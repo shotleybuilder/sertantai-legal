@@ -184,8 +184,9 @@ mix ecto.gen.migration add_feature
 All code must:
 1. Pass Credo checks (no issues in strict mode)
 2. Pass Dialyzer (no warnings)
-3. Be formatted with `mix format`
-4. Have no compiler warnings
+3. Pass Sobelow security checks (no high-severity issues)
+4. Be formatted with `mix format`
+5. Have no compiler warnings
 
 Pre-commit hooks enforce:
 - Code formatting
@@ -194,6 +195,7 @@ Pre-commit hooks enforce:
 
 Pre-push hooks enforce:
 - Dialyzer type checking
+- Sobelow security analysis
 - Full test suite with coverage
 
 ### Frontend Integration

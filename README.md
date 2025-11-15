@@ -29,7 +29,7 @@ A production-ready starter template for building full-stack, real-time, offline-
 - ✅ Offline-first with optimistic updates
 - ✅ Multi-tenant architecture (organization-scoped data)
 - ✅ Auth-ready (User/Organization resources for JWT validation)
-- ✅ Comprehensive quality tooling (Credo, Dialyzer, ESLint, Prettier)
+- ✅ Comprehensive quality tooling (Credo, Dialyzer, Sobelow, ESLint, Prettier)
 - ✅ Production-ready Docker setup
 - ✅ Health monitoring endpoints
 - ✅ CORS configured for frontend/backend separation
@@ -172,6 +172,7 @@ mix phx.server           # Start server
 mix test                 # Run tests
 mix credo                # Static analysis
 mix dialyzer             # Type checking
+mix sobelow              # Security analysis
 
 # Frontend
 cd frontend
@@ -207,6 +208,7 @@ mix test                    # All tests
 mix test --cover            # With coverage
 mix dialyzer                # Type checking
 mix credo                   # Static analysis
+mix sobelow                 # Security analysis
 ```
 
 ### Frontend
