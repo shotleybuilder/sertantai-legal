@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mix test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(mix:*)",
+      "Bash(export MIX_ENV=test)",
+      "Bash(MIX_ENV=test mix test:*)",
+      "Bash(MIX_ENV=dev mix dialyzer:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(PGPASSWORD=postgres psql:*)",
+      "mcp__tidewave__project_eval",
+      "mcp__tidewave__search_package_docs",
+      "mcp__tidewave__get_source_location",
+      "mcp__tidewave__get_docs",
+      "mcp__tidewave__execute_sql_query",
+      "mcp__tidewave__get_logs",
+      "mcp__tidewave__get_ecto_schemas",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:elixirforum.com)",
+      "WebSearch"
+    ],
+    "deny": []
+  },
+  "enabledMcpjsonServers": [
+    "tidewave"
+  ]
+}

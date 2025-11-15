@@ -44,3 +44,6 @@ priv/plts/
 
 # Elixir releases
 rel/
+
+# Claude Code local settings (user-specific)
+.claude/settings.local.json

@@ -25,6 +25,12 @@ defmodule StarterAppWeb.Endpoint do
     gzip: false,
     only: StarterAppWeb.static_paths()
 
+  # Tidewave MCP server for AI assistant integration
+  # Available at http://localhost:4000/tidewave/mcp
+  if Code.ensure_loaded?(Tidewave) do
+    plug Tidewave
+  end
+
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
