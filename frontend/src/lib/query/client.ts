@@ -4,8 +4,8 @@
  * Sets up the QueryClient with TanStack DB persistence
  */
 
-import { QueryClient } from '@tanstack/svelte-query'
-import { browser } from '$app/environment'
+import { QueryClient } from '@tanstack/svelte-query';
+import { browser } from '$app/environment';
 
 /**
  * Create the QueryClient
@@ -14,32 +14,33 @@ import { browser } from '$app/environment'
  * It manages query caching, invalidation, and background updates.
  */
 export function createQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        // Enable queries only in browser (not SSR)
-        enabled: browser,
+	return new QueryClient({
+		defaultOptions: {
+			queries: {
+				// Enable queries only in browser (not SSR)
+				enabled: browser,
 
-        // Stale time - how long before data is considered stale
-        staleTime: 1000 * 60 * 5, // 5 minutes
+				// Stale time - how long before data is considered stale
+				staleTime: 1000 * 60 * 5, // 5 minutes
 
-        // Cache time - how long to keep unused data in cache
-        gcTime: 1000 * 60 * 30, // 30 minutes (was cacheTime in v4)
+				// Cache time - how long to keep unused data in cache
+				gcTime: 1000 * 60 * 30, // 30 minutes (was cacheTime in v4)
 
-        // Retry failed requests
-        retry: 1,
+				// Retry failed requests
+				retry: 1,
 
-        // Refetch on window focus
-        refetchOnWindowFocus: false,
+				// Refetch on window focus
+				refetchOnWindowFocus: false,
 
-        // Refetch on reconnect
-        refetchOnReconnect: true,
-      },
-    },
-  })
+				// Refetch on reconnect
+				refetchOnReconnect: true
+			}
+		}
+	});
 }
 
 /**
  * Global query client instance
+ * Always create one, even for SSR - components need the context
  */
-export const queryClient = browser ? createQueryClient() : null
+export const queryClient = createQueryClient();
