@@ -2,47 +2,33 @@
 #
 #     mix run priv/repo/seeds.exs
 #
-# This is a starter template - add your seed data here as you build your application.
+# Note: This microservice does NOT own User/Organization resources.
+# Those are managed by sertantai-auth. This service receives organization_id
+# from JWT claims during authentication.
 
-alias StarterApp.Auth.{Organization, User}
-
-IO.puts("\n🌱 Seeding StarterApp database...")
+IO.puts("\n🌱 Seeding SertantaiLegal database...")
 
 # ========================================
-# EXAMPLE: Create organization and users
+# Add your domain-specific seed data here
 # ========================================
-# Uncomment and modify this example code to seed your development database
+# Example: Seed UK LRT reference data, compliance templates, etc.
 
-# org_id_string = Ash.UUID.generate()
-# {:ok, org_id_binary} = Ecto.UUID.dump(org_id_string)
-# now = DateTime.utc_now() |> DateTime.truncate(:second)
+# For UK Legal/Regulatory Transport (LRT) reference data:
+# This would typically be loaded from CSV/JSON files containing
+# the 19K+ records from the existing system.
+
+# Example placeholder:
+# alias SertantaiLegal.Legal.UkLrt
 #
-# {:ok, %Postgrex.Result{rows: [org_row]}} =
-#   Ecto.Adapters.SQL.query(
-#     StarterApp.Repo,
-#     "INSERT INTO organizations (id, name, slug, inserted_at, updated_at)
-#    VALUES ($1, $2, $3, $4, $5)
-#    ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
-#    RETURNING *",
-#     [org_id_binary, "Demo Organization", "demo-org", now, now]
-#   )
+# lrt_records = [
+#   %{code: "EW-01", name: "England & Wales - Standard", category: "vehicle"},
+#   %{code: "SC-01", name: "Scotland - Standard", category: "vehicle"},
+#   # ... loaded from external data source
+# ]
 #
-# org_id = Enum.at(org_row, 0)
-#
-# user_id_string = Ash.UUID.generate()
-# {:ok, user_id_binary} = Ecto.UUID.dump(user_id_string)
-#
-# {:ok, %Postgrex.Result{rows: [user_row]}} =
-#   Ecto.Adapters.SQL.query(
-#     StarterApp.Repo,
-#     "INSERT INTO users (id, email, name, organization_id, inserted_at, updated_at)
-#    VALUES ($1, $2, $3, $4, $5, $6)
-#    ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
-#    RETURNING *",
-#     [user_id_binary, "user@example.com", "Demo User", org_id, now, now]
-#   )
-#
-# IO.puts("✓ Created demo organization and user")
+# Enum.each(lrt_records, fn record ->
+#   UkLrt.create!(record)
+# end)
 
 IO.puts("\n✅ Seed script completed!")
-IO.puts("Add your seed data above as you develop your application.\n")
+IO.puts("Add your domain seed data above as you develop your application.\n")

@@ -1,4 +1,4 @@
-defmodule StarterAppWeb.ConnCase do
+defmodule SertantaiLegalWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -11,7 +11,7 @@ defmodule StarterAppWeb.ConnCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use StarterAppWeb.ConnCase, async: true`, although
+  by setting `use SertantaiLegalWeb.ConnCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -20,19 +20,19 @@ defmodule StarterAppWeb.ConnCase do
   using do
     quote do
       # The default endpoint for testing
-      @endpoint StarterAppWeb.Endpoint
+      @endpoint SertantaiLegalWeb.Endpoint
 
-      use StarterAppWeb, :verified_routes
+      use SertantaiLegalWeb, :verified_routes
 
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
-      import StarterAppWeb.ConnCase
+      import SertantaiLegalWeb.ConnCase
     end
   end
 
   setup tags do
-    StarterApp.DataCase.setup_sandbox(tags)
+    SertantaiLegal.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

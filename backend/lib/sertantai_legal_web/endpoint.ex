@@ -1,12 +1,12 @@
-defmodule StarterAppWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :starter_app
+defmodule SertantaiLegalWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :sertantai_legal
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
-    key: "_starter_app_key",
+    key: "_sertantai_legal_key",
     signing_salt: "m2DMKQLC",
     same_site: "Lax"
   ]
@@ -21,9 +21,9 @@ defmodule StarterAppWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :starter_app,
+    from: :sertantai_legal,
     gzip: false,
-    only: StarterAppWeb.static_paths()
+    only: SertantaiLegalWeb.static_paths()
 
   # Tidewave MCP server for AI assistant integration
   # Available at http://localhost:4000/tidewave/mcp
@@ -35,7 +35,7 @@ defmodule StarterAppWeb.Endpoint do
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
     plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :starter_app
+    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :sertantai_legal
   end
 
   plug Plug.RequestId
@@ -62,5 +62,5 @@ defmodule StarterAppWeb.Endpoint do
     allow_headers: ["content-type", "authorization"],
     max_age: 600
 
-  plug StarterAppWeb.Router
+  plug SertantaiLegalWeb.Router
 end

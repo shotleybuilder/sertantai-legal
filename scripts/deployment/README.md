@@ -1,6 +1,6 @@
-# Starter App Deployment Scripts
+# Sertantai-Legal Deployment Scripts
 
-Automated deployment scripts for building and pushing the Starter App backend and frontend Docker images to GitHub Container Registry.
+Automated deployment scripts for building and pushing the Sertantai-Legal backend and frontend Docker images to GitHub Container Registry.
 
 ## Quick Start
 
@@ -60,7 +60,7 @@ Build the production Docker image for the Phoenix/Ash backend.
 - Validates `backend/Dockerfile` exists
 - Checks Docker is running
 - Builds multi-stage image (builder + runner)
-- Includes migrations via `StarterApp.Release.migrate/0`
+- Includes migrations via `SertantaiLegal.Release.migrate/0`
 - Shows image size and ID
 
 **Dockerfile features:**
@@ -120,7 +120,7 @@ echo $GITHUB_PAT | docker login ghcr.io -u YOUR_USERNAME --password-stdin
 **Configuration:**
 Update `IMAGE_NAME` in script with your GitHub org/user:
 ```bash
-IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/starter-app-backend"
+IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/sertantai-legal-backend"
 ```
 
 ---
@@ -140,7 +140,7 @@ Push the frontend image to GitHub Container Registry.
 **Configuration:**
 Update `IMAGE_NAME` in script with your GitHub org/user:
 ```bash
-IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/starter-app-frontend"
+IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/sertantai-legal-frontend"
 ```
 
 ---
@@ -207,30 +207,30 @@ This template follows the **centralized infrastructure pattern** where PostgreSQ
 2. **Update infrastructure docker-compose.yml:**
    ```yaml
    services:
-     starter-app-backend:
-       image: ghcr.io/YOUR_ORG/starter-app-backend:latest
+     sertantai-legal-backend:
+       image: ghcr.io/YOUR_ORG/sertantai-legal-backend:latest
        environment:
-         DATABASE_URL: postgresql://postgres:password@postgres:5432/starter_app_prod
+         DATABASE_URL: postgresql://postgres:password@postgres:5432/sertantai_legal_prod
          SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-         PHX_HOST: api.yourdomain.com
+         SHARED_TOKEN_SECRET: ${SHARED_TOKEN_SECRET}  # For JWT validation
+         PHX_HOST: legal.sertantai.com
        depends_on:
          - postgres
-         - redis
 
-     starter-app-frontend:
-       image: ghcr.io/YOUR_ORG/starter-app-frontend:latest
+     sertantai-legal-frontend:
+       image: ghcr.io/YOUR_ORG/sertantai-legal-frontend:latest
        environment:
-         PUBLIC_API_URL: https://api.yourdomain.com
-         PUBLIC_ELECTRIC_URL: https://electric.yourdomain.com
+         PUBLIC_API_URL: https://legal-api.sertantai.com
+         PUBLIC_ELECTRIC_URL: https://legal-electric.sertantai.com
    ```
 
 3. **Pull and restart on production server:**
    ```bash
    ssh your-server
    cd ~/infrastructure/docker
-   docker compose pull starter-app-backend starter-app-frontend
-   docker compose up -d starter-app-backend starter-app-frontend
-   docker compose logs -f starter-app-backend
+   docker compose pull sertantai-legal-backend sertantai-legal-frontend
+   docker compose up -d sertantai-legal-backend sertantai-legal-frontend
+   docker compose logs -f sertantai-legal-backend
    ```
 
 4. **Configure Nginx reverse proxy:**
@@ -238,18 +238,18 @@ This template follows the **centralized infrastructure pattern** where PostgreSQ
    # Backend API
    server {
        listen 443 ssl;
-       server_name api.yourdomain.com;
+       server_name legal-api.sertantai.com;
        location / {
-           proxy_pass http://starter-app-backend:4000;
+           proxy_pass http://sertantai-legal-backend:4000;
        }
    }
 
    # Frontend
    server {
        listen 443 ssl;
-       server_name app.yourdomain.com;
+       server_name legal.sertantai.com;
        location / {
-           proxy_pass http://starter-app-frontend:3000;
+           proxy_pass http://sertantai-legal-frontend:3000;
        }
    }
    ```
@@ -258,17 +258,18 @@ This template follows the **centralized infrastructure pattern** where PostgreSQ
 
 **Backend (.env):**
 ```bash
-DATABASE_URL=postgresql://postgres:password@postgres:5432/starter_app_prod
+DATABASE_URL=postgresql://postgres:password@postgres:5432/sertantai_legal_prod
 SECRET_KEY_BASE=your-secret-key-base-at-least-64-chars
-PHX_HOST=api.yourdomain.com
-FRONTEND_URL=https://app.yourdomain.com
+SHARED_TOKEN_SECRET=same-as-sertantai-auth-service
+PHX_HOST=legal-api.sertantai.com
+FRONTEND_URL=https://legal.sertantai.com
 POOL_SIZE=10
 ```
 
 **Frontend (.env):**
 ```bash
-PUBLIC_API_URL=https://api.yourdomain.com
-PUBLIC_ELECTRIC_URL=https://electric.yourdomain.com
+PUBLIC_API_URL=https://legal-api.sertantai.com
+PUBLIC_ELECTRIC_URL=https://legal-electric.sertantai.com
 ```
 
 See `backend/.env.example` and `frontend/.env.example` for complete lists.
@@ -281,12 +282,12 @@ Before using the scripts, update the `IMAGE_NAME` variable in each script:
 
 **In build-backend.sh and push-backend.sh:**
 ```bash
-IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/starter-app-backend"
+IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/sertantai-legal-backend"
 ```
 
 **In build-frontend.sh and push-frontend.sh:**
 ```bash
-IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/starter-app-frontend"
+IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/sertantai-legal-frontend"
 ```
 
 Replace `YOUR_GITHUB_ORG` with your GitHub organization or username.
@@ -336,7 +337,7 @@ docker build --no-cache -f backend/Dockerfile backend/
 echo $GITHUB_PAT | docker login ghcr.io -u YOUR_USERNAME --password-stdin
 
 # Verify images exist
-docker images | grep starter-app
+docker images | grep sertantai-legal
 
 # Check GHCR permissions
 # Ensure your GitHub PAT has write:packages scope
@@ -346,7 +347,7 @@ docker images | grep starter-app
 
 ```bash
 # Check logs
-docker logs starter-app-backend
+docker logs sertantai-legal-backend
 
 # Common issues:
 # - DATABASE_URL not set or incorrect
@@ -359,7 +360,7 @@ docker logs starter-app-backend
 
 ```bash
 # Check logs
-docker logs starter-app-frontend
+docker logs sertantai-legal-frontend
 
 # Common issues:
 # - Build artifacts missing (rebuild with --no-cache)
@@ -373,7 +374,7 @@ docker logs starter-app-frontend
 
 **Backend:**
 - Endpoint: `http://localhost:4000/health`
-- Expected: `{"status": "ok", "service": "starter-app", "timestamp": "..."}`
+- Expected: `{"status": "ok", "service": "sertantai-legal", "timestamp": "..."}`
 - Detailed: `http://localhost:4000/health/detailed` (includes database check)
 
 **Frontend:**

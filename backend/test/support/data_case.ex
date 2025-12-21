@@ -1,4 +1,4 @@
-defmodule StarterApp.DataCase do
+defmodule SertantaiLegal.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -10,7 +10,7 @@ defmodule StarterApp.DataCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use StarterApp.DataCase, async: true`, although
+  by setting `use SertantaiLegal.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
 
@@ -18,17 +18,17 @@ defmodule StarterApp.DataCase do
 
   using do
     quote do
-      alias StarterApp.Repo
+      alias SertantaiLegal.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import StarterApp.DataCase
+      import SertantaiLegal.DataCase
     end
   end
 
   setup tags do
-    StarterApp.DataCase.setup_sandbox(tags)
+    SertantaiLegal.DataCase.setup_sandbox(tags)
     :ok
   end
 
@@ -36,7 +36,7 @@ defmodule StarterApp.DataCase do
   Sets up the sandbox based on the test tags.
   """
   def setup_sandbox(tags) do
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(StarterApp.Repo, shared: not tags[:async])
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(SertantaiLegal.Repo, shared: not tags[:async])
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
   end
 

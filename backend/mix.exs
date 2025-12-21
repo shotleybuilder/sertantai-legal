@@ -1,9 +1,9 @@
-defmodule StarterApp.MixProject do
+defmodule SertantaiLegal.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :starter_app,
+      app: :sertantai_legal,
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -19,7 +19,7 @@ defmodule StarterApp.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {StarterApp.Application, []},
+      mod: {SertantaiLegal.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -52,6 +52,9 @@ defmodule StarterApp.MixProject do
       {:ash_postgres, "~> 2.0"},
       {:ash_phoenix, "~> 2.0"},
       {:ash_json_api, "~> 1.0"},
+
+      # JWT validation
+      {:jose, "~> 1.11"},
 
       # Dev/Test Tools
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

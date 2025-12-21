@@ -1,6 +1,32 @@
-# Elixir + Ash + ElectricSQL + Svelte + TanStack Starter Template
+# Sertantai-Legal: UK Legal Compliance Microservice
 
-**IMPORTANT**: This is a STARTER TEMPLATE, not a complete application. It provides infrastructure and base resources (User, Organization) for multi-tenant applications. There is NO example domain code - you add your own domain resources.
+**Service Type**: Domain microservice in the SertantAI ecosystem
+**Domain**: UK Legal/Regulatory Transport (LRT) data and compliance screening
+**Coordinates With**: sertantai-hub (orchestration), sertantai-auth (authentication)
+**Infrastructure**: Shared PostgreSQL via ~/Desktop/infrastructure
+
+## Architecture Context
+
+```
+                    SertantAI Hub (Orchestrator)
+                             ↓
+        ┌────────────────────┼────────────────────┬──────────────┐
+        ↓                    ↓                    ↓              ↓
+   sertantai-auth    sertantai-legal     sertantai-         sertantai-
+   (Identity)        (THIS SERVICE)      enforcement         controls
+                     UK LRT + Screening
+```
+
+**This service provides**:
+- 19,000+ UK Legal/Regulatory Transport records
+- Organization location screening against UK regulations
+- Applicability matching (duty holders, rights holders, power holders)
+- Offline-first data sync via ElectricSQL
+
+**This service does NOT provide**:
+- User authentication (comes from sertantai-auth)
+- Organization management (comes from hub)
+- Billing/subscriptions (comes from hub)
 
 ## Quick Reference
 
@@ -11,8 +37,8 @@
 mix deps.get                      # Install dependencies
 mix ash_postgres.create           # Create database
 mix ash_postgres.migrate          # Run migrations
-mix ash_postgres.generate_migrations --name <name>  # Generate migration from Ash resources
-mix run priv/repo/seeds.exs       # Seed database (minimal example seeds provided)
+mix ash_postgres.generate_migrations --name <name>  # Generate migration
+mix run priv/repo/seeds.exs       # Seed database
 mix phx.server                    # Start Phoenix server (http://localhost:4000)
 mix test                          # Run tests
 mix credo                         # Static analysis
@@ -39,9 +65,9 @@ npm run format                    # Format with Prettier
 npm run format:check              # Check formatting
 ```
 
-**Docker** (from root):
+**Docker** (from root - local development only):
 ```bash
-docker-compose -f docker-compose.dev.yml up -d     # Start PostgreSQL + ElectricSQL
+docker-compose -f docker-compose.dev.yml up -d     # Start local PostgreSQL + ElectricSQL
 docker-compose -f docker-compose.dev.yml down      # Stop services
 docker-compose -f docker-compose.dev.yml logs -f   # View logs
 ```
@@ -51,172 +77,212 @@ docker-compose -f docker-compose.dev.yml logs -f   # View logs
 - Backend detailed: http://localhost:4000/health/detailed
 - ElectricSQL: http://localhost:3000 (HTTP Shape API)
 
-## Architecture Overview
+## Infrastructure Integration
 
-### Tech Stack
-
-**Backend**:
-- **Elixir 1.16+** / Erlang OTP 26+ - Functional, concurrent, fault-tolerant
-- **Phoenix Framework 1.7+** - Web framework
-- **Ash Framework 3.0+** - Declarative resource framework for domain modeling
-- **PostgreSQL 15+** - Primary database with logical replication enabled
-- **ElectricSQL v1.0** - Real-time sync service (HTTP Shape API)
-
-**Frontend**:
-- **SvelteKit** - TypeScript-first framework
-- **TailwindCSS v4** - Utility-first styling
-- **TanStack DB** - Client-side differential dataflow for reactive queries
-- **Vitest** - Unit testing
-
-**DevOps**:
-- **Docker Compose** - Local development environment
-- **usage_rules** - Enforce project coding standards
-- **Tidewave MCP** - AI assistant integration (dev only)
-- **Credo** - Static analysis
-- **Dialyzer** - Type checking
-- **Sobelow** - Security analysis for Phoenix
-- **ESLint** - JavaScript/TypeScript linting
-
-### Data Flow Architecture
+### Production Architecture
 
 ```
-PostgreSQL (source of truth)
-    ↓ (logical replication via wal_level=logical)
-ElectricSQL Sync Service
-    ↓ (HTTP Shape API - new v1.0 approach)
-TanStack DB (client-side normalized store)
-    ↓ (reactive differential dataflow queries)
-Svelte Components (reactive UI)
+┌─────────────────────────────────────────────────────────────────┐
+│                    ~/Desktop/infrastructure                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │ PostgreSQL  │  │    Redis    │  │   Nginx (SSL/Proxy)     │  │
+│  │ (shared)    │  │  (shared)   │  │  legal.sertantai.com    │  │
+│  └──────┬──────┘  └─────────────┘  └───────────┬─────────────┘  │
+│         │                                       │                │
+└─────────┼───────────────────────────────────────┼────────────────┘
+          │                                       │
+          ▼                                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      sertantai-legal                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │ Phoenix Backend │  │   ElectricSQL   │  │ Svelte Frontend │  │
+│  │    (port 4000)  │  │   (port 3000)   │  │  (static build) │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Concept**: This is an **offline-first** architecture. The frontend operates entirely on local data (TanStack DB) that syncs bidirectionally with PostgreSQL via ElectricSQL.
+### Shared Services (from infrastructure)
 
-### Multi-Tenancy Pattern
+| Service | Connection | Purpose |
+|---------|------------|---------|
+| PostgreSQL 16 | `postgres:5432` | Shared database (sertantai_legal_prod) |
+| Redis 7 | `redis:6379` | Caching (if needed) |
+| Nginx | External | SSL termination, routing |
+| sertantai-auth | `sertantai-auth:4001` | JWT validation |
 
-**CRITICAL**: All domain resources MUST include `organization_id` for data isolation.
+### Environment Variables
 
-**Base Resources** (already included):
-- `StarterApp.Auth.User` - User accounts (backend/lib/starter_app/auth/user.ex)
-- `StarterApp.Auth.Organization` - Tenant boundaries (backend/lib/starter_app/auth/organization.ex)
+**Production** (set in infrastructure `.env`):
+```bash
+# Database (shared PostgreSQL)
+DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres/sertantai_legal_prod
 
-Both resources are **read-only by default**. You can modify them to support local auth or sync from external auth service.
+# Application
+SECRET_KEY_BASE=${SERTANTAI_LEGAL_SECRET_KEY_BASE}
+PHX_HOST=legal.sertantai.com
+PORT=4000
 
-**Your Domain Resources** (you add these):
-- Create in `backend/lib/starter_app/<your_domain>/`
-- Must include `organization_id`, `inserted_at`, `updated_at`
-- Use UUID primary keys
-- Define explicit Ash actions (avoid `:all` in defaults)
-- Scope all queries by organization_id
+# Auth integration
+SHARED_TOKEN_SECRET=${SHARED_TOKEN_SECRET}  # Validates JWTs from sertantai-auth
 
-See `usage-rules.md` for detailed requirements and `docs/BLUEPRINT.md` for complete examples.
-
-## Project Structure
-
-```
-starter-app/
-├── backend/                          # Elixir/Phoenix/Ash backend
-│   ├── lib/
-│   │   ├── starter_app/              # Domain layer
-│   │   │   ├── auth/                 # Auth resources (User, Organization)
-│   │   │   │   ├── user.ex
-│   │   │   │   └── organization.ex
-│   │   │   ├── api.ex                # Main Ash Domain - register resources here
-│   │   │   ├── repo.ex               # Ecto Repo
-│   │   │   └── application.ex        # OTP Application
-│   │   ├── starter_app_web/          # Web layer (Phoenix)
-│   │   │   ├── controllers/
-│   │   │   │   ├── health_controller.ex
-│   │   │   │   └── hello_controller.ex
-│   │   │   ├── endpoint.ex           # Includes Tidewave MCP plug
-│   │   │   └── router.ex
-│   │   └── starter_app.ex
-│   ├── priv/
-│   │   └── repo/
-│   │       ├── migrations/           # Ash-generated migrations
-│   │       └── seeds.exs             # Minimal seed examples (commented)
-│   ├── config/                       # Environment configuration
-│   │   ├── dev.exs
-│   │   ├── prod.exs
-│   │   ├── runtime.exs
-│   │   └── test.exs
-│   ├── mix.exs                       # Dependencies and aliases
-│   └── .dialyzer_ignore.exs
-│
-├── frontend/                         # SvelteKit frontend
-│   ├── src/
-│   │   ├── routes/                   # File-based routing
-│   │   │   ├── +layout.svelte
-│   │   │   └── +page.svelte          # Landing page
-│   │   ├── lib/                      # Shared code
-│   │   │   └── components/           # Reusable Svelte components
-│   │   └── app.d.ts
-│   ├── static/                       # Static assets
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── tsconfig.json
-│   └── tailwind.config.js
-│
-├── database/
-│   └── init.sql                      # PostgreSQL init script
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml                    # GitHub Actions CI/CD
-│
-├── .mcp.json                         # Tidewave MCP configuration
-├── .claude/
-│   └── settings.local.json.example   # Claude Code permissions template
-├── docker-compose.dev.yml            # Local dev: PostgreSQL + ElectricSQL
-├── usage-rules.md                    # Enforced coding patterns
-├── docs/
-│   └── BLUEPRINT.md                  # Comprehensive technical guide
-└── README.md                         # Getting started guide
+# ElectricSQL
+ELECTRIC_SECRET=${SERTANTAI_LEGAL_ELECTRIC_SECRET}
 ```
 
-## Core Concepts
+**Local Development** (`backend/.env`):
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5435/sertantai_legal_dev
+SECRET_KEY_BASE=dev_secret_key_base_at_least_64_chars_long_for_development
+FRONTEND_URL=http://localhost:5173
+SHARED_TOKEN_SECRET=dev_shared_token_secret_for_local_testing
+```
 
-### 1. Ash Framework (Declarative Resources)
+## Authentication Pattern
 
-Ash is the **primary way to model domain entities**. Do NOT use plain Ecto schemas.
+**Critical**: This service does NOT manage users or authentication. It validates JWTs from sertantai-auth.
 
-**Key Files**:
-- `backend/lib/starter_app/api.ex` - Main domain, register all resources here
-- `backend/lib/starter_app/auth/user.ex` - Example resource
-- `backend/lib/starter_app/auth/organization.ex` - Example resource
+### JWT Validation Flow
 
-**Ash Resource Anatomy**:
+```
+1. User authenticates with sertantai-auth
+2. sertantai-auth issues JWT with claims:
+   {
+     sub: "user-uuid",
+     organization_id: "org-uuid",
+     roles: ["member"],
+     services: ["legal"],  # Hub controls service access
+     iss: "sertantai_auth",
+     exp: 1234567890
+   }
+3. Frontend stores JWT
+4. Requests to sertantai-legal include JWT in Authorization header
+5. sertantai-legal validates JWT using SHARED_TOKEN_SECRET
+6. Extract organization_id from claims for data scoping
+7. ElectricSQL shapes filtered by organization_id
+```
+
+### Backend JWT Validation
+
 ```elixir
-defmodule StarterApp.YourDomain.YourResource do
+# In endpoint.ex or a plug
+defmodule SertantaiLegalWeb.AuthPlug do
+  def call(conn, _opts) do
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+         {:ok, claims} <- verify_token(token) do
+      conn
+      |> assign(:current_user_id, claims["sub"])
+      |> assign(:organization_id, claims["organization_id"])
+    else
+      _ -> conn |> send_resp(401, "Unauthorized") |> halt()
+    end
+  end
+
+  defp verify_token(token) do
+    secret = System.get_env("SHARED_TOKEN_SECRET")
+    # Use JOSE or Guardian to verify
+  end
+end
+```
+
+### No Local User/Organization Tables
+
+Unlike standalone apps, this service:
+- Does NOT create User or Organization tables
+- Trusts JWT claims for user identity
+- Uses `organization_id` from JWT to scope all queries
+- May cache user/org data locally if needed for display (read-only)
+
+## Domain Resources
+
+This service owns the UK Legal domain. All resources include `organization_id` for multi-tenancy.
+
+### Core Resources
+
+```
+SertantaiLegal.Legal.UkLrt           # 19,000+ UK legal records
+SertantaiLegal.Legal.OrganizationLocation  # Business locations for screening
+SertantaiLegal.Legal.LocationScreening     # Screening results
+SertantaiLegal.Legal.ApplicableLaw         # Laws applicable to a location
+```
+
+### Resource Pattern
+
+```elixir
+defmodule SertantaiLegal.Legal.UkLrt do
   use Ash.Resource,
-    domain: StarterApp.Api,
+    domain: SertantaiLegal.Api,
     data_layer: AshPostgres.DataLayer
 
   postgres do
-    table "your_resources"
-    repo StarterApp.Repo
+    table "uk_lrt"
+    repo SertantaiLegal.Repo
   end
 
   attributes do
     uuid_primary_key :id
-    attribute :name, :string, allow_nil?: false
-    attribute :organization_id, :uuid, allow_nil?: false  # REQUIRED for multi-tenancy
+
+    # Core identification
+    attribute :family, :string
+    attribute :name, :string
+    attribute :title_en, :string
+    attribute :year, :integer
+
+    # Legal entity holders (JSONB)
+    attribute :duty_holder, :map
+    attribute :power_holder, :map
+    attribute :rights_holder, :map
+
+    # Note: UK LRT is reference data, not org-scoped
+    # It's shared across all organizations
+
     create_timestamp :inserted_at
     update_timestamp :updated_at
   end
 
-  relationships do
-    belongs_to :organization, StarterApp.Auth.Organization
+  actions do
+    defaults [:read]
+
+    read :by_family do
+      argument :family, :string, allow_nil?: false
+      filter expr(family == ^arg(:family))
+    end
+
+    read :for_screening do
+      argument :filters, :map, allow_nil?: false
+      # Apply applicability matching logic
+    end
+  end
+end
+
+defmodule SertantaiLegal.Legal.OrganizationLocation do
+  use Ash.Resource,
+    domain: SertantaiLegal.Api,
+    data_layer: AshPostgres.DataLayer
+
+  postgres do
+    table "organization_locations"
+    repo SertantaiLegal.Repo
+  end
+
+  attributes do
+    uuid_primary_key :id
+    attribute :organization_id, :uuid, allow_nil?: false  # From JWT, required
+    attribute :name, :string, allow_nil?: false
+    attribute :address_line1, :string
+    attribute :city, :string
+    attribute :postcode, :string
+    attribute :country, :string, default: "UK"
+    attribute :is_primary, :boolean, default: false
+
+    create_timestamp :inserted_at
+    update_timestamp :updated_at
   end
 
   actions do
     defaults [:read, :destroy]
 
     create :create do
-      accept [:name, :organization_id]
-    end
-
-    update :update do
-      accept [:name]
+      accept [:organization_id, :name, :address_line1, :city, :postcode, :country, :is_primary]
     end
 
     read :by_organization do
@@ -224,306 +290,276 @@ defmodule StarterApp.YourDomain.YourResource do
       filter expr(organization_id == ^arg(:organization_id))
     end
   end
+end
+```
 
-  code_interface do
-    define :read
-    define :create
-    define :by_organization, args: [:organization_id]
+### ElectricSQL Table Configuration
+
+```elixir
+# In migration - enable sync for client-facing tables
+execute "ALTER TABLE organization_locations REPLICA IDENTITY FULL"
+execute "ALTER TABLE location_screenings REPLICA IDENTITY FULL"
+execute "ALTER TABLE uk_lrt REPLICA IDENTITY FULL"
+
+# Grant access (filtered by organization_id in shape request)
+execute "ELECTRIC GRANT SELECT ON organization_locations TO AUTHENTICATED"
+execute "ELECTRIC GRANT SELECT ON location_screenings TO AUTHENTICATED"
+execute "ELECTRIC GRANT SELECT ON uk_lrt TO AUTHENTICATED"  # Reference data, all orgs
+```
+
+## Data Flow Architecture
+
+```
+PostgreSQL (source of truth)
+    ↓ (logical replication via wal_level=logical)
+ElectricSQL Sync Service (this service's instance)
+    ↓ (HTTP Shape API with organization_id filter)
+TanStack DB (client-side normalized store)
+    ↓ (reactive differential dataflow queries)
+Svelte Components (reactive UI)
+```
+
+**Key Concepts**:
+1. **Offline-first**: Frontend operates on local data (TanStack DB)
+2. **Bidirectional sync**: Changes sync both ways via ElectricSQL
+3. **Organization isolation**: Shapes filtered by organization_id from JWT
+4. **Reference data**: UK LRT syncs to all users (read-only, shared)
+
+## Project Structure
+
+```
+sertantai-legal/
+├── backend/                          # Elixir/Phoenix/Ash backend
+│   ├── lib/
+│   │   ├── sertantai_legal/          # Domain layer
+│   │   │   ├── legal/                # UK Legal domain resources
+│   │   │   │   ├── uk_lrt.ex
+│   │   │   │   ├── organization_location.ex
+│   │   │   │   └── location_screening.ex
+│   │   │   ├── matching/             # Applicability matching logic
+│   │   │   │   └── applicability_matcher.ex
+│   │   │   ├── api.ex                # Main Ash Domain
+│   │   │   ├── repo.ex               # Ecto Repo
+│   │   │   └── application.ex        # OTP Application
+│   │   ├── sertantai_legal_web/      # Web layer (Phoenix)
+│   │   │   ├── controllers/
+│   │   │   │   ├── health_controller.ex
+│   │   │   │   └── screening_controller.ex
+│   │   │   ├── plugs/
+│   │   │   │   └── auth_plug.ex      # JWT validation
+│   │   │   ├── endpoint.ex
+│   │   │   └── router.ex
+│   │   └── sertantai_legal.ex
+│   ├── priv/
+│   │   └── repo/
+│   │       ├── migrations/           # Ash-generated migrations
+│   │       └── seeds.exs             # UK LRT seed data
+│   ├── config/
+│   └── mix.exs
+│
+├── frontend/                         # SvelteKit frontend
+│   ├── src/
+│   │   ├── routes/
+│   │   │   ├── +layout.svelte
+│   │   │   ├── +page.svelte          # Dashboard
+│   │   │   ├── locations/            # Location management
+│   │   │   ├── screening/            # Screening workflow
+│   │   │   └── laws/                 # UK LRT browser
+│   │   ├── lib/
+│   │   │   ├── auth/                 # JWT handling (from hub)
+│   │   │   ├── electric/             # ElectricSQL shapes
+│   │   │   ├── db/                   # TanStack DB collections
+│   │   │   └── components/
+│   │   └── app.d.ts
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── docs/
+│   ├── MIGRATION_PLAN.md             # Migration from old Sertantai
+│   ├── QUICKSTART.md
+│   └── BLUEPRINT.md
+│
+├── docker-compose.dev.yml            # Local development only
+├── usage-rules.md                    # Coding standards
+└── README.md
+```
+
+## Multi-Tenancy Pattern
+
+**Organization Scoping** (organization_id from JWT):
+- All domain resources (except UK LRT reference data) include `organization_id`
+- All queries filter by organization_id from JWT claims
+- ElectricSQL shapes request includes `organization_id` filter
+- No cross-organization data leakage
+
+**UK LRT Special Case**:
+- Reference data shared across all organizations
+- Not organization-scoped (no organization_id field)
+- Read-only access for all authenticated users
+- Approximately 19,000 records
+
+## Inter-Service Communication
+
+### Calling sertantai-auth
+
+```elixir
+# Validate user exists (optional, for caching display name)
+defmodule SertantaiLegal.AuthClient do
+  def get_user(user_id, auth_token) do
+    HTTPoison.get(
+      "http://sertantai-auth:4001/api/users/#{user_id}",
+      [{"Authorization", "Bearer #{auth_token}"}]
+    )
   end
 end
 ```
 
-**Migration Workflow**:
-1. Define/modify Ash resource
-2. Run: `mix ash_postgres.generate_migrations --name <description>`
-3. Review generated migration in `priv/repo/migrations/`
-4. Run: `mix ash_postgres.migrate`
+### Hub Service Subscription Check
 
-**NEVER** use `mix ecto.gen.migration` - use Ash generators.
+The hub mediates which services a user can access. This service should:
+1. Check JWT `services` claim includes "legal"
+2. Or call hub API to verify subscription status
 
-### 2. ElectricSQL Real-time Sync
-
-ElectricSQL v1.0 uses **HTTP Shape API** (not WebSocket like v0.x).
-
-**Backend Setup** (in migration):
 ```elixir
-# Enable syncing for a table
-execute "ALTER TABLE your_resources REPLICA IDENTITY FULL"
-execute "ELECTRIC GRANT ALL ON your_resources TO ANYONE"
-# Or with row-level security:
-# execute "ELECTRIC GRANT SELECT ON your_resources TO AUTHENTICATED WHERE organization_id = auth.organization_id()"
+def authorized_for_service?(claims) do
+  "legal" in (claims["services"] || [])
+end
 ```
-
-**Frontend Integration**:
-```typescript
-import { ShapeStream } from '@electric-sql/client'
-
-const stream = new ShapeStream({
-  url: `${PUBLIC_ELECTRIC_URL}/v1/shape`,
-  params: {
-    table: 'your_resources',
-    where: `organization_id='${organizationId}'`
-  }
-})
-
-stream.subscribe((messages) => {
-  // Update TanStack DB with changes
-})
-```
-
-**Docker Configuration** (docker-compose.dev.yml):
-- PostgreSQL: Runs with `wal_level=logical` for replication
-- ElectricSQL: Connects to PostgreSQL, exposes HTTP API on port 3000
-- Backend: Phoenix server on port 4000
-- Frontend: Vite dev server on port 5173
-
-### 3. Multi-Tenancy Implementation
-
-**Organization Scoping**:
-- Every domain resource includes `organization_id`
-- All queries filter by organization
-- ElectricSQL shapes filtered by organization
-- JWT tokens include organization claims
-
-**Authentication Pattern** (to be implemented):
-1. User logs in → Backend validates credentials
-2. Backend generates JWT with claims: `{user_id, organization_id, roles}`
-3. Frontend stores JWT
-4. Frontend requests ElectricSQL shapes with JWT
-5. ElectricSQL validates JWT and filters by organization_id
-6. TanStack DB stores only user's organization data
-
-### 4. Tidewave MCP Integration
-
-**What it is**: Model Context Protocol server for AI assistant integration with Phoenix apps.
-
-**Location**:
-- Plug: `backend/lib/starter_app_web/endpoint.ex:30-32`
-- Config: `.mcp.json` (MCP server proxy)
-- Permissions: `.claude/settings.local.json.example`
-
-**Available Tools** (when Tidewave is running):
-- `mcp__tidewave__project_eval` - Evaluate Elixir expressions
-- `mcp__tidewave__get_docs` - Fetch documentation
-- `mcp__tidewave__execute_sql_query` - Run SQL queries
-- `mcp__tidewave__get_logs` - View application logs
-- `mcp__tidewave__get_ecto_schemas` - List Ecto schemas
-
-**Setup**:
-1. Copy `.claude/settings.local.json.example` to `.claude/settings.local.json`
-2. Start backend: `mix phx.server`
-3. Tidewave available at: http://localhost:4000/tidewave/mcp
-
-### 5. Usage Rules Enforcement
-
-**What it is**: Package that enforces coding standards defined in `usage-rules.md`.
-
-**Key Rules**:
-- ✅ Use Ash Resources (not plain Ecto)
-- ✅ Include `organization_id` in all domain resources
-- ✅ Use UUID primary keys
-- ✅ Include timestamps (`inserted_at`, `updated_at`)
-- ✅ Define explicit actions
-- ✅ Scope queries by organization
-- ❌ NO direct Ecto queries bypassing Ash
-- ❌ NO resources without `organization_id` (except Auth resources)
-- ❌ NO hard-coded organization IDs
-
-**Check compliance**: `mix usage_rules.check`
 
 ## Common Workflows
 
 ### Adding a New Domain Resource
 
-1. **Create resource file**: `backend/lib/starter_app/your_domain/your_resource.ex`
-2. **Define Ash resource** (see template in Core Concepts #1)
-3. **Register in domain**: Add to `backend/lib/starter_app/api.ex`
-   ```elixir
-   resources do
-     resource StarterApp.Auth.User
-     resource StarterApp.Auth.Organization
-     resource StarterApp.YourDomain.YourResource  # Add here
-   end
-   ```
-4. **Generate migration**: `mix ash_postgres.generate_migrations --name add_your_resources`
-5. **Review and run migration**: `mix ash_postgres.migrate`
-6. **Add ElectricSQL grants** (if syncing to frontend):
-   ```elixir
-   # In the generated migration
-   execute "ALTER TABLE your_resources REPLICA IDENTITY FULL"
-   execute "ELECTRIC GRANT ALL ON your_resources TO ANYONE"
-   ```
-7. **Create frontend collection** (if syncing):
-   ```typescript
-   // frontend/src/lib/db/collections.ts
-   export const collections = {
-     your_resources: {
-       schema: {
-         id: 'string',
-         name: 'string',
-         organization_id: 'string',
-         inserted_at: 'string',
-         updated_at: 'string'
-       },
-       primaryKey: 'id'
-     }
-   }
-   ```
-8. **Write tests**: See `docs/BLUEPRINT.md` for testing examples
+1. **Create resource file**: `backend/lib/sertantai_legal/legal/your_resource.ex`
+2. **Include organization_id** (if not reference data)
+3. **Register in domain**: Add to `backend/lib/sertantai_legal/api.ex`
+4. **Generate migration**: `mix ash_postgres.generate_migrations --name add_your_resource`
+5. **Add ElectricSQL grants** if syncing to frontend
+6. **Run migration**: `mix ash_postgres.migrate`
+7. **Create frontend collection**: `frontend/src/lib/db/collections.ts`
 
-### Renaming the Template
+### Testing Organization Isolation
 
-**Backend** (find & replace):
-- `StarterApp` → `YourApp`
-- `:starter_app` → `:your_app`
-- `starter_app` → `your_app`
-- `StarterAppWeb` → `YourAppWeb`
+```elixir
+defmodule SertantaiLegal.Legal.OrganizationLocationTest do
+  use SertantaiLegal.DataCase
 
-**Frontend**:
-- Update `package.json` name
-- Update display text in routes/+page.svelte
+  test "locations are scoped by organization" do
+    org1_id = Ecto.UUID.generate()
+    org2_id = Ecto.UUID.generate()
 
-**Database**:
-- Update `docker-compose.dev.yml` database names
-- Update `config/dev.exs` and `config/runtime.exs` DATABASE_URL
+    {:ok, loc1} = OrganizationLocation.create(%{
+      organization_id: org1_id,
+      name: "Org 1 Location"
+    })
 
-**Files to rename**:
-- `backend/lib/starter_app/` → `backend/lib/your_app/`
-- `backend/lib/starter_app_web/` → `backend/lib/your_app_web/`
+    {:ok, loc2} = OrganizationLocation.create(%{
+      organization_id: org2_id,
+      name: "Org 2 Location"
+    })
 
-### Testing Strategy
+    # Query for org1 only returns org1's locations
+    {:ok, results} = OrganizationLocation.by_organization(org1_id)
+    assert length(results) == 1
+    assert hd(results).id == loc1.id
+  end
+end
+```
 
-**Backend Tests** (ExUnit):
-- Test all Ash actions (create, read, update, destroy)
-- Test organization isolation
-- Test validations and relationships
-- Run: `mix test`
+## Deployment
 
-**Frontend Tests** (Vitest):
-- Component unit tests
-- TanStack DB integration tests
-- Run: `npm test`
+### Production Checklist
 
-**Type Checking**:
-- Backend: `mix dialyzer`
-- Frontend: `npm run check`
+1. **Database**: Add `sertantai_legal_prod` to infrastructure init SQL
+2. **Docker**: Build and push image to GHCR
+3. **Nginx**: Create `legal.sertantai.com.conf` in infrastructure
+4. **Environment**: Add variables to infrastructure `.env`
+5. **Health**: Ensure `/health` endpoint works
+6. **Migrations**: Auto-run on container startup
 
-**Linting**:
-- Backend: `mix credo`
-- Frontend: `npm run lint`
+### Docker Image
 
-## Important Configuration Files
+```dockerfile
+# backend/Dockerfile
+FROM elixir:1.16-alpine AS builder
+# ... multi-stage build ...
 
-### Backend Configuration
+FROM alpine:3.18
+# Run as non-root user
+RUN adduser -D app
+USER app
+WORKDIR /app
+COPY --from=builder /app/_build/prod/rel/sertantai_legal ./
+CMD ["bin/sertantai_legal", "start"]
+```
 
-**mix.exs** (backend/mix.exs):
-- App name: `:starter_app`
-- Dependencies: Ash, Phoenix, ElectricSQL-compatible PostgreSQL
-- Aliases: `mix ash.setup`, `mix ash.reset`
+### Infrastructure Integration
 
-**config/dev.exs**:
-- Database URL: Uses `DATABASE_URL` env var or defaults to localhost:5435
-- Phoenix endpoint configuration
-- Development-only settings
+Add to `~/Desktop/infrastructure/docker/docker-compose.yml`:
 
-**config/runtime.exs**:
-- Production database configuration
-- Secret key base
-- Environment-based settings
+```yaml
+sertantai-legal:
+  image: ghcr.io/shotleybuilder/sertantai-legal:${SERTANTAI_LEGAL_VERSION}
+  container_name: sertantai_legal
+  environment:
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/sertantai_legal_prod
+    - SECRET_KEY_BASE=${SERTANTAI_LEGAL_SECRET_KEY_BASE}
+    - PHX_HOST=legal.sertantai.com
+    - SHARED_TOKEN_SECRET=${SHARED_TOKEN_SECRET}
+  depends_on:
+    postgres:
+      condition: service_healthy
+  networks:
+    - infra_network
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
 
-### Frontend Configuration
+sertantai-legal-electric:
+  image: electricsql/electric:latest
+  container_name: sertantai_legal_electric
+  environment:
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/sertantai_legal_prod
+    - ELECTRIC_SECRET=${SERTANTAI_LEGAL_ELECTRIC_SECRET}
+    - HTTP_PORT=3000
+  depends_on:
+    - postgres
+  networks:
+    - infra_network
+```
 
-**package.json**:
-- Scripts for dev, build, test, lint
-- Dependencies: @electric-sql/client, @tanstack/db
+## Related Projects
 
-**vite.config.ts**:
-- SvelteKit plugin configuration
-- Build optimization
-
-**svelte.config.js**:
-- Adapter configuration (static by default)
-- Preprocessor settings
-
-### Docker Configuration
-
-**docker-compose.dev.yml**:
-- PostgreSQL: Port 5435, logical replication enabled
-- ElectricSQL: Port 3000, connected to PostgreSQL
-- Backend: Port 4000 (optional container)
-- Frontend: Port 5173 (optional container)
-
-**Environment Variables**:
-- `DATABASE_URL`: PostgreSQL connection string
-- `FRONTEND_URL`: CORS configuration
-- `ELECTRIC_URL`: ElectricSQL service URL
-- `SECRET_KEY_BASE`: Phoenix secret (64+ chars)
-- `PUBLIC_ELECTRIC_URL`: Frontend ElectricSQL connection
-
-## Troubleshooting
-
-### Backend Issues
-
-**"No function clause matching in Ash.DataLayer.data_layer/1"**:
-- Resource not using `AshPostgres.DataLayer`
-- Add: `data_layer: AshPostgres.DataLayer`
-
-**"Could not find resource YourResource"**:
-- Resource not registered in domain
-- Add to `lib/starter_app/api.ex`
-
-**Migration fails with "type :text does not exist"**:
-- Use `:string` instead of `:text` in Ash resources
-
-**Database connection fails**:
-- Check PostgreSQL is running: `docker-compose -f docker-compose.dev.yml ps`
-- Verify DATABASE_URL in config/dev.exs
-
-### Frontend Issues
-
-**"Failed to fetch from ElectricSQL"**:
-- Check Electric is running: http://localhost:3000
-- Verify ELECTRIC_URL in .env
-- Check table has ELECTRIC GRANT in migration
-
-**TypeScript errors**:
-- Run: `npm run check`
-- Regenerate types: `svelte-kit sync`
-
-### ElectricSQL Issues
-
-**"Logical replication not enabled"**:
-- Check PostgreSQL started with correct flags in docker-compose.dev.yml
-- Verify: `wal_level=logical`, `max_replication_slots=10`
-
-**"Table not found in replication"**:
-- Ensure migration includes: `ALTER TABLE ... REPLICA IDENTITY FULL`
-- Ensure: `ELECTRIC GRANT ALL ON ... TO ANYONE`
+| Project | Location | Purpose |
+|---------|----------|---------|
+| sertantai-hub | `~/Desktop/sertantai-hub` | Orchestration, user subscriptions |
+| sertantai-auth | TBD | Centralized authentication |
+| infrastructure | `~/Desktop/infrastructure` | Shared PostgreSQL, Redis, Nginx |
+| sertantai (legacy) | `~/Desktop/sertantai` | Original LiveView app (migrating from) |
 
 ## Key Resources
 
-- **Ash Framework**: https://hexdocs.pm/ash (declarative resources)
-- **ElectricSQL**: https://electric-sql.com (real-time sync)
-- **TanStack DB**: https://tanstack.com/db (client-side data layer)
-- **Phoenix**: https://phoenixframework.org (web framework)
-- **SvelteKit**: https://kit.svelte.dev (frontend framework)
-- **usage_rules**: https://hexdocs.pm/usage_rules/readme.html (code enforcement)
-- **Tidewave**: https://hexdocs.pm/tidewave/mcp.html (MCP integration)
+- **Ash Framework**: https://hexdocs.pm/ash
+- **ElectricSQL**: https://electric-sql.com
+- **TanStack DB**: https://tanstack.com/db
+- **Phoenix**: https://phoenixframework.org
+- **SvelteKit**: https://kit.svelte.dev
 
-## Starter Template Philosophy
+## Troubleshooting
 
-**What This Template IS**:
-- Production-ready infrastructure and tooling
-- Base multi-tenant resources (User, Organization)
-- Pre-configured stack: Ash + ElectricSQL + SvelteKit + TanStack DB
-- Quality tooling: Credo, Dialyzer, Sobelow, ESLint, usage_rules, Tidewave
-- Docker Compose development environment
-- CI/CD GitHub Actions workflow
-- Comprehensive documentation
+### JWT Validation Fails
+- Check `SHARED_TOKEN_SECRET` matches sertantai-auth
+- Verify JWT issuer matches expected value
+- Check token expiration
 
-**What This Template IS NOT**:
-- A complete application
-- An example project with domain logic
-- A tutorial (see docs/BLUEPRINT.md for that)
+### ElectricSQL Not Syncing
+- Verify PostgreSQL has `wal_level=logical`
+- Check table has `REPLICA IDENTITY FULL`
+- Verify ELECTRIC GRANT in migration
 
-**Your Job**: Add your domain resources, authentication logic, and business rules using the patterns established in `usage-rules.md` and `docs/BLUEPRINT.md`.
+### Organization Data Leakage
+- Ensure all queries include organization_id filter
+- Verify JWT claims extraction in auth plug
+- Check ElectricSQL shape includes organization_id where clause

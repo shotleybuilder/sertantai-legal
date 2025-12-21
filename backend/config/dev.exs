@@ -5,17 +5,17 @@ import Config
 database_url = System.get_env("DATABASE_URL")
 
 if database_url do
-  config :starter_app, StarterApp.Repo,
+  config :sertantai_legal, SertantaiLegal.Repo,
     url: database_url,
     stacktrace: true,
     show_sensitive_data_on_connection_error: true,
     pool_size: 10
 else
-  config :starter_app, StarterApp.Repo,
+  config :sertantai_legal, SertantaiLegal.Repo,
     username: "postgres",
     password: "postgres",
     hostname: "localhost",
-    database: "starter_app_dev",
+    database: "sertantai_legal_dev",
     stacktrace: true,
     show_sensitive_data_on_connection_error: true,
     pool_size: 10
@@ -27,7 +27,7 @@ end
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :starter_app, StarterAppWeb.Endpoint,
+config :sertantai_legal, SertantaiLegalWeb.Endpoint,
   # Binding to 0.0.0.0 to allow Docker access
   http: [ip: {0, 0, 0, 0}, port: 4000],
   check_origin: false,
@@ -62,7 +62,7 @@ config :starter_app, StarterAppWeb.Endpoint,
 # different ports.
 
 # Enable dev routes for dashboard and mailbox
-config :starter_app, dev_routes: true
+config :sertantai_legal, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

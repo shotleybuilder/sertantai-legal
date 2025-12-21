@@ -1,4 +1,4 @@
-defmodule StarterApp.Release do
+defmodule SertantaiLegal.Release do
   @moduledoc """
   Release tasks for production deployment.
 
@@ -6,7 +6,7 @@ defmodule StarterApp.Release do
   in production environments.
   """
 
-  @app :starter_app
+  @app :sertantai_legal
 
   def migrate do
     load_app()

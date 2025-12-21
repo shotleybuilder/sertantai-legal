@@ -12,12 +12,18 @@ import Config
 # If you use `mix release`, you need to explicitly enable the server
 # by passing the PHX_SERVER=true when you start it:
 #
-#     PHX_SERVER=true bin/starter_app start
+#     PHX_SERVER=true bin/sertantai_legal start
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
 if System.get_env("PHX_SERVER") do
-  config :starter_app, StarterAppWeb.Endpoint, server: true
+  config :sertantai_legal, SertantaiLegalWeb.Endpoint, server: true
+end
+
+# Shared token secret for JWT validation from sertantai-auth
+if config_env() != :test do
+  config :sertantai_legal,
+    shared_token_secret: System.get_env("SHARED_TOKEN_SECRET")
 end
 
 if config_env() == :prod do
@@ -31,7 +37,7 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
-  config :starter_app, StarterApp.Repo,
+  config :sertantai_legal, SertantaiLegal.Repo,
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
@@ -49,12 +55,12 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  host = System.get_env("PHX_HOST") || "legal.sertantai.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
-  config :starter_app, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  config :sertantai_legal, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :starter_app, StarterAppWeb.Endpoint,
+  config :sertantai_legal, SertantaiLegalWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
@@ -66,35 +72,11 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # ## SSL Support
-  #
-  # To get SSL working, you will need to add the `https` key
-  # to your endpoint configuration:
-  #
-  #     config :starter_app, StarterAppWeb.Endpoint,
-  #       https: [
-  #         ...,
-  #         port: 443,
-  #         cipher_suite: :strong,
-  #         keyfile: System.get_env("SOME_APP_SSL_KEY_PATH"),
-  #         certfile: System.get_env("SOME_APP_SSL_CERT_PATH")
-  #       ]
-  #
-  # The `cipher_suite` is set to `:strong` to support only the
-  # latest and more secure SSL ciphers. This means old browsers
-  # and clients may not be supported. You can set it to
-  # `:compatible` for wider support.
-  #
-  # `:keyfile` and `:certfile` expect an absolute path to the key
-  # and cert in disk or a relative path inside priv, for example
-  # "priv/ssl/server.key". For all supported SSL configuration
-  # options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
-  #
-  # We also recommend setting `force_ssl` in your config/prod.exs,
-  # ensuring no data is ever sent via http, always redirecting to https:
-  #
-  #     config :starter_app, StarterAppWeb.Endpoint,
-  #       force_ssl: [hsts: true]
-  #
-  # Check `Plug.SSL` for all available options in `force_ssl`.
+  # Require SHARED_TOKEN_SECRET in production for JWT validation
+  unless System.get_env("SHARED_TOKEN_SECRET") do
+    raise """
+    environment variable SHARED_TOKEN_SECRET is missing.
+    This is required for validating JWTs from sertantai-auth.
+    """
+  end
 end

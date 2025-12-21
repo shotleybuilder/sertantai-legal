@@ -1,4 +1,4 @@
-defmodule StarterAppWeb.HealthController do
+defmodule SertantaiLegalWeb.HealthController do
   @moduledoc """
   Health check endpoints for monitoring and load balancing.
 
@@ -7,7 +7,7 @@ defmodule StarterAppWeb.HealthController do
   - GET /health/detailed - Comprehensive health check (includes database connectivity)
   """
 
-  use StarterAppWeb, :controller
+  use SertantaiLegalWeb, :controller
 
   @doc """
   Basic health check endpoint.
@@ -17,7 +17,7 @@ defmodule StarterAppWeb.HealthController do
   def index(conn, _params) do
     json(conn, %{
       status: "ok",
-      service: "starter-app",
+      service: "sertantai-legal",
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
     })
   end
@@ -30,8 +30,8 @@ defmodule StarterAppWeb.HealthController do
   def show(conn, _params) do
     health_status = %{
       status: "healthy",
-      service: "starter-app",
-      version: Application.spec(:starter_app, :vsn) |> to_string(),
+      service: "sertantai-legal",
+      version: Application.spec(:sertantai_legal, :vsn) |> to_string(),
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
       checks: %{
         database: check_database(),
@@ -52,7 +52,7 @@ defmodule StarterAppWeb.HealthController do
   defp check_database do
     try do
       # Simple query to verify database connectivity
-      case Ecto.Adapters.SQL.query(StarterApp.Repo, "SELECT 1", []) do
+      case Ecto.Adapters.SQL.query(SertantaiLegal.Repo, "SELECT 1", []) do
         {:ok, _} ->
           %{status: "healthy", message: "Database connection successful"}
 

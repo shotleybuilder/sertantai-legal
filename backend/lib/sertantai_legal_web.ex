@@ -1,12 +1,12 @@
-defmodule StarterAppWeb do
+defmodule SertantaiLegalWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
   This can be used in your application as:
 
-      use StarterAppWeb, :controller
-      use StarterAppWeb, :html
+      use SertantaiLegalWeb, :controller
+      use SertantaiLegalWeb, :html
 
   The definitions below will be executed for every controller,
   component, etc, so keep them short and clean, focused
@@ -39,9 +39,9 @@ defmodule StarterAppWeb do
     quote do
       use Phoenix.Controller,
         formats: [:html, :json],
-        layouts: [html: StarterAppWeb.Layouts]
+        layouts: [html: SertantaiLegalWeb.Layouts]
 
-      use Gettext, backend: StarterAppWeb.Gettext
+      use Gettext, backend: SertantaiLegalWeb.Gettext
 
       import Plug.Conn
 
@@ -52,9 +52,9 @@ defmodule StarterAppWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: StarterAppWeb.Endpoint,
-        router: StarterAppWeb.Router,
-        statics: StarterAppWeb.static_paths()
+        endpoint: SertantaiLegalWeb.Endpoint,
+        router: SertantaiLegalWeb.Router,
+        statics: SertantaiLegalWeb.static_paths()
     end
   end
 

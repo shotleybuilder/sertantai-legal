@@ -1,7 +1,7 @@
 version: '3.8'
 
 networks:
-  starter_app_network:
+  sertantai_legal_network:
     driver: bridge
 
 services:
@@ -11,14 +11,14 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: starter_app_dev
+      POSTGRES_DB: sertantai_legal_dev
     ports:
       - "5435:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     networks:
-      - starter_app_network
+      - sertantai_legal_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -39,14 +39,14 @@ services:
   electric:
     image: electricsql/electric:latest
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/starter_app_dev
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sertantai_legal_dev
       HTTP_PORT: 3000
       ELECTRIC_INSECURE: "true"  # Development only! Use ELECTRIC_SECRET in production
       PG_PROXY_PASSWORD: proxy_password  # Secure in production!
     ports:
       - "3000:3000"  # HTTP API for Shape-based sync
     networks:
-      - starter_app_network
+      - sertantai_legal_network
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,12 +62,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/starter_app_dev
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sertantai_legal_dev
       FRONTEND_URL: http://localhost:5173
       ELECTRIC_URL: http://electric:5133
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-dev-secret-key-base-min-64-chars-required-for-security}
-      GUARDIAN_SECRET_KEY: ${GUARDIAN_SECRET_KEY:-dev-guardian-secret}
-      GUARDIAN_ISSUER: starter_app
+      SHARED_TOKEN_SECRET: ${SHARED_TOKEN_SECRET:-dev-shared-token-secret-min-32-chars}
       MIX_ENV: dev
       PORT: 4000
     ports:
@@ -77,7 +76,7 @@ services:
       - backend_build:/app/_build
       - backend_deps:/app/deps
     networks:
-      - starter_app_network
+      - sertantai_legal_network
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,7 +101,7 @@ services:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules
     networks:
-      - starter_app_network
+      - sertantai_legal_network
     restart: unless-stopped
     command: npm run dev
 

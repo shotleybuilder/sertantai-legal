@@ -1,11 +1,11 @@
-# Starter Template Blueprint
+# Sertantai-Legal Blueprint
 
 **Version**: 1.0
 **Status**: Production Ready
 
 ## Overview
 
-This is a production-ready starter template for building full-stack, real-time, offline-first applications using modern technologies:
+This is a production-ready microservice for UK legal/regulatory compliance, built with modern technologies:
 
 - **Backend**: Elixir + Phoenix + Ash Framework 3.0
 - **Frontend**: SvelteKit + TypeScript + TanStack DB
@@ -85,27 +85,26 @@ This template implements organization-based multi-tenancy:
 
 **Example**:
 ```elixir
-defmodule YourApp.YourDomain.YourResource do
+defmodule SertantaiLegal.YourDomain.YourResource do
   use Ash.Resource,
-    domain: YourApp.Api,
+    domain: SertantaiLegal.Api,
     data_layer: AshPostgres.DataLayer
 
   postgres do
     table "your_resources"
-    repo YourApp.Repo
+    repo SertantaiLegal.Repo
   end
 
   attributes do
     uuid_primary_key :id
     attribute :name, :string, allow_nil?: false
-    attribute :organization_id, :uuid, allow_nil?: false
+    attribute :organization_id, :uuid, allow_nil?: false  # From JWT claims
     create_timestamp :inserted_at
     update_timestamp :updated_at
   end
 
-  relationships do
-    belongs_to :organization, YourApp.Auth.Organization
-  end
+  # Note: No belongs_to :organization - this microservice doesn't own Organization
+  # organization_id comes from JWT claims validated by AuthPlug
 
   actions do
     defaults [:read, :destroy]
@@ -128,64 +127,71 @@ end
 
 ### Authentication Options
 
-#### Option 1: Centralized Auth Service (Recommended for Microservices)
+#### Centralized Auth Service (This is how sertantai-legal works)
 
-If you're building multiple applications that share users:
+Sertantai-Legal uses centralized authentication from `sertantai-auth`:
 
-1. Create a separate auth service (e.g., `your-auth-service`)
-2. Auth service owns `users`, `organizations`, `sessions` tables
-3. Auth service issues JWTs with claims: `user_id`, `organization_id`, `roles`
-4. This app syncs user/org data via ElectricSQL (read-only)
-5. This app validates JWTs from the auth service
+1. `sertantai-auth` service owns `users`, `organizations`, `sessions` tables
+2. `sertantai-auth` issues JWTs with claims: `user_id`, `organization_id`, `roles`, `services`
+3. **This service does NOT have User/Organization tables**
+4. This service validates JWTs using `SHARED_TOKEN_SECRET`
+5. `organization_id` from JWT is used to scope all data
 
 **Benefits**:
-- Single sign-on across all apps
-- Centralized user management
-- Independent deployment of apps
+- Single sign-on across all SertantAI services
+- Centralized user management via sertantai-hub
+- Independent deployment of services
 - Consistent authentication logic
 
 **Implementation**:
 ```elixir
-# In your auth service
-defmodule AuthService.Accounts.User do
+# In sertantai-auth service (separate project)
+defmodule SertantaiAuth.Accounts.User do
   use Ash.Resource,
-    domain: AuthService.Accounts,
+    domain: SertantaiAuth.Accounts,
     data_layer: AshPostgres.DataLayer
 
   # Full CRUD actions for user management
   actions do
     defaults [:read, :create, :update, :destroy]
-    # ... authentication actions
+    # ... authentication actions, JWT issuance
   end
 end
 
-# In this app (read-only sync)
-defmodule StarterApp.Auth.User do
-  use Ash.Resource,
-    domain: StarterApp.Api,
-    data_layer: AshPostgres.DataLayer
+# In THIS service (sertantai-legal) - NO User/Organization resources
+# Instead, we validate JWT and extract claims:
+defmodule SertantaiLegalWeb.Plugs.AuthPlug do
+  import Plug.Conn
 
-  # Read-only - synced from auth service
-  actions do
-    defaults [:read]
+  def call(conn, _opts) do
+    with ["Bearer " <> token] <- get_req_header(conn, "authorization"),
+         {:ok, claims} <- verify_jwt(token) do
+      conn
+      |> assign(:current_user_id, claims["sub"])
+      |> assign(:organization_id, claims["organization_id"])
+    else
+      _ -> send_resp(conn, 401, "Unauthorized") |> halt()
+    end
   end
 end
 ```
 
-#### Option 2: Local Authentication
+#### Option 2: Local Authentication (Not used for sertantai-legal)
 
-For standalone applications:
+For standalone applications (not applicable to this microservice):
 
 1. Add password hashing to User resource (use Bcrypt/Argon2)
 2. Implement login/logout/registration actions
 3. Generate and validate JWTs locally
 4. Store sessions in database or Redis
 
-**Example**:
+**Example** (for reference only - not used in sertantai-legal):
 ```elixir
-defmodule StarterApp.Auth.User do
+# This pattern is NOT used in sertantai-legal
+# It's shown for context if building a standalone app
+defmodule StandaloneApp.Auth.User do
   use Ash.Resource,
-    domain: StarterApp.Api,
+    domain: StandaloneApp.Api,
     data_layer: AshPostgres.DataLayer
 
   attributes do
@@ -198,22 +204,7 @@ defmodule StarterApp.Auth.User do
   actions do
     create :register do
       argument :password, :string, allow_nil?: false, sensitive?: true
-      argument :password_confirmation, :string, allow_nil?: false, sensitive?: true
-
-      change fn changeset, _context ->
-        password = Ash.Changeset.get_argument(changeset, :password)
-        hashed = Bcrypt.hash_pwd_salt(password)
-        Ash.Changeset.change_attribute(changeset, :hashed_password, hashed)
-      end
-    end
-
-    read :authenticate do
-      argument :email, :string, allow_nil?: false
-      argument :password, :string, allow_nil?: false, sensitive?: true
-
-      filter expr(email == ^arg(:email))
-
-      # Validate password in controller/plug
+      # ... password hashing
     end
   end
 end
@@ -281,32 +272,31 @@ export async function syncCollection(
 
 1. **Create resource file**:
 ```bash
-# backend/lib/starter_app/your_domain/your_resource.ex
+# backend/lib/sertantai_legal/your_domain/your_resource.ex
 ```
 
 2. **Define resource with Ash**:
 ```elixir
-defmodule StarterApp.YourDomain.YourResource do
+defmodule SertantaiLegal.YourDomain.YourResource do
   use Ash.Resource,
-    domain: StarterApp.Api,
+    domain: SertantaiLegal.Api,
     data_layer: AshPostgres.DataLayer
 
   postgres do
     table "your_resources"
-    repo StarterApp.Repo
+    repo SertantaiLegal.Repo
   end
 
   attributes do
     uuid_primary_key :id
     attribute :name, :string, allow_nil?: false
-    attribute :organization_id, :uuid, allow_nil?: false
+    attribute :organization_id, :uuid, allow_nil?: false  # From JWT claims
     create_timestamp :inserted_at
     update_timestamp :updated_at
   end
 
-  relationships do
-    belongs_to :organization, StarterApp.Auth.Organization
-  end
+  # Note: No belongs_to :organization - we don't own that resource
+  # organization_id is a plain UUID from JWT claims
 
   actions do
     defaults [:read, :create, :update, :destroy]
@@ -316,14 +306,13 @@ end
 
 3. **Add to domain**:
 ```elixir
-# lib/starter_app/api.ex
-defmodule StarterApp.Api do
+# lib/sertantai_legal/api.ex
+defmodule SertantaiLegal.Api do
   use Ash.Domain
 
   resources do
-    resource StarterApp.Auth.User
-    resource StarterApp.Auth.Organization
-    resource StarterApp.YourDomain.YourResource  # Add here
+    # Note: No User/Organization - this microservice doesn't own them
+    resource SertantaiLegal.YourDomain.YourResource
   end
 end
 ```
@@ -356,26 +345,27 @@ export const collections = {
 #### Backend Tests
 
 ```elixir
-# test/starter_app/your_domain/your_resource_test.exs
-defmodule StarterApp.YourDomain.YourResourceTest do
-  use StarterApp.DataCase
+# test/sertantai_legal/your_domain/your_resource_test.exs
+defmodule SertantaiLegal.YourDomain.YourResourceTest do
+  use SertantaiLegal.DataCase
 
-  alias StarterApp.YourDomain.YourResource
+  alias SertantaiLegal.YourDomain.YourResource
 
   describe "create/1" do
     test "creates resource with valid data" do
-      org = create_organization()
+      # Note: organization_id is a plain UUID (no organization record needed)
+      org_id = Ash.UUID.generate()
 
       assert {:ok, resource} =
         YourResource
         |> Ash.Changeset.for_create(:create, %{
           name: "Test Resource",
-          organization_id: org.id
+          organization_id: org_id
         })
         |> Ash.create()
 
       assert resource.name == "Test Resource"
-      assert resource.organization_id == org.id
+      assert resource.organization_id == org_id
     end
   end
 end
@@ -433,11 +423,11 @@ RUN apk add --no-cache openssl ncurses-libs
 
 WORKDIR /app
 
-COPY --from=build /app/_build/prod/rel/starter_app ./
+COPY --from=build /app/_build/prod/rel/sertantai_legal ./
 
 EXPOSE 4000
 
-CMD ["bin/starter_app", "start"]
+CMD ["bin/sertantai_legal", "start"]
 ```
 
 ### Frontend (Static)
@@ -456,7 +446,7 @@ Migrations run automatically on backend startup in production. Set:
 
 ```elixir
 # config/prod.exs
-config :starter_app, StarterApp.Repo,
+config :sertantai_legal, SertantaiLegal.Repo,
   migration_primary_key: [type: :uuid],
   migration_timestamps: [type: :utc_datetime_usec]
 ```
@@ -494,15 +484,15 @@ config :starter_app, StarterApp.Repo,
 
 ## Customization Checklist
 
-- [ ] Rename app (StarterApp → YourApp)
-- [ ] Update database names
-- [ ] Add your domain resources
-- [ ] Update environment variables
-- [ ] Configure authentication strategy
+- [x] Rename app (StarterApp → SertantaiLegal) ✅
+- [x] Update database names ✅
+- [ ] Add your domain resources (UK LRT, Locations, Screenings)
+- [x] Update environment variables ✅
+- [x] Configure authentication strategy (JWT from sertantai-auth) ✅
 - [ ] Set up ElectricSQL sync for your resources
 - [ ] Create frontend collections for synced data
 - [ ] Write tests for your resources
-- [ ] Update README with your app description
+- [x] Update README with your app description ✅
 - [ ] Configure deployment (Docker, CDN)
 - [ ] Set up monitoring and logging
 - [ ] Configure production secrets

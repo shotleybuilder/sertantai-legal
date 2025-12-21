@@ -1,10 +1,14 @@
-# Usage Rules for Starter App
+# Usage Rules for Sertantai-Legal
 
-This file defines usage rules for this application. These rules are enforced during development via the `usage_rules` package.
+This file defines usage rules for this microservice. These rules are enforced during development via the `usage_rules` package.
 
 See [usage_rules documentation](https://hexdocs.pm/usage_rules/readme.html) for more information.
 
-## Package: StarterApp
+## Package: SertantaiLegal
+
+**IMPORTANT**: This is a microservice. It does NOT own User/Organization resources.
+- Authentication comes from JWT validated using `SHARED_TOKEN_SECRET`
+- `organization_id` comes from JWT claims, not a database relationship
 
 ### Core Principles
 
@@ -20,27 +24,26 @@ See [usage_rules documentation](https://hexdocs.pm/usage_rules/readme.html) for 
 
 ```elixir
 # ✓ GOOD: Includes organization_id, uses Ash Resource, proper timestamps
-defmodule StarterApp.YourDomain.YourResource do
+defmodule SertantaiLegal.YourDomain.YourResource do
   use Ash.Resource,
-    domain: StarterApp.Api,
+    domain: SertantaiLegal.Api,
     data_layer: AshPostgres.DataLayer
 
   postgres do
     table "your_resources"
-    repo StarterApp.Repo
+    repo SertantaiLegal.Repo
   end
 
   attributes do
     uuid_primary_key :id
     attribute :name, :string, allow_nil?: false
-    attribute :organization_id, :uuid, allow_nil?: false
+    attribute :organization_id, :uuid, allow_nil?: false  # From JWT claims
     create_timestamp :inserted_at
     update_timestamp :updated_at
   end
 
-  relationships do
-    belongs_to :organization, StarterApp.Auth.Organization
-  end
+  # NOTE: No belongs_to :organization - this microservice doesn't own Organization
+  # organization_id is a plain UUID that comes from JWT claims
 
   actions do
     defaults [:read, :destroy]
@@ -58,7 +61,7 @@ end
 
 ```elixir
 # ✗ BAD: Missing organization_id, no timestamps, plain Ecto schema
-defmodule StarterApp.YourDomain.YourResource do
+defmodule SertantaiLegal.YourDomain.YourResource do
   use Ecto.Schema
 
   schema "your_resources" do
@@ -67,12 +70,13 @@ defmodule StarterApp.YourDomain.YourResource do
 end
 ```
 
-#### Authentication Resources:
+#### Authentication (Microservice Pattern):
 
-- User and Organization resources are read-only by default
-- If implementing local auth, use password hashing (Bcrypt/Argon2)
-- JWT validation should happen at the plug level, not in resources
-- Never store plain text passwords
+- **This service does NOT have User/Organization resources**
+- Authentication is handled by `sertantai-auth` via JWT
+- JWT validation happens at the plug level using `SHARED_TOKEN_SECRET`
+- `organization_id` is extracted from JWT claims and used to scope data
+- Never create local User or Organization tables in this service
 
 #### ElectricSQL Integration:
 
@@ -87,8 +91,9 @@ Resources synced to frontend must:
 #### JSON API Endpoints:
 
 ```elixir
-# ✓ GOOD: Scoped to organization, uses Ash actions
-def index(conn, %{"organization_id" => org_id}) do
+# ✓ GOOD: Organization ID from JWT assigns, uses Ash actions
+def index(conn, _params) do
+  org_id = conn.assigns.organization_id  # From AuthPlug
   case YourResource.by_organization(org_id) do
     {:ok, resources} -> render(conn, "index.json", resources: resources)
     {:error, error} -> handle_error(conn, error)
@@ -102,6 +107,12 @@ def index(conn, _params) do
   resources = Repo.all(YourResource)
   render(conn, "index.json", resources: resources)
 end
+
+# ✗ BAD: Taking organization_id from params instead of JWT
+def index(conn, %{"organization_id" => org_id}) do
+  # NEVER trust organization_id from request params!
+  # Always use conn.assigns.organization_id from JWT
+end
 ```
 
 ### Testing Requirements
@@ -109,28 +120,29 @@ end
 All resources must have:
 1. Basic CRUD tests
 2. Validation tests
-3. Organization isolation tests
+3. Organization isolation tests (using plain UUIDs, no Organization records)
 4. Relationship tests (if applicable)
 
 ```elixir
-# ✓ GOOD: Comprehensive test coverage
-defmodule StarterApp.YourDomain.YourResourceTest do
-  use StarterApp.DataCase
+# ✓ GOOD: Comprehensive test coverage (microservice pattern)
+defmodule SertantaiLegal.YourDomain.YourResourceTest do
+  use SertantaiLegal.DataCase
 
   describe "create/1" do
     test "creates resource with valid data" do
-      org = create_organization()
+      # Note: organization_id is just a UUID, no Organization record needed
+      org_id = Ash.UUID.generate()
 
       assert {:ok, resource} =
         YourResource
         |> Ash.Changeset.for_create(:create, %{
           name: "Test",
-          organization_id: org.id
+          organization_id: org_id
         })
         |> Ash.create()
 
       assert resource.name == "Test"
-      assert resource.organization_id == org.id
+      assert resource.organization_id == org_id
     end
 
     test "requires organization_id" do
@@ -141,15 +153,15 @@ defmodule StarterApp.YourDomain.YourResourceTest do
     end
 
     test "enforces organization isolation" do
-      org1 = create_organization()
-      org2 = create_organization()
+      org1_id = Ash.UUID.generate()
+      org2_id = Ash.UUID.generate()
 
-      resource = create_resource(organization_id: org1.id)
+      resource = create_resource(organization_id: org1_id)
 
       # Should not be accessible from different org
       assert {:ok, []} =
         YourResource
-        |> Ash.Query.for_read(:by_organization, %{organization_id: org2.id})
+        |> Ash.Query.for_read(:by_organization, %{organization_id: org2_id})
         |> Ash.read()
     end
   end
@@ -163,6 +175,7 @@ end
 Required:
 - `DATABASE_URL` - PostgreSQL connection string
 - `SECRET_KEY_BASE` - Phoenix secret key base
+- `SHARED_TOKEN_SECRET` - JWT validation secret (must match sertantai-auth)
 
 Optional:
 - `FRONTEND_URL` - CORS configuration
@@ -235,33 +248,38 @@ syncCollection('your_resources', organizationId)
 ### Forbidden Patterns
 
 ❌ Direct Ecto queries bypassing Ash
-❌ Resources without `organization_id` (except Auth resources)
+❌ Resources without `organization_id` (except shared reference data like UK LRT)
 ❌ Storing sensitive data without encryption
 ❌ Skipping validation in actions
 ❌ Using `String.t()` instead of specific string constraints
 ❌ Database operations in controllers (use actions/changesets)
 ❌ Hard-coded organization IDs
+❌ Creating User or Organization tables (this is a microservice!)
+❌ Trusting organization_id from request params instead of JWT
+❌ Validating JWTs anywhere except AuthPlug
 
 ### Required Patterns
 
 ✅ Use Ash Resource for all domain entities
-✅ Include organization_id in all non-auth tables
+✅ Include organization_id in all tenant-scoped tables
 ✅ Use UUID primary keys
 ✅ Include timestamps (inserted_at, updated_at)
 ✅ Define explicit actions (avoid `:all` in defaults)
 ✅ Use code_interface for common queries
-✅ Scope all queries by organization
+✅ Scope all queries by organization_id from JWT
 ✅ Write tests for all actions
+✅ Extract organization_id from JWT claims in AuthPlug
+✅ Use SHARED_TOKEN_SECRET for JWT validation
 
-## Migration from This Template
+## Microservice-Specific Rules
 
-When using this template for your project:
+This is a microservice in the SertantAI ecosystem:
 
-1. Update this file with your project-specific rules
-2. Replace `StarterApp` namespace with your app name
-3. Add domain-specific validation rules
-4. Document your authorization patterns
-5. Add any custom macros or patterns your team uses
+1. **No local auth**: User/Organization come from sertantai-auth via JWT
+2. **JWT validation**: Use SHARED_TOKEN_SECRET (same across all services)
+3. **organization_id**: Always from JWT claims, never from database
+4. **Shared reference data**: UK LRT is shared (no organization_id)
+5. **Tenant data**: Locations, Screenings scoped by organization_id
 
 ## Enforcement
 

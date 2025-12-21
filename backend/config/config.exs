@@ -7,20 +7,20 @@
 # General application configuration
 import Config
 
-config :starter_app,
-  ecto_repos: [StarterApp.Repo],
-  ash_domains: [StarterApp.Api],
+config :sertantai_legal,
+  ecto_repos: [SertantaiLegal.Repo],
+  ash_domains: [SertantaiLegal.Api],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :starter_app, StarterAppWeb.Endpoint,
+config :sertantai_legal, SertantaiLegalWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [json: StarterAppWeb.ErrorJSON],
+    formats: [json: SertantaiLegalWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: StarterApp.PubSub,
+  pubsub_server: SertantaiLegal.PubSub,
   live_view: [signing_salt: "xjXQzhFq"]
 
 # Configures Elixir's Logger

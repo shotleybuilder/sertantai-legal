@@ -1,4 +1,4 @@
-defmodule StarterAppWeb.Telemetry do
+defmodule SertantaiLegalWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
 
@@ -53,23 +53,23 @@ defmodule StarterAppWeb.Telemetry do
       ),
 
       # Database Metrics
-      summary("starter_app.repo.query.total_time",
+      summary("sertantai_legal.repo.query.total_time",
         unit: {:native, :millisecond},
         description: "The sum of the other measurements"
       ),
-      summary("starter_app.repo.query.decode_time",
+      summary("sertantai_legal.repo.query.decode_time",
         unit: {:native, :millisecond},
         description: "The time spent decoding the data received from the database"
       ),
-      summary("starter_app.repo.query.query_time",
+      summary("sertantai_legal.repo.query.query_time",
         unit: {:native, :millisecond},
         description: "The time spent executing the query"
       ),
-      summary("starter_app.repo.query.queue_time",
+      summary("sertantai_legal.repo.query.queue_time",
         unit: {:native, :millisecond},
         description: "The time spent waiting for a database connection"
       ),
-      summary("starter_app.repo.query.idle_time",
+      summary("sertantai_legal.repo.query.idle_time",
         unit: {:native, :millisecond},
         description:
           "The time the connection spent waiting before being checked out for the query"
@@ -87,7 +87,7 @@ defmodule StarterAppWeb.Telemetry do
     [
       # A module, function and arguments to be invoked periodically.
       # This function must call :telemetry.execute/3 and a metric must be added above.
-      # {StarterAppWeb, :count_users, []}
+      # {SertantaiLegalWeb, :count_users, []}
     ]
   end
 end

@@ -1,74 +1,13 @@
 # Sertantai-Legal Quick Start Guide
 
-**Status**: ✅ Project Created (from starter framework)  
-**Next Step**: Rename project and set up development environment
+**Status**: ✅ Phase 1 Complete (Project renamed to SertantaiLegal)
+**Next Step**: Create JWT validation plug and start UK LRT resource
 
 ## Immediate Actions (Today)
 
-### 1. Rename the Project (30-45 minutes)
+### 1. Project Renaming ✅ COMPLETED
 
-The project was cloned from the starter framework and still uses `StarterApp` naming. We need to rename everything to `SertantaiLegal`.
-
-**Backend Renaming Script**:
-```bash
-cd /home/jason/Desktop/sertantai-legal/backend
-
-# Use find & replace across all files
-find . -type f \( -name "*.ex" -o -name "*.exs" -o -name "*.eex" \) \
-  -exec sed -i 's/StarterApp/SertantaiLegal/g' {} +
-
-find . -type f \( -name "*.ex" -o -name "*.exs" -o -name "*.eex" \) \
-  -exec sed -i 's/StarterAppWeb/SertantaiLegalWeb/g' {} +
-
-find . -type f \( -name "*.ex" -o -name "*.exs" -o -name "*.eex" \) \
-  -exec sed -i 's/starter_app/sertantai_legal/g' {} +
-
-# Rename directories
-mv lib/starter_app lib/sertantai_legal
-mv lib/starter_app_web lib/sertantai_legal_web
-
-# Update mix.exs
-sed -i 's/:starter_app/:sertantai_legal/g' mix.exs
-
-# Update config files
-find config -type f -name "*.exs" \
-  -exec sed -i 's/StarterApp/SertantaiLegal/g' {} +
-find config -type f -name "*.exs" \
-  -exec sed -i 's/starter_app/sertantai_legal/g' {} +
-```
-
-**Frontend Renaming**:
-```bash
-cd /home/jason/Desktop/sertantai-legal/frontend
-
-# Update package.json
-sed -i 's/"name": "starter-app-frontend"/"name": "sertantai-legal-frontend"/g' package.json
-sed -i 's/"Starter App"/"Sertantai Legal"/g' package.json
-
-# Update any references in source files
-find src -type f \( -name "*.ts" -o -name "*.svelte" \) \
-  -exec sed -i 's/Starter App/Sertantai Legal/g' {} +
-find src -type f \( -name "*.ts" -o -name "*.svelte" \) \
-  -exec sed -i 's/starter-app/sertantai-legal/g' {} +
-```
-
-**Docker Compose**:
-```bash
-cd /home/jason/Desktop/sertantai-legal
-
-# Update docker-compose.dev.yml
-sed -i 's/starter_app/sertantai_legal/g' docker-compose.dev.yml
-```
-
-**Root Files**:
-```bash
-cd /home/jason/Desktop/sertantai-legal
-
-# Update README.md
-sed -i 's/Starter App/Sertantai Legal/g' README.md
-sed -i 's/StarterApp/SertantaiLegal/g' README.md
-sed -i 's/starter-app/sertantai-legal/g' README.md
-```
+The project has been renamed from `StarterApp` to `SertantaiLegal`. All module references, config files, docker-compose, and frontend package.json have been updated.
 
 ### 2. Set Up Development Environment (15-20 minutes)
 
@@ -88,7 +27,7 @@ mix deps.get
 # Create database
 mix ash_postgres.create
 
-# Run migrations (creates base User and Organization tables)
+# Run migrations (note: no User/Organization tables - this is a microservice)
 mix ash_postgres.migrate
 
 # Optional: Run seeds
@@ -103,7 +42,7 @@ cd ../frontend
 npm install
 ```
 
-### 3. Verify Setup (5 minutes)
+### 3. Verify Setup (5 minutes) ✅
 
 **Start backend**:
 ```bash
@@ -137,10 +76,11 @@ After completing the above steps, you'll have:
 - ✅ Renamed project (`SertantaiLegal`)
 - ✅ Working PostgreSQL database with logical replication
 - ✅ Working ElectricSQL sync service
-- ✅ Basic User and Organization resources (from starter)
+- ✅ **No User/Organization resources** (this microservice relies on JWT from sertantai-auth)
 - ✅ Backend API running on port 4000
 - ✅ Frontend running on port 5173
 - ✅ Health check endpoints working
+- ✅ SHARED_TOKEN_SECRET configured for JWT validation
 
 ## Next Steps (This Week)
 
@@ -350,12 +290,9 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# OpenAI (when ready for AI features)
-OPENAI_API_KEY=sk-your_key_here
-
-# Stripe (when ready for billing)
-STRIPE_API_KEY=sk_test_your_key_here
-STRIPE_WEBHOOK_SECRET=whsec_your_secret_here
+# Microservices Authentication
+# CRITICAL: Must match across all services for JWT validation
+SHARED_TOKEN_SECRET=same_as_sertantai_auth_service
 ```
 
 **Frontend** (`frontend/.env`):
@@ -366,12 +303,17 @@ PUBLIC_ELECTRIC_URL=http://localhost:3000
 
 ## Success Checklist
 
-By end of Week 1, you should have:
+### Week 1 (Completed) ✅
 - [x] Project renamed to SertantaiLegal
 - [x] Development environment running
 - [x] Backend health check working
 - [x] Frontend loading
 - [x] ElectricSQL service running
+- [x] Local auth resources removed (microservice pattern)
+- [x] SHARED_TOKEN_SECRET configured
+
+### Week 2 (In Progress)
+- [ ] JWT validation plug created
 - [ ] UK LRT resource created
 - [ ] Sample data exported from Supabase
 - [ ] Sample data imported to local database
