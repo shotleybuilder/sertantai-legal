@@ -14,7 +14,8 @@ A production-ready starter template for building full-stack, real-time, offline-
 **Frontend:**
 - [SvelteKit](https://kit.svelte.dev/) (TypeScript)
 - [TailwindCSS](https://tailwindcss.com) v4
-- [TanStack DB](https://tanstack.com/db) (client-side differential dataflow)
+- [TanStack Query](https://tanstack.com/query) v5 (reactive queries and caching)
+- [TanStack DB](https://tanstack.com/db) v0.5 (client-side persistence)
 - Vitest (unit testing)
 
 **DevOps:**
@@ -233,10 +234,60 @@ PostgreSQL (source of truth)
     ↓ (logical replication)
 ElectricSQL (sync service)
     ↓ (HTTP Shape API)
-TanStack DB (client store)
-    ↓ (reactive queries)
+TanStack DB (client persistence)
+    ↓ (reactive state)
+Svelte Stores (reactivity bridge)
+    ↓ (query functions)
+TanStack Query (caching & loading states)
+    ↓ (reactive UI updates)
 Svelte UI (components)
 ```
+
+### Using TanStack Query
+
+This template includes a complete TanStack stack for local-first, offline-capable applications:
+
+**Query Pattern Example:**
+```svelte
+<script lang="ts">
+  import { useCasesQuery } from '$lib/query/cases'
+  import { startSync } from '$lib/electric/sync'
+  import { onMount } from 'svelte'
+
+  // TanStack Query hook
+  const casesQuery = useCasesQuery()
+
+  // Start sync on mount
+  onMount(async () => {
+    await startSync()
+  })
+</script>
+
+<!-- Loading state -->
+{#if $casesQuery.isLoading}
+  <p>Loading...</p>
+
+<!-- Error state -->
+{:else if $casesQuery.isError}
+  <p>Error: {$casesQuery.error.message}</p>
+
+<!-- Success state -->
+{:else}
+  <p>Found {$casesQuery.data.length} items</p>
+  {#each $casesQuery.data as item}
+    <div>{item.name}</div>
+  {/each}
+{/if}
+```
+
+**Key Benefits:**
+- ✅ **Offline-First**: TanStack DB persists data locally
+- ✅ **Real-Time**: ElectricSQL syncs changes instantly
+- ✅ **Reactive**: TanStack Query auto-updates UI
+- ✅ **Type-Safe**: Full TypeScript support
+- ✅ **SSR-Safe**: Browser-only initialization with guards
+
+**Complete documentation:** See `frontend/src/lib/TANSTACK_ARCHITECTURE.md`
 
 ### Multi-Tenancy
 

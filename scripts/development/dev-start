@@ -1,0 +1,85 @@
+#!/bin/bash
+# Development Server Starter for Ash + ElectricSQL + Svelte + TanStack Stack
+# Starts backend (Phoenix/Ash) and frontend (SvelteKit) in separate terminal windows
+
+set -e
+
+# Resolve symlink to get the actual script path
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+# Auto-detect project name from directory
+PROJECT_NAME="$(basename "$PROJECT_ROOT")"
+
+# Configuration - Customize these for your project
+BACKEND_PORT="${BACKEND_PORT:-4000}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+DB_PORT="${DB_PORT:-5432}"
+ELECTRIC_PORT="${ELECTRIC_PORT:-3000}"
+
+echo "🚀 Starting $PROJECT_NAME development servers..."
+echo "📁 Project root: $PROJECT_ROOT"
+echo "📁 Frontend dir: $PROJECT_ROOT/frontend"
+echo ""
+
+# Verify PROJECT_ROOT exists
+if [ ! -d "$PROJECT_ROOT" ]; then
+    echo "❌ Error: Project root directory not found: $PROJECT_ROOT"
+    exit 1
+fi
+
+if [ ! -f "$PROJECT_ROOT/mix.exs" ]; then
+    echo "❌ Error: mix.exs not found in $PROJECT_ROOT"
+    echo "   This script expects a Phoenix/Ash backend in the project root"
+    exit 1
+fi
+
+# Check if servers are already running
+if pgrep -f "mix phx.server" > /dev/null; then
+    echo "⚠️  Phoenix backend is already running!"
+    echo "   Stop it first with: dev-stop"
+    exit 1
+fi
+
+if pgrep -f "vite dev.*$FRONTEND_PORT" > /dev/null; then
+    echo "⚠️  SvelteKit frontend is already running!"
+    echo "   Stop it first with: dev-stop"
+    exit 1
+fi
+
+# Check if Docker services are running
+if ! docker ps | grep -q "postgres"; then
+    echo "⚠️  PostgreSQL container not running"
+    echo "   Starting Docker services..."
+    cd "$PROJECT_ROOT"
+    docker compose -f docker-compose.dev.yml up -d postgres electric redis
+    sleep 3
+fi
+
+echo "📦 Opening terminal windows..."
+
+# Open Phoenix Backend terminal
+gnome-terminal --title="$PROJECT_NAME-backend" -- bash -c "cd \"$PROJECT_ROOT\" && echo '🔥 Starting Phoenix backend on port $BACKEND_PORT...' && echo \"📁 Working directory: \$(pwd)\" && echo '' && mix phx.server" &
+
+# Wait a moment for first terminal to open
+sleep 0.5
+
+# Open SvelteKit Frontend terminal
+gnome-terminal --title="$PROJECT_NAME-frontend" -- bash -c "cd \"$PROJECT_ROOT/frontend\" && echo '⚡ Starting SvelteKit frontend on port $FRONTEND_PORT...' && echo \"📁 Working directory: \$(pwd)\" && echo '' && npm run dev" &
+
+# Wait a moment
+sleep 0.5
+
+# Open Console terminal
+gnome-terminal --title="$PROJECT_NAME-console" -- bash -c "cd \"$PROJECT_ROOT\" && echo '💻 $PROJECT_NAME Development Console' && echo \"📁 Working directory: \$(pwd)\" && echo '' && echo '📊 Available endpoints:' && echo \"   Backend:  http://localhost:$BACKEND_PORT\" && echo \"   Frontend: http://localhost:$FRONTEND_PORT\" && echo \"   Electric: http://localhost:$ELECTRIC_PORT\" && echo '' && echo '🎮 Quick commands:' && echo '   Stop servers:     dev-stop' && echo '   Restart:          dev-stop && dev-start' && echo '   Docker logs:      docker compose -f docker-compose.dev.yml logs -f' && echo '   Phoenix console:  iex -S mix phx.server' && echo '' && read -p 'Press Enter to close...'" &
+
+echo ""
+echo "✅ Development servers starting in new terminal window!"
+echo ""
+echo "📊 URLs:"
+echo "   Backend:  http://localhost:$BACKEND_PORT"
+echo "   Frontend: http://localhost:$FRONTEND_PORT"
+echo "   Electric: http://localhost:$ELECTRIC_PORT"
+echo ""
+echo "To stop: dev-stop"
+echo ""

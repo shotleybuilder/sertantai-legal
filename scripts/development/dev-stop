@@ -1,0 +1,38 @@
+#!/bin/bash
+# Development Server Stopper for Ash + ElectricSQL + Svelte + TanStack Stack
+# Stops backend (Phoenix/Ash) and frontend (SvelteKit) servers
+
+set -e
+
+# Configuration - must match dev-start settings
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+
+echo "🛑 Stopping development servers..."
+
+# Kill any Phoenix processes
+if pgrep -f "mix phx.server" > /dev/null; then
+    echo "🔥 Killing Phoenix backend processes..."
+    pkill -f "mix phx.server" || true
+    echo "✅ Phoenix processes killed"
+else
+    echo "ℹ️  No Phoenix backend processes found"
+fi
+
+# Kill any Vite/npm processes for this project (by port)
+if pgrep -f "vite dev.*$FRONTEND_PORT" > /dev/null; then
+    echo "⚡ Killing SvelteKit frontend processes..."
+    pkill -f "vite dev.*$FRONTEND_PORT" || true
+    echo "✅ SvelteKit processes killed"
+else
+    echo "ℹ️  No SvelteKit frontend processes found"
+fi
+
+# Optional: Stop Docker services (commented out - you might want them running)
+# Uncomment if you want to stop Docker services too
+# echo "🐳 Stopping Docker services..."
+# docker compose -f docker-compose.dev.yml down
+
+echo ""
+echo "✅ All development servers stopped!"
+echo ""
+echo "To start again: dev-start"
