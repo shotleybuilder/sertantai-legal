@@ -41,24 +41,33 @@ Porting the legislation.gov.uk scraper from the legacy legl project. Phase 1 (sc
 ### Known Issue: Ash `accept :*`
 The UkLrt resource's `:create` action with `accept :*` is not accepting all attributes in test environment. Database persistence tests are skipped pending investigation. The XML parsing and metadata extraction work correctly.
 
-## Todos - Phase 2: Remaining Work
+## Completed - Phase 2: Field Enrichment
 
-### Field Population (Future Enhancement)
-- [ ] Port `TypeClass.set_type_class()` - infer legal type (Act, SI, Regulation)
-- [ ] Port `TypeClass.set_type()` - detailed type classification
-- [ ] Port `Tags.set_tags()` - subject tags from metadata
-- [ ] Port `IdField.lrt_acronym()` - generate acronym
-- [ ] Port `Extent.set_extent()` - geographic extent (requires HTTP call)
-- [ ] Port `GetEnactedBy.get_enacting_laws()` - parent law relationships
-- [ ] Port `Amend.workflow()` - amendment relationships
+### Field Population Modules (Complete)
+- [x] `Scraper.TypeClass` - type_class (Act, Regulation, Order) and Type (full name)
+- [x] `Scraper.Tags` - extract keywords from titles (stop word removal)
+- [x] `Scraper.IdField` - name building (uksi/2024/123) and acronym generation
+- [x] `Scraper.Extent` - geographic extent (Geo_Region, Geo_Pan_Region, Geo_Extent)
+- [x] `Scraper.EnactedBy` - parent law relationships (Enacted_by field)
 
 ### HTTP Calls Summary
 | Endpoint | Purpose | Status |
 |----------|---------|--------|
 | `/type/year/number/introduction/data.xml` | Core metadata | Done |
-| `/type/year/number/introduction/extent/data.xml` | Geographic extent | Future |
-| `/type/year/number/introduction/enacting/data.xml` | Parent laws | Future |
+| `/type/year/number/contents/data.xml` | Geographic extent | Done |
+| `/type/year/number/made/introduction/data.xml` | Parent laws | Done |
 | `/type/year/number/introduction/amending/data.xml` | Amendments | Future |
+
+## Future Work
+
+### Amendment Relationships (Deferred)
+- [ ] Port `Amend.workflow()` - amendment relationships (complex BFS traversal)
+
+The Amend module is complex with:
+- Breadth-first search of amendment tree
+- Multiple submodules (Patch, Post, NewLaw, Csv, Delta)
+- Airtable integration not applicable to this project
+- Recommended for future session
 
 ## Completed - Phase 1: Scrape + Categorize
 
@@ -90,6 +99,15 @@ The UkLrt resource's `:create` action with `accept :*` is not accepting all attr
 |--------|---------|
 | `Scraper.LawParser` | Main entry point for parsing individual laws |
 | `Scraper.Metadata` | SweetXml parser for legislation.gov.uk XML API |
+
+### Field Enrichment (Phase 2)
+| Module | Purpose |
+|--------|---------|
+| `Scraper.TypeClass` | Infer type_class and Type from title/type_code |
+| `Scraper.Tags` | Extract keywords from titles |
+| `Scraper.IdField` | Generate name (uksi/2024/123) and acronym |
+| `Scraper.Extent` | Fetch geographic extent from contents XML |
+| `Scraper.EnactedBy` | Find parent legislation relationships |
 
 ### Filtering
 | Module | Purpose |
@@ -147,7 +165,7 @@ SessionManager.delete(session.session_id)
 
 ## Tests
 
-- 111 unit tests passing (3 skipped pending Ash fix)
+- 203 unit tests passing (3 skipped pending Ash fix)
 - Test fixtures in `test/fixtures/legislation_gov_uk/`
 - XML fixtures: `introduction_sample.xml`, `introduction_text_dates.xml`
 - HTTP mocking via Req.Test
@@ -181,6 +199,30 @@ LawParser.record_exists?(%{name: "uksi/2024/1234"})
 
 # Fetch metadata only (no persistence)
 Metadata.fetch(%{type_code: "uksi", Year: 2024, Number: "1234"})
+```
+
+## Field Enrichment Usage
+
+```elixir
+alias SertantaiLegal.Scraper.{TypeClass, Tags, IdField, Extent, EnactedBy}
+
+# Start with a basic record
+record = %{
+  type_code: "uksi",
+  Year: 2024,
+  Number: "123",
+  Title_EN: "The Health and Safety Regulations 2024"
+}
+
+# Apply field enrichment pipeline
+record
+|> TypeClass.set_type_class()  # Adds :type_class => "Regulation"
+|> TypeClass.set_type()        # Adds :Type => "UK Statutory Instrument"
+|> Tags.set_tags()             # Adds :Tags => ["Health", "Safety", "Regulations"]
+|> IdField.set_name()          # Adds :name => "uksi/2024/123"
+|> IdField.set_acronym()       # Adds :Acronym => "THSR"
+|> Extent.set_extent()         # HTTP: Adds :Geo_Region, :Geo_Pan_Region, :Geo_Extent
+|> EnactedBy.get_enacting_laws()  # HTTP: Adds :Enacted_by, :enacted_by_description
 ```
 
 ## Migration

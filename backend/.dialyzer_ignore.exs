@@ -17,5 +17,8 @@
 
   # Parser modules - permissive specs for API consistency
   {"lib/sertantai_legal/scraper/law_parser.ex", :contract_supertype},
-  {"lib/sertantai_legal/scraper/metadata.ex", :contract_supertype}
+  {"lib/sertantai_legal/scraper/metadata.ex", :contract_supertype},
+
+  # Field enrichment modules - permissive specs for pipeline flexibility
+  {"lib/sertantai_legal/scraper/enacted_by.ex", :contract_supertype}
 ]

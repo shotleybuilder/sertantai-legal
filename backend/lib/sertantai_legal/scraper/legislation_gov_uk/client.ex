@@ -55,9 +55,11 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
 
   ## Returns
   - `{:ok, body}` - XML content as string
+  - `{:ok, :html, body}` - HTML content when XML expected
   - `{:error, code, message}` - Error with HTTP status code and message
   """
-  @spec fetch_xml(String.t()) :: {:ok, String.t()} | {:error, integer(), String.t()}
+  @spec fetch_xml(String.t()) ::
+          {:ok, String.t()} | {:ok, :html, String.t()} | {:error, integer(), String.t()}
   def fetch_xml(path) do
     url = @endpoint <> path
 
