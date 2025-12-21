@@ -59,6 +59,10 @@ defmodule SertantaiLegal.MixProject do
       # CSV parsing (for data import scripts)
       {:nimble_csv, "~> 1.2"},
 
+      # Scraper dependencies
+      {:req, "~> 0.5"},
+      {:floki, "~> 0.36"},
+
       # Dev/Test Tools
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

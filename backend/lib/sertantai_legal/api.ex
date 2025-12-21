@@ -22,6 +22,9 @@ defmodule SertantaiLegal.Api do
     # UK Legal Register Table - shared reference data (no organization_id)
     resource(SertantaiLegal.Legal.UkLrt)
 
+    # Scraper session tracking
+    resource(SertantaiLegal.Scraper.ScrapeSession)
+
     # Tenant-scoped resources (require organization_id from JWT):
     # resource(SertantaiLegal.Legal.OrganizationLocation)
     # resource(SertantaiLegal.Legal.LocationScreening)
