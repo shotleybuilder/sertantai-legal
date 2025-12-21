@@ -1,0 +1,298 @@
+#!/bin/bash
+# sertantai-legal Development Server Restarter
+# Forcefully stops and restarts backend (Phoenix) and frontend (SvelteKit) servers
+#
+# Usage:
+#   sert-legal-restart           # Restart all servers
+#   sert-legal-restart --frontend # Restart only frontend (port 5174)
+#   sert-legal-restart --backend  # Restart only backend (port 4000)
+#   sert-legal-restart --docker   # Restart servers + Docker containers
+#   sert-legal-restart --force    # Force kill immediately (skip graceful shutdown)
+#
+# Symlink Setup (to run from anywhere):
+#   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-restart /usr/local/bin/sert-legal-restart
+
+set -e
+
+# Parse arguments
+MANAGE_DOCKER=false
+FORCE_KILL=false
+FRONTEND_ONLY=false
+BACKEND_ONLY=false
+for arg in "$@"; do
+    case $arg in
+        --docker)
+            MANAGE_DOCKER=true
+            ;;
+        --force)
+            FORCE_KILL=true
+            ;;
+        --frontend)
+            FRONTEND_ONLY=true
+            ;;
+        --backend)
+            BACKEND_ONLY=true
+            ;;
+    esac
+done
+
+# Resolve symlink to get the actual script path
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+if [ "$FRONTEND_ONLY" = true ]; then
+    echo "Restarting frontend only..."
+elif [ "$BACKEND_ONLY" = true ]; then
+    echo "Restarting backend only..."
+else
+    echo "Restarting sertantai-legal development servers..."
+fi
+echo ""
+
+# Function to kill processes with timeout and retry
+kill_process_safely() {
+    local process_pattern="$1"
+    local process_name="$2"
+    local max_wait=5
+
+    if pgrep -f "$process_pattern" > /dev/null; then
+        echo "Stopping $process_name..."
+
+        if [ "$FORCE_KILL" = true ]; then
+            # Force kill immediately
+            pkill -9 -f "$process_pattern" || true
+            echo "   $process_name force-killed"
+        else
+            # Try graceful shutdown first (SIGTERM)
+            pkill -f "$process_pattern" || true
+
+            # Wait up to max_wait seconds for graceful shutdown
+            local waited=0
+            while pgrep -f "$process_pattern" > /dev/null && [ $waited -lt $max_wait ]; do
+                sleep 1
+                waited=$((waited + 1))
+                echo -n "."
+            done
+            echo ""
+
+            # If still running, force kill (SIGKILL)
+            if pgrep -f "$process_pattern" > /dev/null; then
+                echo "   Graceful shutdown timed out, force killing..."
+                pkill -9 -f "$process_pattern" || true
+                sleep 1
+            fi
+
+            echo "   $process_name stopped"
+        fi
+    else
+        echo "   $process_name not running"
+    fi
+}
+
+# Function to check if port is free
+wait_for_port_free() {
+    local port="$1"
+    local max_wait=10
+    local waited=0
+
+    while lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1 && [ $waited -lt $max_wait ]; do
+        if [ $waited -eq 0 ]; then
+            echo "Waiting for port $port to be freed..."
+        fi
+        sleep 1
+        waited=$((waited + 1))
+        echo -n "."
+    done
+
+    if [ $waited -gt 0 ]; then
+        echo ""
+    fi
+
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+        echo "   Port $port still in use after ${max_wait}s"
+        echo "   Process using port:"
+        lsof -Pi :$port -sTCP:LISTEN || true
+        echo "   Killing process on port $port..."
+        lsof -ti:$port | xargs kill -9 2>/dev/null || true
+        sleep 1
+    fi
+}
+
+# Stop existing processes
+echo "Step 1: Stopping existing processes"
+echo "------------------------------------"
+
+if [ "$FRONTEND_ONLY" = false ]; then
+    # Kill Phoenix backend
+    kill_process_safely "mix phx.server.*sertantai_legal" "Phoenix backend"
+
+    # Kill Elixir BEAM processes
+    if pgrep -f "beam.smp.*sertantai_legal" > /dev/null; then
+        echo "Stopping BEAM VM processes..."
+        pkill -9 -f "beam.smp.*sertantai_legal" || true
+        echo "   BEAM processes stopped"
+    fi
+fi
+
+if [ "$BACKEND_ONLY" = false ]; then
+    # Kill SvelteKit frontend
+    kill_process_safely "vite.*5174" "SvelteKit frontend"
+
+    # Kill any node processes on port 5174
+    if lsof -ti:5174 >/dev/null 2>&1; then
+        echo "Killing remaining processes on port 5174..."
+        lsof -ti:5174 | xargs kill -9 2>/dev/null || true
+    fi
+fi
+
+echo ""
+
+# Wait for ports to be freed
+echo "Step 2: Ensuring ports are available"
+echo "-------------------------------------"
+
+if [ "$FRONTEND_ONLY" = false ]; then
+    wait_for_port_free 4000  # Phoenix backend
+fi
+
+if [ "$BACKEND_ONLY" = false ]; then
+    wait_for_port_free 5174  # SvelteKit frontend
+fi
+
+if [ "$FRONTEND_ONLY" = true ]; then
+    echo "   Port 5174 is free"
+elif [ "$BACKEND_ONLY" = true ]; then
+    echo "   Port 4000 is free"
+else
+    echo "   Ports 4000 and 5174 are free"
+fi
+echo ""
+
+# Handle Docker if requested
+if [ "$MANAGE_DOCKER" = true ]; then
+    echo "Managing Docker containers..."
+    cd "$PROJECT_ROOT"
+
+    # Stop existing containers
+    docker compose -f docker-compose.dev.yml stop
+
+    # Start fresh containers
+    echo "   Starting Docker services (postgres)..."
+    docker compose -f docker-compose.dev.yml up -d postgres
+
+    echo "   Waiting for services to be healthy..."
+    sleep 5
+
+    # Verify Docker services are up
+    if docker ps | grep -q "sertantai-legal-postgres"; then
+        echo "   Docker services running"
+    else
+        echo "   Warning: Docker services may not be fully ready"
+    fi
+    echo ""
+fi
+
+# Start servers
+echo "Step 3: Starting development servers"
+echo "-------------------------------------"
+
+# Verify PROJECT_ROOT and mix.exs exist
+if [ ! -d "$PROJECT_ROOT" ] || [ ! -f "$PROJECT_ROOT/backend/mix.exs" ]; then
+    echo "Error: Project root or mix.exs not found"
+    exit 1
+fi
+
+# Check Docker if not managing it
+if [ "$MANAGE_DOCKER" = false ] && [ "$FRONTEND_ONLY" = false ]; then
+    if ! docker ps | grep -q "sertantai-legal-postgres"; then
+        echo "Warning: Docker containers not detected"
+        echo "   Tip: Use 'sert-legal-restart --docker' to restart with Docker"
+        echo ""
+    fi
+fi
+
+echo "Opening terminal tabs..."
+
+# Create a temporary launcher script
+LAUNCHER_SCRIPT=$(mktemp)
+
+if [ "$FRONTEND_ONLY" = true ]; then
+    # Frontend only
+    cat > "$LAUNCHER_SCRIPT" << 'LAUNCHER_EOF'
+#!/bin/bash
+
+PROJECT_ROOT="__PROJECT_ROOT__"
+
+# Open SvelteKit frontend tab
+gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5174..."; echo "Working directory: $(pwd)"; echo ""; npm run dev -- --port 5174; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+
+wait
+LAUNCHER_EOF
+elif [ "$BACKEND_ONLY" = true ]; then
+    # Backend only
+    cat > "$LAUNCHER_SCRIPT" << 'LAUNCHER_EOF'
+#!/bin/bash
+
+PROJECT_ROOT="__PROJECT_ROOT__"
+
+# Open Phoenix backend tab
+gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4000..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+
+wait
+LAUNCHER_EOF
+else
+    # All services
+    cat > "$LAUNCHER_SCRIPT" << 'LAUNCHER_EOF'
+#!/bin/bash
+
+PROJECT_ROOT="__PROJECT_ROOT__"
+
+# Open Phoenix backend tab
+gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4000..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+sleep 0.3
+
+# Open SvelteKit frontend tab
+gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5174..."; echo "Working directory: $(pwd)"; echo ""; npm run dev -- --port 5174; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+
+wait
+LAUNCHER_EOF
+fi
+
+# Replace PROJECT_ROOT placeholder
+sed -i "s|__PROJECT_ROOT__|$PROJECT_ROOT|g" "$LAUNCHER_SCRIPT"
+chmod +x "$LAUNCHER_SCRIPT"
+
+# Execute the launcher script in a new gnome-terminal window
+gnome-terminal --window -- bash -c "$LAUNCHER_SCRIPT; rm -f $LAUNCHER_SCRIPT"
+
+echo ""
+if [ "$FRONTEND_ONLY" = true ]; then
+    echo "Frontend restarted successfully!"
+    echo ""
+    echo "URL:"
+    echo "   Frontend: http://localhost:5174  (svelte)"
+elif [ "$BACKEND_ONLY" = true ]; then
+    echo "Backend restarted successfully!"
+    echo ""
+    echo "URL:"
+    echo "   Backend:  http://localhost:4000  (phoenix)"
+else
+    echo "Development servers restarted successfully!"
+    echo ""
+    echo "URLs:"
+    echo "   Backend:  http://localhost:4000  (phoenix)"
+    echo "   Frontend: http://localhost:5174  (svelte)"
+fi
+echo ""
+echo "Tips:"
+echo "   Stop servers:      sert-legal-stop"
+echo "   Restart all:       sert-legal-restart"
+echo "   Restart frontend:  sert-legal-restart --frontend"
+echo "   Restart backend:   sert-legal-restart --backend"
+echo "   Force restart:     sert-legal-restart --force"
+if [ "$MANAGE_DOCKER" = true ]; then
+    echo "   (Docker was restarted)"
+elif [ "$FRONTEND_ONLY" = false ] && [ "$BACKEND_ONLY" = false ]; then
+    echo "   (Docker was not restarted - use --docker flag to restart Docker)"
+fi
+echo ""

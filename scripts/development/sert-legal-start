@@ -1,0 +1,112 @@
+#!/bin/bash
+# sertantai-legal Development Server Starter
+# Starts backend (Phoenix) and frontend (SvelteKit) in terminal tabs
+#
+# Usage:
+#   sert-legal-start          # Start servers only (assumes Docker already running)
+#   sert-legal-start --docker # Start Docker containers + servers
+#
+# Symlink Setup (to run from anywhere):
+#   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-start /usr/local/bin/sert-legal-start
+
+set -e
+
+# Parse arguments
+MANAGE_DOCKER=false
+if [[ "$1" == "--docker" ]]; then
+    MANAGE_DOCKER=true
+fi
+
+# Resolve symlink to get the actual script path
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+echo "Starting sertantai-legal development servers..."
+echo "Project root: $PROJECT_ROOT"
+echo "Frontend dir: $PROJECT_ROOT/frontend"
+echo ""
+
+# Verify PROJECT_ROOT exists
+if [ ! -d "$PROJECT_ROOT" ]; then
+    echo "Error: Project root directory not found: $PROJECT_ROOT"
+    exit 1
+fi
+
+if [ ! -f "$PROJECT_ROOT/backend/mix.exs" ]; then
+    echo "Error: mix.exs not found in $PROJECT_ROOT/backend"
+    exit 1
+fi
+
+# Check if servers are already running
+if pgrep -f "mix phx.server.*sertantai_legal" > /dev/null; then
+    echo "Warning: Phoenix backend is already running!"
+    echo "   Stop it first with: sert-legal-stop"
+    exit 1
+fi
+
+if lsof -ti:5174 >/dev/null 2>&1; then
+    echo "Warning: SvelteKit frontend is already running on port 5174!"
+    echo "   Stop it first with: sert-legal-stop"
+    exit 1
+fi
+
+# Manage Docker containers if requested
+if [ "$MANAGE_DOCKER" = true ]; then
+    echo "Managing Docker containers..."
+    cd "$PROJECT_ROOT"
+
+    if ! docker ps | grep -q "sertantai-legal-postgres"; then
+        echo "   Starting Docker services (postgres)..."
+        docker compose -f docker-compose.dev.yml up -d postgres
+        echo "   Waiting for services to be healthy..."
+        sleep 5
+    else
+        echo "   Docker services already running"
+    fi
+    echo ""
+else
+    # Check if Docker services are running (warning only)
+    if ! docker ps | grep -q "sertantai-legal-postgres"; then
+        echo "Warning: Docker containers not detected"
+        echo "   Tip: Use 'sert-legal-start --docker' to auto-start containers"
+        echo ""
+    fi
+fi
+
+echo "Opening terminal tabs..."
+
+# Create a temporary launcher script
+LAUNCHER_SCRIPT=$(mktemp)
+
+cat > "$LAUNCHER_SCRIPT" << 'LAUNCHER_EOF'
+#!/bin/bash
+
+PROJECT_ROOT="__PROJECT_ROOT__"
+
+# Open Phoenix backend tab
+gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4000..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+sleep 0.3
+
+# Open SvelteKit frontend tab
+gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5174..."; echo "Working directory: $(pwd)"; echo ""; npm run dev -- --port 5174; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+
+# Wait for all background processes
+wait
+LAUNCHER_EOF
+
+# Replace PROJECT_ROOT placeholder
+sed -i "s|__PROJECT_ROOT__|$PROJECT_ROOT|g" "$LAUNCHER_SCRIPT"
+chmod +x "$LAUNCHER_SCRIPT"
+
+# Execute the launcher script in a new gnome-terminal window
+gnome-terminal --window -- bash -c "$LAUNCHER_SCRIPT; rm -f $LAUNCHER_SCRIPT"
+
+echo ""
+echo "Development servers starting in terminal tabs!"
+echo ""
+echo "URLs:"
+echo "   Backend:  http://localhost:4000  (phoenix)"
+echo "   Frontend: http://localhost:5174  (svelte)"
+echo ""
+echo "To stop: sert-legal-stop"
+echo ""

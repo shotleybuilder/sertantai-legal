@@ -1,0 +1,74 @@
+#!/bin/bash
+# sertantai-legal Development Server Stopper
+# Stops backend (Phoenix) and frontend (SvelteKit) servers
+#
+# Usage:
+#   sert-legal-stop          # Stop servers only (leave Docker running)
+#   sert-legal-stop --docker # Stop servers + Docker containers
+#
+# Symlink Setup (to run from anywhere):
+#   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-stop /usr/local/bin/sert-legal-stop
+
+set -e
+
+# Parse arguments
+MANAGE_DOCKER=false
+if [[ "$1" == "--docker" ]]; then
+    MANAGE_DOCKER=true
+fi
+
+# Resolve symlink to get the actual script path
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+echo "Stopping sertantai-legal development servers..."
+
+# Kill Phoenix backend processes (port 4000)
+if lsof -ti:4000 >/dev/null 2>&1; then
+    echo "Killing Phoenix backend processes (port 4000)..."
+    lsof -ti:4000 | xargs kill -9 2>/dev/null || true
+    sleep 0.5
+    echo "   Phoenix processes killed"
+else
+    echo "   No Phoenix backend processes found (port 4000 not in use)"
+fi
+
+# Kill SvelteKit frontend processes (port 5174)
+if lsof -ti:5174 >/dev/null 2>&1; then
+    echo "Killing SvelteKit frontend processes (port 5174)..."
+    lsof -ti:5174 | xargs kill -9 2>/dev/null || true
+    sleep 0.5
+    echo "   SvelteKit processes killed"
+else
+    echo "   No SvelteKit frontend processes found (port 5174 not in use)"
+fi
+
+# Clean up any remaining Elixir BEAM processes for this project
+if pgrep -f "beam.smp.*sertantai_legal" > /dev/null; then
+    echo "Cleaning up remaining BEAM VM processes..."
+    pkill -9 -f "beam.smp.*sertantai_legal" || true
+    echo "   BEAM processes cleaned up"
+fi
+
+# Note: Terminal tabs are left open intentionally
+# The services have been stopped but you can review logs or reuse the terminals
+
+# Stop Docker services if requested
+if [ "$MANAGE_DOCKER" = true ]; then
+    echo ""
+    echo "Stopping Docker containers..."
+    cd "$PROJECT_ROOT"
+    docker compose -f docker-compose.dev.yml stop
+    echo "   Docker containers stopped"
+fi
+
+echo ""
+echo "All development servers stopped!"
+echo ""
+if [ "$MANAGE_DOCKER" = true ]; then
+    echo "To start again: sert-legal-start --docker"
+else
+    echo "To start again: sert-legal-start"
+    echo "Tip: Docker containers are still running. Use 'sert-legal-stop --docker' to stop them."
+fi
+echo ""
