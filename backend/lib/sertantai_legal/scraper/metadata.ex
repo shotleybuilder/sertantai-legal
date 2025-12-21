@@ -92,7 +92,8 @@ defmodule SertantaiLegal.Scraper.Metadata do
         md_description: xpath_text(xml, ~x"//dc:description/text()"s),
         md_subjects: xpath_list(xml, ~x"//dc:subject[not(@scheme)]/text()"ls),
         md_modified: xpath_text(xml, ~x"//dc:modified/text()"s),
-        Title_EN: xpath_text(xml, ~x"//dc:title/text()"s),
+        # Use specific path to avoid matching dc:title in ukm:Supersedes
+        Title_EN: xpath_text(xml, ~x"//ukm:Metadata/dc:title/text()"s),
 
         # SI codes (with scheme="SIheading")
         si_code: xpath_list(xml, ~x"//dc:subject[@scheme='SIheading']/text()"ls),

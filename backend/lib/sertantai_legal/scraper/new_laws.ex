@@ -145,16 +145,39 @@ defmodule SertantaiLegal.Scraper.NewLaws do
               _ -> nil
             end
 
+          # Clean the Title_EN from metadata (remove "The " prefix and year suffix)
+          cleaned_title =
+            case metadata[:Title_EN] do
+              title when is_binary(title) and title != "" -> Helpers.title_clean(title)
+              _ -> nil
+            end
+
+          # Merge metadata but don't overwrite Title_EN if we already have one
+          # (HTML parser already provides a cleaned title)
+          metadata_without_title = Map.delete(metadata, :Title_EN)
+
           record
-          |> Map.merge(metadata)
+          |> Map.merge(metadata_without_title)
           |> Map.put(:si_code, si_code_str)
           |> Map.put(:SICode, metadata[:si_code] || [])
+          |> maybe_update_title(cleaned_title)
 
         {:error, reason} ->
           IO.puts("    Warning: #{reason}")
           record
       end
     end)
+  end
+
+  # Only update Title_EN if the record doesn't have one or it's empty
+  defp maybe_update_title(record, nil), do: record
+
+  defp maybe_update_title(record, cleaned_title) do
+    case record[:Title_EN] do
+      nil -> Map.put(record, :Title_EN, cleaned_title)
+      "" -> Map.put(record, :Title_EN, cleaned_title)
+      _ -> record
+    end
   end
 
   @doc """
