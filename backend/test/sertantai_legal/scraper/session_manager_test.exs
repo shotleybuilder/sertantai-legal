@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Scraper.SessionManagerTest do
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
 
-  @test_session_id "test-2024-12-02-to-05"
+  @test_session_id "2024-12-02-to-05"
 
   setup do
     # Stub HTTP responses

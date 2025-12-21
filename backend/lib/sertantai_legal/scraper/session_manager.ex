@@ -93,22 +93,19 @@ defmodule SertantaiLegal.Scraper.SessionManager do
     # Mark as scraping
     {:ok, session} = ScrapeSession.mark_scraping(session)
 
-    case NewLaws.fetch_range(session.year, session.month, session.day_from, session.day_to, session.type_code) do
-      {:ok, records} ->
-        # Save to raw.json
-        case Storage.save_json(session.session_id, :raw, records) do
-          :ok ->
-            ScrapeSession.mark_scraped(session, %{
-              total_fetched: Enum.count(records),
-              raw_file: Storage.relative_path(session.session_id, :raw)
-            })
+    # fetch_range always returns {:ok, records} (errors on individual days are logged but not propagated)
+    {:ok, records} = NewLaws.fetch_range(session.year, session.month, session.day_from, session.day_to, session.type_code)
 
-          {:error, reason} ->
-            ScrapeSession.mark_failed(session, %{error_message: "Failed to save: #{reason}"})
-        end
+    # Save to raw.json
+    case Storage.save_json(session.session_id, :raw, records) do
+      :ok ->
+        ScrapeSession.mark_scraped(session, %{
+          total_fetched: Enum.count(records),
+          raw_file: Storage.relative_path(session.session_id, :raw)
+        })
 
       {:error, reason} ->
-        ScrapeSession.mark_failed(session, %{error_message: "Scrape failed: #{inspect(reason)}"})
+        ScrapeSession.mark_failed(session, %{error_message: "Failed to save: #{reason}"})
     end
   end
 

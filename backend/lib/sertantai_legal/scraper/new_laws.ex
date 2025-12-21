@@ -54,7 +54,13 @@ defmodule SertantaiLegal.Scraper.NewLaws do
           {:ok, records} ->
             records =
               Enum.map(records, fn record ->
-                Map.put(record, :publication_date, date)
+                name = "#{record[:type_code]}/#{record[:Year]}/#{record[:Number]}"
+                url = "https://www.legislation.gov.uk/#{name}"
+
+                record
+                |> Map.put(:publication_date, date)
+                |> Map.put(:name, name)
+                |> Map.put(:leg_gov_uk_url, url)
               end)
 
             IO.puts("Found #{Enum.count(records)} records")
@@ -144,15 +150,11 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   - type_code: Optional type code filter
   """
   @spec fetch_range_and_filter(integer(), integer(), integer(), integer(), String.t() | nil) ::
-          {:ok, map()} | {:error, any()}
+          {:ok, map()}
   def fetch_range_and_filter(year, month, from_day, to_day, type_code \\ nil) do
-    case fetch_range(year, month, from_day, to_day, type_code) do
-      {:ok, records} ->
-        categorize(records)
-
-      error ->
-        error
-    end
+    # fetch_range always returns {:ok, records}
+    {:ok, records} = fetch_range(year, month, from_day, to_day, type_code)
+    categorize(records)
   end
 
   @doc """
@@ -252,7 +254,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
 
       iex> NewLaws.run(2024, 12, 1, 9)
   """
-  @spec run(integer(), integer(), integer(), integer()) :: {:ok, map()} | {:error, any()}
+  @spec run(integer(), integer(), integer(), integer() | nil) :: {:ok, map()} | {:error, any()}
   def run(year, month, from_day, to_day \\ nil) do
     result =
       if to_day do
@@ -266,7 +268,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
         print_summary(categorized)
         {:ok, categorized}
 
-      error ->
+      {:error, _reason} = error ->
         error
     end
   end

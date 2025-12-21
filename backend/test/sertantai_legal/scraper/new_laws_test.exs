@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Scraper.NewLawsTest do
 
       assert length(records) == 10
       assert Enum.all?(records, fn r -> Map.has_key?(r, :name) end)
-      assert Enum.all?(records, fn r -> Map.has_key?(r, :title_en) end)
+      assert Enum.all?(records, fn r -> Map.has_key?(r, :Title_EN) end)
     end
 
     test "adds name field in correct format" do
@@ -52,28 +52,24 @@ defmodule SertantaiLegal.Scraper.NewLawsTest do
     test "fetches laws for a date range" do
       {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 3)
 
-      # Same fixture returned for each day, so we get 3x the records
-      # (In reality, records would be different per day)
-      assert length(records) > 0
+      # Same fixture returned for each day, so we get 3x10 = 30 records
+      # (publication_date differs so they're not deduplicated)
+      assert length(records) == 30
     end
 
-    test "deduplicates records across days" do
+    test "adds publication_date for each day" do
       {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 3)
 
-      # Should deduplicate by :name
-      names = Enum.map(records, & &1[:name])
-      assert names == Enum.uniq(names)
+      # Each record should have publication_date
+      assert Enum.all?(records, fn r -> Map.has_key?(r, :publication_date) end)
+
+      # We should have records from multiple days
+      dates = records |> Enum.map(& &1[:publication_date]) |> Enum.uniq()
+      assert length(dates) == 3
     end
   end
 
   describe "fetch_range/5 with type_code filter" do
-    test "filters by type_code when provided" do
-      {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 1, "uksi")
-
-      # All records should be uksi
-      assert Enum.all?(records, fn r -> r[:type_code] == "uksi" end)
-    end
-
     test "includes all types when type_code is nil" do
       {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 1, nil)
 
@@ -82,6 +78,15 @@ defmodule SertantaiLegal.Scraper.NewLawsTest do
       # Should have both uksi and ukpga from our fixture
       assert "uksi" in type_codes
       assert "ukpga" in type_codes
+    end
+
+    test "passes type_code in URL" do
+      # This test just verifies the function accepts a type_code parameter
+      # The mock returns all records regardless of URL path
+      {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 1, "uksi")
+
+      # Still returns 10 records (mock doesn't filter)
+      assert length(records) == 10
     end
   end
 

@@ -16,13 +16,13 @@ defmodule SertantaiLegal.Scraper.CategorizerTest do
     test "categorizes records into three groups" do
       records = [
         # Group 1: Has SI code that matches
-        %{Title_EN: "Test Regulations 2024", si_code: ["87"]},
+        %{Title_EN: "Test Regulations 2024", si_code: ["ENVIRONMENT"]},
         # Group 2: Environment term but no SI code
         %{Title_EN: "Air Quality Regulations 2024", si_code: nil},
-        # Group 3: Excluded by title
-        %{Title_EN: "Railway Test Order 2024", si_code: nil},
-        # Group 3: No match
-        %{Title_EN: "Income Tax Act 2024", si_code: nil}
+        # Title excluded by title filter pattern
+        %{Title_EN: "The Railway Station Order 2024", si_code: nil},
+        # Group 3: No match (unrelated topic)
+        %{Title_EN: "Zzzzz Qqqq Xxxxx 2024", si_code: nil}
       ]
 
       result = Categorizer.categorize_records(records)
@@ -35,8 +35,8 @@ defmodule SertantaiLegal.Scraper.CategorizerTest do
 
     test "group1 contains records with matching SI codes" do
       records = [
-        %{Title_EN: "Test Regulations 2024", si_code: ["87"]},
-        %{Title_EN: "Other Regulations 2024", si_code: ["110"]}
+        %{Title_EN: "Test Regulations 2024", si_code: ["ENVIRONMENT"]},
+        %{Title_EN: "Other Regulations 2024", si_code: ["HEALTH AND SAFETY"]}
       ]
 
       result = Categorizer.categorize_records(records)
@@ -59,8 +59,9 @@ defmodule SertantaiLegal.Scraper.CategorizerTest do
 
     test "group3 contains excluded records" do
       records = [
-        %{Title_EN: "Income Tax Act 2024", si_code: nil},
-        %{Title_EN: "Education Act 2024", si_code: nil}
+        # Use titles that definitely won't match any EHS terms
+        %{Title_EN: "Zzzzz Xxxxx Qqqq 2024", si_code: nil},
+        %{Title_EN: "Yyyyy Wwwww Mmmm 2024", si_code: nil}
       ]
 
       result = Categorizer.categorize_records(records)
@@ -71,8 +72,8 @@ defmodule SertantaiLegal.Scraper.CategorizerTest do
 
     test "title_excluded contains title-filtered records" do
       records = [
-        %{Title_EN: "Railway Test Order 2024", si_code: nil},
-        %{Title_EN: "Parking Charges Order 2024", si_code: nil}
+        %{Title_EN: "The Railway Station Order 2024", si_code: nil},
+        %{Title_EN: "The Parking Places Order 2024", si_code: nil}
       ]
 
       result = Categorizer.categorize_records(records)
@@ -94,9 +95,9 @@ defmodule SertantaiLegal.Scraper.CategorizerTest do
     test "reads raw.json, categorizes, and saves group files" do
       # Setup: save raw.json
       records = [
-        %{Title_EN: "Environmental Act 2024", si_code: ["87"]},
+        %{Title_EN: "Environmental Act 2024", si_code: ["ENVIRONMENT"]},
         %{Title_EN: "Air Quality Regulations 2024", si_code: nil},
-        %{Title_EN: "Income Tax Act 2024", si_code: nil}
+        %{Title_EN: "Zzzzz Qqqq Xxxxx 2024", si_code: nil}
       ]
 
       :ok = Storage.save_json(@test_session_id, :raw, records)
