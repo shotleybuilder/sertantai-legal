@@ -9,10 +9,19 @@ defmodule SertantaiLegal.Scraper.SessionManagerTest do
   @test_session_id "2024-12-02-to-05"
 
   setup do
-    # Stub HTTP responses
+    # Stub HTTP responses for both HTML (new laws) and XML (metadata)
     Req.Test.stub(Client, fn conn ->
-      html = fixture("new_laws_sample.html")
-      Req.Test.html(conn, html)
+      path = conn.request_path
+
+      cond do
+        String.contains?(path, "/introduction/data.xml") ->
+          xml = fixture("introduction_sample.xml")
+          Req.Test.text(conn, xml)
+
+        true ->
+          html = fixture("new_laws_sample.html")
+          Req.Test.html(conn, html)
+      end
     end)
 
     # Clean up any existing test session

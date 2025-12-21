@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   alias SertantaiLegal.Scraper.LegislationGovUk.Helpers
   alias SertantaiLegal.Scraper.LegislationGovUk.Parser
   alias SertantaiLegal.Scraper.Filters
+  alias SertantaiLegal.Scraper.Metadata
 
   @type_codes ["uksi", "ukpga", "asp", "anaw", "apni", "wsi", "ssi", "nisi", "nisr", "ukmo"]
 
@@ -85,13 +86,16 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   - from_day: Start day (1-31)
   - to_day: End day (1-31)
   - type_code: Optional type code to filter (default: all)
+  - opts: Optional keyword list with :fetch_metadata (default: true)
 
   ## Returns
   `{:ok, records}` with all records from the date range
   """
-  @spec fetch_range(integer(), integer(), integer(), integer(), String.t() | nil) ::
+  @spec fetch_range(integer(), integer(), integer(), integer(), String.t() | nil, keyword()) ::
           {:ok, list(map())}
-  def fetch_range(year, month, from_day, to_day, type_code \\ nil) do
+  def fetch_range(year, month, from_day, to_day, type_code \\ nil, opts \\ []) do
+    fetch_metadata = Keyword.get(opts, :fetch_metadata, true)
+
     IO.puts("\nFetching laws for #{year}-#{Helpers.format_month(month)} days #{from_day}-#{to_day}")
 
     records =
@@ -103,7 +107,54 @@ defmodule SertantaiLegal.Scraper.NewLaws do
       end)
 
     IO.puts("\nTotal records fetched: #{Enum.count(records)}")
+
+    # Enrich with metadata if requested (default: true)
+    records =
+      if fetch_metadata do
+        IO.puts("\nFetching metadata for #{Enum.count(records)} records...")
+        enrich_with_metadata(records)
+      else
+        records
+      end
+
     {:ok, records}
+  end
+
+  @doc """
+  Enrich records with metadata from legislation.gov.uk XML API.
+
+  For each record, fetches the introduction XML and merges the metadata fields.
+  This includes si_code, md_description, md_subjects, dates, etc.
+  """
+  @spec enrich_with_metadata(list(map())) :: list(map())
+  def enrich_with_metadata(records) do
+    total = Enum.count(records)
+
+    records
+    |> Enum.with_index(1)
+    |> Enum.map(fn {record, index} ->
+      IO.puts("  [#{index}/#{total}] #{record[:type_code]}/#{record[:Year]}/#{record[:Number]}")
+
+      case Metadata.fetch(record) do
+        {:ok, metadata} ->
+          # Merge metadata into record, converting si_code list to comma-separated string
+          # for consistency with filters that expect string
+          si_code_str =
+            case metadata[:si_code] do
+              codes when is_list(codes) and codes != [] -> Enum.join(codes, ",")
+              _ -> nil
+            end
+
+          record
+          |> Map.merge(metadata)
+          |> Map.put(:si_code, si_code_str)
+          |> Map.put(:SICode, metadata[:si_code] || [])
+
+        {:error, reason} ->
+          IO.puts("    Warning: #{reason}")
+          record
+      end
+    end)
   end
 
   @doc """
