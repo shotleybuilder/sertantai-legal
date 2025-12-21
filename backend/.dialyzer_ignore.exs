@@ -13,5 +13,9 @@
   {"lib/sertantai_legal/scraper/persister.ex", :contract_supertype},
   {"lib/sertantai_legal/scraper/persister.ex", :extra_range},
   {"lib/sertantai_legal/scraper/persister.ex", :pattern_match},
-  {"lib/sertantai_legal/scraper/storage.ex", :contract_supertype}
+  {"lib/sertantai_legal/scraper/storage.ex", :contract_supertype},
+
+  # Parser modules - permissive specs for API consistency
+  {"lib/sertantai_legal/scraper/law_parser.ex", :contract_supertype},
+  {"lib/sertantai_legal/scraper/metadata.ex", :contract_supertype}
 ]

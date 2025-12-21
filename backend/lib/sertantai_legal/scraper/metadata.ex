@@ -1,0 +1,269 @@
+defmodule SertantaiLegal.Scraper.Metadata do
+  @moduledoc """
+  Fetches and parses metadata from legislation.gov.uk XML API.
+
+  For each law, fetches the introduction XML which contains:
+  - Description
+  - Subject tags
+  - Paragraph counts
+  - Key dates (made, enactment, coming into force)
+  - SI codes
+  - Geographic extent
+
+  Ported from Legl.Countries.Uk.Metadata and Legl.Services.LegislationGovUk.Parsers.Metadata
+  """
+
+  import SweetXml
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.Client
+
+  @doc """
+  Fetch metadata for a law record.
+
+  ## Parameters
+  - record: Map with :type_code, :Year, :Number keys
+
+  ## Returns
+  `{:ok, metadata_map}` or `{:error, reason}`
+
+  ## Example
+
+      iex> Metadata.fetch(%{type_code: "uksi", Year: 2024, Number: "1001"})
+      {:ok, %{md_description: "...", md_subjects: [...], ...}}
+  """
+  @spec fetch(map()) :: {:ok, map()} | {:error, String.t()}
+  def fetch(%{type_code: type_code, Year: year, Number: number}) do
+    path = introduction_path(type_code, year, number)
+    fetch_from_path(path)
+  end
+
+  def fetch(%{"type_code" => type_code, "Year" => year, "Number" => number}) do
+    fetch(%{type_code: type_code, Year: year, Number: number})
+  end
+
+  @doc """
+  Build the introduction XML path for a law.
+  """
+  @spec introduction_path(String.t(), integer() | String.t(), String.t()) :: String.t()
+  def introduction_path(type_code, year, number) when is_integer(year) do
+    introduction_path(type_code, Integer.to_string(year), number)
+  end
+
+  def introduction_path(type_code, year, number) do
+    "/#{type_code}/#{year}/#{number}/introduction/data.xml"
+  end
+
+  @doc """
+  Fetch and parse metadata from a specific path.
+  Handles redirects automatically.
+  """
+  @spec fetch_from_path(String.t()) :: {:ok, map()} | {:error, String.t()}
+  def fetch_from_path(path) do
+    IO.puts("  Fetching metadata: #{path}")
+
+    case Client.fetch_xml(path) do
+      {:ok, xml} ->
+        parse_xml(xml)
+
+      {:error, 404, _msg} ->
+        # Try with /made/ suffix for older legislation
+        made_path = String.replace(path, "/introduction/data.xml", "/introduction/made/data.xml")
+
+        if made_path != path do
+          IO.puts("  ...trying /made/ path")
+          fetch_from_path(made_path)
+        else
+          {:error, "Not found: #{path}"}
+        end
+
+      {:error, code, msg} ->
+        {:error, "HTTP #{code}: #{msg}"}
+    end
+  end
+
+  @doc """
+  Parse the legislation.gov.uk XML response to extract metadata.
+  """
+  @spec parse_xml(String.t()) :: {:ok, map()} | {:error, String.t()}
+  def parse_xml(xml) when is_binary(xml) do
+    try do
+      metadata = %{
+        # Dublin Core elements
+        md_description: xpath_text(xml, ~x"//dc:description/text()"s),
+        md_subjects: xpath_list(xml, ~x"//dc:subject[not(@scheme)]/text()"ls),
+        md_modified: xpath_text(xml, ~x"//dc:modified/text()"s),
+        Title_EN: xpath_text(xml, ~x"//dc:title/text()"s),
+
+        # SI codes (with scheme="SIheading")
+        si_code: xpath_list(xml, ~x"//dc:subject[@scheme='SIheading']/text()"ls),
+
+        # Statistics
+        md_total_paras: xpath_int(xml, ~x"//ukm:TotalParagraphs/@Value"s),
+        md_body_paras: xpath_int(xml, ~x"//ukm:BodyParagraphs/@Value"s),
+        md_schedule_paras: xpath_int(xml, ~x"//ukm:ScheduleParagraphs/@Value"s),
+        md_attachment_paras: xpath_int(xml, ~x"//ukm:AttachmentParagraphs/@Value"s),
+        md_images: xpath_int(xml, ~x"//ukm:TotalImages/@Value"s),
+
+        # Dates
+        md_enactment_date: xpath_text(xml, ~x"//ukm:EnactmentDate/@Date"s),
+        md_made_date: parse_made_date(xml),
+        md_coming_into_force_date: parse_coming_into_force_date(xml),
+
+        # Extent from Legislation element attributes
+        md_restrict_extent: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s),
+        md_restrict_start_date: xpath_text(xml, ~x"//Legislation/@RestrictStartDate"s),
+
+        # PDF link
+        pdf_href: xpath_text(xml, ~x"//atom:link[@type='application/pdf']/@href"s)
+      }
+
+      # Clean up subjects (remove geographic qualifiers)
+      metadata = Map.update!(metadata, :md_subjects, &clean_subjects/1)
+
+      # Clean up SI codes
+      metadata = Map.update!(metadata, :si_code, &clean_si_codes/1)
+
+      {:ok, metadata}
+    rescue
+      e ->
+        {:error, "XML parse error: #{inspect(e)}"}
+    end
+  end
+
+  # Parse made date from either ukm:Made element or MadeDate/DateText
+  defp parse_made_date(xml) do
+    # Try ukm:Made@Date first
+    case xpath_text(xml, ~x"//ukm:Made/@Date"s) do
+      "" ->
+        # Fall back to MadeDate/DateText
+        parse_date_text(xpath_text(xml, ~x"//MadeDate/DateText/text()"s))
+
+      date ->
+        date
+    end
+  end
+
+  # Parse coming into force date
+  defp parse_coming_into_force_date(xml) do
+    # Try ukm:DateTime@Date within ukm:ComingIntoForce
+    case xpath_text(xml, ~x"//ukm:ComingIntoForce/ukm:DateTime/@Date"s) do
+      "" ->
+        # Try ComingIntoForce/DateText
+        parse_date_text(xpath_text(xml, ~x"//ComingIntoForce/DateText/text()"s))
+
+      date ->
+        date
+    end
+  end
+
+  # Parse text dates like "at 3.32 p.m. on 10th September 2020"
+  defp parse_date_text(""), do: nil
+
+  defp parse_date_text(text) when is_binary(text) do
+    # Already in ISO format
+    if String.contains?(text, "-") do
+      text
+    else
+      # Remove punctuation and time references
+      text = Regex.replace(~r/[[:punct:]]/, text, "")
+      text = Regex.replace(~r/.*?on[ ]/, text, "")
+      text = Regex.replace(~r/at.*/, text, "")
+      text = Regex.replace(~r/.*?pm[ ]/, text, "")
+
+      # Separate "May2004" -> "May 2004"
+      text = Regex.replace(~r/([a-z])(\d{4})$/, text, "\\g{1} \\g{2}")
+
+      # Separate "1stApril" -> "1st April"
+      text = Regex.replace(~r/(st|nd|rd|th)([A-Z])/, text, "\\g{1} \\g{2}")
+
+      case String.split(String.trim(text)) do
+        [day, month, year] ->
+          day = String.replace(day, ~r/[^\d]/, "") |> pad_zero()
+          month = month_to_number(month) |> pad_zero()
+          "#{year}-#{month}-#{day}"
+
+        _ ->
+          nil
+      end
+    end
+  end
+
+  @months %{
+    "january" => 1,
+    "february" => 2,
+    "march" => 3,
+    "april" => 4,
+    "may" => 5,
+    "june" => 6,
+    "july" => 7,
+    "august" => 8,
+    "september" => 9,
+    "october" => 10,
+    "november" => 11,
+    "december" => 12
+  }
+
+  defp month_to_number(month) do
+    Map.get(@months, String.downcase(month), 0)
+  end
+
+  defp pad_zero(n) when is_integer(n) and n < 10, do: "0#{n}"
+  defp pad_zero(n) when is_integer(n), do: Integer.to_string(n)
+  defp pad_zero(s) when is_binary(s) and byte_size(s) == 1, do: "0#{s}"
+  defp pad_zero(s), do: s
+
+  # Clean up subject tags
+  defp clean_subjects(subjects) when is_list(subjects) do
+    subjects
+    |> Enum.map(&String.downcase/1)
+    |> Enum.map(&String.replace(&1, ", england and wales", ""))
+    |> Enum.map(&String.replace(&1, ", england", ""))
+    |> Enum.map(&String.replace(&1, ", wales", ""))
+    |> Enum.map(&String.replace(&1, ", scotland", ""))
+    |> Enum.map(&String.replace(&1, ", northern ireland", ""))
+    |> Enum.uniq()
+  end
+
+  # Clean up SI codes
+  defp clean_si_codes(codes) when is_list(codes) do
+    codes
+    |> Enum.flat_map(&String.split(&1, ";"))
+    |> Enum.map(&String.upcase/1)
+    |> Enum.map(&String.replace(&1, ", ENGLAND AND WALES", ""))
+    |> Enum.map(&String.replace(&1, ", ENGLAND & WALES", ""))
+    |> Enum.map(&String.replace(&1, ", WALES", ""))
+    |> Enum.map(&String.replace(&1, ", ENGLAND", ""))
+    |> Enum.map(&String.replace(&1, ", SCOTLAND", ""))
+    |> Enum.map(&String.replace(&1, ", NORTHERN IRELAND", ""))
+    |> Enum.map(&String.trim/1)
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
+  # XPath helpers with nil handling
+  defp xpath_text(xml, path) do
+    case SweetXml.xpath(xml, path) do
+      nil -> ""
+      "" -> ""
+      value when is_binary(value) -> String.trim(value)
+      value -> to_string(value) |> String.trim()
+    end
+  end
+
+  defp xpath_int(xml, path) do
+    case xpath_text(xml, path) do
+      "" -> nil
+      value -> String.to_integer(value)
+    end
+  rescue
+    _ -> nil
+  end
+
+  defp xpath_list(xml, path) do
+    case SweetXml.xpath(xml, path) do
+      nil -> []
+      list when is_list(list) -> Enum.map(list, &to_string/1)
+      value -> [to_string(value)]
+    end
+  end
+end

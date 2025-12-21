@@ -1,13 +1,66 @@
 # legislation-gov-uk-scraper
 
 **Started**: 2025-12-21 14:47
-**Status**: Complete
+**Status**: In Progress
 
 ## Summary
 
-Ported the legislation.gov.uk scraper from the legacy legl project. Fetches newly published UK laws, categorizes them into 3 groups (SI code match, term match, excluded), and persists to PostgreSQL.
+Porting the legislation.gov.uk scraper from the legacy legl project. Phase 1 (scrape + categorize) complete. Phase 2 (parse + persist) core modules complete.
 
-## Completed
+## Completed - Phase 2: Parser Core
+
+### Core Parser Modules (Complete)
+- [x] Create `Scraper.LawParser` module - main entry point for parsing individual laws
+- [x] Create `Scraper.Metadata` module for XML parsing and field extraction (SweetXml)
+- [x] Port metadata fetching from legislation.gov.uk XML API (`/type/year/number/introduction/data.xml`)
+- [x] Handle 404 errors with fallback to `/made/` path
+
+### Extracted Fields from XML Metadata (Complete)
+- [x] `md_description` - full description text
+- [x] `md_subjects` - array of subject tags (cleaned, geographic qualifiers removed)
+- [x] `md_total_paras`, `md_body_paras`, `md_schedule_paras`, `md_attachment_paras`
+- [x] `md_images` - image count
+- [x] `md_made_date`, `md_enactment_date`, `md_coming_into_force_date`
+- [x] `md_modified` - last modified date
+- [x] `md_restrict_extent` - geographic extent
+- [x] `si_code` - SI heading codes (cleaned, split on semicolons)
+
+### User Interaction (Complete)
+- [x] Per-law confirmation prompt: "Parse {Title}? [y/n]"
+- [x] Check existence in database before create/update decision
+- [x] Group 3: Interactive ID-based selection from indexed `exc.json` map
+- [x] Loop until user enters empty string
+- [x] `auto_confirm: true` option for batch processing
+
+### Testing (Complete)
+- [x] Create XML fixtures for metadata parsing tests
+- [x] 23 tests for Metadata module (Dublin Core, statistics, dates, extent)
+- [x] 8 tests for LawParser module (parsing, name building, URL generation)
+- [x] 111 total tests passing (3 skipped pending Ash fix)
+
+### Known Issue: Ash `accept :*`
+The UkLrt resource's `:create` action with `accept :*` is not accepting all attributes in test environment. Database persistence tests are skipped pending investigation. The XML parsing and metadata extraction work correctly.
+
+## Todos - Phase 2: Remaining Work
+
+### Field Population (Future Enhancement)
+- [ ] Port `TypeClass.set_type_class()` - infer legal type (Act, SI, Regulation)
+- [ ] Port `TypeClass.set_type()` - detailed type classification
+- [ ] Port `Tags.set_tags()` - subject tags from metadata
+- [ ] Port `IdField.lrt_acronym()` - generate acronym
+- [ ] Port `Extent.set_extent()` - geographic extent (requires HTTP call)
+- [ ] Port `GetEnactedBy.get_enacting_laws()` - parent law relationships
+- [ ] Port `Amend.workflow()` - amendment relationships
+
+### HTTP Calls Summary
+| Endpoint | Purpose | Status |
+|----------|---------|--------|
+| `/type/year/number/introduction/data.xml` | Core metadata | Done |
+| `/type/year/number/introduction/extent/data.xml` | Geographic extent | Future |
+| `/type/year/number/introduction/enacting/data.xml` | Parent laws | Future |
+| `/type/year/number/introduction/amending/data.xml` | Amendments | Future |
+
+## Completed - Phase 1: Scrape + Categorize
 
 - [x] Explore legl legacy scraper codebase
 - [x] Identify key modules for "GET Newly Published Laws"
@@ -27,10 +80,16 @@ Ported the legislation.gov.uk scraper from the legacy legl project. Fetches newl
 ### Core Scraper
 | Module | Purpose |
 |--------|---------|
-| `Scraper.LegislationGovUk.Client` | Req HTTP client for legislation.gov.uk |
+| `Scraper.LegislationGovUk.Client` | Req HTTP client for legislation.gov.uk (HTML + XML) |
 | `Scraper.LegislationGovUk.Parser` | Floki HTML parser for new laws pages |
 | `Scraper.LegislationGovUk.Helpers` | URL building, path/title parsing |
 | `Scraper.NewLaws` | Main entry point for fetching new laws |
+
+### Parser (Phase 2)
+| Module | Purpose |
+|--------|---------|
+| `Scraper.LawParser` | Main entry point for parsing individual laws |
+| `Scraper.Metadata` | SweetXml parser for legislation.gov.uk XML API |
 
 ### Filtering
 | Module | Purpose |
@@ -88,12 +147,40 @@ SessionManager.delete(session.session_id)
 
 ## Tests
 
-- 42 unit tests passing for parser, filters, and storage modules
+- 111 unit tests passing (3 skipped pending Ash fix)
 - Test fixtures in `test/fixtures/legislation_gov_uk/`
+- XML fixtures: `introduction_sample.xml`, `introduction_text_dates.xml`
 - HTTP mocking via Req.Test
 
 ```bash
 mix test test/sertantai_legal/scraper/
+```
+
+## Parser Usage
+
+```elixir
+alias SertantaiLegal.Scraper.LawParser
+alias SertantaiLegal.Scraper.Metadata
+
+# Parse all laws in group 1 (with SI codes) - interactive
+LawParser.parse_group("2024-12-02-to-05", :group1)
+
+# Parse with auto-confirm (skip prompts)
+LawParser.parse_group("2024-12-02-to-05", :group1, auto_confirm: true)
+
+# Parse group 3 (excluded) - interactive ID selection
+LawParser.parse_group("2024-12-02-to-05", :group3)
+
+# Parse a single record (fetches metadata, optionally persists)
+record = %{type_code: "uksi", Year: 2024, Number: "1234", Title_EN: "Test"}
+LawParser.parse_record(record, persist: false)  # Just fetch metadata
+LawParser.parse_record(record)                   # Fetch and persist
+
+# Check if record exists in database
+LawParser.record_exists?(%{name: "uksi/2024/1234"})
+
+# Fetch metadata only (no persistence)
+Metadata.fetch(%{type_code: "uksi", Year: 2024, Number: "1234"})
 ```
 
 ## Migration

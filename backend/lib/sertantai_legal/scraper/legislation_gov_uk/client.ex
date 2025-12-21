@@ -111,20 +111,29 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   defp get_content_type(headers) do
     ct =
       headers
-      |> Enum.find(fn {k, _v} -> String.downcase(k) == "content-type" end)
-      |> case do
-        {_, value} -> value
-        nil -> ""
-      end
+      |> find_header("content-type")
+      |> normalize_header_value()
 
     cond do
       String.contains?(ct, "application/xml") -> :xml
+      String.contains?(ct, "text/xml") -> :xml
       String.contains?(ct, "text/html") -> :html
       String.contains?(ct, "application/xhtml+xml") -> :xhtml
       String.contains?(ct, "application/atom+xml") -> :atom
       true -> :unknown
     end
   end
+
+  # Find header value from Req response headers (always a map)
+  defp find_header(headers, name) when is_map(headers) do
+    Map.get(headers, name) || Map.get(headers, String.capitalize(name))
+  end
+
+  # Normalize header value (could be string or list)
+  defp normalize_header_value(nil), do: ""
+  defp normalize_header_value([value | _]) when is_binary(value), do: value
+  defp normalize_header_value(value) when is_binary(value), do: value
+  defp normalize_header_value(_), do: ""
 
   @doc """
   Get the base endpoint URL.

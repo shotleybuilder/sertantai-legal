@@ -1,0 +1,408 @@
+defmodule SertantaiLegal.Scraper.LawParser do
+  @moduledoc """
+  Parses individual laws from categorized JSON files.
+
+  This is the second phase of the scraper workflow:
+  1. SessionManager.run() - Scrape and categorize laws into groups
+  2. LawParser.parse_group() - Parse each law to fetch full metadata
+
+  ## Workflow
+
+  For Groups 1 & 2:
+  - Iterates through each law in the group
+  - Prompts user: "Parse {Title}? [y/n]"
+  - Fetches metadata from legislation.gov.uk XML API
+  - Creates or updates record in uk_lrt table
+
+  For Group 3:
+  - User manually enters ID numbers to parse
+  - Same metadata fetching and persistence
+
+  ## Usage
+
+      alias SertantaiLegal.Scraper.LawParser
+
+      # Parse all laws in group 1 (with SI codes)
+      LawParser.parse_group("2024-12-02-to-05", :group1)
+
+      # Parse group 3 (excluded) - interactive ID selection
+      LawParser.parse_group("2024-12-02-to-05", :group3)
+
+      # Parse a single law by record
+      LawParser.parse_record(%{type_code: "uksi", Year: 2024, Number: "1001", ...})
+
+  Ported from Legl.Countries.Uk.LeglRegister.Crud.CreateFromFile
+  """
+
+  alias SertantaiLegal.Scraper.Storage
+  alias SertantaiLegal.Scraper.Metadata
+  alias SertantaiLegal.Legal.UkLrt
+
+  require Ash.Query
+
+  @doc """
+  Parse all laws in a group from a session.
+
+  For groups 1 and 2, iterates through the list prompting for each.
+  For group 3, uses interactive ID selection.
+
+  ## Parameters
+  - session_id: Session identifier
+  - group: :group1, :group2, or :group3
+
+  ## Options
+  - auto_confirm: If true, skip confirmation prompts (default: false)
+  """
+  @spec parse_group(String.t(), atom(), keyword()) :: {:ok, map()} | {:error, String.t()}
+  def parse_group(session_id, group, opts \\ []) when group in [:group1, :group2, :group3] do
+    IO.puts("\n=== PARSING #{String.upcase(to_string(group))} from #{session_id} ===\n")
+
+    case Storage.read_json(session_id, group) do
+      {:ok, records} when is_list(records) ->
+        # Groups 1 and 2: list of records
+        parse_record_list(records, session_id, group, opts)
+
+      {:ok, records} when is_map(records) ->
+        # Group 3: indexed map
+        if group == :group3 do
+          parse_excluded_interactive(records, session_id, opts)
+        else
+          # Shouldn't happen, but handle it
+          records_list = Map.values(records)
+          parse_record_list(records_list, session_id, group, opts)
+        end
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Parse a single record to fetch metadata and optionally persist.
+
+  ## Parameters
+  - record: Map with :type_code, :Year, :Number, :Title_EN
+
+  ## Options
+  - persist: If true, save to database (default: true)
+  """
+  @spec parse_record(map(), keyword()) :: {:ok, map()} | {:error, String.t()}
+  def parse_record(record, opts \\ []) do
+    title = record[:Title_EN] || record["Title_EN"] || "Unknown"
+    IO.puts("\nParsing: #{title}")
+
+    case Metadata.fetch(record) do
+      {:ok, metadata} ->
+        # Merge metadata with original record
+        enriched = merge_metadata(record, metadata)
+
+        if Keyword.get(opts, :persist, true) do
+          persist_record(enriched)
+        else
+          {:ok, enriched}
+        end
+
+      {:error, reason} ->
+        IO.puts("  Error: #{reason}")
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Check if a record already exists in the database.
+
+  ## Parameters
+  - record: Map with :name or :type_code/:Year/:Number
+  """
+  @spec record_exists?(map()) :: {:exists, map()} | :not_found
+  def record_exists?(record) do
+    name = record[:name] || build_name(record)
+
+    case find_by_name(name) do
+      nil -> :not_found
+      existing -> {:exists, existing}
+    end
+  end
+
+  # Parse a list of records (groups 1 and 2)
+  defp parse_record_list(records, session_id, group, opts) do
+    auto_confirm = Keyword.get(opts, :auto_confirm, false)
+    total = length(records)
+
+    IO.puts("Found #{total} records in #{group}\n")
+
+    results =
+      records
+      |> Enum.with_index(1)
+      |> Enum.reduce(%{parsed: 0, skipped: 0, errors: 0}, fn {record, index}, acc ->
+        title = record[:Title_EN] || record["Title_EN"] || "Unknown"
+
+        IO.puts("[#{index}/#{total}] #{title}")
+
+        should_parse =
+          if auto_confirm do
+            true
+          else
+            prompt_confirm("  Parse this law?")
+          end
+
+        if should_parse do
+          case parse_record(record) do
+            {:ok, _enriched} ->
+              %{acc | parsed: acc.parsed + 1}
+
+            {:error, _reason} ->
+              %{acc | errors: acc.errors + 1}
+          end
+        else
+          IO.puts("  Skipped")
+          %{acc | skipped: acc.skipped + 1}
+        end
+      end)
+
+    IO.puts("\n=== PARSE SUMMARY ===")
+    IO.puts("Session: #{session_id}")
+    IO.puts("Group: #{group}")
+    IO.puts("Parsed: #{results.parsed}")
+    IO.puts("Skipped: #{results.skipped}")
+    IO.puts("Errors: #{results.errors}")
+    IO.puts("=====================\n")
+
+    {:ok, results}
+  end
+
+  # Interactive parsing for group 3 (excluded records)
+  defp parse_excluded_interactive(records, session_id, opts) do
+    IO.puts("Group 3 contains #{map_size(records)} excluded records.")
+    IO.puts("Enter ID number to parse, or empty to exit.\n")
+
+    # Print available IDs
+    IO.puts("Available IDs:")
+
+    records
+    |> Enum.sort_by(fn {k, _v} -> String.to_integer(to_string(k)) end)
+    |> Enum.each(fn {id, record} ->
+      title = record[:Title_EN] || record["Title_EN"] || "Unknown"
+      IO.puts("  #{id}: #{title}")
+    end)
+
+    IO.puts("")
+
+    parse_excluded_loop(records, session_id, %{parsed: 0, errors: 0}, opts)
+  end
+
+  defp parse_excluded_loop(records, session_id, results, opts) do
+    case IO.gets("Enter ID (or empty to exit): ") do
+      :eof ->
+        {:ok, results}
+
+      input ->
+        id = String.trim(input)
+
+        if id == "" do
+          IO.puts("\n=== PARSE SUMMARY ===")
+          IO.puts("Session: #{session_id}")
+          IO.puts("Group: :group3 (excluded)")
+          IO.puts("Parsed: #{results.parsed}")
+          IO.puts("Errors: #{results.errors}")
+          IO.puts("=====================\n")
+
+          {:ok, results}
+        else
+          # Find record by ID (could be atom or string key)
+          record =
+            Map.get(records, id) ||
+              Map.get(records, String.to_atom(id)) ||
+              Map.get(records, :"#{id}")
+
+          case record do
+            nil ->
+              IO.puts("  ID #{id} not found")
+              parse_excluded_loop(records, session_id, results, opts)
+
+            record ->
+              case parse_record(record) do
+                {:ok, _enriched} ->
+                  parse_excluded_loop(records, session_id, %{results | parsed: results.parsed + 1}, opts)
+
+                {:error, _reason} ->
+                  parse_excluded_loop(records, session_id, %{results | errors: results.errors + 1}, opts)
+              end
+          end
+        end
+    end
+  end
+
+  # Prompt for confirmation
+  defp prompt_confirm(message) do
+    case IO.gets("#{message} [y/n]: ") do
+      :eof -> false
+      input -> String.trim(input) |> String.downcase() |> String.starts_with?("y")
+    end
+  end
+
+  # Merge fetched metadata with original record
+  defp merge_metadata(record, metadata) do
+    # Start with original record
+    record
+    # Add metadata fields
+    |> Map.merge(metadata)
+    # Ensure name is set
+    |> ensure_name()
+    # Add leg_gov_uk_url
+    |> ensure_url()
+    # Set md_checked timestamp
+    |> Map.put(:md_checked, Date.utc_today() |> Date.to_iso8601())
+  end
+
+  defp ensure_name(record) do
+    case record[:name] do
+      nil -> Map.put(record, :name, build_name(record))
+      _ -> record
+    end
+  end
+
+  defp ensure_url(record) do
+    case record[:leg_gov_uk_url] do
+      nil ->
+        name = record[:name] || build_name(record)
+        Map.put(record, :leg_gov_uk_url, "https://www.legislation.gov.uk/#{name}")
+
+      _ ->
+        record
+    end
+  end
+
+  defp build_name(record) do
+    type_code = record[:type_code] || record["type_code"]
+    year = record[:Year] || record["Year"]
+    number = record[:Number] || record["Number"]
+    "#{type_code}/#{year}/#{number}"
+  end
+
+  # Persist record to database
+  defp persist_record(record) do
+    name = record[:name] || build_name(record)
+
+    case find_by_name(name) do
+      nil ->
+        # Create new record
+        create_record(record)
+
+      existing ->
+        # Update existing record
+        update_record(existing, record)
+    end
+  end
+
+  defp find_by_name(name) when is_binary(name) and name != "" do
+    case UkLrt
+         |> Ash.Query.filter(name == ^name)
+         |> Ash.read() do
+      {:ok, [existing | _]} -> existing
+      {:ok, []} -> nil
+      _ -> nil
+    end
+  end
+
+  defp find_by_name(_), do: nil
+
+  defp create_record(record) do
+    attrs = build_attrs(record)
+
+    case UkLrt
+         |> Ash.Changeset.for_create(:create, attrs)
+         |> Ash.create() do
+      {:ok, created} ->
+        IO.puts("  Created: #{created.name}")
+        {:ok, created}
+
+      {:error, changeset} ->
+        IO.puts("  Create error: #{inspect(changeset.errors)}")
+        {:error, "Failed to create record"}
+    end
+  end
+
+  defp update_record(existing, record) do
+    attrs = build_attrs(record)
+
+    case existing
+         |> Ash.Changeset.for_update(:update, attrs)
+         |> Ash.update() do
+      {:ok, updated} ->
+        IO.puts("  Updated: #{updated.name}")
+        {:ok, updated}
+
+      {:error, changeset} ->
+        IO.puts("  Update error: #{inspect(changeset.errors)}")
+        {:error, "Failed to update record"}
+    end
+  end
+
+  # Build attributes map for database operations
+  # Converts parsed metadata to match UkLrt resource types
+  defp build_attrs(record) do
+    %{
+      name: record[:name] || build_name(record),
+      title_en: record[:Title_EN] || record["Title_EN"],
+      type_code: record[:type_code] || record["type_code"],
+      year: to_integer(record[:Year] || record["Year"]),
+      number: to_string_safe(record[:Number] || record["Number"]),
+      leg_gov_uk_url: record[:leg_gov_uk_url],
+      family: record[:Family] || record["Family"],
+
+      # Metadata fields - convert types to match UkLrt resource
+      md_description: record[:md_description],
+      md_subjects: list_to_map(record[:md_subjects]),
+      md_total_paras: to_decimal(record[:md_total_paras]),
+      md_body_paras: record[:md_body_paras],
+      md_schedule_paras: record[:md_schedule_paras],
+      md_attachment_paras: record[:md_attachment_paras],
+      md_images: record[:md_images],
+      md_enactment_date: to_date(record[:md_enactment_date]),
+      md_made_date: to_date(record[:md_made_date]),
+      md_coming_into_force_date: to_date(record[:md_coming_into_force_date]),
+      md_restrict_extent: record[:md_restrict_extent],
+
+      # SI codes - stored as map in UkLrt
+      si_code: list_to_map(record[:si_code] || record["si_code"])
+    }
+    |> Enum.reject(fn {_k, v} -> v == nil or v == "" or v == [] or v == %{} end)
+    |> Enum.into(%{})
+  end
+
+  defp to_integer(val) when is_integer(val), do: val
+  defp to_integer(val) when is_binary(val), do: String.to_integer(val)
+  defp to_integer(_), do: nil
+
+  defp to_string_safe(val) when is_binary(val), do: val
+  defp to_string_safe(val) when is_integer(val), do: Integer.to_string(val)
+  defp to_string_safe(_), do: nil
+
+  defp to_decimal(nil), do: nil
+  defp to_decimal(val) when is_integer(val), do: Decimal.new(val)
+  defp to_decimal(val) when is_float(val), do: Decimal.from_float(val)
+  defp to_decimal(%Decimal{} = val), do: val
+  defp to_decimal(_), do: nil
+
+  # Convert ISO date string to Date
+  defp to_date(nil), do: nil
+  defp to_date(""), do: nil
+  defp to_date(%Date{} = date), do: date
+
+  defp to_date(date_string) when is_binary(date_string) do
+    case Date.from_iso8601(date_string) do
+      {:ok, date} -> date
+      {:error, _} -> nil
+    end
+  end
+
+  defp to_date(_), do: nil
+
+  # Convert list to map format for JSONB fields
+  defp list_to_map(nil), do: nil
+  defp list_to_map([]), do: nil
+  defp list_to_map(list) when is_list(list), do: %{"values" => list}
+  defp list_to_map(map) when is_map(map), do: map
+  defp list_to_map(_), do: nil
+end

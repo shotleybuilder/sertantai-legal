@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation
+    xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dct="http://purl.org/dc/terms/"
+    xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    RestrictExtent="E+W"
+    RestrictStartDate="2024-01-01">
+
+  <ukm:Metadata>
+    <dc:title>The Environmental Permitting (England and Wales) Regulations 2024</dc:title>
+    <dc:description>These Regulations consolidate and update the environmental permitting regime.</dc:description>
+    <dc:modified>2024-12-15</dc:modified>
+    <dc:subject>environment</dc:subject>
+    <dc:subject>pollution, England and Wales</dc:subject>
+    <dc:subject>waste management</dc:subject>
+    <dc:subject scheme="SIheading">ENVIRONMENT; POLLUTION</dc:subject>
+
+    <ukm:Statistics>
+      <ukm:TotalParagraphs Value="250"/>
+      <ukm:BodyParagraphs Value="180"/>
+      <ukm:ScheduleParagraphs Value="60"/>
+      <ukm:AttachmentParagraphs Value="10"/>
+      <ukm:TotalImages Value="5"/>
+    </ukm:Statistics>
+
+    <ukm:PrimaryMetadata>
+      <ukm:DocumentClassification>
+        <ukm:DocumentCategory Value="secondary"/>
+        <ukm:DocumentMainType Value="UnitedKingdomStatutoryInstrument"/>
+      </ukm:DocumentClassification>
+      <ukm:Year Value="2024"/>
+      <ukm:Number Value="1234"/>
+      <ukm:EnactmentDate Date="2024-12-01"/>
+      <ukm:Made Date="2024-11-15"/>
+      <ukm:ComingIntoForce>
+        <ukm:DateTime Date="2024-12-15"/>
+      </ukm:ComingIntoForce>
+    </ukm:PrimaryMetadata>
+
+    <atom:link rel="alternate" type="application/pdf" href="https://www.legislation.gov.uk/uksi/2024/1234/pdfs/uksi_20241234_en.pdf"/>
+  </ukm:Metadata>
+
+</Legislation>

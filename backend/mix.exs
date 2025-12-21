@@ -62,6 +62,7 @@ defmodule SertantaiLegal.MixProject do
       # Scraper dependencies
       {:req, "~> 0.5"},
       {:floki, "~> 0.36"},
+      {:sweet_xml, "~> 0.7"},
 
       # Dev/Test Tools
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

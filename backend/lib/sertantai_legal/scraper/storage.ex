@@ -95,8 +95,9 @@ defmodule SertantaiLegal.Scraper.Storage do
 
   @doc """
   Read records from a JSON file.
+  Returns list for raw/group1/group2, map for group3 (indexed).
   """
-  @spec read_json(String.t(), atom()) :: {:ok, list(map())} | {:error, any()}
+  @spec read_json(String.t(), atom()) :: {:ok, list(map()) | map()} | {:error, any()}
   def read_json(session_id, file_type) do
     path = file_path(session_id, file_type)
 
