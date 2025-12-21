@@ -19,8 +19,10 @@ defmodule SertantaiLegal.Api do
   use Ash.Domain
 
   resources do
-    # Domain resources will be added here:
-    # resource(SertantaiLegal.Legal.UkLrt)
+    # UK Legal Register Table - shared reference data (no organization_id)
+    resource(SertantaiLegal.Legal.UkLrt)
+
+    # Tenant-scoped resources (require organization_id from JWT):
     # resource(SertantaiLegal.Legal.OrganizationLocation)
     # resource(SertantaiLegal.Legal.LocationScreening)
   end
