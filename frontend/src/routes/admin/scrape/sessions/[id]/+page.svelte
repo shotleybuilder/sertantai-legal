@@ -344,8 +344,10 @@
 										</td>
 										{#if activeGroup === 1}
 											<td class="px-4 py-3 text-sm text-gray-500">
-												{#if record.si_code && record.si_code.length > 0}
-													<span class="text-green-600">{record.si_code.join(', ')}</span>
+												{#if record.SICode && record.SICode.length > 0}
+													<span class="text-green-600">{record.SICode.join(', ')}</span>
+												{:else if record.si_code}
+													<span class="text-green-600">{record.si_code}</span>
 												{:else}
 													-
 												{/if}

@@ -31,7 +31,8 @@ export interface ScrapeRecord {
 	type_code: string;
 	Year: number;
 	Number: string;
-	si_code?: string[];
+	si_code?: string;
+	SICode?: string[];
 	matched_terms?: string[];
 	_index?: string;
 }
