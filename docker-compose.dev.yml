@@ -7,13 +7,14 @@ networks:
 services:
   # PostgreSQL database (local development)
   postgres:
+    container_name: sertantai-legal-postgres
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sertantai_legal_dev
     ports:
-      - "5435:5432"
+      - "5436:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
@@ -37,6 +38,7 @@ services:
 
   # ElectricSQL sync service (v1.0 - new HTTP Shape API)
   electric:
+    container_name: sertantai-legal-electric
     image: electricsql/electric:latest
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sertantai_legal_dev

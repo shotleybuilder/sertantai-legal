@@ -113,16 +113,16 @@ execute "ELECTRIC GRANT SELECT ON uk_lrt TO AUTHENTICATED WHERE true"
 mix ash_postgres.migrate
 ```
 
-### Priority 2: Export Sample Data from Supabase
+### Priority 2: Import UK LRT Data (COMPLETED)
 
-Create `backend/scripts/export_sample_uk_lrt.exs`:
-```elixir
-# Connect to Supabase production
-# Export 1000 sample UK LRT records
-# Save to JSON file for import
-```
+**Status**: ✅ Data already imported (19,089 records)
 
-See MIGRATION_PLAN.md Phase 2.3 for complete export script template.
+Data files are located at:
+- Schema: `~/Documents/sertantai-data/uk_lrt_schema.sql`
+- Data: `~/Documents/sertantai-data/uk_lrt_data.sql`
+- Function update CSV: `~/Documents/Airtable_Exports/UK-EXPORT.csv`
+
+To re-import if needed, see CLAUDE.md "Initial Database Setup" section.
 
 ### Priority 3: Build Basic Svelte Table
 
@@ -274,8 +274,8 @@ mix compile
 
 **Backend** (`backend/.env`):
 ```bash
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5435/sertantai_legal_dev
+# Database (port 5436 for sertantai-legal)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 
 # Phoenix
 SECRET_KEY_BASE=generate_with_mix_phx_gen_secret_command
@@ -284,11 +284,6 @@ PORT=4000
 
 # CORS
 FRONTEND_URL=http://localhost:5173
-
-# Supabase (for data export - get from existing Sertantai project)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # Microservices Authentication
 # CRITICAL: Must match across all services for JWT validation
@@ -312,11 +307,11 @@ PUBLIC_ELECTRIC_URL=http://localhost:3000
 - [x] Local auth resources removed (microservice pattern)
 - [x] SHARED_TOKEN_SECRET configured
 
-### Week 2 (In Progress)
+### Week 2 (Completed 2025-12-21)
 - [ ] JWT validation plug created
-- [ ] UK LRT resource created
-- [ ] Sample data exported from Supabase
-- [ ] Sample data imported to local database
+- [x] UK LRT resource created (64 attributes mapped) ✅
+- [x] Full data imported from PostgreSQL dump (19,089 records) ✅
+- [x] Function/is_making columns updated from Airtable CSV ✅
 - [ ] Basic Svelte table displaying UK LRT records
 - [ ] ElectricSQL sync working for UK LRT
 
@@ -337,14 +332,13 @@ PUBLIC_ELECTRIC_URL=http://localhost:3000
 - ElectricSQL: [Discord](https://discord.electric-sql.com)
 - Svelte: [Discord](https://discord.gg/svelte)
 
-## Questions to Answer This Week
+## Next Steps
 
-1. **Data Export**: Do we have Supabase credentials for production data export?
-2. **ElectricSQL Scale**: Will 19K records work with initial sync, or do we need filtering?
-3. **AI Scope**: Full AI features or simplified for MVP?
-4. **Timeline**: Is 8-10 weeks realistic for MVP with current team?
+1. **ElectricSQL Scale**: Test 19K records with initial sync
+2. **JWT Plug**: Complete authentication integration
+3. **Frontend**: Build basic UK LRT table view
 
 ---
 
-**Last Updated**: 2025-12-21  
-**Next Review**: After completing renaming and UK LRT resource
+**Last Updated**: 2025-12-21
+**Next Review**: After ElectricSQL sync verification

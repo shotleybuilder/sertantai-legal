@@ -123,12 +123,12 @@ jobs:
       - name: Setup database
         run: mix ecto.setup
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sertantai_controls_test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sertantai_legal_test
 
       - name: Run tests with coverage
         run: mix coveralls.json
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sertantai_controls_test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sertantai_legal_test
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3

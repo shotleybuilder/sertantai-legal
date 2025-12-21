@@ -249,10 +249,14 @@ end
 - [x] Docker-compose updated
 - [x] Frontend package.json updated
 
+### Completed (Phase 2.1 - 2025-12-21)
+- [x] UK LRT resource created (64 attributes mapped) ✅
+- [x] Full data imported (19,089 records) ✅
+- [x] Function/is_making columns updated from Airtable CSV ✅
+
 ### In Progress (Phase 2)
 - [ ] Create JWT validation plug
-- [ ] UK LRT resource creation
-- [ ] Data export from Supabase production
+- [ ] Verify ElectricSQL sync with UK LRT data
 
 ### Upcoming (Phase 2 continued)
 - [ ] Organization Locations resource
@@ -278,7 +282,7 @@ end
 
 **Backend** (`backend/.env`):
 ```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5435/sertantai_legal_dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 SECRET_KEY_BASE=dev_secret_64_chars_minimum
 FRONTEND_URL=http://localhost:5173
 SHARED_TOKEN_SECRET=dev_shared_token_for_jwt_validation

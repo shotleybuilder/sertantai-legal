@@ -67,9 +67,104 @@ npm run format:check              # Check formatting
 
 **Docker** (from root - local development only):
 ```bash
-docker-compose -f docker-compose.dev.yml up -d     # Start local PostgreSQL + ElectricSQL
-docker-compose -f docker-compose.dev.yml down      # Stop services
-docker-compose -f docker-compose.dev.yml logs -f   # View logs
+docker-compose -f docker-compose.dev.yml up -d postgres  # Start PostgreSQL only
+docker-compose -f docker-compose.dev.yml stop            # Stop without removing (PRESERVES DATA)
+docker-compose -f docker-compose.dev.yml logs -f         # View logs
+```
+
+## Local Development Setup
+
+### CRITICAL: Data Persistence Warning
+
+**DO NOT use `docker-compose down` without understanding the consequences!**
+
+```bash
+# SAFE - stops containers, preserves data volumes:
+docker-compose -f docker-compose.dev.yml stop
+
+# DANGEROUS - removes containers but preserves named volumes:
+docker-compose -f docker-compose.dev.yml down
+
+# DESTRUCTIVE - removes containers AND volumes (DESTROYS ALL DATA):
+docker-compose -f docker-compose.dev.yml down -v
+```
+
+The UK LRT database contains 19,000+ records imported from a SQL dump. Re-importing takes time. Always use `stop` instead of `down` unless you specifically need to recreate containers.
+
+### Database Configuration
+
+**Port**: `5436` (unique to sertantai-legal, avoids conflicts with other services)
+
+| Service | Port | Database |
+|---------|------|----------|
+| sertantai-controls | 5435 | sertantai_controls_dev |
+| sertantai-enforcement | 5434 | sertantai_enforcement_dev |
+| **sertantai-legal** | **5436** | **sertantai_legal_dev** |
+
+### Initial Database Setup
+
+1. **Start PostgreSQL container**:
+```bash
+cd /home/jason/Desktop/sertantai-legal
+docker-compose -f docker-compose.dev.yml up -d postgres
+```
+
+2. **Wait for healthy status**:
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}" | grep sertantai-legal
+# Should show: sertantai-legal-postgres   Up X seconds (healthy)
+```
+
+3. **Create schema with Ash** (from backend/):
+```bash
+cd backend
+unset DATABASE_URL  # Ensure local config is used, not stale env vars
+mix ash.setup
+```
+
+4. **Import UK LRT data**:
+```bash
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
+  -f /home/jason/Documents/sertantai-data/import_uk_lrt.sql
+```
+
+5. **Verify import**:
+```bash
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
+  -c "SELECT COUNT(*) FROM uk_lrt;"
+# Should show: 19089
+```
+
+### Data Import Files
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `import_uk_lrt.sql` | `~/Documents/sertantai-data/` | Creates temp table, imports, maps columns |
+| `uk_lrt_data.sql` | `~/Documents/sertantai-data/` | Raw INSERT statements (19,089 records) |
+| `UK-EXPORT.csv` | `~/Documents/Airtable_Exports/` | Airtable export with Function column |
+
+### Updating Missing Columns from CSV
+
+The `function` and `is_making` columns are populated from Airtable CSV export:
+
+```bash
+cd backend
+unset DATABASE_URL
+mix run ../scripts/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+```
+
+### Environment Variable Warning
+
+A stale `DATABASE_URL` environment variable may exist from other projects (e.g., sertantai). Always unset it when running local commands:
+
+```bash
+unset DATABASE_URL
+mix phx.server
+```
+
+Or explicitly use the local database:
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev mix phx.server
 ```
 
 ### Health Check Endpoints
@@ -131,7 +226,7 @@ ELECTRIC_SECRET=${SERTANTAI_LEGAL_ELECTRIC_SECRET}
 
 **Local Development** (`backend/.env`):
 ```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5435/sertantai_legal_dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 SECRET_KEY_BASE=dev_secret_key_base_at_least_64_chars_long_for_development
 FRONTEND_URL=http://localhost:5173
 SHARED_TOKEN_SECRET=dev_shared_token_secret_for_local_testing

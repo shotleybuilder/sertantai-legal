@@ -182,7 +182,7 @@ end
 
 **Backend** (`backend/.env`):
 ```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5435/sertantai_legal_dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 SECRET_KEY_BASE=<64+ chars>
 FRONTEND_URL=http://localhost:5173
 SHARED_TOKEN_SECRET=<matches sertantai-auth>

@@ -201,6 +201,26 @@ config :sertantai_legal,
 
 #### 2.1 UK LRT Resource (Week 3)
 **Priority**: HIGH - Foundation data
+**Status**: ✅ COMPLETED (2025-12-21)
+
+**Completed**:
+- [x] Created UK LRT Ash resource with 64 mapped attributes
+- [x] Generated migrations with comprehensive indexes
+- [x] Imported full 123-column schema from source database
+- [x] Imported 19,089 UK LRT records from PostgreSQL dump
+- [x] Updated `function` column (12,858 records) from Airtable CSV
+- [x] Updated `is_making` column (3,186 records with value 1.0)
+- [x] Updated `is_commencing` column (1,504 records with value 1.0)
+
+**Data Files**:
+- Schema: `~/Documents/sertantai-data/uk_lrt_schema.sql`
+- Data: `~/Documents/sertantai-data/uk_lrt_data.sql`
+- CSV Update: `~/Documents/Airtable_Exports/UK-EXPORT.csv`
+- Update Script: `scripts/update_uk_lrt_function.exs`
+
+**Database**:
+- Local: `sertantai_legal_dev` on port 5436
+- Table: `uk_lrt` (123 columns, full schema preserved)
 
 **Create**: `backend/lib/sertantai_legal/legal/uk_lrt.ex`
 
@@ -304,11 +324,11 @@ execute "ELECTRIC GRANT SELECT ON uk_lrt TO AUTHENTICATED"
 5. Test ElectricSQL sync
 
 **Tasks**:
-- [ ] Create UK LRT Ash resource
-- [ ] Generate migration
-- [ ] Add ElectricSQL grants
-- [ ] Create export script for Supabase
-- [ ] Import sample data (1000 records)
+- [x] Create UK LRT Ash resource ✅
+- [x] Generate migration ✅
+- [x] Add ElectricSQL grants ✅
+- [x] Import full data (19,089 records) ✅
+- [x] Update function/is_making from CSV ✅
 - [ ] Verify ElectricSQL sync
 - [ ] Create TypeScript types for frontend
 - [ ] Build basic Svelte table view
@@ -967,27 +987,29 @@ server {
 
 ## Next Steps
 
-### Immediate (This Week)
+### Completed (2025-12-21)
 1. [x] Rename project: StarterApp → SertantaiLegal ✅
 2. [x] Delete User/Organization resources ✅
-3. [ ] Create JWT validation plug
-4. [x] Configure SHARED_TOKEN_SECRET ✅
-5. [x] Verify health check works ✅
+3. [x] Configure SHARED_TOKEN_SECRET ✅
+4. [x] Verify health check works ✅
+5. [x] Create UK LRT Ash resource (64 attributes mapped) ✅
+6. [x] Import full UK LRT dataset (19,089 records) ✅
+7. [x] Update function/is_making columns from Airtable CSV ✅
 
-### This Sprint (Weeks 1-2)
-1. [ ] Complete Phase 1 (microservice config)
-2. [ ] Start UK LRT resource
-3. [ ] Export sample data from Supabase
+### In Progress
+1. [ ] Create JWT validation plug
+2. [ ] Verify ElectricSQL sync with UK LRT data
+3. [ ] Create TypeScript types for frontend
 
-### This Month (Weeks 1-6)
-1. [ ] Complete Phase 2 (core resources)
-2. [ ] Import full UK LRT dataset
-3. [ ] Build basic location management
+### Next Up
+1. [ ] Complete Phase 1 (microservice config - JWT plug remaining)
+2. [ ] Build basic UK LRT Svelte table view
+3. [ ] Create Organization Locations resource
 4. [ ] Start applicability matching
 
 ---
 
-**Document Version**: 2.0 (Microservices Edition)
+**Document Version**: 2.1 (Phase 2.1 Complete)
 **Updated**: 2025-12-21
 **Author**: Migration Team
-**Next Review**: After Phase 1 completion
+**Next Review**: After Phase 2.2 (Organization Locations)

@@ -56,6 +56,9 @@ defmodule SertantaiLegal.MixProject do
       # JWT validation
       {:jose, "~> 1.11"},
 
+      # CSV parsing (for data import scripts)
+      {:nimble_csv, "~> 1.2"},
+
       # Dev/Test Tools
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
