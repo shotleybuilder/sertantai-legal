@@ -180,12 +180,17 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   ## Parameters
   - group: "1", "2", or "3"
+  - selected_only: boolean (optional) - if true, only parse selected records
   """
-  def parse(conn, %{"id" => session_id, "group" => group_str}) do
+  def parse(conn, %{"id" => session_id, "group" => group_str} = params) do
     with {:ok, group} <- parse_group(group_str),
          {:ok, _session} <- SessionManager.get(session_id) do
       # Parse with auto_confirm since this is API-driven
-      case LawParser.parse_group(session_id, group, auto_confirm: true) do
+      # Optionally filter by selection
+      selected_only = params["selected_only"] == true || params["selected_only"] == "true"
+      opts = [auto_confirm: true, selected_only: selected_only]
+
+      case LawParser.parse_group(session_id, group, opts) do
         {:ok, results} ->
           json(conn, %{
             message: "Group #{group_str} parsed",
@@ -203,6 +208,60 @@ defmodule SertantaiLegalWeb.ScrapeController do
         conn
         |> put_status(:bad_request)
         |> json(%{error: "Invalid group. Use 1, 2, or 3"})
+
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  @doc """
+  PATCH /api/sessions/:id/group/:group/select
+
+  Update selection state for records in a group.
+
+  ## Parameters
+  - group: "1", "2", or "3"
+  - names: list of record names to update
+  - selected: boolean
+  """
+  def select(conn, %{"id" => session_id, "group" => group_str} = params) do
+    with {:ok, group} <- parse_group(group_str),
+         {:ok, _session} <- SessionManager.get(session_id),
+         {:ok, names} <- get_list_param(params, "names"),
+         {:ok, selected} <- get_boolean_param(params, "selected") do
+      case Storage.update_selection(session_id, group, names, selected) do
+        {:ok, count} ->
+          json(conn, %{
+            message: "Selection updated",
+            session_id: session_id,
+            group: group_str,
+            updated: count,
+            selected: selected
+          })
+
+        {:error, reason} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: format_error(reason)})
+      end
+    else
+      {:error, :invalid_group} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Invalid group. Use 1, 2, or 3"})
+
+      {:error, field, message} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Invalid #{field}: #{message}"})
 
       {:error, reason} ->
         if not_found_error?(reason) do
@@ -266,6 +325,38 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
       _ ->
         {:error, field, "must be an integer"}
+    end
+  end
+
+  defp get_list_param(params, field) do
+    case params[field] do
+      nil ->
+        {:error, field, "is required"}
+
+      value when is_list(value) ->
+        {:ok, value}
+
+      _ ->
+        {:error, field, "must be a list"}
+    end
+  end
+
+  defp get_boolean_param(params, field) do
+    case params[field] do
+      nil ->
+        {:error, field, "is required"}
+
+      value when is_boolean(value) ->
+        {:ok, value}
+
+      "true" ->
+        {:ok, true}
+
+      "false" ->
+        {:ok, false}
+
+      _ ->
+        {:error, field, "must be a boolean"}
     end
   end
 

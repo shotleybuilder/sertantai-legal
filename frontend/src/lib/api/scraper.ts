@@ -31,9 +31,11 @@ export interface ScrapeRecord {
 	type_code: string;
 	Year: number;
 	Number: string;
+	name: string;
 	si_code?: string;
 	SICode?: string[];
 	matched_terms?: string[];
+	selected?: boolean;
 	_index?: string;
 }
 
@@ -48,6 +50,14 @@ export interface ParseResult {
 	parsed: number;
 	skipped: number;
 	errors: number;
+}
+
+export interface SelectionResult {
+	message: string;
+	session_id: string;
+	group: string;
+	updated: number;
+	selected: boolean;
 }
 
 /**
@@ -141,15 +151,41 @@ export async function persistGroup(
  */
 export async function parseGroup(
 	sessionId: string,
-	group: 1 | 2 | 3
+	group: 1 | 2 | 3,
+	selectedOnly: boolean = false
 ): Promise<{ message: string; session_id: string; results: ParseResult }> {
 	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/parse/${group}`, {
-		method: 'POST'
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ selected_only: selectedOnly })
 	});
 
 	if (!response.ok) {
 		const error = await response.json();
 		throw new Error(error.error || 'Failed to parse group');
+	}
+
+	return response.json();
+}
+
+/**
+ * Update selection state for records in a group
+ */
+export async function updateSelection(
+	sessionId: string,
+	group: 1 | 2 | 3,
+	names: string[],
+	selected: boolean
+): Promise<SelectionResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/group/${group}/select`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ names, selected })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to update selection');
 	}
 
 	return response.json();

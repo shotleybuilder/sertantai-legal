@@ -51,3 +51,6 @@ logs/
 
 # LSP
 .elixir_ls/
+
+# Scraper session data (JSON files with scraped laws)
+/priv/scraper/

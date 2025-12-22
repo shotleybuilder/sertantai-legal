@@ -11,9 +11,11 @@ import {
 	persistGroup,
 	parseGroup,
 	deleteSession,
+	updateSelection,
 	type ScrapeSession,
 	type GroupResponse,
-	type ParseResult
+	type ParseResult,
+	type SelectionResult
 } from '$lib/api/scraper';
 
 // Query Keys
@@ -94,10 +96,44 @@ export function useParseGroupMutation() {
 	const queryClient = useQueryClient();
 
 	return createMutation({
-		mutationFn: ({ sessionId, group }: { sessionId: string; group: 1 | 2 | 3 }) =>
-			parseGroup(sessionId, group),
+		mutationFn: ({
+			sessionId,
+			group,
+			selectedOnly = false
+		}: {
+			sessionId: string;
+			group: 1 | 2 | 3;
+			selectedOnly?: boolean;
+		}) => parseGroup(sessionId, group, selectedOnly),
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.session(data.session_id) });
+		}
+	});
+}
+
+/**
+ * Mutation: Update selection
+ */
+export function useUpdateSelectionMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: ({
+			sessionId,
+			group,
+			names,
+			selected
+		}: {
+			sessionId: string;
+			group: 1 | 2 | 3;
+			names: string[];
+			selected: boolean;
+		}) => updateSelection(sessionId, group, names, selected),
+		onSuccess: (data) => {
+			// Invalidate the group query to refresh selection state
+			queryClient.invalidateQueries({
+				queryKey: scraperKeys.group(data.session_id, parseInt(data.group) as 1 | 2 | 3)
+			});
 		}
 	});
 }

@@ -22,6 +22,7 @@ defmodule SertantaiLegalWeb.Router do
     get "/sessions", ScrapeController, :index
     get "/sessions/:id", ScrapeController, :show
     get "/sessions/:id/group/:group", ScrapeController, :group
+    patch "/sessions/:id/group/:group/select", ScrapeController, :select
     post "/sessions/:id/persist/:group", ScrapeController, :persist
     post "/sessions/:id/parse/:group", ScrapeController, :parse
     delete "/sessions/:id", ScrapeController, :delete

@@ -52,6 +52,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   ## Options
   - auto_confirm: If true, skip confirmation prompts (default: false)
+  - selected_only: If true, only parse records marked as selected (default: false)
   """
   @spec parse_group(String.t(), atom(), keyword()) :: {:ok, map()} | {:error, String.t()}
   def parse_group(session_id, group, opts \\ []) when group in [:group1, :group2, :group3] do
@@ -60,20 +61,63 @@ defmodule SertantaiLegal.Scraper.LawParser do
     case Storage.read_json(session_id, group) do
       {:ok, records} when is_list(records) ->
         # Groups 1 and 2: list of records
-        parse_record_list(records, session_id, group, opts)
+        # Filter by selection if selected_only option is true
+        records_to_parse = filter_by_selection(records, opts)
+        parse_record_list(records_to_parse, session_id, group, opts)
 
       {:ok, records} when is_map(records) ->
         # Group 3: indexed map
         if group == :group3 do
-          parse_excluded_interactive(records, session_id, opts)
+          # Filter by selection if selected_only option is true
+          records_to_parse = filter_by_selection(records, opts)
+          parse_excluded_interactive(records_to_parse, session_id, opts)
         else
           # Shouldn't happen, but handle it
           records_list = Map.values(records)
-          parse_record_list(records_list, session_id, group, opts)
+          records_to_parse = filter_by_selection(records_list, opts)
+          parse_record_list(records_to_parse, session_id, group, opts)
         end
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  # Filter records by selection state
+  defp filter_by_selection(records, opts) when is_list(records) do
+    if Keyword.get(opts, :selected_only, false) do
+      selected = Enum.filter(records, fn r -> r[:selected] == true end)
+
+      if Enum.empty?(selected) do
+        # If none selected, parse all (backwards compatibility)
+        IO.puts("No records selected, parsing all records")
+        records
+      else
+        IO.puts("Parsing #{length(selected)} selected records")
+        selected
+      end
+    else
+      records
+    end
+  end
+
+  defp filter_by_selection(records, opts) when is_map(records) do
+    if Keyword.get(opts, :selected_only, false) do
+      selected =
+        records
+        |> Enum.filter(fn {_k, v} -> v[:selected] == true end)
+        |> Enum.into(%{})
+
+      if map_size(selected) == 0 do
+        # If none selected, parse all (backwards compatibility)
+        IO.puts("No records selected, parsing all records")
+        records
+      else
+        IO.puts("Parsing #{map_size(selected)} selected records")
+        selected
+      end
+    else
+      records
     end
   end
 

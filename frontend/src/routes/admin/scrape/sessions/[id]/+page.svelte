@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { format } from 'date-fns';
 	import {
 		useSessionQuery,
 		useGroupQuery,
-		usePersistGroupMutation,
-		useParseGroupMutation
+		useParseGroupMutation,
+		useUpdateSelectionMutation
 	} from '$lib/query/scraper';
-	import type { ScrapeSession } from '$lib/api/scraper';
+	import type { ScrapeSession, ScrapeRecord } from '$lib/api/scraper';
 
 	$: sessionId = $page.params.id ?? '';
 	$: sessionQuery = useSessionQuery(sessionId);
@@ -18,8 +17,14 @@
 	type GroupNumber = 1 | 2 | 3;
 	const groups: GroupNumber[] = [1, 2, 3];
 
-	const persistMutation = usePersistGroupMutation();
 	const parseMutation = useParseGroupMutation();
+	const selectionMutation = useUpdateSelectionMutation();
+
+	// Compute selected count from current group data
+	$: records = $groupQuery.data?.records ?? [];
+	$: selectedCount = records.filter((r) => r.selected).length;
+	$: allSelected = records.length > 0 && selectedCount === records.length;
+	$: someSelected = selectedCount > 0 && selectedCount < records.length;
 
 	function getStatusColor(status: ScrapeSession['status']): string {
 		switch (status) {
@@ -77,15 +82,56 @@
 		}
 	}
 
-	async function handlePersist() {
-		if (confirm(`Persist Group ${activeGroup} to database?`)) {
-			await $persistMutation.mutateAsync({ sessionId, group: activeGroup });
+	async function handleParse() {
+		const parseSelectedOnly = selectedCount > 0;
+		const count = parseSelectedOnly ? selectedCount : records.length;
+		const msg = parseSelectedOnly
+			? `Parse ${selectedCount} selected records? This will fetch metadata from legislation.gov.uk.`
+			: `Parse all ${records.length} records in Group ${activeGroup}? This will fetch metadata from legislation.gov.uk.`;
+
+		if (confirm(msg)) {
+			await $parseMutation.mutateAsync({
+				sessionId,
+				group: activeGroup,
+				selectedOnly: parseSelectedOnly
+			});
 		}
 	}
 
-	async function handleParse() {
-		if (confirm(`Parse Group ${activeGroup}? This will fetch metadata from legislation.gov.uk.`)) {
-			await $parseMutation.mutateAsync({ sessionId, group: activeGroup });
+	async function handleSelectAll() {
+		const names = records.map((r) => r.name);
+		await $selectionMutation.mutateAsync({
+			sessionId,
+			group: activeGroup,
+			names,
+			selected: true
+		});
+	}
+
+	async function handleDeselectAll() {
+		const names = records.map((r) => r.name);
+		await $selectionMutation.mutateAsync({
+			sessionId,
+			group: activeGroup,
+			names,
+			selected: false
+		});
+	}
+
+	async function handleToggleRecord(record: ScrapeRecord) {
+		await $selectionMutation.mutateAsync({
+			sessionId,
+			group: activeGroup,
+			names: [record.name],
+			selected: !record.selected
+		});
+	}
+
+	async function handleToggleAll() {
+		if (allSelected) {
+			await handleDeselectAll();
+		} else {
+			await handleSelectAll();
 		}
 	}
 </script>
@@ -184,11 +230,32 @@
 			</div>
 
 			<!-- Action Buttons -->
-			<div class="p-4 border-b border-gray-200 flex justify-end space-x-3">
+			<div class="p-4 border-b border-gray-200 flex justify-between items-center">
+				<div class="flex items-center space-x-2">
+					<button
+						on:click={handleSelectAll}
+						disabled={$selectionMutation.isPending || records.length === 0}
+						class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+					>
+						Select All
+					</button>
+					<button
+						on:click={handleDeselectAll}
+						disabled={$selectionMutation.isPending || selectedCount === 0}
+						class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+					>
+						Deselect All
+					</button>
+					{#if selectedCount > 0}
+						<span class="text-sm text-gray-500">
+							{selectedCount} of {records.length} selected
+						</span>
+					{/if}
+				</div>
 				<button
 					on:click={handleParse}
-					disabled={$parseMutation.isPending}
-					class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+					disabled={$parseMutation.isPending || records.length === 0}
+					class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
 				>
 					{#if $parseMutation.isPending}
 						<svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -207,49 +274,15 @@
 							></path>
 						</svg>
 						Parsing...
+					{:else if selectedCount > 0}
+						Parse Selected ({selectedCount})
 					{:else}
-						Parse Group {activeGroup}
-					{/if}
-				</button>
-				<button
-					on:click={handlePersist}
-					disabled={$persistMutation.isPending}
-					class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-				>
-					{#if $persistMutation.isPending}
-						<svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-							<circle
-								class="opacity-25"
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								stroke-width="4"
-							></circle>
-							<path
-								class="opacity-75"
-								fill="currentColor"
-								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-							></path>
-						</svg>
-						Persisting...
-					{:else}
-						Persist Group {activeGroup}
+						Parse All ({records.length})
 					{/if}
 				</button>
 			</div>
 
 			<!-- Mutation Results -->
-			{#if $persistMutation.isSuccess}
-				<div class="mx-4 mt-4 rounded-md bg-green-50 p-4">
-					<p class="text-sm text-green-700">Group persisted successfully!</p>
-				</div>
-			{/if}
-			{#if $persistMutation.isError}
-				<div class="mx-4 mt-4 rounded-md bg-red-50 p-4">
-					<p class="text-sm text-red-700">{$persistMutation.error?.message}</p>
-				</div>
-			{/if}
 			{#if $parseMutation.isSuccess}
 				<div class="mx-4 mt-4 rounded-md bg-green-50 p-4">
 					<p class="text-sm text-green-700">
@@ -279,6 +312,16 @@
 						<table class="min-w-full divide-y divide-gray-200">
 							<thead class="bg-gray-50">
 								<tr>
+									<th class="px-4 py-3 w-10">
+										<input
+											type="checkbox"
+											checked={allSelected}
+											indeterminate={someSelected}
+											on:change={handleToggleAll}
+											disabled={$selectionMutation.isPending}
+											class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
+										/>
+									</th>
 									{#if activeGroup === 3}
 										<th
 											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -317,7 +360,16 @@
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
 								{#each $groupQuery.data.records as record}
-									<tr class="hover:bg-gray-50">
+									<tr class="hover:bg-gray-50 {record.selected ? 'bg-blue-50' : ''}">
+										<td class="px-4 py-3">
+											<input
+												type="checkbox"
+												checked={record.selected ?? false}
+												on:change={() => handleToggleRecord(record)}
+												disabled={$selectionMutation.isPending}
+												class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
+											/>
+										</td>
 										{#if activeGroup === 3}
 											<td class="px-4 py-3 text-sm text-gray-500">
 												{record._index || '-'}
