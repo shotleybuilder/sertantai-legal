@@ -423,15 +423,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
   GET /api/family-options
 
   Get the list of all available family options for UI dropdowns.
-  Returns families grouped by category (health_safety, environment).
+  Returns families grouped by category (health_safety, environment, hr).
   """
   def family_options(conn, _params) do
     json(conn, %{
-      families: Models.ehs_family(),
-      grouped: %{
-        health_safety: Models.hs_family(),
-        environment: Models.e_family()
-      }
+      families: Models.ehs_family() ++ Models.hr_family(),
+      grouped: Models.family_options_grouped()
     })
   end
 
