@@ -114,6 +114,10 @@ defmodule SertantaiLegal.Scraper.Metadata do
         md_restrict_extent: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s),
         md_restrict_start_date: xpath_text(xml, ~x"//Legislation/@RestrictStartDate"s),
 
+        # Geographic extent - derived from RestrictExtent
+        geo_extent: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> normalize_extent(),
+        geo_region: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> extent_to_regions(),
+
         # PDF link
         pdf_href: xpath_text(xml, ~x"//atom:link[@type='application/pdf']/@href"s),
 
@@ -246,6 +250,39 @@ defmodule SertantaiLegal.Scraper.Metadata do
     |> Enum.map(&String.trim/1)
     |> Enum.uniq()
     |> Enum.sort()
+  end
+
+  # Normalize extent code (e.g., "E+W+S+N.I." → "E+W+S+NI")
+  defp normalize_extent(nil), do: nil
+  defp normalize_extent(""), do: nil
+
+  defp normalize_extent(extent) do
+    extent
+    |> String.replace(".", "")
+    |> String.replace(" ", "")
+    |> String.upcase()
+  end
+
+  # Convert extent code to list of regions
+  defp extent_to_regions(nil), do: []
+  defp extent_to_regions(""), do: []
+
+  defp extent_to_regions(extent) do
+    extent = normalize_extent(extent)
+
+    []
+    |> maybe_add_region(extent, "E", "England")
+    |> maybe_add_region(extent, "W", "Wales")
+    |> maybe_add_region(extent, "S", "Scotland")
+    |> maybe_add_region(extent, "NI", "Northern Ireland")
+  end
+
+  defp maybe_add_region(acc, extent, code, name) do
+    if String.contains?(extent, code) do
+      acc ++ [name]
+    else
+      acc
+    end
   end
 
   # Live status codes (matching legl conventions)
