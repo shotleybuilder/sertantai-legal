@@ -556,9 +556,30 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amended_by_count: length(affected.amended_by),
           rescinded_by_count: length(affected.rescinded_by),
 
-          # Stats
-          amending_stats: affecting.stats,
-          amended_by_stats: affected.stats,
+          # Flattened stats - Self-affects (shared)
+          stats_self_affects_count: affecting.stats.self_amendments,
+
+          # Flattened stats - Amending (🔺 this law affects others)
+          amending_stats_affects_count: affecting.stats.amendments_count,
+          amending_stats_affected_laws_count: affecting.stats.amended_laws_count,
+          amending_stats_affects_count_per_law: build_count_per_law_summary(affecting.amendments),
+          amending_stats_affects_count_per_law_detailed: build_count_per_law_detailed(affecting.amendments),
+
+          # Flattened stats - Amended_by (🔻 this law is affected by others)
+          amended_by_stats_affected_by_count: affected.stats.amendments_count,
+          amended_by_stats_affected_by_laws_count: affected.stats.amended_laws_count,
+          amended_by_stats_affected_by_count_per_law: build_count_per_law_summary(affected.amendments),
+          amended_by_stats_affected_by_count_per_law_detailed: build_count_per_law_detailed(affected.amendments),
+
+          # Flattened stats - Rescinding (🔺 this law rescinds others)
+          rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
+          rescinding_stats_rescinding_count_per_law: build_count_per_law_summary(affecting.revocations),
+          rescinding_stats_rescinding_count_per_law_detailed: build_count_per_law_detailed(affecting.revocations),
+
+          # Flattened stats - Rescinded_by (🔻 this law is rescinded by others)
+          rescinded_by_stats_rescinded_by_laws_count: affected.stats.revoked_laws_count,
+          rescinded_by_stats_rescinded_by_count_per_law: build_count_per_law_summary(affected.revocations),
+          rescinded_by_stats_rescinded_by_count_per_law_detailed: build_count_per_law_detailed(affected.revocations),
 
           # Detailed amendment data (for future use)
           amending_details: affecting.amendments,
@@ -720,5 +741,54 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       value when is_binary(value) -> String.trim(value)
       value -> to_string(value) |> String.trim()
     end
+  end
+
+  # ============================================================================
+  # Amendment Per-Law String Builders
+  # ============================================================================
+  #
+  # Builds the *_count_per_law summary and detailed strings from amendment lists.
+  # These match the format imported from Airtable CSV exports.
+  #
+  # Summary format:   "UK_uksi_2020_100 - 3\nUK_uksi_2019_50 - 2"
+  # Detailed format:  "UK_uksi_2020_100 - 3\n  reg. 1, reg. 2, reg. 3\nUK_uksi_2019_50 - 2\n  reg. 4"
+
+  defp build_count_per_law_summary([]), do: nil
+  defp build_count_per_law_summary(amendments) do
+    amendments
+    |> group_amendments_by_law()
+    |> Enum.map(fn {law_name, items} ->
+      "#{law_name} - #{length(items)}"
+    end)
+    |> Enum.join("\n")
+  end
+
+  defp build_count_per_law_detailed([]), do: nil
+  defp build_count_per_law_detailed(amendments) do
+    amendments
+    |> group_amendments_by_law()
+    |> Enum.map(fn {law_name, items} ->
+      sections = items
+                 |> Enum.map(& &1.target)
+                 |> Enum.reject(&is_nil/1)
+                 |> Enum.reject(&(&1 == ""))
+                 |> Enum.uniq()
+                 |> Enum.sort()
+
+      count_line = "#{law_name} - #{length(items)}"
+      if sections == [] do
+        count_line
+      else
+        section_line = "  " <> Enum.join(sections, ", ")
+        "#{count_line}\n#{section_line}"
+      end
+    end)
+    |> Enum.join("\n")
+  end
+
+  defp group_amendments_by_law(amendments) do
+    amendments
+    |> Enum.group_by(& &1.name)
+    |> Enum.sort_by(fn {_name, items} -> -length(items) end)
   end
 end
