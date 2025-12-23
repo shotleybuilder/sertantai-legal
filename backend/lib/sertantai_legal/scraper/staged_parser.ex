@@ -40,6 +40,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   @stages [:extent, :enacted_by, :amendments, :repeal_revoke]
 
+  # Live status codes (matching legl conventions)
+  @live_in_force "✔ In force"
+  @live_revoked "❌ Revoked / Repealed / Abolished"
+
   @type stage :: :extent | :enacted_by | :amendments | :repeal_revoke
   @type stage_result :: %{status: :ok | :error | :skipped, data: map() | nil, error: String.t() | nil}
   @type parse_result :: %{
@@ -559,9 +563,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         %{status: :ok, data: data, error: nil}
 
       {:error, 404, _} ->
-        # No resources file - assume not revoked
+        # No resources file - assume not revoked (in force)
         IO.puts("    ⚠ No revocation data (404) - assuming active")
-        %{status: :ok, data: %{revoked: false, revoked_by: []}, error: nil}
+        %{status: :ok, data: %{live: @live_in_force, live_description: "", revoked: false, revoked_by: []}, error: nil}
 
       {:error, code, msg} ->
         IO.puts("    ✗ Repeal/Revoke failed: #{msg}")
@@ -589,23 +593,54 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         SweetXml.xpath(xml, ~x"//ukm:SupersededBy/ukm:Citation"l)
         |> Enum.map(fn citation ->
           uri = SweetXml.xpath(citation, ~x"./@URI"s) |> to_string()
-          title = SweetXml.xpath(citation, ~x"./@Title"s) |> to_string()
-          %{uri: uri, title: title, name: uri_to_name(uri)}
+          cit_title = SweetXml.xpath(citation, ~x"./@Title"s) |> to_string()
+          %{uri: uri, title: cit_title, name: uri_to_name(uri)}
         end)
         |> Enum.reject(fn %{uri: uri} -> uri == "" end)
 
+      # Determine if revoked
+      is_revoked = title_revoked or has_repealed_element
+
+      # Build live status and description
+      {live, live_description} = build_live_status(is_revoked, revoked_by)
+
       %{
-        revoked: title_revoked or has_repealed_element,
+        # Fields for modal display
+        live: live,
+        live_description: live_description,
+        # Raw revocation data
+        revoked: is_revoked,
         revoked_title_marker: title_revoked,
         revoked_element: has_repealed_element,
         revoked_by: revoked_by,
+        rescinded_by: format_revoked_by(revoked_by),
         dct_valid: parse_date(dct_valid),
         restrict_start_date: parse_date(restrict_start_date)
       }
     rescue
       e ->
-        %{revoked: false, repeal_revoke_error: "Parse error: #{inspect(e)}"}
+        %{live: @live_in_force, live_description: "", revoked: false, repeal_revoke_error: "Parse error: #{inspect(e)}"}
     end
+  end
+
+  defp build_live_status(false, _revoked_by), do: {@live_in_force, ""}
+
+  defp build_live_status(true, []) do
+    {@live_revoked, "Revoked/Repealed"}
+  end
+
+  defp build_live_status(true, revoked_by) do
+    # Build description showing what laws revoked this one
+    names = Enum.map(revoked_by, fn %{name: name, title: title} ->
+      if title != "", do: "#{name} (#{title})", else: name
+    end)
+    description = "Revoked by: " <> Enum.join(names, ", ")
+    {@live_revoked, description}
+  end
+
+  defp format_revoked_by([]), do: nil
+  defp format_revoked_by(revoked_by) do
+    Enum.map(revoked_by, fn %{name: name} -> name end)
   end
 
   defp parse_date(nil), do: nil
