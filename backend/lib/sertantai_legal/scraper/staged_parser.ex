@@ -42,6 +42,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Live status codes (matching legl conventions)
   @live_in_force "✔ In force"
+  @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
   @type stage :: :extent | :enacted_by | :amendments | :repeal_revoke
@@ -598,18 +599,24 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         end)
         |> Enum.reject(fn %{uri: uri} -> uri == "" end)
 
-      # Determine if revoked
-      is_revoked = title_revoked or has_repealed_element
+      # Determine revocation status
+      # Full revocation: title explicitly says REVOKED/REPEALED or RepealedLaw element exists
+      is_fully_revoked = title_revoked or has_repealed_element
+
+      # Partial revocation: has revoking laws but not fully revoked
+      # This means some provisions are revoked but the law is still partially in force
+      is_partially_revoked = not is_fully_revoked and length(revoked_by) > 0
 
       # Build live status and description
-      {live, live_description} = build_live_status(is_revoked, revoked_by)
+      {live, live_description} = build_live_status(is_fully_revoked, is_partially_revoked, revoked_by)
 
       %{
         # Fields for modal display
         live: live,
         live_description: live_description,
         # Raw revocation data
-        revoked: is_revoked,
+        revoked: is_fully_revoked,
+        partially_revoked: is_partially_revoked,
         revoked_title_marker: title_revoked,
         revoked_element: has_repealed_element,
         revoked_by: revoked_by,
@@ -623,14 +630,25 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     end
   end
 
-  defp build_live_status(false, _revoked_by), do: {@live_in_force, ""}
+  # In force - no revocations
+  defp build_live_status(false, false, _revoked_by), do: {@live_in_force, ""}
 
-  defp build_live_status(true, []) do
+  # Partial revocation - some provisions revoked but law still in force
+  defp build_live_status(false, true, revoked_by) do
+    names = Enum.map(revoked_by, fn %{name: name, title: title} ->
+      if title != "", do: "#{name} (#{title})", else: name
+    end)
+    description = "Partially revoked by: " <> Enum.join(names, ", ")
+    {@live_part_revoked, description}
+  end
+
+  # Full revocation - no details
+  defp build_live_status(true, _partial, []) do
     {@live_revoked, "Revoked/Repealed"}
   end
 
-  defp build_live_status(true, revoked_by) do
-    # Build description showing what laws revoked this one
+  # Full revocation - with revoking law details
+  defp build_live_status(true, _partial, revoked_by) do
     names = Enum.map(revoked_by, fn %{name: name, title: title} ->
       if title != "", do: "#{name} (#{title})", else: name
     end)
