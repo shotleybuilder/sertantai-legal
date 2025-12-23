@@ -36,6 +36,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.Metadata
+  alias SertantaiLegal.Scraper.TypeClass
   alias SertantaiLegal.Legal.UkLrt
 
   require Ash.Query
@@ -386,33 +387,83 @@ defmodule SertantaiLegal.Scraper.LawParser do
   # Build attributes map for database operations
   # Converts parsed metadata to match UkLrt resource types
   defp build_attrs(record) do
+    # Enrich with type_desc and type_class from TypeClass module
+    enriched = enrich_type_fields(record)
+
     %{
-      name: record[:name] || build_name(record),
-      title_en: record[:Title_EN] || record["Title_EN"],
-      type_code: record[:type_code] || record["type_code"],
-      year: to_integer(record[:Year] || record["Year"]),
-      number: to_string_safe(record[:Number] || record["Number"]),
-      leg_gov_uk_url: record[:leg_gov_uk_url],
-      family: record[:Family] || record["Family"],
+      name: enriched[:name] || build_name(enriched),
+      title_en: enriched[:Title_EN] || enriched["Title_EN"],
+      type_code: enriched[:type_code] || enriched["type_code"],
+      type_desc: enriched[:type_desc],
+      type_class: enriched[:type_class],
+      year: to_integer(enriched[:Year] || enriched["Year"]),
+      number: to_string_safe(enriched[:Number] || enriched["Number"]),
+      leg_gov_uk_url: enriched[:leg_gov_uk_url],
+      family: enriched[:Family] || enriched["Family"],
 
       # Metadata fields - convert types to match UkLrt resource
-      md_description: record[:md_description],
-      md_subjects: list_to_map(record[:md_subjects]),
-      md_total_paras: to_decimal(record[:md_total_paras]),
-      md_body_paras: record[:md_body_paras],
-      md_schedule_paras: record[:md_schedule_paras],
-      md_attachment_paras: record[:md_attachment_paras],
-      md_images: record[:md_images],
-      md_enactment_date: to_date(record[:md_enactment_date]),
-      md_made_date: to_date(record[:md_made_date]),
-      md_coming_into_force_date: to_date(record[:md_coming_into_force_date]),
-      md_restrict_extent: record[:md_restrict_extent],
+      md_description: enriched[:md_description],
+      md_subjects: list_to_map(enriched[:md_subjects]),
+      md_total_paras: to_decimal(enriched[:md_total_paras]),
+      md_body_paras: enriched[:md_body_paras],
+      md_schedule_paras: enriched[:md_schedule_paras],
+      md_attachment_paras: enriched[:md_attachment_paras],
+      md_images: enriched[:md_images],
+      md_enactment_date: to_date(enriched[:md_enactment_date]),
+      md_made_date: to_date(enriched[:md_made_date]),
+      md_coming_into_force_date: to_date(enriched[:md_coming_into_force_date]),
+      md_restrict_extent: enriched[:md_restrict_extent],
 
       # SI codes - stored as map in UkLrt
-      si_code: list_to_map(record[:si_code] || record["si_code"])
+      si_code: list_to_map(enriched[:si_code] || enriched["si_code"])
     }
     |> Enum.reject(fn {_k, v} -> v == nil or v == "" or v == [] or v == %{} end)
     |> Enum.into(%{})
+  end
+
+  # Enrich record with type_desc and type_class from TypeClass module
+  defp enrich_type_fields(record) do
+    record
+    |> enrich_type_desc()
+    |> enrich_type_class()
+  end
+
+  # Derive type_desc from type_code using TypeClass.set_type/1
+  defp enrich_type_desc(record) do
+    type_code = record[:type_code] || record["type_code"]
+
+    if type_code do
+      # set_type expects :type_code and returns :Type
+      enriched = TypeClass.set_type(%{type_code: type_code})
+      type_desc = enriched[:Type]
+
+      if type_desc do
+        Map.put(record, :type_desc, type_desc)
+      else
+        record
+      end
+    else
+      record
+    end
+  end
+
+  # Derive type_class from Title_EN using TypeClass.set_type_class/1
+  defp enrich_type_class(record) do
+    title = record[:Title_EN] || record["Title_EN"]
+
+    if title do
+      # set_type_class expects :Title_EN and sets :type_class
+      enriched = TypeClass.set_type_class(%{Title_EN: title})
+      type_class = enriched[:type_class]
+
+      if type_class do
+        Map.put(record, :type_class, type_class)
+      else
+        record
+      end
+    else
+      record
+    end
   end
 
   defp to_integer(val) when is_integer(val), do: val

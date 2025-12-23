@@ -26,6 +26,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   alias SertantaiLegal.Scraper.LegislationGovUk.Parser
   alias SertantaiLegal.Scraper.Filters
   alias SertantaiLegal.Scraper.Metadata
+  alias SertantaiLegal.Scraper.TypeClass
 
   @type_codes ["uksi", "ukpga", "asp", "anaw", "apni", "wsi", "ssi", "nisi", "nisr", "ukmo"]
 
@@ -62,6 +63,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
                 |> Map.put(:publication_date, date)
                 |> Map.put(:name, name)
                 |> Map.put(:leg_gov_uk_url, url)
+                |> enrich_type_fields()
               end)
 
             IO.puts("Found #{Enum.count(records)} records")
@@ -161,6 +163,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
           |> Map.put(:si_code, si_code_str)
           |> Map.put(:SICode, metadata[:si_code] || [])
           |> maybe_update_title(cleaned_title)
+          |> enrich_type_fields()
 
         {:error, reason} ->
           IO.puts("    Warning: #{reason}")
@@ -177,6 +180,49 @@ defmodule SertantaiLegal.Scraper.NewLaws do
       nil -> Map.put(record, :Title_EN, cleaned_title)
       "" -> Map.put(record, :Title_EN, cleaned_title)
       _ -> record
+    end
+  end
+
+  # Enrich record with type_desc (from type_code) and type_class (from title)
+  defp enrich_type_fields(record) do
+    record
+    |> enrich_type_desc()
+    |> enrich_type_class()
+  end
+
+  # Derive type_desc from type_code using TypeClass.set_type/1
+  defp enrich_type_desc(record) do
+    type_code = record[:type_code] || record["type_code"]
+
+    if type_code do
+      enriched = TypeClass.set_type(%{type_code: type_code})
+      type_desc = enriched[:Type]
+
+      if type_desc do
+        Map.put(record, :type_desc, type_desc)
+      else
+        record
+      end
+    else
+      record
+    end
+  end
+
+  # Derive type_class from Title_EN using TypeClass.set_type_class/1
+  defp enrich_type_class(record) do
+    title = record[:Title_EN] || record["Title_EN"]
+
+    if title do
+      enriched = TypeClass.set_type_class(%{Title_EN: title})
+      type_class = enriched[:type_class]
+
+      if type_class do
+        Map.put(record, :type_class, type_class)
+      else
+        record
+      end
+    else
+      record
     end
   end
 

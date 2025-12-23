@@ -15,6 +15,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.LawParser
   alias SertantaiLegal.Scraper.ScrapeSession
+  alias SertantaiLegal.Scraper.Models
+  alias SertantaiLegal.Scraper.TypeClass
 
   @doc """
   POST /api/scrape
@@ -277,6 +279,160 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   @doc """
+  POST /api/sessions/:id/parse-one
+
+  Parse a single record with staged parsing for interactive review.
+  Does NOT persist - returns data for user review.
+
+  ## Parameters
+  - name: record name (e.g., "uksi/2025/1227")
+  """
+  def parse_one(conn, %{"id" => session_id, "name" => name}) do
+    alias SertantaiLegal.Scraper.StagedParser
+    alias SertantaiLegal.Scraper.Storage
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      # Find the record in any group
+      record = find_record_in_session(session_id, name)
+
+      case record do
+        nil ->
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Record not found in session: #{name}"})
+
+        record ->
+          # Run staged parse
+          case StagedParser.parse(record) do
+            {:ok, result} ->
+              # Check for duplicate in database
+              duplicate = check_duplicate(name)
+
+              json(conn, %{
+                session_id: session_id,
+                name: name,
+                record: result.record,
+                stages: format_stages(result.stages),
+                errors: result.errors,
+                has_errors: result.has_errors,
+                duplicate: duplicate
+              })
+          end
+      end
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  def parse_one(conn, %{"id" => _session_id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: name"})
+  end
+
+  @doc """
+  POST /api/sessions/:id/confirm
+
+  Confirm and persist a reviewed record to uk_lrt.
+
+  ## Parameters
+  - name: record name (e.g., "uksi/2025/1227")
+  - family: Family classification (e.g., "E", "H", "S")
+  - overrides: Optional map of field overrides
+  """
+  def confirm(conn, %{"id" => session_id, "name" => name} = params) do
+    alias SertantaiLegal.Scraper.StagedParser
+    alias SertantaiLegal.Scraper.LawParser
+
+    family = params["family"]
+    overrides = params["overrides"] || %{}
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      # Find the record in any group
+      record = find_record_in_session(session_id, name)
+
+      case record do
+        nil ->
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Record not found in session: #{name}"})
+
+        record ->
+          # Run staged parse to get full metadata
+          case StagedParser.parse(record) do
+            {:ok, result} ->
+              # Merge family and overrides
+              record_to_persist =
+                result.record
+                |> Map.put(:Family, family)
+                |> Map.merge(atomize_keys(overrides))
+
+              # Persist using LawParser (handles create/update)
+              case LawParser.parse_record(record_to_persist, persist: true) do
+                {:ok, persisted} ->
+                  # Mark record as reviewed in session
+                  mark_record_reviewed(session_id, name)
+
+                  json(conn, %{
+                    message: "Record persisted successfully",
+                    name: name,
+                    id: persisted.id,
+                    action: if(check_duplicate(name), do: "updated", else: "created")
+                  })
+
+                {:error, reason} ->
+                  conn
+                  |> put_status(:unprocessable_entity)
+                  |> json(%{error: "Failed to persist: #{reason}"})
+              end
+          end
+      end
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  def confirm(conn, %{"id" => _session_id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: name"})
+  end
+
+  @doc """
+  GET /api/family-options
+
+  Get the list of all available family options for UI dropdowns.
+  Returns families grouped by category (health_safety, environment).
+  """
+  def family_options(conn, _params) do
+    json(conn, %{
+      families: Models.ehs_family(),
+      grouped: %{
+        health_safety: Models.hs_family(),
+        environment: Models.e_family()
+      }
+    })
+  end
+
+  @doc """
   DELETE /api/sessions/:id
 
   Delete a session and its files.
@@ -391,17 +547,64 @@ defmodule SertantaiLegalWeb.ScrapeController do
   defp count_records(records) when is_map(records), do: map_size(records)
   defp count_records(_), do: 0
 
-  # Normalize records to list format for JSON response
-  defp normalize_records(records) when is_list(records), do: records
+  # Normalize records to list format for JSON response and enrich with type fields
+  defp normalize_records(records) when is_list(records) do
+    Enum.map(records, &enrich_type_fields/1)
+  end
 
   defp normalize_records(records) when is_map(records) do
     # Group 3 is indexed map, convert to list with index
     records
     |> Enum.sort_by(fn {k, _v} -> String.to_integer(to_string(k)) end)
-    |> Enum.map(fn {id, record} -> Map.put(record, :_index, id) end)
+    |> Enum.map(fn {id, record} ->
+      record
+      |> Map.put(:_index, id)
+      |> enrich_type_fields()
+    end)
   end
 
   defp normalize_records(_), do: []
+
+  # Enrich record with type_desc and type_class if missing
+  defp enrich_type_fields(record) do
+    record
+    |> maybe_enrich_type_desc()
+    |> maybe_enrich_type_class()
+  end
+
+  defp maybe_enrich_type_desc(record) do
+    # Skip if already has type_desc
+    case record[:type_desc] || record["type_desc"] do
+      nil ->
+        type_code = record[:type_code] || record["type_code"]
+        if type_code do
+          enriched = TypeClass.set_type(%{type_code: type_code})
+          type_desc = enriched[:Type]
+          if type_desc, do: Map.put(record, :type_desc, type_desc), else: record
+        else
+          record
+        end
+      _ ->
+        record
+    end
+  end
+
+  defp maybe_enrich_type_class(record) do
+    # Skip if already has type_class
+    case record[:type_class] || record["type_class"] do
+      nil ->
+        title = record[:Title_EN] || record["Title_EN"]
+        if title do
+          enriched = TypeClass.set_type_class(%{Title_EN: title})
+          type_class = enriched[:type_class]
+          if type_class, do: Map.put(record, :type_class, type_class), else: record
+        else
+          record
+        end
+      _ ->
+        record
+    end
+  end
 
   defp format_error(%{errors: errors}) when is_list(errors) do
     Enum.map_join(errors, ", ", &inspect/1)
@@ -418,4 +621,112 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   defp not_found_error?(_), do: false
+
+  # Find a record by name across all groups in a session
+  defp find_record_in_session(session_id, name) do
+    groups = [:group1, :group2, :group3]
+
+    Enum.find_value(groups, fn group ->
+      case Storage.read_json(session_id, group) do
+        {:ok, records} when is_list(records) ->
+          Enum.find(records, fn r ->
+            (r[:name] || r["name"]) == name
+          end)
+
+        {:ok, records} when is_map(records) ->
+          records
+          |> Map.values()
+          |> Enum.find(fn r ->
+            (r[:name] || r["name"]) == name
+          end)
+
+        _ ->
+          nil
+      end
+    end)
+  end
+
+  # Check if a record with this name already exists in uk_lrt
+  defp check_duplicate(name) do
+    alias SertantaiLegal.Legal.UkLrt
+    require Ash.Query
+
+    case UkLrt
+         |> Ash.Query.filter(name == ^name)
+         |> Ash.read() do
+      {:ok, [existing | _]} ->
+        %{
+          exists: true,
+          id: existing.id,
+          updated_at: existing.updated_at
+        }
+
+      _ ->
+        %{exists: false}
+    end
+  end
+
+  # Format stages for JSON response
+  defp format_stages(stages) do
+    stages
+    |> Enum.map(fn {stage, result} ->
+      {stage,
+       %{
+         status: result.status,
+         error: result.error,
+         data: result.data
+       }}
+    end)
+    |> Enum.into(%{})
+  end
+
+  # Mark a record as reviewed in the session JSON
+  defp mark_record_reviewed(session_id, name) do
+    # Update the record in all groups to mark as reviewed
+    groups = [:group1, :group2, :group3]
+
+    Enum.each(groups, fn group ->
+      case Storage.read_json(session_id, group) do
+        {:ok, records} when is_list(records) ->
+          updated =
+            Enum.map(records, fn r ->
+              if (r[:name] || r["name"]) == name do
+                Map.put(r, :reviewed, true)
+              else
+                r
+              end
+            end)
+
+          Storage.save_json(session_id, group, updated)
+
+        {:ok, records} when is_map(records) ->
+          updated =
+            Enum.map(records, fn {k, r} ->
+              if (r[:name] || r["name"]) == name do
+                {k, Map.put(r, :reviewed, true)}
+              else
+                {k, r}
+              end
+            end)
+            |> Enum.into(%{})
+
+          Storage.save_json(session_id, group, updated)
+
+        _ ->
+          :ok
+      end
+    end)
+  end
+
+  # Convert string keys to atoms for overrides
+  defp atomize_keys(map) when is_map(map) do
+    map
+    |> Enum.map(fn
+      {k, v} when is_binary(k) -> {String.to_atom(k), v}
+      {k, v} -> {k, v}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp atomize_keys(other), do: other
 end
