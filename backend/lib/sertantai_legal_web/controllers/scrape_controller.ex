@@ -571,6 +571,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> maybe_enrich_type_desc()
     |> maybe_enrich_type_class()
     |> normalize_family_key()
+    |> normalize_tags_key()
   end
 
   # Normalize Family key to lowercase for consistency
@@ -581,6 +582,19 @@ defmodule SertantaiLegalWeb.ScrapeController do
       |> Map.put(:family, family)
       |> Map.delete(:Family)
       |> Map.delete("Family")
+    else
+      record
+    end
+  end
+
+  # Normalize Tags key to lowercase for consistency
+  defp normalize_tags_key(record) do
+    tags = record[:Tags] || record["Tags"]
+    if tags do
+      record
+      |> Map.put(:tags, tags)
+      |> Map.delete(:Tags)
+      |> Map.delete("Tags")
     else
       record
     end

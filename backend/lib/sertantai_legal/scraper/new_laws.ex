@@ -26,6 +26,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   alias SertantaiLegal.Scraper.LegislationGovUk.Parser
   alias SertantaiLegal.Scraper.Filters
   alias SertantaiLegal.Scraper.Metadata
+  alias SertantaiLegal.Scraper.Tags
   alias SertantaiLegal.Scraper.TypeClass
 
   @type_codes ["uksi", "ukpga", "asp", "anaw", "apni", "wsi", "ssi", "nisi", "nisr", "ukmo"]
@@ -183,11 +184,12 @@ defmodule SertantaiLegal.Scraper.NewLaws do
     end
   end
 
-  # Enrich record with type_desc (from type_code) and type_class (from title)
+  # Enrich record with type_desc (from type_code), type_class (from title), and tags
   defp enrich_type_fields(record) do
     record
     |> enrich_type_desc()
     |> enrich_type_class()
+    |> enrich_tags()
   end
 
   # Derive type_desc from type_code using TypeClass.set_type/1
@@ -224,6 +226,12 @@ defmodule SertantaiLegal.Scraper.NewLaws do
     else
       record
     end
+  end
+
+  # Extract tags from Title_EN using Tags.set_tags/1
+  defp enrich_tags(record) do
+    # Tags.set_tags expects :Title_EN and sets :Tags
+    Tags.set_tags(record)
   end
 
   @doc """
