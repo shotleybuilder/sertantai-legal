@@ -30,11 +30,17 @@ defmodule SertantaiLegalWeb.Router do
     post "/sessions/:id/confirm", ScrapeController, :confirm
     delete "/sessions/:id", ScrapeController, :delete
 
+    # Cascade update endpoints
+    get "/sessions/:id/affected-laws", ScrapeController, :affected_laws
+    post "/sessions/:id/batch-reparse", ScrapeController, :batch_reparse
+    delete "/sessions/:id/affected-laws", ScrapeController, :clear_affected_laws
+
     # UK LRT CRUD endpoints
     get "/uk-lrt", UkLrtController, :index
     get "/uk-lrt/filters", UkLrtController, :filters
     get "/uk-lrt/search", UkLrtController, :search
     get "/uk-lrt/exists/*name", UkLrtController, :exists
+    post "/uk-lrt/batch-exists", UkLrtController, :batch_exists
     get "/uk-lrt/:id", UkLrtController, :show
     patch "/uk-lrt/:id", UkLrtController, :update
     delete "/uk-lrt/:id", UkLrtController, :delete

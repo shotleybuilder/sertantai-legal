@@ -334,3 +334,91 @@ export async function getFamilyOptions(): Promise<FamilyOptionsResult> {
 
 	return response.json();
 }
+
+// ============================================================================
+// Cascade Update API
+// ============================================================================
+
+export interface AffectedLaw {
+	id?: string;
+	name: string;
+	title_en?: string;
+	year?: number;
+	type_code?: string;
+}
+
+export interface AffectedLawsResult {
+	session_id: string;
+	source_laws: string[];
+	source_count: number;
+	in_db: AffectedLaw[];
+	in_db_count: number;
+	not_in_db: AffectedLaw[];
+	not_in_db_count: number;
+	total_affected: number;
+}
+
+export interface BatchReparseResultItem {
+	name: string;
+	status: 'success' | 'error';
+	message: string;
+}
+
+export interface BatchReparseResult {
+	session_id: string;
+	total: number;
+	success: number;
+	errors: number;
+	results: BatchReparseResultItem[];
+}
+
+/**
+ * Get affected laws for a session (for cascade update modal)
+ */
+export async function getAffectedLaws(sessionId: string): Promise<AffectedLawsResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/affected-laws`);
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to fetch affected laws');
+	}
+
+	return response.json();
+}
+
+/**
+ * Trigger batch re-parse for affected laws in the database
+ */
+export async function batchReparse(
+	sessionId: string,
+	names?: string[]
+): Promise<BatchReparseResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/batch-reparse`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ names })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to batch re-parse');
+	}
+
+	return response.json();
+}
+
+/**
+ * Clear affected laws after cascade update is complete
+ */
+export async function clearAffectedLaws(sessionId: string): Promise<{ message: string }> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/affected-laws`, {
+		method: 'DELETE'
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to clear affected laws');
+	}
+
+	return response.json();
+}

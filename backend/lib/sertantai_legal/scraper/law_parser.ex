@@ -416,7 +416,56 @@ defmodule SertantaiLegal.Scraper.LawParser do
       md_restrict_extent: enriched[:md_restrict_extent],
 
       # SI codes - stored as map in UkLrt
-      si_code: list_to_map(enriched[:si_code] || enriched["si_code"])
+      si_code: list_to_map(enriched[:si_code] || enriched["si_code"]),
+
+      # Amendment fields from StagedParser Stage 3
+      # Arrays of UK IDs
+      amending: enriched[:amending],
+      rescinding: enriched[:rescinding],
+      amended_by: enriched[:amended_by],
+      rescinded_by: enriched[:rescinded_by],
+
+      # Counts and flags
+      is_amending: enriched[:is_amending],
+      is_rescinding: enriched[:is_rescinding],
+
+      # Stats - Self-affects (shared)
+      stats_self_affects_count: enriched[:stats_self_affects_count],
+
+      # Stats - Amending (this law affects others)
+      amending_stats_affects_count: enriched[:amending_stats_affects_count],
+      amending_stats_affected_laws_count: enriched[:amending_stats_affected_laws_count],
+      amending_stats_affects_count_per_law: enriched[:amending_stats_affects_count_per_law],
+      amending_stats_affects_count_per_law_detailed: enriched[:amending_stats_affects_count_per_law_detailed],
+
+      # Stats - Amended_by (this law is affected by others)
+      amended_by_stats_affected_by_count: enriched[:amended_by_stats_affected_by_count],
+      amended_by_stats_affected_by_laws_count: enriched[:amended_by_stats_affected_by_laws_count],
+      amended_by_stats_affected_by_count_per_law: enriched[:amended_by_stats_affected_by_count_per_law],
+      amended_by_stats_affected_by_count_per_law_detailed: enriched[:amended_by_stats_affected_by_count_per_law_detailed],
+
+      # Stats - Rescinding (this law rescinds others)
+      rescinding_stats_rescinding_laws_count: enriched[:rescinding_stats_rescinding_laws_count],
+      rescinding_stats_rescinding_count_per_law: enriched[:rescinding_stats_rescinding_count_per_law],
+      rescinding_stats_rescinding_count_per_law_detailed: enriched[:rescinding_stats_rescinding_count_per_law_detailed],
+
+      # Stats - Rescinded_by (this law is rescinded by others)
+      rescinded_by_stats_rescinded_by_laws_count: enriched[:rescinded_by_stats_rescinded_by_laws_count],
+      rescinded_by_stats_rescinded_by_count_per_law: enriched[:rescinded_by_stats_rescinded_by_count_per_law],
+      rescinded_by_stats_rescinded_by_count_per_law_detailed: enriched[:rescinded_by_stats_rescinded_by_count_per_law_detailed],
+
+      # Extent fields from StagedParser Stage 1
+      extent: enriched[:extent],
+      geo_extent: enriched[:geo_extent],
+
+      # Enacted_by fields from StagedParser Stage 2
+      enacted_by: enriched[:enacted_by],
+      enacted_by_description: enriched[:enacted_by_description],
+      is_act: enriched[:is_act],
+
+      # Live status from StagedParser Stage 4
+      live: enriched[:live],
+      live_description: enriched[:live_description]
     }
     |> Enum.reject(fn {_k, v} -> v == nil or v == "" or v == [] or v == %{} end)
     |> Enum.into(%{})

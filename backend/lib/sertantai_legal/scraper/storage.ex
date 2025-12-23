@@ -53,6 +53,7 @@ defmodule SertantaiLegal.Scraper.Storage do
         :group2 -> "inc_wo_si.json"
         :group3 -> "exc.json"
         :metadata -> "metadata.json"
+        :affected_laws -> "affected_laws.json"
       end
 
     Path.join(session_path(session_id), filename)
@@ -71,6 +72,7 @@ defmodule SertantaiLegal.Scraper.Storage do
         :group2 -> "inc_wo_si.json"
         :group3 -> "exc.json"
         :metadata -> "metadata.json"
+        :affected_laws -> "affected_laws.json"
       end
 
     Path.join(session_id, filename)
@@ -315,4 +317,108 @@ defmodule SertantaiLegal.Scraper.Storage do
   end
 
   defp extract_selected_names(_), do: []
+
+  # ============================================================================
+  # Affected Laws Management (for Cascade Updates)
+  # ============================================================================
+
+  @doc """
+  Add affected laws from a persisted record to the session's affected_laws.json.
+
+  Collects laws from `amending` and `rescinding` fields and deduplicates.
+
+  ## Parameters
+  - session_id: Session identifier
+  - source_law: The law that was persisted (name, e.g., "uksi/2024/123")
+  - amending: List of law IDs this law amends
+  - rescinding: List of law IDs this law rescinds
+
+  ## Returns
+  `:ok` or `{:error, reason}`
+  """
+  @spec add_affected_laws(String.t(), String.t(), list(String.t()), list(String.t())) ::
+          :ok | {:error, any()}
+  def add_affected_laws(session_id, source_law, amending, rescinding) do
+    amending = amending || []
+    rescinding = rescinding || []
+
+    # Skip if no affected laws
+    if amending == [] and rescinding == [] do
+      :ok
+    else
+      # Read existing affected laws or initialize
+      existing = read_affected_laws(session_id)
+
+      # Build new entry
+      new_entry = %{
+        source_law: source_law,
+        amending: amending,
+        rescinding: rescinding,
+        added_at: DateTime.utc_now() |> DateTime.to_iso8601()
+      }
+
+      # Merge: append new entry, collect unique affected laws
+      updated = %{
+        entries: (existing[:entries] || []) ++ [new_entry],
+        all_amending: Enum.uniq((existing[:all_amending] || []) ++ amending),
+        all_rescinding: Enum.uniq((existing[:all_rescinding] || []) ++ rescinding),
+        updated_at: DateTime.utc_now() |> DateTime.to_iso8601()
+      }
+
+      save_json(session_id, :affected_laws, updated)
+    end
+  end
+
+  @doc """
+  Read affected laws from a session.
+
+  ## Returns
+  Map with :entries, :all_amending, :all_rescinding keys, or empty map if not found.
+  """
+  @spec read_affected_laws(String.t()) :: map()
+  def read_affected_laws(session_id) do
+    case read_json(session_id, :affected_laws) do
+      {:ok, data} -> data
+      {:error, _} -> %{entries: [], all_amending: [], all_rescinding: []}
+    end
+  end
+
+  @doc """
+  Get summary of affected laws for cascade update UI.
+
+  ## Returns
+  Map with counts and lists of affected laws.
+  """
+  @spec get_affected_laws_summary(String.t()) :: map()
+  def get_affected_laws_summary(session_id) do
+    data = read_affected_laws(session_id)
+
+    all_affected =
+      Enum.uniq((data[:all_amending] || []) ++ (data[:all_rescinding] || []))
+
+    %{
+      source_laws: Enum.map(data[:entries] || [], & &1[:source_law]),
+      source_count: length(data[:entries] || []),
+      amending: data[:all_amending] || [],
+      amending_count: length(data[:all_amending] || []),
+      rescinding: data[:all_rescinding] || [],
+      rescinding_count: length(data[:all_rescinding] || []),
+      all_affected: all_affected,
+      all_affected_count: length(all_affected)
+    }
+  end
+
+  @doc """
+  Clear affected laws for a session (after cascade update is complete).
+  """
+  @spec clear_affected_laws(String.t()) :: :ok | {:error, any()}
+  def clear_affected_laws(session_id) do
+    path = file_path(session_id, :affected_laws)
+
+    case File.rm(path) do
+      :ok -> :ok
+      {:error, :enoent} -> :ok
+      {:error, reason} -> {:error, "Failed to clear affected laws: #{inspect(reason)}"}
+    end
+  end
 end

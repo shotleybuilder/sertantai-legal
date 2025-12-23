@@ -7,7 +7,9 @@
 		useUpdateSelectionMutation
 	} from '$lib/query/scraper';
 	import type { ScrapeSession, ScrapeRecord } from '$lib/api/scraper';
+	import { getAffectedLaws } from '$lib/api/scraper';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
+	import CascadeUpdateModal from '$lib/components/CascadeUpdateModal.svelte';
 
 	$: sessionId = $page.params.id ?? '';
 	$: sessionQuery = useSessionQuery(sessionId);
@@ -32,6 +34,10 @@
 	let parseModalRecords: ScrapeRecord[] = [];
 	let parseModalStartIndex = 0;
 	let parseCompleteMessage = '';
+
+	// Cascade Update Modal State
+	let showCascadeModal = false;
+	let affectedLawsCount = 0;
 
 	function getStatusColor(status: ScrapeSession['status']): string {
 		switch (status) {
@@ -121,12 +127,45 @@
 		showParseModal = false;
 	}
 
-	function handleParseComplete(event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>) {
+	async function handleParseComplete(event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>) {
 		showParseModal = false;
 		const { confirmed, skipped, errors } = event.detail;
 		parseCompleteMessage = `Parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
 		// Refresh the session data to update counts
 		$sessionQuery.refetch();
+
+		// Check if there are affected laws to show cascade modal
+		if (confirmed > 0) {
+			try {
+				const affected = await getAffectedLaws(sessionId);
+				if (affected.total_affected > 0) {
+					affectedLawsCount = affected.total_affected;
+					// Show cascade modal after a brief delay
+					setTimeout(() => {
+						showCascadeModal = true;
+					}, 500);
+				}
+			} catch (e) {
+				console.error('Failed to check affected laws:', e);
+			}
+		}
+	}
+
+	function handleCascadeModalClose() {
+		showCascadeModal = false;
+	}
+
+	function handleCascadeComplete(event: CustomEvent<{ reparsed: number; errors: number }>) {
+		showCascadeModal = false;
+		const { reparsed, errors } = event.detail;
+		if (reparsed > 0 || errors > 0) {
+			parseCompleteMessage = `Cascade update: ${reparsed} re-parsed, ${errors} errors`;
+		}
+		$sessionQuery.refetch();
+	}
+
+	async function handleShowCascadeModal() {
+		showCascadeModal = true;
 	}
 
 	function handleRowClick(record: ScrapeRecord, index: number) {
@@ -511,4 +550,12 @@
 	open={showParseModal}
 	on:close={handleParseModalClose}
 	on:complete={handleParseComplete}
+/>
+
+<!-- Cascade Update Modal -->
+<CascadeUpdateModal
+	{sessionId}
+	open={showCascadeModal}
+	on:close={handleCascadeModalClose}
+	on:complete={handleCascadeComplete}
 />

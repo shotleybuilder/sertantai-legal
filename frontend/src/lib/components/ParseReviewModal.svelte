@@ -336,11 +336,6 @@
 													<option value={family}>{family}</option>
 												{/each}
 											</optgroup>
-											<optgroup label="HR">
-												{#each $familyOptionsQuery.data?.grouped?.hr || [] as family}
-													<option value={family}>{family}</option>
-												{/each}
-											</optgroup>
 										</select>
 									{/if}
 								</div>
@@ -365,11 +360,6 @@
 											</optgroup>
 											<optgroup label="Environment">
 												{#each $familyOptionsQuery.data?.grouped?.environment || [] as family}
-													<option value={family}>{family}</option>
-												{/each}
-											</optgroup>
-											<optgroup label="HR">
-												{#each $familyOptionsQuery.data?.grouped?.hr || [] as family}
 													<option value={family}>{family}</option>
 												{/each}
 											</optgroup>
@@ -537,14 +527,14 @@
 							{/if}
 
 							<!-- Amending section -->
-							{#if hasData(getField(parseResult.record, 'amending')) || (parseResult.record?.amending_count && parseResult.record.amending_count > 0)}
+							{#if hasData(getField(parseResult.record, 'amending')) || Number(parseResult.record?.amending_count) > 0}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Amends <span class="text-xs text-gray-400">(amending)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">
 									{#if parseResult.record?.amending && Array.isArray(parseResult.record.amending) && parseResult.record.amending.length > 0}
 										{parseResult.record.amending.join(', ')}
-									{:else if parseResult.record?.amending_count && parseResult.record.amending_count > 0}
-										{parseResult.record.amending_count} {parseResult.record.amending_count === 1 ? 'law' : 'laws'}
+									{:else if Number(parseResult.record?.amending_count) > 0}
+										{parseResult.record.amending_count} {Number(parseResult.record.amending_count) === 1 ? 'law' : 'laws'}
 									{/if}
 								</span>
 							</div>
@@ -571,14 +561,14 @@
 							{/if}
 
 							<!-- Amended By section -->
-							{#if hasData(getField(parseResult.record, 'amended_by')) || (parseResult.record?.amended_by_count && parseResult.record.amended_by_count > 0)}
+							{#if hasData(getField(parseResult.record, 'amended_by')) || Number(parseResult.record?.amended_by_count) > 0}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Amended By <span class="text-xs text-gray-400">(amended_by)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">
 									{#if parseResult.record?.amended_by && Array.isArray(parseResult.record.amended_by) && parseResult.record.amended_by.length > 0}
 										{parseResult.record.amended_by.join(', ')}
-									{:else if parseResult.record?.amended_by_count && parseResult.record.amended_by_count > 0}
-										{parseResult.record.amended_by_count} {parseResult.record.amended_by_count === 1 ? 'law' : 'laws'}
+									{:else if Number(parseResult.record?.amended_by_count) > 0}
+										{parseResult.record.amended_by_count} {Number(parseResult.record.amended_by_count) === 1 ? 'law' : 'laws'}
 									{/if}
 								</span>
 							</div>
@@ -605,14 +595,14 @@
 							{/if}
 
 							<!-- Rescinding section -->
-							{#if hasData(getField(parseResult.record, 'rescinding')) || (parseResult.record?.rescinding_count && parseResult.record.rescinding_count > 0)}
+							{#if hasData(getField(parseResult.record, 'rescinding')) || Number(parseResult.record?.rescinding_count) > 0}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Rescinds <span class="text-xs text-gray-400">(rescinding)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">
 									{#if parseResult.record?.rescinding && Array.isArray(parseResult.record.rescinding) && parseResult.record.rescinding.length > 0}
 										{parseResult.record.rescinding.join(', ')}
-									{:else if parseResult.record?.rescinding_count && parseResult.record.rescinding_count > 0}
-										{parseResult.record.rescinding_count} {parseResult.record.rescinding_count === 1 ? 'law' : 'laws'}
+									{:else if Number(parseResult.record?.rescinding_count) > 0}
+										{parseResult.record.rescinding_count} {Number(parseResult.record.rescinding_count) === 1 ? 'law' : 'laws'}
 									{/if}
 								</span>
 							</div>
@@ -633,14 +623,14 @@
 							{/if}
 
 							<!-- Rescinded By section -->
-							{#if hasData(getField(parseResult.record, 'rescinded_by')) || (parseResult.record?.rescinded_by_count && parseResult.record.rescinded_by_count > 0)}
+							{#if hasData(getField(parseResult.record, 'rescinded_by')) || Number(parseResult.record?.rescinded_by_count) > 0}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Rescinded By <span class="text-xs text-gray-400">(rescinded_by)</span></span>
 								<span class="col-span-2 text-sm {parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0 ? 'text-red-600 font-medium' : 'text-gray-900'}">
 									{#if parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0}
 										{parseResult.record.rescinded_by.join(', ')}
-									{:else if parseResult.record?.rescinded_by_count && parseResult.record.rescinded_by_count > 0}
-										{parseResult.record.rescinded_by_count} {parseResult.record.rescinded_by_count === 1 ? 'law' : 'laws'}
+									{:else if Number(parseResult.record?.rescinded_by_count) > 0}
+										{parseResult.record.rescinded_by_count} {Number(parseResult.record.rescinded_by_count) === 1 ? 'law' : 'laws'}
 									{/if}
 								</span>
 							</div>

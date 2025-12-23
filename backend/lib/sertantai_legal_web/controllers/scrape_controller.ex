@@ -18,6 +18,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
   alias SertantaiLegal.Scraper.Models
   alias SertantaiLegal.Scraper.TypeClass
 
+  require Ash.Query
+
   @doc """
   POST /api/scrape
 
@@ -355,6 +357,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   def confirm(conn, %{"id" => session_id, "name" => name} = params) do
     alias SertantaiLegal.Scraper.StagedParser
     alias SertantaiLegal.Scraper.LawParser
+    alias SertantaiLegal.Scraper.Storage
 
     family = params["family"]
     overrides = params["overrides"] || %{}
@@ -385,11 +388,21 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   # Mark record as reviewed in session
                   mark_record_reviewed(session_id, name)
 
+                  # Collect affected laws for cascade update
+                  amending = record_to_persist[:amending] || []
+                  rescinding = record_to_persist[:rescinding] || []
+                  Storage.add_affected_laws(session_id, name, amending, rescinding)
+
+                  # Check if there are affected laws
+                  has_affected = length(amending) + length(rescinding) > 0
+
                   json(conn, %{
                     message: "Record persisted successfully",
                     name: name,
                     id: persisted.id,
-                    action: if(check_duplicate(name), do: "updated", else: "created")
+                    action: if(check_duplicate(name), do: "updated", else: "created"),
+                    has_affected_laws: has_affected,
+                    affected_count: length(amending) + length(rescinding)
                   })
 
                 {:error, reason} ->
@@ -799,4 +812,198 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   defp atomize_keys(other), do: other
+
+  # ============================================================================
+  # Cascade Update Actions
+  # ============================================================================
+
+  @doc """
+  GET /api/sessions/:id/affected-laws
+
+  Get affected laws for a session, partitioned by DB existence.
+
+  Returns:
+  - in_db: Laws that exist in uk_lrt (can be re-parsed)
+  - not_in_db: Laws that don't exist (can be scraped)
+  """
+  def affected_laws(conn, %{"id" => session_id}) do
+    alias SertantaiLegal.Legal.UkLrt
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      summary = Storage.get_affected_laws_summary(session_id)
+
+      # Check which laws exist in DB
+      all_affected = summary.all_affected
+
+      {in_db, not_in_db} =
+        if all_affected == [] do
+          {[], []}
+        else
+          # Query DB for existing laws
+          existing =
+            UkLrt
+            |> Ash.Query.filter(name in ^all_affected)
+            |> Ash.Query.select([:id, :name, :title_en, :year, :type_code])
+            |> Ash.read!()
+            |> Enum.map(fn r ->
+              %{
+                id: r.id,
+                name: r.name,
+                title_en: r.title_en,
+                year: r.year,
+                type_code: r.type_code
+              }
+            end)
+
+          existing_names = MapSet.new(existing, & &1.name)
+
+          not_existing =
+            all_affected
+            |> Enum.reject(&MapSet.member?(existing_names, &1))
+            |> Enum.map(fn name -> %{name: name} end)
+
+          {existing, not_existing}
+        end
+
+      json(conn, %{
+        session_id: session_id,
+        source_laws: summary.source_laws,
+        source_count: summary.source_count,
+        in_db: in_db,
+        in_db_count: length(in_db),
+        not_in_db: not_in_db,
+        not_in_db_count: length(not_in_db),
+        total_affected: summary.all_affected_count
+      })
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  @doc """
+  POST /api/sessions/:id/batch-reparse
+
+  Trigger batch re-parse for laws in the DB.
+
+  ## Parameters
+  - names: List of law names to re-parse (optional, defaults to all in_db)
+
+  Returns progress and results for each law.
+  """
+  def batch_reparse(conn, %{"id" => session_id} = params) do
+    alias SertantaiLegal.Scraper.StagedParser
+    alias SertantaiLegal.Scraper.LawParser
+    alias SertantaiLegal.Legal.UkLrt
+
+    names = params["names"]
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      # Get names to re-parse
+      target_names =
+        if names && is_list(names) && length(names) > 0 do
+          names
+        else
+          # Default to all affected laws in DB
+          summary = Storage.get_affected_laws_summary(session_id)
+
+          UkLrt
+          |> Ash.Query.filter(name in ^summary.all_affected)
+          |> Ash.Query.select([:name])
+          |> Ash.read!()
+          |> Enum.map(& &1.name)
+        end
+
+      # Re-parse each law
+      results =
+        Enum.map(target_names, fn name ->
+          # Build minimal record for StagedParser
+          parts = String.split(name, "/")
+
+          case parts do
+            [type_code, year, number] ->
+              record = %{
+                type_code: type_code,
+                Year: String.to_integer(year),
+                Number: number,
+                name: name
+              }
+
+              case StagedParser.parse(record) do
+                {:ok, result} ->
+                  # Persist the updated record
+                  case LawParser.parse_record(result.record, persist: true) do
+                    {:ok, _persisted} ->
+                      %{name: name, status: "success", message: "Re-parsed and updated"}
+
+                    {:error, reason} ->
+                      %{name: name, status: "error", message: "Persist failed: #{inspect(reason)}"}
+                  end
+
+                {:error, reason} ->
+                  %{name: name, status: "error", message: "Parse failed: #{inspect(reason)}"}
+              end
+
+            _ ->
+              %{name: name, status: "error", message: "Invalid name format"}
+          end
+        end)
+
+      success_count = Enum.count(results, &(&1.status == "success"))
+      error_count = Enum.count(results, &(&1.status == "error"))
+
+      json(conn, %{
+        session_id: session_id,
+        total: length(results),
+        success: success_count,
+        errors: error_count,
+        results: results
+      })
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  @doc """
+  DELETE /api/sessions/:id/affected-laws
+
+  Clear affected laws for a session after cascade update is complete.
+  """
+  def clear_affected_laws(conn, %{"id" => session_id}) do
+    with {:ok, _session} <- SessionManager.get(session_id),
+         :ok <- Storage.clear_affected_laws(session_id) do
+      json(conn, %{
+        message: "Affected laws cleared",
+        session_id: session_id
+      })
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
 end

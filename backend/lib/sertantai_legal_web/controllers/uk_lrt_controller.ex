@@ -224,6 +224,51 @@ defmodule SertantaiLegalWeb.UkLrtController do
     end
   end
 
+  @doc """
+  POST /api/uk-lrt/batch-exists
+
+  Check existence of multiple laws in a single request.
+
+  ## Parameters
+  - names: List of law names to check (e.g., ["uksi/2024/123", "ukpga/2020/1"])
+
+  ## Returns
+  - existing: List of laws that exist (with id, name, title_en)
+  - missing: List of names that don't exist
+  """
+  def batch_exists(conn, %{"names" => names}) when is_list(names) do
+    existing =
+      UkLrt
+      |> Ash.Query.filter(name in ^names)
+      |> Ash.Query.select([:id, :name, :title_en, :year, :type_code])
+      |> Ash.read!()
+      |> Enum.map(fn r ->
+        %{
+          id: r.id,
+          name: r.name,
+          title_en: r.title_en,
+          year: r.year,
+          type_code: r.type_code
+        }
+      end)
+
+    existing_names = MapSet.new(existing, & &1.name)
+    missing = Enum.reject(names, &MapSet.member?(existing_names, &1))
+
+    json(conn, %{
+      existing: existing,
+      existing_count: length(existing),
+      missing: missing,
+      missing_count: length(missing)
+    })
+  end
+
+  def batch_exists(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: names (array of law names)"})
+  end
+
   # Private helpers
 
   defp record_to_json(record) do
