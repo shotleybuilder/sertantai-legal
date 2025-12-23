@@ -107,59 +107,133 @@ Example:
 
 ## Cascade Update Strategy
 
-When a new amending law is scraped that amends other laws in the database, those affected laws need their `amended_by` field updated. This is handled through a cascade update process.
+When new amending laws are scraped, the laws they amend need their `amended_by` field updated. Rather than manually manipulating arrays, we re-run enrichment parse on affected laws - this recycles existing code and ensures all stats recalculate correctly.
 
 ### Overview
 
-1. **During Scrape**: When Law A is scraped and found to amend Laws B, C, D:
-   - Law A's `amending` field is populated: `[uksi/2020/100, ukpga/2019/50, ...]`
-   - Law A's `is_amending` flag is set to `true`
-   - Affected laws (B, C, D) are queued for update
+1. **Batch Parse & Persist**: New laws are parsed and persisted as a batch (close session):
+   - Each law's `amending` field is populated with UK IDs
+   - Amendment stats are calculated
+   - All affected laws are collected into a session JSON file
 
-2. **Queue Storage**: Affected laws are stored in a session-specific JSON file:
-   - Location: `priv/scraper_sessions/{session_id}/affected_laws.json`
-   - Format: `{"amending_law": "uksi/2024/123", "affected_laws": ["uksi/2020/100", "ukpga/2019/50"]}`
+2. **Cascade Update UI**: After batch persist, show modal with aggregated affected laws:
+   - **Header**: Session summary (e.g., "5 new laws persisted")
+   - **In Database**: Combined list of all amended laws that exist in uk_lrt
+   - **Not in Database**: Combined list of all amended laws not in uk_lrt
 
-3. **Batch Update**: After scraping completes, run cascade updates:
-   - For each affected law that exists in uk_lrt
-   - Add the new amending law to its `amended_by` list
-   - Skip laws not in the database (they'll be updated when they're scraped)
+3. **Batch Re-parse**: User triggers re-parse for laws in database:
+   - Run enrichment parse on each (same as existing ParseReviewModal flow)
+   - The `/changes/affected` endpoint returns updated amending laws
+   - `amended_by` field updates automatically via parse result
+   - All stats recalculate correctly
 
-### Implementation Notes
+4. **Batch Scrape (Recursive)**: User can scrape laws not in database:
+   - Scrape and persist as a new batch
+   - This builds another JSON with their affected laws
+   - Creates next cascade layer
+   - User decides when to stop (break point)
 
-**Phase 1 (Current)**: Manual cascade updates
-- After confirming a new amending law, manually trigger update for affected laws
-- Use `/api/cascade-update/:name` endpoint
+### UI Design
 
-**Phase 2 (Future)**: Automatic cascade updates
-- Background job to process affected_laws.json after scrape session completes
-- Batch updates with rate limiting to avoid overwhelming legislation.gov.uk
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Cascade Update: Session 2024-12-23                         │
+│  5 new laws persisted                                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Affected Laws in Database (8)                              │
+│  ┌─────────────────────────────────────────────┬──────────┐ │
+│  │ ☐ UK_eur_2011_305 - Construction Products   │          │ │
+│  │ ☐ UK_uksi_2013_1387 - CPR (Amd) Regs 2013   │          │ │
+│  │ ☐ UK_ukpga_1974_37 - HSWA 1974              │          │ │
+│  │ ... (5 more)                                │          │ │
+│  └─────────────────────────────────────────────┴──────────┘ │
+│                                                             │
+│  Affected Laws Not in Database (3)                          │
+│  ┌─────────────────────────────────────────────┬──────────┐ │
+│  │ ☐ uksi/2019/465                             │          │ │
+│  │ ☐ uksi/2018/230                             │          │ │
+│  │ ☐ eur/2016/425                              │          │ │
+│  └─────────────────────────────────────────────┴──────────┘ │
+│                                                             │
+│  [ Re-parse All In DB ]  [ Scrape & Add Selected ]  [Done]  │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### Data Flow
 
 ```
-New Law Scraped (A)
+SESSION BATCH 1: Parse & Persist New Laws
     |
     v
-Amending.get_laws_amended_by_this_law(A)
+Laws [A1, A2, A3] persisted
+    |
+    +---> A1.amending = [B, C]
+    +---> A2.amending = [C, D, E]
+    +---> A3.amending = [B, F]
     |
     v
-[B, C, D] affected laws identified
-    |
-    +---> A.amending = [B, C, D]
-    |
-    +---> Queue [B, C, D] for amended_by update
+Collect all affected: [B, C, D, E, F] --> affected_laws.json
     |
     v
-Cascade Update Job
+CASCADE LAYER 1: Cascade Update Modal
     |
-    +---> B.amended_by += [A]
-    +---> C.amended_by += [A]
-    +---> D.amended_by += [A]
+    +---> [B, C, D] in DB --> "Re-parse All In DB"
+    |         |
+    |         v
+    |     Batch re-parse B, C, D
+    |     amended_by fields update from /changes/affected
+    |
+    +---> [E, F] not in DB --> "Scrape & Add Selected"
+              |
+              v
+SESSION BATCH 2: Scrape [E, F], persist
+    |
+    +---> E.amending = [G, H]
+    +---> F.amending = [H, I]
+    |
+    v
+New affected: [G, H, I] --> affected_laws.json
+    |
+    v
+CASCADE LAYER 2: New Cascade Update Modal
+    |
+    v
+User decides to continue or stop
 ```
+
+### Processing Model: Breadth-First by Layer
+
+**Important**: Each cascade layer is completed before moving to the next layer. Within a layer, the user has flexibility:
+
+- **Individual processing**: Re-parse or scrape one law at a time
+- **Batch processing**: "Re-parse All" or "Scrape All Selected"
+- **Mixed**: Process some individually, then batch the rest
+
+What we avoid is **depth-first chasing**: Don't follow Law A's full cascade chain before returning to Law B. Instead:
+
+```
+CORRECT (Breadth-First):
+  Layer 1: [A, B, C] → process all/individually → complete layer
+  Layer 2: [D, E, F, G] → process all/individually → complete layer
+  Layer 3: [H, I] → process all/individually → done
+
+INCORRECT (Depth-First):
+  A → D → H → (backtrack) → E → (backtrack) → B → F → I → ...
+```
+
+This ensures predictable progress and lets the user see the full scope of each layer before deciding to continue.
+
+### Implementation Notes
+
+- Re-uses existing `StagedParser.parse/1` for enrichment
+- Re-uses existing `ParseReviewModal` pattern for individual law updates
+- No manual array manipulation needed - stats recalculate from source
+- Rate limiting applies to legislation.gov.uk fetches
 
 ### Edge Cases
 
-- **Law not in database**: Skip, will be populated when that law is scraped
-- **Already in amended_by**: Deduplicate before saving
-- **Revocations**: Also tracked in `rescinded_by` field using same pattern
+- **Already parsed recently**: Show last parse date, allow skip or re-parse
+- **Parse fails**: Show error, allow retry or skip
+- **Revocations**: Same pattern applies for `rescinded_by` updates
+- **Circular references**: Law A amends B, B amends A - both get updated, no infinite loop since we parse each law once per cascade session
