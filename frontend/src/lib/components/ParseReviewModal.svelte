@@ -25,6 +25,7 @@
 	let currentIndex = initialIndex;
 	let parseResult: ParseOneResult | null = null;
 	let selectedFamily: string = '';
+	let selectedSubFamily: string = '';
 	let confirmedCount = 0;
 	let skippedCount = 0;
 	let errorCount = 0;
@@ -56,6 +57,7 @@
 			parseResult = result;
 			// API normalizes Family to lowercase family
 			selectedFamily = (result.record?.family as string) || '';
+			selectedSubFamily = (result.record?.family_ii as string) || '';
 		} catch (error) {
 			console.error('Parse error:', error);
 			lastParsedName = null;
@@ -69,7 +71,8 @@
 			await $confirmMutation.mutateAsync({
 				sessionId,
 				name: currentRecord.name,
-				family: selectedFamily || undefined
+				family: selectedFamily || undefined,
+				overrides: selectedSubFamily ? { family_ii: selectedSubFamily } : undefined
 			});
 			confirmedCount++;
 			moveNext();
@@ -327,9 +330,32 @@
 									{/if}
 								</div>
 							</div>
-							<div class="grid grid-cols-3 px-4 py-2">
+							<div class="grid grid-cols-3 px-4 py-2 items-center">
 								<span class="text-sm text-gray-500">Sub-Family <span class="text-xs text-gray-400">(family_ii)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'family_ii'))}</span>
+								<div class="col-span-2">
+									{#if $familyOptionsQuery.isPending}
+										<span class="text-sm text-gray-400">Loading families...</span>
+									{:else if $familyOptionsQuery.isError}
+										<span class="text-sm text-red-500">Error loading families</span>
+									{:else}
+										<select
+											bind:value={selectedSubFamily}
+											class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+										>
+											<option value="">(None)</option>
+											<optgroup label="Health & Safety">
+												{#each $familyOptionsQuery.data?.grouped?.health_safety || [] as family}
+													<option value={family}>{family}</option>
+												{/each}
+											</optgroup>
+											<optgroup label="Environment">
+												{#each $familyOptionsQuery.data?.grouped?.environment || [] as family}
+													<option value={family}>{family}</option>
+												{/each}
+											</optgroup>
+										</select>
+									{/if}
+								</div>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">SI Codes <span class="text-xs text-gray-400">(si_code)</span></span>

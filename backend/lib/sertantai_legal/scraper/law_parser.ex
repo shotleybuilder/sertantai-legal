@@ -399,7 +399,8 @@ defmodule SertantaiLegal.Scraper.LawParser do
       year: to_integer(enriched[:Year] || enriched["Year"]),
       number: to_string_safe(enriched[:Number] || enriched["Number"]),
       leg_gov_uk_url: enriched[:leg_gov_uk_url],
-      family: enriched[:Family] || enriched["Family"],
+      family: enriched[:Family] || enriched["Family"] || enriched[:family],
+      family_ii: enriched[:family_ii] || enriched["family_ii"],
 
       # Metadata fields - convert types to match UkLrt resource
       md_description: enriched[:md_description],
