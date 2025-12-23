@@ -187,6 +187,43 @@ defmodule SertantaiLegalWeb.UkLrtController do
     end
   end
 
+  @doc """
+  GET /api/uk-lrt/exists/:name
+
+  Check if a UK LRT record exists by name (e.g., "uksi/2025/1227").
+  Uses wildcard path to capture the full name with slashes.
+  """
+  def exists(conn, %{"name" => name_parts}) do
+    # Handle wildcard path (comes as list) or single segment
+    decoded_name =
+      case name_parts do
+        parts when is_list(parts) -> Enum.join(parts, "/")
+        name when is_binary(name) -> URI.decode(name)
+      end
+
+    case UkLrt
+         |> Ash.Query.filter(name == ^decoded_name)
+         |> Ash.read() do
+      {:ok, [existing | _]} ->
+        json(conn, %{
+          exists: true,
+          id: existing.id,
+          name: existing.name,
+          title_en: existing.title_en,
+          family: existing.family,
+          updated_at: existing.updated_at
+        })
+
+      {:ok, []} ->
+        json(conn, %{exists: false})
+
+      {:error, reason} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{error: format_error(reason)})
+    end
+  end
+
   # Private helpers
 
   defp record_to_json(record) do

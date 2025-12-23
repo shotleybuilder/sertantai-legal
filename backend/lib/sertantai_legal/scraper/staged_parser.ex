@@ -37,6 +37,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   import SweetXml
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
+  alias SertantaiLegal.Scraper.Amending
 
   @stages [:extent, :enacted_by, :amendments, :repeal_revoke]
 
@@ -524,72 +525,61 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # ============================================================================
   # Stage 3: Amendments
   # ============================================================================
+  #
+  # Uses the Amending module to fetch amendment data from /changes/affecting
+  # and /changes/affected endpoints. These provide detailed amendment info
+  # including target sections, affect types, and application status.
 
-  defp run_amendments_stage(type_code, year, number, record) do
-    path = "/#{type_code}/#{year}/#{number}/resources/data.xml"
+  defp run_amendments_stage(type_code, year, number, _record) do
+    record = %{type_code: type_code, Year: year, Number: number}
 
-    case Client.fetch_xml(path) do
-      {:ok, xml} ->
-        data = parse_amendments_xml(xml, record)
-        amends_count = length(data[:amends] || [])
-        amended_by_count = length(data[:amended_by] || [])
-        IO.puts("    ✓ Amendments: #{amends_count} amends, #{amended_by_count} amended by")
+    # Fetch laws this law amends (affecting)
+    affecting_result = Amending.get_laws_amended_by_this_law(record)
+
+    # Fetch laws that amend this law (affected)
+    affected_result = Amending.get_laws_amending_this_law(record)
+
+    case {affecting_result, affected_result} do
+      {{:ok, affecting}, {:ok, affected}} ->
+        data = %{
+          # Laws this law amends
+          amending: affecting.amending,
+          rescinding: affecting.rescinding,
+          amending_count: length(affecting.amending),
+          rescinding_count: length(affecting.rescinding),
+          is_amending: length(affecting.amending) > 0,
+          is_rescinding: length(affecting.rescinding) > 0,
+
+          # Laws that amend this law
+          amended_by: affected.amended_by,
+          rescinded_by: affected.rescinded_by,
+          amended_by_count: length(affected.amended_by),
+          rescinded_by_count: length(affected.rescinded_by),
+
+          # Stats
+          amending_stats: affecting.stats,
+          amended_by_stats: affected.stats,
+
+          # Detailed amendment data (for future use)
+          amending_details: affecting.amendments,
+          rescinding_details: affecting.revocations,
+          amended_by_details: affected.amendments,
+          rescinded_by_details: affected.revocations
+        }
+
+        IO.puts("    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws")
+        IO.puts("    ✓ Amended by: #{data.amended_by_count} laws, Rescinded by: #{data.rescinded_by_count} laws")
+
         %{status: :ok, data: data, error: nil}
 
-      {:error, 404, _} ->
-        # No resources file is OK - law may not have amendments
-        IO.puts("    ⚠ No amendments data (404)")
-        %{status: :ok, data: %{amends: [], amended_by: []}, error: nil}
+      {{:error, msg}, _} ->
+        IO.puts("    ✗ Amendments (affecting) failed: #{msg}")
+        %{status: :error, data: nil, error: "Affecting: #{msg}"}
 
-      {:error, code, msg} ->
-        IO.puts("    ✗ Amendments failed: #{msg}")
-        %{status: :error, data: nil, error: "HTTP #{code}: #{msg}"}
+      {_, {:error, msg}} ->
+        IO.puts("    ✗ Amendments (affected) failed: #{msg}")
+        %{status: :error, data: nil, error: "Affected: #{msg}"}
     end
-  end
-
-  defp parse_amendments_xml(xml, _record) do
-    try do
-      # Parse laws that this law amends
-      amends =
-        SweetXml.xpath(xml, ~x"//ukm:Supersedes/ukm:Citation"l)
-        |> Enum.map(fn citation ->
-          uri = SweetXml.xpath(citation, ~x"./@URI"s) |> to_string()
-          title = SweetXml.xpath(citation, ~x"./@Title"s) |> to_string()
-          %{uri: uri, title: title, name: uri_to_name(uri)}
-        end)
-        |> Enum.reject(fn %{uri: uri} -> uri == "" end)
-
-      # Parse laws that amend this law (if present)
-      amended_by =
-        SweetXml.xpath(xml, ~x"//ukm:SupersededBy/ukm:Citation"l)
-        |> Enum.map(fn citation ->
-          uri = SweetXml.xpath(citation, ~x"./@URI"s) |> to_string()
-          title = SweetXml.xpath(citation, ~x"./@Title"s) |> to_string()
-          %{uri: uri, title: title, name: uri_to_name(uri)}
-        end)
-        |> Enum.reject(fn %{uri: uri} -> uri == "" end)
-
-      %{
-        amends: amends,
-        amended_by: amended_by,
-        amends_count: length(amends),
-        amended_by_count: length(amended_by)
-      }
-    rescue
-      e ->
-        %{amends: [], amended_by: [], amendments_error: "Parse error: #{inspect(e)}"}
-    end
-  end
-
-  defp uri_to_name(nil), do: nil
-  defp uri_to_name(""), do: nil
-
-  defp uri_to_name(uri) do
-    # Convert URI like "http://www.legislation.gov.uk/id/uksi/2020/1234"
-    # to name like "uksi/2020/1234"
-    uri
-    |> String.replace(~r"^https?://www\.legislation\.gov\.uk/id/", "")
-    |> String.replace(~r"^https?://www\.legislation\.gov\.uk/", "")
   end
 
   # ============================================================================
@@ -711,6 +701,17 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # ============================================================================
   # Helpers
   # ============================================================================
+
+  defp uri_to_name(nil), do: nil
+  defp uri_to_name(""), do: nil
+
+  defp uri_to_name(uri) do
+    # Convert URI like "http://www.legislation.gov.uk/id/uksi/2020/1234"
+    # to name like "uksi/2020/1234"
+    uri
+    |> String.replace(~r"^https?://www\.legislation\.gov\.uk/id/", "")
+    |> String.replace(~r"^https?://www\.legislation\.gov\.uk/", "")
+  end
 
   defp xpath_text(xml, path) do
     case SweetXml.xpath(xml, path) do

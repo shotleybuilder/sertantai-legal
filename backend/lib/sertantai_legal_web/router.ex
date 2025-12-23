@@ -20,17 +20,21 @@ defmodule SertantaiLegalWeb.Router do
     # Scraper endpoints
     post "/scrape", ScrapeController, :create
     get "/sessions", ScrapeController, :index
+    get "/family-options", ScrapeController, :family_options
     get "/sessions/:id", ScrapeController, :show
     get "/sessions/:id/group/:group", ScrapeController, :group
     patch "/sessions/:id/group/:group/select", ScrapeController, :select
     post "/sessions/:id/persist/:group", ScrapeController, :persist
     post "/sessions/:id/parse/:group", ScrapeController, :parse
+    post "/sessions/:id/parse-one", ScrapeController, :parse_one
+    post "/sessions/:id/confirm", ScrapeController, :confirm
     delete "/sessions/:id", ScrapeController, :delete
 
     # UK LRT CRUD endpoints
     get "/uk-lrt", UkLrtController, :index
     get "/uk-lrt/filters", UkLrtController, :filters
     get "/uk-lrt/search", UkLrtController, :search
+    get "/uk-lrt/exists/*name", UkLrtController, :exists
     get "/uk-lrt/:id", UkLrtController, :show
     patch "/uk-lrt/:id", UkLrtController, :update
     delete "/uk-lrt/:id", UkLrtController, :delete

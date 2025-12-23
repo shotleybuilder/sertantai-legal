@@ -312,6 +312,97 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description "Commencing function flag (1.0 = brings other laws into force)"
     end
 
+    # Amendment Stats - Self-affects (shared across amending/amended_by)
+    attribute :stats_self_affects_count, :integer,
+      source: :"🔺🔻_stats_self_affects_count",
+      allow_nil?: true,
+      description: "Number of amendments this law makes to itself"
+
+    # Amendment Stats - Amending (🔺 this law affects others)
+    attribute :amending_stats_affects_count, :integer,
+      source: :"🔺_stats_affects_count",
+      allow_nil?: true,
+      description: "Total number of amendments made by this law"
+
+    attribute :amending_stats_affected_laws_count, :integer,
+      source: :"🔺_stats_affected_laws_count",
+      allow_nil?: true,
+      description: "Number of distinct laws amended by this law"
+
+    attribute :amending_stats_affects_count_per_law, :string,
+      source: :"🔺_stats_affects_count_per_law",
+      allow_nil?: true,
+      description: "Summary list of amendments per law"
+
+    attribute :amending_stats_affects_count_per_law_detailed, :string,
+      source: :"🔺_stats_affects_count_per_law_detailed",
+      allow_nil?: true,
+      description: "Detailed breakdown with sections"
+
+    # Amendment Stats - Amended_by (🔻 this law is affected by others)
+    attribute :amended_by_stats_affected_by_count, :integer,
+      source: :"🔻_stats_affected_by_count",
+      allow_nil?: true,
+      description: "Total amendments made to this law"
+
+    attribute :amended_by_stats_affected_by_laws_count, :integer,
+      source: :"🔻_stats_affected_by_laws_count",
+      allow_nil?: true,
+      description: "Number of distinct laws amending this"
+
+    attribute :amended_by_stats_affected_by_count_per_law, :string,
+      source: :"🔻_stats_affected_by_count_per_law",
+      allow_nil?: true,
+      description: "Summary list of amending laws"
+
+    attribute :amended_by_stats_affected_by_count_per_law_detailed, :string,
+      source: :"🔻_stats_affected_by_count_per_law_detailed",
+      allow_nil?: true,
+      description: "Detailed breakdown with sections"
+
+    # Rescinding Stats (🔺 this law rescinds/revokes others)
+    attribute :rescinding_stats_rescinding_laws_count, :integer,
+      source: :"🔺_stats_rescinding_laws_count",
+      allow_nil?: true,
+      description: "Number of distinct laws rescinded by this law"
+
+    attribute :rescinding_stats_rescinding_count_per_law, :string,
+      source: :"🔺_stats_rescinding_count_per_law",
+      allow_nil?: true,
+      description: "Summary list of rescinded laws"
+
+    attribute :rescinding_stats_rescinding_count_per_law_detailed, :string,
+      source: :"🔺_stats_rescinding_count_per_law_detailed",
+      allow_nil?: true,
+      description: "Detailed breakdown of rescissions"
+
+    # Rescinded_by Stats (🔻 this law is rescinded/revoked by others)
+    attribute :rescinded_by_stats_rescinded_by_laws_count, :integer,
+      source: :"🔻_stats_rescinded_by_laws_count",
+      allow_nil?: true,
+      description: "Number of distinct laws rescinding this"
+
+    attribute :rescinded_by_stats_rescinded_by_count_per_law, :string,
+      source: :"🔻_stats_rescinded_by_count_per_law",
+      allow_nil?: true,
+      description: "Summary list of rescinding laws"
+
+    attribute :rescinded_by_stats_rescinded_by_count_per_law_detailed, :string,
+      source: :"🔻_stats_rescinded_by_count_per_law_detailed",
+      allow_nil?: true,
+      description: "Detailed breakdown of rescissions"
+
+    # Change Logs
+    attribute :amending_change_log, :string do
+      allow_nil? true
+      description "History of amending field changes"
+    end
+
+    attribute :amended_by_change_log, :string do
+      allow_nil? true
+      description "History of amended_by field changes"
+    end
+
     # Key Dates
     attribute :created_at, :utc_datetime do
       allow_nil? true

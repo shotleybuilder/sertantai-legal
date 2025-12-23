@@ -12,10 +12,18 @@ import {
 	parseGroup,
 	deleteSession,
 	updateSelection,
+	parseOne,
+	confirmRecord,
+	checkExists,
+	getFamilyOptions,
 	type ScrapeSession,
 	type GroupResponse,
 	type ParseResult,
-	type SelectionResult
+	type SelectionResult,
+	type ParseOneResult,
+	type ConfirmResult,
+	type ExistsResult,
+	type FamilyOptionsResult
 } from '$lib/api/scraper';
 
 // Query Keys
@@ -149,5 +157,67 @@ export function useDeleteSessionMutation() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}
+	});
+}
+
+// ============================================================================
+// Parse Review Hooks
+// ============================================================================
+
+/**
+ * Mutation: Parse single record for review
+ */
+export function useParseOneMutation() {
+	return createMutation({
+		mutationFn: ({ sessionId, name }: { sessionId: string; name: string }) =>
+			parseOne(sessionId, name)
+	});
+}
+
+/**
+ * Mutation: Confirm and persist reviewed record
+ */
+export function useConfirmRecordMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: ({
+			sessionId,
+			name,
+			family,
+			overrides
+		}: {
+			sessionId: string;
+			name: string;
+			family?: string;
+			overrides?: Record<string, unknown>;
+		}) => confirmRecord(sessionId, name, family, overrides),
+		onSuccess: (data, variables) => {
+			// Invalidate session to update persisted count
+			queryClient.invalidateQueries({ queryKey: scraperKeys.session(variables.sessionId) });
+			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
+		}
+	});
+}
+
+/**
+ * Query: Check if record exists
+ */
+export function useExistsQuery(name: string) {
+	return createQuery({
+		queryKey: ['uk-lrt', 'exists', name] as const,
+		queryFn: () => checkExists(name),
+		enabled: !!name
+	});
+}
+
+/**
+ * Query: Get family options for dropdowns
+ */
+export function useFamilyOptionsQuery() {
+	return createQuery({
+		queryKey: ['family-options'] as const,
+		queryFn: getFamilyOptions,
+		staleTime: Infinity // Family options rarely change
 	});
 }

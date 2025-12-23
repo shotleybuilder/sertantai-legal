@@ -66,18 +66,22 @@ This is the **complete TanStack stack** for local-first applications with real-t
 ## Key Files
 
 ### Setup
+
 - `lib/query/client.ts` - QueryClient configuration
 - `routes/+layout.svelte` - QueryClientProvider setup
 
 ### Queries
+
 - `lib/query/cases.ts` - Case queries (useCasesQuery, useCaseQuery)
 - `lib/query/*.ts` - Add more entity queries as needed
 
 ### Storage
+
 - `lib/db/index.client.ts` - TanStack DB collections
 - `lib/db/schema.ts` - TypeScript schemas
 
 ### Sync
+
 - `lib/electric/sync.ts` - ElectricSQL → TanStack DB → Store → Query
 - `lib/stores/cases.ts` - Svelte stores for reactivity bridge
 
@@ -85,33 +89,33 @@ This is the **complete TanStack stack** for local-first applications with real-t
 
 ```svelte
 <script lang="ts">
-  import { useCasesQuery } from '$lib/query/cases'
-  import { startSync } from '$lib/electric/sync'
-  import { onMount } from 'svelte'
+	import { useCasesQuery } from '$lib/query/cases';
+	import { startSync } from '$lib/electric/sync';
+	import { onMount } from 'svelte';
 
-  // TanStack Query hook
-  const casesQuery = useCasesQuery()
+	// TanStack Query hook
+	const casesQuery = useCasesQuery();
 
-  // Start sync on mount
-  onMount(async () => {
-    await startSync()
-  })
+	// Start sync on mount
+	onMount(async () => {
+		await startSync();
+	});
 </script>
 
 <!-- Loading state -->
 {#if $casesQuery.isLoading}
-  <p>Loading...</p>
+	<p>Loading...</p>
 
-<!-- Error state -->
+	<!-- Error state -->
 {:else if $casesQuery.isError}
-  <p>Error: {$casesQuery.error.message}</p>
+	<p>Error: {$casesQuery.error.message}</p>
 
-<!-- Success state -->
+	<!-- Success state -->
 {:else}
-  <p>Found {$casesQuery.data.length} cases</p>
-  {#each $casesQuery.data as case_}
-    <div>{case_.case_reference}</div>
-  {/each}
+	<p>Found {$casesQuery.data.length} cases</p>
+	{#each $casesQuery.data as case_}
+		<div>{case_.case_reference}</div>
+	{/each}
 {/if}
 ```
 
@@ -155,4 +159,4 @@ npm test
 
 ---
 
-**This is the reference implementation for all sertantai-* projects!** 🚀
+**This is the reference implementation for all sertantai-\* projects!** 🚀

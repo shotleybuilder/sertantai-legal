@@ -113,7 +113,9 @@
 
 		<!-- Tech Stack Badge -->
 		<div class="text-center text-sm text-gray-500">
-			<p>SvelteKit + TypeScript + TailwindCSS + Phoenix + Ash Framework + ElectricSQL + TanStack DB</p>
+			<p>
+				SvelteKit + TypeScript + TailwindCSS + Phoenix + Ash Framework + ElectricSQL + TanStack DB
+			</p>
 		</div>
 	</div>
 </main>

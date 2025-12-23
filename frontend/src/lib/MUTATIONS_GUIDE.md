@@ -39,14 +39,14 @@ User Action
 
 ```typescript
 export interface CreateEntityInput {
-  field1: string
-  field2?: string
-  // ... your fields
+	field1: string;
+	field2?: string;
+	// ... your fields
 }
 
 interface CreateEntityResponse {
-  success: boolean
-  data: Entity
+	success: boolean;
+	data: Entity;
 }
 ```
 
@@ -54,21 +54,21 @@ interface CreateEntityResponse {
 
 ```typescript
 async function createEntityMutation(input: CreateEntityInput): Promise<Entity> {
-  const response = await fetch('http://localhost:4002/api/entities', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(input),
-  })
+	const response = await fetch('http://localhost:4002/api/entities', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(input)
+	});
 
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`)
-  }
+	if (!response.ok) {
+		const data = await response.json().catch(() => ({}));
+		throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+	}
 
-  const result: CreateEntityResponse = await response.json()
-  return result.data
+	const result: CreateEntityResponse = await response.json();
+	return result.data;
 }
 ```
 
@@ -76,54 +76,54 @@ async function createEntityMutation(input: CreateEntityInput): Promise<Entity> {
 
 ```typescript
 export function useCreateEntityMutation() {
-  return createMutation({
-    mutationFn: createEntityMutation,
+	return createMutation({
+		mutationFn: createEntityMutation,
 
-    // OPTIMISTIC UPDATE - Instant UI feedback
-    onMutate: async (newEntity: CreateEntityInput) => {
-      // 1. Cancel outgoing refetches (prevent race conditions)
-      await queryClient?.cancelQueries({ queryKey: entityKeys.all })
+		// OPTIMISTIC UPDATE - Instant UI feedback
+		onMutate: async (newEntity: CreateEntityInput) => {
+			// 1. Cancel outgoing refetches (prevent race conditions)
+			await queryClient?.cancelQueries({ queryKey: entityKeys.all });
 
-      // 2. Snapshot previous state (for rollback)
-      const previousEntities = get(entitiesStore)
+			// 2. Snapshot previous state (for rollback)
+			const previousEntities = get(entitiesStore);
 
-      // 3. Create optimistic entity with temp ID
-      const optimisticEntity: Entity = {
-        id: `temp-${Date.now()}`,
-        ...newEntity,
-        inserted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as Entity
+			// 3. Create optimistic entity with temp ID
+			const optimisticEntity: Entity = {
+				id: `temp-${Date.now()}`,
+				...newEntity,
+				inserted_at: new Date().toISOString(),
+				updated_at: new Date().toISOString()
+			} as Entity;
 
-      // 4. Update store immediately (instant UI update!)
-      addEntity(optimisticEntity)
+			// 4. Update store immediately (instant UI update!)
+			addEntity(optimisticEntity);
 
-      // 5. Return context for success/error handlers
-      return { previousEntities, optimisticEntity }
-    },
+			// 5. Return context for success/error handlers
+			return { previousEntities, optimisticEntity };
+		},
 
-    // SUCCESS - Replace optimistic with real data
-    onSuccess: (serverEntity, _variables, context) => {
-      if (!context) return
+		// SUCCESS - Replace optimistic with real data
+		onSuccess: (serverEntity, _variables, context) => {
+			if (!context) return;
 
-      // Add real entity from server
-      addEntity(serverEntity)
+			// Add real entity from server
+			addEntity(serverEntity);
 
-      // Invalidate queries (ElectricSQL will sync the real data)
-      queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-    },
+			// Invalidate queries (ElectricSQL will sync the real data)
+			queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+		},
 
-    // ERROR - Rollback to previous state
-    onError: (_error, _variables, context) => {
-      if (!context) return
+		// ERROR - Rollback to previous state
+		onError: (_error, _variables, context) => {
+			if (!context) return;
 
-      // Restore previous state
-      entitiesStore.set(context.previousEntities)
+			// Restore previous state
+			entitiesStore.set(context.previousEntities);
 
-      // Invalidate to refetch
-      queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-    },
-  })
+			// Invalidate to refetch
+			queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+		}
+	});
 }
 ```
 
@@ -131,61 +131,56 @@ export function useCreateEntityMutation() {
 
 ```svelte
 <script lang="ts">
-  import { useCreateEntityMutation } from '$lib/query/entities'
+	import { useCreateEntityMutation } from '$lib/query/entities';
 
-  const createMutation = useCreateEntityMutation()
+	const createMutation = useCreateEntityMutation();
 
-  let field1 = ''
-  let field2 = ''
+	let field1 = '';
+	let field2 = '';
 
-  function handleSubmit() {
-    $createMutation.mutate(
-      {
-        field1,
-        field2,
-      },
-      {
-        onSuccess: () => {
-          // Redirect or show success message
-          goto('/entities')
-        },
-      }
-    )
-  }
+	function handleSubmit() {
+		$createMutation.mutate(
+			{
+				field1,
+				field2
+			},
+			{
+				onSuccess: () => {
+					// Redirect or show success message
+					goto('/entities');
+				}
+			}
+		);
+	}
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
-  <!-- Success Message -->
-  {#if $createMutation.isSuccess}
-    <div class="success-banner">
-      Entity created successfully!
-    </div>
-  {/if}
+	<!-- Success Message -->
+	{#if $createMutation.isSuccess}
+		<div class="success-banner">Entity created successfully!</div>
+	{/if}
 
-  <!-- Error Message -->
-  {#if $createMutation.isError}
-    <div class="error-banner">
-      {$createMutation.error?.message || 'Failed to create entity'}
-    </div>
-  {/if}
+	<!-- Error Message -->
+	{#if $createMutation.isError}
+		<div class="error-banner">
+			{$createMutation.error?.message || 'Failed to create entity'}
+		</div>
+	{/if}
 
-  <!-- Form Fields -->
-  <input bind:value={field1} required />
-  <input bind:value={field2} />
+	<!-- Form Fields -->
+	<input bind:value={field1} required />
+	<input bind:value={field2} />
 
-  <!-- Submit Button -->
-  <button
-    type="submit"
-    disabled={$createMutation.isPending || $createMutation.isSuccess}
-  >
-    {#if $createMutation.isPending}
-      Creating...
-    {:else if $createMutation.isSuccess}
-      Created!
-    {:else}
-      Create Entity
-    {/if}
-  </button>
+	<!-- Submit Button -->
+	<button type="submit" disabled={$createMutation.isPending || $createMutation.isSuccess}>
+		{#if $createMutation.isPending}
+			Creating...
+		{:else if $createMutation.isSuccess}
+			Created!
+		{:else}
+			Create Entity
+		{/if}
+	</button>
 </form>
 ```
 
@@ -195,42 +190,42 @@ export function useCreateEntityMutation() {
 
 ```typescript
 export interface UpdateEntityInput {
-  id: string
-  field1?: string
-  field2?: string
+	id: string;
+	field1?: string;
+	field2?: string;
 }
 
 export function useUpdateEntityMutation() {
-  return createMutation({
-    mutationFn: updateEntityMutation,
+	return createMutation({
+		mutationFn: updateEntityMutation,
 
-    onMutate: async (updatedEntity: UpdateEntityInput) => {
-      await queryClient?.cancelQueries({ queryKey: entityKeys.all })
-      const previousEntities = get(entitiesStore)
+		onMutate: async (updatedEntity: UpdateEntityInput) => {
+			await queryClient?.cancelQueries({ queryKey: entityKeys.all });
+			const previousEntities = get(entitiesStore);
 
-      // Optimistically update in store
-      const currentEntities = get(entitiesStore)
-      const optimisticEntities = currentEntities.map(e =>
-        e.id === updatedEntity.id
-          ? { ...e, ...updatedEntity, updated_at: new Date().toISOString() }
-          : e
-      )
-      entitiesStore.set(optimisticEntities)
+			// Optimistically update in store
+			const currentEntities = get(entitiesStore);
+			const optimisticEntities = currentEntities.map((e) =>
+				e.id === updatedEntity.id
+					? { ...e, ...updatedEntity, updated_at: new Date().toISOString() }
+					: e
+			);
+			entitiesStore.set(optimisticEntities);
 
-      return { previousEntities }
-    },
+			return { previousEntities };
+		},
 
-    onSuccess: () => {
-      queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-    },
+		onSuccess: () => {
+			queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+		},
 
-    onError: (_error, _variables, context) => {
-      if (context?.previousEntities) {
-        entitiesStore.set(context.previousEntities)
-      }
-      queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-    },
-  })
+		onError: (_error, _variables, context) => {
+			if (context?.previousEntities) {
+				entitiesStore.set(context.previousEntities);
+			}
+			queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+		}
+	});
 }
 ```
 
@@ -240,31 +235,31 @@ export function useUpdateEntityMutation() {
 
 ```typescript
 export function useDeleteEntityMutation() {
-  return createMutation({
-    mutationFn: deleteEntityMutation,
+	return createMutation({
+		mutationFn: deleteEntityMutation,
 
-    onMutate: async (id: string) => {
-      await queryClient?.cancelQueries({ queryKey: entityKeys.all })
-      const previousEntities = get(entitiesStore)
+		onMutate: async (id: string) => {
+			await queryClient?.cancelQueries({ queryKey: entityKeys.all });
+			const previousEntities = get(entitiesStore);
 
-      // Optimistically remove from store
-      const currentEntities = get(entitiesStore)
-      entitiesStore.set(currentEntities.filter(e => e.id !== id))
+			// Optimistically remove from store
+			const currentEntities = get(entitiesStore);
+			entitiesStore.set(currentEntities.filter((e) => e.id !== id));
 
-      return { previousEntities }
-    },
+			return { previousEntities };
+		},
 
-    onSuccess: () => {
-      queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-    },
+		onSuccess: () => {
+			queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+		},
 
-    onError: (_error, _variables, context) => {
-      if (context?.previousEntities) {
-        entitiesStore.set(context.previousEntities)
-      }
-      queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-    },
-  })
+		onError: (_error, _variables, context) => {
+			if (context?.previousEntities) {
+				entitiesStore.set(context.previousEntities);
+			}
+			queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+		}
+	});
 }
 ```
 
@@ -272,163 +267,182 @@ export function useDeleteEntityMutation() {
 
 ```svelte
 <script lang="ts">
-  import { useDeleteEntityMutation } from '$lib/query/entities'
+	import { useDeleteEntityMutation } from '$lib/query/entities';
 
-  const deleteMutation = useDeleteEntityMutation()
+	const deleteMutation = useDeleteEntityMutation();
 
-  function handleDelete(id: string, name: string) {
-    if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-      $deleteMutation.mutate(id)
-    }
-  }
+	function handleDelete(id: string, name: string) {
+		if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+			$deleteMutation.mutate(id);
+		}
+	}
 </script>
 
 <button
-  on:click={() => handleDelete(entity.id, entity.name)}
-  class="text-red-600 hover:text-red-900"
-  disabled={$deleteMutation.isPending}
+	on:click={() => handleDelete(entity.id, entity.name)}
+	class="text-red-600 hover:text-red-900"
+	disabled={$deleteMutation.isPending}
 >
-  {#if $deleteMutation.isPending}
-    Deleting...
-  {:else}
-    Delete
-  {/if}
+	{#if $deleteMutation.isPending}
+		Deleting...
+	{:else}
+		Delete
+	{/if}
 </button>
 ```
 
 ## Best Practices
 
 ### 1. Always Use Optimistic Updates
+
 ✅ **DO**: Update UI immediately for instant feedback
+
 ```typescript
 onMutate: async (newData) => {
-  // Immediately update store
-  addEntity(optimisticEntity)
-  return { previousData }
-}
+	// Immediately update store
+	addEntity(optimisticEntity);
+	return { previousData };
+};
 ```
 
 ❌ **DON'T**: Wait for server response
+
 ```typescript
 // This creates lag and poor UX
 onSuccess: (serverData) => {
-  addEntity(serverData) // Too slow!
-}
+	addEntity(serverData); // Too slow!
+};
 ```
 
 ### 2. Always Provide Rollback
+
 ✅ **DO**: Save previous state and restore on error
+
 ```typescript
 onMutate: async () => {
-  const previousEntities = get(entitiesStore)
-  return { previousEntities }
-}
+	const previousEntities = get(entitiesStore);
+	return { previousEntities };
+};
 
 onError: (_error, _variables, context) => {
-  entitiesStore.set(context.previousEntities) // Rollback
-}
+	entitiesStore.set(context.previousEntities); // Rollback
+};
 ```
 
 ### 3. Cancel Outgoing Queries
+
 ✅ **DO**: Prevent race conditions
+
 ```typescript
 onMutate: async () => {
-  await queryClient?.cancelQueries({ queryKey: entityKeys.all })
-  // ... rest of optimistic update
-}
+	await queryClient?.cancelQueries({ queryKey: entityKeys.all });
+	// ... rest of optimistic update
+};
 ```
 
 ### 4. Invalidate Queries After Success
+
 ✅ **DO**: Trigger refetch to get ElectricSQL data
+
 ```typescript
 onSuccess: () => {
-  queryClient?.invalidateQueries({ queryKey: entityKeys.all })
-}
+	queryClient?.invalidateQueries({ queryKey: entityKeys.all });
+};
 ```
 
 ### 5. Use Temporary IDs
+
 ✅ **DO**: Use unique temporary IDs
+
 ```typescript
 const optimisticEntity = {
-  id: `temp-${Date.now()}`,
-  ...newData
-}
+	id: `temp-${Date.now()}`,
+	...newData
+};
 ```
 
 ❌ **DON'T**: Use random or duplicate IDs
+
 ```typescript
-id: 'temp' // Could conflict!
-id: Math.random().toString() // Not guaranteed unique
+id: 'temp'; // Could conflict!
+id: Math.random().toString(); // Not guaranteed unique
 ```
 
 ## Debugging Tips
 
 ### Check Optimistic Updates
+
 ```javascript
 // In browser console
-console.log('[Mutation] Optimistic update:', optimisticEntity)
-console.log('[Mutation] Previous state:', previousEntities)
+console.log('[Mutation] Optimistic update:', optimisticEntity);
+console.log('[Mutation] Previous state:', previousEntities);
 ```
 
 ### Monitor Store Changes
+
 ```svelte
 <script>
-  // Add to your component for debugging
-  $: console.log('Store updated:', $entitiesStore)
+	// Add to your component for debugging
+	$: console.log('Store updated:', $entitiesStore);
 </script>
 ```
 
 ### Test Error Rollback
+
 ```typescript
 // Temporarily make API fail to test rollback
 async function createEntityMutation(input) {
-  throw new Error('Test error') // Should trigger rollback!
+	throw new Error('Test error'); // Should trigger rollback!
 }
 ```
 
 ## Common Patterns
 
 ### Pattern: Redirect After Success
+
 ```svelte
 <script>
-  $createMutation.mutate(data, {
-    onSuccess: () => {
-      setTimeout(() => goto('/entities'), 500)
-    }
-  })
+	$createMutation.mutate(data, {
+		onSuccess: () => {
+			setTimeout(() => goto('/entities'), 500);
+		}
+	});
 </script>
 ```
 
 ### Pattern: Toast Notifications
+
 ```svelte
 <script>
-  import { toast } from '$lib/toast'
+	import { toast } from '$lib/toast';
 
-  $createMutation.mutate(data, {
-    onSuccess: () => toast.success('Entity created!'),
-    onError: (error) => toast.error(error.message)
-  })
+	$createMutation.mutate(data, {
+		onSuccess: () => toast.success('Entity created!'),
+		onError: (error) => toast.error(error.message)
+	});
 </script>
 ```
 
 ### Pattern: Form Reset
+
 ```svelte
 <script>
-  function handleSubmit() {
-    $createMutation.mutate(formData, {
-      onSuccess: () => {
-        // Reset form
-        field1 = ''
-        field2 = ''
-      }
-    })
-  }
+	function handleSubmit() {
+		$createMutation.mutate(formData, {
+			onSuccess: () => {
+				// Reset form
+				field1 = '';
+				field2 = '';
+			}
+		});
+	}
 </script>
 ```
 
 ## Reference Implementation
 
 See `frontend/src/lib/query/cases.ts` for complete working examples of:
+
 - ✅ Create mutation with optimistic updates
 - ✅ Update mutation with optimistic updates
 - ✅ Delete mutation with optimistic updates

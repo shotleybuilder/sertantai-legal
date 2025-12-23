@@ -183,6 +183,16 @@
 		}
 		return null;
 	}
+
+	// Helper to check if a field has meaningful data (not empty)
+	function hasData(value: unknown): boolean {
+		if (value === null || value === undefined) return false;
+		if (value === '' || value === '-' || value === '(none)') return false;
+		if (Array.isArray(value) && value.length === 0) return false;
+		if (typeof value === 'object' && Object.keys(value).length === 0) return false;
+		if (typeof value === 'number' && value === 0) return false;
+		return true;
+	}
 </script>
 
 {#if open}
@@ -475,18 +485,36 @@
 
 					<!-- SECTION 6: FUNCTION -->
 					<div class="mb-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
-						<div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+						<div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
 							<h4 class="text-sm font-medium text-gray-700">Function</h4>
+							<div class="flex space-x-2">
+								{#if parseResult.record?.is_amending}
+									<span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">Amending Law</span>
+								{/if}
+								{#if parseResult.record?.is_rescinding}
+									<span class="px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded">Rescinding Law</span>
+								{/if}
+							</div>
 						</div>
 						<div class="divide-y divide-gray-100">
+							<!-- Function -->
+							{#if hasData(getField(parseResult.record, 'function'))}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Function <span class="text-xs text-gray-400">(function)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'function'))}</span>
 							</div>
+							{/if}
+
+							<!-- Enacting -->
+							{#if hasData(getField(parseResult.record, 'enacting'))}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Enacts <span class="text-xs text-gray-400">(enacting)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'enacting'))}</span>
 							</div>
+							{/if}
+
+							<!-- Enacted By -->
+							{#if hasData(getField(parseResult.record, 'enacted_by')) || parseResult.record?.is_act}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Enacted By <span class="text-xs text-gray-400">(enacted_by)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">
@@ -503,41 +531,142 @@
 										{/each}
 									{:else if parseResult.record?.is_act}
 										<span class="italic text-gray-500">Primary legislation - not enacted by other laws</span>
-									{:else}
-										(none)
 									{/if}
 								</span>
 							</div>
+							{/if}
+
+							<!-- Amending section -->
+							{#if hasData(getField(parseResult.record, 'amending')) || (parseResult.record?.amending_count && parseResult.record.amending_count > 0)}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Amends <span class="text-xs text-gray-400">(amending)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">
-									{#if parseResult.record?.amends && Array.isArray(parseResult.record.amends) && parseResult.record.amends.length > 0}
-										{parseResult.record.amends.length} laws
-									{:else}
-										{formatValue(getField(parseResult.record, 'amending'))}
+									{#if parseResult.record?.amending && Array.isArray(parseResult.record.amending) && parseResult.record.amending.length > 0}
+										{parseResult.record.amending.join(', ')}
+									{:else if parseResult.record?.amending_count && parseResult.record.amending_count > 0}
+										{parseResult.record.amending_count} {parseResult.record.amending_count === 1 ? 'law' : 'laws'}
 									{/if}
 								</span>
 							</div>
+							{/if}
+
+							<!-- Amending Stats -->
+							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔺 Affects Count</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amending_stats_affects_count'))}</span>
+							</div>
+							{/if}
+							{#if hasData(getField(parseResult.record, 'amending_stats_affected_laws_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔺 Affected Laws Count</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amending_stats_affected_laws_count'))}</span>
+							</div>
+							{/if}
+							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔺 Affects Detail</span>
+								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed'))}</span>
+							</div>
+							{/if}
+
+							<!-- Amended By section -->
+							{#if hasData(getField(parseResult.record, 'amended_by')) || (parseResult.record?.amended_by_count && parseResult.record.amended_by_count > 0)}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Amended By <span class="text-xs text-gray-400">(amended_by)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">
 									{#if parseResult.record?.amended_by && Array.isArray(parseResult.record.amended_by) && parseResult.record.amended_by.length > 0}
-										{parseResult.record.amended_by.length} laws
-									{:else}
-										(none)
+										{parseResult.record.amended_by.join(', ')}
+									{:else if parseResult.record?.amended_by_count && parseResult.record.amended_by_count > 0}
+										{parseResult.record.amended_by_count} {parseResult.record.amended_by_count === 1 ? 'law' : 'laws'}
 									{/if}
 								</span>
 							</div>
+							{/if}
+
+							<!-- Amended By Stats -->
+							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔻 Affected By Count</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amended_by_stats_affected_by_count'))}</span>
+							</div>
+							{/if}
+							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_laws_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔻 Amending Laws Count</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amended_by_stats_affected_by_laws_count'))}</span>
+							</div>
+							{/if}
+							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count_per_law_detailed'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔻 Amended By Detail</span>
+								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'amended_by_stats_affected_by_count_per_law_detailed'))}</span>
+							</div>
+							{/if}
+
+							<!-- Rescinding section -->
+							{#if hasData(getField(parseResult.record, 'rescinding')) || (parseResult.record?.rescinding_count && parseResult.record.rescinding_count > 0)}
 							<div class="grid grid-cols-3 px-4 py-2">
 								<span class="text-sm text-gray-500">Rescinds <span class="text-xs text-gray-400">(rescinding)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'rescinding'))}</span>
-							</div>
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Rescinded By <span class="text-xs text-gray-400">(rescinded_by)</span></span>
-								<span class="col-span-2 text-sm text-gray-900 {getField(parseResult.record, 'rescinded_by') ? 'text-red-600 font-medium' : ''}">
-									{formatValue(getField(parseResult.record, 'rescinded_by'))}
+								<span class="col-span-2 text-sm text-gray-900">
+									{#if parseResult.record?.rescinding && Array.isArray(parseResult.record.rescinding) && parseResult.record.rescinding.length > 0}
+										{parseResult.record.rescinding.join(', ')}
+									{:else if parseResult.record?.rescinding_count && parseResult.record.rescinding_count > 0}
+										{parseResult.record.rescinding_count} {parseResult.record.rescinding_count === 1 ? 'law' : 'laws'}
+									{/if}
 								</span>
 							</div>
+							{/if}
+
+							<!-- Rescinding Stats -->
+							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_laws_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔺 Rescinded Laws Count</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'rescinding_stats_rescinding_laws_count'))}</span>
+							</div>
+							{/if}
+							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_count_per_law_detailed'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔺 Rescinding Detail</span>
+								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'rescinding_stats_rescinding_count_per_law_detailed'))}</span>
+							</div>
+							{/if}
+
+							<!-- Rescinded By section -->
+							{#if hasData(getField(parseResult.record, 'rescinded_by')) || (parseResult.record?.rescinded_by_count && parseResult.record.rescinded_by_count > 0)}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">Rescinded By <span class="text-xs text-gray-400">(rescinded_by)</span></span>
+								<span class="col-span-2 text-sm {parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0 ? 'text-red-600 font-medium' : 'text-gray-900'}">
+									{#if parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0}
+										{parseResult.record.rescinded_by.join(', ')}
+									{:else if parseResult.record?.rescinded_by_count && parseResult.record.rescinded_by_count > 0}
+										{parseResult.record.rescinded_by_count} {parseResult.record.rescinded_by_count === 1 ? 'law' : 'laws'}
+									{/if}
+								</span>
+							</div>
+							{/if}
+
+							<!-- Rescinded By Stats -->
+							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔻 Rescinding Laws Count</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count'))}</span>
+							</div>
+							{/if}
+							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">🔻 Rescinded By Detail</span>
+								<span class="col-span-2 text-sm text-red-600 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}</span>
+							</div>
+							{/if}
+
+							<!-- Self Amendments (shared stat) -->
+							{#if hasData(getField(parseResult.record, 'stats_self_affects_count'))}
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500">Self Amendments</span>
+								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'stats_self_affects_count'))}</span>
+							</div>
+							{/if}
 						</div>
 					</div>
 

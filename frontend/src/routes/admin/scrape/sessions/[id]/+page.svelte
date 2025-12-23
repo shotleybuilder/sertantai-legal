@@ -7,6 +7,7 @@
 		useUpdateSelectionMutation
 	} from '$lib/query/scraper';
 	import type { ScrapeSession, ScrapeRecord } from '$lib/api/scraper';
+	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 
 	$: sessionId = $page.params.id ?? '';
 	$: sessionQuery = useSessionQuery(sessionId);
@@ -25,6 +26,12 @@
 	$: selectedCount = records.filter((r) => r.selected).length;
 	$: allSelected = records.length > 0 && selectedCount === records.length;
 	$: someSelected = selectedCount > 0 && selectedCount < records.length;
+
+	// Parse Review Modal State
+	let showParseModal = false;
+	let parseModalRecords: ScrapeRecord[] = [];
+	let parseModalStartIndex = 0;
+	let parseCompleteMessage = '';
 
 	function getStatusColor(status: ScrapeSession['status']): string {
 		switch (status) {
@@ -96,6 +103,38 @@
 				selectedOnly: parseSelectedOnly
 			});
 		}
+	}
+
+	function handleInteractiveParse() {
+		const targetRecords = selectedCount > 0 ? records.filter((r) => r.selected) : records;
+		if (targetRecords.length === 0) {
+			alert('No records to parse');
+			return;
+		}
+		parseModalRecords = targetRecords;
+		parseModalStartIndex = 0;
+		parseCompleteMessage = '';
+		showParseModal = true;
+	}
+
+	function handleParseModalClose() {
+		showParseModal = false;
+	}
+
+	function handleParseComplete(event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>) {
+		showParseModal = false;
+		const { confirmed, skipped, errors } = event.detail;
+		parseCompleteMessage = `Parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
+		// Refresh the session data to update counts
+		$sessionQuery.refetch();
+	}
+
+	function handleRowClick(record: ScrapeRecord, index: number) {
+		// Open modal for single record
+		parseModalRecords = [record];
+		parseModalStartIndex = 0;
+		parseCompleteMessage = '';
+		showParseModal = true;
 	}
 
 	async function handleSelectAll() {
@@ -252,37 +291,63 @@
 						</span>
 					{/if}
 				</div>
-				<button
-					on:click={handleParse}
-					disabled={$parseMutation.isPending || records.length === 0}
-					class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-				>
-					{#if $parseMutation.isPending}
-						<svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-							<circle
-								class="opacity-25"
-								cx="12"
-								cy="12"
-								r="10"
-								stroke="currentColor"
-								stroke-width="4"
-							></circle>
-							<path
-								class="opacity-75"
-								fill="currentColor"
-								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-							></path>
-						</svg>
-						Parsing...
-					{:else if selectedCount > 0}
-						Parse Selected ({selectedCount})
-					{:else}
-						Parse All ({records.length})
-					{/if}
-				</button>
+				<div class="flex items-center space-x-2">
+					<button
+						on:click={handleInteractiveParse}
+						disabled={records.length === 0}
+						class="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+					>
+						{#if selectedCount > 0}
+							Review Selected ({selectedCount})
+						{:else}
+							Review All ({records.length})
+						{/if}
+					</button>
+					<button
+						on:click={handleParse}
+						disabled={$parseMutation.isPending || records.length === 0}
+						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+					>
+						{#if $parseMutation.isPending}
+							<svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								></circle>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								></path>
+							</svg>
+							Parsing...
+						{:else if selectedCount > 0}
+							Auto Parse ({selectedCount})
+						{:else}
+							Auto Parse All ({records.length})
+						{/if}
+					</button>
+				</div>
 			</div>
 
 			<!-- Mutation Results -->
+			{#if parseCompleteMessage}
+				<div class="mx-4 mt-4 rounded-md bg-green-50 p-4 flex justify-between items-center">
+					<p class="text-sm text-green-700">{parseCompleteMessage}</p>
+					<button
+						on:click={() => (parseCompleteMessage = '')}
+						class="text-green-600 hover:text-green-800"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+			{/if}
 			{#if $parseMutation.isSuccess}
 				<div class="mx-4 mt-4 rounded-md bg-green-50 p-4">
 					<p class="text-sm text-green-700">
@@ -356,6 +421,11 @@
 											SI Codes
 										</th>
 									{/if}
+									<th
+										class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+									>
+										Actions
+									</th>
 								</tr>
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
@@ -405,6 +475,19 @@
 												{/if}
 											</td>
 										{/if}
+										<td class="px-4 py-3 text-right">
+											<button
+												on:click|stopPropagation={() => handleRowClick(record, 0)}
+												class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+												title="Parse and review this record"
+											>
+												<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+												</svg>
+												Review
+											</button>
+										</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -419,3 +502,13 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Parse Review Modal -->
+<ParseReviewModal
+	{sessionId}
+	records={parseModalRecords}
+	initialIndex={parseModalStartIndex}
+	open={showParseModal}
+	on:close={handleParseModalClose}
+	on:complete={handleParseComplete}
+/>

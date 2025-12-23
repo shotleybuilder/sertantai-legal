@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Scraper.Filters do
   alias SertantaiLegal.Scraper.Terms.Environment
   alias SertantaiLegal.Scraper.Terms.HealthSafety
   alias SertantaiLegal.Scraper.Terms.SICodes
+  alias SertantaiLegal.Scraper.Models
 
   @exclusions [
     ~r/railways?.*station.*order/,
@@ -221,12 +222,20 @@ defmodule SertantaiLegal.Scraper.Filters do
   end
 
   defp si_code_family(si_code) when is_binary(si_code) do
-    # Could be expanded to map SI codes to specific families
-    # For now, return nil as the legl code doesn't populate this
-    cond do
-      MapSet.member?(SICodes.hs_si_codes(), si_code) -> "Health & Safety"
-      MapSet.member?(SICodes.e_si_codes(), si_code) -> "Environment"
-      true -> nil
+    # Use Models module for granular SI code -> family mapping
+    si_code_map = Models.ehs_si_code_family()
+
+    case Map.get(si_code_map, si_code) do
+      nil ->
+        # Fallback to broad category if no specific mapping exists
+        cond do
+          MapSet.member?(SICodes.hs_si_codes(), si_code) -> "💙 OH&S: Occupational / Personal Safety"
+          MapSet.member?(SICodes.e_si_codes(), si_code) -> "💚 ENVIRONMENTAL PROTECTION"
+          true -> nil
+        end
+
+      family ->
+        family
     end
   end
 

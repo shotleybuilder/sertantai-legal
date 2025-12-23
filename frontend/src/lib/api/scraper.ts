@@ -206,3 +206,131 @@ export async function deleteSession(sessionId: string): Promise<{ message: strin
 
 	return response.json();
 }
+
+// ============================================================================
+// Parse Review API
+// ============================================================================
+
+export interface StageResult {
+	status: 'ok' | 'error' | 'skipped';
+	data: Record<string, unknown> | null;
+	error: string | null;
+}
+
+export interface ParseOneResult {
+	session_id: string;
+	name: string;
+	record: Record<string, unknown>;
+	stages: {
+		extent: StageResult;
+		enacted_by: StageResult;
+		amendments: StageResult;
+		repeal_revoke: StageResult;
+	};
+	errors: string[];
+	has_errors: boolean;
+	duplicate: {
+		exists: boolean;
+		id?: string;
+		title_en?: string;
+		family?: string;
+		updated_at?: string;
+	} | null;
+}
+
+export interface ConfirmResult {
+	message: string;
+	name: string;
+	record_id: string;
+	action: 'inserted' | 'updated';
+}
+
+export interface ExistsResult {
+	exists: boolean;
+	id?: string;
+	name?: string;
+	title_en?: string;
+	family?: string;
+	updated_at?: string;
+}
+
+/**
+ * Parse a single record and return staged results for review
+ */
+export async function parseOne(sessionId: string, name: string): Promise<ParseOneResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/parse-one`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ name })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to parse record');
+	}
+
+	return response.json();
+}
+
+/**
+ * Confirm and persist a reviewed record
+ */
+export async function confirmRecord(
+	sessionId: string,
+	name: string,
+	family?: string,
+	overrides?: Record<string, unknown>
+): Promise<ConfirmResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/confirm`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ name, family, overrides })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to confirm record');
+	}
+
+	return response.json();
+}
+
+/**
+ * Check if a record exists in uk_lrt by name
+ */
+export async function checkExists(name: string): Promise<ExistsResult> {
+	const response = await fetch(`${API_URL}/api/uk-lrt/exists/${encodeURIComponent(name)}`);
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to check existence');
+	}
+
+	return response.json();
+}
+
+// ============================================================================
+// Family Options API
+// ============================================================================
+
+export interface FamilyOptionsResult {
+	families: string[];
+	grouped: {
+		health_safety: string[];
+		environment: string[];
+	};
+}
+
+/**
+ * Get available family options for dropdowns
+ */
+export async function getFamilyOptions(): Promise<FamilyOptionsResult> {
+	const response = await fetch(`${API_URL}/api/family-options`);
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to fetch family options');
+	}
+
+	return response.json();
+}

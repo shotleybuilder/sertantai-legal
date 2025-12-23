@@ -5,22 +5,22 @@
  * Mutations that write to API and update local state optimistically
  */
 
-import { createQuery, createMutation } from '@tanstack/svelte-query'
-import { casesStore, addCase } from '$lib/stores/cases'
-import { queryClient } from '$lib/query/client'
-import { get } from 'svelte/store'
-import type { Case } from '$lib/db/schema'
+import { createQuery, createMutation } from '@tanstack/svelte-query';
+import { casesStore, addCase } from '$lib/stores/cases';
+import { queryClient } from '$lib/query/client';
+import { get } from 'svelte/store';
+import type { Case } from '$lib/db/schema';
 
 /**
  * Query key factory for cases
  */
 export const casesKeys = {
-  all: ['cases'] as const,
-  lists: () => [...casesKeys.all, 'list'] as const,
-  list: (filters?: any) => [...casesKeys.lists(), filters] as const,
-  details: () => [...casesKeys.all, 'detail'] as const,
-  detail: (id: string) => [...casesKeys.details(), id] as const,
-}
+	all: ['cases'] as const,
+	lists: () => [...casesKeys.all, 'list'] as const,
+	list: (filters?: any) => [...casesKeys.lists(), filters] as const,
+	details: () => [...casesKeys.all, 'detail'] as const,
+	detail: (id: string) => [...casesKeys.details(), id] as const
+};
 
 /**
  * Fetch all cases from the store
@@ -28,9 +28,9 @@ export const casesKeys = {
  * This reads from the Svelte store which is kept in sync by ElectricSQL
  */
 async function fetchAllCases(): Promise<Case[]> {
-  // Get current value from store
-  const cases = get(casesStore)
-  return cases
+	// Get current value from store
+	const cases = get(casesStore);
+	return cases;
 }
 
 /**
@@ -55,34 +55,34 @@ async function fetchAllCases(): Promise<Case[]> {
  * ```
  */
 export function useCasesQuery() {
-  return createQuery({
-    queryKey: casesKeys.list(),
-    queryFn: fetchAllCases,
-    // Since ElectricSQL handles real-time updates to the store,
-    // we don't need aggressive refetching
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  })
+	return createQuery({
+		queryKey: casesKeys.list(),
+		queryFn: fetchAllCases,
+		// Since ElectricSQL handles real-time updates to the store,
+		// we don't need aggressive refetching
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+		refetchOnWindowFocus: false
+	});
 }
 
 /**
  * Fetch a single case by ID
  */
 async function fetchCaseById(id: string): Promise<Case | undefined> {
-  const cases = get(casesStore)
-  return cases.find((c) => c.id === id)
+	const cases = get(casesStore);
+	return cases.find((c) => c.id === id);
 }
 
 /**
  * Query hook for a single case
  */
 export function useCaseQuery(id: string) {
-  return createQuery({
-    queryKey: casesKeys.detail(id),
-    queryFn: () => fetchCaseById(id),
-    enabled: !!id, // Only run if ID is provided
-  })
+	return createQuery({
+		queryKey: casesKeys.detail(id),
+		queryFn: () => fetchCaseById(id),
+		enabled: !!id // Only run if ID is provided
+	});
 }
 
 // ============================================================================
@@ -93,16 +93,16 @@ export function useCaseQuery(id: string) {
  * Mutation types for Case operations
  */
 export interface CreateCaseInput {
-  // Define your case creation fields here
-  title: string
-  description?: string
-  status?: string
-  // ... other fields
+	// Define your case creation fields here
+	title: string;
+	description?: string;
+	status?: string;
+	// ... other fields
 }
 
 interface CreateCaseResponse {
-  success: boolean
-  data: Case
+	success: boolean;
+	data: Case;
 }
 
 /**
@@ -112,21 +112,21 @@ interface CreateCaseResponse {
  * Replace the URL with your actual backend API
  */
 async function createCaseMutation(input: CreateCaseInput): Promise<Case> {
-  const response = await fetch('http://localhost:4002/api/cases', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(input),
-  })
+	const response = await fetch('http://localhost:4002/api/cases', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(input)
+	});
 
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`)
-  }
+	if (!response.ok) {
+		const data = await response.json().catch(() => ({}));
+		throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+	}
 
-  const result: CreateCaseResponse = await response.json()
-  return result.data
+	const result: CreateCaseResponse = await response.json();
+	return result.data;
 }
 
 /**
@@ -163,57 +163,57 @@ async function createCaseMutation(input: CreateCaseInput): Promise<Case> {
  * ```
  */
 export function useCreateCaseMutation() {
-  return createMutation({
-    mutationFn: createCaseMutation,
+	return createMutation({
+		mutationFn: createCaseMutation,
 
-    // Optimistic update: immediately add to UI before server responds
-    onMutate: async (newCase: CreateCaseInput) => {
-      // Cancel any outgoing refetches to avoid overwriting optimistic update
-      await queryClient?.cancelQueries({ queryKey: casesKeys.all })
+		// Optimistic update: immediately add to UI before server responds
+		onMutate: async (newCase: CreateCaseInput) => {
+			// Cancel any outgoing refetches to avoid overwriting optimistic update
+			await queryClient?.cancelQueries({ queryKey: casesKeys.all });
 
-      // Snapshot the previous value for rollback
-      const previousCases = get(casesStore)
+			// Snapshot the previous value for rollback
+			const previousCases = get(casesStore);
 
-      // Optimistically create a temporary case with placeholder ID
-      const optimisticCase: Case = {
-        id: `temp-${Date.now()}`, // Temporary ID will be replaced by server ID
-        ...newCase,
-        // Add any other required Case fields with default values
-        inserted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      } as Case
+			// Optimistically create a temporary case with placeholder ID
+			const optimisticCase: Case = {
+				id: `temp-${Date.now()}`, // Temporary ID will be replaced by server ID
+				...newCase,
+				// Add any other required Case fields with default values
+				inserted_at: new Date().toISOString(),
+				updated_at: new Date().toISOString()
+			} as Case;
 
-      // Optimistically update the store (instant UI feedback!)
-      addCase(optimisticCase)
+			// Optimistically update the store (instant UI feedback!)
+			addCase(optimisticCase);
 
-      // Return context with rollback data
-      return { previousCases, optimisticCase }
-    },
+			// Return context with rollback data
+			return { previousCases, optimisticCase };
+		},
 
-    // On success: replace optimistic case with real one from server
-    onSuccess: (serverCase, _variables, context) => {
-      if (!context) return
+		// On success: replace optimistic case with real one from server
+		onSuccess: (serverCase, _variables, context) => {
+			if (!context) return;
 
-      // The server case will be synced automatically via ElectricSQL
-      // But we can manually add it immediately for instant feedback
-      addCase(serverCase)
+			// The server case will be synced automatically via ElectricSQL
+			// But we can manually add it immediately for instant feedback
+			addCase(serverCase);
 
-      // Invalidate queries to refetch from TanStack DB
-      // (which will have the real data from ElectricSQL)
-      queryClient?.invalidateQueries({ queryKey: casesKeys.all })
-    },
+			// Invalidate queries to refetch from TanStack DB
+			// (which will have the real data from ElectricSQL)
+			queryClient?.invalidateQueries({ queryKey: casesKeys.all });
+		},
 
-    // On error: rollback to previous state
-    onError: (_error, _variables, context) => {
-      if (!context) return
+		// On error: rollback to previous state
+		onError: (_error, _variables, context) => {
+			if (!context) return;
 
-      // Rollback optimistic update
-      casesStore.set(context.previousCases)
+			// Rollback optimistic update
+			casesStore.set(context.previousCases);
 
-      // Invalidate to refetch correct state
-      queryClient?.invalidateQueries({ queryKey: casesKeys.all })
-    },
-  })
+			// Invalidate to refetch correct state
+			queryClient?.invalidateQueries({ queryKey: casesKeys.all });
+		}
+	});
 }
 
 /**
@@ -222,61 +222,61 @@ export function useCreateCaseMutation() {
  * Copy and adapt this pattern for update operations
  */
 export interface UpdateCaseInput {
-  id: string
-  title?: string
-  description?: string
-  status?: string
-  // ... other updatable fields
+	id: string;
+	title?: string;
+	description?: string;
+	status?: string;
+	// ... other updatable fields
 }
 
 async function updateCaseMutation(input: UpdateCaseInput): Promise<Case> {
-  const { id, ...updates } = input
-  const response = await fetch(`http://localhost:4002/api/cases/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(updates),
-  })
+	const { id, ...updates } = input;
+	const response = await fetch(`http://localhost:4002/api/cases/${id}`, {
+		method: 'PATCH',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(updates)
+	});
 
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`)
-  }
+	if (!response.ok) {
+		const data = await response.json().catch(() => ({}));
+		throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+	}
 
-  const result = await response.json()
-  return result.data
+	const result = await response.json();
+	return result.data;
 }
 
 export function useUpdateCaseMutation() {
-  return createMutation({
-    mutationFn: updateCaseMutation,
+	return createMutation({
+		mutationFn: updateCaseMutation,
 
-    onMutate: async (updatedCase: UpdateCaseInput) => {
-      await queryClient?.cancelQueries({ queryKey: casesKeys.all })
-      const previousCases = get(casesStore)
+		onMutate: async (updatedCase: UpdateCaseInput) => {
+			await queryClient?.cancelQueries({ queryKey: casesKeys.all });
+			const previousCases = get(casesStore);
 
-      // Optimistically update the case in the store
-      const currentCases = get(casesStore)
-      const optimisticCases = currentCases.map(c =>
-        c.id === updatedCase.id ? { ...c, ...updatedCase, updated_at: new Date().toISOString() } : c
-      )
-      casesStore.set(optimisticCases)
+			// Optimistically update the case in the store
+			const currentCases = get(casesStore);
+			const optimisticCases = currentCases.map((c) =>
+				c.id === updatedCase.id ? { ...c, ...updatedCase, updated_at: new Date().toISOString() } : c
+			);
+			casesStore.set(optimisticCases);
 
-      return { previousCases }
-    },
+			return { previousCases };
+		},
 
-    onSuccess: () => {
-      queryClient?.invalidateQueries({ queryKey: casesKeys.all })
-    },
+		onSuccess: () => {
+			queryClient?.invalidateQueries({ queryKey: casesKeys.all });
+		},
 
-    onError: (_error, _variables, context) => {
-      if (context?.previousCases) {
-        casesStore.set(context.previousCases)
-      }
-      queryClient?.invalidateQueries({ queryKey: casesKeys.all })
-    },
-  })
+		onError: (_error, _variables, context) => {
+			if (context?.previousCases) {
+				casesStore.set(context.previousCases);
+			}
+			queryClient?.invalidateQueries({ queryKey: casesKeys.all });
+		}
+	});
 }
 
 /**
@@ -285,40 +285,40 @@ export function useUpdateCaseMutation() {
  * Copy and adapt this pattern for delete operations
  */
 async function deleteCaseMutation(id: string): Promise<void> {
-  const response = await fetch(`http://localhost:4002/api/cases/${id}`, {
-    method: 'DELETE',
-  })
+	const response = await fetch(`http://localhost:4002/api/cases/${id}`, {
+		method: 'DELETE'
+	});
 
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`)
-  }
+	if (!response.ok) {
+		const data = await response.json().catch(() => ({}));
+		throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+	}
 }
 
 export function useDeleteCaseMutation() {
-  return createMutation({
-    mutationFn: deleteCaseMutation,
+	return createMutation({
+		mutationFn: deleteCaseMutation,
 
-    onMutate: async (id: string) => {
-      await queryClient?.cancelQueries({ queryKey: casesKeys.all })
-      const previousCases = get(casesStore)
+		onMutate: async (id: string) => {
+			await queryClient?.cancelQueries({ queryKey: casesKeys.all });
+			const previousCases = get(casesStore);
 
-      // Optimistically remove the case from the store
-      const currentCases = get(casesStore)
-      casesStore.set(currentCases.filter(c => c.id !== id))
+			// Optimistically remove the case from the store
+			const currentCases = get(casesStore);
+			casesStore.set(currentCases.filter((c) => c.id !== id));
 
-      return { previousCases }
-    },
+			return { previousCases };
+		},
 
-    onSuccess: () => {
-      queryClient?.invalidateQueries({ queryKey: casesKeys.all })
-    },
+		onSuccess: () => {
+			queryClient?.invalidateQueries({ queryKey: casesKeys.all });
+		},
 
-    onError: (_error, _variables, context) => {
-      if (context?.previousCases) {
-        casesStore.set(context.previousCases)
-      }
-      queryClient?.invalidateQueries({ queryKey: casesKeys.all })
-    },
-  })
+		onError: (_error, _variables, context) => {
+			if (context?.previousCases) {
+				casesStore.set(context.previousCases);
+			}
+			queryClient?.invalidateQueries({ queryKey: casesKeys.all });
+		}
+	});
 }
