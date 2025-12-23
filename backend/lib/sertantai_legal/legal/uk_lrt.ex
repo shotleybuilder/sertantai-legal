@@ -124,9 +124,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description "Specific regions covered"
     end
 
-    attribute :geo_country, :map do
+    attribute :geo_detail, :string do
       allow_nil? true
-      description "Country-level geographic scope (JSONB)"
+      description "Section-by-section extent breakdown (e.g., '🇬🇧 E+W+S+NI💚️section-1, section-2💚️🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁷󠁬󠁳󠁿 E+W💚️section-61')"
     end
 
     attribute :md_restrict_extent, :string do

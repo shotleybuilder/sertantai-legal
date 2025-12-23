@@ -240,10 +240,11 @@ defmodule SertantaiLegal.Scraper.Extent do
   defp region_to_code("Northern Ireland"), do: "NI"
   defp region_to_code(_), do: ""
 
-  # Build formatted geo_extent string with provisions mapped to regions
+  # Build formatted geo_detail string with provisions mapped to regions
+  # Format: emoji flags + extent code on one line, provisions on next line
   defp build_geo_extent(_data, [single_extent]) do
     # All provisions have the same extent
-    "#{single_extent}: All provisions"
+    "#{emoji_flags(single_extent)}\nAll provisions"
   end
 
   defp build_geo_extent(data, unique_extents) do
@@ -260,13 +261,40 @@ defmodule SertantaiLegal.Scraper.Extent do
       end)
 
     # Format as string, sorted by extent length (broadest first)
+    # Each extent block: "emoji_flags extent\nprovisions"
     extent_map
     |> Enum.map(fn {extent, provisions} -> {extent, Enum.reverse(provisions)} end)
     |> Enum.sort_by(fn {extent, _} -> -byte_size(extent) end)
     |> Enum.map(fn {extent, provisions} ->
       provisions_str = Enum.join(provisions, ", ")
-      "#{extent}: #{provisions_str}"
+      "#{emoji_flags(extent)}\n#{provisions_str}"
     end)
-    |> Enum.join(" | ")
+    |> Enum.join("\n")
+  end
+
+  # Emoji flags for extent codes - matches legl donor app format
+  @uk_flag "🇬🇧"
+  @england_flag "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
+  @wales_flag "🏴󠁧󠁢󠁷󠁬󠁳󠁿"
+  @scotland_flag "🏴󠁧󠁢󠁳󠁣󠁴󠁿"
+  @northern_ireland_flag "🏴󠁧󠁢󠁮󠁩󠁲󠁿"
+
+  defp emoji_flags("E+W+S+NI"), do: "#{@uk_flag} E+W+S+NI"
+
+  defp emoji_flags(extent) do
+    flags =
+      extent
+      |> String.split("+")
+      |> Enum.map(fn
+        "E" -> @england_flag
+        "W" -> @wales_flag
+        "S" -> @scotland_flag
+        "NI" -> @northern_ireland_flag
+        _ -> nil
+      end)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join(" ")
+
+    "#{flags} #{extent}"
   end
 end

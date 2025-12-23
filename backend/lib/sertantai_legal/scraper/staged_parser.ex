@@ -256,11 +256,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       # Only include top-level extent fields if we found data
       # This prevents overwriting values from metadata.ex (initial scrape)
       if normalized_extent do
+        # Use Extent module to generate geo_detail with emoji flags and section breakdown
+        {_region, _pan_region, geo_detail} = SertantaiLegal.Scraper.Extent.transform_extent(section_extents)
+
         Map.merge(base, %{
-          geo_extent: normalized_extent,
+          geo_extent: regions_to_pan_region(regions),
           geo_region: regions,
-          geo_country: regions_to_country(regions),
-          extent: normalized_extent,
+          geo_detail: geo_detail,
+          extent: regions_to_pan_region(regions),
           extent_regions: regions
         })
       else
@@ -274,23 +277,30 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     end
   end
 
-  # Convert regions list to country classification
-  defp regions_to_country([]), do: nil
+  # Convert regions list to pan-region code (UK, GB, E+W, etc.)
+  defp regions_to_pan_region([]), do: nil
 
-  defp regions_to_country(regions) do
+  defp regions_to_pan_region(regions) do
     sorted = Enum.sort(regions)
 
     cond do
-      sorted == ["England", "Northern Ireland", "Scotland", "Wales"] -> "United Kingdom"
-      sorted == ["England", "Scotland", "Wales"] -> "Great Britain"
-      sorted == ["England", "Wales"] -> "England and Wales"
-      sorted == ["England"] -> "England"
-      sorted == ["Wales"] -> "Wales"
-      sorted == ["Scotland"] -> "Scotland"
-      sorted == ["Northern Ireland"] -> "Northern Ireland"
-      true -> Enum.join(regions, ", ")
+      sorted == ["England", "Northern Ireland", "Scotland", "Wales"] -> "UK"
+      sorted == ["England", "Scotland", "Wales"] -> "GB"
+      sorted == ["England", "Wales"] -> "E+W"
+      sorted == ["England", "Scotland"] -> "E+S"
+      sorted == ["England"] -> "E"
+      sorted == ["Wales"] -> "W"
+      sorted == ["Scotland"] -> "S"
+      sorted == ["Northern Ireland"] -> "NI"
+      true -> regions |> Enum.map(&region_to_code/1) |> Enum.join("+")
     end
   end
+
+  defp region_to_code("England"), do: "E"
+  defp region_to_code("Wales"), do: "W"
+  defp region_to_code("Scotland"), do: "S"
+  defp region_to_code("Northern Ireland"), do: "NI"
+  defp region_to_code(_), do: ""
 
   defp parse_section_extents(xml) do
     # Try to get section-level extent data

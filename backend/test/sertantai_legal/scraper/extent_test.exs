@@ -74,57 +74,66 @@ defmodule SertantaiLegal.Scraper.ExtentTest do
       assert Extent.transform_extent([]) == {[], "", ""}
     end
 
-    test "transforms single extent code" do
+    test "transforms single extent code with emoji flags" do
       data = [
         {"section-1", "E+W+S+NI"},
         {"section-2", "E+W+S+NI"}
       ]
 
-      {geo_region, geo_pan_region, geo_extent} = Extent.transform_extent(data)
+      {geo_region, geo_pan_region, geo_detail} = Extent.transform_extent(data)
 
       assert geo_region == ["England", "Wales", "Scotland", "Northern Ireland"]
       assert geo_pan_region == "UK"
-      assert geo_extent == "E+W+S+NI: All provisions"
+      # geo_detail should have UK flag, extent code, newline, then provisions
+      assert geo_detail == "🇬🇧 E+W+S+NI\nAll provisions"
     end
 
-    test "transforms multiple extent codes" do
+    test "transforms multiple extent codes with emoji flags" do
       data = [
         {"section-1", "E+W+S+NI"},
         {"section-2", "E+W"},
         {"section-3", "S"}
       ]
 
-      {geo_region, geo_pan_region, geo_extent} = Extent.transform_extent(data)
+      {geo_region, geo_pan_region, geo_detail} = Extent.transform_extent(data)
 
       assert geo_region == ["England", "Wales", "Scotland", "Northern Ireland"]
       assert geo_pan_region == "UK"
-      assert String.contains?(geo_extent, "E+W+S+NI")
-      assert String.contains?(geo_extent, "E+W")
-      assert String.contains?(geo_extent, "S")
+      # Each extent block separated by newlines
+      assert String.contains?(geo_detail, "🇬🇧 E+W+S+NI")
+      assert String.contains?(geo_detail, "🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁷󠁬󠁳󠁿 E+W")
+      assert String.contains?(geo_detail, "🏴󠁧󠁢󠁳󠁣󠁴󠁿 S")
+      # Provisions on separate lines
+      assert String.contains?(geo_detail, "\nsection-1")
+      assert String.contains?(geo_detail, "\nsection-2")
+      assert String.contains?(geo_detail, "\nsection-3")
     end
 
     test "cleans (E+W) format" do
       data = [{"section-1", "(E+W)"}]
-      {geo_region, geo_pan_region, _geo_extent} = Extent.transform_extent(data)
+      {geo_region, geo_pan_region, geo_detail} = Extent.transform_extent(data)
 
       assert geo_region == ["England", "Wales"]
       assert geo_pan_region == "E+W"
+      assert geo_detail == "🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁷󠁬󠁳󠁿 E+W\nAll provisions"
     end
 
     test "cleans EW format" do
       data = [{"section-1", "EW"}]
-      {geo_region, geo_pan_region, _geo_extent} = Extent.transform_extent(data)
+      {geo_region, geo_pan_region, geo_detail} = Extent.transform_extent(data)
 
       assert geo_region == ["England", "Wales"]
       assert geo_pan_region == "E+W"
+      assert geo_detail == "🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁷󠁬󠁳󠁿 E+W\nAll provisions"
     end
 
     test "cleans EWS format" do
       data = [{"section-1", "EWS"}]
-      {geo_region, geo_pan_region, _geo_extent} = Extent.transform_extent(data)
+      {geo_region, geo_pan_region, geo_detail} = Extent.transform_extent(data)
 
       assert geo_region == ["England", "Wales", "Scotland"]
       assert geo_pan_region == "GB"
+      assert geo_detail == "🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁷󠁬󠁳󠁿 🏴󠁧󠁢󠁳󠁣󠁴󠁿 E+W+S\nAll provisions"
     end
   end
 

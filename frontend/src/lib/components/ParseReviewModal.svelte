@@ -410,16 +410,16 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Geographic Extent <span class="text-xs text-gray-400">(geo_extent)</span></span>
+								<span class="text-sm text-gray-500">Region <span class="text-xs text-gray-400">(geo_extent)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'geo_extent', 'extent'))}</span>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Region <span class="text-xs text-gray-400">(geo_region)</span></span>
+								<span class="text-sm text-gray-500">Country <span class="text-xs text-gray-400">(geo_region)</span></span>
 								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'geo_region', 'extent_regions'))}</span>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Country <span class="text-xs text-gray-400">(geo_country)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'geo_country'))}</span>
+								<span class="text-sm text-gray-500">Detail <span class="text-xs text-gray-400">(geo_detail)</span></span>
+								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line">{formatValue(getField(parseResult.record, 'geo_detail'))}</span>
 							</div>
 						</div>
 					</div>

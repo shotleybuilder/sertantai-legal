@@ -572,37 +572,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> maybe_enrich_type_class()
     |> normalize_family_key()
     |> normalize_tags_key()
-    |> maybe_derive_geo_country()
   end
 
-  # Derive geo_country from geo_region if missing
-  defp maybe_derive_geo_country(record) do
-    geo_country = record[:geo_country] || record["geo_country"]
-    geo_region = record[:geo_region] || record["geo_region"]
-
-    if geo_country == nil and is_list(geo_region) and length(geo_region) > 0 do
-      Map.put(record, :geo_country, regions_to_country(geo_region))
-    else
-      record
-    end
-  end
-
-  defp regions_to_country([]), do: nil
-
-  defp regions_to_country(regions) do
-    sorted = Enum.sort(regions)
-
-    cond do
-      sorted == ["England", "Northern Ireland", "Scotland", "Wales"] -> "United Kingdom"
-      sorted == ["England", "Scotland", "Wales"] -> "Great Britain"
-      sorted == ["England", "Wales"] -> "England and Wales"
-      sorted == ["England"] -> "England"
-      sorted == ["Wales"] -> "Wales"
-      sorted == ["Scotland"] -> "Scotland"
-      sorted == ["Northern Ireland"] -> "Northern Ireland"
-      true -> Enum.join(regions, ", ")
-    end
-  end
+  # Note: geo_detail is populated from Airtable CSV export, not derived from geo_region.
+  # geo_detail contains section-by-section extent breakdown with emoji flags.
 
   # Normalize Family key to lowercase for consistency
   defp normalize_family_key(record) do
