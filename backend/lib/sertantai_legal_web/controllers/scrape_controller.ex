@@ -308,10 +308,13 @@ defmodule SertantaiLegalWeb.ScrapeController do
               # Check for duplicate in database
               duplicate = check_duplicate(name)
 
+              # Enrich record with type fields and normalize keys
+              enriched_record = enrich_type_fields(result.record)
+
               json(conn, %{
                 session_id: session_id,
                 name: name,
-                record: result.record,
+                record: enriched_record,
                 stages: format_stages(result.stages),
                 errors: result.errors,
                 has_errors: result.has_errors,
@@ -565,11 +568,25 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   defp normalize_records(_), do: []
 
-  # Enrich record with type_desc and type_class if missing
+  # Enrich record with type_desc and type_class if missing, normalize keys
   defp enrich_type_fields(record) do
     record
     |> maybe_enrich_type_desc()
     |> maybe_enrich_type_class()
+    |> normalize_family_key()
+  end
+
+  # Normalize Family key to lowercase for consistency
+  defp normalize_family_key(record) do
+    family = record[:Family] || record["Family"]
+    if family do
+      record
+      |> Map.put(:family, family)
+      |> Map.delete(:Family)
+      |> Map.delete("Family")
+    else
+      record
+    end
   end
 
   defp maybe_enrich_type_desc(record) do

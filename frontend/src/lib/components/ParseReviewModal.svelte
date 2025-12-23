@@ -54,6 +54,7 @@
 				name: currentRecord.name
 			});
 			parseResult = result;
+			// API normalizes Family to lowercase family
 			selectedFamily = (result.record?.family as string) || '';
 		} catch (error) {
 			console.error('Parse error:', error);
