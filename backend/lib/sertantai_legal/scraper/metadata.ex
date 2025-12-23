@@ -109,6 +109,7 @@ defmodule SertantaiLegal.Scraper.Metadata do
         md_enactment_date: xpath_text(xml, ~x"//ukm:EnactmentDate/@Date"s),
         md_made_date: parse_made_date(xml),
         md_coming_into_force_date: parse_coming_into_force_date(xml),
+        md_dct_valid_date: xpath_text(xml, ~x"//dct:valid/text()"s),
 
         # Extent from Legislation element attributes
         md_restrict_extent: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s),
@@ -135,6 +136,9 @@ defmodule SertantaiLegal.Scraper.Metadata do
 
       # Clean up SI codes
       metadata = Map.update!(metadata, :si_code, &clean_si_codes/1)
+
+      # Calculate md_date as the primary date (first available from priority list)
+      metadata = calculate_md_date(metadata)
 
       {:ok, metadata}
     rescue
@@ -343,6 +347,34 @@ defmodule SertantaiLegal.Scraper.Metadata do
     |> Map.put(:live, live)
     |> Map.put(:live_description, live_description)
   end
+
+  # Calculate md_date as the primary date from available dates
+  # Priority: enactment_date > coming_into_force_date > made_date > dct_valid_date
+  defp calculate_md_date(metadata) do
+    md_date =
+      cond do
+        present?(metadata[:md_enactment_date]) ->
+          metadata[:md_enactment_date]
+
+        present?(metadata[:md_coming_into_force_date]) ->
+          metadata[:md_coming_into_force_date]
+
+        present?(metadata[:md_made_date]) ->
+          metadata[:md_made_date]
+
+        present?(metadata[:md_dct_valid_date]) ->
+          metadata[:md_dct_valid_date]
+
+        true ->
+          nil
+      end
+
+    Map.put(metadata, :md_date, md_date)
+  end
+
+  defp present?(nil), do: false
+  defp present?(""), do: false
+  defp present?(_), do: true
 
   # XPath helpers with nil handling
   defp xpath_text(xml, path) do

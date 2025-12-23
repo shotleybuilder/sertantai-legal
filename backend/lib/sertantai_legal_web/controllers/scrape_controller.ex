@@ -572,7 +572,46 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> maybe_enrich_type_class()
     |> normalize_family_key()
     |> normalize_tags_key()
+    |> maybe_calculate_md_date()
   end
+
+  # Calculate md_date if missing (for backwards compatibility with old session data)
+  # Priority: enactment_date > coming_into_force_date > made_date > dct_valid_date
+  defp maybe_calculate_md_date(record) do
+    md_date = record[:md_date] || record["md_date"]
+
+    if present?(md_date) do
+      record
+    else
+      calculated_date =
+        cond do
+          present?(record[:md_enactment_date] || record["md_enactment_date"]) ->
+            record[:md_enactment_date] || record["md_enactment_date"]
+
+          present?(record[:md_coming_into_force_date] || record["md_coming_into_force_date"]) ->
+            record[:md_coming_into_force_date] || record["md_coming_into_force_date"]
+
+          present?(record[:md_made_date] || record["md_made_date"]) ->
+            record[:md_made_date] || record["md_made_date"]
+
+          present?(record[:md_dct_valid_date] || record["md_dct_valid_date"]) ->
+            record[:md_dct_valid_date] || record["md_dct_valid_date"]
+
+          true ->
+            nil
+        end
+
+      if calculated_date do
+        Map.put(record, :md_date, calculated_date)
+      else
+        record
+      end
+    end
+  end
+
+  defp present?(nil), do: false
+  defp present?(""), do: false
+  defp present?(_), do: true
 
   # Note: geo_detail is populated from Airtable CSV export, not derived from geo_region.
   # geo_detail contains section-by-section extent breakdown with emoji flags.

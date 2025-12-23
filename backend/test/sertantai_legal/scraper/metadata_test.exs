@@ -207,6 +207,45 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
     end
   end
 
+  describe "parse_xml/1 - md_date calculation" do
+    test "md_date uses enactment_date when present" do
+      xml = fixture("introduction_sample.xml")
+
+      {:ok, metadata} = Metadata.parse_xml(xml)
+
+      # introduction_sample.xml has md_enactment_date = "2024-12-01"
+      assert metadata[:md_date] == "2024-12-01"
+    end
+
+    test "md_date uses coming_into_force_date when enactment_date missing" do
+      xml = fixture("introduction_text_dates.xml")
+
+      {:ok, metadata} = Metadata.parse_xml(xml)
+
+      # introduction_text_dates.xml has coming_into_force_date but no enactment_date
+      assert metadata[:md_date] == "2024-10-01"
+    end
+
+    test "md_date is nil when no dates present" do
+      # Create minimal XML with no dates
+      xml = """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"
+                   xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
+                   xmlns:dct="http://purl.org/dc/terms/"
+                   xmlns:atom="http://www.w3.org/2005/Atom">
+        <ukm:Metadata>
+          <dc:title>Test Act</dc:title>
+        </ukm:Metadata>
+      </Legislation>
+      """
+
+      {:ok, metadata} = Metadata.parse_xml(xml)
+
+      assert metadata[:md_date] == nil
+    end
+  end
+
   describe "parse_xml/1 - extent" do
     test "extracts RestrictExtent from Legislation element" do
       xml = fixture("introduction_sample.xml")
