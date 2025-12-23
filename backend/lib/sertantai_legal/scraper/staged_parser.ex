@@ -312,10 +312,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp normalize_extent(""), do: nil
 
   defp normalize_extent(extent) do
+    # Raw extent from legislation.gov.uk is like "E+W+S+N.I."
+    # Normalize to "E+W+S+NI" format
     extent
-    |> String.replace(".", "+")
-    |> String.replace(" ", "")
     |> String.upcase()
+    |> String.replace("N.I.", "NI")  # Handle "N.I." → "NI"
+    |> String.replace("N.I", "NI")   # Handle "N.I" without trailing dot
+    |> String.replace(".", "")       # Remove any remaining dots
+    |> String.replace(" ", "")       # Remove spaces
   end
 
   defp extent_to_regions(nil), do: []
