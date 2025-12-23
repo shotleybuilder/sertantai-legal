@@ -115,8 +115,15 @@ defmodule SertantaiLegal.Scraper.Metadata do
         md_restrict_start_date: xpath_text(xml, ~x"//Legislation/@RestrictStartDate"s),
 
         # PDF link
-        pdf_href: xpath_text(xml, ~x"//atom:link[@type='application/pdf']/@href"s)
+        pdf_href: xpath_text(xml, ~x"//atom:link[@type='application/pdf']/@href"s),
+
+        # Document status - used to derive live field
+        document_status: xpath_text(xml, ~x"//ukm:DocumentStatus/@Value"s)
       }
+
+      # Set live status based on document_status
+      # New legislation is assumed to be in force unless marked otherwise
+      metadata = set_live_status(metadata)
 
       # Clean up subjects (remove geographic qualifiers)
       metadata = Map.update!(metadata, :md_subjects, &clean_subjects/1)
@@ -239,6 +246,46 @@ defmodule SertantaiLegal.Scraper.Metadata do
     |> Enum.map(&String.trim/1)
     |> Enum.uniq()
     |> Enum.sort()
+  end
+
+  # Live status codes (matching legl conventions)
+  @live_in_force "✔ In force"
+  @live_revoked "❌ Revoked / Repealed / Abolished"
+  # @live_part_revoked "⭕ Part Revocation / Repeal" - used for partial revocations (future)
+
+  # Set live status based on document_status from legislation.gov.uk
+  # New legislation is assumed to be in force unless explicitly marked otherwise
+  defp set_live_status(metadata) do
+    doc_status = metadata[:document_status] || ""
+
+    {live, live_description} =
+      case String.downcase(doc_status) do
+        "final" ->
+          {@live_in_force, "Current legislation"}
+
+        "revised" ->
+          {@live_in_force, "Revised - has been amended"}
+
+        "prospective" ->
+          {@live_in_force, "Prospective - not yet in force"}
+
+        "repealed" ->
+          {@live_revoked, "Repealed"}
+
+        "revoked" ->
+          {@live_revoked, "Revoked"}
+
+        "" ->
+          # Default for new legislation
+          {@live_in_force, ""}
+
+        other ->
+          {@live_in_force, "Status: #{other}"}
+      end
+
+    metadata
+    |> Map.put(:live, live)
+    |> Map.put(:live_description, live_description)
   end
 
   # XPath helpers with nil handling
