@@ -210,23 +210,41 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   defp parse_extent_xml(xml) do
     try do
-      # Get extent from Legislation element
+      # Try multiple locations for extent:
+      # 1. Legislation element's RestrictExtent attribute
+      # 2. First ContentsItem's RestrictExtent attribute (most common for new legislation)
+      # 3. Contents element's RestrictExtent attribute (fallback)
+
       extent = xpath_text(xml, ~x"//Legislation/@RestrictExtent"s)
 
-      # Get extent from Contents if available
+      # Get extent from first ContentsItem if Legislation doesn't have it
+      first_item_extent =
+        case SweetXml.xpath(xml, ~x"//ContentsItem[1]/@RestrictExtent"s) do
+          nil -> nil
+          "" -> nil
+          val -> to_string(val)
+        end
+
+      # Get extent from Contents element as fallback
       contents_extent =
         case SweetXml.xpath(xml, ~x"//Contents/@RestrictExtent"s) do
           nil -> nil
           "" -> nil
-          val -> val
+          val -> to_string(val)
         end
 
       # Parse section-level extents
       section_extents = parse_section_extents(xml)
 
-      # Normalize and derive fields
-      # Use whichever extent is available (Legislation element or Contents element)
-      raw_extent = if extent != "", do: extent, else: contents_extent
+      # Use first available extent: Legislation > first ContentsItem > Contents
+      raw_extent =
+        cond do
+          extent != "" and extent != nil -> extent
+          first_item_extent != "" and first_item_extent != nil -> first_item_extent
+          contents_extent != "" and contents_extent != nil -> contents_extent
+          true -> nil
+        end
+
       normalized_extent = normalize_extent(raw_extent)
       regions = extent_to_regions(raw_extent)
 
