@@ -937,19 +937,16 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 name: name
               }
 
-              case StagedParser.parse(record) do
-                {:ok, result} ->
-                  # Persist the updated record
-                  case LawParser.parse_record(result.record, persist: true) do
-                    {:ok, _persisted} ->
-                      %{name: name, status: "success", message: "Re-parsed and updated"}
+              # StagedParser.parse always returns {:ok, result}
+              {:ok, result} = StagedParser.parse(record)
 
-                    {:error, reason} ->
-                      %{name: name, status: "error", message: "Persist failed: #{inspect(reason)}"}
-                  end
+              # Persist the updated record
+              case LawParser.parse_record(result.record, persist: true) do
+                {:ok, _persisted} ->
+                  %{name: name, status: "success", message: "Re-parsed and updated"}
 
                 {:error, reason} ->
-                  %{name: name, status: "error", message: "Parse failed: #{inspect(reason)}"}
+                  %{name: name, status: "error", message: "Persist failed: #{inspect(reason)}"}
               end
 
             _ ->
