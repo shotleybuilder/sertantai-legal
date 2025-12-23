@@ -225,23 +225,34 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       section_extents = parse_section_extents(xml)
 
       # Normalize and derive fields
-      normalized_extent = normalize_extent(extent) || normalize_extent(contents_extent)
-      regions = extent_to_regions(extent)
+      # Use whichever extent is available (Legislation element or Contents element)
+      raw_extent = if extent != "", do: extent, else: contents_extent
+      normalized_extent = normalize_extent(raw_extent)
+      regions = extent_to_regions(raw_extent)
 
-      %{
-        # Fields matching modal expectations
-        geo_extent: normalized_extent,
-        geo_region: regions,
-        geo_country: regions_to_country(regions),
-        # Raw data for reference
-        extent: normalized_extent,
-        contents_extent: normalize_extent(contents_extent),
-        section_extents: section_extents,
-        extent_regions: regions
+      # Build base result with section-level data (always useful)
+      base = %{
+        section_extents: section_extents
       }
+
+      # Only include top-level extent fields if we found data
+      # This prevents overwriting values from metadata.ex (initial scrape)
+      if normalized_extent do
+        Map.merge(base, %{
+          geo_extent: normalized_extent,
+          geo_region: regions,
+          geo_country: regions_to_country(regions),
+          extent: normalized_extent,
+          extent_regions: regions
+        })
+      else
+        # No extent found in contents XML - preserve whatever came from metadata
+        base
+      end
     rescue
       e ->
-        %{geo_extent: nil, geo_region: [], geo_country: nil, extent_error: "Parse error: #{inspect(e)}"}
+        # Don't overwrite extent fields on error - just log it
+        %{extent_error: "Parse error: #{inspect(e)}"}
     end
   end
 

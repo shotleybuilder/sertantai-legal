@@ -117,6 +117,7 @@ defmodule SertantaiLegal.Scraper.Metadata do
         # Geographic extent - derived from RestrictExtent
         geo_extent: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> normalize_extent(),
         geo_region: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> extent_to_regions(),
+        geo_country: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> extent_to_regions() |> regions_to_country(),
 
         # PDF link
         pdf_href: xpath_text(xml, ~x"//atom:link[@type='application/pdf']/@href"s),
@@ -282,6 +283,24 @@ defmodule SertantaiLegal.Scraper.Metadata do
       acc ++ [name]
     else
       acc
+    end
+  end
+
+  # Convert regions list to country classification
+  defp regions_to_country([]), do: nil
+
+  defp regions_to_country(regions) do
+    sorted = Enum.sort(regions)
+
+    cond do
+      sorted == ["England", "Northern Ireland", "Scotland", "Wales"] -> "United Kingdom"
+      sorted == ["England", "Scotland", "Wales"] -> "Great Britain"
+      sorted == ["England", "Wales"] -> "England and Wales"
+      sorted == ["England"] -> "England"
+      sorted == ["Wales"] -> "Wales"
+      sorted == ["Scotland"] -> "Scotland"
+      sorted == ["Northern Ireland"] -> "Northern Ireland"
+      true -> Enum.join(regions, ", ")
     end
   end
 
