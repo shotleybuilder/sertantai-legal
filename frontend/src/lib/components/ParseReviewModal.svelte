@@ -326,6 +326,11 @@
 													<option value={family}>{family}</option>
 												{/each}
 											</optgroup>
+											<optgroup label="HR">
+												{#each $familyOptionsQuery.data?.grouped?.hr || [] as family}
+													<option value={family}>{family}</option>
+												{/each}
+											</optgroup>
 										</select>
 									{/if}
 								</div>
@@ -350,6 +355,11 @@
 											</optgroup>
 											<optgroup label="Environment">
 												{#each $familyOptionsQuery.data?.grouped?.environment || [] as family}
+													<option value={family}>{family}</option>
+												{/each}
+											</optgroup>
+											<optgroup label="HR">
+												{#each $familyOptionsQuery.data?.grouped?.hr || [] as family}
 													<option value={family}>{family}</option>
 												{/each}
 											</optgroup>
