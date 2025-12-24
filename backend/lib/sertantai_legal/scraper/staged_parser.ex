@@ -38,6 +38,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
+  alias SertantaiLegal.Scraper.EnactedBy
 
   @stages [:extent, :enacted_by, :amendments, :repeal_revoke]
 
@@ -377,148 +378,50 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   defp run_enacted_by_stage(type_code, year, number) do
-    # Use /made/ version for enacted_by parsing
-    path = "/#{type_code}/#{year}/#{number}/made/introduction/data.xml"
+    # Use the EnactedBy module for parsing - single source of truth
+    path = EnactedBy.introduction_path(type_code, to_string(year), to_string(number))
 
-    case Client.fetch_xml(path) do
-      {:ok, xml} ->
-        data = parse_enacted_by_xml(xml)
-        count = length(data[:enacted_by] || [])
+    case EnactedBy.fetch_enacting_data(path) do
+      {:ok, %{text: text, urls: urls} = data} ->
+        # Use EnactedBy's pattern matching to find enacted_by laws
+        enacted_by_ids = EnactedBy.find_enacting_laws(text, urls)
+
+        # Convert law IDs to richer format for downstream compatibility
+        enacted_by = Enum.map(enacted_by_ids, &parse_law_id_to_map/1)
+
+        count = length(enacted_by)
         IO.puts("    ✓ Enacted by: #{count} parent law(s)")
-        %{status: :ok, data: data, error: nil}
 
-      {:error, 404, _} ->
-        # Try without /made/
-        alt_path = "/#{type_code}/#{year}/#{number}/introduction/data.xml"
-
-        case Client.fetch_xml(alt_path) do
-          {:ok, xml} ->
-            data = parse_enacted_by_xml(xml)
-            count = length(data[:enacted_by] || [])
-            IO.puts("    ✓ Enacted by (alt path): #{count} parent law(s)")
-            %{status: :ok, data: data, error: nil}
-
-          {:error, code, msg} ->
-            IO.puts("    ✗ Enacted by failed: #{msg}")
-            %{status: :error, data: nil, error: "HTTP #{code}: #{msg}"}
-        end
-
-      {:error, code, msg} ->
-        IO.puts("    ✗ Enacted by failed: #{msg}")
-        %{status: :error, data: nil, error: "HTTP #{code}: #{msg}"}
-    end
-  end
-
-  defp parse_enacted_by_xml(xml) do
-    try do
-      # Extract enacting text and introductory text (use xpath directly for list results)
-      enacting_text =
-        case SweetXml.xpath(xml, ~x"//EnactingText//text()"sl) do
-          nil -> ""
-          list when is_list(list) -> list |> Enum.map(&to_string/1) |> Enum.join(" ")
-          val -> to_string(val)
-        end
-
-      introductory_text =
-        case SweetXml.xpath(xml, ~x"//IntroductoryText//text()"sl) do
-          nil -> ""
-          list when is_list(list) -> list |> Enum.map(&to_string/1) |> Enum.join(" ")
-          val -> to_string(val)
-        end
-
-      combined_text =
-        (String.trim(introductory_text) <> " " <> String.trim(enacting_text))
-        |> String.replace(~r/\s+/, " ")
-        |> String.trim()
-
-      # Extract footnote URLs map
-      urls = parse_footnote_urls(xml)
-
-      # Find enacting laws from the text
-      enacted_by = find_enacting_laws(combined_text, urls)
-
-      %{
-        enacted_by: enacted_by,
-        enacting_text: String.slice(enacting_text, 0, 500),
-        introductory_text: String.slice(introductory_text, 0, 500)
-      }
-    rescue
-      e ->
-        %{enacted_by: [], enacted_by_error: "Parse error: #{inspect(e)}"}
-    end
-  end
-
-  defp parse_footnote_urls(xml) do
-    try do
-      # Parse footnotes to build url map: %{"f00001" => ["http://..."]}
-      footnotes = SweetXml.xpath(xml, ~x"//Footnotes/Footnote"l) || []
-
-      Enum.reduce(footnotes, %{}, fn footnote, acc ->
-        id = SweetXml.xpath(footnote, ~x"./@id"s) |> to_string()
-
-        # Get all Citation URIs in this footnote
-        uris =
-          case SweetXml.xpath(footnote, ~x".//Citation/@URI"l) do
-            nil -> []
-            list when is_list(list) -> Enum.map(list, &to_string/1) |> Enum.reject(&(&1 == ""))
-            val -> [to_string(val)] |> Enum.reject(&(&1 == ""))
-          end
-
-        if id != "" and uris != [] do
-          Map.put(acc, id, uris)
-        else
-          acc
-        end
-      end)
-    rescue
-      _ -> %{}
-    end
-  end
-
-  defp find_enacting_laws(text, urls) do
-    # Find footnote references (f00001, f00002, etc.) in the text
-    footnote_refs =
-      Regex.scan(~r/f\d{5}/, text)
-      |> List.flatten()
-      |> Enum.uniq()
-
-    # Look up URLs for each footnote reference
-    footnote_refs
-    |> Enum.flat_map(fn ref -> Map.get(urls, ref, []) end)
-    |> Enum.uniq()
-    |> Enum.map(&parse_legislation_url/1)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.uniq_by(fn law -> law[:name] end)
-  end
-
-  defp parse_legislation_url(url) do
-    # Parse URL like "http://www.legislation.gov.uk/id/ukpga/1974/37"
-    # into %{name: "ukpga/1974/37", type_code: "ukpga", year: "1974", number: "37"}
-    cond do
-      # Standard UK legislation URL
-      match = Regex.run(~r/legislation\.gov\.uk\/id\/([a-z]+)\/(\d{4})\/(\d+)/, url) ->
-        [_, type_code, year, number] = match
         %{
-          name: "#{type_code}/#{year}/#{number}",
+          status: :ok,
+          data: %{
+            enacted_by: enacted_by,
+            enacting_text: String.slice(data.enacting_text, 0, 500),
+            introductory_text: String.slice(data.introductory_text, 0, 500)
+          },
+          error: nil
+        }
+
+      {:error, reason} ->
+        IO.puts("    ✗ Enacted by failed: #{reason}")
+        %{status: :error, data: nil, error: reason}
+    end
+  end
+
+  # Convert law ID like "ukpga/1974/37" to map format
+  defp parse_law_id_to_map(law_id) do
+    case String.split(law_id, "/") do
+      [type_code, year, number] ->
+        %{
+          name: law_id,
           type_code: type_code,
           year: year,
           number: number,
-          uri: url
+          uri: "http://www.legislation.gov.uk/id/#{law_id}"
         }
 
-      # EU directive URL
-      match = Regex.run(~r/legislation\.gov\.uk\/european\/directive\/(\d{4})\/(\d+)/, url) ->
-        [_, year, number] = match
-        %{
-          name: "eudr/#{year}/#{number}",
-          type_code: "eudr",
-          year: year,
-          number: number,
-          uri: url
-        }
-
-      true ->
-        nil
+      _ ->
+        %{name: law_id, type_code: nil, year: nil, number: nil, uri: nil}
     end
   end
 

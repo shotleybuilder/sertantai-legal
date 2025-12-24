@@ -112,6 +112,9 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
 
   @doc """
   Parse introduction XML to extract enacting text and footnote URLs.
+
+  The text extraction includes FootnoteRef elements inline (e.g., "Act 1984 f00001")
+  so that patterns can match the footnote references.
   """
   @spec parse_enacting_xml(String.t()) :: map()
   def parse_enacting_xml(xml) when is_binary(xml) do
@@ -119,21 +122,11 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
       # First verify it's valid XML
       _ = SweetXml.parse(xml)
 
-      # Extract introductory text
-      intro_text =
-        xml
-        |> xpath(~x"//IntroductoryText//text()"ls)
-        |> Enum.join(" ")
-        |> String.replace(~r/\s+/, " ")
-        |> String.trim()
+      # Extract introductory text WITH footnote refs inline
+      intro_text = extract_text_with_footnote_refs(xml, "IntroductoryText")
 
-      # Extract enacting text
-      enacting_text =
-        xml
-        |> xpath(~x"//EnactingText//text()"ls)
-        |> Enum.join(" ")
-        |> String.replace(~r/\s+/, " ")
-        |> String.trim()
+      # Extract enacting text WITH footnote refs inline
+      enacting_text = extract_text_with_footnote_refs(xml, "EnactingText")
 
       # Extract footnote references (f00001 -> URL mapping)
       footnotes =
@@ -161,6 +154,28 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
       _ -> %{introductory_text: "", enacting_text: "", text: "", urls: %{}}
     catch
       :exit, _ -> %{introductory_text: "", enacting_text: "", text: "", urls: %{}}
+    end
+  end
+
+  # Extract text content including FootnoteRef elements as inline markers
+  # e.g., "Act 1984<FootnoteRef Ref="f00001"/>" becomes "Act 1984 f00001"
+  defp extract_text_with_footnote_refs(xml, section_name) do
+    # Get the raw XML for the section
+    section_pattern = ~r/<#{section_name}[^>]*>(.*?)<\/#{section_name}>/s
+
+    case Regex.run(section_pattern, xml) do
+      [_, section_xml] ->
+        # Replace FootnoteRef elements with their Ref value
+        section_xml
+        |> String.replace(~r/<FootnoteRef[^>]*Ref="([^"]+)"[^>]*\/>/, " \\1 ")
+        # Strip all other XML tags
+        |> String.replace(~r/<[^>]+>/, " ")
+        # Normalize whitespace
+        |> String.replace(~r/\s+/, " ")
+        |> String.trim()
+
+      _ ->
+        ""
     end
   end
 

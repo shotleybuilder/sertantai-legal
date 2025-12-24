@@ -128,6 +128,16 @@ defmodule SertantaiLegal.Scraper.EnactedBy.PatternRegistry do
         output: IdField.build_name("ukpga", "1992", "42"),
         enabled: true,
         notes: "TWA orders for railways, tramways etc."
+      },
+      %{
+        id: :building_act_1984,
+        name: "Building Act 1984",
+        type: :specific_act,
+        priority: 100,
+        pattern: ~r/(?:of|under) the Building Act 1984/i,
+        output: IdField.build_name("ukpga", "1984", "55"),
+        enabled: true,
+        notes: "Building regulations, safety levy etc."
       }
     ]
   end
