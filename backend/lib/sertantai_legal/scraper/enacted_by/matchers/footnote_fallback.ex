@@ -41,6 +41,7 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.FootnoteFallback do
         |> Enum.uniq()
 
       # Look up URLs and filter by year mentions
+      # Also filter to only enabling legislation types (Acts, EU law) - not SIs
       law_ids =
         footnote_refs
         |> Enum.flat_map(fn ref ->
@@ -53,6 +54,7 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.FootnoteFallback do
         end)
         |> Enum.map(&extract_law_id_from_url/1)
         |> Enum.reject(&is_nil/1)
+        |> Enum.filter(&is_enabling_legislation?/1)
         |> Enum.uniq()
 
       if law_ids == [] do
@@ -78,6 +80,11 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.FootnoteFallback do
 
         IdField.build_name(type, year, number)
 
+      # EU regulation URL
+      Regex.match?(~r/european\/regulation\/(\d{4})\/(\d+)/, url) ->
+        [_, year, number] = Regex.run(~r/european\/regulation\/(\d{4})\/(\d+)/, url)
+        IdField.build_name("eur", year, number)
+
       # EU directive URL
       Regex.match?(~r/european\/directive\/(\d{4})\/(\d+)/, url) ->
         [_, year, number] = Regex.run(~r/european\/directive\/(\d{4})\/(\d+)/, url)
@@ -89,4 +96,17 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.FootnoteFallback do
   end
 
   defp extract_law_id_from_url(_), do: nil
+
+  # Filter to only legislation types that can "enact" other legislation
+  # Primary legislation (Acts) and EU retained law can enable SIs
+  # But SIs cannot enable other SIs (those are just amendment references)
+  @enabling_types ~w[ukpga anaw asp nia apni ukla eur eudr eut]
+  defp is_enabling_legislation?(law_id) when is_binary(law_id) do
+    case String.split(law_id, "/") do
+      [type_code | _] -> type_code in @enabling_types
+      _ -> false
+    end
+  end
+
+  defp is_enabling_legislation?(_), do: false
 end

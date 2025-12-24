@@ -144,7 +144,8 @@ defmodule SertantaiLegal.Scraper.EnactedBy.PatternRegistry do
 
   # ---------------------------------------------------------------------------
   # Powers Clause Patterns (Type: :powers_clause)
-  # These match "powers conferred by" style text and capture footnote refs
+  # These match "powers conferred by" style text and capture footnote refs (f00001)
+  # or inline citation IDs (c00001)
   # Priority: 50 (matched after specific acts)
   # ---------------------------------------------------------------------------
 
@@ -152,28 +153,29 @@ defmodule SertantaiLegal.Scraper.EnactedBy.PatternRegistry do
     [
       %{
         id: :powers_conferred_by,
-        name: "Powers conferred by (with footnote)",
+        name: "Powers conferred by (with ref)",
         type: :powers_clause,
         priority: 50,
-        pattern: ~r/powers? conferred.*?by.*?(f\d{5})/,
+        # Match footnote refs (f00001) or inline citation IDs (c00001)
+        pattern: ~r/powers? conferred.*?by.*?([fc]\d{5})/,
         enabled: true,
-        notes: "Most common phrasing"
+        notes: "Most common phrasing - matches footnotes and inline citations"
       },
       %{
         id: :powers_under,
-        name: "Powers under (with footnote)",
+        name: "Powers under (with ref)",
         type: :powers_clause,
         priority: 50,
-        pattern: ~r/powers under.*?(f\d{5})/,
+        pattern: ~r/powers under.*?([fc]\d{5})/,
         enabled: true,
         notes: "Alternative phrasing"
       },
       %{
         id: :in_exercise_of_powers,
-        name: "In exercise of the powers (with footnote)",
+        name: "In exercise of the powers (with ref)",
         type: :powers_clause,
         priority: 50,
-        pattern: ~r/in exercise of the powers.*?(f\d{5})/,
+        pattern: ~r/in exercise of the powers.*?([fc]\d{5})/,
         enabled: true,
         notes: "Formal phrasing"
       }
@@ -182,20 +184,21 @@ defmodule SertantaiLegal.Scraper.EnactedBy.PatternRegistry do
 
   # ---------------------------------------------------------------------------
   # Fallback Patterns (Type: :footnote_fallback)
-  # Last resort - extract all footnotes and filter by year mentions
+  # Last resort - extract all footnotes/citations and filter by year mentions
   # Priority: 10 (matched last)
   # ---------------------------------------------------------------------------
 
   defp fallback_patterns do
     [
       %{
-        id: :all_footnotes,
-        name: "All footnotes with year filter",
+        id: :all_refs,
+        name: "All refs with year filter",
         type: :footnote_fallback,
         priority: 10,
-        pattern: ~r/f\d{5}/,
+        # Match footnote refs (f00001) and inline citation IDs (c00001)
+        pattern: ~r/[fc]\d{5}/,
         enabled: true,
-        notes: "Fallback: extract all footnote refs, filter by years in text"
+        notes: "Fallback: extract all footnote/citation refs, filter by years in text"
       }
     ]
   end
