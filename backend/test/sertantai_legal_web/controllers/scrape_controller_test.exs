@@ -3,8 +3,35 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
 
   alias SertantaiLegal.Scraper.ScrapeSession
   alias SertantaiLegal.Scraper.Storage
+  alias SertantaiLegal.Repo
 
   @test_session_id "test-2024-12-01-to-05"
+
+  # Helper to create UkLrt records directly via Ecto (bypasses Ash action issues in test)
+  # Note: uk_lrt table uses created_at, not inserted_at/updated_at
+  # UUID must be converted to binary format for insert_all
+  defp create_uk_lrt_record(attrs) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    {:ok, id_binary} = Ecto.UUID.dump(Ecto.UUID.generate())
+
+    defaults = %{
+      id: id_binary,
+      created_at: now
+    }
+
+    record =
+      defaults
+      |> Map.merge(attrs)
+
+    {1, [inserted]} =
+      Repo.insert_all(
+        "uk_lrt",
+        [record],
+        returning: [:id, :name, :enacting, :is_enacting]
+      )
+
+    inserted
+  end
 
   setup do
     # Clean up any test session files
@@ -332,5 +359,354 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
 
     # Note: Testing that valid params proceed to scrape requires HTTP mocking.
     # The rejection tests above validate the parameter parsing logic.
+  end
+
+  # ============================================================================
+  # Cascade Update Endpoint Tests
+  # ============================================================================
+
+  describe "GET /api/sessions/:id/affected-laws" do
+    setup do
+      {:ok, _session} =
+        ScrapeSession.create(%{
+          session_id: @test_session_id,
+          year: 2024,
+          month: 12,
+          day_from: 1,
+          day_to: 5
+        })
+
+      :ok
+    end
+
+    test "returns 404 when session does not exist", %{conn: conn} do
+      conn = get(conn, "/api/sessions/nonexistent/affected-laws")
+
+      assert json_response(conn, 404)["error"] == "Session not found"
+    end
+
+    test "returns empty data when no affected laws", %{conn: conn} do
+      conn = get(conn, "/api/sessions/#{@test_session_id}/affected-laws")
+
+      response = json_response(conn, 200)
+      assert response["session_id"] == @test_session_id
+      assert response["total_affected"] == 0
+      assert response["in_db_count"] == 0
+      assert response["not_in_db_count"] == 0
+      assert response["total_enacting_parents"] == 0
+      assert response["enacting_parents_in_db_count"] == 0
+    end
+
+    test "returns affected laws data when present", %{conn: conn} do
+      # Add some affected laws
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], ["ukpga/1974/37"])
+
+      conn = get(conn, "/api/sessions/#{@test_session_id}/affected-laws")
+
+      response = json_response(conn, 200)
+      assert response["source_count"] == 1
+      assert "uksi/2025/100" in response["source_laws"]
+      assert response["total_affected"] == 1
+      assert response["total_enacting_parents"] == 1
+    end
+
+    test "partitions laws by DB existence", %{conn: conn} do
+      # Create a UkLrt record that will be "in DB"
+      create_uk_lrt_record(%{
+        name: "ukpga/2020/1",
+        title_en: "Test Act 2020",
+        type_code: "ukpga",
+        year: 2020,
+        number: "1"
+      })
+
+      # Add affected laws - one exists in DB, one doesn't
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1", "ukpga/2021/999"], [], [])
+
+      conn = get(conn, "/api/sessions/#{@test_session_id}/affected-laws")
+
+      response = json_response(conn, 200)
+      assert response["in_db_count"] == 1
+      assert response["not_in_db_count"] == 1
+
+      in_db_names = Enum.map(response["in_db"], & &1["name"])
+      assert "ukpga/2020/1" in in_db_names
+
+      not_in_db_names = Enum.map(response["not_in_db"], & &1["name"])
+      assert "ukpga/2021/999" in not_in_db_names
+    end
+
+    test "partitions enacting parents by DB existence", %{conn: conn} do
+      # Create a parent law
+      create_uk_lrt_record(%{
+        name: "ukpga/1974/37",
+        title_en: "Health and Safety at Work Act 1974",
+        type_code: "ukpga",
+        year: 1974,
+        number: "37",
+        enacting: [],
+        is_enacting: false
+      })
+
+      # Add affected laws with enacted_by
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/1974/37", "ukpga/2008/999"])
+
+      conn = get(conn, "/api/sessions/#{@test_session_id}/affected-laws")
+
+      response = json_response(conn, 200)
+      assert response["enacting_parents_in_db_count"] == 1
+      assert response["enacting_parents_not_in_db_count"] == 1
+
+      in_db_names = Enum.map(response["enacting_parents_in_db"], & &1["name"])
+      assert "ukpga/1974/37" in in_db_names
+    end
+  end
+
+  describe "POST /api/sessions/:id/update-enacting-links" do
+    setup do
+      {:ok, _session} =
+        ScrapeSession.create(%{
+          session_id: @test_session_id,
+          year: 2024,
+          month: 12,
+          day_from: 1,
+          day_to: 5
+        })
+
+      :ok
+    end
+
+    test "returns 404 when session does not exist", %{conn: conn} do
+      conn = post(conn, "/api/sessions/nonexistent/update-enacting-links", %{})
+
+      assert json_response(conn, 404)["error"] == "Session not found"
+    end
+
+    test "returns empty results when no enacting parents", %{conn: conn} do
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{})
+
+      response = json_response(conn, 200)
+      assert response["total"] == 0
+      assert response["success"] == 0
+      assert response["message"] == "No enacting parents to update"
+    end
+
+    test "updates enacting array on parent law", %{conn: conn} do
+      alias SertantaiLegal.Legal.UkLrt
+
+      # Create a parent law with empty enacting array
+      parent_law = create_uk_lrt_record(%{
+        name: "ukpga/1974/37",
+        title_en: "Health and Safety at Work Act 1974",
+        type_code: "ukpga",
+        year: 1974,
+        number: "37",
+        enacting: [],
+        is_enacting: false
+      })
+
+      # Add affected laws - the child SI enacted_by this parent
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/1974/37"])
+
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{})
+
+      response = json_response(conn, 200)
+      assert response["total"] == 1
+      assert response["success"] == 1
+      assert response["errors"] == 0
+
+      # Check the result details
+      [result] = response["results"]
+      assert result["name"] == "ukpga/1974/37"
+      assert result["status"] == "success"
+      assert result["added_count"] == 1
+      assert "uksi/2025/100" in result["added"]
+
+      # Verify the database was updated
+      {:ok, updated_law} = Ash.get(UkLrt, parent_law.id)
+      assert "uksi/2025/100" in updated_law.enacting
+      assert updated_law.is_enacting == true
+    end
+
+    test "appends to existing enacting array", %{conn: conn} do
+      alias SertantaiLegal.Legal.UkLrt
+
+      # Create a parent law with existing enacting entry
+      parent_law = create_uk_lrt_record(%{
+        name: "ukpga/1974/37",
+        title_en: "Health and Safety at Work Act 1974",
+        type_code: "ukpga",
+        year: 1974,
+        number: "37",
+        enacting: ["uksi/2024/50"],
+        is_enacting: true
+      })
+
+      # Add affected laws
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/1974/37"])
+
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{})
+
+      response = json_response(conn, 200)
+      assert response["success"] == 1
+
+      # Verify the new entry was appended
+      {:ok, updated_law} = Ash.get(UkLrt, parent_law.id)
+      assert "uksi/2024/50" in updated_law.enacting
+      assert "uksi/2025/100" in updated_law.enacting
+      assert length(updated_law.enacting) == 2
+    end
+
+    test "returns unchanged when source law already in enacting", %{conn: conn} do
+      # Create a parent law that already has the source law
+      create_uk_lrt_record(%{
+        name: "ukpga/1974/37",
+        title_en: "Health and Safety at Work Act 1974",
+        type_code: "ukpga",
+        year: 1974,
+        number: "37",
+        enacting: ["uksi/2025/100"],  # Already has this entry
+        is_enacting: true
+      })
+
+      # Add affected laws with same source
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/1974/37"])
+
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{})
+
+      response = json_response(conn, 200)
+      assert response["unchanged"] == 1
+      assert response["success"] == 0
+
+      [result] = response["results"]
+      assert result["status"] == "unchanged"
+    end
+
+    test "returns error when parent law not in DB", %{conn: conn} do
+      # Add affected laws for a parent that doesn't exist in DB
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/9999/999"])
+
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{})
+
+      response = json_response(conn, 200)
+      assert response["errors"] == 1
+
+      [result] = response["results"]
+      assert result["status"] == "error"
+      assert result["message"] =~ "not found"
+    end
+
+    test "updates only selected parents when names provided", %{conn: conn} do
+      # Create two parent laws
+      create_uk_lrt_record(%{
+        name: "ukpga/1974/37",
+        title_en: "Health and Safety at Work Act 1974",
+        type_code: "ukpga",
+        year: 1974,
+        number: "37",
+        enacting: [],
+        is_enacting: false
+      })
+
+      create_uk_lrt_record(%{
+        name: "ukpga/2008/29",
+        title_en: "Planning Act 2008",
+        type_code: "ukpga",
+        year: 2008,
+        number: "29",
+        enacting: [],
+        is_enacting: false
+      })
+
+      # Add affected laws for both parents
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/1974/37", "ukpga/2008/29"])
+
+      # Only update one of them
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{
+        "names" => ["ukpga/1974/37"]
+      })
+
+      response = json_response(conn, 200)
+      assert response["total"] == 1
+      assert response["success"] == 1
+
+      # Verify only the selected one was updated
+      [result] = response["results"]
+      assert result["name"] == "ukpga/1974/37"
+    end
+
+    test "handles multiple source laws for same parent", %{conn: conn} do
+      alias SertantaiLegal.Legal.UkLrt
+
+      parent_law = create_uk_lrt_record(%{
+        name: "ukpga/1974/37",
+        title_en: "Health and Safety at Work Act 1974",
+        type_code: "ukpga",
+        year: 1974,
+        number: "37",
+        enacting: [],
+        is_enacting: false
+      })
+
+      # Add two different SIs both enacted by same parent
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], ["ukpga/1974/37"])
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/101", [], [], ["ukpga/1974/37"])
+
+      conn = post(conn, "/api/sessions/#{@test_session_id}/update-enacting-links", %{})
+
+      response = json_response(conn, 200)
+      assert response["success"] == 1
+
+      [result] = response["results"]
+      assert result["added_count"] == 2
+
+      # Verify both were added
+      {:ok, updated_law} = Ash.get(UkLrt, parent_law.id)
+      assert "uksi/2025/100" in updated_law.enacting
+      assert "uksi/2025/101" in updated_law.enacting
+    end
+  end
+
+  describe "DELETE /api/sessions/:id/affected-laws" do
+    setup do
+      {:ok, _session} =
+        ScrapeSession.create(%{
+          session_id: @test_session_id,
+          year: 2024,
+          month: 12,
+          day_from: 1,
+          day_to: 5
+        })
+
+      :ok
+    end
+
+    test "returns 404 when session does not exist", %{conn: conn} do
+      conn = delete(conn, "/api/sessions/nonexistent/affected-laws")
+
+      assert json_response(conn, 404)["error"] == "Session not found"
+    end
+
+    test "clears affected laws file", %{conn: conn} do
+      # Add some affected laws
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], ["ukpga/1974/37"])
+      assert Storage.file_exists?(@test_session_id, :affected_laws)
+
+      conn = delete(conn, "/api/sessions/#{@test_session_id}/affected-laws")
+
+      response = json_response(conn, 200)
+      assert response["message"] == "Affected laws cleared"
+
+      refute Storage.file_exists?(@test_session_id, :affected_laws)
+    end
+
+    test "succeeds even when no affected laws file exists", %{conn: conn} do
+      refute Storage.file_exists?(@test_session_id, :affected_laws)
+
+      conn = delete(conn, "/api/sessions/#{@test_session_id}/affected-laws")
+
+      response = json_response(conn, 200)
+      assert response["message"] == "Affected laws cleared"
+    end
   end
 end

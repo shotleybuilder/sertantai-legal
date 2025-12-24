@@ -391,10 +391,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   # Collect affected laws for cascade update
                   amending = record_to_persist[:amending] || []
                   rescinding = record_to_persist[:rescinding] || []
-                  Storage.add_affected_laws(session_id, name, amending, rescinding)
+                  enacted_by = record_to_persist[:enacted_by] || []
+                  Storage.add_affected_laws(session_id, name, amending, rescinding, enacted_by)
 
                   # Check if there are affected laws
                   has_affected = length(amending) + length(rescinding) > 0
+                  has_enacting_parents = length(enacted_by) > 0
 
                   json(conn, %{
                     message: "Record persisted successfully",
@@ -402,7 +404,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
                     id: persisted.id,
                     action: if(check_duplicate(name), do: "updated", else: "created"),
                     has_affected_laws: has_affected,
-                    affected_count: length(amending) + length(rescinding)
+                    affected_count: length(amending) + length(rescinding),
+                    has_enacting_parents: has_enacting_parents,
+                    enacting_parents_count: length(enacted_by)
                   })
 
                 {:error, reason} ->
@@ -832,7 +836,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     with {:ok, _session} <- SessionManager.get(session_id) do
       summary = Storage.get_affected_laws_summary(session_id)
 
-      # Check which laws exist in DB
+      # Check which laws exist in DB (for amending/rescinding - need re-parse)
       all_affected = summary.all_affected
 
       {in_db, not_in_db} =
@@ -865,15 +869,56 @@ defmodule SertantaiLegalWeb.ScrapeController do
           {existing, not_existing}
         end
 
+      # Check which enacting parents exist in DB (for direct array update)
+      enacting_parents = summary.enacting_parents
+
+      {enacting_parents_in_db, enacting_parents_not_in_db} =
+        if enacting_parents == [] do
+          {[], []}
+        else
+          existing =
+            UkLrt
+            |> Ash.Query.filter(name in ^enacting_parents)
+            |> Ash.Query.select([:id, :name, :title_en, :year, :type_code, :enacting, :is_enacting])
+            |> Ash.read!()
+            |> Enum.map(fn r ->
+              %{
+                id: r.id,
+                name: r.name,
+                title_en: r.title_en,
+                year: r.year,
+                type_code: r.type_code,
+                current_enacting_count: length(r.enacting || []),
+                is_enacting: r.is_enacting
+              }
+            end)
+
+          existing_names = MapSet.new(existing, & &1.name)
+
+          not_existing =
+            enacting_parents
+            |> Enum.reject(&MapSet.member?(existing_names, &1))
+            |> Enum.map(fn name -> %{name: name} end)
+
+          {existing, not_existing}
+        end
+
       json(conn, %{
         session_id: session_id,
         source_laws: summary.source_laws,
         source_count: summary.source_count,
+        # Laws needing re-parse (amending/rescinding relationships)
         in_db: in_db,
         in_db_count: length(in_db),
         not_in_db: not_in_db,
         not_in_db_count: length(not_in_db),
-        total_affected: summary.all_affected_count
+        total_affected: summary.all_affected_count,
+        # Parent laws needing direct enacting array update
+        enacting_parents_in_db: enacting_parents_in_db,
+        enacting_parents_in_db_count: length(enacting_parents_in_db),
+        enacting_parents_not_in_db: enacting_parents_not_in_db,
+        enacting_parents_not_in_db_count: length(enacting_parents_not_in_db),
+        total_enacting_parents: summary.enacting_parents_count
       })
     else
       {:error, reason} ->
@@ -964,6 +1009,153 @@ defmodule SertantaiLegalWeb.ScrapeController do
         errors: error_count,
         results: results
       })
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  @doc """
+  POST /api/sessions/:id/update-enacting-links
+
+  Update enacting arrays on parent laws directly.
+
+  Unlike amending/rescinding (which requires re-parsing from legislation.gov.uk),
+  enacting relationships are derived from enacted_by. This endpoint directly
+  appends source laws to parent laws' enacting arrays.
+
+  ## Parameters
+  - names: List of parent law names to update (optional, defaults to all enacting_parents)
+
+  ## Returns
+  Progress and results for each parent law updated.
+  """
+  def update_enacting_links(conn, %{"id" => session_id} = params) do
+    alias SertantaiLegal.Legal.UkLrt
+
+    names = params["names"]
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      # Get affected laws data
+      affected_data = Storage.read_affected_laws(session_id)
+      entries = affected_data[:entries] || []
+
+      # Determine which parents to update
+      target_parents =
+        if names && is_list(names) && length(names) > 0 do
+          names
+        else
+          affected_data[:all_enacting_parents] || []
+        end
+
+      if target_parents == [] do
+        json(conn, %{
+          session_id: session_id,
+          total: 0,
+          success: 0,
+          errors: 0,
+          results: [],
+          message: "No enacting parents to update"
+        })
+      else
+        # Build map of parent -> source_laws to add
+        parent_to_sources =
+          Enum.reduce(entries, %{}, fn entry, acc ->
+            source_law = entry[:source_law]
+            enacted_by_list = entry[:enacted_by] || []
+
+            Enum.reduce(enacted_by_list, acc, fn parent, inner_acc ->
+              if parent in target_parents do
+                Map.update(inner_acc, parent, [source_law], &[source_law | &1])
+              else
+                inner_acc
+              end
+            end)
+          end)
+
+        # Update each parent law
+        results =
+          Enum.map(target_parents, fn parent_name ->
+            sources_to_add = Map.get(parent_to_sources, parent_name, []) |> Enum.uniq()
+
+            if sources_to_add == [] do
+              %{name: parent_name, status: "skipped", message: "No source laws to add"}
+            else
+              # Find the parent law in DB
+              case UkLrt
+                   |> Ash.Query.filter(name == ^parent_name)
+                   |> Ash.read_one() do
+                {:ok, nil} ->
+                  %{name: parent_name, status: "error", message: "Parent law not found in database"}
+
+                {:ok, parent_law} ->
+                  # Merge existing enacting with new sources
+                  existing_enacting = parent_law.enacting || []
+                  new_enacting = Enum.uniq(existing_enacting ++ sources_to_add)
+
+                  # Only update if there's something new to add
+                  added = Enum.reject(sources_to_add, &(&1 in existing_enacting))
+
+                  if added == [] do
+                    %{
+                      name: parent_name,
+                      status: "unchanged",
+                      message: "All source laws already in enacting array",
+                      current_count: length(existing_enacting)
+                    }
+                  else
+                    # Update using Ash - use specific update_enacting action
+                    case Ash.Changeset.for_update(parent_law, :update_enacting, %{
+                           enacting: new_enacting,
+                           is_enacting: true
+                         })
+                         |> Ash.update() do
+                      {:ok, updated} ->
+                        %{
+                          name: parent_name,
+                          status: "success",
+                          message: "Updated enacting array",
+                          added: added,
+                          added_count: length(added),
+                          new_total: length(updated.enacting || [])
+                        }
+
+                      {:error, reason} ->
+                        %{
+                          name: parent_name,
+                          status: "error",
+                          message: "Update failed: #{inspect(reason)}"
+                        }
+                    end
+                  end
+
+                {:error, reason} ->
+                  %{name: parent_name, status: "error", message: "Query failed: #{inspect(reason)}"}
+              end
+            end
+          end)
+
+        success_count = Enum.count(results, &(&1.status == "success"))
+        error_count = Enum.count(results, &(&1.status == "error"))
+        unchanged_count = Enum.count(results, &(&1.status == "unchanged"))
+
+        json(conn, %{
+          session_id: session_id,
+          total: length(results),
+          success: success_count,
+          unchanged: unchanged_count,
+          errors: error_count,
+          results: results
+        })
+      end
     else
       {:error, reason} ->
         if not_found_error?(reason) do

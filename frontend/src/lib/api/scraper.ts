@@ -347,15 +347,32 @@ export interface AffectedLaw {
 	type_code?: string;
 }
 
+export interface EnactingParentLaw {
+	id?: string;
+	name: string;
+	title_en?: string;
+	year?: number;
+	type_code?: string;
+	current_enacting_count?: number;
+	is_enacting?: boolean;
+}
+
 export interface AffectedLawsResult {
 	session_id: string;
 	source_laws: string[];
 	source_count: number;
+	// Laws needing re-parse (amending/rescinding)
 	in_db: AffectedLaw[];
 	in_db_count: number;
 	not_in_db: AffectedLaw[];
 	not_in_db_count: number;
 	total_affected: number;
+	// Parent laws needing direct enacting update
+	enacting_parents_in_db: EnactingParentLaw[];
+	enacting_parents_in_db_count: number;
+	enacting_parents_not_in_db: AffectedLaw[];
+	enacting_parents_not_in_db_count: number;
+	total_enacting_parents: number;
 }
 
 export interface BatchReparseResultItem {
@@ -418,6 +435,53 @@ export async function clearAffectedLaws(sessionId: string): Promise<{ message: s
 	if (!response.ok) {
 		const error = await response.json();
 		throw new Error(error.error || 'Failed to clear affected laws');
+	}
+
+	return response.json();
+}
+
+// ============================================================================
+// Enacting Links Update API
+// ============================================================================
+
+export interface UpdateEnactingResultItem {
+	name: string;
+	status: 'success' | 'error' | 'unchanged' | 'skipped';
+	message: string;
+	added?: string[];
+	added_count?: number;
+	new_total?: number;
+	current_count?: number;
+}
+
+export interface UpdateEnactingLinksResult {
+	session_id: string;
+	total: number;
+	success: number;
+	unchanged: number;
+	errors: number;
+	results: UpdateEnactingResultItem[];
+}
+
+/**
+ * Update enacting arrays on parent laws directly.
+ * Unlike amending/rescinding (which requires re-parsing), enacting relationships
+ * are derived from enacted_by. This endpoint directly appends source laws to
+ * parent laws' enacting arrays.
+ */
+export async function updateEnactingLinks(
+	sessionId: string,
+	names?: string[]
+): Promise<UpdateEnactingLinksResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/update-enacting-links`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ names })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to update enacting links');
 	}
 
 	return response.json();

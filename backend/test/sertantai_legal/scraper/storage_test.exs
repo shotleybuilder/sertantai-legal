@@ -169,4 +169,140 @@ defmodule SertantaiLegal.Scraper.StorageTest do
       assert read_metadata.session_id == @test_session_id
     end
   end
+
+  # ============================================================================
+  # Affected Laws Tests (Cascade Update)
+  # ============================================================================
+
+  describe "add_affected_laws/5" do
+    test "adds affected laws with amending only" do
+      amending = ["ukpga/2020/1", "ukpga/2021/2"]
+      rescinding = []
+      enacted_by = []
+
+      assert :ok = Storage.add_affected_laws(@test_session_id, "uksi/2025/100", amending, rescinding, enacted_by)
+
+      data = Storage.read_affected_laws(@test_session_id)
+
+      assert length(data[:entries]) == 1
+      assert hd(data[:entries])[:source_law] == "uksi/2025/100"
+      assert hd(data[:entries])[:amending] == amending
+      assert data[:all_amending] == amending
+      assert data[:all_rescinding] == []
+      assert data[:all_enacting_parents] == []
+    end
+
+    test "adds affected laws with enacted_by" do
+      amending = []
+      rescinding = []
+      enacted_by = ["ukpga/1974/37", "ukpga/2008/29"]
+
+      assert :ok = Storage.add_affected_laws(@test_session_id, "uksi/2025/100", amending, rescinding, enacted_by)
+
+      data = Storage.read_affected_laws(@test_session_id)
+
+      assert length(data[:entries]) == 1
+      assert hd(data[:entries])[:enacted_by] == enacted_by
+      assert data[:all_enacting_parents] == enacted_by
+    end
+
+    test "accumulates multiple source laws" do
+      # First law amends ukpga/2020/1 and is enacted by ukpga/1974/37
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], ["ukpga/1974/37"])
+
+      # Second law amends ukpga/2020/1 and ukpga/2021/2, enacted by same parent
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/101", ["ukpga/2020/1", "ukpga/2021/2"], [], ["ukpga/1974/37"])
+
+      data = Storage.read_affected_laws(@test_session_id)
+
+      assert length(data[:entries]) == 2
+
+      # all_amending should be deduplicated
+      assert "ukpga/2020/1" in data[:all_amending]
+      assert "ukpga/2021/2" in data[:all_amending]
+      assert length(data[:all_amending]) == 2
+
+      # all_enacting_parents should be deduplicated
+      assert data[:all_enacting_parents] == ["ukpga/1974/37"]
+    end
+
+    test "skips when no affected laws" do
+      assert :ok = Storage.add_affected_laws(@test_session_id, "uksi/2025/100", [], [], [])
+
+      # Should not create a file when nothing to add
+      refute Storage.file_exists?(@test_session_id, :affected_laws)
+    end
+
+    test "handles nil values gracefully" do
+      assert :ok = Storage.add_affected_laws(@test_session_id, "uksi/2025/100", nil, nil, nil)
+      refute Storage.file_exists?(@test_session_id, :affected_laws)
+    end
+  end
+
+  describe "read_affected_laws/1" do
+    test "returns empty structure when no file exists" do
+      data = Storage.read_affected_laws("nonexistent-session")
+
+      assert data[:entries] == []
+      assert data[:all_amending] == []
+      assert data[:all_rescinding] == []
+      assert data[:all_enacting_parents] == []
+    end
+
+    test "reads saved affected laws" do
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], ["ukpga/2019/1"], ["ukpga/1974/37"])
+
+      data = Storage.read_affected_laws(@test_session_id)
+
+      assert length(data[:entries]) == 1
+      assert data[:all_amending] == ["ukpga/2020/1"]
+      assert data[:all_rescinding] == ["ukpga/2019/1"]
+      assert data[:all_enacting_parents] == ["ukpga/1974/37"]
+    end
+  end
+
+  describe "get_affected_laws_summary/1" do
+    test "returns summary with counts" do
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1", "ukpga/2021/2"], ["ukpga/2019/1"], ["ukpga/1974/37"])
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/101", ["ukpga/2020/1"], [], ["ukpga/1974/37", "ukpga/2008/29"])
+
+      summary = Storage.get_affected_laws_summary(@test_session_id)
+
+      assert summary.source_count == 2
+      assert "uksi/2025/100" in summary.source_laws
+      assert "uksi/2025/101" in summary.source_laws
+
+      assert summary.amending_count == 2
+      assert summary.rescinding_count == 1
+      assert summary.all_affected_count == 3  # 2 amending + 1 rescinding (deduplicated)
+
+      assert summary.enacting_parents_count == 2
+      assert "ukpga/1974/37" in summary.enacting_parents
+      assert "ukpga/2008/29" in summary.enacting_parents
+    end
+
+    test "returns zeros for empty session" do
+      summary = Storage.get_affected_laws_summary("nonexistent-session")
+
+      assert summary.source_count == 0
+      assert summary.amending_count == 0
+      assert summary.rescinding_count == 0
+      assert summary.all_affected_count == 0
+      assert summary.enacting_parents_count == 0
+    end
+  end
+
+  describe "clear_affected_laws/1" do
+    test "clears affected laws file" do
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], ["ukpga/1974/37"])
+      assert Storage.file_exists?(@test_session_id, :affected_laws)
+
+      assert :ok = Storage.clear_affected_laws(@test_session_id)
+      refute Storage.file_exists?(@test_session_id, :affected_laws)
+    end
+
+    test "handles non-existent file gracefully" do
+      assert :ok = Storage.clear_affected_laws("nonexistent-session")
+    end
+  end
 end

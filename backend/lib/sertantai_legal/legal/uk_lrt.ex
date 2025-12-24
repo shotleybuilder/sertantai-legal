@@ -476,6 +476,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
       accept :*
     end
 
+    update :update_enacting do
+      description "Update enacting array and is_enacting flag"
+      accept [:enacting, :is_enacting]
+    end
+
     read :by_id do
       description "Get a single record by ID"
       get? true

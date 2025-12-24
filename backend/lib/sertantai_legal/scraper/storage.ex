@@ -325,25 +325,27 @@ defmodule SertantaiLegal.Scraper.Storage do
   @doc """
   Add affected laws from a persisted record to the session's affected_laws.json.
 
-  Collects laws from `amending` and `rescinding` fields and deduplicates.
+  Collects laws from `amending`, `rescinding`, and `enacted_by` fields and deduplicates.
 
   ## Parameters
   - session_id: Session identifier
   - source_law: The law that was persisted (name, e.g., "uksi/2024/123")
   - amending: List of law IDs this law amends
   - rescinding: List of law IDs this law rescinds
+  - enacted_by: List of parent law IDs that enable this law (optional)
 
   ## Returns
   `:ok` or `{:error, reason}`
   """
-  @spec add_affected_laws(String.t(), String.t(), list(String.t()), list(String.t())) ::
+  @spec add_affected_laws(String.t(), String.t(), list(String.t()), list(String.t()), list(String.t())) ::
           :ok | {:error, any()}
-  def add_affected_laws(session_id, source_law, amending, rescinding) do
+  def add_affected_laws(session_id, source_law, amending, rescinding, enacted_by \\ []) do
     amending = amending || []
     rescinding = rescinding || []
+    enacted_by = enacted_by || []
 
     # Skip if no affected laws
-    if amending == [] and rescinding == [] do
+    if amending == [] and rescinding == [] and enacted_by == [] do
       :ok
     else
       # Read existing affected laws or initialize
@@ -354,6 +356,7 @@ defmodule SertantaiLegal.Scraper.Storage do
         source_law: source_law,
         amending: amending,
         rescinding: rescinding,
+        enacted_by: enacted_by,
         added_at: DateTime.utc_now() |> DateTime.to_iso8601()
       }
 
@@ -362,6 +365,7 @@ defmodule SertantaiLegal.Scraper.Storage do
         entries: (existing[:entries] || []) ++ [new_entry],
         all_amending: Enum.uniq((existing[:all_amending] || []) ++ amending),
         all_rescinding: Enum.uniq((existing[:all_rescinding] || []) ++ rescinding),
+        all_enacting_parents: Enum.uniq((existing[:all_enacting_parents] || []) ++ enacted_by),
         updated_at: DateTime.utc_now() |> DateTime.to_iso8601()
       }
 
@@ -373,13 +377,14 @@ defmodule SertantaiLegal.Scraper.Storage do
   Read affected laws from a session.
 
   ## Returns
-  Map with :entries, :all_amending, :all_rescinding keys, or empty map if not found.
+  Map with :entries, :all_amending, :all_rescinding, :all_enacting_parents keys,
+  or empty map if not found.
   """
   @spec read_affected_laws(String.t()) :: map()
   def read_affected_laws(session_id) do
     case read_json(session_id, :affected_laws) do
       {:ok, data} -> data
-      {:error, _} -> %{entries: [], all_amending: [], all_rescinding: []}
+      {:error, _} -> %{entries: [], all_amending: [], all_rescinding: [], all_enacting_parents: []}
     end
   end
 
@@ -393,8 +398,12 @@ defmodule SertantaiLegal.Scraper.Storage do
   def get_affected_laws_summary(session_id) do
     data = read_affected_laws(session_id)
 
+    # Laws that need re-parsing (amending/rescinding relationships)
     all_affected =
       Enum.uniq((data[:all_amending] || []) ++ (data[:all_rescinding] || []))
+
+    # Parent laws that need direct enacting array update
+    enacting_parents = data[:all_enacting_parents] || []
 
     %{
       source_laws: Enum.map(data[:entries] || [], & &1[:source_law]),
@@ -404,7 +413,9 @@ defmodule SertantaiLegal.Scraper.Storage do
       rescinding: data[:all_rescinding] || [],
       rescinding_count: length(data[:all_rescinding] || []),
       all_affected: all_affected,
-      all_affected_count: length(all_affected)
+      all_affected_count: length(all_affected),
+      enacting_parents: enacting_parents,
+      enacting_parents_count: length(enacting_parents)
     }
   end
 

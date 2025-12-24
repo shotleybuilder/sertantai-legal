@@ -33,6 +33,7 @@ defmodule SertantaiLegalWeb.Router do
     # Cascade update endpoints
     get "/sessions/:id/affected-laws", ScrapeController, :affected_laws
     post "/sessions/:id/batch-reparse", ScrapeController, :batch_reparse
+    post "/sessions/:id/update-enacting-links", ScrapeController, :update_enacting_links
     delete "/sessions/:id/affected-laws", ScrapeController, :clear_affected_laws
 
     # UK LRT CRUD endpoints
