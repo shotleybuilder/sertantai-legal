@@ -11,13 +11,24 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
 
   Primary legislation (Acts) are not enacted by other legislation.
 
+  ## Pattern Matching
+
+  Uses patterns defined in `EnactedBy.PatternRegistry` to identify enacted_by
+  relationships. Patterns are processed by priority:
+  1. Specific Act patterns (priority 100) - exact Act name matches
+  2. Powers clause patterns (priority 50) - "powers conferred by" with footnotes
+  3. Fallback patterns (priority 10) - extract all footnotes
+
   Ported from Legl.Countries.Uk.LeglRegister.Enact.GetEnactedBy
   """
 
   import SweetXml
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
-  alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.EnactedBy.PatternRegistry
+  alias SertantaiLegal.Scraper.EnactedBy.Matcher
+  alias SertantaiLegal.Scraper.EnactedBy.Metrics
+  alias SertantaiLegal.Scraper.EnactedBy.Matchers.{SpecificAct, PowersClause, FootnoteFallback}
 
   # Primary legislation type codes - these don't have enacting laws
   @primary_legislation ~w[ukpga anaw asp nia apni]
@@ -155,21 +166,48 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
 
   @doc """
   Find enacting laws from text and URL references.
+
+  Uses the matcher pipeline to process patterns by priority:
+  1. SpecificAct (priority 100) - exact Act name matches
+  2. PowersClause (priority 50) - "powers conferred by" with footnotes
+  3. FootnoteFallback (priority 10) - extract all footnotes (only if above found nothing)
   """
   @spec find_enacting_laws(String.t(), map()) :: [String.t()]
   def find_enacting_laws("", _urls), do: []
 
   def find_enacting_laws(text, urls) do
-    # Strategy 1: Look for specific patterns with footnote refs
-    specific_laws = find_specific_enacting_clauses(text)
+    context = %{urls: urls}
 
-    # Strategy 2: Look for "powers conferred by" patterns with footnote codes
-    pattern_laws = find_powers_conferred_by(text, urls)
+    # Strategy 1: Look for specific Act patterns
+    {specific_laws, _meta1} =
+      Matcher.run_patterns(
+        SpecificAct,
+        PatternRegistry.by_type(:specific_act),
+        text,
+        context
+      )
 
-    # Strategy 3: Fall back to all footnote refs in enacting text
+    # Strategy 2: Look for "powers conferred by" patterns
+    {pattern_laws, _meta2} =
+      Matcher.run_patterns(
+        PowersClause,
+        PatternRegistry.by_type(:powers_clause),
+        text,
+        context
+      )
+
+    # Strategy 3: Fall back to all footnote refs (only if above found nothing)
     fallback_laws =
       if specific_laws == [] and pattern_laws == [] do
-        extract_laws_from_footnotes(text, urls)
+        {laws, _meta3} =
+          Matcher.run_patterns(
+            FootnoteFallback,
+            PatternRegistry.by_type(:footnote_fallback),
+            text,
+            context
+          )
+
+        laws
       else
         []
       end
@@ -178,102 +216,39 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
     |> Enum.uniq()
   end
 
-  # Find specific known enacting law patterns
-  defp find_specific_enacting_clauses(text) do
-    patterns = [
-      # Transport and Works Act
-      {~r/under sections?.*? of the Transport and Works Act 1992/i, "ukpga", "1992", "42"},
-      # European Union (Withdrawal) Act
-      {~r/powers.*?European Union \(Withdrawal\) Act 2018/i, "ukpga", "2018", "16"},
-      # Planning Act - various patterns
-      {~r/under section.*?of the Planning Act 2008/i, "ukpga", "2008", "29"},
-      {~r/section 114.*?and 120.*?of the 2008 Act/i, "ukpga", "2008", "29"},
-      {~r/Planning Act 2008/i, "ukpga", "2008", "29"},
-      # Health and Safety at Work etc. Act
-      {~r/Health and Safety at Work etc\.? Act 1974/i, "ukpga", "1974", "37"}
-    ]
+  @doc """
+  Find enacting laws with detailed metrics about pattern matching.
 
-    Enum.reduce(patterns, [], fn {regex, type, year, number}, acc ->
-      if Regex.match?(regex, text) do
-        [IdField.build_name(type, year, number) | acc]
-      else
-        acc
-      end
-    end)
-    |> Enum.uniq()
-  end
+  Returns `{law_ids, metrics}` where metrics contains information about
+  which patterns matched, which strategy was used, etc.
 
-  # Find "powers conferred by" patterns and extract footnote references
-  defp find_powers_conferred_by(text, urls) do
-    patterns = [
-      ~r/powers? conferred.*?by.*?(f\d{5})/,
-      ~r/powers under.*?(f\d{5})/,
-      ~r/in exercise of the powers.*?(f\d{5})/
-    ]
+  Useful for:
+  - Debugging why a law didn't match expected patterns
+  - Identifying gaps in pattern coverage
+  - Tracking match rates
+  """
+  @spec find_enacting_laws_with_metrics(String.t(), map()) :: {[String.t()], map()}
+  defdelegate find_enacting_laws_with_metrics(text, urls), to: Metrics
 
-    footnote_refs =
-      Enum.flat_map(patterns, fn regex ->
-        case Regex.scan(regex, text) do
-          [] -> []
-          matches -> Enum.map(matches, fn [_full, ref] -> ref end)
-        end
-      end)
-      |> Enum.uniq()
+  @doc """
+  Debug a specific text to see detailed match information.
+  Prints a formatted report to stdout.
+  """
+  @spec debug_match(String.t(), map()) :: :ok
+  defdelegate debug_match(text, urls), to: Metrics
 
-    # Look up URLs for footnote refs and extract law IDs
-    footnote_refs
-    |> Enum.flat_map(fn ref -> Map.get(urls, ref, []) end)
-    |> Enum.map(&extract_law_id_from_url/1)
-    |> Enum.reject(&is_nil/1)
-  end
+  @doc """
+  Get a summary of all registered patterns.
+  Useful for understanding current pattern coverage.
+  """
+  @spec pattern_summary() :: map()
+  defdelegate pattern_summary(), to: Metrics
 
-  # Extract law IDs from footnotes when no patterns matched
-  defp extract_laws_from_footnotes(text, urls) do
-    # Find all footnote refs in text
-    footnote_refs =
-      Regex.scan(~r/f\d{5}/, text)
-      |> Enum.map(fn [ref] -> ref end)
-      |> Enum.uniq()
-
-    # Look up and extract year-matched URLs
-    years =
-      Regex.scan(~r/\b(\d{4})\b/, text)
-      |> Enum.map(fn [_full, year] -> year end)
-      |> Enum.uniq()
-
-    footnote_refs
-    |> Enum.flat_map(fn ref ->
-      urls_for_ref = Map.get(urls, ref, [])
-      # Filter to URLs matching years in text
-      Enum.filter(urls_for_ref, fn url ->
-        Enum.any?(years, fn year -> String.contains?(url, year) end)
-      end)
-    end)
-    |> Enum.map(&extract_law_id_from_url/1)
-    |> Enum.reject(&is_nil/1)
-  end
-
-  # Extract law ID from legislation.gov.uk URL
-  defp extract_law_id_from_url(url) when is_binary(url) do
-    cond do
-      # Standard UK law URL (with or without full domain)
-      Regex.match?(~r/\/id\/([a-z]+)\/(\d{4})\/(\d+)/, url) ->
-        [_, type, year, number] =
-          Regex.run(~r/\/id\/([a-z]+)\/(\d{4})\/(\d+)/, url)
-
-        IdField.build_name(type, year, number)
-
-      # EU directive URL
-      Regex.match?(~r/european\/directive\/(\d{4})\/(\d+)/, url) ->
-        [_, year, number] = Regex.run(~r/european\/directive\/(\d{4})\/(\d+)/, url)
-        IdField.build_name("eudr", year, number)
-
-      true ->
-        nil
-    end
-  end
-
-  defp extract_law_id_from_url(_), do: nil
+  @doc """
+  List all registered pattern IDs.
+  """
+  @spec list_patterns() :: [atom()]
+  defdelegate list_patterns(), to: PatternRegistry, as: :list_ids
 
   # Build human-readable description of enacting laws
   defp build_description([]), do: ""
