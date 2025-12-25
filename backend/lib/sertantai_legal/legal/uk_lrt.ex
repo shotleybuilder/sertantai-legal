@@ -302,14 +302,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description "Whether this is enabling legislation"
     end
 
-    attribute :is_making, :decimal do
+    attribute :is_making, :boolean do
       allow_nil? true
-      description "Making function flag (1.0 = creates duties, used in screening)"
+      description "Making function flag (creates duties, used in screening)"
     end
 
-    attribute :is_commencing, :decimal do
+    attribute :is_commencing, :boolean do
       allow_nil? true
-      description "Commencing function flag (1.0 = brings other laws into force)"
+      description "Commencing function flag (brings other laws into force)"
     end
 
     # Amendment Stats - Self-affects (shared across amending/amended_by)

@@ -10,15 +10,16 @@
 #   mix run ../scripts/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --limit 100
 #   mix run ../scripts/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --dry-run
 #
-# This script updates the `function` (JSONB) and `is_making` (decimal) columns in uk_lrt
-# from the Airtable CSV export which has the Function column populated.
+# This script updates the `function` (JSONB), `is_making` and `is_commencing` (boolean)
+# columns in uk_lrt from the Airtable CSV export which has the Function column populated.
 #
 # CSV Columns used:
 #   - Name → matches uk_lrt.name (e.g., "UK_uksi_2021_74")
 #   - Function → parsed into JSONB {"Making": true, "Amending": true, ...}
 #
 # Derived fields:
-#   - is_making → 1.0 if Function contains "Making", otherwise NULL
+#   - is_making → true if Function contains "Making"
+#   - is_commencing → true if Function contains "Commencing"
 
 require Logger
 
@@ -190,8 +191,8 @@ defmodule UkLrtFunctionUpdater do
       true ->
         id = Map.get(name_to_id, name)
         function_jsonb = parse_function_to_jsonb(function_str)
-        is_making = if has_making?(function_str), do: Decimal.new("1.0"), else: nil
-        is_commencing = if has_commencing?(function_str), do: Decimal.new("1.0"), else: nil
+        is_making = has_making?(function_str)
+        is_commencing = has_commencing?(function_str)
 
         if dry_run do
           %{acc | updated: acc.updated + 1}
