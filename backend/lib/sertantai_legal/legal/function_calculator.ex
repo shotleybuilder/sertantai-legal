@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   ## Returns
   Map with function keys set to true (e.g., %{"Making" => true, "Amending" => true})
   """
-  @spec calculate(map()) :: map()
+  @spec calculate(map()) :: %{optional(String.t()) => true}
   def calculate(record) do
     # Collect all target law names for batch lookup
     all_targets =
@@ -87,7 +87,7 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   @doc """
   Calculate and return the function field, or nil if empty.
   """
-  @spec calculate_or_nil(map()) :: map() | nil
+  @spec calculate_or_nil(map()) :: %{optional(String.t()) => true} | nil
   def calculate_or_nil(record) do
     case calculate(record) do
       result when map_size(result) == 0 -> nil
