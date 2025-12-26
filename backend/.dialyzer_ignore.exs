@@ -32,5 +32,8 @@
   # Controller guard clauses - intentional defensive guards for request validation
   {"lib/sertantai_legal_web/controllers/scrape_controller.ex", :guard_fail},
   {"lib/sertantai_legal_web/controllers/scrape_controller.ex", :pattern_match_cov},
-  {"lib/sertantai_legal_web/controllers/uk_lrt_controller.ex", :guard_fail}
+  {"lib/sertantai_legal_web/controllers/uk_lrt_controller.ex", :guard_fail},
+
+  # Taxa modules - permissive specs for pipeline flexibility
+  {"lib/sertantai_legal/legal/taxa/actor_lib.ex", :contract_supertype}
 ]
