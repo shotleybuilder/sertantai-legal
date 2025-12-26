@@ -2,11 +2,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @moduledoc """
   Staged parser for UK legislation metadata.
 
-  Parses legislation in four defined stages:
+  Parses legislation in five defined stages:
   1. **Extent** - Geographic extent from contents XML (E+W+S+NI)
   2. **Enacted_by** - Enacting parent laws from introduction/made XML
   3. **Amendments** - Laws amended by and amending this law
   4. **Repeal/Revoke** - Repeal/revocation status and relationships
+  5. **Taxa** - Actor, duty type, and POPIMAR classification
 
   Note: Basic metadata (title, dates, SI codes) is already captured during
   the initial scrape by NewLaws.enrich_with_metadata() and is passed in
@@ -27,7 +28,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           extent: %{status: :ok, data: %{...}},
           enacted_by: %{status: :ok, data: %{...}},
           amendments: %{status: :error, error: "...", data: nil},
-          repeal_revoke: %{status: :ok, data: %{...}}
+          repeal_revoke: %{status: :ok, data: %{...}},
+          taxa: %{status: :ok, data: %{...}}
         },
         errors: ["amendments: HTTP 404..."],
         has_errors: true
@@ -39,15 +41,16 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
   alias SertantaiLegal.Scraper.EnactedBy
+  alias SertantaiLegal.Scraper.TaxaParser
 
-  @stages [:extent, :enacted_by, :amendments, :repeal_revoke]
+  @stages [:extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
 
   # Live status codes (matching legl conventions)
   @live_in_force "✔ In force"
   @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
-  @type stage :: :extent | :enacted_by | :amendments | :repeal_revoke
+  @type stage :: :extent | :enacted_by | :amendments | :repeal_revoke | :taxa
   @type stage_result :: %{status: :ok | :error | :skipped, data: map() | nil, error: String.t() | nil}
   @type parse_result :: %{
           record: map(),
@@ -157,23 +160,28 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Run a specific stage
   defp run_stage(:extent, type_code, year, number, _record) do
-    IO.puts("  [1/4] Extent...")
+    IO.puts("  [1/5] Extent...")
     run_extent_stage(type_code, year, number)
   end
 
   defp run_stage(:enacted_by, type_code, year, number, _record) do
-    IO.puts("  [2/4] Enacted By...")
+    IO.puts("  [2/5] Enacted By...")
     run_enacted_by_stage(type_code, year, number)
   end
 
   defp run_stage(:amendments, type_code, year, number, record) do
-    IO.puts("  [3/4] Amendments...")
+    IO.puts("  [3/5] Amendments...")
     run_amendments_stage(type_code, year, number, record)
   end
 
   defp run_stage(:repeal_revoke, type_code, year, number, _record) do
-    IO.puts("  [4/4] Repeal/Revoke...")
+    IO.puts("  [4/5] Repeal/Revoke...")
     run_repeal_revoke_stage(type_code, year, number)
+  end
+
+  defp run_stage(:taxa, type_code, year, number, _record) do
+    IO.puts("  [5/5] Taxa Classification...")
+    run_taxa_stage(type_code, year, number)
   end
 
   # ============================================================================
@@ -621,6 +629,31 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp parse_date(nil), do: nil
   defp parse_date(""), do: nil
   defp parse_date(date), do: date
+
+  # ============================================================================
+  # Stage 5: Taxa Classification
+  # ============================================================================
+  #
+  # Fetches law text and runs the Taxa classification pipeline:
+  # - DutyActor: Extracts actors (employers, authorities, etc.)
+  # - DutyType: Classifies duty types (Duty, Right, Responsibility, Power)
+  # - Popimar: Classifies by POPIMAR management framework
+
+  defp run_taxa_stage(type_code, year, number) do
+    case TaxaParser.run(type_code, year, number) do
+      {:ok, taxa_data} ->
+        role_count = length(taxa_data[:role] || [])
+        duty_types = taxa_data[:duty_type] || []
+        popimar_items = get_in(taxa_data, [:popimar, "items"]) || []
+
+        IO.puts("    ✓ Taxa: #{role_count} actors, #{length(duty_types)} duty types, #{length(popimar_items)} POPIMAR")
+        %{status: :ok, data: taxa_data, error: nil}
+
+      {:error, reason} ->
+        IO.puts("    ✗ Taxa failed: #{reason}")
+        %{status: :error, data: nil, error: reason}
+    end
+  end
 
   # ============================================================================
   # Helpers
