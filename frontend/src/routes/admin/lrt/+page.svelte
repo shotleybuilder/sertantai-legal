@@ -93,6 +93,8 @@
 		md_images: number | null;
 		latest_amend_date: string | null;
 		leg_gov_uk_url: string | null;
+		created_at: string | null;
+		updated_at: string | null;
 	}
 
 	interface ApiResponse {
@@ -1058,6 +1060,31 @@
 			},
 			size: 150,
 			meta: { group: 'Purpose' }
+		},
+		// Timestamps
+		{
+			id: 'created_at',
+			accessorKey: 'created_at',
+			header: 'Created',
+			cell: (info) => {
+				const val = info.getValue() as string | null;
+				if (!val) return '-';
+				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+			},
+			size: 100,
+			meta: { group: 'Timestamps' }
+		},
+		{
+			id: 'updated_at',
+			accessorKey: 'updated_at',
+			header: 'Updated',
+			cell: (info) => {
+				const val = info.getValue() as string | null;
+				if (!val) return '-';
+				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+			},
+			size: 100,
+			meta: { group: 'Timestamps' }
 		},
 		// Links
 		{

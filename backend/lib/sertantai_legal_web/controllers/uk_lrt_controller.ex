@@ -501,7 +501,10 @@ defmodule SertantaiLegalWeb.UkLrtController do
       md_schedule_paras: record.md_schedule_paras,
       md_attachment_paras: record.md_attachment_paras,
       md_images: record.md_images,
-      latest_amend_date: record.latest_amend_date
+      latest_amend_date: record.latest_amend_date,
+      # Timestamps
+      created_at: record.created_at,
+      updated_at: record.updated_at
     }
   end
 
