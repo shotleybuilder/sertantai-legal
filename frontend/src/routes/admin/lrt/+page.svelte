@@ -30,6 +30,8 @@
 		live_description: string | null;
 		geo_extent: string | null;
 		geo_region: string | null;
+		geo_detail: string | null;
+		md_restrict_extent: string | null;
 		si_code: string | null;
 		tags: string[] | null;
 		function: string[] | null;
@@ -40,9 +42,17 @@
 		enacted_by: string | null;
 		amending: Record<string, unknown> | null;
 		amended_by: Record<string, unknown> | null;
+		md_date: string | null;
 		md_made_date: string | null;
 		md_enactment_date: string | null;
 		md_coming_into_force_date: string | null;
+		md_dct_valid_date: string | null;
+		md_restrict_start_date: string | null;
+		md_total_paras: number | null;
+		md_body_paras: number | null;
+		md_schedule_paras: number | null;
+		md_attachment_paras: number | null;
+		md_images: number | null;
 		latest_amend_date: string | null;
 		leg_gov_uk_url: string | null;
 	}
@@ -154,6 +164,16 @@
 			name: 'Status & Dates',
 			description: 'Status and date fields',
 			columns: ['actions', 'name', 'title_en', 'live', 'md_made_date', 'md_coming_into_force_date', 'geo_extent']
+		},
+		{
+			name: 'Geo. Extent',
+			description: 'Geographic scope fields: Extent, Region, Detail, Restrict Extent',
+			columns: ['actions', 'name', 'title_en', 'geo_extent', 'geo_region', 'geo_detail', 'md_restrict_extent']
+		},
+		{
+			name: 'Metadata',
+			description: 'Dates and document stats: Made, Enacted, In Force, Paragraphs, Images',
+			columns: ['actions', 'name', 'title_en', 'md_date', 'md_made_date', 'md_enactment_date', 'md_coming_into_force_date', 'md_dct_valid_date', 'md_restrict_start_date', 'md_total_paras', 'md_body_paras', 'md_schedule_paras', 'md_attachment_paras', 'md_images']
 		}
 	];
 
@@ -543,14 +563,55 @@
 			enableGrouping: true,
 			meta: { group: 'Geographic' }
 		},
-		// Dates
+		{
+			id: 'geo_region',
+			accessorKey: 'geo_region',
+			header: 'Region',
+			cell: (info) => info.getValue(),
+			size: 120,
+			enableGrouping: true,
+			meta: { group: 'Geographic' }
+		},
+		{
+			id: 'geo_detail',
+			accessorKey: 'geo_detail',
+			header: 'Geo Detail',
+			cell: (info) => info.getValue(),
+			size: 150,
+			meta: { group: 'Geographic' }
+		},
+		{
+			id: 'md_restrict_extent',
+			accessorKey: 'md_restrict_extent',
+			header: 'Restrict Extent',
+			cell: (info) => info.getValue(),
+			size: 150,
+			meta: { group: 'Geographic' }
+		},
+		// Metadata / Dates
+		{
+			id: 'md_date',
+			accessorKey: 'md_date',
+			header: 'Primary Date',
+			cell: (info) => formatDate(info.getValue() as string),
+			size: 100,
+			meta: { group: 'Metadata' }
+		},
 		{
 			id: 'md_made_date',
 			accessorKey: 'md_made_date',
 			header: 'Made',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Dates' }
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_enactment_date',
+			accessorKey: 'md_enactment_date',
+			header: 'Enacted',
+			cell: (info) => formatDate(info.getValue() as string),
+			size: 100,
+			meta: { group: 'Metadata' }
 		},
 		{
 			id: 'md_coming_into_force_date',
@@ -558,7 +619,63 @@
 			header: 'In Force',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Dates' }
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_dct_valid_date',
+			accessorKey: 'md_dct_valid_date',
+			header: 'DCT Valid',
+			cell: (info) => formatDate(info.getValue() as string),
+			size: 100,
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_restrict_start_date',
+			accessorKey: 'md_restrict_start_date',
+			header: 'Restrict Start',
+			cell: (info) => formatDate(info.getValue() as string),
+			size: 100,
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_total_paras',
+			accessorKey: 'md_total_paras',
+			header: 'Total Paras',
+			cell: (info) => info.getValue() ?? '-',
+			size: 80,
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_body_paras',
+			accessorKey: 'md_body_paras',
+			header: 'Body Paras',
+			cell: (info) => info.getValue() ?? '-',
+			size: 80,
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_schedule_paras',
+			accessorKey: 'md_schedule_paras',
+			header: 'Schedule Paras',
+			cell: (info) => info.getValue() ?? '-',
+			size: 90,
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_attachment_paras',
+			accessorKey: 'md_attachment_paras',
+			header: 'Attach Paras',
+			cell: (info) => info.getValue() ?? '-',
+			size: 80,
+			meta: { group: 'Metadata' }
+		},
+		{
+			id: 'md_images',
+			accessorKey: 'md_images',
+			header: 'Images',
+			cell: (info) => info.getValue() ?? '-',
+			size: 70,
+			meta: { group: 'Metadata' }
 		},
 		// Links
 		{
