@@ -133,6 +133,11 @@
 	let showSaveModal = false;
 	let capturedConfig: TableConfig | null = null;
 
+	// View configuration state (for applying saved views)
+	let viewColumns: string[] = [];
+	let viewColumnOrder: string[] = [];
+	let configVersion = 0;
+
 	// Default views configuration
 	const defaultViews: Array<{ name: string; description: string; columns: string[] }> = [
 		{
@@ -152,40 +157,43 @@
 		}
 	];
 
-	// Seed default views on first load using viewActions.save()
+	// Seed default views if they don't exist (by name)
 	async function seedDefaultViews() {
 		// Clean up old incorrect localStorage key from previous implementation
 		localStorage.removeItem('svelte-table-views');
 
-		// Wait for the library to fully initialize by checking savedViews store
-		let attempts = 0;
-		const maxAttempts = 10;
+		// Wait for library to initialize
+		await new Promise(resolve => setTimeout(resolve, 200));
 
-		// Wait until the store is initialized (empty array is fine, undefined means not ready)
-		while (attempts < maxAttempts) {
-			await new Promise(resolve => setTimeout(resolve, 100));
-			attempts++;
-
-			// Check the actual localStorage to see what's there
-			const storageData = localStorage.getItem('svelte-table-views-saved-views');
-			console.log(`[LRT Admin] Init check ${attempts}/${maxAttempts}, localStorage:`, storageData ? 'has data' : 'empty');
-
-			if (storageData) {
+		// Get existing view names from localStorage
+		const existingNames = new Set<string>();
+		const storageData = localStorage.getItem('svelte-table-views-saved-views');
+		if (storageData) {
+			try {
 				const parsed = JSON.parse(storageData);
-				const viewCount = Object.keys(parsed).length;
-				if (viewCount > 0) {
-					console.log('[LRT Admin] Views already exist in storage:', viewCount);
-					return;
-				}
+				Object.values(parsed).forEach((item: unknown) => {
+					const stored = item as { data: { name: string } };
+					if (stored.data?.name) {
+						existingNames.add(stored.data.name);
+					}
+				});
+			} catch (err) {
+				console.error('[LRT Admin] Failed to parse existing views:', err);
 			}
-
-			// If store is initialized and empty, proceed to seed
-			if (attempts >= 2) break;
 		}
 
-		console.log('[LRT Admin] Seeding default views...');
+		console.log('[LRT Admin] Existing views:', Array.from(existingNames));
 
-		for (const view of defaultViews) {
+		// Seed only missing default views
+		const missingViews = defaultViews.filter(v => !existingNames.has(v.name));
+		if (missingViews.length === 0) {
+			console.log('[LRT Admin] All default views already exist');
+			return;
+		}
+
+		console.log('[LRT Admin] Seeding missing default views:', missingViews.map(v => v.name));
+
+		for (const view of missingViews) {
 			const viewInput: SavedViewInput = {
 				name: view.name,
 				description: view.description,
@@ -203,17 +211,13 @@
 			try {
 				await viewActions.save(viewInput);
 				console.log('[LRT Admin] Seeded view:', view.name);
-				// Small delay between saves to allow TanStack DB to persist properly
 				await new Promise(resolve => setTimeout(resolve, 100));
 			} catch (err) {
 				console.error('[LRT Admin] Failed to seed view:', view.name, err);
 			}
 		}
 
-		// Verify what was saved
-		const finalData = localStorage.getItem('svelte-table-views-saved-views');
-		console.log('[LRT Admin] Final localStorage:', finalData);
-		console.log('[LRT Admin] Default views seeded successfully');
+		console.log('[LRT Admin] Default views seeding complete');
 	}
 
 	// Capture current table config for saving
@@ -229,10 +233,32 @@
 		};
 	}
 
+	// Apply saved view configuration
+	function applyViewConfig(config: TableConfig) {
+		console.log('[LRT Admin] Applying view config:', config);
+
+		// Get available column IDs
+		const availableColumnIds = new Set(columns.map(c => String(c.id)));
+
+		// Validate columns - filter out missing columns
+		const validColumns = config.columns.filter(colId => availableColumnIds.has(colId));
+		const validColumnOrder = config.columnOrder.filter(colId => availableColumnIds.has(colId));
+
+		// Set view config (triggers reactive update)
+		viewColumns = validColumns.length > 0 ? validColumns : [];
+		viewColumnOrder = validColumnOrder.length > 0 ? validColumnOrder : [];
+		configVersion++;
+	}
+
 	// Handle view selection
 	function handleViewSelected(event: CustomEvent<{ view: SavedView }>) {
 		const view = event.detail.view;
 		console.log('[LRT Admin] View selected:', view.name);
+
+		// Apply view config to table
+		setTimeout(() => {
+			applyViewConfig(view.config);
+		}, 100);
 	}
 
 	// Handle save view button click
@@ -546,6 +572,16 @@
 		}
 	];
 
+	// Build TableKit configuration from view (reactive)
+	$: hasViewConfig = viewColumns.length > 0 || viewColumnOrder.length > 0;
+
+	$: tableKitConfig = hasViewConfig ? {
+		id: `view_config_v${configVersion}`,
+		version: '1.0',
+		defaultColumnOrder: viewColumnOrder.length > 0 ? viewColumnOrder : undefined,
+		defaultVisibleColumns: viewColumns.length > 0 ? viewColumns : undefined
+	} : undefined;
+
 	onMount(() => {
 		if (browser) {
 			seedDefaultViews();
@@ -603,8 +639,9 @@
 		<TableKit
 			{data}
 			{columns}
+			config={tableKitConfig}
 			storageKey="uk_lrt_admin_table"
-			persistState={true}
+			persistState={!hasViewConfig}
 			align="left"
 			features={{
 				columnVisibility: true,
