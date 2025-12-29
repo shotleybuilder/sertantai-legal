@@ -8,9 +8,10 @@
 		SaveViewModal,
 		activeViewId,
 		activeViewModified,
-		viewActions
+		viewActions,
+		savedViews
 	} from 'svelte-table-views-tanstack';
-	import type { TableConfig, SavedView } from 'svelte-table-views-tanstack';
+	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
@@ -131,6 +132,68 @@
 	// Saved views state
 	let showSaveModal = false;
 	let capturedConfig: TableConfig | null = null;
+
+	// Default views configuration
+	const defaultViews: Array<{ name: string; description: string; columns: string[] }> = [
+		{
+			name: 'Credentials',
+			description: 'Core identification fields: Title, Year, Number, Type Code, Type Class',
+			columns: ['actions', 'name', 'title_en', 'year', 'number', 'type_code', 'type_class']
+		},
+		{
+			name: 'Description',
+			description: 'Classification fields: Family, Family II, Function, SI Code',
+			columns: ['actions', 'name', 'title_en', 'family', 'family_ii', 'function', 'si_code']
+		},
+		{
+			name: 'Status & Dates',
+			description: 'Status and date fields',
+			columns: ['actions', 'name', 'title_en', 'live', 'md_made_date', 'md_coming_into_force_date', 'geo_extent']
+		}
+	];
+
+	// Seed default views on first load using viewActions.save()
+	async function seedDefaultViews() {
+		// Clean up old incorrect localStorage key from previous implementation
+		localStorage.removeItem('svelte-table-views');
+
+		// Wait a short moment for the library to initialize
+		await new Promise(resolve => setTimeout(resolve, 100));
+
+		// Check if views already exist
+		const currentViews = $savedViews;
+		if (currentViews.length > 0) {
+			console.log('[LRT Admin] Views already exist, skipping seed:', currentViews.length);
+			return;
+		}
+
+		console.log('[LRT Admin] Seeding default views...');
+
+		for (const view of defaultViews) {
+			const viewInput: SavedViewInput = {
+				name: view.name,
+				description: view.description,
+				config: {
+					filters: [],
+					sort: null,
+					columns: view.columns,
+					columnOrder: view.columns,
+					columnWidths: {},
+					pageSize: 25,
+					grouping: []
+				}
+			};
+
+			try {
+				await viewActions.save(viewInput);
+				console.log('[LRT Admin] Seeded view:', view.name);
+			} catch (err) {
+				console.error('[LRT Admin] Failed to seed view:', view.name, err);
+			}
+		}
+
+		console.log('[LRT Admin] Default views seeded successfully');
+	}
 
 	// Capture current table config for saving
 	function captureCurrentConfig(): TableConfig {
@@ -352,9 +415,26 @@
 		{
 			id: 'type_code',
 			accessorKey: 'type_code',
-			header: 'Type',
+			header: 'Type Code',
 			cell: (info) => String(info.getValue() || '').toUpperCase(),
 			size: 80,
+			enableGrouping: true,
+			meta: { group: 'Credentials' }
+		},
+		{
+			id: 'number',
+			accessorKey: 'number',
+			header: 'Number',
+			cell: (info) => info.getValue(),
+			size: 80,
+			meta: { group: 'Credentials' }
+		},
+		{
+			id: 'type_class',
+			accessorKey: 'type_class',
+			header: 'Type Class',
+			cell: (info) => info.getValue(),
+			size: 120,
 			enableGrouping: true,
 			meta: { group: 'Credentials' }
 		},
@@ -447,6 +527,7 @@
 
 	onMount(() => {
 		if (browser) {
+			seedDefaultViews();
 			fetchData();
 		}
 	});
