@@ -3,6 +3,14 @@
 	import { onMount } from 'svelte';
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
+	import {
+		ViewSelector,
+		SaveViewModal,
+		activeViewId,
+		activeViewModified,
+		viewActions
+	} from 'svelte-table-views-tanstack';
+	import type { TableConfig, SavedView } from 'svelte-table-views-tanstack';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
@@ -119,6 +127,53 @@
 
 	// Rescrape state
 	let rescrapingIds = new Set<string>();
+
+	// Saved views state
+	let showSaveModal = false;
+	let capturedConfig: TableConfig | null = null;
+
+	// Capture current table config for saving
+	function captureCurrentConfig(): TableConfig {
+		return {
+			filters: [],
+			sort: null,
+			columns: columns.map((c) => String(c.id)),
+			columnOrder: columns.map((c) => String(c.id)),
+			columnWidths: {},
+			pageSize: 25,
+			grouping: []
+		};
+	}
+
+	// Handle view selection
+	function handleViewSelected(event: CustomEvent<{ view: SavedView }>) {
+		const view = event.detail.view;
+		console.log('[LRT Admin] View selected:', view.name);
+	}
+
+	// Handle save view button click
+	function handleSaveView() {
+		capturedConfig = captureCurrentConfig();
+		showSaveModal = true;
+	}
+
+	// Handle update existing view
+	async function handleUpdateView() {
+		const activeId = $activeViewId;
+		if (!activeId) return;
+
+		try {
+			const config = captureCurrentConfig();
+			await viewActions.update(activeId, { config });
+		} catch (err) {
+			console.error('[LRT Admin] Failed to update view:', err);
+		}
+	}
+
+	// Handle view saved
+	function handleViewSaved(event: CustomEvent<{ id: string; name: string }>) {
+		console.log('[LRT Admin] View saved:', event.detail.name);
+	}
 
 	// Fetch data
 	async function fetchData(limit = 100, offset = 0) {
@@ -460,6 +515,48 @@
 				grouping: false
 			}}
 		>
+			<!-- Saved Views Toolbar -->
+			<svelte:fragment slot="toolbar-left">
+				<ViewSelector on:viewSelected={handleViewSelected} />
+
+				{#if $activeViewId && $activeViewModified}
+					<!-- Split Button: Update | Save New -->
+					<div class="inline-flex rounded-md shadow-sm">
+						<button
+							type="button"
+							on:click={handleUpdateView}
+							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+							Update View
+						</button>
+						<button
+							type="button"
+							on:click={handleSaveView}
+							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+							</svg>
+							Save New
+						</button>
+					</div>
+				{:else}
+					<button
+						type="button"
+						on:click={handleSaveView}
+						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+						</svg>
+						Save View
+					</button>
+				{/if}
+			</svelte:fragment>
+
 			<svelte:fragment slot="cell" let:cell let:column>
 				{#if column === 'actions'}
 					<button
@@ -675,7 +772,13 @@
 				</li>
 				<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
 				<li>Table state (column order, visibility, sorting) is persisted locally</li>
+				<li><strong>Saved Views</strong> - Save your current table configuration for quick access later</li>
 			</ul>
 		</div>
 	{/if}
 </div>
+
+<!-- Save View Modal -->
+{#if showSaveModal && capturedConfig}
+	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
+{/if}
