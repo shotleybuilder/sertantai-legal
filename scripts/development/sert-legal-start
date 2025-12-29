@@ -44,8 +44,8 @@ if pgrep -f "mix phx.server.*sertantai_legal" > /dev/null; then
     exit 1
 fi
 
-if lsof -ti:5174 >/dev/null 2>&1; then
-    echo "Warning: SvelteKit frontend is already running on port 5174!"
+if lsof -ti:5175 >/dev/null 2>&1; then
+    echo "Warning: SvelteKit frontend is already running on port 5175!"
     echo "   Stop it first with: sert-legal-stop"
     exit 1
 fi
@@ -84,11 +84,11 @@ cat > "$LAUNCHER_SCRIPT" << 'LAUNCHER_EOF'
 PROJECT_ROOT="__PROJECT_ROOT__"
 
 # Open Phoenix backend tab
-gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4000..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4003..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
 sleep 0.3
 
 # Open SvelteKit frontend tab
-gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5174..."; echo "Working directory: $(pwd)"; echo ""; npm run dev -- --port 5174; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5175..."; echo "Working directory: $(pwd)"; echo ""; npm run dev; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
 
 # Wait for all background processes
 wait
@@ -105,8 +105,8 @@ echo ""
 echo "Development servers starting in terminal tabs!"
 echo ""
 echo "URLs:"
-echo "   Backend:  http://localhost:4000  (phoenix)"
-echo "   Frontend: http://localhost:5174  (svelte)"
+echo "   Backend:  http://localhost:4003  (phoenix)"
+echo "   Frontend: http://localhost:5175  (svelte)"
 echo ""
 echo "To stop: sert-legal-stop"
 echo ""

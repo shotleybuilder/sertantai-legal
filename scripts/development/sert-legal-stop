@@ -23,24 +23,24 @@ PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 
 echo "Stopping sertantai-legal development servers..."
 
-# Kill Phoenix backend processes (port 4000)
-if lsof -ti:4000 >/dev/null 2>&1; then
-    echo "Killing Phoenix backend processes (port 4000)..."
-    lsof -ti:4000 | xargs kill -9 2>/dev/null || true
+# Kill Phoenix backend processes (port 4003)
+if lsof -ti:4003 >/dev/null 2>&1; then
+    echo "Killing Phoenix backend processes (port 4003)..."
+    lsof -ti:4003 | xargs kill -9 2>/dev/null || true
     sleep 0.5
     echo "   Phoenix processes killed"
 else
-    echo "   No Phoenix backend processes found (port 4000 not in use)"
+    echo "   No Phoenix backend processes found (port 4003 not in use)"
 fi
 
-# Kill SvelteKit frontend processes (port 5174)
-if lsof -ti:5174 >/dev/null 2>&1; then
-    echo "Killing SvelteKit frontend processes (port 5174)..."
-    lsof -ti:5174 | xargs kill -9 2>/dev/null || true
+# Kill SvelteKit frontend processes (port 5175)
+if lsof -ti:5175 >/dev/null 2>&1; then
+    echo "Killing SvelteKit frontend processes (port 5175)..."
+    lsof -ti:5175 | xargs kill -9 2>/dev/null || true
     sleep 0.5
     echo "   SvelteKit processes killed"
 else
-    echo "   No SvelteKit frontend processes found (port 5174 not in use)"
+    echo "   No SvelteKit frontend processes found (port 5175 not in use)"
 fi
 
 # Clean up any remaining Elixir BEAM processes for this project

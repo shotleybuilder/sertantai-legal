@@ -157,14 +157,30 @@
 		// Clean up old incorrect localStorage key from previous implementation
 		localStorage.removeItem('svelte-table-views');
 
-		// Wait a short moment for the library to initialize
-		await new Promise(resolve => setTimeout(resolve, 100));
+		// Wait for the library to fully initialize by checking savedViews store
+		let attempts = 0;
+		const maxAttempts = 10;
 
-		// Check if views already exist
-		const currentViews = $savedViews;
-		if (currentViews.length > 0) {
-			console.log('[LRT Admin] Views already exist, skipping seed:', currentViews.length);
-			return;
+		// Wait until the store is initialized (empty array is fine, undefined means not ready)
+		while (attempts < maxAttempts) {
+			await new Promise(resolve => setTimeout(resolve, 100));
+			attempts++;
+
+			// Check the actual localStorage to see what's there
+			const storageData = localStorage.getItem('svelte-table-views-saved-views');
+			console.log(`[LRT Admin] Init check ${attempts}/${maxAttempts}, localStorage:`, storageData ? 'has data' : 'empty');
+
+			if (storageData) {
+				const parsed = JSON.parse(storageData);
+				const viewCount = Object.keys(parsed).length;
+				if (viewCount > 0) {
+					console.log('[LRT Admin] Views already exist in storage:', viewCount);
+					return;
+				}
+			}
+
+			// If store is initialized and empty, proceed to seed
+			if (attempts >= 2) break;
 		}
 
 		console.log('[LRT Admin] Seeding default views...');
@@ -187,11 +203,16 @@
 			try {
 				await viewActions.save(viewInput);
 				console.log('[LRT Admin] Seeded view:', view.name);
+				// Small delay between saves to allow TanStack DB to persist properly
+				await new Promise(resolve => setTimeout(resolve, 100));
 			} catch (err) {
 				console.error('[LRT Admin] Failed to seed view:', view.name, err);
 			}
 		}
 
+		// Verify what was saved
+		const finalData = localStorage.getItem('svelte-table-views-saved-views');
+		console.log('[LRT Admin] Final localStorage:', finalData);
 		console.log('[LRT Admin] Default views seeded successfully');
 	}
 
