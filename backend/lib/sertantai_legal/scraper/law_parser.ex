@@ -310,8 +310,11 @@ defmodule SertantaiLegal.Scraper.LawParser do
   defp ensure_url(record) do
     case record[:leg_gov_uk_url] do
       nil ->
-        name = record[:name] || build_name(record)
-        Map.put(record, :leg_gov_uk_url, "https://www.legislation.gov.uk/#{name}")
+        # URL uses slash format: legislation.gov.uk/uksi/2024/1234
+        type_code = record[:type_code] || record["type_code"]
+        year = record[:Year] || record["Year"]
+        number = record[:Number] || record["Number"]
+        Map.put(record, :leg_gov_uk_url, "https://www.legislation.gov.uk/#{type_code}/#{year}/#{number}")
 
       _ ->
         record
@@ -322,7 +325,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
     type_code = record[:type_code] || record["type_code"]
     year = record[:Year] || record["Year"]
     number = record[:Number] || record["Number"]
-    "#{type_code}/#{year}/#{number}"
+    "UK_#{type_code}_#{year}_#{number}"
   end
 
   # Persist record to database
@@ -363,8 +366,9 @@ defmodule SertantaiLegal.Scraper.LawParser do
         {:ok, created}
 
       {:error, changeset} ->
-        IO.puts("  Create error: #{inspect(changeset.errors)}")
-        {:error, "Failed to create record"}
+        error_details = inspect(changeset.errors)
+        IO.puts("  Create error: #{error_details}")
+        {:error, "Failed to create record: #{error_details}"}
     end
   end
 
@@ -455,12 +459,11 @@ defmodule SertantaiLegal.Scraper.LawParser do
       rescinded_by_stats_rescinded_by_count_per_law_detailed: enriched[:rescinded_by_stats_rescinded_by_count_per_law_detailed],
 
       # Extent fields from StagedParser Stage 1
-      extent: enriched[:extent],
       geo_extent: enriched[:geo_extent],
 
       # Enacted_by fields from StagedParser Stage 2
-      enacted_by: enriched[:enacted_by],
-      enacted_by_description: enriched[:enacted_by_description],
+      # enacted_by comes as list of maps, convert to list of name strings
+      enacted_by: extract_names(enriched[:enacted_by]),
       is_act: enriched[:is_act],
 
       # Live status from StagedParser Stage 4
@@ -523,6 +526,20 @@ defmodule SertantaiLegal.Scraper.LawParser do
   defp to_string_safe(val) when is_binary(val), do: val
   defp to_string_safe(val) when is_integer(val), do: Integer.to_string(val)
   defp to_string_safe(_), do: nil
+
+  # Extract names from list of maps (e.g., enacted_by coming from StagedParser)
+  defp extract_names(nil), do: nil
+  defp extract_names([]), do: []
+  defp extract_names(list) when is_list(list) do
+    Enum.map(list, fn
+      %{name: name} -> name
+      %{"name" => name} -> name
+      name when is_binary(name) -> name
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+  defp extract_names(_), do: nil
 
   defp to_decimal(nil), do: nil
   defp to_decimal(val) when is_integer(val), do: Decimal.new(val)

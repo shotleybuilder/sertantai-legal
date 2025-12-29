@@ -604,12 +604,74 @@ defmodule SertantaiLegal.Legal.UkLrt do
     create :create do
       description "Create a new UK LRT record"
       primary? true
-      accept :*
+      # Explicit accept list required in Ash 3 (accept :* only works for public attributes)
+      accept [
+        :name, :title_en, :type_code, :type_desc, :type_class, :year, :number,
+        :leg_gov_uk_url, :family, :family_ii, :acronym, :old_style_number,
+        :secondary_class, :live, :live_description,
+        :geo_extent, :geo_region, :geo_detail, :md_restrict_extent, :md_restrict_start_date,
+        :si_code, :md_subjects, :md_description,
+        :md_total_paras, :md_body_paras, :md_schedule_paras, :md_attachment_paras, :md_images,
+        :md_date, :md_enactment_date, :md_made_date, :md_coming_into_force_date, :md_dct_valid_date,
+        :latest_amend_date, :latest_change_date, :latest_rescind_date,
+        :amending, :amended_by, :rescinding, :rescinded_by, :enacting, :enacted_by,
+        :linked_amending, :linked_amended_by, :linked_rescinding, :linked_rescinded_by, :linked_enacted_by,
+        :is_amending, :is_rescinding, :is_enacting, :is_making, :is_commencing,
+        :function, :purpose, :popimar,
+        :duty_holder, :power_holder, :rights_holder, :responsibility_holder,
+        :role, :role_gvt, :article_role, :role_article,
+        :duty_type, :duty_type_article, :article_duty_type,
+        :duty_holder_article, :duty_holder_article_clause, :article_duty_holder, :article_duty_holder_clause,
+        :power_holder_article, :power_holder_article_clause, :article_power_holder, :article_power_holder_clause,
+        :rights_holder_article, :rights_holder_article_clause, :article_rights_holder, :article_rights_holder_clause,
+        :responsibility_holder_article, :responsibility_holder_article_clause, :article_responsibility_holder, :article_responsibility_holder_clause,
+        :popimar_article, :popimar_article_clause, :article_popimar, :article_popimar_clause,
+        :tags,
+        :stats_self_affects_count,
+        :amending_stats_affects_count, :amending_stats_affected_laws_count,
+        :amending_stats_affects_count_per_law, :amending_stats_affects_count_per_law_detailed,
+        :amended_by_stats_affected_by_count, :amended_by_stats_affected_by_laws_count,
+        :amended_by_stats_affected_by_count_per_law, :amended_by_stats_affected_by_count_per_law_detailed,
+        :rescinding_stats_rescinding_laws_count, :rescinding_stats_rescinding_count_per_law, :rescinding_stats_rescinding_count_per_law_detailed,
+        :rescinded_by_stats_rescinded_by_laws_count, :rescinded_by_stats_rescinded_by_count_per_law, :rescinded_by_stats_rescinded_by_count_per_law_detailed,
+        :amending_change_log, :amended_by_change_log
+      ]
     end
 
     update :update do
       description "Update an existing UK LRT record"
-      accept :*
+      # Same explicit accept list for updates
+      accept [
+        :name, :title_en, :type_code, :type_desc, :type_class, :year, :number,
+        :leg_gov_uk_url, :family, :family_ii, :acronym, :old_style_number,
+        :secondary_class, :live, :live_description,
+        :geo_extent, :geo_region, :geo_detail, :md_restrict_extent, :md_restrict_start_date,
+        :si_code, :md_subjects, :md_description,
+        :md_total_paras, :md_body_paras, :md_schedule_paras, :md_attachment_paras, :md_images,
+        :md_date, :md_enactment_date, :md_made_date, :md_coming_into_force_date, :md_dct_valid_date,
+        :latest_amend_date, :latest_change_date, :latest_rescind_date,
+        :amending, :amended_by, :rescinding, :rescinded_by, :enacting, :enacted_by,
+        :linked_amending, :linked_amended_by, :linked_rescinding, :linked_rescinded_by, :linked_enacted_by,
+        :is_amending, :is_rescinding, :is_enacting, :is_making, :is_commencing,
+        :function, :purpose, :popimar,
+        :duty_holder, :power_holder, :rights_holder, :responsibility_holder,
+        :role, :role_gvt, :article_role, :role_article,
+        :duty_type, :duty_type_article, :article_duty_type,
+        :duty_holder_article, :duty_holder_article_clause, :article_duty_holder, :article_duty_holder_clause,
+        :power_holder_article, :power_holder_article_clause, :article_power_holder, :article_power_holder_clause,
+        :rights_holder_article, :rights_holder_article_clause, :article_rights_holder, :article_rights_holder_clause,
+        :responsibility_holder_article, :responsibility_holder_article_clause, :article_responsibility_holder, :article_responsibility_holder_clause,
+        :popimar_article, :popimar_article_clause, :article_popimar, :article_popimar_clause,
+        :tags,
+        :stats_self_affects_count,
+        :amending_stats_affects_count, :amending_stats_affected_laws_count,
+        :amending_stats_affects_count_per_law, :amending_stats_affects_count_per_law_detailed,
+        :amended_by_stats_affected_by_count, :amended_by_stats_affected_by_laws_count,
+        :amended_by_stats_affected_by_count_per_law, :amended_by_stats_affected_by_count_per_law_detailed,
+        :rescinding_stats_rescinding_laws_count, :rescinding_stats_rescinding_count_per_law, :rescinding_stats_rescinding_count_per_law_detailed,
+        :rescinded_by_stats_rescinded_by_laws_count, :rescinded_by_stats_rescinded_by_count_per_law, :rescinded_by_stats_rescinded_by_count_per_law_detailed,
+        :amending_change_log, :amended_by_change_log
+      ]
     end
 
     update :update_enacting do

@@ -54,7 +54,7 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
       assert "ENVIRONMENT" in enriched[:si_code]
     end
 
-    test "builds name from type_code/Year/Number" do
+    test "builds name in UK_{type_code}_{year}_{number} format" do
       record = %{
         type_code: "uksi",
         Year: 2024,
@@ -64,10 +64,10 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
 
       {:ok, enriched} = LawParser.parse_record(record, persist: false)
 
-      assert enriched[:name] == "uksi/2024/1234"
+      assert enriched[:name] == "UK_uksi_2024_1234"
     end
 
-    test "builds leg_gov_uk_url from name" do
+    test "builds leg_gov_uk_url with slash format (not underscore)" do
       record = %{
         type_code: "uksi",
         Year: 2024,
@@ -77,7 +77,10 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
 
       {:ok, enriched} = LawParser.parse_record(record, persist: false)
 
+      # URL uses slash format for legislation.gov.uk compatibility
       assert enriched[:leg_gov_uk_url] == "https://www.legislation.gov.uk/uksi/2024/1234"
+      # Name uses underscore format
+      assert enriched[:name] == "UK_uksi_2024_1234"
     end
 
     test "sets md_checked timestamp" do
@@ -108,11 +111,6 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
   end
 
   describe "parse_record/2 with database persistence" do
-    # NOTE: These tests are skipped pending investigation of Ash 3 `accept :*` behavior.
-    # The :create action's `accept :*` is not expanding to include all attributes.
-    # See: https://github.com/ash-project/ash/issues
-
-    @tag :skip
     test "creates new record in database when persist: true" do
       record = %{
         type_code: "uksi",
@@ -123,15 +121,14 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
 
       {:ok, created} = LawParser.parse_record(record)
 
-      # Verify it was persisted
-      assert created.name == "uksi/2024/1234"
+      # Verify it was persisted with correct name format
+      assert created.name == "UK_uksi_2024_1234"
       assert created.md_description =~ "consolidate and update"
 
       # Verify we can find it
-      assert {:exists, _} = LawParser.record_exists?(%{name: "uksi/2024/1234"})
+      assert {:exists, _} = LawParser.record_exists?(%{name: "UK_uksi_2024_1234"})
     end
 
-    @tag :skip
     test "updates existing record when it already exists" do
       # First create a record
       record = %{
@@ -170,8 +167,6 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
   end
 
   describe "parse_group/3" do
-    # NOTE: Skipped pending Ash `accept :*` fix - parse_group calls persist internally
-    @tag :skip
     test "parses records from group1 with auto_confirm" do
       # Setup: create session with group1 records
       records = [

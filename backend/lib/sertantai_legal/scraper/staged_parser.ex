@@ -686,8 +686,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Builds the *_count_per_law summary and detailed strings from amendment lists.
   # These match the format imported from Airtable CSV exports.
   #
-  # Summary format:   "UK_uksi_2020_100 - 3\nUK_uksi_2019_50 - 2"
-  # Detailed format:  "UK_uksi_2020_100 - 3\n  reg. 1, reg. 2, reg. 3\nUK_uksi_2019_50 - 2\n  reg. 4"
+  # Summary format:  "UK_uksi_2020_100 - 3\nUK_uksi_2019_50 - 2"
+  # Detailed format:  "UK_uksi_2020_100 - 3\n  reg. 1 inserted [Not yet]\n  reg. 2 substituted [Yes]"
 
   defp build_count_per_law_summary([]), do: nil
   defp build_count_per_law_summary(amendments) do
@@ -704,27 +704,57 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     amendments
     |> group_amendments_by_law()
     |> Enum.map(fn {law_name, items} ->
-      sections = items
-                 |> Enum.map(& &1.target)
-                 |> Enum.reject(&is_nil/1)
-                 |> Enum.reject(&(&1 == ""))
-                 |> Enum.uniq()
-                 |> Enum.sort()
+      # Build detailed entries with target, affect, and applied status
+      # Format: "reg. 2(1) words inserted [Not yet]"
+      details = items
+                |> Enum.map(&build_target_affect_applied/1)
+                |> Enum.reject(&is_nil/1)
+                |> Enum.reject(&(&1 == ""))
+                |> Enum.uniq()
 
       count_line = "#{law_name} - #{length(items)}"
-      if sections == [] do
+      if details == [] do
         count_line
       else
-        section_line = "  " <> Enum.join(sections, ", ")
-        "#{count_line}\n#{section_line}"
+        detail_lines = Enum.map(details, &("  " <> &1)) |> Enum.join("\n")
+        "#{count_line}\n#{detail_lines}"
       end
     end)
     |> Enum.join("\n")
   end
 
+  # Build "target affect [applied?]" string for detailed output
+  # e.g., "reg. 2(1) words inserted [Not yet]"
+  defp build_target_affect_applied(%{target: target, affect: affect, applied?: applied}) do
+    target = target || ""
+    affect = affect || ""
+    applied = applied || ""
+
+    cond do
+      target == "" and affect == "" -> nil
+      target == "" -> "#{affect} [#{applied}]"
+      affect == "" -> target
+      true -> "#{target} #{affect} [#{applied}]"
+    end
+  end
+  defp build_target_affect_applied(%{target: target}) when is_binary(target) and target != "", do: target
+  defp build_target_affect_applied(_), do: nil
+
   defp group_amendments_by_law(amendments) do
     amendments
     |> Enum.group_by(& &1.name)
     |> Enum.sort_by(fn {_name, items} -> -length(items) end)
+  end
+
+  # ============================================================================
+  # Test Helpers - expose private functions for testing
+  # ============================================================================
+
+  if Mix.env() == :test do
+    @doc false
+    def test_build_count_per_law_detailed(amendments), do: build_count_per_law_detailed(amendments)
+
+    @doc false
+    def test_build_target_affect_applied(amendment), do: build_target_affect_applied(amendment)
   end
 end

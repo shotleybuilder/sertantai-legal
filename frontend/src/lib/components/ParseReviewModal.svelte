@@ -698,7 +698,7 @@
 							<!-- Amending Stats -->
 							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔺 Affects Count</span>
+									<span class="text-sm text-gray-500">Affects Count <span class="text-xs text-gray-400">(🔺_stats_affects_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
 											getField(parseResult.record, 'amending_stats_affects_count')
@@ -708,7 +708,7 @@
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amending_stats_affected_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔺 Affected Laws Count</span>
+									<span class="text-sm text-gray-500">Affected Laws Count <span class="text-xs text-gray-400">(🔺_stats_affected_laws_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
 											getField(parseResult.record, 'amending_stats_affected_laws_count')
@@ -718,13 +718,16 @@
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔺 Affects Detail</span>
-									<span
-										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(
-											getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed')
-										)}</span
-									>
+									<span class="text-sm text-gray-500">Affects Per Law (Detail) <span class="text-xs text-gray-400">(🔺_stats_affects_count_per_law_detailed)</span></span>
+									<div class="col-span-2">
+										<div class="text-xs text-gray-400 italic mb-1">Law - Count / Section Action [Status]</div>
+										<span
+											class="text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto block"
+											>{formatValue(
+												getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed')
+											)}</span
+										>
+									</div>
 								</div>
 							{/if}
 
@@ -748,7 +751,7 @@
 							<!-- Amended By Stats -->
 							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔻 Affected By Count</span>
+									<span class="text-sm text-gray-500">Affected By Count <span class="text-xs text-gray-400">(🔻_stats_affected_by_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
 											getField(parseResult.record, 'amended_by_stats_affected_by_count')
@@ -758,7 +761,7 @@
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔻 Amending Laws Count</span>
+									<span class="text-sm text-gray-500">Amending Laws Count <span class="text-xs text-gray-400">(🔻_stats_affected_by_laws_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
 											getField(parseResult.record, 'amended_by_stats_affected_by_laws_count')
@@ -768,16 +771,19 @@
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔻 Amended By Detail</span>
-									<span
-										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(
-											getField(
-												parseResult.record,
-												'amended_by_stats_affected_by_count_per_law_detailed'
-											)
-										)}</span
-									>
+									<span class="text-sm text-gray-500">Affected By Per Law (Detail) <span class="text-xs text-gray-400">(🔻_stats_affected_by_count_per_law_detailed)</span></span>
+									<div class="col-span-2">
+										<div class="text-xs text-gray-400 italic mb-1">Law - Count / Section Action [Status]</div>
+										<span
+											class="text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto block"
+											>{formatValue(
+												getField(
+													parseResult.record,
+													'amended_by_stats_affected_by_count_per_law_detailed'
+												)
+											)}</span
+										>
+									</div>
 								</div>
 							{/if}
 
@@ -801,7 +807,7 @@
 							<!-- Rescinding Stats -->
 							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔺 Rescinded Laws Count</span>
+									<span class="text-sm text-gray-500">Rescinded Laws Count <span class="text-xs text-gray-400">(🔺_stats_rescinding_laws_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
 											getField(parseResult.record, 'rescinding_stats_rescinding_laws_count')
@@ -811,16 +817,19 @@
 							{/if}
 							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔺 Rescinding Detail</span>
-									<span
-										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(
-											getField(
-												parseResult.record,
-												'rescinding_stats_rescinding_count_per_law_detailed'
-											)
-										)}</span
-									>
+									<span class="text-sm text-gray-500">Rescinding Per Law (Detail) <span class="text-xs text-gray-400">(🔺_stats_rescinding_count_per_law_detailed)</span></span>
+									<div class="col-span-2">
+										<div class="text-xs text-gray-400 italic mb-1">Law - Count / Section Action [Status]</div>
+										<span
+											class="text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto block"
+											>{formatValue(
+												getField(
+													parseResult.record,
+													'rescinding_stats_rescinding_count_per_law_detailed'
+												)
+											)}</span
+										>
+									</div>
 								</div>
 							{/if}
 
@@ -850,7 +859,7 @@
 							<!-- Rescinded By Stats -->
 							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔻 Rescinding Laws Count</span>
+									<span class="text-sm text-gray-500">Rescinding Laws Count <span class="text-xs text-gray-400">(🔻_stats_rescinded_by_laws_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
 											getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count')
@@ -860,23 +869,26 @@
 							{/if}
 							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">🔻 Rescinded By Detail</span>
-									<span
-										class="col-span-2 text-sm text-red-600 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(
-											getField(
-												parseResult.record,
-												'rescinded_by_stats_rescinded_by_count_per_law_detailed'
-											)
-										)}</span
-									>
+									<span class="text-sm text-gray-500">Rescinded By Per Law (Detail) <span class="text-xs text-gray-400">(🔻_stats_rescinded_by_count_per_law_detailed)</span></span>
+									<div class="col-span-2">
+										<div class="text-xs text-gray-400 italic mb-1">Law - Count / Section Action [Status]</div>
+										<span
+											class="text-sm text-red-600 whitespace-pre-line max-h-32 overflow-y-auto block"
+											>{formatValue(
+												getField(
+													parseResult.record,
+													'rescinded_by_stats_rescinded_by_count_per_law_detailed'
+												)
+											)}</span
+										>
+									</div>
 								</div>
 							{/if}
 
 							<!-- Self Amendments (shared stat) -->
 							{#if hasData(getField(parseResult.record, 'stats_self_affects_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
-									<span class="text-sm text-gray-500">Self Amendments</span>
+									<span class="text-sm text-gray-500">Self Amendments <span class="text-xs text-gray-400">(🔺🔻_stats_self_affects_count)</span></span>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(getField(parseResult.record, 'stats_self_affects_count'))}</span
 									>
