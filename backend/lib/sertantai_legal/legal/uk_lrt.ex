@@ -192,6 +192,137 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description "Government role classifications (JSONB)"
     end
 
+    attribute :article_role, :string do
+      allow_nil? true
+      description "Article to Role mapping"
+    end
+
+    attribute :role_article, :string do
+      allow_nil? true
+      description "Role to Article mapping"
+    end
+
+    # Duty Type
+    attribute :duty_type, :string do
+      allow_nil? true
+      description "Duty type classification"
+    end
+
+    attribute :duty_type_article, :string do
+      allow_nil? true
+      description "Duty Type to Article mapping"
+    end
+
+    attribute :article_duty_type, :string do
+      allow_nil? true
+      description "Article to Duty Type mapping"
+    end
+
+    # Duty Holder Article References
+    attribute :duty_holder_article, :string do
+      allow_nil? true
+      description "Duty Holder to Article mapping"
+    end
+
+    attribute :duty_holder_article_clause, :string do
+      allow_nil? true
+      description "Duty Holder Article Clause details"
+    end
+
+    attribute :article_duty_holder, :string do
+      allow_nil? true
+      description "Article to Duty Holder mapping"
+    end
+
+    attribute :article_duty_holder_clause, :string do
+      allow_nil? true
+      description "Article Duty Holder Clause details"
+    end
+
+    # Power Holder Article References
+    attribute :power_holder_article, :string do
+      allow_nil? true
+      description "Power Holder to Article mapping"
+    end
+
+    attribute :power_holder_article_clause, :string do
+      allow_nil? true
+      description "Power Holder Article Clause details"
+    end
+
+    attribute :article_power_holder, :string do
+      allow_nil? true
+      description "Article to Power Holder mapping"
+    end
+
+    attribute :article_power_holder_clause, :string do
+      allow_nil? true
+      description "Article Power Holder Clause details"
+    end
+
+    # Rights Holder Article References
+    attribute :rights_holder_article, :string do
+      allow_nil? true
+      description "Rights Holder to Article mapping"
+    end
+
+    attribute :rights_holder_article_clause, :string do
+      allow_nil? true
+      description "Rights Holder Article Clause details"
+    end
+
+    attribute :article_rights_holder, :string do
+      allow_nil? true
+      description "Article to Rights Holder mapping"
+    end
+
+    attribute :article_rights_holder_clause, :string do
+      allow_nil? true
+      description "Article Rights Holder Clause details"
+    end
+
+    # Responsibility Holder Article References
+    attribute :responsibility_holder_article, :string do
+      allow_nil? true
+      description "Responsibility Holder to Article mapping"
+    end
+
+    attribute :responsibility_holder_article_clause, :string do
+      allow_nil? true
+      description "Responsibility Holder Article Clause details"
+    end
+
+    attribute :article_responsibility_holder, :string do
+      allow_nil? true
+      description "Article to Responsibility Holder mapping"
+    end
+
+    attribute :article_responsibility_holder_clause, :string do
+      allow_nil? true
+      description "Article Responsibility Holder Clause details"
+    end
+
+    # POPIMAR Article References
+    attribute :popimar_article, :string do
+      allow_nil? true
+      description "POPIMAR to Article mapping"
+    end
+
+    attribute :popimar_article_clause, :string do
+      allow_nil? true
+      description "POPIMAR Article Clause details"
+    end
+
+    attribute :article_popimar, :string do
+      allow_nil? true
+      description "Article to POPIMAR mapping"
+    end
+
+    attribute :article_popimar_clause, :string do
+      allow_nil? true
+      description "Article POPIMAR Clause details"
+    end
+
     attribute :tags, {:array, :string} do
       allow_nil? true
       description "Searchable tags"

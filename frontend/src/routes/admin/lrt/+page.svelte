@@ -35,9 +35,47 @@
 		si_code: string | null;
 		tags: string[] | null;
 		function: string[] | null;
+		// Role/Actor
+		role: string[] | null;
+		role_gvt: Record<string, unknown> | null;
+		article_role: string | null;
+		role_article: string | null;
+		// Duty Type
+		duty_type: string | null;
+		duty_type_article: string | null;
+		article_duty_type: string | null;
+		// Duty Holder
 		duty_holder: Record<string, unknown> | null;
+		duty_holder_article: string | null;
+		duty_holder_article_clause: string | null;
+		article_duty_holder: string | null;
+		article_duty_holder_clause: string | null;
+		// Power Holder
 		power_holder: Record<string, unknown> | null;
+		power_holder_article: string | null;
+		power_holder_article_clause: string | null;
+		article_power_holder: string | null;
+		article_power_holder_clause: string | null;
+		// Rights Holder
 		rights_holder: Record<string, unknown> | null;
+		rights_holder_article: string | null;
+		rights_holder_article_clause: string | null;
+		article_rights_holder: string | null;
+		article_rights_holder_clause: string | null;
+		// Responsibility Holder
+		responsibility_holder: Record<string, unknown> | null;
+		responsibility_holder_article: string | null;
+		responsibility_holder_article_clause: string | null;
+		article_responsibility_holder: string | null;
+		article_responsibility_holder_clause: string | null;
+		// POPIMAR
+		popimar: Record<string, unknown> | null;
+		popimar_article: string | null;
+		popimar_article_clause: string | null;
+		article_popimar: string | null;
+		article_popimar_clause: string | null;
+		// Purpose
+		purpose: Record<string, unknown> | null;
 		is_making: number | null;
 		enacted_by: string | null;
 		amending: Record<string, unknown> | null;
@@ -174,6 +212,46 @@
 			name: 'Metadata',
 			description: 'Dates and document stats: Made, Enacted, In Force, Paragraphs, Images',
 			columns: ['actions', 'name', 'title_en', 'md_date', 'md_made_date', 'md_enactment_date', 'md_coming_into_force_date', 'md_dct_valid_date', 'md_restrict_start_date', 'md_total_paras', 'md_body_paras', 'md_schedule_paras', 'md_attachment_paras', 'md_images']
+		},
+		{
+			name: 'Role',
+			description: 'Role classifications and article mappings',
+			columns: ['actions', 'name', 'title_en', 'role', 'role_gvt', 'article_role', 'role_article']
+		},
+		{
+			name: 'Duty Type',
+			description: 'Duty type classifications and article mappings',
+			columns: ['actions', 'name', 'title_en', 'duty_type', 'duty_type_article', 'article_duty_type']
+		},
+		{
+			name: 'Duty Holder',
+			description: 'Entities with legal duties and article references',
+			columns: ['actions', 'name', 'title_en', 'duty_holder', 'duty_holder_article', 'duty_holder_article_clause', 'article_duty_holder', 'article_duty_holder_clause']
+		},
+		{
+			name: 'Power Holder',
+			description: 'Entities with legal powers and article references',
+			columns: ['actions', 'name', 'title_en', 'power_holder', 'power_holder_article', 'power_holder_article_clause', 'article_power_holder', 'article_power_holder_clause']
+		},
+		{
+			name: 'Rights Holder',
+			description: 'Entities with legal rights and article references',
+			columns: ['actions', 'name', 'title_en', 'rights_holder', 'rights_holder_article', 'rights_holder_article_clause', 'article_rights_holder', 'article_rights_holder_clause']
+		},
+		{
+			name: 'Responsibility Holder',
+			description: 'Entities with legal responsibilities and article references',
+			columns: ['actions', 'name', 'title_en', 'responsibility_holder', 'responsibility_holder_article', 'responsibility_holder_article_clause', 'article_responsibility_holder', 'article_responsibility_holder_clause']
+		},
+		{
+			name: 'POPIMAR',
+			description: 'POPIMAR framework and article references',
+			columns: ['actions', 'name', 'title_en', 'popimar', 'popimar_article', 'popimar_article_clause', 'article_popimar', 'article_popimar_clause']
+		},
+		{
+			name: 'Purpose',
+			description: 'Legal purposes and objectives',
+			columns: ['actions', 'name', 'title_en', 'purpose']
 		}
 	];
 
@@ -676,6 +754,310 @@
 			cell: (info) => info.getValue() ?? '-',
 			size: 70,
 			meta: { group: 'Metadata' }
+		},
+		// Role/Actor
+		{
+			id: 'role',
+			accessorKey: 'role',
+			header: 'Roles',
+			cell: (info) => {
+				const val = info.getValue() as string[] | null;
+				if (!val || val.length === 0) return '-';
+				return val.join(', ');
+			},
+			size: 150,
+			meta: { group: 'Role' }
+		},
+		{
+			id: 'role_gvt',
+			accessorKey: 'role_gvt',
+			header: 'Govt Roles',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 150,
+			meta: { group: 'Role' }
+		},
+		{
+			id: 'article_role',
+			accessorKey: 'article_role',
+			header: 'Article → Role',
+			cell: (info) => info.getValue() ?? '-',
+			size: 120,
+			meta: { group: 'Role' }
+		},
+		{
+			id: 'role_article',
+			accessorKey: 'role_article',
+			header: 'Role → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 120,
+			meta: { group: 'Role' }
+		},
+		// Duty Type
+		{
+			id: 'duty_type',
+			accessorKey: 'duty_type',
+			header: 'Duty Type',
+			cell: (info) => info.getValue() ?? '-',
+			size: 120,
+			meta: { group: 'Duty Type' }
+		},
+		{
+			id: 'duty_type_article',
+			accessorKey: 'duty_type_article',
+			header: 'Duty Type → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 140,
+			meta: { group: 'Duty Type' }
+		},
+		{
+			id: 'article_duty_type',
+			accessorKey: 'article_duty_type',
+			header: 'Article → Duty Type',
+			cell: (info) => info.getValue() ?? '-',
+			size: 140,
+			meta: { group: 'Duty Type' }
+		},
+		// Duty Holder
+		{
+			id: 'duty_holder',
+			accessorKey: 'duty_holder',
+			header: 'Duty Holder',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 180,
+			meta: { group: 'Duty Holder' }
+		},
+		{
+			id: 'duty_holder_article',
+			accessorKey: 'duty_holder_article',
+			header: 'Duty Holder → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Duty Holder' }
+		},
+		{
+			id: 'duty_holder_article_clause',
+			accessorKey: 'duty_holder_article_clause',
+			header: 'Duty Holder Article Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Duty Holder' }
+		},
+		{
+			id: 'article_duty_holder',
+			accessorKey: 'article_duty_holder',
+			header: 'Article → Duty Holder',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Duty Holder' }
+		},
+		{
+			id: 'article_duty_holder_clause',
+			accessorKey: 'article_duty_holder_clause',
+			header: 'Article Duty Holder Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Duty Holder' }
+		},
+		// Power Holder
+		{
+			id: 'power_holder',
+			accessorKey: 'power_holder',
+			header: 'Power Holder',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 180,
+			meta: { group: 'Power Holder' }
+		},
+		{
+			id: 'power_holder_article',
+			accessorKey: 'power_holder_article',
+			header: 'Power Holder → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Power Holder' }
+		},
+		{
+			id: 'power_holder_article_clause',
+			accessorKey: 'power_holder_article_clause',
+			header: 'Power Holder Article Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Power Holder' }
+		},
+		{
+			id: 'article_power_holder',
+			accessorKey: 'article_power_holder',
+			header: 'Article → Power Holder',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Power Holder' }
+		},
+		{
+			id: 'article_power_holder_clause',
+			accessorKey: 'article_power_holder_clause',
+			header: 'Article Power Holder Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Power Holder' }
+		},
+		// Rights Holder
+		{
+			id: 'rights_holder',
+			accessorKey: 'rights_holder',
+			header: 'Rights Holder',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 180,
+			meta: { group: 'Rights Holder' }
+		},
+		{
+			id: 'rights_holder_article',
+			accessorKey: 'rights_holder_article',
+			header: 'Rights Holder → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Rights Holder' }
+		},
+		{
+			id: 'rights_holder_article_clause',
+			accessorKey: 'rights_holder_article_clause',
+			header: 'Rights Holder Article Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Rights Holder' }
+		},
+		{
+			id: 'article_rights_holder',
+			accessorKey: 'article_rights_holder',
+			header: 'Article → Rights Holder',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Rights Holder' }
+		},
+		{
+			id: 'article_rights_holder_clause',
+			accessorKey: 'article_rights_holder_clause',
+			header: 'Article Rights Holder Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Rights Holder' }
+		},
+		// Responsibility Holder
+		{
+			id: 'responsibility_holder',
+			accessorKey: 'responsibility_holder',
+			header: 'Responsibility Holder',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 180,
+			meta: { group: 'Responsibility Holder' }
+		},
+		{
+			id: 'responsibility_holder_article',
+			accessorKey: 'responsibility_holder_article',
+			header: 'Resp. Holder → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Responsibility Holder' }
+		},
+		{
+			id: 'responsibility_holder_article_clause',
+			accessorKey: 'responsibility_holder_article_clause',
+			header: 'Resp. Holder Article Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Responsibility Holder' }
+		},
+		{
+			id: 'article_responsibility_holder',
+			accessorKey: 'article_responsibility_holder',
+			header: 'Article → Resp. Holder',
+			cell: (info) => info.getValue() ?? '-',
+			size: 150,
+			meta: { group: 'Responsibility Holder' }
+		},
+		{
+			id: 'article_responsibility_holder_clause',
+			accessorKey: 'article_responsibility_holder_clause',
+			header: 'Article Resp. Holder Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 180,
+			meta: { group: 'Responsibility Holder' }
+		},
+		// POPIMAR
+		{
+			id: 'popimar',
+			accessorKey: 'popimar',
+			header: 'POPIMAR',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 150,
+			meta: { group: 'POPIMAR' }
+		},
+		{
+			id: 'popimar_article',
+			accessorKey: 'popimar_article',
+			header: 'POPIMAR → Article',
+			cell: (info) => info.getValue() ?? '-',
+			size: 140,
+			meta: { group: 'POPIMAR' }
+		},
+		{
+			id: 'popimar_article_clause',
+			accessorKey: 'popimar_article_clause',
+			header: 'POPIMAR Article Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 160,
+			meta: { group: 'POPIMAR' }
+		},
+		{
+			id: 'article_popimar',
+			accessorKey: 'article_popimar',
+			header: 'Article → POPIMAR',
+			cell: (info) => info.getValue() ?? '-',
+			size: 140,
+			meta: { group: 'POPIMAR' }
+		},
+		{
+			id: 'article_popimar_clause',
+			accessorKey: 'article_popimar_clause',
+			header: 'Article POPIMAR Clause',
+			cell: (info) => info.getValue() ?? '-',
+			size: 160,
+			meta: { group: 'POPIMAR' }
+		},
+		// Purpose
+		{
+			id: 'purpose',
+			accessorKey: 'purpose',
+			header: 'Purpose',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			},
+			size: 150,
+			meta: { group: 'Purpose' }
 		},
 		// Links
 		{
