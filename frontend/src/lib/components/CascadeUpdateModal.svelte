@@ -237,9 +237,7 @@
 			<div class="flex-1 overflow-y-auto px-6 py-4">
 				{#if loading}
 					<div class="flex items-center justify-center py-12">
-						<div
-							class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-						></div>
+						<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 						<span class="ml-3 text-gray-600">Loading affected laws...</span>
 					</div>
 				{:else if error}
@@ -266,15 +264,21 @@
 						{#if affectedLaws.total_enacting_parents > 0}
 							<div class="grid grid-cols-3 gap-4">
 								<div class="bg-purple-50 rounded-lg p-4 text-center">
-									<div class="text-2xl font-bold text-purple-700">{affectedLaws.total_enacting_parents}</div>
+									<div class="text-2xl font-bold text-purple-700">
+										{affectedLaws.total_enacting_parents}
+									</div>
 									<div class="text-sm text-purple-600">Enacting Parents</div>
 								</div>
 								<div class="bg-purple-50 rounded-lg p-4 text-center">
-									<div class="text-2xl font-bold text-purple-700">{affectedLaws.enacting_parents_in_db_count}</div>
+									<div class="text-2xl font-bold text-purple-700">
+										{affectedLaws.enacting_parents_in_db_count}
+									</div>
 									<div class="text-sm text-purple-600">In DB (Direct Update)</div>
 								</div>
 								<div class="bg-purple-50 rounded-lg p-4 text-center opacity-60">
-									<div class="text-2xl font-bold text-purple-700">{affectedLaws.enacting_parents_not_in_db_count}</div>
+									<div class="text-2xl font-bold text-purple-700">
+										{affectedLaws.enacting_parents_not_in_db_count}
+									</div>
 									<div class="text-sm text-purple-600">Not in DB</div>
 								</div>
 							</div>
@@ -284,7 +288,9 @@
 					<!-- Re-parse Results -->
 					{#if reparseResults}
 						<div class="mb-6 bg-gray-50 rounded-lg p-4">
-							<h3 class="font-semibold text-gray-900 mb-2">Re-parse Results (Amending/Rescinding)</h3>
+							<h3 class="font-semibold text-gray-900 mb-2">
+								Re-parse Results (Amending/Rescinding)
+							</h3>
 							<div class="flex gap-4 mb-3">
 								<span class="text-green-600">{reparseResults.success} success</span>
 								<span class="text-red-600">{reparseResults.errors} errors</span>
@@ -293,7 +299,9 @@
 							<div class="max-h-32 overflow-y-auto text-sm font-mono">
 								{#each reparseResults.results as result}
 									<div class="flex items-center gap-2">
-										<span class={getStatusIcon(result.status)}>[{getStatusSymbol(result.status)}]</span>
+										<span class={getStatusIcon(result.status)}
+											>[{getStatusSymbol(result.status)}]</span
+										>
 										<span class="text-gray-700">{result.name}</span>
 										{#if result.status === 'error'}
 											<span class="text-red-500 text-xs">- {result.message}</span>
@@ -317,7 +325,9 @@
 							<div class="max-h-32 overflow-y-auto text-sm font-mono">
 								{#each enactingResults.results as result}
 									<div class="flex items-center gap-2">
-										<span class={getStatusIcon(result.status)}>[{getStatusSymbol(result.status)}]</span>
+										<span class={getStatusIcon(result.status)}
+											>[{getStatusSymbol(result.status)}]</span
+										>
 										<span class="text-gray-700">{result.name}</span>
 										{#if result.status === 'success' && result.added_count}
 											<span class="text-green-600 text-xs">+{result.added_count} laws added</span>
@@ -340,17 +350,11 @@
 									Affected Laws in Database ({affectedLaws.in_db_count})
 								</h3>
 								<div class="flex gap-2 text-sm">
-									<button
-										on:click={selectAllInDb}
-										class="text-blue-600 hover:underline"
-									>
+									<button on:click={selectAllInDb} class="text-blue-600 hover:underline">
 										Select All
 									</button>
 									<span class="text-gray-300">|</span>
-									<button
-										on:click={selectNoneInDb}
-										class="text-blue-600 hover:underline"
-									>
+									<button on:click={selectNoneInDb} class="text-blue-600 hover:underline">
 										Select None
 									</button>
 								</div>
@@ -387,7 +391,9 @@
 							<p class="text-sm text-gray-500 mb-2">
 								These laws will need to be scraped and added to complete the cascade.
 							</p>
-							<div class="border border-yellow-200 bg-yellow-50 rounded-lg max-h-48 overflow-y-auto">
+							<div
+								class="border border-yellow-200 bg-yellow-50 rounded-lg max-h-48 overflow-y-auto"
+							>
 								{#each affectedLaws.not_in_db as law}
 									<div
 										class="flex items-center gap-3 px-4 py-2 border-b border-yellow-100 last:border-b-0"
@@ -429,9 +435,12 @@
 								</div>
 							</div>
 							<p class="text-sm text-gray-500 mb-2">
-								These parent laws need their <code class="bg-gray-100 px-1 rounded">enacting</code> arrays updated with new child laws.
+								These parent laws need their <code class="bg-gray-100 px-1 rounded">enacting</code> arrays
+								updated with new child laws.
 							</p>
-							<div class="border border-purple-200 bg-purple-50 rounded-lg max-h-48 overflow-y-auto">
+							<div
+								class="border border-purple-200 bg-purple-50 rounded-lg max-h-48 overflow-y-auto"
+							>
 								{#each affectedLaws.enacting_parents_in_db as law}
 									<div
 										class="flex items-center gap-3 px-4 py-2 border-b border-purple-100 last:border-b-0 hover:bg-purple-100"
@@ -509,7 +518,9 @@
 					{#if affectedLaws && affectedLaws.enacting_parents_in_db_count > 0 && !enactingResults}
 						<button
 							on:click={handleUpdateEnactingSelected}
-							disabled={reparseInProgress || enactingUpdateInProgress || selectedEnactingParents.size === 0}
+							disabled={reparseInProgress ||
+								enactingUpdateInProgress ||
+								selectedEnactingParents.size === 0}
 							class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{#if enactingUpdateInProgress}
@@ -535,9 +546,9 @@
 					{#if affectedLaws}
 						{@const allDone =
 							(reparseResults || affectedLaws.in_db_count === 0) &&
-							(enactingResults || affectedLaws.enacting_parents_in_db_count === 0)
-						}
-						{@const nothingToDo = affectedLaws.total_affected === 0 && affectedLaws.total_enacting_parents === 0}
+							(enactingResults || affectedLaws.enacting_parents_in_db_count === 0)}
+						{@const nothingToDo =
+							affectedLaws.total_affected === 0 && affectedLaws.total_enacting_parents === 0}
 						{#if allDone || nothingToDo}
 							<button
 								on:click={handleClearAndClose}

@@ -38,7 +38,12 @@
 	let lastParsedName: string | null = null;
 
 	// Parse current record when index changes (only if not already parsed)
-	$: if (open && currentRecord && currentRecord.name !== lastParsedName && !$parseMutation.isPending) {
+	$: if (
+		open &&
+		currentRecord &&
+		currentRecord.name !== lastParsedName &&
+		!$parseMutation.isPending
+	) {
 		parseCurrentRecord();
 	}
 
@@ -160,7 +165,17 @@
 			if (value.length === 0) return '(none)';
 			return value.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v))).join(', ');
 		}
-		if (typeof value === 'object') return JSON.stringify(value);
+		// Handle JSONB format {items: [...]} used by Taxa fields
+		if (typeof value === 'object' && value !== null) {
+			const obj = value as Record<string, unknown>;
+			if ('items' in obj && Array.isArray(obj.items)) {
+				if (obj.items.length === 0) return '(none)';
+				return obj.items
+					.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v)))
+					.join(', ');
+			}
+			return JSON.stringify(value);
+		}
 		return String(value);
 	}
 
@@ -174,7 +189,10 @@
 	}
 
 	// Helper to get record field with fallback to alternative keys
-	function getField(record: Record<string, unknown> | null | undefined, ...keys: string[]): unknown {
+	function getField(
+		record: Record<string, unknown> | null | undefined,
+		...keys: string[]
+	): unknown {
 		if (!record) return null;
 		for (const key of keys) {
 			if (record[key] !== undefined && record[key] !== null) {
@@ -281,28 +299,52 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Title <span class="text-xs text-gray-400">(title_en)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'title_en', 'Title_EN'))}</span>
+								<span class="text-sm text-gray-500"
+									>Title <span class="text-xs text-gray-400">(title_en)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'title_en', 'Title_EN'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Year <span class="text-xs text-gray-400">(year)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'year', 'Year'))}</span>
+								<span class="text-sm text-gray-500"
+									>Year <span class="text-xs text-gray-400">(year)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'year', 'Year'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Number <span class="text-xs text-gray-400">(number)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'number', 'Number'))}</span>
+								<span class="text-sm text-gray-500"
+									>Number <span class="text-xs text-gray-400">(number)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'number', 'Number'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Type Code <span class="text-xs text-gray-400">(type_code)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'type_code'))}</span>
+								<span class="text-sm text-gray-500"
+									>Type Code <span class="text-xs text-gray-400">(type_code)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'type_code'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Type Description <span class="text-xs text-gray-400">(type_desc)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'type_desc'))}</span>
+								<span class="text-sm text-gray-500"
+									>Type Description <span class="text-xs text-gray-400">(type_desc)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'type_desc'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Type Class <span class="text-xs text-gray-400">(type_class)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'type_class'))}</span>
+								<span class="text-sm text-gray-500"
+									>Type Class <span class="text-xs text-gray-400">(type_class)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'type_class'))}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -314,7 +356,9 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<div class="grid grid-cols-3 px-4 py-2 items-center">
-								<span class="text-sm text-gray-500">Family <span class="text-xs text-gray-400">(family)</span></span>
+								<span class="text-sm text-gray-500"
+									>Family <span class="text-xs text-gray-400">(family)</span></span
+								>
 								<div class="col-span-2">
 									{#if $familyOptionsQuery.isPending}
 										<span class="text-sm text-gray-400">Loading families...</span>
@@ -341,7 +385,9 @@
 								</div>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2 items-center">
-								<span class="text-sm text-gray-500">Sub-Family <span class="text-xs text-gray-400">(family_ii)</span></span>
+								<span class="text-sm text-gray-500"
+									>Sub-Family <span class="text-xs text-gray-400">(family_ii)</span></span
+								>
 								<div class="col-span-2">
 									{#if $familyOptionsQuery.isPending}
 										<span class="text-sm text-gray-400">Loading families...</span>
@@ -368,20 +414,36 @@
 								</div>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">SI Codes <span class="text-xs text-gray-400">(si_code)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'si_code', 'SICode'))}</span>
+								<span class="text-sm text-gray-500"
+									>SI Codes <span class="text-xs text-gray-400">(si_code)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'si_code', 'SICode'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Tags <span class="text-xs text-gray-400">(tags)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'tags'))}</span>
+								<span class="text-sm text-gray-500"
+									>Tags <span class="text-xs text-gray-400">(tags)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'tags'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Description <span class="text-xs text-gray-400">(md_description)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'md_description'))}</span>
+								<span class="text-sm text-gray-500"
+									>Description <span class="text-xs text-gray-400">(md_description)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'md_description'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Subjects <span class="text-xs text-gray-400">(md_subjects)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'md_subjects'))}</span>
+								<span class="text-sm text-gray-500"
+									>Subjects <span class="text-xs text-gray-400">(md_subjects)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'md_subjects'))}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -393,12 +455,21 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Status <span class="text-xs text-gray-400">(live)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'live'))}</span>
+								<span class="text-sm text-gray-500"
+									>Status <span class="text-xs text-gray-400">(live)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'live'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Status Description <span class="text-xs text-gray-400">(live_description)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'live_description'))}</span>
+								<span class="text-sm text-gray-500"
+									>Status Description <span class="text-xs text-gray-400">(live_description)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'live_description'))}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -410,16 +481,28 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Region <span class="text-xs text-gray-400">(geo_extent)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'geo_extent', 'extent'))}</span>
+								<span class="text-sm text-gray-500"
+									>Region <span class="text-xs text-gray-400">(geo_extent)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'geo_extent', 'extent'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Country <span class="text-xs text-gray-400">(geo_region)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'geo_region', 'extent_regions'))}</span>
+								<span class="text-sm text-gray-500"
+									>Country <span class="text-xs text-gray-400">(geo_region)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'geo_region', 'extent_regions'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Detail <span class="text-xs text-gray-400">(geo_detail)</span></span>
-								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line">{formatValue(getField(parseResult.record, 'geo_detail'))}</span>
+								<span class="text-sm text-gray-500"
+									>Detail <span class="text-xs text-gray-400">(geo_detail)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line"
+									>{formatValue(getField(parseResult.record, 'geo_detail'))}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -431,272 +514,554 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Primary Date <span class="text-xs text-gray-400">(md_date)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatDate(getField(parseResult.record, 'md_date'))}</span>
+								<span class="text-sm text-gray-500"
+									>Primary Date <span class="text-xs text-gray-400">(md_date)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatDate(getField(parseResult.record, 'md_date'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Made Date <span class="text-xs text-gray-400">(md_made_date)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatDate(getField(parseResult.record, 'md_made_date'))}</span>
+								<span class="text-sm text-gray-500"
+									>Made Date <span class="text-xs text-gray-400">(md_made_date)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatDate(getField(parseResult.record, 'md_made_date'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Enacted Date <span class="text-xs text-gray-400">(md_enactment_date)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatDate(getField(parseResult.record, 'md_enactment_date'))}</span>
+								<span class="text-sm text-gray-500"
+									>Enacted Date <span class="text-xs text-gray-400">(md_enactment_date)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatDate(getField(parseResult.record, 'md_enactment_date'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">In Force Date <span class="text-xs text-gray-400">(md_coming_into_force_date)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatDate(getField(parseResult.record, 'md_coming_into_force_date'))}</span>
+								<span class="text-sm text-gray-500"
+									>In Force Date <span class="text-xs text-gray-400"
+										>(md_coming_into_force_date)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatDate(getField(parseResult.record, 'md_coming_into_force_date'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">DCT Valid Date <span class="text-xs text-gray-400">(md_dct_valid_date)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatDate(getField(parseResult.record, 'md_dct_valid_date'))}</span>
+								<span class="text-sm text-gray-500"
+									>DCT Valid Date <span class="text-xs text-gray-400">(md_dct_valid_date)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatDate(getField(parseResult.record, 'md_dct_valid_date'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Restriction Start <span class="text-xs text-gray-400">(md_restrict_start_date)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatDate(getField(parseResult.record, 'md_restrict_start_date'))}</span>
+								<span class="text-sm text-gray-500"
+									>Restriction Start <span class="text-xs text-gray-400"
+										>(md_restrict_start_date)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatDate(getField(parseResult.record, 'md_restrict_start_date'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Total Paragraphs <span class="text-xs text-gray-400">(md_total_paras)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'md_total_paras'))}</span>
+								<span class="text-sm text-gray-500"
+									>Total Paragraphs <span class="text-xs text-gray-400">(md_total_paras)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'md_total_paras'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Body Paragraphs <span class="text-xs text-gray-400">(md_body_paras)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'md_body_paras'))}</span>
+								<span class="text-sm text-gray-500"
+									>Body Paragraphs <span class="text-xs text-gray-400">(md_body_paras)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'md_body_paras'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Schedule Paragraphs <span class="text-xs text-gray-400">(md_schedule_paras)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'md_schedule_paras'))}</span>
+								<span class="text-sm text-gray-500"
+									>Schedule Paragraphs <span class="text-xs text-gray-400">(md_schedule_paras)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'md_schedule_paras'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Attachment Paragraphs <span class="text-xs text-gray-400">(md_attachment_paras)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'md_attachment_paras'))}</span>
+								<span class="text-sm text-gray-500"
+									>Attachment Paragraphs <span class="text-xs text-gray-400"
+										>(md_attachment_paras)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'md_attachment_paras'))}</span
+								>
 							</div>
 						</div>
 					</div>
 
 					<!-- SECTION 6: FUNCTION -->
 					<div class="mb-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
-						<div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+						<div
+							class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center"
+						>
 							<h4 class="text-sm font-medium text-gray-700">Function</h4>
 							<div class="flex space-x-2">
 								{#if parseResult.record?.is_amending}
-									<span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">Amending Law</span>
+									<span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded"
+										>Amending Law</span
+									>
 								{/if}
 								{#if parseResult.record?.is_rescinding}
-									<span class="px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded">Rescinding Law</span>
+									<span class="px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded"
+										>Rescinding Law</span
+									>
 								{/if}
 							</div>
 						</div>
 						<div class="divide-y divide-gray-100">
 							<!-- Function -->
 							{#if hasData(getField(parseResult.record, 'function'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Function <span class="text-xs text-gray-400">(function)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'function'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Function <span class="text-xs text-gray-400">(function)</span></span
+									>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(getField(parseResult.record, 'function'))}</span
+									>
+								</div>
 							{/if}
 
 							<!-- Enacting -->
 							{#if hasData(getField(parseResult.record, 'enacting'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Enacts <span class="text-xs text-gray-400">(enacting)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'enacting'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Enacts <span class="text-xs text-gray-400">(enacting)</span></span
+									>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(getField(parseResult.record, 'enacting'))}</span
+									>
+								</div>
 							{/if}
 
 							<!-- Enacted By -->
 							{#if hasData(getField(parseResult.record, 'enacted_by')) || parseResult.record?.is_act}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Enacted By <span class="text-xs text-gray-400">(enacted_by)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">
-									{#if parseResult.record?.enacted_by && Array.isArray(parseResult.record.enacted_by) && parseResult.record.enacted_by.length > 0}
-										{#each parseResult.record.enacted_by as law}
-											<a
-												href="https://www.legislation.gov.uk/{typeof law === 'object' ? law.name : law}"
-												target="_blank"
-												rel="noopener noreferrer"
-												class="text-blue-600 hover:text-blue-800 mr-2"
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Enacted By <span class="text-xs text-gray-400">(enacted_by)</span></span
+									>
+									<span class="col-span-2 text-sm text-gray-900">
+										{#if parseResult.record?.enacted_by && Array.isArray(parseResult.record.enacted_by) && parseResult.record.enacted_by.length > 0}
+											{#each parseResult.record.enacted_by as law}
+												<a
+													href="https://www.legislation.gov.uk/{typeof law === 'object'
+														? law.name
+														: law}"
+													target="_blank"
+													rel="noopener noreferrer"
+													class="text-blue-600 hover:text-blue-800 mr-2"
+												>
+													{typeof law === 'object' ? law.name : law}
+												</a>
+											{/each}
+										{:else if parseResult.record?.is_act}
+											<span class="italic text-gray-500"
+												>Primary legislation - not enacted by other laws</span
 											>
-												{typeof law === 'object' ? law.name : law}
-											</a>
-										{/each}
-									{:else if parseResult.record?.is_act}
-										<span class="italic text-gray-500">Primary legislation - not enacted by other laws</span>
-									{/if}
-								</span>
-							</div>
+										{/if}
+									</span>
+								</div>
 							{/if}
 
 							<!-- Amending section -->
 							{#if hasData(getField(parseResult.record, 'amending')) || Number(parseResult.record?.amending_count) > 0}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Amends <span class="text-xs text-gray-400">(amending)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">
-									{#if parseResult.record?.amending && Array.isArray(parseResult.record.amending) && parseResult.record.amending.length > 0}
-										{parseResult.record.amending.join(', ')}
-									{:else if Number(parseResult.record?.amending_count) > 0}
-										{parseResult.record.amending_count} {Number(parseResult.record.amending_count) === 1 ? 'law' : 'laws'}
-									{/if}
-								</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Amends <span class="text-xs text-gray-400">(amending)</span></span
+									>
+									<span class="col-span-2 text-sm text-gray-900">
+										{#if parseResult.record?.amending && Array.isArray(parseResult.record.amending) && parseResult.record.amending.length > 0}
+											{parseResult.record.amending.join(', ')}
+										{:else if Number(parseResult.record?.amending_count) > 0}
+											{parseResult.record.amending_count}
+											{Number(parseResult.record.amending_count) === 1 ? 'law' : 'laws'}
+										{/if}
+									</span>
+								</div>
 							{/if}
 
 							<!-- Amending Stats -->
 							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔺 Affects Count</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amending_stats_affects_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔺 Affects Count</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(
+											getField(parseResult.record, 'amending_stats_affects_count')
+										)}</span
+									>
+								</div>
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amending_stats_affected_laws_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔺 Affected Laws Count</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amending_stats_affected_laws_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔺 Affected Laws Count</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(
+											getField(parseResult.record, 'amending_stats_affected_laws_count')
+										)}</span
+									>
+								</div>
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔺 Affects Detail</span>
-								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔺 Affects Detail</span>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed')
+										)}</span
+									>
+								</div>
 							{/if}
 
 							<!-- Amended By section -->
 							{#if hasData(getField(parseResult.record, 'amended_by')) || Number(parseResult.record?.amended_by_count) > 0}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Amended By <span class="text-xs text-gray-400">(amended_by)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">
-									{#if parseResult.record?.amended_by && Array.isArray(parseResult.record.amended_by) && parseResult.record.amended_by.length > 0}
-										{parseResult.record.amended_by.join(', ')}
-									{:else if Number(parseResult.record?.amended_by_count) > 0}
-										{parseResult.record.amended_by_count} {Number(parseResult.record.amended_by_count) === 1 ? 'law' : 'laws'}
-									{/if}
-								</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Amended By <span class="text-xs text-gray-400">(amended_by)</span></span
+									>
+									<span class="col-span-2 text-sm text-gray-900">
+										{#if parseResult.record?.amended_by && Array.isArray(parseResult.record.amended_by) && parseResult.record.amended_by.length > 0}
+											{parseResult.record.amended_by.join(', ')}
+										{:else if Number(parseResult.record?.amended_by_count) > 0}
+											{parseResult.record.amended_by_count}
+											{Number(parseResult.record.amended_by_count) === 1 ? 'law' : 'laws'}
+										{/if}
+									</span>
+								</div>
 							{/if}
 
 							<!-- Amended By Stats -->
 							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔻 Affected By Count</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amended_by_stats_affected_by_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔻 Affected By Count</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(
+											getField(parseResult.record, 'amended_by_stats_affected_by_count')
+										)}</span
+									>
+								</div>
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_laws_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔻 Amending Laws Count</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'amended_by_stats_affected_by_laws_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔻 Amending Laws Count</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(
+											getField(parseResult.record, 'amended_by_stats_affected_by_laws_count')
+										)}</span
+									>
+								</div>
 							{/if}
 							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count_per_law_detailed'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔻 Amended By Detail</span>
-								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'amended_by_stats_affected_by_count_per_law_detailed'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔻 Amended By Detail</span>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(
+												parseResult.record,
+												'amended_by_stats_affected_by_count_per_law_detailed'
+											)
+										)}</span
+									>
+								</div>
 							{/if}
 
 							<!-- Rescinding section -->
 							{#if hasData(getField(parseResult.record, 'rescinding')) || Number(parseResult.record?.rescinding_count) > 0}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Rescinds <span class="text-xs text-gray-400">(rescinding)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">
-									{#if parseResult.record?.rescinding && Array.isArray(parseResult.record.rescinding) && parseResult.record.rescinding.length > 0}
-										{parseResult.record.rescinding.join(', ')}
-									{:else if Number(parseResult.record?.rescinding_count) > 0}
-										{parseResult.record.rescinding_count} {Number(parseResult.record.rescinding_count) === 1 ? 'law' : 'laws'}
-									{/if}
-								</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Rescinds <span class="text-xs text-gray-400">(rescinding)</span></span
+									>
+									<span class="col-span-2 text-sm text-gray-900">
+										{#if parseResult.record?.rescinding && Array.isArray(parseResult.record.rescinding) && parseResult.record.rescinding.length > 0}
+											{parseResult.record.rescinding.join(', ')}
+										{:else if Number(parseResult.record?.rescinding_count) > 0}
+											{parseResult.record.rescinding_count}
+											{Number(parseResult.record.rescinding_count) === 1 ? 'law' : 'laws'}
+										{/if}
+									</span>
+								</div>
 							{/if}
 
 							<!-- Rescinding Stats -->
 							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_laws_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔺 Rescinded Laws Count</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'rescinding_stats_rescinding_laws_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔺 Rescinded Laws Count</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(
+											getField(parseResult.record, 'rescinding_stats_rescinding_laws_count')
+										)}</span
+									>
+								</div>
 							{/if}
 							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_count_per_law_detailed'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔺 Rescinding Detail</span>
-								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'rescinding_stats_rescinding_count_per_law_detailed'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔺 Rescinding Detail</span>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(
+												parseResult.record,
+												'rescinding_stats_rescinding_count_per_law_detailed'
+											)
+										)}</span
+									>
+								</div>
 							{/if}
 
 							<!-- Rescinded By section -->
 							{#if hasData(getField(parseResult.record, 'rescinded_by')) || Number(parseResult.record?.rescinded_by_count) > 0}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Rescinded By <span class="text-xs text-gray-400">(rescinded_by)</span></span>
-								<span class="col-span-2 text-sm {parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0 ? 'text-red-600 font-medium' : 'text-gray-900'}">
-									{#if parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0}
-										{parseResult.record.rescinded_by.join(', ')}
-									{:else if Number(parseResult.record?.rescinded_by_count) > 0}
-										{parseResult.record.rescinded_by_count} {Number(parseResult.record.rescinded_by_count) === 1 ? 'law' : 'laws'}
-									{/if}
-								</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Rescinded By <span class="text-xs text-gray-400">(rescinded_by)</span></span
+									>
+									<span
+										class="col-span-2 text-sm {parseResult.record?.rescinded_by &&
+										Array.isArray(parseResult.record.rescinded_by) &&
+										parseResult.record.rescinded_by.length > 0
+											? 'text-red-600 font-medium'
+											: 'text-gray-900'}"
+									>
+										{#if parseResult.record?.rescinded_by && Array.isArray(parseResult.record.rescinded_by) && parseResult.record.rescinded_by.length > 0}
+											{parseResult.record.rescinded_by.join(', ')}
+										{:else if Number(parseResult.record?.rescinded_by_count) > 0}
+											{parseResult.record.rescinded_by_count}
+											{Number(parseResult.record.rescinded_by_count) === 1 ? 'law' : 'laws'}
+										{/if}
+									</span>
+								</div>
 							{/if}
 
 							<!-- Rescinded By Stats -->
 							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔻 Rescinding Laws Count</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔻 Rescinding Laws Count</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(
+											getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count')
+										)}</span
+									>
+								</div>
 							{/if}
 							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">🔻 Rescinded By Detail</span>
-								<span class="col-span-2 text-sm text-red-600 whitespace-pre-line max-h-32 overflow-y-auto">{formatValue(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">🔻 Rescinded By Detail</span>
+									<span
+										class="col-span-2 text-sm text-red-600 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(
+												parseResult.record,
+												'rescinded_by_stats_rescinded_by_count_per_law_detailed'
+											)
+										)}</span
+									>
+								</div>
 							{/if}
 
 							<!-- Self Amendments (shared stat) -->
 							{#if hasData(getField(parseResult.record, 'stats_self_affects_count'))}
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Self Amendments</span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'stats_self_affects_count'))}</span>
-							</div>
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500">Self Amendments</span>
+									<span class="col-span-2 text-sm text-gray-900"
+										>{formatValue(getField(parseResult.record, 'stats_self_affects_count'))}</span
+									>
+								</div>
 							{/if}
 						</div>
 					</div>
 
-					<!-- SECTION 7: ROLES (DRRP Model) -->
+					<!-- SECTION 7: ROLES (DRRP Model) - Taxa Classification -->
 					<div class="mb-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
 						<div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
 							<h4 class="text-sm font-medium text-gray-700">Roles (DRRP Model)</h4>
 						</div>
 						<div class="divide-y divide-gray-100">
+							<!-- Duty Type -->
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Duty Holders <span class="text-xs text-gray-400">(duty_holder)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'duty_holder'))}</span>
+								<span class="text-sm text-gray-500"
+									>Duty Type <span class="text-xs text-gray-400">(duty_type)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'duty_type'))}</span
+								>
+							</div>
+							{#if hasData(getField(parseResult.record, 'duty_type_article'))}
+								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
+									<span class="text-sm text-gray-500 pl-4"
+										>Duty Type Article <span class="text-xs text-gray-400">(duty_type_article)</span
+										></span
+									>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(getField(parseResult.record, 'duty_type_article'))}</span
+									>
+								</div>
+							{/if}
+
+							<!-- Duty Holders -->
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500"
+									>Duty Holders <span class="text-xs text-gray-400">(duty_holder)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'duty_holder'))}</span
+								>
+							</div>
+							{#if hasData(getField(parseResult.record, 'duty_holder_article_clause'))}
+								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
+									<span class="text-sm text-gray-500 pl-4"
+										>Duty Holder Clauses <span class="text-xs text-gray-400"
+											>(duty_holder_article_clause)</span
+										></span
+									>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(getField(parseResult.record, 'duty_holder_article_clause'))}</span
+									>
+								</div>
+							{/if}
+
+							<!-- Rights Holders -->
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500"
+									>Rights Holders <span class="text-xs text-gray-400">(rights_holder)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'rights_holder'))}</span
+								>
+							</div>
+							{#if hasData(getField(parseResult.record, 'rights_holder_article_clause'))}
+								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
+									<span class="text-sm text-gray-500 pl-4"
+										>Rights Holder Clauses <span class="text-xs text-gray-400"
+											>(rights_holder_article_clause)</span
+										></span
+									>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(parseResult.record, 'rights_holder_article_clause')
+										)}</span
+									>
+								</div>
+							{/if}
+
+							<!-- Responsibility Holders -->
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500"
+									>Responsibility Holders <span class="text-xs text-gray-400"
+										>(responsibility_holder)</span
+									></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'responsibility_holder'))}</span
+								>
+							</div>
+							{#if hasData(getField(parseResult.record, 'responsibility_holder_article_clause'))}
+								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
+									<span class="text-sm text-gray-500 pl-4"
+										>Responsibility Holder Clauses <span class="text-xs text-gray-400"
+											>(responsibility_holder_article_clause)</span
+										></span
+									>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(parseResult.record, 'responsibility_holder_article_clause')
+										)}</span
+									>
+								</div>
+							{/if}
+
+							<!-- Power Holders -->
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500"
+									>Power Holders <span class="text-xs text-gray-400">(power_holder)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'power_holder'))}</span
+								>
+							</div>
+							{#if hasData(getField(parseResult.record, 'power_holder_article_clause'))}
+								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
+									<span class="text-sm text-gray-500 pl-4"
+										>Power Holder Clauses <span class="text-xs text-gray-400"
+											>(power_holder_article_clause)</span
+										></span
+									>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(
+											getField(parseResult.record, 'power_holder_article_clause')
+										)}</span
+									>
+								</div>
+							{/if}
+
+							<!-- Roles (Actors) -->
+							<div class="grid grid-cols-3 px-4 py-2">
+								<span class="text-sm text-gray-500"
+									>Roles <span class="text-xs text-gray-400">(role)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'role'))}</span
+								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Power Holders <span class="text-xs text-gray-400">(power_holder)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'power_holder'))}</span>
+								<span class="text-sm text-gray-500"
+									>Government Roles <span class="text-xs text-gray-400">(role_gvt)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'role_gvt'))}</span
+								>
 							</div>
+
+							<!-- POPIMAR -->
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Rights Holders <span class="text-xs text-gray-400">(rights_holder)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'rights_holder'))}</span>
+								<span class="text-sm text-gray-500"
+									>POPIMAR <span class="text-xs text-gray-400">(popimar)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'popimar'))}</span
+								>
 							</div>
+							{#if hasData(getField(parseResult.record, 'popimar_article_clause'))}
+								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
+									<span class="text-sm text-gray-500 pl-4"
+										>POPIMAR Clauses <span class="text-xs text-gray-400"
+											>(popimar_article_clause)</span
+										></span
+									>
+									<span
+										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
+										>{formatValue(getField(parseResult.record, 'popimar_article_clause'))}</span
+									>
+								</div>
+							{/if}
+
+							<!-- Purpose -->
 							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Responsibility Holders <span class="text-xs text-gray-400">(responsibility_holder)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'responsibility_holder'))}</span>
-							</div>
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Roles <span class="text-xs text-gray-400">(role)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'role'))}</span>
-							</div>
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Government Roles <span class="text-xs text-gray-400">(role_gvt)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'role_gvt'))}</span>
-							</div>
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">POPIMAR <span class="text-xs text-gray-400">(popimar)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'popimar'))}</span>
-							</div>
-							<div class="grid grid-cols-3 px-4 py-2">
-								<span class="text-sm text-gray-500">Purpose <span class="text-xs text-gray-400">(purpose)</span></span>
-								<span class="col-span-2 text-sm text-gray-900">{formatValue(getField(parseResult.record, 'purpose'))}</span>
+								<span class="text-sm text-gray-500"
+									>Purpose <span class="text-xs text-gray-400">(purpose)</span></span
+								>
+								<span class="col-span-2 text-sm text-gray-900"
+									>{formatValue(getField(parseResult.record, 'purpose'))}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -724,8 +1089,9 @@
 										A record with name '{parseResult.name}' already exists in uk_lrt.
 										<br />
 										<span class="text-xs text-yellow-600">
-											Family: {parseResult.duplicate.family || 'unset'} |
-											Updated: {formatDate(parseResult.duplicate.updated_at)}
+											Family: {parseResult.duplicate.family || 'unset'} | Updated: {formatDate(
+												parseResult.duplicate.updated_at
+											)}
 										</span>
 									</p>
 									<p class="text-sm text-yellow-700 mt-1">
@@ -739,9 +1105,7 @@
 			</div>
 
 			<!-- Footer -->
-			<div
-				class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center"
-			>
+			<div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
 				<div class="text-sm text-gray-500">
 					Record {currentIndex + 1} of {records.length}
 				</div>
