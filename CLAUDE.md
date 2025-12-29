@@ -39,7 +39,7 @@ mix ash_postgres.create           # Create database
 mix ash_postgres.migrate          # Run migrations
 mix ash_postgres.generate_migrations --name <name>  # Generate migration
 mix run priv/repo/seeds.exs       # Seed database
-mix phx.server                    # Start Phoenix server (http://localhost:4000)
+mix phx.server                    # Start Phoenix server (http://localhost:4003)
 mix test                          # Run tests
 mix credo                         # Static analysis
 mix dialyzer                      # Type checking
@@ -53,7 +53,7 @@ mix ash.reset                     # Reset: drop DB and re-setup
 **Frontend** (from `frontend/`):
 ```bash
 npm install                       # Install dependencies
-npm run dev                       # Start dev server (http://localhost:5173)
+npm run dev                       # Start dev server (http://localhost:5175)
 npm run build                     # Production build
 npm run preview                   # Preview production build
 npm test                          # Run tests (Vitest)
@@ -168,9 +168,9 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev m
 ```
 
 ### Health Check Endpoints
-- Backend: http://localhost:4000/health
-- Backend detailed: http://localhost:4000/health/detailed
-- ElectricSQL: http://localhost:3000 (HTTP Shape API)
+- Backend: http://localhost:4003/health
+- Backend detailed: http://localhost:4003/health/detailed
+- ElectricSQL: http://localhost:3002 (HTTP Shape API)
 
 ## Infrastructure Integration
 
@@ -191,7 +191,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev m
 │                      sertantai-legal                             │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
 │  │ Phoenix Backend │  │   ElectricSQL   │  │ Svelte Frontend │  │
-│  │    (port 4000)  │  │   (port 3000)   │  │  (static build) │  │
+│  │    (port 4003)  │  │   (port 3002)   │  │  (static build) │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -215,7 +215,7 @@ DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres/sertantai_legal
 # Application
 SECRET_KEY_BASE=${SERTANTAI_LEGAL_SECRET_KEY_BASE}
 PHX_HOST=legal.sertantai.com
-PORT=4000
+PORT=4003
 
 # Auth integration
 SHARED_TOKEN_SECRET=${SHARED_TOKEN_SECRET}  # Validates JWTs from sertantai-auth
@@ -228,7 +228,7 @@ ELECTRIC_SECRET=${SERTANTAI_LEGAL_ELECTRIC_SECRET}
 ```bash
 DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 SECRET_KEY_BASE=dev_secret_key_base_at_least_64_chars_long_for_development
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5175
 SHARED_TOKEN_SECRET=dev_shared_token_secret_for_local_testing
 ```
 
@@ -607,7 +607,7 @@ sertantai-legal:
   networks:
     - infra_network
   healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+    test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
     interval: 30s
     timeout: 10s
     retries: 3

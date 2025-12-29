@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 
 	const navItems = [
+		{ href: '/admin/lrt', label: 'LRT Data' },
 		{ href: '/admin/scrape', label: 'New Scrape' },
 		{ href: '/admin/scrape/sessions', label: 'Sessions' }
 	];

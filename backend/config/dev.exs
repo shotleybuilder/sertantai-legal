@@ -19,7 +19,8 @@ config :sertantai_legal, SertantaiLegal.Repo,
 # to bundle .js and .css sources.
 config :sertantai_legal, SertantaiLegalWeb.Endpoint,
   # Binding to 0.0.0.0 to allow Docker access
-  http: [ip: {0, 0, 0, 0}, port: 4000],
+  # Port 4003 to avoid conflicts with other sertantai services
+  http: [ip: {0, 0, 0, 0}, port: 4003],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

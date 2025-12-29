@@ -45,5 +45,6 @@ defmodule SertantaiLegalWeb.Router do
     get "/uk-lrt/:id", UkLrtController, :show
     patch "/uk-lrt/:id", UkLrtController, :update
     delete "/uk-lrt/:id", UkLrtController, :delete
+    post "/uk-lrt/:id/rescrape", UkLrtController, :rescrape
   end
 end

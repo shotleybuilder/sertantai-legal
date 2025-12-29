@@ -269,6 +269,156 @@ defmodule SertantaiLegalWeb.UkLrtController do
     |> json(%{error: "Missing required parameter: names (array of law names)"})
   end
 
+@doc """
+  POST /api/uk-lrt/:id/rescrape
+
+  Re-scrape and re-parse a single UK LRT record from legislation.gov.uk.
+  Updates the record with fresh data from all parsing stages.
+  """
+  def rescrape(conn, %{"id" => id}) do
+    alias SertantaiLegal.Scraper.StagedParser
+
+    case UkLrt.by_id(id) do
+      {:ok, record} ->
+        # Build the input record for StagedParser
+        input = %{
+          type_code: record.type_code,
+          Year: record.year,
+          Number: record.number,
+          Title_EN: record.title_en,
+          name: record.name
+        }
+
+# StagedParser.parse always returns {:ok, result}
+        {:ok, result} = StagedParser.parse(input)
+
+        # Extract parsed data from stages
+        parsed_data = build_update_attrs(result)
+
+        # Update the record
+        case record
+             |> Ash.Changeset.for_update(:update, parsed_data)
+             |> Ash.update() do
+          {:ok, updated} ->
+            json(conn, %{
+              message: "Rescrape completed successfully",
+              record: record_to_json(updated),
+              stages: format_stages(result.stages),
+              errors: result.errors,
+              has_errors: result.has_errors
+            })
+
+          {:error, reason} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Update failed: #{format_error(reason)}"})
+        end
+
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Record not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  # Build update attributes from parsed result
+  defp build_update_attrs(result) do
+    stages = result.stages
+
+    base_attrs = %{}
+
+    # Extent stage
+    base_attrs =
+      if stages[:extent][:status] == :ok and stages[:extent][:data] do
+        Map.merge(base_attrs, %{
+          geo_extent: stages[:extent][:data][:geo_extent],
+          geo_region: stages[:extent][:data][:geo_region],
+          geo_detail: stages[:extent][:data][:geo_detail]
+        })
+      else
+        base_attrs
+      end
+
+    # Enacted_by stage
+    base_attrs =
+      if stages[:enacted_by][:status] == :ok and stages[:enacted_by][:data] do
+        Map.merge(base_attrs, %{
+          enacted_by: stages[:enacted_by][:data][:enacted_by]
+        })
+      else
+        base_attrs
+      end
+
+    # Amendments stage
+    base_attrs =
+      if stages[:amendments][:status] == :ok and stages[:amendments][:data] do
+        Map.merge(base_attrs, %{
+          amending: stages[:amendments][:data][:amending],
+          amended_by: stages[:amendments][:data][:amended_by]
+        })
+      else
+        base_attrs
+      end
+
+    # Repeal/revoke stage
+    base_attrs =
+      if stages[:repeal_revoke][:status] == :ok and stages[:repeal_revoke][:data] do
+        Map.merge(base_attrs, %{
+          live: stages[:repeal_revoke][:data][:live],
+          live_description: stages[:repeal_revoke][:data][:live_description],
+          rescinding: stages[:repeal_revoke][:data][:rescinding],
+          rescinded_by: stages[:repeal_revoke][:data][:rescinded_by]
+        })
+      else
+        base_attrs
+      end
+
+    # Taxa stage
+    base_attrs =
+      if stages[:taxa][:status] == :ok and stages[:taxa][:data] do
+        Map.merge(base_attrs, %{
+          role: stages[:taxa][:data][:role],
+          role_gvt: stages[:taxa][:data][:role_gvt],
+          duty_type: stages[:taxa][:data][:duty_type],
+          duty_holder: stages[:taxa][:data][:duty_holder],
+          duty_holder_article_clause: stages[:taxa][:data][:duty_holder_article_clause],
+          rights_holder: stages[:taxa][:data][:rights_holder],
+          rights_holder_article_clause: stages[:taxa][:data][:rights_holder_article_clause],
+          responsibility_holder: stages[:taxa][:data][:responsibility_holder],
+          responsibility_holder_article_clause: stages[:taxa][:data][:responsibility_holder_article_clause],
+          power_holder: stages[:taxa][:data][:power_holder],
+          power_holder_article_clause: stages[:taxa][:data][:power_holder_article_clause],
+          popimar: stages[:taxa][:data][:popimar],
+          popimar_article_clause: stages[:taxa][:data][:popimar_article_clause]
+        })
+      else
+        base_attrs
+      end
+
+    # Filter out nil values
+    base_attrs
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
+  end
+
+  # Format stages for JSON response
+  defp format_stages(stages) do
+    stages
+    |> Enum.map(fn {stage, result} ->
+      {stage, %{
+        status: result.status,
+        error: result[:error]
+      }}
+    end)
+    |> Map.new()
+  end
+
   # Private helpers
 
   defp record_to_json(record) do

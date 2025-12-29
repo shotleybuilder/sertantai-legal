@@ -3,6 +3,10 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+/* Include table-kit packages for Tailwind scanning */
+@source "../node_modules/@shotleybuilder/svelte-table-kit";
+@source "../node_modules/svelte-table-views-tanstack";
+
 /* Custom base styles */
 @layer base {
 	html {
