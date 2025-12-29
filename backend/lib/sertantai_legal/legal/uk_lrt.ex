@@ -541,6 +541,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description "Record creation timestamp"
     end
 
+    attribute :updated_at, :utc_datetime do
+      allow_nil? true
+      description "Record update timestamp"
+    end
+
     attribute :md_date, :date do
       allow_nil? true
       description "Primary date from legislation"
