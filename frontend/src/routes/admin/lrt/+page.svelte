@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import {
@@ -13,10 +13,16 @@
 	} from 'svelte-table-views-tanstack';
 	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
 
+	// ElectricSQL sync
+	import { syncUkLrt, stopUkLrtSync, syncStatus, updateUkLrtWhere, buildWhereFromFilters, retryUkLrtSync } from '$lib/electric/sync-uk-lrt';
+	import { getUkLrtCollection } from '$lib/db/index.client';
+	import type { TableState } from '@shotleybuilder/svelte-table-kit';
+
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
 	// Types
 	interface UkLrtRecord {
+		[key: string]: unknown; // Index signature for TableKit compatibility
 		id: string;
 		name: string;
 		title_en: string;
@@ -105,6 +111,11 @@
 		has_more: boolean;
 	}
 
+	// Helper to type cast row data from TableKit cell slot
+	function asRecord(row: unknown): UkLrtRecord {
+		return row as UkLrtRecord;
+	}
+
 	// Family options grouped by category
 	const familyOptions = {
 		health_safety: [
@@ -170,7 +181,9 @@
 	let isLoading = true;
 	let error: string | null = null;
 	let totalCount = 0;
-	let hasMore = false;
+
+	// Electric sync state
+	let collectionSubscription: { unsubscribe: () => void } | null = null;
 
 	// Editing state
 	let editingCell: { id: string; field: string } | null = null;
@@ -385,8 +398,67 @@
 		console.log('[LRT Admin] View saved:', event.detail.name);
 	}
 
-	// Fetch data
-	async function fetchData(limit = 100, offset = 0) {
+	// Track last filter state to avoid redundant sync updates
+	let lastWhereClause = '';
+
+	/**
+	 * Handle table state changes - update Electric sync when filters change
+	 */
+	function handleTableStateChange(state: TableState) {
+		// Convert TableKit filters to Electric WHERE clause
+		const filters = state.columnFilters.map(f => ({
+			field: f.field,
+			operator: f.operator,
+			value: f.value
+		}));
+
+		const newWhereClause = buildWhereFromFilters(filters);
+
+		// Only update if WHERE clause actually changed
+		if (newWhereClause !== lastWhereClause) {
+			lastWhereClause = newWhereClause;
+			console.log('[LRT Admin] Filter changed, updating Electric sync:', newWhereClause);
+			updateUkLrtWhere(newWhereClause);
+		}
+	}
+
+	// Electric sync initialization
+	/**
+	 * Initialize Electric sync and subscribe to collection changes
+	 */
+	async function initElectricSync() {
+		try {
+			isLoading = true;
+			error = null;
+
+			// Start Electric sync (default: last 3 years)
+			await syncUkLrt();
+
+			// Get collection and subscribe to changes
+			const collection = await getUkLrtCollection();
+
+			// Initial data load from collection
+			data = collection.toArray as UkLrtRecord[];
+			totalCount = data.length;
+
+			// Subscribe to collection changes for reactivity
+			collectionSubscription = collection.subscribeChanges(() => {
+				data = collection.toArray as UkLrtRecord[];
+				totalCount = data.length;
+			});
+
+			isLoading = false;
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to sync data';
+			isLoading = false;
+		}
+	}
+
+	/**
+	 * Legacy REST API fetch - kept for fallback/comparison
+	 * @deprecated Use initElectricSync instead
+	 */
+	async function fetchDataREST(limit = 100, offset = 0) {
 		try {
 			isLoading = true;
 			const response = await fetch(`${API_URL}/api/uk-lrt?limit=${limit}&offset=${offset}`);
@@ -394,7 +466,6 @@
 			const json: ApiResponse = await response.json();
 			data = json.records;
 			totalCount = json.count;
-			hasMore = json.has_more;
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Unknown error';
@@ -522,6 +593,40 @@
 		return { prefix: '', name: family };
 	}
 
+	// Select options for filtering
+	const typeCodeOptions = [
+		{ value: 'ukpga', label: 'UK Public General Act' },
+		{ value: 'uksi', label: 'UK Statutory Instrument' },
+		{ value: 'ukla', label: 'UK Local Act' },
+		{ value: 'asp', label: 'Act of Scottish Parliament' },
+		{ value: 'ssi', label: 'Scottish Statutory Instrument' },
+		{ value: 'anaw', label: 'Act of National Assembly for Wales' },
+		{ value: 'wsi', label: 'Wales Statutory Instrument' },
+		{ value: 'nia', label: 'Northern Ireland Act' },
+		{ value: 'nisr', label: 'Northern Ireland Statutory Rule' },
+		{ value: 'ukci', label: 'UK Church Instrument' },
+		{ value: 'eur', label: 'EU Regulation' },
+		{ value: 'eudr', label: 'EU Directive' },
+		{ value: 'eudn', label: 'EU Decision' }
+	];
+
+	const liveStatusOptions = [
+		{ value: 'Live', label: 'Live' },
+		{ value: 'Revoked', label: 'Revoked' },
+		{ value: 'Repealed', label: 'Repealed' },
+		{ value: 'Expired', label: 'Expired' }
+	];
+
+	const geoExtentOptions = [
+		{ value: 'E+W+S+NI', label: 'E+W+S+NI (UK-wide)' },
+		{ value: 'E+W+S', label: 'E+W+S (GB)' },
+		{ value: 'E+W', label: 'E+W (England & Wales)' },
+		{ value: 'E', label: 'E (England)' },
+		{ value: 'W', label: 'W (Wales)' },
+		{ value: 'S', label: 'S (Scotland)' },
+		{ value: 'NI', label: 'NI (Northern Ireland)' }
+	];
+
 	// Column definitions
 	const columns: ColumnDef<UkLrtRecord>[] = [
 		// Actions column (rescrape)
@@ -541,7 +646,7 @@
 			header: 'Name',
 			cell: (info) => info.getValue(),
 			size: 140,
-			meta: { group: 'Credentials' }
+			meta: { group: 'Credentials', dataType: 'text' }
 		},
 		{
 			id: 'title_en',
@@ -549,7 +654,7 @@
 			header: 'Title',
 			cell: (info) => info.getValue(),
 			size: 300,
-			meta: { group: 'Credentials' }
+			meta: { group: 'Credentials', dataType: 'text' }
 		},
 		{
 			id: 'year',
@@ -557,7 +662,7 @@
 			header: 'Year',
 			cell: (info) => info.getValue(),
 			size: 70,
-			meta: { group: 'Credentials' }
+			meta: { group: 'Credentials', dataType: 'number' }
 		},
 		{
 			id: 'type_code',
@@ -566,7 +671,7 @@
 			cell: (info) => String(info.getValue() || '').toUpperCase(),
 			size: 80,
 			enableGrouping: true,
-			meta: { group: 'Credentials' }
+			meta: { group: 'Credentials', dataType: 'select', selectOptions: typeCodeOptions }
 		},
 		{
 			id: 'number',
@@ -574,7 +679,7 @@
 			header: 'Number',
 			cell: (info) => info.getValue(),
 			size: 80,
-			meta: { group: 'Credentials' }
+			meta: { group: 'Credentials', dataType: 'text' }
 		},
 		{
 			id: 'type_class',
@@ -583,7 +688,7 @@
 			cell: (info) => info.getValue(),
 			size: 120,
 			enableGrouping: true,
-			meta: { group: 'Credentials' }
+			meta: { group: 'Credentials', dataType: 'text' }
 		},
 		// Editable fields
 		{
@@ -593,7 +698,7 @@
 			cell: (info) => info.getValue(),
 			size: 200,
 			enableGrouping: true,
-			meta: { group: 'Description', editable: true }
+			meta: { group: 'Description', editable: true, dataType: 'text' }
 		},
 		{
 			id: 'family_ii',
@@ -602,7 +707,7 @@
 			cell: (info) => info.getValue(),
 			size: 200,
 			enableGrouping: true,
-			meta: { group: 'Description', editable: true }
+			meta: { group: 'Description', editable: true, dataType: 'text' }
 		},
 		{
 			id: 'function',
@@ -613,7 +718,7 @@
 				return val?.join(', ') || '-';
 			},
 			size: 150,
-			meta: { group: 'Description', editable: true }
+			meta: { group: 'Description', editable: true, dataType: 'text' }
 		},
 		// Status
 		{
@@ -623,7 +728,7 @@
 			cell: (info) => info.getValue(),
 			size: 100,
 			enableGrouping: true,
-			meta: { group: 'Status' }
+			meta: { group: 'Status', dataType: 'select', selectOptions: liveStatusOptions }
 		},
 		{
 			id: 'si_code',
@@ -631,7 +736,7 @@
 			header: 'SI Code',
 			cell: (info) => info.getValue(),
 			size: 180,
-			meta: { group: 'Description' }
+			meta: { group: 'Description', dataType: 'text' }
 		},
 		// Geographic
 		{
@@ -641,7 +746,7 @@
 			cell: (info) => info.getValue(),
 			size: 120,
 			enableGrouping: true,
-			meta: { group: 'Geographic' }
+			meta: { group: 'Geographic', dataType: 'select', selectOptions: geoExtentOptions }
 		},
 		{
 			id: 'geo_region',
@@ -650,7 +755,7 @@
 			cell: (info) => info.getValue(),
 			size: 120,
 			enableGrouping: true,
-			meta: { group: 'Geographic' }
+			meta: { group: 'Geographic', dataType: 'text' }
 		},
 		{
 			id: 'geo_detail',
@@ -658,7 +763,7 @@
 			header: 'Geo Detail',
 			cell: (info) => info.getValue(),
 			size: 150,
-			meta: { group: 'Geographic' }
+			meta: { group: 'Geographic', dataType: 'text' }
 		},
 		{
 			id: 'md_restrict_extent',
@@ -666,7 +771,7 @@
 			header: 'Restrict Extent',
 			cell: (info) => info.getValue(),
 			size: 150,
-			meta: { group: 'Geographic' }
+			meta: { group: 'Geographic', dataType: 'text' }
 		},
 		// Metadata / Dates
 		{
@@ -675,7 +780,7 @@
 			header: 'Primary Date',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'date' }
 		},
 		{
 			id: 'md_made_date',
@@ -683,7 +788,7 @@
 			header: 'Made',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'date' }
 		},
 		{
 			id: 'md_enactment_date',
@@ -691,7 +796,7 @@
 			header: 'Enacted',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'date' }
 		},
 		{
 			id: 'md_coming_into_force_date',
@@ -699,7 +804,7 @@
 			header: 'In Force',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'date' }
 		},
 		{
 			id: 'md_dct_valid_date',
@@ -707,7 +812,7 @@
 			header: 'DCT Valid',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'date' }
 		},
 		{
 			id: 'md_restrict_start_date',
@@ -715,7 +820,7 @@
 			header: 'Restrict Start',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'date' }
 		},
 		{
 			id: 'md_total_paras',
@@ -723,7 +828,7 @@
 			header: 'Total Paras',
 			cell: (info) => info.getValue() ?? '-',
 			size: 80,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'number' }
 		},
 		{
 			id: 'md_body_paras',
@@ -731,7 +836,7 @@
 			header: 'Body Paras',
 			cell: (info) => info.getValue() ?? '-',
 			size: 80,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'number' }
 		},
 		{
 			id: 'md_schedule_paras',
@@ -739,7 +844,7 @@
 			header: 'Schedule Paras',
 			cell: (info) => info.getValue() ?? '-',
 			size: 90,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'number' }
 		},
 		{
 			id: 'md_attachment_paras',
@@ -747,7 +852,7 @@
 			header: 'Attach Paras',
 			cell: (info) => info.getValue() ?? '-',
 			size: 80,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'number' }
 		},
 		{
 			id: 'md_images',
@@ -755,7 +860,7 @@
 			header: 'Images',
 			cell: (info) => info.getValue() ?? '-',
 			size: 70,
-			meta: { group: 'Metadata' }
+			meta: { group: 'Metadata', dataType: 'number' }
 		},
 		// Role/Actor
 		{
@@ -768,7 +873,7 @@
 				return val.join(', ');
 			},
 			size: 150,
-			meta: { group: 'Role' }
+			meta: { group: 'Role', dataType: 'text' }
 		},
 		{
 			id: 'role_gvt',
@@ -780,7 +885,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 150,
-			meta: { group: 'Role' }
+			meta: { group: 'Role', dataType: 'text' }
 		},
 		{
 			id: 'article_role',
@@ -788,7 +893,7 @@
 			header: 'Article → Role',
 			cell: (info) => info.getValue() ?? '-',
 			size: 120,
-			meta: { group: 'Role' }
+			meta: { group: 'Role', dataType: 'text' }
 		},
 		{
 			id: 'role_article',
@@ -796,7 +901,7 @@
 			header: 'Role → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 120,
-			meta: { group: 'Role' }
+			meta: { group: 'Role', dataType: 'text' }
 		},
 		// Duty Type
 		{
@@ -805,7 +910,7 @@
 			header: 'Duty Type',
 			cell: (info) => info.getValue() ?? '-',
 			size: 120,
-			meta: { group: 'Duty Type' }
+			meta: { group: 'Duty Type', dataType: 'text' }
 		},
 		{
 			id: 'duty_type_article',
@@ -813,7 +918,7 @@
 			header: 'Duty Type → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 140,
-			meta: { group: 'Duty Type' }
+			meta: { group: 'Duty Type', dataType: 'text' }
 		},
 		{
 			id: 'article_duty_type',
@@ -821,7 +926,7 @@
 			header: 'Article → Duty Type',
 			cell: (info) => info.getValue() ?? '-',
 			size: 140,
-			meta: { group: 'Duty Type' }
+			meta: { group: 'Duty Type', dataType: 'text' }
 		},
 		// Duty Holder
 		{
@@ -834,7 +939,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Duty Holder' }
+			meta: { group: 'Duty Holder', dataType: 'text' }
 		},
 		{
 			id: 'duty_holder_article',
@@ -842,7 +947,7 @@
 			header: 'Duty Holder → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Duty Holder' }
+			meta: { group: 'Duty Holder', dataType: 'text' }
 		},
 		{
 			id: 'duty_holder_article_clause',
@@ -850,7 +955,7 @@
 			header: 'Duty Holder Article Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Duty Holder' }
+			meta: { group: 'Duty Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_duty_holder',
@@ -858,7 +963,7 @@
 			header: 'Article → Duty Holder',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Duty Holder' }
+			meta: { group: 'Duty Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_duty_holder_clause',
@@ -866,7 +971,7 @@
 			header: 'Article Duty Holder Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Duty Holder' }
+			meta: { group: 'Duty Holder', dataType: 'text' }
 		},
 		// Power Holder
 		{
@@ -879,7 +984,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Power Holder' }
+			meta: { group: 'Power Holder', dataType: 'text' }
 		},
 		{
 			id: 'power_holder_article',
@@ -887,7 +992,7 @@
 			header: 'Power Holder → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Power Holder' }
+			meta: { group: 'Power Holder', dataType: 'text' }
 		},
 		{
 			id: 'power_holder_article_clause',
@@ -895,7 +1000,7 @@
 			header: 'Power Holder Article Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Power Holder' }
+			meta: { group: 'Power Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_power_holder',
@@ -903,7 +1008,7 @@
 			header: 'Article → Power Holder',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Power Holder' }
+			meta: { group: 'Power Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_power_holder_clause',
@@ -911,7 +1016,7 @@
 			header: 'Article Power Holder Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Power Holder' }
+			meta: { group: 'Power Holder', dataType: 'text' }
 		},
 		// Rights Holder
 		{
@@ -924,7 +1029,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Rights Holder' }
+			meta: { group: 'Rights Holder', dataType: 'text' }
 		},
 		{
 			id: 'rights_holder_article',
@@ -932,7 +1037,7 @@
 			header: 'Rights Holder → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Rights Holder' }
+			meta: { group: 'Rights Holder', dataType: 'text' }
 		},
 		{
 			id: 'rights_holder_article_clause',
@@ -940,7 +1045,7 @@
 			header: 'Rights Holder Article Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Rights Holder' }
+			meta: { group: 'Rights Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_rights_holder',
@@ -948,7 +1053,7 @@
 			header: 'Article → Rights Holder',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Rights Holder' }
+			meta: { group: 'Rights Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_rights_holder_clause',
@@ -956,7 +1061,7 @@
 			header: 'Article Rights Holder Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Rights Holder' }
+			meta: { group: 'Rights Holder', dataType: 'text' }
 		},
 		// Responsibility Holder
 		{
@@ -969,7 +1074,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Responsibility Holder' }
+			meta: { group: 'Responsibility Holder', dataType: 'text' }
 		},
 		{
 			id: 'responsibility_holder_article',
@@ -977,7 +1082,7 @@
 			header: 'Resp. Holder → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Responsibility Holder' }
+			meta: { group: 'Responsibility Holder', dataType: 'text' }
 		},
 		{
 			id: 'responsibility_holder_article_clause',
@@ -985,7 +1090,7 @@
 			header: 'Resp. Holder Article Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Responsibility Holder' }
+			meta: { group: 'Responsibility Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_responsibility_holder',
@@ -993,7 +1098,7 @@
 			header: 'Article → Resp. Holder',
 			cell: (info) => info.getValue() ?? '-',
 			size: 150,
-			meta: { group: 'Responsibility Holder' }
+			meta: { group: 'Responsibility Holder', dataType: 'text' }
 		},
 		{
 			id: 'article_responsibility_holder_clause',
@@ -1001,7 +1106,7 @@
 			header: 'Article Resp. Holder Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 180,
-			meta: { group: 'Responsibility Holder' }
+			meta: { group: 'Responsibility Holder', dataType: 'text' }
 		},
 		// POPIMAR
 		{
@@ -1014,7 +1119,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 150,
-			meta: { group: 'POPIMAR' }
+			meta: { group: 'POPIMAR', dataType: 'text' }
 		},
 		{
 			id: 'popimar_article',
@@ -1022,7 +1127,7 @@
 			header: 'POPIMAR → Article',
 			cell: (info) => info.getValue() ?? '-',
 			size: 140,
-			meta: { group: 'POPIMAR' }
+			meta: { group: 'POPIMAR', dataType: 'text' }
 		},
 		{
 			id: 'popimar_article_clause',
@@ -1030,7 +1135,7 @@
 			header: 'POPIMAR Article Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 160,
-			meta: { group: 'POPIMAR' }
+			meta: { group: 'POPIMAR', dataType: 'text' }
 		},
 		{
 			id: 'article_popimar',
@@ -1038,7 +1143,7 @@
 			header: 'Article → POPIMAR',
 			cell: (info) => info.getValue() ?? '-',
 			size: 140,
-			meta: { group: 'POPIMAR' }
+			meta: { group: 'POPIMAR', dataType: 'text' }
 		},
 		{
 			id: 'article_popimar_clause',
@@ -1046,7 +1151,7 @@
 			header: 'Article POPIMAR Clause',
 			cell: (info) => info.getValue() ?? '-',
 			size: 160,
-			meta: { group: 'POPIMAR' }
+			meta: { group: 'POPIMAR', dataType: 'text' }
 		},
 		// Purpose
 		{
@@ -1059,7 +1164,7 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 150,
-			meta: { group: 'Purpose' }
+			meta: { group: 'Purpose', dataType: 'text' }
 		},
 		// Timestamps
 		{
@@ -1072,7 +1177,7 @@
 				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 			},
 			size: 100,
-			meta: { group: 'Timestamps' }
+			meta: { group: 'Timestamps', dataType: 'date' }
 		},
 		{
 			id: 'updated_at',
@@ -1084,7 +1189,7 @@
 				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 			},
 			size: 100,
-			meta: { group: 'Timestamps' }
+			meta: { group: 'Timestamps', dataType: 'date' }
 		},
 		// Links
 		{
@@ -1094,7 +1199,7 @@
 			cell: (info) => (info.getValue() ? 'View' : '-'),
 			size: 70,
 			enableSorting: false,
-			meta: { group: 'Links' }
+			meta: { group: 'Links', dataType: 'text' }
 		}
 	];
 
@@ -1111,8 +1216,16 @@
 	onMount(() => {
 		if (browser) {
 			seedDefaultViews();
-			fetchData();
+			initElectricSync();
 		}
+	});
+
+	onDestroy(() => {
+		// Clean up Electric sync subscription
+		if (collectionSubscription) {
+			collectionSubscription.unsubscribe();
+		}
+		stopUkLrtSync();
 	});
 </script>
 
@@ -1137,21 +1250,51 @@
 			<p class="text-red-600">{error}</p>
 			<button
 				class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-				on:click={() => fetchData()}
+				on:click={() => initElectricSync()}
 			>
 				Retry
 			</button>
 		</div>
 	{:else}
 		<!-- Stats -->
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+		<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Showing</div>
+				<div class="text-sm text-gray-600">Synced Records</div>
 				<div class="text-2xl font-bold text-gray-900">{data.length.toLocaleString()}</div>
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Has More</div>
-				<div class="text-2xl font-bold text-gray-900">{hasMore ? 'Yes' : 'No'}</div>
+				<div class="text-sm text-gray-600">Sync Status</div>
+				<div class="flex items-center gap-2">
+					{#if $syncStatus.syncing}
+						<div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+						<span class="text-lg font-medium text-yellow-600">Syncing...</span>
+					{:else if $syncStatus.offline}
+						<div class="w-2 h-2 bg-red-500 rounded-full"></div>
+						<span class="text-lg font-medium text-red-600">Offline</span>
+						{#if $syncStatus.reconnectAttempts > 0 && $syncStatus.reconnectAttempts < 5}
+							<span class="text-xs text-gray-500">({$syncStatus.reconnectAttempts}/5)</span>
+						{:else}
+							<button
+								class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
+								on:click={() => retryUkLrtSync()}
+							>
+								Retry
+							</button>
+						{/if}
+					{:else if $syncStatus.connected}
+						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+						<span class="text-lg font-medium text-green-600">Connected</span>
+					{:else}
+						<div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+						<span class="text-lg font-medium text-gray-600">Disconnected</span>
+					{/if}
+				</div>
+			</div>
+			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
+				<div class="text-sm text-gray-600">Filter</div>
+				<div class="text-sm font-mono text-gray-700 truncate" title={$syncStatus.whereClause || 'Last 3 years'}>
+					{$syncStatus.whereClause || 'year >= ' + (new Date().getFullYear() - 2)}
+				</div>
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
 				<div class="text-sm text-gray-600">Currently Editing</div>
@@ -1169,6 +1312,7 @@
 			storageKey="uk_lrt_admin_table"
 			persistState={!hasViewConfig}
 			align="left"
+			onStateChange={handleTableStateChange}
 			features={{
 				columnVisibility: true,
 				columnResizing: true,
@@ -1223,14 +1367,15 @@
 			</svelte:fragment>
 
 			<svelte:fragment slot="cell" let:cell let:column>
+				{@const row = asRecord(cell.row.original)}
 				{#if column === 'actions'}
 					<button
 						class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
 						title="Rescrape this record"
-						disabled={rescrapingIds.has(cell.row.original.id)}
-						on:click={() => rescrapeRecord(cell.row.original.id, cell.row.original.name)}
+						disabled={rescrapingIds.has(row.id)}
+						on:click={() => rescrapeRecord(row.id, row.name)}
 					>
-						{#if rescrapingIds.has(cell.row.original.id)}
+						{#if rescrapingIds.has(row.id)}
 							<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
 								<circle
 									class="opacity-25"
@@ -1258,7 +1403,7 @@
 						{/if}
 					</button>
 				{:else if column === 'family'}
-					{#if editingCell?.id === cell.row.original.id && editingCell?.field === 'family'}
+					{#if editingCell?.id === row.id && editingCell?.field === 'family'}
 						<select
 							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 							bind:value={editValue}
@@ -1283,10 +1428,10 @@
 							</optgroup>
 						</select>
 					{:else}
-						{@const display = getFamilyDisplay(cell.row.original.family)}
+						{@const display = getFamilyDisplay(row.family)}
 						<button
 							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-							on:dblclick={() => startEdit(cell.row.original.id, 'family', cell.row.original.family)}
+							on:dblclick={() => startEdit(row.id, 'family', row.family)}
 							title="Double-click to edit"
 						>
 							{#if display.prefix}
@@ -1304,7 +1449,7 @@
 						</button>
 					{/if}
 				{:else if column === 'family_ii'}
-					{#if editingCell?.id === cell.row.original.id && editingCell?.field === 'family_ii'}
+					{#if editingCell?.id === row.id && editingCell?.field === 'family_ii'}
 						<select
 							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 							bind:value={editValue}
@@ -1331,14 +1476,14 @@
 					{:else}
 						<button
 							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-							on:dblclick={() => startEdit(cell.row.original.id, 'family_ii', cell.row.original.family_ii)}
+							on:dblclick={() => startEdit(row.id, 'family_ii', row.family_ii)}
 							title="Double-click to edit"
 						>
-							{cell.row.original.family_ii || '-'}
+							{row.family_ii || '-'}
 						</button>
 					{/if}
 				{:else if column === 'function'}
-					{#if editingCell?.id === cell.row.original.id && editingCell?.field === 'function'}
+					{#if editingCell?.id === row.id && editingCell?.field === 'function'}
 						<div class="flex flex-wrap gap-1 p-1 border border-blue-400 rounded bg-white">
 							{#each functionOptions as fn}
 								<button
@@ -1369,12 +1514,12 @@
 					{:else}
 						<button
 							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-							on:dblclick={() => startEdit(cell.row.original.id, 'function', cell.row.original.function)}
+							on:dblclick={() => startEdit(row.id, 'function', row.function)}
 							title="Double-click to edit"
 						>
-							{#if cell.row.original.function?.length}
+							{#if row.function?.length}
 								<span class="flex flex-wrap gap-1">
-									{#each cell.row.original.function as fn}
+									{#each row.function as fn}
 										<span
 											class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
 												? 'bg-green-100 text-green-700'
