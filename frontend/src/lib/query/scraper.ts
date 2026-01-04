@@ -6,6 +6,7 @@ import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-qu
 import {
 	getSessions,
 	getSession,
+	getSessionDbStatus,
 	getGroupRecords,
 	createScrapeSession,
 	persistGroup,
@@ -23,7 +24,8 @@ import {
 	type ParseOneResult,
 	type ConfirmResult,
 	type ExistsResult,
-	type FamilyOptionsResult
+	type FamilyOptionsResult,
+	type DbStatusResult
 } from '$lib/api/scraper';
 
 // Query Keys
@@ -31,6 +33,7 @@ export const scraperKeys = {
 	all: ['scraper'] as const,
 	sessions: () => [...scraperKeys.all, 'sessions'] as const,
 	session: (id: string) => [...scraperKeys.all, 'session', id] as const,
+	sessionDbStatus: (id: string) => [...scraperKeys.all, 'session', id, 'db-status'] as const,
 	group: (sessionId: string, group: 1 | 2 | 3) =>
 		[...scraperKeys.all, 'group', sessionId, group] as const
 };
@@ -52,6 +55,17 @@ export function useSessionQuery(sessionId: string) {
 	return createQuery({
 		queryKey: scraperKeys.session(sessionId),
 		queryFn: () => getSession(sessionId),
+		enabled: !!sessionId
+	});
+}
+
+/**
+ * Query: Get session DB status (how many records already exist in uk_lrt)
+ */
+export function useSessionDbStatusQuery(sessionId: string) {
+	return createQuery({
+		queryKey: scraperKeys.sessionDbStatus(sessionId),
+		queryFn: () => getSessionDbStatus(sessionId),
 		enabled: !!sessionId
 	});
 }

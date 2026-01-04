@@ -6,6 +6,7 @@
 		useFamilyOptionsQuery
 	} from '$lib/query/scraper';
 	import type { ParseOneResult, ScrapeRecord } from '$lib/api/scraper';
+	import RecordDiff from './RecordDiff.svelte';
 
 	export let sessionId: string;
 	export let records: ScrapeRecord[] = [];
@@ -1078,12 +1079,12 @@
 						</div>
 					</div>
 
-					<!-- Duplicate Warning -->
+					<!-- Duplicate Warning with Diff -->
 					{#if parseResult.duplicate?.exists}
 						<div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
 							<div class="flex">
 								<svg
-									class="h-5 w-5 text-yellow-400 mr-2"
+									class="h-5 w-5 text-yellow-400 mr-2 flex-shrink-0"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -1095,23 +1096,32 @@
 										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
 									/>
 								</svg>
-								<div>
-									<h4 class="text-sm font-medium text-yellow-800">Duplicate Warning</h4>
+								<div class="flex-1">
+									<h4 class="text-sm font-medium text-yellow-800">Existing Record Found</h4>
 									<p class="text-sm text-yellow-700 mt-1">
 										A record with name '{parseResult.name}' already exists in uk_lrt.
-										<br />
 										<span class="text-xs text-yellow-600">
-											Family: {parseResult.duplicate.family || 'unset'} | Updated: {formatDate(
+											(Family: {parseResult.duplicate.family || 'unset'} | Updated: {formatDate(
 												parseResult.duplicate.updated_at
-											)}
+											)})
 										</span>
 									</p>
 									<p class="text-sm text-yellow-700 mt-1">
-										Confirming will <strong>update</strong> the existing record.
+										Confirming will <strong>update</strong> the existing record with the changes below.
 									</p>
 								</div>
 							</div>
 						</div>
+
+						<!-- Record Diff Viewer -->
+						{#if parseResult.duplicate.record && parseResult.record}
+							<div class="mb-6">
+								<RecordDiff
+									existing={parseResult.duplicate.record}
+									incoming={parseResult.record}
+								/>
+							</div>
+						{/if}
 					{/if}
 				{/if}
 			</div>

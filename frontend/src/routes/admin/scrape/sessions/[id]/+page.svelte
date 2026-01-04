@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import {
 		useSessionQuery,
+		useSessionDbStatusQuery,
 		useGroupQuery,
 		useParseGroupMutation,
 		useUpdateSelectionMutation
@@ -13,6 +14,7 @@
 
 	$: sessionId = $page.params.id ?? '';
 	$: sessionQuery = useSessionQuery(sessionId);
+	$: dbStatusQuery = useSessionDbStatusQuery(sessionId);
 
 	let activeGroup: 1 | 2 | 3 = 1;
 	$: groupQuery = useGroupQuery(sessionId, activeGroup);
@@ -252,7 +254,7 @@
 			</div>
 
 			<!-- Stats Grid -->
-			<div class="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+			<div class="mt-6 grid grid-cols-2 md:grid-cols-6 gap-4">
 				<div class="bg-gray-50 rounded-lg p-4">
 					<p class="text-sm text-gray-500">Total Fetched</p>
 					<p class="text-2xl font-semibold text-gray-900">{session.total_fetched}</p>
@@ -270,8 +272,23 @@
 					<p class="text-2xl font-semibold text-gray-700">{session.group3_count}</p>
 				</div>
 				<div class="bg-purple-50 rounded-lg p-4">
-					<p class="text-sm text-purple-600">Persisted</p>
-					<p class="text-2xl font-semibold text-purple-700">{session.persisted_count}</p>
+					<p class="text-sm text-purple-600">In DB</p>
+					{#if $dbStatusQuery.isLoading}
+						<p class="text-2xl font-semibold text-purple-700">...</p>
+					{:else if $dbStatusQuery.data}
+						<p class="text-2xl font-semibold text-purple-700">
+							{$dbStatusQuery.data.existing_in_db}
+							<span class="text-sm font-normal text-purple-500">
+								/ {$dbStatusQuery.data.total_records}
+							</span>
+						</p>
+					{:else}
+						<p class="text-2xl font-semibold text-purple-700">-</p>
+					{/if}
+				</div>
+				<div class="bg-amber-50 rounded-lg p-4">
+					<p class="text-sm text-amber-600">This Session</p>
+					<p class="text-2xl font-semibold text-amber-700">{session.persisted_count}</p>
 				</div>
 			</div>
 

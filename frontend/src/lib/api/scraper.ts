@@ -114,6 +114,31 @@ export async function getSession(sessionId: string): Promise<ScrapeSession> {
 }
 
 /**
+ * DB status response - counts of session records that exist in uk_lrt
+ */
+export interface DbStatusResult {
+	session_id: string;
+	total_records: number;
+	existing_in_db: number;
+	new_records: number;
+	existing_names: string[];
+}
+
+/**
+ * Get the count of session records that already exist in uk_lrt
+ */
+export async function getSessionDbStatus(sessionId: string): Promise<DbStatusResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/db-status`);
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to fetch DB status');
+	}
+
+	return response.json();
+}
+
+/**
  * Get records for a specific group
  */
 export async function getGroupRecords(sessionId: string, group: 1 | 2 | 3): Promise<GroupResponse> {
@@ -235,6 +260,7 @@ export interface ParseOneResult {
 		title_en?: string;
 		family?: string;
 		updated_at?: string;
+		record?: Record<string, unknown>;
 	} | null;
 }
 

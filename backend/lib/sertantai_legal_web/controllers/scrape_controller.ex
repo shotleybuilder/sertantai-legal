@@ -99,6 +99,67 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   @doc """
+  GET /api/sessions/:id/db-status
+
+  Get the count of session records that already exist in uk_lrt.
+  Returns counts for each group and total.
+  """
+  def db_status(conn, %{"id" => session_id}) do
+    alias SertantaiLegal.Legal.UkLrt
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      # Collect all record names from groups 1 and 2 (group 3 is excluded)
+      names =
+        [1, 2]
+        |> Enum.flat_map(fn group ->
+          case Storage.read_json(session_id, group) do
+            {:ok, records} when is_list(records) ->
+              Enum.map(records, fn r -> r[:name] || r["name"] end)
+
+            {:ok, records} when is_map(records) ->
+              Enum.map(records, fn {_k, r} -> r[:name] || r["name"] end)
+
+            _ ->
+              []
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+
+      # Query DB for existing records
+      existing =
+        if length(names) > 0 do
+          UkLrt
+          |> Ash.Query.filter(name in ^names)
+          |> Ash.Query.select([:name])
+          |> Ash.read!()
+          |> Enum.map(& &1.name)
+          |> MapSet.new()
+        else
+          MapSet.new()
+        end
+
+      json(conn, %{
+        session_id: session_id,
+        total_records: length(names),
+        existing_in_db: MapSet.size(existing),
+        new_records: length(names) - MapSet.size(existing),
+        existing_names: MapSet.to_list(existing)
+      })
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  @doc """
   GET /api/sessions/:id/group/:group
 
   Get records for a specific group.
@@ -636,6 +697,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   # Normalize Family key to lowercase for consistency
   defp normalize_family_key(record) do
     family = record[:Family] || record["Family"]
+
     if family do
       record
       |> Map.put(:family, family)
@@ -649,6 +711,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   # Normalize Tags key to lowercase for consistency
   defp normalize_tags_key(record) do
     tags = record[:Tags] || record["Tags"]
+
     if tags do
       record
       |> Map.put(:tags, tags)
@@ -664,6 +727,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     case record[:type_desc] || record["type_desc"] do
       nil ->
         type_code = record[:type_code] || record["type_code"]
+
         if type_code do
           enriched = TypeClass.set_type(%{type_code: type_code})
           type_desc = enriched[:Type]
@@ -671,6 +735,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
         else
           record
         end
+
       _ ->
         record
     end
@@ -681,6 +746,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     case record[:type_class] || record["type_class"] do
       nil ->
         title = record[:Title_EN] || record["Title_EN"]
+
         if title do
           enriched = TypeClass.set_type_class(%{Title_EN: title})
           type_class = enriched[:type_class]
@@ -688,6 +754,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
         else
           record
         end
+
       _ ->
         record
     end
@@ -734,6 +801,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   # Check if a record with this name already exists in uk_lrt
+  # Returns the full existing record for diff comparison
   defp check_duplicate(name) do
     alias SertantaiLegal.Legal.UkLrt
     require Ash.Query
@@ -745,12 +813,23 @@ defmodule SertantaiLegalWeb.ScrapeController do
         %{
           exists: true,
           id: existing.id,
-          updated_at: existing.updated_at
+          updated_at: existing.updated_at,
+          family: existing.family,
+          record: existing_record_to_map(existing)
         }
 
       _ ->
         %{exists: false}
     end
+  end
+
+  # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
+  defp existing_record_to_map(existing) do
+    existing
+    |> Map.from_struct()
+    |> Map.drop([:__meta__, :id, :inserted_at, :updated_at])
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Enum.into(%{})
   end
 
   # Format stages for JSON response
@@ -879,7 +958,15 @@ defmodule SertantaiLegalWeb.ScrapeController do
           existing =
             UkLrt
             |> Ash.Query.filter(name in ^enacting_parents)
-            |> Ash.Query.select([:id, :name, :title_en, :year, :type_code, :enacting, :is_enacting])
+            |> Ash.Query.select([
+              :id,
+              :name,
+              :title_en,
+              :year,
+              :type_code,
+              :enacting,
+              :is_enacting
+            ])
             |> Ash.read!()
             |> Enum.map(fn r ->
               %{
@@ -1094,7 +1181,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
                    |> Ash.Query.filter(name == ^parent_name)
                    |> Ash.read_one() do
                 {:ok, nil} ->
-                  %{name: parent_name, status: "error", message: "Parent law not found in database"}
+                  %{
+                    name: parent_name,
+                    status: "error",
+                    message: "Parent law not found in database"
+                  }
 
                 {:ok, parent_law} ->
                   # Merge existing enacting with new sources
@@ -1138,7 +1229,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   end
 
                 {:error, reason} ->
-                  %{name: parent_name, status: "error", message: "Query failed: #{inspect(reason)}"}
+                  %{
+                    name: parent_name,
+                    status: "error",
+                    message: "Query failed: #{inspect(reason)}"
+                  }
               end
             end
           end)
