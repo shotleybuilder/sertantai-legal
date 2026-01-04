@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   alias SertantaiLegal.Scraper.LegislationGovUk.Helpers
   alias SertantaiLegal.Scraper.LegislationGovUk.Parser
   alias SertantaiLegal.Scraper.Filters
+  alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Scraper.Metadata
   alias SertantaiLegal.Scraper.Tags
   alias SertantaiLegal.Scraper.TypeClass
@@ -57,8 +58,11 @@ defmodule SertantaiLegal.Scraper.NewLaws do
           {:ok, records} ->
             records =
               Enum.map(records, fn record ->
-                name = "#{record[:type_code]}/#{record[:Year]}/#{record[:Number]}"
-                url = "https://www.legislation.gov.uk/#{name}"
+                type_code = record[:type_code]
+                year = record[:Year]
+                number = record[:Number]
+                name = IdField.build_uk_id(type_code, year, number)
+                url = "https://www.legislation.gov.uk/#{type_code}/#{year}/#{number}"
 
                 record
                 |> Map.put(:publication_date, date)
@@ -99,7 +103,9 @@ defmodule SertantaiLegal.Scraper.NewLaws do
   def fetch_range(year, month, from_day, to_day, type_code \\ nil, opts \\ []) do
     fetch_metadata = Keyword.get(opts, :fetch_metadata, true)
 
-    IO.puts("\nFetching laws for #{year}-#{Helpers.format_month(month)} days #{from_day}-#{to_day}")
+    IO.puts(
+      "\nFetching laws for #{year}-#{Helpers.format_month(month)} days #{from_day}-#{to_day}"
+    )
 
     records =
       Enum.reduce(from_day..to_day, [], fn day, acc ->
@@ -347,7 +353,9 @@ defmodule SertantaiLegal.Scraper.NewLaws do
     IO.puts("\n=== INCLUDED LAWS (#{Enum.count(inc)}) ===")
 
     Enum.each(inc, fn law ->
-      IO.puts("  [#{law[:Family]}] #{law[:Title_EN]} (#{law[:type_code]}/#{law[:Year]}/#{law[:Number]})")
+      IO.puts(
+        "  [#{law[:Family]}] #{law[:Title_EN]} (#{law[:type_code]}/#{law[:Year]}/#{law[:Number]})"
+      )
     end)
 
     IO.puts("\n=== EXCLUDED - NO TERM MATCH (#{Enum.count(exc)}) ===")

@@ -34,7 +34,7 @@ defmodule SertantaiLegal.MixProject do
   defp deps do
     [
       {:usage_rules, "~> 0.1", only: [:dev]},
-      {:tidewave, "~> 0.2", only: [:dev]},
+      {:tidewave, "~> 0.5", only: [:dev]},
       {:phoenix, "~> 1.7.21"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},

@@ -36,7 +36,8 @@ defmodule SertantaiLegal.Scraper.NewLawsTest do
 
       record = Enum.find(records, fn r -> r[:Number] == "1001" end)
 
-      assert record[:name] == "uksi/2024/1001"
+      # Name should use UK_ prefix format: UK_typecode_year_number
+      assert record[:name] == "UK_uksi_2024_1001"
     end
 
     test "adds leg_gov_uk_url field" do

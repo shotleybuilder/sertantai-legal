@@ -268,10 +268,20 @@ defmodule SertantaiLegal.Scraper.LawParser do
             record ->
               case parse_record(record) do
                 {:ok, _enriched} ->
-                  parse_excluded_loop(records, session_id, %{results | parsed: results.parsed + 1}, opts)
+                  parse_excluded_loop(
+                    records,
+                    session_id,
+                    %{results | parsed: results.parsed + 1},
+                    opts
+                  )
 
                 {:error, _reason} ->
-                  parse_excluded_loop(records, session_id, %{results | errors: results.errors + 1}, opts)
+                  parse_excluded_loop(
+                    records,
+                    session_id,
+                    %{results | errors: results.errors + 1},
+                    opts
+                  )
               end
           end
         end
@@ -288,16 +298,30 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   # Merge fetched metadata with original record
   defp merge_metadata(record, metadata) do
+    # Preserve original Title_EN from scraped JSON (without "The " prefix and year suffix)
+    # The XML metadata contains the formal title which we don't want to use
+    original_title = record[:Title_EN] || record["Title_EN"]
+
     # Start with original record
     record
     # Add metadata fields
     |> Map.merge(metadata)
+    # Restore original title if it existed (don't use XML's formal title)
+    |> maybe_restore_title(original_title)
     # Ensure name is set
     |> ensure_name()
     # Add leg_gov_uk_url
     |> ensure_url()
     # Set md_checked timestamp
     |> Map.put(:md_checked, Date.utc_today() |> Date.to_iso8601())
+  end
+
+  # Restore the original Title_EN if one was provided
+  defp maybe_restore_title(record, nil), do: record
+  defp maybe_restore_title(record, ""), do: record
+
+  defp maybe_restore_title(record, original_title) do
+    Map.put(record, :Title_EN, original_title)
   end
 
   defp ensure_name(record) do
@@ -314,7 +338,12 @@ defmodule SertantaiLegal.Scraper.LawParser do
         type_code = record[:type_code] || record["type_code"]
         year = record[:Year] || record["Year"]
         number = record[:Number] || record["Number"]
-        Map.put(record, :leg_gov_uk_url, "https://www.legislation.gov.uk/#{type_code}/#{year}/#{number}")
+
+        Map.put(
+          record,
+          :leg_gov_uk_url,
+          "https://www.legislation.gov.uk/#{type_code}/#{year}/#{number}"
+        )
 
       _ ->
         record
@@ -417,6 +446,8 @@ defmodule SertantaiLegal.Scraper.LawParser do
       md_enactment_date: to_date(enriched[:md_enactment_date]),
       md_made_date: to_date(enriched[:md_made_date]),
       md_coming_into_force_date: to_date(enriched[:md_coming_into_force_date]),
+      md_dct_valid_date: to_date(enriched[:md_dct_valid_date]),
+      md_date: to_date(enriched[:md_date]),
       md_restrict_extent: enriched[:md_restrict_extent],
 
       # SI codes - stored as map in UkLrt
@@ -440,23 +471,31 @@ defmodule SertantaiLegal.Scraper.LawParser do
       amending_stats_affects_count: enriched[:amending_stats_affects_count],
       amending_stats_affected_laws_count: enriched[:amending_stats_affected_laws_count],
       amending_stats_affects_count_per_law: enriched[:amending_stats_affects_count_per_law],
-      amending_stats_affects_count_per_law_detailed: enriched[:amending_stats_affects_count_per_law_detailed],
+      amending_stats_affects_count_per_law_detailed:
+        enriched[:amending_stats_affects_count_per_law_detailed],
 
       # Stats - Amended_by (this law is affected by others)
       amended_by_stats_affected_by_count: enriched[:amended_by_stats_affected_by_count],
       amended_by_stats_affected_by_laws_count: enriched[:amended_by_stats_affected_by_laws_count],
-      amended_by_stats_affected_by_count_per_law: enriched[:amended_by_stats_affected_by_count_per_law],
-      amended_by_stats_affected_by_count_per_law_detailed: enriched[:amended_by_stats_affected_by_count_per_law_detailed],
+      amended_by_stats_affected_by_count_per_law:
+        enriched[:amended_by_stats_affected_by_count_per_law],
+      amended_by_stats_affected_by_count_per_law_detailed:
+        enriched[:amended_by_stats_affected_by_count_per_law_detailed],
 
       # Stats - Rescinding (this law rescinds others)
       rescinding_stats_rescinding_laws_count: enriched[:rescinding_stats_rescinding_laws_count],
-      rescinding_stats_rescinding_count_per_law: enriched[:rescinding_stats_rescinding_count_per_law],
-      rescinding_stats_rescinding_count_per_law_detailed: enriched[:rescinding_stats_rescinding_count_per_law_detailed],
+      rescinding_stats_rescinding_count_per_law:
+        enriched[:rescinding_stats_rescinding_count_per_law],
+      rescinding_stats_rescinding_count_per_law_detailed:
+        enriched[:rescinding_stats_rescinding_count_per_law_detailed],
 
       # Stats - Rescinded_by (this law is rescinded by others)
-      rescinded_by_stats_rescinded_by_laws_count: enriched[:rescinded_by_stats_rescinded_by_laws_count],
-      rescinded_by_stats_rescinded_by_count_per_law: enriched[:rescinded_by_stats_rescinded_by_count_per_law],
-      rescinded_by_stats_rescinded_by_count_per_law_detailed: enriched[:rescinded_by_stats_rescinded_by_count_per_law_detailed],
+      rescinded_by_stats_rescinded_by_laws_count:
+        enriched[:rescinded_by_stats_rescinded_by_laws_count],
+      rescinded_by_stats_rescinded_by_count_per_law:
+        enriched[:rescinded_by_stats_rescinded_by_count_per_law],
+      rescinded_by_stats_rescinded_by_count_per_law_detailed:
+        enriched[:rescinded_by_stats_rescinded_by_count_per_law_detailed],
 
       # Extent fields from StagedParser Stage 1
       geo_extent: enriched[:geo_extent],
@@ -530,6 +569,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   # Extract names from list of maps (e.g., enacted_by coming from StagedParser)
   defp extract_names(nil), do: nil
   defp extract_names([]), do: []
+
   defp extract_names(list) when is_list(list) do
     Enum.map(list, fn
       %{name: name} -> name
@@ -539,6 +579,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
     end)
     |> Enum.reject(&is_nil/1)
   end
+
   defp extract_names(_), do: nil
 
   defp to_decimal(nil), do: nil

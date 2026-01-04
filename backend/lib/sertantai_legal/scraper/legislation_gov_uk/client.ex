@@ -4,6 +4,15 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
 
   Ported from Legl.Services.LegislationGovUk.ClientAmdTbl
 
+  ## Rate Limiting
+
+  To avoid being blacklisted, requests are rate-limited with a configurable delay
+  between calls (default: 2 seconds). The delay can be configured via:
+
+      config :sertantai_legal, :scraper_request_delay_ms, 2000
+
+  In test mode, the delay is disabled.
+
   ## Testing
 
   In test environment, the client uses Req.Test for mocking.
@@ -11,6 +20,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   """
 
   @endpoint "https://www.legislation.gov.uk"
+  @default_delay_ms 2000
 
   @doc """
   Fetch HTML content from legislation.gov.uk.
@@ -24,6 +34,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   """
   @spec fetch_html(String.t()) :: {:ok, String.t()} | {:error, integer(), String.t()}
   def fetch_html(path) do
+    rate_limit_delay()
     url = @endpoint <> path
 
     case Req.get(url, req_options()) do
@@ -61,6 +72,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   @spec fetch_xml(String.t()) ::
           {:ok, String.t()} | {:ok, :html, String.t()} | {:error, integer(), String.t()}
   def fetch_xml(path) do
+    rate_limit_delay()
     url = @endpoint <> path
 
     case Req.get(url, req_options()) do
@@ -151,6 +163,17 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
       Keyword.put(base_opts, :plug, {Req.Test, __MODULE__})
     else
       base_opts
+    end
+  end
+
+  # Rate limit delay to avoid being blacklisted by legislation.gov.uk
+  # Disabled in test mode for fast test execution
+  defp rate_limit_delay do
+    unless Application.get_env(:sertantai_legal, :test_mode, false) do
+      delay_ms =
+        Application.get_env(:sertantai_legal, :scraper_request_delay_ms, @default_delay_ms)
+
+      Process.sleep(delay_ms)
     end
   end
 end

@@ -1,0 +1,34 @@
+[
+  {
+    "label": "phoenix-server",
+    "command": "mix phx.server",
+    "use_new_terminal": true,
+    "cwd": "backend"
+  },
+  {
+    "label": "ash-codegen",
+    "command": "mix ash.codegen",
+    "cwd": "backend"
+  },
+  {
+    "label": "ash-migrate",
+    "command": "mix ash_postgres.migrate",
+    "cwd": "backend"
+  },
+  {
+    "label": "test",
+    "command": "mix test",
+    "cwd": "backend"
+  },
+  {
+    "label": "format",
+    "command": "mix format",
+    "cwd": "backend"
+  },
+  {
+    "label": "frontend-dev",
+    "command": "npm run dev",
+    "use_new_terminal": true,
+    "cwd": "frontend"
+  }
+]

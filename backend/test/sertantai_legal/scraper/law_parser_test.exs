@@ -96,6 +96,21 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
       assert enriched[:md_checked] == Date.utc_today() |> Date.to_iso8601()
     end
 
+    test "includes md_date (primary date) from metadata" do
+      record = %{
+        type_code: "uksi",
+        Year: 2024,
+        Number: "1234",
+        Title_EN: "Test Regulation"
+      }
+
+      {:ok, enriched} = LawParser.parse_record(record, persist: false)
+
+      # md_date should be calculated from enactment/coming_into_force/made dates
+      # introduction_sample.xml has md_enactment_date = "2024-12-01"
+      assert enriched[:md_date] == "2024-12-01"
+    end
+
     test "returns error for non-existent record" do
       record = %{
         type_code: "uksi",
@@ -129,6 +144,20 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
       assert {:exists, _} = LawParser.record_exists?(%{name: "UK_uksi_2024_1234"})
     end
 
+    test "persists md_date to database" do
+      record = %{
+        type_code: "uksi",
+        Year: 2024,
+        Number: "1234",
+        Title_EN: "Test Regulation with md_date"
+      }
+
+      {:ok, created} = LawParser.parse_record(record)
+
+      # md_date should be persisted (from introduction_sample.xml enactment_date)
+      assert created.md_date == ~D[2024-12-01]
+    end
+
     test "updates existing record when it already exists" do
       # First create a record
       record = %{
@@ -143,8 +172,9 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
       # Parse again - should update
       {:ok, updated} = LawParser.parse_record(record)
 
-      # Title should be updated from XML
-      assert updated.title_en == "The Health and Safety (Miscellaneous Amendments) Regulations 2024"
+      # Title should be preserved from original record (not overwritten by XML)
+      # This behavior was fixed to prevent "The " prefix from XML being used
+      assert updated.title_en == "Initial Title"
     end
   end
 
@@ -156,11 +186,12 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
     end
 
     test "builds name from record fields if name not provided" do
-      result = LawParser.record_exists?(%{
-        type_code: "uksi",
-        Year: 2024,
-        Number: "77777"
-      })
+      result =
+        LawParser.record_exists?(%{
+          type_code: "uksi",
+          Year: 2024,
+          Number: "77777"
+        })
 
       assert result == :not_found
     end
@@ -170,8 +201,20 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
     test "parses records from group1 with auto_confirm" do
       # Setup: create session with group1 records
       records = [
-        %{type_code: "uksi", Year: 2024, Number: "1234", Title_EN: "Law 1", si_code: ["ENVIRONMENT"]},
-        %{type_code: "uksi", Year: 2024, Number: "567", Title_EN: "Law 2", si_code: ["HEALTH AND SAFETY"]}
+        %{
+          type_code: "uksi",
+          Year: 2024,
+          Number: "1234",
+          Title_EN: "Law 1",
+          si_code: ["ENVIRONMENT"]
+        },
+        %{
+          type_code: "uksi",
+          Year: 2024,
+          Number: "567",
+          Title_EN: "Law 2",
+          si_code: ["HEALTH AND SAFETY"]
+        }
       ]
 
       Storage.save_json(@test_session_id, :group1, records)
