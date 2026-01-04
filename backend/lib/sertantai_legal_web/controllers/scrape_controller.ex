@@ -110,7 +110,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     with {:ok, _session} <- SessionManager.get(session_id) do
       # Collect all record names from groups 1 and 2 (group 3 is excluded)
       names =
-        [1, 2]
+        [:group1, :group2]
         |> Enum.flat_map(fn group ->
           case Storage.read_json(session_id, group) do
             {:ok, records} when is_list(records) ->
