@@ -472,14 +472,19 @@
 				}
 			});
 
-			// Store unsubscribe for cleanup
-			const originalUnsubscribe = collectionSubscription?.unsubscribe;
-			if (collectionSubscription) {
-				collectionSubscription.unsubscribe = () => {
-					originalUnsubscribe?.();
+			// Store original subscription for cleanup
+			const originalSubscription = collectionSubscription;
+
+			// Create a combined unsubscribe that cleans up both subscriptions
+			collectionSubscription = {
+				unsubscribe: () => {
+					// Call original unsubscribe with proper context
+					if (originalSubscription) {
+						originalSubscription.unsubscribe();
+					}
 					unsubscribeSyncStatus();
-				};
-			}
+				}
+			};
 
 			// Start Electric sync in the background (default: last 3 years)
 			syncUkLrt().then(() => {
