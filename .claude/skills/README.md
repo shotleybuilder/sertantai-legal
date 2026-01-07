@@ -48,6 +48,17 @@ Coming soon. Will cover:
 - Organization-based filtering
 - Sync error handling
 
+### 💾 [IndexedDB Persistence for ElectricSQL](indexeddb-electric-persistence/)
+
+**Use when:** Persisting large datasets with ElectricSQL and TanStack DB
+
+Complete guide for:
+- Custom IndexedDB storage adapter using idb-keyval
+- Handling localStorage quota limits (>5MB datasets)
+- Electric offset persistence for delta sync
+- Upsert logic for cached data conflicts
+- Common pitfalls (stale offsets, context errors, subscribeChanges)
+
 ## How to Use
 
 ### For AI Assistants (Claude Code)
