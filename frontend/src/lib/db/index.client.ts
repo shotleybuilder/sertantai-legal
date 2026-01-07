@@ -3,7 +3,7 @@
  *
  * Creates reactive collections for UK LRT data.
  * Collections provide:
- * - Local storage with localStorage persistence
+ * - IndexedDB persistence (handles 19k+ records without quota issues)
  * - Reactive queries that auto-update
  * - Optimistic mutations
  *
@@ -14,12 +14,19 @@
 import { browser } from '$app/environment';
 import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 import type { Collection } from '@tanstack/db';
+import { initializeIDBStorage } from './idb-storage';
+
+// Storage key for UK LRT collection
+const UK_LRT_STORAGE_KEY = 'sertantai-legal-uk-lrt';
 
 // Collection singleton (initialized lazily in browser)
 let ukLrtCol: Collection<UkLrtRecord, string> | null = null;
 
 /**
  * Initialize collections (browser only)
+ *
+ * Uses IndexedDB via a custom storage adapter to handle large datasets
+ * that exceed localStorage's ~5MB limit.
  */
 async function ensureCollections() {
 	if (!browser) {
@@ -30,14 +37,21 @@ async function ensureCollections() {
 		return; // Already initialized
 	}
 
+	// Initialize IndexedDB storage first
+	const idbStorage = await initializeIDBStorage([UK_LRT_STORAGE_KEY]);
+
 	const { createCollection, localStorageCollectionOptions } = await import('@tanstack/db');
 
 	ukLrtCol = createCollection(
 		localStorageCollectionOptions<UkLrtRecord, string>({
-			storageKey: 'sertantai-legal-uk-lrt',
-			getKey: (item) => item.id
+			storageKey: UK_LRT_STORAGE_KEY,
+			getKey: (item) => item.id,
+			// Use IndexedDB-backed storage instead of localStorage
+			storage: idbStorage
 		})
 	);
+
+	console.log('[TanStack DB] UK LRT collection initialized with IndexedDB storage');
 }
 
 /**
@@ -87,7 +101,7 @@ export function getDBStatus() {
 					ukLrt: ukLrtCol!.id
 				}
 			: {},
-		storage: 'localStorage'
+		storage: 'IndexedDB'
 	};
 }
 

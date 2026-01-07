@@ -7,10 +7,19 @@
  * Supports dynamic WHERE clauses for query-based shape syncing.
  */
 
-import { ShapeStream } from '@electric-sql/client';
+import { ShapeStream, type Offset } from '@electric-sql/client';
 import { getUkLrtCollection } from '$lib/db/index.client';
+import {
+	saveElectricSyncState,
+	loadElectricSyncState,
+	clearElectricSyncState,
+	type ElectricSyncState
+} from '$lib/db/idb-storage';
 import { type UkLrtRecord, transformUkLrtRecord } from './uk-lrt-schema';
 import { writable, get } from 'svelte/store';
+
+// Shape key for sync state persistence
+const UK_LRT_SHAPE_KEY = 'uk-lrt-shape';
 
 /**
  * Electric service configuration
@@ -64,12 +73,33 @@ let currentWhereClause: string = '';
 const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY_MS = 3000;
 
+// Debounce settings for WHERE clause updates
+const WHERE_DEBOUNCE_MS = 500;
+let whereDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Generate a shape key that includes the WHERE clause
+ * Different WHERE clauses need separate sync states
+ */
+function getShapeKey(whereClause: string): string {
+	// Create a simple hash of the WHERE clause
+	const hash = whereClause.split('').reduce((acc, char) => {
+		return ((acc << 5) - acc + char.charCodeAt(0)) | 0;
+	}, 0);
+	return `${UK_LRT_SHAPE_KEY}-${hash}`;
+}
+
 /**
  * Start syncing UK LRT collection with optional WHERE clause
  *
+ * Uses persisted Electric offset to enable delta sync - only downloads
+ * changes since last sync rather than full dataset every time.
+ *
  * @param whereClause - SQL WHERE clause for filtering (e.g., "year >= 2024")
+ * @param isReconnect - Whether this is a reconnection attempt
+ * @param clearData - Whether to clear existing data (default: false for performance)
  */
-export async function syncUkLrt(whereClause?: string, isReconnect = false) {
+export async function syncUkLrt(whereClause?: string, isReconnect = false, clearData = false) {
 	const where = whereClause || getDefaultWhere();
 	currentWhereClause = where;
 
@@ -89,22 +119,67 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false) {
 		// Get the UK LRT collection (browser only)
 		const ukLrtCollection = await getUkLrtCollection();
 
-		// Clear existing data when WHERE clause changes
-		const existingKeys = Array.from(ukLrtCollection.keys());
-		for (const key of existingKeys) {
-			ukLrtCollection.delete(key);
+		// Only clear existing data if explicitly requested
+		// This allows the new shape to merge with existing data for better UX
+		if (clearData) {
+			const existingKeys = Array.from(ukLrtCollection.keys());
+			for (const key of existingKeys) {
+				ukLrtCollection.delete(key);
+			}
+			// Also clear the sync state since we're starting fresh
+			await clearElectricSyncState(getShapeKey(where));
 		}
 
-		console.log(`[Electric Sync] Starting UK LRT sync with WHERE: ${where}`);
+		// Load saved sync state for resumable delta sync
+		const shapeKey = getShapeKey(where);
+		const savedState = await loadElectricSyncState(shapeKey);
 
-		// Create shape stream
-		currentStream = new ShapeStream<Record<string, unknown>>({
+		// Build ShapeStream options with offset if we have prior sync state
+		const streamOptions: {
+			url: string;
+			params: { table: string; where: string };
+			offset?: Offset;
+			handle?: string;
+		} = {
 			url: `${ELECTRIC_URL}/v1/shape`,
 			params: {
 				table: 'uk_lrt',
 				where
 			}
-		});
+		};
+
+		// Safety check: if we have a saved offset but the collection is empty,
+		// the data was likely cleared (browser storage reset). Do a fresh sync.
+		const currentCollectionSize = ukLrtCollection.size;
+		const shouldUseOffset = savedState?.offset && currentCollectionSize > 0;
+
+		if (shouldUseOffset) {
+			// Cast the stored offset string to the Offset type
+			// Electric's Offset is a branded string type: `-1` | `now` | `${number}_${number}`
+			streamOptions.offset = savedState!.offset as Offset;
+			if (savedState!.handle) {
+				streamOptions.handle = savedState!.handle;
+			}
+			console.log(
+				`[Electric Sync] Resuming UK LRT sync from offset ${savedState!.offset} (${currentCollectionSize} local records)`
+			);
+		} else {
+			// Clear stale offset if collection is empty but offset exists
+			if (savedState?.offset && currentCollectionSize === 0) {
+				console.log(
+					`[Electric Sync] Clearing stale offset - collection is empty but offset ${savedState.offset} exists`
+				);
+				await clearElectricSyncState(shapeKey);
+			}
+			console.log(`[Electric Sync] Starting fresh UK LRT sync with WHERE: ${where}`);
+		}
+
+		// Create shape stream with optional offset for delta sync
+		currentStream = new ShapeStream<Record<string, unknown>>(streamOptions);
+
+		// Track latest offset for persistence
+		let latestOffset: string | undefined;
+		let latestHandle: string | undefined;
 
 		// Subscribe to shape changes
 		activeSubscription = currentStream.subscribe((messages) => {
@@ -115,9 +190,28 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false) {
 			let deleteCount = 0;
 
 			messages.forEach((msg: any) => {
+				// Track offset from each message for persistence
+				if (msg.offset) {
+					latestOffset = msg.offset;
+				}
+				if (msg.headers?.handle) {
+					latestHandle = msg.headers.handle;
+				}
+
 				// Skip control messages
 				if (msg.headers?.control) {
 					console.log('[Electric Sync] Control message:', msg.headers.control);
+
+					// On "up-to-date" control message, persist the sync state
+					if (msg.headers.control === 'up-to-date' && latestOffset) {
+						const recordCount = ukLrtCollection.size;
+						saveElectricSyncState(shapeKey, {
+							offset: latestOffset,
+							handle: latestHandle,
+							lastSyncTime: new Date().toISOString(),
+							recordCount
+						});
+					}
 					return;
 				}
 
@@ -133,20 +227,36 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false) {
 
 					switch (operation) {
 						case 'insert':
-							ukLrtCollection.insert(data);
-							insertCount++;
+							// Use upsert logic: if record exists (from cached IndexedDB), update it
+							if (ukLrtCollection.has(data.id)) {
+								ukLrtCollection.update(data.id, (draft) => {
+									Object.assign(draft, data);
+								});
+								updateCount++;
+							} else {
+								ukLrtCollection.insert(data);
+								insertCount++;
+							}
 							break;
 
 						case 'update':
-							ukLrtCollection.update(data.id, (draft) => {
-								Object.assign(draft, data);
-							});
-							updateCount++;
+							// Handle case where update arrives for non-existent record (insert it)
+							if (ukLrtCollection.has(data.id)) {
+								ukLrtCollection.update(data.id, (draft) => {
+									Object.assign(draft, data);
+								});
+								updateCount++;
+							} else {
+								ukLrtCollection.insert(data);
+								insertCount++;
+							}
 							break;
 
 						case 'delete':
-							ukLrtCollection.delete(data.id);
-							deleteCount++;
+							if (ukLrtCollection.has(data.id)) {
+								ukLrtCollection.delete(data.id);
+								deleteCount++;
+							}
 							break;
 					}
 				} catch (error) {
@@ -230,6 +340,12 @@ export function stopUkLrtSync(preserveReconnectState = false) {
 		reconnectTimeout = null;
 	}
 
+	// Clear debounce timeout if pending
+	if (whereDebounceTimeout) {
+		clearTimeout(whereDebounceTimeout);
+		whereDebounceTimeout = null;
+	}
+
 	if (activeSubscription) {
 		activeSubscription();
 		activeSubscription = null;
@@ -260,12 +376,62 @@ export async function retryUkLrtSync() {
 }
 
 /**
- * Update the WHERE clause and re-sync
+ * Force a full re-sync by clearing saved offset and data
+ *
+ * Use this when you want to completely refresh data from the server,
+ * ignoring any cached data or sync state.
+ */
+export async function forceFullResync() {
+	const where = currentWhereClause || getDefaultWhere();
+	const shapeKey = getShapeKey(where);
+
+	// Clear persisted sync state
+	await clearElectricSyncState(shapeKey);
+
+	console.log('[Electric Sync] Forcing full re-sync - cleared saved offset');
+
+	// Re-sync with clearData=true to also clear local collection
+	await syncUkLrt(where, false, true);
+}
+
+/**
+ * Update the WHERE clause and re-sync (debounced)
+ *
+ * Debounces updates to prevent excessive re-syncs during rapid filter changes.
+ * The sync will only occur after the user stops typing for WHERE_DEBOUNCE_MS.
  *
  * @param whereClause - New SQL WHERE clause
  */
 export async function updateUkLrtWhere(whereClause: string) {
-	console.log(`[Electric Sync] Updating WHERE clause to: ${whereClause}`);
+	// Clear any pending debounce
+	if (whereDebounceTimeout) {
+		clearTimeout(whereDebounceTimeout);
+		whereDebounceTimeout = null;
+	}
+
+	// Debounce the WHERE clause update
+	whereDebounceTimeout = setTimeout(async () => {
+		console.log(`[Electric Sync] Updating WHERE clause to: ${whereClause}`);
+		await syncUkLrt(whereClause);
+		whereDebounceTimeout = null;
+	}, WHERE_DEBOUNCE_MS);
+}
+
+/**
+ * Update the WHERE clause immediately (no debounce)
+ *
+ * Use this when you need immediate sync, e.g., when applying a saved view.
+ *
+ * @param whereClause - New SQL WHERE clause
+ */
+export async function updateUkLrtWhereImmediate(whereClause: string) {
+	// Clear any pending debounce
+	if (whereDebounceTimeout) {
+		clearTimeout(whereDebounceTimeout);
+		whereDebounceTimeout = null;
+	}
+
+	console.log(`[Electric Sync] Immediately updating WHERE clause to: ${whereClause}`);
 	await syncUkLrt(whereClause);
 }
 

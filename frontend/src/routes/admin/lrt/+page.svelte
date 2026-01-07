@@ -16,7 +16,7 @@
 	// ElectricSQL sync
 	import { syncUkLrt, stopUkLrtSync, syncStatus, updateUkLrtWhere, buildWhereFromFilters, retryUkLrtSync } from '$lib/electric/sync-uk-lrt';
 	import { getUkLrtCollection } from '$lib/db/index.client';
-	import type { TableState } from '@shotleybuilder/svelte-table-kit';
+	import type { TableState, FilterCondition, TableConfig as TableKitConfig } from '@shotleybuilder/svelte-table-kit';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
@@ -399,7 +399,9 @@
 	}
 
 	// Track last filter state to avoid redundant sync updates
-	let lastWhereClause = '';
+	// Initialize to default WHERE to prevent handleTableStateChange from triggering
+	// a redundant sync when TableKit mounts with the default filter
+	let lastWhereClause = `year >= ${new Date().getFullYear() - 2}`;
 
 	/**
 	 * Handle table state changes - update Electric sync when filters change
@@ -425,31 +427,80 @@
 	// Electric sync initialization
 	/**
 	 * Initialize Electric sync and subscribe to collection changes
+	 *
+	 * Optimized for fast initial load:
+	 * 1. Show existing local data immediately (from localStorage/TanstackDB)
+	 * 2. Start Electric sync in the background
+	 * 3. UI updates reactively as new data arrives
 	 */
 	async function initElectricSync() {
 		try {
-			isLoading = true;
 			error = null;
 
-			// Start Electric sync (default: last 3 years)
-			await syncUkLrt();
-
-			// Get collection and subscribe to changes
+			// Get collection first - this gives us immediate access to cached data
 			const collection = await getUkLrtCollection();
 
-			// Initial data load from collection
-			data = collection.toArray as UkLrtRecord[];
-			totalCount = data.length;
+			// Load existing local data IMMEDIATELY (from localStorage)
+			const localData = collection.toArray as UkLrtRecord[];
+			if (localData.length > 0) {
+				data = localData;
+				totalCount = localData.length;
+				isLoading = false; // Show data immediately!
+				console.log(`[LRT Admin] Loaded ${localData.length} records from local cache`);
+			}
+
+			// Function to refresh data from collection
+			const refreshData = () => {
+				const newData = collection.toArray as UkLrtRecord[];
+				if (newData.length !== data.length) {
+					console.log(`[LRT Admin] Refreshing data: ${newData.length} records`);
+					data = newData;
+					totalCount = newData.length;
+				}
+			};
 
 			// Subscribe to collection changes for reactivity
 			collectionSubscription = collection.subscribeChanges(() => {
-				data = collection.toArray as UkLrtRecord[];
-				totalCount = data.length;
+				refreshData();
 			});
 
-			isLoading = false;
+			// Also subscribe to syncStatus changes to refresh data when sync completes
+			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
+				if (status.connected && !status.syncing) {
+					// Sync completed, refresh data
+					refreshData();
+				}
+			});
+
+			// Store unsubscribe for cleanup
+			const originalUnsubscribe = collectionSubscription?.unsubscribe;
+			if (collectionSubscription) {
+				collectionSubscription.unsubscribe = () => {
+					originalUnsubscribe?.();
+					unsubscribeSyncStatus();
+				};
+			}
+
+			// Start Electric sync in the background (default: last 3 years)
+			syncUkLrt().then(() => {
+				// Refresh data after sync completes
+				refreshData();
+				isLoading = false;
+			}).catch((e) => {
+				console.error('[LRT Admin] Background sync failed:', e);
+				// Don't set error if we have local data - just show sync status
+				if (data.length === 0) {
+					error = e instanceof Error ? e.message : 'Failed to sync data';
+				}
+				isLoading = false;
+			});
+
+			// If no local data, wait for first sync batch
+			if (localData.length === 0) {
+				isLoading = true;
+			}
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to sync data';
+			error = e instanceof Error ? e.message : 'Failed to initialize';
 			isLoading = false;
 		}
 	}
@@ -1203,15 +1254,25 @@
 		}
 	];
 
+	// Default year filter matching Electric's default WHERE clause
+	const currentYear = new Date().getFullYear();
+	const defaultYearFilter: FilterCondition = {
+		id: 'default-year-filter',
+		field: 'year',
+		operator: 'greater_or_equal',
+		value: currentYear - 2
+	};
+
 	// Build TableKit configuration from view (reactive)
 	$: hasViewConfig = viewColumns.length > 0 || viewColumnOrder.length > 0;
 
-	$: tableKitConfig = hasViewConfig ? {
-		id: `view_config_v${configVersion}`,
+	$: tableKitConfig = {
+		id: hasViewConfig ? `view_config_v${configVersion}` : 'default_config',
 		version: '1.0',
-		defaultColumnOrder: viewColumnOrder.length > 0 ? viewColumnOrder : undefined,
-		defaultVisibleColumns: viewColumns.length > 0 ? viewColumns : undefined
-	} : undefined;
+		defaultFilters: [defaultYearFilter],
+		defaultColumnOrder: hasViewConfig && viewColumnOrder.length > 0 ? viewColumnOrder : undefined,
+		defaultVisibleColumns: hasViewConfig && viewColumns.length > 0 ? viewColumns : undefined
+	};
 
 	onMount(() => {
 		if (browser) {
