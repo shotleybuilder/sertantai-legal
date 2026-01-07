@@ -202,11 +202,24 @@
 	let configVersion = 0;
 
 	// Default views configuration
-	const defaultViews: Array<{ name: string; description: string; columns: string[] }> = [
+	// Each view can have: name, description, columns, filters (optional), sort (optional), isDefault (optional)
+	// Note: filters use columnId (not field) to match svelte-table-views-tanstack types
+	const currentYear = new Date().getFullYear();
+	const defaultViews: Array<{
+		name: string;
+		description: string;
+		columns: string[];
+		filters?: Array<{ columnId: string; operator: string; value: unknown }>;
+		sort?: { columnId: string; direction: 'asc' | 'desc' } | null;
+		isDefault?: boolean;
+	}> = [
 		{
 			name: 'Credentials',
-			description: 'Core identification fields: Title, Year, Number, Type Code, Type Class',
-			columns: ['actions', 'name', 'title_en', 'year', 'number', 'type_code', 'type_class']
+			description: 'Core identification fields: Title, Year, Number, Type. Last 3 years, sorted by date.',
+			columns: ['actions', 'name', 'title_en', 'year', 'number', 'type_code', 'type_class'],
+			filters: [{ columnId: 'year', operator: 'greater_or_equal', value: String(currentYear - 2) }],
+			sort: { columnId: 'md_date', direction: 'desc' },
+			isDefault: true
 		},
 		{
 			name: 'Description',
@@ -270,67 +283,130 @@
 		}
 	];
 
-	// Seed default views if they don't exist (by name)
+	// Seed default views if they don't exist (by name) and auto-select default view
 	async function seedDefaultViews() {
 		// Clean up old incorrect localStorage key from previous implementation
 		localStorage.removeItem('svelte-table-views');
 
-		// Wait for library to initialize
-		await new Promise(resolve => setTimeout(resolve, 200));
+		// Wait for library to be ready (uses TanStack DB which needs initialization)
+		await viewActions.waitForReady();
+		console.log('[LRT Admin] Saved views library ready');
 
-		// Get existing view names from localStorage
-		const existingNames = new Set<string>();
-		const storageData = localStorage.getItem('svelte-table-views-saved-views');
-		if (storageData) {
-			try {
-				const parsed = JSON.parse(storageData);
-				Object.values(parsed).forEach((item: unknown) => {
-					const stored = item as { data: { name: string } };
-					if (stored.data?.name) {
-						existingNames.add(stored.data.name);
+		// Get existing views from the store (not localStorage directly - the IDs have prefixes)
+		const existingViews = new Map<string, string>(); // name -> id
+		const currentViews = $savedViews;
+		for (const view of currentViews) {
+			existingViews.set(view.name, view.id);
+		}
+
+		console.log('[LRT Admin] Existing views:', Array.from(existingViews.keys()));
+
+		// Clean up duplicate views (e.g., "Duty Holders" when "Duty Holder" exists)
+		// These are views with names that differ only by pluralization
+		const duplicatesToRemove = [
+			{ keep: 'Duty Holder', remove: 'Duty Holders' }
+		];
+
+		for (const { keep, remove } of duplicatesToRemove) {
+			if (existingViews.has(keep) && existingViews.has(remove)) {
+				const removeId = existingViews.get(remove);
+				if (removeId) {
+					console.log(`[LRT Admin] Removing duplicate view "${remove}" (keeping "${keep}")`);
+					try {
+						await viewActions.delete(removeId);
+						existingViews.delete(remove);
+					} catch (err) {
+						console.error(`[LRT Admin] Failed to remove duplicate view "${remove}":`, err);
 					}
-				});
-			} catch (err) {
-				console.error('[LRT Admin] Failed to parse existing views:', err);
+				}
 			}
 		}
 
-		console.log('[LRT Admin] Existing views:', Array.from(existingNames));
+		// Update existing default views if they need new config (e.g., filters/sort added)
+		const credentialsViewDef = defaultViews.find(v => v.name === 'Credentials');
+		const existingCredentials = currentViews.find(v => v.name === 'Credentials');
+		if (credentialsViewDef && existingCredentials) {
+			// Check if the existing Credentials view is missing filter/sort config
+			if (!existingCredentials.config.filters?.length || !existingCredentials.config.sort) {
+				console.log('[LRT Admin] Updating Credentials view with filter and sort config');
+				try {
+					await viewActions.update(existingCredentials.id, {
+						config: {
+							...existingCredentials.config,
+							filters: credentialsViewDef.filters || [],
+							sort: credentialsViewDef.sort || null
+						}
+					});
+				} catch (err) {
+					console.error('[LRT Admin] Failed to update Credentials view:', err);
+				}
+			}
+		}
 
 		// Seed only missing default views
-		const missingViews = defaultViews.filter(v => !existingNames.has(v.name));
-		if (missingViews.length === 0) {
-			console.log('[LRT Admin] All default views already exist');
-			return;
+		const missingViews = defaultViews.filter(v => !existingViews.has(v.name));
+		let defaultViewId: string | null = null;
+
+		// Find if default view already exists
+		const defaultViewDef = defaultViews.find(v => v.isDefault);
+		if (defaultViewDef && existingViews.has(defaultViewDef.name)) {
+			defaultViewId = existingViews.get(defaultViewDef.name) || null;
 		}
 
-		console.log('[LRT Admin] Seeding missing default views:', missingViews.map(v => v.name));
+		if (missingViews.length > 0) {
+			console.log('[LRT Admin] Seeding missing default views:', missingViews.map(v => v.name));
 
-		for (const view of missingViews) {
-			const viewInput: SavedViewInput = {
-				name: view.name,
-				description: view.description,
-				config: {
-					filters: [],
-					sort: null,
-					columns: view.columns,
-					columnOrder: view.columns,
-					columnWidths: {},
-					pageSize: 25,
-					grouping: []
+			for (const view of missingViews) {
+				const viewInput: SavedViewInput = {
+					name: view.name,
+					description: view.description,
+					config: {
+						filters: view.filters || [],
+						sort: view.sort || null,
+						columns: view.columns,
+						columnOrder: view.columns,
+						columnWidths: {},
+						pageSize: 25,
+						grouping: []
+					}
+				};
+
+				try {
+					const savedView = await viewActions.save(viewInput);
+					console.log('[LRT Admin] Seeded view:', view.name, savedView?.id);
+
+					// Track the default view ID if this is the default
+					if (view.isDefault && savedView?.id) {
+						defaultViewId = savedView.id;
+					}
+
+					await new Promise(resolve => setTimeout(resolve, 100));
+				} catch (err) {
+					console.error('[LRT Admin] Failed to seed view:', view.name, err);
 				}
-			};
-
-			try {
-				await viewActions.save(viewInput);
-				console.log('[LRT Admin] Seeded view:', view.name);
-				await new Promise(resolve => setTimeout(resolve, 100));
-			} catch (err) {
-				console.error('[LRT Admin] Failed to seed view:', view.name, err);
 			}
+
+			console.log('[LRT Admin] Default views seeding complete');
+		} else {
+			console.log('[LRT Admin] All default views already exist');
 		}
 
-		console.log('[LRT Admin] Default views seeding complete');
+		// Auto-select default view if no view is currently active
+		console.log('[LRT Admin] Checking for auto-select: defaultViewId=', defaultViewId, 'activeViewId=', $activeViewId);
+		if (defaultViewId && !$activeViewId) {
+			console.log('[LRT Admin] Auto-selecting default view:', defaultViewId);
+
+			// Load the view (sets as active and updates usage stats)
+			const loadedView = await viewActions.load(defaultViewId);
+			console.log('[LRT Admin] Loaded view:', loadedView?.name, loadedView?.config);
+			if (loadedView) {
+				applyViewConfig(loadedView.config);
+			}
+		} else if (!defaultViewId) {
+			console.log('[LRT Admin] No default view found to auto-select');
+		} else {
+			console.log('[LRT Admin] View already active, skipping auto-select');
+		}
 	}
 
 	// Capture current table config for saving
@@ -346,6 +422,11 @@
 		};
 	}
 
+	// View filters and sort state (for applying saved views)
+	// viewFilters uses TableKit's FilterCondition type (with 'field'), converted from library's type (with 'columnId')
+	let viewFilters: FilterCondition[] = [];
+	let viewSort: { columnId: string; direction: 'asc' | 'desc' } | null = null;
+
 	// Apply saved view configuration
 	function applyViewConfig(config: TableConfig) {
 		console.log('[LRT Admin] Applying view config:', config);
@@ -360,6 +441,23 @@
 		// Set view config (triggers reactive update)
 		viewColumns = validColumns.length > 0 ? validColumns : [];
 		viewColumnOrder = validColumnOrder.length > 0 ? validColumnOrder : [];
+
+		// Apply filters from view config (convert columnId to field for TableKit)
+		// Ensure value is a string for FilterCondition component
+		if (config.filters && Array.isArray(config.filters) && config.filters.length > 0) {
+			viewFilters = config.filters.map((f, idx) => ({
+				id: `view-filter-${idx}`,
+				field: f.columnId,
+				operator: f.operator as FilterCondition['operator'],
+				value: typeof f.value === 'string' ? f.value : String(f.value)
+			}));
+		} else {
+			viewFilters = [];
+		}
+
+		// Apply sort from view config
+		viewSort = config.sort || null;
+
 		configVersion++;
 	}
 
@@ -1260,21 +1358,28 @@
 	];
 
 	// Default year filter matching Electric's default WHERE clause
-	const currentYear = new Date().getFullYear();
+	// Note: value must be a string for FilterCondition component
 	const defaultYearFilter: FilterCondition = {
 		id: 'default-year-filter',
 		field: 'year',
 		operator: 'greater_or_equal',
-		value: currentYear - 2
+		value: String(currentYear - 2)
 	};
 
 	// Build TableKit configuration from view (reactive)
-	$: hasViewConfig = viewColumns.length > 0 || viewColumnOrder.length > 0;
+	$: hasViewConfig = viewColumns.length > 0 || viewColumnOrder.length > 0 || viewFilters.length > 0 || viewSort !== null;
+
+	// Determine which filters to use: view filters if set, otherwise default year filter
+	$: activeFilters = viewFilters.length > 0 ? viewFilters : [defaultYearFilter];
+
+	// Determine sort config (TableKit uses columnId and expects an array)
+	$: activeSorting = viewSort ? [{ columnId: viewSort.columnId, direction: viewSort.direction }] : undefined;
 
 	$: tableKitConfig = {
 		id: hasViewConfig ? `view_config_v${configVersion}` : 'default_config',
 		version: '1.0',
-		defaultFilters: [defaultYearFilter],
+		defaultFilters: activeFilters,
+		defaultSorting: activeSorting,
 		defaultColumnOrder: hasViewConfig && viewColumnOrder.length > 0 ? viewColumnOrder : undefined,
 		defaultVisibleColumns: hasViewConfig && viewColumns.length > 0 ? viewColumns : undefined
 	};
