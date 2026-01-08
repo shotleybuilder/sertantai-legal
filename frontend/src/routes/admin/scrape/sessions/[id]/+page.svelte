@@ -31,6 +31,9 @@
 	$: allSelected = records.length > 0 && selectedCount === records.length;
 	$: someSelected = selectedCount > 0 && selectedCount < records.length;
 
+	// Set of names that exist in database (for "In DB" column indicator)
+	$: existingNamesSet = new Set($dbStatusQuery.data?.existing_names ?? []);
+
 	// Parse Review Modal State
 	let showParseModal = false;
 	let parseModalRecords: ScrapeRecord[] = [];
@@ -450,6 +453,12 @@
 											class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
 										/>
 									</th>
+									<th
+										class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+										title="Already exists in database"
+									>
+										In DB
+									</th>
 									{#if activeGroup === 3}
 										<th
 											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -493,7 +502,8 @@
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
 								{#each $groupQuery.data.records as record}
-									<tr class="hover:bg-gray-50 {record.selected ? 'bg-blue-50' : ''}">
+									{@const inDb = existingNamesSet.has(record.name)}
+									<tr class="hover:bg-gray-50 {record.selected ? 'bg-blue-50' : ''} {inDb ? 'bg-purple-50/50' : ''}">
 										<td class="px-4 py-3">
 											<input
 												type="checkbox"
@@ -502,6 +512,17 @@
 												disabled={$selectionMutation.isPending}
 												class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
 											/>
+										</td>
+										<td class="px-4 py-3 text-center">
+											{#if inDb}
+												<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700" title="Exists in database">
+													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+														<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+													</svg>
+												</span>
+											{:else}
+												<span class="text-gray-300">-</span>
+											{/if}
 										</td>
 										{#if activeGroup === 3}
 											<td class="px-4 py-3 text-sm text-gray-500">
