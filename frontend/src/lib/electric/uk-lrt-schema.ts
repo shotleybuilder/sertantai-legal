@@ -83,6 +83,7 @@ export interface UkLrtRecord {
 	md_attachment_paras: number | null;
 	md_images: number | null;
 	latest_amend_date: string | null;
+	latest_rescind_date: string | null;
 	leg_gov_uk_url: string | null;
 	created_at: string | null;
 	updated_at: string | null;
@@ -161,6 +162,7 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		md_attachment_paras: parseNumber(data.md_attachment_paras),
 		md_images: parseNumber(data.md_images),
 		latest_amend_date: parseString(data.latest_amend_date),
+		latest_rescind_date: parseString(data.latest_rescind_date),
 		leg_gov_uk_url: parseString(data.leg_gov_uk_url),
 		created_at: parseString(data.created_at),
 		updated_at: parseString(data.updated_at)

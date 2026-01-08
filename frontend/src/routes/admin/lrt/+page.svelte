@@ -98,6 +98,7 @@
 		md_attachment_paras: number | null;
 		md_images: number | null;
 		latest_amend_date: string | null;
+		latest_rescind_date: string | null;
 		leg_gov_uk_url: string | null;
 		created_at: string | null;
 		updated_at: string | null;
@@ -220,6 +221,20 @@
 			filters: [{ columnId: 'year', operator: 'greater_or_equal', value: String(currentYear - 2) }],
 			sort: { columnId: 'md_date', direction: 'desc' },
 			isDefault: true
+		},
+		{
+			name: 'Recently Amended',
+			description: 'Laws amended in the last 3 years, sorted by most recent amendment date.',
+			columns: ['actions', 'name', 'title_en', 'latest_amend_date', 'year', 'type_code', 'live'],
+			filters: [{ columnId: 'latest_amend_date', operator: 'greater_or_equal', value: String(currentYear - 2) + '-01-01' }],
+			sort: { columnId: 'latest_amend_date', direction: 'desc' }
+		},
+		{
+			name: 'Recently Rescinded',
+			description: 'Laws rescinded (repealed/revoked) in the last 3 years, sorted by most recent rescind date.',
+			columns: ['actions', 'name', 'title_en', 'latest_rescind_date', 'year', 'type_code', 'live'],
+			filters: [{ columnId: 'latest_rescind_date', operator: 'greater_or_equal', value: String(currentYear - 2) + '-01-01' }],
+			sort: { columnId: 'latest_rescind_date', direction: 'desc' }
 		},
 		{
 			name: 'Description',
@@ -1344,6 +1359,30 @@
 			},
 			size: 100,
 			meta: { group: 'Timestamps', dataType: 'date' }
+		},
+		{
+			id: 'latest_amend_date',
+			accessorKey: 'latest_amend_date',
+			header: 'Last Amended',
+			cell: (info) => {
+				const val = info.getValue() as string | null;
+				if (!val) return '-';
+				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+			},
+			size: 110,
+			meta: { group: 'Amendments', dataType: 'date' }
+		},
+		{
+			id: 'latest_rescind_date',
+			accessorKey: 'latest_rescind_date',
+			header: 'Last Rescinded',
+			cell: (info) => {
+				const val = info.getValue() as string | null;
+				if (!val) return '-';
+				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+			},
+			size: 110,
+			meta: { group: 'Amendments', dataType: 'date' }
 		},
 		// Links
 		{
