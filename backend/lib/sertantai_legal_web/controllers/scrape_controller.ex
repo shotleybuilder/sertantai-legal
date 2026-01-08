@@ -827,8 +827,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
   defp existing_record_to_map(existing) do
     existing
     |> Map.from_struct()
-    |> Map.drop([:__meta__, :id, :inserted_at, :updated_at])
-    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.drop([:__meta__, :id, :inserted_at, :updated_at, :calculations, :aggregates])
+    |> Enum.reject(fn {_k, v} ->
+      is_nil(v) or match?(%Ash.NotLoaded{}, v)
+    end)
     |> Enum.into(%{})
   end
 
