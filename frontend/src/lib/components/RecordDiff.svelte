@@ -182,6 +182,15 @@
 		return incoming[field];
 	}
 
+	// Check if a value is empty (null, undefined, empty string, empty array, empty object)
+	function isEmpty(value: unknown): boolean {
+		if (value === null || value === undefined) return true;
+		if (value === '') return true;
+		if (Array.isArray(value) && value.length === 0) return true;
+		if (typeof value === 'object' && Object.keys(value as object).length === 0) return true;
+		return false;
+	}
+
 	$: changes = delta
 		? Object.entries(delta)
 				.filter(([k]) => !k.startsWith('_'))
@@ -191,6 +200,13 @@
 					oldValue: getOldValue(field, deltaValue),
 					newValue: getNewValue(field, deltaValue)
 				}))
+				// Filter out changes where both values are empty, or added/deleted with empty value
+				.filter((change) => {
+					if (change.type === 'added' && isEmpty(change.newValue)) return false;
+					if (change.type === 'deleted' && isEmpty(change.oldValue)) return false;
+					if (change.type === 'modified' && isEmpty(change.oldValue) && isEmpty(change.newValue)) return false;
+					return true;
+				})
 		: [];
 
 	// Group changes by category

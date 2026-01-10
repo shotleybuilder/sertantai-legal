@@ -118,20 +118,20 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   # ============================================================================
 
   # Fetch law text from legislation.gov.uk
-  # Tries multiple sources in order of preference:
-  # 1. Introduction XML (preamble/purpose text) - most relevant for law-level classification
-  # 2. Body XML (full body text) - fallback
+  # Uses body text as primary source (contains full law text for comprehensive actor detection)
+  # Falls back to introduction if body is not available
   defp fetch_law_text(type_code, year, number) do
-    # Try introduction first (contains purpose/preamble)
-    case fetch_introduction_text(type_code, year, number) do
+    # Use body text as primary source - this is where all actors/roles are mentioned
+    # The legacy code parsed the full body text for actor extraction
+    case fetch_body_text(type_code, year, number) do
       {:ok, text} when text != "" ->
-        {:ok, text, "introduction"}
+        {:ok, text, "body"}
 
       _ ->
-        # Try body as fallback
-        case fetch_body_text(type_code, year, number) do
+        # Fallback to introduction if body not available
+        case fetch_introduction_text(type_code, year, number) do
           {:ok, text} when text != "" ->
-            {:ok, text, "body"}
+            {:ok, text, "introduction"}
 
           _ ->
             {:error, "Could not fetch law text from any source"}

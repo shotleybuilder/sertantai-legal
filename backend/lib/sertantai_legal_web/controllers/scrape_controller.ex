@@ -667,16 +667,78 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> maybe_calculate_md_date()
     |> normalize_name_to_db_format(IdField)
     |> normalize_credential_keys()
+    |> normalize_link_fields()
     |> normalize_geo_fields()
   end
 
-  # Normalize geo fields:
+  # Link fields (enacted_by, enacting, amended_by, amending, etc.) come from the scraper
+  # as lists of JSON objects with name/number/uri/year/type_code keys.
+  # The DB stores these as arrays of self-referential Name strings (UK_type_year_number format).
+  # This normalizes the scraper format to match DB format.
+  @link_fields [:enacted_by, :enacting, :amended_by, :amending, :rescinded_by, :rescinding]
+
+  defp normalize_link_fields(record) do
+    Enum.reduce(@link_fields, record, fn field, acc ->
+      value = acc[field] || acc[Atom.to_string(field)]
+
+      case value do
+        nil ->
+          acc
+
+        list when is_list(list) ->
+          normalized =
+            list
+            |> Enum.map(&extract_link_name/1)
+            |> Enum.reject(&is_nil/1)
+
+          acc
+          |> Map.put(field, normalized)
+          |> Map.delete(Atom.to_string(field))
+
+        _ ->
+          acc
+      end
+    end)
+  end
+
+  # Extract name from link object and convert to UK_type_year_number format
+  # Handles both JSON objects from enacted_by scraper and already-normalized strings from Amending module
+  defp extract_link_name(%{"name" => name}) when is_binary(name), do: normalize_link_name(name)
+  defp extract_link_name(%{name: name}) when is_binary(name), do: normalize_link_name(name)
+  defp extract_link_name(name) when is_binary(name), do: normalize_link_name(name)
+  defp extract_link_name(_), do: nil
+
+  # Normalize link name to UK_type_year_number format
+  # Handles multiple input formats:
+  # - Already correct: "UK_ukpga_2008_29" -> pass through
+  # - URI format: "ukpga/2008/29" -> "UK_ukpga_2008_29"
+  defp normalize_link_name(name) do
+    cond do
+      # Already in UK_type_year_number format
+      String.starts_with?(name, "UK_") ->
+        name
+
+      # URI format (type/year/number)
+      String.contains?(name, "/") ->
+        case String.split(name, "/") do
+          [type, year, number] -> "UK_#{type}_#{year}_#{number}"
+          _ -> nil
+        end
+
+      # Unknown format
+      true ->
+        nil
+    end
+  end
+
+  # Normalize geo fields and remove intermediate/non-DB fields:
   # - geo_region: convert list to comma-separated string (DB stores as string)
-  # - Remove fields that don't exist in DB schema
+  # - Remove fields that don't exist in DB schema (intermediate scraper data)
   defp normalize_geo_fields(record) do
     record
     |> normalize_geo_region()
     |> Map.drop([
+      # Geo intermediate fields
       :extent,
       "extent",
       :extent_regions,
@@ -685,8 +747,34 @@ defmodule SertantaiLegalWeb.ScrapeController do
       "geo_country",
       :section_extents,
       "section_extents",
+      # Status intermediate fields
       :revoked_element,
-      "revoked_element"
+      "revoked_element",
+      :revoked_title_marker,
+      "revoked_title_marker",
+      :partially_revoked,
+      "partially_revoked",
+      :document_status,
+      "document_status",
+      # Taxa intermediate fields
+      :taxa_text_source,
+      "taxa_text_source",
+      :taxa_text_length,
+      "taxa_text_length",
+      # Amendment intermediate fields
+      :amending_details,
+      "amending_details",
+      :rescinding_details,
+      "rescinding_details",
+      :amended_by_details,
+      "amended_by_details",
+      :rescinded_by_details,
+      "rescinded_by_details",
+      :revoked,
+      "revoked",
+      # Legacy duplicate fields
+      :SICode,
+      "SICode"
     ])
   end
 

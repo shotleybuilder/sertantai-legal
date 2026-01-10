@@ -101,13 +101,16 @@ defmodule SertantaiLegal.Scraper.Amending do
       {:ok, result} ->
         # Determine live status based on revocations
         live = determine_live_status(result.revocations)
-        {:ok, Map.merge(result, %{
-          amended_by: result.amending,
-          rescinded_by: result.rescinding,
-          live: live
-        })}
 
-      error -> error
+        {:ok,
+         Map.merge(result, %{
+           amended_by: result.amending,
+           rescinded_by: result.rescinding,
+           live: live
+         })}
+
+      error ->
+        error
     end
   end
 
@@ -126,6 +129,7 @@ defmodule SertantaiLegal.Scraper.Amending do
   @spec affecting_path(map()) :: String.t()
   def affecting_path(record) do
     {type_code, year, number} = extract_record_params(record)
+
     "/changes/affecting/#{type_code}/#{year}/#{number}?results-count=#{@results_count}&sort=affecting-year-number"
   end
 
@@ -140,6 +144,7 @@ defmodule SertantaiLegal.Scraper.Amending do
   @spec affected_path(map()) :: String.t()
   def affected_path(record) do
     {type_code, year, number} = extract_record_params(record)
+
     "/changes/affected/#{type_code}/#{year}/#{number}?results-count=#{@results_count}&sort=affected-year-number"
   end
 
@@ -160,23 +165,33 @@ defmodule SertantaiLegal.Scraper.Amending do
         amendments = parse_amendments_html(html)
         {revocations, affectations} = separate_revocations(amendments)
 
-        {:ok, %{
-          amending: build_links(affectations),
-          rescinding: build_links(revocations),
-          stats: build_stats(amendments, affectations, revocations),
-          amendments: affectations,
-          revocations: revocations
-        }}
+        {:ok,
+         %{
+           amending: build_links(affectations),
+           rescinding: build_links(revocations),
+           stats: build_stats(amendments, affectations, revocations),
+           amendments: affectations,
+           revocations: revocations
+         }}
 
       {:error, 404, _msg} ->
         # No amendments data is valid - law may not have any amendments
-        {:ok, %{
-          amending: [],
-          rescinding: [],
-          stats: %{amendments_count: 0, revocations_count: 0, laws_count: 0},
-          amendments: [],
-          revocations: []
-        }}
+        {:ok,
+         %{
+           amending: [],
+           rescinding: [],
+           stats: %{
+             total_changes: 0,
+             amendments_count: 0,
+             revocations_count: 0,
+             laws_count: 0,
+             amended_laws_count: 0,
+             revoked_laws_count: 0,
+             self_amendments: 0
+           },
+           amendments: [],
+           revocations: []
+         }}
 
       {:error, _code, msg} ->
         {:error, msg}
@@ -254,6 +269,7 @@ defmodule SertantaiLegal.Scraper.Amending do
         content
         |> extract_text_content()
         |> String.trim()
+
       _ ->
         ""
     end
@@ -263,6 +279,7 @@ defmodule SertantaiLegal.Scraper.Amending do
     case Enum.find(cells_list, fn {_cell, i} -> i == index end) do
       {{"td", _, content}, _} ->
         extract_link(content)
+
       _ ->
         {nil, nil, nil, nil}
     end
@@ -291,10 +308,12 @@ defmodule SertantaiLegal.Scraper.Amending do
   defp extract_link(content) when is_list(content) do
     Enum.find_value(content, {nil, nil, nil, nil}, fn
       {"a", attrs, _children} ->
-        href = Enum.find_value(attrs, fn
-          {"href", value} -> value
-          _ -> nil
-        end)
+        href =
+          Enum.find_value(attrs, fn
+            {"href", value} -> value
+            _ -> nil
+          end)
+
         parse_legislation_path(href)
 
       {"strong", _, children} ->
@@ -314,6 +333,7 @@ defmodule SertantaiLegal.Scraper.Amending do
     case Regex.run(~r/\/(?:id\/)?([a-z]+)\/(\d{4})\/(\d+)/, path) do
       [_full, type_code, year, number] ->
         {path, type_code, year, number}
+
       _ ->
         {path, nil, nil, nil}
     end
@@ -377,11 +397,14 @@ defmodule SertantaiLegal.Scraper.Amending do
 
   defp determine_live_status(revocations) do
     # Check if there are any "in full" revocations
-    has_full_revocation = Enum.any?(revocations, fn %{affect: affect} ->
-      affect_lower = String.downcase(affect || "")
-      String.contains?(affect_lower, "in full") or
-        (String.contains?(affect_lower, "repeal") and not String.contains?(affect_lower, "in part"))
-    end)
+    has_full_revocation =
+      Enum.any?(revocations, fn %{affect: affect} ->
+        affect_lower = String.downcase(affect || "")
+
+        String.contains?(affect_lower, "in full") or
+          (String.contains?(affect_lower, "repeal") and
+             not String.contains?(affect_lower, "in part"))
+      end)
 
     if has_full_revocation do
       @live_revoked
