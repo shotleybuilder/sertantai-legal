@@ -368,11 +368,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
           # Run staged parse
           case StagedParser.parse(record) do
             {:ok, result} ->
-              # Check for duplicate in database
-              duplicate = check_duplicate(name)
+              # Enrich record with type fields and normalize keys for diff comparison
+              enriched_record = enrich_type_fields_for_diff(result.record)
 
-              # Enrich record with type fields and normalize keys
-              enriched_record = enrich_type_fields(result.record)
+              # Check for duplicate in database, filtering to only keys the scraper produces
+              scraped_keys = Map.keys(enriched_record)
+              duplicate = check_duplicate(name, scraped_keys)
 
               json(conn, %{
                 session_id: session_id,
@@ -643,8 +644,19 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   defp normalize_records(_), do: []
 
-  # Enrich record with type_desc and type_class if missing, normalize keys
+  # Enrich record with type_desc and type_class if missing (for session list display)
+  # Does NOT normalize credential keys - UI expects Year, Number, Title_EN
   defp enrich_type_fields(record) do
+    record
+    |> maybe_enrich_type_desc()
+    |> maybe_enrich_type_class()
+    |> normalize_family_key()
+    |> normalize_tags_key()
+    |> maybe_calculate_md_date()
+  end
+
+  # Enrich record for diff comparison - includes key normalization to match DB schema
+  defp enrich_type_fields_for_diff(record) do
     alias SertantaiLegal.Scraper.IdField
 
     record
@@ -670,7 +682,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
       :extent_regions,
       "extent_regions",
       :geo_country,
-      "geo_country"
+      "geo_country",
+      :section_extents,
+      "section_extents",
+      :revoked_element,
+      "revoked_element"
     ])
   end
 
@@ -878,7 +894,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   # Check if a record with this name already exists in uk_lrt
   # Returns the full existing record for diff comparison
-  defp check_duplicate(name) do
+  # Optional scraped_keys filters the existing record to only include keys the scraper produces
+  defp check_duplicate(name, scraped_keys \\ nil) do
     alias SertantaiLegal.Legal.UkLrt
     alias SertantaiLegal.Scraper.IdField
     require Ash.Query
@@ -895,7 +912,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
           id: existing.id,
           updated_at: existing.updated_at,
           family: existing.family,
-          record: existing_record_to_map(existing)
+          record: existing_record_to_map(existing, scraped_keys)
         }
 
       _ ->
@@ -905,22 +922,31 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
   # Excludes metadata fields that shouldn't be compared (timestamps, internal fields)
-  defp existing_record_to_map(existing) do
-    existing
-    |> Map.from_struct()
-    |> Map.drop([
-      :__meta__,
-      :id,
-      :inserted_at,
-      :updated_at,
-      :created_at,
-      :calculations,
-      :aggregates
-    ])
-    |> Enum.reject(fn {_k, v} ->
-      is_nil(v) or match?(%Ash.NotLoaded{}, v)
-    end)
-    |> Enum.into(%{})
+  # If scraped_keys is provided, only include keys that the scraper produces
+  defp existing_record_to_map(existing, scraped_keys \\ nil) do
+    result =
+      existing
+      |> Map.from_struct()
+      |> Map.drop([
+        :__meta__,
+        :id,
+        :inserted_at,
+        :updated_at,
+        :created_at,
+        :calculations,
+        :aggregates
+      ])
+      |> Enum.reject(fn {_k, v} ->
+        is_nil(v) or match?(%Ash.NotLoaded{}, v)
+      end)
+      |> Enum.into(%{})
+
+    # Filter to only keys the scraper produces (avoids showing "deleted" for unscraped fields)
+    if scraped_keys do
+      Map.take(result, scraped_keys)
+    else
+      result
+    end
   end
 
   # Format stages for JSON response

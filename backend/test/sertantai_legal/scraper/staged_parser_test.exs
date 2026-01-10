@@ -140,7 +140,7 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
 
       assert result == """
              UK_uksi_2016_1154 - 1
-               reg. 5(1) words substituted [Yes]\
+              reg. 5(1) words substituted [Yes]\
              """
     end
 
@@ -283,18 +283,24 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       amendments = [
         %{
           name: "UK_uksi_2016_1154",
+          title_en: "The Environmental Permitting Regulations 2016",
+          path: "/id/uksi/2016/1154",
           target: "reg. 5(1)",
           affect: "words substituted",
           applied?: "Yes"
         },
         %{
           name: "UK_uksi_2016_1154",
+          title_en: "The Environmental Permitting Regulations 2016",
+          path: "/id/uksi/2016/1154",
           target: "reg. 12(3)",
           affect: "inserted",
           applied?: "Yes"
         },
         %{
           name: "UK_ukpga_1974_37",
+          title_en: "Health and Safety at Work etc. Act 1974",
+          path: "/id/ukpga/1974/37",
           target: "s. 15(1)",
           affect: "amended",
           applied?: "Not yet"
@@ -303,12 +309,15 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
 
       result = StagedParser.test_build_count_per_law_detailed(amendments)
 
-      # Verify format matches expected detailed output
-      assert result =~ "UK_uksi_2016_1154 - 2"
-      assert result =~ "  reg. 5(1) words substituted [Yes]"
-      assert result =~ "  reg. 12(3) inserted [Yes]"
-      assert result =~ "UK_ukpga_1974_37 - 1"
-      assert result =~ "  s. 15(1) amended [Not yet]"
+      # Verify format matches expected detailed output:
+      # "2 - The Environmental Permitting Regulations 2016\nhttps://legislation.gov.uk/id/uksi/2016/1154"
+      assert result =~ "2 - The Environmental Permitting Regulations 2016"
+      assert result =~ "https://legislation.gov.uk/id/uksi/2016/1154"
+      assert result =~ " reg. 5(1) words substituted [Yes]"
+      assert result =~ " reg. 12(3) inserted [Yes]"
+      assert result =~ "1 - Health and Safety at Work etc. Act 1974"
+      assert result =~ "https://legislation.gov.uk/id/ukpga/1974/37"
+      assert result =~ " s. 15(1) amended [Not yet]"
     end
 
     test "amended_by_stats_affected_by_count_per_law_detailed format" do
@@ -316,12 +325,16 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       amendments = [
         %{
           name: "UK_uksi_2024_100",
+          title_en: "The Example Amendment Regulations 2024",
+          path: "/id/uksi/2024/100",
           target: "reg. 2(1)",
           affect: "words substituted",
           applied?: "Yes"
         },
         %{
           name: "UK_uksi_2023_50",
+          title_en: "The Earlier Amendment Regulations 2023",
+          path: "/id/uksi/2023/50",
           target: "reg. 3",
           affect: "inserted",
           applied?: "Not yet"
@@ -330,10 +343,12 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
 
       result = StagedParser.test_build_count_per_law_detailed(amendments)
 
-      assert result =~ "UK_uksi_2024_100 - 1"
-      assert result =~ "  reg. 2(1) words substituted [Yes]"
-      assert result =~ "UK_uksi_2023_50 - 1"
-      assert result =~ "  reg. 3 inserted [Not yet]"
+      assert result =~ "1 - The Example Amendment Regulations 2024"
+      assert result =~ "https://legislation.gov.uk/id/uksi/2024/100"
+      assert result =~ " reg. 2(1) words substituted [Yes]"
+      assert result =~ "1 - The Earlier Amendment Regulations 2023"
+      assert result =~ "https://legislation.gov.uk/id/uksi/2023/50"
+      assert result =~ " reg. 3 inserted [Not yet]"
     end
 
     test "rescinding_stats_rescinding_count_per_law_detailed format" do
@@ -341,12 +356,16 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       revocations = [
         %{
           name: "UK_uksi_2010_500",
+          title_en: "The Old Regulations 2010",
+          path: "/id/uksi/2010/500",
           target: "whole instrument",
           affect: "revoked",
           applied?: "Yes"
         },
         %{
           name: "UK_ukpga_2005_10",
+          title_en: "Some Act 2005",
+          path: "/id/ukpga/2005/10",
           target: "s. 1",
           affect: "repealed in part",
           applied?: "Not yet"
@@ -355,10 +374,12 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
 
       result = StagedParser.test_build_count_per_law_detailed(revocations)
 
-      assert result =~ "UK_uksi_2010_500 - 1"
-      assert result =~ "  whole instrument revoked [Yes]"
-      assert result =~ "UK_ukpga_2005_10 - 1"
-      assert result =~ "  s. 1 repealed in part [Not yet]"
+      assert result =~ "1 - The Old Regulations 2010"
+      assert result =~ "https://legislation.gov.uk/id/uksi/2010/500"
+      assert result =~ " whole instrument revoked [Yes]"
+      assert result =~ "1 - Some Act 2005"
+      assert result =~ "https://legislation.gov.uk/id/ukpga/2005/10"
+      assert result =~ " s. 1 repealed in part [Not yet]"
     end
 
     test "rescinded_by_stats_rescinded_by_count_per_law_detailed format" do
@@ -366,12 +387,16 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       revocations = [
         %{
           name: "UK_uksi_2024_200",
+          title_en: "The Revoking Regulations 2024",
+          path: "/id/uksi/2024/200",
           target: "reg. 5",
           affect: "revoked",
           applied?: "Yes"
         },
         %{
           name: "UK_uksi_2024_200",
+          title_en: "The Revoking Regulations 2024",
+          path: "/id/uksi/2024/200",
           target: "reg. 6",
           affect: "revoked",
           applied?: "Yes"
@@ -380,9 +405,10 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
 
       result = StagedParser.test_build_count_per_law_detailed(revocations)
 
-      assert result =~ "UK_uksi_2024_200 - 2"
-      assert result =~ "  reg. 5 revoked [Yes]"
-      assert result =~ "  reg. 6 revoked [Yes]"
+      assert result =~ "2 - The Revoking Regulations 2024"
+      assert result =~ "https://legislation.gov.uk/id/uksi/2024/200"
+      assert result =~ " reg. 5 revoked [Yes]"
+      assert result =~ " reg. 6 revoked [Yes]"
     end
   end
 end

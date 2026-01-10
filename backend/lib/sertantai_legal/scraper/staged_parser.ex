@@ -51,7 +51,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
   @type stage :: :extent | :enacted_by | :amendments | :repeal_revoke | :taxa
-  @type stage_result :: %{status: :ok | :error | :skipped, data: map() | nil, error: String.t() | nil}
+  @type stage_result :: %{
+          status: :ok | :error | :skipped,
+          data: map() | nil,
+          error: String.t() | nil
+        }
   @type parse_result :: %{
           record: map(),
           stages: %{stage() => stage_result()},
@@ -122,7 +126,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         end
       end)
 
-    IO.puts("\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} ===\n")
+    IO.puts(
+      "\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} ===\n"
+    )
 
     {:ok, result}
   end
@@ -267,7 +273,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       # This prevents overwriting values from metadata.ex (initial scrape)
       if normalized_extent do
         # Use Extent module to generate geo_detail with emoji flags and section breakdown
-        {_region, _pan_region, geo_detail} = SertantaiLegal.Scraper.Extent.transform_extent(section_extents)
+        {_region, _pan_region, geo_detail} =
+          SertantaiLegal.Scraper.Extent.transform_extent(section_extents)
 
         Map.merge(base, %{
           geo_extent: regions_to_pan_region(regions),
@@ -336,10 +343,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     # Normalize to "E+W+S+NI" format
     extent
     |> String.upcase()
-    |> String.replace("N.I.", "NI")  # Handle "N.I." → "NI"
-    |> String.replace("N.I", "NI")   # Handle "N.I" without trailing dot
-    |> String.replace(".", "")       # Remove any remaining dots
-    |> String.replace(" ", "")       # Remove spaces
+    # Handle "N.I." → "NI"
+    |> String.replace("N.I.", "NI")
+    # Handle "N.I" without trailing dot
+    |> String.replace("N.I", "NI")
+    # Remove any remaining dots
+    |> String.replace(".", "")
+    # Remove spaces
+    |> String.replace(" ", "")
   end
 
   defp extent_to_regions(nil), do: []
@@ -474,23 +485,30 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amending_stats_affects_count: affecting.stats.amendments_count,
           amending_stats_affected_laws_count: affecting.stats.amended_laws_count,
           amending_stats_affects_count_per_law: build_count_per_law_summary(affecting.amendments),
-          amending_stats_affects_count_per_law_detailed: build_count_per_law_detailed(affecting.amendments),
+          amending_stats_affects_count_per_law_detailed:
+            build_count_per_law_detailed(affecting.amendments),
 
           # Flattened stats - Amended_by (🔻 this law is affected by others)
           amended_by_stats_affected_by_count: affected.stats.amendments_count,
           amended_by_stats_affected_by_laws_count: affected.stats.amended_laws_count,
-          amended_by_stats_affected_by_count_per_law: build_count_per_law_summary(affected.amendments),
-          amended_by_stats_affected_by_count_per_law_detailed: build_count_per_law_detailed(affected.amendments),
+          amended_by_stats_affected_by_count_per_law:
+            build_count_per_law_summary(affected.amendments),
+          amended_by_stats_affected_by_count_per_law_detailed:
+            build_count_per_law_detailed(affected.amendments),
 
           # Flattened stats - Rescinding (🔺 this law rescinds others)
           rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
-          rescinding_stats_rescinding_count_per_law: build_count_per_law_summary(affecting.revocations),
-          rescinding_stats_rescinding_count_per_law_detailed: build_count_per_law_detailed(affecting.revocations),
+          rescinding_stats_rescinding_count_per_law:
+            build_count_per_law_summary(affecting.revocations),
+          rescinding_stats_rescinding_count_per_law_detailed:
+            build_count_per_law_detailed(affecting.revocations),
 
           # Flattened stats - Rescinded_by (🔻 this law is rescinded by others)
           rescinded_by_stats_rescinded_by_laws_count: affected.stats.revoked_laws_count,
-          rescinded_by_stats_rescinded_by_count_per_law: build_count_per_law_summary(affected.revocations),
-          rescinded_by_stats_rescinded_by_count_per_law_detailed: build_count_per_law_detailed(affected.revocations),
+          rescinded_by_stats_rescinded_by_count_per_law:
+            build_count_per_law_summary(affected.revocations),
+          rescinded_by_stats_rescinded_by_count_per_law_detailed:
+            build_count_per_law_detailed(affected.revocations),
 
           # Detailed amendment data (for future use)
           amending_details: affecting.amendments,
@@ -499,8 +517,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           rescinded_by_details: affected.revocations
         }
 
-        IO.puts("    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws")
-        IO.puts("    ✓ Amended by: #{data.amended_by_count} laws, Rescinded by: #{data.rescinded_by_count} laws")
+        IO.puts(
+          "    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws"
+        )
+
+        IO.puts(
+          "    ✓ Amended by: #{data.amended_by_count} laws, Rescinded by: #{data.rescinded_by_count} laws"
+        )
 
         %{status: :ok, data: data, error: nil}
 
@@ -531,7 +554,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       {:error, 404, _} ->
         # No resources file - assume not revoked (in force)
         IO.puts("    ⚠ No revocation data (404) - assuming active")
-        %{status: :ok, data: %{live: @live_in_force, live_description: "", revoked: false, revoked_by: []}, error: nil}
+
+        %{
+          status: :ok,
+          data: %{live: @live_in_force, live_description: "", revoked: false, revoked_by: []},
+          error: nil
+        }
 
       {:error, code, msg} ->
         IO.puts("    ✗ Repeal/Revoke failed: #{msg}")
@@ -543,8 +571,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     try do
       # Check title for REVOKED/REPEALED
       title = xpath_text(xml, ~x"//dc:title/text()"s)
-      title_revoked = String.contains?(String.upcase(title), "REVOKED") or
-                      String.contains?(String.upcase(title), "REPEALED")
+
+      title_revoked =
+        String.contains?(String.upcase(title), "REVOKED") or
+          String.contains?(String.upcase(title), "REPEALED")
 
       # Check for ukm:RepealedLaw element
       repealed_law = SweetXml.xpath(xml, ~x"//ukm:RepealedLaw"o)
@@ -573,7 +603,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       is_partially_revoked = not is_fully_revoked and length(revoked_by) > 0
 
       # Build live status and description
-      {live, live_description} = build_live_status(is_fully_revoked, is_partially_revoked, revoked_by)
+      {live, live_description} =
+        build_live_status(is_fully_revoked, is_partially_revoked, revoked_by)
 
       %{
         # Fields for modal display
@@ -591,7 +622,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       }
     rescue
       e ->
-        %{live: @live_in_force, live_description: "", revoked: false, repeal_revoke_error: "Parse error: #{inspect(e)}"}
+        %{
+          live: @live_in_force,
+          live_description: "",
+          revoked: false,
+          repeal_revoke_error: "Parse error: #{inspect(e)}"
+        }
     end
   end
 
@@ -600,9 +636,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Partial revocation - some provisions revoked but law still in force
   defp build_live_status(false, true, revoked_by) do
-    names = Enum.map(revoked_by, fn %{name: name, title: title} ->
-      if title != "", do: "#{name} (#{title})", else: name
-    end)
+    names =
+      Enum.map(revoked_by, fn %{name: name, title: title} ->
+        if title != "", do: "#{name} (#{title})", else: name
+      end)
+
     description = "Partially revoked by: " <> Enum.join(names, ", ")
     {@live_part_revoked, description}
   end
@@ -614,14 +652,17 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Full revocation - with revoking law details
   defp build_live_status(true, _partial, revoked_by) do
-    names = Enum.map(revoked_by, fn %{name: name, title: title} ->
-      if title != "", do: "#{name} (#{title})", else: name
-    end)
+    names =
+      Enum.map(revoked_by, fn %{name: name, title: title} ->
+        if title != "", do: "#{name} (#{title})", else: name
+      end)
+
     description = "Revoked by: " <> Enum.join(names, ", ")
     {@live_revoked, description}
   end
 
   defp format_revoked_by([]), do: nil
+
   defp format_revoked_by(revoked_by) do
     Enum.map(revoked_by, fn %{name: name} -> name end)
   end
@@ -646,7 +687,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         duty_types = taxa_data[:duty_type] || []
         popimar_items = get_in(taxa_data, [:popimar, "items"]) || []
 
-        IO.puts("    ✓ Taxa: #{role_count} actors, #{length(duty_types)} duty types, #{length(popimar_items)} POPIMAR")
+        IO.puts(
+          "    ✓ Taxa: #{role_count} actors, #{length(duty_types)} duty types, #{length(popimar_items)} POPIMAR"
+        )
+
         %{status: :ok, data: taxa_data, error: nil}
 
       {:error, reason} ->
@@ -690,33 +734,63 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Detailed format:  "UK_uksi_2020_100 - 3\n  reg. 1 inserted [Not yet]\n  reg. 2 substituted [Yes]"
 
   defp build_count_per_law_summary([]), do: nil
+
   defp build_count_per_law_summary(amendments) do
     amendments
     |> group_amendments_by_law()
     |> Enum.map(fn {law_name, items} ->
-      "#{law_name} - #{length(items)}"
+      # Get title and path from first item in group
+      first = hd(items)
+      title = Map.get(first, :title_en) || Map.get(first, "title_en") || ""
+      path = Map.get(first, :path) || Map.get(first, "path") || ""
+      count = length(items)
+
+      # Format: "UK_uksi_2020_847 - 7\nThe Immingham Open Cycle Gas Turbine Order 2020\nhttps://legislation.gov.uk/id/uksi/2020/847"
+      if title != "" and path != "" do
+        url = "https://legislation.gov.uk#{path}"
+        "#{law_name} - #{count}\n#{title}\n#{url}"
+      else
+        "#{law_name} - #{count}"
+      end
     end)
     |> Enum.join("\n")
   end
 
   defp build_count_per_law_detailed([]), do: nil
+
   defp build_count_per_law_detailed(amendments) do
     amendments
     |> group_amendments_by_law()
     |> Enum.map(fn {law_name, items} ->
-      # Build detailed entries with target, affect, and applied status
-      # Format: "reg. 2(1) words inserted [Not yet]"
-      details = items
-                |> Enum.map(&build_target_affect_applied/1)
-                |> Enum.reject(&is_nil/1)
-                |> Enum.reject(&(&1 == ""))
-                |> Enum.uniq()
+      # Get title and path from first item in group (with fallbacks for test data)
+      first = hd(items)
+      title = Map.get(first, :title_en) || Map.get(first, "title_en") || ""
+      path = Map.get(first, :path) || Map.get(first, "path") || ""
+      count = length(items)
 
-      count_line = "#{law_name} - #{length(items)}"
+      # Build detailed entries with target, affect, and applied status
+      # Format: "art. 2(1) words inserted [Not yet]"
+      details =
+        items
+        |> Enum.map(&build_target_affect_applied/1)
+        |> Enum.reject(&is_nil/1)
+        |> Enum.reject(&(&1 == ""))
+        |> Enum.uniq()
+
+      # Format: "7 - The Immingham Open Cycle Gas Turbine Order 2020\nhttps://legislation.gov.uk/id/uksi/2020/847"
+      # Falls back to law_name if title is missing (for backwards compatibility with tests)
+      count_line =
+        if title != "" and path != "" do
+          url = "https://legislation.gov.uk#{path}"
+          "#{count} - #{title}\n#{url}"
+        else
+          "#{law_name} - #{count}"
+        end
+
       if details == [] do
         count_line
       else
-        detail_lines = Enum.map(details, &("  " <> &1)) |> Enum.join("\n")
+        detail_lines = Enum.map(details, &(" " <> &1)) |> Enum.join("\n")
         "#{count_line}\n#{detail_lines}"
       end
     end)
@@ -737,7 +811,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       true -> "#{target} #{affect} [#{applied}]"
     end
   end
-  defp build_target_affect_applied(%{target: target}) when is_binary(target) and target != "", do: target
+
+  defp build_target_affect_applied(%{target: target}) when is_binary(target) and target != "",
+    do: target
+
   defp build_target_affect_applied(_), do: nil
 
   defp group_amendments_by_law(amendments) do
@@ -752,7 +829,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   if Mix.env() == :test do
     @doc false
-    def test_build_count_per_law_detailed(amendments), do: build_count_per_law_detailed(amendments)
+    def test_build_count_per_law_detailed(amendments),
+      do: build_count_per_law_detailed(amendments)
 
     @doc false
     def test_build_target_affect_applied(amendment), do: build_target_affect_applied(amendment)
