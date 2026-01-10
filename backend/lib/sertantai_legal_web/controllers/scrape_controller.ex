@@ -660,11 +660,18 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   # Normalize geo fields:
   # - geo_region: convert list to comma-separated string (DB stores as string)
-  # - Remove extent and extent_regions (duplicates of geo_extent/geo_region)
+  # - Remove fields that don't exist in DB schema
   defp normalize_geo_fields(record) do
     record
     |> normalize_geo_region()
-    |> Map.drop([:extent, "extent", :extent_regions, "extent_regions"])
+    |> Map.drop([
+      :extent,
+      "extent",
+      :extent_regions,
+      "extent_regions",
+      :geo_country,
+      "geo_country"
+    ])
   end
 
   defp normalize_geo_region(record) do
