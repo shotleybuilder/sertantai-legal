@@ -18,9 +18,16 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   3. **Dynamic** (enacted_by → enacting): Enacting/Enacting Maker
      - Parent's enacting[] updated when child declares enacted_by
+
+  ## Change Logging
+
+  Updates are tracked in the `record_change_log` JSONB column.
+  - No entry is created on initial record creation
+  - Each update appends an entry with timestamp, changed_by, and field diffs
   """
 
   alias SertantaiLegal.Scraper.Storage
+  alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Legal.FunctionCalculator
 
@@ -91,13 +98,19 @@ defmodule SertantaiLegal.Scraper.Persister do
     # Phase 2: Update parent enacting[] from child enacted_by
     if Enum.any?(laws_with_enacted_by) do
       IO.puts("Updating enacting[] for #{Enum.count(laws_with_enacted_by)} parent laws...")
-      {:ok, enacting_count} = FunctionCalculator.update_enacting_from_enacted_by_of_laws(laws_with_enacted_by)
+
+      {:ok, enacting_count} =
+        FunctionCalculator.update_enacting_from_enacted_by_of_laws(laws_with_enacted_by)
+
       IO.puts("Updated #{enacting_count} parent laws with enacting[]")
     end
 
     # Phase 3: Calculate relationship Function for laws with amending/rescinding
     if Enum.any?(laws_needing_relationship_calc) do
-      IO.puts("Calculating relationship Function for #{Enum.count(laws_needing_relationship_calc)} laws...")
+      IO.puts(
+        "Calculating relationship Function for #{Enum.count(laws_needing_relationship_calc)} laws..."
+      )
+
       calculate_relationship_function_of_persisted_laws(laws_needing_relationship_calc)
     end
 
@@ -196,7 +209,21 @@ defmodule SertantaiLegal.Scraper.Persister do
     if map_size(update_attrs_with_function) == 0 do
       {:ok, existing}
     else
-      case existing |> Ash.Changeset.for_update(:update, update_attrs_with_function) |> Ash.update() do
+      # Build change log entry before applying updates
+      update_attrs_with_log =
+        case ChangeLogger.build_change_entry(existing, update_attrs_with_function, "persister") do
+          {:ok, log_entry} ->
+            existing_log = existing.record_change_log || []
+            updated_log = ChangeLogger.append_to_log(existing_log, log_entry)
+            Map.put(update_attrs_with_function, :record_change_log, updated_log)
+
+          {:no_changes, nil} ->
+            update_attrs_with_function
+        end
+
+      case existing
+           |> Ash.Changeset.for_update(:update, update_attrs_with_log)
+           |> Ash.update() do
         {:ok, law} -> {:ok, law}
         {:error, reason} -> {:error, reason}
       end
@@ -221,8 +248,12 @@ defmodule SertantaiLegal.Scraper.Persister do
     enacted_by = get_field(original_record, :enacted_by)
 
     case enacted_by do
-      nil -> tracked
-      [] -> tracked
+      nil ->
+        tracked
+
+      [] ->
+        tracked
+
       _ ->
         # Build a map with what FunctionCalculator.update_enacting_from_enacted_by_of_laws expects
         [%{name: law.name, enacted_by: enacted_by, is_making: law.is_making || false} | tracked]
@@ -323,7 +354,9 @@ defmodule SertantaiLegal.Scraper.Persister do
     attrs
     |> Enum.filter(fn {key, _value} ->
       existing_value = Map.get(existing, key)
-      is_nil(existing_value) || existing_value == "" || existing_value == [] || existing_value == %{}
+
+      is_nil(existing_value) || existing_value == "" || existing_value == [] ||
+        existing_value == %{}
     end)
     |> Map.new()
   end

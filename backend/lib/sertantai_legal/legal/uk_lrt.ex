@@ -541,15 +541,24 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Detailed breakdown of rescissions"
     )
 
-    # Change Logs
+    # Change Logs (Legacy - text based)
     attribute :amending_change_log, :string do
       allow_nil?(true)
-      description("History of amending field changes")
+      description("History of amending field changes (legacy)")
     end
 
     attribute :amended_by_change_log, :string do
       allow_nil?(true)
-      description("History of amended_by field changes")
+      description("History of amended_by field changes (legacy)")
+    end
+
+    # Unified Change Log (JSONB - captures all field changes)
+    attribute :record_change_log, {:array, :map} do
+      allow_nil?(true)
+
+      description(
+        "Unified change log for all field changes. Array of entries with timestamp, changed_by, source, and changes map."
+      )
     end
 
     # Key Dates
@@ -733,7 +742,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rescinded_by_stats_rescinded_by_count_per_law,
         :rescinded_by_stats_rescinded_by_count_per_law_detailed,
         :amending_change_log,
-        :amended_by_change_log
+        :amended_by_change_log,
+        :record_change_log
       ])
     end
 
@@ -845,7 +855,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rescinded_by_stats_rescinded_by_count_per_law,
         :rescinded_by_stats_rescinded_by_count_per_law_detailed,
         :amending_change_log,
-        :amended_by_change_log
+        :amended_by_change_log,
+        :record_change_log
       ])
     end
 
