@@ -654,6 +654,32 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> normalize_tags_key()
     |> maybe_calculate_md_date()
     |> normalize_name_to_db_format(IdField)
+    |> normalize_credential_keys()
+  end
+
+  # Normalize credential keys to lowercase (Year -> year, Number -> number, Title_EN -> title_en)
+  # Database uses lowercase, scraper uses capitalized
+  defp normalize_credential_keys(record) do
+    key_mappings = [
+      {:Year, :year},
+      {"Year", :year},
+      {:Number, :number},
+      {"Number", :number},
+      {:Title_EN, :title_en},
+      {"Title_EN", :title_en}
+    ]
+
+    Enum.reduce(key_mappings, record, fn {old_key, new_key}, acc ->
+      case Map.fetch(acc, old_key) do
+        {:ok, value} ->
+          acc
+          |> Map.delete(old_key)
+          |> Map.put(new_key, value)
+
+        :error ->
+          acc
+      end
+    end)
   end
 
   # Normalize the name field to database format (uksi/2025/622 -> UK_uksi_2025_622)
