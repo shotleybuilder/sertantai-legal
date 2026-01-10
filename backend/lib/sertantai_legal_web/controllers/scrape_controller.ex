@@ -777,7 +777,13 @@ defmodule SertantaiLegalWeb.ScrapeController do
       "SICode",
       # Scraper-only fields (not in db schema)
       :publication_date,
-      "publication_date"
+      "publication_date",
+      :pdf_href,
+      "pdf_href",
+      :enacting_text,
+      "enacting_text",
+      :introductory_text,
+      "introductory_text"
     ])
   end
 
