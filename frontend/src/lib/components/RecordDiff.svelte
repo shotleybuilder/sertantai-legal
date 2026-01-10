@@ -98,6 +98,10 @@
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 		font-size: 0.75rem;
 		line-height: 1.5;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		white-space: pre-wrap;
+		max-width: 100%;
 	}
 
 	:global(.jsondiffpatch-delta) {
