@@ -444,8 +444,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 |> Map.put(:Family, family)
                 |> Map.merge(atomize_keys(overrides))
 
-              # Persist using LawParser (handles create/update)
-              case LawParser.parse_record(record_to_persist, persist: true) do
+              # Persist directly - record already has full metadata from StagedParser
+              case LawParser.persist_direct(record_to_persist) do
                 {:ok, persisted} ->
                   # Mark record as reviewed in session
                   mark_record_reviewed(session_id, name)

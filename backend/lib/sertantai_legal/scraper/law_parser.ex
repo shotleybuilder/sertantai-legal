@@ -161,6 +161,23 @@ defmodule SertantaiLegal.Scraper.LawParser do
   end
 
   @doc """
+  Persist an already-enriched record directly to the database.
+
+  Unlike parse_record/2, this skips the Metadata.fetch step and
+  persists the record as-is. Use this when you already have full
+  metadata from StagedParser.
+
+  ## Parameters
+  - record: Fully enriched map with all fields ready for persistence
+  """
+  @spec persist_direct(map()) :: {:ok, map()} | {:error, String.t()}
+  def persist_direct(record) do
+    title = record[:Title_EN] || record[:title_en] || record["Title_EN"] || "Unknown"
+    IO.puts("\nPersisting directly: #{title}")
+    persist_record(record)
+  end
+
+  @doc """
   Check if a record already exists in the database.
 
   ## Parameters
