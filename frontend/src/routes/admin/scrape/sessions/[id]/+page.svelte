@@ -295,6 +295,24 @@
 				</div>
 			</div>
 
+			<!-- Session Actions -->
+			{#if session.persisted_count > 0}
+				<div class="mt-4 flex items-center space-x-3">
+					<button
+						on:click={handleShowCascadeModal}
+						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+					>
+						<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+						</svg>
+						Cascade Update
+					</button>
+					<span class="text-sm text-gray-500">
+						Re-parse affected laws from this session
+					</span>
+				</div>
+			{/if}
+
 			{#if session.error_message}
 				<div class="mt-4 rounded-md bg-red-50 p-4">
 					<p class="text-sm text-red-700">{session.error_message}</p>

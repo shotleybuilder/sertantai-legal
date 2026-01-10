@@ -811,6 +811,43 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> Enum.reject(&is_nil/1)
   end
 
+  # Parse a law name into components (type_code, year, number)
+  # Handles both formats: UK_uksi_2020_847 or uksi/2020/847
+  defp parse_law_name(name) when is_binary(name) do
+    cond do
+      # UK_ format: UK_uksi_2020_847
+      String.starts_with?(name, "UK_") ->
+        case String.split(name, "_") do
+          ["UK", type_code, year, number] ->
+            case Integer.parse(year) do
+              {year_int, ""} -> {:ok, type_code, year_int, number}
+              _ -> :error
+            end
+
+          _ ->
+            :error
+        end
+
+      # Slash format: uksi/2020/847
+      String.contains?(name, "/") ->
+        case String.split(name, "/") do
+          [type_code, year, number] ->
+            case Integer.parse(year) do
+              {year_int, ""} -> {:ok, type_code, year_int, number}
+              _ -> :error
+            end
+
+          _ ->
+            :error
+        end
+
+      true ->
+        :error
+    end
+  end
+
+  defp parse_law_name(_), do: :error
+
   defp normalize_geo_region(record) do
     geo_region = record[:geo_region] || record["geo_region"]
 
@@ -1296,13 +1333,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
       results =
         Enum.map(target_names, fn name ->
           # Build minimal record for StagedParser
-          parts = String.split(name, "/")
-
-          case parts do
-            [type_code, year, number] ->
+          # Handle both formats: UK_uksi_2020_847 or uksi/2020/847
+          case parse_law_name(name) do
+            {:ok, type_code, year, number} ->
               record = %{
                 type_code: type_code,
-                Year: String.to_integer(year),
+                Year: year,
                 Number: number,
                 name: name
               }
@@ -1319,7 +1355,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   %{name: name, status: "error", message: "Persist failed: #{inspect(reason)}"}
               end
 
-            _ ->
+            :error ->
               %{name: name, status: "error", message: "Invalid name format"}
           end
         end)
