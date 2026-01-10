@@ -461,7 +461,8 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
     %{
       name: enriched[:name] || build_name(enriched),
-      title_en: enriched[:Title_EN] || enriched["Title_EN"],
+      title_en:
+        enriched[:Title_EN] || enriched["Title_EN"] || enriched[:title_en] || enriched["title_en"],
       type_code: enriched[:type_code] || enriched["type_code"],
       type_desc: enriched[:type_desc],
       type_class: enriched[:type_class],
@@ -577,7 +578,8 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   # Derive type_class from Title_EN using TypeClass.set_type_class/1
   defp enrich_type_class(record) do
-    title = record[:Title_EN] || record["Title_EN"]
+    # Check both uppercase (legacy) and lowercase (StagedParser) keys
+    title = record[:Title_EN] || record["Title_EN"] || record[:title_en] || record["title_en"]
 
     if title do
       # set_type_class expects :Title_EN and sets :type_class
