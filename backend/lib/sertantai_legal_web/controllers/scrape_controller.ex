@@ -774,7 +774,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
       "revoked",
       # Legacy duplicate fields
       :SICode,
-      "SICode"
+      "SICode",
+      # Scraper-only fields (not in db schema)
+      :publication_date,
+      "publication_date"
     ])
   end
 
