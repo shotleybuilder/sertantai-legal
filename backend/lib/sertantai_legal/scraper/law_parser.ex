@@ -18,6 +18,12 @@ defmodule SertantaiLegal.Scraper.LawParser do
   - User manually enters ID numbers to parse
   - Same metadata fetching and persistence
 
+  ## Change Logging
+
+  Updates are tracked in the `record_change_log` JSONB column.
+  - No entry is created on initial record creation
+  - Each update appends an entry with timestamp, changed_by, and field diffs
+
   ## Usage
 
       alias SertantaiLegal.Scraper.LawParser
@@ -37,6 +43,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.Metadata
   alias SertantaiLegal.Scraper.TypeClass
+  alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Legal.UkLrt
 
   require Ash.Query
@@ -404,8 +411,20 @@ defmodule SertantaiLegal.Scraper.LawParser do
   defp update_record(existing, record) do
     attrs = build_attrs(record)
 
+    # Build change log entry before applying updates
+    attrs_with_log =
+      case ChangeLogger.build_change_entry(existing, attrs, "law_parser") do
+        {:ok, log_entry} ->
+          existing_log = existing.record_change_log || []
+          updated_log = ChangeLogger.append_to_log(existing_log, log_entry)
+          Map.put(attrs, :record_change_log, updated_log)
+
+        {:no_changes, nil} ->
+          attrs
+      end
+
     case existing
-         |> Ash.Changeset.for_update(:update, attrs)
+         |> Ash.Changeset.for_update(:update, attrs_with_log)
          |> Ash.update() do
       {:ok, updated} ->
         IO.puts("  Updated: #{updated.name}")
