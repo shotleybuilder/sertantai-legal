@@ -75,17 +75,20 @@ defmodule SertantaiLegal.Scraper.ChangeLogger do
     old_map = normalize_to_map(old_record)
     new_map = normalize_to_map(new_record)
 
-    # Get all keys from both records (excluding metadata fields)
-    all_keys =
-      (Map.keys(old_map) ++ Map.keys(new_map))
-      |> Enum.uniq()
+    # Only compare keys that are in the NEW record
+    # If a key isn't being updated, we don't track it as a change
+    # This prevents "field deleted" false positives when the update
+    # only includes a subset of fields
+    new_keys =
+      new_map
+      |> Map.keys()
       |> Enum.reject(&(&1 in exclude_fields))
       |> Enum.map(&to_string/1)
       |> Enum.uniq()
 
     # Find fields that changed
     changes =
-      all_keys
+      new_keys
       |> Enum.reduce(%{}, fn key, acc ->
         atom_key = safe_to_atom(key)
         old_value = get_normalized_value(old_map, key, atom_key)
