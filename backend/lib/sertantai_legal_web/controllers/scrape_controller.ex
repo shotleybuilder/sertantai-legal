@@ -873,10 +873,19 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
+  # Excludes metadata fields that shouldn't be compared (timestamps, internal fields)
   defp existing_record_to_map(existing) do
     existing
     |> Map.from_struct()
-    |> Map.drop([:__meta__, :id, :inserted_at, :updated_at, :calculations, :aggregates])
+    |> Map.drop([
+      :__meta__,
+      :id,
+      :inserted_at,
+      :updated_at,
+      :created_at,
+      :calculations,
+      :aggregates
+    ])
     |> Enum.reject(fn {_k, v} ->
       is_nil(v) or match?(%Ash.NotLoaded{}, v)
     end)
