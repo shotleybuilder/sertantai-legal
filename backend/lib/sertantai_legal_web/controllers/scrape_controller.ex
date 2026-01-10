@@ -655,6 +655,30 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> maybe_calculate_md_date()
     |> normalize_name_to_db_format(IdField)
     |> normalize_credential_keys()
+    |> normalize_geo_fields()
+  end
+
+  # Normalize geo fields:
+  # - geo_region: convert list to comma-separated string (DB stores as string)
+  # - Remove extent and extent_regions (duplicates of geo_extent/geo_region)
+  defp normalize_geo_fields(record) do
+    record
+    |> normalize_geo_region()
+    |> Map.drop([:extent, "extent", :extent_regions, "extent_regions"])
+  end
+
+  defp normalize_geo_region(record) do
+    geo_region = record[:geo_region] || record["geo_region"]
+
+    case geo_region do
+      regions when is_list(regions) ->
+        record
+        |> Map.put(:geo_region, Enum.join(regions, ","))
+        |> Map.delete("geo_region")
+
+      _ ->
+        record
+    end
   end
 
   # Normalize credential keys to lowercase (Year -> year, Number -> number, Title_EN -> title_en)
