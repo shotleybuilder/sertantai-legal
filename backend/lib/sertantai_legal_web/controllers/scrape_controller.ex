@@ -645,12 +645,31 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   # Enrich record with type_desc and type_class if missing, normalize keys
   defp enrich_type_fields(record) do
+    alias SertantaiLegal.Scraper.IdField
+
     record
     |> maybe_enrich_type_desc()
     |> maybe_enrich_type_class()
     |> normalize_family_key()
     |> normalize_tags_key()
     |> maybe_calculate_md_date()
+    |> normalize_name_to_db_format(IdField)
+  end
+
+  # Normalize the name field to database format (uksi/2025/622 -> UK_uksi_2025_622)
+  # This ensures diff comparison works correctly between incoming and existing records
+  defp normalize_name_to_db_format(record, id_field_module) do
+    name = record[:name] || record["name"]
+
+    if name do
+      normalized = id_field_module.normalize_to_db_name(name)
+
+      record
+      |> Map.put(:name, normalized)
+      |> Map.delete("name")
+    else
+      record
+    end
   end
 
   # Calculate md_date if missing (for backwards compatibility with old session data)
@@ -804,10 +823,14 @@ defmodule SertantaiLegalWeb.ScrapeController do
   # Returns the full existing record for diff comparison
   defp check_duplicate(name) do
     alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Scraper.IdField
     require Ash.Query
 
+    # Normalize name to database format (uksi/2025/622 -> UK_uksi_2025_622)
+    db_name = IdField.normalize_to_db_name(name)
+
     case UkLrt
-         |> Ash.Query.filter(name == ^name)
+         |> Ash.Query.filter(name == ^db_name)
          |> Ash.read() do
       {:ok, [existing | _]} ->
         %{

@@ -72,6 +72,32 @@ defmodule SertantaiLegal.Scraper.IdField do
   end
 
   @doc """
+  Normalize a name to the database format (UK_-prefixed with underscores).
+
+  Handles both URL format and already-normalized names:
+  - "uksi/2025/622" -> "UK_uksi_2025_622"
+  - "UK_uksi_2025_622" -> "UK_uksi_2025_622" (unchanged)
+
+  ## Examples
+
+      iex> IdField.normalize_to_db_name("uksi/2025/622")
+      "UK_uksi_2025_622"
+
+      iex> IdField.normalize_to_db_name("UK_uksi_2025_622")
+      "UK_uksi_2025_622"
+  """
+  @spec normalize_to_db_name(String.t()) :: String.t()
+  def normalize_to_db_name(name) when is_binary(name) do
+    cond do
+      String.starts_with?(name, "UK_") -> name
+      String.contains?(name, "/") -> "UK_" <> String.replace(name, "/", "_")
+      true -> name
+    end
+  end
+
+  def normalize_to_db_name(name), do: name
+
+  @doc """
   Set the Acronym field based on the Title_EN.
 
   Extracts uppercase letters from the title to form an acronym.
