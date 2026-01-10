@@ -381,9 +381,33 @@ defmodule SertantaiLegal.Scraper.LawParser do
     "UK_#{type_code}_#{year}_#{number}"
   end
 
+  # Normalize name to canonical UK_ format
+  # Handles both slash format (uksi/2025/622) and UK_ format (UK_uksi_2025_622)
+  defp normalize_name(nil, record), do: build_name(record)
+
+  defp normalize_name(name, record) when is_binary(name) do
+    cond do
+      # Already in UK_ format
+      String.starts_with?(name, "UK_") ->
+        name
+
+      # Slash format: uksi/2025/622 -> UK_uksi_2025_622
+      String.contains?(name, "/") ->
+        name
+        |> String.replace("/", "_")
+        |> then(&"UK_#{&1}")
+
+      # Fallback to building from record
+      true ->
+        build_name(record)
+    end
+  end
+
   # Persist record to database
   defp persist_record(record) do
-    name = record[:name] || build_name(record)
+    # Always use canonical UK_ format for name lookup
+    # The record[:name] may be in slash format (uksi/2025/622) from scraped data
+    name = normalize_name(record[:name], record)
 
     case find_by_name(name) do
       nil ->
@@ -460,7 +484,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
     enriched = enrich_type_fields(record)
 
     %{
-      name: enriched[:name] || build_name(enriched),
+      name: normalize_name(enriched[:name], enriched),
       title_en:
         enriched[:Title_EN] || enriched["Title_EN"] || enriched[:title_en] || enriched["title_en"],
       type_code: enriched[:type_code] || enriched["type_code"],

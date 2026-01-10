@@ -453,12 +453,20 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   # Collect affected laws for cascade update
                   amending = record_to_persist[:amending] || []
                   rescinding = record_to_persist[:rescinding] || []
-                  enacted_by = record_to_persist[:enacted_by] || []
-                  Storage.add_affected_laws(session_id, name, amending, rescinding, enacted_by)
+                  # enacted_by can be list of maps or strings - extract names
+                  enacted_by_names = extract_enacted_by_names(record_to_persist[:enacted_by])
+
+                  Storage.add_affected_laws(
+                    session_id,
+                    name,
+                    amending,
+                    rescinding,
+                    enacted_by_names
+                  )
 
                   # Check if there are affected laws
                   has_affected = length(amending) + length(rescinding) > 0
-                  has_enacting_parents = length(enacted_by) > 0
+                  has_enacting_parents = length(enacted_by_names) > 0
 
                   json(conn, %{
                     message: "Record persisted successfully",
@@ -468,7 +476,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
                     has_affected_laws: has_affected,
                     affected_count: length(amending) + length(rescinding),
                     has_enacting_parents: has_enacting_parents,
-                    enacting_parents_count: length(enacted_by)
+                    enacting_parents_count: length(enacted_by_names)
                   })
 
                 {:error, reason} ->
@@ -783,8 +791,24 @@ defmodule SertantaiLegalWeb.ScrapeController do
       :enacting_text,
       "enacting_text",
       :introductory_text,
-      "introductory_text"
+      "introductory_text",
+      :reviewed,
+      "reviewed"
     ])
+  end
+
+  # Extract name strings from enacted_by which can be list of maps or strings
+  defp extract_enacted_by_names(nil), do: []
+  defp extract_enacted_by_names([]), do: []
+
+  defp extract_enacted_by_names(enacted_by) when is_list(enacted_by) do
+    Enum.map(enacted_by, fn
+      %{name: name} -> name
+      %{"name" => name} -> name
+      name when is_binary(name) -> name
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
   end
 
   defp normalize_geo_region(record) do
