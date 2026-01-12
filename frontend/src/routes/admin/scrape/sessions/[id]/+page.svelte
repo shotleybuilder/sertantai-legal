@@ -7,7 +7,7 @@
 		useParseGroupMutation,
 		useUpdateSelectionMutation
 	} from '$lib/query/scraper';
-	import type { ScrapeSession, ScrapeRecord } from '$lib/api/scraper';
+	import type { ScrapeSession, ScrapeRecord, AffectedLaw } from '$lib/api/scraper';
 	import { getAffectedLaws } from '$lib/api/scraper';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import CascadeUpdateModal from '$lib/components/CascadeUpdateModal.svelte';
@@ -169,6 +169,23 @@
 			parseCompleteMessage = `Cascade update: ${reparsed} re-parsed, ${errors} errors`;
 		}
 		$sessionQuery.refetch();
+	}
+
+	function handleCascadeReviewLaws(event: CustomEvent<{ laws: AffectedLaw[] }>) {
+		// Close cascade modal and open parse review modal with the selected laws
+		showCascadeModal = false;
+		const { laws } = event.detail;
+		// Convert AffectedLaw[] to ScrapeRecord[] format (ParseReviewModal uses name field)
+		parseModalRecords = laws.map((law) => ({
+			name: law.name,
+			Title_EN: law.title_en || law.name,
+			type_code: law.type_code || '',
+			Year: law.year || 0,
+			Number: ''
+		}));
+		parseModalStartIndex = 0;
+		parseCompleteMessage = '';
+		showParseModal = true;
 	}
 
 	async function handleShowCascadeModal() {
@@ -636,4 +653,5 @@
 	open={showCascadeModal}
 	on:close={handleCascadeModalClose}
 	on:complete={handleCascadeComplete}
+	on:reviewLaws={handleCascadeReviewLaws}
 />

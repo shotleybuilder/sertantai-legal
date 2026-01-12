@@ -17,6 +17,7 @@
 	const dispatch = createEventDispatcher<{
 		close: void;
 		complete: { reparsed: number; errors: number; enactingUpdated: number };
+		reviewLaws: { laws: AffectedLaw[] };
 	}>();
 
 	// State
@@ -58,6 +59,21 @@
 		}
 	}
 
+	// Review mode: opens ParseReviewModal for each law (default)
+	function handleReviewSelected() {
+		if (selectedInDb.size === 0 || !affectedLaws) return;
+
+		const selectedLaws = affectedLaws.in_db.filter((law) => selectedInDb.has(law.name));
+		dispatch('reviewLaws', { laws: selectedLaws });
+	}
+
+	function handleReviewAll() {
+		if (!affectedLaws || affectedLaws.in_db_count === 0) return;
+
+		dispatch('reviewLaws', { laws: affectedLaws.in_db });
+	}
+
+	// Auto-save mode: batch re-parse without review (kept for future use)
 	async function handleReparseAll() {
 		if (!affectedLaws || affectedLaws.in_db_count === 0) return;
 
@@ -488,29 +504,21 @@
 					{/if}
 				</div>
 				<div class="flex gap-3 flex-wrap justify-end">
-					<!-- Re-parse buttons (amending/rescinding) -->
+					<!-- Review buttons (amending/rescinding) - opens ParseReviewModal for each -->
 					{#if affectedLaws && affectedLaws.in_db_count > 0 && !reparseResults}
 						<button
-							on:click={handleReparseSelected}
+							on:click={handleReviewSelected}
 							disabled={reparseInProgress || enactingUpdateInProgress || selectedInDb.size === 0}
 							class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{#if reparseInProgress}
-								Re-parsing...
-							{:else}
-								Re-parse Selected ({selectedInDb.size})
-							{/if}
+							Review Selected ({selectedInDb.size})
 						</button>
 						<button
-							on:click={handleReparseAll}
+							on:click={handleReviewAll}
 							disabled={reparseInProgress || enactingUpdateInProgress}
 							class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{#if reparseInProgress}
-								Re-parsing...
-							{:else}
-								Re-parse All ({affectedLaws.in_db_count})
-							{/if}
+							Review All ({affectedLaws.in_db_count})
 						</button>
 					{/if}
 
