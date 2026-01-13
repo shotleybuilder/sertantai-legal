@@ -674,6 +674,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> normalize_credential_keys()
     |> normalize_link_fields()
     |> normalize_geo_fields()
+    |> normalize_jsonb_fields()
   end
 
   # Link fields (enacted_by, enacting, amended_by, amending, etc.) come from the scraper
@@ -853,6 +854,67 @@ defmodule SertantaiLegalWeb.ScrapeController do
         record
         |> Map.put(:geo_region, Enum.join(regions, ","))
         |> Map.delete("geo_region")
+
+      _ ->
+        record
+    end
+  end
+
+  # Normalize JSONB fields to match DB storage format
+  # - si_code, md_subjects: list -> {"values": [...]}
+  # - duty_type: list -> {"values": [...]}
+  # - role_gvt, duty_holder, rights_holder, etc.: list -> {key: true, ...}
+  defp normalize_jsonb_fields(record) do
+    record
+    |> normalize_values_jsonb(:si_code)
+    |> normalize_values_jsonb(:md_subjects)
+    |> normalize_values_jsonb(:duty_type)
+    |> normalize_key_map_jsonb(:role_gvt)
+    |> normalize_key_map_jsonb(:duty_holder)
+    |> normalize_key_map_jsonb(:rights_holder)
+    |> normalize_key_map_jsonb(:responsibility_holder)
+    |> normalize_key_map_jsonb(:power_holder)
+    |> normalize_key_map_jsonb(:popimar)
+  end
+
+  # Convert list to {"values": [...]} format for JSONB storage
+  defp normalize_values_jsonb(record, field) do
+    value = record[field] || record[Atom.to_string(field)]
+
+    case value do
+      list when is_list(list) and list != [] ->
+        record
+        |> Map.put(field, %{"values" => list})
+        |> Map.delete(Atom.to_string(field))
+
+      %{"values" => _} = map ->
+        # Already in correct format
+        record
+        |> Map.put(field, map)
+        |> Map.delete(Atom.to_string(field))
+
+      _ ->
+        record
+    end
+  end
+
+  # Convert list to {key: true, ...} format for holder fields
+  defp normalize_key_map_jsonb(record, field) do
+    value = record[field] || record[Atom.to_string(field)]
+
+    case value do
+      list when is_list(list) and list != [] ->
+        key_map = Enum.reduce(list, %{}, fn item, acc -> Map.put(acc, item, true) end)
+
+        record
+        |> Map.put(field, key_map)
+        |> Map.delete(Atom.to_string(field))
+
+      map when is_map(map) ->
+        # Already in correct format
+        record
+        |> Map.put(field, map)
+        |> Map.delete(Atom.to_string(field))
 
       _ ->
         record
