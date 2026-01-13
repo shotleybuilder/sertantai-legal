@@ -269,7 +269,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
     |> json(%{error: "Missing required parameter: names (array of law names)"})
   end
 
-@doc """
+  @doc """
   POST /api/uk-lrt/:id/rescrape
 
   Re-scrape and re-parse a single UK LRT record from legislation.gov.uk.
@@ -289,7 +289,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
           name: record.name
         }
 
-# StagedParser.parse always returns {:ok, result}
+        # StagedParser.parse always returns {:ok, result}
         {:ok, result} = StagedParser.parse(input)
 
         # Extract parsed data from stages
@@ -385,13 +385,14 @@ defmodule SertantaiLegalWeb.UkLrtController do
         Map.merge(base_attrs, %{
           role: stages[:taxa][:data][:role],
           role_gvt: stages[:taxa][:data][:role_gvt],
-          duty_type: stages[:taxa][:data][:duty_type],
+          duty_type: list_to_jsonb_map(stages[:taxa][:data][:duty_type]),
           duty_holder: stages[:taxa][:data][:duty_holder],
           duty_holder_article_clause: stages[:taxa][:data][:duty_holder_article_clause],
           rights_holder: stages[:taxa][:data][:rights_holder],
           rights_holder_article_clause: stages[:taxa][:data][:rights_holder_article_clause],
           responsibility_holder: stages[:taxa][:data][:responsibility_holder],
-          responsibility_holder_article_clause: stages[:taxa][:data][:responsibility_holder_article_clause],
+          responsibility_holder_article_clause:
+            stages[:taxa][:data][:responsibility_holder_article_clause],
           power_holder: stages[:taxa][:data][:power_holder],
           power_holder_article_clause: stages[:taxa][:data][:power_holder_article_clause],
           popimar: stages[:taxa][:data][:popimar],
@@ -401,7 +402,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
         base_attrs
       end
 
-    # Filter out nil values
+    # Filter out nil values - empty lists/maps should still update to clear stale data
     base_attrs
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
     |> Map.new()
@@ -411,10 +412,11 @@ defmodule SertantaiLegalWeb.UkLrtController do
   defp format_stages(stages) do
     stages
     |> Enum.map(fn {stage, result} ->
-      {stage, %{
-        status: result.status,
-        error: result[:error]
-      }}
+      {stage,
+       %{
+         status: result.status,
+         error: result[:error]
+       }}
     end)
     |> Map.new()
   end
@@ -509,34 +511,48 @@ defmodule SertantaiLegalWeb.UkLrtController do
   end
 
   defp parse_integer(nil, default), do: default
+
   defp parse_integer(value, default) when is_binary(value) do
     case Integer.parse(value) do
       {int, ""} -> int
       _ -> default
     end
   end
+
   defp parse_integer(value, _default) when is_integer(value), do: value
   defp parse_integer(_, default), do: default
 
   defp parse_integer_or_nil(nil), do: nil
+
   defp parse_integer_or_nil(value) when is_binary(value) do
     case Integer.parse(value) do
       {int, ""} -> int
       _ -> nil
     end
   end
+
   defp parse_integer_or_nil(value) when is_integer(value), do: value
   defp parse_integer_or_nil(_), do: nil
 
   defp format_error(%{errors: errors}) when is_list(errors) do
     Enum.map_join(errors, ", ", &inspect/1)
   end
+
   defp format_error(reason) when is_binary(reason), do: reason
   defp format_error(reason), do: inspect(reason)
 
   defp not_found_error?(%Ash.Error.Query.NotFound{}), do: true
+
   defp not_found_error?(%Ash.Error.Invalid{errors: errors}) do
     Enum.any?(errors, &not_found_error?/1)
   end
+
   defp not_found_error?(_), do: false
+
+  # Convert list to JSONB map format for DB storage
+  defp list_to_jsonb_map(nil), do: nil
+  defp list_to_jsonb_map([]), do: nil
+  defp list_to_jsonb_map(list) when is_list(list), do: %{"values" => list}
+  defp list_to_jsonb_map(%{"values" => _} = map), do: map
+  defp list_to_jsonb_map(_), do: nil
 end

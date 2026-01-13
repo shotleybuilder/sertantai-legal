@@ -158,6 +158,21 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
       assert created.md_date == ~D[2024-12-01]
     end
 
+    test "persists si_code as JSONB map to database" do
+      record = %{
+        type_code: "uksi",
+        Year: 2024,
+        Number: "1234",
+        Title_EN: "Test Regulation with SI Code"
+      }
+
+      {:ok, created} = LawParser.parse_record(record)
+
+      # si_code should be persisted as JSONB with "values" key
+      # introduction_sample.xml has SIheading: "ENVIRONMENT; POLLUTION"
+      assert created.si_code == %{"values" => ["ENVIRONMENT", "POLLUTION"]}
+    end
+
     test "updates existing record when it already exists" do
       # First create a record
       record = %{

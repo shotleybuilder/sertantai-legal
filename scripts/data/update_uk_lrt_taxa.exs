@@ -202,9 +202,10 @@ defmodule UkLrtTaxaUpdater do
     import Ecto.Query
 
     SertantaiLegal.Repo.all(
-      from u in "uk_lrt",
+      from(u in "uk_lrt",
         where: not is_nil(u.name),
         select: {u.name, u.id}
+      )
     )
     |> Map.new()
   end
@@ -226,6 +227,7 @@ defmodule UkLrtTaxaUpdater do
 
   defp process_batch(batch, name_to_id, column_indices, dry_run, acc) do
     {_, last_index} = List.last(batch)
+
     if rem(last_index, @progress_interval) == 0 or last_index <= @batch_size do
       IO.write("\r  Processed: #{last_index} records...")
     end
@@ -304,6 +306,36 @@ defmodule UkLrtTaxaUpdater do
     end
   end
 
+  defp parse_value(value, :jsonb_values) do
+    # Parse comma-separated values into JSONB {"values": [...]} format
+    # Handles quoted values with commas inside (e.g., "Interpretation, Definition")
+    value
+    |> parse_csv_values()
+    |> case do
+      [] -> nil
+      arr -> %{"values" => arr}
+    end
+  end
+
+  # Parse CSV values respecting quoted strings
+  defp parse_csv_values(str) do
+    # Use regex to split on commas not inside quotes
+    ~r/(?:^|,)("(?:[^"]*(?:""[^"]*)*)"|[^,]*)/
+    |> Regex.scan(str)
+    |> Enum.map(fn
+      [_, quoted] when is_binary(quoted) ->
+        quoted
+        |> String.trim()
+        |> String.trim("\"")
+        # Handle escaped quotes
+        |> String.replace("\"\"", "\"")
+
+      _ ->
+        nil
+    end)
+    |> Enum.filter(&(&1 != nil and &1 != ""))
+  end
+
   defp parse_value(value, :jsonb) do
     # For jsonb holder columns, the CSV has a specific format
     # Try to parse as JSON first, otherwise treat as comma-separated keys
@@ -336,9 +368,10 @@ defmodule UkLrtTaxaUpdater do
       end)
 
     query =
-      from u in "uk_lrt",
+      from(u in "uk_lrt",
         where: u.id == ^id,
         update: [set: ^set_list]
+      )
 
     case SertantaiLegal.Repo.update_all(query, []) do
       {1, _} -> :ok
@@ -370,6 +403,7 @@ defmodule UkLrtTaxaUpdater do
     # Show column update counts
     if map_size(result.column_counts) > 0 do
       IO.puts("\n  Records updated per column:")
+
       result.column_counts
       |> Enum.sort_by(fn {_col, count} -> -count end)
       |> Enum.each(fn {col, count} ->
@@ -412,11 +446,24 @@ csv_path =
       if File.exists?(default_path) do
         default_path
       else
-        IO.puts("Usage: mix run ../scripts/data/update_uk_lrt_taxa.exs <csv_path> [--limit N] [--dry-run]")
+        IO.puts(
+          "Usage: mix run ../scripts/data/update_uk_lrt_taxa.exs <csv_path> [--limit N] [--dry-run]"
+        )
+
         IO.puts("\nExamples:")
-        IO.puts("  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv")
-        IO.puts("  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --limit 100")
-        IO.puts("  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --dry-run")
+
+        IO.puts(
+          "  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv"
+        )
+
+        IO.puts(
+          "  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --limit 100"
+        )
+
+        IO.puts(
+          "  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --dry-run"
+        )
+
         System.halt(1)
       end
   end

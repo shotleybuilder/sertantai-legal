@@ -499,7 +499,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
       # Metadata fields - convert types to match UkLrt resource
       md_description: enriched[:md_description],
       md_subjects: list_to_map(enriched[:md_subjects]),
-      md_total_paras: to_decimal(enriched[:md_total_paras]),
+      md_total_paras: enriched[:md_total_paras],
       md_body_paras: enriched[:md_body_paras],
       md_schedule_paras: enriched[:md_schedule_paras],
       md_attachment_paras: enriched[:md_attachment_paras],
@@ -568,9 +568,26 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
       # Live status from StagedParser Stage 4
       live: enriched[:live],
-      live_description: enriched[:live_description]
+      live_description: enriched[:live_description],
+
+      # Taxa fields from StagedParser Stage 5
+      # role stays as array, role_gvt and holders use {key: true} format for fast lookup
+      role: enriched[:role],
+      role_gvt: list_to_key_map(enriched[:role_gvt]),
+      duty_type: list_to_map(enriched[:duty_type]),
+      duty_holder: list_to_key_map(enriched[:duty_holder]),
+      duty_holder_article_clause: enriched[:duty_holder_article_clause],
+      rights_holder: list_to_key_map(enriched[:rights_holder]),
+      rights_holder_article_clause: enriched[:rights_holder_article_clause],
+      responsibility_holder: list_to_key_map(enriched[:responsibility_holder]),
+      responsibility_holder_article_clause: enriched[:responsibility_holder_article_clause],
+      power_holder: list_to_key_map(enriched[:power_holder]),
+      power_holder_article_clause: enriched[:power_holder_article_clause],
+      popimar: list_to_key_map(enriched[:popimar]),
+      popimar_article_clause: enriched[:popimar_article_clause]
     }
-    |> Enum.reject(fn {_k, v} -> v == nil or v == "" or v == [] or v == %{} end)
+    # Only filter nil - empty values ([], %{}, "") should be persisted to clear stale data
+    |> Enum.reject(fn {_k, v} -> v == nil end)
     |> Enum.into(%{})
   end
 
@@ -644,12 +661,6 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   defp extract_names(_), do: nil
 
-  defp to_decimal(nil), do: nil
-  defp to_decimal(val) when is_integer(val), do: Decimal.new(val)
-  defp to_decimal(val) when is_float(val), do: Decimal.from_float(val)
-  defp to_decimal(%Decimal{} = val), do: val
-  defp to_decimal(_), do: nil
-
   # Convert ISO date string to Date
   defp to_date(nil), do: nil
   defp to_date(""), do: nil
@@ -664,10 +675,24 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   defp to_date(_), do: nil
 
-  # Convert list to map format for JSONB fields
+  # Convert list to map format for JSONB fields ({"values": [...]})
   defp list_to_map(nil), do: nil
   defp list_to_map([]), do: nil
+  defp list_to_map(""), do: nil
+  defp list_to_map(str) when is_binary(str), do: %{"values" => [str]}
   defp list_to_map(list) when is_list(list), do: %{"values" => list}
   defp list_to_map(map) when is_map(map), do: map
   defp list_to_map(_), do: nil
+
+  # Convert list to key map format for holder fields ({key: true, ...})
+  # Used for role_gvt, duty_holder, rights_holder, etc. for fast lookup
+  defp list_to_key_map(nil), do: nil
+  defp list_to_key_map([]), do: %{}
+
+  defp list_to_key_map(list) when is_list(list) do
+    Enum.reduce(list, %{}, fn item, acc -> Map.put(acc, item, true) end)
+  end
+
+  defp list_to_key_map(map) when is_map(map), do: map
+  defp list_to_key_map(_), do: nil
 end

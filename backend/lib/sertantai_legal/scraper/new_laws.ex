@@ -146,14 +146,6 @@ defmodule SertantaiLegal.Scraper.NewLaws do
 
       case Metadata.fetch(record) do
         {:ok, metadata} ->
-          # Merge metadata into record, converting si_code list to comma-separated string
-          # for consistency with filters that expect string
-          si_code_str =
-            case metadata[:si_code] do
-              codes when is_list(codes) and codes != [] -> Enum.join(codes, ",")
-              _ -> nil
-            end
-
           # Clean the Title_EN from metadata (remove "The " prefix and year suffix)
           cleaned_title =
             case metadata[:Title_EN] do
@@ -167,8 +159,6 @@ defmodule SertantaiLegal.Scraper.NewLaws do
 
           record
           |> Map.merge(metadata_without_title)
-          |> Map.put(:si_code, si_code_str)
-          |> Map.put(:SICode, metadata[:si_code] || [])
           |> maybe_update_title(cleaned_title)
           |> enrich_type_fields()
 

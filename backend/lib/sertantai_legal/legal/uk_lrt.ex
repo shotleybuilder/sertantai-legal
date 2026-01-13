@@ -206,9 +206,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
     end
 
     # Duty Type
-    attribute :duty_type, :string do
+    attribute :duty_type, :map do
       allow_nil?(true)
-      description("Duty type classification")
+      description("Duty type classification as JSONB {values: [...]}")
     end
 
     attribute :duty_type_article, :string do
@@ -338,7 +338,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
     end
 
     # Document Statistics (from legislation.gov.uk)
-    attribute :md_total_paras, :decimal do
+    attribute :md_total_paras, :integer do
       allow_nil?(true)
       description("Total paragraph count")
     end

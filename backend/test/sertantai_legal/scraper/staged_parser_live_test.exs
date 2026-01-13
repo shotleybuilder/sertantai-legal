@@ -148,5 +148,28 @@ defmodule SertantaiLegal.Scraper.StagedParserLiveTest do
         end
       end
     end
+
+    @tag :live
+    test "enacted_by names use UK_type_year_number format" do
+      # This SI is enacted by the Planning Act 2008 (ukpga/2008/29)
+      # enacted_by names should be in UK_ format for DB consistency
+      record = %{type_code: "uksi", Year: 2025, Number: "622", name: "UK_uksi_2025_622"}
+
+      {:ok, result} = StagedParser.parse(record)
+
+      assert result.stages[:enacted_by].status == :ok
+
+      enacted_by = result.record[:enacted_by]
+      assert is_list(enacted_by), "enacted_by should be a list"
+      assert length(enacted_by) > 0, "Should have at least one enacted_by"
+
+      # All enacted_by entries should have UK_ format names
+      for entry <- enacted_by do
+        assert is_map(entry), "enacted_by entry should be a map"
+
+        assert String.starts_with?(entry.name, "UK_"),
+               "enacted_by name should start with UK_, got: #{entry.name}"
+      end
+    end
   end
 end

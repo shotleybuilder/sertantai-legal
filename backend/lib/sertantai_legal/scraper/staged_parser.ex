@@ -428,11 +428,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # Convert law ID like "ukpga/1974/37" to map format
+  # Normalizes name to UK_type_year_number format for DB consistency
   defp parse_law_id_to_map(law_id) do
+    alias SertantaiLegal.Scraper.IdField
+
     case String.split(law_id, "/") do
       [type_code, year, number] ->
         %{
-          name: law_id,
+          name: IdField.normalize_to_db_name(law_id),
           type_code: type_code,
           year: year,
           number: number,
@@ -440,7 +443,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         }
 
       _ ->
-        %{name: law_id, type_code: nil, year: nil, number: nil, uri: nil}
+        %{
+          name: IdField.normalize_to_db_name(law_id),
+          type_code: nil,
+          year: nil,
+          number: nil,
+          uri: nil
+        }
     end
   end
 
@@ -617,8 +626,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         revoked_element: has_repealed_element,
         revoked_by: revoked_by,
         rescinded_by: format_revoked_by(revoked_by),
-        dct_valid: parse_date(dct_valid),
-        restrict_start_date: parse_date(restrict_start_date)
+        md_dct_valid_date: parse_date(dct_valid),
+        md_restrict_start_date: parse_date(restrict_start_date)
       }
     rescue
       e ->
