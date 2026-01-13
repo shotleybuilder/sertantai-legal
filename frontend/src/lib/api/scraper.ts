@@ -300,17 +300,19 @@ export async function parseOne(sessionId: string, name: string): Promise<ParseOn
 
 /**
  * Confirm and persist a reviewed record
+ * @param record - The pre-parsed record data from parseOne (required to avoid redundant re-parsing)
  */
 export async function confirmRecord(
 	sessionId: string,
 	name: string,
+	record: Record<string, unknown>,
 	family?: string,
 	overrides?: Record<string, unknown>
 ): Promise<ConfirmResult> {
 	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/confirm`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, family, overrides })
+		body: JSON.stringify({ name, record, family, overrides })
 	});
 
 	if (!response.ok) {

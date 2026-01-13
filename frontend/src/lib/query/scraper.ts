@@ -198,14 +198,16 @@ export function useConfirmRecordMutation() {
 		mutationFn: ({
 			sessionId,
 			name,
+			record,
 			family,
 			overrides
 		}: {
 			sessionId: string;
 			name: string;
+			record: Record<string, unknown>;
 			family?: string;
 			overrides?: Record<string, unknown>;
-		}) => confirmRecord(sessionId, name, family, overrides),
+		}) => confirmRecord(sessionId, name, record, family, overrides),
 		onSuccess: (data, variables) => {
 			// Invalidate session to update persisted count
 			queryClient.invalidateQueries({ queryKey: scraperKeys.session(variables.sessionId) });

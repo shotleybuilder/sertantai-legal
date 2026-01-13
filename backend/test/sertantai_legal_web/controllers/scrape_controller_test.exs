@@ -989,4 +989,101 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       assert record.live == "In Force"
     end
   end
+
+  describe "POST /api/sessions/:id/confirm" do
+    setup do
+      # Create a session for the tests
+      {:ok, _session} =
+        ScrapeSession.create(%{
+          session_id: @test_session_id,
+          year: 2024,
+          month: 12,
+          day_from: 1,
+          day_to: 5
+        })
+
+      :ok
+    end
+
+    test "returns 400 when record parameter is missing", %{conn: conn} do
+      # This test ensures the endpoint requires pre-parsed record data
+      # to prevent redundant re-parsing on confirm
+      conn =
+        post(conn, "/api/sessions/#{@test_session_id}/confirm", %{
+          name: "uksi/2024/999",
+          family: "Environmental Protection"
+          # Note: deliberately omitting 'record' parameter
+        })
+
+      response = json_response(conn, 400)
+      assert response["error"] =~ "Missing required parameter: record"
+    end
+
+    test "persists record without re-parsing when record data is provided", %{conn: conn} do
+      # This test verifies that providing pre-parsed record data works
+      # and doesn't trigger a re-parse (which would fail without network mocks)
+      pre_parsed_record = %{
+        "name" => "uksi/2024/888",
+        "type_code" => "uksi",
+        "Year" => 2024,
+        "Number" => "888",
+        "title_en" => "Test Regulations 2024",
+        "live" => "In Force",
+        "geo_extent" => "England and Wales",
+        "amending" => [],
+        "rescinding" => [],
+        "enacted_by" => []
+      }
+
+      conn =
+        post(conn, "/api/sessions/#{@test_session_id}/confirm", %{
+          name: "uksi/2024/888",
+          record: pre_parsed_record,
+          family: "Environmental Protection"
+        })
+
+      response = json_response(conn, 200)
+      assert response["message"] == "Record persisted successfully"
+      assert response["name"] == "uksi/2024/888"
+
+      # Verify the record was persisted correctly
+      alias SertantaiLegal.Legal.UkLrt
+      require Ash.Query
+      {:ok, [record]} = UkLrt |> Ash.Query.filter(name == "UK_uksi_2024_888") |> Ash.read()
+      assert record.title_en == "Test Regulations 2024"
+      assert record.family == "Environmental Protection"
+    end
+
+    test "merges family and overrides with pre-parsed record", %{conn: conn} do
+      pre_parsed_record = %{
+        "name" => "uksi/2024/777",
+        "type_code" => "uksi",
+        "Year" => 2024,
+        "Number" => "777",
+        "title_en" => "Override Test Regulations 2024",
+        "live" => "In Force",
+        "amending" => [],
+        "rescinding" => [],
+        "enacted_by" => []
+      }
+
+      conn =
+        post(conn, "/api/sessions/#{@test_session_id}/confirm", %{
+          name: "uksi/2024/777",
+          record: pre_parsed_record,
+          family: "Health & Safety",
+          overrides: %{"family_ii" => "Workplace Safety"}
+        })
+
+      response = json_response(conn, 200)
+      assert response["message"] == "Record persisted successfully"
+
+      # Verify both family and override were applied
+      alias SertantaiLegal.Legal.UkLrt
+      require Ash.Query
+      {:ok, [record]} = UkLrt |> Ash.Query.filter(name == "UK_uksi_2024_777") |> Ash.read()
+      assert record.family == "Health & Safety"
+      assert record.family_ii == "Workplace Safety"
+    end
+  end
 end

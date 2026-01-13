@@ -415,75 +415,72 @@ defmodule SertantaiLegalWeb.ScrapeController do
   - name: record name (e.g., "uksi/2025/1227")
   - family: Family classification (e.g., "E", "H", "S")
   - overrides: Optional map of field overrides
+  - record: Optional pre-parsed record data (avoids redundant re-parse)
   """
   def confirm(conn, %{"id" => session_id, "name" => name} = params) do
-    alias SertantaiLegal.Scraper.StagedParser
     alias SertantaiLegal.Scraper.LawParser
     alias SertantaiLegal.Scraper.Storage
 
     family = params["family"]
     overrides = params["overrides"] || %{}
+    pre_parsed_record = params["record"]
 
     with {:ok, _session} <- SessionManager.get(session_id) do
-      # Find the record in any group
-      record = find_record_in_session(session_id, name)
-
-      case record do
+      # Use pre-parsed record if provided, otherwise this is an error
+      # (the frontend should always send the record to avoid redundant parsing)
+      case pre_parsed_record do
         nil ->
           conn
-          |> put_status(:not_found)
-          |> json(%{error: "Record not found in session: #{name}"})
+          |> put_status(:bad_request)
+          |> json(%{error: "Missing required parameter: record (pre-parsed data from parse_one)"})
 
-        record ->
-          # Run staged parse to get full metadata
-          case StagedParser.parse(record) do
-            {:ok, result} ->
-              # Merge family and overrides
-              record_to_persist =
-                result.record
-                |> Map.put(:Family, family)
-                |> Map.merge(atomize_keys(overrides))
+        record_data when is_map(record_data) ->
+          # Atomize keys and merge family/overrides
+          record_to_persist =
+            record_data
+            |> atomize_keys()
+            |> Map.put(:Family, family)
+            |> Map.merge(atomize_keys(overrides))
 
-              # Persist directly - record already has full metadata from StagedParser
-              case LawParser.persist_direct(record_to_persist) do
-                {:ok, persisted} ->
-                  # Mark record as reviewed in session
-                  mark_record_reviewed(session_id, name)
+          # Persist directly - record already has full metadata from parse_one
+          case LawParser.persist_direct(record_to_persist) do
+            {:ok, persisted} ->
+              # Mark record as reviewed in session
+              mark_record_reviewed(session_id, name)
 
-                  # Collect affected laws for cascade update
-                  amending = record_to_persist[:amending] || []
-                  rescinding = record_to_persist[:rescinding] || []
-                  # enacted_by can be list of maps or strings - extract names
-                  enacted_by_names = extract_enacted_by_names(record_to_persist[:enacted_by])
+              # Collect affected laws for cascade update
+              amending = record_to_persist[:amending] || []
+              rescinding = record_to_persist[:rescinding] || []
+              # enacted_by can be list of maps or strings - extract names
+              enacted_by_names = extract_enacted_by_names(record_to_persist[:enacted_by])
 
-                  Storage.add_affected_laws(
-                    session_id,
-                    name,
-                    amending,
-                    rescinding,
-                    enacted_by_names
-                  )
+              Storage.add_affected_laws(
+                session_id,
+                name,
+                amending,
+                rescinding,
+                enacted_by_names
+              )
 
-                  # Check if there are affected laws
-                  has_affected = length(amending) + length(rescinding) > 0
-                  has_enacting_parents = length(enacted_by_names) > 0
+              # Check if there are affected laws
+              has_affected = length(amending) + length(rescinding) > 0
+              has_enacting_parents = length(enacted_by_names) > 0
 
-                  json(conn, %{
-                    message: "Record persisted successfully",
-                    name: name,
-                    id: persisted.id,
-                    action: if(check_duplicate(name), do: "updated", else: "created"),
-                    has_affected_laws: has_affected,
-                    affected_count: length(amending) + length(rescinding),
-                    has_enacting_parents: has_enacting_parents,
-                    enacting_parents_count: length(enacted_by_names)
-                  })
+              json(conn, %{
+                message: "Record persisted successfully",
+                name: name,
+                id: persisted.id,
+                action: if(check_duplicate(name), do: "updated", else: "created"),
+                has_affected_laws: has_affected,
+                affected_count: length(amending) + length(rescinding),
+                has_enacting_parents: has_enacting_parents,
+                enacting_parents_count: length(enacted_by_names)
+              })
 
-                {:error, reason} ->
-                  conn
-                  |> put_status(:unprocessable_entity)
-                  |> json(%{error: "Failed to persist: #{reason}"})
-              end
+            {:error, reason} ->
+              conn
+              |> put_status(:unprocessable_entity)
+              |> json(%{error: "Failed to persist: #{reason}"})
           end
       end
     else

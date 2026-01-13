@@ -76,12 +76,13 @@
 	}
 
 	async function handleConfirm() {
-		if (!parseResult || !currentRecord) return;
+		if (!parseResult || !currentRecord || !parseResult.record) return;
 
 		try {
 			await $confirmMutation.mutateAsync({
 				sessionId,
 				name: currentRecord.name,
+				record: parseResult.record,
 				family: selectedFamily || undefined,
 				overrides: selectedSubFamily ? { family_ii: selectedSubFamily } : undefined
 			});
