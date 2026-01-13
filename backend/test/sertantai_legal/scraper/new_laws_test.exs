@@ -120,24 +120,17 @@ defmodule SertantaiLegal.Scraper.NewLawsTest do
       # Records should have metadata fields from XML
       record = hd(records)
       assert record[:si_code] != nil
-      assert record[:SICode] != nil
-      assert is_list(record[:SICode])
+      assert is_list(record[:si_code])
     end
 
-    test "si_code is comma-separated string" do
+    test "si_code is list of codes" do
       {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 1, nil, fetch_metadata: true)
 
       record = hd(records)
-      # From fixture: "ENVIRONMENT; POLLUTION" becomes "ENVIRONMENT,POLLUTION"
-      assert record[:si_code] == "ENVIRONMENT,POLLUTION"
-    end
-
-    test "SICode is list of codes" do
-      {:ok, records} = NewLaws.fetch_range(2024, 12, 1, 1, nil, fetch_metadata: true)
-
-      record = hd(records)
-      assert "ENVIRONMENT" in record[:SICode]
-      assert "POLLUTION" in record[:SICode]
+      # si_code is now a list directly from metadata (no more CSV format)
+      assert is_list(record[:si_code])
+      assert "ENVIRONMENT" in record[:si_code]
+      assert "POLLUTION" in record[:si_code]
     end
   end
 
