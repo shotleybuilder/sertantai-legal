@@ -355,14 +355,14 @@ defmodule SertantaiLegalWeb.ScrapeController do
     alias SertantaiLegal.Scraper.Storage
 
     with {:ok, _session} <- SessionManager.get(session_id) do
-      # Find the record in any group
-      record = find_record_in_session(session_id, name)
+      # Find the record in any group, or build from name for cascade updates
+      record = find_record_in_session(session_id, name) || build_record_from_name(name)
 
       case record do
         nil ->
           conn
-          |> put_status(:not_found)
-          |> json(%{error: "Record not found in session: #{name}"})
+          |> put_status(:bad_request)
+          |> json(%{error: "Invalid record name format: #{name}"})
 
         record ->
           # Run staged parse
@@ -1025,6 +1025,35 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   defp not_found_error?(_), do: false
+
+  # Build a minimal record from a name string (e.g., "uksi/2025/622" or "UK_uksi_2025_622")
+  # Used for cascade updates where records exist in uk_lrt but not in session
+  defp build_record_from_name(name) do
+    # Handle both formats: "uksi/2025/622" and "UK_uksi_2025_622"
+    normalized =
+      name
+      |> String.replace("UK_", "")
+      |> String.replace("_", "/")
+
+    case String.split(normalized, "/") do
+      [type_code, year_str, number] ->
+        case Integer.parse(year_str) do
+          {year, ""} ->
+            %{
+              type_code: type_code,
+              Year: year,
+              Number: number,
+              name: "#{type_code}/#{year}/#{number}"
+            }
+
+          _ ->
+            nil
+        end
+
+      _ ->
+        nil
+    end
+  end
 
   # Find a record by name across all groups in a session
   defp find_record_in_session(session_id, name) do

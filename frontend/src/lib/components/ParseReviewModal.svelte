@@ -37,12 +37,15 @@
 
 	// Track the last parsed record name to prevent re-parsing
 	let lastParsedName: string | null = null;
+	// Track names that failed to parse to prevent infinite retry loops
+	let failedNames: Set<string> = new Set();
 
-	// Parse current record when index changes (only if not already parsed)
+	// Parse current record when index changes (only if not already parsed or failed)
 	$: if (
 		open &&
 		currentRecord &&
 		currentRecord.name !== lastParsedName &&
+		!failedNames.has(currentRecord.name) &&
 		!$parseMutation.isPending
 	) {
 		parseCurrentRecord();
@@ -51,6 +54,7 @@
 	async function parseCurrentRecord() {
 		if (!currentRecord) return;
 		if (currentRecord.name === lastParsedName) return;
+		if (failedNames.has(currentRecord.name)) return;
 
 		parseResult = null;
 		lastParsedName = currentRecord.name;
@@ -66,7 +70,8 @@
 			selectedSubFamily = (result.record?.family_ii as string) || '';
 		} catch (error) {
 			console.error('Parse error:', error);
-			lastParsedName = null;
+			// Mark this name as failed to prevent infinite retry loops
+			failedNames.add(currentRecord.name);
 		}
 	}
 
@@ -97,6 +102,11 @@
 		if (isLast) {
 			handleComplete();
 		} else {
+			// Clear failed status for current record to allow retry on return
+			const currentName = currentRecord?.name;
+			if (currentName) {
+				failedNames.delete(currentName);
+			}
 			currentIndex++;
 			parseResult = null;
 			lastParsedName = null;
@@ -105,6 +115,11 @@
 
 	function movePrev() {
 		if (!isFirst) {
+			// Clear failed status for current record to allow retry on return
+			const currentName = currentRecord?.name;
+			if (currentName) {
+				failedNames.delete(currentName);
+			}
 			currentIndex--;
 			parseResult = null;
 			lastParsedName = null;
@@ -126,12 +141,16 @@
 	}
 
 	// Reset state when modal opens with new records
-	$: if (open && records.length > 0) {
-		if (currentIndex === initialIndex && !parseResult && !$parseMutation.isPending) {
-			confirmedCount = 0;
-			skippedCount = 0;
-			errorCount = 0;
-		}
+	// Use a separate variable to track the records array identity
+	let lastRecordsId: string = '';
+	$: recordsId = records.map((r) => r.name).join(',');
+	$: if (open && records.length > 0 && recordsId !== lastRecordsId) {
+		lastRecordsId = recordsId;
+		confirmedCount = 0;
+		skippedCount = 0;
+		errorCount = 0;
+		failedNames = new Set();
+		lastParsedName = null;
 	}
 
 	function getStageIcon(status: string): string {
