@@ -2,16 +2,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @moduledoc """
   Staged parser for UK legislation metadata.
 
-  Parses legislation in five defined stages:
-  1. **Extent** - Geographic extent from contents XML (E+W+S+NI)
-  2. **Enacted_by** - Enacting parent laws from introduction/made XML
-  3. **Amendments** - Laws amended by and amending this law
-  4. **Repeal/Revoke** - Repeal/revocation status and relationships
-  5. **Taxa** - Actor, duty type, and POPIMAR classification
-
-  Note: Basic metadata (title, dates, SI codes) is already captured during
-  the initial scrape by NewLaws.enrich_with_metadata() and is passed in
-  via the record parameter.
+  Parses legislation in six defined stages:
+  1. **Metadata** - Basic metadata from introduction XML (title, dates, SI codes, subjects)
+  2. **Extent** - Geographic extent from contents XML (E+W+S+NI)
+  3. **Enacted_by** - Enacting parent laws from introduction/made XML
+  4. **Amendments** - Laws amended by and amending this law
+  5. **Repeal/Revoke** - Repeal/revocation status and relationships
+  6. **Taxa** - Actor, duty type, and POPIMAR classification
 
   Each stage is independent and reports its own success/error status,
   allowing partial results when some stages fail.
@@ -25,6 +22,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       %{
         record: %{...merged data...},
         stages: %{
+          metadata: %{status: :ok, data: %{...}},
           extent: %{status: :ok, data: %{...}},
           enacted_by: %{status: :ok, data: %{...}},
           amendments: %{status: :error, error: "...", data: nil},
@@ -41,16 +39,17 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
   alias SertantaiLegal.Scraper.EnactedBy
+  alias SertantaiLegal.Scraper.Metadata
   alias SertantaiLegal.Scraper.TaxaParser
 
-  @stages [:extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
+  @stages [:metadata, :extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
 
   # Live status codes (matching legl conventions)
   @live_in_force "✔ In force"
   @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
-  @type stage :: :extent | :enacted_by | :amendments | :repeal_revoke | :taxa
+  @type stage :: :metadata | :extent | :enacted_by | :amendments | :repeal_revoke | :taxa
   @type stage_result :: %{
           status: :ok | :error | :skipped,
           data: map() | nil,
@@ -165,33 +164,88 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # Run a specific stage
+  defp run_stage(:metadata, type_code, year, number, record) do
+    IO.puts("  [1/6] Metadata...")
+    run_metadata_stage(type_code, year, number, record)
+  end
+
   defp run_stage(:extent, type_code, year, number, _record) do
-    IO.puts("  [1/5] Extent...")
+    IO.puts("  [2/6] Extent...")
     run_extent_stage(type_code, year, number)
   end
 
   defp run_stage(:enacted_by, type_code, year, number, _record) do
-    IO.puts("  [2/5] Enacted By...")
+    IO.puts("  [3/6] Enacted By...")
     run_enacted_by_stage(type_code, year, number)
   end
 
   defp run_stage(:amendments, type_code, year, number, record) do
-    IO.puts("  [3/5] Amendments...")
+    IO.puts("  [4/6] Amendments...")
     run_amendments_stage(type_code, year, number, record)
   end
 
   defp run_stage(:repeal_revoke, type_code, year, number, _record) do
-    IO.puts("  [4/5] Repeal/Revoke...")
+    IO.puts("  [5/6] Repeal/Revoke...")
     run_repeal_revoke_stage(type_code, year, number)
   end
 
   defp run_stage(:taxa, type_code, year, number, _record) do
-    IO.puts("  [5/5] Taxa Classification...")
+    IO.puts("  [6/6] Taxa Classification...")
     run_taxa_stage(type_code, year, number)
   end
 
   # ============================================================================
-  # Stage 1: Extent
+  # Stage 1: Metadata
+  # ============================================================================
+  # Fetches basic metadata from the introduction XML including:
+  # - Title, description, subjects
+  # - SI codes (si_code)
+  # - Dates (enactment, made, coming into force)
+  # - Statistics (paragraph counts, images)
+  # - Geographic extent fields
+
+  defp run_metadata_stage(type_code, year, number, existing_record) do
+    fetch_record = %{type_code: type_code, Year: year, Number: number}
+
+    case Metadata.fetch(fetch_record) do
+      {:ok, metadata} ->
+        # Only include metadata fields that don't already exist in the record
+        # This prevents overwriting title_en from the original scrape with
+        # a potentially different Title_EN from the introduction XML
+        filtered_metadata =
+          metadata
+          |> Enum.reject(fn {key, _value} ->
+            has_key?(existing_record, key)
+          end)
+          |> Enum.into(%{})
+
+        # Count key fields for summary
+        si_count = length(metadata[:si_code] || [])
+        subjects_count = length(metadata[:md_subjects] || [])
+        IO.puts("    ✓ Metadata: #{si_count} SI codes, #{subjects_count} subjects")
+        %{status: :ok, data: filtered_metadata, error: nil}
+
+      {:error, reason} ->
+        IO.puts("    ✗ Metadata failed: #{reason}")
+        %{status: :error, data: nil, error: reason}
+    end
+  end
+
+  # Check if a key exists in a record (handling both atom and string keys)
+  defp has_key?(record, key) when is_atom(key) do
+    value = record[key] || record[Atom.to_string(key)]
+    not is_nil(value) and value != "" and value != []
+  end
+
+  defp has_key?(record, key) when is_binary(key) do
+    value = record[key] || record[String.to_existing_atom(key)]
+    not is_nil(value) and value != "" and value != []
+  rescue
+    ArgumentError -> record[key] != nil
+  end
+
+  # ============================================================================
+  # Stage 2: Extent
   # ============================================================================
 
   defp run_extent_stage(type_code, year, number) do
@@ -378,7 +432,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # ============================================================================
-  # Stage 2: Enacted By
+  # Stage 3: Enacted By
   # ============================================================================
   #
   # Fetches the "made" version of the introduction XML to find enacting parent laws.
@@ -454,7 +508,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # ============================================================================
-  # Stage 3: Amendments
+  # Stage 4: Amendments
   # ============================================================================
   #
   # Uses the Amending module to fetch amendment data from /changes/affecting
@@ -547,7 +601,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # ============================================================================
-  # Stage 4: Repeal/Revoke
+  # Stage 5: Repeal/Revoke
   # ============================================================================
 
   defp run_repeal_revoke_stage(type_code, year, number) do
@@ -681,7 +735,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp parse_date(date), do: date
 
   # ============================================================================
-  # Stage 5: Taxa Classification
+  # Stage 6: Taxa Classification
   # ============================================================================
   #
   # Fetches law text and runs the Taxa classification pipeline:

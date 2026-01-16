@@ -661,6 +661,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   # Enrich record for diff comparison - includes key normalization to match DB schema
+  # NOTE: We do NOT normalize JSONB fields here anymore. Instead, we unwrap JSONB
+  # from DB records in existing_record_to_map/2 so both sides compare as lists.
   defp enrich_type_fields_for_diff(record) do
     alias SertantaiLegal.Scraper.IdField
 
@@ -674,7 +676,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> normalize_credential_keys()
     |> normalize_link_fields()
     |> normalize_geo_fields()
-    |> normalize_jsonb_fields()
   end
 
   # Link fields (enacted_by, enacting, amended_by, amending, etc.) come from the scraper
@@ -854,67 +855,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
         record
         |> Map.put(:geo_region, Enum.join(regions, ","))
         |> Map.delete("geo_region")
-
-      _ ->
-        record
-    end
-  end
-
-  # Normalize JSONB fields to match DB storage format
-  # - si_code, md_subjects: list -> {"values": [...]}
-  # - duty_type: list -> {"values": [...]}
-  # - role_gvt, duty_holder, rights_holder, etc.: list -> {key: true, ...}
-  defp normalize_jsonb_fields(record) do
-    record
-    |> normalize_values_jsonb(:si_code)
-    |> normalize_values_jsonb(:md_subjects)
-    |> normalize_values_jsonb(:duty_type)
-    |> normalize_key_map_jsonb(:role_gvt)
-    |> normalize_key_map_jsonb(:duty_holder)
-    |> normalize_key_map_jsonb(:rights_holder)
-    |> normalize_key_map_jsonb(:responsibility_holder)
-    |> normalize_key_map_jsonb(:power_holder)
-    |> normalize_key_map_jsonb(:popimar)
-  end
-
-  # Convert list to {"values": [...]} format for JSONB storage
-  defp normalize_values_jsonb(record, field) do
-    value = record[field] || record[Atom.to_string(field)]
-
-    case value do
-      list when is_list(list) and list != [] ->
-        record
-        |> Map.put(field, %{"values" => list})
-        |> Map.delete(Atom.to_string(field))
-
-      %{"values" => _} = map ->
-        # Already in correct format
-        record
-        |> Map.put(field, map)
-        |> Map.delete(Atom.to_string(field))
-
-      _ ->
-        record
-    end
-  end
-
-  # Convert list to {key: true, ...} format for holder fields
-  defp normalize_key_map_jsonb(record, field) do
-    value = record[field] || record[Atom.to_string(field)]
-
-    case value do
-      list when is_list(list) and list != [] ->
-        key_map = Enum.reduce(list, %{}, fn item, acc -> Map.put(acc, item, true) end)
-
-        record
-        |> Map.put(field, key_map)
-        |> Map.delete(Atom.to_string(field))
-
-      map when is_map(map) ->
-        # Already in correct format
-        record
-        |> Map.put(field, map)
-        |> Map.delete(Atom.to_string(field))
 
       _ ->
         record
@@ -1169,6 +1109,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
   # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
   # Excludes metadata fields that shouldn't be compared (timestamps, internal fields)
   # If scraped_keys is provided, only include keys that the scraper produces
+  #
+  # IMPORTANT: Unwraps JSONB fields to list format for comparison.
+  # DB stores si_code as {"values": [...]}, but scraper produces [...]
+  # We compare in list format (scraper's native format) to avoid false diffs.
   defp existing_record_to_map(existing, scraped_keys \\ nil) do
     result =
       existing
@@ -1186,6 +1130,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
         is_nil(v) or match?(%Ash.NotLoaded{}, v)
       end)
       |> Enum.into(%{})
+      |> unwrap_jsonb_fields()
 
     # Filter to only keys the scraper produces (avoids showing "deleted" for unscraped fields)
     if scraped_keys do
@@ -1193,6 +1138,49 @@ defmodule SertantaiLegalWeb.ScrapeController do
     else
       result
     end
+  end
+
+  # Unwrap JSONB fields from DB format to list format for comparison
+  # DB stores: %{"values" => ["A", "B"]} or %{"key" => true, ...}
+  # Scraper produces: ["A", "B"]
+  # We compare in list format to avoid format-only diffs
+  @values_jsonb_fields [:si_code, :md_subjects, :duty_type]
+  @key_map_jsonb_fields [
+    :role_gvt,
+    :duty_holder,
+    :rights_holder,
+    :responsibility_holder,
+    :power_holder,
+    :popimar
+  ]
+
+  defp unwrap_jsonb_fields(record) do
+    record
+    |> unwrap_values_jsonb_fields()
+    |> unwrap_key_map_jsonb_fields()
+  end
+
+  defp unwrap_values_jsonb_fields(record) do
+    Enum.reduce(@values_jsonb_fields, record, fn field, acc ->
+      case Map.get(acc, field) do
+        %{"values" => list} when is_list(list) -> Map.put(acc, field, list)
+        _ -> acc
+      end
+    end)
+  end
+
+  defp unwrap_key_map_jsonb_fields(record) do
+    Enum.reduce(@key_map_jsonb_fields, record, fn field, acc ->
+      case Map.get(acc, field) do
+        map when is_map(map) and map != %{} ->
+          # Convert %{"key1" => true, "key2" => true} to ["key1", "key2"]
+          list = map |> Map.keys() |> Enum.sort()
+          Map.put(acc, field, list)
+
+        _ ->
+          acc
+      end
+    end)
   end
 
   # Format stages for JSON response
