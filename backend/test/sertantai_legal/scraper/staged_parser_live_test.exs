@@ -161,16 +161,28 @@ defmodule SertantaiLegal.Scraper.StagedParserLiveTest do
 
       assert result.stages[:enacted_by].status == :ok
 
-      enacted_by = result.record[:enacted_by]
+      # enacted_by is a list of name strings for DB links
+      enacted_by = result.law.enacted_by
       assert is_list(enacted_by), "enacted_by should be a list"
       assert length(enacted_by) > 0, "Should have at least one enacted_by"
 
-      # All enacted_by entries should have UK_ format names
-      for entry <- enacted_by do
-        assert is_map(entry), "enacted_by entry should be a map"
+      # All enacted_by entries should be UK_ format name strings
+      for name <- enacted_by do
+        assert is_binary(name), "enacted_by entry should be a string"
 
-        assert String.starts_with?(entry.name, "UK_"),
-               "enacted_by name should start with UK_, got: #{entry.name}"
+        assert String.starts_with?(name, "UK_"),
+               "enacted_by name should start with UK_, got: #{name}"
+      end
+
+      # enacted_by_meta should have the rich metadata
+      enacted_by_meta = result.law.enacted_by_meta
+      assert is_list(enacted_by_meta), "enacted_by_meta should be a list"
+      assert length(enacted_by_meta) > 0, "Should have at least one enacted_by_meta"
+
+      for entry <- enacted_by_meta do
+        assert is_map(entry), "enacted_by_meta entry should be a map"
+        assert Map.has_key?(entry, "name"), "enacted_by_meta should have name"
+        assert Map.has_key?(entry, "uri"), "enacted_by_meta should have uri"
       end
     end
   end

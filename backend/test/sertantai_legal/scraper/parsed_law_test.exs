@@ -14,7 +14,8 @@ defmodule SertantaiLegal.Scraper.ParsedLawTest do
 
       law = ParsedLaw.from_map(map)
 
-      assert law.title_en == "Test Act 2024"
+      # title_en is cleaned: "The " prefix and year suffix removed
+      assert law.title_en == "Test Act"
       assert law.year == 2024
       assert law.number == "123"
       assert law.type_code == "uksi"
@@ -29,7 +30,8 @@ defmodule SertantaiLegal.Scraper.ParsedLawTest do
 
       law = ParsedLaw.from_map(map)
 
-      assert law.title_en == "Test Act 2024"
+      # title_en is cleaned: year suffix removed
+      assert law.title_en == "Test Act"
       assert law.year == 2024
       assert law.number == "123"
     end
@@ -43,7 +45,8 @@ defmodule SertantaiLegal.Scraper.ParsedLawTest do
 
       law = ParsedLaw.from_map(map)
 
-      assert law.title_en == "Test Act 2024"
+      # title_en is cleaned: year suffix removed
+      assert law.title_en == "Test Act"
       assert law.year == 2024
       assert law.number == "123"
     end
@@ -370,8 +373,9 @@ defmodule SertantaiLegal.Scraper.ParsedLawTest do
 
   describe "roundtrip: from_map -> to_db_attrs -> from_db_record" do
     test "preserves data through full roundtrip" do
+      # Note: title_en without year since it gets cleaned on from_map
       original = %{
-        title_en: "Test Act 2024",
+        title_en: "Test Act",
         year: 2024,
         number: "123",
         type_code: "uksi",
@@ -392,8 +396,8 @@ defmodule SertantaiLegal.Scraper.ParsedLawTest do
       # Simulate reading back from DB (with JSONB format)
       restored = ParsedLaw.from_db_record(db_attrs)
 
-      # Verify all values match
-      assert restored.title_en == "Test Act 2024"
+      # Verify all values match (title_en is already clean)
+      assert restored.title_en == "Test Act"
       assert restored.year == 2024
       assert restored.number == "123"
       assert restored.type_code == "uksi"

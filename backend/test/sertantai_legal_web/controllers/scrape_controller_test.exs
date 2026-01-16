@@ -1047,10 +1047,11 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       assert response["name"] == "uksi/2024/888"
 
       # Verify the record was persisted correctly
+      # Note: title_en is cleaned (year suffix removed) by ParsedLaw.from_map
       alias SertantaiLegal.Legal.UkLrt
       require Ash.Query
       {:ok, [record]} = UkLrt |> Ash.Query.filter(name == "UK_uksi_2024_888") |> Ash.read()
-      assert record.title_en == "Test Regulations 2024"
+      assert record.title_en == "Test Regulations"
       assert record.family == "Environmental Protection"
     end
 

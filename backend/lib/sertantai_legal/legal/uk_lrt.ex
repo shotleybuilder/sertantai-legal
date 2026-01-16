@@ -119,9 +119,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Geographic extent (e.g., 'E+W+S+NI', 'E+W')")
     end
 
-    attribute :geo_region, :string do
+    attribute :geo_region, {:array, :string} do
       allow_nil?(true)
-      description("Specific regions covered")
+      description("Specific regions covered (e.g. England, Wales, Scotland, Northern Ireland)")
     end
 
     attribute :geo_detail, :string do
@@ -391,7 +391,12 @@ defmodule SertantaiLegal.Legal.UkLrt do
 
     attribute :enacted_by, {:array, :string} do
       allow_nil?(true)
-      description("Parent enabling legislation")
+      description("Parent enabling legislation (names for self-referential links)")
+    end
+
+    attribute :enacted_by_meta, {:array, :map} do
+      allow_nil?(true)
+      description("Parent enabling legislation metadata (name, number, uri, year, type_code)")
     end
 
     # Linked Relationship Arrays (for graph visualization)
@@ -681,6 +686,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rescinded_by,
         :enacting,
         :enacted_by,
+        :enacted_by_meta,
         :linked_amending,
         :linked_amended_by,
         :linked_rescinding,
@@ -794,6 +800,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rescinded_by,
         :enacting,
         :enacted_by,
+        :enacted_by_meta,
         :linked_amending,
         :linked_amended_by,
         :linked_rescinding,

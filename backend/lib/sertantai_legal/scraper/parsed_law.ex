@@ -1,4 +1,7 @@
 defmodule SertantaiLegal.Scraper.ParsedLaw do
+  alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.LegislationGovUk.Helpers
+
   @moduledoc """
   Canonical representation of a parsed UK law.
 
@@ -66,7 +69,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
           # === GEOGRAPHIC EXTENT ===
           geo_extent: String.t() | nil,
-          geo_region: String.t() | nil,
+          geo_region: [String.t()],
           geo_detail: String.t() | nil,
           md_restrict_extent: String.t() | nil,
 
@@ -100,6 +103,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
           # === FUNCTION (Relationships - all as name lists) ===
           enacted_by: [String.t()],
+          enacted_by_meta: [map()],
           enacting: [String.t()],
           amended_by: [String.t()],
           amending: [String.t()],
@@ -211,7 +215,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
     # Geographic Extent
     geo_extent: nil,
-    geo_region: nil,
+    geo_region: [],
     geo_detail: nil,
     md_restrict_extent: nil,
 
@@ -245,6 +249,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
     # Function (Relationships)
     enacted_by: [],
+    enacted_by_meta: [],
     enacting: [],
     amended_by: [],
     amending: [],
@@ -429,8 +434,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     # Then build the struct with proper type coercion
     %__MODULE__{
       # Credentials
-      name: get_string(normalized, :name),
-      title_en: get_string(normalized, :title_en),
+      name: get_name(normalized, :name),
+      title_en: get_title(normalized, :title_en),
       year: get_integer(normalized, :year),
       number: get_string(normalized, :number),
       number_int: get_integer(normalized, :number_int),
@@ -455,7 +460,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
       # Geographic Extent
       geo_extent: get_string(normalized, :geo_extent),
-      geo_region: get_string(normalized, :geo_region),
+      geo_region: get_list(normalized, :geo_region),
       geo_detail: get_string(normalized, :geo_detail),
       md_restrict_extent: get_string(normalized, :md_restrict_extent),
 
@@ -487,13 +492,14 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       is_rescinding: get_boolean(normalized, :is_rescinding),
       is_enacting: get_boolean(normalized, :is_enacting),
 
-      # Function (Relationships)
-      enacted_by: get_list(normalized, :enacted_by),
-      enacting: get_list(normalized, :enacting),
-      amended_by: get_list(normalized, :amended_by),
-      amending: get_list(normalized, :amending),
-      rescinded_by: get_list(normalized, :rescinded_by),
-      rescinding: get_list(normalized, :rescinding),
+      # Function (Relationships) - extract names from maps or pass through strings
+      enacted_by: get_name_list(normalized, :enacted_by),
+      enacted_by_meta: get_meta_list(normalized, :enacted_by),
+      enacting: get_name_list(normalized, :enacting),
+      amended_by: get_name_list(normalized, :amended_by),
+      amending: get_name_list(normalized, :amending),
+      rescinded_by: get_name_list(normalized, :rescinded_by),
+      rescinding: get_name_list(normalized, :rescinding),
 
       # Function (Linked)
       linked_enacted_by: get_list(normalized, :linked_enacted_by),
@@ -733,6 +739,24 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     end
   end
 
+  # Title gets cleaned: removes "The " prefix, year suffix, "(repealed)", "(revoked)"
+  defp get_title(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      val when is_binary(val) and val != "" -> Helpers.title_clean(val)
+      _ -> nil
+    end
+  end
+
+  # Name gets normalized to DB format: uksi/2025/622 -> UK_uksi_2025_622
+  defp get_name(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      val when is_binary(val) and val != "" -> IdField.normalize_to_db_name(val)
+      _ -> nil
+    end
+  end
+
   defp get_integer(map, key) do
     case Map.get(map, key) do
       nil -> nil
@@ -805,6 +829,50 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     |> String.split(",")
     |> Enum.map(&String.trim/1)
     |> Enum.reject(&(&1 == ""))
+  end
+
+  # Get list of names from relationship fields (enacted_by, amending, etc.)
+  # These may come as rich maps from StagedParser or simple strings from DB
+  defp get_name_list(map, key) do
+    case Map.get(map, key) do
+      nil -> []
+      list when is_list(list) -> extract_names(list)
+      str when is_binary(str) -> [str]
+      _ -> []
+    end
+  end
+
+  # Extract name field from list of maps or pass through strings
+  defp extract_names(list) do
+    list
+    |> Enum.map(fn
+      %{name: name} when is_binary(name) -> name
+      %{"name" => name} when is_binary(name) -> name
+      name when is_binary(name) -> name
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  # Get list of metadata maps from relationship fields
+  # Filters to only include actual maps (not strings)
+  defp get_meta_list(map, key) do
+    case Map.get(map, key) do
+      nil -> []
+      list when is_list(list) -> extract_meta_maps(list)
+      _ -> []
+    end
+  end
+
+  # Extract only map entries, converting atom keys to string keys for JSONB
+  defp extract_meta_maps(list) do
+    list
+    |> Enum.filter(&is_map/1)
+    |> Enum.map(&stringify_keys/1)
+  end
+
+  defp stringify_keys(map) when is_map(map) do
+    Map.new(map, fn {k, v} -> {to_string(k), v} end)
   end
 
   defp get_map(map, key) do
