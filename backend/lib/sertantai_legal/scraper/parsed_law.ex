@@ -1,0 +1,952 @@
+defmodule SertantaiLegal.Scraper.ParsedLaw do
+  @moduledoc """
+  Canonical representation of a parsed UK law.
+
+  All scraper modules should work with this struct internally.
+  This provides:
+  - Single source of truth for data shape
+  - Type safety with compile-time key validation
+  - Normalized keys (always lowercase atoms)
+  - JSONB conversion only at persistence time
+
+  ## Usage
+
+      # Create from any map (normalizes keys)
+      law = ParsedLaw.from_map(%{"Title_EN" => "...", "Year" => 2024})
+
+      # Access fields directly
+      law.title_en
+      law.year
+
+      # Convert to DB format (wraps JSONB fields)
+      attrs = ParsedLaw.to_db_attrs(law)
+
+  ## Field Categories
+
+  1. **Credentials** - Identifiers (name, title, year, number, type)
+  2. **Description** - Classification (family, si_code, tags, subjects)
+  3. **Status** - Enforcement state (live, live_description)
+  4. **Geographic** - Extent and regions
+  5. **Metadata** - Dates and document stats
+  6. **Function** - Relationships (enacted_by, amending, etc.)
+  7. **Taxa** - Role classifications (duty_holder, rights_holder, etc.)
+  8. **Stats** - Amendment statistics
+  9. **Internal** - Parse metadata (not persisted)
+  """
+
+  # ============================================================================
+  # Type Definitions
+  # ============================================================================
+
+  @type t :: %__MODULE__{
+          # === CREDENTIALS ===
+          name: String.t() | nil,
+          title_en: String.t() | nil,
+          year: integer() | nil,
+          number: String.t() | nil,
+          number_int: integer() | nil,
+          type_code: String.t() | nil,
+          type_desc: String.t() | nil,
+          type_class: String.t() | nil,
+          secondary_class: String.t() | nil,
+          acronym: String.t() | nil,
+          old_style_number: String.t() | nil,
+
+          # === DESCRIPTION ===
+          family: String.t() | nil,
+          family_ii: String.t() | nil,
+          si_code: [String.t()],
+          tags: [String.t()],
+          md_description: String.t() | nil,
+          md_subjects: [String.t()],
+
+          # === STATUS ===
+          live: String.t() | nil,
+          live_description: String.t() | nil,
+
+          # === GEOGRAPHIC EXTENT ===
+          geo_extent: String.t() | nil,
+          geo_region: String.t() | nil,
+          geo_detail: String.t() | nil,
+          md_restrict_extent: String.t() | nil,
+
+          # === METADATA (Dates) ===
+          md_date: Date.t() | nil,
+          md_made_date: Date.t() | nil,
+          md_enactment_date: Date.t() | nil,
+          md_coming_into_force_date: Date.t() | nil,
+          md_dct_valid_date: Date.t() | nil,
+          md_modified: Date.t() | nil,
+          md_restrict_start_date: Date.t() | nil,
+          latest_amend_date: Date.t() | nil,
+          latest_change_date: Date.t() | nil,
+          latest_rescind_date: Date.t() | nil,
+
+          # === METADATA (Document Stats) ===
+          md_total_paras: integer() | nil,
+          md_body_paras: integer() | nil,
+          md_schedule_paras: integer() | nil,
+          md_attachment_paras: integer() | nil,
+          md_images: integer() | nil,
+
+          # === FUNCTION (Purpose) ===
+          function: map() | nil,
+          purpose: map() | nil,
+          is_making: boolean() | nil,
+          is_commencing: boolean() | nil,
+          is_amending: boolean() | nil,
+          is_rescinding: boolean() | nil,
+          is_enacting: boolean() | nil,
+
+          # === FUNCTION (Relationships - all as name lists) ===
+          enacted_by: [String.t()],
+          enacting: [String.t()],
+          amended_by: [String.t()],
+          amending: [String.t()],
+          rescinded_by: [String.t()],
+          rescinding: [String.t()],
+
+          # === FUNCTION (Linked - graph edges) ===
+          linked_enacted_by: [String.t()],
+          linked_amending: [String.t()],
+          linked_amended_by: [String.t()],
+          linked_rescinding: [String.t()],
+          linked_rescinded_by: [String.t()],
+
+          # === TAXA (Roles - lists internally, JSONB {key: true} in DB) ===
+          role: [String.t()],
+          role_gvt: [String.t()],
+          duty_type: [String.t()],
+          duty_holder: [String.t()],
+          rights_holder: [String.t()],
+          responsibility_holder: [String.t()],
+          power_holder: [String.t()],
+          popimar: [String.t()],
+
+          # === TAXA (Article mappings) ===
+          article_role: String.t() | nil,
+          role_article: String.t() | nil,
+          duty_type_article: String.t() | nil,
+          article_duty_type: String.t() | nil,
+          duty_holder_article: String.t() | nil,
+          duty_holder_article_clause: String.t() | nil,
+          article_duty_holder: String.t() | nil,
+          article_duty_holder_clause: String.t() | nil,
+          power_holder_article: String.t() | nil,
+          power_holder_article_clause: String.t() | nil,
+          article_power_holder: String.t() | nil,
+          article_power_holder_clause: String.t() | nil,
+          rights_holder_article: String.t() | nil,
+          rights_holder_article_clause: String.t() | nil,
+          article_rights_holder: String.t() | nil,
+          article_rights_holder_clause: String.t() | nil,
+          responsibility_holder_article: String.t() | nil,
+          responsibility_holder_article_clause: String.t() | nil,
+          article_responsibility_holder: String.t() | nil,
+          article_responsibility_holder_clause: String.t() | nil,
+          popimar_article: String.t() | nil,
+          popimar_article_clause: String.t() | nil,
+          article_popimar: String.t() | nil,
+          article_popimar_clause: String.t() | nil,
+
+          # === STATS (Amendment) ===
+          stats_self_affects_count: integer() | nil,
+          amending_stats_affects_count: integer() | nil,
+          amending_stats_affected_laws_count: integer() | nil,
+          amending_stats_affects_count_per_law: String.t() | nil,
+          amending_stats_affects_count_per_law_detailed: String.t() | nil,
+          amended_by_stats_affected_by_count: integer() | nil,
+          amended_by_stats_affected_by_laws_count: integer() | nil,
+          amended_by_stats_affected_by_count_per_law: String.t() | nil,
+          amended_by_stats_affected_by_count_per_law_detailed: String.t() | nil,
+          rescinding_stats_rescinding_laws_count: integer() | nil,
+          rescinding_stats_rescinding_count_per_law: String.t() | nil,
+          rescinding_stats_rescinding_count_per_law_detailed: String.t() | nil,
+          rescinded_by_stats_rescinded_by_laws_count: integer() | nil,
+          rescinded_by_stats_rescinded_by_count_per_law: String.t() | nil,
+          rescinded_by_stats_rescinded_by_count_per_law_detailed: String.t() | nil,
+
+          # === CHANGE LOGS ===
+          amending_change_log: String.t() | nil,
+          amended_by_change_log: String.t() | nil,
+          record_change_log: [map()] | nil,
+
+          # === EXTERNAL REFERENCES ===
+          leg_gov_uk_url: String.t() | nil,
+
+          # === INTERNAL (Parse metadata - not persisted) ===
+          parse_stages: map(),
+          parse_errors: [String.t()]
+        }
+
+  # ============================================================================
+  # Struct Definition
+  # ============================================================================
+
+  defstruct [
+    # Credentials
+    name: nil,
+    title_en: nil,
+    year: nil,
+    number: nil,
+    number_int: nil,
+    type_code: nil,
+    type_desc: nil,
+    type_class: nil,
+    secondary_class: nil,
+    acronym: nil,
+    old_style_number: nil,
+
+    # Description
+    family: nil,
+    family_ii: nil,
+    si_code: [],
+    tags: [],
+    md_description: nil,
+    md_subjects: [],
+
+    # Status
+    live: nil,
+    live_description: nil,
+
+    # Geographic Extent
+    geo_extent: nil,
+    geo_region: nil,
+    geo_detail: nil,
+    md_restrict_extent: nil,
+
+    # Metadata (Dates)
+    md_date: nil,
+    md_made_date: nil,
+    md_enactment_date: nil,
+    md_coming_into_force_date: nil,
+    md_dct_valid_date: nil,
+    md_modified: nil,
+    md_restrict_start_date: nil,
+    latest_amend_date: nil,
+    latest_change_date: nil,
+    latest_rescind_date: nil,
+
+    # Metadata (Document Stats)
+    md_total_paras: nil,
+    md_body_paras: nil,
+    md_schedule_paras: nil,
+    md_attachment_paras: nil,
+    md_images: nil,
+
+    # Function (Purpose)
+    function: nil,
+    purpose: nil,
+    is_making: nil,
+    is_commencing: nil,
+    is_amending: nil,
+    is_rescinding: nil,
+    is_enacting: nil,
+
+    # Function (Relationships)
+    enacted_by: [],
+    enacting: [],
+    amended_by: [],
+    amending: [],
+    rescinded_by: [],
+    rescinding: [],
+
+    # Function (Linked)
+    linked_enacted_by: [],
+    linked_amending: [],
+    linked_amended_by: [],
+    linked_rescinding: [],
+    linked_rescinded_by: [],
+
+    # Taxa (Roles)
+    role: [],
+    role_gvt: [],
+    duty_type: [],
+    duty_holder: [],
+    rights_holder: [],
+    responsibility_holder: [],
+    power_holder: [],
+    popimar: [],
+
+    # Taxa (Article mappings)
+    article_role: nil,
+    role_article: nil,
+    duty_type_article: nil,
+    article_duty_type: nil,
+    duty_holder_article: nil,
+    duty_holder_article_clause: nil,
+    article_duty_holder: nil,
+    article_duty_holder_clause: nil,
+    power_holder_article: nil,
+    power_holder_article_clause: nil,
+    article_power_holder: nil,
+    article_power_holder_clause: nil,
+    rights_holder_article: nil,
+    rights_holder_article_clause: nil,
+    article_rights_holder: nil,
+    article_rights_holder_clause: nil,
+    responsibility_holder_article: nil,
+    responsibility_holder_article_clause: nil,
+    article_responsibility_holder: nil,
+    article_responsibility_holder_clause: nil,
+    popimar_article: nil,
+    popimar_article_clause: nil,
+    article_popimar: nil,
+    article_popimar_clause: nil,
+
+    # Stats (Amendment)
+    stats_self_affects_count: nil,
+    amending_stats_affects_count: nil,
+    amending_stats_affected_laws_count: nil,
+    amending_stats_affects_count_per_law: nil,
+    amending_stats_affects_count_per_law_detailed: nil,
+    amended_by_stats_affected_by_count: nil,
+    amended_by_stats_affected_by_laws_count: nil,
+    amended_by_stats_affected_by_count_per_law: nil,
+    amended_by_stats_affected_by_count_per_law_detailed: nil,
+    rescinding_stats_rescinding_laws_count: nil,
+    rescinding_stats_rescinding_count_per_law: nil,
+    rescinding_stats_rescinding_count_per_law_detailed: nil,
+    rescinded_by_stats_rescinded_by_laws_count: nil,
+    rescinded_by_stats_rescinded_by_count_per_law: nil,
+    rescinded_by_stats_rescinded_by_count_per_law_detailed: nil,
+
+    # Change Logs
+    amending_change_log: nil,
+    amended_by_change_log: nil,
+    record_change_log: nil,
+
+    # External References
+    leg_gov_uk_url: nil,
+
+    # Internal (Parse metadata)
+    parse_stages: %{},
+    parse_errors: []
+  ]
+
+  # ============================================================================
+  # Key Mappings (Capitalized → lowercase)
+  # ============================================================================
+
+  # Maps legacy capitalized keys to canonical lowercase keys
+  @key_aliases %{
+    # Credentials
+    "Title_EN" => :title_en,
+    :Title_EN => :title_en,
+    "Year" => :year,
+    :Year => :year,
+    "Number" => :number,
+    :Number => :number,
+    "Name" => :name,
+    :Name => :name,
+    "Type" => :type_desc,
+    :Type => :type_desc,
+    "Acronym" => :acronym,
+    :Acronym => :acronym,
+
+    # Description
+    "Family" => :family,
+    :Family => :family,
+    "SICode" => :si_code,
+    :SICode => :si_code,
+    "Tags" => :tags,
+    :Tags => :tags,
+
+    # Status
+    "Live?" => :live,
+    :Live? => :live,
+    "Live?_description" => :live_description,
+    :"Live?_description" => :live_description,
+
+    # Geographic
+    "Geo_Extent" => :geo_extent,
+    :Geo_Extent => :geo_extent,
+    "Geo_Region" => :geo_region,
+    :Geo_Region => :geo_region,
+    "Geo_Pan_Region" => :geo_detail,
+    :Geo_Pan_Region => :geo_detail,
+
+    # Relationships (donor field names)
+    "Enacted_by" => :enacted_by,
+    :Enacted_by => :enacted_by,
+    "Enacting" => :enacting,
+    :Enacting => :enacting,
+    "Amending" => :amending,
+    :Amending => :amending,
+    "Amended_by" => :amended_by,
+    :Amended_by => :amended_by,
+    "Revoking" => :rescinding,
+    :Revoking => :rescinding,
+    "Revoked_by" => :rescinded_by,
+    :Revoked_by => :rescinded_by,
+
+    # Taxa (donor field names)
+    "actor" => :role,
+    :actor => :role,
+    "actor_gvt" => :role_gvt,
+    :actor_gvt => :role_gvt
+  }
+
+  # Fields that store lists internally but convert to {"values": [...]} JSONB in DB
+  @values_jsonb_fields [:si_code, :md_subjects, :duty_type]
+
+  # Fields that store lists internally but convert to {key: true, ...} JSONB in DB
+  @key_map_jsonb_fields [
+    :role_gvt,
+    :duty_holder,
+    :rights_holder,
+    :responsibility_holder,
+    :power_holder,
+    :popimar
+  ]
+
+  # Fields that are arrays in both struct and DB
+  @array_fields [
+    :role,
+    :tags,
+    :enacted_by,
+    :enacting,
+    :amended_by,
+    :amending,
+    :rescinded_by,
+    :rescinding,
+    :linked_enacted_by,
+    :linked_amending,
+    :linked_amended_by,
+    :linked_rescinding,
+    :linked_rescinded_by,
+    :record_change_log
+  ]
+
+  # Fields that are integers
+  @integer_fields [
+    :year,
+    :number_int,
+    :md_total_paras,
+    :md_body_paras,
+    :md_schedule_paras,
+    :md_attachment_paras,
+    :md_images,
+    :stats_self_affects_count,
+    :amending_stats_affects_count,
+    :amending_stats_affected_laws_count,
+    :amended_by_stats_affected_by_count,
+    :amended_by_stats_affected_by_laws_count,
+    :rescinding_stats_rescinding_laws_count,
+    :rescinded_by_stats_rescinded_by_laws_count
+  ]
+
+  # Fields that are dates
+  @date_fields [
+    :md_date,
+    :md_made_date,
+    :md_enactment_date,
+    :md_coming_into_force_date,
+    :md_dct_valid_date,
+    :md_modified,
+    :md_restrict_start_date,
+    :latest_amend_date,
+    :latest_change_date,
+    :latest_rescind_date
+  ]
+
+  # Fields that are booleans
+  @boolean_fields [
+    :is_making,
+    :is_commencing,
+    :is_amending,
+    :is_rescinding,
+    :is_enacting
+  ]
+
+  # Internal fields (not persisted to DB)
+  @internal_fields [:parse_stages, :parse_errors]
+
+  # ============================================================================
+  # Public API
+  # ============================================================================
+
+  @doc """
+  Create a ParsedLaw from any map, normalizing keys.
+
+  This is the ONLY way to create a ParsedLaw - ensures consistent format.
+  Handles both capitalized (legacy) and lowercase keys.
+
+  ## Examples
+
+      iex> ParsedLaw.from_map(%{"Title_EN" => "Test Act", "Year" => 2024})
+      %ParsedLaw{title_en: "Test Act", year: 2024, ...}
+
+      iex> ParsedLaw.from_map(%{title_en: "Test Act", year: 2024})
+      %ParsedLaw{title_en: "Test Act", year: 2024, ...}
+  """
+  @spec from_map(map()) :: t()
+  def from_map(map) when is_map(map) do
+    # First, normalize all keys to canonical lowercase atoms
+    normalized = normalize_keys(map)
+
+    # Then build the struct with proper type coercion
+    %__MODULE__{
+      # Credentials
+      name: get_string(normalized, :name),
+      title_en: get_string(normalized, :title_en),
+      year: get_integer(normalized, :year),
+      number: get_string(normalized, :number),
+      number_int: get_integer(normalized, :number_int),
+      type_code: get_string(normalized, :type_code),
+      type_desc: get_string(normalized, :type_desc),
+      type_class: get_string(normalized, :type_class),
+      secondary_class: get_string(normalized, :secondary_class),
+      acronym: get_string(normalized, :acronym),
+      old_style_number: get_string(normalized, :old_style_number),
+
+      # Description
+      family: get_string(normalized, :family),
+      family_ii: get_string(normalized, :family_ii),
+      si_code: get_list(normalized, :si_code),
+      tags: get_list(normalized, :tags),
+      md_description: get_string(normalized, :md_description),
+      md_subjects: get_list(normalized, :md_subjects),
+
+      # Status
+      live: get_string(normalized, :live),
+      live_description: get_string(normalized, :live_description),
+
+      # Geographic Extent
+      geo_extent: get_string(normalized, :geo_extent),
+      geo_region: get_string(normalized, :geo_region),
+      geo_detail: get_string(normalized, :geo_detail),
+      md_restrict_extent: get_string(normalized, :md_restrict_extent),
+
+      # Metadata (Dates)
+      md_date: get_date(normalized, :md_date),
+      md_made_date: get_date(normalized, :md_made_date),
+      md_enactment_date: get_date(normalized, :md_enactment_date),
+      md_coming_into_force_date: get_date(normalized, :md_coming_into_force_date),
+      md_dct_valid_date: get_date(normalized, :md_dct_valid_date),
+      md_modified: get_date(normalized, :md_modified),
+      md_restrict_start_date: get_date(normalized, :md_restrict_start_date),
+      latest_amend_date: get_date(normalized, :latest_amend_date),
+      latest_change_date: get_date(normalized, :latest_change_date),
+      latest_rescind_date: get_date(normalized, :latest_rescind_date),
+
+      # Metadata (Document Stats)
+      md_total_paras: get_integer(normalized, :md_total_paras),
+      md_body_paras: get_integer(normalized, :md_body_paras),
+      md_schedule_paras: get_integer(normalized, :md_schedule_paras),
+      md_attachment_paras: get_integer(normalized, :md_attachment_paras),
+      md_images: get_integer(normalized, :md_images),
+
+      # Function (Purpose)
+      function: get_map(normalized, :function),
+      purpose: get_map(normalized, :purpose),
+      is_making: get_boolean(normalized, :is_making),
+      is_commencing: get_boolean(normalized, :is_commencing),
+      is_amending: get_boolean(normalized, :is_amending),
+      is_rescinding: get_boolean(normalized, :is_rescinding),
+      is_enacting: get_boolean(normalized, :is_enacting),
+
+      # Function (Relationships)
+      enacted_by: get_list(normalized, :enacted_by),
+      enacting: get_list(normalized, :enacting),
+      amended_by: get_list(normalized, :amended_by),
+      amending: get_list(normalized, :amending),
+      rescinded_by: get_list(normalized, :rescinded_by),
+      rescinding: get_list(normalized, :rescinding),
+
+      # Function (Linked)
+      linked_enacted_by: get_list(normalized, :linked_enacted_by),
+      linked_amending: get_list(normalized, :linked_amending),
+      linked_amended_by: get_list(normalized, :linked_amended_by),
+      linked_rescinding: get_list(normalized, :linked_rescinding),
+      linked_rescinded_by: get_list(normalized, :linked_rescinded_by),
+
+      # Taxa (Roles)
+      role: get_list(normalized, :role),
+      role_gvt: get_list(normalized, :role_gvt),
+      duty_type: get_list(normalized, :duty_type),
+      duty_holder: get_list(normalized, :duty_holder),
+      rights_holder: get_list(normalized, :rights_holder),
+      responsibility_holder: get_list(normalized, :responsibility_holder),
+      power_holder: get_list(normalized, :power_holder),
+      popimar: get_list(normalized, :popimar),
+
+      # Taxa (Article mappings)
+      article_role: get_string(normalized, :article_role),
+      role_article: get_string(normalized, :role_article),
+      duty_type_article: get_string(normalized, :duty_type_article),
+      article_duty_type: get_string(normalized, :article_duty_type),
+      duty_holder_article: get_string(normalized, :duty_holder_article),
+      duty_holder_article_clause: get_string(normalized, :duty_holder_article_clause),
+      article_duty_holder: get_string(normalized, :article_duty_holder),
+      article_duty_holder_clause: get_string(normalized, :article_duty_holder_clause),
+      power_holder_article: get_string(normalized, :power_holder_article),
+      power_holder_article_clause: get_string(normalized, :power_holder_article_clause),
+      article_power_holder: get_string(normalized, :article_power_holder),
+      article_power_holder_clause: get_string(normalized, :article_power_holder_clause),
+      rights_holder_article: get_string(normalized, :rights_holder_article),
+      rights_holder_article_clause: get_string(normalized, :rights_holder_article_clause),
+      article_rights_holder: get_string(normalized, :article_rights_holder),
+      article_rights_holder_clause: get_string(normalized, :article_rights_holder_clause),
+      responsibility_holder_article: get_string(normalized, :responsibility_holder_article),
+      responsibility_holder_article_clause:
+        get_string(normalized, :responsibility_holder_article_clause),
+      article_responsibility_holder: get_string(normalized, :article_responsibility_holder),
+      article_responsibility_holder_clause:
+        get_string(normalized, :article_responsibility_holder_clause),
+      popimar_article: get_string(normalized, :popimar_article),
+      popimar_article_clause: get_string(normalized, :popimar_article_clause),
+      article_popimar: get_string(normalized, :article_popimar),
+      article_popimar_clause: get_string(normalized, :article_popimar_clause),
+
+      # Stats (Amendment)
+      stats_self_affects_count: get_integer(normalized, :stats_self_affects_count),
+      amending_stats_affects_count: get_integer(normalized, :amending_stats_affects_count),
+      amending_stats_affected_laws_count:
+        get_integer(normalized, :amending_stats_affected_laws_count),
+      amending_stats_affects_count_per_law:
+        get_string(normalized, :amending_stats_affects_count_per_law),
+      amending_stats_affects_count_per_law_detailed:
+        get_string(normalized, :amending_stats_affects_count_per_law_detailed),
+      amended_by_stats_affected_by_count:
+        get_integer(normalized, :amended_by_stats_affected_by_count),
+      amended_by_stats_affected_by_laws_count:
+        get_integer(normalized, :amended_by_stats_affected_by_laws_count),
+      amended_by_stats_affected_by_count_per_law:
+        get_string(normalized, :amended_by_stats_affected_by_count_per_law),
+      amended_by_stats_affected_by_count_per_law_detailed:
+        get_string(normalized, :amended_by_stats_affected_by_count_per_law_detailed),
+      rescinding_stats_rescinding_laws_count:
+        get_integer(normalized, :rescinding_stats_rescinding_laws_count),
+      rescinding_stats_rescinding_count_per_law:
+        get_string(normalized, :rescinding_stats_rescinding_count_per_law),
+      rescinding_stats_rescinding_count_per_law_detailed:
+        get_string(normalized, :rescinding_stats_rescinding_count_per_law_detailed),
+      rescinded_by_stats_rescinded_by_laws_count:
+        get_integer(normalized, :rescinded_by_stats_rescinded_by_laws_count),
+      rescinded_by_stats_rescinded_by_count_per_law:
+        get_string(normalized, :rescinded_by_stats_rescinded_by_count_per_law),
+      rescinded_by_stats_rescinded_by_count_per_law_detailed:
+        get_string(normalized, :rescinded_by_stats_rescinded_by_count_per_law_detailed),
+
+      # Change Logs
+      amending_change_log: get_string(normalized, :amending_change_log),
+      amended_by_change_log: get_string(normalized, :amended_by_change_log),
+      record_change_log: get_list(normalized, :record_change_log),
+
+      # External References
+      leg_gov_uk_url: get_string(normalized, :leg_gov_uk_url),
+
+      # Internal (Parse metadata)
+      parse_stages: normalized[:parse_stages] || %{},
+      parse_errors: normalized[:parse_errors] || []
+    }
+  end
+
+  @doc """
+  Merge new data into an existing ParsedLaw.
+
+  Only updates fields that have non-nil, non-empty values in the new data.
+  Useful for staged parsing where each stage adds new fields.
+
+  ## Examples
+
+      iex> law = ParsedLaw.from_map(%{title_en: "Test"})
+      iex> ParsedLaw.merge(law, %{year: 2024, si_code: ["CODE"]})
+      %ParsedLaw{title_en: "Test", year: 2024, si_code: ["CODE"], ...}
+  """
+  @spec merge(t(), map()) :: t()
+  def merge(%__MODULE__{} = law, new_data) when is_map(new_data) do
+    new_law = from_map(new_data)
+
+    # Merge each field, keeping existing value if new is nil/empty
+    struct_fields()
+    |> Enum.reduce(law, fn field, acc ->
+      new_value = Map.get(new_law, field)
+      old_value = Map.get(acc, field)
+
+      if should_update?(field, new_value, old_value) do
+        Map.put(acc, field, new_value)
+      else
+        acc
+      end
+    end)
+  end
+
+  @doc """
+  Convert to map format suitable for DB persistence.
+
+  This is where JSONB wrapping happens:
+  - si_code, md_subjects, duty_type → %{"values" => [...]}
+  - role_gvt, duty_holder, etc. → %{key => true, ...}
+
+  Excludes internal fields (parse_stages, parse_errors).
+  """
+  @spec to_db_attrs(t()) :: map()
+  def to_db_attrs(%__MODULE__{} = law) do
+    law
+    |> Map.from_struct()
+    |> Map.drop(@internal_fields)
+    |> wrap_values_jsonb_fields()
+    |> wrap_key_map_jsonb_fields()
+    |> reject_nil_and_empty()
+  end
+
+  @doc """
+  Convert to map format for diff comparison.
+
+  Unlike to_db_attrs, this keeps lists as lists (no JSONB wrapping)
+  so we can compare scraper output (lists) with unwrapped DB values.
+  """
+  @spec to_comparison_map(t()) :: map()
+  def to_comparison_map(%__MODULE__{} = law) do
+    law
+    |> Map.from_struct()
+    |> Map.drop(@internal_fields)
+    |> reject_nil_and_empty()
+  end
+
+  @doc """
+  Create a ParsedLaw from a UkLrt database record.
+
+  Unwraps JSONB fields back to lists for internal use.
+  """
+  @spec from_db_record(map() | struct()) :: t()
+  def from_db_record(%{__struct__: _} = record) do
+    record
+    |> Map.from_struct()
+    |> Map.drop([
+      :__meta__,
+      :id,
+      :inserted_at,
+      :updated_at,
+      :created_at,
+      :calculations,
+      :aggregates
+    ])
+    |> unwrap_jsonb_fields()
+    |> from_map()
+  end
+
+  def from_db_record(map) when is_map(map) do
+    map
+    |> unwrap_jsonb_fields()
+    |> from_map()
+  end
+
+  @doc """
+  Get the list of all struct field names.
+  """
+  @spec struct_fields() :: [atom()]
+  def struct_fields do
+    __MODULE__.__struct__()
+    |> Map.keys()
+    |> List.delete(:__struct__)
+  end
+
+  # ============================================================================
+  # Private Helpers - Key Normalization
+  # ============================================================================
+
+  defp normalize_keys(map) do
+    map
+    |> Enum.map(fn {key, value} ->
+      canonical_key = normalize_key(key)
+      {canonical_key, value}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp normalize_key(key) when is_atom(key) do
+    case Map.get(@key_aliases, key) do
+      nil -> key
+      canonical -> canonical
+    end
+  end
+
+  defp normalize_key(key) when is_binary(key) do
+    # First check if it's an aliased key
+    case Map.get(@key_aliases, key) do
+      nil ->
+        # Not aliased, convert to atom (snake_case assumed)
+        key
+        |> String.downcase()
+        |> String.to_atom()
+
+      canonical ->
+        canonical
+    end
+  end
+
+  defp normalize_key(key), do: key
+
+  # ============================================================================
+  # Private Helpers - Type Coercion
+  # ============================================================================
+
+  defp get_string(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      val when is_binary(val) -> if val == "", do: nil, else: val
+      val -> to_string(val)
+    end
+  end
+
+  defp get_integer(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      val when is_integer(val) -> val
+      val when is_binary(val) -> parse_integer(val)
+      val when is_float(val) -> round(val)
+      _ -> nil
+    end
+  end
+
+  defp parse_integer(str) do
+    case Integer.parse(str) do
+      {int, ""} -> int
+      {int, _} -> int
+      :error -> nil
+    end
+  end
+
+  defp get_boolean(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      true -> true
+      false -> false
+      "true" -> true
+      "false" -> false
+      1 -> true
+      0 -> false
+      1.0 -> true
+      0.0 -> false
+      _ -> nil
+    end
+  end
+
+  defp get_date(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      %Date{} = date -> date
+      str when is_binary(str) -> parse_date(str)
+      _ -> nil
+    end
+  end
+
+  defp parse_date(""), do: nil
+
+  defp parse_date(str) do
+    case Date.from_iso8601(str) do
+      {:ok, date} -> date
+      {:error, _} -> nil
+    end
+  end
+
+  defp get_list(map, key) do
+    case Map.get(map, key) do
+      nil -> []
+      list when is_list(list) -> list
+      # Handle JSONB {"values": [...]} format from DB
+      %{"values" => list} when is_list(list) -> list
+      # Handle JSONB {key: true, ...} format from DB
+      map when is_map(map) -> Map.keys(map)
+      # Handle comma-separated string
+      str when is_binary(str) -> parse_list_string(str)
+      _ -> []
+    end
+  end
+
+  defp parse_list_string(""), do: []
+
+  defp parse_list_string(str) do
+    str
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+  end
+
+  defp get_map(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      m when is_map(m) -> m
+      _ -> nil
+    end
+  end
+
+  # ============================================================================
+  # Private Helpers - JSONB Conversion
+  # ============================================================================
+
+  defp wrap_values_jsonb_fields(map) do
+    Enum.reduce(@values_jsonb_fields, map, fn field, acc ->
+      case Map.get(acc, field) do
+        list when is_list(list) and list != [] ->
+          Map.put(acc, field, %{"values" => list})
+
+        _ ->
+          acc
+      end
+    end)
+  end
+
+  defp wrap_key_map_jsonb_fields(map) do
+    Enum.reduce(@key_map_jsonb_fields, map, fn field, acc ->
+      case Map.get(acc, field) do
+        list when is_list(list) and list != [] ->
+          key_map = Enum.reduce(list, %{}, fn item, m -> Map.put(m, item, true) end)
+          Map.put(acc, field, key_map)
+
+        _ ->
+          acc
+      end
+    end)
+  end
+
+  defp unwrap_jsonb_fields(map) do
+    map
+    |> unwrap_values_jsonb()
+    |> unwrap_key_map_jsonb()
+  end
+
+  defp unwrap_values_jsonb(map) do
+    Enum.reduce(@values_jsonb_fields, map, fn field, acc ->
+      case Map.get(acc, field) do
+        %{"values" => list} when is_list(list) -> Map.put(acc, field, list)
+        _ -> acc
+      end
+    end)
+  end
+
+  defp unwrap_key_map_jsonb(map) do
+    Enum.reduce(@key_map_jsonb_fields, map, fn field, acc ->
+      case Map.get(acc, field) do
+        m when is_map(m) and m != %{} -> Map.put(acc, field, Map.keys(m))
+        _ -> acc
+      end
+    end)
+  end
+
+  # ============================================================================
+  # Private Helpers - Merge Logic
+  # ============================================================================
+
+  defp should_update?(field, new_value, _old_value) when field in @internal_fields do
+    # Always update internal fields
+    true
+  end
+
+  defp should_update?(_field, nil, _old_value), do: false
+  defp should_update?(_field, [], _old_value), do: false
+  defp should_update?(_field, "", _old_value), do: false
+  defp should_update?(_field, %{}, _old_value), do: false
+  defp should_update?(_field, _new_value, _old_value), do: true
+
+  defp reject_nil_and_empty(map) do
+    map
+    |> Enum.reject(fn {_k, v} ->
+      is_nil(v) or v == [] or v == "" or v == %{}
+    end)
+    |> Enum.into(%{})
+  end
+end
