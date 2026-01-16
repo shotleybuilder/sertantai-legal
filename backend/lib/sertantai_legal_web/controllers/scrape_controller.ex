@@ -17,6 +17,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   alias SertantaiLegal.Scraper.ScrapeSession
   alias SertantaiLegal.Scraper.Models
   alias SertantaiLegal.Scraper.TypeClass
+  alias SertantaiLegal.Scraper.ParsedLaw
 
   require Ash.Query
 
@@ -368,17 +369,18 @@ defmodule SertantaiLegalWeb.ScrapeController do
           # Run staged parse
           case StagedParser.parse(record) do
             {:ok, result} ->
-              # Enrich record with type fields and normalize keys for diff comparison
-              enriched_record = enrich_type_fields_for_diff(result.record)
+              # Use ParsedLaw.to_comparison_map for normalized diff comparison
+              # This handles all key normalization and excludes empty/nil fields
+              comparison_map = ParsedLaw.to_comparison_map(result.law)
 
               # Check for duplicate in database, filtering to only keys the scraper produces
-              scraped_keys = Map.keys(enriched_record)
+              scraped_keys = Map.keys(comparison_map)
               duplicate = check_duplicate(name, scraped_keys)
 
               json(conn, %{
                 session_id: session_id,
                 name: name,
-                record: enriched_record,
+                record: comparison_map,
                 stages: format_stages(result.stages),
                 errors: result.errors,
                 has_errors: result.has_errors,
@@ -660,142 +662,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> maybe_calculate_md_date()
   end
 
-  # Enrich record for diff comparison - includes key normalization to match DB schema
-  # NOTE: We do NOT normalize JSONB fields here anymore. Instead, we unwrap JSONB
-  # from DB records in existing_record_to_map/2 so both sides compare as lists.
-  defp enrich_type_fields_for_diff(record) do
-    alias SertantaiLegal.Scraper.IdField
-
-    record
-    |> maybe_enrich_type_desc()
-    |> maybe_enrich_type_class()
-    |> normalize_family_key()
-    |> normalize_tags_key()
-    |> maybe_calculate_md_date()
-    |> normalize_name_to_db_format(IdField)
-    |> normalize_credential_keys()
-    |> normalize_link_fields()
-    |> normalize_geo_fields()
-  end
-
-  # Link fields (enacted_by, enacting, amended_by, amending, etc.) come from the scraper
-  # as lists of JSON objects with name/number/uri/year/type_code keys.
-  # The DB stores these as arrays of self-referential Name strings (UK_type_year_number format).
-  # This normalizes the scraper format to match DB format.
-  @link_fields [:enacted_by, :enacting, :amended_by, :amending, :rescinded_by, :rescinding]
-
-  defp normalize_link_fields(record) do
-    Enum.reduce(@link_fields, record, fn field, acc ->
-      value = acc[field] || acc[Atom.to_string(field)]
-
-      case value do
-        nil ->
-          acc
-
-        list when is_list(list) ->
-          normalized =
-            list
-            |> Enum.map(&extract_link_name/1)
-            |> Enum.reject(&is_nil/1)
-
-          acc
-          |> Map.put(field, normalized)
-          |> Map.delete(Atom.to_string(field))
-
-        _ ->
-          acc
-      end
-    end)
-  end
-
-  # Extract name from link object and convert to UK_type_year_number format
-  # Handles both JSON objects from enacted_by scraper and already-normalized strings from Amending module
-  defp extract_link_name(%{"name" => name}) when is_binary(name), do: normalize_link_name(name)
-  defp extract_link_name(%{name: name}) when is_binary(name), do: normalize_link_name(name)
-  defp extract_link_name(name) when is_binary(name), do: normalize_link_name(name)
-  defp extract_link_name(_), do: nil
-
-  # Normalize link name to UK_type_year_number format
-  # Handles multiple input formats:
-  # - Already correct: "UK_ukpga_2008_29" -> pass through
-  # - URI format: "ukpga/2008/29" -> "UK_ukpga_2008_29"
-  defp normalize_link_name(name) do
-    cond do
-      # Already in UK_type_year_number format
-      String.starts_with?(name, "UK_") ->
-        name
-
-      # URI format (type/year/number)
-      String.contains?(name, "/") ->
-        case String.split(name, "/") do
-          [type, year, number] -> "UK_#{type}_#{year}_#{number}"
-          _ -> nil
-        end
-
-      # Unknown format
-      true ->
-        nil
-    end
-  end
-
-  # Normalize geo fields and remove intermediate/non-DB fields:
-  # - geo_region: convert list to comma-separated string (DB stores as string)
-  # - Remove fields that don't exist in DB schema (intermediate scraper data)
-  defp normalize_geo_fields(record) do
-    record
-    |> normalize_geo_region()
-    |> Map.drop([
-      # Geo intermediate fields
-      :extent,
-      "extent",
-      :extent_regions,
-      "extent_regions",
-      :geo_country,
-      "geo_country",
-      :section_extents,
-      "section_extents",
-      # Status intermediate fields
-      :revoked_element,
-      "revoked_element",
-      :revoked_title_marker,
-      "revoked_title_marker",
-      :partially_revoked,
-      "partially_revoked",
-      :document_status,
-      "document_status",
-      # Taxa intermediate fields
-      :taxa_text_source,
-      "taxa_text_source",
-      :taxa_text_length,
-      "taxa_text_length",
-      # Amendment intermediate fields
-      :amending_details,
-      "amending_details",
-      :rescinding_details,
-      "rescinding_details",
-      :amended_by_details,
-      "amended_by_details",
-      :rescinded_by_details,
-      "rescinded_by_details",
-      :revoked,
-      "revoked",
-      # Legacy duplicate fields
-      :SICode,
-      "SICode",
-      # Scraper-only fields (not in db schema)
-      :publication_date,
-      "publication_date",
-      :pdf_href,
-      "pdf_href",
-      :enacting_text,
-      "enacting_text",
-      :introductory_text,
-      "introductory_text",
-      :reviewed,
-      "reviewed"
-    ])
-  end
-
   # Extract name strings from enacted_by which can be list of maps or strings
   defp extract_enacted_by_names(nil), do: []
   defp extract_enacted_by_names([]), do: []
@@ -846,61 +712,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   defp parse_law_name(_), do: :error
-
-  defp normalize_geo_region(record) do
-    geo_region = record[:geo_region] || record["geo_region"]
-
-    case geo_region do
-      regions when is_list(regions) ->
-        record
-        |> Map.put(:geo_region, Enum.join(regions, ","))
-        |> Map.delete("geo_region")
-
-      _ ->
-        record
-    end
-  end
-
-  # Normalize credential keys to lowercase (Year -> year, Number -> number, Title_EN -> title_en)
-  # Database uses lowercase, scraper uses capitalized
-  defp normalize_credential_keys(record) do
-    key_mappings = [
-      {:Year, :year},
-      {"Year", :year},
-      {:Number, :number},
-      {"Number", :number},
-      {:Title_EN, :title_en},
-      {"Title_EN", :title_en}
-    ]
-
-    Enum.reduce(key_mappings, record, fn {old_key, new_key}, acc ->
-      case Map.fetch(acc, old_key) do
-        {:ok, value} ->
-          acc
-          |> Map.delete(old_key)
-          |> Map.put(new_key, value)
-
-        :error ->
-          acc
-      end
-    end)
-  end
-
-  # Normalize the name field to database format (uksi/2025/622 -> UK_uksi_2025_622)
-  # This ensures diff comparison works correctly between incoming and existing records
-  defp normalize_name_to_db_format(record, id_field_module) do
-    name = record[:name] || record["name"]
-
-    if name do
-      normalized = id_field_module.normalize_to_db_name(name)
-
-      record
-      |> Map.put(:name, normalized)
-      |> Map.delete("name")
-    else
-      record
-    end
-  end
 
   # Calculate md_date if missing (for backwards compatibility with old session data)
   # Priority: enactment_date > coming_into_force_date > made_date > dct_valid_date
@@ -1107,30 +918,14 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
-  # Excludes metadata fields that shouldn't be compared (timestamps, internal fields)
+  # Uses ParsedLaw.from_db_record/1 to unwrap JSONB fields to list format
   # If scraped_keys is provided, only include keys that the scraper produces
-  #
-  # IMPORTANT: Unwraps JSONB fields to list format for comparison.
-  # DB stores si_code as {"values": [...]}, but scraper produces [...]
-  # We compare in list format (scraper's native format) to avoid false diffs.
-  defp existing_record_to_map(existing, scraped_keys \\ nil) do
+  defp existing_record_to_map(existing, scraped_keys) do
+    # Use ParsedLaw to handle JSONB unwrapping consistently
     result =
       existing
-      |> Map.from_struct()
-      |> Map.drop([
-        :__meta__,
-        :id,
-        :inserted_at,
-        :updated_at,
-        :created_at,
-        :calculations,
-        :aggregates
-      ])
-      |> Enum.reject(fn {_k, v} ->
-        is_nil(v) or match?(%Ash.NotLoaded{}, v)
-      end)
-      |> Enum.into(%{})
-      |> unwrap_jsonb_fields()
+      |> ParsedLaw.from_db_record()
+      |> ParsedLaw.to_comparison_map()
 
     # Filter to only keys the scraper produces (avoids showing "deleted" for unscraped fields)
     if scraped_keys do
@@ -1138,49 +933,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
     else
       result
     end
-  end
-
-  # Unwrap JSONB fields from DB format to list format for comparison
-  # DB stores: %{"values" => ["A", "B"]} or %{"key" => true, ...}
-  # Scraper produces: ["A", "B"]
-  # We compare in list format to avoid format-only diffs
-  @values_jsonb_fields [:si_code, :md_subjects, :duty_type]
-  @key_map_jsonb_fields [
-    :role_gvt,
-    :duty_holder,
-    :rights_holder,
-    :responsibility_holder,
-    :power_holder,
-    :popimar
-  ]
-
-  defp unwrap_jsonb_fields(record) do
-    record
-    |> unwrap_values_jsonb_fields()
-    |> unwrap_key_map_jsonb_fields()
-  end
-
-  defp unwrap_values_jsonb_fields(record) do
-    Enum.reduce(@values_jsonb_fields, record, fn field, acc ->
-      case Map.get(acc, field) do
-        %{"values" => list} when is_list(list) -> Map.put(acc, field, list)
-        _ -> acc
-      end
-    end)
-  end
-
-  defp unwrap_key_map_jsonb_fields(record) do
-    Enum.reduce(@key_map_jsonb_fields, record, fn field, acc ->
-      case Map.get(acc, field) do
-        map when is_map(map) and map != %{} ->
-          # Convert %{"key1" => true, "key2" => true} to ["key1", "key2"]
-          list = map |> Map.keys() |> Enum.sort()
-          Map.put(acc, field, list)
-
-        _ ->
-          acc
-      end
-    end)
   end
 
   # Format stages for JSON response
