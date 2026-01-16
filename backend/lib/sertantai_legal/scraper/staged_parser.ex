@@ -40,6 +40,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.Amending
   alias SertantaiLegal.Scraper.EnactedBy
   alias SertantaiLegal.Scraper.Metadata
+  alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Scraper.TaxaParser
 
   @stages [:metadata, :extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
@@ -87,9 +88,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     IO.puts("\n=== STAGED PARSE: #{name} ===")
 
-    # Initialize result
+    # Initialize result with ParsedLaw struct for type safety and normalized keys
+    # The input record is normalized via from_map, then we add the computed name
+    initial_law = record |> Map.put(:name, name) |> ParsedLaw.from_map()
+
     initial_result = %{
-      record: Map.merge(record, %{name: name}),
+      law: initial_law,
       stages: %{},
       errors: [],
       has_errors: false
@@ -103,7 +107,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           stage_result = %{status: :skipped, data: nil, error: "Skipped due to previous error"}
           {:cont, update_result(acc, stage, stage_result)}
         else
-          stage_result = run_stage(stage, type_code, year, number, acc.record)
+          stage_result = run_stage(stage, type_code, year, number, acc.law)
           updated = update_result(acc, stage, stage_result)
 
           if skip_on_error and stage_result.status == :error do
@@ -129,7 +133,17 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       "\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} ===\n"
     )
 
-    {:ok, result}
+    # Convert ParsedLaw to map for backwards compatibility with callers
+    # The :law key contains the ParsedLaw struct, :record contains the map version
+    final_result = %{
+      record: ParsedLaw.to_comparison_map(result.law),
+      law: result.law,
+      stages: result.stages,
+      errors: result.errors,
+      has_errors: result.has_errors
+    }
+
+    {:ok, final_result}
   end
 
   @doc """
@@ -139,6 +153,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   def stages, do: @stages
 
   # Update result with stage outcome
+  # Uses ParsedLaw.merge/2 which only updates fields with non-nil, non-empty values
   defp update_result(result, stage, stage_result) do
     new_stages = Map.put(result.stages, stage, stage_result)
 
@@ -148,10 +163,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         _ -> result.errors
       end
 
-    new_record =
+    new_law =
       case stage_result.status do
-        :ok -> Map.merge(result.record, stage_result.data || %{})
-        _ -> result.record
+        :ok -> ParsedLaw.merge(result.law, stage_result.data || %{})
+        _ -> result.law
       end
 
     %{
@@ -159,7 +174,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       | stages: new_stages,
         errors: new_errors,
         has_errors: length(new_errors) > 0,
-        record: new_record
+        law: new_law
     }
   end
 
@@ -231,7 +246,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     end
   end
 
-  # Check if a key exists in a record (handling both atom and string keys)
+  # Check if a key exists in a record (handling ParsedLaw structs and maps)
+  # For ParsedLaw structs, use Map.get which works on structs
+  # For maps, handle both atom and string keys
+  defp has_key?(%ParsedLaw{} = law, key) when is_atom(key) do
+    value = Map.get(law, key)
+    not is_nil(value) and value != "" and value != []
+  end
+
+  defp has_key?(%ParsedLaw{} = _law, _key) do
+    # String keys don't exist in ParsedLaw struct (all keys are atoms)
+    false
+  end
+
   defp has_key?(record, key) when is_atom(key) do
     value = record[key] || record[Atom.to_string(key)]
     not is_nil(value) and value != "" and value != []

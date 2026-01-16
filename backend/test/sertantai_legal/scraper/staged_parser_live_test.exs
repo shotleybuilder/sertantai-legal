@@ -109,18 +109,20 @@ defmodule SertantaiLegal.Scraper.StagedParserLiveTest do
       # Check taxa stage
       assert result.stages[:taxa].status == :ok
 
-      # Check all taxa fields are present in final record
-      assert Map.has_key?(result.record, :role)
-      assert Map.has_key?(result.record, :role_gvt)
-      assert Map.has_key?(result.record, :duty_type)
-      assert Map.has_key?(result.record, :duty_holder)
-      assert Map.has_key?(result.record, :rights_holder)
-      assert Map.has_key?(result.record, :responsibility_holder)
-      assert Map.has_key?(result.record, :power_holder)
-      assert Map.has_key?(result.record, :popimar)
+      # Check all taxa fields are populated in the ParsedLaw struct
+      # Note: We check result.law (the struct) not result.record (comparison map)
+      # because empty lists are valid results and are filtered from comparison map
+      assert is_list(result.law.role)
+      assert is_list(result.law.role_gvt)
+      assert is_list(result.law.duty_type)
+      assert is_list(result.law.duty_holder)
+      assert is_list(result.law.rights_holder)
+      assert is_list(result.law.responsibility_holder)
+      assert is_list(result.law.power_holder)
+      assert is_list(result.law.popimar)
 
       # Role should have multiple entries for this complex law
-      assert length(result.record[:role]) >= 5
+      assert length(result.law.role) >= 5
     end
   end
 

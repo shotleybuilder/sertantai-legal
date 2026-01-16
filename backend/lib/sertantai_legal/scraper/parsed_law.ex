@@ -400,65 +400,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     :popimar
   ]
 
-  # Fields that are arrays in both struct and DB
-  @array_fields [
-    :role,
-    :tags,
-    :enacted_by,
-    :enacting,
-    :amended_by,
-    :amending,
-    :rescinded_by,
-    :rescinding,
-    :linked_enacted_by,
-    :linked_amending,
-    :linked_amended_by,
-    :linked_rescinding,
-    :linked_rescinded_by,
-    :record_change_log
-  ]
-
-  # Fields that are integers
-  @integer_fields [
-    :year,
-    :number_int,
-    :md_total_paras,
-    :md_body_paras,
-    :md_schedule_paras,
-    :md_attachment_paras,
-    :md_images,
-    :stats_self_affects_count,
-    :amending_stats_affects_count,
-    :amending_stats_affected_laws_count,
-    :amended_by_stats_affected_by_count,
-    :amended_by_stats_affected_by_laws_count,
-    :rescinding_stats_rescinding_laws_count,
-    :rescinded_by_stats_rescinded_by_laws_count
-  ]
-
-  # Fields that are dates
-  @date_fields [
-    :md_date,
-    :md_made_date,
-    :md_enactment_date,
-    :md_coming_into_force_date,
-    :md_dct_valid_date,
-    :md_modified,
-    :md_restrict_start_date,
-    :latest_amend_date,
-    :latest_change_date,
-    :latest_rescind_date
-  ]
-
-  # Fields that are booleans
-  @boolean_fields [
-    :is_making,
-    :is_commencing,
-    :is_amending,
-    :is_rescinding,
-    :is_enacting
-  ]
-
   # Internal fields (not persisted to DB)
   @internal_fields [:parse_stages, :parse_errors]
 
@@ -819,8 +760,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       "false" -> false
       1 -> true
       0 -> false
-      1.0 -> true
-      0.0 -> false
+      x when x == 1.0 -> true
+      x when x == 0.0 -> false
       _ -> nil
     end
   end
@@ -931,7 +872,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
   # Private Helpers - Merge Logic
   # ============================================================================
 
-  defp should_update?(field, new_value, _old_value) when field in @internal_fields do
+  defp should_update?(field, _new_value, _old_value) when field in @internal_fields do
     # Always update internal fields
     true
   end
