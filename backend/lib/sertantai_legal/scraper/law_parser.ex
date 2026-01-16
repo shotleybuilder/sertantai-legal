@@ -44,6 +44,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   alias SertantaiLegal.Scraper.Metadata
   alias SertantaiLegal.Scraper.TypeClass
   alias SertantaiLegal.Scraper.ChangeLogger
+  alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.UkLrt
 
   require Ash.Query
@@ -478,117 +479,27 @@ defmodule SertantaiLegal.Scraper.LawParser do
   end
 
   # Build attributes map for database operations
-  # Converts parsed metadata to match UkLrt resource types
+  # Uses ParsedLaw.to_db_attrs/1 for consistent JSONB conversion
   defp build_attrs(record) do
     # Enrich with type_desc and type_class from TypeClass module
     enriched = enrich_type_fields(record)
 
-    %{
-      name: normalize_name(enriched[:name], enriched),
-      title_en:
-        enriched[:Title_EN] || enriched["Title_EN"] || enriched[:title_en] || enriched["title_en"],
-      type_code: enriched[:type_code] || enriched["type_code"],
-      type_desc: enriched[:type_desc],
-      type_class: enriched[:type_class],
-      year: to_integer(enriched[:Year] || enriched["Year"]),
-      number: to_string_safe(enriched[:Number] || enriched["Number"]),
-      leg_gov_uk_url: enriched[:leg_gov_uk_url],
-      family: enriched[:Family] || enriched["Family"] || enriched[:family],
-      family_ii: enriched[:family_ii] || enriched["family_ii"],
+    # Normalize name to UK_ format
+    normalized_name = normalize_name(enriched[:name], enriched)
 
-      # Metadata fields - convert types to match UkLrt resource
-      md_description: enriched[:md_description],
-      md_subjects: list_to_map(enriched[:md_subjects]),
-      md_total_paras: enriched[:md_total_paras],
-      md_body_paras: enriched[:md_body_paras],
-      md_schedule_paras: enriched[:md_schedule_paras],
-      md_attachment_paras: enriched[:md_attachment_paras],
-      md_images: enriched[:md_images],
-      md_enactment_date: to_date(enriched[:md_enactment_date]),
-      md_made_date: to_date(enriched[:md_made_date]),
-      md_coming_into_force_date: to_date(enriched[:md_coming_into_force_date]),
-      md_dct_valid_date: to_date(enriched[:md_dct_valid_date]),
-      md_date: to_date(enriched[:md_date]),
-      md_restrict_extent: enriched[:md_restrict_extent],
+    # Extract enacted_by names (may come as list of maps from StagedParser)
+    enacted_by_names = extract_names(enriched[:enacted_by])
 
-      # SI codes - stored as map in UkLrt
-      si_code: list_to_map(enriched[:si_code] || enriched["si_code"]),
+    # Build enriched map with normalized fields for ParsedLaw
+    normalized =
+      enriched
+      |> Map.put(:name, normalized_name)
+      |> Map.put(:enacted_by, enacted_by_names)
 
-      # Amendment fields from StagedParser Stage 3
-      # Arrays of UK IDs
-      amending: enriched[:amending],
-      rescinding: enriched[:rescinding],
-      amended_by: enriched[:amended_by],
-      rescinded_by: enriched[:rescinded_by],
-
-      # Counts and flags
-      is_amending: enriched[:is_amending],
-      is_rescinding: enriched[:is_rescinding],
-
-      # Stats - Self-affects (shared)
-      stats_self_affects_count: enriched[:stats_self_affects_count],
-
-      # Stats - Amending (this law affects others)
-      amending_stats_affects_count: enriched[:amending_stats_affects_count],
-      amending_stats_affected_laws_count: enriched[:amending_stats_affected_laws_count],
-      amending_stats_affects_count_per_law: enriched[:amending_stats_affects_count_per_law],
-      amending_stats_affects_count_per_law_detailed:
-        enriched[:amending_stats_affects_count_per_law_detailed],
-
-      # Stats - Amended_by (this law is affected by others)
-      amended_by_stats_affected_by_count: enriched[:amended_by_stats_affected_by_count],
-      amended_by_stats_affected_by_laws_count: enriched[:amended_by_stats_affected_by_laws_count],
-      amended_by_stats_affected_by_count_per_law:
-        enriched[:amended_by_stats_affected_by_count_per_law],
-      amended_by_stats_affected_by_count_per_law_detailed:
-        enriched[:amended_by_stats_affected_by_count_per_law_detailed],
-
-      # Stats - Rescinding (this law rescinds others)
-      rescinding_stats_rescinding_laws_count: enriched[:rescinding_stats_rescinding_laws_count],
-      rescinding_stats_rescinding_count_per_law:
-        enriched[:rescinding_stats_rescinding_count_per_law],
-      rescinding_stats_rescinding_count_per_law_detailed:
-        enriched[:rescinding_stats_rescinding_count_per_law_detailed],
-
-      # Stats - Rescinded_by (this law is rescinded by others)
-      rescinded_by_stats_rescinded_by_laws_count:
-        enriched[:rescinded_by_stats_rescinded_by_laws_count],
-      rescinded_by_stats_rescinded_by_count_per_law:
-        enriched[:rescinded_by_stats_rescinded_by_count_per_law],
-      rescinded_by_stats_rescinded_by_count_per_law_detailed:
-        enriched[:rescinded_by_stats_rescinded_by_count_per_law_detailed],
-
-      # Extent fields from StagedParser Stage 1
-      geo_extent: enriched[:geo_extent],
-
-      # Enacted_by fields from StagedParser Stage 2
-      # enacted_by comes as list of maps, convert to list of name strings
-      enacted_by: extract_names(enriched[:enacted_by]),
-      is_act: enriched[:is_act],
-
-      # Live status from StagedParser Stage 4
-      live: enriched[:live],
-      live_description: enriched[:live_description],
-
-      # Taxa fields from StagedParser Stage 5
-      # role stays as array, role_gvt and holders use {key: true} format for fast lookup
-      role: enriched[:role],
-      role_gvt: list_to_key_map(enriched[:role_gvt]),
-      duty_type: list_to_map(enriched[:duty_type]),
-      duty_holder: list_to_key_map(enriched[:duty_holder]),
-      duty_holder_article_clause: enriched[:duty_holder_article_clause],
-      rights_holder: list_to_key_map(enriched[:rights_holder]),
-      rights_holder_article_clause: enriched[:rights_holder_article_clause],
-      responsibility_holder: list_to_key_map(enriched[:responsibility_holder]),
-      responsibility_holder_article_clause: enriched[:responsibility_holder_article_clause],
-      power_holder: list_to_key_map(enriched[:power_holder]),
-      power_holder_article_clause: enriched[:power_holder_article_clause],
-      popimar: list_to_key_map(enriched[:popimar]),
-      popimar_article_clause: enriched[:popimar_article_clause]
-    }
-    # Only filter nil - empty values ([], %{}, "") should be persisted to clear stale data
-    |> Enum.reject(fn {_k, v} -> v == nil end)
-    |> Enum.into(%{})
+    # Use ParsedLaw for consistent field handling and JSONB conversion
+    normalized
+    |> ParsedLaw.from_map()
+    |> ParsedLaw.to_db_attrs()
   end
 
   # Enrich record with type_desc and type_class from TypeClass module
@@ -637,14 +548,6 @@ defmodule SertantaiLegal.Scraper.LawParser do
     end
   end
 
-  defp to_integer(val) when is_integer(val), do: val
-  defp to_integer(val) when is_binary(val), do: String.to_integer(val)
-  defp to_integer(_), do: nil
-
-  defp to_string_safe(val) when is_binary(val), do: val
-  defp to_string_safe(val) when is_integer(val), do: Integer.to_string(val)
-  defp to_string_safe(_), do: nil
-
   # Extract names from list of maps (e.g., enacted_by coming from StagedParser)
   defp extract_names(nil), do: nil
   defp extract_names([]), do: []
@@ -660,39 +563,4 @@ defmodule SertantaiLegal.Scraper.LawParser do
   end
 
   defp extract_names(_), do: nil
-
-  # Convert ISO date string to Date
-  defp to_date(nil), do: nil
-  defp to_date(""), do: nil
-  defp to_date(%Date{} = date), do: date
-
-  defp to_date(date_string) when is_binary(date_string) do
-    case Date.from_iso8601(date_string) do
-      {:ok, date} -> date
-      {:error, _} -> nil
-    end
-  end
-
-  defp to_date(_), do: nil
-
-  # Convert list to map format for JSONB fields ({"values": [...]})
-  defp list_to_map(nil), do: nil
-  defp list_to_map([]), do: nil
-  defp list_to_map(""), do: nil
-  defp list_to_map(str) when is_binary(str), do: %{"values" => [str]}
-  defp list_to_map(list) when is_list(list), do: %{"values" => list}
-  defp list_to_map(map) when is_map(map), do: map
-  defp list_to_map(_), do: nil
-
-  # Convert list to key map format for holder fields ({key: true, ...})
-  # Used for role_gvt, duty_holder, rights_holder, etc. for fast lookup
-  defp list_to_key_map(nil), do: nil
-  defp list_to_key_map([]), do: %{}
-
-  defp list_to_key_map(list) when is_list(list) do
-    Enum.reduce(list, %{}, fn item, acc -> Map.put(acc, item, true) end)
-  end
-
-  defp list_to_key_map(map) when is_map(map), do: map
-  defp list_to_key_map(_), do: nil
 end

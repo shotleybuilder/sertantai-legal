@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.ChangeLogger
+  alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Legal.FunctionCalculator
 
@@ -320,33 +321,23 @@ defmodule SertantaiLegal.Scraper.Persister do
     end
   end
 
-  # Build attributes map from scraped record
+  # Build attributes map from scraped record using ParsedLaw for consistent JSONB conversion
   defp build_attrs(record) do
-    %{
-      name: get_field(record, :name),
-      title_en: get_field(record, :title_en),
-      type_code: get_field(record, :type_code),
-      year: get_integer_field(record, :year),
-      number: get_string_field(record, :number),
-      number_int: get_integer_field(record, :number),
-      si_code: build_si_code(record),
-      leg_gov_uk_url: get_field(record, :leg_gov_uk_url),
-      # Relationship arrays
-      amending: get_array_field(record, :amending),
-      rescinding: get_array_field(record, :rescinding),
-      enacted_by: get_array_field(record, :enacted_by),
-      amended_by: get_array_field(record, :amended_by),
-      rescinded_by: get_array_field(record, :rescinded_by),
-      # Boolean flags
-      is_making: get_boolean_field(record, :is_making),
-      is_commencing: get_boolean_field(record, :is_commencing),
-      is_amending: has_array_field?(record, :amending),
-      is_rescinding: has_array_field?(record, :rescinding),
-      # Mark as newly scraped
-      live: "🆕 Newly Published"
-    }
-    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
-    |> Map.new()
+    # Derive is_amending/is_rescinding from arrays
+    is_amending = has_array_field?(record, :amending)
+    is_rescinding = has_array_field?(record, :rescinding)
+
+    # Build enriched map with derived fields
+    enriched =
+      record
+      |> Map.put(:is_amending, is_amending)
+      |> Map.put(:is_rescinding, is_rescinding)
+      |> Map.put(:live, "🆕 Newly Published")
+
+    # Use ParsedLaw for consistent field handling and JSONB conversion
+    enriched
+    |> ParsedLaw.from_map()
+    |> ParsedLaw.to_db_attrs()
   end
 
   # Only update fields that are nil in existing record
@@ -361,20 +352,6 @@ defmodule SertantaiLegal.Scraper.Persister do
     |> Map.new()
   end
 
-  # Build si_code JSONB from scraped si_code field
-  defp build_si_code(record) do
-    si_code = get_field(record, :si_code)
-
-    case si_code do
-      nil -> nil
-      "" -> nil
-      [] -> nil
-      codes when is_list(codes) -> %{"codes" => codes}
-      code when is_binary(code) -> %{"codes" => [code]}
-      _ -> nil
-    end
-  end
-
   # ============================================================================
   # PRIVATE - Field Access Helpers
   # ============================================================================
@@ -384,46 +361,6 @@ defmodule SertantaiLegal.Scraper.Persister do
     record[key] || record[Atom.to_string(key)]
   end
 
-  # Get field as string
-  defp get_string_field(record, key) do
-    case get_field(record, key) do
-      nil -> nil
-      val when is_binary(val) -> val
-      val when is_integer(val) -> Integer.to_string(val)
-      _ -> nil
-    end
-  end
-
-  # Get field as integer
-  defp get_integer_field(record, key) do
-    case get_field(record, key) do
-      nil -> nil
-      val when is_integer(val) -> val
-      val when is_binary(val) -> parse_integer(val)
-      _ -> nil
-    end
-  end
-
-  # Get field as array
-  defp get_array_field(record, key) do
-    case get_field(record, key) do
-      nil -> nil
-      [] -> nil
-      list when is_list(list) -> list
-      _ -> nil
-    end
-  end
-
-  # Get field as boolean
-  defp get_boolean_field(record, key) do
-    case get_field(record, key) do
-      true -> true
-      "true" -> true
-      1 -> true
-      _ -> nil
-    end
-  end
-
   # Check if array field has values
   defp has_array_field?(record, key) do
     case get_field(record, key) do
@@ -431,13 +368,6 @@ defmodule SertantaiLegal.Scraper.Persister do
       [] -> nil
       list when is_list(list) and length(list) > 0 -> true
       _ -> nil
-    end
-  end
-
-  defp parse_integer(str) do
-    case Integer.parse(str) do
-      {num, _} -> num
-      :error -> nil
     end
   end
 end
