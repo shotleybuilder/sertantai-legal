@@ -1,6 +1,6 @@
 # UK Legal Register Table (LRT) Schema
 
-**Version**: 0.4
+**Version**: 0.5
 **Last Updated**: 2026-01-17
 
 The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
@@ -31,7 +31,7 @@ The `uk_lrt` table stores metadata for UK legislation including acts, statutory 
 | `title_en` | `title_en` | `string` | Yes (14705) | `Wild Birds Protection Order (Northern Ireland)` |
 | `year` | `year` | `integer` | Yes (19090) | `1926` |
 | `number` | `number` | `string` | Yes (19089) | `51` |
-| `number_int` | `number_int` | `integer` | No | |
+| `number_int` | `number_int` | `integer` (generated) | Yes (19088) | `1031` |
 | `type_code` | `type_code` | `string` | Yes (14166) | `nisro` |
 | `type_desc` | `type_desc` | `string` | Yes (18562) | `Northern Ireland Statutory Rule or Order` |
 | `type_class` | `type_class` | `string` | Yes (1995) | `Secondary` |

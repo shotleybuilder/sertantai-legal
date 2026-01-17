@@ -68,7 +68,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
 
     attribute :number_int, :integer do
       allow_nil?(true)
-      description("Numeric version of legislation number for sorting")
+      writable?(false)
+      description("Numeric legislation number - generated from number field")
     end
 
     attribute :acronym, :string do
