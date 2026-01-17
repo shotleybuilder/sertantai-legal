@@ -35,9 +35,9 @@ The `uk_lrt` table stores metadata for UK legislation including acts, statutory 
 | `type_code` | `type_code` | `string` | Yes (14166) | `nisro` |
 | `type_desc` | `type_desc` | `string` | Yes (18562) | `Northern Ireland Statutory Rule or Order` |
 | `type_class` | `type_class` | `string` | Yes (1995) | `Secondary` |
-| `secondary_class` | `secondary_class` | `string` | Minimal (3) | |
+| `domain` | `domain` | `text[]` | Yes (9247) | `{environment}`, `{health_safety}` |
 | `acronym` | `acronym` | `string` | Yes (190) | `TSACNR` |
-| `old_style_number` | `old_style_number` | `string` | No | |
+| `old_style_number` | `old_style_number` | `string` | Yes (99) | `Eliz2/10-11/19` |
 
 ---
 
@@ -225,49 +225,49 @@ The `uk_lrt` table stores metadata for UK legislation including acts, statutory 
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `🔺🔻_stats_self_affects_count` | `stats_self_affects_count` | `integer` | ? | |
+| `🔺🔻_stats_self_affects_count` | `stats_self_affects_count` | `integer` | Yes (15042) | |
 
 ### Amending (this law affects others)
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `🔺_stats_affects_count` | `amending_stats_affects_count` | `integer` | Yes | `2` |
-| `🔺_stats_affected_laws_count` | `amending_stats_affected_laws_count` | `integer` | Yes | `2` |
-| `🔺_stats_affects_count_per_law` | `amending_stats_affects_count_per_law` | `string` | ? | |
-| `🔺_stats_affects_count_per_law_detailed` | `amending_stats_affects_count_per_law_detailed` | `string` | ? | |
+| `🔺_stats_affects_count` | `amending_stats_affects_count` | `integer` | Yes (15042) | `2` |
+| `🔺_stats_affected_laws_count` | `amending_stats_affected_laws_count` | `integer` | Yes (15042) | `2` |
+| `🔺_stats_affects_count_per_law` | `amending_stats_affects_count_per_law` | `string` | Yes (9078) | |
+| `🔺_stats_affects_count_per_law_detailed` | `amending_stats_affects_count_per_law_detailed` | `string` | Yes (9077) | |
 
 ### Amended By (this law is affected by others)
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `🔻_stats_affected_by_count` | `amended_by_stats_affected_by_count` | `integer` | Yes | |
-| `🔻_stats_affected_by_laws_count` | `amended_by_stats_affected_by_laws_count` | `integer` | Yes | |
-| `🔻_stats_affected_by_count_per_law` | `amended_by_stats_affected_by_count_per_law` | `string` | ? | |
-| `🔻_stats_affected_by_count_per_law_detailed` | `amended_by_stats_affected_by_count_per_law_detailed` | `string` | ? | |
+| `🔻_stats_affected_by_count` | `amended_by_stats_affected_by_count` | `integer` | Yes (16757) | |
+| `🔻_stats_affected_by_laws_count` | `amended_by_stats_affected_by_laws_count` | `integer` | Yes (16751) | |
+| `🔻_stats_affected_by_count_per_law` | `amended_by_stats_affected_by_count_per_law` | `string` | Yes (7964) | |
+| `🔻_stats_affected_by_count_per_law_detailed` | `amended_by_stats_affected_by_count_per_law_detailed` | `string` | Yes (6242) | |
 
 ### Rescinding (this law rescinds others)
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `🔺_stats_rescinding_laws_count` | `rescinding_stats_rescinding_laws_count` | `integer` | ? | |
-| `🔺_stats_rescinding_count_per_law` | `rescinding_stats_rescinding_count_per_law` | `string` | ? | |
-| `🔺_stats_rescinding_count_per_law_detailed` | `rescinding_stats_rescinding_count_per_law_detailed` | `string` | ? | |
+| `🔺_stats_rescinding_laws_count` | `rescinding_stats_rescinding_laws_count` | `integer` | Yes (14979) | |
+| `🔺_stats_rescinding_count_per_law` | `rescinding_stats_rescinding_count_per_law` | `string` | Yes (2479) | |
+| `🔺_stats_rescinding_count_per_law_detailed` | `rescinding_stats_rescinding_count_per_law_detailed` | `string` | Yes (2479) | |
 
 ### Rescinded By (this law is rescinded by others)
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `🔻_stats_rescinded_by_laws_count` | `rescinded_by_stats_rescinded_by_laws_count` | `integer` | ? | |
-| `🔻_stats_rescinded_by_count_per_law` | `rescinded_by_stats_rescinded_by_count_per_law` | `string` | ? | |
-| `🔻_stats_rescinded_by_count_per_law_detailed` | `rescinded_by_stats_rescinded_by_count_per_law_detailed` | `string` | ? | |
+| `🔻_stats_rescinded_by_laws_count` | `rescinded_by_stats_rescinded_by_laws_count` | `integer` | Yes (14939) | |
+| `🔻_stats_rescinded_by_count_per_law` | `rescinded_by_stats_rescinded_by_count_per_law` | `string` | Yes (5714) | |
+| `🔻_stats_rescinded_by_count_per_law_detailed` | `rescinded_by_stats_rescinded_by_count_per_law_detailed` | `string` | Yes (5714) | |
 
 ### Change Logs
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `amending_change_log` | `amending_change_log` | `string` | ? | |
-| `amended_by_change_log` | `amended_by_change_log` | `string` | ? | |
-| `record_change_log` | `record_change_log` | `map[]` (JSONB) | No | |
+| `amending_change_log` | `amending_change_log` | `string` | Yes (287) | |
+| `amended_by_change_log` | `amended_by_change_log` | `string` | Yes (302) | |
+| `record_change_log` | `record_change_log` | `map[]` (JSONB) | Yes (473) | |
 
 ---
 
@@ -275,7 +275,9 @@ The `uk_lrt` table stores metadata for UK legislation including acts, statutory 
 
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `leg_gov_uk_url` | `leg_gov_uk_url` | `string` | Minimal (4) | `https://www.legislation.gov.uk/uksi/2024/123` |
+| `leg_gov_uk_url` | - | `string` (generated) | Yes (14165) | `https://www.legislation.gov.uk/uksi/2024/123` |
+
+**Note:** `leg_gov_uk_url` is a PostgreSQL generated column computed from `type_code`, `year`, and `number`.
 
 ---
 

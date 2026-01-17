@@ -97,9 +97,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Type class (Primary, Secondary)")
     end
 
-    attribute :secondary_class, :string do
+    attribute :domain, {:array, :string} do
       allow_nil?(true)
-      description("Secondary classification")
+      description("Regulatory domain(s): environment, health_safety, human_resources")
     end
 
     # Status
@@ -638,10 +638,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Date of most recent rescission/revocation")
     end
 
-    # External Reference
+    # External Reference (PostgreSQL generated column)
     attribute :leg_gov_uk_url, :string do
       allow_nil?(true)
-      description("legislation.gov.uk URL")
+      writable?(false)
+      description("legislation.gov.uk URL - generated from type_code/year/number")
     end
   end
 
@@ -660,12 +661,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :type_class,
         :year,
         :number,
-        :leg_gov_uk_url,
         :family,
         :family_ii,
         :acronym,
         :old_style_number,
-        :secondary_class,
+        :domain,
         :live,
         :live_description,
         :geo_extent,
@@ -776,12 +776,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :type_class,
         :year,
         :number,
-        :leg_gov_uk_url,
         :family,
         :family_ii,
         :acronym,
         :old_style_number,
-        :secondary_class,
+        :domain,
         :live,
         :live_description,
         :geo_extent,

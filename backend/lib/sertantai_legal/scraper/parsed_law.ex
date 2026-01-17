@@ -51,7 +51,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           type_code: String.t() | nil,
           type_desc: String.t() | nil,
           type_class: String.t() | nil,
-          secondary_class: String.t() | nil,
+          domain: [String.t()],
           acronym: String.t() | nil,
           old_style_number: String.t() | nil,
 
@@ -197,7 +197,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     type_code: nil,
     type_desc: nil,
     type_class: nil,
-    secondary_class: nil,
+    domain: [],
     acronym: nil,
     old_style_number: nil,
 
@@ -442,7 +442,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       type_code: get_string(normalized, :type_code),
       type_desc: get_string(normalized, :type_desc),
       type_class: get_string(normalized, :type_class),
-      secondary_class: get_string(normalized, :secondary_class),
+      domain: get_list(normalized, :domain),
       acronym: get_string(normalized, :acronym),
       old_style_number: get_string(normalized, :old_style_number),
 
