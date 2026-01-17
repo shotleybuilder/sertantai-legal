@@ -195,6 +195,16 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Government role classifications (JSONB)")
     end
 
+    attribute :role_gvt_article, :string do
+      allow_nil?(true)
+      description("Role GVT to Article mapping")
+    end
+
+    attribute :article_role_gvt, :string do
+      allow_nil?(true)
+      description("Article to Role GVT mapping")
+    end
+
     attribute :article_role, :string do
       allow_nil?(true)
       description("Article to Role mapping")
@@ -706,6 +716,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :responsibility_holder,
         :role,
         :role_gvt,
+        :role_gvt_article,
+        :article_role_gvt,
         :article_role,
         :role_article,
         :duty_type,
@@ -820,6 +832,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :responsibility_holder,
         :role,
         :role_gvt,
+        :role_gvt_article,
+        :article_role_gvt,
         :article_role,
         :role_article,
         :duty_type,

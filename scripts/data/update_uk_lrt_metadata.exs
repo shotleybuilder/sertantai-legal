@@ -1,59 +1,37 @@
 #!/usr/bin/env elixir
 
-# Update UK LRT Taxa columns from Airtable CSV export
+# Update UK LRT Metadata columns from Airtable CSV export
 #
 # Usage:
-#   cd backend && mix run ../scripts/data/update_uk_lrt_taxa.exs [csv_path] [--limit N] [--dry-run]
+#   cd backend && mix run ../scripts/data/update_uk_lrt_metadata.exs [csv_path] [--limit N] [--dry-run]
 #
 # Examples:
-#   mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv
-#   mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --limit 100
-#   mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --dry-run
+#   mix run ../scripts/data/update_uk_lrt_metadata.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+#   mix run ../scripts/data/update_uk_lrt_metadata.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --limit 100
+#   mix run ../scripts/data/update_uk_lrt_metadata.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --dry-run
 #
-# Taxa columns imported:
-#   - role (from actor) - text[] - SKIPPED if already has data
-#   - role_gvt (from actor_gvt) - jsonb
-#   - role_article (from actor_article) - text
-#   - article_role (from article_actor) - text
-#   - role_gvt_article (from actor_gvt_article) - text
-#   - article_role_gvt (from article_actor_gvt) - text
-#   - duty_type - text
-#   - duty_type_article - text
-#   - article_duty_type - text
-#   - duty_holder - jsonb
-#   - duty_holder_article - text
-#   - duty_holder_article_clause - text
-#   - article_duty_holder - text
-#   - article_duty_holder_clause - text
-#   - rights_holder - jsonb
-#   - rights_holder_article - text
-#   - rights_holder_article_clause - text
-#   - article_rights_holder - text
-#   - article_rights_holder_clause - text
-#   - responsibility_holder - jsonb
-#   - responsibility_holder_article - text
-#   - responsibility_holder_article_clause - text
-#   - article_responsibility_holder - text
-#   - article_responsibility_holder_clause - text
-#   - power_holder - jsonb
-#   - power_holder_article - text
-#   - power_holder_article_clause - text
-#   - article_power_holder - text
-#   - article_power_holder_clause - text
-#   - popimar - jsonb
-#   - popimar_article - text
-#   - popimar_article_clause - text
-#   - article_popimar - text
-#   - article_popimar_clause - text
+# Metadata columns imported:
+#   - si_code (from si_code) - jsonb {"values": [...]}
+#   - md_subjects (from md_subjects) - jsonb {"values": [...]}
+#   - md_total_paras - integer
+#   - md_body_paras - integer
+#   - md_schedule_paras - integer
+#   - md_attachment_paras - integer
+#   - md_images - integer
+#   - md_enactment_date - date
+#   - md_made_date - date
+#   - md_coming_into_force_date - date
+#   - md_dct_valid_date - date
+#   - md_restrict_start_date - date
 
 require Logger
 
 # Define CSV parser
 NimbleCSV.define(AirtableCSV, separator: ",", escape: "\"")
 
-defmodule UkLrtTaxaUpdater do
+defmodule UkLrtMetadataUpdater do
   @moduledoc """
-  Updates UK LRT Taxa columns from Airtable CSV export.
+  Updates UK LRT Metadata columns from Airtable CSV export.
   """
 
   @batch_size 100
@@ -61,49 +39,23 @@ defmodule UkLrtTaxaUpdater do
 
   # Map CSV column names to DB column names
   # Format: {csv_column, db_column, type}
-  # Types: :text, :text_array, :jsonb
+  # Types: :text, :integer, :date, :jsonb_values
   @column_mappings [
-    # Role (actor in CSV)
-    {"actor", "role", :text_array},
-    {"actor_gvt", "role_gvt", :jsonb},
-    {"actor_article", "role_article", :text},
-    {"article_actor", "article_role", :text},
-    {"actor_gvt_article", "role_gvt_article", :text},
-    {"article_actor_gvt", "article_role_gvt", :text},
-    # Duty Type
-    {"duty_type", "duty_type", :text},
-    {"duty_type_article", "duty_type_article", :text},
-    {"article_duty_type", "article_duty_type", :text},
-    # Duty Holder
-    {"duty_holder", "duty_holder", :jsonb},
-    {"duty_holder_article", "duty_holder_article", :text},
-    {"duty_holder_article_clause", "duty_holder_article_clause", :text},
-    {"article_duty_holder", "article_duty_holder", :text},
-    {"article_duty_holder_clause", "article_duty_holder_clause", :text},
-    # Rights Holder
-    {"rights_holder", "rights_holder", :jsonb},
-    {"rights_holder_article", "rights_holder_article", :text},
-    {"rights_holder_article_clause", "rights_holder_article_clause", :text},
-    {"article_rights_holder", "article_rights_holder", :text},
-    {"article_rights_holder_clause", "article_rights_holder_clause", :text},
-    # Responsibility Holder
-    {"responsibility_holder", "responsibility_holder", :jsonb},
-    {"responsibility_holder_article", "responsibility_holder_article", :text},
-    {"responsibility_holder_article_clause", "responsibility_holder_article_clause", :text},
-    {"article_responsibility_holder", "article_responsibility_holder", :text},
-    {"article_responsibility_holder_clause", "article_responsibility_holder_clause", :text},
-    # Power Holder
-    {"power_holder", "power_holder", :jsonb},
-    {"power_holder_article", "power_holder_article", :text},
-    {"power_holder_article_clause", "power_holder_article_clause", :text},
-    {"article_power_holder", "article_power_holder", :text},
-    {"article_power_holder_clause", "article_power_holder_clause", :text},
-    # Popimar
-    {"popimar", "popimar", :jsonb},
-    {"popimar_article", "popimar_article", :text},
-    {"popimar_article_clause", "popimar_article_clause", :text},
-    {"article_popimar", "article_popimar", :text},
-    {"article_popimar_clause", "article_popimar_clause", :text}
+    # SI Code and Subjects (multi-select in Airtable)
+    {"si_code", "si_code", :jsonb_values},
+    {"md_subjects", "md_subjects", :jsonb_values},
+    # Document statistics
+    {"md_total_paras", "md_total_paras", :integer},
+    {"md_body_paras", "md_body_paras", :integer},
+    {"md_schedule_paras", "md_schedule_paras", :integer},
+    {"md_attachment_paras", "md_attachment_paras", :integer},
+    {"md_images", "md_images", :integer},
+    # Dates
+    {"md_enactment_date", "md_enactment_date", :date},
+    {"md_made_date", "md_made_date", :date},
+    {"md_coming_into_force_date", "md_coming_into_force_date", :date},
+    {"md_dct_valid_date", "md_dct_valid_date", :date},
+    {"md_restrict_start_date", "md_restrict_start_date", :date}
   ]
 
   def run(csv_path, opts \\ []) do
@@ -111,7 +63,7 @@ defmodule UkLrtTaxaUpdater do
     dry_run = Keyword.get(opts, :dry_run, false)
 
     IO.puts("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    IO.puts("  UK LRT Taxa Update from Airtable CSV")
+    IO.puts("  UK LRT Metadata Update from Airtable CSV")
     IO.puts("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     IO.puts("  File: #{csv_path}")
     IO.puts("  Limit: #{if limit == :all, do: "No limit", else: limit}")
@@ -130,12 +82,17 @@ defmodule UkLrtTaxaUpdater do
 
     # Read headers and build column index map
     IO.puts("  Reading CSV headers...")
-    {headers, column_indices} = read_headers(csv_path)
-    IO.puts("  Found #{map_size(column_indices)} Taxa columns in CSV\n")
+    {_headers, column_indices} = read_headers(csv_path)
+    IO.puts("  Found #{map_size(column_indices) - 1} Metadata columns in CSV\n")
 
     # Show which columns were found
-    found_columns = Map.keys(column_indices) |> Enum.sort()
-    IO.puts("  Taxa columns found: #{Enum.join(found_columns, ", ")}\n")
+    found_columns =
+      column_indices
+      |> Map.keys()
+      |> Enum.reject(&(&1 == :name))
+      |> Enum.sort()
+
+    IO.puts("  Metadata columns found: #{Enum.join(found_columns, ", ")}\n")
 
     # Count total records
     IO.puts("  Counting CSV records...")
@@ -193,7 +150,7 @@ defmodule UkLrtTaxaUpdater do
       System.halt(1)
     end
 
-    # Build index map for Taxa columns
+    # Build index map for Metadata columns
     column_indices =
       @column_mappings
       |> Enum.reduce(%{name: name_idx}, fn {csv_col, db_col, type}, acc ->
@@ -280,10 +237,11 @@ defmodule UkLrtTaxaUpdater do
   end
 
   defp build_updates(row, column_indices, column_counts) do
-    # Skip :name key, process all Taxa columns
-    taxa_columns = Map.delete(column_indices, :name)
+    # Skip :name key, process all Metadata columns
+    metadata_columns = Map.delete(column_indices, :name)
 
-    Enum.reduce(taxa_columns, {%{}, column_counts}, fn {db_col, {idx, type}}, {updates, counts} ->
+    Enum.reduce(metadata_columns, {%{}, column_counts}, fn {db_col, {idx, type}},
+                                                           {updates, counts} ->
       raw_value = get_field(row, idx)
 
       case parse_value(raw_value, type) do
@@ -300,23 +258,66 @@ defmodule UkLrtTaxaUpdater do
   defp parse_value(nil, _type), do: nil
   defp parse_value("", _type), do: nil
 
-  defp parse_value(value, :text), do: value
+  defp parse_value(value, :integer) do
+    case Integer.parse(value) do
+      {int, _} -> int
+      :error -> nil
+    end
+  end
 
-  defp parse_value(value, :text_array) do
-    # Parse comma-separated values into array
-    value
-    |> String.split(",")
-    |> Enum.map(&String.trim/1)
-    |> Enum.filter(&(&1 != ""))
-    |> case do
-      [] -> nil
-      arr -> arr
+  defp parse_value(value, :date) do
+    # Airtable exports dates in various formats, try common ones
+    cond do
+      # ISO format: 2024-01-15
+      Regex.match?(~r/^\d{4}-\d{2}-\d{2}$/, value) ->
+        case Date.from_iso8601(value) do
+          {:ok, date} -> date
+          _ -> nil
+        end
+
+      # UK format: 15/01/2024
+      Regex.match?(~r/^\d{2}\/\d{2}\/\d{4}$/, value) ->
+        [day, month, year] = String.split(value, "/")
+
+        case Date.new(String.to_integer(year), String.to_integer(month), String.to_integer(day)) do
+          {:ok, date} -> date
+          _ -> nil
+        end
+
+      # US format: 01/15/2024
+      Regex.match?(~r/^\d{1,2}\/\d{1,2}\/\d{4}$/, value) ->
+        parts = String.split(value, "/")
+
+        case parts do
+          [month, day, year] ->
+            case Date.new(
+                   String.to_integer(year),
+                   String.to_integer(month),
+                   String.to_integer(day)
+                 ) do
+              {:ok, date} -> date
+              _ -> nil
+            end
+
+          _ ->
+            nil
+        end
+
+      # Year only: 2024
+      Regex.match?(~r/^\d{4}$/, value) ->
+        case Date.new(String.to_integer(value), 1, 1) do
+          {:ok, date} -> date
+          _ -> nil
+        end
+
+      true ->
+        nil
     end
   end
 
   defp parse_value(value, :jsonb_values) do
     # Parse comma-separated values into JSONB {"values": [...]} format
-    # Handles quoted values with commas inside (e.g., "Interpretation, Definition")
+    # Handles quoted values with commas inside
     value
     |> parse_csv_values()
     |> case do
@@ -327,41 +328,11 @@ defmodule UkLrtTaxaUpdater do
 
   # Parse CSV values respecting quoted strings
   defp parse_csv_values(str) do
-    # Use regex to split on commas not inside quotes
-    ~r/(?:^|,)("(?:[^"]*(?:""[^"]*)*)"|[^,]*)/
-    |> Regex.scan(str)
-    |> Enum.map(fn
-      [_, quoted] when is_binary(quoted) ->
-        quoted
-        |> String.trim()
-        |> String.trim("\"")
-        # Handle escaped quotes
-        |> String.replace("\"\"", "\"")
-
-      _ ->
-        nil
-    end)
-    |> Enum.filter(&(&1 != nil and &1 != ""))
-  end
-
-  defp parse_value(value, :jsonb) do
-    # For jsonb holder columns, the CSV has a specific format
-    # Try to parse as JSON first, otherwise treat as comma-separated keys
-    case Jason.decode(value) do
-      {:ok, parsed} when is_map(parsed) ->
-        parsed
-
-      _ ->
-        # Treat as comma-separated list of values, convert to map with true values
-        value
-        |> String.split(",")
-        |> Enum.map(&String.trim/1)
-        |> Enum.filter(&(&1 != ""))
-        |> case do
-          [] -> nil
-          items -> Enum.reduce(items, %{}, fn item, acc -> Map.put(acc, item, true) end)
-        end
-    end
+    # Airtable multi-select fields are comma-separated, with quotes around values containing commas
+    str
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.filter(&(&1 != ""))
   end
 
   defp update_record(id, updates) do
@@ -401,7 +372,7 @@ defmodule UkLrtTaxaUpdater do
 
     IO.puts("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     IO.puts("  Updated:      #{result.updated}")
-    IO.puts("  No data:      #{result.no_data} (no Taxa fields)")
+    IO.puts("  No data:      #{result.no_data} (no Metadata fields)")
     IO.puts("  Skipped:      #{result.skipped} (missing name)")
     IO.puts("  Not found:    #{result.not_found} (not in database)")
     IO.puts("  Errors:       #{length(result.errors)}")
@@ -449,27 +420,27 @@ csv_path =
       Path.expand(path)
 
     [] ->
-      default_path = Path.expand("~/Documents/sertantai_data/UK-EXPORT.csv")
+      default_path = Path.expand("~/Documents/Airtable_Exports/UK-EXPORT.csv")
 
       if File.exists?(default_path) do
         default_path
       else
         IO.puts(
-          "Usage: mix run ../scripts/data/update_uk_lrt_taxa.exs <csv_path> [--limit N] [--dry-run]"
+          "Usage: mix run ../scripts/data/update_uk_lrt_metadata.exs <csv_path> [--limit N] [--dry-run]"
         )
 
         IO.puts("\nExamples:")
 
         IO.puts(
-          "  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv"
+          "  mix run ../scripts/data/update_uk_lrt_metadata.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv"
         )
 
         IO.puts(
-          "  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --limit 100"
+          "  mix run ../scripts/data/update_uk_lrt_metadata.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --limit 100"
         )
 
         IO.puts(
-          "  mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/sertantai_data/UK-EXPORT.csv --dry-run"
+          "  mix run ../scripts/data/update_uk_lrt_metadata.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --dry-run"
         )
 
         System.halt(1)
@@ -483,4 +454,4 @@ update_opts = [
 ]
 
 # Run the updater
-UkLrtTaxaUpdater.run(csv_path, update_opts)
+UkLrtMetadataUpdater.run(csv_path, update_opts)
