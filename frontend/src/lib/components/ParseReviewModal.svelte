@@ -147,11 +147,13 @@
 	$: recordsId = records.map((r) => r.name).join(',');
 	$: if (open && records.length > 0 && recordsId !== lastRecordsId) {
 		lastRecordsId = recordsId;
+		currentIndex = initialIndex;  // Reset to initial index for new records
 		confirmedCount = 0;
 		skippedCount = 0;
 		errorCount = 0;
 		failedNames = new Set();
 		lastParsedName = null;
+		parseResult = null;
 	}
 
 	function getStageIcon(status: string): string {

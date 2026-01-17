@@ -140,12 +140,14 @@
 		parseCompleteMessage = `Parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
 		// Refresh the session data to update counts
 		$sessionQuery.refetch();
+		// Also refresh db status to update the "In DB" indicator
+		$dbStatusQuery.refetch();
 
 		// Check if there are affected laws to show cascade modal
 		if (confirmed > 0) {
 			try {
 				const affected = await getAffectedLaws(sessionId);
-				if (affected.total_affected > 0) {
+				if (affected.total_affected > 0 || affected.total_enacting_parents > 0) {
 					affectedLawsCount = affected.total_affected;
 					// Show cascade modal after a brief delay
 					setTimeout(() => {
