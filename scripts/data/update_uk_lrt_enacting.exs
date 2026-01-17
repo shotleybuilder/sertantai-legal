@@ -70,12 +70,14 @@ defmodule UkLrtEnactingUpdater do
 
     # Show which columns were found
     IO.puts("  Column mappings:")
+
     Enum.each(@column_mappings, fn {csv_col, db_col, _type} ->
       case Map.get(column_indices, csv_col) do
         nil -> IO.puts("    ✗ #{csv_col} (not found in CSV)")
         idx -> IO.puts("    ✓ #{csv_col} [#{idx}] → #{db_col}")
       end
     end)
+
     IO.puts("")
 
     IO.puts("  Scanning CSV for records with enacting data...\n")
@@ -105,7 +107,14 @@ defmodule UkLrtEnactingUpdater do
       |> Stream.with_index(1)
       |> Stream.chunk_every(@batch_size)
       |> Enum.reduce(
-        %{updated: 0, skipped: 0, not_found: 0, errors: [], enacted_by_count: 0, enacting_count: 0},
+        %{
+          updated: 0,
+          skipped: 0,
+          not_found: 0,
+          errors: [],
+          enacted_by_count: 0,
+          enacting_count: 0
+        },
         fn batch, acc ->
           process_batch(batch, name_to_id, name_idx, column_indices, dry_run, acc)
         end
@@ -154,9 +163,10 @@ defmodule UkLrtEnactingUpdater do
     import Ecto.Query
 
     SertantaiLegal.Repo.all(
-      from u in "uk_lrt",
+      from(u in "uk_lrt",
         where: not is_nil(u.name),
         select: {u.name, u.id}
+      )
     )
     |> Map.new()
   end
@@ -192,6 +202,7 @@ defmodule UkLrtEnactingUpdater do
   defp process_batch(batch, name_to_id, name_idx, column_indices, dry_run, acc) do
     # Show progress
     {_, last_index} = List.last(batch)
+
     if rem(last_index, @progress_interval) == 0 or last_index <= @batch_size do
       IO.write("\r  Processed: #{last_index} records...")
     end
@@ -242,7 +253,8 @@ defmodule UkLrtEnactingUpdater do
   defp build_updates(row, column_indices) do
     {updates, has_enacted_by, has_enacting} =
       @column_mappings
-      |> Enum.reduce({%{}, false, false}, fn {csv_col, db_col, type}, {acc, enacted_by, enacting} ->
+      |> Enum.reduce({%{}, false, false}, fn {csv_col, db_col, type},
+                                             {acc, enacted_by, enacting} ->
         case Map.get(column_indices, csv_col) do
           nil ->
             {acc, enacted_by, enacting}
@@ -272,11 +284,11 @@ defmodule UkLrtEnactingUpdater do
 
   defp parse_value(value, :array) do
     # Parse comma-separated list into array
-    # Handle Airtable format: "UK_uksi_2024_123" -> "uksi/2024/123"
+    # Normalize to canonical UK_ format: "uksi/2024/123" -> "UK_uksi_2024_123"
     value
     |> String.split(",")
     |> Enum.map(&String.trim/1)
-    |> Enum.map(&normalize_law_name/1)
+    |> Enum.map(&normalize_to_canonical_name/1)
     |> Enum.filter(&(&1 != ""))
     |> case do
       [] -> nil
@@ -284,14 +296,21 @@ defmodule UkLrtEnactingUpdater do
     end
   end
 
-  # Convert Airtable format to standard format
-  # "UK_uksi_2024_123" -> "uksi/2024/123"
-  defp normalize_law_name(name) do
-    case Regex.run(~r/^UK_([a-z]+)_(\d{4})_(\d+)$/i, name) do
-      [_, type, year, number] ->
-        "#{String.downcase(type)}/#{year}/#{number}"
-      _ ->
-        # Already in correct format or unknown format
+  # Normalize to canonical UK_ format
+  # "uksi/2024/123" -> "UK_uksi_2024_123"
+  # "UK_uksi_2024_123" -> "UK_uksi_2024_123" (unchanged)
+  defp normalize_to_canonical_name(name) do
+    cond do
+      # Already in canonical format
+      String.starts_with?(name, "UK_") ->
+        name
+
+      # URI format - convert to canonical
+      String.contains?(name, "/") ->
+        "UK_" <> String.replace(name, "/", "_")
+
+      # Unknown format - pass through
+      true ->
         name
     end
   end
@@ -313,9 +332,10 @@ defmodule UkLrtEnactingUpdater do
       |> Enum.map(fn {col, val} -> {col, val} end)
 
     query =
-      from u in "uk_lrt",
+      from(u in "uk_lrt",
         where: u.id == ^id,
         update: [set: ^set_clause]
+      )
 
     case SertantaiLegal.Repo.update_all(query, []) do
       {1, _} -> :ok
@@ -378,11 +398,24 @@ csv_path =
       if File.exists?(default_path) do
         default_path
       else
-        IO.puts("Usage: mix run ../scripts/data/update_uk_lrt_enacting.exs <csv_path> [--limit N] [--dry-run]")
+        IO.puts(
+          "Usage: mix run ../scripts/data/update_uk_lrt_enacting.exs <csv_path> [--limit N] [--dry-run]"
+        )
+
         IO.puts("\nExamples:")
-        IO.puts("  mix run ../scripts/data/update_uk_lrt_enacting.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv")
-        IO.puts("  mix run ../scripts/data/update_uk_lrt_enacting.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --limit 100")
-        IO.puts("  mix run ../scripts/data/update_uk_lrt_enacting.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --dry-run")
+
+        IO.puts(
+          "  mix run ../scripts/data/update_uk_lrt_enacting.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv"
+        )
+
+        IO.puts(
+          "  mix run ../scripts/data/update_uk_lrt_enacting.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --limit 100"
+        )
+
+        IO.puts(
+          "  mix run ../scripts/data/update_uk_lrt_enacting.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv --dry-run"
+        )
+
         System.halt(1)
       end
   end
