@@ -335,8 +335,6 @@ defmodule SertantaiLegal.Scraper.LawParser do
     |> maybe_restore_title(original_title)
     # Ensure name is set
     |> ensure_name()
-    # Add leg_gov_uk_url
-    |> ensure_url()
     # Set md_checked timestamp
     |> Map.put(:md_checked, Date.utc_today() |> Date.to_iso8601())
   end
@@ -353,25 +351,6 @@ defmodule SertantaiLegal.Scraper.LawParser do
     case record[:name] do
       nil -> Map.put(record, :name, build_name(record))
       _ -> record
-    end
-  end
-
-  defp ensure_url(record) do
-    case record[:leg_gov_uk_url] do
-      nil ->
-        # URL uses slash format: legislation.gov.uk/uksi/2024/1234
-        type_code = record[:type_code] || record["type_code"]
-        year = record[:Year] || record["Year"]
-        number = record[:Number] || record["Number"]
-
-        Map.put(
-          record,
-          :leg_gov_uk_url,
-          "https://www.legislation.gov.uk/#{type_code}/#{year}/#{number}"
-        )
-
-      _ ->
-        record
     end
   end
 

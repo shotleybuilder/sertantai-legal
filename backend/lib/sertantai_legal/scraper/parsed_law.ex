@@ -175,9 +175,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           amended_by_change_log: String.t() | nil,
           record_change_log: [map()] | nil,
 
-          # === EXTERNAL REFERENCES ===
-          leg_gov_uk_url: String.t() | nil,
-
           # === INTERNAL (Parse metadata - not persisted) ===
           parse_stages: map(),
           parse_errors: [String.t()]
@@ -320,9 +317,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     amending_change_log: nil,
     amended_by_change_log: nil,
     record_change_log: nil,
-
-    # External References
-    leg_gov_uk_url: nil,
 
     # Internal (Parse metadata)
     parse_stages: %{},
@@ -580,9 +574,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       amending_change_log: get_string(normalized, :amending_change_log),
       amended_by_change_log: get_string(normalized, :amended_by_change_log),
       record_change_log: get_list(normalized, :record_change_log),
-
-      # External References
-      leg_gov_uk_url: get_string(normalized, :leg_gov_uk_url),
 
       # Internal (Parse metadata)
       parse_stages: normalized[:parse_stages] || %{},

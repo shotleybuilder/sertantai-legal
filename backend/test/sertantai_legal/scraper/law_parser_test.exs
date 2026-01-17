@@ -67,21 +67,7 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
       assert enriched[:name] == "UK_uksi_2024_1234"
     end
 
-    test "builds leg_gov_uk_url with slash format (not underscore)" do
-      record = %{
-        type_code: "uksi",
-        Year: 2024,
-        Number: "1234",
-        Title_EN: "Test Regulation"
-      }
-
-      {:ok, enriched} = LawParser.parse_record(record, persist: false)
-
-      # URL uses slash format for legislation.gov.uk compatibility
-      assert enriched[:leg_gov_uk_url] == "https://www.legislation.gov.uk/uksi/2024/1234"
-      # Name uses underscore format
-      assert enriched[:name] == "UK_uksi_2024_1234"
-    end
+    # Note: leg_gov_uk_url is now a PostgreSQL generated column, not set by parser
 
     test "sets md_checked timestamp" do
       record = %{

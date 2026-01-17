@@ -62,12 +62,10 @@ defmodule SertantaiLegal.Scraper.NewLaws do
                 year = record[:Year]
                 number = record[:Number]
                 name = IdField.build_uk_id(type_code, year, number)
-                url = "https://www.legislation.gov.uk/#{type_code}/#{year}/#{number}"
 
                 record
                 |> Map.put(:publication_date, date)
                 |> Map.put(:name, name)
-                |> Map.put(:leg_gov_uk_url, url)
                 |> enrich_type_fields()
               end)
 

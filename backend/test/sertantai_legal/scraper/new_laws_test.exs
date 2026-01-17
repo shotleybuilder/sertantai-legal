@@ -40,13 +40,7 @@ defmodule SertantaiLegal.Scraper.NewLawsTest do
       assert record[:name] == "UK_uksi_2024_1001"
     end
 
-    test "adds leg_gov_uk_url field" do
-      {:ok, records} = NewLaws.fetch(2024, 12, 1)
-
-      record = Enum.find(records, fn r -> r[:Number] == "1001" end)
-
-      assert record[:leg_gov_uk_url] == "https://www.legislation.gov.uk/uksi/2024/1001"
-    end
+    # Note: leg_gov_uk_url is now a PostgreSQL generated column, not set by NewLaws
   end
 
   describe "fetch_range/4" do

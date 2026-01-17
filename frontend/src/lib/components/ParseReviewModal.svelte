@@ -30,6 +30,8 @@
 	let confirmedCount = 0;
 	let skippedCount = 0;
 	let errorCount = 0;
+	// Flag to prevent reparsing after workflow is complete
+	let workflowComplete = false;
 
 	$: currentRecord = records[currentIndex];
 	$: isFirst = currentIndex === 0;
@@ -41,8 +43,10 @@
 	let failedNames: Set<string> = new Set();
 
 	// Parse current record when index changes (only if not already parsed or failed)
+	// IMPORTANT: workflowComplete guard prevents reparse after final confirm
 	$: if (
 		open &&
+		!workflowComplete &&
 		currentRecord &&
 		currentRecord.name !== lastParsedName &&
 		!failedNames.has(currentRecord.name) &&
@@ -133,6 +137,8 @@
 	}
 
 	function handleComplete() {
+		// Set flag BEFORE dispatching to prevent reactive reparse trigger
+		workflowComplete = true;
 		lastParsedName = null;
 		dispatch('complete', {
 			confirmed: confirmedCount,
@@ -154,6 +160,7 @@
 		failedNames = new Set();
 		lastParsedName = null;
 		parseResult = null;
+		workflowComplete = false;  // Reset workflow flag for new records
 	}
 
 	function getStageIcon(status: string): string {
