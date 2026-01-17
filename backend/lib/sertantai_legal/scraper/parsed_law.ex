@@ -632,6 +632,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
   @spec to_db_attrs(t()) :: map()
   def to_db_attrs(%__MODULE__{} = law) do
     law
+    |> derive_domain_from_family()
     |> Map.from_struct()
     |> Map.drop(@internal_fields)
     |> wrap_values_jsonb_fields()
@@ -958,4 +959,50 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     end)
     |> Enum.into(%{})
   end
+
+  # ============================================================================
+  # Private Helpers - Domain Derivation
+  # ============================================================================
+
+  # Domain emoji mappings from family field
+  @domain_emoji_map %{
+    "💚" => "environment",
+    "💙" => "health_safety",
+    "🖤" => "governance",
+    "💜" => "human_resources"
+  }
+
+  @doc false
+  defp derive_domain_from_family(%__MODULE__{domain: domain} = law)
+       when is_list(domain) and domain != [] do
+    # Domain already set, don't override
+    law
+  end
+
+  defp derive_domain_from_family(%__MODULE__{family: nil, family_ii: nil} = law) do
+    # No family data to derive from
+    law
+  end
+
+  defp derive_domain_from_family(%__MODULE__{family: family, family_ii: family_ii} = law) do
+    # Derive domains from both family and family_ii
+    domains =
+      [family, family_ii]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.map(&extract_domain_from_family/1)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+
+    %{law | domain: domains}
+  end
+
+  defp extract_domain_from_family(family_value) when is_binary(family_value) do
+    # Check first character (emoji) against domain map
+    case String.first(family_value) do
+      nil -> nil
+      first_char -> Map.get(@domain_emoji_map, first_char)
+    end
+  end
+
+  defp extract_domain_from_family(_), do: nil
 end
