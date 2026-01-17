@@ -94,7 +94,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
           # === FUNCTION (Purpose) ===
           function: map() | nil,
-          purpose: map() | nil,
+          purpose: [String.t()],
           is_making: boolean() | nil,
           is_commencing: boolean() | nil,
           is_amending: boolean() | nil,
@@ -237,7 +237,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
     # Function (Purpose)
     function: nil,
-    purpose: nil,
+    purpose: [],
     is_making: nil,
     is_commencing: nil,
     is_amending: nil,
@@ -387,7 +387,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
   }
 
   # Fields that store lists internally but convert to {"values": [...]} JSONB in DB
-  @values_jsonb_fields [:si_code, :md_subjects, :duty_type]
+  @values_jsonb_fields [:si_code, :md_subjects, :duty_type, :purpose]
 
   # Fields that store lists internally but convert to {key: true, ...} JSONB in DB
   @key_map_jsonb_fields [
@@ -479,7 +479,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
       # Function (Purpose)
       function: get_map(normalized, :function),
-      purpose: get_map(normalized, :purpose),
+      purpose: get_list(normalized, :purpose),
       is_making: get_boolean(normalized, :is_making),
       is_commencing: get_boolean(normalized, :is_commencing),
       is_amending: get_boolean(normalized, :is_amending),
