@@ -67,7 +67,8 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
     test "processes training provision with competence classification" do
       record = %{
-        text: "The employer shall provide adequate training to all employees before they commence work."
+        text:
+          "The employer shall provide adequate training to all employees before they commence work."
       }
 
       record =
@@ -137,7 +138,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       assert record.power_holder != nil
     end
 
-    test "processes amendment clause (stops further classification)" do
+    test "processes amendment clause (no role holders found)" do
       record = %{
         text: "The following amendments are made to the Health and Safety Act 1974."
       }
@@ -148,10 +149,11 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
         |> DutyType.process_record()
         |> Popimar.process_record()
 
-      # Amendments should be classified but not get duty holders or POPIMAR
-      assert "Amendment" in record.duty_type
+      # Amendment text doesn't have role holder patterns, so no duty_type values
+      # (duty_type now only contains role-based values: Duty, Right, Responsibility, Power)
+      assert record.duty_type == []
 
-      # Use Map.get since duty_holder key may not exist for amendments
+      # Use Map.get since duty_holder key may not exist
       duty_holder = Map.get(record, :duty_holder)
       assert duty_holder == nil or duty_holder == %{"items" => []}
 
@@ -220,9 +222,10 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       assert "Responsibility" in third.duty_type
 
-      # Fourth record - citation
+      # Fourth record - citation (no role holders, just purpose)
       fourth = Enum.at(results, 3)
-      assert "Enactment, Citation, Commencement" in fourth.duty_type
+      # duty_type now only contains role-based values, so citation has empty duty_type
+      assert fourth.duty_type == []
 
       # Fifth record - empty text (unchanged)
       fifth = Enum.at(results, 4)
@@ -269,6 +272,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       # Multiple governed actors
       assert "Org: Employer" in record.role
+
       assert Enum.any?(record.role, fn r ->
                String.contains?(r, "Contractor") or String.contains?(r, "Designer")
              end)

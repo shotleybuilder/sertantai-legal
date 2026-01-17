@@ -1,31 +1,26 @@
 defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   @moduledoc """
-  Utility functions for duty type classification.
+  Utility functions for duty type (role-based) classification.
 
-  This module provides the core logic for:
-  - Finding role holders (duty holders, rights holders, etc.) in legal text
-  - Processing generic duty type patterns
-  - Building custom regex libraries for specific actors
+  This module provides the core logic for finding role holders
+  (duty holders, rights holders, responsibility holders, power holders) in legal text.
+
+  Note: For function-based classification (purpose), see `PurposeClassifier`.
 
   ## Processing Flow
 
   1. Text is first cleaned with `blacklist/1` to remove false positive patterns
   2. `find_role_holders/4` searches for actor-specific duties/rights/responsibilities/powers
-  3. `duty_types_generic/1` identifies structural duty types (amendment, definition, etc.)
-  4. Results are combined and sorted
+  3. Results identify which actors have which roles
 
   ## Example
 
-      iex> DutyTypeLib.duty_types_generic("This Act may be cited as...")
-      ["Enactment, Citation, Commencement"]
-
-      iex> DutyTypeLib.find_role_holders(:duty, ["Org: Employer"], "The employer shall ensure...")
-      {["Org: Employer"], ["Duty"], "DUTY\\n👤Org: Employer\\n📌..."}
+      iex> DutyTypeLib.find_role_holders(:duty, ["Org: Employer"], "The employer shall ensure...", [])
+      {["Org: Employer"], ["Duty"], "DUTY\\n👤Org: Employer\\n📌...", [...]}
   """
 
   alias SertantaiLegal.Legal.Taxa.{
     ActorLib,
-    DutyTypeDefn,
     DutyTypeDefnGoverned,
     DutyTypeDefnGovernment
   }
@@ -95,39 +90,6 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   end
 
   @doc """
-  Extracts generic duty types from text (not actor-specific).
-
-  Checks for structural patterns like amendments, definitions, scope, etc.
-  """
-  @spec duty_types_generic(text()) :: duty_types()
-  def duty_types_generic(text) do
-    {text, []}
-    |> process_duty_types()
-    |> elem(1)
-    |> Enum.uniq()
-  end
-
-  @doc """
-  Processes text against a list of duty type patterns.
-
-  Returns `{remaining_text, list_of_duty_types}`.
-  """
-  @spec process({text(), list()}, list({String.t(), String.t()})) :: {text(), duty_types()}
-  def process(collector, regexes) do
-    Enum.reduce(regexes, collector, fn {regex, duty_type}, {text, duty_types} = acc ->
-      case Regex.match?(~r/#{regex}/, text) do
-        true ->
-          duty_type = if is_binary(duty_type), do: [duty_type], else: duty_type
-          # Remove matched text to avoid duplicate matches
-          {Regex.replace(~r/#{regex}/m, text, ""), duty_types ++ duty_type}
-
-        false ->
-          acc
-      end
-    end)
-  end
-
-  @doc """
   Removes blacklisted patterns from text before processing.
 
   This prevents false positive matches on common phrases.
@@ -159,23 +121,6 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   # ============================================================================
   # Private Functions
   # ============================================================================
-
-  # Processes text through all generic duty type patterns
-  defp process_duty_types(collector) do
-    collector
-    |> process(DutyTypeDefn.enaction_citation_commencement())
-    |> process(DutyTypeDefn.extent())
-    |> process(DutyTypeDefn.interpretation_definition())
-    |> process(DutyTypeDefn.application_scope())
-    |> process(DutyTypeDefn.exemption())
-    |> process(DutyTypeDefn.repeal_revocation())
-    |> process(DutyTypeDefn.transitional_arrangement())
-    |> process(DutyTypeDefn.charge_fee())
-    |> process(DutyTypeDefn.offence())
-    |> process(DutyTypeDefn.enforcement_prosecution())
-    |> process(DutyTypeDefn.defence_appeal())
-    |> process(DutyTypeDefn.power_conferred())
-  end
 
   # Runs role-specific regex patterns against text
   defp run_role_regex(collector, library, label) do

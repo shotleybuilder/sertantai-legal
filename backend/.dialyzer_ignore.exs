@@ -27,7 +27,11 @@
 
   # Staged parser - permissive specs for enrichment pipeline
   {"lib/sertantai_legal/scraper/staged_parser.ex", :contract_supertype},
+  {"lib/sertantai_legal/scraper/staged_parser.ex", :invalid_contract},
   {"lib/sertantai_legal/scraper/staged_parser.ex", :pattern_match},
+
+  # ParsedLaw - permissive specs for database record conversion
+  {"lib/sertantai_legal/scraper/parsed_law.ex", :contract_supertype},
 
   # Controller guard clauses - intentional defensive guards for request validation
   {"lib/sertantai_legal_web/controllers/scrape_controller.ex", :guard_fail},
