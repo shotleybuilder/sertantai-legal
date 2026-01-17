@@ -130,13 +130,15 @@ The `uk_lrt` table stores metadata for UK legislation including acts, statutory 
 
 ### Linked (Graph Edges)
 
+These columns contain **resolved** self-referential links to other `uk_lrt` records. They enable navigation between related laws. Only references that exist in the database are included.
+
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
-| `linked_enacted_by` | `linked_enacted_by` | `text[]` | No | |
-| `linked_amending` | `linked_amending` | `text[]` | No | |
-| `linked_amended_by` | `linked_amended_by` | `text[]` | No | |
-| `linked_rescinding` | `linked_rescinding` | `text[]` | No | |
-| `linked_rescinded_by` | `linked_rescinded_by` | `text[]` | No | |
+| `linked_enacted_by` | `linked_enacted_by` | `text[]` | Yes (7839) | `{UK_ukpga_1972_68}` |
+| `linked_amending` | `linked_amending` | `text[]` | Yes (9673) | `{UK_uksi_2024_436,UK_ukpga_2021_30}` |
+| `linked_amended_by` | `linked_amended_by` | `text[]` | Yes (6180) | `{UK_uksi_2023_381}` |
+| `linked_rescinding` | `linked_rescinding` | `text[]` | Yes (2014) | `{UK_uksi_2002_119}` |
+| `linked_rescinded_by` | `linked_rescinded_by` | `text[]` | Yes (5600) | `{UK_uksi_2015_1640}` |
 
 ---
 
