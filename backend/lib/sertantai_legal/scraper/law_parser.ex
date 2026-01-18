@@ -466,6 +466,10 @@ defmodule SertantaiLegal.Scraper.LawParser do
     # Normalize name to UK_ format
     normalized_name = normalize_name(enriched[:name], enriched)
 
+    # Extract enacted_by metadata before normalizing to names
+    # This preserves the rich map data for enacted_by_meta field
+    enacted_by_meta = extract_meta_maps(enriched[:enacted_by])
+
     # Extract enacted_by names (may come as list of maps from StagedParser)
     enacted_by_names = extract_names(enriched[:enacted_by])
 
@@ -474,11 +478,28 @@ defmodule SertantaiLegal.Scraper.LawParser do
       enriched
       |> Map.put(:name, normalized_name)
       |> Map.put(:enacted_by, enacted_by_names)
+      |> Map.put(:enacted_by_meta, enacted_by_meta)
 
     # Use ParsedLaw for consistent field handling and JSONB conversion
     normalized
     |> ParsedLaw.from_map()
     |> ParsedLaw.to_db_attrs()
+  end
+
+  # Extract metadata maps from a list, converting atom keys to string keys
+  defp extract_meta_maps(nil), do: []
+  defp extract_meta_maps([]), do: []
+
+  defp extract_meta_maps(list) when is_list(list) do
+    list
+    |> Enum.filter(&is_map/1)
+    |> Enum.map(&stringify_keys/1)
+  end
+
+  defp extract_meta_maps(_), do: []
+
+  defp stringify_keys(map) when is_map(map) do
+    Map.new(map, fn {k, v} -> {to_string(k), v} end)
   end
 
   # Enrich record with type_desc and type_class from TypeClass module

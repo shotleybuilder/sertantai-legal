@@ -488,7 +488,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
       # Function (Relationships) - extract names from maps or pass through strings
       enacted_by: get_name_list(normalized, :enacted_by),
-      enacted_by_meta: get_meta_list(normalized, :enacted_by),
+      enacted_by_meta: get_enacted_by_meta(normalized),
       enacting: get_name_list(normalized, :enacting),
       amended_by: get_name_list(normalized, :amended_by),
       amending: get_name_list(normalized, :amending),
@@ -865,6 +865,22 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
   defp stringify_keys(map) when is_map(map) do
     Map.new(map, fn {k, v} -> {to_string(k), v} end)
+  end
+
+  # Get enacted_by_meta: use explicit key if present, otherwise extract from enacted_by
+  # This handles both cases:
+  # 1. Input has enacted_by_meta already (from DB or explicit)
+  # 2. Input has enacted_by as list of maps (from StagedParser) - extract metadata
+  defp get_enacted_by_meta(map) do
+    case Map.get(map, :enacted_by_meta) do
+      list when is_list(list) and list != [] ->
+        # Use explicit enacted_by_meta if present and non-empty
+        extract_meta_maps(list)
+
+      _ ->
+        # Fall back to extracting from enacted_by field
+        get_meta_list(map, :enacted_by)
+    end
   end
 
   defp get_map(map, key) do
