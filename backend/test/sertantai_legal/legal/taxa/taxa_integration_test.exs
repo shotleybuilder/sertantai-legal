@@ -29,8 +29,8 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       record = DutyType.process_record(record)
 
       assert "Duty" in record.duty_type
-      assert record.duty_holder != nil
-      assert "Org: Employer" in record.duty_holder["items"]
+      assert is_list(record.duty_holder)
+      assert "Org: Employer" in record.duty_holder
 
       # Step 3: Classify by POPIMAR
       record = Popimar.process_record(record)
@@ -55,8 +55,8 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       record = DutyType.process_record(record)
 
       assert "Responsibility" in record.duty_type
-      assert record.responsibility_holder != nil
-      assert "Gvt: Authority: Local" in record.responsibility_holder["items"]
+      assert is_list(record.responsibility_holder)
+      assert "Gvt: Authority: Local" in record.responsibility_holder
 
       # Step 3: Classify by POPIMAR
       record = Popimar.process_record(record)
@@ -83,7 +83,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       # Duty classification
       assert "Duty" in record.duty_type
-      assert "Org: Employer" in record.duty_holder["items"]
+      assert "Org: Employer" in record.duty_holder
 
       # POPIMAR - training maps to Competence
       assert "Organisation - Competence" in record.popimar
@@ -118,8 +118,8 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       assert "Ind: Employee" in record.role
       assert "Right" in record.duty_type
-      assert record.rights_holder != nil
-      assert "Ind: Employee" in record.rights_holder["items"]
+      assert is_list(record.rights_holder)
+      assert "Ind: Employee" in record.rights_holder
     end
 
     test "processes ministerial power provision" do
@@ -153,9 +153,9 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       # (duty_type now only contains role-based values: Duty, Right, Responsibility, Power)
       assert record.duty_type == []
 
-      # Use Map.get since duty_holder key may not exist
+      # Use Map.get since duty_holder key may not exist - returns plain list or nil
       duty_holder = Map.get(record, :duty_holder)
-      assert duty_holder == nil or duty_holder == %{"items" => []}
+      assert duty_holder == nil or duty_holder == []
 
       popimar = Map.get(record, :popimar)
       assert popimar == nil or popimar == []

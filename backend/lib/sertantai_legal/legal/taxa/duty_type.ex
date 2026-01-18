@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
 
       # Process a single record
       iex> DutyType.process_record(%{text: "The employer shall ensure...", role: ["Org: Employer"]})
-      %{text: "...", role: [...], duty_type: ["Duty"], duty_holder: %{"items" => ["Org: Employer"]}, ...}
+      %{text: "...", role: [...], duty_type: ["Duty"], duty_holder: ["Org: Employer"], ...}
 
       # Process multiple records
       iex> DutyType.process_records(records)
@@ -129,12 +129,12 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
       |> Enum.uniq()
       |> duty_type_sorter()
 
-    # Update record
+    # Update record - return plain lists, ParsedLaw.to_db_attrs handles JSONB conversion
     record
-    |> put_field(:duty_holder, to_jsonb(dutyholders), key_type)
-    |> put_field(:rights_holder, to_jsonb(rightsholders), key_type)
-    |> put_field(:responsibility_holder, to_jsonb(resp_holders), key_type)
-    |> put_field(:power_holder, to_jsonb(power_holders), key_type)
+    |> put_field(:duty_holder, dutyholders, key_type)
+    |> put_field(:rights_holder, rightsholders, key_type)
+    |> put_field(:responsibility_holder, resp_holders, key_type)
+    |> put_field(:power_holder, power_holders, key_type)
     |> put_field(:duty_type, duty_types, key_type)
     |> put_field(:duty_holder_article_clause, duty_matches, key_type)
     |> put_field(:rights_holder_article_clause, right_matches, key_type)
@@ -165,10 +165,6 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
       _ -> []
     end
   end
-
-  # Converts list to JSONB-compatible format
-  defp to_jsonb([]), do: nil
-  defp to_jsonb(list) when is_list(list), do: %{"items" => list}
 
   # Puts a field in the record with appropriate key type
   defp put_field(record, key, value, :atom), do: Map.put(record, key, value)

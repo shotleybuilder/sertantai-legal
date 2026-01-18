@@ -16,9 +16,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
       # Duty type classification
       assert "Duty" in result.duty_type
 
-      # Duty holder
-      assert result.duty_holder != nil
-      assert "Org: Employer" in result.duty_holder["items"]
+      # Duty holder - returns plain list
+      assert is_list(result.duty_holder)
+      assert "Org: Employer" in result.duty_holder
 
       # Metadata
       assert result.taxa_text_source == "test"
@@ -69,9 +69,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
       # Right classification
       assert "Right" in result.duty_type
 
-      # Rights holder
-      assert result.rights_holder != nil
-      assert "Ind: Employee" in result.rights_holder["items"]
+      # Rights holder - returns plain list
+      assert is_list(result.rights_holder)
+      assert "Ind: Employee" in result.rights_holder
     end
 
     test "classifies ministerial power provision" do

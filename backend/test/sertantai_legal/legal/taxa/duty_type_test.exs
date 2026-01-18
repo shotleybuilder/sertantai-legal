@@ -22,8 +22,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeTest do
       result = DutyType.process_record(record)
 
       assert "Duty" in result.duty_type
-      assert result.duty_holder != nil
-      assert "Org: Employer" in result.duty_holder["items"]
+      assert is_list(result.duty_holder)
+      assert "Org: Employer" in result.duty_holder
     end
 
     test "identifies right with rights holder" do
@@ -36,8 +36,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeTest do
       result = DutyType.process_record(record)
 
       assert "Right" in result.duty_type
-      assert result.rights_holder != nil
-      assert "Ind: Employee" in result.rights_holder["items"]
+      assert is_list(result.rights_holder)
+      assert "Ind: Employee" in result.rights_holder
     end
 
     test "identifies responsibility with responsibility holder" do
@@ -50,8 +50,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeTest do
       result = DutyType.process_record(record)
 
       assert "Responsibility" in result.duty_type
-      assert result.responsibility_holder != nil
-      assert "Gvt: Authority: Local" in result.responsibility_holder["items"]
+      assert is_list(result.responsibility_holder)
+      assert "Gvt: Authority: Local" in result.responsibility_holder
     end
 
     test "identifies power with power holder" do
