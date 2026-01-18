@@ -14,8 +14,10 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifierTest do
       ]
 
       for text <- texts do
-        assert PurposeClassifier.classify(text) == ["Amendment"],
-               "Expected Amendment for: #{text}"
+        purposes = PurposeClassifier.classify(text)
+
+        assert "Amendment" in purposes,
+               "Expected Amendment for: #{text}, got: #{inspect(purposes)}"
       end
     end
 

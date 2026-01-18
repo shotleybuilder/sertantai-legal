@@ -196,6 +196,11 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
     |> check_patterns(text, application_scope_patterns(), @purposes.application_scope)
     |> check_patterns(text, extent_patterns(), @purposes.extent)
     |> check_patterns(text, exemption_patterns(), @purposes.exemption)
+    |> check_patterns(
+      text,
+      process_rule_constraint_condition_patterns(),
+      @purposes.process_rule_constraint_condition
+    )
     |> check_patterns(text, repeal_revocation_patterns(), @purposes.repeal_revocation)
     |> check_patterns(
       text,
@@ -371,6 +376,41 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
       "shall not apply in any case where",
       "by a certificate in writing exempt",
       "\\bexemption\\b"
+    ]
+  end
+
+  defp process_rule_constraint_condition_patterns do
+    [
+      # Obligations and requirements
+      "\\bshall\\b",
+      "\\bmust\\b",
+      "\\brequired\\b",
+      "\\brequirements?\\b",
+      "\\bobligations?\\b",
+      # Rules and procedures
+      "\\bprocedures?\\b",
+      "\\brules?\\b",
+      "\\bconditions?\\b",
+      "\\bconstraints?\\b",
+      # Duty language
+      "\\bduty\\b",
+      "\\bduties\\b",
+      # Compliance
+      "\\bcomply\\b",
+      "\\bcompliance\\b",
+      # Permission/prohibition
+      "\\bprohibited\\b",
+      "\\bpermitted\\b",
+      "\\bmay not\\b",
+      # Standards and specifications
+      "\\bstandards?\\b",
+      "\\bspecifications?\\b",
+      # Ensure/maintain
+      "\\bensure\\b",
+      "\\bmaintain\\b",
+      # Responsibilities
+      "\\bresponsible\\b",
+      "\\bresponsibilities\\b"
     ]
   end
 
