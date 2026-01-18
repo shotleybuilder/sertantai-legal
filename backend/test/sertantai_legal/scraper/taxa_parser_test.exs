@@ -30,9 +30,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # Government actor
+      # Government actor - now returns list, not jsonb map
       assert result.role_gvt != nil
-      assert "Gvt: Authority: Local" in result.role_gvt["items"]
+      assert "Gvt: Authority: Local" in result.role_gvt
 
       # Responsibility type
       assert "Responsibility" in result.duty_type
@@ -79,9 +79,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # Government actor
+      # Government actor - now returns list, not jsonb map
       assert result.role_gvt != nil
-      assert "Gvt: Minister" in result.role_gvt["items"]
+      assert "Gvt: Minister" in result.role_gvt
 
       # Power classification
       assert "Power" in result.duty_type or "Power Conferred" in result.duty_type
@@ -197,22 +197,22 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
       assert Map.has_key?(result, :taxa_text_length)
     end
 
-    test "role_gvt is nil when no government actors" do
+    test "role_gvt is empty list when no government actors" do
       text = "The employer shall ensure safety."
 
       result = TaxaParser.classify_text(text, "test")
 
-      assert result.role_gvt == nil
+      assert result.role_gvt == []
     end
 
-    test "role_gvt is jsonb format when government actors present" do
+    test "role_gvt is list when government actors present" do
       text = "The Minister may prescribe requirements."
 
       result = TaxaParser.classify_text(text, "test")
 
-      assert result.role_gvt != nil
-      assert Map.has_key?(result.role_gvt, "items")
-      assert is_list(result.role_gvt["items"])
+      assert is_list(result.role_gvt)
+      assert length(result.role_gvt) > 0
+      assert "Gvt: Minister" in result.role_gvt
     end
   end
 end

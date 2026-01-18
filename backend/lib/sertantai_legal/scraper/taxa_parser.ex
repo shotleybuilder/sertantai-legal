@@ -95,10 +95,11 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       purpose = PurposeClassifier.classify(text)
 
       # Build result map with all Taxa fields
+      # Note: Don't wrap in to_jsonb() - ParsedLaw handles JSONB conversion
       %{
         # Actor fields
         role: actors,
-        role_gvt: to_jsonb(actors_gvt),
+        role_gvt: actors_gvt,
 
         # Duty type field
         duty_type: Map.get(record, :duty_type, []),
@@ -232,8 +233,4 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       taxa_text_length: 0
     }
   end
-
-  # Convert list to JSONB format
-  defp to_jsonb([]), do: nil
-  defp to_jsonb(list) when is_list(list), do: %{"items" => list}
 end
