@@ -17,16 +17,27 @@
 defmodule PurposeSeparatorMigrator do
   alias SertantaiLegal.Repo
 
-  # Mapping from comma-separated to plus-separated values
+  # Mapping from comma-separated to plus-separated values (no spaces around +)
+  # Also fixes previously corrupted values that have spaces around +
   @value_mappings %{
-    "Application, Scope" => "Application + Scope",
-    "Charge, Fee" => "Charge + Fee",
-    "Defence, Appeal" => "Defence + Appeal",
-    "Enactment, Citation, Commencement" => "Enactment + Citation + Commencement",
-    "Enforcement, Prosecution" => "Enforcement + Prosecution",
-    "Interpretation, Definition" => "Interpretation + Definition",
-    "Process, Rule, Constraint, Condition" => "Process + Rule + Constraint + Condition",
-    "Repeal, Revocation" => "Repeal + Revocation"
+    # From comma-separated
+    "Application, Scope" => "Application+Scope",
+    "Charge, Fee" => "Charge+Fee",
+    "Defence, Appeal" => "Defence+Appeal",
+    "Enactment, Citation, Commencement" => "Enactment+Citation+Commencement",
+    "Enforcement, Prosecution" => "Enforcement+Prosecution",
+    "Interpretation, Definition" => "Interpretation+Definition",
+    "Process, Rule, Constraint, Condition" => "Process+Rule+Constraint+Condition",
+    "Repeal, Revocation" => "Repeal+Revocation",
+    # Fix corrupted values (with spaces around +)
+    "Application + Scope" => "Application+Scope",
+    "Charge + Fee" => "Charge+Fee",
+    "Defence + Appeal" => "Defence+Appeal",
+    "Enactment + Citation + Commencement" => "Enactment+Citation+Commencement",
+    "Enforcement + Prosecution" => "Enforcement+Prosecution",
+    "Interpretation + Definition" => "Interpretation+Definition",
+    "Process + Rule + Constraint + Condition" => "Process+Rule+Constraint+Condition",
+    "Repeal + Revocation" => "Repeal+Revocation"
   }
 
   def run(dry_run \\ false) do
@@ -45,12 +56,12 @@ defmodule PurposeSeparatorMigrator do
   end
 
   defp show_current_state do
-    IO.puts("Current state of purpose values with commas:")
+    IO.puts("Current state of purpose values needing migration:")
 
     query = """
     SELECT elem, COUNT(*) as cnt
     FROM uk_lrt, jsonb_array_elements_text(purpose->'values') as elem
-    WHERE elem LIKE '%,%'
+    WHERE elem LIKE '%,%' OR elem LIKE '% + %'
     GROUP BY elem
     ORDER BY elem
     """
@@ -80,7 +91,7 @@ defmodule PurposeSeparatorMigrator do
     WHERE purpose IS NOT NULL
       AND EXISTS (
         SELECT 1 FROM jsonb_array_elements_text(purpose->'values') as elem
-        WHERE elem LIKE '%,%'
+        WHERE elem LIKE '%,%' OR elem LIKE '% + %'
       )
     LIMIT 5
     """
@@ -101,7 +112,7 @@ defmodule PurposeSeparatorMigrator do
     count_query = """
     SELECT COUNT(DISTINCT id)
     FROM uk_lrt, jsonb_array_elements_text(purpose->'values') as elem
-    WHERE elem LIKE '%,%'
+    WHERE elem LIKE '%,%' OR elem LIKE '% + %'
     """
 
     {:ok, count_result} = Repo.query(count_query)
@@ -113,14 +124,14 @@ defmodule PurposeSeparatorMigrator do
   defp migrate_all do
     IO.puts("Migrating purpose values...\n")
 
-    # Get all records with comma-containing purpose values
+    # Get all records with purpose values needing migration (commas or spaced +)
     query = """
     SELECT id, purpose->'values' as values
     FROM uk_lrt
     WHERE purpose IS NOT NULL
       AND EXISTS (
         SELECT 1 FROM jsonb_array_elements_text(purpose->'values') as elem
-        WHERE elem LIKE '%,%'
+        WHERE elem LIKE '%,%' OR elem LIKE '% + %'
       )
     """
 
@@ -172,11 +183,11 @@ defmodule PurposeSeparatorMigrator do
   defp show_final_state do
     IO.puts("\n=== Final State ===")
 
-    # Check for any remaining comma values
+    # Check for any remaining values needing migration
     query = """
     SELECT elem, COUNT(*) as cnt
     FROM uk_lrt, jsonb_array_elements_text(purpose->'values') as elem
-    WHERE elem LIKE '%,%'
+    WHERE elem LIKE '%,%' OR elem LIKE '% + %'
     GROUP BY elem
     ORDER BY cnt DESC
     """
@@ -184,9 +195,9 @@ defmodule PurposeSeparatorMigrator do
     {:ok, result} = Repo.query(query)
 
     if result.num_rows == 0 do
-      IO.puts("✓ No purpose values with comma separators remain")
+      IO.puts("✓ No purpose values needing migration remain")
     else
-      IO.puts("⚠ Values still containing commas:")
+      IO.puts("⚠ Values still needing migration:")
 
       result.rows
       |> Enum.each(fn [value, count] ->
@@ -194,11 +205,11 @@ defmodule PurposeSeparatorMigrator do
       end)
     end
 
-    # Show + separator values
+    # Show correctly formatted + separator values (no spaces)
     plus_query = """
     SELECT elem, COUNT(*) as cnt
     FROM uk_lrt, jsonb_array_elements_text(purpose->'values') as elem
-    WHERE elem LIKE '%+%'
+    WHERE elem LIKE '%+%' AND elem NOT LIKE '% + %'
     GROUP BY elem
     ORDER BY cnt DESC
     """
@@ -206,7 +217,7 @@ defmodule PurposeSeparatorMigrator do
     {:ok, plus_result} = Repo.query(plus_query)
 
     if plus_result.num_rows > 0 do
-      IO.puts("\nValues with + separators:")
+      IO.puts("\nCorrectly formatted values (no spaces around +):")
 
       plus_result.rows
       |> Enum.each(fn [value, count] ->
