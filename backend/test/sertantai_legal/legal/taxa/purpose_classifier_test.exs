@@ -208,10 +208,13 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifierTest do
       assert PurposeClassifier.classify("") == []
     end
 
-    test "Amendment takes precedence over other patterns" do
-      # Text that could match multiple patterns but includes amendment
+    test "Amendment is classified alongside other patterns" do
+      # Text that matches multiple patterns including amendment
       text = "These Regulations are amended as follows and come into force on 1st January"
-      assert PurposeClassifier.classify(text) == ["Amendment"]
+      purposes = PurposeClassifier.classify(text)
+
+      assert "Enactment+Citation+Commencement" in purposes
+      assert "Amendment" in purposes
     end
 
     test "returns multiple purposes when text matches multiple patterns" do

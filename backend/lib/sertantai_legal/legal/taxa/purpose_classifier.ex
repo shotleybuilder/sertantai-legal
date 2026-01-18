@@ -99,20 +99,15 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
   @doc """
   Classifies legal text and returns a list of purposes.
 
-  Amendment is checked first - if found, no further classification is done.
+  Runs all pattern checks and returns all matching purposes.
   """
   @spec classify(String.t()) :: purposes()
   def classify(text) when is_binary(text) and text != "" do
-    # Amendment takes precedence - if found, return immediately
-    if matches_amendment?(text) do
-      [@purposes.amendment]
-    else
-      text
-      |> run_all_patterns()
-      |> apply_defaults()
-      |> Enum.uniq()
-      |> sort_purposes()
-    end
+    text
+    |> run_all_patterns()
+    |> apply_defaults()
+    |> Enum.uniq()
+    |> sort_purposes()
   end
 
   def classify(_), do: []
@@ -213,6 +208,7 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
     |> check_patterns(text, defence_appeal_patterns(), @purposes.defence_appeal)
     |> check_patterns(text, power_conferred_patterns(), @purposes.power_conferred)
     |> check_patterns(text, liability_patterns(), @purposes.liability)
+    |> check_patterns(text, amendment_patterns(), @purposes.amendment)
   end
 
   defp check_patterns(acc, text, patterns, purpose) do
@@ -237,14 +233,11 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
   # Amendment Detection
   # ============================================================================
 
-  defp matches_amendment?(text) do
-    Enum.any?(amendment_patterns(), &regex_match?(text, &1))
-  end
-
   defp title_matches_amendment?(title) do
     String.contains?(title, "(Amendment)") or
       String.match?(title, ~r/\(Amendment No\.\s*\d+\)/i) or
-      String.match?(title, ~r/\(Amendments?\)/i)
+      String.match?(title, ~r/\(Amendments?\)/i) or
+      String.match?(title, ~r/Amendment (?:Regulations?|Order|Act|Rules?)/i)
   end
 
   # ============================================================================

@@ -5,6 +5,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   Fetches law text from legislation.gov.uk and runs the Taxa classification pipeline:
   - DutyActor: Extracts actors (employers, authorities, etc.)
   - DutyType: Classifies duty types (Duty, Right, Responsibility, Power)
+  - PurposeClassifier: Classifies purpose (Amendment, Interpretation+Definition, etc.)
   - Popimar: Classifies by POPIMAR management framework
 
   ## Usage
@@ -17,6 +18,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         role: ["Org: Employer", "Ind: Employee"],
         role_gvt: %{"items" => ["Gvt: Minister"]},
         duty_type: ["Duty", "Right"],
+        purpose: ["Amendment"],
         duty_holder: %{"items" => ["Org: Employer"]},
         popimar: %{"items" => ["Risk Control", "Organisation - Competence"]},
         ...
@@ -24,7 +26,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   """
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
-  alias SertantaiLegal.Legal.Taxa.{DutyActor, DutyType, Popimar}
+  alias SertantaiLegal.Legal.Taxa.{DutyActor, DutyType, Popimar, PurposeClassifier}
 
   import SweetXml
 
@@ -32,6 +34,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           role: list(String.t()),
           role_gvt: map() | nil,
           duty_type: list(String.t()),
+          purpose: list(String.t()),
           duty_holder: map() | nil,
           rights_holder: map() | nil,
           responsibility_holder: map() | nil,
@@ -88,6 +91,9 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       # Step 4: Classify by POPIMAR
       record = Popimar.process_record(record)
 
+      # Step 5: Classify purpose (what the law does)
+      purpose = PurposeClassifier.classify(text)
+
       # Build result map with all Taxa fields
       %{
         # Actor fields
@@ -96,6 +102,9 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
 
         # Duty type field
         duty_type: Map.get(record, :duty_type, []),
+
+        # Purpose field (function-based classification)
+        purpose: purpose,
 
         # Role holder fields
         duty_holder: Map.get(record, :duty_holder),
@@ -213,6 +222,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       role: [],
       role_gvt: nil,
       duty_type: [],
+      purpose: [],
       duty_holder: nil,
       rights_holder: nil,
       responsibility_holder: nil,
