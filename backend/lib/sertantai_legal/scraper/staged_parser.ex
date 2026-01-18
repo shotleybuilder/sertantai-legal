@@ -36,6 +36,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   import SweetXml
 
+  alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
   alias SertantaiLegal.Scraper.EnactedBy
@@ -510,27 +511,42 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Convert law ID like "ukpga/1974/37" to map format
   # Normalizes name to UK_type_year_number format for DB consistency
+  # Looks up title from database if the law exists
   defp parse_law_id_to_map(law_id) do
     alias SertantaiLegal.Scraper.IdField
 
+    name = IdField.normalize_to_db_name(law_id)
+
+    # Look up title from database (parent Acts should already exist)
+    title = lookup_law_title(name)
+
     case String.split(law_id, "/") do
-      [type_code, year, number] ->
+      [_type_code, _year, _number] ->
         %{
-          name: IdField.normalize_to_db_name(law_id),
-          type_code: type_code,
-          year: year,
-          number: number,
+          name: name,
+          title: title,
           uri: "http://www.legislation.gov.uk/id/#{law_id}"
         }
 
       _ ->
         %{
-          name: IdField.normalize_to_db_name(law_id),
-          type_code: nil,
-          year: nil,
-          number: nil,
+          name: name,
+          title: title,
           uri: nil
         }
+    end
+  end
+
+  # Look up a law's title from the database
+  defp lookup_law_title(name) do
+    require Ash.Query
+
+    case UkLrt
+         |> Ash.Query.filter(name == ^name)
+         |> Ash.Query.select([:title_en])
+         |> Ash.read_one() do
+      {:ok, %{title_en: title}} when not is_nil(title) -> title
+      _ -> nil
     end
   end
 

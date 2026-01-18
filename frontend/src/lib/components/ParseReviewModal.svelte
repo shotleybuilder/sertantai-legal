@@ -689,14 +689,17 @@
 										{#if parseResult.record?.enacted_by && Array.isArray(parseResult.record.enacted_by) && parseResult.record.enacted_by.length > 0}
 											{#each parseResult.record.enacted_by as law}
 												<a
-													href="https://www.legislation.gov.uk/{typeof law === 'object'
-														? law.name
-														: law}"
+													href={typeof law === 'object' && law.uri
+														? law.uri
+														: `https://www.legislation.gov.uk/${typeof law === 'object' ? law.name : law}`}
 													target="_blank"
 													rel="noopener noreferrer"
 													class="text-blue-600 hover:text-blue-800 mr-2"
+													title={typeof law === 'object' && law.title ? law.title : ''}
 												>
-													{typeof law === 'object' ? law.name : law}
+													{typeof law === 'object'
+														? law.title || law.name
+														: law}
 												</a>
 											{/each}
 										{:else if parseResult.record?.is_act}
