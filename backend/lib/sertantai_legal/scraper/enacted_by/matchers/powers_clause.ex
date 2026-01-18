@@ -36,17 +36,46 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.PowersClause do
         # or at "The Secretary of State—" pattern
         enacting_clause = extract_enacting_clause(text, matched_text)
 
-        # Extract ALL footnote/citation refs from the enacting clause
-        footnote_refs =
-          Regex.scan(~r/[fc]\d{5}/, enacting_clause)
+        # Extract citation refs (c00001) and footnote refs (f00001) separately
+        # Inline citations point directly to enabling Acts
+        # Footnotes may contain amendment history (multiple Acts that touched the section)
+        citation_refs =
+          Regex.scan(~r/c\d{5}/, enacting_clause)
           |> List.flatten()
           |> Enum.uniq()
 
-        # Look up URLs for footnote refs and extract law IDs
+        footnote_refs =
+          Regex.scan(~r/f\d{5}/, enacting_clause)
+          |> List.flatten()
+          |> Enum.uniq()
+
+        # Prefer inline citations - they point directly to the enabling Act
+        # Only use footnotes if no inline citations found
+        # Footnotes often include amendment history (Acts that modified the section)
+        refs_to_use =
+          if citation_refs != [] do
+            citation_refs
+          else
+            # For footnotes, only take the FIRST URL from each footnote
+            # The first URL is typically the primary enabling Act
+            # Subsequent URLs are Acts that amended that section
+            footnote_refs
+          end
+
+        # Look up URLs for refs and extract law IDs
+        # For footnotes, only take the first URL (primary enabling Act)
         # Filter to only primary legislation and EU law - SIs can't "enact" other SIs
         law_ids =
-          footnote_refs
-          |> Enum.flat_map(fn ref -> Map.get(urls, ref, []) end)
+          refs_to_use
+          |> Enum.flat_map(fn ref ->
+            case {String.starts_with?(ref, "c"), Map.get(urls, ref, [])} do
+              # Inline citations - use all URLs (typically just one)
+              {true, ref_urls} -> ref_urls
+              # Footnotes - only use first URL (primary enabling Act)
+              {false, [first_url | _]} -> [first_url]
+              {false, []} -> []
+            end
+          end)
           |> Enum.map(&extract_law_id_from_url/1)
           |> Enum.reject(&is_nil/1)
           |> Enum.filter(&is_enabling_legislation?/1)
@@ -55,7 +84,13 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.PowersClause do
         if law_ids == [] do
           :no_match
         else
-          {:match, law_ids, %{footnote_refs: footnote_refs, enacting_clause: enacting_clause}}
+          {:match, law_ids,
+           %{
+             citation_refs: citation_refs,
+             footnote_refs: footnote_refs,
+             refs_used: refs_to_use,
+             enacting_clause: enacting_clause
+           }}
         end
     end
   end
@@ -83,12 +118,22 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.PowersClause do
   end
 
   # Extract law ID from legislation.gov.uk URL
+  # Handles both /id/ style URLs and direct URLs
   defp extract_law_id_from_url(url) when is_binary(url) do
     cond do
-      # Standard UK law URL (with or without full domain)
+      # Standard UK law URL with /id/ path (from footnotes)
+      # e.g., http://www.legislation.gov.uk/id/ukpga/1996/18
       Regex.match?(~r/\/id\/([a-z]+)\/(\d{4})\/(\d+)/, url) ->
         [_, type, year, number] =
           Regex.run(~r/\/id\/([a-z]+)\/(\d{4})\/(\d+)/, url)
+
+        IdField.build_name(type, year, number)
+
+      # Direct UK law URL without /id/ (from inline citations)
+      # e.g., https://www.legislation.gov.uk/ukpga/1996/18
+      Regex.match?(~r/legislation\.gov\.uk\/([a-z]+)\/(\d{4})\/(\d+)/, url) ->
+        [_, type, year, number] =
+          Regex.run(~r/legislation\.gov\.uk\/([a-z]+)\/(\d{4})\/(\d+)/, url)
 
         IdField.build_name(type, year, number)
 
