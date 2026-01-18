@@ -775,7 +775,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       {:ok, taxa_data} ->
         role_count = length(taxa_data[:role] || [])
         duty_types = taxa_data[:duty_type] || []
-        popimar_items = get_in(taxa_data, [:popimar, "items"]) || []
+        popimar_items = taxa_data[:popimar] || []
 
         IO.puts(
           "    ✓ Taxa: #{role_count} actors, #{length(duty_types)} duty types, #{length(popimar_items)} POPIMAR"

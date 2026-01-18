@@ -16,11 +16,11 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       # Returns:
       %{
         role: ["Org: Employer", "Ind: Employee"],
-        role_gvt: %{"items" => ["Gvt: Minister"]},
+        role_gvt: ["Gvt: Minister"],
         duty_type: ["Duty", "Right"],
         purpose: ["Amendment"],
         duty_holder: %{"items" => ["Org: Employer"]},
-        popimar: %{"items" => ["Risk Control", "Organisation - Competence"]},
+        popimar: ["Risk Control", "Organisation - Competence"],
         ...
       }
   """

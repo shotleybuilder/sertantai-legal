@@ -33,7 +33,7 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
 
       # Process a record with duty types
       iex> Popimar.process_record(%{text: "...", duty_type: ["Duty"]})
-      %{text: "...", duty_type: ["Duty"], popimar: %{"items" => ["Risk Control"]}}
+      %{text: "...", duty_type: ["Duty"], popimar: ["Risk Control"]}
   """
 
   alias SertantaiLegal.Legal.Taxa.PopimarLib
