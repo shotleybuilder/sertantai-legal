@@ -172,7 +172,8 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
       "Policy" => "01Policy",
       "Organisation" => "02Organisation",
       "Organisation - Control" => "03Organisation - Control",
-      "Organisation - Communication & Consultation" => "04Organisation - Communication & Consultation",
+      "Organisation - Communication & Consultation" =>
+        "04Organisation - Communication & Consultation",
       "Organisation - Collaboration, Coordination, Cooperation" =>
         "05Organisation - Collaboration, Coordination, Cooperation",
       "Organisation - Competence" => "06Organisation - Competence",
@@ -210,7 +211,8 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
         []
       end
 
-    put_field(record, :popimar, to_jsonb(popimar), key_type)
+    # Don't wrap in to_jsonb - ParsedLaw handles JSONB conversion
+    put_field(record, :popimar, popimar, key_type)
   end
 
   # Converts category name to function name
@@ -237,10 +239,6 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
   defp normalize_duty_types(list) when is_list(list), do: list
   defp normalize_duty_types(%{"items" => items}) when is_list(items), do: items
   defp normalize_duty_types(_), do: []
-
-  # Converts list to JSONB-compatible format
-  defp to_jsonb([]), do: nil
-  defp to_jsonb(list) when is_list(list), do: %{"items" => list}
 
   # Puts a field in the record with appropriate key type
   defp put_field(record, key, value, :atom), do: Map.put(record, key, value)

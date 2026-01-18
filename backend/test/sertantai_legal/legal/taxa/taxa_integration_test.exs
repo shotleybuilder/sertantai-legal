@@ -37,7 +37,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       assert record.popimar != nil
       # Employer duties typically default to Risk Control
-      assert "Risk Control" in record.popimar["items"]
+      assert "Risk Control" in record.popimar
     end
 
     test "processes government responsibility provision end-to-end" do
@@ -86,7 +86,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       assert "Org: Employer" in record.duty_holder["items"]
 
       # POPIMAR - training maps to Competence
-      assert "Organisation - Competence" in record.popimar["items"]
+      assert "Organisation - Competence" in record.popimar
     end
 
     test "processes record keeping provision" do
@@ -102,7 +102,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       assert "Org: Employer" in record.role
       assert "Duty" in record.duty_type
-      assert "Records" in record.popimar["items"]
+      assert "Records" in record.popimar
     end
 
     test "processes rights provision" do
@@ -158,7 +158,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       assert duty_holder == nil or duty_holder == %{"items" => []}
 
       popimar = Map.get(record, :popimar)
-      assert popimar == nil or Map.get(popimar, "items", []) == []
+      assert popimar == nil or popimar == []
     end
 
     test "processes multi-category provision" do
@@ -181,10 +181,9 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       assert "Ind: Employee" in record.role
       assert "Duty" in record.duty_type
 
-      popimar_items = record.popimar["items"]
-      assert "Organisation - Competence" in popimar_items
-      assert "Records" in popimar_items
-      assert "Organisation - Communication & Consultation" in popimar_items
+      assert "Organisation - Competence" in record.popimar
+      assert "Records" in record.popimar
+      assert "Organisation - Communication & Consultation" in record.popimar
     end
   end
 
@@ -251,7 +250,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
 
       record = Popimar.process_record(record)
       assert record["popimar"] != nil
-      assert "Organisation - Competence" in record["popimar"]["items"]
+      assert "Organisation - Competence" in record["popimar"]
     end
   end
 
@@ -278,7 +277,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
              end)
 
       # Notification POPIMAR category
-      assert "Notification" in record.popimar["items"]
+      assert "Notification" in record.popimar
     end
 
     test "handles text with no actors" do
@@ -320,10 +319,8 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       assert record.popimar != nil
 
       # This text mentions multiple POPIMAR concepts
-      popimar_items = record.popimar["items"]
-
       # Should match several categories
-      assert length(popimar_items) >= 1
+      assert length(record.popimar) >= 1
     end
   end
 
@@ -335,7 +332,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Policy" in record.popimar["items"]
+      assert "Policy" in record.popimar
     end
 
     test "organisation provisions" do
@@ -345,7 +342,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Organisation" in record.popimar["items"]
+      assert "Organisation" in record.popimar
     end
 
     test "risk assessment provisions" do
@@ -355,7 +352,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Planning & Risk / Impact Assessment" in record.popimar["items"]
+      assert "Planning & Risk / Impact Assessment" in record.popimar
     end
 
     test "hazard identification provisions" do
@@ -365,7 +362,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Aspects and Hazards" in record.popimar["items"]
+      assert "Aspects and Hazards" in record.popimar
     end
 
     test "maintenance provisions" do
@@ -375,7 +372,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Maintenance, Examination and Testing" in record.popimar["items"]
+      assert "Maintenance, Examination and Testing" in record.popimar
     end
 
     test "monitoring provisions" do
@@ -385,7 +382,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Checking, Monitoring" in record.popimar["items"]
+      assert "Checking, Monitoring" in record.popimar
     end
 
     test "permit provisions" do
@@ -395,7 +392,7 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaIntegrationTest do
       }
 
       record = Popimar.process_record(record)
-      assert "Permit, Authorisation, License" in record.popimar["items"]
+      assert "Permit, Authorisation, License" in record.popimar
     end
   end
 end

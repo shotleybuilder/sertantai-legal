@@ -141,6 +141,7 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarTest do
       The employer shall provide training and keep records of all training provided.
       The training shall be reviewed annually.
       """
+
       result = Popimar.get_popimar(text)
 
       assert "Organisation - Competence" in result
@@ -190,8 +191,8 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarTest do
       result = Popimar.process_record(record)
 
       assert result.popimar != nil
-      assert result.popimar["items"] != nil
-      assert "Organisation - Competence" in result.popimar["items"]
+      assert is_list(result.popimar)
+      assert "Organisation - Competence" in result.popimar
     end
 
     test "processes record with string keys" do
@@ -203,7 +204,7 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarTest do
       result = Popimar.process_record(record)
 
       assert result["popimar"] != nil
-      assert "Records" in result["popimar"]["items"]
+      assert "Records" in result["popimar"]
     end
 
     test "handles record without duty_type" do
@@ -230,7 +231,7 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarTest do
       result = Popimar.process_record(record)
 
       # Should return nil or empty for amendments
-      assert result.popimar == nil or result.popimar["items"] == []
+      assert result.popimar == nil or result.popimar == []
     end
   end
 
@@ -245,8 +246,8 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarTest do
       results = Popimar.process_records(records)
 
       assert length(results) == 3
-      assert "Organisation - Competence" in Enum.at(results, 0).popimar["items"]
-      assert "Records" in Enum.at(results, 1).popimar["items"]
+      assert "Organisation - Competence" in Enum.at(results, 0).popimar
+      assert "Records" in Enum.at(results, 1).popimar
     end
   end
 

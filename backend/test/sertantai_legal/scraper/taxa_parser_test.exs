@@ -46,9 +46,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # POPIMAR classification
+      # POPIMAR classification - returns list, not map
       assert result.popimar != nil
-      assert "Organisation - Competence" in result.popimar["items"]
+      assert "Organisation - Competence" in result.popimar
     end
 
     test "classifies record keeping provision" do
@@ -56,9 +56,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # POPIMAR - Records category
+      # POPIMAR - Records category (returns list)
       assert result.popimar != nil
-      assert "Records" in result.popimar["items"]
+      assert "Records" in result.popimar
     end
 
     test "classifies rights provision" do
@@ -122,9 +122,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
       assert "Org: Employer" in result.role
       assert "Ind: Employee" in result.role
 
-      # Communication & Consultation POPIMAR
+      # Communication & Consultation POPIMAR (returns list)
       assert result.popimar != nil
-      assert "Organisation - Communication & Consultation" in result.popimar["items"]
+      assert "Organisation - Communication & Consultation" in result.popimar
     end
 
     test "classifies supply chain actors" do
@@ -143,9 +143,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # Notification POPIMAR
+      # Notification POPIMAR (returns list)
       assert result.popimar != nil
-      assert "Notification" in result.popimar["items"]
+      assert "Notification" in result.popimar
     end
 
     test "classifies risk assessment provision" do
@@ -153,9 +153,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # Risk assessment POPIMAR
+      # Risk assessment POPIMAR (returns list)
       assert result.popimar != nil
-      assert "Planning & Risk / Impact Assessment" in result.popimar["items"]
+      assert "Planning & Risk / Impact Assessment" in result.popimar
     end
 
     test "classifies policy provision" do
@@ -163,9 +163,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # Policy POPIMAR
+      # Policy POPIMAR (returns list)
       assert result.popimar != nil
-      assert "Policy" in result.popimar["items"]
+      assert "Policy" in result.popimar
     end
 
     test "classifies review provision" do
@@ -173,9 +173,9 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
       result = TaxaParser.classify_text(text, "test")
 
-      # Review POPIMAR
+      # Review POPIMAR (returns list)
       assert result.popimar != nil
-      assert "Review" in result.popimar["items"]
+      assert "Review" in result.popimar
     end
   end
 
