@@ -228,6 +228,7 @@ These columns contain **resolved** self-referential links to other `uk_lrt` reco
 | Column | ParsedLaw Key | Type | Has Data | Example |
 |--------|---------------|------|:--------:|---------|
 | `🔺🔻_stats_self_affects_count` | `stats_self_affects_count` | `integer` | Yes (15042) | |
+| `🔺🔻_stats_self_affects_count_per_law_detailed` | `stats_self_affects_count_per_law_detailed` | `string` | Yes | `235 self-amendments\n art. 1 coming into force [Yes]...` |
 
 ### Amending (this law affects others)
 

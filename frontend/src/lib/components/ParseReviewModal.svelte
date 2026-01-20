@@ -927,6 +927,26 @@
 									>
 								</div>
 							{/if}
+							{#if hasData(getField(parseResult.record, 'stats_self_affects_count_per_law_detailed'))}
+								<div class="grid grid-cols-3 px-4 py-2">
+									<span class="text-sm text-gray-500"
+										>Self Amendments (Detail) <span class="text-xs text-gray-400"
+											>(🔺🔻_stats_self_affects_count_per_law_detailed)</span
+										></span
+									>
+									<div class="col-span-2">
+										<div class="text-xs text-gray-400 italic mb-1">
+											Count / Section Action [Status]
+										</div>
+										<span
+											class="text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto block"
+											>{formatValue(
+												getField(parseResult.record, 'stats_self_affects_count_per_law_detailed')
+											)}</span
+										>
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 

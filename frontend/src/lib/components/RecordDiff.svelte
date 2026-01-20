@@ -95,6 +95,7 @@
 			'rescinded_by_stats_rescinded_by_count_per_law',
 			'rescinded_by_stats_rescinded_by_count_per_law_detailed',
 			'stats_self_affects_count',
+			'stats_self_affects_count_per_law_detailed',
 			'linked_amending',
 			'linked_amended_by',
 			'linked_rescinding',
