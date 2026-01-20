@@ -469,6 +469,12 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Number of amendments this law makes to itself"
     )
 
+    attribute(:stats_self_affects_count_per_law_detailed, :string,
+      source: :"🔺🔻_stats_self_affects_count_per_law_detailed",
+      allow_nil?: true,
+      description: "Detailed breakdown of self-amendments (coming into force provisions, etc.)"
+    )
+
     # Amendment Stats - Amending (🔺 this law affects others)
     attribute(:amending_stats_affects_count, :integer,
       source: :"🔺_stats_affects_count",
@@ -743,6 +749,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :article_popimar_clause,
         :tags,
         :stats_self_affects_count,
+        :stats_self_affects_count_per_law_detailed,
         :amending_stats_affects_count,
         :amending_stats_affected_laws_count,
         :amending_stats_affects_count_per_law,
@@ -858,6 +865,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :article_popimar_clause,
         :tags,
         :stats_self_affects_count,
+        :stats_self_affects_count_per_law_detailed,
         :amending_stats_affects_count,
         :amending_stats_affected_laws_count,
         :amending_stats_affects_count_per_law,

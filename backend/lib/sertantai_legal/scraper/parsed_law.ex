@@ -155,6 +155,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
           # === STATS (Amendment) ===
           stats_self_affects_count: integer() | nil,
+          stats_self_affects_count_per_law_detailed: String.t() | nil,
           amending_stats_affects_count: integer() | nil,
           amending_stats_affected_laws_count: integer() | nil,
           amending_stats_affects_count_per_law: String.t() | nil,
@@ -298,6 +299,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
     # Stats (Amendment)
     stats_self_affects_count: nil,
+    stats_self_affects_count_per_law_detailed: nil,
     amending_stats_affects_count: nil,
     amending_stats_affected_laws_count: nil,
     amending_stats_affects_count_per_law: nil,
@@ -542,6 +544,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
 
       # Stats (Amendment)
       stats_self_affects_count: get_integer(normalized, :stats_self_affects_count),
+      stats_self_affects_count_per_law_detailed:
+        get_string(normalized, :stats_self_affects_count_per_law_detailed),
       amending_stats_affects_count: get_integer(normalized, :amending_stats_affects_count),
       amending_stats_affected_laws_count:
         get_integer(normalized, :amending_stats_affected_laws_count),
