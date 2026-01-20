@@ -61,6 +61,7 @@ defmodule SertantaiLegalWeb.Endpoint do
       System.get_env("FRONTEND_URL") || ""
     ],
     allow_credentials: true,
+    allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers: ["content-type", "authorization"],
     max_age: 600
   )
