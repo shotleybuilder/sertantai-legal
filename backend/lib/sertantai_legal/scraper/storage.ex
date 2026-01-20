@@ -337,7 +337,13 @@ defmodule SertantaiLegal.Scraper.Storage do
   ## Returns
   `:ok` or `{:error, reason}`
   """
-  @spec add_affected_laws(String.t(), String.t(), list(String.t()), list(String.t()), list(String.t())) ::
+  @spec add_affected_laws(
+          String.t(),
+          String.t(),
+          list(String.t()),
+          list(String.t()),
+          list(String.t())
+        ) ::
           :ok | {:error, any()}
   def add_affected_laws(session_id, source_law, amending, rescinding, enacted_by \\ []) do
     amending = amending || []
@@ -360,9 +366,16 @@ defmodule SertantaiLegal.Scraper.Storage do
         added_at: DateTime.utc_now() |> DateTime.to_iso8601()
       }
 
-      # Merge: append new entry, collect unique affected laws
+      # Filter out any existing entry for this source_law to prevent duplicates
+      filtered_entries =
+        (existing[:entries] || [])
+        |> Enum.reject(fn entry ->
+          entry[:source_law] == source_law or entry["source_law"] == source_law
+        end)
+
+      # Merge: append new entry (replacing any previous), collect unique affected laws
       updated = %{
-        entries: (existing[:entries] || []) ++ [new_entry],
+        entries: filtered_entries ++ [new_entry],
         all_amending: Enum.uniq((existing[:all_amending] || []) ++ amending),
         all_rescinding: Enum.uniq((existing[:all_rescinding] || []) ++ rescinding),
         all_enacting_parents: Enum.uniq((existing[:all_enacting_parents] || []) ++ enacted_by),
@@ -383,8 +396,11 @@ defmodule SertantaiLegal.Scraper.Storage do
   @spec read_affected_laws(String.t()) :: map()
   def read_affected_laws(session_id) do
     case read_json(session_id, :affected_laws) do
-      {:ok, data} -> data
-      {:error, _} -> %{entries: [], all_amending: [], all_rescinding: [], all_enacting_parents: []}
+      {:ok, data} ->
+        data
+
+      {:error, _} ->
+        %{entries: [], all_amending: [], all_rescinding: [], all_enacting_parents: []}
     end
   end
 
