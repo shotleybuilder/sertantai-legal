@@ -466,9 +466,18 @@ defmodule SertantaiLegal.Scraper.LawParser do
     # Normalize name to UK_ format
     normalized_name = normalize_name(enriched[:name], enriched)
 
-    # Extract enacted_by metadata before normalizing to names
-    # This preserves the rich map data for enacted_by_meta field
-    enacted_by_meta = extract_meta_maps(enriched[:enacted_by])
+    # Use existing enacted_by_meta if provided (e.g., from frontend confirm),
+    # otherwise try to extract from enacted_by if it contains map data
+    enacted_by_meta =
+      case enriched[:enacted_by_meta] do
+        meta when is_list(meta) and length(meta) > 0 ->
+          # Already have metadata, just ensure string keys
+          Enum.map(meta, &stringify_keys/1)
+
+        _ ->
+          # Try to extract from enacted_by (for StagedParser path)
+          extract_meta_maps(enriched[:enacted_by])
+      end
 
     # Extract enacted_by names (may come as list of maps from StagedParser)
     enacted_by_names = extract_names(enriched[:enacted_by])

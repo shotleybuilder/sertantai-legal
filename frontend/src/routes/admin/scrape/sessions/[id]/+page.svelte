@@ -44,6 +44,16 @@
 	let showCascadeModal = false;
 	let affectedLawsCount = 0;
 
+	function formatUpdatedAt(isoString: string | null | undefined): string {
+		if (!isoString) return '-';
+		const date = new Date(isoString);
+		const month = (date.getMonth() + 1).toString().padStart(2, '0');
+		const day = date.getDate().toString().padStart(2, '0');
+		const hours = date.getHours().toString().padStart(2, '0');
+		const mins = date.getMinutes().toString().padStart(2, '0');
+		return `${month}/${day} ${hours}:${mins}`;
+	}
+
 	function getStatusColor(status: ScrapeSession['status']): string {
 		switch (status) {
 			case 'completed':
@@ -491,10 +501,16 @@
 										/>
 									</th>
 									<th
-										class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16"
+										class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
 										title="Already exists in database"
 									>
 										In DB
+									</th>
+									<th
+										class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24"
+										title="Last updated in database"
+									>
+										Updated
 									</th>
 									{#if activeGroup === 3}
 										<th
@@ -504,7 +520,7 @@
 										</th>
 									{/if}
 									<th
-										class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+										class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider max-w-xs"
 									>
 										Title
 									</th>
@@ -525,7 +541,7 @@
 									</th>
 									{#if activeGroup === 1}
 										<th
-											class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+											class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider max-w-[150px]"
 										>
 											SI Codes
 										</th>
@@ -560,6 +576,9 @@
 											{:else}
 												<span class="text-gray-300">-</span>
 											{/if}
+										</td>
+										<td class="px-2 py-3 text-sm text-gray-500 whitespace-nowrap">
+											{formatUpdatedAt($dbStatusQuery.data?.updated_at_map?.[record.name])}
 										</td>
 										{#if activeGroup === 3}
 											<td class="px-4 py-3 text-sm text-gray-500">

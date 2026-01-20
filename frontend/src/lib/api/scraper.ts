@@ -122,6 +122,7 @@ export interface DbStatusResult {
 	existing_in_db: number;
 	new_records: number;
 	existing_names: string[];
+	updated_at_map: Record<string, string | null>;
 }
 
 /**

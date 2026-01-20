@@ -126,25 +126,32 @@ defmodule SertantaiLegalWeb.ScrapeController do
         end)
         |> Enum.reject(&is_nil/1)
 
-      # Query DB for existing records
-      existing =
+      # Query DB for existing records with updated_at
+      existing_records =
         if length(names) > 0 do
           UkLrt
           |> Ash.Query.filter(name in ^names)
-          |> Ash.Query.select([:name])
+          |> Ash.Query.select([:name, :updated_at])
           |> Ash.read!()
-          |> Enum.map(& &1.name)
-          |> MapSet.new()
         else
-          MapSet.new()
+          []
         end
+
+      existing_names = existing_records |> Enum.map(& &1.name) |> MapSet.new()
+
+      # Build map of name -> updated_at for frontend
+      updated_at_map =
+        existing_records
+        |> Enum.map(fn r -> {r.name, r.updated_at} end)
+        |> Enum.into(%{})
 
       json(conn, %{
         session_id: session_id,
         total_records: length(names),
-        existing_in_db: MapSet.size(existing),
-        new_records: length(names) - MapSet.size(existing),
-        existing_names: MapSet.to_list(existing)
+        existing_in_db: MapSet.size(existing_names),
+        new_records: length(names) - MapSet.size(existing_names),
+        existing_names: MapSet.to_list(existing_names),
+        updated_at_map: updated_at_map
       })
     else
       {:error, reason} ->

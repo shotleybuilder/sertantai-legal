@@ -578,14 +578,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
     end
 
     # Key Dates
-    attribute :created_at, :utc_datetime do
-      allow_nil?(true)
-      writable?(false)
+    create_timestamp :created_at do
       description("Record creation timestamp")
     end
 
-    attribute :updated_at, :utc_datetime do
-      allow_nil?(true)
+    update_timestamp :updated_at do
       description("Record update timestamp")
     end
 
