@@ -17,6 +17,14 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
           # Return empty results for affected (no laws amend this law yet)
           Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
 
+        String.contains?(path, "/changes/affecting/uksi/2024/200") ->
+          html = fixture("amendments_with_self_refs.html")
+          Req.Test.text(conn, html)
+
+        String.contains?(path, "/changes/affected/uksi/2024/200") ->
+          # Return empty results
+          Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
+
         String.contains?(path, "/changes/affecting/uksi/2024/999") ->
           Plug.Conn.send_resp(conn, 404, "Not found")
 
@@ -36,14 +44,16 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       record = %{type_code: "uksi", Year: 2024, Number: "1001"}
       path = Amending.affecting_path(record)
 
-      assert path == "/changes/affecting/uksi/2024/1001?results-count=1000&sort=affecting-year-number"
+      assert path ==
+               "/changes/affecting/uksi/2024/1001?results-count=1000&sort=affecting-year-number"
     end
 
     test "builds correct path with string keys" do
       record = %{"type_code" => "uksi", "Year" => 2024, "Number" => "1001"}
       path = Amending.affecting_path(record)
 
-      assert path == "/changes/affecting/uksi/2024/1001?results-count=1000&sort=affecting-year-number"
+      assert path ==
+               "/changes/affecting/uksi/2024/1001?results-count=1000&sort=affecting-year-number"
     end
   end
 
@@ -52,7 +62,8 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       record = %{type_code: "uksi", Year: 2024, Number: "1001"}
       path = Amending.affected_path(record)
 
-      assert path == "/changes/affected/uksi/2024/1001?results-count=1000&sort=affected-year-number"
+      assert path ==
+               "/changes/affected/uksi/2024/1001?results-count=1000&sort=affected-year-number"
     end
   end
 
@@ -170,9 +181,11 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       {:ok, result} = Amending.get_laws_amended_by_this_law(record)
 
       assert result.stats.total_changes == 5
-      assert result.stats.amendments_count == 3  # Raw count including duplicates
+      # Raw count including duplicates
+      assert result.stats.amendments_count == 3
       assert result.stats.revocations_count == 2
-      assert result.stats.amended_laws_count == 2  # Unique laws
+      # Unique laws
+      assert result.stats.amended_laws_count == 2
       assert result.stats.revoked_laws_count == 2
     end
 
@@ -206,6 +219,73 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
 
       # No revocations means in force
       assert result.live == "✔ In force"
+    end
+  end
+
+  describe "self-reference filtering" do
+    test "excludes self-references from amending list" do
+      record = %{type_code: "uksi", Year: 2024, Number: "200"}
+
+      {:ok, result} = Amending.get_laws_amended_by_this_law(record)
+
+      # Should NOT contain self (UK_uksi_2024_200)
+      refute "UK_uksi_2024_200" in result.amending
+
+      # Should contain the other two laws
+      assert "UK_uksi_2016_1154" in result.amending
+      assert "UK_ukpga_1974_37" in result.amending
+      assert length(result.amending) == 2
+    end
+
+    test "captures self-references in self_amendments list" do
+      record = %{type_code: "uksi", Year: 2024, Number: "200"}
+
+      {:ok, result} = Amending.get_laws_amended_by_this_law(record)
+
+      # Should have 3 self-amendments (coming into force provisions)
+      assert length(result.self_amendments) == 3
+
+      # All self_amendments should have the same name as the source law
+      Enum.each(result.self_amendments, fn amendment ->
+        assert amendment.name == "UK_uksi_2024_200"
+      end)
+    end
+
+    test "stats include accurate self_amendments_count" do
+      record = %{type_code: "uksi", Year: 2024, Number: "200"}
+
+      {:ok, result} = Amending.get_laws_amended_by_this_law(record)
+
+      # Stats should show 3 self-amendments
+      assert result.stats.self_amendments_count == 3
+
+      # Other stats should exclude self
+      # Only non-self amendments
+      assert result.stats.amendments_count == 2
+      # Only unique non-self laws
+      assert result.stats.amended_laws_count == 2
+    end
+
+    test "total_changes includes self for reference" do
+      record = %{type_code: "uksi", Year: 2024, Number: "200"}
+
+      {:ok, result} = Amending.get_laws_amended_by_this_law(record)
+
+      # Total should be 5 (3 self + 2 others)
+      assert result.stats.total_changes == 5
+    end
+
+    test "self_amendments preserves amendment details" do
+      record = %{type_code: "uksi", Year: 2024, Number: "200"}
+
+      {:ok, result} = Amending.get_laws_amended_by_this_law(record)
+
+      # Self-amendments should have target, affect, and applied fields
+      first_self = hd(result.self_amendments)
+
+      assert first_self.target == "art. 1"
+      assert first_self.affect == "coming into force"
+      assert first_self.applied? == "Yes"
     end
   end
 

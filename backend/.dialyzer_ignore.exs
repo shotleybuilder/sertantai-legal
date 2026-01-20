@@ -29,6 +29,8 @@
   {"lib/sertantai_legal/scraper/staged_parser.ex", :contract_supertype},
   {"lib/sertantai_legal/scraper/staged_parser.ex", :invalid_contract},
   {"lib/sertantai_legal/scraper/staged_parser.ex", :pattern_match},
+  # False positives - these private functions ARE called within run_amendments_stage/4
+  {"lib/sertantai_legal/scraper/staged_parser.ex", :unused_fun},
 
   # ParsedLaw - permissive specs for database record conversion
   {"lib/sertantai_legal/scraper/parsed_law.ex", :contract_supertype},

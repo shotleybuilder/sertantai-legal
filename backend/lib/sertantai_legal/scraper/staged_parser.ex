@@ -569,8 +569,15 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     case {affecting_result, affected_result} do
       {{:ok, affecting}, {:ok, affected}} ->
+        # Combine self-amendments from both directions (affecting and affected)
+        # These represent the law's "coming into force" provisions
+        all_self_amendments = affecting.self_amendments ++ affected.self_amendments
+
+        total_self_count =
+          affecting.stats.self_amendments_count + affected.stats.self_amendments_count
+
         data = %{
-          # Laws this law amends
+          # Laws this law amends (excluding self)
           amending: affecting.amending,
           rescinding: affecting.rescinding,
           amending_count: length(affecting.amending),
@@ -578,23 +585,25 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           is_amending: length(affecting.amending) > 0,
           is_rescinding: length(affecting.rescinding) > 0,
 
-          # Laws that amend this law
+          # Laws that amend this law (excluding self)
           amended_by: affected.amended_by,
           rescinded_by: affected.rescinded_by,
           amended_by_count: length(affected.amended_by),
           rescinded_by_count: length(affected.rescinded_by),
 
-          # Flattened stats - Self-affects (shared)
-          stats_self_affects_count: affecting.stats.self_amendments,
+          # Flattened stats - Self-affects (combined from both directions)
+          stats_self_affects_count: total_self_count,
+          stats_self_affects_count_per_law_detailed:
+            build_self_amendments_detailed(all_self_amendments),
 
-          # Flattened stats - Amending (🔺 this law affects others)
+          # Flattened stats - Amending (🔺 this law affects others) - excludes self
           amending_stats_affects_count: affecting.stats.amendments_count,
           amending_stats_affected_laws_count: affecting.stats.amended_laws_count,
           amending_stats_affects_count_per_law: build_count_per_law_summary(affecting.amendments),
           amending_stats_affects_count_per_law_detailed:
             build_count_per_law_detailed(affecting.amendments),
 
-          # Flattened stats - Amended_by (🔻 this law is affected by others)
+          # Flattened stats - Amended_by (🔻 this law is affected by others) - excludes self
           amended_by_stats_affected_by_count: affected.stats.amendments_count,
           amended_by_stats_affected_by_laws_count: affected.stats.amended_laws_count,
           amended_by_stats_affected_by_count_per_law:
@@ -602,21 +611,21 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amended_by_stats_affected_by_count_per_law_detailed:
             build_count_per_law_detailed(affected.amendments),
 
-          # Flattened stats - Rescinding (🔺 this law rescinds others)
+          # Flattened stats - Rescinding (🔺 this law rescinds others) - excludes self
           rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
           rescinding_stats_rescinding_count_per_law:
             build_count_per_law_summary(affecting.revocations),
           rescinding_stats_rescinding_count_per_law_detailed:
             build_count_per_law_detailed(affecting.revocations),
 
-          # Flattened stats - Rescinded_by (🔻 this law is rescinded by others)
+          # Flattened stats - Rescinded_by (🔻 this law is rescinded by others) - excludes self
           rescinded_by_stats_rescinded_by_laws_count: affected.stats.revoked_laws_count,
           rescinded_by_stats_rescinded_by_count_per_law:
             build_count_per_law_summary(affected.revocations),
           rescinded_by_stats_rescinded_by_count_per_law_detailed:
             build_count_per_law_detailed(affected.revocations),
 
-          # Detailed amendment data (for future use)
+          # Detailed amendment data (for future use) - excludes self
           amending_details: affecting.amendments,
           rescinding_details: affecting.revocations,
           amended_by_details: affected.amendments,
@@ -624,7 +633,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         }
 
         IO.puts(
-          "    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws"
+          "    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws (self: #{total_self_count})"
         )
 
         IO.puts(
@@ -633,11 +642,15 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
         %{status: :ok, data: data, error: nil}
 
-      {{:error, msg}, _} ->
+      {{:error, msg}, {:ok, _}} ->
         IO.puts("    ✗ Amendments (affecting) failed: #{msg}")
         %{status: :error, data: nil, error: "Affecting: #{msg}"}
 
-      {_, {:error, msg}} ->
+      {{:error, msg}, {:error, _}} ->
+        IO.puts("    ✗ Amendments (affecting) failed: #{msg}")
+        %{status: :error, data: nil, error: "Affecting: #{msg}"}
+
+      {{:ok, _}, {:error, msg}} ->
         IO.puts("    ✗ Amendments (affected) failed: #{msg}")
         %{status: :error, data: nil, error: "Affected: #{msg}"}
     end
@@ -927,6 +940,32 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     amendments
     |> Enum.group_by(& &1.name)
     |> Enum.sort_by(fn {_name, items} -> -length(items) end)
+  end
+
+  # Build detailed string for self-amendments (coming into force provisions)
+  # These are amendments where the law references itself
+  # Format: "235 self-amendments\n art. 1 coming into force [Yes]\n art. 2 coming into force [Yes]..."
+  defp build_self_amendments_detailed([]), do: nil
+
+  defp build_self_amendments_detailed(self_amendments) do
+    count = length(self_amendments)
+
+    # Build detailed entries
+    details =
+      self_amendments
+      |> Enum.map(&build_target_affect_applied/1)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.uniq()
+
+    header = "#{count} self-amendments"
+
+    if details == [] do
+      header
+    else
+      detail_lines = Enum.map(details, &(" " <> &1)) |> Enum.join("\n")
+      "#{header}\n#{detail_lines}"
+    end
   end
 
   # ============================================================================

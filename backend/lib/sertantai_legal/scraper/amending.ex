@@ -58,9 +58,11 @@ defmodule SertantaiLegal.Scraper.Amending do
   Fetches from `/changes/affecting/{type_code}/{year}/{number}` endpoint.
 
   Returns amendment relationships including:
-  - amending: List of law names this law amends
-  - rescinding: List of law names this law revokes/repeals
-  - stats: Amendment statistics
+  - amending: List of law names this law amends (excluding self)
+  - rescinding: List of law names this law revokes/repeals (excluding self)
+  - self_amendments: List of self-referencing amendment records
+  - self_revocations: List of self-referencing revocation records
+  - stats: Amendment statistics (with accurate self_amendments count)
 
   ## Parameters
   - record: Map with :type_code, :Year, :Number keys
@@ -71,8 +73,10 @@ defmodule SertantaiLegal.Scraper.Amending do
   """
   @spec get_laws_amended_by_this_law(map()) :: {:ok, amending_result()} | {:error, String.t()}
   def get_laws_amended_by_this_law(record) do
+    {type_code, year, number} = extract_record_params(record)
+    self_name = IdField.build_uk_id(type_code, year, number)
     path = affecting_path(record)
-    fetch_and_parse_amendments(path)
+    fetch_and_parse_amendments_with_self_filter(path, self_name)
   end
 
   @doc """
@@ -81,9 +85,11 @@ defmodule SertantaiLegal.Scraper.Amending do
   Fetches from `/changes/affected/{type_code}/{year}/{number}` endpoint.
 
   Returns amendment relationships including:
-  - amended_by: List of law names that amend this law
-  - rescinded_by: List of law names that revoke/repeal this law
-  - stats: Amendment statistics
+  - amended_by: List of law names that amend this law (excluding self)
+  - rescinded_by: List of law names that revoke/repeal this law (excluding self)
+  - self_amendments: List of self-referencing amendment records
+  - self_revocations: List of self-referencing revocation records
+  - stats: Amendment statistics (with accurate self_amendments count)
   - live: Computed live status based on revocations
 
   ## Parameters
@@ -95,11 +101,13 @@ defmodule SertantaiLegal.Scraper.Amending do
   """
   @spec get_laws_amending_this_law(map()) :: {:ok, map()} | {:error, String.t()}
   def get_laws_amending_this_law(record) do
+    {type_code, year, number} = extract_record_params(record)
+    self_name = IdField.build_uk_id(type_code, year, number)
     path = affected_path(record)
 
-    case fetch_and_parse_amendments(path) do
+    case fetch_and_parse_amendments_with_self_filter(path, self_name) do
       {:ok, result} ->
-        # Determine live status based on revocations
+        # Determine live status based on revocations (excluding self)
         live = determine_live_status(result.revocations)
 
         {:ok,
@@ -159,19 +167,40 @@ defmodule SertantaiLegal.Scraper.Amending do
   # Fetch and Parse
   # ============================================================================
 
-  defp fetch_and_parse_amendments(path) do
+  defp fetch_and_parse_amendments_with_self_filter(path, self_name) do
     case Client.fetch_html(path) do
       {:ok, html} ->
-        amendments = parse_amendments_html(html)
-        {revocations, affectations} = separate_revocations(amendments)
+        all_amendments = parse_amendments_html(html)
+
+        # Separate self-references from other amendments
+        {self_all, other_all} = Enum.split_with(all_amendments, &(&1.name == self_name))
+
+        # Separate revocations from amendments for non-self
+        {other_revocations, other_affectations} = separate_revocations(other_all)
+
+        # Separate revocations from amendments for self
+        {self_revocations, self_affectations} = separate_revocations(self_all)
 
         {:ok,
          %{
-           amending: build_links(affectations),
-           rescinding: build_links(revocations),
-           stats: build_stats(amendments, affectations, revocations),
-           amendments: affectations,
-           revocations: revocations
+           # Non-self amendments (for amending/amended_by arrays)
+           amending: build_links(other_affectations),
+           rescinding: build_links(other_revocations),
+           amendments: other_affectations,
+           revocations: other_revocations,
+
+           # Self-referencing amendments (for stats and detailed field)
+           self_amendments: self_affectations,
+           self_revocations: self_revocations,
+
+           # Stats with accurate self count
+           stats:
+             build_stats_with_self(
+               all_amendments,
+               other_affectations,
+               other_revocations,
+               self_all
+             )
          }}
 
       {:error, 404, _msg} ->
@@ -180,6 +209,10 @@ defmodule SertantaiLegal.Scraper.Amending do
          %{
            amending: [],
            rescinding: [],
+           amendments: [],
+           revocations: [],
+           self_amendments: [],
+           self_revocations: [],
            stats: %{
              total_changes: 0,
              amendments_count: 0,
@@ -187,10 +220,8 @@ defmodule SertantaiLegal.Scraper.Amending do
              laws_count: 0,
              amended_laws_count: 0,
              revoked_laws_count: 0,
-             self_amendments: 0
-           },
-           amendments: [],
-           revocations: []
+             self_amendments_count: 0
+           }
          }}
 
       {:error, _code, msg} ->
@@ -362,27 +393,27 @@ defmodule SertantaiLegal.Scraper.Amending do
     |> Enum.map(& &1.name)
   end
 
-  defp build_stats(all, amendments, revocations) do
-    unique_all = Enum.uniq_by(all, & &1.name)
-    unique_amendments = Enum.uniq_by(amendments, & &1.name)
-    unique_revocations = Enum.uniq_by(revocations, & &1.name)
+  defp build_stats_with_self(all, other_amendments, other_revocations, self_all) do
+    # Stats for non-self amendments only (what we report in main arrays)
+    unique_other_amendments = Enum.uniq_by(other_amendments, & &1.name)
+    unique_other_revocations = Enum.uniq_by(other_revocations, & &1.name)
+
+    # Combined unique laws (excluding self)
+    all_other = other_amendments ++ other_revocations
+    unique_other_all = Enum.uniq_by(all_other, & &1.name)
 
     %{
+      # Total includes self for reference
       total_changes: length(all),
-      amendments_count: length(amendments),
-      revocations_count: length(revocations),
-      laws_count: length(unique_all),
-      amended_laws_count: length(unique_amendments),
-      revoked_laws_count: length(unique_revocations),
-      self_amendments: count_self_amendments(all)
+      # Counts exclude self
+      amendments_count: length(other_amendments),
+      revocations_count: length(other_revocations),
+      laws_count: length(unique_other_all),
+      amended_laws_count: length(unique_other_amendments),
+      revoked_laws_count: length(unique_other_revocations),
+      # Self-amendment count (the actual count of self-referencing entries)
+      self_amendments_count: length(self_all)
     }
-  end
-
-  defp count_self_amendments(_amendments) do
-    # Count amendments where the target law is the same as the source law
-    # This would require knowing the source law, which we'd get from the affecting_path columns
-    # For now, return 0 - can be enhanced later
-    0
   end
 
   # ============================================================================
