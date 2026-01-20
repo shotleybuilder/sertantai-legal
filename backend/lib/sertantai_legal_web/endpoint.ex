@@ -19,48 +19,51 @@ defmodule SertantaiLegalWeb.Endpoint do
   #
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.
-  plug Plug.Static,
+  plug(Plug.Static,
     at: "/",
     from: :sertantai_legal,
     gzip: false,
     only: SertantaiLegalWeb.static_paths()
+  )
 
   # Tidewave MCP server for AI assistant integration
   # Available at http://localhost:4000/tidewave/mcp
   if Code.ensure_loaded?(Tidewave) do
-    plug Tidewave
+    plug(Tidewave)
   end
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
-    plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :sertantai_legal
+    plug(Phoenix.CodeReloader)
+    plug(Phoenix.Ecto.CheckRepoStatus, otp_app: :sertantai_legal)
   end
 
-  plug Plug.RequestId
-  plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  plug(Plug.RequestId)
+  plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
 
-  plug Plug.Parsers,
+  plug(Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
+  )
 
-  plug Plug.MethodOverride
-  plug Plug.Head
-  plug Plug.Session, @session_options
+  plug(Plug.MethodOverride)
+  plug(Plug.Head)
+  plug(Plug.Session, @session_options)
 
   # CORS configuration
-  plug Corsica,
+  plug(Corsica,
     origins: [
-      # Vite dev server
-      ~r{^https?://localhost:5173$},
-      ~r{^https?://127\.0\.0\.1:5173$},
+      # Vite dev server (port 5175 for sertantai-legal)
+      ~r{^https?://localhost:517[35]$},
+      ~r{^https?://127\.0\.0\.1:517[35]$},
       System.get_env("FRONTEND_URL") || ""
     ],
     allow_credentials: true,
     allow_headers: ["content-type", "authorization"],
     max_age: 600
+  )
 
-  plug SertantaiLegalWeb.Router
+  plug(SertantaiLegalWeb.Router)
 end
