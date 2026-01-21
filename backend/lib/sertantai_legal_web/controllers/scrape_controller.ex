@@ -473,6 +473,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
             |> put_resp_header("access-control-allow-origin", "*")
             |> send_chunked(200)
 
+          # Send initial event to confirm connection is established
+          {:ok, conn} =
+            chunk(conn, "data: #{Jason.encode!(%{event: "connected", name: name})}\n\n")
+
           # Progress callback that sends SSE events
           send_progress = fn event ->
             data = encode_progress_event(event)

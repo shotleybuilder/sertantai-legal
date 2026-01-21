@@ -582,17 +582,30 @@ export function parseOneStream(
 
 	eventSource.onmessage = (event) => {
 		try {
-			const data = JSON.parse(event.data) as ParseProgressEvent;
+			const data = JSON.parse(event.data) as
+				| ParseProgressEvent
+				| { event: 'connected'; name: string };
 
 			switch (data.event) {
+				case 'connected':
+					// Initial connection confirmed, just ignore
+					break;
 				case 'stage_start':
-					callbacks.onStageStart?.(data.stage, data.stage_num, data.total);
+					callbacks.onStageStart?.(
+						(data as ParseStageStartEvent).stage,
+						(data as ParseStageStartEvent).stage_num,
+						(data as ParseStageStartEvent).total
+					);
 					break;
 				case 'stage_complete':
-					callbacks.onStageComplete?.(data.stage, data.status, data.summary);
+					callbacks.onStageComplete?.(
+						(data as ParseStageCompleteEvent).stage,
+						(data as ParseStageCompleteEvent).status,
+						(data as ParseStageCompleteEvent).summary
+					);
 					break;
 				case 'parse_complete':
-					callbacks.onComplete?.(data.result);
+					callbacks.onComplete?.((data as ParseCompleteEvent).result);
 					eventSource.close();
 					break;
 			}
