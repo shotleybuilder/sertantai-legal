@@ -521,6 +521,130 @@ export async function updateEnactingLinks(
 }
 
 // ============================================================================
+// Error Message Mapping
+// ============================================================================
+
+/**
+ * Maps technical parser error messages to user-friendly messages.
+ * Used to display meaningful feedback when parsing fails.
+ */
+export function mapParseError(error: string): string {
+	if (!error) return 'An unknown error occurred';
+
+	const errorLower = error.toLowerCase();
+
+	// Network/Service Failures
+	if (errorLower.includes('econnrefused') || errorLower.includes('connection refused')) {
+		return 'Unable to connect to legislation.gov.uk. The service may be temporarily unavailable.';
+	}
+	if (errorLower.includes('timeout') || errorLower.includes('timed out')) {
+		return 'Request timed out. legislation.gov.uk may be slow or unresponsive.';
+	}
+	if (errorLower.includes('nxdomain') || errorLower.includes('dns')) {
+		return 'Unable to resolve legislation.gov.uk. Check your network connection.';
+	}
+	if (
+		errorLower.includes('ssl') ||
+		errorLower.includes('tls') ||
+		errorLower.includes('certificate')
+	) {
+		return 'Secure connection failed. Try again in a moment.';
+	}
+
+	// HTTP Error Responses
+	if (errorLower.includes('404') || errorLower.includes('not found')) {
+		return 'Law not found on legislation.gov.uk. It may have been removed, renumbered, or not yet published.';
+	}
+	if (errorLower.includes('429') || errorLower.includes('too many requests')) {
+		return 'Rate limited by legislation.gov.uk. Please wait a moment and try again.';
+	}
+	if (errorLower.includes('500') || errorLower.includes('internal server error')) {
+		return 'legislation.gov.uk is experiencing issues. Try again later.';
+	}
+	if (errorLower.includes('503') || errorLower.includes('service unavailable')) {
+		return 'legislation.gov.uk is temporarily unavailable for maintenance.';
+	}
+	if (errorLower.includes('307') || errorLower.includes('redirect')) {
+		return 'Law has moved. Try refreshing the page.';
+	}
+
+	// Data/Parsing Failures
+	if (errorLower.includes('html instead of xml') || errorLower.includes('received html')) {
+		return 'Unexpected response format. The law may not be available in machine-readable format.';
+	}
+	if (errorLower.includes('xml parse error') || errorLower.includes('parse error')) {
+		return 'Unable to parse law data. The format may have changed.';
+	}
+
+	// Stage-Specific Messages
+	if (errorLower.includes('no extent') || errorLower.includes('extent not found')) {
+		return 'Geographic extent not specified for this law.';
+	}
+	if (errorLower.includes('empty') || errorLower.includes('too short')) {
+		return 'Unable to classify. Law body is empty or too short.';
+	}
+
+	// Connection to parse stream failed (SSE-specific)
+	if (errorLower.includes('connection to parse stream failed')) {
+		return 'Lost connection during parsing. Retrying with fallback method...';
+	}
+
+	// Default: return original with minor cleanup
+	// Remove Elixir-specific formatting like %Req.TransportError{...}
+	const cleaned = error
+		.replace(/%\w+\.\w+Error\{[^}]*\}/g, '')
+		.replace(/Request failed:\s*/i, '')
+		.replace(/HTTP \d+:\s*/i, '')
+		.trim();
+
+	return cleaned || error;
+}
+
+/**
+ * Maps a stage-specific error to a user-friendly message with stage context.
+ */
+export function mapStageError(stage: string, error: string): string {
+	const friendlyError = mapParseError(error);
+
+	// Add stage-specific context for certain errors
+	switch (stage) {
+		case 'metadata':
+			if (error.toLowerCase().includes('404')) {
+				return 'Metadata not available. This may be draft or historical legislation.';
+			}
+			break;
+		case 'extent':
+			if (error.toLowerCase().includes('404') || error.toLowerCase().includes('not found')) {
+				return 'Extent data unavailable. Manual review may be needed.';
+			}
+			break;
+		case 'enacted_by':
+			// Acts are not enacted by other laws - this is informational, not an error
+			if (error.toLowerCase().includes('acts are not enacted')) {
+				return 'Primary legislation - not enacted by other laws.';
+			}
+			break;
+		case 'amendments':
+			if (error.toLowerCase().includes('timeout')) {
+				return 'Amendment data incomplete. This law has extensive amendment history.';
+			}
+			break;
+		case 'repeal_revoke':
+			if (error.toLowerCase().includes('404')) {
+				return 'Revocation status unknown. Assuming in force.';
+			}
+			break;
+		case 'taxa':
+			if (error.toLowerCase().includes('empty') || error.toLowerCase().includes('too short')) {
+				return 'Unable to classify. Law body is empty or too short.';
+			}
+			break;
+	}
+
+	return friendlyError;
+}
+
+// ============================================================================
 // Parse Streaming API (SSE)
 // ============================================================================
 

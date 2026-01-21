@@ -6,7 +6,7 @@
 		useFamilyOptionsQuery
 	} from '$lib/query/scraper';
 	import type { ParseOneResult, ScrapeRecord, ParseStage } from '$lib/api/scraper';
-	import { parseOneStream } from '$lib/api/scraper';
+	import { parseOneStream, mapParseError, mapStageError } from '$lib/api/scraper';
 	import RecordDiff from './RecordDiff.svelte';
 
 	export let sessionId: string;
@@ -401,7 +401,7 @@
 					</div>
 				{:else if parseError || $parseMutation.isError}
 					<div class="rounded-md bg-red-50 p-4">
-						<p class="text-sm text-red-700">{parseError || $parseMutation.error?.message}</p>
+						<p class="text-sm text-red-700">{mapParseError(parseError || $parseMutation.error?.message || '')}</p>
 					</div>
 				{:else if parseResult}
 					<!-- Title -->
@@ -439,7 +439,8 @@
 								<strong>Errors:</strong>
 								<ul class="list-disc list-inside mt-1">
 									{#each parseResult.errors as error}
-										<li>{error}</li>
+										{@const [stage, ...rest] = error.split(': ')}
+										<li>{mapStageError(stage, rest.join(': '))}</li>
 									{/each}
 								</ul>
 							</div>
