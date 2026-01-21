@@ -291,15 +291,12 @@ export function useCascadeReparseMutation() {
 
 /**
  * Mutation: Update enacting links for cascade entries
+ * Note: Does NOT invalidate cache - the component manually updates local state
+ * so users can review the changes before removing entries
  */
 export function useCascadeUpdateEnactingMutation() {
-	const queryClient = useQueryClient();
-
 	return createMutation({
-		mutationFn: (ids: string[]) => cascadeUpdateEnacting(ids),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
-		}
+		mutationFn: (ids: string[]) => cascadeUpdateEnacting(ids)
 	});
 }
 

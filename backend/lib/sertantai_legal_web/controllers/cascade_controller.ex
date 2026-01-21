@@ -312,28 +312,26 @@ defmodule SertantaiLegalWeb.CascadeController do
       end)
       |> Enum.reject(&is_nil/1)
 
-    # Process each entry
+    # Process each entry - do NOT mark as processed, let user remove manually after reviewing
     results =
       Enum.map(entries, fn entry ->
         case update_enacting_for_entry(entry) do
-          {:ok, :updated, count} ->
-            CascadeAffectedLaw.mark_processed!(entry)
-
+          {:ok, :updated, count, updated_enacting} ->
             %{
               id: entry.id,
               affected_law: entry.affected_law,
               status: "success",
-              message: "Added #{count} enacting link(s)"
+              message: "Added #{count} enacting link(s)",
+              current_enacting: updated_enacting
             }
 
-          {:ok, :unchanged} ->
-            CascadeAffectedLaw.mark_processed!(entry)
-
+          {:ok, :unchanged, current_enacting} ->
             %{
               id: entry.id,
               affected_law: entry.affected_law,
               status: "unchanged",
-              message: "Already up to date"
+              message: "Already up to date",
+              current_enacting: current_enacting
             }
 
           {:ok, :not_found} ->
@@ -570,20 +568,48 @@ defmodule SertantaiLegalWeb.CascadeController do
         new_laws = source_laws -- current_enacting
 
         if Enum.empty?(new_laws) do
-          {:ok, :unchanged}
+          {:ok, :unchanged, current_enacting}
         else
-          updated_enacting = current_enacting ++ new_laws
+          updated_enacting =
+            (current_enacting ++ new_laws)
+            |> sort_enacting_by_year_number_desc()
 
           case Ash.update(parent, %{enacting: updated_enacting, is_enacting: true},
                  action: :update_enacting
                ) do
-            {:ok, _} -> {:ok, :updated, length(new_laws)}
+            {:ok, _} -> {:ok, :updated, length(new_laws), updated_enacting}
             error -> error
           end
         end
 
       error ->
         error
+    end
+  end
+
+  # Sort enacting law names by year (desc) then number (desc)
+  # e.g., UK_uksi_2024_16, UK_uksi_2024_3, UK_uksi_2022_10
+  defp sort_enacting_by_year_number_desc(names) do
+    Enum.sort_by(names, fn name ->
+      case String.split(name, "_") do
+        [_prefix, _type, year_str, number_str] ->
+          year = String.to_integer(year_str)
+          number = parse_number(number_str)
+          # Negate for descending order
+          {-year, -number}
+
+        _ ->
+          # Unknown format, sort to end
+          {0, 0}
+      end
+    end)
+  end
+
+  # Parse number, handling non-numeric suffixes like "123a"
+  defp parse_number(str) do
+    case Integer.parse(str) do
+      {num, _rest} -> num
+      :error -> 0
     end
   end
 

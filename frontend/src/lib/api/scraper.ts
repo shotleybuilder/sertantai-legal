@@ -629,6 +629,7 @@ export interface CascadeOperationResultItem {
 	affected_law: string;
 	status: 'success' | 'error' | 'unchanged' | 'exists' | 'skipped';
 	message: string;
+	current_enacting?: string[];
 }
 
 export interface CascadeOperationResult {

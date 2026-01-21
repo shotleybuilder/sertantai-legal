@@ -6,11 +6,13 @@
 		useCascadeAddLawsMutation,
 		useDeleteCascadeEntryMutation,
 		useClearProcessedCascadeMutation,
-		useConfirmRecordMutation
+		useConfirmRecordMutation,
+		scraperKeys
 	} from '$lib/query/scraper';
-	import type { CascadeEntry, CascadeOperationResultItem, ParseMetadataResult, ScrapeRecord } from '$lib/api/scraper';
+	import type { CascadeEntry, CascadeIndexResult, CascadeOperationResultItem, ParseMetadataResult, ScrapeRecord } from '$lib/api/scraper';
 	import { parseMetadata, parseOne } from '$lib/api/scraper';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
+	import { useQueryClient } from '@tanstack/svelte-query';
 
 	// Session filter state - defaults to 'all' to show all sessions
 	let selectedSessionId: string | undefined = undefined;
@@ -25,6 +27,7 @@
 	const deleteEntryMutation = useDeleteCascadeEntryMutation();
 	const clearProcessedMutation = useClearProcessedCascadeMutation();
 	const confirmMutation = useConfirmRecordMutation();
+	const queryClient = useQueryClient();
 
 	// Selection state for batch operations
 	let selectedReparseInDb: Set<string> = new Set();
@@ -315,8 +318,39 @@
 
 		const result = await $updateEnactingMutation.mutateAsync(Array.from(selectedEnactingInDb));
 		operationResults = result.results;
-		operationMessage = `Updated enacting links for ${result.success} of ${result.total} laws`;
+		operationMessage = `Updated enacting links for ${result.success} of ${result.total} laws. Review changes, then Remove entries when done.`;
 		selectedEnactingInDb = new Set();
+
+		// Update query cache with new current_enacting values from response
+		// This lets users see the updated enacting array without a refetch
+		if (result.results) {
+			const updatedEnactingMap = new Map<string, string[]>();
+			for (const r of result.results) {
+				if (r.current_enacting) {
+					updatedEnactingMap.set(r.id, r.current_enacting);
+				}
+			}
+
+			if (updatedEnactingMap.size > 0) {
+				// Use queryClient.setQueryData for proper reactivity
+				queryClient.setQueryData<CascadeIndexResult>(
+					scraperKeys.cascadeIndex(selectedSessionId),
+					(oldData) => {
+						if (!oldData) return oldData;
+						return {
+							...oldData,
+							enacting_in_db: oldData.enacting_in_db.map((entry) => {
+								const updated = updatedEnactingMap.get(entry.id);
+								if (updated) {
+									return { ...entry, current_enacting: updated };
+								}
+								return entry;
+							})
+						};
+					}
+				);
+			}
+		}
 	}
 
 	async function handleAddEnactingMissing() {
@@ -334,6 +368,20 @@
 		if (confirm('Remove this cascade entry?')) {
 			await $deleteEntryMutation.mutateAsync(id);
 		}
+	}
+
+	async function handleBulkRemoveEnactingInDb() {
+		if (selectedEnactingInDb.size === 0) return;
+		const count = selectedEnactingInDb.size;
+		if (!confirm(`Remove ${count} selected cascade ${count === 1 ? 'entry' : 'entries'}?`)) return;
+
+		// Delete each selected entry
+		for (const id of selectedEnactingInDb) {
+			await $deleteEntryMutation.mutateAsync(id);
+		}
+
+		operationMessage = `Removed ${count} cascade ${count === 1 ? 'entry' : 'entries'}`;
+		selectedEnactingInDb = new Set();
 	}
 
 	async function handleClearProcessed() {
@@ -879,6 +927,13 @@
 								{/if}
 								Update Enacting ({selectedEnactingInDb.size})
 							</button>
+							<button
+								on:click={handleBulkRemoveEnactingInDb}
+								disabled={selectedEnactingInDb.size === 0}
+								class="inline-flex items-center px-3 py-1.5 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+							>
+								Remove ({selectedEnactingInDb.size})
+							</button>
 						</div>
 					</div>
 					<div class="max-h-64 overflow-y-auto">
@@ -920,11 +975,9 @@
 											class="px-4 py-2 text-sm text-gray-600 max-w-xs truncate"
 											title={entry.title_en}>{entry.title_en || '-'}</td
 										>
-										<td class="px-4 py-2 text-xs text-gray-500 max-w-xs">
+										<td class="px-4 py-2 text-xs text-gray-500 max-w-xs truncate" title={entry.current_enacting?.join(', ') || ''}>
 											{#if entry.current_enacting && entry.current_enacting.length > 0}
-												<span title={entry.current_enacting.join(', ')}>
-													{entry.current_enacting.length} laws
-												</span>
+												{entry.current_enacting.join(', ')}
 											{:else}
 												<span class="text-gray-400">None</span>
 											{/if}
