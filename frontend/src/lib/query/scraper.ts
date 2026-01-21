@@ -17,6 +17,13 @@ import {
 	confirmRecord,
 	checkExists,
 	getFamilyOptions,
+	getCascadeIndex,
+	getCascadeSessions,
+	cascadeReparse,
+	cascadeUpdateEnacting,
+	cascadeAddLaws,
+	deleteCascadeEntry,
+	clearProcessedCascade,
 	type ScrapeSession,
 	type GroupResponse,
 	type ParseResult,
@@ -25,7 +32,10 @@ import {
 	type ConfirmResult,
 	type ExistsResult,
 	type FamilyOptionsResult,
-	type DbStatusResult
+	type DbStatusResult,
+	type CascadeIndexResult,
+	type CascadeSessionsResult,
+	type CascadeOperationResult
 } from '$lib/api/scraper';
 
 // Query Keys
@@ -35,7 +45,10 @@ export const scraperKeys = {
 	session: (id: string) => [...scraperKeys.all, 'session', id] as const,
 	sessionDbStatus: (id: string) => [...scraperKeys.all, 'session', id, 'db-status'] as const,
 	group: (sessionId: string, group: 1 | 2 | 3) =>
-		[...scraperKeys.all, 'group', sessionId, group] as const
+		[...scraperKeys.all, 'group', sessionId, group] as const,
+	cascade: () => [...scraperKeys.all, 'cascade'] as const,
+	cascadeIndex: (sessionId?: string) => [...scraperKeys.cascade(), 'index', sessionId] as const,
+	cascadeSessions: () => [...scraperKeys.cascade(), 'sessions'] as const
 };
 
 /**
@@ -235,5 +248,99 @@ export function useFamilyOptionsQuery() {
 		queryKey: ['family-options'] as const,
 		queryFn: getFamilyOptions,
 		staleTime: Infinity // Family options rarely change
+	});
+}
+
+// ============================================================================
+// Cascade Management Hooks
+// ============================================================================
+
+/**
+ * Query: Get cascade index (all pending entries, optionally filtered by session)
+ */
+export function useCascadeIndexQuery(sessionId?: string) {
+	return createQuery({
+		queryKey: scraperKeys.cascadeIndex(sessionId),
+		queryFn: () => getCascadeIndex(sessionId)
+	});
+}
+
+/**
+ * Query: Get sessions with pending cascade entries
+ */
+export function useCascadeSessionsQuery() {
+	return createQuery({
+		queryKey: scraperKeys.cascadeSessions(),
+		queryFn: getCascadeSessions
+	});
+}
+
+/**
+ * Mutation: Batch re-parse cascade entries
+ */
+export function useCascadeReparseMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (ids: string[]) => cascadeReparse(ids),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+		}
+	});
+}
+
+/**
+ * Mutation: Update enacting links for cascade entries
+ */
+export function useCascadeUpdateEnactingMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (ids: string[]) => cascadeUpdateEnacting(ids),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+		}
+	});
+}
+
+/**
+ * Mutation: Add missing laws to database
+ */
+export function useCascadeAddLawsMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (ids: string[]) => cascadeAddLaws(ids),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+		}
+	});
+}
+
+/**
+ * Mutation: Delete a single cascade entry
+ */
+export function useDeleteCascadeEntryMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (id: string) => deleteCascadeEntry(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+		}
+	});
+}
+
+/**
+ * Mutation: Clear all processed cascade entries
+ */
+export function useClearProcessedCascadeMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (sessionId?: string) => clearProcessedCascade(sessionId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+		}
 	});
 }

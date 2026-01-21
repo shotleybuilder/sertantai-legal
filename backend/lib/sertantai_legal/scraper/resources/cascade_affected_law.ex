@@ -152,6 +152,18 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
       argument(:affected_law, :string, allow_nil?: false)
       filter(expr(session_id == ^arg(:session_id) and affected_law == ^arg(:affected_law)))
     end
+
+    read :all_pending do
+      description("Get all pending cascade entries across all sessions")
+      filter(expr(status == :pending))
+      prepare(build(sort: [session_id: :desc, inserted_at: :asc]))
+    end
+
+    read :sessions_with_pending do
+      description("Get distinct session IDs that have pending cascade entries")
+      filter(expr(status == :pending))
+      prepare(build(sort: [session_id: :desc]))
+    end
   end
 
   code_interface do
@@ -166,6 +178,8 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
     define(:by_session_and_type, args: [:session_id, :update_type])
     define(:pending_for_session, args: [:session_id])
     define(:by_session_and_law, args: [:session_id, :affected_law])
+    define(:all_pending)
+    define(:sessions_with_pending)
     define(:mark_processed)
     define(:append_source_law)
     define(:upgrade_to_reparse)

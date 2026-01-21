@@ -49,6 +49,15 @@ defmodule SertantaiLegalWeb.Router do
     post("/sessions/:id/update-enacting-links", ScrapeController, :update_enacting_links)
     delete("/sessions/:id/affected-laws", ScrapeController, :clear_affected_laws)
 
+    # Cascade management endpoints (standalone page)
+    get("/cascade", CascadeController, :index)
+    get("/cascade/sessions", CascadeController, :sessions)
+    post("/cascade/reparse", CascadeController, :reparse)
+    post("/cascade/update-enacting", CascadeController, :update_enacting)
+    post("/cascade/add-laws", CascadeController, :add_laws)
+    delete("/cascade/processed", CascadeController, :clear_processed)
+    delete("/cascade/:id", CascadeController, :delete)
+
     # UK LRT CRUD endpoints
     get("/uk-lrt", UkLrtController, :index)
     get("/uk-lrt/filters", UkLrtController, :filters)

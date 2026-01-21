@@ -521,6 +521,199 @@ export async function updateEnactingLinks(
 }
 
 // ============================================================================
+// Standalone Cascade Management API
+// ============================================================================
+
+export interface CascadeSession {
+	session_id: string;
+	year: number | null;
+	month: number | null;
+	day_from: number | null;
+	day_to: number | null;
+	status: string | null;
+	persisted_count: number;
+	pending_count?: number;
+	reparse_count?: number;
+	enacting_count?: number;
+}
+
+export interface CascadeEntry {
+	id: string;
+	affected_law: string;
+	session_id: string;
+	source_laws: string[];
+	title_en?: string;
+	year?: number;
+	type_code?: string;
+	family?: string;
+	current_enacting_count?: number;
+	is_enacting?: boolean;
+}
+
+export interface CascadeIndexResult {
+	sessions: CascadeSession[];
+	reparse_in_db: CascadeEntry[];
+	reparse_missing: CascadeEntry[];
+	enacting_in_db: CascadeEntry[];
+	enacting_missing: CascadeEntry[];
+	summary: {
+		total_pending: number;
+		reparse_in_db_count: number;
+		reparse_missing_count: number;
+		enacting_in_db_count: number;
+		enacting_missing_count: number;
+		session_count: number;
+	};
+	filter: {
+		session_id: string | null;
+	};
+}
+
+export interface CascadeSessionsResult {
+	sessions: CascadeSession[];
+}
+
+export interface CascadeOperationResultItem {
+	id: string;
+	affected_law: string;
+	status: 'success' | 'error' | 'unchanged' | 'exists' | 'skipped';
+	message: string;
+}
+
+export interface CascadeOperationResult {
+	total: number;
+	success: number;
+	errors: number;
+	unchanged?: number;
+	exists?: number;
+	results: CascadeOperationResultItem[];
+}
+
+/**
+ * Get cascade entries, optionally filtered by session
+ */
+export async function getCascadeIndex(sessionId?: string): Promise<CascadeIndexResult> {
+	const url = sessionId
+		? `${API_URL}/api/cascade?session_id=${encodeURIComponent(sessionId)}`
+		: `${API_URL}/api/cascade`;
+
+	const response = await fetch(url);
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to fetch cascade entries');
+	}
+
+	return response.json();
+}
+
+/**
+ * Get list of sessions with pending cascade entries
+ */
+export async function getCascadeSessions(): Promise<CascadeSessionsResult> {
+	const response = await fetch(`${API_URL}/api/cascade/sessions`);
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to fetch cascade sessions');
+	}
+
+	return response.json();
+}
+
+/**
+ * Batch re-parse cascade entries by ID
+ */
+export async function cascadeReparse(ids: string[]): Promise<CascadeOperationResult> {
+	const response = await fetch(`${API_URL}/api/cascade/reparse`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ ids })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to re-parse cascade entries');
+	}
+
+	return response.json();
+}
+
+/**
+ * Update enacting links for cascade entries by ID
+ */
+export async function cascadeUpdateEnacting(ids: string[]): Promise<CascadeOperationResult> {
+	const response = await fetch(`${API_URL}/api/cascade/update-enacting`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ ids })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to update enacting links');
+	}
+
+	return response.json();
+}
+
+/**
+ * Add missing laws to the database by parsing them
+ */
+export async function cascadeAddLaws(ids: string[]): Promise<CascadeOperationResult> {
+	const response = await fetch(`${API_URL}/api/cascade/add-laws`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ ids })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to add laws');
+	}
+
+	return response.json();
+}
+
+/**
+ * Delete a single cascade entry
+ */
+export async function deleteCascadeEntry(id: string): Promise<{ message: string; id: string }> {
+	const response = await fetch(`${API_URL}/api/cascade/${id}`, {
+		method: 'DELETE'
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to delete cascade entry');
+	}
+
+	return response.json();
+}
+
+/**
+ * Clear all processed cascade entries
+ */
+export async function clearProcessedCascade(
+	sessionId?: string
+): Promise<{ message: string; deleted_count: number }> {
+	const url = sessionId
+		? `${API_URL}/api/cascade/processed?session_id=${encodeURIComponent(sessionId)}`
+		: `${API_URL}/api/cascade/processed`;
+
+	const response = await fetch(url, {
+		method: 'DELETE'
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to clear processed entries');
+	}
+
+	return response.json();
+}
+
+// ============================================================================
 // Error Message Mapping
 // ============================================================================
 
