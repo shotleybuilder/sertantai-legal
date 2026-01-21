@@ -570,6 +570,16 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
           # Parse stages parameter if provided (for retry functionality)
           # Expected format: "metadata,extent,amendments" (comma-separated stage names)
+          # Use a whitelist map to safely convert strings to atoms (avoids atom exhaustion)
+          valid_stages_map = %{
+            "metadata" => :metadata,
+            "extent" => :extent,
+            "enacted_by" => :enacted_by,
+            "amendments" => :amendments,
+            "repeal_revoke" => :repeal_revoke,
+            "taxa" => :taxa
+          }
+
           parse_opts =
             case params["stages"] do
               nil ->
@@ -580,8 +590,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   stages_str
                   |> String.split(",")
                   |> Enum.map(&String.trim/1)
-                  |> Enum.map(&String.to_existing_atom/1)
-                  |> Enum.filter(&(&1 in StagedParser.stages()))
+                  |> Enum.map(&Map.get(valid_stages_map, &1))
+                  |> Enum.reject(&is_nil/1)
 
                 [on_progress: send_progress, stages: stages]
             end
