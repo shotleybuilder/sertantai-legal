@@ -621,7 +621,7 @@
 								<tr>
 									<th class="w-8 px-4 py-2"></th>
 									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-										>Law</th
+										>Name</th
 									>
 									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-16"
 										>Status</th
