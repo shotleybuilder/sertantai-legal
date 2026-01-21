@@ -939,8 +939,25 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp group_amendments_by_law(amendments) do
     amendments
     |> Enum.group_by(& &1.name)
-    |> Enum.sort_by(fn {_name, items} -> -length(items) end)
+    |> Enum.sort_by(fn {_name, items} ->
+      # Sort by year desc, then number desc (most recent first)
+      first = hd(items)
+      year = Map.get(first, :year) || Map.get(first, "year") || 0
+      number = parse_number_for_sort(Map.get(first, :number) || Map.get(first, "number"))
+      {-year, -number}
+    end)
   end
+
+  # Parse number string to integer for sorting, handling non-numeric suffixes
+  defp parse_number_for_sort(number) when is_binary(number) do
+    case Integer.parse(number) do
+      {n, _} -> n
+      :error -> 0
+    end
+  end
+
+  defp parse_number_for_sort(number) when is_integer(number), do: number
+  defp parse_number_for_sort(_), do: 0
 
   # Build detailed string for self-amendments (coming into force provisions)
   # These are amendments where the law references itself
