@@ -390,9 +390,19 @@ defmodule SertantaiLegal.Scraper.Amending do
   defp build_links(amendments) do
     amendments
     |> Enum.uniq_by(& &1.name)
-    |> Enum.sort_by(& &1.year, :desc)
+    |> Enum.sort_by(fn a -> {-a.year, -parse_number_for_sort(a.number)} end)
     |> Enum.map(& &1.name)
   end
+
+  # Parse number string to integer for sorting, handling non-numeric suffixes
+  defp parse_number_for_sort(number) when is_binary(number) do
+    case Integer.parse(number) do
+      {n, _} -> n
+      :error -> 0
+    end
+  end
+
+  defp parse_number_for_sort(_), do: 0
 
   defp build_stats_with_self(all, other_amendments, other_revocations, self_all) do
     # Stats for non-self amendments only (what we report in main arrays)
