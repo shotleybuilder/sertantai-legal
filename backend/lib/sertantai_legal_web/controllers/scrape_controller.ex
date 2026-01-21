@@ -113,14 +113,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
       names =
         [:group1, :group2]
         |> Enum.flat_map(fn group ->
-          case Storage.read_json(session_id, group) do
-            {:ok, records} when is_list(records) ->
+          case Storage.read_session_records(session_id, group) do
+            {:ok, records} ->
               Enum.map(records, fn r -> r[:name] || r["name"] end)
 
-            {:ok, records} when is_map(records) ->
-              Enum.map(records, fn {_k, r} -> r[:name] || r["name"] end)
-
-            _ ->
+            {:error, _} ->
               []
           end
         end)
@@ -178,7 +175,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
   def group(conn, %{"id" => session_id, "group" => group_str}) do
     with {:ok, group} <- parse_group(group_str),
          {:ok, _session} <- SessionManager.get(session_id) do
-      case Storage.read_json(session_id, group) do
+      # Use read_session_records which tries DB first, falls back to JSON
+      case Storage.read_session_records(session_id, group) do
         {:ok, records} ->
           json(conn, %{
             session_id: session_id,
@@ -310,17 +308,42 @@ defmodule SertantaiLegalWeb.ScrapeController do
          {:ok, _session} <- SessionManager.get(session_id),
          {:ok, names} <- get_list_param(params, "names"),
          {:ok, selected} <- get_boolean_param(params, "selected") do
-      case Storage.update_selection(session_id, group, names, selected) do
-        {:ok, count} ->
+      # Update both JSON and DB for backwards compatibility
+      json_result = Storage.update_selection(session_id, group, names, selected)
+      db_result = Storage.update_selection_db(session_id, group, names, selected)
+
+      # Use whichever succeeded (prefer DB count if both succeeded)
+      case {json_result, db_result} do
+        {{:ok, _json_count}, {:ok, db_count}} ->
           json(conn, %{
             message: "Selection updated",
             session_id: session_id,
             group: group_str,
-            updated: count,
+            updated: db_count,
             selected: selected
           })
 
-        {:error, reason} ->
+        {{:ok, json_count}, {:error, _}} ->
+          # DB failed but JSON succeeded - still report success
+          json(conn, %{
+            message: "Selection updated",
+            session_id: session_id,
+            group: group_str,
+            updated: json_count,
+            selected: selected
+          })
+
+        {{:error, _}, {:ok, db_count}} ->
+          # JSON failed but DB succeeded
+          json(conn, %{
+            message: "Selection updated",
+            session_id: session_id,
+            group: group_str,
+            updated: db_count,
+            selected: selected
+          })
+
+        {{:error, reason}, {:error, _}} ->
           conn
           |> put_status(:unprocessable_entity)
           |> json(%{error: format_error(reason)})
@@ -877,20 +900,13 @@ defmodule SertantaiLegalWeb.ScrapeController do
     groups = [:group1, :group2, :group3]
 
     Enum.find_value(groups, fn group ->
-      case Storage.read_json(session_id, group) do
-        {:ok, records} when is_list(records) ->
+      case Storage.read_session_records(session_id, group) do
+        {:ok, records} ->
           Enum.find(records, fn r ->
             (r[:name] || r["name"]) == name
           end)
 
-        {:ok, records} when is_map(records) ->
-          records
-          |> Map.values()
-          |> Enum.find(fn r ->
-            (r[:name] || r["name"]) == name
-          end)
-
-        _ ->
+        {:error, _} ->
           nil
       end
     end)
@@ -956,9 +972,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
     |> Enum.into(%{})
   end
 
-  # Mark a record as reviewed in the session JSON
+  # Mark a record as reviewed/confirmed in session storage
   defp mark_record_reviewed(session_id, name) do
-    # Update the record in all groups to mark as reviewed
+    # Update DB record status to confirmed
+    Storage.confirm_session_record(session_id, name)
+
+    # Also update JSON files for backwards compatibility
     groups = [:group1, :group2, :group3]
 
     Enum.each(groups, fn group ->

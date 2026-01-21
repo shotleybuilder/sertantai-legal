@@ -73,16 +73,20 @@ defmodule SertantaiLegal.Scraper.Categorizer do
   end
 
   @doc """
-  Save categorized records to JSON files.
+  Save categorized records to JSON files and database.
   """
   @spec save_categorized(String.t(), map()) :: {:ok, map()} | {:error, any()}
   def save_categorized(session_id, %{group1: g1, group2: g2, group3: g3, title_excluded: te}) do
     # Index Group 3 with numeric keys for easy reference (matches legl pattern)
     indexed_group3 = Storage.index_records(g3 ++ te)
 
+    # Save to JSON files (for backwards compatibility and debugging)
     with :ok <- Storage.save_json(session_id, :group1, g1),
          :ok <- Storage.save_json(session_id, :group2, g2),
          :ok <- Storage.save_json(session_id, :group3, indexed_group3) do
+      # Also save to database for deduplication and querying
+      save_records_to_db(session_id, g1, g2, g3 ++ te)
+
       counts = %{
         group1_count: Enum.count(g1),
         group2_count: Enum.count(g2),
@@ -104,6 +108,28 @@ defmodule SertantaiLegal.Scraper.Categorizer do
 
       {:ok, counts}
     end
+  end
+
+  # Save records to database (parallel to JSON for now)
+  defp save_records_to_db(session_id, g1, g2, g3) do
+    IO.puts("\n=== SAVING TO DATABASE ===")
+
+    case Storage.save_session_records(session_id, g1, :group1) do
+      {:ok, count} -> IO.puts("Group 1: #{count} records saved to DB")
+      {:error, reason} -> IO.puts("Group 1 DB save failed: #{inspect(reason)}")
+    end
+
+    case Storage.save_session_records(session_id, g2, :group2) do
+      {:ok, count} -> IO.puts("Group 2: #{count} records saved to DB")
+      {:error, reason} -> IO.puts("Group 2 DB save failed: #{inspect(reason)}")
+    end
+
+    case Storage.save_session_records(session_id, g3, :group3) do
+      {:ok, count} -> IO.puts("Group 3: #{count} records saved to DB")
+      {:error, reason} -> IO.puts("Group 3 DB save failed: #{inspect(reason)}")
+    end
+
+    IO.puts("================================")
   end
 
   # Split records by whether they have an SI code

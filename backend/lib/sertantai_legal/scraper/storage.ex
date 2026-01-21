@@ -448,4 +448,258 @@ defmodule SertantaiLegal.Scraper.Storage do
       {:error, reason} -> {:error, "Failed to clear affected laws: #{inspect(reason)}"}
     end
   end
+
+  # ============================================================================
+  # DB-Backed Session Records (replaces JSON group files)
+  # ============================================================================
+
+  alias SertantaiLegal.Scraper.ScrapeSessionRecord
+
+  @doc """
+  Save a single session record to the database.
+
+  Uses upsert to handle re-categorization without duplicates.
+
+  ## Parameters
+  - session_id: Session identifier
+  - record: Map with at least :name key
+  - group: :group1, :group2, or :group3
+
+  ## Returns
+  `{:ok, record}` or `{:error, reason}`
+  """
+  @spec save_session_record(String.t(), map(), atom()) ::
+          {:ok, ScrapeSessionRecord.t()} | {:error, any()}
+  def save_session_record(session_id, record, group) do
+    law_name = record[:name] || record["name"]
+
+    if is_nil(law_name) do
+      {:error, "Record missing :name field"}
+    else
+      ScrapeSessionRecord.create(%{
+        session_id: session_id,
+        law_name: law_name,
+        group: group,
+        status: :pending,
+        selected: false,
+        parsed_data: nil
+      })
+    end
+  end
+
+  @doc """
+  Save multiple session records to the database.
+
+  ## Parameters
+  - session_id: Session identifier
+  - records: List of record maps
+  - group: :group1, :group2, or :group3
+
+  ## Returns
+  `{:ok, count}` with number of records saved, or `{:error, reason}`
+  """
+  @spec save_session_records(String.t(), list(map()), atom()) ::
+          {:ok, integer()} | {:error, any()}
+  def save_session_records(session_id, records, group) do
+    results =
+      Enum.map(records, fn record ->
+        save_session_record(session_id, record, group)
+      end)
+
+    errors = Enum.filter(results, &match?({:error, _}, &1))
+
+    if Enum.empty?(errors) do
+      {:ok, length(results)}
+    else
+      {:error, "Failed to save #{length(errors)} records: #{inspect(Enum.take(errors, 3))}"}
+    end
+  end
+
+  @doc """
+  Read session records from database for a group.
+
+  Returns records in same format as JSON (list of maps with atom keys).
+  Falls back to JSON file if no DB records found (backwards compatibility).
+
+  ## Parameters
+  - session_id: Session identifier
+  - group: :group1, :group2, or :group3
+
+  ## Returns
+  `{:ok, records}` or `{:error, reason}`
+  """
+  @spec read_session_records(String.t(), atom()) :: {:ok, list(map())} | {:error, any()}
+  def read_session_records(session_id, group) do
+    case ScrapeSessionRecord.by_session_and_group(session_id, group) do
+      {:ok, db_records} when db_records != [] ->
+        # Convert DB records to map format for compatibility
+        records = Enum.map(db_records, &session_record_to_map/1)
+        {:ok, records}
+
+      {:ok, []} ->
+        # Fall back to JSON file for backwards compatibility
+        read_json(session_id, group)
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Get a specific session record by session and law name.
+
+  ## Returns
+  `{:ok, record}` or `{:ok, nil}` if not found
+  """
+  @spec get_session_record(String.t(), String.t()) ::
+          {:ok, ScrapeSessionRecord.t() | nil} | {:error, any()}
+  def get_session_record(session_id, law_name) do
+    ScrapeSessionRecord.by_session_and_name(session_id, law_name)
+  end
+
+  @doc """
+  Update parsed data for a session record.
+
+  ## Parameters
+  - session_id: Session identifier
+  - law_name: Law name
+  - parsed_data: Full ParsedLaw output as map
+
+  ## Returns
+  `{:ok, record}` or `{:error, reason}`
+  """
+  @spec update_session_record_parsed(String.t(), String.t(), map()) ::
+          {:ok, ScrapeSessionRecord.t()} | {:error, any()}
+  def update_session_record_parsed(session_id, law_name, parsed_data) do
+    case get_session_record(session_id, law_name) do
+      {:ok, nil} ->
+        {:error, "Record not found: #{law_name}"}
+
+      {:ok, record} ->
+        ScrapeSessionRecord.mark_parsed(record, %{parsed_data: parsed_data})
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Mark a session record as confirmed (persisted to uk_lrt).
+
+  ## Returns
+  `{:ok, record}` or `{:error, reason}`
+  """
+  @spec confirm_session_record(String.t(), String.t()) ::
+          {:ok, ScrapeSessionRecord.t()} | {:error, any()}
+  def confirm_session_record(session_id, law_name) do
+    case get_session_record(session_id, law_name) do
+      {:ok, nil} ->
+        {:error, "Record not found: #{law_name}"}
+
+      {:ok, record} ->
+        ScrapeSessionRecord.mark_confirmed(record)
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Update selection state for records in DB.
+
+  ## Parameters
+  - session_id: Session identifier
+  - group: :group1, :group2, or :group3
+  - names: List of law names to update
+  - selected: Boolean selection state
+
+  ## Returns
+  `{:ok, count}` with number updated, or `{:error, reason}`
+  """
+  @spec update_selection_db(String.t(), atom(), list(String.t()), boolean()) ::
+          {:ok, integer()} | {:error, any()}
+  def update_selection_db(session_id, group, names, selected) do
+    # Get records matching the names in this group
+    case ScrapeSessionRecord.by_session_and_group(session_id, group) do
+      {:ok, records} ->
+        names_set = MapSet.new(names)
+
+        updates =
+          records
+          |> Enum.filter(fn r -> MapSet.member?(names_set, r.law_name) end)
+          |> Enum.map(fn r -> ScrapeSessionRecord.set_selected(r, %{selected: selected}) end)
+
+        errors = Enum.filter(updates, &match?({:error, _}, &1))
+
+        if Enum.empty?(errors) do
+          {:ok, length(updates)}
+        else
+          {:error, "Failed to update some records"}
+        end
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Get selected record names from DB.
+
+  ## Returns
+  `{:ok, names}` list of selected law names
+  """
+  @spec get_selected_db(String.t(), atom()) :: {:ok, list(String.t())} | {:error, any()}
+  def get_selected_db(session_id, group) do
+    case ScrapeSessionRecord.selected_in_group(session_id, group) do
+      {:ok, records} ->
+        {:ok, Enum.map(records, & &1.law_name)}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Get count of records per status for a session.
+
+  ## Returns
+  Map with status counts: %{pending: n, parsed: n, confirmed: n, skipped: n}
+  """
+  @spec session_record_counts(String.t()) :: map()
+  def session_record_counts(session_id) do
+    case ScrapeSessionRecord.by_session(session_id) do
+      {:ok, records} ->
+        records
+        |> Enum.group_by(& &1.status)
+        |> Enum.map(fn {status, recs} -> {status, length(recs)} end)
+        |> Enum.into(%{pending: 0, parsed: 0, confirmed: 0, skipped: 0})
+
+      {:error, _} ->
+        %{pending: 0, parsed: 0, confirmed: 0, skipped: 0}
+    end
+  end
+
+  # Convert a ScrapeSessionRecord to a map format compatible with existing code
+  defp session_record_to_map(%ScrapeSessionRecord{} = record) do
+    base = %{
+      name: record.law_name,
+      selected: record.selected,
+      status: record.status,
+      parse_count: record.parse_count
+    }
+
+    # Merge in parsed_data if present
+    if record.parsed_data do
+      Map.merge(base, atomize_keys(record.parsed_data))
+    else
+      base
+    end
+  end
+
+  defp atomize_keys(map) when is_map(map) do
+    Map.new(map, fn
+      {k, v} when is_binary(k) -> {String.to_atom(k), v}
+      {k, v} -> {k, v}
+    end)
+  end
 end
