@@ -368,15 +368,32 @@ defmodule SertantaiLegal.Scraper.Storage do
 
   # Add affected laws to DB with proper deduplication
   defp add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by) do
+    alias SertantaiLegal.Scraper.IdField
+
+    # Normalize source_law to DB format for comparison
+    source_law_normalized = IdField.normalize_to_db_name(source_law)
+
     # Laws that need reparse (amending + rescinding)
-    reparse_laws = Enum.uniq(amending ++ rescinding)
+    # Filter out self-references (defense-in-depth - should already be filtered upstream)
+    reparse_laws =
+      (amending ++ rescinding)
+      |> Enum.uniq()
+      |> Enum.reject(fn affected_law ->
+        IdField.normalize_to_db_name(affected_law) == source_law_normalized
+      end)
 
     Enum.each(reparse_laws, fn affected_law ->
       upsert_cascade_entry(session_id, affected_law, :reparse, source_law)
     end)
 
-    # Laws that need enacting link update
-    Enum.each(enacted_by, fn affected_law ->
+    # Laws that need enacting link update (also filter self-references)
+    enacted_by_filtered =
+      enacted_by
+      |> Enum.reject(fn affected_law ->
+        IdField.normalize_to_db_name(affected_law) == source_law_normalized
+      end)
+
+    Enum.each(enacted_by_filtered, fn affected_law ->
       # Only add as enacting_link if not already marked for reparse
       case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
         {:ok, nil} ->
