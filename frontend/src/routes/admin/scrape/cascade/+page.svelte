@@ -893,10 +893,10 @@
 										>Title</th
 									>
 									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-										>Current Count</th
+										>Current Enacting</th
 									>
 									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-										>New Children</th
+										>To Add</th
 									>
 									<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 										>Actions</th
@@ -920,8 +920,16 @@
 											class="px-4 py-2 text-sm text-gray-600 max-w-xs truncate"
 											title={entry.title_en}>{entry.title_en || '-'}</td
 										>
-										<td class="px-4 py-2 text-sm">{entry.current_enacting_count || 0}</td>
-										<td class="px-4 py-2 text-xs text-gray-500">{entry.source_laws.join(', ')}</td>
+										<td class="px-4 py-2 text-xs text-gray-500 max-w-xs">
+											{#if entry.current_enacting && entry.current_enacting.length > 0}
+												<span title={entry.current_enacting.join(', ')}>
+													{entry.current_enacting.length} laws
+												</span>
+											{:else}
+												<span class="text-gray-400">None</span>
+											{/if}
+										</td>
+										<td class="px-4 py-2 text-xs text-green-600 font-medium">{entry.source_laws.join(', ')}</td>
 										<td class="px-4 py-2 text-right">
 											<button
 												on:click={() => handleDeleteEntry(entry.id)}

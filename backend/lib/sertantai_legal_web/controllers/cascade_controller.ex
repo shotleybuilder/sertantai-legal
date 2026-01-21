@@ -141,6 +141,7 @@ defmodule SertantaiLegalWeb.CascadeController do
           title_en: law[:title_en],
           year: law[:year],
           type_code: law[:type_code],
+          current_enacting: law[:enacting] || [],
           current_enacting_count: length(law[:enacting] || []),
           is_enacting: law[:is_enacting] || false
         }
