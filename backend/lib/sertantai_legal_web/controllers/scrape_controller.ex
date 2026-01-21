@@ -1203,6 +1203,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
               # Persist the updated record
               case LawParser.parse_record(result.record, persist: true) do
                 {:ok, _persisted} ->
+                  # Mark cascade entry as processed
+                  Storage.mark_cascade_processed(session_id, name)
                   %{name: name, status: "success", message: "Re-parsed and updated"}
 
                 {:error, reason} ->
@@ -1255,20 +1257,66 @@ defmodule SertantaiLegalWeb.ScrapeController do
   """
   def update_enacting_links(conn, %{"id" => session_id} = params) do
     alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Scraper.CascadeAffectedLaw
 
     names = params["names"]
 
     with {:ok, _session} <- SessionManager.get(session_id) do
-      # Get affected laws data
-      affected_data = Storage.read_affected_laws(session_id)
-      entries = affected_data[:entries] || []
+      # Get enacting_link entries from DB
+      enacting_entries =
+        case CascadeAffectedLaw.by_session_and_type(session_id, :enacting_link) do
+          {:ok, entries} -> entries
+          _ -> []
+        end
 
-      # Determine which parents to update
-      target_parents =
-        if names && is_list(names) && length(names) > 0 do
-          names
+      # Fall back to JSON if no DB entries
+      {target_parents, parent_to_sources} =
+        if enacting_entries == [] do
+          # Use JSON format (backwards compatibility)
+          affected_data = Storage.read_affected_laws(session_id)
+          entries = affected_data[:entries] || []
+
+          all_parents =
+            if names && is_list(names) && length(names) > 0 do
+              names
+            else
+              affected_data[:all_enacting_parents] || []
+            end
+
+          # Build map from old JSON format (entry has :enacted_by list)
+          sources_map =
+            Enum.reduce(entries, %{}, fn entry, acc ->
+              source_law = entry[:source_law] || entry["source_law"]
+              enacted_by_list = entry[:enacted_by] || entry["enacted_by"] || []
+
+              Enum.reduce(enacted_by_list, acc, fn parent, inner_acc ->
+                if parent in all_parents do
+                  Map.update(inner_acc, parent, [source_law], &[source_law | &1])
+                else
+                  inner_acc
+                end
+              end)
+            end)
+
+          {all_parents, sources_map}
         else
-          affected_data[:all_enacting_parents] || []
+          # Use DB format
+          all_parents =
+            if names && is_list(names) && length(names) > 0 do
+              Enum.filter(enacting_entries, &(&1.affected_law in names))
+            else
+              enacting_entries
+            end
+            |> Enum.map(& &1.affected_law)
+
+          # Build map from DB entries (each entry is a parent with source_laws)
+          sources_map =
+            enacting_entries
+            |> Enum.filter(&(&1.affected_law in all_parents))
+            |> Enum.map(fn entry -> {entry.affected_law, entry.source_laws} end)
+            |> Map.new()
+
+          {all_parents, sources_map}
         end
 
       if target_parents == [] do
@@ -1281,21 +1329,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
           message: "No enacting parents to update"
         })
       else
-        # Build map of parent -> source_laws to add
-        parent_to_sources =
-          Enum.reduce(entries, %{}, fn entry, acc ->
-            source_law = entry[:source_law]
-            enacted_by_list = entry[:enacted_by] || []
-
-            Enum.reduce(enacted_by_list, acc, fn parent, inner_acc ->
-              if parent in target_parents do
-                Map.update(inner_acc, parent, [source_law], &[source_law | &1])
-              else
-                inner_acc
-              end
-            end)
-          end)
-
         # Update each parent law
         results =
           Enum.map(target_parents, fn parent_name ->
@@ -1324,6 +1357,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
                   added = Enum.reject(sources_to_add, &(&1 in existing_enacting))
 
                   if added == [] do
+                    # Mark as processed even if unchanged
+                    Storage.mark_cascade_processed(session_id, parent_name)
+
                     %{
                       name: parent_name,
                       status: "unchanged",
@@ -1338,6 +1374,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
                          })
                          |> Ash.update() do
                       {:ok, updated} ->
+                        # Mark cascade entry as processed
+                        Storage.mark_cascade_processed(session_id, parent_name)
+
                         %{
                           name: parent_name,
                           status: "success",

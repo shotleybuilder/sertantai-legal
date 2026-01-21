@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Api do
     # Scraper session tracking
     resource(SertantaiLegal.Scraper.ScrapeSession)
     resource(SertantaiLegal.Scraper.ScrapeSessionRecord)
+    resource(SertantaiLegal.Scraper.CascadeAffectedLaw)
 
     # Tenant-scoped resources (require organization_id from JWT):
     # resource(SertantaiLegal.Legal.OrganizationLocation)

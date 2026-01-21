@@ -322,17 +322,21 @@ defmodule SertantaiLegal.Scraper.Storage do
   # Affected Laws Management (for Cascade Updates)
   # ============================================================================
 
-  @doc """
-  Add affected laws from a persisted record to the session's affected_laws.json.
+  alias SertantaiLegal.Scraper.CascadeAffectedLaw
 
-  Collects laws from `amending`, `rescinding`, and `enacted_by` fields and deduplicates.
+  @doc """
+  Add affected laws from a persisted record to the cascade todo list.
+
+  Writes to both DB (cascade_affected_laws table) and JSON (backwards compat).
+  DB entries are deduplicated by affected_law - multiple source laws pointing
+  to the same affected law result in one row with source_laws array.
 
   ## Parameters
   - session_id: Session identifier
   - source_law: The law that was persisted (name, e.g., "uksi/2024/123")
-  - amending: List of law IDs this law amends
-  - rescinding: List of law IDs this law rescinds
-  - enacted_by: List of parent law IDs that enable this law (optional)
+  - amending: List of law IDs this law amends (need reparse)
+  - rescinding: List of law IDs this law rescinds (need reparse)
+  - enacted_by: List of parent law IDs that enable this law (need enacting link update)
 
   ## Returns
   `:ok` or `{:error, reason}`
@@ -354,40 +358,111 @@ defmodule SertantaiLegal.Scraper.Storage do
     if amending == [] and rescinding == [] and enacted_by == [] do
       :ok
     else
-      # Read existing affected laws or initialize
-      existing = read_affected_laws(session_id)
+      # Write to DB (deduplicated by affected_law)
+      add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by)
 
-      # Build new entry
-      new_entry = %{
-        source_law: source_law,
-        amending: amending,
-        rescinding: rescinding,
-        enacted_by: enacted_by,
-        added_at: DateTime.utc_now() |> DateTime.to_iso8601()
-      }
-
-      # Filter out any existing entry for this source_law to prevent duplicates
-      filtered_entries =
-        (existing[:entries] || [])
-        |> Enum.reject(fn entry ->
-          entry[:source_law] == source_law or entry["source_law"] == source_law
-        end)
-
-      # Merge: append new entry (replacing any previous), collect unique affected laws
-      updated = %{
-        entries: filtered_entries ++ [new_entry],
-        all_amending: Enum.uniq((existing[:all_amending] || []) ++ amending),
-        all_rescinding: Enum.uniq((existing[:all_rescinding] || []) ++ rescinding),
-        all_enacting_parents: Enum.uniq((existing[:all_enacting_parents] || []) ++ enacted_by),
-        updated_at: DateTime.utc_now() |> DateTime.to_iso8601()
-      }
-
-      save_json(session_id, :affected_laws, updated)
+      # Also write to JSON for backwards compatibility
+      add_affected_laws_to_json(session_id, source_law, amending, rescinding, enacted_by)
     end
   end
 
+  # Add affected laws to DB with proper deduplication
+  defp add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by) do
+    # Laws that need reparse (amending + rescinding)
+    reparse_laws = Enum.uniq(amending ++ rescinding)
+
+    Enum.each(reparse_laws, fn affected_law ->
+      upsert_cascade_entry(session_id, affected_law, :reparse, source_law)
+    end)
+
+    # Laws that need enacting link update
+    Enum.each(enacted_by, fn affected_law ->
+      # Only add as enacting_link if not already marked for reparse
+      case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
+        {:ok, nil} ->
+          upsert_cascade_entry(session_id, affected_law, :enacting_link, source_law)
+
+        {:ok, existing} ->
+          # Just append source_law, don't downgrade from reparse to enacting_link
+          CascadeAffectedLaw.append_source_law(existing, %{source_law: source_law})
+
+        {:error, _} ->
+          upsert_cascade_entry(session_id, affected_law, :enacting_link, source_law)
+      end
+    end)
+
+    :ok
+  end
+
+  # Upsert a cascade entry, appending source_law if exists
+  defp upsert_cascade_entry(session_id, affected_law, update_type, source_law) do
+    case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
+      {:ok, nil} ->
+        # Create new entry
+        CascadeAffectedLaw.create(%{
+          session_id: session_id,
+          affected_law: affected_law,
+          update_type: update_type,
+          status: :pending,
+          source_laws: [source_law]
+        })
+
+      {:ok, existing} ->
+        # Append source_law and possibly upgrade update_type
+        CascadeAffectedLaw.append_source_law(existing, %{source_law: source_law})
+
+        # Upgrade to reparse if needed
+        if update_type == :reparse and existing.update_type == :enacting_link do
+          CascadeAffectedLaw.upgrade_to_reparse(existing)
+        end
+
+      {:error, _reason} ->
+        # Try to create anyway
+        CascadeAffectedLaw.create(%{
+          session_id: session_id,
+          affected_law: affected_law,
+          update_type: update_type,
+          status: :pending,
+          source_laws: [source_law]
+        })
+    end
+  end
+
+  # Add affected laws to JSON (backwards compatibility)
+  defp add_affected_laws_to_json(session_id, source_law, amending, rescinding, enacted_by) do
+    # Read existing affected laws or initialize
+    existing = read_affected_laws_json(session_id)
+
+    # Build new entry
+    new_entry = %{
+      source_law: source_law,
+      amending: amending,
+      rescinding: rescinding,
+      enacted_by: enacted_by,
+      added_at: DateTime.utc_now() |> DateTime.to_iso8601()
+    }
+
+    # Filter out any existing entry for this source_law to prevent duplicates
+    filtered_entries =
+      (existing[:entries] || [])
+      |> Enum.reject(fn entry ->
+        entry[:source_law] == source_law or entry["source_law"] == source_law
+      end)
+
+    # Merge: append new entry (replacing any previous), collect unique affected laws
+    updated = %{
+      entries: filtered_entries ++ [new_entry],
+      all_amending: Enum.uniq((existing[:all_amending] || []) ++ amending),
+      all_rescinding: Enum.uniq((existing[:all_rescinding] || []) ++ rescinding),
+      all_enacting_parents: Enum.uniq((existing[:all_enacting_parents] || []) ++ enacted_by),
+      updated_at: DateTime.utc_now() |> DateTime.to_iso8601()
+    }
+
+    save_json(session_id, :affected_laws, updated)
+  end
+
   @doc """
-  Read affected laws from a session.
+  Read affected laws from a session (tries DB first, falls back to JSON).
 
   ## Returns
   Map with :entries, :all_amending, :all_rescinding, :all_enacting_parents keys,
@@ -395,6 +470,44 @@ defmodule SertantaiLegal.Scraper.Storage do
   """
   @spec read_affected_laws(String.t()) :: map()
   def read_affected_laws(session_id) do
+    case CascadeAffectedLaw.by_session(session_id) do
+      {:ok, db_entries} when db_entries != [] ->
+        # Convert DB entries to the expected format
+        reparse_laws =
+          db_entries
+          |> Enum.filter(&(&1.update_type == :reparse))
+          |> Enum.map(& &1.affected_law)
+
+        enacting_parents =
+          db_entries
+          |> Enum.filter(&(&1.update_type == :enacting_link))
+          |> Enum.map(& &1.affected_law)
+
+        # Build entries list from DB data
+        entries =
+          db_entries
+          |> Enum.flat_map(fn entry ->
+            Enum.map(entry.source_laws, fn source_law ->
+              %{source_law: source_law, affected_law: entry.affected_law}
+            end)
+          end)
+          |> Enum.uniq_by(& &1.source_law)
+
+        %{
+          entries: entries,
+          all_amending: reparse_laws,
+          all_rescinding: [],
+          all_enacting_parents: enacting_parents
+        }
+
+      _ ->
+        # Fall back to JSON
+        read_affected_laws_json(session_id)
+    end
+  end
+
+  # Read affected laws from JSON file only
+  defp read_affected_laws_json(session_id) do
     case read_json(session_id, :affected_laws) do
       {:ok, data} ->
         data
@@ -407,12 +520,53 @@ defmodule SertantaiLegal.Scraper.Storage do
   @doc """
   Get summary of affected laws for cascade update UI.
 
+  Reads from DB first, falls back to JSON.
+
   ## Returns
   Map with counts and lists of affected laws.
   """
   @spec get_affected_laws_summary(String.t()) :: map()
   def get_affected_laws_summary(session_id) do
-    data = read_affected_laws(session_id)
+    case CascadeAffectedLaw.by_session(session_id) do
+      {:ok, db_entries} when db_entries != [] ->
+        get_affected_laws_summary_from_db(db_entries)
+
+      _ ->
+        get_affected_laws_summary_from_json(session_id)
+    end
+  end
+
+  defp get_affected_laws_summary_from_db(db_entries) do
+    # Partition by update_type
+    {reparse_entries, enacting_entries} =
+      Enum.split_with(db_entries, &(&1.update_type == :reparse))
+
+    reparse_laws = Enum.map(reparse_entries, & &1.affected_law)
+    enacting_parents = Enum.map(enacting_entries, & &1.affected_law)
+
+    # Collect all unique source laws
+    source_laws =
+      db_entries
+      |> Enum.flat_map(& &1.source_laws)
+      |> Enum.uniq()
+
+    %{
+      source_laws: source_laws,
+      source_count: length(source_laws),
+      # For backwards compat, report reparse laws as both amending and all_affected
+      amending: reparse_laws,
+      amending_count: length(reparse_laws),
+      rescinding: [],
+      rescinding_count: 0,
+      all_affected: reparse_laws,
+      all_affected_count: length(reparse_laws),
+      enacting_parents: enacting_parents,
+      enacting_parents_count: length(enacting_parents)
+    }
+  end
+
+  defp get_affected_laws_summary_from_json(session_id) do
+    data = read_affected_laws_json(session_id)
 
     # Laws that need re-parsing (amending/rescinding relationships)
     all_affected =
@@ -437,15 +591,68 @@ defmodule SertantaiLegal.Scraper.Storage do
 
   @doc """
   Clear affected laws for a session (after cascade update is complete).
+
+  Deletes from both DB and JSON file.
   """
   @spec clear_affected_laws(String.t()) :: :ok | {:error, any()}
   def clear_affected_laws(session_id) do
+    # Delete from DB
+    case CascadeAffectedLaw.by_session(session_id) do
+      {:ok, entries} ->
+        Enum.each(entries, fn entry ->
+          CascadeAffectedLaw.destroy(entry)
+        end)
+
+      {:error, _} ->
+        :ok
+    end
+
+    # Delete JSON file
     path = file_path(session_id, :affected_laws)
 
     case File.rm(path) do
       :ok -> :ok
       {:error, :enoent} -> :ok
       {:error, reason} -> {:error, "Failed to clear affected laws: #{inspect(reason)}"}
+    end
+  end
+
+  @doc """
+  Mark a cascade entry as processed.
+  """
+  @spec mark_cascade_processed(String.t(), String.t()) :: {:ok, any()} | {:error, any()}
+  def mark_cascade_processed(session_id, affected_law) do
+    case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
+      {:ok, nil} ->
+        {:error, "Cascade entry not found"}
+
+      {:ok, entry} ->
+        CascadeAffectedLaw.mark_processed(entry)
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Get pending cascade entries for a session, partitioned by update_type.
+
+  ## Returns
+  Map with :reparse and :enacting_link lists
+  """
+  @spec get_pending_cascade_entries(String.t()) :: map()
+  def get_pending_cascade_entries(session_id) do
+    case CascadeAffectedLaw.pending_for_session(session_id) do
+      {:ok, entries} ->
+        {reparse, enacting} = Enum.split_with(entries, &(&1.update_type == :reparse))
+
+        %{
+          reparse: Enum.map(reparse, & &1.affected_law),
+          enacting_link: Enum.map(enacting, & &1.affected_law)
+        }
+
+      {:error, _} ->
+        %{reparse: [], enacting_link: []}
     end
   end
 

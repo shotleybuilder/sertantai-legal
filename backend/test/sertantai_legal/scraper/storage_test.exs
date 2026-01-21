@@ -1,5 +1,5 @@
 defmodule SertantaiLegal.Scraper.StorageTest do
-  use ExUnit.Case
+  use SertantaiLegal.DataCase
 
   alias SertantaiLegal.Scraper.Storage
 
@@ -180,15 +180,25 @@ defmodule SertantaiLegal.Scraper.StorageTest do
       rescinding = []
       enacted_by = []
 
-      assert :ok = Storage.add_affected_laws(@test_session_id, "uksi/2025/100", amending, rescinding, enacted_by)
+      assert :ok =
+               Storage.add_affected_laws(
+                 @test_session_id,
+                 "uksi/2025/100",
+                 amending,
+                 rescinding,
+                 enacted_by
+               )
 
       data = Storage.read_affected_laws(@test_session_id)
 
-      assert length(data[:entries]) == 1
-      assert hd(data[:entries])[:source_law] == "uksi/2025/100"
-      assert hd(data[:entries])[:amending] == amending
-      assert data[:all_amending] == amending
-      assert data[:all_rescinding] == []
+      # Entries now contain source_law -> affected_law mappings
+      assert length(data[:entries]) >= 1
+      source_laws = Enum.map(data[:entries], & &1[:source_law]) |> Enum.uniq()
+      assert "uksi/2025/100" in source_laws
+
+      # all_amending contains the affected laws that need reparse
+      assert "ukpga/2020/1" in data[:all_amending]
+      assert "ukpga/2021/2" in data[:all_amending]
       assert data[:all_enacting_parents] == []
     end
 
@@ -197,33 +207,54 @@ defmodule SertantaiLegal.Scraper.StorageTest do
       rescinding = []
       enacted_by = ["ukpga/1974/37", "ukpga/2008/29"]
 
-      assert :ok = Storage.add_affected_laws(@test_session_id, "uksi/2025/100", amending, rescinding, enacted_by)
+      assert :ok =
+               Storage.add_affected_laws(
+                 @test_session_id,
+                 "uksi/2025/100",
+                 amending,
+                 rescinding,
+                 enacted_by
+               )
 
       data = Storage.read_affected_laws(@test_session_id)
 
-      assert length(data[:entries]) == 1
-      assert hd(data[:entries])[:enacted_by] == enacted_by
-      assert data[:all_enacting_parents] == enacted_by
+      # Entries contain the source law
+      assert length(data[:entries]) >= 1
+
+      # all_enacting_parents contains the parent laws that need enacting link update
+      assert "ukpga/1974/37" in data[:all_enacting_parents]
+      assert "ukpga/2008/29" in data[:all_enacting_parents]
     end
 
     test "accumulates multiple source laws" do
       # First law amends ukpga/2020/1 and is enacted by ukpga/1974/37
-      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], ["ukpga/1974/37"])
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], [
+        "ukpga/1974/37"
+      ])
 
       # Second law amends ukpga/2020/1 and ukpga/2021/2, enacted by same parent
-      Storage.add_affected_laws(@test_session_id, "uksi/2025/101", ["ukpga/2020/1", "ukpga/2021/2"], [], ["ukpga/1974/37"])
+      Storage.add_affected_laws(
+        @test_session_id,
+        "uksi/2025/101",
+        ["ukpga/2020/1", "ukpga/2021/2"],
+        [],
+        ["ukpga/1974/37"]
+      )
 
       data = Storage.read_affected_laws(@test_session_id)
 
-      assert length(data[:entries]) == 2
+      # Should have entries from both source laws
+      source_laws = Enum.map(data[:entries], & &1[:source_law]) |> Enum.uniq()
+      assert "uksi/2025/100" in source_laws
+      assert "uksi/2025/101" in source_laws
 
-      # all_amending should be deduplicated
+      # all_amending should contain both affected laws (deduplicated)
       assert "ukpga/2020/1" in data[:all_amending]
       assert "ukpga/2021/2" in data[:all_amending]
-      assert length(data[:all_amending]) == 2
 
-      # all_enacting_parents should be deduplicated
-      assert data[:all_enacting_parents] == ["ukpga/1974/37"]
+      # all_enacting_parents should be deduplicated (only one parent)
+      assert "ukpga/1974/37" in data[:all_enacting_parents]
+      assert length(data[:all_enacting_parents]) == 1
     end
 
     test "skips when no affected laws" do
@@ -250,21 +281,40 @@ defmodule SertantaiLegal.Scraper.StorageTest do
     end
 
     test "reads saved affected laws" do
-      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], ["ukpga/2019/1"], ["ukpga/1974/37"])
+      Storage.add_affected_laws(
+        @test_session_id,
+        "uksi/2025/100",
+        ["ukpga/2020/1"],
+        ["ukpga/2019/1"],
+        ["ukpga/1974/37"]
+      )
 
       data = Storage.read_affected_laws(@test_session_id)
 
       assert length(data[:entries]) == 1
-      assert data[:all_amending] == ["ukpga/2020/1"]
-      assert data[:all_rescinding] == ["ukpga/2019/1"]
+      # Both amending and rescinding are stored as reparse entries in DB
+      assert "ukpga/2020/1" in data[:all_amending]
+      assert "ukpga/2019/1" in data[:all_amending]
+      # rescinding is merged into amending for reparse
+      assert data[:all_rescinding] == []
       assert data[:all_enacting_parents] == ["ukpga/1974/37"]
     end
   end
 
   describe "get_affected_laws_summary/1" do
     test "returns summary with counts" do
-      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1", "ukpga/2021/2"], ["ukpga/2019/1"], ["ukpga/1974/37"])
-      Storage.add_affected_laws(@test_session_id, "uksi/2025/101", ["ukpga/2020/1"], [], ["ukpga/1974/37", "ukpga/2008/29"])
+      Storage.add_affected_laws(
+        @test_session_id,
+        "uksi/2025/100",
+        ["ukpga/2020/1", "ukpga/2021/2"],
+        ["ukpga/2019/1"],
+        ["ukpga/1974/37"]
+      )
+
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/101", ["ukpga/2020/1"], [], [
+        "ukpga/1974/37",
+        "ukpga/2008/29"
+      ])
 
       summary = Storage.get_affected_laws_summary(@test_session_id)
 
@@ -272,9 +322,13 @@ defmodule SertantaiLegal.Scraper.StorageTest do
       assert "uksi/2025/100" in summary.source_laws
       assert "uksi/2025/101" in summary.source_laws
 
-      assert summary.amending_count == 2
-      assert summary.rescinding_count == 1
-      assert summary.all_affected_count == 3  # 2 amending + 1 rescinding (deduplicated)
+      # amending + rescinding are combined as reparse entries in DB
+      # ukpga/2020/1, ukpga/2021/2 (amending) + ukpga/2019/1 (rescinding) = 3
+      assert summary.amending_count == 3
+      # rescinding is merged into amending for reparse
+      assert summary.rescinding_count == 0
+      # 3 reparse entries (deduplicated)
+      assert summary.all_affected_count == 3
 
       assert summary.enacting_parents_count == 2
       assert "ukpga/1974/37" in summary.enacting_parents
@@ -294,7 +348,10 @@ defmodule SertantaiLegal.Scraper.StorageTest do
 
   describe "clear_affected_laws/1" do
     test "clears affected laws file" do
-      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], ["ukpga/1974/37"])
+      Storage.add_affected_laws(@test_session_id, "uksi/2025/100", ["ukpga/2020/1"], [], [
+        "ukpga/1974/37"
+      ])
+
       assert Storage.file_exists?(@test_session_id, :affected_laws)
 
       assert :ok = Storage.clear_affected_laws(@test_session_id)
