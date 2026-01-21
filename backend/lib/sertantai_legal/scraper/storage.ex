@@ -737,15 +737,39 @@ defmodule SertantaiLegal.Scraper.Storage do
   """
   @spec read_session_records(String.t(), atom()) :: {:ok, list(map())} | {:error, any()}
   def read_session_records(session_id, group) do
+    case read_session_records_with_source(session_id, group) do
+      {:ok, records, _source} -> {:ok, records}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  Read session records for a specific group, returning both records and data source.
+
+  Tries DB first, falls back to JSON for backwards compatibility.
+
+  ## Parameters
+  - session_id: Session identifier
+  - group: :group1, :group2, or :group3
+
+  ## Returns
+  `{:ok, records, source}` where source is "db" or "json", or `{:error, reason}`
+  """
+  @spec read_session_records_with_source(String.t(), atom()) ::
+          {:ok, list(map()), String.t()} | {:error, any()}
+  def read_session_records_with_source(session_id, group) do
     case ScrapeSessionRecord.by_session_and_group(session_id, group) do
       {:ok, db_records} when db_records != [] ->
         # Convert DB records to map format for compatibility
         records = Enum.map(db_records, &session_record_to_map/1)
-        {:ok, records}
+        {:ok, records, "db"}
 
       {:ok, []} ->
         # Fall back to JSON file for backwards compatibility
-        read_json(session_id, group)
+        case read_json(session_id, group) do
+          {:ok, records} -> {:ok, records, "json"}
+          {:error, reason} -> {:error, reason}
+        end
 
       {:error, reason} ->
         {:error, reason}

@@ -44,6 +44,7 @@ export interface GroupResponse {
 	group: string;
 	count: number;
 	records: ScrapeRecord[];
+	data_source: 'db' | 'json';
 }
 
 export interface ParseResult {

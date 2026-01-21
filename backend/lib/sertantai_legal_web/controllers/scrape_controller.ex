@@ -175,14 +175,15 @@ defmodule SertantaiLegalWeb.ScrapeController do
   def group(conn, %{"id" => session_id, "group" => group_str}) do
     with {:ok, group} <- parse_group(group_str),
          {:ok, _session} <- SessionManager.get(session_id) do
-      # Use read_session_records which tries DB first, falls back to JSON
-      case Storage.read_session_records(session_id, group) do
-        {:ok, records} ->
+      # Use read_session_records_with_source which tries DB first, falls back to JSON
+      case Storage.read_session_records_with_source(session_id, group) do
+        {:ok, records, data_source} ->
           json(conn, %{
             session_id: session_id,
             group: group_str,
             count: count_records(records),
-            records: normalize_records(records)
+            records: normalize_records(records),
+            data_source: data_source
           })
 
         {:error, reason} ->

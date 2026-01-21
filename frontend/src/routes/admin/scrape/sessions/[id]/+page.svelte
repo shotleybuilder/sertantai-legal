@@ -379,6 +379,32 @@
 			<!-- Action Buttons -->
 			<div class="p-4 border-b border-gray-200 flex justify-between items-center">
 				<div class="flex items-center space-x-2">
+					<!-- Data Source Badge -->
+					{#if $groupQuery.data?.data_source}
+						{@const isDb = $groupQuery.data.data_source === 'db'}
+						<span
+							class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {isDb
+								? 'bg-green-100 text-green-800'
+								: 'bg-yellow-100 text-yellow-800'}"
+							title={isDb
+								? 'Data loaded from database'
+								: 'Data loaded from JSON files (legacy)'}
+						>
+							{#if isDb}
+								<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+									<path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
+									<path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
+									<path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
+								</svg>
+								DB
+							{:else}
+								<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+								</svg>
+								JSON
+							{/if}
+						</span>
+					{/if}
 					<button
 						on:click={handleSelectAll}
 						disabled={$selectionMutation.isPending || records.length === 0}
