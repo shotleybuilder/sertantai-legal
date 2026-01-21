@@ -390,6 +390,7 @@ defmodule SertantaiLegal.Scraper.Amending do
   defp build_links(amendments) do
     amendments
     |> Enum.uniq_by(& &1.name)
+    |> Enum.sort_by(& &1.year, :desc)
     |> Enum.map(& &1.name)
   end
 
