@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onDestroy } from 'svelte';
 	import {
 		useParseOneMutation,
 		useConfirmRecordMutation,
 		useFamilyOptionsQuery
 	} from '$lib/query/scraper';
-	import type { ParseOneResult, ScrapeRecord } from '$lib/api/scraper';
+	import type { ParseOneResult, ScrapeRecord, ParseStage } from '$lib/api/scraper';
+	import { parseOneStream } from '$lib/api/scraper';
 	import RecordDiff from './RecordDiff.svelte';
 
 	export let sessionId: string;
@@ -33,6 +34,26 @@
 	// Flag to prevent reparsing after workflow is complete
 	let workflowComplete = false;
 
+	// Streaming progress state
+	let isParsing = false;
+	let parseError: string | null = null;
+	let stageProgress: Map<ParseStage, { status: 'pending' | 'running' | 'ok' | 'error' | 'skipped'; summary: string | null }> = new Map();
+	let currentStage: ParseStage | null = null;
+	let cleanupStream: (() => void) | null = null;
+
+	// All stages in order
+	const ALL_STAGES: ParseStage[] = ['metadata', 'extent', 'enacted_by', 'amendments', 'repeal_revoke', 'taxa'];
+
+	// Human-readable stage names
+	const STAGE_LABELS: Record<ParseStage, string> = {
+		metadata: 'Metadata',
+		extent: 'Extent',
+		enacted_by: 'Enacted By',
+		amendments: 'Amendments',
+		repeal_revoke: 'Repeal/Revoke',
+		taxa: 'Taxa Classification'
+	};
+
 	$: currentRecord = records[currentIndex];
 	$: isFirst = currentIndex === 0;
 	$: isLast = currentIndex === records.length - 1;
@@ -50,9 +71,25 @@
 		currentRecord &&
 		currentRecord.name !== lastParsedName &&
 		!failedNames.has(currentRecord.name) &&
-		!$parseMutation.isPending
+		!isParsing
 	) {
 		parseCurrentRecord();
+	}
+
+	// Cleanup stream on component destroy
+	onDestroy(() => {
+		if (cleanupStream) {
+			cleanupStream();
+			cleanupStream = null;
+		}
+	});
+
+	function initStageProgress() {
+		stageProgress = new Map();
+		for (const stage of ALL_STAGES) {
+			stageProgress.set(stage, { status: 'pending', summary: null });
+		}
+		stageProgress = stageProgress; // Trigger reactivity
 	}
 
 	async function parseCurrentRecord() {
@@ -60,23 +97,62 @@
 		if (currentRecord.name === lastParsedName) return;
 		if (failedNames.has(currentRecord.name)) return;
 
-		parseResult = null;
-		lastParsedName = currentRecord.name;
-
-		try {
-			const result = await $parseMutation.mutateAsync({
-				sessionId,
-				name: currentRecord.name
-			});
-			parseResult = result;
-			// API normalizes Family to lowercase family
-			selectedFamily = (result.record?.family as string) || '';
-			selectedSubFamily = (result.record?.family_ii as string) || '';
-		} catch (error) {
-			console.error('Parse error:', error);
-			// Mark this name as failed to prevent infinite retry loops
-			failedNames.add(currentRecord.name);
+		// Cleanup any existing stream
+		if (cleanupStream) {
+			cleanupStream();
+			cleanupStream = null;
 		}
+
+		parseResult = null;
+		parseError = null;
+		isParsing = true;
+		currentStage = null;
+		lastParsedName = currentRecord.name;
+		initStageProgress();
+
+		// Try streaming first, fall back to non-streaming on error
+		cleanupStream = parseOneStream(sessionId, currentRecord.name, {
+			onStageStart: (stage, _stageNum, _total) => {
+				currentStage = stage;
+				const existing = stageProgress.get(stage);
+				stageProgress.set(stage, { ...existing, status: 'running', summary: null });
+				stageProgress = stageProgress; // Trigger reactivity
+			},
+			onStageComplete: (stage, status, summary) => {
+				stageProgress.set(stage, { status, summary });
+				stageProgress = stageProgress; // Trigger reactivity
+			},
+			onComplete: (result) => {
+				parseResult = result;
+				isParsing = false;
+				currentStage = null;
+				cleanupStream = null;
+				// API normalizes Family to lowercase family
+				selectedFamily = (result.record?.family as string) || '';
+				selectedSubFamily = (result.record?.family_ii as string) || '';
+			},
+			onError: async (error) => {
+				console.warn('SSE stream failed, falling back to non-streaming:', error);
+				cleanupStream = null;
+				// Fallback to non-streaming mutation
+				try {
+					const result = await $parseMutation.mutateAsync({
+						sessionId,
+						name: currentRecord.name
+					});
+					parseResult = result;
+					selectedFamily = (result.record?.family as string) || '';
+					selectedSubFamily = (result.record?.family_ii as string) || '';
+				} catch (fallbackError) {
+					console.error('Parse error:', fallbackError);
+					parseError = fallbackError instanceof Error ? fallbackError.message : 'Parse failed';
+					failedNames.add(currentRecord.name);
+				} finally {
+					isParsing = false;
+					currentStage = null;
+				}
+			}
+		});
 	}
 
 	async function handleConfirm() {
@@ -270,15 +346,50 @@
 
 			<!-- Content -->
 			<div class="flex-1 overflow-y-auto p-6">
-				{#if $parseMutation.isPending}
-					<div class="flex flex-col items-center justify-center py-12">
-						<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-						<p class="text-gray-500">Parsing {currentRecord?.name}...</p>
-						<p class="text-sm text-gray-400 mt-1">Fetching metadata from legislation.gov.uk</p>
+				{#if isParsing}
+					<div class="flex flex-col items-center justify-center py-8">
+						<p class="text-gray-700 font-medium mb-4">Parsing {currentRecord?.name}...</p>
+
+						<!-- Stage Progress -->
+						<div class="w-full max-w-md space-y-2">
+							{#each ALL_STAGES as stage}
+								{@const progress = stageProgress.get(stage)}
+								<div class="flex items-center space-x-3 py-1">
+									<!-- Status Icon -->
+									<div class="w-5 h-5 flex items-center justify-center">
+										{#if progress?.status === 'running'}
+											<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+										{:else if progress?.status === 'ok'}
+											<span class="text-green-600 font-bold">✓</span>
+										{:else if progress?.status === 'error'}
+											<span class="text-red-600 font-bold">✗</span>
+										{:else if progress?.status === 'skipped'}
+											<span class="text-gray-400">-</span>
+										{:else}
+											<span class="text-gray-300">○</span>
+										{/if}
+									</div>
+
+									<!-- Stage Name -->
+									<span class="w-32 text-sm {progress?.status === 'running' ? 'text-blue-600 font-medium' : progress?.status === 'ok' ? 'text-gray-700' : progress?.status === 'error' ? 'text-red-600' : 'text-gray-400'}">
+										{STAGE_LABELS[stage]}
+									</span>
+
+									<!-- Summary -->
+									<span class="text-sm text-gray-500 truncate flex-1">
+										{#if progress?.status === 'running'}
+											...
+										{:else if progress?.summary}
+											{progress.summary}
+										{/if}
+									</span>
+								</div>
+							{/each}
+						</div>
 					</div>
-				{:else if $parseMutation.isError}
+				{:else if parseError || $parseMutation.isError}
 					<div class="rounded-md bg-red-50 p-4">
-						<p class="text-sm text-red-700">{$parseMutation.error?.message}</p>
+						<p class="text-sm text-red-700">{parseError || $parseMutation.error?.message}</p>
 					</div>
 				{:else if parseResult}
 					<!-- Title -->

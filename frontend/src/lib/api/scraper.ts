@@ -519,3 +519,96 @@ export async function updateEnactingLinks(
 
 	return response.json();
 }
+
+// ============================================================================
+// Parse Streaming API (SSE)
+// ============================================================================
+
+export type ParseStage =
+	| 'metadata'
+	| 'extent'
+	| 'enacted_by'
+	| 'amendments'
+	| 'repeal_revoke'
+	| 'taxa';
+
+export interface ParseStageStartEvent {
+	event: 'stage_start';
+	stage: ParseStage;
+	stage_num: number;
+	total: number;
+}
+
+export interface ParseStageCompleteEvent {
+	event: 'stage_complete';
+	stage: ParseStage;
+	status: 'ok' | 'error' | 'skipped';
+	summary: string | null;
+}
+
+export interface ParseCompleteEvent {
+	event: 'parse_complete';
+	has_errors: boolean;
+	result: ParseOneResult;
+}
+
+export type ParseProgressEvent =
+	| ParseStageStartEvent
+	| ParseStageCompleteEvent
+	| ParseCompleteEvent;
+
+export interface ParseProgressCallbacks {
+	onStageStart?: (stage: ParseStage, stageNum: number, total: number) => void;
+	onStageComplete?: (
+		stage: ParseStage,
+		status: 'ok' | 'error' | 'skipped',
+		summary: string | null
+	) => void;
+	onComplete?: (result: ParseOneResult) => void;
+	onError?: (error: Error) => void;
+}
+
+/**
+ * Parse a single record with streaming progress updates via SSE.
+ * Returns a cleanup function to abort the connection.
+ */
+export function parseOneStream(
+	sessionId: string,
+	name: string,
+	callbacks: ParseProgressCallbacks
+): () => void {
+	const url = `${API_URL}/api/sessions/${sessionId}/parse-stream?name=${encodeURIComponent(name)}`;
+	const eventSource = new EventSource(url);
+
+	eventSource.onmessage = (event) => {
+		try {
+			const data = JSON.parse(event.data) as ParseProgressEvent;
+
+			switch (data.event) {
+				case 'stage_start':
+					callbacks.onStageStart?.(data.stage, data.stage_num, data.total);
+					break;
+				case 'stage_complete':
+					callbacks.onStageComplete?.(data.stage, data.status, data.summary);
+					break;
+				case 'parse_complete':
+					callbacks.onComplete?.(data.result);
+					eventSource.close();
+					break;
+			}
+		} catch (err) {
+			console.error('Failed to parse SSE event:', err);
+		}
+	};
+
+	eventSource.onerror = (event) => {
+		console.error('SSE error:', event);
+		callbacks.onError?.(new Error('Connection to parse stream failed'));
+		eventSource.close();
+	};
+
+	// Return cleanup function
+	return () => {
+		eventSource.close();
+	};
+}
