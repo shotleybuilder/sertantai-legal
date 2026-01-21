@@ -465,12 +465,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
         record ->
           # Set up SSE connection
+          # Note: CORS headers are handled by CORSPlug - don't add duplicate access-control-allow-origin
           conn =
             conn
             |> put_resp_content_type("text/event-stream")
             |> put_resp_header("cache-control", "no-cache")
             |> put_resp_header("connection", "keep-alive")
-            |> put_resp_header("access-control-allow-origin", "*")
             |> send_chunked(200)
 
           # Send initial event to confirm connection is established
