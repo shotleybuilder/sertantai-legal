@@ -636,11 +636,11 @@
 							<thead class="bg-gray-50 sticky top-0">
 								<tr>
 									<th class="w-8 px-4 py-2"></th>
-									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-										>Name</th
-									>
 									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-16"
 										>Status</th
+									>
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										>Name</th
 									>
 									<th
 										class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase max-w-xs"
@@ -688,9 +688,6 @@
 													))}
 												class="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
 											/>
-										</td>
-										<td class="px-2 py-2 font-mono text-xs text-gray-700">
-											{entry.affected_law}
 										</td>
 										<td class="px-2 py-2">
 											{#if isAdding}
@@ -763,6 +760,9 @@
 													Pending
 												</span>
 											{/if}
+										</td>
+										<td class="px-2 py-2 font-mono text-xs text-gray-700">
+											{entry.affected_law}
 										</td>
 										<td
 											class="px-2 py-2 text-sm text-gray-900 max-w-xs truncate"
