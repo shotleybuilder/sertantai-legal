@@ -945,7 +945,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         "#{law_name} - #{count}"
       end
     end)
-    |> Enum.join("\n")
+    # Use \n\n (blank line) between law blocks to match legacy data format
+    |> Enum.join("\n\n")
   end
 
   defp build_count_per_law_detailed([]), do: nil
@@ -986,7 +987,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         "#{count_line}\n#{detail_lines}"
       end
     end)
-    |> Enum.join("\n")
+    # Use \n\n (blank line) between law blocks to match legacy data format
+    |> Enum.join("\n\n")
   end
 
   # Build "target affect [applied?]" string for detailed output
