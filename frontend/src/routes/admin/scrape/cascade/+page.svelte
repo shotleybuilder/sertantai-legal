@@ -6,9 +6,11 @@
 		useCascadeUpdateEnactingMutation,
 		useCascadeAddLawsMutation,
 		useDeleteCascadeEntryMutation,
-		useClearProcessedCascadeMutation
+		useClearProcessedCascadeMutation,
+		useConfirmRecordMutation
 	} from '$lib/query/scraper';
-	import type { CascadeEntry, CascadeOperationResultItem } from '$lib/api/scraper';
+	import type { CascadeEntry, CascadeOperationResultItem, ParseOneResult } from '$lib/api/scraper';
+	import { parseOne } from '$lib/api/scraper';
 
 	// Session filter state - defaults to 'all' to show all sessions
 	let selectedSessionId: string | undefined = undefined;
@@ -23,6 +25,7 @@
 	const addLawsMutation = useCascadeAddLawsMutation();
 	const deleteEntryMutation = useDeleteCascadeEntryMutation();
 	const clearProcessedMutation = useClearProcessedCascadeMutation();
+	const confirmMutation = useConfirmRecordMutation();
 
 	// Selection state for batch operations
 	let selectedReparseInDb: Set<string> = new Set();
@@ -33,6 +36,21 @@
 	// Operation results state
 	let operationResults: CascadeOperationResultItem[] | null = null;
 	let operationMessage: string | null = null;
+
+	// Metadata state for new laws (two-step workflow)
+	// Maps cascade entry ID -> parsed metadata
+	type ParsedMetadata = {
+		title_en: string;
+		type_code: string;
+		year: number;
+		number: string;
+		si_code: string[];
+		record: Record<string, unknown>;
+		parseResult: ParseOneResult;
+	};
+	let parsedMetadata: Map<string, ParsedMetadata> = new Map();
+	let parsingIds: Set<string> = new Set(); // Currently fetching metadata
+	let parseErrors: Map<string, string> = new Map(); // Errors during parse
 
 	// Helper to format session display
 	function formatSession(session: {
@@ -92,6 +110,131 @@
 		selectedReparseInDb = new Set();
 	}
 
+	// Convert law name like "UK_uksi_2025_622" to format needed for parseOne
+	function lawNameToParseFormat(name: string): string {
+		// UK_uksi_2025_622 -> uksi/2025/622
+		const parts = name.split('_');
+		if (parts.length === 4 && parts[0] === 'UK') {
+			return `${parts[1]}/${parts[2]}/${parts[3]}`;
+		}
+		return name;
+	}
+
+	// Step 1: Get metadata for selected new laws
+	async function handleGetMetadata() {
+		if (selectedReparseMissing.size === 0) return;
+		operationResults = null;
+		operationMessage = null;
+		parseErrors = new Map();
+
+		const data = $cascadeQuery.data;
+		if (!data) return;
+
+		// Get entries for selected IDs
+		const entriesToParse = data.reparse_missing.filter((e) => selectedReparseMissing.has(e.id));
+
+		// Parse each one
+		for (const entry of entriesToParse) {
+			parsingIds = new Set([...parsingIds, entry.id]);
+
+			try {
+				const parseName = lawNameToParseFormat(entry.affected_law);
+				const result = await parseOne(entry.session_id, parseName);
+
+				// Extract metadata from result
+				const record = result.record as Record<string, unknown>;
+				const metadata: ParsedMetadata = {
+					title_en: (record.title_en as string) || (record.Title_EN as string) || '',
+					type_code: (record.type_code as string) || '',
+					year: (record.year as number) || (record.Year as number) || 0,
+					number: (record.number as string) || (record.Number as string) || '',
+					si_code: (record.si_code as string[]) || (record.SICode as string[]) || [],
+					record: record,
+					parseResult: result
+				};
+
+				parsedMetadata = new Map(parsedMetadata).set(entry.id, metadata);
+			} catch (err) {
+				const errorMsg = err instanceof Error ? err.message : 'Failed to fetch metadata';
+				parseErrors = new Map(parseErrors).set(entry.id, errorMsg);
+			} finally {
+				parsingIds = new Set([...parsingIds].filter((id) => id !== entry.id));
+			}
+		}
+
+		// Clear selection after fetching
+		selectedReparseMissing = new Set();
+
+		const successCount = entriesToParse.filter((e) => parsedMetadata.has(e.id)).length;
+		const errorCount = entriesToParse.filter((e) => parseErrors.has(e.id)).length;
+		if (errorCount > 0) {
+			operationMessage = `Fetched metadata for ${successCount} laws, ${errorCount} failed`;
+		} else {
+			operationMessage = `Fetched metadata for ${successCount} laws`;
+		}
+	}
+
+	// Step 2: Add laws with metadata to database
+	async function handleAddWithMetadata() {
+		// Get entries that have metadata fetched
+		const data = $cascadeQuery.data;
+		if (!data) return;
+
+		const entriesToAdd = data.reparse_missing.filter(
+			(e) => selectedReparseMissing.has(e.id) && parsedMetadata.has(e.id)
+		);
+
+		if (entriesToAdd.length === 0) return;
+
+		operationResults = null;
+		operationMessage = null;
+
+		const results: CascadeOperationResultItem[] = [];
+
+		for (const entry of entriesToAdd) {
+			const metadata = parsedMetadata.get(entry.id)!;
+
+			try {
+				// Use confirmRecord to persist
+				await $confirmMutation.mutateAsync({
+					sessionId: entry.session_id,
+					name: lawNameToParseFormat(entry.affected_law),
+					record: metadata.record
+				});
+
+				// Mark cascade entry as processed by deleting it
+				await $deleteEntryMutation.mutateAsync(entry.id);
+
+				results.push({
+					id: entry.id,
+					affected_law: entry.affected_law,
+					status: 'success',
+					message: 'Added to database'
+				});
+
+				// Remove from local metadata cache
+				parsedMetadata = new Map([...parsedMetadata].filter(([k]) => k !== entry.id));
+			} catch (err) {
+				const errorMsg = err instanceof Error ? err.message : 'Failed to add';
+				results.push({
+					id: entry.id,
+					affected_law: entry.affected_law,
+					status: 'error',
+					message: errorMsg
+				});
+			}
+		}
+
+		operationResults = results;
+		const successCount = results.filter((r) => r.status === 'success').length;
+		operationMessage = `Added ${successCount} of ${results.length} laws to database`;
+		selectedReparseMissing = new Set();
+
+		// Refresh cascade data
+		$cascadeQuery.refetch();
+	}
+
+	// Legacy: Add laws without metadata preview (kept for batch operations)
 	async function handleAddMissingLaws() {
 		if (selectedReparseMissing.size === 0) return;
 		operationResults = null;
@@ -102,6 +245,10 @@
 		operationMessage = `Added ${result.success} of ${result.total} laws to database`;
 		selectedReparseMissing = new Set();
 	}
+
+	// Check if any selected entries have metadata
+	$: selectedWithMetadata = [...selectedReparseMissing].filter((id) => parsedMetadata.has(id));
+	$: selectedWithoutMetadata = [...selectedReparseMissing].filter((id) => !parsedMetadata.has(id));
 
 	async function handleUpdateEnacting() {
 		if (selectedEnactingInDb.size === 0) return;
@@ -406,37 +553,110 @@
 									? 'Deselect All'
 									: 'Select All'}
 							</button>
+							<!-- Step 1: Get Metadata (for entries without metadata) -->
+							{#if selectedWithoutMetadata.length > 0}
+								<button
+									on:click={handleGetMetadata}
+									disabled={parsingIds.size > 0}
+									class="inline-flex items-center px-3 py-1.5 border border-orange-600 text-sm font-medium rounded-md text-orange-600 bg-white hover:bg-orange-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+								>
+									{#if parsingIds.size > 0}
+										<svg
+											class="animate-spin -ml-0.5 mr-1.5 h-4 w-4"
+											fill="none"
+											viewBox="0 0 24 24"
+										>
+											<circle
+												class="opacity-25"
+												cx="12"
+												cy="12"
+												r="10"
+												stroke="currentColor"
+												stroke-width="4"
+											></circle>
+											<path
+												class="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+											></path>
+										</svg>
+										Getting...
+									{:else}
+										Get Metadata ({selectedWithoutMetadata.length})
+									{/if}
+								</button>
+							{/if}
+							<!-- Step 2: Add to Database (only for entries with metadata) -->
 							<button
-								on:click={handleAddMissingLaws}
-								disabled={selectedReparseMissing.size === 0 || $addLawsMutation.isPending}
+								on:click={handleAddWithMetadata}
+								disabled={selectedWithMetadata.length === 0 || $confirmMutation.isPending}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
-								{#if $addLawsMutation.isPending}
-									<span class="animate-spin mr-1">...</span>
+								{#if $confirmMutation.isPending}
+									<svg class="animate-spin -ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24">
+										<circle
+											class="opacity-25"
+											cx="12"
+											cy="12"
+											r="10"
+											stroke="currentColor"
+											stroke-width="4"
+										></circle>
+										<path
+											class="opacity-75"
+											fill="currentColor"
+											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+										></path>
+									</svg>
+									Adding...
+								{:else}
+									Add to Database ({selectedWithMetadata.length})
 								{/if}
-								Add to Database ({selectedReparseMissing.size})
 							</button>
 						</div>
 					</div>
-					<div class="max-h-64 overflow-y-auto">
+					<div class="max-h-96 overflow-y-auto">
 						<table class="min-w-full divide-y divide-gray-200">
 							<thead class="bg-gray-50 sticky top-0">
 								<tr>
 									<th class="w-8 px-4 py-2"></th>
-									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-										>Law</th
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-16"
+										>Status</th
 									>
-									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
-										>Source Laws</th
+									<th
+										class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase max-w-xs"
+										>Title</th
 									>
-									<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										>Type</th
+									>
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										>Year</th
+									>
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										>Number</th
+									>
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										>SI Codes</th
+									>
+									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										>Source</th
+									>
+									<th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 										>Actions</th
 									>
 								</tr>
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
 								{#each data.reparse_missing as entry}
-									<tr class="hover:bg-gray-50">
+									{@const metadata = parsedMetadata.get(entry.id)}
+									{@const isParsing = parsingIds.has(entry.id)}
+									{@const hasError = parseErrors.has(entry.id)}
+									<tr
+										class="hover:bg-gray-50 {metadata ? 'bg-green-50/50' : ''} {hasError
+											? 'bg-red-50/50'
+											: ''}"
+									>
 										<td class="px-4 py-2">
 											<input
 												type="checkbox"
@@ -449,9 +669,81 @@
 												class="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
 											/>
 										</td>
-										<td class="px-4 py-2 font-mono text-xs">{entry.affected_law}</td>
-										<td class="px-4 py-2 text-xs text-gray-500">{entry.source_laws.join(', ')}</td>
-										<td class="px-4 py-2 text-right">
+										<td class="px-2 py-2">
+											{#if isParsing}
+												<span
+													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+												>
+													<svg
+														class="animate-spin -ml-0.5 mr-1 h-3 w-3"
+														fill="none"
+														viewBox="0 0 24 24"
+													>
+														<circle
+															class="opacity-25"
+															cx="12"
+															cy="12"
+															r="10"
+															stroke="currentColor"
+															stroke-width="4"
+														></circle>
+														<path
+															class="opacity-75"
+															fill="currentColor"
+															d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+														></path>
+													</svg>
+													Parsing
+												</span>
+											{:else if metadata}
+												<span
+													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"
+												>
+													Ready
+												</span>
+											{:else if hasError}
+												<span
+													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
+													title={parseErrors.get(entry.id)}
+												>
+													Error
+												</span>
+											{:else}
+												<span
+													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600"
+												>
+													Pending
+												</span>
+											{/if}
+										</td>
+										<td
+											class="px-2 py-2 text-sm text-gray-900 max-w-xs truncate"
+											title={metadata?.title_en || entry.affected_law}
+										>
+											{metadata?.title_en || '-'}
+										</td>
+										<td class="px-2 py-2 text-sm text-gray-600">
+											{metadata?.type_code || '-'}
+										</td>
+										<td class="px-2 py-2 text-sm text-gray-600">
+											{metadata?.year || '-'}
+										</td>
+										<td class="px-2 py-2 text-sm text-gray-600">
+											{metadata?.number || '-'}
+										</td>
+										<td
+											class="px-2 py-2 text-xs text-gray-500 max-w-[120px] truncate"
+											title={metadata?.si_code?.join(', ') || ''}
+										>
+											{metadata?.si_code?.join(', ') || '-'}
+										</td>
+										<td
+											class="px-2 py-2 text-xs text-gray-500 max-w-[150px] truncate"
+											title={entry.source_laws.join(', ')}
+										>
+											{entry.source_laws.join(', ')}
+										</td>
+										<td class="px-2 py-2 text-right">
 											<button
 												on:click={() => handleDeleteEntry(entry.id)}
 												class="text-red-600 hover:text-red-800 text-sm"
