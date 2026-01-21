@@ -1173,20 +1173,13 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
   # Uses ParsedLaw.from_db_record/1 to unwrap JSONB fields to list format
-  # If scraped_keys is provided, only include keys that the scraper produces
-  defp existing_record_to_map(existing, scraped_keys) do
+  # Always returns the full record - frontend handles diff display appropriately
+  # (RecordDiff filters out changes where both values are empty)
+  defp existing_record_to_map(existing, _scraped_keys) do
     # Use ParsedLaw to handle JSONB unwrapping consistently
-    result =
-      existing
-      |> ParsedLaw.from_db_record()
-      |> ParsedLaw.to_comparison_map()
-
-    # Filter to only keys the scraper produces (avoids showing "deleted" for unscraped fields)
-    if scraped_keys do
-      Map.take(result, scraped_keys)
-    else
-      result
-    end
+    existing
+    |> ParsedLaw.from_db_record()
+    |> ParsedLaw.to_comparison_map()
   end
 
   # Format stages for JSON response

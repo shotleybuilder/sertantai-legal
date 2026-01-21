@@ -80,6 +80,14 @@
 	$: isFirst = currentIndex === 0;
 	$: isLast = currentIndex === records.length - 1;
 
+	// For display: merge existing DB record with parsed changes (for selective stage parsing)
+	// This shows the user complete data with parsed updates overlaid
+	$: displayRecord = parseResult?.record
+		? parseResult.duplicate?.exists && parseResult.duplicate?.record
+			? { ...parseResult.duplicate.record, ...parseResult.record }
+			: parseResult.record
+		: null;
+
 	// Track the last parsed record name to prevent re-parsing
 	let lastParsedName: string | null = null;
 	// Track names that failed to parse to prevent infinite retry loops
@@ -535,7 +543,7 @@
 					<!-- Title -->
 					<div class="mb-6">
 						<h3 class="text-xl font-medium text-gray-900">
-							{getField(parseResult.record, 'title_en', 'Title_EN') || 'Untitled'}
+							{getField(displayRecord, 'title_en', 'Title_EN') || 'Untitled'}
 						</h3>
 						<a
 							href="https://www.legislation.gov.uk/{parseResult.name}"
@@ -655,7 +663,7 @@
 									>Title <span class="text-xs text-gray-400">(title_en)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'title_en', 'Title_EN'))}</span
+									>{formatValue(getField(displayRecord, 'title_en', 'Title_EN'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -663,7 +671,7 @@
 									>Year <span class="text-xs text-gray-400">(year)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'year', 'Year'))}</span
+									>{formatValue(getField(displayRecord, 'year', 'Year'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -671,7 +679,7 @@
 									>Number <span class="text-xs text-gray-400">(number)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'number', 'Number'))}</span
+									>{formatValue(getField(displayRecord, 'number', 'Number'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -679,7 +687,7 @@
 									>Type Code <span class="text-xs text-gray-400">(type_code)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'type_code'))}</span
+									>{formatValue(getField(displayRecord, 'type_code'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -687,7 +695,7 @@
 									>Type Description <span class="text-xs text-gray-400">(type_desc)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'type_desc'))}</span
+									>{formatValue(getField(displayRecord, 'type_desc'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -695,7 +703,7 @@
 									>Type Class <span class="text-xs text-gray-400">(type_class)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'type_class'))}</span
+									>{formatValue(getField(displayRecord, 'type_class'))}</span
 								>
 							</div>
 						</div>
@@ -770,7 +778,7 @@
 									>SI Codes <span class="text-xs text-gray-400">(si_code)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'si_code', 'SICode'))}</span
+									>{formatValue(getField(displayRecord, 'si_code', 'SICode'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -778,7 +786,7 @@
 									>Tags <span class="text-xs text-gray-400">(tags)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'tags'))}</span
+									>{formatValue(getField(displayRecord, 'tags'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -786,7 +794,7 @@
 									>Description <span class="text-xs text-gray-400">(md_description)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'md_description'))}</span
+									>{formatValue(getField(displayRecord, 'md_description'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -794,7 +802,7 @@
 									>Subjects <span class="text-xs text-gray-400">(md_subjects)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'md_subjects'))}</span
+									>{formatValue(getField(displayRecord, 'md_subjects'))}</span
 								>
 							</div>
 						</div>
@@ -811,7 +819,7 @@
 									>Status <span class="text-xs text-gray-400">(live)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'live'))}</span
+									>{formatValue(getField(displayRecord, 'live'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -820,7 +828,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'live_description'))}</span
+									>{formatValue(getField(displayRecord, 'live_description'))}</span
 								>
 							</div>
 						</div>
@@ -837,7 +845,7 @@
 									>Region <span class="text-xs text-gray-400">(geo_extent)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'geo_extent', 'extent'))}</span
+									>{formatValue(getField(displayRecord, 'geo_extent', 'extent'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -845,7 +853,7 @@
 									>Country <span class="text-xs text-gray-400">(geo_region)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'geo_region', 'extent_regions'))}</span
+									>{formatValue(getField(displayRecord, 'geo_region', 'extent_regions'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -853,7 +861,7 @@
 									>Detail <span class="text-xs text-gray-400">(geo_detail)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900 whitespace-pre-line"
-									>{formatValue(getField(parseResult.record, 'geo_detail'))}</span
+									>{formatValue(getField(displayRecord, 'geo_detail'))}</span
 								>
 							</div>
 						</div>
@@ -870,7 +878,7 @@
 									>Primary Date <span class="text-xs text-gray-400">(md_date)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatDate(getField(parseResult.record, 'md_date'))}</span
+									>{formatDate(getField(displayRecord, 'md_date'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -878,7 +886,7 @@
 									>Made Date <span class="text-xs text-gray-400">(md_made_date)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatDate(getField(parseResult.record, 'md_made_date'))}</span
+									>{formatDate(getField(displayRecord, 'md_made_date'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -886,7 +894,7 @@
 									>Enacted Date <span class="text-xs text-gray-400">(md_enactment_date)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatDate(getField(parseResult.record, 'md_enactment_date'))}</span
+									>{formatDate(getField(displayRecord, 'md_enactment_date'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -896,7 +904,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatDate(getField(parseResult.record, 'md_coming_into_force_date'))}</span
+									>{formatDate(getField(displayRecord, 'md_coming_into_force_date'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -905,7 +913,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatDate(getField(parseResult.record, 'md_dct_valid_date'))}</span
+									>{formatDate(getField(displayRecord, 'md_dct_valid_date'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -915,7 +923,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatDate(getField(parseResult.record, 'md_restrict_start_date'))}</span
+									>{formatDate(getField(displayRecord, 'md_restrict_start_date'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -924,7 +932,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'md_total_paras'))}</span
+									>{formatValue(getField(displayRecord, 'md_total_paras'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -932,7 +940,7 @@
 									>Body Paragraphs <span class="text-xs text-gray-400">(md_body_paras)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'md_body_paras'))}</span
+									>{formatValue(getField(displayRecord, 'md_body_paras'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -941,7 +949,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'md_schedule_paras'))}</span
+									>{formatValue(getField(displayRecord, 'md_schedule_paras'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -951,7 +959,7 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'md_attachment_paras'))}</span
+									>{formatValue(getField(displayRecord, 'md_attachment_paras'))}</span
 								>
 							</div>
 						</div>
@@ -978,31 +986,31 @@
 						</div>
 						<div class="divide-y divide-gray-100">
 							<!-- Function -->
-							{#if hasData(getField(parseResult.record, 'function'))}
+							{#if hasData(getField(displayRecord, 'function'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Function <span class="text-xs text-gray-400">(function)</span></span
 									>
 									<span class="col-span-2 text-sm text-gray-900"
-										>{formatValue(getField(parseResult.record, 'function'))}</span
+										>{formatValue(getField(displayRecord, 'function'))}</span
 									>
 								</div>
 							{/if}
 
 							<!-- Enacting -->
-							{#if hasData(getField(parseResult.record, 'enacting'))}
+							{#if hasData(getField(displayRecord, 'enacting'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Enacts <span class="text-xs text-gray-400">(enacting)</span></span
 									>
 									<span class="col-span-2 text-sm text-gray-900"
-										>{formatValue(getField(parseResult.record, 'enacting'))}</span
+										>{formatValue(getField(displayRecord, 'enacting'))}</span
 									>
 								</div>
 							{/if}
 
 							<!-- Enacted By -->
-							{#if hasData(getField(parseResult.record, 'enacted_by')) || parseResult.record?.is_act}
+							{#if hasData(getField(displayRecord, 'enacted_by')) || parseResult.record?.is_act}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Enacted By <span class="text-xs text-gray-400">(enacted_by)</span></span
@@ -1032,7 +1040,7 @@
 							{/if}
 
 							<!-- Amending section -->
-							{#if hasData(getField(parseResult.record, 'amending')) || Number(parseResult.record?.amending_count) > 0}
+							{#if hasData(getField(displayRecord, 'amending')) || Number(parseResult.record?.amending_count) > 0}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Amends <span class="text-xs text-gray-400">(amending)</span></span
@@ -1049,7 +1057,7 @@
 							{/if}
 
 							<!-- Amending Stats -->
-							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count'))}
+							{#if hasData(getField(displayRecord, 'amending_stats_affects_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Affects Count <span class="text-xs text-gray-400"
@@ -1058,12 +1066,12 @@
 									>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
-											getField(parseResult.record, 'amending_stats_affects_count')
+											getField(displayRecord, 'amending_stats_affects_count')
 										)}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'amending_stats_affected_laws_count'))}
+							{#if hasData(getField(displayRecord, 'amending_stats_affected_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Affected Laws Count <span class="text-xs text-gray-400"
@@ -1072,12 +1080,12 @@
 									>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
-											getField(parseResult.record, 'amending_stats_affected_laws_count')
+											getField(displayRecord, 'amending_stats_affected_laws_count')
 										)}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'amending_stats_affects_count_per_law_detailed'))}
+							{#if hasData(getField(displayRecord, 'amending_stats_affects_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Affects Per Law (Detail) <span class="text-xs text-gray-400"
@@ -1102,7 +1110,7 @@
 							{/if}
 
 							<!-- Amended By section -->
-							{#if hasData(getField(parseResult.record, 'amended_by')) || Number(parseResult.record?.amended_by_count) > 0}
+							{#if hasData(getField(displayRecord, 'amended_by')) || Number(parseResult.record?.amended_by_count) > 0}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Amended By <span class="text-xs text-gray-400">(amended_by)</span></span
@@ -1119,7 +1127,7 @@
 							{/if}
 
 							<!-- Amended By Stats -->
-							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count'))}
+							{#if hasData(getField(displayRecord, 'amended_by_stats_affected_by_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Affected By Count <span class="text-xs text-gray-400"
@@ -1128,12 +1136,12 @@
 									>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
-											getField(parseResult.record, 'amended_by_stats_affected_by_count')
+											getField(displayRecord, 'amended_by_stats_affected_by_count')
 										)}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_laws_count'))}
+							{#if hasData(getField(displayRecord, 'amended_by_stats_affected_by_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Amending Laws Count <span class="text-xs text-gray-400"
@@ -1142,12 +1150,12 @@
 									>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
-											getField(parseResult.record, 'amended_by_stats_affected_by_laws_count')
+											getField(displayRecord, 'amended_by_stats_affected_by_laws_count')
 										)}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'amended_by_stats_affected_by_count_per_law_detailed'))}
+							{#if hasData(getField(displayRecord, 'amended_by_stats_affected_by_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Affected By Per Law (Detail) <span class="text-xs text-gray-400"
@@ -1172,7 +1180,7 @@
 							{/if}
 
 							<!-- Rescinding section -->
-							{#if hasData(getField(parseResult.record, 'rescinding')) || Number(parseResult.record?.rescinding_count) > 0}
+							{#if hasData(getField(displayRecord, 'rescinding')) || Number(parseResult.record?.rescinding_count) > 0}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Rescinds <span class="text-xs text-gray-400">(rescinding)</span></span
@@ -1189,7 +1197,7 @@
 							{/if}
 
 							<!-- Rescinding Stats -->
-							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_laws_count'))}
+							{#if hasData(getField(displayRecord, 'rescinding_stats_rescinding_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Rescinded Laws Count <span class="text-xs text-gray-400"
@@ -1198,12 +1206,12 @@
 									>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
-											getField(parseResult.record, 'rescinding_stats_rescinding_laws_count')
+											getField(displayRecord, 'rescinding_stats_rescinding_laws_count')
 										)}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'rescinding_stats_rescinding_count_per_law_detailed'))}
+							{#if hasData(getField(displayRecord, 'rescinding_stats_rescinding_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Rescinding Per Law (Detail) <span class="text-xs text-gray-400"
@@ -1228,7 +1236,7 @@
 							{/if}
 
 							<!-- Rescinded By section -->
-							{#if hasData(getField(parseResult.record, 'rescinded_by')) || Number(parseResult.record?.rescinded_by_count) > 0}
+							{#if hasData(getField(displayRecord, 'rescinded_by')) || Number(parseResult.record?.rescinded_by_count) > 0}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Rescinded By <span class="text-xs text-gray-400">(rescinded_by)</span></span
@@ -1251,7 +1259,7 @@
 							{/if}
 
 							<!-- Rescinded By Stats -->
-							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count'))}
+							{#if hasData(getField(displayRecord, 'rescinded_by_stats_rescinded_by_laws_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Rescinding Laws Count <span class="text-xs text-gray-400"
@@ -1260,12 +1268,12 @@
 									>
 									<span class="col-span-2 text-sm text-gray-900"
 										>{formatValue(
-											getField(parseResult.record, 'rescinded_by_stats_rescinded_by_laws_count')
+											getField(displayRecord, 'rescinded_by_stats_rescinded_by_laws_count')
 										)}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}
+							{#if hasData(getField(displayRecord, 'rescinded_by_stats_rescinded_by_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Rescinded By Per Law (Detail) <span class="text-xs text-gray-400"
@@ -1290,7 +1298,7 @@
 							{/if}
 
 							<!-- Self Amendments (shared stat) -->
-							{#if hasData(getField(parseResult.record, 'stats_self_affects_count'))}
+							{#if hasData(getField(displayRecord, 'stats_self_affects_count'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Self Amendments <span class="text-xs text-gray-400"
@@ -1298,11 +1306,11 @@
 										></span
 									>
 									<span class="col-span-2 text-sm text-gray-900"
-										>{formatValue(getField(parseResult.record, 'stats_self_affects_count'))}</span
+										>{formatValue(getField(displayRecord, 'stats_self_affects_count'))}</span
 									>
 								</div>
 							{/if}
-							{#if hasData(getField(parseResult.record, 'stats_self_affects_count_per_law_detailed'))}
+							{#if hasData(getField(displayRecord, 'stats_self_affects_count_per_law_detailed'))}
 								<div class="grid grid-cols-3 px-4 py-2">
 									<span class="text-sm text-gray-500"
 										>Self Amendments (Detail) <span class="text-xs text-gray-400"
@@ -1316,7 +1324,7 @@
 										<span
 											class="text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto block"
 											>{formatValue(
-												getField(parseResult.record, 'stats_self_affects_count_per_law_detailed')
+												getField(displayRecord, 'stats_self_affects_count_per_law_detailed')
 											)}</span
 										>
 									</div>
@@ -1337,10 +1345,10 @@
 									>Duty Type <span class="text-xs text-gray-400">(duty_type)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'duty_type'))}</span
+									>{formatValue(getField(displayRecord, 'duty_type'))}</span
 								>
 							</div>
-							{#if hasData(getField(parseResult.record, 'duty_type_article'))}
+							{#if hasData(getField(displayRecord, 'duty_type_article'))}
 								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
 									<span class="text-sm text-gray-500 pl-4"
 										>Duty Type Article <span class="text-xs text-gray-400">(duty_type_article)</span
@@ -1348,7 +1356,7 @@
 									>
 									<span
 										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(getField(parseResult.record, 'duty_type_article'))}</span
+										>{formatValue(getField(displayRecord, 'duty_type_article'))}</span
 									>
 								</div>
 							{/if}
@@ -1359,10 +1367,10 @@
 									>Duty Holders <span class="text-xs text-gray-400">(duty_holder)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'duty_holder'))}</span
+									>{formatValue(getField(displayRecord, 'duty_holder'))}</span
 								>
 							</div>
-							{#if hasData(getField(parseResult.record, 'duty_holder_article_clause'))}
+							{#if hasData(getField(displayRecord, 'duty_holder_article_clause'))}
 								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
 									<span class="text-sm text-gray-500 pl-4"
 										>Duty Holder Clauses <span class="text-xs text-gray-400"
@@ -1371,7 +1379,7 @@
 									>
 									<span
 										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(getField(parseResult.record, 'duty_holder_article_clause'))}</span
+										>{formatValue(getField(displayRecord, 'duty_holder_article_clause'))}</span
 									>
 								</div>
 							{/if}
@@ -1382,10 +1390,10 @@
 									>Rights Holders <span class="text-xs text-gray-400">(rights_holder)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'rights_holder'))}</span
+									>{formatValue(getField(displayRecord, 'rights_holder'))}</span
 								>
 							</div>
-							{#if hasData(getField(parseResult.record, 'rights_holder_article_clause'))}
+							{#if hasData(getField(displayRecord, 'rights_holder_article_clause'))}
 								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
 									<span class="text-sm text-gray-500 pl-4"
 										>Rights Holder Clauses <span class="text-xs text-gray-400"
@@ -1395,7 +1403,7 @@
 									<span
 										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
 										>{formatValue(
-											getField(parseResult.record, 'rights_holder_article_clause')
+											getField(displayRecord, 'rights_holder_article_clause')
 										)}</span
 									>
 								</div>
@@ -1409,10 +1417,10 @@
 									></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'responsibility_holder'))}</span
+									>{formatValue(getField(displayRecord, 'responsibility_holder'))}</span
 								>
 							</div>
-							{#if hasData(getField(parseResult.record, 'responsibility_holder_article_clause'))}
+							{#if hasData(getField(displayRecord, 'responsibility_holder_article_clause'))}
 								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
 									<span class="text-sm text-gray-500 pl-4"
 										>Responsibility Holder Clauses <span class="text-xs text-gray-400"
@@ -1422,7 +1430,7 @@
 									<span
 										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
 										>{formatValue(
-											getField(parseResult.record, 'responsibility_holder_article_clause')
+											getField(displayRecord, 'responsibility_holder_article_clause')
 										)}</span
 									>
 								</div>
@@ -1434,10 +1442,10 @@
 									>Power Holders <span class="text-xs text-gray-400">(power_holder)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'power_holder'))}</span
+									>{formatValue(getField(displayRecord, 'power_holder'))}</span
 								>
 							</div>
-							{#if hasData(getField(parseResult.record, 'power_holder_article_clause'))}
+							{#if hasData(getField(displayRecord, 'power_holder_article_clause'))}
 								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
 									<span class="text-sm text-gray-500 pl-4"
 										>Power Holder Clauses <span class="text-xs text-gray-400"
@@ -1447,7 +1455,7 @@
 									<span
 										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
 										>{formatValue(
-											getField(parseResult.record, 'power_holder_article_clause')
+											getField(displayRecord, 'power_holder_article_clause')
 										)}</span
 									>
 								</div>
@@ -1459,7 +1467,7 @@
 									>Roles <span class="text-xs text-gray-400">(role)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'role'))}</span
+									>{formatValue(getField(displayRecord, 'role'))}</span
 								>
 							</div>
 							<div class="grid grid-cols-3 px-4 py-2">
@@ -1467,7 +1475,7 @@
 									>Government Roles <span class="text-xs text-gray-400">(role_gvt)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'role_gvt'))}</span
+									>{formatValue(getField(displayRecord, 'role_gvt'))}</span
 								>
 							</div>
 
@@ -1477,10 +1485,10 @@
 									>POPIMAR <span class="text-xs text-gray-400">(popimar)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'popimar'))}</span
+									>{formatValue(getField(displayRecord, 'popimar'))}</span
 								>
 							</div>
-							{#if hasData(getField(parseResult.record, 'popimar_article_clause'))}
+							{#if hasData(getField(displayRecord, 'popimar_article_clause'))}
 								<div class="grid grid-cols-3 px-4 py-2 bg-gray-50">
 									<span class="text-sm text-gray-500 pl-4"
 										>POPIMAR Clauses <span class="text-xs text-gray-400"
@@ -1489,7 +1497,7 @@
 									>
 									<span
 										class="col-span-2 text-sm text-gray-900 whitespace-pre-line max-h-32 overflow-y-auto"
-										>{formatValue(getField(parseResult.record, 'popimar_article_clause'))}</span
+										>{formatValue(getField(displayRecord, 'popimar_article_clause'))}</span
 									>
 								</div>
 							{/if}
@@ -1500,7 +1508,7 @@
 									>Purpose <span class="text-xs text-gray-400">(purpose)</span></span
 								>
 								<span class="col-span-2 text-sm text-gray-900"
-									>{formatValue(getField(parseResult.record, 'purpose'))}</span
+									>{formatValue(getField(displayRecord, 'purpose'))}</span
 								>
 							</div>
 						</div>
@@ -1541,9 +1549,9 @@
 						</div>
 
 						<!-- Record Diff Viewer -->
-						{#if parseResult.duplicate.record && parseResult.record}
+						{#if parseResult.duplicate.record && displayRecord}
 							<div class="mb-6">
-								<RecordDiff existing={parseResult.duplicate.record} incoming={parseResult.record} />
+								<RecordDiff existing={parseResult.duplicate.record} incoming={displayRecord} />
 							</div>
 						{/if}
 					{/if}
