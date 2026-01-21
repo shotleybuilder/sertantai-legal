@@ -13,6 +13,8 @@
 	export let records: ScrapeRecord[] = [];
 	export let initialIndex: number = 0;
 	export let open: boolean = false;
+	// Optional: limit which stages to run (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
+	export let stages: ParseStage[] | undefined = undefined;
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -105,13 +107,15 @@
 	});
 
 	function initStageProgress() {
+		// If stages prop is set, mark non-selected stages as 'skipped' from the start
+		const activeStages = stages || ALL_STAGES;
 		stageProgress = {
-			metadata: { status: 'pending', summary: null },
-			extent: { status: 'pending', summary: null },
-			enacted_by: { status: 'pending', summary: null },
-			amendments: { status: 'pending', summary: null },
-			repeal_revoke: { status: 'pending', summary: null },
-			taxa: { status: 'pending', summary: null }
+			metadata: { status: activeStages.includes('metadata') ? 'pending' : 'skipped', summary: null },
+			extent: { status: activeStages.includes('extent') ? 'pending' : 'skipped', summary: null },
+			enacted_by: { status: activeStages.includes('enacted_by') ? 'pending' : 'skipped', summary: null },
+			amendments: { status: activeStages.includes('amendments') ? 'pending' : 'skipped', summary: null },
+			repeal_revoke: { status: activeStages.includes('repeal_revoke') ? 'pending' : 'skipped', summary: null },
+			taxa: { status: activeStages.includes('taxa') ? 'pending' : 'skipped', summary: null }
 		};
 	}
 
@@ -134,47 +138,52 @@
 		initStageProgress();
 
 		// Try streaming first, fall back to non-streaming on error
-		cleanupStream = parseOneStream(sessionId, currentRecord.name, {
-			onStageStart: (stage, _stageNum, _total) => {
-				currentStage = stage;
-				// Use object spread to trigger Svelte reactivity
-				stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
-			},
-			onStageComplete: (stage, status, summary) => {
-				// Use object spread to trigger Svelte reactivity
-				stageProgress = { ...stageProgress, [stage]: { status, summary } };
-			},
-			onComplete: (result) => {
-				parseResult = result;
-				isParsing = false;
-				currentStage = null;
-				cleanupStream = null;
-				// API normalizes Family to lowercase family
-				selectedFamily = (result.record?.family as string) || '';
-				selectedSubFamily = (result.record?.family_ii as string) || '';
-			},
-			onError: async (error) => {
-				console.warn('SSE stream failed, falling back to non-streaming:', error);
-				cleanupStream = null;
-				// Fallback to non-streaming mutation
-				try {
-					const result = await $parseMutation.mutateAsync({
-						sessionId,
-						name: currentRecord.name
-					});
+		cleanupStream = parseOneStream(
+			sessionId,
+			currentRecord.name,
+			{
+				onStageStart: (stage, _stageNum, _total) => {
+					currentStage = stage;
+					// Use object spread to trigger Svelte reactivity
+					stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
+				},
+				onStageComplete: (stage, status, summary) => {
+					// Use object spread to trigger Svelte reactivity
+					stageProgress = { ...stageProgress, [stage]: { status, summary } };
+				},
+				onComplete: (result) => {
 					parseResult = result;
-					selectedFamily = (result.record?.family as string) || '';
-					selectedSubFamily = (result.record?.family_ii as string) || '';
-				} catch (fallbackError) {
-					console.error('Parse error:', fallbackError);
-					parseError = fallbackError instanceof Error ? fallbackError.message : 'Parse failed';
-					failedNames.add(currentRecord.name);
-				} finally {
 					isParsing = false;
 					currentStage = null;
+					cleanupStream = null;
+					// API normalizes Family to lowercase family
+					selectedFamily = (result.record?.family as string) || '';
+					selectedSubFamily = (result.record?.family_ii as string) || '';
+				},
+				onError: async (error) => {
+					console.warn('SSE stream failed, falling back to non-streaming:', error);
+					cleanupStream = null;
+					// Fallback to non-streaming mutation
+					try {
+						const result = await $parseMutation.mutateAsync({
+							sessionId,
+							name: currentRecord.name
+						});
+						parseResult = result;
+						selectedFamily = (result.record?.family as string) || '';
+						selectedSubFamily = (result.record?.family_ii as string) || '';
+					} catch (fallbackError) {
+						console.error('Parse error:', fallbackError);
+						parseError = fallbackError instanceof Error ? fallbackError.message : 'Parse failed';
+						failedNames.add(currentRecord.name);
+					} finally {
+						isParsing = false;
+						currentStage = null;
+					}
 				}
-			}
-		});
+			},
+			stages // Pass optional stages filter (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
+		);
 	}
 
 	async function handleConfirm() {
