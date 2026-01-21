@@ -2,15 +2,15 @@
 	import {
 		useCascadeIndexQuery,
 		useCascadeSessionsQuery,
-		useCascadeReparseMutation,
 		useCascadeUpdateEnactingMutation,
 		useCascadeAddLawsMutation,
 		useDeleteCascadeEntryMutation,
 		useClearProcessedCascadeMutation,
 		useConfirmRecordMutation
 	} from '$lib/query/scraper';
-	import type { CascadeEntry, CascadeOperationResultItem, ParseMetadataResult } from '$lib/api/scraper';
+	import type { CascadeEntry, CascadeOperationResultItem, ParseMetadataResult, ScrapeRecord } from '$lib/api/scraper';
 	import { parseMetadata, parseOne } from '$lib/api/scraper';
+	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 
 	// Session filter state - defaults to 'all' to show all sessions
 	let selectedSessionId: string | undefined = undefined;
@@ -20,7 +20,6 @@
 	const sessionsQuery = useCascadeSessionsQuery();
 
 	// Mutations
-	const reparseMutation = useCascadeReparseMutation();
 	const updateEnactingMutation = useCascadeUpdateEnactingMutation();
 	const addLawsMutation = useCascadeAddLawsMutation();
 	const deleteEntryMutation = useDeleteCascadeEntryMutation();
@@ -50,6 +49,12 @@
 	let parsedMetadata: Map<string, ParsedMetadata> = new Map();
 	let parsingIds: Set<string> = new Set(); // Currently fetching metadata
 	let parseErrors: Map<string, string> = new Map(); // Errors during parse
+
+	// Parse Review Modal state (reused from session workflow)
+	let showParseModal = false;
+	let parseModalRecords: ScrapeRecord[] = [];
+	let parseModalSessionId = '';
+	let parseCompleteMessage = '';
 
 	// Helper to format source laws with titles for hover tooltip
 	function formatSourceLawsTooltip(entry: CascadeEntry): string {
@@ -108,15 +113,52 @@
 	}
 
 	// Action handlers
-	async function handleReparseInDb() {
-		if (selectedReparseInDb.size === 0) return;
-		operationResults = null;
-		operationMessage = null;
 
-		const result = await $reparseMutation.mutateAsync(Array.from(selectedReparseInDb));
-		operationResults = result.results;
-		operationMessage = `Re-parsed ${result.success} of ${result.total} laws`;
+	// Open ParseReviewModal for selected laws to re-parse
+	function handleReparseInDb() {
+		if (selectedReparseInDb.size === 0) return;
+
+		const data = $cascadeQuery.data;
+		if (!data) return;
+
+		// Get selected entries
+		const selectedEntries = data.reparse_in_db.filter((e) => selectedReparseInDb.has(e.id));
+		if (selectedEntries.length === 0) return;
+
+		// Use the session_id from the first entry (or fall back to filter)
+		// All entries in the selection should belong to the same session when filtered
+		parseModalSessionId = selectedEntries[0].session_id;
+
+		// Convert CascadeEntry to ScrapeRecord format for ParseReviewModal
+		parseModalRecords = selectedEntries.map((entry) => ({
+			name: lawNameToParseFormat(entry.affected_law),
+			Title_EN: entry.title_en || entry.affected_law,
+			type_code: entry.type_code || '',
+			Year: entry.year || 0,
+			Number: ''
+		}));
+
+		// Clear selection and open modal
 		selectedReparseInDb = new Set();
+		showParseModal = true;
+	}
+
+	function handleParseModalClose() {
+		showParseModal = false;
+		parseModalRecords = [];
+	}
+
+	async function handleParseComplete(
+		event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
+	) {
+		showParseModal = false;
+		parseModalRecords = [];
+
+		const { confirmed, skipped, errors } = event.detail;
+		operationMessage = `Re-parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
+
+		// Refresh cascade data
+		$cascadeQuery.refetch();
 	}
 
 	// Convert law name like "UK_uksi_2025_622" to format needed for parseOne
@@ -479,13 +521,10 @@
 							</button>
 							<button
 								on:click={handleReparseInDb}
-								disabled={selectedReparseInDb.size === 0 || $reparseMutation.isPending}
+								disabled={selectedReparseInDb.size === 0}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
-								{#if $reparseMutation.isPending}
-									<span class="animate-spin mr-1">...</span>
-								{/if}
-								Re-parse Selected ({selectedReparseInDb.size})
+								Review & Re-parse ({selectedReparseInDb.size})
 							</button>
 						</div>
 					</div>
@@ -996,3 +1035,13 @@
 		{/if}
 	{/if}
 </div>
+
+<!-- Parse Review Modal (reused from session workflow) -->
+<ParseReviewModal
+	sessionId={parseModalSessionId}
+	records={parseModalRecords}
+	initialIndex={0}
+	open={showParseModal}
+	on:close={handleParseModalClose}
+	on:complete={handleParseComplete}
+/>
