@@ -689,6 +689,9 @@
 												class="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
 											/>
 										</td>
+										<td class="px-2 py-2 font-mono text-xs text-gray-700">
+											{entry.affected_law}
+										</td>
 										<td class="px-2 py-2">
 											{#if isAdding}
 												<span
@@ -760,9 +763,6 @@
 													Pending
 												</span>
 											{/if}
-										</td>
-										<td class="px-2 py-2 font-mono text-xs text-gray-700">
-											{entry.affected_law}
 										</td>
 										<td
 											class="px-2 py-2 text-sm text-gray-900 max-w-xs truncate"
