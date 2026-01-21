@@ -37,9 +37,19 @@
 	// Streaming progress state
 	let isParsing = false;
 	let parseError: string | null = null;
-	let stageProgress: Map<ParseStage, { status: 'pending' | 'running' | 'ok' | 'error' | 'skipped'; summary: string | null }> = new Map();
 	let currentStage: ParseStage | null = null;
 	let cleanupStream: (() => void) | null = null;
+
+	// Use plain object for better Svelte reactivity (Maps don't trigger updates reliably)
+	type StageStatus = { status: 'pending' | 'running' | 'ok' | 'error' | 'skipped'; summary: string | null };
+	let stageProgress: Record<ParseStage, StageStatus> = {
+		metadata: { status: 'pending', summary: null },
+		extent: { status: 'pending', summary: null },
+		enacted_by: { status: 'pending', summary: null },
+		amendments: { status: 'pending', summary: null },
+		repeal_revoke: { status: 'pending', summary: null },
+		taxa: { status: 'pending', summary: null }
+	};
 
 	// All stages in order
 	const ALL_STAGES: ParseStage[] = ['metadata', 'extent', 'enacted_by', 'amendments', 'repeal_revoke', 'taxa'];
@@ -85,11 +95,14 @@
 	});
 
 	function initStageProgress() {
-		stageProgress = new Map();
-		for (const stage of ALL_STAGES) {
-			stageProgress.set(stage, { status: 'pending', summary: null });
-		}
-		stageProgress = stageProgress; // Trigger reactivity
+		stageProgress = {
+			metadata: { status: 'pending', summary: null },
+			extent: { status: 'pending', summary: null },
+			enacted_by: { status: 'pending', summary: null },
+			amendments: { status: 'pending', summary: null },
+			repeal_revoke: { status: 'pending', summary: null },
+			taxa: { status: 'pending', summary: null }
+		};
 	}
 
 	async function parseCurrentRecord() {
@@ -114,13 +127,12 @@
 		cleanupStream = parseOneStream(sessionId, currentRecord.name, {
 			onStageStart: (stage, _stageNum, _total) => {
 				currentStage = stage;
-				const existing = stageProgress.get(stage);
-				stageProgress.set(stage, { ...existing, status: 'running', summary: null });
-				stageProgress = stageProgress; // Trigger reactivity
+				// Use object spread to trigger Svelte reactivity
+				stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
 			},
 			onStageComplete: (stage, status, summary) => {
-				stageProgress.set(stage, { status, summary });
-				stageProgress = stageProgress; // Trigger reactivity
+				// Use object spread to trigger Svelte reactivity
+				stageProgress = { ...stageProgress, [stage]: { status, summary } };
 			},
 			onComplete: (result) => {
 				parseResult = result;
@@ -353,7 +365,7 @@
 						<!-- Stage Progress -->
 						<div class="w-full max-w-md space-y-2">
 							{#each ALL_STAGES as stage}
-								{@const progress = stageProgress.get(stage)}
+								{@const progress = stageProgress[stage]}
 								<div class="flex items-center space-x-3 py-1">
 									<!-- Status Icon -->
 									<div class="w-5 h-5 flex items-center justify-center">
