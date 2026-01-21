@@ -26,6 +26,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActorTest do
       The employer shall notify the local authority of any dangerous occurrence.
       The authority must investigate within 7 days.
       """
+
       result = DutyActor.get_actors_in_text(text)
 
       assert "Org: Employer" in result.actors

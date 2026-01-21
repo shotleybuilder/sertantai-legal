@@ -40,6 +40,7 @@ defmodule SertantaiLegalWeb.Router do
     post("/sessions/:id/persist/:group", ScrapeController, :persist)
     post("/sessions/:id/parse/:group", ScrapeController, :parse)
     post("/sessions/:id/parse-one", ScrapeController, :parse_one)
+    post("/sessions/:id/parse-metadata", ScrapeController, :parse_metadata)
     post("/sessions/:id/confirm", ScrapeController, :confirm)
     delete("/sessions/:id", ScrapeController, :delete)
 

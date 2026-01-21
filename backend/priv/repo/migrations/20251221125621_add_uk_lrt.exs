@@ -97,13 +97,18 @@ defmodule SertantaiLegal.Repo.Migrations.AddUkLrt do
     execute "CREATE INDEX idx_uk_lrt_role_gin ON uk_lrt USING gin (role)"
     execute "CREATE INDEX idx_uk_lrt_tags_gin ON uk_lrt USING gin (tags)"
     execute "CREATE INDEX idx_uk_lrt_linked_amending_gin ON uk_lrt USING gin (linked_amending)"
+
     execute "CREATE INDEX idx_uk_lrt_linked_amended_by_gin ON uk_lrt USING gin (linked_amended_by)"
+
     execute "CREATE INDEX idx_uk_lrt_linked_rescinding_gin ON uk_lrt USING gin (linked_rescinding)"
+
     execute "CREATE INDEX idx_uk_lrt_linked_rescinded_by_gin ON uk_lrt USING gin (linked_rescinded_by)"
+
     execute "CREATE INDEX idx_uk_lrt_linked_enacted_by_gin ON uk_lrt USING gin (linked_enacted_by)"
 
     # Partial index for Making function (applicability screening optimization)
     execute "CREATE INDEX idx_uk_lrt_function_making ON uk_lrt USING gin (function) WHERE (function ? 'Making')"
+
     execute "CREATE INDEX idx_uk_lrt_function_composite ON uk_lrt USING btree (family, geo_extent, live) WHERE (function ? 'Making')"
 
     # Index for is_making screening queries

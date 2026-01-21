@@ -189,9 +189,7 @@ describe('RecordDiff diff logic', () => {
 			};
 
 			const delta = jsondiffpatch.diff(existing, incoming);
-			const changedFields = delta
-				? Object.keys(delta).filter((k) => !k.startsWith('_'))
-				: [];
+			const changedFields = delta ? Object.keys(delta).filter((k) => !k.startsWith('_')) : [];
 
 			expect(changedFields).toContain('title');
 			expect(changedFields).toContain('year');
@@ -204,9 +202,7 @@ describe('RecordDiff diff logic', () => {
 			const incoming = { name: 'test', title: 'Title' };
 
 			const delta = jsondiffpatch.diff(existing, incoming);
-			const changedFields = delta
-				? Object.keys(delta).filter((k) => !k.startsWith('_'))
-				: [];
+			const changedFields = delta ? Object.keys(delta).filter((k) => !k.startsWith('_')) : [];
 
 			expect(changedFields).toEqual([]);
 		});
@@ -253,15 +249,10 @@ describe('RecordDiff diff logic', () => {
 			};
 
 			const delta = jsondiffpatch.diff(existing, incoming);
-			const changedFields = delta
-				? Object.keys(delta).filter((k) => !k.startsWith('_'))
-				: [];
+			const changedFields = delta ? Object.keys(delta).filter((k) => !k.startsWith('_')) : [];
 
 			expect(changedFields).toEqual(['family']);
-			expect(delta!.family).toEqual([
-				'Environmental Protection',
-				'OH&S: Occupational Safety'
-			]);
+			expect(delta!.family).toEqual(['Environmental Protection', 'OH&S: Occupational Safety']);
 		});
 
 		it('detects multiple field changes during re-parse', () => {
@@ -281,9 +272,7 @@ describe('RecordDiff diff logic', () => {
 			};
 
 			const delta = jsondiffpatch.diff(existing, incoming);
-			const changedFields = delta
-				? Object.keys(delta).filter((k) => !k.startsWith('_'))
-				: [];
+			const changedFields = delta ? Object.keys(delta).filter((k) => !k.startsWith('_')) : [];
 
 			expect(changedFields).toContain('live');
 			expect(changedFields).toContain('geo_extent');

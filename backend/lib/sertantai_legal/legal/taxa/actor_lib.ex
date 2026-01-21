@@ -95,7 +95,10 @@ defmodule SertantaiLegal.Legal.Taxa.ActorLib do
             _multiple_matches ->
               # Multiple matches - take first occurrence
               actor_str = to_string(actor)
-              new_text = if rm?, do: Regex.replace(regex_compiled, text, "", global: false), else: text
+
+              new_text =
+                if rm?, do: Regex.replace(regex_compiled, text, "", global: false), else: text
+
               {new_text, [actor_str | actors]}
           end
 

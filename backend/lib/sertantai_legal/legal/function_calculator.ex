@@ -372,7 +372,10 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
 
           new_function =
             current_function
-            |> maybe_put("Enacting", has_non_maker or Map.get(current_function, "Enacting", false))
+            |> maybe_put(
+              "Enacting",
+              has_non_maker or Map.get(current_function, "Enacting", false)
+            )
             |> maybe_put(
               "Enacting Maker",
               has_maker or Map.get(current_function, "Enacting Maker", false)

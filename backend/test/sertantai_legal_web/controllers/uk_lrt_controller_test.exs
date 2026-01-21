@@ -53,6 +53,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
       conn = get(conn, "/api/uk-lrt", %{year: "2024"})
 
       response = json_response(conn, 200)
+
       Enum.each(response["records"], fn r ->
         assert r["year"] == 2024 or response["count"] == 0
       end)
@@ -62,6 +63,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
       conn = get(conn, "/api/uk-lrt", %{type_code: "uksi"})
 
       response = json_response(conn, 200)
+
       Enum.each(response["records"], fn r ->
         assert r["type_code"] == "uksi" or response["count"] == 0
       end)

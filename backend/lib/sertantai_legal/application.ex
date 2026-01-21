@@ -10,8 +10,7 @@ defmodule SertantaiLegal.Application do
     children = [
       SertantaiLegalWeb.Telemetry,
       SertantaiLegal.Repo,
-      {DNSCluster,
-       query: Application.get_env(:sertantai_legal, :dns_cluster_query) || :ignore},
+      {DNSCluster, query: Application.get_env(:sertantai_legal, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: SertantaiLegal.PubSub},
       # Start a worker by calling: SertantaiLegal.Worker.start_link(arg)
       # {SertantaiLegal.Worker, arg},

@@ -138,28 +138,23 @@ defmodule SertantaiLegal.Scraper.TypeClass do
       "ukla" -> "UK Local Act"
       "ukmo" -> "UK Ministerial Order"
       "ukci" -> "Church Instrument"
-
       # Scotland
       "asp" -> "Act of the Scottish Parliament"
       "ssi" -> "Scottish Statutory Instrument"
-
       # Northern Ireland
       "nisr" -> "Northern Ireland Statutory Rule"
       "nisi" -> "Northern Ireland Order in Council 1972-date"
       "nia" -> "Act of the Northern Ireland Assembly"
-
       # Wales
       "wca" -> "Act of the National Assembly for Wales"
       "asc" -> "Act of the Senedd Cymru 2020-date"
       "anaw" -> "Act of the National Assembly for Wales 2012-2020"
       "wsi" -> "Wales Statutory Instrument 2018-date"
       "mwa" -> "Measure of the National Assembly for Wales 2008-2011"
-
       # EU retained
       "eur" -> "EU Retained Legislation"
       "eudr" -> "EU Directive"
       "eudn" -> "EU Decision"
-
       _ -> nil
     end
   end

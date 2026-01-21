@@ -86,7 +86,9 @@ defmodule SertantaiLegal.Scraper.TagsTest do
     end
 
     test "handles complex title with parentheses and hyphens" do
-      tags = Tags.extract_tags("The Environmental Permitting (England and Wales) Regulations 2016")
+      tags =
+        Tags.extract_tags("The Environmental Permitting (England and Wales) Regulations 2016")
+
       assert "Environmental" in tags
       assert "Permitting" in tags
       assert "England" in tags

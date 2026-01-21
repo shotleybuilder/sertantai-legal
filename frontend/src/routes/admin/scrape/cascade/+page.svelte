@@ -9,8 +9,8 @@
 		useClearProcessedCascadeMutation,
 		useConfirmRecordMutation
 	} from '$lib/query/scraper';
-	import type { CascadeEntry, CascadeOperationResultItem, ParseOneResult } from '$lib/api/scraper';
-	import { parseOne } from '$lib/api/scraper';
+	import type { CascadeEntry, CascadeOperationResultItem, ParseMetadataResult } from '$lib/api/scraper';
+	import { parseMetadata, parseOne } from '$lib/api/scraper';
 
 	// Session filter state - defaults to 'all' to show all sessions
 	let selectedSessionId: string | undefined = undefined;
@@ -40,13 +40,12 @@
 	// Metadata state for new laws (two-step workflow)
 	// Maps cascade entry ID -> parsed metadata
 	type ParsedMetadata = {
-		title_en: string;
+		title_en: string | null;
 		type_code: string;
 		year: number;
 		number: string;
 		si_code: string[];
-		record: Record<string, unknown>;
-		parseResult: ParseOneResult;
+		metadataResult: ParseMetadataResult;
 	};
 	let parsedMetadata: Map<string, ParsedMetadata> = new Map();
 	let parsingIds: Set<string> = new Set(); // Currently fetching metadata
@@ -130,7 +129,7 @@
 		return name;
 	}
 
-	// Step 1: Get metadata for selected new laws
+	// Step 1: Get metadata for selected new laws (fast, metadata-only)
 	async function handleGetMetadata() {
 		if (selectedReparseMissing.size === 0) return;
 		operationResults = null;
@@ -143,24 +142,22 @@
 		// Get entries for selected IDs
 		const entriesToParse = data.reparse_missing.filter((e) => selectedReparseMissing.has(e.id));
 
-		// Parse each one
+		// Fetch metadata for each one (fast - no enrichment)
 		for (const entry of entriesToParse) {
 			parsingIds = new Set([...parsingIds, entry.id]);
 
 			try {
 				const parseName = lawNameToParseFormat(entry.affected_law);
-				const result = await parseOne(entry.session_id, parseName);
+				const result = await parseMetadata(entry.session_id, parseName);
 
 				// Extract metadata from result
-				const record = result.record as Record<string, unknown>;
 				const metadata: ParsedMetadata = {
-					title_en: (record.title_en as string) || (record.Title_EN as string) || '',
-					type_code: (record.type_code as string) || '',
-					year: (record.year as number) || (record.Year as number) || 0,
-					number: (record.number as string) || (record.Number as string) || '',
-					si_code: (record.si_code as string[]) || (record.SICode as string[]) || [],
-					record: record,
-					parseResult: result
+					title_en: result.record.title_en,
+					type_code: result.record.type_code,
+					year: result.record.year,
+					number: result.record.number,
+					si_code: result.record.si_code || [],
+					metadataResult: result
 				};
 
 				parsedMetadata = new Map(parsedMetadata).set(entry.id, metadata);
@@ -185,6 +182,9 @@
 	}
 
 	// Step 2: Add laws with metadata to database
+	// This runs the FULL enrichment parse before persisting
+	let addingIds: Set<string> = new Set(); // Track which entries are being added
+
 	async function handleAddWithMetadata() {
 		// Get entries that have metadata fetched
 		const data = $cascadeQuery.data;
@@ -202,14 +202,18 @@
 		const results: CascadeOperationResultItem[] = [];
 
 		for (const entry of entriesToAdd) {
-			const metadata = parsedMetadata.get(entry.id)!;
+			addingIds = new Set([...addingIds, entry.id]);
 
 			try {
-				// Use confirmRecord to persist
+				// Step 2a: Run FULL enrichment parse to get complete record
+				const parseName = lawNameToParseFormat(entry.affected_law);
+				const parseResult = await parseOne(entry.session_id, parseName);
+
+				// Step 2b: Use confirmRecord to persist
 				await $confirmMutation.mutateAsync({
 					sessionId: entry.session_id,
-					name: lawNameToParseFormat(entry.affected_law),
-					record: metadata.record
+					name: parseName,
+					record: parseResult.record
 				});
 
 				// Mark cascade entry as processed by deleting it
@@ -232,6 +236,8 @@
 					status: 'error',
 					message: errorMsg
 				});
+			} finally {
+				addingIds = new Set([...addingIds].filter((id) => id !== entry.id));
 			}
 		}
 
@@ -599,10 +605,10 @@
 							<!-- Step 2: Add to Database (only for entries with metadata) -->
 							<button
 								on:click={handleAddWithMetadata}
-								disabled={selectedWithMetadata.length === 0 || $confirmMutation.isPending}
+								disabled={selectedWithMetadata.length === 0 || addingIds.size > 0}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
-								{#if $confirmMutation.isPending}
+								{#if addingIds.size > 0}
 									<svg class="animate-spin -ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24">
 										<circle
 											class="opacity-25"
@@ -664,6 +670,7 @@
 								{#each data.reparse_missing as entry}
 									{@const metadata = parsedMetadata.get(entry.id)}
 									{@const isParsing = parsingIds.has(entry.id)}
+									{@const isAdding = addingIds.has(entry.id)}
 									{@const hasError = parseErrors.has(entry.id)}
 									<tr
 										class="hover:bg-gray-50 {metadata ? 'bg-green-50/50' : ''} {hasError
@@ -683,7 +690,32 @@
 											/>
 										</td>
 										<td class="px-2 py-2">
-											{#if isParsing}
+											{#if isAdding}
+												<span
+													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800"
+												>
+													<svg
+														class="animate-spin -ml-0.5 mr-1 h-3 w-3"
+														fill="none"
+														viewBox="0 0 24 24"
+													>
+														<circle
+															class="opacity-25"
+															cx="12"
+															cy="12"
+															r="10"
+															stroke="currentColor"
+															stroke-width="4"
+														></circle>
+														<path
+															class="opacity-75"
+															fill="currentColor"
+															d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+														></path>
+													</svg>
+													Adding
+												</span>
+											{:else if isParsing}
 												<span
 													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
 												>
@@ -706,7 +738,7 @@
 															d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
 														></path>
 													</svg>
-													Parsing
+													Fetching
 												</span>
 											{:else if metadata}
 												<span

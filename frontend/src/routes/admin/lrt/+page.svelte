@@ -14,9 +14,20 @@
 	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
 
 	// ElectricSQL sync
-	import { syncUkLrt, stopUkLrtSync, syncStatus, updateUkLrtWhere, buildWhereFromFilters, retryUkLrtSync } from '$lib/electric/sync-uk-lrt';
+	import {
+		syncUkLrt,
+		stopUkLrtSync,
+		syncStatus,
+		updateUkLrtWhere,
+		buildWhereFromFilters,
+		retryUkLrtSync
+	} from '$lib/electric/sync-uk-lrt';
 	import { getUkLrtCollection } from '$lib/db/index.client';
-	import type { TableState, FilterCondition, TableConfig as TableKitConfig } from '@shotleybuilder/svelte-table-kit';
+	import type {
+		TableState,
+		FilterCondition,
+		TableConfig as TableKitConfig
+	} from '@shotleybuilder/svelte-table-kit';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
@@ -216,7 +227,8 @@
 	}> = [
 		{
 			name: 'Credentials',
-			description: 'Core identification fields: Title, Year, Number, Type. Last 3 years, sorted by date.',
+			description:
+				'Core identification fields: Title, Year, Number, Type. Last 3 years, sorted by date.',
 			columns: ['actions', 'name', 'title_en', 'year', 'number', 'type_code', 'type_class'],
 			filters: [{ columnId: 'year', operator: 'greater_or_equal', value: String(currentYear - 2) }],
 			sort: { columnId: 'md_date', direction: 'desc' },
@@ -226,14 +238,27 @@
 			name: 'Recently Amended',
 			description: 'Laws amended in the last 3 years, sorted by most recent amendment date.',
 			columns: ['actions', 'name', 'title_en', 'latest_amend_date', 'year', 'type_code', 'live'],
-			filters: [{ columnId: 'latest_amend_date', operator: 'greater_or_equal', value: String(currentYear - 2) + '-01-01' }],
+			filters: [
+				{
+					columnId: 'latest_amend_date',
+					operator: 'greater_or_equal',
+					value: String(currentYear - 2) + '-01-01'
+				}
+			],
 			sort: { columnId: 'latest_amend_date', direction: 'desc' }
 		},
 		{
 			name: 'Recently Rescinded',
-			description: 'Laws rescinded (repealed/revoked) in the last 3 years, sorted by most recent rescind date.',
+			description:
+				'Laws rescinded (repealed/revoked) in the last 3 years, sorted by most recent rescind date.',
 			columns: ['actions', 'name', 'title_en', 'latest_rescind_date', 'year', 'type_code', 'live'],
-			filters: [{ columnId: 'latest_rescind_date', operator: 'greater_or_equal', value: String(currentYear - 2) + '-01-01' }],
+			filters: [
+				{
+					columnId: 'latest_rescind_date',
+					operator: 'greater_or_equal',
+					value: String(currentYear - 2) + '-01-01'
+				}
+			],
 			sort: { columnId: 'latest_rescind_date', direction: 'desc' }
 		},
 		{
@@ -244,17 +269,48 @@
 		{
 			name: 'Status & Dates',
 			description: 'Status and date fields',
-			columns: ['actions', 'name', 'title_en', 'live', 'md_made_date', 'md_coming_into_force_date', 'geo_extent']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'live',
+				'md_made_date',
+				'md_coming_into_force_date',
+				'geo_extent'
+			]
 		},
 		{
 			name: 'Geo. Extent',
 			description: 'Geographic scope fields: Extent, Region, Detail, Restrict Extent',
-			columns: ['actions', 'name', 'title_en', 'geo_extent', 'geo_region', 'geo_detail', 'md_restrict_extent']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'geo_extent',
+				'geo_region',
+				'geo_detail',
+				'md_restrict_extent'
+			]
 		},
 		{
 			name: 'Metadata',
 			description: 'Dates and document stats: Made, Enacted, In Force, Paragraphs, Images',
-			columns: ['actions', 'name', 'title_en', 'md_date', 'md_made_date', 'md_enactment_date', 'md_coming_into_force_date', 'md_dct_valid_date', 'md_restrict_start_date', 'md_total_paras', 'md_body_paras', 'md_schedule_paras', 'md_attachment_paras', 'md_images']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'md_date',
+				'md_made_date',
+				'md_enactment_date',
+				'md_coming_into_force_date',
+				'md_dct_valid_date',
+				'md_restrict_start_date',
+				'md_total_paras',
+				'md_body_paras',
+				'md_schedule_paras',
+				'md_attachment_paras',
+				'md_images'
+			]
 		},
 		{
 			name: 'Role',
@@ -264,32 +320,84 @@
 		{
 			name: 'Duty Type',
 			description: 'Duty type classifications and article mappings',
-			columns: ['actions', 'name', 'title_en', 'duty_type', 'duty_type_article', 'article_duty_type']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'duty_type',
+				'duty_type_article',
+				'article_duty_type'
+			]
 		},
 		{
 			name: 'Duty Holder',
 			description: 'Entities with legal duties and article references',
-			columns: ['actions', 'name', 'title_en', 'duty_holder', 'duty_holder_article', 'duty_holder_article_clause', 'article_duty_holder', 'article_duty_holder_clause']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'duty_holder',
+				'duty_holder_article',
+				'duty_holder_article_clause',
+				'article_duty_holder',
+				'article_duty_holder_clause'
+			]
 		},
 		{
 			name: 'Power Holder',
 			description: 'Entities with legal powers and article references',
-			columns: ['actions', 'name', 'title_en', 'power_holder', 'power_holder_article', 'power_holder_article_clause', 'article_power_holder', 'article_power_holder_clause']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'power_holder',
+				'power_holder_article',
+				'power_holder_article_clause',
+				'article_power_holder',
+				'article_power_holder_clause'
+			]
 		},
 		{
 			name: 'Rights Holder',
 			description: 'Entities with legal rights and article references',
-			columns: ['actions', 'name', 'title_en', 'rights_holder', 'rights_holder_article', 'rights_holder_article_clause', 'article_rights_holder', 'article_rights_holder_clause']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'rights_holder',
+				'rights_holder_article',
+				'rights_holder_article_clause',
+				'article_rights_holder',
+				'article_rights_holder_clause'
+			]
 		},
 		{
 			name: 'Responsibility Holder',
 			description: 'Entities with legal responsibilities and article references',
-			columns: ['actions', 'name', 'title_en', 'responsibility_holder', 'responsibility_holder_article', 'responsibility_holder_article_clause', 'article_responsibility_holder', 'article_responsibility_holder_clause']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'responsibility_holder',
+				'responsibility_holder_article',
+				'responsibility_holder_article_clause',
+				'article_responsibility_holder',
+				'article_responsibility_holder_clause'
+			]
 		},
 		{
 			name: 'POPIMAR',
 			description: 'POPIMAR framework and article references',
-			columns: ['actions', 'name', 'title_en', 'popimar', 'popimar_article', 'popimar_article_clause', 'article_popimar', 'article_popimar_clause']
+			columns: [
+				'actions',
+				'name',
+				'title_en',
+				'popimar',
+				'popimar_article',
+				'popimar_article_clause',
+				'article_popimar',
+				'article_popimar_clause'
+			]
 		},
 		{
 			name: 'Purpose',
@@ -318,9 +426,7 @@
 
 		// Clean up duplicate views (e.g., "Duty Holders" when "Duty Holder" exists)
 		// These are views with names that differ only by pluralization
-		const duplicatesToRemove = [
-			{ keep: 'Duty Holder', remove: 'Duty Holders' }
-		];
+		const duplicatesToRemove = [{ keep: 'Duty Holder', remove: 'Duty Holders' }];
 
 		for (const { keep, remove } of duplicatesToRemove) {
 			if (existingViews.has(keep) && existingViews.has(remove)) {
@@ -338,8 +444,8 @@
 		}
 
 		// Update existing default views if they need new config (e.g., filters/sort added)
-		const credentialsViewDef = defaultViews.find(v => v.name === 'Credentials');
-		const existingCredentials = currentViews.find(v => v.name === 'Credentials');
+		const credentialsViewDef = defaultViews.find((v) => v.name === 'Credentials');
+		const existingCredentials = currentViews.find((v) => v.name === 'Credentials');
 		if (credentialsViewDef && existingCredentials) {
 			// Check if the existing Credentials view is missing filter/sort config
 			if (!existingCredentials.config.filters?.length || !existingCredentials.config.sort) {
@@ -359,17 +465,20 @@
 		}
 
 		// Seed only missing default views
-		const missingViews = defaultViews.filter(v => !existingViews.has(v.name));
+		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
 
 		// Find if default view already exists
-		const defaultViewDef = defaultViews.find(v => v.isDefault);
+		const defaultViewDef = defaultViews.find((v) => v.isDefault);
 		if (defaultViewDef && existingViews.has(defaultViewDef.name)) {
 			defaultViewId = existingViews.get(defaultViewDef.name) || null;
 		}
 
 		if (missingViews.length > 0) {
-			console.log('[LRT Admin] Seeding missing default views:', missingViews.map(v => v.name));
+			console.log(
+				'[LRT Admin] Seeding missing default views:',
+				missingViews.map((v) => v.name)
+			);
 
 			for (const view of missingViews) {
 				const viewInput: SavedViewInput = {
@@ -395,7 +504,7 @@
 						defaultViewId = savedView.id;
 					}
 
-					await new Promise(resolve => setTimeout(resolve, 100));
+					await new Promise((resolve) => setTimeout(resolve, 100));
 				} catch (err) {
 					console.error('[LRT Admin] Failed to seed view:', view.name, err);
 				}
@@ -407,7 +516,12 @@
 		}
 
 		// Auto-select default view if no view is currently active
-		console.log('[LRT Admin] Checking for auto-select: defaultViewId=', defaultViewId, 'activeViewId=', $activeViewId);
+		console.log(
+			'[LRT Admin] Checking for auto-select: defaultViewId=',
+			defaultViewId,
+			'activeViewId=',
+			$activeViewId
+		);
 		if (defaultViewId && !$activeViewId) {
 			console.log('[LRT Admin] Auto-selecting default view:', defaultViewId);
 
@@ -447,11 +561,11 @@
 		console.log('[LRT Admin] Applying view config:', config);
 
 		// Get available column IDs
-		const availableColumnIds = new Set(columns.map(c => String(c.id)));
+		const availableColumnIds = new Set(columns.map((c) => String(c.id)));
 
 		// Validate columns - filter out missing columns
-		const validColumns = config.columns.filter(colId => availableColumnIds.has(colId));
-		const validColumnOrder = config.columnOrder.filter(colId => availableColumnIds.has(colId));
+		const validColumns = config.columns.filter((colId) => availableColumnIds.has(colId));
+		const validColumnOrder = config.columnOrder.filter((colId) => availableColumnIds.has(colId));
 
 		// Set view config (triggers reactive update)
 		viewColumns = validColumns.length > 0 ? validColumns : [];
@@ -521,7 +635,7 @@
 	 */
 	function handleTableStateChange(state: TableState) {
 		// Convert TableKit filters to Electric WHERE clause
-		const filters = state.columnFilters.map(f => ({
+		const filters = state.columnFilters.map((f) => ({
 			field: f.field,
 			operator: f.operator,
 			value: f.value
@@ -600,18 +714,20 @@
 			};
 
 			// Start Electric sync in the background (default: last 3 years)
-			syncUkLrt().then(() => {
-				// Refresh data after sync completes
-				refreshData();
-				isLoading = false;
-			}).catch((e) => {
-				console.error('[LRT Admin] Background sync failed:', e);
-				// Don't set error if we have local data - just show sync status
-				if (data.length === 0) {
-					error = e instanceof Error ? e.message : 'Failed to sync data';
-				}
-				isLoading = false;
-			});
+			syncUkLrt()
+				.then(() => {
+					// Refresh data after sync completes
+					refreshData();
+					isLoading = false;
+				})
+				.catch((e) => {
+					console.error('[LRT Admin] Background sync failed:', e);
+					// Don't set error if we have local data - just show sync status
+					if (data.length === 0) {
+						error = e instanceof Error ? e.message : 'Failed to sync data';
+					}
+					isLoading = false;
+				});
 
 			// If no local data, wait for first sync batch
 			if (localData.length === 0) {
@@ -753,12 +869,30 @@
 	// Get family prefix and clean name
 	function getFamilyDisplay(family: string | null): { prefix: string; name: string } {
 		if (!family) return { prefix: '', name: '-' };
-		if (family.startsWith('HS:') || family.includes('OH&S') || family.includes('FIRE') || family.includes('FOOD') || family.includes('HEALTH') || family.includes('PUBLIC') || family.includes('TRANSPORT:'))
+		if (
+			family.startsWith('HS:') ||
+			family.includes('OH&S') ||
+			family.includes('FIRE') ||
+			family.includes('FOOD') ||
+			family.includes('HEALTH') ||
+			family.includes('PUBLIC') ||
+			family.includes('TRANSPORT:')
+		)
 			return { prefix: 'HS', name: family };
-		if (family.startsWith('E:') || family.includes('ENVIRONMENT') || family.includes('CLIMATE') || family.includes('WASTE') || family.includes('WATER') || family.includes('WILDLIFE') || family.includes('MARINE') || family.includes('POLLUTION') || family.includes('AGRICULTURE') || family.includes('ENERGY'))
+		if (
+			family.startsWith('E:') ||
+			family.includes('ENVIRONMENT') ||
+			family.includes('CLIMATE') ||
+			family.includes('WASTE') ||
+			family.includes('WATER') ||
+			family.includes('WILDLIFE') ||
+			family.includes('MARINE') ||
+			family.includes('POLLUTION') ||
+			family.includes('AGRICULTURE') ||
+			family.includes('ENERGY')
+		)
 			return { prefix: 'E', name: family };
-		if (family.startsWith('HR:') || family.includes('HR:'))
-			return { prefix: 'HR', name: family };
+		if (family.startsWith('HR:') || family.includes('HR:')) return { prefix: 'HR', name: family };
 		return { prefix: '', name: family };
 	}
 
@@ -1343,7 +1477,11 @@
 			cell: (info) => {
 				const val = info.getValue() as string | null;
 				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+				return new Date(val).toLocaleDateString('en-GB', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric'
+				});
 			},
 			size: 100,
 			meta: { group: 'Timestamps', dataType: 'date' }
@@ -1355,7 +1493,11 @@
 			cell: (info) => {
 				const val = info.getValue() as string | null;
 				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+				return new Date(val).toLocaleDateString('en-GB', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric'
+				});
 			},
 			size: 100,
 			meta: { group: 'Timestamps', dataType: 'date' }
@@ -1367,7 +1509,11 @@
 			cell: (info) => {
 				const val = info.getValue() as string | null;
 				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+				return new Date(val).toLocaleDateString('en-GB', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric'
+				});
 			},
 			size: 110,
 			meta: { group: 'Amendments', dataType: 'date' }
@@ -1379,7 +1525,11 @@
 			cell: (info) => {
 				const val = info.getValue() as string | null;
 				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+				return new Date(val).toLocaleDateString('en-GB', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric'
+				});
 			},
 			size: 110,
 			meta: { group: 'Amendments', dataType: 'date' }
@@ -1406,13 +1556,19 @@
 	};
 
 	// Build TableKit configuration from view (reactive)
-	$: hasViewConfig = viewColumns.length > 0 || viewColumnOrder.length > 0 || viewFilters.length > 0 || viewSort !== null;
+	$: hasViewConfig =
+		viewColumns.length > 0 ||
+		viewColumnOrder.length > 0 ||
+		viewFilters.length > 0 ||
+		viewSort !== null;
 
 	// Determine which filters to use: view filters if set, otherwise default year filter
 	$: activeFilters = viewFilters.length > 0 ? viewFilters : [defaultYearFilter];
 
 	// Determine sort config (TableKit uses columnId and expects an array)
-	$: activeSorting = viewSort ? [{ columnId: viewSort.columnId, direction: viewSort.direction }] : undefined;
+	$: activeSorting = viewSort
+		? [{ columnId: viewSort.columnId, direction: viewSort.direction }]
+		: undefined;
 
 	$: tableKitConfig = {
 		id: hasViewConfig ? `view_config_v${configVersion}` : 'default_config',
@@ -1449,9 +1605,7 @@
 
 	{#if isLoading}
 		<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
-			<div
-				class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-			></div>
+			<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 			<p class="mt-4 text-gray-600">Loading UK LRT data...</p>
 		</div>
 	{:else if error}
@@ -1502,7 +1656,10 @@
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
 				<div class="text-sm text-gray-600">Filter</div>
-				<div class="text-sm font-mono text-gray-700 truncate" title={$syncStatus.whereClause || 'Last 3 years'}>
+				<div
+					class="text-sm font-mono text-gray-700 truncate"
+					title={$syncStatus.whereClause || 'Last 3 years'}
+				>
 					{$syncStatus.whereClause || 'year >= ' + (new Date().getFullYear() - 2)}
 				</div>
 			</div>
@@ -1547,7 +1704,12 @@
 							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+								/>
 							</svg>
 							Update View
 						</button>
@@ -1557,7 +1719,12 @@
 							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 4v16m8-8H4"
+								/>
 							</svg>
 							Save New
 						</button>
@@ -1569,7 +1736,12 @@
 						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 					>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+							/>
 						</svg>
 						Save View
 					</button>
@@ -1698,7 +1870,8 @@
 							{#each functionOptions as fn}
 								<button
 									type="button"
-									class="px-2 py-0.5 text-xs rounded {Array.isArray(editValue) && editValue.includes(fn)
+									class="px-2 py-0.5 text-xs rounded {Array.isArray(editValue) &&
+									editValue.includes(fn)
 										? 'bg-blue-600 text-white'
 										: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
 									on:click={() => toggleFunction(fn)}
@@ -1792,7 +1965,9 @@
 				</li>
 				<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
 				<li>Table state (column order, visibility, sorting) is persisted locally</li>
-				<li><strong>Saved Views</strong> - Save your current table configuration for quick access later</li>
+				<li>
+					<strong>Saved Views</strong> - Save your current table configuration for quick access later
+				</li>
 			</ul>
 		</div>
 	{/if}

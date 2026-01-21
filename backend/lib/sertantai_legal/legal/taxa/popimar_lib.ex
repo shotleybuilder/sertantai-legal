@@ -41,8 +41,12 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarLib do
   @spec regex(atom()) :: Regex.t() | nil
   def regex(function) when is_atom(function) do
     case apply(__MODULE__, function, []) do
-      nil -> nil
-      [] -> nil
+      nil ->
+        nil
+
+      [] ->
+        nil
+
       patterns when is_list(patterns) ->
         term = Enum.join(patterns, "|")
         {:ok, regex} = Regex.compile("(#{term})", "m")

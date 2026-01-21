@@ -440,6 +440,91 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   @doc """
+  POST /api/sessions/:id/parse-metadata
+
+  Fetch metadata only for a single record (fast, no enrichment).
+  This is the same metadata fetch used during initial session scrape.
+  Use this for preview before full parse.
+
+  ## Parameters
+  - name: record name (e.g., "uksi/2025/1227" or "UK_uksi_2025_1227")
+  """
+  def parse_metadata(conn, %{"id" => session_id, "name" => name}) do
+    alias SertantaiLegal.Scraper.Metadata
+    alias SertantaiLegal.Scraper.IdField
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      # Normalize name to slash format for API call
+      normalized = IdField.normalize_to_slash_format(name)
+
+      case String.split(normalized, "/") do
+        [type_code, year_str, number] ->
+          case Integer.parse(year_str) do
+            {year, ""} ->
+              record = %{type_code: type_code, Year: year, Number: number}
+
+              case Metadata.fetch(record) do
+                {:ok, metadata} ->
+                  # Build canonical name
+                  db_name = IdField.build_uk_id(type_code, year, number)
+
+                  # Check if already exists in DB
+                  duplicate = check_duplicate(db_name)
+
+                  json(conn, %{
+                    session_id: session_id,
+                    name: db_name,
+                    record: %{
+                      name: db_name,
+                      title_en: metadata[:Title_EN] || metadata[:title_en],
+                      type_code: type_code,
+                      year: year,
+                      number: number,
+                      si_code: metadata[:si_code] || [],
+                      md_description: metadata[:md_description],
+                      md_subjects: metadata[:md_subjects] || []
+                    },
+                    duplicate: duplicate
+                  })
+
+                {:error, reason} ->
+                  conn
+                  |> put_status(:unprocessable_entity)
+                  |> json(%{error: "Metadata fetch failed: #{reason}"})
+              end
+
+            _ ->
+              conn
+              |> put_status(:bad_request)
+              |> json(%{error: "Invalid year in name: #{name}"})
+          end
+
+        _ ->
+          conn
+          |> put_status(:bad_request)
+          |> json(%{error: "Invalid name format: #{name}"})
+      end
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  def parse_metadata(conn, %{"id" => _session_id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: name"})
+  end
+
+  @doc """
   GET /api/sessions/:id/parse-stream?name=uksi/2025/568
 
   Server-Sent Events endpoint for streaming parse progress.

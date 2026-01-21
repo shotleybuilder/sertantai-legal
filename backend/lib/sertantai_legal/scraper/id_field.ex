@@ -98,6 +98,37 @@ defmodule SertantaiLegal.Scraper.IdField do
   def normalize_to_db_name(name), do: name
 
   @doc """
+  Normalize a name to slash format (for API calls).
+
+  Handles both DB format and already-normalized names:
+  - "UK_uksi_2025_622" -> "uksi/2025/622"
+  - "uksi/2025/622" -> "uksi/2025/622" (unchanged)
+
+  ## Examples
+
+      iex> IdField.normalize_to_slash_format("UK_uksi_2025_622")
+      "uksi/2025/622"
+
+      iex> IdField.normalize_to_slash_format("uksi/2025/622")
+      "uksi/2025/622"
+  """
+  @spec normalize_to_slash_format(String.t()) :: String.t()
+  def normalize_to_slash_format(name) when is_binary(name) do
+    cond do
+      String.contains?(name, "/") ->
+        name
+
+      String.starts_with?(name, "UK_") ->
+        name |> String.replace_prefix("UK_", "") |> String.replace("_", "/")
+
+      true ->
+        name
+    end
+  end
+
+  def normalize_to_slash_format(name), do: name
+
+  @doc """
   Set the Acronym field based on the Title_EN.
 
   Extracts uppercase letters from the title to form an acronym.

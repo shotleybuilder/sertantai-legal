@@ -115,6 +115,7 @@ defmodule SertantaiLegal.Scraper.EnactedByTest do
 
     test "extracts law IDs from footnote URLs" do
       text = "In exercise of powers conferred by f00001"
+
       urls = %{
         "f00001" => ["http://www.legislation.gov.uk/id/ukpga/2020/1"]
       }
@@ -127,6 +128,7 @@ defmodule SertantaiLegal.Scraper.EnactedByTest do
     test "handles EU directive URLs" do
       # Include year in text so the year-matching logic works
       text = "Under directive 2019 f00001"
+
       urls = %{
         "f00001" => ["http://www.legislation.gov.uk/european/directive/2019/904"]
       }

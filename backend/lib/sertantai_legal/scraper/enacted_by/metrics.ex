@@ -104,7 +104,8 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Metrics do
     # Build metrics
     metrics = %{
       matched_patterns: all_meta,
-      unmatched_pattern_types: get_unmatched_types(specific_meta, powers_meta, fallback_meta, used_fallback),
+      unmatched_pattern_types:
+        get_unmatched_types(specific_meta, powers_meta, fallback_meta, used_fallback),
       strategy_used: strategy_used,
       law_ids: all_laws,
       law_count: length(all_laws),

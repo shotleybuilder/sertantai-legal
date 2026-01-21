@@ -31,21 +31,9 @@
 			'acronym',
 			'old_style_number'
 		],
-		Description: [
-			'family',
-			'family_ii',
-			'si_code',
-			'tags',
-			'md_description',
-			'md_subjects'
-		],
+		Description: ['family', 'family_ii', 'si_code', 'tags', 'md_description', 'md_subjects'],
 		Status: ['live', 'live_description'],
-		'Geographic Extent': [
-			'geo_extent',
-			'geo_region',
-			'geo_detail',
-			'md_restrict_extent'
-		],
+		'Geographic Extent': ['geo_extent', 'geo_region', 'geo_detail', 'md_restrict_extent'],
 		Metadata: [
 			'md_date',
 			'md_made_date',
@@ -205,7 +193,8 @@
 				.filter((change) => {
 					if (change.type === 'added' && isEmpty(change.newValue)) return false;
 					if (change.type === 'deleted' && isEmpty(change.oldValue)) return false;
-					if (change.type === 'modified' && isEmpty(change.oldValue) && isEmpty(change.newValue)) return false;
+					if (change.type === 'modified' && isEmpty(change.oldValue) && isEmpty(change.newValue))
+						return false;
 					return true;
 				})
 		: [];
@@ -273,12 +262,7 @@
 			class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-amber-100 transition-colors"
 		>
 			<div class="flex items-center space-x-3">
-				<svg
-					class="w-5 h-5 text-amber-600"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
+				<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -291,9 +275,7 @@
 				</span>
 				<div class="flex items-center space-x-2 text-xs">
 					{#if deletedCount > 0}
-						<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded"
-							>{deletedCount} removed</span
-						>
+						<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded">{deletedCount} removed</span>
 					{/if}
 					{#if modifiedCount > 0}
 						<span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded"
@@ -301,16 +283,12 @@
 						>
 					{/if}
 					{#if addedCount > 0}
-						<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded"
-							>{addedCount} added</span
-						>
+						<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded">{addedCount} added</span>
 					{/if}
 				</div>
 			</div>
 			<svg
-				class="w-5 h-5 text-amber-600 transform transition-transform {expanded
-					? 'rotate-180'
-					: ''}"
+				class="w-5 h-5 text-amber-600 transform transition-transform {expanded ? 'rotate-180' : ''}"
 				fill="none"
 				stroke="currentColor"
 				viewBox="0 0 24 24"
@@ -323,7 +301,9 @@
 			<div class="border-t border-amber-200 bg-white">
 				{#each sortedGroups as group}
 					<div class="border-b border-gray-100 last:border-b-0">
-						<div class="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+						<div
+							class="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide"
+						>
 							{group.name}
 						</div>
 						<div class="divide-y divide-gray-100">
@@ -380,12 +360,7 @@
 	<div class="border border-green-200 rounded-lg bg-green-50 px-4 py-3">
 		<div class="flex items-center space-x-2">
 			<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M5 13l4 4L19 7"
-				/>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 			</svg>
 			<span class="text-green-800">No changes detected - record is identical</span>
 		</div>

@@ -42,7 +42,9 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
       {:ok, metadata} = Metadata.fetch(record)
 
       assert metadata[:md_description] =~ "consolidate and update"
-      assert metadata[:Title_EN] == "The Environmental Permitting (England and Wales) Regulations 2024"
+
+      assert metadata[:Title_EN] ==
+               "The Environmental Permitting (England and Wales) Regulations 2024"
     end
 
     test "fetches metadata for a record with string keys" do
@@ -80,7 +82,8 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
 
       {:ok, metadata} = Metadata.parse_xml(xml)
 
-      assert metadata[:Title_EN] == "The Environmental Permitting (England and Wales) Regulations 2024"
+      assert metadata[:Title_EN] ==
+               "The Environmental Permitting (England and Wales) Regulations 2024"
     end
 
     test "extracts dc:description" do
@@ -88,7 +91,8 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
 
       {:ok, metadata} = Metadata.parse_xml(xml)
 
-      assert metadata[:md_description] == "These Regulations consolidate and update the environmental permitting regime."
+      assert metadata[:md_description] ==
+               "These Regulations consolidate and update the environmental permitting regime."
     end
 
     test "extracts dc:modified" do
@@ -270,7 +274,8 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
 
       {:ok, metadata} = Metadata.parse_xml(xml)
 
-      assert metadata[:pdf_href] == "https://www.legislation.gov.uk/uksi/2024/1234/pdfs/uksi_20241234_en.pdf"
+      assert metadata[:pdf_href] ==
+               "https://www.legislation.gov.uk/uksi/2024/1234/pdfs/uksi_20241234_en.pdf"
     end
   end
 

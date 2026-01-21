@@ -80,7 +80,9 @@ defmodule SertantaiLegal.Scraper.IdFieldTest do
     end
 
     test "removes The prefix" do
-      assert IdField.build_acronym("The Control of Substances Hazardous to Health Regulations 2002") ==
+      assert IdField.build_acronym(
+               "The Control of Substances Hazardous to Health Regulations 2002"
+             ) ==
                "CSHHR"
     end
 
@@ -94,7 +96,9 @@ defmodule SertantaiLegal.Scraper.IdFieldTest do
     end
 
     test "handles complex title" do
-      assert IdField.build_acronym("The Environmental Permitting (England and Wales) Regulations 2016") ==
+      assert IdField.build_acronym(
+               "The Environmental Permitting (England and Wales) Regulations 2016"
+             ) ==
                "EPEWR"
     end
 

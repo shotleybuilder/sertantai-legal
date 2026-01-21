@@ -193,7 +193,10 @@ defmodule SertantaiLegal.Scraper.EnactedBy do
   # Returns map like %{"c00001" => ["http://..."]}
   defp extract_inline_citations(xml) do
     # Find all Citation elements with both id and URI attributes
-    Regex.scan(~r/<Citation[^>]*\bURI="([^"]+)"[^>]*\bid="([^"]+)"[^>]*>|<Citation[^>]*\bid="([^"]+)"[^>]*\bURI="([^"]+)"[^>]*>/, xml)
+    Regex.scan(
+      ~r/<Citation[^>]*\bURI="([^"]+)"[^>]*\bid="([^"]+)"[^>]*>|<Citation[^>]*\bid="([^"]+)"[^>]*\bURI="([^"]+)"[^>]*>/,
+      xml
+    )
     |> Enum.reduce(%{}, fn match, acc ->
       # Handle both attribute orders (URI before id, or id before URI)
       {id, uri} =

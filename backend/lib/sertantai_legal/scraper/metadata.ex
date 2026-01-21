@@ -118,7 +118,10 @@ defmodule SertantaiLegal.Scraper.Metadata do
         # Geographic extent - derived from RestrictExtent
         geo_extent: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> normalize_extent(),
         geo_region: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> extent_to_regions(),
-        geo_country: xpath_text(xml, ~x"//Legislation/@RestrictExtent"s) |> extent_to_regions() |> regions_to_country(),
+        geo_country:
+          xpath_text(xml, ~x"//Legislation/@RestrictExtent"s)
+          |> extent_to_regions()
+          |> regions_to_country(),
 
         # PDF link
         pdf_href: xpath_text(xml, ~x"//atom:link[@type='application/pdf']/@href"s),

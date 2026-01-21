@@ -283,6 +283,51 @@ export interface ExistsResult {
 }
 
 /**
+ * Metadata-only parse result (fast, no enrichment)
+ */
+export interface ParseMetadataResult {
+	session_id: string;
+	name: string;
+	record: {
+		name: string;
+		title_en: string | null;
+		type_code: string;
+		year: number;
+		number: string;
+		si_code: string[];
+		md_description?: string;
+		md_subjects?: string[];
+	};
+	duplicate: {
+		exists: boolean;
+		id?: string;
+		title_en?: string;
+		family?: string;
+		updated_at?: string;
+	} | null;
+}
+
+/**
+ * Parse metadata only for a single record (fast, no enrichment).
+ * This is the same metadata fetch used during initial session scrape.
+ * Use this for preview before deciding to do full enrichment parse.
+ */
+export async function parseMetadata(sessionId: string, name: string): Promise<ParseMetadataResult> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/parse-metadata`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ name })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to fetch metadata');
+	}
+
+	return response.json();
+}
+
+/**
  * Parse a single record and return staged results for review
  */
 export async function parseOne(sessionId: string, name: string): Promise<ParseOneResult> {

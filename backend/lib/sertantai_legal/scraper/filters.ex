@@ -229,9 +229,14 @@ defmodule SertantaiLegal.Scraper.Filters do
       nil ->
         # Fallback to broad category if no specific mapping exists
         cond do
-          MapSet.member?(SICodes.hs_si_codes(), si_code) -> "💙 OH&S: Occupational / Personal Safety"
-          MapSet.member?(SICodes.e_si_codes(), si_code) -> "💚 ENVIRONMENTAL PROTECTION"
-          true -> nil
+          MapSet.member?(SICodes.hs_si_codes(), si_code) ->
+            "💙 OH&S: Occupational / Personal Safety"
+
+          MapSet.member?(SICodes.e_si_codes(), si_code) ->
+            "💚 ENVIRONMENTAL PROTECTION"
+
+          true ->
+            nil
         end
 
       family ->

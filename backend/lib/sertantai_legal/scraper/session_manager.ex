@@ -94,7 +94,14 @@ defmodule SertantaiLegal.Scraper.SessionManager do
     {:ok, session} = ScrapeSession.mark_scraping(session)
 
     # fetch_range always returns {:ok, records} (errors on individual days are logged but not propagated)
-    {:ok, records} = NewLaws.fetch_range(session.year, session.month, session.day_from, session.day_to, session.type_code)
+    {:ok, records} =
+      NewLaws.fetch_range(
+        session.year,
+        session.month,
+        session.day_from,
+        session.day_to,
+        session.type_code
+      )
 
     # Save to raw.json
     case Storage.save_json(session.session_id, :raw, records) do
@@ -166,7 +173,8 @@ defmodule SertantaiLegal.Scraper.SessionManager do
   @doc """
   Mark session as under review.
   """
-  @spec mark_reviewing(ScrapeSession.t() | String.t()) :: {:ok, ScrapeSession.t()} | {:error, any()}
+  @spec mark_reviewing(ScrapeSession.t() | String.t()) ::
+          {:ok, ScrapeSession.t()} | {:error, any()}
   def mark_reviewing(%ScrapeSession{} = session) do
     ScrapeSession.mark_reviewing(session)
   end
@@ -185,7 +193,8 @@ defmodule SertantaiLegal.Scraper.SessionManager do
   """
   @spec persist_group(ScrapeSession.t() | String.t(), atom()) ::
           {:ok, ScrapeSession.t()} | {:error, any()}
-  def persist_group(%ScrapeSession{} = session, group) when group in [:group1, :group2, :group3] do
+  def persist_group(%ScrapeSession{} = session, group)
+      when group in [:group1, :group2, :group3] do
     case Persister.persist_group(session.session_id, group) do
       {:ok, count} ->
         new_count = (session.persisted_count || 0) + count
@@ -273,7 +282,11 @@ defmodule SertantaiLegal.Scraper.SessionManager do
     IO.puts("\n=== SESSION SUMMARY ===")
     IO.puts("Session ID:      #{session.session_id}")
     IO.puts("Status:          #{session.status}")
-    IO.puts("Date range:      #{session.year}-#{session.month}-#{session.day_from} to #{session.day_to}")
+
+    IO.puts(
+      "Date range:      #{session.year}-#{session.month}-#{session.day_from} to #{session.day_to}"
+    )
+
     IO.puts("Total fetched:   #{session.total_fetched}")
     IO.puts("Group 1 (SI):    #{session.group1_count}")
     IO.puts("Group 2 (Term):  #{session.group2_count}")

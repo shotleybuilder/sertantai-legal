@@ -350,10 +350,18 @@
 				<div class="mt-4 flex items-center space-x-3">
 					<button
 						on:click={handleShowCascadeModal}
-						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white {cascadePendingCount > 0 ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-500 hover:bg-gray-600'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white {cascadePendingCount >
+						0
+							? 'bg-indigo-600 hover:bg-indigo-700'
+							: 'bg-gray-500 hover:bg-gray-600'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
 						<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+							/>
 						</svg>
 						Cascade Update
 						{#if cascadePendingCount > 0}
@@ -416,20 +424,26 @@
 							class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {isDb
 								? 'bg-green-100 text-green-800'
 								: 'bg-yellow-100 text-yellow-800'}"
-							title={isDb
-								? 'Data loaded from database'
-								: 'Data loaded from JSON files (legacy)'}
+							title={isDb ? 'Data loaded from database' : 'Data loaded from JSON files (legacy)'}
 						>
 							{#if isDb}
 								<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-									<path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
-									<path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
+									<path
+										d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z"
+									/>
+									<path
+										d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z"
+									/>
 									<path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
 								</svg>
 								DB
 							{:else}
 								<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-									<path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+									<path
+										fill-rule="evenodd"
+										d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+										clip-rule="evenodd"
+									/>
 								</svg>
 								JSON
 							{/if}
@@ -612,7 +626,11 @@
 							<tbody class="bg-white divide-y divide-gray-200">
 								{#each $groupQuery.data.records as record}
 									{@const inDb = existingNamesSet.has(record.name)}
-									<tr class="hover:bg-gray-50 {record.selected ? 'bg-blue-50' : ''} {inDb ? 'bg-purple-50/50' : ''}">
+									<tr
+										class="hover:bg-gray-50 {record.selected ? 'bg-blue-50' : ''} {inDb
+											? 'bg-purple-50/50'
+											: ''}"
+									>
 										<td class="px-4 py-3">
 											<input
 												type="checkbox"
@@ -624,9 +642,16 @@
 										</td>
 										<td class="px-4 py-3 text-center">
 											{#if inDb}
-												<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700" title="Exists in database">
+												<span
+													class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700"
+													title="Exists in database"
+												>
 													<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-														<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+														<path
+															fill-rule="evenodd"
+															d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+															clip-rule="evenodd"
+														/>
 													</svg>
 												</span>
 											{:else}

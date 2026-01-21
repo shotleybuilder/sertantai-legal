@@ -16,10 +16,7 @@ vi.mock('$lib/db/index.client', () => ({
 }));
 
 // Import after mocks
-import {
-	buildWhereFromFilters,
-	syncStatus
-} from './sync-uk-lrt';
+import { buildWhereFromFilters, syncStatus } from './sync-uk-lrt';
 
 describe('buildWhereFromFilters', () => {
 	it('returns default 3-year filter when no filters provided', () => {
@@ -35,121 +32,91 @@ describe('buildWhereFromFilters', () => {
 	});
 
 	it('builds equals clause for string value', () => {
-		const filters = [
-			{ field: 'family', operator: 'equals', value: 'FIRE' }
-		];
+		const filters = [{ field: 'family', operator: 'equals', value: 'FIRE' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("family = 'FIRE'");
 	});
 
 	it('builds equals clause for numeric value', () => {
-		const filters = [
-			{ field: 'year', operator: 'equals', value: 2024 }
-		];
+		const filters = [{ field: 'year', operator: 'equals', value: 2024 }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe('year = 2024');
 	});
 
 	it('builds not_equals clause', () => {
-		const filters = [
-			{ field: 'live', operator: 'not_equals', value: 'Revoked' }
-		];
+		const filters = [{ field: 'live', operator: 'not_equals', value: 'Revoked' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("live != 'Revoked'");
 	});
 
 	it('builds contains clause with ILIKE', () => {
-		const filters = [
-			{ field: 'title_en', operator: 'contains', value: 'Safety' }
-		];
+		const filters = [{ field: 'title_en', operator: 'contains', value: 'Safety' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("title_en ILIKE '%Safety%'");
 	});
 
 	it('builds not_contains clause', () => {
-		const filters = [
-			{ field: 'title_en', operator: 'not_contains', value: 'Draft' }
-		];
+		const filters = [{ field: 'title_en', operator: 'not_contains', value: 'Draft' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("title_en NOT ILIKE '%Draft%'");
 	});
 
 	it('builds starts_with clause', () => {
-		const filters = [
-			{ field: 'name', operator: 'starts_with', value: 'UK_uksi' }
-		];
+		const filters = [{ field: 'name', operator: 'starts_with', value: 'UK_uksi' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("name ILIKE 'UK_uksi%'");
 	});
 
 	it('builds ends_with clause', () => {
-		const filters = [
-			{ field: 'name', operator: 'ends_with', value: '_2024' }
-		];
+		const filters = [{ field: 'name', operator: 'ends_with', value: '_2024' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("name ILIKE '%_2024'");
 	});
 
 	it('builds greater_than clause', () => {
-		const filters = [
-			{ field: 'year', operator: 'greater_than', value: 2020 }
-		];
+		const filters = [{ field: 'year', operator: 'greater_than', value: 2020 }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe('year > 2020');
 	});
 
 	it('builds less_than clause', () => {
-		const filters = [
-			{ field: 'year', operator: 'less_than', value: 2025 }
-		];
+		const filters = [{ field: 'year', operator: 'less_than', value: 2025 }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe('year < 2025');
 	});
 
 	it('builds greater_or_equal clause', () => {
-		const filters = [
-			{ field: 'year', operator: 'greater_or_equal', value: 2022 }
-		];
+		const filters = [{ field: 'year', operator: 'greater_or_equal', value: 2022 }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe('year >= 2022');
 	});
 
 	it('builds less_or_equal clause', () => {
-		const filters = [
-			{ field: 'year', operator: 'less_or_equal', value: 2024 }
-		];
+		const filters = [{ field: 'year', operator: 'less_or_equal', value: 2024 }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe('year <= 2024');
 	});
 
 	it('builds is_empty clause', () => {
-		const filters = [
-			{ field: 'family', operator: 'is_empty', value: null }
-		];
+		const filters = [{ field: 'family', operator: 'is_empty', value: null }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("(family IS NULL OR family = '')");
 	});
 
 	it('builds is_not_empty clause', () => {
-		const filters = [
-			{ field: 'family', operator: 'is_not_empty', value: null }
-		];
+		const filters = [{ field: 'family', operator: 'is_not_empty', value: null }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("(family IS NOT NULL AND family != '')");
 	});
 
 	it('builds is_before date clause', () => {
-		const filters = [
-			{ field: 'md_made_date', operator: 'is_before', value: '2024-01-01' }
-		];
+		const filters = [{ field: 'md_made_date', operator: 'is_before', value: '2024-01-01' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("md_made_date < '2024-01-01'");
 	});
 
 	it('builds is_after date clause', () => {
-		const filters = [
-			{ field: 'md_made_date', operator: 'is_after', value: '2023-12-31' }
-		];
+		const filters = [{ field: 'md_made_date', operator: 'is_after', value: '2023-12-31' }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("md_made_date > '2023-12-31'");
 	});
@@ -174,17 +141,13 @@ describe('buildWhereFromFilters', () => {
 	});
 
 	it('escapes single quotes in string values', () => {
-		const filters = [
-			{ field: 'title_en', operator: 'contains', value: "Worker's Rights" }
-		];
+		const filters = [{ field: 'title_en', operator: 'contains', value: "Worker's Rights" }];
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe("title_en ILIKE '%Worker''s Rights%'");
 	});
 
 	it('ignores unknown operators and returns default', () => {
-		const filters = [
-			{ field: 'year', operator: 'unknown_operator', value: 2024 }
-		];
+		const filters = [{ field: 'year', operator: 'unknown_operator', value: 2024 }];
 		const currentYear = new Date().getFullYear();
 		const result = buildWhereFromFilters(filters);
 		expect(result).toBe(`year >= ${currentYear - 2}`);
@@ -242,7 +205,7 @@ describe('syncStatus store', () => {
 	});
 
 	it('can update syncing state', () => {
-		syncStatus.update(s => ({ ...s, syncing: true, whereClause: 'year >= 2024' }));
+		syncStatus.update((s) => ({ ...s, syncing: true, whereClause: 'year >= 2024' }));
 
 		const status = get(syncStatus);
 		expect(status.syncing).toBe(true);
@@ -250,7 +213,7 @@ describe('syncStatus store', () => {
 	});
 
 	it('can update connected state with record count', () => {
-		syncStatus.update(s => ({
+		syncStatus.update((s) => ({
 			...s,
 			connected: true,
 			syncing: false,
@@ -266,7 +229,7 @@ describe('syncStatus store', () => {
 	});
 
 	it('can track offline and reconnect attempts', () => {
-		syncStatus.update(s => ({
+		syncStatus.update((s) => ({
 			...s,
 			offline: true,
 			reconnectAttempts: 3,
