@@ -425,7 +425,7 @@
 						<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
 							{#each Object.entries(parseResult.stages) as [stage, result]}
 								<div
-									class="flex items-center space-x-2 bg-white rounded px-3 py-2 border border-gray-200"
+									class="flex items-center space-x-2 bg-white rounded px-3 py-2 border {result.status === 'error' ? 'border-red-200 bg-red-50' : 'border-gray-200'}"
 								>
 									<span class="font-mono text-lg {getStageIcon(result.status)}">
 										{getStageSymbol(result.status)}
@@ -434,15 +434,25 @@
 								</div>
 							{/each}
 						</div>
-						{#if parseResult.errors.length > 0}
-							<div class="mt-3 text-sm text-red-600">
-								<strong>Errors:</strong>
-								<ul class="list-disc list-inside mt-1">
-									{#each parseResult.errors as error}
-										{@const [stage, ...rest] = error.split(': ')}
-										<li>{mapStageError(stage, rest.join(': '))}</li>
-									{/each}
-								</ul>
+						{#if parseResult.has_errors}
+							<div class="mt-4 rounded-md bg-amber-50 border border-amber-200 p-3">
+								<div class="flex">
+									<svg class="h-5 w-5 text-amber-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+									</svg>
+									<div class="flex-1">
+										<h4 class="text-sm font-medium text-amber-800">Partial Parse Results</h4>
+										<p class="text-sm text-amber-700 mt-1">
+											Some stages could not complete. Data from successful stages is still available and can be saved.
+										</p>
+										<ul class="list-disc list-inside mt-2 text-sm text-amber-600">
+											{#each parseResult.errors as error}
+												{@const [stage, ...rest] = error.split(': ')}
+												<li>{mapStageError(stage, rest.join(': '))}</li>
+											{/each}
+										</ul>
+									</div>
+								</div>
 							</div>
 						{/if}
 					</div>
@@ -1341,7 +1351,8 @@
 					<button
 						on:click={handleConfirm}
 						disabled={!parseResult || $parseMutation.isPending || $confirmMutation.isPending}
-						class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+						class="px-4 py-2 text-sm text-white rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center {parseResult?.has_errors ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}"
+						title={parseResult?.has_errors ? 'Save data from successful stages only' : 'Save all parsed data'}
 					>
 						{#if $confirmMutation.isPending}
 							<svg
@@ -1364,6 +1375,8 @@
 								></path>
 							</svg>
 							Saving...
+						{:else if parseResult?.has_errors}
+							Save Partial Data
 						{:else}
 							Confirm & Save
 						{/if}
