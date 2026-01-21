@@ -403,6 +403,9 @@ export interface AffectedLawsResult {
 	enacting_parents_not_in_db: AffectedLaw[];
 	enacting_parents_not_in_db_count: number;
 	total_enacting_parents: number;
+	// Status counts for cascade button display
+	pending_count: number;
+	processed_count: number;
 }
 
 export interface BatchReparseResultItem {

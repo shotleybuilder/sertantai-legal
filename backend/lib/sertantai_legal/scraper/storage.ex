@@ -550,6 +550,10 @@ defmodule SertantaiLegal.Scraper.Storage do
       |> Enum.flat_map(& &1.source_laws)
       |> Enum.uniq()
 
+    # Count by status
+    {pending_entries, processed_entries} =
+      Enum.split_with(db_entries, &(&1.status == :pending))
+
     %{
       source_laws: source_laws,
       source_count: length(source_laws),
@@ -561,7 +565,10 @@ defmodule SertantaiLegal.Scraper.Storage do
       all_affected: reparse_laws,
       all_affected_count: length(reparse_laws),
       enacting_parents: enacting_parents,
-      enacting_parents_count: length(enacting_parents)
+      enacting_parents_count: length(enacting_parents),
+      # Status counts for UI
+      pending_count: length(pending_entries),
+      processed_count: length(processed_entries)
     }
   end
 
@@ -575,6 +582,9 @@ defmodule SertantaiLegal.Scraper.Storage do
     # Parent laws that need direct enacting array update
     enacting_parents = data[:all_enacting_parents] || []
 
+    # JSON doesn't track status, so treat all as pending
+    total_count = length(all_affected) + length(enacting_parents)
+
     %{
       source_laws: Enum.map(data[:entries] || [], & &1[:source_law]),
       source_count: length(data[:entries] || []),
@@ -585,7 +595,10 @@ defmodule SertantaiLegal.Scraper.Storage do
       all_affected: all_affected,
       all_affected_count: length(all_affected),
       enacting_parents: enacting_parents,
-      enacting_parents_count: length(enacting_parents)
+      enacting_parents_count: length(enacting_parents),
+      # JSON doesn't track status - treat all as pending
+      pending_count: total_count,
+      processed_count: 0
     }
   end
 

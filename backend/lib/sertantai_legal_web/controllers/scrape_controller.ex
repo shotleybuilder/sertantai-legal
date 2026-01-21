@@ -1135,7 +1135,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
         enacting_parents_in_db_count: length(enacting_parents_in_db),
         enacting_parents_not_in_db: enacting_parents_not_in_db,
         enacting_parents_not_in_db_count: length(enacting_parents_not_in_db),
-        total_enacting_parents: summary.enacting_parents_count
+        total_enacting_parents: summary.enacting_parents_count,
+        # Status counts for cascade button display
+        pending_count: summary.pending_count,
+        processed_count: summary.processed_count
       })
     else
       {:error, reason} ->

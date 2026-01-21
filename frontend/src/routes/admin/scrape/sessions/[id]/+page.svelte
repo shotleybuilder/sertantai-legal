@@ -43,6 +43,25 @@
 	// Cascade Update Modal State
 	let showCascadeModal = false;
 	let affectedLawsCount = 0;
+	let cascadePendingCount = 0;
+	let cascadeProcessedCount = 0;
+
+	// Fetch cascade status on mount and when session changes
+	$: if (sessionId) {
+		fetchCascadeStatus();
+	}
+
+	async function fetchCascadeStatus() {
+		try {
+			const affected = await getAffectedLaws(sessionId);
+			cascadePendingCount = affected.pending_count;
+			cascadeProcessedCount = affected.processed_count;
+		} catch (e) {
+			// No cascade data or error - that's fine
+			cascadePendingCount = 0;
+			cascadeProcessedCount = 0;
+		}
+	}
 
 	function formatUpdatedAt(isoString: string | null | undefined): string {
 		if (!isoString) return '-';
@@ -181,6 +200,8 @@
 			parseCompleteMessage = `Cascade update: ${reparsed} re-parsed, ${errors} errors`;
 		}
 		$sessionQuery.refetch();
+		// Refresh cascade status to update pending/processed counts
+		fetchCascadeStatus();
 	}
 
 	function handleCascadeReviewLaws(event: CustomEvent<{ laws: AffectedLaw[] }>) {
@@ -324,20 +345,29 @@
 				</div>
 			</div>
 
-			<!-- Session Actions -->
-			{#if session.persisted_count > 0}
+			<!-- Session Actions - Cascade Update -->
+			{#if cascadePendingCount > 0 || cascadeProcessedCount > 0}
 				<div class="mt-4 flex items-center space-x-3">
 					<button
 						on:click={handleShowCascadeModal}
-						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white {cascadePendingCount > 0 ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-500 hover:bg-gray-600'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 					>
 						<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 						</svg>
 						Cascade Update
+						{#if cascadePendingCount > 0}
+							<span class="ml-2 py-0.5 px-2 rounded-full text-xs bg-white text-indigo-700">
+								{cascadePendingCount} pending
+							</span>
+						{/if}
 					</button>
 					<span class="text-sm text-gray-500">
-						Re-parse affected laws from this session
+						{#if cascadePendingCount > 0}
+							{cascadePendingCount} laws need updating
+						{:else}
+							{cascadeProcessedCount} processed (all complete)
+						{/if}
 					</span>
 				</div>
 			{/if}
