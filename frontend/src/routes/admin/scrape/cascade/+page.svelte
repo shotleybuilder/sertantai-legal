@@ -52,6 +52,16 @@
 	let parsingIds: Set<string> = new Set(); // Currently fetching metadata
 	let parseErrors: Map<string, string> = new Map(); // Errors during parse
 
+	// Helper to format source laws with titles for hover tooltip
+	function formatSourceLawsTooltip(entry: CascadeEntry): string {
+		if (entry.source_laws_details && entry.source_laws_details.length > 0) {
+			return entry.source_laws_details
+				.map((s) => (s.title_en ? `${s.name}: ${s.title_en}` : s.name))
+				.join('\n');
+		}
+		return entry.source_laws.join(', ');
+	}
+
 	// Helper to format session display
 	function formatSession(session: {
 		session_id: string;
@@ -745,7 +755,7 @@
 										</td>
 										<td
 											class="px-2 py-2 text-xs text-gray-500 max-w-[150px] truncate"
-											title={entry.source_laws.join(', ')}
+											title={formatSourceLawsTooltip(entry)}
 										>
 											{entry.source_laws.join(', ')}
 										</td>

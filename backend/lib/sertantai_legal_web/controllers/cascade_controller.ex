@@ -86,6 +86,14 @@ defmodule SertantaiLegalWeb.CascadeController do
     existing_laws = lookup_existing_laws(all_names)
     existing_names = MapSet.new(Map.keys(existing_laws))
 
+    # Also look up source law titles (source laws are in DB - they triggered the cascade)
+    all_source_names =
+      entries
+      |> Enum.flat_map(& &1.source_laws)
+      |> Enum.uniq()
+
+    source_laws_map = lookup_existing_laws(all_source_names)
+
     # Build reparse lists (in DB vs missing)
     reparse_in_db =
       reparse_entries
@@ -113,7 +121,8 @@ defmodule SertantaiLegalWeb.CascadeController do
           id: entry.id,
           affected_law: entry.affected_law,
           session_id: entry.session_id,
-          source_laws: entry.source_laws
+          source_laws: entry.source_laws,
+          source_laws_details: build_source_details(entry.source_laws, source_laws_map)
         }
       end)
 
@@ -627,4 +636,13 @@ defmodule SertantaiLegalWeb.CascadeController do
   defp format_error(error) when is_binary(error), do: error
   defp format_error(%{message: msg}), do: msg
   defp format_error(error), do: inspect(error)
+
+  defp build_source_details(source_laws, source_laws_map) do
+    Enum.map(source_laws, fn name ->
+      case Map.get(source_laws_map, name) do
+        nil -> %{name: name, title_en: nil}
+        details -> %{name: name, title_en: details[:title_en]}
+      end
+    end)
+  end
 end

@@ -537,11 +537,17 @@ export interface CascadeSession {
 	enacting_count?: number;
 }
 
+export interface SourceLawDetail {
+	name: string;
+	title_en: string | null;
+}
+
 export interface CascadeEntry {
 	id: string;
 	affected_law: string;
 	session_id: string;
 	source_laws: string[];
+	source_laws_details?: SourceLawDetail[];
 	title_en?: string;
 	year?: number;
 	type_code?: string;
