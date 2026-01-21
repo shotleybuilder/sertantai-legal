@@ -28,6 +28,7 @@ defmodule SertantaiLegalWeb.Router do
     post("/sessions/:id/persist/:group", ScrapeController, :persist)
     post("/sessions/:id/parse/:group", ScrapeController, :parse)
     post("/sessions/:id/parse-one", ScrapeController, :parse_one)
+    get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
     post("/sessions/:id/confirm", ScrapeController, :confirm)
     delete("/sessions/:id", ScrapeController, :delete)
 

@@ -64,6 +64,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           has_errors: boolean()
         }
 
+  @typedoc """
+  Progress event types for streaming progress updates.
+  """
+  @type progress_event ::
+          {:stage_start, stage(), integer(), integer()}
+          | {:stage_complete, stage(), :ok | :error | :skipped, String.t() | nil}
+          | {:parse_complete, boolean()}
+
   @doc """
   Parse a law record through all stages.
 
@@ -72,6 +80,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   - opts: Options
     - :stages - List of stages to run (default: all)
     - :skip_on_error - Skip remaining stages if one fails (default: false)
+    - :on_progress - Callback function receiving progress events (optional)
+      Callback signature: `(progress_event()) -> :ok`
 
   ## Returns
   `{:ok, parse_result}` with merged data and per-stage status
@@ -80,6 +90,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   def parse(record, opts \\ []) do
     stages_to_run = Keyword.get(opts, :stages, @stages)
     skip_on_error = Keyword.get(opts, :skip_on_error, false)
+    on_progress = Keyword.get(opts, :on_progress)
 
     # Build law identifiers
     type_code = record[:type_code] || record["type_code"]
@@ -100,15 +111,30 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       has_errors: false
     }
 
+    total_stages = length(stages_to_run)
+
     # Run each stage
     result =
-      Enum.reduce_while(stages_to_run, initial_result, fn stage, acc ->
+      stages_to_run
+      |> Enum.with_index(1)
+      |> Enum.reduce_while(initial_result, fn {stage, stage_num}, acc ->
         if skip_on_error and acc.has_errors do
           # Mark remaining stages as skipped
+          notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
           stage_result = %{status: :skipped, data: nil, error: "Skipped due to previous error"}
+          notify_progress(on_progress, {:stage_complete, stage, :skipped, nil})
           {:cont, update_result(acc, stage, stage_result)}
         else
+          # Notify stage start
+          notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
+
+          # Run the stage
           stage_result = run_stage(stage, type_code, year, number, acc.law)
+
+          # Notify stage complete with summary
+          summary = build_stage_summary(stage, stage_result)
+          notify_progress(on_progress, {:stage_complete, stage, stage_result.status, summary})
+
           updated = update_result(acc, stage, stage_result)
 
           if skip_on_error and stage_result.status == :error do
@@ -133,6 +159,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     IO.puts(
       "\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} ===\n"
     )
+
+    # Notify parse complete
+    notify_progress(on_progress, {:parse_complete, result.has_errors})
 
     # Convert ParsedLaw to map for backwards compatibility with callers
     # The :law key contains the ParsedLaw struct, :record contains the map version
@@ -178,6 +207,50 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         law: new_law
     }
   end
+
+  # Progress notification helper - only calls callback if provided
+  defp notify_progress(nil, _event), do: :ok
+  defp notify_progress(callback, event) when is_function(callback, 1), do: callback.(event)
+
+  # Build human-readable summary for each stage completion
+  defp build_stage_summary(:metadata, %{status: :ok, data: data}) do
+    si_count = length(data[:si_code] || [])
+    subjects_count = length(data[:md_subjects] || [])
+    "#{si_count} SI codes, #{subjects_count} subjects"
+  end
+
+  defp build_stage_summary(:extent, %{status: :ok, data: data}) do
+    data[:extent] || "unknown"
+  end
+
+  defp build_stage_summary(:enacted_by, %{status: :ok, data: data}) do
+    count = length(data[:enacted_by] || [])
+    "#{count} parent law(s)"
+  end
+
+  defp build_stage_summary(:amendments, %{status: :ok, data: data}) do
+    amends = data[:amending_count] || 0
+    rescinds = data[:rescinding_count] || 0
+    amended_by = data[:amended_by_count] || 0
+    rescinded_by = data[:rescinded_by_count] || 0
+    self_count = data[:stats_self_affects_count] || 0
+
+    "Amends: #{amends}, Rescinds: #{rescinds}, Amended by: #{amended_by}, Rescinded by: #{rescinded_by} (self: #{self_count})"
+  end
+
+  defp build_stage_summary(:repeal_revoke, %{status: :ok, data: data}) do
+    if data[:revoked], do: "REVOKED", else: "Active"
+  end
+
+  defp build_stage_summary(:taxa, %{status: :ok, data: data}) do
+    role_count = length(data[:role] || [])
+    duty_types = length(data[:duty_type] || [])
+    popimar = length(data[:popimar] || [])
+    "#{role_count} actors, #{duty_types} duty types, #{popimar} POPIMAR"
+  end
+
+  defp build_stage_summary(_stage, %{status: :error, error: error}), do: error
+  defp build_stage_summary(_stage, _), do: nil
 
   # Run a specific stage
   defp run_stage(:metadata, type_code, year, number, record) do

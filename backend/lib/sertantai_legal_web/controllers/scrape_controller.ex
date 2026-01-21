@@ -440,6 +440,119 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   @doc """
+  GET /api/sessions/:id/parse-stream?name=uksi/2025/568
+
+  Server-Sent Events endpoint for streaming parse progress.
+
+  Streams events as JSON lines:
+  - `{"event": "stage_start", "stage": "metadata", "stage_num": 1, "total": 6}`
+  - `{"event": "stage_complete", "stage": "metadata", "status": "ok", "summary": "1 SI codes, 0 subjects"}`
+  - `{"event": "parse_complete", "has_errors": false, "result": {...}}`
+
+  The final `parse_complete` event includes the full parse result (same as parse_one response).
+  """
+  def parse_stream(conn, %{"id" => session_id, "name" => name}) do
+    alias SertantaiLegal.Scraper.StagedParser
+
+    with {:ok, _session} <- SessionManager.get(session_id) do
+      record = find_record_in_session(session_id, name) || build_record_from_name(name)
+
+      case record do
+        nil ->
+          conn
+          |> put_status(:bad_request)
+          |> json(%{error: "Invalid record name format: #{name}"})
+
+        record ->
+          # Set up SSE connection
+          conn =
+            conn
+            |> put_resp_content_type("text/event-stream")
+            |> put_resp_header("cache-control", "no-cache")
+            |> put_resp_header("connection", "keep-alive")
+            |> put_resp_header("access-control-allow-origin", "*")
+            |> send_chunked(200)
+
+          # Progress callback that sends SSE events
+          send_progress = fn event ->
+            data = encode_progress_event(event)
+            chunk(conn, "data: #{data}\n\n")
+          end
+
+          # Run staged parse with progress callback
+          {:ok, result} = StagedParser.parse(record, on_progress: send_progress)
+
+          # Send final result
+          comparison_map = ParsedLaw.to_comparison_map(result.law)
+          scraped_keys = Map.keys(comparison_map)
+          duplicate = check_duplicate(name, scraped_keys)
+
+          final_event =
+            Jason.encode!(%{
+              event: "parse_complete",
+              has_errors: result.has_errors,
+              result: %{
+                session_id: session_id,
+                name: name,
+                record: comparison_map,
+                stages: format_stages(result.stages),
+                errors: result.errors,
+                has_errors: result.has_errors,
+                duplicate: duplicate
+              }
+            })
+
+          chunk(conn, "data: #{final_event}\n\n")
+
+          conn
+      end
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  def parse_stream(conn, %{"id" => _session_id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: name"})
+  end
+
+  # Encode progress events to JSON for SSE
+  defp encode_progress_event({:stage_start, stage, stage_num, total}) do
+    Jason.encode!(%{
+      event: "stage_start",
+      stage: stage,
+      stage_num: stage_num,
+      total: total
+    })
+  end
+
+  defp encode_progress_event({:stage_complete, stage, status, summary}) do
+    Jason.encode!(%{
+      event: "stage_complete",
+      stage: stage,
+      status: status,
+      summary: summary
+    })
+  end
+
+  defp encode_progress_event({:parse_complete, has_errors}) do
+    Jason.encode!(%{
+      event: "parse_done",
+      has_errors: has_errors
+    })
+  end
+
+  @doc """
   POST /api/sessions/:id/confirm
 
   Confirm and persist a reviewed record to uk_lrt.
