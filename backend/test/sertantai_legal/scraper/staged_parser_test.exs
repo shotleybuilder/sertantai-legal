@@ -411,4 +411,95 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert result =~ " reg. 6 revoked [Yes]"
     end
   end
+
+  describe "on_progress callback" do
+    test "notify_progress calls callback with event" do
+      # Test that the notify_progress helper works correctly
+      ref = make_ref()
+      test_pid = self()
+
+      callback = fn event -> send(test_pid, {ref, event}) end
+
+      # Call the test helper that exposes notify_progress
+      StagedParser.test_notify_progress(callback, {:stage_start, :metadata, 1, 6})
+
+      assert_receive {^ref, {:stage_start, :metadata, 1, 6}}
+    end
+
+    test "notify_progress does nothing with nil callback" do
+      # Should not crash when callback is nil
+      assert :ok == StagedParser.test_notify_progress(nil, {:stage_start, :metadata, 1, 6})
+    end
+
+    test "build_stage_summary returns summary for metadata stage" do
+      stage_result = %{status: :ok, data: %{si_code: ["code1", "code2"], md_subjects: ["subj1"]}}
+      summary = StagedParser.test_build_stage_summary(:metadata, stage_result)
+      assert summary == "2 SI codes, 1 subjects"
+    end
+
+    test "build_stage_summary returns summary for extent stage" do
+      stage_result = %{status: :ok, data: %{extent: "UK"}}
+      summary = StagedParser.test_build_stage_summary(:extent, stage_result)
+      assert summary == "UK"
+    end
+
+    test "build_stage_summary returns summary for enacted_by stage" do
+      stage_result = %{status: :ok, data: %{enacted_by: [%{name: "law1"}, %{name: "law2"}]}}
+      summary = StagedParser.test_build_stage_summary(:enacted_by, stage_result)
+      assert summary == "2 parent law(s)"
+    end
+
+    test "build_stage_summary returns summary for amendments stage" do
+      stage_result = %{
+        status: :ok,
+        data: %{
+          amending_count: 3,
+          rescinding_count: 1,
+          amended_by_count: 2,
+          rescinded_by_count: 0,
+          stats_self_affects_count: 5
+        }
+      }
+
+      summary = StagedParser.test_build_stage_summary(:amendments, stage_result)
+      assert summary == "Amends: 3, Rescinds: 1, Amended by: 2, Rescinded by: 0 (self: 5)"
+    end
+
+    test "build_stage_summary returns summary for repeal_revoke stage" do
+      stage_result = %{status: :ok, data: %{revoked: true}}
+      summary = StagedParser.test_build_stage_summary(:repeal_revoke, stage_result)
+      assert summary == "REVOKED"
+
+      stage_result2 = %{status: :ok, data: %{revoked: false}}
+      summary2 = StagedParser.test_build_stage_summary(:repeal_revoke, stage_result2)
+      assert summary2 == "Active"
+    end
+
+    test "build_stage_summary returns summary for taxa stage" do
+      stage_result = %{
+        status: :ok,
+        data: %{role: ["actor1", "actor2"], duty_type: ["type1"], popimar: ["p1", "p2", "p3"]}
+      }
+
+      summary = StagedParser.test_build_stage_summary(:taxa, stage_result)
+      assert summary == "2 actors, 1 duty types, 3 POPIMAR"
+    end
+
+    test "build_stage_summary returns error message for failed stage" do
+      stage_result = %{status: :error, data: nil, error: "HTTP 404: Not found"}
+      summary = StagedParser.test_build_stage_summary(:metadata, stage_result)
+      assert summary == "HTTP 404: Not found"
+    end
+
+    test "build_stage_summary returns nil for unknown status" do
+      stage_result = %{status: :unknown, data: nil}
+      summary = StagedParser.test_build_stage_summary(:metadata, stage_result)
+      assert summary == nil
+    end
+
+    test "stages/0 returns all 6 stages in order" do
+      stages = StagedParser.stages()
+      assert stages == [:metadata, :extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
+    end
+  end
 end

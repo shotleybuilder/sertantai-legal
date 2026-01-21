@@ -1069,5 +1069,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     @doc false
     def test_build_target_affect_applied(amendment), do: build_target_affect_applied(amendment)
+
+    @doc false
+    def test_notify_progress(callback, event), do: notify_progress(callback, event)
+
+    @doc false
+    def test_build_stage_summary(stage, result), do: build_stage_summary(stage, result)
   end
 end
