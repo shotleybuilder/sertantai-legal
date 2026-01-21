@@ -166,6 +166,10 @@ defmodule SessionMigrator do
             true -> :pending
           end
 
+        # Store the ENTIRE record as parsed_data (all scrape metadata)
+        # Strip transient fields that don't belong in parsed_data
+        parsed_data = record_to_parsed_data(record)
+
         # Note: parse_count is not accepted by create action, uses default of 1
         attrs = %{
           session_id: session_id,
@@ -173,7 +177,7 @@ defmodule SessionMigrator do
           group: group,
           status: status,
           selected: record["selected"] || record[:selected] || false,
-          parsed_data: record["parsed_data"] || record[:parsed_data]
+          parsed_data: parsed_data
         }
 
         case ScrapeSessionRecord.create(attrs) do
@@ -193,6 +197,19 @@ defmodule SessionMigrator do
         end
       end
     end)
+  end
+
+  # Convert record map to parsed_data format for DB storage
+  # Strips out transient fields, keeps all scrape metadata
+  defp record_to_parsed_data(record) do
+    # Keys to exclude from parsed_data (transient/session-specific fields)
+    exclude_keys = ["selected", "status", "parse_count", :selected, :status, :parse_count]
+
+    record
+    |> Enum.reject(fn {k, v} ->
+      k in exclude_keys or is_nil(v) or v == "" or v == []
+    end)
+    |> Enum.into(%{})
   end
 
   defp migrate_affected_laws(session_id, session_path, dry_run) do

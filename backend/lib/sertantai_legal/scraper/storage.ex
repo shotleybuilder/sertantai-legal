@@ -683,15 +683,29 @@ defmodule SertantaiLegal.Scraper.Storage do
     if is_nil(law_name) do
       {:error, "Record missing :name field"}
     else
+      # Store full record data in parsed_data (scrape metadata)
+      # This gets added to during subsequent parse stages
+      parsed_data = record_to_parsed_data(record)
+
       ScrapeSessionRecord.create(%{
         session_id: session_id,
         law_name: law_name,
         group: group,
         status: :pending,
         selected: false,
-        parsed_data: nil
+        parsed_data: parsed_data
       })
     end
+  end
+
+  # Convert record map to parsed_data format for DB storage
+  # Strips out transient fields, keeps all scrape metadata
+  defp record_to_parsed_data(record) do
+    record
+    |> atomize_keys()
+    |> Map.drop([:selected, :status, :parse_count])
+    |> Enum.reject(fn {_k, v} -> is_nil(v) or v == "" or v == [] end)
+    |> Enum.into(%{})
   end
 
   @doc """

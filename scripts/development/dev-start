@@ -59,7 +59,8 @@ fi
 echo "📦 Opening terminal windows..."
 
 # Open Phoenix Backend terminal
-gnome-terminal --title="$PROJECT_NAME-backend" -- bash -c "cd \"$PROJECT_ROOT\" && echo '🔥 Starting Phoenix backend on port $BACKEND_PORT...' && echo \"📁 Working directory: \$(pwd)\" && echo '' && mix phx.server" &
+# Unset DATABASE_URL to ensure local dev database is used (not Supabase)
+gnome-terminal --title="$PROJECT_NAME-backend" -- bash -c "cd \"$PROJECT_ROOT\" && unset DATABASE_URL && echo '🔥 Starting Phoenix backend on port $BACKEND_PORT...' && echo \"📁 Working directory: \$(pwd)\" && echo '' && mix phx.server" &
 
 # Wait a moment for first terminal to open
 sleep 0.5
