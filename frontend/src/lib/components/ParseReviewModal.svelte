@@ -330,6 +330,103 @@
 		if (typeof value === 'number' && value === 0) return false;
 		return true;
 	}
+
+	// Get list of failed stages from parseResult
+	function getFailedStages(): ParseStage[] {
+		if (!parseResult?.stages) return [];
+		return (Object.entries(parseResult.stages) as [ParseStage, { status: string }][])
+			.filter(([_, result]) => result.status === 'error')
+			.map(([stage, _]) => stage);
+	}
+
+	// Retry only the failed stages
+	let isRetrying = false;
+	async function retryFailedStages() {
+		if (!currentRecord || !parseResult) return;
+
+		const failedStages = getFailedStages();
+		if (failedStages.length === 0) return;
+
+		// Cleanup any existing stream
+		if (cleanupStream) {
+			cleanupStream();
+			cleanupStream = null;
+		}
+
+		isRetrying = true;
+		parseError = null;
+
+		// Reset progress for failed stages to pending, keep successful ones
+		for (const stage of failedStages) {
+			stageProgress = { ...stageProgress, [stage]: { status: 'pending', summary: null } };
+		}
+
+		// Store current successful results to merge later
+		const previousResult = parseResult;
+
+		cleanupStream = parseOneStream(
+			sessionId,
+			currentRecord.name,
+			{
+				onStageStart: (stage, _stageNum, _total) => {
+					currentStage = stage;
+					stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
+				},
+				onStageComplete: (stage, status, summary) => {
+					stageProgress = { ...stageProgress, [stage]: { status, summary } };
+				},
+				onComplete: (result) => {
+					// Merge retry results with previous results
+					// For stages that were retried, use new results
+					// For stages that weren't retried, keep previous results
+					const mergedStages = { ...previousResult.stages };
+					const mergedRecord = { ...previousResult.record };
+					const mergedErrors: string[] = [];
+
+					for (const stage of ALL_STAGES) {
+						if (failedStages.includes(stage)) {
+							// Use new result for retried stage
+							mergedStages[stage] = result.stages[stage];
+							// If the retry succeeded, merge in any new data
+							if (result.stages[stage]?.status === 'ok' && result.record) {
+								Object.assign(mergedRecord, result.record);
+							}
+							// Add error if retry still failed
+							if (result.stages[stage]?.status === 'error') {
+								const error = result.errors.find(e => e.startsWith(stage + ':'));
+								if (error) mergedErrors.push(error);
+							}
+						} else {
+							// Keep previous result for non-retried stage
+							// Also keep any errors from previous result for this stage
+							const prevError = previousResult.errors.find(e => e.startsWith(stage + ':'));
+							if (prevError) mergedErrors.push(prevError);
+						}
+					}
+
+					parseResult = {
+						...result,
+						record: mergedRecord,
+						stages: mergedStages,
+						errors: mergedErrors,
+						has_errors: mergedErrors.length > 0
+					};
+
+					isRetrying = false;
+					currentStage = null;
+					cleanupStream = null;
+				},
+				onError: (error) => {
+					console.error('Retry failed:', error);
+					parseError = error.message;
+					isRetrying = false;
+					currentStage = null;
+					cleanupStream = null;
+				}
+			},
+			failedStages // Only retry failed stages
+		);
+	}
 </script>
 
 {#if open}
@@ -441,7 +538,27 @@
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 									</svg>
 									<div class="flex-1">
-										<h4 class="text-sm font-medium text-amber-800">Partial Parse Results</h4>
+										<div class="flex justify-between items-start">
+											<h4 class="text-sm font-medium text-amber-800">Partial Parse Results</h4>
+											<button
+												on:click={retryFailedStages}
+												disabled={isRetrying}
+												class="ml-3 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+											>
+												{#if isRetrying}
+													<svg class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 text-amber-700" fill="none" viewBox="0 0 24 24">
+														<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+														<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+													</svg>
+													Retrying...
+												{:else}
+													<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+													</svg>
+													Retry Failed
+												{/if}
+											</button>
+										</div>
 										<p class="text-sm text-amber-700 mt-1">
 											Some stages could not complete. Data from successful stages is still available and can be saved.
 										</p>
@@ -1322,14 +1439,14 @@
 					<div class="flex space-x-2 mr-4">
 						<button
 							on:click={movePrev}
-							disabled={isFirst || $parseMutation.isPending || $confirmMutation.isPending}
+							disabled={isFirst || $parseMutation.isPending || $confirmMutation.isPending || isRetrying}
 							class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Prev
 						</button>
 						<button
 							on:click={moveNext}
-							disabled={isLast || $parseMutation.isPending || $confirmMutation.isPending}
+							disabled={isLast || $parseMutation.isPending || $confirmMutation.isPending || isRetrying}
 							class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Next
@@ -1343,14 +1460,14 @@
 					</button>
 					<button
 						on:click={handleSkip}
-						disabled={$parseMutation.isPending || $confirmMutation.isPending}
+						disabled={$parseMutation.isPending || $confirmMutation.isPending || isRetrying}
 						class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						Skip
 					</button>
 					<button
 						on:click={handleConfirm}
-						disabled={!parseResult || $parseMutation.isPending || $confirmMutation.isPending}
+						disabled={!parseResult || $parseMutation.isPending || $confirmMutation.isPending || isRetrying}
 						class="px-4 py-2 text-sm text-white rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center {parseResult?.has_errors ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}"
 						title={parseResult?.has_errors ? 'Save data from successful stages only' : 'Save all parsed data'}
 					>

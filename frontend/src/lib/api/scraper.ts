@@ -694,14 +694,19 @@ export interface ParseProgressCallbacks {
 
 /**
  * Parse a single record with streaming progress updates via SSE.
+ * Optionally pass specific stages to retry only those stages.
  * Returns a cleanup function to abort the connection.
  */
 export function parseOneStream(
 	sessionId: string,
 	name: string,
-	callbacks: ParseProgressCallbacks
+	callbacks: ParseProgressCallbacks,
+	stages?: ParseStage[]
 ): () => void {
-	const url = `${API_URL}/api/sessions/${sessionId}/parse-stream?name=${encodeURIComponent(name)}`;
+	let url = `${API_URL}/api/sessions/${sessionId}/parse-stream?name=${encodeURIComponent(name)}`;
+	if (stages && stages.length > 0) {
+		url += `&stages=${stages.join(',')}`;
+	}
 	const eventSource = new EventSource(url);
 
 	eventSource.onmessage = (event) => {

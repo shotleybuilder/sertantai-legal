@@ -451,7 +451,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   The final `parse_complete` event includes the full parse result (same as parse_one response).
   """
-  def parse_stream(conn, %{"id" => session_id, "name" => name}) do
+  def parse_stream(conn, %{"id" => session_id, "name" => name} = params) do
     alias SertantaiLegal.Scraper.StagedParser
 
     with {:ok, _session} <- SessionManager.get(session_id) do
@@ -483,8 +483,26 @@ defmodule SertantaiLegalWeb.ScrapeController do
             chunk(conn, "data: #{data}\n\n")
           end
 
-          # Run staged parse with progress callback
-          {:ok, result} = StagedParser.parse(record, on_progress: send_progress)
+          # Parse stages parameter if provided (for retry functionality)
+          # Expected format: "metadata,extent,amendments" (comma-separated stage names)
+          parse_opts =
+            case params["stages"] do
+              nil ->
+                [on_progress: send_progress]
+
+              stages_str when is_binary(stages_str) ->
+                stages =
+                  stages_str
+                  |> String.split(",")
+                  |> Enum.map(&String.trim/1)
+                  |> Enum.map(&String.to_existing_atom/1)
+                  |> Enum.filter(&(&1 in StagedParser.stages()))
+
+                [on_progress: send_progress, stages: stages]
+            end
+
+          # Run staged parse with progress callback (and optional stage filter)
+          {:ok, result} = StagedParser.parse(record, parse_opts)
 
           # Send final result
           comparison_map = ParsedLaw.to_comparison_map(result.law)
