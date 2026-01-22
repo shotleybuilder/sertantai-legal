@@ -754,29 +754,16 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- STAGE 5 🚫 repeal_revoke: Status -->
-					{@const statusConfig = SECTION_CONFIG.find(s => s.id === 'status')}
-					{#if statusConfig?.fields}
-						<CollapsibleSection title={statusConfig.title} expanded={statusConfig.defaultExpanded}>
-							{#each statusConfig.fields as field}
-								{@const fieldValue = getFieldValue(displayRecord, field)}
-								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
-									<FieldRow config={field} value={fieldValue} />
-								{/if}
-							{/each}
-						</CollapsibleSection>
-					{/if}
-
-					<!-- SECTION 6: FUNCTION (with subsections) -->
-					{@const functionConfig = SECTION_CONFIG.find(s => s.id === 'function')}
-					{#if functionConfig?.subsections}
+					<!-- STAGE 4 🔄 amendments -->
+					{@const stage4Config = SECTION_CONFIG.find(s => s.id === 'stage4_amendments')}
+					{#if stage4Config?.subsections}
 						<CollapsibleSection
-							title={functionConfig.title}
-							expanded={functionConfig.defaultExpanded}
+							title={stage4Config.title}
+							expanded={stage4Config.defaultExpanded}
 							badge={parseResult.record?.is_amending ? 'Amending' : parseResult.record?.is_rescinding ? 'Rescinding' : ''}
 							badgeColor={parseResult.record?.is_rescinding ? 'red' : 'blue'}
 						>
-							{#each functionConfig.subsections as subsection}
+							{#each stage4Config.subsections as subsection}
 								<CollapsibleSection
 									title={subsection.title}
 									expanded={subsection.defaultExpanded}
@@ -789,6 +776,19 @@
 										{/if}
 									{/each}
 								</CollapsibleSection>
+							{/each}
+						</CollapsibleSection>
+					{/if}
+
+					<!-- STAGE 5 🚫 repeal_revoke: Status -->
+					{@const statusConfig = SECTION_CONFIG.find(s => s.id === 'status')}
+					{#if statusConfig?.fields}
+						<CollapsibleSection title={statusConfig.title} expanded={statusConfig.defaultExpanded}>
+							{#each statusConfig.fields as field}
+								{@const fieldValue = getFieldValue(displayRecord, field)}
+								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
+									<FieldRow config={field} value={fieldValue} />
+								{/if}
 							{/each}
 						</CollapsibleSection>
 					{/if}

@@ -502,34 +502,20 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
-	// STAGE 5 🚫 repeal_revoke (placeholder - to be restructured)
+	// STAGE 4 🔄 amendments
 	// ==========================================
 	{
-		id: 'status',
-		title: 'Status',
-		stage: 'repeal_revoke',
-		defaultExpanded: true,
-		fields: [
-			{ key: 'live', label: 'Status', type: 'text', stage: 'repeal_revoke' },
-			{
-				key: 'live_description',
-				label: 'Status Description',
-				type: 'text',
-				stage: 'repeal_revoke',
-				hideWhenEmpty: true
-			}
-		]
-	},
-	{
-		id: 'function',
-		title: 'Function',
+		id: 'stage4_amendments',
+		title: 'STAGE 4 🔄 amendments',
+		stage: 'amendments',
 		defaultExpanded: true,
 		subsections: [
 			{
-				id: 'flags',
-				title: 'Flags',
+				id: 'function',
+				title: 'Function',
 				defaultExpanded: true,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 4 Function table
 					{
 						key: 'function',
 						label: 'Function',
@@ -538,26 +524,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					},
 					{ key: 'is_making', label: 'Is Making', type: 'boolean', stage: 'derived' },
-					{ key: 'is_commencing', label: 'Is Commencing', type: 'boolean', stage: 'derived' },
-					{ key: 'is_amending', label: 'Is Amending', type: 'boolean', stage: 'amendments' },
-					{ key: 'is_rescinding', label: 'Is Rescinding', type: 'boolean', stage: 'amendments' },
-					{ key: 'is_enacting', label: 'Is Enacting', type: 'boolean', stage: 'enacted_by' }
-				]
-			},
-			{
-				id: 'enacting',
-				title: 'Enacting',
-				defaultExpanded: true,
-				fields: [
-					{ key: 'enacted_by', label: 'Enacted By', type: 'array', stage: 'enacted_by' },
-					{
-						key: 'enacted_by_meta',
-						label: 'Enacted By (Meta)',
-						type: 'json',
-						stage: 'enacted_by',
-						hideWhenEmpty: true
-					},
-					{ key: 'enacting', label: 'Enacts', type: 'array', stage: 'derived', hideWhenEmpty: true }
+					{ key: 'is_commencing', label: 'Is Commencing', type: 'boolean', stage: 'derived' }
 				]
 			},
 			{
@@ -565,6 +532,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Self-Affects',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 4 Self-Affects table
 					{
 						key: 'stats_self_affects_count',
 						label: 'Self Amendments',
@@ -586,6 +554,8 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Amending',
 				defaultExpanded: true,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 4 Amending table
+					{ key: 'is_amending', label: 'Is Amending', type: 'boolean', stage: 'derived' },
 					{
 						key: 'amending_stats_affects_count',
 						label: 'Affects Count',
@@ -620,6 +590,13 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'array',
 						stage: 'amendments',
 						hideWhenEmpty: true
+					},
+					{
+						key: 'linked_amending',
+						label: 'Linked Amends',
+						type: 'array',
+						stage: 'derived',
+						hideWhenEmpty: true
 					}
 				]
 			},
@@ -628,6 +605,8 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Rescinding',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 4 Rescinding table
+					{ key: 'is_rescinding', label: 'Is Rescinding', type: 'boolean', stage: 'derived' },
 					{
 						key: 'rescinding_stats_rescinding_laws_count',
 						label: 'Rescinded Laws Count',
@@ -655,6 +634,13 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'array',
 						stage: 'amendments',
 						hideWhenEmpty: true
+					},
+					{
+						key: 'linked_rescinding',
+						label: 'Linked Rescinds',
+						type: 'array',
+						stage: 'derived',
+						hideWhenEmpty: true
 					}
 				]
 			},
@@ -663,6 +649,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Amended By',
 				defaultExpanded: true,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 4 Amended By table
 					{
 						key: 'amended_by_stats_affected_by_count',
 						label: 'Affected By Count',
@@ -697,6 +684,27 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'array',
 						stage: 'amendments',
 						hideWhenEmpty: true
+					},
+					{
+						key: 'linked_amended_by',
+						label: 'Linked Amended By',
+						type: 'array',
+						stage: 'derived',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'latest_amend_date',
+						label: 'Latest Amendment',
+						type: 'date',
+						stage: 'derived',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'latest_change_date',
+						label: 'Latest Change',
+						type: 'date',
+						stage: 'derived',
+						hideWhenEmpty: true
 					}
 				]
 			},
@@ -705,6 +713,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Rescinded By',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 4 Rescinded By table
 					{
 						key: 'rescinded_by_stats_rescinded_by_laws_count',
 						label: 'Rescinding Laws Count',
@@ -732,41 +741,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'array',
 						stage: 'amendments',
 						hideWhenEmpty: true
-					}
-				]
-			},
-			{
-				id: 'linked',
-				title: 'Linked',
-				defaultExpanded: false,
-				fields: [
-					{
-						key: 'linked_enacted_by',
-						label: 'Linked Enacted By',
-						type: 'array',
-						stage: 'derived',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'linked_amending',
-						label: 'Linked Amends',
-						type: 'array',
-						stage: 'derived',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'linked_amended_by',
-						label: 'Linked Amended By',
-						type: 'array',
-						stage: 'derived',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'linked_rescinding',
-						label: 'Linked Rescinds',
-						type: 'array',
-						stage: 'derived',
-						hideWhenEmpty: true
 					},
 					{
 						key: 'linked_rescinded_by',
@@ -774,8 +748,34 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'array',
 						stage: 'derived',
 						hideWhenEmpty: true
+					},
+					{
+						key: 'latest_rescind_date',
+						label: 'Latest Rescind',
+						type: 'date',
+						stage: 'derived',
+						hideWhenEmpty: true
 					}
 				]
+			}
+		]
+	},
+	// ==========================================
+	// STAGE 5 🚫 repeal_revoke (placeholder - to be restructured)
+	// ==========================================
+	{
+		id: 'status',
+		title: 'Status',
+		stage: 'repeal_revoke',
+		defaultExpanded: true,
+		fields: [
+			{ key: 'live', label: 'Status', type: 'text', stage: 'repeal_revoke' },
+			{
+				key: 'live_description',
+				label: 'Status Description',
+				type: 'text',
+				stage: 'repeal_revoke',
+				hideWhenEmpty: true
 			}
 		]
 	},
