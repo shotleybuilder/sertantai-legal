@@ -473,6 +473,35 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
+	// STAGE 3 🚀 enacted_by
+	// ==========================================
+	{
+		id: 'stage3_enacted_by',
+		title: 'STAGE 3 🚀 enacted_by',
+		stage: 'enacted_by',
+		defaultExpanded: true,
+		fields: [
+			// Order matches LRT-SCHEMA.md Enacting <> Enacted_By table
+			{ key: 'enacted_by', label: 'Enacted By', type: 'array', stage: 'enacted_by' },
+			{
+				key: 'enacted_by_meta',
+				label: 'Enacted By (Meta)',
+				type: 'json',
+				stage: 'enacted_by',
+				hideWhenEmpty: true
+			},
+			{ key: 'is_enacting', label: 'Is Enacting', type: 'boolean', stage: 'derived' },
+			{ key: 'enacting', label: 'Enacts', type: 'array', stage: 'derived', hideWhenEmpty: true },
+			{
+				key: 'linked_enacted_by',
+				label: 'Linked Enacted By',
+				type: 'array',
+				stage: 'derived',
+				hideWhenEmpty: true
+			}
+		]
+	},
+	// ==========================================
 	// STAGE 5 🚫 repeal_revoke (placeholder - to be restructured)
 	// ==========================================
 	{

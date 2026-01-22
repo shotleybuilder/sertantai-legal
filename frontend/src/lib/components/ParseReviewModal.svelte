@@ -741,6 +741,19 @@
 						</CollapsibleSection>
 					{/if}
 
+					<!-- STAGE 3 🚀 enacted_by -->
+					{@const stage3Config = SECTION_CONFIG.find(s => s.id === 'stage3_enacted_by')}
+					{#if stage3Config?.fields}
+						<CollapsibleSection title={stage3Config.title} expanded={stage3Config.defaultExpanded}>
+							{#each stage3Config.fields as field}
+								{@const fieldValue = getFieldValue(displayRecord, field)}
+								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
+									<FieldRow config={field} value={fieldValue} />
+								{/if}
+							{/each}
+						</CollapsibleSection>
+					{/if}
+
 					<!-- STAGE 5 🚫 repeal_revoke: Status -->
 					{@const statusConfig = SECTION_CONFIG.find(s => s.id === 'status')}
 					{#if statusConfig?.fields}
