@@ -761,14 +761,15 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
-	// STAGE 5 🚫 repeal_revoke (placeholder - to be restructured)
+	// STAGE 5 🚫 repeal_revoke
 	// ==========================================
 	{
-		id: 'status',
-		title: 'Status',
+		id: 'stage5_repeal_revoke',
+		title: 'STAGE 5 🚫 repeal_revoke',
 		stage: 'repeal_revoke',
 		defaultExpanded: true,
 		fields: [
+			// Order matches LRT-SCHEMA.md STAGE 5 Status table
 			{ key: 'live', label: 'Status', type: 'text', stage: 'repeal_revoke' },
 			{
 				key: 'live_description',
