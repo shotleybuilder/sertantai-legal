@@ -116,17 +116,17 @@
 
 # STAGE 3 🚀 enacted_by
 
-  ## Enacting <> Enacted_By
+  Enacting <> Enacted_By
+
+  **enacting** may be a duplicate of **is_enacting**.
   
-    **enacting** may be a duplicate of **is_enacting**.
-    
-    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
-    |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `enacted_by` | Enacted By | `enacted_by` | `text[]` | Yes (8380) | `{ukpga/2000/5}` | enacted_by |
-    | `enacted_by_meta` | Enacted By (Meta) | `enacted_by_meta` | `map[]` (JSONB) | No | `[{"name": "UK_ukpga_2008_29", "uri": "http://..."}]` | enacted_by |
-    | `is_enacting` | Is Enacting | `is_enacting` | `boolean` | Yes (686) | `false` | 🧮_derived <- 🚀 enacted_by |
-    | `enacting` | Enacts | `enacting` | `text[]` | Yes (686) | | 🧮_derived <- 🚀 enacted_by |
-    | `linked_enacted_by` | Linked Enacted By | `linked_enacted_by` | `text[]` | Yes (7839) | `{UK_ukpga_1972_68}` | 🧮_derived <- 🚀 enacted_by 🔗 |
+  | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+  |--------|---------------|---------------|------|:--------:|---------|-------|
+  | `enacted_by` | Enacted By | `enacted_by` | `text[]` | Yes (8380) | `{ukpga/2000/5}` | enacted_by |
+  | `enacted_by_meta` | Enacted By (Meta) | `enacted_by_meta` | `map[]` (JSONB) | No | `[{"name": "UK_ukpga_2008_29", "uri": "http://..."}]` | enacted_by |
+  | `is_enacting` | Is Enacting | `is_enacting` | `boolean` | Yes (686) | `false` | 🧮_derived <- 🚀 enacted_by |
+  | `enacting` | Enacts | `enacting` | `text[]` | Yes (686) | | 🧮_derived <- 🚀 enacted_by |
+  | `linked_enacted_by` | Linked Enacted By | `linked_enacted_by` | `text[]` | Yes (7839) | `{UK_ukpga_1972_68}` | 🧮_derived <- 🚀 enacted_by 🔗 |
 
 ---
 
@@ -213,8 +213,6 @@
 ---
 
 # STAGE 5 🚫_repeal_revoke
-
-  ## Status
 
   | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
   |--------|---------------|---------------|------|:--------:|---------|-------|

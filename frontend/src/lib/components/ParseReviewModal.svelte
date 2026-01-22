@@ -12,12 +12,21 @@
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
 	import { SECTION_CONFIG } from './parse-review/field-config';
 
-	export let sessionId: string;
+	// Display mode: 'create' (new law), 'update' (reparse with diff), 'read' (view DB record)
+	type DisplayMode = 'create' | 'update' | 'read';
+
+	// Props for parse workflow (Create/Update modes)
+	export let sessionId: string = '';
 	export let records: ScrapeRecord[] = [];
 	export let initialIndex: number = 0;
 	export let open: boolean = false;
 	// Optional: limit which stages to run (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
 	export let stages: ParseStage[] | undefined = undefined;
+
+	// Props for Read mode (view existing DB record without parsing)
+	export let record: Record<string, unknown> | null = null;
+	// Optional: force specific mode (otherwise auto-detected)
+	export let mode: DisplayMode | undefined = undefined;
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -83,13 +92,26 @@
 	$: isFirst = currentIndex === 0;
 	$: isLast = currentIndex === records.length - 1;
 
-	// For display: merge existing DB record with parsed changes (for selective stage parsing)
-	// This shows the user complete data with parsed updates overlaid
-	$: displayRecord = parseResult?.record
-		? parseResult.duplicate?.exists && parseResult.duplicate?.record
-			? { ...parseResult.duplicate.record, ...parseResult.record }
-			: parseResult.record
-		: null;
+	// Derive effective display mode:
+	// 1. Explicit mode prop takes precedence
+	// 2. If record prop is set (no records array), it's Read mode
+	// 3. Otherwise, Create (no duplicate) or Update (has duplicate) based on parse result
+	$: effectiveMode = (mode
+		? mode
+		: record
+			? 'read'
+			: parseResult?.duplicate?.exists
+				? 'update'
+				: 'create') as DisplayMode;
+
+	// For display: use record prop in Read mode, otherwise merge DB record with parsed changes
+	$: displayRecord = effectiveMode === 'read'
+		? record
+		: parseResult?.record
+			? parseResult.duplicate?.exists && parseResult.duplicate?.record
+				? { ...parseResult.duplicate.record, ...parseResult.record }
+				: parseResult.record
+			: null;
 
 	// Track the last parsed record name to prevent re-parsing
 	let lastParsedName: string | null = null;
@@ -98,8 +120,10 @@
 
 	// Parse current record when index changes (only if not already parsed or failed)
 	// IMPORTANT: workflowComplete guard prevents reparse after final confirm
+	// Skip parsing entirely in Read mode (record prop provides the data)
 	$: if (
 		open &&
+		effectiveMode !== 'read' &&
 		!workflowComplete &&
 		currentRecord &&
 		currentRecord.name !== lastParsedName &&
@@ -460,7 +484,24 @@
 		>
 			<!-- Header -->
 			<div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-				<h2 class="text-lg font-semibold text-gray-900">Parse Review</h2>
+				<div class="flex items-center space-x-3">
+					<h2 class="text-lg font-semibold text-gray-900">
+						{#if effectiveMode === 'read'}
+							View Record
+						{:else if effectiveMode === 'update'}
+							Update Record
+						{:else}
+							New Record
+						{/if}
+					</h2>
+					<span class="px-2 py-0.5 text-xs font-medium rounded-full {
+						effectiveMode === 'read' ? 'bg-gray-100 text-gray-600' :
+						effectiveMode === 'update' ? 'bg-amber-100 text-amber-700' :
+						'bg-green-100 text-green-700'
+					}">
+						{effectiveMode === 'read' ? 'Read Only' : effectiveMode === 'update' ? 'Update' : 'Create'}
+					</span>
+				</div>
 				<button on:click={handleCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -532,23 +573,27 @@
 							{mapParseError(parseError || $parseMutation.error?.message || '')}
 						</p>
 					</div>
-				{:else if parseResult}
+				{:else if parseResult || effectiveMode === 'read'}
+					{@const recordName = effectiveMode === 'read' ? displayRecord?.name : parseResult?.name}
 					<!-- Title -->
 					<div class="mb-6">
 						<h3 class="text-xl font-medium text-gray-900">
 							{getField(displayRecord, 'title_en', 'Title_EN') || 'Untitled'}
 						</h3>
-						<a
-							href="https://www.legislation.gov.uk/{parseResult.name}"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-sm text-blue-600 hover:text-blue-800"
-						>
-							View on legislation.gov.uk
-						</a>
+						{#if recordName}
+							<a
+								href="https://www.legislation.gov.uk/{recordName}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-sm text-blue-600 hover:text-blue-800"
+							>
+								View on legislation.gov.uk
+							</a>
+						{/if}
 					</div>
 
-					<!-- Parse Stages Status -->
+					<!-- Parse Stages Status (hidden in Read mode) -->
+					{#if effectiveMode !== 'read' && parseResult}
 					<div class="mb-6 bg-gray-50 rounded-lg p-4">
 						<h4 class="text-sm font-medium text-gray-700 mb-3">Parse Stages</h4>
 						<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -644,6 +689,7 @@
 							</div>
 						{/if}
 					</div>
+					{/if}
 
 					<!-- STAGE 1 💠 metadata -->
 					{@const stage1Config = SECTION_CONFIG.find(s => s.id === 'stage1_metadata')}
@@ -657,8 +703,8 @@
 								>
 									{#each subsection.fields as field}
 										{@const fieldValue = getFieldValue(displayRecord, field)}
-										{#if field.editable && field.key === 'family'}
-											<!-- Special: Family dropdown -->
+										{#if field.editable && field.key === 'family' && effectiveMode !== 'read'}
+											<!-- Special: Family dropdown (editable in Create/Update modes) -->
 											<div class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0">
 												<span class="text-sm text-gray-500">
 													{field.label} <span class="text-xs text-gray-400">({field.key})</span>
@@ -688,8 +734,8 @@
 													{/if}
 												</div>
 											</div>
-										{:else if field.editable && field.key === 'family_ii'}
-											<!-- Special: Sub-Family dropdown -->
+										{:else if field.editable && field.key === 'family_ii' && effectiveMode !== 'read'}
+											<!-- Special: Sub-Family dropdown (editable in Create/Update modes) -->
 											<div class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0">
 												<span class="text-sm text-gray-500">
 													{field.label} <span class="text-xs text-gray-400">({field.key})</span>
@@ -760,8 +806,8 @@
 						<CollapsibleSection
 							title={stage4Config.title}
 							expanded={stage4Config.defaultExpanded}
-							badge={parseResult.record?.is_amending ? 'Amending' : parseResult.record?.is_rescinding ? 'Rescinding' : ''}
-							badgeColor={parseResult.record?.is_rescinding ? 'red' : 'blue'}
+							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
+							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
 						>
 							{#each stage4Config.subsections as subsection}
 								<CollapsibleSection
@@ -840,8 +886,8 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- Duplicate Warning with Diff -->
-					{#if parseResult.duplicate?.exists}
+					<!-- Duplicate Warning with Diff (Update mode only) -->
+					{#if effectiveMode === 'update' && parseResult?.duplicate?.exists}
 						<div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
 							<div class="flex">
 								<svg
@@ -887,9 +933,15 @@
 			<!-- Footer -->
 			<div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
 				<div class="text-sm text-gray-500">
-					Record {currentIndex + 1} of {records.length}
+					{#if effectiveMode === 'read'}
+						{displayRecord?.name || 'Record'}
+					{:else}
+						Record {currentIndex + 1} of {records.length}
+					{/if}
 				</div>
 				<div class="flex items-center space-x-3">
+					{#if effectiveMode !== 'read'}
+					<!-- Navigation (Create/Update modes only) -->
 					<div class="flex space-x-2 mr-4">
 						<button
 							on:click={movePrev}
@@ -912,12 +964,14 @@
 							Next
 						</button>
 					</div>
+					{/if}
 					<button
 						on:click={handleCancel}
 						class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 					>
-						Cancel
+						{effectiveMode === 'read' ? 'Close' : 'Cancel'}
 					</button>
+					{#if effectiveMode !== 'read'}
 					<button
 						on:click={handleSkip}
 						disabled={$parseMutation.isPending || $confirmMutation.isPending || isRetrying}
@@ -965,6 +1019,7 @@
 							Confirm & Save
 						{/if}
 					</button>
+					{/if}
 				</div>
 			</div>
 		</div>
