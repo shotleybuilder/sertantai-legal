@@ -780,9 +780,12 @@ export const SECTION_CONFIG: SectionConfig[] = [
 			}
 		]
 	},
+	// ==========================================
+	// STAGE 6 🦋 taxa
+	// ==========================================
 	{
-		id: 'taxa',
-		title: 'Taxa',
+		id: 'stage6_taxa',
+		title: 'STAGE 6 🦋 taxa',
 		stage: 'taxa',
 		defaultExpanded: false,
 		subsections: [
@@ -791,14 +794,16 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Purpose',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Purpose table
 					{ key: 'purpose', label: 'Purpose', type: 'json', stage: 'taxa', hideWhenEmpty: true }
 				]
 			},
 			{
 				id: 'roles',
-				title: 'Roles (DRRP Model)',
+				title: 'Roles',
 				defaultExpanded: true,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Roles table
 					{ key: 'role', label: 'Role', type: 'array', stage: 'taxa', hideWhenEmpty: true },
 					{
 						key: 'article_role',
@@ -836,6 +841,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Duty Type',
 				defaultExpanded: true,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Duty Type table
 					{
 						key: 'duty_type',
 						label: 'Duty Type',
@@ -864,6 +870,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Duty Holder',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Duty Holder table
 					{
 						key: 'duty_holder',
 						label: 'Duty Holder',
@@ -906,6 +913,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Rights Holder',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Rights Holder table
 					{
 						key: 'rights_holder',
 						label: 'Rights Holder',
@@ -948,6 +956,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Responsibility Holder',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Responsibility Holder table
 					{
 						key: 'responsibility_holder',
 						label: 'Responsibility Holder',
@@ -990,6 +999,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Power Holder',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 Power Holder table
 					{
 						key: 'power_holder',
 						label: 'Power Holder',
@@ -1032,6 +1042,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'POPIMAR',
 				defaultExpanded: false,
 				fields: [
+					// Order matches LRT-SCHEMA.md STAGE 6 POPIMAR table
 					{ key: 'popimar', label: 'POPIMAR', type: 'json', stage: 'taxa', hideWhenEmpty: true },
 					{
 						key: 'popimar_article',

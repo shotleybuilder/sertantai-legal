@@ -793,11 +793,11 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- SECTION 7: TAXA (with subsections) -->
-					{@const taxaConfig = SECTION_CONFIG.find(s => s.id === 'taxa')}
-					{#if taxaConfig?.subsections}
-						<CollapsibleSection title={taxaConfig.title} expanded={taxaConfig.defaultExpanded}>
-							{#each taxaConfig.subsections as subsection}
+					<!-- STAGE 6 🦋 taxa -->
+					{@const stage6Config = SECTION_CONFIG.find(s => s.id === 'stage6_taxa')}
+					{#if stage6Config?.subsections}
+						<CollapsibleSection title={stage6Config.title} expanded={stage6Config.defaultExpanded}>
+							{#each stage6Config.subsections as subsection}
 								<CollapsibleSection
 									title={subsection.title}
 									expanded={subsection.defaultExpanded}
