@@ -104,15 +104,13 @@
 
 ---
 
-# STAGE 2 📍 extent
-
-  ## Geographic Extent
+# STAGE 2 📍 geographic extent
   
-    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
-    |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `geo_extent` | Geographic Extent | `geo_extent` | `string` | Yes (13730) | `E+W+S+NI` | 📍 extent |
-    | `geo_region` | Region | `geo_region` | `text[]` | Yes (13738) | `{England,Wales,Scotland,"Northern Ireland"}` | 📍 extent |
-    | `geo_detail` | Detail | `geo_detail` | `string` | Yes (13695) | `🇬🇧 E+W+S+NI\nAll provisions` | 📍 extent |
+  | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+  |--------|---------------|---------------|------|:--------:|---------|-------|
+  | `geo_extent` | Geographic Extent | `geo_extent` | `string` | Yes (13730) | `E+W+S+NI` | 📍 extent |
+  | `geo_region` | Region | `geo_region` | `text[]` | Yes (13738) | `{England,Wales,Scotland,"Northern Ireland"}` | 📍 extent |
+  | `geo_detail` | Detail | `geo_detail` | `string` | Yes (13695) | `🇬🇧 E+W+S+NI\nAll provisions` | 📍 extent |
 
 ---
 

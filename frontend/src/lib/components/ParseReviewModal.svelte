@@ -728,11 +728,11 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- STAGE 2 📍 extent -->
-					{@const geoConfig = SECTION_CONFIG.find(s => s.id === 'geographic_extent')}
-					{#if geoConfig?.fields}
-						<CollapsibleSection title={geoConfig.title} expanded={geoConfig.defaultExpanded}>
-							{#each geoConfig.fields as field}
+					<!-- STAGE 2 📍 geographic extent -->
+					{@const stage2Config = SECTION_CONFIG.find(s => s.id === 'stage2_extent')}
+					{#if stage2Config?.fields}
+						<CollapsibleSection title={stage2Config.title} expanded={stage2Config.defaultExpanded}>
+							{#each stage2Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
 									<FieldRow config={field} value={fieldValue} />

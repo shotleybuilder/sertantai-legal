@@ -446,14 +446,15 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
-	// STAGE 2 📍 extent (placeholder - to be restructured)
+	// STAGE 2 📍 geographic extent
 	// ==========================================
 	{
-		id: 'geographic_extent',
-		title: 'Geographic Extent',
+		id: 'stage2_extent',
+		title: 'STAGE 2 📍 geographic extent',
 		stage: 'extent',
 		defaultExpanded: true,
 		fields: [
+			// Order matches LRT-SCHEMA.md Geographic Extent table
 			{
 				key: 'geo_extent',
 				label: 'Geographic Extent',
