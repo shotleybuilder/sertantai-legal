@@ -227,13 +227,13 @@
 
 # STAGE 6 🦋_taxa
 
-  ### Purpose
+  ## Purpose
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `purpose` | Purpose | `purpose` | `map` (JSONB) | No | | 🦋_taxa |
     
-  ### Roles (DRRP Model)
+  ## Roles
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -244,7 +244,7 @@
     | `role_gvt_article` | Role Gvt Article | `role_gvt_article` | `string` | Yes (4974) | | 🦋_taxa |
     | `article_role_gvt` | Article Role Gvt | `article_role_gvt` | `string` | Yes (4974) | | 🦋_taxa |
   
-  ### Duty Type
+  ## Duty Type
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -252,7 +252,7 @@
     | `duty_type_article` | Duty Type Article | `duty_type_article` | `string` | Yes (7775) | | 🦋_taxa |
     | `article_duty_type` | Article Duty Type | `article_duty_type` | `string` | Yes (7775) | | 🦋_taxa |
   
-  ### Duty Holder
+  ## Duty Holder
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -262,7 +262,7 @@
     | `article_duty_holder` | Article Duty Holder | `article_duty_holder` | `string` | Yes (2430) | | 🦋_taxa |
     | `article_duty_holder_clause` | Article Duty Holder Clause | `article_duty_holder_clause` | `string` | Yes (2430) | | 🦋_taxa |
   
-  ### Rights Holder
+  ## Rights Holder
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -272,7 +272,7 @@
     | `article_rights_holder` | Article Rights Holder | `article_rights_holder` | `string` | Yes (1812) | | 🦋_taxa |
     | `article_rights_holder_clause` | Article Rights Holder Clause | `article_rights_holder_clause` | `string` | Yes (1812) | | 🦋_taxa |
   
-  ### Responsibility Holder
+  ## Responsibility Holder
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -282,7 +282,7 @@
     | `article_responsibility_holder` | Article Responsibility Holder | `article_responsibility_holder` | `string` | Yes (2513) | | 🦋_taxa |
     | `article_responsibility_holder_clause` | Article Responsibility Holder Clause | `article_responsibility_holder_clause` | `string` | Yes (2513) | | 🦋_taxa |
   
-  ### Power Holder
+  ## Power Holder
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
@@ -292,7 +292,7 @@
     | `article_power_holder` | Article Power Holder | `article_power_holder` | `string` | Yes (2121) | | 🦋_taxa |
     | `article_power_holder_clause` | Article Power Holder Clause | `article_power_holder_clause` | `string` | Yes (2121) | | 🦋_taxa |
   
-  ### POPIMAR
+  ## POPIMAR
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
