@@ -114,6 +114,31 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Detailed status description")
     end
 
+    attribute :live_source, :string do
+      allow_nil?(true)
+      description("Source of live status: 'metadata', 'changes', or 'both'")
+    end
+
+    attribute :live_conflict, :boolean do
+      allow_nil?(true)
+      description("Whether live status sources disagreed")
+    end
+
+    attribute :live_from_changes, :string do
+      allow_nil?(true)
+      description("Live status derived from /changes/affected endpoint")
+    end
+
+    attribute :live_from_metadata, :string do
+      allow_nil?(true)
+      description("Live status derived from /resources/data.xml endpoint")
+    end
+
+    attribute :live_conflict_detail, :map do
+      allow_nil?(true)
+      description("Details of live status conflict: reason, winner, severities (JSONB)")
+    end
+
     # Geographic Scope
     attribute :geo_extent, :string do
       allow_nil?(true)
@@ -672,6 +697,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :domain,
         :live,
         :live_description,
+        :live_source,
+        :live_conflict,
+        :live_from_changes,
+        :live_from_metadata,
+        :live_conflict_detail,
         :geo_extent,
         :geo_region,
         :geo_detail,
@@ -788,6 +818,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :domain,
         :live,
         :live_description,
+        :live_source,
+        :live_conflict,
+        :live_from_changes,
+        :live_from_metadata,
+        :live_conflict_detail,
         :geo_extent,
         :geo_region,
         :geo_detail,

@@ -70,6 +70,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           live_conflict: boolean() | nil,
           live_from_changes: String.t() | nil,
           live_from_metadata: String.t() | nil,
+          live_conflict_detail: map() | nil,
 
           # === GEOGRAPHIC EXTENT ===
           geo_extent: String.t() | nil,
@@ -218,6 +219,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     live_conflict: nil,
     live_from_changes: nil,
     live_from_metadata: nil,
+    live_conflict_detail: nil,
 
     # Geographic Extent
     geo_extent: nil,
@@ -465,6 +467,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       live_conflict: get_boolean(normalized, :live_conflict),
       live_from_changes: get_string(normalized, :live_from_changes),
       live_from_metadata: get_string(normalized, :live_from_metadata),
+      live_conflict_detail: get_map(normalized, :live_conflict_detail),
 
       # Geographic Extent
       geo_extent: get_string(normalized, :geo_extent),
@@ -983,7 +986,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
   defp should_update?(_field, nil, _old_value), do: false
   defp should_update?(_field, [], _old_value), do: false
   defp should_update?(_field, "", _old_value), do: false
-  defp should_update?(_field, %{}, _old_value), do: false
+  defp should_update?(_field, map, _old_value) when is_map(map), do: map != %{}
   defp should_update?(_field, _new_value, _old_value), do: true
 
   defp reject_nil_and_empty(map) do

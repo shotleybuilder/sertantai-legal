@@ -965,7 +965,36 @@
 
 					<!-- STAGE 6 🚫 repeal_revoke -->
 					{@const stage6Config = SECTION_CONFIG.find(s => s.id === 'stage6_repeal_revoke')}
-					{#if stage6Config?.fields}
+					{@const hasLiveConflict = displayRecord?.live_conflict === true}
+					{#if stage6Config?.subsections}
+						<CollapsibleSection
+							title={stage6Config.title}
+							expanded={stage6Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'repeal_revoke'}
+							badge={hasLiveConflict ? 'Conflict' : ''}
+							badgeColor={hasLiveConflict ? 'amber' : 'gray'}
+							on:reparse={() => reparseStage('repeal_revoke')}
+						>
+							{#each stage6Config.subsections as subsection}
+								<CollapsibleSection
+									title={subsection.title}
+									expanded={subsection.defaultExpanded}
+									level="subsection"
+									badge={subsection.id === 'reconciliation' && hasLiveConflict ? '!' : ''}
+									badgeColor={hasLiveConflict ? 'amber' : 'gray'}
+								>
+									{#each subsection.fields as field}
+										{@const fieldValue = getFieldValue(displayRecord, field)}
+										{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
+											<FieldRow config={field} value={fieldValue} />
+										{/if}
+									{/each}
+								</CollapsibleSection>
+							{/each}
+						</CollapsibleSection>
+					{:else if stage6Config?.fields}
+						<!-- Fallback for old config without subsections -->
 						<CollapsibleSection
 							title={stage6Config.title}
 							expanded={stage6Config.defaultExpanded}

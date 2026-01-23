@@ -275,6 +275,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           {live_from_metadata, :both, false}
       end
 
+    # Build conflict detail if there is a conflict
+    conflict_detail =
+      if conflict do
+        %{
+          "reason" => describe_conflict_reason(live_from_changes, live_from_metadata),
+          "winner" => to_string(source),
+          "changes_severity" => severity_changes,
+          "metadata_severity" => severity_metadata
+        }
+      else
+        nil
+      end
+
     # Log conflicts for review
     if conflict do
       law_name = Map.get(law, :name) || "unknown"
@@ -291,10 +304,37 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       live_source: source,
       live_conflict: conflict,
       live_from_changes: live_from_changes,
-      live_from_metadata: live_from_metadata
+      live_from_metadata: live_from_metadata,
+      live_conflict_detail: conflict_detail
     }
 
     ParsedLaw.merge(law, reconciliation_data)
+  end
+
+  # Describe the reason for a conflict between live status sources
+  defp describe_conflict_reason(changes, metadata) do
+    case {changes, metadata} do
+      {@live_in_force, @live_revoked} ->
+        "Metadata shows revoked but changes history shows in force"
+
+      {@live_revoked, @live_in_force} ->
+        "Changes history shows revoked but metadata shows in force"
+
+      {@live_in_force, @live_part_revoked} ->
+        "Metadata shows partial revocation but changes history shows in force"
+
+      {@live_part_revoked, @live_in_force} ->
+        "Changes history shows partial revocation but metadata shows in force"
+
+      {@live_part_revoked, @live_revoked} ->
+        "Metadata shows full revocation, changes only show partial"
+
+      {@live_revoked, @live_part_revoked} ->
+        "Changes show full revocation, metadata only shows partial"
+
+      _ ->
+        "Unknown conflict pattern"
+    end
   end
 
   # Severity ranking for live status values

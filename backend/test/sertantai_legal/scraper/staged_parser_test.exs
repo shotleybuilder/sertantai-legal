@@ -441,6 +441,8 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert result.live_conflict == false
       assert result.live_from_changes == @live_in_force
       assert result.live_from_metadata == @live_in_force
+      # No conflict detail when sources agree
+      assert result.live_conflict_detail == nil
     end
 
     test "reconcile_live_status/2 - both sources agree (revoked)" do
@@ -471,6 +473,13 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert result.live == @live_revoked
       assert result.live_source == :metadata
       assert result.live_conflict == true
+
+      # Check conflict detail
+      assert result.live_conflict_detail != nil
+      assert result.live_conflict_detail["winner"] == "metadata"
+      assert result.live_conflict_detail["reason"] =~ "Metadata shows revoked"
+      assert result.live_conflict_detail["changes_severity"] == 1
+      assert result.live_conflict_detail["metadata_severity"] == 3
     end
 
     test "reconcile_live_status/2 - changes says revoked, metadata says in force (changes wins)" do
@@ -486,6 +495,13 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert result.live == @live_revoked
       assert result.live_source == :changes
       assert result.live_conflict == true
+
+      # Check conflict detail
+      assert result.live_conflict_detail != nil
+      assert result.live_conflict_detail["winner"] == "changes"
+      assert result.live_conflict_detail["reason"] =~ "Changes history shows revoked"
+      assert result.live_conflict_detail["changes_severity"] == 3
+      assert result.live_conflict_detail["metadata_severity"] == 1
     end
 
     test "reconcile_live_status/2 - partial revocation vs in force (partial wins)" do

@@ -38,6 +38,11 @@ export const FIELD_LABELS: Record<string, string> = {
 	// Status
 	live: 'Status',
 	live_description: 'Status Description',
+	live_source: 'Status Source',
+	live_conflict: 'Status Conflict',
+	live_from_changes: 'Status (Changes)',
+	live_from_metadata: 'Status (Metadata)',
+	live_conflict_detail: 'Conflict Detail',
 
 	// Geographic Extent
 	geo_extent: 'Geographic Extent',
@@ -780,15 +785,63 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		title: 'STAGE 6 🚫 repeal_revoke',
 		stage: 'repeal_revoke',
 		defaultExpanded: true,
-		fields: [
-			// Order matches LRT-SCHEMA.md STAGE 5 Status table
-			{ key: 'live', label: 'Status', type: 'text', stage: 'repeal_revoke' },
+		subsections: [
 			{
-				key: 'live_description',
-				label: 'Status Description',
-				type: 'text',
-				stage: 'repeal_revoke',
-				hideWhenEmpty: true
+				id: 'status',
+				title: 'Status',
+				defaultExpanded: true,
+				fields: [
+					{ key: 'live', label: 'Status', type: 'text', stage: 'repeal_revoke' },
+					{
+						key: 'live_description',
+						label: 'Status Description',
+						type: 'text',
+						stage: 'repeal_revoke',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'reconciliation',
+				title: 'Reconciliation',
+				defaultExpanded: false,
+				fields: [
+					{
+						key: 'live_source',
+						label: 'Status Source',
+						type: 'text',
+						stage: 'repeal_revoke',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'live_conflict',
+						label: 'Status Conflict',
+						type: 'boolean',
+						stage: 'repeal_revoke',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'live_from_changes',
+						label: 'Status (Changes)',
+						type: 'text',
+						stage: 'amended_by',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'live_from_metadata',
+						label: 'Status (Metadata)',
+						type: 'text',
+						stage: 'repeal_revoke',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'live_conflict_detail',
+						label: 'Conflict Detail',
+						type: 'json',
+						stage: 'repeal_revoke',
+						hideWhenEmpty: true
+					}
+				]
 			}
 		]
 	},
