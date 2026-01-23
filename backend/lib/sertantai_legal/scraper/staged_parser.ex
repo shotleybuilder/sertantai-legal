@@ -2,16 +2,18 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @moduledoc """
   Staged parser for UK legislation metadata.
 
-  Parses legislation in six defined stages:
+  Parses legislation in seven defined stages:
   1. **Metadata** - Basic metadata from introduction XML (title, dates, SI codes, subjects)
   2. **Extent** - Geographic extent from contents XML (E+W+S+NI)
   3. **Enacted_by** - Enacting parent laws from introduction/made XML
-  4. **Amendments** - Laws amended by and amending this law
-  5. **Repeal/Revoke** - Repeal/revocation status and relationships
-  6. **Taxa** - Actor, duty type, and POPIMAR classification
+  4. **Amending** - Laws this law amends/rescinds (outgoing amendments)
+  5. **Amended_by** - Laws that amend/rescind this law (incoming amendments)
+  6. **Repeal/Revoke** - Repeal/revocation status and relationships
+  7. **Taxa** - Actor, duty type, and POPIMAR classification
 
   Each stage is independent and reports its own success/error status,
-  allowing partial results when some stages fail.
+  allowing partial results when some stages fail. The amending and amended_by
+  stages can be re-run independently for cascade updates.
 
   ## Usage
 
@@ -25,11 +27,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           metadata: %{status: :ok, data: %{...}},
           extent: %{status: :ok, data: %{...}},
           enacted_by: %{status: :ok, data: %{...}},
-          amendments: %{status: :error, error: "...", data: nil},
+          amending: %{status: :ok, data: %{...}},
+          amended_by: %{status: :error, error: "...", data: nil},
           repeal_revoke: %{status: :ok, data: %{...}},
           taxa: %{status: :ok, data: %{...}}
         },
-        errors: ["amendments: HTTP 404..."],
+        errors: ["amended_by: HTTP 404..."],
         has_errors: true
       }
   """
@@ -44,14 +47,15 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Scraper.TaxaParser
 
-  @stages [:metadata, :extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
+  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by, :repeal_revoke, :taxa]
 
   # Live status codes (matching legl conventions)
   @live_in_force "✔ In force"
   @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
-  @type stage :: :metadata | :extent | :enacted_by | :amendments | :repeal_revoke | :taxa
+  @type stage ::
+          :metadata | :extent | :enacted_by | :amending | :amended_by | :repeal_revoke | :taxa
   @type stage_result :: %{
           status: :ok | :error | :skipped,
           data: map() | nil,
@@ -228,14 +232,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     "#{count} parent law(s)"
   end
 
-  defp build_stage_summary(:amendments, %{status: :ok, data: data}) do
+  defp build_stage_summary(:amending, %{status: :ok, data: data}) do
     amends = data[:amending_count] || 0
     rescinds = data[:rescinding_count] || 0
-    amended_by = data[:amended_by_count] || 0
-    rescinded_by = data[:rescinded_by_count] || 0
     self_count = data[:stats_self_affects_count] || 0
 
-    "Amends: #{amends}, Rescinds: #{rescinds}, Amended by: #{amended_by}, Rescinded by: #{rescinded_by} (self: #{self_count})"
+    "Amends: #{amends}, Rescinds: #{rescinds} (self: #{self_count})"
+  end
+
+  defp build_stage_summary(:amended_by, %{status: :ok, data: data}) do
+    amended_by = data[:amended_by_count] || 0
+    rescinded_by = data[:rescinded_by_count] || 0
+
+    "Amended by: #{amended_by}, Rescinded by: #{rescinded_by}"
   end
 
   defp build_stage_summary(:repeal_revoke, %{status: :ok, data: data}) do
@@ -254,32 +263,37 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Run a specific stage
   defp run_stage(:metadata, type_code, year, number, record) do
-    IO.puts("  [1/6] Metadata...")
+    IO.puts("  [1/7] Metadata...")
     run_metadata_stage(type_code, year, number, record)
   end
 
   defp run_stage(:extent, type_code, year, number, _record) do
-    IO.puts("  [2/6] Extent...")
+    IO.puts("  [2/7] Extent...")
     run_extent_stage(type_code, year, number)
   end
 
   defp run_stage(:enacted_by, type_code, year, number, _record) do
-    IO.puts("  [3/6] Enacted By...")
+    IO.puts("  [3/7] Enacted By...")
     run_enacted_by_stage(type_code, year, number)
   end
 
-  defp run_stage(:amendments, type_code, year, number, record) do
-    IO.puts("  [4/6] Amendments...")
-    run_amendments_stage(type_code, year, number, record)
+  defp run_stage(:amending, type_code, year, number, _record) do
+    IO.puts("  [4/7] Amending (this law affects others)...")
+    run_amending_stage(type_code, year, number)
+  end
+
+  defp run_stage(:amended_by, type_code, year, number, _record) do
+    IO.puts("  [5/7] Amended By (this law is affected by others)...")
+    run_amended_by_stage(type_code, year, number)
   end
 
   defp run_stage(:repeal_revoke, type_code, year, number, _record) do
-    IO.puts("  [5/6] Repeal/Revoke...")
+    IO.puts("  [6/7] Repeal/Revoke...")
     run_repeal_revoke_stage(type_code, year, number)
   end
 
   defp run_stage(:taxa, type_code, year, number, _record) do
-    IO.puts("  [6/6] Taxa Classification...")
+    IO.puts("  [7/7] Taxa Classification...")
     run_taxa_stage(type_code, year, number)
   end
 
@@ -624,30 +638,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # ============================================================================
-  # Stage 4: Amendments
+  # Stage 4: Amending (this law affects others)
   # ============================================================================
   #
   # Uses the Amending module to fetch amendment data from /changes/affecting
-  # and /changes/affected endpoints. These provide detailed amendment info
-  # including target sections, affect types, and application status.
+  # endpoint. This shows laws that THIS law amends or rescinds.
 
-  defp run_amendments_stage(type_code, year, number, _record) do
+  defp run_amending_stage(type_code, year, number) do
     record = %{type_code: type_code, Year: year, Number: number}
 
-    # Fetch laws this law amends (affecting)
-    affecting_result = Amending.get_laws_amended_by_this_law(record)
-
-    # Fetch laws that amend this law (affected)
-    affected_result = Amending.get_laws_amending_this_law(record)
-
-    case {affecting_result, affected_result} do
-      {{:ok, affecting}, {:ok, affected}} ->
-        # Combine self-amendments from both directions (affecting and affected)
-        # These represent the law's "coming into force" provisions
-        all_self_amendments = affecting.self_amendments ++ affected.self_amendments
-
-        total_self_count =
-          affecting.stats.self_amendments_count + affected.stats.self_amendments_count
+    case Amending.get_laws_amended_by_this_law(record) do
+      {:ok, affecting} ->
+        # Self-amendments (this law affecting itself) - "coming into force" provisions
+        self_count = affecting.stats.self_amendments_count
 
         data = %{
           # Laws this law amends (excluding self)
@@ -658,16 +661,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           is_amending: length(affecting.amending) > 0,
           is_rescinding: length(affecting.rescinding) > 0,
 
-          # Laws that amend this law (excluding self)
-          amended_by: affected.amended_by,
-          rescinded_by: affected.rescinded_by,
-          amended_by_count: length(affected.amended_by),
-          rescinded_by_count: length(affected.rescinded_by),
-
-          # Flattened stats - Self-affects (combined from both directions)
-          stats_self_affects_count: total_self_count,
+          # Self-affects (this law amending itself)
+          stats_self_affects_count: self_count,
           stats_self_affects_count_per_law_detailed:
-            build_self_amendments_detailed(all_self_amendments),
+            build_self_amendments_detailed(affecting.self_amendments),
 
           # Flattened stats - Amending (🔺 this law affects others) - excludes self
           amending_stats_affects_count: affecting.stats.amendments_count,
@@ -675,6 +672,49 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amending_stats_affects_count_per_law: build_count_per_law_summary(affecting.amendments),
           amending_stats_affects_count_per_law_detailed:
             build_count_per_law_detailed(affecting.amendments),
+
+          # Flattened stats - Rescinding (🔺 this law rescinds others) - excludes self
+          rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
+          rescinding_stats_rescinding_count_per_law:
+            build_count_per_law_summary(affecting.revocations),
+          rescinding_stats_rescinding_count_per_law_detailed:
+            build_count_per_law_detailed(affecting.revocations),
+
+          # Detailed amendment data (for future use) - excludes self
+          amending_details: affecting.amendments,
+          rescinding_details: affecting.revocations
+        }
+
+        IO.puts(
+          "    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws (self: #{self_count})"
+        )
+
+        %{status: :ok, data: data, error: nil}
+
+      {:error, msg} ->
+        IO.puts("    ✗ Amending stage failed: #{msg}")
+        %{status: :error, data: nil, error: msg}
+    end
+  end
+
+  # ============================================================================
+  # Stage 5: Amended By (this law is affected by others)
+  # ============================================================================
+  #
+  # Uses the Amending module to fetch amendment data from /changes/affected
+  # endpoint. This shows laws that amend or rescind THIS law.
+
+  defp run_amended_by_stage(type_code, year, number) do
+    record = %{type_code: type_code, Year: year, Number: number}
+
+    case Amending.get_laws_amending_this_law(record) do
+      {:ok, affected} ->
+        data = %{
+          # Laws that amend this law (excluding self)
+          amended_by: affected.amended_by,
+          rescinded_by: affected.rescinded_by,
+          amended_by_count: length(affected.amended_by),
+          rescinded_by_count: length(affected.rescinded_by),
 
           # Flattened stats - Amended_by (🔻 this law is affected by others) - excludes self
           amended_by_stats_affected_by_count: affected.stats.amendments_count,
@@ -684,13 +724,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amended_by_stats_affected_by_count_per_law_detailed:
             build_count_per_law_detailed(affected.amendments),
 
-          # Flattened stats - Rescinding (🔺 this law rescinds others) - excludes self
-          rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
-          rescinding_stats_rescinding_count_per_law:
-            build_count_per_law_summary(affecting.revocations),
-          rescinding_stats_rescinding_count_per_law_detailed:
-            build_count_per_law_detailed(affecting.revocations),
-
           # Flattened stats - Rescinded_by (🔻 this law is rescinded by others) - excludes self
           rescinded_by_stats_rescinded_by_laws_count: affected.stats.revoked_laws_count,
           rescinded_by_stats_rescinded_by_count_per_law:
@@ -699,15 +732,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
             build_count_per_law_detailed(affected.revocations),
 
           # Detailed amendment data (for future use) - excludes self
-          amending_details: affecting.amendments,
-          rescinding_details: affecting.revocations,
           amended_by_details: affected.amendments,
           rescinded_by_details: affected.revocations
         }
-
-        IO.puts(
-          "    ✓ Amends: #{data.amending_count} laws, Rescinds: #{data.rescinding_count} laws (self: #{total_self_count})"
-        )
 
         IO.puts(
           "    ✓ Amended by: #{data.amended_by_count} laws, Rescinded by: #{data.rescinded_by_count} laws"
@@ -715,22 +742,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
         %{status: :ok, data: data, error: nil}
 
-      {{:error, msg}, {:ok, _}} ->
-        IO.puts("    ✗ Amendments (affecting) failed: #{msg}")
-        %{status: :error, data: nil, error: "Affecting: #{msg}"}
-
-      {{:error, msg}, {:error, _}} ->
-        IO.puts("    ✗ Amendments (affecting) failed: #{msg}")
-        %{status: :error, data: nil, error: "Affecting: #{msg}"}
-
-      {{:ok, _}, {:error, msg}} ->
-        IO.puts("    ✗ Amendments (affected) failed: #{msg}")
-        %{status: :error, data: nil, error: "Affected: #{msg}"}
+      {:error, msg} ->
+        IO.puts("    ✗ Amended by stage failed: #{msg}")
+        %{status: :error, data: nil, error: msg}
     end
   end
 
   # ============================================================================
-  # Stage 5: Repeal/Revoke
+  # Stage 6: Repeal/Revoke
   # ============================================================================
 
   defp run_repeal_revoke_stage(type_code, year, number) do
@@ -864,7 +883,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp parse_date(date), do: date
 
   # ============================================================================
-  # Stage 6: Taxa Classification
+  # Stage 7: Taxa Classification
   # ============================================================================
   #
   # Fetches law text and runs the Taxa classification pipeline:

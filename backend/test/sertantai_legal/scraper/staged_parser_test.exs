@@ -449,20 +449,31 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert summary == "2 parent law(s)"
     end
 
-    test "build_stage_summary returns summary for amendments stage" do
+    test "build_stage_summary returns summary for amending stage" do
       stage_result = %{
         status: :ok,
         data: %{
           amending_count: 3,
           rescinding_count: 1,
-          amended_by_count: 2,
-          rescinded_by_count: 0,
           stats_self_affects_count: 5
         }
       }
 
-      summary = StagedParser.test_build_stage_summary(:amendments, stage_result)
-      assert summary == "Amends: 3, Rescinds: 1, Amended by: 2, Rescinded by: 0 (self: 5)"
+      summary = StagedParser.test_build_stage_summary(:amending, stage_result)
+      assert summary == "Amends: 3, Rescinds: 1 (self: 5)"
+    end
+
+    test "build_stage_summary returns summary for amended_by stage" do
+      stage_result = %{
+        status: :ok,
+        data: %{
+          amended_by_count: 2,
+          rescinded_by_count: 1
+        }
+      }
+
+      summary = StagedParser.test_build_stage_summary(:amended_by, stage_result)
+      assert summary == "Amended by: 2, Rescinded by: 1"
     end
 
     test "build_stage_summary returns summary for repeal_revoke stage" do
@@ -497,9 +508,18 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert summary == nil
     end
 
-    test "stages/0 returns all 6 stages in order" do
+    test "stages/0 returns all 7 stages in order" do
       stages = StagedParser.stages()
-      assert stages == [:metadata, :extent, :enacted_by, :amendments, :repeal_revoke, :taxa]
+
+      assert stages == [
+               :metadata,
+               :extent,
+               :enacted_by,
+               :amending,
+               :amended_by,
+               :repeal_revoke,
+               :taxa
+             ]
     end
   end
 end

@@ -249,10 +249,13 @@ export interface ParseOneResult {
 	name: string;
 	record: Record<string, unknown>;
 	stages: {
+		metadata: StageResult;
 		extent: StageResult;
 		enacted_by: StageResult;
-		amendments: StageResult;
+		amending: StageResult;
+		amended_by: StageResult;
 		repeal_revoke: StageResult;
+		taxa: StageResult;
 	};
 	errors: string[];
 	has_errors: boolean;
@@ -897,7 +900,8 @@ export type ParseStage =
 	| 'metadata'
 	| 'extent'
 	| 'enacted_by'
-	| 'amendments'
+	| 'amending'
+	| 'amended_by'
 	| 'repeal_revoke'
 	| 'taxa';
 

@@ -254,9 +254,10 @@ export interface SectionConfig {
  * - STAGE 1 💠 metadata: Credentials, Description, Dates, Document Statistics
  * - STAGE 2 📍 extent: Geographic Extent
  * - STAGE 3 🚀 enacted_by: Enacting
- * - STAGE 4 🔄 amendments: Function, Self-Affects, Amending, Amended By, Rescinding, Rescinded By
- * - STAGE 5 🚫 repeal_revoke: Status
- * - STAGE 6 🦋 taxa: Purpose, Roles, Duty Type, Duty Holder, Rights Holder, etc.
+ * - STAGE 4 🔄 amending: Self-Affects, Amending, Rescinding (this law affects others)
+ * - STAGE 5 🔄 amended_by: Amended By, Rescinded By (this law affected by others)
+ * - STAGE 6 🚫 repeal_revoke: Status
+ * - STAGE 7 🦋 taxa: Purpose, Roles, Duty Type, Duty Holder, Rights Holder, etc.
  */
 export const SECTION_CONFIG: SectionConfig[] = [
 	// ==========================================
@@ -502,12 +503,12 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
-	// STAGE 4 🔄 amendments
+	// STAGE 4 🔄 amending (this law affects others)
 	// ==========================================
 	{
-		id: 'stage4_amendments',
-		title: 'STAGE 4 🔄 amendments',
-		stage: 'amendments',
+		id: 'stage4_amending',
+		title: 'STAGE 4 🔄 amending',
+		stage: 'amending',
 		defaultExpanded: true,
 		subsections: [
 			{
@@ -515,7 +516,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Function',
 				defaultExpanded: true,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 4 Function table
+					// Function flags derived from amending data
 					{
 						key: 'function',
 						label: 'Function',
@@ -532,19 +533,19 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Self-Affects',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 4 Self-Affects table
+					// Self-amendments (this law amending itself)
 					{
 						key: 'stats_self_affects_count',
 						label: 'Self Amendments',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'stats_self_affects_count_per_law_detailed',
 						label: 'Self Affects (Detail)',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					}
 				]
@@ -554,41 +555,41 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Amending',
 				defaultExpanded: true,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 4 Amending table
+					// Laws THIS law amends
 					{ key: 'is_amending', label: 'Is Amending', type: 'boolean', stage: 'derived' },
 					{
 						key: 'amending_stats_affects_count',
 						label: 'Affects Count',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amending_stats_affected_laws_count',
 						label: 'Affected Laws Count',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amending_stats_affects_count_per_law',
 						label: 'Affects Per Law',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amending_stats_affects_count_per_law_detailed',
 						label: 'Affects Per Law (Detail)',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amending',
 						label: 'Amends',
 						type: 'array',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
@@ -605,34 +606,34 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Rescinding',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 4 Rescinding table
+					// Laws THIS law rescinds
 					{ key: 'is_rescinding', label: 'Is Rescinding', type: 'boolean', stage: 'derived' },
 					{
 						key: 'rescinding_stats_rescinding_laws_count',
 						label: 'Rescinded Laws Count',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'rescinding_stats_rescinding_count_per_law',
 						label: 'Rescinding Per Law',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'rescinding_stats_rescinding_count_per_law_detailed',
 						label: 'Rescinding Per Law (Detail)',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'rescinding',
 						label: 'Rescinds',
 						type: 'array',
-						stage: 'amendments',
+						stage: 'amending',
 						hideWhenEmpty: true
 					},
 					{
@@ -643,46 +644,57 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					}
 				]
-			},
+			}
+		]
+	},
+	// ==========================================
+	// STAGE 5 🔄 amended_by (this law affected by others)
+	// ==========================================
+	{
+		id: 'stage5_amended_by',
+		title: 'STAGE 5 🔄 amended_by',
+		stage: 'amended_by',
+		defaultExpanded: true,
+		subsections: [
 			{
 				id: 'amended_by',
 				title: 'Amended By',
 				defaultExpanded: true,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 4 Amended By table
+					// Laws that amend THIS law
 					{
 						key: 'amended_by_stats_affected_by_count',
 						label: 'Affected By Count',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amended_by_stats_affected_by_laws_count',
 						label: 'Amending Laws Count',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amended_by_stats_affected_by_count_per_law',
 						label: 'Affected By Per Law',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amended_by_stats_affected_by_count_per_law_detailed',
 						label: 'Affected By Per Law (Detail)',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'amended_by',
 						label: 'Amended By',
 						type: 'array',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
@@ -713,33 +725,33 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Rescinded By',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 4 Rescinded By table
+					// Laws that rescind THIS law
 					{
 						key: 'rescinded_by_stats_rescinded_by_laws_count',
 						label: 'Rescinding Laws Count',
 						type: 'number',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'rescinded_by_stats_rescinded_by_count_per_law',
 						label: 'Rescinded By Per Law',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'rescinded_by_stats_rescinded_by_count_per_law_detailed',
 						label: 'Rescinded By Per Law (Detail)',
 						type: 'multiline',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'rescinded_by',
 						label: 'Rescinded By',
 						type: 'array',
-						stage: 'amendments',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
@@ -761,11 +773,11 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
-	// STAGE 5 🚫 repeal_revoke
+	// STAGE 6 🚫 repeal_revoke
 	// ==========================================
 	{
-		id: 'stage5_repeal_revoke',
-		title: 'STAGE 5 🚫 repeal_revoke',
+		id: 'stage6_repeal_revoke',
+		title: 'STAGE 6 🚫 repeal_revoke',
 		stage: 'repeal_revoke',
 		defaultExpanded: true,
 		fields: [
@@ -781,11 +793,11 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		]
 	},
 	// ==========================================
-	// STAGE 6 🦋 taxa
+	// STAGE 7 🦋 taxa
 	// ==========================================
 	{
-		id: 'stage6_taxa',
-		title: 'STAGE 6 🦋 taxa',
+		id: 'stage7_taxa',
+		title: 'STAGE 7 🦋 taxa',
 		stage: 'taxa',
 		defaultExpanded: false,
 		subsections: [

@@ -66,7 +66,8 @@
 		metadata: { status: 'pending', summary: null },
 		extent: { status: 'pending', summary: null },
 		enacted_by: { status: 'pending', summary: null },
-		amendments: { status: 'pending', summary: null },
+		amending: { status: 'pending', summary: null },
+		amended_by: { status: 'pending', summary: null },
 		repeal_revoke: { status: 'pending', summary: null },
 		taxa: { status: 'pending', summary: null }
 	};
@@ -76,7 +77,8 @@
 		'metadata',
 		'extent',
 		'enacted_by',
-		'amendments',
+		'amending',
+		'amended_by',
 		'repeal_revoke',
 		'taxa'
 	];
@@ -86,7 +88,8 @@
 		metadata: 'Metadata',
 		extent: 'Extent',
 		enacted_by: 'Enacted By',
-		amendments: 'Amendments',
+		amending: 'Amending',
+		amended_by: 'Amended By',
 		repeal_revoke: 'Repeal/Revoke',
 		taxa: 'Taxa Classification'
 	};
@@ -151,7 +154,8 @@
 			metadata: { status: activeStages.includes('metadata') ? 'pending' : 'skipped', summary: null },
 			extent: { status: activeStages.includes('extent') ? 'pending' : 'skipped', summary: null },
 			enacted_by: { status: activeStages.includes('enacted_by') ? 'pending' : 'skipped', summary: null },
-			amendments: { status: activeStages.includes('amendments') ? 'pending' : 'skipped', summary: null },
+			amending: { status: activeStages.includes('amending') ? 'pending' : 'skipped', summary: null },
+			amended_by: { status: activeStages.includes('amended_by') ? 'pending' : 'skipped', summary: null },
 			repeal_revoke: { status: activeStages.includes('repeal_revoke') ? 'pending' : 'skipped', summary: null },
 			taxa: { status: activeStages.includes('taxa') ? 'pending' : 'skipped', summary: null }
 		};
@@ -903,8 +907,8 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- STAGE 4 🔄 amendments -->
-					{@const stage4Config = SECTION_CONFIG.find(s => s.id === 'stage4_amendments')}
+					<!-- STAGE 4 🔄 amending (this law affects others) -->
+					{@const stage4Config = SECTION_CONFIG.find(s => s.id === 'stage4_amending')}
 					{#if stage4Config?.subsections}
 						<CollapsibleSection
 							title={stage4Config.title}
@@ -912,8 +916,8 @@
 							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
-							isReparsing={reparsingStage === 'amendments'}
-							on:reparse={() => reparseStage('amendments')}
+							isReparsing={reparsingStage === 'amending'}
+							on:reparse={() => reparseStage('amending')}
 						>
 							{#each stage4Config.subsections as subsection}
 								<CollapsibleSection
@@ -932,17 +936,44 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- STAGE 5 🚫 repeal_revoke -->
-					{@const stage5Config = SECTION_CONFIG.find(s => s.id === 'stage5_repeal_revoke')}
-					{#if stage5Config?.fields}
+					<!-- STAGE 5 🔄 amended_by (this law affected by others) -->
+					{@const stage5Config = SECTION_CONFIG.find(s => s.id === 'stage5_amended_by')}
+					{#if stage5Config?.subsections}
 						<CollapsibleSection
 							title={stage5Config.title}
 							expanded={stage5Config.defaultExpanded}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'amended_by'}
+							on:reparse={() => reparseStage('amended_by')}
+						>
+							{#each stage5Config.subsections as subsection}
+								<CollapsibleSection
+									title={subsection.title}
+									expanded={subsection.defaultExpanded}
+									level="subsection"
+								>
+									{#each subsection.fields as field}
+										{@const fieldValue = getFieldValue(displayRecord, field)}
+										{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
+											<FieldRow config={field} value={fieldValue} />
+										{/if}
+									{/each}
+								</CollapsibleSection>
+							{/each}
+						</CollapsibleSection>
+					{/if}
+
+					<!-- STAGE 6 🚫 repeal_revoke -->
+					{@const stage6Config = SECTION_CONFIG.find(s => s.id === 'stage6_repeal_revoke')}
+					{#if stage6Config?.fields}
+						<CollapsibleSection
+							title={stage6Config.title}
+							expanded={stage6Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'repeal_revoke'}
 							on:reparse={() => reparseStage('repeal_revoke')}
 						>
-							{#each stage5Config.fields as field}
+							{#each stage6Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
 									<FieldRow config={field} value={fieldValue} />
@@ -951,17 +982,17 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- STAGE 6 🦋 taxa -->
-					{@const stage6Config = SECTION_CONFIG.find(s => s.id === 'stage6_taxa')}
-					{#if stage6Config?.subsections}
+					<!-- STAGE 7 🦋 taxa -->
+					{@const stage7Config = SECTION_CONFIG.find(s => s.id === 'stage7_taxa')}
+					{#if stage7Config?.subsections}
 						<CollapsibleSection
-							title={stage6Config.title}
-							expanded={stage6Config.defaultExpanded}
+							title={stage7Config.title}
+							expanded={stage7Config.defaultExpanded}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'taxa'}
 							on:reparse={() => reparseStage('taxa')}
 						>
-							{#each stage6Config.subsections as subsection}
+							{#each stage7Config.subsections as subsection}
 								<CollapsibleSection
 									title={subsection.title}
 									expanded={subsection.defaultExpanded}
