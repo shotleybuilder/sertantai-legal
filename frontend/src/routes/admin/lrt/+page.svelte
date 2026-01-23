@@ -13,16 +13,13 @@
 	} from 'svelte-table-views-tanstack';
 	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
 
-	// ElectricSQL sync
+	// ElectricSQL sync - using official TanStack Electric integration
 	import {
-		syncUkLrt,
-		stopUkLrtSync,
-		syncStatus,
+		getUkLrtCollection,
 		updateUkLrtWhere,
 		buildWhereFromFilters,
-		retryUkLrtSync
-	} from '$lib/electric/sync-uk-lrt';
-	import { getUkLrtCollection } from '$lib/db/index.client';
+		syncStatus
+	} from '$lib/db/index.client';
 	import type {
 		TableState,
 		FilterCondition,
@@ -655,85 +652,70 @@
 	/**
 	 * Initialize Electric sync and subscribe to collection changes
 	 *
-	 * Optimized for fast initial load:
-	 * 1. Show existing local data immediately (from localStorage/TanstackDB)
-	 * 2. Start Electric sync in the background
-	 * 3. UI updates reactively as new data arrives
+	 * Uses the official @tanstack/electric-db-collection integration which handles:
+	 * - ShapeStream subscription and lifecycle
+	 * - Efficient batched updates (no browser crash)
+	 * - Reactive state management
 	 */
 	async function initElectricSync() {
 		try {
 			error = null;
+			isLoading = true;
 
-			// Get collection first - this gives us immediate access to cached data
+			// Get collection - this creates the Electric-synced collection
 			const collection = await getUkLrtCollection();
 
-			// Load existing local data IMMEDIATELY (from localStorage)
-			const localData = collection.toArray as UkLrtRecord[];
-			if (localData.length > 0) {
-				data = localData;
-				totalCount = localData.length;
-				isLoading = false; // Show data immediately!
-				console.log(`[LRT Admin] Loaded ${localData.length} records from local cache`);
-			}
-
-			// Function to refresh data from collection
+			// Debounced refresh to prevent excessive UI updates
+			let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 			const refreshData = () => {
-				const newData = collection.toArray as UkLrtRecord[];
-				if (newData.length !== data.length) {
+				if (refreshDebounceTimer) {
+					clearTimeout(refreshDebounceTimer);
+				}
+				refreshDebounceTimer = setTimeout(() => {
+					const newData = collection.toArray as UkLrtRecord[];
 					console.log(`[LRT Admin] Refreshing data: ${newData.length} records`);
 					data = newData;
 					totalCount = newData.length;
-				}
+					if (newData.length > 0) {
+						isLoading = false;
+					}
+				}, 200);  // 200ms debounce
 			};
 
-			// Subscribe to collection changes for reactivity
-			collectionSubscription = collection.subscribeChanges(() => {
-				refreshData();
-			});
-
-			// Also subscribe to syncStatus changes to refresh data when sync completes
+			// Only subscribe to syncStatus - it already debounces and we only need UI updates when sync completes
 			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-				if (status.connected && !status.syncing) {
-					// Sync completed, refresh data
+				if (status.connected) {
 					refreshData();
+					if (!status.syncing) {
+						isLoading = false;
+					}
+				}
+				if (status.error) {
+					error = status.error;
+					isLoading = false;
 				}
 			});
 
-			// Store original subscription for cleanup
-			const originalSubscription = collectionSubscription;
-
-			// Create a combined unsubscribe that cleans up both subscriptions
+			// Store cleanup
 			collectionSubscription = {
 				unsubscribe: () => {
-					// Call original unsubscribe with proper context
-					if (originalSubscription) {
-						originalSubscription.unsubscribe();
-					}
 					unsubscribeSyncStatus();
+					if (refreshDebounceTimer) {
+						clearTimeout(refreshDebounceTimer);
+					}
 				}
 			};
 
-			// Start Electric sync in the background (default: last 3 years)
-			syncUkLrt()
-				.then(() => {
-					// Refresh data after sync completes
-					refreshData();
-					isLoading = false;
-				})
-				.catch((e) => {
-					console.error('[LRT Admin] Background sync failed:', e);
-					// Don't set error if we have local data - just show sync status
-					if (data.length === 0) {
-						error = e instanceof Error ? e.message : 'Failed to sync data';
-					}
-					isLoading = false;
-				});
-
-			// If no local data, wait for first sync batch
-			if (localData.length === 0) {
-				isLoading = true;
+			// Initial data load (immediate, no debounce)
+			const initialData = collection.toArray as UkLrtRecord[];
+			if (initialData.length > 0) {
+				data = initialData;
+				totalCount = initialData.length;
+				isLoading = false;
 			}
+
 		} catch (e) {
+			console.error('[LRT Admin] Failed to initialize:', e);
 			error = e instanceof Error ? e.message : 'Failed to initialize';
 			isLoading = false;
 		}
@@ -1587,11 +1569,10 @@
 	});
 
 	onDestroy(() => {
-		// Clean up Electric sync subscription
+		// Clean up collection subscription
 		if (collectionSubscription) {
 			collectionSubscription.unsubscribe();
 		}
-		stopUkLrtSync();
 	});
 </script>
 
@@ -1635,16 +1616,12 @@
 					{:else if $syncStatus.offline}
 						<div class="w-2 h-2 bg-red-500 rounded-full"></div>
 						<span class="text-lg font-medium text-red-600">Offline</span>
-						{#if $syncStatus.reconnectAttempts > 0 && $syncStatus.reconnectAttempts < 5}
-							<span class="text-xs text-gray-500">({$syncStatus.reconnectAttempts}/5)</span>
-						{:else}
-							<button
-								class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
-								on:click={() => retryUkLrtSync()}
-							>
-								Retry
-							</button>
-						{/if}
+						<button
+							class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
+							on:click={() => initElectricSync()}
+						>
+							Retry
+						</button>
 					{:else if $syncStatus.connected}
 						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
 						<span class="text-lg font-medium text-green-600">Connected</span>

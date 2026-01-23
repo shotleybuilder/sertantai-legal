@@ -43,6 +43,10 @@ class IndexedDBStorage implements StorageInterface {
 	private initPromise: Promise<void> | null = null;
 	private pendingWrites: Map<string, Promise<void>> = new Map();
 
+	// Debounce settings - only persist to IndexedDB after writes settle
+	private writeDebounceTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+	private static WRITE_DEBOUNCE_MS = 1000; // Wait 1s after last write before persisting
+
 	/**
 	 * Initialize by loading all data from IndexedDB into memory cache
 	 */
@@ -73,23 +77,44 @@ class IndexedDBStorage implements StorageInterface {
 	}
 
 	setItem(key: string, value: string): void {
-		// Update cache immediately (sync)
+		// Update cache immediately (sync) - this is what TanStack DB reads from
 		this.cache.set(key, value);
 
-		// Persist to IndexedDB in background (async)
-		const writePromise = set(key, value, customStore).catch((error) => {
-			console.error(`[IDB Storage] Error persisting key "${key}":`, error);
-		});
+		// Cancel any pending write for this key
+		const existingTimer = this.writeDebounceTimers.get(key);
+		if (existingTimer) {
+			clearTimeout(existingTimer);
+		}
 
-		this.pendingWrites.set(key, writePromise);
-		writePromise.finally(() => {
-			this.pendingWrites.delete(key);
-		});
+		// Debounce IndexedDB writes - only persist after writes settle
+		// This prevents 600+ IndexedDB writes during bulk sync
+		const timer = setTimeout(() => {
+			this.writeDebounceTimers.delete(key);
+			const currentValue = this.cache.get(key);
+			if (currentValue !== undefined) {
+				const writePromise = set(key, currentValue, customStore).catch((error) => {
+					console.error(`[IDB Storage] Error persisting key "${key}":`, error);
+				});
+				this.pendingWrites.set(key, writePromise);
+				writePromise.finally(() => {
+					this.pendingWrites.delete(key);
+				});
+			}
+		}, IndexedDBStorage.WRITE_DEBOUNCE_MS);
+
+		this.writeDebounceTimers.set(key, timer);
 	}
 
 	removeItem(key: string): void {
 		// Update cache immediately (sync)
 		this.cache.delete(key);
+
+		// Cancel any pending write for this key
+		const existingTimer = this.writeDebounceTimers.get(key);
+		if (existingTimer) {
+			clearTimeout(existingTimer);
+			this.writeDebounceTimers.delete(key);
+		}
 
 		// Persist deletion to IndexedDB in background (async)
 		del(key, customStore).catch((error) => {
@@ -101,6 +126,20 @@ class IndexedDBStorage implements StorageInterface {
 	 * Wait for all pending writes to complete
 	 */
 	async flush(): Promise<void> {
+		// First, flush any debounced writes immediately
+		for (const [key, timer] of this.writeDebounceTimers.entries()) {
+			clearTimeout(timer);
+			const currentValue = this.cache.get(key);
+			if (currentValue !== undefined) {
+				const writePromise = set(key, currentValue, customStore).catch((error) => {
+					console.error(`[IDB Storage] Error persisting key "${key}":`, error);
+				});
+				this.pendingWrites.set(key, writePromise);
+			}
+		}
+		this.writeDebounceTimers.clear();
+
+		// Then wait for all writes to complete
 		await Promise.all(this.pendingWrites.values());
 	}
 

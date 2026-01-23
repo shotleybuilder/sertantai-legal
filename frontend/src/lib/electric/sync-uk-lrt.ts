@@ -30,6 +30,109 @@ const ELECTRIC_URL =
 	'http://localhost:3002';
 
 /**
+ * Columns to sync from uk_lrt table.
+ * Excludes PostgreSQL generated columns (leg_gov_uk_url, number_int) which Electric cannot sync.
+ */
+const UK_LRT_COLUMNS = [
+	'id',
+	'family',
+	'family_ii',
+	'name',
+	'md_description',
+	'year',
+	'number',
+	'live',
+	'type_desc',
+	'role',
+	'tags',
+	'created_at',
+	'title_en',
+	'acronym',
+	'old_style_number',
+	'type_code',
+	'type_class',
+	'domain',
+	'md_date',
+	'md_made_date',
+	'md_enactment_date',
+	'md_coming_into_force_date',
+	'md_dct_valid_date',
+	'md_restrict_start_date',
+	'live_description',
+	'latest_amend_date',
+	'latest_rescind_date',
+	'duty_holder',
+	'power_holder',
+	'rights_holder',
+	'responsibility_holder',
+	'role_gvt',
+	'geo_extent',
+	'geo_region',
+	'md_restrict_extent',
+	'md_subjects',
+	'purpose',
+	'function',
+	'popimar',
+	'si_code',
+	'md_total_paras',
+	'md_body_paras',
+	'md_schedule_paras',
+	'md_attachment_paras',
+	'md_images',
+	'amending',
+	'amended_by',
+	'linked_amending',
+	'linked_amended_by',
+	'is_amending',
+	'rescinding',
+	'rescinded_by',
+	'linked_rescinding',
+	'linked_rescinded_by',
+	'is_rescinding',
+	'enacted_by',
+	'linked_enacted_by',
+	'is_enacting',
+	'article_role',
+	'role_article',
+	'article_duty_holder',
+	'duty_holder_article',
+	'article_power_holder',
+	'power_holder_article',
+	'article_rights_holder',
+	'rights_holder_article',
+	'article_responsibility_holder',
+	'responsibility_holder_article',
+	'article_duty_holder_clause',
+	'duty_holder_article_clause',
+	'article_power_holder_clause',
+	'power_holder_article_clause',
+	'article_rights_holder_clause',
+	'rights_holder_article_clause',
+	'article_responsibility_holder_clause',
+	'responsibility_holder_article_clause',
+	'article_popimar_clause',
+	'popimar_article_clause',
+	'is_making',
+	'is_commencing',
+	'geo_detail',
+	'duty_type',
+	'duty_type_article',
+	'article_duty_type',
+	'popimar_article',
+	'article_popimar',
+	'updated_at',
+	'md_modified',
+	'enacted_by_meta',
+	'role_gvt_article',
+	'article_role_gvt',
+	'live_source',
+	'live_conflict',
+	'live_from_changes',
+	'live_from_metadata',
+	'live_conflict_detail'
+].join(',');
+
+/**
  * Get default WHERE clause (last 3 years)
  */
 function getDefaultWhere(): string {
@@ -137,14 +240,15 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 		// Build ShapeStream options with offset if we have prior sync state
 		const streamOptions: {
 			url: string;
-			params: { table: string; where: string };
+			params: { table: string; where: string; columns: string };
 			offset?: Offset;
 			handle?: string;
 		} = {
 			url: `${ELECTRIC_URL}/v1/shape`,
 			params: {
 				table: 'uk_lrt',
-				where
+				where,
+				columns: UK_LRT_COLUMNS
 			}
 		};
 
@@ -181,88 +285,115 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 		let latestOffset: string | undefined;
 		let latestHandle: string | undefined;
 
-		// Subscribe to shape changes
+		// Subscribe to shape changes - process asynchronously to prevent blocking
 		activeSubscription = currentStream.subscribe((messages) => {
-			console.log(`[Electric Sync] Received ${messages.length} UK LRT updates`);
+			// Process messages asynchronously to prevent browser freeze
+			processMessages(messages, ukLrtCollection, shapeKey, latestOffset, latestHandle).then(
+				({ newOffset, newHandle }) => {
+					if (newOffset) latestOffset = newOffset;
+					if (newHandle) latestHandle = newHandle;
+				}
+			);
+		});
 
+		// Async message processor with batching and yielding
+		async function processMessages(
+			messages: any[],
+			collection: typeof ukLrtCollection,
+			shapeKey: string,
+			prevOffset: string | undefined,
+			prevHandle: string | undefined
+		): Promise<{ newOffset?: string; newHandle?: string }> {
+			console.log(
+				`[Electric Sync] Processing ${messages.length} UK LRT updates, isUpToDate: ${currentStream?.isUpToDate}`
+			);
+
+			let latestOffset = prevOffset;
+			let latestHandle = prevHandle;
 			let insertCount = 0;
 			let updateCount = 0;
 			let deleteCount = 0;
 
-			messages.forEach((msg: any) => {
-				// Track offset from each message for persistence
-				if (msg.offset) {
-					latestOffset = msg.offset;
-				}
-				if (msg.headers?.handle) {
-					latestHandle = msg.headers.handle;
-				}
+			// Process in batches to prevent blocking
+			const BATCH_SIZE = 100;
 
-				// Skip control messages
+			for (let i = 0; i < messages.length; i++) {
+				const msg = messages[i];
+
+				// Track offset
+				if (msg.offset) latestOffset = msg.offset;
+				if (msg.headers?.handle) latestHandle = msg.headers.handle;
+
+				// Handle control messages
 				if (msg.headers?.control) {
 					console.log('[Electric Sync] Control message:', msg.headers.control);
 
-					// On "up-to-date" control message, persist the sync state
-					if (msg.headers.control === 'up-to-date' && latestOffset) {
-						const recordCount = ukLrtCollection.size;
-						saveElectricSyncState(shapeKey, {
-							offset: latestOffset,
-							handle: latestHandle,
-							lastSyncTime: new Date().toISOString(),
-							recordCount
-						});
+					if (msg.headers.control === 'up-to-date') {
+						if (latestOffset) {
+							saveElectricSyncState(shapeKey, {
+								offset: latestOffset,
+								handle: latestHandle,
+								lastSyncTime: new Date().toISOString(),
+								recordCount: collection.size
+							});
+						}
+
+						syncStatus.update((s) => ({
+							...s,
+							connected: true,
+							syncing: false,
+							offline: false,
+							recordCount: collection.size,
+							lastSyncTime: new Date(),
+							reconnectAttempts: 0
+						}));
 					}
-					return;
+					continue;
 				}
 
 				const operation = msg.headers?.operation;
 				const rawData = msg.value;
 
-				if (!operation || !rawData) {
-					return;
-				}
+				if (!operation || !rawData) continue;
 
 				try {
 					const data = transformUkLrtRecord(rawData);
 
 					switch (operation) {
 						case 'insert':
-							// Use upsert logic: if record exists (from cached IndexedDB), update it
-							if (ukLrtCollection.has(data.id)) {
-								ukLrtCollection.update(data.id, (draft) => {
-									Object.assign(draft, data);
-								});
+							if (collection.has(data.id)) {
+								collection.update(data.id, (draft) => Object.assign(draft, data));
 								updateCount++;
 							} else {
-								ukLrtCollection.insert(data);
+								collection.insert(data);
 								insertCount++;
 							}
 							break;
-
 						case 'update':
-							// Handle case where update arrives for non-existent record (insert it)
-							if (ukLrtCollection.has(data.id)) {
-								ukLrtCollection.update(data.id, (draft) => {
-									Object.assign(draft, data);
-								});
+							if (collection.has(data.id)) {
+								collection.update(data.id, (draft) => Object.assign(draft, data));
 								updateCount++;
 							} else {
-								ukLrtCollection.insert(data);
+								collection.insert(data);
 								insertCount++;
 							}
 							break;
-
 						case 'delete':
-							if (ukLrtCollection.has(data.id)) {
-								ukLrtCollection.delete(data.id);
+							if (collection.has(data.id)) {
+								collection.delete(data.id);
 								deleteCount++;
 							}
 							break;
 					}
 				} catch (error) {
-					console.error('[Electric Sync] Error processing UK LRT message:', error, msg);
+					console.error('[Electric Sync] Error processing message:', error);
 				}
-			});
+
+				// Yield to event loop every BATCH_SIZE messages
+				if ((i + 1) % BATCH_SIZE === 0) {
+					await new Promise((resolve) => setTimeout(resolve, 0));
+				}
+			}
 
 			if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
 				console.log(
@@ -271,17 +402,19 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 			}
 
 			// Update sync status
-			const recordCount = ukLrtCollection.size;
+			const isFullySynced = currentStream?.isUpToDate ?? false;
 			syncStatus.update((s) => ({
 				...s,
 				connected: true,
-				syncing: false,
+				syncing: !isFullySynced,
 				offline: false,
-				recordCount,
-				lastSyncTime: new Date(),
+				recordCount: collection.size,
+				lastSyncTime: isFullySynced ? new Date() : s.lastSyncTime,
 				reconnectAttempts: 0
 			}));
-		});
+
+			return { newOffset: latestOffset, newHandle: latestHandle };
+		}
 
 		console.log('[Electric Sync] UK LRT sync started');
 	} catch (error) {
@@ -447,7 +580,9 @@ export function getUkLrtSyncStatus(): SyncStatus {
  */
 export async function checkElectricHealth(): Promise<boolean> {
 	try {
-		const response = await fetch(`${ELECTRIC_URL}/v1/shape?table=uk_lrt&offset=-1&where=year=2025`);
+		const response = await fetch(
+			`${ELECTRIC_URL}/v1/shape?table=uk_lrt&offset=-1&where=year=2025&columns=${UK_LRT_COLUMNS}`
+		);
 		return response.ok;
 	} catch (error) {
 		console.error('[Electric Sync] Health check failed:', error);

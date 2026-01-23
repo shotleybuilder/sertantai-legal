@@ -1,69 +1,280 @@
 /**
  * TanStack DB Collections (Client-Only)
  *
- * Creates reactive collections for UK LRT data.
- * Collections provide:
- * - IndexedDB persistence (handles 19k+ records without quota issues)
+ * Creates reactive collections for UK LRT data using the official
+ * @tanstack/electric-db-collection integration.
+ *
+ * This uses electricCollectionOptions which handles:
+ * - ShapeStream subscription and management
+ * - Efficient batched updates to the collection
  * - Reactive queries that auto-update
- * - Optimistic mutations
  *
  * NOTE: This module uses dynamic imports to ensure it only runs in the browser.
- * DO NOT import collections directly - use the exported functions instead.
  */
 
 import { browser } from '$app/environment';
-import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 import type { Collection } from '@tanstack/db';
-import { initializeIDBStorage } from './idb-storage';
+import { writable } from 'svelte/store';
+import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 
-// Storage key for UK LRT collection
-const UK_LRT_STORAGE_KEY = 'sertantai-legal-uk-lrt';
+// Re-export UkLrtRecord for external use
+export type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 
-// Collection singleton (initialized lazily in browser)
-let ukLrtCol: Collection<UkLrtRecord, string> | null = null;
+// Type that satisfies Electric's Row constraint (requires index signature)
+type ElectricUkLrtRecord = UkLrtRecord & Record<string, unknown>;
+
+// Electric service configuration
+const ELECTRIC_URL =
+	import.meta.env.VITE_ELECTRIC_URL ||
+	import.meta.env.PUBLIC_ELECTRIC_URL ||
+	'http://localhost:3002';
 
 /**
- * Initialize collections (browser only)
- *
- * Uses IndexedDB via a custom storage adapter to handle large datasets
- * that exceed localStorage's ~5MB limit.
+ * Columns to sync from uk_lrt table.
+ * Excludes PostgreSQL generated columns (leg_gov_uk_url, number_int) which Electric cannot sync.
  */
-async function ensureCollections() {
-	if (!browser) {
-		throw new Error('TanStack DB collections can only be initialized in the browser');
-	}
+const UK_LRT_COLUMNS = [
+	'id',
+	'family',
+	'family_ii',
+	'name',
+	'md_description',
+	'year',
+	'number',
+	'live',
+	'type_desc',
+	'role',
+	'tags',
+	'created_at',
+	'title_en',
+	'acronym',
+	'old_style_number',
+	'type_code',
+	'type_class',
+	'domain',
+	'md_date',
+	'md_made_date',
+	'md_enactment_date',
+	'md_coming_into_force_date',
+	'md_dct_valid_date',
+	'md_restrict_start_date',
+	'live_description',
+	'latest_amend_date',
+	'latest_rescind_date',
+	'duty_holder',
+	'power_holder',
+	'rights_holder',
+	'responsibility_holder',
+	'role_gvt',
+	'geo_extent',
+	'geo_region',
+	'md_restrict_extent',
+	'md_subjects',
+	'purpose',
+	'function',
+	'popimar',
+	'si_code',
+	'md_total_paras',
+	'md_body_paras',
+	'md_schedule_paras',
+	'md_attachment_paras',
+	'md_images',
+	'amending',
+	'amended_by',
+	'linked_amending',
+	'linked_amended_by',
+	'is_amending',
+	'rescinding',
+	'rescinded_by',
+	'linked_rescinding',
+	'linked_rescinded_by',
+	'is_rescinding',
+	'enacted_by',
+	'linked_enacted_by',
+	'is_enacting',
+	'article_role',
+	'role_article',
+	'article_duty_holder',
+	'duty_holder_article',
+	'article_power_holder',
+	'power_holder_article',
+	'article_rights_holder',
+	'rights_holder_article',
+	'article_responsibility_holder',
+	'responsibility_holder_article',
+	'article_duty_holder_clause',
+	'duty_holder_article_clause',
+	'article_power_holder_clause',
+	'power_holder_article_clause',
+	'article_rights_holder_clause',
+	'rights_holder_article_clause',
+	'article_responsibility_holder_clause',
+	'responsibility_holder_article_clause',
+	'article_popimar_clause',
+	'popimar_article_clause',
+	'is_making',
+	'is_commencing',
+	'geo_detail',
+	'duty_type',
+	'duty_type_article',
+	'article_duty_type',
+	'popimar_article',
+	'article_popimar',
+	'updated_at',
+	'md_modified',
+	'enacted_by_meta',
+	'role_gvt_article',
+	'article_role_gvt',
+	'live_source',
+	'live_conflict',
+	'live_from_changes',
+	'live_from_metadata',
+	'live_conflict_detail'
+].join(',');
 
-	if (ukLrtCol) {
-		return; // Already initialized
-	}
+/**
+ * Get default WHERE clause (last 3 years)
+ */
+function getDefaultWhere(): string {
+	const currentYear = new Date().getFullYear();
+	return `year >= ${currentYear - 2}`;
+}
 
-	// Initialize IndexedDB storage first
-	const idbStorage = await initializeIDBStorage([UK_LRT_STORAGE_KEY]);
+// Collection singleton using Electric-compatible type
+let ukLrtCol: Collection<ElectricUkLrtRecord, string> | null = null;
+let currentWhereClause: string = '';
 
-	const { createCollection, localStorageCollectionOptions } = await import('@tanstack/db');
+// Sync status store
+export interface SyncStatus {
+	connected: boolean;
+	syncing: boolean;
+	offline: boolean;
+	recordCount: number;
+	lastSyncTime: Date | null;
+	error: string | null;
+	whereClause: string;
+}
 
-	ukLrtCol = createCollection(
-		localStorageCollectionOptions<UkLrtRecord, string>({
-			storageKey: UK_LRT_STORAGE_KEY,
-			getKey: (item) => item.id,
-			// Use IndexedDB-backed storage instead of localStorage
-			storage: idbStorage
+export const syncStatus = writable<SyncStatus>({
+	connected: false,
+	syncing: true,
+	offline: false,
+	recordCount: 0,
+	lastSyncTime: null,
+	error: null,
+	whereClause: ''
+});
+
+/**
+ * Initialize UK LRT collection with Electric sync
+ */
+async function createUkLrtCollection(
+	whereClause: string
+): Promise<Collection<ElectricUkLrtRecord, string>> {
+	const { createCollection } = await import('@tanstack/db');
+	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+	currentWhereClause = whereClause;
+
+	syncStatus.update((s) => ({
+		...s,
+		syncing: true,
+		whereClause,
+		error: null
+	}));
+
+	const collection = createCollection(
+		electricCollectionOptions<ElectricUkLrtRecord>({
+			id: 'uk-lrt',
+			syncMode: 'progressive', // Use progressive mode for large datasets - provides incremental snapshots
+			shapeOptions: {
+				url: `${ELECTRIC_URL}/v1/shape`,
+				params: {
+					table: 'uk_lrt',
+					where: whereClause,
+					columns: UK_LRT_COLUMNS
+				}
+			},
+			getKey: (item) => item.id as string
 		})
 	);
 
-	console.log('[TanStack DB] UK LRT collection initialized with IndexedDB storage');
+	// Monitor collection state for sync status (debounced to prevent excessive updates)
+	let statusDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+	const checkSyncStatus = () => {
+		// Debounce status updates to prevent UI thrashing
+		if (statusDebounceTimer) {
+			clearTimeout(statusDebounceTimer);
+		}
+		statusDebounceTimer = setTimeout(() => {
+			const isReady = collection.isReady();
+			const recordCount = collection.size;
+
+			syncStatus.update((s) => ({
+				...s,
+				connected: true,
+				syncing: !isReady,
+				recordCount,
+				lastSyncTime: isReady ? new Date() : s.lastSyncTime
+			}));
+		}, 100);
+	};
+
+	// Subscribe to collection changes to update sync status
+	collection.subscribeChanges(() => {
+		checkSyncStatus();
+	});
+
+	// Initial status check (immediate)
+	syncStatus.update((s) => ({
+		...s,
+		connected: true,
+		syncing: true,
+		recordCount: collection.size
+	}));
+
+	console.log(
+		`[TanStack DB] UK LRT collection initialized with Electric sync, WHERE: ${whereClause}`
+	);
+
+	return collection;
 }
 
 /**
  * Get UK LRT collection (browser only)
+ * Creates the collection on first call with default WHERE clause
  */
-export async function getUkLrtCollection(): Promise<Collection<UkLrtRecord, string>> {
-	await ensureCollections();
-	return ukLrtCol!;
+export async function getUkLrtCollection(
+	whereClause?: string
+): Promise<Collection<ElectricUkLrtRecord, string>> {
+	if (!browser) {
+		throw new Error('TanStack DB collections can only be used in the browser');
+	}
+
+	const where = whereClause || getDefaultWhere();
+
+	// If collection exists with same WHERE, return it
+	if (ukLrtCol && currentWhereClause === where) {
+		return ukLrtCol;
+	}
+
+	// Create new collection (or recreate with new WHERE)
+	ukLrtCol = await createUkLrtCollection(where);
+	return ukLrtCol;
 }
 
 /**
- * Initialize all collections
+ * Update the WHERE clause and recreate the collection
+ */
+export async function updateUkLrtWhere(whereClause: string): Promise<void> {
+	if (!browser) return;
+
+	// Recreate collection with new WHERE
+	ukLrtCol = await createUkLrtCollection(whereClause);
+}
+
+/**
+ * Initialize the database
  */
 export async function initDB(): Promise<void> {
 	if (!browser) {
@@ -72,10 +283,16 @@ export async function initDB(): Promise<void> {
 	}
 
 	try {
-		await ensureCollections();
-		console.log('[TanStack DB] Collections initialized successfully');
+		await getUkLrtCollection();
+		console.log('[TanStack DB] Database initialized successfully');
 	} catch (error) {
-		console.error('[TanStack DB] Failed to initialize collections:', error);
+		console.error('[TanStack DB] Failed to initialize:', error);
+		syncStatus.update((s) => ({
+			...s,
+			error: error instanceof Error ? error.message : 'Failed to initialize',
+			syncing: false,
+			offline: true
+		}));
 		throw error;
 	}
 }
@@ -92,42 +309,68 @@ export function getDBStatus() {
 		};
 	}
 
-	const initialized = ukLrtCol !== null;
-
 	return {
-		initialized,
-		collections: initialized
-			? {
-					ukLrt: ukLrtCol!.id
-				}
-			: {},
-		storage: 'IndexedDB'
+		initialized: ukLrtCol !== null,
+		collections: ukLrtCol ? { ukLrt: 'uk-lrt' } : {},
+		storage: 'Electric (memory)',
+		whereClause: currentWhereClause
 	};
 }
 
 /**
- * Clear all collections (useful for testing/debugging)
- *
- * WARNING: This will delete all local data!
+ * Build WHERE clause from filter conditions
  */
-export async function clearDB(): Promise<void> {
-	if (!browser) {
-		console.warn('[TanStack DB] clearDB called on server - skipping');
-		return;
+export function buildWhereFromFilters(
+	filters: Array<{ field: string; operator: string; value: unknown }>
+): string {
+	if (!filters || filters.length === 0) {
+		return getDefaultWhere();
 	}
 
-	try {
-		await ensureCollections();
+	const escapeValue = (value: string): string => value.replace(/'/g, "''");
 
-		// Get all keys and delete them
-		const keys = Array.from(ukLrtCol!.keys());
-		for (const key of keys) {
-			ukLrtCol!.delete(key);
-		}
+	const clauses = filters
+		.map((filter) => {
+			const { field, operator, value } = filter;
 
-		console.log('[TanStack DB] Collections cleared');
-	} catch (error) {
-		console.error('[TanStack DB] Failed to clear collections:', error);
-		throw error;
+			switch (operator) {
+				case 'equals':
+					return typeof value === 'string'
+						? `${field} = '${escapeValue(String(value))}'`
+						: `${field} = ${value}`;
+				case 'not_equals':
+					return typeof value === 'string'
+						? `${field} != '${escapeValue(String(value))}'`
+						: `${field} != ${value}`;
+				case 'contains':
+					return `${field} ILIKE '%${escapeValue(String(value))}%'`;
+				case 'not_contains':
+					return `${field} NOT ILIKE '%${escapeValue(String(value))}%'`;
+				case 'starts_with':
+					return `${field} ILIKE '${escapeValue(String(value))}%'`;
+				case 'ends_with':
+					return `${field} ILIKE '%${escapeValue(String(value))}'`;
+				case 'greater_than':
+					return `${field} > ${value}`;
+				case 'less_than':
+					return `${field} < ${value}`;
+				case 'greater_or_equal':
+					return `${field} >= ${value}`;
+				case 'less_or_equal':
+					return `${field} <= ${value}`;
+				case 'is_empty':
+					return `(${field} IS NULL OR ${field} = '')`;
+				case 'is_not_empty':
+					return `(${field} IS NOT NULL AND ${field} != '')`;
+				default:
+					return null;
+			}
+		})
+		.filter(Boolean);
+
+	if (clauses.length === 0) {
+		return getDefaultWhere();
 	}
+
+	return clauses.join(' AND ');
 }
