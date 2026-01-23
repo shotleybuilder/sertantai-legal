@@ -412,6 +412,177 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
     end
   end
 
+  describe "live status reconciliation" do
+    # Live status codes
+    @live_in_force StagedParser.live_in_force()
+    @live_part_revoked StagedParser.live_part_revoked()
+    @live_revoked StagedParser.live_revoked()
+
+    test "live_severity/1 returns correct severity rankings" do
+      assert StagedParser.test_live_severity(@live_revoked) == 3
+      assert StagedParser.test_live_severity(@live_part_revoked) == 2
+      assert StagedParser.test_live_severity(@live_in_force) == 1
+      assert StagedParser.test_live_severity("unknown") == 0
+      assert StagedParser.test_live_severity(nil) == 0
+    end
+
+    test "reconcile_live_status/2 - both sources agree (in force)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2024_100"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_in_force}},
+        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      assert result.live == @live_in_force
+      assert result.live_source == :both
+      assert result.live_conflict == false
+      assert result.live_from_changes == @live_in_force
+      assert result.live_from_metadata == @live_in_force
+    end
+
+    test "reconcile_live_status/2 - both sources agree (revoked)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2010_500"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_revoked}},
+        repeal_revoke: %{status: :ok, data: %{live: @live_revoked}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      assert result.live == @live_revoked
+      assert result.live_source == :both
+      assert result.live_conflict == false
+    end
+
+    test "reconcile_live_status/2 - metadata says revoked, changes says in force (metadata wins)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2015_200"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_in_force}},
+        repeal_revoke: %{status: :ok, data: %{live: @live_revoked}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      assert result.live == @live_revoked
+      assert result.live_source == :metadata
+      assert result.live_conflict == true
+    end
+
+    test "reconcile_live_status/2 - changes says revoked, metadata says in force (changes wins)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2016_300"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_revoked}},
+        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      assert result.live == @live_revoked
+      assert result.live_source == :changes
+      assert result.live_conflict == true
+    end
+
+    test "reconcile_live_status/2 - partial revocation vs in force (partial wins)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2018_400"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_part_revoked}},
+        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      assert result.live == @live_part_revoked
+      assert result.live_source == :changes
+      assert result.live_conflict == true
+    end
+
+    test "reconcile_live_status/2 - revoked vs partial (revoked wins)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2019_500"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_revoked}},
+        repeal_revoke: %{status: :ok, data: %{live: @live_part_revoked}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      assert result.live == @live_revoked
+      assert result.live_source == :changes
+      assert result.live_conflict == true
+    end
+
+    test "reconcile_live_status/2 - handles missing amended_by stage" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2020_600"}
+
+      stages = %{
+        repeal_revoke: %{status: :ok, data: %{live: @live_revoked}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      # Defaults to in_force for missing amended_by, metadata wins
+      assert result.live == @live_revoked
+      assert result.live_source == :metadata
+      assert result.live_conflict == true
+      assert result.live_from_changes == @live_in_force
+      assert result.live_from_metadata == @live_revoked
+    end
+
+    test "reconcile_live_status/2 - handles missing repeal_revoke stage" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2021_700"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: @live_part_revoked}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      # Defaults to in_force for missing repeal_revoke, changes wins
+      assert result.live == @live_part_revoked
+      assert result.live_source == :changes
+      assert result.live_conflict == true
+    end
+
+    test "reconcile_live_status/2 - handles failed amended_by stage" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2022_800"}
+
+      stages = %{
+        amended_by: %{status: :error, data: nil, error: "HTTP 404"},
+        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      # Falls back to in_force for error, no conflict (both in_force)
+      assert result.live == @live_in_force
+      assert result.live_source == :both
+      assert result.live_conflict == false
+    end
+
+    test "reconcile_live_status/2 - handles nil live values in stage data" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2023_900"}
+
+      stages = %{
+        amended_by: %{status: :ok, data: %{live_from_changes: nil}},
+        repeal_revoke: %{status: :ok, data: %{live: nil}}
+      }
+
+      result = StagedParser.test_reconcile_live_status(law, stages)
+
+      # Both default to in_force
+      assert result.live == @live_in_force
+      assert result.live_source == :both
+      assert result.live_conflict == false
+    end
+  end
+
   describe "on_progress callback" do
     test "notify_progress calls callback with event" do
       # Test that the notify_progress helper works correctly

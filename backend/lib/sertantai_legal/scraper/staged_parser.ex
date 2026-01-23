@@ -54,6 +54,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
+  require Logger
+
   @type stage ::
           :metadata | :extent | :enacted_by | :amending | :amended_by | :repeal_revoke | :taxa
   @type stage_result :: %{
@@ -188,6 +190,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Update result with stage outcome
   # Uses ParsedLaw.merge/2 which only updates fields with non-nil, non-empty values
+  # After repeal_revoke stage completes, runs live status reconciliation
   defp update_result(result, stage, stage_result) do
     new_stages = Map.put(result.stages, stage, stage_result)
 
@@ -203,6 +206,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         _ -> result.law
       end
 
+    # After repeal_revoke stage completes, reconcile live status from both sources
+    new_law =
+      if stage == :repeal_revoke and stage_result.status == :ok do
+        reconcile_live_status(new_law, new_stages)
+      else
+        new_law
+      end
+
     %{
       result
       | stages: new_stages,
@@ -211,6 +222,86 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         law: new_law
     }
   end
+
+  # ============================================================================
+  # Live Status Reconciliation
+  # ============================================================================
+  #
+  # Reconciles live status from two independent data sources:
+  #
+  # 1. **amended_by stage** (changes/affected endpoint):
+  #    - Returns `live_from_changes` based on amendment/revocation history
+  #    - Reliable for tracking which laws have revoked this one
+  #
+  # 2. **repeal_revoke stage** (resources/data.xml endpoint):
+  #    - Returns `live` based on document metadata
+  #    - Reliable for official revocation markers in the document
+  #
+  # Strategy: "Most Severe Wins" - If either source indicates revocation,
+  # the law is considered revoked. This errs on the side of caution.
+  #
+  # Severity ranking: revoked (3) > partial (2) > in_force (1)
+
+  defp reconcile_live_status(law, stages) do
+    # Get live status from amended_by stage (change history)
+    live_from_changes =
+      case stages[:amended_by] do
+        %{status: :ok, data: data} -> data[:live_from_changes] || @live_in_force
+        _ -> @live_in_force
+      end
+
+    # Get live status from repeal_revoke stage (metadata)
+    live_from_metadata =
+      case stages[:repeal_revoke] do
+        %{status: :ok, data: data} -> data[:live] || @live_in_force
+        _ -> @live_in_force
+      end
+
+    # Determine severity of each status
+    severity_changes = live_severity(live_from_changes)
+    severity_metadata = live_severity(live_from_metadata)
+
+    # Most severe wins
+    {final_live, source, conflict} =
+      cond do
+        severity_changes > severity_metadata ->
+          {live_from_changes, :changes, true}
+
+        severity_metadata > severity_changes ->
+          {live_from_metadata, :metadata, true}
+
+        true ->
+          # Equal severity - no conflict, use metadata as canonical
+          {live_from_metadata, :both, false}
+      end
+
+    # Log conflicts for review
+    if conflict do
+      law_name = Map.get(law, :name) || "unknown"
+
+      Logger.warning(
+        "[LiveStatusConflict] #{law_name}: " <>
+          "changes=#{live_from_changes} vs metadata=#{live_from_metadata} → #{source}=#{final_live}"
+      )
+    end
+
+    # Merge reconciliation results into law
+    reconciliation_data = %{
+      live: final_live,
+      live_source: source,
+      live_conflict: conflict,
+      live_from_changes: live_from_changes,
+      live_from_metadata: live_from_metadata
+    }
+
+    ParsedLaw.merge(law, reconciliation_data)
+  end
+
+  # Severity ranking for live status values
+  defp live_severity(@live_revoked), do: 3
+  defp live_severity(@live_part_revoked), do: 2
+  defp live_severity(@live_in_force), do: 1
+  defp live_severity(_), do: 0
 
   # Progress notification helper - only calls callback if provided
   defp notify_progress(nil, _event), do: :ok
@@ -716,6 +807,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amended_by_count: length(affected.amended_by),
           rescinded_by_count: length(affected.rescinded_by),
 
+          # Live status derived from change history (for reconciliation with repeal_revoke stage)
+          live_from_changes: affected.live,
+
           # Flattened stats - Amended_by (🔻 this law is affected by others) - excludes self
           amended_by_stats_affected_by_count: affected.stats.amendments_count,
           amended_by_stats_affected_by_laws_count: affected.stats.amended_laws_count,
@@ -1096,5 +1190,20 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     @doc false
     def test_build_stage_summary(stage, result), do: build_stage_summary(stage, result)
+
+    @doc false
+    def test_reconcile_live_status(law, stages), do: reconcile_live_status(law, stages)
+
+    @doc false
+    def test_live_severity(status), do: live_severity(status)
+
+    @doc false
+    def live_in_force, do: @live_in_force
+
+    @doc false
+    def live_part_revoked, do: @live_part_revoked
+
+    @doc false
+    def live_revoked, do: @live_revoked
   end
 end
