@@ -54,6 +54,9 @@
 	let currentStage: ParseStage | null = null;
 	let cleanupStream: (() => void) | null = null;
 
+	// Per-stage reparse state
+	let reparsingStage: ParseStage | null = null;
+
 	// Use plain object for better Svelte reactivity (Maps don't trigger updates reliably)
 	type StageStatus = {
 		status: 'pending' | 'running' | 'ok' | 'error' | 'skipped';
@@ -471,6 +474,88 @@
 			failedStages // Only retry failed stages
 		);
 	}
+
+	// Re-parse a single stage (called from section header reparse button)
+	async function reparseStage(stage: ParseStage) {
+		if (!currentRecord || !parseResult || reparsingStage) return;
+
+		// Cleanup any existing stream
+		if (cleanupStream) {
+			cleanupStream();
+			cleanupStream = null;
+		}
+
+		reparsingStage = stage;
+		parseError = null;
+
+		// Reset progress for this stage
+		stageProgress = { ...stageProgress, [stage]: { status: 'pending', summary: null } };
+
+		// Store current results to merge later
+		const previousResult = parseResult;
+
+		cleanupStream = parseOneStream(
+			sessionId,
+			currentRecord.name,
+			{
+				onStageStart: (s, _stageNum, _total) => {
+					if (s === stage) {
+						stageProgress = { ...stageProgress, [s]: { status: 'running', summary: null } };
+					}
+				},
+				onStageComplete: (s, status, summary) => {
+					if (s === stage) {
+						stageProgress = { ...stageProgress, [s]: { status, summary } };
+					}
+				},
+				onComplete: (result) => {
+					// Merge the single stage result with previous results
+					const mergedStages = { ...previousResult.stages };
+					const mergedRecord = { ...previousResult.record };
+					const mergedErrors: string[] = previousResult.errors.filter(
+						(e) => !e.startsWith(stage + ':')
+					);
+
+					// Update with new stage result
+					mergedStages[stage] = result.stages[stage];
+
+					// If stage succeeded, merge in the new data
+					if (result.stages[stage]?.status === 'ok' && result.record) {
+						Object.assign(mergedRecord, result.record);
+					}
+
+					// Add error if stage failed
+					if (result.stages[stage]?.status === 'error') {
+						const error = result.errors.find((e) => e.startsWith(stage + ':'));
+						if (error) mergedErrors.push(error);
+					}
+
+					parseResult = {
+						...result,
+						record: mergedRecord,
+						stages: mergedStages,
+						errors: mergedErrors,
+						has_errors: mergedErrors.length > 0
+					};
+
+					reparsingStage = null;
+					cleanupStream = null;
+				},
+				onError: (error) => {
+					console.error('Stage reparse failed:', error);
+					parseError = error.message;
+					// Mark stage as error
+					stageProgress = {
+						...stageProgress,
+						[stage]: { status: 'error', summary: error.message }
+					};
+					reparsingStage = null;
+					cleanupStream = null;
+				}
+			},
+			[stage] // Only parse this single stage
+		);
+	}
 </script>
 
 {#if open}
@@ -694,7 +779,13 @@
 					<!-- STAGE 1 💠 metadata -->
 					{@const stage1Config = SECTION_CONFIG.find(s => s.id === 'stage1_metadata')}
 					{#if stage1Config?.subsections}
-						<CollapsibleSection title={stage1Config.title} expanded={stage1Config.defaultExpanded}>
+						<CollapsibleSection
+							title={stage1Config.title}
+							expanded={stage1Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'metadata'}
+							on:reparse={() => reparseStage('metadata')}
+						>
 							{#each stage1Config.subsections as subsection}
 								<CollapsibleSection
 									title={subsection.title}
@@ -777,7 +868,13 @@
 					<!-- STAGE 2 📍 geographic extent -->
 					{@const stage2Config = SECTION_CONFIG.find(s => s.id === 'stage2_extent')}
 					{#if stage2Config?.fields}
-						<CollapsibleSection title={stage2Config.title} expanded={stage2Config.defaultExpanded}>
+						<CollapsibleSection
+							title={stage2Config.title}
+							expanded={stage2Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'extent'}
+							on:reparse={() => reparseStage('extent')}
+						>
 							{#each stage2Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -790,7 +887,13 @@
 					<!-- STAGE 3 🚀 enacted_by -->
 					{@const stage3Config = SECTION_CONFIG.find(s => s.id === 'stage3_enacted_by')}
 					{#if stage3Config?.fields}
-						<CollapsibleSection title={stage3Config.title} expanded={stage3Config.defaultExpanded}>
+						<CollapsibleSection
+							title={stage3Config.title}
+							expanded={stage3Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'enacted_by'}
+							on:reparse={() => reparseStage('enacted_by')}
+						>
 							{#each stage3Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -808,6 +911,9 @@
 							expanded={stage4Config.defaultExpanded}
 							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'amendments'}
+							on:reparse={() => reparseStage('amendments')}
 						>
 							{#each stage4Config.subsections as subsection}
 								<CollapsibleSection
@@ -829,7 +935,13 @@
 					<!-- STAGE 5 🚫 repeal_revoke -->
 					{@const stage5Config = SECTION_CONFIG.find(s => s.id === 'stage5_repeal_revoke')}
 					{#if stage5Config?.fields}
-						<CollapsibleSection title={stage5Config.title} expanded={stage5Config.defaultExpanded}>
+						<CollapsibleSection
+							title={stage5Config.title}
+							expanded={stage5Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'repeal_revoke'}
+							on:reparse={() => reparseStage('repeal_revoke')}
+						>
 							{#each stage5Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -842,7 +954,13 @@
 					<!-- STAGE 6 🦋 taxa -->
 					{@const stage6Config = SECTION_CONFIG.find(s => s.id === 'stage6_taxa')}
 					{#if stage6Config?.subsections}
-						<CollapsibleSection title={stage6Config.title} expanded={stage6Config.defaultExpanded}>
+						<CollapsibleSection
+							title={stage6Config.title}
+							expanded={stage6Config.defaultExpanded}
+							showReparse={effectiveMode !== 'read' && !!parseResult}
+							isReparsing={reparsingStage === 'taxa'}
+							on:reparse={() => reparseStage('taxa')}
+						>
 							{#each stage6Config.subsections as subsection}
 								<CollapsibleSection
 									title={subsection.title}
