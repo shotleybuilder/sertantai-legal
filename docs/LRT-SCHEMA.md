@@ -1,7 +1,7 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 0.7
-  **Last Updated**: 2026-01-22
+  **Version**: 0.8
+  **Last Updated**: 2026-01-23
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -214,10 +214,41 @@
 
 # STAGE 5 🚫_repeal_revoke
 
-  | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
-  |--------|---------------|---------------|------|:--------:|---------|-------|
-  | `live` | Status | `live` | `string` | Yes (16845) | `✔ In force` | 🚫_repeal_revoke |
-  | `live_description` | Status Description | `live_description` | `string` | Yes (686) | `Current legislation` | 🚫_repeal_revoke |
+  ## Status
+  
+    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+    |--------|---------------|---------------|------|:--------:|---------|-------|
+    | `live` | Status | `live` | `string` | Yes (16845) | `✔ In force` | 🚫_repeal_revoke |
+    | `live_description` | Status Description | `live_description` | `string` | Yes (686) | `Current legislation` | 🚫_repeal_revoke |
+  
+  ## Reconciliation
+  
+    Live status can be derived from two sources that may conflict:
+    1. **Changes endpoint** (`/changes/affected`) - from Stage 4b amended_by parsing
+    2. **Metadata endpoint** (`/resources/data.xml`) - from Stage 5 repeal_revoke parsing
+    
+    When sources disagree, the "Most Severe Wins" strategy is applied:
+    - Severity ranking: `revoked (3) > partial (2) > in_force (1)`
+    - If either source indicates revocation, the law is considered revoked
+    - Conflicts are logged for later analysis
+    
+    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+    |--------|---------------|---------------|------|:--------:|---------|-------|
+    | `live_source` | Status Source | `live_source` | `string` | No | `metadata`, `changes`, `both` | 🚫_repeal_revoke |
+    | `live_conflict` | Status Conflict | `live_conflict` | `boolean` | No | `true` | 🚫_repeal_revoke |
+    | `live_from_changes` | Status (Changes) | `live_from_changes` | `string` | No | `✔ In force` | 🔄 amendments (4b) |
+    | `live_from_metadata` | Status (Metadata) | `live_from_metadata` | `string` | No | `❌ Revoked / Repealed / Abolished` | 🚫_repeal_revoke |
+    | `live_conflict_detail` | Conflict Detail | `live_conflict_detail` | `map` (JSONB) | No | `{"reason": "...", "winner": "metadata", ...}` | 🚫_repeal_revoke |
+    
+    **Conflict Detail Structure:**
+    ```json
+    {
+      "reason": "Metadata shows revoked but changes history shows in force",
+      "winner": "metadata",
+      "changes_severity": 1,
+      "metadata_severity": 3
+    }
+    ```
 
 ---
 
