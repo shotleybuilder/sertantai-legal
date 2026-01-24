@@ -29,6 +29,8 @@
 	export let recordId: string | undefined = undefined;
 	// Optional: force specific mode (otherwise auto-detected)
 	export let mode: DisplayMode | undefined = undefined;
+	// Optional: auto-trigger reparse when modal opens (for "Parse & Review" workflow)
+	export let autoReparse: boolean = false;
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -142,6 +144,8 @@
 	let lastParsedName: string | null = null;
 	// Track names that failed to parse to prevent infinite retry loops
 	let failedNames: Set<string> = new Set();
+	// Track if auto-reparse has been triggered to prevent infinite loops
+	let autoReparseTriggered = false;
 
 	// Parse current record when index changes (only if not already parsed or failed)
 	// IMPORTANT: workflowComplete guard prevents reparse after final confirm
@@ -156,6 +160,25 @@
 		!isParsing
 	) {
 		parseCurrentRecord();
+	}
+
+	// Auto-reparse when modal opens with autoReparse=true (for "Parse & Review" workflow)
+	// Only triggers once per modal open to prevent infinite loops
+	$: if (
+		open &&
+		autoReparse &&
+		effectiveMode === 'read' &&
+		recordId &&
+		!autoReparseTriggered &&
+		!reparsingStage
+	) {
+		autoReparseTriggered = true;
+		reparseAllReadMode();
+	}
+
+	// Reset auto-reparse trigger when modal closes
+	$: if (!open) {
+		autoReparseTriggered = false;
 	}
 
 	// Cleanup stream on component destroy

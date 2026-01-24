@@ -272,59 +272,28 @@ defmodule SertantaiLegalWeb.UkLrtController do
   @doc """
   POST /api/uk-lrt/:id/rescrape
 
-  Re-scrape and re-parse a single UK LRT record from legislation.gov.uk.
-  Updates the record with fresh data from all parsing stages.
+  DEPRECATED: This endpoint has been replaced by the parse-preview workflow.
+  Use POST /api/uk-lrt/:id/parse-preview to get parsed data for review,
+  then PATCH /api/uk-lrt/:id to save approved changes.
+
+  This ensures all changes are reviewed before being saved to the database.
   """
-  def rescrape(conn, %{"id" => id}) do
-    alias SertantaiLegal.Scraper.StagedParser
-
-    case UkLrt.by_id(id) do
-      {:ok, record} ->
-        # Build the input record for StagedParser
-        input = %{
-          type_code: record.type_code,
-          Year: record.year,
-          Number: record.number,
-          Title_EN: record.title_en,
-          name: record.name
-        }
-
-        # StagedParser.parse always returns {:ok, result}
-        {:ok, result} = StagedParser.parse(input)
-
-        # Extract parsed data from stages
-        parsed_data = build_update_attrs(result)
-
-        # Update the record
-        case record
-             |> Ash.Changeset.for_update(:update, parsed_data)
-             |> Ash.update() do
-          {:ok, updated} ->
-            json(conn, %{
-              message: "Rescrape completed successfully",
-              record: record_to_json(updated),
-              stages: format_stages(result.stages),
-              errors: result.errors,
-              has_errors: result.has_errors
-            })
-
-          {:error, reason} ->
-            conn
-            |> put_status(:unprocessable_entity)
-            |> json(%{error: "Update failed: #{format_error(reason)}"})
-        end
-
-      {:error, reason} ->
-        if not_found_error?(reason) do
-          conn
-          |> put_status(:not_found)
-          |> json(%{error: "Record not found"})
-        else
-          conn
-          |> put_status(:internal_server_error)
-          |> json(%{error: format_error(reason)})
-        end
-    end
+  def rescrape(conn, _params) do
+    conn
+    |> put_status(:gone)
+    |> json(%{
+      error: "This endpoint is deprecated",
+      message:
+        "Use POST /api/uk-lrt/:id/parse-preview to get parsed data, " <>
+          "then PATCH /api/uk-lrt/:id to save changes after review.",
+      migration: %{
+        old: "POST /api/uk-lrt/:id/rescrape",
+        new: [
+          "POST /api/uk-lrt/:id/parse-preview (get parsed data + diff)",
+          "PATCH /api/uk-lrt/:id (save approved changes)"
+        ]
+      }
+    })
   end
 
   @doc """

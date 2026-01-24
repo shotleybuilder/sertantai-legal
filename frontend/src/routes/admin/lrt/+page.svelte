@@ -201,21 +201,28 @@
 	let editingCell: { id: string; field: string } | null = null;
 	let editValue: string | string[] = '';
 
-	// Rescrape state
-	let rescrapingIds = new Set<string>();
-
-	// ParseReviewModal state (read-only view)
+	// ParseReviewModal state
 	let viewModalOpen = false;
 	let viewModalRecord: UkLrtRecord | null = null;
+	let viewModalAutoReparse = false; // When true, triggers "Parse & Review" mode
 
 	function openViewModal(record: UkLrtRecord) {
 		viewModalRecord = record;
+		viewModalAutoReparse = false;
+		viewModalOpen = true;
+	}
+
+	// Open modal in "Parse & Review" mode (auto-triggers reparse)
+	function openParseReviewModal(record: UkLrtRecord) {
+		viewModalRecord = record;
+		viewModalAutoReparse = true;
 		viewModalOpen = true;
 	}
 
 	function closeViewModal() {
 		viewModalOpen = false;
 		viewModalRecord = null;
+		viewModalAutoReparse = false;
 	}
 
 	// Saved views state
@@ -777,43 +784,6 @@
 			data = data.map((r) => (r.id === id ? updated : r));
 		} catch (e) {
 			alert(`Update failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
-		}
-	}
-
-	// Rescrape single record
-	async function rescrapeRecord(id: string, name: string) {
-		if (rescrapingIds.has(id)) return;
-
-		try {
-			rescrapingIds.add(id);
-			rescrapingIds = rescrapingIds; // trigger reactivity
-
-			// Call the parse-one endpoint (we need the session context, so we'll use a direct approach)
-			const response = await fetch(`${API_URL}/api/uk-lrt/${id}/rescrape`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' }
-			});
-
-			if (!response.ok) {
-				const err = await response.json();
-				throw new Error(err.error || 'Rescrape failed');
-			}
-
-			const result = await response.json();
-
-			// Refresh this record's data
-			const recordResponse = await fetch(`${API_URL}/api/uk-lrt/${id}`);
-			if (recordResponse.ok) {
-				const updated = await recordResponse.json();
-				data = data.map((r) => (r.id === id ? updated : r));
-			}
-
-			alert(`Rescrape complete for ${name}`);
-		} catch (e) {
-			alert(`Rescrape failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
-		} finally {
-			rescrapingIds.delete(id);
-			rescrapingIds = rescrapingIds;
 		}
 	}
 
@@ -1767,39 +1737,20 @@
 								/>
 							</svg>
 						</button>
-						<!-- Rescrape button -->
+						<!-- Parse & Review button -->
 						<button
-							class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-							title="Rescrape this record"
-							disabled={rescrapingIds.has(row.id)}
-							on:click={() => rescrapeRecord(row.id, row.name)}
+							class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+							title="Parse & Review - re-parse and review changes before saving"
+							on:click={() => openParseReviewModal(row)}
 						>
-							{#if rescrapingIds.has(row.id)}
-								<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-									<circle
-										class="opacity-25"
-										cx="12"
-										cy="12"
-										r="10"
-										stroke="currentColor"
-										stroke-width="4"
-									></circle>
-									<path
-										class="opacity-75"
-										fill="currentColor"
-										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-									></path>
-								</svg>
-							{:else}
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-									/>
-								</svg>
-							{/if}
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+								/>
+							</svg>
 						</button>
 					</div>
 				{:else if column === 'family'}
@@ -1982,7 +1933,7 @@
 					<strong>View button</strong> (eye icon) opens record details in a modal
 				</li>
 				<li>
-					<strong>Rescrape button</strong> (refresh icon) re-fetches and parses the record from legislation.gov.uk
+					<strong>Parse & Review button</strong> (refresh icon) re-parses and shows diff for review before saving
 				</li>
 				<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
 				<li>Table state (column order, visibility, sorting) is persisted locally</li>
@@ -1999,11 +1950,12 @@
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
 {/if}
 
-<!-- Parse Review Modal (read-only view with reparse capability) -->
+<!-- Parse Review Modal (view with optional auto-reparse for "Parse & Review" workflow) -->
 {#if viewModalRecord}
 	<ParseReviewModal
 		record={viewModalRecord}
 		recordId={viewModalRecord.id}
+		autoReparse={viewModalAutoReparse}
 		open={viewModalOpen}
 		on:close={closeViewModal}
 	/>
