@@ -69,5 +69,6 @@ defmodule SertantaiLegalWeb.Router do
     patch("/uk-lrt/:id", UkLrtController, :update)
     delete("/uk-lrt/:id", UkLrtController, :delete)
     post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
+    post("/uk-lrt/:id/parse-preview", UkLrtController, :parse_preview)
   end
 end

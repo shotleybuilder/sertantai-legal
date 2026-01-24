@@ -26,6 +26,9 @@
 		TableConfig as TableKitConfig
 	} from '@shotleybuilder/svelte-table-kit';
 
+	// ParseReviewModal for viewing record details
+	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
+
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
 	// Types
@@ -200,6 +203,20 @@
 
 	// Rescrape state
 	let rescrapingIds = new Set<string>();
+
+	// ParseReviewModal state (read-only view)
+	let viewModalOpen = false;
+	let viewModalRecord: UkLrtRecord | null = null;
+
+	function openViewModal(record: UkLrtRecord) {
+		viewModalRecord = record;
+		viewModalOpen = true;
+	}
+
+	function closeViewModal() {
+		viewModalOpen = false;
+		viewModalRecord = null;
+	}
 
 	// Saved views state
 	let showSaveModal = false;
@@ -1728,39 +1745,63 @@
 			<svelte:fragment slot="cell" let:cell let:column>
 				{@const row = asRecord(cell.row.original)}
 				{#if column === 'actions'}
-					<button
-						class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-						title="Rescrape this record"
-						disabled={rescrapingIds.has(row.id)}
-						on:click={() => rescrapeRecord(row.id, row.name)}
-					>
-						{#if rescrapingIds.has(row.id)}
-							<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-								<circle
-									class="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									stroke-width="4"
-								></circle>
-								<path
-									class="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-								></path>
-							</svg>
-						{:else}
+					<div class="flex items-center gap-1">
+						<!-- View button -->
+						<button
+							class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded"
+							title="View record details"
+							on:click={() => openViewModal(row)}
+						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+								/>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
 								/>
 							</svg>
-						{/if}
-					</button>
+						</button>
+						<!-- Rescrape button -->
+						<button
+							class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+							title="Rescrape this record"
+							disabled={rescrapingIds.has(row.id)}
+							on:click={() => rescrapeRecord(row.id, row.name)}
+						>
+							{#if rescrapingIds.has(row.id)}
+								<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
+								</svg>
+							{:else}
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									/>
+								</svg>
+							{/if}
+						</button>
+					</div>
 				{:else if column === 'family'}
 					{#if editingCell?.id === row.id && editingCell?.field === 'family'}
 						<select
@@ -1938,6 +1979,9 @@
 			<ul class="list-disc list-inside text-blue-700 space-y-1">
 				<li><strong>Double-click</strong> Family, Family II, or Function cells to edit inline</li>
 				<li>
+					<strong>View button</strong> (eye icon) opens record details in a modal
+				</li>
+				<li>
 					<strong>Rescrape button</strong> (refresh icon) re-fetches and parses the record from legislation.gov.uk
 				</li>
 				<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
@@ -1953,4 +1997,13 @@
 <!-- Save View Modal -->
 {#if showSaveModal && capturedConfig}
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
+{/if}
+
+<!-- Parse Review Modal (read-only view) -->
+{#if viewModalRecord}
+	<ParseReviewModal
+		record={viewModalRecord}
+		open={viewModalOpen}
+		on:close={closeViewModal}
+	/>
 {/if}

@@ -327,6 +327,116 @@ defmodule SertantaiLegalWeb.UkLrtController do
     end
   end
 
+  @doc """
+  POST /api/uk-lrt/:id/parse-preview
+
+  Parse a UK LRT record without saving to database.
+  Returns parsed data, current DB record, and diff for review.
+
+  ## Query Parameters
+  - stages: Comma-separated list of stages to run (optional, defaults to all)
+            Valid stages: metadata, extent, enacted_by, amending, amended_by, repeal_revoke, taxa
+
+  ## Response
+  - parsed: The newly parsed data
+  - current: The current DB record
+  - diff: Fields that differ between parsed and current
+  - stages: Status of each parse stage
+  - errors: Any parse errors
+  - has_errors: Boolean indicating if any stage failed
+  """
+  def parse_preview(conn, %{"id" => id} = params) do
+    alias SertantaiLegal.Scraper.StagedParser
+
+    # Parse stages parameter if provided
+    stages_to_run = parse_stages_param(params["stages"])
+
+    case UkLrt.by_id(id) do
+      {:ok, record} ->
+        # Build the input record for StagedParser
+        input = %{
+          type_code: record.type_code,
+          Year: record.year,
+          Number: record.number,
+          Title_EN: record.title_en,
+          name: record.name
+        }
+
+        # Parse with optional stage filtering
+        parse_opts = if stages_to_run, do: [stages: stages_to_run], else: []
+        {:ok, result} = StagedParser.parse(input, parse_opts)
+
+        # Extract parsed data from stages
+        parsed_data = build_update_attrs(result)
+
+        # Get current record as map for comparison
+        current_data = record_to_json(record)
+
+        # Compute diff - fields where parsed differs from current
+        diff = compute_diff(current_data, parsed_data)
+
+        json(conn, %{
+          parsed: parsed_data,
+          current: current_data,
+          diff: diff,
+          stages: format_stages(result.stages),
+          errors: result.errors,
+          has_errors: result.has_errors
+        })
+
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Record not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  # Parse comma-separated stages parameter into list of atoms
+  defp parse_stages_param(nil), do: nil
+  defp parse_stages_param(""), do: nil
+
+  defp parse_stages_param(stages_str) when is_binary(stages_str) do
+    valid_stages = ~w(metadata extent enacted_by amending amended_by repeal_revoke taxa)a
+
+    stages_str
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.map(&String.to_existing_atom/1)
+    |> Enum.filter(&(&1 in valid_stages))
+    |> case do
+      [] -> nil
+      stages -> stages
+    end
+  rescue
+    ArgumentError -> nil
+  end
+
+  # Compute diff between current and parsed data
+  defp compute_diff(current, parsed) do
+    parsed
+    |> Enum.filter(fn {key, parsed_value} ->
+      current_value = Map.get(current, key)
+      # Consider it changed if values differ (handling nil vs missing)
+      normalize_value(parsed_value) != normalize_value(current_value)
+    end)
+    |> Enum.map(fn {key, parsed_value} ->
+      {key, %{current: Map.get(current, key), parsed: parsed_value}}
+    end)
+    |> Map.new()
+  end
+
+  # Normalize values for comparison (treat empty lists/maps as nil-equivalent)
+  defp normalize_value(nil), do: nil
+  defp normalize_value([]), do: nil
+  defp normalize_value(%{} = map) when map_size(map) == 0, do: nil
+  defp normalize_value(value), do: value
+
   # Build update attributes from parsed result
   defp build_update_attrs(result) do
     stages = result.stages

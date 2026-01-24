@@ -141,6 +141,38 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
   end
 
+  describe "POST /api/uk-lrt/:id/parse-preview" do
+    test "returns 404 when record not found", %{conn: conn} do
+      fake_id = Ecto.UUID.generate()
+      conn = post(conn, "/api/uk-lrt/#{fake_id}/parse-preview")
+
+      assert json_response(conn, 404)["error"] == "Record not found"
+    end
+
+    test "returns error for invalid UUID format", %{conn: conn} do
+      conn = post(conn, "/api/uk-lrt/invalid-uuid/parse-preview")
+
+      assert conn.status in [400, 404, 500]
+    end
+
+    test "accepts stages query parameter", %{conn: conn} do
+      fake_id = Ecto.UUID.generate()
+      # Even with invalid ID, should handle stages param correctly
+      conn = post(conn, "/api/uk-lrt/#{fake_id}/parse-preview?stages=metadata,taxa")
+
+      # Should still return 404 (record not found), not a param error
+      assert json_response(conn, 404)["error"] == "Record not found"
+    end
+
+    test "handles invalid stages gracefully", %{conn: conn} do
+      fake_id = Ecto.UUID.generate()
+      conn = post(conn, "/api/uk-lrt/#{fake_id}/parse-preview?stages=invalid_stage")
+
+      # Should return 404 (stages param failure should not crash)
+      assert json_response(conn, 404)["error"] == "Record not found"
+    end
+  end
+
   describe "GET /api/uk-lrt/filters" do
     test "returns filter structure", %{conn: conn} do
       conn = get(conn, "/api/uk-lrt/filters")
