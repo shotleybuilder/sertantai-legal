@@ -1999,10 +1999,11 @@
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
 {/if}
 
-<!-- Parse Review Modal (read-only view) -->
+<!-- Parse Review Modal (read-only view with reparse capability) -->
 {#if viewModalRecord}
 	<ParseReviewModal
 		record={viewModalRecord}
+		recordId={viewModalRecord.id}
 		open={viewModalOpen}
 		on:close={closeViewModal}
 	/>
