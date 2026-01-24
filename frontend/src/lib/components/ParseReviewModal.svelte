@@ -119,6 +119,15 @@
 				: parseResult.record
 			: null;
 
+	// In Update mode, collapse sections by default - diff is primary content
+	// In Create/Read modes, respect the config's defaultExpanded setting
+	function shouldExpand(configDefault: boolean | undefined): boolean {
+		if (effectiveMode === 'update') {
+			return false; // Collapse all sections in Update mode
+		}
+		return configDefault ?? true;
+	}
+
 	// Track the last parsed record name to prevent re-parsing
 	let lastParsedName: string | null = null;
 	// Track names that failed to parse to prevent infinite retry loops
@@ -681,6 +690,53 @@
 						{/if}
 					</div>
 
+					<!-- UPDATE MODE: Show credentials summary + diff FIRST -->
+					{#if effectiveMode === 'update' && parseResult?.duplicate?.exists}
+						<!-- Compact Credentials Summary -->
+						<div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+							<div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+								<div>
+									<span class="text-gray-500">Name:</span>
+									<span class="ml-1 font-mono text-gray-900">{recordName}</span>
+								</div>
+								<div>
+									<span class="text-gray-500">Year:</span>
+									<span class="ml-1 text-gray-900">{getField(displayRecord, 'year', 'Year')}</span>
+								</div>
+								<div>
+									<span class="text-gray-500">Type:</span>
+									<span class="ml-1 text-gray-900">{getField(displayRecord, 'type_code')}</span>
+								</div>
+								<div>
+									<span class="text-gray-500">Family:</span>
+									<span class="ml-1 text-gray-900">{getField(displayRecord, 'family') || 'Uncategorized'}</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- Update Notice -->
+						<div class="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+							<div class="flex items-start">
+								<svg class="h-5 w-5 text-amber-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+								</svg>
+								<div class="text-sm">
+									<span class="font-medium text-amber-800">Updating existing record</span>
+									<span class="text-amber-700 ml-1">
+										— Last updated: {formatDate(parseResult.duplicate.updated_at)}
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- DIFF IS PRIMARY CONTENT IN UPDATE MODE -->
+						{#if parseResult.duplicate.record && displayRecord}
+							<div class="mb-6">
+								<RecordDiff existing={parseResult.duplicate.record} incoming={displayRecord} />
+							</div>
+						{/if}
+					{/if}
+
 					<!-- Parse Stages Status (hidden in Read mode) -->
 					{#if effectiveMode !== 'read' && parseResult}
 					<div class="mb-6 bg-gray-50 rounded-lg p-4">
@@ -785,7 +841,7 @@
 					{#if stage1Config?.subsections}
 						<CollapsibleSection
 							title={stage1Config.title}
-							expanded={stage1Config.defaultExpanded}
+							expanded={shouldExpand(stage1Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'metadata'}
 							on:reparse={() => reparseStage('metadata')}
@@ -874,7 +930,7 @@
 					{#if stage2Config?.fields}
 						<CollapsibleSection
 							title={stage2Config.title}
-							expanded={stage2Config.defaultExpanded}
+							expanded={shouldExpand(stage2Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'extent'}
 							on:reparse={() => reparseStage('extent')}
@@ -893,7 +949,7 @@
 					{#if stage3Config?.fields}
 						<CollapsibleSection
 							title={stage3Config.title}
-							expanded={stage3Config.defaultExpanded}
+							expanded={shouldExpand(stage3Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'enacted_by'}
 							on:reparse={() => reparseStage('enacted_by')}
@@ -912,7 +968,7 @@
 					{#if stage4Config?.subsections}
 						<CollapsibleSection
 							title={stage4Config.title}
-							expanded={stage4Config.defaultExpanded}
+							expanded={shouldExpand(stage4Config.defaultExpanded)}
 							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
@@ -941,7 +997,7 @@
 					{#if stage5Config?.subsections}
 						<CollapsibleSection
 							title={stage5Config.title}
-							expanded={stage5Config.defaultExpanded}
+							expanded={shouldExpand(stage5Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'amended_by'}
 							on:reparse={() => reparseStage('amended_by')}
@@ -969,7 +1025,7 @@
 					{#if stage6Config?.subsections}
 						<CollapsibleSection
 							title={stage6Config.title}
-							expanded={stage6Config.defaultExpanded}
+							expanded={shouldExpand(stage6Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'repeal_revoke'}
 							badge={hasLiveConflict ? 'Conflict' : ''}
@@ -997,7 +1053,7 @@
 						<!-- Fallback for old config without subsections -->
 						<CollapsibleSection
 							title={stage6Config.title}
-							expanded={stage6Config.defaultExpanded}
+							expanded={shouldExpand(stage6Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'repeal_revoke'}
 							on:reparse={() => reparseStage('repeal_revoke')}
@@ -1016,7 +1072,7 @@
 					{#if stage7Config?.subsections}
 						<CollapsibleSection
 							title={stage7Config.title}
-							expanded={stage7Config.defaultExpanded}
+							expanded={shouldExpand(stage7Config.defaultExpanded)}
 							showReparse={effectiveMode !== 'read' && !!parseResult}
 							isReparsing={reparsingStage === 'taxa'}
 							on:reparse={() => reparseStage('taxa')}
@@ -1041,7 +1097,7 @@
 					<!-- SECTION 8: CHANGE LOGS -->
 					{@const changeLogsConfig = SECTION_CONFIG.find(s => s.id === 'change_logs')}
 					{#if changeLogsConfig?.fields}
-						<CollapsibleSection title={changeLogsConfig.title} expanded={changeLogsConfig.defaultExpanded}>
+						<CollapsibleSection title={changeLogsConfig.title} expanded={shouldExpand(changeLogsConfig.defaultExpanded)}>
 							{#each changeLogsConfig.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -1054,7 +1110,7 @@
 					<!-- SECTION 9: TIMESTAMPS -->
 					{@const timestampsConfig = SECTION_CONFIG.find(s => s.id === 'timestamps')}
 					{#if timestampsConfig?.fields}
-						<CollapsibleSection title={timestampsConfig.title} expanded={timestampsConfig.defaultExpanded}>
+						<CollapsibleSection title={timestampsConfig.title} expanded={shouldExpand(timestampsConfig.defaultExpanded)}>
 							{#each timestampsConfig.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -1064,47 +1120,6 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- Duplicate Warning with Diff (Update mode only) -->
-					{#if effectiveMode === 'update' && parseResult?.duplicate?.exists}
-						<div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-							<div class="flex">
-								<svg
-									class="h-5 w-5 text-yellow-400 mr-2 flex-shrink-0"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-									/>
-								</svg>
-								<div class="flex-1">
-									<h4 class="text-sm font-medium text-yellow-800">Existing Record Found</h4>
-									<p class="text-sm text-yellow-700 mt-1">
-										A record with name '{parseResult.name}' already exists in uk_lrt.
-										<span class="text-xs text-yellow-600">
-											(Family: {parseResult.duplicate.family || 'unset'} | Updated: {formatDate(
-												parseResult.duplicate.updated_at
-											)})
-										</span>
-									</p>
-									<p class="text-sm text-yellow-700 mt-1">
-										Confirming will <strong>update</strong> the existing record with the changes below.
-									</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Record Diff Viewer -->
-						{#if parseResult.duplicate.record && displayRecord}
-							<div class="mb-6">
-								<RecordDiff existing={parseResult.duplicate.record} incoming={displayRecord} />
-							</div>
-						{/if}
-					{/if}
 				{/if}
 			</div>
 
