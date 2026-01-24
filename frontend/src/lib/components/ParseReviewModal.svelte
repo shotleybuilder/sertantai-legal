@@ -5,8 +5,8 @@
 		useConfirmRecordMutation,
 		useFamilyOptionsQuery
 	} from '$lib/query/scraper';
-	import type { ParseOneResult, ScrapeRecord, ParseStage } from '$lib/api/scraper';
-	import { parseOneStream, mapParseError, mapStageError } from '$lib/api/scraper';
+	import type { ParseOneResult, ScrapeRecord, ParseStage, ParsePreviewResult } from '$lib/api/scraper';
+	import { parseOneStream, mapParseError, mapStageError, parsePreview, updateUkLrtRecord } from '$lib/api/scraper';
 	import RecordDiff from './RecordDiff.svelte';
 	import CollapsibleSection from './CollapsibleSection.svelte';
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
@@ -25,6 +25,8 @@
 
 	// Props for Read mode (view existing DB record without parsing)
 	export let record: Record<string, unknown> | null = null;
+	// Optional: record ID for enabling reparse in Read mode
+	export let recordId: string | undefined = undefined;
 	// Optional: force specific mode (otherwise auto-detected)
 	export let mode: DisplayMode | undefined = undefined;
 
@@ -56,6 +58,13 @@
 
 	// Per-stage reparse state
 	let reparsingStage: ParseStage | null = null;
+
+	// Read mode reparse state - accumulated parsed data for preview before save
+	let readModeAccumulatedData: Record<string, unknown> | null = null;
+	let readModePreviewResult: ParsePreviewResult | null = null;
+	let readModeHasChanges = false;
+	let readModeSaving = false;
+	let readModeSaveError: string | null = null;
 
 	// Use plain object for better Svelte reactivity (Maps don't trigger updates reliably)
 	type StageStatus = {
@@ -111,8 +120,9 @@
 				: 'create') as DisplayMode;
 
 	// For display: use record prop in Read mode, otherwise merge DB record with parsed changes
+	// In Read mode with accumulated changes, merge them for display
 	$: displayRecord = effectiveMode === 'read'
-		? record
+		? (readModeAccumulatedData ? { ...record, ...readModeAccumulatedData } : record)
 		: parseResult?.record
 			? parseResult.duplicate?.exists && parseResult.duplicate?.record
 				? { ...parseResult.duplicate.record, ...parseResult.record }
@@ -569,6 +579,173 @@
 			[stage] // Only parse this single stage
 		);
 	}
+
+	// ============================================
+	// Read Mode Reparse Functions
+	// ============================================
+
+	// Reparse a single stage in Read mode (uses parse-preview endpoint)
+	async function reparseStageReadMode(stage: ParseStage) {
+		if (!recordId || reparsingStage) return;
+
+		reparsingStage = stage;
+		readModeSaveError = null;
+
+		// Reset progress for this stage
+		stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
+
+		try {
+			const result = await parsePreview(recordId, [stage]);
+
+			// Update stage progress
+			const stageResult = result.stages[stage];
+			stageProgress = {
+				...stageProgress,
+				[stage]: {
+					status: stageResult?.status === 'ok' ? 'ok' : 'error',
+					summary: stageResult?.error || null
+				}
+			};
+
+			// Merge parsed data into accumulated state
+			readModeAccumulatedData = {
+				...(readModeAccumulatedData || {}),
+				...result.parsed
+			};
+
+			// Store the preview result for diff display
+			readModePreviewResult = {
+				...result,
+				// Update diff to reflect all accumulated changes vs original
+				diff: computeAccumulatedDiff()
+			};
+
+			readModeHasChanges = Object.keys(readModePreviewResult.diff).length > 0;
+		} catch (error) {
+			console.error('Read mode reparse failed:', error);
+			stageProgress = {
+				...stageProgress,
+				[stage]: { status: 'error', summary: error instanceof Error ? error.message : 'Unknown error' }
+			};
+		} finally {
+			reparsingStage = null;
+		}
+	}
+
+	// Reparse all stages in Read mode
+	async function reparseAllReadMode() {
+		if (!recordId || reparsingStage) return;
+
+		reparsingStage = 'metadata'; // Use first stage as indicator
+		readModeSaveError = null;
+
+		// Set all stages to running
+		ALL_STAGES.forEach((stage) => {
+			stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
+		});
+
+		try {
+			const result = await parsePreview(recordId); // No stages = all stages
+
+			// Update all stage progress
+			ALL_STAGES.forEach((stage) => {
+				const stageResult = result.stages[stage];
+				stageProgress = {
+					...stageProgress,
+					[stage]: {
+						status: stageResult?.status === 'ok' ? 'ok' : stageResult?.status === 'error' ? 'error' : 'skipped',
+						summary: stageResult?.error || null
+					}
+				};
+			});
+
+			// Replace accumulated data with full fresh parse
+			readModeAccumulatedData = { ...result.parsed };
+			readModePreviewResult = result;
+			readModeHasChanges = Object.keys(result.diff).length > 0;
+		} catch (error) {
+			console.error('Read mode reparse all failed:', error);
+			ALL_STAGES.forEach((stage) => {
+				stageProgress = {
+					...stageProgress,
+					[stage]: { status: 'error', summary: error instanceof Error ? error.message : 'Unknown error' }
+				};
+			});
+		} finally {
+			reparsingStage = null;
+		}
+	}
+
+	// Compute diff between accumulated changes and original record
+	function computeAccumulatedDiff(): Record<string, { current: unknown; parsed: unknown }> {
+		if (!record || !readModeAccumulatedData) return {};
+
+		const diff: Record<string, { current: unknown; parsed: unknown }> = {};
+
+		for (const [key, parsedValue] of Object.entries(readModeAccumulatedData)) {
+			const currentValue = record[key];
+			// Normalize for comparison
+			const normalizedParsed = normalizeValue(parsedValue);
+			const normalizedCurrent = normalizeValue(currentValue);
+
+			if (JSON.stringify(normalizedParsed) !== JSON.stringify(normalizedCurrent)) {
+				diff[key] = { current: currentValue, parsed: parsedValue };
+			}
+		}
+
+		return diff;
+	}
+
+	// Helper to normalize values for comparison
+	function normalizeValue(value: unknown): unknown {
+		if (value === null || value === undefined) return null;
+		if (Array.isArray(value) && value.length === 0) return null;
+		if (typeof value === 'object' && Object.keys(value as object).length === 0) return null;
+		return value;
+	}
+
+	// Save accumulated changes to DB
+	async function saveReadModeChanges() {
+		if (!recordId || !readModeAccumulatedData || readModeSaving) return;
+
+		readModeSaving = true;
+		readModeSaveError = null;
+
+		try {
+			await updateUkLrtRecord(recordId, readModeAccumulatedData);
+
+			// Update the original record prop with saved data
+			// This will be reflected when modal is reopened
+			dispatch('close');
+		} catch (error) {
+			console.error('Failed to save changes:', error);
+			readModeSaveError = error instanceof Error ? error.message : 'Failed to save changes';
+		} finally {
+			readModeSaving = false;
+		}
+	}
+
+	// Discard accumulated changes
+	function discardReadModeChanges() {
+		readModeAccumulatedData = null;
+		readModePreviewResult = null;
+		readModeHasChanges = false;
+		readModeSaveError = null;
+
+		// Reset stage progress
+		ALL_STAGES.forEach((stage) => {
+			stageProgress = { ...stageProgress, [stage]: { status: 'pending', summary: null } };
+		});
+	}
+
+	// Determine which reparse function to use based on mode
+	function handleSectionReparse(stage: ParseStage) {
+		if (effectiveMode === 'read' && recordId) {
+			reparseStageReadMode(stage);
+		} else {
+			reparseStage(stage);
+		}
+	}
 </script>
 
 {#if open}
@@ -593,12 +770,36 @@
 						{/if}
 					</h2>
 					<span class="px-2 py-0.5 text-xs font-medium rounded-full {
-						effectiveMode === 'read' ? 'bg-gray-100 text-gray-600' :
-						effectiveMode === 'update' ? 'bg-amber-100 text-amber-700' :
+						effectiveMode === 'read'
+							? (readModeHasChanges ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600')
+							: effectiveMode === 'update' ? 'bg-amber-100 text-amber-700' :
 						'bg-green-100 text-green-700'
 					}">
-						{effectiveMode === 'read' ? 'Read Only' : effectiveMode === 'update' ? 'Update' : 'Create'}
+						{effectiveMode === 'read'
+							? (readModeHasChanges ? 'Unsaved Changes' : 'Read Only')
+							: effectiveMode === 'update' ? 'Update' : 'Create'}
 					</span>
+					<!-- Reparse All button for Read mode -->
+					{#if effectiveMode === 'read' && recordId}
+						<button
+							on:click={reparseAllReadMode}
+							disabled={!!reparsingStage}
+							class="ml-2 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+						>
+							{#if reparsingStage}
+								<svg class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 text-blue-700" fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								</svg>
+								Reparsing...
+							{:else}
+								<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+								Reparse All
+							{/if}
+						</button>
+					{/if}
 				</div>
 				<button on:click={handleCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -737,6 +938,43 @@
 						{/if}
 					{/if}
 
+					<!-- READ MODE: Show diff when there are accumulated changes -->
+					{#if effectiveMode === 'read' && readModeHasChanges && record && readModeAccumulatedData}
+						<!-- Changes Notice -->
+						<div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+							<div class="flex items-start">
+								<svg class="h-5 w-5 text-blue-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+								<div class="text-sm">
+									<span class="font-medium text-blue-800">Pending changes from reparse</span>
+									<span class="text-blue-700 ml-1">
+										— Review the diff below and save or discard changes
+									</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- DIFF FOR READ MODE -->
+						{#if displayRecord}
+						<div class="mb-6">
+							<RecordDiff existing={record} incoming={displayRecord} />
+						</div>
+						{/if}
+
+						<!-- Save Error -->
+						{#if readModeSaveError}
+							<div class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+								<div class="flex items-start">
+									<svg class="h-5 w-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+									<div class="text-sm text-red-700">{readModeSaveError}</div>
+								</div>
+							</div>
+						{/if}
+					{/if}
+
 					<!-- Parse Stages Status (hidden in Read mode) -->
 					{#if effectiveMode !== 'read' && parseResult}
 					<div class="mb-6 bg-gray-50 rounded-lg p-4">
@@ -842,9 +1080,9 @@
 						<CollapsibleSection
 							title={stage1Config.title}
 							expanded={shouldExpand(stage1Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'metadata'}
-							on:reparse={() => reparseStage('metadata')}
+							on:reparse={() => handleSectionReparse('metadata')}
 						>
 							{#each stage1Config.subsections as subsection}
 								<CollapsibleSection
@@ -931,9 +1169,9 @@
 						<CollapsibleSection
 							title={stage2Config.title}
 							expanded={shouldExpand(stage2Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'extent'}
-							on:reparse={() => reparseStage('extent')}
+							on:reparse={() => handleSectionReparse('extent')}
 						>
 							{#each stage2Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
@@ -950,9 +1188,9 @@
 						<CollapsibleSection
 							title={stage3Config.title}
 							expanded={shouldExpand(stage3Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'enacted_by'}
-							on:reparse={() => reparseStage('enacted_by')}
+							on:reparse={() => handleSectionReparse('enacted_by')}
 						>
 							{#each stage3Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
@@ -971,9 +1209,9 @@
 							expanded={shouldExpand(stage4Config.defaultExpanded)}
 							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'amending'}
-							on:reparse={() => reparseStage('amending')}
+							on:reparse={() => handleSectionReparse('amending')}
 						>
 							{#each stage4Config.subsections as subsection}
 								<CollapsibleSection
@@ -998,9 +1236,9 @@
 						<CollapsibleSection
 							title={stage5Config.title}
 							expanded={shouldExpand(stage5Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'amended_by'}
-							on:reparse={() => reparseStage('amended_by')}
+							on:reparse={() => handleSectionReparse('amended_by')}
 						>
 							{#each stage5Config.subsections as subsection}
 								<CollapsibleSection
@@ -1026,11 +1264,11 @@
 						<CollapsibleSection
 							title={stage6Config.title}
 							expanded={shouldExpand(stage6Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'repeal_revoke'}
 							badge={hasLiveConflict ? 'Conflict' : ''}
 							badgeColor={hasLiveConflict ? 'amber' : 'gray'}
-							on:reparse={() => reparseStage('repeal_revoke')}
+							on:reparse={() => handleSectionReparse('repeal_revoke')}
 						>
 							{#each stage6Config.subsections as subsection}
 								<CollapsibleSection
@@ -1054,9 +1292,9 @@
 						<CollapsibleSection
 							title={stage6Config.title}
 							expanded={shouldExpand(stage6Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'repeal_revoke'}
-							on:reparse={() => reparseStage('repeal_revoke')}
+							on:reparse={() => handleSectionReparse('repeal_revoke')}
 						>
 							{#each stage6Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
@@ -1073,9 +1311,9 @@
 						<CollapsibleSection
 							title={stage7Config.title}
 							expanded={shouldExpand(stage7Config.defaultExpanded)}
-							showReparse={effectiveMode !== 'read' && !!parseResult}
+							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
 							isReparsing={reparsingStage === 'taxa'}
-							on:reparse={() => reparseStage('taxa')}
+							on:reparse={() => handleSectionReparse('taxa')}
 						>
 							{#each stage7Config.subsections as subsection}
 								<CollapsibleSection
@@ -1164,6 +1402,31 @@
 					>
 						{effectiveMode === 'read' ? 'Close' : 'Cancel'}
 					</button>
+					<!-- Read mode with changes: Discard and Save buttons -->
+					{#if effectiveMode === 'read' && readModeHasChanges}
+						<button
+							on:click={discardReadModeChanges}
+							disabled={readModeSaving}
+							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							Discard Changes
+						</button>
+						<button
+							on:click={saveReadModeChanges}
+							disabled={readModeSaving}
+							class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+						>
+							{#if readModeSaving}
+								<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								</svg>
+								Saving...
+							{:else}
+								Save Changes
+							{/if}
+						</button>
+					{/if}
 					{#if effectiveMode !== 'read'}
 					<button
 						on:click={handleSkip}

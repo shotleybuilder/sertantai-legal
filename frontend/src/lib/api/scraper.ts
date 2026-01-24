@@ -1003,3 +1003,70 @@ export function parseOneStream(
 		eventSource.close();
 	};
 }
+
+/**
+ * Parse preview result - parsed data without saving to DB
+ */
+export interface ParsePreviewResult {
+	parsed: Record<string, unknown>;
+	current: Record<string, unknown>;
+	diff: Record<string, { current: unknown; parsed: unknown }>;
+	stages: Record<string, { status: string; error?: string }>;
+	errors: string[];
+	has_errors: boolean;
+}
+
+/**
+ * Parse a UK LRT record without saving to database.
+ * Returns parsed data, current DB record, and diff for review.
+ *
+ * @param recordId - The UUID of the UK LRT record
+ * @param stages - Optional array of stages to run (defaults to all)
+ * @returns ParsePreviewResult with parsed data, current record, and diff
+ */
+export async function parsePreview(
+	recordId: string,
+	stages?: ParseStage[]
+): Promise<ParsePreviewResult> {
+	let url = `${API_URL}/api/uk-lrt/${recordId}/parse-preview`;
+	if (stages && stages.length > 0) {
+		url += `?stages=${stages.join(',')}`;
+	}
+
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to parse record');
+	}
+
+	return response.json();
+}
+
+/**
+ * Update a UK LRT record with new data.
+ *
+ * @param recordId - The UUID of the UK LRT record
+ * @param data - The data to update
+ * @returns The updated record
+ */
+export async function updateUkLrtRecord(
+	recordId: string,
+	data: Record<string, unknown>
+): Promise<Record<string, unknown>> {
+	const response = await fetch(`${API_URL}/api/uk-lrt/${recordId}`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to update record');
+	}
+
+	return response.json();
+}
