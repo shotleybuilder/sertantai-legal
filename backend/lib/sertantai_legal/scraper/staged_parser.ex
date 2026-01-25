@@ -803,6 +803,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amending_stats_affects_count_per_law: build_count_per_law_summary(affecting.amendments),
           amending_stats_affects_count_per_law_detailed:
             build_count_per_law_detailed(affecting.amendments),
+          # NEW: Consolidated JSONB field (🔺_affects_stats_per_law)
+          affects_stats_per_law: build_stats_per_law_jsonb(affecting.amendments),
 
           # Flattened stats - Rescinding (🔺 this law rescinds others) - excludes self
           rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
@@ -810,6 +812,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
             build_count_per_law_summary(affecting.revocations),
           rescinding_stats_rescinding_count_per_law_detailed:
             build_count_per_law_detailed(affecting.revocations),
+          # NEW: Consolidated JSONB field (🔺_rescinding_stats_per_law)
+          rescinding_stats_per_law: build_stats_per_law_jsonb(affecting.revocations),
 
           # Detailed amendment data (for future use) - excludes self
           amending_details: affecting.amendments,
@@ -857,6 +861,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
             build_count_per_law_summary(affected.amendments),
           amended_by_stats_affected_by_count_per_law_detailed:
             build_count_per_law_detailed(affected.amendments),
+          # NEW: Consolidated JSONB field (🔻_affected_by_stats_per_law)
+          affected_by_stats_per_law: build_stats_per_law_jsonb(affected.amendments),
 
           # Flattened stats - Rescinded_by (🔻 this law is rescinded by others) - excludes self
           rescinded_by_stats_rescinded_by_laws_count: affected.stats.revoked_laws_count,
@@ -864,6 +870,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
             build_count_per_law_summary(affected.revocations),
           rescinded_by_stats_rescinded_by_count_per_law_detailed:
             build_count_per_law_detailed(affected.revocations),
+          # NEW: Consolidated JSONB field (🔻_rescinded_by_stats_per_law)
+          rescinded_by_stats_per_law: build_stats_per_law_jsonb(affected.revocations),
 
           # Detailed amendment data (for future use) - excludes self
           amended_by_details: affected.amendments,
@@ -1143,6 +1151,77 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     # Use \n\n (blank line) between law blocks to match legacy data format
     |> Enum.join("\n\n")
   end
+
+  # Builds a JSONB-compatible map combining summary and detailed data.
+  # This consolidates the separate *_count_per_law and *_count_per_law_detailed fields.
+  #
+  # Output format (map keyed by law name):
+  #   %{
+  #     "UK_uksi_2020_100" => %{
+  #       "name" => "UK_uksi_2020_100",
+  #       "title" => "The Example Regulations 2020",
+  #       "url" => "https://legislation.gov.uk/id/uksi/2020/100",
+  #       "count" => 3,
+  #       "details" => [
+  #         %{"target" => "reg. 1", "affect" => "inserted", "applied" => "Not yet"},
+  #         %{"target" => "reg. 2", "affect" => "substituted", "applied" => "Yes"}
+  #       ]
+  #     }
+  #   }
+  defp build_stats_per_law_jsonb([]), do: nil
+
+  defp build_stats_per_law_jsonb(amendments) do
+    amendments
+    |> group_amendments_by_law()
+    |> Enum.map(fn {law_name, items} ->
+      first = hd(items)
+      title = Map.get(first, :title_en) || Map.get(first, "title_en") || ""
+      path = Map.get(first, :path) || Map.get(first, "path") || ""
+
+      url =
+        if path != "" do
+          "https://legislation.gov.uk#{path}"
+        else
+          nil
+        end
+
+      details =
+        items
+        |> Enum.map(&build_detail_map/1)
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+
+      entry = %{
+        "name" => law_name,
+        "title" => if(title != "", do: title, else: nil),
+        "url" => url,
+        "count" => length(items),
+        "details" => details
+      }
+
+      {law_name, entry}
+    end)
+    |> Map.new()
+  end
+
+  # Build a detail map for JSONB output
+  defp build_detail_map(%{target: target, affect: affect, applied?: applied}) do
+    target = if target == "", do: nil, else: target
+    affect = if affect == "", do: nil, else: affect
+    applied = if applied == "", do: nil, else: applied
+
+    if is_nil(target) and is_nil(affect) do
+      nil
+    else
+      %{"target" => target, "affect" => affect, "applied" => applied}
+    end
+  end
+
+  defp build_detail_map(%{target: target}) when is_binary(target) and target != "" do
+    %{"target" => target, "affect" => nil, "applied" => nil}
+  end
+
+  defp build_detail_map(_), do: nil
 
   # Build "target affect [applied?]" string for detailed output
   # e.g., "reg. 2(1) words inserted [Not yet]"

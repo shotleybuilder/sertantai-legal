@@ -176,6 +176,12 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           rescinded_by_stats_rescinded_by_count_per_law: String.t() | nil,
           rescinded_by_stats_rescinded_by_count_per_law_detailed: String.t() | nil,
 
+          # === STATS (Consolidated JSONB - replaces *_per_law and *_per_law_detailed pairs) ===
+          affects_stats_per_law: map() | nil,
+          rescinding_stats_per_law: map() | nil,
+          affected_by_stats_per_law: map() | nil,
+          rescinded_by_stats_per_law: map() | nil,
+
           # === CHANGE LOGS ===
           amending_change_log: String.t() | nil,
           amended_by_change_log: String.t() | nil,
@@ -324,6 +330,12 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     rescinded_by_stats_rescinded_by_laws_count: nil,
     rescinded_by_stats_rescinded_by_count_per_law: nil,
     rescinded_by_stats_rescinded_by_count_per_law_detailed: nil,
+
+    # Stats (Consolidated JSONB)
+    affects_stats_per_law: nil,
+    rescinding_stats_per_law: nil,
+    affected_by_stats_per_law: nil,
+    rescinded_by_stats_per_law: nil,
 
     # Change Logs
     amending_change_log: nil,
@@ -588,6 +600,12 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
         get_string(normalized, :rescinded_by_stats_rescinded_by_count_per_law),
       rescinded_by_stats_rescinded_by_count_per_law_detailed:
         get_string(normalized, :rescinded_by_stats_rescinded_by_count_per_law_detailed),
+
+      # Stats (Consolidated JSONB)
+      affects_stats_per_law: get_map(normalized, :affects_stats_per_law),
+      rescinding_stats_per_law: get_map(normalized, :rescinding_stats_per_law),
+      affected_by_stats_per_law: get_map(normalized, :affected_by_stats_per_law),
+      rescinded_by_stats_per_law: get_map(normalized, :rescinded_by_stats_per_law),
 
       # Change Logs
       amending_change_log: get_string(normalized, :amending_change_log),
