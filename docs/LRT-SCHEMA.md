@@ -1,7 +1,7 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 0.8
-  **Last Updated**: 2026-01-23
+  **Version**: 0.9
+  **Last Updated**: 2026-01-25
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -158,10 +158,13 @@
     | `is_amending` | Is Amending | `is_amending` | `boolean` | Yes (9866) | `true` | 🧮_derived <- 🔄 amendments |
     | `🔺_stats_affects_count` | Affects Count | `amending_stats_affects_count` | `integer` | Yes (15042) | `2` | 🔄 amendments |
     | `🔺_stats_affected_laws_count` | Affected Laws Count | `amending_stats_affected_laws_count` | `integer` | Yes (15042) | `2` | 🔄 amendments |
-    | `🔺_stats_affects_count_per_law` | Affects Per Law | `amending_stats_affects_count_per_law` | `string` | Yes (9078) | | 🔄 amendments |
-    | `🔺_stats_affects_count_per_law_detailed` | Affects Per Law (Detail) | `amending_stats_affects_count_per_law_detailed` | `string` | Yes (9077) | | 🔄 amendments |
+    | `🔺_affects_stats_per_law` | **Affects Stats Per Law** | `affects_stats_per_law` | `map` (JSONB) | Yes (9079) | See below | 🔄 amendments |
+    | `🔺_stats_affects_count_per_law` | Affects Per Law (Legacy) | `amending_stats_affects_count_per_law` | `string` | Yes (9078) | | 🔄 amendments ⚠️ |
+    | `🔺_stats_affects_count_per_law_detailed` | Affects Per Law Detail (Legacy) | `amending_stats_affects_count_per_law_detailed` | `string` | Yes (9077) | | 🔄 amendments ⚠️ |
     | `amending` | Amends | `amending` | `text[]` | Yes (9866) | `{UK_ukpga_2000_5,UK_ukpga_1978_25}` | 🔄 amendments |
     | `linked_amending` | Linked Amends | `linked_amending` | `text[]` | Yes (9673) | `{UK_uksi_2024_436,UK_ukpga_2021_30}` | 🧮_derived <- 🔄 amendments |
+    
+    **⚠️ Legacy fields**: `_stats_affects_count_per_law` and `_detailed` are deprecated. Use `🔺_affects_stats_per_law` instead.
   
   ## Rescinding (this law rescinds others)
   
@@ -173,10 +176,13 @@
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `is_rescinding` | Is Rescinding | `is_rescinding` | `boolean` | Yes (2462) | `false` | 🧮_derived <- 🔄 amendments |
     | `🔺_stats_rescinding_laws_count` | Rescinded Laws Count | `rescinding_stats_rescinding_laws_count` | `integer` | Yes (14979) | | 🔄 amendments |
-    | `🔺_stats_rescinding_count_per_law` | Rescinding Per Law | `rescinding_stats_rescinding_count_per_law` | `string` | Yes (2479) | | 🔄 amendments |
-    | `🔺_stats_rescinding_count_per_law_detailed` | Rescinding Per Law (Detail) | `rescinding_stats_rescinding_count_per_law_detailed` | `string` | Yes (2479) | | 🔄 amendments |
+    | `🔺_rescinding_stats_per_law` | **Rescinding Stats Per Law** | `rescinding_stats_per_law` | `map` (JSONB) | Yes (2481) | See below | 🔄 amendments |
+    | `🔺_stats_rescinding_count_per_law` | Rescinding Per Law (Legacy) | `rescinding_stats_rescinding_count_per_law` | `string` | Yes (2479) | | 🔄 amendments ⚠️ |
+    | `🔺_stats_rescinding_count_per_law_detailed` | Rescinding Per Law Detail (Legacy) | `rescinding_stats_rescinding_count_per_law_detailed` | `string` | Yes (2479) | | 🔄 amendments ⚠️ |
     | `rescinding` | Rescinds | `rescinding` | `text[]` | Yes (2458) | | 🔄 amendments |
     | `linked_rescinding` | Linked Rescinds | `linked_rescinding` | `text[]` | Yes (2014) | `{UK_uksi_2002_119}` | 🧮_derived <- 🔄 amendments |
+    
+    **⚠️ Legacy fields**: `_stats_rescinding_count_per_law` and `_detailed` are deprecated. Use `🔺_rescinding_stats_per_law` instead.
     
   ## Amended By (this law is affected by others)
   
@@ -190,12 +196,15 @@
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `🔻_stats_affected_by_count` | Affected By Count | `amended_by_stats_affected_by_count` | `integer` | Yes (16757) | | 🔄 amendments |
     | `🔻_stats_affected_by_laws_count` | Amending Laws Count | `amended_by_stats_affected_by_laws_count` | `integer` | Yes (16751) | | 🔄 amendments |
-    | `🔻_stats_affected_by_count_per_law` | Affected By Per Law | `amended_by_stats_affected_by_count_per_law` | `string` | Yes (7964) | | 🔄 amendments |
-    | `🔻_stats_affected_by_count_per_law_detailed` | Affected By Per Law (Detail) | `amended_by_stats_affected_by_count_per_law_detailed` | `string` | Yes (6242) | | 🔄 amendments |
+    | `🔻_affected_by_stats_per_law` | **Affected By Stats Per Law** | `affected_by_stats_per_law` | `map` (JSONB) | Yes (6243) | See below | 🔄 amendments |
+    | `🔻_stats_affected_by_count_per_law` | Affected By Per Law (Legacy) | `amended_by_stats_affected_by_count_per_law` | `string` | Yes (7964) | | 🔄 amendments ⚠️ |
+    | `🔻_stats_affected_by_count_per_law_detailed` | Affected By Per Law Detail (Legacy) | `amended_by_stats_affected_by_count_per_law_detailed` | `string` | Yes (6242) | | 🔄 amendments ⚠️ |
     | `amended_by` | Amended By | `amended_by` | `text[]` | Yes (6338) | | 🔄 amendments |
     | `linked_amended_by` | Linked Amended By | `linked_amended_by` | `text[]` | Yes (6180) | `{UK_uksi_2023_381}` | 🧮_derived |
     | `latest_amend_date` | Latest Amendment | `latest_amend_date` | `date` | Yes (5512) | | 🧮_derived <- 🔄 amendments |
     | `latest_change_date` | Latest Change | `latest_change_date` | `date` | No | | 🧮_derived |
+    
+    **⚠️ Legacy fields**: `_stats_affected_by_count_per_law` and `_detailed` are deprecated. Use `🔻_affected_by_stats_per_law` instead.
   
   ## Rescinded By (this law is rescinded by others)
   
@@ -204,11 +213,55 @@
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `🔻_stats_rescinded_by_laws_count` | Rescinding Laws Count | `rescinded_by_stats_rescinded_by_laws_count` | `integer` | Yes (14939) | | 🔄 amendments |
-    | `🔻_stats_rescinded_by_count_per_law` | Rescinded By Per Law | `rescinded_by_stats_rescinded_by_count_per_law` | `string` | Yes (5714) | | 🔄 amendments |
-    | `🔻_stats_rescinded_by_count_per_law_detailed` | Rescinded By Per Law (Detail) | `rescinded_by_stats_rescinded_by_count_per_law_detailed` | `string` | Yes (5714) | | 🔄 amendments |
+    | `🔻_rescinded_by_stats_per_law` | **Rescinded By Stats Per Law** | `rescinded_by_stats_per_law` | `map` (JSONB) | Yes (5714) | See below | 🔄 amendments |
+    | `🔻_stats_rescinded_by_count_per_law` | Rescinded By Per Law (Legacy) | `rescinded_by_stats_rescinded_by_count_per_law` | `string` | Yes (5714) | | 🔄 amendments ⚠️ |
+    | `🔻_stats_rescinded_by_count_per_law_detailed` | Rescinded By Per Law Detail (Legacy) | `rescinded_by_stats_rescinded_by_count_per_law_detailed` | `string` | Yes (5714) | | 🔄 amendments ⚠️ |
     | `rescinded_by` | Rescinded By | `rescinded_by` | `text[]` | Yes (5789) | | 🔄 amendments |
     | `linked_rescinded_by` | Linked Rescinded By | `linked_rescinded_by` | `text[]` | Yes (5600) | `{UK_uksi_2015_1640}` | 🧮_derived |
     | `latest_rescind_date` | Latest Rescind | `latest_rescind_date` | `date` | Yes (4379) | | 🧮_derived <- 🚫_repeal_revoke |
+    
+    **⚠️ Legacy fields**: `_stats_rescinded_by_count_per_law` and `_detailed` are deprecated. Use `🔻_rescinded_by_stats_per_law` instead.
+
+  ## Consolidated Stats JSONB Structure
+  
+    The four `*_stats_per_law` fields share the same JSONB structure, keyed by law name:
+    
+    ```json
+    {
+      "UK_uksi_2023_1071": {
+        "name": "UK_uksi_2023_1071",
+        "title": "The Health and Care Act 2022 (Further Consequential Amendments) Regulations 2023",
+        "url": "https://legislation.gov.uk/id/uksi/2023/1071",
+        "count": 4,
+        "details": [
+          { "target": "reg. 1(2)(d)", "affect": "words omitted", "applied": "Not yet" },
+          { "target": "reg. 1(2)(e)", "affect": "word omitted", "applied": "Not yet" },
+          { "target": "reg. 1(2)(ea)", "affect": "inserted", "applied": "Not yet" },
+          { "target": "blanket amendment", "affect": "words substituted", "applied": "Not yet" }
+        ]
+      },
+      "UK_uksi_2020_240": {
+        "name": "UK_uksi_2020_240",
+        "title": "The Statutory Parental Bereavement Pay Regulations 2020",
+        "url": "https://legislation.gov.uk/id/uksi/2020/240",
+        "count": 1,
+        "details": [
+          { "target": "reg. 1(2)", "affect": "words substituted", "applied": "Not yet" }
+        ]
+      }
+    }
+    ```
+    
+    | Field | Type | Description |
+    |-------|------|-------------|
+    | `name` | string | Law identifier (e.g., `UK_uksi_2023_1071`) |
+    | `title` | string | Full title of the law |
+    | `url` | string | Link to legislation.gov.uk |
+    | `count` | integer | Number of amendments/changes |
+    | `details` | array | Individual change entries |
+    | `details[].target` | string | Article/regulation affected (e.g., `reg. 1(2)`) |
+    | `details[].affect` | string | Type of change (e.g., `words substituted`, `inserted`) |
+    | `details[].applied` | string | Application status (`Yes`, `Not yet`, `In part`) |
 
 ---
 
