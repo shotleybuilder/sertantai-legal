@@ -588,6 +588,36 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Detailed breakdown of rescissions"
     )
 
+    # ============================================================================
+    # Consolidated Stats per Law (JSONB) - replaces summary + detailed text pairs
+    # ============================================================================
+
+    # 🔺 Outbound: This law affects others
+    attribute(:affects_stats_per_law, :map,
+      source: :"🔺_affects_stats_per_law",
+      allow_nil?: true,
+      description: "JSONB: Amendments this law makes to others, keyed by law name"
+    )
+
+    attribute(:rescinding_stats_per_law, :map,
+      source: :"🔺_rescinding_stats_per_law",
+      allow_nil?: true,
+      description: "JSONB: Repeals/revokes this law makes to others, keyed by law name"
+    )
+
+    # 🔻 Inbound: Others affect this law
+    attribute(:affected_by_stats_per_law, :map,
+      source: :"🔻_affected_by_stats_per_law",
+      allow_nil?: true,
+      description: "JSONB: Amendments made to this law by others, keyed by law name"
+    )
+
+    attribute(:rescinded_by_stats_per_law, :map,
+      source: :"🔻_rescinded_by_stats_per_law",
+      allow_nil?: true,
+      description: "JSONB: Repeals/revokes made to this law by others, keyed by law name"
+    )
+
     # Change Logs (Legacy - text based)
     attribute :amending_change_log, :string do
       allow_nil?(true)
@@ -794,6 +824,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rescinded_by_stats_rescinded_by_laws_count,
         :rescinded_by_stats_rescinded_by_count_per_law,
         :rescinded_by_stats_rescinded_by_count_per_law_detailed,
+        # Consolidated JSONB stats
+        :affects_stats_per_law,
+        :rescinding_stats_per_law,
+        :affected_by_stats_per_law,
+        :rescinded_by_stats_per_law,
         :amending_change_log,
         :amended_by_change_log,
         :record_change_log
@@ -915,6 +950,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rescinded_by_stats_rescinded_by_laws_count,
         :rescinded_by_stats_rescinded_by_count_per_law,
         :rescinded_by_stats_rescinded_by_count_per_law_detailed,
+        # Consolidated JSONB stats
+        :affects_stats_per_law,
+        :rescinding_stats_per_law,
+        :affected_by_stats_per_law,
+        :rescinded_by_stats_per_law,
         :amending_change_log,
         :amended_by_change_log,
         :record_change_log
