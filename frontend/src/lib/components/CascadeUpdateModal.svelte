@@ -5,10 +5,12 @@
 		batchReparse,
 		clearAffectedLaws,
 		updateEnactingLinks,
+		parseMetadata,
 		type AffectedLaw,
 		type AffectedLawsResult,
 		type BatchReparseResult,
-		type UpdateEnactingLinksResult
+		type UpdateEnactingLinksResult,
+		type ParseMetadataResult
 	} from '$lib/api/scraper';
 
 	export let sessionId: string;
@@ -31,6 +33,11 @@
 	let enactingUpdateInProgress = false;
 	let enactingResults: UpdateEnactingLinksResult | null = null;
 
+	// Not-in-DB metadata state
+	let metadataResults: Map<string, ParseMetadataResult['record']> = new Map();
+	let metadataFetching: Set<string> = new Set();
+	let metadataErrors: Map<string, string> = new Map();
+
 	// Selection state for individual processing
 	let selectedInDb: Set<string> = new Set();
 	let selectedNotInDb: Set<string> = new Set();
@@ -41,11 +48,13 @@
 		loadAffectedLaws();
 	}
 
-	async function loadAffectedLaws() {
+	async function loadAffectedLaws(preserveResults = false) {
 		loading = true;
 		error = null;
-		reparseResults = null;
-		enactingResults = null;
+		if (!preserveResults) {
+			reparseResults = null;
+			enactingResults = null;
+		}
 		try {
 			affectedLaws = await getAffectedLaws(sessionId);
 			// Select all by default
@@ -109,6 +118,8 @@
 		error = null;
 		try {
 			enactingResults = await updateEnactingLinks(sessionId);
+			// Reload to reflect processed entries removed from active lists
+			await loadAffectedLaws(true);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to update enacting links';
 		} finally {
@@ -123,11 +134,53 @@
 		error = null;
 		try {
 			enactingResults = await updateEnactingLinks(sessionId, Array.from(selectedEnactingParents));
+			// Reload to reflect processed entries removed from active lists
+			await loadAffectedLaws(true);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to update enacting links';
 		} finally {
 			enactingUpdateInProgress = false;
 		}
+	}
+
+	// --- Not-in-DB handlers ---
+	async function handleFetchMetadataSelected() {
+		if (selectedNotInDb.size === 0) return;
+
+		const names = Array.from(selectedNotInDb);
+		metadataFetching = new Set(names);
+		metadataErrors = new Map();
+
+		for (const name of names) {
+			try {
+				const result = await parseMetadata(sessionId, name);
+				metadataResults.set(name, result.record);
+				metadataResults = metadataResults; // Trigger reactivity
+			} catch (e) {
+				metadataErrors.set(name, e instanceof Error ? e.message : 'Failed');
+				metadataErrors = metadataErrors;
+			} finally {
+				metadataFetching.delete(name);
+				metadataFetching = metadataFetching;
+			}
+		}
+	}
+
+	function handleReviewNotInDbSelected() {
+		if (selectedNotInDb.size === 0 || !affectedLaws) return;
+
+		const selectedLaws: AffectedLaw[] = affectedLaws.not_in_db
+			.filter((law) => selectedNotInDb.has(law.name))
+			.map((law) => {
+				const meta = metadataResults.get(law.name);
+				return {
+					...law,
+					title_en: meta?.title_en || law.title_en || law.name,
+					type_code: meta?.type_code || law.type_code,
+					year: meta?.year || law.year
+				};
+			});
+		dispatch('reviewLaws', { laws: selectedLaws });
 	}
 
 	async function handleClearAndClose() {
@@ -401,18 +454,32 @@
 					<!-- Laws NOT in Database -->
 					{#if affectedLaws.not_in_db_count > 0}
 						<div class="mb-6">
-							<h3 class="font-semibold text-gray-900 mb-2">
-								Affected Laws NOT in Database ({affectedLaws.not_in_db_count})
-							</h3>
+							<div class="flex justify-between items-center mb-2">
+								<h3 class="font-semibold text-gray-900">
+									Affected Laws <span class="text-yellow-600">NOT</span> in Database ({affectedLaws.not_in_db_count})
+								</h3>
+								<div class="flex gap-2 text-sm">
+									<button on:click={() => { if (affectedLaws) selectedNotInDb = new Set(affectedLaws.not_in_db.map(l => l.name)); }} class="text-yellow-600 hover:underline">
+										Select All
+									</button>
+									<span class="text-gray-300">|</span>
+									<button on:click={() => { selectedNotInDb = new Set(); }} class="text-yellow-600 hover:underline">
+										Select None
+									</button>
+								</div>
+							</div>
 							<p class="text-sm text-gray-500 mb-2">
-								These laws will need to be scraped and added to complete the cascade.
+								These laws need to be scraped and added. Fetch metadata first, then parse & review.
 							</p>
 							<div
 								class="border border-yellow-200 bg-yellow-50 rounded-lg max-h-48 overflow-y-auto"
 							>
 								{#each affectedLaws.not_in_db as law}
+									{@const meta = metadataResults.get(law.name)}
+									{@const isFetching = metadataFetching.has(law.name)}
+									{@const fetchError = metadataErrors.get(law.name)}
 									<div
-										class="flex items-center gap-3 px-4 py-2 border-b border-yellow-100 last:border-b-0"
+										class="flex items-center gap-3 px-4 py-2 border-b border-yellow-100 last:border-b-0 hover:bg-yellow-100"
 									>
 										<input
 											type="checkbox"
@@ -420,7 +487,22 @@
 											on:change={() => toggleNotInDbSelection(law.name)}
 											class="h-4 w-4 text-yellow-600 rounded"
 										/>
-										<div class="font-mono text-sm text-gray-700">{law.name}</div>
+										<div class="flex-1 min-w-0">
+											<div class="font-mono text-sm text-gray-700">{law.name}</div>
+											{#if isFetching}
+												<div class="text-xs text-yellow-600 animate-pulse">Fetching metadata...</div>
+											{:else if fetchError}
+												<div class="text-xs text-red-500">{fetchError}</div>
+											{:else if meta}
+												<div class="text-sm text-gray-800 truncate">{meta.title_en}</div>
+												<div class="text-xs text-gray-500">
+													{meta.type_code} {meta.year}/{meta.number}
+												</div>
+											{/if}
+										</div>
+										{#if meta}
+											<span class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded">Ready</span>
+										{/if}
 									</div>
 								{/each}
 							</div>
@@ -499,6 +581,9 @@
 					{#if selectedInDb.size > 0}
 						<span>{selectedInDb.size} selected for re-parse</span>
 					{/if}
+					{#if selectedNotInDb.size > 0}
+						<span class="text-yellow-600">{selectedNotInDb.size} new laws selected</span>
+					{/if}
 					{#if selectedEnactingParents.size > 0}
 						<span class="text-purple-600">{selectedEnactingParents.size} parent laws selected</span>
 					{/if}
@@ -519,6 +604,28 @@
 							class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Review All ({affectedLaws.in_db_count})
+						</button>
+					{/if}
+
+					<!-- Not-in-DB buttons: Get Metadata + Parse & Review -->
+					{#if affectedLaws && affectedLaws.not_in_db_count > 0}
+						<button
+							on:click={handleFetchMetadataSelected}
+							disabled={metadataFetching.size > 0 || selectedNotInDb.size === 0}
+							class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{#if metadataFetching.size > 0}
+								Fetching ({metadataFetching.size})...
+							{:else}
+								Get Metadata ({selectedNotInDb.size})
+							{/if}
+						</button>
+						<button
+							on:click={handleReviewNotInDbSelected}
+							disabled={metadataFetching.size > 0 || selectedNotInDb.size === 0}
+							class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							Parse &amp; Review ({selectedNotInDb.size})
 						</button>
 					{/if}
 

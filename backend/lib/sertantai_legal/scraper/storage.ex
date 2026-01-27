@@ -544,6 +544,7 @@ defmodule SertantaiLegal.Scraper.Storage do
   """
   @spec get_affected_laws_summary(String.t()) :: map()
   def get_affected_laws_summary(session_id) do
+    # First check if any DB entries exist for this session (including processed)
     case CascadeAffectedLaw.by_session(session_id) do
       {:ok, db_entries} when db_entries != [] ->
         get_affected_laws_summary_from_db(db_entries)
@@ -554,27 +555,27 @@ defmodule SertantaiLegal.Scraper.Storage do
   end
 
   defp get_affected_laws_summary_from_db(db_entries) do
-    # Partition by update_type
+    # Split by status first
+    {pending_entries, processed_entries} =
+      Enum.split_with(db_entries, &(&1.status == :pending))
+
+    # Only pending entries appear in active lists
     {reparse_entries, enacting_entries} =
-      Enum.split_with(db_entries, &(&1.update_type == :reparse))
+      Enum.split_with(pending_entries, &(&1.update_type == :reparse))
 
     reparse_laws = Enum.map(reparse_entries, & &1.affected_law)
     enacting_parents = Enum.map(enacting_entries, & &1.affected_law)
 
-    # Collect all unique source laws
+    # Collect source laws from ALL entries (including processed) for context
     source_laws =
       db_entries
       |> Enum.flat_map(& &1.source_laws)
       |> Enum.uniq()
 
-    # Count by status
-    {pending_entries, processed_entries} =
-      Enum.split_with(db_entries, &(&1.status == :pending))
-
     %{
       source_laws: source_laws,
       source_count: length(source_laws),
-      # For backwards compat, report reparse laws as both amending and all_affected
+      # Only pending reparse laws in active lists
       amending: reparse_laws,
       amending_count: length(reparse_laws),
       rescinding: [],
