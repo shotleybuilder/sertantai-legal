@@ -76,7 +76,7 @@ defmodule SertantaiLegal.Scraper.Amending do
     {type_code, year, number} = extract_record_params(record)
     self_name = IdField.build_uk_id(type_code, year, number)
     path = affecting_path(record)
-    fetch_and_parse_amendments_with_self_filter(path, self_name)
+    fetch_and_parse_amendments_with_self_filter(path, self_name, :affecting)
   end
 
   @doc """
@@ -105,7 +105,7 @@ defmodule SertantaiLegal.Scraper.Amending do
     self_name = IdField.build_uk_id(type_code, year, number)
     path = affected_path(record)
 
-    case fetch_and_parse_amendments_with_self_filter(path, self_name) do
+    case fetch_and_parse_amendments_with_self_filter(path, self_name, :affected) do
       {:ok, result} ->
         # Determine live status based on revocations (excluding self)
         live = determine_live_status(result.revocations)
@@ -167,10 +167,10 @@ defmodule SertantaiLegal.Scraper.Amending do
   # Fetch and Parse
   # ============================================================================
 
-  defp fetch_and_parse_amendments_with_self_filter(path, self_name) do
+  defp fetch_and_parse_amendments_with_self_filter(path, self_name, endpoint) do
     case Client.fetch_html(path) do
       {:ok, html} ->
-        all_amendments = parse_amendments_html(html)
+        all_amendments = parse_amendments_html(html, endpoint: endpoint)
 
         # Separate self-references from other amendments
         {self_all, other_all} = Enum.split_with(all_amendments, &(&1.name == self_name))
@@ -236,24 +236,31 @@ defmodule SertantaiLegal.Scraper.Amending do
   @doc """
   Parse amendment HTML table into structured data.
 
-  The HTML contains a table with rows like:
+  The HTML contains a table with 9 columns:
   - Column 0: Affected law title
   - Column 1: Affected law path/link (e.g., "/id/uksi/2020/1234")
   - Column 2: Target section (e.g., "s. 2(1)")
   - Column 3: Affect type (e.g., "inserted", "substituted", "repealed")
-  - Column 4: Affecting law title (this law)
+  - Column 4: Affecting law title
   - Column 5: Affecting law path
   - Column 6: Affecting section
   - Column 7: Applied status ("Yes", "Not yet", etc.)
   - Column 8: Notes
+
+  ## Options
+  - `:endpoint` - `:affecting` (default) or `:affected`
+    - `:affecting` reads the OTHER law from columns 0-1 (affected law)
+    - `:affected` reads the OTHER law from columns 4-5 (affecting law)
   """
-  @spec parse_amendments_html(String.t()) :: list(amendment())
-  def parse_amendments_html(html) do
+  @spec parse_amendments_html(String.t(), keyword()) :: list(amendment())
+  def parse_amendments_html(html, opts \\ []) do
+    endpoint = Keyword.get(opts, :endpoint, :affecting)
+
     case Floki.parse_document(html) do
       {:ok, document} ->
         document
         |> Floki.find("tbody tr")
-        |> Enum.map(&parse_amendment_row/1)
+        |> Enum.map(&parse_amendment_row(&1, endpoint))
         |> Enum.reject(&is_nil/1)
 
       {:error, _} ->
@@ -261,13 +268,21 @@ defmodule SertantaiLegal.Scraper.Amending do
     end
   end
 
-  defp parse_amendment_row({"tr", _attrs, cells}) do
+  defp parse_amendment_row({"tr", _attrs, cells}, endpoint) do
     try do
       cells_list = Enum.with_index(cells)
 
-      # Extract data from each cell
-      title_en = get_cell_text(cells_list, 0) |> extract_title()
-      {path, type_code, year, number} = get_cell_link(cells_list, 1)
+      # For /changes/affecting: the OTHER law is in columns 0-1 (affected law)
+      # For /changes/affected: the OTHER law is in columns 4-5 (affecting law)
+      {title_col, link_col} =
+        case endpoint do
+          :affected -> {4, 5}
+          _ -> {0, 1}
+        end
+
+      # Extract data from the appropriate columns
+      title_en = get_cell_text(cells_list, title_col) |> extract_title()
+      {path, type_code, year, number} = get_cell_link(cells_list, link_col)
       target = get_cell_text(cells_list, 2)
       affect = get_cell_text(cells_list, 3)
       applied? = get_cell_text(cells_list, 7)
@@ -292,7 +307,7 @@ defmodule SertantaiLegal.Scraper.Amending do
     end
   end
 
-  defp parse_amendment_row(_), do: nil
+  defp parse_amendment_row(_, _endpoint), do: nil
 
   defp get_cell_text(cells_list, index) do
     case Enum.find(cells_list, fn {_cell, i} -> i == index end) do

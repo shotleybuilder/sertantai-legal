@@ -443,13 +443,16 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     case Metadata.fetch(fetch_record) do
       {:ok, metadata} ->
-        # Only include metadata fields that don't already exist in the record
-        # This prevents overwriting title_en from the original scrape with
-        # a potentially different Title_EN from the introduction XML
+        # Only protect title_en from being overwritten - the introduction XML
+        # may have a different Title_EN than the original scrape.
+        # All other metadata fields (md_description, md_subjects, dates, etc.)
+        # should be refreshed on reparse.
+        protected_fields = [:title_en]
+
         filtered_metadata =
           metadata
           |> Enum.reject(fn {key, _value} ->
-            has_key?(existing_record, key)
+            key in protected_fields and has_key?(existing_record, key)
           end)
           |> Enum.into(%{})
 

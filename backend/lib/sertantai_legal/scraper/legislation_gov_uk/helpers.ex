@@ -65,6 +65,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Helpers do
   @spec title_clean(String.t()) :: String.t()
   def title_clean(title) do
     title
+    |> normalize_whitespace()
     |> remove_the()
     |> remove_repeal_date()
     |> remove_repeal()
@@ -76,8 +77,13 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Helpers do
   defp remove_the(title), do: title
 
   defp remove_year(str) do
-    Regex.replace(~r/ /, str, " ")
-    |> then(&Regex.replace(~r/(.*?)([ | ]\d{4})$/, &1, "\\g{1}"))
+    Regex.replace(~r/(.*?)([ | ]\d{4})$/, str, "\\g{1}")
+  end
+
+  # Replace non-breaking spaces (\u00A0) with regular spaces.
+  # legislation.gov.uk titles often contain NBSP before the year.
+  defp normalize_whitespace(str) do
+    String.replace(str, "\u00A0", " ")
   end
 
   defp remove_repeal(str) do

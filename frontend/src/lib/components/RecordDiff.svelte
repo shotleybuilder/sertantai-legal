@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { create } from 'jsondiffpatch';
+	import { getFieldLabel } from './parse-review/field-config';
 
 	export let existing: Record<string, unknown>;
 	export let incoming: Record<string, unknown>;
@@ -329,8 +330,8 @@
 													: 'Updated'}
 										</span>
 										<div class="flex-1 min-w-0">
-											<div class="font-mono text-sm font-medium text-indigo-600 mb-1">
-												{change.field}
+											<div class="text-sm font-medium text-indigo-600 mb-1">
+												{getFieldLabel(change.field)} <span class="font-mono text-xs text-gray-400">({change.field})</span>
 											</div>
 											{#if change.type === 'deleted'}
 												<div class="diff-value deleted">
