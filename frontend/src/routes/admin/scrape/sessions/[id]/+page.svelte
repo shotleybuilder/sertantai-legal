@@ -38,6 +38,7 @@
 	let showParseModal = false;
 	let parseModalRecords: ScrapeRecord[] = [];
 	let parseModalStartIndex = 0;
+	let parseModalStages: import('$lib/api/scraper').ParseStage[] | undefined = undefined;
 	let parseCompleteMessage = '';
 
 	// Cascade Update Modal State
@@ -153,6 +154,7 @@
 		}
 		parseModalRecords = targetRecords;
 		parseModalStartIndex = 0;
+		parseModalStages = undefined;
 		parseCompleteMessage = '';
 		showParseModal = true;
 	}
@@ -204,10 +206,10 @@
 		fetchCascadeStatus();
 	}
 
-	function handleCascadeReviewLaws(event: CustomEvent<{ laws: AffectedLaw[] }>) {
+	function handleCascadeReviewLaws(event: CustomEvent<{ laws: AffectedLaw[]; stages?: import('$lib/api/scraper').ParseStage[] }>) {
 		// Close cascade modal and open parse review modal with the selected laws
 		showCascadeModal = false;
-		const { laws } = event.detail;
+		const { laws, stages } = event.detail;
 		// Convert AffectedLaw[] to ScrapeRecord[] format (ParseReviewModal uses name field)
 		parseModalRecords = laws.map((law) => ({
 			name: law.name,
@@ -217,6 +219,7 @@
 			Number: ''
 		}));
 		parseModalStartIndex = 0;
+		parseModalStages = stages;
 		parseCompleteMessage = '';
 		showParseModal = true;
 	}
@@ -229,6 +232,7 @@
 		// Open modal for single record
 		parseModalRecords = [record];
 		parseModalStartIndex = 0;
+		parseModalStages = undefined;
 		parseCompleteMessage = '';
 		showParseModal = true;
 	}
@@ -744,6 +748,7 @@
 	{sessionId}
 	records={parseModalRecords}
 	initialIndex={parseModalStartIndex}
+	stages={parseModalStages}
 	open={showParseModal}
 	on:close={handleParseModalClose}
 	on:complete={handleParseComplete}

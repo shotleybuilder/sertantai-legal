@@ -11,19 +11,23 @@
 		type AffectedLawsResult,
 		type BatchReparseResult,
 		type UpdateEnactingLinksResult,
-		type ParseMetadataResult
+		type ParseMetadataResult,
+		type ParseStage
 	} from '$lib/api/scraper';
 
 	export let sessionId: string;
 	export let open: boolean = false;
 
+	const MIN_REPARSE_STAGES: ParseStage[] = ['amended_by', 'repeal_revoke'];
+
 	const dispatch = createEventDispatcher<{
 		close: void;
 		complete: { reparsed: number; errors: number; enactingUpdated: number };
-		reviewLaws: { laws: AffectedLaw[] };
+		reviewLaws: { laws: AffectedLaw[]; stages?: ParseStage[] };
 	}>();
 
 	// State
+	let fullReparse = false;
 	let loading = true;
 	let error: string | null = null;
 	let affectedLaws: AffectedLawsResult | null = null;
@@ -82,13 +86,15 @@
 		if (selectedInDb.size === 0 || !affectedLaws) return;
 
 		const selectedLaws = affectedLaws.in_db.filter((law) => selectedInDb.has(law.name));
-		dispatch('reviewLaws', { laws: selectedLaws });
+		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
+		dispatch('reviewLaws', { laws: selectedLaws, stages });
 	}
 
 	function handleReviewAll() {
 		if (!affectedLaws || affectedLaws.in_db_count === 0) return;
 
-		dispatch('reviewLaws', { laws: affectedLaws.in_db });
+		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
+		dispatch('reviewLaws', { laws: affectedLaws.in_db, stages });
 	}
 
 	// Auto-save mode: batch re-parse without review (kept for future use)
@@ -429,7 +435,22 @@
 								<h3 class="font-semibold text-gray-900">
 									Affected Laws in Database ({affectedLaws.in_db_count})
 								</h3>
-								<div class="flex gap-2 text-sm">
+								<div class="flex items-center gap-4 text-sm">
+									<label class="flex items-center gap-2 cursor-pointer" title={fullReparse
+										? 'All 7 stages will be re-parsed'
+										: 'Only amended_by + repeal_revoke stages'}>
+										<span class="text-gray-500">{fullReparse ? 'Full' : 'Min'}</span>
+										<button
+											type="button"
+											role="switch"
+											aria-checked={fullReparse}
+											on:click={() => fullReparse = !fullReparse}
+											class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors {fullReparse ? 'bg-blue-600' : 'bg-gray-300'}"
+										>
+											<span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform {fullReparse ? 'translate-x-4.5' : 'translate-x-0.5'}" />
+										</button>
+									</label>
+									<span class="text-gray-300">|</span>
 									<button on:click={selectAllInDb} class="text-blue-600 hover:underline">
 										Select All
 									</button>
