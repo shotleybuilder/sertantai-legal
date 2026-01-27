@@ -307,6 +307,9 @@
 						Session: {sessionId}
 						{#if affectedLaws}
 							| {affectedLaws.source_count} law{affectedLaws.source_count !== 1 ? 's' : ''} persisted
+							{#if affectedLaws.current_layer}
+								| Layer {affectedLaws.current_layer}
+							{/if}
 						{/if}
 					</p>
 				</div>
@@ -347,6 +350,24 @@
 								<div class="text-sm text-yellow-600">Not in DB</div>
 							</div>
 						</div>
+						{#if affectedLaws.layers && affectedLaws.layers.length > 1}
+							<div class="flex items-center gap-2 mb-3 text-sm">
+								<span class="text-gray-500 font-medium">Layers:</span>
+								{#each affectedLaws.layers as l}
+									<span
+										class="px-2 py-0.5 rounded text-xs font-medium {l.layer === affectedLaws.current_layer ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600'}"
+									>
+										L{l.layer}: {l.count}
+									</span>
+								{/each}
+								{#if affectedLaws.deferred_count > 0}
+									<span class="px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
+										{affectedLaws.deferred_count} deferred
+									</span>
+								{/if}
+							</div>
+						{/if}
+
 						{#if affectedLaws.total_enacting_parents > 0}
 							<div class="grid grid-cols-3 gap-4">
 								<div class="bg-purple-50 rounded-lg p-4 text-center">

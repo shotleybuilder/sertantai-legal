@@ -47,15 +47,24 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
     end
 
     attribute :status, :atom do
-      constraints(one_of: [:pending, :processed])
+      constraints(one_of: [:pending, :processed, :deferred])
       default(:pending)
       allow_nil?(false)
-      description("Processing status")
+
+      description(
+        "Processing status: pending (actionable), processed (done), deferred (beyond max layer)"
+      )
     end
 
     attribute :source_laws, {:array, :string} do
       default([])
       description("List of laws that triggered this cascade entry (audit trail)")
+    end
+
+    attribute :layer, :integer do
+      default(1)
+      allow_nil?(false)
+      description("Cascade depth: 1 = direct affected, 2 = affected-of-affected, etc.")
     end
 
     attribute :metadata, :map do
@@ -77,12 +86,12 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
 
     create :create do
       description("Create a new cascade entry")
-      accept([:session_id, :affected_law, :update_type, :status, :source_laws])
+      accept([:session_id, :affected_law, :update_type, :status, :source_laws, :layer])
     end
 
     create :upsert do
       description("Upsert a cascade entry - append source_law if exists")
-      accept([:session_id, :affected_law, :update_type, :source_laws])
+      accept([:session_id, :affected_law, :update_type, :source_laws, :layer])
       upsert?(true)
       upsert_identity(:unique_per_session)
       # On conflict: merge source_laws and possibly upgrade update_type
@@ -153,6 +162,18 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
       description("Get pending cascade entries for a session")
       argument(:session_id, :string, allow_nil?: false)
       filter(expr(session_id == ^arg(:session_id) and status == :pending))
+      prepare(build(sort: [layer: :asc, inserted_at: :asc]))
+    end
+
+    read :pending_for_session_and_layer do
+      description("Get pending cascade entries for a session at a specific layer")
+      argument(:session_id, :string, allow_nil?: false)
+      argument(:layer, :integer, allow_nil?: false)
+
+      filter(
+        expr(session_id == ^arg(:session_id) and status == :pending and layer == ^arg(:layer))
+      )
+
       prepare(build(sort: [inserted_at: :asc]))
     end
 
@@ -188,6 +209,7 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
     define(:by_session_and_status, args: [:session_id, :status])
     define(:by_session_and_type, args: [:session_id, :update_type])
     define(:pending_for_session, args: [:session_id])
+    define(:pending_for_session_and_layer, args: [:session_id, :layer])
     define(:by_session_and_law, args: [:session_id, :affected_law])
     define(:all_pending)
     define(:sessions_with_pending)

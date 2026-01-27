@@ -341,25 +341,37 @@ defmodule SertantaiLegal.Scraper.Storage do
   ## Returns
   `:ok` or `{:error, reason}`
   """
+  # Maximum cascade depth — beyond this, affected laws are recorded but marked :deferred
+  @max_cascade_layer 3
+
   @spec add_affected_laws(
           String.t(),
           String.t(),
           list(String.t()),
           list(String.t()),
-          list(String.t())
+          list(String.t()),
+          keyword()
         ) ::
           :ok | {:error, any()}
-  def add_affected_laws(session_id, source_law, amending, rescinding, enacted_by \\ []) do
+  def add_affected_laws(
+        session_id,
+        source_law,
+        amending,
+        rescinding,
+        enacted_by \\ [],
+        opts \\ []
+      ) do
     amending = amending || []
     rescinding = rescinding || []
     enacted_by = enacted_by || []
+    layer = Keyword.get(opts, :layer, 1)
 
     # Skip if no affected laws
     if amending == [] and rescinding == [] and enacted_by == [] do
       :ok
     else
       # Write to DB (deduplicated by affected_law)
-      add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by)
+      add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by, layer)
 
       # Also write to JSON for backwards compatibility
       add_affected_laws_to_json(session_id, source_law, amending, rescinding, enacted_by)
@@ -367,7 +379,7 @@ defmodule SertantaiLegal.Scraper.Storage do
   end
 
   # Add affected laws to DB with proper deduplication
-  defp add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by) do
+  defp add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by, layer) do
     alias SertantaiLegal.Scraper.IdField
 
     # Normalize source_law to DB format for comparison
@@ -383,7 +395,7 @@ defmodule SertantaiLegal.Scraper.Storage do
       end)
 
     Enum.each(reparse_laws, fn affected_law ->
-      upsert_cascade_entry(session_id, affected_law, :reparse, source_law)
+      upsert_cascade_entry(session_id, affected_law, :reparse, source_law, layer)
     end)
 
     # Laws that need enacting link update (also filter self-references)
@@ -397,14 +409,14 @@ defmodule SertantaiLegal.Scraper.Storage do
       # Only add as enacting_link if not already marked for reparse
       case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
         {:ok, nil} ->
-          upsert_cascade_entry(session_id, affected_law, :enacting_link, source_law)
+          upsert_cascade_entry(session_id, affected_law, :enacting_link, source_law, layer)
 
         {:ok, existing} ->
           # Just append source_law, don't downgrade from reparse to enacting_link
           CascadeAffectedLaw.append_source_law(existing, %{source_law: source_law})
 
         {:error, _} ->
-          upsert_cascade_entry(session_id, affected_law, :enacting_link, source_law)
+          upsert_cascade_entry(session_id, affected_law, :enacting_link, source_law, layer)
       end
     end)
 
@@ -412,7 +424,10 @@ defmodule SertantaiLegal.Scraper.Storage do
   end
 
   # Upsert a cascade entry, appending source_law if exists
-  defp upsert_cascade_entry(session_id, affected_law, update_type, source_law) do
+  # Entries beyond @max_cascade_layer are created as :deferred status
+  defp upsert_cascade_entry(session_id, affected_law, update_type, source_law, layer) do
+    status = if layer > @max_cascade_layer, do: :deferred, else: :pending
+
     case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
       {:ok, nil} ->
         # Create new entry
@@ -420,8 +435,9 @@ defmodule SertantaiLegal.Scraper.Storage do
           session_id: session_id,
           affected_law: affected_law,
           update_type: update_type,
-          status: :pending,
-          source_laws: [source_law]
+          status: status,
+          source_laws: [source_law],
+          layer: layer
         })
 
       {:ok, existing} ->
@@ -439,8 +455,9 @@ defmodule SertantaiLegal.Scraper.Storage do
           session_id: session_id,
           affected_law: affected_law,
           update_type: update_type,
-          status: :pending,
-          source_laws: [source_law]
+          status: status,
+          source_laws: [source_law],
+          layer: layer
         })
     end
   end
@@ -555,9 +572,10 @@ defmodule SertantaiLegal.Scraper.Storage do
   end
 
   defp get_affected_laws_summary_from_db(db_entries) do
-    # Split by status first
-    {pending_entries, processed_entries} =
-      Enum.split_with(db_entries, &(&1.status == :pending))
+    # Split by status
+    pending_entries = Enum.filter(db_entries, &(&1.status == :pending))
+    processed_entries = Enum.filter(db_entries, &(&1.status == :processed))
+    deferred_entries = Enum.filter(db_entries, &(&1.status == :deferred))
 
     # Only pending entries appear in active lists
     {reparse_entries, enacting_entries} =
@@ -571,6 +589,20 @@ defmodule SertantaiLegal.Scraper.Storage do
       db_entries
       |> Enum.flat_map(& &1.source_laws)
       |> Enum.uniq()
+
+    # Layer breakdown for pending entries
+    layers =
+      pending_entries
+      |> Enum.group_by(& &1.layer)
+      |> Enum.map(fn {layer, entries} -> %{layer: layer, count: length(entries)} end)
+      |> Enum.sort_by(& &1.layer)
+
+    # Current active layer = lowest layer with pending entries
+    current_layer =
+      case pending_entries do
+        [] -> nil
+        entries -> entries |> Enum.map(& &1.layer) |> Enum.min()
+      end
 
     %{
       source_laws: source_laws,
@@ -586,7 +618,11 @@ defmodule SertantaiLegal.Scraper.Storage do
       enacting_parents_count: length(enacting_parents),
       # Status counts for UI
       pending_count: length(pending_entries),
-      processed_count: length(processed_entries)
+      processed_count: length(processed_entries),
+      deferred_count: length(deferred_entries),
+      # Layer info
+      layers: layers,
+      current_layer: current_layer
     }
   end
 
@@ -661,6 +697,19 @@ defmodule SertantaiLegal.Scraper.Storage do
 
       _ ->
         %{}
+    end
+  end
+
+  @doc """
+  Get the cascade layer for a law in this session.
+  Returns {:ok, layer} or {:error, reason} if not a cascade entry (i.e., layer 0).
+  """
+  @spec get_cascade_layer(String.t(), String.t()) :: {:ok, integer()} | {:error, any()}
+  def get_cascade_layer(session_id, affected_law) do
+    case CascadeAffectedLaw.by_session_and_law(session_id, affected_law) do
+      {:ok, nil} -> {:error, :not_found}
+      {:ok, entry} -> {:ok, entry.layer}
+      {:error, reason} -> {:error, reason}
     end
   end
 

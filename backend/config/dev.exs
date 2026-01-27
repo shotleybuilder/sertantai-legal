@@ -9,7 +9,9 @@ config :sertantai_legal, SertantaiLegal.Repo,
   database: "sertantai_legal_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10,
+  pool_size: 20,
+  queue_target: 5000,
+  queue_interval: 1000,
   # Disable verbose query logging in dev (reduces noise during parsing)
   log: false
 

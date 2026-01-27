@@ -712,9 +712,17 @@ defmodule SertantaiLegalWeb.ScrapeController do
               mark_record_reviewed(session_id, name)
 
               # Mark any pending cascade entry for this law as processed
+              # and determine its cascade layer for propagation
+              source_layer =
+                case Storage.get_cascade_layer(session_id, name) do
+                  {:ok, layer} -> layer
+                  _ -> 0
+                end
+
               Storage.mark_cascade_processed(session_id, name)
 
               # Collect affected laws for cascade update
+              # Affected laws go into the next layer
               amending = record_to_persist[:amending] || []
               rescinding = record_to_persist[:rescinding] || []
               # enacted_by can be list of maps or strings - extract names
@@ -725,7 +733,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 name,
                 amending,
                 rescinding,
-                enacted_by_names
+                enacted_by_names,
+                layer: source_layer + 1
               )
 
               # Check if there are affected laws
@@ -1372,7 +1381,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
         total_enacting_parents: summary.enacting_parents_count,
         # Status counts for cascade button display
         pending_count: summary.pending_count,
-        processed_count: summary.processed_count
+        processed_count: summary.processed_count,
+        deferred_count: Map.get(summary, :deferred_count, 0),
+        # Layer info
+        layers: Map.get(summary, :layers, []),
+        current_layer: Map.get(summary, :current_layer)
       })
     else
       {:error, reason} ->

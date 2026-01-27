@@ -590,6 +590,9 @@
 									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 										>Year</th
 									>
+									<th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase"
+										>Layer</th
+									>
 									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 										>Source Laws</th
 									>
@@ -616,6 +619,11 @@
 											title={entry.title_en}>{entry.title_en || '-'}</td
 										>
 										<td class="px-4 py-2 text-sm">{entry.year || '-'}</td>
+										<td class="px-4 py-2 text-center">
+											<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+												L{entry.layer}
+											</span>
+										</td>
 										<td class="px-4 py-2 text-xs text-gray-500">{entry.source_laws.join(', ')}</td>
 										<td class="px-4 py-2 text-right">
 											<button
@@ -745,6 +753,9 @@
 									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 										>SI Codes</th
 									>
+									<th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase"
+										>Layer</th
+									>
 									<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 										>Source</th
 									>
@@ -871,6 +882,11 @@
 											title={metadata?.si_code?.join(', ') || ''}
 										>
 											{metadata?.si_code?.join(', ') || '-'}
+										</td>
+										<td class="px-2 py-2 text-center">
+											<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+												L{entry.layer}
+											</span>
 										</td>
 										<td
 											class="px-2 py-2 text-xs text-gray-500 max-w-[150px] truncate"

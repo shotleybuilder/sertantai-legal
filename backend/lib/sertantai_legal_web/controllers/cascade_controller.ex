@@ -109,7 +109,8 @@ defmodule SertantaiLegalWeb.CascadeController do
           title_en: law[:title_en],
           year: law[:year],
           type_code: law[:type_code],
-          family: law[:family]
+          family: law[:family],
+          layer: entry.layer
         }
       end)
 
@@ -122,7 +123,8 @@ defmodule SertantaiLegalWeb.CascadeController do
           affected_law: entry.affected_law,
           session_id: entry.session_id,
           source_laws: entry.source_laws,
-          source_laws_details: build_source_details(entry.source_laws, source_laws_map)
+          source_laws_details: build_source_details(entry.source_laws, source_laws_map),
+          layer: entry.layer
         }
       end)
 
@@ -143,7 +145,8 @@ defmodule SertantaiLegalWeb.CascadeController do
           type_code: law[:type_code],
           current_enacting: law[:enacting] || [],
           current_enacting_count: length(law[:enacting] || []),
-          is_enacting: law[:is_enacting] || false
+          is_enacting: law[:is_enacting] || false,
+          layer: entry.layer
         }
       end)
 
@@ -155,7 +158,8 @@ defmodule SertantaiLegalWeb.CascadeController do
           id: entry.id,
           affected_law: entry.affected_law,
           session_id: entry.session_id,
-          source_laws: entry.source_laws
+          source_laws: entry.source_laws,
+          layer: entry.layer
         }
       end)
 

@@ -463,6 +463,10 @@ export interface AffectedLawsResult {
 	// Status counts for cascade button display
 	pending_count: number;
 	processed_count: number;
+	deferred_count: number;
+	// Layer info
+	layers: { layer: number; count: number }[];
+	current_layer: number | null;
 }
 
 export interface BatchReparseResultItem {
@@ -630,6 +634,7 @@ export interface CascadeEntry {
 	family?: string;
 	current_enacting_count?: number;
 	is_enacting?: boolean;
+	layer: number;
 }
 
 export interface CascadeIndexResult {
