@@ -48,6 +48,7 @@ defmodule SertantaiLegalWeb.Router do
     get("/sessions/:id/affected-laws", ScrapeController, :affected_laws)
     post("/sessions/:id/batch-reparse", ScrapeController, :batch_reparse)
     post("/sessions/:id/update-enacting-links", ScrapeController, :update_enacting_links)
+    put("/sessions/:id/cascade-metadata", ScrapeController, :save_cascade_metadata)
     delete("/sessions/:id/affected-laws", ScrapeController, :clear_affected_laws)
 
     # Cascade management endpoints (standalone page)

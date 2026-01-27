@@ -58,6 +58,12 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
       description("List of laws that triggered this cascade entry (audit trail)")
     end
 
+    attribute :metadata, :map do
+      description(
+        "Cached metadata from parse-metadata (title_en, type_code, year, number, si_code)"
+      )
+    end
+
     create_timestamp(:inserted_at)
     update_timestamp(:updated_at)
   end
@@ -91,6 +97,11 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
     update :mark_processed do
       description("Mark cascade entry as processed")
       change(set_attribute(:status, :processed))
+    end
+
+    update :update_metadata do
+      description("Store fetched metadata on a cascade entry")
+      accept([:metadata])
     end
 
     update :append_source_law do
@@ -181,6 +192,7 @@ defmodule SertantaiLegal.Scraper.CascadeAffectedLaw do
     define(:all_pending)
     define(:sessions_with_pending)
     define(:mark_processed)
+    define(:update_metadata)
     define(:append_source_law)
     define(:upgrade_to_reparse)
   end

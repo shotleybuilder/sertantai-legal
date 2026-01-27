@@ -417,12 +417,21 @@ export async function getFamilyOptions(): Promise<FamilyOptionsResult> {
 // Cascade Update API
 // ============================================================================
 
+export interface AffectedLawMetadata {
+	title_en: string | null;
+	type_code: string;
+	year: number;
+	number: string;
+	si_code?: string[];
+}
+
 export interface AffectedLaw {
 	id?: string;
 	name: string;
 	title_en?: string;
 	year?: number;
 	type_code?: string;
+	metadata?: AffectedLawMetadata;
 }
 
 export interface EnactingParentLaw {
@@ -566,6 +575,25 @@ export async function updateEnactingLinks(
 	}
 
 	return response.json();
+}
+
+/**
+ * Save fetched metadata for a not-in-db cascade entry (persists across modal reopens)
+ */
+export async function saveCascadeMetadata(
+	sessionId: string,
+	name: string,
+	metadata: AffectedLawMetadata
+): Promise<void> {
+	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/cascade-metadata`, {
+		method: 'PUT',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ name, metadata })
+	});
+
+	if (!response.ok) {
+		console.warn(`Failed to persist metadata for ${name}`);
+	}
 }
 
 // ============================================================================

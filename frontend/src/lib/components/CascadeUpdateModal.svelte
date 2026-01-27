@@ -6,6 +6,7 @@
 		clearAffectedLaws,
 		updateEnactingLinks,
 		parseMetadata,
+		saveCascadeMetadata,
 		type AffectedLaw,
 		type AffectedLawsResult,
 		type BatchReparseResult,
@@ -61,6 +62,14 @@
 			selectedInDb = new Set(affectedLaws.in_db.map((l) => l.name));
 			selectedNotInDb = new Set(affectedLaws.not_in_db.map((l) => l.name));
 			selectedEnactingParents = new Set(affectedLaws.enacting_parents_in_db.map((l) => l.name));
+
+			// Pre-populate metadata from persisted cascade entries
+			for (const law of affectedLaws.not_in_db) {
+				if (law.metadata && !metadataResults.has(law.name)) {
+					metadataResults.set(law.name, law.metadata as ParseMetadataResult['record']);
+				}
+			}
+			metadataResults = metadataResults;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load affected laws';
 		} finally {
@@ -156,6 +165,8 @@
 				const result = await parseMetadata(sessionId, name);
 				metadataResults.set(name, result.record);
 				metadataResults = metadataResults; // Trigger reactivity
+				// Persist to cascade entry so it survives modal reopen
+				saveCascadeMetadata(sessionId, name, result.record);
 			} catch (e) {
 				metadataErrors.set(name, e instanceof Error ? e.message : 'Failed');
 				metadataErrors = metadataErrors;

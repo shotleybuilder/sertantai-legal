@@ -1293,10 +1293,18 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
           existing_names = MapSet.new(existing, & &1.name)
 
+          # Build not-in-db list with any cached metadata from cascade entries
+          cascade_metadata = Storage.get_cascade_metadata_map(session_id)
+
           not_existing =
             all_affected
             |> Enum.reject(&MapSet.member?(existing_names, &1))
-            |> Enum.map(fn name -> %{name: name} end)
+            |> Enum.map(fn name ->
+              case Map.get(cascade_metadata, name) do
+                nil -> %{name: name}
+                meta -> %{name: name, metadata: meta}
+              end
+            end)
 
           {existing, not_existing}
         end
@@ -1660,10 +1668,35 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   @doc """
-  DELETE /api/sessions/:id/affected-laws
-
-  Clear affected laws for a session after cascade update is complete.
+  Save fetched metadata for a not-in-db cascade entry so it persists across modal reopens.
   """
+  def save_cascade_metadata(conn, %{"id" => session_id, "name" => name, "metadata" => metadata}) do
+    alias SertantaiLegal.Scraper.CascadeAffectedLaw
+
+    case CascadeAffectedLaw.by_session_and_law(session_id, name) do
+      {:ok, entry} when not is_nil(entry) ->
+        case CascadeAffectedLaw.update_metadata(entry, %{metadata: metadata}) do
+          {:ok, _updated} ->
+            json(conn, %{status: "ok", name: name})
+
+          {:error, reason} ->
+            conn
+            |> put_status(:internal_server_error)
+            |> json(%{error: format_error(reason)})
+        end
+
+      {:ok, nil} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Cascade entry not found for #{name}"})
+
+      {:error, reason} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{error: format_error(reason)})
+    end
+  end
+
   def clear_affected_laws(conn, %{"id" => session_id}) do
     with {:ok, _session} <- SessionManager.get(session_id),
          :ok <- Storage.clear_affected_laws(session_id) do

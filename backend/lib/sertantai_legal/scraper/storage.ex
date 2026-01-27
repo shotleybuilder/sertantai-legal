@@ -649,6 +649,22 @@ defmodule SertantaiLegal.Scraper.Storage do
   end
 
   @doc """
+  Get a map of law_name => metadata for cascade entries that have cached metadata.
+  """
+  @spec get_cascade_metadata_map(String.t()) :: map()
+  def get_cascade_metadata_map(session_id) do
+    case CascadeAffectedLaw.by_session(session_id) do
+      {:ok, entries} ->
+        entries
+        |> Enum.filter(& &1.metadata)
+        |> Map.new(&{&1.affected_law, &1.metadata})
+
+      _ ->
+        %{}
+    end
+  end
+
+  @doc """
   Mark a cascade entry as processed.
   """
   @spec mark_cascade_processed(String.t(), String.t()) :: {:ok, any()} | {:error, any()}
