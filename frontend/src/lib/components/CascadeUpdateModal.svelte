@@ -341,9 +341,6 @@
 							<div class="bg-green-50 rounded-lg p-4 text-center">
 								<div class="text-2xl font-bold text-green-700">{affectedLaws.in_db_count}</div>
 								<div class="text-sm text-green-600">In DB (Re-parse)</div>
-								{#if affectedLaws.recently_updated_count > 0}
-									<div class="text-xs text-gray-400 mt-1">{affectedLaws.recently_updated_count} recently updated</div>
-								{/if}
 							</div>
 							<div class="bg-yellow-50 rounded-lg p-4 text-center">
 								<div class="text-2xl font-bold text-yellow-700">{affectedLaws.not_in_db_count}</div>

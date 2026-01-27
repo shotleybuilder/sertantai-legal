@@ -711,6 +711,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
               # Mark record as reviewed in session
               mark_record_reviewed(session_id, name)
 
+              # Mark any pending cascade entry for this law as processed
+              Storage.mark_cascade_processed(session_id, name)
+
               # Collect affected laws for cascade update
               amending = record_to_persist[:amending] || []
               rescinding = record_to_persist[:rescinding] || []
@@ -1271,27 +1274,17 @@ defmodule SertantaiLegalWeb.ScrapeController do
       # Check which laws exist in DB (for amending/rescinding - need re-parse)
       all_affected = summary.all_affected
 
-      {in_db, not_in_db, recently_updated_count} =
+      {in_db, not_in_db} =
         if all_affected == [] do
-          {[], [], 0}
+          {[], []}
         else
           # Query DB for existing laws
-          cutoff = DateTime.utc_now() |> DateTime.add(-30, :day)
-
-          existing_records =
+          existing =
             UkLrt
             |> Ash.Query.filter(name in ^all_affected)
-            |> Ash.Query.select([:id, :name, :title_en, :year, :type_code, :updated_at])
+            |> Ash.Query.select([:id, :name, :title_en, :year, :type_code])
             |> Ash.read!()
-
-          # Split: recently updated (within 30 days) vs needing re-parse
-          {recently_updated, needing_reparse} =
-            Enum.split_with(existing_records, fn r ->
-              r.updated_at && DateTime.compare(r.updated_at, cutoff) == :gt
-            end)
-
-          existing =
-            Enum.map(needing_reparse, fn r ->
+            |> Enum.map(fn r ->
               %{
                 id: r.id,
                 name: r.name,
@@ -1301,7 +1294,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
               }
             end)
 
-          existing_names = MapSet.new(existing_records, & &1.name)
+          existing_names = MapSet.new(existing, & &1.name)
 
           # Build not-in-db list with any cached metadata from cascade entries
           cascade_metadata = Storage.get_cascade_metadata_map(session_id)
@@ -1316,7 +1309,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
               end
             end)
 
-          {existing, not_existing, length(recently_updated)}
+          {existing, not_existing}
         end
 
       # Check which enacting parents exist in DB (for direct array update)
@@ -1371,7 +1364,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
         not_in_db: not_in_db,
         not_in_db_count: length(not_in_db),
         total_affected: summary.all_affected_count,
-        recently_updated_count: recently_updated_count,
         # Parent laws needing direct enacting array update
         enacting_parents_in_db: enacting_parents_in_db,
         enacting_parents_in_db_count: length(enacting_parents_in_db),

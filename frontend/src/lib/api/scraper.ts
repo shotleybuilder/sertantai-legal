@@ -454,7 +454,6 @@ export interface AffectedLawsResult {
 	not_in_db: AffectedLaw[];
 	not_in_db_count: number;
 	total_affected: number;
-	recently_updated_count: number;
 	// Parent laws needing direct enacting update
 	enacting_parents_in_db: EnactingParentLaw[];
 	enacting_parents_in_db_count: number;
