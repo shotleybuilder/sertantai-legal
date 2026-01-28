@@ -1171,6 +1171,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   #       ]
   #     }
   #   }
+  # Test helper - expose private function for testing
+  if Mix.env() == :test do
+    def build_stats_per_law_jsonb_test(amendments), do: build_stats_per_law_jsonb(amendments)
+  end
+
   defp build_stats_per_law_jsonb([]), do: nil
 
   defp build_stats_per_law_jsonb(amendments) do
@@ -1248,7 +1253,15 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   defp group_amendments_by_law(amendments) do
     amendments
-    |> Enum.group_by(& &1.name)
+    # Filter out amendments with no name
+    |> Enum.reject(fn item ->
+      name = Map.get(item, :name) || Map.get(item, "name")
+      is_nil(name) || name == ""
+    end)
+    |> Enum.group_by(fn item ->
+      # Handle both atom and string keys
+      Map.get(item, :name) || Map.get(item, "name")
+    end)
     |> Enum.sort_by(fn {_name, items} ->
       # Sort by year desc, then number desc (most recent first)
       first = hd(items)
