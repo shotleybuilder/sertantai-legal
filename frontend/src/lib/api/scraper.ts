@@ -1044,7 +1044,19 @@ export function parseOneStream(
 
 	eventSource.onerror = (event) => {
 		console.error('SSE error:', event);
-		callbacks.onError?.(new Error('Connection to parse stream failed'));
+		// Check if the connection is in an intermediate state (might reconnect)
+		if (eventSource.readyState === EventSource.CONNECTING) {
+			console.log('SSE reconnecting...');
+			// Don't call onError yet, let it try to reconnect
+			return;
+		}
+
+		// Connection failed permanently
+		callbacks.onError?.(
+			new Error(
+				'Connection to parse stream failed - the parse may have completed on the server. Try using "Confirm & Save" to see if the data is available.'
+			)
+		);
 		eventSource.close();
 	};
 

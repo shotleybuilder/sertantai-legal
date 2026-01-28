@@ -245,25 +245,14 @@
 					selectedSubFamily = (result.record?.family_ii as string) || '';
 				},
 				onError: async (error) => {
-					console.warn('SSE stream failed, falling back to non-streaming:', error);
+					console.warn('SSE stream failed:', error);
 					cleanupStream = null;
-					// Fallback to non-streaming mutation
-					try {
-						const result = await $parseMutation.mutateAsync({
-							sessionId,
-							name: currentRecord.name
-						});
-						parseResult = result;
-						selectedFamily = (result.record?.family as string) || '';
-						selectedSubFamily = (result.record?.family_ii as string) || '';
-					} catch (fallbackError) {
-						console.error('Parse error:', fallbackError);
-						parseError = fallbackError instanceof Error ? fallbackError.message : 'Parse failed';
-						failedNames.add(currentRecord.name);
-					} finally {
-						isParsing = false;
-						currentStage = null;
-					}
+					isParsing = false;
+					currentStage = null;
+
+					// Don't automatically retry for heavy parses - let user decide
+					parseError = error instanceof Error ? error.message : 'Connection lost during parse';
+					// Don't add to failedNames - allow manual retry
 				}
 			},
 			stages // Pass optional stages filter (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
