@@ -48,6 +48,9 @@
 	let selectedNotInDb: Set<string> = new Set();
 	let selectedEnactingParents: Set<string> = new Set();
 
+	// Layer filtering state
+	let selectedLayer: number | null = null;
+
 	// Load affected laws when modal opens
 	$: if (open && sessionId) {
 		loadAffectedLaws();
@@ -290,6 +293,32 @@
 				return 'x';
 		}
 	}
+
+	function toggleLayerFilter(layer: number) {
+		if (selectedLayer === layer) {
+			// Deselect layer - show all
+			selectedLayer = null;
+		} else {
+			// Select this layer
+			selectedLayer = layer;
+		}
+	}
+
+	// Filter laws by selected layer
+	$: filteredInDb =
+		affectedLaws && selectedLayer !== null
+			? affectedLaws.in_db.filter((law) => law.layer === selectedLayer)
+			: affectedLaws?.in_db || [];
+
+	$: filteredNotInDb =
+		affectedLaws && selectedLayer !== null
+			? affectedLaws.not_in_db.filter((law) => law.layer === selectedLayer)
+			: affectedLaws?.not_in_db || [];
+
+	$: filteredEnactingParents =
+		affectedLaws && selectedLayer !== null
+			? affectedLaws.enacting_parents_in_db.filter((law) => law.layer === selectedLayer)
+			: affectedLaws?.enacting_parents_in_db || [];
 </script>
 
 {#if open}
@@ -354,16 +383,25 @@
 							<div class="flex items-center gap-2 mb-3 text-sm">
 								<span class="text-gray-500 font-medium">Layers:</span>
 								{#each affectedLaws.layers as l}
-									<span
-										class="px-2 py-0.5 rounded text-xs font-medium {l.layer === affectedLaws.current_layer ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600'}"
+									<button
+										on:click={() => toggleLayerFilter(l.layer)}
+										class="px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-blue-400 {selectedLayer === l.layer ? 'bg-blue-600 text-white ring-2 ring-blue-400' : l.layer === affectedLaws.current_layer ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600'}"
 									>
 										L{l.layer}: {l.count}
-									</span>
+									</button>
 								{/each}
 								{#if affectedLaws.deferred_count > 0}
 									<span class="px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
 										{affectedLaws.deferred_count} deferred
 									</span>
+								{/if}
+								{#if selectedLayer !== null}
+									<button
+										on:click={() => (selectedLayer = null)}
+										class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
+									>
+										Show All
+									</button>
 								{/if}
 							</div>
 						{/if}
@@ -454,7 +492,7 @@
 						<div class="mb-6">
 							<div class="flex justify-between items-center mb-2">
 								<h3 class="font-semibold text-gray-900">
-									Affected Laws in Database ({affectedLaws.in_db_count})
+									Affected Laws in Database ({filteredInDb.length}{#if selectedLayer !== null} of {affectedLaws.in_db_count}{/if})
 								</h3>
 								<div class="flex items-center gap-4 text-sm">
 									<label class="flex items-center gap-2 cursor-pointer" title={fullReparse
@@ -482,7 +520,7 @@
 								</div>
 							</div>
 							<div class="border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
-								{#each affectedLaws.in_db as law}
+								{#each filteredInDb as law}
 									<div
 										class="flex items-center gap-3 px-4 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
 									>
@@ -509,7 +547,7 @@
 						<div class="mb-6">
 							<div class="flex justify-between items-center mb-2">
 								<h3 class="font-semibold text-gray-900">
-									Affected Laws <span class="text-yellow-600">NOT</span> in Database ({affectedLaws.not_in_db_count})
+									Affected Laws <span class="text-yellow-600">NOT</span> in Database ({filteredNotInDb.length}{#if selectedLayer !== null} of {affectedLaws.not_in_db_count}{/if})
 								</h3>
 								<div class="flex gap-2 text-sm">
 									<button on:click={() => { if (affectedLaws) selectedNotInDb = new Set(affectedLaws.not_in_db.map(l => l.name)); }} class="text-yellow-600 hover:underline">
@@ -527,7 +565,7 @@
 							<div
 								class="border border-yellow-200 bg-yellow-50 rounded-lg max-h-48 overflow-y-auto"
 							>
-								{#each affectedLaws.not_in_db as law}
+								{#each filteredNotInDb as law}
 									{@const meta = metadataResults.get(law.name)}
 									{@const isFetching = metadataFetching.has(law.name)}
 									{@const fetchError = metadataErrors.get(law.name)}
@@ -567,7 +605,7 @@
 						<div class="mb-6">
 							<div class="flex justify-between items-center mb-2">
 								<h3 class="font-semibold text-gray-900">
-									<span class="text-purple-600">Enacting Parents</span> in Database ({affectedLaws.enacting_parents_in_db_count})
+									<span class="text-purple-600">Enacting Parents</span> in Database ({filteredEnactingParents.length}{#if selectedLayer !== null} of {affectedLaws.enacting_parents_in_db_count}{/if})
 								</h3>
 								<div class="flex gap-2 text-sm">
 									<button
@@ -592,7 +630,7 @@
 							<div
 								class="border border-purple-200 bg-purple-50 rounded-lg max-h-48 overflow-y-auto"
 							>
-								{#each affectedLaws.enacting_parents_in_db as law}
+								{#each filteredEnactingParents as law}
 									<div
 										class="flex items-center gap-3 px-4 py-2 border-b border-purple-100 last:border-b-0 hover:bg-purple-100"
 									>

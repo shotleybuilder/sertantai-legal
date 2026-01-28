@@ -432,6 +432,7 @@ export interface AffectedLaw {
 	year?: number;
 	type_code?: string;
 	metadata?: AffectedLawMetadata;
+	layer?: number;
 }
 
 export interface EnactingParentLaw {
@@ -442,6 +443,7 @@ export interface EnactingParentLaw {
 	type_code?: string;
 	current_enacting_count?: number;
 	is_enacting?: boolean;
+	layer?: number;
 }
 
 export interface AffectedLawsResult {
