@@ -34,11 +34,22 @@ defmodule SertantaiLegalWeb.CascadeController do
   def index(conn, params) do
     session_id = params["session_id"]
 
-    # Get pending entries
+    # Get pending entries from DB
+    # Note: This will fallback to JSON via Storage.get_affected_laws_summary if DB is empty
     entries =
       case session_id do
         nil -> CascadeAffectedLaw.all_pending!()
         id -> CascadeAffectedLaw.pending_for_session!(id)
+      end
+
+    # If filtering by session_id and DB has no entries, check JSON fallback
+    entries =
+      if session_id && entries == [] do
+        # Try JSON fallback for this specific session
+        json_entries = build_entries_from_json_fallback(session_id)
+        json_entries
+      else
+        entries
       end
 
     # Get unique session IDs with pending work
@@ -544,6 +555,59 @@ defmodule SertantaiLegalWeb.CascadeController do
   # ============================================================================
   # Private Helpers
   # ============================================================================
+
+  # Build pseudo cascade entries from JSON fallback for a session
+  # This allows the cascade management page to work with legacy sessions that only have JSON data
+  defp build_entries_from_json_fallback(session_id) do
+    alias SertantaiLegal.Scraper.Storage
+
+    # Use the same fallback logic as the session detail page
+    summary = Storage.get_affected_laws_summary(session_id)
+
+    # If summary has data, it came from JSON (since DB was empty)
+    if summary.pending_count > 0 do
+      # Build pseudo-entries that match CascadeAffectedLaw structure
+      # These aren't real DB records, just structs for display purposes
+      reparse_entries =
+        summary.all_affected
+        |> Enum.map(fn law_name ->
+          %{
+            id: "json-fallback-#{session_id}-#{law_name}",
+            session_id: session_id,
+            affected_law: law_name,
+            update_type: :reparse,
+            status: :pending,
+            source_laws: summary.source_laws,
+            layer: 1,
+            # No metadata in JSON format
+            metadata: nil,
+            inserted_at: nil,
+            updated_at: nil
+          }
+        end)
+
+      enacting_entries =
+        summary.enacting_parents
+        |> Enum.map(fn law_name ->
+          %{
+            id: "json-fallback-enacting-#{session_id}-#{law_name}",
+            session_id: session_id,
+            affected_law: law_name,
+            update_type: :enacting_link,
+            status: :pending,
+            source_laws: summary.source_laws,
+            layer: 1,
+            metadata: nil,
+            inserted_at: nil,
+            updated_at: nil
+          }
+        end)
+
+      reparse_entries ++ enacting_entries
+    else
+      []
+    end
+  end
 
   defp lookup_existing_laws(names) when is_list(names) do
     if Enum.empty?(names) do
