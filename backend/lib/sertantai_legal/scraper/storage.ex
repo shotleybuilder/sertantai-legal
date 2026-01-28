@@ -612,6 +612,12 @@ defmodule SertantaiLegal.Scraper.Storage do
         entries -> entries |> Enum.map(& &1.layer) |> Enum.min()
       end
 
+    # Build law_layers map for affected_laws endpoint
+    law_layers =
+      db_entries
+      |> Enum.map(fn entry -> {entry.affected_law, entry.layer} end)
+      |> Map.new()
+
     %{
       source_laws: source_laws,
       source_count: length(source_laws),
@@ -630,7 +636,9 @@ defmodule SertantaiLegal.Scraper.Storage do
       deferred_count: length(deferred_entries),
       # Layer info
       layers: layers,
-      current_layer: current_layer
+      current_layer: current_layer,
+      # Map of law_name => layer for frontend filtering
+      law_layers: law_layers
     }
   end
 

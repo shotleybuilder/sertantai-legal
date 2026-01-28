@@ -1283,6 +1283,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
       # Check which laws exist in DB (for amending/rescinding - need re-parse)
       all_affected = summary.all_affected
 
+      # Get law_layers map from summary (may be nil for DB-only mode)
+      law_layers = Map.get(summary, :law_layers, %{})
+
       {in_db, not_in_db} =
         if all_affected == [] do
           {[], []}
@@ -1299,7 +1302,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 name: r.name,
                 title_en: r.title_en,
                 year: r.year,
-                type_code: r.type_code
+                type_code: r.type_code,
+                layer: Map.get(law_layers, r.name, 1)
               }
             end)
 
@@ -1312,9 +1316,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
             all_affected
             |> Enum.reject(&MapSet.member?(existing_names, &1))
             |> Enum.map(fn name ->
+              base = %{name: name, layer: Map.get(law_layers, name, 1)}
+
               case Map.get(cascade_metadata, name) do
-                nil -> %{name: name}
-                meta -> %{name: name, metadata: meta}
+                nil -> base
+                meta -> Map.put(base, :metadata, meta)
               end
             end)
 
@@ -1349,7 +1355,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 year: r.year,
                 type_code: r.type_code,
                 current_enacting_count: length(r.enacting || []),
-                is_enacting: r.is_enacting
+                is_enacting: r.is_enacting,
+                layer: Map.get(law_layers, r.name, 1)
               }
             end)
 
@@ -1358,7 +1365,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
           not_existing =
             enacting_parents
             |> Enum.reject(&MapSet.member?(existing_names, &1))
-            |> Enum.map(fn name -> %{name: name} end)
+            |> Enum.map(fn name -> %{name: name, layer: Map.get(law_layers, name, 1)} end)
 
           {existing, not_existing}
         end
