@@ -150,13 +150,22 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         }
       )
 
-      # Log timing for large documents (>100KB) or slow parses (>5s)
-      if text_length > 100_000 or total_duration > 5_000_000 do
-        Logger.info(
-          "[Taxa] Classified #{text_length} chars in #{div(total_duration, 1000)}ms " <>
-            "(actor: #{div(actor_duration, 1000)}ms, duty_type: #{div(duty_type_duration, 1000)}ms, " <>
-            "popimar: #{div(popimar_duration, 1000)}ms, purpose: #{div(purpose_duration, 1000)}ms)"
-        )
+      # Always log timing for performance monitoring
+      # Log to both Logger and IO for visibility in terminal
+      timing_msg =
+        "[Taxa] #{text_length} chars in #{div(total_duration, 1000)}ms " <>
+          "(actor: #{div(actor_duration, 1000)}ms, duty_type: #{div(duty_type_duration, 1000)}ms, " <>
+          "popimar: #{div(popimar_duration, 1000)}ms#{if popimar_skipped, do: " [skipped]", else: ""}, " <>
+          "purpose: #{div(purpose_duration, 1000)}ms)"
+
+      # IO.puts for immediate terminal visibility
+      IO.puts("    #{timing_msg}")
+
+      # Logger for structured logging (warning level for slow parses)
+      if total_duration > 5_000_000 do
+        Logger.warning(timing_msg)
+      else
+        Logger.info(timing_msg)
       end
 
       # Build result map with all Taxa fields

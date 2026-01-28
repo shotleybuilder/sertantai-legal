@@ -7,6 +7,9 @@ defmodule SertantaiLegal.Application do
 
   @impl true
   def start(_type, _args) do
+    # Attach telemetry handler for metrics collection (dev/test only)
+    SertantaiLegal.Metrics.TelemetryHandler.attach()
+
     children = [
       SertantaiLegalWeb.Telemetry,
       SertantaiLegal.Repo,

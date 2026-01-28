@@ -54,3 +54,6 @@ logs/
 
 # Scraper session data (JSON files with scraped laws)
 /priv/scraper/
+
+# Metrics data (dev/test only - NDJSON files)
+/priv/metrics/
