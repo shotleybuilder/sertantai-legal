@@ -529,27 +529,36 @@ defmodule SertantaiLegalWeb.CascadeController do
   Clear ALL cascade entries (pending and processed) for a specific session.
   This allows rebuilding cascade data from scratch.
 
+  Deletes cascade data from BOTH database and JSON file to prevent fallback.
+
   Path params:
   - session_id: Session to clear (required)
   """
   def clear_session(conn, %{"session_id" => session_id}) do
-    # Get all entries for this session (pending and processed)
+    alias SertantaiLegal.Scraper.Storage
+
+    # Get count before clearing (for response)
     entries = CascadeAffectedLaw.by_session!(session_id)
+    deleted_count = length(entries)
 
-    # Delete all
-    deleted_count =
-      Enum.reduce(entries, 0, fn entry, acc ->
-        case CascadeAffectedLaw.destroy(entry) do
-          :ok -> acc + 1
-          _ -> acc
-        end
-      end)
+    # Clear from BOTH database and JSON file
+    # This uses Storage.clear_affected_laws/1 which handles both sources
+    case Storage.clear_affected_laws(session_id) do
+      :ok ->
+        json(conn, %{
+          message: "Cleared all cascade entries for session (database and JSON)",
+          session_id: session_id,
+          deleted_count: deleted_count
+        })
 
-    json(conn, %{
-      message: "Cleared all cascade entries for session",
-      session_id: session_id,
-      deleted_count: deleted_count
-    })
+      {:error, reason} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{
+          error: "Failed to clear cascade data: #{reason}",
+          session_id: session_id
+        })
+    end
   end
 
   # ============================================================================
