@@ -8,6 +8,22 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   - PurposeClassifier: Classifies purpose (Amendment, Interpretation+Definition, etc.)
   - Popimar: Classifies by POPIMAR management framework
 
+  ## Telemetry Events
+
+  The following telemetry events are emitted for performance monitoring:
+
+  - `[:taxa, :classify, :start]` - When classification begins
+  - `[:taxa, :classify, :stop]` - When classification completes successfully
+  - `[:taxa, :classify, :exception]` - When classification fails
+
+  Measurements include:
+  - `duration` - Total classification time in native units
+  - `text_length` - Length of text being classified
+  - `actor_duration` - Time for DutyActor stage
+  - `duty_type_duration` - Time for DutyType stage
+  - `popimar_duration` - Time for Popimar stage
+  - `purpose_duration` - Time for PurposeClassifier stage
+
   ## Usage
 
       # Run Taxa classification for a law
@@ -28,6 +44,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Legal.Taxa.{DutyActor, DutyType, Popimar, PurposeClassifier}
 
+  require Logger
   import SweetXml
 
   @type taxa_result :: %{
@@ -69,14 +86,21 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   Classify text using the Taxa pipeline.
 
   Returns a map with all Taxa fields populated.
+
+  Emits telemetry events with per-stage timing for performance monitoring.
   """
   @spec classify_text(String.t(), String.t()) :: taxa_result()
   def classify_text(text, source \\ "unknown") when is_binary(text) do
     if String.trim(text) == "" do
       empty_result(source)
     else
+      text_length = String.length(text)
+      start_time = System.monotonic_time(:microsecond)
+
       # Step 1: Extract actors
+      actor_start = System.monotonic_time(:microsecond)
       %{actors: actors, actors_gvt: actors_gvt} = DutyActor.get_actors_in_text(text)
+      actor_duration = System.monotonic_time(:microsecond) - actor_start
 
       # Step 2: Build record with actors for DutyType processing
       record = %{
@@ -86,13 +110,49 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       }
 
       # Step 3: Classify duty types and find role holders
+      duty_type_start = System.monotonic_time(:microsecond)
       record = DutyType.process_record(record)
+      duty_type_duration = System.monotonic_time(:microsecond) - duty_type_start
 
       # Step 4: Classify by POPIMAR
+      popimar_start = System.monotonic_time(:microsecond)
       record = Popimar.process_record(record)
+      popimar_duration = System.monotonic_time(:microsecond) - popimar_start
 
       # Step 5: Classify purpose (what the law does)
+      purpose_start = System.monotonic_time(:microsecond)
       purpose = PurposeClassifier.classify(text)
+      purpose_duration = System.monotonic_time(:microsecond) - purpose_start
+
+      total_duration = System.monotonic_time(:microsecond) - start_time
+
+      # Emit telemetry for performance monitoring
+      :telemetry.execute(
+        [:taxa, :classify, :complete],
+        %{
+          duration_us: total_duration,
+          actor_duration_us: actor_duration,
+          duty_type_duration_us: duty_type_duration,
+          popimar_duration_us: popimar_duration,
+          purpose_duration_us: purpose_duration,
+          text_length: text_length
+        },
+        %{
+          source: source,
+          actor_count: length(actors) + length(actors_gvt),
+          duty_type_count: length(Map.get(record, :duty_type, [])),
+          popimar_count: length(Map.get(record, :popimar, []))
+        }
+      )
+
+      # Log timing for large documents (>100KB) or slow parses (>5s)
+      if text_length > 100_000 or total_duration > 5_000_000 do
+        Logger.info(
+          "[Taxa] Classified #{text_length} chars in #{div(total_duration, 1000)}ms " <>
+            "(actor: #{div(actor_duration, 1000)}ms, duty_type: #{div(duty_type_duration, 1000)}ms, " <>
+            "popimar: #{div(popimar_duration, 1000)}ms, purpose: #{div(purpose_duration, 1000)}ms)"
+        )
+      end
 
       # Build result map with all Taxa fields
       # Note: Don't wrap in to_jsonb() - ParsedLaw handles JSONB conversion
@@ -118,7 +178,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
 
         # Metadata about the classification
         taxa_text_source: source,
-        taxa_text_length: String.length(text)
+        taxa_text_length: text_length
       }
     end
   end
