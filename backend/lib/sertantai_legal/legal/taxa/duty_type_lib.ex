@@ -47,8 +47,13 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
   - `role`: One of `:duty`, `:right`, `:responsibility`, `:power`
   - `actors`: List of actor names to search for
-  - `text`: The legal text to search
+  - `text`: The legal text to search (will have blacklist applied internally)
   - `regexes`: Accumulated regex patterns (for debugging)
+
+  Note: If text has already been cleaned by TextCleaner.clean/1, the internal
+  blacklist is still applied but will have minimal effect (patterns already removed).
+  For optimal performance with pre-cleaned text, the blacklist step is lightweight
+  since patterns won't match.
   """
   @spec find_role_holders(role(), actors(), text(), list()) ::
           {actors(), duty_types(), String.t(), list()}
@@ -71,7 +76,9 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
         :power -> build_lib(actors_regex, &DutyTypeDefnGovernment.power_conferred/1)
       end
 
-    # Clean text and run patterns
+    # Apply blacklist (lightweight if text already cleaned by TextCleaner)
+    # Note: The unified blacklist in TextCleaner includes these patterns,
+    # so this is effectively a no-op when called from taxa_parser pipeline
     cleaned_text = blacklist(text)
     label = role |> Atom.to_string() |> String.upcase()
 

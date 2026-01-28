@@ -42,7 +42,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   """
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
-  alias SertantaiLegal.Legal.Taxa.{DutyActor, DutyType, Popimar, PurposeClassifier}
+  alias SertantaiLegal.Legal.Taxa.{DutyActor, DutyType, Popimar, PurposeClassifier, TextCleaner}
 
   require Logger
   import SweetXml
@@ -97,14 +97,21 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       text_length = String.length(text)
       start_time = System.monotonic_time(:microsecond)
 
-      # Step 1: Extract actors
+      # Step 0: Apply unified blacklist once (combines actor + duty_type blacklists)
+      # This eliminates redundant cleaning in DutyActor and DutyTypeLib
+      cleaned_text = TextCleaner.clean(text)
+
+      # Step 1: Extract actors (using pre-cleaned text)
       actor_start = System.monotonic_time(:microsecond)
-      %{actors: actors, actors_gvt: actors_gvt} = DutyActor.get_actors_in_text(text)
+
+      %{actors: actors, actors_gvt: actors_gvt} =
+        DutyActor.get_actors_in_text_cleaned(cleaned_text)
+
       actor_duration = System.monotonic_time(:microsecond) - actor_start
 
       # Step 2: Build record with actors for DutyType processing
       record = %{
-        text: text,
+        text: cleaned_text,
         role: actors,
         role_gvt: actors_gvt
       }
@@ -117,7 +124,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       # Step 4 & 5: Run POPIMAR and PurposeClassifier in parallel
       # POPIMAR only runs for "Making" laws (those with Duty or Responsibility)
       {record, popimar_duration, purpose, purpose_duration} =
-        run_popimar_and_purpose_parallel(record, text)
+        run_popimar_and_purpose_parallel(record, cleaned_text)
 
       popimar_skipped = not is_making_law?(record)
 

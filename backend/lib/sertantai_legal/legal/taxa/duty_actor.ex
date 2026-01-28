@@ -39,6 +39,9 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
 
   Returns a map with `:actors` (governed) and `:actors_gvt` (government).
   Uses pre-compiled regexes for performance.
+
+  Note: This applies internal blacklist. For pre-cleaned text, use
+  `get_actors_in_text_cleaned/1` instead to avoid redundant cleaning.
   """
   @spec get_actors_in_text(text()) :: %{actors: list(actor()), actors_gvt: list(actor())}
   def get_actors_in_text(text) when is_binary(text) do
@@ -51,6 +54,23 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   end
 
   def get_actors_in_text(_), do: %{actors: [], actors_gvt: []}
+
+  @doc """
+  Extracts both governed and government actors from pre-cleaned text.
+
+  Use this when text has already been cleaned by TextCleaner.clean/1 to avoid
+  redundant blacklist application. This is the preferred entry point from
+  taxa_parser.ex which applies unified blacklist once at the start.
+  """
+  @spec get_actors_in_text_cleaned(text()) :: %{actors: list(actor()), actors_gvt: list(actor())}
+  def get_actors_in_text_cleaned(text) when is_binary(text) do
+    %{
+      actors: extract_actors_compiled(text, @governed_compiled),
+      actors_gvt: extract_actors_compiled(text, @government_compiled)
+    }
+  end
+
+  def get_actors_in_text_cleaned(_), do: %{actors: [], actors_gvt: []}
 
   @doc """
   Extracts governed actors ("Duty Actor") from text.
