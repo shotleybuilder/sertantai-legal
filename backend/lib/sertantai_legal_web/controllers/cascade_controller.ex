@@ -575,6 +575,9 @@ defmodule SertantaiLegalWeb.CascadeController do
 
     # If summary has data, it came from JSON (since DB was empty)
     if summary.pending_count > 0 do
+      # Get law_layers map from summary (if available, otherwise default to 1)
+      law_layers = Map.get(summary, :law_layers, %{})
+
       # Build pseudo-entries that match CascadeAffectedLaw structure
       # These aren't real DB records, just structs for display purposes
       reparse_entries =
@@ -587,7 +590,8 @@ defmodule SertantaiLegalWeb.CascadeController do
             update_type: :reparse,
             status: :pending,
             source_laws: summary.source_laws,
-            layer: 1,
+            # Use layer from JSON if available, otherwise default to 1
+            layer: Map.get(law_layers, law_name, 1),
             # No metadata in JSON format
             metadata: nil,
             inserted_at: nil,
@@ -605,7 +609,8 @@ defmodule SertantaiLegalWeb.CascadeController do
             update_type: :enacting_link,
             status: :pending,
             source_laws: summary.source_laws,
-            layer: 1,
+            # Use layer from JSON if available, otherwise default to 1
+            layer: Map.get(law_layers, law_name, 1),
             metadata: nil,
             inserted_at: nil,
             updated_at: nil

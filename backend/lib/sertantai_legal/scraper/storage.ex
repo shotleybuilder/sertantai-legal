@@ -373,8 +373,8 @@ defmodule SertantaiLegal.Scraper.Storage do
       # Write to DB (deduplicated by affected_law)
       add_affected_laws_to_db(session_id, source_law, amending, rescinding, enacted_by, layer)
 
-      # Also write to JSON for backwards compatibility
-      add_affected_laws_to_json(session_id, source_law, amending, rescinding, enacted_by)
+      # Also write to JSON with layer tracking
+      add_affected_laws_to_json(session_id, source_law, amending, rescinding, enacted_by, layer)
     end
   end
 
@@ -462,17 +462,25 @@ defmodule SertantaiLegal.Scraper.Storage do
     end
   end
 
-  # Add affected laws to JSON (backwards compatibility)
-  defp add_affected_laws_to_json(session_id, source_law, amending, rescinding, enacted_by) do
+  # Add affected laws to JSON with layer tracking
+  defp add_affected_laws_to_json(
+         session_id,
+         source_law,
+         amending,
+         rescinding,
+         enacted_by,
+         layer
+       ) do
     # Read existing affected laws or initialize
     existing = read_affected_laws_json(session_id)
 
-    # Build new entry
+    # Build new entry with layer tracking
     new_entry = %{
       source_law: source_law,
       amending: amending,
       rescinding: rescinding,
       enacted_by: enacted_by,
+      layer: layer,
       added_at: DateTime.utc_now() |> DateTime.to_iso8601()
     }
 
@@ -639,6 +647,48 @@ defmodule SertantaiLegal.Scraper.Storage do
     # JSON doesn't track status, so treat all as pending
     total_count = length(all_affected) + length(enacting_parents)
 
+    # Extract layers from JSON entries (if available)
+    # Build a map of affected_law => layer for each law
+    law_layers =
+      (data[:entries] || [])
+      |> Enum.flat_map(fn entry ->
+        layer = entry[:layer] || entry["layer"] || 1
+        amending = entry[:amending] || entry["amending"] || []
+        rescinding = entry[:rescinding] || entry["rescinding"] || []
+        enacted_by = entry[:enacted_by] || entry["enacted_by"] || []
+
+        # Map each affected law to its layer
+        (amending ++ rescinding ++ enacted_by)
+        |> Enum.map(fn law -> {law, layer} end)
+      end)
+      |> Map.new()
+
+    # Group laws by layer for layer breakdown
+    reparse_by_layer =
+      all_affected
+      |> Enum.group_by(fn law -> Map.get(law_layers, law, 1) end)
+
+    enacting_by_layer =
+      enacting_parents
+      |> Enum.group_by(fn law -> Map.get(law_layers, law, 1) end)
+
+    # Build layer summary (treat all as pending since JSON doesn't track status)
+    layers =
+      (Map.keys(reparse_by_layer) ++ Map.keys(enacting_by_layer))
+      |> Enum.uniq()
+      |> Enum.map(fn layer ->
+        reparse_count = length(Map.get(reparse_by_layer, layer, []))
+        enacting_count = length(Map.get(enacting_by_layer, layer, []))
+        %{layer: layer, count: reparse_count + enacting_count}
+      end)
+      |> Enum.sort_by(& &1.layer)
+
+    current_layer =
+      case layers do
+        [] -> nil
+        layers -> layers |> Enum.map(& &1.layer) |> Enum.min()
+      end
+
     %{
       source_laws: Enum.map(data[:entries] || [], & &1[:source_law]),
       source_count: length(data[:entries] || []),
@@ -652,7 +702,13 @@ defmodule SertantaiLegal.Scraper.Storage do
       enacting_parents_count: length(enacting_parents),
       # JSON doesn't track status - treat all as pending
       pending_count: total_count,
-      processed_count: 0
+      processed_count: 0,
+      deferred_count: 0,
+      # Layer info extracted from JSON entries
+      layers: layers,
+      current_layer: current_layer,
+      # Store law_layers map for cascade controller fallback
+      law_layers: law_layers
     }
   end
 
