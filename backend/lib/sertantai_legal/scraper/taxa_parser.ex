@@ -114,15 +114,12 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       record = DutyType.process_record(record)
       duty_type_duration = System.monotonic_time(:microsecond) - duty_type_start
 
-      # Step 4: Classify by POPIMAR
-      popimar_start = System.monotonic_time(:microsecond)
-      record = Popimar.process_record(record)
-      popimar_duration = System.monotonic_time(:microsecond) - popimar_start
+      # Step 4 & 5: Run POPIMAR and PurposeClassifier in parallel
+      # POPIMAR only runs for "Making" laws (those with Duty or Responsibility)
+      {record, popimar_duration, purpose, purpose_duration} =
+        run_popimar_and_purpose_parallel(record, text)
 
-      # Step 5: Classify purpose (what the law does)
-      purpose_start = System.monotonic_time(:microsecond)
-      purpose = PurposeClassifier.classify(text)
-      purpose_duration = System.monotonic_time(:microsecond) - purpose_start
+      popimar_skipped = not is_making_law?(record)
 
       total_duration = System.monotonic_time(:microsecond) - start_time
 
@@ -141,7 +138,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           source: source,
           actor_count: length(actors) + length(actors_gvt),
           duty_type_count: length(Map.get(record, :duty_type, [])),
-          popimar_count: length(Map.get(record, :popimar, []))
+          popimar_count: length(Map.get(record, :popimar, [])),
+          popimar_skipped: popimar_skipped
         }
       )
 
@@ -272,6 +270,52 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       texts when is_list(texts) -> Enum.map(texts, &to_string/1)
       text -> [to_string(text)]
     end
+  end
+
+  # ============================================================================
+  # POPIMAR + Purpose Parallel Processing
+  # ============================================================================
+
+  # Runs POPIMAR and PurposeClassifier in parallel for performance.
+  # POPIMAR is only run for "Making" laws (those with Duty or Responsibility).
+  # Non-making laws (Amending, Commencing, Revoking) don't need POPIMAR classification.
+  defp run_popimar_and_purpose_parallel(record, text) do
+    is_making = is_making_law?(record)
+
+    # Start PurposeClassifier task (always runs)
+    purpose_task =
+      Task.async(fn ->
+        start = System.monotonic_time(:microsecond)
+        result = PurposeClassifier.classify(text)
+        duration = System.monotonic_time(:microsecond) - start
+        {result, duration}
+      end)
+
+    # Run POPIMAR only for Making laws, or return empty
+    {record, popimar_duration} =
+      if is_making do
+        popimar_start = System.monotonic_time(:microsecond)
+        updated_record = Popimar.process_record(record)
+        popimar_duration = System.monotonic_time(:microsecond) - popimar_start
+        {updated_record, popimar_duration}
+      else
+        # Skip POPIMAR for non-Making laws
+        {Map.put(record, :popimar, []), 0}
+      end
+
+    # Await PurposeClassifier result
+    {purpose, purpose_duration} = Task.await(purpose_task, 30_000)
+
+    {record, popimar_duration, purpose, purpose_duration}
+  end
+
+  # A "Making" law creates substantive duties/responsibilities.
+  # This is determined by duty_type containing "Duty" or "Responsibility".
+  # Laws with only "Right" or "Power" are not "Making" - they grant permissions
+  # but don't impose management obligations that POPIMAR would classify.
+  defp is_making_law?(record) do
+    duty_types = Map.get(record, :duty_type, [])
+    "Duty" in duty_types or "Responsibility" in duty_types
   end
 
   # ============================================================================
