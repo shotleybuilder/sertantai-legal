@@ -512,6 +512,35 @@ defmodule SertantaiLegalWeb.CascadeController do
     })
   end
 
+  @doc """
+  DELETE /api/cascade/session/:session_id
+
+  Clear ALL cascade entries (pending and processed) for a specific session.
+  This allows rebuilding cascade data from scratch.
+
+  Path params:
+  - session_id: Session to clear (required)
+  """
+  def clear_session(conn, %{"session_id" => session_id}) do
+    # Get all entries for this session (pending and processed)
+    entries = CascadeAffectedLaw.by_session!(session_id)
+
+    # Delete all
+    deleted_count =
+      Enum.reduce(entries, 0, fn entry, acc ->
+        case CascadeAffectedLaw.destroy(entry) do
+          :ok -> acc + 1
+          _ -> acc
+        end
+      end)
+
+    json(conn, %{
+      message: "Cleared all cascade entries for session",
+      session_id: session_id,
+      deleted_count: deleted_count
+    })
+  end
+
   # ============================================================================
   # Private Helpers
   # ============================================================================

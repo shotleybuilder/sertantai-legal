@@ -58,6 +58,7 @@ defmodule SertantaiLegalWeb.Router do
     post("/cascade/update-enacting", CascadeController, :update_enacting)
     post("/cascade/add-laws", CascadeController, :add_laws)
     delete("/cascade/processed", CascadeController, :clear_processed)
+    delete("/cascade/session/:session_id", CascadeController, :clear_session)
     delete("/cascade/:id", CascadeController, :delete)
 
     # UK LRT CRUD endpoints

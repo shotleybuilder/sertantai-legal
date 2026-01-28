@@ -5,7 +5,8 @@
 		useSessionDbStatusQuery,
 		useGroupQuery,
 		useParseGroupMutation,
-		useUpdateSelectionMutation
+		useUpdateSelectionMutation,
+		useClearSessionCascadeMutation
 	} from '$lib/query/scraper';
 	import type { ScrapeSession, ScrapeRecord, AffectedLaw } from '$lib/api/scraper';
 	import { getAffectedLaws } from '$lib/api/scraper';
@@ -24,6 +25,7 @@
 
 	const parseMutation = useParseGroupMutation();
 	const selectionMutation = useUpdateSelectionMutation();
+	const clearCascadeMutation = useClearSessionCascadeMutation();
 
 	// Compute selected count from current group data
 	$: records = $groupQuery.data?.records ?? [];
@@ -228,6 +230,27 @@
 		showCascadeModal = true;
 	}
 
+	async function handleClearCascade() {
+		const totalEntries = cascadePendingCount + cascadeProcessedCount;
+		if (
+			!confirm(
+				`Clear ALL cascade entries (${totalEntries} total: ${cascadePendingCount} pending, ${cascadeProcessedCount} processed) for this session?\n\nThis will allow you to rebuild cascade data from scratch by re-confirming laws.`
+			)
+		) {
+			return;
+		}
+
+		try {
+			const result = await $clearCascadeMutation.mutateAsync(sessionId);
+			parseCompleteMessage = `Cleared ${result.deleted_count} cascade entries. You can now rebuild by re-confirming laws.`;
+			// Refresh cascade status
+			await fetchCascadeStatus();
+		} catch (error) {
+			const errorMsg = error instanceof Error ? error.message : 'Failed to clear cascade';
+			parseCompleteMessage = `Error: ${errorMsg}`;
+		}
+	}
+
 	function handleRowClick(record: ScrapeRecord, index: number) {
 		// Open modal for single record
 		parseModalRecords = [record];
@@ -372,6 +395,26 @@
 							<span class="ml-2 py-0.5 px-2 rounded-full text-xs bg-white text-indigo-700">
 								{cascadePendingCount} pending
 							</span>
+						{/if}
+					</button>
+					<button
+						on:click={handleClearCascade}
+						disabled={$clearCascadeMutation.isPending}
+						class="inline-flex items-center px-3 py-2 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+						title="Clear all cascade data for this session to rebuild from scratch"
+					>
+						<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+							/>
+						</svg>
+						{#if $clearCascadeMutation.isPending}
+							Clearing...
+						{:else}
+							Clear Cascade
 						{/if}
 					</button>
 					<span class="text-sm text-gray-500">

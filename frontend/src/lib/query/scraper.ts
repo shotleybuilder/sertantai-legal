@@ -24,6 +24,7 @@ import {
 	cascadeAddLaws,
 	deleteCascadeEntry,
 	clearProcessedCascade,
+	clearSessionCascade,
 	type ScrapeSession,
 	type GroupResponse,
 	type ParseResult,
@@ -338,6 +339,21 @@ export function useClearProcessedCascadeMutation() {
 		mutationFn: (sessionId?: string) => clearProcessedCascade(sessionId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+		}
+	});
+}
+
+export function useClearSessionCascadeMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (sessionId: string) => clearSessionCascade(sessionId),
+		onSuccess: (data, sessionId) => {
+			// Invalidate cascade queries for this session
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
+			queryClient.invalidateQueries({ queryKey: scraperKeys.cascadeIndex(sessionId) });
+			// Also invalidate session query to refresh cascade stats
+			queryClient.invalidateQueries({ queryKey: scraperKeys.session(sessionId) });
 		}
 	});
 }

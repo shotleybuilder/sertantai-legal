@@ -801,6 +801,21 @@ export async function clearProcessedCascade(
 	return response.json();
 }
 
+export async function clearSessionCascade(
+	sessionId: string
+): Promise<{ message: string; session_id: string; deleted_count: number }> {
+	const response = await fetch(`${API_URL}/api/cascade/session/${encodeURIComponent(sessionId)}`, {
+		method: 'DELETE'
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to clear session cascade entries');
+	}
+
+	return response.json();
+}
+
 // ============================================================================
 // Error Message Mapping
 // ============================================================================
