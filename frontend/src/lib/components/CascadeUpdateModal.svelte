@@ -240,13 +240,14 @@
 	}
 
 	function selectAllInDb() {
-		if (affectedLaws) {
-			selectedInDb = new Set(affectedLaws.in_db.map((l) => l.name));
-		}
+		// Select all from the filtered list
+		selectedInDb = new Set(filteredInDb.map((l) => l.name));
 	}
 
 	function selectNoneInDb() {
-		selectedInDb = new Set();
+		// Deselect all from the filtered list
+		const filteredNames = new Set(filteredInDb.map((l) => l.name));
+		selectedInDb = new Set([...selectedInDb].filter((name) => !filteredNames.has(name)));
 	}
 
 	function toggleEnactingParentSelection(name: string) {
@@ -259,13 +260,14 @@
 	}
 
 	function selectAllEnactingParents() {
-		if (affectedLaws) {
-			selectedEnactingParents = new Set(affectedLaws.enacting_parents_in_db.map((l) => l.name));
-		}
+		// Select all from the filtered list
+		selectedEnactingParents = new Set(filteredEnactingParents.map((l) => l.name));
 	}
 
 	function selectNoneEnactingParents() {
-		selectedEnactingParents = new Set();
+		// Deselect all from the filtered list
+		const filteredNames = new Set(filteredEnactingParents.map((l) => l.name));
+		selectedEnactingParents = new Set([...selectedEnactingParents].filter((name) => !filteredNames.has(name)));
 	}
 
 	function getStatusIcon(status: string): string {
@@ -319,6 +321,19 @@
 		affectedLaws && selectedLayer !== null
 			? affectedLaws.enacting_parents_in_db.filter((law) => law.layer === selectedLayer)
 			: affectedLaws?.enacting_parents_in_db || [];
+
+	// Count selected items from the filtered lists
+	$: selectedInDbCount = [...selectedInDb].filter((name) =>
+		filteredInDb.some((law) => law.name === name)
+	).length;
+
+	$: selectedNotInDbCount = [...selectedNotInDb].filter((name) =>
+		filteredNotInDb.some((law) => law.name === name)
+	).length;
+
+	$: selectedEnactingParentsCount = [...selectedEnactingParents].filter((name) =>
+		filteredEnactingParents.some((law) => law.name === name)
+	).length;
 </script>
 
 {#if open}
@@ -669,14 +684,14 @@
 			<!-- Footer -->
 			<div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
 				<div class="text-sm text-gray-500 flex flex-col gap-1">
-					{#if selectedInDb.size > 0}
-						<span>{selectedInDb.size} selected for re-parse</span>
+					{#if selectedInDbCount > 0}
+						<span>{selectedInDbCount} selected for re-parse</span>
 					{/if}
-					{#if selectedNotInDb.size > 0}
-						<span class="text-yellow-600">{selectedNotInDb.size} new laws selected</span>
+					{#if selectedNotInDbCount > 0}
+						<span class="text-yellow-600">{selectedNotInDbCount} new laws selected</span>
 					{/if}
-					{#if selectedEnactingParents.size > 0}
-						<span class="text-purple-600">{selectedEnactingParents.size} parent laws selected</span>
+					{#if selectedEnactingParentsCount > 0}
+						<span class="text-purple-600">{selectedEnactingParentsCount} parent laws selected</span>
 					{/if}
 				</div>
 				<div class="flex gap-3 flex-wrap justify-end">
@@ -684,17 +699,17 @@
 					{#if affectedLaws && affectedLaws.in_db_count > 0 && !reparseResults}
 						<button
 							on:click={handleReviewSelected}
-							disabled={reparseInProgress || enactingUpdateInProgress || selectedInDb.size === 0}
+							disabled={reparseInProgress || enactingUpdateInProgress || selectedInDbCount === 0}
 							class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							Review Selected ({selectedInDb.size})
+							Review Selected ({selectedInDbCount})
 						</button>
 						<button
 							on:click={handleReviewAll}
 							disabled={reparseInProgress || enactingUpdateInProgress}
 							class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							Review All ({affectedLaws.in_db_count})
+							Review All ({filteredInDb.length})
 						</button>
 					{/if}
 
@@ -702,21 +717,21 @@
 					{#if affectedLaws && affectedLaws.not_in_db_count > 0}
 						<button
 							on:click={handleFetchMetadataSelected}
-							disabled={metadataFetching.size > 0 || selectedNotInDb.size === 0}
+							disabled={metadataFetching.size > 0 || selectedNotInDbCount === 0}
 							class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{#if metadataFetching.size > 0}
 								Fetching ({metadataFetching.size})...
 							{:else}
-								Get Metadata ({selectedNotInDb.size})
+								Get Metadata ({selectedNotInDbCount})
 							{/if}
 						</button>
 						<button
 							on:click={handleReviewNotInDbSelected}
-							disabled={metadataFetching.size > 0 || selectedNotInDb.size === 0}
+							disabled={metadataFetching.size > 0 || selectedNotInDbCount === 0}
 							class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							Parse &amp; Review ({selectedNotInDb.size})
+							Parse &amp; Review ({selectedNotInDbCount})
 						</button>
 					{/if}
 
@@ -726,13 +741,13 @@
 							on:click={handleUpdateEnactingSelected}
 							disabled={reparseInProgress ||
 								enactingUpdateInProgress ||
-								selectedEnactingParents.size === 0}
+								selectedEnactingParentsCount === 0}
 							class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{#if enactingUpdateInProgress}
 								Updating...
 							{:else}
-								Update Enacting ({selectedEnactingParents.size})
+								Update Enacting ({selectedEnactingParentsCount})
 							{/if}
 						</button>
 						<button
@@ -743,7 +758,7 @@
 							{#if enactingUpdateInProgress}
 								Updating...
 							{:else}
-								Update All Parents ({affectedLaws.enacting_parents_in_db_count})
+								Update All Parents ({filteredEnactingParents.length})
 							{/if}
 						</button>
 					{/if}
