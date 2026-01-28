@@ -22,8 +22,10 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
 
   alias SertantaiLegal.Legal.Taxa.ActorDefinitions
 
-  @government ActorDefinitions.government()
-  @governed ActorDefinitions.governed()
+  # Use pre-compiled regexes for performance
+  @government_compiled ActorDefinitions.government_compiled()
+  @governed_compiled ActorDefinitions.governed_compiled()
+  @blacklist_compiled ActorDefinitions.blacklist_compiled()
 
   @type actor :: String.t()
   @type text :: String.t()
@@ -36,14 +38,15 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   Extracts both governed and government actors from text.
 
   Returns a map with `:actors` (governed) and `:actors_gvt` (government).
+  Uses pre-compiled regexes for performance.
   """
   @spec get_actors_in_text(text()) :: %{actors: list(actor()), actors_gvt: list(actor())}
   def get_actors_in_text(text) when is_binary(text) do
     cleaned_text = apply_blacklist(text)
 
     %{
-      actors: extract_actors(cleaned_text, :governed),
-      actors_gvt: extract_actors(cleaned_text, :government)
+      actors: extract_actors_compiled(cleaned_text, @governed_compiled),
+      actors_gvt: extract_actors_compiled(cleaned_text, @government_compiled)
     }
   end
 
@@ -58,7 +61,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   def get_governed_actors(text) when is_binary(text) do
     text
     |> apply_blacklist()
-    |> extract_actors(:governed)
+    |> extract_actors_compiled(@governed_compiled)
   end
 
   def get_governed_actors(_), do: []
@@ -72,7 +75,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   def get_government_actors(text) when is_binary(text) do
     text
     |> apply_blacklist()
-    |> extract_actors(:government)
+    |> extract_actors_compiled(@government_compiled)
   end
 
   def get_government_actors(_), do: []
@@ -114,34 +117,19 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   # Private Functions
   # ============================================================================
 
-  # Extracts actors using the specified library
-  defp extract_actors(text, :governed) do
-    run_actor_regex(text, @governed)
-  end
-
-  defp extract_actors(text, :government) do
-    run_actor_regex(text, @government)
-  end
-
-  # Runs regex patterns against text and collects matching actors
-  defp run_actor_regex(text, library) do
+  # Runs pre-compiled regex patterns against text and collects matching actors
+  # This is the optimized version that avoids runtime regex compilation
+  defp extract_actors_compiled(text, compiled_library) do
     {_remaining_text, actors} =
-      Enum.reduce(library, {text, []}, fn {actor, regex}, {txt, acc} ->
-        case Regex.compile(regex, "m") do
-          {:ok, regex_compiled} ->
-            case Regex.run(regex_compiled, txt) do
-              [_match | _] ->
-                actor_str = to_string(actor)
-                # Remove matched text to prevent duplicate matches
-                new_text = Regex.replace(regex_compiled, txt, "", global: false)
-                {new_text, [actor_str | acc]}
+      Enum.reduce(compiled_library, {text, []}, fn {actor, regex_compiled}, {txt, acc} ->
+        case Regex.run(regex_compiled, txt) do
+          [_match | _] ->
+            actor_str = to_string(actor)
+            # Remove matched text to prevent duplicate matches
+            new_text = Regex.replace(regex_compiled, txt, "", global: false)
+            {new_text, [actor_str | acc]}
 
-              nil ->
-                {txt, acc}
-            end
-
-          {:error, {error, _pos}} ->
-            IO.puts("ERROR: DutyActor regex doesn't compile: #{error}")
+          nil ->
             {txt, acc}
         end
       end)
@@ -153,12 +141,10 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   end
 
   # Removes blacklisted terms from text before processing
+  # Uses pre-compiled regexes for performance
   defp apply_blacklist(text) do
-    Enum.reduce(ActorDefinitions.blacklist(), text, fn pattern, acc ->
-      case Regex.compile(pattern, "m") do
-        {:ok, regex} -> Regex.replace(regex, acc, "")
-        {:error, _} -> acc
-      end
+    Enum.reduce(@blacklist_compiled, text, fn regex, acc ->
+      Regex.replace(regex, acc, "")
     end)
   end
 end

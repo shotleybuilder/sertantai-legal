@@ -40,6 +40,231 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
   @type purposes :: list(purpose())
 
   # ============================================================================
+  # Pre-compiled Regex Patterns (compiled at module load time)
+  # ============================================================================
+
+  # Em dash character (U+2014)
+  @emdash <<226, 128, 148>>
+
+  # Pattern definitions as module attributes (for compile-time access)
+  @amendment_patterns_raw [
+    "shall be inserted the words#{@emdash}",
+    "shall be inserted#{@emdash}",
+    "there is inserted",
+    "insert the following after",
+    " (?:substituted?|inserte?d?)#{@emdash}?",
+    "shall be (?:inserted|substituted) the words",
+    "for.*?substitute",
+    "omit the (?:words?|entr(?:y|ies) relat(?:ing|ed) to|entry for)",
+    "omit the following",
+    ~s/[Oo]mit ["'""]?(?:section|paragraph)/,
+    "[Oo]mit[ ]+(?:section|paragraph)",
+    "entry.*?shall be omitted",
+    "shall be amended",
+    "there shall be added the following paragraph",
+    "add the following after (?:subsection|paragraph)",
+    "[Aa]mendments?",
+    "[Aa]mended as follows",
+    "are amended on accordance with"
+  ]
+
+  @enactment_patterns_raw [
+    "(?:Act|Regulations?|Order) may be cited as",
+    "(?:Act|Regulations?|Order).*?shall have effect",
+    "(?:Act|Regulations?|Order) shall come into (?:force|operation)",
+    "comes? into force",
+    "has effect.*?on or after",
+    "commencement"
+  ]
+
+  @interpretation_patterns_raw (
+                                 defn =
+                                   [
+                                     "means",
+                                     "includes",
+                                     "does not include",
+                                     "is (?:information|the)",
+                                     "are",
+                                     "to be read as",
+                                     "are references to",
+                                     "consists"
+                                   ]
+                                   |> Enum.join("|")
+
+                                 quote_pattern = ~s/[""']/
+
+                                 [
+                                   "[A-Za-z\\d ]#{quote_pattern}.*?(?:#{defn})",
+                                   "#{quote_pattern}.*?#{quote_pattern} is",
+                                   "In thi?e?se? [Rr]egulations?.*?#{@emdash}",
+                                   "In thi?e?se? [Rr]egulations?.*?—",
+                                   "has?v?e? the (?:same )?(?:respective )?meanings?",
+                                   "[Ff]or the purposes? of (?:this Act|determining|these Regulations)",
+                                   "(?:any reference|references?).*?to",
+                                   "[Ii]nterpretation",
+                                   "interpreting these Regulation",
+                                   "for the meaning of",
+                                   "provisions.*?are reproduced",
+                                   "an?y? reference.*?in these Regulations",
+                                   "[Ww]here an expression is defined.*?and is not defined.*?it has the same meaning",
+                                   "are to be read",
+                                   "[Ff]or the purposes of (?:this Act|these Regulations|the definition of|subsection)"
+                                 ]
+                               )
+
+  @application_scope_patterns_raw [
+    "Application",
+    "(?:Act|Part|Chapter|[Ss]ections?|[Ss]ubsection|[Rr]egulations?|[Pp]aragraphs?|Article).*?apply?i?e?s?",
+    "(?:Act|Part|Chapter|[Ss]ections?|[Ss]ubsection|[Rr]egulations?|[Pp]aragraphs?).*?doe?s? not apply",
+    "(?:Act|Part|Chapter|[Ss]ections?|[Ss]ubsection|[Rr]egulations?|[Pp]aragraphs?|[Ss]chedules?).*?has effect",
+    "This.*?was enacted.*?for the purpose of making such provision as.*?necessary in order to comply with",
+    "does not apply",
+    "shall.*?apply",
+    "shall have effect",
+    "shall have no effect",
+    "ceases to have effect",
+    "shall remain in force until",
+    "provisions of.*?apply",
+    "application of this (?:Part|Chapter|[Ss]ection)",
+    "apply to any work outside",
+    "apply to a self-employed person",
+    "Save where otherwise expressly provided, nothing in.*?shall impose a duty",
+    "need not be complied with until",
+    "Section.*?apply for the purposes",
+    "[Ff]or the purposes of.*?the requirements? (?:of|set out in)",
+    "[Ff]or the purposes of paragraph",
+    "requirements.*?which cannot be complied with are to be disregarded",
+    "(?:[Rr]egulations|provisions) referred to",
+    "without prejudice to (?:regulation|the generality of the requirements?)",
+    "Nothing in.*?shall prejudice the operation",
+    "[Nn]othing in these (?:Regulations) prevents",
+    "shall bind the Crown"
+  ]
+
+  @extent_patterns_raw [
+    "(?:Act|Regulation|section)(?: does not | do not | )extends? to",
+    "(?:Act|Regulations?|Section).*?extends? (?:only )?to",
+    "[Oo]nly.*?extend to",
+    "do not extend to",
+    "[R|r]egulations under",
+    "enactment amended or repealed by this Act extends",
+    "[Cc]orresponding provisions for Northern Ireland",
+    "shall not (?:extend|apply) to (Scotland|Wales|Northern Ireland)"
+  ]
+
+  @exemption_patterns_raw [
+    "shall not apply in any case where",
+    "by a certificate in writing exempt",
+    "\\bexemption\\b"
+  ]
+
+  @process_rule_patterns_raw [
+    "\\bshall\\b",
+    "\\bmust\\b",
+    "\\brequired\\b",
+    "\\brequirements?\\b",
+    "\\bobligations?\\b",
+    "\\bprocedures?\\b",
+    "\\brules?\\b",
+    "\\bconditions?\\b",
+    "\\bconstraints?\\b",
+    "\\bduty\\b",
+    "\\bduties\\b",
+    "\\bcomply\\b",
+    "\\bcompliance\\b",
+    "\\bprohibited\\b",
+    "\\bpermitted\\b",
+    "\\bmay not\\b",
+    "\\bstandards?\\b",
+    "\\bspecifications?\\b",
+    "\\bensure\\b",
+    "\\bmaintain\\b",
+    "\\bresponsible\\b",
+    "\\bresponsibilities\\b"
+  ]
+
+  @repeal_revocation_patterns_raw [
+    "\\.\\s+\\.\\s+\\.\\s+\\.\\s+\\.\\s+\\.\\s+\\.",
+    "(?:revoked|repealed)",
+    "(?:[Rr]epeals|revocations)",
+    "following Acts shall cease to have effect"
+  ]
+
+  @transitional_patterns_raw [
+    "transitional provision",
+    "transitional arrangements?"
+  ]
+
+  @charge_fee_patterns_raw [
+    "fees and charges",
+    "(fees?|charges?).*(paid|payable)",
+    "by the (fee|charge)",
+    "failed to pay a (fee|charge)",
+    "fee.*?may not exceed the sum of the costs",
+    "fee may include any costs",
+    "may charge.*?a fee",
+    "[Aa] fee charged",
+    "invoice must include a statement of the work done"
+  ]
+
+  @offence_patterns_raw [
+    " ?[Oo]ffences?[ \\.,#{@emdash}:]",
+    "(?:[Ff]ixed|liable to a) penalty"
+  ]
+
+  @enforcement_patterns_raw [
+    "proceedings",
+    "conviction"
+  ]
+
+  @defence_appeal_patterns_raw [
+    " [Aa]ppeal ",
+    "[Ii]t is a defence for a ",
+    "may not rely on a defence",
+    "shall not be (?:guilty|liable)",
+    "[Ii]t shall (?:also )?.*?be a defence",
+    "[Ii]t shall be sufficient compliance",
+    "rebuttable"
+  ]
+
+  @power_conferred_patterns_raw [
+    " functions.*(?:exercis(?:ed|able)|conferred) ",
+    " exercising.*functions ",
+    "power to make regulations",
+    "[Tt]he power under (?:subsection)"
+  ]
+
+  @liability_patterns_raw [
+    "\\bliability\\b",
+    "\\bliable\\b"
+  ]
+
+  # Pre-compiled regex maps (compiled at module load)
+  @compiled_patterns %{
+    amendment: Enum.map(@amendment_patterns_raw, &Regex.compile!(&1, "i")),
+    enactment: Enum.map(@enactment_patterns_raw, &Regex.compile!(&1, "i")),
+    interpretation: Enum.map(@interpretation_patterns_raw, &Regex.compile!(&1, "i")),
+    application_scope: Enum.map(@application_scope_patterns_raw, &Regex.compile!(&1, "i")),
+    extent: Enum.map(@extent_patterns_raw, &Regex.compile!(&1, "i")),
+    exemption: Enum.map(@exemption_patterns_raw, &Regex.compile!(&1, "i")),
+    process_rule: Enum.map(@process_rule_patterns_raw, &Regex.compile!(&1, "i")),
+    repeal_revocation: Enum.map(@repeal_revocation_patterns_raw, &Regex.compile!(&1, "i")),
+    transitional: Enum.map(@transitional_patterns_raw, &Regex.compile!(&1, "i")),
+    charge_fee: Enum.map(@charge_fee_patterns_raw, &Regex.compile!(&1, "i")),
+    offence: Enum.map(@offence_patterns_raw, &Regex.compile!(&1, "i")),
+    enforcement: Enum.map(@enforcement_patterns_raw, &Regex.compile!(&1, "i")),
+    defence_appeal: Enum.map(@defence_appeal_patterns_raw, &Regex.compile!(&1, "i")),
+    power_conferred: Enum.map(@power_conferred_patterns_raw, &Regex.compile!(&1, "i")),
+    liability: Enum.map(@liability_patterns_raw, &Regex.compile!(&1, "i"))
+  }
+
+  @doc """
+  Returns pre-compiled regex patterns for a given category.
+  """
+  @spec compiled_patterns(atom()) :: list(Regex.t())
+  def compiled_patterns(category), do: Map.get(@compiled_patterns, category, [])
+
+  # ============================================================================
   # Purpose Values (with + separator)
   # ============================================================================
 
@@ -84,13 +309,6 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
       @purposes.transitional_arrangement
     ]
   end
-
-  # ============================================================================
-  # Special Characters
-  # ============================================================================
-
-  # Em dash character (U+2014)
-  defp emdash, do: <<226, 128, 148>>
 
   # ============================================================================
   # Public API
@@ -183,51 +401,30 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
 
   defp run_all_patterns(text) do
     []
-    |> check_patterns(
-      text,
-      enactment_citation_commencement_patterns(),
-      @purposes.enactment_citation_commencement
-    )
-    |> check_patterns(
-      text,
-      interpretation_definition_patterns(),
-      @purposes.interpretation_definition
-    )
-    |> check_patterns(text, application_scope_patterns(), @purposes.application_scope)
-    |> check_patterns(text, extent_patterns(), @purposes.extent)
-    |> check_patterns(text, exemption_patterns(), @purposes.exemption)
-    |> check_patterns(
-      text,
-      process_rule_constraint_condition_patterns(),
-      @purposes.process_rule_constraint_condition
-    )
-    |> check_patterns(text, repeal_revocation_patterns(), @purposes.repeal_revocation)
-    |> check_patterns(
-      text,
-      transitional_arrangement_patterns(),
-      @purposes.transitional_arrangement
-    )
-    |> check_patterns(text, charge_fee_patterns(), @purposes.charge_fee)
-    |> check_patterns(text, offence_patterns(), @purposes.offence)
-    |> check_patterns(text, enforcement_prosecution_patterns(), @purposes.enforcement_prosecution)
-    |> check_patterns(text, defence_appeal_patterns(), @purposes.defence_appeal)
-    |> check_patterns(text, power_conferred_patterns(), @purposes.power_conferred)
-    |> check_patterns(text, liability_patterns(), @purposes.liability)
-    |> check_patterns(text, amendment_patterns(), @purposes.amendment)
+    |> check_patterns_compiled(text, :enactment, @purposes.enactment_citation_commencement)
+    |> check_patterns_compiled(text, :interpretation, @purposes.interpretation_definition)
+    |> check_patterns_compiled(text, :application_scope, @purposes.application_scope)
+    |> check_patterns_compiled(text, :extent, @purposes.extent)
+    |> check_patterns_compiled(text, :exemption, @purposes.exemption)
+    |> check_patterns_compiled(text, :process_rule, @purposes.process_rule_constraint_condition)
+    |> check_patterns_compiled(text, :repeal_revocation, @purposes.repeal_revocation)
+    |> check_patterns_compiled(text, :transitional, @purposes.transitional_arrangement)
+    |> check_patterns_compiled(text, :charge_fee, @purposes.charge_fee)
+    |> check_patterns_compiled(text, :offence, @purposes.offence)
+    |> check_patterns_compiled(text, :enforcement, @purposes.enforcement_prosecution)
+    |> check_patterns_compiled(text, :defence_appeal, @purposes.defence_appeal)
+    |> check_patterns_compiled(text, :power_conferred, @purposes.power_conferred)
+    |> check_patterns_compiled(text, :liability, @purposes.liability)
+    |> check_patterns_compiled(text, :amendment, @purposes.amendment)
   end
 
-  defp check_patterns(acc, text, patterns, purpose) do
-    if Enum.any?(patterns, &regex_match?(text, &1)) do
+  defp check_patterns_compiled(acc, text, category, purpose) do
+    regexes = Map.get(@compiled_patterns, category, [])
+
+    if Enum.any?(regexes, &Regex.match?(&1, text)) do
       [purpose | acc]
     else
       acc
-    end
-  end
-
-  defp regex_match?(text, pattern) do
-    case Regex.compile(pattern, "i") do
-      {:ok, regex} -> Regex.match?(regex, text)
-      {:error, _} -> false
     end
   end
 
@@ -243,246 +440,5 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
       String.match?(title, ~r/\(Amendment No\.\s*\d+\)/i) or
       String.match?(title, ~r/\(Amendments?\)/i) or
       String.match?(title, ~r/Amendment (?:Regulations?|Order|Act|Rules?)/i)
-  end
-
-  # ============================================================================
-  # Pattern Definitions
-  # ============================================================================
-
-  defp amendment_patterns do
-    [
-      # insert
-      "shall be inserted the words#{emdash()}",
-      "shall be inserted#{emdash()}",
-      "there is inserted",
-      "insert the following after",
-      # inserted substituted
-      " (?:substituted?|inserte?d?)#{emdash()}?",
-      "shall be (?:inserted|substituted) the words",
-      # substitute
-      "for.*?substitute",
-      # omit
-      "omit the (?:words?|entr(?:y|ies) relat(?:ing|ed) to|entry for)",
-      "omit the following",
-      ~s/[Oo]mit ["'""]?(?:section|paragraph)/,
-      "[Oo]mit[ ]+(?:section|paragraph)",
-      "entry.*?shall be omitted",
-      # amended
-      "shall be amended",
-      # added
-      "there shall be added the following paragraph",
-      "add the following after (?:subsection|paragraph)",
-      # amend
-      "[Aa]mendments?",
-      "[Aa]mended as follows",
-      "are amended in accordance with"
-    ]
-  end
-
-  defp enactment_citation_commencement_patterns do
-    [
-      "(?:Act|Regulations?|Order) may be cited as",
-      "(?:Act|Regulations?|Order).*?shall have effect",
-      "(?:Act|Regulations?|Order) shall come into (?:force|operation)",
-      "comes? into force",
-      "has effect.*?on or after",
-      "commencement"
-    ]
-  end
-
-  defp interpretation_definition_patterns do
-    defn =
-      [
-        "means",
-        "includes",
-        "does not include",
-        "is (?:information|the)",
-        "are",
-        "to be read as",
-        "are references to",
-        "consists"
-      ]
-      |> Enum.join("|")
-
-    # Pattern with both curly quotes and straight quotes
-    quote_pattern = ~s/[""']/
-
-    [
-      # Pattern: "term" means... (with curly or straight quotes)
-      "[A-Za-z\\d ]#{quote_pattern}.*?(?:#{defn})",
-      "#{quote_pattern}.*?#{quote_pattern} is",
-      "In thi?e?se? [Rr]egulations?.*?#{emdash()}",
-      "In thi?e?se? [Rr]egulations?.*?—",
-      "has?v?e? the (?:same )?(?:respective )?meanings?",
-      "[Ff]or the purposes? of (?:this Act|determining|these Regulations)",
-      "(?:any reference|references?).*?to",
-      "[Ii]nterpretation",
-      "interpreting these Regulation",
-      "for the meaning of",
-      "provisions.*?are reproduced",
-      "an?y? reference.*?in these Regulations",
-      "[Ww]here an expression is defined.*?and is not defined.*?it has the same meaning",
-      "are to be read",
-      "[Ff]or the purposes of (?:this Act|these Regulations|the definition of|subsection)"
-    ]
-  end
-
-  defp application_scope_patterns do
-    [
-      "Application",
-      "(?:Act|Part|Chapter|[Ss]ections?|[Ss]ubsection|[Rr]egulations?|[Pp]aragraphs?|Article).*?apply?i?e?s?",
-      "(?:Act|Part|Chapter|[Ss]ections?|[Ss]ubsection|[Rr]egulations?|[Pp]aragraphs?).*?doe?s? not apply",
-      "(?:Act|Part|Chapter|[Ss]ections?|[Ss]ubsection|[Rr]egulations?|[Pp]aragraphs?|[Ss]chedules?).*?has effect",
-      "This.*?was enacted.*?for the purpose of making such provision as.*?necessary in order to comply with",
-      "does not apply",
-      "shall.*?apply",
-      "shall have effect",
-      "shall have no effect",
-      "ceases to have effect",
-      "shall remain in force until",
-      "provisions of.*?apply",
-      "application of this (?:Part|Chapter|[Ss]ection)",
-      "apply to any work outside",
-      "apply to a self-employed person",
-      "Save where otherwise expressly provided, nothing in.*?shall impose a duty",
-      "need not be complied with until",
-      "Section.*?apply for the purposes",
-      "[Ff]or the purposes of.*?the requirements? (?:of|set out in)",
-      "[Ff]or the purposes of paragraph",
-      "requirements.*?which cannot be complied with are to be disregarded",
-      "(?:[Rr]egulations|provisions) referred to",
-      "without prejudice to (?:regulation|the generality of the requirements?)",
-      "Nothing in.*?shall prejudice the operation",
-      "[Nn]othing in these (?:Regulations) prevents",
-      "shall bind the Crown"
-    ]
-  end
-
-  defp extent_patterns do
-    [
-      "(?:Act|Regulation|section)(?: does not | do not | )extends? to",
-      "(?:Act|Regulations?|Section).*?extends? (?:only )?to",
-      "[Oo]nly.*?extend to",
-      "do not extend to",
-      "[R|r]egulations under",
-      "enactment amended or repealed by this Act extends",
-      "[Cc]orresponding provisions for Northern Ireland",
-      "shall not (?:extend|apply) to (Scotland|Wales|Northern Ireland)"
-    ]
-  end
-
-  defp exemption_patterns do
-    [
-      "shall not apply in any case where",
-      "by a certificate in writing exempt",
-      "\\bexemption\\b"
-    ]
-  end
-
-  defp process_rule_constraint_condition_patterns do
-    [
-      # Obligations and requirements
-      "\\bshall\\b",
-      "\\bmust\\b",
-      "\\brequired\\b",
-      "\\brequirements?\\b",
-      "\\bobligations?\\b",
-      # Rules and procedures
-      "\\bprocedures?\\b",
-      "\\brules?\\b",
-      "\\bconditions?\\b",
-      "\\bconstraints?\\b",
-      # Duty language
-      "\\bduty\\b",
-      "\\bduties\\b",
-      # Compliance
-      "\\bcomply\\b",
-      "\\bcompliance\\b",
-      # Permission/prohibition
-      "\\bprohibited\\b",
-      "\\bpermitted\\b",
-      "\\bmay not\\b",
-      # Standards and specifications
-      "\\bstandards?\\b",
-      "\\bspecifications?\\b",
-      # Ensure/maintain
-      "\\bensure\\b",
-      "\\bmaintain\\b",
-      # Responsibilities
-      "\\bresponsible\\b",
-      "\\bresponsibilities\\b"
-    ]
-  end
-
-  defp repeal_revocation_patterns do
-    [
-      "\\.\\s+\\.\\s+\\.\\s+\\.\\s+\\.\\s+\\.\\s+\\.",
-      "(?:revoked|repealed)",
-      "(?:[Rr]epeals|revocations)",
-      "following Acts shall cease to have effect"
-    ]
-  end
-
-  defp transitional_arrangement_patterns do
-    [
-      "transitional provision",
-      "transitional arrangements?"
-    ]
-  end
-
-  defp charge_fee_patterns do
-    [
-      "fees and charges",
-      "(fees?|charges?).*(paid|payable)",
-      "by the (fee|charge)",
-      "failed to pay a (fee|charge)",
-      "fee.*?may not exceed the sum of the costs",
-      "fee may include any costs",
-      "may charge.*?a fee",
-      "[Aa] fee charged",
-      "invoice must include a statement of the work done"
-    ]
-  end
-
-  defp offence_patterns do
-    [
-      " ?[Oo]ffences?[ \\.,#{emdash()}:]",
-      "(?:[Ff]ixed|liable to a) penalty"
-    ]
-  end
-
-  defp enforcement_prosecution_patterns do
-    [
-      "proceedings",
-      "conviction"
-    ]
-  end
-
-  defp defence_appeal_patterns do
-    [
-      " [Aa]ppeal ",
-      "[Ii]t is a defence for a ",
-      "may not rely on a defence",
-      "shall not be (?:guilty|liable)",
-      "[Ii]t shall (?:also )?.*?be a defence",
-      "[Ii]t shall be sufficient compliance",
-      "rebuttable"
-    ]
-  end
-
-  defp power_conferred_patterns do
-    [
-      " functions.*(?:exercis(?:ed|able)|conferred) ",
-      " exercising.*functions ",
-      "power to make regulations",
-      "[Tt]he power under (?:subsection)"
-    ]
-  end
-
-  defp liability_patterns do
-    [
-      "\\bliability\\b",
-      "\\bliable\\b"
-    ]
   end
 end
