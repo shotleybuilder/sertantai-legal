@@ -385,7 +385,7 @@
 								{#each affectedLaws.layers as l}
 									<button
 										on:click={() => toggleLayerFilter(l.layer)}
-										class="px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-blue-400 {selectedLayer === l.layer ? 'bg-blue-600 text-white ring-2 ring-blue-400' : l.layer === affectedLaws.current_layer ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600'}"
+										class="px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-blue-400 {selectedLayer === l.layer ? 'bg-blue-600 text-white ring-2 ring-blue-400' : selectedLayer === null && l.layer === affectedLaws.current_layer ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600'}"
 									>
 										L{l.layer}: {l.count}
 									</button>
