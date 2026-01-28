@@ -73,7 +73,7 @@ defmodule SertantaiLegalWeb.CascadeControllerTest do
       conn = delete(conn, ~p"/api/cascade/session/#{@test_session_id}")
 
       assert json_response(conn, 200) == %{
-               "message" => "Cleared all cascade entries for session",
+               "message" => "Cleared all cascade entries for session (database and JSON)",
                "session_id" => @test_session_id,
                "deleted_count" => 3
              }
@@ -123,7 +123,7 @@ defmodule SertantaiLegalWeb.CascadeControllerTest do
       conn = delete(conn, ~p"/api/cascade/session/#{empty_session_id}")
 
       assert json_response(conn, 200) == %{
-               "message" => "Cleared all cascade entries for session",
+               "message" => "Cleared all cascade entries for session (database and JSON)",
                "session_id" => empty_session_id,
                "deleted_count" => 0
              }
@@ -133,7 +133,7 @@ defmodule SertantaiLegalWeb.CascadeControllerTest do
       conn = delete(conn, ~p"/api/cascade/session/non-existent-session")
 
       assert json_response(conn, 200) == %{
-               "message" => "Cleared all cascade entries for session",
+               "message" => "Cleared all cascade entries for session (database and JSON)",
                "session_id" => "non-existent-session",
                "deleted_count" => 0
              }
