@@ -30,14 +30,24 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   @type text :: String.t()
   @type role :: :duty | :right | :responsibility | :power
 
-  # Threshold for using windowed search optimization (in characters)
-  # For texts larger than this, we find actor mentions first and only
-  # search in windows around those mentions instead of the full text.
+  # Threshold for using modal-based windowed search optimization (in characters)
+  # For texts larger than this, we find modal verb positions first and only
+  # search in windows around those modals instead of the full text.
   @windowed_search_threshold 50_000
 
-  # Window size around each actor mention (characters before and after)
-  # Must be large enough to capture patterns like "Where...employer...shall"
-  @window_padding 500
+  # Window size around each modal verb mention
+  # Before: needs to capture actor that precedes the modal (e.g., "The employer shall")
+  # After: needs to capture verb phrase after modal (e.g., "shall ensure safety")
+  @modal_window_before 400
+  @modal_window_after 200
+
+  # Pre-compiled modal verb pattern for finding duty/right locations
+  # These are the verbs that indicate obligations or permissions in legal text
+  @modal_pattern ~r/\b(?:shall|must|may(?:\s+not|\s+only)?)\b/i
+
+  # Additional anchor patterns for non-modal duty/right indicators
+  # These patterns don't use shall/must/may but still indicate duties or rights
+  @non_modal_anchors ~r/\b(?:is\s+(?:liable|responsible|entitled|required)|remains\s+responsible|has\s+(?:the\s+)?duty|owes\s+a\s+duty|under\s+a\s+(?:like\s+)?duty)\b/i
 
   # ============================================================================
   # Public API
@@ -91,10 +101,14 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     cleaned_text = blacklist(text)
     label = role |> Atom.to_string() |> String.upcase()
 
-    # Use windowed search for large texts to dramatically reduce regex processing
+    # Use modal-based windowed search for large texts to dramatically reduce regex processing
+    # Instead of searching the full text for each pattern, we:
+    # 1. Find all modal verb positions (shall, must, may)
+    # 2. Create windows around those positions
+    # 3. Only run patterns against those windows
     result =
       if use_windowed_search?(cleaned_text) do
-        run_role_regex_windowed({cleaned_text, [], [], regexes}, regex_lib, label, cleaned_text)
+        run_modal_windowed_search({cleaned_text, [], [], regexes}, regex_lib, label, cleaned_text)
       else
         run_role_regex({cleaned_text, [], [], regexes}, regex_lib, label)
       end
@@ -189,45 +203,51 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   end
 
   # ============================================================================
-  # Windowed Search Optimization
+  # Modal-Based Windowed Search Optimization (Phase 5)
   # ============================================================================
   # For large texts, instead of running each regex against the full text,
-  # we first find all positions where the actor is mentioned, then only
-  # search in windows around those positions. This dramatically reduces
-  # the amount of text processed by complex regex patterns.
+  # we first find all positions where modal verbs (shall, must, may) appear,
+  # then only search in windows around those positions. This dramatically
+  # reduces the amount of text processed because:
+  # 1. Modal verbs are the key indicators of duties/rights in legal text
+  # 2. Most of the text (descriptions, definitions, etc.) has NO modals
+  # 3. We only need to check ~100-200 modal positions vs 546KB of text
 
   # Determines if windowed search should be used based on text length
   defp use_windowed_search?(text) do
     String.length(text) > @windowed_search_threshold
   end
 
-  # Finds all positions where the actor pattern matches in the text
+  # Finds all modal verb positions in the text
   # Returns list of {start_pos, length} tuples
-  defp find_actor_positions(actor_pattern, text) do
-    case Regex.compile(actor_pattern, "i") do
-      {:ok, regex} ->
-        Regex.scan(regex, text, return: :index)
-        |> List.flatten()
-        |> Enum.uniq()
+  defp find_modal_positions(text) do
+    modal_positions =
+      Regex.scan(@modal_pattern, text, return: :index)
+      |> List.flatten()
 
-      {:error, _} ->
-        []
-    end
+    # Also find non-modal anchor positions (is liable, remains responsible, etc.)
+    non_modal_positions =
+      Regex.scan(@non_modal_anchors, text, return: :index)
+      |> List.flatten()
+
+    (modal_positions ++ non_modal_positions)
+    |> Enum.uniq()
+    |> Enum.sort_by(fn {pos, _len} -> pos end)
   end
 
-  # Extracts text windows around actor positions and merges overlapping windows
-  # Returns list of {start, text_slice} tuples for searching
-  defp extract_windows(positions, _text) when positions == [], do: []
+  # Creates windows around modal positions with asymmetric padding
+  # More space before (for actor) than after (for verb phrase)
+  defp create_modal_windows(positions, _text) when positions == [], do: []
 
-  defp extract_windows(positions, text) do
+  defp create_modal_windows(positions, text) do
     text_length = String.length(text)
 
-    # Convert positions to window ranges
+    # Convert positions to window ranges with asymmetric padding
     ranges =
       positions
       |> Enum.map(fn {pos, len} ->
-        start_pos = max(0, pos - @window_padding)
-        end_pos = min(text_length, pos + len + @window_padding)
+        start_pos = max(0, pos - @modal_window_before)
+        end_pos = min(text_length, pos + len + @modal_window_after)
         {start_pos, end_pos}
       end)
       |> Enum.sort()
@@ -255,57 +275,87 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     [first | merge_ranges(rest)]
   end
 
-  # Runs regex patterns against windows instead of full text
-  # This is the windowed version of run_role_regex
-  defp run_role_regex_windowed(collector, library, label, full_text) do
-    Enum.reduce(library, collector, fn {actor, regexes}, acc ->
-      # Get the actor's base pattern from the library to find mentions
-      actor_pattern = get_actor_base_pattern(actor)
-      positions = find_actor_positions(actor_pattern, full_text)
+  # Main modal-based windowed search function
+  # 1. Find all modal positions in the text
+  # 2. Create windows around those positions
+  # 3. For each actor, check if they appear in any window
+  # 4. Only run patterns for actors that are actually present
+  defp run_modal_windowed_search(collector, library, label, full_text) do
+    # Step 1: Find all modal positions
+    modal_positions = find_modal_positions(full_text)
 
-      if positions == [] do
-        # Actor not mentioned in text at all - skip all patterns
-        acc
-      else
-        # Extract windows around actor mentions
-        windows = extract_windows(positions, full_text)
+    if modal_positions == [] do
+      # No modals found - no duties/rights possible
+      collector
+    else
+      # Step 2: Create windows around modal positions
+      modal_windows = create_modal_windows(modal_positions, full_text)
 
-        # Run patterns against each window
-        Enum.reduce(regexes, acc, fn regex, {text, role_holders, matches, reg_exs} = acc2 ->
-          {regex_str, rm_matched_text?} =
-            case regex do
-              {r, true} -> {r, true}
-              r -> {r, false}
-            end
+      # Step 3: For each actor in the library, check presence and run patterns
+      Enum.reduce(library, collector, fn {actor, regexes}, acc ->
+        # Get simple pattern to check if actor is mentioned at all
+        actor_pattern = get_actor_base_pattern(actor)
 
-          case Regex.compile(regex_str, "m") do
-            {:ok, regex_c} ->
-              # Search each window for a match
-              case find_match_in_windows(regex_c, windows) do
-                {:found, match} ->
-                  # Found a match - update accumulator
-                  # Note: We don't modify the original text for windowed search
-                  # since windows are independent slices
-                  new_text = if rm_matched_text?, do: Regex.replace(regex_c, text, ""), else: text
-                  match = ensure_valid_utf8(match)
-                  actor_str = to_string(actor)
+        # Check if actor appears in ANY modal window
+        actor_windows = filter_windows_with_actor(modal_windows, actor_pattern)
 
-                  {
-                    new_text,
-                    [actor_str | role_holders],
-                    [~s/#{label}\n👤#{actor_str}\n📌#{match}\n/ | matches],
-                    [~s/#{label}: #{actor_str}\n#{regex_str}\n-> #{match}\n/ | reg_exs]
-                  }
+        if actor_windows == [] do
+          # Actor not in any modal window - skip all patterns for this actor
+          acc
+        else
+          # Actor found in some windows - run patterns only against those windows
+          run_patterns_in_windows(acc, actor, regexes, actor_windows, label)
+        end
+      end)
+    end
+  end
 
-                :not_found ->
-                  acc2
-              end
+  # Filters windows to only those containing the actor pattern
+  defp filter_windows_with_actor(windows, actor_pattern) do
+    case Regex.compile(actor_pattern, "i") do
+      {:ok, regex} ->
+        Enum.filter(windows, fn {_start, window_text} ->
+          Regex.match?(regex, window_text)
+        end)
 
-            {:error, {error, _pos}} ->
-              IO.puts("ERROR: DutyTypeLib regex doesn't compile: #{error}\nPattern: #{regex_str}")
+      {:error, _} ->
+        []
+    end
+  end
+
+  # Runs patterns for a specific actor against filtered windows
+  defp run_patterns_in_windows(acc, actor, regexes, windows, label) do
+    Enum.reduce(regexes, acc, fn regex, {text, role_holders, matches, reg_exs} = acc2 ->
+      {regex_str, rm_matched_text?} =
+        case regex do
+          {r, true} -> {r, true}
+          r -> {r, false}
+        end
+
+      case Regex.compile(regex_str, "m") do
+        {:ok, regex_c} ->
+          # Search each window for a match
+          case find_match_in_windows(regex_c, windows) do
+            {:found, match} ->
+              # Found a match - update accumulator
+              new_text = if rm_matched_text?, do: Regex.replace(regex_c, text, ""), else: text
+              match = ensure_valid_utf8(match)
+              actor_str = to_string(actor)
+
+              {
+                new_text,
+                [actor_str | role_holders],
+                [~s/#{label}\n👤#{actor_str}\n📌#{match}\n/ | matches],
+                [~s/#{label}: #{actor_str}\n#{regex_str}\n-> #{match}\n/ | reg_exs]
+              }
+
+            :not_found ->
               acc2
           end
-        end)
+
+        {:error, {error, _pos}} ->
+          IO.puts("ERROR: DutyTypeLib regex doesn't compile: #{error}\nPattern: #{regex_str}")
+          acc2
       end
     end)
   end

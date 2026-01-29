@@ -261,4 +261,175 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeTest do
       assert "Power" in result.duty_type
     end
   end
+
+  describe "modal-based windowing (Phase 5)" do
+    # Modal-based windowing finds modal verbs (shall, must, may) first,
+    # then only searches for actors in windows around those modals.
+    # This is more efficient than actor-based windowing because modals
+    # are fewer and more specific to duties/rights.
+
+    test "finds duties only near modal verbs in large text" do
+      # Create large text with an employer mention far from any modal
+      # and another employer mention near a modal
+      filler = String.duplicate("General information about workplace safety procedures. ", 1500)
+
+      text =
+        "The employer operates in multiple locations. " <>
+          filler <>
+          "The employer shall ensure adequate ventilation. " <>
+          filler
+
+      record = %{
+        text: text,
+        role: ["Org: Employer"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # Should find duty from the "employer shall ensure" near the modal
+      assert "Duty" in result.duty_type
+      assert "Org: Employer" in result.duty_holder
+    end
+
+    test "skips actors that only appear outside modal windows" do
+      # Create text where employee is mentioned but never near a modal verb
+      # while employer is near a modal
+      filler = String.duplicate("Procedures and guidelines for operations. ", 1500)
+
+      text =
+        "The employee handbook describes policies. " <>
+          filler <>
+          "The employer shall provide training. " <>
+          filler <>
+          "Employee records are maintained by HR."
+
+      record = %{
+        text: text,
+        role: ["Org: Employer", "Ind: Employee"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # Employer near modal should be found
+      assert "Org: Employer" in result.duty_holder
+
+      # Employee is only mentioned outside modal windows, so should not have rights
+      # (no "employee may" or "employee shall" patterns)
+      refute "Ind: Employee" in (result.rights_holder || [])
+    end
+
+    test "handles non-modal duty indicators (is liable, remains responsible)" do
+      # Test that non-modal patterns like "is liable" are still found
+      filler = String.duplicate("Standard operating procedures apply here. ", 1500)
+
+      text =
+        filler <>
+          "The employer is liable for damages caused by negligence. " <>
+          filler
+
+      record = %{
+        text: text,
+        role: ["Org: Employer"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # Should find duty from "is liable" pattern (non-modal anchor)
+      assert "Duty" in result.duty_type
+      assert "Org: Employer" in result.duty_holder
+    end
+
+    test "finds rights with may patterns" do
+      filler = String.duplicate("Background information about regulations. ", 1500)
+
+      text =
+        filler <>
+          "The employee may request a review of the decision. " <>
+          filler
+
+      record = %{
+        text: text,
+        role: ["Ind: Employee"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # Should find right from "employee may request"
+      assert "Right" in result.duty_type
+      assert "Ind: Employee" in result.rights_holder
+    end
+
+    test "distinguishes may not (duty) from may (right)" do
+      filler = String.duplicate("Regulatory framework and compliance requirements. ", 1500)
+
+      text =
+        filler <>
+          "The employer may not dismiss an employee without cause. " <>
+          filler <>
+          "The employee may appeal the decision."
+
+      record = %{
+        text: text,
+        role: ["Org: Employer", "Ind: Employee"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # "may not" is a duty, "may" (without not) is a right
+      assert "Duty" in result.duty_type
+      assert "Right" in result.duty_type
+    end
+
+    test "handles government actors with modal verbs" do
+      filler = String.duplicate("Administrative and procedural matters. ", 1500)
+
+      text =
+        filler <>
+          "The local authority must ensure compliance. " <>
+          filler <>
+          "The Minister may by regulations prescribe standards."
+
+      record = %{
+        text: text,
+        role: [],
+        role_gvt: ["Gvt: Authority: Local", "Gvt: Minister"]
+      }
+
+      result = DutyType.process_record(record)
+
+      # Local authority with "must" = responsibility
+      assert "Responsibility" in result.duty_type
+      assert "Gvt: Authority: Local" in result.responsibility_holder
+
+      # Minister with "may by regulations" = power
+      assert "Power" in result.duty_type
+      assert "Gvt: Minister" in result.power_holder
+    end
+
+    test "processes text with no modal verbs returns empty" do
+      # Large text with actors but absolutely no modal verbs or duty indicators
+      filler = String.duplicate("Description of equipment and processes. ", 1500)
+
+      text =
+        "The employer provides equipment. " <>
+          filler <>
+          "The employee receives training annually."
+
+      record = %{
+        text: text,
+        role: ["Org: Employer", "Ind: Employee"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # No modals = no duties/rights
+      assert result.duty_type == []
+    end
+  end
 end
