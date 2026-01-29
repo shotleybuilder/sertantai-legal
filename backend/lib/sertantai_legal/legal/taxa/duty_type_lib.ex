@@ -100,12 +100,13 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   Removes blacklisted patterns from text before processing.
 
   This prevents false positive matches on common phrases.
+  Uses pre-compiled regexes for better performance.
   """
   @spec blacklist(text()) :: text()
   def blacklist(text) do
-    blacklist_regex()
+    blacklist_regex_compiled()
     |> Enum.reduce(text, fn regex, acc ->
-      Regex.replace(~r/#{regex}/, acc, " ")
+      Regex.replace(regex, acc, " ")
     end)
   end
 
@@ -170,21 +171,33 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     end)
   end
 
-  # Blacklist patterns that cause false positives
-  defp blacklist_regex do
-    modals = ~s/(?:shall|must|may[ ]only|may[ ]not)/
+  # ============================================================================
+  # Pre-compiled Blacklist Patterns
+  # ============================================================================
+  # These patterns cause false positives and are applied to every text.
+  # Pre-compiling at module load avoids repeated Regex.compile calls.
 
-    [
-      "[ ]area of the authority",
-      # Other subjects directly adjacent to the modal verb
-      "[ ]said report (?:shall|must)|shall[ ]not[ ]apply",
-      "[ ]may[ ]be[ ](?:approved|reduced|reasonably foreseeably|required)",
-      "[ ]may[ ]reasonably[ ]require",
-      "[ ]as[ ]the[ ]case[ ]may[ ]be",
-      "[ ]as may reasonably foreseeably",
-      "[ ]and[ ]#{modals}"
-    ]
-  end
+  @blacklist_modals ~s/(?:shall|must|may[ ]only|may[ ]not)/
+
+  @blacklist_patterns [
+    "[ ]area of the authority",
+    # Other subjects directly adjacent to the modal verb
+    "[ ]said report (?:shall|must)|shall[ ]not[ ]apply",
+    "[ ]may[ ]be[ ](?:approved|reduced|reasonably foreseeably|required)",
+    "[ ]may[ ]reasonably[ ]require",
+    "[ ]as[ ]the[ ]case[ ]may[ ]be",
+    "[ ]as may reasonably foreseeably",
+    "[ ]and[ ]#{@blacklist_modals}"
+  ]
+
+  # Pre-compile blacklist regexes at module load time
+  @compiled_blacklist_regexes Enum.map(@blacklist_patterns, fn pattern ->
+                                {:ok, regex} = Regex.compile(pattern)
+                                regex
+                              end)
+
+  # Returns pre-compiled blacklist regexes
+  defp blacklist_regex_compiled, do: @compiled_blacklist_regexes
 
   # Ensures string is valid UTF-8
   defp ensure_valid_utf8(str) do
