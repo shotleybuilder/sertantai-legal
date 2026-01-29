@@ -71,10 +71,11 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   def run(type_code, year, number) do
     year = to_string(year)
     number = to_string(number)
+    law_name = "#{type_code}/#{year}/#{number}"
 
     case fetch_law_text(type_code, year, number) do
       {:ok, text, source} ->
-        taxa_data = classify_text(text, source)
+        taxa_data = classify_text(text, source, law_name: law_name)
         {:ok, taxa_data}
 
       {:error, reason} ->
@@ -88,9 +89,14 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   Returns a map with all Taxa fields populated.
 
   Emits telemetry events with per-stage timing for performance monitoring.
+
+  ## Options
+  - `:law_name` - Law identifier for telemetry (e.g., "uksi/2024/1001")
   """
-  @spec classify_text(String.t(), String.t()) :: taxa_result()
-  def classify_text(text, source \\ "unknown") when is_binary(text) do
+  @spec classify_text(String.t(), String.t(), keyword()) :: taxa_result()
+  def classify_text(text, source \\ "unknown", opts \\ []) when is_binary(text) do
+    law_name = Keyword.get(opts, :law_name)
+
     if String.trim(text) == "" do
       empty_result(source)
     else
@@ -142,6 +148,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           text_length: text_length
         },
         %{
+          law_name: law_name,
           source: source,
           actor_count: length(actors) + length(actors_gvt),
           duty_type_count: length(Map.get(record, :duty_type, [])),
