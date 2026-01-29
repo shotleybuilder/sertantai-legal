@@ -189,4 +189,76 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeTest do
       assert result.responsibility_holder != nil
     end
   end
+
+  describe "windowed search optimization" do
+    # The windowed search threshold is 50,000 chars
+    # We test that large texts still produce correct results
+
+    test "processes large text with windowed search" do
+      # Create a large text that exceeds the windowed search threshold (50,000 chars)
+      # by padding with filler text, with duty provisions scattered throughout
+      filler = String.duplicate("This is filler text for testing. ", 2000)
+
+      text =
+        "The employer shall ensure the health and safety of employees. " <>
+          filler <>
+          "The employee may request a copy of the assessment. " <>
+          filler
+
+      record = %{
+        text: text,
+        role: ["Org: Employer", "Ind: Employee"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # Should still find duty and right even with windowed search
+      assert "Duty" in result.duty_type
+      assert "Right" in result.duty_type
+      assert "Org: Employer" in result.duty_holder
+      assert "Ind: Employee" in result.rights_holder
+    end
+
+    test "handles actors not mentioned in large text" do
+      # Create large text without any actor mentions
+      filler = String.duplicate("This is generic filler text without actors. ", 2000)
+      text = filler
+
+      record = %{
+        text: text,
+        role: ["Org: Employer"],
+        role_gvt: []
+      }
+
+      result = DutyType.process_record(record)
+
+      # Should return empty when actor not found in text
+      assert result.duty_type == []
+      assert result.duty_holder == []
+    end
+
+    test "finds multiple duty types in large text" do
+      filler = String.duplicate("Additional content here. ", 2000)
+
+      text =
+        "The employer shall ensure safety. " <>
+          filler <>
+          "The local authority must investigate all incidents. " <>
+          filler <>
+          "The Secretary of State may by regulations prescribe requirements."
+
+      record = %{
+        text: text,
+        role: ["Org: Employer"],
+        role_gvt: ["Gvt: Authority: Local", "Gvt: Minister"]
+      }
+
+      result = DutyType.process_record(record)
+
+      assert "Duty" in result.duty_type
+      assert "Responsibility" in result.duty_type
+      assert "Power" in result.duty_type
+    end
+  end
 end
