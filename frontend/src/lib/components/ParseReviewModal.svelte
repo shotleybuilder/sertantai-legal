@@ -312,6 +312,12 @@
 	}
 
 	function handleCancel() {
+		// Stop any in-progress parsing stream
+		if (cleanupStream) {
+			cleanupStream();
+			cleanupStream = null;
+		}
+		isParsing = false;
 		// Don't reset lastParsedName here - it triggers a reparse before the modal closes
 		// The state will be reset when the modal reopens with new records (via recordsId check)
 		dispatch('close');
