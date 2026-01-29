@@ -709,4 +709,132 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
              ]
     end
   end
+
+  describe "cancellation support" do
+    # These tests verify the abort/cancellation callback behavior.
+    # Tests that abort at stage_start avoid HTTP calls entirely.
+
+    test "callback returning :abort at stage_start halts parsing immediately" do
+      # Track which stages were started
+      test_pid = self()
+      ref = make_ref()
+
+      # Callback that aborts at first stage_start (before any HTTP call)
+      callback = fn event ->
+        send(test_pid, {ref, event})
+
+        case event do
+          {:stage_start, :metadata, _, _} -> :abort
+          _ -> :ok
+        end
+      end
+
+      record = %{type_code: "uksi", Year: 2025, Number: "99999"}
+
+      {:ok, result} =
+        StagedParser.parse(record, on_progress: callback, stages: [:metadata, :extent])
+
+      # Should have received stage_start for metadata
+      assert_receive {^ref, {:stage_start, :metadata, 1, 2}}
+
+      # Should NOT have received stage_start for extent (aborted before)
+      refute_receive {^ref, {:stage_start, :extent, _, _}}, 100
+
+      # Result should be marked as cancelled
+      assert result.cancelled == true
+
+      # Metadata should be skipped (aborted before it ran)
+      assert result.stages[:metadata].status == :skipped
+      assert result.stages[:metadata].error == "Cancelled by client"
+
+      # Extent should also be skipped
+      assert result.stages[:extent].status == :skipped
+      assert result.stages[:extent].error == "Cancelled by client"
+    end
+
+    test "parse_complete event not sent when cancelled" do
+      test_pid = self()
+      ref = make_ref()
+
+      callback = fn event ->
+        send(test_pid, {ref, event})
+
+        case event do
+          {:stage_start, :metadata, _, _} -> :abort
+          _ -> :ok
+        end
+      end
+
+      record = %{type_code: "uksi", Year: 2025, Number: "99999"}
+
+      {:ok, _result} = StagedParser.parse(record, on_progress: callback, stages: [:metadata])
+
+      # Should NOT receive parse_complete event when cancelled
+      refute_receive {^ref, {:parse_complete, _}}, 100
+    end
+
+    test "cancelled result has cancelled flag set to true" do
+      callback = fn event ->
+        case event do
+          {:stage_start, _, _, _} -> :abort
+          _ -> :ok
+        end
+      end
+
+      record = %{type_code: "uksi", Year: 2025, Number: "99999"}
+
+      {:ok, result} = StagedParser.parse(record, on_progress: callback, stages: [:metadata])
+
+      assert result.cancelled == true
+    end
+
+    test "all remaining stages marked as cancelled when abort occurs" do
+      test_pid = self()
+      ref = make_ref()
+
+      callback = fn event ->
+        send(test_pid, {ref, event})
+
+        case event do
+          {:stage_start, :metadata, _, _} -> :abort
+          _ -> :ok
+        end
+      end
+
+      record = %{type_code: "uksi", Year: 2025, Number: "99999"}
+
+      {:ok, result} =
+        StagedParser.parse(record,
+          on_progress: callback,
+          stages: [:metadata, :extent, :enacted_by, :amending]
+        )
+
+      # All stages should be skipped with "Cancelled by client"
+      assert result.stages[:metadata].status == :skipped
+      assert result.stages[:metadata].error == "Cancelled by client"
+
+      assert result.stages[:extent].status == :skipped
+      assert result.stages[:extent].error == "Cancelled by client"
+
+      assert result.stages[:enacted_by].status == :skipped
+      assert result.stages[:enacted_by].error == "Cancelled by client"
+
+      assert result.stages[:amending].status == :skipped
+      assert result.stages[:amending].error == "Cancelled by client"
+    end
+
+    test "notify_progress returns callback result for abort detection" do
+      # Verify the notify_progress helper returns the callback result
+      abort_callback = fn _event -> :abort end
+      ok_callback = fn _event -> :ok end
+
+      assert StagedParser.test_notify_progress(abort_callback, {:stage_start, :metadata, 1, 7}) ==
+               :abort
+
+      assert StagedParser.test_notify_progress(ok_callback, {:stage_start, :metadata, 1, 7}) ==
+               :ok
+
+      assert StagedParser.test_notify_progress(nil, {:stage_start, :metadata, 1, 7}) == :ok
+    end
+  end
 end

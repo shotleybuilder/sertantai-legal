@@ -563,9 +563,15 @@ defmodule SertantaiLegalWeb.ScrapeController do
             chunk(conn, "data: #{Jason.encode!(%{event: "connected", name: name})}\n\n")
 
           # Progress callback that sends SSE events
+          # Returns :abort if client disconnected (chunk returns {:error, :closed})
           send_progress = fn event ->
             data = encode_progress_event(event)
-            chunk(conn, "data: #{data}\n\n")
+
+            case chunk(conn, "data: #{data}\n\n") do
+              {:ok, _} -> :ok
+              {:error, :closed} -> :abort
+              {:error, _reason} -> :abort
+            end
           end
 
           # Parse stages parameter if provided (for retry functionality)
@@ -599,27 +605,29 @@ defmodule SertantaiLegalWeb.ScrapeController do
           # Run staged parse with progress callback (and optional stage filter)
           {:ok, result} = StagedParser.parse(record, parse_opts)
 
-          # Send final result
-          comparison_map = ParsedLaw.to_comparison_map(result.law)
-          scraped_keys = Map.keys(comparison_map)
-          duplicate = check_duplicate(name, scraped_keys)
+          # Only send final result if parse wasn't cancelled (client still connected)
+          unless result.cancelled do
+            comparison_map = ParsedLaw.to_comparison_map(result.law)
+            scraped_keys = Map.keys(comparison_map)
+            duplicate = check_duplicate(name, scraped_keys)
 
-          final_event =
-            Jason.encode!(%{
-              event: "parse_complete",
-              has_errors: result.has_errors,
-              result: %{
-                session_id: session_id,
-                name: name,
-                record: comparison_map,
-                stages: format_stages(result.stages),
-                errors: result.errors,
+            final_event =
+              Jason.encode!(%{
+                event: "parse_complete",
                 has_errors: result.has_errors,
-                duplicate: duplicate
-              }
-            })
+                result: %{
+                  session_id: session_id,
+                  name: name,
+                  record: comparison_map,
+                  stages: format_stages(result.stages),
+                  errors: result.errors,
+                  has_errors: result.has_errors,
+                  duplicate: duplicate
+                }
+              })
 
-          chunk(conn, "data: #{final_event}\n\n")
+            chunk(conn, "data: #{final_event}\n\n")
+          end
 
           conn
       end

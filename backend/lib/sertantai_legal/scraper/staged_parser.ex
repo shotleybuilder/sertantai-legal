@@ -91,10 +91,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     - :stages - List of stages to run (default: all)
     - :skip_on_error - Skip remaining stages if one fails (default: false)
     - :on_progress - Callback function receiving progress events (optional)
-      Callback signature: `(progress_event()) -> :ok`
+      Callback signature: `(progress_event()) -> :ok | :abort`
+      Return `:abort` to cancel parsing (e.g., when SSE client disconnects).
+      Remaining stages will be marked as skipped with "Cancelled by client".
 
   ## Returns
-  `{:ok, parse_result}` with merged data and per-stage status
+  `{:ok, parse_result}` with merged data and per-stage status.
+  Result includes `cancelled: true` if parsing was aborted.
   """
   @spec parse(map(), keyword()) :: {:ok, parse_result()}
   def parse(record, opts \\ []) do
@@ -121,7 +124,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       stages: %{},
       stage_timings: %{},
       errors: [],
-      has_errors: false
+      has_errors: false,
+      cancelled: false
     }
 
     total_stages = length(stages_to_run)
@@ -131,44 +135,69 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       stages_to_run
       |> Enum.with_index(1)
       |> Enum.reduce_while(initial_result, fn {stage, stage_num}, acc ->
-        if skip_on_error and acc.has_errors do
-          # Mark remaining stages as skipped
-          notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
-          stage_result = %{status: :skipped, data: nil, error: "Skipped due to previous error"}
-          notify_progress(on_progress, {:stage_complete, stage, :skipped, nil})
-          {:cont, update_result(acc, stage, stage_result, 0)}
-        else
-          # Notify stage start
-          notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
+        cond do
+          # If already cancelled, skip remaining stages
+          acc.cancelled ->
+            stage_result = %{status: :skipped, data: nil, error: "Cancelled by client"}
+            {:cont, update_result(acc, stage, stage_result, 0)}
 
-          # Run the stage with timing
-          stage_start = System.monotonic_time(:microsecond)
-          stage_result = run_stage(stage, type_code, year, number, acc.law)
-          stage_duration = System.monotonic_time(:microsecond) - stage_start
+          # If skip_on_error and previous error, mark as skipped
+          skip_on_error and acc.has_errors ->
+            # Mark remaining stages as skipped
+            notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
+            stage_result = %{status: :skipped, data: nil, error: "Skipped due to previous error"}
+            notify_progress(on_progress, {:stage_complete, stage, :skipped, nil})
+            {:cont, update_result(acc, stage, stage_result, 0)}
 
-          # Emit per-stage telemetry
-          :telemetry.execute(
-            @telemetry_stage_complete,
-            %{duration_us: stage_duration},
-            %{
-              stage: stage,
-              status: stage_result.status,
-              law_name: name,
-              type_code: type_code
-            }
-          )
+          # Normal case - run the stage
+          true ->
+            # Notify stage start (check for abort signal)
+            case notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages}) do
+              :abort ->
+                IO.puts("    ⚠ Cancelled by client before #{stage}")
+                stage_result = %{status: :skipped, data: nil, error: "Cancelled by client"}
+                {:halt, %{update_result(acc, stage, stage_result, 0) | cancelled: true}}
 
-          # Notify stage complete with summary
-          summary = build_stage_summary(stage, stage_result)
-          notify_progress(on_progress, {:stage_complete, stage, stage_result.status, summary})
+              _ ->
+                # Run the stage with timing
+                stage_start = System.monotonic_time(:microsecond)
+                stage_result = run_stage(stage, type_code, year, number, acc.law)
+                stage_duration = System.monotonic_time(:microsecond) - stage_start
 
-          updated = update_result(acc, stage, stage_result, stage_duration)
+                # Emit per-stage telemetry
+                :telemetry.execute(
+                  @telemetry_stage_complete,
+                  %{duration_us: stage_duration},
+                  %{
+                    stage: stage,
+                    status: stage_result.status,
+                    law_name: name,
+                    type_code: type_code
+                  }
+                )
 
-          if skip_on_error and stage_result.status == :error do
-            {:halt, updated}
-          else
-            {:cont, updated}
-          end
+                # Notify stage complete with summary (check for abort signal)
+                summary = build_stage_summary(stage, stage_result)
+
+                case notify_progress(
+                       on_progress,
+                       {:stage_complete, stage, stage_result.status, summary}
+                     ) do
+                  :abort ->
+                    IO.puts("    ⚠ Cancelled by client after #{stage}")
+                    updated = update_result(acc, stage, stage_result, stage_duration)
+                    {:halt, %{updated | cancelled: true}}
+
+                  _ ->
+                    updated = update_result(acc, stage, stage_result, stage_duration)
+
+                    if skip_on_error and stage_result.status == :error do
+                      {:halt, updated}
+                    else
+                      {:cont, updated}
+                    end
+                end
+            end
         end
       end)
 
@@ -178,7 +207,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         if Map.has_key?(acc.stages, stage) do
           acc
         else
-          stage_result = %{status: :skipped, data: nil, error: "Skipped"}
+          # Use appropriate message based on whether cancelled or just skipped
+          error_msg = if acc.cancelled, do: "Cancelled by client", else: "Skipped"
+          stage_result = %{status: :skipped, data: nil, error: error_msg}
           update_result(acc, stage, stage_result, 0)
         end
       end)
@@ -204,16 +235,24 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       %{
         law_name: name,
         type_code: type_code,
-        has_errors: result.has_errors
+        has_errors: result.has_errors,
+        cancelled: result.cancelled
       }
     )
 
-    IO.puts(
-      "\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} (#{div(total_duration, 1000)}ms) ===\n"
-    )
+    status_msg =
+      cond do
+        result.cancelled -> "CANCELLED"
+        result.has_errors -> "WITH ERRORS"
+        true -> "SUCCESS"
+      end
 
-    # Notify parse complete
-    notify_progress(on_progress, {:parse_complete, result.has_errors})
+    IO.puts("\n=== PARSE COMPLETE: #{status_msg} (#{div(total_duration, 1000)}ms) ===\n")
+
+    # Notify parse complete (unless cancelled - client already disconnected)
+    unless result.cancelled do
+      notify_progress(on_progress, {:parse_complete, result.has_errors})
+    end
 
     # Convert ParsedLaw to map for backwards compatibility with callers
     # The :law key contains the ParsedLaw struct, :record contains the map version
@@ -222,7 +261,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       law: result.law,
       stages: result.stages,
       errors: result.errors,
-      has_errors: result.has_errors
+      has_errors: result.has_errors,
+      cancelled: result.cancelled
     }
 
     {:ok, final_result}
