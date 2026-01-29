@@ -7,8 +7,11 @@ defmodule SertantaiLegal.Application do
 
   @impl true
   def start(_type, _args) do
-    # Attach telemetry handler for metrics collection (dev/test only)
-    SertantaiLegal.Metrics.TelemetryHandler.attach()
+    # Attach telemetry handler for metrics collection (dev only, not test)
+    # Test runs generate many telemetry events that pollute the metrics files
+    unless Application.get_env(:sertantai_legal, :test_mode, false) do
+      SertantaiLegal.Metrics.TelemetryHandler.attach()
+    end
 
     children = [
       SertantaiLegalWeb.Telemetry,
