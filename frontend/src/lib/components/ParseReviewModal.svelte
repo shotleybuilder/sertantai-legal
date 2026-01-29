@@ -350,6 +350,18 @@
 		workflowComplete = false; // Reset workflow flag for new records
 	}
 
+	// Track when modal was last open to detect reopening
+	let wasOpen = false;
+	$: if (open && !wasOpen) {
+		// Modal just opened - reset lastParsedName to allow re-parsing same record
+		// This handles the case where user cancels and reopens with the same records
+		lastParsedName = null;
+		parseResult = null;
+		parseError = null;
+		workflowComplete = false;
+	}
+	$: wasOpen = open;
+
 	function getStageIcon(status: string): string {
 		switch (status) {
 			case 'ok':
