@@ -56,6 +56,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   require Logger
 
+  # Telemetry event names
+  @telemetry_parse_complete [:staged_parser, :parse, :complete]
+  @telemetry_stage_complete [:staged_parser, :stage, :complete]
+
   @type stage ::
           :metadata | :extent | :enacted_by | :amending | :amended_by | :repeal_revoke | :taxa
   @type stage_result :: %{
@@ -94,6 +98,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   """
   @spec parse(map(), keyword()) :: {:ok, parse_result()}
   def parse(record, opts \\ []) do
+    parse_start_time = System.monotonic_time(:microsecond)
+
     stages_to_run = Keyword.get(opts, :stages, @stages)
     skip_on_error = Keyword.get(opts, :skip_on_error, false)
     on_progress = Keyword.get(opts, :on_progress)
@@ -113,6 +119,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     initial_result = %{
       law: initial_law,
       stages: %{},
+      stage_timings: %{},
       errors: [],
       has_errors: false
     }
@@ -129,19 +136,33 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
           stage_result = %{status: :skipped, data: nil, error: "Skipped due to previous error"}
           notify_progress(on_progress, {:stage_complete, stage, :skipped, nil})
-          {:cont, update_result(acc, stage, stage_result)}
+          {:cont, update_result(acc, stage, stage_result, 0)}
         else
           # Notify stage start
           notify_progress(on_progress, {:stage_start, stage, stage_num, total_stages})
 
-          # Run the stage
+          # Run the stage with timing
+          stage_start = System.monotonic_time(:microsecond)
           stage_result = run_stage(stage, type_code, year, number, acc.law)
+          stage_duration = System.monotonic_time(:microsecond) - stage_start
+
+          # Emit per-stage telemetry
+          :telemetry.execute(
+            @telemetry_stage_complete,
+            %{duration_us: stage_duration},
+            %{
+              stage: stage,
+              status: stage_result.status,
+              law_name: name,
+              type_code: type_code
+            }
+          )
 
           # Notify stage complete with summary
           summary = build_stage_summary(stage, stage_result)
           notify_progress(on_progress, {:stage_complete, stage, stage_result.status, summary})
 
-          updated = update_result(acc, stage, stage_result)
+          updated = update_result(acc, stage, stage_result, stage_duration)
 
           if skip_on_error and stage_result.status == :error do
             {:halt, updated}
@@ -158,12 +179,37 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           acc
         else
           stage_result = %{status: :skipped, data: nil, error: "Skipped"}
-          update_result(acc, stage, stage_result)
+          update_result(acc, stage, stage_result, 0)
         end
       end)
 
+    # Calculate total parse duration
+    total_duration = System.monotonic_time(:microsecond) - parse_start_time
+
+    # Emit parse complete telemetry
+    :telemetry.execute(
+      @telemetry_parse_complete,
+      %{
+        duration_us: total_duration,
+        metadata_duration_us: result.stage_timings[:metadata] || 0,
+        extent_duration_us: result.stage_timings[:extent] || 0,
+        enacted_by_duration_us: result.stage_timings[:enacted_by] || 0,
+        amending_duration_us: result.stage_timings[:amending] || 0,
+        amended_by_duration_us: result.stage_timings[:amended_by] || 0,
+        repeal_revoke_duration_us: result.stage_timings[:repeal_revoke] || 0,
+        taxa_duration_us: result.stage_timings[:taxa] || 0,
+        stages_run: length(stages_to_run),
+        errors_count: length(result.errors)
+      },
+      %{
+        law_name: name,
+        type_code: type_code,
+        has_errors: result.has_errors
+      }
+    )
+
     IO.puts(
-      "\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} ===\n"
+      "\n=== PARSE COMPLETE: #{if result.has_errors, do: "WITH ERRORS", else: "SUCCESS"} (#{div(total_duration, 1000)}ms) ===\n"
     )
 
     # Notify parse complete
@@ -191,8 +237,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Update result with stage outcome
   # Uses ParsedLaw.merge/2 which only updates fields with non-nil, non-empty values
   # After repeal_revoke stage completes, runs live status reconciliation
-  defp update_result(result, stage, stage_result) do
+  defp update_result(result, stage, stage_result, stage_duration) do
     new_stages = Map.put(result.stages, stage, stage_result)
+    new_timings = Map.put(result.stage_timings || %{}, stage, stage_duration)
 
     new_errors =
       case stage_result.status do
@@ -217,6 +264,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     %{
       result
       | stages: new_stages,
+        stage_timings: new_timings,
         errors: new_errors,
         has_errors: length(new_errors) > 0,
         law: new_law

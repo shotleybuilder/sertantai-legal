@@ -8,6 +8,8 @@ defmodule SertantaiLegal.Metrics.TelemetryHandler do
   ## Handled Events
 
   - `[:taxa, :classify, :complete]` - Taxa classification complete
+  - `[:staged_parser, :parse, :complete]` - Full parse complete (all 7 stages)
+  - `[:staged_parser, :stage, :complete]` - Individual stage complete
 
   ## Usage
 
@@ -34,7 +36,9 @@ defmodule SertantaiLegal.Metrics.TelemetryHandler do
   @spec attach() :: :ok | {:error, :already_exists}
   def attach do
     events = [
-      [:taxa, :classify, :complete]
+      [:taxa, :classify, :complete],
+      [:staged_parser, :parse, :complete],
+      [:staged_parser, :stage, :complete]
     ]
 
     :telemetry.attach_many(
@@ -69,6 +73,14 @@ defmodule SertantaiLegal.Metrics.TelemetryHandler do
   """
   def handle_event([:taxa, :classify, :complete], measurements, metadata, _config) do
     FileStore.record(:taxa, measurements, metadata)
+  end
+
+  def handle_event([:staged_parser, :parse, :complete], measurements, metadata, _config) do
+    FileStore.record(:parse, measurements, metadata)
+  end
+
+  def handle_event([:staged_parser, :stage, :complete], measurements, metadata, _config) do
+    FileStore.record(:stage, measurements, metadata)
   end
 
   def handle_event(_event, _measurements, _metadata, _config) do
