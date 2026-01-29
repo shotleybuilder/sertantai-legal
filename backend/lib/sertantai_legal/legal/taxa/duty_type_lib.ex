@@ -322,6 +322,11 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
   # Gets the base actor pattern for finding mentions
   # This extracts the core pattern from actor definitions
+  # Never matches - nil actor
+  defp get_actor_base_pattern(nil), do: "(?!)"
+  # Never matches - empty actor
+  defp get_actor_base_pattern(""), do: "(?!)"
+
   defp get_actor_base_pattern(actor) do
     actor_str = to_string(actor)
 
@@ -411,9 +416,21 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
       # Default: try to extract the last word and make a case-insensitive pattern
       true ->
-        word = actor_str |> String.split(~r/[:\s]+/) |> List.last() |> String.downcase()
-        first_char = String.first(word)
-        "[#{String.upcase(first_char)}#{first_char}]#{String.slice(word, 1..-1//1)}s?"
+        word =
+          actor_str
+          |> String.split(~r/[:\s]+/)
+          |> List.last()
+          |> Kernel.||("")
+          |> String.downcase()
+
+        case String.first(word) do
+          nil ->
+            # Empty word - use the whole actor string as a literal pattern
+            Regex.escape(actor_str)
+
+          first_char ->
+            "[#{String.upcase(first_char)}#{first_char}]#{String.slice(word, 1..-1//1)}s?"
+        end
     end
   end
 
