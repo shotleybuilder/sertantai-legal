@@ -3,6 +3,144 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
 
   alias SertantaiLegal.Scraper.TaxaParser
 
+  describe "large_law_threshold/0" do
+    test "returns default threshold of 200,000 characters" do
+      # Default threshold should be 200KB
+      assert TaxaParser.large_law_threshold() == 200_000
+    end
+
+    test "threshold is configurable via application env" do
+      # Save original value
+      original = Application.get_env(:sertantai_legal, :large_law_threshold)
+
+      try do
+        # Set custom threshold
+        Application.put_env(:sertantai_legal, :large_law_threshold, 100_000)
+        assert TaxaParser.large_law_threshold() == 100_000
+
+        # Set another value
+        Application.put_env(:sertantai_legal, :large_law_threshold, 500_000)
+        assert TaxaParser.large_law_threshold() == 500_000
+      after
+        # Restore original value
+        if original do
+          Application.put_env(:sertantai_legal, :large_law_threshold, original)
+        else
+          Application.delete_env(:sertantai_legal, :large_law_threshold)
+        end
+      end
+    end
+  end
+
+  describe "large_law?/1" do
+    test "returns false for text under threshold" do
+      refute TaxaParser.large_law?(100_000)
+      refute TaxaParser.large_law?(199_999)
+      refute TaxaParser.large_law?(0)
+    end
+
+    test "returns false for text at exactly threshold" do
+      # At threshold is NOT large (must exceed)
+      refute TaxaParser.large_law?(200_000)
+    end
+
+    test "returns true for text over threshold" do
+      assert TaxaParser.large_law?(200_001)
+      assert TaxaParser.large_law?(500_000)
+      assert TaxaParser.large_law?(1_000_000)
+    end
+
+    test "respects custom threshold from application env" do
+      original = Application.get_env(:sertantai_legal, :large_law_threshold)
+
+      try do
+        Application.put_env(:sertantai_legal, :large_law_threshold, 50_000)
+
+        # Under new threshold
+        refute TaxaParser.large_law?(40_000)
+        refute TaxaParser.large_law?(50_000)
+
+        # Over new threshold
+        assert TaxaParser.large_law?(50_001)
+        assert TaxaParser.large_law?(100_000)
+      after
+        if original do
+          Application.put_env(:sertantai_legal, :large_law_threshold, original)
+        else
+          Application.delete_env(:sertantai_legal, :large_law_threshold)
+        end
+      end
+    end
+  end
+
+  describe "classify_text/2 with telemetry" do
+    test "emits telemetry with large_law: false for small text" do
+      # Attach a telemetry handler to capture events
+      test_pid = self()
+      handler_id = "test-small-law-#{System.unique_integer()}"
+
+      :telemetry.attach(
+        handler_id,
+        [:taxa, :classify, :complete],
+        fn _event, measurements, metadata, _config ->
+          send(test_pid, {:telemetry, measurements, metadata})
+        end,
+        nil
+      )
+
+      try do
+        text = "The employer shall ensure safety."
+        _result = TaxaParser.classify_text(text, "test", law_name: "test/2024/1")
+
+        assert_receive {:telemetry, measurements, metadata}, 5000
+        assert measurements.text_length < TaxaParser.large_law_threshold()
+        assert metadata.large_law == false
+      after
+        :telemetry.detach(handler_id)
+      end
+    end
+
+    test "emits telemetry with large_law: true for large text" do
+      # Attach a telemetry handler to capture events
+      test_pid = self()
+      handler_id = "test-large-law-#{System.unique_integer()}"
+
+      :telemetry.attach(
+        handler_id,
+        [:taxa, :classify, :complete],
+        fn _event, measurements, metadata, _config ->
+          send(test_pid, {:telemetry, measurements, metadata})
+        end,
+        nil
+      )
+
+      try do
+        # Set a low threshold for testing
+        original = Application.get_env(:sertantai_legal, :large_law_threshold)
+        Application.put_env(:sertantai_legal, :large_law_threshold, 50)
+
+        text =
+          "The employer shall ensure the health and safety of employees at work. " <>
+            String.duplicate("Additional text. ", 10)
+
+        _result = TaxaParser.classify_text(text, "test", law_name: "test/2024/1")
+
+        assert_receive {:telemetry, measurements, metadata}, 5000
+        assert measurements.text_length > 50
+        assert metadata.large_law == true
+
+        # Restore threshold
+        if original do
+          Application.put_env(:sertantai_legal, :large_law_threshold, original)
+        else
+          Application.delete_env(:sertantai_legal, :large_law_threshold)
+        end
+      after
+        :telemetry.detach(handler_id)
+      end
+    end
+  end
+
   describe "classify_text/2" do
     test "classifies employer duty provision" do
       text = "The employer shall ensure the health and safety of employees at work."

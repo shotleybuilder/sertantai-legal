@@ -47,6 +47,30 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   require Logger
   import SweetXml
 
+  # Large law threshold in characters - laws above this size trigger
+  # additional telemetry and logging for performance analysis.
+  # Future phases will add optimizations for large laws.
+  # Configurable via application env.
+  @default_large_law_threshold 200_000
+
+  @doc """
+  Returns the threshold (in characters) above which a law is considered "large".
+  Large laws receive additional telemetry and may have optimizations applied.
+  Default: 200,000 characters (~200KB).
+  """
+  @spec large_law_threshold() :: non_neg_integer()
+  def large_law_threshold do
+    Application.get_env(:sertantai_legal, :large_law_threshold, @default_large_law_threshold)
+  end
+
+  @doc """
+  Returns true if the given text length exceeds the large law threshold.
+  """
+  @spec large_law?(non_neg_integer()) :: boolean()
+  def large_law?(text_length) when is_integer(text_length) do
+    text_length > large_law_threshold()
+  end
+
   @type taxa_result :: %{
           role: list(String.t()),
           role_gvt: map() | nil,
@@ -101,7 +125,19 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       empty_result(source)
     else
       text_length = String.length(text)
+      is_large_law = large_law?(text_length)
       start_time = System.monotonic_time(:microsecond)
+
+      # Log large law detection for visibility
+      if is_large_law do
+        Logger.warning(
+          "[Taxa] Large law detected: #{law_name || "unknown"} (#{text_length} chars > #{large_law_threshold()} threshold)"
+        )
+
+        IO.puts(
+          "    ⚠ Large law detected: #{text_length} chars (threshold: #{large_law_threshold()})"
+        )
+      end
 
       # Step 0: Apply unified blacklist once (combines actor + duty_type blacklists)
       # This eliminates redundant cleaning in DutyActor and DutyTypeLib
@@ -153,14 +189,17 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           actor_count: length(actors) + length(actors_gvt),
           duty_type_count: length(Map.get(record, :duty_type, [])),
           popimar_count: length(Map.get(record, :popimar, [])),
-          popimar_skipped: popimar_skipped
+          popimar_skipped: popimar_skipped,
+          large_law: is_large_law
         }
       )
 
       # Always log timing for performance monitoring
       # Log to both Logger and IO for visibility in terminal
+      large_law_marker = if is_large_law, do: " [LARGE]", else: ""
+
       timing_msg =
-        "[Taxa] #{text_length} chars in #{div(total_duration, 1000)}ms " <>
+        "[Taxa]#{large_law_marker} #{text_length} chars in #{div(total_duration, 1000)}ms " <>
           "(actor: #{div(actor_duration, 1000)}ms, duty_type: #{div(duty_type_duration, 1000)}ms, " <>
           "popimar: #{div(popimar_duration, 1000)}ms#{if popimar_skipped, do: " [skipped]", else: ""}, " <>
           "purpose: #{div(purpose_duration, 1000)}ms)"
