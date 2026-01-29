@@ -85,29 +85,37 @@
 	}
 
 	// Review mode: opens ParseReviewModal for each law (default)
+	// Uses filteredInDb to respect layer filter
 	function handleReviewSelected() {
 		if (selectedInDb.size === 0 || !affectedLaws) return;
 
-		const selectedLaws = affectedLaws.in_db.filter((law) => selectedInDb.has(law.name));
+		// Filter from filteredInDb (layer-filtered) not affectedLaws.in_db (all)
+		const selectedLaws = filteredInDb.filter((law) => selectedInDb.has(law.name));
+		if (selectedLaws.length === 0) return;
+
 		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
 		dispatch('reviewLaws', { laws: selectedLaws, stages });
 	}
 
 	function handleReviewAll() {
-		if (!affectedLaws || affectedLaws.in_db_count === 0) return;
+		if (!affectedLaws || filteredInDb.length === 0) return;
 
 		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
-		dispatch('reviewLaws', { laws: affectedLaws.in_db, stages });
+		// Use filteredInDb to respect layer filter
+		dispatch('reviewLaws', { laws: filteredInDb, stages });
 	}
 
 	// Auto-save mode: batch re-parse without review (kept for future use)
+	// Uses filteredInDb to respect layer filter
 	async function handleReparseAll() {
-		if (!affectedLaws || affectedLaws.in_db_count === 0) return;
+		if (!affectedLaws || filteredInDb.length === 0) return;
 
 		reparseInProgress = true;
 		error = null;
 		try {
-			reparseResults = await batchReparse(sessionId);
+			// Pass filtered law names to respect layer filter
+			const names = filteredInDb.map((l) => l.name);
+			reparseResults = await batchReparse(sessionId, names);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to batch re-parse';
 		} finally {
@@ -121,7 +129,12 @@
 		reparseInProgress = true;
 		error = null;
 		try {
-			reparseResults = await batchReparse(sessionId, Array.from(selectedInDb));
+			// Filter to only selected laws in the current layer filter
+			const selectedInFilteredLayer = filteredInDb
+				.filter((law) => selectedInDb.has(law.name))
+				.map((l) => l.name);
+			if (selectedInFilteredLayer.length === 0) return;
+			reparseResults = await batchReparse(sessionId, selectedInFilteredLayer);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to batch re-parse';
 		} finally {
@@ -129,13 +142,16 @@
 		}
 	}
 
+	// Uses filteredEnactingParents to respect layer filter
 	async function handleUpdateEnactingAll() {
-		if (!affectedLaws || affectedLaws.enacting_parents_in_db_count === 0) return;
+		if (!affectedLaws || filteredEnactingParents.length === 0) return;
 
 		enactingUpdateInProgress = true;
 		error = null;
 		try {
-			enactingResults = await updateEnactingLinks(sessionId);
+			// Pass filtered names to respect layer filter
+			const names = filteredEnactingParents.map((l) => l.name);
+			enactingResults = await updateEnactingLinks(sessionId, names);
 			// Reload to reflect processed entries removed from active lists
 			await loadAffectedLaws(true);
 		} catch (e) {
@@ -151,7 +167,12 @@
 		enactingUpdateInProgress = true;
 		error = null;
 		try {
-			enactingResults = await updateEnactingLinks(sessionId, Array.from(selectedEnactingParents));
+			// Filter to only selected parents in the current layer filter
+			const selectedInFilteredLayer = filteredEnactingParents
+				.filter((law) => selectedEnactingParents.has(law.name))
+				.map((l) => l.name);
+			if (selectedInFilteredLayer.length === 0) return;
+			enactingResults = await updateEnactingLinks(sessionId, selectedInFilteredLayer);
 			// Reload to reflect processed entries removed from active lists
 			await loadAffectedLaws(true);
 		} catch (e) {
@@ -162,10 +183,16 @@
 	}
 
 	// --- Not-in-DB handlers ---
+	// Uses filteredNotInDb to respect layer filter
 	async function handleFetchMetadataSelected() {
 		if (selectedNotInDb.size === 0) return;
 
-		const names = Array.from(selectedNotInDb);
+		// Filter to only selected laws in the current layer filter
+		const names = filteredNotInDb
+			.filter((law) => selectedNotInDb.has(law.name))
+			.map((l) => l.name);
+		if (names.length === 0) return;
+
 		metadataFetching = new Set(names);
 		metadataErrors = new Map();
 
@@ -189,7 +216,8 @@
 	function handleReviewNotInDbSelected() {
 		if (selectedNotInDb.size === 0 || !affectedLaws) return;
 
-		const selectedLaws: AffectedLaw[] = affectedLaws.not_in_db
+		// Filter from filteredNotInDb to respect layer filter
+		const selectedLaws: AffectedLaw[] = filteredNotInDb
 			.filter((law) => selectedNotInDb.has(law.name))
 			.map((law) => {
 				const meta = metadataResults.get(law.name);
@@ -200,6 +228,7 @@
 					year: meta?.year || law.year
 				};
 			});
+		if (selectedLaws.length === 0) return;
 		dispatch('reviewLaws', { laws: selectedLaws });
 	}
 
