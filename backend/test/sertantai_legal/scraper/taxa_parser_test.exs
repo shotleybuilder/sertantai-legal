@@ -353,4 +353,133 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
       assert "Gvt: Minister" in result.role_gvt
     end
   end
+
+  describe "classify_text_chunked/4 (Phase 6 P1 chunking)" do
+    # P1 chunking processes each section in parallel for large laws
+
+    test "processes multiple P1 sections and merges results" do
+      # Full text for actor extraction
+      text = """
+      The employer shall ensure health and safety.
+      The employee may request information.
+      The local authority must investigate complaints.
+      The Secretary of State may by regulations prescribe requirements.
+      """
+
+      # Simulate P1 sections (what would be extracted from XML)
+      p1_sections = [
+        {"section-1", "The employer shall ensure health and safety."},
+        {"section-2", "The employee may request information."},
+        {"section-3", "The local authority must investigate complaints."},
+        {"section-4", "The Secretary of State may by regulations prescribe requirements."}
+      ]
+
+      result =
+        TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "test/chunked")
+
+      # Should find all duty types from different sections
+      assert "Duty" in result.duty_type
+      assert "Right" in result.duty_type
+      assert "Responsibility" in result.duty_type
+      assert "Power" in result.duty_type
+
+      # Should find duty holder from section 1
+      assert "Org: Employer" in result.duty_holder
+
+      # Should find rights holder from section 2
+      assert "Ind: Employee" in result.rights_holder
+
+      # Should find responsibility holder from section 3
+      assert "Gvt: Authority: Local" in result.responsibility_holder
+
+      # Should find power holder from section 4
+      assert "Gvt: Minister" in result.power_holder
+    end
+
+    test "deduplicates results across sections" do
+      text = """
+      The employer shall ensure safety. The employer shall provide training.
+      The employer shall maintain equipment.
+      """
+
+      # Same actor across multiple sections
+      p1_sections = [
+        {"section-1", "The employer shall ensure safety."},
+        {"section-2", "The employer shall provide training."},
+        {"section-3", "The employer shall maintain equipment."}
+      ]
+
+      result = TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "test/dedup")
+
+      # Duty type should appear once, not three times
+      duty_count = Enum.count(result.duty_type, &(&1 == "Duty"))
+      assert duty_count == 1
+
+      # Employer should appear once in duty holders
+      employer_count = Enum.count(result.duty_holder, &(&1 == "Org: Employer"))
+      assert employer_count == 1
+    end
+
+    test "handles empty P1 sections gracefully" do
+      text = "The employer shall ensure safety."
+
+      # Mix of empty and non-empty sections
+      p1_sections = [
+        {"section-1", ""},
+        {"section-2", "The employer shall ensure safety."},
+        {"section-3", "   "}
+      ]
+
+      result = TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "test/empty")
+
+      # Should still find duty from non-empty section
+      assert "Duty" in result.duty_type
+      assert "Org: Employer" in result.duty_holder
+    end
+
+    test "extracts actors from full text, not just sections" do
+      # Full text mentions employee, but sections only have employer duties
+      text = """
+      The employer and employee must work together.
+      The employer shall ensure safety.
+      The employer shall provide training.
+      """
+
+      p1_sections = [
+        {"section-1", "The employer shall ensure safety."},
+        {"section-2", "The employer shall provide training."}
+      ]
+
+      result =
+        TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "test/actors")
+
+      # Should find both actors from full text
+      assert "Org: Employer" in result.role
+      assert "Ind: Employee" in result.role
+
+      # But only employer has duties (from sections)
+      assert "Org: Employer" in result.duty_holder
+    end
+
+    test "returns proper structure with all expected fields" do
+      text = "The employer shall ensure safety."
+      p1_sections = [{"section-1", "The employer shall ensure safety."}]
+
+      result =
+        TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "test/structure")
+
+      # Verify all expected fields are present
+      assert Map.has_key?(result, :role)
+      assert Map.has_key?(result, :role_gvt)
+      assert Map.has_key?(result, :duty_type)
+      assert Map.has_key?(result, :duty_holder)
+      assert Map.has_key?(result, :rights_holder)
+      assert Map.has_key?(result, :responsibility_holder)
+      assert Map.has_key?(result, :power_holder)
+      assert Map.has_key?(result, :popimar)
+      assert Map.has_key?(result, :purpose)
+      assert Map.has_key?(result, :taxa_text_source)
+      assert Map.has_key?(result, :taxa_text_length)
+    end
+  end
 end

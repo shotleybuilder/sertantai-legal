@@ -41,5 +41,6 @@
   {"lib/sertantai_legal_web/controllers/uk_lrt_controller.ex", :guard_fail},
 
   # Taxa modules - permissive specs for pipeline flexibility
-  {"lib/sertantai_legal/legal/taxa/actor_lib.ex", :contract_supertype}
+  {"lib/sertantai_legal/legal/taxa/actor_lib.ex", :contract_supertype},
+  {"lib/sertantai_legal/scraper/taxa_parser.ex", :contract_supertype}
 ]
