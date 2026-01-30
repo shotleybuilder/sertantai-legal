@@ -481,5 +481,150 @@ defmodule SertantaiLegal.Scraper.TaxaParserTest do
       assert Map.has_key?(result, :taxa_text_source)
       assert Map.has_key?(result, :taxa_text_length)
     end
+
+    test "JSONB holder fields contain article from section_id (regression for Issue #14 bug)" do
+      # This test verifies the fix for the bug where JSONB holder fields
+      # (duties, rights, responsibilities, powers) were not receiving the
+      # article field from P1 section IDs in the chunked processing path.
+      #
+      # Root cause was: result map was getting JSONB fields from `merged_record`
+      # (which didn't have them) instead of `duty_type_results`.
+      #
+      # JSONB structure is: %{"articles" => [...], "entries" => [...], "holders" => [...]}
+
+      text = """
+      The employer shall ensure the health and safety of employees at work.
+      The employee may request a copy of any risk assessment.
+      The local authority must investigate all reported incidents.
+      The Secretary of State may by regulations prescribe additional requirements.
+      """
+
+      p1_sections = [
+        {"regulation-4", "The employer shall ensure the health and safety of employees at work."},
+        {"regulation-5", "The employee may request a copy of any risk assessment."},
+        {"regulation-6", "The local authority must investigate all reported incidents."},
+        {"regulation-7",
+         "The Secretary of State may by regulations prescribe additional requirements."}
+      ]
+
+      result =
+        TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "uksi/2024/test")
+
+      # Verify JSONB fields are populated (not nil)
+      assert result.duties != nil, "duties should be populated"
+      assert result.rights != nil, "rights should be populated"
+      assert result.responsibilities != nil, "responsibilities should be populated"
+      assert result.powers != nil, "powers should be populated"
+
+      # Verify duties JSONB structure and article field
+      assert is_map(result.duties), "duties should be a map"
+      assert Map.has_key?(result.duties, "articles"), "duties should have 'articles' key"
+      assert Map.has_key?(result.duties, "entries"), "duties should have 'entries' key"
+      assert Map.has_key?(result.duties, "holders"), "duties should have 'holders' key"
+
+      # Articles list should contain the section ID
+      assert "regulation-4" in result.duties["articles"],
+             "duties articles should contain 'regulation-4'"
+
+      # Entries should have article field on each entry
+      duty_entry =
+        Enum.find(result.duties["entries"], fn entry ->
+          Map.get(entry, "holder") == "Org: Employer"
+        end)
+
+      assert duty_entry != nil, "Should find employer duty entry"
+
+      assert Map.get(duty_entry, "article") == "regulation-4",
+             "Duty entry should have article 'regulation-4'"
+
+      # Verify rights JSONB structure and article field
+      assert is_map(result.rights), "rights should be a map"
+
+      assert "regulation-5" in result.rights["articles"],
+             "rights articles should contain 'regulation-5'"
+
+      rights_entry =
+        Enum.find(result.rights["entries"], fn entry ->
+          Map.get(entry, "holder") == "Ind: Employee"
+        end)
+
+      assert rights_entry != nil, "Should find employee rights entry"
+
+      assert Map.get(rights_entry, "article") == "regulation-5",
+             "Rights entry should have article 'regulation-5'"
+
+      # Verify responsibilities JSONB structure and article field
+      assert is_map(result.responsibilities), "responsibilities should be a map"
+
+      assert "regulation-6" in result.responsibilities["articles"],
+             "responsibilities articles should contain 'regulation-6'"
+
+      resp_entry =
+        Enum.find(result.responsibilities["entries"], fn entry ->
+          Map.get(entry, "holder") == "Gvt: Authority: Local"
+        end)
+
+      assert resp_entry != nil, "Should find local authority responsibility entry"
+
+      assert Map.get(resp_entry, "article") == "regulation-6",
+             "Responsibility entry should have article 'regulation-6'"
+
+      # Verify powers JSONB structure and article field
+      assert is_map(result.powers), "powers should be a map"
+
+      assert "regulation-7" in result.powers["articles"],
+             "powers articles should contain 'regulation-7'"
+
+      power_entry =
+        Enum.find(result.powers["entries"], fn entry ->
+          Map.get(entry, "holder") == "Gvt: Minister"
+        end)
+
+      assert power_entry != nil, "Should find minister power entry"
+
+      assert Map.get(power_entry, "article") == "regulation-7",
+             "Power entry should have article 'regulation-7'"
+    end
+
+    test "JSONB fields merge articles from multiple sections for same holder" do
+      # When the same holder appears in multiple sections, their articles should be merged
+      # JSONB structure: %{"articles" => [...], "entries" => [...], "holders" => [...]}
+
+      text = """
+      The employer shall ensure health and safety.
+      The employer shall provide training.
+      The employer shall maintain equipment.
+      """
+
+      p1_sections = [
+        {"regulation-4", "The employer shall ensure health and safety."},
+        {"regulation-5", "The employer shall provide training."},
+        {"regulation-6", "The employer shall maintain equipment."}
+      ]
+
+      result =
+        TaxaParser.classify_text_chunked(text, "test", p1_sections, law_name: "uksi/2024/merge")
+
+      assert is_map(result.duties), "duties should be a map"
+
+      # Top-level articles should contain all sections where employer appears
+      articles = Map.get(result.duties, "articles", [])
+      assert is_list(articles)
+
+      # Should contain articles from all three sections
+      assert "regulation-4" in articles, "Should have regulation-4"
+      assert "regulation-5" in articles, "Should have regulation-5"
+      assert "regulation-6" in articles, "Should have regulation-6"
+
+      # Entries should have individual article fields
+      entries = Map.get(result.duties, "entries", [])
+      assert length(entries) == 3, "Should have 3 duty entries"
+
+      # Each entry should have the correct article
+      entry_articles = Enum.map(entries, &Map.get(&1, "article"))
+      assert "regulation-4" in entry_articles
+      assert "regulation-5" in entry_articles
+      assert "regulation-6" in entry_articles
+    end
   end
 end

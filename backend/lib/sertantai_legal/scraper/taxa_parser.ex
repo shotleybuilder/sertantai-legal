@@ -420,11 +420,11 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       responsibility_holder: Map.get(merged_record, :responsibility_holder),
       power_holder: Map.get(merged_record, :power_holder),
 
-      # Consolidated JSONB holder fields (Phase 4)
-      duties: Map.get(merged_record, :duties),
-      rights: Map.get(merged_record, :rights),
-      responsibilities: Map.get(merged_record, :responsibilities),
-      powers: Map.get(merged_record, :powers),
+      # Consolidated JSONB holder fields (Phase 4) - get from duty_type_results, not merged_record
+      duties: duty_type_results.duties,
+      rights: duty_type_results.rights,
+      responsibilities: duty_type_results.responsibilities,
+      powers: duty_type_results.powers,
       popimar: Map.get(merged_record, :popimar),
       taxa_text_source: source,
       taxa_text_length: text_length
