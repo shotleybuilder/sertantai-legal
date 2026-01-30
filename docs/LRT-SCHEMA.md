@@ -1,7 +1,9 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 0.9
-  **Last Updated**: 2026-01-25
+  **Version**: 1.0
+  **Last Updated**: 2026-01-30
+  
+  > **Issue #14 (Phase 4)**: Consolidated 16 holder text columns into 4 JSONB columns with 93% storage reduction.
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -332,45 +334,41 @@
     | `duty_type_article` | Duty Type Article | `duty_type_article` | `string` | Yes (7775) | | 🦋_taxa |
     | `article_duty_type` | Article Duty Type | `article_duty_type` | `string` | Yes (7775) | | 🦋_taxa |
   
-  ## Duty Holder
+  ## Holders (Legacy - for reference only)
   
+    These simple JSONB maps indicate which holder types are present. The detailed data is in the consolidated JSONB fields below.
+    
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `duty_holder` | Duty Holder | `duty_holder` | `map` (JSONB) | Yes (2450) | `{"Public": true, "Ind: Person": true}` | 🦋_taxa |
-    | `duty_holder_article` | Duty Holder Article | `duty_holder_article` | `string` | Yes (2430) | | 🦋_taxa |
-    | `duty_holder_article_clause` | Duty Holder Article Clause | `duty_holder_article_clause` | `string` | Yes (2430) | | 🦋_taxa |
-    | `article_duty_holder` | Article Duty Holder | `article_duty_holder` | `string` | Yes (2430) | | 🦋_taxa |
-    | `article_duty_holder_clause` | Article Duty Holder Clause | `article_duty_holder_clause` | `string` | Yes (2430) | | 🦋_taxa |
+    | `rights_holder` | Rights Holder | `rights_holder` | `map` (JSONB) | Yes (1812) | `{"Ind: Person": true}` | 🦋_taxa |
+    | `responsibility_holder` | Responsibility Holder | `responsibility_holder` | `map` (JSONB) | Yes (2513) | `{"Gvt: Minister": true}` | 🦋_taxa |
+    | `power_holder` | Power Holder | `power_holder` | `map` (JSONB) | Yes (2121) | `{"Gvt: Authority": true}` | 🦋_taxa |
   
-  ## Rights Holder
+  ## Consolidated Holder JSONB (Phase 4)
   
+    These 4 JSONB columns replace the previous 16 text columns, providing structured holder/article/clause data with 93% storage reduction.
+    
+    **Schema**: `{entries: [{holder, duty_type, clause, article}], holders: [], articles: []}`
+    
+    **GIN Indexes**: Each column has a GIN index on the `holders` array for efficient querying.
+    
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `rights_holder` | Rights Holder | `rights_holder` | `map` (JSONB) | Yes (1812) | `{"key": true, ...}` | 🦋_taxa |
-    | `rights_holder_article` | Rights Holder Article | `rights_holder_article` | `string` | Yes (1812) | | 🦋_taxa |
-    | `rights_holder_article_clause` | Rights Holder Article Clause | `rights_holder_article_clause` | `string` | Yes (1812) | | 🦋_taxa |
-    | `article_rights_holder` | Article Rights Holder | `article_rights_holder` | `string` | Yes (1812) | | 🦋_taxa |
-    | `article_rights_holder_clause` | Article Rights Holder Clause | `article_rights_holder_clause` | `string` | Yes (1812) | | 🦋_taxa |
-  
-  ## Responsibility Holder
-  
-    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
-    |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `responsibility_holder` | Responsibility Holder | `responsibility_holder` | `map` (JSONB) | Yes (2513) | `{"key": true, ...}` | 🦋_taxa |
-    | `responsibility_holder_article` | Responsibility Holder Article | `responsibility_holder_article` | `string` | Yes (2513) | | 🦋_taxa |
-    | `responsibility_holder_article_clause` | Responsibility Holder Article Clause | `responsibility_holder_article_clause` | `string` | Yes (2513) | | 🦋_taxa |
-    | `article_responsibility_holder` | Article Responsibility Holder | `article_responsibility_holder` | `string` | Yes (2513) | | 🦋_taxa |
-    | `article_responsibility_holder_clause` | Article Responsibility Holder Clause | `article_responsibility_holder_clause` | `string` | Yes (2513) | | 🦋_taxa |
-  
-  ## Power Holder
-  
-    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
-    |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `power_holder` | Power Holder | `power_holder` | `map` (JSONB) | Yes (2121) | `{"key": true, ...}` | 🦋_taxa |
-    | `power_holder_article` | Power Holder Article | `power_holder_article` | `string` | Yes (2121) | | 🦋_taxa |
-    | `power_holder_article_clause` | Power Holder Article Clause | `power_holder_article_clause` | `string` | Yes (2121) | | 🦋_taxa |
-    | `article_power_holder` | Article Power Holder | `article_power_holder` | `string` | Yes (2121) | | 🦋_taxa |
-    | `article_power_holder_clause` | Article Power Holder Clause | `article_power_holder_clause` | `string` | Yes (2121) | | 🦋_taxa |
+    | `duties` | Duties | `duties` | `map` (JSONB) | Yes (2430) | `{"entries": [...], "holders": ["Ind: Person"], "articles": ["regulation/4"]}` | 🦋_taxa |
+    | `rights` | Rights | `rights` | `map` (JSONB) | Yes (1812) | `{"entries": [...], "holders": [...], "articles": [...]}` | 🦋_taxa |
+    | `responsibilities` | Responsibilities | `responsibilities` | `map` (JSONB) | Yes (2513) | `{"entries": [...], "holders": [...], "articles": [...]}` | 🦋_taxa |
+    | `powers` | Powers | `powers` | `map` (JSONB) | Yes (2121) | `{"entries": [...], "holders": [...], "articles": [...]}` | 🦋_taxa |
+    
+    **Entry Structure**:
+    ```json
+    {
+      "holder": "Ind: Person",
+      "duty_type": "DUTY",
+      "clause": "applicant as two or more farming businesses...",
+      "article": "regulation/4"
+    }
+    ```
   
   ## POPIMAR
   
