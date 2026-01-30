@@ -627,6 +627,13 @@ defmodule SertantaiLegalWeb.ScrapeController do
     end
   end
 
+  # Fallback when name parameter is missing
+  def parse_stream(conn, %{"id" => _session_id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: name"})
+  end
+
   # SSE event loop - receives parser events or sends heartbeats on timeout
   defp sse_event_loop(conn, task, session_id, name) do
     receive do
@@ -702,12 +709,6 @@ defmodule SertantaiLegalWeb.ScrapeController do
     end
 
     conn
-  end
-
-  def parse_stream(conn, %{"id" => _session_id}) do
-    conn
-    |> put_status(:bad_request)
-    |> json(%{error: "Missing required parameter: name"})
   end
 
   # Encode progress events to JSON for SSE
