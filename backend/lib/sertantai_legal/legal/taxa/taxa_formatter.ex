@@ -1,0 +1,181 @@
+defmodule SertantaiLegal.Legal.Taxa.TaxaFormatter do
+  @moduledoc """
+  Serializes TaxaParser results into various output formats.
+
+  This module decouples parsing logic from output format concerns, allowing
+  TaxaParser to produce both legacy text format and new JSONB format without
+  modifying the complex DutyTypeLib parsing logic.
+
+  ## Phase 2a Strategy
+
+  Parse the existing text output (with emojis and newlines) into structured
+  JSONB format. This approach:
+  - Zero changes to DutyTypeLib (complex, optimized)
+  - Easy to validate against Phase 1 migrated data
+  - Full rollback capability if issues arise
+
+  ## JSONB Schema
+
+  ```json
+  {
+    "entries": [
+      {"holder": "Ind: Person", "article": "regulation/4", "duty_type": "DUTY", "clause": "..."}
+    ],
+    "holders": ["Ind: Person"],
+    "articles": ["regulation/4"]
+  }
+  ```
+  """
+
+  @doc """
+  Convert legacy text format to JSONB structure.
+
+  Parses the emoji-formatted text output from DutyTypeLib into structured JSONB.
+
+  ## Parameters
+  - `text` - The legacy text format (e.g., duty_holder_article_clause)
+  - `default_type` - Default duty type if not specified in text (e.g., "DUTY")
+
+  ## Returns
+  Map with `entries`, `holders`, and `articles` keys, or nil if text is empty.
+  """
+  @spec text_to_jsonb(String.t() | nil, String.t()) :: map() | nil
+  def text_to_jsonb(nil, _default_type), do: nil
+  def text_to_jsonb("", _default_type), do: nil
+  def text_to_jsonb("{}", _default_type), do: nil
+
+  def text_to_jsonb(text, default_type) when is_binary(text) do
+    text = String.trim(text)
+    if text == "", do: nil, else: parse_text_to_jsonb(text, default_type)
+  end
+
+  @doc """
+  Convert duties text to JSONB (convenience wrapper).
+  """
+  @spec duties_to_jsonb(String.t() | nil) :: map() | nil
+  def duties_to_jsonb(text), do: text_to_jsonb(text, "DUTY")
+
+  @doc """
+  Convert rights text to JSONB (convenience wrapper).
+  """
+  @spec rights_to_jsonb(String.t() | nil) :: map() | nil
+  def rights_to_jsonb(text), do: text_to_jsonb(text, "RIGHT")
+
+  @doc """
+  Convert responsibilities text to JSONB (convenience wrapper).
+  """
+  @spec responsibilities_to_jsonb(String.t() | nil) :: map() | nil
+  def responsibilities_to_jsonb(text), do: text_to_jsonb(text, "RESPONSIBILITY")
+
+  @doc """
+  Convert powers text to JSONB (convenience wrapper).
+  """
+  @spec powers_to_jsonb(String.t() | nil) :: map() | nil
+  def powers_to_jsonb(text), do: text_to_jsonb(text, "POWER")
+
+  # ============================================================================
+  # Private Functions
+  # ============================================================================
+
+  defp parse_text_to_jsonb(text, default_type) do
+    # Split into holder blocks (separated by [Holder Name] headers)
+    blocks = split_into_holder_blocks(text)
+
+    entries =
+      blocks
+      |> Enum.flat_map(fn {holder, block_text} ->
+        parse_holder_block(holder, block_text, default_type)
+      end)
+
+    if entries == [] do
+      nil
+    else
+      holders = entries |> Enum.map(& &1["holder"]) |> Enum.uniq() |> Enum.sort()
+      articles = entries |> Enum.map(& &1["article"]) |> Enum.uniq() |> Enum.sort()
+
+      %{
+        "entries" => entries,
+        "holders" => holders,
+        "articles" => articles
+      }
+    end
+  end
+
+  # Split text into blocks by [Holder Name] headers
+  defp split_into_holder_blocks(text) do
+    # Match [Category: Name] or [Name] at start of line
+    regex = ~r/^\[([^\]]+)\]\s*$/m
+
+    parts = Regex.split(regex, text, include_captures: true, trim: true)
+
+    # Pair headers with their content
+    parts
+    |> Enum.chunk_every(2)
+    |> Enum.filter(fn chunk -> length(chunk) == 2 end)
+    |> Enum.map(fn [header, content] ->
+      # Extract holder name from [Name] format
+      holder = header |> String.trim() |> String.replace(~r/^\[|\]$/, "")
+      {holder, content}
+    end)
+  end
+
+  # Parse a single holder's block into entries
+  defp parse_holder_block(holder, block_text, default_type) do
+    lines = String.split(block_text, "\n") |> Enum.map(&String.trim/1)
+
+    # State machine to parse entries
+    parse_lines(lines, holder, default_type, nil, nil, [])
+  end
+
+  # Recursive line parser
+  # State: current_article, current_duty_type, accumulated entries
+  defp parse_lines([], _holder, _default_type, _article, _duty_type, entries) do
+    Enum.reverse(entries)
+  end
+
+  defp parse_lines([line | rest], holder, default_type, article, duty_type, entries) do
+    cond do
+      # URL line - extract article path
+      String.starts_with?(line, "https://legislation.gov.uk/") ->
+        new_article = extract_article_path(line)
+        parse_lines(rest, holder, default_type, new_article, duty_type, entries)
+
+      # Duty type line (DUTY, RIGHT, POWER, RESPONSIBILITY)
+      line in ["DUTY", "RIGHT", "POWER", "RESPONSIBILITY"] ->
+        parse_lines(rest, holder, default_type, article, line, entries)
+
+      # Holder line with emoji - confirms holder (skip, we already have it)
+      String.starts_with?(line, "👤") ->
+        parse_lines(rest, holder, default_type, article, duty_type, entries)
+
+      # Clause line with emoji - create entry
+      String.starts_with?(line, "📌") ->
+        clause_text = String.replace_prefix(line, "📌", "") |> String.trim()
+
+        entry = %{
+          "holder" => holder,
+          "article" => article,
+          "duty_type" => duty_type || default_type,
+          "clause" => if(clause_text == "", do: nil, else: clause_text)
+        }
+
+        # Only add entry if we have an article
+        new_entries = if article, do: [entry | entries], else: entries
+        parse_lines(rest, holder, default_type, article, nil, new_entries)
+
+      # Empty line or other - skip
+      true ->
+        parse_lines(rest, holder, default_type, article, duty_type, entries)
+    end
+  end
+
+  # Extract article path from full URL
+  # Input: https://legislation.gov.uk/uksi/2005/621/regulation/4
+  # Output: regulation/4
+  defp extract_article_path(url) do
+    case Regex.run(~r{legislation\.gov\.uk/[^/]+/\d+/\d+/(.+)$}, url) do
+      [_, path] -> path
+      _ -> url |> String.replace(~r{^https?://[^/]+/[^/]+/\d+/\d+/?}, "")
+    end
+  end
+end

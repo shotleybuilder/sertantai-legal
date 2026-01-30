@@ -42,7 +42,15 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   """
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
-  alias SertantaiLegal.Legal.Taxa.{DutyActor, DutyType, Popimar, PurposeClassifier, TextCleaner}
+
+  alias SertantaiLegal.Legal.Taxa.{
+    DutyActor,
+    DutyType,
+    Popimar,
+    PurposeClassifier,
+    TaxaFormatter,
+    TextCleaner
+  }
 
   require Logger
   import SweetXml
@@ -223,6 +231,12 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         Logger.info(timing_msg)
       end
 
+      # Extract legacy text fields from record
+      duty_text = Map.get(record, :duty_holder_article_clause)
+      rights_text = Map.get(record, :rights_holder_article_clause)
+      responsibility_text = Map.get(record, :responsibility_holder_article_clause)
+      power_text = Map.get(record, :power_holder_article_clause)
+
       # Build result map with all Taxa fields
       # Note: Don't wrap in to_jsonb() - ParsedLaw handles JSONB conversion
       %{
@@ -236,11 +250,23 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         # Purpose field (function-based classification)
         purpose: purpose,
 
-        # Role holder fields
+        # Role holder fields (lists)
         duty_holder: Map.get(record, :duty_holder),
         rights_holder: Map.get(record, :rights_holder),
         responsibility_holder: Map.get(record, :responsibility_holder),
         power_holder: Map.get(record, :power_holder),
+
+        # Legacy text fields (for backwards compatibility)
+        duty_holder_article_clause: duty_text,
+        rights_holder_article_clause: rights_text,
+        responsibility_holder_article_clause: responsibility_text,
+        power_holder_article_clause: power_text,
+
+        # NEW: Consolidated JSONB fields (Phase 2a dual-write)
+        duties: TaxaFormatter.duties_to_jsonb(duty_text),
+        rights: TaxaFormatter.rights_to_jsonb(rights_text),
+        responsibilities: TaxaFormatter.responsibilities_to_jsonb(responsibility_text),
+        powers: TaxaFormatter.powers_to_jsonb(power_text),
 
         # POPIMAR field
         popimar: Map.get(record, :popimar),
@@ -388,6 +414,12 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       Logger.info(timing_msg)
     end
 
+    # Extract legacy text fields from merged record
+    duty_text = Map.get(merged_record, :duty_holder_article_clause)
+    rights_text = Map.get(merged_record, :rights_holder_article_clause)
+    responsibility_text = Map.get(merged_record, :responsibility_holder_article_clause)
+    power_text = Map.get(merged_record, :power_holder_article_clause)
+
     # Build result
     %{
       role: actors,
@@ -398,6 +430,18 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       rights_holder: Map.get(merged_record, :rights_holder),
       responsibility_holder: Map.get(merged_record, :responsibility_holder),
       power_holder: Map.get(merged_record, :power_holder),
+
+      # Legacy text fields (for backwards compatibility)
+      duty_holder_article_clause: duty_text,
+      rights_holder_article_clause: rights_text,
+      responsibility_holder_article_clause: responsibility_text,
+      power_holder_article_clause: power_text,
+
+      # NEW: Consolidated JSONB fields (Phase 2a dual-write)
+      duties: TaxaFormatter.duties_to_jsonb(duty_text),
+      rights: TaxaFormatter.rights_to_jsonb(rights_text),
+      responsibilities: TaxaFormatter.responsibilities_to_jsonb(responsibility_text),
+      powers: TaxaFormatter.powers_to_jsonb(power_text),
       popimar: Map.get(merged_record, :popimar),
       taxa_text_source: source,
       taxa_text_length: text_length

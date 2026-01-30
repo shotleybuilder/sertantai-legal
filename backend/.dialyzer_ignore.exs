@@ -42,5 +42,6 @@
 
   # Taxa modules - permissive specs for pipeline flexibility
   {"lib/sertantai_legal/legal/taxa/actor_lib.ex", :contract_supertype},
+  {"lib/sertantai_legal/legal/taxa/taxa_formatter.ex", :contract_supertype},
   {"lib/sertantai_legal/scraper/taxa_parser.ex", :contract_supertype}
 ]
