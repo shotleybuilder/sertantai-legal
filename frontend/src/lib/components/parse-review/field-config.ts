@@ -139,33 +139,17 @@ export const FIELD_LABELS: Record<string, string> = {
 	duty_type_article: 'Duty Type Article',
 	article_duty_type: 'Article Duty Type',
 
-	// Taxa - Duty Holder
+	// Taxa - Holder Lists (simple maps)
 	duty_holder: 'Duty Holder',
-	duty_holder_article: 'Duty Holder Article',
-	duty_holder_article_clause: 'Duty Holder Article Clause',
-	article_duty_holder: 'Article Duty Holder',
-	article_duty_holder_clause: 'Article Duty Holder Clause',
-
-	// Taxa - Rights Holder
 	rights_holder: 'Rights Holder',
-	rights_holder_article: 'Rights Holder Article',
-	rights_holder_article_clause: 'Rights Holder Article Clause',
-	article_rights_holder: 'Article Rights Holder',
-	article_rights_holder_clause: 'Article Rights Holder Clause',
-
-	// Taxa - Responsibility Holder
 	responsibility_holder: 'Responsibility Holder',
-	responsibility_holder_article: 'Responsibility Holder Article',
-	responsibility_holder_article_clause: 'Responsibility Holder Article Clause',
-	article_responsibility_holder: 'Article Responsibility Holder',
-	article_responsibility_holder_clause: 'Article Responsibility Holder Clause',
-
-	// Taxa - Power Holder
 	power_holder: 'Power Holder',
-	power_holder_article: 'Power Holder Article',
-	power_holder_article_clause: 'Power Holder Article Clause',
-	article_power_holder: 'Article Power Holder',
-	article_power_holder_clause: 'Article Power Holder Clause',
+
+	// Taxa - Consolidated JSONB Holder Fields (Phase 3)
+	duties: 'Duties',
+	rights: 'Rights',
+	responsibilities: 'Responsibilities',
+	powers: 'Powers',
 
 	// Taxa - POPIMAR
 	popimar: 'POPIMAR',
@@ -963,172 +947,85 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				]
 			},
 			{
-				id: 'duty_holder',
-				title: 'Duty Holder',
+				id: 'duties',
+				title: 'Duties',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 6 Duty Holder table
+					// Phase 3: Consolidated JSONB holder fields
 					{
 						key: 'duty_holder',
-						label: 'Duty Holder',
+						label: 'Duty Holders',
 						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					},
 					{
-						key: 'duty_holder_article',
-						label: 'Duty Holder Article',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'duty_holder_article_clause',
-						label: 'Duty Holder Article Clause',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_duty_holder',
-						label: 'Article Duty Holder',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_duty_holder_clause',
-						label: 'Article Duty Holder Clause',
-						type: 'multiline',
+						key: 'duties',
+						label: 'Duties (JSONB)',
+						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					}
 				]
 			},
 			{
-				id: 'rights_holder',
-				title: 'Rights Holder',
+				id: 'rights',
+				title: 'Rights',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 6 Rights Holder table
 					{
 						key: 'rights_holder',
-						label: 'Rights Holder',
+						label: 'Rights Holders',
 						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					},
 					{
-						key: 'rights_holder_article',
-						label: 'Rights Holder Article',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'rights_holder_article_clause',
-						label: 'Rights Holder Article Clause',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_rights_holder',
-						label: 'Article Rights Holder',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_rights_holder_clause',
-						label: 'Article Rights Holder Clause',
-						type: 'multiline',
+						key: 'rights',
+						label: 'Rights (JSONB)',
+						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					}
 				]
 			},
 			{
-				id: 'responsibility_holder',
-				title: 'Responsibility Holder',
+				id: 'responsibilities',
+				title: 'Responsibilities',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 6 Responsibility Holder table
 					{
 						key: 'responsibility_holder',
-						label: 'Responsibility Holder',
+						label: 'Responsibility Holders',
 						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					},
 					{
-						key: 'responsibility_holder_article',
-						label: 'Responsibility Holder Article',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'responsibility_holder_article_clause',
-						label: 'Responsibility Holder Article Clause',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_responsibility_holder',
-						label: 'Article Responsibility Holder',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_responsibility_holder_clause',
-						label: 'Article Responsibility Holder Clause',
-						type: 'multiline',
+						key: 'responsibilities',
+						label: 'Responsibilities (JSONB)',
+						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					}
 				]
 			},
 			{
-				id: 'power_holder',
-				title: 'Power Holder',
+				id: 'powers',
+				title: 'Powers',
 				defaultExpanded: false,
 				fields: [
-					// Order matches LRT-SCHEMA.md STAGE 6 Power Holder table
 					{
 						key: 'power_holder',
-						label: 'Power Holder',
+						label: 'Power Holders',
 						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					},
 					{
-						key: 'power_holder_article',
-						label: 'Power Holder Article',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'power_holder_article_clause',
-						label: 'Power Holder Article Clause',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_power_holder',
-						label: 'Article Power Holder',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_power_holder_clause',
-						label: 'Article Power Holder Clause',
-						type: 'multiline',
+						key: 'powers',
+						label: 'Powers (JSONB)',
+						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
 					}

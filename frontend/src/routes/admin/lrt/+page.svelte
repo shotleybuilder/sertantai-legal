@@ -61,30 +61,16 @@
 		duty_type: string | null;
 		duty_type_article: string | null;
 		article_duty_type: string | null;
-		// Duty Holder
+		// Holder Lists
 		duty_holder: Record<string, unknown> | null;
-		duty_holder_article: string | null;
-		duty_holder_article_clause: string | null;
-		article_duty_holder: string | null;
-		article_duty_holder_clause: string | null;
-		// Power Holder
 		power_holder: Record<string, unknown> | null;
-		power_holder_article: string | null;
-		power_holder_article_clause: string | null;
-		article_power_holder: string | null;
-		article_power_holder_clause: string | null;
-		// Rights Holder
 		rights_holder: Record<string, unknown> | null;
-		rights_holder_article: string | null;
-		rights_holder_article_clause: string | null;
-		article_rights_holder: string | null;
-		article_rights_holder_clause: string | null;
-		// Responsibility Holder
 		responsibility_holder: Record<string, unknown> | null;
-		responsibility_holder_article: string | null;
-		responsibility_holder_article_clause: string | null;
-		article_responsibility_holder: string | null;
-		article_responsibility_holder_clause: string | null;
+		// Consolidated JSONB holder fields (Phase 3)
+		duties: Record<string, unknown> | null;
+		rights: Record<string, unknown> | null;
+		responsibilities: Record<string, unknown> | null;
+		powers: Record<string, unknown> | null;
 		// POPIMAR
 		popimar: Record<string, unknown> | null;
 		popimar_article: string | null;
@@ -351,60 +337,24 @@
 			]
 		},
 		{
-			name: 'Duty Holder',
-			description: 'Entities with legal duties and article references',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'duty_holder',
-				'duty_holder_article',
-				'duty_holder_article_clause',
-				'article_duty_holder',
-				'article_duty_holder_clause'
-			]
+			name: 'Duties',
+			description: 'Entities with legal duties (consolidated JSONB)',
+			columns: ['actions', 'name', 'title_en', 'duty_holder', 'duties']
 		},
 		{
-			name: 'Power Holder',
-			description: 'Entities with legal powers and article references',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'power_holder',
-				'power_holder_article',
-				'power_holder_article_clause',
-				'article_power_holder',
-				'article_power_holder_clause'
-			]
+			name: 'Powers',
+			description: 'Entities with legal powers (consolidated JSONB)',
+			columns: ['actions', 'name', 'title_en', 'power_holder', 'powers']
 		},
 		{
-			name: 'Rights Holder',
-			description: 'Entities with legal rights and article references',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'rights_holder',
-				'rights_holder_article',
-				'rights_holder_article_clause',
-				'article_rights_holder',
-				'article_rights_holder_clause'
-			]
+			name: 'Rights',
+			description: 'Entities with legal rights (consolidated JSONB)',
+			columns: ['actions', 'name', 'title_en', 'rights_holder', 'rights']
 		},
 		{
-			name: 'Responsibility Holder',
-			description: 'Entities with legal responsibilities and article references',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'responsibility_holder',
-				'responsibility_holder_article',
-				'responsibility_holder_article_clause',
-				'article_responsibility_holder',
-				'article_responsibility_holder_clause'
-			]
+			name: 'Responsibilities',
+			description: 'Entities with legal responsibilities (consolidated JSONB)',
+			columns: ['actions', 'name', 'title_en', 'responsibility_holder', 'responsibilities']
 		},
 		{
 			name: 'POPIMAR',
@@ -1200,7 +1150,7 @@
 			size: 140,
 			meta: { group: 'Duty Type', dataType: 'text' }
 		},
-		// Duty Holder
+		// Duties (consolidated JSONB)
 		{
 			id: 'duty_holder',
 			accessorKey: 'duty_holder',
@@ -1211,41 +1161,23 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Duty Holder', dataType: 'text' }
+			meta: { group: 'Duties', dataType: 'text' }
 		},
 		{
-			id: 'duty_holder_article',
-			accessorKey: 'duty_holder_article',
-			header: 'Duty Holder → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Duty Holder', dataType: 'text' }
+			id: 'duties',
+			accessorKey: 'duties',
+			header: 'Duties (JSONB)',
+			cell: (info) => {
+				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
+				if (!val) return '-';
+				const holders = val.holders?.join(', ') || '';
+				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
+				return holders + articles || '-';
+			},
+			size: 250,
+			meta: { group: 'Duties', dataType: 'jsonb' }
 		},
-		{
-			id: 'duty_holder_article_clause',
-			accessorKey: 'duty_holder_article_clause',
-			header: 'Duty Holder Article Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Duty Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_duty_holder',
-			accessorKey: 'article_duty_holder',
-			header: 'Article → Duty Holder',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Duty Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_duty_holder_clause',
-			accessorKey: 'article_duty_holder_clause',
-			header: 'Article Duty Holder Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Duty Holder', dataType: 'text' }
-		},
-		// Power Holder
+		// Powers (consolidated JSONB)
 		{
 			id: 'power_holder',
 			accessorKey: 'power_holder',
@@ -1256,41 +1188,23 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Power Holder', dataType: 'text' }
+			meta: { group: 'Powers', dataType: 'text' }
 		},
 		{
-			id: 'power_holder_article',
-			accessorKey: 'power_holder_article',
-			header: 'Power Holder → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Power Holder', dataType: 'text' }
+			id: 'powers',
+			accessorKey: 'powers',
+			header: 'Powers (JSONB)',
+			cell: (info) => {
+				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
+				if (!val) return '-';
+				const holders = val.holders?.join(', ') || '';
+				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
+				return holders + articles || '-';
+			},
+			size: 250,
+			meta: { group: 'Powers', dataType: 'jsonb' }
 		},
-		{
-			id: 'power_holder_article_clause',
-			accessorKey: 'power_holder_article_clause',
-			header: 'Power Holder Article Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Power Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_power_holder',
-			accessorKey: 'article_power_holder',
-			header: 'Article → Power Holder',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Power Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_power_holder_clause',
-			accessorKey: 'article_power_holder_clause',
-			header: 'Article Power Holder Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Power Holder', dataType: 'text' }
-		},
-		// Rights Holder
+		// Rights (consolidated JSONB)
 		{
 			id: 'rights_holder',
 			accessorKey: 'rights_holder',
@@ -1301,41 +1215,23 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Rights Holder', dataType: 'text' }
+			meta: { group: 'Rights', dataType: 'text' }
 		},
 		{
-			id: 'rights_holder_article',
-			accessorKey: 'rights_holder_article',
-			header: 'Rights Holder → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Rights Holder', dataType: 'text' }
+			id: 'rights',
+			accessorKey: 'rights',
+			header: 'Rights (JSONB)',
+			cell: (info) => {
+				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
+				if (!val) return '-';
+				const holders = val.holders?.join(', ') || '';
+				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
+				return holders + articles || '-';
+			},
+			size: 250,
+			meta: { group: 'Rights', dataType: 'jsonb' }
 		},
-		{
-			id: 'rights_holder_article_clause',
-			accessorKey: 'rights_holder_article_clause',
-			header: 'Rights Holder Article Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Rights Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_rights_holder',
-			accessorKey: 'article_rights_holder',
-			header: 'Article → Rights Holder',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Rights Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_rights_holder_clause',
-			accessorKey: 'article_rights_holder_clause',
-			header: 'Article Rights Holder Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Rights Holder', dataType: 'text' }
-		},
-		// Responsibility Holder
+		// Responsibilities (consolidated JSONB)
 		{
 			id: 'responsibility_holder',
 			accessorKey: 'responsibility_holder',
@@ -1346,39 +1242,21 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 180,
-			meta: { group: 'Responsibility Holder', dataType: 'text' }
+			meta: { group: 'Responsibilities', dataType: 'text' }
 		},
 		{
-			id: 'responsibility_holder_article',
-			accessorKey: 'responsibility_holder_article',
-			header: 'Resp. Holder → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Responsibility Holder', dataType: 'text' }
-		},
-		{
-			id: 'responsibility_holder_article_clause',
-			accessorKey: 'responsibility_holder_article_clause',
-			header: 'Resp. Holder Article Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Responsibility Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_responsibility_holder',
-			accessorKey: 'article_responsibility_holder',
-			header: 'Article → Resp. Holder',
-			cell: (info) => info.getValue() ?? '-',
-			size: 150,
-			meta: { group: 'Responsibility Holder', dataType: 'text' }
-		},
-		{
-			id: 'article_responsibility_holder_clause',
-			accessorKey: 'article_responsibility_holder_clause',
-			header: 'Article Resp. Holder Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 180,
-			meta: { group: 'Responsibility Holder', dataType: 'text' }
+			id: 'responsibilities',
+			accessorKey: 'responsibilities',
+			header: 'Responsibilities (JSONB)',
+			cell: (info) => {
+				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
+				if (!val) return '-';
+				const holders = val.holders?.join(', ') || '';
+				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
+				return holders + articles || '-';
+			},
+			size: 250,
+			meta: { group: 'Responsibilities', dataType: 'jsonb' }
 		},
 		// POPIMAR
 		{

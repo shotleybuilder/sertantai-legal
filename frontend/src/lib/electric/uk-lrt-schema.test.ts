@@ -148,25 +148,47 @@ describe('transformUkLrtRecord', () => {
 		const raw = {
 			id: 'uuid-123',
 			duty_holder: { employer: true },
-			duty_holder_article: 'Article 5',
-			duty_holder_article_clause: 'Clause 1',
-			article_duty_holder: 'Section 2',
-			article_duty_holder_clause: 'Paragraph 3',
 			power_holder: { minister: true },
 			rights_holder: { worker: true },
-			responsibility_holder: { director: true }
+			responsibility_holder: { director: true },
+			// Consolidated JSONB fields
+			duties: {
+				entries: [
+					{ holder: 'employer', duty_type: 'Duty', clause: 'Clause 1', article: 'Article 5' }
+				],
+				holders: ['employer'],
+				articles: ['Article 5']
+			},
+			rights: {
+				entries: [{ holder: 'worker', duty_type: 'Right', clause: null, article: 'Section 2' }],
+				holders: ['worker'],
+				articles: ['Section 2']
+			},
+			responsibilities: null,
+			powers: {
+				entries: [{ holder: 'minister', duty_type: 'Power', clause: null, article: null }],
+				holders: ['minister'],
+				articles: []
+			}
 		};
 
 		const result = transformUkLrtRecord(raw);
 
 		expect(result.duty_holder).toEqual({ employer: true });
-		expect(result.duty_holder_article).toBe('Article 5');
-		expect(result.duty_holder_article_clause).toBe('Clause 1');
-		expect(result.article_duty_holder).toBe('Section 2');
-		expect(result.article_duty_holder_clause).toBe('Paragraph 3');
 		expect(result.power_holder).toEqual({ minister: true });
 		expect(result.rights_holder).toEqual({ worker: true });
 		expect(result.responsibility_holder).toEqual({ director: true });
+		// Consolidated JSONB fields
+		expect(result.duties).toEqual({
+			entries: [
+				{ holder: 'employer', duty_type: 'Duty', clause: 'Clause 1', article: 'Article 5' }
+			],
+			holders: ['employer'],
+			articles: ['Article 5']
+		});
+		expect(result.rights?.holders).toEqual(['worker']);
+		expect(result.responsibilities).toBeNull();
+		expect(result.powers?.holders).toEqual(['minister']);
 	});
 
 	it('handles live status field', () => {
@@ -268,25 +290,14 @@ describe('UkLrtRecord type', () => {
 			duty_type_article: null,
 			article_duty_type: null,
 			duty_holder: null,
-			duty_holder_article: null,
-			duty_holder_article_clause: null,
-			article_duty_holder: null,
-			article_duty_holder_clause: null,
 			power_holder: null,
-			power_holder_article: null,
-			power_holder_article_clause: null,
-			article_power_holder: null,
-			article_power_holder_clause: null,
 			rights_holder: null,
-			rights_holder_article: null,
-			rights_holder_article_clause: null,
-			article_rights_holder: null,
-			article_rights_holder_clause: null,
 			responsibility_holder: null,
-			responsibility_holder_article: null,
-			responsibility_holder_article_clause: null,
-			article_responsibility_holder: null,
-			article_responsibility_holder_clause: null,
+			// Consolidated JSONB holder fields
+			duties: null,
+			rights: null,
+			responsibilities: null,
+			powers: null,
 			popimar: null,
 			popimar_article: null,
 			popimar_article_clause: null,
