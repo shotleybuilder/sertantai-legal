@@ -65,16 +65,18 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
   - `:responsibilities` - Consolidated JSONB (Phase 4)
   - `:powers` - Consolidated JSONB (Phase 4)
   """
-  @spec process_record(record()) :: record()
-  def process_record(%{text: text} = record) when is_binary(text) and text != "" do
-    do_process_record(record, text, :atom)
+  @spec process_record(record(), keyword()) :: record()
+  def process_record(record, opts \\ [])
+
+  def process_record(%{text: text} = record, opts) when is_binary(text) and text != "" do
+    do_process_record(record, text, :atom, opts)
   end
 
-  def process_record(%{"text" => text} = record) when is_binary(text) and text != "" do
-    do_process_record(record, text, :string)
+  def process_record(%{"text" => text} = record, opts) when is_binary(text) and text != "" do
+    do_process_record(record, text, :string, opts)
   end
 
-  def process_record(record), do: record
+  def process_record(record, _opts), do: record
 
   @doc """
   Processes a list of law records.
@@ -105,9 +107,13 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
   # Private Functions
   # ============================================================================
 
-  defp do_process_record(record, text, key_type) do
+  defp do_process_record(record, text, key_type, opts) do
     # Get actors from record
     {governed_actors, government_actors} = get_actors(record, key_type)
+
+    # Get article context if provided (e.g., section ID from chunked processing)
+    article = Keyword.get(opts, :article)
+    formatter_opts = if article, do: [article: article], else: []
 
     # Find role holders for each duty type
     # Phase 2b: matches are now structured lists instead of formatted strings
@@ -137,15 +143,27 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
     |> put_field(:responsibility_holder, resp_holders, key_type)
     |> put_field(:power_holder, power_holders, key_type)
     |> put_field(:duty_type, duty_types, key_type)
-    # Phase 4: Consolidated JSONB fields (legacy text fields removed)
-    |> put_field(:duties, TaxaFormatter.duties_from_matches(duty_matches), key_type)
-    |> put_field(:rights, TaxaFormatter.rights_from_matches(right_matches), key_type)
+    # Phase 4: Consolidated JSONB fields with article context
     |> put_field(
-      :responsibilities,
-      TaxaFormatter.responsibilities_from_matches(resp_matches),
+      :duties,
+      TaxaFormatter.duties_from_matches(duty_matches, formatter_opts),
       key_type
     )
-    |> put_field(:powers, TaxaFormatter.powers_from_matches(power_matches), key_type)
+    |> put_field(
+      :rights,
+      TaxaFormatter.rights_from_matches(right_matches, formatter_opts),
+      key_type
+    )
+    |> put_field(
+      :responsibilities,
+      TaxaFormatter.responsibilities_from_matches(resp_matches, formatter_opts),
+      key_type
+    )
+    |> put_field(
+      :powers,
+      TaxaFormatter.powers_from_matches(power_matches, formatter_opts),
+      key_type
+    )
   end
 
   # Gets actors from record based on key type

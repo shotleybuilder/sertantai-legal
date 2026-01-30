@@ -325,7 +325,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     duty_type_results =
       p1_sections
       |> Task.async_stream(
-        fn {_section_id, section_text} ->
+        fn {section_id, section_text} ->
           # Clean section text and build record
           cleaned_section = TextCleaner.clean(section_text)
 
@@ -335,8 +335,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
             role_gvt: actors_gvt
           }
 
-          # Process this section
-          DutyType.process_record(record)
+          # Process this section with article context (section_id)
+          DutyType.process_record(record, article: section_id)
         end,
         max_concurrency: System.schedulers_online(),
         timeout: 30_000
