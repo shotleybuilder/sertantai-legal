@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
       ["Duty", "Right", "Power"]
   """
 
-  alias SertantaiLegal.Legal.Taxa.DutyTypeLib
+  alias SertantaiLegal.Legal.Taxa.{DutyTypeLib, TaxaFormatter}
 
   @type duty_types :: list(String.t())
   @type text :: String.t()
@@ -110,6 +110,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
     {governed_actors, government_actors} = get_actors(record, key_type)
 
     # Find role holders for each duty type
+    # Phase 2b: matches are now structured lists instead of formatted strings
     {dutyholders, duties, duty_matches, regexes} =
       DutyTypeLib.find_role_holders(:duty, governed_actors, text, [])
 
@@ -129,17 +130,49 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
       |> Enum.uniq()
       |> duty_type_sorter()
 
-    # Update record - return plain lists, ParsedLaw.to_db_attrs handles JSONB conversion
+    # Update record with holder lists and duty types
     record
     |> put_field(:duty_holder, dutyholders, key_type)
     |> put_field(:rights_holder, rightsholders, key_type)
     |> put_field(:responsibility_holder, resp_holders, key_type)
     |> put_field(:power_holder, power_holders, key_type)
     |> put_field(:duty_type, duty_types, key_type)
-    |> put_field(:duty_holder_article_clause, duty_matches, key_type)
-    |> put_field(:rights_holder_article_clause, right_matches, key_type)
-    |> put_field(:responsibility_holder_article_clause, resp_matches, key_type)
-    |> put_field(:power_holder_article_clause, power_matches, key_type)
+    # Phase 2b: Store structured matches for legacy text generation
+    |> put_field(:duty_holder_article_clause, matches_to_legacy_text(duty_matches), key_type)
+    |> put_field(:rights_holder_article_clause, matches_to_legacy_text(right_matches), key_type)
+    |> put_field(
+      :responsibility_holder_article_clause,
+      matches_to_legacy_text(resp_matches),
+      key_type
+    )
+    |> put_field(:power_holder_article_clause, matches_to_legacy_text(power_matches), key_type)
+    # Phase 2b: Store new JSONB format
+    |> put_field(:duties, TaxaFormatter.duties_from_matches(duty_matches), key_type)
+    |> put_field(:rights, TaxaFormatter.rights_from_matches(right_matches), key_type)
+    |> put_field(
+      :responsibilities,
+      TaxaFormatter.responsibilities_from_matches(resp_matches),
+      key_type
+    )
+    |> put_field(:powers, TaxaFormatter.powers_from_matches(power_matches), key_type)
+  end
+
+  # Phase 2b: Convert structured matches back to legacy text format for backwards compatibility
+  defp matches_to_legacy_text([]), do: ""
+  defp matches_to_legacy_text(nil), do: ""
+
+  defp matches_to_legacy_text(matches) when is_list(matches) do
+    matches
+    |> Enum.map(&format_match_entry/1)
+    |> Enum.uniq()
+    |> Enum.map(&String.trim/1)
+    |> Enum.join("\n")
+  end
+
+  # Format a single match entry to legacy text format
+  @spec format_match_entry(map()) :: String.t()
+  defp format_match_entry(%{holder: holder, duty_type: duty_type, clause: clause}) do
+    ~s/#{duty_type}\n👤#{holder}\n📌#{clause}\n/
   end
 
   # Gets actors from record based on key type

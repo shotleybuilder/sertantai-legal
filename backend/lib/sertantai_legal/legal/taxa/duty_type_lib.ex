@@ -74,9 +74,15 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   For optimal performance with pre-cleaned text, the blacklist step is lightweight
   since patterns won't match.
   """
+  @type match_entry :: %{
+          holder: String.t(),
+          duty_type: String.t(),
+          clause: String.t() | nil
+        }
+
   @spec find_role_holders(role(), actors(), text(), list()) ::
-          {actors(), duty_types(), String.t(), list()}
-  def find_role_holders(_role, [], _text, regexes), do: {[], [], "", regexes}
+          {actors(), duty_types(), list(match_entry()), list()}
+  def find_role_holders(_role, [], _text, regexes), do: {[], [], [], regexes}
 
   def find_role_holders(role, actors, text, regexes) when is_list(actors) do
     # Build actor-specific regex library
@@ -115,17 +121,20 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
     case result do
       {_, [], _, regexes} ->
-        {[], [], "", regexes}
+        {[], [], [], regexes}
 
       {_, role_holders, matches, regexes} ->
         {
           Enum.uniq(role_holders),
           role |> Atom.to_string() |> String.capitalize() |> List.wrap(),
-          matches |> Enum.uniq() |> Enum.map(&String.trim/1) |> Enum.join("\n"),
+          matches |> Enum.uniq_by(&match_key/1),
           regexes
         }
     end
   end
+
+  # Generate a unique key for deduplication of matches
+  defp match_key(%{holder: h, duty_type: d, clause: c}), do: {h, d, c}
 
   @doc """
   Removes blacklisted patterns from text before processing.
@@ -162,6 +171,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   # ============================================================================
 
   # Runs role-specific regex patterns against text
+  # Returns structured match data (Phase 2b)
   defp run_role_regex(collector, library, label) do
     Enum.reduce(library, collector, fn {actor, regexes}, acc ->
       Enum.reduce(regexes, acc, fn regex, {text, role_holders, matches, reg_exs} = acc2 ->
@@ -183,10 +193,17 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
                 match = ensure_valid_utf8(match)
                 actor_str = to_string(actor)
 
+                # Phase 2b: Return structured match data instead of formatted string
+                match_entry = %{
+                  holder: actor_str,
+                  duty_type: label,
+                  clause: match
+                }
+
                 {
                   text,
                   [actor_str | role_holders],
-                  [~s/#{label}\n👤#{actor_str}\n📌#{match}\n/ | matches],
+                  [match_entry | matches],
                   [~s/#{label}: #{actor_str}\n#{regex}\n-> #{match}\n/ | reg_exs]
                 }
 
@@ -324,6 +341,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   end
 
   # Runs patterns for a specific actor against filtered windows
+  # Returns structured match data (Phase 2b)
   defp run_patterns_in_windows(acc, actor, regexes, windows, label) do
     Enum.reduce(regexes, acc, fn regex, {text, role_holders, matches, reg_exs} = acc2 ->
       {regex_str, rm_matched_text?} =
@@ -342,10 +360,17 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
               match = ensure_valid_utf8(match)
               actor_str = to_string(actor)
 
+              # Phase 2b: Return structured match data instead of formatted string
+              match_entry = %{
+                holder: actor_str,
+                duty_type: label,
+                clause: match
+              }
+
               {
                 new_text,
                 [actor_str | role_holders],
-                [~s/#{label}\n👤#{actor_str}\n📌#{match}\n/ | matches],
+                [match_entry | matches],
                 [~s/#{label}: #{actor_str}\n#{regex_str}\n-> #{match}\n/ | reg_exs]
               }
 

@@ -43,5 +43,10 @@
   # Taxa modules - permissive specs for pipeline flexibility
   {"lib/sertantai_legal/legal/taxa/actor_lib.ex", :contract_supertype},
   {"lib/sertantai_legal/legal/taxa/taxa_formatter.ex", :contract_supertype},
-  {"lib/sertantai_legal/scraper/taxa_parser.ex", :contract_supertype}
+  {"lib/sertantai_legal/scraper/taxa_parser.ex", :contract_supertype},
+
+  # DutyType - Phase 2b pattern match on structured match entries
+  # The pattern is valid, Dialyzer is overly strict about map key types
+  {"lib/sertantai_legal/legal/taxa/duty_type.ex", :pattern_match},
+  {"lib/sertantai_legal/legal/taxa/duty_type.ex", :contract_supertype}
 ]

@@ -74,7 +74,80 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaFormatter do
   def powers_to_jsonb(text), do: text_to_jsonb(text, "POWER")
 
   # ============================================================================
-  # Private Functions
+  # Phase 2b: Direct structured match conversion (no text parsing)
+  # ============================================================================
+
+  @doc """
+  Convert structured match data directly to JSONB format.
+
+  This is the Phase 2b approach - DutyTypeLib now returns structured maps
+  instead of emoji-formatted text, so we can convert directly without parsing.
+
+  ## Parameters
+  - `matches` - List of match maps with :holder, :duty_type, :clause keys
+  - `opts` - Optional keyword list with :article key for article context
+
+  ## Returns
+  Map with `entries`, `holders`, and `articles` keys, or nil if empty.
+  """
+  @spec matches_to_jsonb(list(map()) | nil, keyword()) :: map() | nil
+  def matches_to_jsonb(matches, opts \\ [])
+  def matches_to_jsonb(nil, _opts), do: nil
+  def matches_to_jsonb([], _opts), do: nil
+
+  def matches_to_jsonb(matches, opts) when is_list(matches) do
+    article = Keyword.get(opts, :article)
+
+    entries =
+      Enum.map(matches, fn match ->
+        %{
+          "holder" => match[:holder] || match["holder"],
+          "duty_type" => match[:duty_type] || match["duty_type"],
+          "clause" => match[:clause] || match["clause"],
+          "article" => article
+        }
+      end)
+
+    if entries == [] do
+      nil
+    else
+      holders = entries |> Enum.map(& &1["holder"]) |> Enum.uniq() |> Enum.sort()
+      articles = if article, do: [article], else: []
+
+      %{
+        "entries" => entries,
+        "holders" => holders,
+        "articles" => articles
+      }
+    end
+  end
+
+  @doc """
+  Convert duty matches to JSONB (Phase 2b convenience wrapper).
+  """
+  @spec duties_from_matches(list(map()) | nil, keyword()) :: map() | nil
+  def duties_from_matches(matches, opts \\ []), do: matches_to_jsonb(matches, opts)
+
+  @doc """
+  Convert rights matches to JSONB (Phase 2b convenience wrapper).
+  """
+  @spec rights_from_matches(list(map()) | nil, keyword()) :: map() | nil
+  def rights_from_matches(matches, opts \\ []), do: matches_to_jsonb(matches, opts)
+
+  @doc """
+  Convert responsibility matches to JSONB (Phase 2b convenience wrapper).
+  """
+  @spec responsibilities_from_matches(list(map()) | nil, keyword()) :: map() | nil
+  def responsibilities_from_matches(matches, opts \\ []), do: matches_to_jsonb(matches, opts)
+
+  @doc """
+  Convert power matches to JSONB (Phase 2b convenience wrapper).
+  """
+  @spec powers_from_matches(list(map()) | nil, keyword()) :: map() | nil
+  def powers_from_matches(matches, opts \\ []), do: matches_to_jsonb(matches, opts)
+
+  # ============================================================================
+  # Private Functions (Phase 2a legacy text parsing)
   # ============================================================================
 
   defp parse_text_to_jsonb(text, default_type) do

@@ -48,7 +48,6 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     DutyType,
     Popimar,
     PurposeClassifier,
-    TaxaFormatter,
     TextCleaner
   }
 
@@ -231,14 +230,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         Logger.info(timing_msg)
       end
 
-      # Extract legacy text fields from record
-      duty_text = Map.get(record, :duty_holder_article_clause)
-      rights_text = Map.get(record, :rights_holder_article_clause)
-      responsibility_text = Map.get(record, :responsibility_holder_article_clause)
-      power_text = Map.get(record, :power_holder_article_clause)
-
       # Build result map with all Taxa fields
-      # Note: Don't wrap in to_jsonb() - ParsedLaw handles JSONB conversion
+      # Phase 2b: DutyType now produces both legacy text and JSONB directly
       %{
         # Actor fields
         role: actors,
@@ -257,16 +250,17 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         power_holder: Map.get(record, :power_holder),
 
         # Legacy text fields (for backwards compatibility)
-        duty_holder_article_clause: duty_text,
-        rights_holder_article_clause: rights_text,
-        responsibility_holder_article_clause: responsibility_text,
-        power_holder_article_clause: power_text,
+        duty_holder_article_clause: Map.get(record, :duty_holder_article_clause),
+        rights_holder_article_clause: Map.get(record, :rights_holder_article_clause),
+        responsibility_holder_article_clause:
+          Map.get(record, :responsibility_holder_article_clause),
+        power_holder_article_clause: Map.get(record, :power_holder_article_clause),
 
-        # NEW: Consolidated JSONB fields (Phase 2a dual-write)
-        duties: TaxaFormatter.duties_to_jsonb(duty_text),
-        rights: TaxaFormatter.rights_to_jsonb(rights_text),
-        responsibilities: TaxaFormatter.responsibilities_to_jsonb(responsibility_text),
-        powers: TaxaFormatter.powers_to_jsonb(power_text),
+        # Phase 2b: JSONB fields now produced directly by DutyType (no text parsing)
+        duties: Map.get(record, :duties),
+        rights: Map.get(record, :rights),
+        responsibilities: Map.get(record, :responsibilities),
+        powers: Map.get(record, :powers),
 
         # POPIMAR field
         popimar: Map.get(record, :popimar),
@@ -414,13 +408,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       Logger.info(timing_msg)
     end
 
-    # Extract legacy text fields from merged record
-    duty_text = Map.get(merged_record, :duty_holder_article_clause)
-    rights_text = Map.get(merged_record, :rights_holder_article_clause)
-    responsibility_text = Map.get(merged_record, :responsibility_holder_article_clause)
-    power_text = Map.get(merged_record, :power_holder_article_clause)
-
     # Build result
+    # Phase 2b: DutyType now produces both legacy text and JSONB directly
     %{
       role: actors,
       role_gvt: actors_gvt,
@@ -432,16 +421,17 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       power_holder: Map.get(merged_record, :power_holder),
 
       # Legacy text fields (for backwards compatibility)
-      duty_holder_article_clause: duty_text,
-      rights_holder_article_clause: rights_text,
-      responsibility_holder_article_clause: responsibility_text,
-      power_holder_article_clause: power_text,
+      duty_holder_article_clause: Map.get(merged_record, :duty_holder_article_clause),
+      rights_holder_article_clause: Map.get(merged_record, :rights_holder_article_clause),
+      responsibility_holder_article_clause:
+        Map.get(merged_record, :responsibility_holder_article_clause),
+      power_holder_article_clause: Map.get(merged_record, :power_holder_article_clause),
 
-      # NEW: Consolidated JSONB fields (Phase 2a dual-write)
-      duties: TaxaFormatter.duties_to_jsonb(duty_text),
-      rights: TaxaFormatter.rights_to_jsonb(rights_text),
-      responsibilities: TaxaFormatter.responsibilities_to_jsonb(responsibility_text),
-      powers: TaxaFormatter.powers_to_jsonb(power_text),
+      # Phase 2b: JSONB fields now produced directly by DutyType (no text parsing)
+      duties: Map.get(merged_record, :duties),
+      rights: Map.get(merged_record, :rights),
+      responsibilities: Map.get(merged_record, :responsibilities),
+      powers: Map.get(merged_record, :powers),
       popimar: Map.get(merged_record, :popimar),
       taxa_text_source: source,
       taxa_text_length: text_length
@@ -459,7 +449,12 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       duty_holder_article_clause: "",
       rights_holder_article_clause: "",
       responsibility_holder_article_clause: "",
-      power_holder_article_clause: ""
+      power_holder_article_clause: "",
+      # Phase 2b: JSONB fields
+      duties: nil,
+      rights: nil,
+      responsibilities: nil,
+      powers: nil
     }
   end
 
@@ -494,7 +489,13 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         merge_article_clauses(
           acc.power_holder_article_clause,
           Map.get(section_result, :power_holder_article_clause)
-        )
+        ),
+      # Phase 2b: Merge JSONB fields
+      duties: merge_jsonb_fields(acc.duties, Map.get(section_result, :duties)),
+      rights: merge_jsonb_fields(acc.rights, Map.get(section_result, :rights)),
+      responsibilities:
+        merge_jsonb_fields(acc.responsibilities, Map.get(section_result, :responsibilities)),
+      powers: merge_jsonb_fields(acc.powers, Map.get(section_result, :powers))
     }
   end
 
@@ -505,6 +506,36 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   defp merge_article_clauses(acc, ""), do: acc
   defp merge_article_clauses("", new), do: new
   defp merge_article_clauses(acc, new), do: acc <> "\n" <> new
+
+  # Phase 2b: Merge JSONB holder fields
+  defp merge_jsonb_fields(nil, nil), do: nil
+  defp merge_jsonb_fields(nil, new), do: new
+  defp merge_jsonb_fields(acc, nil), do: acc
+
+  defp merge_jsonb_fields(acc, new) when is_map(acc) and is_map(new) do
+    acc_entries = Map.get(acc, "entries", [])
+    new_entries = Map.get(new, "entries", [])
+    merged_entries = Enum.uniq(acc_entries ++ new_entries)
+
+    if merged_entries == [] do
+      nil
+    else
+      holders = merged_entries |> Enum.map(& &1["holder"]) |> Enum.uniq() |> Enum.sort()
+
+      articles =
+        merged_entries
+        |> Enum.map(& &1["article"])
+        |> Enum.filter(& &1)
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      %{
+        "entries" => merged_entries,
+        "holders" => holders,
+        "articles" => articles
+      }
+    end
+  end
 
   # ============================================================================
   # Text Fetching
