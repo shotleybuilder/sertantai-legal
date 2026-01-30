@@ -409,7 +409,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     end
 
     # Build result
-    # Phase 2b: DutyType now produces both legacy text and JSONB directly
+    # Phase 4: Only JSONB fields are persisted (legacy text fields removed)
     %{
       role: actors,
       role_gvt: actors_gvt,
@@ -420,14 +420,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       responsibility_holder: Map.get(merged_record, :responsibility_holder),
       power_holder: Map.get(merged_record, :power_holder),
 
-      # Legacy text fields (for backwards compatibility)
-      duty_holder_article_clause: Map.get(merged_record, :duty_holder_article_clause),
-      rights_holder_article_clause: Map.get(merged_record, :rights_holder_article_clause),
-      responsibility_holder_article_clause:
-        Map.get(merged_record, :responsibility_holder_article_clause),
-      power_holder_article_clause: Map.get(merged_record, :power_holder_article_clause),
-
-      # Phase 2b: JSONB fields now produced directly by DutyType (no text parsing)
+      # Consolidated JSONB holder fields (Phase 4)
       duties: Map.get(merged_record, :duties),
       rights: Map.get(merged_record, :rights),
       responsibilities: Map.get(merged_record, :responsibilities),

@@ -257,91 +257,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Article to Duty Type mapping")
     end
 
-    # Duty Holder Article References
-    attribute :duty_holder_article, :string do
-      allow_nil?(true)
-      description("Duty Holder to Article mapping")
-    end
-
-    attribute :duty_holder_article_clause, :string do
-      allow_nil?(true)
-      description("Duty Holder Article Clause details")
-    end
-
-    attribute :article_duty_holder, :string do
-      allow_nil?(true)
-      description("Article to Duty Holder mapping")
-    end
-
-    attribute :article_duty_holder_clause, :string do
-      allow_nil?(true)
-      description("Article Duty Holder Clause details")
-    end
-
-    # Power Holder Article References
-    attribute :power_holder_article, :string do
-      allow_nil?(true)
-      description("Power Holder to Article mapping")
-    end
-
-    attribute :power_holder_article_clause, :string do
-      allow_nil?(true)
-      description("Power Holder Article Clause details")
-    end
-
-    attribute :article_power_holder, :string do
-      allow_nil?(true)
-      description("Article to Power Holder mapping")
-    end
-
-    attribute :article_power_holder_clause, :string do
-      allow_nil?(true)
-      description("Article Power Holder Clause details")
-    end
-
-    # Rights Holder Article References
-    attribute :rights_holder_article, :string do
-      allow_nil?(true)
-      description("Rights Holder to Article mapping")
-    end
-
-    attribute :rights_holder_article_clause, :string do
-      allow_nil?(true)
-      description("Rights Holder Article Clause details")
-    end
-
-    attribute :article_rights_holder, :string do
-      allow_nil?(true)
-      description("Article to Rights Holder mapping")
-    end
-
-    attribute :article_rights_holder_clause, :string do
-      allow_nil?(true)
-      description("Article Rights Holder Clause details")
-    end
-
-    # Responsibility Holder Article References
-    attribute :responsibility_holder_article, :string do
-      allow_nil?(true)
-      description("Responsibility Holder to Article mapping")
-    end
-
-    attribute :responsibility_holder_article_clause, :string do
-      allow_nil?(true)
-      description("Responsibility Holder Article Clause details")
-    end
-
-    attribute :article_responsibility_holder, :string do
-      allow_nil?(true)
-      description("Article to Responsibility Holder mapping")
-    end
-
-    attribute :article_responsibility_holder_clause, :string do
-      allow_nil?(true)
-      description("Article Responsibility Holder Clause details")
-    end
-
-    # Consolidated Holder JSONB columns (replace 16 text columns above)
+    # Consolidated Holder JSONB columns (Phase 4 - replaced 16 deprecated text columns)
     # Schema: {entries: [{holder, article, duty_type, clause}], holders: [], articles: []}
     attribute :duties, :map do
       allow_nil?(true)
@@ -809,22 +725,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :duty_type,
         :duty_type_article,
         :article_duty_type,
-        :duty_holder_article,
-        :duty_holder_article_clause,
-        :article_duty_holder,
-        :article_duty_holder_clause,
-        :power_holder_article,
-        :power_holder_article_clause,
-        :article_power_holder,
-        :article_power_holder_clause,
-        :rights_holder_article,
-        :rights_holder_article_clause,
-        :article_rights_holder,
-        :article_rights_holder_clause,
-        :responsibility_holder_article,
-        :responsibility_holder_article_clause,
-        :article_responsibility_holder,
-        :article_responsibility_holder_clause,
+        # Consolidated JSONB holder fields (Phase 4)
+        :duties,
+        :rights,
+        :responsibilities,
+        :powers,
         :popimar_article,
         :popimar_article_clause,
         :article_popimar,
@@ -935,22 +840,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :duty_type,
         :duty_type_article,
         :article_duty_type,
-        :duty_holder_article,
-        :duty_holder_article_clause,
-        :article_duty_holder,
-        :article_duty_holder_clause,
-        :power_holder_article,
-        :power_holder_article_clause,
-        :article_power_holder,
-        :article_power_holder_clause,
-        :rights_holder_article,
-        :rights_holder_article_clause,
-        :article_rights_holder,
-        :article_rights_holder_clause,
-        :responsibility_holder_article,
-        :responsibility_holder_article_clause,
-        :article_responsibility_holder,
-        :article_responsibility_holder_clause,
+        # Consolidated JSONB holder fields (Phase 4)
+        :duties,
+        :rights,
+        :responsibilities,
+        :powers,
         :popimar_article,
         :popimar_article_clause,
         :article_popimar,
