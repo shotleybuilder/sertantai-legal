@@ -99,7 +99,11 @@
 		],
 		Roles: [
 			'role',
+			'article_role',
+			'role_article',
 			'role_gvt',
+			'role_gvt_article',
+			'article_role_gvt',
 			'duty_type',
 			'duty_type_article',
 			'article_duty_type',
