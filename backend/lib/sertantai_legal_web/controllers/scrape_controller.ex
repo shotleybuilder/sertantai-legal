@@ -11,6 +11,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   use SertantaiLegalWeb, :controller
 
+  require Logger
+
   alias SertantaiLegal.Scraper.SessionManager
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.LawParser
@@ -536,6 +538,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   The final `parse_complete` event includes the full parse result (same as parse_one response).
   """
+  # SSE heartbeat interval in milliseconds (keeps connection alive during long parses)
+  @sse_heartbeat_interval 5_000
+
   def parse_stream(conn, %{"id" => session_id, "name" => name} = params) do
     alias SertantaiLegal.Scraper.StagedParser
 
@@ -562,16 +567,14 @@ defmodule SertantaiLegalWeb.ScrapeController do
           {:ok, conn} =
             chunk(conn, "data: #{Jason.encode!(%{event: "connected", name: name})}\n\n")
 
-          # Progress callback that sends SSE events
-          # Returns :abort if client disconnected (chunk returns {:error, :closed})
-          send_progress = fn event ->
-            data = encode_progress_event(event)
+          # We need to handle progress events from the parser while also sending heartbeats
+          # Strategy: parser sends messages to this process, we loop receiving them with timeout
+          caller = self()
 
-            case chunk(conn, "data: #{data}\n\n") do
-              {:ok, _} -> :ok
-              {:error, :closed} -> :abort
-              {:error, _reason} -> :abort
-            end
+          # Progress callback sends messages to the controller process
+          send_progress = fn event ->
+            send(caller, {:sse_event, event})
+            :ok
           end
 
           # Parse stages parameter if provided (for retry functionality)
@@ -602,32 +605,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 [on_progress: send_progress, stages: stages]
             end
 
-          # Run staged parse with progress callback (and optional stage filter)
-          {:ok, result} = StagedParser.parse(record, parse_opts)
+          # Start the parser in a separate task
+          task = Task.async(fn -> StagedParser.parse(record, parse_opts) end)
 
-          # Only send final result if parse wasn't cancelled (client still connected)
-          unless result.cancelled do
-            comparison_map = ParsedLaw.to_comparison_map(result.law)
-            scraped_keys = Map.keys(comparison_map)
-            duplicate = check_duplicate(name, scraped_keys)
-
-            final_event =
-              Jason.encode!(%{
-                event: "parse_complete",
-                has_errors: result.has_errors,
-                result: %{
-                  session_id: session_id,
-                  name: name,
-                  record: comparison_map,
-                  stages: format_stages(result.stages),
-                  errors: result.errors,
-                  has_errors: result.has_errors,
-                  duplicate: duplicate
-                }
-              })
-
-            chunk(conn, "data: #{final_event}\n\n")
-          end
+          # Event loop: receive parser events or send heartbeats on timeout
+          conn = sse_event_loop(conn, task, session_id, name)
 
           conn
       end
@@ -643,6 +625,83 @@ defmodule SertantaiLegalWeb.ScrapeController do
           |> json(%{error: format_error(reason)})
         end
     end
+  end
+
+  # SSE event loop - receives parser events or sends heartbeats on timeout
+  defp sse_event_loop(conn, task, session_id, name) do
+    receive do
+      {:sse_event, event} ->
+        # Forward parser event to client
+        data = encode_progress_event(event)
+
+        case chunk(conn, "data: #{data}\n\n") do
+          {:ok, conn} ->
+            sse_event_loop(conn, task, session_id, name)
+
+          {:error, _reason} ->
+            # Client disconnected, but let task finish (it will check for :abort)
+            Task.await(task, :infinity)
+            conn
+        end
+
+      {ref, {:ok, result}} when is_reference(ref) ->
+        # Task completed successfully
+        Process.demonitor(ref, [:flush])
+        send_parse_complete(conn, result, session_id, name)
+
+      {ref, {:error, reason}} when is_reference(ref) ->
+        # Task failed
+        Process.demonitor(ref, [:flush])
+        Logger.error("[SSE] Parse task failed: #{inspect(reason)}")
+        conn
+
+      {:DOWN, _ref, :process, _pid, reason} ->
+        # Task crashed
+        Logger.error("[SSE] Parse task crashed: #{inspect(reason)}")
+        conn
+    after
+      @sse_heartbeat_interval ->
+        # Send SSE comment as heartbeat (keeps connection alive)
+        # SSE spec: lines starting with ":" are comments and should be ignored by clients
+        case chunk(conn, ": heartbeat\n\n") do
+          {:ok, conn} ->
+            sse_event_loop(conn, task, session_id, name)
+
+          {:error, _reason} ->
+            # Client disconnected
+            Logger.info("[SSE] Client disconnected during heartbeat")
+            Task.await(task, :infinity)
+            conn
+        end
+    end
+  end
+
+  # Send the final parse_complete event
+  defp send_parse_complete(conn, result, session_id, name) do
+    unless result.cancelled do
+      comparison_map = ParsedLaw.to_comparison_map(result.law)
+      scraped_keys = Map.keys(comparison_map)
+      duplicate = check_duplicate(name, scraped_keys)
+
+      final_event =
+        Jason.encode!(%{
+          event: "parse_complete",
+          has_errors: result.has_errors,
+          result: %{
+            session_id: session_id,
+            name: name,
+            record: comparison_map,
+            stages: format_stages(result.stages),
+            errors: result.errors,
+            has_errors: result.has_errors,
+            duplicate: duplicate
+          }
+        })
+
+      chunk(conn, "data: #{final_event}\n\n")
+    end
+
+    conn
   end
 
   def parse_stream(conn, %{"id" => _session_id}) do
