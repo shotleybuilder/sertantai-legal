@@ -341,6 +341,28 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Article Responsibility Holder Clause details")
     end
 
+    # Consolidated Holder JSONB columns (replace 16 text columns above)
+    # Schema: {entries: [{holder, article, duty_type, clause}], holders: [], articles: []}
+    attribute :duties, :map do
+      allow_nil?(true)
+      description("Consolidated duty holder/article/clause data as JSONB")
+    end
+
+    attribute :rights, :map do
+      allow_nil?(true)
+      description("Consolidated rights holder/article/clause data as JSONB")
+    end
+
+    attribute :responsibilities, :map do
+      allow_nil?(true)
+      description("Consolidated responsibility holder/article/clause data as JSONB")
+    end
+
+    attribute :powers, :map do
+      allow_nil?(true)
+      description("Consolidated power holder/article/clause data as JSONB")
+    end
+
     # POPIMAR Article References
     attribute :popimar_article, :string do
       allow_nil?(true)
