@@ -109,12 +109,13 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
 
     case fetch_law_text(type_code, year, number) do
       {:ok, text, source, p1_sections} ->
-        # Large law with P1 sections - use chunked parallel processing
+        # Law with P1 sections - use chunked processing for article field population
+        # Large laws use parallel processing, small laws use sequential
         taxa_data = classify_text_chunked(text, source, p1_sections, law_name: law_name)
         {:ok, taxa_data}
 
       {:ok, text, source} ->
-        # Normal law or large law without P1 tags - use standard processing
+        # Law without P1 tags - use standard processing (no article granularity)
         taxa_data = classify_text(text, source, law_name: law_name)
         {:ok, taxa_data}
 
@@ -543,7 +544,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     # The legacy code parsed the full body text for actor extraction
     case fetch_body_text(type_code, year, number) do
       {:ok, text, p1_sections} when text != "" ->
-        # Large law with P1 sections for chunked processing
+        # Law with P1 sections - enables article field population
         {:ok, text, "body", p1_sections}
 
       {:ok, text} when text != "" ->
@@ -589,19 +590,15 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     case Client.fetch_xml(path) do
       {:ok, xml} ->
         text = extract_text_from_xml(xml)
-        text_length = String.length(text)
 
-        # For large laws, also extract P1 sections for chunked processing
-        if large_law?(text_length) do
-          p1_sections = extract_p1_sections(xml)
+        # Always extract P1 sections for article field population
+        # Large laws use chunked parallel processing, small laws use sequential
+        p1_sections = extract_p1_sections(xml)
 
-          if p1_sections != [] do
-            {:ok, text, p1_sections}
-          else
-            # No P1 tags - return just text (will use modal windowing fallback)
-            {:ok, text}
-          end
+        if p1_sections != [] do
+          {:ok, text, p1_sections}
         else
+          # No P1 tags - return just text (will use modal windowing for large laws)
           {:ok, text}
         end
 
