@@ -26,6 +26,25 @@ export interface HolderJsonb {
 }
 
 /**
+ * Entry in the consolidated JSONB POPIMAR field
+ * Represents a single category/article combination
+ */
+export interface PopimarEntry {
+	category: string;
+	article: string | null;
+}
+
+/**
+ * Consolidated JSONB structure for POPIMAR field (Phase 3 Issue #15)
+ * Replaces the 4 deprecated text columns (popimar_article, popimar_article_clause, article_popimar, article_popimar_clause)
+ */
+export interface PopimarJsonb {
+	entries: PopimarEntry[];
+	categories: string[];
+	articles: string[];
+}
+
+/**
  * UK LRT Record type matching the database schema
  */
 export interface UkLrtRecord {
@@ -71,6 +90,8 @@ export interface UkLrtRecord {
 	powers: HolderJsonb | null;
 	// POPIMAR
 	popimar: Record<string, unknown> | null;
+	// Consolidated JSONB POPIMAR field (Phase 3 Issue #15 - replaces 4 deprecated text columns)
+	popimar_details: PopimarJsonb | null;
 	popimar_article: string | null;
 	popimar_article_clause: string | null;
 	article_popimar: string | null;
@@ -140,6 +161,8 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		responsibilities: parseHolderJsonb(data.responsibilities),
 		powers: parseHolderJsonb(data.powers),
 		popimar: parseJson(data.popimar),
+		// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
+		popimar_details: parsePopimarJsonb(data.popimar_details),
 		popimar_article: parseString(data.popimar_article),
 		popimar_article_clause: parseString(data.popimar_article_clause),
 		article_popimar: parseString(data.article_popimar),
@@ -248,6 +271,41 @@ function parseHolderJsonb(value: unknown): HolderJsonb | null {
 			};
 		}),
 		holders: Array.isArray(obj.holders) ? obj.holders.map(String) : [],
+		articles: Array.isArray(obj.articles) ? obj.articles.map(String) : []
+	};
+}
+
+/**
+ * Parse consolidated JSONB POPIMAR field (Phase 3 Issue #15)
+ */
+function parsePopimarJsonb(value: unknown): PopimarJsonb | null {
+	if (value === null || value === undefined) return null;
+
+	let parsed: unknown = value;
+	if (typeof value === 'string') {
+		try {
+			parsed = JSON.parse(value);
+		} catch {
+			return null;
+		}
+	}
+
+	if (typeof parsed !== 'object' || parsed === null) return null;
+
+	const obj = parsed as Record<string, unknown>;
+
+	// Validate structure
+	if (!Array.isArray(obj.entries)) return null;
+
+	return {
+		entries: (obj.entries as unknown[]).map((entry) => {
+			const e = entry as Record<string, unknown>;
+			return {
+				category: String(e.category || ''),
+				article: e.article ? String(e.article) : null
+			};
+		}),
+		categories: Array.isArray(obj.categories) ? obj.categories.map(String) : [],
 		articles: Array.isArray(obj.articles) ? obj.articles.map(String) : []
 	};
 }

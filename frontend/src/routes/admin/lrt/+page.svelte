@@ -73,6 +73,8 @@
 		powers: Record<string, unknown> | null;
 		// POPIMAR
 		popimar: Record<string, unknown> | null;
+		// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
+		popimar_details: Record<string, unknown> | null;
 		popimar_article: string | null;
 		popimar_article_clause: string | null;
 		article_popimar: string | null;
@@ -364,6 +366,7 @@
 				'name',
 				'title_en',
 				'popimar',
+				'popimar_details',
 				'popimar_article',
 				'popimar_article_clause',
 				'article_popimar',
@@ -1270,6 +1273,22 @@
 			},
 			size: 150,
 			meta: { group: 'POPIMAR', dataType: 'text' }
+		},
+		{
+			id: 'popimar_details',
+			accessorKey: 'popimar_details',
+			header: 'POPIMAR Details (JSONB)',
+			cell: (info) => {
+				const val = info.getValue() as Record<string, unknown> | null;
+				if (!val) return '-';
+				const categories = val.categories as string[] | undefined;
+				if (categories && categories.length > 0) {
+					return categories.join(', ');
+				}
+				return JSON.stringify(val).slice(0, 50);
+			},
+			size: 200,
+			meta: { group: 'POPIMAR', dataType: 'jsonb' }
 		},
 		{
 			id: 'popimar_article',

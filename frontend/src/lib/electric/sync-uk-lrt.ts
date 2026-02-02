@@ -108,6 +108,7 @@ const UK_LRT_COLUMNS = [
 	'article_duty_type',
 	'popimar_article',
 	'article_popimar',
+	'popimar_details',
 	'updated_at',
 	'md_modified',
 	'enacted_by_meta',

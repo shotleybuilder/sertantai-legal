@@ -117,6 +117,8 @@
 			'responsibilities',
 			'powers',
 			'popimar',
+			// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
+			'popimar_details',
 			'popimar_article',
 			'popimar_article_clause',
 			'article_popimar',

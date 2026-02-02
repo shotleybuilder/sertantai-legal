@@ -299,6 +299,8 @@ describe('UkLrtRecord type', () => {
 			responsibilities: null,
 			powers: null,
 			popimar: null,
+			// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
+			popimar_details: null,
 			popimar_article: null,
 			popimar_article_clause: null,
 			article_popimar: null,
@@ -320,6 +322,7 @@ describe('UkLrtRecord type', () => {
 			md_attachment_paras: null,
 			md_images: null,
 			latest_amend_date: null,
+			latest_rescind_date: null,
 			leg_gov_uk_url: null,
 			created_at: null,
 			updated_at: null

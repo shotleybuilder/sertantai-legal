@@ -153,6 +153,7 @@ export const FIELD_LABELS: Record<string, string> = {
 
 	// Taxa - POPIMAR
 	popimar: 'POPIMAR',
+	popimar_details: 'POPIMAR Details (JSONB)',
 	popimar_article: 'POPIMAR Article',
 	popimar_article_clause: 'POPIMAR Article Clause',
 	article_popimar: 'Article POPIMAR',
@@ -1038,6 +1039,13 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				fields: [
 					// Order matches LRT-SCHEMA.md STAGE 6 POPIMAR table
 					{ key: 'popimar', label: 'POPIMAR', type: 'json', stage: 'taxa', hideWhenEmpty: true },
+					{
+						key: 'popimar_details',
+						label: 'POPIMAR Details (JSONB)',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
 					{
 						key: 'popimar_article',
 						label: 'POPIMAR Article',
