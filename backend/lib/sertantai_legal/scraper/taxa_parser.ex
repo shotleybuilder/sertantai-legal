@@ -48,6 +48,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     DutyType,
     Popimar,
     PurposeClassifier,
+    TaxaFormatter,
     TextCleaner
   }
 
@@ -87,7 +88,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           rights_holder: map() | nil,
           responsibility_holder: map() | nil,
           power_holder: map() | nil,
-          popimar: map() | nil,
+          popimar: list(String.t()) | nil,
+          popimar_details: map() | nil,
           taxa_text_source: String.t(),
           taxa_text_length: integer()
         }
@@ -263,8 +265,10 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         responsibilities: Map.get(record, :responsibilities),
         powers: Map.get(record, :powers),
 
-        # POPIMAR field
+        # POPIMAR field (list of categories)
         popimar: Map.get(record, :popimar),
+        # Phase 2 Issue #15: POPIMAR JSONB (no article context in non-chunked path)
+        popimar_details: TaxaFormatter.popimar_to_jsonb(Map.get(record, :popimar), []),
 
         # Metadata about the classification
         taxa_text_source: source,
@@ -426,7 +430,10 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       rights: duty_type_results.rights,
       responsibilities: duty_type_results.responsibilities,
       powers: duty_type_results.powers,
+      # POPIMAR field (list of categories)
       popimar: Map.get(merged_record, :popimar),
+      # Phase 2 Issue #15: POPIMAR JSONB (no article context in chunked path currently)
+      popimar_details: TaxaFormatter.popimar_to_jsonb(Map.get(merged_record, :popimar), []),
       taxa_text_source: source,
       taxa_text_length: text_length
     }
@@ -746,6 +753,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       responsibility_holder: nil,
       power_holder: nil,
       popimar: nil,
+      popimar_details: nil,
       taxa_text_source: source,
       taxa_text_length: 0
     }

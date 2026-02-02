@@ -142,6 +142,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           rights: map() | nil,
           responsibilities: map() | nil,
           powers: map() | nil,
+          # === TAXA (Consolidated JSONB POPIMAR field - Phase 2 Issue #15) ===
+          popimar_details: map() | nil,
           popimar_article: String.t() | nil,
           popimar_article_clause: String.t() | nil,
           article_popimar: String.t() | nil,
@@ -286,6 +288,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     rights: nil,
     responsibilities: nil,
     powers: nil,
+    # Taxa (Consolidated JSONB POPIMAR field - Phase 2 Issue #15)
+    popimar_details: nil,
     popimar_article: nil,
     popimar_article_clause: nil,
     article_popimar: nil,
@@ -529,6 +533,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       rights: get_map(normalized, :rights),
       responsibilities: get_map(normalized, :responsibilities),
       powers: get_map(normalized, :powers),
+      # Taxa (Consolidated JSONB POPIMAR field - Phase 2 Issue #15)
+      popimar_details: get_map(normalized, :popimar_details),
       popimar_article: get_string(normalized, :popimar_article),
       popimar_article_clause: get_string(normalized, :popimar_article_clause),
       article_popimar: get_string(normalized, :article_popimar),

@@ -147,6 +147,104 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaFormatter do
   def powers_from_matches(matches, opts \\ []), do: matches_to_jsonb(matches, opts)
 
   # ============================================================================
+  # Phase 2 Issue #15: POPIMAR JSONB conversion
+  # ============================================================================
+
+  @doc """
+  Convert POPIMAR matches to JSONB format.
+
+  Takes the list of POPIMAR categories and article context, producing
+  a structured JSONB with entries, categories, and articles.
+
+  ## Parameters
+  - `categories` - List of POPIMAR category strings (e.g., ["Records", "Risk Control"])
+  - `opts` - Optional keyword list with :article key for article context
+
+  ## Returns
+  Map with `entries`, `categories`, and `articles` keys, or nil if empty.
+
+  ## Example
+
+      iex> popimar_to_jsonb(["Records", "Risk Control"], article: "regulation/4")
+      %{
+        "entries" => [
+          %{"category" => "Records", "article" => "regulation/4"},
+          %{"category" => "Risk Control", "article" => "regulation/4"}
+        ],
+        "categories" => ["Records", "Risk Control"],
+        "articles" => ["regulation/4"]
+      }
+  """
+  @spec popimar_to_jsonb(list(String.t()) | nil, keyword()) :: map() | nil
+  def popimar_to_jsonb(nil, _opts), do: nil
+  def popimar_to_jsonb([], _opts), do: nil
+
+  def popimar_to_jsonb(categories, opts) when is_list(categories) do
+    article = Keyword.get(opts, :article)
+
+    entries =
+      Enum.map(categories, fn category ->
+        %{
+          "category" => category,
+          "article" => article
+        }
+      end)
+
+    if entries == [] do
+      nil
+    else
+      unique_categories = categories |> Enum.uniq() |> Enum.sort()
+      articles = if article, do: [article], else: []
+
+      %{
+        "entries" => entries,
+        "categories" => unique_categories,
+        "articles" => articles
+      }
+    end
+  end
+
+  @doc """
+  Merge multiple POPIMAR JSONB results into one.
+
+  Used when combining results from chunked processing where each section
+  may have different POPIMAR categories.
+
+  ## Parameters
+  - `results` - List of POPIMAR JSONB maps to merge
+
+  ## Returns
+  Merged map with deduplicated entries, categories, and articles.
+  """
+  @spec merge_popimar_jsonb(list(map() | nil)) :: map() | nil
+  def merge_popimar_jsonb(results) do
+    results = Enum.reject(results, &is_nil/1)
+
+    if results == [] do
+      nil
+    else
+      all_entries = Enum.flat_map(results, & &1["entries"])
+      # Deduplicate by category+article combination
+      unique_entries = Enum.uniq_by(all_entries, fn e -> {e["category"], e["article"]} end)
+
+      categories = unique_entries |> Enum.map(& &1["category"]) |> Enum.uniq() |> Enum.sort()
+
+      articles =
+        unique_entries
+        |> Enum.map(& &1["article"])
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      %{
+        "entries" => unique_entries,
+        "categories" => categories,
+        "articles" => articles
+      }
+    end
+  end
+
+  # ============================================================================
   # Private Functions (Phase 2a legacy text parsing)
   # ============================================================================
 
