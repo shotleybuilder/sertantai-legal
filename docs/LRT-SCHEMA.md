@@ -375,10 +375,25 @@
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `popimar` | POPIMAR | `popimar` | `map` (JSONB) | Yes (4707) | `{"Policy": true, "Risk Control": true, ...}` | 🦋_taxa |
-    | `popimar_article` | POPIMAR Article | `popimar_article` | `string` | Yes (4707) | | 🦋_taxa |
-    | `popimar_article_clause` | POPIMAR Article Clause | `popimar_article_clause` | `string` | Yes (67) | | 🦋_taxa |
-    | `article_popimar` | Article POPIMAR | `article_popimar` | `string` | Yes (4706) | | 🦋_taxa |
-    | `article_popimar_clause` | Article POPIMAR Clause | `article_popimar_clause` | `string` | No | | 🦋_taxa |
+    | `popimar_details` | POPIMAR Details | `popimar_details` | `map` (JSONB) | Yes (4707) | `{"entries": [...], "categories": [...], "articles": [...]}` | 🦋_taxa |
+    
+    **Entry Structure** (Issue #15 - consolidated from 4 deprecated text columns):
+    ```json
+    {
+      "entries": [
+        {"category": "Risk Control", "article": "regulation/4"},
+        {"category": "Records", "article": "regulation/5"}
+      ],
+      "categories": ["Records", "Risk Control"],
+      "articles": ["regulation/4", "regulation/5"]
+    }
+    ```
+    
+    **Deprecated columns** (removed in Phase 4 Issue #15):
+    - `popimar_article` - consolidated into `popimar_details`
+    - `popimar_article_clause` - consolidated into `popimar_details`
+    - `article_popimar` - consolidated into `popimar_details`
+    - `article_popimar_clause` - consolidated into `popimar_details`
 
 ---
 
