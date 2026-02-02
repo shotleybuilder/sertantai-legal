@@ -26,111 +26,125 @@
 		}
 	});
 
-	// Field groupings matching the schema alignment doc
+	// Field groupings matching LRT-SCHEMA.md structure (v1.1)
+	// Order follows parse stages: STAGE 1-7
 	const fieldGroups: Record<string, string[]> = {
+		// STAGE 1 💠 metadata - Credentials
 		Credentials: [
+			'id',
 			'name',
-			'title_en',
+			'type_code',
 			'year',
 			'number',
-			'number_int',
-			'type_code',
+			'old_style_number',
+			'title_en',
+			'acronym',
+			'leg_gov_uk_url',
 			'type_desc',
 			'type_class',
 			'secondary_class',
-			'acronym',
-			'old_style_number'
+			'domain',
+			'number_int'
 		],
+		// STAGE 1 💠 metadata - Description
 		Description: ['family', 'family_ii', 'si_code', 'tags', 'md_description', 'md_subjects'],
-		Status: ['live', 'live_description'],
-		'Geographic Extent': ['geo_extent', 'geo_region', 'geo_detail', 'md_restrict_extent'],
-		Metadata: [
+		// STAGE 1 💠 metadata - Dates
+		Dates: [
 			'md_date',
 			'md_made_date',
 			'md_enactment_date',
 			'md_coming_into_force_date',
 			'md_dct_valid_date',
+			'md_modified',
 			'md_restrict_start_date',
+			'md_restrict_extent'
+		],
+		// STAGE 1 💠 metadata - Document Statistics
+		'Document Statistics': [
 			'md_total_paras',
 			'md_body_paras',
 			'md_schedule_paras',
 			'md_attachment_paras',
-			'md_images',
-			'dct_valid',
-			'latest_amend_date',
-			'latest_change_date',
-			'latest_rescind_date'
+			'md_images'
 		],
-		Function: [
-			'function',
-			'is_making',
-			'is_commencing',
+		// STAGE 2 📍 geographic extent
+		'Geographic Extent': ['geo_extent', 'geo_region', 'geo_detail'],
+		// STAGE 3 🚀 enacted_by
+		'Enacted By': ['enacted_by', 'enacted_by_meta', 'is_enacting', 'enacting', 'linked_enacted_by'],
+		// STAGE 4 🔄 amending - Function flags
+		Function: ['function', 'is_making', 'is_commencing'],
+		// STAGE 4 🔄 amending - Self-Affects
+		'Self-Affects': ['stats_self_affects_count', 'stats_self_affects_count_per_law_detailed'],
+		// STAGE 4 🔄 amending - Amending (this law affects others)
+		Amending: [
 			'is_amending',
-			'is_rescinding',
-			'is_enacting',
-			'enacting',
-			'enacted_by',
-			'amending',
-			'amended_by',
-			'rescinding',
-			'rescinded_by',
-			'amending_count',
-			'amended_by_count',
-			'rescinding_count',
-			'rescinded_by_count',
 			'amending_stats_affects_count',
 			'amending_stats_affected_laws_count',
 			'affects_stats_per_law',
+			'amending',
+			'linked_amending',
+			'amending_change_log'
+		],
+		// STAGE 4 🔄 amending - Rescinding (this law rescinds others)
+		Rescinding: [
+			'is_rescinding',
+			'rescinding_stats_rescinding_laws_count',
+			'rescinding_stats_per_law',
+			'rescinding',
+			'linked_rescinding'
+		],
+		// STAGE 5 🔄 amended_by - Amended By (this law is affected by others)
+		'Amended By': [
 			'amended_by_stats_affected_by_count',
 			'amended_by_stats_affected_by_laws_count',
 			'affected_by_stats_per_law',
-			'rescinding_stats_rescinding_laws_count',
-			'rescinding_stats_per_law',
-			'rescinded_by_stats_rescinded_by_laws_count',
-			'rescinded_by_stats_per_law',
-			'stats_self_affects_count',
-			'stats_self_affects_count_per_law_detailed',
-			'linked_amending',
+			'amended_by',
 			'linked_amended_by',
-			'linked_rescinding',
-			'linked_rescinded_by',
-			'linked_enacted_by',
-			'amending_change_log',
+			'latest_amend_date',
+			'latest_change_date',
 			'amended_by_change_log'
 		],
-		Roles: [
-			'role',
-			'article_role',
-			'role_article',
-			'role_gvt',
-			'role_gvt_article',
-			'article_role_gvt',
-			'duty_type',
-			'duty_type_article',
-			'article_duty_type',
-			'duty_holder',
-			'rights_holder',
-			'responsibility_holder',
-			'power_holder',
-			// Consolidated JSONB holder fields (Phase 3)
-			'duties',
-			'rights',
-			'responsibilities',
-			'powers',
+		// STAGE 5 🔄 amended_by - Rescinded By (this law is rescinded by others)
+		'Rescinded By': [
+			'rescinded_by_stats_rescinded_by_laws_count',
+			'rescinded_by_stats_per_law',
+			'rescinded_by',
+			'linked_rescinded_by',
+			'latest_rescind_date'
+		],
+		// STAGE 6 🚫 repeal_revoke - Status
+		Status: [
+			'live',
+			'live_description',
+			'live_source',
+			'live_conflict',
+			'live_from_changes',
+			'live_from_metadata',
+			'live_conflict_detail'
+		],
+		// STAGE 7 🦋 taxa - Purpose
+		Purpose: ['purpose'],
+		// STAGE 7 🦋 taxa - Roles
+		Roles: ['role', 'role_details', 'role_gvt', 'role_gvt_details'],
+		// STAGE 7 🦋 taxa - Duty Type
+		'Duty Type': ['duty_type', 'duty_type_article', 'article_duty_type'],
+		// STAGE 7 🦋 taxa - Holders (DRRP)
+		Duties: ['duty_holder', 'duties'],
+		Rights: ['rights_holder', 'rights'],
+		Responsibilities: ['responsibility_holder', 'responsibilities'],
+		Powers: ['power_holder', 'powers'],
+		// STAGE 7 🦋 taxa - POPIMAR
+		POPIMAR: [
 			'popimar',
-			// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
 			'popimar_details',
-			// Consolidated JSONB Role fields (Phase 3 Issue #16)
-			'role_details',
-			'role_gvt_details',
 			'popimar_article',
 			'popimar_article_clause',
 			'article_popimar',
-			'article_popimar_clause',
-			'purpose',
-			'items'
+			'article_popimar_clause'
 		],
-		'External References': ['leg_gov_uk_url'],
+		// Change Logs
+		'Change Logs': ['record_change_log'],
+		// Timestamps
 		Timestamps: ['created_at', 'updated_at', 'inserted_at']
 	};
 
@@ -214,16 +228,38 @@
 	// Sort order for change types
 	const typeOrder: Record<ChangeType, number> = { deleted: 0, modified: 1, added: 2 };
 
-	// Group order
+	// Group order matching LRT-SCHEMA.md structure (v1.1)
 	const groupOrder = [
+		// STAGE 1 💠 metadata
 		'Credentials',
 		'Description',
-		'Status',
+		'Dates',
+		'Document Statistics',
+		// STAGE 2 📍 geographic extent
 		'Geographic Extent',
-		'Metadata',
+		// STAGE 3 🚀 enacted_by
+		'Enacted By',
+		// STAGE 4 🔄 amending
 		'Function',
+		'Self-Affects',
+		'Amending',
+		'Rescinding',
+		// STAGE 5 🔄 amended_by
+		'Amended By',
+		'Rescinded By',
+		// STAGE 6 🚫 repeal_revoke
+		'Status',
+		// STAGE 7 🦋 taxa
+		'Purpose',
 		'Roles',
-		'External References',
+		'Duty Type',
+		'Duties',
+		'Rights',
+		'Responsibilities',
+		'Powers',
+		'POPIMAR',
+		// Other
+		'Change Logs',
 		'Timestamps',
 		'Other'
 	];
