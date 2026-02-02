@@ -133,6 +133,9 @@ export const FIELD_LABELS: Record<string, string> = {
 	role_gvt: 'Role Gvt',
 	role_gvt_article: 'Role Gvt Article',
 	article_role_gvt: 'Article Role Gvt',
+	// Consolidated JSONB Role fields (Phase 3 Issue #16)
+	role_details: 'Role Details (JSONB)',
+	role_gvt_details: 'Role Gvt Details (JSONB)',
 
 	// Taxa - Duty Type
 	duty_type: 'Duty Type',
@@ -888,6 +891,13 @@ export const SECTION_CONFIG: SectionConfig[] = [
 					// Order matches LRT-SCHEMA.md STAGE 6 Roles table
 					{ key: 'role', label: 'Role', type: 'array', stage: 'taxa', hideWhenEmpty: true },
 					{
+						key: 'role_details',
+						label: 'Role Details (JSONB)',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
 						key: 'article_role',
 						label: 'Article Role',
 						type: 'multiline',
@@ -902,6 +912,13 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					},
 					{ key: 'role_gvt', label: 'Role Gvt', type: 'json', stage: 'taxa', hideWhenEmpty: true },
+					{
+						key: 'role_gvt_details',
+						label: 'Role Gvt Details (JSONB)',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
 					{
 						key: 'role_gvt_article',
 						label: 'Role Gvt Article',

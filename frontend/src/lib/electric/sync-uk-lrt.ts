@@ -114,6 +114,8 @@ const UK_LRT_COLUMNS = [
 	'enacted_by_meta',
 	'role_gvt_article',
 	'article_role_gvt',
+	'role_details',
+	'role_gvt_details',
 	'live_source',
 	'live_conflict',
 	'live_from_changes',

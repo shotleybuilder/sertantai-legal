@@ -45,6 +45,25 @@ export interface PopimarJsonb {
 }
 
 /**
+ * Entry in the consolidated JSONB Role fields
+ * Represents a single role/article combination
+ */
+export interface RoleEntry {
+	role: string;
+	article: string | null;
+}
+
+/**
+ * Consolidated JSONB structure for Role fields (Phase 3 Issue #16)
+ * Replaces the 4 deprecated text columns (article_role, role_article, role_gvt_article, article_role_gvt)
+ */
+export interface RoleJsonb {
+	entries: RoleEntry[];
+	roles: string[];
+	articles: string[];
+}
+
+/**
  * UK LRT Record type matching the database schema
  */
 export interface UkLrtRecord {
@@ -71,6 +90,9 @@ export interface UkLrtRecord {
 	role_gvt: Record<string, unknown> | null;
 	article_role: string | null;
 	role_article: string | null;
+	// Consolidated JSONB Role fields (Phase 3 Issue #16 - replaces 4 deprecated text columns)
+	role_details: RoleJsonb | null;
+	role_gvt_details: RoleJsonb | null;
 	// Duty Type
 	duty_type: string | null;
 	duty_type_article: string | null;
@@ -148,6 +170,9 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		role_gvt: parseJson(data.role_gvt),
 		article_role: parseString(data.article_role),
 		role_article: parseString(data.role_article),
+		// Consolidated JSONB Role fields (Phase 3 Issue #16)
+		role_details: parseRoleJsonb(data.role_details),
+		role_gvt_details: parseRoleJsonb(data.role_gvt_details),
 		duty_type: parseString(data.duty_type),
 		duty_type_article: parseString(data.duty_type_article),
 		article_duty_type: parseString(data.article_duty_type),
@@ -271,6 +296,41 @@ function parseHolderJsonb(value: unknown): HolderJsonb | null {
 			};
 		}),
 		holders: Array.isArray(obj.holders) ? obj.holders.map(String) : [],
+		articles: Array.isArray(obj.articles) ? obj.articles.map(String) : []
+	};
+}
+
+/**
+ * Parse consolidated JSONB Role fields (Phase 3 Issue #16)
+ */
+function parseRoleJsonb(value: unknown): RoleJsonb | null {
+	if (value === null || value === undefined) return null;
+
+	let parsed: unknown = value;
+	if (typeof value === 'string') {
+		try {
+			parsed = JSON.parse(value);
+		} catch {
+			return null;
+		}
+	}
+
+	if (typeof parsed !== 'object' || parsed === null) return null;
+
+	const obj = parsed as Record<string, unknown>;
+
+	// Validate structure
+	if (!Array.isArray(obj.entries)) return null;
+
+	return {
+		entries: (obj.entries as unknown[]).map((entry) => {
+			const e = entry as Record<string, unknown>;
+			return {
+				role: String(e.role || ''),
+				article: e.article ? String(e.article) : null
+			};
+		}),
+		roles: Array.isArray(obj.roles) ? obj.roles.map(String) : [],
 		articles: Array.isArray(obj.articles) ? obj.articles.map(String) : []
 	};
 }

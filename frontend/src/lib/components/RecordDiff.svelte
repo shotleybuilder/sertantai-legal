@@ -119,6 +119,9 @@
 			'popimar',
 			// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
 			'popimar_details',
+			// Consolidated JSONB Role fields (Phase 3 Issue #16)
+			'role_details',
+			'role_gvt_details',
 			'popimar_article',
 			'popimar_article_clause',
 			'article_popimar',

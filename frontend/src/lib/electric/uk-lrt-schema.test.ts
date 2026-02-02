@@ -286,6 +286,9 @@ describe('UkLrtRecord type', () => {
 			role_gvt: null,
 			article_role: null,
 			role_article: null,
+			// Consolidated JSONB Role fields (Phase 3 Issue #16)
+			role_details: null,
+			role_gvt_details: null,
 			duty_type: null,
 			duty_type_article: null,
 			article_duty_type: null,
