@@ -229,6 +229,14 @@
 	// Sort order for change types
 	const typeOrder: Record<ChangeType, number> = { deleted: 0, modified: 1, added: 2 };
 
+	// Get field order within a group for sorting
+	function getFieldOrder(group: string, field: string): number {
+		const fields = fieldGroups[group];
+		if (!fields) return 999;
+		const index = fields.indexOf(field);
+		return index === -1 ? 999 : index;
+	}
+
 	// Group order matching LRT-SCHEMA.md structure (v1.1)
 	const groupOrder = [
 		// STAGE 1 💠 metadata
@@ -275,12 +283,14 @@
 		{} as Record<string, Change[]>
 	);
 
-	// Sort changes within each group by type
+	// Sort changes within each group by field order (matching LRT-SCHEMA.md)
 	$: sortedGroups = groupOrder
 		.filter((g) => groupedChanges[g]?.length > 0)
 		.map((group) => ({
 			name: group,
-			changes: groupedChanges[group].sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
+			changes: groupedChanges[group].sort(
+				(a, b) => getFieldOrder(group, a.field) - getFieldOrder(group, b.field)
+			)
 		}));
 
 	// Summary counts
