@@ -249,6 +249,23 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Role to Article mapping")
     end
 
+    # Consolidated Role JSONB fields (Phase 1 Issue #16)
+    attribute :role_details, :map do
+      allow_nil?(true)
+
+      description(
+        "Consolidated role/article details (Phase 1 Issue #16) - replaces article_role, role_article"
+      )
+    end
+
+    attribute :role_gvt_details, :map do
+      allow_nil?(true)
+
+      description(
+        "Consolidated government role/article details (Phase 1 Issue #16) - replaces role_gvt_article, article_role_gvt"
+      )
+    end
+
     # Duty Type
     attribute :duty_type, :map do
       allow_nil?(true)
@@ -713,6 +730,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :article_role_gvt,
         :article_role,
         :role_article,
+        # Consolidated Role JSONB fields (Phase 1 Issue #16)
+        :role_details,
+        :role_gvt_details,
         :duty_type,
         :duty_type_article,
         :article_duty_type,
@@ -827,6 +847,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :article_role_gvt,
         :article_role,
         :role_article,
+        # Consolidated Role JSONB fields (Phase 1 Issue #16)
+        :role_details,
+        :role_gvt_details,
         :duty_type,
         :duty_type_article,
         :article_duty_type,
