@@ -984,19 +984,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           # Flattened stats - Amending (🔺 this law affects others) - excludes self
           amending_stats_affects_count: affecting.stats.amendments_count,
           amending_stats_affected_laws_count: affecting.stats.amended_laws_count,
-          amending_stats_affects_count_per_law: build_count_per_law_summary(affecting.amendments),
-          amending_stats_affects_count_per_law_detailed:
-            build_count_per_law_detailed(affecting.amendments),
-          # NEW: Consolidated JSONB field (🔺_affects_stats_per_law)
+          # Consolidated JSONB field (🔺_affects_stats_per_law) - replaces legacy text columns
           affects_stats_per_law: build_stats_per_law_jsonb(affecting.amendments),
 
           # Flattened stats - Rescinding (🔺 this law rescinds others) - excludes self
           rescinding_stats_rescinding_laws_count: affecting.stats.revoked_laws_count,
-          rescinding_stats_rescinding_count_per_law:
-            build_count_per_law_summary(affecting.revocations),
-          rescinding_stats_rescinding_count_per_law_detailed:
-            build_count_per_law_detailed(affecting.revocations),
-          # NEW: Consolidated JSONB field (🔺_rescinding_stats_per_law)
+          # Consolidated JSONB field (🔺_rescinding_stats_per_law) - replaces legacy text columns
           rescinding_stats_per_law: build_stats_per_law_jsonb(affecting.revocations),
 
           # Detailed amendment data (for future use) - excludes self
@@ -1041,20 +1034,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           # Flattened stats - Amended_by (🔻 this law is affected by others) - excludes self
           amended_by_stats_affected_by_count: affected.stats.amendments_count,
           amended_by_stats_affected_by_laws_count: affected.stats.amended_laws_count,
-          amended_by_stats_affected_by_count_per_law:
-            build_count_per_law_summary(affected.amendments),
-          amended_by_stats_affected_by_count_per_law_detailed:
-            build_count_per_law_detailed(affected.amendments),
-          # NEW: Consolidated JSONB field (🔻_affected_by_stats_per_law)
+          # Consolidated JSONB field (🔻_affected_by_stats_per_law) - replaces legacy text columns
           affected_by_stats_per_law: build_stats_per_law_jsonb(affected.amendments),
 
           # Flattened stats - Rescinded_by (🔻 this law is rescinded by others) - excludes self
           rescinded_by_stats_rescinded_by_laws_count: affected.stats.revoked_laws_count,
-          rescinded_by_stats_rescinded_by_count_per_law:
-            build_count_per_law_summary(affected.revocations),
-          rescinded_by_stats_rescinded_by_count_per_law_detailed:
-            build_count_per_law_detailed(affected.revocations),
-          # NEW: Consolidated JSONB field (🔻_rescinded_by_stats_per_law)
+          # Consolidated JSONB field (🔻_rescinded_by_stats_per_law) - replaces legacy text columns
           rescinded_by_stats_per_law: build_stats_per_law_jsonb(affected.revocations),
 
           # Detailed amendment data (for future use) - excludes self
@@ -1267,74 +1252,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Builds the *_count_per_law summary and detailed strings from amendment lists.
   # These match the format imported from Airtable CSV exports.
   #
-  # Summary format:  "UK_uksi_2020_100 - 3\nUK_uksi_2019_50 - 2"
-  # Detailed format:  "UK_uksi_2020_100 - 3\n  reg. 1 inserted [Not yet]\n  reg. 2 substituted [Yes]"
-
-  defp build_count_per_law_summary([]), do: nil
-
-  defp build_count_per_law_summary(amendments) do
-    amendments
-    |> group_amendments_by_law()
-    |> Enum.map(fn {law_name, items} ->
-      # Get title and path from first item in group
-      first = hd(items)
-      title = Map.get(first, :title_en) || Map.get(first, "title_en") || ""
-      path = Map.get(first, :path) || Map.get(first, "path") || ""
-      count = length(items)
-
-      # Format: "UK_uksi_2020_847 - 7\nThe Immingham Open Cycle Gas Turbine Order 2020\nhttps://legislation.gov.uk/id/uksi/2020/847"
-      if title != "" and path != "" do
-        url = "https://legislation.gov.uk#{path}"
-        "#{law_name} - #{count}\n#{title}\n#{url}"
-      else
-        "#{law_name} - #{count}"
-      end
-    end)
-    # Use \n\n (blank line) between law blocks to match legacy data format
-    |> Enum.join("\n\n")
-  end
-
-  defp build_count_per_law_detailed([]), do: nil
-
-  defp build_count_per_law_detailed(amendments) do
-    amendments
-    |> group_amendments_by_law()
-    |> Enum.map(fn {law_name, items} ->
-      # Get title and path from first item in group (with fallbacks for test data)
-      first = hd(items)
-      title = Map.get(first, :title_en) || Map.get(first, "title_en") || ""
-      path = Map.get(first, :path) || Map.get(first, "path") || ""
-      count = length(items)
-
-      # Build detailed entries with target, affect, and applied status
-      # Format: "art. 2(1) words inserted [Not yet]"
-      details =
-        items
-        |> Enum.map(&build_target_affect_applied/1)
-        |> Enum.reject(&is_nil/1)
-        |> Enum.reject(&(&1 == ""))
-        |> Enum.uniq()
-
-      # Format: "7 - The Immingham Open Cycle Gas Turbine Order 2020\nhttps://legislation.gov.uk/id/uksi/2020/847"
-      # Falls back to law_name if title is missing (for backwards compatibility with tests)
-      count_line =
-        if title != "" and path != "" do
-          url = "https://legislation.gov.uk#{path}"
-          "#{count} - #{title}\n#{url}"
-        else
-          "#{law_name} - #{count}"
-        end
-
-      if details == [] do
-        count_line
-      else
-        detail_lines = Enum.map(details, &(" " <> &1)) |> Enum.join("\n")
-        "#{count_line}\n#{detail_lines}"
-      end
-    end)
-    # Use \n\n (blank line) between law blocks to match legacy data format
-    |> Enum.join("\n\n")
-  end
+  # Legacy text format functions removed - replaced by build_stats_per_law_jsonb/1
+  # - build_count_per_law_summary/1
+  # - build_count_per_law_detailed/1
 
   # Builds a JSONB-compatible map combining summary and detailed data.
   # This consolidates the separate *_count_per_law and *_count_per_law_detailed fields.
@@ -1494,9 +1414,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # ============================================================================
 
   if Mix.env() == :test do
-    @doc false
-    def test_build_count_per_law_detailed(amendments),
-      do: build_count_per_law_detailed(amendments)
+    # Removed: test_build_count_per_law_detailed/1 (legacy function removed)
 
     @doc false
     def test_build_target_affect_applied(amendment), do: build_target_affect_applied(amendment)

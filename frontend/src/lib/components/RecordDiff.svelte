@@ -6,6 +6,15 @@
 	export let incoming: Record<string, unknown>;
 	export let expanded: boolean = false;
 
+	// Track which section groups are expanded (all expanded by default)
+	let expandedGroups: Record<string, boolean> = {};
+	// Track which long field values are expanded
+	let expandedFields: Record<string, boolean> = {};
+
+	// Threshold for collapsing long arrays/strings
+	const ARRAY_COLLAPSE_THRESHOLD = 5;
+	const STRING_COLLAPSE_LENGTH = 300;
+
 	const jsondiffpatch = create({
 		objectHash: function (obj) {
 			const o = obj as Record<string, unknown>;
@@ -71,21 +80,13 @@
 			'rescinded_by_count',
 			'amending_stats_affects_count',
 			'amending_stats_affected_laws_count',
-			'amending_stats_affects_count_per_law',
-			'amending_stats_affects_count_per_law_detailed',
 			'affects_stats_per_law',
 			'amended_by_stats_affected_by_count',
 			'amended_by_stats_affected_by_laws_count',
-			'amended_by_stats_affected_by_count_per_law',
-			'amended_by_stats_affected_by_count_per_law_detailed',
 			'affected_by_stats_per_law',
 			'rescinding_stats_rescinding_laws_count',
-			'rescinding_stats_rescinding_count_per_law',
-			'rescinding_stats_rescinding_count_per_law_detailed',
 			'rescinding_stats_per_law',
 			'rescinded_by_stats_rescinded_by_laws_count',
-			'rescinded_by_stats_rescinded_by_count_per_law',
-			'rescinded_by_stats_rescinded_by_count_per_law_detailed',
 			'rescinded_by_stats_per_law',
 			'stats_self_affects_count',
 			'stats_self_affects_count_per_law_detailed',
@@ -255,6 +256,46 @@
 		if (typeof value === 'object') return JSON.stringify(value, null, 2);
 		return String(value);
 	}
+
+	// Check if a value is long enough to warrant collapsing
+	function isLongValue(value: unknown): boolean {
+		if (Array.isArray(value) && value.length > ARRAY_COLLAPSE_THRESHOLD) return true;
+		const formatted = formatValue(value);
+		return formatted.length > STRING_COLLAPSE_LENGTH;
+	}
+
+	// Get truncated preview of a value
+	function getPreview(value: unknown): string {
+		if (Array.isArray(value)) {
+			const preview = value.slice(0, 3).map(v => typeof v === 'string' ? v : JSON.stringify(v)).join(', ');
+			return `[${preview}${value.length > 3 ? `, ... +${value.length - 3} more` : ''}]`;
+		}
+		const formatted = formatValue(value);
+		if (formatted.length > 100) {
+			return formatted.slice(0, 100) + '...';
+		}
+		return formatted;
+	}
+
+	// Toggle group expansion
+	function toggleGroup(groupName: string) {
+		// Default is expanded (true), so toggle from current state
+		const currentState = expandedGroups[groupName] !== false;
+		expandedGroups = { ...expandedGroups, [groupName]: !currentState };
+	}
+
+	// Toggle field expansion
+	function toggleField(fieldKey: string) {
+		expandedFields = { ...expandedFields, [fieldKey]: !expandedFields[fieldKey] };
+	}
+
+	// Get array length for display
+	function getArrayInfo(value: unknown): string | null {
+		if (Array.isArray(value)) {
+			return `${value.length} item${value.length === 1 ? '' : 's'}`;
+		}
+		return null;
+	}
 </script>
 
 {#if hasChanges}
@@ -304,13 +345,37 @@
 			<div class="border-t border-amber-200 bg-white">
 				{#each sortedGroups as group}
 					<div class="border-b border-gray-100 last:border-b-0">
-						<div
-							class="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide"
+						<!-- Collapsible Group Header -->
+						<button
+							type="button"
+							on:click={() => toggleGroup(group.name)}
+							class="w-full px-4 py-2 bg-gray-50 flex items-center justify-between text-left hover:bg-gray-100 transition-colors"
 						>
-							{group.name}
-						</div>
+							<div class="flex items-center gap-2">
+								<span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+									{group.name}
+								</span>
+								<span class="text-xs text-gray-400">
+									({group.changes.length} field{group.changes.length === 1 ? '' : 's'})
+								</span>
+							</div>
+							<svg
+								class="w-4 h-4 text-gray-500 transform transition-transform {expandedGroups[group.name] !== false ? 'rotate-180' : ''}"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+							</svg>
+						</button>
+						<!-- Group Content -->
+						{#if expandedGroups[group.name] !== false}
 						<div class="divide-y divide-gray-100">
 							{#each group.changes as change}
+								{@const fieldKey = `${group.name}-${change.field}`}
+								{@const oldIsLong = isLongValue(change.oldValue)}
+								{@const newIsLong = isLongValue(change.newValue)}
+								{@const isFieldExpanded = expandedFields[fieldKey]}
 								<div class="px-4 py-3">
 									<div class="flex items-start gap-3">
 										<span
@@ -328,24 +393,50 @@
 													: 'Updated'}
 										</span>
 										<div class="flex-1 min-w-0">
-											<div class="text-sm font-medium text-indigo-600 mb-1">
-												{getFieldLabel(change.field)} <span class="font-mono text-xs text-gray-400">({change.field})</span>
+											<!-- Field header with optional expand toggle -->
+											<div class="flex items-center justify-between mb-1">
+												<div class="text-sm font-medium text-indigo-600">
+													{getFieldLabel(change.field)} <span class="font-mono text-xs text-gray-400">({change.field})</span>
+													{#if getArrayInfo(change.newValue || change.oldValue)}
+														<span class="ml-1 text-xs text-gray-400">
+															{getArrayInfo(change.newValue || change.oldValue)}
+														</span>
+													{/if}
+												</div>
+												{#if oldIsLong || newIsLong}
+													<button
+														type="button"
+														on:click={() => toggleField(fieldKey)}
+														class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+													>
+														{isFieldExpanded ? 'Collapse' : 'Expand'}
+														<svg
+															class="w-3 h-3 transform transition-transform {isFieldExpanded ? 'rotate-180' : ''}"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+														</svg>
+													</button>
+												{/if}
 											</div>
+											<!-- Field values -->
 											{#if change.type === 'deleted'}
 												<div class="diff-value deleted">
-													<pre>{formatValue(change.oldValue)}</pre>
+													<pre>{(oldIsLong && !isFieldExpanded) ? getPreview(change.oldValue) : formatValue(change.oldValue)}</pre>
 												</div>
 											{:else if change.type === 'added'}
 												<div class="diff-value added">
-													<pre>{formatValue(change.newValue)}</pre>
+													<pre>{(newIsLong && !isFieldExpanded) ? getPreview(change.newValue) : formatValue(change.newValue)}</pre>
 												</div>
 											{:else}
 												<div class="space-y-1">
 													<div class="diff-value deleted">
-														<pre>{formatValue(change.oldValue)}</pre>
+														<pre>{(oldIsLong && !isFieldExpanded) ? getPreview(change.oldValue) : formatValue(change.oldValue)}</pre>
 													</div>
 													<div class="diff-value added">
-														<pre>{formatValue(change.newValue)}</pre>
+														<pre>{(newIsLong && !isFieldExpanded) ? getPreview(change.newValue) : formatValue(change.newValue)}</pre>
 													</div>
 												</div>
 											{/if}
@@ -354,6 +445,7 @@
 								</div>
 							{/each}
 						</div>
+						{/if}
 					</div>
 				{/each}
 			</div>

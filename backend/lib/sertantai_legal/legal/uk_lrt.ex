@@ -445,17 +445,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Number of distinct laws amended by this law"
     )
 
-    attribute(:amending_stats_affects_count_per_law, :string,
-      source: :"🔺_stats_affects_count_per_law",
-      allow_nil?: true,
-      description: "Summary list of amendments per law"
-    )
-
-    attribute(:amending_stats_affects_count_per_law_detailed, :string,
-      source: :"🔺_stats_affects_count_per_law_detailed",
-      allow_nil?: true,
-      description: "Detailed breakdown with sections"
-    )
+    # Legacy text columns removed - replaced by affects_stats_per_law JSONB:
+    # - amending_stats_affects_count_per_law
+    # - amending_stats_affects_count_per_law_detailed
 
     # Amendment Stats - Amended_by (🔻 this law is affected by others)
     attribute(:amended_by_stats_affected_by_count, :integer,
@@ -470,17 +462,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Number of distinct laws amending this"
     )
 
-    attribute(:amended_by_stats_affected_by_count_per_law, :string,
-      source: :"🔻_stats_affected_by_count_per_law",
-      allow_nil?: true,
-      description: "Summary list of amending laws"
-    )
-
-    attribute(:amended_by_stats_affected_by_count_per_law_detailed, :string,
-      source: :"🔻_stats_affected_by_count_per_law_detailed",
-      allow_nil?: true,
-      description: "Detailed breakdown with sections"
-    )
+    # Legacy text columns removed - replaced by affected_by_stats_per_law JSONB:
+    # - amended_by_stats_affected_by_count_per_law
+    # - amended_by_stats_affected_by_count_per_law_detailed
 
     # Rescinding Stats (🔺 this law rescinds/revokes others)
     attribute(:rescinding_stats_rescinding_laws_count, :integer,
@@ -489,17 +473,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Number of distinct laws rescinded by this law"
     )
 
-    attribute(:rescinding_stats_rescinding_count_per_law, :string,
-      source: :"🔺_stats_rescinding_count_per_law",
-      allow_nil?: true,
-      description: "Summary list of rescinded laws"
-    )
-
-    attribute(:rescinding_stats_rescinding_count_per_law_detailed, :string,
-      source: :"🔺_stats_rescinding_count_per_law_detailed",
-      allow_nil?: true,
-      description: "Detailed breakdown of rescissions"
-    )
+    # Legacy text columns removed - replaced by rescinding_stats_per_law JSONB:
+    # - rescinding_stats_rescinding_count_per_law
+    # - rescinding_stats_rescinding_count_per_law_detailed
 
     # Rescinded_by Stats (🔻 this law is rescinded/revoked by others)
     attribute(:rescinded_by_stats_rescinded_by_laws_count, :integer,
@@ -508,17 +484,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description: "Number of distinct laws rescinding this"
     )
 
-    attribute(:rescinded_by_stats_rescinded_by_count_per_law, :string,
-      source: :"🔻_stats_rescinded_by_count_per_law",
-      allow_nil?: true,
-      description: "Summary list of rescinding laws"
-    )
-
-    attribute(:rescinded_by_stats_rescinded_by_count_per_law_detailed, :string,
-      source: :"🔻_stats_rescinded_by_count_per_law_detailed",
-      allow_nil?: true,
-      description: "Detailed breakdown of rescissions"
-    )
+    # Legacy text columns removed - replaced by rescinded_by_stats_per_law JSONB:
+    # - rescinded_by_stats_rescinded_by_count_per_law
+    # - rescinded_by_stats_rescinded_by_count_per_law_detailed
 
     # ============================================================================
     # Consolidated Stats per Law (JSONB) - replaces summary + detailed text pairs
@@ -732,19 +700,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :stats_self_affects_count_per_law_detailed,
         :amending_stats_affects_count,
         :amending_stats_affected_laws_count,
-        :amending_stats_affects_count_per_law,
-        :amending_stats_affects_count_per_law_detailed,
         :amended_by_stats_affected_by_count,
         :amended_by_stats_affected_by_laws_count,
-        :amended_by_stats_affected_by_count_per_law,
-        :amended_by_stats_affected_by_count_per_law_detailed,
         :rescinding_stats_rescinding_laws_count,
-        :rescinding_stats_rescinding_count_per_law,
-        :rescinding_stats_rescinding_count_per_law_detailed,
         :rescinded_by_stats_rescinded_by_laws_count,
-        :rescinded_by_stats_rescinded_by_count_per_law,
-        :rescinded_by_stats_rescinded_by_count_per_law_detailed,
-        # Consolidated JSONB stats
+        # Consolidated JSONB stats (replaced legacy text columns)
         :affects_stats_per_law,
         :rescinding_stats_per_law,
         :affected_by_stats_per_law,
@@ -846,19 +806,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :stats_self_affects_count_per_law_detailed,
         :amending_stats_affects_count,
         :amending_stats_affected_laws_count,
-        :amending_stats_affects_count_per_law,
-        :amending_stats_affects_count_per_law_detailed,
         :amended_by_stats_affected_by_count,
         :amended_by_stats_affected_by_laws_count,
-        :amended_by_stats_affected_by_count_per_law,
-        :amended_by_stats_affected_by_count_per_law_detailed,
         :rescinding_stats_rescinding_laws_count,
-        :rescinding_stats_rescinding_count_per_law,
-        :rescinding_stats_rescinding_count_per_law_detailed,
         :rescinded_by_stats_rescinded_by_laws_count,
-        :rescinded_by_stats_rescinded_by_count_per_law,
-        :rescinded_by_stats_rescinded_by_count_per_law_detailed,
-        # Consolidated JSONB stats
+        # Consolidated JSONB stats (replaced legacy text columns)
         :affects_stats_per_law,
         :rescinding_stats_per_law,
         :affected_by_stats_per_law,

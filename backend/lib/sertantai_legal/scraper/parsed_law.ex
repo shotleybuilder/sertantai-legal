@@ -153,18 +153,15 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           stats_self_affects_count_per_law_detailed: String.t() | nil,
           amending_stats_affects_count: integer() | nil,
           amending_stats_affected_laws_count: integer() | nil,
-          amending_stats_affects_count_per_law: String.t() | nil,
-          amending_stats_affects_count_per_law_detailed: String.t() | nil,
           amended_by_stats_affected_by_count: integer() | nil,
           amended_by_stats_affected_by_laws_count: integer() | nil,
-          amended_by_stats_affected_by_count_per_law: String.t() | nil,
-          amended_by_stats_affected_by_count_per_law_detailed: String.t() | nil,
           rescinding_stats_rescinding_laws_count: integer() | nil,
-          rescinding_stats_rescinding_count_per_law: String.t() | nil,
-          rescinding_stats_rescinding_count_per_law_detailed: String.t() | nil,
           rescinded_by_stats_rescinded_by_laws_count: integer() | nil,
-          rescinded_by_stats_rescinded_by_count_per_law: String.t() | nil,
-          rescinded_by_stats_rescinded_by_count_per_law_detailed: String.t() | nil,
+          # Legacy text columns removed - replaced by JSONB:
+          # - amending_stats_affects_count_per_law, amending_stats_affects_count_per_law_detailed
+          # - amended_by_stats_affected_by_count_per_law, amended_by_stats_affected_by_count_per_law_detailed
+          # - rescinding_stats_rescinding_count_per_law, rescinding_stats_rescinding_count_per_law_detailed
+          # - rescinded_by_stats_rescinded_by_count_per_law, rescinded_by_stats_rescinded_by_count_per_law_detailed
 
           # === STATS (Consolidated JSONB - replaces *_per_law and *_per_law_detailed pairs) ===
           affects_stats_per_law: map() | nil,
@@ -298,18 +295,11 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     stats_self_affects_count_per_law_detailed: nil,
     amending_stats_affects_count: nil,
     amending_stats_affected_laws_count: nil,
-    amending_stats_affects_count_per_law: nil,
-    amending_stats_affects_count_per_law_detailed: nil,
     amended_by_stats_affected_by_count: nil,
     amended_by_stats_affected_by_laws_count: nil,
-    amended_by_stats_affected_by_count_per_law: nil,
-    amended_by_stats_affected_by_count_per_law_detailed: nil,
     rescinding_stats_rescinding_laws_count: nil,
-    rescinding_stats_rescinding_count_per_law: nil,
-    rescinding_stats_rescinding_count_per_law_detailed: nil,
     rescinded_by_stats_rescinded_by_laws_count: nil,
-    rescinded_by_stats_rescinded_by_count_per_law: nil,
-    rescinded_by_stats_rescinded_by_count_per_law_detailed: nil,
+    # Legacy text columns removed - replaced by JSONB *_per_law fields
 
     # Stats (Consolidated JSONB)
     affects_stats_per_law: nil,
@@ -544,32 +534,16 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       amending_stats_affects_count: get_integer(normalized, :amending_stats_affects_count),
       amending_stats_affected_laws_count:
         get_integer(normalized, :amending_stats_affected_laws_count),
-      amending_stats_affects_count_per_law:
-        get_string(normalized, :amending_stats_affects_count_per_law),
-      amending_stats_affects_count_per_law_detailed:
-        get_string(normalized, :amending_stats_affects_count_per_law_detailed),
       amended_by_stats_affected_by_count:
         get_integer(normalized, :amended_by_stats_affected_by_count),
       amended_by_stats_affected_by_laws_count:
         get_integer(normalized, :amended_by_stats_affected_by_laws_count),
-      amended_by_stats_affected_by_count_per_law:
-        get_string(normalized, :amended_by_stats_affected_by_count_per_law),
-      amended_by_stats_affected_by_count_per_law_detailed:
-        get_string(normalized, :amended_by_stats_affected_by_count_per_law_detailed),
       rescinding_stats_rescinding_laws_count:
         get_integer(normalized, :rescinding_stats_rescinding_laws_count),
-      rescinding_stats_rescinding_count_per_law:
-        get_string(normalized, :rescinding_stats_rescinding_count_per_law),
-      rescinding_stats_rescinding_count_per_law_detailed:
-        get_string(normalized, :rescinding_stats_rescinding_count_per_law_detailed),
       rescinded_by_stats_rescinded_by_laws_count:
         get_integer(normalized, :rescinded_by_stats_rescinded_by_laws_count),
-      rescinded_by_stats_rescinded_by_count_per_law:
-        get_string(normalized, :rescinded_by_stats_rescinded_by_count_per_law),
-      rescinded_by_stats_rescinded_by_count_per_law_detailed:
-        get_string(normalized, :rescinded_by_stats_rescinded_by_count_per_law_detailed),
 
-      # Stats (Consolidated JSONB)
+      # Stats (Consolidated JSONB - replaced legacy text columns)
       affects_stats_per_law: get_map(normalized, :affects_stats_per_law),
       rescinding_stats_per_law: get_map(normalized, :rescinding_stats_per_law),
       affected_by_stats_per_law: get_map(normalized, :affected_by_stats_per_law),

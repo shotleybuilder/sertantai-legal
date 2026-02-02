@@ -89,30 +89,22 @@ export const FIELD_LABELS: Record<string, string> = {
 	// Function - Amending (this law affects others)
 	amending_stats_affects_count: 'Affects Count',
 	amending_stats_affected_laws_count: 'Affected Laws Count',
-	amending_stats_affects_count_per_law: 'Affects Per Law (Legacy)',
-	amending_stats_affects_count_per_law_detailed: 'Affects Per Law Detail (Legacy)',
 	affects_stats_per_law: '🔺 Affects Stats Per Law',
 	amending: 'Amends',
 
 	// Function - Rescinding (this law rescinds others)
 	rescinding_stats_rescinding_laws_count: 'Rescinded Laws Count',
-	rescinding_stats_rescinding_count_per_law: 'Rescinding Per Law (Legacy)',
-	rescinding_stats_rescinding_count_per_law_detailed: 'Rescinding Per Law Detail (Legacy)',
 	rescinding_stats_per_law: '🔺 Rescinding Stats Per Law',
 	rescinding: 'Rescinds',
 
 	// Function - Amended By (this law is affected by others)
 	amended_by_stats_affected_by_count: 'Affected By Count',
 	amended_by_stats_affected_by_laws_count: 'Amending Laws Count',
-	amended_by_stats_affected_by_count_per_law: 'Affected By Per Law (Legacy)',
-	amended_by_stats_affected_by_count_per_law_detailed: 'Affected By Per Law Detail (Legacy)',
 	affected_by_stats_per_law: '🔻 Affected By Stats Per Law',
 	amended_by: 'Amended By',
 
 	// Function - Rescinded By (this law is rescinded by others)
 	rescinded_by_stats_rescinded_by_laws_count: 'Rescinding Laws Count',
-	rescinded_by_stats_rescinded_by_count_per_law: 'Rescinded By Per Law (Legacy)',
-	rescinded_by_stats_rescinded_by_count_per_law_detailed: 'Rescinded By Per Law Detail (Legacy)',
 	rescinded_by_stats_per_law: '🔻 Rescinded By Stats Per Law',
 	rescinded_by: 'Rescinded By',
 
@@ -573,20 +565,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					},
 					{
-						key: 'amending_stats_affects_count_per_law',
-						label: 'Affects Per Law (Legacy)',
-						type: 'multiline',
-						stage: 'amending',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'amending_stats_affects_count_per_law_detailed',
-						label: 'Affects Per Law Detail (Legacy)',
-						type: 'multiline',
-						stage: 'amending',
-						hideWhenEmpty: true
-					},
-					{
 						key: 'amending',
 						label: 'Amends',
 						type: 'array',
@@ -620,20 +598,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						key: 'rescinding_stats_per_law',
 						label: '🔺 Rescinding Stats Per Law',
 						type: 'json',
-						stage: 'amending',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'rescinding_stats_rescinding_count_per_law',
-						label: 'Rescinding Per Law (Legacy)',
-						type: 'multiline',
-						stage: 'amending',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'rescinding_stats_rescinding_count_per_law_detailed',
-						label: 'Rescinding Per Law Detail (Legacy)',
-						type: 'multiline',
 						stage: 'amending',
 						hideWhenEmpty: true
 					},
@@ -692,20 +656,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					},
 					{
-						key: 'amended_by_stats_affected_by_count_per_law',
-						label: 'Affected By Per Law (Legacy)',
-						type: 'multiline',
-						stage: 'amended_by',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'amended_by_stats_affected_by_count_per_law_detailed',
-						label: 'Affected By Per Law Detail (Legacy)',
-						type: 'multiline',
-						stage: 'amended_by',
-						hideWhenEmpty: true
-					},
-					{
 						key: 'amended_by',
 						label: 'Amended By',
 						type: 'array',
@@ -752,20 +702,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						key: 'rescinded_by_stats_per_law',
 						label: '🔻 Rescinded By Stats Per Law',
 						type: 'json',
-						stage: 'amended_by',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'rescinded_by_stats_rescinded_by_count_per_law',
-						label: 'Rescinded By Per Law (Legacy)',
-						type: 'multiline',
-						stage: 'amended_by',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'rescinded_by_stats_rescinded_by_count_per_law_detailed',
-						label: 'Rescinded By Per Law Detail (Legacy)',
-						type: 'multiline',
 						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
