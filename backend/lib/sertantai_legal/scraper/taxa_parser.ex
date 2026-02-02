@@ -270,6 +270,10 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         # Phase 2 Issue #15: POPIMAR JSONB (no article context in non-chunked path)
         popimar_details: TaxaFormatter.popimar_to_jsonb(Map.get(record, :popimar), []),
 
+        # Phase 2 Issue #16: Role JSONB (no article context in non-chunked path)
+        role_details: TaxaFormatter.roles_to_jsonb(actors, []),
+        role_gvt_details: TaxaFormatter.roles_to_jsonb(actors_gvt, []),
+
         # Metadata about the classification
         taxa_text_source: source,
         taxa_text_length: text_length
@@ -324,8 +328,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
 
     actor_duration = System.monotonic_time(:microsecond) - actor_start
 
-    # Step 2: Process P1 sections in parallel for DutyType AND POPIMAR
-    # Both now run per-section with article context for proper JSONB population
+    # Step 2: Process P1 sections in parallel for DutyType, POPIMAR, and Roles
+    # All now run per-section with article context for proper JSONB population
     duty_type_start = System.monotonic_time(:microsecond)
 
     duty_type_results =
@@ -335,10 +339,14 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           # Clean section text and build record
           cleaned_section = TextCleaner.clean(section_text)
 
+          # Issue #16: Extract actors PER-SECTION with article context
+          %{actors: section_actors, actors_gvt: section_actors_gvt} =
+            DutyActor.get_actors_in_text_cleaned(cleaned_section)
+
           record = %{
             text: cleaned_section,
-            role: actors,
-            role_gvt: actors_gvt
+            role: section_actors,
+            role_gvt: section_actors_gvt
           }
 
           # Process this section with article context (section_id)
@@ -347,7 +355,18 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
 
           # POPIMAR also runs per-section with article context (Issue #15 fix)
           # This populates popimar_details entries with the correct article reference
-          Popimar.process_record(duty_type_result, article: section_id)
+          popimar_result = Popimar.process_record(duty_type_result, article: section_id)
+
+          # Issue #16: Add role JSONB fields with article context
+          popimar_result
+          |> Map.put(
+            :role_details,
+            TaxaFormatter.roles_to_jsonb(section_actors, article: section_id)
+          )
+          |> Map.put(
+            :role_gvt_details,
+            TaxaFormatter.roles_to_jsonb(section_actors_gvt, article: section_id)
+          )
         end,
         max_concurrency: System.schedulers_online(),
         timeout: 30_000
@@ -424,6 +443,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     # Build result
     # Phase 4: Only JSONB fields are persisted (legacy text fields removed)
     %{
+      # Role lists: Use full-text actors (more comprehensive - catches actors mentioned outside sections)
+      # Role JSONB: Use per-section actors (provides article context)
       role: actors,
       role_gvt: actors_gvt,
       duty_type: Map.get(merged_record, :duty_type, []),
@@ -442,6 +463,9 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       popimar: duty_type_results.popimar,
       # Issue #15: POPIMAR JSONB with article context - merged from per-section results
       popimar_details: duty_type_results.popimar_details,
+      # Issue #16: Role JSONB with article context - merged from per-section results
+      role_details: duty_type_results.role_details,
+      role_gvt_details: duty_type_results.role_gvt_details,
       taxa_text_source: source,
       taxa_text_length: text_length
     }
@@ -466,7 +490,12 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       powers: nil,
       # Issue #15: POPIMAR per-section with article context
       popimar: [],
-      popimar_details: nil
+      popimar_details: nil,
+      # Issue #16: Role per-section with article context
+      role: [],
+      role_gvt: [],
+      role_details: nil,
+      role_gvt_details: nil
     }
   end
 
@@ -511,7 +540,13 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       # Issue #15: Merge POPIMAR per-section results
       popimar: Enum.uniq(acc.popimar ++ (Map.get(section_result, :popimar) || [])),
       popimar_details:
-        merge_popimar_jsonb(acc.popimar_details, Map.get(section_result, :popimar_details))
+        merge_popimar_jsonb(acc.popimar_details, Map.get(section_result, :popimar_details)),
+      # Issue #16: Merge role per-section results
+      role: Enum.uniq(acc.role ++ (Map.get(section_result, :role) || [])),
+      role_gvt: Enum.uniq(acc.role_gvt ++ (Map.get(section_result, :role_gvt) || [])),
+      role_details: merge_roles_jsonb(acc.role_details, Map.get(section_result, :role_details)),
+      role_gvt_details:
+        merge_roles_jsonb(acc.role_gvt_details, Map.get(section_result, :role_gvt_details))
     }
   end
 
@@ -545,6 +580,39 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       %{
         "entries" => merged_entries,
         "categories" => categories,
+        "articles" => articles
+      }
+    end
+  end
+
+  # Issue #16: Merge Role JSONB fields (binary merge for reduce)
+  defp merge_roles_jsonb(nil, nil), do: nil
+  defp merge_roles_jsonb(nil, new), do: new
+  defp merge_roles_jsonb(acc, nil), do: acc
+
+  defp merge_roles_jsonb(acc, new) when is_map(acc) and is_map(new) do
+    acc_entries = Map.get(acc, "entries", [])
+    new_entries = Map.get(new, "entries", [])
+
+    # Deduplicate by role+article combination
+    merged_entries =
+      Enum.uniq_by(acc_entries ++ new_entries, fn e -> {e["role"], e["article"]} end)
+
+    if merged_entries == [] do
+      nil
+    else
+      roles = merged_entries |> Enum.map(& &1["role"]) |> Enum.uniq() |> Enum.sort()
+
+      articles =
+        merged_entries
+        |> Enum.map(& &1["article"])
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      %{
+        "entries" => merged_entries,
+        "roles" => roles,
         "articles" => articles
       }
     end

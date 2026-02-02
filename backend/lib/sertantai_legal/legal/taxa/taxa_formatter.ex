@@ -245,6 +245,104 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaFormatter do
   end
 
   # ============================================================================
+  # Phase 2 Issue #16: Role JSONB conversion
+  # ============================================================================
+
+  @doc """
+  Convert role list to JSONB format with article context.
+
+  Takes a list of role strings and optional article context, producing
+  a structured JSONB with entries, roles, and articles.
+
+  ## Parameters
+  - `roles` - List of role strings (e.g., ["Ind: Person", "Org: Employer"])
+  - `opts` - Optional keyword list with :article key for article context
+
+  ## Returns
+  Map with `entries`, `roles`, and `articles` keys, or nil if empty.
+
+  ## Example
+
+      iex> roles_to_jsonb(["Ind: Person", "Org: Employer"], article: "regulation/4")
+      %{
+        "entries" => [
+          %{"role" => "Ind: Person", "article" => "regulation/4"},
+          %{"role" => "Org: Employer", "article" => "regulation/4"}
+        ],
+        "roles" => ["Ind: Person", "Org: Employer"],
+        "articles" => ["regulation/4"]
+      }
+  """
+  @spec roles_to_jsonb(list(String.t()) | nil, keyword()) :: map() | nil
+  def roles_to_jsonb(nil, _opts), do: nil
+  def roles_to_jsonb([], _opts), do: nil
+
+  def roles_to_jsonb(roles, opts) when is_list(roles) do
+    article = Keyword.get(opts, :article)
+
+    entries =
+      Enum.map(roles, fn role ->
+        %{
+          "role" => role,
+          "article" => article
+        }
+      end)
+
+    if entries == [] do
+      nil
+    else
+      unique_roles = roles |> Enum.uniq() |> Enum.sort()
+      articles = if article, do: [article], else: []
+
+      %{
+        "entries" => entries,
+        "roles" => unique_roles,
+        "articles" => articles
+      }
+    end
+  end
+
+  @doc """
+  Merge multiple role JSONB results into one.
+
+  Used when combining results from chunked processing where each section
+  may have different roles.
+
+  ## Parameters
+  - `results` - List of role JSONB maps to merge
+
+  ## Returns
+  Merged map with deduplicated entries, roles, and articles.
+  """
+  @spec merge_roles_jsonb(list(map() | nil)) :: map() | nil
+  def merge_roles_jsonb(results) do
+    results = Enum.reject(results, &is_nil/1)
+
+    if results == [] do
+      nil
+    else
+      all_entries = Enum.flat_map(results, & &1["entries"])
+      # Deduplicate by role+article combination
+      unique_entries = Enum.uniq_by(all_entries, fn e -> {e["role"], e["article"]} end)
+
+      roles = unique_entries |> Enum.map(& &1["role"]) |> Enum.uniq() |> Enum.sort()
+
+      articles =
+        unique_entries
+        |> Enum.map(& &1["article"])
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      %{
+        "entries" => unique_entries,
+        "roles" => roles,
+        "articles" => articles
+      }
+    end
+  end
+
+  # ============================================================================
   # Private Functions (Phase 2a legacy text parsing)
   # ============================================================================
 

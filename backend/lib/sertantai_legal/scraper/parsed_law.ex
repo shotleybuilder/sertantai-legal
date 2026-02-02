@@ -144,6 +144,9 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           powers: map() | nil,
           # === TAXA (Consolidated JSONB POPIMAR field - Phase 2 Issue #15) ===
           popimar_details: map() | nil,
+          # === TAXA (Consolidated JSONB Role fields - Phase 2 Issue #16) ===
+          role_details: map() | nil,
+          role_gvt_details: map() | nil,
           # Phase 4: Removed deprecated text columns - popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
 
           # === STATS (Amendment) ===
@@ -287,6 +290,9 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     powers: nil,
     # Taxa (Consolidated JSONB POPIMAR field - Phase 2 Issue #15)
     popimar_details: nil,
+    # Taxa (Consolidated JSONB Role fields - Phase 2 Issue #16)
+    role_details: nil,
+    role_gvt_details: nil,
     # Phase 4: Removed deprecated text columns
 
     # Stats (Amendment)
@@ -529,6 +535,9 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       powers: get_map(normalized, :powers),
       # Taxa (Consolidated JSONB POPIMAR field - Phase 2 Issue #15)
       popimar_details: get_map(normalized, :popimar_details),
+      # Taxa (Consolidated JSONB Role fields - Phase 2 Issue #16)
+      role_details: get_map(normalized, :role_details),
+      role_gvt_details: get_map(normalized, :role_gvt_details),
       # Phase 4: Removed deprecated text columns
 
       # Stats (Amendment)
