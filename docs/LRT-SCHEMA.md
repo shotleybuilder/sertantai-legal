@@ -1,9 +1,12 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 1.0
-  **Last Updated**: 2026-01-30
+  **Version**: 1.1
+  **Last Updated**: 2026-02-02
   
   > **Issue #14 (Phase 4)**: Consolidated 16 holder text columns into 4 JSONB columns with 93% storage reduction.
+  > **Issue #15 (Phase 4)**: Consolidated 4 POPIMAR text columns into 1 JSONB column.
+  > **Issue #16 (Phase 4)**: Consolidated 4 role text columns into 2 JSONB columns.
+  > **Cleanup (2026-02-02)**: Removed 8 legacy stats text columns replaced by JSONB.
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -161,12 +164,10 @@
     | `🔺_stats_affects_count` | Affects Count | `amending_stats_affects_count` | `integer` | Yes (15042) | `2` | 🔄 amendments |
     | `🔺_stats_affected_laws_count` | Affected Laws Count | `amending_stats_affected_laws_count` | `integer` | Yes (15042) | `2` | 🔄 amendments |
     | `🔺_affects_stats_per_law` | **Affects Stats Per Law** | `affects_stats_per_law` | `map` (JSONB) | Yes (9079) | See below | 🔄 amendments |
-    | `🔺_stats_affects_count_per_law` | Affects Per Law (Legacy) | `amending_stats_affects_count_per_law` | `string` | Yes (9078) | | 🔄 amendments ⚠️ |
-    | `🔺_stats_affects_count_per_law_detailed` | Affects Per Law Detail (Legacy) | `amending_stats_affects_count_per_law_detailed` | `string` | Yes (9077) | | 🔄 amendments ⚠️ |
     | `amending` | Amends | `amending` | `text[]` | Yes (9866) | `{UK_ukpga_2000_5,UK_ukpga_1978_25}` | 🔄 amendments |
     | `linked_amending` | Linked Amends | `linked_amending` | `text[]` | Yes (9673) | `{UK_uksi_2024_436,UK_ukpga_2021_30}` | 🧮_derived <- 🔄 amendments |
     
-    **⚠️ Legacy fields**: `_stats_affects_count_per_law` and `_detailed` are deprecated. Use `🔺_affects_stats_per_law` instead.
+    > **Removed (2026-02-02)**: `🔺_stats_affects_count_per_law` and `🔺_stats_affects_count_per_law_detailed` were removed. Data consolidated into `🔺_affects_stats_per_law` JSONB.
   
   ## Rescinding (this law rescinds others)
   
@@ -179,12 +180,10 @@
     | `is_rescinding` | Is Rescinding | `is_rescinding` | `boolean` | Yes (2462) | `false` | 🧮_derived <- 🔄 amendments |
     | `🔺_stats_rescinding_laws_count` | Rescinded Laws Count | `rescinding_stats_rescinding_laws_count` | `integer` | Yes (14979) | | 🔄 amendments |
     | `🔺_rescinding_stats_per_law` | **Rescinding Stats Per Law** | `rescinding_stats_per_law` | `map` (JSONB) | Yes (2481) | See below | 🔄 amendments |
-    | `🔺_stats_rescinding_count_per_law` | Rescinding Per Law (Legacy) | `rescinding_stats_rescinding_count_per_law` | `string` | Yes (2479) | | 🔄 amendments ⚠️ |
-    | `🔺_stats_rescinding_count_per_law_detailed` | Rescinding Per Law Detail (Legacy) | `rescinding_stats_rescinding_count_per_law_detailed` | `string` | Yes (2479) | | 🔄 amendments ⚠️ |
     | `rescinding` | Rescinds | `rescinding` | `text[]` | Yes (2458) | | 🔄 amendments |
     | `linked_rescinding` | Linked Rescinds | `linked_rescinding` | `text[]` | Yes (2014) | `{UK_uksi_2002_119}` | 🧮_derived <- 🔄 amendments |
     
-    **⚠️ Legacy fields**: `_stats_rescinding_count_per_law` and `_detailed` are deprecated. Use `🔺_rescinding_stats_per_law` instead.
+    > **Removed (2026-02-02)**: `🔺_stats_rescinding_count_per_law` and `🔺_stats_rescinding_count_per_law_detailed` were removed. Data consolidated into `🔺_rescinding_stats_per_law` JSONB.
     
   ## Amended By (this law is affected by others)
   
@@ -199,14 +198,12 @@
     | `🔻_stats_affected_by_count` | Affected By Count | `amended_by_stats_affected_by_count` | `integer` | Yes (16757) | | 🔄 amendments |
     | `🔻_stats_affected_by_laws_count` | Amending Laws Count | `amended_by_stats_affected_by_laws_count` | `integer` | Yes (16751) | | 🔄 amendments |
     | `🔻_affected_by_stats_per_law` | **Affected By Stats Per Law** | `affected_by_stats_per_law` | `map` (JSONB) | Yes (6243) | See below | 🔄 amendments |
-    | `🔻_stats_affected_by_count_per_law` | Affected By Per Law (Legacy) | `amended_by_stats_affected_by_count_per_law` | `string` | Yes (7964) | | 🔄 amendments ⚠️ |
-    | `🔻_stats_affected_by_count_per_law_detailed` | Affected By Per Law Detail (Legacy) | `amended_by_stats_affected_by_count_per_law_detailed` | `string` | Yes (6242) | | 🔄 amendments ⚠️ |
     | `amended_by` | Amended By | `amended_by` | `text[]` | Yes (6338) | | 🔄 amendments |
     | `linked_amended_by` | Linked Amended By | `linked_amended_by` | `text[]` | Yes (6180) | `{UK_uksi_2023_381}` | 🧮_derived |
     | `latest_amend_date` | Latest Amendment | `latest_amend_date` | `date` | Yes (5512) | | 🧮_derived <- 🔄 amendments |
     | `latest_change_date` | Latest Change | `latest_change_date` | `date` | No | | 🧮_derived |
     
-    **⚠️ Legacy fields**: `_stats_affected_by_count_per_law` and `_detailed` are deprecated. Use `🔻_affected_by_stats_per_law` instead.
+    > **Removed (2026-02-02)**: `🔻_stats_affected_by_count_per_law` and `🔻_stats_affected_by_count_per_law_detailed` were removed. Data consolidated into `🔻_affected_by_stats_per_law` JSONB.
   
   ## Rescinded By (this law is rescinded by others)
   
@@ -216,13 +213,11 @@
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `🔻_stats_rescinded_by_laws_count` | Rescinding Laws Count | `rescinded_by_stats_rescinded_by_laws_count` | `integer` | Yes (14939) | | 🔄 amendments |
     | `🔻_rescinded_by_stats_per_law` | **Rescinded By Stats Per Law** | `rescinded_by_stats_per_law` | `map` (JSONB) | Yes (5714) | See below | 🔄 amendments |
-    | `🔻_stats_rescinded_by_count_per_law` | Rescinded By Per Law (Legacy) | `rescinded_by_stats_rescinded_by_count_per_law` | `string` | Yes (5714) | | 🔄 amendments ⚠️ |
-    | `🔻_stats_rescinded_by_count_per_law_detailed` | Rescinded By Per Law Detail (Legacy) | `rescinded_by_stats_rescinded_by_count_per_law_detailed` | `string` | Yes (5714) | | 🔄 amendments ⚠️ |
     | `rescinded_by` | Rescinded By | `rescinded_by` | `text[]` | Yes (5789) | | 🔄 amendments |
     | `linked_rescinded_by` | Linked Rescinded By | `linked_rescinded_by` | `text[]` | Yes (5600) | `{UK_uksi_2015_1640}` | 🧮_derived |
     | `latest_rescind_date` | Latest Rescind | `latest_rescind_date` | `date` | Yes (4379) | | 🧮_derived <- 🚫_repeal_revoke |
     
-    **⚠️ Legacy fields**: `_stats_rescinded_by_count_per_law` and `_detailed` are deprecated. Use `🔻_rescinded_by_stats_per_law` instead.
+    > **Removed (2026-02-02)**: `🔻_stats_rescinded_by_count_per_law` and `🔻_stats_rescinded_by_count_per_law_detailed` were removed. Data consolidated into `🔻_rescinded_by_stats_per_law` JSONB.
 
   ## Consolidated Stats JSONB Structure
   
