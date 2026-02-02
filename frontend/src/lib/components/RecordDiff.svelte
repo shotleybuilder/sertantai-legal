@@ -94,9 +94,10 @@
 			'linked_rescinding'
 		],
 		// STAGE 5 🔄 amended_by - Amended By (this law is affected by others)
+		// Order matches LRT-SCHEMA.md: laws_count, count, details, amended_by, linked, dates
 		'Amended By': [
-			'amended_by_stats_affected_by_count',
 			'amended_by_stats_affected_by_laws_count',
+			'amended_by_stats_affected_by_count',
 			'affected_by_stats_per_law',
 			'amended_by',
 			'linked_amended_by',

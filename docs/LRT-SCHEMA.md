@@ -195,9 +195,9 @@
     
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `🔻_stats_affected_by_count` | Affected By Count | `amended_by_stats_affected_by_count` | `integer` | Yes (16757) | | 🔄 amendments |
-    | `🔻_stats_affected_by_laws_count` | Amending Laws Count | `amended_by_stats_affected_by_laws_count` | `integer` | Yes (16751) | | 🔄 amendments |
-    | `🔻_affected_by_stats_per_law` | **Affected By Stats Per Law** | `affected_by_stats_per_law` | `map` (JSONB) | Yes (6243) | See below | 🔄 amendments |
+    | `🔻_stats_affected_by_laws_count` | Count of Laws Amending this Law | `amended_by_stats_affected_by_laws_count` | `integer` | Yes (16751) | | 🔄 amendments |
+    | `🔻_stats_affected_by_count` | Count of Amendments Made to this Law | `amended_by_stats_affected_by_count` | `integer` | Yes (16757) | | 🔄 amendments |
+    | `🔻_affected_by_stats_per_law` | Details of Amendments Made to this Law | `affected_by_stats_per_law` | `map` (JSONB) | Yes (6243) | See below | 🔄 amendments |
     | `amended_by` | Amended By | `amended_by` | `text[]` | Yes (6338) | | 🔄 amendments |
     | `linked_amended_by` | Linked Amended By | `linked_amended_by` | `text[]` | Yes (6180) | `{UK_uksi_2023_381}` | 🧮_derived |
     | `latest_amend_date` | Latest Amendment | `latest_amend_date` | `date` | Yes (5512) | | 🧮_derived <- 🔄 amendments |

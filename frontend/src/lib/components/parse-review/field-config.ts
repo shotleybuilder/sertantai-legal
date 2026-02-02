@@ -98,9 +98,9 @@ export const FIELD_LABELS: Record<string, string> = {
 	rescinding: 'Rescinds',
 
 	// Function - Amended By (this law is affected by others)
-	amended_by_stats_affected_by_count: 'Affected By Count',
-	amended_by_stats_affected_by_laws_count: 'Amending Laws Count',
-	affected_by_stats_per_law: '🔻 Affected By Stats Per Law',
+	amended_by_stats_affected_by_laws_count: 'Count of Laws Amending this Law',
+	amended_by_stats_affected_by_count: 'Count of Amendments Made to this Law',
+	affected_by_stats_per_law: 'Details of Amendments Made to this Law',
 	amended_by: 'Amended By',
 
 	// Function - Rescinded By (this law is rescinded by others)
@@ -633,24 +633,24 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				title: 'Amended By',
 				defaultExpanded: true,
 				fields: [
-					// Laws that amend THIS law
+					// Laws that amend THIS law - order matches LRT-SCHEMA.md
 					{
-						key: 'amended_by_stats_affected_by_count',
-						label: 'Affected By Count',
+						key: 'amended_by_stats_affected_by_laws_count',
+						label: 'Count of Laws Amending this Law',
 						type: 'number',
 						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
-						key: 'amended_by_stats_affected_by_laws_count',
-						label: 'Amending Laws Count',
+						key: 'amended_by_stats_affected_by_count',
+						label: 'Count of Amendments Made to this Law',
 						type: 'number',
 						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
 						key: 'affected_by_stats_per_law',
-						label: '🔻 Affected By Stats Per Law',
+						label: 'Details of Amendments Made to this Law',
 						type: 'json',
 						stage: 'amended_by',
 						hideWhenEmpty: true
