@@ -287,26 +287,9 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Consolidated power holder/article/clause data as JSONB")
     end
 
-    # POPIMAR Article References
-    attribute :popimar_article, :string do
-      allow_nil?(true)
-      description("POPIMAR to Article mapping")
-    end
-
-    attribute :popimar_article_clause, :string do
-      allow_nil?(true)
-      description("POPIMAR Article Clause details")
-    end
-
-    attribute :article_popimar, :string do
-      allow_nil?(true)
-      description("Article to POPIMAR mapping")
-    end
-
-    attribute :article_popimar_clause, :string do
-      allow_nil?(true)
-      description("Article POPIMAR Clause details")
-    end
+    # POPIMAR Article References - REMOVED in Phase 4 Issue #15
+    # These 4 text columns have been consolidated into popimar_details JSONB field
+    # Dropped: popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
 
     attribute :tags, {:array, :string} do
       allow_nil?(true)
@@ -740,10 +723,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :powers,
         # Consolidated JSONB POPIMAR field (Phase 1 Issue #15)
         :popimar_details,
-        :popimar_article,
-        :popimar_article_clause,
-        :article_popimar,
-        :article_popimar_clause,
+        # Phase 4: Removed deprecated text columns - popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
         :tags,
         :stats_self_affects_count,
         :stats_self_affects_count_per_law_detailed,
@@ -857,10 +837,7 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :powers,
         # Consolidated JSONB POPIMAR field (Phase 1 Issue #15)
         :popimar_details,
-        :popimar_article,
-        :popimar_article_clause,
-        :article_popimar,
-        :article_popimar_clause,
+        # Phase 4: Removed deprecated text columns - popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
         :tags,
         :stats_self_affects_count,
         :stats_self_affects_count_per_law_detailed,

@@ -475,7 +475,8 @@ defmodule SertantaiLegalWeb.UkLrtController do
           power_holder: stages[:taxa][:data][:power_holder],
           power_holder_article_clause: stages[:taxa][:data][:power_holder_article_clause],
           popimar: stages[:taxa][:data][:popimar],
-          popimar_article_clause: stages[:taxa][:data][:popimar_article_clause]
+          # Phase 4 Issue #15: popimar_details replaces deprecated text columns
+          popimar_details: stages[:taxa][:data][:popimar_details]
         })
       else
         base_attrs
@@ -561,10 +562,8 @@ defmodule SertantaiLegalWeb.UkLrtController do
       article_responsibility_holder_clause: record.article_responsibility_holder_clause,
       # POPIMAR
       popimar: record.popimar,
-      popimar_article: record.popimar_article,
-      popimar_article_clause: record.popimar_article_clause,
-      article_popimar: record.article_popimar,
-      article_popimar_clause: record.article_popimar_clause,
+      # Phase 4 Issue #15: Consolidated JSONB field replaces deprecated text columns
+      popimar_details: record.popimar_details,
       # Purpose
       purpose: record.purpose,
       is_making: record.is_making,
