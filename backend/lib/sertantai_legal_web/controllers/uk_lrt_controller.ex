@@ -530,8 +530,9 @@ defmodule SertantaiLegalWeb.UkLrtController do
       # Role/Actor
       role: record.role,
       role_gvt: record.role_gvt,
-      article_role: record.article_role,
-      role_article: record.role_article,
+      # Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article
+      role_details: record.role_details,
+      role_gvt_details: record.role_gvt_details,
       # Duty Type
       duty_type: record.duty_type,
       duty_type_article: record.duty_type_article,

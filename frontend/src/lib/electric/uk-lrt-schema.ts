@@ -88,9 +88,8 @@ export interface UkLrtRecord {
 	// Role/Actor
 	role: string[] | null;
 	role_gvt: Record<string, unknown> | null;
-	article_role: string | null;
-	role_article: string | null;
 	// Consolidated JSONB Role fields (Phase 3 Issue #16 - replaces 4 deprecated text columns)
+	// Phase 4: Removed deprecated text columns - article_role, role_article
 	role_details: RoleJsonb | null;
 	role_gvt_details: RoleJsonb | null;
 	// Duty Type
@@ -168,9 +167,8 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		function: parseArray(data.function),
 		role: parseArray(data.role),
 		role_gvt: parseJson(data.role_gvt),
-		article_role: parseString(data.article_role),
-		role_article: parseString(data.role_article),
 		// Consolidated JSONB Role fields (Phase 3 Issue #16)
+		// Phase 4: Removed deprecated text columns - article_role, role_article
 		role_details: parseRoleJsonb(data.role_details),
 		role_gvt_details: parseRoleJsonb(data.role_gvt_details),
 		duty_type: parseString(data.duty_type),

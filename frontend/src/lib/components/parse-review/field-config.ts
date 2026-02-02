@@ -128,12 +128,9 @@ export const FIELD_LABELS: Record<string, string> = {
 
 	// Taxa - Roles (DRRP Model)
 	role: 'Role',
-	article_role: 'Article Role',
-	role_article: 'Role Article',
 	role_gvt: 'Role Gvt',
-	role_gvt_article: 'Role Gvt Article',
-	article_role_gvt: 'Article Role Gvt',
 	// Consolidated JSONB Role fields (Phase 3 Issue #16)
+	// Phase 4: Removed deprecated text columns - article_role, role_article, role_gvt_article, article_role_gvt
 	role_details: 'Role Details (JSONB)',
 	role_gvt_details: 'Role Gvt Details (JSONB)',
 
@@ -897,20 +894,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						stage: 'taxa',
 						hideWhenEmpty: true
 					},
-					{
-						key: 'article_role',
-						label: 'Article Role',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'role_article',
-						label: 'Role Article',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
 					{ key: 'role_gvt', label: 'Role Gvt', type: 'json', stage: 'taxa', hideWhenEmpty: true },
 					{
 						key: 'role_gvt_details',
@@ -918,21 +901,8 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'json',
 						stage: 'taxa',
 						hideWhenEmpty: true
-					},
-					{
-						key: 'role_gvt_article',
-						label: 'Role Gvt Article',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'article_role_gvt',
-						label: 'Article Role Gvt',
-						type: 'multiline',
-						stage: 'taxa',
-						hideWhenEmpty: true
 					}
+					// Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article, role_gvt_article, article_role_gvt
 				]
 			},
 			{

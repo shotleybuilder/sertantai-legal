@@ -229,25 +229,11 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Government role classifications (JSONB)")
     end
 
-    attribute :role_gvt_article, :string do
-      allow_nil?(true)
-      description("Role GVT to Article mapping")
-    end
-
-    attribute :article_role_gvt, :string do
-      allow_nil?(true)
-      description("Article to Role GVT mapping")
-    end
-
-    attribute :article_role, :string do
-      allow_nil?(true)
-      description("Article to Role mapping")
-    end
-
-    attribute :role_article, :string do
-      allow_nil?(true)
-      description("Role to Article mapping")
-    end
+    # Phase 4 Issue #16: Removed deprecated text columns
+    # - role_gvt_article (replaced by role_gvt_details)
+    # - article_role_gvt (replaced by role_gvt_details)
+    # - article_role (replaced by role_details)
+    # - role_article (replaced by role_details)
 
     # Consolidated Role JSONB fields (Phase 1 Issue #16)
     attribute :role_details, :map do
@@ -726,11 +712,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :responsibility_holder,
         :role,
         :role_gvt,
-        :role_gvt_article,
-        :article_role_gvt,
-        :article_role,
-        :role_article,
         # Consolidated Role JSONB fields (Phase 1 Issue #16)
+        # Phase 4: Removed deprecated text columns - role_gvt_article, article_role_gvt, article_role, role_article
         :role_details,
         :role_gvt_details,
         :duty_type,
@@ -843,11 +826,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :responsibility_holder,
         :role,
         :role_gvt,
-        :role_gvt_article,
-        :article_role_gvt,
-        :article_role,
-        :role_article,
         # Consolidated Role JSONB fields (Phase 1 Issue #16)
+        # Phase 4: Removed deprecated text columns - role_gvt_article, article_role_gvt, article_role, role_article
         :role_details,
         :role_gvt_details,
         :duty_type,

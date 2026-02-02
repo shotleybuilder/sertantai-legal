@@ -133,8 +133,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           popimar: [String.t()],
 
           # === TAXA (Article mappings) ===
-          article_role: String.t() | nil,
-          role_article: String.t() | nil,
+          # Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article
           duty_type_article: String.t() | nil,
           article_duty_type: String.t() | nil,
           # === TAXA (Consolidated JSONB holder fields - Phase 4) ===
@@ -279,8 +278,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     popimar: [],
 
     # Taxa (Article mappings)
-    article_role: nil,
-    role_article: nil,
+    # Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article
     duty_type_article: nil,
     article_duty_type: nil,
     # Taxa (Consolidated JSONB holder fields - Phase 4)
@@ -524,8 +522,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       popimar: get_list(normalized, :popimar),
 
       # Taxa (Article mappings)
-      article_role: get_string(normalized, :article_role),
-      role_article: get_string(normalized, :role_article),
+      # Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article
       duty_type_article: get_string(normalized, :duty_type_article),
       article_duty_type: get_string(normalized, :article_duty_type),
       # Taxa (Consolidated JSONB holder fields - Phase 4)

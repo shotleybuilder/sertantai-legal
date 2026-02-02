@@ -96,8 +96,7 @@ const UK_LRT_COLUMNS = [
 	'enacted_by',
 	'linked_enacted_by',
 	'is_enacting',
-	'article_role',
-	'role_article',
+	// Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article
 	'article_popimar_clause',
 	'popimar_article_clause',
 	'is_making',
@@ -112,8 +111,7 @@ const UK_LRT_COLUMNS = [
 	'updated_at',
 	'md_modified',
 	'enacted_by_meta',
-	'role_gvt_article',
-	'article_role_gvt',
+	// Phase 4 Issue #16: Removed deprecated text columns - role_gvt_article, article_role_gvt
 	'role_details',
 	'role_gvt_details',
 	'live_source',

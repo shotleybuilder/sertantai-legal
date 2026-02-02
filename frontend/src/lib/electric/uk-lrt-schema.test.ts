@@ -284,9 +284,8 @@ describe('UkLrtRecord type', () => {
 			function: null,
 			role: null,
 			role_gvt: null,
-			article_role: null,
-			role_article: null,
 			// Consolidated JSONB Role fields (Phase 3 Issue #16)
+			// Phase 4: Removed deprecated text columns - article_role, role_article
 			role_details: null,
 			role_gvt_details: null,
 			duty_type: null,
