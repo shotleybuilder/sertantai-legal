@@ -130,30 +130,35 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
   - `:text` or `"text"` - The legal text to analyze
   - `:duty_type` or `"duty_type"` - List of duty types (optional)
 
+  ## Options
+  - `:article` - Article reference for JSONB output (e.g., "regulation/4")
+
   Returns the map with `:popimar` added.
   """
-  @spec process_record(record()) :: record()
-  def process_record(%{text: text, duty_type: duty_types} = record)
+  @spec process_record(record(), keyword()) :: record()
+  def process_record(record, opts \\ [])
+
+  def process_record(%{text: text, duty_type: duty_types} = record, opts)
       when is_binary(text) and text != "" do
     duty_types = normalize_duty_types(duty_types)
-    do_process_record(record, text, duty_types, :atom)
+    do_process_record(record, text, duty_types, :atom, opts)
   end
 
-  def process_record(%{text: text} = record) when is_binary(text) and text != "" do
-    do_process_record(record, text, [], :atom)
+  def process_record(%{text: text} = record, opts) when is_binary(text) and text != "" do
+    do_process_record(record, text, [], :atom, opts)
   end
 
-  def process_record(%{"text" => text, "duty_type" => duty_types} = record)
+  def process_record(%{"text" => text, "duty_type" => duty_types} = record, opts)
       when is_binary(text) and text != "" do
     duty_types = normalize_duty_types(duty_types)
-    do_process_record(record, text, duty_types, :string)
+    do_process_record(record, text, duty_types, :string, opts)
   end
 
-  def process_record(%{"text" => text} = record) when is_binary(text) and text != "" do
-    do_process_record(record, text, [], :string)
+  def process_record(%{"text" => text} = record, opts) when is_binary(text) and text != "" do
+    do_process_record(record, text, [], :string, opts)
   end
 
-  def process_record(record), do: record
+  def process_record(record, _opts), do: record
 
   @doc """
   Processes a list of law records.
@@ -202,7 +207,9 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
   # Private Functions
   # ============================================================================
 
-  defp do_process_record(record, text, duty_types, key_type) do
+  defp do_process_record(record, text, duty_types, key_type, opts) do
+    article = Keyword.get(opts, :article)
+
     # Only process if has relevant duty types (or no duty types provided)
     popimar =
       if duty_types == [] or has_relevant_duty_types?(duty_types) do
@@ -211,8 +218,18 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
         []
       end
 
-    # Don't wrap in to_jsonb - ParsedLaw handles JSONB conversion
-    put_field(record, :popimar, popimar, key_type)
+    # Add popimar list field
+    record = put_field(record, :popimar, popimar, key_type)
+
+    # Add popimar_details JSONB field with article context
+    popimar_details =
+      if popimar != [] do
+        SertantaiLegal.Legal.Taxa.TaxaFormatter.popimar_to_jsonb(popimar, article: article)
+      else
+        nil
+      end
+
+    put_field(record, :popimar_details, popimar_details, key_type)
   end
 
   # Converts category name to function name

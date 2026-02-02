@@ -324,7 +324,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
 
     actor_duration = System.monotonic_time(:microsecond) - actor_start
 
-    # Step 2: Process P1 sections in parallel for DutyType
+    # Step 2: Process P1 sections in parallel for DutyType AND POPIMAR
+    # Both now run per-section with article context for proper JSONB population
     duty_type_start = System.monotonic_time(:microsecond)
 
     duty_type_results =
@@ -341,7 +342,12 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           }
 
           # Process this section with article context (section_id)
-          DutyType.process_record(record, article: section_id)
+          # DutyType adds duties/rights/responsibilities/powers with article
+          duty_type_result = DutyType.process_record(record, article: section_id)
+
+          # POPIMAR also runs per-section with article context (Issue #15 fix)
+          # This populates popimar_details entries with the correct article reference
+          Popimar.process_record(duty_type_result, article: section_id)
         end,
         max_concurrency: System.schedulers_online(),
         timeout: 30_000
@@ -367,11 +373,13 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       power_holder_article_clause: duty_type_results.power_holder_article_clause
     }
 
-    # Step 4: Run POPIMAR and Purpose in parallel (same as non-chunked)
-    {merged_record, popimar_duration, purpose, purpose_duration} =
-      run_popimar_and_purpose_parallel(merged_record, cleaned_text)
+    # Step 4: Run Purpose only (POPIMAR is now handled per-section in Step 2)
+    # Issue #15: POPIMAR moved to per-section processing for article context
+    {purpose, purpose_duration} = run_purpose_classification(cleaned_text)
 
-    popimar_skipped = not is_making_law?(merged_record)
+    # POPIMAR duration is now included in duty_type_duration since it runs per-section
+    popimar_duration = 0
+    popimar_skipped = duty_type_results.popimar == []
     total_duration = System.monotonic_time(:microsecond) - start_time
 
     # Emit telemetry
@@ -389,8 +397,8 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         law_name: law_name,
         source: source,
         actor_count: length(actors) + length(actors_gvt),
-        duty_type_count: length(Map.get(merged_record, :duty_type, [])),
-        popimar_count: length(Map.get(merged_record, :popimar, [])),
+        duty_type_count: length(duty_type_results.duty_type),
+        popimar_count: length(duty_type_results.popimar),
         popimar_skipped: popimar_skipped,
         large_law: true,
         chunked: true,
@@ -430,10 +438,10 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       rights: duty_type_results.rights,
       responsibilities: duty_type_results.responsibilities,
       powers: duty_type_results.powers,
-      # POPIMAR field (list of categories)
-      popimar: Map.get(merged_record, :popimar),
-      # Phase 2 Issue #15: POPIMAR JSONB (no article context in chunked path currently)
-      popimar_details: TaxaFormatter.popimar_to_jsonb(Map.get(merged_record, :popimar), []),
+      # POPIMAR field (list of categories) - merged from per-section results
+      popimar: duty_type_results.popimar,
+      # Issue #15: POPIMAR JSONB with article context - merged from per-section results
+      popimar_details: duty_type_results.popimar_details,
       taxa_text_source: source,
       taxa_text_length: text_length
     }
@@ -455,7 +463,10 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       duties: nil,
       rights: nil,
       responsibilities: nil,
-      powers: nil
+      powers: nil,
+      # Issue #15: POPIMAR per-section with article context
+      popimar: [],
+      popimar_details: nil
     }
   end
 
@@ -496,11 +507,48 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       rights: merge_jsonb_fields(acc.rights, Map.get(section_result, :rights)),
       responsibilities:
         merge_jsonb_fields(acc.responsibilities, Map.get(section_result, :responsibilities)),
-      powers: merge_jsonb_fields(acc.powers, Map.get(section_result, :powers))
+      powers: merge_jsonb_fields(acc.powers, Map.get(section_result, :powers)),
+      # Issue #15: Merge POPIMAR per-section results
+      popimar: Enum.uniq(acc.popimar ++ (Map.get(section_result, :popimar) || [])),
+      popimar_details:
+        merge_popimar_jsonb(acc.popimar_details, Map.get(section_result, :popimar_details))
     }
   end
 
   defp merge_duty_type_results({:exit, _reason}, acc), do: acc
+
+  # Issue #15: Merge POPIMAR JSONB fields (binary merge for reduce)
+  defp merge_popimar_jsonb(nil, nil), do: nil
+  defp merge_popimar_jsonb(nil, new), do: new
+  defp merge_popimar_jsonb(acc, nil), do: acc
+
+  defp merge_popimar_jsonb(acc, new) when is_map(acc) and is_map(new) do
+    acc_entries = Map.get(acc, "entries", [])
+    new_entries = Map.get(new, "entries", [])
+
+    # Deduplicate by category+article combination
+    merged_entries =
+      Enum.uniq_by(acc_entries ++ new_entries, fn e -> {e["category"], e["article"]} end)
+
+    if merged_entries == [] do
+      nil
+    else
+      categories = merged_entries |> Enum.map(& &1["category"]) |> Enum.uniq() |> Enum.sort()
+
+      articles =
+        merged_entries
+        |> Enum.map(& &1["article"])
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      %{
+        "entries" => merged_entries,
+        "categories" => categories,
+        "articles" => articles
+      }
+    end
+  end
 
   # Merge article clause strings
   defp merge_article_clauses(acc, nil), do: acc
@@ -697,6 +745,14 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   # ============================================================================
 
   # Runs POPIMAR and PurposeClassifier in parallel for performance.
+  # Run Purpose classification only (used by chunked mode where POPIMAR is per-section)
+  defp run_purpose_classification(text) do
+    start = System.monotonic_time(:microsecond)
+    result = PurposeClassifier.classify(text)
+    duration = System.monotonic_time(:microsecond) - start
+    {result, duration}
+  end
+
   # POPIMAR is only run for "Making" laws (those with Duty or Responsibility).
   # Non-making laws (Amending, Commencing, Revoking) don't need POPIMAR classification.
   defp run_popimar_and_purpose_parallel(record, text) do
