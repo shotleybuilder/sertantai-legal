@@ -200,6 +200,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("POPIMAR framework classification (JSONB)")
     end
 
+    attribute :popimar_details, :map do
+      allow_nil?(true)
+
+      description(
+        "Consolidated POPIMAR article details (Phase 1 Issue #15) - replaces popimar_article, popimar_article_clause, article_popimar, article_popimar_clause"
+      )
+    end
+
     attribute :si_code, :map do
       allow_nil?(true)
       description("Statutory Instrument code classification (JSONB)")
@@ -730,6 +738,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rights,
         :responsibilities,
         :powers,
+        # Consolidated JSONB POPIMAR field (Phase 1 Issue #15)
+        :popimar_details,
         :popimar_article,
         :popimar_article_clause,
         :article_popimar,
@@ -845,6 +855,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rights,
         :responsibilities,
         :powers,
+        # Consolidated JSONB POPIMAR field (Phase 1 Issue #15)
+        :popimar_details,
         :popimar_article,
         :popimar_article_clause,
         :article_popimar,
