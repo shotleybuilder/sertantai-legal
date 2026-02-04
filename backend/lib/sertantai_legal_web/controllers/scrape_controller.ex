@@ -578,13 +578,14 @@ defmodule SertantaiLegalWeb.ScrapeController do
           end
 
           # Parse stages parameter if provided (for retry functionality)
-          # Expected format: "metadata,extent,amendments" (comma-separated stage names)
+          # Expected format: "metadata,extent,amended_by" (comma-separated stage names)
           # Use a whitelist map to safely convert strings to atoms (avoids atom exhaustion)
           valid_stages_map = %{
             "metadata" => :metadata,
             "extent" => :extent,
             "enacted_by" => :enacted_by,
-            "amendments" => :amendments,
+            "amending" => :amending,
+            "amended_by" => :amended_by,
             "repeal_revoke" => :repeal_revoke,
             "taxa" => :taxa
           }

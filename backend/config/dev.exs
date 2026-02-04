@@ -12,6 +12,8 @@ config :sertantai_legal, SertantaiLegal.Repo,
   pool_size: 20,
   queue_target: 5000,
   queue_interval: 1000,
+  # Postgrex query timeout (default 15s too low for large JSONB record updates)
+  timeout: 60_000,
   # Disable verbose query logging in dev (reduces noise during parsing)
   log: false
 
