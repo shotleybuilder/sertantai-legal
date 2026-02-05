@@ -33,7 +33,7 @@ const ELECTRIC_URL =
  * Columns to sync from uk_lrt table.
  * Excludes PostgreSQL generated columns (leg_gov_uk_url, number_int) which Electric cannot sync.
  */
-const UK_LRT_COLUMNS = [
+const UK_LRT_COLUMNS: string[] = [
 	'id',
 	'family',
 	'family_ii',
@@ -53,6 +53,8 @@ const UK_LRT_COLUMNS = [
 	'type_class',
 	'domain',
 	'md_date',
+	'md_date_year',
+	'md_date_month',
 	'md_made_date',
 	'md_enactment_date',
 	'md_coming_into_force_date',
@@ -92,34 +94,29 @@ const UK_LRT_COLUMNS = [
 	'enacted_by',
 	'linked_enacted_by',
 	'is_enacting',
-	'article_role',
-	'role_article',
 	// Consolidated JSONB holder fields (Phase 3)
 	'duties',
 	'rights',
 	'responsibilities',
 	'powers',
-	'article_popimar_clause',
-	'popimar_article_clause',
 	'is_making',
 	'is_commencing',
 	'geo_detail',
 	'duty_type',
 	'duty_type_article',
 	'article_duty_type',
-	'popimar_article',
-	'article_popimar',
+	'popimar_details',
 	'updated_at',
 	'md_modified',
 	'enacted_by_meta',
-	'role_gvt_article',
-	'article_role_gvt',
+	'role_details',
+	'role_gvt_details',
 	'live_source',
 	'live_conflict',
 	'live_from_changes',
 	'live_from_metadata',
 	'live_conflict_detail'
-].join(',');
+];
 
 /**
  * Get default WHERE clause (last 3 years)
@@ -347,11 +344,16 @@ export function buildWhereFromFilters(
 					return `${field} >= ${value}`;
 				case 'less_or_equal':
 					return `${field} <= ${value}`;
+				case 'is_before':
+					return `${field} < '${escapeValue(String(value))}'`;
+				case 'is_after':
+					return `${field} > '${escapeValue(String(value))}'`;
 				case 'is_empty':
 					return `(${field} IS NULL OR ${field} = '')`;
 				case 'is_not_empty':
 					return `(${field} IS NOT NULL AND ${field} != '')`;
 				default:
+					console.warn(`[buildWhereFromFilters] Unknown operator: ${operator}`);
 					return null;
 			}
 		})

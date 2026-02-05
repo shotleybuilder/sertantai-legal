@@ -53,6 +53,8 @@ const UK_LRT_COLUMNS = [
 	'type_class',
 	'domain',
 	'md_date',
+	'md_date_year',
+	'md_date_month',
 	'md_made_date',
 	'md_enactment_date',
 	'md_coming_into_force_date',
@@ -96,22 +98,16 @@ const UK_LRT_COLUMNS = [
 	'enacted_by',
 	'linked_enacted_by',
 	'is_enacting',
-	// Phase 4 Issue #16: Removed deprecated text columns - article_role, role_article
-	'article_popimar_clause',
-	'popimar_article_clause',
 	'is_making',
 	'is_commencing',
 	'geo_detail',
 	'duty_type',
 	'duty_type_article',
 	'article_duty_type',
-	'popimar_article',
-	'article_popimar',
 	'popimar_details',
 	'updated_at',
 	'md_modified',
 	'enacted_by_meta',
-	// Phase 4 Issue #16: Removed deprecated text columns - role_gvt_article, article_role_gvt
 	'role_details',
 	'role_gvt_details',
 	'live_source',
@@ -119,7 +115,7 @@ const UK_LRT_COLUMNS = [
 	'live_from_changes',
 	'live_from_metadata',
 	'live_conflict_detail'
-].join(',');
+];
 
 /**
  * Get default WHERE clause (last 3 years)
@@ -229,7 +225,7 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 		// Build ShapeStream options with offset if we have prior sync state
 		const streamOptions: {
 			url: string;
-			params: { table: string; where: string; columns: string };
+			params: { table: string; where: string; columns: string[] };
 			offset?: Offset;
 			handle?: string;
 		} = {
@@ -570,7 +566,7 @@ export function getUkLrtSyncStatus(): SyncStatus {
 export async function checkElectricHealth(): Promise<boolean> {
 	try {
 		const response = await fetch(
-			`${ELECTRIC_URL}/v1/shape?table=uk_lrt&offset=-1&where=year=2025&columns=${UK_LRT_COLUMNS}`
+			`${ELECTRIC_URL}/v1/shape?table=uk_lrt&offset=-1&where=year=2025&columns=${UK_LRT_COLUMNS.join(',')}`
 		);
 		return response.ok;
 	} catch (error) {

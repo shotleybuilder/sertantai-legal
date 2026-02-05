@@ -46,6 +46,8 @@
 		si_code: string | null;
 		function: string[] | null;
 		md_date: string | null;
+		md_date_year: number | null;
+		md_date_month: number | null;
 		md_made_date: string | null;
 		md_enactment_date: string | null;
 		md_coming_into_force_date: string | null;
@@ -219,13 +221,10 @@
 			enableGrouping: true,
 			meta: { group: 'Credentials', dataType: 'text' }
 		},
-		// Derived date columns for grouping
+		// Date grouping columns (from DB generated columns)
 		{
 			id: 'md_date_year',
-			accessorFn: (row: UkLrtRecord) => {
-				if (!row.md_date) return null;
-				return new Date(row.md_date).getFullYear();
-			},
+			accessorKey: 'md_date_year',
 			header: 'Year (Date)',
 			cell: (info) => info.getValue() ?? '-',
 			size: 90,
@@ -235,22 +234,17 @@
 		},
 		{
 			id: 'md_date_month',
-			accessorFn: (row: UkLrtRecord) => {
-				if (!row.md_date) return null;
-				const d = new Date(row.md_date);
-				return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-			},
+			accessorKey: 'md_date_month',
 			header: 'Month (Date)',
 			cell: (info) => {
-				const val = info.getValue() as string | null;
-				if (!val) return '-';
-				const parts = val.split('-');
-				return `${monthNames[parseInt(parts[1]) - 1]} ${parts[0]}`;
+				const val = info.getValue() as number | null;
+				if (val == null) return '-';
+				return monthNames[val - 1] ?? '-';
 			},
 			size: 100,
 			enableGrouping: true,
 			enableSorting: true,
-			meta: { group: 'Metadata', dataType: 'text' }
+			meta: { group: 'Metadata', dataType: 'number' }
 		},
 		// Description
 		{
@@ -437,8 +431,6 @@
 
 	// Seed default views
 	async function seedDefaultViews() {
-		localStorage.removeItem('svelte-table-views');
-
 		await viewActions.waitForReady();
 
 		const existingViews = new Map<string, string>();
@@ -618,8 +610,10 @@
 				if (refreshDebounceTimer) {
 					clearTimeout(refreshDebounceTimer);
 				}
-				refreshDebounceTimer = setTimeout(() => {
-					const newData = collection.toArray as UkLrtRecord[];
+				refreshDebounceTimer = setTimeout(async () => {
+					// Always get the latest collection reference in case it was recreated
+					const currentCollection = await getUkLrtCollection();
+					const newData = currentCollection.toArray as unknown as UkLrtRecord[];
 					data = newData;
 					totalCount = newData.length;
 					if (newData.length > 0) {
@@ -627,6 +621,11 @@
 					}
 				}, 200);
 			};
+
+			// Subscribe to collection changes directly
+			const changeSub = collection.subscribeChanges(() => {
+				refreshData();
+			});
 
 			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
 				if (status.connected) {
@@ -644,13 +643,14 @@
 			collectionSubscription = {
 				unsubscribe: () => {
 					unsubscribeSyncStatus();
+					changeSub.unsubscribe();
 					if (refreshDebounceTimer) {
 						clearTimeout(refreshDebounceTimer);
 					}
 				}
 			};
 
-			const initialData = collection.toArray as UkLrtRecord[];
+			const initialData = collection.toArray as unknown as UkLrtRecord[];
 			if (initialData.length > 0) {
 				data = initialData;
 				totalCount = initialData.length;
@@ -674,8 +674,17 @@
 	$: activeFilters = viewFilters.length > 0 ? viewFilters : [defaultDateFilter];
 
 	$: activeSorting = viewSort
-		? [{ columnId: viewSort.columnId, direction: viewSort.direction }]
-		: [{ columnId: 'md_date', direction: 'desc' as const }];
+		? [
+				// Include grouping columns in sort so groups are ordered correctly
+				...viewGrouping.map((col) => ({ columnId: col, direction: 'desc' as const })),
+				{ columnId: viewSort.columnId, direction: viewSort.direction }
+			]
+		: [
+				...(viewGrouping.length > 0
+					? viewGrouping.map((col) => ({ columnId: col, direction: 'desc' as const }))
+					: []),
+				{ columnId: 'md_date', direction: 'desc' as const }
+			];
 
 	$: tableKitConfig = {
 		id: hasViewConfig ? `browse_view_v${configVersion}` : 'browse_default',
