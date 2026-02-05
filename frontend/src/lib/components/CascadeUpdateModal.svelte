@@ -7,6 +7,8 @@
 		updateEnactingLinks,
 		parseMetadata,
 		saveCascadeMetadata,
+		parseOneStreamAsync,
+		confirmRecord,
 		type AffectedLaw,
 		type AffectedLawsResult,
 		type BatchReparseResult,
@@ -50,6 +52,19 @@
 
 	// Layer filtering state
 	let selectedLayer: number | null = null;
+
+	// Auto re-parse state
+	let autoReparseActive = false;
+	let autoReparseCancelled = false;
+	let autoReparseStreamCancel: (() => void) | null = null;
+	let autoReparseProgress: {
+		current: number;
+		total: number;
+		currentName: string;
+		successes: number;
+		errors: number;
+		errorDetails: Array<{ name: string; message: string }>;
+	} | null = null;
 
 	// Load affected laws when modal opens
 	$: if (open && sessionId) {
@@ -140,6 +155,100 @@
 		} finally {
 			reparseInProgress = false;
 		}
+	}
+
+	// Auto re-parse: loop through selected laws, parse via SSE, auto-confirm
+	async function handleAutoReparse() {
+		if (selectedInDb.size === 0 || !affectedLaws) return;
+
+		const selectedLaws = filteredInDb.filter((law) => selectedInDb.has(law.name));
+		if (selectedLaws.length === 0) return;
+
+		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
+
+		autoReparseActive = true;
+		autoReparseCancelled = false;
+		autoReparseProgress = {
+			current: 0,
+			total: selectedLaws.length,
+			currentName: '',
+			successes: 0,
+			errors: 0,
+			errorDetails: []
+		};
+
+		for (let i = 0; i < selectedLaws.length; i++) {
+			if (autoReparseCancelled) break;
+
+			const law = selectedLaws[i];
+			const parseName = lawNameToParseFormat(law.name);
+
+			autoReparseProgress = {
+				...autoReparseProgress!,
+				current: i + 1,
+				currentName: law.name
+			};
+
+			try {
+				// Parse via SSE stream
+				const { promise, cancel } = parseOneStreamAsync(sessionId, parseName, stages);
+				autoReparseStreamCancel = cancel;
+				const result = await promise;
+				autoReparseStreamCancel = null;
+
+				if (autoReparseCancelled) break;
+
+				// Auto-confirm: persist to DB
+				if (result.record) {
+					await confirmRecord(sessionId, law.name, result.record);
+					autoReparseProgress = {
+						...autoReparseProgress!,
+						successes: autoReparseProgress!.successes + 1
+					};
+				} else {
+					autoReparseProgress = {
+						...autoReparseProgress!,
+						errors: autoReparseProgress!.errors + 1,
+						errorDetails: [
+							...autoReparseProgress!.errorDetails,
+							{ name: law.name, message: 'No record data returned' }
+						]
+					};
+				}
+			} catch (err) {
+				autoReparseStreamCancel = null;
+				autoReparseProgress = {
+					...autoReparseProgress!,
+					errors: autoReparseProgress!.errors + 1,
+					errorDetails: [
+						...autoReparseProgress!.errorDetails,
+						{ name: law.name, message: err instanceof Error ? err.message : String(err) }
+					]
+				};
+			}
+		}
+
+		autoReparseActive = false;
+		autoReparseStreamCancel = null;
+
+		// Refresh cascade data to reflect processed entries
+		await loadAffectedLaws(true);
+	}
+
+	function handleCancelAutoReparse() {
+		autoReparseCancelled = true;
+		autoReparseStreamCancel?.();
+		autoReparseStreamCancel = null;
+		autoReparseActive = false;
+	}
+
+	// Convert law name like "UK_uksi_2025_622" to format needed for parseOne
+	function lawNameToParseFormat(name: string): string {
+		const parts = name.split('_');
+		if (parts.length === 4 && parts[0] === 'UK') {
+			return `${parts[1]}/${parts[2]}/${parts[3]}`;
+		}
+		return name;
 	}
 
 	// Uses filteredEnactingParents to respect layer filter
@@ -531,6 +640,59 @@
 						</div>
 					{/if}
 
+					<!-- Auto Re-parse Progress -->
+					{#if autoReparseProgress}
+						<div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+							<div class="flex items-center justify-between mb-2">
+								<h4 class="text-sm font-medium text-blue-900">
+									{#if autoReparseActive}
+										Auto Re-parse in Progress
+									{:else}
+										Auto Re-parse Complete
+									{/if}
+								</h4>
+								{#if autoReparseActive}
+									<button
+										on:click={handleCancelAutoReparse}
+										class="text-sm text-red-600 hover:text-red-800 font-medium"
+									>
+										Cancel
+									</button>
+								{:else}
+									<button
+										on:click={() => (autoReparseProgress = null)}
+										class="text-sm text-gray-500 hover:text-gray-700"
+									>
+										Dismiss
+									</button>
+								{/if}
+							</div>
+							{#if autoReparseActive}
+								<div class="text-sm text-blue-800 mb-2">
+									Processing {autoReparseProgress.current} of {autoReparseProgress.total}:
+									<span class="font-mono">{autoReparseProgress.currentName}</span>
+								</div>
+							{/if}
+							<div class="w-full bg-blue-200 rounded-full h-2 mb-2">
+								<div
+									class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+									style="width: {(autoReparseProgress.current / autoReparseProgress.total) * 100}%"
+								/>
+							</div>
+							<div class="text-xs text-blue-700">
+								{autoReparseProgress.successes} succeeded{#if autoReparseProgress.errors > 0},
+									<span class="text-red-600">{autoReparseProgress.errors} failed</span>{/if}
+							</div>
+							{#if autoReparseProgress.errorDetails.length > 0}
+								<div class="mt-2 max-h-24 overflow-y-auto text-xs font-mono">
+									{#each autoReparseProgress.errorDetails as err}
+										<div class="text-red-600">[x] {err.name}: {err.message}</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
 					<!-- Laws in Database -->
 					{#if affectedLaws.in_db_count > 0}
 						<div class="mb-6">
@@ -728,17 +890,28 @@
 					{#if affectedLaws && affectedLaws.in_db_count > 0 && !reparseResults}
 						<button
 							on:click={handleReviewSelected}
-							disabled={reparseInProgress || enactingUpdateInProgress || selectedInDbCount === 0}
+							disabled={reparseInProgress || enactingUpdateInProgress || autoReparseActive || selectedInDbCount === 0}
 							class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Review Selected ({selectedInDbCount})
 						</button>
 						<button
 							on:click={handleReviewAll}
-							disabled={reparseInProgress || enactingUpdateInProgress}
+							disabled={reparseInProgress || enactingUpdateInProgress || autoReparseActive}
 							class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Review All ({filteredInDb.length})
+						</button>
+						<button
+							on:click={handleAutoReparse}
+							disabled={reparseInProgress || enactingUpdateInProgress || autoReparseActive || selectedInDbCount === 0}
+							class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{#if autoReparseActive}
+								Auto Re-parsing...
+							{:else}
+								Auto Re-parse ({selectedInDbCount})
+							{/if}
 						</button>
 					{/if}
 

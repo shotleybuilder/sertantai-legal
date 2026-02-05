@@ -396,6 +396,7 @@ export interface FamilyOptionsResult {
 	grouped: {
 		health_safety: string[];
 		environment: string[];
+		hr: string[];
 	};
 }
 
@@ -1063,6 +1064,35 @@ export function parseOneStream(
 	// Return cleanup function
 	return () => {
 		eventSource.close();
+	};
+}
+
+/**
+ * Promise-based wrapper around parseOneStream for use in automated loops.
+ * Returns a promise that resolves with the parse result and a cancel function.
+ */
+export function parseOneStreamAsync(
+	sessionId: string,
+	name: string,
+	stages?: ParseStage[]
+): { promise: Promise<ParseOneResult>; cancel: () => void } {
+	let cleanup: (() => void) | null = null;
+
+	const promise = new Promise<ParseOneResult>((resolve, reject) => {
+		cleanup = parseOneStream(
+			sessionId,
+			name,
+			{
+				onComplete: (result) => resolve(result),
+				onError: (error) => reject(error)
+			},
+			stages
+		);
+	});
+
+	return {
+		promise,
+		cancel: () => cleanup?.()
 	};
 }
 
