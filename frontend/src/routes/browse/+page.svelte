@@ -77,6 +77,7 @@
 	let configVersion = 0;
 	let viewFilters: FilterCondition[] = [];
 	let viewSort: { columnId: string; direction: 'asc' | 'desc' } | null = null;
+	let viewGrouping: string[] = [];
 
 	// Format date helper
 	function formatDate(dateStr: string | null): string {
@@ -446,6 +447,26 @@
 			existingViews.set(view.name, view.id);
 		}
 
+		// Update existing default views that need grouping config added
+		for (const viewDef of defaultViews) {
+			const existingId = existingViews.get(viewDef.name);
+			if (existingId && viewDef.grouping?.length) {
+				const existing = currentViews.find((v) => v.id === existingId);
+				if (existing && (!existing.config.grouping || existing.config.grouping.length === 0)) {
+					try {
+						await viewActions.update(existingId, {
+							config: {
+								...existing.config,
+								grouping: viewDef.grouping
+							}
+						});
+					} catch (err) {
+						console.error('[Browse] Failed to update view grouping:', viewDef.name, err);
+					}
+				}
+			}
+		}
+
 		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
 
@@ -525,6 +546,7 @@
 		}
 
 		viewSort = config.sort || null;
+		viewGrouping = config.grouping || [];
 		configVersion++;
 	}
 
@@ -646,7 +668,8 @@
 		viewColumns.length > 0 ||
 		viewColumnOrder.length > 0 ||
 		viewFilters.length > 0 ||
-		viewSort !== null;
+		viewSort !== null ||
+		viewGrouping.length > 0;
 
 	$: activeFilters = viewFilters.length > 0 ? viewFilters : [defaultDateFilter];
 
@@ -660,7 +683,9 @@
 		defaultFilters: activeFilters,
 		defaultSorting: activeSorting,
 		defaultColumnOrder: hasViewConfig && viewColumnOrder.length > 0 ? viewColumnOrder : undefined,
-		defaultVisibleColumns: hasViewConfig && viewColumns.length > 0 ? viewColumns : undefined
+		defaultVisibleColumns: hasViewConfig && viewColumns.length > 0 ? viewColumns : undefined,
+		defaultGrouping: viewGrouping.length > 0 ? viewGrouping : undefined,
+		defaultExpanded: viewGrouping.length > 0 ? true : undefined
 	};
 
 	onMount(() => {
