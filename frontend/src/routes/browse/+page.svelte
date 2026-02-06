@@ -638,7 +638,7 @@
 			error = null;
 			isLoading = true;
 
-			const collection = await getUkLrtCollection();
+			const collection = await getUkLrtCollection(lastWhereClause);
 
 			let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 			const refreshData = () => {
@@ -647,7 +647,7 @@
 				}
 				refreshDebounceTimer = setTimeout(async () => {
 					// Always get the latest collection reference in case it was recreated
-					const currentCollection = await getUkLrtCollection();
+					const currentCollection = await getUkLrtCollection(lastWhereClause);
 					const newData = currentCollection.toArray as unknown as UkLrtRecord[];
 					data = newData;
 					totalCount = newData.length;
@@ -751,7 +751,7 @@
 	<ViewSidebar
 		views={sidebarViews}
 		groups={viewGroups}
-		selectedViewId={$activeViewId}
+		selectedViewId={$activeViewId ?? undefined}
 		storageKey="browse-views-sidebar"
 		width={220}
 		showSearch={true}

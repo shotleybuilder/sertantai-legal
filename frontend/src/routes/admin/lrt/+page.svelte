@@ -639,8 +639,8 @@
 			error = null;
 			isLoading = true;
 
-			// Get collection - this creates the Electric-synced collection
-			const collection = await getUkLrtCollection();
+			// Get collection - this creates the Electric-synced collection with correct WHERE
+			const collection = await getUkLrtCollection(lastWhereClause);
 
 			// Debounced refresh to prevent excessive UI updates
 			let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
