@@ -204,8 +204,8 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 			reconnectAttempts: isReconnect ? s.reconnectAttempts : 0
 		}));
 
-		// Get the UK LRT collection (browser only)
-		const ukLrtCollection = await getUkLrtCollection();
+		// Get the UK LRT collection (browser only) with the correct WHERE clause
+		const ukLrtCollection = await getUkLrtCollection(where);
 
 		// Only clear existing data if explicitly requested
 		// This allows the new shape to merge with existing data for better UX

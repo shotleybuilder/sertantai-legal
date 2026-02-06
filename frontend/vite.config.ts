@@ -8,6 +8,6 @@ export default defineConfig({
 		port: 5175
 	},
 	ssr: {
-		noExternal: ['@tanstack/svelte-query']
+		noExternal: ['@tanstack/svelte-query', 'svelte-table-views-sidebar']
 	}
 });

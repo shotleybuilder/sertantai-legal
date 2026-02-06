@@ -4,7 +4,6 @@
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import {
-		ViewSelector,
 		SaveViewModal,
 		activeViewId,
 		activeViewModified,
@@ -12,6 +11,8 @@
 		savedViews
 	} from 'svelte-table-views-tanstack';
 	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
+	import { ViewSidebar } from 'svelte-table-views-sidebar';
+	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
 	import {
 		getUkLrtCollection,
@@ -371,6 +372,22 @@
 	const currentYear = new Date().getFullYear();
 	const threeYearsAgo = `${currentYear - 3}-01-01`;
 
+	// View group definitions for sidebar organization
+	const viewGroups: ViewGroup[] = [
+		{ id: 'time-based', name: 'Time-Based', order: 0 },
+		{ id: 'classification', name: 'Classification', order: 1 },
+		{ id: 'custom', name: 'Custom Views', order: 2 }
+	];
+
+	// Map view names to group IDs
+	const viewGroupMapping: Record<string, string> = {
+		'Recent Laws': 'time-based',
+		'By Family': 'classification',
+		'By Status': 'classification',
+		'By Type': 'classification',
+		'Geographic Scope': 'classification'
+	};
+
 	const defaultViews: Array<{
 		name: string;
 		description: string;
@@ -428,6 +445,15 @@
 			grouping: ['geo_extent']
 		}
 	];
+
+	// Convert saved views to sidebar format
+	$: sidebarViews = $savedViews.map((view): SidebarView => ({
+		id: view.id,
+		name: view.name,
+		description: view.description,
+		groupId: viewGroupMapping[view.name] || 'custom',
+		isDefault: defaultViews.find((dv) => dv.name === view.name)?.isDefault
+	}));
 
 	// Seed default views
 	async function seedDefaultViews() {
@@ -542,7 +568,16 @@
 		configVersion++;
 	}
 
-	// Handle view selection
+	// Handle view selection from sidebar
+	async function handleSidebarSelect(event: CustomEvent<{ view: SidebarView }>) {
+		const sidebarView = event.detail.view;
+		const loadedView = await viewActions.load(sidebarView.id);
+		if (loadedView) {
+			applyViewConfig(loadedView.config);
+		}
+	}
+
+	// Handle view selection (legacy - for modal)
 	function handleViewSelected(event: CustomEvent<{ view: SavedView }>) {
 		const view = event.detail.view;
 		setTimeout(() => {
@@ -711,14 +746,27 @@
 	});
 </script>
 
-<div class="container mx-auto px-4 py-6">
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold text-gray-900 mb-1">UK Legal Register</h1>
-		<p class="text-sm text-gray-600">
-			Browse UK Legal, Regulatory & Transport records. Use views to switch between different
-			perspectives.
-		</p>
-	</div>
+<div class="flex h-full">
+	<!-- View Sidebar -->
+	<ViewSidebar
+		views={sidebarViews}
+		groups={viewGroups}
+		selectedViewId={$activeViewId}
+		storageKey="browse-views-sidebar"
+		width={220}
+		showSearch={true}
+		showPinned={true}
+		on:select={handleSidebarSelect}
+	/>
+
+	<!-- Main Content -->
+	<div class="flex-1 overflow-auto px-6 py-4">
+		<div class="mb-4">
+			<h1 class="text-xl font-bold text-gray-900">UK Legal Register</h1>
+			<p class="text-sm text-gray-600">
+				Browse UK Legal, Regulatory & Transport records.
+			</p>
+		</div>
 
 	{#if isLoading}
 		<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
@@ -793,10 +841,8 @@
 				grouping: true
 			}}
 		>
-			<!-- Saved Views Toolbar -->
+			<!-- Save View Buttons -->
 			<svelte:fragment slot="toolbar-left">
-				<ViewSelector on:viewSelected={handleViewSelected} />
-
 				{#if $activeViewId && $activeViewModified}
 					<div class="inline-flex rounded-md shadow-sm">
 						<button
@@ -921,6 +967,7 @@
 			</svelte:fragment>
 		</TableKit>
 	{/if}
+	</div>
 </div>
 
 <!-- Save View Modal -->

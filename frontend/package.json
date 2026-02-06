@@ -57,6 +57,7 @@
 		"date-fns": "^4.1.0",
 		"idb-keyval": "^6.2.2",
 		"jsondiffpatch": "^0.7.3",
+		"svelte-table-views-sidebar": "^0.1.0",
 		"svelte-table-views-tanstack": "^0.1.7"
 	}
 }
