@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 networks:
   sertantai_legal_network:
@@ -43,10 +43,11 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sertantai_legal_dev
       HTTP_PORT: 3000
-      ELECTRIC_INSECURE: "true"  # Development only! Use ELECTRIC_SECRET in production
-      PG_PROXY_PASSWORD: proxy_password  # Secure in production!
+      ELECTRIC_INSECURE: "true" # Development only! Use ELECTRIC_SECRET in production
+      ELECTRIC_ENABLE_INTEGRATION_TESTING: "true" # Enables DELETE /v1/shape for stale shape cleanup
+      PG_PROXY_PASSWORD: proxy_password # Secure in production!
     ports:
-      - "3002:3000"  # HTTP API for Shape-based sync (port 3002 to avoid conflicts)
+      - "3002:3000" # HTTP API for Shape-based sync (port 3002 to avoid conflicts)
     networks:
       - sertantai_legal_network
     depends_on:
@@ -94,7 +95,7 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       PUBLIC_API_URL: http://localhost:4003
-      PUBLIC_ELECTRIC_URL: http://localhost:3002  # New Electric HTTP API
+      PUBLIC_ELECTRIC_URL: http://localhost:3002 # New Electric HTTP API
       PUBLIC_ENV: development
       PUBLIC_ENABLE_DEBUG: "true"
     ports:

@@ -130,6 +130,9 @@ function getDefaultWhere(): string {
 let ukLrtCol: Collection<ElectricUkLrtRecord, string> | null = null;
 let currentWhereClause: string = '';
 
+// Shape recovery: track whether we've already attempted a shape reset
+let shapeResetAttempted = false;
+
 // Sync status store
 export interface SyncStatus {
 	connected: boolean;
@@ -179,6 +182,44 @@ async function createUkLrtCollection(
 					table: 'uk_lrt',
 					where: whereClause,
 					columns: UK_LRT_COLUMNS
+				},
+				onError: async (error: unknown) => {
+					// After an Electric restart, restored shapes can be permanently broken
+					// (400 "offset out of bounds"). Delete the broken shape via the HTTP API
+					// so the next request creates a fresh one, then retry.
+					if (
+						error instanceof Error &&
+						'status' in error &&
+						(error as { status: number }).status === 400 &&
+						!shapeResetAttempted
+					) {
+						shapeResetAttempted = true;
+						console.warn('[TanStack DB] Broken shape detected (400), deleting and retrying');
+						try {
+							await fetch(`${ELECTRIC_URL}/v1/shape?table=uk_lrt`, { method: 'DELETE' });
+						} catch (e) {
+							console.warn('[TanStack DB] Shape deletion failed:', e);
+						}
+						// Brief delay for Electric to clean up, then retry fresh
+						await new Promise((resolve) => setTimeout(resolve, 1000));
+						return {};
+					}
+					if (
+						error instanceof Error &&
+						'status' in error &&
+						(error as { status: number }).status === 400
+					) {
+						// Already tried reset, give up
+						console.error('[TanStack DB] Shape recovery failed after reset');
+						syncStatus.update((s) => ({
+							...s,
+							error: 'Electric sync unavailable — try refreshing the page',
+							syncing: false
+						}));
+						return;
+					}
+					console.error('[TanStack DB] Electric sync error:', error);
+					return;
 				}
 			},
 			getKey: (item) => item.id as string
@@ -195,6 +236,11 @@ async function createUkLrtCollection(
 		statusDebounceTimer = setTimeout(() => {
 			const isReady = collection.isReady();
 			const recordCount = collection.size;
+
+			// Data is flowing — reset shape recovery flag
+			if (recordCount > 0) {
+				shapeResetAttempted = false;
+			}
 
 			syncStatus.update((s) => ({
 				...s,

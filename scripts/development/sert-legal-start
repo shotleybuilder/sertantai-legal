@@ -55,19 +55,55 @@ if [ "$MANAGE_DOCKER" = true ]; then
     echo "Managing Docker containers..."
     cd "$PROJECT_ROOT"
 
+    NEED_START=false
     if ! docker ps | grep -q "sertantai-legal-postgres"; then
-        echo "   Starting Docker services (postgres)..."
+        NEED_START=true
+    fi
+    if ! docker ps | grep -q "sertantai-legal-electric"; then
+        NEED_START=true
+    fi
+
+    if [ "$NEED_START" = true ]; then
+        echo "   Starting Docker services (postgres + electric)..."
+        # Start postgres first, then electric with --no-deps to avoid
+        # dependency chain recreating postgres (see SKILLS.md)
         docker compose -f docker-compose.dev.yml up -d postgres
-        echo "   Waiting for services to be healthy..."
+        echo "   Waiting for postgres to be healthy..."
         sleep 5
+        docker compose -f docker-compose.dev.yml up -d --no-deps electric
+
+        # Wait for Electric to be ready (up to 30s)
+        echo -n "   Waiting for ElectricSQL..."
+        for i in $(seq 1 30); do
+            if curl -s -o /dev/null -w "" http://localhost:3002/v1/health 2>/dev/null; then
+                echo " ready"
+                break
+            fi
+            if [ "$i" -eq 30 ]; then
+                echo " timeout (may still be starting)"
+            fi
+            sleep 1
+            echo -n "."
+        done
     else
         echo "   Docker services already running"
     fi
     echo ""
 else
     # Check if Docker services are running (warning only)
+    MISSING=""
     if ! docker ps | grep -q "sertantai-legal-postgres"; then
-        echo "Warning: Docker containers not detected"
+        MISSING="postgres"
+    fi
+    if ! docker ps | grep -q "sertantai-legal-electric"; then
+        if [ -n "$MISSING" ]; then
+            MISSING="$MISSING, electric"
+        else
+            MISSING="electric"
+        fi
+    fi
+    if [ -n "$MISSING" ]; then
+        echo "Warning: Docker containers not detected ($MISSING)"
         echo "   Tip: Use 'sert-legal-start --docker' to auto-start containers"
         echo ""
     fi
@@ -107,6 +143,7 @@ echo ""
 echo "URLs:"
 echo "   Backend:  http://localhost:4003  (phoenix)"
 echo "   Frontend: http://localhost:5175  (svelte)"
+echo "   Electric: http://localhost:3002  (sync)"
 echo ""
 echo "To stop: sert-legal-stop"
 echo ""
