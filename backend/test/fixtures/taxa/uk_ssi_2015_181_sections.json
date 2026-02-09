@@ -1,0 +1,70 @@
+{
+  "law_name": "UK_ssi_2015_181",
+  "title": "Town and Country Planning (Hazardous Substances) (Scotland) Regulations 2015",
+  "sections": {
+    "regulation-6": {
+      "text": "An application for hazardous substances consent must be made to the planning authority on a form published by the Scottish Ministers and must contain— the name and address of the applicant; the name and address of any agent acting on behalf of the applicant and whether any notice or other correspondence which is required by these Regulations to be sent to the applicant should be sent instead to the agent; the address or location of the land to which the application relates and a description of that land; a description of any proposed hazardous substance and the maximum quantity of that proposed hazardous substance that it is proposed to be present on, over or under the land to which the application relates at any time; and such other information as may be necessary to enable the planning authority to determine the application.",
+      "note": "No planning authority responsibility here - the text says 'must be made TO the planning authority' (passive, authority is recipient not actor)",
+      "expected_responsibilities": []
+    },
+    "regulation-9": {
+      "text": "Where an application for hazardous substances consent requires to be advertised under regulation 7, the planning authority must not determine the application before the end of the period of 21 days beginning with the date on which notice of the application was published. Notice to be given where there are premises situated on the neighbouring land to which the notice can be sent to the owner, lessee or occupier of such premises must be made (being a date not earlier than 21 days after the date on which the notice is sent); where applicable, state that the proposal is a project, or part of a project, that is subject to a national or regional planning framework.",
+      "expected_responsibilities": [
+        {
+          "holder": "Gvt: Authority: Planning",
+          "clause_must_contain": ["not determine", "21 days"],
+          "clause_must_not_end_with_partial_word": true
+        }
+      ]
+    },
+    "regulation-10": {
+      "text": "Where an application is made for hazardous substances consent, the planning authority must publish a notice in the form set out in Schedule 4 in a newspaper circulating in the locality in which the land to which the application relates is situated within 10 days of the receipt of the application.",
+      "expected_responsibilities": [
+        {
+          "holder": "Gvt: Authority: Planning",
+          "clause_must_contain": "publish a notice",
+          "clause_must_not_end_with_partial_word": true,
+          "clause_should_end_with": [".", ";", "10"]
+        }
+      ]
+    },
+    "regulation-12": {
+      "text": "Where the planning authority is minded to grant hazardous substances consent, the authority must, where the Health and Safety Executive or the Office for Nuclear Regulation has advised the planning authority against granting the consent or has advised that conditions should be attached to the consent which differ from those which the planning authority proposes to attach, notify that agent, a notice identifying any information, plan, other documents or fee the applicant must submit in order to complete the application.",
+      "expected_responsibilities": [
+        {
+          "holder": "Gvt: Authority: Planning",
+          "clause_must_contain": ["notify", "agent"],
+          "clause_must_not_end_with_partial_word": true,
+          "clause_must_not_contain": ["compl"]
+        }
+      ]
+    },
+    "regulation-14": {
+      "text": "Subject to paragraph (2), a planning authority must consult the following bodies before determining an application— the safety regulator; the Police Service of Scotland; Scottish Natural Heritage; a community council established in accordance with the provisions of Part IV of the Local Government (Scotland) Act 1973, any part of whose area is within or adjoins the land to which the application relates; the Scottish Fire and Rescue Service; the Scottish Environment Protection Agency; a person to whom a licence has been granted under section 7(2) of the Gas Act 1986 (licence to convey gas through pipes) whose apparatus is situated on, over or under the land to which the application relates or on, over or under adjoining land. The planning authority must give notice of the application to every person who is an owner or occupier of any land.",
+      "expected_responsibilities": [
+        {
+          "holder": "Gvt: Authority: Planning",
+          "clause_must_contain": "consult",
+          "clause_must_not_end_with_partial_word": true
+        },
+        {
+          "holder": "Gvt: Authority: Planning",
+          "clause_must_contain": "give notice",
+          "clause_must_not_end_with_partial_word": true
+        }
+      ]
+    },
+    "regulation-45": {
+      "text": "Where the planning authority serves a hazardous substances contravention notice under section 24(1) of the Act, the planning authority must, not later than 14 days after notification of the appeal under regulation 44 give notice of the appeal to each person (other than the appellant) on whom the hazardous substances contravention notice was served.",
+      "expected_responsibilities": [
+        {
+          "holder": "Gvt: Authority: Planning",
+          "clause_must_contain": ["give notice", "appeal"],
+          "clause_must_not_end_with_partial_word": true,
+          "clause_must_not_contain": ["wa", "serv"],
+          "clause_should_end_with": [".", ";", "served"]
+        }
+      ]
+    }
+  }
+}

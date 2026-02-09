@@ -72,6 +72,7 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
                              "Gvt: Authority: Licensing": "[Ll]icen[cs]ing [Aa]uthority?i?e?s?",
                              "Gvt: Authority: Market":
                                "(?:market surveillance|weights and measures) authority?i?e?s?",
+                             "Gvt: Authority: Planning": "[Pp]lanning [Aa]uthority?i?e?s?",
                              "Gvt: Authority: Public": "[Pp]ublic [Aa]uthority?i?e?s?",
                              "Gvt: Authority: Traffic": "[Tt]raffic [Aa]uthority?i?e?s?",
                              "Gvt: Authority: Waste":

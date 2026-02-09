@@ -1,8 +1,8 @@
 Create a GitHub Issue using `gh` CLI.
 
 ---
-**LABEL LIST LAST UPDATED**: 2025-11-15
-**Repository**: shotleybuilder/sertantai-ash-electricsql-svelte-tanstack-starter
+**LABEL LIST LAST UPDATED**: 2026-02-04
+**Repository**: shotleybuilder/sertantai-legal
 
 **CURRENT LABELS**:
 - `bug` - Something isn't working

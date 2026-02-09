@@ -1,12 +1,13 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 1.1
-  **Last Updated**: 2026-02-02
+  **Version**: 1.2
+  **Last Updated**: 2026-02-06
   
   > **Issue #14 (Phase 4)**: Consolidated 16 holder text columns into 4 JSONB columns with 93% storage reduction.
   > **Issue #15 (Phase 4)**: Consolidated 4 POPIMAR text columns into 1 JSONB column.
   > **Issue #16 (Phase 4)**: Consolidated 4 role text columns into 2 JSONB columns.
   > **Cleanup (2026-02-02)**: Removed 8 legacy stats text columns replaced by JSONB.
+  > **Issue #18 (2026-02-06)**: Documented derived year/month columns for date grouping in TableKit.
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -87,6 +88,8 @@
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `md_date` | Primary Date | `md_date` | `date` | Yes (13610) | `2024-01-15` | 💠 metadata |
+    | `md_date_year` | Primary Date (Year) | - | `integer` | Yes | `2024` | 🧮_derived <- `md_date` (trigger) |
+    | `md_date_month` | Primary Date (Month) | - | `integer` | Yes | `1` | 🧮_derived <- `md_date` (trigger) |
     | `md_made_date` | Made Date | `md_made_date` | `date` | Yes (14565) | `2024-01-10` | 💠 metadata |
     | `md_enactment_date` | Enacted Date | `md_enactment_date` | `date` | Yes (1581) | `2020-11-23` | 💠 metadata |
     | `md_coming_into_force_date` | In Force Date | `md_coming_into_force_date` | `date` | Yes (11750) | `2024-02-01` | 💠 metadata |
@@ -201,7 +204,11 @@
     | `amended_by` | Amended By | `amended_by` | `text[]` | Yes (6338) | | 🔄 amendments |
     | `linked_amended_by` | Linked Amended By | `linked_amended_by` | `text[]` | Yes (6180) | `{UK_uksi_2023_381}` | 🧮_derived |
     | `latest_amend_date` | Latest Amendment | `latest_amend_date` | `date` | Yes (5512) | | 🧮_derived <- 🔄 amendments |
+    | `latest_amend_date_year` | Latest Amendment (Year) | - | `integer` | Yes | `2024` | 🧮_derived <- `latest_amend_date` (trigger) |
+    | `latest_amend_date_month` | Latest Amendment (Month) | - | `integer` | Yes | `6` | 🧮_derived <- `latest_amend_date` (trigger) |
     | `latest_change_date` | Latest Change | `latest_change_date` | `date` | No | | 🧮_derived |
+    | `latest_change_date_year` | Latest Change (Year) | - | `integer` | No | | 🧮_derived <- `latest_change_date` |
+    | `latest_change_date_month` | Latest Change (Month) | - | `integer` | No | | 🧮_derived <- `latest_change_date` |
     
     > **Removed (2026-02-02)**: `🔻_stats_affected_by_count_per_law` and `🔻_stats_affected_by_count_per_law_detailed` were removed. Data consolidated into `🔻_affected_by_stats_per_law` JSONB.
   
@@ -216,6 +223,8 @@
     | `rescinded_by` | Rescinded By | `rescinded_by` | `text[]` | Yes (5789) | | 🔄 amendments |
     | `linked_rescinded_by` | Linked Rescinded By | `linked_rescinded_by` | `text[]` | Yes (5600) | `{UK_uksi_2015_1640}` | 🧮_derived |
     | `latest_rescind_date` | Latest Rescind | `latest_rescind_date` | `date` | Yes (4379) | | 🧮_derived <- 🚫_repeal_revoke |
+    | `latest_rescind_date_year` | Latest Rescind (Year) | - | `integer` | Yes | `2023` | 🧮_derived <- `latest_rescind_date` (trigger) |
+    | `latest_rescind_date_month` | Latest Rescind (Month) | - | `integer` | Yes | `12` | 🧮_derived <- `latest_rescind_date` (trigger) |
     
     > **Removed (2026-02-02)**: `🔻_stats_rescinded_by_count_per_law` and `🔻_stats_rescinded_by_count_per_law_detailed` were removed. Data consolidated into `🔻_rescinded_by_stats_per_law` JSONB.
 

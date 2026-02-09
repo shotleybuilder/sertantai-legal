@@ -21,9 +21,16 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
   alias SertantaiLegal.Legal.Taxa.{
     ActorLib,
+    ClauseRefiner,
     DutyTypeDefnGoverned,
-    DutyTypeDefnGovernment
+    DutyTypeDefnGovernment,
+    DutyTypeDefnGovernmentV2
   }
+
+  # Pattern version configuration
+  # :v1 - Legacy patterns (unbounded pre-modal capture, no action capture)
+  # :v2 - Improved patterns (limited pre-modal, capture groups for action)
+  @default_pattern_version :v2
 
   @type duty_types :: list(String.t())
   @type actors :: list(String.t())
@@ -93,12 +100,28 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
       end
 
     # Build role-specific patterns for each actor
+    # Use V2 patterns for government roles (responsibility/power) when configured
+    pattern_version = get_pattern_version()
+
     regex_lib =
-      case role do
-        :duty -> build_lib(actors_regex, &DutyTypeDefnGoverned.duty/1)
-        :right -> build_lib(actors_regex, &DutyTypeDefnGoverned.right/1)
-        :responsibility -> build_lib(actors_regex, &DutyTypeDefnGovernment.responsibility/1)
-        :power -> build_lib(actors_regex, &DutyTypeDefnGovernment.power_conferred/1)
+      case {role, pattern_version} do
+        {:duty, _} ->
+          build_lib(actors_regex, &DutyTypeDefnGoverned.duty/1)
+
+        {:right, _} ->
+          build_lib(actors_regex, &DutyTypeDefnGoverned.right/1)
+
+        {:responsibility, :v2} ->
+          build_lib(actors_regex, &DutyTypeDefnGovernmentV2.responsibility/1)
+
+        {:responsibility, _} ->
+          build_lib(actors_regex, &DutyTypeDefnGovernment.responsibility/1)
+
+        {:power, :v2} ->
+          build_lib(actors_regex, &DutyTypeDefnGovernmentV2.power_conferred/1)
+
+        {:power, _} ->
+          build_lib(actors_regex, &DutyTypeDefnGovernment.power_conferred/1)
       end
 
     # Apply blacklist (lightweight if text already cleaned by TextCleaner)
@@ -124,17 +147,91 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
         {[], [], [], regexes}
 
       {_, role_holders, matches, regexes} ->
+        # Deduplicate matches - when same clause captured for different holders,
+        # keep only the most specific holder (longest holder name wins)
+        deduplicated_matches = deduplicate_by_clause(matches)
+
         {
           Enum.uniq(role_holders),
           role |> Atom.to_string() |> String.capitalize() |> List.wrap(),
-          matches |> Enum.uniq_by(&match_key/1),
+          deduplicated_matches,
           regexes
         }
     end
   end
 
-  # Generate a unique key for deduplication of matches
-  defp match_key(%{holder: h, duty_type: d, clause: c}), do: {h, d, c}
+  # Deduplicates and filters matches to remove false positives.
+  #
+  # Two issues addressed:
+  # 1. Multiple actors matching the same clause - keep most specific holder
+  # 2. Actor mentioned in text but not the subject of "must" - filter out
+  #
+  # Example: "Scottish Environment Protection Agency" pattern matches text containing
+  # "SEPA" in a list, but the clause is "planning authority must..." - this is a
+  # false positive for SEPA.
+  defp deduplicate_by_clause(matches) do
+    matches
+    # First, filter out false positives where holder doesn't match clause subject
+    |> Enum.filter(&holder_matches_clause_subject?/1)
+    # Then group by similar clauses and keep most specific
+    |> Enum.group_by(fn %{duty_type: d, clause: c} -> {d, normalize_clause_for_grouping(c)} end)
+    |> Enum.map(fn {_key, group} ->
+      # Pick the most specific holder (longest name = more specific)
+      Enum.max_by(group, fn %{holder: h} -> String.length(h) end)
+    end)
+  end
+
+  # Check if the holder matches the subject of the responsibility in the clause.
+  # Returns false if the clause says "X must..." but the holder is Y.
+  defp holder_matches_clause_subject?(%{holder: holder, clause: clause}) do
+    # Extract the actor type from holder (e.g., "Authority" from "Gvt: Authority: Planning")
+    holder_keywords = extract_holder_keywords(holder)
+
+    # Find what appears before "must" or "shall" in the clause
+    case Regex.run(~r/(\w+(?:\s+\w+)?)\s+(?:must|shall)/i, clause) do
+      [_, subject] ->
+        # Check if any holder keyword matches the subject
+        subject_lower = String.downcase(subject)
+        Enum.any?(holder_keywords, fn kw -> String.contains?(subject_lower, kw) end)
+
+      nil ->
+        # No clear subject found - keep the match
+        true
+    end
+  end
+
+  # Extract keywords from holder name for matching
+  defp extract_holder_keywords(holder) do
+    holder
+    |> String.downcase()
+    |> String.split(~r/[:\s]+/)
+    |> Enum.reject(&(&1 in ["gvt", "org", "ind", "spc", "sc", ""]))
+    |> Enum.flat_map(fn
+      "authority" -> ["authority", "authorities"]
+      "planning" -> ["planning"]
+      "local" -> ["local"]
+      "waste" -> ["waste", "disposal"]
+      "agency" -> ["agency"]
+      "minister" -> ["minister", "ministers", "scottish ministers"]
+      "environment" -> ["environment", "environmental"]
+      "protection" -> ["protection"]
+      "scottish" -> ["scottish"]
+      other -> [other]
+    end)
+  end
+
+  # Normalize clause for grouping - extract the core "subject must action" part
+  defp normalize_clause_for_grouping(clause) do
+    # Find the "X must Y" core pattern and use that for grouping
+    case Regex.run(~r/(\w+(?:\s+\w+)?)\s+(must|shall)\s+(.{1,50})/i, clause) do
+      [_, subject, modal, action_start] ->
+        "#{String.downcase(subject)} #{String.downcase(modal)} #{String.downcase(action_start)}"
+
+      nil ->
+        # Can't normalize - use first 100 chars
+        String.slice(clause, 0, 100) |> String.downcase()
+    end
+  end
 
   @doc """
   Removes blacklisted patterns from text before processing.
@@ -148,6 +245,19 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     |> Enum.reduce(text, fn regex, acc ->
       Regex.replace(regex, acc, " ")
     end)
+  end
+
+  @doc """
+  Returns the current pattern version for government patterns.
+
+  Can be overridden via application config:
+      config :sertantai_legal, :duty_type_pattern_version, :v1
+
+  Returns :v2 by default (improved patterns with capture groups).
+  """
+  @spec get_pattern_version() :: :v1 | :v2
+  def get_pattern_version do
+    Application.get_env(:sertantai_legal, :duty_type_pattern_version, @default_pattern_version)
   end
 
   @doc """
@@ -172,47 +282,74 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
   # Runs role-specific regex patterns against text
   # Returns structured match data (Phase 2b)
+  # V2 patterns: Prefers capture groups if present (action text after modal)
+  # Uses Regex.scan to capture ALL matches of a pattern, not just the first
   defp run_role_regex(collector, library, label) do
     Enum.reduce(library, collector, fn {actor, regexes}, acc ->
       Enum.reduce(regexes, acc, fn regex, {text, role_holders, matches, reg_exs} = acc2 ->
-        {regex, rm_matched_text?} =
+        {regex_str, rm_matched_text?} =
           case regex do
             {regex, true} -> {regex, true}
             _ -> {regex, false}
           end
 
-        case Regex.compile(regex, "m") do
+        case Regex.compile(regex_str, "m") do
           {:ok, regex_c} ->
-            case Regex.run(regex_c, text) do
-              [match | _] ->
-                text =
-                  if rm_matched_text?,
-                    do: Regex.replace(regex_c, text, ""),
-                    else: text
+            # Use Regex.scan to find ALL matches, not just the first
+            all_matches = Regex.scan(regex_c, text)
 
-                match = ensure_valid_utf8(match)
-                actor_str = to_string(actor)
+            if all_matches == [] do
+              acc2
+            else
+              # Process each match and accumulate results
+              text =
+                if rm_matched_text?,
+                  do: Regex.replace(regex_c, text, ""),
+                  else: text
 
-                # Phase 2b: Return structured match data instead of formatted string
-                match_entry = %{
-                  holder: actor_str,
-                  duty_type: label,
-                  clause: match
-                }
+              actor_str = to_string(actor)
 
-                {
-                  text,
-                  [actor_str | role_holders],
-                  [match_entry | matches],
-                  [~s/#{label}: #{actor_str}\n#{regex}\n-> #{match}\n/ | reg_exs]
-                }
+              new_entries =
+                Enum.map(all_matches, fn [full_match | captures] ->
+                  full_match = ensure_valid_utf8(full_match)
 
-              nil ->
-                acc2
+                  # V2 patterns have capture groups for action text after modal
+                  refined_clause =
+                    case captures do
+                      [captured | _] when captured != "" ->
+                        captured = ensure_valid_utf8(captured)
+
+                        ClauseRefiner.refine(full_match, label,
+                          section_text: text,
+                          captured_action: captured
+                        )
+
+                      _ ->
+                        ClauseRefiner.refine(full_match, label, section_text: text)
+                    end
+
+                  %{
+                    holder: actor_str,
+                    duty_type: label,
+                    clause: refined_clause
+                  }
+                end)
+
+              new_debug =
+                Enum.map(new_entries, fn entry ->
+                  ~s/#{label}: #{actor_str}\n#{regex_str}\n-> #{entry.clause}\n/
+                end)
+
+              {
+                text,
+                List.duplicate(actor_str, length(new_entries)) ++ role_holders,
+                new_entries ++ matches,
+                new_debug ++ reg_exs
+              }
             end
 
           {:error, {error, _pos}} ->
-            IO.puts("ERROR: DutyTypeLib regex doesn't compile: #{error}\nPattern: #{regex}")
+            IO.puts("ERROR: DutyTypeLib regex doesn't compile: #{error}\nPattern: #{regex_str}")
             acc2
         end
       end)
@@ -342,6 +479,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
   # Runs patterns for a specific actor against filtered windows
   # Returns structured match data (Phase 2b)
+  # V2 patterns: Prefers capture groups if present (action text after modal)
+  # Uses Regex.scan to capture ALL matches from all windows
   defp run_patterns_in_windows(acc, actor, regexes, windows, label) do
     Enum.reduce(regexes, acc, fn regex, {text, role_holders, matches, reg_exs} = acc2 ->
       {regex_str, rm_matched_text?} =
@@ -352,30 +491,52 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
       case Regex.compile(regex_str, "m") do
         {:ok, regex_c} ->
-          # Search each window for a match
-          case find_match_in_windows(regex_c, windows) do
-            {:found, match} ->
-              # Found a match - update accumulator
-              new_text = if rm_matched_text?, do: Regex.replace(regex_c, text, ""), else: text
-              match = ensure_valid_utf8(match)
-              actor_str = to_string(actor)
+          # Search ALL windows for ALL matches
+          all_matches = find_all_matches_in_windows(regex_c, windows)
 
-              # Phase 2b: Return structured match data instead of formatted string
-              match_entry = %{
-                holder: actor_str,
-                duty_type: label,
-                clause: match
-              }
+          if all_matches == [] do
+            acc2
+          else
+            new_text = if rm_matched_text?, do: Regex.replace(regex_c, text, ""), else: text
+            actor_str = to_string(actor)
 
-              {
-                new_text,
-                [actor_str | role_holders],
-                [match_entry | matches],
-                [~s/#{label}: #{actor_str}\n#{regex_str}\n-> #{match}\n/ | reg_exs]
-              }
+            new_entries =
+              Enum.map(all_matches, fn {full_match, captures, window_text} ->
+                full_match = ensure_valid_utf8(full_match)
 
-            :not_found ->
-              acc2
+                # V2 patterns have capture groups for action text after modal
+                refined_clause =
+                  case captures do
+                    [captured | _] when captured != "" ->
+                      captured = ensure_valid_utf8(captured)
+
+                      ClauseRefiner.refine(full_match, label,
+                        section_text: window_text,
+                        captured_action: captured
+                      )
+
+                    _ ->
+                      ClauseRefiner.refine(full_match, label, section_text: window_text)
+                  end
+
+                %{
+                  holder: actor_str,
+                  duty_type: label,
+                  clause: refined_clause
+                }
+              end)
+
+            new_debug =
+              Enum.map(new_entries, fn entry ->
+                ~s/#{label}: #{actor_str}\n#{regex_str}\n-> #{entry.clause}\n/
+              end)
+
+            {
+              new_text,
+              List.duplicate(actor_str, length(new_entries)) ++ role_holders,
+              new_entries ++ matches,
+              new_debug ++ reg_exs
+            }
           end
 
         {:error, {error, _pos}} ->
@@ -385,14 +546,15 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     end)
   end
 
-  # Searches for a regex match in a list of text windows
-  defp find_match_in_windows(_regex, []), do: :not_found
-
-  defp find_match_in_windows(regex, [{_start_pos, window_text} | rest]) do
-    case Regex.run(regex, window_text) do
-      [match | _] -> {:found, match}
-      nil -> find_match_in_windows(regex, rest)
-    end
+  # Searches for ALL regex matches in ALL windows
+  # Returns list of {full_match, captures, window_text} tuples
+  defp find_all_matches_in_windows(regex, windows) do
+    Enum.flat_map(windows, fn {_start_pos, window_text} ->
+      Regex.scan(regex, window_text)
+      |> Enum.map(fn [full_match | captures] ->
+        {full_match, captures, window_text}
+      end)
+    end)
   end
 
   # Gets the base actor pattern for finding mentions

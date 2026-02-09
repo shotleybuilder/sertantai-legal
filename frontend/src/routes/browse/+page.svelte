@@ -837,7 +837,7 @@
 				filtering: true,
 				sorting: true,
 				sortingMode: 'control',
-				pagination: true,
+				pagination: false,
 				grouping: true
 			}}
 		>
