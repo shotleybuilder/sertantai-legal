@@ -62,7 +62,11 @@ const UK_LRT_COLUMNS: string[] = [
 	'md_restrict_start_date',
 	'live_description',
 	'latest_amend_date',
+	'latest_amend_date_year',
+	'latest_amend_date_month',
 	'latest_rescind_date',
+	'latest_rescind_date_year',
+	'latest_rescind_date_month',
 	'duty_holder',
 	'power_holder',
 	'rights_holder',
@@ -398,6 +402,11 @@ export function buildWhereFromFilters(
 					return `(${field} IS NULL OR ${field} = '')`;
 				case 'is_not_empty':
 					return `(${field} IS NOT NULL AND ${field} != '')`;
+				case 'in': {
+					const values = Array.isArray(value) ? value : [value];
+					const escaped = values.map((v: unknown) => `'${escapeValue(String(v))}'`).join(', ');
+					return `${field} IN (${escaped})`;
+				}
 				default:
 					console.warn(`[buildWhereFromFilters] Unknown operator: ${operator}`);
 					return null;

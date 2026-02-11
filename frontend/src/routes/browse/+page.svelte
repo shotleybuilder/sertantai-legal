@@ -53,7 +53,11 @@
 		md_enactment_date: string | null;
 		md_coming_into_force_date: string | null;
 		latest_amend_date: string | null;
+		latest_amend_date_year: number | null;
+		latest_amend_date_month: number | null;
 		latest_rescind_date: string | null;
+		latest_rescind_date_year: number | null;
+		latest_rescind_date_month: number | null;
 		leg_gov_uk_url: string | null;
 	}
 
@@ -349,12 +353,60 @@
 			meta: { group: 'Amendments', dataType: 'date' }
 		},
 		{
+			id: 'latest_amend_date_year',
+			accessorKey: 'latest_amend_date_year',
+			header: 'Amended Year',
+			cell: (info) => info.getValue() ?? '-',
+			size: 90,
+			enableGrouping: true,
+			enableSorting: true,
+			meta: { group: 'Amendments', dataType: 'number' }
+		},
+		{
+			id: 'latest_amend_date_month',
+			accessorKey: 'latest_amend_date_month',
+			header: 'Amended Month',
+			cell: (info) => {
+				const val = info.getValue() as number | null;
+				if (val == null) return '-';
+				return monthNames[val - 1] ?? '-';
+			},
+			size: 100,
+			enableGrouping: true,
+			enableSorting: true,
+			meta: { group: 'Amendments', dataType: 'number' }
+		},
+		{
 			id: 'latest_rescind_date',
 			accessorKey: 'latest_rescind_date',
 			header: 'Last Rescinded',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 110,
 			meta: { group: 'Amendments', dataType: 'date' }
+		},
+		{
+			id: 'latest_rescind_date_year',
+			accessorKey: 'latest_rescind_date_year',
+			header: 'Rescinded Year',
+			cell: (info) => info.getValue() ?? '-',
+			size: 90,
+			enableGrouping: true,
+			enableSorting: true,
+			meta: { group: 'Amendments', dataType: 'number' }
+		},
+		{
+			id: 'latest_rescind_date_month',
+			accessorKey: 'latest_rescind_date_month',
+			header: 'Rescinded Month',
+			cell: (info) => {
+				const val = info.getValue() as number | null;
+				if (val == null) return '-';
+				return monthNames[val - 1] ?? '-';
+			},
+			size: 100,
+			enableGrouping: true,
+			enableSorting: true,
+			meta: { group: 'Amendments', dataType: 'number' }
 		},
 		// Links
 		{
@@ -368,20 +420,119 @@
 		}
 	];
 
-	// Default views for browse page
-	const currentYear = new Date().getFullYear();
-	const threeYearsAgo = `${currentYear - 3}-01-01`;
+	// Date boundary helpers for view filters
+	const now = new Date();
+	const currentYear = now.getFullYear();
+	const currentMonth = now.getMonth(); // 0-indexed
+	const currentQuarterStart = Math.floor(currentMonth / 3) * 3;
+
+	function isoDate(y: number, m: number, d: number): string {
+		return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+	}
+
+	const thisMonthStart = isoDate(currentYear, currentMonth, 1);
+	const lastMonthStart =
+		currentMonth === 0
+			? isoDate(currentYear - 1, 11, 1)
+			: isoDate(currentYear, currentMonth - 1, 1);
+
+	const thisQuarterStart = isoDate(currentYear, currentQuarterStart, 1);
+	const lastQuarterStart =
+		currentQuarterStart === 0
+			? isoDate(currentYear - 1, 9, 1)
+			: isoDate(currentYear, currentQuarterStart - 3, 1);
+
+	const thisYearStart = isoDate(currentYear, 0, 1);
+	const lastYearStart = isoDate(currentYear - 1, 0, 1);
+	const threeYearsAgoStart = isoDate(currentYear - 3, 0, 1);
+	const todayStr = isoDate(currentYear, currentMonth, now.getDate());
+
+	// Shared column/sort/grouping config for all New Laws views
+	const newLawsColumns = [
+		'name',
+		'title_en',
+		'md_date',
+		'md_date_year',
+		'md_date_month',
+		'type_code',
+		'live',
+		'family'
+	];
+	const newLawsSort = { columnId: 'md_date', direction: 'desc' as const };
+	const newLawsGrouping = ['md_date_year', 'md_date_month'];
+
+	// Shared config for Amended Laws views
+	const amendedLawsColumns = [
+		'name',
+		'title_en',
+		'latest_amend_date',
+		'latest_amend_date_year',
+		'latest_amend_date_month',
+		'type_code',
+		'live',
+		'family'
+	];
+	const amendedLawsSort = { columnId: 'latest_amend_date', direction: 'desc' as const };
+	const amendedLawsGrouping = ['latest_amend_date_year', 'latest_amend_date_month'];
+	// Only include laws still at least partly in force
+	const amendedLawsLiveFilter: { columnId: string; operator: string; value: unknown } = {
+		columnId: 'live',
+		operator: 'in',
+		value: ['✔ In force', '⭕ Part Revocation / Repeal']
+	};
+
+	// Shared config for Repealed Laws views
+	const repealedLawsColumns = [
+		'name',
+		'title_en',
+		'latest_rescind_date',
+		'latest_rescind_date_year',
+		'latest_rescind_date_month',
+		'type_code',
+		'live',
+		'family'
+	];
+	const repealedLawsSort = { columnId: 'latest_rescind_date', direction: 'desc' as const };
+	const repealedLawsGrouping = ['latest_rescind_date_year', 'latest_rescind_date_month'];
+	// Only fully repealed/revoked laws
+	const repealedLawsLiveFilter: { columnId: string; operator: string; value: unknown } = {
+		columnId: 'live',
+		operator: 'equals',
+		value: '❌ Revoked / Repealed / Abolished'
+	};
 
 	// View group definitions for sidebar organization
 	const viewGroups: ViewGroup[] = [
-		{ id: 'time-based', name: 'Time-Based', order: 0 },
-		{ id: 'classification', name: 'Classification', order: 1 },
-		{ id: 'custom', name: 'Custom Views', order: 2 }
+		{ id: 'new-laws', name: 'New Laws', order: 0 },
+		{ id: 'amended-laws', name: 'Amended Laws', order: 1 },
+		{ id: 'repealed-laws', name: 'Repealed Laws', order: 2 },
+		{ id: 'classification', name: 'Classification', order: 3 },
+		{ id: 'custom', name: 'Custom Views', order: 4 }
 	];
 
 	// Map view names to group IDs
 	const viewGroupMapping: Record<string, string> = {
-		'Recent Laws': 'time-based',
+		'This Month': 'new-laws',
+		'Last Month': 'new-laws',
+		'This Quarter': 'new-laws',
+		'Last Quarter': 'new-laws',
+		'This Year': 'new-laws',
+		'Last Year': 'new-laws',
+		'Last 3 Years': 'new-laws',
+		'Amended This Month': 'amended-laws',
+		'Amended Last Month': 'amended-laws',
+		'Amended This Quarter': 'amended-laws',
+		'Amended Last Quarter': 'amended-laws',
+		'Amended This Year': 'amended-laws',
+		'Amended Last Year': 'amended-laws',
+		'Amended Last 3 Years': 'amended-laws',
+		'Repealed This Month': 'repealed-laws',
+		'Repealed Last Month': 'repealed-laws',
+		'Repealed This Quarter': 'repealed-laws',
+		'Repealed Last Quarter': 'repealed-laws',
+		'Repealed This Year': 'repealed-laws',
+		'Repealed Last Year': 'repealed-laws',
+		'Repealed Last 3 Years': 'repealed-laws',
 		'By Family': 'classification',
 		'By Status': 'classification',
 		'By Type': 'classification',
@@ -397,25 +548,241 @@
 		grouping?: string[];
 		isDefault?: boolean;
 	}> = [
+		// New Laws group
 		{
-			name: 'Recent Laws',
-			description:
-				'Laws passed in the last 3 years, grouped by year and month (most recent first).',
-			columns: [
-				'name',
-				'title_en',
-				'md_date',
-				'md_date_year',
-				'md_date_month',
-				'type_code',
-				'live',
-				'family'
-			],
-			filters: [{ columnId: 'md_date', operator: 'is_after', value: threeYearsAgo }],
-			sort: { columnId: 'md_date', direction: 'desc' },
-			grouping: ['md_date_year', 'md_date_month'],
+			name: 'This Month',
+			description: 'Laws from this calendar month onwards (includes future dates).',
+			columns: newLawsColumns,
+			filters: [{ columnId: 'md_date', operator: 'is_after', value: thisMonthStart }],
+			sort: newLawsSort,
+			grouping: newLawsGrouping,
 			isDefault: true
 		},
+		{
+			name: 'Last Month',
+			description: 'Laws from the previous calendar month.',
+			columns: newLawsColumns,
+			filters: [
+				{ columnId: 'md_date', operator: 'is_after', value: lastMonthStart },
+				{ columnId: 'md_date', operator: 'is_before', value: thisMonthStart }
+			],
+			sort: newLawsSort,
+			grouping: newLawsGrouping
+		},
+		{
+			name: 'This Quarter',
+			description: 'Laws from this calendar quarter onwards (includes future dates).',
+			columns: newLawsColumns,
+			filters: [{ columnId: 'md_date', operator: 'is_after', value: thisQuarterStart }],
+			sort: newLawsSort,
+			grouping: newLawsGrouping
+		},
+		{
+			name: 'Last Quarter',
+			description: 'Laws from the previous calendar quarter.',
+			columns: newLawsColumns,
+			filters: [
+				{ columnId: 'md_date', operator: 'is_after', value: lastQuarterStart },
+				{ columnId: 'md_date', operator: 'is_before', value: thisQuarterStart }
+			],
+			sort: newLawsSort,
+			grouping: newLawsGrouping
+		},
+		{
+			name: 'This Year',
+			description: 'Laws from this calendar year onwards (includes future dates).',
+			columns: newLawsColumns,
+			filters: [{ columnId: 'md_date', operator: 'is_after', value: thisYearStart }],
+			sort: newLawsSort,
+			grouping: newLawsGrouping
+		},
+		{
+			name: 'Last Year',
+			description: `Laws from ${currentYear - 1}.`,
+			columns: newLawsColumns,
+			filters: [
+				{ columnId: 'md_date', operator: 'is_after', value: lastYearStart },
+				{ columnId: 'md_date', operator: 'is_before', value: thisYearStart }
+			],
+			sort: newLawsSort,
+			grouping: newLawsGrouping
+		},
+		{
+			name: 'Last 3 Years',
+			description: `Laws from ${currentYear - 3} to today.`,
+			columns: newLawsColumns,
+			filters: [
+				{ columnId: 'md_date', operator: 'is_after', value: threeYearsAgoStart },
+				{ columnId: 'md_date', operator: 'is_before', value: todayStr }
+			],
+			sort: newLawsSort,
+			grouping: newLawsGrouping
+		},
+		// Amended Laws group
+		{
+			name: 'Amended This Month',
+			description: 'Laws amended this calendar month onwards (in force or partly repealed).',
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: thisMonthStart },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		{
+			name: 'Amended Last Month',
+			description: 'Laws amended in the previous calendar month (in force or partly repealed).',
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: lastMonthStart },
+				{ columnId: 'latest_amend_date', operator: 'is_before', value: thisMonthStart },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		{
+			name: 'Amended This Quarter',
+			description: 'Laws amended this calendar quarter onwards (in force or partly repealed).',
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: thisQuarterStart },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		{
+			name: 'Amended Last Quarter',
+			description: 'Laws amended in the previous calendar quarter (in force or partly repealed).',
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: lastQuarterStart },
+				{ columnId: 'latest_amend_date', operator: 'is_before', value: thisQuarterStart },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		{
+			name: 'Amended This Year',
+			description: 'Laws amended this calendar year onwards (in force or partly repealed).',
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: thisYearStart },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		{
+			name: 'Amended Last Year',
+			description: `Laws amended in ${currentYear - 1} (in force or partly repealed).`,
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: lastYearStart },
+				{ columnId: 'latest_amend_date', operator: 'is_before', value: thisYearStart },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		{
+			name: 'Amended Last 3 Years',
+			description: `Laws amended from ${currentYear - 3} to today (in force or partly repealed).`,
+			columns: amendedLawsColumns,
+			filters: [
+				{ columnId: 'latest_amend_date', operator: 'is_after', value: threeYearsAgoStart },
+				{ columnId: 'latest_amend_date', operator: 'is_before', value: todayStr },
+				amendedLawsLiveFilter
+			],
+			sort: amendedLawsSort,
+			grouping: amendedLawsGrouping
+		},
+		// Repealed Laws group
+		{
+			name: 'Repealed This Month',
+			description: 'Laws repealed/revoked this calendar month onwards.',
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: thisMonthStart },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		{
+			name: 'Repealed Last Month',
+			description: 'Laws repealed/revoked in the previous calendar month.',
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: lastMonthStart },
+				{ columnId: 'latest_rescind_date', operator: 'is_before', value: thisMonthStart },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		{
+			name: 'Repealed This Quarter',
+			description: 'Laws repealed/revoked this calendar quarter onwards.',
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: thisQuarterStart },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		{
+			name: 'Repealed Last Quarter',
+			description: 'Laws repealed/revoked in the previous calendar quarter.',
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: lastQuarterStart },
+				{ columnId: 'latest_rescind_date', operator: 'is_before', value: thisQuarterStart },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		{
+			name: 'Repealed This Year',
+			description: 'Laws repealed/revoked this calendar year onwards.',
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: thisYearStart },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		{
+			name: 'Repealed Last Year',
+			description: `Laws repealed/revoked in ${currentYear - 1}.`,
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: lastYearStart },
+				{ columnId: 'latest_rescind_date', operator: 'is_before', value: thisYearStart },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		{
+			name: 'Repealed Last 3 Years',
+			description: `Laws repealed/revoked from ${currentYear - 3} to today.`,
+			columns: repealedLawsColumns,
+			filters: [
+				{ columnId: 'latest_rescind_date', operator: 'is_after', value: threeYearsAgoStart },
+				{ columnId: 'latest_rescind_date', operator: 'is_before', value: todayStr },
+				repealedLawsLiveFilter
+			],
+			sort: repealedLawsSort,
+			grouping: repealedLawsGrouping
+		},
+		// Classification group
 		{
 			name: 'By Family',
 			description: 'Browse laws organized by legal family classification.',
@@ -446,23 +813,57 @@
 		}
 	];
 
-	// Convert saved views to sidebar format
-	$: sidebarViews = $savedViews.map((view): SidebarView => ({
-		id: view.id,
-		name: view.name,
-		description: view.description,
-		groupId: viewGroupMapping[view.name] || 'custom',
-		isDefault: defaultViews.find((dv) => dv.name === view.name)?.isDefault
-	}));
+	// Build order lookup from defaultViews array position
+	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
+
+	// Convert saved views to sidebar format, preserving definition order
+	$: sidebarViews = $savedViews
+		.map((view): SidebarView => ({
+			id: view.id,
+			name: view.name,
+			description: view.description,
+			groupId: viewGroupMapping[view.name] || 'custom',
+			isDefault: defaultViews.find((dv) => dv.name === view.name)?.isDefault,
+			order: viewOrderMap.get(view.name) ?? 1000
+		}))
+		.sort((a, b) => (a.order ?? 1000) - (b.order ?? 1000));
+
+	// View names that have been removed and should be cleaned up from storage
+	const staleViewNames = ['Recent Laws'];
 
 	// Seed default views
 	async function seedDefaultViews() {
 		await viewActions.waitForReady();
 
-		const existingViews = new Map<string, string>();
 		const currentViews = $savedViews;
+
+		// Build map of existing views, keeping only the first instance of each name
+		// and deleting duplicates (can happen from HMR or double-mount)
+		const existingViews = new Map<string, string>();
 		for (const view of currentViews) {
-			existingViews.set(view.name, view.id);
+			if (existingViews.has(view.name)) {
+				// Duplicate — delete it
+				try {
+					await viewActions.delete(view.id);
+				} catch (err) {
+					console.error('[Browse] Failed to delete duplicate view:', view.name, err);
+				}
+			} else {
+				existingViews.set(view.name, view.id);
+			}
+		}
+
+		// Clean up stale views from previous versions
+		for (const staleName of staleViewNames) {
+			const staleId = existingViews.get(staleName);
+			if (staleId) {
+				try {
+					await viewActions.delete(staleId);
+					existingViews.delete(staleName);
+				} catch (err) {
+					console.error('[Browse] Failed to delete stale view:', staleName, err);
+				}
+			}
 		}
 
 		// Update existing default views that need grouping config added
@@ -514,6 +915,8 @@
 					if (view.isDefault && savedView?.id) {
 						defaultViewId = savedView.id;
 					}
+					// Track the name so we don't re-create on reactive re-runs
+					existingViews.set(view.name, savedView?.id || '');
 					await new Promise((resolve) => setTimeout(resolve, 100));
 				} catch (err) {
 					console.error('[Browse] Failed to seed view:', view.name, err);
@@ -557,7 +960,11 @@
 				id: `view-filter-${idx}`,
 				field: f.columnId,
 				operator: f.operator as FilterCondition['operator'],
-				value: typeof f.value === 'string' ? f.value : String(f.value)
+				value: Array.isArray(f.value)
+					? f.value
+					: typeof f.value === 'string'
+						? f.value
+						: String(f.value)
 			}));
 		} else {
 			viewFilters = [];
@@ -606,16 +1013,16 @@
 		console.log('[Browse] View saved:', event.detail.name);
 	}
 
-	// Default date filter (3 years) for Electric sync
+	// Default date filter matching the default "This Month" view
 	const defaultDateFilter: FilterCondition = {
 		id: 'default-date-filter',
 		field: 'md_date',
 		operator: 'is_after',
-		value: threeYearsAgo
+		value: thisMonthStart
 	};
 
 	// Track last filter state
-	let lastWhereClause = `"md_date" > '${threeYearsAgo}'`;
+	let lastWhereClause = `"md_date" > '${thisMonthStart}'`;
 
 	function handleTableStateChange(state: TableState) {
 		const filters = state.columnFilters.map((f) => ({
@@ -814,9 +1221,9 @@
 				<div class="text-sm text-gray-600">Filter</div>
 				<div
 					class="text-sm font-mono text-gray-700 truncate"
-					title={$syncStatus.whereClause || 'Last 3 years'}
+					title={$syncStatus.whereClause || 'This month'}
 				>
-					{$syncStatus.whereClause || 'Last 3 years (by primary date)'}
+					{$syncStatus.whereClause || 'This month (by primary date)'}
 				</div>
 			</div>
 		</div>
