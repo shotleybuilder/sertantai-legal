@@ -935,13 +935,18 @@
 	// Capture current table config for saving
 	function captureCurrentConfig(): TableConfig {
 		return {
-			filters: [],
-			sort: null,
-			columns: columns.map((c) => String(c.id)),
-			columnOrder: columns.map((c) => String(c.id)),
+			filters: viewFilters.map((f) => ({
+				columnId: f.field,
+				operator: f.operator,
+				value: f.value
+			})),
+			sort: viewSort,
+			columns: viewColumns.length > 0 ? viewColumns : columns.map((c) => String(c.id)),
+			columnOrder:
+				viewColumnOrder.length > 0 ? viewColumnOrder : columns.map((c) => String(c.id)),
 			columnWidths: {},
 			pageSize: 25,
-			grouping: []
+			grouping: viewGrouping
 		};
 	}
 
