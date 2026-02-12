@@ -1335,7 +1335,7 @@
 							href={String(cell.getValue())}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-blue-600 hover:text-blue-800 hover:underline"
+							class="flex items-center justify-center w-full h-full text-blue-600 hover:text-blue-800 hover:underline"
 						>
 							View
 						</a>
