@@ -40,9 +40,9 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.newField).toBeDefined();
+			expect((delta as any).newField).toBeDefined();
 			// Added fields have format [newValue]
-			expect(delta!.newField).toEqual(['new value']);
+			expect((delta as any).newField).toEqual(['new value']);
 		});
 
 		it('detects removed fields', () => {
@@ -52,9 +52,9 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.oldField).toBeDefined();
+			expect((delta as any).oldField).toBeDefined();
 			// Removed fields have format [oldValue, 0, 0]
-			expect(delta!.oldField).toEqual(['old value', 0, 0]);
+			expect((delta as any).oldField).toEqual(['old value', 0, 0]);
 		});
 
 		it('detects modified fields', () => {
@@ -64,9 +64,9 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.title).toBeDefined();
+			expect((delta as any).title).toBeDefined();
 			// Modified fields have format [oldValue, newValue]
-			expect(delta!.title).toEqual(['Old Title', 'New Title']);
+			expect((delta as any).title).toEqual(['Old Title', 'New Title']);
 		});
 	});
 
@@ -84,8 +84,8 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.metadata).toBeDefined();
-			expect(delta!.metadata.author).toEqual(['Alice', 'Bob']);
+			expect((delta as any).metadata).toBeDefined();
+			expect((delta as any).metadata.author).toEqual(['Alice', 'Bob']);
 		});
 
 		it('handles null to object transitions', () => {
@@ -95,7 +95,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.duty_holder).toBeDefined();
+			expect((delta as any).duty_holder).toBeDefined();
 		});
 
 		it('handles object to null transitions', () => {
@@ -105,7 +105,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.duty_holder).toBeDefined();
+			expect((delta as any).duty_holder).toBeDefined();
 		});
 	});
 
@@ -117,7 +117,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.tags).toBeDefined();
+			expect((delta as any).tags).toBeDefined();
 		});
 
 		it('detects removed array elements', () => {
@@ -127,7 +127,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.tags).toBeDefined();
+			expect((delta as any).tags).toBeDefined();
 		});
 
 		it('detects empty to non-empty array', () => {
@@ -137,7 +137,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.tags).toBeDefined();
+			expect((delta as any).tags).toBeDefined();
 		});
 	});
 
@@ -149,7 +149,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.year).toEqual(['2024', 2024]);
+			expect((delta as any).year).toEqual(['2024', 2024]);
 		});
 
 		it('detects null to string change', () => {
@@ -159,7 +159,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.family).toEqual([null, 'Environmental Protection']);
+			expect((delta as any).family).toEqual([null, 'Environmental Protection']);
 		});
 
 		it('detects string to null change', () => {
@@ -169,7 +169,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.family).toEqual(['Environmental Protection', null]);
+			expect((delta as any).family).toEqual(['Environmental Protection', null]);
 		});
 	});
 
@@ -252,7 +252,7 @@ describe('RecordDiff diff logic', () => {
 			const changedFields = delta ? Object.keys(delta).filter((k) => !k.startsWith('_')) : [];
 
 			expect(changedFields).toEqual(['family']);
-			expect(delta!.family).toEqual(['Environmental Protection', 'OH&S: Occupational Safety']);
+			expect((delta as any).family).toEqual(['Environmental Protection', 'OH&S: Occupational Safety']);
 		});
 
 		it('detects multiple field changes during re-parse', () => {
@@ -293,8 +293,8 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.duty_holder).toBeDefined();
-			expect(delta!.duty_holder.employee).toBeDefined();
+			expect((delta as any).duty_holder).toBeDefined();
+			expect((delta as any).duty_holder.employee).toBeDefined();
 		});
 
 		it('handles amendment array changes', () => {
@@ -310,7 +310,7 @@ describe('RecordDiff diff logic', () => {
 			const delta = jsondiffpatch.diff(existing, incoming);
 
 			expect(delta).toBeDefined();
-			expect(delta!.amending).toBeDefined();
+			expect((delta as any).amending).toBeDefined();
 		});
 	});
 });

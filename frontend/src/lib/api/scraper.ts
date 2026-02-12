@@ -635,6 +635,7 @@ export interface CascadeEntry {
 	year?: number;
 	type_code?: string;
 	family?: string;
+	current_enacting?: string[];
 	current_enacting_count?: number;
 	is_enacting?: boolean;
 	layer: number;

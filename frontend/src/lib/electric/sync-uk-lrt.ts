@@ -342,7 +342,7 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 				if (!operation || !rawData) continue;
 
 				try {
-					const data = transformUkLrtRecord(rawData);
+					const data = transformUkLrtRecord(rawData) as UkLrtRecord & Record<string, unknown>;
 
 					switch (operation) {
 						case 'insert':

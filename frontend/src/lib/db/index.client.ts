@@ -273,7 +273,7 @@ async function createUkLrtCollection(
 		`[TanStack DB] UK LRT collection initialized with Electric sync, WHERE: ${whereClause}`
 	);
 
-	return collection;
+	return collection as unknown as Collection<ElectricUkLrtRecord, string>;
 }
 
 /**

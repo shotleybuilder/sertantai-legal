@@ -55,8 +55,6 @@
 		// Role/Actor
 		role: string[] | null;
 		role_gvt: Record<string, unknown> | null;
-		article_role: string | null;
-		role_article: string | null;
 		// Duty Type
 		duty_type: string | null;
 		duty_type_article: string | null;
@@ -324,7 +322,7 @@
 		{
 			name: 'Role',
 			description: 'Role classifications and article mappings',
-			columns: ['actions', 'name', 'title_en', 'role', 'role_gvt', 'article_role', 'role_article']
+			columns: ['actions', 'name', 'title_en', 'role', 'role_gvt', 'role_details', 'role_gvt_details']
 		},
 		{
 			name: 'Duty Type',
@@ -1110,22 +1108,6 @@
 				return Object.keys(val).join(', ');
 			},
 			size: 150,
-			meta: { group: 'Role', dataType: 'text' }
-		},
-		{
-			id: 'article_role',
-			accessorKey: 'article_role',
-			header: 'Article → Role',
-			cell: (info) => info.getValue() ?? '-',
-			size: 120,
-			meta: { group: 'Role', dataType: 'text' }
-		},
-		{
-			id: 'role_article',
-			accessorKey: 'role_article',
-			header: 'Role → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 120,
 			meta: { group: 'Role', dataType: 'text' }
 		},
 		// Duty Type
