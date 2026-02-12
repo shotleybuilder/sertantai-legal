@@ -1357,9 +1357,7 @@
 						{display.name}
 					</span>
 				{:else if column === 'title_en'}
-					<div class="truncate max-w-xs" title={String(cell.getValue() || '')}>
-						{cell.getValue() || '-'}
-					</div>
+					{cell.getValue() || '-'}
 				{:else if column === 'leg_gov_uk_url'}
 					{#if cell.getValue()}
 						<a
