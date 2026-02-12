@@ -77,6 +77,7 @@
 	// Saved views state
 	let showSaveModal = false;
 	let capturedConfig: TableConfig | null = null;
+	let sidebarOpen = false;
 
 	// View configuration state
 	let viewColumns: string[] = [];
@@ -1158,26 +1159,56 @@
 	});
 </script>
 
-<div class="flex h-full">
+<div class="flex h-full relative">
+	<!-- Mobile sidebar overlay -->
+	{#if sidebarOpen}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div
+			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
+			on:click={() => (sidebarOpen = false)}
+		/>
+	{/if}
+
 	<!-- View Sidebar -->
-	<ViewSidebar
-		views={sidebarViews}
-		groups={viewGroups}
-		selectedViewId={$activeViewId ?? undefined}
-		storageKey="browse-views-sidebar"
-		width={220}
-		showSearch={true}
-		showPinned={true}
-		on:select={handleSidebarSelect}
-	/>
+	<div
+		class="shrink-0 {sidebarOpen
+			? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto'
+			: 'hidden lg:block'}"
+	>
+		<ViewSidebar
+			views={sidebarViews}
+			groups={viewGroups}
+			selectedViewId={$activeViewId ?? undefined}
+			storageKey="browse-views-sidebar"
+			width={220}
+			showSearch={true}
+			showPinned={true}
+			on:select={(e) => {
+				handleSidebarSelect(e);
+				sidebarOpen = false;
+			}}
+		/>
+	</div>
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-auto px-6 py-4">
-		<div class="mb-4">
-			<h1 class="text-xl font-bold text-gray-900">UK Legal Register</h1>
-			<p class="text-sm text-gray-600">
-				Browse UK Legal, Regulatory & Transport records.
-			</p>
+		<div class="mb-4 flex items-center gap-3">
+			<button
+				class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
+				on:click={() => (sidebarOpen = !sidebarOpen)}
+				title="Toggle views sidebar"
+			>
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+				</svg>
+			</button>
+			<div>
+				<h1 class="text-xl font-bold text-gray-900">UK Legal Register</h1>
+				<p class="text-sm text-gray-600">
+					Browse UK Legal, Regulatory & Transport records.
+				</p>
+			</div>
 		</div>
 
 	{#if isLoading}
