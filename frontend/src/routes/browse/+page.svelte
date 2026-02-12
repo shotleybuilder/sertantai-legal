@@ -1281,7 +1281,8 @@
 				sorting: true,
 				sortingMode: 'control',
 				pagination: false,
-				grouping: true
+				grouping: true,
+				globalSearch: true
 			}}
 		>
 			<!-- Save View Buttons -->
