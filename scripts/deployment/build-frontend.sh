@@ -6,6 +6,7 @@
 # The image is tagged for GitHub Container Registry (GHCR).
 #
 # Usage:
+#   sert-legal-fe [tag]
 #   ./scripts/deployment/build-frontend.sh [tag]
 #
 # Arguments:
@@ -16,7 +17,7 @@
 #   - frontend/Dockerfile present
 #
 # Next steps after successful build:
-#   - Push to GHCR: ./scripts/deployment/push-frontend.sh
+#   - Push to GHCR: sert-legal-push-fe
 #
 
 set -e  # Exit on any error
@@ -86,7 +87,7 @@ if [ $? -eq 0 ]; then
     echo ""
 
     echo -e "${BLUE}Next steps:${NC}"
-    echo -e "  ${GREEN}→${NC} Push to GHCR:  ${YELLOW}./scripts/deployment/push-frontend.sh${NC}"
+    echo -e "  ${GREEN}→${NC} Push to GHCR:  ${YELLOW}sert-legal-push-fe${NC}"
     echo ""
 else
     echo ""

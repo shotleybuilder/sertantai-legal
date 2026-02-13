@@ -6,13 +6,14 @@
 # to GHCR before running this script.
 #
 # Usage:
+#   sert-legal-push-fe [tag]
 #   ./scripts/deployment/push-frontend.sh [tag]
 #
 # Arguments:
 #   tag - Optional image tag (default: latest)
 #
 # Prerequisites:
-#   - Docker image built: ./scripts/deployment/build-frontend.sh
+#   - Docker image built: sert-legal-fe
 #   - Logged in to GHCR: echo $GITHUB_PAT | docker login ghcr.io -u USERNAME --password-stdin
 #
 # Next steps after successful push:
@@ -49,19 +50,13 @@ fi
 
 # Check Docker registry authentication
 echo -e "${BLUE}Checking GHCR authentication...${NC}"
-if ! docker info 2>/dev/null | grep -q "ghcr.io"; then
-    echo -e "${YELLOW}⚠ Warning: May not be logged in to GHCR${NC}"
-    echo -e "${YELLOW}  If push fails, login with:${NC}"
+if grep -q "ghcr.io" ~/.docker/config.json 2>/dev/null; then
+    echo -e "${GREEN}✓ GHCR credentials found${NC}"
+else
+    echo -e "${RED}✗ Not logged in to GHCR${NC}"
+    echo -e "${YELLOW}  Login with:${NC}"
     echo -e "${YELLOW}  echo \$GITHUB_PAT | docker login ghcr.io -u YOUR_USERNAME --password-stdin${NC}"
-    echo ""
-
-    # Ask for confirmation
-    read -p "Continue anyway? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${YELLOW}Push cancelled${NC}"
-        exit 0
-    fi
+    exit 1
 fi
 
 # Push the image
