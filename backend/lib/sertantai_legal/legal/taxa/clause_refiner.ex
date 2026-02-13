@@ -47,11 +47,34 @@ defmodule SertantaiLegal.Legal.Taxa.ClauseRefiner do
   @subject_window 100
   @action_window 200
 
-  # Modal verb pattern - matches shall, must, may, may not, may only
-  @modal_pattern ~r/\b(shall|must|may(?:\s+(?:not|only))?)\b/i
+  # Modal verb pattern string
+  @modal_pattern_str "\\b(shall|must|may(?:\\s+(?:not|only))?)\\b"
+  # Sentence boundary pattern string
+  @sentence_end_pattern_str "[.;]|\\n\\n"
 
-  # Sentence boundary pattern - period, semicolon, or paragraph marker
-  @sentence_end_pattern ~r/[.;]|\n\n/
+  defp modal_pattern do
+    case :persistent_term.get({__MODULE__, :modal_pattern}, nil) do
+      nil ->
+        r = Regex.compile!(@modal_pattern_str, "i")
+        :persistent_term.put({__MODULE__, :modal_pattern}, r)
+        r
+
+      cached ->
+        cached
+    end
+  end
+
+  defp sentence_end_pattern do
+    case :persistent_term.get({__MODULE__, :sentence_end_pattern}, nil) do
+      nil ->
+        r = Regex.compile!(@sentence_end_pattern_str)
+        :persistent_term.put({__MODULE__, :sentence_end_pattern}, r)
+        r
+
+      cached ->
+        cached
+    end
+  end
 
   # ============================================================================
   # Public API
@@ -143,7 +166,7 @@ defmodule SertantaiLegal.Legal.Taxa.ClauseRefiner do
   @spec find_last_modal_position(String.t()) ::
           {non_neg_integer(), non_neg_integer(), String.t()} | nil
   def find_last_modal_position(text) when is_binary(text) do
-    case Regex.scan(@modal_pattern, text, return: :index) do
+    case Regex.scan(modal_pattern(), text, return: :index) do
       [] ->
         nil
 
@@ -290,7 +313,7 @@ defmodule SertantaiLegal.Legal.Taxa.ClauseRefiner do
 
   # Extract text up to the first sentence boundary
   defp extract_to_sentence_end(text) do
-    case Regex.run(@sentence_end_pattern, text, return: :index) do
+    case Regex.run(sentence_end_pattern(), text, return: :index) do
       [{pos, _len}] when pos > 0 ->
         # Include the period/semicolon
         String.slice(text, 0, pos + 1)

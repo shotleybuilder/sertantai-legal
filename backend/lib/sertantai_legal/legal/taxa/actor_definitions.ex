@@ -166,10 +166,8 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
                        end)
                        |> Enum.reverse()
 
-  @government_compiled @government_patterns
-                       |> Enum.map(fn {actor, pattern} ->
-                         {actor, Regex.compile!(pattern, "m")}
-                       end)
+  # Note: compiled regexes are computed at runtime via government_compiled/0
+  # because Regex structs contain NIF references that can't be stored in module attributes.
 
   @governed_patterns_raw [
     # Business
@@ -354,17 +352,8 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
                      end)
                      |> Enum.reverse()
 
-  @governed_compiled @governed_patterns
-                     |> Enum.map(fn {actor, pattern} ->
-                       {actor, Regex.compile!(pattern, "m")}
-                     end)
-
-  @blacklist_compiled [
-                        "local authority collected municipal waste",
-                        "[Pp]ublic (?:nature|sewer|importance|functions?|interest|[Ss]ervices)",
-                        "[Rr]epresentatives? of"
-                      ]
-                      |> Enum.map(fn pattern -> Regex.compile!(pattern, "m") end)
+  # Note: compiled regexes are computed at runtime via governed_compiled/0 and blacklist_compiled/0
+  # because Regex structs contain NIF references that can't be stored in module attributes.
 
   @doc """
   Returns the complete dutyholder library combining government and governed actors.
@@ -391,17 +380,45 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
 
   @doc """
   Returns pre-compiled government actor regexes.
-  Use this for performance - avoids runtime regex compilation.
+  Compiled at runtime and cached via :persistent_term.
   """
   @spec government_compiled() :: list({atom() | String.t(), Regex.t()})
-  def government_compiled, do: @government_compiled
+  def government_compiled do
+    case :persistent_term.get({__MODULE__, :government_compiled}, nil) do
+      nil ->
+        compiled =
+          Enum.map(@government_patterns, fn {actor, pattern} ->
+            {actor, Regex.compile!(pattern, "m")}
+          end)
+
+        :persistent_term.put({__MODULE__, :government_compiled}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   @doc """
   Returns pre-compiled governed actor regexes.
-  Use this for performance - avoids runtime regex compilation.
+  Compiled at runtime and cached via :persistent_term.
   """
   @spec governed_compiled() :: list({atom() | String.t(), Regex.t()})
-  def governed_compiled, do: @governed_compiled
+  def governed_compiled do
+    case :persistent_term.get({__MODULE__, :governed_compiled}, nil) do
+      nil ->
+        compiled =
+          Enum.map(@governed_patterns, fn {actor, pattern} ->
+            {actor, Regex.compile!(pattern, "m")}
+          end)
+
+        :persistent_term.put({__MODULE__, :governed_compiled}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   @doc """
   Returns terms to exclude from actor matching (false positives).
@@ -418,10 +435,20 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
 
   @doc """
   Returns pre-compiled blacklist regexes.
-  Use this for performance - avoids runtime regex compilation.
+  Compiled at runtime and cached via :persistent_term.
   """
   @spec blacklist_compiled() :: list(Regex.t())
-  def blacklist_compiled, do: @blacklist_compiled
+  def blacklist_compiled do
+    case :persistent_term.get({__MODULE__, :blacklist_compiled}, nil) do
+      nil ->
+        compiled = blacklist() |> Enum.map(fn pattern -> Regex.compile!(pattern, "m") end)
+        :persistent_term.put({__MODULE__, :blacklist_compiled}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   # ============================================================================
   # Library Processing

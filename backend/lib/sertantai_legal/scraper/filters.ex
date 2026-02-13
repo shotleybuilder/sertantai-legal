@@ -15,23 +15,23 @@ defmodule SertantaiLegal.Scraper.Filters do
   alias SertantaiLegal.Scraper.Terms.SICodes
   alias SertantaiLegal.Scraper.Models
 
-  @exclusions [
-    ~r/railways?.*station.*order/,
-    ~r/railways?.*junction.*order/,
-    ~r/(network rail|railways?).*(extensions?|improvements?|preparation|enhancement|reduction).*order/,
-    ~r/rail freight.*order/,
-    ~r/light railway order/,
-    ~r/drought.*order/,
-    ~r/restriction of flying/,
-    ~r/correction slip/,
-    ~r/trunk road/,
-    ~r/harbour empowerment order/,
-    ~r/harbour revision order/,
-    ~r/parking places/,
-    ~r/parking prohibition/,
-    ~r/parking and waiting/,
-    ~r/development consent order/,
-    ~r/electrical system order/
+  @exclusion_patterns [
+    "railways?.*station.*order",
+    "railways?.*junction.*order",
+    "(network rail|railways?).*(extensions?|improvements?|preparation|enhancement|reduction).*order",
+    "rail freight.*order",
+    "light railway order",
+    "drought.*order",
+    "restriction of flying",
+    "correction slip",
+    "trunk road",
+    "harbour empowerment order",
+    "harbour revision order",
+    "parking places",
+    "parking prohibition",
+    "parking and waiting",
+    "development consent order",
+    "electrical system order"
   ]
 
   @doc """
@@ -64,8 +64,20 @@ defmodule SertantaiLegal.Scraper.Filters do
     {Enum.reverse(inc), Enum.reverse(exc)}
   end
 
+  defp exclusions_compiled do
+    case :persistent_term.get({__MODULE__, :exclusions}, nil) do
+      nil ->
+        compiled = Enum.map(@exclusion_patterns, &Regex.compile!/1)
+        :persistent_term.put({__MODULE__, :exclusions}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
+
   defp exclude?(title) do
-    Enum.reduce_while(@exclusions, false, fn pattern, _acc ->
+    Enum.reduce_while(exclusions_compiled(), false, fn pattern, _acc ->
       case Regex.match?(pattern, title) do
         true -> {:halt, true}
         false -> {:cont, false}

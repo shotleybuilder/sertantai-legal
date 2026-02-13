@@ -54,9 +54,8 @@ defmodule SertantaiLegal.Legal.Taxa.TextCleaner do
                                   ]
                                 )
 
-  # Combined and pre-compiled patterns
-  @all_blacklist_compiled (@actor_blacklist_patterns ++ @duty_type_blacklist_patterns)
-                          |> Enum.map(&Regex.compile!(&1, "m"))
+  # Combined blacklist patterns (compiled at runtime via all_blacklist_compiled/0)
+  @all_blacklist_patterns @actor_blacklist_patterns ++ @duty_type_blacklist_patterns
 
   # ============================================================================
   # Public API
@@ -73,12 +72,26 @@ defmodule SertantaiLegal.Legal.Taxa.TextCleaner do
   """
   @spec clean(String.t()) :: String.t()
   def clean(text) when is_binary(text) do
-    Enum.reduce(@all_blacklist_compiled, text, fn regex, acc ->
+    Enum.reduce(all_blacklist_compiled(), text, fn regex, acc ->
       Regex.replace(regex, acc, " ")
     end)
   end
 
   def clean(text), do: text
+
+  # Compiles and caches all blacklist patterns at runtime.
+  # Regex structs contain NIF references that can't be stored in module attributes.
+  defp all_blacklist_compiled do
+    case :persistent_term.get({__MODULE__, :all_blacklist_compiled}, nil) do
+      nil ->
+        compiled = Enum.map(@all_blacklist_patterns, &Regex.compile!(&1, "m"))
+        :persistent_term.put({__MODULE__, :all_blacklist_compiled}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   @doc """
   Returns the pre-compiled actor blacklist patterns.

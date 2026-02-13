@@ -239,30 +239,47 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
     "\\bliable\\b"
   ]
 
-  # Pre-compiled regex maps (compiled at module load)
-  @compiled_patterns %{
-    amendment: Enum.map(@amendment_patterns_raw, &Regex.compile!(&1, "i")),
-    enactment: Enum.map(@enactment_patterns_raw, &Regex.compile!(&1, "i")),
-    interpretation: Enum.map(@interpretation_patterns_raw, &Regex.compile!(&1, "i")),
-    application_scope: Enum.map(@application_scope_patterns_raw, &Regex.compile!(&1, "i")),
-    extent: Enum.map(@extent_patterns_raw, &Regex.compile!(&1, "i")),
-    exemption: Enum.map(@exemption_patterns_raw, &Regex.compile!(&1, "i")),
-    process_rule: Enum.map(@process_rule_patterns_raw, &Regex.compile!(&1, "i")),
-    repeal_revocation: Enum.map(@repeal_revocation_patterns_raw, &Regex.compile!(&1, "i")),
-    transitional: Enum.map(@transitional_patterns_raw, &Regex.compile!(&1, "i")),
-    charge_fee: Enum.map(@charge_fee_patterns_raw, &Regex.compile!(&1, "i")),
-    offence: Enum.map(@offence_patterns_raw, &Regex.compile!(&1, "i")),
-    enforcement: Enum.map(@enforcement_patterns_raw, &Regex.compile!(&1, "i")),
-    defence_appeal: Enum.map(@defence_appeal_patterns_raw, &Regex.compile!(&1, "i")),
-    power_conferred: Enum.map(@power_conferred_patterns_raw, &Regex.compile!(&1, "i")),
-    liability: Enum.map(@liability_patterns_raw, &Regex.compile!(&1, "i"))
+  # Raw pattern map for runtime compilation (Regex structs can't be stored in module attributes)
+  @raw_pattern_map %{
+    amendment: @amendment_patterns_raw,
+    enactment: @enactment_patterns_raw,
+    interpretation: @interpretation_patterns_raw,
+    application_scope: @application_scope_patterns_raw,
+    extent: @extent_patterns_raw,
+    exemption: @exemption_patterns_raw,
+    process_rule: @process_rule_patterns_raw,
+    repeal_revocation: @repeal_revocation_patterns_raw,
+    transitional: @transitional_patterns_raw,
+    charge_fee: @charge_fee_patterns_raw,
+    offence: @offence_patterns_raw,
+    enforcement: @enforcement_patterns_raw,
+    defence_appeal: @defence_appeal_patterns_raw,
+    power_conferred: @power_conferred_patterns_raw,
+    liability: @liability_patterns_raw
   }
+
+  # Returns compiled patterns map, cached in :persistent_term
+  defp do_compiled_patterns do
+    case :persistent_term.get({__MODULE__, :compiled_patterns}, nil) do
+      nil ->
+        compiled =
+          Map.new(@raw_pattern_map, fn {k, patterns} ->
+            {k, Enum.map(patterns, &Regex.compile!(&1, "i"))}
+          end)
+
+        :persistent_term.put({__MODULE__, :compiled_patterns}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   @doc """
   Returns pre-compiled regex patterns for a given category.
   """
   @spec compiled_patterns(atom()) :: list(Regex.t())
-  def compiled_patterns(category), do: Map.get(@compiled_patterns, category, [])
+  def compiled_patterns(category), do: Map.get(do_compiled_patterns(), category, [])
 
   # ============================================================================
   # Purpose Values (with + separator)
@@ -419,7 +436,7 @@ defmodule SertantaiLegal.Legal.Taxa.PurposeClassifier do
   end
 
   defp check_patterns_compiled(acc, text, category, purpose) do
-    regexes = Map.get(@compiled_patterns, category, [])
+    regexes = Map.get(do_compiled_patterns(), category, [])
 
     if Enum.any?(regexes, &Regex.match?(&1, text)) do
       [purpose | acc]

@@ -22,10 +22,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
 
   alias SertantaiLegal.Legal.Taxa.ActorDefinitions
 
-  # Use pre-compiled regexes for performance
-  @government_compiled ActorDefinitions.government_compiled()
-  @governed_compiled ActorDefinitions.governed_compiled()
-  @blacklist_compiled ActorDefinitions.blacklist_compiled()
+  # Compiled regexes are fetched at runtime via ActorDefinitions.*_compiled() functions
+  # (cached in :persistent_term after first call)
 
   @type actor :: String.t()
   @type text :: String.t()
@@ -48,8 +46,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
     cleaned_text = apply_blacklist(text)
 
     %{
-      actors: extract_actors_compiled(cleaned_text, @governed_compiled),
-      actors_gvt: extract_actors_compiled(cleaned_text, @government_compiled)
+      actors: extract_actors_compiled(cleaned_text, ActorDefinitions.governed_compiled()),
+      actors_gvt: extract_actors_compiled(cleaned_text, ActorDefinitions.government_compiled())
     }
   end
 
@@ -65,8 +63,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   @spec get_actors_in_text_cleaned(text()) :: %{actors: list(actor()), actors_gvt: list(actor())}
   def get_actors_in_text_cleaned(text) when is_binary(text) do
     %{
-      actors: extract_actors_compiled(text, @governed_compiled),
-      actors_gvt: extract_actors_compiled(text, @government_compiled)
+      actors: extract_actors_compiled(text, ActorDefinitions.governed_compiled()),
+      actors_gvt: extract_actors_compiled(text, ActorDefinitions.government_compiled())
     }
   end
 
@@ -81,7 +79,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   def get_governed_actors(text) when is_binary(text) do
     text
     |> apply_blacklist()
-    |> extract_actors_compiled(@governed_compiled)
+    |> extract_actors_compiled(ActorDefinitions.governed_compiled())
   end
 
   def get_governed_actors(_), do: []
@@ -95,7 +93,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   def get_government_actors(text) when is_binary(text) do
     text
     |> apply_blacklist()
-    |> extract_actors_compiled(@government_compiled)
+    |> extract_actors_compiled(ActorDefinitions.government_compiled())
   end
 
   def get_government_actors(_), do: []
@@ -163,7 +161,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActor do
   # Removes blacklisted terms from text before processing
   # Uses pre-compiled regexes for performance
   defp apply_blacklist(text) do
-    Enum.reduce(@blacklist_compiled, text, fn regex, acc ->
+    Enum.reduce(ActorDefinitions.blacklist_compiled(), text, fn regex, acc ->
       Regex.replace(regex, acc, "")
     end)
   end

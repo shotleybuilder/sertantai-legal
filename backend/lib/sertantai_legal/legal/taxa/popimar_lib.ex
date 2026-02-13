@@ -42,84 +42,57 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarLib do
   @emdash <<226, 128, 148>>
   @rquote <<226, 128, 157>>
 
-  # Pre-compile all POPIMAR regexes at module load time
-  # Using Regex.compile!/2 directly in module attributes
-  @compiled_regexes %{
-    policy:
-      Regex.compile!(
-        "(#{Enum.join(["[Pp]olicy?i?e?s?", "[Oo]bjectives?", "[Ss]trateg"], "|")})",
-        "m"
-      ),
+  # Raw POPIMAR regex pattern strings (compiled at runtime via compiled_regexes/0)
+  # Regex structs contain NIF references that can't be stored in module attributes.
+  @raw_regex_patterns %{
+    policy: "(#{Enum.join(["[Pp]olicy?i?e?s?", "[Oo]bjectives?", "[Ss]trateg"], "|")})",
     organisation:
-      Regex.compile!(
-        "(#{Enum.join(["[Oo]rg.? chart", "[Oo]rganisation chart", "making of appointments?", "(?:must|may|shall)[ ]?(?:jointly)?[ ]?appoint", "person.*?appointed", "appoint a person"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Oo]rg.? chart", "[Oo]rganisation chart", "making of appointments?", "(?:must|may|shall)[ ]?(?:jointly)?[ ]?appoint", "person.*?appointed", "appoint a person"], "|")})",
     organisation_control:
-      Regex.compile!(
-        "(#{Enum.join(["[Pp]rocess", "[Pp]rocedure", "[Ww]ork instruction", "[Mm]ethod statement", "[Ii]nstruction", "comply?i?e?s? with.*?(?:duties|requirements)", "is responsible for", "has control over", "must ensure, insofar as they are matters within that person's control", "take such measures as it is reasonable for a person in his position to take", "(?:supervised?|supervising)"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Pp]rocess", "[Pp]rocedure", "[Ww]ork instruction", "[Mm]ethod statement", "[Ii]nstruction", "comply?i?e?s? with.*?(?:duties|requirements)", "is responsible for", "has control over", "must ensure, insofar as they are matters within that person's control", "take such measures as it is reasonable for a person in his position to take", "(?:supervised?|supervising)"], "|")})",
     organisation_communication_consultation:
-      Regex.compile!(
-        "(#{Enum.join(["[Cc]omminiate?i?o?n?g?", "[Cc]onsult", "[Cc]onsulti?n?g?", "[Cc]onsultation", "(?:send a copy of it|be sent) to", "must identify to", "publish a report", "must (?:immediately )?inform[[:blank:][:punct:]#{@emdash}]", "report to", "(?:by|to) provide?i?n?g?.*?information", "made available to (?:the public)", "supplied (?:in writing|with a copy)", "aware of the contents of"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Cc]omminiate?i?o?n?g?", "[Cc]onsult", "[Cc]onsulti?n?g?", "[Cc]onsultation", "(?:send a copy of it|be sent) to", "must identify to", "publish a report", "must (?:immediately )?inform[[:blank:][:punct:]#{@emdash}]", "report to", "(?:by|to) provide?i?n?g?.*?information", "made available to (?:the public)", "supplied (?:in writing|with a copy)", "aware of the contents of"], "|")})",
     organisation_collaboration_coordination_cooperation:
-      Regex.compile!("(#{Enum.join(["[Cc]ollaborat", "[Cc]oordinat", "[Cc]ooperat"], "|")})", "m"),
+      "(#{Enum.join(["[Cc]ollaborat", "[Cc]oordinat", "[Cc]ooperat"], "|")})",
     organisation_competence:
-      Regex.compile!(
-        "(#{Enum.join(["[Cc]ompetent?c?e?y?[ ](?!authority)", "[Tt]raining", "[Ii]nformation, instruction and training", "[Ii]nformation.*?provided to every person", "provide.*?information", "person satisfies the criteria", "skills, knowledge and experience", "organisational capability", "instructe?d?"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Cc]ompetent?c?e?y?[ ](?!authority)", "[Tt]raining", "[Ii]nformation, instruction and training", "[Ii]nformation.*?provided to every person", "provide.*?information", "person satisfies the criteria", "skills, knowledge and experience", "organisational capability", "instructe?d?"], "|")})",
     organisation_costs:
-      Regex.compile!(
-        "(#{Enum.join(["[Cc]ost[- ]benefit", "[Nn]ett? cost", "[Ff]ee[[:blank:][:punct:]#{@rquote}]", "[Cc]harge", "[Ff]inancial loss"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Cc]ost[- ]benefit", "[Nn]ett? cost", "[Ff]ee[[:blank:][:punct:]#{@rquote}]", "[Cc]harge", "[Ff]inancial loss"], "|")})",
     records:
-      Regex.compile!(
-        "(#{Enum.join(["(?:[Rr]ecord|[Rr]eport (?!to)|[Rr]egister)", "[Ll]ogbook", "[Ii]ventory", "[Dd]atabase", "(?:[Ee]nforcement|[Pp]rohibition|[Ii]mprovement) notice", "[Dd]ocuments?", "(?:marke?d?i?n?g?|labelled)", "must be kept", "certificate", "health and safety file"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["(?:[Rr]ecord|[Rr]eport (?!to)|[Rr]egister)", "[Ll]ogbook", "[Ii]ventory", "[Dd]atabase", "(?:[Ee]nforcement|[Pp]rohibition|[Ii]mprovement) notice", "[Dd]ocuments?", "(?:marke?d?i?n?g?|labelled)", "must be kept", "certificate", "health and safety file"], "|")})",
     permit_authorisation_license:
-      Regex.compile!(
-        "(#{Enum.join(["[ #{@rquote}][Pp]ermit[[:blank:][:punct:]#{@rquote}]", "[Aa]uthorisation", "[Aa]uthorised (?:^representative)", "[Ll]i[sc]en[sc]ed?", "[Ll]i[sc]en[sc]ing"], "|")})",
-        "m"
-      ),
-    aspects_and_hazards:
-      Regex.compile!("(#{Enum.join(["[Aa]spects and impacts", "[Hh]azard"], "|")})", "m"),
+      "(#{Enum.join(["[ #{@rquote}][Pp]ermit[[:blank:][:punct:]#{@rquote}]", "[Aa]uthorisation", "[Aa]uthorised (?:^representative)", "[Ll]i[sc]en[sc]ed?", "[Ll]i[sc]en[sc]ing"], "|")})",
+    aspects_and_hazards: "(#{Enum.join(["[Aa]spects and impacts", "[Hh]azard"], "|")})",
     planning_risk_impact_assessment:
-      Regex.compile!(
-        "(#{Enum.join(["[Aa]nnual plan", "[Ss]trategic plan", "[Bb]usiness plan", "[Pp]lan of work", "construction phase plan", "written plan", "measures? to be specified in the plan", "(?:project|action) plan", "project is planned", "[Ii]mpact [Aa]ssessment", "[Rr]isk [Aa]ssessment", "assessment of any risks", "suitable and sufficient assessment", "[Ii]n making the assessment", "(?:reassess|reassessed|reassessment)", "general principles of prevention", "identify and eliminate"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Aa]nnual plan", "[Ss]trategic plan", "[Bb]usiness plan", "[Pp]lan of work", "construction phase plan", "written plan", "measures? to be specified in the plan", "(?:project|action) plan", "project is planned", "[Ii]mpact [Aa]ssessment", "[Rr]isk [Aa]ssessment", "assessment of any risks", "suitable and sufficient assessment", "[Ii]n making the assessment", "(?:reassess|reassessed|reassessment)", "general principles of prevention", "identify and eliminate"], "|")})",
     risk_control:
-      Regex.compile!(
-        "(#{Enum.join(["avoid the need", "suitable and sufficient steps", "steps as are reasonable in the circumstances must be taken", "taken? all reasonable steps", "takes immediate steps", "[Rr]isk [Cc]ontrol", "control.*?risk", "[Rr]isk mitigation", "use the best available techniques not entailing excessive cost", "eliminates.*?the risk", "reduces? the risk", "provided to.*?employees", "provision and use of", "safety management system", "corrective measures?", "meets the requirements?", "standards for the construction", "shall make full and proper use", "measures?.*?specified.*?plan", "take such measures"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["avoid the need", "suitable and sufficient steps", "steps as are reasonable in the circumstances must be taken", "taken? all reasonable steps", "takes immediate steps", "[Rr]isk [Cc]ontrol", "control.*?risk", "[Rr]isk mitigation", "use the best available techniques not entailing excessive cost", "eliminates.*?the risk", "reduces? the risk", "provided to.*?employees", "provision and use of", "safety management system", "corrective measures?", "meets the requirements?", "standards for the construction", "shall make full and proper use", "measures?.*?specified.*?plan", "take such measures"], "|")})",
     notification:
-      Regex.compile!(
-        "(#{Enum.join(["given?.*?notice", "accident report", "[Nn]otify", "[Nn]otification", "[Aa]pplication for", "publish.*?a notice"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["given?.*?notice", "accident report", "[Nn]otify", "[Nn]otification", "[Aa]pplication for", "publish.*?a notice"], "|")})",
     maintenance_examination_and_testing:
-      Regex.compile!(
-        "(#{Enum.join(["[Mm]aintenance", "[Mm]aintaine?d?", "[Ee]xamination", "[Tt]esting", "[Ii]nspecti?o?n?e?d?"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Mm]aintenance", "[Mm]aintaine?d?", "[Ee]xamination", "[Tt]esting", "[Ii]nspecti?o?n?e?d?"], "|")})",
     checking_monitoring:
-      Regex.compile!(
-        "(#{Enum.join(["[Cc]heck", "[Mm]onitor", "medical exam", "at least once every.*?years", "kept available for inspection"], "|")})",
-        "m"
-      ),
+      "(#{Enum.join(["[Cc]heck", "[Mm]onitor", "medical exam", "at least once every.*?years", "kept available for inspection"], "|")})",
     review:
-      Regex.compile!(
-        "(#{Enum.join(["[Mm]anagement review", "(?:[Rr]eviewed|is [Rr]evised)", "(?:conduct|carry out|carrying out) (?:a|the) review", "review the (?:assessment)"], "|")})",
-        "m"
-      )
+      "(#{Enum.join(["[Mm]anagement review", "(?:[Rr]eviewed|is [Rr]evised)", "(?:conduct|carry out|carrying out) (?:a|the) review", "review the (?:assessment)"], "|")})"
   }
+
+  # Returns compiled regexes map, cached in :persistent_term
+  defp compiled_regexes do
+    case :persistent_term.get({__MODULE__, :compiled_regexes}, nil) do
+      nil ->
+        compiled =
+          Map.new(@raw_regex_patterns, fn {k, pattern} ->
+            {k, Regex.compile!(pattern, "m")}
+          end)
+
+        :persistent_term.put({__MODULE__, :compiled_regexes}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   @doc """
   Returns a pre-compiled regex for the given category.
@@ -127,7 +100,7 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarLib do
   """
   @spec regex_compiled(atom()) :: Regex.t() | nil
   def regex_compiled(function) when is_atom(function) do
-    Map.get(@compiled_regexes, function)
+    Map.get(compiled_regexes(), function)
   end
 
   @doc """
@@ -139,7 +112,7 @@ defmodule SertantaiLegal.Legal.Taxa.PopimarLib do
   @spec regex(atom()) :: Regex.t() | nil
   def regex(function) when is_atom(function) do
     # Use pre-compiled version if available
-    case Map.get(@compiled_regexes, function) do
+    case Map.get(compiled_regexes(), function) do
       nil ->
         # Fallback to dynamic compilation for any custom functions
         case apply(__MODULE__, function, []) do

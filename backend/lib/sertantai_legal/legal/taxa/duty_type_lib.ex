@@ -48,13 +48,35 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   @modal_window_before 400
   @modal_window_after 200
 
-  # Pre-compiled modal verb pattern for finding duty/right locations
-  # These are the verbs that indicate obligations or permissions in legal text
-  @modal_pattern ~r/\b(?:shall|must|may(?:\s+not|\s+only)?)\b/i
+  # Modal verb pattern string for finding duty/right locations
+  @modal_pattern_str "\\b(?:shall|must|may(?:\\s+not|\\s+only)?)\\b"
 
-  # Additional anchor patterns for non-modal duty/right indicators
-  # These patterns don't use shall/must/may but still indicate duties or rights
-  @non_modal_anchors ~r/\b(?:is\s+(?:liable|responsible|entitled|required)|remains\s+responsible|has\s+(?:the\s+)?duty|owes\s+a\s+duty|under\s+a\s+(?:like\s+)?duty)\b/i
+  # Non-modal duty/right anchor pattern string
+  @non_modal_anchors_str "\\b(?:is\\s+(?:liable|responsible|entitled|required)|remains\\s+responsible|has\\s+(?:the\\s+)?duty|owes\\s+a\\s+duty|under\\s+a\\s+(?:like\\s+)?duty)\\b"
+
+  defp modal_pattern do
+    case :persistent_term.get({__MODULE__, :modal_pattern}, nil) do
+      nil ->
+        r = Regex.compile!(@modal_pattern_str, "i")
+        :persistent_term.put({__MODULE__, :modal_pattern}, r)
+        r
+
+      cached ->
+        cached
+    end
+  end
+
+  defp non_modal_anchors do
+    case :persistent_term.get({__MODULE__, :non_modal_anchors}, nil) do
+      nil ->
+        r = Regex.compile!(@non_modal_anchors_str, "i")
+        :persistent_term.put({__MODULE__, :non_modal_anchors}, r)
+        r
+
+      cached ->
+        cached
+    end
+  end
 
   # ============================================================================
   # Public API
@@ -376,12 +398,12 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
   # Returns list of {start_pos, length} tuples
   defp find_modal_positions(text) do
     modal_positions =
-      Regex.scan(@modal_pattern, text, return: :index)
+      Regex.scan(modal_pattern(), text, return: :index)
       |> List.flatten()
 
     # Also find non-modal anchor positions (is liable, remains responsible, etc.)
     non_modal_positions =
-      Regex.scan(@non_modal_anchors, text, return: :index)
+      Regex.scan(non_modal_anchors(), text, return: :index)
       |> List.flatten()
 
     (modal_positions ++ non_modal_positions)
@@ -690,14 +712,24 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     "[ ]and[ ]#{@blacklist_modals}"
   ]
 
-  # Pre-compile blacklist regexes at module load time
-  @compiled_blacklist_regexes Enum.map(@blacklist_patterns, fn pattern ->
-                                {:ok, regex} = Regex.compile(pattern)
-                                regex
-                              end)
+  # Returns pre-compiled blacklist regexes, cached in :persistent_term.
+  # Regex structs contain NIF references that can't be stored in module attributes.
+  defp blacklist_regex_compiled do
+    case :persistent_term.get({__MODULE__, :blacklist_regexes}, nil) do
+      nil ->
+        compiled =
+          Enum.map(@blacklist_patterns, fn pattern ->
+            {:ok, regex} = Regex.compile(pattern)
+            regex
+          end)
 
-  # Returns pre-compiled blacklist regexes
-  defp blacklist_regex_compiled, do: @compiled_blacklist_regexes
+        :persistent_term.put({__MODULE__, :blacklist_regexes}, compiled)
+        compiled
+
+      cached ->
+        cached
+    end
+  end
 
   # Ensures string is valid UTF-8
   defp ensure_valid_utf8(str) do
