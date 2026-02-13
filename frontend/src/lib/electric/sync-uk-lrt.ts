@@ -25,9 +25,7 @@ const UK_LRT_SHAPE_KEY = 'uk-lrt-shape';
  * Electric service configuration
  */
 const ELECTRIC_URL =
-	import.meta.env.VITE_ELECTRIC_URL ||
-	import.meta.env.PUBLIC_ELECTRIC_URL ||
-	'http://localhost:3002';
+	import.meta.env.VITE_ELECTRIC_URL || import.meta.env.PUBLIC_ELECTRIC_URL || '/electric';
 
 /**
  * Columns to sync from uk_lrt table.

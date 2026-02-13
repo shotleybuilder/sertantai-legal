@@ -23,11 +23,9 @@ export type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 // Type that satisfies Electric's Row constraint (requires index signature)
 type ElectricUkLrtRecord = UkLrtRecord & Record<string, unknown>;
 
-// Electric service configuration
+// Electric service configuration — relative path works via nginx (prod) and vite proxy (dev)
 const ELECTRIC_URL =
-	import.meta.env.VITE_ELECTRIC_URL ||
-	import.meta.env.PUBLIC_ELECTRIC_URL ||
-	'http://localhost:3002';
+	import.meta.env.VITE_ELECTRIC_URL || import.meta.env.PUBLIC_ELECTRIC_URL || '/electric';
 
 /**
  * Columns to sync from uk_lrt table.
