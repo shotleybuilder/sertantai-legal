@@ -219,12 +219,11 @@ if [ "$CHECK_ONLY" = true ]; then
     echo -e "${BLUE}ElectricSQL Status:${NC}"
     ssh "${SERVER}" "docker ps --filter name=${ELECTRIC_CONTAINER} --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'" || echo "  Electric not running"
 
-    # Check Electric health
-    ELECTRIC_HEALTH=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${ELECTRIC_INTERNAL_PORT}/v1/health" 2>/dev/null || echo "000")
-    if [ "$ELECTRIC_HEALTH" = "200" ]; then
-        echo -e "  ${GREEN}✓${NC} Electric health check passed (HTTP 200)"
+    # Check Electric health (no host port mapping — must exec into container)
+    if ssh "${SERVER}" "docker exec ${ELECTRIC_CONTAINER} curl -sf http://localhost:3000/v1/health" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✓${NC} Electric health check passed"
     else
-        echo -e "  ${YELLOW}⚠${NC} Electric health check returned HTTP ${ELECTRIC_HEALTH}"
+        echo -e "  ${YELLOW}⚠${NC} Electric health check failed"
     fi
     echo ""
 
@@ -273,14 +272,14 @@ if [ "$DEPLOY_FRONTEND" = true ]; then
     fi
 
     if [ "$FRONTEND_SUCCESS" = true ]; then
-        # Health check
+        # Health check (no host port mapping — use Docker's built-in health status)
         echo -e "${BLUE}[3/3] Checking frontend health...${NC}"
         sleep 3
-        FRONTEND_HEALTH=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/" 2>/dev/null || echo "000")
-        if [ "$FRONTEND_HEALTH" = "200" ]; then
-            echo -e "${GREEN}✓ Frontend health check passed (HTTP 200)${NC}"
+        FRONTEND_STATUS=$(ssh "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' sertantai_legal_frontend" 2>/dev/null || echo "unknown")
+        if [ "$FRONTEND_STATUS" = "healthy" ]; then
+            echo -e "${GREEN}✓ Frontend container is healthy${NC}"
         else
-            echo -e "${YELLOW}⚠ Frontend health check returned HTTP ${FRONTEND_HEALTH} (container may still be starting)${NC}"
+            echo -e "${YELLOW}⚠ Frontend health status: ${FRONTEND_STATUS} (may still be starting)${NC}"
         fi
         echo ""
     fi
@@ -339,22 +338,23 @@ if [ "$DEPLOY_BACKEND" = true ]; then
     fi
 
     if [ "$BACKEND_SUCCESS" = true ]; then
-        # Wait and check health with retry
-        echo -e "${BLUE}[3/3] Checking health endpoint...${NC}"
-        HEALTH_CHECK="000"
-        for i in 1 2 3; do
+        # Wait and check health via Docker health status (no host port mapping)
+        echo -e "${BLUE}[3/3] Waiting for backend to become healthy...${NC}"
+        BACKEND_HEALTHY=false
+        for i in 1 2 3 4 5 6; do
             sleep 5
-            HEALTH_CHECK=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' -H 'X-Forwarded-Proto: https' http://localhost:${BACKEND_PORT}/health" 2>/dev/null || echo "000")
-            if [ "$HEALTH_CHECK" = "200" ]; then
+            BACKEND_STATUS=$(ssh "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' sertantai_legal_app" 2>/dev/null || echo "unknown")
+            if [ "$BACKEND_STATUS" = "healthy" ]; then
+                BACKEND_HEALTHY=true
                 break
             fi
-            echo -e "${YELLOW}  Attempt ${i}/3: HTTP ${HEALTH_CHECK} — retrying in 5s...${NC}"
+            echo -e "${YELLOW}  Attempt ${i}/6: status=${BACKEND_STATUS} — retrying in 5s...${NC}"
         done
 
-        if [ "$HEALTH_CHECK" = "200" ]; then
-            echo -e "${GREEN}✓ Health check passed (HTTP 200)${NC}"
+        if [ "$BACKEND_HEALTHY" = true ]; then
+            echo -e "${GREEN}✓ Backend is healthy${NC}"
         else
-            echo -e "${YELLOW}⚠ Health check returned HTTP ${HEALTH_CHECK} after 3 attempts${NC}"
+            echo -e "${YELLOW}⚠ Backend health status: ${BACKEND_STATUS} after 30s${NC}"
             echo -e "${YELLOW}  Check logs: ssh ${SERVER} 'cd ${DEPLOY_PATH} && docker compose logs --tail=20 ${BACKEND_SERVICE}'${NC}"
         fi
         echo ""
@@ -413,12 +413,11 @@ if [ "$DEPLOY_ELECTRIC" = true ] || ([ "$WITH_ELECTRIC" = true ] && [ "$DEPLOY_B
         sleep 3
 
         echo -e "${BLUE}Checking Electric health...${NC}"
-        ELECTRIC_HEALTH=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' http://localhost:${ELECTRIC_INTERNAL_PORT}/v1/health" 2>/dev/null || echo "000")
-
-        if [ "$ELECTRIC_HEALTH" = "200" ]; then
-            echo -e "${GREEN}✓ Electric health check passed (HTTP 200)${NC}"
+        ELECTRIC_STATUS=$(ssh "${SERVER}" "docker inspect --format='{{.State.Health.Status}}' ${ELECTRIC_CONTAINER}" 2>/dev/null || echo "unknown")
+        if [ "$ELECTRIC_STATUS" = "healthy" ]; then
+            echo -e "${GREEN}✓ Electric is healthy${NC}"
         else
-            echo -e "${YELLOW}⚠ Electric health check returned HTTP ${ELECTRIC_HEALTH}${NC}"
+            echo -e "${YELLOW}⚠ Electric health status: ${ELECTRIC_STATUS}${NC}"
             echo -e "${YELLOW}  Electric may still be starting up${NC}"
         fi
         echo ""
