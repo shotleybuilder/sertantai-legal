@@ -552,6 +552,18 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Primary date from legislation")
     end
 
+    attribute :md_date_year, :integer do
+      allow_nil?(true)
+      writable?(false)
+      description("Year extracted from md_date (auto-populated by DB trigger)")
+    end
+
+    attribute :md_date_month, :integer do
+      allow_nil?(true)
+      writable?(false)
+      description("Month extracted from md_date (auto-populated by DB trigger)")
+    end
+
     attribute :md_made_date, :date do
       allow_nil?(true)
       description("Date made (for SIs)")

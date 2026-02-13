@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# build-backend.sh - Build production Docker image for Starter App Backend
+# build-backend.sh - Build production Docker image for sertantai-legal Backend
 #
 # This script builds the production Docker image for the Phoenix/Ash backend.
 # The image is tagged for GitHub Container Registry (GHCR).
@@ -29,7 +29,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Image configuration (update with your GitHub org/user)
-IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/starter-app-backend"
+IMAGE_NAME="ghcr.io/shotleybuilder/sertantai-legal-backend"
 IMAGE_TAG="${1:-latest}"
 FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 
@@ -37,7 +37,7 @@ FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 cd "$(dirname "$0")/../.."
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  Starter App Backend - Docker Build${NC}"
+echo -e "${BLUE}  Sertantai Legal Backend - Docker Build${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${YELLOW}Image:${NC} ${FULL_IMAGE}"

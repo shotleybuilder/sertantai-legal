@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# push-backend.sh - Push Starter App Backend Docker image to GitHub Container Registry
+# push-backend.sh - Push sertantai-legal Backend Docker image to GitHub Container Registry
 #
 # This script pushes the built backend Docker image to GHCR. You must be logged in
 # to GHCR before running this script.
@@ -29,12 +29,12 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Image configuration (update with your GitHub org/user)
-IMAGE_NAME="ghcr.io/YOUR_GITHUB_ORG/starter-app-backend"
+IMAGE_NAME="ghcr.io/shotleybuilder/sertantai-legal-backend"
 IMAGE_TAG="${1:-latest}"
 FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  Starter App Backend - Push to GHCR${NC}"
+echo -e "${BLUE}  Sertantai Legal Backend - Push to GHCR${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${YELLOW}Image:${NC} ${FULL_IMAGE}"

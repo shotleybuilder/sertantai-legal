@@ -56,8 +56,10 @@ defmodule SertantaiLegalWeb.Endpoint do
   plug(Corsica,
     origins: [
       # Vite dev server (port 5175 for sertantai-legal)
-      ~r{^https?://localhost:517[35]$},
-      ~r{^https?://127\.0\.0\.1:517[35]$},
+      "http://localhost:5175",
+      "http://localhost:5173",
+      "http://127.0.0.1:5175",
+      "http://127.0.0.1:5173",
       System.get_env("FRONTEND_URL") || ""
     ],
     allow_credentials: true,

@@ -59,6 +59,17 @@ Complete guide for:
 - Upsert logic for cached data conflicts
 - Common pitfalls (stale offsets, context errors, subscribeChanges)
 
+### 🚀 [Production Deployment](production-deployment/)
+
+**Use when:** Deploying sertantai-legal (or a new microservice) to Hetzner production
+
+Battle-tested guide covering:
+- Infrastructure config (docker-compose, nginx, postgres, env vars)
+- Docker image build and push to GHCR
+- Server-side setup (DNS, SSL, database, secrets)
+- Data migration with pg_dump/pg_restore (custom format only)
+- 8 common pitfalls with solutions (Alpine mismatch, Electric slot conflicts, GHCR auth, schema drift, etc.)
+
 ## How to Use
 
 ### For AI Assistants (Claude Code)

@@ -37,7 +37,7 @@ RUN mix release
 ################################################################################
 # Runner Stage
 ################################################################################
-FROM alpine:3.19
+FROM alpine:3.23
 
 # Install runtime dependencies
 RUN apk add --no-cache \
@@ -69,7 +69,7 @@ EXPOSE 4000
 
 # Health check using the dedicated endpoint
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
 
 # Start script: run migrations then start server
 CMD ["/bin/bash", "-c", "/app/bin/sertantai_legal eval 'SertantaiLegal.Release.migrate()' && /app/bin/sertantai_legal start"]
