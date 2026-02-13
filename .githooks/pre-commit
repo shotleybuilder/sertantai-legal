@@ -305,6 +305,61 @@ check_frontend_types() {
     fi
 }
 
+# Check 7: Sensitive Information in Markdown Files
+check_md_sensitive_info() {
+    print_status "Checking markdown files for sensitive information..."
+
+    # Get staged .md files
+    STAGED_MD_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)
+
+    if [ -z "$STAGED_MD_FILES" ]; then
+        print_info "No markdown files staged for commit"
+        return 0
+    fi
+
+    FOUND_ISSUES=0
+
+    # Patterns that suggest sensitive information
+    # Each pattern: "regex|||description"
+    PATTERNS=(
+        'password\s*[:=]\s*["\x27][^"\x27]{4,}'|||'Possible password value'
+        'secret_key_base\s*[:=]\s*["\x27][^"\x27]{8,}'|||'Possible SECRET_KEY_BASE value'
+        'ELECTRIC_SECRET\s*[:=]\s*["\x27][^"\x27]{4,}'|||'Possible ELECTRIC_SECRET value'
+        'SHARED_TOKEN_SECRET\s*[:=]\s*["\x27][^"\x27]{4,}'|||'Possible SHARED_TOKEN_SECRET value'
+        'Bearer\s+ey[A-Za-z0-9_-]{20,}'|||'Possible JWT token'
+        'POSTGRES_PASSWORD\s*=\s*[^\s$]{4,}'|||'Possible database password (not variable ref)'
+        'api[_-]?key\s*[:=]\s*["\x27][^"\x27]{8,}'|||'Possible API key value'
+        'ghp_[A-Za-z0-9]{36,}'|||'GitHub personal access token'
+        'sk-[A-Za-z0-9]{20,}'|||'Possible secret key (sk-...)'
+    )
+
+    for PATTERN_DESC in "${PATTERNS[@]}"; do
+        PATTERN="${PATTERN_DESC%%|||*}"
+        DESC="${PATTERN_DESC##*|||}"
+
+        for FILE in $STAGED_MD_FILES; do
+            # Search staged content (not working tree)
+            MATCHES=$(git diff --cached -U0 "$FILE" 2>/dev/null | grep -iP "^\+.*${PATTERN}" || true)
+            if [ -n "$MATCHES" ]; then
+                if [ $FOUND_ISSUES -eq 0 ]; then
+                    print_error "Potential sensitive information found in markdown files:"
+                fi
+                FOUND_ISSUES=1
+                echo -e "  ${RED}${FILE}${NC}: ${DESC}"
+                echo "$MATCHES" | head -3 | sed 's/^/    /'
+            fi
+        done
+    done
+
+    if [ $FOUND_ISSUES -ne 0 ]; then
+        print_info "Review the flagged lines above. If they are example/template values, use 'git commit --no-verify'"
+        return 1
+    else
+        print_success "No sensitive information detected in markdown files"
+        return 0
+    fi
+}
+
 # Function to get list of staged files
 get_staged_files() {
     git diff --cached --name-only --diff-filter=ACM
@@ -347,6 +402,9 @@ main() {
     echo ""
 
     check_frontend_types || EXIT_CODE=1
+    echo ""
+
+    check_md_sensitive_info || EXIT_CODE=1
     echo ""
 
     # Final result

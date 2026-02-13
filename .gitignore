@@ -45,6 +45,9 @@ priv/plts/
 # Elixir releases
 rel/
 
-# Claude Code local settings (user-specific)
-.claude/settings.local.json
-.claude/sessions/
+# Claude Code - track skills, sessions, plans; exclude user-specific settings
+.claude/*
+!.claude/skills/
+!.claude/sessions/
+!.claude/plans/
+!.claude/commands/
