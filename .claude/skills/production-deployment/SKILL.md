@@ -18,6 +18,47 @@
 3. **Migrations are the source of truth** — If a column exists in dev but not in a migration, it won't exist in prod. Fix the migration first.
 4. **ElectricSQL instances need unique identifiers** — Multiple Electric instances on the same PostgreSQL cluster will conflict on replication slots
 5. **Alpine versions must match** — The Docker builder stage and runner stage must use the same Alpine/OpenSSL version or NIF libraries will fail to load
+6. **No host port mappings** — All services communicate via the `infra_network` Docker network. Health checks must use `docker inspect` or `docker exec`, not `curl localhost`.
+
+## Deployment Scripts & Aliases
+
+All deployment scripts live in `scripts/deployment/`. Shell aliases are defined in `~/.bashrc`:
+
+| Alias | Script | Purpose |
+|-------|--------|---------|
+| `sert-legal-fe` | `build-frontend.sh` | Build frontend Docker image |
+| `sert-legal-be` | `build-backend.sh` | Build backend Docker image |
+| `sert-legal-push-fe` | `push-frontend.sh` | Push frontend image to GHCR |
+| `sert-legal-push-be` | `push-backend.sh` | Push backend image to GHCR |
+| `sert-legal-deploy` | `deploy-prod.sh` | Deploy to production server |
+
+### deploy-prod.sh Options
+
+```bash
+sert-legal-deploy                    # Deploy frontend + backend (default)
+sert-legal-deploy --frontend         # Frontend only
+sert-legal-deploy --backend          # Backend only
+sert-legal-deploy --electric         # Restart ElectricSQL only
+sert-legal-deploy --with-electric    # Backend + ElectricSQL
+sert-legal-deploy --electric-clear-cache  # Recreate Electric (clears shape cache)
+sert-legal-deploy --migrate          # Run database migrations after restart
+sert-legal-deploy --check-only       # Check status without deploying
+sert-legal-deploy --logs             # Follow logs after deployment
+```
+
+### Typical Deploy Workflow
+
+```bash
+# 1. Build and push (on laptop)
+sert-legal-fe && sert-legal-push-fe
+sert-legal-be && sert-legal-push-be
+
+# 2. Deploy to server (SSHs automatically)
+sert-legal-deploy
+
+# Or frontend only:
+sert-legal-fe && sert-legal-push-fe && sert-legal-deploy --frontend
+```
 
 ## Infrastructure Files to Modify
 
@@ -31,6 +72,30 @@ When adding a new service, these files in `~/Desktop/infrastructure` need updati
 | `nginx/conf.d/<domain>.conf` | Create nginx config with SSL, API proxy, Electric proxy |
 
 **Commit and push** these changes so they can be `git pull`ed on the server.
+
+## Container Architecture
+
+All services run on the internal `infra_network` Docker network with no host port mappings. Nginx is the sole entry point.
+
+```
+legal.sertantai.com (Nginx :443)
+  /          → sertantai-legal-frontend:3000  (SvelteKit via serve)
+  /api/      → sertantai-legal:4000           (Phoenix API)
+  /electric/ → sertantai-legal-electric:3000  (ElectricSQL)
+  /health    → sertantai-legal:4000/health
+```
+
+### Container Health Checks
+
+Health checks are defined in docker-compose.yml and use tools available inside each container:
+
+| Container | Tool | Command |
+|-----------|------|---------|
+| `sertantai_legal_app` | `wget` | `wget --spider http://localhost:4000/health` |
+| `sertantai_legal_frontend` | `wget` | `wget --spider http://localhost:3000/` |
+| `sertantai_legal_electric` | `curl` | `curl -f http://localhost:3000/v1/health` |
+
+**Important:** The backend container does NOT have `curl` — use `wget` for health checks. The deploy script checks health via `docker inspect --format='{{.State.Health.Status}}'`.
 
 ## Common Pitfalls & Solutions
 
@@ -81,6 +146,7 @@ environment:
 - GHCR packages are **private by default** — the server needs `docker login ghcr.io` with a PAT that has `read:packages` scope
 - PATs expire — if pushes or pulls suddenly fail with `denied`, regenerate the PAT
 - The `gh` CLI token is separate from the Docker credential store token
+- Push scripts check `~/.docker/config.json` for GHCR credentials and fail fast if not logged in
 
 ```bash
 # Login to GHCR (both laptop and server need this)
@@ -112,7 +178,7 @@ psql -d prod_db -c "SELECT count(*) FROM information_schema.columns WHERE table_
 
 ### Pitfall 7: SSL Cert with Nginx Already Running
 
-`certbot --webroot` fails if nginx catches the ACME challenge request and routes it to another service (e.g., Affine). Use standalone mode instead:
+`certbot --webroot` fails if nginx catches the ACME challenge request and routes it to another service. Use standalone mode instead:
 
 ```bash
 docker compose stop nginx
@@ -128,6 +194,18 @@ The `data/postgres-init/01-create-databases.sql` only executes on first PostgreS
 docker exec shared_postgres psql -U postgres -c "CREATE DATABASE sertantai_legal_prod;"
 docker exec shared_postgres psql -U postgres -d sertantai_legal_prod \
   -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"; CREATE EXTENSION IF NOT EXISTS \"citext\";"
+```
+
+### Pitfall 9: Health Check Tool Mismatch
+
+Backend container is Alpine-based and only has `wget`, not `curl`. If docker-compose.yml healthcheck uses `curl`, the container will always show `unhealthy`.
+
+```yaml
+# WRONG — curl not installed:
+test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+
+# CORRECT — wget is available:
+test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
 ```
 
 ## Working Deployment Sequence
@@ -149,21 +227,19 @@ git push
 ### Phase 2: Build and Push Docker Images (on laptop)
 
 ```bash
-cd ~/Desktop/sertantai-legal
-
 # Build
-./scripts/deployment/build-backend.sh
-./scripts/deployment/build-frontend.sh
+sert-legal-be
+sert-legal-fe
 
 # Push (ensure GHCR login is current)
-docker push ghcr.io/shotleybuilder/sertantai-legal-backend:latest
-docker push ghcr.io/shotleybuilder/sertantai-legal-frontend:latest
+sert-legal-push-be
+sert-legal-push-fe
 ```
 
-### Phase 3: Server Setup (SSH to hetzner)
+### Phase 3: Server Setup (SSH to hetzner — first time only)
 
 ```bash
-ssh hetzner
+ssh sertantai-hz
 
 # 1. Pull infrastructure updates
 cd ~/infrastructure
@@ -188,30 +264,18 @@ docker exec shared_postgres psql -U postgres -d sertantai_legal_prod \
 docker compose -f docker/docker-compose.yml stop nginx
 sudo certbot certonly --standalone -d legal.sertantai.com
 docker compose -f docker/docker-compose.yml start nginx
-
-# 7. Create frontend directory
-sudo mkdir -p /var/www/legal-frontend
 ```
 
-### Phase 4: Deploy Services (on server)
+### Phase 4: Deploy Services
 
 ```bash
-cd ~/infrastructure/docker
+# From laptop — handles SSH, pull, restart, health checks automatically:
+sert-legal-deploy
 
-# Login to GHCR if needed
-echo "YOUR_PAT" | docker login ghcr.io -u shotleybuilder --password-stdin
-
-# Pull and start
-docker compose pull sertantai-legal sertantai-legal-electric
-docker compose up -d sertantai-legal-electric
-docker compose up -d sertantai-legal    # auto-runs migrations on startup
-
-# Reload nginx
-docker compose exec nginx nginx -s reload
-
-# Verify
-curl https://legal.sertantai.com/health
-curl https://legal.sertantai.com/electric/v1/health
+# Or deploy individual components:
+sert-legal-deploy --frontend
+sert-legal-deploy --backend
+sert-legal-deploy --backend --with-electric
 ```
 
 ### Phase 5: Populate Data (on laptop, then server)
@@ -237,7 +301,7 @@ PGPASSWORD=postgres pg_dump -h localhost -p 5436 -U postgres \
   --format=custom -f /tmp/sertantai_legal_data.dump
 
 # Transfer to server
-scp /tmp/sertantai_legal_data.dump hetzner:/tmp/
+scp /tmp/sertantai_legal_data.dump sertantai-hz:/tmp/
 
 # On server — stop services, restore, restart
 docker compose stop sertantai-legal sertantai-legal-electric
@@ -273,6 +337,9 @@ docker compose logs sertantai-legal --tail 50
 - **database does not exist** → Create it manually (see Pitfall 8)
 - **connect raised UndefinedFunctionError** → Usually the crypto NIF issue
 
+### Backend shows "unhealthy" but logs show 200s
+The docker-compose healthcheck is using a tool not available in the container (e.g., `curl` instead of `wget`). See Pitfall 9.
+
 ### ElectricSQL stuck on "waiting_on_lock"
 ```bash
 docker compose logs sertantai-legal-electric --tail 50
@@ -285,10 +352,7 @@ docker compose logs sertantai-legal-electric --tail 50
   ```
 
 ### 502 Bad Gateway after deploy
-Backend takes ~5-10 seconds to start. Wait and retry:
-```bash
-sleep 10 && curl https://legal.sertantai.com/health
-```
+Backend takes ~5-10 seconds to start (runs migrations first). The deploy script retries health checks 6 times over 30 seconds. If still failing, check logs.
 
 ### pg_restore fails with "column X does not exist"
 Schema drift — see Pitfall 6. Fix migrations before restoring data.
@@ -300,7 +364,7 @@ Harmless — the migrations table was already populated when the container ran m
 
 ### SSH to server
 ```bash
-ssh hetzner   # or ssh sertantai-hz
+ssh sertantai-hz
 ```
 
 ### Key paths on server
@@ -308,17 +372,17 @@ ssh hetzner   # or ssh sertantai-hz
 |------|---------|
 | `~/infrastructure/docker/` | docker-compose.yml and .env |
 | `~/infrastructure/nginx/conf.d/` | Nginx site configs |
-| `/var/www/legal-frontend/` | Frontend static build |
 | `/etc/letsencrypt/live/legal.sertantai.com/` | SSL certs |
 
-### Key ports (internal to Docker network)
-| Service | Port |
-|---------|------|
-| PostgreSQL | 5432 |
-| sertantai-legal (Phoenix) | 4000 |
-| sertantai-legal-electric | 3000 |
-| sertantai-auth | 4001 |
-| sertantai-enforcement | 4002 |
+### Key ports (internal to Docker network — no host mappings)
+| Service | Container Name | Port |
+|---------|---------------|------|
+| PostgreSQL | `shared_postgres` | 5432 |
+| sertantai-legal (Phoenix) | `sertantai_legal_app` | 4000 |
+| sertantai-legal-electric | `sertantai_legal_electric` | 3000 |
+| sertantai-legal-frontend | `sertantai_legal_frontend` | 3000 |
+| sertantai-auth | `sertantai_auth_app` | 4001 |
+| sertantai-enforcement | `sertantai_enforcement_app` | 4002 |
 
 ### Docker image names
 ```
@@ -328,13 +392,14 @@ ghcr.io/shotleybuilder/sertantai-legal-frontend:latest
 
 ### Rebuild and deploy cycle
 ```bash
-# On laptop
-./scripts/deployment/build-backend.sh
-docker push ghcr.io/shotleybuilder/sertantai-legal-backend:latest
+# On laptop — full cycle
+sert-legal-be && sert-legal-push-be && sert-legal-fe && sert-legal-push-fe && sert-legal-deploy
 
-# On server
-docker compose pull sertantai-legal
-docker compose up -d --force-recreate sertantai-legal
+# Frontend only
+sert-legal-fe && sert-legal-push-fe && sert-legal-deploy --frontend
+
+# Backend only
+sert-legal-be && sert-legal-push-be && sert-legal-deploy --backend
 ```
 
 ## Related Skills
@@ -345,10 +410,12 @@ docker compose up -d --force-recreate sertantai-legal
 
 ## Key Takeaways
 
+- **Use the deployment scripts** — `sert-legal-deploy` handles SSH, pulling, restarting, and health checks
 - **Always use `--format=custom`** for pg_dump/pg_restore — never plain SQL text
 - **Always verify schema parity** before restoring data
 - **Always use `ELECTRIC_REPLICATION_STREAM_ID`** when running multiple Electric instances
 - **Always match Alpine versions** between Docker builder and runner stages
+- **Always use `wget` not `curl`** for backend container health checks
 - **Always check GHCR PAT expiry** when pushes/pulls fail with "denied"
 - **Never use `docker compose down -v`** on production — it destroys data volumes
-- **Never assume psql can handle COPY FROM STDIN** through Docker exec pipes — use pg_restore instead
+- **Never assume localhost is reachable** — services have no host port mappings, use `docker inspect` or `docker exec`
