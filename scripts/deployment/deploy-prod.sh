@@ -276,11 +276,11 @@ if [ "$DEPLOY_FRONTEND" = true ]; then
         # Health check
         echo -e "${BLUE}[3/3] Checking frontend health...${NC}"
         sleep 3
-        FRONTEND_HEALTH=$(ssh "${SERVER}" "docker exec ${FRONTEND_SERVICE//sertantai-/sertantai_} wget --no-verbose --tries=1 --spider http://localhost:3000/ 2>&1 && echo OK || echo FAIL" 2>/dev/null)
-        if echo "$FRONTEND_HEALTH" | grep -q "OK"; then
-            echo -e "${GREEN}✓ Frontend health check passed${NC}"
+        FRONTEND_HEALTH=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/" 2>/dev/null || echo "000")
+        if [ "$FRONTEND_HEALTH" = "200" ]; then
+            echo -e "${GREEN}✓ Frontend health check passed (HTTP 200)${NC}"
         else
-            echo -e "${YELLOW}⚠ Frontend health check inconclusive (container may still be starting)${NC}"
+            echo -e "${YELLOW}⚠ Frontend health check returned HTTP ${FRONTEND_HEALTH} (container may still be starting)${NC}"
         fi
         echo ""
     fi
@@ -315,32 +315,8 @@ if [ "$DEPLOY_BACKEND" = true ]; then
     echo ""
 
     if [ "$BACKEND_SUCCESS" = true ]; then
-        # Check migration status
-        echo -e "${BLUE}[2/4] Checking migration status...${NC}"
-        ssh "${SERVER}" "cd ${DEPLOY_PATH} && docker compose exec -T ${BACKEND_SERVICE} /app/bin/sertantai_legal eval 'SertantaiLegal.Release.migrate'" 2>/dev/null || {
-            echo -e "${YELLOW}⚠ Could not check migration status (container may not be running)${NC}"
-        }
-        echo ""
-
-        # Run migrations if requested
-        if [ "$RUN_MIGRATIONS" = true ]; then
-            echo -e "${BLUE}[3/4] Running migrations...${NC}"
-            if ssh "${SERVER}" "cd ${DEPLOY_PATH} && docker compose exec -T ${BACKEND_SERVICE} /app/bin/sertantai_legal eval 'SertantaiLegal.Release.migrate'"; then
-                echo -e "${GREEN}✓ Migrations complete${NC}"
-            else
-                echo -e "${RED}✗ Migration failed${NC}"
-                BACKEND_SUCCESS=false
-            fi
-            echo ""
-        else
-            echo -e "${YELLOW}[3/4] Skipping migrations (use --migrate to run)${NC}"
-            echo ""
-        fi
-    fi
-
-    if [ "$BACKEND_SUCCESS" = true ]; then
-        # Restart container
-        echo -e "${BLUE}[4/4] Restarting container...${NC}"
+        # Restart container (picks up new image)
+        echo -e "${BLUE}[2/3] Restarting container...${NC}"
         if ssh "${SERVER}" "cd ${DEPLOY_PATH} && docker compose up -d ${BACKEND_SERVICE}"; then
             echo -e "${GREEN}✓ Container restarted${NC}"
         else
@@ -348,23 +324,40 @@ if [ "$DEPLOY_BACKEND" = true ]; then
             BACKEND_SUCCESS=false
         fi
         echo ""
+    fi
 
-        # Wait and check health
-        if [ "$BACKEND_SUCCESS" = true ]; then
-            echo -e "${BLUE}Waiting for startup...${NC}"
-            sleep 5
-
-            echo -e "${BLUE}Checking health endpoint...${NC}"
-            HEALTH_CHECK=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' -H 'X-Forwarded-Proto: https' http://localhost:${BACKEND_PORT}/health" || echo "000")
-
-            if [ "$HEALTH_CHECK" = "200" ]; then
-                echo -e "${GREEN}✓ Health check passed (HTTP 200)${NC}"
-            else
-                echo -e "${YELLOW}⚠ Health check returned HTTP ${HEALTH_CHECK}${NC}"
-                echo -e "${YELLOW}  The application may still be starting up${NC}"
-            fi
-            echo ""
+    # Run migrations if requested (after container restart so new code is running)
+    if [ "$BACKEND_SUCCESS" = true ] && [ "$RUN_MIGRATIONS" = true ]; then
+        echo -e "${BLUE}[2b] Running migrations...${NC}"
+        if ssh "${SERVER}" "cd ${DEPLOY_PATH} && docker compose exec -T ${BACKEND_SERVICE} /app/bin/sertantai_legal eval 'SertantaiLegal.Release.migrate'"; then
+            echo -e "${GREEN}✓ Migrations complete${NC}"
+        else
+            echo -e "${RED}✗ Migration failed${NC}"
+            BACKEND_SUCCESS=false
         fi
+        echo ""
+    fi
+
+    if [ "$BACKEND_SUCCESS" = true ]; then
+        # Wait and check health with retry
+        echo -e "${BLUE}[3/3] Checking health endpoint...${NC}"
+        HEALTH_CHECK="000"
+        for i in 1 2 3; do
+            sleep 5
+            HEALTH_CHECK=$(ssh "${SERVER}" "curl -s -o /dev/null -w '%{http_code}' -H 'X-Forwarded-Proto: https' http://localhost:${BACKEND_PORT}/health" 2>/dev/null || echo "000")
+            if [ "$HEALTH_CHECK" = "200" ]; then
+                break
+            fi
+            echo -e "${YELLOW}  Attempt ${i}/3: HTTP ${HEALTH_CHECK} — retrying in 5s...${NC}"
+        done
+
+        if [ "$HEALTH_CHECK" = "200" ]; then
+            echo -e "${GREEN}✓ Health check passed (HTTP 200)${NC}"
+        else
+            echo -e "${YELLOW}⚠ Health check returned HTTP ${HEALTH_CHECK} after 3 attempts${NC}"
+            echo -e "${YELLOW}  Check logs: ssh ${SERVER} 'cd ${DEPLOY_PATH} && docker compose logs --tail=20 ${BACKEND_SERVICE}'${NC}"
+        fi
+        echo ""
     fi
 fi
 
