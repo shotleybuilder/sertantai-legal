@@ -139,46 +139,131 @@ Registration auto-creates an Organization and assigns the user as `owner`.
 #### Where should Login/Register UI live?
 
 **Problem**: All four frontend services (-legal, -enforcement, -controls, -hub) need a common
-login/register flow. Duplicating auth UI in each service is wrong. Three options considered:
+login/register flow. Duplicating auth UI in each service is wrong.
+
+**Options considered**:
 
 | Option | Pros | Cons |
 |--------|------|------|
-| **A. sertantai-auth** (add frontend) | Auth logic co-located; single source of truth for auth flows | Currently backend-only; adding a frontend changes its nature; tighter coupling between auth API and UI |
-| **B. sertantai-hub** (orchestrator) | Already has a SvelteKit frontend; natural home for cross-cutting UI; orchestrator role fits; users land at hub first then navigate to services | Hub becomes a dependency for all services; login latency if hub redirects are involved |
-| **C. Shared SvelteKit package** | Each service embeds the component; no redirect needed; works offline | Package versioning/publishing overhead; duplication of auth state management; harder to update |
+| **A. sertantai-auth** (add frontend) | Auth logic co-located; single source of truth | Changes its backend-only nature; tighter coupling |
+| **B. sertantai-hub** (orchestrator) | Has SvelteKit frontend; orchestrator role fits | Hub dependency for all services |
+| **C. Shared SvelteKit package** | No redirect; works offline | Versioning overhead; duplicated state |
+| **D. Keycloak** (replace auth) | Industry-standard OIDC; built-in login UI | Java stack; operational overhead; loses custom tenant model |
 
-**Recommendation: Option B — sertantai-hub**
+#### Keycloak Assessment (Option D)
+
+Keycloak 25+ has an [Organizations feature](https://www.keycloak.org/2024/06/announcement-keycloak-organizations)
+that supports multi-tenancy with first-class Organizations, Memberships, and Roles. However:
+
+**Keycloak cannot replace our tenant model.** Here's why:
+
+1. **Domain-specific user attributes**: sertantai-auth already stores `org_id` and `role` on users
+   and injects them as JWT claims. Future phases will add `legalTier`, `services`, and
+   content-matching attributes (duty_holder type, geo_region, role_gvt). These are deeply
+   domain-specific — Keycloak's custom claims require writing Java protocol mappers.
+
+2. **Existing Gatekeeper pattern**: sertantai-auth already has a `/api/gatekeeper` endpoint that
+   issues shape-scoped JWTs for ElectricSQL, with role-based table access policies
+   (owner/admin/member/viewer). This is tightly integrated with Ash resources and would need
+   complete reimplementation in Keycloak.
+
+3. **Content matching**: Later phases need to match users to legal content based on their
+   organization profile (what type of duty holder, geographic jurisdiction, sector). This requires
+   domain queries joining user/org data with UK LRT records — something that lives in our
+   Ash resources, not in an external IdP.
+
+4. **Operational overhead**: Keycloak is a Java application requiring its own infrastructure,
+   monitoring, and upgrades. For a small team, maintaining a custom Elixir auth service built on
+   AshAuthentication is less operational burden than running Keycloak alongside the existing stack.
+
+5. **What Keycloak IS good for**: If we needed federated SSO (SAML, social login, enterprise IdPs)
+   or had hundreds of tenants, Keycloak would be worth the overhead. We don't — we have a
+   straightforward email/password flow with a small tenant base.
+
+**Verdict**: Keep sertantai-auth. It owns the tenant model and will grow to support content matching.
+
+#### Recommendation: Option B — sertantai-hub (with shared domain cookie)
+
+**Hub hosts the login UI. Token transport via shared domain cookie, not URL redirect.**
 
 Rationale:
 1. **Hub is the user's entry point** — users authenticate at the hub, then navigate to domain
-   services. This matches the orchestrator role described in CLAUDE.md.
-2. **Hub already has a SvelteKit frontend** — no new project or frontend bootstrap needed.
-3. **Auth stays backend-only** — sertantai_auth remains a clean API/IdP service. Adding UI to it
-   would blur the boundary between identity provider and user-facing application.
-4. **Natural redirect flow**: `legal.sertantai.com` → check JWT → no JWT → redirect to
-   `hub.sertantai.com/login` → authenticate → redirect back with JWT → proceed.
-5. **Shared auth state**: Hub manages the JWT lifecycle (login, refresh, logout). Domain services
-   only validate JWTs — they never issue or refresh them.
-6. **Single sign-on (SSO)**: Hub login covers all services. Once authenticated at hub, the JWT
-   works across -legal, -enforcement, and -controls (same `SHARED_TOKEN_SECRET`).
+   services. This matches the orchestrator role.
+2. **Hub already has a SvelteKit frontend** — no new project needed.
+3. **Auth stays backend-only** — sertantai_auth remains a clean API/IdP service.
 
-**Flow**:
+#### Token Transport: Shared Domain Cookie (not URL redirect)
+
+**Initial proposal** (`?token=<jwt>` in redirect URL) has security issues:
+- JWT appears in browser history, server logs, and Referrer headers
+- Essentially reinventing OAuth2 authorization code flow, badly
+
+**Better approach**: HttpOnly cookie on `.sertantai.com` domain.
+
 ```
 User visits legal.sertantai.com
-  → Frontend checks for JWT in localStorage/cookie
-  → No JWT? Redirect to hub.sertantai.com/login?redirect=legal.sertantai.com
+  → Frontend checks for JWT cookie (set on .sertantai.com domain)
+  → No cookie? Redirect to hub.sertantai.com/login?redirect=legal.sertantai.com
   → Hub login page calls sertantai-auth API (POST /api/auth/user/password/sign_in)
-  → On success, hub stores JWT and redirects back to legal.sertantai.com?token=<jwt>
-  → Legal frontend stores JWT, attaches to API requests
+  → On success, hub backend sets HttpOnly cookie on .sertantai.com domain
+  → Redirect back to legal.sertantai.com
+  → Cookie automatically sent with all requests to *.sertantai.com
+  → Legal backend reads JWT from cookie (or Authorization header — support both)
 ```
 
-**What sertantai-legal Phase 4 still needs** (JWT consumption, not auth UI):
-- [ ] Auth guard: check for JWT on app load, redirect to hub if missing
-- [ ] JWT storage (localStorage or cookie) and retrieval
-- [ ] Attach JWT to API requests (Authorization header) — scraper, cascade, write endpoints
+**Cookie properties**:
+- `Domain=.sertantai.com` — shared across all subdomains
+- `HttpOnly` — not accessible via JavaScript (XSS-safe)
+- `Secure` — HTTPS only
+- `SameSite=Lax` — sent on top-level navigations and same-site requests
+- `Path=/` — available on all paths
+- `Max-Age=1209600` — 14 days (matches JWT TTL)
+
+**Implications**:
+- Backend `AuthPlug` updated to check both `Authorization` header AND cookie
+- API requests from SvelteKit frontend use cookie automatically (no manual header needed)
+- Electric proxy requests also carry the cookie
+- `localStorage` not needed for token storage
+- Logout = delete cookie at hub + redirect
+
+**Dev environment**: In development, services run on `localhost` with different ports. Cookie
+domain `.localhost` doesn't work reliably across browsers. Two options:
+- Use `Authorization` header in dev (frontend reads token from cookie-less login response)
+- Use `/etc/hosts` aliases: `hub.sertantai.local`, `legal.sertantai.local` with cookie on
+  `.sertantai.local`
+
+#### sertantai-auth Capabilities (already built)
+
+Deeper review of sertantai-auth revealed it already has more than expected:
+
+| Capability | Status | Location |
+|------------|--------|----------|
+| User + Organization resources | Built | `lib/sertantai_auth/accounts/` |
+| Password registration + login | Built | AshAuthentication password strategy |
+| JWT with `org_id` + `role` claims | Built | `auth_controller.ex` |
+| Token refresh endpoint | Built | `POST /api/auth/refresh` |
+| Gatekeeper (shape-scoped JWTs) | Built | `gatekeeper_controller.ex` |
+| Role-based shape policies | Built | `electric/shape_policies.ex` |
+| Auto-create org on registration | Built | `auth_controller.ex` |
+| `services` / `legalTier` claims | Not yet | Phase 5 |
+| Content-matching user attributes | Not yet | Future |
+| Login/Register UI | Not built | Phase 4 (in hub) |
+
+**Note**: sertantai-auth already has a Gatekeeper endpoint that issues shape-scoped JWTs. This
+overlaps with sertantai-legal's Phase 3 ElectricProxyController. Decision needed: should the
+Electric proxy in sertantai-legal delegate to auth's Gatekeeper, or continue validating
+independently? For now, independent validation is simpler (avoids inter-service HTTP call on
+every shape request), but worth revisiting when org-scoped shapes are needed.
+
+#### Phase 4 Tasks (JWT consumption in sertantai-legal, not auth UI)
+
+- [ ] Auth guard: check for JWT cookie on app load, redirect to hub if missing
+- [ ] Update `AuthPlug` to read JWT from cookie OR Authorization header
+- [ ] Attach JWT to API requests (cookie auto-sent; Authorization header as fallback)
 - [ ] Attach JWT to Electric proxy requests (for future org-scoped shapes)
 - [ ] Token refresh flow (call hub/auth refresh endpoint before expiry)
-- [ ] Logout: clear JWT, redirect to hub
+- [ ] Logout: clear cookie via hub, redirect
+- [ ] Dev environment strategy: decide on cookie vs header approach for localhost
 
 ### Phase 5: Tier Claims + Feature Gating (#18)
 - [ ] sertantai-auth: Add `services` and `legalTier` claims to JWTs
@@ -189,6 +274,8 @@ User visits legal.sertantai.com
 ### Phase 6: Production Deployment
 - [ ] sertantai-auth deployed to production
 - [ ] `SHARED_TOKEN_SECRET` configured in infrastructure `.env`
+- [ ] Nginx: cookie domain `.sertantai.com` on hub login response
+- [ ] Remove nginx `/electric/` direct proxy (use backend proxy only)
 - [ ] Production data flowing through authenticated proxy
 - [ ] Verify cross-service JWT validation in production
 
@@ -200,3 +287,9 @@ User visits legal.sertantai.com
 - **Tier Plan**: `.claude/plans/issue-18-future-tiers-and-views.md`
 - **Auth API docs**: `~/Desktop/sertantai_auth/API.md`
 - **Auth CLAUDE.md**: `~/Desktop/sertantai_auth/CLAUDE.md`
+- **Auth Gatekeeper**: `~/Desktop/sertantai_auth/lib/sertantai_auth_web/controllers/gatekeeper_controller.ex`
+- **Auth Shape Policies**: `~/Desktop/sertantai_auth/lib/sertantai_auth/electric/shape_policies.ex`
+- **Keycloak Organizations**: https://www.keycloak.org/2024/06/announcement-keycloak-organizations
+- **Keycloak Multi-Tenancy Options**: https://phasetwo.io/blog/multi-tenancy-options-keycloak/
+- **Microservices Auth Architecture**: https://microservices.io/post/architecture/2025/05/28/microservices-authn-authz-part-2-authentication.html
+- **Cross-subdomain Cookies**: https://fwielstra.github.io/2017/03/13/fun-with-cookies-and-subdomains/
