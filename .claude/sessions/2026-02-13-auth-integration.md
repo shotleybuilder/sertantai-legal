@@ -102,18 +102,19 @@ Registration auto-creates an Organization and assigns the user as `owner`.
 - [x] Verify sertantai-auth can register a test user and issue JWTs
 - [x] Verify JWT structure and document actual claim names
 
-### Phase 2: JWT Validation in sertantai-legal (#20)
-- [ ] Add `shared_token_secret` to `config/test.exs` (known test value)
-- [ ] JWT validation plug (verify tokens using `shared_token_secret`)
-- [ ] Extract user ID from `sub` claim (parse `"user?id=<uuid>"` format)
-- [ ] Extract `org_id` from claims (not `organization_id`)
-- [ ] Protect API routes that need authentication
-- [ ] Pass-through for unauthenticated routes (health, UK LRT browsing)
-- [ ] Test helper (`test/support/auth_helpers.ex`): mint JWTs locally via JOSE
-  - `build_token/1` — generates valid JWT with default claims (`sub`, `org_id`, `role`, `iss`, `exp`)
-  - Overridable claims for testing edge cases (expired, wrong org, malformed sub)
-- [ ] Auth plug unit tests (valid token, expired, malformed, missing header)
-- [ ] Controller tests updated to use `AuthHelpers.build_token/1` for authenticated routes
+### Phase 2: JWT Validation in sertantai-legal (#20) — COMPLETE
+- [x] Add `shared_token_secret` to `config/test.exs` (known test value)
+- [x] JWT validation plug (`AuthPlug`) — verifies HS256 via JOSE
+- [x] Extract user ID from `sub` claim (handles `"user?id=<uuid>"` format + bare UUID)
+- [x] Extract `org_id` from claims → `conn.assigns.organization_id`
+- [x] Extract `role` from claims → `conn.assigns.user_role`
+- [x] Router reorganised: public pipeline (health, UK LRT reads) + authenticated pipeline (writes, scraper, cascade)
+- [x] Test helper (`test/support/auth_helpers.ex`): mint JWTs locally via JOSE
+  - `build_token/1`, `build_expired_token/1`, `put_auth_header/1`
+  - Imported in ConnCase for all controller tests
+- [x] 17 auth plug tests (valid, expired, malformed, wrong secret, missing claims, router integration)
+- [x] Controller tests updated: scrape + cascade use auth in setup, UK LRT writes add auth, 401 tests added
+- [x] All 751 tests pass, dialyzer clean
 
 ### Phase 3: Electric Auth Proxy (#20)
 - [ ] Electric proxy controller (`GET /api/electric/v1/shape`)
