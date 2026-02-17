@@ -135,10 +135,50 @@ Registration auto-creates an Organization and assigns the user as `owner`.
 - [ ] Remove nginx `/electric/` proxy location in production (deferred to Phase 6)
 
 ### Phase 4: Frontend Auth Integration
-- [ ] Auth store/context for JWT management in SvelteKit
-- [ ] Login/register UI (or redirect to sertantai-auth)
-- [ ] Attach JWT to API requests (Authorization header)
-- [ ] Attach JWT to Electric shape requests via proxy
+
+#### Where should Login/Register UI live?
+
+**Problem**: All four frontend services (-legal, -enforcement, -controls, -hub) need a common
+login/register flow. Duplicating auth UI in each service is wrong. Three options considered:
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **A. sertantai-auth** (add frontend) | Auth logic co-located; single source of truth for auth flows | Currently backend-only; adding a frontend changes its nature; tighter coupling between auth API and UI |
+| **B. sertantai-hub** (orchestrator) | Already has a SvelteKit frontend; natural home for cross-cutting UI; orchestrator role fits; users land at hub first then navigate to services | Hub becomes a dependency for all services; login latency if hub redirects are involved |
+| **C. Shared SvelteKit package** | Each service embeds the component; no redirect needed; works offline | Package versioning/publishing overhead; duplication of auth state management; harder to update |
+
+**Recommendation: Option B — sertantai-hub**
+
+Rationale:
+1. **Hub is the user's entry point** — users authenticate at the hub, then navigate to domain
+   services. This matches the orchestrator role described in CLAUDE.md.
+2. **Hub already has a SvelteKit frontend** — no new project or frontend bootstrap needed.
+3. **Auth stays backend-only** — sertantai_auth remains a clean API/IdP service. Adding UI to it
+   would blur the boundary between identity provider and user-facing application.
+4. **Natural redirect flow**: `legal.sertantai.com` → check JWT → no JWT → redirect to
+   `hub.sertantai.com/login` → authenticate → redirect back with JWT → proceed.
+5. **Shared auth state**: Hub manages the JWT lifecycle (login, refresh, logout). Domain services
+   only validate JWTs — they never issue or refresh them.
+6. **Single sign-on (SSO)**: Hub login covers all services. Once authenticated at hub, the JWT
+   works across -legal, -enforcement, and -controls (same `SHARED_TOKEN_SECRET`).
+
+**Flow**:
+```
+User visits legal.sertantai.com
+  → Frontend checks for JWT in localStorage/cookie
+  → No JWT? Redirect to hub.sertantai.com/login?redirect=legal.sertantai.com
+  → Hub login page calls sertantai-auth API (POST /api/auth/user/password/sign_in)
+  → On success, hub stores JWT and redirects back to legal.sertantai.com?token=<jwt>
+  → Legal frontend stores JWT, attaches to API requests
+```
+
+**What sertantai-legal Phase 4 still needs** (JWT consumption, not auth UI):
+- [ ] Auth guard: check for JWT on app load, redirect to hub if missing
+- [ ] JWT storage (localStorage or cookie) and retrieval
+- [ ] Attach JWT to API requests (Authorization header) — scraper, cascade, write endpoints
+- [ ] Attach JWT to Electric proxy requests (for future org-scoped shapes)
+- [ ] Token refresh flow (call hub/auth refresh endpoint before expiry)
+- [ ] Logout: clear JWT, redirect to hub
 
 ### Phase 5: Tier Claims + Feature Gating (#18)
 - [ ] sertantai-auth: Add `services` and `legalTier` claims to JWTs
