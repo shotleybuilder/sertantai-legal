@@ -102,30 +102,47 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
   end
 
   describe "PATCH /api/uk-lrt/:id" do
-    test "returns 404 when record not found", %{conn: conn} do
+    test "returns 401 without auth", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
       conn = patch(conn, "/api/uk-lrt/#{fake_id}", %{title_en: "New Title"})
+
+      assert conn.status == 401
+    end
+
+    test "returns 404 when record not found", %{conn: conn} do
+      fake_id = Ecto.UUID.generate()
+
+      conn =
+        conn |> put_auth_header() |> patch("/api/uk-lrt/#{fake_id}", %{title_en: "New Title"})
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
-      conn = patch(conn, "/api/uk-lrt/invalid-uuid", %{title_en: "New Title"})
+      conn =
+        conn |> put_auth_header() |> patch("/api/uk-lrt/invalid-uuid", %{title_en: "New Title"})
 
       assert conn.status in [400, 404, 500]
     end
   end
 
   describe "DELETE /api/uk-lrt/:id" do
-    test "returns 404 when record not found", %{conn: conn} do
+    test "returns 401 without auth", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
       conn = delete(conn, "/api/uk-lrt/#{fake_id}")
+
+      assert conn.status == 401
+    end
+
+    test "returns 404 when record not found", %{conn: conn} do
+      fake_id = Ecto.UUID.generate()
+      conn = conn |> put_auth_header() |> delete("/api/uk-lrt/#{fake_id}")
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
-      conn = delete(conn, "/api/uk-lrt/invalid-uuid")
+      conn = conn |> put_auth_header() |> delete("/api/uk-lrt/invalid-uuid")
 
       assert conn.status in [400, 404, 500]
     end
@@ -142,15 +159,22 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
   end
 
   describe "POST /api/uk-lrt/:id/parse-preview" do
-    test "returns 404 when record not found", %{conn: conn} do
+    test "returns 401 without auth", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
       conn = post(conn, "/api/uk-lrt/#{fake_id}/parse-preview")
+
+      assert conn.status == 401
+    end
+
+    test "returns 404 when record not found", %{conn: conn} do
+      fake_id = Ecto.UUID.generate()
+      conn = conn |> put_auth_header() |> post("/api/uk-lrt/#{fake_id}/parse-preview")
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
-      conn = post(conn, "/api/uk-lrt/invalid-uuid/parse-preview")
+      conn = conn |> put_auth_header() |> post("/api/uk-lrt/invalid-uuid/parse-preview")
 
       assert conn.status in [400, 404, 500]
     end
@@ -158,7 +182,10 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     test "accepts stages query parameter", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
       # Even with invalid ID, should handle stages param correctly
-      conn = post(conn, "/api/uk-lrt/#{fake_id}/parse-preview?stages=metadata,taxa")
+      conn =
+        conn
+        |> put_auth_header()
+        |> post("/api/uk-lrt/#{fake_id}/parse-preview?stages=metadata,taxa")
 
       # Should still return 404 (record not found), not a param error
       assert json_response(conn, 404)["error"] == "Record not found"
@@ -166,7 +193,11 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
 
     test "handles invalid stages gracefully", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = post(conn, "/api/uk-lrt/#{fake_id}/parse-preview?stages=invalid_stage")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> post("/api/uk-lrt/#{fake_id}/parse-preview?stages=invalid_stage")
 
       # Should return 404 (stages param failure should not crash)
       assert json_response(conn, 404)["error"] == "Record not found"

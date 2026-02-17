@@ -29,3 +29,8 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Enable test mode for HTTP client mocking
 config :sertantai_legal, test_mode: true
+
+# Shared token secret for JWT validation in tests
+# Must match the secret used by AuthHelpers.build_token/1
+config :sertantai_legal,
+  shared_token_secret: "test_secret_key_for_jwt_signing_at_least_32_chars"

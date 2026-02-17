@@ -28,6 +28,7 @@ defmodule SertantaiLegalWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import SertantaiLegalWeb.ConnCase
+      import SertantaiLegal.AuthHelpers
     end
   end
 

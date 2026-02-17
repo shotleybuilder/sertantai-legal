@@ -5,10 +5,21 @@ defmodule SertantaiLegalWeb.Router do
     plug(:accepts, ["json"])
   end
 
+  # Authenticated API pipeline — validates JWT from sertantai-auth
+  pipeline :api_authenticated do
+    plug(:accepts, ["json"])
+    plug(SertantaiLegalWeb.AuthPlug)
+  end
+
   # Pipeline for Server-Sent Events - no content type restrictions
   # EventSource sends Accept: text/event-stream which Phoenix's :accepts plug doesn't handle
   pipeline :sse do
     # No accepts plug - we set content-type manually in the controller
+  end
+
+  # SSE with authentication
+  pipeline :sse_authenticated do
+    plug(SertantaiLegalWeb.AuthPlug)
   end
 
   # Health check endpoints (no /api prefix, no authentication required)
@@ -18,18 +29,37 @@ defmodule SertantaiLegalWeb.Router do
     get("/health/detailed", HealthController, :show)
   end
 
-  # SSE streaming endpoints (separate pipeline to accept text/event-stream)
-  scope "/api", SertantaiLegalWeb do
-    pipe_through(:sse)
-    get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
-  end
-
-  # API endpoints
+  # Public API endpoints — UK LRT reference data (read-only, no auth)
   scope "/api", SertantaiLegalWeb do
     pipe_through(:api)
     get("/hello", HelloController, :index)
 
-    # Scraper endpoints
+    # UK LRT read endpoints (public reference data)
+    get("/uk-lrt", UkLrtController, :index)
+    get("/uk-lrt/filters", UkLrtController, :filters)
+    get("/uk-lrt/search", UkLrtController, :search)
+    get("/uk-lrt/exists/*name", UkLrtController, :exists)
+    post("/uk-lrt/batch-exists", UkLrtController, :batch_exists)
+    get("/uk-lrt/:id", UkLrtController, :show)
+  end
+
+  # Authenticated SSE streaming endpoints
+  scope "/api", SertantaiLegalWeb do
+    pipe_through([:sse, :sse_authenticated])
+    get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
+  end
+
+  # Authenticated API endpoints — admin/write operations
+  scope "/api", SertantaiLegalWeb do
+    pipe_through(:api_authenticated)
+
+    # UK LRT write endpoints (require auth)
+    patch("/uk-lrt/:id", UkLrtController, :update)
+    delete("/uk-lrt/:id", UkLrtController, :delete)
+    post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
+    post("/uk-lrt/:id/parse-preview", UkLrtController, :parse_preview)
+
+    # Scraper endpoints (admin tools)
     post("/scrape", ScrapeController, :create)
     get("/sessions", ScrapeController, :index)
     get("/family-options", ScrapeController, :family_options)
@@ -60,17 +90,5 @@ defmodule SertantaiLegalWeb.Router do
     delete("/cascade/processed", CascadeController, :clear_processed)
     delete("/cascade/session/:session_id", CascadeController, :clear_session)
     delete("/cascade/:id", CascadeController, :delete)
-
-    # UK LRT CRUD endpoints
-    get("/uk-lrt", UkLrtController, :index)
-    get("/uk-lrt/filters", UkLrtController, :filters)
-    get("/uk-lrt/search", UkLrtController, :search)
-    get("/uk-lrt/exists/*name", UkLrtController, :exists)
-    post("/uk-lrt/batch-exists", UkLrtController, :batch_exists)
-    get("/uk-lrt/:id", UkLrtController, :show)
-    patch("/uk-lrt/:id", UkLrtController, :update)
-    delete("/uk-lrt/:id", UkLrtController, :delete)
-    post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
-    post("/uk-lrt/:id/parse-preview", UkLrtController, :parse_preview)
   end
 end
