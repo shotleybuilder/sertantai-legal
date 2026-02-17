@@ -1,152 +1,142 @@
 # Development Scripts
 
-Quick start/stop scripts for Ash + ElectricSQL + Svelte + TanStack development.
+Start/stop scripts for sertantai-legal (Phoenix + ElectricSQL + SvelteKit) with optional sertantai-auth dependency management.
 
 ## Quick Start
 
 ```bash
-# From anywhere in your project
-./scripts/development/dev-start
+# Start sertantai-legal only (assumes Docker + auth already running)
+sert-legal-start
+
+# Start with Docker containers
+sert-legal-start --docker
+
+# Start with Docker + sertantai-auth service
+sert-legal-start --docker --auth
 
 # Stop servers
-./scripts/development/dev-stop
+sert-legal-stop
+
+# Stop everything (servers + Docker + auth)
+sert-legal-stop --docker --auth
 ```
 
-## Global Installation (Optional)
+## Scripts
 
-Create symlinks for easy access from anywhere:
+| Script | Purpose |
+|--------|---------|
+| `sert-legal-start` | Start backend + frontend in terminal tabs |
+| `sert-legal-stop` | Stop backend + frontend processes |
+| `sert-legal-restart` | Force-stop then restart (with port cleanup) |
+
+## Flags
+
+All three scripts support these flags:
+
+| Flag | Description |
+|------|-------------|
+| `--docker` | Also manage sertantai-legal Docker containers (postgres + electric) |
+| `--auth` | Also manage sertantai-auth service (postgres container + Phoenix server) |
+
+Additional flags for `sert-legal-restart`:
+
+| Flag | Description |
+|------|-------------|
+| `--frontend` | Restart frontend only |
+| `--backend` | Restart backend only |
+| `--force` | Skip graceful shutdown, force-kill immediately |
+
+Flags can be combined: `sert-legal-start --docker --auth`
+
+## Service Architecture
+
+```
+sertantai-auth (port 4000)        <-- JWT issuer, optional dependency
+    PostgreSQL (port 5435)
+
+sertantai-legal
+    Backend  (port 4003)          <-- Phoenix/Ash, validates JWTs
+    Frontend (port 5175)          <-- SvelteKit
+    Electric (port 3002)          <-- ElectricSQL sync
+    PostgreSQL (port 5436)        <-- Docker container
+```
+
+## sertantai-auth Integration
+
+sertantai-legal validates JWTs issued by sertantai-auth. For development:
+
+- **Without auth**: Legal service runs normally but cannot validate user tokens. Fine for browsing UK LRT data and UI development.
+- **With auth**: Full authentication flow. Use `--auth` flag to auto-start the auth service.
+
+The `--auth` flag:
+1. Checks if sertantai-auth is already running (health check on port 4000)
+2. If not running, starts its PostgreSQL container (port 5435)
+3. Starts auth's Phoenix server in a new terminal tab
+4. Waits up to 30s for health check to pass
+
+**Shared secret**: Both services must use the same `SHARED_TOKEN_SECRET` for JWT validation. In development, set this in `backend/.env` matching the value from sertantai-auth's `config/dev.exs`.
+
+### Auth project location
+
+The scripts expect sertantai-auth at `~/Desktop/sertantai_auth`. If your layout differs, update `AUTH_PROJECT_ROOT` in the scripts.
+
+## Symlink Setup
 
 ```bash
-# Replace 'myproject' with your project name
-sudo ln -sf $(pwd)/scripts/development/dev-start /usr/local/bin/myproject-start
-sudo ln -sf $(pwd)/scripts/development/dev-stop /usr/local/bin/myproject-stop
-
-# Then use from anywhere:
-myproject-start
-myproject-stop
+# From the sertantai-legal project root
+sudo ln -sf $(pwd)/scripts/development/sert-legal-start /usr/local/bin/sert-legal-start
+sudo ln -sf $(pwd)/scripts/development/sert-legal-stop /usr/local/bin/sert-legal-stop
+sudo ln -sf $(pwd)/scripts/development/sert-legal-restart /usr/local/bin/sert-legal-restart
 ```
 
-## What Gets Started
+## Port Allocation
 
-The `dev-start` script opens **3 terminal windows**:
+| Service | Port | Project |
+|---------|------|---------|
+| sertantai-auth Phoenix | 4000 | sertantai_auth |
+| sertantai-auth PostgreSQL | 5435 | sertantai_auth |
+| sertantai-legal Phoenix | 4003 | sertantai-legal |
+| sertantai-legal PostgreSQL | 5436 | sertantai-legal |
+| sertantai-legal Electric | 3002 | sertantai-legal |
+| sertantai-legal Frontend | 5175 | sertantai-legal |
 
-1. **Backend** (`{project}-backend`) - Phoenix/Ash server
-2. **Frontend** (`{project}-frontend`) - SvelteKit dev server
-3. **Console** (`{project}-console`) - Interactive shell with helpful info
+## sertantai-hub
 
-## Port Configuration
-
-Default ports can be customized via environment variables:
-
-```bash
-# Custom ports (add to ~/.bashrc or run before starting)
-export BACKEND_PORT=4002
-export FRONTEND_PORT=5173
-export DB_PORT=5434
-export ELECTRIC_PORT=3001
-
-# Then start normally
-./scripts/development/dev-start
-```
-
-**Default Ports:**
-- Backend: `4000`
-- Frontend: `5173`
-- Database: `5432`
-- Electric: `3000`
-
-## Project-Specific Setup
-
-When creating a new project from this template:
-
-1. **Copy scripts** to your new project
-2. **Update symlinks** with your project name
-3. **Set custom ports** if needed (to avoid conflicts with other projects)
-4. **Verify docker-compose.dev.yml** matches your port configuration
-
-### Example: Multiple Projects
-
-```bash
-# Project 1: sertantai-auth (default ports)
-cd ~/projects/sertantai-auth
-sudo ln -sf $(pwd)/scripts/development/dev-start /usr/local/bin/sert-auth-start
-sudo ln -sf $(pwd)/scripts/development/dev-stop /usr/local/bin/sert-auth-stop
-
-# Project 2: sertantai-enforcement (custom ports)
-cd ~/projects/sertantai-enforcement
-export BACKEND_PORT=4002 FRONTEND_PORT=5173 DB_PORT=5434 ELECTRIC_PORT=3001
-sudo ln -sf $(pwd)/scripts/development/dev-start /usr/local/bin/sert-enf-start
-sudo ln -sf $(pwd)/scripts/development/dev-stop /usr/local/bin/sert-enf-stop
-```
-
-## Features
-
-- ✅ Auto-detects project name from directory
-- ✅ Verifies Docker services are running (starts if needed)
-- ✅ Checks for already-running servers (prevents conflicts)
-- ✅ Named terminal windows for easy identification
-- ✅ Auto-closes backend/frontend windows on stop
-- ✅ Console window stays open for reference
-- ✅ Works from symlinks (resolves actual script location)
-- ✅ Configurable ports via environment variables
+The hub service is the microservices orchestrator. It is **not required** for local development of sertantai-legal. The hub mediates which services a user can access via JWT `services` claims, but for development this can be skipped or mocked.
 
 ## Prerequisites
 
 - **gnome-terminal** (Ubuntu default)
-- **Docker** + **docker-compose**
-- **Phoenix/Ash** backend in project root
-- **SvelteKit** frontend in `frontend/` subdirectory
+- **Docker** + **docker compose**
+- **Elixir/Phoenix** backend in `backend/`
+- **SvelteKit** frontend in `frontend/`
+- **sertantai_auth** at `~/Desktop/sertantai_auth` (for `--auth` flag)
 
 ## Troubleshooting
 
-### Frontend shows "vite: not found"
+### sertantai-auth won't start
+- Check if port 4000 is already in use: `lsof -ti:4000`
+- Verify auth project exists: `ls ~/Desktop/sertantai_auth/mix.exs`
+- Check auth database: `docker ps | grep sertantai_auth`
 
-Install dependencies first:
+### Frontend shows "vite: not found"
 ```bash
-cd frontend
-npm install
+cd frontend && npm install
 ```
 
-### Only one terminal window opens
-
-Check gnome-terminal version. Scripts use separate windows for compatibility.
-
 ### Ports already in use
-
-Either stop conflicting services or set custom ports:
 ```bash
-export BACKEND_PORT=4003 FRONTEND_PORT=5174
-./scripts/development/dev-start
+# Check what's using a port
+lsof -ti:4003
+lsof -ti:5175
+
+# Force stop everything
+sert-legal-stop --docker --auth
 ```
 
 ### Docker services not starting
-
 Manually start Docker services:
 ```bash
-docker compose -f docker-compose.dev.yml up -d postgres electric redis
+docker compose -f docker-compose.dev.yml up -d postgres
+docker compose -f docker-compose.dev.yml up -d --no-deps electric
 ```
-
-## How It Works
-
-**dev-start:**
-1. Resolves symlink to find actual project location
-2. Auto-detects project name from directory
-3. Validates project structure (mix.exs, frontend/)
-4. Checks for running servers
-5. Starts Docker services if needed
-6. Opens 3 terminal windows with appropriate commands
-
-**dev-stop:**
-1. Kills Phoenix processes (`mix phx.server`)
-2. Kills Vite processes on configured port
-3. Terminal windows auto-close (except console)
-
-## Customization
-
-Edit the scripts directly to customize:
-- Docker service names
-- Additional checks or validations
-- Terminal window layout
-- Console information displayed
-
-The scripts are designed to be simple and hackable!

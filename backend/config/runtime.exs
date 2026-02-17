@@ -21,9 +21,12 @@ if System.get_env("PHX_SERVER") do
 end
 
 # Shared token secret for JWT validation from sertantai-auth
+# In dev, this is set in config/dev.exs; env var overrides if present
 if config_env() != :test do
-  config :sertantai_legal,
-    shared_token_secret: System.get_env("SHARED_TOKEN_SECRET")
+  if secret = System.get_env("SHARED_TOKEN_SECRET") do
+    config :sertantai_legal,
+      shared_token_secret: secret
+  end
 end
 
 if config_env() == :prod do

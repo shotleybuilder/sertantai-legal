@@ -3,11 +3,12 @@
 # Forcefully stops and restarts backend (Phoenix) and frontend (SvelteKit) servers
 #
 # Usage:
-#   sert-legal-restart           # Restart all servers
-#   sert-legal-restart --frontend # Restart only frontend (port 5174)
-#   sert-legal-restart --backend  # Restart only backend (port 4000)
-#   sert-legal-restart --docker   # Restart servers + Docker containers
-#   sert-legal-restart --force    # Force kill immediately (skip graceful shutdown)
+#   sert-legal-restart              # Restart all servers
+#   sert-legal-restart --frontend   # Restart only frontend (port 5175)
+#   sert-legal-restart --backend    # Restart only backend (port 4003)
+#   sert-legal-restart --docker     # Restart servers + Docker containers
+#   sert-legal-restart --auth       # Also manage sertantai-auth service
+#   sert-legal-restart --force      # Force kill immediately (skip graceful shutdown)
 #
 # Symlink Setup (to run from anywhere):
 #   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-restart /usr/local/bin/sert-legal-restart
@@ -16,6 +17,7 @@ set -e
 
 # Parse arguments
 MANAGE_DOCKER=false
+MANAGE_AUTH=false
 FORCE_KILL=false
 FRONTEND_ONLY=false
 BACKEND_ONLY=false
@@ -23,6 +25,9 @@ for arg in "$@"; do
     case $arg in
         --docker)
             MANAGE_DOCKER=true
+            ;;
+        --auth)
+            MANAGE_AUTH=true
             ;;
         --force)
             FORCE_KILL=true
@@ -39,6 +44,10 @@ done
 # Resolve symlink to get the actual script path
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+# sertantai-auth project location
+AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai_auth"
+AUTH_PORT=4000
 
 if [ "$FRONTEND_ONLY" = true ]; then
     echo "Restarting frontend only..."
@@ -118,6 +127,11 @@ wait_for_port_free() {
     fi
 }
 
+# Function to check auth health
+check_auth_running() {
+    curl -s -o /dev/null -w "%{http_code}" "http://localhost:$AUTH_PORT/health" 2>/dev/null | grep -q "200"
+}
+
 # Stop existing processes
 echo "Step 1: Stopping existing processes"
 echo "------------------------------------"
@@ -136,12 +150,12 @@ fi
 
 if [ "$BACKEND_ONLY" = false ]; then
     # Kill SvelteKit frontend
-    kill_process_safely "vite.*5174" "SvelteKit frontend"
+    kill_process_safely "vite.*5175" "SvelteKit frontend"
 
-    # Kill any node processes on port 5174
-    if lsof -ti:5174 >/dev/null 2>&1; then
-        echo "Killing remaining processes on port 5174..."
-        lsof -ti:5174 | xargs kill -9 2>/dev/null || true
+    # Kill any node processes on port 5175
+    if lsof -ti:5175 >/dev/null 2>&1; then
+        echo "Killing remaining processes on port 5175..."
+        lsof -ti:5175 | xargs kill -9 2>/dev/null || true
     fi
 fi
 
@@ -152,19 +166,19 @@ echo "Step 2: Ensuring ports are available"
 echo "-------------------------------------"
 
 if [ "$FRONTEND_ONLY" = false ]; then
-    wait_for_port_free 4000  # Phoenix backend
+    wait_for_port_free 4003  # Phoenix backend
 fi
 
 if [ "$BACKEND_ONLY" = false ]; then
-    wait_for_port_free 5174  # SvelteKit frontend
+    wait_for_port_free 5175  # SvelteKit frontend
 fi
 
 if [ "$FRONTEND_ONLY" = true ]; then
-    echo "   Port 5174 is free"
+    echo "   Port 5175 is free"
 elif [ "$BACKEND_ONLY" = true ]; then
-    echo "   Port 4000 is free"
+    echo "   Port 4003 is free"
 else
-    echo "   Ports 4000 and 5174 are free"
+    echo "   Ports 4003 and 5175 are free"
 fi
 echo ""
 
@@ -183,11 +197,54 @@ if [ "$MANAGE_DOCKER" = true ]; then
     echo "   Waiting for services to be healthy..."
     sleep 5
 
+    docker compose -f docker-compose.dev.yml up -d --no-deps electric
+
     # Verify Docker services are up
     if docker ps | grep -q "sertantai-legal-postgres"; then
         echo "   Docker services running"
     else
         echo "   Warning: Docker services may not be fully ready"
+    fi
+    echo ""
+fi
+
+# ============================================================================
+# Handle sertantai-auth if requested
+# ============================================================================
+if [ "$MANAGE_AUTH" = true ]; then
+    echo "Checking sertantai-auth service..."
+
+    if [ ! -d "$AUTH_PROJECT_ROOT" ]; then
+        echo "   Warning: sertantai-auth project not found at $AUTH_PROJECT_ROOT"
+    elif check_auth_running; then
+        echo "   sertantai-auth already running on port $AUTH_PORT"
+    else
+        echo "   sertantai-auth not running, starting it..."
+
+        # Check/start auth postgres container
+        if ! docker ps --format '{{.Names}}' | grep -q "sertantai-auth.*postgres\|sertantai_auth.*postgres"; then
+            echo "   Starting sertantai-auth PostgreSQL..."
+            cd "$AUTH_PROJECT_ROOT"
+            docker compose -f docker-compose.dev.yml up -d postgres
+            sleep 3
+            cd "$PROJECT_ROOT"
+        fi
+
+        # Start auth Phoenix server
+        gnome-terminal --tab --title="sertantai-auth-backend" --working-directory="$AUTH_PROJECT_ROOT" -- bash -c "echo 'Starting sertantai-auth on port $AUTH_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+
+        echo -n "   Waiting for sertantai-auth..."
+        for i in $(seq 1 30); do
+            if check_auth_running; then
+                echo " ready"
+                break
+            fi
+            if [ "$i" -eq 30 ]; then
+                echo " timeout (may still be starting)"
+            fi
+            sleep 1
+            echo -n "."
+        done
     fi
     echo ""
 fi
@@ -224,7 +281,7 @@ if [ "$FRONTEND_ONLY" = true ]; then
 PROJECT_ROOT="__PROJECT_ROOT__"
 
 # Open SvelteKit frontend tab
-gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5174..."; echo "Working directory: $(pwd)"; echo ""; npm run dev -- --port 5174; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5175..."; echo "Working directory: $(pwd)"; echo ""; npm run dev; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
 
 wait
 LAUNCHER_EOF
@@ -236,7 +293,7 @@ elif [ "$BACKEND_ONLY" = true ]; then
 PROJECT_ROOT="__PROJECT_ROOT__"
 
 # Open Phoenix backend tab
-gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4000..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4003..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
 
 wait
 LAUNCHER_EOF
@@ -248,11 +305,11 @@ else
 PROJECT_ROOT="__PROJECT_ROOT__"
 
 # Open Phoenix backend tab
-gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4000..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4003..."; echo "Working directory: $(pwd)"; echo ""; unset DATABASE_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
 sleep 0.3
 
 # Open SvelteKit frontend tab
-gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5174..."; echo "Working directory: $(pwd)"; echo ""; npm run dev -- --port 5174; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5175..."; echo "Working directory: $(pwd)"; echo ""; npm run dev; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
 
 wait
 LAUNCHER_EOF
@@ -270,18 +327,22 @@ if [ "$FRONTEND_ONLY" = true ]; then
     echo "Frontend restarted successfully!"
     echo ""
     echo "URL:"
-    echo "   Frontend: http://localhost:5174  (svelte)"
+    echo "   Frontend: http://localhost:5175  (svelte)"
 elif [ "$BACKEND_ONLY" = true ]; then
     echo "Backend restarted successfully!"
     echo ""
     echo "URL:"
-    echo "   Backend:  http://localhost:4000  (phoenix)"
+    echo "   Backend:  http://localhost:4003  (phoenix)"
 else
     echo "Development servers restarted successfully!"
     echo ""
     echo "URLs:"
-    echo "   Backend:  http://localhost:4000  (phoenix)"
-    echo "   Frontend: http://localhost:5174  (svelte)"
+    echo "   Backend:  http://localhost:4003  (phoenix)"
+    echo "   Frontend: http://localhost:5175  (svelte)"
+    echo "   Electric: http://localhost:3002  (sync)"
+    if [ "$MANAGE_AUTH" = true ] || check_auth_running 2>/dev/null; then
+        echo "   Auth:     http://localhost:$AUTH_PORT  (sertantai-auth)"
+    fi
 fi
 echo ""
 echo "Tips:"
@@ -290,6 +351,7 @@ echo "   Restart all:       sert-legal-restart"
 echo "   Restart frontend:  sert-legal-restart --frontend"
 echo "   Restart backend:   sert-legal-restart --backend"
 echo "   Force restart:     sert-legal-restart --force"
+echo "   With auth:         sert-legal-restart --auth"
 if [ "$MANAGE_DOCKER" = true ]; then
     echo "   (Docker was restarted)"
 elif [ "$FRONTEND_ONLY" = false ] && [ "$BACKEND_ONLY" = false ]; then

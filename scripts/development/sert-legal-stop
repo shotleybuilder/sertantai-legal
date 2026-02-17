@@ -3,8 +3,10 @@
 # Stops backend (Phoenix) and frontend (SvelteKit) servers
 #
 # Usage:
-#   sert-legal-stop          # Stop servers only (leave Docker running)
-#   sert-legal-stop --docker # Stop servers + Docker containers
+#   sert-legal-stop                # Stop servers only (leave Docker running)
+#   sert-legal-stop --docker       # Stop servers + Docker containers
+#   sert-legal-stop --auth         # Also stop sertantai-auth server
+#   sert-legal-stop --docker --auth # Stop everything including auth Docker
 #
 # Symlink Setup (to run from anywhere):
 #   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-stop /usr/local/bin/sert-legal-stop
@@ -13,13 +15,25 @@ set -e
 
 # Parse arguments
 MANAGE_DOCKER=false
-if [[ "$1" == "--docker" ]]; then
-    MANAGE_DOCKER=true
-fi
+MANAGE_AUTH=false
+for arg in "$@"; do
+    case $arg in
+        --docker)
+            MANAGE_DOCKER=true
+            ;;
+        --auth)
+            MANAGE_AUTH=true
+            ;;
+    esac
+done
 
 # Resolve symlink to get the actual script path
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+# sertantai-auth project location
+AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai_auth"
+AUTH_PORT=4000
 
 echo "Stopping sertantai-legal development servers..."
 
@@ -50,9 +64,6 @@ if pgrep -f "beam.smp.*sertantai_legal" > /dev/null; then
     echo "   BEAM processes cleaned up"
 fi
 
-# Note: Terminal tabs are left open intentionally
-# The services have been stopped but you can review logs or reuse the terminals
-
 # Stop Docker services if requested
 if [ "$MANAGE_DOCKER" = true ]; then
     echo ""
@@ -60,6 +71,38 @@ if [ "$MANAGE_DOCKER" = true ]; then
     cd "$PROJECT_ROOT"
     docker compose -f docker-compose.dev.yml stop
     echo "   Docker containers stopped"
+fi
+
+# ============================================================================
+# Stop sertantai-auth if requested
+# ============================================================================
+if [ "$MANAGE_AUTH" = true ]; then
+    echo ""
+    echo "Stopping sertantai-auth..."
+
+    # Kill auth Phoenix processes (port 4000)
+    if lsof -ti:$AUTH_PORT >/dev/null 2>&1; then
+        echo "   Killing sertantai-auth processes (port $AUTH_PORT)..."
+        lsof -ti:$AUTH_PORT | xargs kill -9 2>/dev/null || true
+        sleep 0.5
+        echo "   sertantai-auth processes killed"
+    else
+        echo "   sertantai-auth not running (port $AUTH_PORT not in use)"
+    fi
+
+    # Clean up auth BEAM processes
+    if pgrep -f "beam.smp.*sertantai_auth" > /dev/null; then
+        pkill -9 -f "beam.smp.*sertantai_auth" || true
+        echo "   sertantai-auth BEAM processes cleaned up"
+    fi
+
+    # Stop auth Docker if --docker also specified
+    if [ "$MANAGE_DOCKER" = true ] && [ -d "$AUTH_PROJECT_ROOT" ]; then
+        echo "   Stopping sertantai-auth Docker containers..."
+        cd "$AUTH_PROJECT_ROOT"
+        docker compose -f docker-compose.dev.yml stop
+        echo "   sertantai-auth Docker containers stopped"
+    fi
 fi
 
 echo ""
@@ -70,5 +113,8 @@ if [ "$MANAGE_DOCKER" = true ]; then
 else
     echo "To start again: sert-legal-start"
     echo "Tip: Docker containers are still running. Use 'sert-legal-stop --docker' to stop them."
+fi
+if [ "$MANAGE_AUTH" = true ]; then
+    echo "Tip: sertantai-auth was also stopped. Use '--auth' with start to restart it."
 fi
 echo ""
