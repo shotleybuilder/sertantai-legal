@@ -74,4 +74,5 @@ config :phoenix, :plug_init_mode, :runtime
 # Shared token secret for JWT validation — must match sertantai-auth's
 # :token_signing_secret in its config/dev.exs
 config :sertantai_legal,
-  shared_token_secret: "dev_secret_key_for_jwt_signing_please_change_in_production"
+  shared_token_secret: "dev_secret_key_for_jwt_signing_please_change_in_production",
+  electric_url: "http://localhost:3002"

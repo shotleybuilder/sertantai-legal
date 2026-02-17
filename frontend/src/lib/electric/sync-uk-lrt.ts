@@ -22,10 +22,10 @@ import { writable, get } from 'svelte/store';
 const UK_LRT_SHAPE_KEY = 'uk-lrt-shape';
 
 /**
- * Electric service configuration
+ * Electric service configuration — goes through Phoenix backend proxy (Guardian pattern)
  */
-const ELECTRIC_URL =
-	import.meta.env.VITE_ELECTRIC_URL || import.meta.env.PUBLIC_ELECTRIC_URL || '/electric';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
+const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
 
 /**
  * Columns to sync from uk_lrt table.

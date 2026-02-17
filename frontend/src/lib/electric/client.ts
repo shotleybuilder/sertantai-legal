@@ -4,10 +4,10 @@
  * Provides the base URL and utilities for connecting to the Electric sync service.
  */
 
-// Electric sync service URL - uses environment variable or defaults to relative path
-// Relative /electric path works in both prod (nginx proxy) and dev (vite proxy)
-export const ELECTRIC_URL =
-	import.meta.env.VITE_ELECTRIC_URL || import.meta.env.PUBLIC_ELECTRIC_URL || '/electric';
+// Electric sync service URL — goes through Phoenix backend proxy (Guardian pattern)
+// Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
+export const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
 
 // Re-export for convenience
 export { ELECTRIC_URL as electricUrl };

@@ -29,6 +29,18 @@ if config_env() != :test do
   end
 end
 
+# ElectricSQL upstream URL — env var overrides config files
+if electric_url = System.get_env("ELECTRIC_URL") do
+  config :sertantai_legal,
+    electric_url: electric_url
+end
+
+# ElectricSQL secret — required in production (ELECTRIC_INSECURE=true bypasses in dev)
+if electric_secret = System.get_env("ELECTRIC_SECRET") do
+  config :sertantai_legal,
+    electric_secret: electric_secret
+end
+
 if config_env() == :prod do
   # Production uses DATABASE_URL (standard for most hosting platforms)
   database_url =
