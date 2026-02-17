@@ -116,12 +116,23 @@ Registration auto-creates an Organization and assigns the user as `owner`.
 - [x] Controller tests updated: scrape + cascade use auth in setup, UK LRT writes add auth, 401 tests added
 - [x] All 751 tests pass, dialyzer clean
 
-### Phase 3: Electric Auth Proxy (#20)
-- [ ] Electric proxy controller (`GET /api/electric/v1/shape`)
-- [ ] Proxy validates JWT before forwarding to Electric
-- [ ] Proxy appends `?secret=ELECTRIC_SECRET` to upstream Electric requests
-- [ ] Frontend ELECTRIC_URL updated to `/api/electric`
-- [ ] Remove nginx `/electric/` proxy location in production
+### Phase 3: Electric Auth Proxy (#20) — COMPLETE
+- [x] Electric proxy controller (`ElectricProxyController`) — Guardian pattern
+  - `GET /api/electric/v1/shape` — resolves shape, forwards to Electric
+  - `DELETE /api/electric/v1/shape` — shape recovery for broken offsets
+  - Server-side shape resolution: only allowed tables (uk_lrt, organization_locations, location_screenings)
+  - Org-scoped tables get mandatory `WHERE organization_id = <jwt.org_id>` filter
+  - UK LRT is public reference data — no auth required (matches REST endpoints)
+  - Passthrough params: offset, handle, live, cursor, replica
+- [x] Proxy appends `?secret=ELECTRIC_SECRET` when configured (production)
+  - `electric_url` in dev.exs/test.exs, `ELECTRIC_URL` env var override
+  - `electric_secret` via `ELECTRIC_SECRET` env var (production only)
+- [x] Frontend ELECTRIC_URL updated to point through Phoenix proxy
+  - `index.client.ts`, `sync-uk-lrt.ts`, `client.ts` all use `API_URL/api/electric`
+  - Removed Vite `/electric` proxy (no longer needed)
+- [x] 18 new tests: shape resolution, param forwarding, header forwarding, secret handling, upstream errors
+- [x] All 769 tests pass, dialyzer clean, TypeScript clean
+- [ ] Remove nginx `/electric/` proxy location in production (deferred to Phase 6)
 
 ### Phase 4: Frontend Auth Integration
 - [ ] Auth store/context for JWT management in SvelteKit
