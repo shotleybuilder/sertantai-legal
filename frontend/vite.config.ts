@@ -6,7 +6,7 @@ export default defineConfig({
 	server: {
 		host: '0.0.0.0',
 		port: 5175
-		// Note: Electric requests now go through Phoenix backend proxy (Guardian pattern)
+		// Note: Electric requests now go through Phoenix backend proxy (Gatekeeper pattern)
 		// at http://localhost:4003/api/electric — no Vite proxy needed
 	},
 	ssr: {

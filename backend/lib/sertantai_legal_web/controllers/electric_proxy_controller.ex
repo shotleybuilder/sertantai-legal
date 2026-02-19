@@ -1,9 +1,12 @@
 defmodule SertantaiLegalWeb.ElectricProxyController do
   @moduledoc """
-  Guardian-pattern proxy for ElectricSQL shape requests.
+  Gatekeeper-pattern proxy for ElectricSQL shape requests.
 
-  Validates JWT before forwarding requests to the Electric sync service.
-  Server-side shape definitions prevent clients from accessing arbitrary tables.
+  Public reference data (UK LRT) is served directly without authentication.
+  Org-scoped tables (organization_locations, location_screenings) are validated
+  by sertantai-auth's Gatekeeper endpoint, which checks role-based access and
+  injects organization_id WHERE clauses.
+
   The Electric secret is appended server-side so it never reaches the client.
 
   See: https://electric-sql.com/docs/guides/auth
@@ -15,35 +18,31 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   # Client-safe params that pass through to Electric unchanged
   @passthrough_params ~w(offset handle live cursor replica)
 
+  # Tables allowed for shape recovery (DELETE). Kept as a simple static list
+  # since DELETE doesn't need full Gatekeeper validation.
+  @allowed_tables ~w(uk_lrt organization_locations location_screenings)
+
+  # Public reference tables that don't require authentication
+  @public_tables ~w(uk_lrt)
+
   @doc """
   Proxy GET /api/electric/v1/shape to Electric's HTTP API.
 
-  The JWT has already been validated by AuthPlug in the router pipeline.
-  This controller resolves the requested shape, builds server-side params
-  (table, where, columns), and forwards to Electric with the secret appended.
+  Public tables (UK LRT) are forwarded directly. Org-scoped tables are validated
+  via sertantai-auth's Gatekeeper, which checks role access and org scoping.
   """
   def shape(conn, params) do
-    with {:ok, shape_def} <- resolve_shape(params, conn.assigns) do
-      electric_url = Application.get_env(:sertantai_legal, :electric_url)
+    table = params["table"]
 
-      unless electric_url do
-        raise "electric_url not configured"
-      end
+    cond do
+      table in @public_tables ->
+        forward_public_shape(conn, params)
 
-      query_params =
-        shape_def
-        |> Map.merge(passthrough_params(params))
-        |> maybe_add_secret()
-        |> URI.encode_query()
+      is_binary(table) ->
+        forward_gatekeeper_shape(conn, params)
 
-      upstream_url = "#{electric_url}/v1/shape?#{query_params}"
-
-      stream_from_electric(conn, upstream_url)
-    else
-      {:error, :unknown_shape} ->
-        conn
-        |> put_status(400)
-        |> json(%{error: "Unknown or disallowed shape"})
+      true ->
+        conn |> put_status(400) |> json(%{error: "Missing or invalid table parameter"})
     end
   end
 
@@ -51,10 +50,12 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   Proxy DELETE /api/electric/v1/shape for shape recovery.
 
   Used by the frontend to delete broken shapes after Electric restarts.
-  Only allows deletion of shapes the user has access to.
+  Uses a simple static allowlist — no Gatekeeper needed for DELETE.
   """
   def delete_shape(conn, params) do
-    with {:ok, shape_def} <- resolve_shape(params, conn.assigns) do
+    table = params["table"]
+
+    if table in @allowed_tables do
       electric_url = Application.get_env(:sertantai_legal, :electric_url)
 
       unless electric_url do
@@ -62,7 +63,7 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
       end
 
       query_params =
-        %{"table" => shape_def["table"]}
+        %{"table" => table}
         |> maybe_add_secret()
         |> URI.encode_query()
 
@@ -81,85 +82,150 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
           send_resp(conn, 502, "")
       end
     else
-      {:error, :unknown_shape} ->
-        conn
-        |> put_status(400)
-        |> json(%{error: "Unknown or disallowed shape"})
+      conn |> put_status(400) |> json(%{error: "Unknown or disallowed shape"})
     end
   end
 
-  # --- Shape Resolution ---
+  # --- Public shapes (no auth required) ---
 
-  # Resolves the requested shape name to server-side params.
-  # This is the core of the Guardian pattern — the server defines
-  # which shapes exist and what params they use.
-  defp resolve_shape(params, assigns) do
-    table = params["table"]
+  defp forward_public_shape(conn, params) do
+    electric_url = Application.get_env(:sertantai_legal, :electric_url)
 
-    case table do
-      "uk_lrt" ->
-        {:ok, uk_lrt_shape(params)}
+    unless electric_url do
+      raise "electric_url not configured"
+    end
 
-      "organization_locations" ->
-        case assigns[:organization_id] do
-          nil -> {:error, :unknown_shape}
-          org_id -> {:ok, org_scoped_shape("organization_locations", org_id, params)}
-        end
+    shape_params = %{"table" => params["table"]}
 
-      "location_screenings" ->
-        case assigns[:organization_id] do
-          nil -> {:error, :unknown_shape}
-          org_id -> {:ok, org_scoped_shape("location_screenings", org_id, params)}
+    shape_params =
+      case params["where"] do
+        where when is_binary(where) and where != "" -> Map.put(shape_params, "where", where)
+        _ -> shape_params
+      end
+
+    shape_params =
+      case params["columns"] do
+        cols when is_binary(cols) and cols != "" -> Map.put(shape_params, "columns", cols)
+        _ -> shape_params
+      end
+
+    query_params =
+      shape_params
+      |> Map.merge(passthrough_params(params))
+      |> maybe_add_secret()
+      |> URI.encode_query()
+
+    upstream_url = "#{electric_url}/v1/shape?#{query_params}"
+    stream_from_electric(conn, upstream_url)
+  end
+
+  # --- Gatekeeper-validated shapes (auth required) ---
+
+  defp forward_gatekeeper_shape(conn, params) do
+    auth_header = Plug.Conn.get_req_header(conn, "authorization")
+
+    case auth_header do
+      [bearer | _] when is_binary(bearer) ->
+        case validate_with_gatekeeper(params, bearer) do
+          {:ok, validated_shape} ->
+            forward_validated_shape(conn, validated_shape, params)
+
+          {:error, status, body} ->
+            conn |> put_status(status) |> json(body)
         end
 
       _ ->
-        {:error, :unknown_shape}
+        conn |> put_status(401) |> json(%{error: "Authentication required"})
     end
   end
 
-  # UK LRT is public reference data — no org_id filter needed.
-  # Client can specify WHERE and columns (validated against allowed set).
-  defp uk_lrt_shape(params) do
-    shape = %{"table" => "uk_lrt"}
+  defp validate_with_gatekeeper(params, auth_header) do
+    auth_url = Application.get_env(:sertantai_legal, :auth_url)
 
-    shape =
+    unless auth_url do
+      raise "auth_url not configured"
+    end
+
+    shape_body = %{"table" => params["table"]}
+
+    shape_body =
       case params["where"] do
-        nil -> shape
-        where when is_binary(where) -> Map.put(shape, "where", where)
-        _ -> shape
+        where when is_binary(where) and where != "" -> Map.put(shape_body, "where", where)
+        _ -> shape_body
       end
 
-    case params["columns"] do
-      nil -> shape
-      columns when is_binary(columns) -> Map.put(shape, "columns", columns)
-      _ -> shape
-    end
-  end
-
-  # Org-scoped tables always filter by organization_id from JWT.
-  defp org_scoped_shape(table, org_id, params) do
-    # Build WHERE clause with mandatory org_id filter
-    base_where = "\"organization_id\" = '#{org_id}'"
-
-    where =
-      case params["where"] do
-        nil ->
-          base_where
-
-        extra when is_binary(extra) ->
-          "(#{base_where}) AND (#{extra})"
+    shape_body =
+      case params["columns"] do
+        cols when is_binary(cols) and cols != "" ->
+          Map.put(shape_body, "columns", String.split(cols, ",", trim: true))
 
         _ ->
-          base_where
+          shape_body
       end
 
-    shape = %{"table" => table, "where" => where}
+    gatekeeper_url = "#{auth_url}/api/gatekeeper"
 
-    case params["columns"] do
-      nil -> shape
-      columns when is_binary(columns) -> Map.put(shape, "columns", columns)
-      _ -> shape
+    case Req.post(gatekeeper_url,
+           json: %{"shape" => shape_body},
+           headers: [{"authorization", auth_header}],
+           receive_timeout: 10_000,
+           retry: false,
+           plug: gatekeeper_plug()
+         ) do
+      {:ok, %Req.Response{status: 200, body: %{"status" => "success", "shape" => shape}}} ->
+        {:ok, shape}
+
+      {:ok, %Req.Response{status: status, body: %{"reason" => reason, "message" => message}}}
+      when status in [400, 403, 422] ->
+        {:error, status, %{error: message, reason: reason}}
+
+      {:ok, %Req.Response{status: 401}} ->
+        {:error, 401, %{error: "Authentication required"}}
+
+      {:ok, %Req.Response{status: status, body: body}} ->
+        Logger.warning("Gatekeeper returned unexpected #{status}: #{inspect(body)}")
+        {:error, 502, %{error: "Auth service error"}}
+
+      {:error, %Req.TransportError{reason: :econnrefused}} ->
+        Logger.error("Auth service unavailable (connection refused)")
+        {:error, 502, %{error: "Auth service unavailable"}}
+
+      {:error, reason} ->
+        Logger.error("Gatekeeper request failed: #{inspect(reason)}")
+        {:error, 502, %{error: "Auth service unavailable"}}
     end
+  end
+
+  defp forward_validated_shape(conn, validated_shape, params) do
+    electric_url = Application.get_env(:sertantai_legal, :electric_url)
+
+    unless electric_url do
+      raise "electric_url not configured"
+    end
+
+    # Use table and where from Gatekeeper response (org-scoped WHERE injected by auth)
+    shape_params = %{"table" => validated_shape["table"]}
+
+    shape_params =
+      case validated_shape["where"] do
+        where when is_binary(where) and where != "" -> Map.put(shape_params, "where", where)
+        _ -> shape_params
+      end
+
+    shape_params =
+      case validated_shape["columns"] do
+        cols when is_binary(cols) and cols != "" -> Map.put(shape_params, "columns", cols)
+        _ -> shape_params
+      end
+
+    query_params =
+      shape_params
+      |> Map.merge(passthrough_params(params))
+      |> maybe_add_secret()
+      |> URI.encode_query()
+
+    upstream_url = "#{electric_url}/v1/shape?#{query_params}"
+    stream_from_electric(conn, upstream_url)
   end
 
   # --- Helpers ---
@@ -180,7 +246,16 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     end
   end
 
-  # Build Req options, using plug adapter in test environment
+  # Returns Req plug option for Gatekeeper calls (test mocking)
+  defp gatekeeper_plug do
+    if Application.get_env(:sertantai_legal, :test_mode, false) do
+      {Req.Test, SertantaiLegalWeb.GatekeeperClient}
+    else
+      nil
+    end
+  end
+
+  # Build Req options for Electric calls, using plug adapter in test environment
   defp req_options(extra_opts \\ []) do
     base_opts = [receive_timeout: 60_000, retry: false] ++ extra_opts
 
@@ -192,8 +267,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   end
 
   # Forward the response from Electric back to the client.
-  # Electric uses long-polling for live mode — each request returns a complete
-  # response, so we buffer and forward rather than streaming.
   defp stream_from_electric(conn, upstream_url) do
     case Req.get(upstream_url, req_options()) do
       {:ok, %Req.Response{status: status, body: body} = resp} when status in 200..299 ->
@@ -203,7 +276,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
         |> send_resp(status, ensure_binary(body))
 
       {:ok, %Req.Response{status: status, body: body}} ->
-        # Forward error responses from Electric (400, 409, etc.)
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(status, ensure_binary(body))
@@ -229,9 +301,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     end
   end
 
-  # Forward relevant Electric headers to the client
-  # (e.g., electric-handle, electric-offset, electric-schema, electric-chunk-last-offset)
-  # Req headers are %{"key" => ["value1", ...]}
   defp forward_electric_headers(conn, %Req.Response{headers: headers}) do
     Enum.reduce(headers, conn, fn {key, values}, conn ->
       if String.starts_with?(key, "electric-") or key in ~w(cache-control etag x-request-id) do

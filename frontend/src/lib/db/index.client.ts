@@ -23,7 +23,7 @@ export type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 // Type that satisfies Electric's Row constraint (requires index signature)
 type ElectricUkLrtRecord = UkLrtRecord & Record<string, unknown>;
 
-// Electric service configuration — goes through Phoenix backend proxy (Guardian pattern)
+// Electric service configuration — goes through Phoenix backend proxy (Gatekeeper pattern)
 // Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;

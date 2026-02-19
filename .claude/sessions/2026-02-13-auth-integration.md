@@ -116,8 +116,23 @@ Registration auto-creates an Organization and assigns the user as `owner`.
 - [x] Controller tests updated: scrape + cascade use auth in setup, UK LRT writes add auth, 401 tests added
 - [x] All 751 tests pass, dialyzer clean
 
-### Phase 3: Electric Auth Proxy (#20) — COMPLETE
-- [x] Electric proxy controller (`ElectricProxyController`) — Guardian pattern
+### Phase 3: Electric Auth — Proxy Pattern (interim) → Gatekeeper Pattern (target) (#20)
+
+**Terminology** (per [ElectricSQL auth guide](https://electric-sql.com/docs/guides/auth)):
+- **Proxy auth**: Every request goes through your backend, which validates auth and injects shape params server-side
+- **Gatekeeper auth**: Your API issues a short-lived shape-scoped JWT; client uses it with a thin validating proxy
+
+**Current state**: Proxy pattern implemented (see below). This works but puts the backend on the
+hot path for every Electric request. The target architecture is the **Gatekeeper pattern**, where
+sertantai-auth issues shape-scoped JWTs and a thin proxy (or edge function) validates them.
+See `.claude/plans/proxy-v-gatekeeper-auth.md` for the full comparison.
+
+**Migration path**: The proxy controller below will be replaced when the Gatekeeper flow is wired
+through from -auth. The frontend ELECTRIC_URL routing and backend config (electric_url, electric_secret)
+will be reused.
+
+#### Completed (Proxy pattern — interim)
+- [x] Electric proxy controller (`ElectricProxyController`) — Proxy auth pattern
   - `GET /api/electric/v1/shape` — resolves shape, forwards to Electric
   - `DELETE /api/electric/v1/shape` — shape recovery for broken offsets
   - Server-side shape resolution: only allowed tables (uk_lrt, organization_locations, location_screenings)
@@ -132,6 +147,10 @@ Registration auto-creates an Organization and assigns the user as `owner`.
   - Removed Vite `/electric` proxy (no longer needed)
 - [x] 18 new tests: shape resolution, param forwarding, header forwarding, secret handling, upstream errors
 - [x] All 769 tests pass, dialyzer clean, TypeScript clean
+
+#### TODO (Gatekeeper pattern — target)
+- [ ] Wire frontend to call -auth's `/api/gatekeeper` to obtain shape-scoped JWT
+- [ ] Replace `ElectricProxyController` shape resolution with thin JWT validation proxy
 - [ ] Remove nginx `/electric/` proxy location in production (deferred to Phase 6)
 
 ### Phase 4: Frontend Auth Integration
@@ -279,6 +298,76 @@ every shape request), but worth revisiting when org-scoped shapes are needed.
 - [ ] Production data flowing through authenticated proxy
 - [ ] Verify cross-service JWT validation in production
 
+## Separation of Concerns Audit (2026-02-17)
+
+### Overlap Between -auth and -legal
+
+| Area | -legal | -auth | Resolution |
+|------|--------|-------|------------|
+| JWT validation | `AuthPlug` (JOSE, HS256) | AshAuthentication built-in | OK — each service validates locally, no inter-service call needed |
+| Shape table whitelist | `ElectricProxyController.resolve_shape/2` | `ShapePolicies.allowed_shapes/1` | **Overlap** — auth has role-based policies, legal has hardcoded whitelist |
+| Org-scoped WHERE injection | `org_scoped_shape/3` in proxy | `ShapeValidator.validate_where/3` | **Overlap** — same logic in two places |
+| Electric secret management | `maybe_add_secret/1` appends to query | Gatekeeper signs shape-scoped JWT | Different mechanisms, same goal |
+| Tenant extraction | `conn.assigns.organization_id` (manual) | `Ash.PlugHelpers.set_tenant` (ORM-integrated) | Style difference — legal should adopt Ash tenant pattern if it uses Ash queries |
+
+### Proxy vs Gatekeeper — Decision
+
+Two Electric auth patterns exist (per [ElectricSQL auth guide](https://electric-sql.com/docs/guides/auth)):
+- **Proxy auth (legal, interim)**: Every request goes through backend, which validates auth and injects
+  shape params. Simple but puts backend on the hot path for all Electric traffic.
+- **Gatekeeper auth (auth, target)**: API issues shape-scoped JWT once; client uses it with a thin
+  validating proxy. Higher performance, edge-friendly, auth check happens once per token.
+
+See `.claude/plans/proxy-v-gatekeeper-auth.md` for full comparison.
+
+**Decision: Gatekeeper pattern wins.** It keeps shape authorization in -auth (where it belongs),
+offloads the hot path from -legal's backend, and aligns with ElectricSQL's recommendation for
+production apps. The proxy pattern in -legal is an interim step that will be replaced.
+
+### What Should Move to -auth (Future)
+
+- **Shape policies already in -auth**: The Gatekeeper decision means `ShapePolicies` in -auth is the
+  correct home for role-based shape access rules. When -enforcement and -controls need Electric shapes,
+  they call -auth's Gatekeeper — no shape whitelisting needed in each service. The overlap in -legal's
+  `ElectricProxyController` will be removed when migrating to Gatekeeper.
+
+- **JWT claim parsing**: The `"user?id=<uuid>"` sub format parsing is duplicated. A shared Elixir library
+  (`sertantai_auth_client`) could export a `parse_claims/1` helper. **Not urgent** — trivial code, but
+  worth extracting when 3+ services exist.
+
+### What Stays in -legal (Correct Placement)
+
+- **Guardian proxy itself**: Each service proxies its own Electric shapes because each service knows its
+  own tables and domain-specific WHERE clauses. The proxy lives where the domain knowledge lives.
+- **Domain-specific shape resolution**: `uk_lrt` is public, `organization_locations` needs org scoping —
+  this is legal domain logic, not auth logic.
+- **JWT validation plug**: Each service validates JWTs locally. This is standard microservice practice —
+  no auth service round-trip on every request.
+
+### Elixir Ecosystem Research (Cookies & Hub)
+
+**Keycloak is a misdirection.** Staying in the Elixir ecosystem.
+
+| Library/Tool | What It Does | Relevant? |
+|-------------|--------------|-----------|
+| AshAuthentication | Password strategy, JWT issuance, token storage | Already used by -auth. No cross-subdomain cookie support (that's Plug's job). |
+| Phoenix `Plug.Session` | Session cookies with configurable `domain` | **Key tool** — `domain: ".sertantai.com"` enables cross-subdomain cookie sharing |
+| Guardian (ueberauth) | JWT-in-session, auth pipelines | Unnecessary — we already have JWT validation via JOSE. Adds a dependency for no benefit. |
+| JOSE | JWT signing/verification | Already used by -legal's AuthPlug. Correct choice. |
+
+**Cross-subdomain cookie approach** (confirmed by Elixir community patterns):
+- Hub sets HttpOnly cookie on `.sertantai.com` domain containing the JWT
+- All services (`legal.sertantai.com`, etc.) receive the cookie automatically
+- `AuthPlug` reads JWT from cookie OR Authorization header (support both)
+- No extra libraries needed — `Plug.Session` handles cookie management
+- For shared session cookies: all services need matching `secret_key_base`, `signing_salt`, `encryption_salt`
+- For JWT-in-cookie: simpler — just set a plain cookie with JWT, each service verifies with JOSE
+
+**Dev environment**: Services run on `localhost:PORT` (no subdomains). Use Authorization header in dev,
+cookie in production. Or use `/etc/hosts` aliases with `.sertantai.local` domain.
+
+**No new libraries needed**: JOSE + Plug.Session + AshAuthentication cover everything.
+
 ## References
 
 - **Dev scripts**: `scripts/development/README.md`
@@ -293,3 +382,5 @@ every shape request), but worth revisiting when org-scoped shapes are needed.
 - **Keycloak Multi-Tenancy Options**: https://phasetwo.io/blog/multi-tenancy-options-keycloak/
 - **Microservices Auth Architecture**: https://microservices.io/post/architecture/2025/05/28/microservices-authn-authz-part-2-authentication.html
 - **Cross-subdomain Cookies**: https://fwielstra.github.io/2017/03/13/fun-with-cookies-and-subdomains/
+
+**Ended**: 2026-02-18

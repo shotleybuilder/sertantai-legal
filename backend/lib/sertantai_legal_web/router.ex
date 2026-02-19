@@ -44,7 +44,7 @@ defmodule SertantaiLegalWeb.Router do
   end
 
   # Electric proxy — public shapes (UK LRT reference data)
-  # Guardian pattern: proxy controls table/columns, adds secret server-side.
+  # Gatekeeper pattern: org-scoped shapes validated by sertantai-auth, secret added server-side.
   # UK LRT is public reference data so no JWT required (matches REST endpoints above).
   scope "/api/electric", SertantaiLegalWeb do
     pipe_through(:sse)
