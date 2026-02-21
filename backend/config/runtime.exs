@@ -20,19 +20,16 @@ if System.get_env("PHX_SERVER") do
   config :sertantai_legal, SertantaiLegalWeb.Endpoint, server: true
 end
 
-# Shared token secret for JWT validation from sertantai-auth
-# In dev, this is set in config/dev.exs; env var overrides if present
-if config_env() != :test do
-  if secret = System.get_env("SHARED_TOKEN_SECRET") do
-    config :sertantai_legal,
-      shared_token_secret: secret
-  end
-end
-
 # ElectricSQL upstream URL — env var overrides config files
 if electric_url = System.get_env("ELECTRIC_URL") do
   config :sertantai_legal,
     electric_url: electric_url
+end
+
+# Auth service URL for Gatekeeper shape validation
+if auth_url = System.get_env("AUTH_URL") do
+  config :sertantai_legal,
+    auth_url: auth_url
 end
 
 # ElectricSQL secret — required in production (ELECTRIC_INSECURE=true bypasses in dev)
@@ -87,11 +84,12 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # Require SHARED_TOKEN_SECRET in production for JWT validation
-  unless System.get_env("SHARED_TOKEN_SECRET") do
+  # Require AUTH_URL in production — JwksClient fetches the EdDSA public key from it
+  unless System.get_env("AUTH_URL") do
     raise """
-    environment variable SHARED_TOKEN_SECRET is missing.
-    This is required for validating JWTs from sertantai-auth.
+    environment variable AUTH_URL is missing.
+    This is required for fetching the JWKS public key from sertantai-auth.
+    Example: http://sertantai-auth:4001
     """
   end
 end

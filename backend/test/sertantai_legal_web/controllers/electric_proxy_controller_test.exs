@@ -5,6 +5,8 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
   import SertantaiLegal.AuthHelpers
 
+  setup :setup_auth
+
   setup do
     # Stub the Electric upstream with Req.Test
     Req.Test.stub(ElectricProxyController, fn conn ->
@@ -27,35 +29,74 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     :ok
   end
 
-  # --- Public shapes (UK LRT, no auth required) ---
+  # Helper: stub Gatekeeper to approve a table with optional where/columns
+  defp stub_gatekeeper_approve(table, opts \\ []) do
+    where = Keyword.get(opts, :where)
+    columns = Keyword.get(opts, :columns)
 
-  describe "GET /api/electric/v1/shape - public tables" do
-    test "proxies uk_lrt shape requests without auth", %{conn: conn} do
+    Req.Test.stub(SertantaiLegalWeb.GatekeeperClient, fn conn ->
+      shape =
+        %{"table" => table}
+        |> then(fn s -> if where, do: Map.put(s, "where", where), else: s end)
+        |> then(fn s -> if columns, do: Map.put(s, "columns", columns), else: s end)
+
+      conn
+      |> Plug.Conn.put_resp_content_type("application/json")
+      |> Plug.Conn.send_resp(
+        200,
+        Jason.encode!(%{
+          status: "success",
+          token: "shape-token",
+          proxy_url: "http://electric:3000",
+          expires_at: System.system_time(:second) + 3600,
+          shape: shape
+        })
+      )
+    end)
+  end
+
+  # --- All shapes require Gatekeeper validation ---
+
+  describe "GET /api/electric/v1/shape - uk_lrt (via Gatekeeper)" do
+    test "returns 401 without auth", %{conn: conn} do
       conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+
+      assert json_response(conn, 401)["error"] == "Authentication required"
+    end
+
+    test "proxies uk_lrt when Gatekeeper approves", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["table"] == "uk_lrt"
     end
 
-    test "forwards where clause for uk_lrt", %{conn: conn} do
+    test "forwards where clause from Gatekeeper response", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt", where: "year >= 2024")
+
       conn =
-        get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
-          "where" => "year >= 2024"
-        })
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["params"]["where"] == "year >= 2024"
     end
 
-    test "forwards columns for uk_lrt", %{conn: conn} do
+    test "forwards columns from Gatekeeper response", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt", columns: "id,name,year")
+
       conn =
-        get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
-          "columns" => "id,name,year"
-        })
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
@@ -63,8 +104,12 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end
 
     test "forwards passthrough params (offset, handle, live, cursor, replica)", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
       conn =
-        get(conn, "/api/electric/v1/shape", %{
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{
           "table" => "uk_lrt",
           "offset" => "0_5",
           "handle" => "some-handle",
@@ -83,7 +128,12 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end
 
     test "forwards electric headers to client", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       assert get_resp_header(conn, "electric-handle") == ["test-handle-123"]
@@ -92,13 +142,18 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end
 
     test "does not forward non-electric headers", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert get_resp_header(conn, "x-custom-header") == []
     end
   end
 
-  # --- Gatekeeper-validated shapes (org-scoped, auth required) ---
+  # --- Org-scoped shapes ---
 
   describe "GET /api/electric/v1/shape - org-scoped tables" do
     test "returns 401 when no auth header for org-scoped table", %{conn: conn} do
@@ -115,24 +170,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
     test "forwards to Electric when Gatekeeper approves", %{conn: conn} do
       org_id = default_org_id()
-
-      Req.Test.stub(SertantaiLegalWeb.GatekeeperClient, fn conn ->
-        conn
-        |> Plug.Conn.put_resp_content_type("application/json")
-        |> Plug.Conn.send_resp(
-          200,
-          Jason.encode!(%{
-            status: "success",
-            token: "shape-token",
-            proxy_url: "http://electric:3000",
-            expires_at: System.system_time(:second) + 3600,
-            shape: %{
-              table: "organization_locations",
-              where: "organization_id = '#{org_id}'"
-            }
-          })
-        )
-      end)
+      stub_gatekeeper_approve("organization_locations", where: "organization_id = '#{org_id}'")
 
       conn =
         conn
@@ -142,30 +180,12 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["table"] == "organization_locations"
-      # Verify the org-scoped WHERE was used (from Gatekeeper response)
       assert body["params"]["where"] == "organization_id = '#{org_id}'"
     end
 
     test "forwards passthrough params for org-scoped shapes", %{conn: conn} do
       org_id = default_org_id()
-
-      Req.Test.stub(SertantaiLegalWeb.GatekeeperClient, fn conn ->
-        conn
-        |> Plug.Conn.put_resp_content_type("application/json")
-        |> Plug.Conn.send_resp(
-          200,
-          Jason.encode!(%{
-            status: "success",
-            token: "shape-token",
-            proxy_url: "http://electric:3000",
-            expires_at: System.system_time(:second) + 3600,
-            shape: %{
-              table: "organization_locations",
-              where: "organization_id = '#{org_id}'"
-            }
-          })
-        )
-      end)
+      stub_gatekeeper_approve("organization_locations", where: "organization_id = '#{org_id}'")
 
       conn =
         conn
@@ -209,7 +229,6 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
     test "returns 502 when Gatekeeper is unavailable", %{conn: conn} do
       Req.Test.stub(SertantaiLegalWeb.GatekeeperClient, fn conn ->
-        # Simulate connection refused by returning 503
         conn
         |> Plug.Conn.send_resp(503, "Service Unavailable")
       end)
@@ -227,7 +246,6 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       org_id = default_org_id()
 
       Req.Test.stub(SertantaiLegalWeb.GatekeeperClient, fn conn ->
-        # Capture the authorization header sent to Gatekeeper
         [auth_header] = Plug.Conn.get_req_header(conn, "authorization")
         send(test_pid, {:gatekeeper_auth, auth_header})
 
@@ -334,7 +352,12 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
   describe "Electric secret handling" do
     test "does not include secret when not configured", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
@@ -346,6 +369,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       try do
         Application.put_env(:sertantai_legal, :electric_secret, "test-electric-secret")
+        stub_gatekeeper_approve("uk_lrt")
 
         Req.Test.stub(ElectricProxyController, fn conn ->
           query = URI.decode_query(conn.query_string)
@@ -355,7 +379,10 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
           |> Plug.Conn.send_resp(200, Jason.encode!(%{params: query}))
         end)
 
-        conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+        conn =
+          conn
+          |> put_auth_header()
+          |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
         assert conn.status == 200
         body = Jason.decode!(conn.resp_body)
@@ -374,35 +401,50 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
   describe "Electric upstream errors" do
     test "returns error status when Electric returns 503", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
       Req.Test.stub(ElectricProxyController, fn conn ->
         Plug.Conn.send_resp(conn, 503, "Service Unavailable")
       end)
 
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 503
     end
 
     test "forwards 400 errors from Electric", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
       Req.Test.stub(ElectricProxyController, fn conn ->
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(400, Jason.encode!(%{error: "offset out of bounds"}))
       end)
 
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 400
     end
 
     test "forwards 409 errors from Electric (stale handle)", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
       Req.Test.stub(ElectricProxyController, fn conn ->
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(409, Jason.encode!(%{error: "shape handle mismatch"}))
       end)
 
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 409
     end

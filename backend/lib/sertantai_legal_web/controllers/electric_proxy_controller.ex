@@ -2,10 +2,9 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   @moduledoc """
   Gatekeeper-pattern proxy for ElectricSQL shape requests.
 
-  Public reference data (UK LRT) is served directly without authentication.
-  Org-scoped tables (organization_locations, location_screenings) are validated
-  by sertantai-auth's Gatekeeper endpoint, which checks role-based access and
-  injects organization_id WHERE clauses.
+  All shape requests are validated by sertantai-auth's Gatekeeper endpoint,
+  which checks authentication, role-based access, and injects appropriate
+  WHERE clauses (e.g. organization_id scoping for org-specific tables).
 
   The Electric secret is appended server-side so it never reaches the client.
 
@@ -22,22 +21,16 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   # since DELETE doesn't need full Gatekeeper validation.
   @allowed_tables ~w(uk_lrt organization_locations location_screenings)
 
-  # Public reference tables that don't require authentication
-  @public_tables ~w(uk_lrt)
-
   @doc """
   Proxy GET /api/electric/v1/shape to Electric's HTTP API.
 
-  Public tables (UK LRT) are forwarded directly. Org-scoped tables are validated
-  via sertantai-auth's Gatekeeper, which checks role access and org scoping.
+  All shapes are validated via sertantai-auth's Gatekeeper, which checks
+  authentication, role access, and injects org-scoped WHERE clauses.
   """
   def shape(conn, params) do
     table = params["table"]
 
     cond do
-      table in @public_tables ->
-        forward_public_shape(conn, params)
-
       is_binary(table) ->
         forward_gatekeeper_shape(conn, params)
 
@@ -84,39 +77,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     else
       conn |> put_status(400) |> json(%{error: "Unknown or disallowed shape"})
     end
-  end
-
-  # --- Public shapes (no auth required) ---
-
-  defp forward_public_shape(conn, params) do
-    electric_url = Application.get_env(:sertantai_legal, :electric_url)
-
-    unless electric_url do
-      raise "electric_url not configured"
-    end
-
-    shape_params = %{"table" => params["table"]}
-
-    shape_params =
-      case params["where"] do
-        where when is_binary(where) and where != "" -> Map.put(shape_params, "where", where)
-        _ -> shape_params
-      end
-
-    shape_params =
-      case params["columns"] do
-        cols when is_binary(cols) and cols != "" -> Map.put(shape_params, "columns", cols)
-        _ -> shape_params
-      end
-
-    query_params =
-      shape_params
-      |> Map.merge(passthrough_params(params))
-      |> maybe_add_secret()
-      |> URI.encode_query()
-
-    upstream_url = "#{electric_url}/v1/shape?#{query_params}"
-    stream_from_electric(conn, upstream_url)
   end
 
   # --- Gatekeeper-validated shapes (auth required) ---

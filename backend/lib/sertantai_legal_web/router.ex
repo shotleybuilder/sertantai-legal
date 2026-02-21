@@ -8,6 +8,7 @@ defmodule SertantaiLegalWeb.Router do
   # Authenticated API pipeline — validates JWT from sertantai-auth
   pipeline :api_authenticated do
     plug(:accepts, ["json"])
+    plug(SertantaiLegalWeb.LoadFromCookie)
     plug(SertantaiLegalWeb.AuthPlug)
   end
 
@@ -19,6 +20,7 @@ defmodule SertantaiLegalWeb.Router do
 
   # SSE with authentication
   pipeline :sse_authenticated do
+    plug(SertantaiLegalWeb.LoadFromCookie)
     plug(SertantaiLegalWeb.AuthPlug)
   end
 

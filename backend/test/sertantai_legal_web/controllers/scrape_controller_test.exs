@@ -33,6 +33,8 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
     inserted
   end
 
+  setup :setup_auth
+
   setup %{conn: conn} do
     # Clean up any test session files
     Storage.delete_session(@test_session_id)

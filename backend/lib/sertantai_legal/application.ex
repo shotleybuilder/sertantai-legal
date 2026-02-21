@@ -13,16 +13,19 @@ defmodule SertantaiLegal.Application do
       SertantaiLegal.Metrics.TelemetryHandler.attach()
     end
 
-    children = [
-      SertantaiLegalWeb.Telemetry,
-      SertantaiLegal.Repo,
-      {DNSCluster, query: Application.get_env(:sertantai_legal, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: SertantaiLegal.PubSub},
-      # Start a worker by calling: SertantaiLegal.Worker.start_link(arg)
-      # {SertantaiLegal.Worker, arg},
-      # Start to serve requests, typically the last entry
-      SertantaiLegalWeb.Endpoint
-    ]
+    children =
+      [
+        SertantaiLegalWeb.Telemetry,
+        SertantaiLegal.Repo,
+        {DNSCluster, query: Application.get_env(:sertantai_legal, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: SertantaiLegal.PubSub},
+        # JWKS client — fetches EdDSA public key from sertantai-auth for JWT verification
+        # In test mode, skips HTTP fetch — tests call set_test_key/1 instead
+        SertantaiLegal.Auth.JwksClient,
+        # Start to serve requests, typically the last entry
+        SertantaiLegalWeb.Endpoint
+      ]
+      |> Enum.reject(&is_nil/1)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

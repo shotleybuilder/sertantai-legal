@@ -1,6 +1,8 @@
 defmodule SertantaiLegalWeb.UkLrtControllerTest do
   use SertantaiLegalWeb.ConnCase
 
+  setup :setup_auth
+
   # Note: The UkLrt resource has an issue with `accept :*` not working correctly
   # in test environment. Tests are written to work with existing database records
   # or to test error paths. Full CRUD testing requires fixing the Ash action config.

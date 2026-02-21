@@ -2,14 +2,17 @@ defmodule SertantaiLegal.AuthHelpers do
   @moduledoc """
   Test helpers for JWT authentication.
 
-  Generates valid JWT tokens locally using JOSE, matching the format
-  produced by sertantai-auth's AshAuthentication. No running auth
-  service needed.
+  Generates valid EdDSA (Ed25519) JWT tokens locally using JOSE, matching
+  the format produced by sertantai-auth. The test keypair is generated at
+  compile time and the public key is registered with `JwksClient` via
+  `setup_auth/0`.
 
   ## Usage
 
       # In tests:
       import SertantaiLegal.AuthHelpers
+
+      setup :setup_auth   # <-- registers the test public key with JwksClient
 
       test "requires auth", %{conn: conn} do
         conn = conn |> put_auth_header() |> get("/api/sessions")
@@ -25,6 +28,31 @@ defmodule SertantaiLegal.AuthHelpers do
 
   @default_user_id "test-user-00000000-0000-0000-0000-000000000001"
   @default_org_id "test-org-00000000-0000-0000-0000-000000000001"
+
+  # Ed25519 test keypair — generated at compile time, stable across test runs
+  @test_private_key JOSE.JWK.generate_key({:okp, :Ed25519})
+  @test_public_key JOSE.JWK.to_public(@test_private_key)
+
+  @doc """
+  ExUnit setup callback that registers the test public key with JwksClient.
+
+  Call as `setup :setup_auth` in your test module, or invoke manually in a
+  `setup` block.
+  """
+  def setup_auth(_context \\ %{}) do
+    :ok = SertantaiLegal.Auth.JwksClient.set_test_key(@test_public_key)
+    :ok
+  end
+
+  @doc """
+  Returns the test Ed25519 private key (for signing tokens in tests).
+  """
+  def test_private_key, do: @test_private_key
+
+  @doc """
+  Returns the test Ed25519 public key (for verification).
+  """
+  def test_public_key, do: @test_public_key
 
   @doc """
   Builds a signed JWT token with the given claims merged over defaults.
@@ -54,11 +82,8 @@ defmodule SertantaiLegal.AuthHelpers do
       }
       |> Map.merge(overrides)
 
-    secret = Application.get_env(:sertantai_legal, :shared_token_secret)
-    jwk = JOSE.JWK.from_oct(secret)
-    jws = %{"alg" => "HS256"}
-
-    {_, token} = JOSE.JWT.sign(jwk, jws, claims) |> JOSE.JWS.compact()
+    jws = %{"alg" => "EdDSA"}
+    {_, token} = JOSE.JWT.sign(@test_private_key, jws, claims) |> JOSE.JWS.compact()
     token
   end
 

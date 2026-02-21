@@ -2,8 +2,8 @@ defmodule SertantaiLegalWeb.AuthPlug do
   @moduledoc """
   JWT validation plug for sertantai-legal.
 
-  Validates Bearer tokens issued by sertantai-auth using the shared token secret.
-  Extracts user_id and org_id from JWT claims and assigns them to the connection.
+  Validates EdDSA (Ed25519) Bearer tokens issued by sertantai-auth. The public
+  key is fetched from auth's JWKS endpoint and cached by `JwksClient`.
 
   ## JWT Claims (from sertantai-auth)
 
@@ -27,6 +27,8 @@ defmodule SertantaiLegalWeb.AuthPlug do
   """
 
   import Plug.Conn
+
+  alias SertantaiLegal.Auth.JwksClient
 
   @behaviour Plug
 
@@ -60,20 +62,17 @@ defmodule SertantaiLegalWeb.AuthPlug do
   end
 
   defp verify_token(token) do
-    secret = Application.get_env(:sertantai_legal, :shared_token_secret)
+    with {:ok, jwk} <- JwksClient.public_key() do
+      case JOSE.JWT.verify_strict(jwk, ["EdDSA"], token) do
+        {true, %JOSE.JWT{fields: claims}, _jws} ->
+          validate_claims(claims)
 
-    unless secret do
-      raise "shared_token_secret not configured. Set it in config or SHARED_TOKEN_SECRET env var."
-    end
-
-    jwk = JOSE.JWK.from_oct(secret)
-
-    case JOSE.JWT.verify_strict(jwk, ["HS256"], token) do
-      {true, %JOSE.JWT{fields: claims}, _jws} ->
-        validate_claims(claims)
-
-      {false, _, _} ->
-        {:error, "Invalid token signature"}
+        {false, _, _} ->
+          {:error, "Invalid token signature"}
+      end
+    else
+      {:error, :no_key} ->
+        {:error, "Auth service unavailable (no signing key)"}
     end
   rescue
     _ -> {:error, "Malformed token"}

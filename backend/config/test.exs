@@ -30,8 +30,9 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable test mode for HTTP client mocking
 config :sertantai_legal, test_mode: true
 
-# Shared token secret for JWT validation in tests
-# Must match the secret used by AuthHelpers.build_token/1
+# Auth + Electric config for tests
+# jwks_req_plug routes JWKS HTTP calls through Req.Test stubs
 config :sertantai_legal,
-  shared_token_secret: "test_secret_key_for_jwt_signing_at_least_32_chars",
-  electric_url: "http://localhost:3002"
+  electric_url: "http://localhost:3002",
+  auth_url: "http://localhost:4000",
+  jwks_req_plug: {Req.Test, SertantaiLegal.Auth.JwksClient}

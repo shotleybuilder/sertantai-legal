@@ -3,6 +3,8 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
 
   alias SertantaiLegalWeb.AuthPlug
 
+  setup :setup_auth
+
   describe "valid token" do
     test "assigns user_id, org_id, and role from JWT claims", %{conn: conn} do
       conn =
@@ -126,18 +128,17 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
     end
   end
 
-  describe "wrong signing secret" do
-    test "returns 401", %{conn: conn} do
-      # Sign with a different secret
-      wrong_jwk = JOSE.JWK.from_oct("wrong_secret_that_does_not_match_at_all!")
-      jws = %{"alg" => "HS256"}
+  describe "wrong signing key" do
+    test "returns 401 when signed with a different Ed25519 key", %{conn: conn} do
+      wrong_key = JOSE.JWK.generate_key({:okp, :Ed25519})
+      jws = %{"alg" => "EdDSA"}
 
       claims = %{
         "sub" => "user?id=#{Ecto.UUID.generate()}",
         "exp" => System.system_time(:second) + 3600
       }
 
-      {_, token} = JOSE.JWT.sign(wrong_jwk, jws, claims) |> JOSE.JWS.compact()
+      {_, token} = JOSE.JWT.sign(wrong_key, jws, claims) |> JOSE.JWS.compact()
 
       conn =
         conn
