@@ -27,6 +27,7 @@ type ElectricUkLrtRecord = UkLrtRecord & Record<string, unknown>;
 // Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
+const HUB_URL = import.meta.env.VITE_HUB_URL || 'https://sertantai.com';
 
 /**
  * Columns to sync from uk_lrt table.
@@ -187,15 +188,27 @@ async function createUkLrtCollection(
 					columns: UK_LRT_COLUMNS
 				},
 				onError: async (error: unknown) => {
+					const status =
+						error instanceof Error && 'status' in error
+							? (error as { status: number }).status
+							: null;
+
+					// 401 Unauthorized — no valid auth cookie, redirect to hub login
+					if (status === 401) {
+						console.warn('[TanStack DB] Unauthorized (401), redirecting to hub login');
+						syncStatus.update((s) => ({
+							...s,
+							error: 'Authentication required',
+							syncing: false
+						}));
+						window.location.href = HUB_URL;
+						return;
+					}
+
 					// After an Electric restart, restored shapes can be permanently broken
 					// (400 "offset out of bounds"). Delete the broken shape via the HTTP API
 					// so the next request creates a fresh one, then retry.
-					if (
-						error instanceof Error &&
-						'status' in error &&
-						(error as { status: number }).status === 400 &&
-						!shapeResetAttempted
-					) {
+					if (status === 400 && !shapeResetAttempted) {
 						shapeResetAttempted = true;
 						console.warn('[TanStack DB] Broken shape detected (400), deleting and retrying');
 						try {
@@ -207,11 +220,7 @@ async function createUkLrtCollection(
 						await new Promise((resolve) => setTimeout(resolve, 1000));
 						return {};
 					}
-					if (
-						error instanceof Error &&
-						'status' in error &&
-						(error as { status: number }).status === 400
-					) {
+					if (status === 400) {
 						// Already tried reset, give up
 						console.error('[TanStack DB] Shape recovery failed after reset');
 						syncStatus.update((s) => ({
