@@ -106,6 +106,13 @@ defmodule SertantaiLegalWeb.Router do
     put("/sessions/:id/cascade-metadata", ScrapeController, :save_cascade_metadata)
     delete("/sessions/:id/affected-laws", ScrapeController, :clear_affected_laws)
 
+    # LAT admin endpoints
+    get("/lat/stats", LatAdminController, :stats)
+    get("/lat/laws", LatAdminController, :laws)
+    get("/lat/laws/:law_name", LatAdminController, :show)
+    get("/lat/laws/:law_name/annotations", LatAdminController, :annotations)
+    post("/lat/laws/:law_name/reparse", LatAdminController, :reparse)
+
     # Cascade management endpoints (standalone page)
     get("/cascade", CascadeController, :index)
     get("/cascade/sessions", CascadeController, :sessions)
