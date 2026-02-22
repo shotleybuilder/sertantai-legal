@@ -1,6 +1,7 @@
 # AI Taxa (DRRP) Integration
 
 **Started**: 2026-02-22
+**Ended**: 2026-02-22
 **Related**: 2026-02-02-taxa-parser-responsibilities.md, 2026-02-03-ai-responsibility-parsing.md
 **Issue**: https://github.com/shotleybuilder/sertantai-legal/issues/17
 
@@ -28,11 +29,11 @@ sertantai-legal (this project)           AI service (LAN machine)
 
 - [x] Design queue/results schema — no new tables, queue is a query over existing DRRP entries
 - [x] Define payload format (what goes to AI, what comes back)
-- [ ] Add `regex_clause_confidence` (float) and `ai_clause` (string) to DRRP entry schema
-- [ ] Create `GET /api/ai/drrp/clause/queue` endpoint (serializer over existing DRRP entries)
-- [ ] Create result puller — fetch completed clauses from AI service and write back to DRRP entries
-- [ ] Integrate results back into taxa DRRP fields
-- [ ] Auth for AI service endpoints (API key? LAN-only?)
+- [x] Create `GET /api/ai/drrp/clause/queue` endpoint (serializer over existing DRRP entries) — `be25674`
+- [x] Auth for AI service endpoints — API key via `X-API-Key` header (`AiApiKeyPlug`) — `be25674`
+- [x] Add `regex_clause_confidence` scoring to regex DRRP pipeline — `f052d31`
+- [ ] Create result puller — fetch completed clauses from AI service and write back to DRRP entries (Phase 2)
+- [ ] Integrate results back into taxa DRRP fields (Phase 2)
 
 ## DRRP JSONB Schema
 
@@ -165,3 +166,52 @@ Elixir options: `explorer` (Polars-backed DataFrames) or raw `adbc`/`arrow` NIF.
 - AI service is local LAN only — no cloud dependency
 - Pull model chosen for simplicity — AI service controls its own pace
 - ~2,500 records already have DRRP data; AI refines clauses that are truncated/incomplete
+
+## Phase 1 Implementation (be25674)
+
+**Commit**: `be25674` — `feat: add GET /api/ai/drrp/clause/queue endpoint for AI service`
+
+**Files created:**
+- `backend/lib/sertantai_legal_web/plugs/ai_api_key_plug.ex` — `X-API-Key` header validation against `AI_SERVICE_API_KEY` env var
+- `backend/lib/sertantai_legal_web/controllers/ai_drrp_controller.ex` — queue endpoint, raw SQL CTE + UNION ALL across 4 DRRP JSONB columns
+- `backend/test/sertantai_legal_web/plugs/ai_api_key_plug_test.exs` — 4 tests
+- `backend/test/sertantai_legal_web/controllers/ai_drrp_controller_test.exs` — 11 tests
+
+**Files modified:**
+- `backend/lib/sertantai_legal_web/router.ex` — `:api_ai` pipeline + `/api/ai/drrp/clause/queue` route
+- `backend/.env.example` — `AI_SERVICE_API_KEY` section
+
+**Key decisions:**
+- Raw SQL (not Ash) — query unnests JSONB arrays from 4 columns into one row per entry, Ash doesn't model this
+- API key auth (not JWT) — machine-to-machine LAN endpoint, JWT claims (org_id, role) don't apply
+- NULL confidence = queued — all ~110K existing entries appear in queue until `regex_clause_confidence` is set
+- No migration — `regex_clause_confidence` and `ai_clause` are JSONB keys added at write-back time
+
+## Phase 1b Implementation (f052d31)
+
+**Commit**: `f052d31` — `feat: add regex_clause_confidence scoring to DRRP pipeline`
+
+**Files created:**
+- `backend/lib/sertantai_legal/legal/taxa/regex_clause_confidence.ex` — scoring module, 4 signals weighted 0.0–0.85 (article bonus added downstream)
+- `backend/test/sertantai_legal/legal/taxa/regex_clause_confidence_test.exs` — 9 tests
+
+**Files modified:**
+- `backend/lib/sertantai_legal/legal/taxa/duty_type_lib.ex` — both `run_role_regex` and `run_modal_windowed_search` now compute `regex_clause_confidence` on each entry
+- `backend/lib/sertantai_legal/legal/taxa/taxa_formatter.ex` — `matches_to_jsonb/2` passes through `regex_clause_confidence` and adds +0.15 article context bonus (capped at 1.0)
+
+**Confidence scoring signals (RegexClauseConfidence):**
+
+| Signal | Weight | Description |
+|--------|--------|-------------|
+| V2 captured action | +0.25 | Regex capture group extracted an action verb |
+| Clean ending | +0.25 | No trailing ellipsis or mid-word truncation |
+| Adequate length | +0.20 | Clause ≥30 chars (meaningful content) |
+| Strong modal | +0.15 | Contains `shall`, `must`, `may`, `entitled` |
+| Article context | +0.15 | Added in TaxaFormatter when article is known |
+
+**Score range:** 0.0 (nil/empty clause) to 1.0 (all signals present). Newly extracted entries get scored immediately; existing entries remain NULL until re-processed.
+
+**Key decisions:**
+- Score split across two modules — DutyTypeLib scores 0.0–0.85 (match-level signals), TaxaFormatter adds article bonus +0.15 (only known at formatting time)
+- `ai_clause` not yet populated — that's Phase 2 (result puller writes it back)
+- Existing DRRP entries in DB retain NULL confidence — queue endpoint treats NULL as "unscored = queued"

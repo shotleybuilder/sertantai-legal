@@ -59,6 +59,17 @@ Complete guide for:
 - Upsert logic for cached data conflicts
 - Common pitfalls (stale offsets, context errors, subscribeChanges)
 
+### 🤖 [AI DRRP Clause Queue Endpoint](endpoint-api-ai-drrp-clause-queue/)
+
+**Use when:** Querying or testing the AI clause queue endpoint
+
+How to use `GET /api/ai/drrp/clause/queue`:
+- Authentication via `X-API-Key` header
+- Query parameters (limit, offset, threshold)
+- Response format and field mapping
+- Composite key for Phase 2 write-back
+- curl examples for common scenarios
+
 ### 🚀 [Production Deployment](production-deployment/)
 
 **Use when:** Deploying sertantai-legal (or a new microservice) to Hetzner production
