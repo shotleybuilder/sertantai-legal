@@ -25,6 +25,9 @@ defmodule SertantaiLegal.Api do
     # Legal Articles Table - one row per structural unit of legal text (belongs to UkLrt)
     resource(SertantaiLegal.Legal.Lat)
 
+    # Amendment Annotations - legislative change footnotes linked to LAT sections
+    resource(SertantaiLegal.Legal.AmendmentAnnotation)
+
     # Scraper session tracking
     resource(SertantaiLegal.Scraper.ScrapeSession)
     resource(SertantaiLegal.Scraper.ScrapeSessionRecord)
