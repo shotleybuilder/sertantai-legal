@@ -24,6 +24,12 @@ defmodule SertantaiLegalWeb.Router do
     plug(SertantaiLegalWeb.AuthPlug)
   end
 
+  # AI service pipeline — API key auth for machine-to-machine LAN calls
+  pipeline :api_ai do
+    plug(:accepts, ["json"])
+    plug(SertantaiLegalWeb.AiApiKeyPlug)
+  end
+
   # Health check endpoints (no /api prefix, no authentication required)
   scope "/", SertantaiLegalWeb do
     pipe_through(:api)
@@ -43,6 +49,12 @@ defmodule SertantaiLegalWeb.Router do
     get("/uk-lrt/exists/*name", UkLrtController, :exists)
     post("/uk-lrt/batch-exists", UkLrtController, :batch_exists)
     get("/uk-lrt/:id", UkLrtController, :show)
+  end
+
+  # AI service endpoints — DRRP clause processing (API key auth)
+  scope "/api/ai", SertantaiLegalWeb do
+    pipe_through(:api_ai)
+    get("/drrp/clause/queue", AiDrrpController, :queue)
   end
 
   # Electric proxy — public shapes (UK LRT reference data)
