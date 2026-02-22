@@ -1,0 +1,46 @@
+<Legislation RestrictExtent="E+W+S+N.I.">
+<Primary>
+<Body>
+  <Part id="part-I" RestrictExtent="E+W+S+N.I.">
+    <Number>Part I</Number>
+    <Pblock id="xh-general">
+      <Title>General provisions</Title>
+      <P1group RestrictExtent="E+W+S" RestrictStartDate="2024-01-01">
+        <P1 id="section-23-ews" RestrictExtent="E+W+S">
+          <Pnumber>23</Pnumber>
+          <P1para>
+            <P2 id="section-23-1-ews" RestrictExtent="E+W+S">
+              <Pnumber>1</Pnumber>
+              <P2para>
+                <Text>England, Wales and Scotland version of section 23.</Text>
+              </P2para>
+            </P2>
+          </P1para>
+        </P1>
+      </P1group>
+      <P1group RestrictExtent="N.I." RestrictStartDate="2024-01-01">
+        <P1 id="section-23-ni" RestrictExtent="N.I.">
+          <Pnumber>23</Pnumber>
+          <P1para>
+            <P2 id="section-23-1-ni" RestrictExtent="N.I.">
+              <Pnumber>1</Pnumber>
+              <P2para>
+                <Text>Northern Ireland version of section 23.</Text>
+              </P2para>
+            </P2>
+          </P1para>
+        </P1>
+      </P1group>
+      <P1group>
+        <P1 id="section-24">
+          <Pnumber>24</Pnumber>
+          <P1para>
+            <Text>Section 24 applies to the whole of the United Kingdom.</Text>
+          </P1para>
+        </P1>
+      </P1group>
+    </Pblock>
+  </Part>
+</Body>
+</Primary>
+</Legislation>

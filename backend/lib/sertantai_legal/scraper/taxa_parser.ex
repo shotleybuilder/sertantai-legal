@@ -101,27 +101,73 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   Run Taxa classification for a law.
 
   Fetches the introduction/preamble text and runs the full Taxa pipeline.
+  Delegates to `run_with_body/3` and discards the raw body XML.
   """
   @spec run(String.t(), String.t() | integer(), String.t() | integer()) ::
           {:ok, taxa_result()} | {:error, String.t()}
   def run(type_code, year, number) do
+    case run_with_body(type_code, year, number) do
+      {:ok, taxa_data, _body_xml} -> {:ok, taxa_data}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  Run Taxa classification and also return the raw body XML (if available).
+
+  Used by the LAT pipeline to avoid re-fetching the body XML.
+
+  Returns `{:ok, taxa_data, body_xml}` where `body_xml` is the raw XML string
+  or `nil` if the classification fell back to introduction text.
+  """
+  @spec run_with_body(String.t(), String.t() | integer(), String.t() | integer()) ::
+          {:ok, taxa_result(), String.t() | nil} | {:error, String.t()}
+  def run_with_body(type_code, year, number) do
     year = to_string(year)
     number = to_string(number)
     law_name = "#{type_code}/#{year}/#{number}"
 
     case fetch_law_text(type_code, year, number) do
-      {:ok, text, source, p1_sections} ->
-        # Law with P1 sections - use chunked processing for article field population
-        # Large laws use parallel processing, small laws use sequential
-        taxa_data = classify_text_chunked(text, source, p1_sections, law_name: law_name)
-        {:ok, taxa_data}
+      {:ok, text, "body", p1_sections, body_xml} ->
+        taxa_data = classify_text_chunked(text, "body", p1_sections, law_name: law_name)
+        {:ok, taxa_data, body_xml}
+
+      {:ok, text, "body", body_xml} ->
+        taxa_data = classify_text(text, "body", law_name: law_name)
+        {:ok, taxa_data, body_xml}
 
       {:ok, text, source} ->
-        # Law without P1 tags - use standard processing (no article granularity)
         taxa_data = classify_text(text, source, law_name: law_name)
-        {:ok, taxa_data}
+        {:ok, taxa_data, nil}
 
       {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Fetch body XML for a law. Returns parsed text, P1 sections, and raw XML.
+
+  ## Returns
+
+    - `{:ok, %{xml: String.t(), text: String.t(), p1_sections: list()}}` on success
+    - `{:error, reason}` on failure
+  """
+  @spec fetch_body_xml(String.t(), String.t() | integer(), String.t() | integer()) ::
+          {:ok, %{xml: String.t(), text: String.t(), p1_sections: list()}}
+          | {:error, String.t()}
+  def fetch_body_xml(type_code, year, number) do
+    year = to_string(year)
+    number = to_string(number)
+    path = "/#{type_code}/#{year}/#{number}/body/data.xml"
+
+    case Client.fetch_xml(path) do
+      {:ok, xml} ->
+        text = extract_text_from_xml(xml)
+        p1_sections = extract_p1_sections(xml)
+        {:ok, %{xml: xml, text: text, p1_sections: p1_sections}}
+
+      {:error, _, reason} ->
         {:error, reason}
     end
   end
@@ -661,17 +707,15 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
   # Fetch law text from legislation.gov.uk
   # Uses body text as primary source (contains full law text for comprehensive actor detection)
   # Falls back to introduction if body is not available
-  # Returns {:ok, text, source} or {:ok, text, source, p1_sections} for large laws
+  # Returns {:ok, text, "body", p1_sections, raw_xml} or {:ok, text, "body", raw_xml}
+  # or {:ok, text, source} for introduction fallback
   defp fetch_law_text(type_code, year, number) do
-    # Use body text as primary source - this is where all actors/roles are mentioned
-    # The legacy code parsed the full body text for actor extraction
     case fetch_body_text(type_code, year, number) do
-      {:ok, text, p1_sections} when text != "" ->
-        # Law with P1 sections - enables article field population
-        {:ok, text, "body", p1_sections}
+      {:ok, text, p1_sections, raw_xml} when text != "" ->
+        {:ok, text, "body", p1_sections, raw_xml}
 
-      {:ok, text} when text != "" ->
-        {:ok, text, "body"}
+      {:ok, text, raw_xml} when text != "" ->
+        {:ok, text, "body", raw_xml}
 
       _ ->
         # Fallback to introduction if body not available
@@ -705,24 +749,20 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
     end)
   end
 
-  # Fetch body text (first few sections)
-  # Returns {:ok, text} or {:ok, text, p1_sections} for large laws with P1 tags
+  # Fetch body text and raw XML
+  # Returns {:ok, text, p1_sections, raw_xml} or {:ok, text, raw_xml}
   defp fetch_body_text(type_code, year, number) do
     path = "/#{type_code}/#{year}/#{number}/body/data.xml"
 
     case Client.fetch_xml(path) do
       {:ok, xml} ->
         text = extract_text_from_xml(xml)
-
-        # Always extract P1 sections for article field population
-        # Large laws use chunked parallel processing, small laws use sequential
         p1_sections = extract_p1_sections(xml)
 
         if p1_sections != [] do
-          {:ok, text, p1_sections}
+          {:ok, text, p1_sections, xml}
         else
-          # No P1 tags - return just text (will use modal windowing for large laws)
-          {:ok, text}
+          {:ok, text, xml}
         end
 
       {:error, _, _} ->

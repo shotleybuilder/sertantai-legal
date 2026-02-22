@@ -40,6 +40,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   import SweetXml
 
   alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.LatParser
+  alias SertantaiLegal.Scraper.LatPersister
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
   alias SertantaiLegal.Scraper.EnactedBy
@@ -567,7 +571,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     role_count = length(data[:role] || [])
     duty_types = length(data[:duty_type] || [])
     popimar = length(data[:popimar] || [])
-    "#{role_count} actors, #{duty_types} duty types, #{popimar} POPIMAR"
+    lat_count = data[:lat_rows_count] || 0
+
+    base = "#{role_count} actors, #{duty_types} duty types, #{popimar} POPIMAR"
+    if lat_count > 0, do: "#{base} | #{lat_count} LAT rows", else: base
   end
 
   defp build_stage_summary(_stage, %{status: :error, error: error}), do: error
@@ -604,9 +611,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     run_repeal_revoke_stage(type_code, year, number)
   end
 
-  defp run_stage(:taxa, type_code, year, number, _record) do
+  defp run_stage(:taxa, type_code, year, number, record) do
     IO.puts("  [7/7] Taxa Classification...")
-    run_taxa_stage(type_code, year, number)
+    run_taxa_stage(type_code, year, number, record)
   end
 
   # ============================================================================
@@ -915,8 +922,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Normalizes name to UK_type_year_number format for DB consistency
   # Looks up title from database if the law exists
   defp parse_law_id_to_map(law_id) do
-    alias SertantaiLegal.Scraper.IdField
-
     name = IdField.normalize_to_db_name(law_id)
 
     # Look up title from database (parent Acts should already exist)
@@ -1202,9 +1207,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # - DutyType: Classifies duty types (Duty, Right, Responsibility, Power)
   # - Popimar: Classifies by POPIMAR management framework
 
-  defp run_taxa_stage(type_code, year, number) do
-    case TaxaParser.run(type_code, year, number) do
-      {:ok, taxa_data} ->
+  defp run_taxa_stage(type_code, year, number, record) do
+    case TaxaParser.run_with_body(type_code, year, number) do
+      {:ok, taxa_data, body_xml} ->
         role_count = length(taxa_data[:role] || [])
         duty_types = taxa_data[:duty_type] || []
         popimar_items = taxa_data[:popimar] || []
@@ -1213,11 +1218,59 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           "    ✓ Taxa: #{role_count} actors, #{length(duty_types)} duty types, #{length(popimar_items)} POPIMAR"
         )
 
+        # LAT sub-stage: parse body XML into LAT rows for "making" laws
+        lat_count = maybe_run_lat_substage(taxa_data, body_xml, type_code, year, number, record)
+        taxa_data = Map.put(taxa_data, :lat_rows_count, lat_count)
+
         %{status: :ok, data: taxa_data, error: nil}
 
       {:error, reason} ->
         IO.puts("    ✗ Taxa failed: #{reason}")
         %{status: :error, data: nil, error: reason}
+    end
+  end
+
+  # LAT sub-stage: conditionally parse body XML into LAT rows
+  defp maybe_run_lat_substage(taxa_data, body_xml, type_code, _year, _number, record)
+       when is_binary(body_xml) do
+    duty_types = taxa_data[:duty_type] || []
+    is_making = "Duty" in duty_types or "Responsibility" in duty_types
+
+    if is_making do
+      law_name = IdField.normalize_to_db_name(record.name)
+
+      case lookup_law_id(law_name) do
+        {:ok, law_id} ->
+          rows = LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
+
+          case LatPersister.persist(rows, law_name, law_id) do
+            {:ok, %{inserted: inserted}} ->
+              IO.puts("    ✓ LAT: #{inserted} rows persisted")
+              inserted
+
+            {:error, reason} ->
+              IO.puts("    ✗ LAT persist failed: #{reason}")
+              0
+          end
+
+        {:error, reason} ->
+          IO.puts("    ✗ LAT skipped: #{reason}")
+          0
+      end
+    else
+      IO.puts("    ○ LAT skipped (not a making law)")
+      0
+    end
+  end
+
+  defp maybe_run_lat_substage(_taxa_data, _body_xml, _type_code, _year, _number, _record), do: 0
+
+  # Look up the uk_lrt database ID for a given law_name
+  defp lookup_law_id(law_name) do
+    case Repo.query("SELECT id::text FROM uk_lrt WHERE name = $1 LIMIT 1", [law_name]) do
+      {:ok, %{rows: [[id]]}} -> {:ok, id}
+      {:ok, %{rows: []}} -> {:error, "law not found in uk_lrt: #{law_name}"}
+      {:error, err} -> {:error, "DB error: #{inspect(err)}"}
     end
   end
 

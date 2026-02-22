@@ -1,0 +1,59 @@
+<Legislation RestrictExtent="E+W+S">
+<Secondary>
+<Body>
+  <Part id="part-1">
+    <Number><Strong>PART 1</Strong></Number>
+    <P1group>
+      <P1 id="regulation-1">
+        <Pnumber>1</Pnumber>
+        <P1para><Text>Citation and commencement.</Text></P1para>
+      </P1>
+    </P1group>
+  </Part>
+</Body>
+<Schedules>
+  <Schedule id="schedule-1" RestrictExtent="E+W+S">
+    <Number>SCHEDULE 1</Number>
+    <TitleBlock><Title>Particulars to be notified</Title></TitleBlock>
+    <ScheduleBody>
+      <P1group>
+        <P1 id="schedule-1-paragraph-1">
+          <Pnumber>1</Pnumber>
+          <P1para>
+            <Text>The date of commencement of the project.</Text>
+          </P1para>
+        </P1>
+      </P1group>
+      <P1group>
+        <P1 id="schedule-1-paragraph-2">
+          <Pnumber>2</Pnumber>
+          <P1para>
+            <P2 id="schedule-1-paragraph-2-1">
+              <Pnumber>1</Pnumber>
+              <P2para><Text>The address of the construction site.</Text></P2para>
+            </P2>
+          </P1para>
+        </P1>
+      </P1group>
+      <Tabular Orientation="portrait">
+        <xhtml:table xmlns:xhtml="http://www.w3.org/1999/xhtml">
+          <xhtml:tr><xhtml:td>Column 1</xhtml:td><xhtml:td>Column 2</xhtml:td></xhtml:tr>
+        </xhtml:table>
+      </Tabular>
+    </ScheduleBody>
+  </Schedule>
+  <Schedule id="schedule-2" RestrictExtent="E+W">
+    <Number>SCHEDULE 2</Number>
+    <TitleBlock><Title>Minimum welfare facilities</Title></TitleBlock>
+    <ScheduleBody>
+      <P1group>
+        <P1 id="schedule-2-paragraph-1">
+          <Pnumber>1</Pnumber>
+          <P1para><Text>Sanitary conveniences.</Text></P1para>
+        </P1>
+      </P1group>
+    </ScheduleBody>
+  </Schedule>
+</Schedules>
+</Secondary>
+</Legislation>
