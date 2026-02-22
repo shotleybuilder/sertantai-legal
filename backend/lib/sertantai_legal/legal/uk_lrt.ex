@@ -617,6 +617,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
     end
   end
 
+  relationships do
+    has_many :lat_records, SertantaiLegal.Legal.Lat do
+      source_attribute(:id)
+      destination_attribute(:law_id)
+      description("Legal Articles Table — structural text content for this law")
+    end
+  end
+
   actions do
     defaults([:read, :destroy])
 

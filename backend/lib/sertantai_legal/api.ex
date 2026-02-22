@@ -22,6 +22,9 @@ defmodule SertantaiLegal.Api do
     # UK Legal Register Table - shared reference data (no organization_id)
     resource(SertantaiLegal.Legal.UkLrt)
 
+    # Legal Articles Table - one row per structural unit of legal text (belongs to UkLrt)
+    resource(SertantaiLegal.Legal.Lat)
+
     # Scraper session tracking
     resource(SertantaiLegal.Scraper.ScrapeSession)
     resource(SertantaiLegal.Scraper.ScrapeSessionRecord)
