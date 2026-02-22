@@ -42,6 +42,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.CommentaryParser
+  alias SertantaiLegal.Scraper.CommentaryPersister
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LatPersister
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
@@ -1230,7 +1232,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     end
   end
 
-  # LAT sub-stage: conditionally parse body XML into LAT rows
+  # LAT sub-stage: conditionally parse body XML into LAT rows + commentary annotations
   defp maybe_run_lat_substage(taxa_data, body_xml, type_code, _year, _number, record)
        when is_binary(body_xml) do
     duty_types = taxa_data[:duty_type] || []
@@ -1246,6 +1248,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           case LatPersister.persist(rows, law_name, law_id) do
             {:ok, %{inserted: inserted}} ->
               IO.puts("    ✓ LAT: #{inserted} rows persisted")
+
+              # Commentary sub-stage: parse Commentaries block and persist annotations
+              maybe_run_commentary_substage(body_xml, rows, law_name, law_id)
+
               inserted
 
             {:error, reason} ->
@@ -1264,6 +1270,24 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   defp maybe_run_lat_substage(_taxa_data, _body_xml, _type_code, _year, _number, _record), do: 0
+
+  # Commentary sub-stage: parse <Commentaries> block from body XML and persist annotations
+  defp maybe_run_commentary_substage(body_xml, lat_rows, law_name, law_id) do
+    ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
+    annotations = CommentaryParser.parse(body_xml, %{law_name: law_name}, ref_to_sections)
+
+    if annotations == [] do
+      IO.puts("    ○ Annotations: none found in body XML")
+    else
+      case CommentaryPersister.persist(annotations, law_name, law_id) do
+        {:ok, %{inserted: inserted}} ->
+          IO.puts("    ✓ Annotations: #{inserted} persisted from Commentaries block")
+
+        {:error, reason} ->
+          IO.puts("    ✗ Annotations persist failed: #{reason}")
+      end
+    end
+  end
 
   # Look up the uk_lrt database ID for a given law_name
   defp lookup_law_id(law_name) do

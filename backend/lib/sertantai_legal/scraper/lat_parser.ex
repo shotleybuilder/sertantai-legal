@@ -204,7 +204,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp emit_row(element, ctx, node, extent) do
     text = extract_element_text(node)
-    commentary_counts = count_commentary_refs(node)
+    {commentary_counts, commentary_refs} = collect_commentary_refs(node)
 
     %{
       element: element,
@@ -221,12 +221,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
-      extent_count: Map.get(commentary_counts, :e)
+      extent_count: Map.get(commentary_counts, :e),
+      commentary_refs: commentary_refs
     }
   end
 
   defp emit_heading_row(ctx, node, extent, heading_text) do
-    commentary_counts = count_commentary_refs(node)
+    {commentary_counts, commentary_refs} = collect_commentary_refs(node)
 
     %{
       element: "Pblock",
@@ -243,7 +244,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
-      extent_count: Map.get(commentary_counts, :e)
+      extent_count: Map.get(commentary_counts, :e),
+      commentary_refs: commentary_refs
     }
   end
 
@@ -360,25 +362,26 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  # ── Commentary Counting ──────────────────────────────────────────
+  # ── Commentary Ref Collection & Counting ──────────────────────────
 
-  defp count_commentary_refs(node) do
+  defp collect_commentary_refs(node) do
     refs =
       case xpath(node, ~x".//CommentaryRef/@Ref"ls) do
         nil -> []
         list -> Enum.map(list, &to_string/1)
       end
 
-    %{
+    counts = %{
       f: count_prefix(refs, "F") |> nil_if_zero(),
       c: count_prefix(refs, "C") |> nil_if_zero(),
       i: count_prefix(refs, "I") |> nil_if_zero(),
       e: count_prefix(refs, "E") |> nil_if_zero()
     }
+
+    {counts, refs}
   end
 
   defp count_prefix(refs, prefix) do
-    # Match refs like "c7806021" (starts with lowercase letter) — these are commentary IDs, not codes
     # Match refs like "F3", "C1", "I2", "E5" — uppercase letter followed by digit(s)
     Enum.count(refs, fn ref ->
       String.match?(ref, ~r/^#{prefix}\d/)

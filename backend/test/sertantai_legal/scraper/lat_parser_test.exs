@@ -306,9 +306,9 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
-  # ── Commentary Counting ────────────────────────────────────────
+  # ── Commentary Counting & Refs ───────────────────────────────────
 
-  describe "commentary ref counting" do
+  describe "commentary ref counting and collection" do
     test "counts F-prefixed refs as amendments" do
       xml = """
       <Legislation RestrictExtent="E+W+S+N.I.">
@@ -332,6 +332,69 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert section.modification_count == 1
       assert section.commencement_count == nil
       assert section.extent_count == nil
+    end
+
+    test "collects raw commentary ref IDs per row" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1">
+            <Pnumber>1</Pnumber>
+            <P1para>
+              <Text><CommentaryRef Ref="F1"/><CommentaryRef Ref="key-abc"/>text</Text>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert "F1" in section.commentary_refs
+      assert "key-abc" in section.commentary_refs
+      assert length(section.commentary_refs) == 2
+    end
+
+    test "rows without CommentaryRef have empty commentary_refs list" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1">
+            <Pnumber>1</Pnumber>
+            <P1para><Text>No commentary refs here.</Text></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert section.commentary_refs == []
+    end
+  end
+
+  describe "commentary refs in simple_act fixture" do
+    setup do
+      xml = read_fixture("simple_act.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      %{rows: rows}
+    end
+
+    test "section 3 has F1 and C1 refs", %{rows: rows} do
+      s3 = Enum.find(rows, &(&1.provision == "3" and &1.section_type == "section"))
+      assert "F1" in s3.commentary_refs
+      assert "C1" in s3.commentary_refs
+    end
+
+    test "section 1 has no commentary refs", %{rows: rows} do
+      s1 = Enum.find(rows, &(&1.section_id == "UK_ukpga_2024_1:s.1"))
+      assert s1.commentary_refs == []
     end
   end
 
@@ -378,13 +441,14 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert %DateTime{} = first.updated_at
     end
 
-    test "strips internal fields" do
+    test "strips internal fields including commentary_refs" do
       xml = read_fixture("simple_act.xml")
       rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
       [first | _] = LatParser.to_insert_maps(rows, @test_law_id)
 
       refute Map.has_key?(first, :element)
       refute Map.has_key?(first, :citation)
+      refute Map.has_key?(first, :commentary_refs)
     end
   end
 
