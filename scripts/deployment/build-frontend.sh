@@ -29,9 +29,40 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Help text
+show_help() {
+    echo "Usage: $0 [options] [tag]"
+    echo ""
+    echo "Build production Docker image for Sertantai Legal Frontend."
+    echo ""
+    echo "Arguments:"
+    echo "  tag              Image tag (default: latest)"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help       Show this help message"
+    echo "  --no-cache       Build without Docker cache"
+    echo ""
+    echo "Examples:"
+    echo "  $0               Build with tag 'latest'"
+    echo "  $0 v1.2.3        Build with tag 'v1.2.3'"
+    echo "  $0 --no-cache    Build 'latest' without cache"
+    exit 0
+}
+
+# Parse flags
+NO_CACHE=""
+IMAGE_TAG="latest"
+
+for arg in "$@"; do
+    case "$arg" in
+        -h|--help) show_help ;;
+        --no-cache) NO_CACHE="--no-cache" ;;
+        *) IMAGE_TAG="$arg" ;;
+    esac
+done
+
 # Image configuration (update with your GitHub org/user)
 IMAGE_NAME="ghcr.io/shotleybuilder/sertantai-legal-frontend"
-IMAGE_TAG="${1:-latest}"
 FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 
 # Navigate to project root (two levels up from scripts/deployment/)
@@ -66,6 +97,7 @@ echo ""
 
 # Build the image with progress output
 docker build \
+    ${NO_CACHE} \
     --tag "${FULL_IMAGE}" \
     --file frontend/Dockerfile \
     frontend/
