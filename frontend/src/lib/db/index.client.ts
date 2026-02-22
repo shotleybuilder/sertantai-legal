@@ -16,12 +16,20 @@ import { browser } from '$app/environment';
 import type { Collection } from '@tanstack/db';
 import { writable } from 'svelte/store';
 import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
+import type { LatRecord } from '$lib/electric/lat-schema';
+import type { AnnotationRecord } from '$lib/electric/annotation-schema';
+import { LAT_COLUMNS } from '$lib/electric/lat-schema';
+import { ANNOTATION_COLUMNS } from '$lib/electric/annotation-schema';
 
-// Re-export UkLrtRecord for external use
+// Re-export types for external use
 export type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
+export type { LatRecord } from '$lib/electric/lat-schema';
+export type { AnnotationRecord } from '$lib/electric/annotation-schema';
 
-// Type that satisfies Electric's Row constraint (requires index signature)
+// Types that satisfy Electric's Row constraint (requires index signature)
 type ElectricUkLrtRecord = UkLrtRecord & Record<string, unknown>;
+type ElectricLatRecord = LatRecord & Record<string, unknown>;
+type ElectricAnnotationRecord = AnnotationRecord & Record<string, unknown>;
 
 // Electric service configuration — goes through Phoenix backend proxy (Gatekeeper pattern)
 // Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
@@ -317,6 +325,180 @@ export async function updateUkLrtWhere(whereClause: string): Promise<void> {
 	ukLrtCol = await createUkLrtCollection(whereClause);
 }
 
+// ── LAT Collection ──────────────────────────────────────────────────────────
+
+let latCol: Collection<ElectricLatRecord, string> | null = null;
+let latShapeResetAttempted = false;
+
+/**
+ * Create LAT collection with Electric sync.
+ * Filtered by law_name — LAT is per-law, so a WHERE clause is required.
+ */
+async function createLatCollection(
+	lawName: string
+): Promise<Collection<ElectricLatRecord, string>> {
+	const { createCollection } = await import('@tanstack/db');
+	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+	const whereClause = `law_name = '${lawName.replace(/'/g, "''")}'`;
+
+	const collection = createCollection(
+		electricCollectionOptions<ElectricLatRecord>({
+			id: `lat-${lawName}`,
+			syncMode: 'progressive',
+			shapeOptions: {
+				url: `${ELECTRIC_URL}/v1/shape`,
+				params: {
+					table: 'lat',
+					where: whereClause,
+					columns: LAT_COLUMNS
+				},
+				onError: async (error: unknown) => {
+					const status =
+						error instanceof Error && 'status' in error
+							? (error as { status: number }).status
+							: null;
+
+					if (status === 401) {
+						console.warn('[TanStack DB] LAT: Unauthorized (401), redirecting to hub login');
+						window.location.href = HUB_URL;
+						return;
+					}
+
+					if (status === 400 && !latShapeResetAttempted) {
+						latShapeResetAttempted = true;
+						console.warn('[TanStack DB] LAT: Broken shape detected (400), deleting and retrying');
+						try {
+							await fetch(`${ELECTRIC_URL}/v1/shape?table=lat`, { method: 'DELETE' });
+						} catch (e) {
+							console.warn('[TanStack DB] LAT: Shape deletion failed:', e);
+						}
+						await new Promise((resolve) => setTimeout(resolve, 1000));
+						return {};
+					}
+
+					console.error('[TanStack DB] LAT: Electric sync error:', error);
+					return;
+				}
+			},
+			getKey: (item) => item.section_id as string
+		})
+	);
+
+	console.log(`[TanStack DB] LAT collection initialized for law: ${lawName}`);
+	return collection as unknown as Collection<ElectricLatRecord, string>;
+}
+
+/**
+ * Get LAT collection for a specific law (browser only).
+ * Creates the collection on first call; recreates if law changes.
+ */
+let currentLatLawName = '';
+export async function getLatCollection(
+	lawName: string
+): Promise<Collection<ElectricLatRecord, string>> {
+	if (!browser) {
+		throw new Error('TanStack DB collections can only be used in the browser');
+	}
+
+	if (latCol && currentLatLawName === lawName) {
+		return latCol;
+	}
+
+	currentLatLawName = lawName;
+	latCol = await createLatCollection(lawName);
+	return latCol;
+}
+
+// ── Amendment Annotations Collection ────────────────────────────────────────
+
+let annotationCol: Collection<ElectricAnnotationRecord, string> | null = null;
+let annotationShapeResetAttempted = false;
+
+/**
+ * Create annotations collection with Electric sync.
+ * Filtered by law_name — annotations are per-law.
+ */
+async function createAnnotationCollection(
+	lawName: string
+): Promise<Collection<ElectricAnnotationRecord, string>> {
+	const { createCollection } = await import('@tanstack/db');
+	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+	const whereClause = `law_name = '${lawName.replace(/'/g, "''")}'`;
+
+	const collection = createCollection(
+		electricCollectionOptions<ElectricAnnotationRecord>({
+			id: `annotations-${lawName}`,
+			syncMode: 'progressive',
+			shapeOptions: {
+				url: `${ELECTRIC_URL}/v1/shape`,
+				params: {
+					table: 'amendment_annotations',
+					where: whereClause,
+					columns: ANNOTATION_COLUMNS
+				},
+				onError: async (error: unknown) => {
+					const status =
+						error instanceof Error && 'status' in error
+							? (error as { status: number }).status
+							: null;
+
+					if (status === 401) {
+						console.warn('[TanStack DB] Annotations: Unauthorized (401), redirecting to hub login');
+						window.location.href = HUB_URL;
+						return;
+					}
+
+					if (status === 400 && !annotationShapeResetAttempted) {
+						annotationShapeResetAttempted = true;
+						console.warn(
+							'[TanStack DB] Annotations: Broken shape detected (400), deleting and retrying'
+						);
+						try {
+							await fetch(`${ELECTRIC_URL}/v1/shape?table=amendment_annotations`, {
+								method: 'DELETE'
+							});
+						} catch (e) {
+							console.warn('[TanStack DB] Annotations: Shape deletion failed:', e);
+						}
+						await new Promise((resolve) => setTimeout(resolve, 1000));
+						return {};
+					}
+
+					console.error('[TanStack DB] Annotations: Electric sync error:', error);
+					return;
+				}
+			},
+			getKey: (item) => item.id as string
+		})
+	);
+
+	console.log(`[TanStack DB] Annotations collection initialized for law: ${lawName}`);
+	return collection as unknown as Collection<ElectricAnnotationRecord, string>;
+}
+
+/**
+ * Get annotations collection for a specific law (browser only).
+ * Creates the collection on first call; recreates if law changes.
+ */
+let currentAnnotationLawName = '';
+export async function getAnnotationCollection(
+	lawName: string
+): Promise<Collection<ElectricAnnotationRecord, string>> {
+	if (!browser) {
+		throw new Error('TanStack DB collections can only be used in the browser');
+	}
+
+	if (annotationCol && currentAnnotationLawName === lawName) {
+		return annotationCol;
+	}
+
+	currentAnnotationLawName = lawName;
+	annotationCol = await createAnnotationCollection(lawName);
+	return annotationCol;
+}
+
 /**
  * Initialize the database
  */
@@ -353,9 +535,14 @@ export function getDBStatus() {
 		};
 	}
 
+	const collections: Record<string, string> = {};
+	if (ukLrtCol) collections.ukLrt = 'uk-lrt';
+	if (latCol) collections.lat = `lat-${currentLatLawName}`;
+	if (annotationCol) collections.annotations = `annotations-${currentAnnotationLawName}`;
+
 	return {
 		initialized: ukLrtCol !== null,
-		collections: ukLrtCol ? { ukLrt: 'uk-lrt' } : {},
+		collections,
 		storage: 'Electric (memory)',
 		whereClause: currentWhereClause
 	};

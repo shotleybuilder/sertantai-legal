@@ -19,7 +19,7 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
 
   # Tables allowed for shape recovery (DELETE). Kept as a simple static list
   # since DELETE doesn't need full Gatekeeper validation.
-  @allowed_tables ~w(uk_lrt organization_locations location_screenings)
+  @allowed_tables ~w(uk_lrt organization_locations location_screenings lat amendment_annotations)
 
   @doc """
   Proxy GET /api/electric/v1/shape to Electric's HTTP API.
