@@ -51,10 +51,12 @@ defmodule SertantaiLegalWeb.Router do
     get("/uk-lrt/:id", UkLrtController, :show)
   end
 
-  # AI service endpoints — DRRP clause processing (API key auth)
+  # AI service endpoints — machine-to-machine (API key auth)
   scope "/api/ai", SertantaiLegalWeb do
     pipe_through(:api_ai)
     get("/drrp/clause/queue", AiDrrpController, :queue)
+    get("/sync/lat", AiSyncController, :lat)
+    get("/sync/annotations", AiSyncController, :annotations)
   end
 
   # Electric proxy — public shapes (UK LRT reference data)
