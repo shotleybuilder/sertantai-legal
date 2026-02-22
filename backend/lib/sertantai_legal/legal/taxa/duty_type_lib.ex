@@ -24,7 +24,8 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
     ClauseRefiner,
     DutyTypeDefnGoverned,
     DutyTypeDefnGovernment,
-    DutyTypeDefnGovernmentV2
+    DutyTypeDefnGovernmentV2,
+    RegexClauseConfidence
   }
 
   # Pattern version configuration
@@ -336,6 +337,9 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
                   full_match = ensure_valid_utf8(full_match)
 
                   # V2 patterns have capture groups for action text after modal
+                  has_captured_action =
+                    match?([captured | _] when captured != "", captures)
+
                   refined_clause =
                     case captures do
                       [captured | _] when captured != "" ->
@@ -353,7 +357,11 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
                   %{
                     holder: actor_str,
                     duty_type: label,
-                    clause: refined_clause
+                    clause: refined_clause,
+                    regex_clause_confidence:
+                      RegexClauseConfidence.score(refined_clause,
+                        captured_action: has_captured_action
+                      )
                   }
                 end)
 
@@ -527,6 +535,9 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
                 full_match = ensure_valid_utf8(full_match)
 
                 # V2 patterns have capture groups for action text after modal
+                has_captured_action =
+                  match?([captured | _] when captured != "", captures)
+
                 refined_clause =
                   case captures do
                     [captured | _] when captured != "" ->
@@ -544,7 +555,11 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
                 %{
                   holder: actor_str,
                   duty_type: label,
-                  clause: refined_clause
+                  clause: refined_clause,
+                  regex_clause_confidence:
+                    RegexClauseConfidence.score(refined_clause,
+                      captured_action: has_captured_action
+                    )
                 }
               end)
 

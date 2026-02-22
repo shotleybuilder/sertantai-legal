@@ -100,12 +100,27 @@ defmodule SertantaiLegal.Legal.Taxa.TaxaFormatter do
 
     entries =
       Enum.map(matches, fn match ->
-        %{
+        entry = %{
           "holder" => match[:holder] || match["holder"],
           "duty_type" => match[:duty_type] || match["duty_type"],
           "clause" => match[:clause] || match["clause"],
           "article" => article
         }
+
+        confidence = match[:regex_clause_confidence] || match["regex_clause_confidence"]
+
+        # Add article bonus to confidence if article context is available
+        confidence =
+          if confidence && article do
+            Float.round(min(confidence + 0.15, 1.0), 2)
+          else
+            confidence
+          end
+
+        entry
+        |> then(fn e ->
+          if confidence, do: Map.put(e, "regex_clause_confidence", confidence), else: e
+        end)
       end)
 
     if entries == [] do
