@@ -91,16 +91,6 @@
 		{ value: 'stale', label: 'Stale' }
 	];
 
-	const typeCodeOptions = [
-		{ value: 'ukpga', label: 'UK Public General Act' },
-		{ value: 'uksi', label: 'UK Statutory Instrument' },
-		{ value: 'asp', label: 'Act of Scottish Parliament' },
-		{ value: 'ssi', label: 'Scottish Statutory Instrument' },
-		{ value: 'wsi', label: 'Wales Statutory Instrument' },
-		{ value: 'nia', label: 'Northern Ireland Act' },
-		{ value: 'nisr', label: 'NI Statutory Rules' }
-	];
-
 	const columns: ColumnDef<QueueItem>[] = [
 		{
 			id: 'actions',
@@ -123,26 +113,9 @@
 			id: 'title_en',
 			accessorKey: 'title_en',
 			header: 'Title',
-			cell: (info) => info.getValue(),
-			size: 300,
+			cell: (info) => info.getValue() || '',
+			size: 350,
 			meta: { group: 'Identification', dataType: 'text' }
-		},
-		{
-			id: 'year',
-			accessorKey: 'year',
-			header: 'Year',
-			cell: (info) => info.getValue(),
-			size: 70,
-			meta: { group: 'Identification', dataType: 'number' }
-		},
-		{
-			id: 'type_code',
-			accessorKey: 'type_code',
-			header: 'Type',
-			cell: (info) => String(info.getValue() || '').toUpperCase(),
-			size: 80,
-			enableGrouping: true,
-			meta: { group: 'Identification', dataType: 'select', selectOptions: typeCodeOptions }
 		},
 		{
 			id: 'queue_reason',
@@ -292,6 +265,12 @@
 					</button>
 				{:else if column === 'law_name'}
 					<span class="font-mono text-gray-700">{row.law_name}</span>
+				{:else if column === 'title_en'}
+					{#if row.title_en}
+						<span class="text-gray-900">{row.title_en}</span>
+					{:else}
+						<span class="text-gray-400 italic">No title</span>
+					{/if}
 				{:else if column === 'queue_reason'}
 					{#if row.queue_reason === 'missing'}
 						<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
@@ -302,11 +281,7 @@
 							stale
 						</span>
 					{/if}
-				{:else if column === 'type_code'}
-					<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-						{String(row.type_code || '').toUpperCase()}
-					</span>
-				{/if}
+			{/if}
 			</svelte:fragment>
 		</TableKit>
 	{/if}
