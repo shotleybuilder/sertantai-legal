@@ -89,6 +89,7 @@ export interface QueueItem {
 	title_en: string;
 	year: number;
 	type_code: string;
+	family: string | null;
 	lrt_updated_at: string | null;
 	lat_count: number;
 	latest_lat_updated_at: string | null;

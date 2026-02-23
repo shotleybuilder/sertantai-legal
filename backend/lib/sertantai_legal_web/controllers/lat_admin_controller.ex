@@ -70,7 +70,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   @queue_base_select """
   SELECT
     u.id::text AS law_id, u.name AS law_name, u.title_en, u.year,
-    u.type_code, u.updated_at AS lrt_updated_at,
+    u.type_code, u.family, u.updated_at AS lrt_updated_at,
     COALESCE(lat_agg.lat_count, 0) AS lat_count,
     lat_agg.latest_lat_updated_at,
     CASE WHEN COALESCE(lat_agg.lat_count, 0) = 0 THEN 'missing'
@@ -82,11 +82,14 @@ defmodule SertantaiLegalWeb.LatAdminController do
   ) lat_agg ON lat_agg.law_id = u.id
   """
 
-  @queue_live_filter "AND u.live IS DISTINCT FROM '❌ Revoked / Repealed / Abolished'"
+  @queue_exclusions """
+  AND u.live IS DISTINCT FROM '❌ Revoked / Repealed / Abolished'
+  AND u.title_en IS NOT NULL
+  """
 
   @queue_sql @queue_base_select <>
                """
-               WHERE u.is_making = true #{@queue_live_filter}
+               WHERE u.is_making = true #{@queue_exclusions}
                  AND (COALESCE(lat_agg.lat_count, 0) = 0
                       OR u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months')
                ORDER BY u.updated_at ASC
@@ -95,7 +98,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   @queue_missing_sql @queue_base_select <>
                        """
-                       WHERE u.is_making = true #{@queue_live_filter}
+                       WHERE u.is_making = true #{@queue_exclusions}
                          AND COALESCE(lat_agg.lat_count, 0) = 0
                        ORDER BY u.updated_at ASC
                        LIMIT $1 OFFSET $2
@@ -103,7 +106,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   @queue_stale_sql @queue_base_select <>
                      """
-                     WHERE u.is_making = true #{@queue_live_filter}
+                     WHERE u.is_making = true #{@queue_exclusions}
                        AND lat_agg.lat_count > 0
                        AND u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months'
                      ORDER BY u.updated_at ASC
@@ -121,7 +124,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
     SELECT law_id, COUNT(*) AS lat_count, MAX(updated_at) AS latest_lat_updated_at
     FROM lat GROUP BY law_id
   ) lat_agg ON lat_agg.law_id = u.id
-  WHERE u.is_making = true #{@queue_live_filter}
+  WHERE u.is_making = true #{@queue_exclusions}
     AND (COALESCE(lat_agg.lat_count, 0) = 0
          OR u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months')
   """

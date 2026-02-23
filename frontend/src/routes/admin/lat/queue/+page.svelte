@@ -118,6 +118,15 @@
 			meta: { group: 'Identification', dataType: 'text' }
 		},
 		{
+			id: 'family',
+			accessorKey: 'family',
+			header: 'Family',
+			cell: (info) => info.getValue() || '',
+			size: 200,
+			enableGrouping: true,
+			meta: { group: 'Identification', dataType: 'text' }
+		},
+		{
 			id: 'queue_reason',
 			accessorKey: 'queue_reason',
 			header: 'Reason',
@@ -156,7 +165,7 @@
 
 	const tableConfig = {
 		id: 'lat_queue_default',
-		version: '1.0',
+		version: '1.1',
 		defaultSorting: [{ columnId: 'lrt_updated_at', direction: 'asc' as const }]
 	};
 </script>
@@ -265,12 +274,6 @@
 					</button>
 				{:else if column === 'law_name'}
 					<span class="font-mono text-gray-700">{row.law_name}</span>
-				{:else if column === 'title_en'}
-					{#if row.title_en}
-						<span class="text-gray-900">{row.title_en}</span>
-					{:else}
-						<span class="text-gray-400 italic">No title</span>
-					{/if}
 				{:else if column === 'queue_reason'}
 					{#if row.queue_reason === 'missing'}
 						<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
