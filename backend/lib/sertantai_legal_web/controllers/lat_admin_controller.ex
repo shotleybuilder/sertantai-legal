@@ -82,9 +82,11 @@ defmodule SertantaiLegalWeb.LatAdminController do
   ) lat_agg ON lat_agg.law_id = u.id
   """
 
+  @queue_live_filter "AND u.live IS DISTINCT FROM '❌ Revoked / Repealed / Abolished'"
+
   @queue_sql @queue_base_select <>
                """
-               WHERE u.is_making = true
+               WHERE u.is_making = true #{@queue_live_filter}
                  AND (COALESCE(lat_agg.lat_count, 0) = 0
                       OR u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months')
                ORDER BY u.updated_at ASC
@@ -93,7 +95,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   @queue_missing_sql @queue_base_select <>
                        """
-                       WHERE u.is_making = true
+                       WHERE u.is_making = true #{@queue_live_filter}
                          AND COALESCE(lat_agg.lat_count, 0) = 0
                        ORDER BY u.updated_at ASC
                        LIMIT $1 OFFSET $2
@@ -101,7 +103,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   @queue_stale_sql @queue_base_select <>
                      """
-                     WHERE u.is_making = true
+                     WHERE u.is_making = true #{@queue_live_filter}
                        AND lat_agg.lat_count > 0
                        AND u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months'
                      ORDER BY u.updated_at ASC
@@ -119,7 +121,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
     SELECT law_id, COUNT(*) AS lat_count, MAX(updated_at) AS latest_lat_updated_at
     FROM lat GROUP BY law_id
   ) lat_agg ON lat_agg.law_id = u.id
-  WHERE u.is_making = true
+  WHERE u.is_making = true #{@queue_live_filter}
     AND (COALESCE(lat_agg.lat_count, 0) = 0
          OR u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months')
   """
