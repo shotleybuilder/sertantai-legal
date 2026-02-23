@@ -31,6 +31,9 @@ build/
 coverage/
 .nyc_output/
 
+# Data exports
+data/
+
 # Docker volumes
 volumes/
 
@@ -49,5 +52,6 @@ rel/
 .claude/*
 !.claude/skills/
 !.claude/sessions/
+.claude/sessions/.current-session
 !.claude/plans/
 !.claude/commands/
