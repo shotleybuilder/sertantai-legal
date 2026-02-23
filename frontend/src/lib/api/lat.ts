@@ -83,6 +83,7 @@ export interface AnnotationsResponse {
 }
 
 export interface QueueItem {
+	[key: string]: unknown; // Index signature for TableKit compatibility
 	law_id: string;
 	law_name: string;
 	title_en: string;

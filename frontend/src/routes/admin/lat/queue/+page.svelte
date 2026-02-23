@@ -1,80 +1,79 @@
 <script lang="ts">
-	import { useLatQueueQuery, useReparseMutation } from '$lib/query/lat';
+	import { onMount } from 'svelte';
+	import { TableKit } from '@shotleybuilder/svelte-table-kit';
+	import type { ColumnDef } from '@tanstack/svelte-table';
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import type { QueueItem } from '$lib/api/lat';
+	import { getLatQueue, reparseLat, type QueueItem } from '$lib/api/lat';
 
 	const queryClient = useQueryClient();
 
 	// ── State ────────────────────────────────────────────────────────
 
-	let reasonFilter: 'missing' | 'stale' | undefined = undefined;
-	let limit = 50;
-	let offset = 0;
+	let data: QueueItem[] = [];
+	let isLoading = true;
+	let error: string | null = null;
+
+	// Counts from API (always reflect full queue, not filtered)
+	let totalCount = 0;
+	let missingCount = 0;
+	let staleCount = 0;
 
 	// Reparse tracking
 	let reparsingLaw: string | null = null;
 	let reparseMessage = '';
 	let reparseError = '';
 
-	// ── Queries ──────────────────────────────────────────────────────
+	// ── Data fetching ───────────────────────────────────────────────
 
-	$: queueQuery = useLatQueueQuery(limit, offset, reasonFilter);
-	$: reparseMutation = useReparseMutation();
-
-	// ── Derived ──────────────────────────────────────────────────────
-
-	$: data = $queueQuery?.data;
-	$: items = data?.items ?? [];
-	$: total = data?.total ?? 0;
-	$: missingCount = data?.missing_count ?? 0;
-	$: staleCount = data?.stale_count ?? 0;
-	$: filteredTotal = data?.filtered_total ?? 0;
-	$: hasMore = data?.has_more ?? false;
-	$: currentPage = Math.floor(offset / limit) + 1;
-	$: totalPages = Math.ceil(filteredTotal / limit);
-
-	// ── Filter ───────────────────────────────────────────────────────
-
-	function setFilter(reason: 'missing' | 'stale' | undefined) {
-		reasonFilter = reason;
-		offset = 0;
+	async function fetchQueue() {
+		try {
+			isLoading = true;
+			error = null;
+			const result = await getLatQueue(5000, 0);
+			data = result.items;
+			totalCount = result.total;
+			missingCount = result.missing_count;
+			staleCount = result.stale_count;
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to load queue';
+		} finally {
+			isLoading = false;
+		}
 	}
 
-	// ── Pagination ──────────────────────────────────────────────────
-
-	function nextPage() {
-		offset += limit;
-	}
-
-	function prevPage() {
-		offset = Math.max(0, offset - limit);
-	}
+	onMount(() => {
+		fetchQueue();
+	});
 
 	// ── Re-parse ────────────────────────────────────────────────────
 
-	function handleReparse(item: QueueItem) {
+	async function handleReparse(item: QueueItem) {
 		reparsingLaw = item.law_name;
 		reparseMessage = '';
 		reparseError = '';
 
-		$reparseMutation.mutate(item.law_name, {
-			onSuccess: (result) => {
-				reparsingLaw = null;
-				reparseMessage = `Re-parsed ${item.law_name}: ${result.lat.inserted} LAT rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
-				queryClient.invalidateQueries({ queryKey: ['lat', 'queue'] });
-			},
-			onError: (error) => {
-				reparsingLaw = null;
-				reparseError = `Failed to re-parse ${item.law_name}: ${error.message}`;
-			}
-		});
+		try {
+			const result = await reparseLat(item.law_name);
+			reparsingLaw = null;
+			reparseMessage = `Re-parsed ${item.law_name}: ${result.lat.inserted} LAT rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
+			// Refresh queue data and invalidate related queries
+			queryClient.invalidateQueries({ queryKey: ['lat'] });
+			await fetchQueue();
+		} catch (e) {
+			reparsingLaw = null;
+			reparseError = `Failed to re-parse ${item.law_name}: ${e instanceof Error ? e.message : 'Unknown error'}`;
+		}
 	}
 
-	// ── Formatting ──────────────────────────────────────────────────
+	// ── Helpers ──────────────────────────────────────────────────────
 
-	function formatDate(iso: string | null): string {
-		if (!iso) return '--';
-		return new Date(iso).toLocaleDateString('en-GB', {
+	function asRecord(row: unknown): QueueItem {
+		return row as QueueItem;
+	}
+
+	function formatDate(dateStr: string | null): string {
+		if (!dateStr) return '--';
+		return new Date(dateStr).toLocaleDateString('en-GB', {
 			day: '2-digit',
 			month: 'short',
 			year: 'numeric'
@@ -84,6 +83,109 @@
 	function formatNumber(n: number): string {
 		return n.toLocaleString();
 	}
+
+	// ── Column definitions ──────────────────────────────────────────
+
+	const reasonOptions = [
+		{ value: 'missing', label: 'Missing' },
+		{ value: 'stale', label: 'Stale' }
+	];
+
+	const typeCodeOptions = [
+		{ value: 'ukpga', label: 'UK Public General Act' },
+		{ value: 'uksi', label: 'UK Statutory Instrument' },
+		{ value: 'asp', label: 'Act of Scottish Parliament' },
+		{ value: 'ssi', label: 'Scottish Statutory Instrument' },
+		{ value: 'wsi', label: 'Wales Statutory Instrument' },
+		{ value: 'nia', label: 'Northern Ireland Act' },
+		{ value: 'nisr', label: 'NI Statutory Rules' }
+	];
+
+	const columns: ColumnDef<QueueItem>[] = [
+		{
+			id: 'actions',
+			header: '',
+			cell: (info) => info.cell.row.original.law_name,
+			size: 80,
+			enableSorting: false,
+			enableResizing: false,
+			meta: { group: 'Actions' }
+		},
+		{
+			id: 'law_name',
+			accessorKey: 'law_name',
+			header: 'Law Name',
+			cell: (info) => info.getValue(),
+			size: 160,
+			meta: { group: 'Identification', dataType: 'text' }
+		},
+		{
+			id: 'title_en',
+			accessorKey: 'title_en',
+			header: 'Title',
+			cell: (info) => info.getValue(),
+			size: 300,
+			meta: { group: 'Identification', dataType: 'text' }
+		},
+		{
+			id: 'year',
+			accessorKey: 'year',
+			header: 'Year',
+			cell: (info) => info.getValue(),
+			size: 70,
+			meta: { group: 'Identification', dataType: 'number' }
+		},
+		{
+			id: 'type_code',
+			accessorKey: 'type_code',
+			header: 'Type',
+			cell: (info) => String(info.getValue() || '').toUpperCase(),
+			size: 80,
+			enableGrouping: true,
+			meta: { group: 'Identification', dataType: 'select', selectOptions: typeCodeOptions }
+		},
+		{
+			id: 'queue_reason',
+			accessorKey: 'queue_reason',
+			header: 'Reason',
+			cell: (info) => info.getValue(),
+			size: 90,
+			enableGrouping: true,
+			meta: { group: 'Queue', dataType: 'select', selectOptions: reasonOptions }
+		},
+		{
+			id: 'lat_count',
+			accessorKey: 'lat_count',
+			header: 'LAT Rows',
+			cell: (info) => info.getValue(),
+			size: 80,
+			meta: { group: 'Queue', dataType: 'number' }
+		},
+		{
+			id: 'lrt_updated_at',
+			accessorKey: 'lrt_updated_at',
+			header: 'LRT Updated',
+			cell: (info) => formatDate(info.getValue() as string | null),
+			size: 110,
+			meta: { group: 'Dates', dataType: 'date' }
+		},
+		{
+			id: 'latest_lat_updated_at',
+			accessorKey: 'latest_lat_updated_at',
+			header: 'LAT Updated',
+			cell: (info) => formatDate(info.getValue() as string | null),
+			size: 110,
+			meta: { group: 'Dates', dataType: 'date' }
+		}
+	];
+
+	// ── TableKit config ─────────────────────────────────────────────
+
+	const tableConfig = {
+		id: 'lat_queue_default',
+		version: '1.0',
+		defaultSorting: [{ columnId: 'lrt_updated_at', direction: 'asc' as const }]
+	};
 </script>
 
 <svelte:head>
@@ -115,177 +217,97 @@
 	{/if}
 
 	<!-- Stats Bar -->
-	{#if data}
+	{#if !isLoading}
 		<div class="grid grid-cols-3 gap-4">
-			<button
-				on:click={() => setFilter(undefined)}
-				class="bg-white rounded-lg border p-4 text-left transition-colors
-					{reasonFilter === undefined
-					? 'border-blue-500 ring-1 ring-blue-500'
-					: 'border-gray-200 hover:border-gray-300'}"
-			>
+			<div class="bg-white rounded-lg border border-gray-200 p-4">
 				<div class="text-sm text-gray-500">Total Queue</div>
-				<div class="text-2xl font-bold text-gray-900">{formatNumber(total)}</div>
-			</button>
-			<button
-				on:click={() => setFilter('missing')}
-				class="bg-white rounded-lg border p-4 text-left transition-colors
-					{reasonFilter === 'missing'
-					? 'border-red-500 ring-1 ring-red-500'
-					: 'border-gray-200 hover:border-gray-300'}"
-			>
+				<div class="text-2xl font-bold text-gray-900">{formatNumber(totalCount)}</div>
+			</div>
+			<div class="bg-white rounded-lg border border-gray-200 p-4">
 				<div class="text-sm text-gray-500">Missing LAT</div>
 				<div class="text-2xl font-bold text-red-600">{formatNumber(missingCount)}</div>
-			</button>
-			<button
-				on:click={() => setFilter('stale')}
-				class="bg-white rounded-lg border p-4 text-left transition-colors
-					{reasonFilter === 'stale'
-					? 'border-amber-500 ring-1 ring-amber-500'
-					: 'border-gray-200 hover:border-gray-300'}"
-			>
+			</div>
+			<div class="bg-white rounded-lg border border-gray-200 p-4">
 				<div class="text-sm text-gray-500">Stale LAT</div>
 				<div class="text-2xl font-bold text-amber-600">{formatNumber(staleCount)}</div>
-			</button>
+			</div>
 		</div>
 	{/if}
 
 	<!-- Table -->
-	{#if $queueQuery?.isLoading}
-		<div class="text-center py-12 text-gray-500">Loading queue...</div>
-	{:else if items.length === 0}
+	{#if isLoading}
+		<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
+			<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+			<p class="mt-4 text-gray-600">Loading queue...</p>
+		</div>
+	{:else if error}
+		<div class="px-4 py-8 bg-red-50 border border-red-200 rounded-lg">
+			<p class="text-red-600">{error}</p>
+			<button
+				class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+				on:click={fetchQueue}
+			>
+				Retry
+			</button>
+		</div>
+	{:else if data.length === 0}
 		<div class="text-center py-12 text-gray-500">
-			{#if reasonFilter}
-				No {reasonFilter} records in queue.
-			{:else}
-				No records in queue. All making laws have up-to-date LAT data.
-			{/if}
+			No records in queue. All making laws have up-to-date LAT data.
 		</div>
 	{:else}
-		<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-			<div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-				<span class="text-xs text-gray-500">
-					Showing {offset + 1}–{Math.min(offset + items.length, filteredTotal)} of {formatNumber(filteredTotal)}
-					{#if reasonFilter}({reasonFilter}){/if}
-				</span>
-				<span class="text-xs text-gray-400">Oldest first</span>
-			</div>
-			<div class="overflow-x-auto">
-				<table class="min-w-full divide-y divide-gray-200">
-					<thead class="bg-gray-50">
-						<tr>
-							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Law Name
-							</th>
-							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Title
-							</th>
-							<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Year
-							</th>
-							<th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Type
-							</th>
-							<th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Reason
-							</th>
-							<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-								LAT Rows
-							</th>
-							<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-								LRT Updated
-							</th>
-							<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-								LAT Updated
-							</th>
-							<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Actions
-							</th>
-						</tr>
-					</thead>
-					<tbody class="bg-white divide-y divide-gray-200">
-						{#each items as item (item.law_id)}
-							<tr class="hover:bg-gray-50 transition-colors">
-								<td class="px-4 py-2 text-sm font-mono text-gray-700 whitespace-nowrap">
-									{item.law_name}
-								</td>
-								<td class="px-4 py-2 text-sm text-gray-900 max-w-xs truncate" title={item.title_en}>
-									{item.title_en}
-								</td>
-								<td class="px-4 py-2 text-sm text-gray-600 text-right">{item.year}</td>
-								<td class="px-4 py-2 text-sm text-center">
-									<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-										{item.type_code}
-									</span>
-								</td>
-								<td class="px-4 py-2 text-center">
-									{#if item.queue_reason === 'missing'}
-										<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-											missing
-										</span>
-									{:else}
-										<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-											stale
-										</span>
-									{/if}
-								</td>
-								<td class="px-4 py-2 text-sm text-gray-600 text-right font-mono">
-									{item.lat_count}
-								</td>
-								<td class="px-4 py-2 text-sm text-gray-600 text-right whitespace-nowrap">
-									{formatDate(item.lrt_updated_at)}
-								</td>
-								<td class="px-4 py-2 text-sm text-gray-600 text-right whitespace-nowrap">
-									{formatDate(item.latest_lat_updated_at)}
-								</td>
-								<td class="px-4 py-2 text-right">
-									<button
-										on:click={() => handleReparse(item)}
-										disabled={reparsingLaw === item.law_name}
-										class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors
-											{reparsingLaw === item.law_name
-											? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-											: 'bg-blue-600 text-white hover:bg-blue-700'}"
-									>
-										{#if reparsingLaw === item.law_name}
-											Parsing...
-										{:else}
-											Re-parse
-										{/if}
-									</button>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-
-			<!-- Pagination -->
-			<div class="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-				<button
-					on:click={prevPage}
-					disabled={offset === 0}
-					class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors
-						{offset === 0
-						? 'text-gray-400 cursor-not-allowed'
-						: 'text-blue-600 hover:bg-blue-50'}"
-				>
-					&larr; Previous
-				</button>
-				<span class="text-xs text-gray-500">
-					Page {currentPage} of {totalPages}
-				</span>
-				<button
-					on:click={nextPage}
-					disabled={!hasMore}
-					class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors
-						{!hasMore
-						? 'text-gray-400 cursor-not-allowed'
-						: 'text-blue-600 hover:bg-blue-50'}"
-				>
-					Next &rarr;
-				</button>
-			</div>
-		</div>
+		<TableKit
+			{data}
+			{columns}
+			config={tableConfig}
+			storageKey="lat_queue_table"
+			persistState={true}
+			align="left"
+			features={{
+				columnVisibility: true,
+				columnResizing: true,
+				columnReordering: true,
+				filtering: true,
+				sorting: true,
+				sortingMode: 'control',
+				pagination: true,
+				grouping: true
+			}}
+		>
+			<svelte:fragment slot="cell" let:cell let:column>
+				{@const row = asRecord(cell.row.original)}
+				{#if column === 'actions'}
+					<button
+						on:click={() => handleReparse(row)}
+						disabled={reparsingLaw === row.law_name}
+						class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors
+							{reparsingLaw === row.law_name
+							? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+							: 'bg-blue-600 text-white hover:bg-blue-700'}"
+					>
+						{#if reparsingLaw === row.law_name}
+							Parsing...
+						{:else}
+							Re-parse
+						{/if}
+					</button>
+				{:else if column === 'law_name'}
+					<span class="font-mono text-gray-700">{row.law_name}</span>
+				{:else if column === 'queue_reason'}
+					{#if row.queue_reason === 'missing'}
+						<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+							missing
+						</span>
+					{:else}
+						<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+							stale
+						</span>
+					{/if}
+				{:else if column === 'type_code'}
+					<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
+						{String(row.type_code || '').toUpperCase()}
+					</span>
+				{/if}
+			</svelte:fragment>
+		</TableKit>
 	{/if}
 </div>
