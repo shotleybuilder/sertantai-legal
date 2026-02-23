@@ -278,6 +278,12 @@
 					<span class="text-gray-900">{row.title_en || ''}</span>
 				{:else if column === 'family'}
 					<span class="text-gray-700">{row.family || ''}</span>
+				{:else if column === 'lat_count'}
+					<span class="text-gray-700">{row.lat_count}</span>
+				{:else if column === 'lrt_updated_at'}
+					<span class="text-gray-700">{formatDate(String(row.lrt_updated_at ?? ''))}</span>
+				{:else if column === 'latest_lat_updated_at'}
+					<span class="text-gray-700">{formatDate(String(row.latest_lat_updated_at ?? ''))}</span>
 				{:else if column === 'queue_reason'}
 					{#if row.queue_reason === 'missing'}
 						<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
