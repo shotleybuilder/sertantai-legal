@@ -97,9 +97,11 @@ The UK LRT database contains 19,000+ records imported from a SQL dump. Re-import
 
 | Service | Port | Database |
 |---------|------|----------|
-| sertantai-controls | 5435 | sertantai_controls_dev |
 | sertantai-enforcement | 5434 | sertantai_enforcement_dev |
+| sertantai-hub | 5435 | starter_app_dev |
 | **sertantai-legal** | **5436** | **sertantai_legal_dev** |
+| sertantai-controls | 5437 | sertantai_controls_dev |
+| sertantai-auth | 5438 | sertantai_auth_prod (integration testing only) |
 
 ### Initial Database Setup
 
