@@ -7,7 +7,10 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
   setup :setup_auth
 
-  setup do
+  setup %{conn: conn} do
+    {:ok, result} = SertantaiLegal.AuthHelpers.setup_admin_session(%{conn: conn})
+    admin_conn = result[:conn]
+
     law_id = Ecto.UUID.generate()
     {:ok, law_id_binary} = Ecto.UUID.dump(law_id)
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
@@ -87,19 +90,20 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
       }
     ])
 
-    %{law_id: law_id, now: now}
+    %{law_id: law_id, now: now, conn: admin_conn}
   end
 
   # ── Auth ────────────────────────────────────────────────────────
 
   describe "auth" do
-    test "returns 401 without auth header", %{conn: conn} do
-      conn = get(conn, "/api/lat/stats")
+    test "returns 401 without session" do
+      # Fresh conn without admin session
+      conn = Phoenix.ConnTest.build_conn() |> get("/api/lat/stats")
       assert json_response(conn, 401)
     end
 
-    test "returns 200 with valid auth", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/stats")
+    test "returns 200 with valid admin session", %{conn: conn} do
+      conn = get(conn, "/api/lat/stats")
       assert json_response(conn, 200)
     end
   end
@@ -108,7 +112,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
   describe "GET /api/lat/stats" do
     test "returns expected stats shape", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/stats")
+      conn = conn |> get("/api/lat/stats")
       resp = json_response(conn, 200)
 
       assert is_integer(resp["total_lat_rows"])
@@ -124,7 +128,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     end
 
     test "section_type_counts includes test data types", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/stats")
+      conn = conn |> get("/api/lat/stats")
       resp = json_response(conn, 200)
 
       assert resp["section_type_counts"]["section"] >= 2
@@ -136,7 +140,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
   describe "GET /api/lat/laws" do
     test "returns law list with counts", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws")
+      conn = conn |> get("/api/lat/laws")
       resp = json_response(conn, 200)
 
       assert is_list(resp["laws"])
@@ -152,35 +156,35 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     end
 
     test "search filters by title", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws", search: "Test Act")
+      conn = conn |> get("/api/lat/laws", search: "Test Act")
       resp = json_response(conn, 200)
 
       assert Enum.any?(resp["laws"], &(&1["law_name"] == "UK_ukpga_2024_1"))
     end
 
     test "search filters by law_name", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws", search: "UK_ukpga_2024")
+      conn = conn |> get("/api/lat/laws", search: "UK_ukpga_2024")
       resp = json_response(conn, 200)
 
       assert Enum.any?(resp["laws"], &(&1["law_name"] == "UK_ukpga_2024_1"))
     end
 
     test "search with no matches returns empty", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws", search: "zzz_nonexistent")
+      conn = conn |> get("/api/lat/laws", search: "zzz_nonexistent")
       resp = json_response(conn, 200)
 
       refute Enum.any?(resp["laws"], &(&1["law_name"] == "UK_ukpga_2024_1"))
     end
 
     test "type_code filter works", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws", type_code: "ukpga")
+      conn = conn |> get("/api/lat/laws", type_code: "ukpga")
       resp = json_response(conn, 200)
 
       assert Enum.any?(resp["laws"], &(&1["law_name"] == "UK_ukpga_2024_1"))
     end
 
     test "type_code filter excludes non-matching", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws", type_code: "uksi")
+      conn = conn |> get("/api/lat/laws", type_code: "uksi")
       resp = json_response(conn, 200)
 
       refute Enum.any?(resp["laws"], &(&1["law_name"] == "UK_ukpga_2024_1"))
@@ -191,7 +195,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
   describe "GET /api/lat/laws/:law_name" do
     test "returns LAT rows in document order", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_2024_1")
+      conn = conn |> get("/api/lat/laws/UK_ukpga_2024_1")
       resp = json_response(conn, 200)
 
       assert resp["law_name"] == "UK_ukpga_2024_1"
@@ -205,7 +209,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     end
 
     test "rows include expected fields", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_2024_1")
+      conn = conn |> get("/api/lat/laws/UK_ukpga_2024_1")
       resp = json_response(conn, 200)
 
       row = Enum.find(resp["rows"], &(&1["section_id"] == "UK_ukpga_2024_1:s.1"))
@@ -218,7 +222,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
     test "pagination with limit and offset", %{conn: conn} do
       conn =
-        conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_2024_1", limit: "2", offset: "0")
+        conn |> get("/api/lat/laws/UK_ukpga_2024_1", limit: "2", offset: "0")
 
       resp = json_response(conn, 200)
 
@@ -231,7 +235,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
     test "pagination offset works", %{conn: conn} do
       conn =
-        conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_2024_1", limit: "2", offset: "2")
+        conn |> get("/api/lat/laws/UK_ukpga_2024_1", limit: "2", offset: "2")
 
       resp = json_response(conn, 200)
 
@@ -240,7 +244,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     end
 
     test "non-existent law returns empty", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_9999_1")
+      conn = conn |> get("/api/lat/laws/UK_ukpga_9999_1")
       resp = json_response(conn, 200)
 
       assert resp["count"] == 0
@@ -253,7 +257,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
   describe "GET /api/lat/laws/:law_name/annotations" do
     test "returns annotations for a law", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_2024_1/annotations")
+      conn = conn |> get("/api/lat/laws/UK_ukpga_2024_1/annotations")
       resp = json_response(conn, 200)
 
       assert resp["law_name"] == "UK_ukpga_2024_1"
@@ -261,7 +265,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     end
 
     test "annotations include expected fields", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_2024_1/annotations")
+      conn = conn |> get("/api/lat/laws/UK_ukpga_2024_1/annotations")
       resp = json_response(conn, 200)
 
       ann = Enum.find(resp["annotations"], &(&1["id"] == "UK_ukpga_2024_1:amendment:1"))
@@ -273,7 +277,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     end
 
     test "non-existent law returns empty", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/lat/laws/UK_ukpga_9999_1/annotations")
+      conn = conn |> get("/api/lat/laws/UK_ukpga_9999_1/annotations")
       resp = json_response(conn, 200)
 
       assert resp["count"] == 0
@@ -285,7 +289,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
 
   describe "POST /api/lat/laws/:law_name/reparse" do
     test "returns 422 for non-existent law", %{conn: conn} do
-      conn = conn |> put_auth_header() |> post("/api/lat/laws/UK_ukpga_9999_1/reparse")
+      conn = conn |> post("/api/lat/laws/UK_ukpga_9999_1/reparse")
       resp = json_response(conn, 422)
 
       assert is_binary(resp["error"])

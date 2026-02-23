@@ -193,18 +193,30 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
       assert conn.status == 200
     end
 
-    test "protected endpoint returns 401 without auth", %{conn: conn} do
+    test "JWT endpoint returns 401 without auth", %{conn: conn} do
+      conn =
+        conn
+        |> put_req_header("content-type", "application/json")
+        |> patch("/api/uk-lrt/#{Ecto.UUID.generate()}", Jason.encode!(%{}))
+
+      assert conn.status == 401
+    end
+
+    test "admin endpoint returns 401 without session", %{conn: conn} do
       conn = get(conn, "/api/sessions")
       assert conn.status == 401
     end
 
     test "protected endpoint works with valid auth", %{conn: conn} do
+      # uk-lrt write routes still use JWT auth
       conn =
         conn
         |> put_auth_header()
-        |> get("/api/sessions")
+        |> put_req_header("content-type", "application/json")
+        |> patch("/api/uk-lrt/#{Ecto.UUID.generate()}", Jason.encode!(%{}))
 
-      assert conn.status == 200
+      # 404/422/400 means JWT auth passed (resource not found)
+      assert conn.status in [400, 404, 422]
     end
   end
 end

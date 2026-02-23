@@ -8,7 +8,9 @@ defmodule SertantaiLegalWeb.Endpoint do
     store: :cookie,
     key: "_sertantai_legal_key",
     signing_salt: "m2DMKQLC",
-    same_site: "Lax"
+    same_site: "Lax",
+    secure: Application.compile_env(:sertantai_legal, :session_secure, false),
+    domain: Application.compile_env(:sertantai_legal, :session_domain, "localhost")
   ]
 
   # socket "/live", Phoenix.LiveView.Socket,

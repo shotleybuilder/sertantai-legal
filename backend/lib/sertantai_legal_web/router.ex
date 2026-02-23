@@ -1,15 +1,33 @@
 defmodule SertantaiLegalWeb.Router do
   use SertantaiLegalWeb, :router
+  use AshAuthentication.Phoenix.Router
 
   pipeline :api do
     plug(:accepts, ["json"])
   end
 
-  # Authenticated API pipeline — validates JWT from sertantai-auth
+  # Authenticated API pipeline — validates JWT from sertantai-auth (tenant users)
   pipeline :api_authenticated do
     plug(:accepts, ["json"])
     plug(SertantaiLegalWeb.LoadFromCookie)
     plug(SertantaiLegalWeb.AuthPlug)
+  end
+
+  # Browser-like pipeline for OAuth redirects (session + cookies)
+  pipeline :auth_browser do
+    plug(:accepts, ["html", "json"])
+    plug(:fetch_session)
+    plug(:fetch_cookies)
+  end
+
+  # Admin API pipeline — GitHub session auth, JSON responses
+  pipeline :api_admin do
+    plug(:accepts, ["json"])
+    plug(:fetch_session)
+    plug(:fetch_cookies)
+    plug(SertantaiLegalWeb.Plugs.AuthHelpers, :load_current_user)
+    plug(SertantaiLegalWeb.Plugs.AuthHelpers, :require_authenticated_user)
+    plug(SertantaiLegalWeb.Plugs.AuthHelpers, :require_admin_user)
   end
 
   # Pipeline for Server-Sent Events - no content type restrictions
@@ -18,16 +36,33 @@ defmodule SertantaiLegalWeb.Router do
     # No accepts plug - we set content-type manually in the controller
   end
 
-  # SSE with authentication
-  pipeline :sse_authenticated do
+  # SSE with flexible auth (session OR JWT)
+  pipeline :sse_flexible_authenticated do
+    plug(:fetch_session)
+    plug(:fetch_cookies)
+    plug(SertantaiLegalWeb.Plugs.AuthHelpers, :load_current_user)
     plug(SertantaiLegalWeb.LoadFromCookie)
-    plug(SertantaiLegalWeb.AuthPlug)
+    plug(SertantaiLegalWeb.Plugs.FlexibleAuth)
   end
 
   # AI service pipeline — API key auth for machine-to-machine LAN calls
   pipeline :api_ai do
     plug(:accepts, ["json"])
     plug(SertantaiLegalWeb.AiApiKeyPlug)
+  end
+
+  # GitHub OAuth routes (browser redirects)
+  scope "/", SertantaiLegalWeb do
+    pipe_through(:auth_browser)
+
+    auth_routes(AuthController, SertantaiLegal.Accounts.User, path: "/auth")
+    get("/auth/sign-out", AuthController, :sign_out)
+  end
+
+  # Auth status endpoint (session-based, JSON)
+  scope "/api/auth", SertantaiLegalWeb do
+    pipe_through([:api, :fetch_session, :fetch_cookies])
+    get("/me", AuthController, :me)
   end
 
   # Health check endpoints (no /api prefix, no authentication required)
@@ -60,29 +95,32 @@ defmodule SertantaiLegalWeb.Router do
   end
 
   # Electric proxy — public shapes (UK LRT reference data)
-  # Gatekeeper pattern: org-scoped shapes validated by sertantai-auth, secret added server-side.
-  # UK LRT is public reference data so no JWT required (matches REST endpoints above).
   scope "/api/electric", SertantaiLegalWeb do
     pipe_through(:sse)
     get("/v1/shape", ElectricProxyController, :shape)
     delete("/v1/shape", ElectricProxyController, :delete_shape)
   end
 
-  # Authenticated SSE streaming endpoints
+  # Authenticated SSE streaming with flexible auth (session OR JWT)
   scope "/api", SertantaiLegalWeb do
-    pipe_through([:sse, :sse_authenticated])
+    pipe_through([:sse, :sse_flexible_authenticated])
     get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
   end
 
-  # Authenticated API endpoints — admin/write operations
+  # Tenant-scoped API endpoints (JWT auth from sertantai-auth)
   scope "/api", SertantaiLegalWeb do
     pipe_through(:api_authenticated)
 
-    # UK LRT write endpoints (require auth)
+    # UK LRT write endpoints (require org_id from JWT)
     patch("/uk-lrt/:id", UkLrtController, :update)
     delete("/uk-lrt/:id", UkLrtController, :delete)
     post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
     post("/uk-lrt/:id/parse-preview", UkLrtController, :parse_preview)
+  end
+
+  # Admin API endpoints (GitHub session auth)
+  scope "/api", SertantaiLegalWeb do
+    pipe_through(:api_admin)
 
     # Scraper endpoints (admin tools)
     post("/scrape", ScrapeController, :create)

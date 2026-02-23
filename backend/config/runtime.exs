@@ -38,6 +38,38 @@ if electric_secret = System.get_env("ELECTRIC_SECRET") do
     electric_secret: electric_secret
 end
 
+# GitHub OAuth admin configuration (all environments)
+if github_client_id =
+     System.get_env("SERTANTAI_LEGAL_GITHUB_CLIENT_ID") || System.get_env("GITHUB_CLIENT_ID") do
+  if github_client_secret =
+       System.get_env("SERTANTAI_LEGAL_GITHUB_CLIENT_SECRET") ||
+         System.get_env("GITHUB_CLIENT_SECRET") do
+    config :sertantai_legal, :github_oauth,
+      client_id: github_client_id,
+      client_secret: github_client_secret,
+      redirect_uri:
+        System.get_env("GITHUB_REDIRECT_URI") ||
+          "http://localhost:4003/auth/user/github/callback"
+  end
+end
+
+if allowed_users = System.get_env("GITHUB_ALLOWED_USERS") do
+  config :sertantai_legal, :github_admin,
+    allowed_users:
+      allowed_users
+      |> String.split(",")
+      |> Enum.map(&String.trim/1)
+      |> Enum.reject(&(&1 == ""))
+end
+
+if token_secret = System.get_env("TOKEN_SIGNING_SECRET") do
+  config :sertantai_legal, :token_signing_secret, token_secret
+end
+
+if frontend_url = System.get_env("FRONTEND_URL") do
+  config :sertantai_legal, :frontend_url, frontend_url
+end
+
 if config_env() == :prod do
   # Production uses DATABASE_URL (standard for most hosting platforms)
   database_url =
@@ -84,12 +116,32 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # Require AUTH_URL in production — JwksClient fetches the EdDSA public key from it
+  # AUTH_URL is optional — without it, JwksClient runs in degraded mode
+  # (JWT tenant auth disabled, but GitHub OAuth admin auth still works)
   unless System.get_env("AUTH_URL") do
+    IO.puts("[warning] AUTH_URL not set — JWT tenant auth will be unavailable")
+  end
+
+  # GitHub OAuth is required in production
+  unless System.get_env("GITHUB_CLIENT_ID") || System.get_env("SERTANTAI_LEGAL_GITHUB_CLIENT_ID") do
     raise """
-    environment variable AUTH_URL is missing.
-    This is required for fetching the JWKS public key from sertantai-auth.
-    Example: http://sertantai-auth:4001
+    environment variable GITHUB_CLIENT_ID is missing.
+    Required for GitHub OAuth admin authentication.
+    """
+  end
+
+  unless System.get_env("GITHUB_CLIENT_SECRET") ||
+           System.get_env("SERTANTAI_LEGAL_GITHUB_CLIENT_SECRET") do
+    raise """
+    environment variable GITHUB_CLIENT_SECRET is missing.
+    Required for GitHub OAuth admin authentication.
+    """
+  end
+
+  unless System.get_env("TOKEN_SIGNING_SECRET") do
+    raise """
+    environment variable TOKEN_SIGNING_SECRET is missing.
+    Required for OAuth session token signing.
     """
   end
 end

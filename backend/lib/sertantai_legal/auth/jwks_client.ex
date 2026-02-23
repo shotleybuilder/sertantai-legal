@@ -9,6 +9,9 @@ defmodule SertantaiLegal.Auth.JwksClient do
   In test mode, skips the HTTP fetch — tests provide their own keypair via
   `set_test_key/1`.
 
+  When `auth_url` is not configured, runs in degraded mode — JWT tenant auth
+  is disabled but the service continues (admin-only mode via GitHub OAuth).
+
   ## Usage
 
       # Get the cached public key for JWT verification
@@ -82,6 +85,9 @@ defmodule SertantaiLegal.Auth.JwksClient do
         schedule_refresh(@refresh_interval)
         {:noreply, %{state | key: jwk}}
 
+      {:error, :no_auth_url} ->
+        {:noreply, state}
+
       {:error, reason} ->
         Logger.warning("JWKS refresh failed: #{inspect(reason)}, keeping existing key")
         schedule_refresh(@retry_interval)
@@ -97,6 +103,10 @@ defmodule SertantaiLegal.Auth.JwksClient do
         schedule_refresh(@refresh_interval)
         {:noreply, %{state | key: jwk}}
 
+      {:error, :no_auth_url} ->
+        Logger.info("auth_url not configured — running without JWKS (admin-only mode)")
+        {:noreply, state}
+
       {:error, reason} ->
         Logger.warning("JWKS fetch failed: #{inspect(reason)}, retrying in 30s")
         schedule_refresh(@retry_interval)
@@ -110,27 +120,27 @@ defmodule SertantaiLegal.Auth.JwksClient do
     auth_url = Application.get_env(:sertantai_legal, :auth_url)
 
     unless auth_url do
-      raise "auth_url not configured — cannot fetch JWKS"
-    end
+      {:error, :no_auth_url}
+    else
+      url = "#{auth_url}/.well-known/jwks.json"
 
-    url = "#{auth_url}/.well-known/jwks.json"
+      case Req.get(url, receive_timeout: 10_000, retry: false, plug: req_plug()) do
+        {:ok, %Req.Response{status: 200, body: %{"keys" => [key | _]}}} ->
+          jwk = JOSE.JWK.from_map(key)
+          {:ok, jwk}
 
-    case Req.get(url, receive_timeout: 10_000, retry: false, plug: req_plug()) do
-      {:ok, %Req.Response{status: 200, body: %{"keys" => [key | _]}}} ->
-        jwk = JOSE.JWK.from_map(key)
-        {:ok, jwk}
+        {:ok, %Req.Response{status: 200, body: %{"keys" => []}}} ->
+          {:error, :no_keys_in_jwks}
 
-      {:ok, %Req.Response{status: 200, body: %{"keys" => []}}} ->
-        {:error, :no_keys_in_jwks}
+        {:ok, %Req.Response{status: status}} ->
+          {:error, {:unexpected_status, status}}
 
-      {:ok, %Req.Response{status: status}} ->
-        {:error, {:unexpected_status, status}}
+        {:error, %Req.TransportError{reason: reason}} ->
+          {:error, {:transport, reason}}
 
-      {:error, %Req.TransportError{reason: reason}} ->
-        {:error, {:transport, reason}}
-
-      {:error, reason} ->
-        {:error, reason}
+        {:error, reason} ->
+          {:error, reason}
+      end
     end
   end
 

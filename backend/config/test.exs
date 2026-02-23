@@ -36,3 +36,12 @@ config :sertantai_legal,
   electric_url: "http://localhost:3002",
   auth_url: "http://localhost:4000",
   jwks_req_plug: {Req.Test, SertantaiLegal.Auth.JwksClient}
+
+# Admin OAuth config for tests
+config :sertantai_legal,
+       :token_signing_secret,
+       "test-only-secret-not-for-production"
+
+config :sertantai_legal, :github_admin, allowed_users: ["test-admin"]
+
+config :sertantai_legal, :frontend_url, "http://localhost:5175"

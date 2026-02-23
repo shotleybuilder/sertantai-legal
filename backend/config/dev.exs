@@ -75,3 +75,19 @@ config :phoenix, :plug_init_mode, :runtime
 config :sertantai_legal,
   electric_url: "http://localhost:3002",
   auth_url: "http://localhost:4000"
+
+# Frontend URL for OAuth callback redirects
+config :sertantai_legal, :frontend_url, "http://localhost:5175"
+
+# Token signing secret for admin OAuth session tokens
+config :sertantai_legal,
+       :token_signing_secret,
+       System.get_env("TOKEN_SIGNING_SECRET") || "dev-only-secret-change-in-production"
+
+# GitHub admin config (GITHUB_ALLOWED_USERS controls who gets admin)
+config :sertantai_legal, :github_admin,
+  allowed_users:
+    System.get_env("GITHUB_ALLOWED_USERS", "")
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))

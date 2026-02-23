@@ -113,4 +113,76 @@ defmodule SertantaiLegal.AuthHelpers do
   Returns the default test organization ID.
   """
   def default_org_id, do: @default_org_id
+
+  # ── Admin Session Helpers ──────────────────────────────────────
+
+  @doc """
+  Creates an admin user in the database and initializes a session in the test conn.
+
+  Returns `%{conn: conn, admin_user: user}`.
+  """
+  def setup_admin_session(%{conn: conn} = _context) do
+    user = create_admin_user!()
+
+    conn =
+      conn
+      |> Plug.Test.init_test_session(%{"user_id" => user.id})
+
+    {:ok, conn: conn, admin_user: user}
+  end
+
+  @doc """
+  Creates a non-admin user and initializes a session in the test conn.
+
+  Returns `%{conn: conn, non_admin_user: user}`.
+  """
+  def setup_non_admin_session(%{conn: conn} = _context) do
+    user = create_non_admin_user!()
+
+    conn =
+      conn
+      |> Plug.Test.init_test_session(%{"user_id" => user.id})
+
+    {:ok, conn: conn, non_admin_user: user}
+  end
+
+  @doc "Creates an admin user directly via Ash."
+  def create_admin_user!(attrs \\ %{}) do
+    defaults = %{
+      email: "admin-#{System.unique_integer([:positive])}@test.com",
+      github_id: "#{System.unique_integer([:positive])}",
+      github_login: "test-admin",
+      name: "Test Admin",
+      is_admin: true,
+      admin_checked_at: DateTime.utc_now(),
+      last_login_at: DateTime.utc_now(),
+      primary_provider: "github"
+    }
+
+    attrs = Map.merge(defaults, attrs)
+
+    SertantaiLegal.Accounts.User
+    |> Ash.Changeset.for_create(:create, attrs)
+    |> Ash.create!(authorize?: false)
+  end
+
+  @doc "Creates a non-admin user directly via Ash."
+  def create_non_admin_user!(attrs \\ %{}) do
+    defaults = %{
+      email: "user-#{System.unique_integer([:positive])}@test.com",
+      github_id: "#{System.unique_integer([:positive])}",
+      github_login: "non-admin-user",
+      name: "Test User",
+      is_admin: false,
+      admin_checked_at: DateTime.utc_now(),
+      last_login_at: DateTime.utc_now(),
+      primary_provider: "github"
+    }
+
+    attrs = Map.merge(defaults, attrs)
+
+    SertantaiLegal.Accounts.User
+    |> Ash.Changeset.for_create(:create, attrs)
+    |> Ash.create!(authorize?: false)
+  end
 end

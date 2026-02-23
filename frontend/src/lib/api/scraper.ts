@@ -6,6 +6,13 @@
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
+/**
+ * Fetch wrapper that includes session credentials for admin auth.
+ */
+async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
+	return fetch(url, { ...options, credentials: 'include' });
+}
+
 export interface ScrapeSession {
 	id: string;
 	session_id: string;
@@ -71,7 +78,7 @@ export async function createScrapeSession(params: {
 	day_to: number;
 	type_code?: string;
 }): Promise<ScrapeSession> {
-	const response = await fetch(`${API_URL}/api/scrape`, {
+	const response = await adminFetch(`${API_URL}/api/scrape`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(params)
@@ -89,7 +96,7 @@ export async function createScrapeSession(params: {
  * Get list of recent sessions
  */
 export async function getSessions(): Promise<ScrapeSession[]> {
-	const response = await fetch(`${API_URL}/api/sessions`);
+	const response = await adminFetch(`${API_URL}/api/sessions`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -104,7 +111,7 @@ export async function getSessions(): Promise<ScrapeSession[]> {
  * Get session detail by session_id
  */
 export async function getSession(sessionId: string): Promise<ScrapeSession> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}`);
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -130,7 +137,7 @@ export interface DbStatusResult {
  * Get the count of session records that already exist in uk_lrt
  */
 export async function getSessionDbStatus(sessionId: string): Promise<DbStatusResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/db-status`);
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/db-status`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -144,7 +151,7 @@ export async function getSessionDbStatus(sessionId: string): Promise<DbStatusRes
  * Get records for a specific group
  */
 export async function getGroupRecords(sessionId: string, group: 1 | 2 | 3): Promise<GroupResponse> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/group/${group}`);
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/group/${group}`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -161,7 +168,7 @@ export async function persistGroup(
 	sessionId: string,
 	group: 1 | 2 | 3
 ): Promise<{ message: string; session: ScrapeSession }> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/persist/${group}`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/persist/${group}`, {
 		method: 'POST'
 	});
 
@@ -181,7 +188,7 @@ export async function parseGroup(
 	group: 1 | 2 | 3,
 	selectedOnly: boolean = false
 ): Promise<{ message: string; session_id: string; results: ParseResult }> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/parse/${group}`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/parse/${group}`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ selected_only: selectedOnly })
@@ -204,7 +211,7 @@ export async function updateSelection(
 	names: string[],
 	selected: boolean
 ): Promise<SelectionResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/group/${group}/select`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/group/${group}/select`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ names, selected })
@@ -222,7 +229,7 @@ export async function updateSelection(
  * Delete a session
  */
 export async function deleteSession(sessionId: string): Promise<{ message: string }> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}`, {
 		method: 'DELETE'
 	});
 
@@ -316,7 +323,7 @@ export interface ParseMetadataResult {
  * Use this for preview before deciding to do full enrichment parse.
  */
 export async function parseMetadata(sessionId: string, name: string): Promise<ParseMetadataResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/parse-metadata`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/parse-metadata`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ name })
@@ -334,7 +341,7 @@ export async function parseMetadata(sessionId: string, name: string): Promise<Pa
  * Parse a single record and return staged results for review
  */
 export async function parseOne(sessionId: string, name: string): Promise<ParseOneResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/parse-one`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/parse-one`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ name })
@@ -359,7 +366,7 @@ export async function confirmRecord(
 	family?: string,
 	overrides?: Record<string, unknown>
 ): Promise<ConfirmResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/confirm`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/confirm`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ name, record, family, overrides })
@@ -377,7 +384,7 @@ export async function confirmRecord(
  * Check if a record exists in uk_lrt by name
  */
 export async function checkExists(name: string): Promise<ExistsResult> {
-	const response = await fetch(`${API_URL}/api/uk-lrt/exists/${encodeURIComponent(name)}`);
+	const response = await adminFetch(`${API_URL}/api/uk-lrt/exists/${encodeURIComponent(name)}`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -404,7 +411,7 @@ export interface FamilyOptionsResult {
  * Get available family options for dropdowns
  */
 export async function getFamilyOptions(): Promise<FamilyOptionsResult> {
-	const response = await fetch(`${API_URL}/api/family-options`);
+	const response = await adminFetch(`${API_URL}/api/family-options`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -490,7 +497,7 @@ export interface BatchReparseResult {
  * Get affected laws for a session (for cascade update modal)
  */
 export async function getAffectedLaws(sessionId: string): Promise<AffectedLawsResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/affected-laws`);
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/affected-laws`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -507,7 +514,7 @@ export async function batchReparse(
 	sessionId: string,
 	names?: string[]
 ): Promise<BatchReparseResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/batch-reparse`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/batch-reparse`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ names })
@@ -525,7 +532,7 @@ export async function batchReparse(
  * Clear affected laws after cascade update is complete
  */
 export async function clearAffectedLaws(sessionId: string): Promise<{ message: string }> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/affected-laws`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/affected-laws`, {
 		method: 'DELETE'
 	});
 
@@ -570,7 +577,7 @@ export async function updateEnactingLinks(
 	sessionId: string,
 	names?: string[]
 ): Promise<UpdateEnactingLinksResult> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/update-enacting-links`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/update-enacting-links`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ names })
@@ -592,7 +599,7 @@ export async function saveCascadeMetadata(
 	name: string,
 	metadata: AffectedLawMetadata
 ): Promise<void> {
-	const response = await fetch(`${API_URL}/api/sessions/${sessionId}/cascade-metadata`, {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/cascade-metadata`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ name, metadata })
@@ -689,7 +696,7 @@ export async function getCascadeIndex(sessionId?: string): Promise<CascadeIndexR
 		? `${API_URL}/api/cascade?session_id=${encodeURIComponent(sessionId)}`
 		: `${API_URL}/api/cascade`;
 
-	const response = await fetch(url);
+	const response = await adminFetch(url);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -703,7 +710,7 @@ export async function getCascadeIndex(sessionId?: string): Promise<CascadeIndexR
  * Get list of sessions with pending cascade entries
  */
 export async function getCascadeSessions(): Promise<CascadeSessionsResult> {
-	const response = await fetch(`${API_URL}/api/cascade/sessions`);
+	const response = await adminFetch(`${API_URL}/api/cascade/sessions`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -717,7 +724,7 @@ export async function getCascadeSessions(): Promise<CascadeSessionsResult> {
  * Batch re-parse cascade entries by ID
  */
 export async function cascadeReparse(ids: string[]): Promise<CascadeOperationResult> {
-	const response = await fetch(`${API_URL}/api/cascade/reparse`, {
+	const response = await adminFetch(`${API_URL}/api/cascade/reparse`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ ids })
@@ -735,7 +742,7 @@ export async function cascadeReparse(ids: string[]): Promise<CascadeOperationRes
  * Update enacting links for cascade entries by ID
  */
 export async function cascadeUpdateEnacting(ids: string[]): Promise<CascadeOperationResult> {
-	const response = await fetch(`${API_URL}/api/cascade/update-enacting`, {
+	const response = await adminFetch(`${API_URL}/api/cascade/update-enacting`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ ids })
@@ -753,7 +760,7 @@ export async function cascadeUpdateEnacting(ids: string[]): Promise<CascadeOpera
  * Add missing laws to the database by parsing them
  */
 export async function cascadeAddLaws(ids: string[]): Promise<CascadeOperationResult> {
-	const response = await fetch(`${API_URL}/api/cascade/add-laws`, {
+	const response = await adminFetch(`${API_URL}/api/cascade/add-laws`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ ids })
@@ -771,7 +778,7 @@ export async function cascadeAddLaws(ids: string[]): Promise<CascadeOperationRes
  * Delete a single cascade entry
  */
 export async function deleteCascadeEntry(id: string): Promise<{ message: string; id: string }> {
-	const response = await fetch(`${API_URL}/api/cascade/${id}`, {
+	const response = await adminFetch(`${API_URL}/api/cascade/${id}`, {
 		method: 'DELETE'
 	});
 
@@ -793,7 +800,7 @@ export async function clearProcessedCascade(
 		? `${API_URL}/api/cascade/processed?session_id=${encodeURIComponent(sessionId)}`
 		: `${API_URL}/api/cascade/processed`;
 
-	const response = await fetch(url, {
+	const response = await adminFetch(url, {
 		method: 'DELETE'
 	});
 
@@ -808,7 +815,7 @@ export async function clearProcessedCascade(
 export async function clearSessionCascade(
 	sessionId: string
 ): Promise<{ message: string; session_id: string; deleted_count: number }> {
-	const response = await fetch(`${API_URL}/api/cascade/session/${encodeURIComponent(sessionId)}`, {
+	const response = await adminFetch(`${API_URL}/api/cascade/session/${encodeURIComponent(sessionId)}`, {
 		method: 'DELETE'
 	});
 
@@ -1008,7 +1015,7 @@ export function parseOneStream(
 	if (stages && stages.length > 0) {
 		url += `&stages=${stages.join(',')}`;
 	}
-	const eventSource = new EventSource(url);
+	const eventSource = new EventSource(url, { withCredentials: true });
 
 	eventSource.onmessage = (event) => {
 		try {
@@ -1126,7 +1133,7 @@ export async function parsePreview(
 		url += `?stages=${stages.join(',')}`;
 	}
 
-	const response = await fetch(url, {
+	const response = await adminFetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' }
 	});
@@ -1150,7 +1157,7 @@ export async function updateUkLrtRecord(
 	recordId: string,
 	data: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
-	const response = await fetch(`${API_URL}/api/uk-lrt/${recordId}`, {
+	const response = await adminFetch(`${API_URL}/api/uk-lrt/${recordId}`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data)

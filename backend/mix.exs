@@ -53,6 +53,13 @@ defmodule SertantaiLegal.MixProject do
       {:ash_phoenix, "~> 2.0"},
       {:ash_json_api, "~> 1.0"},
 
+      # GitHub OAuth authentication
+      {:ash_authentication, "~> 4.12"},
+      {:ash_authentication_phoenix, "~> 2.12"},
+
+      # SAT solver for Ash policy checking
+      {:picosat_elixir, "~> 0.2"},
+
       # JWT validation
       {:jose, "~> 1.11"},
 

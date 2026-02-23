@@ -34,12 +34,13 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
   end
 
   setup :setup_auth
+  setup :setup_admin_session
 
   setup %{conn: conn} do
     # Clean up any test session files
     Storage.delete_session(@test_session_id)
     on_exit(fn -> Storage.delete_session(@test_session_id) end)
-    {:ok, conn: put_auth_header(conn)}
+    {:ok, conn: conn}
   end
 
   describe "POST /api/scrape" do
