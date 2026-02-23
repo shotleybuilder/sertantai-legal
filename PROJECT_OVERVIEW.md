@@ -284,14 +284,14 @@ end
 ```bash
 DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 SECRET_KEY_BASE=dev_secret_64_chars_minimum
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5175
 SHARED_TOKEN_SECRET=dev_shared_token_for_jwt_validation
 ```
 
 **Frontend** (`frontend/.env`):
 ```bash
-VITE_API_URL=http://localhost:4000
-PUBLIC_ELECTRIC_URL=http://localhost:3000
+VITE_API_URL=http://localhost:4003
+PUBLIC_ELECTRIC_URL=http://localhost:3002
 ```
 
 ### Production (via infrastructure)
@@ -372,9 +372,9 @@ cd ../frontend && npm run dev     # Terminal 2
 ```
 
 ### Verify
-- Backend: http://localhost:4000/health
-- Frontend: http://localhost:5173
-- ElectricSQL: http://localhost:3000
+- Backend: http://localhost:4003/health
+- Frontend: http://localhost:5175
+- ElectricSQL: http://localhost:3002
 
 ---
 

@@ -29,14 +29,14 @@ Automated deployment scripts for building and pushing the Sertantai-Legal backen
 
 This template uses a **backend/frontend split** architecture:
 
-- **Backend:** Phoenix + Ash Framework API (port 4000)
+- **Backend:** Phoenix + Ash Framework API (port 4003)
   - No LiveView
   - No asset compilation
   - RESTful/JSON:API endpoints
   - Database migrations via release module
   - Health check endpoint: `/health`
 
-- **Frontend:** SvelteKit static application (port 3000)
+- **Frontend:** SvelteKit static application (port 5175)
   - Connects to backend API
   - Connects to ElectricSQL sync service
   - TanStack DB for client-side data
@@ -194,8 +194,8 @@ This template follows the **centralized infrastructure pattern** where PostgreSQ
 - SSL certificates
 
 ### Your App Provides:
-- Backend Docker image (exposes port 4000)
-- Frontend Docker image (exposes port 3000)
+- Backend Docker image (exposes port 4003)
+- Frontend Docker image (exposes port 5175)
 - Health endpoints for monitoring
 - Runtime configuration via environment variables
 - Automatic migrations on startup
@@ -240,7 +240,7 @@ This template follows the **centralized infrastructure pattern** where PostgreSQ
        listen 443 ssl;
        server_name legal-api.sertantai.com;
        location / {
-           proxy_pass http://sertantai-legal-backend:4000;
+           proxy_pass http://sertantai-legal-backend:4003;
        }
    }
 
@@ -249,7 +249,7 @@ This template follows the **centralized infrastructure pattern** where PostgreSQ
        listen 443 ssl;
        server_name legal.sertantai.com;
        location / {
-           proxy_pass http://sertantai-legal-frontend:3000;
+           proxy_pass http://sertantai-legal-frontend:5175;
        }
    }
    ```
@@ -373,12 +373,12 @@ docker logs sertantai-legal-frontend
 ## Health Checks
 
 **Backend:**
-- Endpoint: `http://localhost:4000/health`
+- Endpoint: `http://localhost:4003/health`
 - Expected: `{"status": "ok", "service": "sertantai-legal", "timestamp": "..."}`
-- Detailed: `http://localhost:4000/health/detailed` (includes database check)
+- Detailed: `http://localhost:4003/health/detailed` (includes database check)
 
 **Frontend:**
-- Endpoint: `http://localhost:3000/`
+- Endpoint: `http://localhost:3002/`
 - Expected: HTTP 200 with HTML
 
 **Docker health checks:**

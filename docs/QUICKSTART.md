@@ -50,7 +50,7 @@ cd backend
 mix phx.server
 ```
 
-Visit http://localhost:4000/health - should see:
+Visit http://localhost:4003/health - should see:
 ```json
 {"status": "ok", "service": "sertantai-legal", "timestamp": "..."}
 ```
@@ -61,11 +61,11 @@ cd frontend
 npm run dev
 ```
 
-Visit http://localhost:5173 - should see the starter app homepage
+Visit http://localhost:5175 - should see the starter app homepage
 
 **Check ElectricSQL**:
 ```bash
-curl http://localhost:3000
+curl http://localhost:3002
 ```
 
 Should get ElectricSQL response.
@@ -77,8 +77,8 @@ After completing the above steps, you'll have:
 - ✅ Working PostgreSQL database with logical replication
 - ✅ Working ElectricSQL sync service
 - ✅ **No User/Organization resources** (this microservice relies on JWT from sertantai-auth)
-- ✅ Backend API running on port 4000
-- ✅ Frontend running on port 5173
+- ✅ Backend API running on port 4003
+- ✅ Frontend running on port 5175
 - ✅ Health check endpoints working
 - ✅ SHARED_TOKEN_SECRET configured for JWT validation
 
@@ -214,12 +214,12 @@ cd backend
 mix ash_postgres.create
 ```
 
-**"Port 4000 already in use"**:
+**"Port 4003 already in use"**:
 ```bash
-# Check what's using port 4000
-lsof -i :4000
+# Check what's using port 4003
+lsof -i :4003
 # Kill the process or use a different port
-PORT=4001 mix phx.server
+PORT=4010 mix phx.server
 ```
 
 **"ElectricSQL connection failed"**:
@@ -233,8 +233,8 @@ docker-compose -f docker-compose.dev.yml restart electric
 **"Frontend can't connect to backend"**:
 Check `frontend/.env` has correct API URL:
 ```bash
-PUBLIC_API_URL=http://localhost:4000
-PUBLIC_ELECTRIC_URL=http://localhost:3000
+PUBLIC_API_URL=http://localhost:4003
+PUBLIC_ELECTRIC_URL=http://localhost:3002
 ```
 
 **"Module not found after renaming"**:
@@ -280,10 +280,10 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 # Phoenix
 SECRET_KEY_BASE=generate_with_mix_phx_gen_secret_command
 PHX_HOST=localhost
-PORT=4000
+PORT=4003
 
 # CORS
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5175
 
 # Microservices Authentication
 # CRITICAL: Must match across all services for JWT validation
@@ -292,8 +292,8 @@ SHARED_TOKEN_SECRET=same_as_sertantai_auth_service
 
 **Frontend** (`frontend/.env`):
 ```bash
-PUBLIC_API_URL=http://localhost:4000
-PUBLIC_ELECTRIC_URL=http://localhost:3000
+PUBLIC_API_URL=http://localhost:4003
+PUBLIC_ELECTRIC_URL=http://localhost:3002
 ```
 
 ## Success Checklist

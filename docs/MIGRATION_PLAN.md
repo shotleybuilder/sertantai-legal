@@ -839,7 +839,7 @@ sertantai-legal:
   networks:
     - infra_network
   healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+    test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
 
 sertantai-legal-electric:
   image: electricsql/electric:latest
@@ -854,11 +854,11 @@ sertantai-legal-electric:
 3. **Nginx config** (`nginx/conf.d/legal.sertantai.com.conf`):
 ```nginx
 upstream sertantai_legal_api {
-    server sertantai-legal:4000;
+    server sertantai-legal:4003;
 }
 
 upstream sertantai_legal_electric {
-    server sertantai-legal-electric:3000;
+    server sertantai-legal-electric:3002;
 }
 
 server {

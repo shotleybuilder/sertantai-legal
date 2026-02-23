@@ -110,15 +110,15 @@ cd ../frontend
 npm install
 
 # 4. Start servers
-cd ../backend && mix phx.server &   # Backend on :4000
-cd ../frontend && npm run dev       # Frontend on :5173
+cd ../backend && mix phx.server &   # Backend on :4003
+cd ../frontend && npm run dev       # Frontend on :5175
 ```
 
 ### Verify Setup
 
-- Backend API: http://localhost:4000/health
-- Frontend: http://localhost:5173
-- ElectricSQL: http://localhost:3000
+- Backend API: http://localhost:4003/health
+- Frontend: http://localhost:5175
+- ElectricSQL: http://localhost:3002
 
 ## Integration with SertantAI Ecosystem
 
@@ -184,14 +184,14 @@ end
 ```bash
 DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev
 SECRET_KEY_BASE=<64+ chars>
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5175
 SHARED_TOKEN_SECRET=<matches sertantai-auth>
 ```
 
 **Frontend** (`frontend/.env`):
 ```bash
-VITE_API_URL=http://localhost:4000
-PUBLIC_ELECTRIC_URL=http://localhost:3000
+VITE_API_URL=http://localhost:4003
+PUBLIC_ELECTRIC_URL=http://localhost:3002
 ```
 
 ## Development Commands

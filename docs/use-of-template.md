@@ -146,7 +146,7 @@ docs/use-of-template.md          # Template usage guide
     "tidewave": {
       "type": "stdio",
       "command": "/path/to/mcp-proxy",
-      "args": ["http://localhost:4000/tidewave/mcp"],
+      "args": ["http://localhost:4003/tidewave/mcp"],
       "env": {}
     }
   }

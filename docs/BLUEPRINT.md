@@ -237,7 +237,7 @@ electric:
   image: electricsql/electric:latest
   environment:
     DATABASE_URL: postgresql://postgres:postgres@postgres:5432/your_app_dev
-    HTTP_PORT: 3000
+    HTTP_PORT: 3002
     ELECTRIC_INSECURE: "true"  # Development only!
 ```
 
@@ -425,7 +425,7 @@ WORKDIR /app
 
 COPY --from=build /app/_build/prod/rel/sertantai_legal ./
 
-EXPOSE 4000
+EXPOSE 4003
 
 CMD ["bin/sertantai_legal", "start"]
 ```
