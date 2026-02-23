@@ -82,6 +82,30 @@ export interface AnnotationsResponse {
 	count: number;
 }
 
+export interface QueueItem {
+	law_id: string;
+	law_name: string;
+	title_en: string;
+	year: number;
+	type_code: string;
+	lrt_updated_at: string | null;
+	lat_count: number;
+	latest_lat_updated_at: string | null;
+	queue_reason: 'missing' | 'stale';
+}
+
+export interface QueueResponse {
+	items: QueueItem[];
+	count: number;
+	total: number;
+	missing_count: number;
+	stale_count: number;
+	filtered_total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+}
+
 export interface ReparseResult {
 	law_name: string;
 	lat: { inserted: number };
@@ -146,5 +170,21 @@ export async function getAnnotations(lawName: string): Promise<AnnotationsRespon
 export async function reparseLat(lawName: string): Promise<ReparseResult> {
 	const url = `${API_URL}/api/lat/laws/${encodeURIComponent(lawName)}/reparse`;
 	const response = await fetchWithAuth(url, { method: 'POST' });
+	return response.json();
+}
+
+export async function getLatQueue(
+	limit?: number,
+	offset?: number,
+	reason?: 'missing' | 'stale'
+): Promise<QueueResponse> {
+	const params = new URLSearchParams();
+	if (limit !== undefined) params.set('limit', String(limit));
+	if (offset !== undefined) params.set('offset', String(offset));
+	if (reason) params.set('reason', reason);
+
+	const qs = params.toString();
+	const url = `${API_URL}/api/lat/queue${qs ? `?${qs}` : ''}`;
+	const response = await fetchWithAuth(url);
 	return response.json();
 }

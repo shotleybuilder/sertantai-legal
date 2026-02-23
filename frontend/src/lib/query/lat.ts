@@ -9,19 +9,22 @@ import {
 	getLatRows,
 	getAnnotations,
 	reparseLat,
+	getLatQueue,
 	type LatStats,
 	type LawSummary,
 	type LatRowsResponse,
 	type AnnotationsResponse,
-	type ReparseResult
+	type ReparseResult,
+	type QueueResponse
 } from '$lib/api/lat';
 
 // Query Keys
 export const latKeys = {
 	all: ['lat'] as const,
 	stats: () => [...latKeys.all, 'stats'] as const,
-	laws: (search?: string, typeCode?: string) =>
-		[...latKeys.all, 'laws', search, typeCode] as const,
+	queue: (limit?: number, offset?: number, reason?: string) =>
+		[...latKeys.all, 'queue', limit, offset, reason] as const,
+	laws: (search?: string, typeCode?: string) => [...latKeys.all, 'laws', search, typeCode] as const,
 	rows: (lawName: string, limit?: number, offset?: number) =>
 		[...latKeys.all, 'rows', lawName, limit, offset] as const,
 	annotations: (lawName: string) => [...latKeys.all, 'annotations', lawName] as const
@@ -70,6 +73,16 @@ export function useAnnotationsQuery(lawName: string) {
 }
 
 /**
+ * Query: Get LAT parse queue (LRT records needing LAT parsing)
+ */
+export function useLatQueueQuery(limit?: number, offset?: number, reason?: 'missing' | 'stale') {
+	return createQuery<QueueResponse>({
+		queryKey: latKeys.queue(limit, offset, reason),
+		queryFn: () => getLatQueue(limit, offset, reason)
+	});
+}
+
+/**
  * Mutation: Trigger LAT re-parse for a law
  */
 export function useReparseMutation() {
@@ -80,6 +93,7 @@ export function useReparseMutation() {
 		onSuccess: (_data, lawName) => {
 			// Invalidate all queries that may have changed
 			queryClient.invalidateQueries({ queryKey: latKeys.stats() });
+			queryClient.invalidateQueries({ queryKey: ['lat', 'queue'] });
 			queryClient.invalidateQueries({ queryKey: ['lat', 'laws'] });
 			queryClient.invalidateQueries({ queryKey: ['lat', 'rows', lawName] });
 			queryClient.invalidateQueries({ queryKey: latKeys.annotations(lawName) });

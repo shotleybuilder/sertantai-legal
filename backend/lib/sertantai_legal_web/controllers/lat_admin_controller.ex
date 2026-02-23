@@ -6,6 +6,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   ## Endpoints
 
     - `GET /api/lat/stats` — Aggregate statistics
+    - `GET /api/lat/queue` — LRT records needing LAT parsing (missing or stale)
     - `GET /api/lat/laws` — List laws with LAT/annotation counts
     - `GET /api/lat/laws/:law_name` — LAT rows for a specific law
     - `GET /api/lat/laws/:law_name/annotations` — Annotations for a specific law
@@ -61,6 +62,112 @@ defmodule SertantaiLegalWeb.LatAdminController do
       laws_with_annotations: stats["laws_with_annotations"],
       section_type_counts: section_type_counts,
       code_type_counts: code_type_counts
+    })
+  end
+
+  # ── Queue — LRT records needing LAT parsing ─────────────────────────
+
+  @queue_base_select """
+  SELECT
+    u.id::text AS law_id, u.name AS law_name, u.title_en, u.year,
+    u.type_code, u.updated_at AS lrt_updated_at,
+    COALESCE(lat_agg.lat_count, 0) AS lat_count,
+    lat_agg.latest_lat_updated_at,
+    CASE WHEN COALESCE(lat_agg.lat_count, 0) = 0 THEN 'missing'
+         ELSE 'stale' END AS queue_reason
+  FROM uk_lrt u
+  LEFT JOIN (
+    SELECT law_id, COUNT(*) AS lat_count, MAX(updated_at) AS latest_lat_updated_at
+    FROM lat GROUP BY law_id
+  ) lat_agg ON lat_agg.law_id = u.id
+  """
+
+  @queue_sql @queue_base_select <>
+               """
+               WHERE u.is_making = true
+                 AND (COALESCE(lat_agg.lat_count, 0) = 0
+                      OR u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months')
+               ORDER BY u.updated_at ASC
+               LIMIT $1 OFFSET $2
+               """
+
+  @queue_missing_sql @queue_base_select <>
+                       """
+                       WHERE u.is_making = true
+                         AND COALESCE(lat_agg.lat_count, 0) = 0
+                       ORDER BY u.updated_at ASC
+                       LIMIT $1 OFFSET $2
+                       """
+
+  @queue_stale_sql @queue_base_select <>
+                     """
+                     WHERE u.is_making = true
+                       AND lat_agg.lat_count > 0
+                       AND u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months'
+                     ORDER BY u.updated_at ASC
+                     LIMIT $1 OFFSET $2
+                     """
+
+  @queue_count_sql """
+  SELECT
+    COUNT(*) AS total,
+    COUNT(*) FILTER (WHERE COALESCE(lat_agg.lat_count, 0) = 0) AS missing_count,
+    COUNT(*) FILTER (WHERE lat_agg.lat_count > 0
+      AND u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months') AS stale_count
+  FROM uk_lrt u
+  LEFT JOIN (
+    SELECT law_id, COUNT(*) AS lat_count, MAX(updated_at) AS latest_lat_updated_at
+    FROM lat GROUP BY law_id
+  ) lat_agg ON lat_agg.law_id = u.id
+  WHERE u.is_making = true
+    AND (COALESCE(lat_agg.lat_count, 0) = 0
+         OR u.updated_at > lat_agg.latest_lat_updated_at + INTERVAL '6 months')
+  """
+
+  def queue(conn, params) do
+    limit = parse_limit(params["limit"])
+    offset = parse_offset(params["offset"])
+    reason = params["reason"]
+
+    # Always fetch unfiltered counts for the stats bar
+    {:ok, %{columns: count_cols, rows: [count_row]}} = Repo.query(@queue_count_sql)
+    counts = Enum.zip(count_cols, count_row) |> Map.new()
+
+    # Fetch paginated items, optionally filtered by reason
+    {sql, args} =
+      case reason do
+        "missing" -> {@queue_missing_sql, [limit, offset]}
+        "stale" -> {@queue_stale_sql, [limit, offset]}
+        _ -> {@queue_sql, [limit, offset]}
+      end
+
+    {:ok, %{columns: cols, rows: rows}} = Repo.query(sql, args)
+
+    items =
+      Enum.map(rows, fn row ->
+        Enum.zip(cols, row)
+        |> Map.new()
+        |> maybe_format_timestamp("lrt_updated_at")
+        |> maybe_format_timestamp("latest_lat_updated_at")
+      end)
+
+    filtered_total =
+      case reason do
+        "missing" -> counts["missing_count"]
+        "stale" -> counts["stale_count"]
+        _ -> counts["total"]
+      end
+
+    json(conn, %{
+      items: items,
+      count: length(items),
+      total: counts["total"],
+      missing_count: counts["missing_count"],
+      stale_count: counts["stale_count"],
+      filtered_total: filtered_total,
+      limit: limit,
+      offset: offset,
+      has_more: offset + limit < filtered_total
     })
   end
 

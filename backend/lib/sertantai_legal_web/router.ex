@@ -146,6 +146,7 @@ defmodule SertantaiLegalWeb.Router do
 
     # LAT admin endpoints
     get("/lat/stats", LatAdminController, :stats)
+    get("/lat/queue", LatAdminController, :queue)
     get("/lat/laws", LatAdminController, :laws)
     get("/lat/laws/:law_name", LatAdminController, :show)
     get("/lat/laws/:law_name/annotations", LatAdminController, :annotations)
