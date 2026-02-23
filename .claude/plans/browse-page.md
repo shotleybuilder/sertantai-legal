@@ -48,32 +48,32 @@ Links: `leg_gov_uk_url`
 
 ## Known Bugs / Remaining Work
 
-- [ ] `captureCurrentConfig()` returns hardcoded defaults instead of actual current table state — "Save View" and "Update View" buttons save incorrect config
-- [ ] `ViewSidebar` basic integration done but lacks search, pinned section, keyboard nav — see `.claude/plans/issue-18-future-tiers-and-views.md` Phase 2
-- [ ] Mobile responsive not implemented — sidebar doesn't collapse to dropdown on narrow screens
-- [ ] `leg_gov_uk_url` cell renders "View" text but link click area is small
-- [ ] No detail view for individual law records (`/browse/[family]/[name]` not built)
+1. [x] **Sidebar views & labelling** — Added 3 view groups (New Laws, Amended Laws, Repealed Laws) with 7 time-based views each, plus Classification group. Views ordered by definition. Commit `3b24a67`.
 
-### Bug: captureCurrentConfig
+2. [ ] **Grouping rows show Family column value** — Group header rows (e.g. "2028", "Mar") render the Family cell content alongside the group key. Needs investigation: could be in `svelte-table-kit` group row rendering, `@tanstack/svelte-table` aggregation, or the browse page `slot="cell"` being applied to group rows.
 
-The `captureCurrentConfig()` function in `+page.svelte` doesn't capture the actual table state:
+3. [ ] **No search** — No way to search within displayed data or query the full DB. Options: global filter in TableKit, full-text search via Electric/Postgres, or a new search component/library.
 
-```typescript
-// CURRENT (broken) — returns defaults, not current state
-function captureCurrentConfig(): TableConfig {
-  return {
-    filters: [],
-    sort: null,
-    columns: columns.map((c) => String(c.id)),
-    columnOrder: columns.map((c) => String(c.id)),
-    columnWidths: {},
-    pageSize: 25,
-    grouping: []
-  };
-}
-```
+4. [ ] **`captureCurrentConfig()` returns hardcoded defaults** — "Save View" and "Update View" buttons save incorrect config:
+   ```typescript
+   // CURRENT (broken) — returns defaults, not current state
+   function captureCurrentConfig(): TableConfig {
+     return {
+       filters: [],
+       sort: null,
+       columns: columns.map((c) => String(c.id)),
+       columnOrder: columns.map((c) => String(c.id)),
+       columnWidths: {},
+       pageSize: 25,
+       grouping: []
+     };
+   }
+   ```
+   Needs to read from TableKit's current state via `handleTableStateChange` or a ref.
 
-Needs to read from TableKit's current state (visible columns, active filters, sort, grouping) via `handleTableStateChange` or a ref.
+5. [ ] **`leg_gov_uk_url` link click area too small** — "View" text link is hard to click.
+
+6. [ ] **Mobile responsive** — Sidebar doesn't collapse to dropdown on narrow screens.
 
 ---
 

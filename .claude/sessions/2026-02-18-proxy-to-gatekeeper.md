@@ -62,6 +62,9 @@
 - [ ] Manual: `sert-legal-start --docker --auth`, verify UK LRT shapes
 - [ ] Manual: verify org-scoped shape with valid JWT calls Gatekeeper
 
+**Ended**: 2026-02-18
+**Committed**: ac4abc5
+
 ## Auth Service Spec (Phase 1)
 
 ### Required changes in sertantai-auth (`~/Desktop/sertantai_auth`)

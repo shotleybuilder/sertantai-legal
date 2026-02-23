@@ -175,64 +175,31 @@ To support amendment/rescission views, add to `UK_LRT_COLUMNS`:
 
 **sertantai-legal** implements:
 - JWT validation, extract `org_id` and `services.legal.tier`
-- Tier-gated routing (frontend route groups)
-- Tier-specific UI
+- Feature-gated UI (same pages, selectively enable controls per tier)
 - RLS scoping by `org_id`
 - API layer (Atlantic Rainforest)
 
-### Proposed Route Architecture
+### Architecture Decision: Feature-Gated, Not Route-Gated
 
-```
-/                           # Landing page (public)
-/login                      # Redirect to sertantai-auth
-/callback                   # OAuth callback
+**Tiers are handled within the same browse page** by selectively enabling/disabling features and controls based on the user's tier — NOT by creating separate route hierarchies per tier.
 
-# Blanket Bog (free) ← CURRENT WORK
-/browse                     # UK LRT data browser (read-only)
-/browse/[family]            # Browse by family
-/browse/[family]/[name]     # Single law detail
+This means:
+- `/browse` is the single main page for all tiers
+- Blanket Bog sees read-only views
+- Flower Meadow sees the same page with additional controls (custom registers, screening, location panels)
+- Atlantic Rainforest sees API key management and usage sections enabled
+- Feature visibility is driven by a reactive tier store, not by route guards
 
-# Flower Meadow (paid)
-/registers                  # Custom legal registers dashboard
-/registers/[id]             # Single register view
-/screening                  # Location screening workflow
-/screening/new              # New screening
-/screening/[id]             # Screening results
-/locations                  # Organization locations
-/locations/[id]             # Location detail
+```typescript
+// Feature gating pattern
+{#if tier >= 'flower_meadow'}
+  <ScreeningPanel />
+  <RegisterBuilder />
+{/if}
 
-# Atlantic Rainforest (top)
-/api-keys                   # API key management
-/api-docs                   # Interactive API documentation
-/usage                      # API usage dashboard
-
-# Admin (internal, existing)
-/admin/lrt                  # LRT data management
-/admin/scrape               # Scraping tools
-```
-
-### Tier Gating: Layout-Based (Recommended)
-
-```
-routes/
-├── (public)/               # No auth required
-│   ├── +layout.svelte
-│   ├── +page.svelte        # Landing page
-│   └── login/
-├── (authenticated)/        # Any tier (logged in)
-│   ├── +layout.svelte      # Auth guard + tier detection
-│   ├── (bog)/              # Blanket Bog minimum
-│   │   └── browse/
-│   ├── (meadow)/           # Flower Meadow minimum
-│   │   ├── +layout.svelte  # Tier guard: >= flower_meadow
-│   │   ├── registers/
-│   │   ├── screening/
-│   │   └── locations/
-│   └── (rainforest)/       # Atlantic Rainforest
-│       ├── +layout.svelte  # Tier guard: == atlantic_rainforest
-│       ├── api-keys/
-│       └── usage/
-└── admin/                  # Internal admin routes
+{#if tier === 'atlantic_rainforest'}
+  <ApiKeyManager />
+{/if}
 ```
 
 ### Auth Store Design
@@ -247,14 +214,18 @@ interface AuthState {
 }
 ```
 
-### Navigation Per Tier
+### Features Per Tier
 
-| Tier | Nav Items |
-|------|-----------|
-| Blanket Bog | Browse Laws |
-| Flower Meadow | Browse Laws, My Registers, Screening, Locations |
-| Atlantic Rainforest | Browse Laws, My Registers, Screening, Locations, API Keys, Usage |
-| Admin (internal) | LRT Data, Scrape, Sessions, Cascade |
+| Feature | Blanket Bog | Flower Meadow | Atlantic Rainforest |
+|---------|:-----------:|:-------------:|:-------------------:|
+| Browse views (read-only) | yes | yes | yes |
+| Search | yes | yes | yes |
+| Custom views (save/edit) | ? | yes | yes |
+| Custom registers | | yes | yes |
+| Screening | | yes | yes |
+| Location management | | yes | yes |
+| API keys | | | yes |
+| Usage dashboard | | | yes |
 
 ---
 
@@ -263,6 +234,6 @@ interface AuthState {
 - [ ] Design Flower Meadow register builder concept
 - [ ] Design Atlantic Rainforest API layer concept
 - [ ] Implement auth store + JWT handling
-- [ ] Create route group structure with tier layouts
+- [ ] Implement feature-gating by tier (reactive store, conditional UI)
 - [ ] Build landing page
 - [ ] View sidebar enhancements (Phase 2a-2d above)
