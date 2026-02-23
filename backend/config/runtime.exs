@@ -48,12 +48,15 @@ if github_client_id =
       client_id: github_client_id,
       client_secret: github_client_secret,
       redirect_uri:
-        System.get_env("GITHUB_REDIRECT_URI") ||
+        System.get_env("SERTANTAI_LEGAL_GITHUB_REDIRECT_URI") ||
+          System.get_env("GITHUB_REDIRECT_URI") ||
           "http://localhost:4003/auth/user/github/callback"
   end
 end
 
-if allowed_users = System.get_env("GITHUB_ALLOWED_USERS") do
+if allowed_users =
+     System.get_env("SERTANTAI_LEGAL_GITHUB_ALLOWED_USERS") ||
+       System.get_env("GITHUB_ALLOWED_USERS") do
   config :sertantai_legal, :github_admin,
     allowed_users:
       allowed_users

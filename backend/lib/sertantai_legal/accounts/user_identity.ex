@@ -17,4 +17,9 @@ defmodule SertantaiLegal.Accounts.UserIdentity do
     domain(SertantaiLegal.Accounts)
     user_resource(SertantaiLegal.Accounts.User)
   end
+
+  attributes do
+    create_timestamp(:inserted_at)
+    update_timestamp(:updated_at)
+  end
 end

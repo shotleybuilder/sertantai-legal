@@ -57,10 +57,11 @@ defmodule SertantaiLegal.Accounts.User do
 
         redirect_uri(fn _, _ ->
           {:ok,
-           System.get_env(
-             "GITHUB_REDIRECT_URI",
-             "http://localhost:4003/auth/user/github/callback"
-           )}
+           System.get_env("SERTANTAI_LEGAL_GITHUB_REDIRECT_URI") ||
+             System.get_env(
+               "GITHUB_REDIRECT_URI",
+               "http://localhost:4003/auth/user/github/callback"
+             )}
         end)
 
         base_url("https://github.com")
@@ -200,7 +201,7 @@ defmodule SertantaiLegal.Accounts.User do
   end
 
   relationships do
-    has_many :user_identities, SertantaiLegal.Accounts.UserIdentity
+    has_many(:user_identities, SertantaiLegal.Accounts.UserIdentity)
   end
 
   code_interface do

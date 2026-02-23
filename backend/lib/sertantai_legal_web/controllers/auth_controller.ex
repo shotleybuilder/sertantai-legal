@@ -13,7 +13,13 @@ defmodule SertantaiLegalWeb.AuthController do
   use SertantaiLegalWeb, :controller
   use AshAuthentication.Phoenix.Controller
 
-  def success(conn, _activity, user, _token) do
+  def success(conn, activity, user, token) do
+    require Logger
+
+    Logger.info(
+      "OAuth SUCCESS: user=#{inspect(user.id)}, email=#{inspect(user.email)}, token=#{inspect(token != nil)}, activity=#{inspect(activity)}"
+    )
+
     frontend_url = Application.get_env(:sertantai_legal, :frontend_url, "http://localhost:5175")
 
     conn
@@ -22,7 +28,9 @@ defmodule SertantaiLegalWeb.AuthController do
     |> redirect(external: "#{frontend_url}/auth/callback")
   end
 
-  def failure(conn, _activity, _reason) do
+  def failure(conn, activity, reason) do
+    require Logger
+    Logger.error("OAuth FAILURE: activity=#{inspect(activity)}, reason=#{inspect(reason)}")
     frontend_url = Application.get_env(:sertantai_legal, :frontend_url, "http://localhost:5175")
 
     conn

@@ -20,7 +20,7 @@
 			const user = await adminAuth.check();
 			if (user) {
 				status = 'success';
-				setTimeout(() => goto('/admin/scrape'), 1000);
+				setTimeout(() => goto('/admin'), 1000);
 			} else {
 				status = 'error';
 				errorMessage = 'Session not established. Please try again.';
