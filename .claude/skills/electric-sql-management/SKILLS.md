@@ -270,16 +270,21 @@ If database was wiped, recover with these steps:
 ```bash
 # 1. Run all migrations
 cd /home/jason/Desktop/sertantai-legal/backend
+unset DATABASE_URL
 mix ash_postgres.migrate
 
-# 2. Re-import UK LRT data
+# 2. Import base records from legacy SQL dump
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
   -f /home/jason/Documents/sertantai-data/import_uk_lrt.sql
 
-# 3. Verify import
+# 3. Enrich with canonical Airtable CSV data
+mix run ../scripts/data/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+
+# 4. Verify import
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
   -c "SELECT COUNT(*) FROM uk_lrt;"
-# Should show: 19089
+# Should show: 19089+
 ```
 
 ## Quick Reference Card

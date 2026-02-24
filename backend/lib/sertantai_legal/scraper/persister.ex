@@ -200,9 +200,22 @@ defmodule SertantaiLegal.Scraper.Persister do
     existing_function = existing.function || %{}
     merged_function = Map.merge(existing_function, immediate_function)
 
+    # is_making must be updated even if existing is false (filter_update_attrs
+    # skips non-nil values). Taxa derives is_making from duty_type and it must
+    # propagate to the DB alongside the function map.
+    new_is_making = get_field(record, :is_making) == true
+
     update_attrs_with_function =
       if map_size(merged_function) > 0 do
-        Map.put(update_attrs, :function, merged_function)
+        update_attrs
+        |> Map.put(:function, merged_function)
+        |> then(fn attrs ->
+          if new_is_making and existing.is_making != true do
+            Map.put(attrs, :is_making, true)
+          else
+            attrs
+          end
+        end)
       else
         update_attrs
       end

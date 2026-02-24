@@ -118,11 +118,11 @@ mix ash_postgres.migrate
 **Status**: ✅ Data already imported (19,089 records)
 
 Data files are located at:
-- Schema: `~/Documents/sertantai-data/uk_lrt_schema.sql`
-- Data: `~/Documents/sertantai-data/uk_lrt_data.sql`
-- Function update CSV: `~/Documents/Airtable_Exports/UK-EXPORT.csv`
+- Legacy SQL dump: `~/Documents/sertantai-data/import_uk_lrt.sql` (base records with stale function/is_making values)
+- Canonical CSV source: `~/Documents/Airtable_Exports/UK-EXPORT.csv` (function, taxa, holders, duty_type, purpose)
+- CSV enrichment scripts: `scripts/data/update_uk_lrt_function.exs`, `scripts/data/update_uk_lrt_taxa.exs`
 
-To re-import if needed, see CLAUDE.md "Initial Database Setup" section.
+To re-import if needed, see CLAUDE.md "Initial Database Setup" section (two-step: SQL base + CSV enrichment).
 
 ### Priority 3: Build Basic Svelte Table
 

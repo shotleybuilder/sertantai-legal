@@ -84,10 +84,15 @@ cd /home/jason/Desktop/sertantai-legal/backend
 unset DATABASE_URL
 mix ash_postgres.migrate
 
+# Step 1: Import base records from legacy SQL dump
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
   -f /home/jason/Documents/sertantai-data/import_uk_lrt.sql
 
-# Verify: should show 19089
+# Step 2: Enrich with canonical Airtable CSV data
+mix run ../scripts/data/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+
+# Verify: should show 19089+
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
   -c "SELECT COUNT(*) FROM uk_lrt;"
 ```

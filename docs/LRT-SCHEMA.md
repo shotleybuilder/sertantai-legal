@@ -317,7 +317,7 @@
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `purpose` | Purpose | `purpose` | `map` (JSONB) | No | | 🦋_taxa |
+    | `purpose` | Purpose | `purpose` | `map` (JSONB) | Yes (8060) | | 🦋_taxa |
     
   ## Roles
   
@@ -441,3 +441,5 @@
 
 - [Family Values](./FAMILY_VALUES.md) - Valid family classifications
 - [Function Values](./FUNCTION_VALUES.md) - Making, Amending, Revoking, Commencing, Enacting
+- [Holder Values](./HOLDER_VALUES.md) - Actor taxonomy for duty/rights/responsibility/power holders
+- [Purpose Values](./PURPOSE_VALUES.md) - Purpose and duty_type taxonomy

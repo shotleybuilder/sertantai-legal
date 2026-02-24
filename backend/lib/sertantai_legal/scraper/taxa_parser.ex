@@ -90,6 +90,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
           power_holder: map() | nil,
           popimar: list(String.t()) | nil,
           popimar_details: map() | nil,
+          is_making: boolean(),
           taxa_text_source: String.t(),
           taxa_text_length: integer()
         }
@@ -320,6 +321,11 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
         role_details: TaxaFormatter.roles_to_jsonb(actors, []),
         role_gvt_details: TaxaFormatter.roles_to_jsonb(actors_gvt, []),
 
+        # Derived boolean: is_making = duty_type contains Duty or Responsibility
+        # This must be set here so the persister can propagate it to
+        # FunctionCalculator and the function JSONB map gets "Making": true
+        is_making: is_making_law?(record),
+
         # Metadata about the classification
         taxa_text_source: source,
         taxa_text_length: text_length
@@ -512,6 +518,9 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       # Issue #16: Role JSONB with article context - merged from per-section results
       role_details: duty_type_results.role_details,
       role_gvt_details: duty_type_results.role_gvt_details,
+
+      # Derived boolean: is_making = duty_type contains Duty or Responsibility
+      is_making: is_making_law?(merged_record),
       taxa_text_source: source,
       taxa_text_length: text_length
     }
@@ -918,6 +927,7 @@ defmodule SertantaiLegal.Scraper.TaxaParser do
       power_holder: nil,
       popimar: nil,
       popimar_details: nil,
+      is_making: false,
       taxa_text_source: source,
       taxa_text_length: 0
     }
