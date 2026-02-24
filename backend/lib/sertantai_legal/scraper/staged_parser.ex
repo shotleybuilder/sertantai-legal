@@ -52,6 +52,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.Metadata
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Scraper.TaxaParser
+  alias SertantaiLegal.Legal.Taxa.MakingDetector
 
   @stages [:metadata, :extent, :enacted_by, :amending, :amended_by, :repeal_revoke, :taxa]
 
@@ -400,6 +401,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         new_law
       end
 
+    # After metadata stage completes, run lightweight Making detection pre-filter
+    new_law =
+      if stage == :metadata and stage_result.status == :ok do
+        run_making_detection(new_law)
+      else
+        new_law
+      end
+
+    # After taxa stage completes, log disagreements between pre-filter and taxa
+    if stage == :taxa and stage_result.status == :ok do
+      log_making_disagreement(new_law)
+    end
+
     %{
       result
       | stages: new_stages,
@@ -408,6 +422,55 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         has_errors: length(new_errors) > 0,
         law: new_law
     }
+  end
+
+  # ============================================================================
+  # Making Detection Pre-filter (Issue #25)
+  # ============================================================================
+  #
+  # Runs after the metadata stage completes. Uses title, description, and
+  # structural metadata (paragraph counts) to classify laws as making/not_making/
+  # uncertain with a confidence score. This pre-filter determines which laws
+  # get sent to the future AI taxa service.
+
+  defp run_making_detection(law) do
+    metadata = %{
+      title: law.title_en,
+      md_description: law.md_description,
+      md_body_paras: law.md_body_paras,
+      md_schedule_paras: law.md_schedule_paras,
+      md_attachment_paras: law.md_attachment_paras
+    }
+
+    result = MakingDetector.detect(metadata)
+    fields = MakingDetector.to_parsed_law_fields(result)
+
+    ParsedLaw.merge(law, fields)
+  end
+
+  defp log_making_disagreement(law) do
+    classification = law.making_classification
+    taxa_making = law.is_making
+
+    case {classification, taxa_making} do
+      # Pre-filter said not_making but taxa found Making — false negative (most important)
+      {"not_making", true} ->
+        Logger.warning(
+          "[MakingDisagreement] FALSE_NEGATIVE #{law.name}: " <>
+            "pre-filter=not_making (#{law.making_confidence}) but taxa=making"
+        )
+
+      # Pre-filter said making but taxa says not Making — false positive (less critical)
+      {"making", false} ->
+        Logger.info(
+          "[MakingDisagreement] FALSE_POSITIVE #{law.name}: " <>
+            "pre-filter=making (#{law.making_confidence}) but taxa=not_making"
+        )
+
+      # No pre-filter result or uncertain — nothing to compare
+      _ ->
+        :ok
+    end
   end
 
   # ============================================================================

@@ -106,6 +106,12 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           is_rescinding: boolean() | nil,
           is_enacting: boolean() | nil,
 
+          # === FUNCTION (Making Detection Pre-filter) ===
+          making_confidence: float() | nil,
+          making_classification: String.t() | nil,
+          making_detection_tier: integer() | nil,
+          making_detection_signals: map() | nil,
+
           # === FUNCTION (Relationships - all as name lists) ===
           enacted_by: [String.t()],
           enacted_by_meta: [map()],
@@ -247,6 +253,12 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     is_amending: nil,
     is_rescinding: nil,
     is_enacting: nil,
+
+    # Function (Making Detection Pre-filter)
+    making_confidence: nil,
+    making_classification: nil,
+    making_detection_tier: nil,
+    making_detection_signals: nil,
 
     # Function (Relationships)
     enacted_by: [],
@@ -484,6 +496,12 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       is_amending: get_boolean(normalized, :is_amending),
       is_rescinding: get_boolean(normalized, :is_rescinding),
       is_enacting: get_boolean(normalized, :is_enacting),
+
+      # Function (Making Detection Pre-filter)
+      making_confidence: get_float(normalized, :making_confidence),
+      making_classification: get_string(normalized, :making_classification),
+      making_detection_tier: get_integer(normalized, :making_detection_tier),
+      making_detection_signals: get_map(normalized, :making_detection_signals),
 
       # Function (Relationships) - extract names from maps or pass through strings
       enacted_by: get_name_list(normalized, :enacted_by),
@@ -742,6 +760,23 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     case Integer.parse(str) do
       {int, ""} -> int
       {int, _} -> int
+      :error -> nil
+    end
+  end
+
+  defp get_float(map, key) do
+    case Map.get(map, key) do
+      nil -> nil
+      val when is_float(val) -> val
+      val when is_integer(val) -> val / 1
+      val when is_binary(val) -> parse_float(val)
+      _ -> nil
+    end
+  end
+
+  defp parse_float(str) do
+    case Float.parse(str) do
+      {float, _} -> float
       :error -> nil
     end
   end

@@ -419,6 +419,27 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Commencing function flag (brings other laws into force)")
     end
 
+    # Making Detection pre-filter (Issue #25)
+    attribute :making_confidence, :float do
+      allow_nil?(true)
+      description("Making detection composite confidence score (0.0-1.0)")
+    end
+
+    attribute :making_classification, :string do
+      allow_nil?(true)
+      description("Making detection classification: making, not_making, or uncertain")
+    end
+
+    attribute :making_detection_tier, :integer do
+      allow_nil?(true)
+      description("Highest tier that contributed a signal (1-4)")
+    end
+
+    attribute :making_detection_signals, :map do
+      allow_nil?(true)
+      description("JSONB map of all signals that fired during detection")
+    end
+
     # Amendment Stats - Self-affects (shared across amending/amended_by)
     attribute(:stats_self_affects_count, :integer,
       source: :"🔺🔻_stats_self_affects_count",
@@ -691,6 +712,10 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :is_enacting,
         :is_making,
         :is_commencing,
+        :making_confidence,
+        :making_classification,
+        :making_detection_tier,
+        :making_detection_signals,
         :function,
         :purpose,
         :popimar,
@@ -797,6 +822,10 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :is_enacting,
         :is_making,
         :is_commencing,
+        :making_confidence,
+        :making_classification,
+        :making_detection_tier,
+        :making_detection_signals,
         :function,
         :purpose,
         :popimar,
