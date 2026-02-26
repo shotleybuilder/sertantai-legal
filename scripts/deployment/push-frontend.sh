@@ -48,15 +48,22 @@ if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${FULL_IMAGE}
     exit 1
 fi
 
-# Check Docker registry authentication
+# Ensure logged in to GHCR
 echo -e "${BLUE}Checking GHCR authentication...${NC}"
-if grep -q "ghcr.io" ~/.docker/config.json 2>/dev/null; then
-    echo -e "${GREEN}✓ GHCR credentials found${NC}"
+if [ -n "$GHCR_TOKEN" ]; then
+    GHCR_USER="${GHCR_USER:-shotleybuilder}"
+    echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Logged in to GHCR as ${GHCR_USER}${NC}"
+    else
+        echo -e "${RED}✗ GHCR login failed (check GHCR_TOKEN)${NC}"
+        exit 1
+    fi
 else
-    echo -e "${RED}✗ Not logged in to GHCR${NC}"
-    echo -e "${YELLOW}  Login with:${NC}"
-    echo -e "${YELLOW}  echo \$GITHUB_PAT | docker login ghcr.io -u YOUR_USERNAME --password-stdin${NC}"
-    exit 1
+    echo -e "${YELLOW}⚠ GHCR_TOKEN not set — assuming already logged in${NC}"
+    echo -e "${YELLOW}  Set GHCR_TOKEN in ~/.bashrc for automatic login${NC}"
+    echo -e "${YELLOW}  Or login manually: echo \$TOKEN | docker login ghcr.io -u USERNAME --password-stdin${NC}"
+    echo ""
 fi
 
 # Push the image
