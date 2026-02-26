@@ -70,7 +70,6 @@
 	let isLoading = true;
 	let error: string | null = null;
 	let totalCount = 0;
-
 	// Electric sync state
 	let collectionSubscription: { unsubscribe: () => void } | null = null;
 
@@ -1282,7 +1281,8 @@
 				sortingMode: 'control',
 				pagination: false,
 				grouping: true,
-				globalSearch: true
+				globalSearch: true,
+				rowDetail: true
 			}}
 		>
 			<!-- Save View Buttons -->
@@ -1405,6 +1405,93 @@
 					{/if}
 				{:else}
 					{cell.getValue() ?? '-'}
+				{/if}
+			</svelte:fragment>
+
+			<svelte:fragment slot="row-detail" let:row let:close let:goToPrev let:goToNext let:hasPrev let:hasNext>
+				{#if row}
+					{@const r = asRecord(row)}
+					{@const familyDisplay = getFamilyDisplay(r.family)}
+					<div class="max-w-4xl mx-auto">
+						<!-- Header -->
+						<div class="mb-6">
+							<div class="flex items-start gap-3 mb-2">
+								{#if familyDisplay.prefix}
+									<span class="inline-block px-2 py-1 text-sm font-medium rounded {familyDisplay.prefix === 'HS' ? 'bg-blue-100 text-blue-700' : familyDisplay.prefix === 'E' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}">
+										{familyDisplay.prefix}
+									</span>
+								{/if}
+								<div>
+									<h2 class="text-xl font-bold text-gray-900">{r.title_en || r.name}</h2>
+									<p class="text-sm text-gray-500 font-mono mt-1">{r.name}</p>
+								</div>
+							</div>
+							<div class="flex flex-wrap gap-2 mt-3">
+								{#if r.live}
+									<span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {r.live === 'Live' ? 'bg-green-100 text-green-800' : r.live === 'Revoked' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
+										{r.live}
+									</span>
+								{/if}
+								{#if r.function?.length}
+									{#each r.function as fn}
+										<span class="px-2 py-0.5 text-xs rounded {fn === 'Making' ? 'bg-green-100 text-green-700' : fn === 'Amending' ? 'bg-yellow-100 text-yellow-700' : fn === 'Revoking' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">
+											{fn}
+										</span>
+									{/each}
+								{/if}
+								{#if r.leg_gov_uk_url}
+									<a href={String(r.leg_gov_uk_url)} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-0.5 text-xs text-blue-600 hover:text-blue-800 bg-blue-50 rounded">
+										legislation.gov.uk
+										<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+									</a>
+								{/if}
+							</div>
+						</div>
+
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<!-- Credentials -->
+							<section class="bg-gray-50 rounded-lg p-4">
+								<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Credentials</h3>
+								<dl class="space-y-2">
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Year</dt><dd class="text-sm font-medium text-gray-900">{r.year}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Number</dt><dd class="text-sm font-medium text-gray-900">{r.number || '-'}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Type Code</dt><dd class="text-sm font-medium text-gray-900 uppercase">{r.type_code || '-'}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Type Class</dt><dd class="text-sm font-medium text-gray-900">{r.type_class || '-'}</dd></div>
+								</dl>
+							</section>
+
+							<!-- Classification -->
+							<section class="bg-gray-50 rounded-lg p-4">
+								<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Classification</h3>
+								<dl class="space-y-2">
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Family</dt><dd class="text-sm font-medium text-gray-900">{r.family || '-'}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Family II</dt><dd class="text-sm font-medium text-gray-900">{r.family_ii || '-'}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">SI Code</dt><dd class="text-sm font-medium text-gray-900">{r.si_code || '-'}</dd></div>
+								</dl>
+							</section>
+
+							<!-- Geographic -->
+							<section class="bg-gray-50 rounded-lg p-4">
+								<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Geographic</h3>
+								<dl class="space-y-2">
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Extent</dt><dd class="text-sm font-medium text-gray-900">{r.geo_extent || '-'}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Region</dt><dd class="text-sm font-medium text-gray-900">{r.geo_region || '-'}</dd></div>
+								</dl>
+							</section>
+
+							<!-- Key Dates -->
+							<section class="bg-gray-50 rounded-lg p-4">
+								<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Key Dates</h3>
+								<dl class="space-y-2">
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Primary Date</dt><dd class="text-sm font-medium text-gray-900">{formatDate(r.md_date)}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Made</dt><dd class="text-sm font-medium text-gray-900">{formatDate(r.md_made_date)}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">In Force</dt><dd class="text-sm font-medium text-gray-900">{formatDate(r.md_coming_into_force_date)}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Last Amended</dt><dd class="text-sm font-medium text-gray-900">{formatDate(r.latest_amend_date)}</dd></div>
+									<div class="flex justify-between"><dt class="text-sm text-gray-600">Last Rescinded</dt><dd class="text-sm font-medium text-gray-900">{formatDate(r.latest_rescind_date)}</dd></div>
+								</dl>
+							</section>
+						</div>
+					</div>
 				{/if}
 			</svelte:fragment>
 		</TableKit>
