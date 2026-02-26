@@ -73,6 +73,18 @@ if frontend_url = System.get_env("FRONTEND_URL") do
   config :sertantai_legal, :frontend_url, frontend_url
 end
 
+# Hub notifier — notify sertantai-hub of law changes for user notifications
+# Supports both SERTANTAI_LEGAL_HUB_* (infrastructure) and HUB_* (local dev) prefixes
+if hub_enabled =
+     System.get_env("SERTANTAI_LEGAL_HUB_ENABLED") || System.get_env("HUB_ENABLED") do
+  config :sertantai_legal, :hub,
+    enabled: hub_enabled in ~w(true 1),
+    url:
+      System.get_env("SERTANTAI_LEGAL_HUB_URL") ||
+        System.get_env("HUB_URL", "http://localhost:4000"),
+    api_key: System.get_env("SERTANTAI_LEGAL_HUB_API_KEY") || System.get_env("HUB_API_KEY")
+end
+
 # Zenoh P2P mesh configuration
 # Supports both SERTANTAI_LEGAL_ZENOH_* (infrastructure) and ZENOH_* (local dev) prefixes
 if zenoh_enabled =

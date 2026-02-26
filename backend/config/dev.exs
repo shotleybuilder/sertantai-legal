@@ -71,6 +71,13 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
+# Hub notifier — notify sertantai-hub of law changes for user notifications
+# Disabled locally by default (hub not running); enable via env var in production
+config :sertantai_legal, :hub,
+  enabled: false,
+  url: "http://localhost:4000",
+  api_key: "dev-hub-api-key"
+
 # Zenoh P2P mesh — publish legislation data to fractalaw
 config :sertantai_legal, :zenoh,
   enabled: true,

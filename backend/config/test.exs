@@ -30,8 +30,9 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable test mode for HTTP client mocking
 config :sertantai_legal, test_mode: true
 
-# Disable Zenoh in tests
+# Disable Zenoh and Hub notifier in tests
 config :sertantai_legal, :zenoh, enabled: false
+config :sertantai_legal, :hub, enabled: false
 
 # Auth + Electric config for tests
 # jwks_req_plug routes JWKS HTTP calls through Req.Test stubs

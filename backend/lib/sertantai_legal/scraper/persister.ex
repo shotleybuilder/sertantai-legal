@@ -31,6 +31,7 @@ defmodule SertantaiLegal.Scraper.Persister do
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Legal.FunctionCalculator
+  alias SertantaiLegal.Integrations.HubNotifier
 
   require Ash.Query
 
@@ -72,27 +73,33 @@ defmodule SertantaiLegal.Scraper.Persister do
 
     # Phase 1: Persist all records and calculate immediate Function
     {results, laws_needing_relationship_calc, laws_with_enacted_by} =
-      Enum.reduce(records, {{0, 0, []}, [], []}, fn record, {counts, rel_laws, enacted_laws} ->
-        {created, updated, errors} = counts
+      Enum.reduce(records, {{0, 0, [], [], []}, [], []}, fn record,
+                                                            {counts, rel_laws, enacted_laws} ->
+        {created, updated, errors, created_laws, updated_laws} = counts
 
         case persist_record_with_immediate_function(record) do
           {:ok, :created, law} ->
             # Track for relationship Function calc if has amending/rescinding
             rel_laws = maybe_track_for_relationship_calc(rel_laws, law)
             enacted_laws = maybe_track_enacted_by(enacted_laws, law, record)
-            {{created + 1, updated, errors}, rel_laws, enacted_laws}
+
+            {{created + 1, updated, errors, [law | created_laws], updated_laws}, rel_laws,
+             enacted_laws}
 
           {:ok, :updated, law} ->
             rel_laws = maybe_track_for_relationship_calc(rel_laws, law)
             enacted_laws = maybe_track_enacted_by(enacted_laws, law, record)
-            {{created, updated + 1, errors}, rel_laws, enacted_laws}
+
+            {{created, updated + 1, errors, created_laws, [law | updated_laws]}, rel_laws,
+             enacted_laws}
 
           {:error, reason} ->
-            {{created, updated, [{record, reason} | errors]}, rel_laws, enacted_laws}
+            {{created, updated, [{record, reason} | errors], created_laws, updated_laws},
+             rel_laws, enacted_laws}
         end
       end)
 
-    {created, updated, errors} = results
+    {created, updated, errors, created_laws, updated_laws} = results
 
     IO.puts("Created: #{created}, Updated: #{updated}, Errors: #{Enum.count(errors)}")
 
@@ -124,6 +131,10 @@ defmodule SertantaiLegal.Scraper.Persister do
         IO.puts("  - #{record[:name]}: #{inspect(reason)}")
       end)
     end
+
+    # Phase 4: Notify hub of law changes (async, fire-and-forget)
+    hub_changes = build_hub_changes(created_laws, updated_laws)
+    HubNotifier.notify(hub_changes)
 
     {:ok, created + updated}
   end
@@ -382,5 +393,27 @@ defmodule SertantaiLegal.Scraper.Persister do
       list when is_list(list) and length(list) > 0 -> true
       _ -> nil
     end
+  end
+
+  # ============================================================================
+  # PRIVATE - Hub Notification Helpers
+  # ============================================================================
+
+  defp build_hub_changes(created_laws, updated_laws) do
+    created = Enum.map(created_laws, &law_to_hub_change(&1, "new"))
+    updated = Enum.map(updated_laws, &law_to_hub_change(&1, "updated"))
+    created ++ updated
+  end
+
+  defp law_to_hub_change(law, change_type) do
+    %{
+      law_name: law.name,
+      law_title: law.title_en,
+      change_type: change_type,
+      families: [law.family, law.family_ii] |> Enum.reject(&is_nil/1),
+      geo_extent: law.geo_extent,
+      type_code: law.type_code,
+      year: law.year
+    }
   end
 end
