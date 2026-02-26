@@ -10,7 +10,8 @@ defmodule SertantaiLegal.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      dialyzer: dialyzer()
+      dialyzer: dialyzer(),
+      docs: docs()
     ]
   end
 
@@ -66,6 +67,9 @@ defmodule SertantaiLegal.MixProject do
       # CSV parsing (for data import scripts)
       {:nimble_csv, "~> 1.2"},
 
+      # Zenoh P2P mesh — publish LRT/LAT/amendments to fractalaw
+      {:zenohex, "~> 0.7.2"},
+
       # Scraper dependencies
       {:req, "~> 0.5"},
       {:floki, "~> 0.36"},
@@ -75,7 +79,8 @@ defmodule SertantaiLegal.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.35", only: :dev, runtime: false}
     ]
   end
 
@@ -91,6 +96,47 @@ defmodule SertantaiLegal.MixProject do
       "ash.setup": ["ash_postgres.create", "ash.migrate", "run priv/repo/seeds.exs"],
       "ash.reset": ["ash_postgres.drop", "ash.setup"],
       test: ["ash_postgres.create --quiet", "ash.migrate --quiet", "test"]
+    ]
+  end
+
+  # ExDoc configuration
+  defp docs do
+    [
+      main: "SertantaiLegal",
+      extras: [],
+      groups_for_modules: [
+        "Taxa Pipeline": [
+          SertantaiLegal.Scraper.TaxaParser,
+          SertantaiLegal.Legal.Taxa.DutyType,
+          SertantaiLegal.Legal.Taxa.DutyTypeLib,
+          SertantaiLegal.Legal.Taxa.DutyActor,
+          SertantaiLegal.Legal.Taxa.ActorLib,
+          SertantaiLegal.Legal.Taxa.ActorDefinitions,
+          SertantaiLegal.Legal.Taxa.Popimar,
+          SertantaiLegal.Legal.Taxa.PopimarLib,
+          SertantaiLegal.Legal.Taxa.PurposeClassifier,
+          SertantaiLegal.Legal.Taxa.TaxaFormatter,
+          SertantaiLegal.Legal.Taxa.TextCleaner,
+          SertantaiLegal.Legal.Taxa.ClauseRefiner,
+          SertantaiLegal.Legal.Taxa.RegexClauseConfidence
+        ],
+        "Taxa Definitions": [
+          SertantaiLegal.Legal.Taxa.DutyTypeDefnGoverned,
+          SertantaiLegal.Legal.Taxa.DutyTypeDefnGovernment,
+          SertantaiLegal.Legal.Taxa.DutyTypeDefnGovernmentV2
+        ],
+        "Making Detection": [
+          SertantaiLegal.Legal.Taxa.MakingDetector,
+          SertantaiLegal.Legal.Taxa.MakingDetectorSignals
+        ],
+        "LAT Parser": [
+          SertantaiLegal.Scraper.LatParser,
+          SertantaiLegal.Scraper.LatPersister,
+          SertantaiLegal.Scraper.LatReparser,
+          SertantaiLegal.Scraper.CommentaryParser,
+          SertantaiLegal.Scraper.CommentaryPersister
+        ]
+      ]
     ]
   end
 

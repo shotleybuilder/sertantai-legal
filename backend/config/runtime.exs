@@ -73,6 +73,23 @@ if frontend_url = System.get_env("FRONTEND_URL") do
   config :sertantai_legal, :frontend_url, frontend_url
 end
 
+# Zenoh P2P mesh configuration
+# Supports both SERTANTAI_LEGAL_ZENOH_* (infrastructure) and ZENOH_* (local dev) prefixes
+if zenoh_enabled =
+     System.get_env("SERTANTAI_LEGAL_ZENOH_ENABLED") || System.get_env("ZENOH_ENABLED") do
+  connect_endpoints =
+    (System.get_env("SERTANTAI_LEGAL_ZENOH_CONNECT") || System.get_env("ZENOH_CONNECT") || "")
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+
+  config :sertantai_legal, :zenoh,
+    enabled: zenoh_enabled in ~w(true 1),
+    tenant:
+      System.get_env("SERTANTAI_LEGAL_ZENOH_TENANT") || System.get_env("ZENOH_TENANT", "dev"),
+    connect_endpoints: connect_endpoints
+end
+
 if config_env() == :prod do
   # Production uses DATABASE_URL (standard for most hosting platforms)
   database_url =

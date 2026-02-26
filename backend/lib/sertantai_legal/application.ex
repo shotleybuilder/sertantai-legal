@@ -22,6 +22,10 @@ defmodule SertantaiLegal.Application do
         # JWKS client — fetches EdDSA public key from sertantai-auth for JWT verification
         # In test mode, skips HTTP fetch — tests call set_test_key/1 instead
         SertantaiLegal.Auth.JwksClient,
+        # Zenoh P2P mesh — publishes LRT/LAT/amendments to fractalaw
+        if(Application.get_env(:sertantai_legal, :zenoh)[:enabled],
+          do: SertantaiLegal.Zenoh.Supervisor
+        ),
         # Start to serve requests, typically the last entry
         SertantaiLegalWeb.Endpoint
       ]

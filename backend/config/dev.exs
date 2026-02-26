@@ -71,6 +71,12 @@ config :phoenix, :stacktrace_depth, 20
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
 
+# Zenoh P2P mesh — publish legislation data to fractalaw
+config :sertantai_legal, :zenoh,
+  enabled: true,
+  tenant: "dev",
+  connect_endpoints: []
+
 # Auth + Electric URLs for local development
 config :sertantai_legal,
   electric_url: "http://localhost:3002",
