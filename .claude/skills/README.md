@@ -70,6 +70,19 @@ How to use `GET /api/ai/drrp/clause/queue`:
 - Composite key for Phase 2 write-back
 - curl examples for common scenarios
 
+### 🌐 [Zenoh P2P Publishing](zenoh-p2p-publishing/)
+
+**Use when:** Working with Zenoh mesh integration, adding new queryables, or troubleshooting P2P data sharing with fractalaw
+
+Complete guide for:
+- Architecture and OTP supervision tree
+- Key expression schema and tenant isolation
+- Configuration (dev, test, production env vars)
+- Adding new queryables and serialization
+- Publishing change notifications
+- zenohex API quick reference
+- Troubleshooting and common pitfalls
+
 ### 🚀 [Production Deployment](production-deployment/)
 
 **Use when:** Deploying sertantai-legal (or a new microservice) to Hetzner production
