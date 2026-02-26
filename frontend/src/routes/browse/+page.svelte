@@ -1276,7 +1276,7 @@
 				columnVisibility: true,
 				columnResizing: true,
 				columnReordering: true,
-				filtering: true,
+				filtering: false,
 				sorting: true,
 				sortingMode: 'control',
 				pagination: false,
