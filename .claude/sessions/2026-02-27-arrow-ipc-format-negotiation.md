@@ -1,6 +1,7 @@
 # Title: Arrow IPC format negotiation for DataServer
 
 **Started**: 2026-02-27
+**Ended**: 2026-02-27
 
 ## Todo
 - [x] Add Arrow IPC response to DataServer `*/lat/{name}` queryable

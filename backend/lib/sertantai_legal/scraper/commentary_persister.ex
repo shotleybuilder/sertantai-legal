@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
   """
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Zenoh.ChangeNotifier
 
   require Logger
 
@@ -54,6 +55,8 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
         end)
 
       Logger.info("[CommentaryPersister] #{law_name}: deleted #{deleted}, inserted #{inserted}")
+
+      ChangeNotifier.notify("amendments", "persist", %{law_name: law_name, count: inserted})
 
       %{inserted: inserted, deleted: deleted}
     end)

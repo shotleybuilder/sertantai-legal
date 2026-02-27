@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.LatParser
+  alias SertantaiLegal.Zenoh.ChangeNotifier
 
   require Logger
 
@@ -56,6 +57,8 @@ defmodule SertantaiLegal.Scraper.LatPersister do
         end)
 
       Logger.info("[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted}")
+
+      ChangeNotifier.notify("lat", "persist", %{law_name: law_name, count: inserted})
 
       %{inserted: inserted, deleted: deleted}
     end)

@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.Persister do
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Legal.FunctionCalculator
   alias SertantaiLegal.Integrations.HubNotifier
+  alias SertantaiLegal.Zenoh.ChangeNotifier
 
   require Ash.Query
 
@@ -136,7 +137,23 @@ defmodule SertantaiLegal.Scraper.Persister do
     hub_changes = build_hub_changes(created_laws, updated_laws)
     HubNotifier.notify(hub_changes)
 
-    {:ok, created + updated}
+    # Phase 5: Notify Zenoh mesh of LRT changes
+    total = created + updated
+
+    if total > 0 do
+      law_names =
+        (created_laws ++ updated_laws)
+        |> Enum.map(& &1.name)
+
+      ChangeNotifier.notify("uk_lrt", "persist", %{
+        count: total,
+        created: created,
+        updated: updated,
+        law_names: law_names
+      })
+    end
+
+    {:ok, total}
   end
 
   @doc """

@@ -5,7 +5,7 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
   When legislation data is modified (scrape imports, CSV enrichment),
   call `notify/3` to inform connected peers that they should re-query.
 
-  Publishes to: fractalaw/@{tenant}/events/data-changed
+  Publishes to: fractalaw/@{tenant}/events/sync
   """
 
   use GenServer
@@ -57,7 +57,7 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
     case SertantaiLegal.Zenoh.Session.session_id() do
       {:ok, session_id} ->
         tenant = tenant_id()
-        key = "fractalaw/@#{tenant}/events/data-changed"
+        key = "fractalaw/@#{tenant}/events/sync"
 
         case Zenohex.Session.declare_publisher(session_id, key) do
           {:ok, pub_id} ->

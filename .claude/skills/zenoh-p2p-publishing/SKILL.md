@@ -27,7 +27,7 @@ SertantaiLegal.Application
 └── SertantaiLegal.Zenoh.Supervisor (rest_for_one)
     ├── Zenoh.Session         -- owns the Zenoh session lifecycle
     ├── Zenoh.DataServer      -- declares queryables, responds to queries
-    └── Zenoh.ChangeNotifier  -- publishes data-changed events
+    └── Zenoh.ChangeNotifier  -- publishes sync events
 ```
 
 **rest_for_one**: If Session crashes, DataServer and ChangeNotifier restart too (they need a fresh session_id).
@@ -39,7 +39,7 @@ SertantaiLegal.Application
 | `backend/lib/sertantai_legal/zenoh/supervisor.ex` | Supervisor |
 | `backend/lib/sertantai_legal/zenoh/session.ex` | Session GenServer — opens peer session, retry on failure |
 | `backend/lib/sertantai_legal/zenoh/data_server.ex` | Queryables for LRT/LAT/amendments, JSON serialization |
-| `backend/lib/sertantai_legal/zenoh/change_notifier.ex` | Publisher for data-changed events |
+| `backend/lib/sertantai_legal/zenoh/change_notifier.ex` | Publisher for sync events |
 | `backend/lib/sertantai_legal/application.ex` | Conditional startup (line ~25) |
 | `backend/config/dev.exs` | Dev config (enabled, tenant: "dev") |
 | `backend/config/test.exs` | Test config (disabled) |
@@ -52,7 +52,7 @@ fractalaw/@{tenant}/data/legislation/lrt                   -- all LRT records
 fractalaw/@{tenant}/data/legislation/lrt/{law_name}        -- single LRT by name
 fractalaw/@{tenant}/data/legislation/lat/{law_name}        -- LAT sections for a law
 fractalaw/@{tenant}/data/legislation/amendments/{law_name} -- annotations for a law
-fractalaw/@{tenant}/events/data-changed                    -- change notifications (pub/sub)
+fractalaw/@{tenant}/events/sync                    -- change notifications (pub/sub)
 ```
 
 The `@` prefix on `{tenant}` creates a **hermetic namespace** — no wildcard can match across tenants at the protocol level.
@@ -170,7 +170,7 @@ SertantaiLegal.Zenoh.ChangeNotifier.notify("lat", "parse_complete", %{
 })
 ```
 
-The notification is a small JSON message published to `fractalaw/@{tenant}/events/data-changed`. Fractalaw subscribes to this and re-queries the relevant key expressions.
+The notification is a small JSON message published to `fractalaw/@{tenant}/events/sync`. Fractalaw subscribes to this and re-queries the relevant key expressions.
 
 ## zenohex API Quick Reference
 

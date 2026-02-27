@@ -11,7 +11,7 @@ Sertantai-legal runs as a **Zenoh peer** and exposes legislation data via **quer
 
 Fractalaw should:
 1. Open a Zenoh session (peer mode, multicast scouting or explicit connect)
-2. Subscribe to the `events/data-changed` key for change notifications
+2. Subscribe to the `events/sync` key for change notifications
 3. Query the data key expressions to pull records
 
 ## Connection
@@ -45,7 +45,7 @@ All key expressions are prefixed with `fractalaw/@{tenant}/` where `{tenant}` de
 
 | Key Expression | Direction | Payload |
 |---------------|-----------|---------|
-| `fractalaw/@{tenant}/events/data-changed` | Push | JSON object (see [Change Notification](#change-notification) below) |
+| `fractalaw/@{tenant}/events/sync` | Push | JSON object (see [Change Notification](#change-notification) below) |
 
 ### `law_name` Format
 
@@ -239,7 +239,7 @@ Returned by `/amendments/{law_name}` as an array sorted by `id`.
 
 ### Change Notification
 
-Published to `fractalaw/@{tenant}/events/data-changed` when data is modified.
+Published to `fractalaw/@{tenant}/events/sync` when data is modified.
 
 ```json
 {
@@ -287,7 +287,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Subscribe to change notifications
     let sub = session
-        .declare_subscriber(format!("fractalaw/@{tenant}/events/data-changed"))
+        .declare_subscriber(format!("fractalaw/@{tenant}/events/sync"))
         .res().await?;
 
     tokio::spawn(async move {
