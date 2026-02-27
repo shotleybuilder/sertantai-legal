@@ -640,6 +640,20 @@ sertantai-legal-electric:
     - infra_network
 ```
 
+### CRITICAL: Server Configuration Workflow
+
+**NEVER edit files directly on the production server via SSH.** The server's `~/infrastructure` directory is a git checkout of `sertantai-stack`. Direct edits cause the repo and server to drift out of sync, breaking future `git pull` deployments.
+
+**Correct workflow for server config changes** (docker-compose.yml, .env.example, nginx configs):
+
+1. Edit files in the **local** `~/Desktop/infrastructure` repo
+2. `git commit` and `git push origin main`
+3. `ssh sertantai-hz "cd ~/infrastructure && git pull"`
+4. Restart affected services: `ssh sertantai-hz "cd ~/infrastructure/docker && docker compose up -d <service>"`
+
+**For `.env` secrets** (gitignored — not in the repo):
+- These must be added on the server directly, but **also** update `.env.example` in the repo so the expected variables are documented.
+
 ## Related Projects
 
 | Project | Location | Purpose |
