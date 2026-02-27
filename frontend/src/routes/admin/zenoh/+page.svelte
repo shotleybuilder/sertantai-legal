@@ -49,12 +49,27 @@
 		const v = stats[key];
 		return typeof v === 'number' ? v : 0;
 	}
+
+	function startedAt(stats: Record<string, unknown> | undefined): string | null {
+		if (!stats) return null;
+		const v = stats['started_at'];
+		return typeof v === 'string' ? v : null;
+	}
+
+	$: statsSince =
+		startedAt($subsQuery.data?.stats) ||
+		startedAt($queryablesQuery.data?.data_server?.stats);
 </script>
 
 <div>
 	<div class="mb-6">
 		<h1 class="text-2xl font-bold text-gray-900">Zenoh P2P Mesh</h1>
-		<p class="mt-1 text-sm text-gray-500">Monitor subscriptions, queryables, and publishers</p>
+		<p class="mt-1 text-sm text-gray-500">
+			Monitor subscriptions, queryables, and publishers
+			{#if statsSince}
+				<span class="ml-2 text-gray-400">| Stats since {formatTs(statsSince)}</span>
+			{/if}
+		</p>
 	</div>
 
 	<!-- Tabs -->

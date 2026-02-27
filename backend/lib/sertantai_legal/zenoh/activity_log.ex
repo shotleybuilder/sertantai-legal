@@ -60,6 +60,8 @@ defmodule SertantaiLegal.Zenoh.ActivityLog do
   @impl true
   def init(_opts) do
     table = :ets.new(@table, [:named_table, :set, :public, read_concurrency: true])
+    started_at = DateTime.utc_now() |> DateTime.to_iso8601()
+    :ets.insert(table, {:started_at, started_at})
     {:ok, %{table: table}}
   end
 
@@ -110,7 +112,14 @@ defmodule SertantaiLegal.Zenoh.ActivityLog do
         [] -> :unknown
       end
 
-    {:reply, Map.put(counters, :status, status), state}
+    started_at =
+      case :ets.lookup(@table, :started_at) do
+        [{_, ts}] -> ts
+        [] -> nil
+      end
+
+    result = counters |> Map.put(:status, status) |> Map.put(:started_at, started_at)
+    {:reply, result, state}
   end
 
   def handle_call({:get_recent, service, limit}, _from, state) do
