@@ -25,3 +25,6 @@
 - `lib/sertantai_legal/scraper/persister.ex` — integration point
 - `lib/sertantai_legal/zenoh/change_notifier.ex` — parallel pattern to follow
 - `lib/sertantai_legal/integrations/hub_notifier.ex` — new module
+
+**Ended**: 2026-02-27
+**Committed**: 627f96a
