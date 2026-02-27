@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Zenoh.Supervisor do
   @impl true
   def init(_opts) do
     children = [
+      SertantaiLegal.Zenoh.ActivityLog,
       SertantaiLegal.Zenoh.Session,
       SertantaiLegal.Zenoh.DataServer,
       SertantaiLegal.Zenoh.ChangeNotifier,

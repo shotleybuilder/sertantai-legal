@@ -11,6 +11,8 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
   use GenServer
   require Logger
 
+  alias SertantaiLegal.Zenoh.ActivityLog
+
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
 
@@ -18,6 +20,14 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
 
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  @doc "Returns current status for the admin dashboard."
+  @spec status() :: map()
+  def status do
+    GenServer.call(__MODULE__, :status)
+  catch
+    :exit, _ -> %{state: :stopped}
   end
 
   @doc """
@@ -37,8 +47,9 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
 
   @impl true
   def init(_opts) do
+    ActivityLog.set_status(:change_notifier, :connecting)
     send(self(), :setup)
-    {:ok, %{publisher_id: nil, poll_count: 0}}
+    {:ok, %{publisher_id: nil, poll_count: 0, key: nil}}
   end
 
   @impl true
@@ -51,7 +62,9 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
         case Zenohex.Session.declare_publisher(session_id, key) do
           {:ok, pub_id} ->
             Logger.info("[Zenoh.ChangeNotifier] Publisher declared: #{key}")
-            {:noreply, %{state | publisher_id: pub_id}}
+            ActivityLog.set_status(:change_notifier, :ready)
+            ActivityLog.record(:change_notifier, :connected, %{key: key})
+            {:noreply, %{state | publisher_id: pub_id, key: key}}
 
           {:error, reason} ->
             Logger.error("[Zenoh.ChangeNotifier] Failed to declare publisher: #{inspect(reason)}")
@@ -79,6 +92,7 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
   @impl true
   def handle_cast({:notify, _table, _action, _metadata}, %{publisher_id: nil} = state) do
     Logger.warning("[Zenoh.ChangeNotifier] Publisher not ready, dropping notification")
+    ActivityLog.increment(:change_notifier, :dropped)
     {:noreply, state}
   end
 
@@ -93,13 +107,27 @@ defmodule SertantaiLegal.Zenoh.ChangeNotifier do
 
     case Zenohex.Publisher.put(state.publisher_id, payload) do
       :ok ->
+        ActivityLog.increment(:change_notifier, :published)
+        ActivityLog.record(:change_notifier, :published, %{table: table, action: action})
         Logger.debug("[Zenoh.ChangeNotifier] Published: #{table}/#{action}")
 
       {:error, reason} ->
+        ActivityLog.increment(:change_notifier, :errors)
+        ActivityLog.record(:change_notifier, :error, %{table: table, reason: inspect(reason)})
         Logger.warning("[Zenoh.ChangeNotifier] Publish failed: #{inspect(reason)}")
     end
 
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_call(:status, _from, state) do
+    status = %{
+      state: if(state.publisher_id, do: :ready, else: :connecting),
+      key: state.key
+    }
+
+    {:reply, status, state}
   end
 
   # --- Private ---

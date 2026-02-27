@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   require Logger
 
   alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Zenoh.ActivityLog
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -23,12 +24,21 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  @doc "Returns current status for the admin dashboard."
+  @spec status() :: map()
+  def status do
+    GenServer.call(__MODULE__, :status)
+  catch
+    :exit, _ -> %{state: :stopped, key_expr: nil}
+  end
+
   # --- Server Callbacks ---
 
   @impl true
   def init(_opts) do
+    ActivityLog.set_status(:taxa_subscriber, :connecting)
     send(self(), :setup)
-    {:ok, %{subscriber_id: nil, poll_count: 0}}
+    {:ok, %{subscriber_id: nil, poll_count: 0, key_expr: nil}}
   end
 
   @impl true
@@ -42,7 +52,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
           Zenohex.Session.declare_subscriber(session_id, key_expr, self())
 
         Logger.info("[Zenoh.TaxaSubscriber] Subscribed to #{key_expr}")
-        {:noreply, %{state | subscriber_id: subscriber_id}}
+        ActivityLog.set_status(:taxa_subscriber, :ready)
+        ActivityLog.record(:taxa_subscriber, :connected, %{key_expr: key_expr})
+        {:noreply, %{state | subscriber_id: subscriber_id, key_expr: key_expr}}
 
       {:error, :not_ready} ->
         if state.poll_count < @max_poll_attempts do
@@ -60,12 +72,21 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   def handle_info(%Zenohex.Sample{} = sample, state) do
     law_name = sample.key_expr |> String.split("/") |> List.last()
+    ActivityLog.increment(:taxa_subscriber, :received)
 
     case decode_and_upsert(law_name, sample.payload) do
       :ok ->
-        :ok
+        ActivityLog.increment(:taxa_subscriber, :updated)
+        ActivityLog.record(:taxa_subscriber, :updated, %{law_name: law_name})
 
       {:error, reason} ->
+        ActivityLog.increment(:taxa_subscriber, :failed)
+
+        ActivityLog.record(:taxa_subscriber, :error, %{
+          law_name: law_name,
+          reason: inspect(reason)
+        })
+
         Logger.error("[Zenoh.TaxaSubscriber] Failed to process #{law_name}: #{inspect(reason)}")
     end
 
@@ -75,6 +96,16 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   def handle_info(msg, state) do
     Logger.debug("[Zenoh.TaxaSubscriber] Unexpected message: #{inspect(msg)}")
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_call(:status, _from, state) do
+    status = %{
+      state: if(state.subscriber_id, do: :ready, else: :connecting),
+      key_expr: state.key_expr
+    }
+
+    {:reply, status, state}
   end
 
   # --- Internal ---

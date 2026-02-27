@@ -11,7 +11,8 @@
 		{ href: '/admin/lat/queue', label: 'LAT Queue', exact: false },
 		{ href: '/admin/scrape', label: 'New Scrape', exact: true },
 		{ href: '/admin/scrape/sessions', label: 'Sessions', exact: false },
-		{ href: '/admin/scrape/cascade', label: 'Cascade', exact: false }
+		{ href: '/admin/scrape/cascade', label: 'Cascade', exact: false },
+		{ href: '/admin/zenoh', label: 'Zenoh', exact: false }
 	];
 
 	// Reactive pathname for proper updates on navigation

@@ -3,7 +3,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   Declares Zenoh queryables for LRT, LAT, and AmendmentAnnotation tables.
 
   Fractalaw queries these key expressions to pull legislation data on demand.
-  Responds with JSON-encoded records.
+  Default response format is Arrow IPC streaming. Append `?format=json` to the
+  query parameters for JSON.
 
   Key expressions:
     fractalaw/@{tenant}/data/legislation/lrt           -- all LRT records
@@ -19,6 +20,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Legal.{UkLrt, Lat, AmendmentAnnotation}
+  alias SertantaiLegal.Zenoh.ActivityLog
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -29,21 +31,32 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  @doc "Returns current status for the admin dashboard."
+  @spec status() :: map()
+  def status do
+    GenServer.call(__MODULE__, :status)
+  catch
+    :exit, _ -> %{state: :stopped, queryable_count: 0, key_expressions: []}
+  end
+
   # --- Server Callbacks ---
 
   @impl true
   def init(_opts) do
+    ActivityLog.set_status(:data_server, :connecting)
     send(self(), :setup)
-    {:ok, %{queryable_ids: [], poll_count: 0}}
+    {:ok, %{queryable_ids: [], poll_count: 0, key_expressions: []}}
   end
 
   @impl true
   def handle_info(:setup, state) do
     case SertantaiLegal.Zenoh.Session.session_id() do
       {:ok, session_id} ->
-        queryable_ids = declare_queryables(session_id)
+        {queryable_ids, key_expressions} = declare_queryables(session_id)
         Logger.info("[Zenoh.DataServer] Declared #{length(queryable_ids)} queryables")
-        {:noreply, %{state | queryable_ids: queryable_ids}}
+        ActivityLog.set_status(:data_server, :ready)
+        ActivityLog.record(:data_server, :connected, %{queryables: length(queryable_ids)})
+        {:noreply, %{state | queryable_ids: queryable_ids, key_expressions: key_expressions}}
 
       {:error, :not_ready} ->
         if state.poll_count < @max_poll_attempts do
@@ -69,47 +82,83 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     {:noreply, state}
   end
 
+  @impl true
+  def handle_call(:status, _from, state) do
+    status = %{
+      state: if(state.queryable_ids != [], do: :ready, else: :connecting),
+      queryable_count: length(state.queryable_ids),
+      key_expressions: state.key_expressions
+    }
+
+    {:reply, status, state}
+  end
+
   # --- Query Handling ---
 
-  defp handle_query(%Zenohex.Query{key_expr: key_expr, zenoh_query: zq} = _query) do
+  defp handle_query(%Zenohex.Query{key_expr: key_expr, parameters: params, zenoh_query: zq}) do
     tenant = tenant_id()
     prefix = "fractalaw/@#{tenant}/data/legislation"
+    format = parse_format(params)
 
-    result =
-      case key_expr do
-        ^prefix <> "/lrt" ->
-          fetch_all_lrt()
+    {duration_us, result} =
+      :timer.tc(fn ->
+        case key_expr do
+          ^prefix <> "/lrt" ->
+            fetch_all_lrt(format)
 
-        ^prefix <> "/lrt/" <> law_name ->
-          fetch_lrt_by_name(law_name)
+          ^prefix <> "/lrt/" <> law_name ->
+            fetch_lrt_by_name(law_name, format)
 
-        ^prefix <> "/lat/" <> law_name ->
-          fetch_lat_by_law(law_name)
+          ^prefix <> "/lat/" <> law_name ->
+            fetch_lat_by_law(law_name, format)
 
-        ^prefix <> "/amendments/" <> law_name ->
-          fetch_amendments_by_law(law_name)
+          ^prefix <> "/amendments/" <> law_name ->
+            fetch_amendments_by_law(law_name, format)
 
-        _ ->
-          {:error, :unknown_key}
-      end
+          _ ->
+            {:error, :unknown_key}
+        end
+      end)
+
+    duration_ms = div(duration_us, 1000)
 
     case result do
       {:ok, payload} ->
+        ActivityLog.increment(:data_server, :queries)
+
+        ActivityLog.record(:data_server, :query, %{
+          key_expr: key_expr,
+          format: format,
+          duration_ms: duration_ms
+        })
+
         Zenohex.Query.reply(zq, key_expr, payload, final?: true)
 
       {:error, reason} ->
+        ActivityLog.increment(:data_server, :errors)
+        ActivityLog.record(:data_server, :error, %{key_expr: key_expr, reason: inspect(reason)})
         Logger.warning("[Zenoh.DataServer] Query failed for #{key_expr}: #{inspect(reason)}")
         error_payload = Jason.encode!(%{error: to_string(reason)})
         Zenohex.Query.reply(zq, key_expr, error_payload, final?: true)
     end
   rescue
     e ->
+      ActivityLog.increment(:data_server, :errors)
+
+      ActivityLog.record(:data_server, :error, %{key_expr: key_expr, reason: Exception.message(e)})
+
       Logger.error("[Zenoh.DataServer] Query error: #{Exception.message(e)}")
   end
 
+  defp parse_format(params) when is_binary(params) do
+    if String.contains?(params, "format=json"), do: :json, else: :arrow
+  end
+
+  defp parse_format(_), do: :arrow
+
   # --- Data Fetching ---
 
-  defp fetch_all_lrt do
+  defp fetch_all_lrt(:json) do
     records =
       from(u in UkLrt, order_by: [asc: u.name])
       |> Repo.all()
@@ -118,14 +167,26 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     {:ok, Jason.encode!(records)}
   end
 
-  defp fetch_lrt_by_name(law_name) do
+  defp fetch_all_lrt(:arrow) do
+    records = from(u in UkLrt, order_by: [asc: u.name]) |> Repo.all()
+    lrt_to_arrow(records)
+  end
+
+  defp fetch_lrt_by_name(law_name, :json) do
     case Repo.one(from(u in UkLrt, where: u.name == ^law_name)) do
       nil -> {:error, :not_found}
       record -> {:ok, Jason.encode!(serialize_lrt(record))}
     end
   end
 
-  defp fetch_lat_by_law(law_name) do
+  defp fetch_lrt_by_name(law_name, :arrow) do
+    case Repo.one(from(u in UkLrt, where: u.name == ^law_name)) do
+      nil -> {:error, :not_found}
+      record -> lrt_to_arrow([record])
+    end
+  end
+
+  defp fetch_lat_by_law(law_name, :json) do
     records =
       from(l in Lat,
         where: l.law_name == ^law_name,
@@ -137,7 +198,18 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     {:ok, Jason.encode!(records)}
   end
 
-  defp fetch_amendments_by_law(law_name) do
+  defp fetch_lat_by_law(law_name, :arrow) do
+    records =
+      from(l in Lat,
+        where: l.law_name == ^law_name,
+        order_by: [asc: l.sort_key]
+      )
+      |> Repo.all()
+
+    lat_to_arrow(records)
+  end
+
+  defp fetch_amendments_by_law(law_name, :json) do
     records =
       from(a in AmendmentAnnotation,
         where: a.law_name == ^law_name,
@@ -147,6 +219,17 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       |> Enum.map(&serialize_amendment/1)
 
     {:ok, Jason.encode!(records)}
+  end
+
+  defp fetch_amendments_by_law(law_name, :arrow) do
+    records =
+      from(a in AmendmentAnnotation,
+        where: a.law_name == ^law_name,
+        order_by: [asc: a.id]
+      )
+      |> Repo.all()
+
+    amendments_to_arrow(records)
   end
 
   # --- Serialization ---
@@ -225,6 +308,107 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     }
   end
 
+  # --- Arrow IPC Serialization ---
+
+  defp lat_to_arrow([]), do: {:ok, <<>>}
+
+  defp lat_to_arrow(records) do
+    df =
+      Explorer.DataFrame.new(%{
+        section_id: Enum.map(records, & &1.section_id),
+        law_name: Enum.map(records, & &1.law_name),
+        section_type: Enum.map(records, &to_string(&1.section_type)),
+        text: Enum.map(records, & &1.text),
+        sort_key: Enum.map(records, & &1.sort_key),
+        position: Enum.map(records, & &1.position),
+        depth: Enum.map(records, & &1.depth),
+        hierarchy_path: Enum.map(records, & &1.hierarchy_path),
+        extent_code: Enum.map(records, & &1.extent_code),
+        language: Enum.map(records, & &1.language),
+        part: Enum.map(records, & &1.part),
+        chapter: Enum.map(records, & &1.chapter),
+        heading_group: Enum.map(records, & &1.heading_group),
+        provision: Enum.map(records, & &1.provision),
+        paragraph: Enum.map(records, & &1.paragraph),
+        sub_paragraph: Enum.map(records, & &1.sub_paragraph),
+        schedule: Enum.map(records, & &1.schedule),
+        amendment_count: Enum.map(records, & &1.amendment_count),
+        modification_count: Enum.map(records, & &1.modification_count),
+        commencement_count: Enum.map(records, & &1.commencement_count),
+        extent_count: Enum.map(records, & &1.extent_count),
+        editorial_count: Enum.map(records, & &1.editorial_count),
+        updated_at: Enum.map(records, & &1.updated_at)
+      })
+
+    df =
+      cast_columns(
+        df,
+        ~w(position depth amendment_count modification_count commencement_count extent_count editorial_count),
+        {:s, 32}
+      )
+
+    Explorer.DataFrame.dump_ipc_stream(df)
+  end
+
+  defp lrt_to_arrow([]), do: {:ok, <<>>}
+
+  defp lrt_to_arrow(records) do
+    df =
+      Explorer.DataFrame.new(%{
+        id: Enum.map(records, & &1.id),
+        family: Enum.map(records, & &1.family),
+        family_ii: Enum.map(records, & &1.family_ii),
+        name: Enum.map(records, & &1.name),
+        title_en: Enum.map(records, & &1.title_en),
+        year: Enum.map(records, & &1.year),
+        number: Enum.map(records, & &1.number),
+        type_desc: Enum.map(records, & &1.type_desc),
+        type_code: Enum.map(records, & &1.type_code),
+        type_class: Enum.map(records, & &1.type_class),
+        domain: Enum.map(records, & &1.domain),
+        geo_extent: Enum.map(records, & &1.geo_extent),
+        geo_region: Enum.map(records, & &1.geo_region),
+        live: Enum.map(records, & &1.live),
+        is_making: Enum.map(records, & &1.is_making),
+        is_amending: Enum.map(records, & &1.is_amending),
+        is_rescinding: Enum.map(records, & &1.is_rescinding),
+        is_enacting: Enum.map(records, & &1.is_enacting),
+        is_commencing: Enum.map(records, & &1.is_commencing),
+        leg_gov_uk_url: Enum.map(records, & &1.leg_gov_uk_url),
+        updated_at: Enum.map(records, & &1.updated_at)
+      })
+
+    df = cast_columns(df, ~w(year), {:s, 32})
+
+    Explorer.DataFrame.dump_ipc_stream(df)
+  end
+
+  defp amendments_to_arrow([]), do: {:ok, <<>>}
+
+  defp amendments_to_arrow(records) do
+    df =
+      Explorer.DataFrame.new(%{
+        id: Enum.map(records, & &1.id),
+        law_id: Enum.map(records, & &1.law_id),
+        law_name: Enum.map(records, & &1.law_name),
+        code: Enum.map(records, & &1.code),
+        code_type: Enum.map(records, & &1.code_type),
+        text: Enum.map(records, & &1.text),
+        source: Enum.map(records, & &1.source),
+        updated_at: Enum.map(records, & &1.updated_at)
+      })
+
+    Explorer.DataFrame.dump_ipc_stream(df)
+  end
+
+  defp cast_columns(df, col_names, dtype) do
+    Enum.reduce(col_names, df, fn col, acc ->
+      series = Explorer.DataFrame.pull(acc, col)
+      casted = Explorer.Series.cast(series, dtype)
+      Explorer.DataFrame.put(acc, col, casted)
+    end)
+  end
+
   # --- Queryable Declaration ---
 
   defp declare_queryables(session_id) do
@@ -238,11 +422,14 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       "#{prefix}/amendments/*"
     ]
 
-    Enum.map(keys, fn key ->
-      {:ok, qid} = Zenohex.Session.declare_queryable(session_id, key, self())
-      Logger.info("[Zenoh.DataServer] Queryable declared: #{key}")
-      qid
-    end)
+    queryable_ids =
+      Enum.map(keys, fn key ->
+        {:ok, qid} = Zenohex.Session.declare_queryable(session_id, key, self())
+        Logger.info("[Zenoh.DataServer] Queryable declared: #{key}")
+        qid
+      end)
+
+    {queryable_ids, keys}
   end
 
   defp tenant_id do

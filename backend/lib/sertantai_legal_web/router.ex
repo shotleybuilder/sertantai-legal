@@ -144,6 +144,10 @@ defmodule SertantaiLegalWeb.Router do
     put("/sessions/:id/cascade-metadata", ScrapeController, :save_cascade_metadata)
     delete("/sessions/:id/affected-laws", ScrapeController, :clear_affected_laws)
 
+    # Zenoh P2P mesh monitoring
+    get("/zenoh/subscriptions", ZenohController, :subscriptions)
+    get("/zenoh/queryables", ZenohController, :queryables)
+
     # LAT admin endpoints
     get("/lat/stats", LatAdminController, :stats)
     get("/lat/queue", LatAdminController, :queue)
