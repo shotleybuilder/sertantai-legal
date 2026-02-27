@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   use GenServer
   require Logger
+  require Ash.Query
 
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Zenoh.ActivityLog
@@ -132,7 +133,10 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp find_record(law_name) do
-    case Ash.read(UkLrt, filter: [name: law_name]) do
+    UkLrt
+    |> Ash.Query.filter(name == ^law_name)
+    |> Ash.read()
+    |> case do
       {:ok, [record | _]} -> {:ok, record}
       {:ok, []} -> {:error, {:not_found, law_name}}
       {:error, reason} -> {:error, reason}
