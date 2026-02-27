@@ -25,9 +25,12 @@
 
 	// ── Data fetching ───────────────────────────────────────────────
 
-	async function fetchQueue() {
+	let isRefreshing = false;
+
+	async function fetchQueue(initial = false) {
 		try {
-			isLoading = true;
+			if (initial) isLoading = true;
+			isRefreshing = true;
 			error = null;
 			const result = await getLatQueue(5000, 0);
 			data = result.items;
@@ -38,11 +41,12 @@
 			error = e instanceof Error ? e.message : 'Failed to load queue';
 		} finally {
 			isLoading = false;
+			isRefreshing = false;
 		}
 	}
 
 	onMount(() => {
-		fetchQueue();
+		fetchQueue(true);
 	});
 
 	// ── Re-parse ────────────────────────────────────────────────────
@@ -221,7 +225,7 @@
 			<p class="text-red-600">{error}</p>
 			<button
 				class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-				on:click={fetchQueue}
+				on:click={() => fetchQueue(true)}
 			>
 				Retry
 			</button>
