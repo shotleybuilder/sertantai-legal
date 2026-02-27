@@ -70,6 +70,9 @@ defmodule SertantaiLegal.MixProject do
       # Zenoh P2P mesh — publish LRT/LAT/amendments to fractalaw
       {:zenohex, "~> 0.7.2"},
 
+      # Arrow IPC decoding for Zenoh taxa subscriber (wraps Polars)
+      {:explorer, "~> 0.11"},
+
       # Scraper dependencies
       {:req, "~> 0.5"},
       {:floki, "~> 0.36"},

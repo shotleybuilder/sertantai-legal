@@ -20,7 +20,8 @@ defmodule SertantaiLegal.Zenoh.Supervisor do
     children = [
       SertantaiLegal.Zenoh.Session,
       SertantaiLegal.Zenoh.DataServer,
-      SertantaiLegal.Zenoh.ChangeNotifier
+      SertantaiLegal.Zenoh.ChangeNotifier,
+      SertantaiLegal.Zenoh.TaxaSubscriber
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)
