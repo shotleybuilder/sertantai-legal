@@ -169,7 +169,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   defp put_holder_map(acc, row, key) do
     case Map.get(row, key) do
       nil -> acc
-      values when is_list(values) -> Map.put(acc, String.to_existing_atom(key), %{values: values})
+      values when is_list(values) -> Map.put(acc, String.to_atom(key), %{values: values})
       _ -> acc
     end
   end
@@ -178,7 +178,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   defp put_list_field(acc, row, key) do
     case Map.get(row, key) do
       nil -> acc
-      values when is_list(values) -> Map.put(acc, String.to_existing_atom(key), values)
+      values when is_list(values) -> Map.put(acc, String.to_atom(key), values)
       _ -> acc
     end
   end
@@ -190,7 +190,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
         acc
 
       entries when is_list(entries) ->
-        Map.put(acc, String.to_existing_atom(key), %{entries: entries})
+        Map.put(acc, String.to_atom(key), %{entries: entries})
 
       _ ->
         acc
