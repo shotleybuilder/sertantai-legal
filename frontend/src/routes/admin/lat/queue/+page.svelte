@@ -161,13 +161,7 @@
 		}
 	];
 
-	// ── TableKit config ─────────────────────────────────────────────
 
-	const tableConfig = {
-		id: 'lat_queue_default',
-		version: '1.1',
-		defaultSorting: [{ columnId: 'lrt_updated_at', direction: 'asc' as const }]
-	};
 </script>
 
 <svelte:head>
@@ -240,7 +234,6 @@
 		<TableKit
 			{data}
 			{columns}
-			config={tableConfig}
 			storageKey="lat_queue_table"
 			persistState={true}
 			align="left"
