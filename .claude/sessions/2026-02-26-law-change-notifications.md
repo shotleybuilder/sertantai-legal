@@ -9,10 +9,10 @@
 - [x] Design change detection mechanism
 - [x] Create GH issue on sertantai-hub#9 (subscriptions, matching, delivery)
 - [x] Create GH issue on sertantai-legal#30 (HubNotifier webhook)
-- [ ] Implement HubNotifier module (#30)
-- [ ] Wire into scraper pipeline
-- [ ] Add configuration (dev/runtime)
-- [ ] Build and verify
+- [x] Implement HubNotifier module (#30)
+- [x] Wire into scraper pipeline
+- [x] Add configuration (dev/runtime)
+- [x] Build and verify (1110 tests, 0 failures)
 
 ## Decisions
 - sertantai-legal detects changes (already does), signals hub via webhook
