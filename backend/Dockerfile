@@ -9,6 +9,10 @@ RUN apk add --no-cache \
     git \
     postgresql-client
 
+# picosat_elixir includes <sys/unistd.h> which doesn't exist in musl/Alpine
+RUN mkdir -p /usr/include/sys && \
+    echo '#include <unistd.h>' > /usr/include/sys/unistd.h
+
 WORKDIR /app
 
 # Install hex and rebar
