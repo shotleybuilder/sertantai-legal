@@ -85,6 +85,8 @@ defmodule SertantaiLegalWeb.LatAdminController do
   @queue_exclusions """
   AND u.live IS DISTINCT FROM '❌ Revoked / Repealed / Abolished'
   AND u.title_en IS NOT NULL
+  AND u.family IS NOT NULL
+  AND u.family NOT IN ('_todo', '🖤 X: No Family')
   """
 
   @queue_sql @queue_base_select <>
