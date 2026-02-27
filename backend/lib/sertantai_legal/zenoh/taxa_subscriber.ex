@@ -16,6 +16,11 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Zenoh.ActivityLog
 
+  # Ensure these atoms exist for String.to_existing_atom/1 in normalize_taxa.
+  # The sigil creates the atoms at compile time; the list is not used directly.
+  _ = ~w(duty_holder rights_holder responsibility_holder power_holder
+         duty_type role role_gvt duties rights responsibilities powers)a
+
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
 
@@ -169,7 +174,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   defp put_holder_map(acc, row, key) do
     case Map.get(row, key) do
       nil -> acc
-      values when is_list(values) -> Map.put(acc, String.to_atom(key), %{values: values})
+      values when is_list(values) -> Map.put(acc, String.to_existing_atom(key), %{values: values})
       _ -> acc
     end
   end
@@ -178,7 +183,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   defp put_list_field(acc, row, key) do
     case Map.get(row, key) do
       nil -> acc
-      values when is_list(values) -> Map.put(acc, String.to_atom(key), values)
+      values when is_list(values) -> Map.put(acc, String.to_existing_atom(key), values)
       _ -> acc
     end
   end
@@ -190,7 +195,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
         acc
 
       entries when is_list(entries) ->
-        Map.put(acc, String.to_atom(key), %{entries: entries})
+        Map.put(acc, String.to_existing_atom(key), %{entries: entries})
 
       _ ->
         acc
