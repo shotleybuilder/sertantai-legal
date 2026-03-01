@@ -201,15 +201,20 @@ async function createUkLrtCollection(
 							? (error as { status: number }).status
 							: null;
 
-					// 401 Unauthorized — no valid auth cookie, redirect to hub login
+					// 401 Unauthorized — no valid auth cookie
 					if (status === 401) {
-						console.warn('[TanStack DB] Unauthorized (401), redirecting to hub login');
 						syncStatus.update((s) => ({
 							...s,
 							error: 'Authentication required',
 							syncing: false
 						}));
-						window.location.href = HUB_URL;
+						// Don't redirect away from admin pages — they have their own auth
+						if (!window.location.pathname.startsWith('/admin')) {
+							console.warn('[TanStack DB] Unauthorized (401), redirecting to hub login');
+							window.location.href = HUB_URL;
+						} else {
+							console.warn('[TanStack DB] Unauthorized (401) on admin page, not redirecting');
+						}
 						return;
 					}
 
@@ -360,8 +365,12 @@ async function createLatCollection(
 							: null;
 
 					if (status === 401) {
-						console.warn('[TanStack DB] LAT: Unauthorized (401), redirecting to hub login');
-						window.location.href = HUB_URL;
+						if (!window.location.pathname.startsWith('/admin')) {
+							console.warn('[TanStack DB] LAT: Unauthorized (401), redirecting to hub login');
+							window.location.href = HUB_URL;
+						} else {
+							console.warn('[TanStack DB] LAT: Unauthorized (401) on admin page, not redirecting');
+						}
 						return;
 					}
 
@@ -445,8 +454,16 @@ async function createAnnotationCollection(
 							: null;
 
 					if (status === 401) {
-						console.warn('[TanStack DB] Annotations: Unauthorized (401), redirecting to hub login');
-						window.location.href = HUB_URL;
+						if (!window.location.pathname.startsWith('/admin')) {
+							console.warn(
+								'[TanStack DB] Annotations: Unauthorized (401), redirecting to hub login'
+							);
+							window.location.href = HUB_URL;
+						} else {
+							console.warn(
+								'[TanStack DB] Annotations: Unauthorized (401) on admin page, not redirecting'
+							);
+						}
 						return;
 					}
 

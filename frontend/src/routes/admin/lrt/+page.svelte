@@ -375,6 +375,16 @@
 			name: 'Purpose',
 			description: 'Legal purposes and objectives',
 			columns: ['actions', 'name', 'title_en', 'purpose']
+		},
+		{
+			name: 'LAT Queue',
+			description: 'Making laws in force — candidates for LAT parsing or re-parsing.',
+			columns: ['actions', 'name', 'title_en', 'family', 'live', 'function', 'year', 'type_code'],
+			filters: [
+				{ columnId: 'is_making', operator: 'equals', value: 'true' },
+				{ columnId: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
+			],
+			sort: { columnId: 'name', direction: 'asc' }
 		}
 	];
 
