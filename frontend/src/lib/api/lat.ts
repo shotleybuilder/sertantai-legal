@@ -90,6 +90,8 @@ export interface QueueItem {
 	year: number;
 	type_code: string;
 	family: string | null;
+	live: string | null;
+	function: string[] | null;
 	lrt_updated_at: string | null;
 	lat_count: number;
 	latest_lat_updated_at: string | null;

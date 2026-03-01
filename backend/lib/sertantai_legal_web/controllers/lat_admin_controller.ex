@@ -70,7 +70,9 @@ defmodule SertantaiLegalWeb.LatAdminController do
   @queue_base_select """
   SELECT
     u.id::text AS law_id, u.name AS law_name, u.title_en, u.year,
-    u.type_code, u.family, u.updated_at AS lrt_updated_at,
+    u.type_code, u.family, u.live,
+    (SELECT jsonb_agg(k) FROM jsonb_object_keys(u.function) AS k) AS function,
+    u.updated_at AS lrt_updated_at,
     COALESCE(lat_agg.lat_count, 0) AS lat_count,
     lat_agg.latest_lat_updated_at,
     CASE WHEN COALESCE(lat_agg.lat_count, 0) = 0 THEN 'missing'
@@ -83,7 +85,6 @@ defmodule SertantaiLegalWeb.LatAdminController do
   """
 
   @queue_exclusions """
-  AND u.live IS DISTINCT FROM '❌ Revoked / Repealed / Abolished'
   AND u.title_en IS NOT NULL
   AND u.family IS NOT NULL
   AND u.family NOT IN ('_todo', '🖤 X: No Family')
