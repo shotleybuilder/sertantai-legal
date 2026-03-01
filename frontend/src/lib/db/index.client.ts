@@ -20,6 +20,7 @@ import type { LatRecord } from '$lib/electric/lat-schema';
 import type { AnnotationRecord } from '$lib/electric/annotation-schema';
 import { LAT_COLUMNS } from '$lib/electric/lat-schema';
 import { ANNOTATION_COLUMNS } from '$lib/electric/annotation-schema';
+import { getAuthToken } from '$lib/stores/auth';
 
 // Re-export types for external use
 export type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
@@ -35,7 +36,6 @@ type ElectricAnnotationRecord = AnnotationRecord & Record<string, unknown>;
 // Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
-const HUB_URL = import.meta.env.VITE_HUB_URL || 'https://sertantai.com';
 
 /**
  * Columns to sync from uk_lrt table.
@@ -131,6 +131,19 @@ const UK_LRT_COLUMNS: string[] = [
 ];
 
 /**
+ * Custom fetch client that includes the JWT Authorization header
+ * for Electric shape requests through the backend proxy.
+ */
+function electricFetchClient(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+	const token = getAuthToken();
+	const headers = new Headers(init?.headers);
+	if (token && !headers.has('Authorization')) {
+		headers.set('Authorization', `Bearer ${token}`);
+	}
+	return fetch(input, { ...init, headers });
+}
+
+/**
  * Get default WHERE clause (last 3 years)
  */
 function getDefaultWhere(): string {
@@ -190,6 +203,7 @@ async function createUkLrtCollection(
 			syncMode: 'progressive', // Use progressive mode for large datasets - provides incremental snapshots
 			shapeOptions: {
 				url: `${ELECTRIC_URL}/v1/shape`,
+				fetchClient: electricFetchClient,
 				params: {
 					table: 'uk_lrt',
 					where: whereClause,
@@ -201,20 +215,14 @@ async function createUkLrtCollection(
 							? (error as { status: number }).status
 							: null;
 
-					// 401 Unauthorized — no valid auth cookie
+					// 401 Unauthorized — no valid JWT token
 					if (status === 401) {
 						syncStatus.update((s) => ({
 							...s,
 							error: 'Authentication required',
 							syncing: false
 						}));
-						// Don't redirect away from admin pages — they have their own auth
-						if (!window.location.pathname.startsWith('/admin')) {
-							console.warn('[TanStack DB] Unauthorized (401), redirecting to hub login');
-							window.location.href = HUB_URL;
-						} else {
-							console.warn('[TanStack DB] Unauthorized (401) on admin page, not redirecting');
-						}
+						console.warn('[TanStack DB] Unauthorized (401) — sign in required');
 						return;
 					}
 
@@ -353,6 +361,7 @@ async function createLatCollection(
 			syncMode: 'progressive',
 			shapeOptions: {
 				url: `${ELECTRIC_URL}/v1/shape`,
+				fetchClient: electricFetchClient,
 				params: {
 					table: 'lat',
 					where: whereClause,
@@ -365,12 +374,7 @@ async function createLatCollection(
 							: null;
 
 					if (status === 401) {
-						if (!window.location.pathname.startsWith('/admin')) {
-							console.warn('[TanStack DB] LAT: Unauthorized (401), redirecting to hub login');
-							window.location.href = HUB_URL;
-						} else {
-							console.warn('[TanStack DB] LAT: Unauthorized (401) on admin page, not redirecting');
-						}
+						console.warn('[TanStack DB] LAT: Unauthorized (401) — sign in required');
 						return;
 					}
 
@@ -442,6 +446,7 @@ async function createAnnotationCollection(
 			syncMode: 'progressive',
 			shapeOptions: {
 				url: `${ELECTRIC_URL}/v1/shape`,
+				fetchClient: electricFetchClient,
 				params: {
 					table: 'amendment_annotations',
 					where: whereClause,
@@ -454,16 +459,7 @@ async function createAnnotationCollection(
 							: null;
 
 					if (status === 401) {
-						if (!window.location.pathname.startsWith('/admin')) {
-							console.warn(
-								'[TanStack DB] Annotations: Unauthorized (401), redirecting to hub login'
-							);
-							window.location.href = HUB_URL;
-						} else {
-							console.warn(
-								'[TanStack DB] Annotations: Unauthorized (401) on admin page, not redirecting'
-							);
-						}
+						console.warn('[TanStack DB] Annotations: Unauthorized (401) — sign in required');
 						return;
 					}
 

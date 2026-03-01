@@ -6,9 +6,9 @@ defmodule SertantaiLegalWeb.CascadeControllerTest do
   @test_session_id "test-cascade-clear-#{System.unique_integer([:positive])}"
 
   setup :setup_auth
-  setup :setup_admin_session
 
   setup %{conn: conn} do
+    conn = put_admin_auth_header(conn)
     # Note: We don't need to create actual sessions for cascade clear tests
     # The endpoint works with any session_id, even if the session doesn't exist
 

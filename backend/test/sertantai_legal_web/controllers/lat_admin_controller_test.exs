@@ -8,8 +8,8 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
   setup :setup_auth
 
   setup %{conn: conn} do
-    {:ok, result} = SertantaiLegal.AuthHelpers.setup_admin_session(%{conn: conn})
-    admin_conn = result[:conn]
+    # Use JWT admin auth instead of session auth
+    admin_conn = put_admin_auth_header(conn)
 
     law_id = Ecto.UUID.generate()
     {:ok, law_id_binary} = Ecto.UUID.dump(law_id)
@@ -96,13 +96,21 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
   # ── Auth ────────────────────────────────────────────────────────
 
   describe "auth" do
-    test "returns 401 without session" do
-      # Fresh conn without admin session
+    test "returns 401 without JWT" do
       conn = Phoenix.ConnTest.build_conn() |> get("/api/lat/stats")
       assert json_response(conn, 401)
     end
 
-    test "returns 200 with valid admin session", %{conn: conn} do
+    test "returns 403 with non-admin JWT" do
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> put_auth_header(%{"role" => "member"})
+        |> get("/api/lat/stats")
+
+      assert json_response(conn, 403)
+    end
+
+    test "returns 200 with valid admin JWT", %{conn: conn} do
       conn = get(conn, "/api/lat/stats")
       assert json_response(conn, 200)
     end

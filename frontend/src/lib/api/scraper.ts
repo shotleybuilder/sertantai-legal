@@ -6,11 +6,14 @@
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
+import { authFetch } from '$lib/api/client';
+import { getAuthToken } from '$lib/stores/auth';
+
 /**
- * Fetch wrapper that includes session credentials for admin auth.
+ * Fetch wrapper that includes JWT auth for admin API calls.
  */
 async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
-	return fetch(url, { ...options, credentials: 'include' });
+	return authFetch(url, options);
 }
 
 export interface ScrapeSession {
@@ -815,9 +818,12 @@ export async function clearProcessedCascade(
 export async function clearSessionCascade(
 	sessionId: string
 ): Promise<{ message: string; session_id: string; deleted_count: number }> {
-	const response = await adminFetch(`${API_URL}/api/cascade/session/${encodeURIComponent(sessionId)}`, {
-		method: 'DELETE'
-	});
+	const response = await adminFetch(
+		`${API_URL}/api/cascade/session/${encodeURIComponent(sessionId)}`,
+		{
+			method: 'DELETE'
+		}
+	);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -1015,7 +1021,12 @@ export function parseOneStream(
 	if (stages && stages.length > 0) {
 		url += `&stages=${stages.join(',')}`;
 	}
-	const eventSource = new EventSource(url, { withCredentials: true });
+	// EventSource doesn't support custom headers — pass token as query param
+	const token = getAuthToken();
+	if (token) {
+		url += `&token=${encodeURIComponent(token)}`;
+	}
+	const eventSource = new EventSource(url);
 
 	eventSource.onmessage = (event) => {
 		try {

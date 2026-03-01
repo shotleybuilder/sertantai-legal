@@ -34,9 +34,9 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
   end
 
   setup :setup_auth
-  setup :setup_admin_session
 
   setup %{conn: conn} do
+    conn = put_admin_auth_header(conn)
     # Clean up any test session files
     Storage.delete_session(@test_session_id)
     on_exit(fn -> Storage.delete_session(@test_session_id) end)

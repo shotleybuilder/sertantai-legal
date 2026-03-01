@@ -1,21 +1,7 @@
 defmodule SertantaiLegalWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :sertantai_legal
 
-  # The session will be stored in the cookie and signed,
-  # this means its contents can be read but not tampered with.
-  # Set :encryption_salt if you would also like to encrypt it.
-  @session_options [
-    store: :cookie,
-    key: "_sertantai_legal_key",
-    signing_salt: "m2DMKQLC",
-    same_site: "Lax",
-    secure: Application.compile_env(:sertantai_legal, :session_secure, false),
-    domain: Application.compile_env(:sertantai_legal, :session_domain, "localhost")
-  ]
-
-  # socket "/live", Phoenix.LiveView.Socket,
-  #   websocket: [connect_info: [session: @session_options]],
-  #   longpoll: [connect_info: [session: @session_options]]
+  # No session needed — all auth is stateless JWT from sertantai-auth
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -52,7 +38,6 @@ defmodule SertantaiLegalWeb.Endpoint do
 
   plug(Plug.MethodOverride)
   plug(Plug.Head)
-  plug(Plug.Session, @session_options)
 
   # CORS configuration
   plug(Corsica,

@@ -118,10 +118,8 @@ export interface ReparseResult {
 }
 
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-	const response = await fetch(url, {
-		...options,
-		credentials: 'include'
-	});
+	const { authFetch } = await import('$lib/api/client');
+	const response = await authFetch(url, options);
 
 	if (!response.ok) {
 		const body = await response.json().catch(() => ({ error: response.statusText }));

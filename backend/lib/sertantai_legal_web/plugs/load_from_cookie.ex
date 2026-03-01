@@ -1,13 +1,14 @@
 defmodule SertantaiLegalWeb.LoadFromCookie do
   @moduledoc """
-  Reads the `sertantai_token` cookie and injects it as a Bearer Authorization header.
+  Injects a Bearer Authorization header from a cookie or query parameter.
 
-  This plug runs **before** `AuthPlug` in the pipeline. It only acts when no
-  Authorization header is already present — Bearer header takes priority,
-  cookie is the fallback.
+  Runs **before** `AuthPlug` in the pipeline. Only acts when no
+  Authorization header is already present — Bearer header takes priority.
 
-  The cookie is set by sertantai-auth on `.sertantai.com` and sent automatically
-  by the browser to all subdomains (e.g. `legal.sertantai.com`).
+  Token sources (checked in order):
+  1. `Authorization: Bearer <token>` header (already present — skip)
+  2. `sertantai_token` cookie (set by sertantai-auth on `.sertantai.com`)
+  3. `token` query parameter (for EventSource/SSE which can't set headers)
   """
 
   import Plug.Conn
@@ -20,9 +21,35 @@ defmodule SertantaiLegalWeb.LoadFromCookie do
     if has_bearer_header?(conn) do
       conn
     else
+      conn
+      |> try_cookie()
+      |> try_query_param()
+    end
+  end
+
+  defp try_cookie(conn) do
+    if has_bearer_header?(conn) do
+      conn
+    else
       conn = fetch_cookies(conn)
 
       case conn.cookies[@cookie_name] do
+        token when is_binary(token) and token != "" ->
+          put_req_header(conn, "authorization", "Bearer #{token}")
+
+        _ ->
+          conn
+      end
+    end
+  end
+
+  defp try_query_param(conn) do
+    if has_bearer_header?(conn) do
+      conn
+    else
+      conn = Plug.Conn.fetch_query_params(conn)
+
+      case conn.query_params["token"] do
         token when is_binary(token) and token != "" ->
           put_req_header(conn, "authorization", "Bearer #{token}")
 

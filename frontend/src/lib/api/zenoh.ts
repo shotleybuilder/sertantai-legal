@@ -6,8 +6,10 @@
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
+import { authFetch } from '$lib/api/client';
+
 async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
-	return fetch(url, { ...options, credentials: 'include' });
+	return authFetch(url, options);
 }
 
 // --- Types ---

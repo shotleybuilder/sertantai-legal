@@ -7,7 +7,7 @@
 	let status: 'loading' | 'success' | 'error' = 'loading';
 	let errorMessage = '';
 
-	onMount(async () => {
+	onMount(() => {
 		const error = $page.url.searchParams.get('error');
 		if (error) {
 			status = 'error';
@@ -16,19 +16,22 @@
 			return;
 		}
 
-		try {
-			const user = await adminAuth.check();
-			if (user) {
-				status = 'success';
-				setTimeout(() => goto('/admin'), 1000);
-			} else {
-				status = 'error';
-				errorMessage = 'Session not established. Please try again.';
-				setTimeout(() => goto('/admin'), 3000);
-			}
-		} catch {
+		const token = $page.url.searchParams.get('token');
+		if (!token) {
 			status = 'error';
-			errorMessage = 'Authentication verification failed.';
+			errorMessage = 'No token received. Redirecting...';
+			setTimeout(() => goto('/admin'), 3000);
+			return;
+		}
+
+		const user = adminAuth.setToken(token);
+		if (user) {
+			status = 'success';
+			// Clean the token from the URL before redirecting
+			setTimeout(() => goto('/admin'), 500);
+		} else {
+			status = 'error';
+			errorMessage = 'Invalid or expired token.';
 			setTimeout(() => goto('/admin'), 3000);
 		}
 	});
@@ -39,7 +42,7 @@
 		{#if status === 'loading'}
 			<div class="text-gray-600">
 				<div class="mb-4 text-lg">Completing sign in...</div>
-				<div class="animate-pulse text-sm text-gray-400">Verifying session</div>
+				<div class="animate-pulse text-sm text-gray-400">Verifying token</div>
 			</div>
 		{:else if status === 'success'}
 			<div class="text-green-600">

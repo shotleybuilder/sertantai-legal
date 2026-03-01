@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { authFetch } from '$lib/api/client';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
@@ -28,9 +29,9 @@
 	onMount(async () => {
 		try {
 			const [filtersRes, latRes, sessionsRes] = await Promise.all([
-				fetch(`${API_URL}/api/uk-lrt/filters`, { credentials: 'include' }),
-				fetch(`${API_URL}/api/lat/stats`, { credentials: 'include' }),
-				fetch(`${API_URL}/api/sessions`, { credentials: 'include' })
+				authFetch(`${API_URL}/api/uk-lrt/filters`),
+				authFetch(`${API_URL}/api/lat/stats`),
+				authFetch(`${API_URL}/api/sessions`)
 			]);
 
 			// LRT filters: families + years
