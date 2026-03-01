@@ -24,13 +24,7 @@
 	adminAuth.subscribe((v) => (user = v));
 
 	onMount(() => {
-		const user = adminAuth.check();
-		if (!user) {
-			// No JWT — redirect to hub login, which handles OAuth
-			const returnUrl = encodeURIComponent(window.location.href);
-			window.location.href = `${HUB_URL}/login?redirect=${returnUrl}`;
-			return;
-		}
+		adminAuth.check();
 		loading = false;
 	});
 
@@ -54,22 +48,40 @@
 {:else if !user}
 	<div class="flex min-h-screen items-center justify-center bg-gray-50">
 		<div class="text-center">
-			<div class="text-gray-500">Redirecting to sign in...</div>
+			<h1 class="mb-4 text-2xl font-bold text-gray-900">Not Signed In</h1>
+			<p class="mb-6 text-sm text-gray-500">
+				You need to sign in to access the admin area.
+			</p>
+			<a
+				href="{HUB_URL}"
+				class="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+			>
+				Go to SertantAI Hub
+			</a>
 		</div>
 	</div>
 {:else if !isAdmin(user)}
 	<div class="flex min-h-screen items-center justify-center bg-gray-50">
 		<div class="text-center">
 			<h1 class="mb-4 text-2xl font-bold text-gray-900">Access Denied</h1>
-			<p class="mb-4 text-sm text-red-500">
-				Your account does not have admin privileges. Contact an administrator.
+			<p class="mb-4 text-sm text-gray-500">
+				This area is restricted to administrators. If you believe you should have access,
+				contact your organisation owner.
 			</p>
-			<button
-				on:click={signOut}
-				class="text-sm text-gray-400 hover:text-gray-600"
-			>
-				Sign out
-			</button>
+			<div class="flex items-center justify-center gap-4">
+				<a
+					href="/browse"
+					class="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+				>
+					Browse Laws
+				</a>
+				<button
+					on:click={signOut}
+					class="text-sm text-gray-400 hover:text-gray-600"
+				>
+					Sign out
+				</button>
+			</div>
 		</div>
 	</div>
 {:else}

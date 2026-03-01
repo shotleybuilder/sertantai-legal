@@ -6,13 +6,17 @@
 
 	let status: 'loading' | 'success' | 'error' = 'loading';
 	let errorMessage = '';
+	let dest = '/browse';
 
 	onMount(() => {
+		// Where to go after auth — defaults to /browse
+		dest = $page.url.searchParams.get('dest') || '/browse';
+
 		const error = $page.url.searchParams.get('error');
 		if (error) {
 			status = 'error';
 			errorMessage = 'Authentication failed. Redirecting...';
-			setTimeout(() => goto('/admin'), 3000);
+			setTimeout(() => goto(dest), 3000);
 			return;
 		}
 
@@ -20,7 +24,7 @@
 		if (!token) {
 			status = 'error';
 			errorMessage = 'No token received. Redirecting...';
-			setTimeout(() => goto('/admin'), 3000);
+			setTimeout(() => goto(dest), 3000);
 			return;
 		}
 
@@ -28,11 +32,11 @@
 		if (user) {
 			status = 'success';
 			// Clean the token from the URL before redirecting
-			setTimeout(() => goto('/admin'), 500);
+			setTimeout(() => goto(dest), 500);
 		} else {
 			status = 'error';
 			errorMessage = 'Invalid or expired token.';
-			setTimeout(() => goto('/admin'), 3000);
+			setTimeout(() => goto(dest), 3000);
 		}
 	});
 </script>
@@ -47,7 +51,7 @@
 		{:else if status === 'success'}
 			<div class="text-green-600">
 				<div class="mb-2 text-lg font-medium">Signed in successfully</div>
-				<div class="text-sm text-gray-500">Redirecting to admin...</div>
+				<div class="text-sm text-gray-500">Redirecting...</div>
 			</div>
 		{:else}
 			<div class="text-red-600">
