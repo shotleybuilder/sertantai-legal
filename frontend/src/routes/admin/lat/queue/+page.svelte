@@ -6,6 +6,7 @@
 	import type { FilterCondition, TableConfig as TableKitConfig } from '@shotleybuilder/svelte-table-kit';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { getLatQueue, reparseLat, type QueueItem } from '$lib/api/lat';
+	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import {
 		SaveViewModal,
 		activeViewId,
@@ -34,6 +35,11 @@
 	let reparsingLaw: string | null = null;
 	let reparseMessage = '';
 	let reparseError = '';
+
+	// LRT refresh modal state
+	let lrtModalOpen = false;
+	let lrtModalRecord: QueueItem | null = null;
+	let lrtModalRecordId: string | undefined = undefined;
 
 	// Saved views state
 	let showSaveModal = false;
@@ -97,6 +103,22 @@
 		}
 	}
 
+	// ── LRT Refresh (Parse & Review modal) ──────────────────────────
+
+	function openLrtRefresh(item: QueueItem) {
+		lrtModalRecord = item;
+		lrtModalRecordId = item.law_id;
+		lrtModalOpen = true;
+	}
+
+	function closeLrtRefresh() {
+		lrtModalOpen = false;
+		lrtModalRecord = null;
+		lrtModalRecordId = undefined;
+		// Refresh queue — LRT record may have changed (e.g. live status updated)
+		fetchQueue();
+	}
+
 	// ── Helpers ──────────────────────────────────────────────────────
 
 	function asRecord(row: unknown): QueueItem {
@@ -135,7 +157,7 @@
 			id: 'actions',
 			header: '',
 			cell: (info) => info.cell.row.original.law_name,
-			size: 80,
+			size: 60,
 			enableSorting: false,
 			enableResizing: false,
 			meta: { group: 'Actions' }
@@ -252,6 +274,7 @@
 				{ columnId: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
 			],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
+			grouping: ['family'],
 			isDefault: true
 		},
 		{
@@ -259,14 +282,16 @@
 			description: 'LRT records with making function that have no LAT data at all.',
 			columns: allColumns,
 			filters: [{ columnId: 'queue_reason', operator: 'equals', value: 'missing' }],
-			sort: { columnId: 'lrt_updated_at', direction: 'asc' }
+			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
+			grouping: ['family']
 		},
 		{
 			name: 'Stale LAT',
 			description: 'LRT records where LAT data exists but is more than 6 months out of date.',
 			columns: allColumns,
 			filters: [{ columnId: 'queue_reason', operator: 'equals', value: 'stale' }],
-			sort: { columnId: 'lrt_updated_at', direction: 'asc' }
+			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
+			grouping: ['family']
 		}
 	];
 
@@ -606,7 +631,7 @@
 					filtering: true,
 					sorting: true,
 					sortingMode: 'control',
-					pagination: true,
+					pagination: false,
 					grouping: true
 				}}
 			>
@@ -652,26 +677,36 @@
 				<svelte:fragment slot="cell" let:cell let:column>
 					{@const row = asRecord(cell.row.original)}
 					{#if column === 'actions'}
-						<button
-							on:click={() => handleReparse(row)}
-							disabled={reparsingLaw === row.law_name}
-							class="px-2.5 py-1 text-xs font-medium rounded-md transition-colors
-								{reparsingLaw === row.law_name
-								? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-								: 'bg-blue-600 text-white hover:bg-blue-700'}"
-						>
-							{#if reparsingLaw === row.law_name}
-								Parsing...
-							{:else}
-								Re-parse
-							{/if}
-						</button>
+						<div class="flex flex-col gap-0.5">
+							<button
+								on:click={() => openLrtRefresh(row)}
+								class="px-2 py-0.5 text-xs font-medium rounded transition-colors bg-indigo-600 text-white hover:bg-indigo-700"
+								title="Refresh LRT metadata (status, dates, extent) from legislation.gov.uk"
+							>
+								LRT
+							</button>
+							<button
+								on:click={() => handleReparse(row)}
+								disabled={reparsingLaw === row.law_name}
+								class="px-2 py-0.5 text-xs font-medium rounded transition-colors
+									{reparsingLaw === row.law_name
+									? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+									: 'bg-blue-600 text-white hover:bg-blue-700'}"
+								title="Re-parse LAT articles and annotations"
+							>
+								{#if reparsingLaw === row.law_name}
+									Parsing...
+								{:else}
+									LAT
+								{/if}
+							</button>
+						</div>
 					{:else if column === 'law_name'}
 						<span class="font-mono text-gray-700">{row.law_name}</span>
 					{:else if column === 'title_en'}
-						<span class="text-gray-900">{row.title_en || ''}</span>
+						<span class="text-gray-900 whitespace-normal leading-snug">{row.title_en || ''}</span>
 					{:else if column === 'family'}
-						<span class="text-gray-700">{row.family || ''}</span>
+						<span class="text-gray-700 whitespace-normal leading-snug">{row.family || ''}</span>
 					{:else if column === 'live'}
 						{@const status = row.live}
 						<span
@@ -683,20 +718,8 @@
 							{status || '-'}
 						</span>
 					{:else if column === 'function'}
-						{#if row.function?.length}
-							<span class="flex flex-wrap gap-1">
-								{#each row.function as fn}
-									<span
-										class="px-1.5 py-0.5 text-xs rounded
-											{fn === 'Making' ? 'bg-green-100 text-green-700'
-											: fn === 'Amending' ? 'bg-yellow-100 text-yellow-700'
-											: fn === 'Revoking' ? 'bg-red-100 text-red-700'
-											: 'bg-gray-100 text-gray-700'}"
-									>
-										{fn}
-									</span>
-								{/each}
-							</span>
+						{#if row.function?.includes('Making')}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
 						{:else}
 							<span class="text-gray-400">-</span>
 						{/if}
@@ -726,4 +749,15 @@
 <!-- Save View Modal -->
 {#if showSaveModal && capturedConfig}
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
+{/if}
+
+<!-- LRT Refresh Modal (Parse & Review) -->
+{#if lrtModalRecord}
+	<ParseReviewModal
+		record={lrtModalRecord}
+		recordId={lrtModalRecordId}
+		autoReparse={true}
+		open={lrtModalOpen}
+		on:close={closeLrtRefresh}
+	/>
 {/if}

@@ -4,14 +4,15 @@
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import {
-		ViewSelector,
 		SaveViewModal,
 		activeViewId,
 		activeViewModified,
 		viewActions,
 		savedViews
 	} from 'svelte-table-views-tanstack';
-	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
+	import type { TableConfig, SavedViewInput } from 'svelte-table-views-tanstack';
+	import { ViewSidebar } from 'svelte-table-views-sidebar';
+	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
 	// ElectricSQL sync - using official TanStack Electric integration
 	import {
@@ -214,6 +215,7 @@
 	// Saved views state
 	let showSaveModal = false;
 	let capturedConfig: TableConfig | null = null;
+	let sidebarOpen = false;
 
 	// View configuration state (for applying saved views)
 	let viewColumns: string[] = [];
@@ -388,135 +390,135 @@
 		}
 	];
 
+	// ── View groups & sidebar mapping ───────────────────────────────
+
+	const viewGroups: ViewGroup[] = [
+		{ id: 'credentials', name: 'Credentials & Dates', order: 0 },
+		{ id: 'classification', name: 'Classification', order: 1 },
+		{ id: 'holders', name: 'Holders', order: 2 },
+		{ id: 'analysis', name: 'Analysis', order: 3 }
+	];
+
+	const viewGroupMapping: Record<string, string> = {
+		'Credentials': 'credentials',
+		'Recently Amended': 'credentials',
+		'Recently Rescinded': 'credentials',
+		'Status & Dates': 'credentials',
+		'Metadata': 'credentials',
+		'Description': 'classification',
+		'Geo. Extent': 'classification',
+		'Role': 'classification',
+		'Duty Type': 'classification',
+		'Duties': 'holders',
+		'Powers': 'holders',
+		'Rights': 'holders',
+		'Responsibilities': 'holders',
+		'POPIMAR': 'analysis',
+		'Purpose': 'analysis',
+		'LAT Queue': 'analysis'
+	};
+
+	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
+	const lrtViewNames = new Set(defaultViews.map((v) => v.name));
+
+	$: sidebarViews = $savedViews
+		.filter((view) => lrtViewNames.has(view.name))
+		.map((view): SidebarView => ({
+			id: view.id,
+			name: view.name,
+			description: view.description,
+			groupId: viewGroupMapping[view.name] || 'analysis',
+			isDefault: defaultViews.find((dv) => dv.name === view.name)?.isDefault,
+			order: viewOrderMap.get(view.name) ?? 1000
+		}))
+		.sort((a, b) => (a.order ?? 1000) - (b.order ?? 1000));
+
 	// Seed default views if they don't exist (by name) and auto-select default view
 	async function seedDefaultViews() {
-		// Clean up old incorrect localStorage key from previous implementation
-		localStorage.removeItem('svelte-table-views');
-
-		// Wait for library to be ready (uses TanStack DB which needs initialization)
 		await viewActions.waitForReady();
-		console.log('[LRT Admin] Saved views library ready');
 
-		// Get existing views from the store (not localStorage directly - the IDs have prefixes)
-		const existingViews = new Map<string, string>(); // name -> id
 		const currentViews = $savedViews;
+
+		// Deduplicate — keep first occurrence of each name
+		const existingViews = new Map<string, string>();
 		for (const view of currentViews) {
-			existingViews.set(view.name, view.id);
-		}
-
-		console.log('[LRT Admin] Existing views:', Array.from(existingViews.keys()));
-
-		// Clean up duplicate views (e.g., "Duty Holders" when "Duty Holder" exists)
-		// These are views with names that differ only by pluralization
-		const duplicatesToRemove = [{ keep: 'Duty Holder', remove: 'Duty Holders' }];
-
-		for (const { keep, remove } of duplicatesToRemove) {
-			if (existingViews.has(keep) && existingViews.has(remove)) {
-				const removeId = existingViews.get(remove);
-				if (removeId) {
-					console.log(`[LRT Admin] Removing duplicate view "${remove}" (keeping "${keep}")`);
-					try {
-						await viewActions.delete(removeId);
-						existingViews.delete(remove);
-					} catch (err) {
-						console.error(`[LRT Admin] Failed to remove duplicate view "${remove}":`, err);
-					}
-				}
+			if (existingViews.has(view.name)) {
+				try { await viewActions.delete(view.id); } catch { /* dedup */ }
+			} else {
+				existingViews.set(view.name, view.id);
 			}
 		}
 
-		// Update existing default views if they need new config (e.g., filters/sort added)
-		const credentialsViewDef = defaultViews.find((v) => v.name === 'Credentials');
-		const existingCredentials = currentViews.find((v) => v.name === 'Credentials');
-		if (credentialsViewDef && existingCredentials) {
-			// Check if the existing Credentials view is missing filter/sort config
-			if (!existingCredentials.config.filters?.length || !existingCredentials.config.sort) {
-				console.log('[LRT Admin] Updating Credentials view with filter and sort config');
+		// Update existing default views if their config has drifted
+		for (const viewDef of defaultViews) {
+			const existingId = existingViews.get(viewDef.name);
+			if (!existingId) continue;
+			const existing = currentViews.find((v) => v.id === existingId);
+			if (!existing) continue;
+
+			const expectedFilters = viewDef.filters || [];
+			const currentFilters = existing.config.filters || [];
+			const filtersMatch = JSON.stringify(currentFilters) === JSON.stringify(expectedFilters);
+			const columnsMatch = JSON.stringify(existing.config.columns) === JSON.stringify(viewDef.columns);
+
+			if (!filtersMatch || !columnsMatch) {
 				try {
-					await viewActions.update(existingCredentials.id, {
+					await viewActions.update(existingId, {
 						config: {
-							...existingCredentials.config,
-							filters: credentialsViewDef.filters || [],
-							sort: credentialsViewDef.sort || null
+							...existing.config,
+							filters: expectedFilters,
+							columns: viewDef.columns,
+							columnOrder: viewDef.columns
 						}
 					});
 				} catch (err) {
-					console.error('[LRT Admin] Failed to update Credentials view:', err);
+					console.error('[LRT Admin] Failed to update view:', viewDef.name, err);
 				}
 			}
 		}
 
-		// Seed only missing default views
+		// Seed missing views
 		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
 
-		// Find if default view already exists
 		const defaultViewDef = defaultViews.find((v) => v.isDefault);
 		if (defaultViewDef && existingViews.has(defaultViewDef.name)) {
 			defaultViewId = existingViews.get(defaultViewDef.name) || null;
 		}
 
-		if (missingViews.length > 0) {
-			console.log(
-				'[LRT Admin] Seeding missing default views:',
-				missingViews.map((v) => v.name)
-			);
-
-			for (const view of missingViews) {
-				const viewInput: SavedViewInput = {
-					name: view.name,
-					description: view.description,
-					config: {
-						filters: view.filters || [],
-						sort: view.sort || null,
-						columns: view.columns,
-						columnOrder: view.columns,
-						columnWidths: {},
-						pageSize: 25,
-						grouping: []
-					}
-				};
-
-				try {
-					const savedView = await viewActions.save(viewInput);
-					console.log('[LRT Admin] Seeded view:', view.name, savedView?.id);
-
-					// Track the default view ID if this is the default
-					if (view.isDefault && savedView?.id) {
-						defaultViewId = savedView.id;
-					}
-
-					await new Promise((resolve) => setTimeout(resolve, 100));
-				} catch (err) {
-					console.error('[LRT Admin] Failed to seed view:', view.name, err);
+		for (const view of missingViews) {
+			const viewInput: SavedViewInput = {
+				name: view.name,
+				description: view.description,
+				config: {
+					filters: view.filters || [],
+					sort: view.sort || null,
+					columns: view.columns,
+					columnOrder: view.columns,
+					columnWidths: {},
+					pageSize: 25,
+					grouping: []
 				}
-			}
+			};
 
-			console.log('[LRT Admin] Default views seeding complete');
-		} else {
-			console.log('[LRT Admin] All default views already exist');
+			try {
+				const savedView = await viewActions.save(viewInput);
+				if (view.isDefault && savedView?.id) {
+					defaultViewId = savedView.id;
+				}
+				existingViews.set(view.name, savedView?.id || '');
+				await new Promise((resolve) => setTimeout(resolve, 100));
+			} catch (err) {
+				console.error('[LRT Admin] Failed to seed view:', view.name, err);
+			}
 		}
 
-		// Auto-select default view if no view is currently active
-		console.log(
-			'[LRT Admin] Checking for auto-select: defaultViewId=',
-			defaultViewId,
-			'activeViewId=',
-			$activeViewId
-		);
+		// Auto-select default view
 		if (defaultViewId && !$activeViewId) {
-			console.log('[LRT Admin] Auto-selecting default view:', defaultViewId);
-
-			// Load the view (sets as active and updates usage stats)
 			const loadedView = await viewActions.load(defaultViewId);
-			console.log('[LRT Admin] Loaded view:', loadedView?.name, loadedView?.config);
 			if (loadedView) {
 				applyViewConfig(loadedView.config);
 			}
-		} else if (!defaultViewId) {
-			console.log('[LRT Admin] No default view found to auto-select');
-		} else {
-			console.log('[LRT Admin] View already active, skipping auto-select');
 		}
 	}
 
@@ -572,15 +574,13 @@
 		configVersion++;
 	}
 
-	// Handle view selection
-	function handleViewSelected(event: CustomEvent<{ view: SavedView }>) {
-		const view = event.detail.view;
-		console.log('[LRT Admin] View selected:', view.name);
-
-		// Apply view config to table
-		setTimeout(() => {
-			applyViewConfig(view.config);
-		}, 100);
+	// Handle sidebar view selection
+	async function handleSidebarSelect(event: CustomEvent<{ view: SidebarView }>) {
+		const sidebarView = event.detail.view;
+		const loadedView = await viewActions.load(sidebarView.id);
+		if (loadedView) {
+			applyViewConfig(loadedView.config);
+		}
 	}
 
 	// Handle save view button click
@@ -1452,13 +1452,58 @@
 	});
 </script>
 
-<div class="container mx-auto px-4 py-6">
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold text-gray-900 mb-1">UK LRT Data</h1>
-		<p class="text-sm text-gray-600">
-			Manage UK Legal Register Table records. Inline edit Family, Family II, and Function fields.
-		</p>
+<div class="flex h-full relative">
+	<!-- Mobile sidebar overlay -->
+	{#if sidebarOpen}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div
+			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
+			on:click={() => (sidebarOpen = false)}
+		/>
+	{/if}
+
+	<!-- View Sidebar -->
+	<div
+		class="shrink-0 {sidebarOpen
+			? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto'
+			: 'hidden lg:block'}"
+	>
+		<ViewSidebar
+			views={sidebarViews}
+			groups={viewGroups}
+			selectedViewId={$activeViewId ?? undefined}
+			storageKey="lrt-admin-views-sidebar"
+			width={220}
+			showSearch={false}
+			showPinned={false}
+			on:select={(e) => {
+				handleSidebarSelect(e);
+				sidebarOpen = false;
+			}}
+		/>
 	</div>
+
+	<!-- Main Content -->
+	<div class="flex-1 overflow-auto px-6 py-4 space-y-6">
+		<!-- Header -->
+		<div class="flex items-center gap-3">
+			<button
+				class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
+				on:click={() => (sidebarOpen = !sidebarOpen)}
+				title="Toggle views sidebar"
+			>
+				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+				</svg>
+			</button>
+			<div>
+				<h1 class="text-2xl font-bold text-gray-900">UK LRT Data</h1>
+				<p class="mt-1 text-sm text-gray-500">
+					Manage UK Legal Register Table records. Inline edit Family, Family II, and Function fields.
+				</p>
+			</div>
+		</div>
 
 	{#if isLoading}
 		<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
@@ -1546,8 +1591,6 @@
 		>
 			<!-- Saved Views Toolbar -->
 			<svelte:fragment slot="toolbar-left">
-				<ViewSelector on:viewSelected={handleViewSelected} />
-
 				{#if $activeViewId && $activeViewModified}
 					<!-- Split Button: Update | Save New -->
 					<div class="inline-flex rounded-md shadow-sm">
@@ -1832,7 +1875,8 @@
 			</ul>
 		</div>
 	{/if}
-</div>
+	</div> <!-- /flex-1 overflow-auto (main content) -->
+</div> <!-- /flex h-full relative (sidebar+content wrapper) -->
 
 <!-- Save View Modal -->
 {#if showSaveModal && capturedConfig}
