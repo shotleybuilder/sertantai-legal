@@ -261,6 +261,141 @@ describe('transformUkLrtRecord', () => {
 	});
 });
 
+describe('fitness columns (Issue #39)', () => {
+	it('parses fitness tag arrays from PostgreSQL format', () => {
+		const raw = {
+			id: 'uuid-fitness-1',
+			fitness_person: '{employer,worker}',
+			fitness_process: '{manufacturing}',
+			fitness_place: null,
+			fitness_plant: '{machinery,equipment}',
+			fitness_property: null,
+			fitness_sector: '{construction,mining}'
+		};
+
+		const result = transformUkLrtRecord(raw);
+
+		expect(result.fitness_person).toEqual(['employer', 'worker']);
+		expect(result.fitness_process).toEqual(['manufacturing']);
+		expect(result.fitness_place).toBeNull();
+		expect(result.fitness_plant).toEqual(['machinery', 'equipment']);
+		expect(result.fitness_property).toBeNull();
+		expect(result.fitness_sector).toEqual(['construction', 'mining']);
+	});
+
+	it('parses fitness tag arrays from JSON format', () => {
+		const raw = {
+			id: 'uuid-fitness-2',
+			fitness_person: ['employer', 'self-employed'],
+			fitness_process: '["welding","cutting"]'
+		};
+
+		const result = transformUkLrtRecord(raw);
+
+		expect(result.fitness_person).toEqual(['employer', 'self-employed']);
+		expect(result.fitness_process).toEqual(['welding', 'cutting']);
+	});
+
+	it('parses fitness detail array from JSON', () => {
+		const raw = {
+			id: 'uuid-fitness-3',
+			fitness: JSON.stringify([
+				{
+					polarity: 'positive',
+					person: 'employer',
+					process: 'manufacturing',
+					place: null,
+					plant: 'machinery',
+					property: null,
+					sector: 'construction',
+					article: 'Section 2'
+				},
+				{
+					polarity: 'negative',
+					person: 'visitor',
+					process: null,
+					place: 'domestic premises',
+					plant: null,
+					property: null,
+					sector: null,
+					article: 'Section 3(1)'
+				}
+			])
+		};
+
+		const result = transformUkLrtRecord(raw);
+
+		expect(result.fitness).toHaveLength(2);
+		expect(result.fitness![0].polarity).toBe('positive');
+		expect(result.fitness![0].person).toBe('employer');
+		expect(result.fitness![0].plant).toBe('machinery');
+		expect(result.fitness![0].article).toBe('Section 2');
+		expect(result.fitness![1].polarity).toBe('negative');
+		expect(result.fitness![1].place).toBe('domestic premises');
+		expect(result.fitness![1].process).toBeNull();
+	});
+
+	it('parses fitness detail array from object (already parsed)', () => {
+		const raw = {
+			id: 'uuid-fitness-4',
+			fitness: [
+				{
+					polarity: 'positive',
+					person: 'worker',
+					process: null,
+					place: null,
+					plant: null,
+					property: null,
+					sector: null,
+					article: null
+				}
+			]
+		};
+
+		const result = transformUkLrtRecord(raw);
+
+		expect(result.fitness).toHaveLength(1);
+		expect(result.fitness![0].polarity).toBe('positive');
+		expect(result.fitness![0].person).toBe('worker');
+	});
+
+	it('handles null fitness columns', () => {
+		const raw = {
+			id: 'uuid-fitness-5',
+			fitness_person: null,
+			fitness_process: null,
+			fitness_place: null,
+			fitness_plant: null,
+			fitness_property: null,
+			fitness_sector: null,
+			fitness: null
+		};
+
+		const result = transformUkLrtRecord(raw);
+
+		expect(result.fitness_person).toBeNull();
+		expect(result.fitness_process).toBeNull();
+		expect(result.fitness_place).toBeNull();
+		expect(result.fitness_plant).toBeNull();
+		expect(result.fitness_property).toBeNull();
+		expect(result.fitness_sector).toBeNull();
+		expect(result.fitness).toBeNull();
+	});
+
+	it('handles empty fitness arrays', () => {
+		const raw = {
+			id: 'uuid-fitness-6',
+			fitness_person: '{}',
+			fitness: '[]'
+		};
+
+		const result = transformUkLrtRecord(raw);
+
+		expect(result.fitness_person).toEqual([]);
+		expect(result.fitness).toEqual([]);
+	});
+});
+
 describe('UkLrtRecord type', () => {
 	it('should have required id field', () => {
 		const record: UkLrtRecord = {
@@ -327,7 +462,18 @@ describe('UkLrtRecord type', () => {
 			latest_rescind_date: null,
 			leg_gov_uk_url: null,
 			created_at: null,
-			updated_at: null
+			updated_at: null,
+			// LAT stats
+			lat_count: null,
+			latest_lat_updated_at: null,
+			// Fitness/applicability columns (Issue #39)
+			fitness_person: null,
+			fitness_process: null,
+			fitness_place: null,
+			fitness_plant: null,
+			fitness_property: null,
+			fitness_sector: null,
+			fitness: null
 		};
 
 		expect(record.id).toBe('test-id');

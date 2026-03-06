@@ -64,6 +64,21 @@ export interface RoleJsonb {
 }
 
 /**
+ * Entry in the fitness applicability array
+ * Each entry represents a polarity-qualified combination of fitness dimensions
+ */
+export interface FitnessEntry {
+	polarity: string;
+	person: string | null;
+	process: string | null;
+	place: string | null;
+	plant: string | null;
+	property: string | null;
+	sector: string | null;
+	article: string | null;
+}
+
+/**
  * UK LRT Record type matching the database schema
  */
 export interface UkLrtRecord {
@@ -139,6 +154,17 @@ export interface UkLrtRecord {
 	leg_gov_uk_url: string | null;
 	created_at: string | null;
 	updated_at: string | null;
+	// LAT stats (trigger-maintained)
+	lat_count: number | null;
+	latest_lat_updated_at: string | null;
+	// Fitness/applicability columns (Issue #39)
+	fitness_person: string[] | null;
+	fitness_process: string[] | null;
+	fitness_place: string[] | null;
+	fitness_plant: string[] | null;
+	fitness_property: string[] | null;
+	fitness_sector: string[] | null;
+	fitness: FitnessEntry[] | null;
 }
 
 /**
@@ -210,7 +236,18 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		latest_rescind_date: parseString(data.latest_rescind_date),
 		leg_gov_uk_url: parseString(data.leg_gov_uk_url),
 		created_at: parseString(data.created_at),
-		updated_at: parseString(data.updated_at)
+		updated_at: parseString(data.updated_at),
+		// LAT stats
+		lat_count: parseNumber(data.lat_count),
+		latest_lat_updated_at: parseString(data.latest_lat_updated_at),
+		// Fitness/applicability columns (Issue #39)
+		fitness_person: parseArray(data.fitness_person),
+		fitness_process: parseArray(data.fitness_process),
+		fitness_place: parseArray(data.fitness_place),
+		fitness_plant: parseArray(data.fitness_plant),
+		fitness_property: parseArray(data.fitness_property),
+		fitness_sector: parseArray(data.fitness_sector),
+		fitness: parseFitnessArray(data.fitness)
 	};
 }
 
@@ -259,6 +296,39 @@ function parseArray(value: unknown): string[] | null {
 		}
 	}
 	return null;
+}
+
+/**
+ * Parse fitness applicability array (Issue #39)
+ * Stored as {:array, :map} in Postgres — each entry has polarity + dimension fields
+ */
+function parseFitnessArray(value: unknown): FitnessEntry[] | null {
+	if (value === null || value === undefined) return null;
+
+	let parsed: unknown = value;
+	if (typeof value === 'string') {
+		try {
+			parsed = JSON.parse(value);
+		} catch {
+			return null;
+		}
+	}
+
+	if (!Array.isArray(parsed)) return null;
+
+	return (parsed as unknown[]).map((entry) => {
+		const e = entry as Record<string, unknown>;
+		return {
+			polarity: String(e.polarity || ''),
+			person: e.person ? String(e.person) : null,
+			process: e.process ? String(e.process) : null,
+			place: e.place ? String(e.place) : null,
+			plant: e.plant ? String(e.plant) : null,
+			property: e.property ? String(e.property) : null,
+			sector: e.sector ? String(e.sector) : null,
+			article: e.article ? String(e.article) : null
+		};
+	});
 }
 
 /**

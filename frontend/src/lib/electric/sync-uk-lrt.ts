@@ -108,7 +108,17 @@ const UK_LRT_COLUMNS = [
 	'live_conflict',
 	'live_from_changes',
 	'live_from_metadata',
-	'live_conflict_detail'
+	'live_conflict_detail',
+	'lat_count',
+	'latest_lat_updated_at',
+	// Fitness/applicability columns (Issue #39)
+	'fitness_person',
+	'fitness_process',
+	'fitness_place',
+	'fitness_plant',
+	'fitness_property',
+	'fitness_sector',
+	'fitness'
 ];
 
 /**

@@ -290,6 +290,47 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Consolidated power holder/article/clause data as JSONB")
     end
 
+    # Fitness / Applicability columns (Issue #39 — fractalaw taxa enrichment)
+    # 6 tag columns: flat arrays for filtering/grouping (union of both polarities)
+    attribute :fitness_person, {:array, :string} do
+      allow_nil?(true)
+      description("Fitness: person terms (e.g. employer, worker)")
+    end
+
+    attribute :fitness_process, {:array, :string} do
+      allow_nil?(true)
+      description("Fitness: process terms (e.g. construction work)")
+    end
+
+    attribute :fitness_place, {:array, :string} do
+      allow_nil?(true)
+      description("Fitness: place terms (e.g. Great Britain, offshore)")
+    end
+
+    attribute :fitness_plant, {:array, :string} do
+      allow_nil?(true)
+      description("Fitness: plant terms (e.g. asbestos)")
+    end
+
+    attribute :fitness_property, {:array, :string} do
+      allow_nil?(true)
+      description("Fitness: property terms (e.g. at work)")
+    end
+
+    attribute :fitness_sector, {:array, :string} do
+      allow_nil?(true)
+      description("Fitness: sector terms (e.g. construction)")
+    end
+
+    # 1 detail column: full fitness rules with polarity and article reference
+    attribute :fitness, {:array, :map} do
+      allow_nil?(true)
+
+      description(
+        "Fitness applicability rules: [{polarity, person, process, place, plant, property, sector, article}]"
+      )
+    end
+
     # POPIMAR Article References - REMOVED in Phase 4 Issue #15
     # These 4 text columns have been consolidated into popimar_details JSONB field
     # Dropped: popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
@@ -751,6 +792,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rights,
         :responsibilities,
         :powers,
+        # Fitness / Applicability columns (Issue #39)
+        :fitness_person,
+        :fitness_process,
+        :fitness_place,
+        :fitness_plant,
+        :fitness_property,
+        :fitness_sector,
+        :fitness,
         # Consolidated JSONB POPIMAR field (Phase 1 Issue #15)
         :popimar_details,
         # Phase 4: Removed deprecated text columns - popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
@@ -861,6 +910,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :rights,
         :responsibilities,
         :powers,
+        # Fitness / Applicability columns (Issue #39)
+        :fitness_person,
+        :fitness_process,
+        :fitness_place,
+        :fitness_plant,
+        :fitness_property,
+        :fitness_sector,
+        :fitness,
         # Consolidated JSONB POPIMAR field (Phase 1 Issue #15)
         :popimar_details,
         # Phase 4: Removed deprecated text columns - popimar_article, popimar_article_clause, article_popimar, article_popimar_clause

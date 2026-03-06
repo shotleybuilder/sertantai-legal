@@ -29,7 +29,15 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "duties" => :duties,
     "rights" => :rights,
     "responsibilities" => :responsibilities,
-    "powers" => :powers
+    "powers" => :powers,
+    # Fitness / Applicability columns (Issue #39)
+    "fitness_person" => :fitness_person,
+    "fitness_process" => :fitness_process,
+    "fitness_place" => :fitness_place,
+    "fitness_plant" => :fitness_plant,
+    "fitness_property" => :fitness_property,
+    "fitness_sector" => :fitness_sector,
+    "fitness" => :fitness
   }
 
   @poll_interval :timer.seconds(2)
@@ -179,6 +187,15 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_entries_map(row, "rights")
     |> put_entries_map(row, "responsibilities")
     |> put_entries_map(row, "powers")
+    # Fitness tag columns — List<Utf8> → text[] (same as role)
+    |> put_list_field(row, "fitness_person")
+    |> put_list_field(row, "fitness_process")
+    |> put_list_field(row, "fitness_place")
+    |> put_list_field(row, "fitness_plant")
+    |> put_list_field(row, "fitness_property")
+    |> put_list_field(row, "fitness_sector")
+    # Fitness detail — List<Struct> → {:array, :map} (passed through directly)
+    |> put_list_of_maps(row, "fitness")
   end
 
   # List<Utf8> → %{values: ["a", "b"]} to match existing JSONB map format
@@ -210,6 +227,15 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
       _ ->
         acc
+    end
+  end
+
+  # List<Struct> → [{map}] — stored directly as {:array, :map} (no wrapper)
+  defp put_list_of_maps(acc, row, str_key) do
+    case Map.get(row, str_key) do
+      nil -> acc
+      entries when is_list(entries) -> Map.put(acc, @field_atoms[str_key], entries)
+      _ -> acc
     end
   end
 end
