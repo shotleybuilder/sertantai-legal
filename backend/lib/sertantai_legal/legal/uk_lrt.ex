@@ -630,6 +630,20 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Date of most recent rescission/revocation")
     end
 
+    # LAT statistics (trigger-maintained from lat table)
+    attribute :lat_count, :integer do
+      allow_nil?(false)
+      default(0)
+      writable?(false)
+      description("Number of LAT rows for this law — trigger-maintained from lat table")
+    end
+
+    attribute :latest_lat_updated_at, :utc_datetime_usec do
+      allow_nil?(true)
+      writable?(false)
+      description("Most recent LAT updated_at — trigger-maintained from lat table")
+    end
+
     # External Reference (PostgreSQL generated column)
     attribute :leg_gov_uk_url, :string do
       allow_nil?(true)

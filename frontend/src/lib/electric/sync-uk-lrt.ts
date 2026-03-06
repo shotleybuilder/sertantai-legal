@@ -21,11 +21,7 @@ import { writable, get } from 'svelte/store';
 // Shape key for sync state persistence
 const UK_LRT_SHAPE_KEY = 'uk-lrt-shape';
 
-/**
- * Electric service configuration — goes through Phoenix backend proxy (Gatekeeper pattern)
- */
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
-const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
+import { ELECTRIC_URL } from './client';
 
 /**
  * Columns to sync from uk_lrt table.

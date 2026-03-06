@@ -32,10 +32,8 @@ type ElectricUkLrtRecord = UkLrtRecord & Record<string, unknown>;
 type ElectricLatRecord = LatRecord & Record<string, unknown>;
 type ElectricAnnotationRecord = AnnotationRecord & Record<string, unknown>;
 
-// Electric service configuration — goes through Phoenix backend proxy (Gatekeeper pattern)
-// Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
-const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
+// Electric service configuration — import resolved absolute URL from shared client
+import { ELECTRIC_URL } from '$lib/electric/client';
 
 /**
  * Columns to sync from uk_lrt table.
@@ -127,7 +125,9 @@ const UK_LRT_COLUMNS: string[] = [
 	'live_conflict',
 	'live_from_changes',
 	'live_from_metadata',
-	'live_conflict_detail'
+	'live_conflict_detail',
+	'lat_count',
+	'latest_lat_updated_at'
 ];
 
 /**

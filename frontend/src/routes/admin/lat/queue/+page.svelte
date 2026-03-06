@@ -1,11 +1,14 @@
 <script lang="ts">
+	/* eslint-disable no-undef */
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
-	import type { FilterCondition, TableConfig as TableKitConfig } from '@shotleybuilder/svelte-table-kit';
+	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import { getLatQueue, reparseLat, type QueueItem } from '$lib/api/lat';
+	import { reparseLat, type QueueItem } from '$lib/api/lat';
+	import { getUkLrtCollection, syncStatus } from '$lib/db/index.client';
+	import type { UkLrtRecord } from '$lib/db/index.client';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import {
 		SaveViewModal,
@@ -14,7 +17,7 @@
 		viewActions,
 		savedViews
 	} from 'svelte-table-views-tanstack';
-	import type { TableConfig, SavedView, SavedViewInput } from 'svelte-table-views-tanstack';
+	import type { TableConfig, SavedViewInput } from 'svelte-table-views-tanstack';
 	import { ViewSidebar } from 'svelte-table-views-sidebar';
 	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
@@ -22,14 +25,8 @@
 
 	// ── State ────────────────────────────────────────────────────────
 
-	let data: QueueItem[] = [];
-	let isLoading = true;
+	let allRecords: UkLrtRecord[] = [];
 	let error: string | null = null;
-
-	// Counts from API (always reflect full queue, not filtered)
-	let totalCount = 0;
-	let missingCount = 0;
-	let staleCount = 0;
 
 	// Reparse tracking
 	let reparsingLaw: string | null = null;
@@ -54,32 +51,138 @@
 	let viewGrouping: string[] = [];
 	let configVersion = 0;
 
-	// ── Data fetching ───────────────────────────────────────────────
+	// Electric sync subscription cleanup
+	let collectionCleanup: { unsubscribe: () => void } | null = null;
 
-	let isRefreshing = false;
+	// ── Reactive queue derivation from Electric-synced uk_lrt ─────
 
-	async function fetchQueue(initial = false) {
-		try {
-			if (initial) isLoading = true;
-			isRefreshing = true;
-			error = null;
-			const result = await getLatQueue(5000, 0);
-			data = result.items;
-			totalCount = result.total;
-			missingCount = result.missing_count;
-			staleCount = result.stale_count;
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load queue';
-		} finally {
-			isLoading = false;
-			isRefreshing = false;
+	const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
+	// Electric sends JSONB `function` as a JS object {Making: true, ...}
+	// Convert to string[] of truthy keys for QueueItem compatibility
+	function parseFunctionKeys(fn: unknown): string[] | null {
+		if (!fn) return null;
+		if (Array.isArray(fn)) return fn as string[];
+		if (typeof fn === 'object') {
+			return Object.keys(fn as Record<string, boolean>).filter((k) => (fn as Record<string, boolean>)[k]);
 		}
+		if (typeof fn === 'string') {
+			try {
+				const parsed = JSON.parse(fn);
+				if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return Object.keys(parsed).filter((k) => parsed[k]);
+				}
+			} catch { /* not JSON */ }
+		}
+		return null;
 	}
 
-	onMount(() => {
-		fetchQueue(true);
+	// Access trigger-maintained fields (not in UkLrtRecord type yet — cast through unknown)
+	function getLatCount(r: UkLrtRecord): number {
+		return ((r as unknown as Record<string, unknown>).lat_count as number) ?? 0;
+	}
+
+	function getLatUpdatedAt(r: UkLrtRecord): string | null {
+		return ((r as unknown as Record<string, unknown>).latest_lat_updated_at as string) ?? null;
+	}
+
+	$: queueData = allRecords
+		.filter((r) => {
+			if (!r.title_en || !r.family) return false;
+			if (r.family === '_todo' || r.family === '\u{1F5A4} X: No Family') return false;
+			const latCount = getLatCount(r);
+			if (latCount === 0) return true; // missing
+			// stale: lrt updated > 6 months after lat
+			const lrtUpdated = r.updated_at ? new Date(r.updated_at as string) : null;
+			const latUpdatedStr = getLatUpdatedAt(r);
+			const latUpdated = latUpdatedStr ? new Date(latUpdatedStr) : null;
+			if (lrtUpdated && latUpdated) {
+				return lrtUpdated.getTime() > latUpdated.getTime() + SIX_MONTHS_MS;
+			}
+			return false;
+		})
+		.map((r): QueueItem => ({
+			law_id: r.id,
+			law_name: r.name,
+			title_en: r.title_en,
+			year: r.year,
+			type_code: r.type_code,
+			family: r.family,
+			live: r.live,
+			function: parseFunctionKeys(r.function),
+			lrt_updated_at: r.updated_at as string | null,
+			lat_count: getLatCount(r),
+			latest_lat_updated_at: getLatUpdatedAt(r),
+			queue_reason: getLatCount(r) === 0 ? 'missing' : 'stale'
+		}));
+
+	$: totalCount = queueData.length;
+	$: missingCount = queueData.filter((r) => r.queue_reason === 'missing').length;
+	$: staleCount = queueData.filter((r) => r.queue_reason === 'stale').length;
+	$: isLoading = !$syncStatus.connected && allRecords.length === 0;
+
+	// ── Electric sync initialization ────────────────────────────────
+
+	onMount(async () => {
 		if (browser) {
+			try {
+				// Sync all making laws — the queue needs records across all years
+				const collection = await getUkLrtCollection('is_making = true');
+
+				// Debounced refresh to prevent excessive UI updates
+				let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+				const refreshData = () => {
+					if (refreshDebounceTimer) {
+						clearTimeout(refreshDebounceTimer);
+					}
+					refreshDebounceTimer = setTimeout(() => {
+						const newData = collection.toArray as UkLrtRecord[];
+						console.log(`[LAT Queue] Collection refresh: ${newData.length} records`);
+						allRecords = newData;
+					}, 200);
+				};
+
+				// Subscribe to collection changes — fires as Electric data arrives
+				const changesSub = collection.subscribeChanges(
+					() => refreshData(),
+					{ includeInitialState: true }
+				);
+
+				// Also subscribe to syncStatus for error display
+				const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
+					if (status.error) {
+						error = status.error;
+					}
+				});
+
+				collectionCleanup = {
+					unsubscribe: () => {
+						changesSub.unsubscribe();
+						unsubscribeSyncStatus();
+						if (refreshDebounceTimer) {
+							clearTimeout(refreshDebounceTimer);
+						}
+					}
+				};
+
+				// Initial data load (immediate, no debounce)
+				const initialData = collection.toArray as UkLrtRecord[];
+				if (initialData.length > 0) {
+					console.log(`[LAT Queue] Initial load: ${initialData.length} records`);
+					allRecords = initialData;
+				}
+			} catch (e) {
+				console.error('[LAT Queue] Failed to initialize Electric sync:', e);
+				error = e instanceof Error ? e.message : 'Failed to initialize';
+			}
+
 			seedDefaultViews();
+		}
+	});
+
+	onDestroy(() => {
+		if (collectionCleanup) {
+			collectionCleanup.unsubscribe();
 		}
 	});
 
@@ -94,9 +197,8 @@
 			const result = await reparseLat(item.law_name);
 			reparsingLaw = null;
 			reparseMessage = `Re-parsed ${item.law_name}: ${result.lat.inserted} LAT rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
-			// Refresh queue data and invalidate related queries
+			// Invalidate LAT queries on other pages — Electric handles queue data reactivity
 			queryClient.invalidateQueries({ queryKey: ['lat'] });
-			await fetchQueue();
 		} catch (e) {
 			reparsingLaw = null;
 			reparseError = `Failed to re-parse ${item.law_name}: ${e instanceof Error ? e.message : 'Unknown error'}`;
@@ -115,8 +217,7 @@
 		lrtModalOpen = false;
 		lrtModalRecord = null;
 		lrtModalRecordId = undefined;
-		// Refresh queue — LRT record may have changed (e.g. live status updated)
-		fetchQueue();
+		// Electric auto-updates queue data when LRT record changes
 	}
 
 	// ── Helpers ──────────────────────────────────────────────────────
@@ -250,11 +351,6 @@
 		{ id: 'queue', name: 'Queue Views', order: 0 }
 	];
 
-	const viewGroupMapping: Record<string, string> = {
-		'All Queue': 'queue',
-		'Missing LAT': 'queue',
-		'Stale LAT': 'queue'
-	};
 
 	const defaultViews: Array<{
 		name: string;
@@ -323,7 +419,7 @@
 		const existingViews = new Map<string, string>();
 		for (const view of currentViews) {
 			if (existingViews.has(view.name)) {
-				try { await viewActions.delete(view.id); } catch {}
+				try { await viewActions.delete(view.id); } catch { /* ignore duplicate cleanup */ }
 			} else {
 				existingViews.set(view.name, view.id);
 			}
@@ -607,18 +703,18 @@
 				<p class="text-red-600">{error}</p>
 				<button
 					class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-					on:click={() => fetchQueue(true)}
+					on:click={() => window.location.reload()}
 				>
 					Retry
 				</button>
 			</div>
-		{:else if data.length === 0}
+		{:else if queueData.length === 0}
 			<div class="text-center py-12 text-gray-500">
 				No records in queue. All making laws have up-to-date LAT data.
 			</div>
 		{:else}
 			<TableKit
-				{data}
+				data={queueData}
 				{columns}
 				config={tableKitConfig}
 				storageKey="lat_queue_table"

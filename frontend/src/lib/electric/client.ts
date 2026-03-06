@@ -7,7 +7,14 @@
 // Electric sync service URL — goes through Phoenix backend proxy (Gatekeeper pattern)
 // Dev: http://localhost:4003/api/electric, Prod: https://legal.sertantai.com/api/electric
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
-export const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
+const rawElectricUrl = import.meta.env.VITE_ELECTRIC_URL || `${API_URL}/api/electric`;
+
+// Resolve relative URLs (e.g. "/electric") against the current origin so the
+// URL constructor inside the Electric client receives a valid absolute URL.
+export const ELECTRIC_URL =
+	rawElectricUrl.startsWith('/') && typeof window !== 'undefined'
+		? `${window.location.origin}${rawElectricUrl}`
+		: rawElectricUrl;
 
 // Re-export for convenience
 export { ELECTRIC_URL as electricUrl };
