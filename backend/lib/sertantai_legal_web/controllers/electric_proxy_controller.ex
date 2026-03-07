@@ -174,8 +174,14 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
 
     shape_params =
       case validated_shape["columns"] do
-        cols when is_binary(cols) and cols != "" -> Map.put(shape_params, "columns", cols)
-        _ -> shape_params
+        cols when is_binary(cols) and cols != "" ->
+          Map.put(shape_params, "columns", cols)
+
+        cols when is_list(cols) and cols != [] ->
+          Map.put(shape_params, "columns", Enum.join(cols, ","))
+
+        _ ->
+          shape_params
       end
 
     query_params =

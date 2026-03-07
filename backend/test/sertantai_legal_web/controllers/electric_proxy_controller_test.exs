@@ -90,8 +90,21 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["where"] == "year >= 2024"
     end
 
-    test "forwards columns from Gatekeeper response", %{conn: conn} do
+    test "forwards columns from Gatekeeper response (string)", %{conn: conn} do
       stub_gatekeeper_approve("uk_lrt", columns: "id,name,year")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["columns"] == "id,name,year"
+    end
+
+    test "forwards columns from Gatekeeper response (list)", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt", columns: ["id", "name", "year"])
 
       conn =
         conn
