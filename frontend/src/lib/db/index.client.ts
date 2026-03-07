@@ -182,6 +182,14 @@ export const syncStatus = writable<SyncStatus>({
 async function createUkLrtCollection(
 	whereClause: string
 ): Promise<Collection<ElectricUkLrtRecord, string>> {
+	// Clean up the previous collection's ShapeStream before creating a new one.
+	// Without this, rapid view switches leave multiple ShapeStreams active,
+	// causing MissingHeadersError when responses arrive for stale streams.
+	if (ukLrtCol) {
+		ukLrtCol.cleanup();
+		ukLrtCol = null;
+	}
+
 	const { createCollection } = await import('@tanstack/db');
 	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
 
@@ -363,6 +371,11 @@ let latShapeResetAttemptedAt = 0;
 async function createLatCollection(
 	lawName: string
 ): Promise<Collection<ElectricLatRecord, string>> {
+	if (latCol) {
+		latCol.cleanup();
+		latCol = null;
+	}
+
 	const { createCollection } = await import('@tanstack/db');
 	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
 
@@ -462,6 +475,11 @@ let annotationShapeResetAttemptedAt = 0;
 async function createAnnotationCollection(
 	lawName: string
 ): Promise<Collection<ElectricAnnotationRecord, string>> {
+	if (annotationCol) {
+		annotationCol.cleanup();
+		annotationCol = null;
+	}
+
 	const { createCollection } = await import('@tanstack/db');
 	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
 

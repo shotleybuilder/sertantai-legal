@@ -24,7 +24,17 @@ export function createElectricFetchClient(
 		if (token && !headers.has('Authorization')) {
 			headers.set('Authorization', `Bearer ${token}`);
 		}
-		return fetchFn(input, { ...init, headers });
+
+		// Add cache-buster to initial shape requests (offset=-1) to prevent
+		// the browser serving stale cached responses that lack CORS headers.
+		// Live/polling requests already have unique offset+handle params.
+		let url = input.toString();
+		if (url.includes('/v1/shape') && url.includes('offset=-1')) {
+			const separator = url.includes('?') ? '&' : '?';
+			url = `${url}${separator}_cb=${Date.now()}`;
+		}
+
+		return fetchFn(url, { ...init, headers });
 	};
 }
 
