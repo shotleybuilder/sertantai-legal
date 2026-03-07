@@ -29,8 +29,16 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   """
   def shape(conn, params) do
     table = params["table"]
+    handle = params["handle"]
 
     cond do
+      # Follow-up requests (live polling) with an existing handle skip the
+      # Gatekeeper — the initial shape request already validated access.
+      # The handle is only valid for shapes Electric has already created,
+      # and the ELECTRIC_SECRET is still appended server-side.
+      is_binary(table) and table in @allowed_tables and is_binary(handle) and handle != "" ->
+        forward_with_handle(conn, params)
+
       is_binary(table) ->
         forward_gatekeeper_shape(conn, params)
 
@@ -77,6 +85,29 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     else
       conn |> put_status(400) |> json(%{error: "Unknown or disallowed shape"})
     end
+  end
+
+  # --- Handle-based pass-through (live polling, already validated) ---
+
+  defp forward_with_handle(conn, params) do
+    electric_url = Application.get_env(:sertantai_legal, :electric_url)
+
+    unless electric_url do
+      raise "electric_url not configured"
+    end
+
+    # Pass through all client params (table, where, columns, offset, handle, etc.)
+    # and append the server-side secret.
+    query_params =
+      params
+      |> Map.take(["table", "where", "columns" | @passthrough_params])
+      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+      |> Map.new()
+      |> maybe_add_secret()
+      |> URI.encode_query()
+
+    upstream_url = "#{electric_url}/v1/shape?#{query_params}"
+    stream_from_electric(conn, upstream_url)
   end
 
   # --- Gatekeeper-validated shapes (auth required) ---

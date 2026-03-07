@@ -157,6 +157,23 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["replica"] == "full"
     end
 
+    test "handle-based requests skip Gatekeeper (no auth needed for live polling)", %{conn: conn} do
+      # No auth header, no Gatekeeper stub — handle-based requests bypass auth
+      conn =
+        conn
+        |> get("/api/electric/v1/shape", %{
+          "table" => "uk_lrt",
+          "handle" => "12345-678",
+          "offset" => "0_inf"
+        })
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["table"] == "uk_lrt"
+      assert body["params"]["handle"] == "12345-678"
+      assert body["params"]["offset"] == "0_inf"
+    end
+
     test "forwards electric headers to client", %{conn: conn} do
       stub_gatekeeper_approve("uk_lrt")
 
