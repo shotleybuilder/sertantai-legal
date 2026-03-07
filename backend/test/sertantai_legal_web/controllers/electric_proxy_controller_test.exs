@@ -116,6 +116,23 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["columns"] == "id,name,year"
     end
 
+    test "falls back to client columns when Gatekeeper omits them", %{conn: conn} do
+      # Gatekeeper returns shape without columns (sertantai-auth doesn't include them)
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{
+          "table" => "uk_lrt",
+          "columns" => ~s("id","name","year")
+        })
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["columns"] == ~s("id","name","year")
+    end
+
     test "forwards passthrough params (offset, handle, live, cursor, replica)", %{conn: conn} do
       stub_gatekeeper_approve("uk_lrt")
 

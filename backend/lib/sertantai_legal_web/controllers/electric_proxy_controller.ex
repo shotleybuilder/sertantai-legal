@@ -172,6 +172,10 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
         _ -> shape_params
       end
 
+    # Columns: prefer Gatekeeper response, fall back to original client request.
+    # The Gatekeeper may not return columns (sertantai-auth currently doesn't),
+    # so we pass through the client's columns to avoid syncing all columns
+    # (which fails on tables with generated columns).
     shape_params =
       case validated_shape["columns"] do
         cols when is_binary(cols) and cols != "" ->
@@ -181,7 +185,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
           Map.put(shape_params, "columns", Enum.join(cols, ","))
 
         _ ->
-          shape_params
+          # Fall back to original client-requested columns
+          case params["columns"] do
+            cols when is_binary(cols) and cols != "" -> Map.put(shape_params, "columns", cols)
+            _ -> shape_params
+          end
       end
 
     query_params =
