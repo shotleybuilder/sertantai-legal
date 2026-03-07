@@ -263,9 +263,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     end
   end
 
-  # Build Req options for Electric calls, using plug adapter in test environment
+  # Build Req options for Electric calls, using plug adapter in test environment.
+  # Disables automatic JSON decoding so Electric's response body is passed through
+  # as a raw binary — avoids a wasteful decode→encode round-trip.
   defp req_options(extra_opts \\ []) do
-    base_opts = [receive_timeout: 60_000, retry: false] ++ extra_opts
+    base_opts = [receive_timeout: 60_000, retry: false, decode_body: false] ++ extra_opts
 
     if Application.get_env(:sertantai_legal, :test_mode, false) do
       Keyword.put(base_opts, :plug, {Req.Test, __MODULE__})
@@ -334,5 +336,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
 
   defp ensure_binary(body) when is_binary(body), do: body
   defp ensure_binary(body) when is_map(body), do: Jason.encode!(body)
+  defp ensure_binary(body) when is_list(body), do: Jason.encode!(body)
   defp ensure_binary(_body), do: ""
 end
