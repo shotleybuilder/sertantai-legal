@@ -632,13 +632,21 @@ export function buildWhereFromFilters(
 				case 'ends_with':
 					return `${field} ILIKE '%${escapeValue(String(value))}'`;
 				case 'greater_than':
-					return `${field} > ${value}`;
+					return typeof value === 'string'
+						? `${field} > '${escapeValue(String(value))}'`
+						: `${field} > ${value}`;
 				case 'less_than':
-					return `${field} < ${value}`;
+					return typeof value === 'string'
+						? `${field} < '${escapeValue(String(value))}'`
+						: `${field} < ${value}`;
 				case 'greater_or_equal':
-					return `${field} >= ${value}`;
+					return typeof value === 'string'
+						? `${field} >= '${escapeValue(String(value))}'`
+						: `${field} >= ${value}`;
 				case 'less_or_equal':
-					return `${field} <= ${value}`;
+					return typeof value === 'string'
+						? `${field} <= '${escapeValue(String(value))}'`
+						: `${field} <= ${value}`;
 				case 'is_before':
 					return `${field} < '${escapeValue(String(value))}'`;
 				case 'is_after':
