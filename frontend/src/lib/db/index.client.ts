@@ -150,8 +150,10 @@ function getDefaultWhere(): string {
 let ukLrtCol: Collection<ElectricUkLrtRecord, string> | null = null;
 let currentWhereClause: string = '';
 
-// Shape recovery: track whether we've already attempted a shape reset
-let shapeResetAttempted = false;
+// Shape recovery: track whether we've already attempted a shape reset.
+// Uses a timestamp so the flag auto-expires after 30 seconds — prevents
+// permanent lockout if the first retry fails but conditions change.
+let shapeResetAttemptedAt = 0;
 
 // Sync status store
 export interface SyncStatus {
@@ -221,31 +223,47 @@ async function createUkLrtCollection(
 						return;
 					}
 
-					// After an Electric restart, restored shapes can be permanently broken
-					// (400 "offset out of bounds"). Delete the broken shape via the HTTP API
-					// so the next request creates a fresh one, then retry.
-					if (status === 400 && !shapeResetAttempted) {
-						shapeResetAttempted = true;
-						console.warn('[TanStack DB] Broken shape detected (400), deleting and retrying');
-						try {
-							await fetch(`${ELECTRIC_URL}/v1/shape?table=uk_lrt`, { method: 'DELETE' });
-						} catch (e) {
-							console.warn('[TanStack DB] Shape deletion failed:', e);
-						}
-						// Brief delay for Electric to clean up, then retry fresh
-						await new Promise((resolve) => setTimeout(resolve, 1000));
-						return {};
-					}
+					// 400 "offset out of bounds" — stale shape from Electric restart or
+					// prior errors. The Electric client retains internal offset/handle state
+					// across retries, so returning {} doesn't help (it retries with the same
+					// stale offset). Instead, destroy the collection and recreate it fresh.
 					if (status === 400) {
-						// Already tried reset, give up
-						console.error('[TanStack DB] Shape recovery failed after reset');
-						syncStatus.update((s) => ({
-							...s,
-							error: 'Electric sync unavailable — try refreshing the page',
-							syncing: false
-						}));
+						const now = Date.now();
+						if (now - shapeResetAttemptedAt < 30_000) {
+							console.error('[TanStack DB] Shape recovery already attempted recently, waiting');
+							syncStatus.update((s) => ({
+								...s,
+								error: 'Electric sync unavailable — try refreshing the page',
+								syncing: false
+							}));
+							return;
+						}
+						shapeResetAttemptedAt = now;
+						console.warn('[TanStack DB] Broken shape detected (400), recreating collection');
+
+						// Try to delete the broken shape via the proxy (works if
+						// ELECTRIC_ENABLE_INTEGRATION_TESTING is set on the Electric container)
+						try {
+							await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=uk_lrt`, {
+								method: 'DELETE'
+							});
+						} catch {
+							// DELETE may not be available — that's OK
+						}
+
+						// Schedule collection recreation after a brief delay.
+						// This creates a brand-new ShapeStream with offset=-1.
+						setTimeout(async () => {
+							try {
+								ukLrtCol = null;
+								ukLrtCol = await createUkLrtCollection(currentWhereClause);
+							} catch (e) {
+								console.error('[TanStack DB] Collection recreation failed:', e);
+							}
+						}, 1500);
 						return;
 					}
+
 					console.error('[TanStack DB] Electric sync error:', error);
 					return;
 				}
@@ -267,7 +285,7 @@ async function createUkLrtCollection(
 
 			// Data is flowing — reset shape recovery flag
 			if (recordCount > 0) {
-				shapeResetAttempted = false;
+				shapeResetAttemptedAt = 0;
 			}
 
 			syncStatus.update((s) => ({
@@ -336,7 +354,7 @@ export async function updateUkLrtWhere(whereClause: string): Promise<void> {
 // ── LAT Collection ──────────────────────────────────────────────────────────
 
 let latCol: Collection<ElectricLatRecord, string> | null = null;
-let latShapeResetAttempted = false;
+let latShapeResetAttemptedAt = 0;
 
 /**
  * Create LAT collection with Electric sync.
@@ -373,16 +391,30 @@ async function createLatCollection(
 						return;
 					}
 
-					if (status === 400 && !latShapeResetAttempted) {
-						latShapeResetAttempted = true;
-						console.warn('[TanStack DB] LAT: Broken shape detected (400), deleting and retrying');
-						try {
-							await fetch(`${ELECTRIC_URL}/v1/shape?table=lat`, { method: 'DELETE' });
-						} catch (e) {
-							console.warn('[TanStack DB] LAT: Shape deletion failed:', e);
+					if (status === 400) {
+						const now = Date.now();
+						if (now - latShapeResetAttemptedAt < 30_000) {
+							console.error('[TanStack DB] LAT: Shape recovery already attempted recently');
+							return;
 						}
-						await new Promise((resolve) => setTimeout(resolve, 1000));
-						return {};
+						latShapeResetAttemptedAt = now;
+						console.warn('[TanStack DB] LAT: Broken shape (400), recreating collection');
+						try {
+							await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=lat`, {
+								method: 'DELETE'
+							});
+						} catch {
+							// DELETE may not be available
+						}
+						setTimeout(async () => {
+							try {
+								latCol = null;
+								latCol = await createLatCollection(currentLatLawName);
+							} catch (e) {
+								console.error('[TanStack DB] LAT: Collection recreation failed:', e);
+							}
+						}, 1500);
+						return;
 					}
 
 					console.error('[TanStack DB] LAT: Electric sync error:', error);
@@ -421,7 +453,7 @@ export async function getLatCollection(
 // ── Amendment Annotations Collection ────────────────────────────────────────
 
 let annotationCol: Collection<ElectricAnnotationRecord, string> | null = null;
-let annotationShapeResetAttempted = false;
+let annotationShapeResetAttemptedAt = 0;
 
 /**
  * Create annotations collection with Electric sync.
@@ -458,20 +490,30 @@ async function createAnnotationCollection(
 						return;
 					}
 
-					if (status === 400 && !annotationShapeResetAttempted) {
-						annotationShapeResetAttempted = true;
-						console.warn(
-							'[TanStack DB] Annotations: Broken shape detected (400), deleting and retrying'
-						);
+					if (status === 400) {
+						const now = Date.now();
+						if (now - annotationShapeResetAttemptedAt < 30_000) {
+							console.error('[TanStack DB] Annotations: Shape recovery already attempted recently');
+							return;
+						}
+						annotationShapeResetAttemptedAt = now;
+						console.warn('[TanStack DB] Annotations: Broken shape (400), recreating collection');
 						try {
-							await fetch(`${ELECTRIC_URL}/v1/shape?table=amendment_annotations`, {
+							await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=amendment_annotations`, {
 								method: 'DELETE'
 							});
-						} catch (e) {
-							console.warn('[TanStack DB] Annotations: Shape deletion failed:', e);
+						} catch {
+							// DELETE may not be available
 						}
-						await new Promise((resolve) => setTimeout(resolve, 1000));
-						return {};
+						setTimeout(async () => {
+							try {
+								annotationCol = null;
+								annotationCol = await createAnnotationCollection(currentAnnotationLawName);
+							} catch (e) {
+								console.error('[TanStack DB] Annotations: Collection recreation failed:', e);
+							}
+						}, 1500);
+						return;
 					}
 
 					console.error('[TanStack DB] Annotations: Electric sync error:', error);
