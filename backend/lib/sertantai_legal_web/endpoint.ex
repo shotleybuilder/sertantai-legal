@@ -52,6 +52,15 @@ defmodule SertantaiLegalWeb.Endpoint do
     allow_credentials: true,
     allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers: ["content-type", "authorization"],
+    # Expose Electric's custom headers so the browser allows JavaScript to read them
+    expose_headers: [
+      "electric-cursor",
+      "electric-handle",
+      "electric-offset",
+      "electric-schema",
+      "electric-up-to-date",
+      "electric-internal-known-error"
+    ],
     max_age: 600
   )
 
