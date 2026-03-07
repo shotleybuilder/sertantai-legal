@@ -25,6 +25,9 @@
 	// Optional: record ID for sessionless reparse (existing DB record)
 	// When set and sessionId is empty, uses parseRecordStream instead of parseOneStream
 	export let recordId: string | undefined = undefined;
+	// Auto-confirm mode: automatically confirm each record after parse completes
+	// Used by "Auto Parse All" to iterate through records without manual intervention
+	export let autoConfirm: boolean = false;
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -115,6 +118,11 @@
 		return configDefault ?? true;
 	}
 
+	// Auto-confirm timer reference (for cleanup)
+	let autoConfirmTimer: ReturnType<typeof setTimeout> | null = null;
+	// Track whether auto-confirm has been triggered for current record (prevent double-fire)
+	let autoConfirmTriggered = false;
+
 	// Track the last parsed record name to prevent re-parsing
 	let lastParsedName: string | null = null;
 	// Track names that failed to parse to prevent infinite retry loops
@@ -133,11 +141,36 @@
 		parseCurrentRecord();
 	}
 
+	// Auto-confirm: when parse completes and autoConfirm is enabled, confirm automatically
+	$: if (
+		autoConfirm &&
+		parseResult &&
+		!isParsing &&
+		!$confirmMutation.isPending &&
+		!autoConfirmTriggered &&
+		currentRecord
+	) {
+		autoConfirmTriggered = true;
+		autoConfirmTimer = setTimeout(() => {
+			autoConfirmTimer = null;
+			handleConfirm();
+		}, 300);
+	}
+
+	// Stop auto-confirm on parse error
+	$: if (autoConfirm && parseError && !isParsing) {
+		autoConfirm = false;
+	}
+
 	// Cleanup stream on component destroy
 	onDestroy(() => {
 		if (cleanupStream) {
 			cleanupStream();
 			cleanupStream = null;
+		}
+		if (autoConfirmTimer) {
+			clearTimeout(autoConfirmTimer);
+			autoConfirmTimer = null;
 		}
 	});
 
@@ -255,6 +288,7 @@
 			currentIndex++;
 			parseResult = null;
 			lastParsedName = null;
+			autoConfirmTriggered = false;
 		}
 	}
 
@@ -268,6 +302,7 @@
 			currentIndex--;
 			parseResult = null;
 			lastParsedName = null;
+			autoConfirmTriggered = false;
 		}
 	}
 
@@ -277,7 +312,12 @@
 			cleanupStream();
 			cleanupStream = null;
 		}
+		if (autoConfirmTimer) {
+			clearTimeout(autoConfirmTimer);
+			autoConfirmTimer = null;
+		}
 		isParsing = false;
+		autoConfirm = false;
 		// Don't reset lastParsedName here - it triggers a reparse before the modal closes
 		// The state will be reset when the modal reopens with new records (via recordsId check)
 		dispatch('close');
@@ -308,6 +348,7 @@
 		lastParsedName = null;
 		parseResult = null;
 		workflowComplete = false; // Reset workflow flag for new records
+		autoConfirmTriggered = false;
 	}
 
 	// Track when modal was last open to detect reopening
@@ -601,6 +642,11 @@
 					}">
 						{effectiveMode === 'update' ? 'Update' : 'Create'}
 					</span>
+					{#if autoConfirm}
+						<span class="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+							Auto
+						</span>
+					{/if}
 				</div>
 				<button on:click={handleCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1158,84 +1204,112 @@
 			<div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
 				<div class="text-sm text-gray-500">
 					Record {currentIndex + 1} of {records.length}
+					{#if confirmedCount > 0 || errorCount > 0}
+						<span class="ml-2">
+							({confirmedCount} confirmed{#if skippedCount > 0}, {skippedCount} skipped{/if}{#if errorCount > 0}, {errorCount} errors{/if})
+						</span>
+					{/if}
 				</div>
 				<div class="flex items-center space-x-3">
-					<!-- Navigation -->
-					<div class="flex space-x-2 mr-4">
-						<button
-							on:click={movePrev}
-							disabled={isFirst ||
-								$parseMutation.isPending ||
-								$confirmMutation.isPending ||
-								isRetrying}
-							class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Prev
-						</button>
-						<button
-							on:click={moveNext}
-							disabled={isLast ||
-								$parseMutation.isPending ||
-								$confirmMutation.isPending ||
-								isRetrying}
-							class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Next
-						</button>
-					</div>
-					<button
-						on:click={handleCancel}
-						class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-					>
-						Cancel
-					</button>
-					<button
-						on:click={handleSkip}
-						disabled={$parseMutation.isPending || $confirmMutation.isPending || isRetrying}
-						class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						Skip
-					</button>
-					<button
-						on:click={handleConfirm}
-						disabled={!parseResult ||
-							$parseMutation.isPending ||
-							$confirmMutation.isPending ||
-							isRetrying}
-						class="px-4 py-2 text-sm text-white rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center {parseResult?.has_errors
-							? 'bg-amber-600 hover:bg-amber-700'
-							: 'bg-blue-600 hover:bg-blue-700'}"
-						title={parseResult?.has_errors
-							? 'Save data from successful stages only'
-							: 'Save all parsed data'}
-					>
-						{#if $confirmMutation.isPending}
-							<svg
-								class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-								fill="none"
-								viewBox="0 0 24 24"
-							>
-								<circle
-									class="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									stroke-width="4"
-								></circle>
-								<path
-									class="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-								></path>
+					{#if autoConfirm}
+						<!-- Auto-confirm mode: show stop button + status -->
+						<span class="text-sm text-blue-600 font-medium flex items-center">
+							<svg class="animate-spin -ml-0.5 mr-1.5 h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 							</svg>
-							Saving...
-						{:else if parseResult?.has_errors}
-							Save Partial Data
-						{:else}
-							Confirm & Save
-						{/if}
-					</button>
+							Auto-parsing...
+						</span>
+						<button
+							on:click={() => { autoConfirm = false; if (autoConfirmTimer) { clearTimeout(autoConfirmTimer); autoConfirmTimer = null; } }}
+							class="px-4 py-2 text-sm text-amber-700 border border-amber-300 bg-amber-50 rounded-md hover:bg-amber-100"
+						>
+							Stop
+						</button>
+						<button
+							on:click={handleCancel}
+							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+						>
+							Cancel
+						</button>
+					{:else}
+						<!-- Manual mode: navigation + confirm/skip -->
+						<div class="flex space-x-2 mr-4">
+							<button
+								on:click={movePrev}
+								disabled={isFirst ||
+									$parseMutation.isPending ||
+									$confirmMutation.isPending ||
+									isRetrying}
+								class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								Prev
+							</button>
+							<button
+								on:click={moveNext}
+								disabled={isLast ||
+									$parseMutation.isPending ||
+									$confirmMutation.isPending ||
+									isRetrying}
+								class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								Next
+							</button>
+						</div>
+						<button
+							on:click={handleCancel}
+							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+						>
+							Cancel
+						</button>
+						<button
+							on:click={handleSkip}
+							disabled={$parseMutation.isPending || $confirmMutation.isPending || isRetrying}
+							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							Skip
+						</button>
+						<button
+							on:click={handleConfirm}
+							disabled={!parseResult ||
+								$parseMutation.isPending ||
+								$confirmMutation.isPending ||
+								isRetrying}
+							class="px-4 py-2 text-sm text-white rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center {parseResult?.has_errors
+								? 'bg-amber-600 hover:bg-amber-700'
+								: 'bg-blue-600 hover:bg-blue-700'}"
+							title={parseResult?.has_errors
+								? 'Save data from successful stages only'
+								: 'Save all parsed data'}
+						>
+							{#if $confirmMutation.isPending}
+								<svg
+									class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
+								</svg>
+								Saving...
+							{:else if parseResult?.has_errors}
+								Save Partial Data
+							{:else}
+								Confirm & Save
+							{/if}
+						</button>
+					{/if}
 				</div>
 			</div>
 		</div>

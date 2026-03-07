@@ -128,3 +128,5 @@ A new way to **create** a session — not from a scrape, but from existing DB re
 - Capture each as a todo, implement, iterate
 - Taxa parsing removed from core stages (moved to external Zenoh service)
 - Reparse consolidation: scrape session streaming UI is the gold standard, LRT admin should reuse it without creating sessions
+
+**Ended**: 2026-03-07 20:30
