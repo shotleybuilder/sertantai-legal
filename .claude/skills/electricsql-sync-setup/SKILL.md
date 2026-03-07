@@ -217,7 +217,58 @@ let lastWhereClause = `"md_date" > '${thisMonthStart}'`;
 let lastWhereClause = `md_date > '${thisMonthStart}'`;
 ```
 
-### ❌ Pitfall 5: Syncing PostgreSQL Generated Columns
+### ❌ Pitfall 5: MissingHeadersError When Switching Views Rapidly
+
+**Why it fails:** Two related causes:
+
+1. **Stale browser cache**: Even with `cache-control: no-store` from the proxy, old cached responses (from before the fix was deployed, or from other origins) can persist in the browser's HTTP cache. Initial shape requests (`offset=-1`) with the same URL get served from cache — the cached response lacks CORS headers → `MissingHeadersError`.
+
+2. **Orphaned ShapeStreams**: When recreating a collection (e.g. user switches view), the old collection's ShapeStream keeps running. Multiple concurrent ShapeStreams for the same table cause unpredictable responses.
+
+**✅ Fix (cache-buster):** Add a timestamp to initial shape requests in `fetchClient`:
+
+```typescript
+export function createElectricFetchClient(
+  fetchFn: typeof fetch = fetch
+): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
+  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const token = getAuthToken();
+    const headers = new Headers(init?.headers);
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    // Cache-bust initial shape requests to prevent browser serving
+    // stale cached responses that lack CORS headers.
+    let url = input.toString();
+    if (url.includes('/v1/shape') && url.includes('offset=-1')) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}_cb=${Date.now()}`;
+    }
+
+    return fetchFn(url, { ...init, headers });
+  };
+}
+```
+
+The `_cb` param is stripped by the proxy's `Map.take` (not in `@passthrough_params`), so Electric never sees it. It only needs to make the URL unique for the browser's cache.
+
+**✅ Fix (cleanup):** Call `collection.cleanup()` before creating a new one:
+
+```typescript
+async function createMyCollection(whereClause: string) {
+  // Stop the previous ShapeStream before creating a new one
+  if (myCol) {
+    myCol.cleanup();
+    myCol = null;
+  }
+
+  const { createCollection } = await import('@tanstack/db');
+  // ... rest of creation
+}
+```
+
+### ❌ Pitfall 6: Syncing PostgreSQL Generated Columns
 
 **Why it fails:**
 Electric returns 400 when trying to sync generated columns.
@@ -239,7 +290,7 @@ WHERE table_name = 'my_table'
   AND generation_expression IS NOT NULL;
 ```
 
-### ❌ Pitfall 6: No Auth Token on Electric Requests
+### ❌ Pitfall 7: No Auth Token on Electric Requests
 
 **Why it fails:**
 Electric shape requests need JWT for org-scoped tables. Without `fetchClient`, no `Authorization` header is sent.
@@ -275,7 +326,7 @@ shapeOptions: {
 }
 ```
 
-### ❌ Pitfall 7: Shape Recovery After Electric Restart
+### ❌ Pitfall 8: Shape Recovery After Electric Restart
 
 **Why it fails:**
 After Electric restarts, restored shapes can have broken offsets (`offset out of bounds`, 400). The Electric client retains internal offset/handle state across retries, so `return {}` from `onError` doesn't help.
@@ -315,7 +366,7 @@ shapeOptions: {
 }
 ```
 
-### ❌ Pitfall 8: TypeScript Type Doesn't Satisfy Row<unknown>
+### ❌ Pitfall 9: TypeScript Type Doesn't Satisfy Row<unknown>
 
 ```typescript
 // WRONG — No index signature
@@ -368,6 +419,13 @@ function getDefaultWhere(): string {
 async function createMyCollection(
   whereClause: string
 ): Promise<Collection<ElectricMyRecord, string>> {
+  // Clean up previous collection's ShapeStream before creating a new one.
+  // Without this, rapid view switches leave orphaned ShapeStreams running.
+  if (myCol) {
+    myCol.cleanup();
+    myCol = null;
+  }
+
   const { createCollection } = await import('@tanstack/db');
   const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
 
@@ -617,8 +675,10 @@ npm install @electric-sql/client@^1.5 @tanstack/db@^0.5 @tanstack/electric-db-co
 3. Add to `@public_tables` if it's public reference data (no auth needed)
 4. Create column list excluding generated columns
 5. Create collection in `index.client.ts` with `eager` mode + `fetchClient`
-6. Add `onError` handler for shape recovery
-7. Initialize `lastWhereClause` matching `buildWhereFromFilters` output format
+6. Call `collection.cleanup()` before recreating (in `createXxxCollection`)
+7. Add `onError` handler for shape recovery
+8. Initialize `lastWhereClause` matching `buildWhereFromFilters` output format
+9. Cache-busting is handled globally by `electricFetchClient` — no per-table action needed
 
 ---
 
@@ -641,6 +701,8 @@ npm install @electric-sql/client@^1.5 @tanstack/db@^0.5 @tanstack/electric-db-co
 - ✅ Expose `electric-*` headers in both Corsica plug AND proxy response
 - ✅ Quote string/date values in all WHERE comparison operators
 - ✅ Match `lastWhereClause` format to `buildWhereFromFilters` output
+- ✅ Call `collection.cleanup()` before recreating with a new WHERE clause
+- ✅ Cache-bust initial shape requests (`_cb=timestamp` on `offset=-1` URLs)
 - ✅ Add `onError` handler for shape recovery (400 → recreate collection)
 - ✅ Add `& Record<string, unknown>` to types for Electric compatibility
 - ✅ Explicitly list columns, excluding generated ones
@@ -652,4 +714,5 @@ npm install @electric-sql/client@^1.5 @tanstack/db@^0.5 @tanstack/electric-db-co
 - ❌ Initialize `lastWhereClause` with different format than `buildWhereFromFilters`
 - ❌ Forward `content-encoding`/`content-length` through the proxy
 - ❌ Let Electric's `cache-control: public, max-age=604800` reach the browser
+- ❌ Create a new collection without calling `cleanup()` on the old one first
 - ❌ Try to sync PostgreSQL generated columns
