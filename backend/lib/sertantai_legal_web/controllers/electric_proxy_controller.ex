@@ -24,6 +24,10 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   # since DELETE doesn't need full Gatekeeper validation.
   @allowed_tables ~w(uk_lrt organization_locations location_screenings lat amendment_annotations)
 
+  # Public reference tables — no auth required, bypass Gatekeeper.
+  # These mirror the public REST API routes (e.g. GET /api/uk-lrt).
+  @public_tables ~w(uk_lrt lat amendment_annotations)
+
   @doc """
   Proxy GET /api/electric/v1/shape to Electric's HTTP API.
 
@@ -41,6 +45,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
       # and the ELECTRIC_SECRET is still appended server-side.
       is_binary(table) and table in @allowed_tables and is_binary(handle) and handle != "" ->
         forward_with_handle(conn, params)
+
+      # Public reference tables (uk_lrt, lat, amendment_annotations) — no auth required.
+      # These are read-only shared data, mirroring the public REST API routes.
+      is_binary(table) and table in @public_tables ->
+        forward_public_shape(conn, params)
 
       is_binary(table) ->
         forward_gatekeeper_shape(conn, params)
@@ -88,6 +97,27 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     else
       conn |> put_status(400) |> json(%{error: "Unknown or disallowed shape"})
     end
+  end
+
+  # --- Public table pass-through (no auth required) ---
+
+  defp forward_public_shape(conn, params) do
+    electric_url = Application.get_env(:sertantai_legal, :electric_url)
+
+    unless electric_url do
+      raise "electric_url not configured"
+    end
+
+    query_params =
+      params
+      |> Map.take(["table", "where", "columns" | @passthrough_params])
+      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+      |> Map.new()
+      |> maybe_add_secret()
+      |> URI.encode_query()
+
+    upstream_url = "#{electric_url}/v1/shape?#{query_params}"
+    stream_from_electric(conn, upstream_url)
   end
 
   # --- Handle-based pass-through (live polling, already validated) ---

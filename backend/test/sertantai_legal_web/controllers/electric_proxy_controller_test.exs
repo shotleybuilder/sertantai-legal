@@ -55,75 +55,48 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end)
   end
 
-  # --- All shapes require Gatekeeper validation ---
+  # --- Public tables bypass Gatekeeper ---
 
-  describe "GET /api/electric/v1/shape - uk_lrt (via Gatekeeper)" do
-    test "returns 401 without auth", %{conn: conn} do
+  describe "GET /api/electric/v1/shape - public tables (no auth)" do
+    test "proxies uk_lrt without auth (public reference data)", %{conn: conn} do
       conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
-
-      assert json_response(conn, 401)["error"] == "Authentication required"
-    end
-
-    test "proxies uk_lrt when Gatekeeper approves", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["table"] == "uk_lrt"
     end
 
-    test "forwards where clause from Gatekeeper response", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt", where: "year >= 2024")
+    test "proxies lat without auth (public reference data)", %{conn: conn} do
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "lat"})
 
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["table"] == "lat"
+    end
+
+    test "proxies amendment_annotations without auth", %{conn: conn} do
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "amendment_annotations"})
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["table"] == "amendment_annotations"
+    end
+
+    test "forwards where clause for public tables", %{conn: conn} do
       conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+        get(conn, "/api/electric/v1/shape", %{
+          "table" => "uk_lrt",
+          "where" => "year >= 2024"
+        })
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["params"]["where"] == "year >= 2024"
     end
 
-    test "forwards columns from Gatekeeper response (string)", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt", columns: "id,name,year")
-
+    test "forwards columns for public tables", %{conn: conn} do
       conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
-
-      assert conn.status == 200
-      body = Jason.decode!(conn.resp_body)
-      assert body["params"]["columns"] == "id,name,year"
-    end
-
-    test "forwards columns from Gatekeeper response (list)", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt", columns: ["id", "name", "year"])
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
-
-      assert conn.status == 200
-      body = Jason.decode!(conn.resp_body)
-      assert body["params"]["columns"] == "id,name,year"
-    end
-
-    test "falls back to client columns when Gatekeeper omits them", %{conn: conn} do
-      # Gatekeeper returns shape without columns (sertantai-auth doesn't include them)
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{
+        get(conn, "/api/electric/v1/shape", %{
           "table" => "uk_lrt",
           "columns" => ~s("id","name","year")
         })
@@ -134,15 +107,10 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end
 
     test "forwards passthrough params (offset, handle, live, cursor, replica)", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
       conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{
+        get(conn, "/api/electric/v1/shape", %{
           "table" => "uk_lrt",
           "offset" => "0_5",
-          "handle" => "some-handle",
           "live" => "true",
           "cursor" => "abc",
           "replica" => "full"
@@ -151,36 +119,14 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["params"]["offset"] == "0_5"
-      assert body["params"]["handle"] == "some-handle"
       assert body["params"]["live"] == "true"
       assert body["params"]["cursor"] == "abc"
       assert body["params"]["replica"] == "full"
     end
 
-    test "handle-based requests skip Gatekeeper (no auth needed for live polling)", %{conn: conn} do
-      # No auth header, no Gatekeeper stub — handle-based requests bypass auth
+    test "forwards subset and log params for progressive sync", %{conn: conn} do
       conn =
-        conn
-        |> get("/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
-          "handle" => "12345-678",
-          "offset" => "0_inf"
-        })
-
-      assert conn.status == 200
-      body = Jason.decode!(conn.resp_body)
-      assert body["params"]["table"] == "uk_lrt"
-      assert body["params"]["handle"] == "12345-678"
-      assert body["params"]["offset"] == "0_inf"
-    end
-
-    test "forwards subset and log params for progressive sync (Gatekeeper path)", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{
+        get(conn, "/api/electric/v1/shape", %{
           "table" => "uk_lrt",
           "offset" => "0_0",
           "log" => "changes_only",
@@ -199,32 +145,8 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["subset__order_by"] == "year DESC"
     end
 
-    test "forwards subset params via handle bypass path", %{conn: conn} do
-      conn =
-        conn
-        |> get("/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
-          "handle" => "snap-handle",
-          "offset" => "0_0",
-          "log" => "changes_only",
-          "subset__where" => "year >= 2024",
-          "subset__limit" => "50"
-        })
-
-      assert conn.status == 200
-      body = Jason.decode!(conn.resp_body)
-      assert body["params"]["log"] == "changes_only"
-      assert body["params"]["subset__where"] == "year >= 2024"
-      assert body["params"]["subset__limit"] == "50"
-    end
-
     test "forwards electric headers to client", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       assert get_resp_header(conn, "electric-handle") == ["test-handle-123"]
@@ -232,30 +154,87 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert get_resp_header(conn, "electric-schema") == ["{}"]
     end
 
-    test "does not forward non-electric headers", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
-
-      assert get_resp_header(conn, "x-custom-header") == []
-    end
-
     test "sets access-control-expose-headers for CORS", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       [expose_header] = get_resp_header(conn, "access-control-expose-headers")
       assert expose_header =~ "electric-handle"
       assert expose_header =~ "electric-offset"
       assert expose_header =~ "electric-schema"
+    end
+
+    test "handle-based requests also work for public tables", %{conn: conn} do
+      conn =
+        get(conn, "/api/electric/v1/shape", %{
+          "table" => "uk_lrt",
+          "handle" => "12345-678",
+          "offset" => "0_inf"
+        })
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["table"] == "uk_lrt"
+      assert body["params"]["handle"] == "12345-678"
+    end
+  end
+
+  # --- Gatekeeper-validated shapes (org-scoped tables with auth) ---
+
+  describe "GET /api/electric/v1/shape - Gatekeeper validation" do
+    test "forwards columns from Gatekeeper response (string)", %{conn: conn} do
+      stub_gatekeeper_approve("organization_locations", columns: "id,name,organization_id")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "organization_locations"})
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["columns"] == "id,name,organization_id"
+    end
+
+    test "forwards columns from Gatekeeper response (list)", %{conn: conn} do
+      stub_gatekeeper_approve("organization_locations",
+        columns: ["id", "name", "organization_id"]
+      )
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "organization_locations"})
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["columns"] == "id,name,organization_id"
+    end
+
+    test "falls back to client columns when Gatekeeper omits them", %{conn: conn} do
+      stub_gatekeeper_approve("organization_locations")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{
+          "table" => "organization_locations",
+          "columns" => ~s("id","name")
+        })
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["columns"] == ~s("id","name")
+    end
+
+    test "does not forward non-electric headers", %{conn: conn} do
+      stub_gatekeeper_approve("organization_locations")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "organization_locations"})
+
+      assert get_resp_header(conn, "x-custom-header") == []
     end
   end
 
@@ -458,12 +437,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
   describe "Electric secret handling" do
     test "does not include secret when not configured", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
@@ -475,7 +449,6 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       try do
         Application.put_env(:sertantai_legal, :electric_secret, "test-electric-secret")
-        stub_gatekeeper_approve("uk_lrt")
 
         Req.Test.stub(ElectricProxyController, fn conn ->
           query = URI.decode_query(conn.query_string)
@@ -485,10 +458,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
           |> Plug.Conn.send_resp(200, Jason.encode!(%{params: query}))
         end)
 
-        conn =
-          conn
-          |> put_auth_header()
-          |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+        conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
         assert conn.status == 200
         body = Jason.decode!(conn.resp_body)
@@ -507,50 +477,35 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
   describe "Electric upstream errors" do
     test "returns error status when Electric returns 503", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
       Req.Test.stub(ElectricProxyController, fn conn ->
         Plug.Conn.send_resp(conn, 503, "Service Unavailable")
       end)
 
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 503
     end
 
     test "forwards 400 errors from Electric", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
       Req.Test.stub(ElectricProxyController, fn conn ->
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(400, Jason.encode!(%{error: "offset out of bounds"}))
       end)
 
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 400
     end
 
     test "forwards 409 errors from Electric (stale handle)", %{conn: conn} do
-      stub_gatekeeper_approve("uk_lrt")
-
       Req.Test.stub(ElectricProxyController, fn conn ->
         conn
         |> Plug.Conn.put_resp_content_type("application/json")
         |> Plug.Conn.send_resp(409, Jason.encode!(%{error: "shape handle mismatch"}))
       end)
 
-      conn =
-        conn
-        |> put_auth_header()
-        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
 
       assert conn.status == 409
     end
