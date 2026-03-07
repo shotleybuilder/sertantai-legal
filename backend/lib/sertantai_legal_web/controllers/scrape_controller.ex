@@ -180,11 +180,13 @@ defmodule SertantaiLegalWeb.ScrapeController do
       # Use read_session_records_with_source which tries DB first, falls back to JSON
       case Storage.read_session_records_with_source(session_id, group) do
         {:ok, records, data_source} ->
+          enriched = enrich_records_from_db(records)
+
           json(conn, %{
             session_id: session_id,
             group: group_str,
-            count: count_records(records),
-            records: normalize_records(records),
+            count: count_records(enriched),
+            records: normalize_records(enriched),
             data_source: data_source
           })
 
@@ -780,8 +782,8 @@ defmodule SertantaiLegalWeb.ScrapeController do
           # Persist directly - record already has full metadata from parse_one
           case LawParser.persist_direct(record_to_persist) do
             {:ok, persisted} ->
-              # Mark record as reviewed in session
-              mark_record_reviewed(session_id, name)
+              # Mark record as reviewed in session (with parsed data for table display)
+              mark_record_reviewed(session_id, name, record_to_persist)
 
               # Mark any pending cascade entry for this law as processed
               # and determine its cascade layer for propagation
@@ -1054,16 +1056,138 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
   defp normalize_records(_), do: []
 
+  # Batch-enrich session records with current uk_lrt data.
+  # This ensures Title_EN, si_code, etc. reflect the latest DB state
+  # even if parsed_data is stale or incomplete.
+  defp enrich_records_from_db(records) when is_list(records) do
+    names = Enum.map(records, fn r -> r[:name] || r["name"] end) |> Enum.reject(&is_nil/1)
+
+    if Enum.empty?(names) do
+      records
+    else
+      # Batch lookup from uk_lrt
+      import Ecto.Query
+
+      db_records =
+        SertantaiLegal.Repo.all(
+          from(u in "uk_lrt",
+            where: u.name in ^names,
+            select: %{
+              name: u.name,
+              title_en: u.title_en,
+              year: u.year,
+              number: u.number,
+              si_code: u.si_code,
+              type_code: u.type_code
+            }
+          )
+        )
+
+      db_map = Map.new(db_records, fn r -> {r.name, r} end)
+
+      Enum.map(records, fn record ->
+        name = record[:name] || record["name"]
+
+        case Map.get(db_map, name) do
+          nil ->
+            record
+
+          db_rec ->
+            # Merge DB values as fallbacks (don't overwrite existing non-nil parsed_data)
+            record
+            |> put_if_missing(:Title_EN, db_rec.title_en)
+            |> put_if_missing(:title_en, db_rec.title_en)
+            |> put_if_missing(:Year, db_rec.year)
+            |> put_if_missing(:year, db_rec.year)
+            |> put_if_missing(:Number, db_rec.number)
+            |> put_if_missing(:number, db_rec.number)
+            |> put_if_missing(:si_code, db_rec.si_code)
+            |> put_if_missing(:type_code, db_rec.type_code)
+        end
+      end)
+    end
+  end
+
+  defp enrich_records_from_db(records), do: records
+
+  defp put_if_missing(record, key, value) do
+    case record[key] do
+      nil -> Map.put(record, key, value)
+      "" -> Map.put(record, key, value)
+      _ -> record
+    end
+  end
+
   # Enrich record with type_desc and type_class if missing (for session list display)
-  # Does NOT normalize credential keys - UI expects Year, Number, Title_EN
+  # Also normalizes credential keys - UI expects Year, Number, Title_EN
   defp enrich_type_fields(record) do
     record
+    |> normalize_credential_keys()
     |> maybe_enrich_type_desc()
     |> maybe_enrich_type_class()
     |> normalize_family_key()
     |> normalize_tags_key()
     |> maybe_calculate_md_date()
   end
+
+  # The UI expects Year, Number, Title_EN (uppercase) but StagedParser outputs
+  # year, number, title_en (lowercase). Promote lowercase to uppercase if missing.
+  # Falls back to extracting Year/Number from name (e.g. UK_uksi_1977_500).
+  defp normalize_credential_keys(record) do
+    record
+    |> promote_key(:year, :Year)
+    |> promote_key(:number, :Number)
+    |> promote_key(:title_en, :Title_EN)
+    |> promote_key(:si_code, :SICode, &normalize_si_code/1)
+    |> maybe_extract_year_number_from_name()
+  end
+
+  # If Year/Number still missing, extract from name like UK_uksi_1977_500
+  defp maybe_extract_year_number_from_name(record) do
+    has_year = not is_nil(record[:Year])
+    has_number = not is_nil(record[:Number])
+
+    if has_year and has_number do
+      record
+    else
+      name = record[:name] || ""
+
+      case Regex.run(~r/UK_[a-z]+_(\d{4})_(\d+)/, name) do
+        [_, year_str, number_str] ->
+          record
+          |> then(fn r ->
+            if has_year, do: r, else: Map.put(r, :Year, String.to_integer(year_str))
+          end)
+          |> then(fn r -> if has_number, do: r, else: Map.put(r, :Number, number_str) end)
+
+        _ ->
+          record
+      end
+    end
+  end
+
+  defp promote_key(record, from, to, transform \\ nil) do
+    has_to = Map.has_key?(record, to) and not is_nil(record[to])
+
+    if has_to do
+      record
+    else
+      case record[from] do
+        nil ->
+          record
+
+        value ->
+          transformed = if transform, do: transform.(value), else: value
+          Map.put(record, to, transformed)
+      end
+    end
+  end
+
+  # si_code can be a string, map with "values" key, or already a list
+  defp normalize_si_code(%{"values" => values}) when is_list(values), do: values
+  defp normalize_si_code(value) when is_list(value), do: value
+  defp normalize_si_code(value) when is_binary(value), do: [value]
+  defp normalize_si_code(_), do: nil
 
   # Extract name strings from enacted_by which can be list of maps or strings
   defp extract_enacted_by_names(nil), do: []
@@ -1363,9 +1487,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   # Mark a record as reviewed/confirmed in session storage
-  defp mark_record_reviewed(session_id, name) do
-    # Update DB record status to confirmed
-    Storage.confirm_session_record(session_id, name)
+  defp mark_record_reviewed(session_id, name, parsed_data) do
+    # Update DB record status to confirmed (and parsed_data if provided)
+    Storage.confirm_session_record(session_id, name, stringify_keys(parsed_data))
 
     # Also update JSON files for backwards compatibility
     groups = [:group1, :group2, :group3]
@@ -1414,6 +1538,15 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   defp atomize_keys(other), do: other
+
+  defp stringify_keys(nil), do: nil
+
+  defp stringify_keys(map) when is_map(map) do
+    Map.new(map, fn
+      {k, v} when is_atom(k) -> {Atom.to_string(k), v}
+      {k, v} -> {k, v}
+    end)
+  end
 
   # ============================================================================
   # Cascade Update Actions

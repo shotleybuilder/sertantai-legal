@@ -996,13 +996,17 @@ defmodule SertantaiLegal.Scraper.Storage do
   """
   @spec confirm_session_record(String.t(), String.t()) ::
           {:ok, ScrapeSessionRecord.t()} | {:error, any()}
-  def confirm_session_record(session_id, law_name) do
+  def confirm_session_record(session_id, law_name, parsed_data \\ nil) do
     case get_session_record(session_id, law_name) do
       {:ok, nil} ->
         {:error, "Record not found: #{law_name}"}
 
       {:ok, record} ->
-        ScrapeSessionRecord.mark_confirmed(record)
+        if parsed_data do
+          ScrapeSessionRecord.mark_confirmed(record, %{parsed_data: parsed_data})
+        else
+          ScrapeSessionRecord.mark_confirmed(record)
+        end
 
       {:error, reason} ->
         {:error, reason}

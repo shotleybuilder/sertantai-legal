@@ -175,6 +175,8 @@
 		parseCompleteMessage = `Parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
 		// Refresh the session data to update counts
 		$sessionQuery.refetch();
+		// Refresh group records to show updated parsed_data in table rows
+		$groupQuery.refetch();
 		// Also refresh db status to update the "In DB" indicator
 		$dbStatusQuery.refetch();
 

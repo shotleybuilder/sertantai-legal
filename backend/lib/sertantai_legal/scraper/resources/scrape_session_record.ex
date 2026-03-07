@@ -103,6 +103,7 @@ defmodule SertantaiLegal.Scraper.ScrapeSessionRecord do
 
     update :mark_confirmed do
       description("Mark record as confirmed (persisted to uk_lrt)")
+      accept([:parsed_data])
       change(set_attribute(:status, :confirmed))
     end
 
