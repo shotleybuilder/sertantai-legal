@@ -197,7 +197,7 @@ async function createUkLrtCollection(
 	const collection = createCollection(
 		electricCollectionOptions<ElectricUkLrtRecord>({
 			id: 'uk-lrt',
-			syncMode: 'progressive', // Use progressive mode for large datasets - provides incremental snapshots
+			syncMode: 'eager', // Eager mode: sync all data immediately. Safe because WHERE clause limits to ~800 records.
 			shapeOptions: {
 				url: `${ELECTRIC_URL}/v1/shape`,
 				fetchClient: electricFetchClient,
@@ -371,7 +371,7 @@ async function createLatCollection(
 	const collection = createCollection(
 		electricCollectionOptions<ElectricLatRecord>({
 			id: `lat-${lawName}`,
-			syncMode: 'progressive',
+			syncMode: 'eager',
 			shapeOptions: {
 				url: `${ELECTRIC_URL}/v1/shape`,
 				fetchClient: electricFetchClient,
@@ -470,7 +470,7 @@ async function createAnnotationCollection(
 	const collection = createCollection(
 		electricCollectionOptions<ElectricAnnotationRecord>({
 			id: `annotations-${lawName}`,
-			syncMode: 'progressive',
+			syncMode: 'eager',
 			shapeOptions: {
 				url: `${ELECTRIC_URL}/v1/shape`,
 				fetchClient: electricFetchClient,

@@ -14,8 +14,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
 
   require Logger
 
-  # Client-safe params that pass through to Electric unchanged
-  @passthrough_params ~w(offset handle live cursor replica)
+  # Client-safe params that pass through to Electric unchanged.
+  # Includes subset__* params used by progressive/on-demand sync modes
+  # for snapshot requests (fetchSnapshot/requestSnapshot in @electric-sql/client).
+  @passthrough_params ~w(offset handle live cursor replica log
+                         subset__where subset__params subset__limit subset__offset subset__order_by)
 
   # Tables allowed for shape recovery (DELETE). Kept as a simple static list
   # since DELETE doesn't need full Gatekeeper validation.

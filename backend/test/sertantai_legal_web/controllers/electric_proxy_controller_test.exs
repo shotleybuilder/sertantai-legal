@@ -174,6 +174,50 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["offset"] == "0_inf"
     end
 
+    test "forwards subset and log params for progressive sync (Gatekeeper path)", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{
+          "table" => "uk_lrt",
+          "offset" => "0_0",
+          "log" => "changes_only",
+          "subset__where" => "year >= 2024",
+          "subset__limit" => "100",
+          "subset__offset" => "50",
+          "subset__order_by" => "year DESC"
+        })
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["log"] == "changes_only"
+      assert body["params"]["subset__where"] == "year >= 2024"
+      assert body["params"]["subset__limit"] == "100"
+      assert body["params"]["subset__offset"] == "50"
+      assert body["params"]["subset__order_by"] == "year DESC"
+    end
+
+    test "forwards subset params via handle bypass path", %{conn: conn} do
+      conn =
+        conn
+        |> get("/api/electric/v1/shape", %{
+          "table" => "uk_lrt",
+          "handle" => "snap-handle",
+          "offset" => "0_0",
+          "log" => "changes_only",
+          "subset__where" => "year >= 2024",
+          "subset__limit" => "50"
+        })
+
+      assert conn.status == 200
+      body = Jason.decode!(conn.resp_body)
+      assert body["params"]["log"] == "changes_only"
+      assert body["params"]["subset__where"] == "year >= 2024"
+      assert body["params"]["subset__limit"] == "50"
+    end
+
     test "forwards electric headers to client", %{conn: conn} do
       stub_gatekeeper_approve("uk_lrt")
 
