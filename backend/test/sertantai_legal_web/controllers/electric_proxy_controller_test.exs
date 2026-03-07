@@ -242,6 +242,21 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       assert get_resp_header(conn, "x-custom-header") == []
     end
+
+    test "sets access-control-expose-headers for CORS", %{conn: conn} do
+      stub_gatekeeper_approve("uk_lrt")
+
+      conn =
+        conn
+        |> put_auth_header()
+        |> get("/api/electric/v1/shape", %{"table" => "uk_lrt"})
+
+      assert conn.status == 200
+      [expose_header] = get_resp_header(conn, "access-control-expose-headers")
+      assert expose_header =~ "electric-handle"
+      assert expose_header =~ "electric-offset"
+      assert expose_header =~ "electric-schema"
+    end
   end
 
   # --- Org-scoped shapes ---

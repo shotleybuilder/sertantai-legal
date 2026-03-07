@@ -310,16 +310,26 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   end
 
   defp forward_electric_headers(conn, %Req.Response{headers: headers}) do
-    Enum.reduce(headers, conn, fn {key, values}, conn ->
-      if String.starts_with?(key, "electric-") or key in ~w(cache-control etag x-request-id) do
-        case values do
-          [val | _] -> put_resp_header(conn, key, val)
-          _ -> conn
+    conn =
+      Enum.reduce(headers, conn, fn {key, values}, conn ->
+        if String.starts_with?(key, "electric-") or key in ~w(cache-control etag x-request-id) do
+          case values do
+            [val | _] -> put_resp_header(conn, key, val)
+            _ -> conn
+          end
+        else
+          conn
         end
-      else
-        conn
-      end
-    end)
+      end)
+
+    # Expose Electric's custom headers to the browser via CORS.
+    # Without this, the Electric client can't read electric-offset, electric-handle,
+    # electric-schema from the response and throws MissingHeadersError.
+    put_resp_header(
+      conn,
+      "access-control-expose-headers",
+      "electric-cursor,electric-handle,electric-offset,electric-schema,electric-up-to-date,electric-internal-known-error"
+    )
   end
 
   defp ensure_binary(body) when is_binary(body), do: body
