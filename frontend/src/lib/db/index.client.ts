@@ -20,7 +20,7 @@ import type { LatRecord } from '$lib/electric/lat-schema';
 import type { AnnotationRecord } from '$lib/electric/annotation-schema';
 import { LAT_COLUMNS } from '$lib/electric/lat-schema';
 import { ANNOTATION_COLUMNS } from '$lib/electric/annotation-schema';
-import { getAuthToken } from '$lib/stores/auth';
+import { electricFetchClient } from '$lib/electric/fetch-client';
 
 // Re-export types for external use
 export type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
@@ -137,19 +137,6 @@ const UK_LRT_COLUMNS: string[] = [
 	'fitness_sector',
 	'fitness'
 ];
-
-/**
- * Custom fetch client that includes the JWT Authorization header
- * for Electric shape requests through the backend proxy.
- */
-function electricFetchClient(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-	const token = getAuthToken();
-	const headers = new Headers(init?.headers);
-	if (token && !headers.has('Authorization')) {
-		headers.set('Authorization', `Bearer ${token}`);
-	}
-	return fetch(input, { ...init, headers });
-}
 
 /**
  * Get default WHERE clause (last 3 years)

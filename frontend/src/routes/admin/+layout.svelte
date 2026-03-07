@@ -24,7 +24,8 @@
 	adminAuth.subscribe((v) => (user = v));
 
 	onMount(() => {
-		adminAuth.check();
+		// adminAuth.check() is called at module scope in the root +layout.svelte
+		// so the token is already restored before any child component mounts.
 		loading = false;
 	});
 
