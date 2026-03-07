@@ -67,7 +67,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   def parse_group(session_id, group, opts \\ []) when group in [:group1, :group2, :group3] do
     IO.puts("\n=== PARSING #{String.upcase(to_string(group))} from #{session_id} ===\n")
 
-    case Storage.read_json(session_id, group) do
+    case Storage.read_session_records(session_id, group) do
       {:ok, records} when is_list(records) ->
         # Groups 1 and 2: list of records
         # Filter by selection if selected_only option is true
