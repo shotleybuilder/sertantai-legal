@@ -18,7 +18,7 @@ import { getAuthToken } from '$lib/stores/auth';
 export function createElectricFetchClient(
 	fetchFn: typeof fetch = fetch
 ): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
-	return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+	return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
 		const token = getAuthToken();
 		const headers = new Headers(init?.headers);
 		if (token && !headers.has('Authorization')) {

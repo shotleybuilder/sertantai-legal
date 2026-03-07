@@ -342,23 +342,40 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   end
 
   defp forward_electric_headers(conn, %Req.Response{headers: headers}) do
+    # Follow the official Electric proxy pattern:
+    # https://github.com/electric-sql/electric/blob/main/examples/proxy-auth/app/shape-proxy/route.ts
+    #
+    # 1. Forward all electric-* headers (required by the client protocol)
+    # 2. Delete content-encoding and content-length (Req decompresses the body
+    #    but doesn't remove these headers — stale values break browser decoding)
+    # 3. Set cache-control: no-store (Electric sets "public, max-age=604800" which
+    #    causes browsers to cache responses without CORS headers → MissingHeadersError)
+    # 4. Set Vary: Authorization for per-user cache isolation
+    # 5. Expose electric-* headers via CORS so the browser JS can read them
+
+    # Headers to skip — either replaced or invalid after proxy decompression
+    skip = MapSet.new(~w(cache-control content-encoding content-length transfer-encoding))
+
     conn =
       Enum.reduce(headers, conn, fn {key, values}, conn ->
-        if String.starts_with?(key, "electric-") or key in ~w(cache-control etag x-request-id) do
-          case values do
-            [val | _] -> put_resp_header(conn, key, val)
-            _ -> conn
-          end
-        else
+        if key in skip do
           conn
+        else
+          if String.starts_with?(key, "electric-") or key in ~w(etag x-request-id) do
+            case values do
+              [val | _] -> put_resp_header(conn, key, val)
+              _ -> conn
+            end
+          else
+            conn
+          end
         end
       end)
 
-    # Expose Electric's custom headers to the browser via CORS.
-    # Without this, the Electric client can't read electric-offset, electric-handle,
-    # electric-schema from the response and throws MissingHeadersError.
-    put_resp_header(
-      conn,
+    conn
+    |> put_resp_header("cache-control", "no-store")
+    |> put_resp_header("vary", "Authorization")
+    |> put_resp_header(
       "access-control-expose-headers",
       "electric-cursor,electric-handle,electric-offset,electric-schema,electric-up-to-date,electric-internal-known-error"
     )
