@@ -177,23 +177,17 @@
 							{#if familyGrouped}
 								<optgroup label="Health & Safety">
 									{#each familyGrouped.health_safety || [] as opt}
-										{#if !opt.includes(':')}
-											<option value={opt}>{opt}</option>
-										{/if}
+										<option value={opt}>{opt}</option>
 									{/each}
 								</optgroup>
 								<optgroup label="Environment">
 									{#each familyGrouped.environment || [] as opt}
-										{#if !opt.includes(':')}
-											<option value={opt}>{opt}</option>
-										{/if}
+										<option value={opt}>{opt}</option>
 									{/each}
 								</optgroup>
 								<optgroup label="HR">
 									{#each familyGrouped.hr || [] as opt}
-										{#if !opt.includes(':')}
-											<option value={opt}>{opt}</option>
-										{/if}
+										<option value={opt}>{opt}</option>
 									{/each}
 								</optgroup>
 							{/if}
