@@ -90,14 +90,18 @@
 		return filters;
 	}
 
-	// Preview count — debounced
+	// Preview count — debounced, re-triggers when any filter changes
+	// Reactive key ensures Svelte tracks all filter dependencies
+	$: _filterKey = [selectedFamily, selectedFamilyIi, selectedTypeCode, selectedFunction];
 	let previewTimeout: ReturnType<typeof setTimeout>;
-	$: if (selectedFamily) {
-		clearTimeout(previewTimeout);
-		previewTimeout = setTimeout(fetchPreview, 300);
-	} else {
-		previewCount = null;
-		previewError = '';
+	$: if (_filterKey) {
+		if (selectedFamily) {
+			clearTimeout(previewTimeout);
+			previewTimeout = setTimeout(fetchPreview, 300);
+		} else {
+			previewCount = null;
+			previewError = '';
+		}
 	}
 
 	async function fetchPreview() {
