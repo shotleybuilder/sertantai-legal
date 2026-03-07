@@ -61,7 +61,9 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetector do
   @tier_weights %{1 => 0.95, 2 => 0.75, 3 => 0.50, 4 => 0.65}
 
   # Current detection algorithm version
-  @version 1
+  # v2: Added positive title signals (Regulations, Rules), negative title signals
+  #     (Directive, Scheme), and moderate body count signal (11-50 paras)
+  @version 2
 
   @doc """
   Run all detection tiers on metadata and return composite result.

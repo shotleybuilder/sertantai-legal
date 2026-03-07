@@ -245,6 +245,47 @@ export async function deleteSession(sessionId: string): Promise<{ message: strin
 }
 
 // ============================================================================
+// Reparse Session API
+// ============================================================================
+
+export interface ReparseFilters {
+	family: string;
+	family_ii?: string;
+	type_code?: string;
+	function?: string;
+}
+
+export async function previewReparseSession(filters: ReparseFilters): Promise<{ count: number }> {
+	const response = await adminFetch(`${API_URL}/api/sessions/reparse/preview`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(filters)
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to preview reparse session');
+	}
+
+	return response.json();
+}
+
+export async function createReparseSession(filters: ReparseFilters): Promise<ScrapeSession> {
+	const response = await adminFetch(`${API_URL}/api/sessions/reparse`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(filters)
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to create reparse session');
+	}
+
+	return response.json();
+}
+
+// ============================================================================
 // Parse Review API
 // ============================================================================
 
@@ -947,11 +988,6 @@ export function mapStageError(stage: string, error: string): string {
 				return 'Revocation status unknown. Assuming in force.';
 			}
 			break;
-		case 'taxa':
-			if (error.toLowerCase().includes('empty') || error.toLowerCase().includes('too short')) {
-				return 'Unable to classify. Law body is empty or too short.';
-			}
-			break;
 	}
 
 	return friendlyError;
@@ -967,8 +1003,7 @@ export type ParseStage =
 	| 'enacted_by'
 	| 'amending'
 	| 'amended_by'
-	| 'repeal_revoke'
-	| 'taxa';
+	| 'repeal_revoke';
 
 export interface ParseStageStartEvent {
 	event: 'stage_start';
@@ -1087,6 +1122,75 @@ export function parseOneStream(
 }
 
 /**
+ * Stream parse progress for an existing UK LRT record (sessionless).
+ * Uses the same SSE protocol as parseOneStream but looks up by record UUID.
+ */
+export function parseRecordStream(
+	recordId: string,
+	callbacks: ParseProgressCallbacks,
+	stages?: ParseStage[]
+): () => void {
+	let url = `${API_URL}/api/uk-lrt/${recordId}/parse-stream`;
+	if (stages && stages.length > 0) {
+		url += `?stages=${stages.join(',')}`;
+	}
+	const token = getAuthToken();
+	if (token) {
+		url += `${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+	}
+	const eventSource = new EventSource(url);
+
+	eventSource.onmessage = (event) => {
+		try {
+			const data = JSON.parse(event.data) as
+				| ParseProgressEvent
+				| { event: 'connected'; name: string };
+
+			switch (data.event) {
+				case 'connected':
+					break;
+				case 'stage_start':
+					callbacks.onStageStart?.(
+						(data as ParseStageStartEvent).stage,
+						(data as ParseStageStartEvent).stage_num,
+						(data as ParseStageStartEvent).total
+					);
+					break;
+				case 'stage_complete':
+					callbacks.onStageComplete?.(
+						(data as ParseStageCompleteEvent).stage,
+						(data as ParseStageCompleteEvent).status,
+						(data as ParseStageCompleteEvent).summary
+					);
+					break;
+				case 'parse_complete':
+					callbacks.onComplete?.((data as ParseCompleteEvent).result);
+					eventSource.close();
+					break;
+			}
+		} catch (err) {
+			console.error('Failed to parse SSE event:', err);
+		}
+	};
+
+	eventSource.onerror = (event) => {
+		console.error('SSE error:', event);
+		if (eventSource.readyState === EventSource.CONNECTING) {
+			console.log('SSE reconnecting...');
+			return;
+		}
+		callbacks.onError?.(
+			new Error('Connection to parse stream failed. The server may have completed the parse.')
+		);
+		eventSource.close();
+	};
+
+	return () => {
+		eventSource.close();
+	};
+}
+
+/**
  * Promise-based wrapper around parseOneStream for use in automated loops.
  * Returns a promise that resolves with the parse result and a cancel function.
  */
@@ -1113,48 +1217,6 @@ export function parseOneStreamAsync(
 		promise,
 		cancel: () => cleanup?.()
 	};
-}
-
-/**
- * Parse preview result - parsed data without saving to DB
- */
-export interface ParsePreviewResult {
-	parsed: Record<string, unknown>;
-	current: Record<string, unknown>;
-	diff: Record<string, { current: unknown; parsed: unknown }>;
-	stages: Record<string, { status: string; error?: string }>;
-	errors: string[];
-	has_errors: boolean;
-}
-
-/**
- * Parse a UK LRT record without saving to database.
- * Returns parsed data, current DB record, and diff for review.
- *
- * @param recordId - The UUID of the UK LRT record
- * @param stages - Optional array of stages to run (defaults to all)
- * @returns ParsePreviewResult with parsed data, current record, and diff
- */
-export async function parsePreview(
-	recordId: string,
-	stages?: ParseStage[]
-): Promise<ParsePreviewResult> {
-	let url = `${API_URL}/api/uk-lrt/${recordId}/parse-preview`;
-	if (stages && stages.length > 0) {
-		url += `?stages=${stages.join(',')}`;
-	}
-
-	const response = await adminFetch(url, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' }
-	});
-
-	if (!response.ok) {
-		const error = await response.json();
-		throw new Error(error.error || 'Failed to parse record');
-	}
-
-	return response.json();
 }
 
 /**

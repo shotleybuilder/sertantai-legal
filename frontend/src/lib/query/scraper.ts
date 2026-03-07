@@ -25,6 +25,7 @@ import {
 	deleteCascadeEntry,
 	clearProcessedCascade,
 	clearSessionCascade,
+	createReparseSession,
 	type ScrapeSession,
 	type GroupResponse,
 	type ParseResult,
@@ -182,6 +183,21 @@ export function useDeleteSessionMutation() {
 
 	return createMutation({
 		mutationFn: deleteSession,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
+		}
+	});
+}
+
+// ============================================================================
+// Reparse Session Hooks
+// ============================================================================
+
+export function useCreateReparseMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: createReparseSession,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}

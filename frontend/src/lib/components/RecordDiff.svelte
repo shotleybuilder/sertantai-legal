@@ -149,8 +149,36 @@
 		Timestamps: ['created_at', 'updated_at', 'inserted_at']
 	};
 
-	// Compute diff between existing and incoming records
-	$: delta = jsondiffpatch.diff(existing, incoming);
+	// Taxa fields are managed by an external Rust service (Zenoh P2P) and are
+	// excluded from the diff — the core parser no longer runs taxa stages.
+	const TAXA_FIELDS = new Set([
+		// Purpose
+		'purpose',
+		// Roles
+		'role', 'role_details', 'role_gvt', 'role_gvt_details',
+		// Duty Type
+		'duty_type', 'duty_type_article', 'article_duty_type',
+		// Holders (DRRP)
+		'duty_holder', 'duties',
+		'rights_holder', 'rights',
+		'responsibility_holder', 'responsibilities',
+		'power_holder', 'powers',
+		// POPIMAR
+		'popimar', 'popimar_details',
+		'popimar_article', 'popimar_article_clause',
+		'article_popimar', 'article_popimar_clause'
+	]);
+
+	// Compute diff between existing and incoming records, excluding taxa fields
+	$: delta = (() => {
+		const raw = jsondiffpatch.diff(existing, incoming);
+		if (!raw) return raw;
+		const filtered = { ...raw } as Record<string, unknown>;
+		for (const key of Object.keys(filtered)) {
+			if (TAXA_FIELDS.has(key)) delete filtered[key];
+		}
+		return Object.keys(filtered).length > 0 ? filtered : undefined;
+	})();
 	$: hasChanges = delta !== undefined && Object.keys(delta).length > 0;
 
 	// Categorize changes

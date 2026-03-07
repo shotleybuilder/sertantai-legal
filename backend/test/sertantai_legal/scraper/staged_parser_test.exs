@@ -404,7 +404,7 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert summary == nil
     end
 
-    test "stages/0 returns all 7 stages in order" do
+    test "stages/0 returns all 6 stages in order" do
       stages = StagedParser.stages()
 
       assert stages == [
@@ -413,8 +413,7 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
                :enacted_by,
                :amending,
                :amended_by,
-               :repeal_revoke,
-               :taxa
+               :repeal_revoke
              ]
     end
   end

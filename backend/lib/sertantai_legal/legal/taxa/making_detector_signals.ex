@@ -86,27 +86,65 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetectorSignals do
   # "(Repeal" -> ~95% not Making
 
   @doc """
-  Tier 2: Strong title-based exclusion signals.
+  Tier 2: Strong title-based signals.
 
-  These title patterns strongly indicate non-Making laws, but have
-  measurable false positive rates (especially Amendment).
+  Exclusion patterns strongly indicate non-Making laws.
+  Positive patterns (e.g. "Regulations") indicate potential Making laws
+  when no exclusion marker is present.
+
+  Data-driven confidence from corpus analysis (19,318 records):
+  - "Regulations" without exclusion: 31.3% Making (1.8x base rate)
+  - "Rules" without exclusion: 21.6% Making (1.2x base rate)
+  - "Directive" without exclusion: 0% Making
+  - "Scheme" without exclusion: 2% Making
   """
   @spec tier2_title_strong([signal()], map()) :: [signal()]
   def tier2_title_strong(signals, %{title_en: title}) when is_binary(title) do
+    has_exclusion =
+      String.contains?(title, "(Revocation") or
+        String.contains?(title, "(Consequential") or
+        String.contains?(title, "(Repeal") or
+        String.contains?(title, "(Amendment") or
+        String.contains?(title, "(Transitional")
+
     signals
-    |> maybe_add_title_signal(title, "(Revocation", "title_revocation", 0.98)
-    |> maybe_add_title_signal(title, "(Consequential", "title_consequential", 0.90)
-    |> maybe_add_title_signal(title, "(Repeal", "title_repeal", 0.92)
-    |> maybe_add_title_signal(title, "(Amendment", "title_amendment", 0.80)
-    |> maybe_add_title_signal(title, "(Transitional", "title_transitional", 0.75)
+    # Exclusion signals (always checked)
+    |> maybe_add_title_signal(title, "(Revocation", "title_revocation", :not_making, 0.98)
+    |> maybe_add_title_signal(title, "(Consequential", "title_consequential", :not_making, 0.90)
+    |> maybe_add_title_signal(title, "(Repeal", "title_repeal", :not_making, 0.92)
+    |> maybe_add_title_signal(title, "(Amendment", "title_amendment", :not_making, 0.80)
+    |> maybe_add_title_signal(title, "(Transitional", "title_transitional", :not_making, 0.75)
+    # Positive signals (only when no exclusion marker present)
+    |> maybe_add_positive_title_signal(
+      title,
+      has_exclusion,
+      "Regulations",
+      "title_regulations",
+      0.55
+    )
+    |> maybe_add_positive_title_signal(title, has_exclusion, "Rules", "title_rules", 0.35)
+    # Negative signals for non-Making instrument types
+    |> maybe_add_title_signal(title, "Directive", "title_directive", :not_making, 0.85)
+    |> maybe_add_title_signal(title, "Scheme", "title_scheme", :not_making, 0.70)
   end
 
   def tier2_title_strong(signals, _metadata), do: signals
 
-  defp maybe_add_title_signal(signals, title, pattern, name, confidence) do
+  defp maybe_add_title_signal(signals, title, pattern, name, direction, confidence) do
     if String.contains?(title, pattern) do
       [
-        %{tier: 2, signal: name, direction: :not_making, confidence: confidence, value: title}
+        %{tier: 2, signal: name, direction: direction, confidence: confidence, value: title}
+        | signals
+      ]
+    else
+      signals
+    end
+  end
+
+  defp maybe_add_positive_title_signal(signals, title, has_exclusion, pattern, name, confidence) do
+    if not has_exclusion and String.contains?(title, pattern) do
+      [
+        %{tier: 2, signal: name, direction: :making, confidence: confidence, value: title}
         | signals
       ]
     else
@@ -130,6 +168,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetectorSignals do
     signals
     |> check_body_schedule_ratio(metadata)
     |> check_high_body_count(metadata)
+    |> check_moderate_body_count(metadata)
     |> check_low_body_count(metadata)
   end
 
@@ -169,6 +208,25 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetectorSignals do
   end
 
   defp check_high_body_count(signals, _metadata), do: signals
+
+  # Moderate body count (11-50) indicates substantive content.
+  # Corpus data: 39.8% Making rate in this range (2.3x base rate).
+  # Lower confidence than high_body_paras since it's less definitive.
+  defp check_moderate_body_count(signals, %{md_body_paras: body})
+       when is_integer(body) and body >= 11 and body <= 50 do
+    [
+      %{
+        tier: 3,
+        signal: "moderate_body_paras",
+        direction: :making,
+        confidence: 0.40,
+        value: body
+      }
+      | signals
+    ]
+  end
+
+  defp check_moderate_body_count(signals, _metadata), do: signals
 
   # Very low body count = unlikely to be substantive Making
   defp check_low_body_count(signals, %{md_body_paras: body})

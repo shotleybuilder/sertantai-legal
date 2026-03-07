@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetectorTest do
       assert result.confidence < 0.10
       assert result.tier > 0
       assert length(result.signals) >= 1
-      assert result.version == 1
+      assert result.version == 2
     end
 
     test "appointed day title -> not_making with very high confidence" do
@@ -112,7 +112,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetectorTest do
     test "low body + high schedule -> not_making (amending pattern)" do
       result =
         MakingDetector.detect(%{
-          title_en: "Some Regulations 2024",
+          title_en: "Some Order 2024",
           md_body_paras: 2,
           md_schedule_paras: 80,
           md_description: nil
@@ -153,7 +153,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetectorTest do
       assert fields.making_classification in ["making", "not_making", "uncertain"]
       assert is_integer(fields.making_detection_tier)
       assert is_map(fields.making_detection_signals)
-      assert fields.making_detection_signals["version"] == 1
+      assert fields.making_detection_signals["version"] == 2
       assert fields.making_detection_signals["detected_at"] == "metadata"
       assert is_list(fields.making_detection_signals["signals"])
     end

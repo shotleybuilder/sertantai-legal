@@ -29,6 +29,8 @@
 
 	// ParseReviewModal for viewing record details
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
+	import ReparseDialog from '$lib/components/ReparseDialog.svelte';
+	import { goto } from '$app/navigation';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
@@ -191,25 +193,24 @@
 	// ParseReviewModal state
 	let viewModalOpen = false;
 	let viewModalRecord: UkLrtRecord | null = null;
-	let viewModalAutoReparse = false; // When true, triggers "Parse & Review" mode
 
-	function openViewModal(record: UkLrtRecord) {
-		viewModalRecord = record;
-		viewModalAutoReparse = false;
-		viewModalOpen = true;
-	}
-
-	// Open modal in "Parse & Review" mode (auto-triggers reparse)
+	// Open modal in streaming parse & review mode
 	function openParseReviewModal(record: UkLrtRecord) {
 		viewModalRecord = record;
-		viewModalAutoReparse = true;
 		viewModalOpen = true;
 	}
 
 	function closeViewModal() {
 		viewModalOpen = false;
 		viewModalRecord = null;
-		viewModalAutoReparse = false;
+	}
+
+	// Reparse dialog state
+	let showReparseDialog = false;
+
+	function handleReparseCreated(event: CustomEvent<{ session_id: string }>) {
+		showReparseDialog = false;
+		goto(`/admin/scrape/sessions/${event.detail.session_id}`);
 	}
 
 	// Saved views state
@@ -220,6 +221,7 @@
 	// View configuration state (for applying saved views)
 	let viewColumns: string[] = [];
 	let viewColumnOrder: string[] = [];
+	let viewGrouping: string[] = [];
 	let configVersion = 0;
 
 	// Default views configuration
@@ -232,6 +234,7 @@
 		columns: string[];
 		filters?: Array<{ columnId: string; operator: string; value: unknown }>;
 		sort?: { columnId: string; direction: 'asc' | 'desc' } | null;
+		grouping?: string[];
 		isDefault?: boolean;
 	}> = [
 		{
@@ -386,7 +389,8 @@
 				{ columnId: 'is_making', operator: 'equals', value: 'true' },
 				{ columnId: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
 			],
-			sort: { columnId: 'name', direction: 'asc' }
+			sort: { columnId: 'name', direction: 'asc' },
+			grouping: ['family', 'year']
 		}
 	];
 
@@ -457,18 +461,22 @@
 			if (!existing) continue;
 
 			const expectedFilters = viewDef.filters || [];
+			const expectedGrouping = viewDef.grouping || [];
 			const currentFilters = existing.config.filters || [];
+			const currentGrouping = existing.config.grouping || [];
 			const filtersMatch = JSON.stringify(currentFilters) === JSON.stringify(expectedFilters);
 			const columnsMatch = JSON.stringify(existing.config.columns) === JSON.stringify(viewDef.columns);
+			const groupingMatch = JSON.stringify(currentGrouping) === JSON.stringify(expectedGrouping);
 
-			if (!filtersMatch || !columnsMatch) {
+			if (!filtersMatch || !columnsMatch || !groupingMatch) {
 				try {
 					await viewActions.update(existingId, {
 						config: {
 							...existing.config,
 							filters: expectedFilters,
 							columns: viewDef.columns,
-							columnOrder: viewDef.columns
+							columnOrder: viewDef.columns,
+							grouping: expectedGrouping
 						}
 					});
 				} catch (err) {
@@ -497,7 +505,7 @@
 					columnOrder: view.columns,
 					columnWidths: {},
 					pageSize: 25,
-					grouping: []
+					grouping: view.grouping || []
 				}
 			};
 
@@ -525,13 +533,17 @@
 	// Capture current table config for saving
 	function captureCurrentConfig(): TableConfig {
 		return {
-			filters: [],
-			sort: null,
-			columns: columns.map((c) => String(c.id)),
-			columnOrder: columns.map((c) => String(c.id)),
+			filters: viewFilters.map((f) => ({
+				columnId: f.field,
+				operator: f.operator,
+				value: f.value
+			})),
+			sort: viewSort,
+			columns: viewColumns.length > 0 ? viewColumns : columns.map((c) => String(c.id)),
+			columnOrder: viewColumnOrder.length > 0 ? viewColumnOrder : columns.map((c) => String(c.id)),
 			columnWidths: {},
 			pageSize: 25,
-			grouping: []
+			grouping: viewGrouping
 		};
 	}
 
@@ -570,6 +582,9 @@
 
 		// Apply sort from view config
 		viewSort = config.sort || null;
+
+		// Apply grouping from view config
+		viewGrouping = config.grouping || [];
 
 		configVersion++;
 	}
@@ -656,8 +671,11 @@
 				if (refreshDebounceTimer) {
 					clearTimeout(refreshDebounceTimer);
 				}
-				refreshDebounceTimer = setTimeout(() => {
-					const newData = collection.toArray as UkLrtRecord[];
+				refreshDebounceTimer = setTimeout(async () => {
+					// Always get the latest collection reference in case it was recreated
+					// by updateUkLrtWhere() after a filter change
+					const currentCollection = await getUkLrtCollection(lastWhereClause);
+					const newData = currentCollection.toArray as unknown as UkLrtRecord[];
 					console.log(`[LRT Admin] Refreshing data: ${newData.length} records`);
 					data = newData;
 					totalCount = newData.length;
@@ -667,7 +685,11 @@
 				}, 200);  // 200ms debounce
 			};
 
-			// Only subscribe to syncStatus - it already debounces and we only need UI updates when sync completes
+			// Subscribe to collection changes directly
+			const changeSub = collection.subscribeChanges(() => {
+				refreshData();
+			});
+
 			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
 				if (status.connected) {
 					refreshData();
@@ -685,6 +707,7 @@
 			collectionSubscription = {
 				unsubscribe: () => {
 					unsubscribeSyncStatus();
+					changeSub.unsubscribe();
 					if (refreshDebounceTimer) {
 						clearTimeout(refreshDebounceTimer);
 					}
@@ -867,7 +890,7 @@
 			id: 'actions',
 			header: '',
 			cell: (info) => info.cell.row.original.id,
-			size: 60,
+			size: 90,
 			enableSorting: false,
 			enableResizing: false,
 			meta: { group: 'Actions' }
@@ -895,6 +918,7 @@
 			header: 'Year',
 			cell: (info) => info.getValue(),
 			size: 70,
+			enableGrouping: true,
 			meta: { group: 'Credentials', dataType: 'number' }
 		},
 		{
@@ -1418,15 +1442,22 @@
 		viewColumns.length > 0 ||
 		viewColumnOrder.length > 0 ||
 		viewFilters.length > 0 ||
-		viewSort !== null;
+		viewSort !== null ||
+		viewGrouping.length > 0;
 
 	// Determine which filters to use: view filters if set, otherwise default year filter
 	$: activeFilters = viewFilters.length > 0 ? viewFilters : [defaultYearFilter];
 
 	// Determine sort config (TableKit uses columnId and expects an array)
+	// When grouping is active, prepend grouped columns as desc sort (year descending)
 	$: activeSorting = viewSort
-		? [{ columnId: viewSort.columnId, direction: viewSort.direction }]
-		: undefined;
+		? [
+				...viewGrouping.map((col) => ({ columnId: col, direction: 'desc' as const })),
+				{ columnId: viewSort.columnId, direction: viewSort.direction }
+			]
+		: viewGrouping.length > 0
+			? viewGrouping.map((col) => ({ columnId: col, direction: 'desc' as const }))
+			: undefined;
 
 	$: tableKitConfig = {
 		id: hasViewConfig ? `view_config_v${configVersion}` : 'default_config',
@@ -1434,7 +1465,9 @@
 		defaultFilters: activeFilters,
 		defaultSorting: activeSorting,
 		defaultColumnOrder: hasViewConfig && viewColumnOrder.length > 0 ? viewColumnOrder : undefined,
-		defaultVisibleColumns: hasViewConfig && viewColumns.length > 0 ? viewColumns : undefined
+		defaultVisibleColumns: hasViewConfig && viewColumns.length > 0 ? viewColumns : undefined,
+		defaultGrouping: viewGrouping.length > 0 ? viewGrouping : undefined,
+		defaultExpanded: viewGrouping.length > 0 ? true : undefined
 	};
 
 	onMount(() => {
@@ -1497,12 +1530,21 @@
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 				</svg>
 			</button>
-			<div>
+			<div class="flex-1">
 				<h1 class="text-2xl font-bold text-gray-900">UK LRT Data</h1>
 				<p class="mt-1 text-sm text-gray-500">
 					Manage UK Legal Register Table records. Inline edit Family, Family II, and Function fields.
 				</p>
 			</div>
+			<button
+				class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+				on:click={() => (showReparseDialog = true)}
+			>
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+				</svg>
+				Reparse Family
+			</button>
 		</div>
 
 	{#if isLoading}
@@ -1585,8 +1627,8 @@
 				filtering: true,
 				sorting: true,
 				sortingMode: 'control',
-				pagination: true,
-				grouping: false
+				pagination: false,
+				grouping: true
 			}}
 		>
 			<!-- Saved Views Toolbar -->
@@ -1648,27 +1690,6 @@
 				{@const row = asRecord(cell.row.original)}
 				{#if column === 'actions'}
 					<div class="flex items-center gap-1">
-						<!-- View button -->
-						<button
-							class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded"
-							title="View record details"
-							on:click={() => openViewModal(row)}
-						>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-								/>
-							</svg>
-						</button>
 						<!-- Parse & Review button -->
 						<button
 							class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
@@ -1862,10 +1883,7 @@
 			<ul class="list-disc list-inside text-blue-700 space-y-1">
 				<li><strong>Double-click</strong> Family, Family II, or Function cells to edit inline</li>
 				<li>
-					<strong>View button</strong> (eye icon) opens record details in a modal
-				</li>
-				<li>
-					<strong>Parse & Review button</strong> (refresh icon) re-parses and shows diff for review before saving
+					<strong>Parse & Review button</strong> (refresh icon) re-parses with streaming progress and shows diff for review before saving
 				</li>
 				<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
 				<li>Table state (column order, visibility, sorting) is persisted locally</li>
@@ -1883,13 +1901,25 @@
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
 {/if}
 
-<!-- Parse Review Modal (view with optional auto-reparse for "Parse & Review" workflow) -->
+<!-- Parse Review Modal (streaming parse & review for existing records) -->
 {#if viewModalRecord}
 	<ParseReviewModal
-		record={viewModalRecord}
+		records={[{
+			name: viewModalRecord.name,
+			Title_EN: viewModalRecord.title_en,
+			type_code: viewModalRecord.type_code,
+			Year: viewModalRecord.year,
+			Number: viewModalRecord.number
+		}]}
 		recordId={viewModalRecord.id}
-		autoReparse={viewModalAutoReparse}
 		open={viewModalOpen}
 		on:close={closeViewModal}
 	/>
 {/if}
+
+<!-- Reparse Family Dialog -->
+<ReparseDialog
+	open={showReparseDialog}
+	on:close={() => (showReparseDialog = false)}
+	on:created={handleReparseCreated}
+/>

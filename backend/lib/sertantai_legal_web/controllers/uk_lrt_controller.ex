@@ -272,11 +272,9 @@ defmodule SertantaiLegalWeb.UkLrtController do
   @doc """
   POST /api/uk-lrt/:id/rescrape
 
-  DEPRECATED: This endpoint has been replaced by the parse-preview workflow.
-  Use POST /api/uk-lrt/:id/parse-preview to get parsed data for review,
+  DEPRECATED: This endpoint has been replaced by the streaming parse workflow.
+  Use GET /api/uk-lrt/:id/parse-stream for real-time SSE parse progress,
   then PATCH /api/uk-lrt/:id to save approved changes.
-
-  This ensures all changes are reviewed before being saved to the database.
   """
   def rescrape(conn, _params) do
     conn
@@ -284,41 +282,34 @@ defmodule SertantaiLegalWeb.UkLrtController do
     |> json(%{
       error: "This endpoint is deprecated",
       message:
-        "Use POST /api/uk-lrt/:id/parse-preview to get parsed data, " <>
+        "Use GET /api/uk-lrt/:id/parse-stream for real-time SSE parse progress, " <>
           "then PATCH /api/uk-lrt/:id to save changes after review.",
       migration: %{
         old: "POST /api/uk-lrt/:id/rescrape",
         new: [
-          "POST /api/uk-lrt/:id/parse-preview (get parsed data + diff)",
+          "GET /api/uk-lrt/:id/parse-stream (SSE streaming parse with progress)",
           "PATCH /api/uk-lrt/:id (save approved changes)"
         ]
       }
     })
   end
 
-  @doc """
-  POST /api/uk-lrt/:id/parse-preview
+  # SSE heartbeat interval in milliseconds (keeps connection alive during long parses)
+  @sse_heartbeat_interval 5_000
 
-  Parse a UK LRT record without saving to database.
-  Returns parsed data, current DB record, and diff for review.
+  @doc """
+  GET /api/uk-lrt/:id/parse-stream
+
+  Stream parse progress for an existing UK LRT record via Server-Sent Events.
+  Mirrors the scrape session parse-stream endpoint but works without a session.
 
   ## Query Parameters
   - stages: Comma-separated list of stages to run (optional, defaults to all)
-            Valid stages: metadata, extent, enacted_by, amending, amended_by, repeal_revoke, taxa
-
-  ## Response
-  - parsed: The newly parsed data
-  - current: The current DB record
-  - diff: Fields that differ between parsed and current
-  - stages: Status of each parse stage
-  - errors: Any parse errors
-  - has_errors: Boolean indicating if any stage failed
+            Valid stages: metadata, extent, enacted_by, amending, amended_by, repeal_revoke
   """
-  def parse_preview(conn, %{"id" => id} = params) do
+  def parse_stream(conn, %{"id" => id} = params) do
     alias SertantaiLegal.Scraper.StagedParser
-
-    # Parse stages parameter if provided
-    stages_to_run = parse_stages_param(params["stages"])
+    alias SertantaiLegal.Scraper.ParsedLaw
 
     case UkLrt.by_id(id) do
       {:ok, record} ->
@@ -331,27 +322,59 @@ defmodule SertantaiLegalWeb.UkLrtController do
           name: record.name
         }
 
-        # Parse with optional stage filtering
-        parse_opts = if stages_to_run, do: [stages: stages_to_run], else: []
-        {:ok, result} = StagedParser.parse(input, parse_opts)
+        # Set up SSE connection
+        conn =
+          conn
+          |> put_resp_content_type("text/event-stream")
+          |> put_resp_header("cache-control", "no-cache")
+          |> put_resp_header("connection", "keep-alive")
+          |> send_chunked(200)
 
-        # Extract parsed data from stages
-        parsed_data = build_update_attrs(result)
+        # Send initial event to confirm connection is established
+        {:ok, conn} =
+          chunk(conn, "data: #{Jason.encode!(%{event: "connected", name: record.name})}\n\n")
 
-        # Get current record as map for comparison
-        current_data = record_to_json(record)
+        caller = self()
 
-        # Compute diff - fields where parsed differs from current
-        diff = compute_diff(current_data, parsed_data)
+        # Progress callback sends messages to the controller process
+        send_progress = fn event ->
+          send(caller, {:sse_event, event})
+          :ok
+        end
 
-        json(conn, %{
-          parsed: parsed_data,
-          current: current_data,
-          diff: diff,
-          stages: format_stages(result.stages),
-          errors: result.errors,
-          has_errors: result.has_errors
-        })
+        # Parse stages parameter if provided (for retry functionality)
+        valid_stages_map = %{
+          "metadata" => :metadata,
+          "extent" => :extent,
+          "enacted_by" => :enacted_by,
+          "amending" => :amending,
+          "amended_by" => :amended_by,
+          "repeal_revoke" => :repeal_revoke
+        }
+
+        parse_opts =
+          case params["stages"] do
+            nil ->
+              [on_progress: send_progress]
+
+            stages_str when is_binary(stages_str) ->
+              stages =
+                stages_str
+                |> String.split(",")
+                |> Enum.map(&String.trim/1)
+                |> Enum.map(&Map.get(valid_stages_map, &1))
+                |> Enum.reject(&is_nil/1)
+
+              [on_progress: send_progress, stages: stages]
+          end
+
+        # Start the parser in a separate task
+        task = Task.async(fn -> StagedParser.parse(input, parse_opts) end)
+
+        # Event loop: receive parser events or send heartbeats on timeout
+        conn = sse_event_loop(conn, task, record.name)
+
+        conn
 
       {:error, reason} ->
         if not_found_error?(reason) do
@@ -364,141 +387,6 @@ defmodule SertantaiLegalWeb.UkLrtController do
           |> json(%{error: format_error(reason)})
         end
     end
-  end
-
-  # Parse comma-separated stages parameter into list of atoms
-  defp parse_stages_param(nil), do: nil
-  defp parse_stages_param(""), do: nil
-
-  defp parse_stages_param(stages_str) when is_binary(stages_str) do
-    valid_stages = ~w(metadata extent enacted_by amending amended_by repeal_revoke taxa)a
-
-    stages_str
-    |> String.split(",")
-    |> Enum.map(&String.trim/1)
-    |> Enum.map(&String.to_existing_atom/1)
-    |> Enum.filter(&(&1 in valid_stages))
-    |> case do
-      [] -> nil
-      stages -> stages
-    end
-  rescue
-    ArgumentError -> nil
-  end
-
-  # Compute diff between current and parsed data
-  defp compute_diff(current, parsed) do
-    parsed
-    |> Enum.filter(fn {key, parsed_value} ->
-      current_value = Map.get(current, key)
-      # Consider it changed if values differ (handling nil vs missing)
-      normalize_value(parsed_value) != normalize_value(current_value)
-    end)
-    |> Enum.map(fn {key, parsed_value} ->
-      {key, %{current: Map.get(current, key), parsed: parsed_value}}
-    end)
-    |> Map.new()
-  end
-
-  # Normalize values for comparison (treat empty lists/maps as nil-equivalent)
-  defp normalize_value(nil), do: nil
-  defp normalize_value([]), do: nil
-  defp normalize_value(%{} = map) when map_size(map) == 0, do: nil
-  defp normalize_value(value), do: value
-
-  # Build update attributes from parsed result
-  defp build_update_attrs(result) do
-    stages = result.stages
-
-    base_attrs = %{}
-
-    # Extent stage
-    base_attrs =
-      if stages[:extent][:status] == :ok and stages[:extent][:data] do
-        Map.merge(base_attrs, %{
-          geo_extent: stages[:extent][:data][:geo_extent],
-          geo_region: stages[:extent][:data][:geo_region],
-          geo_detail: stages[:extent][:data][:geo_detail]
-        })
-      else
-        base_attrs
-      end
-
-    # Enacted_by stage
-    base_attrs =
-      if stages[:enacted_by][:status] == :ok and stages[:enacted_by][:data] do
-        Map.merge(base_attrs, %{
-          enacted_by: stages[:enacted_by][:data][:enacted_by]
-        })
-      else
-        base_attrs
-      end
-
-    # Amendments stage
-    base_attrs =
-      if stages[:amendments][:status] == :ok and stages[:amendments][:data] do
-        Map.merge(base_attrs, %{
-          amending: stages[:amendments][:data][:amending],
-          amended_by: stages[:amendments][:data][:amended_by]
-        })
-      else
-        base_attrs
-      end
-
-    # Repeal/revoke stage
-    base_attrs =
-      if stages[:repeal_revoke][:status] == :ok and stages[:repeal_revoke][:data] do
-        Map.merge(base_attrs, %{
-          live: stages[:repeal_revoke][:data][:live],
-          live_description: stages[:repeal_revoke][:data][:live_description],
-          rescinding: stages[:repeal_revoke][:data][:rescinding],
-          rescinded_by: stages[:repeal_revoke][:data][:rescinded_by]
-        })
-      else
-        base_attrs
-      end
-
-    # Taxa stage
-    base_attrs =
-      if stages[:taxa][:status] == :ok and stages[:taxa][:data] do
-        Map.merge(base_attrs, %{
-          role: stages[:taxa][:data][:role],
-          role_gvt: stages[:taxa][:data][:role_gvt],
-          duty_type: list_to_jsonb_map(stages[:taxa][:data][:duty_type]),
-          duty_holder: stages[:taxa][:data][:duty_holder],
-          duty_holder_article_clause: stages[:taxa][:data][:duty_holder_article_clause],
-          rights_holder: stages[:taxa][:data][:rights_holder],
-          rights_holder_article_clause: stages[:taxa][:data][:rights_holder_article_clause],
-          responsibility_holder: stages[:taxa][:data][:responsibility_holder],
-          responsibility_holder_article_clause:
-            stages[:taxa][:data][:responsibility_holder_article_clause],
-          power_holder: stages[:taxa][:data][:power_holder],
-          power_holder_article_clause: stages[:taxa][:data][:power_holder_article_clause],
-          popimar: stages[:taxa][:data][:popimar],
-          # Phase 4 Issue #15: popimar_details replaces deprecated text columns
-          popimar_details: stages[:taxa][:data][:popimar_details]
-        })
-      else
-        base_attrs
-      end
-
-    # Filter out nil values - empty lists/maps should still update to clear stale data
-    base_attrs
-    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
-    |> Map.new()
-  end
-
-  # Format stages for JSON response
-  defp format_stages(stages) do
-    stages
-    |> Enum.map(fn {stage, result} ->
-      {stage,
-       %{
-         status: result.status,
-         error: result[:error]
-       }}
-    end)
-    |> Map.new()
   end
 
   # Private helpers
@@ -628,10 +516,157 @@ defmodule SertantaiLegalWeb.UkLrtController do
 
   defp not_found_error?(_), do: false
 
-  # Convert list to JSONB map format for DB storage
-  defp list_to_jsonb_map(nil), do: nil
-  defp list_to_jsonb_map([]), do: nil
-  defp list_to_jsonb_map(list) when is_list(list), do: %{"values" => list}
-  defp list_to_jsonb_map(%{"values" => _} = map), do: map
-  defp list_to_jsonb_map(_), do: nil
+  # SSE event loop - receives parser events or sends heartbeats on timeout
+  defp sse_event_loop(conn, task, name) do
+    receive do
+      {:sse_event, event} ->
+        # Forward parser event to client
+        data = encode_progress_event(event)
+
+        case chunk(conn, "data: #{data}\n\n") do
+          {:ok, conn} ->
+            sse_event_loop(conn, task, name)
+
+          {:error, _reason} ->
+            # Client disconnected, but let task finish
+            Task.await(task, :infinity)
+            conn
+        end
+
+      {ref, {:ok, result}} when is_reference(ref) ->
+        # Task completed successfully
+        Process.demonitor(ref, [:flush])
+        send_sse_parse_complete(conn, result, name)
+
+      {ref, {:error, reason}} when is_reference(ref) ->
+        # Task failed
+        Process.demonitor(ref, [:flush])
+
+        require Logger
+        Logger.error("[SSE] Parse task failed: #{inspect(reason)}")
+
+        conn
+
+      {:DOWN, _ref, :process, _pid, reason} ->
+        # Task crashed
+        require Logger
+        Logger.error("[SSE] Parse task crashed: #{inspect(reason)}")
+
+        conn
+    after
+      @sse_heartbeat_interval ->
+        # Send SSE comment as heartbeat (keeps connection alive)
+        case chunk(conn, ": heartbeat\n\n") do
+          {:ok, conn} ->
+            sse_event_loop(conn, task, name)
+
+          {:error, _reason} ->
+            require Logger
+            Logger.info("[SSE] Client disconnected during heartbeat")
+
+            Task.await(task, :infinity)
+            conn
+        end
+    end
+  end
+
+  # Send the final parse_complete event with duplicate check for diff display
+  defp send_sse_parse_complete(conn, result, name) do
+    alias SertantaiLegal.Scraper.ParsedLaw
+    alias SertantaiLegal.Scraper.IdField
+
+    unless result.cancelled do
+      comparison_map = ParsedLaw.to_comparison_map(result.law)
+      scraped_keys = Map.keys(comparison_map)
+
+      # Check for existing record to enable diff display
+      duplicate = check_duplicate_for_stream(name, scraped_keys)
+
+      final_event =
+        Jason.encode!(%{
+          event: "parse_complete",
+          has_errors: result.has_errors,
+          result: %{
+            name: name,
+            record: comparison_map,
+            stages: format_stages_for_stream(result.stages),
+            errors: result.errors,
+            has_errors: result.has_errors,
+            duplicate: duplicate
+          }
+        })
+
+      chunk(conn, "data: #{final_event}\n\n")
+    end
+
+    conn
+  end
+
+  # Encode progress events to JSON for SSE
+  defp encode_progress_event({:stage_start, stage, stage_num, total}) do
+    Jason.encode!(%{
+      event: "stage_start",
+      stage: stage,
+      stage_num: stage_num,
+      total: total
+    })
+  end
+
+  defp encode_progress_event({:stage_complete, stage, status, summary}) do
+    Jason.encode!(%{
+      event: "stage_complete",
+      stage: stage,
+      status: status,
+      summary: summary
+    })
+  end
+
+  defp encode_progress_event({:parse_complete, has_errors}) do
+    Jason.encode!(%{
+      event: "parse_done",
+      has_errors: has_errors
+    })
+  end
+
+  # Check for existing record in DB (for diff display in parse_stream)
+  defp check_duplicate_for_stream(name, _scraped_keys) do
+    alias SertantaiLegal.Scraper.IdField
+    alias SertantaiLegal.Scraper.ParsedLaw
+    require Ash.Query
+
+    db_name = IdField.normalize_to_db_name(name)
+
+    case UkLrt
+         |> Ash.Query.filter(name == ^db_name)
+         |> Ash.read() do
+      {:ok, [existing | _]} ->
+        %{
+          exists: true,
+          id: existing.id,
+          updated_at: existing.updated_at,
+          family: existing.family,
+          record:
+            existing
+            |> ParsedLaw.from_db_record()
+            |> ParsedLaw.to_comparison_map()
+        }
+
+      _ ->
+        %{exists: false}
+    end
+  end
+
+  # Format stages for SSE stream response (includes data field)
+  defp format_stages_for_stream(stages) do
+    stages
+    |> Enum.map(fn {stage, result} ->
+      {stage,
+       %{
+         status: result.status,
+         error: result.error,
+         data: result.data
+       }}
+    end)
+    |> Enum.into(%{})
+  end
 end

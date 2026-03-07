@@ -80,6 +80,7 @@ defmodule SertantaiLegalWeb.Router do
   scope "/api", SertantaiLegalWeb do
     pipe_through([:sse, :sse_authenticated])
     get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
+    get("/uk-lrt/:id/parse-stream", UkLrtController, :parse_stream)
   end
 
   # Tenant-scoped API endpoints (JWT auth from sertantai-auth)
@@ -90,7 +91,6 @@ defmodule SertantaiLegalWeb.Router do
     patch("/uk-lrt/:id", UkLrtController, :update)
     delete("/uk-lrt/:id", UkLrtController, :delete)
     post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
-    post("/uk-lrt/:id/parse-preview", UkLrtController, :parse_preview)
   end
 
   # Admin API endpoints (JWT auth + admin role)
@@ -101,6 +101,11 @@ defmodule SertantaiLegalWeb.Router do
     post("/scrape", ScrapeController, :create)
     get("/sessions", ScrapeController, :index)
     get("/family-options", ScrapeController, :family_options)
+
+    # Reparse session endpoints (must come before /sessions/:id to avoid capture)
+    post("/sessions/reparse/preview", ScrapeController, :reparse_preview)
+    post("/sessions/reparse", ScrapeController, :create_reparse)
+
     get("/sessions/:id", ScrapeController, :show)
     get("/sessions/:id/db-status", ScrapeController, :db_status)
     get("/sessions/:id/group/:group", ScrapeController, :group)

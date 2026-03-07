@@ -54,7 +54,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.TaxaParser
   alias SertantaiLegal.Legal.Taxa.MakingDetector
 
-  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by, :repeal_revoke, :taxa]
+  # Taxa stage removed — now handled by external Rust service over Zenoh P2P.
+  # MakingDetector still runs after metadata (stage 1) as a lightweight proxy.
+  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by, :repeal_revoke]
 
   # Live status codes (matching legl conventions)
   @live_in_force "✔ In force"
@@ -68,7 +70,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @telemetry_stage_complete [:staged_parser, :stage, :complete]
 
   @type stage ::
-          :metadata | :extent | :enacted_by | :amending | :amended_by | :repeal_revoke | :taxa
+          :metadata | :extent | :enacted_by | :amending | :amended_by | :repeal_revoke
   @type stage_result :: %{
           status: :ok | :error | :skipped,
           data: map() | nil,
@@ -409,11 +411,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         new_law
       end
 
-    # After taxa stage completes, log disagreements between pre-filter and taxa
-    if stage == :taxa and stage_result.status == :ok do
-      log_making_disagreement(new_law)
-    end
-
     %{
       result
       | stages: new_stages,
@@ -446,31 +443,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     fields = MakingDetector.to_parsed_law_fields(result)
 
     ParsedLaw.merge(law, fields)
-  end
-
-  defp log_making_disagreement(law) do
-    classification = law.making_classification
-    taxa_making = law.is_making
-
-    case {classification, taxa_making} do
-      # Pre-filter said not_making but taxa found Making — false negative (most important)
-      {"not_making", true} ->
-        Logger.warning(
-          "[MakingDisagreement] FALSE_NEGATIVE #{law.name}: " <>
-            "pre-filter=not_making (#{law.making_confidence}) but taxa=making"
-        )
-
-      # Pre-filter said making but taxa says not Making — false positive (less critical)
-      {"making", false} ->
-        Logger.info(
-          "[MakingDisagreement] FALSE_POSITIVE #{law.name}: " <>
-            "pre-filter=making (#{law.making_confidence}) but taxa=not_making"
-        )
-
-      # No pre-filter result or uncertain — nothing to compare
-      _ ->
-        :ok
-    end
   end
 
   # ============================================================================

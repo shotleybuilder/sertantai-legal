@@ -586,8 +586,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
             "enacted_by" => :enacted_by,
             "amending" => :amending,
             "amended_by" => :amended_by,
-            "repeal_revoke" => :repeal_revoke,
-            "taxa" => :taxa
+            "repeal_revoke" => :repeal_revoke
           }
 
           parse_opts =
@@ -845,6 +844,64 @@ defmodule SertantaiLegalWeb.ScrapeController do
     conn
     |> put_status(:bad_request)
     |> json(%{error: "Missing required parameter: name"})
+  end
+
+  @doc """
+  POST /api/sessions/reparse/preview
+
+  Preview a reparse session — returns the count of records matching the given filters.
+  Does not create a session.
+
+  ## Parameters
+  - family (required): Family classification, e.g. "💙 FIRE"
+  - family_ii (optional): Sub-family refinement
+  - type_code (optional): Instrument type, e.g. "uksi"
+  - function (optional): Function tag key, e.g. "Making"
+  """
+  def reparse_preview(conn, params) do
+    alias SertantaiLegal.Scraper.ReparseManager
+
+    case ReparseManager.preview(params) do
+      {:ok, result} ->
+        json(conn, result)
+
+      {:error, reason} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: format_error(reason)})
+    end
+  end
+
+  @doc """
+  POST /api/sessions/reparse
+
+  Create a reparse session from existing uk_lrt records filtered by family.
+  Returns the created session. Navigate to session detail page to review.
+
+  ## Parameters
+  Same as reparse_preview.
+  """
+  def create_reparse(conn, params) do
+    alias SertantaiLegal.Scraper.ReparseManager
+
+    case ReparseManager.create(params) do
+      {:ok, session} ->
+        json(conn, %{
+          session_id: session.session_id,
+          status: session.status,
+          group1_count: session.group1_count,
+          year: session.year,
+          month: session.month,
+          day_from: session.day_from,
+          day_to: session.day_to,
+          type_code: session.type_code
+        })
+
+      {:error, reason} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: format_error(reason)})
+    end
   end
 
   @doc """

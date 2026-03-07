@@ -135,8 +135,10 @@
 					if (refreshDebounceTimer) {
 						clearTimeout(refreshDebounceTimer);
 					}
-					refreshDebounceTimer = setTimeout(() => {
-						const newData = collection.toArray as UkLrtRecord[];
+					refreshDebounceTimer = setTimeout(async () => {
+						// Always get the latest collection reference in case it was recreated
+						const currentCollection = await getUkLrtCollection('is_making = true');
+						const newData = currentCollection.toArray as unknown as UkLrtRecord[];
 						console.log(`[LAT Queue] Collection refresh: ${newData.length} records`);
 						allRecords = newData;
 					}, 200);
@@ -289,6 +291,15 @@
 			meta: { group: 'Identification', dataType: 'text' }
 		},
 		{
+			id: 'year',
+			accessorKey: 'year',
+			header: 'Year',
+			cell: (info) => info.getValue() ?? '',
+			size: 80,
+			enableGrouping: true,
+			meta: { group: 'Identification', dataType: 'number' }
+		},
+		{
 			id: 'live',
 			accessorKey: 'live',
 			header: 'Status',
@@ -345,7 +356,7 @@
 
 	// ── View definitions ────────────────────────────────────────────
 
-	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
 
 	const viewGroups: ViewGroup[] = [
 		{ id: 'queue', name: 'Queue Views', order: 0 }
@@ -370,7 +381,7 @@
 				{ columnId: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
 			],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
-			grouping: ['family'],
+			grouping: ['family', 'year'],
 			isDefault: true
 		},
 		{
@@ -379,7 +390,7 @@
 			columns: allColumns,
 			filters: [{ columnId: 'queue_reason', operator: 'equals', value: 'missing' }],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
-			grouping: ['family']
+			grouping: ['family', 'year']
 		},
 		{
 			name: 'Stale LAT',
@@ -387,7 +398,7 @@
 			columns: allColumns,
 			filters: [{ columnId: 'queue_reason', operator: 'equals', value: 'stale' }],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
-			grouping: ['family']
+			grouping: ['family', 'year']
 		}
 	];
 
@@ -433,18 +444,22 @@
 			if (!existing) continue;
 
 			const expectedFilters = viewDef.filters || [];
+			const expectedGrouping = viewDef.grouping || [];
 			const currentFilters = existing.config.filters || [];
+			const currentGrouping = existing.config.grouping || [];
 			const filtersMatch = JSON.stringify(currentFilters) === JSON.stringify(expectedFilters);
 			const columnsMatch = JSON.stringify(existing.config.columns) === JSON.stringify(viewDef.columns);
+			const groupingMatch = JSON.stringify(currentGrouping) === JSON.stringify(expectedGrouping);
 
-			if (!filtersMatch || !columnsMatch) {
+			if (!filtersMatch || !columnsMatch || !groupingMatch) {
 				try {
 					await viewActions.update(existingId, {
 						config: {
 							...existing.config,
 							filters: expectedFilters,
 							columns: viewDef.columns,
-							columnOrder: viewDef.columns
+							columnOrder: viewDef.columns,
+							grouping: expectedGrouping
 						}
 					});
 				} catch (err) {
@@ -803,6 +818,8 @@
 						<span class="text-gray-900 whitespace-normal leading-snug">{row.title_en || ''}</span>
 					{:else if column === 'family'}
 						<span class="text-gray-700 whitespace-normal leading-snug">{row.family || ''}</span>
+					{:else if column === 'year'}
+						<span class="text-gray-700">{row.year ?? ''}</span>
 					{:else if column === 'live'}
 						{@const status = row.live}
 						<span
@@ -850,9 +867,14 @@
 <!-- LRT Refresh Modal (Parse & Review) -->
 {#if lrtModalRecord}
 	<ParseReviewModal
-		record={lrtModalRecord}
+		records={[{
+			name: lrtModalRecord.law_name,
+			Title_EN: lrtModalRecord.title_en,
+			type_code: lrtModalRecord.type_code,
+			Year: lrtModalRecord.year,
+			Number: ''
+		}]}
 		recordId={lrtModalRecordId}
-		autoReparse={true}
 		open={lrtModalOpen}
 		on:close={closeLrtRefresh}
 	/>

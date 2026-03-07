@@ -142,7 +142,7 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
 
     create :create do
       description("Create a new scrape session")
-      accept([:session_id, :year, :month, :day_from, :day_to, :type_code])
+      accept([:session_id, :year, :month, :day_from, :day_to, :type_code, :status, :group1_count])
     end
 
     update :update do

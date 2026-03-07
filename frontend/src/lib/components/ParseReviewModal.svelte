@@ -5,32 +5,26 @@
 		useConfirmRecordMutation,
 		useFamilyOptionsQuery
 	} from '$lib/query/scraper';
-	import type { ParseOneResult, ScrapeRecord, ParseStage, ParsePreviewResult } from '$lib/api/scraper';
-	import { parseOneStream, mapParseError, mapStageError, parsePreview, updateUkLrtRecord } from '$lib/api/scraper';
+	import type { ParseOneResult, ScrapeRecord, ParseStage } from '$lib/api/scraper';
+	import { parseOneStream, parseRecordStream, mapParseError, mapStageError, updateUkLrtRecord } from '$lib/api/scraper';
 	import RecordDiff from './RecordDiff.svelte';
 	import CollapsibleSection from './CollapsibleSection.svelte';
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
 	import { SECTION_CONFIG } from './parse-review/field-config';
 
-	// Display mode: 'create' (new law), 'update' (reparse with diff), 'read' (view DB record)
-	type DisplayMode = 'create' | 'update' | 'read';
+	// Display mode: 'create' (new law), 'update' (reparse with diff)
+	type DisplayMode = 'create' | 'update';
 
-	// Props for parse workflow (Create/Update modes)
+	// Props for parse workflow
 	export let sessionId: string = '';
 	export let records: ScrapeRecord[] = [];
 	export let initialIndex: number = 0;
 	export let open: boolean = false;
 	// Optional: limit which stages to run (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
 	export let stages: ParseStage[] | undefined = undefined;
-
-	// Props for Read mode (view existing DB record without parsing)
-	export let record: Record<string, unknown> | null = null;
-	// Optional: record ID for enabling reparse in Read mode
+	// Optional: record ID for sessionless reparse (existing DB record)
+	// When set and sessionId is empty, uses parseRecordStream instead of parseOneStream
 	export let recordId: string | undefined = undefined;
-	// Optional: force specific mode (otherwise auto-detected)
-	export let mode: DisplayMode | undefined = undefined;
-	// Optional: auto-trigger reparse when modal opens (for "Parse & Review" workflow)
-	export let autoReparse: boolean = false;
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -61,13 +55,6 @@
 	// Per-stage reparse state
 	let reparsingStage: ParseStage | null = null;
 
-	// Read mode reparse state - accumulated parsed data for preview before save
-	let readModeAccumulatedData: Record<string, unknown> | null = null;
-	let readModePreviewResult: ParsePreviewResult | null = null;
-	let readModeHasChanges = false;
-	let readModeSaving = false;
-	let readModeSaveError: string | null = null;
-
 	// Use plain object for better Svelte reactivity (Maps don't trigger updates reliably)
 	type StageStatus = {
 		status: 'pending' | 'running' | 'ok' | 'error' | 'skipped';
@@ -79,8 +66,7 @@
 		enacted_by: { status: 'pending', summary: null },
 		amending: { status: 'pending', summary: null },
 		amended_by: { status: 'pending', summary: null },
-		repeal_revoke: { status: 'pending', summary: null },
-		taxa: { status: 'pending', summary: null }
+		repeal_revoke: { status: 'pending', summary: null }
 	};
 
 	// All stages in order
@@ -90,8 +76,7 @@
 		'enacted_by',
 		'amending',
 		'amended_by',
-		'repeal_revoke',
-		'taxa'
+		'repeal_revoke'
 	];
 
 	// Human-readable stage names
@@ -101,8 +86,7 @@
 		enacted_by: 'Enacted By',
 		amending: 'Amending',
 		amended_by: 'Amended By',
-		repeal_revoke: 'Repeal/Revoke',
-		taxa: 'Taxa Classification'
+		repeal_revoke: 'Repeal/Revoke'
 	};
 
 	$: currentRecord = records[currentIndex];
@@ -110,29 +94,20 @@
 	$: isLast = currentIndex === records.length - 1;
 
 	// Derive effective display mode:
-	// 1. Explicit mode prop takes precedence
-	// 2. If record prop is set (no records array), it's Read mode
-	// 3. Otherwise, Create (no duplicate) or Update (has duplicate) based on parse result
-	$: effectiveMode = (mode
-		? mode
-		: record
-			? 'read'
-			: parseResult?.duplicate?.exists
-				? 'update'
-				: 'create') as DisplayMode;
+	// Create (no duplicate) or Update (has duplicate) based on parse result
+	$: effectiveMode = (parseResult?.duplicate?.exists
+		? 'update'
+		: 'create') as DisplayMode;
 
-	// For display: use record prop in Read mode, otherwise merge DB record with parsed changes
-	// In Read mode with accumulated changes, merge them for display
-	$: displayRecord = effectiveMode === 'read'
-		? (readModeAccumulatedData ? { ...record, ...readModeAccumulatedData } : record)
-		: parseResult?.record
-			? parseResult.duplicate?.exists && parseResult.duplicate?.record
-				? { ...parseResult.duplicate.record, ...parseResult.record }
-				: parseResult.record
-			: null;
+	// For display: merge DB record with parsed changes in Update mode
+	$: displayRecord = parseResult?.record
+		? parseResult.duplicate?.exists && parseResult.duplicate?.record
+			? { ...parseResult.duplicate.record, ...parseResult.record }
+			: parseResult.record
+		: null;
 
 	// In Update mode, collapse sections by default - diff is primary content
-	// In Create/Read modes, respect the config's defaultExpanded setting
+	// In Create mode, respect the config's defaultExpanded setting
 	function shouldExpand(configDefault: boolean | undefined): boolean {
 		if (effectiveMode === 'update') {
 			return false; // Collapse all sections in Update mode
@@ -144,15 +119,11 @@
 	let lastParsedName: string | null = null;
 	// Track names that failed to parse to prevent infinite retry loops
 	let failedNames: Set<string> = new Set();
-	// Track if auto-reparse has been triggered to prevent infinite loops
-	let autoReparseTriggered = false;
 
 	// Parse current record when index changes (only if not already parsed or failed)
 	// IMPORTANT: workflowComplete guard prevents reparse after final confirm
-	// Skip parsing entirely in Read mode (record prop provides the data)
 	$: if (
 		open &&
-		effectiveMode !== 'read' &&
 		!workflowComplete &&
 		currentRecord &&
 		currentRecord.name !== lastParsedName &&
@@ -160,25 +131,6 @@
 		!isParsing
 	) {
 		parseCurrentRecord();
-	}
-
-	// Auto-reparse when modal opens with autoReparse=true (for "Parse & Review" workflow)
-	// Only triggers once per modal open to prevent infinite loops
-	$: if (
-		open &&
-		autoReparse &&
-		effectiveMode === 'read' &&
-		recordId &&
-		!autoReparseTriggered &&
-		!reparsingStage
-	) {
-		autoReparseTriggered = true;
-		reparseAllReadMode();
-	}
-
-	// Reset auto-reparse trigger when modal closes
-	$: if (!open) {
-		autoReparseTriggered = false;
 	}
 
 	// Cleanup stream on component destroy
@@ -198,8 +150,7 @@
 			enacted_by: { status: activeStages.includes('enacted_by') ? 'pending' : 'skipped', summary: null },
 			amending: { status: activeStages.includes('amending') ? 'pending' : 'skipped', summary: null },
 			amended_by: { status: activeStages.includes('amended_by') ? 'pending' : 'skipped', summary: null },
-			repeal_revoke: { status: activeStages.includes('repeal_revoke') ? 'pending' : 'skipped', summary: null },
-			taxa: { status: activeStages.includes('taxa') ? 'pending' : 'skipped', summary: null }
+			repeal_revoke: { status: activeStages.includes('repeal_revoke') ? 'pending' : 'skipped', summary: null }
 		};
 	}
 
@@ -221,55 +172,64 @@
 		lastParsedName = currentRecord.name;
 		initStageProgress();
 
-		// Try streaming first, fall back to non-streaming on error
-		cleanupStream = parseOneStream(
-			sessionId,
-			currentRecord.name,
-			{
-				onStageStart: (stage, _stageNum, _total) => {
-					currentStage = stage;
-					// Use object spread to trigger Svelte reactivity
-					stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
-				},
-				onStageComplete: (stage, status, summary) => {
-					// Use object spread to trigger Svelte reactivity
-					stageProgress = { ...stageProgress, [stage]: { status, summary } };
-				},
-				onComplete: (result) => {
-					parseResult = result;
-					isParsing = false;
-					currentStage = null;
-					cleanupStream = null;
-					// API normalizes Family to lowercase family
-					selectedFamily = (result.record?.family as string) || '';
-					selectedSubFamily = (result.record?.family_ii as string) || '';
-				},
-				onError: async (error) => {
-					console.warn('SSE stream failed:', error);
-					cleanupStream = null;
-					isParsing = false;
-					currentStage = null;
-
-					// Don't automatically retry for heavy parses - let user decide
-					parseError = error instanceof Error ? error.message : 'Connection lost during parse';
-					// Don't add to failedNames - allow manual retry
-				}
+		// Shared callbacks for both session and sessionless streaming
+		const callbacks = {
+			onStageStart: (stage: ParseStage, _stageNum: number, _total: number) => {
+				currentStage = stage;
+				stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
 			},
-			stages // Pass optional stages filter (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
-		);
+			onStageComplete: (stage: ParseStage, status: 'ok' | 'error' | 'skipped', summary: string | null) => {
+				stageProgress = { ...stageProgress, [stage]: { status, summary } };
+			},
+			onComplete: (result: ParseOneResult) => {
+				parseResult = result;
+				isParsing = false;
+				currentStage = null;
+				cleanupStream = null;
+				// In update mode, initialize family from the DB record (duplicate),
+				// since the parser doesn't produce family/family_ii fields.
+				const familySource = result.duplicate?.exists ? result.duplicate.record : result.record;
+				selectedFamily = (familySource?.family as string) || '';
+				selectedSubFamily = (familySource?.family_ii as string) || '';
+			},
+			onError: async (error: Error | string) => {
+				console.warn('SSE stream failed:', error);
+				cleanupStream = null;
+				isParsing = false;
+				currentStage = null;
+				parseError = error instanceof Error ? error.message : 'Connection lost during parse';
+			}
+		};
+
+		// Use sessionless endpoint when recordId is set without a session
+		if (recordId && !sessionId) {
+			cleanupStream = parseRecordStream(recordId, callbacks, stages);
+		} else {
+			cleanupStream = parseOneStream(sessionId, currentRecord.name, callbacks, stages);
+		}
 	}
 
 	async function handleConfirm() {
 		if (!parseResult || !currentRecord || !parseResult.record) return;
 
 		try {
-			await $confirmMutation.mutateAsync({
-				sessionId,
-				name: currentRecord.name,
-				record: parseResult.record,
-				family: selectedFamily || undefined,
-				overrides: selectedSubFamily ? { family_ii: selectedSubFamily } : undefined
-			});
+			if (recordId && !sessionId) {
+				// Sessionless reparse: save directly via PATCH
+				await updateUkLrtRecord(recordId, {
+					...parseResult.record,
+					...(selectedFamily ? { family: selectedFamily } : {}),
+					...(selectedSubFamily ? { family_ii: selectedSubFamily } : {})
+				});
+			} else {
+				// Session-based: confirm via session endpoint
+				await $confirmMutation.mutateAsync({
+					sessionId,
+					name: currentRecord.name,
+					record: parseResult.record,
+					family: selectedFamily || undefined,
+					overrides: selectedSubFamily ? { family_ii: selectedSubFamily } : undefined
+				});
+			}
 			confirmedCount++;
 			moveNext();
 		} catch (error) {
@@ -610,171 +570,9 @@
 		);
 	}
 
-	// ============================================
-	// Read Mode Reparse Functions
-	// ============================================
-
-	// Reparse a single stage in Read mode (uses parse-preview endpoint)
-	async function reparseStageReadMode(stage: ParseStage) {
-		if (!recordId || reparsingStage) return;
-
-		reparsingStage = stage;
-		readModeSaveError = null;
-
-		// Reset progress for this stage
-		stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
-
-		try {
-			const result = await parsePreview(recordId, [stage]);
-
-			// Update stage progress
-			const stageResult = result.stages[stage];
-			stageProgress = {
-				...stageProgress,
-				[stage]: {
-					status: stageResult?.status === 'ok' ? 'ok' : 'error',
-					summary: stageResult?.error || null
-				}
-			};
-
-			// Merge parsed data into accumulated state
-			readModeAccumulatedData = {
-				...(readModeAccumulatedData || {}),
-				...result.parsed
-			};
-
-			// Store the preview result for diff display
-			readModePreviewResult = {
-				...result,
-				// Update diff to reflect all accumulated changes vs original
-				diff: computeAccumulatedDiff()
-			};
-
-			readModeHasChanges = Object.keys(readModePreviewResult.diff).length > 0;
-		} catch (error) {
-			console.error('Read mode reparse failed:', error);
-			stageProgress = {
-				...stageProgress,
-				[stage]: { status: 'error', summary: error instanceof Error ? error.message : 'Unknown error' }
-			};
-		} finally {
-			reparsingStage = null;
-		}
-	}
-
-	// Reparse all stages in Read mode
-	async function reparseAllReadMode() {
-		if (!recordId || reparsingStage) return;
-
-		reparsingStage = 'metadata'; // Use first stage as indicator
-		readModeSaveError = null;
-
-		// Set all stages to running
-		ALL_STAGES.forEach((stage) => {
-			stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
-		});
-
-		try {
-			const result = await parsePreview(recordId); // No stages = all stages
-
-			// Update all stage progress
-			ALL_STAGES.forEach((stage) => {
-				const stageResult = result.stages[stage];
-				stageProgress = {
-					...stageProgress,
-					[stage]: {
-						status: stageResult?.status === 'ok' ? 'ok' : stageResult?.status === 'error' ? 'error' : 'skipped',
-						summary: stageResult?.error || null
-					}
-				};
-			});
-
-			// Replace accumulated data with full fresh parse
-			readModeAccumulatedData = { ...result.parsed };
-			readModePreviewResult = result;
-			readModeHasChanges = Object.keys(result.diff).length > 0;
-		} catch (error) {
-			console.error('Read mode reparse all failed:', error);
-			ALL_STAGES.forEach((stage) => {
-				stageProgress = {
-					...stageProgress,
-					[stage]: { status: 'error', summary: error instanceof Error ? error.message : 'Unknown error' }
-				};
-			});
-		} finally {
-			reparsingStage = null;
-		}
-	}
-
-	// Compute diff between accumulated changes and original record
-	function computeAccumulatedDiff(): Record<string, { current: unknown; parsed: unknown }> {
-		if (!record || !readModeAccumulatedData) return {};
-
-		const diff: Record<string, { current: unknown; parsed: unknown }> = {};
-
-		for (const [key, parsedValue] of Object.entries(readModeAccumulatedData)) {
-			const currentValue = record[key];
-			// Normalize for comparison
-			const normalizedParsed = normalizeValue(parsedValue);
-			const normalizedCurrent = normalizeValue(currentValue);
-
-			if (JSON.stringify(normalizedParsed) !== JSON.stringify(normalizedCurrent)) {
-				diff[key] = { current: currentValue, parsed: parsedValue };
-			}
-		}
-
-		return diff;
-	}
-
-	// Helper to normalize values for comparison
-	function normalizeValue(value: unknown): unknown {
-		if (value === null || value === undefined) return null;
-		if (Array.isArray(value) && value.length === 0) return null;
-		if (typeof value === 'object' && Object.keys(value as object).length === 0) return null;
-		return value;
-	}
-
-	// Save accumulated changes to DB
-	async function saveReadModeChanges() {
-		if (!recordId || !readModeAccumulatedData || readModeSaving) return;
-
-		readModeSaving = true;
-		readModeSaveError = null;
-
-		try {
-			await updateUkLrtRecord(recordId, readModeAccumulatedData);
-
-			// Update the original record prop with saved data
-			// This will be reflected when modal is reopened
-			dispatch('close');
-		} catch (error) {
-			console.error('Failed to save changes:', error);
-			readModeSaveError = error instanceof Error ? error.message : 'Failed to save changes';
-		} finally {
-			readModeSaving = false;
-		}
-	}
-
-	// Discard accumulated changes
-	function discardReadModeChanges() {
-		readModeAccumulatedData = null;
-		readModePreviewResult = null;
-		readModeHasChanges = false;
-		readModeSaveError = null;
-
-		// Reset stage progress
-		ALL_STAGES.forEach((stage) => {
-			stageProgress = { ...stageProgress, [stage]: { status: 'pending', summary: null } };
-		});
-	}
-
-	// Determine which reparse function to use based on mode
+	// Reparse a single section stage
 	function handleSectionReparse(stage: ParseStage) {
-		if (effectiveMode === 'read' && recordId) {
-			reparseStageReadMode(stage);
-		} else {
-			reparseStage(stage);
-		}
+		reparseStage(stage);
 	}
 </script>
 
@@ -791,45 +589,18 @@
 			<div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
 				<div class="flex items-center space-x-3">
 					<h2 class="text-lg font-semibold text-gray-900">
-						{#if effectiveMode === 'read'}
-							View Record
-						{:else if effectiveMode === 'update'}
+						{#if effectiveMode === 'update'}
 							Update Record
 						{:else}
 							New Record
 						{/if}
 					</h2>
 					<span class="px-2 py-0.5 text-xs font-medium rounded-full {
-						effectiveMode === 'read'
-							? (readModeHasChanges ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600')
-							: effectiveMode === 'update' ? 'bg-amber-100 text-amber-700' :
+						effectiveMode === 'update' ? 'bg-amber-100 text-amber-700' :
 						'bg-green-100 text-green-700'
 					}">
-						{effectiveMode === 'read'
-							? (readModeHasChanges ? 'Unsaved Changes' : 'Read Only')
-							: effectiveMode === 'update' ? 'Update' : 'Create'}
+						{effectiveMode === 'update' ? 'Update' : 'Create'}
 					</span>
-					<!-- Reparse All button for Read mode -->
-					{#if effectiveMode === 'read' && recordId}
-						<button
-							on:click={reparseAllReadMode}
-							disabled={!!reparsingStage}
-							class="ml-2 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-						>
-							{#if reparsingStage}
-								<svg class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 text-blue-700" fill="none" viewBox="0 0 24 24">
-									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-								</svg>
-								Reparsing...
-							{:else}
-								<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-								</svg>
-								Reparse All
-							{/if}
-						</button>
-					{/if}
 				</div>
 				<button on:click={handleCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -912,7 +683,7 @@
 							Retry Parse
 						</button>
 					</div>
-				{:else if parseResult || effectiveMode === 'read'}
+				{:else if parseResult}
 					<!-- Show error banner if there was an error but parse succeeded -->
 					{#if parseError || $parseMutation.isError}
 						<div class="rounded-md bg-yellow-50 border border-yellow-200 p-4 mb-4">
@@ -935,7 +706,7 @@
 							</div>
 						</div>
 					{/if}
-					{@const recordName = effectiveMode === 'read' ? displayRecord?.name : parseResult?.name}
+					{@const recordName = parseResult?.name}
 					<!-- Title -->
 					<div class="mb-6">
 						<h3 class="text-xl font-medium text-gray-900">
@@ -957,7 +728,7 @@
 					{#if effectiveMode === 'update' && parseResult?.duplicate?.exists}
 						<!-- Compact Credentials Summary -->
 						<div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-							<div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+							<div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
 								<div>
 									<span class="text-gray-500">Name:</span>
 									<span class="ml-1 font-mono text-gray-900">{recordName}</span>
@@ -973,6 +744,18 @@
 								<div>
 									<span class="text-gray-500">Family:</span>
 									<span class="ml-1 text-gray-900">{getField(displayRecord, 'family') || 'Uncategorized'}</span>
+								</div>
+								<div>
+									<span class="text-gray-500">Making:</span>
+									{#if getField(displayRecord, 'making_classification') === 'making'}
+										<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700">Making</span>
+									{:else if getField(displayRecord, 'making_classification') === 'not_making'}
+										<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600">Not Making</span>
+									{:else if getField(displayRecord, 'making_classification') === 'uncertain'}
+										<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-700">Uncertain</span>
+									{:else}
+										<span class="ml-1 text-gray-400">-</span>
+									{/if}
 								</div>
 							</div>
 						</div>
@@ -1000,45 +783,8 @@
 						{/if}
 					{/if}
 
-					<!-- READ MODE: Show diff when there are accumulated changes -->
-					{#if effectiveMode === 'read' && readModeHasChanges && record && readModeAccumulatedData}
-						<!-- Changes Notice -->
-						<div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
-							<div class="flex items-start">
-								<svg class="h-5 w-5 text-blue-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
-								<div class="text-sm">
-									<span class="font-medium text-blue-800">Pending changes from reparse</span>
-									<span class="text-blue-700 ml-1">
-										— Review the diff below and save or discard changes
-									</span>
-								</div>
-							</div>
-						</div>
-
-						<!-- DIFF FOR READ MODE -->
-						{#if displayRecord}
-						<div class="mb-6">
-							<RecordDiff existing={record} incoming={displayRecord} />
-						</div>
-						{/if}
-
-						<!-- Save Error -->
-						{#if readModeSaveError}
-							<div class="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
-								<div class="flex items-start">
-									<svg class="h-5 w-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-									</svg>
-									<div class="text-sm text-red-700">{readModeSaveError}</div>
-								</div>
-							</div>
-						{/if}
-					{/if}
-
-					<!-- Parse Stages Status (hidden in Read mode) -->
-					{#if effectiveMode !== 'read' && parseResult}
+					<!-- Parse Stages Status -->
+					{#if parseResult}
 					<div class="mb-6 bg-gray-50 rounded-lg p-4">
 						<h4 class="text-sm font-medium text-gray-700 mb-3">Parse Stages</h4>
 						<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1142,7 +888,7 @@
 						<CollapsibleSection
 							title={stage1Config.title}
 							expanded={shouldExpand(stage1Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'metadata'}
 							on:reparse={() => handleSectionReparse('metadata')}
 						>
@@ -1154,7 +900,7 @@
 								>
 									{#each subsection.fields as field}
 										{@const fieldValue = getFieldValue(displayRecord, field)}
-										{#if field.editable && field.key === 'family' && effectiveMode !== 'read'}
+										{#if field.editable && field.key === 'family'}
 											<!-- Special: Family dropdown (editable in Create/Update modes) -->
 											<div class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0">
 												<span class="text-sm text-gray-500">
@@ -1190,7 +936,7 @@
 													{/if}
 												</div>
 											</div>
-										{:else if field.editable && field.key === 'family_ii' && effectiveMode !== 'read'}
+										{:else if field.editable && field.key === 'family_ii'}
 											<!-- Special: Sub-Family dropdown (editable in Create/Update modes) -->
 											<div class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0">
 												<span class="text-sm text-gray-500">
@@ -1241,7 +987,7 @@
 						<CollapsibleSection
 							title={stage2Config.title}
 							expanded={shouldExpand(stage2Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'extent'}
 							on:reparse={() => handleSectionReparse('extent')}
 						>
@@ -1260,7 +1006,7 @@
 						<CollapsibleSection
 							title={stage3Config.title}
 							expanded={shouldExpand(stage3Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'enacted_by'}
 							on:reparse={() => handleSectionReparse('enacted_by')}
 						>
@@ -1281,7 +1027,7 @@
 							expanded={shouldExpand(stage4Config.defaultExpanded)}
 							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'amending'}
 							on:reparse={() => handleSectionReparse('amending')}
 						>
@@ -1308,7 +1054,7 @@
 						<CollapsibleSection
 							title={stage5Config.title}
 							expanded={shouldExpand(stage5Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'amended_by'}
 							on:reparse={() => handleSectionReparse('amended_by')}
 						>
@@ -1336,7 +1082,7 @@
 						<CollapsibleSection
 							title={stage6Config.title}
 							expanded={shouldExpand(stage6Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'repeal_revoke'}
 							badge={hasLiveConflict ? 'Conflict' : ''}
 							badgeColor={hasLiveConflict ? 'amber' : 'gray'}
@@ -1364,7 +1110,7 @@
 						<CollapsibleSection
 							title={stage6Config.title}
 							expanded={shouldExpand(stage6Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
+							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'repeal_revoke'}
 							on:reparse={() => handleSectionReparse('repeal_revoke')}
 						>
@@ -1377,32 +1123,7 @@
 						</CollapsibleSection>
 					{/if}
 
-					<!-- STAGE 7 🦋 taxa -->
-					{@const stage7Config = SECTION_CONFIG.find(s => s.id === 'stage7_taxa')}
-					{#if stage7Config?.subsections}
-						<CollapsibleSection
-							title={stage7Config.title}
-							expanded={shouldExpand(stage7Config.defaultExpanded)}
-							showReparse={(effectiveMode !== 'read' && !!parseResult) || (effectiveMode === 'read' && !!recordId)}
-							isReparsing={reparsingStage === 'taxa'}
-							on:reparse={() => handleSectionReparse('taxa')}
-						>
-							{#each stage7Config.subsections as subsection}
-								<CollapsibleSection
-									title={subsection.title}
-									expanded={subsection.defaultExpanded}
-									level="subsection"
-								>
-									{#each subsection.fields as field}
-										{@const fieldValue = getFieldValue(displayRecord, field)}
-										{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
-											<FieldRow config={field} value={fieldValue} />
-										{/if}
-									{/each}
-								</CollapsibleSection>
-							{/each}
-						</CollapsibleSection>
-					{/if}
+
 
 					<!-- SECTION 8: CHANGE LOGS -->
 					{@const changeLogsConfig = SECTION_CONFIG.find(s => s.id === 'change_logs')}
@@ -1436,15 +1157,10 @@
 			<!-- Footer -->
 			<div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
 				<div class="text-sm text-gray-500">
-					{#if effectiveMode === 'read'}
-						{displayRecord?.name || 'Record'}
-					{:else}
-						Record {currentIndex + 1} of {records.length}
-					{/if}
+					Record {currentIndex + 1} of {records.length}
 				</div>
 				<div class="flex items-center space-x-3">
-					{#if effectiveMode !== 'read'}
-					<!-- Navigation (Create/Update modes only) -->
+					<!-- Navigation -->
 					<div class="flex space-x-2 mr-4">
 						<button
 							on:click={movePrev}
@@ -1467,39 +1183,12 @@
 							Next
 						</button>
 					</div>
-					{/if}
 					<button
 						on:click={handleCancel}
 						class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 					>
-						{effectiveMode === 'read' ? 'Close' : 'Cancel'}
+						Cancel
 					</button>
-					<!-- Read mode with changes: Discard and Save buttons -->
-					{#if effectiveMode === 'read' && readModeHasChanges}
-						<button
-							on:click={discardReadModeChanges}
-							disabled={readModeSaving}
-							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Discard Changes
-						</button>
-						<button
-							on:click={saveReadModeChanges}
-							disabled={readModeSaving}
-							class="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
-						>
-							{#if readModeSaving}
-								<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-								</svg>
-								Saving...
-							{:else}
-								Save Changes
-							{/if}
-						</button>
-					{/if}
-					{#if effectiveMode !== 'read'}
 					<button
 						on:click={handleSkip}
 						disabled={$parseMutation.isPending || $confirmMutation.isPending || isRetrying}
@@ -1547,7 +1236,6 @@
 							Confirm & Save
 						{/if}
 					</button>
-					{/if}
 				</div>
 			</div>
 		</div>
