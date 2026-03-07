@@ -141,6 +141,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   """
   @spec parse_record(map(), keyword()) :: {:ok, map()} | {:error, String.t()}
   def parse_record(record, opts \\ []) do
+    record = ensure_year_number(record)
     title = record[:Title_EN] || record["Title_EN"] || "Unknown"
     IO.puts("\nParsing: #{title}")
 
@@ -572,4 +573,38 @@ defmodule SertantaiLegal.Scraper.LawParser do
   end
 
   defp extract_names(_), do: nil
+
+  # Ensure a record has Year and Number keys.
+  # Extracts from the name field (e.g. "UK_uksi_2025_747") if missing.
+  defp ensure_year_number(record) do
+    has_year = not is_nil(record[:Year] || record["Year"])
+    has_number = not is_nil(record[:Number] || record["Number"])
+
+    if has_year and has_number do
+      record
+    else
+      name = to_string(record[:name] || record["name"] || "")
+
+      normalized =
+        name
+        |> String.replace("UK_", "")
+        |> String.replace("_", "/")
+
+      case String.split(normalized, "/") do
+        [_type_code, year_str, number] ->
+          case Integer.parse(year_str) do
+            {year, ""} ->
+              record
+              |> Map.put_new(:Year, year)
+              |> Map.put_new(:Number, number)
+
+            _ ->
+              record
+          end
+
+        _ ->
+          record
+      end
+    end
+  end
 end
