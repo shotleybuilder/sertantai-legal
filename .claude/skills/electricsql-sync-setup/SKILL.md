@@ -1,616 +1,237 @@
 # SKILL: ElectricSQL + TanStack DB Sync Setup
 
-**Purpose:** Set up real-time data sync between PostgreSQL and the browser using ElectricSQL with the official TanStack DB integration.
+**Purpose:** Set up real-time data sync between PostgreSQL and the browser using ElectricSQL with the official TanStack DB integration, proxied through the Phoenix backend.
 
-**Context:** ElectricSQL, TanStack DB, @tanstack/electric-db-collection, Svelte/SvelteKit
+**Context:** ElectricSQL 1.2+, TanStack DB 0.5+, @tanstack/electric-db-collection 0.2+, @electric-sql/client 1.5+, Svelte/SvelteKit, Phoenix backend proxy
 
 **When to Use:**
 - Setting up real-time sync for a new resource
-- Fixing sync issues (stuck status, browser crashes, data not loading)
-- Migrating from manual ShapeStream to the official pattern
+- Fixing sync issues (401s, 400s, MissingHeadersError, data not loading)
 - Adding server-side filtering to synced data
+- Configuring the backend proxy for Electric
 
 ---
 
 ## Core Principles
 
-### 1. Use `electricCollectionOptions` - The Official Pattern
+### 1. All Electric Requests Go Through the Backend Proxy
 
-The `@tanstack/electric-db-collection` package provides `electricCollectionOptions()` which is the **official, correct way** to connect ElectricSQL to TanStack DB.
+Never expose Electric directly to the browser. The Phoenix backend proxies all shape requests, injecting the `ELECTRIC_SECRET` server-side and validating auth via the Gatekeeper.
 
-**Key Understanding:**
-- It handles ShapeStream lifecycle internally
-- It batches updates efficiently (no browser crash)
-- It manages reactive state updates automatically
-- It tracks sync status (`isReady()`, `status`)
+```
+Browser → Phoenix proxy (/api/electric/v1/shape) → ElectricSQL (:3000)
+```
 
-### 2. Don't Manually Subscribe to ShapeStream
+### 2. Use `electricCollectionOptions` — The Official Pattern
 
-Manual ShapeStream subscription with `collection.insert()` is an anti-pattern that causes:
-- Browser crashes from excessive reactive updates
-- Memory exhaustion from unbatched operations
-- Sync status bugs from improper state management
+The `@tanstack/electric-db-collection` package provides `electricCollectionOptions()` which handles ShapeStream lifecycle, batched updates, and reactive state internally.
 
-### 3. PostgreSQL Generated Columns Cannot Be Synced
+### 3. Use `eager` Sync Mode (Not `progressive`)
 
-Electric cannot sync PostgreSQL generated columns. You must explicitly exclude them using the `columns` parameter.
+`progressive` maps to `on-demand` internally in TanStack DB. In on-demand mode, data is only loaded via `loadSubset`/`fetchSnapshot`, NOT via `collection.toArray`. Since pages use `collection.toArray` directly, progressive mode results in **no data**.
 
-### 4. Type Constraints for Electric
+Use `eager` mode with WHERE clauses to limit the dataset size.
 
-Electric's `Row<unknown>` type requires an index signature. Your record types must satisfy this constraint with `& Record<string, unknown>`.
+### 4. PostgreSQL Generated Columns Cannot Be Synced
+
+Electric returns 400 when trying to sync generated columns. Always pass an explicit `columns` array excluding them.
+
+### 5. Quote String Values in WHERE Clauses
+
+All comparison operators must quote string/date values: `field >= '2024-01-01'` not `field >= 2024-01-01`. Unquoted date values cause Electric 400 errors.
+
+---
+
+## Architecture: Proxy Pattern
+
+### Why a Proxy?
+
+1. **Security**: `ELECTRIC_SECRET` stays server-side, never sent to browser
+2. **Auth**: Gatekeeper validates JWT and injects org-scoped WHERE clauses
+3. **Public tables**: Some tables (reference data) bypass auth entirely
+4. **CORS**: Proxy controls headers so browser JS can read Electric protocol headers
+
+### Proxy Flow
+
+```
+Public tables (uk_lrt, lat, amendment_annotations):
+  Browser → Phoenix proxy → Electric (no auth needed)
+
+Org-scoped tables (organization_locations, etc.):
+  Browser → Phoenix proxy → Gatekeeper (validates JWT, injects org WHERE) → Electric
+```
+
+### Backend Proxy Controller
+
+See `backend/lib/sertantai_legal_web/controllers/electric_proxy_controller.ex`
+
+Key responsibilities:
+- Route public tables directly to Electric (bypass Gatekeeper)
+- Route auth-required tables through Gatekeeper validation
+- Forward handle-based requests directly (already validated)
+- Inject `ELECTRIC_SECRET` on all requests
+- Forward `electric-*` response headers for client protocol
+- Strip `content-encoding` and `content-length` (Req decompresses but leaves stale headers)
+- Set `cache-control: no-store` (prevents browser caching without CORS headers)
+- Set `Vary: Authorization` for per-user cache isolation
+- Expose `electric-*` headers via `Access-Control-Expose-Headers`
+
+### CORS Configuration (endpoint.ex)
+
+The Corsica plug must expose Electric headers so browser JS can read them:
+
+```elixir
+plug(Corsica,
+  origins: [...],
+  allow_credentials: true,
+  allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allow_headers: ["content-type", "authorization"],
+  expose_headers: [
+    "electric-cursor", "electric-handle", "electric-offset",
+    "electric-schema", "electric-up-to-date", "electric-internal-known-error"
+  ],
+  max_age: 600
+)
+```
+
+### Adding a New Table to the Proxy
+
+In `electric_proxy_controller.ex`:
+
+```elixir
+# For public reference data (no auth):
+@public_tables ~w(uk_lrt lat amendment_annotations your_new_table)
+
+# For all tables (including shape DELETE recovery):
+@allowed_tables ~w(uk_lrt organization_locations ... your_new_table)
+```
 
 ---
 
 ## Common Pitfalls & Solutions
 
-### ❌ Pitfall 1: Manual ShapeStream + collection.insert()
+### ❌ Pitfall 1: Using `progressive` Sync Mode
 
 **Why it fails:**
-Each `insert()` call triggers reactive updates and storage writes. With thousands of records, this crashes the browser.
+`progressive` maps to `on-demand` internally. In on-demand mode:
+- ShapeStream uses `log=changes_only` and `offset=now`
+- Data is ONLY loaded via `loadSubset` → `fetchSnapshot`/`requestSnapshot`
+- `loadSubset` is triggered by live queries, NOT by `collection.toArray`
+- Pages use `collection.toArray` directly → data never loads
 
-```typescript
-// WRONG - Manual ShapeStream subscription
-const stream = new ShapeStream({
-  url: `${ELECTRIC_URL}/v1/shape`,
-  params: { table: 'my_table' }
-});
-
-stream.subscribe((messages) => {
-  messages.forEach((msg) => {
-    if (msg.headers?.operation === 'insert') {
-      collection.insert(msg.value);  // 💥 Triggers reactive update for EACH record
-    }
-  });
-});
-```
-
-**✅ Correct Pattern:**
-```typescript
-import { createCollection } from '@tanstack/db';
-import { electricCollectionOptions } from '@tanstack/electric-db-collection';
-
-const collection = createCollection(
-  electricCollectionOptions<MyRecord>({
-    id: 'my-collection',
-    shapeOptions: {
-      url: `${ELECTRIC_URL}/v1/shape`,
-      params: { table: 'my_table' }
-    },
-    getKey: (item) => item.id
-  })
-);
-```
-
-### ❌ Pitfall 2: Syncing PostgreSQL Generated Columns
-
-**Why it fails:**
-Electric returns HTTP 400 error when trying to sync generated columns.
-
-```
-FetchError: HTTP Error 400: Bad Request
-// Error: Cannot sync generated column "my_computed_field"
-```
-
-**✅ Correct Pattern:**
-Explicitly list columns, excluding generated ones:
-
-```typescript
-const COLUMNS = [
-  'id',
-  'name',
-  'title',
-  'created_at',
-  // Do NOT include generated columns like 'computed_url', 'full_name', etc.
-].join(',');
-
-const collection = createCollection(
-  electricCollectionOptions<MyRecord>({
-    id: 'my-collection',
-    shapeOptions: {
-      url: `${ELECTRIC_URL}/v1/shape`,
-      params: {
-        table: 'my_table',
-        columns: COLUMNS  // Explicit whitelist
-      }
-    },
-    getKey: (item) => item.id
-  })
-);
-```
-
-### ❌ Pitfall 3: TypeScript Type Doesn't Satisfy Row<unknown>
-
-**Why it fails:**
-Electric requires types with index signatures. Interface types without `[key: string]: unknown` fail.
-
-```typescript
-// WRONG - No index signature
-interface MyRecord {
-  id: string;
-  name: string;
-}
-
-// Error: Type 'MyRecord' does not satisfy the constraint 'Row<unknown>'.
-// Index signature for type 'string' is missing in type 'MyRecord'.
-```
-
-**✅ Correct Pattern:**
-Add index signature to your type:
-
-```typescript
-// Define base type
-interface MyRecord {
-  id: string;
-  name: string;
-}
-
-// Create Electric-compatible type with index signature
-type ElectricMyRecord = MyRecord & Record<string, unknown>;
-
-// Use Electric-compatible type with electricCollectionOptions
-const collection = createCollection(
-  electricCollectionOptions<ElectricMyRecord>({
-    id: 'my-collection',
-    shapeOptions: { ... },
-    getKey: (item) => item.id as string
-  })
-);
-```
-
-### ❌ Pitfall 4: Using state.isReady Instead of isReady()
-
-**Why it fails:**
-`state.isReady` doesn't exist on TanStack DB collections. The correct API is `collection.isReady()` method.
-
-```typescript
-// WRONG
-const isReady = collection.state.isReady;  // Property 'isReady' does not exist
-
-// CORRECT
-const isReady = collection.isReady();  // Method call
-```
-
-### ❌ Pitfall 5: Sync Status Stuck on "Syncing"
-
-**Why it fails:**
-Only checking for data messages, not handling `up-to-date` control message.
-
-**✅ Correct Pattern:**
-Use `collection.isReady()` or subscribe to changes:
-
-```typescript
-const checkSyncStatus = () => {
-  const isReady = collection.isReady();
-  const recordCount = collection.size;
-  
-  syncStatus.update((s) => ({
-    ...s,
-    connected: true,
-    syncing: !isReady,
-    recordCount,
-    lastSyncTime: isReady ? new Date() : s.lastSyncTime
-  }));
-};
-
-// Subscribe to collection changes
-collection.subscribeChanges(() => {
-  checkSyncStatus();
-});
-```
-
-### ❌ Pitfall 6: Browser Crash with Large Datasets (Even with electricCollectionOptions)
-
-**Why it fails:**
-Even with the official `electricCollectionOptions`, large datasets (500+ records) can crash the browser due to:
-- Default `eager` sync mode loading everything at once
-- Excessive reactive updates from `subscribeChanges`
-- UI re-renders on every collection change
-
-**✅ Correct Pattern:**
-Use `progressive` sync mode + debounced updates:
+**✅ Fix:** Use `eager` mode with WHERE clause to limit dataset:
 
 ```typescript
 const collection = createCollection(
   electricCollectionOptions<ElectricMyRecord>({
     id: 'my-collection',
-    syncMode: 'progressive',  // 👈 Key: Use progressive for large datasets
+    syncMode: 'eager',  // NOT progressive
     shapeOptions: {
       url: `${ELECTRIC_URL}/v1/shape`,
+      fetchClient: electricFetchClient,  // Injects auth headers
       params: {
         table: 'my_table',
-        where: whereClause,
-        columns: COLUMNS
+        where: 'year >= 2024',  // Limit dataset size
+        columns: MY_COLUMNS     // String array, not comma-joined
       }
     },
     getKey: (item) => item.id as string
   })
 );
-
-// Debounce sync status updates to prevent UI thrashing
-let statusDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-const checkSyncStatus = () => {
-  if (statusDebounceTimer) clearTimeout(statusDebounceTimer);
-  statusDebounceTimer = setTimeout(() => {
-    syncStatus.update((s) => ({
-      ...s,
-      connected: true,
-      syncing: !collection.isReady(),
-      recordCount: collection.size
-    }));
-  }, 100);  // 100ms debounce
-};
 ```
 
-**Sync Mode Options:**
-| Mode | Behavior | Use When |
-|------|----------|----------|
-| `eager` (default) | Downloads all data before ready | Small datasets (<100 records) |
-| `progressive` | Incremental snapshots, ready after full sync | Large datasets (100-10k records) |
-| `on-demand` | Syncs when queried, ready after first snapshot | Very large datasets, paginated views |
+### ❌ Pitfall 2: MissingHeadersError
 
-### ❌ Pitfall 7: Double Subscription Causing Excessive Updates
+**Why it fails:** Multiple possible causes:
+1. Corsica plug doesn't expose `electric-*` headers → browser JS can't read them
+2. Proxy doesn't set `Access-Control-Expose-Headers`
+3. Browser caches a proxied response → cached response lacks CORS headers
+4. Proxy forwards stale `content-encoding`/`content-length` → browser can't decode body
+
+**✅ Fix:** Ensure proxy follows the official Electric proxy pattern:
+
+```elixir
+defp forward_electric_headers(conn, %Req.Response{headers: headers}) do
+  # Headers to skip — replaced or invalid after decompression
+  skip = MapSet.new(~w(cache-control content-encoding content-length transfer-encoding))
+
+  conn =
+    Enum.reduce(headers, conn, fn {key, values}, conn ->
+      if key in skip do
+        conn
+      else
+        if String.starts_with?(key, "electric-") or key in ~w(etag x-request-id) do
+          case values do
+            [val | _] -> put_resp_header(conn, key, val)
+            _ -> conn
+          end
+        else
+          conn
+        end
+      end
+    end)
+
+  conn
+  |> put_resp_header("cache-control", "no-store")
+  |> put_resp_header("vary", "Authorization")
+  |> put_resp_header(
+    "access-control-expose-headers",
+    "electric-cursor,electric-handle,electric-offset,electric-schema,electric-up-to-date,electric-internal-known-error"
+  )
+end
+```
+
+### ❌ Pitfall 3: Unquoted String Values in WHERE Clauses
 
 **Why it fails:**
-Subscribing to BOTH `collection.subscribeChanges()` AND `syncStatus` causes double refreshes on every change.
+`latest_amend_date >= 2024-01-01` is invalid SQL. Electric returns 400.
+
+**✅ Fix:** Quote string values in all comparison operators:
 
 ```typescript
-// WRONG - Double subscription
-collection.subscribeChanges(() => refreshData());  // Fires on every change
-syncStatus.subscribe((status) => {
-  if (status.connected) refreshData();  // Also fires on every change!
-});
+case 'greater_or_equal':
+  return typeof value === 'string'
+    ? `${field} >= '${escapeValue(String(value))}'`
+    : `${field} >= ${value}`;
 ```
 
-**✅ Correct Pattern:**
-Subscribe to `syncStatus` only - it's already debounced:
+Apply this pattern to: `greater_than`, `less_than`, `greater_or_equal`, `less_or_equal`.
+
+Note: `is_before`/`is_after` operators already quote correctly by design.
+
+### ❌ Pitfall 4: Double Collection Creation on Page Load
+
+**Why it fails:**
+`lastWhereClause` initialized with a different format than what `buildWhereFromFilters` produces. Example:
+- Init: `"md_date" > '2026-03-01'` (quoted column name)
+- `buildWhereFromFilters`: `md_date > '2026-03-01'` (unquoted)
+- They don't match → collection recreated immediately → two rapid requests → second hits browser cache → MissingHeadersError
+
+**✅ Fix:** Initialize `lastWhereClause` to match `buildWhereFromFilters` output format:
 
 ```typescript
-// Only subscribe to syncStatus for UI updates
-const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-  if (status.connected) {
-    refreshData();
-    if (!status.syncing) {
-      isLoading = false;
-    }
-  }
-});
+// WRONG — quoted column name
+let lastWhereClause = `"md_date" > '${thisMonthStart}'`;
+
+// CORRECT — matches buildWhereFromFilters output
+let lastWhereClause = `md_date > '${thisMonthStart}'`;
 ```
 
----
+### ❌ Pitfall 5: Syncing PostgreSQL Generated Columns
 
-## Working Patterns
+**Why it fails:**
+Electric returns 400 when trying to sync generated columns.
 
-### Pattern 1: Complete Collection Setup with Electric
-
-**File: `src/lib/db/index.client.ts`**
+**✅ Fix:** Pass `columns` as a string array excluding generated columns:
 
 ```typescript
-import { browser } from '$app/environment';
-import type { Collection } from '@tanstack/db';
-import { writable } from 'svelte/store';
-import type { MyRecord } from '$lib/types/my-record';
-
-// Re-export for external use
-export type { MyRecord } from '$lib/types/my-record';
-
-// Type that satisfies Electric's Row constraint
-type ElectricMyRecord = MyRecord & Record<string, unknown>;
-
-const ELECTRIC_URL = import.meta.env.VITE_ELECTRIC_URL || 'http://localhost:3002';
-
-/**
- * Columns to sync - excludes PostgreSQL generated columns
- */
-const COLUMNS = [
-  'id',
-  'name',
-  'title',
-  'description',
-  'status',
-  'created_at',
-  'updated_at'
-].join(',');
-
-// Collection singleton
-let collection: Collection<ElectricMyRecord, string> | null = null;
-let currentWhereClause: string = '';
-
-// Sync status store
-export interface SyncStatus {
-  connected: boolean;
-  syncing: boolean;
-  offline: boolean;
-  recordCount: number;
-  lastSyncTime: Date | null;
-  error: string | null;
-  whereClause: string;
-}
-
-export const syncStatus = writable<SyncStatus>({
-  connected: false,
-  syncing: true,
-  offline: false,
-  recordCount: 0,
-  lastSyncTime: null,
-  error: null,
-  whereClause: ''
-});
-
-/**
- * Get default WHERE clause
- */
-function getDefaultWhere(): string {
-  const currentYear = new Date().getFullYear();
-  return `year >= ${currentYear - 2}`;
-}
-
-/**
- * Create collection with Electric sync
- */
-async function createMyCollection(
-  whereClause: string
-): Promise<Collection<ElectricMyRecord, string>> {
-  const { createCollection } = await import('@tanstack/db');
-  const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
-
-  currentWhereClause = whereClause;
-
-  syncStatus.update((s) => ({
-    ...s,
-    syncing: true,
-    whereClause,
-    error: null
-  }));
-
-  const col = createCollection(
-    electricCollectionOptions<ElectricMyRecord>({
-      id: 'my-collection',
-      syncMode: 'progressive',  // Use progressive for large datasets (500+ records)
-      shapeOptions: {
-        url: `${ELECTRIC_URL}/v1/shape`,
-        params: {
-          table: 'my_table',
-          where: whereClause,
-          columns: COLUMNS
-        }
-      },
-      getKey: (item) => item.id as string
-    })
-  );
-
-  // Monitor sync status (debounced to prevent excessive updates)
-  let statusDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  const checkSyncStatus = () => {
-    if (statusDebounceTimer) clearTimeout(statusDebounceTimer);
-    statusDebounceTimer = setTimeout(() => {
-      const isReady = col.isReady();
-      const recordCount = col.size;
-
-      syncStatus.update((s) => ({
-        ...s,
-        connected: true,
-        syncing: !isReady,
-        recordCount,
-        lastSyncTime: isReady ? new Date() : s.lastSyncTime
-      }));
-    }, 100);  // 100ms debounce
-  };
-
-  // Subscribe to collection changes
-  col.subscribeChanges(() => {
-    checkSyncStatus();
-  });
-
-  // Initial status (immediate)
-  syncStatus.update((s) => ({
-    ...s,
-    connected: true,
-    syncing: true,
-    recordCount: col.size
-  }));
-
-  console.log(`[TanStack DB] Collection initialized with WHERE: ${whereClause}`);
-
-  return col;
-}
-
-/**
- * Get collection (creates on first call)
- */
-export async function getMyCollection(
-  whereClause?: string
-): Promise<Collection<ElectricMyRecord, string>> {
-  if (!browser) {
-    throw new Error('Collections can only be used in the browser');
-  }
-
-  const where = whereClause || getDefaultWhere();
-
-  // Return existing if WHERE unchanged
-  if (collection && currentWhereClause === where) {
-    return collection;
-  }
-
-  // Create new collection
-  collection = await createMyCollection(where);
-  return collection;
-}
-
-/**
- * Update WHERE clause (recreates collection)
- */
-export async function updateMyWhere(whereClause: string): Promise<void> {
-  if (!browser) return;
-  collection = await createMyCollection(whereClause);
-}
-
-/**
- * Build WHERE clause from filter conditions
- */
-export function buildWhereFromFilters(
-  filters: Array<{ field: string; operator: string; value: unknown }>
-): string {
-  if (!filters || filters.length === 0) {
-    return getDefaultWhere();
-  }
-
-  const escapeValue = (value: string): string => value.replace(/'/g, "''");
-
-  const clauses = filters
-    .map((filter) => {
-      const { field, operator, value } = filter;
-
-      switch (operator) {
-        case 'equals':
-          return typeof value === 'string'
-            ? `${field} = '${escapeValue(String(value))}'`
-            : `${field} = ${value}`;
-        case 'contains':
-          return `${field} ILIKE '%${escapeValue(String(value))}%'`;
-        case 'greater_or_equal':
-          return `${field} >= ${value}`;
-        case 'less_or_equal':
-          return `${field} <= ${value}`;
-        default:
-          return null;
-      }
-    })
-    .filter(Boolean);
-
-  return clauses.length > 0 ? clauses.join(' AND ') : getDefaultWhere();
-}
+const COLUMNS: string[] = [
+  'id', 'name', 'title', 'year', 'created_at', 'updated_at'
+  // Do NOT include generated columns like 'computed_url', 'number_int'
+];
 ```
 
-### Pattern 2: Svelte Page Integration
-
-```svelte
-<script lang="ts">
-  import { browser } from '$app/environment';
-  import { onMount, onDestroy } from 'svelte';
-  import {
-    getMyCollection,
-    updateMyWhere,
-    buildWhereFromFilters,
-    syncStatus
-  } from '$lib/db/index.client';
-  import type { MyRecord } from '$lib/db/index.client';
-
-  let data: MyRecord[] = [];
-  let isLoading = true;
-  let error: string | null = null;
-  let collectionSubscription: { unsubscribe: () => void } | null = null;
-
-  async function initSync() {
-    try {
-      error = null;
-      isLoading = true;
-
-      // Get collection (creates Electric-synced collection)
-      const collection = await getMyCollection();
-
-      // Debounced refresh to prevent excessive UI updates
-      let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-      const refreshData = () => {
-        if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
-        refreshDebounceTimer = setTimeout(() => {
-          const newData = collection.toArray as MyRecord[];
-          data = newData;
-          if (newData.length > 0) {
-            isLoading = false;
-          }
-        }, 200);  // 200ms debounce
-      };
-
-      // Only subscribe to syncStatus - it's already debounced
-      // Don't also subscribe to collection.subscribeChanges() (causes double updates)
-      const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-        if (status.connected) {
-          refreshData();
-          if (!status.syncing) {
-            isLoading = false;
-          }
-        }
-        if (status.error) {
-          error = status.error;
-          isLoading = false;
-        }
-      });
-
-      // Store cleanup
-      collectionSubscription = {
-        unsubscribe: () => {
-          unsubscribeSyncStatus();
-          if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
-        }
-      };
-
-      // Initial data load (immediate, no debounce)
-      const initialData = collection.toArray as MyRecord[];
-      if (initialData.length > 0) {
-        data = initialData;
-        isLoading = false;
-      }
-
-    } catch (e) {
-      console.error('Failed to initialize sync:', e);
-      error = e instanceof Error ? e.message : 'Failed to initialize';
-      isLoading = false;
-    }
-  }
-
-  function handleFilterChange(filters: Array<{ field: string; operator: string; value: unknown }>) {
-    const newWhere = buildWhereFromFilters(filters);
-    updateMyWhere(newWhere);
-  }
-
-  onMount(() => {
-    if (browser) {
-      initSync();
-    }
-  });
-
-  onDestroy(() => {
-    collectionSubscription?.unsubscribe();
-  });
-</script>
-
-{#if isLoading}
-  <div class="loading">
-    <span class="spinner"></span>
-    <p>Loading data...</p>
-  </div>
-{:else if error}
-  <div class="error">
-    <p>Error: {error}</p>
-    <button on:click={initSync}>Retry</button>
-  </div>
-{:else}
-  <!-- Sync Status Indicator -->
-  <div class="sync-status">
-    {#if $syncStatus.syncing}
-      <span class="status syncing">Syncing...</span>
-    {:else if $syncStatus.connected}
-      <span class="status connected">Connected ({$syncStatus.recordCount} records)</span>
-    {:else if $syncStatus.offline}
-      <span class="status offline">Offline</span>
-    {:else}
-      <span class="status disconnected">Disconnected</span>
-    {/if}
-  </div>
-
-  <!-- Data Display -->
-  <ul>
-    {#each data as item (item.id)}
-      <li>{item.name}</li>
-    {/each}
-  </ul>
-{/if}
-```
-
-### Pattern 3: Finding Generated Columns to Exclude
-
-Run this SQL to find generated columns in your table:
-
+Find generated columns with:
 ```sql
 SELECT column_name, generation_expression
 FROM information_schema.columns
@@ -618,34 +239,286 @@ WHERE table_name = 'my_table'
   AND generation_expression IS NOT NULL;
 ```
 
-Or in Elixir:
+### ❌ Pitfall 6: No Auth Token on Electric Requests
 
-```elixir
-# Via Ecto
-query = """
-SELECT column_name, generation_expression
-FROM information_schema.columns
-WHERE table_name = 'my_table'
-  AND generation_expression IS NOT NULL
-"""
-Ecto.Adapters.SQL.query!(MyApp.Repo, query)
+**Why it fails:**
+Electric shape requests need JWT for org-scoped tables. Without `fetchClient`, no `Authorization` header is sent.
+
+**✅ Fix:** Use `electricFetchClient` which injects the JWT:
+
+```typescript
+// frontend/src/lib/electric/fetch-client.ts
+import { getAuthToken } from '$lib/stores/auth';
+
+export function createElectricFetchClient(
+  fetchFn: typeof fetch = fetch
+): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
+  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const token = getAuthToken();
+    const headers = new Headers(init?.headers);
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return fetchFn(input, { ...init, headers });
+  };
+}
+
+export const electricFetchClient = createElectricFetchClient();
+```
+
+Then pass it to shape options:
+```typescript
+shapeOptions: {
+  url: `${ELECTRIC_URL}/v1/shape`,
+  fetchClient: electricFetchClient,  // ← Injects JWT
+  params: { ... }
+}
+```
+
+### ❌ Pitfall 7: Shape Recovery After Electric Restart
+
+**Why it fails:**
+After Electric restarts, restored shapes can have broken offsets (`offset out of bounds`, 400). The Electric client retains internal offset/handle state across retries, so `return {}` from `onError` doesn't help.
+
+**✅ Fix:** Destroy and recreate the collection:
+
+```typescript
+shapeOptions: {
+  // ...
+  onError: async (error: unknown) => {
+    const status = error instanceof Error && 'status' in error
+      ? (error as { status: number }).status : null;
+
+    if (status === 400) {
+      const now = Date.now();
+      if (now - shapeResetAttemptedAt < 30_000) {
+        console.error('Shape recovery already attempted recently');
+        return;
+      }
+      shapeResetAttemptedAt = now;
+
+      // Try to delete the broken shape
+      try {
+        await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=my_table`, {
+          method: 'DELETE'
+        });
+      } catch { /* DELETE may not be available */ }
+
+      // Recreate after delay (new ShapeStream with offset=-1)
+      setTimeout(async () => {
+        myCollection = null;
+        myCollection = await createMyCollection(currentWhereClause);
+      }, 1500);
+      return;
+    }
+  }
+}
+```
+
+### ❌ Pitfall 8: TypeScript Type Doesn't Satisfy Row<unknown>
+
+```typescript
+// WRONG — No index signature
+interface MyRecord { id: string; name: string; }
+
+// CORRECT — Add index signature
+type ElectricMyRecord = MyRecord & Record<string, unknown>;
 ```
 
 ---
 
-## Backend Setup (PostgreSQL + Electric)
+## Working Pattern: Complete Collection Setup
 
-### Required Migration Setup
+### File: `src/lib/db/index.client.ts`
+
+```typescript
+import { browser } from '$app/environment';
+import type { Collection } from '@tanstack/db';
+import { writable } from 'svelte/store';
+import type { MyRecord } from '$lib/types/my-record';
+import { electricFetchClient } from '$lib/electric/fetch-client';
+import { ELECTRIC_URL } from '$lib/electric/client';
+
+type ElectricMyRecord = MyRecord & Record<string, unknown>;
+
+// Columns to sync — excludes generated columns
+const MY_COLUMNS: string[] = ['id', 'name', 'title', 'status', 'created_at', 'updated_at'];
+
+let myCol: Collection<ElectricMyRecord, string> | null = null;
+let currentWhereClause = '';
+let shapeResetAttemptedAt = 0;
+
+export interface SyncStatus {
+  connected: boolean;
+  syncing: boolean;
+  recordCount: number;
+  lastSyncTime: Date | null;
+  error: string | null;
+}
+
+export const syncStatus = writable<SyncStatus>({
+  connected: false, syncing: true, recordCount: 0,
+  lastSyncTime: null, error: null
+});
+
+function getDefaultWhere(): string {
+  return `year >= ${new Date().getFullYear() - 2}`;
+}
+
+async function createMyCollection(
+  whereClause: string
+): Promise<Collection<ElectricMyRecord, string>> {
+  const { createCollection } = await import('@tanstack/db');
+  const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+  currentWhereClause = whereClause;
+  syncStatus.update((s) => ({ ...s, syncing: true, error: null }));
+
+  const collection = createCollection(
+    electricCollectionOptions<ElectricMyRecord>({
+      id: 'my-collection',
+      syncMode: 'eager',  // Use eager — WHERE limits dataset size
+      shapeOptions: {
+        url: `${ELECTRIC_URL}/v1/shape`,
+        fetchClient: electricFetchClient,
+        params: {
+          table: 'my_table',
+          where: whereClause,
+          columns: MY_COLUMNS
+        },
+        onError: async (error: unknown) => {
+          const status = error instanceof Error && 'status' in error
+            ? (error as { status: number }).status : null;
+
+          if (status === 401) {
+            syncStatus.update((s) => ({ ...s, error: 'Authentication required', syncing: false }));
+            return;
+          }
+
+          if (status === 400) {
+            const now = Date.now();
+            if (now - shapeResetAttemptedAt < 30_000) return;
+            shapeResetAttemptedAt = now;
+            try {
+              await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=my_table`, { method: 'DELETE' });
+            } catch { /* OK */ }
+            setTimeout(async () => {
+              myCol = null;
+              myCol = await createMyCollection(currentWhereClause);
+            }, 1500);
+            return;
+          }
+
+          console.error('Electric sync error:', error);
+        }
+      },
+      getKey: (item) => item.id as string
+    })
+  );
+
+  // Debounced sync status monitoring
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  collection.subscribeChanges(() => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (collection.size > 0) shapeResetAttemptedAt = 0;
+      syncStatus.update((s) => ({
+        ...s, connected: true, syncing: !collection.isReady(),
+        recordCount: collection.size,
+        lastSyncTime: collection.isReady() ? new Date() : s.lastSyncTime
+      }));
+    }, 100);
+  });
+
+  return collection as unknown as Collection<ElectricMyRecord, string>;
+}
+
+export async function getMyCollection(
+  whereClause?: string
+): Promise<Collection<ElectricMyRecord, string>> {
+  if (!browser) throw new Error('Collections can only be used in the browser');
+  const where = whereClause || getDefaultWhere();
+  if (myCol && currentWhereClause === where) return myCol;
+  myCol = await createMyCollection(where);
+  return myCol;
+}
+
+export async function updateMyWhere(whereClause: string): Promise<void> {
+  if (!browser) return;
+  myCol = await createMyCollection(whereClause);
+}
+```
+
+### File: `src/lib/electric/client.ts`
+
+```typescript
+// Electric URL points to the backend proxy, NOT directly to Electric
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003/api';
+export const ELECTRIC_URL = `${API_URL}/electric`;
+```
+
+### `buildWhereFromFilters` — Correct Value Quoting
+
+```typescript
+export function buildWhereFromFilters(
+  filters: Array<{ field: string; operator: string; value: unknown }>
+): string {
+  if (!filters || filters.length === 0) return getDefaultWhere();
+
+  const escapeValue = (v: string): string => v.replace(/'/g, "''");
+
+  const clauses = filters.map(({ field, operator, value }) => {
+    switch (operator) {
+      case 'equals':
+        return typeof value === 'string'
+          ? `${field} = '${escapeValue(String(value))}'`
+          : `${field} = ${value}`;
+      case 'contains':
+        return `${field} ILIKE '%${escapeValue(String(value))}%'`;
+      case 'greater_than':
+        return typeof value === 'string'
+          ? `${field} > '${escapeValue(String(value))}'`
+          : `${field} > ${value}`;
+      case 'less_than':
+        return typeof value === 'string'
+          ? `${field} < '${escapeValue(String(value))}'`
+          : `${field} < ${value}`;
+      case 'greater_or_equal':
+        return typeof value === 'string'
+          ? `${field} >= '${escapeValue(String(value))}'`
+          : `${field} >= ${value}`;
+      case 'less_or_equal':
+        return typeof value === 'string'
+          ? `${field} <= '${escapeValue(String(value))}'`
+          : `${field} <= ${value}`;
+      case 'is_before':
+        return `${field} < '${escapeValue(String(value))}'`;
+      case 'is_after':
+        return `${field} > '${escapeValue(String(value))}'`;
+      case 'is_empty':
+        return `(${field} IS NULL OR ${field} = '')`;
+      case 'is_not_empty':
+        return `(${field} IS NOT NULL AND ${field} != '')`;
+      default:
+        return null;
+    }
+  }).filter(Boolean);
+
+  return clauses.length > 0 ? clauses.join(' AND ') : getDefaultWhere();
+}
+```
+
+---
+
+## Backend Setup
+
+### Required Migration
 
 ```elixir
-# In migration file
 def change do
   create table(:my_table, primary_key: false) do
     add :id, :uuid, primary_key: true, default: fragment("gen_random_uuid()")
     add :name, :string, null: false
-    add :title, :string
-    add :status, :string, default: "active"
-    
     timestamps(type: :utc_datetime)
   end
 
@@ -654,10 +527,9 @@ def change do
 end
 ```
 
-### Docker Compose for Electric
+### Docker Compose for Electric (Development)
 
 ```yaml
-# docker-compose.dev.yml
 services:
   postgres:
     image: postgres:16
@@ -671,9 +543,6 @@ services:
       - "5436:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   electric:
     image: electricsql/electric:latest
@@ -686,142 +555,101 @@ services:
         condition: service_healthy
 ```
 
+### Production: ElectricSQL Replication Slot
+
+Multiple Electric instances on the same PostgreSQL cluster conflict on replication slots. Set a unique ID:
+
+```yaml
+environment:
+  - ELECTRIC_REPLICATION_STREAM_ID=legal  # → creates electric_slot_legal
+```
+
 ---
 
 ## Troubleshooting
 
-### Error: HTTP 400 from Electric
+### MissingHeadersError
+1. Check Corsica `expose_headers` in `endpoint.ex` includes all `electric-*` headers
+2. Check proxy sets `Access-Control-Expose-Headers` on response
+3. Check proxy sets `cache-control: no-store` (prevents browser serving cached responses without CORS)
+4. Check proxy strips `content-encoding` and `content-length` (stale after Req decompression)
+5. Check for double collection creation (format mismatch in `lastWhereClause`)
 
-**Check:**
-- Are you syncing generated columns?
-- Is the table name correct?
-- Does the WHERE clause have valid SQL syntax?
+### Electric Returns 400
+1. Are you syncing generated columns? → Add explicit `columns` array
+2. Is the WHERE clause quoting string/date values? → `field >= '2024-01-01'` not `field >= 2024-01-01`
+3. Is the table name correct?
 
-**Fix:** Add explicit `columns` parameter excluding generated columns.
+### 401 Unauthorized
+1. Is `electricFetchClient` being passed to `shapeOptions.fetchClient`?
+2. Is the JWT in localStorage? (check `getAuthToken()`)
+3. For public tables — is the table listed in `@public_tables` in the proxy controller?
 
-### Browser Crashes During Sync
+### Data Doesn't Load (Spinner Forever)
+1. Are you using `progressive` sync mode? → Switch to `eager`
+2. Is `collection.subscribeChanges` connected?
+3. Check browser console for errors
 
-**Check:**
-- Are you manually subscribing to ShapeStream?
-- Are you calling `collection.insert()` in a loop?
-- Are you using default `eager` sync mode with large datasets?
-- Are you subscribing to both `subscribeChanges` AND `syncStatus`?
-
-**Fix:** 
-1. Use `electricCollectionOptions()` instead of manual subscription
-2. Add `syncMode: 'progressive'` for datasets >100 records
-3. Debounce sync status updates (100ms) and UI refreshes (200ms)
-4. Only subscribe to `syncStatus`, not both `subscribeChanges` and `syncStatus`
-
-### Sync Status Stuck on "Syncing"
-
-**Check:**
-- Is `collection.isReady()` being called?
-- Is there a `subscribeChanges` listener?
-
-**Fix:** Add proper sync status monitoring as shown in Pattern 1.
-
-### TypeScript Error: Type doesn't satisfy Row<unknown>
-
-**Check:**
-- Does your type have an index signature?
-
-**Fix:** Add `& Record<string, unknown>` to your type.
-
-### Data Not Updating in UI
-
-**Check:**
-- Is `subscribeChanges` connected?
-- Is the data array being reassigned (not just mutated)?
-
-**Fix:** Use `data = collection.toArray` to trigger Svelte reactivity.
+### Shape Broken After Electric Restart
+The `onError` handler with 400 detection recreates the collection. If `ELECTRIC_ENABLE_INTEGRATION_TESTING=true` is set, it also DELETEs the broken shape first.
 
 ---
 
 ## Quick Reference
 
 ### Dependencies
-
 ```bash
-npm install @tanstack/db @tanstack/electric-db-collection @electric-sql/client
+npm install @electric-sql/client@^1.5 @tanstack/db@^0.5 @tanstack/electric-db-collection@^0.2
 ```
 
-### Key Imports
+### Key Files
+| File | Purpose |
+|------|---------|
+| `frontend/src/lib/db/index.client.ts` | Collections, sync status, WHERE builder |
+| `frontend/src/lib/electric/fetch-client.ts` | JWT header injection for Electric requests |
+| `frontend/src/lib/electric/client.ts` | ELECTRIC_URL (points to backend proxy) |
+| `backend/lib/sertantai_legal_web/controllers/electric_proxy_controller.ex` | Proxy controller |
+| `backend/lib/sertantai_legal_web/endpoint.ex` | Corsica CORS config with expose_headers |
 
-```typescript
-import { createCollection } from '@tanstack/db';
-import { electricCollectionOptions } from '@tanstack/electric-db-collection';
-import type { Collection } from '@tanstack/db';
-```
-
-### Collection API
-
-```typescript
-// Create collection
-const collection = createCollection(electricCollectionOptions<T>({ ... }));
-
-// Check if ready
-collection.isReady();        // boolean
-
-// Get data
-collection.toArray;          // T[]
-collection.size;             // number
-collection.get(key);         // T | undefined
-collection.has(key);         // boolean
-
-// Subscribe to changes
-const sub = collection.subscribeChanges((changes) => { ... });
-sub.unsubscribe();
-
-// Mutations (for local changes)
-collection.insert(item);
-collection.update(key, (draft) => { draft.field = value; });
-collection.delete(key);
-```
-
-### Shape Options
-
-```typescript
-electricCollectionOptions<T>({
-  id: 'unique-collection-id',
-  shapeOptions: {
-    url: 'http://localhost:3002/v1/shape',
-    params: {
-      table: 'table_name',
-      where: 'status = \'active\'',  // SQL WHERE clause
-      columns: 'id,name,title'        // Comma-separated, no spaces
-    }
-  },
-  getKey: (item) => item.id
-})
-```
+### Adding a New Synced Table Checklist
+1. Create Ash resource with `REPLICA IDENTITY FULL` in migration
+2. Add table to `@allowed_tables` in proxy controller
+3. Add to `@public_tables` if it's public reference data (no auth needed)
+4. Create column list excluding generated columns
+5. Create collection in `index.client.ts` with `eager` mode + `fetchClient`
+6. Add `onError` handler for shape recovery
+7. Initialize `lastWhereClause` matching `buildWhereFromFilters` output format
 
 ---
 
 ## Related Skills
 
-- [IndexedDB Persistence](../indexeddb-electric-persistence/) - For offline persistence with delta sync
-- [Creating Ash Resources](../creating-ash-resources/) - Backend resource definitions
-- [Multi-Tenant Resources](../multi-tenant-resources/) - Organization-scoped data patterns
+- [Production Deployment](../production-deployment/) — Deploy to Hetzner
+- [Stale Electric Shapes](../stale-electric-shapes/) — Recovering from broken shapes
+- [Creating Ash Resources](../creating-ash-resources/) — Backend resource definitions
 
 ---
 
 ## Key Takeaways
 
 **Do:**
-- ✅ Use `electricCollectionOptions()` from `@tanstack/electric-db-collection`
-- ✅ Use `syncMode: 'progressive'` for datasets with 100+ records
-- ✅ Debounce sync status updates (100ms) and UI refreshes (200ms)
+- ✅ Proxy all Electric requests through the Phoenix backend
+- ✅ Use `eager` sync mode with WHERE-limited datasets
+- ✅ Pass `fetchClient: electricFetchClient` for JWT injection
+- ✅ Set `cache-control: no-store` and `Vary: Authorization` in proxy
+- ✅ Strip `content-encoding`/`content-length` from proxied responses
+- ✅ Expose `electric-*` headers in both Corsica plug AND proxy response
+- ✅ Quote string/date values in all WHERE comparison operators
+- ✅ Match `lastWhereClause` format to `buildWhereFromFilters` output
+- ✅ Add `onError` handler for shape recovery (400 → recreate collection)
 - ✅ Add `& Record<string, unknown>` to types for Electric compatibility
-- ✅ Use `collection.isReady()` method for sync status
 - ✅ Explicitly list columns, excluding generated ones
-- ✅ Subscribe to `syncStatus` store only for UI updates
 
 **Don't:**
-- ❌ Manually subscribe to ShapeStream and call `collection.insert()`
-- ❌ Use default `eager` sync mode for large datasets (causes browser crash)
-- ❌ Subscribe to both `subscribeChanges()` AND `syncStatus` (causes double updates)
+- ❌ Use `progressive`/`on-demand` sync mode with `collection.toArray`
+- ❌ Expose Electric directly to the browser (use proxy)
+- ❌ Forget to quote string values in WHERE clauses
+- ❌ Initialize `lastWhereClause` with different format than `buildWhereFromFilters`
+- ❌ Forward `content-encoding`/`content-length` through the proxy
+- ❌ Let Electric's `cache-control: public, max-age=604800` reach the browser
 - ❌ Try to sync PostgreSQL generated columns
-- ❌ Use `state.isReady` (doesn't exist, use `isReady()` method)
-- ❌ Forget to handle sync errors in the UI
-- ❌ Mutate arrays in place (reassign for Svelte reactivity)
