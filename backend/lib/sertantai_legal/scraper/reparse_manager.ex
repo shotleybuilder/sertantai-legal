@@ -67,9 +67,17 @@ defmodule SertantaiLegal.Scraper.ReparseManager do
         with {:ok, session} <- ScrapeSession.create(session_attrs),
              {:ok, session} <- ScrapeSession.mark_reviewing(session) do
           # Bulk-insert session records
+          # Keys must match scrape record format: Title_EN, Year, Number (capitalized)
           session_records =
             Enum.map(records, fn record ->
-              %{name: record.name, Title_EN: record.title_en, type_code: record.type_code}
+              %{
+                name: record.name,
+                Title_EN: record.title_en,
+                type_code: record.type_code,
+                Year: record.year,
+                Number: record.number,
+                si_code: record.si_code
+              }
             end)
 
           case Storage.save_session_records(session_id, session_records, :group1) do
