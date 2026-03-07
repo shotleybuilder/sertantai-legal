@@ -1026,8 +1026,8 @@
 		value: thisMonthStart
 	};
 
-	// Track last filter state
-	let lastWhereClause = `"md_date" > '${thisMonthStart}'`;
+	// Track last filter state — must match buildWhereFromFilters output format (unquoted columns)
+	let lastWhereClause = `md_date > '${thisMonthStart}'`;
 
 	function handleTableStateChange(state: TableState) {
 		const filters = state.columnFilters.map((f) => ({
