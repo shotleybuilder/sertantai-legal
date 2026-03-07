@@ -545,7 +545,11 @@ defmodule SertantaiLegalWeb.ScrapeController do
     alias SertantaiLegal.Scraper.StagedParser
 
     with {:ok, _session} <- SessionManager.get(session_id) do
-      record = find_record_in_session(session_id, name) || build_record_from_name(name)
+      record =
+        case find_record_in_session(session_id, name) do
+          nil -> build_record_from_name(name)
+          found -> ensure_year_number(found)
+        end
 
       case record do
         nil ->
@@ -1234,6 +1238,30 @@ defmodule SertantaiLegalWeb.ScrapeController do
   end
 
   defp not_found_error?(_), do: false
+
+  # Ensure a session record has Year and Number keys.
+  # Older session records (or reparse records before the fix) may lack these.
+  # Extract from the name field (e.g., "UK_uksi_2025_747") if missing.
+  defp ensure_year_number(record) do
+    has_year = not is_nil(record[:Year] || record["Year"])
+    has_number = not is_nil(record[:Number] || record["Number"])
+
+    if has_year and has_number do
+      record
+    else
+      name = record[:name] || record["name"] || ""
+
+      case build_record_from_name(name) do
+        %{Year: year, Number: number} ->
+          record
+          |> Map.put_new(:Year, year)
+          |> Map.put_new(:Number, number)
+
+        _ ->
+          record
+      end
+    end
+  end
 
   # Build a minimal record from a name string (e.g., "uksi/2025/622" or "UK_uksi_2025_622")
   # Used for cascade updates where records exist in uk_lrt but not in session
