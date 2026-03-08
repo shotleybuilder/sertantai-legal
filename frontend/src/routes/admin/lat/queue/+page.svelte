@@ -7,7 +7,7 @@
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { reparseLat, type QueueItem } from '$lib/api/lat';
-	import { getUkLrtCollection, syncStatus } from '$lib/db/index.client';
+	import { getLatQueueCollection, syncStatus } from '$lib/db/index.client';
 	import type { UkLrtRecord } from '$lib/db/index.client';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import {
@@ -127,7 +127,7 @@
 		if (browser) {
 			try {
 				// Sync all making laws — the queue needs records across all years
-				const collection = await getUkLrtCollection('is_making = true');
+				const collection = await getLatQueueCollection();
 
 				// Debounced refresh to prevent excessive UI updates
 				let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -137,7 +137,7 @@
 					}
 					refreshDebounceTimer = setTimeout(async () => {
 						// Always get the latest collection reference in case it was recreated
-						const currentCollection = await getUkLrtCollection('is_making = true');
+						const currentCollection = await getLatQueueCollection();
 						const newData = currentCollection.toArray as unknown as UkLrtRecord[];
 						console.log(`[LAT Queue] Collection refresh: ${newData.length} records`);
 						allRecords = newData;
@@ -186,6 +186,7 @@
 		if (collectionCleanup) {
 			collectionCleanup.unsubscribe();
 		}
+		// LAT queue collection is a singleton — not cleaned up on page destroy
 	});
 
 	// ── Re-parse ────────────────────────────────────────────────────

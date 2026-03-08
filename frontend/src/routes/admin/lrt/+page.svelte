@@ -15,17 +15,8 @@
 	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
 	// ElectricSQL sync - using official TanStack Electric integration
-	import {
-		getUkLrtCollection,
-		updateUkLrtWhere,
-		buildWhereFromFilters,
-		syncStatus
-	} from '$lib/db/index.client';
-	import type {
-		TableState,
-		FilterCondition,
-		TableConfig as TableKitConfig
-	} from '@shotleybuilder/svelte-table-kit';
+	import { getAdminCollection, syncStatus } from '$lib/db/index.client';
+	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 
 	// ParseReviewModal for viewing record details
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
@@ -622,73 +613,33 @@
 		console.log('[LRT Admin] View saved:', event.detail.name);
 	}
 
-	// Track last filter state to avoid redundant sync updates
-	// Initialize to default WHERE to prevent handleTableStateChange from triggering
-	// a redundant sync when TableKit mounts with the default filter
-	let lastWhereClause = `year >= ${new Date().getFullYear() - 2}`;
-
-	/**
-	 * Handle table state changes - update Electric sync when filters change
-	 */
-	function handleTableStateChange(state: TableState) {
-		// Convert TableKit filters to Electric WHERE clause
-		const filters = state.columnFilters.map((f) => ({
-			field: f.field,
-			operator: f.operator,
-			value: f.value
-		}));
-
-		const newWhereClause = buildWhereFromFilters(filters);
-
-		// Only update if WHERE clause actually changed
-		if (newWhereClause !== lastWhereClause) {
-			lastWhereClause = newWhereClause;
-			console.log('[LRT Admin] Filter changed, updating Electric sync:', newWhereClause);
-			updateUkLrtWhere(newWhereClause);
-		}
-	}
-
 	// Electric sync initialization
-	/**
-	 * Initialize Electric sync and subscribe to collection changes
-	 *
-	 * Uses the official @tanstack/electric-db-collection integration which handles:
-	 * - ShapeStream subscription and lifecycle
-	 * - Efficient batched updates (no browser crash)
-	 * - Reactive state management
-	 */
+	// Progressive mode: snapshot loads active view data fast, full dataset (~19K records,
+	// ~48MB without heavy JSONB) backfills in background. After backfill, all filtering
+	// is client-side sub-millisecond via TableKit's applyFilters.
+
 	async function initElectricSync() {
 		try {
 			error = null;
 			isLoading = true;
 
-			// Get collection - this creates the Electric-synced collection with correct WHERE
-			const collection = await getUkLrtCollection(lastWhereClause);
+			const collection = await getAdminCollection();
 
-			// Debounced refresh to prevent excessive UI updates
 			let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 			const refreshData = () => {
-				if (refreshDebounceTimer) {
-					clearTimeout(refreshDebounceTimer);
-				}
+				if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
 				refreshDebounceTimer = setTimeout(async () => {
-					// Always get the latest collection reference in case it was recreated
-					// by updateUkLrtWhere() after a filter change
-					const currentCollection = await getUkLrtCollection(lastWhereClause);
+					const currentCollection = await getAdminCollection();
 					const newData = currentCollection.toArray as unknown as UkLrtRecord[];
-					console.log(`[LRT Admin] Refreshing data: ${newData.length} records`);
 					data = newData;
 					totalCount = newData.length;
 					if (newData.length > 0) {
 						isLoading = false;
 					}
-				}, 200);  // 200ms debounce
+				}, 200);
 			};
 
-			// Subscribe to collection changes directly
-			const changeSub = collection.subscribeChanges(() => {
-				refreshData();
-			});
+			const changeSub = collection.subscribeChanges(() => refreshData());
 
 			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
 				if (status.connected) {
@@ -703,25 +654,21 @@
 				}
 			});
 
-			// Store cleanup
 			collectionSubscription = {
 				unsubscribe: () => {
 					unsubscribeSyncStatus();
 					changeSub.unsubscribe();
-					if (refreshDebounceTimer) {
-						clearTimeout(refreshDebounceTimer);
-					}
+					if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
 				}
 			};
 
-			// Initial data load (immediate, no debounce)
-			const initialData = collection.toArray as UkLrtRecord[];
-			if (initialData.length > 0) {
-				data = initialData;
-				totalCount = initialData.length;
+			// Immediate data load from current collection state
+			const currentData = collection.toArray as UkLrtRecord[];
+			if (currentData.length > 0) {
+				data = currentData;
+				totalCount = currentData.length;
 				isLoading = false;
 			}
-
 		} catch (e) {
 			console.error('[LRT Admin] Failed to initialize:', e);
 			error = e instanceof Error ? e.message : 'Failed to initialize';
@@ -1428,15 +1375,6 @@
 		}
 	];
 
-	// Default year filter matching Electric's default WHERE clause
-	// Note: value must be a string for FilterCondition component
-	const defaultYearFilter: FilterCondition = {
-		id: 'default-year-filter',
-		field: 'year',
-		operator: 'greater_or_equal',
-		value: String(currentYear - 2)
-	};
-
 	// Build TableKit configuration from view (reactive)
 	$: hasViewConfig =
 		viewColumns.length > 0 ||
@@ -1445,8 +1383,9 @@
 		viewSort !== null ||
 		viewGrouping.length > 0;
 
-	// Determine which filters to use: view filters if set, otherwise default year filter
-	$: activeFilters = viewFilters.length > 0 ? viewFilters : [defaultYearFilter];
+	// Filters come from saved views or user interaction — no hidden year scope.
+	// Progressive sync provides all data, TableKit's applyFilters handles everything client-side.
+	$: activeFilters = viewFilters;
 
 	// Determine sort config (TableKit uses columnId and expects an array)
 	// When grouping is active, prepend grouped columns as desc sort (year descending)
@@ -1478,10 +1417,10 @@
 	});
 
 	onDestroy(() => {
-		// Clean up collection subscription
 		if (collectionSubscription) {
 			collectionSubscription.unsubscribe();
 		}
+		// Admin collection is a singleton — not cleaned up on page destroy
 	});
 </script>
 
@@ -1595,12 +1534,13 @@
 				</div>
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Filter</div>
-				<div
-					class="text-sm font-mono text-gray-700 truncate"
-					title={$syncStatus.whereClause || 'Last 3 years'}
-				>
-					{$syncStatus.whereClause || 'year >= ' + (new Date().getFullYear() - 2)}
+				<div class="text-sm text-gray-600">Data Scope</div>
+				<div class="text-sm font-medium text-gray-700">
+					{#if $syncStatus.syncing}
+						Syncing... ({$syncStatus.recordCount.toLocaleString()})
+					{:else}
+						All records synced
+					{/if}
 				</div>
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
@@ -1619,7 +1559,6 @@
 			storageKey="uk_lrt_admin_table"
 			persistState={!hasViewConfig}
 			align="left"
-			onStateChange={handleTableStateChange}
 			features={{
 				columnVisibility: true,
 				columnResizing: true,

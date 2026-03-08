@@ -393,6 +393,7 @@ defmodule SertantaiLegal.Scraper.Storage do
       |> Enum.reject(fn affected_law ->
         IdField.normalize_to_db_name(affected_law) == source_law_normalized
       end)
+      |> filter_already_linked(source_law_normalized)
 
     Enum.each(reparse_laws, fn affected_law ->
       upsert_cascade_entry(session_id, affected_law, :reparse, source_law, layer)
@@ -421,6 +422,41 @@ defmodule SertantaiLegal.Scraper.Storage do
     end)
 
     :ok
+  end
+
+  # Filter out affected laws where the source law is already recorded in
+  # their amended_by or rescinded_by arrays (relationship already linked).
+  defp filter_already_linked([], _source_law), do: []
+
+  defp filter_already_linked(affected_laws, source_law) do
+    alias SertantaiLegal.Scraper.IdField
+    import Ecto.Query
+
+    db_names = Enum.map(affected_laws, &IdField.normalize_to_db_name/1)
+
+    already_linked =
+      SertantaiLegal.Repo.all(
+        from(u in "uk_lrt",
+          where: u.name in ^db_names,
+          where: ^source_law in u.amended_by or ^source_law in u.rescinded_by,
+          select: u.name
+        )
+      )
+      |> MapSet.new()
+
+    if MapSet.size(already_linked) > 0 do
+      filtered_count = MapSet.size(already_linked)
+
+      require Logger
+
+      Logger.info(
+        "[Cascade] Filtered #{filtered_count} already-linked laws for source #{source_law}"
+      )
+    end
+
+    Enum.reject(affected_laws, fn law ->
+      MapSet.member?(already_linked, IdField.normalize_to_db_name(law))
+    end)
   end
 
   # Upsert a cascade entry, appending source_law if exists

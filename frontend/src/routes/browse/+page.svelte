@@ -14,17 +14,11 @@
 	import { ViewSidebar } from 'svelte-table-views-sidebar';
 	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
-	import {
-		getUkLrtCollection,
-		updateUkLrtWhere,
-		buildWhereFromFilters,
-		syncStatus
-	} from '$lib/db/index.client';
-	import type {
-		TableState,
-		FilterCondition,
-		TableConfig as TableKitConfig
-	} from '@shotleybuilder/svelte-table-kit';
+	import { getBrowseCollection, syncStatus } from '$lib/db/index.client';
+	import { createLiveQueryCollection } from '@tanstack/db';
+	import type { Collection } from '@tanstack/db';
+	import { filtersToWhereCallback } from '$lib/db/query-helpers';
+	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 
 	// Types
 	interface UkLrtRecord {
@@ -1026,63 +1020,87 @@
 		value: thisMonthStart
 	};
 
-	// Track last filter state — must match buildWhereFromFilters output format (unquoted columns)
-	let lastWhereClause = `md_date > '${thisMonthStart}'`;
+	// Electric sync initialization
+	// On-demand mode: base collection starts at offset=now (empty, changes only).
+	// Each view change creates a live query that triggers loadSubset → fetchSnapshot
+	// to pull only matching rows. Previously fetched data stays cached.
 
-	function handleTableStateChange(state: TableState) {
-		const filters = state.columnFilters.map((f) => ({
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let baseCollection: Collection<any, any> | null = null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let liveQuery: Collection<any, any> | null = null;
+	let liveQueryCleanup: (() => void) | null = null;
+
+	/**
+	 * Build a live query from the current view filters.
+	 * On-demand mode: the live query's predicates drive loadSubset → fetchSnapshot.
+	 */
+	function buildLiveQuery(filters: FilterCondition[]) {
+		if (!baseCollection) return;
+
+		// Clean up previous live query
+		if (liveQueryCleanup) {
+			liveQueryCleanup();
+			liveQueryCleanup = null;
+			liveQuery = null;
+		}
+
+		const filterInputs = filters.map((f) => ({
 			field: f.field,
 			operator: f.operator,
 			value: f.value
 		}));
 
-		const newWhereClause = buildWhereFromFilters(filters);
+		const whereCallback = filtersToWhereCallback(filterInputs);
 
-		if (newWhereClause !== lastWhereClause) {
-			lastWhereClause = newWhereClause;
-			updateUkLrtWhere(newWhereClause);
+		liveQuery = createLiveQueryCollection((q) => {
+			const query = q.from({ law: baseCollection! });
+			if (whereCallback) {
+				return query.where(whereCallback);
+			}
+			return query;
+		});
+
+		const sub = liveQuery.subscribeChanges(
+			() => {
+				const newData = liveQuery!.toArray as unknown as UkLrtRecord[];
+				data = newData;
+				totalCount = newData.length;
+				if (newData.length > 0) {
+					isLoading = false;
+				}
+			},
+			{ includeInitialState: true }
+		);
+
+		liveQueryCleanup = () => {
+			sub.unsubscribe();
+			liveQuery?.cleanup();
+		};
+
+		// Check if data is already available
+		const currentData = liveQuery.toArray as unknown as UkLrtRecord[];
+		if (currentData.length > 0) {
+			data = currentData;
+			totalCount = currentData.length;
+			isLoading = false;
 		}
 	}
 
-	// Electric sync initialization
 	async function initElectricSync() {
 		try {
 			error = null;
 			isLoading = true;
 
-			const collection = await getUkLrtCollection(lastWhereClause);
+			baseCollection = await getBrowseCollection();
 
-			let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-			const refreshData = () => {
-				if (refreshDebounceTimer) {
-					clearTimeout(refreshDebounceTimer);
-				}
-				refreshDebounceTimer = setTimeout(async () => {
-					// Always get the latest collection reference in case it was recreated
-					const currentCollection = await getUkLrtCollection(lastWhereClause);
-					const newData = currentCollection.toArray as unknown as UkLrtRecord[];
-					data = newData;
-					totalCount = newData.length;
-					if (newData.length > 0) {
-						isLoading = false;
-					}
-				}, 200);
-			};
-
-			// Subscribe to collection changes directly
-			const changeSub = collection.subscribeChanges(() => {
-				refreshData();
-			});
-
+			// Monitor sync status for error display
 			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-				if (status.connected) {
-					refreshData();
-					if (!status.syncing) {
-						isLoading = false;
-					}
-				}
 				if (status.error) {
 					error = status.error;
+					isLoading = false;
+				}
+				if (status.connected) {
 					isLoading = false;
 				}
 			});
@@ -1090,19 +1108,11 @@
 			collectionSubscription = {
 				unsubscribe: () => {
 					unsubscribeSyncStatus();
-					changeSub.unsubscribe();
-					if (refreshDebounceTimer) {
-						clearTimeout(refreshDebounceTimer);
-					}
 				}
 			};
 
-			const initialData = collection.toArray as unknown as UkLrtRecord[];
-			if (initialData.length > 0) {
-				data = initialData;
-				totalCount = initialData.length;
-				isLoading = false;
-			}
+			// Build initial live query from active filters
+			buildLiveQuery(activeFilters);
 		} catch (e) {
 			console.error('[Browse] Failed to initialize:', e);
 			error = e instanceof Error ? e.message : 'Failed to initialize';
@@ -1144,6 +1154,11 @@
 		defaultExpanded: viewGrouping.length > 0 ? true : undefined
 	};
 
+	// Rebuild live query when active filters change (view switch, filter add/remove)
+	$: if (baseCollection && activeFilters) {
+		buildLiveQuery(activeFilters);
+	}
+
 	onMount(() => {
 		if (browser) {
 			seedDefaultViews();
@@ -1152,9 +1167,13 @@
 	});
 
 	onDestroy(() => {
+		if (liveQueryCleanup) {
+			liveQueryCleanup();
+		}
 		if (collectionSubscription) {
 			collectionSubscription.unsubscribe();
 		}
+		// Browse collection is a singleton — not cleaned up on page destroy
 	});
 </script>
 
@@ -1253,12 +1272,9 @@
 				</div>
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Filter</div>
-				<div
-					class="text-sm font-mono text-gray-700 truncate"
-					title={$syncStatus.whereClause || 'This month'}
-				>
-					{$syncStatus.whereClause || 'This month (by primary date)'}
+				<div class="text-sm text-gray-600">Data Scope</div>
+				<div class="text-sm font-medium text-gray-700">
+					On-demand ({$syncStatus.recordCount.toLocaleString()} cached)
 				</div>
 			</div>
 		</div>
@@ -1271,7 +1287,6 @@
 			storageKey="uk_lrt_browse_table"
 			persistState={!hasViewConfig}
 			align="left"
-			onStateChange={handleTableStateChange}
 			features={{
 				columnVisibility: true,
 				columnResizing: true,

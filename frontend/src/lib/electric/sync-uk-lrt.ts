@@ -8,7 +8,7 @@
  */
 
 import { ShapeStream, type Offset } from '@electric-sql/client';
-import { getUkLrtCollection } from '$lib/db/index.client';
+import { getAdminCollection } from '$lib/db/index.client';
 import {
 	saveElectricSyncState,
 	loadElectricSyncState,
@@ -209,7 +209,7 @@ export async function syncUkLrt(whereClause?: string, isReconnect = false, clear
 		}));
 
 		// Get the UK LRT collection (browser only) with the correct WHERE clause
-		const ukLrtCollection = await getUkLrtCollection(where);
+		const ukLrtCollection = await getAdminCollection();
 
 		// Only clear existing data if explicitly requested
 		// This allows the new shape to merge with existing data for better UX

@@ -4,10 +4,13 @@
  * Creates reactive collections for UK LRT data using the official
  * @tanstack/electric-db-collection integration.
  *
- * This uses electricCollectionOptions which handles:
- * - ShapeStream subscription and management
- * - Efficient batched updates to the collection
- * - Reactive queries that auto-update
+ * Collection Strategy:
+ * - Admin pages: `progressive` mode — snapshot loads first view fast,
+ *   full dataset (~19K records, ~48MB) backfills in background.
+ *   After backfill, all filtering is client-side sub-millisecond.
+ * - Public pages: `on-demand` mode — only fetches data when queried
+ *   via createLiveQueryCollection. Previously fetched data stays cached.
+ * - LAT Queue: `eager` mode — small fixed dataset (is_making = true).
  *
  * NOTE: This module uses dynamic imports to ensure it only runs in the browser.
  */
@@ -35,11 +38,13 @@ type ElectricAnnotationRecord = AnnotationRecord & Record<string, unknown>;
 // Electric service configuration — import resolved absolute URL from shared client
 import { ELECTRIC_URL } from '$lib/electric/client';
 
+// ── Column Sets ─────────────────────────────────────────────────────────────
+
 /**
- * Columns to sync from uk_lrt table.
+ * All syncable columns from uk_lrt table.
  * Excludes PostgreSQL generated columns (leg_gov_uk_url, number_int) which Electric cannot sync.
  */
-const UK_LRT_COLUMNS: string[] = [
+export const UK_LRT_ALL_COLUMNS: string[] = [
 	'id',
 	'family',
 	'family_ii',
@@ -104,7 +109,6 @@ const UK_LRT_COLUMNS: string[] = [
 	'enacted_by',
 	'linked_enacted_by',
 	'is_enacting',
-	// Consolidated JSONB holder fields (Phase 3)
 	'duties',
 	'rights',
 	'responsibilities',
@@ -128,7 +132,6 @@ const UK_LRT_COLUMNS: string[] = [
 	'live_conflict_detail',
 	'lat_count',
 	'latest_lat_updated_at',
-	// Fitness/applicability columns (Issue #39)
 	'fitness_person',
 	'fitness_process',
 	'fitness_place',
@@ -139,23 +142,67 @@ const UK_LRT_COLUMNS: string[] = [
 ];
 
 /**
- * Get default WHERE clause (last 3 years)
+ * Heavy JSONB columns excluded from admin sync to reduce payload ~50%.
+ * Detail data is available via ParseReviewModal REST call when needed.
  */
-function getDefaultWhere(): string {
-	const currentYear = new Date().getFullYear();
-	return `year >= ${currentYear - 2}`;
-}
+const HEAVY_JSONB_COLUMNS = new Set([
+	'role_details',
+	'role_gvt_details',
+	'duties',
+	'responsibilities',
+	'powers',
+	'popimar_details',
+	'rights'
+]);
 
-// Collection singleton using Electric-compatible type
-let ukLrtCol: Collection<ElectricUkLrtRecord, string> | null = null;
-let currentWhereClause: string = '';
+/**
+ * Admin columns: all columns minus heavy JSONB (~2.5 KB/row instead of ~5.7 KB/row).
+ * Full sync: 19K × 2.5 KB ≈ 48 MB (progressive backfill).
+ */
+export const UK_LRT_ADMIN_COLUMNS: string[] = UK_LRT_ALL_COLUMNS.filter(
+	(col) => !HEAVY_JSONB_COLUMNS.has(col)
+);
 
-// Shape recovery: track whether we've already attempted a shape reset.
-// Uses a timestamp so the flag auto-expires after 30 seconds — prevents
-// permanent lockout if the first retry fails but conditions change.
-let shapeResetAttemptedAt = 0;
+/**
+ * Browse columns: lightweight subset for public-facing pages.
+ * Only columns needed for browse views (no amendment links, no holder details).
+ */
+export const UK_LRT_BROWSE_COLUMNS: string[] = [
+	'id',
+	'family',
+	'family_ii',
+	'name',
+	'title_en',
+	'year',
+	'number',
+	'type_code',
+	'type_class',
+	'live',
+	'live_description',
+	'function',
+	'is_making',
+	'si_code',
+	'geo_extent',
+	'geo_region',
+	'geo_detail',
+	'md_restrict_extent',
+	'md_date',
+	'md_date_year',
+	'md_date_month',
+	'md_made_date',
+	'md_enactment_date',
+	'md_coming_into_force_date',
+	'latest_amend_date',
+	'latest_amend_date_year',
+	'latest_amend_date_month',
+	'latest_rescind_date',
+	'latest_rescind_date_year',
+	'latest_rescind_date_month',
+	'updated_at'
+];
 
-// Sync status store
+// ── Sync Status ─────────────────────────────────────────────────────────────
+
 export interface SyncStatus {
 	connected: boolean;
 	syncing: boolean;
@@ -176,125 +223,79 @@ export const syncStatus = writable<SyncStatus>({
 	whereClause: ''
 });
 
+// ── Shared Error Handler ────────────────────────────────────────────────────
+
 /**
- * Initialize UK LRT collection with Electric sync
+ * Creates a shape error handler for a specific collection.
+ * Handles 401 (auth), 400 (broken shape) with throttled recovery.
+ * On 400, nulls out the singleton so next getter call recreates it.
  */
-async function createUkLrtCollection(
-	whereClause: string
-): Promise<Collection<ElectricUkLrtRecord, string>> {
-	// Clean up the previous collection's ShapeStream before creating a new one.
-	// Without this, rapid view switches leave multiple ShapeStreams active,
-	// causing MissingHeadersError when responses arrive for stale streams.
-	if (ukLrtCol) {
-		ukLrtCol.cleanup();
-		ukLrtCol = null;
-	}
+function shapeErrorHandler(collectionId: string, columns: string[], resetSingleton: () => void) {
+	let resetAttemptedAt = 0;
 
-	const { createCollection } = await import('@tanstack/db');
-	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+	return async (error: unknown) => {
+		const status =
+			error instanceof Error && 'status' in error ? (error as { status: number }).status : null;
 
-	currentWhereClause = whereClause;
-
-	syncStatus.update((s) => ({
-		...s,
-		syncing: true,
-		whereClause,
-		error: null
-	}));
-
-	const collection = createCollection(
-		electricCollectionOptions<ElectricUkLrtRecord>({
-			id: 'uk-lrt',
-			syncMode: 'eager', // Eager mode: sync all data immediately. Safe because WHERE clause limits to ~800 records.
-			shapeOptions: {
-				url: `${ELECTRIC_URL}/v1/shape`,
-				fetchClient: electricFetchClient,
-				params: {
-					table: 'uk_lrt',
-					where: whereClause,
-					columns: UK_LRT_COLUMNS
-				},
-				onError: async (error: unknown) => {
-					const status =
-						error instanceof Error && 'status' in error
-							? (error as { status: number }).status
-							: null;
-
-					// 401 Unauthorized — no valid JWT token
-					if (status === 401) {
-						syncStatus.update((s) => ({
-							...s,
-							error: 'Authentication required',
-							syncing: false
-						}));
-						console.warn('[TanStack DB] Unauthorized (401) — sign in required');
-						return;
-					}
-
-					// 400 "offset out of bounds" — stale shape from Electric restart or
-					// prior errors. The Electric client retains internal offset/handle state
-					// across retries, so returning {} doesn't help (it retries with the same
-					// stale offset). Instead, destroy the collection and recreate it fresh.
-					if (status === 400) {
-						const now = Date.now();
-						if (now - shapeResetAttemptedAt < 30_000) {
-							console.error('[TanStack DB] Shape recovery already attempted recently, waiting');
-							syncStatus.update((s) => ({
-								...s,
-								error: 'Electric sync unavailable — try refreshing the page',
-								syncing: false
-							}));
-							return;
-						}
-						shapeResetAttemptedAt = now;
-						console.warn('[TanStack DB] Broken shape detected (400), recreating collection');
-
-						// Try to delete the broken shape via the proxy (works if
-						// ELECTRIC_ENABLE_INTEGRATION_TESTING is set on the Electric container)
-						try {
-							await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=uk_lrt`, {
-								method: 'DELETE'
-							});
-						} catch {
-							// DELETE may not be available — that's OK
-						}
-
-						// Schedule collection recreation after a brief delay.
-						// This creates a brand-new ShapeStream with offset=-1.
-						setTimeout(async () => {
-							try {
-								ukLrtCol = null;
-								ukLrtCol = await createUkLrtCollection(currentWhereClause);
-							} catch (e) {
-								console.error('[TanStack DB] Collection recreation failed:', e);
-							}
-						}, 1500);
-						return;
-					}
-
-					console.error('[TanStack DB] Electric sync error:', error);
-					return;
-				}
-			},
-			getKey: (item) => item.id as string
-		})
-	);
-
-	// Monitor collection state for sync status (debounced to prevent excessive updates)
-	let statusDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-	const checkSyncStatus = () => {
-		// Debounce status updates to prevent UI thrashing
-		if (statusDebounceTimer) {
-			clearTimeout(statusDebounceTimer);
+		if (status === 401) {
+			syncStatus.update((s) => ({
+				...s,
+				error: 'Authentication required',
+				syncing: false
+			}));
+			console.warn(`[TanStack DB] ${collectionId}: Unauthorized (401)`);
+			return;
 		}
+
+		if (status === 400) {
+			const now = Date.now();
+			if (now - resetAttemptedAt < 30_000) {
+				console.error(`[TanStack DB] ${collectionId}: Shape recovery already attempted recently`);
+				syncStatus.update((s) => ({
+					...s,
+					error: 'Electric sync unavailable — try refreshing the page',
+					syncing: false
+				}));
+				return;
+			}
+			resetAttemptedAt = now;
+			console.warn(`[TanStack DB] ${collectionId}: Broken shape (400), resetting`);
+
+			try {
+				const colParam = encodeURIComponent(columns.join(','));
+				await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=uk_lrt&columns=${colParam}`, {
+					method: 'DELETE'
+				});
+			} catch {
+				// DELETE may not be available
+			}
+
+			// Null out singleton so next call recreates fresh
+			resetSingleton();
+			return;
+		}
+
+		console.error(`[TanStack DB] ${collectionId}: sync error:`, error);
+	};
+}
+
+/**
+ * Attach sync status monitoring to a collection.
+ */
+function monitorSyncStatus(
+	collection: Collection<ElectricUkLrtRecord, string>,
+	collectionId: string
+) {
+	let statusDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+	let resetAttemptedAt = 0;
+
+	const checkStatus = () => {
+		if (statusDebounceTimer) clearTimeout(statusDebounceTimer);
 		statusDebounceTimer = setTimeout(() => {
 			const isReady = collection.isReady();
 			const recordCount = collection.size;
 
-			// Data is flowing — reset shape recovery flag
-			if (recordCount > 0) {
-				shapeResetAttemptedAt = 0;
-			}
+			if (recordCount > 0) resetAttemptedAt = 0;
 
 			syncStatus.update((s) => ({
 				...s,
@@ -306,57 +307,147 @@ async function createUkLrtCollection(
 		}, 100);
 	};
 
-	// Subscribe to collection changes to update sync status
-	collection.subscribeChanges(() => {
-		checkSyncStatus();
-	});
+	collection.subscribeChanges(() => checkStatus());
 
-	// Initial status check (immediate)
 	syncStatus.update((s) => ({
 		...s,
 		connected: true,
 		syncing: true,
-		recordCount: collection.size
+		recordCount: collection.size,
+		whereClause: collectionId
 	}));
 
-	console.log(
-		`[TanStack DB] UK LRT collection initialized with Electric sync, WHERE: ${whereClause}`
-	);
-
-	return collection as unknown as Collection<ElectricUkLrtRecord, string>;
+	console.log(`[TanStack DB] ${collectionId} collection initialized`);
 }
 
+// ── Admin Collection (Progressive) ──────────────────────────────────────────
+
+let adminCollection: Collection<ElectricUkLrtRecord, string> | null = null;
+
 /**
- * Get UK LRT collection (browser only)
- * Creates the collection on first call with default WHERE clause
+ * Admin collection: progressive sync, no WHERE clause.
+ * First query loads fast via fetchSnapshot. Full dataset (~19K records, ~48MB
+ * without heavy JSONB) backfills in background. After backfill, all filtering
+ * is client-side sub-millisecond.
  */
-export async function getUkLrtCollection(
-	whereClause?: string
-): Promise<Collection<ElectricUkLrtRecord, string>> {
+export async function getAdminCollection(): Promise<Collection<ElectricUkLrtRecord, string>> {
 	if (!browser) {
 		throw new Error('TanStack DB collections can only be used in the browser');
 	}
 
-	const where = whereClause || getDefaultWhere();
+	if (adminCollection) return adminCollection;
 
-	// If collection exists with same WHERE, return it
-	if (ukLrtCol && currentWhereClause === where) {
-		return ukLrtCol;
-	}
+	const { createCollection } = await import('@tanstack/db');
+	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
 
-	// Create new collection (or recreate with new WHERE)
-	ukLrtCol = await createUkLrtCollection(where);
-	return ukLrtCol;
+	adminCollection = createCollection(
+		electricCollectionOptions<ElectricUkLrtRecord>({
+			id: 'uk-lrt-admin',
+			syncMode: 'progressive',
+			shapeOptions: {
+				url: `${ELECTRIC_URL}/v1/shape`,
+				fetchClient: electricFetchClient,
+				params: {
+					table: 'uk_lrt',
+					columns: UK_LRT_ADMIN_COLUMNS
+					// No WHERE — progressive syncs everything
+				},
+				onError: shapeErrorHandler('uk-lrt-admin', UK_LRT_ADMIN_COLUMNS, () => {
+					adminCollection = null;
+				})
+			},
+			getKey: (item) => item.id as string
+		})
+	) as unknown as Collection<ElectricUkLrtRecord, string>;
+
+	monitorSyncStatus(adminCollection, 'uk-lrt-admin (progressive)');
+	return adminCollection;
 }
 
-/**
- * Update the WHERE clause and recreate the collection
- */
-export async function updateUkLrtWhere(whereClause: string): Promise<void> {
-	if (!browser) return;
+// ── Browse Collection (On-Demand) ───────────────────────────────────────────
 
-	// Recreate collection with new WHERE
-	ukLrtCol = await createUkLrtCollection(whereClause);
+let browseCollection: Collection<ElectricUkLrtRecord, string> | null = null;
+
+/**
+ * Browse collection: on-demand sync, no WHERE clause.
+ * Starts at offset=now (changes only). Each createLiveQueryCollection
+ * triggers loadSubset → fetchSnapshot to pull only matching rows.
+ * Previously fetched data stays cached in the collection.
+ */
+export async function getBrowseCollection(): Promise<Collection<ElectricUkLrtRecord, string>> {
+	if (!browser) {
+		throw new Error('TanStack DB collections can only be used in the browser');
+	}
+
+	if (browseCollection) return browseCollection;
+
+	const { createCollection } = await import('@tanstack/db');
+	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+	browseCollection = createCollection(
+		electricCollectionOptions<ElectricUkLrtRecord>({
+			id: 'uk-lrt-browse',
+			syncMode: 'on-demand',
+			shapeOptions: {
+				url: `${ELECTRIC_URL}/v1/shape`,
+				fetchClient: electricFetchClient,
+				params: {
+					table: 'uk_lrt',
+					columns: UK_LRT_BROWSE_COLUMNS
+					// No WHERE — on-demand fetches per-query
+				},
+				onError: shapeErrorHandler('uk-lrt-browse', UK_LRT_BROWSE_COLUMNS, () => {
+					browseCollection = null;
+				})
+			},
+			getKey: (item) => item.id as string
+		})
+	) as unknown as Collection<ElectricUkLrtRecord, string>;
+
+	monitorSyncStatus(browseCollection, 'uk-lrt-browse (on-demand)');
+	return browseCollection;
+}
+
+// ── LAT Queue Collection (Eager) ────────────────────────────────────────────
+
+let latQueueCollection: Collection<ElectricUkLrtRecord, string> | null = null;
+
+/**
+ * LAT Queue collection: eager sync with fixed WHERE (is_making = true).
+ * Small dataset (~3K records), never changes scope.
+ */
+export async function getLatQueueCollection(): Promise<Collection<ElectricUkLrtRecord, string>> {
+	if (!browser) {
+		throw new Error('TanStack DB collections can only be used in the browser');
+	}
+
+	if (latQueueCollection) return latQueueCollection;
+
+	const { createCollection } = await import('@tanstack/db');
+	const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+	latQueueCollection = createCollection(
+		electricCollectionOptions<ElectricUkLrtRecord>({
+			id: 'uk-lrt-lat-queue',
+			syncMode: 'eager',
+			shapeOptions: {
+				url: `${ELECTRIC_URL}/v1/shape`,
+				fetchClient: electricFetchClient,
+				params: {
+					table: 'uk_lrt',
+					where: 'is_making = true',
+					columns: UK_LRT_ADMIN_COLUMNS
+				},
+				onError: shapeErrorHandler('uk-lrt-lat-queue', UK_LRT_ADMIN_COLUMNS, () => {
+					latQueueCollection = null;
+				})
+			},
+			getKey: (item) => item.id as string
+		})
+	) as unknown as Collection<ElectricUkLrtRecord, string>;
+
+	monitorSyncStatus(latQueueCollection, 'uk-lrt-lat-queue (eager)');
+	return latQueueCollection;
 }
 
 // ── LAT Collection ──────────────────────────────────────────────────────────
@@ -567,29 +658,7 @@ export async function getAnnotationCollection(
 	return annotationCol;
 }
 
-/**
- * Initialize the database
- */
-export async function initDB(): Promise<void> {
-	if (!browser) {
-		console.warn('[TanStack DB] initDB called on server - skipping');
-		return;
-	}
-
-	try {
-		await getUkLrtCollection();
-		console.log('[TanStack DB] Database initialized successfully');
-	} catch (error) {
-		console.error('[TanStack DB] Failed to initialize:', error);
-		syncStatus.update((s) => ({
-			...s,
-			error: error instanceof Error ? error.message : 'Failed to initialize',
-			syncing: false,
-			offline: true
-		}));
-		throw error;
-	}
-}
+// ── Status ──────────────────────────────────────────────────────────────────
 
 /**
  * Get database status
@@ -604,90 +673,15 @@ export function getDBStatus() {
 	}
 
 	const collections: Record<string, string> = {};
-	if (ukLrtCol) collections.ukLrt = 'uk-lrt';
+	if (adminCollection) collections.admin = 'uk-lrt-admin (progressive)';
+	if (browseCollection) collections.browse = 'uk-lrt-browse (on-demand)';
+	if (latQueueCollection) collections.latQueue = 'uk-lrt-lat-queue (eager)';
 	if (latCol) collections.lat = `lat-${currentLatLawName}`;
 	if (annotationCol) collections.annotations = `annotations-${currentAnnotationLawName}`;
 
 	return {
-		initialized: ukLrtCol !== null,
+		initialized: adminCollection !== null || browseCollection !== null,
 		collections,
-		storage: 'Electric (memory)',
-		whereClause: currentWhereClause
+		storage: 'Electric (memory)'
 	};
-}
-
-/**
- * Build WHERE clause from filter conditions
- */
-export function buildWhereFromFilters(
-	filters: Array<{ field: string; operator: string; value: unknown }>
-): string {
-	if (!filters || filters.length === 0) {
-		return getDefaultWhere();
-	}
-
-	const escapeValue = (value: string): string => value.replace(/'/g, "''");
-
-	const clauses = filters
-		.map((filter) => {
-			const { field, operator, value } = filter;
-
-			switch (operator) {
-				case 'equals':
-					return typeof value === 'string'
-						? `${field} = '${escapeValue(String(value))}'`
-						: `${field} = ${value}`;
-				case 'not_equals':
-					return typeof value === 'string'
-						? `${field} != '${escapeValue(String(value))}'`
-						: `${field} != ${value}`;
-				case 'contains':
-					return `${field} ILIKE '%${escapeValue(String(value))}%'`;
-				case 'not_contains':
-					return `${field} NOT ILIKE '%${escapeValue(String(value))}%'`;
-				case 'starts_with':
-					return `${field} ILIKE '${escapeValue(String(value))}%'`;
-				case 'ends_with':
-					return `${field} ILIKE '%${escapeValue(String(value))}'`;
-				case 'greater_than':
-					return typeof value === 'string'
-						? `${field} > '${escapeValue(String(value))}'`
-						: `${field} > ${value}`;
-				case 'less_than':
-					return typeof value === 'string'
-						? `${field} < '${escapeValue(String(value))}'`
-						: `${field} < ${value}`;
-				case 'greater_or_equal':
-					return typeof value === 'string'
-						? `${field} >= '${escapeValue(String(value))}'`
-						: `${field} >= ${value}`;
-				case 'less_or_equal':
-					return typeof value === 'string'
-						? `${field} <= '${escapeValue(String(value))}'`
-						: `${field} <= ${value}`;
-				case 'is_before':
-					return `${field} < '${escapeValue(String(value))}'`;
-				case 'is_after':
-					return `${field} > '${escapeValue(String(value))}'`;
-				case 'is_empty':
-					return `(${field} IS NULL OR ${field} = '')`;
-				case 'is_not_empty':
-					return `(${field} IS NOT NULL AND ${field} != '')`;
-				case 'in': {
-					const values = Array.isArray(value) ? value : [value];
-					const escaped = values.map((v: unknown) => `'${escapeValue(String(v))}'`).join(', ');
-					return `${field} IN (${escaped})`;
-				}
-				default:
-					console.warn(`[buildWhereFromFilters] Unknown operator: ${operator}`);
-					return null;
-			}
-		})
-		.filter(Boolean);
-
-	if (clauses.length === 0) {
-		return getDefaultWhere();
-	}
-
-	return clauses.join(' AND ');
 }
