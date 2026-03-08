@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import {
@@ -14,8 +14,9 @@
 	import { ViewSidebar } from 'svelte-table-views-sidebar';
 	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
-	// ElectricSQL sync - using official TanStack Electric integration
-	import { getAdminCollection, syncStatus } from '$lib/db/index.client';
+	// PGLite sync
+	import { startSync, syncStatus } from '$lib/pglite/sync';
+	import { createQueryStore } from '$lib/pglite/live-store';
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 
 	// ParseReviewModal for viewing record details
@@ -31,76 +32,16 @@
 		id: string;
 		name: string;
 		title_en: string;
-		year: number;
-		number: string;
-		type_code: string;
-		type_class: string;
+		type_desc: string | null;
 		family: string | null;
 		family_ii: string | null;
-		live: string | null;
-		live_description: string | null;
-		geo_extent: string | null;
-		geo_region: string | null;
-		geo_detail: string | null;
-		md_restrict_extent: string | null;
 		si_code: string | null;
-		tags: string[] | null;
-		function: string[] | null;
-		// Role/Actor
-		role: string[] | null;
-		role_gvt: Record<string, unknown> | null;
-		// Duty Type
-		duty_type: string | null;
-		duty_type_article: string | null;
-		article_duty_type: string | null;
-		// Holder Lists
-		duty_holder: Record<string, unknown> | null;
-		power_holder: Record<string, unknown> | null;
-		rights_holder: Record<string, unknown> | null;
-		responsibility_holder: Record<string, unknown> | null;
-		// Consolidated JSONB holder fields (Phase 3)
-		duties: Record<string, unknown> | null;
-		rights: Record<string, unknown> | null;
-		responsibilities: Record<string, unknown> | null;
-		powers: Record<string, unknown> | null;
-		// POPIMAR
-		popimar: Record<string, unknown> | null;
-		// Consolidated JSONB POPIMAR field (Phase 3 Issue #15)
-		popimar_details: Record<string, unknown> | null;
-		popimar_article: string | null;
-		popimar_article_clause: string | null;
-		article_popimar: string | null;
-		article_popimar_clause: string | null;
-		// Purpose
-		purpose: Record<string, unknown> | null;
-		is_making: number | null;
-		enacted_by: string | null;
-		amending: Record<string, unknown> | null;
-		amended_by: Record<string, unknown> | null;
+		md_subjects: Record<string, unknown> | null;
 		md_date: string | null;
-		md_made_date: string | null;
-		md_enactment_date: string | null;
-		md_coming_into_force_date: string | null;
-		md_dct_valid_date: string | null;
-		md_restrict_start_date: string | null;
-		md_total_paras: number | null;
-		md_body_paras: number | null;
-		md_schedule_paras: number | null;
-		md_attachment_paras: number | null;
-		md_images: number | null;
-		latest_amend_date: string | null;
-		latest_rescind_date: string | null;
-		leg_gov_uk_url: string | null;
-		created_at: string | null;
-		updated_at: string | null;
-	}
-
-	interface ApiResponse {
-		records: UkLrtRecord[];
-		count: number;
-		limit: number;
-		offset: number;
-		has_more: boolean;
+		geo_extent: string | null;
+		function: string[] | null;
+		is_making: boolean | null;
+		live: string | null;
 	}
 
 	// Helper to type cast row data from TableKit cell slot
@@ -168,14 +109,29 @@
 	// Function options
 	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
 
-	// State
-	let data: UkLrtRecord[] = [];
-	let isLoading = true;
-	let error: string | null = null;
-	let totalCount = 0;
+	// State — PGLite one-shot query (not live — 19K rows too large for live diff cache)
+	const LRT_COLUMNS = 'id, name, title_en, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live';
+	const { store: dataStore, refresh: refreshData } = createQueryStore<UkLrtRecord>(
+		`SELECT ${LRT_COLUMNS} FROM uk_lrt ORDER BY name`,
+		[]
+	);
 
-	// Electric sync state
-	let collectionSubscription: { unsubscribe: () => void } | null = null;
+	$: data = $dataStore;
+	$: totalCount = data.length;
+	$: isLoading = !$syncStatus.connected && data.length === 0;
+	let error: string | null = null;
+
+	// Watch syncStatus for errors
+	$: if ($syncStatus.error) {
+		error = $syncStatus.error;
+	}
+
+	// Refresh data when sync status changes (initial sync complete, or warm start with existing data)
+	let lastRefreshRecordCount = 0;
+	$: if ($syncStatus.recordCount > 0 && $syncStatus.recordCount !== lastRefreshRecordCount) {
+		lastRefreshRecordCount = $syncStatus.recordCount;
+		refreshData();
+	}
 
 	// Editing state
 	let editingCell: { id: string; field: string } | null = null;
@@ -332,41 +288,7 @@
 				'article_duty_type'
 			]
 		},
-		{
-			name: 'Duties',
-			description: 'Entities with legal duties (consolidated JSONB)',
-			columns: ['actions', 'name', 'title_en', 'duty_holder', 'duties']
-		},
-		{
-			name: 'Powers',
-			description: 'Entities with legal powers (consolidated JSONB)',
-			columns: ['actions', 'name', 'title_en', 'power_holder', 'powers']
-		},
-		{
-			name: 'Rights',
-			description: 'Entities with legal rights (consolidated JSONB)',
-			columns: ['actions', 'name', 'title_en', 'rights_holder', 'rights']
-		},
-		{
-			name: 'Responsibilities',
-			description: 'Entities with legal responsibilities (consolidated JSONB)',
-			columns: ['actions', 'name', 'title_en', 'responsibility_holder', 'responsibilities']
-		},
-		{
-			name: 'POPIMAR',
-			description: 'POPIMAR framework and article references',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'popimar',
-				'popimar_details',
-				'popimar_article',
-				'popimar_article_clause',
-				'article_popimar',
-				'article_popimar_clause'
-			]
-		},
+
 		{
 			name: 'Purpose',
 			description: 'Legal purposes and objectives',
@@ -390,8 +312,7 @@
 	const viewGroups: ViewGroup[] = [
 		{ id: 'credentials', name: 'Credentials & Dates', order: 0 },
 		{ id: 'classification', name: 'Classification', order: 1 },
-		{ id: 'holders', name: 'Holders', order: 2 },
-		{ id: 'analysis', name: 'Analysis', order: 3 }
+		{ id: 'analysis', name: 'Analysis', order: 2 }
 	];
 
 	const viewGroupMapping: Record<string, string> = {
@@ -404,11 +325,6 @@
 		'Geo. Extent': 'classification',
 		'Role': 'classification',
 		'Duty Type': 'classification',
-		'Duties': 'holders',
-		'Powers': 'holders',
-		'Rights': 'holders',
-		'Responsibilities': 'holders',
-		'POPIMAR': 'analysis',
 		'Purpose': 'analysis',
 		'LAT Queue': 'analysis'
 	};
@@ -444,39 +360,7 @@
 			}
 		}
 
-		// Update existing default views if their config has drifted
-		for (const viewDef of defaultViews) {
-			const existingId = existingViews.get(viewDef.name);
-			if (!existingId) continue;
-			const existing = currentViews.find((v) => v.id === existingId);
-			if (!existing) continue;
-
-			const expectedFilters = viewDef.filters || [];
-			const expectedGrouping = viewDef.grouping || [];
-			const currentFilters = existing.config.filters || [];
-			const currentGrouping = existing.config.grouping || [];
-			const filtersMatch = JSON.stringify(currentFilters) === JSON.stringify(expectedFilters);
-			const columnsMatch = JSON.stringify(existing.config.columns) === JSON.stringify(viewDef.columns);
-			const groupingMatch = JSON.stringify(currentGrouping) === JSON.stringify(expectedGrouping);
-
-			if (!filtersMatch || !columnsMatch || !groupingMatch) {
-				try {
-					await viewActions.update(existingId, {
-						config: {
-							...existing.config,
-							filters: expectedFilters,
-							columns: viewDef.columns,
-							columnOrder: viewDef.columns,
-							grouping: expectedGrouping
-						}
-					});
-				} catch (err) {
-					console.error('[LRT Admin] Failed to update view:', viewDef.name, err);
-				}
-			}
-		}
-
-		// Seed missing views
+		// Seed missing views (existing views are never overwritten — user edits are preserved)
 		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
 
@@ -611,89 +495,6 @@
 	// Handle view saved
 	function handleViewSaved(event: CustomEvent<{ id: string; name: string }>) {
 		console.log('[LRT Admin] View saved:', event.detail.name);
-	}
-
-	// Electric sync initialization
-	// Progressive mode: snapshot loads active view data fast, full dataset (~19K records,
-	// ~48MB without heavy JSONB) backfills in background. After backfill, all filtering
-	// is client-side sub-millisecond via TableKit's applyFilters.
-
-	async function initElectricSync() {
-		try {
-			error = null;
-			isLoading = true;
-
-			const collection = await getAdminCollection();
-
-			let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-			const refreshData = () => {
-				if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
-				refreshDebounceTimer = setTimeout(async () => {
-					const currentCollection = await getAdminCollection();
-					const newData = currentCollection.toArray as unknown as UkLrtRecord[];
-					data = newData;
-					totalCount = newData.length;
-					if (newData.length > 0) {
-						isLoading = false;
-					}
-				}, 200);
-			};
-
-			const changeSub = collection.subscribeChanges(() => refreshData());
-
-			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-				if (status.connected) {
-					refreshData();
-					if (!status.syncing) {
-						isLoading = false;
-					}
-				}
-				if (status.error) {
-					error = status.error;
-					isLoading = false;
-				}
-			});
-
-			collectionSubscription = {
-				unsubscribe: () => {
-					unsubscribeSyncStatus();
-					changeSub.unsubscribe();
-					if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
-				}
-			};
-
-			// Immediate data load from current collection state
-			const currentData = collection.toArray as UkLrtRecord[];
-			if (currentData.length > 0) {
-				data = currentData;
-				totalCount = currentData.length;
-				isLoading = false;
-			}
-		} catch (e) {
-			console.error('[LRT Admin] Failed to initialize:', e);
-			error = e instanceof Error ? e.message : 'Failed to initialize';
-			isLoading = false;
-		}
-	}
-
-	/**
-	 * Legacy REST API fetch - kept for fallback/comparison
-	 * @deprecated Use initElectricSync instead
-	 */
-	async function fetchDataREST(limit = 100, offset = 0) {
-		try {
-			isLoading = true;
-			const response = await fetch(`${API_URL}/api/uk-lrt?limit=${limit}&offset=${offset}`);
-			if (!response.ok) throw new Error('Failed to fetch data');
-			const json: ApiResponse = await response.json();
-			data = json.records;
-			totalCount = json.count;
-			error = null;
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Unknown error';
-		} finally {
-			isLoading = false;
-		}
 	}
 
 	// Update record
@@ -1116,175 +917,6 @@
 			size: 140,
 			meta: { group: 'Duty Type', dataType: 'text' }
 		},
-		// Duties (consolidated JSONB)
-		{
-			id: 'duty_holder',
-			accessorKey: 'duty_holder',
-			header: 'Duty Holder',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val || Object.keys(val).length === 0) return '-';
-				return Object.keys(val).join(', ');
-			},
-			size: 180,
-			meta: { group: 'Duties', dataType: 'text' }
-		},
-		{
-			id: 'duties',
-			accessorKey: 'duties',
-			header: 'Duties (JSONB)',
-			cell: (info) => {
-				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
-				if (!val) return '-';
-				const holders = val.holders?.join(', ') || '';
-				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
-				return holders + articles || '-';
-			},
-			size: 250,
-			meta: { group: 'Duties', dataType: 'jsonb' }
-		},
-		// Powers (consolidated JSONB)
-		{
-			id: 'power_holder',
-			accessorKey: 'power_holder',
-			header: 'Power Holder',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val || Object.keys(val).length === 0) return '-';
-				return Object.keys(val).join(', ');
-			},
-			size: 180,
-			meta: { group: 'Powers', dataType: 'text' }
-		},
-		{
-			id: 'powers',
-			accessorKey: 'powers',
-			header: 'Powers (JSONB)',
-			cell: (info) => {
-				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
-				if (!val) return '-';
-				const holders = val.holders?.join(', ') || '';
-				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
-				return holders + articles || '-';
-			},
-			size: 250,
-			meta: { group: 'Powers', dataType: 'jsonb' }
-		},
-		// Rights (consolidated JSONB)
-		{
-			id: 'rights_holder',
-			accessorKey: 'rights_holder',
-			header: 'Rights Holder',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val || Object.keys(val).length === 0) return '-';
-				return Object.keys(val).join(', ');
-			},
-			size: 180,
-			meta: { group: 'Rights', dataType: 'text' }
-		},
-		{
-			id: 'rights',
-			accessorKey: 'rights',
-			header: 'Rights (JSONB)',
-			cell: (info) => {
-				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
-				if (!val) return '-';
-				const holders = val.holders?.join(', ') || '';
-				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
-				return holders + articles || '-';
-			},
-			size: 250,
-			meta: { group: 'Rights', dataType: 'jsonb' }
-		},
-		// Responsibilities (consolidated JSONB)
-		{
-			id: 'responsibility_holder',
-			accessorKey: 'responsibility_holder',
-			header: 'Responsibility Holder',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val || Object.keys(val).length === 0) return '-';
-				return Object.keys(val).join(', ');
-			},
-			size: 180,
-			meta: { group: 'Responsibilities', dataType: 'text' }
-		},
-		{
-			id: 'responsibilities',
-			accessorKey: 'responsibilities',
-			header: 'Responsibilities (JSONB)',
-			cell: (info) => {
-				const val = info.getValue() as { holders?: string[]; articles?: string[] } | null;
-				if (!val) return '-';
-				const holders = val.holders?.join(', ') || '';
-				const articles = val.articles?.length ? ` [${val.articles.length} articles]` : '';
-				return holders + articles || '-';
-			},
-			size: 250,
-			meta: { group: 'Responsibilities', dataType: 'jsonb' }
-		},
-		// POPIMAR
-		{
-			id: 'popimar',
-			accessorKey: 'popimar',
-			header: 'POPIMAR',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val || Object.keys(val).length === 0) return '-';
-				return Object.keys(val).join(', ');
-			},
-			size: 150,
-			meta: { group: 'POPIMAR', dataType: 'text' }
-		},
-		{
-			id: 'popimar_details',
-			accessorKey: 'popimar_details',
-			header: 'POPIMAR Details (JSONB)',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val) return '-';
-				const categories = val.categories as string[] | undefined;
-				if (categories && categories.length > 0) {
-					return categories.join(', ');
-				}
-				return JSON.stringify(val).slice(0, 50);
-			},
-			size: 200,
-			meta: { group: 'POPIMAR', dataType: 'jsonb' }
-		},
-		{
-			id: 'popimar_article',
-			accessorKey: 'popimar_article',
-			header: 'POPIMAR → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 140,
-			meta: { group: 'POPIMAR', dataType: 'text' }
-		},
-		{
-			id: 'popimar_article_clause',
-			accessorKey: 'popimar_article_clause',
-			header: 'POPIMAR Article Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 160,
-			meta: { group: 'POPIMAR', dataType: 'text' }
-		},
-		{
-			id: 'article_popimar',
-			accessorKey: 'article_popimar',
-			header: 'Article → POPIMAR',
-			cell: (info) => info.getValue() ?? '-',
-			size: 140,
-			meta: { group: 'POPIMAR', dataType: 'text' }
-		},
-		{
-			id: 'article_popimar_clause',
-			accessorKey: 'article_popimar_clause',
-			header: 'Article POPIMAR Clause',
-			cell: (info) => info.getValue() ?? '-',
-			size: 160,
-			meta: { group: 'POPIMAR', dataType: 'text' }
-		},
 		// Purpose
 		{
 			id: 'purpose',
@@ -1409,18 +1041,11 @@
 		defaultExpanded: viewGrouping.length > 0 ? true : undefined
 	};
 
-	onMount(() => {
+	onMount(async () => {
 		if (browser) {
+			await startSync();
 			seedDefaultViews();
-			initElectricSync();
 		}
-	});
-
-	onDestroy(() => {
-		if (collectionSubscription) {
-			collectionSubscription.unsubscribe();
-		}
-		// Admin collection is a singleton — not cleaned up on page destroy
 	});
 </script>
 
@@ -1497,7 +1122,7 @@
 			<p class="text-red-600">{error}</p>
 			<button
 				class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-				on:click={() => initElectricSync()}
+				on:click={() => window.location.reload()}
 			>
 				Retry
 			</button>
@@ -1520,7 +1145,7 @@
 						<span class="text-lg font-medium text-red-600">Offline</span>
 						<button
 							class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
-							on:click={() => initElectricSync()}
+							on:click={() => window.location.reload()}
 						>
 							Retry
 						</button>
@@ -1566,7 +1191,7 @@
 				filtering: true,
 				sorting: true,
 				sortingMode: 'control',
-				pagination: false,
+				pagination: true,
 				grouping: true
 			}}
 		>
@@ -1846,9 +1471,9 @@
 		records={[{
 			name: viewModalRecord.name,
 			Title_EN: viewModalRecord.title_en,
-			type_code: viewModalRecord.type_code,
-			Year: viewModalRecord.year,
-			Number: viewModalRecord.number
+			type_code: String(viewModalRecord.type_code ?? ''),
+			Year: Number(viewModalRecord.year ?? 0),
+			Number: String(viewModalRecord.number ?? '')
 		}]}
 		recordId={viewModalRecord.id}
 		open={viewModalOpen}

@@ -1,14 +1,15 @@
 <script lang="ts">
 	/* eslint-disable no-undef */
 	import { browser } from '$app/environment';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { reparseLat, type QueueItem } from '$lib/api/lat';
-	import { getLatQueueCollection, syncStatus } from '$lib/db/index.client';
-	import type { UkLrtRecord } from '$lib/db/index.client';
+	import { startSync, syncStatus } from '$lib/pglite/sync';
+	import { createLiveQuery } from '$lib/pglite/live-store';
+	import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import {
 		SaveViewModal,
@@ -25,7 +26,18 @@
 
 	// ── State ────────────────────────────────────────────────────────
 
-	let allRecords: UkLrtRecord[] = [];
+	// PGLite live query: all making laws (same WHERE that was previously in Electric shape)
+	const allRecordsStore = createLiveQuery<UkLrtRecord>(
+		`SELECT * FROM uk_lrt
+		 WHERE is_making = true
+		   AND (making_classification IS NULL OR making_classification != 'not_making')
+		   AND (live IS NULL OR live != '❌ Revoked / Repealed / Abolished')
+		 ORDER BY name`,
+		[],
+		'id'
+	);
+
+	$: allRecords = $allRecordsStore;
 	let error: string | null = null;
 
 	// Reparse tracking
@@ -51,10 +63,7 @@
 	let viewGrouping: string[] = [];
 	let configVersion = 0;
 
-	// Electric sync subscription cleanup
-	let collectionCleanup: { unsubscribe: () => void } | null = null;
-
-	// ── Reactive queue derivation from Electric-synced uk_lrt ─────
+	// ── Reactive queue derivation from PGLite-synced uk_lrt ─────
 
 	const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
 
@@ -121,72 +130,19 @@
 	$: staleCount = queueData.filter((r) => r.queue_reason === 'stale').length;
 	$: isLoading = !$syncStatus.connected && allRecords.length === 0;
 
-	// ── Electric sync initialization ────────────────────────────────
+	// ── PGLite sync initialization ──────────────────────────────────
+
+	// Watch syncStatus for errors
+	$: if ($syncStatus.error) {
+		error = $syncStatus.error;
+	}
 
 	onMount(async () => {
 		if (browser) {
-			try {
-				// Sync all making laws — the queue needs records across all years
-				const collection = await getLatQueueCollection();
-
-				// Debounced refresh to prevent excessive UI updates
-				let refreshDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-				const refreshData = () => {
-					if (refreshDebounceTimer) {
-						clearTimeout(refreshDebounceTimer);
-					}
-					refreshDebounceTimer = setTimeout(async () => {
-						// Always get the latest collection reference in case it was recreated
-						const currentCollection = await getLatQueueCollection();
-						const newData = currentCollection.toArray as unknown as UkLrtRecord[];
-						console.log(`[LAT Queue] Collection refresh: ${newData.length} records`);
-						allRecords = newData;
-					}, 200);
-				};
-
-				// Subscribe to collection changes — fires as Electric data arrives
-				const changesSub = collection.subscribeChanges(
-					() => refreshData(),
-					{ includeInitialState: true }
-				);
-
-				// Also subscribe to syncStatus for error display
-				const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-					if (status.error) {
-						error = status.error;
-					}
-				});
-
-				collectionCleanup = {
-					unsubscribe: () => {
-						changesSub.unsubscribe();
-						unsubscribeSyncStatus();
-						if (refreshDebounceTimer) {
-							clearTimeout(refreshDebounceTimer);
-						}
-					}
-				};
-
-				// Initial data load (immediate, no debounce)
-				const initialData = collection.toArray as UkLrtRecord[];
-				if (initialData.length > 0) {
-					console.log(`[LAT Queue] Initial load: ${initialData.length} records`);
-					allRecords = initialData;
-				}
-			} catch (e) {
-				console.error('[LAT Queue] Failed to initialize Electric sync:', e);
-				error = e instanceof Error ? e.message : 'Failed to initialize';
-			}
-
+			// Start PGLite sync (no-op if already started by another page)
+			await startSync();
 			seedDefaultViews();
 		}
-	});
-
-	onDestroy(() => {
-		if (collectionCleanup) {
-			collectionCleanup.unsubscribe();
-		}
-		// LAT queue collection is a singleton — not cleaned up on page destroy
 	});
 
 	// ── Re-parse ────────────────────────────────────────────────────
@@ -375,12 +331,9 @@
 	}> = [
 		{
 			name: 'All Queue',
-			description: 'Making laws in force needing LAT parsing — missing and stale.',
+			description: 'Making laws needing LAT parsing — missing and stale.',
 			columns: allColumns,
-			filters: [
-				{ columnId: 'function', operator: 'contains', value: 'Making' },
-				{ columnId: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
-			],
+			filters: [],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
 			grouping: ['family', 'year'],
 			isDefault: true
@@ -437,38 +390,7 @@
 			}
 		}
 
-		// Update existing default views if their config has drifted (e.g. new filters/columns added)
-		for (const viewDef of defaultViews) {
-			const existingId = existingViews.get(viewDef.name);
-			if (!existingId) continue;
-			const existing = currentViews.find((v) => v.id === existingId);
-			if (!existing) continue;
-
-			const expectedFilters = viewDef.filters || [];
-			const expectedGrouping = viewDef.grouping || [];
-			const currentFilters = existing.config.filters || [];
-			const currentGrouping = existing.config.grouping || [];
-			const filtersMatch = JSON.stringify(currentFilters) === JSON.stringify(expectedFilters);
-			const columnsMatch = JSON.stringify(existing.config.columns) === JSON.stringify(viewDef.columns);
-			const groupingMatch = JSON.stringify(currentGrouping) === JSON.stringify(expectedGrouping);
-
-			if (!filtersMatch || !columnsMatch || !groupingMatch) {
-				try {
-					await viewActions.update(existingId, {
-						config: {
-							...existing.config,
-							filters: expectedFilters,
-							columns: viewDef.columns,
-							columnOrder: viewDef.columns,
-							grouping: expectedGrouping
-						}
-					});
-				} catch (err) {
-					console.error('[LAT Queue] Failed to update view:', viewDef.name, err);
-				}
-			}
-		}
-
+		// Existing views are never overwritten — user edits are preserved
 		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
 
@@ -692,7 +614,7 @@
 
 		<!-- Stats Bar -->
 		{#if !isLoading}
-			<div class="grid grid-cols-3 gap-4">
+			<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 				<div class="bg-white rounded-lg border border-gray-200 p-4">
 					<div class="text-sm text-gray-500">Total Queue</div>
 					<div class="text-2xl font-bold text-gray-900">{formatNumber(totalCount)}</div>
@@ -704,6 +626,29 @@
 				<div class="bg-white rounded-lg border border-gray-200 p-4">
 					<div class="text-sm text-gray-500">Stale LAT</div>
 					<div class="text-2xl font-bold text-amber-600">{formatNumber(staleCount)}</div>
+				</div>
+				<div class="bg-white rounded-lg border border-gray-200 p-4">
+					<div class="text-sm text-gray-500">Data Scope</div>
+					<div class="flex items-center gap-2">
+						{#if $syncStatus.syncing}
+							<div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+							<span class="text-sm font-medium text-yellow-600">Syncing...</span>
+						{:else if $syncStatus.connected}
+							<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+							<span class="text-sm font-medium text-green-600">Synced</span>
+						{:else}
+							<div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+							<span class="text-sm font-medium text-gray-600">Disconnected</span>
+						{/if}
+					</div>
+					<div class="mt-1.5 flex flex-wrap gap-1 text-xs text-gray-400">
+						<span class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded font-mono">is_making = true</span>
+						<span class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded font-mono">classification != not_making</span>
+						<span class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded font-mono">live != revoked</span>
+					</div>
+					<div class="mt-1 text-xs text-gray-400">
+						{formatNumber(allRecords.length)} records synced
+					</div>
 				</div>
 			</div>
 		{/if}

@@ -9,6 +9,9 @@ export default defineConfig({
 		// Note: Electric requests now go through Phoenix backend proxy (Gatekeeper pattern)
 		// at http://localhost:4003/api/electric — no Vite proxy needed
 	},
+	optimizeDeps: {
+		exclude: ['@electric-sql/pglite']
+	},
 	ssr: {
 		noExternal: ['@tanstack/svelte-query', 'svelte-table-views-sidebar']
 	}

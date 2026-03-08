@@ -14,10 +14,9 @@
 	import { ViewSidebar } from 'svelte-table-views-sidebar';
 	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
 
-	import { getBrowseCollection, syncStatus } from '$lib/db/index.client';
-	import { createLiveQueryCollection } from '@tanstack/db';
-	import type { Collection } from '@tanstack/db';
-	import { filtersToWhereCallback } from '$lib/db/query-helpers';
+	import { startSync, syncStatus } from '$lib/pglite/sync';
+	import { createDynamicLiveQuery } from '$lib/pglite/live-store';
+	import { filtersToSQL } from '$lib/pglite/sql-filters';
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 
 	// Types
@@ -59,13 +58,13 @@
 		return row as UkLrtRecord;
 	}
 
-	// State
-	let data: UkLrtRecord[] = [];
-	let isLoading = true;
+	// State — PGLite dynamic live query
+	const dynamicQuery = createDynamicLiveQuery<UkLrtRecord>('id');
+	const dataStore = dynamicQuery.store;
+	$: data = $dataStore;
+	$: totalCount = data.length;
+	$: isLoading = !$syncStatus.connected && data.length === 0;
 	let error: string | null = null;
-	let totalCount = 0;
-	// Electric sync state
-	let collectionSubscription: { unsubscribe: () => void } | null = null;
 
 	// Saved views state
 	let showSaveModal = false;
@@ -1020,104 +1019,20 @@
 		value: thisMonthStart
 	};
 
-	// Electric sync initialization
-	// On-demand mode: base collection starts at offset=now (empty, changes only).
-	// Each view change creates a live query that triggers loadSubset → fetchSnapshot
-	// to pull only matching rows. Previously fetched data stays cached.
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let baseCollection: Collection<any, any> | null = null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let liveQuery: Collection<any, any> | null = null;
-	let liveQueryCleanup: (() => void) | null = null;
-
 	/**
-	 * Build a live query from the current view filters.
-	 * On-demand mode: the live query's predicates drive loadSubset → fetchSnapshot.
+	 * Build a PGLite live query from the current view filters.
+	 * All data is in the local PGLite table — no network fetch needed.
 	 */
 	function buildLiveQuery(filters: FilterCondition[]) {
-		if (!baseCollection) return;
-
-		// Clean up previous live query
-		if (liveQueryCleanup) {
-			liveQueryCleanup();
-			liveQueryCleanup = null;
-			liveQuery = null;
-		}
-
 		const filterInputs = filters.map((f) => ({
 			field: f.field,
 			operator: f.operator,
 			value: f.value
 		}));
 
-		const whereCallback = filtersToWhereCallback(filterInputs);
-
-		liveQuery = createLiveQueryCollection((q) => {
-			const query = q.from({ law: baseCollection! });
-			if (whereCallback) {
-				return query.where(whereCallback);
-			}
-			return query;
-		});
-
-		const sub = liveQuery.subscribeChanges(
-			() => {
-				const newData = liveQuery!.toArray as unknown as UkLrtRecord[];
-				data = newData;
-				totalCount = newData.length;
-				if (newData.length > 0) {
-					isLoading = false;
-				}
-			},
-			{ includeInitialState: true }
-		);
-
-		liveQueryCleanup = () => {
-			sub.unsubscribe();
-			liveQuery?.cleanup();
-		};
-
-		// Check if data is already available
-		const currentData = liveQuery.toArray as unknown as UkLrtRecord[];
-		if (currentData.length > 0) {
-			data = currentData;
-			totalCount = currentData.length;
-			isLoading = false;
-		}
-	}
-
-	async function initElectricSync() {
-		try {
-			error = null;
-			isLoading = true;
-
-			baseCollection = await getBrowseCollection();
-
-			// Monitor sync status for error display
-			const unsubscribeSyncStatus = syncStatus.subscribe((status) => {
-				if (status.error) {
-					error = status.error;
-					isLoading = false;
-				}
-				if (status.connected) {
-					isLoading = false;
-				}
-			});
-
-			collectionSubscription = {
-				unsubscribe: () => {
-					unsubscribeSyncStatus();
-				}
-			};
-
-			// Build initial live query from active filters
-			buildLiveQuery(activeFilters);
-		} catch (e) {
-			console.error('[Browse] Failed to initialize:', e);
-			error = e instanceof Error ? e.message : 'Failed to initialize';
-			isLoading = false;
-		}
+		const { sql: whereSql, params } = filtersToSQL(filterInputs);
+		const sql = `SELECT * FROM uk_lrt WHERE ${whereSql} ORDER BY name`;
+		dynamicQuery.update(sql, params);
 	}
 
 	// Build TableKit configuration (reactive)
@@ -1154,26 +1069,26 @@
 		defaultExpanded: viewGrouping.length > 0 ? true : undefined
 	};
 
+	// Monitor sync errors
+	$: if ($syncStatus.error) {
+		error = $syncStatus.error;
+	}
+
 	// Rebuild live query when active filters change (view switch, filter add/remove)
-	$: if (baseCollection && activeFilters) {
+	$: if (activeFilters) {
 		buildLiveQuery(activeFilters);
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		if (browser) {
+			await startSync();
 			seedDefaultViews();
-			initElectricSync();
+			// Initial live query is built reactively via $: if (activeFilters)
 		}
 	});
 
 	onDestroy(() => {
-		if (liveQueryCleanup) {
-			liveQueryCleanup();
-		}
-		if (collectionSubscription) {
-			collectionSubscription.unsubscribe();
-		}
-		// Browse collection is a singleton — not cleaned up on page destroy
+		dynamicQuery.destroy();
 	});
 </script>
 
@@ -1241,7 +1156,7 @@
 			<p class="text-red-600">{error}</p>
 			<button
 				class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-				on:click={() => initElectricSync()}
+				on:click={() => window.location.reload()}
 			>
 				Retry
 			</button>
@@ -1272,9 +1187,9 @@
 				</div>
 			</div>
 			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Data Scope</div>
+				<div class="text-sm text-gray-600">Total Records</div>
 				<div class="text-sm font-medium text-gray-700">
-					On-demand ({$syncStatus.recordCount.toLocaleString()} cached)
+					{$syncStatus.recordCount.toLocaleString()} in local database
 				</div>
 			</div>
 		</div>
