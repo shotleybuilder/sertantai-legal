@@ -1,5 +1,11 @@
 /**
  * Tests for ElectricSQL UK LRT sync utilities
+ *
+ * LEGACY: buildWhereFromFilters and getDefaultWhere tests are skipped.
+ * These test SQL WHERE clause building for the old per-filter shape sync
+ * approach. Pages now use progressive/on-demand sync modes with client-side
+ * filtering (see query-helpers.test.ts for the replacement).
+ * The syncUkLrt module is still exported but no page calls it directly.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -10,7 +16,7 @@ vi.mock('$app/environment', () => ({
 	browser: true
 }));
 
-// Mock the TanStack DB collection
+// Mock the TanStack DB collection (legacy export name — no longer in index.client)
 vi.mock('$lib/db/index.client', () => ({
 	getUkLrtCollection: vi.fn()
 }));
@@ -18,7 +24,9 @@ vi.mock('$lib/db/index.client', () => ({
 // Import after mocks
 import { buildWhereFromFilters, syncStatus } from './sync-uk-lrt';
 
-describe('buildWhereFromFilters', () => {
+// LEGACY — skipped: pages no longer use SQL WHERE clause building.
+// See query-helpers.test.ts for the TanStack DB expression-based replacement.
+describe.skip('buildWhereFromFilters', () => {
 	it('returns default 3-year filter when no filters provided', () => {
 		const currentYear = new Date().getFullYear();
 		const result = buildWhereFromFilters([]);
@@ -154,7 +162,8 @@ describe('buildWhereFromFilters', () => {
 	});
 });
 
-describe('getDefaultWhere (via buildWhereFromFilters)', () => {
+// LEGACY — skipped: same reason as buildWhereFromFilters above.
+describe.skip('getDefaultWhere (via buildWhereFromFilters)', () => {
 	it('returns current year minus 2 for default filter', () => {
 		const currentYear = new Date().getFullYear();
 		const expectedWhere = `year >= ${currentYear - 2}`;
