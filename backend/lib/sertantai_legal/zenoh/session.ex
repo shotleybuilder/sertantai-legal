@@ -57,15 +57,19 @@ defmodule SertantaiLegal.Zenoh.Session do
 
   defp zenoh_config do
     app_config = Application.get_env(:sertantai_legal, :zenoh, [])
-    endpoints = Keyword.get(app_config, :connect_endpoints, [])
+    connect_endpoints = Keyword.get(app_config, :connect_endpoints, [])
+    listen_endpoints = Keyword.get(app_config, :listen_endpoints, ["tcp/[::]:7447"])
 
     config = Zenohex.Config.default()
 
     config =
       Zenohex.Config.update_in(config, ["mode"], fn _ -> "peer" end)
 
-    if endpoints != [] do
-      Zenohex.Config.update_in(config, ["connect", "endpoints"], fn _ -> endpoints end)
+    config =
+      Zenohex.Config.update_in(config, ["listen", "endpoints"], fn _ -> listen_endpoints end)
+
+    if connect_endpoints != [] do
+      Zenohex.Config.update_in(config, ["connect", "endpoints"], fn _ -> connect_endpoints end)
     else
       config
     end

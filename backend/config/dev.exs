@@ -82,7 +82,7 @@ config :sertantai_legal, :hub,
 config :sertantai_legal, :zenoh,
   enabled: true,
   tenant: "dev",
-  connect_endpoints: []
+  connect_endpoints: ["tcp/10.203.1.170:7447"]
 
 # Auth + Electric URLs for local development
 config :sertantai_legal,
