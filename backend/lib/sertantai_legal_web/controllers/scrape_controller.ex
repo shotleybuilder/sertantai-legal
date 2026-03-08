@@ -69,7 +69,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
   def index(conn, _params) do
     case SessionManager.list_recent() do
       {:ok, sessions} ->
-        json(conn, %{sessions: Enum.map(sessions, &session_to_json/1)})
+        # Exclude LAT parse sessions — they have their own UI at /admin/lat/sessions
+        filtered = Enum.reject(sessions, &(&1.session_type == "lat_parse"))
+        json(conn, %{sessions: Enum.map(filtered, &session_to_json/1)})
 
       {:error, reason} ->
         conn
