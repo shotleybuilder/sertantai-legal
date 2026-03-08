@@ -1147,4 +1147,58 @@ defmodule SertantaiLegal.Scraper.Storage do
       {k, v} -> {k, v}
     end)
   end
+
+  # ── LAT session helpers ──────────────────────────────────────────
+
+  @doc """
+  Update a session record with LAT parse results.
+
+  ## Parameters
+  - session_id: Session identifier
+  - law_name: Law name
+  - result: Map with lat: %{inserted, deleted}, annotations: %{inserted}, duration_ms
+
+  ## Returns
+  `{:ok, record}` or `{:error, reason}`
+  """
+  @spec update_lat_result(String.t(), String.t(), map()) ::
+          {:ok, ScrapeSessionRecord.t()} | {:error, any()}
+  def update_lat_result(session_id, law_name, result) do
+    case get_session_record(session_id, law_name) do
+      {:ok, nil} ->
+        {:error, "Record not found: #{law_name}"}
+
+      {:ok, record} ->
+        ScrapeSessionRecord.mark_lat_parsed(record, %{
+          lat_inserted: get_in(result, [:lat, :inserted]) || 0,
+          lat_deleted: get_in(result, [:lat, :deleted]) || 0,
+          annotations_inserted: get_in(result, [:annotations, :inserted]) || 0,
+          parse_duration_ms: result[:duration_ms] || 0
+        })
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  Mark a session record as failed with an error message.
+  """
+  @spec mark_lat_failed(String.t(), String.t(), String.t(), integer()) ::
+          {:ok, ScrapeSessionRecord.t()} | {:error, any()}
+  def mark_lat_failed(session_id, law_name, error, duration_ms) do
+    case get_session_record(session_id, law_name) do
+      {:ok, nil} ->
+        {:error, "Record not found: #{law_name}"}
+
+      {:ok, record} ->
+        ScrapeSessionRecord.mark_lat_failed(record, %{
+          parse_error: error,
+          parse_duration_ms: duration_ms
+        })
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
 end

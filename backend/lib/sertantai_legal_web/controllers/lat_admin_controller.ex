@@ -16,7 +16,10 @@ defmodule SertantaiLegalWeb.LatAdminController do
   use SertantaiLegalWeb, :controller
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LatReparser
+  alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
+  alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
+
+  require Logger
 
   @default_limit 500
   @max_limit 5000
@@ -427,6 +430,327 @@ defmodule SertantaiLegalWeb.LatAdminController do
       %NaiveDateTime{} = dt -> Map.put(row, key, NaiveDateTime.to_iso8601(dt))
       %DateTime{} = dt -> Map.put(row, key, DateTime.to_iso8601(dt))
       _ -> row
+    end
+  end
+
+  # ── LAT Session endpoints ──────────────────────────────────────────
+
+  @doc "POST /api/lat/sessions/preview — Preview count of records matching filters."
+  def lat_session_preview(conn, params) do
+    case LatSessionManager.preview(params) do
+      {:ok, result} -> json(conn, result)
+      {:error, reason} -> conn |> put_status(:bad_request) |> json(%{error: reason})
+    end
+  end
+
+  @doc "POST /api/lat/sessions — Create a LAT parse session from filters."
+  def create_lat_session(conn, params) do
+    case LatSessionManager.create(params) do
+      {:ok, session} ->
+        json(conn, %{
+          session_id: session.session_id,
+          session_type: session.session_type,
+          status: session.status,
+          group1_count: session.group1_count
+        })
+
+      {:error, reason} ->
+        conn |> put_status(422) |> json(%{error: reason})
+    end
+  end
+
+  @doc "GET /api/lat/sessions — List recent LAT parse sessions."
+  def lat_sessions(conn, _params) do
+    case ScrapeSession.recent_by_type("lat_parse") do
+      {:ok, sessions} ->
+        json(conn, %{sessions: Enum.map(sessions, &session_to_json/1)})
+
+      {:error, reason} ->
+        conn |> put_status(500) |> json(%{error: inspect(reason)})
+    end
+  end
+
+  @doc "GET /api/lat/sessions/:id — Get a single LAT session by session_id."
+  def lat_session_show(conn, %{"id" => session_id}) do
+    case ScrapeSession.by_session_id(session_id) do
+      {:ok, session} ->
+        json(conn, session_to_json(session))
+
+      {:error, _} ->
+        conn |> put_status(:not_found) |> json(%{error: "Session not found"})
+    end
+  end
+
+  @doc "GET /api/lat/sessions/:id/records — Get records for a LAT session."
+  def lat_session_records(conn, %{"id" => session_id}) do
+    case Storage.read_session_records(session_id, :group1) do
+      {:ok, records} ->
+        enriched =
+          Enum.map(records, fn record ->
+            # Merge DB record fields (status, lat results) with stored data
+            case Storage.get_session_record(session_id, record["name"] || record[:name]) do
+              {:ok, db_record} when not is_nil(db_record) ->
+                %{
+                  law_name: db_record.law_name,
+                  title_en: record["Title_EN"] || record[:Title_EN] || "",
+                  type_code: record["type_code"] || record[:type_code] || "",
+                  year: record["Year"] || record[:Year],
+                  family: record["family"] || record[:family] || "",
+                  status: db_record.status,
+                  selected: db_record.selected,
+                  lat_inserted: db_record.lat_inserted,
+                  lat_deleted: db_record.lat_deleted,
+                  annotations_inserted: db_record.annotations_inserted,
+                  parse_duration_ms: db_record.parse_duration_ms,
+                  parse_error: db_record.parse_error,
+                  parse_count: db_record.parse_count
+                }
+
+              _ ->
+                %{
+                  law_name: record["name"] || record[:name],
+                  title_en: record["Title_EN"] || record[:Title_EN] || "",
+                  type_code: record["type_code"] || record[:type_code] || "",
+                  year: record["Year"] || record[:Year],
+                  family: record["family"] || record[:family] || "",
+                  status: :pending,
+                  selected: false,
+                  lat_inserted: nil,
+                  lat_deleted: nil,
+                  annotations_inserted: nil,
+                  parse_duration_ms: nil,
+                  parse_error: nil,
+                  parse_count: 0
+                }
+            end
+          end)
+
+        json(conn, %{records: enriched, count: length(enriched)})
+
+      {:error, reason} ->
+        conn |> put_status(500) |> json(%{error: inspect(reason)})
+    end
+  end
+
+  @doc "PATCH /api/lat/sessions/:id/records/select — Bulk update selection state."
+  def lat_select(conn, %{"id" => session_id, "names" => names, "selected" => selected}) do
+    case Storage.update_selection(session_id, :group1, names, selected) do
+      {:ok, count} -> json(conn, %{updated: count})
+      {:error, reason} -> conn |> put_status(500) |> json(%{error: inspect(reason)})
+    end
+  end
+
+  @doc "POST /api/lat/sessions/:id/confirm — Mark a record as confirmed after parsing."
+  def lat_confirm(conn, %{"id" => session_id, "law_name" => law_name}) do
+    case Storage.get_session_record(session_id, law_name) do
+      {:ok, record} when not is_nil(record) ->
+        case ScrapeSessionRecord.mark_confirmed(record, %{}) do
+          {:ok, _} ->
+            # Update session totals
+            update_session_lat_totals(session_id)
+
+            json(conn, %{
+              law_name: law_name,
+              status: :confirmed,
+              lat_inserted: record.lat_inserted,
+              annotations_inserted: record.annotations_inserted
+            })
+
+          {:error, reason} ->
+            conn |> put_status(500) |> json(%{error: inspect(reason)})
+        end
+
+      _ ->
+        conn |> put_status(:not_found) |> json(%{error: "Record not found"})
+    end
+  end
+
+  @doc "DELETE /api/lat/sessions/:id — Delete a LAT session."
+  def lat_delete(conn, %{"id" => session_id}) do
+    case ScrapeSession.by_session_id(session_id) do
+      {:ok, session} ->
+        ScrapeSession.destroy(session)
+        json(conn, %{message: "Session deleted"})
+
+      {:error, _} ->
+        conn |> put_status(:not_found) |> json(%{error: "Session not found"})
+    end
+  end
+
+  # ── LAT SSE parse stream ───────────────────────────────────────────
+
+  @sse_heartbeat_interval 5_000
+
+  @doc "GET /api/lat/sessions/:id/parse-stream?name=UK_uksi_2024_1001 — SSE streaming LAT parse."
+  def lat_parse_stream(conn, %{"id" => session_id, "name" => law_name}) do
+    case ScrapeSession.by_session_id(session_id) do
+      {:ok, _session} ->
+        conn =
+          conn
+          |> put_resp_content_type("text/event-stream")
+          |> put_resp_header("cache-control", "no-cache")
+          |> put_resp_header("connection", "keep-alive")
+          |> send_chunked(200)
+
+        {:ok, conn} =
+          chunk(conn, "data: #{Jason.encode!(%{event: "connected", name: law_name})}\n\n")
+
+        caller = self()
+
+        send_progress = fn event ->
+          send(caller, {:sse_event, event})
+          :ok
+        end
+
+        task =
+          Task.async(fn ->
+            LatStagedParser.parse(law_name, on_progress: send_progress)
+          end)
+
+        lat_sse_event_loop(conn, task, session_id, law_name)
+
+      {:error, _} ->
+        conn |> put_status(:not_found) |> json(%{error: "Session not found"})
+    end
+  end
+
+  def lat_parse_stream(conn, %{"id" => _}) do
+    conn |> put_status(:bad_request) |> json(%{error: "Missing required parameter: name"})
+  end
+
+  defp lat_sse_event_loop(conn, task, session_id, law_name) do
+    receive do
+      {:sse_event, event} ->
+        data = lat_encode_progress_event(event)
+
+        case chunk(conn, "data: #{data}\n\n") do
+          {:ok, conn} ->
+            lat_sse_event_loop(conn, task, session_id, law_name)
+
+          {:error, _} ->
+            Task.await(task, :infinity)
+            conn
+        end
+
+      {ref, {:ok, result}} when is_reference(ref) ->
+        Process.demonitor(ref, [:flush])
+        lat_send_parse_complete(conn, result, session_id, law_name)
+
+      {ref, {:error, reason}} when is_reference(ref) ->
+        Process.demonitor(ref, [:flush])
+        Logger.error("[LAT SSE] Parse task failed: #{inspect(reason)}")
+
+        # Update session record with error
+        Storage.mark_lat_failed(session_id, law_name, inspect(reason), 0)
+        conn
+
+      {:DOWN, _ref, :process, _pid, reason} ->
+        Logger.error("[LAT SSE] Parse task crashed: #{inspect(reason)}")
+        Storage.mark_lat_failed(session_id, law_name, inspect(reason), 0)
+        conn
+    after
+      @sse_heartbeat_interval ->
+        case chunk(conn, ": heartbeat\n\n") do
+          {:ok, conn} ->
+            lat_sse_event_loop(conn, task, session_id, law_name)
+
+          {:error, _} ->
+            Logger.info("[LAT SSE] Client disconnected during heartbeat")
+            Task.await(task, :infinity)
+            conn
+        end
+    end
+  end
+
+  defp lat_send_parse_complete(conn, result, session_id, law_name) do
+    # Update session record with results
+    case result do
+      %{has_errors: false} = r ->
+        Storage.update_lat_result(session_id, law_name, r)
+
+      %{has_errors: true, error: error} ->
+        Storage.mark_lat_failed(session_id, law_name, error, result[:duration_ms] || 0)
+
+      %{has_errors: true} = r ->
+        # Partial success — some stages may have succeeded
+        Storage.update_lat_result(session_id, law_name, r)
+    end
+
+    final_event =
+      Jason.encode!(%{
+        event: "parse_complete",
+        has_errors: result[:has_errors] || false,
+        result: %{
+          law_name: law_name,
+          lat: result[:lat],
+          annotations: result[:annotations],
+          duration_ms: result[:duration_ms]
+        }
+      })
+
+    chunk(conn, "data: #{final_event}\n\n")
+    conn
+  end
+
+  defp lat_encode_progress_event({:stage_start, stage, stage_num, total}) do
+    Jason.encode!(%{event: "stage_start", stage: stage, stage_num: stage_num, total: total})
+  end
+
+  defp lat_encode_progress_event({:stage_complete, stage, status, summary}) do
+    Jason.encode!(%{event: "stage_complete", stage: stage, status: status, summary: summary})
+  end
+
+  defp lat_encode_progress_event({:parse_complete, has_errors}) do
+    Jason.encode!(%{event: "parse_done", has_errors: has_errors})
+  end
+
+  # ── LAT Session helpers ────────────────────────────────────────────
+
+  defp session_to_json(session) do
+    %{
+      id: session.id,
+      session_id: session.session_id,
+      session_type: session.session_type,
+      status: session.status,
+      group1_count: session.group1_count,
+      persisted_count: session.persisted_count,
+      lat_total_inserted: session.lat_total_inserted,
+      lat_total_annotations: session.lat_total_annotations,
+      inserted_at: format_datetime(session.inserted_at),
+      updated_at: format_datetime(session.updated_at)
+    }
+  end
+
+  defp format_datetime(nil), do: nil
+  defp format_datetime(%DateTime{} = dt), do: DateTime.to_iso8601(dt)
+  defp format_datetime(%NaiveDateTime{} = dt), do: NaiveDateTime.to_iso8601(dt)
+
+  defp update_session_lat_totals(session_id) do
+    sql = """
+    SELECT
+      COALESCE(SUM(lat_inserted), 0) AS total_inserted,
+      COALESCE(SUM(annotations_inserted), 0) AS total_annotations,
+      COUNT(*) FILTER (WHERE status = 'confirmed') AS confirmed_count
+    FROM scrape_session_records
+    WHERE session_id = $1
+    """
+
+    case Repo.query(sql, [session_id]) do
+      {:ok, %{rows: [[total_inserted, total_annotations, confirmed_count]]}} ->
+        case ScrapeSession.by_session_id(session_id) do
+          {:ok, session} ->
+            ScrapeSession.update_lat_totals(session, %{
+              lat_total_inserted: total_inserted,
+              lat_total_annotations: total_annotations,
+              persisted_count: confirmed_count
+            })
+
+          _ ->
+            :ok
+        end
+
+      _ ->
+        :ok
     end
   end
 end

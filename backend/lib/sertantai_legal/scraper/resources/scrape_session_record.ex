@@ -69,6 +69,32 @@ defmodule SertantaiLegal.Scraper.ScrapeSessionRecord do
       description("Number of times this record has been parsed")
     end
 
+    # LAT session result fields (nullable, only populated for lat_parse sessions)
+    attribute :lat_inserted, :integer do
+      allow_nil?(true)
+      description("LAT rows inserted for this record")
+    end
+
+    attribute :lat_deleted, :integer do
+      allow_nil?(true)
+      description("LAT rows deleted for this record")
+    end
+
+    attribute :annotations_inserted, :integer do
+      allow_nil?(true)
+      description("Annotation rows inserted for this record")
+    end
+
+    attribute :parse_duration_ms, :integer do
+      allow_nil?(true)
+      description("Total parse duration in milliseconds")
+    end
+
+    attribute :parse_error, :string do
+      allow_nil?(true)
+      description("Error message if parse failed")
+    end
+
     create_timestamp(:inserted_at)
     update_timestamp(:updated_at)
   end
@@ -115,6 +141,19 @@ defmodule SertantaiLegal.Scraper.ScrapeSessionRecord do
     update :set_selected do
       description("Update selection state")
       accept([:selected])
+    end
+
+    update :mark_lat_parsed do
+      description("Mark record as parsed with LAT results")
+      accept([:lat_inserted, :lat_deleted, :annotations_inserted, :parse_duration_ms])
+      change(set_attribute(:status, :parsed))
+      change(atomic_update(:parse_count, expr(parse_count + 1)))
+    end
+
+    update :mark_lat_failed do
+      description("Mark record as failed with error message")
+      accept([:parse_error, :parse_duration_ms])
+      change(set_attribute(:status, :skipped))
     end
 
     read :by_session do
@@ -180,5 +219,7 @@ defmodule SertantaiLegal.Scraper.ScrapeSessionRecord do
     define(:mark_confirmed)
     define(:mark_skipped)
     define(:set_selected)
+    define(:mark_lat_parsed)
+    define(:mark_lat_failed)
   end
 end

@@ -81,6 +81,7 @@ defmodule SertantaiLegalWeb.Router do
     pipe_through([:sse, :sse_authenticated])
     get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
     get("/uk-lrt/:id/parse-stream", UkLrtController, :parse_stream)
+    get("/lat/sessions/:id/parse-stream", LatAdminController, :lat_parse_stream)
   end
 
   # Tenant-scoped API endpoints (JWT auth from sertantai-auth)
@@ -127,6 +128,16 @@ defmodule SertantaiLegalWeb.Router do
     # Zenoh P2P mesh monitoring
     get("/zenoh/subscriptions", ZenohController, :subscriptions)
     get("/zenoh/queryables", ZenohController, :queryables)
+
+    # LAT session endpoints (must come before /lat/:id routes)
+    post("/lat/sessions/preview", LatAdminController, :lat_session_preview)
+    post("/lat/sessions", LatAdminController, :create_lat_session)
+    get("/lat/sessions", LatAdminController, :lat_sessions)
+    get("/lat/sessions/:id", LatAdminController, :lat_session_show)
+    get("/lat/sessions/:id/records", LatAdminController, :lat_session_records)
+    patch("/lat/sessions/:id/records/select", LatAdminController, :lat_select)
+    post("/lat/sessions/:id/confirm", LatAdminController, :lat_confirm)
+    delete("/lat/sessions/:id", LatAdminController, :lat_delete)
 
     # LAT admin endpoints
     get("/lat/stats", LatAdminController, :stats)

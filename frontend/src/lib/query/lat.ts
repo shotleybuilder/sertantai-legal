@@ -10,12 +10,22 @@ import {
 	getAnnotations,
 	reparseLat,
 	getLatQueue,
+	getLatSessions,
+	getLatSession,
+	getLatSessionRecords,
+	createLatSession,
+	deleteLatSession,
+	updateLatSelection,
+	confirmLatRecord,
 	type LatStats,
 	type LawSummary,
 	type LatRowsResponse,
 	type AnnotationsResponse,
 	type ReparseResult,
-	type QueueResponse
+	type QueueResponse,
+	type LatSession,
+	type LatSessionRecord,
+	type LatSessionFilters
 } from '$lib/api/lat';
 
 // Query Keys
@@ -27,7 +37,10 @@ export const latKeys = {
 	laws: (search?: string, typeCode?: string) => [...latKeys.all, 'laws', search, typeCode] as const,
 	rows: (lawName: string, limit?: number, offset?: number) =>
 		[...latKeys.all, 'rows', lawName, limit, offset] as const,
-	annotations: (lawName: string) => [...latKeys.all, 'annotations', lawName] as const
+	annotations: (lawName: string) => [...latKeys.all, 'annotations', lawName] as const,
+	sessions: () => [...latKeys.all, 'sessions'] as const,
+	session: (id: string) => [...latKeys.all, 'session', id] as const,
+	sessionRecords: (id: string) => [...latKeys.all, 'session', id, 'records'] as const
 };
 
 /**
@@ -97,6 +110,111 @@ export function useReparseMutation() {
 			queryClient.invalidateQueries({ queryKey: ['lat', 'laws'] });
 			queryClient.invalidateQueries({ queryKey: ['lat', 'rows', lawName] });
 			queryClient.invalidateQueries({ queryKey: latKeys.annotations(lawName) });
+		}
+	});
+}
+
+// ── LAT Session Hooks ──────────────────────────────────────────────
+
+/**
+ * Query: List recent LAT parse sessions
+ */
+export function useLatSessionsQuery() {
+	return createQuery<{ sessions: LatSession[] }>({
+		queryKey: latKeys.sessions(),
+		queryFn: getLatSessions
+	});
+}
+
+/**
+ * Query: Get a single LAT session
+ */
+export function useLatSessionQuery(sessionId: string) {
+	return createQuery<LatSession>({
+		queryKey: latKeys.session(sessionId),
+		queryFn: () => getLatSession(sessionId),
+		enabled: !!sessionId
+	});
+}
+
+/**
+ * Query: Get records for a LAT session
+ */
+export function useLatSessionRecordsQuery(sessionId: string) {
+	return createQuery<{ records: LatSessionRecord[]; count: number }>({
+		queryKey: latKeys.sessionRecords(sessionId),
+		queryFn: () => getLatSessionRecords(sessionId),
+		enabled: !!sessionId
+	});
+}
+
+/**
+ * Mutation: Create a LAT parse session
+ */
+export function useCreateLatSessionMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (filters: LatSessionFilters) => createLatSession(filters),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: latKeys.sessions() });
+		}
+	});
+}
+
+/**
+ * Mutation: Delete a LAT session
+ */
+export function useDeleteLatSessionMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: (sessionId: string) => deleteLatSession(sessionId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: latKeys.sessions() });
+		}
+	});
+}
+
+/**
+ * Mutation: Update LAT session record selection
+ */
+export function useUpdateLatSelectionMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: ({
+			sessionId,
+			names,
+			selected
+		}: {
+			sessionId: string;
+			names: string[];
+			selected: boolean;
+		}) => updateLatSelection(sessionId, names, selected),
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: latKeys.sessionRecords(variables.sessionId)
+			});
+		}
+	});
+}
+
+/**
+ * Mutation: Confirm a parsed LAT record
+ */
+export function useConfirmLatRecordMutation() {
+	const queryClient = useQueryClient();
+
+	return createMutation({
+		mutationFn: ({ sessionId, lawName }: { sessionId: string; lawName: string }) =>
+			confirmLatRecord(sessionId, lawName),
+		onSuccess: (_data, variables) => {
+			queryClient.invalidateQueries({
+				queryKey: latKeys.sessionRecords(variables.sessionId)
+			});
+			queryClient.invalidateQueries({ queryKey: latKeys.session(variables.sessionId) });
+			queryClient.invalidateQueries({ queryKey: latKeys.sessions() });
 		}
 	});
 }

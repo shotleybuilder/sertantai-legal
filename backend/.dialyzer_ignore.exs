@@ -18,6 +18,9 @@
 
   # Parser modules - permissive specs for API consistency
   {"lib/sertantai_legal/scraper/law_parser.ex", :contract_supertype},
+  {"lib/sertantai_legal/scraper/law_parser.ex", :pattern_match},
+  {"lib/sertantai_legal/scraper/law_parser.ex", :pattern_match_cov},
+  {"lib/sertantai_legal/scraper/law_parser.ex", :unused_fun},
   {"lib/sertantai_legal/scraper/metadata.ex", :contract_supertype},
   {"lib/sertantai_legal/scraper/metadata.ex", :pattern_match},
 
@@ -37,6 +40,7 @@
 
   # Controller guard clauses - intentional defensive guards for request validation
   {"lib/sertantai_legal_web/controllers/scrape_controller.ex", :guard_fail},
+  {"lib/sertantai_legal_web/controllers/scrape_controller.ex", :pattern_match},
   {"lib/sertantai_legal_web/controllers/scrape_controller.ex", :pattern_match_cov},
   {"lib/sertantai_legal_web/controllers/uk_lrt_controller.ex", :guard_fail},
 

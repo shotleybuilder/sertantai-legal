@@ -5,12 +5,14 @@
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
+	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { reparseLat, type QueueItem } from '$lib/api/lat';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { createLiveQuery } from '$lib/pglite/live-store';
 	import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
+	import LatParseDialog from '$lib/components/LatParseDialog.svelte';
 	import {
 		SaveViewModal,
 		activeViewId,
@@ -49,6 +51,14 @@
 	let lrtModalOpen = false;
 	let lrtModalRecord: QueueItem | null = null;
 	let lrtModalRecordId: string | undefined = undefined;
+
+	// LAT Parse Dialog state
+	let showLatDialog = false;
+
+	function handleLatSessionCreated(event: CustomEvent<{ session_id: string }>) {
+		showLatDialog = false;
+		goto(`/admin/lat/sessions/${event.detail.session_id}`);
+	}
 
 	// Saved views state
 	let showSaveModal = false;
@@ -597,7 +607,20 @@
 					</p>
 				</div>
 			</div>
-			<a href="/admin/lat" class="text-sm text-gray-500 hover:text-gray-700">&larr; LAT Data</a>
+			<div class="flex items-center space-x-3">
+				<a
+					href="/admin/lat/sessions"
+					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+				>
+					Sessions
+				</a>
+				<button
+					on:click={() => (showLatDialog = true)}
+					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+				>
+					Parse Family
+				</button>
+			</div>
 		</div>
 
 		<!-- Feedback messages -->
@@ -809,6 +832,13 @@
 {#if showSaveModal && capturedConfig}
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
 {/if}
+
+<!-- LAT Parse Family Dialog -->
+<LatParseDialog
+	bind:open={showLatDialog}
+	on:close={() => (showLatDialog = false)}
+	on:created={handleLatSessionCreated}
+/>
 
 <!-- LRT Refresh Modal (Parse & Review) -->
 {#if lrtModalRecord}

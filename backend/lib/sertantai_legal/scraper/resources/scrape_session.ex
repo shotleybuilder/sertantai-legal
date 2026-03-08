@@ -64,6 +64,11 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
       description("Optional type code filter (uksi, ukpga, etc). Nil = all")
     end
 
+    attribute :session_type, :string do
+      allow_nil?(true)
+      description("Session type discriminator: scrape, reparse, lat_parse. Nil for legacy rows.")
+    end
+
     # Status
     attribute :status, :atom do
       constraints(one_of: [:pending, :scraping, :categorized, :reviewing, :completed, :failed])
@@ -108,6 +113,17 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
       description("Records persisted to uk_lrt table")
     end
 
+    # LAT session aggregate fields
+    attribute :lat_total_inserted, :integer do
+      default(0)
+      description("Total LAT rows inserted across all records (lat_parse sessions)")
+    end
+
+    attribute :lat_total_annotations, :integer do
+      default(0)
+      description("Total annotation rows inserted across all records (lat_parse sessions)")
+    end
+
     # File paths (relative to priv/scraper/)
     attribute :raw_file, :string do
       allow_nil?(true)
@@ -142,7 +158,18 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
 
     create :create do
       description("Create a new scrape session")
-      accept([:session_id, :year, :month, :day_from, :day_to, :type_code, :status, :group1_count])
+
+      accept([
+        :session_id,
+        :year,
+        :month,
+        :day_from,
+        :day_to,
+        :type_code,
+        :status,
+        :group1_count,
+        :session_type
+      ])
     end
 
     update :update do
@@ -225,6 +252,25 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
       filter(expr(status == ^arg(:status)))
       prepare(build(sort: [inserted_at: :desc]))
     end
+
+    read :by_type do
+      description("Get sessions by session_type")
+      argument(:session_type, :string, allow_nil?: false)
+      filter(expr(session_type == ^arg(:session_type)))
+      prepare(build(sort: [inserted_at: :desc]))
+    end
+
+    read :recent_by_type do
+      description("Get recent sessions by session_type (max 20)")
+      argument(:session_type, :string, allow_nil?: false)
+      filter(expr(session_type == ^arg(:session_type)))
+      prepare(build(sort: [inserted_at: :desc], limit: 20))
+    end
+
+    update :update_lat_totals do
+      description("Update LAT aggregate totals for a lat_parse session")
+      accept([:lat_total_inserted, :lat_total_annotations, :persisted_count])
+    end
   end
 
   code_interface do
@@ -244,5 +290,8 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
     define(:mark_completed)
     define(:mark_failed)
     define(:destroy)
+    define(:by_type, args: [:session_type])
+    define(:recent_by_type, args: [:session_type])
+    define(:update_lat_totals)
   end
 end
