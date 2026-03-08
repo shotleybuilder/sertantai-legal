@@ -65,18 +65,16 @@
 	}
 
 	function openReviewSelected() {
-		const target = selectedRecords.length > 0 ? selectedRecords : pendingRecords;
-		if (target.length === 0) return;
-		modalRecords = target;
+		if (selectedRecords.length === 0) return;
+		modalRecords = selectedRecords;
 		modalInitialIndex = 0;
 		modalAutoConfirm = false;
 		showModal = true;
 	}
 
 	function openAutoParseAll() {
-		const target = selectedRecords.length > 0 ? selectedRecords : pendingRecords;
-		if (target.length === 0) return;
-		modalRecords = target;
+		if (selectedRecords.length === 0) return;
+		modalRecords = selectedRecords;
 		modalInitialIndex = 0;
 		modalAutoConfirm = true;
 		showModal = true;
@@ -181,17 +179,17 @@
 		<div class="flex items-center space-x-3">
 			<button
 				on:click={openReviewSelected}
-				disabled={selectedRecords.length === 0 && pendingRecords.length === 0}
+				disabled={selectedRecords.length === 0}
 				class="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
 			>
-				Review {selectedRecords.length > 0 ? 'Selected' : 'All'}
+				Review Selected ({selectedRecords.length})
 			</button>
 			<button
 				on:click={openAutoParseAll}
-				disabled={selectedRecords.length === 0 && pendingRecords.length === 0}
+				disabled={selectedRecords.length === 0}
 				class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 			>
-				Auto Parse {selectedRecords.length > 0 ? 'Selected' : 'All'}
+				Auto Parse Selected ({selectedRecords.length})
 			</button>
 		</div>
 	</div>
