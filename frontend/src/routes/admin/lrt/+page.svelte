@@ -32,6 +32,9 @@
 		id: string;
 		name: string;
 		title_en: string;
+		year: number | null;
+		number: string | null;
+		type_code: string | null;
 		type_desc: string | null;
 		family: string | null;
 		family_ii: string | null;
@@ -110,7 +113,7 @@
 	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
 
 	// State — PGLite one-shot query (not live — 19K rows too large for live diff cache)
-	const LRT_COLUMNS = 'id, name, title_en, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live';
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live';
 	const { store: dataStore, refresh: refreshData } = createQueryStore<UkLrtRecord>(
 		`SELECT ${LRT_COLUMNS} FROM uk_lrt ORDER BY name`,
 		[]
