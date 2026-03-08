@@ -10,10 +10,34 @@
 		{ href: '/admin/lat', label: 'LAT Data', exact: true },
 		{ href: '/admin/lat/queue', label: 'LAT Queue', exact: false },
 		{ href: '/admin/scrape', label: 'New Scrape', exact: true },
-		{ href: '/admin/scrape/sessions', label: 'Sessions', exact: false },
+		{
+			label: 'Sessions',
+			dropdown: [
+				{ href: '/admin/scrape/sessions', label: 'LRT Sessions' },
+				{ href: '/admin/lat/sessions', label: 'LAT Sessions' }
+			]
+		},
 		{ href: '/admin/scrape/cascade', label: 'Cascade', exact: false },
 		{ href: '/admin/zenoh', label: 'Zenoh', exact: false }
 	];
+
+	type NavItem =
+		| { href: string; label: string; exact: boolean; dropdown?: undefined }
+		| { label: string; dropdown: { href: string; label: string }[]; href?: undefined; exact?: undefined };
+
+	let openDropdown: string | null = null;
+
+	function toggleDropdown(label: string) {
+		openDropdown = openDropdown === label ? null : label;
+	}
+
+	function closeDropdown() {
+		openDropdown = null;
+	}
+
+	function isDropdownActive(currentPath: string, items: { href: string }[]): boolean {
+		return items.some((item) => currentPath === item.href || currentPath.startsWith(item.href + '/'));
+	}
 
 	// Reactive pathname for proper updates on navigation
 	$: pathname = $page.url.pathname;
@@ -100,15 +124,50 @@
 						<!-- Navigation Links -->
 						<div class="hidden sm:ml-8 sm:flex sm:space-x-4">
 							{#each navItems as item}
-								<a
-									href={item.href}
-									class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium
-                       {isActive(pathname, item.href, item.exact)
-										? 'bg-blue-100 text-blue-700'
-										: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"
-								>
-									{item.label}
-								</a>
+								{#if item.dropdown}
+									<!-- svelte-ignore a11y-click-events-have-key-events -->
+									<div class="relative inline-flex items-center">
+										<button
+											on:click={() => toggleDropdown(item.label)}
+											class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium
+												{isDropdownActive(pathname, item.dropdown)
+												? 'bg-blue-100 text-blue-700'
+												: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"
+										>
+											{item.label}
+											<svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+											</svg>
+										</button>
+										{#if openDropdown === item.label}
+											<!-- svelte-ignore a11y-no-static-element-interactions -->
+											<div class="fixed inset-0 z-10" on:click={closeDropdown}></div>
+											<div class="absolute left-0 z-20 mt-1 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+												{#each item.dropdown as sub}
+													<a
+														href={sub.href}
+														on:click={closeDropdown}
+														class="block px-4 py-2 text-sm {isActive(pathname, sub.href, false)
+															? 'bg-blue-50 text-blue-700'
+															: 'text-gray-700 hover:bg-gray-100'}"
+													>
+														{sub.label}
+													</a>
+												{/each}
+											</div>
+										{/if}
+									</div>
+								{:else}
+									<a
+										href={item.href}
+										class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium
+											{isActive(pathname, item.href, item.exact ?? false)
+											? 'bg-blue-100 text-blue-700'
+											: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"
+									>
+										{item.label}
+									</a>
+								{/if}
 							{/each}
 						</div>
 					</div>
@@ -129,17 +188,31 @@
 
 			<!-- Mobile Navigation -->
 			<div class="border-t border-gray-200 py-2 px-4 sm:hidden">
-				<div class="flex space-x-2">
+				<div class="flex flex-wrap gap-1">
 					{#each navItems as item}
-						<a
-							href={item.href}
-							class="rounded-md px-3 py-2 text-sm font-medium
-                   {isActive(pathname, item.href, item.exact)
-								? 'bg-blue-100 text-blue-700'
-								: 'text-gray-600 hover:bg-gray-100'}"
-						>
-							{item.label}
-						</a>
+						{#if item.dropdown}
+							{#each item.dropdown as sub}
+								<a
+									href={sub.href}
+									class="rounded-md px-3 py-2 text-sm font-medium
+										{isActive(pathname, sub.href, false)
+										? 'bg-blue-100 text-blue-700'
+										: 'text-gray-600 hover:bg-gray-100'}"
+								>
+									{sub.label}
+								</a>
+							{/each}
+						{:else}
+							<a
+								href={item.href}
+								class="rounded-md px-3 py-2 text-sm font-medium
+									{isActive(pathname, item.href, item.exact ?? false)
+									? 'bg-blue-100 text-blue-700'
+									: 'text-gray-600 hover:bg-gray-100'}"
+							>
+								{item.label}
+							</a>
+						{/if}
 					{/each}
 				</div>
 			</div>

@@ -9,8 +9,7 @@
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { reparseLat, type QueueItem } from '$lib/api/lat';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
-	import { createLiveQuery } from '$lib/pglite/live-store';
-	import type { UkLrtRecord } from '$lib/electric/uk-lrt-schema';
+	import { createDynamicQueryStore } from '$lib/pglite/live-store';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import LatParseDialog from '$lib/components/LatParseDialog.svelte';
 	import {
@@ -28,18 +27,31 @@
 
 	// ── State ────────────────────────────────────────────────────────
 
-	// PGLite live query: all making laws (same WHERE that was previously in Electric shape)
-	const allRecordsStore = createLiveQuery<UkLrtRecord>(
-		`SELECT * FROM uk_lrt
-		 WHERE is_making = true
-		   AND (making_classification IS NULL OR making_classification != 'not_making')
-		   AND (live IS NULL OR live != '❌ Revoked / Repealed / Abolished')
-		 ORDER BY name`,
-		[],
-		'id'
-	);
+	const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+	const SIX_MONTHS_INTERVAL = "6 months";
 
-	$: allRecords = $allRecordsStore;
+	// PGLite dynamic query: scoped to selected family view
+	const { store: rawStore, update: updateQuery, refresh: refreshData } = createDynamicQueryStore<Record<string, unknown>>();
+
+	// Build QueueItem[] from raw PGLite rows
+	$: queueData = $rawStore.map((r): QueueItem => {
+		const latCount = (r.lat_count as number) ?? 0;
+		return {
+			law_id: r.id as string,
+			law_name: r.name as string,
+			title_en: r.title_en as string,
+			year: (r.year as number | null) ?? 0,
+			type_code: (r.type_code as string | null) ?? '',
+			family: r.family as string | null,
+			live: r.live as string | null,
+			function: parseFunctionKeys(r.function),
+			lrt_updated_at: r.updated_at as string | null,
+			lat_count: latCount,
+			latest_lat_updated_at: r.latest_lat_updated_at as string | null,
+			queue_reason: latCount === 0 ? 'missing' : 'stale'
+		};
+	});
+
 	let error: string | null = null;
 
 	// Reparse tracking
@@ -73,12 +85,109 @@
 	let viewGrouping: string[] = [];
 	let configVersion = 0;
 
-	// ── Reactive queue derivation from PGLite-synced uk_lrt ─────
+	// Track current family for stats
+	let currentFamily: string | null = null;
+	let currentViewName: string | null = null;
 
-	const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+	// ── SQL query builders ──────────────────────────────────────────
+
+	// Base WHERE for LAT queue candidates: making, not revoked, not classified as not_making
+	const QUEUE_BASE_WHERE = `
+		is_making = true
+		AND (making_classification IS NULL OR making_classification != 'not_making')
+		AND (live IS NULL OR live != '❌ Revoked / Repealed / Abolished')
+		AND title_en IS NOT NULL
+		AND family IS NOT NULL
+		AND family != '_todo'
+		AND family != '🖤 X: No Family'`;
+
+	// LAT queue condition: missing (lat_count=0) OR stale (LRT updated > 6 months after LAT)
+	const QUEUE_LAT_WHERE = `
+		AND (
+			lat_count = 0
+			OR (
+				updated_at IS NOT NULL
+				AND latest_lat_updated_at IS NOT NULL
+				AND updated_at > latest_lat_updated_at + INTERVAL '${SIX_MONTHS_INTERVAL}'
+			)
+		)`;
+
+	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, live, function, updated_at, lat_count, latest_lat_updated_at';
+
+	function queryForFamily(family: string) {
+		currentFamily = family;
+		updateQuery(
+			`SELECT ${QUEUE_COLUMNS} FROM uk_lrt
+			 WHERE ${QUEUE_BASE_WHERE} ${QUEUE_LAT_WHERE}
+			   AND family = $1
+			 ORDER BY name`,
+			[family]
+		);
+	}
+
+	function queryAllQueue() {
+		currentFamily = null;
+		updateQuery(
+			`SELECT ${QUEUE_COLUMNS} FROM uk_lrt
+			 WHERE ${QUEUE_BASE_WHERE} ${QUEUE_LAT_WHERE}
+			 ORDER BY name`,
+			[]
+		);
+	}
+
+	function queryForView(viewName: string) {
+		currentViewName = viewName;
+		const family = viewFamilyMapping[viewName];
+		if (family) {
+			queryForFamily(family);
+		} else if (viewName === 'Missing LAT') {
+			currentFamily = null;
+			updateQuery(
+				`SELECT ${QUEUE_COLUMNS} FROM uk_lrt
+				 WHERE ${QUEUE_BASE_WHERE}
+				   AND lat_count = 0
+				 ORDER BY name`,
+				[]
+			);
+		} else if (viewName === 'Stale LAT') {
+			currentFamily = null;
+			updateQuery(
+				`SELECT ${QUEUE_COLUMNS} FROM uk_lrt
+				 WHERE ${QUEUE_BASE_WHERE}
+				   AND lat_count > 0
+				   AND updated_at IS NOT NULL
+				   AND latest_lat_updated_at IS NOT NULL
+				   AND updated_at > latest_lat_updated_at + INTERVAL '${SIX_MONTHS_INTERVAL}'
+				 ORDER BY name`,
+				[]
+			);
+		} else {
+			queryAllQueue();
+		}
+	}
+
+	// Refresh data when sync status changes
+	let lastRefreshRecordCount = 0;
+	$: if ($syncStatus.recordCount > 0 && $syncStatus.recordCount !== lastRefreshRecordCount) {
+		lastRefreshRecordCount = $syncStatus.recordCount;
+		refreshData();
+	}
+
+	// ── Reactive stats ──────────────────────────────────────────────
+
+	$: totalCount = queueData.length;
+	$: missingCount = queueData.filter((r) => r.queue_reason === 'missing').length;
+	$: staleCount = queueData.filter((r) => r.queue_reason === 'stale').length;
+	$: isLoading = !$syncStatus.connected && queueData.length === 0;
+
+	// Watch syncStatus for errors
+	$: if ($syncStatus.error) {
+		error = $syncStatus.error;
+	}
+
+	// ── Helpers ──────────────────────────────────────────────────────
 
 	// Electric sends JSONB `function` as a JS object {Making: true, ...}
-	// Convert to string[] of truthy keys for QueueItem compatibility
 	function parseFunctionKeys(fn: unknown): string[] | null {
 		if (!fn) return null;
 		if (Array.isArray(fn)) return fn as string[];
@@ -96,60 +205,27 @@
 		return null;
 	}
 
-	// Access trigger-maintained fields (not in UkLrtRecord type yet — cast through unknown)
-	function getLatCount(r: UkLrtRecord): number {
-		return ((r as unknown as Record<string, unknown>).lat_count as number) ?? 0;
+	function asRecord(row: unknown): QueueItem {
+		return row as QueueItem;
 	}
 
-	function getLatUpdatedAt(r: UkLrtRecord): string | null {
-		return ((r as unknown as Record<string, unknown>).latest_lat_updated_at as string) ?? null;
+	function formatDate(dateStr: string | null): string {
+		if (!dateStr) return '--';
+		return new Date(dateStr).toLocaleDateString('en-GB', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 
-	$: queueData = allRecords
-		.filter((r) => {
-			if (!r.title_en || !r.family) return false;
-			if (r.family === '_todo' || r.family === '\u{1F5A4} X: No Family') return false;
-			const latCount = getLatCount(r);
-			if (latCount === 0) return true; // missing
-			// stale: lrt updated > 6 months after lat
-			const lrtUpdated = r.updated_at ? new Date(r.updated_at as string) : null;
-			const latUpdatedStr = getLatUpdatedAt(r);
-			const latUpdated = latUpdatedStr ? new Date(latUpdatedStr) : null;
-			if (lrtUpdated && latUpdated) {
-				return lrtUpdated.getTime() > latUpdated.getTime() + SIX_MONTHS_MS;
-			}
-			return false;
-		})
-		.map((r): QueueItem => ({
-			law_id: r.id,
-			law_name: r.name,
-			title_en: r.title_en,
-			year: r.year,
-			type_code: r.type_code,
-			family: r.family,
-			live: r.live,
-			function: parseFunctionKeys(r.function),
-			lrt_updated_at: r.updated_at as string | null,
-			lat_count: getLatCount(r),
-			latest_lat_updated_at: getLatUpdatedAt(r),
-			queue_reason: getLatCount(r) === 0 ? 'missing' : 'stale'
-		}));
-
-	$: totalCount = queueData.length;
-	$: missingCount = queueData.filter((r) => r.queue_reason === 'missing').length;
-	$: staleCount = queueData.filter((r) => r.queue_reason === 'stale').length;
-	$: isLoading = !$syncStatus.connected && allRecords.length === 0;
+	function formatNumber(n: number): string {
+		return n.toLocaleString();
+	}
 
 	// ── PGLite sync initialization ──────────────────────────────────
 
-	// Watch syncStatus for errors
-	$: if ($syncStatus.error) {
-		error = $syncStatus.error;
-	}
-
 	onMount(async () => {
 		if (browser) {
-			// Start PGLite sync (no-op if already started by another page)
 			await startSync();
 			seedDefaultViews();
 		}
@@ -166,7 +242,6 @@
 			const result = await reparseLat(item.law_name);
 			reparsingLaw = null;
 			reparseMessage = `Re-parsed ${item.law_name}: ${result.lat.inserted} LAT rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
-			// Invalidate LAT queries on other pages — Electric handles queue data reactivity
 			queryClient.invalidateQueries({ queryKey: ['lat'] });
 		} catch (e) {
 			reparsingLaw = null;
@@ -186,26 +261,6 @@
 		lrtModalOpen = false;
 		lrtModalRecord = null;
 		lrtModalRecordId = undefined;
-		// Electric auto-updates queue data when LRT record changes
-	}
-
-	// ── Helpers ──────────────────────────────────────────────────────
-
-	function asRecord(row: unknown): QueueItem {
-		return row as QueueItem;
-	}
-
-	function formatDate(dateStr: string | null): string {
-		if (!dateStr) return '--';
-		return new Date(dateStr).toLocaleDateString('en-GB', {
-			day: '2-digit',
-			month: 'short',
-			year: 'numeric'
-		});
-	}
-
-	function formatNumber(n: number): string {
-		return n.toLocaleString();
 	}
 
 	// ── Column definitions ──────────────────────────────────────────
@@ -321,16 +376,89 @@
 		}
 	];
 
-	// ── View definitions ────────────────────────────────────────────
+	// ── Family-based view definitions ───────────────────────────────
 
-	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	interface FamilyViewDef {
+		name: string;
+		family: string;
+		group: 'safety' | 'environment' | 'hr';
+	}
 
-	const viewGroups: ViewGroup[] = [
-		{ id: 'queue', name: 'Queue Views', order: 0 }
+	const familyViewDefs: FamilyViewDef[] = [
+		// Safety
+		{ name: 'Fire', family: '💙 FIRE', group: 'safety' },
+		{ name: 'Fire: Dangerous & Explosive', family: '💙 FIRE: Dangerous and Explosive Substances', group: 'safety' },
+		{ name: 'Food', family: '💙 FOOD', group: 'safety' },
+		{ name: 'Health: Coronavirus', family: '💙 HEALTH: Coronavirus', group: 'safety' },
+		{ name: 'Health: Drug & Medicine', family: '💙 HEALTH: Drug & Medicine Safety', group: 'safety' },
+		{ name: 'Health: Patient Safety', family: '💙 HEALTH: Patient Safety', group: 'safety' },
+		{ name: 'Health: Public', family: '💙 HEALTH: Public', group: 'safety' },
+		{ name: 'OHS: Gas & Electrical', family: '💙 OH&S: Gas & Electrical Safety', group: 'safety' },
+		{ name: 'OHS: Mines & Quarries', family: '💙 OH&S: Mines & Quarries', group: 'safety' },
+		{ name: 'OHS: Occupational', family: '💙 OH&S: Occupational / Personal Safety', group: 'safety' },
+		{ name: 'OHS: Offshore', family: '💙 OH&S: Offshore Safety', group: 'safety' },
+		{ name: 'Public', family: '💙 PUBLIC', group: 'safety' },
+		{ name: 'Public: Building Safety', family: '💙 PUBLIC: Building Safety', group: 'safety' },
+		{ name: 'Public: Consumer / Product', family: '💙 PUBLIC: Consumer / Product Safety', group: 'safety' },
+		{ name: 'Transport: Air Safety', family: '💙 TRANSPORT: Air Safety', group: 'safety' },
+		{ name: 'Transport: Rail Safety', family: '💙 TRANSPORT: Rail Safety', group: 'safety' },
+		{ name: 'Transport: Road Safety', family: '💙 TRANSPORT: Road Safety', group: 'safety' },
+		{ name: 'Transport: Maritime', family: '💙 TRANSPORT: Maritime Safety', group: 'safety' },
+		// Environment
+		{ name: 'Agriculture', family: '💚 AGRICULTURE', group: 'environment' },
+		{ name: 'Agriculture: Pesticides', family: '💚 AGRICULTURE: Pesticides', group: 'environment' },
+		{ name: 'Air Quality', family: '💚 AIR QUALITY', group: 'environment' },
+		{ name: 'Animals & Animal Health', family: '💚 ANIMALS & ANIMAL HEALTH', group: 'environment' },
+		{ name: 'Antarctica', family: '💚 ANTARCTICA', group: 'environment' },
+		{ name: 'Buildings', family: '💚 BUILDINGS', group: 'environment' },
+		{ name: 'Climate Change', family: '💚 CLIMATE CHANGE', group: 'environment' },
+		{ name: 'Energy', family: '💚 ENERGY', group: 'environment' },
+		{ name: 'Environmental Protection', family: '💚 ENVIRONMENTAL PROTECTION', group: 'environment' },
+		{ name: 'Finance', family: '💚 FINANCE', group: 'environment' },
+		{ name: 'Fisheries & Fishing', family: '💚 FISHERIES & FISHING', group: 'environment' },
+		{ name: 'GMOs', family: '💚 GMOs', group: 'environment' },
+		{ name: 'Historic Environment', family: '💚 HISTORIC ENVIRONMENT', group: 'environment' },
+		{ name: 'Marine & Riverine', family: '💚 MARINE & RIVERINE', group: 'environment' },
+		{ name: 'Noise', family: '💚 NOISE', group: 'environment' },
+		{ name: 'Nuclear & Radiological', family: '💚 NUCLEAR & RADIOLOGICAL', group: 'environment' },
+		{ name: 'Oil & Gas / Offshore', family: '💚 OIL & GAS - OFFSHORE - PETROLEUM', group: 'environment' },
+		{ name: 'Planning & Infrastructure', family: '💚 PLANNING & INFRASTRUCTURE', group: 'environment' },
+		{ name: 'Plant Health', family: '💚 PLANT HEALTH', group: 'environment' },
+		{ name: 'Pollution', family: '💚 POLLUTION', group: 'environment' },
+		{ name: 'Town & Country Planning', family: '💚 TOWN & COUNTRY PLANNING', group: 'environment' },
+		{ name: 'Transport', family: '💚 TRANSPORT', group: 'environment' },
+		{ name: 'Transport: Aviation', family: '💚 TRANSPORT: Aviation', group: 'environment' },
+		{ name: 'Transport: Harbours & Shipping', family: '💚 TRANSPORT: Harbours & Shipping', group: 'environment' },
+		{ name: 'Transport: Railways', family: '💚 TRANSPORT: Railways & Rail Transport', group: 'environment' },
+		{ name: 'Transport: Roads & Vehicles', family: '💚 TRANSPORT: Roads & Vehicles', group: 'environment' },
+		{ name: 'Trees: Forestry & Timber', family: '💚 TREES: Forestry & Timber', group: 'environment' },
+		{ name: 'Waste', family: '💚 WASTE', group: 'environment' },
+		{ name: 'Water & Wastewater', family: '💚 WATER & WASTEWATER', group: 'environment' },
+		{ name: 'Wildlife & Countryside', family: '💚 WILDLIFE & COUNTRYSIDE', group: 'environment' },
+		// HR
+		{ name: 'Employment', family: '💜 HR: Employment', group: 'hr' },
+		{ name: 'Insurance / Compensation', family: '💜 HR: Insurance / Compensation / Wages / Benefits', group: 'hr' },
+		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' },
 	];
 
+	// Mappings for quick lookup
+	const viewFamilyMapping: Record<string, string> = {};
+	for (const def of familyViewDefs) {
+		viewFamilyMapping[def.name] = def.family;
+	}
 
-	const defaultViews: Array<{
+	const viewGroupMapping: Record<string, string> = {};
+	for (const def of familyViewDefs) {
+		viewGroupMapping[def.name] = def.group;
+	}
+	viewGroupMapping['All Queue'] = 'queue';
+	viewGroupMapping['Missing LAT'] = 'queue';
+	viewGroupMapping['Stale LAT'] = 'queue';
+
+	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	const familyColumns = ['actions', 'law_name', 'title_en', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+
+	type ViewDef = {
 		name: string;
 		description: string;
 		columns: string[];
@@ -338,12 +466,14 @@
 		sort?: { columnId: string; direction: 'asc' | 'desc' } | null;
 		grouping?: string[];
 		isDefault?: boolean;
-	}> = [
+	};
+
+	const defaultViews: ViewDef[] = [
+		// Queue-wide views
 		{
 			name: 'All Queue',
-			description: 'Making laws needing LAT parsing — missing and stale.',
+			description: 'All making laws needing LAT parsing — missing and stale.',
 			columns: allColumns,
-			filters: [],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
 			grouping: ['family', 'year'],
 			isDefault: true
@@ -352,7 +482,6 @@
 			name: 'Missing LAT',
 			description: 'LRT records with making function that have no LAT data at all.',
 			columns: allColumns,
-			filters: [{ columnId: 'queue_reason', operator: 'equals', value: 'missing' }],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
 			grouping: ['family', 'year']
 		},
@@ -360,15 +489,27 @@
 			name: 'Stale LAT',
 			description: 'LRT records where LAT data exists but is more than 6 months out of date.',
 			columns: allColumns,
-			filters: [{ columnId: 'queue_reason', operator: 'equals', value: 'stale' }],
 			sort: { columnId: 'lrt_updated_at', direction: 'asc' },
 			grouping: ['family', 'year']
-		}
+		},
+		// Family-specific views
+		...familyViewDefs.map((def): ViewDef => ({
+			name: def.name,
+			description: `${def.family} — LAT parse candidates`,
+			columns: familyColumns,
+			sort: { columnId: 'name', direction: 'asc' },
+			grouping: ['year']
+		}))
+	];
+
+	const viewGroups: ViewGroup[] = [
+		{ id: 'queue', name: 'Queue', order: 0 },
+		{ id: 'safety', name: '💙 S', order: 1 },
+		{ id: 'environment', name: '💚 E', order: 2 },
+		{ id: 'hr', name: '💜 HR', order: 3 }
 	];
 
 	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
-
-	// Only show views that belong to this page (filter out browse page views from shared store)
 	const queueViewNames = new Set(defaultViews.map((v) => v.name));
 
 	$: sidebarViews = $savedViews
@@ -377,7 +518,7 @@
 			id: view.id,
 			name: view.name,
 			description: view.description,
-			groupId: 'queue',
+			groupId: viewGroupMapping[view.name] || 'queue',
 			isDefault: defaultViews.find((dv) => dv.name === view.name)?.isDefault,
 			order: viewOrderMap.get(view.name) ?? 1000
 		}))
@@ -400,7 +541,7 @@
 			}
 		}
 
-		// Existing views are never overwritten — user edits are preserved
+		// Seed missing views (existing views are never overwritten)
 		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
 
@@ -438,10 +579,22 @@
 			}
 		}
 
+		// Auto-select default view and query it
 		if (defaultViewId && !$activeViewId) {
 			const loadedView = await viewActions.load(defaultViewId);
 			if (loadedView) {
 				applyViewConfig(loadedView.config);
+				const defaultDef = defaultViews.find((v) => v.isDefault);
+				if (defaultDef) {
+					queryForView(defaultDef.name);
+				}
+			}
+		} else if ($activeViewId) {
+			// Returning user — resolve the active view and query it
+			const activeView = $savedViews.find((v) => v.id === $activeViewId);
+			if (activeView) {
+				applyViewConfig(activeView as unknown as TableConfig);
+				queryForView(activeView.name);
 			}
 		}
 	}
@@ -496,6 +649,7 @@
 		if (loadedView) {
 			applyViewConfig(loadedView.config);
 		}
+		queryForView(sidebarView.name);
 	}
 
 	function handleSaveView() {
@@ -603,7 +757,13 @@
 				<div>
 					<h1 class="text-2xl font-bold text-gray-900">LAT Parse Queue</h1>
 					<p class="mt-1 text-sm text-gray-500">
-						LRT records with making function that need LAT parsing or re-parsing.
+						{#if currentFamily}
+							{currentFamily} — records needing LAT parsing
+						{:else if currentViewName}
+							{currentViewName}
+						{:else}
+							LRT records with making function that need LAT parsing or re-parsing.
+						{/if}
 					</p>
 				</div>
 			</div>
@@ -639,7 +799,7 @@
 		{#if !isLoading}
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 				<div class="bg-white rounded-lg border border-gray-200 p-4">
-					<div class="text-sm text-gray-500">Total Queue</div>
+					<div class="text-sm text-gray-500">View Total</div>
 					<div class="text-2xl font-bold text-gray-900">{formatNumber(totalCount)}</div>
 				</div>
 				<div class="bg-white rounded-lg border border-gray-200 p-4">
@@ -651,7 +811,7 @@
 					<div class="text-2xl font-bold text-amber-600">{formatNumber(staleCount)}</div>
 				</div>
 				<div class="bg-white rounded-lg border border-gray-200 p-4">
-					<div class="text-sm text-gray-500">Data Scope</div>
+					<div class="text-sm text-gray-500">Sync Status</div>
 					<div class="flex items-center gap-2">
 						{#if $syncStatus.syncing}
 							<div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
@@ -663,14 +823,6 @@
 							<div class="w-2 h-2 bg-gray-400 rounded-full"></div>
 							<span class="text-sm font-medium text-gray-600">Disconnected</span>
 						{/if}
-					</div>
-					<div class="mt-1.5 flex flex-wrap gap-1 text-xs text-gray-400">
-						<span class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded font-mono">is_making = true</span>
-						<span class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded font-mono">classification != not_making</span>
-						<span class="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded font-mono">live != revoked</span>
-					</div>
-					<div class="mt-1 text-xs text-gray-400">
-						{formatNumber(allRecords.length)} records synced
 					</div>
 				</div>
 			</div>
@@ -694,7 +846,11 @@
 			</div>
 		{:else if queueData.length === 0}
 			<div class="text-center py-12 text-gray-500">
-				No records in queue. All making laws have up-to-date LAT data.
+				{#if currentFamily}
+					No records needing LAT parsing in this family.
+				{:else}
+					No records in queue. All making laws have up-to-date LAT data.
+				{/if}
 			</div>
 		{:else}
 			<TableKit
