@@ -156,5 +156,9 @@ defmodule SertantaiLegalWeb.Router do
     delete("/cascade/processed", CascadeController, :clear_processed)
     delete("/cascade/session/:session_id", CascadeController, :clear_session)
     delete("/cascade/:id", CascadeController, :delete)
+
+    # Analytics endpoints
+    get("/analytics/changes", AnalyticsController, :changes)
+    get("/analytics/sessions", AnalyticsController, :sessions)
   end
 end

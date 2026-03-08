@@ -6,6 +6,7 @@
 	const HUB_URL = import.meta.env.VITE_HUB_URL || 'http://localhost:5173';
 
 	const navItems = [
+		{ href: '/admin/analytics', label: 'Analytics', exact: true },
 		{ href: '/admin/lrt', label: 'LRT Data', exact: false },
 		{ href: '/admin/lat', label: 'LAT Data', exact: true },
 		{ href: '/admin/lat/queue', label: 'LAT Queue', exact: false },
