@@ -50,4 +50,10 @@ Bring the rich LRT session-based parsing experience to LAT parsing.
 - Extended existing tables rather than new ones — session pattern is identical, only parse payload differs
 - `session_type` discriminator: `scrape` | `reparse` | `lat_parse`
 - LAT has 5 stages (fetch_body, parse_lat, persist_lat, parse_annotations, persist_annotations) vs LRT's 6
-- Needs manual testing: create session, SSE streaming, auto-parse, confirm workflow
+- Fixed: LAT sessions were showing in LRT scrape sessions list — added filter in scrape_controller
+- Fixed: auto-parse was ignoring selection, parsing all pending records — now strictly uses selectedRecords
+- Perf: LAT queue page switched from createLiveQuery (all records) to createDynamicQueryStore (family-scoped SQL)
+- Added family-based sidebar views to LAT queue matching LRT page pattern
+- Nav dropdown for Sessions (LRT/LAT) added to admin layout
+
+**Ended**: 2026-03-08T22:45Z

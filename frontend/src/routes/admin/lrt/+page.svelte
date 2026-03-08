@@ -16,7 +16,7 @@
 
 	// PGLite sync
 	import { startSync, syncStatus } from '$lib/pglite/sync';
-	import { createQueryStore } from '$lib/pglite/live-store';
+	import { createDynamicQueryStore } from '$lib/pglite/live-store';
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 
 	// ParseReviewModal for viewing record details
@@ -45,6 +45,9 @@
 		function: string[] | null;
 		is_making: boolean | null;
 		live: string | null;
+		latest_amend_date: string | null;
+		latest_rescind_date: string | null;
+		created_at: string | null;
 	}
 
 	// Helper to type cast row data from TableKit cell slot
@@ -55,69 +58,66 @@
 	// Family options grouped by category
 	const familyOptions = {
 		health_safety: [
-			'FIRE',
-			'FIRE: Dangerous and Explosive Substances',
-			'FOOD',
-			'HEALTH: Coronavirus',
-			'HEALTH: Drug & Medicine Safety',
-			'HEALTH: Patient Safety',
-			'HEALTH: Public',
-			'OH&S: Gas & Electrical Safety',
-			'OH&S: Mines & Quarries',
-			'OH&S: Occupational / Personal Safety',
-			'OH&S: Offshore Safety',
-			'PUBLIC',
-			'PUBLIC: Building Safety',
-			'PUBLIC: Consumer / Product Safety',
-			'TRANSPORT: Air Safety',
-			'TRANSPORT: Rail Safety',
-			'TRANSPORT: Road Safety',
-			'TRANSPORT: Maritime Safety'
+			'💙 FIRE',
+			'💙 FIRE: Dangerous and Explosive Substances',
+			'💙 FOOD',
+			'💙 HEALTH: Coronavirus',
+			'💙 HEALTH: Drug & Medicine Safety',
+			'💙 HEALTH: Patient Safety',
+			'💙 HEALTH: Public',
+			'💙 OH&S: Gas & Electrical Safety',
+			'💙 OH&S: Mines & Quarries',
+			'💙 OH&S: Occupational / Personal Safety',
+			'💙 OH&S: Offshore Safety',
+			'💙 PUBLIC',
+			'💙 PUBLIC: Building Safety',
+			'💙 PUBLIC: Consumer / Product Safety',
+			'💙 TRANSPORT: Air Safety',
+			'💙 TRANSPORT: Rail Safety',
+			'💙 TRANSPORT: Road Safety',
+			'💙 TRANSPORT: Maritime Safety'
 		],
 		environment: [
-			'AGRICULTURE',
-			'AGRICULTURE: Pesticides',
-			'AIR QUALITY',
-			'ANIMALS & ANIMAL HEALTH',
-			'ANTARCTICA',
-			'BUILDINGS',
-			'CLIMATE CHANGE',
-			'ENERGY',
-			'ENVIRONMENTAL PROTECTION',
-			'FINANCE',
-			'FISHERIES & FISHING',
-			'GMOs',
-			'HISTORIC ENVIRONMENT',
-			'MARINE & RIVERINE',
-			'NOISE',
-			'NUCLEAR & RADIOLOGICAL',
-			'OIL & GAS - OFFSHORE - PETROLEUM',
-			'PLANNING & INFRASTRUCTURE',
-			'PLANT HEALTH',
-			'POLLUTION',
-			'TOWN & COUNTRY PLANNING',
-			'TRANSPORT',
-			'TRANSPORT: Aviation',
-			'TRANSPORT: Harbours & Shipping',
-			'TRANSPORT: Railways & Rail Transport',
-			'TRANSPORT: Roads & Vehicles',
-			'TREES: Forestry & Timber',
-			'WASTE',
-			'WATER & WASTEWATER',
-			'WILDLIFE & COUNTRYSIDE'
+			'💚 AGRICULTURE',
+			'💚 AGRICULTURE: Pesticides',
+			'💚 AIR QUALITY',
+			'💚 ANIMALS & ANIMAL HEALTH',
+			'💚 ANTARCTICA',
+			'💚 BUILDINGS',
+			'💚 CLIMATE CHANGE',
+			'💚 ENERGY',
+			'💚 ENVIRONMENTAL PROTECTION',
+			'💚 FINANCE',
+			'💚 FISHERIES & FISHING',
+			'💚 GMOs',
+			'💚 HISTORIC ENVIRONMENT',
+			'💚 MARINE & RIVERINE',
+			'💚 NOISE',
+			'💚 NUCLEAR & RADIOLOGICAL',
+			'💚 OIL & GAS - OFFSHORE - PETROLEUM',
+			'💚 PLANNING & INFRASTRUCTURE',
+			'💚 PLANT HEALTH',
+			'💚 POLLUTION',
+			'💚 TOWN & COUNTRY PLANNING',
+			'💚 TRANSPORT',
+			'💚 TRANSPORT: Aviation',
+			'💚 TRANSPORT: Harbours & Shipping',
+			'💚 TRANSPORT: Railways & Rail Transport',
+			'💚 TRANSPORT: Roads & Vehicles',
+			'💚 TREES: Forestry & Timber',
+			'💚 WASTE',
+			'💚 WATER & WASTEWATER',
+			'💚 WILDLIFE & COUNTRYSIDE'
 		],
-		hr: ['HR: Employment', 'HR: Insurance / Compensation / Wages / Benefits', 'HR: Working Time']
+		hr: ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time']
 	};
 
 	// Function options
 	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
 
-	// State — PGLite one-shot query (not live — 19K rows too large for live diff cache)
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live';
-	const { store: dataStore, refresh: refreshData } = createQueryStore<UkLrtRecord>(
-		`SELECT ${LRT_COLUMNS} FROM uk_lrt ORDER BY name`,
-		[]
-	);
+	// State — PGLite dynamic one-shot query (SQL changes per view/family selection)
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live, latest_amend_date, latest_rescind_date, created_at';
+	const { store: dataStore, update: updateQuery, refresh: refreshData } = createDynamicQueryStore<UkLrtRecord>();
 
 	$: data = $dataStore;
 	$: totalCount = data.length;
@@ -127,6 +127,25 @@
 	// Watch syncStatus for errors
 	$: if ($syncStatus.error) {
 		error = $syncStatus.error;
+	}
+
+	// Track current family filter for query updates
+	let currentFamily: string | null = null;
+
+	// Run query for the selected family (or all records if null)
+	function queryForFamily(family: string | null) {
+		currentFamily = family;
+		if (family) {
+			updateQuery(`SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = $1 ORDER BY type_desc, name`, [family]);
+		} else {
+			updateQuery(`SELECT ${LRT_COLUMNS} FROM uk_lrt ORDER BY name`, []);
+		}
+	}
+
+	// Run a custom SQL query (for non-family views like Recent)
+	function queryCustom(sql: string, params: unknown[]) {
+		currentFamily = null;
+		updateQuery(sql, params);
 	}
 
 	// Refresh data when sync status changes (initial sync complete, or warm start with existing data)
@@ -174,11 +193,81 @@
 	let viewGrouping: string[] = [];
 	let configVersion = 0;
 
-	// Default views configuration
-	// Each view can have: name, description, columns, filters (optional), sort (optional), isDefault (optional)
-	// Note: filters use columnId (not field) to match svelte-table-views-tanstack types
+	// ── Family-based views ─────────────────────────────────────────
+	// Each family value becomes its own view. Views are grouped into S (Safety),
+	// E (Environment), HR. Selecting a view queries PGLite for that family only
+	// and groups results by type_desc.
+
+	const VIEW_COLUMNS = ['actions', 'name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
+
+	interface FamilyViewDef {
+		name: string;
+		family: string; // exact value in uk_lrt.family column
+		group: 'safety' | 'environment' | 'hr';
+	}
+
+	const familyViewDefs: FamilyViewDef[] = [
+		// Safety (💙 prefix in DB)
+		{ name: 'Fire', family: '💙 FIRE', group: 'safety' },
+		{ name: 'Fire: Dangerous & Explosive', family: '💙 FIRE: Dangerous and Explosive Substances', group: 'safety' },
+		{ name: 'Food', family: '💙 FOOD', group: 'safety' },
+		{ name: 'Health: Coronavirus', family: '💙 HEALTH: Coronavirus', group: 'safety' },
+		{ name: 'Health: Drug & Medicine', family: '💙 HEALTH: Drug & Medicine Safety', group: 'safety' },
+		{ name: 'Health: Patient Safety', family: '💙 HEALTH: Patient Safety', group: 'safety' },
+		{ name: 'Health: Public', family: '💙 HEALTH: Public', group: 'safety' },
+		{ name: 'OHS: Gas & Electrical', family: '💙 OH&S: Gas & Electrical Safety', group: 'safety' },
+		{ name: 'OHS: Mines & Quarries', family: '💙 OH&S: Mines & Quarries', group: 'safety' },
+		{ name: 'OHS: Occupational', family: '💙 OH&S: Occupational / Personal Safety', group: 'safety' },
+		{ name: 'OHS: Offshore', family: '💙 OH&S: Offshore Safety', group: 'safety' },
+		{ name: 'Public', family: '💙 PUBLIC', group: 'safety' },
+		{ name: 'Public: Building Safety', family: '💙 PUBLIC: Building Safety', group: 'safety' },
+		{ name: 'Public: Consumer / Product', family: '💙 PUBLIC: Consumer / Product Safety', group: 'safety' },
+		{ name: 'Transport: Air Safety', family: '💙 TRANSPORT: Air Safety', group: 'safety' },
+		{ name: 'Transport: Rail Safety', family: '💙 TRANSPORT: Rail Safety', group: 'safety' },
+		{ name: 'Transport: Road Safety', family: '💙 TRANSPORT: Road Safety', group: 'safety' },
+		{ name: 'Transport: Maritime', family: '💙 TRANSPORT: Maritime Safety', group: 'safety' },
+		// Environment (💚 prefix in DB)
+		{ name: 'Agriculture', family: '💚 AGRICULTURE', group: 'environment' },
+		{ name: 'Agriculture: Pesticides', family: '💚 AGRICULTURE: Pesticides', group: 'environment' },
+		{ name: 'Air Quality', family: '💚 AIR QUALITY', group: 'environment' },
+		{ name: 'Animals & Animal Health', family: '💚 ANIMALS & ANIMAL HEALTH', group: 'environment' },
+		{ name: 'Antarctica', family: '💚 ANTARCTICA', group: 'environment' },
+		{ name: 'Buildings', family: '💚 BUILDINGS', group: 'environment' },
+		{ name: 'Climate Change', family: '💚 CLIMATE CHANGE', group: 'environment' },
+		{ name: 'Energy', family: '💚 ENERGY', group: 'environment' },
+		{ name: 'Environmental Protection', family: '💚 ENVIRONMENTAL PROTECTION', group: 'environment' },
+		{ name: 'Finance', family: '💚 FINANCE', group: 'environment' },
+		{ name: 'Fisheries & Fishing', family: '💚 FISHERIES & FISHING', group: 'environment' },
+		{ name: 'GMOs', family: '💚 GMOs', group: 'environment' },
+		{ name: 'Historic Environment', family: '💚 HISTORIC ENVIRONMENT', group: 'environment' },
+		{ name: 'Marine & Riverine', family: '💚 MARINE & RIVERINE', group: 'environment' },
+		{ name: 'Noise', family: '💚 NOISE', group: 'environment' },
+		{ name: 'Nuclear & Radiological', family: '💚 NUCLEAR & RADIOLOGICAL', group: 'environment' },
+		{ name: 'Oil & Gas / Offshore', family: '💚 OIL & GAS - OFFSHORE - PETROLEUM', group: 'environment' },
+		{ name: 'Planning & Infrastructure', family: '💚 PLANNING & INFRASTRUCTURE', group: 'environment' },
+		{ name: 'Plant Health', family: '💚 PLANT HEALTH', group: 'environment' },
+		{ name: 'Pollution', family: '💚 POLLUTION', group: 'environment' },
+		{ name: 'Town & Country Planning', family: '💚 TOWN & COUNTRY PLANNING', group: 'environment' },
+		{ name: 'Transport', family: '💚 TRANSPORT', group: 'environment' },
+		{ name: 'Transport: Aviation', family: '💚 TRANSPORT: Aviation', group: 'environment' },
+		{ name: 'Transport: Harbours & Shipping', family: '💚 TRANSPORT: Harbours & Shipping', group: 'environment' },
+		{ name: 'Transport: Railways', family: '💚 TRANSPORT: Railways & Rail Transport', group: 'environment' },
+		{ name: 'Transport: Roads & Vehicles', family: '💚 TRANSPORT: Roads & Vehicles', group: 'environment' },
+		{ name: 'Trees: Forestry & Timber', family: '💚 TREES: Forestry & Timber', group: 'environment' },
+		{ name: 'Waste', family: '💚 WASTE', group: 'environment' },
+		{ name: 'Water & Wastewater', family: '💚 WATER & WASTEWATER', group: 'environment' },
+		{ name: 'Wildlife & Countryside', family: '💚 WILDLIFE & COUNTRYSIDE', group: 'environment' },
+		// HR (💜 prefix in DB)
+		{ name: 'Employment', family: '💜 HR: Employment', group: 'hr' },
+		{ name: 'Insurance / Compensation', family: '💜 HR: Insurance / Compensation / Wages / Benefits', group: 'hr' },
+		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' },
+	];
+
+	// Build defaultViews from family definitions + recent views
 	const currentYear = new Date().getFullYear();
-	const defaultViews: Array<{
+	const RECENT_COLUMNS = ['actions', 'name', 'title_en', 'year', 'type_code', 'family', 'live'];
+
+	type ViewDef = {
 		name: string;
 		description: string;
 		columns: string[];
@@ -186,151 +275,90 @@
 		sort?: { columnId: string; direction: 'asc' | 'desc' } | null;
 		grouping?: string[];
 		isDefault?: boolean;
-	}> = [
+		family?: string;
+		customQuery?: { sql: string; params: unknown[] };
+	};
+
+	const recentViews: ViewDef[] = [
 		{
-			name: 'Credentials',
-			description:
-				'Core identification fields: Title, Year, Number, Type. Last 3 years, sorted by date.',
-			columns: ['actions', 'name', 'title_en', 'year', 'number', 'type_code', 'type_class'],
-			filters: [{ columnId: 'year', operator: 'greater_or_equal', value: String(currentYear - 2) }],
-			sort: { columnId: 'md_date', direction: 'desc' },
-			isDefault: true
+			name: 'Recently Added',
+			description: 'Records added to the database in the last month.',
+			columns: [...RECENT_COLUMNS, 'created_at'],
+			sort: { columnId: 'created_at', direction: 'desc' },
+			grouping: ['type_desc'],
+			customQuery: {
+				sql: `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE created_at >= NOW() - INTERVAL '1 month' ORDER BY created_at DESC`,
+				params: []
+			}
 		},
 		{
 			name: 'Recently Amended',
 			description: 'Laws amended in the last 3 years, sorted by most recent amendment date.',
-			columns: ['actions', 'name', 'title_en', 'latest_amend_date', 'year', 'type_code', 'live'],
-			filters: [
-				{
-					columnId: 'latest_amend_date',
-					operator: 'greater_or_equal',
-					value: String(currentYear - 2) + '-01-01'
-				}
-			],
-			sort: { columnId: 'latest_amend_date', direction: 'desc' }
+			columns: [...RECENT_COLUMNS, 'latest_amend_date'],
+			sort: { columnId: 'latest_amend_date', direction: 'desc' },
+			grouping: ['type_desc'],
+			customQuery: {
+				sql: `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_amend_date >= $1 ORDER BY latest_amend_date DESC`,
+				params: [`${currentYear - 2}-01-01`]
+			}
 		},
 		{
 			name: 'Recently Rescinded',
-			description:
-				'Laws rescinded (repealed/revoked) in the last 3 years, sorted by most recent rescind date.',
-			columns: ['actions', 'name', 'title_en', 'latest_rescind_date', 'year', 'type_code', 'live'],
-			filters: [
-				{
-					columnId: 'latest_rescind_date',
-					operator: 'greater_or_equal',
-					value: String(currentYear - 2) + '-01-01'
-				}
-			],
-			sort: { columnId: 'latest_rescind_date', direction: 'desc' }
-		},
-		{
-			name: 'Description',
-			description: 'Classification fields: Family, Family II, Function, SI Code',
-			columns: ['actions', 'name', 'title_en', 'family', 'family_ii', 'function', 'si_code']
-		},
-		{
-			name: 'Status & Dates',
-			description: 'Status and date fields',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'live',
-				'md_made_date',
-				'md_coming_into_force_date',
-				'geo_extent'
-			]
-		},
-		{
-			name: 'Geo. Extent',
-			description: 'Geographic scope fields: Extent, Region, Detail, Restrict Extent',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'geo_extent',
-				'geo_region',
-				'geo_detail',
-				'md_restrict_extent'
-			]
-		},
-		{
-			name: 'Metadata',
-			description: 'Dates and document stats: Made, Enacted, In Force, Paragraphs, Images',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'md_date',
-				'md_made_date',
-				'md_enactment_date',
-				'md_coming_into_force_date',
-				'md_dct_valid_date',
-				'md_restrict_start_date',
-				'md_total_paras',
-				'md_body_paras',
-				'md_schedule_paras',
-				'md_attachment_paras',
-				'md_images'
-			]
-		},
-		{
-			name: 'Role',
-			description: 'Role classifications and article mappings',
-			columns: ['actions', 'name', 'title_en', 'role', 'role_gvt', 'role_details', 'role_gvt_details']
-		},
-		{
-			name: 'Duty Type',
-			description: 'Duty type classifications and article mappings',
-			columns: [
-				'actions',
-				'name',
-				'title_en',
-				'duty_type',
-				'duty_type_article',
-				'article_duty_type'
-			]
-		},
-
-		{
-			name: 'Purpose',
-			description: 'Legal purposes and objectives',
-			columns: ['actions', 'name', 'title_en', 'purpose']
-		},
-		{
-			name: 'LAT Queue',
-			description: 'Making laws in force — candidates for LAT parsing or re-parsing.',
-			columns: ['actions', 'name', 'title_en', 'family', 'live', 'function', 'year', 'type_code'],
-			filters: [
-				{ columnId: 'is_making', operator: 'equals', value: 'true' },
-				{ columnId: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
-			],
-			sort: { columnId: 'name', direction: 'asc' },
-			grouping: ['family', 'year']
+			description: 'Laws rescinded (repealed/revoked) in the last 3 years.',
+			columns: [...RECENT_COLUMNS, 'latest_rescind_date'],
+			sort: { columnId: 'latest_rescind_date', direction: 'desc' },
+			grouping: ['type_desc'],
+			customQuery: {
+				sql: `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_rescind_date >= $1 ORDER BY latest_rescind_date DESC`,
+				params: [`${currentYear - 2}-01-01`]
+			}
 		}
+	];
+
+	const defaultViews: ViewDef[] = [
+		...familyViewDefs.map((def, i): ViewDef => ({
+			name: def.name,
+			description: `${def.family} — grouped by type`,
+			columns: VIEW_COLUMNS,
+			sort: { columnId: 'name', direction: 'asc' as const },
+			grouping: ['type_desc'],
+			isDefault: i === 0,
+			family: def.family
+		})),
+		...recentViews
 	];
 
 	// ── View groups & sidebar mapping ───────────────────────────────
 
 	const viewGroups: ViewGroup[] = [
-		{ id: 'credentials', name: 'Credentials & Dates', order: 0 },
-		{ id: 'classification', name: 'Classification', order: 1 },
-		{ id: 'analysis', name: 'Analysis', order: 2 }
+		{ id: 'recent', name: 'Recent', order: 0 },
+		{ id: 'safety', name: '💙 S', order: 1 },
+		{ id: 'environment', name: '💚 E', order: 2 },
+		{ id: 'hr', name: '💜 HR', order: 3 }
 	];
 
-	const viewGroupMapping: Record<string, string> = {
-		'Credentials': 'credentials',
-		'Recently Amended': 'credentials',
-		'Recently Rescinded': 'credentials',
-		'Status & Dates': 'credentials',
-		'Metadata': 'credentials',
-		'Description': 'classification',
-		'Geo. Extent': 'classification',
-		'Role': 'classification',
-		'Duty Type': 'classification',
-		'Purpose': 'analysis',
-		'LAT Queue': 'analysis'
-	};
+	// Map view name → group id
+	const viewGroupMapping: Record<string, string> = {};
+	for (const def of familyViewDefs) {
+		viewGroupMapping[def.name] = def.group;
+	}
+	viewGroupMapping['Recently Added'] = 'recent';
+	viewGroupMapping['Recently Amended'] = 'recent';
+	viewGroupMapping['Recently Rescinded'] = 'recent';
+
+	// Map view name → family value (for PGLite query)
+	const viewFamilyMapping: Record<string, string> = {};
+	for (const def of familyViewDefs) {
+		viewFamilyMapping[def.name] = def.family;
+	}
+
+	// Map view name → custom query (for non-family views)
+	const viewCustomQueryMapping: Record<string, { sql: string; params: unknown[] }> = {};
+	for (const view of recentViews) {
+		if (view.customQuery) {
+			viewCustomQueryMapping[view.name] = view.customQuery;
+		}
+	}
 
 	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
 	const lrtViewNames = new Set(defaultViews.map((v) => v.name));
@@ -399,12 +427,52 @@
 			}
 		}
 
-		// Auto-select default view
+		// Auto-select default view and query it
 		if (defaultViewId && !$activeViewId) {
 			const loadedView = await viewActions.load(defaultViewId);
 			if (loadedView) {
 				applyViewConfig(loadedView.config);
+				const defaultDef = defaultViews.find((v) => v.isDefault);
+				if (defaultDef) {
+					queryForView(defaultDef.name);
+				}
 			}
+		} else if ($activeViewId) {
+			// Returning user — resolve the active view and query it
+			const activeView = $savedViews.find((v) => v.id === $activeViewId);
+			if (activeView) {
+				queryForView(activeView.name);
+			}
+		}
+	}
+
+	// Sync TableKit's internal state back to our view variables
+	// so captureCurrentConfig() captures the user's actual current config
+	import type { TableState } from '@shotleybuilder/svelte-table-kit';
+
+	function handleStateChange(state: TableState) {
+		// Update visible columns from TableKit's visibility state
+		const visibleCols = Object.entries(state.columnVisibility)
+			.filter(([, visible]) => visible)
+			.map(([id]) => id);
+		if (visibleCols.length > 0) {
+			viewColumns = visibleCols;
+		}
+
+		// Update column order
+		if (state.columnOrder.length > 0) {
+			viewColumnOrder = state.columnOrder;
+		}
+
+		// Update filters
+		viewFilters = state.columnFilters;
+
+		// Update sort
+		if (state.sorting.length > 0) {
+			viewSort = {
+				columnId: state.sorting[0].columnId,
+				direction: state.sorting[0].direction
+			};
 		}
 	}
 
@@ -467,12 +535,24 @@
 		configVersion++;
 	}
 
-	// Handle sidebar view selection
+	// Handle sidebar view selection — load view config AND query PGLite
 	async function handleSidebarSelect(event: CustomEvent<{ view: SidebarView }>) {
 		const sidebarView = event.detail.view;
 		const loadedView = await viewActions.load(sidebarView.id);
 		if (loadedView) {
 			applyViewConfig(loadedView.config);
+		}
+		queryForView(sidebarView.name);
+	}
+
+	// Resolve view name to the correct PGLite query
+	function queryForView(viewName: string) {
+		const custom = viewCustomQueryMapping[viewName];
+		if (custom) {
+			queryCustom(custom.sql, custom.params);
+		} else {
+			const family = viewFamilyMapping[viewName] ?? null;
+			queryForFamily(family);
 		}
 	}
 
@@ -501,7 +581,7 @@
 	}
 
 	// Update record
-	async function updateRecord(id: string, field: string, value: string | string[] | null) {
+	async function updateRecord(id: string, field: string, value: string | string[] | boolean | null) {
 		try {
 			const response = await fetch(`${API_URL}/api/uk-lrt/${id}`, {
 				method: 'PATCH',
@@ -636,7 +716,6 @@
 
 	// Column definitions
 	const columns: ColumnDef<UkLrtRecord>[] = [
-		// Actions column (rescrape)
 		{
 			id: 'actions',
 			header: '',
@@ -646,7 +725,6 @@
 			enableResizing: false,
 			meta: { group: 'Actions' }
 		},
-		// Core identification
 		{
 			id: 'name',
 			accessorKey: 'name',
@@ -673,6 +751,14 @@
 			meta: { group: 'Credentials', dataType: 'number' }
 		},
 		{
+			id: 'number',
+			accessorKey: 'number',
+			header: 'Number',
+			cell: (info) => info.getValue(),
+			size: 80,
+			meta: { group: 'Credentials', dataType: 'text' }
+		},
+		{
 			id: 'type_code',
 			accessorKey: 'type_code',
 			header: 'Type Code',
@@ -682,23 +768,14 @@
 			meta: { group: 'Credentials', dataType: 'select', selectOptions: typeCodeOptions }
 		},
 		{
-			id: 'number',
-			accessorKey: 'number',
-			header: 'Number',
-			cell: (info) => info.getValue(),
-			size: 80,
-			meta: { group: 'Credentials', dataType: 'text' }
-		},
-		{
-			id: 'type_class',
-			accessorKey: 'type_class',
-			header: 'Type Class',
-			cell: (info) => info.getValue(),
-			size: 120,
+			id: 'type_desc',
+			accessorKey: 'type_desc',
+			header: 'Type',
+			cell: (info) => info.getValue() || '-',
+			size: 180,
 			enableGrouping: true,
 			meta: { group: 'Credentials', dataType: 'text' }
 		},
-		// Editable fields
 		{
 			id: 'family',
 			accessorKey: 'family',
@@ -718,6 +795,14 @@
 			meta: { group: 'Description', editable: true, dataType: 'text' }
 		},
 		{
+			id: 'si_code',
+			accessorKey: 'si_code',
+			header: 'SI Code',
+			cell: (info) => info.getValue(),
+			size: 180,
+			meta: { group: 'Description', dataType: 'text' }
+		},
+		{
 			id: 'function',
 			accessorKey: 'function',
 			header: 'Function',
@@ -728,7 +813,15 @@
 			size: 150,
 			meta: { group: 'Description', editable: true, dataType: 'text' }
 		},
-		// Status
+		{
+			id: 'is_making',
+			accessorKey: 'is_making',
+			header: 'Making?',
+			cell: (info) => info.getValue() ? 'Yes' : '-',
+			size: 80,
+			enableGrouping: true,
+			meta: { group: 'Description', editable: true, dataType: 'text' }
+		},
 		{
 			id: 'live',
 			accessorKey: 'live',
@@ -739,15 +832,6 @@
 			meta: { group: 'Status', dataType: 'select', selectOptions: liveStatusOptions }
 		},
 		{
-			id: 'si_code',
-			accessorKey: 'si_code',
-			header: 'SI Code',
-			cell: (info) => info.getValue(),
-			size: 180,
-			meta: { group: 'Description', dataType: 'text' }
-		},
-		// Geographic
-		{
 			id: 'geo_extent',
 			accessorKey: 'geo_extent',
 			header: 'Extent',
@@ -757,183 +841,41 @@
 			meta: { group: 'Geographic', dataType: 'select', selectOptions: geoExtentOptions }
 		},
 		{
-			id: 'geo_region',
-			accessorKey: 'geo_region',
-			header: 'Region',
-			cell: (info) => info.getValue(),
-			size: 120,
-			enableGrouping: true,
-			meta: { group: 'Geographic', dataType: 'text' }
-		},
-		{
-			id: 'geo_detail',
-			accessorKey: 'geo_detail',
-			header: 'Geo Detail',
-			cell: (info) => info.getValue(),
-			size: 150,
-			meta: { group: 'Geographic', dataType: 'text' }
-		},
-		{
-			id: 'md_restrict_extent',
-			accessorKey: 'md_restrict_extent',
-			header: 'Restrict Extent',
-			cell: (info) => info.getValue(),
-			size: 150,
-			meta: { group: 'Geographic', dataType: 'text' }
-		},
-		// Metadata / Dates
-		{
 			id: 'md_date',
 			accessorKey: 'md_date',
 			header: 'Primary Date',
 			cell: (info) => formatDate(info.getValue() as string),
 			size: 100,
-			meta: { group: 'Metadata', dataType: 'date' }
+			meta: { group: 'Dates', dataType: 'date' }
 		},
 		{
-			id: 'md_made_date',
-			accessorKey: 'md_made_date',
-			header: 'Made',
-			cell: (info) => formatDate(info.getValue() as string),
-			size: 100,
-			meta: { group: 'Metadata', dataType: 'date' }
-		},
-		{
-			id: 'md_enactment_date',
-			accessorKey: 'md_enactment_date',
-			header: 'Enacted',
-			cell: (info) => formatDate(info.getValue() as string),
-			size: 100,
-			meta: { group: 'Metadata', dataType: 'date' }
-		},
-		{
-			id: 'md_coming_into_force_date',
-			accessorKey: 'md_coming_into_force_date',
-			header: 'In Force',
-			cell: (info) => formatDate(info.getValue() as string),
-			size: 100,
-			meta: { group: 'Metadata', dataType: 'date' }
-		},
-		{
-			id: 'md_dct_valid_date',
-			accessorKey: 'md_dct_valid_date',
-			header: 'DCT Valid',
-			cell: (info) => formatDate(info.getValue() as string),
-			size: 100,
-			meta: { group: 'Metadata', dataType: 'date' }
-		},
-		{
-			id: 'md_restrict_start_date',
-			accessorKey: 'md_restrict_start_date',
-			header: 'Restrict Start',
-			cell: (info) => formatDate(info.getValue() as string),
-			size: 100,
-			meta: { group: 'Metadata', dataType: 'date' }
-		},
-		{
-			id: 'md_total_paras',
-			accessorKey: 'md_total_paras',
-			header: 'Total Paras',
-			cell: (info) => info.getValue() ?? '-',
-			size: 80,
-			meta: { group: 'Metadata', dataType: 'number' }
-		},
-		{
-			id: 'md_body_paras',
-			accessorKey: 'md_body_paras',
-			header: 'Body Paras',
-			cell: (info) => info.getValue() ?? '-',
-			size: 80,
-			meta: { group: 'Metadata', dataType: 'number' }
-		},
-		{
-			id: 'md_schedule_paras',
-			accessorKey: 'md_schedule_paras',
-			header: 'Schedule Paras',
-			cell: (info) => info.getValue() ?? '-',
-			size: 90,
-			meta: { group: 'Metadata', dataType: 'number' }
-		},
-		{
-			id: 'md_attachment_paras',
-			accessorKey: 'md_attachment_paras',
-			header: 'Attach Paras',
-			cell: (info) => info.getValue() ?? '-',
-			size: 80,
-			meta: { group: 'Metadata', dataType: 'number' }
-		},
-		{
-			id: 'md_images',
-			accessorKey: 'md_images',
-			header: 'Images',
-			cell: (info) => info.getValue() ?? '-',
-			size: 70,
-			meta: { group: 'Metadata', dataType: 'number' }
-		},
-		// Role/Actor
-		{
-			id: 'role',
-			accessorKey: 'role',
-			header: 'Roles',
-			cell: (info) => {
-				const val = info.getValue() as string[] | null;
-				if (!val || val.length === 0) return '-';
-				return val.join(', ');
-			},
-			size: 150,
-			meta: { group: 'Role', dataType: 'text' }
-		},
-		{
-			id: 'role_gvt',
-			accessorKey: 'role_gvt',
-			header: 'Govt Roles',
+			id: 'md_subjects',
+			accessorKey: 'md_subjects',
+			header: 'Subjects',
 			cell: (info) => {
 				const val = info.getValue() as Record<string, unknown> | null;
 				if (!val || Object.keys(val).length === 0) return '-';
 				return Object.keys(val).join(', ');
 			},
-			size: 150,
-			meta: { group: 'Role', dataType: 'text' }
-		},
-		// Duty Type
-		{
-			id: 'duty_type',
-			accessorKey: 'duty_type',
-			header: 'Duty Type',
-			cell: (info) => info.getValue() ?? '-',
-			size: 120,
-			meta: { group: 'Duty Type', dataType: 'text' }
+			size: 200,
+			meta: { group: 'Description', dataType: 'text' }
 		},
 		{
-			id: 'duty_type_article',
-			accessorKey: 'duty_type_article',
-			header: 'Duty Type → Article',
-			cell: (info) => info.getValue() ?? '-',
-			size: 140,
-			meta: { group: 'Duty Type', dataType: 'text' }
+			id: 'latest_amend_date',
+			accessorKey: 'latest_amend_date',
+			header: 'Last Amended',
+			cell: (info) => formatDate(info.getValue() as string),
+			size: 110,
+			meta: { group: 'Dates', dataType: 'date' }
 		},
 		{
-			id: 'article_duty_type',
-			accessorKey: 'article_duty_type',
-			header: 'Article → Duty Type',
-			cell: (info) => info.getValue() ?? '-',
-			size: 140,
-			meta: { group: 'Duty Type', dataType: 'text' }
+			id: 'latest_rescind_date',
+			accessorKey: 'latest_rescind_date',
+			header: 'Last Rescinded',
+			cell: (info) => formatDate(info.getValue() as string),
+			size: 110,
+			meta: { group: 'Dates', dataType: 'date' }
 		},
-		// Purpose
-		{
-			id: 'purpose',
-			accessorKey: 'purpose',
-			header: 'Purpose',
-			cell: (info) => {
-				const val = info.getValue() as Record<string, unknown> | null;
-				if (!val || Object.keys(val).length === 0) return '-';
-				return Object.keys(val).join(', ');
-			},
-			size: 150,
-			meta: { group: 'Purpose', dataType: 'text' }
-		},
-		// Timestamps
 		{
 			id: 'created_at',
 			accessorKey: 'created_at',
@@ -948,65 +890,7 @@
 				});
 			},
 			size: 100,
-			meta: { group: 'Timestamps', dataType: 'date' }
-		},
-		{
-			id: 'updated_at',
-			accessorKey: 'updated_at',
-			header: 'Updated',
-			cell: (info) => {
-				const val = info.getValue() as string | null;
-				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', {
-					day: '2-digit',
-					month: 'short',
-					year: 'numeric'
-				});
-			},
-			size: 100,
-			meta: { group: 'Timestamps', dataType: 'date' }
-		},
-		{
-			id: 'latest_amend_date',
-			accessorKey: 'latest_amend_date',
-			header: 'Last Amended',
-			cell: (info) => {
-				const val = info.getValue() as string | null;
-				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', {
-					day: '2-digit',
-					month: 'short',
-					year: 'numeric'
-				});
-			},
-			size: 110,
-			meta: { group: 'Amendments', dataType: 'date' }
-		},
-		{
-			id: 'latest_rescind_date',
-			accessorKey: 'latest_rescind_date',
-			header: 'Last Rescinded',
-			cell: (info) => {
-				const val = info.getValue() as string | null;
-				if (!val) return '-';
-				return new Date(val).toLocaleDateString('en-GB', {
-					day: '2-digit',
-					month: 'short',
-					year: 'numeric'
-				});
-			},
-			size: 110,
-			meta: { group: 'Amendments', dataType: 'date' }
-		},
-		// Links
-		{
-			id: 'leg_gov_uk_url',
-			accessorKey: 'leg_gov_uk_url',
-			header: 'Link',
-			cell: (info) => (info.getValue() ? 'View' : '-'),
-			size: 70,
-			enableSorting: false,
-			meta: { group: 'Links', dataType: 'text' }
+			meta: { group: 'Dates', dataType: 'date' }
 		}
 	];
 
@@ -1186,6 +1070,7 @@
 			config={tableKitConfig}
 			storageKey="uk_lrt_admin_table"
 			persistState={!hasViewConfig}
+			onStateChange={handleStateChange}
 			align="left"
 			features={{
 				columnVisibility: true,
@@ -1200,8 +1085,8 @@
 		>
 			<!-- Saved Views Toolbar -->
 			<svelte:fragment slot="toolbar-left">
-				{#if $activeViewId && $activeViewModified}
-					<!-- Split Button: Update | Save New -->
+				{#if $activeViewId}
+					<!-- Split Button: Save (update current) | Save As New -->
 					<div class="inline-flex rounded-md shadow-sm">
 						<button
 							type="button"
@@ -1213,15 +1098,15 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
 								/>
 							</svg>
-							Update View
+							Save View
 						</button>
 						<button
 							type="button"
 							on:click={handleSaveView}
-							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
@@ -1231,7 +1116,7 @@
 									d="M12 4v16m8-8H4"
 								/>
 							</svg>
-							Save New
+
 						</button>
 					</div>
 				{:else}
@@ -1411,22 +1296,21 @@
 						</button>
 					{/if}
 				{:else if column === 'title_en'}
-					<div class="truncate max-w-xs" title={String(cell.getValue() || '')}>
+					<div class="whitespace-normal break-words">
 						{cell.getValue() || '-'}
 					</div>
-				{:else if column === 'leg_gov_uk_url'}
-					{#if cell.getValue()}
-						<a
-							href={String(cell.getValue())}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="text-blue-600 hover:text-blue-800 hover:underline"
-						>
-							View
-						</a>
-					{:else}
-						<span class="text-gray-400">-</span>
-					{/if}
+				{:else if column === 'is_making'}
+					<button
+						class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+						on:click={() => updateRecord(row.id, 'is_making', !row.is_making)}
+						title="Click to toggle"
+					>
+						{#if row.is_making}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
+						{:else}
+							<span class="text-gray-400">-</span>
+						{/if}
+					</button>
 				{:else if column === 'live'}
 					{@const status = cell.getValue()}
 					<span
@@ -1490,3 +1374,9 @@
 	on:close={() => (showReparseDialog = false)}
 	on:created={handleReparseCreated}
 />
+
+<style>
+	:global(.table-kit-table) {
+		min-width: auto !important;
+	}
+</style>

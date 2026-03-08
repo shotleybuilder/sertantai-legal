@@ -175,6 +175,54 @@ export function createQueryStore<T>(
 }
 
 /**
+ * Create a dynamic one-shot query store that can swap its SQL on demand.
+ *
+ * Like `createQueryStore` but with `update(sql, params)` to change the query
+ * (e.g. when switching between family-filtered views on admin LRT).
+ * No live subscription — call `refresh()` to re-run the current query.
+ *
+ * @returns Object with `store`, `update(sql, params)`, and `refresh()`
+ */
+export function createDynamicQueryStore<T>(): {
+	store: Readable<T[]>;
+	update: (sql: string, params: unknown[]) => void;
+	refresh: () => void;
+} {
+	let setter: ((value: T[]) => void) | null = null;
+	let pgReady: Promise<Awaited<ReturnType<typeof getPglite>>> | null = null;
+	let currentSql: string | null = null;
+	let currentParams: unknown[] = [];
+
+	async function runQuery() {
+		if (!currentSql) return;
+		if (!pgReady) pgReady = getPglite();
+		try {
+			const pg = await pgReady;
+			const result = await pg.query<T>(currentSql, currentParams);
+			if (setter) setter(result.rows);
+		} catch (err) {
+			console.error('[PGLite] Dynamic query failed:', currentSql, err);
+		}
+	}
+
+	const store = readable<T[]>([], (set) => {
+		setter = set;
+		if (currentSql) runQuery();
+		return () => {
+			setter = null;
+		};
+	});
+
+	function update(sql: string, params: unknown[]) {
+		currentSql = sql;
+		currentParams = params;
+		runQuery();
+	}
+
+	return { store, update, refresh: runQuery };
+}
+
+/**
  * Create a Svelte readable store for a single count query.
  *
  * Uses `live.query()` (simpler, re-runs full query on change — fine for
