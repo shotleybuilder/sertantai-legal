@@ -9,6 +9,11 @@ description: Safe procedures for restarting, troubleshooting, and managing Elect
 
 ElectricSQL provides real-time PostgreSQL sync via HTTP Shape API. This guide covers safe restart procedures and troubleshooting to **prevent accidental database wipes**.
 
+> **Architecture note (post-#46):** The frontend uses three sync modes via singleton
+> collection factories — progressive (admin), on-demand (browse), eager (LAT queue).
+> All requests go through the Phoenix backend proxy. See
+> [ElectricSQL Sync Setup](../electricsql-sync-setup/) for the client-side architecture.
+
 ## Development vs Production Environments
 
 The project uses different Docker Compose files for dev and production:

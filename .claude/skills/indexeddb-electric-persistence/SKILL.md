@@ -1,14 +1,23 @@
 # SKILL: IndexedDB Persistence for ElectricSQL + TanStack DB
 
+> **LEGACY (as of #46):** This skill describes the old manual `ShapeStream` + `idb-keyval`
+> persistence approach used by `sync-uk-lrt.ts`. The current architecture uses
+> `electricCollectionOptions` with in-memory storage (no IndexedDB). Collections are
+> progressive/on-demand/eager singletons that re-sync from scratch on page refresh.
+> See [ElectricSQL Sync Setup](../electricsql-sync-setup/) for the current approach.
+>
+> This skill is retained for reference in case IndexedDB persistence is reintroduced
+> for offline-first features in the future.
+
 **Purpose:** Enable persistent offline storage for ElectricSQL-synced data using IndexedDB, with delta sync support across page reloads.
 
 **Context:** ElectricSQL, TanStack DB, idb-keyval, IndexedDB, Svelte
 
 **When to Use:**
-- Syncing large datasets (>5MB) that exceed localStorage limits
-- Need data to persist across page reloads
-- Want delta sync (only download changes on subsequent visits)
-- Building offline-first features with ElectricSQL
+- ~~Syncing large datasets (>5MB) that exceed localStorage limits~~ **(not currently used)**
+- ~~Need data to persist across page reloads~~ **(not currently used)**
+- ~~Want delta sync (only download changes on subsequent visits)~~ **(not currently used)**
+- Future: Building offline-first features that need cross-session persistence
 
 ---
 

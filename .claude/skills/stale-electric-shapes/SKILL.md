@@ -13,64 +13,87 @@ After an ElectricSQL server restart, previously active shapes can become **perma
 
 | HTTP Status | Meaning | Auto-handled? |
 |-------------|---------|---------------|
-| **409** | Stale shape handle (shape was deleted/recreated) | Yes -- client automatically retries with new handle |
-| **400** | Broken offset (shape exists but internal state is corrupted) | **No** -- requires manual intervention |
+| **409** | Stale shape handle (shape was deleted/recreated) | Yes — client automatically retries with new handle |
+| **400** | Broken offset (shape exists but internal state is corrupted) | **No** — requires manual intervention |
 
-## The Fix: Three Components
+## The Fix: Singleton Reset Pattern
 
-### 1. Server-Side: Enable Shape Deletion API
+The current architecture uses singleton collection factories (`getAdminCollection`, `getBrowseCollection`, `getLatQueueCollection`). Each factory has a shared `shapeErrorHandler` that:
 
-In `docker-compose.dev.yml`, set:
+1. Detects 400 errors (broken shape)
+2. Throttles recovery attempts (30-second cooldown)
+3. Deletes the broken shape via `DELETE /v1/shape`
+4. Nulls out the singleton so the next call recreates a fresh collection
+
+### Client-Side: `shapeErrorHandler` in index.client.ts
+
+```typescript
+function shapeErrorHandler(collectionId: string, columns: string[], resetSingleton: () => void) {
+  let resetAttemptedAt = 0;
+
+  return async (error: unknown) => {
+    const status = error instanceof Error && 'status' in error
+      ? (error as { status: number }).status : null;
+
+    if (status === 401) {
+      syncStatus.update((s) => ({ ...s, error: 'Authentication required', syncing: false }));
+      return;
+    }
+
+    if (status === 400) {
+      const now = Date.now();
+      if (now - resetAttemptedAt < 30_000) {
+        console.error(`[TanStack DB] ${collectionId}: Shape recovery already attempted recently`);
+        syncStatus.update((s) => ({
+          ...s, error: 'Electric sync unavailable — try refreshing the page', syncing: false
+        }));
+        return;
+      }
+      resetAttemptedAt = now;
+
+      // Delete the broken shape
+      try {
+        const colParam = encodeURIComponent(columns.join(','));
+        await electricFetchClient(
+          `${ELECTRIC_URL}/v1/shape?table=uk_lrt&columns=${colParam}`,
+          { method: 'DELETE' }
+        );
+      } catch { /* DELETE may not be available */ }
+
+      // Null out singleton — next getXxxCollection() call creates fresh
+      resetSingleton();
+      return;
+    }
+
+    console.error(`[TanStack DB] ${collectionId}: sync error:`, error);
+  };
+}
+```
+
+Each singleton factory passes its own reset callback:
+
+```typescript
+onError: shapeErrorHandler('uk-lrt-admin', UK_LRT_ADMIN_COLUMNS, () => {
+  adminCollection = null;
+})
+```
+
+### Server-Side: Enable Shape Deletion API
+
+In `docker-compose.dev.yml`:
 
 ```yaml
 ELECTRIC_ENABLE_INTEGRATION_TESTING: "true"
 ```
 
-This enables the `DELETE /v1/shape?table=<table>` endpoint, which allows clients to delete broken shapes so Electric creates fresh ones.
-
-**Production note**: This flag is for development. In production, consider a different strategy (e.g., restarting Electric with a clean state or using the Electric admin API).
-
-### 2. Client-Side: onError Handler in TanStack DB
-
-In `frontend/src/lib/db/index.client.ts`, the Electric shape config includes an `onError` handler:
-
-```typescript
-onError: async (error: unknown) => {
-  if (
-    error instanceof Error &&
-    'status' in error &&
-    (error as { status: number }).status === 400 &&
-    !shapeResetAttempted
-  ) {
-    shapeResetAttempted = true;
-    // Delete the broken shape via HTTP API
-    await fetch(`${ELECTRIC_URL}/v1/shape?table=uk_lrt`, { method: 'DELETE' });
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return {}; // Retry -- returning {} tells TanStack DB to retry the shape
-  }
-  // If already tried once, give up
-  return;
-}
-```
-
-Key behaviors:
-- `return {}` from `onError` retries the shape request (but does NOT clear internal `_lastOffset` or `_shapeHandle`)
-- A `shapeResetAttempted` flag prevents infinite retry loops
-- The flag resets to `false` once data starts flowing (recordCount > 0)
-
-### 3. Startup Script: Health Check Polling
-
-`scripts/development/sert-legal-start` now:
-- Starts Electric alongside postgres using `--no-deps` flag
-- Polls `http://localhost:3002/v1/health` for up to 30 seconds before continuing
-- Reports Electric URL in the startup summary
+This enables the `DELETE /v1/shape?table=<table>` endpoint. Without it, the DELETE call returns 405 and recovery relies on Electric eventually cleaning up the shape.
 
 ## Key Files
 
 | File | Role |
 |------|------|
 | `docker-compose.dev.yml` | `ELECTRIC_ENABLE_INTEGRATION_TESTING=true` env var |
-| `frontend/src/lib/db/index.client.ts` | `onError` handler with shape deletion and retry |
+| `frontend/src/lib/db/index.client.ts` | `shapeErrorHandler` with singleton reset |
 | `scripts/development/sert-legal-start` | Electric container management and health polling |
 
 ## Debugging Stale Shapes
@@ -87,12 +110,12 @@ curl -s -X DELETE "http://localhost:3002/v1/shape?table=uk_lrt"
 # Returns 202 if deletion API is enabled, 405 if not
 
 # Check browser console for recovery messages
-# Look for: "[TanStack DB] Broken shape detected (400), deleting and retrying"
+# Look for: "[TanStack DB] uk-lrt-admin: Broken shape (400), resetting"
 ```
 
 ## Gotchas
 
-- `progressive` syncMode maps to `on-demand` internally in TanStack DB
-- In `on-demand` mode, offset defaults to `now`; in `progressive` mode, offset defaults to `void` (which becomes `-1`)
-- `return {}` from `onError` does NOT clear `_lastOffset` or `_shapeHandle` -- it retries with the same internal state, but after deleting the server-side shape, the server issues a new handle
-- The `--no-deps` flag on `docker compose up -d --no-deps electric` is critical to avoid Docker recreating the postgres container (which can cause data loss)
+- `progressive` syncMode maps to `on-demand` internally in TanStack DB. In on-demand mode, offset defaults to `now`; in progressive, offset defaults to `void` (→ `-1`).
+- The singleton reset pattern means the page must call `getXxxCollection()` again to get the fresh collection. Pages that hold a reference to the old collection won't automatically recover — a page refresh may be needed.
+- The 30-second throttle prevents infinite recovery loops. If a shape is persistently broken, the user sees "Electric sync unavailable — try refreshing the page".
+- The `--no-deps` flag on `docker compose up -d --no-deps electric` is critical to avoid Docker recreating the postgres container (which can cause data loss).

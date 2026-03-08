@@ -39,25 +39,22 @@ Comprehensive coverage of:
 
 ### ⚡ [ElectricSQL Sync Setup](electricsql-sync-setup/)
 
-**Use when:** Enabling real-time sync for a resource
-
-Coming soon. Will cover:
-- PostgreSQL logical replication setup
-- ELECTRIC GRANT statements
-- Shape API subscriptions
-- Organization-based filtering
-- Sync error handling
-
-### 💾 [IndexedDB Persistence for ElectricSQL](indexeddb-electric-persistence/)
-
-**Use when:** Persisting large datasets with ElectricSQL and TanStack DB
+**Use when:** Setting up real-time sync for a resource, choosing sync modes, or fixing sync issues
 
 Complete guide for:
-- Custom IndexedDB storage adapter using idb-keyval
-- Handling localStorage quota limits (>5MB datasets)
-- Electric offset persistence for delta sync
-- Upsert logic for cached data conflicts
-- Common pitfalls (stale offsets, context errors, subscribeChanges)
+- Three sync modes: progressive (admin), on-demand (browse), eager (small fixed datasets)
+- Singleton collection factories with column set optimization
+- `createLiveQueryCollection` for on-demand query-driven fetching
+- `filtersToWhereCallback` for translating UI filters to TanStack DB expressions
+- Backend proxy pattern (Phoenix → Electric with CORS, auth, cache-control)
+- Shape error recovery with singleton reset
+- Common pitfalls (MissingHeadersError, generated columns, wrong sync mode)
+
+### 💾 [IndexedDB Persistence for ElectricSQL](indexeddb-electric-persistence/) *(LEGACY)*
+
+**Status:** Not currently used. Retained for reference.
+
+The current architecture uses in-memory `electricCollectionOptions` — data re-syncs from scratch on page refresh. This skill documents the old manual `ShapeStream` + `idb-keyval` approach from `sync-uk-lrt.ts`, which may be relevant if offline-first persistence is reintroduced.
 
 ### 🤖 [AI DRRP Clause Queue Endpoint](endpoint-api-ai-drrp-clause-queue/)
 

@@ -2,19 +2,31 @@
 
 **Purpose:** Set up real-time data sync between PostgreSQL and the browser using ElectricSQL with the official TanStack DB integration, proxied through the Phoenix backend.
 
-**Context:** ElectricSQL 1.2+, TanStack DB 0.5+, @tanstack/electric-db-collection 0.2+, @electric-sql/client 1.5+, Svelte/SvelteKit, Phoenix backend proxy
+**Context:** ElectricSQL 1.5+, TanStack DB 0.5+, @tanstack/electric-db-collection 0.2+, @electric-sql/client 1.5+, Svelte/SvelteKit, Phoenix backend proxy
 
 **When to Use:**
 - Setting up real-time sync for a new resource
+- Choosing the right sync mode for a page
 - Fixing sync issues (401s, 400s, MissingHeadersError, data not loading)
-- Adding server-side filtering to synced data
 - Configuring the backend proxy for Electric
 
 ---
 
 ## Core Principles
 
-### 1. All Electric Requests Go Through the Backend Proxy
+### 1. Three Sync Modes — Choose by Use Case
+
+TanStack DB's `electricCollectionOptions` supports three sync modes:
+
+| Mode | Behaviour | Use When |
+|------|-----------|----------|
+| **`progressive`** | Snapshot loads first query fast, full dataset backfills in background. After backfill, all data is local. | Admin pages — full dataset needed, all filtering client-side |
+| **`on-demand`** | Starts at `offset=now` (empty). Each `createLiveQueryCollection` triggers `loadSubset` → `fetchSnapshot` for matching rows. | Public pages — fetch only what's queried, data accumulates |
+| **`eager`** | Downloads entire shape immediately. Simple, predictable. | Small fixed datasets with WHERE clause (e.g. `is_making = true`) |
+
+**Key insight:** `progressive` maps to `on-demand` internally but with `offset=void` (→ `-1`) instead of `offset=now`. The initial snapshot is what makes progressive feel fast — it loads the first query's worth of data immediately, then backfills everything else.
+
+### 2. All Electric Requests Go Through the Backend Proxy
 
 Never expose Electric directly to the browser. The Phoenix backend proxies all shape requests, injecting the `ELECTRIC_SECRET` server-side and validating auth via the Gatekeeper.
 
@@ -22,34 +34,46 @@ Never expose Electric directly to the browser. The Phoenix backend proxies all s
 Browser → Phoenix proxy (/api/electric/v1/shape) → ElectricSQL (:3000)
 ```
 
-### 2. Use `electricCollectionOptions` — The Official Pattern
+### 3. Column Sets Control Payload Size
 
-The `@tanstack/electric-db-collection` package provides `electricCollectionOptions()` which handles ShapeStream lifecycle, batched updates, and reactive state internally.
+Exclude columns you don't need. Excluding 7 heavy JSONB columns from admin sync saves ~50% payload:
 
-### 3. Use `eager` Sync Mode (Not `progressive`)
+```
+Full sync:     19K × ~5.7 KB/row ≈ 107 MB
+Admin columns: 19K × ~2.5 KB/row ≈ 48 MB  (exclude heavy JSONB)
+Browse columns: Minimal subset (~30 columns for views)
+```
 
-`progressive` maps to `on-demand` internally in TanStack DB. In on-demand mode, data is only loaded via `loadSubset`/`fetchSnapshot`, NOT via `collection.toArray`. Since pages use `collection.toArray` directly, progressive mode results in **no data**.
+### 4. Singleton Collections — One Per Page Type
 
-Use `eager` mode with WHERE clauses to limit the dataset size.
+Collections are created once and cached. Navigation between pages reuses the same collection. The data persists in memory for the session but not across page refresh.
 
-### 4. PostgreSQL Generated Columns Cannot Be Synced
+### 5. PostgreSQL Generated Columns Cannot Be Synced
 
 Electric returns 400 when trying to sync generated columns. Always pass an explicit `columns` array excluding them.
 
-### 5. Quote String Values in WHERE Clauses
+### 6. No Data Persistence Across Refresh
 
-All comparison operators must quote string/date values: `field >= '2024-01-01'` not `field >= 2024-01-01`. Unquoted date values cause Electric 400 errors.
+Collections are in-memory only. On page refresh, progressive sync restarts from scratch (snapshot → backfill). The old `sync-uk-lrt.ts` module had IndexedDB offset persistence, but the `electricCollectionOptions` approach does not use that.
 
 ---
 
-## Architecture: Proxy Pattern
+## Architecture
 
-### Why a Proxy?
+### Current Collection Architecture (post-#46)
 
-1. **Security**: `ELECTRIC_SECRET` stays server-side, never sent to browser
-2. **Auth**: Gatekeeper validates JWT and injects org-scoped WHERE clauses
-3. **Public tables**: Some tables (reference data) bypass auth entirely
-4. **CORS**: Proxy controls headers so browser JS can read Electric protocol headers
+```
+ADMIN (/admin/lrt)          BROWSE (/browse)            LAT QUEUE (/admin/lat/queue)
+─────────────────           ────────────────            ────────────────────────────
+getAdminCollection()        getBrowseCollection()       getLatQueueCollection()
+syncMode: progressive       syncMode: on-demand         syncMode: eager
+columns: ADMIN (no JSONB)   columns: BROWSE (minimal)   columns: ADMIN (no JSONB)
+WHERE: none                 WHERE: none                 WHERE: is_making = true
+
+After backfill:             Per-query:                  Immediate:
+collection.toArray = 19K    createLiveQueryCollection   collection.toArray = ~3K
+TableKit filters locally    → loadSubset → snapshot     Fixed dataset
+```
 
 ### Proxy Flow
 
@@ -94,279 +118,263 @@ plug(Corsica,
 )
 ```
 
-### Adding a New Table to the Proxy
+---
 
-In `electric_proxy_controller.ex`:
+## Working Pattern: Collection Factories
 
-```elixir
-# For public reference data (no auth):
-@public_tables ~w(uk_lrt lat amendment_annotations your_new_table)
+### File: `src/lib/db/index.client.ts`
 
-# For all tables (including shape DELETE recovery):
-@allowed_tables ~w(uk_lrt organization_locations ... your_new_table)
+The module defines column sets, singleton factories, and shared error handling.
+
+#### Column Sets
+
+```typescript
+// All syncable columns (excludes PostgreSQL generated columns)
+export const UK_LRT_ALL_COLUMNS: string[] = ['id', 'family', 'name', 'year', ...];
+
+// Heavy JSONB columns excluded from admin sync
+const HEAVY_JSONB_COLUMNS = new Set([
+  'role_details', 'role_gvt_details', 'duties',
+  'responsibilities', 'powers', 'popimar_details', 'rights'
+]);
+
+// Admin: all minus heavy JSONB (~2.5 KB/row)
+export const UK_LRT_ADMIN_COLUMNS: string[] = UK_LRT_ALL_COLUMNS.filter(
+  (col) => !HEAVY_JSONB_COLUMNS.has(col)
+);
+
+// Browse: lightweight subset for public pages (~30 columns)
+export const UK_LRT_BROWSE_COLUMNS: string[] = [
+  'id', 'family', 'name', 'title_en', 'year', 'number',
+  'type_code', 'live', 'function', 'is_making', 'md_date', ...
+];
+```
+
+#### Singleton Factory Pattern
+
+```typescript
+let adminCollection: Collection<ElectricUkLrtRecord, string> | null = null;
+
+export async function getAdminCollection(): Promise<Collection<ElectricUkLrtRecord, string>> {
+  if (!browser) throw new Error('Collections can only be used in the browser');
+  if (adminCollection) return adminCollection;  // Singleton
+
+  const { createCollection } = await import('@tanstack/db');
+  const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
+
+  adminCollection = createCollection(
+    electricCollectionOptions<ElectricUkLrtRecord>({
+      id: 'uk-lrt-admin',
+      syncMode: 'progressive',     // Full backfill, client-side filtering
+      shapeOptions: {
+        url: `${ELECTRIC_URL}/v1/shape`,
+        fetchClient: electricFetchClient,
+        params: {
+          table: 'uk_lrt',
+          columns: UK_LRT_ADMIN_COLUMNS
+          // No WHERE — progressive syncs everything
+        },
+        onError: shapeErrorHandler('uk-lrt-admin', UK_LRT_ADMIN_COLUMNS, () => {
+          adminCollection = null;  // Reset singleton on fatal error
+        })
+      },
+      getKey: (item) => item.id as string
+    })
+  ) as unknown as Collection<ElectricUkLrtRecord, string>;
+
+  monitorSyncStatus(adminCollection, 'uk-lrt-admin (progressive)');
+  return adminCollection;
+}
+```
+
+#### On-Demand Collection (Browse)
+
+```typescript
+let browseCollection: Collection<ElectricUkLrtRecord, string> | null = null;
+
+export async function getBrowseCollection(): Promise<Collection<ElectricUkLrtRecord, string>> {
+  if (!browser) throw new Error('...');
+  if (browseCollection) return browseCollection;
+
+  // Same pattern but:
+  //   syncMode: 'on-demand'
+  //   columns: UK_LRT_BROWSE_COLUMNS
+  //   No WHERE — on-demand fetches per-query via createLiveQueryCollection
+}
+```
+
+#### Eager Collection (LAT Queue)
+
+```typescript
+let latQueueCollection: Collection<ElectricUkLrtRecord, string> | null = null;
+
+export async function getLatQueueCollection(): Promise<Collection<ElectricUkLrtRecord, string>> {
+  if (!browser) throw new Error('...');
+  if (latQueueCollection) return latQueueCollection;
+
+  // Same pattern but:
+  //   syncMode: 'eager'
+  //   columns: UK_LRT_ADMIN_COLUMNS
+  //   WHERE: 'is_making = true'  — small fixed dataset
+}
+```
+
+#### Shared Error Handler
+
+```typescript
+function shapeErrorHandler(collectionId: string, columns: string[], resetSingleton: () => void) {
+  let resetAttemptedAt = 0;
+
+  return async (error: unknown) => {
+    const status = error instanceof Error && 'status' in error
+      ? (error as { status: number }).status : null;
+
+    if (status === 401) {
+      syncStatus.update((s) => ({ ...s, error: 'Authentication required', syncing: false }));
+      return;
+    }
+
+    if (status === 400) {
+      const now = Date.now();
+      if (now - resetAttemptedAt < 30_000) return;  // Throttle
+      resetAttemptedAt = now;
+
+      // Try to delete the broken shape
+      try {
+        const colParam = encodeURIComponent(columns.join(','));
+        await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=uk_lrt&columns=${colParam}`, {
+          method: 'DELETE'
+        });
+      } catch { /* DELETE may not be available */ }
+
+      resetSingleton();  // Null out singleton so next call recreates
+      return;
+    }
+
+    console.error(`[TanStack DB] ${collectionId}: sync error:`, error);
+  };
+}
+```
+
+---
+
+## Working Pattern: On-Demand with Live Queries (Browse Page)
+
+On-demand mode starts empty. Use `createLiveQueryCollection` to drive data fetching:
+
+### File: `src/lib/db/query-helpers.ts`
+
+Translates svelte-table-kit `FilterCondition[]` to TanStack DB query expressions:
+
+```typescript
+import { eq, gt, gte, lt, lte, and, not, ilike, isNull, inArray } from '@tanstack/db';
+
+export function filtersToWhereCallback(
+  filters: FilterConditionInput[]
+): ((sources: any) => ReturnType<typeof eq>) | null {
+  if (!filters || filters.length === 0) return null;
+
+  return (sources: any) => {
+    const sourceKey = Object.keys(sources)[0];
+    const source = sources[sourceKey];
+
+    const exprs = filters
+      .map((f) => filterToExpr(source, f))
+      .filter((e): e is ReturnType<typeof eq> => e !== null);
+
+    if (exprs.length === 0) return eq(1, 1);
+    if (exprs.length === 1) return exprs[0];
+    return and(exprs[0], exprs[1], ...exprs.slice(2));
+  };
+}
+```
+
+### Browse Page Usage
+
+```typescript
+import { getBrowseCollection } from '$lib/db/index.client';
+import { createLiveQueryCollection } from '@tanstack/db';
+import { filtersToWhereCallback } from '$lib/db/query-helpers';
+
+let baseCollection = await getBrowseCollection();
+let liveQuery: ReturnType<typeof createLiveQueryCollection> | null = null;
+
+function buildLiveQuery(filters: FilterCondition[]) {
+  if (liveQueryCleanup) { liveQueryCleanup(); }
+
+  const filterInputs = filters.map((f) => ({
+    field: f.field, operator: f.operator, value: f.value
+  }));
+  const whereCallback = filtersToWhereCallback(filterInputs);
+
+  liveQuery = createLiveQueryCollection((q) => {
+    const query = q.from({ law: baseCollection! });
+    if (whereCallback) return query.where(whereCallback);
+    return query;
+  });
+
+  const sub = liveQuery.subscribeChanges(() => {
+    data = liveQuery!.toArray as unknown as UkLrtRecord[];
+  }, { includeInitialState: true });
+
+  liveQueryCleanup = () => { sub.unsubscribe(); liveQuery?.cleanup(); };
+}
+
+// Reactive: rebuild live query when filters change
+$: if (baseCollection && activeFilters) { buildLiveQuery(activeFilters); }
 ```
 
 ---
 
 ## Common Pitfalls & Solutions
 
-### ❌ Pitfall 1: Using `progressive` Sync Mode
+### ❌ Pitfall 1: Wrong Sync Mode for the Use Case
 
-**Why it fails:**
-`progressive` maps to `on-demand` internally. In on-demand mode:
-- ShapeStream uses `log=changes_only` and `offset=now`
-- Data is ONLY loaded via `loadSubset` → `fetchSnapshot`/`requestSnapshot`
-- `loadSubset` is triggered by live queries, NOT by `collection.toArray`
-- Pages use `collection.toArray` directly → data never loads
+| Symptom | Likely Cause |
+|---------|--------------|
+| Data never loads | Using `progressive` with `collection.toArray` and no `createLiveQueryCollection` (works, but takes time for backfill) |
+| Full re-sync on every filter change | Using `eager` with dynamic WHERE — shape recreated each time |
+| Slow initial load | Using `progressive` for small fixed datasets (use `eager` instead) |
 
-**✅ Fix:** Use `eager` mode with WHERE clause to limit dataset:
-
-```typescript
-const collection = createCollection(
-  electricCollectionOptions<ElectricMyRecord>({
-    id: 'my-collection',
-    syncMode: 'eager',  // NOT progressive
-    shapeOptions: {
-      url: `${ELECTRIC_URL}/v1/shape`,
-      fetchClient: electricFetchClient,  // Injects auth headers
-      params: {
-        table: 'my_table',
-        where: 'year >= 2024',  // Limit dataset size
-        columns: MY_COLUMNS     // String array, not comma-joined
-      }
-    },
-    getKey: (item) => item.id as string
-  })
-);
-```
+**✅ Fix:** Match sync mode to page type:
+- Admin (full dataset, client filtering) → `progressive`
+- Public (fetch-per-query) → `on-demand` + `createLiveQueryCollection`
+- Small fixed dataset → `eager` with WHERE
 
 ### ❌ Pitfall 2: MissingHeadersError
 
 **Why it fails:** Multiple possible causes:
-1. Corsica plug doesn't expose `electric-*` headers → browser JS can't read them
+1. Corsica plug doesn't expose `electric-*` headers
 2. Proxy doesn't set `Access-Control-Expose-Headers`
-3. Browser caches a proxied response → cached response lacks CORS headers
-4. Proxy forwards stale `content-encoding`/`content-length` → browser can't decode body
+3. Browser caches a response → cached response lacks CORS headers
+4. Proxy forwards stale `content-encoding`/`content-length`
 
-**✅ Fix:** Ensure proxy follows the official Electric proxy pattern:
+**✅ Fix:** Ensure proxy follows the official Electric proxy pattern. See proxy controller for the complete `forward_electric_headers/2` function.
 
-```elixir
-defp forward_electric_headers(conn, %Req.Response{headers: headers}) do
-  # Headers to skip — replaced or invalid after decompression
-  skip = MapSet.new(~w(cache-control content-encoding content-length transfer-encoding))
+### ❌ Pitfall 3: Syncing PostgreSQL Generated Columns
 
-  conn =
-    Enum.reduce(headers, conn, fn {key, values}, conn ->
-      if key in skip do
-        conn
-      else
-        if String.starts_with?(key, "electric-") or key in ~w(etag x-request-id) do
-          case values do
-            [val | _] -> put_resp_header(conn, key, val)
-            _ -> conn
-          end
-        else
-          conn
-        end
-      end
-    end)
+Electric returns 400 for generated columns like `leg_gov_uk_url`, `number_int`.
 
-  conn
-  |> put_resp_header("cache-control", "no-store")
-  |> put_resp_header("vary", "Authorization")
-  |> put_resp_header(
-    "access-control-expose-headers",
-    "electric-cursor,electric-handle,electric-offset,electric-schema,electric-up-to-date,electric-internal-known-error"
-  )
-end
-```
+**✅ Fix:** Pass explicit `columns` array:
 
-### ❌ Pitfall 3: Unquoted String Values in WHERE Clauses
-
-**Why it fails:**
-`latest_amend_date >= 2024-01-01` is invalid SQL. Electric returns 400.
-
-**✅ Fix:** Quote string values in all comparison operators:
-
-```typescript
-case 'greater_or_equal':
-  return typeof value === 'string'
-    ? `${field} >= '${escapeValue(String(value))}'`
-    : `${field} >= ${value}`;
-```
-
-Apply this pattern to: `greater_than`, `less_than`, `greater_or_equal`, `less_or_equal`.
-
-Note: `is_before`/`is_after` operators already quote correctly by design.
-
-### ❌ Pitfall 4: Double Collection Creation on Page Load
-
-**Why it fails:**
-`lastWhereClause` initialized with a different format than what `buildWhereFromFilters` produces. Example:
-- Init: `"md_date" > '2026-03-01'` (quoted column name)
-- `buildWhereFromFilters`: `md_date > '2026-03-01'` (unquoted)
-- They don't match → collection recreated immediately → two rapid requests → second hits browser cache → MissingHeadersError
-
-**✅ Fix:** Initialize `lastWhereClause` to match `buildWhereFromFilters` output format:
-
-```typescript
-// WRONG — quoted column name
-let lastWhereClause = `"md_date" > '${thisMonthStart}'`;
-
-// CORRECT — matches buildWhereFromFilters output
-let lastWhereClause = `md_date > '${thisMonthStart}'`;
-```
-
-### ❌ Pitfall 5: MissingHeadersError When Switching Views Rapidly
-
-**Why it fails:** Two related causes:
-
-1. **Stale browser cache**: Even with `cache-control: no-store` from the proxy, old cached responses (from before the fix was deployed, or from other origins) can persist in the browser's HTTP cache. Initial shape requests (`offset=-1`) with the same URL get served from cache — the cached response lacks CORS headers → `MissingHeadersError`.
-
-2. **Orphaned ShapeStreams**: When recreating a collection (e.g. user switches view), the old collection's ShapeStream keeps running. Multiple concurrent ShapeStreams for the same table cause unpredictable responses.
-
-**✅ Fix (cache-buster):** Add a timestamp to initial shape requests in `fetchClient`:
-
-```typescript
-export function createElectricFetchClient(
-  fetchFn: typeof fetch = fetch
-): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
-  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const token = getAuthToken();
-    const headers = new Headers(init?.headers);
-    if (token && !headers.has('Authorization')) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    // Cache-bust initial shape requests to prevent browser serving
-    // stale cached responses that lack CORS headers.
-    let url = input.toString();
-    if (url.includes('/v1/shape') && url.includes('offset=-1')) {
-      const separator = url.includes('?') ? '&' : '?';
-      url = `${url}${separator}_cb=${Date.now()}`;
-    }
-
-    return fetchFn(url, { ...init, headers });
-  };
-}
-```
-
-The `_cb` param is stripped by the proxy's `Map.take` (not in `@passthrough_params`), so Electric never sees it. It only needs to make the URL unique for the browser's cache.
-
-**✅ Fix (cleanup):** Call `collection.cleanup()` before creating a new one:
-
-```typescript
-async function createMyCollection(whereClause: string) {
-  // Stop the previous ShapeStream before creating a new one
-  if (myCol) {
-    myCol.cleanup();
-    myCol = null;
-  }
-
-  const { createCollection } = await import('@tanstack/db');
-  // ... rest of creation
-}
-```
-
-### ❌ Pitfall 6: Syncing PostgreSQL Generated Columns
-
-**Why it fails:**
-Electric returns 400 when trying to sync generated columns.
-
-**✅ Fix:** Pass `columns` as a string array excluding generated columns:
-
-```typescript
-const COLUMNS: string[] = [
-  'id', 'name', 'title', 'year', 'created_at', 'updated_at'
-  // Do NOT include generated columns like 'computed_url', 'number_int'
-];
-```
-
-Find generated columns with:
 ```sql
+-- Find generated columns:
 SELECT column_name, generation_expression
 FROM information_schema.columns
-WHERE table_name = 'my_table'
-  AND generation_expression IS NOT NULL;
+WHERE table_name = 'my_table' AND generation_expression IS NOT NULL;
 ```
 
-### ❌ Pitfall 7: No Auth Token on Electric Requests
+### ❌ Pitfall 4: No Auth Token on Electric Requests
 
-**Why it fails:**
-Electric shape requests need JWT for org-scoped tables. Without `fetchClient`, no `Authorization` header is sent.
+**✅ Fix:** Pass `electricFetchClient` to `shapeOptions.fetchClient`. It injects the JWT from `adminAuth` store.
 
-**✅ Fix:** Use `electricFetchClient` which injects the JWT:
+### ❌ Pitfall 5: Shape Broken After Electric Restart
 
-```typescript
-// frontend/src/lib/electric/fetch-client.ts
-import { getAuthToken } from '$lib/stores/auth';
+Restored shapes can have broken offsets (400 "offset out of bounds"). The `shapeErrorHandler` deletes the broken shape and nulls the singleton so the next call recreates fresh.
 
-export function createElectricFetchClient(
-  fetchFn: typeof fetch = fetch
-): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
-  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const token = getAuthToken();
-    const headers = new Headers(init?.headers);
-    if (token && !headers.has('Authorization')) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-    return fetchFn(input, { ...init, headers });
-  };
-}
+See [Stale Electric Shapes](../stale-electric-shapes/) skill for full details.
 
-export const electricFetchClient = createElectricFetchClient();
-```
-
-Then pass it to shape options:
-```typescript
-shapeOptions: {
-  url: `${ELECTRIC_URL}/v1/shape`,
-  fetchClient: electricFetchClient,  // ← Injects JWT
-  params: { ... }
-}
-```
-
-### ❌ Pitfall 8: Shape Recovery After Electric Restart
-
-**Why it fails:**
-After Electric restarts, restored shapes can have broken offsets (`offset out of bounds`, 400). The Electric client retains internal offset/handle state across retries, so `return {}` from `onError` doesn't help.
-
-**✅ Fix:** Destroy and recreate the collection:
-
-```typescript
-shapeOptions: {
-  // ...
-  onError: async (error: unknown) => {
-    const status = error instanceof Error && 'status' in error
-      ? (error as { status: number }).status : null;
-
-    if (status === 400) {
-      const now = Date.now();
-      if (now - shapeResetAttemptedAt < 30_000) {
-        console.error('Shape recovery already attempted recently');
-        return;
-      }
-      shapeResetAttemptedAt = now;
-
-      // Try to delete the broken shape
-      try {
-        await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=my_table`, {
-          method: 'DELETE'
-        });
-      } catch { /* DELETE may not be available */ }
-
-      // Recreate after delay (new ShapeStream with offset=-1)
-      setTimeout(async () => {
-        myCollection = null;
-        myCollection = await createMyCollection(currentWhereClause);
-      }, 1500);
-      return;
-    }
-  }
-}
-```
-
-### ❌ Pitfall 9: TypeScript Type Doesn't Satisfy Row<unknown>
+### ❌ Pitfall 6: TypeScript Type Doesn't Satisfy Row<unknown>
 
 ```typescript
 // WRONG — No index signature
@@ -376,195 +384,11 @@ interface MyRecord { id: string; name: string; }
 type ElectricMyRecord = MyRecord & Record<string, unknown>;
 ```
 
----
+### ❌ Pitfall 7: Cache-bust Initial Shape Requests
 
-## Working Pattern: Complete Collection Setup
+Browser may serve stale cached responses lacking CORS headers.
 
-### File: `src/lib/db/index.client.ts`
-
-```typescript
-import { browser } from '$app/environment';
-import type { Collection } from '@tanstack/db';
-import { writable } from 'svelte/store';
-import type { MyRecord } from '$lib/types/my-record';
-import { electricFetchClient } from '$lib/electric/fetch-client';
-import { ELECTRIC_URL } from '$lib/electric/client';
-
-type ElectricMyRecord = MyRecord & Record<string, unknown>;
-
-// Columns to sync — excludes generated columns
-const MY_COLUMNS: string[] = ['id', 'name', 'title', 'status', 'created_at', 'updated_at'];
-
-let myCol: Collection<ElectricMyRecord, string> | null = null;
-let currentWhereClause = '';
-let shapeResetAttemptedAt = 0;
-
-export interface SyncStatus {
-  connected: boolean;
-  syncing: boolean;
-  recordCount: number;
-  lastSyncTime: Date | null;
-  error: string | null;
-}
-
-export const syncStatus = writable<SyncStatus>({
-  connected: false, syncing: true, recordCount: 0,
-  lastSyncTime: null, error: null
-});
-
-function getDefaultWhere(): string {
-  return `year >= ${new Date().getFullYear() - 2}`;
-}
-
-async function createMyCollection(
-  whereClause: string
-): Promise<Collection<ElectricMyRecord, string>> {
-  // Clean up previous collection's ShapeStream before creating a new one.
-  // Without this, rapid view switches leave orphaned ShapeStreams running.
-  if (myCol) {
-    myCol.cleanup();
-    myCol = null;
-  }
-
-  const { createCollection } = await import('@tanstack/db');
-  const { electricCollectionOptions } = await import('@tanstack/electric-db-collection');
-
-  currentWhereClause = whereClause;
-  syncStatus.update((s) => ({ ...s, syncing: true, error: null }));
-
-  const collection = createCollection(
-    electricCollectionOptions<ElectricMyRecord>({
-      id: 'my-collection',
-      syncMode: 'eager',  // Use eager — WHERE limits dataset size
-      shapeOptions: {
-        url: `${ELECTRIC_URL}/v1/shape`,
-        fetchClient: electricFetchClient,
-        params: {
-          table: 'my_table',
-          where: whereClause,
-          columns: MY_COLUMNS
-        },
-        onError: async (error: unknown) => {
-          const status = error instanceof Error && 'status' in error
-            ? (error as { status: number }).status : null;
-
-          if (status === 401) {
-            syncStatus.update((s) => ({ ...s, error: 'Authentication required', syncing: false }));
-            return;
-          }
-
-          if (status === 400) {
-            const now = Date.now();
-            if (now - shapeResetAttemptedAt < 30_000) return;
-            shapeResetAttemptedAt = now;
-            try {
-              await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=my_table`, { method: 'DELETE' });
-            } catch { /* OK */ }
-            setTimeout(async () => {
-              myCol = null;
-              myCol = await createMyCollection(currentWhereClause);
-            }, 1500);
-            return;
-          }
-
-          console.error('Electric sync error:', error);
-        }
-      },
-      getKey: (item) => item.id as string
-    })
-  );
-
-  // Debounced sync status monitoring
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  collection.subscribeChanges(() => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      if (collection.size > 0) shapeResetAttemptedAt = 0;
-      syncStatus.update((s) => ({
-        ...s, connected: true, syncing: !collection.isReady(),
-        recordCount: collection.size,
-        lastSyncTime: collection.isReady() ? new Date() : s.lastSyncTime
-      }));
-    }, 100);
-  });
-
-  return collection as unknown as Collection<ElectricMyRecord, string>;
-}
-
-export async function getMyCollection(
-  whereClause?: string
-): Promise<Collection<ElectricMyRecord, string>> {
-  if (!browser) throw new Error('Collections can only be used in the browser');
-  const where = whereClause || getDefaultWhere();
-  if (myCol && currentWhereClause === where) return myCol;
-  myCol = await createMyCollection(where);
-  return myCol;
-}
-
-export async function updateMyWhere(whereClause: string): Promise<void> {
-  if (!browser) return;
-  myCol = await createMyCollection(whereClause);
-}
-```
-
-### File: `src/lib/electric/client.ts`
-
-```typescript
-// Electric URL points to the backend proxy, NOT directly to Electric
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003/api';
-export const ELECTRIC_URL = `${API_URL}/electric`;
-```
-
-### `buildWhereFromFilters` — Correct Value Quoting
-
-```typescript
-export function buildWhereFromFilters(
-  filters: Array<{ field: string; operator: string; value: unknown }>
-): string {
-  if (!filters || filters.length === 0) return getDefaultWhere();
-
-  const escapeValue = (v: string): string => v.replace(/'/g, "''");
-
-  const clauses = filters.map(({ field, operator, value }) => {
-    switch (operator) {
-      case 'equals':
-        return typeof value === 'string'
-          ? `${field} = '${escapeValue(String(value))}'`
-          : `${field} = ${value}`;
-      case 'contains':
-        return `${field} ILIKE '%${escapeValue(String(value))}%'`;
-      case 'greater_than':
-        return typeof value === 'string'
-          ? `${field} > '${escapeValue(String(value))}'`
-          : `${field} > ${value}`;
-      case 'less_than':
-        return typeof value === 'string'
-          ? `${field} < '${escapeValue(String(value))}'`
-          : `${field} < ${value}`;
-      case 'greater_or_equal':
-        return typeof value === 'string'
-          ? `${field} >= '${escapeValue(String(value))}'`
-          : `${field} >= ${value}`;
-      case 'less_or_equal':
-        return typeof value === 'string'
-          ? `${field} <= '${escapeValue(String(value))}'`
-          : `${field} <= ${value}`;
-      case 'is_before':
-        return `${field} < '${escapeValue(String(value))}'`;
-      case 'is_after':
-        return `${field} > '${escapeValue(String(value))}'`;
-      case 'is_empty':
-        return `(${field} IS NULL OR ${field} = '')`;
-      case 'is_not_empty':
-        return `(${field} IS NOT NULL AND ${field} != '')`;
-      default:
-        return null;
-    }
-  }).filter(Boolean);
-
-  return clauses.length > 0 ? clauses.join(' AND ') : getDefaultWhere();
-}
-```
+**✅ Fix:** `electricFetchClient` adds `_cb=timestamp` to `offset=-1` URLs. The proxy strips this param before forwarding to Electric.
 
 ---
 
@@ -585,71 +409,17 @@ def change do
 end
 ```
 
-### Docker Compose for Electric (Development)
+### Adding a New Table to the Proxy
 
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_PASSWORD: postgres
-    command:
-      - postgres
-      - -c
-      - wal_level=logical  # Required for Electric
-    ports:
-      - "5436:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+In `electric_proxy_controller.ex`:
 
-  electric:
-    image: electricsql/electric:latest
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres/my_app_dev
-    ports:
-      - "3002:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
+```elixir
+# For public reference data (no auth):
+@public_tables ~w(uk_lrt lat amendment_annotations your_new_table)
+
+# For all tables (including shape DELETE recovery):
+@allowed_tables ~w(uk_lrt organization_locations ... your_new_table)
 ```
-
-### Production: ElectricSQL Replication Slot
-
-Multiple Electric instances on the same PostgreSQL cluster conflict on replication slots. Set a unique ID:
-
-```yaml
-environment:
-  - ELECTRIC_REPLICATION_STREAM_ID=legal  # → creates electric_slot_legal
-```
-
----
-
-## Troubleshooting
-
-### MissingHeadersError
-1. Check Corsica `expose_headers` in `endpoint.ex` includes all `electric-*` headers
-2. Check proxy sets `Access-Control-Expose-Headers` on response
-3. Check proxy sets `cache-control: no-store` (prevents browser serving cached responses without CORS)
-4. Check proxy strips `content-encoding` and `content-length` (stale after Req decompression)
-5. Check for double collection creation (format mismatch in `lastWhereClause`)
-
-### Electric Returns 400
-1. Are you syncing generated columns? → Add explicit `columns` array
-2. Is the WHERE clause quoting string/date values? → `field >= '2024-01-01'` not `field >= 2024-01-01`
-3. Is the table name correct?
-
-### 401 Unauthorized
-1. Is `electricFetchClient` being passed to `shapeOptions.fetchClient`?
-2. Is the JWT in localStorage? (check `getAuthToken()`)
-3. For public tables — is the table listed in `@public_tables` in the proxy controller?
-
-### Data Doesn't Load (Spinner Forever)
-1. Are you using `progressive` sync mode? → Switch to `eager`
-2. Is `collection.subscribeChanges` connected?
-3. Check browser console for errors
-
-### Shape Broken After Electric Restart
-The `onError` handler with 400 detection recreates the collection. If `ELECTRIC_ENABLE_INTEGRATION_TESTING=true` is set, it also DELETEs the broken shape first.
 
 ---
 
@@ -663,22 +433,31 @@ npm install @electric-sql/client@^1.5 @tanstack/db@^0.5 @tanstack/electric-db-co
 ### Key Files
 | File | Purpose |
 |------|---------|
-| `frontend/src/lib/db/index.client.ts` | Collections, sync status, WHERE builder |
-| `frontend/src/lib/electric/fetch-client.ts` | JWT header injection for Electric requests |
+| `frontend/src/lib/db/index.client.ts` | Column sets, singleton factories, sync status |
+| `frontend/src/lib/db/query-helpers.ts` | FilterCondition → TanStack DB expressions |
+| `frontend/src/lib/electric/fetch-client.ts` | JWT header injection + cache-busting |
 | `frontend/src/lib/electric/client.ts` | ELECTRIC_URL (points to backend proxy) |
-| `backend/lib/sertantai_legal_web/controllers/electric_proxy_controller.ex` | Proxy controller |
-| `backend/lib/sertantai_legal_web/endpoint.ex` | Corsica CORS config with expose_headers |
+| `backend/.../electric_proxy_controller.ex` | Proxy controller |
+| `backend/.../endpoint.ex` | Corsica CORS config with expose_headers |
 
 ### Adding a New Synced Table Checklist
 1. Create Ash resource with `REPLICA IDENTITY FULL` in migration
 2. Add table to `@allowed_tables` in proxy controller
-3. Add to `@public_tables` if it's public reference data (no auth needed)
-4. Create column list excluding generated columns
-5. Create collection in `index.client.ts` with `eager` mode + `fetchClient`
-6. Call `collection.cleanup()` before recreating (in `createXxxCollection`)
-7. Add `onError` handler for shape recovery
-8. Initialize `lastWhereClause` matching `buildWhereFromFilters` output format
-9. Cache-busting is handled globally by `electricFetchClient` — no per-table action needed
+3. Add to `@public_tables` if it's public reference data
+4. Define column list excluding generated columns
+5. Choose sync mode: `progressive` (admin), `on-demand` (public), `eager` (small fixed)
+6. Create singleton factory in `index.client.ts`
+7. Add `shapeErrorHandler` with singleton reset callback
+8. For on-demand pages: create `filtersToWhereCallback` mappings in `query-helpers.ts`
+9. Cache-busting is handled globally by `electricFetchClient`
+
+### Test Files
+| File | Covers |
+|------|--------|
+| `src/lib/db/index.client.test.ts` | Column sets, factory configs, sync status |
+| `src/lib/db/query-helpers.test.ts` | All filter operators, multi-filter AND |
+| `src/lib/electric/fetch-client.test.ts` | JWT injection |
+| `src/lib/electric/client.test.ts` | URL resolution |
 
 ---
 
@@ -693,26 +472,22 @@ npm install @electric-sql/client@^1.5 @tanstack/db@^0.5 @tanstack/electric-db-co
 ## Key Takeaways
 
 **Do:**
+- ✅ Choose sync mode by use case: progressive (admin), on-demand (public), eager (small fixed)
+- ✅ Use singleton collection factories — one per page type, never destroyed
+- ✅ Define column sets to exclude heavy/unnecessary columns
+- ✅ Use `createLiveQueryCollection` with on-demand mode for query-driven fetching
+- ✅ Use `filtersToWhereCallback` to translate UI filters to TanStack DB expressions
 - ✅ Proxy all Electric requests through the Phoenix backend
-- ✅ Use `eager` sync mode with WHERE-limited datasets
-- ✅ Pass `fetchClient: electricFetchClient` for JWT injection
-- ✅ Set `cache-control: no-store` and `Vary: Authorization` in proxy
-- ✅ Strip `content-encoding`/`content-length` from proxied responses
-- ✅ Expose `electric-*` headers in both Corsica plug AND proxy response
-- ✅ Quote string/date values in all WHERE comparison operators
-- ✅ Match `lastWhereClause` format to `buildWhereFromFilters` output
-- ✅ Call `collection.cleanup()` before recreating with a new WHERE clause
-- ✅ Cache-bust initial shape requests (`_cb=timestamp` on `offset=-1` URLs)
-- ✅ Add `onError` handler for shape recovery (400 → recreate collection)
+- ✅ Pass `fetchClient: electricFetchClient` for JWT injection + cache-busting
+- ✅ Add `shapeErrorHandler` with singleton reset for shape recovery
 - ✅ Add `& Record<string, unknown>` to types for Electric compatibility
 - ✅ Explicitly list columns, excluding generated ones
 
 **Don't:**
-- ❌ Use `progressive`/`on-demand` sync mode with `collection.toArray`
-- ❌ Expose Electric directly to the browser (use proxy)
-- ❌ Forget to quote string values in WHERE clauses
-- ❌ Initialize `lastWhereClause` with different format than `buildWhereFromFilters`
-- ❌ Forward `content-encoding`/`content-length` through the proxy
-- ❌ Let Electric's `cache-control: public, max-age=604800` reach the browser
-- ❌ Create a new collection without calling `cleanup()` on the old one first
+- ❌ Use `eager` with dynamic WHERE clauses (shape recreated on every change)
+- ❌ Use `on-demand` without `createLiveQueryCollection` (data never loads)
+- ❌ Expose Electric directly to the browser
+- ❌ Destroy/recreate collections on page navigation (use singletons)
 - ❌ Try to sync PostgreSQL generated columns
+- ❌ Let Electric's `cache-control: public, max-age=604800` reach the browser
+- ❌ Expect data to persist across page refresh (in-memory only)
