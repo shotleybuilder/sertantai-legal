@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { TableKit } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
-	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
+	import type { FilterCondition, TableState } from '@shotleybuilder/svelte-table-kit';
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { reparseLat, type QueueItem } from '$lib/api/lat';
@@ -626,6 +626,30 @@
 		configVersion++;
 	}
 
+	// Sync TableKit's internal state back to our view variables
+	// so captureCurrentConfig() captures the user's actual current config
+	function handleStateChange(state: TableState) {
+		const visibleCols = Object.entries(state.columnVisibility)
+			.filter(([, visible]) => visible)
+			.map(([id]) => id);
+		if (visibleCols.length > 0) {
+			viewColumns = visibleCols;
+		}
+
+		if (state.columnOrder.length > 0) {
+			viewColumnOrder = state.columnOrder;
+		}
+
+		viewFilters = state.columnFilters;
+
+		if (state.sorting.length > 0) {
+			viewSort = {
+				columnId: state.sorting[0].columnId,
+				direction: state.sorting[0].direction
+			};
+		}
+	}
+
 	function captureCurrentConfig(): TableConfig {
 		return {
 			filters: viewFilters.map((f) => ({
@@ -858,6 +882,7 @@
 				config={tableKitConfig}
 				storageKey="lat_queue_table"
 				persistState={!hasViewConfig}
+				onStateChange={handleStateChange}
 				align="left"
 				features={{
 					columnVisibility: true,
