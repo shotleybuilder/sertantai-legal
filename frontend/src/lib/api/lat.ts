@@ -92,6 +92,9 @@ export interface QueueItem {
 	year: number;
 	type_code: string;
 	family: string | null;
+	family_ii: string | null;
+	is_making: boolean | null;
+	making_classification: string | null;
 	live: string | null;
 	function: string[] | null;
 	lrt_updated_at: string | null;

@@ -13,6 +13,7 @@
 	import type { TableConfig, SavedViewInput } from 'svelte-table-views-tanstack';
 	import { ViewSidebar } from 'svelte-table-views-sidebar';
 	import type { SidebarView, ViewGroup } from 'svelte-table-views-sidebar';
+	import { authFetch } from '$lib/api/client';
 
 	// PGLite sync
 	import { startSync, syncStatus } from '$lib/pglite/sync';
@@ -583,7 +584,7 @@
 	// Update record
 	async function updateRecord(id: string, field: string, value: string | string[] | boolean | null) {
 		try {
-			const response = await fetch(`${API_URL}/api/uk-lrt/${id}`, {
+			const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ [field]: value })

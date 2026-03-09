@@ -8,6 +8,9 @@
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { reparseLat, type QueueItem } from '$lib/api/lat';
+	import { authFetch } from '$lib/api/client';
+
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { createDynamicQueryStore } from '$lib/pglite/live-store';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
@@ -42,6 +45,9 @@
 			year: (r.year as number | null) ?? 0,
 			type_code: (r.type_code as string | null) ?? '',
 			family: r.family as string | null,
+			family_ii: r.family_ii as string | null,
+			is_making: r.is_making as boolean | null,
+			making_classification: r.making_classification as string | null,
 			live: r.live as string | null,
 			function: parseFunctionKeys(r.function),
 			lrt_updated_at: r.updated_at as string | null,
@@ -69,6 +75,57 @@
 	function handleLatSessionCreated(event: CustomEvent<{ session_id: string }>) {
 		showLatDialog = false;
 		goto(`/admin/lat/sessions/${event.detail.session_id}`);
+	}
+
+	// Inline editing state
+	let editingCell: { id: string; field: string } | null = null;
+	let editValue: string = '';
+
+	async function updateRecord(id: string, field: string, value: string | boolean | null) {
+		try {
+			const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ [field]: value })
+			});
+
+			if (!response.ok) {
+				const err = await response.json();
+				throw new Error(err.error || 'Failed to update');
+			}
+
+			// Refresh data from PGLite after Electric syncs the change back
+			refreshData();
+		} catch (e) {
+			alert(`Update failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
+		}
+	}
+
+	function startEdit(id: string, field: string, currentValue: string | null) {
+		editingCell = { id, field };
+		editValue = currentValue ?? '';
+	}
+
+	async function saveEdit() {
+		if (!editingCell) return;
+		const { id, field } = editingCell;
+		await updateRecord(id, field, editValue || null);
+		editingCell = null;
+		editValue = '';
+	}
+
+	function cancelEdit() {
+		editingCell = null;
+		editValue = '';
+	}
+
+	function handleEditKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			saveEdit();
+		} else if (e.key === 'Escape') {
+			cancelEdit();
+		}
 	}
 
 	// Saved views state
@@ -111,7 +168,7 @@
 			)
 		)`;
 
-	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, live, function, updated_at, lat_count, latest_lat_updated_at';
+	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, function, updated_at, lat_count, latest_lat_updated_at';
 
 	function queryForFamily(family: string) {
 		currentFamily = family;
@@ -264,6 +321,69 @@
 
 	// ── Column definitions ──────────────────────────────────────────
 
+	// Family options grouped by category (shared with LRT page)
+	const familyOptions = {
+		health_safety: [
+			'💙 FIRE',
+			'💙 FIRE: Dangerous and Explosive Substances',
+			'💙 FOOD',
+			'💙 HEALTH: Coronavirus',
+			'💙 HEALTH: Drug & Medicine Safety',
+			'💙 HEALTH: Patient Safety',
+			'💙 HEALTH: Public',
+			'💙 OH&S: Gas & Electrical Safety',
+			'💙 OH&S: Mines & Quarries',
+			'💙 OH&S: Occupational / Personal Safety',
+			'💙 OH&S: Offshore Safety',
+			'💙 PUBLIC',
+			'💙 PUBLIC: Building Safety',
+			'💙 PUBLIC: Consumer / Product Safety',
+			'💙 TRANSPORT: Air Safety',
+			'💙 TRANSPORT: Rail Safety',
+			'💙 TRANSPORT: Road Safety',
+			'💙 TRANSPORT: Maritime Safety'
+		],
+		environment: [
+			'💚 AGRICULTURE',
+			'💚 AGRICULTURE: Pesticides',
+			'💚 AIR QUALITY',
+			'💚 ANIMALS & ANIMAL HEALTH',
+			'💚 ANTARCTICA',
+			'💚 BUILDINGS',
+			'💚 CLIMATE CHANGE',
+			'💚 ENERGY',
+			'💚 ENVIRONMENTAL PROTECTION',
+			'💚 FINANCE',
+			'💚 FISHERIES & FISHING',
+			'💚 GMOs',
+			'💚 HISTORIC ENVIRONMENT',
+			'💚 MARINE & RIVERINE',
+			'💚 NOISE',
+			'💚 NUCLEAR & RADIOLOGICAL',
+			'💚 OIL & GAS - OFFSHORE - PETROLEUM',
+			'💚 PLANNING & INFRASTRUCTURE',
+			'💚 PLANT HEALTH',
+			'💚 POLLUTION',
+			'💚 TOWN & COUNTRY PLANNING',
+			'💚 TRANSPORT',
+			'💚 TRANSPORT: Aviation',
+			'💚 TRANSPORT: Harbours & Shipping',
+			'💚 TRANSPORT: Railways & Rail Transport',
+			'💚 TRANSPORT: Roads & Vehicles',
+			'💚 TREES: Forestry & Timber',
+			'💚 WASTE',
+			'💚 WATER & WASTEWATER',
+			'💚 WILDLIFE & COUNTRYSIDE'
+		],
+		hr: ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time']
+	};
+
+	const makingClassificationOptions = [
+		{ value: 'making', label: 'Making' },
+		{ value: 'not_making', label: 'Not Making' },
+		{ value: 'uncertain', label: 'Uncertain' }
+	];
+
 	const reasonOptions = [
 		{ value: 'missing', label: 'Missing' },
 		{ value: 'stale', label: 'Stale' }
@@ -309,7 +429,34 @@
 			cell: (info) => info.getValue() || '',
 			size: 200,
 			enableGrouping: true,
-			meta: { group: 'Identification', dataType: 'text' }
+			meta: { group: 'Identification', editable: true, dataType: 'text' }
+		},
+		{
+			id: 'family_ii',
+			accessorKey: 'family_ii',
+			header: 'Family II',
+			cell: (info) => info.getValue() || '',
+			size: 200,
+			enableGrouping: true,
+			meta: { group: 'Identification', editable: true, dataType: 'text' }
+		},
+		{
+			id: 'is_making',
+			accessorKey: 'is_making',
+			header: 'Is Making',
+			cell: (info) => info.getValue() ? 'Yes' : '-',
+			size: 90,
+			enableGrouping: true,
+			meta: { group: 'Classification', editable: true, dataType: 'text' }
+		},
+		{
+			id: 'making_classification',
+			accessorKey: 'making_classification',
+			header: 'Making Classification',
+			cell: (info) => info.getValue() || '-',
+			size: 160,
+			enableGrouping: true,
+			meta: { group: 'Classification', dataType: 'select', selectOptions: makingClassificationOptions }
 		},
 		{
 			id: 'year',
@@ -454,8 +601,8 @@
 	viewGroupMapping['Missing LAT'] = 'queue';
 	viewGroupMapping['Stale LAT'] = 'queue';
 
-	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
-	const familyColumns = ['actions', 'law_name', 'title_en', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'family_ii', 'is_making', 'making_classification', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	const familyColumns = ['actions', 'law_name', 'title_en', 'is_making', 'making_classification', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
 
 	type ViewDef = {
 		name: string;
@@ -981,8 +1128,116 @@
 					{:else if column === 'title_en'}
 						<span class="text-gray-900 whitespace-normal leading-snug">{row.title_en || ''}</span>
 					{:else if column === 'family'}
-						<span class="text-gray-700 whitespace-normal leading-snug">{row.family || ''}</span>
-					{:else if column === 'year'}
+					{#if editingCell?.id === row.law_id && editingCell?.field === 'family'}
+						<select
+							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							bind:value={editValue}
+							on:blur={saveEdit}
+							on:keydown={handleEditKeydown}
+						>
+							<option value="">-- None --</option>
+							<optgroup label="Health & Safety">
+								{#each familyOptions.health_safety as opt}
+									<option value={opt}>{opt}</option>
+								{/each}
+							</optgroup>
+							<optgroup label="Environment">
+								{#each familyOptions.environment as opt}
+									<option value={opt}>{opt}</option>
+								{/each}
+							</optgroup>
+							<optgroup label="HR">
+								{#each familyOptions.hr as opt}
+									<option value={opt}>{opt}</option>
+								{/each}
+							</optgroup>
+						</select>
+					{:else}
+						<button
+							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+							on:dblclick={() => startEdit(row.law_id, 'family', row.family)}
+							title="Double-click to edit"
+						>
+							<span class="text-gray-700 whitespace-normal leading-snug">{row.family || '-'}</span>
+						</button>
+					{/if}
+				{:else if column === 'family_ii'}
+					{#if editingCell?.id === row.law_id && editingCell?.field === 'family_ii'}
+						<select
+							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							bind:value={editValue}
+							on:blur={saveEdit}
+							on:keydown={handleEditKeydown}
+						>
+							<option value="">-- None --</option>
+							<optgroup label="Health & Safety">
+								{#each familyOptions.health_safety as opt}
+									<option value={opt}>{opt}</option>
+								{/each}
+							</optgroup>
+							<optgroup label="Environment">
+								{#each familyOptions.environment as opt}
+									<option value={opt}>{opt}</option>
+								{/each}
+							</optgroup>
+							<optgroup label="HR">
+								{#each familyOptions.hr as opt}
+									<option value={opt}>{opt}</option>
+								{/each}
+							</optgroup>
+						</select>
+					{:else}
+						<button
+							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+							on:dblclick={() => startEdit(row.law_id, 'family_ii', String(row.family_ii ?? '') || null)}
+							title="Double-click to edit"
+						>
+							{row.family_ii || '-'}
+						</button>
+					{/if}
+				{:else if column === 'is_making'}
+					<button
+						class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+						on:click={() => updateRecord(row.law_id, 'is_making', !row.is_making)}
+						title="Click to toggle"
+					>
+						{#if row.is_making}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
+						{:else}
+							<span class="text-gray-400">-</span>
+						{/if}
+					</button>
+				{:else if column === 'making_classification'}
+					{#if editingCell?.id === row.law_id && editingCell?.field === 'making_classification'}
+						<select
+							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							bind:value={editValue}
+							on:blur={saveEdit}
+							on:keydown={handleEditKeydown}
+						>
+							<option value="">-- None --</option>
+							{#each makingClassificationOptions as opt}
+								<option value={opt.value}>{opt.label}</option>
+							{/each}
+						</select>
+					{:else}
+						<button
+							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+							on:dblclick={() => startEdit(row.law_id, 'making_classification', String(row.making_classification ?? '') || null)}
+							title="Double-click to edit"
+						>
+							{#if row.making_classification === 'making'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
+							{:else if row.making_classification === 'not_making'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">Not Making</span>
+							{:else if row.making_classification === 'uncertain'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700">Uncertain</span>
+							{:else}
+								<span class="text-gray-400">-</span>
+							{/if}
+						</button>
+					{/if}
+				{:else if column === 'year'}
 						<span class="text-gray-700">{row.year ?? ''}</span>
 					{:else if column === 'live'}
 						{@const status = row.live}
