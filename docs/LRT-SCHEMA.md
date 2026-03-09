@@ -1,13 +1,15 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 1.2
-  **Last Updated**: 2026-02-06
+  **Version**: 1.3
+  **Last Updated**: 2026-03-09
   
   > **Issue #14 (Phase 4)**: Consolidated 16 holder text columns into 4 JSONB columns with 93% storage reduction.
   > **Issue #15 (Phase 4)**: Consolidated 4 POPIMAR text columns into 1 JSONB column.
   > **Issue #16 (Phase 4)**: Consolidated 4 role text columns into 2 JSONB columns.
   > **Cleanup (2026-02-02)**: Removed 8 legacy stats text columns replaced by JSONB.
   > **Issue #18 (2026-02-06)**: Documented derived year/month columns for date grouping in TableKit.
+  > **Issue #39 (2026-03-06)**: Added 7 fitness columns for applicability matching (person, process, place, plant, property, sector, detail).
+  > **Making Detection (2026-02-24)**: Added 4 making classification columns for AI-assisted function detection.
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -38,11 +40,12 @@
   3. [Status](#status) - Enforcement state
   4. [Geographic Extent](#geographic-extent) - Territorial scope
   5. [Metadata](#metadata) - Dates and document statistics
-  6. [Function](#function) - Relationships and amendment tracking
-  7. [Taxa](#taxa) - Role and holder classifications (DRRP model)
-  8. [Stats](#stats) - Amendment statistics
-  9. [External](#external) - URLs and references
-  10. [Timestamps](#timestamps) - Record tracking
+  6. [Function & Making Classification](#function--making-classification) - Legislative function and AI-assisted making detection
+  7. [Amendments](#amendments) - Relationships and amendment tracking
+  8. [Taxa](#taxa) - Role and holder classifications (DRRP model)
+  9. [Fitness](#fitness) - Applicability matching (person, process, place, plant, property, sector)
+  10. [Stats](#stats) - Amendment statistics
+  11. [Timestamps](#timestamps) - Record tracking
 
 ---
 
@@ -138,16 +141,53 @@
 
 ---
 
-# STAGE 4 🔄 amendments
+# Function & Making Classification
+
+  The `function` field captures a law's legislative purpose (Making, Amending, Revoking, Commencing, Enacting). The `is_making` boolean identifies laws that create new legal obligations — the primary filter for LAT parsing candidates.
+
+  The making classification columns provide AI-assisted detection of making function, using a tiered signal system to classify laws that lack explicit function metadata.
 
   ## Function
-  
+
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
     | `function` | Function | `function` | `map` (JSONB) | Yes (12858) | `{"Making": true, "Amending Maker": true}` | 🧮_derived |
     | `is_making` | Is Making | `is_making` | `boolean` | Yes (19089) | `true` | 🧮_derived |
     | `is_commencing` | Is Commencing | `is_commencing` | `boolean` | Yes (19089) | `false` | 🧮_derived |
-  
+
+  ## Making Classification
+
+    Added in migration `20260224190132_add_making_detection`. These columns support the AI-assisted making detection pipeline that classifies laws based on title patterns, type code heuristics, and amendment graph signals.
+
+    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+    |--------|---------------|---------------|------|:--------:|---------|-------|
+    | `making_classification` | Making Classification | - | `text` | Yes (257) | `making`, `not_making`, `uncertain` | 🤖 system |
+    | `making_confidence` | Making Confidence | - | `float8` | Yes (257) | `0.85` | 🤖 system |
+    | `making_detection_tier` | Detection Tier | - | `bigint` | Yes (257) | `0`, `3`, `4` | 🤖 system |
+    | `making_detection_signals` | Detection Signals | - | `map` (JSONB) | Yes (257) | See below | 🤖 system |
+
+    **Classification Values:**
+    | Value | Meaning |
+    |-------|---------|
+    | `making` | Law creates new legal obligations (confirmed making function) |
+    | `not_making` | Law does not create obligations (amending, revoking, commencing only) |
+    | `uncertain` | Insufficient signals to classify confidently |
+
+    **Detection Signals Structure:**
+    ```json
+    {
+      "classification": "not_making",
+      "composite_score": 0.173,
+      "detected_at": "metadata",
+      "signals": [],
+      "version": 2
+    }
+    ```
+
+---
+
+# STAGE 4 🔄 amendments
+
   ## Self-Affects
   
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
@@ -398,6 +438,58 @@
     - `popimar_article_clause` - consolidated into `popimar_details`
     - `article_popimar` - consolidated into `popimar_details`
     - `article_popimar_clause` - consolidated into `popimar_details`
+
+---
+
+# Fitness (Applicability)
+
+  Added in migration `20260306205339_add_fitness_columns` (Issue #39). Fitness columns capture what a law applies to across six dimensions: person, process, place, plant, property, and sector. These are used for applicability matching — determining which laws are relevant to a given organisation based on its activities, locations, and assets.
+
+  The tag columns (`fitness_person`, `fitness_process`, etc.) contain flat arrays of extracted terms for fast filtering. The `fitness` detail column contains the full article-level breakdown with polarity (AppliesTo / DisappliesTo).
+
+  Data is populated via Zenoh P2P mesh from fractalaw's DRRP analysis pipeline.
+
+  ## Fitness Tags
+
+    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+    |--------|---------------|---------------|------|:--------:|---------|-------|
+    | `fitness_person` | Fitness: Person | `fitness_person` | `text[]` | Yes (25) | `{"licensing authority"}` | 🦋_taxa (Zenoh) |
+    | `fitness_process` | Fitness: Process | `fitness_process` | `text[]` | Yes (13) | `{"carriage of goods", "storage of explosives"}` | 🦋_taxa (Zenoh) |
+    | `fitness_place` | Fitness: Place | `fitness_place` | `text[]` | Yes (34) | `{"Scotland", "harbour", "mine", "premises"}` | 🦋_taxa (Zenoh) |
+    | `fitness_plant` | Fitness: Plant | `fitness_plant` | `text[]` | Yes (21) | `{"explosives", "dangerous goods"}` | 🦋_taxa (Zenoh) |
+    | `fitness_property` | Fitness: Property | `fitness_property` | `text[]` | Yes (11) | `{"at work"}` | 🦋_taxa (Zenoh) |
+    | `fitness_sector` | Fitness: Sector | `fitness_sector` | `text[]` | Yes (5) | `{"construction", "mining"}` | 🦋_taxa (Zenoh) |
+
+  ## Fitness Detail
+
+    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+    |--------|---------------|---------------|------|:--------:|---------|-------|
+    | `fitness` | Fitness Detail | `fitness` | `map[]` (JSONB array) | Yes (39) | See below | 🦋_taxa (Zenoh) |
+
+    **Entry Structure:**
+    ```json
+    {
+      "article": "section/2",
+      "polarity": "AppliesTo",
+      "person": null,
+      "process": "carriage of goods",
+      "place": "harbour",
+      "plant": "dangerous goods, explosives",
+      "property": null,
+      "sector": null
+    }
+    ```
+
+    | Field | Type | Description |
+    |-------|------|-------------|
+    | `article` | string | Article/section reference (e.g., `section/2`, `regulation/4`) |
+    | `polarity` | string | `AppliesTo` or `DisappliesTo` — whether the article applies or explicitly excludes |
+    | `person` | string \| null | Person/role the article applies to (e.g., `licensing authority`) |
+    | `process` | string \| null | Activity/process (e.g., `carriage of goods`, `storage of explosives`) |
+    | `place` | string \| null | Location/geography (e.g., `Scotland`, `harbour`, `mine`) |
+    | `plant` | string \| null | Equipment/substance (e.g., `explosives`, `dangerous goods`) |
+    | `property` | string \| null | Property context (e.g., `at work`) |
+    | `sector` | string \| null | Industry sector (e.g., `construction`, `mining`) |
 
 ---
 
