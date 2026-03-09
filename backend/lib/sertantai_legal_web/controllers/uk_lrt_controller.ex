@@ -427,28 +427,12 @@ defmodule SertantaiLegalWeb.UkLrtController do
       article_duty_type: record.article_duty_type,
       # Duty Holder
       duty_holder: record.duty_holder,
-      duty_holder_article: record.duty_holder_article,
-      duty_holder_article_clause: record.duty_holder_article_clause,
-      article_duty_holder: record.article_duty_holder,
-      article_duty_holder_clause: record.article_duty_holder_clause,
       # Power Holder
       power_holder: record.power_holder,
-      power_holder_article: record.power_holder_article,
-      power_holder_article_clause: record.power_holder_article_clause,
-      article_power_holder: record.article_power_holder,
-      article_power_holder_clause: record.article_power_holder_clause,
       # Rights Holder
       rights_holder: record.rights_holder,
-      rights_holder_article: record.rights_holder_article,
-      rights_holder_article_clause: record.rights_holder_article_clause,
-      article_rights_holder: record.article_rights_holder,
-      article_rights_holder_clause: record.article_rights_holder_clause,
       # Responsibility Holder
       responsibility_holder: record.responsibility_holder,
-      responsibility_holder_article: record.responsibility_holder_article,
-      responsibility_holder_article_clause: record.responsibility_holder_article_clause,
-      article_responsibility_holder: record.article_responsibility_holder,
-      article_responsibility_holder_clause: record.article_responsibility_holder_clause,
       # POPIMAR
       popimar: record.popimar,
       # Phase 4 Issue #15: Consolidated JSONB field replaces deprecated text columns
