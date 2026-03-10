@@ -97,7 +97,15 @@ defmodule SertantaiLegalWeb.UkLrtController do
   Any valid UK LRT attributes (title_en, family, tags, etc.)
   """
   def update(conn, %{"id" => id} = params) do
-    attrs = Map.drop(params, ["id"])
+    # Filter to only fields accepted by the :update action to avoid Ash NoSuchInput errors
+    accepted_keys =
+      Ash.Resource.Info.action(UkLrt, :update).accept
+      |> MapSet.new(&to_string/1)
+
+    attrs =
+      params
+      |> Map.drop(["id"])
+      |> Map.filter(fn {k, _v} -> MapSet.member?(accepted_keys, k) end)
 
     case UkLrt.by_id(id) do
       {:ok, record} ->
