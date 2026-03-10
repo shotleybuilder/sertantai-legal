@@ -17,11 +17,12 @@
 
 	// PGLite sync
 	import { startSync, syncStatus } from '$lib/pglite/sync';
-	import { createDynamicQueryStore } from '$lib/pglite/live-store';
+	import { createDynamicLiveQuery } from '$lib/pglite/live-store';
 	import type { FilterCondition } from '@shotleybuilder/svelte-table-kit';
 
-	// ParseReviewModal for viewing record details
+	// Record viewing & parsing
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
+	import RecordCardModal from '$lib/components/RecordCardModal.svelte';
 	import ReparseDialog from '$lib/components/ReparseDialog.svelte';
 	import { goto } from '$app/navigation';
 
@@ -116,9 +117,9 @@
 	// Function options
 	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
 
-	// State — PGLite dynamic one-shot query (SQL changes per view/family selection)
+	// State — PGLite live query: auto-updates when Electric syncs changes back from backend
 	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live, latest_amend_date, latest_rescind_date, created_at';
-	const { store: dataStore, update: updateQuery, refresh: refreshData } = createDynamicQueryStore<UkLrtRecord>();
+	const { store: dataStore, update: updateQuery, destroy: destroyLiveQuery } = createDynamicLiveQuery<UkLrtRecord>('id');
 
 	$: data = $dataStore;
 	$: totalCount = data.length;
@@ -149,16 +150,25 @@
 		updateQuery(sql, params);
 	}
 
-	// Refresh data when sync status changes (initial sync complete, or warm start with existing data)
-	let lastRefreshRecordCount = 0;
-	$: if ($syncStatus.recordCount > 0 && $syncStatus.recordCount !== lastRefreshRecordCount) {
-		lastRefreshRecordCount = $syncStatus.recordCount;
-		refreshData();
-	}
+	// Live query auto-refreshes via PGLite triggers — no manual refresh needed
 
 	// Editing state
 	let editingCell: { id: string; field: string } | null = null;
 	let editValue: string | string[] = '';
+
+	// Record Card modal state (back of card — view all fields)
+	let cardModalOpen = false;
+	let cardModalRecord: UkLrtRecord | null = null;
+
+	function openRecordCard(record: UkLrtRecord) {
+		cardModalRecord = record;
+		cardModalOpen = true;
+	}
+
+	function closeRecordCard() {
+		cardModalOpen = false;
+		cardModalRecord = null;
+	}
 
 	// ParseReviewModal state
 	let viewModalOpen = false;
@@ -1143,6 +1153,16 @@
 				{@const row = asRecord(cell.row.original)}
 				{#if column === 'actions'}
 					<div class="flex items-center gap-1">
+						<!-- Expand arrow — open record card (back of card) -->
+						<button
+							class="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded"
+							title="View record details"
+							on:click={() => openRecordCard(row)}
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+							</svg>
+						</button>
 						<!-- Parse & Review button -->
 						<button
 							class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
@@ -1352,6 +1372,14 @@
 {#if showSaveModal && capturedConfig}
 	<SaveViewModal bind:open={showSaveModal} config={capturedConfig} on:save={handleViewSaved} />
 {/if}
+
+<!-- Record Card Modal (back of card — view all fields) -->
+<RecordCardModal
+	bind:open={cardModalOpen}
+	record={cardModalRecord}
+	recordId={cardModalRecord?.id ?? null}
+	on:close={closeRecordCard}
+/>
 
 <!-- Parse Review Modal (streaming parse & review for existing records) -->
 {#if viewModalRecord}

@@ -12,7 +12,7 @@
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
-	import { createDynamicQueryStore } from '$lib/pglite/live-store';
+	import { createDynamicLiveQuery } from '$lib/pglite/live-store';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import LatParseDialog from '$lib/components/LatParseDialog.svelte';
 	import {
@@ -32,8 +32,8 @@
 	const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
 	const SIX_MONTHS_INTERVAL = "6 months";
 
-	// PGLite dynamic query: scoped to selected family view
-	const { store: rawStore, update: updateQuery, refresh: refreshData } = createDynamicQueryStore<Record<string, unknown>>();
+	// PGLite live query: auto-updates when Electric syncs changes back from backend
+	const { store: rawStore, update: updateQuery, destroy: destroyLiveQuery } = createDynamicLiveQuery<Record<string, unknown>>('id');
 
 	// Build QueueItem[] from raw PGLite rows
 	$: queueData = $rawStore.map((r): QueueItem => {
@@ -94,8 +94,7 @@
 				throw new Error(err.error || 'Failed to update');
 			}
 
-			// Refresh data from PGLite after Electric syncs the change back
-			refreshData();
+			// Live query auto-updates when Electric syncs the change back to PGLite
 		} catch (e) {
 			alert(`Update failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
 		}
@@ -222,12 +221,7 @@
 		}
 	}
 
-	// Refresh data when sync status changes
-	let lastRefreshRecordCount = 0;
-	$: if ($syncStatus.recordCount > 0 && $syncStatus.recordCount !== lastRefreshRecordCount) {
-		lastRefreshRecordCount = $syncStatus.recordCount;
-		refreshData();
-	}
+	// Live query auto-refreshes via PGLite triggers — no manual refresh needed
 
 	// ── Reactive stats ──────────────────────────────────────────────
 
