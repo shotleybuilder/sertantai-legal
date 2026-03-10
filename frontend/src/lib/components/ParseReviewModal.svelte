@@ -267,6 +267,7 @@
 			moveNext();
 		} catch (error) {
 			console.error('Confirm error:', error);
+			parseError = `Save failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
 			errorCount++;
 		}
 	}

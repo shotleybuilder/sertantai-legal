@@ -96,6 +96,9 @@ defmodule SertantaiLegalWeb.UkLrtController do
   ## Body Parameters
   Any valid UK LRT attributes (title_en, family, tags, etc.)
   """
+  # Fields stored as %{"values" => [...]} in DB but sent as bare lists from the parser
+  @values_jsonb_fields ~w(si_code md_subjects duty_type purpose)
+
   def update(conn, %{"id" => id} = params) do
     # Filter to only fields accepted by the :update action to avoid Ash NoSuchInput errors
     accepted_keys =
@@ -106,6 +109,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
       params
       |> Map.drop(["id"])
       |> Map.filter(fn {k, _v} -> MapSet.member?(accepted_keys, k) end)
+      |> wrap_values_jsonb()
 
     case UkLrt.by_id(id) do
       {:ok, record} ->
@@ -467,6 +471,16 @@ defmodule SertantaiLegalWeb.UkLrtController do
       created_at: record.created_at,
       updated_at: record.updated_at
     }
+  end
+
+  # Wrap bare lists as %{"values" => [...]} for JSONB map fields
+  defp wrap_values_jsonb(attrs) do
+    Enum.reduce(@values_jsonb_fields, attrs, fn field, acc ->
+      case Map.get(acc, field) do
+        val when is_list(val) -> Map.put(acc, field, %{"values" => val})
+        _ -> acc
+      end
+    end)
   end
 
   defp parse_integer(nil, default), do: default
