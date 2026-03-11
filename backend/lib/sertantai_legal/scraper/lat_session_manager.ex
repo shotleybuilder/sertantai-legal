@@ -129,14 +129,20 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
     find_unique_session_id(base)
   end
 
-  # Build an Ash query from filters
+  # Build an Ash query from filters.
+  # Base filters match the LAT queue page's QUEUE_BASE_WHERE + QUEUE_LAT_WHERE:
+  #   is_making=true, not classified as not_making, not fully revoked, has title
+  # Then applies user-selected optional filters on top.
   defp build_query(family, filters) do
     UkLrt
     |> Ash.Query.filter(family == ^family)
     |> Ash.Query.filter(is_making == true)
+    |> Ash.Query.filter(is_nil(making_classification) or making_classification != "not_making")
+    |> Ash.Query.filter(not is_nil(title_en))
     |> maybe_filter_type_code(filters["type_code"])
     |> maybe_filter_function(filters["function"])
     |> maybe_filter_queue_reason(filters["queue_reason"])
+    |> maybe_filter_live(filters["live"])
     |> Ash.Query.sort(name: :asc)
   end
 
@@ -155,6 +161,10 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
     Ash.Query.filter(query, fragment("?->>? = 'true'", function, ^function_key))
   end
 
+  # "All (Missing + Stale)" — default: records that need LAT parsing
+  defp maybe_filter_queue_reason(query, nil), do: filter_missing_or_stale(query)
+  defp maybe_filter_queue_reason(query, ""), do: filter_missing_or_stale(query)
+
   defp maybe_filter_queue_reason(query, "missing") do
     Ash.Query.filter(query, fragment("COALESCE(?, 0) = 0", lat_count))
   end
@@ -171,7 +181,31 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
     )
   end
 
-  defp maybe_filter_queue_reason(query, _), do: query
+  defp maybe_filter_queue_reason(query, _), do: filter_missing_or_stale(query)
+
+  defp filter_missing_or_stale(query) do
+    Ash.Query.filter(
+      query,
+      fragment(
+        "COALESCE(?, 0) = 0 OR (? > 0 AND ? IS NOT NULL AND ? IS NOT NULL AND ? > ? + INTERVAL '6 months')",
+        lat_count,
+        lat_count,
+        updated_at,
+        latest_lat_updated_at,
+        updated_at,
+        latest_lat_updated_at
+      )
+    )
+  end
+
+  defp maybe_filter_live(query, nil), do: query
+  defp maybe_filter_live(query, []), do: query
+
+  defp maybe_filter_live(query, live_values) when is_list(live_values) do
+    Ash.Query.filter(query, live in ^live_values)
+  end
+
+  defp maybe_filter_live(query, _), do: query
 
   # Slugify a family name for use in session_id
   # "💙 OH&S: Occupational / Personal Safety" -> "ohs-occupational-personal-safety"

@@ -158,6 +158,7 @@ export interface LatSessionFilters {
 	type_code?: string;
 	function?: string;
 	queue_reason?: 'missing' | 'stale';
+	live?: string[];
 }
 
 export interface LatParseResult {

@@ -20,6 +20,14 @@
 	let selectedFunction = '';
 	let selectedQueueReason: '' | 'missing' | 'stale' = '';
 
+	const liveOptions = [
+		{ value: '✔ In force', label: 'In force' },
+		{ value: '⭕ Part Revocation / Repeal', label: 'Part Revoked' },
+		{ value: '❌ Revoked / Repealed / Abolished', label: 'Revoked' }
+	];
+	// Default: exclude fully revoked
+	let selectedLive: string[] = ['✔ In force', '⭕ Part Revocation / Repeal'];
+
 	// Preview state
 	let previewCount: number | null = null;
 	let previewLoading = false;
@@ -73,11 +81,14 @@
 		if (selectedTypeCode) filters.type_code = selectedTypeCode;
 		if (selectedFunction) filters.function = selectedFunction;
 		if (selectedQueueReason) filters.queue_reason = selectedQueueReason;
+		if (selectedLive.length > 0 && selectedLive.length < liveOptions.length) {
+			filters.live = selectedLive;
+		}
 		return filters;
 	}
 
 	// Preview count — debounced
-	$: _filterKey = [selectedFamily, selectedTypeCode, selectedFunction, selectedQueueReason];
+	$: _filterKey = [selectedFamily, selectedTypeCode, selectedFunction, selectedQueueReason, selectedLive];
 	let previewTimeout: ReturnType<typeof setTimeout>;
 	$: if (_filterKey) {
 		if (selectedFamily) {
@@ -123,6 +134,7 @@
 		selectedTypeCode = '';
 		selectedFunction = '';
 		selectedQueueReason = '';
+		selectedLive = ['✔ In force', '⭕ Part Revocation / Repeal'];
 		previewCount = null;
 		previewError = '';
 		createError = '';
@@ -153,9 +165,10 @@
 						<select
 							id="lat-family"
 							bind:value={selectedFamily}
+							disabled={$familyOptionsQuery.isLoading}
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
 						>
-							<option value="">-- Select Family --</option>
+							<option value="">{$familyOptionsQuery.isLoading ? 'Loading families...' : '-- Select Family --'}</option>
 							{#if $familyOptionsQuery.data?.grouped}
 								<optgroup label="Health & Safety">
 									{#each $familyOptionsQuery.data.grouped.health_safety || [] as opt}
@@ -174,6 +187,9 @@
 								</optgroup>
 							{/if}
 						</select>
+						{#if $familyOptionsQuery.isError}
+							<p class="mt-1 text-xs text-red-600">Failed to load families: {$familyOptionsQuery.error?.message}</p>
+						{/if}
 					</div>
 
 					<!-- Queue Reason -->
@@ -207,6 +223,31 @@
 								<option value={opt.value}>{opt.label} ({opt.value})</option>
 							{/each}
 						</select>
+					</div>
+
+					<!-- Live Status -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-1">Live Status</label>
+						<div class="flex flex-wrap gap-3">
+							{#each liveOptions as opt}
+								<label class="inline-flex items-center gap-1.5 text-sm">
+									<input
+										type="checkbox"
+										value={opt.value}
+										checked={selectedLive.includes(opt.value)}
+										on:change={(e) => {
+											if (e.currentTarget.checked) {
+												selectedLive = [...selectedLive, opt.value];
+											} else {
+												selectedLive = selectedLive.filter((v) => v !== opt.value);
+											}
+										}}
+										class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+									/>
+									{opt.label}
+								</label>
+							{/each}
+						</div>
 					</div>
 
 					<!-- Function -->

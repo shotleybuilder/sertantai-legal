@@ -12,3 +12,6 @@
 - Airtable pattern: table rows = metadata ("front"), click row = full record ("back of card")
 - ParseReviewModal already shows record fields — reuse/extend as configurable component
 - Start with LRT table, extend to LAT queue later
+
+**Ended**: 2026-03-10 21:00
+**Committed**: 5b549a0

@@ -276,6 +276,10 @@
 
 	onMount(async () => {
 		if (browser) {
+			// startSync() initializes PGLite schema + starts Electric sync.
+			// On warm start, returns as soon as schema is ready — Electric
+			// shape sync continues in background. Queries work immediately
+			// against IndexedDB data; live query refreshes when sync catches up.
 			await startSync();
 			seedDefaultViews();
 		}

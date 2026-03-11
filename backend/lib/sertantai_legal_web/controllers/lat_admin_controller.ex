@@ -534,7 +534,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   @doc "PATCH /api/lat/sessions/:id/records/select — Bulk update selection state."
   def lat_select(conn, %{"id" => session_id, "names" => names, "selected" => selected}) do
-    case Storage.update_selection(session_id, :group1, names, selected) do
+    case Storage.update_selection_db(session_id, :group1, names, selected) do
       {:ok, count} -> json(conn, %{updated: count})
       {:error, reason} -> conn |> put_status(500) |> json(%{error: inspect(reason)})
     end

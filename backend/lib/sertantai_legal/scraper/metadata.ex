@@ -66,14 +66,35 @@ defmodule SertantaiLegal.Scraper.Metadata do
         parse_xml(xml)
 
       {:error, 404, _msg} ->
-        # Try with /made/ suffix for older legislation
-        made_path = String.replace(path, "/introduction/data.xml", "/introduction/made/data.xml")
+        cond do
+          # Fallback 1: Try /introduction/made/ for older SIs
+          String.contains?(path, "/introduction/data.xml") ->
+            made_path =
+              String.replace(path, "/introduction/data.xml", "/introduction/made/data.xml")
 
-        if made_path != path do
-          IO.puts("  ...trying /made/ path")
-          fetch_from_path(made_path)
-        else
-          {:error, "Not found: #{path}"}
+            IO.puts("  ...trying /made/ path")
+            fetch_from_path(made_path)
+
+          # Fallback 2: Try /contents/ which has identical ukm:Metadata block
+          String.contains?(path, "/introduction/made/data.xml") ->
+            contents_path =
+              String.replace(path, "/introduction/made/data.xml", "/contents/data.xml")
+
+            IO.puts("  ...trying /contents/ path")
+            fetch_from_path(contents_path)
+
+          # Fallback 3: Try /data.rdf for lightweight title + description + date
+          String.contains?(path, "/contents/data.xml") ->
+            rdf_path = String.replace(path, "/contents/data.xml", "/data.rdf")
+            IO.puts("  ...trying RDF fallback: #{rdf_path}")
+
+            case Client.fetch_rdf(rdf_path) do
+              {:ok, rdf} -> parse_rdf(rdf)
+              {:error, _code, _msg} -> {:error, "Not found: #{path}"}
+            end
+
+          true ->
+            {:error, "Not found: #{path}"}
         end
 
       {:error, code, msg} ->
@@ -148,6 +169,94 @@ defmodule SertantaiLegal.Scraper.Metadata do
       e ->
         {:error, "XML parse error: #{inspect(e)}"}
     end
+  end
+
+  @doc """
+  Parse RDF response from legislation.gov.uk to extract lightweight metadata.
+  Used as a last-resort fallback when XML endpoints all 404.
+
+  Extracts: title, description, created date, and geographic extent (from hasPart URLs).
+  """
+  @spec parse_rdf(String.t()) :: {:ok, map()} | {:error, String.t()}
+  def parse_rdf(rdf) when is_binary(rdf) do
+    try do
+      title = xpath_text(rdf, ~x"//frbr:Work/dct:title/text()"s)
+      description = xpath_text(rdf, ~x"//frbr:Work/dct:description/text()"s)
+      created = xpath_text(rdf, ~x"//frbr:Work/dct:created/text()"s)
+
+      # Extract extent from hasPart resource URLs (e.g. ".../england", ".../wales")
+      has_parts = xpath_list(rdf, ~x"//frbr:Expression/dct:hasPart/@rdf:resource"ls)
+      regions = rdf_parts_to_regions(has_parts)
+
+      metadata = %{
+        Title_EN: title,
+        md_description: description,
+        md_date: if(present?(created), do: created, else: nil),
+        md_enactment_date: created,
+        geo_region: regions,
+        geo_country: regions_to_country(regions),
+        geo_extent: regions_to_extent(regions),
+        # Set defaults for fields not available in RDF
+        md_subjects: [],
+        si_code: [],
+        md_modified: "",
+        md_total_paras: nil,
+        md_body_paras: nil,
+        md_schedule_paras: nil,
+        md_attachment_paras: nil,
+        md_images: nil,
+        md_made_date: nil,
+        md_coming_into_force_date: nil,
+        md_dct_valid_date: nil,
+        md_restrict_extent: nil,
+        md_restrict_start_date: nil,
+        pdf_href: "",
+        document_status: ""
+      }
+
+      metadata = set_live_status(metadata)
+      {:ok, metadata}
+    rescue
+      e ->
+        {:error, "RDF parse error: #{inspect(e)}"}
+    end
+  end
+
+  # Extract region names from hasPart resource URLs
+  # e.g. "http://www.legislation.gov.uk/ukpga/1963/41/england" -> "England"
+  defp rdf_parts_to_regions(urls) do
+    region_map = %{
+      "england" => "England",
+      "wales" => "Wales",
+      "scotland" => "Scotland",
+      "ni" => "Northern Ireland",
+      "northern-ireland" => "Northern Ireland"
+    }
+
+    urls
+    |> Enum.map(fn url ->
+      url |> String.split("/") |> List.last() |> String.downcase()
+    end)
+    |> Enum.filter(&Map.has_key?(region_map, &1))
+    |> Enum.map(&Map.fetch!(region_map, &1))
+    |> Enum.uniq()
+  end
+
+  # Convert regions list back to an extent code like "E+W+S"
+  defp regions_to_extent([]), do: nil
+
+  defp regions_to_extent(regions) do
+    code_map = %{
+      "England" => "E",
+      "Wales" => "W",
+      "Scotland" => "S",
+      "Northern Ireland" => "NI"
+    }
+
+    regions
+    |> Enum.map(&Map.get(code_map, &1))
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("+")
   end
 
   # Parse made date from either ukm:Made element or MadeDate/DateText

@@ -150,6 +150,36 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   defp normalize_header_value(_), do: ""
 
   @doc """
+  Fetch RDF content from legislation.gov.uk.
+  Sends Accept: application/rdf+xml to ensure we get RDF, not HTML.
+
+  ## Returns
+  - `{:ok, body}` - RDF/XML content as string
+  - `{:error, code, message}` - Error with HTTP status code and message
+  """
+  @spec fetch_rdf(String.t()) :: {:ok, String.t()} | {:error, integer(), String.t()}
+  def fetch_rdf(path) do
+    rate_limit_delay()
+    url = @endpoint <> path
+
+    opts = Keyword.put(req_options(), :headers, [{"accept", "application/rdf+xml"}])
+
+    case Req.get(url, opts) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        {:ok, body}
+
+      {:ok, %Req.Response{status: 404}} ->
+        {:error, 404, "Not found: #{path}"}
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, status, "Unexpected status #{status} for #{path}"}
+
+      {:error, exception} ->
+        {:error, 0, "Request failed: #{inspect(exception)}"}
+    end
+  end
+
+  @doc """
   Get the base endpoint URL.
   """
   @spec endpoint() :: String.t()

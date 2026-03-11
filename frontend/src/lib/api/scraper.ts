@@ -459,7 +459,8 @@ export async function getFamilyOptions(): Promise<FamilyOptionsResult> {
 
 	if (!response.ok) {
 		const error = await response.json();
-		throw new Error(error.error || 'Failed to fetch family options');
+		const msg = error.reason ? `${error.error}: ${error.reason}` : error.error;
+		throw new Error(msg || 'Failed to fetch family options');
 	}
 
 	return response.json();
