@@ -8,7 +8,9 @@
 - [x] Random sample 20 OH&S laws >20 years old
 - [x] Check reconciliation columns (`live_source`, `live_from_changes`, `live_from_metadata`)
 - [x] Check changelog coverage across OH&S
-- [ ] Re-examine after user reruns OH&S scrape
+- [x] Re-examine after OH&S reparse (84% coverage)
+- [x] Fix `determine_live_status` bug — missing "revoke" check (commit `10fbf50`)
+- [x] SQL data fix — reclassify 322 records using `rescinded_by_stats_per_law` JSONB (0 remaining misclassified)
 
 ### Phase 1b: Admin LRT UI for Targeted Reparsing ✅
 - [x] Add "Analytics" view group with "Live" view showing live-* columns (both LRT + LAT queue pages)
@@ -73,9 +75,56 @@ Traced from `UK_nisr_2003_33` — changes data shows `"affect": "revoked", "targ
 
 **Records need re-scraping** to recalculate `live_from_changes` with the fixed logic.
 
+### Data fix: SQL reclassification using `rescinded_by_stats_per_law` JSONB (2026-03-12)
+
+Instead of re-scraping 480 records, fixed the data in-place using the existing `🔻_rescinded_by_stats_per_law` JSONB column.
+
+**Key insight**: Full revocation signal in the JSONB is `target` = whole instrument type ("Regulations", "Act", "Order", etc.) AND `affect` = "revoked" or "repealed" (not "words revoked", "in part", etc.). Section-specific targets (e.g. "reg. 3", "s. 1") indicate partial revocation.
+
+**JSONB `affect`/`target` field mapping** (different from what scraper HTML columns suggest):
+- `target` = what part of the law is affected (whole instrument type or specific section)
+- `affect` = what happened ("revoked", "repealed", "words revoked", etc.)
+
+**SQL fix applied** (2 steps):
+1. Updated `live_from_changes` from `⭕ Part Revocation / Repeal` → `❌ Revoked / Repealed / Abolished` for 322 records where JSONB shows whole-instrument revocation
+2. Re-ran "most severe wins" reconciliation to update `live`, `live_source`, `live_conflict`
+
+**Results**:
+
+| Metric | Before | After |
+|---|---|---|
+| `live_from_changes` = Full Revocation | 209 | 531 (+322) |
+| `live_from_changes` = Partial | 515 | 193 (-322) |
+| Overall `live` = Full Revocation | 3,933 | 4,116 (+183) |
+| Overall `live` = Partial | 2,416 | 2,239 (-177) |
+| Sources agreeing (`live_source=both`) | 724 | 868 (+144) |
+| Remaining misclassified | 322 | **0** |
+
+**Breakdown of the 322 fixed records**:
+- 178 had `live_from_metadata = ✔ In force` → `live` changed from Partial → Full Revocation (changes wins)
+- 144 had `live_from_metadata = ❌ Revoked` → `live` unchanged but `live_source` changed from "metadata" → "both", `live_conflict` → false (now in agreement)
+
+### Additional fix: 69 unprocessed records with whole-instrument revocation
+
+Cross-checked records with NO `live_from_changes` (never through the changes pipeline) but with whole-instrument revocation in `rescinded_by_stats_per_law` JSONB. Found 69 more:
+- 67 showed `⭕ Partial` (from original Airtable import, never verified)
+- 2 had NULL `live`
+
+All 69 updated to `❌ Revoked / Repealed / Abolished`.
+
+**Also checked**: 1 record (`UK_uksi_1995_614`, Animal By-Products) shows `✔ In force` despite having whole-instrument revocations — but those revocations all have `"applied": "Not yet"`, so In force is correct.
+
+**Final totals after both fixes (322 + 69 = 391 records)**:
+
+| live | Before | After | Change |
+|---|---|---|---|
+| ❌ Revoked / Repealed / Abolished | 3,933 | 4,185 | +252 |
+| ⭕ Part Revocation / Repeal | 2,416 | 2,172 | -244 |
+| ✔ In force | 10,744 | 10,739 | -5 |
+| Remaining misclassified | 391 | **1** (justified) |
+
 ### Next step
 - Reparse the 71 null-title OH&S records with current code (has 4-fallback chain)
-- Re-scrape affected records to fix the 335 misclassified live statuses
 
 ## Notes
 - `record_change_log` is `jsonb[]` column on `uk_lrt`

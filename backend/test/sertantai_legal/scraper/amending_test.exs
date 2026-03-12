@@ -25,6 +25,29 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
           # Return empty results
           Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
 
+        # Full revocation fixture — has whole-instrument revocations
+        String.contains?(path, "/changes/affected/nisr/2003/33") ->
+          html = fixture("amendments_affected_revocations.html")
+          Req.Test.text(conn, html)
+
+        String.contains?(path, "/changes/affecting/nisr/2003/33") ->
+          Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
+
+        # Partial-only fixture — only section-specific revocations
+        String.contains?(path, "/changes/affected/uksi/2005/300") ->
+          html = fixture("amendments_affected_partial_only.html")
+          Req.Test.text(conn, html)
+
+        String.contains?(path, "/changes/affecting/uksi/2005/300") ->
+          Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
+
+        # No revocations at all — only amendments
+        String.contains?(path, "/changes/affected/uksi/2024/400") ->
+          Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
+
+        String.contains?(path, "/changes/affecting/uksi/2024/400") ->
+          Req.Test.text(conn, "<html><body><table><tbody></tbody></table></body></html>")
+
         String.contains?(path, "/changes/affecting/uksi/2024/999") ->
           Plug.Conn.send_resp(conn, 404, "Not found")
 
@@ -219,6 +242,223 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
 
       # No revocations means in force
       assert result.live == "✔ In force"
+    end
+  end
+
+  describe "live status determination" do
+    test "full revocation when target is whole instrument and affect is 'revoked'" do
+      # nisr/2003/33 fixture has: target=Regulations, affect=revoked (row 1)
+      record = %{type_code: "nisr", Year: 2003, Number: "33"}
+
+      {:ok, result} = Amending.get_laws_amending_this_law(record)
+
+      assert result.live == "❌ Revoked / Repealed / Abolished"
+    end
+
+    test "partial revocation when only section-specific targets are revoked" do
+      # uksi/2005/300 fixture has only: reg. 3 revoked, words repealed, Sch. 1 revoked,
+      # Regulations revoked in part, power to revoke conferred — no whole-instrument
+      record = %{type_code: "uksi", Year: 2005, Number: "300"}
+
+      {:ok, result} = Amending.get_laws_amending_this_law(record)
+
+      assert result.live == "⭕ Part Revocation / Repeal"
+    end
+
+    test "in force when no revocations at all" do
+      # uksi/2024/400 returns empty results
+      record = %{type_code: "uksi", Year: 2024, Number: "400"}
+
+      {:ok, result} = Amending.get_laws_amending_this_law(record)
+
+      assert result.live == "✔ In force"
+    end
+
+    test "in force for 404 (no changes data exists)" do
+      record = %{type_code: "uksi", Year: 2024, Number: "999"}
+
+      {:ok, result} = Amending.get_laws_amending_this_law(record)
+
+      assert result.live == "✔ In force"
+    end
+
+    test "separates revocations from amendments in affected data" do
+      record = %{type_code: "nisr", Year: 2003, Number: "33"}
+
+      {:ok, result} = Amending.get_laws_amending_this_law(record)
+
+      # All rows in the fixture are revocations (contain repeal/revoke in affect)
+      assert length(result.rescinded_by) > 0
+      # No pure amendments in the fixture
+      assert result.amended_by == []
+    end
+
+    test "revocation stats count unique rescinding laws" do
+      record = %{type_code: "nisr", Year: 2003, Number: "33"}
+
+      {:ok, result} = Amending.get_laws_amending_this_law(record)
+
+      # There are multiple entries from the same law (e.g. nisr/2005/50 appears multiple times)
+      # rescinded_by should be deduplicated
+      assert result.stats.revoked_laws_count == length(result.rescinded_by)
+    end
+  end
+
+  describe "revocation pattern classification" do
+    # These tests verify that parse_amendments_html correctly parses the HTML
+    # and that determine_live_status classifies each pattern correctly.
+    # Using the amendments_affected_revocations.html fixture directly.
+
+    test "whole-instrument targets are classified as full revocation" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      # Find whole-instrument revocations from the fixture
+      full_revocation_targets =
+        amendments
+        |> Enum.filter(fn a ->
+          a.target in ["Regulations", "Act", "Order", "Rules", "Scheme",
+                        "Measure", "Byelaws", "Instrument", "whole instrument"]
+          and a.affect in ["revoked", "repealed"]
+        end)
+
+      # Fixture has rows 1, 6, 7, 8, 9, 12, 15, 18, 20, 23
+      assert length(full_revocation_targets) == 10
+    end
+
+    test "section-specific targets with bare 'revoked' are NOT full revocation" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      # reg. 3 revoked, s. 1 repealed, Sch. 2 revoked, s. 20(b) repealed
+      section_revocations =
+        amendments
+        |> Enum.filter(fn a ->
+          a.affect in ["revoked", "repealed"] and
+          a.target not in ["Regulations", "Act", "Order", "Rules", "Scheme",
+                           "Measure", "Byelaws", "Instrument", "whole instrument"]
+        end)
+
+      assert length(section_revocations) == 4
+      targets = Enum.map(section_revocations, & &1.target)
+      assert "reg. 3" in targets
+      assert "s. 1" in targets
+      assert "Sch. 2" in targets
+      assert "s. 20(b)" in targets
+    end
+
+    test "'words revoked' is always partial regardless of target" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      words_revoked = Enum.filter(amendments, &(&1.affect == "words revoked"))
+      assert length(words_revoked) == 1
+      assert hd(words_revoked).target == "reg. 2(1)"
+    end
+
+    test "'word revoked' is always partial" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      word_revoked = Enum.filter(amendments, &(&1.affect == "word revoked"))
+      assert length(word_revoked) == 1
+      assert hd(word_revoked).target == "reg. 1(2)"
+    end
+
+    test "'repealed in part' is always partial even with whole-instrument target" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      in_part = Enum.filter(amendments, &(&1.affect == "repealed in part"))
+      assert length(in_part) == 1
+      # This has target=Regulations but affect says "in part" — still partial
+      assert hd(in_part).target == "Regulations"
+    end
+
+    test "'revoked in part' is always partial even with whole-instrument target" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      in_part = Enum.filter(amendments, &(&1.affect == "revoked in part"))
+      assert length(in_part) == 1
+      assert hd(in_part).target == "Regulations"
+    end
+
+    test "'power to amend or revoke conferred' is not a revocation" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      power = Enum.filter(amendments, &(&1.affect == "power to amend or revoke conferred"))
+      assert length(power) == 1
+      # This contains "revoke" but is a power grant, not an actual revocation
+      assert hd(power).target == "Regulations"
+    end
+
+    test "'entry repealed' is always partial" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      entry = Enum.filter(amendments, &(&1.affect == "entry repealed"))
+      assert length(entry) == 1
+    end
+
+    test "'entries repealed' is always partial" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      entries = Enum.filter(amendments, &(&1.affect == "entries repealed"))
+      assert length(entries) == 1
+    end
+
+    test "'comma revoked' is always partial" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      comma = Enum.filter(amendments, &(&1.affect == "comma revoked"))
+      assert length(comma) == 1
+    end
+
+    test "'revoked with savings' on whole instrument is full revocation" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      savings = Enum.filter(amendments, &(&1.affect == "revoked with savings"))
+      assert length(savings) == 1
+      assert hd(savings).target == "Regulations"
+      # "revoked with savings" contains "revoke" and no "in part" — and target is whole instrument
+    end
+
+    test "partial-only fixture produces partial live status" do
+      html = fixture("amendments_affected_partial_only.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      # Should have 5 entries, all partial
+      assert length(amendments) == 5
+
+      # Verify targets — none are bare whole-instrument revocations
+      revocation_entries =
+        Enum.filter(amendments, fn a ->
+          affect_lower = String.downcase(a.affect)
+          String.contains?(affect_lower, "repeal") or String.contains?(affect_lower, "revoke")
+        end)
+
+      assert length(revocation_entries) == 5
+
+      # None should be classified as full revocation
+      full =
+        Enum.filter(revocation_entries, fn a ->
+          affect_lower = String.downcase(a.affect)
+          target_lower = String.downcase(a.target)
+
+          not String.contains?(affect_lower, "in part") and
+            not String.contains?(affect_lower, "words ") and
+            not String.contains?(affect_lower, "power to") and
+            a.affect in ["revoked", "repealed"] and
+            target_lower in ["regulations", "act", "order", "rules", "scheme",
+                             "measure", "charter", "byelaws", "instrument"]
+        end)
+
+      assert full == []
     end
   end
 

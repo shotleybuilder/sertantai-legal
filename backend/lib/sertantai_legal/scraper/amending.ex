@@ -453,17 +453,46 @@ defmodule SertantaiLegal.Scraper.Amending do
   defp determine_live_status([]), do: @live_in_force
 
   defp determine_live_status(revocations) do
-    # Check if there are any full revocations/repeals
-    # legislation.gov.uk uses both "repeal" and "revoke" — a bare "revoked" or
-    # "repealed" without "in part" indicates full revocation
+    # Check if there are any full revocations/repeals.
+    # A revocation is "full" (whole instrument) when:
+    #   1. affect says "in full", OR
+    #   2. affect contains "repeal"/"revoke" (not "in part", "words", "entry")
+    #      AND target is a whole-instrument type (Regulations, Act, Order, etc.)
+    #      rather than a specific section (reg. 3, s. 1, Sch. 2)
     has_full_revocation =
-      Enum.any?(revocations, fn %{affect: affect} ->
+      Enum.any?(revocations, fn %{affect: affect, target: target} ->
         affect_lower = String.downcase(affect || "")
+        target_lower = String.downcase(target || "")
 
-        String.contains?(affect_lower, "in full") or
-          ((String.contains?(affect_lower, "repeal") or
-              String.contains?(affect_lower, "revoke")) and
-             not String.contains?(affect_lower, "in part"))
+        cond do
+          # Explicit "in full" is always full revocation
+          String.contains?(affect_lower, "in full") ->
+            true
+
+          # "in part" is always partial
+          String.contains?(affect_lower, "in part") ->
+            false
+
+          # "words repealed/revoked", "word repealed", "entry repealed" — always partial
+          String.contains?(affect_lower, "words ") or
+            String.contains?(affect_lower, "word ") or
+              String.contains?(affect_lower, "entry ") or
+              String.contains?(affect_lower, "entries ") or
+              String.contains?(affect_lower, "comma ") ->
+            false
+
+          # "power to repeal/revoke conferred" — grants power, not an actual revocation
+          String.contains?(affect_lower, "power to") ->
+            false
+
+          # Bare "repeal"/"revoke" — only full if target is whole instrument
+          String.contains?(affect_lower, "repeal") or
+              String.contains?(affect_lower, "revoke") ->
+            is_whole_instrument_target?(target_lower)
+
+          true ->
+            false
+        end
       end)
 
     if has_full_revocation do
@@ -471,5 +500,15 @@ defmodule SertantaiLegal.Scraper.Amending do
     else
       @live_part_revoked
     end
+  end
+
+  # Whole-instrument targets: the target refers to the entire law, not a specific section.
+  # Values from legislation.gov.uk /changes/affected endpoint column 2.
+  @whole_instrument_targets ~w(regulations act order rules scheme measure charter byelaws instrument)
+  defp is_whole_instrument_target?(target_lower) do
+    # Exact match against known instrument types
+    target_lower in @whole_instrument_targets or
+      # "whole instrument" is used in some entries
+      String.contains?(target_lower, "whole instrument")
   end
 end
