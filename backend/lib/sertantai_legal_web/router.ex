@@ -163,5 +163,6 @@ defmodule SertantaiLegalWeb.Router do
     get("/analytics/changes", AnalyticsController, :changes)
     get("/analytics/sessions", AnalyticsController, :sessions)
     get("/analytics/live-status", AnalyticsController, :live_status)
+    get("/analytics/live-status/misclassified", AnalyticsController, :misclassified_names)
   end
 end

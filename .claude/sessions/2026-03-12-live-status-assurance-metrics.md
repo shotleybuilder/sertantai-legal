@@ -25,3 +25,5 @@
 - SQL queries are pre-tested in the spec doc
 - Metrics 3/4/6 need JSONB unnesting — API-backed, not PGLite
 - Metrics 1/5 could be PGLite but simpler to keep all in one API call
+
+**Ended**: 2026-03-12

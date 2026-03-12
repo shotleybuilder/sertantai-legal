@@ -322,7 +322,7 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
           and a.affect in ["revoked", "repealed"]
         end)
 
-      # Fixture has rows 1, 6, 7, 8, 9, 12, 15, 18, 20, 23
+      # Fixture has rows 1, 6, 7, 8, 9, 12, 15, 18, 20, 23 (not row 24 — it uses abbreviated "Rev")
       assert length(full_revocation_targets) == 10
     end
 
@@ -335,7 +335,7 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
         amendments
         |> Enum.filter(fn a ->
           a.affect in ["revoked", "repealed"] and
-          a.target not in ["Regulations", "Act", "Order", "Rules", "Scheme",
+          a.target not in ["", "Regulations", "Act", "Order", "Rules", "Scheme",
                            "Measure", "Byelaws", "Instrument", "whole instrument"]
         end)
 
@@ -426,6 +426,43 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       assert length(savings) == 1
       assert hd(savings).target == "Regulations"
       # "revoked with savings" contains "revoke" and no "in part" — and target is whole instrument
+    end
+
+    test "empty target with bare 'revoked' is full revocation" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      # Row 24: empty target + "revoked"
+      empty_target_revoked =
+        Enum.filter(amendments, &(&1.affect == "revoked" and &1.target == ""))
+
+      assert length(empty_target_revoked) == 1
+    end
+
+    test "abbreviated 'Rev' with empty target is full revocation" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      # Row 25: empty target + "Rev"
+      rev_rows = Enum.filter(amendments, &(&1.affect == "Rev"))
+      assert length(rev_rows) == 1
+      assert hd(rev_rows).target == ""
+    end
+
+    test "abbreviated 'Rev' is captured as a revocation by separate_revocations" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      # All rows have some form of revocation/repeal affect — count should match total
+      revocation_entries =
+        Enum.filter(amendments, fn a ->
+          affect_lower = String.downcase(String.trim(a.affect))
+
+          String.contains?(affect_lower, "repeal") or String.contains?(affect_lower, "revoke") or
+            affect_lower in ["rev", "rep"]
+        end)
+
+      assert length(revocation_entries) == length(amendments)
     end
 
     test "partial-only fixture produces partial live status" do

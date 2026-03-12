@@ -124,3 +124,8 @@ export async function getLiveStatusAssurance(): Promise<LiveStatusAssurance> {
 	const response = await fetchWithAuth(`${API_URL}/api/analytics/live-status`);
 	return response.json();
 }
+
+export async function getMisclassifiedNames(): Promise<{ names: string[]; count: number }> {
+	const response = await fetchWithAuth(`${API_URL}/api/analytics/live-status/misclassified`);
+	return response.json();
+}

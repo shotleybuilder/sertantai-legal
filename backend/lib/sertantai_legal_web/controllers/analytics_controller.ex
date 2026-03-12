@@ -226,22 +226,41 @@ defmodule SertantaiLegalWeb.AnalyticsController do
   ORDER BY count DESC
   """
 
+  # Check both rescinded_by and affected_by JSONB — the old parser misclassified
+  # abbreviated "rev"/"rep" entries into affected_by instead of rescinded_by
   @live_misclassified_sql """
-  SELECT COUNT(DISTINCT uk_lrt.id)::int AS misclassified
-  FROM uk_lrt,
-    jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
-    jsonb_array_elements(val->'details') AS detail
-  WHERE live != '❌ Revoked / Repealed / Abolished'
-  AND lower(detail->>'target') IN ('regulations', 'act', 'order', 'rules', 'scheme',
-    'measure', 'charter', 'byelaws', 'instrument')
-  AND lower(detail->>'affect') IN ('revoked', 'repealed')
-  AND lower(detail->>'affect') NOT LIKE '%in part%'
-  AND lower(detail->>'affect') NOT LIKE 'power to%'
-  AND lower(detail->>'affect') NOT LIKE 'words %'
-  AND lower(detail->>'affect') NOT LIKE 'word %'
-  AND lower(detail->>'affect') NOT LIKE 'entry %'
-  AND lower(detail->>'affect') NOT LIKE 'entries %'
-  AND lower(detail->>'affect') NOT LIKE 'comma %'
+  WITH revocation_details AS (
+    SELECT uk_lrt.id, detail->>'affect' AS affect, detail->>'target' AS target
+    FROM uk_lrt,
+      jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
+      jsonb_array_elements(val->'details') AS detail
+    UNION ALL
+    SELECT uk_lrt.id, detail->>'affect' AS affect, detail->>'target' AS target
+    FROM uk_lrt,
+      jsonb_each("🔻_affected_by_stats_per_law") AS entries(key, val),
+      jsonb_array_elements(val->'details') AS detail
+  )
+  SELECT COUNT(DISTINCT r.id)::int AS misclassified
+  FROM revocation_details r
+  JOIN uk_lrt ON uk_lrt.id = r.id
+  WHERE uk_lrt.live != '❌ Revoked / Repealed / Abolished'
+  AND (
+    -- Standard whole-instrument revocation: known target + revoked/repealed
+    (lower(r.target) IN ('regulations', 'act', 'order', 'rules', 'scheme',
+      'measure', 'charter', 'byelaws', 'instrument')
+    AND lower(r.affect) IN ('revoked', 'repealed')
+    AND lower(r.affect) NOT LIKE '%in part%'
+    AND lower(r.affect) NOT LIKE 'power to%'
+    AND lower(r.affect) NOT LIKE 'words %'
+    AND lower(r.affect) NOT LIKE 'word %'
+    AND lower(r.affect) NOT LIKE 'entry %'
+    AND lower(r.affect) NOT LIKE 'entries %'
+    AND lower(r.affect) NOT LIKE 'comma %')
+    OR
+    -- Empty target + revoked/repealed/rev/rep (whole-instrument implied)
+    (trim(coalesce(r.target, '')) = ''
+    AND lower(trim(r.affect)) IN ('rev', 'rep', 'revoked', 'repealed'))
+  )
   """
 
   @live_affect_distribution_sql """
@@ -260,6 +279,8 @@ defmodule SertantaiLegalWeb.AnalyticsController do
       WHEN lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
         'measure','charter','byelaws','instrument') THEN 'whole_instrument'
       WHEN lower(detail->>'target') LIKE 'whole %' THEN 'whole_instrument'
+      WHEN trim(coalesce(detail->>'target', '')) = ''
+        AND lower(trim(detail->>'affect')) IN ('rev', 'rep') THEN 'whole_instrument'
       ELSE 'section_specific'
     END AS target_type,
     COUNT(*)::int AS count
@@ -288,9 +309,14 @@ defmodule SertantaiLegalWeb.AnalyticsController do
   FROM uk_lrt,
     jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
     jsonb_array_elements(val->'details') AS detail
-  WHERE lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
-    'measure','charter','byelaws','instrument')
-  AND lower(detail->>'affect') IN ('revoked', 'repealed')
+  WHERE (
+    (lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
+      'measure','charter','byelaws','instrument')
+    AND lower(detail->>'affect') IN ('revoked', 'repealed'))
+    OR
+    (trim(coalesce(detail->>'target', '')) = ''
+    AND lower(trim(detail->>'affect')) IN ('rev', 'rep'))
+  )
   GROUP BY detail->>'applied'
   ORDER BY count DESC
   """
@@ -384,6 +410,48 @@ defmodule SertantaiLegalWeb.AnalyticsController do
       families: families,
       applied_status: applied_status
     })
+  end
+
+  # ── Misclassified Names (for targeted reparse) ────────────────────
+
+  @misclassified_names_sql """
+  WITH revocation_details AS (
+    SELECT uk_lrt.id, detail->>'affect' AS affect, detail->>'target' AS target
+    FROM uk_lrt,
+      jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
+      jsonb_array_elements(val->'details') AS detail
+    UNION ALL
+    SELECT uk_lrt.id, detail->>'affect' AS affect, detail->>'target' AS target
+    FROM uk_lrt,
+      jsonb_each("🔻_affected_by_stats_per_law") AS entries(key, val),
+      jsonb_array_elements(val->'details') AS detail
+  )
+  SELECT DISTINCT uk_lrt.name
+  FROM revocation_details r
+  JOIN uk_lrt ON uk_lrt.id = r.id
+  WHERE uk_lrt.live != '❌ Revoked / Repealed / Abolished'
+  AND (
+    (lower(r.target) IN ('regulations', 'act', 'order', 'rules', 'scheme',
+      'measure', 'charter', 'byelaws', 'instrument')
+    AND lower(r.affect) IN ('revoked', 'repealed')
+    AND lower(r.affect) NOT LIKE '%in part%'
+    AND lower(r.affect) NOT LIKE 'power to%'
+    AND lower(r.affect) NOT LIKE 'words %'
+    AND lower(r.affect) NOT LIKE 'word %'
+    AND lower(r.affect) NOT LIKE 'entry %'
+    AND lower(r.affect) NOT LIKE 'entries %'
+    AND lower(r.affect) NOT LIKE 'comma %')
+    OR
+    (trim(coalesce(r.target, '')) = ''
+    AND lower(trim(r.affect)) IN ('rev', 'rep', 'revoked', 'repealed'))
+  )
+  ORDER BY uk_lrt.name
+  """
+
+  def misclassified_names(conn, _params) do
+    {:ok, %{rows: rows}} = Repo.query(@misclassified_names_sql)
+    names = Enum.map(rows, fn [name] -> name end)
+    json(conn, %{names: names, count: length(names)})
   end
 
   defp maybe_format_timestamp(nil), do: nil

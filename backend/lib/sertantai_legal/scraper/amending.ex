@@ -397,8 +397,10 @@ defmodule SertantaiLegal.Scraper.Amending do
 
   defp separate_revocations(amendments) do
     Enum.split_with(amendments, fn %{affect: affect} ->
-      affect_lower = String.downcase(affect || "")
-      String.contains?(affect_lower, "repeal") or String.contains?(affect_lower, "revoke")
+      affect_lower = String.downcase(String.trim(affect || ""))
+
+      String.contains?(affect_lower, "repeal") or String.contains?(affect_lower, "revoke") or
+        affect_lower in ["rev", "rep"]
     end)
   end
 
@@ -461,8 +463,8 @@ defmodule SertantaiLegal.Scraper.Amending do
     #      rather than a specific section (reg. 3, s. 1, Sch. 2)
     has_full_revocation =
       Enum.any?(revocations, fn %{affect: affect, target: target} ->
-        affect_lower = String.downcase(affect || "")
-        target_lower = String.downcase(target || "")
+        affect_lower = String.downcase(String.trim(affect || ""))
+        target_lower = String.downcase(String.trim(target || ""))
 
         cond do
           # Explicit "in full" is always full revocation
@@ -485,6 +487,11 @@ defmodule SertantaiLegal.Scraper.Amending do
           String.contains?(affect_lower, "power to") ->
             false
 
+          # Abbreviated "Rev"/"Rep" — legislation.gov.uk uses these when entire instrument
+          # is revoked/repealed. Empty target confirms whole-instrument scope.
+          affect_lower in ["rev", "rep"] ->
+            target_lower == "" or is_whole_instrument_target?(target_lower)
+
           # Bare "repeal"/"revoke" — only full if target is whole instrument
           String.contains?(affect_lower, "repeal") or
               String.contains?(affect_lower, "revoke") ->
@@ -506,8 +513,10 @@ defmodule SertantaiLegal.Scraper.Amending do
   # Values from legislation.gov.uk /changes/affected endpoint column 2.
   @whole_instrument_targets ~w(regulations act order rules scheme measure charter byelaws instrument)
   defp is_whole_instrument_target?(target_lower) do
-    # Exact match against known instrument types
-    target_lower in @whole_instrument_targets or
+    # Empty target with a revocation affect implies whole instrument
+    target_lower == "" or
+      # Exact match against known instrument types
+      target_lower in @whole_instrument_targets or
       # "whole instrument" is used in some entries
       String.contains?(target_lower, "whole instrument")
   end

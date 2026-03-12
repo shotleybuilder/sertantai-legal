@@ -3,11 +3,14 @@
 	import { onMount } from 'svelte';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite } from '$lib/pglite/client';
+	import { goto } from '$app/navigation';
 	import {
 		getChangeTrackingStats,
 		getSessionAnalytics,
-		getLiveStatusAssurance
+		getLiveStatusAssurance,
+		getMisclassifiedNames
 	} from '$lib/api/analytics';
+	import { createReparseFromView } from '$lib/api/scraper';
 	import type {
 		ChangeTrackingStats,
 		SessionAnalytics,
@@ -54,6 +57,31 @@
 	let liveStatusData: LiveStatusAssurance | null = null;
 	let apiLoading = true;
 	let apiError = '';
+
+	// ── Reparse Misclassified ───────────────────────────────────
+	let reparseLoading = false;
+	let reparseError = '';
+
+	async function reparseMisclassified() {
+		reparseLoading = true;
+		reparseError = '';
+		try {
+			const { names, count } = await getMisclassifiedNames();
+			if (count === 0) {
+				reparseError = 'No misclassified records found';
+				return;
+			}
+			const session = await createReparseFromView(
+				names,
+				`live-misclassified-${new Date().toISOString().slice(0, 10)}`
+			);
+			goto(`/admin/scrape/sessions/${session.session_id}`);
+		} catch (e) {
+			reparseError = e instanceof Error ? e.message : 'Failed to create reparse session';
+		} finally {
+			reparseLoading = false;
+		}
+	}
 
 	// ── Collapsible sections ────────────────────────────────────────
 
@@ -621,6 +649,19 @@
 						<div class="text-xs {liveStatusData.misclassified > 0 ? 'text-red-500' : 'text-green-500'} mt-0.5">
 							{liveStatusData.misclassified > 0 ? 'JSONB shows revoked but live != Revoked' : 'All consistent'}
 						</div>
+						{#if liveStatusData.misclassified > 0}
+							<button
+								on:click={reparseMisclassified}
+								disabled={reparseLoading}
+								class="mt-2 w-full px-3 py-1.5 text-xs font-medium rounded
+									bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+							>
+								{reparseLoading ? 'Creating session...' : `Reparse ${fmt(liveStatusData.misclassified)} records`}
+							</button>
+							{#if reparseError}
+								<div class="text-xs text-red-600 mt-1">{reparseError}</div>
+							{/if}
+						{/if}
 					</div>
 				</div>
 
