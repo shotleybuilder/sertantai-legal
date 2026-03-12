@@ -63,9 +63,19 @@ Coverage jumped from 31% → 77% (426/556 reconciled).
 - **Fix**: Need a separate reparse targeting `title_en IS NULL` records specifically
 - All tested endpoints (introduction, contents, RDF) return 200 with titles for these records
 
+### Bug: `determine_live_status` misses bare "revoked" affects
+
+Traced from `UK_nisr_2003_33` — changes data shows `"affect": "revoked", "target": "Regulations"` (full revocation by nisr/2007/31). But `determine_live_status` in `amending.ex` only checked for `"repeal"`, not `"revoke"`. A bare `"revoked"` fell through to `⭕ Part Revocation / Repeal`.
+
+**Impact**: 480 records misclassified as partial when they have bare "revoked" entries. Of those, only 144 were corrected by metadata reconciliation — **335 still show wrong `live` status**.
+
+**Fix**: Added `String.contains?(affect_lower, "revoke")` to the full-revocation check in `amending.ex:determine_live_status/1`.
+
+**Records need re-scraping** to recalculate `live_from_changes` with the fixed logic.
+
 ### Next step
 - Reparse the 71 null-title OH&S records with current code (has 4-fallback chain)
-- Then re-examine coverage — should reach ~95%+
+- Re-scrape affected records to fix the 335 misclassified live statuses
 
 ## Notes
 - `record_change_log` is `jsonb[]` column on `uk_lrt`

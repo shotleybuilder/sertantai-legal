@@ -453,13 +453,16 @@ defmodule SertantaiLegal.Scraper.Amending do
   defp determine_live_status([]), do: @live_in_force
 
   defp determine_live_status(revocations) do
-    # Check if there are any "in full" revocations
+    # Check if there are any full revocations/repeals
+    # legislation.gov.uk uses both "repeal" and "revoke" — a bare "revoked" or
+    # "repealed" without "in part" indicates full revocation
     has_full_revocation =
       Enum.any?(revocations, fn %{affect: affect} ->
         affect_lower = String.downcase(affect || "")
 
         String.contains?(affect_lower, "in full") or
-          (String.contains?(affect_lower, "repeal") and
+          ((String.contains?(affect_lower, "repeal") or
+              String.contains?(affect_lower, "revoke")) and
              not String.contains?(affect_lower, "in part"))
       end)
 
