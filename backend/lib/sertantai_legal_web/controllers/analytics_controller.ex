@@ -196,6 +196,196 @@ defmodule SertantaiLegalWeb.AnalyticsController do
     })
   end
 
+  # ── Live Status Assurance ──────────────────────────────────────────
+
+  @live_pipeline_coverage_sql """
+  SELECT
+    COUNT(*)::int AS total,
+    COUNT(live_source)::int AS reconciled,
+    COUNT(CASE WHEN live_from_changes IS NOT NULL AND live_from_metadata IS NULL THEN 1 END)::int AS changes_only,
+    COUNT(CASE WHEN live_from_changes IS NULL AND live_from_metadata IS NOT NULL THEN 1 END)::int AS metadata_only,
+    COUNT(CASE WHEN live_source IS NULL AND live IS NOT NULL THEN 1 END)::int AS airtable_only,
+    COUNT(CASE WHEN live IS NULL THEN 1 END)::int AS no_status
+  FROM uk_lrt
+  """
+
+  @live_agreement_sql """
+  SELECT
+    COUNT(*)::int AS reconciled,
+    COUNT(CASE WHEN live_conflict = false THEN 1 END)::int AS agreeing,
+    COUNT(CASE WHEN live_conflict = true THEN 1 END)::int AS conflicting
+  FROM uk_lrt
+  WHERE live_source IS NOT NULL
+  """
+
+  @live_conflict_breakdown_sql """
+  SELECT live_from_changes, live_from_metadata, live_source, COUNT(*)::int AS count
+  FROM uk_lrt
+  WHERE live_conflict = true
+  GROUP BY live_from_changes, live_from_metadata, live_source
+  ORDER BY count DESC
+  """
+
+  @live_misclassified_sql """
+  SELECT COUNT(DISTINCT uk_lrt.id)::int AS misclassified
+  FROM uk_lrt,
+    jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
+    jsonb_array_elements(val->'details') AS detail
+  WHERE live != '❌ Revoked / Repealed / Abolished'
+  AND lower(detail->>'target') IN ('regulations', 'act', 'order', 'rules', 'scheme',
+    'measure', 'charter', 'byelaws', 'instrument')
+  AND lower(detail->>'affect') IN ('revoked', 'repealed')
+  AND lower(detail->>'affect') NOT LIKE '%in part%'
+  AND lower(detail->>'affect') NOT LIKE 'power to%'
+  AND lower(detail->>'affect') NOT LIKE 'words %'
+  AND lower(detail->>'affect') NOT LIKE 'word %'
+  AND lower(detail->>'affect') NOT LIKE 'entry %'
+  AND lower(detail->>'affect') NOT LIKE 'entries %'
+  AND lower(detail->>'affect') NOT LIKE 'comma %'
+  """
+
+  @live_affect_distribution_sql """
+  SELECT lower(detail->>'affect') AS affect_type, COUNT(*)::int AS count
+  FROM uk_lrt,
+    jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
+    jsonb_array_elements(val->'details') AS detail
+  GROUP BY lower(detail->>'affect')
+  ORDER BY count DESC
+  LIMIT 20
+  """
+
+  @live_target_distribution_sql """
+  SELECT
+    CASE
+      WHEN lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
+        'measure','charter','byelaws','instrument') THEN 'whole_instrument'
+      WHEN lower(detail->>'target') LIKE 'whole %' THEN 'whole_instrument'
+      ELSE 'section_specific'
+    END AS target_type,
+    COUNT(*)::int AS count
+  FROM uk_lrt,
+    jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
+    jsonb_array_elements(val->'details') AS detail
+  GROUP BY 1
+  """
+
+  @live_by_family_sql """
+  SELECT
+    family,
+    COUNT(*)::int AS total,
+    COUNT(live_source)::int AS reconciled,
+    COUNT(CASE WHEN live = '✔ In force' THEN 1 END)::int AS in_force,
+    COUNT(CASE WHEN live = '❌ Revoked / Repealed / Abolished' THEN 1 END)::int AS revoked,
+    COUNT(CASE WHEN live = '⭕ Part Revocation / Repeal' THEN 1 END)::int AS partial,
+    COUNT(CASE WHEN live IS NULL THEN 1 END)::int AS unknown
+  FROM uk_lrt
+  GROUP BY family
+  ORDER BY total DESC
+  """
+
+  @live_applied_status_sql """
+  SELECT COALESCE(detail->>'applied', '(empty)') AS applied_status, COUNT(*)::int AS count
+  FROM uk_lrt,
+    jsonb_each("🔻_rescinded_by_stats_per_law") AS entries(key, val),
+    jsonb_array_elements(val->'details') AS detail
+  WHERE lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
+    'measure','charter','byelaws','instrument')
+  AND lower(detail->>'affect') IN ('revoked', 'repealed')
+  GROUP BY detail->>'applied'
+  ORDER BY count DESC
+  """
+
+  def live_status(conn, _params) do
+    # Run all queries in parallel via Task.async
+    tasks = %{
+      coverage: Task.async(fn -> Repo.query(@live_pipeline_coverage_sql) end),
+      agreement: Task.async(fn -> Repo.query(@live_agreement_sql) end),
+      conflicts: Task.async(fn -> Repo.query(@live_conflict_breakdown_sql) end),
+      misclassified: Task.async(fn -> Repo.query(@live_misclassified_sql) end),
+      affects: Task.async(fn -> Repo.query(@live_affect_distribution_sql) end),
+      targets: Task.async(fn -> Repo.query(@live_target_distribution_sql) end),
+      families: Task.async(fn -> Repo.query(@live_by_family_sql) end),
+      applied: Task.async(fn -> Repo.query(@live_applied_status_sql) end)
+    }
+
+    {:ok, %{rows: [[total, reconciled, changes_only, metadata_only, airtable_only, no_status]]}} =
+      Task.await(tasks.coverage)
+
+    {:ok, %{rows: [[rec_total, agreeing, conflicting]]}} = Task.await(tasks.agreement)
+
+    {:ok, %{rows: conflict_rows}} = Task.await(tasks.conflicts)
+
+    conflict_breakdown =
+      Enum.map(conflict_rows, fn [from_changes, from_metadata, source, count] ->
+        %{
+          live_from_changes: from_changes,
+          live_from_metadata: from_metadata,
+          live_source: source,
+          count: count
+        }
+      end)
+
+    {:ok, %{rows: [[misclassified]]}} = Task.await(tasks.misclassified)
+
+    {:ok, %{rows: affect_rows}} = Task.await(tasks.affects)
+
+    affect_distribution =
+      Enum.map(affect_rows, fn [affect_type, count] ->
+        %{affect_type: affect_type || "(empty)", count: count}
+      end)
+
+    {:ok, %{rows: target_rows}} = Task.await(tasks.targets)
+
+    target_distribution =
+      Enum.map(target_rows, fn [target_type, count] ->
+        %{target_type: target_type, count: count}
+      end)
+
+    {:ok, %{rows: family_rows}} = Task.await(tasks.families)
+
+    families =
+      Enum.map(family_rows, fn [family, total_f, reconciled_f, in_force, revoked, partial, unknown] ->
+        %{
+          family: family,
+          total: total_f,
+          reconciled: reconciled_f,
+          in_force: in_force,
+          revoked: revoked,
+          partial: partial,
+          unknown: unknown
+        }
+      end)
+
+    {:ok, %{rows: applied_rows}} = Task.await(tasks.applied)
+
+    applied_status =
+      Enum.map(applied_rows, fn [status, count] ->
+        %{status: status, count: count}
+      end)
+
+    json(conn, %{
+      pipeline_coverage: %{
+        total: total,
+        reconciled: reconciled,
+        changes_only: changes_only,
+        metadata_only: metadata_only,
+        airtable_only: airtable_only,
+        no_status: no_status
+      },
+      source_agreement: %{
+        reconciled: rec_total,
+        agreeing: agreeing,
+        conflicting: conflicting,
+        conflict_breakdown: conflict_breakdown
+      },
+      misclassified: misclassified,
+      affect_distribution: affect_distribution,
+      target_distribution: target_distribution,
+      families: families,
+      applied_status: applied_status
+    })
+  end
+
   defp maybe_format_timestamp(nil), do: nil
   defp maybe_format_timestamp(%NaiveDateTime{} = ts), do: NaiveDateTime.to_iso8601(ts)
   defp maybe_format_timestamp(other), do: to_string(other)

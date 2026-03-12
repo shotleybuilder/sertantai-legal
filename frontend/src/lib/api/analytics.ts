@@ -71,6 +71,43 @@ async function fetchWithAuth(url: string): Promise<Response> {
 	return response;
 }
 
+// ── Live Status Assurance Types ──────────────────────────────────
+
+export interface LiveStatusAssurance {
+	pipeline_coverage: {
+		total: number;
+		reconciled: number;
+		changes_only: number;
+		metadata_only: number;
+		airtable_only: number;
+		no_status: number;
+	};
+	source_agreement: {
+		reconciled: number;
+		agreeing: number;
+		conflicting: number;
+		conflict_breakdown: Array<{
+			live_from_changes: string;
+			live_from_metadata: string;
+			live_source: string;
+			count: number;
+		}>;
+	};
+	misclassified: number;
+	affect_distribution: Array<{ affect_type: string; count: number }>;
+	target_distribution: Array<{ target_type: string; count: number }>;
+	families: Array<{
+		family: string | null;
+		total: number;
+		reconciled: number;
+		in_force: number;
+		revoked: number;
+		partial: number;
+		unknown: number;
+	}>;
+	applied_status: Array<{ status: string; count: number }>;
+}
+
 // ── API Functions ────────────────────────────────────────────────────
 
 export async function getChangeTrackingStats(): Promise<ChangeTrackingStats> {
@@ -80,5 +117,10 @@ export async function getChangeTrackingStats(): Promise<ChangeTrackingStats> {
 
 export async function getSessionAnalytics(): Promise<SessionAnalytics> {
 	const response = await fetchWithAuth(`${API_URL}/api/analytics/sessions`);
+	return response.json();
+}
+
+export async function getLiveStatusAssurance(): Promise<LiveStatusAssurance> {
+	const response = await fetchWithAuth(`${API_URL}/api/analytics/live-status`);
 	return response.json();
 }

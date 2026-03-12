@@ -18,11 +18,6 @@
 - [x] Backend: `ReparseManager.create_from_names/1` + `POST /api/sessions/reparse/from-view`
 - [x] Keep existing Reparse Family dialog as secondary option
 
-### Phase 2: Full Text Parsing Failures
-- [ ] Identify recent OH&S laws with zero LAT content
-- [ ] Investigate root causes for parsing failures
-- [ ] Categorize failure types
-
 ## Phase 1 Interim Results
 
 **Finding: Coverage gap, not a data deletion bug.**
@@ -125,6 +120,193 @@ All 69 updated to `❌ Revoked / Repealed / Abolished`.
 
 ### Next step
 - Reparse the 71 null-title OH&S records with current code (has 4-fallback chain)
+
+## Phase 3: Live Status Assurance Metrics (for new session)
+
+### Context
+
+The live status classification pipeline has three trust tiers:
+1. **Reconciled** — both changes + metadata engines ran, "most severe wins" applied (`live_source` set)
+2. **JSONB-only** — scraper fetched `/changes/affected` data (stored in `🔻_rescinded_by_stats_per_law`) but reconciliation hasn't run
+3. **Airtable import** — original CSV value, never verified by any scraper (`live_source` IS NULL)
+
+Current state (2026-03-12):
+- 19,330 total records
+- 1,509 reconciled (7.8%)
+- 5,082 have JSONB revocation data but no `live_from_changes` calculation
+- 15,627 Airtable-only (including 2,194 with no `live` at all)
+- 571 conflicts (changes vs metadata disagree)
+
+### Recommended Metrics
+
+#### 1. Pipeline Coverage (the most critical metric)
+
+**What**: % of records that have been through the full reconciliation pipeline.
+
+```sql
+-- KPIs: total, reconciled, changes-only, metadata-only, unverified
+SELECT
+  COUNT(*) as total,
+  COUNT(live_source) as reconciled,
+  ROUND(100.0 * COUNT(live_source) / COUNT(*), 1) as reconciled_pct,
+  COUNT(CASE WHEN live_from_changes IS NOT NULL AND live_from_metadata IS NULL THEN 1 END) as changes_only,
+  COUNT(CASE WHEN live_from_changes IS NULL AND live_from_metadata IS NOT NULL THEN 1 END) as metadata_only,
+  COUNT(CASE WHEN live_source IS NULL AND live IS NOT NULL THEN 1 END) as airtable_only,
+  COUNT(CASE WHEN live IS NULL THEN 1 END) as no_status
+FROM uk_lrt;
+```
+
+**Display**: Stacked progress bar — green (reconciled), amber (single-source), red (airtable/none). Per-family breakdown table.
+
+**Why**: This session proved that unverified Airtable values can be wrong (391 misclassified). Every unreconciled record is a latent risk.
+
+#### 2. Source Agreement Rate
+
+**What**: Among reconciled records, how often do changes and metadata agree?
+
+```sql
+SELECT
+  COUNT(*) as reconciled,
+  COUNT(CASE WHEN live_conflict = false THEN 1 END) as agreeing,
+  COUNT(CASE WHEN live_conflict = true THEN 1 END) as conflicting,
+  ROUND(100.0 * COUNT(CASE WHEN live_conflict = false THEN 1 END) / COUNT(*), 1) as agreement_pct
+FROM uk_lrt
+WHERE live_source IS NOT NULL;
+```
+
+**Display**: Donut chart (agree vs conflict). Table of conflicts grouped by `live_from_changes` vs `live_from_metadata` combination.
+
+**Why**: Conflicts indicate either a classification bug or genuine ambiguity in the law's status. A rising conflict rate after a code change signals a regression.
+
+#### 3. JSONB Cross-Check — Misclassification Detector
+
+**What**: Records where the JSONB revocation data contradicts the current `live` classification. This is the exact query that found the 391 bugs.
+
+```sql
+-- Records with whole-instrument revocation in JSONB but NOT classified as fully revoked
+SELECT COUNT(DISTINCT uk_lrt.id) as misclassified_count
+FROM uk_lrt,
+  jsonb_each("🔻_rescinded_by_stats_per_law") as entries(key, val),
+  jsonb_array_elements(val->'details') as detail
+WHERE live != '❌ Revoked / Repealed / Abolished'
+AND lower(detail->>'target') IN ('regulations', 'act', 'order', 'rules', 'scheme',
+  'measure', 'charter', 'byelaws', 'instrument')
+AND (lower(detail->>'affect') = 'revoked' OR lower(detail->>'affect') = 'repealed'
+  OR lower(detail->>'affect') LIKE '%in full%')
+AND lower(detail->>'affect') NOT LIKE '%in part%'
+AND lower(detail->>'affect') NOT LIKE 'power to%'
+AND lower(detail->>'affect') NOT LIKE 'words %'
+AND lower(detail->>'affect') NOT LIKE 'word %'
+AND lower(detail->>'affect') NOT LIKE 'entry %'
+AND lower(detail->>'affect') NOT LIKE 'entries %'
+AND lower(detail->>'affect') NOT LIKE 'comma %';
+```
+
+**Display**: Single KPI card — **"0"** in green, any non-zero in red with drill-down link. This should be a regression alarm.
+
+**Why**: This is the "canary" metric. If the code or data changes and this goes above 0, something is wrong. The 1 known justified exception (`UK_uksi_1995_614`, "applied: Not yet") should be documented as an allowed exclusion.
+
+#### 4. Revocation Pattern Distribution
+
+**What**: Breakdown of what the scraper is capturing in `rescinded_by_stats_per_law`.
+
+```sql
+-- Affect type distribution (top 20)
+SELECT lower(detail->>'affect') as affect_type, COUNT(*) as cnt
+FROM uk_lrt,
+  jsonb_each("🔻_rescinded_by_stats_per_law") as entries(key, val),
+  jsonb_array_elements(val->'details') as detail
+GROUP BY lower(detail->>'affect')
+ORDER BY cnt DESC
+LIMIT 20;
+
+-- Target type distribution (whole-instrument vs section-specific)
+SELECT
+  CASE
+    WHEN lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
+      'measure','charter','byelaws','instrument') THEN 'whole_instrument'
+    WHEN lower(detail->>'target') LIKE 'whole %' THEN 'whole_instrument'
+    ELSE 'section_specific'
+  END as target_type,
+  COUNT(*) as cnt
+FROM uk_lrt,
+  jsonb_each("🔻_rescinded_by_stats_per_law") as entries(key, val),
+  jsonb_array_elements(val->'details') as detail
+GROUP BY 1;
+```
+
+**Display**: Two horizontal bar charts — affect types and target types. The target type split is a useful sanity check (roughly 60/40 section vs whole-instrument based on current data).
+
+**Why**: New affect patterns appearing in future scrapes (e.g. a new legislation.gov.uk format) would show up here as low-count unknowns, flagging the need for parser updates.
+
+#### 5. Live Status by Family
+
+**What**: Per-family breakdown of live classification with pipeline coverage.
+
+```sql
+SELECT
+  family,
+  COUNT(*) as total,
+  COUNT(live_source) as reconciled,
+  ROUND(100.0 * COUNT(live_source) / COUNT(*), 1) as coverage_pct,
+  COUNT(CASE WHEN live = '✔ In force' THEN 1 END) as in_force,
+  COUNT(CASE WHEN live = '❌ Revoked / Repealed / Abolished' THEN 1 END) as revoked,
+  COUNT(CASE WHEN live = '⭕ Part Revocation / Repeal' THEN 1 END) as partial,
+  COUNT(CASE WHEN live IS NULL THEN 1 END) as unknown
+FROM uk_lrt
+GROUP BY family
+ORDER BY total DESC;
+```
+
+**Display**: Table with sparkline-style inline bars per family. Sortable by coverage_pct to prioritise families needing reparse.
+
+**Why**: Drives the reparse queue — families with low coverage are the priority for scraping runs.
+
+#### 6. "Applied" Status Distribution
+
+**What**: How many whole-instrument revocations are "Not yet" applied vs "Yes".
+
+```sql
+SELECT detail->>'applied' as applied_status, COUNT(*) as cnt
+FROM uk_lrt,
+  jsonb_each("🔻_rescinded_by_stats_per_law") as entries(key, val),
+  jsonb_array_elements(val->'details') as detail
+WHERE lower(detail->>'target') IN ('regulations','act','order','rules','scheme',
+  'measure','charter','byelaws','instrument')
+AND (lower(detail->>'affect') = 'revoked' OR lower(detail->>'affect') = 'repealed')
+GROUP BY detail->>'applied'
+ORDER BY cnt DESC;
+```
+
+**Display**: Small table or KPI cards.
+
+**Why**: "Not yet" applied revocations are the edge case that tripped up `UK_uksi_1995_614`. Monitoring this count helps anticipate future reclassifications when legislation.gov.uk updates these to "Yes".
+
+### Implementation Notes
+
+**Backend**: New endpoint `GET /api/analytics/live-status` in `AnalyticsController`. Run all 6 queries in a single request. Most queries are fast (< 100ms) but queries 3 and 4 do JSONB unnesting across ~6K records — consider caching or limiting to on-demand refresh.
+
+**Frontend**: New collapsible section "Live Status Assurance" on `/admin/analytics`. Structure:
+- **KPI row**: Reconciled %, Agreement %, Misclassified count (the 3 headline numbers)
+- **Pipeline Coverage**: Stacked bar + per-family table (metric 1 + 5 combined)
+- **Conflicts & Cross-Checks**: Agreement donut + misclassification alarm (metrics 2 + 3)
+- **Pattern Distribution**: Affect/target bar charts + applied status (metrics 4 + 6)
+
+**PGLite vs API**: Metrics 1 and 5 could run client-side on PGLite (the columns are synced). Metrics 3, 4, and 6 require JSONB unnesting on the full `rescinded_by_stats_per_law` column which is too large for PGLite — these should be API-backed.
+
+### Session Handoff
+
+This session (2026-03-12 OH&S Data Quality Audit) is complete. Phase 3 implementation should be a **new session** covering:
+
+1. Backend: `GET /api/analytics/live-status` endpoint with all 6 queries
+2. Frontend: "Live Status Assurance" section on `/admin/analytics`
+3. Consider adding the misclassification detector (metric 3) as a health check endpoint (`/health/data-quality`) for monitoring
+
+**Prerequisite**: None — can start immediately. The SQL queries above are tested and ready.
+
+**Related sessions**: 2026-03-10-fallback-metadata-research.md (title_en gaps), 2026-03-01-lrt-admin-table-views.md (saved views)
+
+**Ended**: 2026-03-12
 
 ## Notes
 - `record_change_log` is `jsonb[]` column on `uk_lrt`

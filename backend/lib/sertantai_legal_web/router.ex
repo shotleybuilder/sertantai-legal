@@ -162,5 +162,6 @@ defmodule SertantaiLegalWeb.Router do
     # Analytics endpoints
     get("/analytics/changes", AnalyticsController, :changes)
     get("/analytics/sessions", AnalyticsController, :sessions)
+    get("/analytics/live-status", AnalyticsController, :live_status)
   end
 end

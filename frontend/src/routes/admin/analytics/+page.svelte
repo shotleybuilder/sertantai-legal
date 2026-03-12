@@ -3,8 +3,16 @@
 	import { onMount } from 'svelte';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite } from '$lib/pglite/client';
-	import { getChangeTrackingStats, getSessionAnalytics } from '$lib/api/analytics';
-	import type { ChangeTrackingStats, SessionAnalytics } from '$lib/api/analytics';
+	import {
+		getChangeTrackingStats,
+		getSessionAnalytics,
+		getLiveStatusAssurance
+	} from '$lib/api/analytics';
+	import type {
+		ChangeTrackingStats,
+		SessionAnalytics,
+		LiveStatusAssurance
+	} from '$lib/api/analytics';
 
 	// ── PGLite Stats (Sections 1-3) ────────────────────────────────
 
@@ -43,6 +51,7 @@
 
 	let changeStats: ChangeTrackingStats | null = null;
 	let sessionStats: SessionAnalytics | null = null;
+	let liveStatusData: LiveStatusAssurance | null = null;
 	let apiLoading = true;
 	let apiError = '';
 
@@ -52,6 +61,7 @@
 		completeness: true,
 		population: true,
 		lat: true,
+		liveStatus: true,
 		changes: true,
 		sessions: true
 	};
@@ -211,12 +221,14 @@
 
 	async function loadApiStats() {
 		try {
-			const [changes, sessions] = await Promise.all([
+			const [changes, sessions, liveStatus] = await Promise.all([
 				getChangeTrackingStats(),
-				getSessionAnalytics()
+				getSessionAnalytics(),
+				getLiveStatusAssurance()
 			]);
 			changeStats = changes;
 			sessionStats = sessions;
+			liveStatusData = liveStatus;
 		} catch (e) {
 			apiError = e instanceof Error ? e.message : 'Failed to load API stats';
 		} finally {
@@ -537,7 +549,332 @@
 		{/if}
 	</section>
 
-	<!-- ═══════ Section 4: Change Tracking ═══════ -->
+	<!-- ═══════ Section 4: Live Status Assurance ═══════ -->
+	<section>
+		<button
+			on:click={() => toggleSection('liveStatus')}
+			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
+		>
+			<svg
+				class="w-4 h-4 transition-transform {openSections.liveStatus ? 'rotate-90' : ''}"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+			</svg>
+			Live Status Assurance
+			<span class="text-sm font-normal text-gray-400">(API)</span>
+		</button>
+
+		{#if openSections.liveStatus}
+			{#if apiLoading}
+				<div class="text-sm text-gray-500 py-4">Loading...</div>
+			{:else if apiError}
+				<div class="bg-red-50 text-red-700 px-4 py-3 rounded-md text-sm">{apiError}</div>
+			{:else if liveStatusData}
+				{@const cov = liveStatusData.pipeline_coverage}
+				{@const agr = liveStatusData.source_agreement}
+
+				<!-- KPI Row -->
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+					<div class="bg-white rounded-lg border border-gray-200 p-4">
+						<div class="text-sm text-gray-500">Reconciled</div>
+						<div class="text-2xl font-bold text-gray-900">{fmt(cov.reconciled)}</div>
+						<div class="text-xs text-gray-400 mt-0.5">
+							{pct(cov.reconciled, cov.total)}% of {fmt(cov.total)}
+						</div>
+					</div>
+					<div class="bg-white rounded-lg border border-gray-200 p-4">
+						<div class="text-sm text-gray-500">Agreement Rate</div>
+						<div class="text-2xl font-bold {agr.conflicting === 0 ? 'text-green-600' : 'text-amber-600'}">
+							{pct(agr.agreeing, agr.reconciled)}%
+						</div>
+						<div class="text-xs text-gray-400 mt-0.5">
+							{fmt(agr.agreeing)} agree / {fmt(agr.conflicting)} conflict
+						</div>
+					</div>
+					<div class="bg-white rounded-lg border border-gray-200 p-4">
+						<div class="text-sm text-gray-500">No Status</div>
+						<div class="text-2xl font-bold {cov.no_status > 0 ? 'text-red-600' : 'text-green-600'}">
+							{fmt(cov.no_status)}
+						</div>
+						<div class="text-xs text-gray-400 mt-0.5">
+							{pct(cov.no_status, cov.total)}% missing
+						</div>
+					</div>
+					<div
+						class="rounded-lg border-2 p-4 {liveStatusData.misclassified > 0
+							? 'bg-red-50 border-red-300'
+							: 'bg-green-50 border-green-300'}"
+					>
+						<div class="text-sm {liveStatusData.misclassified > 0 ? 'text-red-700' : 'text-green-700'}">
+							Misclassified
+						</div>
+						<div
+							class="text-2xl font-bold {liveStatusData.misclassified > 0
+								? 'text-red-700'
+								: 'text-green-700'}"
+						>
+							{fmt(liveStatusData.misclassified)}
+						</div>
+						<div class="text-xs {liveStatusData.misclassified > 0 ? 'text-red-500' : 'text-green-500'} mt-0.5">
+							{liveStatusData.misclassified > 0 ? 'JSONB shows revoked but live != Revoked' : 'All consistent'}
+						</div>
+					</div>
+				</div>
+
+				<!-- Pipeline Coverage Stacked Bar -->
+				<div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+					<h3 class="text-sm font-medium text-gray-700 mb-3">Pipeline Coverage</h3>
+					<div class="w-full h-8 flex rounded-lg overflow-hidden">
+						{#if cov.reconciled > 0}
+							<div
+								class="bg-green-500 flex items-center justify-center text-white text-xs font-medium"
+								style="width: {pctNum(cov.reconciled, cov.total)}%"
+								title="Reconciled: {fmt(cov.reconciled)}"
+							>
+								{pctNum(cov.reconciled, cov.total) > 8 ? `${pct(cov.reconciled, cov.total)}%` : ''}
+							</div>
+						{/if}
+						{#if cov.changes_only > 0}
+							<div
+								class="bg-blue-400 flex items-center justify-center text-white text-xs font-medium"
+								style="width: {pctNum(cov.changes_only, cov.total)}%"
+								title="Changes only: {fmt(cov.changes_only)}"
+							>
+								{pctNum(cov.changes_only, cov.total) > 8 ? `${pct(cov.changes_only, cov.total)}%` : ''}
+							</div>
+						{/if}
+						{#if cov.metadata_only > 0}
+							<div
+								class="bg-purple-400 flex items-center justify-center text-white text-xs font-medium"
+								style="width: {pctNum(cov.metadata_only, cov.total)}%"
+								title="Metadata only: {fmt(cov.metadata_only)}"
+							>
+								{pctNum(cov.metadata_only, cov.total) > 8 ? `${pct(cov.metadata_only, cov.total)}%` : ''}
+							</div>
+						{/if}
+						{#if cov.airtable_only > 0}
+							<div
+								class="bg-amber-400 flex items-center justify-center text-white text-xs font-medium"
+								style="width: {pctNum(cov.airtable_only, cov.total)}%"
+								title="Airtable only: {fmt(cov.airtable_only)}"
+							>
+								{pctNum(cov.airtable_only, cov.total) > 8 ? `${pct(cov.airtable_only, cov.total)}%` : ''}
+							</div>
+						{/if}
+						{#if cov.no_status > 0}
+							<div
+								class="bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-medium"
+								style="width: {pctNum(cov.no_status, cov.total)}%"
+								title="No status: {fmt(cov.no_status)}"
+							>
+								{pctNum(cov.no_status, cov.total) > 8 ? `${pct(cov.no_status, cov.total)}%` : ''}
+							</div>
+						{/if}
+					</div>
+					<div class="flex flex-wrap gap-4 mt-2 text-xs text-gray-500">
+						<span class="flex items-center gap-1">
+							<span class="w-3 h-3 rounded bg-green-500 inline-block"></span>
+							Reconciled ({fmt(cov.reconciled)})
+						</span>
+						<span class="flex items-center gap-1">
+							<span class="w-3 h-3 rounded bg-blue-400 inline-block"></span>
+							Changes only ({fmt(cov.changes_only)})
+						</span>
+						<span class="flex items-center gap-1">
+							<span class="w-3 h-3 rounded bg-purple-400 inline-block"></span>
+							Metadata only ({fmt(cov.metadata_only)})
+						</span>
+						<span class="flex items-center gap-1">
+							<span class="w-3 h-3 rounded bg-amber-400 inline-block"></span>
+							Airtable only ({fmt(cov.airtable_only)})
+						</span>
+						<span class="flex items-center gap-1">
+							<span class="w-3 h-3 rounded bg-gray-300 inline-block"></span>
+							No status ({fmt(cov.no_status)})
+						</span>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+					<!-- Conflict Breakdown -->
+					{#if agr.conflicting > 0}
+						<div class="bg-white rounded-lg border border-gray-200 p-4">
+							<h3 class="text-sm font-medium text-gray-700 mb-3">
+								Conflict Breakdown ({fmt(agr.conflicting)})
+							</h3>
+							<div class="space-y-2">
+								{#each liveStatusData.source_agreement.conflict_breakdown as row}
+									<div class="text-sm border-l-2 border-amber-400 pl-3">
+										<div class="flex justify-between">
+											<span class="text-gray-600">Changes: <span class="font-medium">{row.live_from_changes || '(none)'}</span></span>
+											<span class="text-gray-900 font-medium">{fmt(row.count)}</span>
+										</div>
+										<div class="text-gray-500 text-xs">
+											Metadata: {row.live_from_metadata || '(none)'} | Winner: {row.live_source}
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<!-- Target Distribution -->
+					<div class="bg-white rounded-lg border border-gray-200 p-4">
+						<h3 class="text-sm font-medium text-gray-700 mb-3">Revocation Target Scope</h3>
+						<div class="space-y-2">
+							{#each liveStatusData.target_distribution as { target_type, count }}
+								{@const maxTarget = Math.max(
+									...liveStatusData.target_distribution.map((t) => t.count)
+								)}
+								<div class="flex items-center gap-2 text-sm">
+									<div
+										class="h-3 rounded-full {target_type === 'whole_instrument'
+											? 'bg-red-400'
+											: 'bg-blue-400'} flex-shrink-0"
+										style="width: {(count / maxTarget) * 60}%"
+									></div>
+									<span class="text-gray-600">
+										{target_type === 'whole_instrument' ? 'Whole Instrument' : 'Section Specific'}
+									</span>
+									<span class="text-gray-400 ml-auto">{fmt(count)}</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+
+				<!-- Affect Type Distribution + Applied Status -->
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+					<!-- Top Affect Types -->
+					<div class="bg-white rounded-lg border border-gray-200 p-4">
+						<h3 class="text-sm font-medium text-gray-700 mb-3">Top Affect Patterns</h3>
+						<div class="space-y-1.5">
+							{#each liveStatusData.affect_distribution.slice(0, 12) as { affect_type, count }}
+								{@const maxAffect = liveStatusData.affect_distribution[0]?.count ?? 1}
+								<div class="flex items-center gap-2 text-sm">
+									<div
+										class="h-2 rounded-full bg-rose-400 flex-shrink-0"
+										style="width: {(count / maxAffect) * 100}%"
+									></div>
+									<span class="text-gray-600 truncate max-w-[180px] font-mono text-xs"
+										>{affect_type}</span
+									>
+									<span class="text-gray-400 ml-auto">{fmt(count)}</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+
+					<!-- Applied Status -->
+					<div class="bg-white rounded-lg border border-gray-200 p-4">
+						<h3 class="text-sm font-medium text-gray-700 mb-3">
+							Applied Status (whole-instrument revocations)
+						</h3>
+						<div class="space-y-1.5">
+							{#each liveStatusData.applied_status as { status, count }}
+								{@const maxApplied = liveStatusData.applied_status[0]?.count ?? 1}
+								<div class="flex items-center gap-2 text-sm">
+									<div
+										class="h-2 rounded-full bg-teal-400 flex-shrink-0"
+										style="width: {(count / maxApplied) * 100}%"
+									></div>
+									<span class="text-gray-600 truncate max-w-[180px]">{status}</span>
+									<span class="text-gray-400 ml-auto">{fmt(count)}</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+
+				<!-- Per-Family Table -->
+				{#if liveStatusData.families.length > 0}
+					<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+						<h3 class="text-sm font-medium text-gray-700 px-4 py-3 bg-gray-50 border-b">
+							Live Status by Family
+						</h3>
+						<div class="overflow-x-auto">
+							<table class="min-w-full divide-y divide-gray-200">
+								<thead class="bg-gray-50">
+									<tr>
+										<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+											Family
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											Total
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											Reconciled
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											In Force
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											Revoked
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											Partial
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											Unknown
+										</th>
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+											Coverage
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200">
+									{#each liveStatusData.families as fam}
+										{@const famCovPct = pctNum(fam.reconciled, fam.total)}
+										<tr class="hover:bg-gray-50">
+											<td class="px-4 py-2 text-sm text-gray-700 truncate max-w-[200px]">
+												{fam.family || '(null)'}
+											</td>
+											<td class="px-4 py-2 text-sm text-gray-600 text-right">{fmt(fam.total)}</td>
+											<td class="px-4 py-2 text-sm text-gray-600 text-right">
+												{fmt(fam.reconciled)}
+											</td>
+											<td class="px-4 py-2 text-sm text-green-600 text-right">
+												{fmt(fam.in_force)}
+											</td>
+											<td class="px-4 py-2 text-sm text-red-600 text-right">
+												{fmt(fam.revoked)}
+											</td>
+											<td class="px-4 py-2 text-sm text-amber-600 text-right">
+												{fmt(fam.partial)}
+											</td>
+											<td class="px-4 py-2 text-sm text-gray-400 text-right">
+												{fmt(fam.unknown)}
+											</td>
+											<td class="px-4 py-2">
+												<div class="flex items-center gap-2">
+													<div class="w-16 bg-gray-100 rounded-full h-2">
+														<div
+															class="h-2 rounded-full {famCovPct > 50
+																? 'bg-green-400'
+																: famCovPct > 20
+																	? 'bg-amber-400'
+																	: 'bg-red-400'}"
+															style="width: {Math.max(famCovPct, 1)}%"
+														></div>
+													</div>
+													<span class="text-xs text-gray-500">{pct(fam.reconciled, fam.total)}%</span>
+												</div>
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				{/if}
+			{/if}
+		{/if}
+	</section>
+
+	<!-- ═══════ Section 5: Change Tracking ═══════ -->
 	<section>
 		<button
 			on:click={() => toggleSection('changes')}
@@ -661,7 +998,7 @@
 		{/if}
 	</section>
 
-	<!-- ═══════ Section 5: Session Analytics ═══════ -->
+	<!-- ═══════ Section 6: Session Analytics ═══════ -->
 	<section>
 		<button
 			on:click={() => toggleSection('sessions')}
