@@ -21,7 +21,7 @@ defmodule SertantaiLegal.Scraper.LawParserTest do
           xml = fixture("introduction_text_dates.xml")
           Req.Test.text(conn, xml)
 
-        String.contains?(path, "/uksi/2024/9999/introduction/") ->
+        String.contains?(path, "/uksi/2024/9999/") ->
           Plug.Conn.send_resp(conn, 404, "Not found")
 
         true ->
