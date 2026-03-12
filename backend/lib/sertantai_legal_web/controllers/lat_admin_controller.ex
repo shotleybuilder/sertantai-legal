@@ -443,6 +443,22 @@ defmodule SertantaiLegalWeb.LatAdminController do
     end
   end
 
+  @doc "POST /api/lat/sessions/from-view — Create a LAT parse session from explicit law names."
+  def create_lat_session_from_view(conn, params) do
+    case LatSessionManager.create_from_names(params) do
+      {:ok, session} ->
+        json(conn, %{
+          session_id: session.session_id,
+          session_type: session.session_type,
+          status: session.status,
+          group1_count: session.group1_count
+        })
+
+      {:error, reason} ->
+        conn |> put_status(422) |> json(%{error: reason})
+    end
+  end
+
   @doc "POST /api/lat/sessions — Create a LAT parse session from filters."
   def create_lat_session(conn, params) do
     case LatSessionManager.create(params) do

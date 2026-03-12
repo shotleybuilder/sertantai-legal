@@ -889,6 +889,28 @@ defmodule SertantaiLegalWeb.ScrapeController do
   ## Parameters
   Same as reparse_preview.
   """
+  def create_reparse_from_view(conn, params) do
+    alias SertantaiLegal.Scraper.ReparseManager
+
+    case ReparseManager.create_from_names(params) do
+      {:ok, session} ->
+        json(conn, %{
+          session_id: session.session_id,
+          status: session.status,
+          group1_count: session.group1_count,
+          year: session.year,
+          month: session.month,
+          day_from: session.day_from,
+          day_to: session.day_to
+        })
+
+      {:error, reason} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: format_error(reason)})
+    end
+  end
+
   def create_reparse(conn, params) do
     alias SertantaiLegal.Scraper.ReparseManager
 

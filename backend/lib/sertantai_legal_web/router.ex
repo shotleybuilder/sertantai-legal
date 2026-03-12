@@ -105,6 +105,7 @@ defmodule SertantaiLegalWeb.Router do
 
     # Reparse session endpoints (must come before /sessions/:id to avoid capture)
     post("/sessions/reparse/preview", ScrapeController, :reparse_preview)
+    post("/sessions/reparse/from-view", ScrapeController, :create_reparse_from_view)
     post("/sessions/reparse", ScrapeController, :create_reparse)
 
     get("/sessions/:id", ScrapeController, :show)
@@ -131,6 +132,7 @@ defmodule SertantaiLegalWeb.Router do
 
     # LAT session endpoints (must come before /lat/:id routes)
     post("/lat/sessions/preview", LatAdminController, :lat_session_preview)
+    post("/lat/sessions/from-view", LatAdminController, :create_lat_session_from_view)
     post("/lat/sessions", LatAdminController, :create_lat_session)
     get("/lat/sessions", LatAdminController, :lat_sessions)
     get("/lat/sessions/:id", LatAdminController, :lat_session_show)

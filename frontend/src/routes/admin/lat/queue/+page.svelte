@@ -2,12 +2,12 @@
 	/* eslint-disable no-undef */
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { TableKit } from '@shotleybuilder/svelte-table-kit';
+	import { TableKit, applyFilters } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import type { FilterCondition, TableState } from '@shotleybuilder/svelte-table-kit';
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import { reparseLat, type QueueItem } from '$lib/api/lat';
+	import { reparseLat, createLatSessionFromView, type QueueItem } from '$lib/api/lat';
 	import { authFetch } from '$lib/api/client';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
@@ -49,6 +49,10 @@
 			is_making: r.is_making as boolean | null,
 			making_classification: r.making_classification as string | null,
 			live: r.live as string | null,
+			live_source: r.live_source as string | null,
+			live_conflict: r.live_conflict as boolean | null,
+			live_from_changes: r.live_from_changes as string | null,
+			live_from_metadata: r.live_from_metadata as string | null,
 			function: parseFunctionKeys(r.function),
 			lrt_updated_at: r.updated_at as string | null,
 			lat_count: latCount,
@@ -56,6 +60,8 @@
 			queue_reason: latCount === 0 ? 'missing' : 'stale'
 		};
 	});
+
+	$: filteredQueueData = applyFilters(queueData, viewFilters) as QueueItem[];
 
 	let error: string | null = null;
 
@@ -75,6 +81,27 @@
 	function handleLatSessionCreated(event: CustomEvent<{ session_id: string }>) {
 		showLatDialog = false;
 		goto(`/admin/lat/sessions/${event.detail.session_id}`);
+	}
+
+	// Reparse View dialog state
+	let showReparseViewDialog = false;
+	let reparseViewLoading = false;
+	let reparseViewError: string | null = null;
+
+	async function handleReparseViewConfirm() {
+		reparseViewLoading = true;
+		reparseViewError = null;
+		try {
+			const names = filteredQueueData.map((r) => r.law_name);
+			const label = currentViewName || 'view';
+			const result = await createLatSessionFromView(names, label);
+			showReparseViewDialog = false;
+			goto(`/admin/lat/sessions/${result.session_id}`);
+		} catch (err) {
+			reparseViewError = err instanceof Error ? err.message : String(err);
+		} finally {
+			reparseViewLoading = false;
+		}
 	}
 
 	// Inline editing state
@@ -167,7 +194,7 @@
 			)
 		)`;
 
-	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, function, updated_at, lat_count, latest_lat_updated_at';
+	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, live_source, live_conflict, live_from_changes, live_from_metadata, function, updated_at, lat_count, latest_lat_updated_at';
 
 	function queryForFamily(family: string) {
 		currentFamily = family;
@@ -195,6 +222,16 @@
 		const family = viewFamilyMapping[viewName];
 		if (family) {
 			queryForFamily(family);
+		} else if (viewName === 'Live') {
+			// Analytics view: all records for OH&S family (no queue filters)
+			currentFamily = '💙 OH&S: Occupational / Personal Safety';
+			updateQuery(
+				`SELECT ${QUEUE_COLUMNS} FROM uk_lrt
+				 WHERE family = $1
+				   AND title_en IS NOT NULL
+				 ORDER BY name`,
+				['💙 OH&S: Occupational / Personal Safety']
+			);
 		} else if (viewName === 'Missing LAT') {
 			currentFamily = null;
 			updateQuery(
@@ -475,6 +512,38 @@
 			meta: { group: 'Identification', dataType: 'select', selectOptions: liveStatusOptions }
 		},
 		{
+			id: 'live_source',
+			accessorKey: 'live_source',
+			header: 'Source',
+			cell: (info) => info.getValue() || '-',
+			size: 90,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
+			id: 'live_from_changes',
+			accessorKey: 'live_from_changes',
+			header: 'From Changes',
+			cell: (info) => info.getValue() || '-',
+			size: 130,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
+			id: 'live_from_metadata',
+			accessorKey: 'live_from_metadata',
+			header: 'From Metadata',
+			cell: (info) => info.getValue() || '-',
+			size: 130,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
+			id: 'live_conflict',
+			accessorKey: 'live_conflict',
+			header: 'Conflict',
+			cell: (info) => info.getValue() ? 'Yes' : '-',
+			size: 80,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
 			id: 'function',
 			accessorKey: 'function',
 			header: 'Function',
@@ -598,9 +667,11 @@
 	viewGroupMapping['All Queue'] = 'queue';
 	viewGroupMapping['Missing LAT'] = 'queue';
 	viewGroupMapping['Stale LAT'] = 'queue';
+	viewGroupMapping['Live'] = 'analytics';
 
-	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'family_ii', 'is_making', 'making_classification', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	const allColumns = ['actions', 'law_name', 'title_en', 'family', 'family_ii', 'is_making', 'making_classification', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
 	const familyColumns = ['actions', 'law_name', 'title_en', 'is_making', 'making_classification', 'year', 'live', 'function', 'queue_reason', 'lat_count', 'lrt_updated_at', 'latest_lat_updated_at'];
+	const liveColumns = ['actions', 'law_name', 'title_en', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict', 'lat_count'];
 
 	type ViewDef = {
 		name: string;
@@ -643,14 +714,24 @@
 			columns: familyColumns,
 			sort: { columnId: 'name', direction: 'asc' },
 			grouping: ['year']
-		}))
+		})),
+		// Analytics views
+		{
+			name: 'Live',
+			description: 'Live status reconciliation — OH&S Occupational / Personal Safety',
+			columns: liveColumns,
+			filters: [{ columnId: 'family', operator: 'equals', value: '💙 OH&S: Occupational / Personal Safety' }],
+			sort: { columnId: 'name', direction: 'asc' },
+			grouping: []
+		}
 	];
 
 	const viewGroups: ViewGroup[] = [
 		{ id: 'queue', name: 'Queue', order: 0 },
 		{ id: 'safety', name: '💙 S', order: 1 },
 		{ id: 'environment', name: '💚 E', order: 2 },
-		{ id: 'hr', name: '💜 HR', order: 3 }
+		{ id: 'hr', name: '💜 HR', order: 3 },
+		{ id: 'analytics', name: 'Analytics', order: 4 }
 	];
 
 	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
@@ -944,9 +1025,16 @@
 				</a>
 				<button
 					on:click={() => (showLatDialog = true)}
-					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+					class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
 				>
 					Parse Family
+				</button>
+				<button
+					on:click={() => (showReparseViewDialog = true)}
+					disabled={filteredQueueData.length === 0}
+					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+				>
+					Reparse View ({filteredQueueData.length})
 				</button>
 			</div>
 		</div>
@@ -1302,4 +1390,54 @@
 		open={lrtModalOpen}
 		on:close={closeLrtRefresh}
 	/>
+{/if}
+
+<!-- Reparse View Confirmation Dialog -->
+{#if showReparseViewDialog}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" on:click|self={() => (showReparseViewDialog = false)}>
+		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+			<div class="px-6 py-4 border-b border-gray-200">
+				<h3 class="text-lg font-semibold text-gray-900">Reparse View</h3>
+			</div>
+			<div class="px-6 py-4 space-y-3">
+				<div class="text-sm text-gray-600">
+					<p><span class="font-medium">View:</span> {currentViewName || 'All Queue'}</p>
+					{#if currentFamily}
+						<p><span class="font-medium">Family:</span> {currentFamily}</p>
+					{/if}
+					<p class="mt-2">
+						<span class="text-2xl font-bold text-gray-900">{filteredQueueData.length}</span>
+						<span class="text-gray-500 ml-1">records will be added to a new parse session</span>
+					</p>
+				</div>
+				{#if reparseViewError}
+					<div class="px-3 py-2 text-sm bg-red-50 text-red-700 rounded border border-red-200">
+						{reparseViewError}
+					</div>
+				{/if}
+			</div>
+			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+				<button
+					on:click={() => (showReparseViewDialog = false)}
+					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+					disabled={reparseViewLoading}
+				>
+					Cancel
+				</button>
+				<button
+					on:click={handleReparseViewConfirm}
+					disabled={reparseViewLoading || filteredQueueData.length === 0}
+					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+				>
+					{#if reparseViewLoading}
+						Creating...
+					{:else}
+						Create Reparse Session
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
 {/if}

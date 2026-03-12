@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { TableKit } from '@shotleybuilder/svelte-table-kit';
+	import { TableKit, applyFilters } from '@shotleybuilder/svelte-table-kit';
 	import type { ColumnDef } from '@tanstack/svelte-table';
 	import {
 		SaveViewModal,
@@ -24,6 +24,7 @@
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import RecordCardModal from '$lib/components/RecordCardModal.svelte';
 	import ReparseDialog from '$lib/components/ReparseDialog.svelte';
+	import { createReparseFromView } from '$lib/api/scraper';
 	import { goto } from '$app/navigation';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
@@ -118,10 +119,11 @@
 	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
 
 	// State — PGLite live query: auto-updates when Electric syncs changes back from backend
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live, latest_amend_date, latest_rescind_date, created_at';
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
 	const { store: dataStore, update: updateQuery, destroy: destroyLiveQuery } = createDynamicLiveQuery<UkLrtRecord>('id');
 
 	$: data = $dataStore;
+	$: filteredData = applyFilters(data, viewFilters) as UkLrtRecord[];
 	$: totalCount = data.length;
 	$: isLoading = !$syncStatus.connected && data.length === 0;
 	let error: string | null = null;
@@ -191,6 +193,29 @@
 	function handleReparseCreated(event: CustomEvent<{ session_id: string }>) {
 		showReparseDialog = false;
 		goto(`/admin/scrape/sessions/${event.detail.session_id}`);
+	}
+
+	// Reparse View dialog state
+	let showReparseViewDialog = false;
+	let reparseViewLoading = false;
+	let reparseViewError: string | null = null;
+
+	$: activeViewName = $savedViews.find((v) => v.id === $activeViewId)?.name || null;
+
+	async function handleReparseViewConfirm() {
+		reparseViewLoading = true;
+		reparseViewError = null;
+		try {
+			const names = filteredData.map((r) => r.name);
+			const label = activeViewName || 'view';
+			const result = await createReparseFromView(names, label);
+			showReparseViewDialog = false;
+			goto(`/admin/scrape/sessions/${result.session_id}`);
+		} catch (err) {
+			reparseViewError = err instanceof Error ? err.message : String(err);
+		} finally {
+			reparseViewLoading = false;
+		}
 	}
 
 	// Saved views state
@@ -326,6 +351,22 @@
 		}
 	];
 
+	const LIVE_VIEW_COLUMNS = ['actions', 'name', 'title_en', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict'];
+
+	const analyticsViews: ViewDef[] = [
+		{
+			name: 'Live',
+			description: 'Live status reconciliation — OH&S Occupational / Personal Safety',
+			columns: LIVE_VIEW_COLUMNS,
+			sort: { columnId: 'name', direction: 'asc' },
+			grouping: [],
+			customQuery: {
+				sql: `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = $1 AND title_en IS NOT NULL ORDER BY name`,
+				params: ['💙 OH&S: Occupational / Personal Safety']
+			}
+		}
+	];
+
 	const defaultViews: ViewDef[] = [
 		...familyViewDefs.map((def, i): ViewDef => ({
 			name: def.name,
@@ -336,7 +377,8 @@
 			isDefault: i === 0,
 			family: def.family
 		})),
-		...recentViews
+		...recentViews,
+		...analyticsViews
 	];
 
 	// ── View groups & sidebar mapping ───────────────────────────────
@@ -345,7 +387,8 @@
 		{ id: 'recent', name: 'Recent', order: 0 },
 		{ id: 'safety', name: '💙 S', order: 1 },
 		{ id: 'environment', name: '💚 E', order: 2 },
-		{ id: 'hr', name: '💜 HR', order: 3 }
+		{ id: 'hr', name: '💜 HR', order: 3 },
+		{ id: 'analytics', name: 'Analytics', order: 4 }
 	];
 
 	// Map view name → group id
@@ -356,6 +399,7 @@
 	viewGroupMapping['Recently Added'] = 'recent';
 	viewGroupMapping['Recently Amended'] = 'recent';
 	viewGroupMapping['Recently Rescinded'] = 'recent';
+	viewGroupMapping['Live'] = 'analytics';
 
 	// Map view name → family value (for PGLite query)
 	const viewFamilyMapping: Record<string, string> = {};
@@ -365,7 +409,7 @@
 
 	// Map view name → custom query (for non-family views)
 	const viewCustomQueryMapping: Record<string, { sql: string; params: unknown[] }> = {};
-	for (const view of recentViews) {
+	for (const view of [...recentViews, ...analyticsViews]) {
 		if (view.customQuery) {
 			viewCustomQueryMapping[view.name] = view.customQuery;
 		}
@@ -843,6 +887,38 @@
 			meta: { group: 'Status', dataType: 'select', selectOptions: liveStatusOptions }
 		},
 		{
+			id: 'live_source',
+			accessorKey: 'live_source',
+			header: 'Source',
+			cell: (info) => info.getValue() || '-',
+			size: 90,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
+			id: 'live_from_changes',
+			accessorKey: 'live_from_changes',
+			header: 'From Changes',
+			cell: (info) => info.getValue() || '-',
+			size: 130,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
+			id: 'live_from_metadata',
+			accessorKey: 'live_from_metadata',
+			header: 'From Metadata',
+			cell: (info) => info.getValue() || '-',
+			size: 130,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
+			id: 'live_conflict',
+			accessorKey: 'live_conflict',
+			header: 'Conflict',
+			cell: (info) => info.getValue() ? 'Yes' : '-',
+			size: 80,
+			meta: { group: 'Reconciliation', dataType: 'text' }
+		},
+		{
 			id: 'geo_extent',
 			accessorKey: 'geo_extent',
 			header: 'Extent',
@@ -999,13 +1075,23 @@
 				</p>
 			</div>
 			<button
-				class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+				class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
 				on:click={() => (showReparseDialog = true)}
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 				</svg>
 				Reparse Family
+			</button>
+			<button
+				class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+				on:click={() => (showReparseViewDialog = true)}
+				disabled={filteredData.length === 0}
+			>
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+				</svg>
+				Reparse View ({filteredData.length})
 			</button>
 		</div>
 
@@ -1403,6 +1489,56 @@
 	on:close={() => (showReparseDialog = false)}
 	on:created={handleReparseCreated}
 />
+
+<!-- Reparse View Confirmation Dialog -->
+{#if showReparseViewDialog}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" on:click|self={() => (showReparseViewDialog = false)}>
+		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+			<div class="px-6 py-4 border-b border-gray-200">
+				<h3 class="text-lg font-semibold text-gray-900">Reparse View</h3>
+			</div>
+			<div class="px-6 py-4 space-y-3">
+				<div class="text-sm text-gray-600">
+					<p><span class="font-medium">View:</span> {activeViewName || 'All'}</p>
+					{#if currentFamily}
+						<p><span class="font-medium">Family:</span> {currentFamily}</p>
+					{/if}
+					<p class="mt-2">
+						<span class="text-2xl font-bold text-gray-900">{filteredData.length}</span>
+						<span class="text-gray-500 ml-1">records will be added to a new reparse session</span>
+					</p>
+				</div>
+				{#if reparseViewError}
+					<div class="px-3 py-2 text-sm bg-red-50 text-red-700 rounded border border-red-200">
+						{reparseViewError}
+					</div>
+				{/if}
+			</div>
+			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+				<button
+					on:click={() => (showReparseViewDialog = false)}
+					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+					disabled={reparseViewLoading}
+				>
+					Cancel
+				</button>
+				<button
+					on:click={handleReparseViewConfirm}
+					disabled={reparseViewLoading || filteredData.length === 0}
+					class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50"
+				>
+					{#if reparseViewLoading}
+						Creating...
+					{:else}
+						Create Reparse Session
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	:global(.table-kit-table) {

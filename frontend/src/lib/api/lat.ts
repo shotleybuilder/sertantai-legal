@@ -96,6 +96,10 @@ export interface QueueItem {
 	is_making: boolean | null;
 	making_classification: string | null;
 	live: string | null;
+	live_source: string | null;
+	live_conflict: boolean | null;
+	live_from_changes: string | null;
+	live_from_metadata: string | null;
 	function: string[] | null;
 	lrt_updated_at: string | null;
 	lat_count: number;
@@ -327,6 +331,18 @@ export async function deleteLatSession(sessionId: string): Promise<{ message: st
 		`${API_URL}/api/lat/sessions/${encodeURIComponent(sessionId)}`,
 		{ method: 'DELETE' }
 	);
+	return response.json();
+}
+
+export async function createLatSessionFromView(
+	names: string[],
+	label: string
+): Promise<{ session_id: string; session_type: string; status: string; group1_count: number }> {
+	const response = await fetchWithAuth(`${API_URL}/api/lat/sessions/from-view`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ names, label })
+	});
 	return response.json();
 }
 

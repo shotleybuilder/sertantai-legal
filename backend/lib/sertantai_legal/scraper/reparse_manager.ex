@@ -104,6 +104,73 @@ defmodule SertantaiLegal.Scraper.ReparseManager do
   def create(_), do: {:error, "family is required"}
 
   @doc """
+  Create a reparse session from an explicit list of law names.
+
+  Used by the "Reparse View" button which sends the names of all records
+  currently displayed in the table.
+  """
+  @spec create_from_names(map()) :: {:ok, ScrapeSession.t()} | {:error, any()}
+  def create_from_names(%{"names" => names, "label" => label})
+      when is_list(names) and names != [] do
+    query =
+      UkLrt
+      |> Ash.Query.filter(name in ^names)
+      |> Ash.Query.sort(name: :asc)
+
+    case Ash.read(query) do
+      {:ok, records} when records != [] ->
+        today = Date.utc_today()
+        session_id = find_unique_session_id("reparse-#{slugify(label)}-#{Date.to_iso8601(today)}")
+
+        session_attrs = %{
+          session_id: session_id,
+          year: today.year,
+          month: today.month,
+          day_from: today.day,
+          day_to: today.day,
+          status: :reviewing,
+          group1_count: length(records)
+        }
+
+        with {:ok, session} <- ScrapeSession.create(session_attrs),
+             {:ok, session} <- ScrapeSession.mark_reviewing(session) do
+          session_records =
+            Enum.map(records, fn record ->
+              %{
+                name: record.name,
+                Title_EN: record.title_en,
+                type_code: record.type_code,
+                Year: record.year,
+                Number: record.number,
+                si_code: record.si_code
+              }
+            end)
+
+          case Storage.save_session_records(session_id, session_records, :group1) do
+            {:ok, count} ->
+              Logger.info(
+                "[ReparseManager] Created from-view session #{session_id} with #{count} records"
+              )
+
+              {:ok, session}
+
+            {:error, reason} ->
+              ScrapeSession.destroy(session)
+              {:error, "Failed to create session records: #{inspect(reason)}"}
+          end
+        end
+
+      {:ok, []} ->
+        {:error, "No records found for the given names"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  def create_from_names(_), do: {:error, "names (list) and label are required"}
+
+  @doc """
   Generate a session_id from filters.
 
   Format: `reparse-{family}[-{type_code}][-{function}]-{YYYY-MM-DD}[-{seq}]`

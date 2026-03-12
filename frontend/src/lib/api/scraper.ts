@@ -270,6 +270,24 @@ export async function previewReparseSession(filters: ReparseFilters): Promise<{ 
 	return response.json();
 }
 
+export async function createReparseFromView(
+	names: string[],
+	label: string
+): Promise<ScrapeSession> {
+	const response = await adminFetch(`${API_URL}/api/sessions/reparse/from-view`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ names, label })
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to create reparse session from view');
+	}
+
+	return response.json();
+}
+
 export async function createReparseSession(filters: ReparseFilters): Promise<ScrapeSession> {
 	const response = await adminFetch(`${API_URL}/api/sessions/reparse`, {
 		method: 'POST',
