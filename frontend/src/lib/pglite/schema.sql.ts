@@ -146,7 +146,7 @@ CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_cl
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 4; // Bump when schema changes require a fresh table
+const SCHEMA_VERSION = 5; // Bump when schema changes require a fresh table
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;
@@ -165,9 +165,10 @@ export async function initSchema(pg: {
 			`[PGLite] Schema version ${currentVersion} → ${SCHEMA_VERSION}, recreating uk_lrt table`
 		);
 		await pg.exec('DROP TABLE IF EXISTS uk_lrt CASCADE');
-		// Drop old views tables (svelte-table-kit schema lacked grid_id column)
+		// Drop all gridlite tables so both kit and views packages recreate cleanly
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_column_state CASCADE');
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_views CASCADE');
+		await pg.exec('DROP TABLE IF EXISTS _gridlite_meta CASCADE');
 		await pg.exec(CREATE_UK_LRT_SQL);
 		await pg.exec(CREATE_UK_LRT_INDEXES_SQL);
 		await pg.exec(
