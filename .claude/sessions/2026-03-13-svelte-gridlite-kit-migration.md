@@ -39,6 +39,9 @@ Zed IDE crashed mid-migration. Resumed to fix type errors.
   - `applyViewToGrid()` in all 3 pages: cast `cfg.filters/sorting/grouping` to kit types
 - [x] Build passes clean, dev server responds 200
 
+## Commits
+- `441c560` feat: migrate svelte-table-kit → svelte-gridlite-kit + svelte-gridlite-views
+
 ## Notes
 - 7 source files migrated
 - `sql-filters.ts` deleted (gridlite-kit handles filtering internally)
