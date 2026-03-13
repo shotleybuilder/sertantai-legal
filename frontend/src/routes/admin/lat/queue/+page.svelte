@@ -2,7 +2,7 @@
 	/* eslint-disable no-undef */
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
-	import { GridLite, runMigrations as runKitMigrations } from '@shotleybuilder/svelte-gridlite-kit';
+	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
 	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
@@ -649,7 +649,6 @@
 		if (browser) {
 			await startSync();
 			db = await getPglite();
-			await runKitMigrations(db as any);
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
 			ready = true;

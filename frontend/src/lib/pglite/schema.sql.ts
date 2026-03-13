@@ -179,5 +179,25 @@ export async function initSchema(pg: {
 		await pg.exec(CREATE_UK_LRT_INDEXES_SQL);
 	}
 
+	// Fix incompatible _gridlite_column_state from svelte-gridlite-views (lacks grid_id).
+	// Drop all gridlite tables so both kit and views recreate with correct schemas.
+	try {
+		const cs = await pg.query<{ column_name: string }>(
+			`SELECT column_name FROM information_schema.columns WHERE table_name = '_gridlite_column_state' AND column_name = 'grid_id'`
+		);
+		// Table exists but missing grid_id → incompatible schema
+		const tableExists = await pg.query<{ c: string }>(
+			`SELECT '1' as c FROM information_schema.tables WHERE table_name = '_gridlite_column_state' LIMIT 1`
+		);
+		if (tableExists.rows.length > 0 && cs.rows.length === 0) {
+			console.log('[PGLite] Dropping incompatible _gridlite_column_state (missing grid_id)');
+			await pg.exec('DROP TABLE IF EXISTS _gridlite_column_state CASCADE');
+			await pg.exec('DROP TABLE IF EXISTS _gridlite_views CASCADE');
+			await pg.exec('DROP TABLE IF EXISTS _gridlite_meta CASCADE');
+		}
+	} catch {
+		/* table doesn't exist yet — fine */
+	}
+
 	console.log('[PGLite] uk_lrt schema initialized');
 }
