@@ -43,6 +43,7 @@ Zed IDE crashed mid-migration. Resumed to fix type errors.
 - `441c560` feat: migrate svelte-table-kit → svelte-gridlite-kit + svelte-gridlite-views
 - `b886217` fix: drop stale _gridlite_views table missing grid_id column
 - `c25a683` fix: also drop _gridlite_meta to force kit migration re-run
+- `1a1ba85` fix: detect and drop incompatible _gridlite_column_state on every init
 
 ## Notes
 - 7 source files migrated
@@ -51,3 +52,4 @@ Zed IDE crashed mid-migration. Resumed to fix type errors.
 - Svelte 4 gotcha: no TS `as` casts in template markup — use helper functions instead
 - gridlite-views `FilterCondition.operator` is `string`, gridlite-kit expects `FilterOperator` — needs cast at boundary
 - Pre-existing: `env-production.test.ts` has `fs`/`path` import errors (vitest types, unrelated)
+- **gridlite-kit vs gridlite-views schema conflict**: both create `_gridlite_column_state` with different schemas (kit has `grid_id`, views doesn't). Fix: `initSchema` introspects the table and drops all `_gridlite_*` if incompatible
