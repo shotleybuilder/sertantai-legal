@@ -54,12 +54,10 @@
 		"@electric-sql/client": "^1.5.12",
 		"@electric-sql/pglite": "^0.3.15",
 		"@electric-sql/pglite-sync": "^0.4.1",
-		"@shotleybuilder/svelte-table-kit": "^0.15.1",
+		"@shotleybuilder/svelte-gridlite-kit": "^0.2.1",
+		"@shotleybuilder/svelte-gridlite-views": "^0.0.1",
 		"@tanstack/svelte-query": "^5.90.2",
-		"@tanstack/svelte-table": "^8.21.3",
 		"date-fns": "^4.1.0",
-		"jsondiffpatch": "^0.7.3",
-		"svelte-table-views-sidebar": "^0.1.0",
-		"svelte-table-views-tanstack": "^0.1.7"
+		"jsondiffpatch": "^0.7.3"
 	}
 }

@@ -12,11 +12,25 @@
 - [x] Fix `determine_live_status` bug — missing "revoke" check (commit `10fbf50`)
 - [x] SQL data fix — reclassify 322 records using `rescinded_by_stats_per_law` JSONB (0 remaining misclassified)
 
-### Phase 1b: Admin LRT UI for Targeted Reparsing ✅
+### Phase 1b: Admin LRT UI for Targeted Reparsing
 - [x] Add "Analytics" view group with "Live" view showing live-* columns (both LRT + LAT queue pages)
 - [x] Add Reparse View button to LRT page — uses current table records, confirmation dialog, creates session
 - [x] Backend: `ReparseManager.create_from_names/1` + `POST /api/sessions/reparse/from-view`
 - [x] Keep existing Reparse Family dialog as secondary option
+
+### Phase 4: Abbreviated & Empty-Target Revocation Patterns
+- [x] Fix parser: `separate_revocations` captures abbreviated "Rev"/"Rep" affects
+- [x] Fix parser: empty target treated as whole-instrument in `is_whole_instrument_target?`
+- [x] Fix parser: `determine_live_status` handles abbreviated "Rev"/"Rep" + empty target
+- [x] Data fix: 6 records corrected (empty target + "rev" in `affected_by_stats_per_law`)
+- [x] Data fix: 1 record corrected (`UK_eudn_2010_347`, empty target + "revoked" in `rescinded_by`)
+- [x] Analytics: misclassified canary SQL checks both JSONB fields
+- [x] Analytics: `GET /api/analytics/live-status/misclassified` endpoint returns names
+- [x] Analytics: "Reparse N records" button on misclassified alarm card → creates session
+- [x] Tests: fixture rows 24-25 (empty target + "revoked", empty target + "Rev"), 3 new tests
+- [x] Verified: reparse of misclassified records → 0 misclassified, all consistent
+
+**Ended**: 2026-03-12
 
 ## Phase 1 Interim Results
 

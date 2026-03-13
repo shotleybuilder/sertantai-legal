@@ -15,4 +15,4 @@ export {
 } from './annotation-schema';
 
 // Client config
-export { ELECTRIC_URL, getCurrentYear, getDefaultUkLrtWhere } from './client';
+export { ELECTRIC_URL } from './client';
