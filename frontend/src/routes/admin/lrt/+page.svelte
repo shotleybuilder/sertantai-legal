@@ -909,7 +909,6 @@
 				id: 'lrt-admin',
 				columns,
 				defaultSorting: [{ column: 'name', direction: 'asc' }],
-				defaultGrouping: [{ column: 'type_desc' }],
 				defaultVisibleColumns: VIEW_COLUMNS,
 				pagination: { pageSize: 25 }
 			}}

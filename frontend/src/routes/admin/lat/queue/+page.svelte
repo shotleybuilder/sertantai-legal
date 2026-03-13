@@ -812,7 +812,6 @@
 					id: 'lat-queue',
 					columns,
 					defaultSorting: [{ column: 'updated_at', direction: 'asc' }],
-					defaultGrouping: [{ column: 'family' }, { column: 'year' }],
 					defaultVisibleColumns: allCols,
 					pagination: { pageSize: 50 }
 				}}

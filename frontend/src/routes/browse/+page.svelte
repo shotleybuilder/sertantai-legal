@@ -485,7 +485,7 @@
 					id: 'browse',
 					columns,
 					defaultFilters: [{ id: 'default-date', field: 'md_date', operator: 'is_after', value: thisMonthStart }],
-					defaultSorting: [{ column: 'md_date', direction: 'desc' }],
+					defaultSorting: [{ column: 'md_date_year', direction: 'desc' }, { column: 'md_date_month', direction: 'desc' }],
 					defaultGrouping: [{ column: 'md_date_year' }, { column: 'md_date_month' }],
 					defaultVisibleColumns: newLawsColumns,
 					pagination: { pageSize: 25 }
