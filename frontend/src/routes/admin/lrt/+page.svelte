@@ -899,6 +899,7 @@
 		</div>
 
 		<!-- GridLite Table -->
+		{#if currentQuery}
 		{#key currentQuery}
 		<GridLite
 			bind:this={gridRef}
@@ -1122,6 +1123,7 @@
 			</svelte:fragment>
 		</GridLite>
 		{/key}
+		{/if}
 
 		<!-- Instructions -->
 		<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
