@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
-	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
+	import { GridLite, runMigrations as runKitMigrations } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
 	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
@@ -378,7 +378,8 @@
 		if (browser) {
 			await startSync();
 			db = await getPglite();
-			await runViewMigrations(db as any);
+			await runKitMigrations(db as any);    // kit first — creates _gridlite_column_state with grid_id
+			await runViewMigrations(db as any);   // views second — IF NOT EXISTS is a no-op
 			viewStore = initViewStore(db as any, 'browse');
 			ready = true;
 			// Wait for next tick so GridLite renders, then seed views

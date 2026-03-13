@@ -42,6 +42,7 @@ Zed IDE crashed mid-migration. Resumed to fix type errors.
 ## Commits
 - `441c560` feat: migrate svelte-table-kit → svelte-gridlite-kit + svelte-gridlite-views
 - `b886217` fix: drop stale _gridlite_views table missing grid_id column
+- `c25a683` fix: also drop _gridlite_meta to force kit migration re-run
 
 ## Notes
 - 7 source files migrated
