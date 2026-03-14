@@ -40,6 +40,7 @@
 		geo_extent: string | null;
 		function: Record<string, boolean> | string[] | null;
 		is_making: boolean | null;
+		has_fitness: string;
 		live: string | null;
 		live_source: string | null;
 		live_conflict: boolean | null;
@@ -183,7 +184,7 @@
 	];
 
 	// LRT columns queried from PGLite
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
 
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
@@ -198,6 +199,7 @@
 		{ name: 'si_code', label: 'SI Code', width: 180, dataType: 'text' },
 		{ name: 'function', label: 'Function', width: 150, dataType: 'text' },
 		{ name: 'is_making', label: 'Making?', width: 80, dataType: 'text' },
+		{ name: 'has_fitness', label: 'Fitness?', width: 80, dataType: 'select', selectOptions: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }] },
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
 		{ name: 'live_source', label: 'Source', width: 90, dataType: 'text' },
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
@@ -1109,6 +1111,12 @@
 							<span class="text-gray-400">-</span>
 						{/if}
 					</button>
+				{:else if column === 'has_fitness'}
+					{#if r.has_fitness === 'true'}
+						<span class="px-1.5 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Yes</span>
+					{:else}
+						<span class="text-gray-400">-</span>
+					{/if}
 				{:else if column === 'live'}
 					<span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {value === 'Live' ? 'bg-green-100 text-green-800' : value === 'Revoked' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
 						{value || '-'}

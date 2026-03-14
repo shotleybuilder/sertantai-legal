@@ -14,6 +14,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import CollapsibleSection from './CollapsibleSection.svelte';
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
+	import FitnessRulesRenderer from './FitnessRulesRenderer.svelte';
 	import { SECTION_CONFIG, type SectionConfig } from './parse-review/field-config';
 
 	/** The record data to display */
@@ -51,7 +52,27 @@
 		'responsibilities',
 		'powers',
 		'popimar_details',
-		'rights'
+		'rights',
+		// Taxa fields (not synced to PGLite)
+		'purpose',
+		'duty_type',
+		'duty_type_article',
+		'article_duty_type',
+		'duty_holder',
+		'rights_holder',
+		'responsibility_holder',
+		'power_holder',
+		'role',
+		'role_gvt',
+		'popimar',
+		// Fitness fields (not synced to PGLite)
+		'fitness',
+		'fitness_person',
+		'fitness_place',
+		'fitness_plant',
+		'fitness_process',
+		'fitness_property',
+		'fitness_sector'
 	]);
 
 	/** Check if a section (or its subsections) contains any heavy fields */
@@ -67,10 +88,22 @@
 		return false;
 	}
 
+	/** Check if a subsection contains any heavy fields */
+	function subsectionHasHeavyFields(sub: { fields: { key: string }[] }): boolean {
+		return sub.fields.some(f => HEAVY_FIELDS.has(f.key));
+	}
+
+	/** Check if ALL subsections in a section are heavy (no light data to show) */
+	function sectionAllSubsectionsHeavy(section: SectionConfig): boolean {
+		if (!section.subsections) return false;
+		return section.subsections.every(sub => subsectionHasHeavyFields(sub));
+	}
+
 	function getSectionExpanded(section: SectionConfig): boolean {
 		if (defaultExpanded !== null) return defaultExpanded;
-		// Heavy sections start collapsed if data not loaded
-		if (sectionHasHeavyFields(section) && !heavyLoaded) return false;
+		// Only collapse if ALL content is heavy and not yet loaded
+		if (sectionAllSubsectionsHeavy(section) && !heavyLoaded) return false;
+		if (!section.subsections && sectionHasHeavyFields(section) && !heavyLoaded) return false;
 		return section.defaultExpanded ?? true;
 	}
 
@@ -90,7 +123,8 @@
 				title={section.title}
 				expanded={getSectionExpanded(section)}
 			>
-				{#if needsLoad}
+				{#if needsLoad && sectionAllSubsectionsHeavy(section)}
+					<!-- All subsections are heavy — show single load prompt -->
 					<div class="px-4 py-6 text-center">
 						{#if heavyLoading}
 							<div class="flex items-center justify-center gap-2 text-sm text-gray-500">
@@ -111,18 +145,46 @@
 						{/if}
 					</div>
 				{:else}
+					<!-- Render each subsection; heavy ones get individual load prompts -->
 					{#each section.subsections as subsection}
+						{@const subHeavy = subsectionHasHeavyFields(subsection)}
+						{@const subNeedsLoad = subHeavy && !heavyLoaded}
 						<CollapsibleSection
 							title={subsection.title}
 							expanded={getSubsectionExpanded(subsection.defaultExpanded)}
 							level="subsection"
 						>
-							{#each subsection.fields as field}
-								{@const fieldValue = getFieldValue(record, field)}
-								{#if !hideEmpty || !field.hideWhenEmpty || fieldHasData(fieldValue)}
-									<FieldRow config={field} value={fieldValue} showFieldKey={showFieldKeys} />
-								{/if}
-							{/each}
+							{#if subNeedsLoad}
+								<div class="px-4 py-4 text-center">
+									{#if heavyLoading}
+										<div class="flex items-center justify-center gap-2 text-sm text-gray-500">
+											<svg class="animate-spin h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+												<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+												<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+											</svg>
+											Loading...
+										</div>
+									{:else}
+										<button
+											on:click={() => dispatch('loadHeavy')}
+											class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+										>
+											Load detailed data
+										</button>
+									{/if}
+								</div>
+							{:else}
+								{#each subsection.fields as field}
+									{@const fieldValue = getFieldValue(record, field)}
+									{#if !hideEmpty || !field.hideWhenEmpty || fieldHasData(fieldValue)}
+										{#if field.key === 'fitness' && Array.isArray(fieldValue)}
+											<FitnessRulesRenderer rules={fieldValue} />
+										{:else}
+											<FieldRow config={field} value={fieldValue} showFieldKey={showFieldKeys} />
+										{/if}
+									{/if}
+								{/each}
+							{/if}
 						</CollapsibleSection>
 					{/each}
 				{/if}

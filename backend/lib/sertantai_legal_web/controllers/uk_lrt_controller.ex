@@ -451,6 +451,14 @@ defmodule SertantaiLegalWeb.UkLrtController do
       popimar_details: record.popimar_details,
       # Purpose
       purpose: record.purpose,
+      # Fitness / Applicability (Issue #39)
+      fitness: record.fitness,
+      fitness_person: record.fitness_person,
+      fitness_place: record.fitness_place,
+      fitness_plant: record.fitness_plant,
+      fitness_process: record.fitness_process,
+      fitness_property: record.fitness_property,
+      fitness_sector: record.fitness_sector,
       is_making: record.is_making,
       enacted_by: record.enacted_by,
       amending: record.amending,

@@ -151,6 +151,15 @@ export const FIELD_LABELS: Record<string, string> = {
 	article_popimar: 'Article POPIMAR',
 	article_popimar_clause: 'Article POPIMAR Clause',
 
+	// Fitness / Applicability
+	fitness: 'Fitness Rules',
+	fitness_person: 'Person',
+	fitness_place: 'Place',
+	fitness_plant: 'Plant',
+	fitness_process: 'Process',
+	fitness_property: 'Property',
+	fitness_sector: 'Sector',
+
 	// Change Logs
 	amending_change_log: 'Amending Change Log',
 	amended_by_change_log: 'Amended By Change Log',
@@ -198,7 +207,7 @@ export interface FieldConfig {
 	key: string;
 	label: string;
 	type: FieldType;
-	stage: ParseStage | 'input' | 'derived' | 'system';
+	stage: ParseStage | 'input' | 'derived' | 'system' | 'taxa' | 'fitness';
 	/** Alternative keys to check (for API variations) */
 	altKeys?: string[];
 	/** Whether this field should be hidden in create mode */
@@ -226,7 +235,7 @@ export interface SectionConfig {
 	id: string;
 	title: string;
 	/** Primary parse stage for this section (for re-parse controls) */
-	stage?: ParseStage;
+	stage?: ParseStage | 'taxa' | 'fitness';
 	/** Whether section has subsections or direct fields */
 	subsections?: SubsectionConfig[];
 	fields?: FieldConfig[];
@@ -792,6 +801,259 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						label: 'Conflict Detail',
 						type: 'json',
 						stage: 'repeal_revoke',
+						hideWhenEmpty: true
+					}
+				]
+			}
+		]
+	},
+	// ==========================================
+	// STAGE 7 🦋 taxa
+	// ==========================================
+	{
+		id: 'stage7_taxa',
+		title: 'STAGE 7 🦋 taxa',
+		stage: 'taxa',
+		defaultExpanded: true,
+		subsections: [
+			{
+				id: 'taxa_purpose',
+				title: 'Purpose',
+				defaultExpanded: true,
+				fields: [
+					{
+						key: 'purpose',
+						label: 'Purpose',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'taxa_duty_type',
+				title: 'Duty Type',
+				defaultExpanded: true,
+				fields: [
+					{
+						key: 'duty_type',
+						label: 'Duty Type',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'duty_type_article',
+						label: 'Duty Type Article',
+						type: 'text',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'article_duty_type',
+						label: 'Article Duty Type',
+						type: 'text',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'taxa_holders',
+				title: 'Holders',
+				defaultExpanded: true,
+				fields: [
+					{
+						key: 'duty_holder',
+						label: 'Duty Holder',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'rights_holder',
+						label: 'Rights Holder',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'responsibility_holder',
+						label: 'Responsibility Holder',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'power_holder',
+						label: 'Power Holder',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'taxa_roles',
+				title: 'Roles',
+				defaultExpanded: true,
+				fields: [
+					{
+						key: 'role',
+						label: 'Role',
+						type: 'array',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'role_gvt',
+						label: 'Role Gvt',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'role_details',
+						label: 'Role Details (JSONB)',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'role_gvt_details',
+						label: 'Role Gvt Details (JSONB)',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'taxa_drrp',
+				title: 'DRRP (Consolidated)',
+				defaultExpanded: false,
+				fields: [
+					{
+						key: 'duties',
+						label: 'Duties',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'rights',
+						label: 'Rights',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'responsibilities',
+						label: 'Responsibilities',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'powers',
+						label: 'Powers',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'taxa_popimar',
+				title: 'POPIMAR',
+				defaultExpanded: false,
+				fields: [
+					{
+						key: 'popimar',
+						label: 'POPIMAR',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'popimar_details',
+						label: 'POPIMAR Details (JSONB)',
+						type: 'json',
+						stage: 'taxa',
+						hideWhenEmpty: true
+					}
+				]
+			}
+		]
+	},
+	// ==========================================
+	// STAGE 8 🏋️ fitness
+	// ==========================================
+	{
+		id: 'stage8_fitness',
+		title: 'STAGE 8 🏋️ fitness',
+		stage: 'fitness',
+		defaultExpanded: true,
+		subsections: [
+			{
+				id: 'fitness_tags',
+				title: 'Fitness Tags',
+				defaultExpanded: true,
+				fields: [
+					{
+						key: 'fitness_person',
+						label: 'Person',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_place',
+						label: 'Place',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_plant',
+						label: 'Plant',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_process',
+						label: 'Process',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_property',
+						label: 'Property',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_sector',
+						label: 'Sector',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'fitness_rules',
+				title: 'Fitness Rules (Detail)',
+				defaultExpanded: false,
+				fields: [
+					{
+						key: 'fitness',
+						label: 'Fitness Rules',
+						type: 'json',
+						stage: 'fitness',
 						hideWhenEmpty: true
 					}
 				]

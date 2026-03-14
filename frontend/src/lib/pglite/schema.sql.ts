@@ -117,14 +117,14 @@ CREATE TABLE IF NOT EXISTS uk_lrt (
   lat_count INTEGER NOT NULL DEFAULT 0,
   latest_lat_updated_at TIMESTAMPTZ,
 
-  -- Fitness
+  -- Fitness (tag arrays synced; fitness JSONB[] is heavy, fetched via REST)
   fitness_person TEXT[],
   fitness_process TEXT[],
   fitness_place TEXT[],
   fitness_plant TEXT[],
   fitness_property TEXT[],
   fitness_sector TEXT[],
-  fitness JSONB[],
+  has_fitness TEXT NOT NULL DEFAULT 'false',
 
   -- Timestamps
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -146,7 +146,7 @@ CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_cl
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 6; // Bump when schema changes require a fresh table
+const SCHEMA_VERSION = 9; // Bump when schema changes require a fresh table
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;

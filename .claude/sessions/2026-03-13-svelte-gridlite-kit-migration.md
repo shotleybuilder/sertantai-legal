@@ -53,3 +53,21 @@ Zed IDE crashed mid-migration. Resumed to fix type errors.
 - gridlite-views `FilterCondition.operator` is `string`, gridlite-kit expects `FilterOperator` — needs cast at boundary
 - Pre-existing: `env-production.test.ts` has `fs`/`path` import errors (vitest types, unrelated)
 - **gridlite-kit vs gridlite-views schema conflict**: both create `_gridlite_column_state` with different schemas (kit has `grid_id`, views doesn't). Fix: `initSchema` introspects the table and drops all `_gridlite_*` if incompatible
+
+## Session 3 — gridlite-kit bug fixing (2026-03-14)
+
+Resolved "No data" on all 3 grid pages. Root cause: multiple gridlite-kit bugs.
+
+### Kit issues raised and fixed
+- **#4** (0.3.1): `query` prop — columns not derived from result fields
+- **#5** (0.4.0): `query` prop — toolbar not rendered; fix: subquery wrapping gives full parity
+- **#6** (0.4.1): `setFilters`/`setSorting`/`setGrouping` throw before first query result
+- **#7** (0.4.2): Grouped mode ORDER BY includes non-grouped columns
+- **#8** (0.4.3): Top-level GROUP BY ORDER BY includes deeper-level group columns
+- **#9** (0.4.4): Grouped mode `storeState.loading` stays true forever
+
+### Commits
+- `7c586c7` fix: guard GridLite render on non-empty currentQuery in admin/lrt
+- `c30288a` feat: upgrade svelte-gridlite-kit to 0.4.4 (subquery wrapping, query prop parity)
+
+**Ended**: 2026-03-14T23:30Z

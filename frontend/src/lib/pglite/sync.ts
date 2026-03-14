@@ -241,6 +241,17 @@ export async function startSync(): Promise<void> {
 				for (const [key, v] of Object.entries(val)) {
 					mapped[key] = typeof v === 'bigint' ? Number(v) : v;
 				}
+				// has_fitness: server generated column can't be synced via Electric,
+				// so compute client-side from tag arrays (null = no data).
+				// Stored as TEXT 'true'/'false' for gridlite-kit filter compatibility.
+				const hasFitness =
+					mapped.fitness_person != null ||
+					mapped.fitness_process != null ||
+					mapped.fitness_place != null ||
+					mapped.fitness_plant != null ||
+					mapped.fitness_property != null ||
+					mapped.fitness_sector != null;
+				mapped.has_fitness = hasFitness ? 'true' : 'false';
 				return mapped;
 			},
 			initialInsertMethod: 'json',

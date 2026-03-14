@@ -331,6 +331,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
       )
     end
 
+    # Generated column: true when any fitness tag array is populated
+    attribute :has_fitness, :boolean do
+      allow_nil?(false)
+      generated?(true)
+      writable?(false)
+      description("Whether this record has any fitness/applicability data")
+    end
+
     # POPIMAR Article References - REMOVED in Phase 4 Issue #15
     # These 4 text columns have been consolidated into popimar_details JSONB field
     # Dropped: popimar_article, popimar_article_clause, article_popimar, article_popimar_clause
