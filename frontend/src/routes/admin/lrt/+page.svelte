@@ -38,7 +38,7 @@
 		md_subjects: Record<string, unknown> | null;
 		md_date: string | null;
 		geo_extent: string | null;
-		function: string[] | null;
+		function: Record<string, boolean> | string[] | null;
 		is_making: boolean | null;
 		live: string | null;
 		live_source: string | null;
@@ -52,6 +52,24 @@
 
 	/** Template-safe row cast (Svelte 4 markup doesn't support TS `as`) */
 	function asLrt(row: Record<string, unknown>): UkLrtRecord { return row as UkLrtRecord; }
+
+	/** Electric sends JSONB `function` as a JS object {Making: true, ...} — extract keys */
+	function parseFunctionKeys(fn: unknown): string[] | null {
+		if (!fn) return null;
+		if (Array.isArray(fn)) return fn as string[];
+		if (typeof fn === 'object') {
+			return Object.keys(fn as Record<string, boolean>).filter((k) => (fn as Record<string, boolean>)[k]);
+		}
+		if (typeof fn === 'string') {
+			try {
+				const parsed = JSON.parse(fn);
+				if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return Object.keys(parsed).filter((k) => parsed[k]);
+				}
+			} catch { /* not JSON */ }
+		}
+		return null;
+	}
 
 	// PGLite + GridLite state
 	let db: PGLiteWithExtensions | null = null;
@@ -516,9 +534,13 @@
 	}
 
 	// Start editing
-	function startEdit(id: string, field: string, currentValue: string | string[] | null) {
+	function startEdit(id: string, field: string, currentValue: string | string[] | Record<string, boolean> | null) {
 		editingCell = { id, field };
-		editValue = currentValue ?? (field === 'function' ? [] : '');
+		if (field === 'function') {
+			editValue = parseFunctionKeys(currentValue) ?? [];
+		} else {
+			editValue = (currentValue as string) ?? '';
+		}
 	}
 
 	// Save edit
@@ -1060,9 +1082,9 @@
 							on:dblclick={() => startEdit(r.id, 'function', r.function)}
 							title="Double-click to edit"
 						>
-							{#if r.function?.length}
+							{#if parseFunctionKeys(r.function)?.length}
 								<span class="flex flex-wrap gap-1">
-									{#each r.function as fn}
+									{#each parseFunctionKeys(r.function) ?? [] as fn}
 										<span class="px-1.5 py-0.5 text-xs rounded {fn === 'Making' ? 'bg-green-100 text-green-700' : fn === 'Amending' ? 'bg-yellow-100 text-yellow-700' : fn === 'Revoking' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">
 											{fn}
 										</span>

@@ -28,6 +28,24 @@
 	function asStrArr(v: unknown): string[] | null { return v as string[] | null; }
 	function asRec(v: unknown): Record<string, unknown> { return v as Record<string, unknown>; }
 
+	/** Electric sends JSONB `function` as a JS object {Making: true, ...} — extract keys */
+	function parseFunctionKeys(fn: unknown): string[] | null {
+		if (!fn) return null;
+		if (Array.isArray(fn)) return fn as string[];
+		if (typeof fn === 'object') {
+			return Object.keys(fn as Record<string, boolean>).filter((k) => (fn as Record<string, boolean>)[k]);
+		}
+		if (typeof fn === 'string') {
+			try {
+				const parsed = JSON.parse(fn);
+				if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return Object.keys(parsed).filter((k) => parsed[k]);
+				}
+			} catch { /* not JSON */ }
+		}
+		return null;
+	}
+
 	// Format date helper
 	function formatDate(dateStr: string | null): string {
 		if (!dateStr) return '-';
@@ -541,7 +559,7 @@
 							{value || '-'}
 						</span>
 					{:else if column === 'function'}
-						{@const fns = asStrArr(row.function)}
+						{@const fns = parseFunctionKeys(row.function)}
 						{#if fns?.length}
 							<span class="flex flex-wrap gap-1">
 								{#each fns as fn}
@@ -563,7 +581,7 @@
 					{#if row}
 						{@const r = asRec(row)}
 						{@const familyDisplay = getFamilyDisplay(asStr(r.family))}
-						{@const fns = asStrArr(r.function)}
+						{@const fns = parseFunctionKeys(r.function)}
 						<div class="max-w-4xl mx-auto">
 							<div class="mb-6">
 								<div class="flex items-start gap-3 mb-2">
