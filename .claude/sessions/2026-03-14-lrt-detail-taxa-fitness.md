@@ -33,3 +33,6 @@
 - PGLite stores has_fitness as TEXT 'true'/'false' (gridlite-kit boolean filter bug)
 - Fitness tag arrays synced to PGLite; fitness JSONB[] rules are heavy (REST only)
 - RecordDetailPanel now supports mixed heavy/light subsections within a section
+
+**Ended**: 2026-03-14
+**Committed**: aa72216

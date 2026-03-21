@@ -40,6 +40,12 @@ defmodule SertantaiLegalWeb.Router do
     plug(SertantaiLegalWeb.AiApiKeyPlug)
   end
 
+  # Webhook pipeline — API key auth for hub-to-legal webhooks
+  pipeline :api_webhook do
+    plug(:accepts, ["json"])
+    plug(SertantaiLegalWeb.WebhookApiKeyPlug)
+  end
+
   # Health check endpoints (no /api prefix, no authentication required)
   scope "/", SertantaiLegalWeb do
     pipe_through(:api)
@@ -67,6 +73,12 @@ defmodule SertantaiLegalWeb.Router do
     get("/drrp/clause/queue", AiDrrpController, :queue)
     get("/sync/lat", AiSyncController, :lat)
     get("/sync/annotations", AiSyncController, :annotations)
+  end
+
+  # Webhook endpoints — hub-to-legal (API key auth)
+  scope "/api/webhooks", SertantaiLegalWeb do
+    pipe_through(:api_webhook)
+    post("/entitlement-change", WebhookController, :entitlement_change)
   end
 
   # Electric proxy — public shapes (UK LRT reference data)
@@ -158,6 +170,21 @@ defmodule SertantaiLegalWeb.Router do
     delete("/cascade/processed", CascadeController, :clear_processed)
     delete("/cascade/session/:session_id", CascadeController, :clear_session)
     delete("/cascade/:id", CascadeController, :delete)
+
+    # Sync management endpoints
+    get("/sync/entitlement", SyncController, :entitlement)
+    get("/sync/profiles", SyncController, :list_profiles)
+    post("/sync/profiles", SyncController, :create_profile)
+    post("/sync/profiles/preview", SyncController, :preview_profile)
+    patch("/sync/profiles/:id", SyncController, :update_profile)
+    delete("/sync/profiles/:id", SyncController, :delete_profile)
+    get("/sync/configurations", SyncController, :list_configurations)
+    post("/sync/configurations", SyncController, :create_configuration)
+    patch("/sync/configurations/:id", SyncController, :update_configuration)
+    delete("/sync/configurations/:id", SyncController, :delete_configuration)
+    post("/sync/configurations/:id/test", SyncController, :test_connection)
+    post("/sync/configurations/:id/sync", SyncController, :trigger_sync)
+    get("/sync/jobs", SyncController, :list_jobs)
 
     # Analytics endpoints
     get("/analytics/changes", AnalyticsController, :changes)
