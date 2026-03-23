@@ -48,3 +48,11 @@
 - Migration ran successfully — 5 tables created
 - Pre-existing svelte-check errors (fs/path modules) — not from our changes
 - 16 API routes registered (13 sync + 1 webhook + 2 pre-existing AI sync)
+
+**Ended**: 2026-03-21
+
+## Summary
+- Completed: 6 of 6 todos
+- Files touched: 22 new, 3 modified (40 files total incl. enums)
+- Outcome: Phase 1 sync service fully built and pushed. Commit 2d91c08, GH #50 closed.
+- Next: Phase 2 — Oban scheduled syncs, delta sync, entitlement downgrade handling
