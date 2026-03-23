@@ -25,8 +25,8 @@
 		{ value: '⭕ Part Revocation / Repeal', label: 'Part Revoked' },
 		{ value: '❌ Revoked / Repealed / Abolished', label: 'Revoked' }
 	];
-	// Default: exclude fully revoked
-	let selectedLive: string[] = ['✔ In force', '⭕ Part Revocation / Repeal'];
+	// Default: all checked (no live filter sent — backend excludes revoked by default)
+	let selectedLive: string[] = ['✔ In force', '⭕ Part Revocation / Repeal', '❌ Revoked / Repealed / Abolished'];
 
 	// Preview state
 	let previewCount: number | null = null;
@@ -134,7 +134,7 @@
 		selectedTypeCode = '';
 		selectedFunction = '';
 		selectedQueueReason = '';
-		selectedLive = ['✔ In force', '⭕ Part Revocation / Repeal'];
+		selectedLive = ['✔ In force', '⭕ Part Revocation / Repeal', '❌ Revoked / Repealed / Abolished'];
 		previewCount = null;
 		previewError = '';
 		createError = '';

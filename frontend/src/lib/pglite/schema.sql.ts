@@ -146,7 +146,7 @@ CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_cl
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 9; // Bump when schema changes require a fresh table
+const SCHEMA_VERSION = 10; // Bump: force re-sync to pick up lat_count fixes from trigger migration
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;

@@ -209,6 +209,7 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
     |> Ash.Query.filter(is_making == true)
     |> Ash.Query.filter(is_nil(making_classification) or making_classification != "not_making")
     |> Ash.Query.filter(not is_nil(title_en))
+    |> Ash.Query.filter(is_nil(live) or live != "❌ Revoked / Repealed / Abolished")
     |> maybe_filter_type_code(filters["type_code"])
     |> maybe_filter_function(filters["function"])
     |> maybe_filter_queue_reason(filters["queue_reason"])
