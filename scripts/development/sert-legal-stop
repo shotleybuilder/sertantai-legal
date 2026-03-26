@@ -6,7 +6,8 @@
 #   sert-legal-stop                # Stop servers only (leave Docker running)
 #   sert-legal-stop --docker       # Stop servers + Docker containers
 #   sert-legal-stop --auth         # Also stop sertantai-auth server
-#   sert-legal-stop --docker --auth # Stop everything including auth Docker
+#   sert-legal-stop --hub          # Also stop sertantai-hub server
+#   sert-legal-stop --docker --auth --hub # Stop everything including auth + hub Docker
 #
 # Symlink Setup (to run from anywhere):
 #   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-stop /usr/local/bin/sert-legal-stop
@@ -16,6 +17,7 @@ set -e
 # Parse arguments
 MANAGE_DOCKER=false
 MANAGE_AUTH=false
+MANAGE_HUB=false
 for arg in "$@"; do
     case $arg in
         --docker)
@@ -23,6 +25,9 @@ for arg in "$@"; do
             ;;
         --auth)
             MANAGE_AUTH=true
+            ;;
+        --hub)
+            MANAGE_HUB=true
             ;;
     esac
 done
@@ -34,6 +39,10 @@ PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 # sertantai-auth project location
 AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai-auth"
 AUTH_PORT=4000
+
+# sertantai-hub project location
+HUB_PROJECT_ROOT="$HOME/Desktop/sertantai-hub"
+HUB_PORT=4006
 
 echo "Stopping sertantai-legal development servers..."
 
@@ -105,6 +114,38 @@ if [ "$MANAGE_AUTH" = true ]; then
     fi
 fi
 
+# ============================================================================
+# Stop sertantai-hub if requested
+# ============================================================================
+if [ "$MANAGE_HUB" = true ]; then
+    echo ""
+    echo "Stopping sertantai-hub..."
+
+    # Kill hub Phoenix processes (port 4006)
+    if lsof -ti:$HUB_PORT >/dev/null 2>&1; then
+        echo "   Killing sertantai-hub processes (port $HUB_PORT)..."
+        lsof -ti:$HUB_PORT | xargs kill -9 2>/dev/null || true
+        sleep 0.5
+        echo "   sertantai-hub processes killed"
+    else
+        echo "   sertantai-hub not running (port $HUB_PORT not in use)"
+    fi
+
+    # Clean up hub BEAM processes
+    if pgrep -f "beam.smp.*sertantai_hub\|beam.smp.*starter_app" > /dev/null; then
+        pkill -9 -f "beam.smp.*sertantai_hub\|beam.smp.*starter_app" || true
+        echo "   sertantai-hub BEAM processes cleaned up"
+    fi
+
+    # Stop hub Docker if --docker also specified
+    if [ "$MANAGE_DOCKER" = true ] && [ -d "$HUB_PROJECT_ROOT" ]; then
+        echo "   Stopping sertantai-hub Docker containers..."
+        cd "$HUB_PROJECT_ROOT"
+        docker compose -f docker-compose.dev.yml stop
+        echo "   sertantai-hub Docker containers stopped"
+    fi
+fi
+
 echo ""
 echo "All development servers stopped!"
 echo ""
@@ -116,5 +157,8 @@ else
 fi
 if [ "$MANAGE_AUTH" = true ]; then
     echo "Tip: sertantai-auth was also stopped. Use '--auth' with start to restart it."
+fi
+if [ "$MANAGE_HUB" = true ]; then
+    echo "Tip: sertantai-hub was also stopped. Use '--hub' with start to restart it."
 fi
 echo ""

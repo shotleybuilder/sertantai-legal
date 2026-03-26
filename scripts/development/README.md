@@ -11,14 +11,14 @@ sert-legal-start
 # Start with Docker containers
 sert-legal-start --docker
 
-# Start with Docker + sertantai-auth service
-sert-legal-start --docker --auth
+# Start with Docker + sertantai-auth + sertantai-hub
+sert-legal-start --docker --auth --hub
 
 # Stop servers
 sert-legal-stop
 
-# Stop everything (servers + Docker + auth)
-sert-legal-stop --docker --auth
+# Stop everything (servers + Docker + auth + hub)
+sert-legal-stop --docker --auth --hub
 ```
 
 ## Scripts
@@ -37,6 +37,7 @@ All three scripts support these flags:
 |------|-------------|
 | `--docker` | Also manage sertantai-legal Docker containers (postgres + electric) |
 | `--auth` | Also manage sertantai-auth service (postgres container + Phoenix server) |
+| `--hub` | Also manage sertantai-hub service (postgres container + Phoenix server) |
 
 Additional flags for `sert-legal-restart`:
 
@@ -46,12 +47,15 @@ Additional flags for `sert-legal-restart`:
 | `--backend` | Restart backend only |
 | `--force` | Skip graceful shutdown, force-kill immediately |
 
-Flags can be combined: `sert-legal-start --docker --auth`
+Flags can be combined: `sert-legal-start --docker --auth --hub`
 
 ## Service Architecture
 
 ```
 sertantai-auth (port 4000)        <-- JWT issuer, optional dependency
+    PostgreSQL (port 5438)
+
+sertantai-hub (port 4006)         <-- Orchestrator, mediates auth
     PostgreSQL (port 5435)
 
 sertantai-legal
@@ -94,15 +98,30 @@ sudo ln -sf $(pwd)/scripts/development/sert-legal-restart /usr/local/bin/sert-le
 | Service | Port | Project |
 |---------|------|---------|
 | sertantai-auth Phoenix | 4000 | sertantai-auth |
-| sertantai-auth PostgreSQL | 5435 | sertantai-auth |
+| sertantai-auth PostgreSQL | 5438 | sertantai-auth |
+| sertantai-hub Phoenix | 4006 | sertantai-hub |
+| sertantai-hub PostgreSQL | 5435 | sertantai-hub |
 | sertantai-legal Phoenix | 4003 | sertantai-legal |
 | sertantai-legal PostgreSQL | 5436 | sertantai-legal |
 | sertantai-legal Electric | 3002 | sertantai-legal |
 | sertantai-legal Frontend | 5175 | sertantai-legal |
 
-## sertantai-hub
+## sertantai-hub Integration
 
-The hub service is the microservices orchestrator. It is **not required** for local development of sertantai-legal. The hub mediates which services a user can access via JWT `services` claims, but for development this can be skipped or mocked.
+The hub service is the microservices orchestrator. Authentication is mediated through hub — to sign in with admin credentials, hub must be running.
+
+- **Without hub**: Legal service runs but cannot authenticate users. Fine for UI development with no auth.
+- **With hub**: Full authentication flow via sertantai-auth + hub. Use `--hub --auth` flags.
+
+The `--hub` flag:
+1. Checks if sertantai-hub is already running (health check on port 4006)
+2. If not running, starts its PostgreSQL container (port 5435)
+3. Starts hub's Phoenix server in a new terminal tab
+4. Waits up to 30s for health check to pass
+
+### Hub project location
+
+The scripts expect sertantai-hub at `~/Desktop/sertantai-hub`. If your layout differs, update `HUB_PROJECT_ROOT` in the scripts.
 
 ## Prerequisites
 
@@ -111,6 +130,7 @@ The hub service is the microservices orchestrator. It is **not required** for lo
 - **Elixir/Phoenix** backend in `backend/`
 - **SvelteKit** frontend in `frontend/`
 - **sertantai-auth** at `~/Desktop/sertantai-auth` (for `--auth` flag)
+- **sertantai-hub** at `~/Desktop/sertantai-hub` (for `--hub` flag)
 
 ## Troubleshooting
 

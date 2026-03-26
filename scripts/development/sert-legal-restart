@@ -8,6 +8,7 @@
 #   sert-legal-restart --backend    # Restart only backend (port 4003)
 #   sert-legal-restart --docker     # Restart servers + Docker containers
 #   sert-legal-restart --auth       # Also manage sertantai-auth service
+#   sert-legal-restart --hub        # Also manage sertantai-hub service
 #   sert-legal-restart --force      # Force kill immediately (skip graceful shutdown)
 #
 # Symlink Setup (to run from anywhere):
@@ -18,6 +19,7 @@ set -e
 # Parse arguments
 MANAGE_DOCKER=false
 MANAGE_AUTH=false
+MANAGE_HUB=false
 FORCE_KILL=false
 FRONTEND_ONLY=false
 BACKEND_ONLY=false
@@ -28,6 +30,9 @@ for arg in "$@"; do
             ;;
         --auth)
             MANAGE_AUTH=true
+            ;;
+        --hub)
+            MANAGE_HUB=true
             ;;
         --force)
             FORCE_KILL=true
@@ -48,6 +53,10 @@ PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 # sertantai-auth project location
 AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai-auth"
 AUTH_PORT=4000
+
+# sertantai-hub project location
+HUB_PROJECT_ROOT="$HOME/Desktop/sertantai-hub"
+HUB_PORT=4006
 
 if [ "$FRONTEND_ONLY" = true ]; then
     echo "Restarting frontend only..."
@@ -130,6 +139,11 @@ wait_for_port_free() {
 # Function to check auth health
 check_auth_running() {
     curl -s -o /dev/null -w "%{http_code}" "http://localhost:$AUTH_PORT/health" 2>/dev/null | grep -q "200"
+}
+
+# Function to check hub health
+check_hub_running() {
+    curl -s -o /dev/null -w "%{http_code}" "http://localhost:$HUB_PORT/health" 2>/dev/null | grep -q "200"
 }
 
 # Stop existing processes
@@ -249,6 +263,47 @@ if [ "$MANAGE_AUTH" = true ]; then
     echo ""
 fi
 
+# ============================================================================
+# Handle sertantai-hub if requested
+# ============================================================================
+if [ "$MANAGE_HUB" = true ]; then
+    echo "Checking sertantai-hub service..."
+
+    if [ ! -d "$HUB_PROJECT_ROOT" ]; then
+        echo "   Warning: sertantai-hub project not found at $HUB_PROJECT_ROOT"
+    elif check_hub_running; then
+        echo "   sertantai-hub already running on port $HUB_PORT"
+    else
+        echo "   sertantai-hub not running, starting it..."
+
+        # Check/start hub postgres container
+        if ! docker ps --format '{{.Names}}' | grep -q "sertantai-hub.*postgres"; then
+            echo "   Starting sertantai-hub PostgreSQL..."
+            cd "$HUB_PROJECT_ROOT"
+            docker compose -f docker-compose.dev.yml up -d postgres
+            sleep 3
+            cd "$PROJECT_ROOT"
+        fi
+
+        # Start hub Phoenix server
+        gnome-terminal --tab --title="sertantai-hub-backend" --working-directory="$HUB_PROJECT_ROOT/backend" -- bash -c "echo 'Starting sertantai-hub on port $HUB_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+
+        echo -n "   Waiting for sertantai-hub..."
+        for i in $(seq 1 30); do
+            if check_hub_running; then
+                echo " ready"
+                break
+            fi
+            if [ "$i" -eq 30 ]; then
+                echo " timeout (may still be starting)"
+            fi
+            sleep 1
+            echo -n "."
+        done
+    fi
+    echo ""
+fi
+
 # Start servers
 echo "Step 3: Starting development servers"
 echo "-------------------------------------"
@@ -343,6 +398,9 @@ else
     if [ "$MANAGE_AUTH" = true ] || check_auth_running 2>/dev/null; then
         echo "   Auth:     http://localhost:$AUTH_PORT  (sertantai-auth)"
     fi
+    if [ "$MANAGE_HUB" = true ] || check_hub_running 2>/dev/null; then
+        echo "   Hub:      http://localhost:$HUB_PORT  (sertantai-hub)"
+    fi
 fi
 echo ""
 echo "Tips:"
@@ -352,6 +410,7 @@ echo "   Restart frontend:  sert-legal-restart --frontend"
 echo "   Restart backend:   sert-legal-restart --backend"
 echo "   Force restart:     sert-legal-restart --force"
 echo "   With auth:         sert-legal-restart --auth"
+echo "   With hub:          sert-legal-restart --hub"
 if [ "$MANAGE_DOCKER" = true ]; then
     echo "   (Docker was restarted)"
 elif [ "$FRONTEND_ONLY" = false ] && [ "$BACKEND_ONLY" = false ]; then
