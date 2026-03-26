@@ -9,3 +9,13 @@
 - [x] Exclude `fitness` from Electric shape columns + bump SCHEMA_VERSION
 
 **Ended**: 2026-03-26
+
+---
+
+**Reopened**: 2026-03-26
+**Reason**: API sections (Live Status Assurance, Change Tracking, Session Analytics) showing "Unauthorized" for owner role. PGLite sync broken (0 records).
+
+## Todo (reopened)
+- [ ] Fix "Unauthorized" on API-backed analytics sections for owner role
+- [ ] Fix PGLite sync (0 records on analytics page)
+- [ ] Create tests to prevent regressions on analytics page

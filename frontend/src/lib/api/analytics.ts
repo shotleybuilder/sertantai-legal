@@ -4,6 +4,8 @@
  * Functions for fetching LRT analytics: change tracking and session metrics.
  */
 
+import { authFetch } from '$lib/api/client';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
 // ── Change Tracking Types ────────────────────────────────────────────
@@ -60,7 +62,6 @@ export interface SessionAnalytics {
 // ── Fetch Helper ─────────────────────────────────────────────────────
 
 async function fetchWithAuth(url: string): Promise<Response> {
-	const { authFetch } = await import('$lib/api/client');
 	const response = await authFetch(url);
 
 	if (!response.ok) {

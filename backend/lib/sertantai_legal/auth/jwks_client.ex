@@ -40,10 +40,16 @@ defmodule SertantaiLegal.Auth.JwksClient do
     GenServer.call(__MODULE__, :public_key)
   end
 
-  @doc "Forces an immediate re-fetch of the JWKS."
+  @doc "Forces an immediate re-fetch of the JWKS (async)."
   @spec refresh() :: :ok
   def refresh do
     GenServer.cast(__MODULE__, :refresh)
+  end
+
+  @doc "Forces a synchronous re-fetch. Returns the new key or error."
+  @spec refresh_sync() :: {:ok, JOSE.JWK.t()} | {:error, term()}
+  def refresh_sync do
+    GenServer.call(__MODULE__, :refresh_sync, 15_000)
   end
 
   @doc "Sets a test key directly (test mode only)."
@@ -71,6 +77,17 @@ defmodule SertantaiLegal.Auth.JwksClient do
     case state.key do
       nil -> {:reply, {:error, :no_key}, state}
       jwk -> {:reply, {:ok, jwk}, state}
+    end
+  end
+
+  def handle_call(:refresh_sync, _from, state) do
+    case fetch_jwks() do
+      {:ok, jwk} ->
+        schedule_refresh(@refresh_interval)
+        {:reply, {:ok, jwk}, %{state | key: jwk}}
+
+      {:error, _reason} = err ->
+        {:reply, err, state}
     end
   end
 

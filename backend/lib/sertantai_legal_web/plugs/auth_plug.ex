@@ -62,6 +62,23 @@ defmodule SertantaiLegalWeb.AuthPlug do
   end
 
   defp verify_token(token) do
+    case try_verify(token) do
+      {:ok, _claims} = ok ->
+        ok
+
+      {:error, "Invalid token signature"} ->
+        # Key may be stale after auth restart — refresh JWKS and retry once
+        case JwksClient.refresh_sync() do
+          {:ok, _jwk} -> try_verify(token)
+          {:error, _} -> {:error, "Invalid token signature"}
+        end
+
+      {:error, _reason} = err ->
+        err
+    end
+  end
+
+  defp try_verify(token) do
     with {:ok, jwk} <- JwksClient.public_key() do
       case JOSE.JWT.verify_strict(jwk, ["EdDSA"], token) do
         {true, %JOSE.JWT{fields: claims}, _jws} ->
