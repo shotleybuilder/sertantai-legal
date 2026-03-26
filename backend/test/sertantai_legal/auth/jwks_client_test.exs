@@ -132,6 +132,65 @@ defmodule SertantaiLegal.Auth.JwksClientTest do
     end
   end
 
+  describe "refresh_sync/0" do
+    setup do
+      Req.Test.set_req_test_to_shared()
+      Application.put_env(:sertantai_legal, :test_mode, false)
+      :ok
+    end
+
+    test "synchronously fetches and returns the new key" do
+      stub_jwks_success()
+      assert {:ok, jwk} = JwksClient.refresh_sync()
+
+      {_, pub_map} = JOSE.JWK.to_map(JOSE.JWK.to_public(jwk))
+      assert pub_map["kty"] == "OKP"
+      assert pub_map["crv"] == "Ed25519"
+
+      # Key is also cached
+      assert {:ok, ^jwk} = JwksClient.public_key()
+    end
+
+    test "returns error when JWKS endpoint fails" do
+      Req.Test.stub(JwksClient, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "Service Unavailable")
+      end)
+
+      assert {:error, _reason} = JwksClient.refresh_sync()
+    end
+
+    test "replaces a stale key with the new one" do
+      # Set an initial key
+      stub_jwks_success()
+      send(GenServer.whereis(JwksClient), :fetch)
+      Process.sleep(200)
+      {:ok, old_key} = JwksClient.public_key()
+
+      # Generate a different key and stub it
+      new_jwk = JOSE.JWK.generate_key({:okp, :Ed25519})
+      new_pub = JOSE.JWK.to_public(new_jwk)
+      {_, new_pub_map} = JOSE.JWK.to_map(new_pub)
+
+      Req.Test.stub(JwksClient, fn conn ->
+        jwks = %{
+          "keys" => [
+            Map.merge(new_pub_map, %{"use" => "sig", "kid" => "rotated-kid"})
+          ]
+        }
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, Jason.encode!(jwks))
+      end)
+
+      {:ok, refreshed_key} = JwksClient.refresh_sync()
+      # The key should have changed
+      assert refreshed_key != old_key
+      # And the cached key should be the new one
+      assert {:ok, ^refreshed_key} = JwksClient.public_key()
+    end
+  end
+
   # Helpers
 
   defp stub_jwks_success do

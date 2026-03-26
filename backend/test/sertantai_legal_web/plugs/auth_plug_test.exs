@@ -1,6 +1,7 @@
 defmodule SertantaiLegalWeb.AuthPlugTest do
-  use SertantaiLegalWeb.ConnCase, async: true
+  use SertantaiLegalWeb.ConnCase, async: false
 
+  alias SertantaiLegal.Auth.JwksClient
   alias SertantaiLegalWeb.AuthPlug
 
   setup :setup_auth
@@ -129,6 +130,24 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
   end
 
   describe "wrong signing key" do
+    setup do
+      # Stub JWKS so refresh_sync doesn't crash — returns the same test key,
+      # so token signed with a truly different key still fails after refresh
+      Req.Test.set_req_test_to_shared()
+      {_, pub_map} = JOSE.JWK.to_map(test_public_key())
+
+      Req.Test.stub(JwksClient, fn conn ->
+        jwks = %{"keys" => [Map.merge(pub_map, %{"use" => "sig", "kid" => "test-kid"})]}
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, Jason.encode!(jwks))
+      end)
+
+      on_exit(fn -> Req.Test.set_req_test_to_private() end)
+      :ok
+    end
+
     test "returns 401 when signed with a different Ed25519 key", %{conn: conn} do
       wrong_key = JOSE.JWK.generate_key({:okp, :Ed25519})
       jws = %{"alg" => "EdDSA"}
@@ -149,6 +168,118 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
       assert conn.status == 401
       body = Jason.decode!(conn.resp_body)
       assert body["reason"] =~ "Invalid token signature"
+    end
+  end
+
+  describe "JWKS auto-refresh on key rotation" do
+    setup do
+      Req.Test.set_req_test_to_shared()
+
+      on_exit(fn ->
+        Req.Test.set_req_test_to_private()
+        # Restore the standard test key
+        JwksClient.set_test_key(test_public_key())
+      end)
+
+      :ok
+    end
+
+    test "recovers when auth restarts with a new keypair", %{conn: conn} do
+      # Simulate auth restart: generate a NEW keypair (the "rotated" key)
+      new_private = JOSE.JWK.generate_key({:okp, :Ed25519})
+      new_public = JOSE.JWK.to_public(new_private)
+      {_, new_pub_map} = JOSE.JWK.to_map(new_public)
+
+      # Sign a valid token with the NEW private key
+      now = System.system_time(:second)
+
+      claims = %{
+        "sub" => "user?id=#{Ecto.UUID.generate()}",
+        "org_id" => Ecto.UUID.generate(),
+        "role" => "owner",
+        "exp" => now + 3600,
+        "iat" => now,
+        "nbf" => now
+      }
+
+      {_, token} = JOSE.JWT.sign(new_private, %{"alg" => "EdDSA"}, claims) |> JOSE.JWS.compact()
+
+      # JwksClient still has the OLD test key cached (from setup_auth).
+      # First verify attempt will fail. Stub JWKS to return the NEW public key.
+      Req.Test.stub(JwksClient, fn conn ->
+        jwks = %{"keys" => [Map.merge(new_pub_map, %{"use" => "sig", "kid" => "rotated-kid"})]}
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, Jason.encode!(jwks))
+      end)
+
+      # AuthPlug should: fail verification → refresh_sync → get new key → retry → succeed
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{token}")
+        |> AuthPlug.call([])
+
+      refute conn.halted, "Expected auth to succeed after JWKS refresh, but got 401"
+      assert conn.assigns.current_user_id == claims["sub"] |> String.replace("user?id=", "")
+      assert conn.assigns.organization_id == claims["org_id"]
+      assert conn.assigns.user_role == "owner"
+    end
+
+    test "still rejects when refresh returns same key and token is truly invalid", %{conn: conn} do
+      # Token signed with a random key that doesn't match anything
+      wrong_key = JOSE.JWK.generate_key({:okp, :Ed25519})
+
+      claims = %{
+        "sub" => "user?id=#{Ecto.UUID.generate()}",
+        "exp" => System.system_time(:second) + 3600
+      }
+
+      {_, token} = JOSE.JWT.sign(wrong_key, %{"alg" => "EdDSA"}, claims) |> JOSE.JWS.compact()
+
+      # Stub JWKS to return the same old test key (no rotation happened)
+      {_, pub_map} = JOSE.JWK.to_map(test_public_key())
+
+      Req.Test.stub(JwksClient, fn conn ->
+        jwks = %{"keys" => [Map.merge(pub_map, %{"use" => "sig", "kid" => "test-kid"})]}
+
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(200, Jason.encode!(jwks))
+      end)
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{token}")
+        |> AuthPlug.call([])
+
+      assert conn.halted
+      assert conn.status == 401
+    end
+
+    test "returns 401 when JWKS endpoint is unreachable during refresh", %{conn: conn} do
+      # Token signed with a different key
+      wrong_key = JOSE.JWK.generate_key({:okp, :Ed25519})
+
+      claims = %{
+        "sub" => "user?id=#{Ecto.UUID.generate()}",
+        "exp" => System.system_time(:second) + 3600
+      }
+
+      {_, token} = JOSE.JWT.sign(wrong_key, %{"alg" => "EdDSA"}, claims) |> JOSE.JWS.compact()
+
+      # Stub JWKS to return 503 (auth service down)
+      Req.Test.stub(JwksClient, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "Service Unavailable")
+      end)
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{token}")
+        |> AuthPlug.call([])
+
+      assert conn.halted
+      assert conn.status == 401
     end
   end
 
