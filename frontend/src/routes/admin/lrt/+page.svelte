@@ -521,15 +521,8 @@
 	// Track grid data for reparse view count
 	let latestGridState: GridState | null = null;
 
-	$: activeViewName = (() => {
-		if (!viewStore) return null;
-		let name: string | null = null;
-		const unsub = viewStore.activeView.subscribe((v) => { name = v?.name ?? null; });
-		unsub();
-		return name;
-	})();
-
-	// Visible columns for the active view — set imperatively by switchToView()
+	// Active view name + visible columns — set imperatively by switchToView()
+	let activeViewName: string | null = null;
 	let activeVisibleColumns: string[] = VIEW_COLUMNS;
 
 	async function handleReparseViewConfirm() {
@@ -721,6 +714,7 @@
 		const query = getQueryForView(viewName);
 		currentQuery = query;
 		currentFamily = viewFamilyMapping[viewName] ?? null;
+		activeViewName = viewName;
 		// Resolve visible columns for this view (used by GridLite config on {#key} remount)
 		const viewDef = defaultViews.find((v) => v.name === viewName);
 		activeVisibleColumns = viewDef?.config.columnOrder ?? VIEW_COLUMNS;
