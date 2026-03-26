@@ -678,6 +678,19 @@
 			}
 		}
 
+		// Update existing default views whose config has changed
+		for (const def of defaultViews) {
+			const existingId = existingViews.get(def.name);
+			if (!existingId) continue;
+			const existing = currentViews.find((v) => v.id === existingId);
+			if (!existing) continue;
+			const defJson = JSON.stringify(def.config);
+			const existingJson = JSON.stringify(existing.config);
+			if (defJson !== existingJson) {
+				try { await actions.update(existingId, { config: def.config }); } catch { /* ignore */ }
+			}
+		}
+
 		// Seed missing
 		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
 		let defaultViewId: string | null = null;
