@@ -471,15 +471,16 @@ defmodule SertantaiLegal.Scraper.Amending do
           String.contains?(affect_lower, "in full") ->
             true
 
-          # "in part" is always partial
-          String.contains?(affect_lower, "in part") ->
+          # "in part" or "except for" is always partial
+          String.contains?(affect_lower, "in part") or
+              String.contains?(affect_lower, "except") ->
             false
 
           # "words repealed/revoked", "word repealed", "entry repealed" — always partial
           String.contains?(affect_lower, "words ") or
             String.contains?(affect_lower, "word ") or
-              String.contains?(affect_lower, "entry ") or
-              String.contains?(affect_lower, "entries ") or
+            String.contains?(affect_lower, "entry ") or
+            String.contains?(affect_lower, "entries ") or
               String.contains?(affect_lower, "comma ") ->
             false
 
@@ -514,10 +515,10 @@ defmodule SertantaiLegal.Scraper.Amending do
   @whole_instrument_targets ~w(regulations act order rules scheme measure charter byelaws instrument)
   defp is_whole_instrument_target?(target_lower) do
     # Empty target with a revocation affect implies whole instrument
+    # Exact match against known instrument types
+    # "whole instrument" is used in some entries
     target_lower == "" or
-      # Exact match against known instrument types
       target_lower in @whole_instrument_targets or
-      # "whole instrument" is used in some entries
       String.contains?(target_lower, "whole instrument")
   end
 end

@@ -317,9 +317,18 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       full_revocation_targets =
         amendments
         |> Enum.filter(fn a ->
-          a.target in ["Regulations", "Act", "Order", "Rules", "Scheme",
-                        "Measure", "Byelaws", "Instrument", "whole instrument"]
-          and a.affect in ["revoked", "repealed"]
+          a.target in [
+            "Regulations",
+            "Act",
+            "Order",
+            "Rules",
+            "Scheme",
+            "Measure",
+            "Byelaws",
+            "Instrument",
+            "whole instrument"
+          ] and
+            a.affect in ["revoked", "repealed"]
         end)
 
       # Fixture has rows 1, 6, 7, 8, 9, 12, 15, 18, 20, 23 (not row 24 — it uses abbreviated "Rev")
@@ -335,8 +344,18 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
         amendments
         |> Enum.filter(fn a ->
           a.affect in ["revoked", "repealed"] and
-          a.target not in ["", "Regulations", "Act", "Order", "Rules", "Scheme",
-                           "Measure", "Byelaws", "Instrument", "whole instrument"]
+            a.target not in [
+              "",
+              "Regulations",
+              "Act",
+              "Order",
+              "Rules",
+              "Scheme",
+              "Measure",
+              "Byelaws",
+              "Instrument",
+              "whole instrument"
+            ]
         end)
 
       assert length(section_revocations) == 4
@@ -425,6 +444,7 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       savings = Enum.filter(amendments, &(&1.affect == "revoked with savings"))
       assert length(savings) == 1
       assert hd(savings).target == "Regulations"
+
       # "revoked with savings" contains "revoke" and no "in part" — and target is whole instrument
     end
 
@@ -447,6 +467,19 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
       rev_rows = Enum.filter(amendments, &(&1.affect == "Rev"))
       assert length(rev_rows) == 1
       assert hd(rev_rows).target == ""
+    end
+
+    test "'revoked (except for ...)' on whole-instrument target is partial, not full" do
+      html = fixture("amendments_affected_revocations.html")
+      amendments = Amending.parse_amendments_html(html, endpoint: :affected)
+
+      except_rows =
+        Enum.filter(amendments, &String.contains?(&1.affect, "except"))
+
+      assert length(except_rows) == 1
+      row = hd(except_rows)
+      assert row.target == "Regulations"
+      assert row.affect == "revoked (except for regs. 1, 2(2)(b), 3(2)(b))"
     end
 
     test "abbreviated 'Rev' is captured as a revocation by separate_revocations" do
@@ -491,8 +524,17 @@ defmodule SertantaiLegal.Scraper.AmendingTest do
             not String.contains?(affect_lower, "words ") and
             not String.contains?(affect_lower, "power to") and
             a.affect in ["revoked", "repealed"] and
-            target_lower in ["regulations", "act", "order", "rules", "scheme",
-                             "measure", "charter", "byelaws", "instrument"]
+            target_lower in [
+              "regulations",
+              "act",
+              "order",
+              "rules",
+              "scheme",
+              "measure",
+              "charter",
+              "byelaws",
+              "instrument"
+            ]
         end)
 
       assert full == []
