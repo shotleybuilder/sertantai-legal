@@ -41,6 +41,7 @@
 		function: Record<string, boolean> | string[] | null;
 		is_making: boolean | null;
 		has_fitness: string;
+		lat_count: number;
 		live: string | null;
 		live_source: string | null;
 		live_conflict: boolean | null;
@@ -184,7 +185,7 @@
 	];
 
 	// LRT columns queried from PGLite
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, lat_count, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
 
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
@@ -200,6 +201,7 @@
 		{ name: 'function', label: 'Function', width: 150, dataType: 'text' },
 		{ name: 'is_making', label: 'Making?', width: 80, dataType: 'text' },
 		{ name: 'has_fitness', label: 'Fitness?', width: 80, dataType: 'select', selectOptions: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }] },
+		{ name: 'lat_count', label: 'LAT', width: 70, dataType: 'number' },
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
 		{ name: 'live_source', label: 'Source', width: 90, dataType: 'text' },
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
@@ -300,6 +302,7 @@
 	viewGroupMapping['Recently Amended'] = 'recent';
 	viewGroupMapping['Recently Rescinded'] = 'recent';
 	viewGroupMapping['Live'] = 'analytics';
+	viewGroupMapping['LAT Cleanup'] = 'analytics';
 
 	// Map view name → family value (for PGLite query)
 	const viewFamilyMapping: Record<string, string> = {};
@@ -312,13 +315,15 @@
 	const VIEW_COLUMNS = ['name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
 	const RECENT_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'family', 'live'];
 	const LIVE_VIEW_COLUMNS = ['name', 'title_en', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict'];
+	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'live', 'function', 'is_making', 'lat_count', 'family'];
 
 	// Map view name → custom query SQL
 	const viewCustomQueryMapping: Record<string, string> = {
 		'Recently Added': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE created_at >= NOW() - INTERVAL '1 month' ORDER BY created_at DESC`,
 		'Recently Amended': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_amend_date >= '${currentYear - 2}-01-01' ORDER BY latest_amend_date DESC`,
 		'Recently Rescinded': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_rescind_date >= '${currentYear - 2}-01-01' ORDER BY latest_rescind_date DESC`,
-		'Live': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = '💙 OH&S: Occupational / Personal Safety' AND title_en IS NOT NULL ORDER BY name`
+		'Live': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = '💙 OH&S: Occupational / Personal Safety' AND title_en IS NOT NULL ORDER BY name`,
+		'LAT Cleanup': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE lat_count > 0 AND (live = '❌ Revoked / Repealed / Abolished' OR (is_making = true AND NOT (function ? 'Making'))) ORDER BY lat_count DESC`
 	};
 
 	// Helper to build column visibility map from a list of visible column names
@@ -407,6 +412,16 @@
 				grouping: []
 			}),
 			customQuery: viewCustomQueryMapping['Live']
+		},
+		{
+			name: 'LAT Cleanup',
+			description: 'Laws qualifying for LAT deletion — revoked/repealed or not-making with LAT data',
+			config: makeViewConfig({
+				visibleCols: LAT_CLEANUP_COLUMNS,
+				sorting: [{ column: 'lat_count', direction: 'desc' }],
+				grouping: []
+			}),
+			customQuery: viewCustomQueryMapping['LAT Cleanup']
 		}
 	];
 
@@ -487,6 +502,11 @@
 	let reparseViewLoading = false;
 	let reparseViewError: string | null = null;
 
+	// LAT deletion dialog state
+	let deleteConfirmRecord: UkLrtRecord | null = null;
+	let deleteLoading = false;
+	let deleteError: string | null = null;
+
 	// Track grid data for reparse view count
 	let latestGridState: GridState | null = null;
 
@@ -513,6 +533,36 @@
 			reparseViewError = err instanceof Error ? err.message : String(err);
 		} finally {
 			reparseViewLoading = false;
+		}
+	}
+
+	// Delete LAT data for a single law
+	async function handleDeleteLat() {
+		if (!deleteConfirmRecord) return;
+		deleteLoading = true;
+		deleteError = null;
+
+		try {
+			const response = await authFetch(
+				`${API_URL}/api/lat/laws/${encodeURIComponent(deleteConfirmRecord.name)}/data`,
+				{ method: 'DELETE' }
+			);
+
+			if (!response.ok) {
+				const err = await response.json();
+				throw new Error(err.error || 'Failed to delete LAT data');
+			}
+
+			const result = await response.json();
+			console.log(`[LAT Cleanup] Deleted ${result.lat_deleted} LAT rows, ${result.annotations_deleted} annotations for ${result.law_name}`);
+
+			// Close dialog — PGLite will auto-update lat_count via Electric sync
+			deleteConfirmRecord = null;
+			deleteError = null;
+		} catch (e) {
+			deleteError = e instanceof Error ? e.message : String(e);
+		} finally {
+			deleteLoading = false;
 		}
 	}
 
@@ -1145,8 +1195,27 @@
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 							</svg>
 						</button>
+						{#if activeViewName === 'LAT Cleanup' && (r.lat_count ?? 0) > 0}
+							<button
+								class="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded shrink-0"
+								title="Delete LAT data for this law"
+								on:click={() => { deleteConfirmRecord = r; }}
+							>
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+								</svg>
+							</button>
+						{/if}
 						<span class="font-mono text-gray-700 truncate">{value}</span>
 					</div>
+				{:else if column === 'lat_count'}
+					{#if Number(value) > 0}
+						<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700 font-medium">
+							{Number(value).toLocaleString()}
+						</span>
+					{:else}
+						<span class="text-gray-400">0</span>
+					{/if}
 				{:else}
 					{value ?? '-'}
 				{/if}
@@ -1248,6 +1317,62 @@
 						Creating...
 					{:else}
 						Create Reparse Session
+					{/if}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Delete LAT Confirmation Dialog -->
+{#if deleteConfirmRecord}
+	{@const r = deleteConfirmRecord}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" on:click|self={() => { deleteConfirmRecord = null; deleteError = null; }}>
+		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+			<div class="px-6 py-4 border-b border-gray-200">
+				<h3 class="text-lg font-semibold text-gray-900">Delete LAT Data</h3>
+			</div>
+			<div class="px-6 py-4 space-y-3">
+				<div class="text-sm text-gray-600">
+					<p><span class="font-medium">Law:</span> <span class="font-mono">{r.name}</span></p>
+					<p class="mt-1 text-xs text-gray-500 line-clamp-2">{r.title_en}</p>
+					<p class="mt-2"><span class="font-medium">Status:</span> {r.live || '-'}</p>
+					<p><span class="font-medium">Function:</span> {parseFunctionKeys(r.function)?.join(', ') || 'None'}</p>
+					<p><span class="font-medium">Making:</span> {r.is_making ? 'Yes' : 'No'}</p>
+					<p class="mt-3">
+						<span class="text-2xl font-bold text-red-600">{r.lat_count?.toLocaleString()}</span>
+						<span class="text-gray-500 ml-1">LAT rows will be permanently deleted</span>
+					</p>
+					<p class="mt-2 text-xs text-gray-500">
+						Amendment annotations for this law will also be deleted.
+						Taxa and fitness data will NOT be affected.
+					</p>
+				</div>
+				{#if deleteError}
+					<div class="px-3 py-2 text-sm bg-red-50 text-red-700 rounded border border-red-200">
+						{deleteError}
+					</div>
+				{/if}
+			</div>
+			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+				<button
+					on:click={() => { deleteConfirmRecord = null; deleteError = null; }}
+					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+					disabled={deleteLoading}
+				>
+					Cancel
+				</button>
+				<button
+					on:click={handleDeleteLat}
+					disabled={deleteLoading}
+					class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+				>
+					{#if deleteLoading}
+						Deleting...
+					{:else}
+						Delete LAT Data
 					{/if}
 				</button>
 			</div>

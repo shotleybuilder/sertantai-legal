@@ -303,4 +303,79 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
       assert is_binary(resp["error"])
     end
   end
+
+  # ── Delete LAT ─────────────────────────────────────────────────
+
+  describe "DELETE /api/lat/laws/:law_name/data" do
+    test "deletes all LAT rows and annotations for the law", %{conn: conn} do
+      # Verify data exists before deletion
+      %{rows: [[lat_before]]} =
+        Repo.query!("SELECT COUNT(*) FROM lat WHERE law_name = $1", ["UK_ukpga_2024_1"])
+
+      %{rows: [[ann_before]]} =
+        Repo.query!(
+          "SELECT COUNT(*) FROM amendment_annotations WHERE law_name = $1",
+          ["UK_ukpga_2024_1"]
+        )
+
+      assert lat_before == 3
+      assert ann_before == 2
+
+      conn = conn |> delete("/api/lat/laws/UK_ukpga_2024_1/data")
+      resp = json_response(conn, 200)
+
+      assert resp["law_name"] == "UK_ukpga_2024_1"
+      assert resp["lat_deleted"] == 3
+      assert resp["annotations_deleted"] == 2
+      assert resp["message"] == "LAT data deleted successfully"
+
+      # Verify data is gone
+      %{rows: [[lat_after]]} =
+        Repo.query!("SELECT COUNT(*) FROM lat WHERE law_name = $1", ["UK_ukpga_2024_1"])
+
+      %{rows: [[ann_after]]} =
+        Repo.query!(
+          "SELECT COUNT(*) FROM amendment_annotations WHERE law_name = $1",
+          ["UK_ukpga_2024_1"]
+        )
+
+      assert lat_after == 0
+      assert ann_after == 0
+    end
+
+    test "uk_lrt record still exists with lat_count updated by trigger", %{conn: conn} do
+      conn |> delete("/api/lat/laws/UK_ukpga_2024_1/data")
+
+      %{rows: [[lat_count, title_en]]} =
+        Repo.query!(
+          "SELECT lat_count, title_en FROM uk_lrt WHERE name = $1",
+          ["UK_ukpga_2024_1"]
+        )
+
+      assert lat_count == 0
+      assert title_en == "Test Act 2024"
+    end
+
+    test "returns zero counts for non-existent law", %{conn: conn} do
+      conn = conn |> delete("/api/lat/laws/UK_ukpga_9999_1/data")
+      resp = json_response(conn, 200)
+
+      assert resp["lat_deleted"] == 0
+      assert resp["annotations_deleted"] == 0
+    end
+
+    test "returns 401 without auth" do
+      conn = Phoenix.ConnTest.build_conn() |> delete("/api/lat/laws/UK_ukpga_2024_1/data")
+      assert json_response(conn, 401)
+    end
+
+    test "returns 403 with non-admin JWT" do
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> put_auth_header(%{"role" => "member"})
+        |> delete("/api/lat/laws/UK_ukpga_2024_1/data")
+
+      assert json_response(conn, 403)
+    end
+  end
 end

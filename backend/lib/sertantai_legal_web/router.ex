@@ -160,6 +160,7 @@ defmodule SertantaiLegalWeb.Router do
     get("/lat/laws/:law_name", LatAdminController, :show)
     get("/lat/laws/:law_name/annotations", LatAdminController, :annotations)
     post("/lat/laws/:law_name/reparse", LatAdminController, :reparse)
+    delete("/lat/laws/:law_name/data", LatAdminController, :delete_lat)
 
     # Cascade management endpoints (standalone page)
     get("/cascade", CascadeController, :index)

@@ -16,6 +16,9 @@
 **Reason**: API sections (Live Status Assurance, Change Tracking, Session Analytics) showing "Unauthorized" for owner role. PGLite sync broken (0 records).
 
 ## Todo (reopened)
-- [ ] Fix "Unauthorized" on API-backed analytics sections for owner role
-- [ ] Fix PGLite sync (0 records on analytics page)
-- [ ] Create tests to prevent regressions on analytics page
+- [x] Fix "Unauthorized" on API-backed analytics sections for owner role
+- [x] Fix PGLite sync (0 records on analytics page)
+- [x] Auto-start legal Docker containers in dev scripts
+- [x] Add JWKS auto-refresh + key rotation tests
+
+**Ended**: 2026-03-26T09:30Z

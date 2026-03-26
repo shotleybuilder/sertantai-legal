@@ -18,6 +18,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
   alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
+  alias SertantaiLegal.Zenoh.ChangeNotifier
 
   require Logger
 
@@ -392,6 +393,53 @@ defmodule SertantaiLegalWeb.LatAdminController do
         conn
         |> put_status(422)
         |> json(%{error: reason})
+    end
+  end
+
+  # ── Delete LAT ──────────────────────────────────────────────────────
+
+  @doc """
+  DELETE /api/lat/laws/:law_name/data
+
+  Deletes all LAT rows and amendment annotations for a single law.
+  The propagate_lat_stats trigger auto-sets uk_lrt.lat_count = 0.
+  Taxa/fitness fields on uk_lrt are unaffected.
+  """
+  def delete_lat(conn, %{"law_name" => law_name}) do
+    Repo.transaction(fn ->
+      %{num_rows: ann_deleted} =
+        Repo.query!("DELETE FROM amendment_annotations WHERE law_name = $1", [law_name])
+
+      %{num_rows: lat_deleted} =
+        Repo.query!("DELETE FROM lat WHERE law_name = $1", [law_name])
+
+      {lat_deleted, ann_deleted}
+    end)
+    |> case do
+      {:ok, {lat_deleted, ann_deleted}} ->
+        Logger.info(
+          "[LatAdmin] Deleted LAT for #{law_name}: #{lat_deleted} rows, #{ann_deleted} annotations"
+        )
+
+        if lat_deleted > 0 or ann_deleted > 0 do
+          ChangeNotifier.notify("lat", "lat_deleted", %{
+            law_name: law_name,
+            lat_deleted: lat_deleted,
+            annotations_deleted: ann_deleted
+          })
+        end
+
+        json(conn, %{
+          law_name: law_name,
+          lat_deleted: lat_deleted,
+          annotations_deleted: ann_deleted,
+          message: "LAT data deleted successfully"
+        })
+
+      {:error, reason} ->
+        conn
+        |> put_status(500)
+        |> json(%{error: inspect(reason)})
     end
   end
 
