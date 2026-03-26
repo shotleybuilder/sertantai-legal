@@ -4,8 +4,8 @@
 # Optionally manages sertantai-auth dependency service
 #
 # Usage:
-#   sert-legal-start                # Start servers only (assumes Docker already running)
-#   sert-legal-start --docker       # Start Docker containers + servers
+#   sert-legal-start                # Start servers (auto-starts Docker if not running)
+#   sert-legal-start --docker       # Force restart Docker containers + servers
 #   sert-legal-start --auth         # Also ensure sertantai-auth is running
 #   sert-legal-start --hub          # Also ensure sertantai-hub is running
 #   sert-legal-start --zenoh        # Enable Zenoh P2P mesh (taxa subscriber, data server)
@@ -276,23 +276,54 @@ if [ "$MANAGE_DOCKER" = true ]; then
     fi
     echo ""
 else
-    # Check if Docker services are running (warning only)
+    # Auto-start Docker services if not running (postgres + electric are always required)
+    cd "$PROJECT_ROOT"
+    NEED_START=false
     MISSING=""
     if ! docker ps | grep -q "sertantai-legal-postgres"; then
+        NEED_START=true
         MISSING="postgres"
     fi
     if ! docker ps | grep -q "sertantai-legal-electric"; then
+        NEED_START=true
         if [ -n "$MISSING" ]; then
             MISSING="$MISSING, electric"
         else
             MISSING="electric"
         fi
     fi
-    if [ -n "$MISSING" ]; then
-        echo "Warning: Docker containers not detected ($MISSING)"
-        echo "   Tip: Use 'sert-legal-start --docker' to auto-start containers"
-        echo ""
+    if [ "$NEED_START" = true ]; then
+        echo "Docker containers not running ($MISSING), starting..."
+        docker compose -f docker-compose.dev.yml up -d postgres
+        echo -n "   Waiting for postgres..."
+        for i in $(seq 1 15); do
+            if docker compose -f docker-compose.dev.yml exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+                echo " ready"
+                break
+            fi
+            if [ "$i" -eq 15 ]; then
+                echo " timeout (may still be starting)"
+            fi
+            sleep 1
+            echo -n "."
+        done
+        docker compose -f docker-compose.dev.yml up -d --no-deps electric
+        echo -n "   Waiting for ElectricSQL..."
+        for i in $(seq 1 30); do
+            if curl -s -o /dev/null -w "" http://localhost:3002/v1/health 2>/dev/null; then
+                echo " ready"
+                break
+            fi
+            if [ "$i" -eq 30 ]; then
+                echo " timeout (may still be starting)"
+            fi
+            sleep 1
+            echo -n "."
+        done
+    else
+        echo "Docker services already running (postgres + electric)"
     fi
+    echo ""
 fi
 
 # ============================================================================
