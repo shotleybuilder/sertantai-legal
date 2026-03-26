@@ -279,6 +279,63 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
     end
   end
 
+  describe "parse_xml/1 - live status derivation" do
+    test "title with (repealed ...) is detected as revoked" do
+      xml = live_status_xml("Clean Air Act 1956 (repealed 27.8.1993)", "revised")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "❌ Revoked / Repealed / Abolished"
+      assert metadata[:live_description] == "Repealed (from title)"
+    end
+
+    test "title with (revoked ...) is detected as revoked" do
+      xml = live_status_xml("The Example Regulations 2005 (revoked 1.4.2010)", "revised")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "❌ Revoked / Repealed / Abolished"
+      assert metadata[:live_description] == "Revoked (from title)"
+    end
+
+    test "document_status 'repealed' is detected as revoked" do
+      xml = live_status_xml("Some Act 2000", "repealed")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "❌ Revoked / Repealed / Abolished"
+    end
+
+    test "document_status 'revoked' is detected as revoked" do
+      xml = live_status_xml("Some Regulations 2010", "revoked")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "❌ Revoked / Repealed / Abolished"
+    end
+
+    test "title takes priority over document_status" do
+      # Title says repealed but document_status is "revised" (real pattern from legislation.gov.uk)
+      xml = live_status_xml("Badgers Act 1991 (repealed 16.10.1992)", "revised")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "❌ Revoked / Repealed / Abolished"
+      assert metadata[:live_description] == "Repealed (from title)"
+    end
+
+    test "document_status 'final' does NOT indicate in-force" do
+      xml = live_status_xml("Some Old Regulations 1953", "final")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      # Defaults to in_force but live_description is empty (not asserting "Current legislation")
+      assert metadata[:live] == "✔ In force"
+      assert metadata[:live_description] == ""
+    end
+
+    test "document_status 'revised' does NOT indicate in-force" do
+      xml = live_status_xml("Some Regulations 2010", "revised")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "✔ In force"
+      assert metadata[:live_description] == ""
+    end
+
+    test "clean title with no document_status defaults to in-force" do
+      xml = live_status_xml("Health and Safety at Work etc. Act 1974", "")
+      {:ok, metadata} = Metadata.parse_xml(xml)
+      assert metadata[:live] == "✔ In force"
+    end
+  end
+
   describe "fetch_from_path/1 - redirect handling" do
     test "tries /made/ path on 404" do
       # This should 404 on the normal path and retry with /made/
@@ -292,5 +349,30 @@ defmodule SertantaiLegal.Scraper.MetadataTest do
   defp fixture(name) do
     Path.join([File.cwd!(), "test/fixtures/legislation_gov_uk", name])
     |> File.read!()
+  end
+
+  defp live_status_xml(title, document_status) do
+    status_element =
+      if document_status != "" do
+        ~s(<ukm:DocumentStatus Value="#{document_status}"/>)
+      else
+        ""
+      end
+
+    """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Legislation
+        xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:dct="http://purl.org/dc/terms/"
+        xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
+        xmlns:atom="http://www.w3.org/2005/Atom">
+      <ukm:Metadata>
+        <dc:title>#{title}</dc:title>
+        <dc:description>Test description</dc:description>
+        #{status_element}
+      </ukm:Metadata>
+    </Legislation>
+    """
   end
 end

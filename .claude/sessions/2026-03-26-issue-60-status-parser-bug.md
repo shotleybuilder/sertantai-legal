@@ -6,7 +6,7 @@
 
 ## Todo
 - [x] Bug 1: `determine_live_status` missing "except for" partial revocation pattern — only checks "in part", misses `"revoked (except for regs. 1, 2(2)(b)...)"`
-- [ ] Bug 2: `set_live_status` maps `document_status: "final"` → `✔ In force` — but "final" means "original text, not revised", NOT "currently in force". Genuinely revoked laws (e.g. uksi/2010/676) have `"final"` status
+- [x] Bug 2: `set_live_status` maps `document_status: "final"` → `✔ In force` — but "final" means "original text, not revised", NOT "currently in force". Genuinely revoked laws (e.g. uksi/2010/676) have `"final"` status
 - [ ] Bug 3: HASAWA parsed at 09:20 on March 12, before 3 fixes to `determine_live_status` committed later that day (13:58, 14:39, 17:10) — stale parse data, needs re-parse
 - [ ] Bug 4: `reconcile_live_status` "Most Severe Wins" strategy can't work when neither source is reliable — needs rethinking after bugs 1-2 are fixed
 - [ ] Re-parse the 1,266 conflict records (changes=revoked, metadata=in_force) after fixing bugs 1-2
@@ -20,3 +20,12 @@
 - Key files: `amending.ex:455` (determine_live_status), `metadata.ex:428` (set_live_status), `staged_parser.ex:469` (reconcile_live_status)
 - Bug 1 fix: added `"except"` check to `determine_live_status` cond chain, fixture row 26, test added
 - Verified: uksi/2007/175 now correctly returns `⭕ Part Revocation` (was `❌ Revoked`)
+- Bug 2 investigation: `document_status` values on legislation.gov.uk:
+  - `"final"` = original text, not revised by legislation.gov.uk — NOT an in-force indicator
+  - `"revised"` = legislation.gov.uk has updated the text — NOT an in-force indicator (revoked laws can be "revised")
+  - `"repealed"`/`"revoked"` = definitive revocation marker BUT rarely used (most revoked laws have "revised")
+  - **Title `(repealed DD.MM.YYYY)` or `(revoked DD.MM.YYYY)` is the definitive metadata signal**
+  - Confirmed: Clean Air Act 1956 title = "Clean Air Act 1956 (repealed 27.8.1993)", status = "revised"
+  - Confirmed: Badgers Act 1991 title = "Badgers (Further Protection) Act 1991 (repealed 16.10.1992)", status = "revised"
+  - Edge case: uksi/2010/676 genuinely revoked but NO title marker AND status = "revised" — only detectable via /changes/affected
+- Bug 2 fix: `set_live_status` now checks title for `(repealed` / `(revoked` first (definitive), then `document_status` repealed/revoked, then defaults to in_force. 8 tests added.

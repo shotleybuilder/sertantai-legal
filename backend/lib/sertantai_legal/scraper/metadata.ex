@@ -425,34 +425,38 @@ defmodule SertantaiLegal.Scraper.Metadata do
   @live_revoked "❌ Revoked / Repealed / Abolished"
   # @live_part_revoked "⭕ Part Revocation / Repeal" - used for partial revocations (future)
 
-  # Set live status based on document_status from legislation.gov.uk
-  # New legislation is assumed to be in force unless explicitly marked otherwise
+  # Derive live status from metadata.
+  #
+  # Priority:
+  #   1. Title contains "(repealed ...)" or "(revoked ...)" — definitive from legislation.gov.uk
+  #   2. document_status "repealed"/"revoked" — definitive
+  #   3. Everything else (final, revised, prospective, empty) — not enough to determine
+  #      live status from metadata alone; defaults to in_force so that the reconciliation
+  #      stage can combine with changes data
   defp set_live_status(metadata) do
+    title = metadata[:Title_EN] || ""
     doc_status = metadata[:document_status] || ""
+    title_lower = String.downcase(title)
 
     {live, live_description} =
-      case String.downcase(doc_status) do
-        "final" ->
-          {@live_in_force, "Current legislation"}
+      cond do
+        # Title "(repealed ...)" or "(revoked ...)" is definitive
+        Regex.match?(~r/\(repealed\b/, title_lower) ->
+          {@live_revoked, "Repealed (from title)"}
 
-        "revised" ->
-          {@live_in_force, "Revised - has been amended"}
+        Regex.match?(~r/\(revoked\b/, title_lower) ->
+          {@live_revoked, "Revoked (from title)"}
 
-        "prospective" ->
-          {@live_in_force, "Prospective - not yet in force"}
-
-        "repealed" ->
+        # document_status "repealed"/"revoked" is definitive
+        String.downcase(doc_status) == "repealed" ->
           {@live_revoked, "Repealed"}
 
-        "revoked" ->
+        String.downcase(doc_status) == "revoked" ->
           {@live_revoked, "Revoked"}
 
-        "" ->
-          # Default for new legislation
+        # Everything else: not enough info to determine — default to in_force
+        true ->
           {@live_in_force, ""}
-
-        other ->
-          {@live_in_force, "Status: #{other}"}
       end
 
     metadata
