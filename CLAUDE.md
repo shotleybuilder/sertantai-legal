@@ -28,6 +28,17 @@
 - Organization management (comes from hub)
 - Billing/subscriptions (comes from hub)
 
+## Git Commit Rules
+
+**Do NOT use `--no-verify` on commits for feature implementations, bug fixes, or any code changes.** Git hooks (pre-commit, pre-push) exist to maintain code quality — formatting, linting, tests — and must run on substantive changes.
+
+Only use `--no-verify` when **explicitly instructed by the user**, typically for:
+- Bash script changes (hooks may not apply)
+- Session/documentation-only changes
+- Minor non-code changes where hooks are irrelevant
+
+When in doubt, **run hooks** (omit `--no-verify`).
+
 ## Quick Reference
 
 ### Development Commands
