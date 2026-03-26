@@ -161,7 +161,7 @@
 				fitness_plant_pop: number;
 				fitness_property_pop: number;
 				fitness_sector_pop: number;
-				fitness_pop: number;
+				has_fitness_pop: number;
 			}>(`
 				SELECT
 					COUNT(*)::int AS total,
@@ -177,7 +177,7 @@
 					COUNT(*) FILTER (WHERE fitness_plant IS NOT NULL AND array_length(fitness_plant, 1) > 0)::int AS fitness_plant_pop,
 					COUNT(*) FILTER (WHERE fitness_property IS NOT NULL AND array_length(fitness_property, 1) > 0)::int AS fitness_property_pop,
 					COUNT(*) FILTER (WHERE fitness_sector IS NOT NULL AND array_length(fitness_sector, 1) > 0)::int AS fitness_sector_pop,
-					COUNT(*) FILTER (WHERE fitness IS NOT NULL AND array_length(fitness, 1) > 0)::int AS fitness_pop
+					COUNT(*) FILTER (WHERE has_fitness = 'true')::int AS has_fitness_pop
 				FROM uk_lrt
 			`);
 
@@ -197,7 +197,7 @@
 					['fitness_plant', p.fitness_plant_pop],
 					['fitness_property', p.fitness_property_pop],
 					['fitness_sector', p.fitness_sector_pop],
-					['fitness', p.fitness_pop]
+					['has_fitness (any)', p.has_fitness_pop]
 				];
 				populationStats = fields.map(([field, populated]) => ({
 					field,

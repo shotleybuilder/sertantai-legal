@@ -131,7 +131,8 @@ const HEAVY_JSONB_COLUMNS = new Set([
 	'responsibilities',
 	'powers',
 	'popimar_details',
-	'rights'
+	'rights',
+	'fitness'
 ]);
 
 /**
