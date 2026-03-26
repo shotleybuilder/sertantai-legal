@@ -9,6 +9,7 @@
 
 	import { authFetch } from '$lib/api/client';
 	import { goto } from '$app/navigation';
+	import { seedDefaultViews as seedDefaults } from '$lib/views/seed-defaults';
 
 	// PGLite sync
 	import { startSync, syncStatus } from '$lib/pglite/sync';
@@ -668,49 +669,8 @@
 		let currentViews: SavedView[] = [];
 		const unsub = svStore.subscribe((v) => { currentViews = v; });
 
-		// Deduplicate
-		const existingViews = new Map<string, string>();
-		for (const view of currentViews) {
-			if (existingViews.has(view.name)) {
-				try { await actions.delete(view.id); } catch { /* dedup */ }
-			} else {
-				existingViews.set(view.name, view.id);
-			}
-		}
-
-		// Update existing default views whose config has changed
-		for (const def of defaultViews) {
-			const existingId = existingViews.get(def.name);
-			if (!existingId) continue;
-			const existing = currentViews.find((v) => v.id === existingId);
-			if (!existing) continue;
-			const defJson = JSON.stringify(def.config);
-			const existingJson = JSON.stringify(existing.config);
-			if (defJson !== existingJson) {
-				try { await actions.update(existingId, { config: def.config }); } catch { /* ignore */ }
-			}
-		}
-
-		// Seed missing
-		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
-		let defaultViewId: string | null = null;
-
-		const defaultViewDef = defaultViews.find((v) => v.isDefault);
-		if (defaultViewDef && existingViews.has(defaultViewDef.name)) {
-			defaultViewId = existingViews.get(defaultViewDef.name) || null;
-		}
-
-		for (const view of missingViews) {
-			try {
-				const saved = await actions.save({ name: view.name, description: view.description, config: view.config });
-				if (view.isDefault && saved?.id) {
-					defaultViewId = saved.id;
-				}
-				existingViews.set(view.name, saved?.id || '');
-			} catch (err) {
-				console.error('[LRT Admin] Failed to seed view:', view.name, err);
-			}
-		}
+		// Dedup, update stale configs, seed missing — tested in seed-defaults.test.ts
+		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
 
 		// Auto-select default view
 		let activeId: string | null = null;
