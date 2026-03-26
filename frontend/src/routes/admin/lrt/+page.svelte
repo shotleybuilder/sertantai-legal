@@ -42,6 +42,7 @@
 		is_making: boolean | null;
 		has_fitness: string;
 		lat_count: number;
+		duty_type: Record<string, unknown> | null;
 		live: string | null;
 		live_source: string | null;
 		live_conflict: boolean | null;
@@ -185,7 +186,7 @@
 	];
 
 	// LRT columns queried from PGLite
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, lat_count, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, lat_count, duty_type, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
 
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
@@ -202,6 +203,13 @@
 		{ name: 'is_making', label: 'Making?', width: 80, dataType: 'text' },
 		{ name: 'has_fitness', label: 'Fitness?', width: 80, dataType: 'select', selectOptions: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }] },
 		{ name: 'lat_count', label: 'LAT', width: 70, dataType: 'number' },
+		{ name: 'duty_type', label: 'Duty Type', width: 100, dataType: 'text',
+			format: (v) => {
+				const val = v as Record<string, unknown> | null;
+				if (!val || Object.keys(val).length === 0) return '-';
+				return Object.keys(val).join(', ');
+			}
+		},
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
 		{ name: 'live_source', label: 'Source', width: 90, dataType: 'text' },
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
@@ -315,7 +323,7 @@
 	const VIEW_COLUMNS = ['name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
 	const RECENT_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'family', 'live'];
 	const LIVE_VIEW_COLUMNS = ['name', 'title_en', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict'];
-	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'live', 'function', 'is_making', 'lat_count', 'family'];
+	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict', 'function', 'is_making', 'duty_type', 'lat_count', 'family'];
 
 	// Map view name → custom query SQL
 	const viewCustomQueryMapping: Record<string, string> = {
@@ -340,6 +348,7 @@
 		filters?: FilterCondition[];
 		sorting?: SortConfig[];
 		grouping?: GroupConfig[];
+		pageSize?: number;
 	}): ViewConfig {
 		return {
 			filters: opts.filters ?? [],
@@ -349,7 +358,7 @@
 			columnVisibility: colVis(opts.visibleCols),
 			columnOrder: opts.visibleCols,
 			columnWidths: {},
-			pageSize: 25
+			pageSize: opts.pageSize ?? 25
 		};
 	}
 
@@ -419,7 +428,8 @@
 			config: makeViewConfig({
 				visibleCols: LAT_CLEANUP_COLUMNS,
 				sorting: [{ column: 'lat_count', direction: 'desc' }],
-				grouping: []
+				grouping: [],
+				pageSize: 500
 			}),
 			customQuery: viewCustomQueryMapping['LAT Cleanup']
 		}
@@ -727,6 +737,7 @@
 		gridRef.setFilters(cfg.filters as FilterCondition[], cfg.filterLogic);
 		gridRef.setSorting(cfg.sorting as SortConfig[]);
 		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
+		if (cfg.pageSize) gridRef.setPageSize(cfg.pageSize);
 	}
 
 	// Switch to a view (loads the query + applies config)
