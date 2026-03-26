@@ -56,6 +56,7 @@ sertantai-auth (port 4000)        <-- JWT issuer, optional dependency
     PostgreSQL (port 5438)
 
 sertantai-hub (port 4006)         <-- Orchestrator, mediates auth
+    Frontend (port 5173)          <-- SvelteKit (login UI)
     PostgreSQL (port 5435)
 
 sertantai-legal
@@ -100,6 +101,7 @@ sudo ln -sf $(pwd)/scripts/development/sert-legal-restart /usr/local/bin/sert-le
 | sertantai-auth Phoenix | 4000 | sertantai-auth |
 | sertantai-auth PostgreSQL | 5438 | sertantai-auth |
 | sertantai-hub Phoenix | 4006 | sertantai-hub |
+| sertantai-hub Frontend | 5173 | sertantai-hub |
 | sertantai-hub PostgreSQL | 5435 | sertantai-hub |
 | sertantai-legal Phoenix | 4003 | sertantai-legal |
 | sertantai-legal PostgreSQL | 5436 | sertantai-legal |

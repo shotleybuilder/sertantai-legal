@@ -50,6 +50,7 @@ AUTH_DB_PORT=5438
 # sertantai-hub project location
 HUB_PROJECT_ROOT="$HOME/Desktop/sertantai-hub"
 HUB_PORT=4006
+HUB_FRONTEND_PORT=5173
 HUB_DB_PORT=5435
 
 echo "Starting sertantai-legal development servers..."
@@ -199,6 +200,10 @@ if [ "$MANAGE_HUB" = true ]; then
         echo "   Starting sertantai-hub Phoenix server (port $HUB_PORT)..."
         gnome-terminal --tab --title="sertantai-hub-backend" --working-directory="$HUB_PROJECT_ROOT/backend" -- bash -c "echo 'Starting sertantai-hub on port $HUB_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
 
+        # Start hub frontend in a terminal tab
+        echo "   Starting sertantai-hub frontend (port $HUB_FRONTEND_PORT)..."
+        gnome-terminal --tab --title="sertantai-hub-frontend" --working-directory="$HUB_PROJECT_ROOT/frontend" -- bash -c "echo 'Starting sertantai-hub frontend on port $HUB_FRONTEND_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+
         # Wait for hub to be healthy
         echo -n "   Waiting for sertantai-hub to be ready..."
         for i in $(seq 1 30); do
@@ -336,6 +341,7 @@ if [ "$MANAGE_AUTH" = true ] || check_auth_running 2>/dev/null; then
 fi
 if [ "$MANAGE_HUB" = true ] || check_hub_running 2>/dev/null; then
     echo "   Hub:      http://localhost:$HUB_PORT  (sertantai-hub)"
+    echo "   Hub UI:   http://localhost:$HUB_FRONTEND_PORT  (sertantai-hub frontend)"
 fi
 if [ "$ENABLE_ZENOH" = true ]; then
     echo "   Zenoh:    enabled (tenant=dev, multicast scouting)"

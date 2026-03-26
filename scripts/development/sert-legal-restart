@@ -57,6 +57,7 @@ AUTH_PORT=4000
 # sertantai-hub project location
 HUB_PROJECT_ROOT="$HOME/Desktop/sertantai-hub"
 HUB_PORT=4006
+HUB_FRONTEND_PORT=5173
 
 if [ "$FRONTEND_ONLY" = true ]; then
     echo "Restarting frontend only..."
@@ -288,6 +289,9 @@ if [ "$MANAGE_HUB" = true ]; then
         # Start hub Phoenix server
         gnome-terminal --tab --title="sertantai-hub-backend" --working-directory="$HUB_PROJECT_ROOT/backend" -- bash -c "echo 'Starting sertantai-hub on port $HUB_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
 
+        # Start hub frontend
+        gnome-terminal --tab --title="sertantai-hub-frontend" --working-directory="$HUB_PROJECT_ROOT/frontend" -- bash -c "echo 'Starting sertantai-hub frontend on port $HUB_FRONTEND_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+
         echo -n "   Waiting for sertantai-hub..."
         for i in $(seq 1 30); do
             if check_hub_running; then
@@ -400,6 +404,7 @@ else
     fi
     if [ "$MANAGE_HUB" = true ] || check_hub_running 2>/dev/null; then
         echo "   Hub:      http://localhost:$HUB_PORT  (sertantai-hub)"
+        echo "   Hub UI:   http://localhost:$HUB_FRONTEND_PORT  (sertantai-hub frontend)"
     fi
 fi
 echo ""
