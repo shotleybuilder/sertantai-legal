@@ -23,19 +23,33 @@ export interface ViewActions {
 }
 
 /**
+ * Deterministic JSON.stringify with sorted keys (handles JSONB key-order differences from PGLite).
+ */
+function stableStringify(obj: unknown): string {
+	return JSON.stringify(obj, (_, v) =>
+		v && typeof v === 'object' && !Array.isArray(v)
+			? Object.keys(v)
+					.sort()
+					.reduce((acc: Record<string, unknown>, k) => {
+						acc[k] = (v as Record<string, unknown>)[k];
+						return acc;
+					}, {})
+			: v
+	);
+}
+
+/**
  * Compare two ViewConfig objects for equality.
- * Normalizes undefined vs missing keys and pageSize defaults.
+ * Normalizes undefined vs missing keys, pageSize defaults, and JSONB key order.
  */
 function configsEqual(a: ViewConfig, b: ViewConfig): boolean {
-	// Compare each field individually to avoid serialization order issues
-	if (JSON.stringify(a.filters) !== JSON.stringify(b.filters)) return false;
+	if (stableStringify(a.filters) !== stableStringify(b.filters)) return false;
 	if ((a.filterLogic ?? 'and') !== (b.filterLogic ?? 'and')) return false;
-	if (JSON.stringify(a.sorting) !== JSON.stringify(b.sorting)) return false;
-	if (JSON.stringify(a.grouping) !== JSON.stringify(b.grouping)) return false;
-	if (JSON.stringify(a.columnVisibility) !== JSON.stringify(b.columnVisibility)) return false;
-	if (JSON.stringify(a.columnOrder) !== JSON.stringify(b.columnOrder)) return false;
-	if (JSON.stringify(a.columnWidths) !== JSON.stringify(b.columnWidths)) return false;
-	// pageSize: treat undefined and null as equivalent
+	if (stableStringify(a.sorting) !== stableStringify(b.sorting)) return false;
+	if (stableStringify(a.grouping) !== stableStringify(b.grouping)) return false;
+	if (stableStringify(a.columnVisibility) !== stableStringify(b.columnVisibility)) return false;
+	if (JSON.stringify(a.columnOrder) !== JSON.stringify(b.columnOrder)) return false; // arrays — order matters
+	if (stableStringify(a.columnWidths) !== stableStringify(b.columnWidths)) return false;
 	if ((a.pageSize ?? null) !== (b.pageSize ?? null)) return false;
 	return true;
 }
@@ -68,7 +82,11 @@ export async function seedDefaultViews(
 	const existingViews = new Map<string, string>();
 	for (const view of currentViews) {
 		if (existingViews.has(view.name)) {
-			try { await actions.delete(view.id); } catch { /* dedup */ }
+			try {
+				await actions.delete(view.id);
+			} catch {
+				/* dedup */
+			}
 		} else {
 			existingViews.set(view.name, view.id);
 		}
@@ -95,7 +113,11 @@ export async function seedDefaultViews(
 	// Seed missing
 	const missingViews = defaults.filter((v) => !existingViews.has(v.name));
 	for (const view of missingViews) {
-		const saved = await actions.save({ name: view.name, description: view.description, config: view.config });
+		const saved = await actions.save({
+			name: view.name,
+			description: view.description,
+			config: view.config
+		});
 		if (view.isDefault && saved?.id) {
 			result.defaultViewId = saved.id;
 		}

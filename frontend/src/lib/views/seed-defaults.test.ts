@@ -106,6 +106,22 @@ describe('configsEqual', () => {
 		const b = makeConfig({ columnVisibility: { name: true, title: true, duty_type: true } });
 		expect(_configsEqual(a, b)).toBe(false);
 	});
+
+	it('treats same columnVisibility with different key order as equal (JSONB round-trip)', () => {
+		const a = makeConfig({
+			columnVisibility: { name: true, title: true, year: false, type_code: true }
+		});
+		const b = makeConfig({
+			columnVisibility: { type_code: true, year: false, name: true, title: true }
+		});
+		expect(_configsEqual(a, b)).toBe(true);
+	});
+
+	it('treats same columnWidths with different key order as equal', () => {
+		const a = makeConfig({ columnWidths: { name: 100, title: 200 } });
+		const b = makeConfig({ columnWidths: { title: 200, name: 100 } });
+		expect(_configsEqual(a, b)).toBe(true);
+	});
 });
 
 // ── seedDefaultViews ────────────────────────────────────────────

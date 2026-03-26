@@ -529,6 +529,9 @@
 		return name;
 	})();
 
+	// Visible columns for the active view — set imperatively by switchToView()
+	let activeVisibleColumns: string[] = VIEW_COLUMNS;
+
 	async function handleReparseViewConfirm() {
 		reparseViewLoading = true;
 		reparseViewError = null;
@@ -718,6 +721,9 @@
 		const query = getQueryForView(viewName);
 		currentQuery = query;
 		currentFamily = viewFamilyMapping[viewName] ?? null;
+		// Resolve visible columns for this view (used by GridLite config on {#key} remount)
+		const viewDef = defaultViews.find((v) => v.name === viewName);
+		activeVisibleColumns = viewDef?.config.columnOrder ?? VIEW_COLUMNS;
 	}
 
 	// Handle sidebar view selection
@@ -968,7 +974,8 @@
 				id: 'lrt-admin',
 				columns,
 				defaultSorting: [{ column: 'name', direction: 'asc' }],
-				defaultVisibleColumns: VIEW_COLUMNS,
+				defaultVisibleColumns: activeVisibleColumns,
+				defaultColumnOrder: activeVisibleColumns,
 				pagination: { pageSize: 25 }
 			}}
 			features={{
