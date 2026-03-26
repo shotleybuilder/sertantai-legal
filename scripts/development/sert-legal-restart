@@ -46,7 +46,7 @@ SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 
 # sertantai-auth project location
-AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai_auth"
+AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai-auth"
 AUTH_PORT=4000
 
 if [ "$FRONTEND_ONLY" = true ]; then
@@ -222,7 +222,7 @@ if [ "$MANAGE_AUTH" = true ]; then
         echo "   sertantai-auth not running, starting it..."
 
         # Check/start auth postgres container
-        if ! docker ps --format '{{.Names}}' | grep -q "sertantai-auth.*postgres\|sertantai_auth.*postgres"; then
+        if ! docker ps --format '{{.Names}}' | grep -q "sertantai-auth.*postgres"; then
             echo "   Starting sertantai-auth PostgreSQL..."
             cd "$AUTH_PROJECT_ROOT"
             docker compose -f docker-compose.dev.yml up -d postgres

@@ -78,7 +78,7 @@ The `--auth` flag:
 
 ### Auth project location
 
-The scripts expect sertantai-auth at `~/Desktop/sertantai_auth`. If your layout differs, update `AUTH_PROJECT_ROOT` in the scripts.
+The scripts expect sertantai-auth at `~/Desktop/sertantai-auth`. If your layout differs, update `AUTH_PROJECT_ROOT` in the scripts.
 
 ## Symlink Setup
 
@@ -93,8 +93,8 @@ sudo ln -sf $(pwd)/scripts/development/sert-legal-restart /usr/local/bin/sert-le
 
 | Service | Port | Project |
 |---------|------|---------|
-| sertantai-auth Phoenix | 4000 | sertantai_auth |
-| sertantai-auth PostgreSQL | 5435 | sertantai_auth |
+| sertantai-auth Phoenix | 4000 | sertantai-auth |
+| sertantai-auth PostgreSQL | 5435 | sertantai-auth |
 | sertantai-legal Phoenix | 4003 | sertantai-legal |
 | sertantai-legal PostgreSQL | 5436 | sertantai-legal |
 | sertantai-legal Electric | 3002 | sertantai-legal |
@@ -110,14 +110,14 @@ The hub service is the microservices orchestrator. It is **not required** for lo
 - **Docker** + **docker compose**
 - **Elixir/Phoenix** backend in `backend/`
 - **SvelteKit** frontend in `frontend/`
-- **sertantai_auth** at `~/Desktop/sertantai_auth` (for `--auth` flag)
+- **sertantai-auth** at `~/Desktop/sertantai-auth` (for `--auth` flag)
 
 ## Troubleshooting
 
 ### sertantai-auth won't start
 - Check if port 4000 is already in use: `lsof -ti:4000`
-- Verify auth project exists: `ls ~/Desktop/sertantai_auth/mix.exs`
-- Check auth database: `docker ps | grep sertantai_auth`
+- Verify auth project exists: `ls ~/Desktop/sertantai-auth/mix.exs`
+- Check auth database: `docker ps | grep sertantai-auth`
 
 ### Frontend shows "vite: not found"
 ```bash

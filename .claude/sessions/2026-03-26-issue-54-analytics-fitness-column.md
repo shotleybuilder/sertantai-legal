@@ -4,10 +4,8 @@
 **Issue**: https://github.com/shotleybuilder/sertantai-legal/issues/54
 
 ## Todo
-- [ ] Remove `fitness` column reference from analytics population query
-- [ ] Replace with `has_fitness` or derive from individual fitness_* columns
-- [ ] Test analytics page loads without errors
+- [x] Remove `fitness` column reference from analytics population query
+- [x] Replace with `has_fitness` or derive from individual fitness_* columns
+- [x] Exclude `fitness` from Electric shape columns + bump SCHEMA_VERSION
 
-## Notes
-- PGLite schema has fitness_person/process/place/plant/property/sector + has_fitness (TEXT)
-- No `fitness` (JSONB[]) column — excluded from Electric sync as heavy data
+**Ended**: 2026-03-26
