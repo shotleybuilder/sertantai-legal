@@ -5,8 +5,8 @@
 	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
-	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
-	import type { ViewConfig, SavedView, ViewStoreBundle } from '@shotleybuilder/svelte-gridlite-views';
+	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
+	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -18,6 +18,8 @@
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import LatParseDialog from '$lib/components/LatParseDialog.svelte';
+	import { seedDefaultViews as seedDefaults, seedDefaultGroups, assignViewsToGroups } from '$lib/views/seed-defaults';
+	import type { GroupDef } from '$lib/views/seed-defaults';
 
 	const queryClient = useQueryClient();
 
@@ -366,12 +368,24 @@
 	const viewFamilyMapping: Record<string, string> = {};
 	for (const def of familyViewDefs) viewFamilyMapping[def.name] = def.family;
 
-	const viewGroupMapping: Record<string, string> = {};
-	for (const def of familyViewDefs) viewGroupMapping[def.name] = def.group;
-	viewGroupMapping['All Queue'] = 'queue';
-	viewGroupMapping['Missing LAT'] = 'queue';
-	viewGroupMapping['Stale LAT'] = 'queue';
-	viewGroupMapping['Live'] = 'analytics';
+	// Default group definitions for ViewSidebar seeding
+	const defaultGroupDefs: GroupDef[] = [
+		{ name: 'Queue', icon: '📋' },
+		{ name: '💙 S', icon: '💙' },
+		{ name: '💚 E', icon: '💚' },
+		{ name: '💜 HR', icon: '💜' },
+		{ name: 'Analytics', icon: '📊' }
+	];
+
+	// Map view name → group name (for seeding assignments)
+	const viewToGroupName: Record<string, string> = {};
+	for (const def of familyViewDefs) {
+		viewToGroupName[def.name] = def.group === 'safety' ? '💙 S' : def.group === 'environment' ? '💚 E' : '💜 HR';
+	}
+	viewToGroupName['All Queue'] = 'Queue';
+	viewToGroupName['Missing LAT'] = 'Queue';
+	viewToGroupName['Stale LAT'] = 'Queue';
+	viewToGroupName['Live'] = 'Analytics';
 
 	// Column visibility sets
 	const allCols = columns.map((c) => c.name);
@@ -402,15 +416,6 @@
 			pageSize: 50
 		};
 	}
-
-	interface ViewGroupDef { id: string; name: string; order: number }
-	const viewGroups: ViewGroupDef[] = [
-		{ id: 'queue', name: 'Queue', order: 0 },
-		{ id: 'safety', name: '💙 S', order: 1 },
-		{ id: 'environment', name: '💚 E', order: 2 },
-		{ id: 'hr', name: '💜 HR', order: 3 },
-		{ id: 'analytics', name: 'Analytics', order: 4 }
-	];
 
 	interface ViewDef {
 		name: string;
@@ -448,66 +453,31 @@
 		}
 	];
 
-	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
-
 	// ── Sidebar state ───────────────────────────────────────────────
 
-	let sidebarOpen = false;
-
-	interface SidebarViewItem { id: string; name: string; groupId: string; order: number; isDefault?: boolean }
-	let sidebarViews: SidebarViewItem[] = [];
-
-	function rebuildSidebarViews(views: SavedView[]) {
-		sidebarViews = views
-			.filter((v) => defaultViews.some((dv) => dv.name === v.name))
-			.map((v): SidebarViewItem => ({
-				id: v.id,
-				name: v.name,
-				groupId: viewGroupMapping[v.name] || 'queue',
-				order: viewOrderMap.get(v.name) ?? 1000,
-				isDefault: defaultViews.find((dv) => dv.name === v.name)?.isDefault
-			}))
-			.sort((a, b) => a.order - b.order);
-	}
+	let sidebarVisible = false;
 
 	// ── View lifecycle ──────────────────────────────────────────────
 
 	async function seedDefaultViews() {
 		if (!viewStore) return;
-		const { actions, savedViews: svStore } = viewStore;
+		const { actions, savedViews: svStore, groupActions, savedGroups: grpStore } = viewStore;
 		await actions.waitForReady();
 
 		let currentViews: SavedView[] = [];
 		const unsub = svStore.subscribe((v) => { currentViews = v; });
 
-		// Deduplicate
-		const existingViews = new Map<string, string>();
-		for (const view of currentViews) {
-			if (existingViews.has(view.name)) {
-				try { await actions.delete(view.id); } catch { /* dedup */ }
-			} else {
-				existingViews.set(view.name, view.id);
-			}
-		}
+		// Dedup, update stale configs, seed missing
+		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
 
-		// Seed missing
-		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
-		let defaultViewId: string | null = null;
-
-		const defaultViewDef = defaultViews.find((v) => v.isDefault);
-		if (defaultViewDef && existingViews.has(defaultViewDef.name)) {
-			defaultViewId = existingViews.get(defaultViewDef.name) || null;
-		}
-
-		for (const view of missingViews) {
-			try {
-				const saved = await actions.save({ name: view.name, description: view.description, config: view.config });
-				if (view.isDefault && saved?.id) defaultViewId = saved.id;
-				existingViews.set(view.name, saved?.id || '');
-			} catch (err) {
-				console.error('[LAT Queue] Failed to seed view:', view.name, err);
-			}
-		}
+		// Seed groups and assign views to groups
+		let currentGroups: ViewGroup[] = [];
+		const unsubGrp = grpStore.subscribe((g) => { currentGroups = g; });
+		const groupNameToId = await seedDefaultGroups(defaultGroupDefs, currentGroups, groupActions);
+		// Re-read views after seeding (IDs may have changed)
+		svStore.subscribe((v) => { currentViews = v; })();
+		await assignViewsToGroups(viewToGroupName, groupNameToId, currentViews, groupActions);
+		unsubGrp();
 
 		// Auto-select default view
 		let activeId: string | null = null;
@@ -526,9 +496,7 @@
 			}
 		}
 
-		rebuildSidebarViews(currentViews);
 		unsub();
-		svStore.subscribe((views) => rebuildSidebarViews(views));
 	}
 
 	function applyViewToGrid(view: SavedView) {
@@ -545,14 +513,11 @@
 		currentFamily = viewFamilyMapping[viewName] ?? null;
 	}
 
-	async function handleViewSelect(viewItem: SidebarViewItem) {
-		if (!viewStore) return;
-		const view = await viewStore.actions.load(viewItem.id);
-		if (view) {
-			switchToView(viewItem.name);
-			setTimeout(() => applyViewToGrid(view), 50);
-		}
-		sidebarOpen = false;
+	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
+		const view = e.detail.view;
+		switchToView(view.name);
+		setTimeout(() => applyViewToGrid(view), 50);
+		sidebarVisible = false;
 	}
 
 	// ── Grid state management ───────────────────────────────────────
@@ -666,31 +631,23 @@
 
 <div class="flex h-full relative">
 	<!-- Mobile sidebar overlay -->
-	{#if sidebarOpen}
+	{#if sidebarVisible}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarOpen = false)} />
+		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarVisible = false)} />
 	{/if}
 
 	<!-- View Sidebar -->
-	<div class="shrink-0 {sidebarOpen ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
-		<div class="w-[220px] h-full bg-white border-r border-gray-200 overflow-y-auto py-2">
-			{#each viewGroups as group}
-				{@const groupViews = sidebarViews.filter((v) => v.groupId === group.id)}
-				{#if groupViews.length > 0}
-					<div class="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{group.name}</div>
-					{#each groupViews as view}
-						<button
-							class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 truncate"
-							on:click={() => handleViewSelect(view)}
-						>
-							{view.name}
-						</button>
-					{/each}
-				{/if}
-			{/each}
+	{#if viewStore}
+		<div class="shrink-0 {sidebarVisible ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
+			<ViewSidebar
+				{viewStore}
+				storageKey="lat-queue-sidebar"
+				isDocked={true}
+				on:viewSelected={handleViewSelected}
+			/>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-auto px-6 py-4 space-y-6">
@@ -699,7 +656,7 @@
 			<div class="flex items-center gap-3">
 				<button
 					class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
-					on:click={() => (sidebarOpen = !sidebarOpen)}
+					on:click={() => (sidebarVisible = !sidebarVisible)}
 					title="Toggle views sidebar"
 				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
