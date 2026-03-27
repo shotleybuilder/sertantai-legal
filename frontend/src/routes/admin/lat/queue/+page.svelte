@@ -570,8 +570,10 @@
 	$: isLoading = !$syncStatus.connected && !ready;
 
 	let hasActiveView = false;
+	let activeViewUnsub: (() => void) | null = null;
 	$: if (viewStore) {
-		viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; })();
+		activeViewUnsub?.();
+		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
 	}
 
 	// Reparse view record count
@@ -621,6 +623,7 @@
 	});
 
 	onDestroy(() => {
+		activeViewUnsub?.();
 		viewStore?.destroy();
 	});
 </script>

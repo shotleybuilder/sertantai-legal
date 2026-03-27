@@ -810,13 +810,16 @@
 	});
 
 	onDestroy(() => {
+		activeViewUnsub?.();
 		viewStore?.destroy();
 	});
 
-	// Reactive check for active view id
+	// Live subscription to active view id
 	let hasActiveView = false;
+	let activeViewUnsub: (() => void) | null = null;
 	$: if (viewStore) {
-		viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; })();
+		activeViewUnsub?.();
+		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
 	}
 
 	// Reparse view record count — use PGLite query to count
