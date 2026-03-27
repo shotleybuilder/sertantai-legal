@@ -714,20 +714,26 @@
 	}
 
 	// Switch to a view (loads the query + applies config)
-	function switchToView(viewName: string) {
+	function switchToView(viewName: string, savedConfig?: ViewConfig) {
 		const query = getQueryForView(viewName);
 		currentQuery = query;
 		currentFamily = viewFamilyMapping[viewName] ?? null;
 		activeViewName = viewName;
-		// Resolve visible columns for this view (used by GridLite config on {#key} remount)
-		const viewDef = defaultViews.find((v) => v.name === viewName);
-		activeVisibleColumns = viewDef?.config.columnOrder ?? VIEW_COLUMNS;
+		// Resolve visible columns: prefer saved view config, fall back to code defaults
+		if (savedConfig?.columnVisibility) {
+			activeVisibleColumns = Object.entries(savedConfig.columnVisibility)
+				.filter(([, visible]) => visible)
+				.map(([name]) => name);
+		} else {
+			const viewDef = defaultViews.find((v) => v.name === viewName);
+			activeVisibleColumns = viewDef?.config.columnOrder ?? VIEW_COLUMNS;
+		}
 	}
 
 	// Handle ViewSidebar view selection
 	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
 		const view = e.detail.view;
-		switchToView(view.name);
+		switchToView(view.name, view.config);
 		setTimeout(() => applyViewToGrid(view), 50);
 		sidebarVisible = false; // auto-close on mobile
 	}

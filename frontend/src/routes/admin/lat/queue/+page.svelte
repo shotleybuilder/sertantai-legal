@@ -507,15 +507,26 @@
 		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
 	}
 
-	function switchToView(viewName: string) {
+	// Track visible columns for GridLite config on {#key} remount
+	let activeVisibleColumns: string[] = allCols;
+
+	function switchToView(viewName: string, savedConfig?: ViewConfig) {
 		currentViewName = viewName;
 		currentQuery = getQueryForView(viewName);
 		currentFamily = viewFamilyMapping[viewName] ?? null;
+		if (savedConfig?.columnVisibility) {
+			activeVisibleColumns = Object.entries(savedConfig.columnVisibility)
+				.filter(([, visible]) => visible)
+				.map(([name]) => name);
+		} else {
+			const viewDef = defaultViews.find((v) => v.name === viewName);
+			activeVisibleColumns = viewDef?.config.columnOrder ?? allCols;
+		}
 	}
 
 	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
 		const view = e.detail.view;
-		switchToView(view.name);
+		switchToView(view.name, view.config);
 		setTimeout(() => applyViewToGrid(view), 50);
 		sidebarVisible = false;
 	}
@@ -769,7 +780,7 @@
 					id: 'lat-queue',
 					columns,
 					defaultSorting: [{ column: 'updated_at', direction: 'asc' }],
-					defaultVisibleColumns: allCols,
+					defaultVisibleColumns: activeVisibleColumns,
 					pagination: { pageSize: 50 }
 				}}
 				features={{
