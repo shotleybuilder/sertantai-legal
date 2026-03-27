@@ -150,22 +150,22 @@ defmodule SertantaiLegalWeb.AnalyticsController do
 
     recent =
       Enum.map(recent_rows, fn [
-                                  session_id,
-                                  session_type,
-                                  status,
-                                  year,
-                                  month,
-                                  day_from,
-                                  day_to,
-                                  type_code,
-                                  total_fetched,
-                                  group1_count,
-                                  persisted_count,
-                                  lat_inserted,
-                                  lat_annotations,
-                                  inserted_at,
-                                  updated_at
-                                ] ->
+                                 session_id,
+                                 session_type,
+                                 status,
+                                 year,
+                                 month,
+                                 day_from,
+                                 day_to,
+                                 type_code,
+                                 total_fetched,
+                                 group1_count,
+                                 persisted_count,
+                                 lat_inserted,
+                                 lat_annotations,
+                                 inserted_at,
+                                 updated_at
+                               ] ->
         %{
           session_id: session_id,
           session_type: session_type,
@@ -201,29 +201,10 @@ defmodule SertantaiLegalWeb.AnalyticsController do
   @live_pipeline_coverage_sql """
   SELECT
     COUNT(*)::int AS total,
-    COUNT(live_source)::int AS reconciled,
-    COUNT(CASE WHEN live_from_changes IS NOT NULL AND live_from_metadata IS NULL THEN 1 END)::int AS changes_only,
-    COUNT(CASE WHEN live_from_changes IS NULL AND live_from_metadata IS NOT NULL THEN 1 END)::int AS metadata_only,
-    COUNT(CASE WHEN live_source IS NULL AND live IS NOT NULL THEN 1 END)::int AS airtable_only,
+    COUNT(live_from_changes)::int AS parsed,
+    COUNT(CASE WHEN live IS NOT NULL AND live_from_changes IS NULL THEN 1 END)::int AS airtable_only,
     COUNT(CASE WHEN live IS NULL THEN 1 END)::int AS no_status
   FROM uk_lrt
-  """
-
-  @live_agreement_sql """
-  SELECT
-    COUNT(*)::int AS reconciled,
-    COUNT(CASE WHEN live_conflict = false THEN 1 END)::int AS agreeing,
-    COUNT(CASE WHEN live_conflict = true THEN 1 END)::int AS conflicting
-  FROM uk_lrt
-  WHERE live_source IS NOT NULL
-  """
-
-  @live_conflict_breakdown_sql """
-  SELECT live_from_changes, live_from_metadata, live_source, COUNT(*)::int AS count
-  FROM uk_lrt
-  WHERE live_conflict = true
-  GROUP BY live_from_changes, live_from_metadata, live_source
-  ORDER BY count DESC
   """
 
   # Check both rescinded_by and affected_by JSONB — the old parser misclassified
@@ -294,7 +275,7 @@ defmodule SertantaiLegalWeb.AnalyticsController do
   SELECT
     family,
     COUNT(*)::int AS total,
-    COUNT(live_source)::int AS reconciled,
+    COUNT(live_from_changes)::int AS parsed,
     COUNT(CASE WHEN live = '✔ In force' THEN 1 END)::int AS in_force,
     COUNT(CASE WHEN live = '❌ Revoked / Repealed / Abolished' THEN 1 END)::int AS revoked,
     COUNT(CASE WHEN live = '⭕ Part Revocation / Repeal' THEN 1 END)::int AS partial,
@@ -325,8 +306,6 @@ defmodule SertantaiLegalWeb.AnalyticsController do
     # Run all queries in parallel via Task.async
     tasks = %{
       coverage: Task.async(fn -> Repo.query(@live_pipeline_coverage_sql) end),
-      agreement: Task.async(fn -> Repo.query(@live_agreement_sql) end),
-      conflicts: Task.async(fn -> Repo.query(@live_conflict_breakdown_sql) end),
       misclassified: Task.async(fn -> Repo.query(@live_misclassified_sql) end),
       affects: Task.async(fn -> Repo.query(@live_affect_distribution_sql) end),
       targets: Task.async(fn -> Repo.query(@live_target_distribution_sql) end),
@@ -334,22 +313,8 @@ defmodule SertantaiLegalWeb.AnalyticsController do
       applied: Task.async(fn -> Repo.query(@live_applied_status_sql) end)
     }
 
-    {:ok, %{rows: [[total, reconciled, changes_only, metadata_only, airtable_only, no_status]]}} =
+    {:ok, %{rows: [[total, parsed, airtable_only, no_status]]}} =
       Task.await(tasks.coverage)
-
-    {:ok, %{rows: [[rec_total, agreeing, conflicting]]}} = Task.await(tasks.agreement)
-
-    {:ok, %{rows: conflict_rows}} = Task.await(tasks.conflicts)
-
-    conflict_breakdown =
-      Enum.map(conflict_rows, fn [from_changes, from_metadata, source, count] ->
-        %{
-          live_from_changes: from_changes,
-          live_from_metadata: from_metadata,
-          live_source: source,
-          count: count
-        }
-      end)
 
     {:ok, %{rows: [[misclassified]]}} = Task.await(tasks.misclassified)
 
@@ -370,11 +335,11 @@ defmodule SertantaiLegalWeb.AnalyticsController do
     {:ok, %{rows: family_rows}} = Task.await(tasks.families)
 
     families =
-      Enum.map(family_rows, fn [family, total_f, reconciled_f, in_force, revoked, partial, unknown] ->
+      Enum.map(family_rows, fn [family, total_f, parsed_f, in_force, revoked, partial, unknown] ->
         %{
           family: family,
           total: total_f,
-          reconciled: reconciled_f,
+          parsed: parsed_f,
           in_force: in_force,
           revoked: revoked,
           partial: partial,
@@ -392,17 +357,9 @@ defmodule SertantaiLegalWeb.AnalyticsController do
     json(conn, %{
       pipeline_coverage: %{
         total: total,
-        reconciled: reconciled,
-        changes_only: changes_only,
-        metadata_only: metadata_only,
+        parsed: parsed,
         airtable_only: airtable_only,
         no_status: no_status
-      },
-      source_agreement: %{
-        reconciled: rec_total,
-        agreeing: agreeing,
-        conflicting: conflicting,
-        conflict_breakdown: conflict_breakdown
       },
       misclassified: misclassified,
       affect_distribution: affect_distribution,

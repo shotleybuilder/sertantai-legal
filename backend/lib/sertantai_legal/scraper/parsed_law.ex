@@ -66,11 +66,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           # === STATUS ===
           live: String.t() | nil,
           live_description: String.t() | nil,
-          live_source: atom() | nil,
-          live_conflict: boolean() | nil,
           live_from_changes: String.t() | nil,
-          live_from_metadata: String.t() | nil,
-          live_conflict_detail: map() | nil,
 
           # === GEOGRAPHIC EXTENT ===
           geo_extent: String.t() | nil,
@@ -214,11 +210,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     # Status
     live: nil,
     live_description: nil,
-    live_source: nil,
-    live_conflict: nil,
     live_from_changes: nil,
-    live_from_metadata: nil,
-    live_conflict_detail: nil,
 
     # Geographic Extent
     geo_extent: nil,
@@ -457,11 +449,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       # Status
       live: get_string(normalized, :live),
       live_description: get_string(normalized, :live_description),
-      live_source: get_atom(normalized, :live_source),
-      live_conflict: get_boolean(normalized, :live_conflict),
       live_from_changes: get_string(normalized, :live_from_changes),
-      live_from_metadata: get_string(normalized, :live_from_metadata),
-      live_conflict_detail: get_map(normalized, :live_conflict_detail),
 
       # Geographic Extent
       geo_extent: get_string(normalized, :geo_extent),
@@ -794,17 +782,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       x when x == 0.0 -> false
       _ -> nil
     end
-  end
-
-  defp get_atom(map, key) do
-    case Map.get(map, key) do
-      nil -> nil
-      val when is_atom(val) -> val
-      val when is_binary(val) -> String.to_existing_atom(val)
-      _ -> nil
-    end
-  rescue
-    ArgumentError -> nil
   end
 
   defp get_date(map, key) do

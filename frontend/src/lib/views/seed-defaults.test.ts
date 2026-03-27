@@ -162,8 +162,14 @@ describe('seedDefaultViews', () => {
 			columnOrder: ['name', 'title', 'year', 'type_code']
 		});
 		const newConfig = makeConfig({
-			columnVisibility: { name: true, title: true, live: true, live_source: true, duty_type: true },
-			columnOrder: ['name', 'title', 'live', 'live_source', 'duty_type']
+			columnVisibility: {
+				name: true,
+				title: true,
+				live: true,
+				live_from_changes: true,
+				duty_type: true
+			},
+			columnOrder: ['name', 'title', 'live', 'live_from_changes', 'duty_type']
 		});
 
 		const defaults = [makeDef('LAT Cleanup', newConfig)];

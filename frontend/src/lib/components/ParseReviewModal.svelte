@@ -20,7 +20,7 @@
 	export let records: ScrapeRecord[] = [];
 	export let initialIndex: number = 0;
 	export let open: boolean = false;
-	// Optional: limit which stages to run (e.g., ['amendments', 'repeal_revoke'] for cascade re-parse)
+	// Optional: limit which stages to run (e.g., ['amended_by'] for cascade re-parse)
 	export let stages: ParseStage[] | undefined = undefined;
 	// Optional: record ID for sessionless reparse (existing DB record)
 	// When set and sessionId is empty, uses parseRecordStream instead of parseOneStream
@@ -68,8 +68,7 @@
 		extent: { status: 'pending', summary: null },
 		enacted_by: { status: 'pending', summary: null },
 		amending: { status: 'pending', summary: null },
-		amended_by: { status: 'pending', summary: null },
-		repeal_revoke: { status: 'pending', summary: null }
+		amended_by: { status: 'pending', summary: null }
 	};
 
 	// All stages in order
@@ -78,8 +77,7 @@
 		'extent',
 		'enacted_by',
 		'amending',
-		'amended_by',
-		'repeal_revoke'
+		'amended_by'
 	];
 
 	// Human-readable stage names
@@ -88,8 +86,7 @@
 		extent: 'Extent',
 		enacted_by: 'Enacted By',
 		amending: 'Amending',
-		amended_by: 'Amended By',
-		repeal_revoke: 'Repeal/Revoke'
+		amended_by: 'Amended By'
 	};
 
 	$: currentRecord = records[currentIndex];
@@ -182,8 +179,7 @@
 			extent: { status: activeStages.includes('extent') ? 'pending' : 'skipped', summary: null },
 			enacted_by: { status: activeStages.includes('enacted_by') ? 'pending' : 'skipped', summary: null },
 			amending: { status: activeStages.includes('amending') ? 'pending' : 'skipped', summary: null },
-			amended_by: { status: activeStages.includes('amended_by') ? 'pending' : 'skipped', summary: null },
-			repeal_revoke: { status: activeStages.includes('repeal_revoke') ? 'pending' : 'skipped', summary: null }
+			amended_by: { status: activeStages.includes('amended_by') ? 'pending' : 'skipped', summary: null }
 		};
 	}
 
@@ -1121,56 +1117,6 @@
 							{/each}
 						</CollapsibleSection>
 					{/if}
-
-					<!-- STAGE 6 🚫 repeal_revoke -->
-					{@const stage6Config = SECTION_CONFIG.find(s => s.id === 'stage6_repeal_revoke')}
-					{@const hasLiveConflict = displayRecord?.live_conflict === true}
-					{#if stage6Config?.subsections}
-						<CollapsibleSection
-							title={stage6Config.title}
-							expanded={shouldExpand(stage6Config.defaultExpanded)}
-							showReparse={!!parseResult}
-							isReparsing={reparsingStage === 'repeal_revoke'}
-							badge={hasLiveConflict ? 'Conflict' : ''}
-							badgeColor={hasLiveConflict ? 'amber' : 'gray'}
-							on:reparse={() => handleSectionReparse('repeal_revoke')}
-						>
-							{#each stage6Config.subsections as subsection}
-								<CollapsibleSection
-									title={subsection.title}
-									expanded={subsection.defaultExpanded}
-									level="subsection"
-									badge={subsection.id === 'reconciliation' && hasLiveConflict ? '!' : ''}
-									badgeColor={hasLiveConflict ? 'amber' : 'gray'}
-								>
-									{#each subsection.fields as field}
-										{@const fieldValue = getFieldValue(displayRecord, field)}
-										{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
-											<FieldRow config={field} value={fieldValue} />
-										{/if}
-									{/each}
-								</CollapsibleSection>
-							{/each}
-						</CollapsibleSection>
-					{:else if stage6Config?.fields}
-						<!-- Fallback for old config without subsections -->
-						<CollapsibleSection
-							title={stage6Config.title}
-							expanded={shouldExpand(stage6Config.defaultExpanded)}
-							showReparse={!!parseResult}
-							isReparsing={reparsingStage === 'repeal_revoke'}
-							on:reparse={() => handleSectionReparse('repeal_revoke')}
-						>
-							{#each stage6Config.fields as field}
-								{@const fieldValue = getFieldValue(displayRecord, field)}
-								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
-									<FieldRow config={field} value={fieldValue} />
-								{/if}
-							{/each}
-						</CollapsibleSection>
-					{/if}
-
-
 
 					<!-- SECTION 8: CHANGE LOGS -->
 					{@const changeLogsConfig = SECTION_CONFIG.find(s => s.id === 'change_logs')}

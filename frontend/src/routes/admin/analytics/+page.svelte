@@ -602,24 +602,21 @@
 				<div class="bg-red-50 text-red-700 px-4 py-3 rounded-md text-sm">{apiError}</div>
 			{:else if liveStatusData}
 				{@const cov = liveStatusData.pipeline_coverage}
-				{@const agr = liveStatusData.source_agreement}
 
 				<!-- KPI Row -->
 				<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
 					<div class="bg-white rounded-lg border border-gray-200 p-4">
-						<div class="text-sm text-gray-500">Reconciled</div>
-						<div class="text-2xl font-bold text-gray-900">{fmt(cov.reconciled)}</div>
+						<div class="text-sm text-gray-500">Parsed</div>
+						<div class="text-2xl font-bold text-gray-900">{fmt(cov.parsed)}</div>
 						<div class="text-xs text-gray-400 mt-0.5">
-							{pct(cov.reconciled, cov.total)}% of {fmt(cov.total)}
+							{pct(cov.parsed, cov.total)}% of {fmt(cov.total)}
 						</div>
 					</div>
 					<div class="bg-white rounded-lg border border-gray-200 p-4">
-						<div class="text-sm text-gray-500">Agreement Rate</div>
-						<div class="text-2xl font-bold {agr.conflicting === 0 ? 'text-green-600' : 'text-amber-600'}">
-							{pct(agr.agreeing, agr.reconciled)}%
-						</div>
+						<div class="text-sm text-gray-500">Airtable Only</div>
+						<div class="text-2xl font-bold text-amber-600">{fmt(cov.airtable_only)}</div>
 						<div class="text-xs text-gray-400 mt-0.5">
-							{fmt(agr.agreeing)} agree / {fmt(agr.conflicting)} conflict
+							{pct(cov.airtable_only, cov.total)}% legacy
 						</div>
 					</div>
 					<div class="bg-white rounded-lg border border-gray-200 p-4">
@@ -669,31 +666,13 @@
 				<div class="bg-white rounded-lg border border-gray-200 p-4 mb-4">
 					<h3 class="text-sm font-medium text-gray-700 mb-3">Pipeline Coverage</h3>
 					<div class="w-full h-8 flex rounded-lg overflow-hidden">
-						{#if cov.reconciled > 0}
+						{#if cov.parsed > 0}
 							<div
 								class="bg-green-500 flex items-center justify-center text-white text-xs font-medium"
-								style="width: {pctNum(cov.reconciled, cov.total)}%"
-								title="Reconciled: {fmt(cov.reconciled)}"
+								style="width: {pctNum(cov.parsed, cov.total)}%"
+								title="Parsed: {fmt(cov.parsed)}"
 							>
-								{pctNum(cov.reconciled, cov.total) > 8 ? `${pct(cov.reconciled, cov.total)}%` : ''}
-							</div>
-						{/if}
-						{#if cov.changes_only > 0}
-							<div
-								class="bg-blue-400 flex items-center justify-center text-white text-xs font-medium"
-								style="width: {pctNum(cov.changes_only, cov.total)}%"
-								title="Changes only: {fmt(cov.changes_only)}"
-							>
-								{pctNum(cov.changes_only, cov.total) > 8 ? `${pct(cov.changes_only, cov.total)}%` : ''}
-							</div>
-						{/if}
-						{#if cov.metadata_only > 0}
-							<div
-								class="bg-purple-400 flex items-center justify-center text-white text-xs font-medium"
-								style="width: {pctNum(cov.metadata_only, cov.total)}%"
-								title="Metadata only: {fmt(cov.metadata_only)}"
-							>
-								{pctNum(cov.metadata_only, cov.total) > 8 ? `${pct(cov.metadata_only, cov.total)}%` : ''}
+								{pctNum(cov.parsed, cov.total) > 8 ? `${pct(cov.parsed, cov.total)}%` : ''}
 							</div>
 						{/if}
 						{#if cov.airtable_only > 0}
@@ -718,15 +697,7 @@
 					<div class="flex flex-wrap gap-4 mt-2 text-xs text-gray-500">
 						<span class="flex items-center gap-1">
 							<span class="w-3 h-3 rounded bg-green-500 inline-block"></span>
-							Reconciled ({fmt(cov.reconciled)})
-						</span>
-						<span class="flex items-center gap-1">
-							<span class="w-3 h-3 rounded bg-blue-400 inline-block"></span>
-							Changes only ({fmt(cov.changes_only)})
-						</span>
-						<span class="flex items-center gap-1">
-							<span class="w-3 h-3 rounded bg-purple-400 inline-block"></span>
-							Metadata only ({fmt(cov.metadata_only)})
+							Parsed ({fmt(cov.parsed)})
 						</span>
 						<span class="flex items-center gap-1">
 							<span class="w-3 h-3 rounded bg-amber-400 inline-block"></span>
@@ -740,28 +711,6 @@
 				</div>
 
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-					<!-- Conflict Breakdown -->
-					{#if agr.conflicting > 0}
-						<div class="bg-white rounded-lg border border-gray-200 p-4">
-							<h3 class="text-sm font-medium text-gray-700 mb-3">
-								Conflict Breakdown ({fmt(agr.conflicting)})
-							</h3>
-							<div class="space-y-2">
-								{#each liveStatusData.source_agreement.conflict_breakdown as row}
-									<div class="text-sm border-l-2 border-amber-400 pl-3">
-										<div class="flex justify-between">
-											<span class="text-gray-600">Changes: <span class="font-medium">{row.live_from_changes || '(none)'}</span></span>
-											<span class="text-gray-900 font-medium">{fmt(row.count)}</span>
-										</div>
-										<div class="text-gray-500 text-xs">
-											Metadata: {row.live_from_metadata || '(none)'} | Winner: {row.live_source}
-										</div>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-
 					<!-- Target Distribution -->
 					<div class="bg-white rounded-lg border border-gray-200 p-4">
 						<h3 class="text-sm font-medium text-gray-700 mb-3">Revocation Target Scope</h3>
@@ -847,7 +796,7 @@
 											Total
 										</th>
 										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
-											Reconciled
+											Parsed
 										</th>
 										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
 											In Force
@@ -868,14 +817,14 @@
 								</thead>
 								<tbody class="divide-y divide-gray-200">
 									{#each liveStatusData.families as fam}
-										{@const famCovPct = pctNum(fam.reconciled, fam.total)}
+										{@const famCovPct = pctNum(fam.parsed, fam.total)}
 										<tr class="hover:bg-gray-50">
 											<td class="px-4 py-2 text-sm text-gray-700 truncate max-w-[200px]">
 												{fam.family || '(null)'}
 											</td>
 											<td class="px-4 py-2 text-sm text-gray-600 text-right">{fmt(fam.total)}</td>
 											<td class="px-4 py-2 text-sm text-gray-600 text-right">
-												{fmt(fam.reconciled)}
+												{fmt(fam.parsed)}
 											</td>
 											<td class="px-4 py-2 text-sm text-green-600 text-right">
 												{fmt(fam.in_force)}
@@ -901,7 +850,7 @@
 															style="width: {Math.max(famCovPct, 1)}%"
 														></div>
 													</div>
-													<span class="text-xs text-gray-500">{pct(fam.reconciled, fam.total)}%</span>
+													<span class="text-xs text-gray-500">{pct(fam.parsed, fam.total)}%</span>
 												</div>
 											</td>
 										</tr>

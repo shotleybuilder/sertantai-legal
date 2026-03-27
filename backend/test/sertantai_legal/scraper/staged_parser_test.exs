@@ -121,190 +121,81 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
 
   # Tests for build_count_per_law_detailed/1 removed - legacy function replaced by JSONB
 
-  describe "live status reconciliation" do
+  describe "live status resolution (changes-primary, metadata-override)" do
     # Live status codes
     @live_in_force StagedParser.live_in_force()
     @live_part_revoked StagedParser.live_part_revoked()
     @live_revoked StagedParser.live_revoked()
 
-    test "live_severity/1 returns correct severity rankings" do
-      assert StagedParser.test_live_severity(@live_revoked) == 3
-      assert StagedParser.test_live_severity(@live_part_revoked) == 2
-      assert StagedParser.test_live_severity(@live_in_force) == 1
-      assert StagedParser.test_live_severity("unknown") == 0
-      assert StagedParser.test_live_severity(nil) == 0
-    end
-
-    test "reconcile_live_status/2 - both sources agree (in force)" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2024_100"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_in_force}},
-        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+    test "metadata says revoked → revoked (regardless of changes)" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2015_200",
+        live: @live_revoked,
+        live_from_changes: @live_in_force
       }
 
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      assert result.live == @live_in_force
-      assert result.live_source == :both
-      assert result.live_conflict == false
-      assert result.live_from_changes == @live_in_force
-      assert result.live_from_metadata == @live_in_force
-      # No conflict detail when sources agree
-      assert result.live_conflict_detail == nil
-    end
-
-    test "reconcile_live_status/2 - both sources agree (revoked)" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2010_500"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_revoked}},
-        repeal_revoke: %{status: :ok, data: %{live: @live_revoked}}
-      }
-
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
+      result = StagedParser.test_resolve_live_status(law)
       assert result.live == @live_revoked
-      assert result.live_source == :both
-      assert result.live_conflict == false
     end
 
-    test "reconcile_live_status/2 - metadata says revoked, changes says in force (metadata wins)" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2015_200"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_in_force}},
-        repeal_revoke: %{status: :ok, data: %{live: @live_revoked}}
+    test "metadata says in_force, changes says revoked → revoked" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2016_300",
+        live: @live_in_force,
+        live_from_changes: @live_revoked
       }
 
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
+      result = StagedParser.test_resolve_live_status(law)
       assert result.live == @live_revoked
-      assert result.live_source == :metadata
-      assert result.live_conflict == true
-
-      # Check conflict detail
-      assert result.live_conflict_detail != nil
-      assert result.live_conflict_detail["winner"] == "metadata"
-      assert result.live_conflict_detail["reason"] =~ "Metadata shows revoked"
-      assert result.live_conflict_detail["changes_severity"] == 1
-      assert result.live_conflict_detail["metadata_severity"] == 3
+      assert result.live_from_changes == @live_revoked
     end
 
-    test "reconcile_live_status/2 - changes says revoked, metadata says in force (changes wins)" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2016_300"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_revoked}},
-        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+    test "metadata says in_force, changes says partial → partial" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2018_400",
+        live: @live_in_force,
+        live_from_changes: @live_part_revoked
       }
 
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      assert result.live == @live_revoked
-      assert result.live_source == :changes
-      assert result.live_conflict == true
-
-      # Check conflict detail
-      assert result.live_conflict_detail != nil
-      assert result.live_conflict_detail["winner"] == "changes"
-      assert result.live_conflict_detail["reason"] =~ "Changes history shows revoked"
-      assert result.live_conflict_detail["changes_severity"] == 3
-      assert result.live_conflict_detail["metadata_severity"] == 1
-    end
-
-    test "reconcile_live_status/2 - partial revocation vs in force (partial wins)" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2018_400"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_part_revoked}},
-        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
-      }
-
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
+      result = StagedParser.test_resolve_live_status(law)
       assert result.live == @live_part_revoked
-      assert result.live_source == :changes
-      assert result.live_conflict == true
     end
 
-    test "reconcile_live_status/2 - revoked vs partial (revoked wins)" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2019_500"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_revoked}},
-        repeal_revoke: %{status: :ok, data: %{live: @live_part_revoked}}
+    test "both say in_force → in_force" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2024_100",
+        live: @live_in_force,
+        live_from_changes: @live_in_force
       }
 
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      assert result.live == @live_revoked
-      assert result.live_source == :changes
-      assert result.live_conflict == true
-    end
-
-    test "reconcile_live_status/2 - handles missing amended_by stage" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2020_600"}
-
-      stages = %{
-        repeal_revoke: %{status: :ok, data: %{live: @live_revoked}}
-      }
-
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      # Defaults to in_force for missing amended_by, metadata wins
-      assert result.live == @live_revoked
-      assert result.live_source == :metadata
-      assert result.live_conflict == true
+      result = StagedParser.test_resolve_live_status(law)
+      assert result.live == @live_in_force
       assert result.live_from_changes == @live_in_force
-      assert result.live_from_metadata == @live_revoked
     end
 
-    test "reconcile_live_status/2 - handles missing repeal_revoke stage" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2021_700"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: @live_part_revoked}}
+    test "no changes data (nil) → uses metadata" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2023_900",
+        live: @live_revoked,
+        live_from_changes: nil
       }
 
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      # Defaults to in_force for missing repeal_revoke, changes wins
-      assert result.live == @live_part_revoked
-      assert result.live_source == :changes
-      assert result.live_conflict == true
+      result = StagedParser.test_resolve_live_status(law)
+      assert result.live == @live_revoked
+      # nil live_from_changes defaults to in_force internally
+      assert result.live_from_changes == @live_in_force
     end
 
-    test "reconcile_live_status/2 - handles failed amended_by stage" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2022_800"}
-
-      stages = %{
-        amended_by: %{status: :error, data: nil, error: "HTTP 404"},
-        repeal_revoke: %{status: :ok, data: %{live: @live_in_force}}
+    test "both nil → defaults to in_force" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2023_901",
+        live: nil,
+        live_from_changes: nil
       }
 
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      # Falls back to in_force for error, no conflict (both in_force)
+      result = StagedParser.test_resolve_live_status(law)
       assert result.live == @live_in_force
-      assert result.live_source == :both
-      assert result.live_conflict == false
-    end
-
-    test "reconcile_live_status/2 - handles nil live values in stage data" do
-      law = %SertantaiLegal.Scraper.ParsedLaw{name: "UK_uksi_2023_900"}
-
-      stages = %{
-        amended_by: %{status: :ok, data: %{live_from_changes: nil}},
-        repeal_revoke: %{status: :ok, data: %{live: nil}}
-      }
-
-      result = StagedParser.test_reconcile_live_status(law, stages)
-
-      # Both default to in_force
-      assert result.live == @live_in_force
-      assert result.live_source == :both
-      assert result.live_conflict == false
+      assert result.live_from_changes == @live_in_force
     end
   end
 
@@ -372,16 +263,6 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
       assert summary == "Amended by: 2, Rescinded by: 1"
     end
 
-    test "build_stage_summary returns summary for repeal_revoke stage" do
-      stage_result = %{status: :ok, data: %{revoked: true}}
-      summary = StagedParser.test_build_stage_summary(:repeal_revoke, stage_result)
-      assert summary == "REVOKED"
-
-      stage_result2 = %{status: :ok, data: %{revoked: false}}
-      summary2 = StagedParser.test_build_stage_summary(:repeal_revoke, stage_result2)
-      assert summary2 == "Active"
-    end
-
     test "build_stage_summary returns summary for taxa stage" do
       stage_result = %{
         status: :ok,
@@ -412,8 +293,7 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
                :extent,
                :enacted_by,
                :amending,
-               :amended_by,
-               :repeal_revoke
+               :amended_by
              ]
     end
   end

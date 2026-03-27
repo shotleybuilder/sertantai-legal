@@ -298,7 +298,7 @@ describe('ParseReviewModal state logic', () => {
 	});
 
 	describe('per-stage reparse functionality', () => {
-		type ParseStage = 'metadata' | 'extent' | 'enacted_by' | 'amendments' | 'repeal_revoke';
+		type ParseStage = 'metadata' | 'extent' | 'enacted_by' | 'amending' | 'amended_by';
 
 		/**
 		 * Simulates whether a stage reparse can be triggered.
@@ -447,8 +447,8 @@ describe('ParseReviewModal state logic', () => {
 					metadata: { status: 'ok' },
 					extent: { status: 'ok' },
 					enacted_by: { status: 'error' },
-					amendments: { status: 'ok' },
-					repeal_revoke: { status: 'ok' }
+					amending: { status: 'ok' },
+					amended_by: { status: 'ok' }
 				} as Record<ParseStage, { status: string }>,
 				record: { title_en: 'Old Title', geo_extent: 'UK' },
 				errors: ['enacted_by: Connection timeout']
@@ -475,8 +475,8 @@ describe('ParseReviewModal state logic', () => {
 					metadata: { status: 'ok' },
 					extent: { status: 'ok' },
 					enacted_by: { status: 'ok' },
-					amendments: { status: 'ok' },
-					repeal_revoke: { status: 'ok' }
+					amending: { status: 'ok' },
+					amended_by: { status: 'ok' }
 				} as Record<ParseStage, { status: string }>,
 				record: { title_en: 'Title', geo_extent: 'UK' },
 				errors: []
@@ -484,15 +484,15 @@ describe('ParseReviewModal state logic', () => {
 
 			const merged = mergeStageResult(
 				previousResult,
-				'repeal_revoke',
+				'amended_by',
 				{ status: 'error' },
 				null,
-				'repeal_revoke: API timeout'
+				'amended_by: API timeout'
 			);
 
-			expect(merged.stages.repeal_revoke.status).toBe('error');
+			expect(merged.stages.amended_by.status).toBe('error');
 			expect(merged.record.geo_extent).toEqual('UK'); // Preserved from before
-			expect(merged.errors).toContain('repeal_revoke: API timeout');
+			expect(merged.errors).toContain('amended_by: API timeout');
 			expect(merged.has_errors).toBe(true);
 		});
 
@@ -502,8 +502,8 @@ describe('ParseReviewModal state logic', () => {
 					metadata: { status: 'ok' },
 					extent: { status: 'error' },
 					enacted_by: { status: 'ok' },
-					amendments: { status: 'ok' },
-					repeal_revoke: { status: 'ok' }
+					amending: { status: 'ok' },
+					amended_by: { status: 'ok' }
 				} as Record<ParseStage, { status: string }>,
 				record: { title_en: 'Title' },
 				errors: ['extent: Parse failed']
@@ -530,8 +530,8 @@ describe('ParseReviewModal state logic', () => {
 					metadata: { status: 'ok' },
 					extent: { status: 'error' },
 					enacted_by: { status: 'error' },
-					amendments: { status: 'ok' },
-					repeal_revoke: { status: 'ok' }
+					amending: { status: 'ok' },
+					amended_by: { status: 'ok' }
 				} as Record<ParseStage, { status: string }>,
 				record: { title_en: 'Title' },
 				errors: ['extent: Parse failed', 'enacted_by: Connection timeout']

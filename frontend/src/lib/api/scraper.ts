@@ -323,8 +323,6 @@ export interface ParseOneResult {
 		enacted_by: StageResult;
 		amending: StageResult;
 		amended_by: StageResult;
-		repeal_revoke: StageResult;
-		taxa: StageResult;
 	};
 	errors: string[];
 	has_errors: boolean;
@@ -1002,11 +1000,6 @@ export function mapStageError(stage: string, error: string): string {
 				return 'Amendment data incomplete. This law has extensive amendment history.';
 			}
 			break;
-		case 'repeal_revoke':
-			if (error.toLowerCase().includes('404')) {
-				return 'Revocation status unknown. Assuming in force.';
-			}
-			break;
 	}
 
 	return friendlyError;
@@ -1016,13 +1009,7 @@ export function mapStageError(stage: string, error: string): string {
 // Parse Streaming API (SSE)
 // ============================================================================
 
-export type ParseStage =
-	| 'metadata'
-	| 'extent'
-	| 'enacted_by'
-	| 'amending'
-	| 'amended_by'
-	| 'repeal_revoke';
+export type ParseStage = 'metadata' | 'extent' | 'enacted_by' | 'amending' | 'amended_by';
 
 export interface ParseStageStartEvent {
 	event: 'stage_start';

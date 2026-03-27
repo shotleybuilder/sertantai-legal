@@ -2,14 +2,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @moduledoc """
   Staged parser for UK legislation metadata.
 
-  Parses legislation in seven defined stages:
+  Parses legislation in five defined stages:
   1. **Metadata** - Basic metadata from introduction XML (title, dates, SI codes, subjects)
   2. **Extent** - Geographic extent from contents XML (E+W+S+NI)
   3. **Enacted_by** - Enacting parent laws from introduction/made XML
   4. **Amending** - Laws this law amends/rescinds (outgoing amendments)
   5. **Amended_by** - Laws that amend/rescind this law (incoming amendments)
-  6. **Repeal/Revoke** - Repeal/revocation status and relationships
-  7. **Taxa** - Actor, duty type, and POPIMAR classification
 
   Each stage is independent and reports its own success/error status,
   allowing partial results when some stages fail. The amending and amended_by
@@ -28,9 +26,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           extent: %{status: :ok, data: %{...}},
           enacted_by: %{status: :ok, data: %{...}},
           amending: %{status: :ok, data: %{...}},
-          amended_by: %{status: :error, error: "...", data: nil},
-          repeal_revoke: %{status: :ok, data: %{...}},
-          taxa: %{status: :ok, data: %{...}}
+          amended_by: %{status: :error, error: "...", data: nil}
         },
         errors: ["amended_by: HTTP 404..."],
         has_errors: true
@@ -56,12 +52,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Taxa stage removed — now handled by external Rust service over Zenoh P2P.
   # MakingDetector still runs after metadata (stage 1) as a lightweight proxy.
-  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by, :repeal_revoke]
+  # repeal_revoke stage removed (Issue #60 Bug 4) — redundant with metadata stage's
+  # title-based revocation detection. Live status now resolved after amended_by.
+  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by]
 
   # Live status codes (matching legl conventions)
+  # @live_part_revoked is only used in test helpers but must be a module attribute
+  # to stay DRY with the other status codes
   @live_in_force "✔ In force"
   @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
+
+  # Suppress unused warning — @live_part_revoked is used by test helpers
+  _ = @live_part_revoked
 
   require Logger
 
@@ -70,7 +73,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   @telemetry_stage_complete [:staged_parser, :stage, :complete]
 
   @type stage ::
-          :metadata | :extent | :enacted_by | :amending | :amended_by | :repeal_revoke
+          :metadata | :extent | :enacted_by | :amending | :amended_by
   @type stage_result :: %{
           status: :ok | :error | :skipped,
           data: map() | nil,
@@ -329,8 +332,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         enacted_by_duration_us: result.stage_timings[:enacted_by] || 0,
         amending_duration_us: result.stage_timings[:amending] || 0,
         amended_by_duration_us: result.stage_timings[:amended_by] || 0,
-        repeal_revoke_duration_us: result.stage_timings[:repeal_revoke] || 0,
-        taxa_duration_us: result.stage_timings[:taxa] || 0,
         stages_run: length(stages_to_run),
         errors_count: length(result.errors)
       },
@@ -378,7 +379,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Update result with stage outcome
   # Uses ParsedLaw.merge/2 which only updates fields with non-nil, non-empty values
-  # After repeal_revoke stage completes, runs live status reconciliation
+  # After amended_by stage completes, resolves final live status
   defp update_result(result, stage, stage_result, stage_duration) do
     new_stages = Map.put(result.stages, stage, stage_result)
     new_timings = Map.put(result.stage_timings || %{}, stage, stage_duration)
@@ -395,10 +396,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         _ -> result.law
       end
 
-    # After repeal_revoke stage completes, reconcile live status from both sources
+    # After amended_by stage completes, resolve final live status
+    # (changes-primary, metadata-override strategy — Issue #60 Bug 4)
     new_law =
-      if stage == :repeal_revoke and stage_result.status == :ok do
-        reconcile_live_status(new_law, new_stages)
+      if stage == :amended_by and stage_result.status == :ok do
+        resolve_live_status(new_law)
       else
         new_law
       end
@@ -446,124 +448,34 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # ============================================================================
-  # Live Status Reconciliation
+  # Live Status Resolution (Issue #60 Bug 4)
   # ============================================================================
   #
-  # Reconciles live status from two independent data sources:
+  # Strategy: "Changes-primary, metadata-override"
+  # - Changes (/changes/affected, stage 5) is the primary source — it analyses
+  #   actual revocation entries and is the only way to detect most revocations
+  # - Metadata (stage 1) overrides only when definitive — title marker
+  #   "(repealed ...)" or "(revoked ...)" is a hard override to revoked
   #
-  # 1. **amended_by stage** (changes/affected endpoint):
-  #    - Returns `live_from_changes` based on amendment/revocation history
-  #    - Reliable for tracking which laws have revoked this one
-  #
-  # 2. **repeal_revoke stage** (resources/data.xml endpoint):
-  #    - Returns `live` based on document metadata
-  #    - Reliable for official revocation markers in the document
-  #
-  # Strategy: "Most Severe Wins" - If either source indicates revocation,
-  # the law is considered revoked. This errs on the side of caution.
-  #
-  # Severity ranking: revoked (3) > partial (2) > in_force (1)
+  # At this point in the pipeline:
+  # - law.live holds the metadata-derived status from stage 1 (metadata.ex:set_live_status)
+  # - law.live_from_changes was set during stage 5 (amended_by)
 
-  defp reconcile_live_status(law, stages) do
-    # Get live status from amended_by stage (change history)
-    live_from_changes =
-      case stages[:amended_by] do
-        %{status: :ok, data: data} -> data[:live_from_changes] || @live_in_force
-        _ -> @live_in_force
-      end
+  defp resolve_live_status(law) do
+    metadata_live = Map.get(law, :live) || @live_in_force
+    changes_live = Map.get(law, :live_from_changes) || @live_in_force
 
-    # Get live status from repeal_revoke stage (metadata)
-    live_from_metadata =
-      case stages[:repeal_revoke] do
-        %{status: :ok, data: data} -> data[:live] || @live_in_force
-        _ -> @live_in_force
-      end
-
-    # Determine severity of each status
-    severity_changes = live_severity(live_from_changes)
-    severity_metadata = live_severity(live_from_metadata)
-
-    # Most severe wins
-    {final_live, source, conflict} =
-      cond do
-        severity_changes > severity_metadata ->
-          {live_from_changes, :changes, true}
-
-        severity_metadata > severity_changes ->
-          {live_from_metadata, :metadata, true}
-
-        true ->
-          # Equal severity - no conflict, use metadata as canonical
-          {live_from_metadata, :both, false}
-      end
-
-    # Build conflict detail if there is a conflict
-    conflict_detail =
-      if conflict do
-        %{
-          "reason" => describe_conflict_reason(live_from_changes, live_from_metadata),
-          "winner" => to_string(source),
-          "changes_severity" => severity_changes,
-          "metadata_severity" => severity_metadata
-        }
+    # If metadata says revoked (title marker or doc_status) → revoked (definitive)
+    # Otherwise → use changes (primary source)
+    final_live =
+      if metadata_live == @live_revoked do
+        @live_revoked
       else
-        nil
+        changes_live
       end
 
-    # Log conflicts for review
-    if conflict do
-      law_name = Map.get(law, :name) || "unknown"
-
-      Logger.warning(
-        "[LiveStatusConflict] #{law_name}: " <>
-          "changes=#{live_from_changes} vs metadata=#{live_from_metadata} → #{source}=#{final_live}"
-      )
-    end
-
-    # Merge reconciliation results into law
-    reconciliation_data = %{
-      live: final_live,
-      live_source: source,
-      live_conflict: conflict,
-      live_from_changes: live_from_changes,
-      live_from_metadata: live_from_metadata,
-      live_conflict_detail: conflict_detail
-    }
-
-    ParsedLaw.merge(law, reconciliation_data)
+    ParsedLaw.merge(law, %{live: final_live, live_from_changes: changes_live})
   end
-
-  # Describe the reason for a conflict between live status sources
-  defp describe_conflict_reason(changes, metadata) do
-    case {changes, metadata} do
-      {@live_in_force, @live_revoked} ->
-        "Metadata shows revoked but changes history shows in force"
-
-      {@live_revoked, @live_in_force} ->
-        "Changes history shows revoked but metadata shows in force"
-
-      {@live_in_force, @live_part_revoked} ->
-        "Metadata shows partial revocation but changes history shows in force"
-
-      {@live_part_revoked, @live_in_force} ->
-        "Changes history shows partial revocation but metadata shows in force"
-
-      {@live_part_revoked, @live_revoked} ->
-        "Metadata shows full revocation, changes only show partial"
-
-      {@live_revoked, @live_part_revoked} ->
-        "Changes show full revocation, metadata only shows partial"
-
-      _ ->
-        "Unknown conflict pattern"
-    end
-  end
-
-  # Severity ranking for live status values
-  defp live_severity(@live_revoked), do: 3
-  defp live_severity(@live_part_revoked), do: 2
-  defp live_severity(@live_in_force), do: 1
-  defp live_severity(_), do: 0
 
   # Progress notification helper - only calls callback if provided
   defp notify_progress(nil, _event), do: :ok
@@ -598,10 +510,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     rescinded_by = data[:rescinded_by_count] || 0
 
     "Amended by: #{amended_by}, Rescinded by: #{rescinded_by}"
-  end
-
-  defp build_stage_summary(:repeal_revoke, %{status: :ok, data: data}) do
-    if data[:revoked], do: "REVOKED", else: "Active"
   end
 
   defp build_stage_summary(:taxa, %{status: :ok, data: data}) do
@@ -641,11 +549,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp run_stage(:amended_by, type_code, year, number, _record) do
     IO.puts("  [5/7] Amended By (this law is affected by others)...")
     run_amended_by_stage(type_code, year, number)
-  end
-
-  defp run_stage(:repeal_revoke, type_code, year, number, _record) do
-    IO.puts("  [6/7] Repeal/Revoke...")
-    run_repeal_revoke_stage(type_code, year, number)
   end
 
   defp run_stage(:taxa, type_code, year, number, record) do
@@ -1070,7 +973,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           amended_by_count: length(affected.amended_by),
           rescinded_by_count: length(affected.rescinded_by),
 
-          # Live status derived from change history (for reconciliation with repeal_revoke stage)
+          # Live status derived from change history
           live_from_changes: affected.live,
 
           # Flattened stats - Amended_by (🔻 this law is affected by others) - excludes self
@@ -1100,140 +1003,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         %{status: :error, data: nil, error: msg}
     end
   end
-
-  # ============================================================================
-  # Stage 6: Repeal/Revoke
-  # ============================================================================
-
-  defp run_repeal_revoke_stage(type_code, year, number) do
-    path = "/#{type_code}/#{year}/#{number}/resources/data.xml"
-
-    case Client.fetch_xml(path) do
-      {:ok, xml} ->
-        data = parse_repeal_revoke_xml(xml)
-        status_str = if data[:revoked], do: "REVOKED", else: "Active"
-        IO.puts("    ✓ Status: #{status_str}")
-        %{status: :ok, data: data, error: nil}
-
-      {:error, 404, _} ->
-        # No resources file - assume not revoked (in force)
-        IO.puts("    ⚠ No revocation data (404) - assuming active")
-
-        %{
-          status: :ok,
-          data: %{live: @live_in_force, live_description: "", revoked: false, revoked_by: []},
-          error: nil
-        }
-
-      {:error, code, msg} ->
-        IO.puts("    ✗ Repeal/Revoke failed: #{msg}")
-        %{status: :error, data: nil, error: "HTTP #{code}: #{msg}"}
-    end
-  end
-
-  defp parse_repeal_revoke_xml(xml) do
-    try do
-      # Check title for REVOKED/REPEALED
-      title = xpath_text(xml, ~x"//dc:title/text()"s)
-
-      title_revoked =
-        String.contains?(String.upcase(title), "REVOKED") or
-          String.contains?(String.upcase(title), "REPEALED")
-
-      # Check for ukm:RepealedLaw element
-      repealed_law = SweetXml.xpath(xml, ~x"//ukm:RepealedLaw"o)
-      has_repealed_element = repealed_law != nil
-
-      # Get revocation dates
-      dct_valid = xpath_text(xml, ~x"//dct:valid/text()"s)
-      restrict_start_date = xpath_text(xml, ~x"//Legislation/@RestrictStartDate"s)
-
-      # Get laws that revoke/repeal this one
-      revoked_by =
-        SweetXml.xpath(xml, ~x"//ukm:SupersededBy/ukm:Citation"l)
-        |> Enum.map(fn citation ->
-          uri = SweetXml.xpath(citation, ~x"./@URI"s) |> to_string()
-          cit_title = SweetXml.xpath(citation, ~x"./@Title"s) |> to_string()
-          %{uri: uri, title: cit_title, name: uri_to_name(uri)}
-        end)
-        |> Enum.reject(fn %{uri: uri} -> uri == "" end)
-
-      # Determine revocation status
-      # Full revocation: title explicitly says REVOKED/REPEALED or RepealedLaw element exists
-      is_fully_revoked = title_revoked or has_repealed_element
-
-      # Partial revocation: has revoking laws but not fully revoked
-      # This means some provisions are revoked but the law is still partially in force
-      is_partially_revoked = not is_fully_revoked and length(revoked_by) > 0
-
-      # Build live status and description
-      {live, live_description} =
-        build_live_status(is_fully_revoked, is_partially_revoked, revoked_by)
-
-      %{
-        # Fields for modal display
-        live: live,
-        live_description: live_description,
-        # Raw revocation data
-        revoked: is_fully_revoked,
-        partially_revoked: is_partially_revoked,
-        revoked_title_marker: title_revoked,
-        revoked_element: has_repealed_element,
-        revoked_by: revoked_by,
-        rescinded_by: format_revoked_by(revoked_by),
-        md_dct_valid_date: parse_date(dct_valid),
-        md_restrict_start_date: parse_date(restrict_start_date)
-      }
-    rescue
-      e ->
-        %{
-          live: @live_in_force,
-          live_description: "",
-          revoked: false,
-          repeal_revoke_error: "Parse error: #{inspect(e)}"
-        }
-    end
-  end
-
-  # In force - no revocations
-  defp build_live_status(false, false, _revoked_by), do: {@live_in_force, ""}
-
-  # Partial revocation - some provisions revoked but law still in force
-  defp build_live_status(false, true, revoked_by) do
-    names =
-      Enum.map(revoked_by, fn %{name: name, title: title} ->
-        if title != "", do: "#{name} (#{title})", else: name
-      end)
-
-    description = "Partially revoked by: " <> Enum.join(names, ", ")
-    {@live_part_revoked, description}
-  end
-
-  # Full revocation - no details
-  defp build_live_status(true, _partial, []) do
-    {@live_revoked, "Revoked/Repealed"}
-  end
-
-  # Full revocation - with revoking law details
-  defp build_live_status(true, _partial, revoked_by) do
-    names =
-      Enum.map(revoked_by, fn %{name: name, title: title} ->
-        if title != "", do: "#{name} (#{title})", else: name
-      end)
-
-    description = "Revoked by: " <> Enum.join(names, ", ")
-    {@live_revoked, description}
-  end
-
-  defp format_revoked_by([]), do: nil
-
-  defp format_revoked_by(revoked_by) do
-    Enum.map(revoked_by, fn %{name: name} -> name end)
-  end
-
-  defp parse_date(nil), do: nil
-  defp parse_date(""), do: nil
-  defp parse_date(date), do: date
 
   # ============================================================================
   # Stage 7: Taxa Classification
@@ -1336,17 +1105,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # ============================================================================
   # Helpers
   # ============================================================================
-
-  defp uri_to_name(nil), do: nil
-  defp uri_to_name(""), do: nil
-
-  defp uri_to_name(uri) do
-    # Convert URI like "http://www.legislation.gov.uk/id/uksi/2020/1234"
-    # to name like "uksi/2020/1234"
-    uri
-    |> String.replace(~r"^https?://www\.legislation\.gov\.uk/id/", "")
-    |> String.replace(~r"^https?://www\.legislation\.gov\.uk/", "")
-  end
 
   defp xpath_text(xml, path) do
     case SweetXml.xpath(xml, path) do
@@ -1538,10 +1296,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     def test_build_stage_summary(stage, result), do: build_stage_summary(stage, result)
 
     @doc false
-    def test_reconcile_live_status(law, stages), do: reconcile_live_status(law, stages)
-
-    @doc false
-    def test_live_severity(status), do: live_severity(status)
+    def test_resolve_live_status(law), do: resolve_live_status(law)
 
     @doc false
     def live_in_force, do: @live_in_force

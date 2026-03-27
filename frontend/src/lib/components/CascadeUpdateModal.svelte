@@ -20,7 +20,7 @@
 	export let sessionId: string;
 	export let open: boolean = false;
 
-	const MIN_REPARSE_STAGES: ParseStage[] = ['amended_by', 'repeal_revoke'];
+	const MIN_REPARSE_STAGES: ParseStage[] = ['amended_by'];
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -702,8 +702,8 @@
 								</h3>
 								<div class="flex items-center gap-4 text-sm">
 									<label class="flex items-center gap-2 cursor-pointer" title={fullReparse
-										? 'All 7 stages will be re-parsed'
-										: 'Only amended_by + repeal_revoke stages'}>
+										? 'All 5 stages will be re-parsed'
+										: 'Only amended_by stage'}>
 										<span class="text-gray-500">{fullReparse ? 'Full' : 'Min'}</span>
 										<button
 											type="button"

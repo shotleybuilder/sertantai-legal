@@ -29,3 +29,90 @@
   - Confirmed: Badgers Act 1991 title = "Badgers (Further Protection) Act 1991 (repealed 16.10.1992)", status = "revised"
   - Edge case: uksi/2010/676 genuinely revoked but NO title marker AND status = "revised" — only detectable via /changes/affected
 - Bug 2 fix: `set_live_status` now checks title for `(repealed` / `(revoked` first (definitive), then `document_status` repealed/revoked, then defaults to in_force. 8 tests added.
+
+## Bug 4 — Recommendation: Simplify live status to "changes-primary, metadata-override"
+
+### Problem
+
+The current "Most Severe Wins" reconciliation (`staged_parser.ex:469`) uses two independent sources to determine `live`:
+
+| Source | Stage | Endpoint | What it tells us |
+|--------|-------|----------|-----------------|
+| `live_from_changes` | `amended_by` (stage 5) | `/changes/affected` | Analyses revocation entries — detects partial AND full revocations |
+| `live_from_metadata` | `repeal_revoke` (stage 6) | `/resources/data.xml` | Checks `dc:title` for `(repealed...)`, `RepealedLaw` element, `SupersededBy` element |
+
+Investigation shows:
+- The `resources/data.xml` endpoint returns the **same** `dc:title` and `DocumentStatus` as `introduction/data.xml` (metadata stage 1)
+- `RepealedLaw` and `SupersededBy` XML elements are **never populated** in any law tested
+- So `repeal_revoke` (stage 6) duplicates what `metadata` (stage 1) already provides after Bug 2 fix
+- The title `(repealed ...)` marker is only present on ~half of genuinely revoked laws — it is definitive when present but patchy
+- `/changes/affected` is the **only** source that can detect revocations for laws without a title marker (e.g. uksi/2010/676)
+
+### Data (5,510 parsed records)
+
+| live | source | conflict | count | note |
+|------|--------|----------|-------|------|
+| ✔ In force | both | false | 2,716 | Both agree — no problem |
+| ❌ Revoked | changes | true | 1,267 | Changes says revoked, metadata says in force — **the bug group** |
+| ❌ Revoked | both | false | 828 | Both agree revoked — no problem |
+| ⭕ Partial | changes | true | 640 | Changes detected partial — correct behaviour |
+| ❌ Revoked | changes | false | 40 | Only changes available — correct |
+| ❌ Revoked | metadata | true | 19 | Metadata says revoked, changes says in force — correct |
+
+### Proposed new strategy: "Changes-primary, metadata-override"
+
+**Changes is the primary source.** It analyses actual revocation entries and is the only way to detect most revocations. After bugs 1-2, it is now more accurate.
+
+**Metadata overrides only when definitive.** Title marker `(repealed ...)` / `(revoked ...)` is a hard override to revoked — no reconciliation needed.
+
+Resolution rules:
+1. If metadata says revoked (title marker or doc_status) → **revoked** (definitive)
+2. Otherwise → **use changes** (in_force / partial / revoked as determined by `determine_live_status`)
+
+### Proposed implementation
+
+**A. Remove `repeal_revoke` stage entirely (stage 6)**
+- Its only useful signal (title check) is now done by `metadata` stage (Bug 2 fix)
+- `RepealedLaw` / `SupersededBy` elements are never populated — dead code
+- Saves one HTTP request per law during parsing
+
+**B. Simplify `reconcile_live_status` → single function**
+- No more severity ranking, no more "Most Severe Wins"
+- New logic in `update_result` after `amended_by` stage completes:
+
+```
+if metadata says revoked (from title/doc_status) → live = revoked
+else → live = live_from_changes
+```
+
+**C. Simplify DB schema** — drop 4 columns:
+- `live_from_metadata` — redundant (always same as metadata stage's title-derived status)  
+- `live_conflict` — no longer meaningful with single-source priority
+- `live_conflict_detail` — JSONB, no longer needed
+- `live_source` — always deterministic from the rule above, no need to store
+
+Keep: `live` (final status), `live_from_changes` (useful for debugging / audit trail), `live_description`
+
+**D. Frontend changes**
+- Remove `live_from_metadata`, `live_conflict`, `live_conflict_detail`, `live_source` from:
+  - `UkLrtRecord` type in `+page.svelte`
+  - `LRT_COLUMNS` SQL string
+  - Column definitions
+  - `LIVE_VIEW_COLUMNS` / `LAT_CLEANUP_COLUMNS`
+  - PGLite `schema.sql.ts` and `sync.ts`
+  - `analytics.ts` and `lat.ts` types
+- Simplify Live Status admin view to show `live` + `live_from_changes` only
+
+### Risk / edge cases
+
+- **uksi/2010/676 pattern** (genuinely revoked, no title marker, no metadata signal): changes correctly says revoked via `/changes/affected` → now becomes the primary → **correctly resolved**
+- **HASAWA pattern** (in force, section-level repeals): after Bug 1 fix, changes now correctly says partial → **correctly resolved**
+- **False full revocation from changes** (still possible for edge cases): no metadata override available, so this remains a risk — but greatly reduced after Bug 1 `"except"` fix
+- **13,820 unparsed records**: their `live` values come from the original SQL import, not the parser. This change only affects future parses.
+
+### Alternative: Keep columns, just change the logic
+
+If dropping DB columns feels too risky or the audit trail is valued, we could:
+- Keep all 7 `live_*` columns
+- Just replace the reconciliation logic (option B above)
+- This is a smaller, safer change and the schema migration can happen later

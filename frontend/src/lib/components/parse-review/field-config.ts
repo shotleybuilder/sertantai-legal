@@ -38,11 +38,7 @@ export const FIELD_LABELS: Record<string, string> = {
 	// Status
 	live: 'Status',
 	live_description: 'Status Description',
-	live_source: 'Status Source',
-	live_conflict: 'Status Conflict',
 	live_from_changes: 'Status (Changes)',
-	live_from_metadata: 'Status (Metadata)',
-	live_conflict_detail: 'Conflict Detail',
 
 	// Geographic Extent
 	geo_extent: 'Geographic Extent',
@@ -250,9 +246,8 @@ export interface SectionConfig {
  * - STAGE 2 📍 extent: Geographic Extent
  * - STAGE 3 🚀 enacted_by: Enacting
  * - STAGE 4 🔄 amending: Self-Affects, Amending, Rescinding (this law affects others)
- * - STAGE 5 🔄 amended_by: Amended By, Rescinded By (this law affected by others)
- * - STAGE 6 🚫 repeal_revoke: Status
- * - STAGE 7 🦋 taxa: Purpose, Roles, Duty Type, Duty Holder, Rights Holder, etc.
+ * - STAGE 5 🔄 amended_by: Amended By, Rescinded By (this law affected by others), Status
+ * - STAGE 6 🦋 taxa: Purpose, Roles, Duty Type, Duty Holder, Rights Holder, etc.
  */
 export const SECTION_CONFIG: SectionConfig[] = [
 	// ==========================================
@@ -736,50 +731,18 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					}
 				]
-			}
-		]
-	},
-	// ==========================================
-	// STAGE 6 🚫 repeal_revoke
-	// ==========================================
-	{
-		id: 'stage6_repeal_revoke',
-		title: 'STAGE 6 🚫 repeal_revoke',
-		stage: 'repeal_revoke',
-		defaultExpanded: true,
-		subsections: [
+			},
 			{
 				id: 'status',
 				title: 'Status',
 				defaultExpanded: true,
 				fields: [
-					{ key: 'live', label: 'Status', type: 'text', stage: 'repeal_revoke' },
+					{ key: 'live', label: 'Status', type: 'text', stage: 'amended_by' },
 					{
 						key: 'live_description',
 						label: 'Status Description',
 						type: 'text',
-						stage: 'repeal_revoke',
-						hideWhenEmpty: true
-					}
-				]
-			},
-			{
-				id: 'reconciliation',
-				title: 'Reconciliation',
-				defaultExpanded: false,
-				fields: [
-					{
-						key: 'live_source',
-						label: 'Status Source',
-						type: 'text',
-						stage: 'repeal_revoke',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'live_conflict',
-						label: 'Status Conflict',
-						type: 'boolean',
-						stage: 'repeal_revoke',
+						stage: 'amended_by',
 						hideWhenEmpty: true
 					},
 					{
@@ -788,27 +751,13 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'text',
 						stage: 'amended_by',
 						hideWhenEmpty: true
-					},
-					{
-						key: 'live_from_metadata',
-						label: 'Status (Metadata)',
-						type: 'text',
-						stage: 'repeal_revoke',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'live_conflict_detail',
-						label: 'Conflict Detail',
-						type: 'json',
-						stage: 'repeal_revoke',
-						hideWhenEmpty: true
 					}
 				]
 			}
 		]
 	},
 	// ==========================================
-	// STAGE 7 🦋 taxa
+	// STAGE 6 🦋 taxa
 	// ==========================================
 	{
 		id: 'stage7_taxa',

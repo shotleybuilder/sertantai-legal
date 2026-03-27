@@ -96,10 +96,7 @@ export interface QueueItem {
 	is_making: boolean | null;
 	making_classification: string | null;
 	live: string | null;
-	live_source: string | null;
-	live_conflict: boolean | null;
 	live_from_changes: string | null;
-	live_from_metadata: string | null;
 	function: string[] | null;
 	lrt_updated_at: string | null;
 	lat_count: number;

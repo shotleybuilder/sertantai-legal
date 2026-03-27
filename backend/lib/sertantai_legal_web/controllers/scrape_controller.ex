@@ -593,8 +593,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
             "extent" => :extent,
             "enacted_by" => :enacted_by,
             "amending" => :amending,
-            "amended_by" => :amended_by,
-            "repeal_revoke" => :repeal_revoke
+            "amended_by" => :amended_by
           }
 
           parse_opts =

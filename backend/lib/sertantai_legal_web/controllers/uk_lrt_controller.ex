@@ -317,7 +317,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
 
   ## Query Parameters
   - stages: Comma-separated list of stages to run (optional, defaults to all)
-            Valid stages: metadata, extent, enacted_by, amending, amended_by, repeal_revoke
+            Valid stages: metadata, extent, enacted_by, amending, amended_by
   """
   def parse_stream(conn, %{"id" => id} = params) do
     alias SertantaiLegal.Scraper.StagedParser
@@ -360,8 +360,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
           "extent" => :extent,
           "enacted_by" => :enacted_by,
           "amending" => :amending,
-          "amended_by" => :amended_by,
-          "repeal_revoke" => :repeal_revoke
+          "amended_by" => :amended_by
         }
 
         parse_opts =

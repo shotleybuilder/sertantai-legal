@@ -83,8 +83,8 @@ defmodule SertantaiLegal.Scraper.StagedParserLiveTest do
     end
 
     @tag :live
-    test "amendments 404 does not crash taxa stage" do
-      # Use a law that may return 404 for amendments but should still run taxa
+    test "amendments 404 does not crash subsequent stages" do
+      # Use a law that may return 404 for amendments but should still complete
       record = %{type_code: "uksi", Year: 1991, Number: "899", name: "UK_uksi_1991_899"}
 
       {:ok, result} = StagedParser.parse(record)
@@ -92,12 +92,8 @@ defmodule SertantaiLegal.Scraper.StagedParserLiveTest do
       # All stages should complete (not crash)
       assert Map.has_key?(result.stages, :extent)
       assert Map.has_key?(result.stages, :enacted_by)
-      assert Map.has_key?(result.stages, :amendments)
-      assert Map.has_key?(result.stages, :repeal_revoke)
-      assert Map.has_key?(result.stages, :taxa)
-
-      # Taxa should run regardless of amendment errors
-      assert result.stages[:taxa].status == :ok
+      assert Map.has_key?(result.stages, :amending)
+      assert Map.has_key?(result.stages, :amended_by)
     end
 
     @tag :live

@@ -113,17 +113,13 @@
 			'linked_rescinded_by',
 			'latest_rescind_date'
 		],
-		// STAGE 6 🚫 repeal_revoke - Status
+		// STAGE 5 🔄 amended_by - Status (resolved after amended_by)
 		Status: [
 			'live',
 			'live_description',
-			'live_source',
-			'live_conflict',
-			'live_from_changes',
-			'live_from_metadata',
-			'live_conflict_detail'
+			'live_from_changes'
 		],
-		// STAGE 7 🦋 taxa - Purpose
+		// STAGE 6 🦋 taxa - Purpose
 		Purpose: ['purpose'],
 		// STAGE 7 🦋 taxa - Roles
 		Roles: ['role', 'role_details', 'role_gvt', 'role_gvt_details'],
@@ -284,7 +280,7 @@
 		// STAGE 5 🔄 amended_by
 		'Amended By',
 		'Rescinded By',
-		// STAGE 6 🚫 repeal_revoke
+		// Status (resolved from amended_by stage)
 		'Status',
 		// STAGE 7 🦋 taxa
 		'Purpose',

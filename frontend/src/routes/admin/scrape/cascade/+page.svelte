@@ -1114,13 +1114,13 @@
 </div>
 
 <!-- Parse Review Modal (reused from session workflow) -->
-<!-- For cascade re-parse, only run amended_by + repeal_revoke stages (updating amended_by/rescinded_by fields) -->
+<!-- For cascade re-parse, only run amended_by stage (updating amended_by/rescinded_by fields) -->
 <ParseReviewModal
 	sessionId={parseModalSessionId}
 	records={parseModalRecords}
 	initialIndex={0}
 	open={showParseModal}
-	stages={['amended_by', 'repeal_revoke']}
+	stages={['amended_by']}
 	on:close={handleParseModalClose}
 	on:complete={handleParseComplete}
 />

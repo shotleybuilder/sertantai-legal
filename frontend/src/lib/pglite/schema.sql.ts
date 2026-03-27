@@ -36,11 +36,7 @@ CREATE TABLE IF NOT EXISTS uk_lrt (
   -- Status
   live VARCHAR,
   live_description TEXT,
-  live_source TEXT,
-  live_conflict BOOLEAN,
   live_from_changes TEXT,
-  live_from_metadata TEXT,
-  live_conflict_detail JSONB,
 
   -- Geographic
   geo_extent TEXT,
@@ -146,7 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_cl
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 11; // Bump: exclude fitness JSONB[] from Electric shape columns
+const SCHEMA_VERSION = 12; // Bump: remove live_source, live_conflict, live_from_metadata, live_conflict_detail (Issue #60)
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;

@@ -45,10 +45,7 @@
 		lat_count: number;
 		duty_type: Record<string, unknown> | null;
 		live: string | null;
-		live_source: string | null;
-		live_conflict: boolean | null;
 		live_from_changes: string | null;
-		live_from_metadata: string | null;
 		latest_amend_date: string | null;
 		latest_rescind_date: string | null;
 		created_at: string | null;
@@ -187,7 +184,7 @@
 	];
 
 	// LRT columns queried from PGLite
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, lat_count, duty_type, live, live_source, live_conflict, live_from_changes, live_from_metadata, latest_amend_date, latest_rescind_date, created_at';
+	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, lat_count, duty_type, live, live_from_changes, latest_amend_date, latest_rescind_date, created_at';
 
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
@@ -212,10 +209,7 @@
 			}
 		},
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
-		{ name: 'live_source', label: 'Source', width: 90, dataType: 'text' },
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
-		{ name: 'live_from_metadata', label: 'From Metadata', width: 130, dataType: 'text' },
-		{ name: 'live_conflict', label: 'Conflict', width: 80, dataType: 'text' },
 		{ name: 'geo_extent', label: 'Extent', width: 120, dataType: 'text', selectOptions: geoExtentOptions },
 		{ name: 'md_date', label: 'Primary Date', width: 100, dataType: 'date', format: (v) => formatDate(v as string | null) },
 		{ name: 'md_subjects', label: 'Subjects', width: 200, dataType: 'text',
@@ -323,8 +317,8 @@
 	const currentYear = new Date().getFullYear();
 	const VIEW_COLUMNS = ['name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
 	const RECENT_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'family', 'live'];
-	const LIVE_VIEW_COLUMNS = ['name', 'title_en', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict'];
-	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict', 'function', 'is_making', 'duty_type', 'lat_count', 'family'];
+	const LIVE_VIEW_COLUMNS = ['name', 'title_en', 'year', 'live', 'live_from_changes'];
+	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'live', 'live_from_changes', 'function', 'is_making', 'duty_type', 'lat_count', 'family'];
 
 	// Map view name → custom query SQL
 	const viewCustomQueryMapping: Record<string, string> = {
@@ -1156,8 +1150,6 @@
 					<span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {value === 'Live' ? 'bg-green-100 text-green-800' : value === 'Revoked' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
 						{value || '-'}
 					</span>
-				{:else if column === 'live_conflict'}
-					{value ? 'Yes' : '-'}
 				{:else if column === 'type_code'}
 					<span class="uppercase">{value || '-'}</span>
 				{:else if column === 'name'}

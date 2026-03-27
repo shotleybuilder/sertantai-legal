@@ -63,7 +63,7 @@
 			)
 		)`;
 
-	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, live_source, live_conflict, live_from_changes, live_from_metadata, function, updated_at, lat_count, latest_lat_updated_at';
+	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, live_from_changes, function, updated_at, lat_count, latest_lat_updated_at';
 
 	function getQueryForFamily(family: string): string {
 		return `SELECT ${QUEUE_COLUMNS} FROM uk_lrt WHERE ${QUEUE_BASE_WHERE} ${QUEUE_LAT_WHERE} AND family = '${family.replace(/'/g, "''")}' ORDER BY name`;
@@ -293,10 +293,7 @@
 		{ name: 'making_classification', label: 'Making Classification', width: 160, dataType: 'text', selectOptions: makingClassificationOptions },
 		{ name: 'year', label: 'Year', width: 80, dataType: 'number' },
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
-		{ name: 'live_source', label: 'Source', width: 90, dataType: 'text' },
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
-		{ name: 'live_from_metadata', label: 'From Metadata', width: 130, dataType: 'text' },
-		{ name: 'live_conflict', label: 'Conflict', width: 80, dataType: 'text' },
 		{ name: 'function', label: 'Function', width: 150, dataType: 'text' },
 		{ name: 'lat_count', label: 'LAT Rows', width: 80, dataType: 'number' },
 		{ name: 'updated_at', label: 'LRT Updated', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) },
@@ -379,7 +376,7 @@
 	// Column visibility sets
 	const allCols = columns.map((c) => c.name);
 	const familyCols = ['name', 'title_en', 'is_making', 'making_classification', 'year', 'live', 'function', 'lat_count', 'updated_at', 'latest_lat_updated_at'];
-	const liveCols = ['name', 'title_en', 'year', 'live', 'live_source', 'live_from_changes', 'live_from_metadata', 'live_conflict', 'lat_count'];
+	const liveCols = ['name', 'title_en', 'year', 'live', 'live_from_changes', 'lat_count'];
 
 	// Helper to build column visibility map
 	function colVis(visibleCols: string[]): Record<string, boolean> {
@@ -1001,8 +998,6 @@
 						{:else}
 							<span class="text-gray-400">-</span>
 						{/if}
-					{:else if column === 'live_conflict'}
-						{value ? 'Yes' : '-'}
 					{:else}
 						{value ?? '-'}
 					{/if}

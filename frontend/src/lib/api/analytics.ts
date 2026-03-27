@@ -77,22 +77,9 @@ async function fetchWithAuth(url: string): Promise<Response> {
 export interface LiveStatusAssurance {
 	pipeline_coverage: {
 		total: number;
-		reconciled: number;
-		changes_only: number;
-		metadata_only: number;
+		parsed: number;
 		airtable_only: number;
 		no_status: number;
-	};
-	source_agreement: {
-		reconciled: number;
-		agreeing: number;
-		conflicting: number;
-		conflict_breakdown: Array<{
-			live_from_changes: string;
-			live_from_metadata: string;
-			live_source: string;
-			count: number;
-		}>;
 	};
 	misclassified: number;
 	affect_distribution: Array<{ affect_type: string; count: number }>;
@@ -100,7 +87,7 @@ export interface LiveStatusAssurance {
 	families: Array<{
 		family: string | null;
 		total: number;
-		reconciled: number;
+		parsed: number;
 		in_force: number;
 		revoked: number;
 		partial: number;
