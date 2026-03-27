@@ -4,12 +4,13 @@
 	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
-	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
-	import type { ViewConfig, SavedView, ViewStoreBundle } from '@shotleybuilder/svelte-gridlite-views';
+	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
+	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
 	import { authFetch } from '$lib/api/client';
 	import { goto } from '$app/navigation';
-	import { seedDefaultViews as seedDefaults } from '$lib/views/seed-defaults';
+	import { seedDefaultViews as seedDefaults, seedDefaultGroups, assignViewsToGroups } from '$lib/views/seed-defaults';
+	import type { GroupDef } from '$lib/views/seed-defaults';
 
 	// PGLite sync
 	import { startSync, syncStatus } from '$lib/pglite/sync';
@@ -286,26 +287,27 @@
 		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' },
 	];
 
-	// View group definitions (sidebar)
-	interface ViewGroupDef { id: string; name: string; order: number }
-	const viewGroups: ViewGroupDef[] = [
-		{ id: 'recent', name: 'Recent', order: 0 },
-		{ id: 'safety', name: '💙 S', order: 1 },
-		{ id: 'environment', name: '💚 E', order: 2 },
-		{ id: 'hr', name: '💜 HR', order: 3 },
-		{ id: 'analytics', name: 'Analytics', order: 4 }
+	// Default group definitions for ViewSidebar seeding
+	const defaultGroupDefs: GroupDef[] = [
+		{ name: 'Recent', icon: '🕐' },
+		{ name: '💙 S', icon: '💙' },
+		{ name: '💚 E', icon: '💚' },
+		{ name: '💜 HR', icon: '💜' },
+		{ name: 'Analytics', icon: '📊' }
 	];
 
-	// Map view name → group id
-	const viewGroupMapping: Record<string, string> = {};
+	// Map view name → group name (for seeding assignments)
+	const viewToGroupName: Record<string, string> = {};
 	for (const def of familyViewDefs) {
-		viewGroupMapping[def.name] = def.group;
+		viewToGroupName[def.name] = def.group === 'safety' ? '💙 S' : def.group === 'environment' ? '💚 E' : '💜 HR';
 	}
-	viewGroupMapping['Recently Added'] = 'recent';
-	viewGroupMapping['Recently Amended'] = 'recent';
-	viewGroupMapping['Recently Rescinded'] = 'recent';
-	viewGroupMapping['Live'] = 'analytics';
-	viewGroupMapping['LAT Cleanup'] = 'analytics';
+	viewToGroupName['Recently Added'] = 'Recent';
+	viewToGroupName['Recently Amended'] = 'Recent';
+	viewToGroupName['Recently Rescinded'] = 'Recent';
+	viewToGroupName['Live'] = 'Analytics';
+	viewToGroupName['LAT Cleanup'] = 'Analytics';
+	viewToGroupName['Unparsed'] = 'Analytics';
+	viewToGroupName['Revoked (Unverified)'] = 'Analytics';
 
 	// Map view name → family value (for PGLite query)
 	const viewFamilyMapping: Record<string, string> = {};
@@ -326,7 +328,9 @@
 		'Recently Amended': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_amend_date >= '${currentYear - 2}-01-01' ORDER BY latest_amend_date DESC`,
 		'Recently Rescinded': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_rescind_date >= '${currentYear - 2}-01-01' ORDER BY latest_rescind_date DESC`,
 		'Live': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = '💙 OH&S: Occupational / Personal Safety' AND title_en IS NOT NULL ORDER BY name`,
-		'LAT Cleanup': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE lat_count > 0 AND (live = '❌ Revoked / Repealed / Abolished' OR (is_making = true AND NOT (function ? 'Making'))) ORDER BY lat_count DESC`
+		'LAT Cleanup': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE lat_count > 0 AND (live = '❌ Revoked / Repealed / Abolished' OR (is_making = true AND NOT (function ? 'Making'))) ORDER BY lat_count DESC`,
+		'Unparsed': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE live_from_changes IS NULL ORDER BY name`,
+		'Revoked (Unverified)': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE live = '❌ Revoked / Repealed / Abolished' AND live_from_changes IS NULL ORDER BY name`
 	};
 
 	// Helper to build column visibility map from a list of visible column names
@@ -427,10 +431,28 @@
 				pageSize: 500
 			}),
 			customQuery: viewCustomQueryMapping['LAT Cleanup']
+		},
+		{
+			name: 'Unparsed',
+			description: 'Records never parsed — live_from_changes is NULL',
+			config: makeViewConfig({
+				visibleCols: LIVE_VIEW_COLUMNS,
+				sorting: [{ column: 'name', direction: 'asc' }],
+				grouping: [{ column: 'type_desc' }]
+			}),
+			customQuery: viewCustomQueryMapping['Unparsed']
+		},
+		{
+			name: 'Revoked (Unverified)',
+			description: 'Records marked revoked from Airtable import but never verified by parser',
+			config: makeViewConfig({
+				visibleCols: LIVE_VIEW_COLUMNS,
+				sorting: [{ column: 'name', direction: 'asc' }],
+				grouping: [{ column: 'type_desc' }]
+			}),
+			customQuery: viewCustomQueryMapping['Revoked (Unverified)']
 		}
 	];
-
-	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
 
 	// Resolve view name to the correct PGLite query SQL
 	function getQueryForView(viewName: string): string {
@@ -443,23 +465,7 @@
 
 	// ── Sidebar state ───────────────────────────────────────────────
 
-	let sidebarOpen = false;
-
-	interface SidebarViewItem { id: string; name: string; groupId: string; order: number; isDefault?: boolean }
-	let sidebarViews: SidebarViewItem[] = [];
-
-	function rebuildSidebarViews(views: SavedView[]) {
-		sidebarViews = views
-			.filter((v) => defaultViews.some((dv) => dv.name === v.name))
-			.map((v): SidebarViewItem => ({
-				id: v.id,
-				name: v.name,
-				groupId: viewGroupMapping[v.name] || 'recent',
-				order: viewOrderMap.get(v.name) ?? 1000,
-				isDefault: defaultViews.find((dv) => dv.name === v.name)?.isDefault
-			}))
-			.sort((a, b) => a.order - b.order);
-	}
+	let sidebarVisible = false;
 
 	// ── Editing state ───────────────────────────────────────────────
 
@@ -653,7 +659,7 @@
 
 	async function seedDefaultViews() {
 		if (!viewStore) return;
-		const { actions, savedViews: svStore } = viewStore;
+		const { actions, savedViews: svStore, groupActions, savedGroups: grpStore } = viewStore;
 		await actions.waitForReady();
 
 		let currentViews: SavedView[] = [];
@@ -661,6 +667,15 @@
 
 		// Dedup, update stale configs, seed missing — tested in seed-defaults.test.ts
 		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
+
+		// Seed groups and assign views to groups
+		let currentGroups: ViewGroup[] = [];
+		const unsubGrp = grpStore.subscribe((g) => { currentGroups = g; });
+		const groupNameToId = await seedDefaultGroups(defaultGroupDefs, currentGroups, groupActions);
+		// Re-read views after seeding (IDs may have changed)
+		svStore.subscribe((v) => { currentViews = v; })();
+		await assignViewsToGroups(viewToGroupName, groupNameToId, currentViews, groupActions);
+		unsubGrp();
 
 		// Auto-select default view
 		let activeId: string | null = null;
@@ -685,12 +700,7 @@
 			}
 		}
 
-		// Rebuild sidebar
-		rebuildSidebarViews(currentViews);
 		unsub();
-
-		// Subscribe for future updates
-		svStore.subscribe((views) => rebuildSidebarViews(views));
 	}
 
 	// Apply a saved view to the GridLite instance
@@ -714,16 +724,12 @@
 		activeVisibleColumns = viewDef?.config.columnOrder ?? VIEW_COLUMNS;
 	}
 
-	// Handle sidebar view selection
-	async function handleViewSelect(viewItem: SidebarViewItem) {
-		if (!viewStore) return;
-		const view = await viewStore.actions.load(viewItem.id);
-		if (view) {
-			switchToView(viewItem.name);
-			// Wait for GridLite to update with new query, then apply view config
-			setTimeout(() => applyViewToGrid(view), 50);
-		}
-		sidebarOpen = false;
+	// Handle ViewSidebar view selection
+	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
+		const view = e.detail.view;
+		switchToView(view.name);
+		setTimeout(() => applyViewToGrid(view), 50);
+		sidebarVisible = false; // auto-close on mobile
 	}
 
 	// Capture current grid state for saving as a view
@@ -824,31 +830,23 @@
 
 <div class="flex h-full relative">
 	<!-- Mobile sidebar overlay -->
-	{#if sidebarOpen}
+	{#if sidebarVisible}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarOpen = false)} />
+		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarVisible = false)} />
 	{/if}
 
 	<!-- View Sidebar -->
-	<div class="shrink-0 {sidebarOpen ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
-		<div class="w-[220px] h-full bg-white border-r border-gray-200 overflow-y-auto py-2">
-			{#each viewGroups as group}
-				{@const groupViews = sidebarViews.filter((v) => v.groupId === group.id)}
-				{#if groupViews.length > 0}
-					<div class="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{group.name}</div>
-					{#each groupViews as view}
-						<button
-							class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 truncate"
-							on:click={() => handleViewSelect(view)}
-						>
-							{view.name}
-						</button>
-					{/each}
-				{/if}
-			{/each}
+	{#if viewStore}
+		<div class="shrink-0 {sidebarVisible ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
+			<ViewSidebar
+				{viewStore}
+				storageKey="lrt-admin-sidebar"
+				isDocked={true}
+				on:viewSelected={handleViewSelected}
+			/>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-auto px-6 py-4 space-y-6">
@@ -856,7 +854,7 @@
 		<div class="flex items-center gap-3">
 			<button
 				class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
-				on:click={() => (sidebarOpen = !sidebarOpen)}
+				on:click={() => (sidebarVisible = !sidebarVisible)}
 				title="Toggle views sidebar"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

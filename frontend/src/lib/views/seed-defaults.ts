@@ -6,7 +6,12 @@
  *
  * Used by admin pages to ensure default views stay in sync with code changes.
  */
-import type { ViewConfig, SavedView } from '@shotleybuilder/svelte-gridlite-views';
+import type {
+	ViewConfig,
+	SavedView,
+	GroupActions,
+	ViewGroup
+} from '@shotleybuilder/svelte-gridlite-views';
 
 export interface ViewDef {
 	name: string;
@@ -125,4 +130,58 @@ export async function seedDefaultViews(
 	}
 
 	return result;
+}
+
+export interface GroupDef {
+	name: string;
+	icon?: string;
+}
+
+/**
+ * Seed default groups into the view store.
+ * Idempotent — skips groups that already exist by name.
+ * Returns a map of groupName → groupId for use in assignViewsToGroups.
+ */
+export async function seedDefaultGroups(
+	defaults: GroupDef[],
+	currentGroups: ViewGroup[],
+	groupActions: GroupActions
+): Promise<Map<string, string>> {
+	const nameToId = new Map<string, string>();
+
+	// Index existing groups
+	for (const group of currentGroups) {
+		nameToId.set(group.name, group.id);
+	}
+
+	// Seed missing
+	for (const def of defaults) {
+		if (!nameToId.has(def.name)) {
+			const group = await groupActions.createGroup({ name: def.name, icon: def.icon });
+			nameToId.set(def.name, group.id);
+		}
+	}
+
+	return nameToId;
+}
+
+/**
+ * Assign views to groups based on a view-name → group-name mapping.
+ * Idempotent — only moves views that aren't already in the correct group.
+ */
+export async function assignViewsToGroups(
+	viewToGroupName: Record<string, string>,
+	groupNameToId: Map<string, string>,
+	savedViews: SavedView[],
+	groupActions: GroupActions
+): Promise<void> {
+	for (const view of savedViews) {
+		const expectedGroupName = viewToGroupName[view.name];
+		if (!expectedGroupName) continue;
+		const expectedGroupId = groupNameToId.get(expectedGroupName);
+		if (!expectedGroupId) continue;
+		if (view.groupId !== expectedGroupId) {
+			await groupActions.moveViewToGroup(view.id, expectedGroupId);
+		}
+	}
 }
