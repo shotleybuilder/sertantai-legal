@@ -7,9 +7,9 @@
 ## Todo
 - [x] Bug 1: `determine_live_status` missing "except for" partial revocation pattern — only checks "in part", misses `"revoked (except for regs. 1, 2(2)(b)...)"`
 - [x] Bug 2: `set_live_status` maps `document_status: "final"` → `✔ In force` — but "final" means "original text, not revised", NOT "currently in force". Genuinely revoked laws (e.g. uksi/2010/676) have `"final"` status
-- [ ] Bug 3: HASAWA parsed at 09:20 on March 12, before 3 fixes to `determine_live_status` committed later that day (13:58, 14:39, 17:10) — stale parse data, needs re-parse
-- [ ] Bug 4: `reconcile_live_status` "Most Severe Wins" strategy can't work when neither source is reliable — needs rethinking after bugs 1-2 are fixed
-- [ ] Re-parse the 1,266 conflict records (changes=revoked, metadata=in_force) after fixing bugs 1-2
+- [x] Bug 3: HASAWA parsed at 09:20 on March 12, before 3 fixes to `determine_live_status` committed later that day (13:58, 14:39, 17:10) — manually re-parsed
+- [x] Bug 4: `reconcile_live_status` "Most Severe Wins" strategy can't work when neither source is reliable — replaced with "changes-primary, metadata-override" (commit 7ff25fb)
+- [x] Re-parse the 1,266 conflict records — **reparse not needed**. March 12 SQL reclassification + subsequent reparses resolved all but 25 records. Final 25 fixed via SQL UPDATE setting `live = live_from_changes` (no title markers present, so changes-primary rule applies). 0 mismatches remain.
 
 ## Notes
 - 1,266 records: changes=revoked, metadata=in_force — mix of genuinely revoked AND genuinely in force

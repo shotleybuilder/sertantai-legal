@@ -1,7 +1,7 @@
 # UK Legal Register Table (LRT) Schema
 
-  **Version**: 1.3
-  **Last Updated**: 2026-03-09
+  **Version**: 1.4
+  **Last Updated**: 2026-03-27
   
   > **Issue #14 (Phase 4)**: Consolidated 16 holder text columns into 4 JSONB columns with 93% storage reduction.
   > **Issue #15 (Phase 4)**: Consolidated 4 POPIMAR text columns into 1 JSONB column.
@@ -10,6 +10,7 @@
   > **Issue #18 (2026-02-06)**: Documented derived year/month columns for date grouping in TableKit.
   > **Issue #39 (2026-03-06)**: Added 7 fitness columns for applicability matching (person, process, place, plant, property, sector, detail).
   > **Making Detection (2026-02-24)**: Added 4 making classification columns for AI-assisted function detection.
+  > **Issue #60 (2026-03-27)**: Simplified live status to "changes-primary, metadata-override". Removed 4 columns: `live_from_metadata`, `live_conflict`, `live_conflict_detail`, `live_source`. Removed `repeal_revoke` parser stage (redundant with metadata stage). See [Live Status Values](./LIVE_STATUS_VALUES.md).
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -312,15 +313,22 @@
 
 ## Status (resolved after Stage 4 amended_by)
 
-  Live status is resolved using a "changes-primary, metadata-override" strategy:
-  - **Changes** (`/changes/affected`, from Stage 4 amended_by) is the primary source
-  - **Metadata** (title marker from Stage 1 metadata) overrides only when it definitively says revoked
+  Live status is resolved using a **"changes-primary, metadata-override"** strategy:
+  - **Changes** (`/changes/affected`, from Stage 4 amended_by) is the primary source — analyses actual revocation entries
+  - **Metadata** (title marker from Stage 1) overrides only when it definitively says revoked
+  - Rule: if metadata says `❌ Revoked` → revoked (definitive). Otherwise → use changes result.
+  
+  See [Live Status Values](./LIVE_STATUS_VALUES.md) for full rules, classification logic, and data provenance.
   
   | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
   |--------|---------------|---------------|------|:--------:|---------|-------|
-  | `live` | Status | `live` | `string` | Yes (16845) | `✔ In force` | 🔄 amendments (resolved) |
-  | `live_description` | Status Description | `live_description` | `string` | Yes (686) | `Current legislation` | 💠 metadata |
-  | `live_from_changes` | Status (Changes) | `live_from_changes` | `string` | Yes | `✔ In force` | 🔄 amendments |
+  | `live` | Status | `live` | `string` | Yes (17216) | `✔ In force` | 🔄 amendments (resolved) |
+  | `live_description` | Status Description | `live_description` | `string` | Yes | `Current legislation` | 💠 metadata |
+  | `live_from_changes` | Status (Changes) | `live_from_changes` | `string` | Yes (5529) | `✔ In force` | 🔄 amendments |
+
+  **Status Values**: `✔ In force`, `⭕ Part Revocation / Repeal`, `❌ Revoked / Repealed / Abolished`, `⚠ Planned`, `NULL`/`""`
+  
+  > **Removed (2026-03-27, Issue #60)**: `live_from_metadata`, `live_conflict`, `live_conflict_detail`, `live_source` — redundant after simplifying reconciliation from "most severe wins" to "changes-primary, metadata-override". The `repeal_revoke` parser stage (stage 6) was also removed; its only useful signal (title check) is now handled by the metadata stage.
 
 ---
 
@@ -507,4 +515,5 @@
 - [Family Values](./FAMILY_VALUES.md) - Valid family classifications
 - [Function Values](./FUNCTION_VALUES.md) - Making, Amending, Revoking, Commencing, Enacting
 - [Holder Values](./HOLDER_VALUES.md) - Actor taxonomy for duty/rights/responsibility/power holders
+- [Live Status Values](./LIVE_STATUS_VALUES.md) - Rules governing live status determination and all related columns
 - [Purpose Values](./PURPOSE_VALUES.md) - Purpose and duty_type taxonomy
