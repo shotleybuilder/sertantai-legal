@@ -8,7 +8,9 @@
 - [x] Sidebar: drag views to reorder within/between groups — same fix, ViewSidebar has drag-and-drop built in
 - [x] Column width changer not actually resizing — library bug: `border-collapse: collapse` broke `position: relative` on `<th>`, fixed in kit v0.4.6 (kit#13), bumped to v0.4.7 (4296939)
 - [x] Error when all groups removed — Svelte reactive timing: `setGrouping([])` called `rebuildQuery` before `$: validGrouping` updated, fixed with snapshot in kit v0.4.8 (kit#14, 66ea1ad) — verified
-- [ ] Save View on default view should update, not create new
+- [x] Save View on default view should update, not create new — two-part fix:
+  - hasActiveView subscription was one-shot, now live (be414e6)
+  - Column visibility not persisting: notifyStateChange reported stale visibleColumns due to Svelte reactive batching (kit#15), fixed in kit v0.4.9 (1322db5) + consumer-side switchToView reads savedConfig.columnVisibility (d444966) — verified
 - [ ] Default view filters not showing in filter toolbar
 
 ## Notes

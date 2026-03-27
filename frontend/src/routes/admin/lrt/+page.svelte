@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
-	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
+	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
@@ -315,23 +315,25 @@
 		viewFamilyMapping[def.name] = def.family;
 	}
 
-	// Custom query views
+	// Query constants
 	const currentYear = new Date().getFullYear();
+	const BASE_QUERY = `SELECT ${LRT_COLUMNS} FROM uk_lrt`;
+	// LAT Cleanup needs nested OR groups + JSONB ? operator — stays as raw SQL until kit#17 + kit#18
+	const LAT_CLEANUP_QUERY = `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE lat_count > 0 AND (live = '❌ Revoked / Repealed / Abolished' OR (is_making = true AND NOT (function ? 'Making')))`;
+
+	// Column sets for view configs
 	const VIEW_COLUMNS = ['name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
 	const RECENT_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'family', 'live'];
 	const LIVE_VIEW_COLUMNS = ['name', 'title_en', 'year', 'live', 'live_from_changes'];
 	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'live', 'live_from_changes', 'function', 'is_making', 'duty_type', 'lat_count', 'family'];
 
-	// Map view name → custom query SQL
-	const viewCustomQueryMapping: Record<string, string> = {
-		'Recently Added': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE created_at >= NOW() - INTERVAL '1 month' ORDER BY created_at DESC`,
-		'Recently Amended': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_amend_date >= '${currentYear - 2}-01-01' ORDER BY latest_amend_date DESC`,
-		'Recently Rescinded': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE latest_rescind_date >= '${currentYear - 2}-01-01' ORDER BY latest_rescind_date DESC`,
-		'Live': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = '💙 OH&S: Occupational / Personal Safety' AND title_en IS NOT NULL ORDER BY name`,
-		'LAT Cleanup': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE lat_count > 0 AND (live = '❌ Revoked / Repealed / Abolished' OR (is_making = true AND NOT (function ? 'Making'))) ORDER BY lat_count DESC`,
-		'Unparsed': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE live_from_changes IS NULL ORDER BY name`,
-		'Revoked (Unverified)': `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE live = '❌ Revoked / Repealed / Abolished' AND live_from_changes IS NULL ORDER BY name`
-	};
+	// Date helpers for filter values
+	function oneMonthAgo(): string {
+		const d = new Date();
+		d.setMonth(d.getMonth() - 1);
+		return d.toISOString().split('T')[0];
+	}
+	const twoYearsAgoJan1 = `${currentYear - 2}-01-01`;
 
 	// Helper to build column visibility map from a list of visible column names
 	function colVis(visibleCols: string[]): Record<string, boolean> {
@@ -371,11 +373,14 @@
 	}
 
 	const defaultViews: ViewDef[] = [
-		// Family views
+		// Family views — filter via GridLite FilterCondition, not SQL WHERE
 		...familyViewDefs.map((def, i): ViewDef => ({
 			name: def.name,
 			description: `${def.family} — grouped by type`,
-			config: makeViewConfig({ visibleCols: VIEW_COLUMNS }),
+			config: makeViewConfig({
+				visibleCols: VIEW_COLUMNS,
+				filters: [{ id: `family-${i}`, field: 'family', operator: 'equals', value: def.family }]
+			}),
 			isDefault: i === 0,
 			family: def.family
 		})),
@@ -385,30 +390,30 @@
 			description: 'Records added to the database in the last month.',
 			config: makeViewConfig({
 				visibleCols: [...RECENT_COLUMNS, 'created_at'],
+				filters: [{ id: 'recent-added', field: 'created_at', operator: 'is_after', value: oneMonthAgo() }],
 				sorting: [{ column: 'created_at', direction: 'desc' }],
 				grouping: [{ column: 'type_desc' }]
-			}),
-			customQuery: viewCustomQueryMapping['Recently Added']
+			})
 		},
 		{
 			name: 'Recently Amended',
 			description: 'Laws amended in the last 3 years, sorted by most recent amendment date.',
 			config: makeViewConfig({
 				visibleCols: [...RECENT_COLUMNS, 'latest_amend_date'],
+				filters: [{ id: 'recent-amended', field: 'latest_amend_date', operator: 'is_after', value: twoYearsAgoJan1 }],
 				sorting: [{ column: 'latest_amend_date', direction: 'desc' }],
 				grouping: [{ column: 'type_desc' }]
-			}),
-			customQuery: viewCustomQueryMapping['Recently Amended']
+			})
 		},
 		{
 			name: 'Recently Rescinded',
 			description: 'Laws rescinded (repealed/revoked) in the last 3 years.',
 			config: makeViewConfig({
 				visibleCols: [...RECENT_COLUMNS, 'latest_rescind_date'],
+				filters: [{ id: 'recent-rescinded', field: 'latest_rescind_date', operator: 'is_after', value: twoYearsAgoJan1 }],
 				sorting: [{ column: 'latest_rescind_date', direction: 'desc' }],
 				grouping: [{ column: 'type_desc' }]
-			}),
-			customQuery: viewCustomQueryMapping['Recently Rescinded']
+			})
 		},
 		// Analytics
 		{
@@ -416,10 +421,13 @@
 			description: 'Live status reconciliation — OH&S Occupational / Personal Safety',
 			config: makeViewConfig({
 				visibleCols: LIVE_VIEW_COLUMNS,
+				filters: [
+					{ id: 'live-family', field: 'family', operator: 'equals', value: '💙 OH&S: Occupational / Personal Safety' },
+					{ id: 'live-title', field: 'title_en', operator: 'is_not_empty', value: '' }
+				],
 				sorting: [{ column: 'name', direction: 'asc' }],
 				grouping: []
-			}),
-			customQuery: viewCustomQueryMapping['Live']
+			})
 		},
 		{
 			name: 'LAT Cleanup',
@@ -430,37 +438,40 @@
 				grouping: [],
 				pageSize: 500
 			}),
-			customQuery: viewCustomQueryMapping['LAT Cleanup']
+			// Raw SQL — needs kit#17 (nested OR groups) + kit#18 (JSONB ?) to convert
+			customQuery: LAT_CLEANUP_QUERY
 		},
 		{
 			name: 'Unparsed',
 			description: 'Records never parsed — live_from_changes is NULL',
 			config: makeViewConfig({
 				visibleCols: LIVE_VIEW_COLUMNS,
+				filters: [{ id: 'unparsed', field: 'live_from_changes', operator: 'is_empty', value: '' }],
 				sorting: [{ column: 'name', direction: 'asc' }],
 				grouping: [{ column: 'type_desc' }]
-			}),
-			customQuery: viewCustomQueryMapping['Unparsed']
+			})
 		},
 		{
 			name: 'Revoked (Unverified)',
 			description: 'Records marked revoked from Airtable import but never verified by parser',
 			config: makeViewConfig({
 				visibleCols: LIVE_VIEW_COLUMNS,
+				filters: [
+					{ id: 'revoked', field: 'live', operator: 'equals', value: '❌ Revoked / Repealed / Abolished' },
+					{ id: 'unverified', field: 'live_from_changes', operator: 'is_empty', value: '' }
+				],
 				sorting: [{ column: 'name', direction: 'asc' }],
 				grouping: [{ column: 'type_desc' }]
-			}),
-			customQuery: viewCustomQueryMapping['Revoked (Unverified)']
+			})
 		}
 	];
 
-	// Resolve view name to the correct PGLite query SQL
+	// Resolve view name to the query string — most views use BASE_QUERY,
+	// only LAT Cleanup has a custom query (until kit#17 + kit#18 land)
 	function getQueryForView(viewName: string): string {
-		const custom = viewCustomQueryMapping[viewName];
-		if (custom) return custom;
-		const family = viewFamilyMapping[viewName];
-		if (family) return `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = '${family.replace(/'/g, "''")}' ORDER BY type_desc, name`;
-		return `SELECT ${LRT_COLUMNS} FROM uk_lrt ORDER BY name`;
+		const viewDef = defaultViews.find((v) => v.name === viewName);
+		if (viewDef?.customQuery) return viewDef.customQuery;
+		return BASE_QUERY;
 	}
 
 	// ── Sidebar state ───────────────────────────────────────────────
@@ -525,12 +536,25 @@
 	let activeViewName: string | null = null;
 	let activeVisibleColumns: string[] = VIEW_COLUMNS;
 
+	// Build the effective SQL query including GridLite filters (for reparse operations)
+	function getEffectiveQuery(): { sql: string; params: unknown[] } {
+		if (!latestGridState) return { sql: currentQuery, params: [] };
+		return buildQuery({
+			source: currentQuery,
+			filters: latestGridState.filters as FilterCondition[],
+			filterLogic: latestGridState.filterLogic as 'and' | 'or',
+			sorting: latestGridState.sorting as SortConfig[],
+			allowedColumns: columns.map((c) => c.name)
+		});
+	}
+
 	async function handleReparseViewConfirm() {
 		reparseViewLoading = true;
 		reparseViewError = null;
 		try {
-			// Get visible data names from PGLite directly using the current query
-			const result = await db?.query<{ name: string }>(currentQuery);
+			// Get visible data names from PGLite using current query + active filters
+			const { sql, params } = getEffectiveQuery();
+			const result = await db?.query<{ name: string }>(sql, params);
 			const names = result?.rows.map((r) => r.name) ?? [];
 			const label = activeViewName || 'view';
 			const sessionResult = await createReparseFromView(names, label);
@@ -807,8 +831,8 @@
 			viewStore = initViewStore(db as any, 'lrt-admin');
 			ready = true;
 			await refreshTotalCount();
-			// Default query until views load
-			currentQuery = `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE family = '${familyViewDefs[0].family.replace(/'/g, "''")}' ORDER BY type_desc, name`;
+			// Default query until views load — filters applied by applyViewToGrid after seeding
+			currentQuery = BASE_QUERY;
 			currentFamily = familyViewDefs[0].family;
 			// Wait for next tick so GridLite renders, then seed views
 			setTimeout(() => seedDefaultViews(), 100);
@@ -828,10 +852,11 @@
 		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
 	}
 
-	// Reparse view record count — use PGLite query to count
+	// Reparse view record count — use effective filtered query to count
 	let reparseViewCount = 0;
 	$: if (showReparseViewDialog && db && currentQuery) {
-		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${currentQuery}) sub`).then((r) => {
+		const eff = getEffectiveQuery();
+		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params).then((r) => {
 			reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
 		}).catch(() => { reparseViewCount = 0; });
 	}
