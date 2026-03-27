@@ -4,9 +4,9 @@
 **Issue**: https://github.com/shotleybuilder/sertantai-legal/issues/61
 
 ## Todo
-- [ ] Sidebar: expand/collapse on view groups
-- [ ] Sidebar: drag views to reorder within/between groups
-- [ ] Column width changer not actually resizing
+- [x] Sidebar: expand/collapse on view groups — replaced custom sidebar with library ViewSidebar (eebcba9, 69c847c)
+- [x] Sidebar: drag views to reorder within/between groups — same fix, ViewSidebar has drag-and-drop built in
+- [x] Column width changer not actually resizing — library bug: `border-collapse: collapse` broke `position: relative` on `<th>`, fixed in kit v0.4.6 (kit#13), bumped to v0.4.7 (4296939)
 - [ ] Error when all groups removed
 - [ ] Save View on default view should update, not create new
 - [ ] Default view filters not showing in filter toolbar
@@ -14,3 +14,4 @@
 ## Notes
 - Affected libs: @shotleybuilder/svelte-gridlite-kit, @shotleybuilder/svelte-gridlite-views
 - Page: frontend/src/routes/admin/lrt/+page.svelte
+- Also fixed: frontend/src/routes/admin/lat/queue/+page.svelte (same sidebar swap)
