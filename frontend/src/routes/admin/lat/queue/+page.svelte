@@ -303,7 +303,7 @@
 		{ name: 'year', label: 'Year', width: 80, dataType: 'number' },
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
-		{ name: 'function', label: 'Function', width: 150, dataType: 'text' },
+		{ name: 'function', label: 'Function', width: 150, dataType: 'json' },
 		{ name: 'lat_count', label: 'LAT Rows', width: 80, dataType: 'number' },
 		{ name: 'updated_at', label: 'LRT Updated', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) },
 		{ name: 'latest_lat_updated_at', label: 'LAT Updated', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) }
@@ -505,17 +505,28 @@
 		const { actions, savedViews: svStore, groupActions, savedGroups: grpStore } = viewStore;
 		await actions.waitForReady();
 
+		// One-time wipe of stale views (pre-filter-conversion format)
+		const versionKey = 'lat-queue-view-version';
+		if (localStorage.getItem(versionKey) !== '7') {
+			let existingViews: SavedView[] = [];
+			svStore.subscribe((v) => { existingViews = v; })();
+			if (existingViews.length > 0) {
+				// Wipe via raw SQL to avoid live-query cascade from individual deletes
+				await db!.exec(`DELETE FROM _gridlite_views WHERE grid_id = 'lat-queue'; DELETE FROM _gridlite_view_groups WHERE grid_id = 'lat-queue'`);
+			}
+			localStorage.setItem(versionKey, '7');
+		}
+
 		let currentViews: SavedView[] = [];
 		const unsub = svStore.subscribe((v) => { currentViews = v; });
 
-		// Dedup, update stale configs, seed missing
+		// Same pattern as working LRT page: dedup, update stale configs, seed missing
 		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
 
 		// Seed groups and assign views to groups
 		let currentGroups: ViewGroup[] = [];
 		const unsubGrp = grpStore.subscribe((g) => { currentGroups = g; });
 		const groupNameToId = await seedDefaultGroups(defaultGroupDefs, currentGroups, groupActions);
-		// Re-read views after seeding (IDs may have changed)
 		svStore.subscribe((v) => { currentViews = v; })();
 		await assignViewsToGroups(viewToGroupName, groupNameToId, currentViews, groupActions);
 		unsubGrp();
@@ -672,10 +683,12 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
-			ready = true;
 			// Default query until views load — filters applied by applyViewToGrid after seeding
 			currentQuery = BASE_QUERY;
-			setTimeout(() => seedDefaultViews(), 100);
+			ready = true;
+			// Wait for GridLite to render, then seed views
+			await new Promise((r) => setTimeout(r, 100));
+			await seedDefaultViews();
 		}
 	});
 
@@ -835,7 +848,7 @@
 					columnReordering: true,
 					filtering: true,
 					sorting: true,
-					pagination: false,
+					pagination: true,
 					grouping: true,
 					globalSearch: true
 				}}

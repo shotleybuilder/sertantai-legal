@@ -81,7 +81,7 @@
 		},
 		{ name: 'family', label: 'Family', width: 200, dataType: 'text' },
 		{ name: 'family_ii', label: 'Family II', width: 200, dataType: 'text' },
-		{ name: 'function', label: 'Function', width: 150, dataType: 'text' },
+		{ name: 'function', label: 'Function', width: 150, dataType: 'json' },
 		{ name: 'si_code', label: 'SI Code', width: 180, dataType: 'text' },
 		{ name: 'live', label: 'Status', width: 100, dataType: 'text' },
 		{ name: 'geo_extent', label: 'Extent', width: 120, dataType: 'text' },

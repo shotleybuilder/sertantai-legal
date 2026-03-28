@@ -198,7 +198,7 @@
 		{ name: 'family', label: 'Family', width: 200, dataType: 'text' },
 		{ name: 'family_ii', label: 'Family II', width: 200, dataType: 'text' },
 		{ name: 'si_code', label: 'SI Code', width: 180, dataType: 'text' },
-		{ name: 'function', label: 'Function', width: 150, dataType: 'text' },
+		{ name: 'function', label: 'Function', width: 150, dataType: 'json' },
 		{ name: 'is_making', label: 'Making?', width: 80, dataType: 'text' },
 		{ name: 'has_fitness', label: 'Fitness?', width: 80, dataType: 'select', selectOptions: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }] },
 		{ name: 'lat_count', label: 'LAT', width: 70, dataType: 'number' },
