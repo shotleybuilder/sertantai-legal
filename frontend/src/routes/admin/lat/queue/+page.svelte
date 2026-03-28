@@ -2,9 +2,9 @@
 	/* eslint-disable no-undef */
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
-	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
+	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
-	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -42,53 +42,47 @@
 	let currentFamily: string | null = null;
 	let currentViewName: string | null = null;
 
-	// ── SQL query builders ──────────────────────────────────────────
-
-	const SIX_MONTHS_INTERVAL = "6 months";
-
-	const QUEUE_BASE_WHERE = `
-		is_making = true
-		AND (making_classification IS NULL OR making_classification != 'not_making')
-		AND (live IS NULL OR live != '❌ Revoked / Repealed / Abolished')
-		AND title_en IS NOT NULL
-		AND family IS NOT NULL
-		AND family != '_todo'
-		AND family != '🖤 X: No Family'`;
-
-	const QUEUE_LAT_WHERE = `
-		AND (
-			lat_count = 0
-			OR (
-				updated_at IS NOT NULL
-				AND latest_lat_updated_at IS NOT NULL
-				AND updated_at > latest_lat_updated_at + INTERVAL '${SIX_MONTHS_INTERVAL}'
-			)
-		)`;
+	// ── Query + Filter constants ────────────────────────────────────
 
 	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, live_from_changes, function, updated_at, lat_count, latest_lat_updated_at';
+	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS} FROM uk_lrt`;
 
-	function getQueryForFamily(family: string): string {
-		return `SELECT ${QUEUE_COLUMNS} FROM uk_lrt WHERE ${QUEUE_BASE_WHERE} ${QUEUE_LAT_WHERE} AND family = '${family.replace(/'/g, "''")}' ORDER BY name`;
-	}
+	// Shared base filters: is_making, not classified as not_making, not revoked, has title & family
+	const QUEUE_BASE_FILTERS: FilterNode[] = [
+		{ id: 'q-is-making', field: 'is_making', operator: 'equals', value: true },
+		// making_classification IS NULL OR != 'not_making' → OR group
+		{
+			id: 'q-class-ok', logic: 'or' as const, children: [
+				{ id: 'q-class-null', field: 'making_classification', operator: 'is_empty', value: '' },
+				{ id: 'q-class-ne', field: 'making_classification', operator: 'not_equals', value: 'not_making' }
+			]
+		},
+		// live IS NULL OR != '❌ Revoked / Repealed / Abolished' → OR group
+		{
+			id: 'q-live-ok', logic: 'or' as const, children: [
+				{ id: 'q-live-null', field: 'live', operator: 'is_empty', value: '' },
+				{ id: 'q-live-ne', field: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
+			]
+		},
+		{ id: 'q-has-title', field: 'title_en', operator: 'is_not_empty', value: '' },
+		{ id: 'q-has-family', field: 'family', operator: 'is_not_empty', value: '' },
+		{ id: 'q-not-todo', field: 'family', operator: 'not_equals', value: '_todo' },
+		{ id: 'q-not-nofam', field: 'family', operator: 'not_equals', value: '🖤 X: No Family' }
+	];
 
-	function getQueryAll(): string {
-		return `SELECT ${QUEUE_COLUMNS} FROM uk_lrt WHERE ${QUEUE_BASE_WHERE} ${QUEUE_LAT_WHERE} ORDER BY name`;
-	}
-
-	function getQueryForView(viewName: string): string {
-		const family = viewFamilyMapping[viewName];
-		if (family) return getQueryForFamily(family);
-		if (viewName === 'Missing LAT') {
-			return `SELECT ${QUEUE_COLUMNS} FROM uk_lrt WHERE ${QUEUE_BASE_WHERE} AND lat_count = 0 ORDER BY name`;
-		}
-		if (viewName === 'Stale LAT') {
-			return `SELECT ${QUEUE_COLUMNS} FROM uk_lrt WHERE ${QUEUE_BASE_WHERE} AND lat_count > 0 AND updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '${SIX_MONTHS_INTERVAL}' ORDER BY name`;
-		}
-		if (viewName === 'Live') {
-			return `SELECT ${QUEUE_COLUMNS} FROM uk_lrt WHERE family = '💙 OH&S: Occupational / Personal Safety' AND title_en IS NOT NULL ORDER BY name`;
-		}
-		return getQueryAll();
-	}
+	// LAT queue filter: missing OR stale (updated_at > latest_lat_updated_at + 6 months)
+	const QUEUE_LAT_FILTER: FilterNode = {
+		id: 'q-lat-need', logic: 'or' as const, children: [
+			{ id: 'q-lat-zero', field: 'lat_count', operator: 'equals', value: 0 },
+			{
+				id: 'q-lat-stale', logic: 'and' as const, children: [
+					{ id: 'q-upd-set', field: 'updated_at', operator: 'is_not_empty', value: '' },
+					{ id: 'q-lat-upd-set', field: 'latest_lat_updated_at', operator: 'is_not_empty', value: '' },
+					{ id: 'q-lat-outdated', field: 'updated_at', operator: 'greater_than', value: '', valueColumn: 'latest_lat_updated_at', intervalOffset: '6 months' }
+				]
+			}
+		]
+	};
 
 	// ── State ────────────────────────────────────────────────────────
 
@@ -115,11 +109,24 @@
 	let reparseViewError: string | null = null;
 	let reparseViewCount = 0;
 
+	// Build the effective SQL query including GridLite filters (for reparse operations)
+	function getEffectiveQuery(): { sql: string; params: unknown[] } {
+		if (!latestGridState) return { sql: currentQuery, params: [] };
+		return buildQuery({
+			source: currentQuery,
+			filters: latestGridState.filters as FilterCondition[],
+			filterLogic: latestGridState.filterLogic as 'and' | 'or',
+			sorting: latestGridState.sorting as SortConfig[],
+			allowedColumns: columns.map((c) => c.name)
+		});
+	}
+
 	async function handleReparseViewConfirm() {
 		reparseViewLoading = true;
 		reparseViewError = null;
 		try {
-			const result = await db?.query<{ name: string }>(currentQuery);
+			const { sql, params } = getEffectiveQuery();
+			const result = await db?.query<{ name: string }>(sql, params);
 			const names = result?.rows.map((r) => r.name) ?? [];
 			const label = currentViewName || 'view';
 			const sessionResult = await createLatSessionFromView(names, label);
@@ -401,12 +408,14 @@
 
 	function makeViewConfig(opts: {
 		visibleCols: string[];
-		filters?: FilterCondition[];
+		filters?: FilterNode[];
 		sorting?: SortConfig[];
 		grouping?: GroupConfig[];
 	}): ViewConfig {
 		return {
-			filters: opts.filters ?? [],
+			// Cast: ViewConfig.filters is typed as FilterCondition[] but we store FilterNode[]
+			// (including FilterGroup). The views lib serializes to JSON so this is safe at runtime.
+			filters: (opts.filters ?? []) as FilterCondition[],
 			filterLogic: 'and',
 			sorting: opts.sorting ?? [{ column: 'updated_at', direction: 'asc' }],
 			grouping: opts.grouping ?? [{ column: 'family' }, { column: 'year' }],
@@ -428,28 +437,60 @@
 		{
 			name: 'All Queue',
 			description: 'All making laws needing LAT parsing — missing and stale.',
-			config: makeViewConfig({ visibleCols: allCols }),
+			config: makeViewConfig({
+				visibleCols: allCols,
+				filters: [...QUEUE_BASE_FILTERS, QUEUE_LAT_FILTER]
+			}),
 			isDefault: true
 		},
 		{
 			name: 'Missing LAT',
 			description: 'LRT records with making function that have no LAT data at all.',
-			config: makeViewConfig({ visibleCols: allCols })
+			config: makeViewConfig({
+				visibleCols: allCols,
+				filters: [...QUEUE_BASE_FILTERS, { id: 'q-lat-missing', field: 'lat_count', operator: 'equals', value: 0 }]
+			})
 		},
 		{
 			name: 'Stale LAT',
 			description: 'LRT records where LAT data exists but is more than 6 months out of date.',
-			config: makeViewConfig({ visibleCols: allCols })
+			config: makeViewConfig({
+				visibleCols: allCols,
+				filters: [
+					...QUEUE_BASE_FILTERS,
+					{ id: 'q-lat-gt0', field: 'lat_count', operator: 'greater_than', value: 0 },
+					{ id: 'q-upd-set2', field: 'updated_at', operator: 'is_not_empty', value: '' },
+					{ id: 'q-lat-upd-set2', field: 'latest_lat_updated_at', operator: 'is_not_empty', value: '' },
+					{ id: 'q-lat-outdated2', field: 'updated_at', operator: 'greater_than', value: '', valueColumn: 'latest_lat_updated_at', intervalOffset: '6 months' }
+				]
+			})
 		},
-		...familyViewDefs.map((def): ViewDef => ({
+		...familyViewDefs.map((def, i): ViewDef => ({
 			name: def.name,
 			description: `${def.family} — LAT parse candidates`,
-			config: makeViewConfig({ visibleCols: familyCols, sorting: [{ column: 'name', direction: 'asc' }], grouping: [{ column: 'year' }] })
+			config: makeViewConfig({
+				visibleCols: familyCols,
+				filters: [
+					...QUEUE_BASE_FILTERS,
+					QUEUE_LAT_FILTER,
+					{ id: `q-fam-${i}`, field: 'family', operator: 'equals', value: def.family }
+				],
+				sorting: [{ column: 'name', direction: 'asc' }],
+				grouping: [{ column: 'year' }]
+			})
 		})),
 		{
 			name: 'Live',
 			description: 'Live status reconciliation — OH&S Occupational / Personal Safety',
-			config: makeViewConfig({ visibleCols: liveCols, sorting: [{ column: 'name', direction: 'asc' }], grouping: [] })
+			config: makeViewConfig({
+				visibleCols: liveCols,
+				filters: [
+					{ id: 'q-live-fam', field: 'family', operator: 'equals', value: '💙 OH&S: Occupational / Personal Safety' },
+					{ id: 'q-live-title', field: 'title_en', operator: 'is_not_empty', value: '' }
+				],
+				sorting: [{ column: 'name', direction: 'asc' }],
+				grouping: []
+			})
 		}
 	];
 
@@ -502,7 +543,7 @@
 	function applyViewToGrid(view: SavedView) {
 		if (!gridRef) return;
 		const cfg = view.config;
-		gridRef.setFilters(cfg.filters as FilterCondition[], cfg.filterLogic);
+		gridRef.setFilters(cfg.filters as FilterNode[], cfg.filterLogic);
 		gridRef.setSorting(cfg.sorting as SortConfig[]);
 		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
 	}
@@ -512,7 +553,7 @@
 
 	function switchToView(viewName: string, savedConfig?: ViewConfig) {
 		currentViewName = viewName;
-		currentQuery = getQueryForView(viewName);
+		currentQuery = BASE_QUERY;
 		currentFamily = viewFamilyMapping[viewName] ?? null;
 		if (savedConfig?.columnVisibility) {
 			activeVisibleColumns = Object.entries(savedConfig.columnVisibility)
@@ -541,7 +582,7 @@
 
 	function captureCurrentConfig(state: GridState): ViewConfig {
 		return {
-			filters: state.filters,
+			filters: state.filters as FilterCondition[],
 			filterLogic: state.filterLogic,
 			sorting: state.sorting,
 			grouping: state.grouping,
@@ -587,26 +628,31 @@
 		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
 	}
 
-	// Reparse view record count
+	// Reparse view record count — use effective filtered query
 	$: if (showReparseViewDialog && db && currentQuery) {
-		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${currentQuery}) sub`).then((r) => {
+		const eff = getEffectiveQuery();
+		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params).then((r) => {
 			reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
 		}).catch(() => { reparseViewCount = 0; });
 	}
 
-	// Stats from current query
+	// Stats from current filtered query
 	let statTotal = 0;
 	let statMissing = 0;
 	let statStale = 0;
 
 	async function refreshStats() {
-		if (!db || !currentQuery) return;
+		if (!db || !latestGridState) return;
 		try {
-			const total = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${currentQuery}) sub`);
+			const { sql, params } = getEffectiveQuery();
+			const total = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${sql}) sub`, params);
 			statTotal = parseInt(total.rows[0]?.count ?? '0', 10);
-			// For detailed stats, only relevant when showing the queue
-			if (currentQuery.includes('lat_count')) {
-				const missing = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${currentQuery}) sub WHERE lat_count = 0`);
+			// For detailed stats, check if the filtered data includes lat_count-based filters
+			const hasLatFilters = latestGridState.filters.some((f: any) =>
+				f.field === 'lat_count' || f.id?.startsWith('q-lat')
+			);
+			if (hasLatFilters) {
+				const missing = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${sql}) sub WHERE lat_count = 0`, params);
 				statMissing = parseInt(missing.rows[0]?.count ?? '0', 10);
 				statStale = statTotal - statMissing;
 			} else {
@@ -616,7 +662,7 @@
 		} catch { /* ignore */ }
 	}
 
-	$: if (ready && db && currentQuery) {
+	$: if (ready && db && latestGridState) {
 		refreshStats();
 	}
 
@@ -627,8 +673,8 @@
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
 			ready = true;
-			// Default query until views load
-			currentQuery = getQueryAll();
+			// Default query until views load — filters applied by applyViewToGrid after seeding
+			currentQuery = BASE_QUERY;
 			setTimeout(() => seedDefaultViews(), 100);
 		}
 	});

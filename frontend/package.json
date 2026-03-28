@@ -54,7 +54,7 @@
 		"@electric-sql/client": "^1.5.12",
 		"@electric-sql/pglite": "^0.3.15",
 		"@electric-sql/pglite-sync": "^0.4.1",
-		"@shotleybuilder/svelte-gridlite-kit": "^0.4.9",
+		"@shotleybuilder/svelte-gridlite-kit": "^0.4.13",
 		"@shotleybuilder/svelte-gridlite-views": "^0.2.1",
 		"@tanstack/svelte-query": "^5.90.2",
 		"date-fns": "^4.1.0",

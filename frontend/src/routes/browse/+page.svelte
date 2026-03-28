@@ -358,7 +358,7 @@
 	// Capture current grid state for saving as a view
 	function captureCurrentConfig(state: GridState): ViewConfig {
 		return {
-			filters: state.filters,
+			filters: state.filters as FilterCondition[],
 			filterLogic: state.filterLogic,
 			sorting: state.sorting,
 			grouping: state.grouping,

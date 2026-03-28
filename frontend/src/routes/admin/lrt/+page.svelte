@@ -3,7 +3,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
-	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -318,8 +318,6 @@
 	// Query constants
 	const currentYear = new Date().getFullYear();
 	const BASE_QUERY = `SELECT ${LRT_COLUMNS} FROM uk_lrt`;
-	// LAT Cleanup needs nested OR groups + JSONB ? operator — stays as raw SQL until kit#17 + kit#18
-	const LAT_CLEANUP_QUERY = `SELECT ${LRT_COLUMNS} FROM uk_lrt WHERE lat_count > 0 AND (live = '❌ Revoked / Repealed / Abolished' OR (is_making = true AND NOT (function ? 'Making')))`;
 
 	// Column sets for view configs
 	const VIEW_COLUMNS = ['name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
@@ -346,13 +344,15 @@
 
 	function makeViewConfig(opts: {
 		visibleCols: string[];
-		filters?: FilterCondition[];
+		filters?: FilterNode[];
 		sorting?: SortConfig[];
 		grouping?: GroupConfig[];
 		pageSize?: number;
 	}): ViewConfig {
 		return {
-			filters: opts.filters ?? [],
+			// Cast: ViewConfig.filters is typed as FilterCondition[] but we store FilterNode[]
+			// (including FilterGroup). The views lib serializes to JSON so this is safe at runtime.
+			filters: (opts.filters ?? []) as FilterCondition[],
 			filterLogic: 'and',
 			sorting: opts.sorting ?? [{ column: 'name', direction: 'asc' }],
 			grouping: opts.grouping ?? [{ column: 'type_desc' }],
@@ -369,7 +369,6 @@
 		config: ViewConfig;
 		isDefault?: boolean;
 		family?: string;
-		customQuery?: string;
 	}
 
 	const defaultViews: ViewDef[] = [
@@ -434,12 +433,24 @@
 			description: 'Laws qualifying for LAT deletion — revoked/repealed or not-making with LAT data',
 			config: makeViewConfig({
 				visibleCols: LAT_CLEANUP_COLUMNS,
+				filters: [
+					{ id: 'lat-has-data', field: 'lat_count', operator: 'greater_than', value: 0 },
+					{
+						id: 'cleanup-reason', logic: 'or' as const, children: [
+							{ id: 'revoked', field: 'live', operator: 'equals', value: '❌ Revoked / Repealed / Abolished' },
+							{
+								id: 'not-making', logic: 'and' as const, children: [
+									{ id: 'is-making-true', field: 'is_making', operator: 'equals', value: true },
+									{ id: 'no-making-fn', field: 'function', operator: 'jsonb_not_has_key', value: 'Making' }
+								]
+							}
+						]
+					}
+				],
 				sorting: [{ column: 'lat_count', direction: 'desc' }],
 				grouping: [],
 				pageSize: 500
-			}),
-			// Raw SQL — needs kit#17 (nested OR groups) + kit#18 (JSONB ?) to convert
-			customQuery: LAT_CLEANUP_QUERY
+			})
 		},
 		{
 			name: 'Unparsed',
@@ -466,11 +477,8 @@
 		}
 	];
 
-	// Resolve view name to the query string — most views use BASE_QUERY,
-	// only LAT Cleanup has a custom query (until kit#17 + kit#18 land)
-	function getQueryForView(viewName: string): string {
-		const viewDef = defaultViews.find((v) => v.name === viewName);
-		if (viewDef?.customQuery) return viewDef.customQuery;
+	// All views use the same base query — filtering is done via GridLite FilterConditions
+	function getQueryForView(_viewName: string): string {
 		return BASE_QUERY;
 	}
 
@@ -731,7 +739,7 @@
 	function applyViewToGrid(view: SavedView) {
 		if (!gridRef) return;
 		const cfg = view.config;
-		gridRef.setFilters(cfg.filters as FilterCondition[], cfg.filterLogic);
+		gridRef.setFilters(cfg.filters as FilterNode[], cfg.filterLogic);
 		gridRef.setSorting(cfg.sorting as SortConfig[]);
 		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
 		if (cfg.pageSize) gridRef.setPageSize(cfg.pageSize);
@@ -765,7 +773,7 @@
 	// Capture current grid state for saving as a view
 	function captureCurrentConfig(state: GridState): ViewConfig {
 		return {
-			filters: state.filters,
+			filters: state.filters as FilterCondition[],
 			filterLogic: state.filterLogic,
 			sorting: state.sorting,
 			grouping: state.grouping,
