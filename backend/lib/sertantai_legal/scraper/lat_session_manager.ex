@@ -200,13 +200,12 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
   end
 
   # Build an Ash query from filters.
-  # Base filters match the LAT queue page's QUEUE_BASE_WHERE + QUEUE_LAT_WHERE:
-  #   is_making=true, not classified as not_making, not fully revoked, has title
+  # Base filters match the LAT queue page: candidates for LAT parsing.
+  # making_classification != "not_making" (includes "making", "uncertain", and NULL).
   # Then applies user-selected optional filters on top.
   defp build_query(family, filters) do
     UkLrt
     |> Ash.Query.filter(family == ^family)
-    |> Ash.Query.filter(is_making == true)
     |> Ash.Query.filter(is_nil(making_classification) or making_classification != "not_making")
     |> Ash.Query.filter(not is_nil(title_en))
     |> Ash.Query.filter(is_nil(live) or live != "❌ Revoked / Repealed / Abolished")

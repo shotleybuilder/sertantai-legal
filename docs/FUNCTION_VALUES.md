@@ -2,7 +2,7 @@
 
 The `function` field is a JSONB map indicating the purpose/role of the legislation. Keys are tag names, values are `true`.
 
-Source of truth: Airtable `Function` multi-select column (8 tags).
+Initial data: seeded from Airtable `Function` multi-select column (one-time import, not an ongoing source). Ongoing values are set by the LRT → LAT parsing pipeline.
 
 ## Valid Values
 
@@ -26,13 +26,42 @@ The "Maker" suffix means the target law of the relationship has `Making` in its 
 | **Revoking Maker** | Repeals/revokes other laws that ARE makers | Removes duty-creating laws |
 | **Enacting Maker** | Primary legislation enabling SIs that ARE makers | Enables duty-creating laws |
 
+## Pipeline: How Function is Determined
+
+```
+LRT Scraper (metadata only, lightweight)
+  → making_classification = "making" / "not_making" / "uncertain"
+  → MakingDetector: title patterns, structure, metadata signals
+  → This is a GUESS — no full text parsing
+
+LAT Queue (frontend)
+  → Shows candidates where making_classification != "not_making"
+  → These are laws that MIGHT create duties and need full-text parsing
+
+LAT Parser (Rust service, resource-heavy full-text analysis)
+  → Extracts duty_type from legislation body (Duty, Responsibility, Right, Power)
+  → Derives is_making: true if duty_type contains "Duty" or "Responsibility"
+  → This is the CONFIRMED answer
+
+FunctionCalculator (Elixir, post-LAT)
+  → Builds the function JSONB map using is_making as input
+  → "Making": true added when is_making = true
+  → Relationship labels (Amending Maker, etc.) depend on target law's is_making
+```
+
+### Key distinction
+
+| Field | Stage | Certainty | Purpose |
+|-------|-------|-----------|---------|
+| `making_classification` | LRT parse | Guess | Builds the LAT queue — candidates for full-text parsing |
+| `is_making` | LAT parse | Confirmed | Gold standard — law creates duties/responsibilities |
+| `function` | Post-LAT | Derived | JSONB map built from `is_making` + relationship analysis |
+
 ## Usage
 
 - A law can have multiple functions (e.g., both "Making" and "Amending Maker")
-- 107 unique tag combinations exist in the Airtable data
 - For applicability screening, filter on `function` containing "Making"
-- 12,860 records have Function data; 6,713 are empty in the Airtable export
-- 3,186 records (16.3%) have the Making tag — these are laws needing taxa parsing
+- For the LAT parse queue, filter on `making_classification` (not `is_making`)
 
 ## DB Columns
 
@@ -42,32 +71,44 @@ The "Maker" suffix means the target law of the relationship has `Making` in its 
 - **Type**: `map` (JSONB) — keys are tag names, values are `true`
 - **Example**: `{"Making": true, "Amending Maker": true}`
 - **Query**: `fragment("? \\? ?", function, "Making")` (JSONB `?` operator)
+- **Set by**: FunctionCalculator, using `is_making` and relationship arrays as inputs
 
 ### `is_making` (boolean)
 
 - **Column**: `is_making`
 - **Type**: `boolean`
-- **Purpose**: `true` if `function` contains "Making"
-- **Derived from**: `function` map
+- **Purpose**: Confirmed — law creates substantive duties/responsibilities
+- **Set by**: LAT parser (Rust service) — derived from `duty_type` containing "Duty" or "Responsibility"
+- **Used by**: FunctionCalculator to set `"Making": true` in `function` map, and to determine "Maker" suffix on relationship labels
+
+### `making_classification` (string)
+
+- **Column**: `making_classification`
+- **Type**: `string` — `"making"`, `"not_making"`, or `"uncertain"`
+- **Purpose**: Lightweight guess from LRT metadata — used to build the LAT parse queue
+- **Set by**: MakingDetector during LRT scraper stage (title patterns, structural signals)
+- **Can be manually overridden**: via inline editing in the LAT queue UI
 
 ### `is_commencing` (boolean)
 
 - **Column**: `is_commencing`
 - **Type**: `boolean`
-- **Purpose**: `true` if `function` contains "Commencing"
-- **Derived from**: `function` map
+- **Purpose**: `true` if law brings other laws into force
+- **Set by**: FunctionCalculator
 
 ## Related Fields
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `is_making` | boolean | `true` if function contains "Making" |
-| `is_commencing` | boolean | `true` if function contains "Commencing" |
-| `is_amending` | boolean | Primary purpose is amending (derived from relationship arrays) |
-| `is_rescinding` | boolean | Primary purpose is revoking (derived from relationship arrays) |
-| `is_enacting` | boolean | Is enabling legislation (derived from relationship arrays) |
+| Field | Type | Set By | Purpose |
+|-------|------|--------|---------|
+| `making_classification` | string | MakingDetector (LRT scraper) | Guess — builds LAT queue |
+| `making_confidence` | float | MakingDetector (LRT scraper) | Confidence score (0.0–1.0) |
+| `is_making` | boolean | LAT parser (Rust) | Confirmed — has Duty or Responsibility |
+| `is_commencing` | boolean | FunctionCalculator | Brings other laws into force |
+| `is_amending` | boolean | Derived from relationships | Primary purpose is amending |
+| `is_rescinding` | boolean | Derived from relationships | Primary purpose is revoking |
+| `is_enacting` | boolean | Derived from relationships | Is enabling legislation |
 
-## Airtable Statistics
+## Airtable Statistics (initial seed)
 
 | Tag | Records | % of tagged |
 |-----|---------|-------------|

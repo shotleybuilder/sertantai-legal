@@ -47,10 +47,9 @@
 	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, live_from_changes, function, updated_at, lat_count, latest_lat_updated_at';
 	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS} FROM uk_lrt`;
 
-	// Shared base filters: is_making, not classified as not_making, not revoked, has title & family
-	const QUEUE_BASE_FILTERS: FilterNode[] = [
-		{ id: 'q-is-making', field: 'is_making', operator: 'equals', value: true },
-		// making_classification IS NULL OR != 'not_making' → OR group
+	// Core filters (always apply): candidates for LAT parsing, not revoked
+	// making_classification != 'not_making' (includes 'making', 'uncertain', and NULL/unclassified)
+	const QUEUE_CORE_FILTERS: FilterNode[] = [
 		{
 			id: 'q-class-ok', logic: 'or' as const, children: [
 				{ id: 'q-class-null', field: 'making_classification', operator: 'is_empty', value: '' },
@@ -64,11 +63,18 @@
 				{ id: 'q-live-ne', field: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
 			]
 		},
+	];
+
+	// Guard filters — only needed for broad views without a specific family
+	const QUEUE_BROAD_GUARDS: FilterNode[] = [
 		{ id: 'q-has-title', field: 'title_en', operator: 'is_not_empty', value: '' },
 		{ id: 'q-has-family', field: 'family', operator: 'is_not_empty', value: '' },
 		{ id: 'q-not-todo', field: 'family', operator: 'not_equals', value: '_todo' },
 		{ id: 'q-not-nofam', field: 'family', operator: 'not_equals', value: '🖤 X: No Family' }
 	];
+
+	// Full base filters for broad views (no specific family)
+	const QUEUE_BASE_FILTERS: FilterNode[] = [...QUEUE_CORE_FILTERS, ...QUEUE_BROAD_GUARDS];
 
 	// LAT queue filter: missing OR stale (updated_at > latest_lat_updated_at + 6 months)
 	const QUEUE_LAT_FILTER: FilterNode = {
@@ -471,7 +477,7 @@
 			config: makeViewConfig({
 				visibleCols: familyCols,
 				filters: [
-					...QUEUE_BASE_FILTERS,
+					...QUEUE_CORE_FILTERS,
 					QUEUE_LAT_FILTER,
 					{ id: `q-fam-${i}`, field: 'family', operator: 'equals', value: def.family }
 				],
@@ -507,7 +513,7 @@
 
 		// One-time wipe of stale views (pre-filter-conversion format)
 		const versionKey = 'lat-queue-view-version';
-		if (localStorage.getItem(versionKey) !== '8') {
+		if (localStorage.getItem(versionKey) !== '10') {
 			let existingViews: SavedView[] = [];
 			svStore.subscribe((v) => { existingViews = v; })();
 			if (existingViews.length > 0) {
@@ -516,7 +522,7 @@
 				// Wait for live query to propagate the deletion before re-reading
 				await new Promise((r) => setTimeout(r, 200));
 			}
-			localStorage.setItem(versionKey, '8');
+			localStorage.setItem(versionKey, '10');
 		}
 
 		let currentViews: SavedView[] = [];
