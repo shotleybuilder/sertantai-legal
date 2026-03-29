@@ -546,13 +546,14 @@
 			const loadedView = await actions.load(defaultViewId);
 			if (loadedView) {
 				switchToView('All Queue');
-				setTimeout(() => applyViewToGrid(loadedView), 50);
+				applyViewToGrid(loadedView);
 			}
 		} else if (activeId) {
 			let activeView: SavedView | null = null;
 			svStore.subscribe((views) => { activeView = views.find((v) => v.id === activeId) ?? null; })();
 			if (activeView) {
 				switchToView((activeView as SavedView).name);
+				applyViewToGrid(activeView as SavedView);
 			}
 		}
 
@@ -562,9 +563,12 @@
 	function applyViewToGrid(view: SavedView) {
 		if (!gridRef) return;
 		const cfg = view.config;
-		gridRef.setFilters(cfg.filters as FilterNode[], cfg.filterLogic);
-		gridRef.setSorting(cfg.sorting as SortConfig[]);
-		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
+		gridRef.applyConfig({
+			filters: cfg.filters as FilterNode[],
+			filterLogic: cfg.filterLogic,
+			sorting: cfg.sorting as SortConfig[],
+			grouping: cfg.grouping as GroupConfig[]
+		});
 	}
 
 	// Track visible columns for GridLite config on {#key} remount
@@ -587,7 +591,7 @@
 	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
 		const view = e.detail.view;
 		switchToView(view.name, view.config);
-		setTimeout(() => applyViewToGrid(view), 50);
+		applyViewToGrid(view);
 		sidebarVisible = false;
 	}
 
@@ -837,7 +841,6 @@
 				<button class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" on:click={() => window.location.reload()}>Retry</button>
 			</div>
 		{:else if ready && db && currentQuery}
-			{#key currentQuery}
 			<GridLite
 				bind:this={gridRef}
 				{db}
@@ -1041,7 +1044,6 @@
 					{/if}
 				</svelte:fragment>
 			</GridLite>
-			{/key}
 		{/if}
 	</div>
 </div>

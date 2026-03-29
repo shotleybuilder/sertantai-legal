@@ -739,10 +739,13 @@
 	function applyViewToGrid(view: SavedView) {
 		if (!gridRef) return;
 		const cfg = view.config;
-		gridRef.setFilters(cfg.filters as FilterNode[], cfg.filterLogic);
-		gridRef.setSorting(cfg.sorting as SortConfig[]);
-		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
-		if (cfg.pageSize) gridRef.setPageSize(cfg.pageSize);
+		gridRef.applyConfig({
+			filters: cfg.filters as FilterNode[],
+			filterLogic: cfg.filterLogic,
+			sorting: cfg.sorting as SortConfig[],
+			grouping: cfg.grouping as GroupConfig[],
+			pageSize: cfg.pageSize ?? undefined
+		});
 	}
 
 	// Switch to a view (loads the query + applies config)
@@ -766,7 +769,7 @@
 	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
 		const view = e.detail.view;
 		switchToView(view.name, view.config);
-		setTimeout(() => applyViewToGrid(view), 50);
+		applyViewToGrid(view);
 		sidebarVisible = false; // auto-close on mobile
 	}
 

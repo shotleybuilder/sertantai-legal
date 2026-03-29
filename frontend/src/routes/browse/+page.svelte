@@ -340,9 +340,12 @@
 	function applyViewToGrid(view: SavedView) {
 		if (!gridRef) return;
 		const cfg = view.config;
-		gridRef.setFilters(cfg.filters as FilterCondition[], cfg.filterLogic);
-		gridRef.setSorting(cfg.sorting as SortConfig[]);
-		gridRef.setGrouping(cfg.grouping as GroupConfig[]);
+		gridRef.applyConfig({
+			filters: cfg.filters as FilterCondition[],
+			filterLogic: cfg.filterLogic,
+			sorting: cfg.sorting as SortConfig[],
+			grouping: cfg.grouping as GroupConfig[]
+		});
 	}
 
 	// Handle sidebar view selection
