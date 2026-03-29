@@ -507,14 +507,16 @@
 
 		// One-time wipe of stale views (pre-filter-conversion format)
 		const versionKey = 'lat-queue-view-version';
-		if (localStorage.getItem(versionKey) !== '7') {
+		if (localStorage.getItem(versionKey) !== '8') {
 			let existingViews: SavedView[] = [];
 			svStore.subscribe((v) => { existingViews = v; })();
 			if (existingViews.length > 0) {
 				// Wipe via raw SQL to avoid live-query cascade from individual deletes
 				await db!.exec(`DELETE FROM _gridlite_views WHERE grid_id = 'lat-queue'; DELETE FROM _gridlite_view_groups WHERE grid_id = 'lat-queue'`);
+				// Wait for live query to propagate the deletion before re-reading
+				await new Promise((r) => setTimeout(r, 200));
 			}
-			localStorage.setItem(versionKey, '7');
+			localStorage.setItem(versionKey, '8');
 		}
 
 		let currentViews: SavedView[] = [];
