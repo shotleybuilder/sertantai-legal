@@ -15,6 +15,9 @@
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
 
+	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
+	export let params: Record<string, string> = {};
+
 	// Columns queried from PGLite for the browse page
 	const BROWSE_COLUMNS = [
 		'id', 'name', 'title_en', 'year', 'type_code', 'number', 'type_class',

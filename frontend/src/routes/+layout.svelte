@@ -5,6 +5,9 @@
 	import { browser } from '$app/environment';
 	import { adminAuth } from '$lib/stores/auth';
 
+	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
+	export let params: Record<string, string> = {};
+
 	// Restore auth from localStorage at module scope — runs during script
 	// initialization BEFORE any child onMount callbacks fire.
 	// Fixes Issue #42: Electric sync was starting before auth was initialized

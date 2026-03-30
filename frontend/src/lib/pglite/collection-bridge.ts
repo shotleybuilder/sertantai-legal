@@ -10,10 +10,26 @@
  * TanStack DB provides the reactive orchestration layer on top.
  */
 
-import { createCollection, BasicIndex } from '@tanstack/db';
+import { createCollection, BasicIndex, configureIndexDevMode } from '@tanstack/db';
 import type { CollectionConfig, ChangeMessage } from '@tanstack/db';
 import type { PGLiteWithExtensions } from './client';
 import type { Change, LiveChanges } from '@electric-sql/pglite/live';
+
+// Deduplicate TanStack DB index suggestions in dev mode.
+// autoIndex: 'eager' auto-creates indexes on first query, but the dev-mode
+// suggestion fires before the index exists — logging the same field repeatedly.
+// Show each suggestion once, then suppress duplicates.
+const _seenSuggestions = new Set<string>();
+configureIndexDevMode({
+	onSuggestion: (suggestion) => {
+		const key = `${suggestion.collectionId}:${suggestion.fieldPath.join('.')}`;
+		if (_seenSuggestions.has(key)) return;
+		_seenSuggestions.add(key);
+		console.info(
+			`[TanStack DB] Auto-indexed "${suggestion.fieldPath.join('.')}" on "${suggestion.collectionId}" (${suggestion.type})`
+		);
+	}
+});
 
 export interface PGLiteCollectionOptions {
 	/** PGLite instance with live extension */

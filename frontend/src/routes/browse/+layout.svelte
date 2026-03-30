@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
+	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
+	export let params: Record<string, string> = {};
+
 	const navItems = [{ href: '/browse', label: 'Browse Laws', exact: false }];
 
 	$: pathname = $page.url.pathname;
