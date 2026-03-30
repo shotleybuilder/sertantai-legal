@@ -15,11 +15,13 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   use SertantaiLegalWeb, :controller
 
+  alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
   alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
   alias SertantaiLegal.Zenoh.ChangeNotifier
 
+  require Ash.Query
   require Logger
 
   @default_limit 500
@@ -549,17 +551,34 @@ defmodule SertantaiLegalWeb.LatAdminController do
   def lat_session_records(conn, %{"id" => session_id}) do
     case Storage.read_session_records(session_id, :group1) do
       {:ok, records} ->
+        # Backfill family for sessions created before family was stored in JSON.
+        # Batch-lookup from uk_lrt for any records missing family.
+        names = Enum.map(records, fn r -> r["name"] || r[:name] end)
+
+        family_lookup =
+          case Ash.read(Ash.Query.filter(UkLrt, name in ^names)) do
+            {:ok, lrt_records} ->
+              Map.new(lrt_records, fn r -> {r.name, r.family} end)
+
+            _ ->
+              %{}
+          end
+
         enriched =
           Enum.map(records, fn record ->
+            name = record["name"] || record[:name]
+            stored_family = record["family"] || record[:family] || ""
+            family = if stored_family == "", do: family_lookup[name] || "", else: stored_family
+
             # Merge DB record fields (status, lat results) with stored data
-            case Storage.get_session_record(session_id, record["name"] || record[:name]) do
+            case Storage.get_session_record(session_id, name) do
               {:ok, db_record} when not is_nil(db_record) ->
                 %{
                   law_name: db_record.law_name,
                   title_en: record["Title_EN"] || record[:Title_EN] || "",
                   type_code: record["type_code"] || record[:type_code] || "",
                   year: record["Year"] || record[:Year],
-                  family: record["family"] || record[:family] || "",
+                  family: family,
                   status: db_record.status,
                   selected: db_record.selected,
                   lat_inserted: db_record.lat_inserted,
@@ -572,11 +591,11 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
               _ ->
                 %{
-                  law_name: record["name"] || record[:name],
+                  law_name: name,
                   title_en: record["Title_EN"] || record[:Title_EN] || "",
                   type_code: record["type_code"] || record[:type_code] || "",
                   year: record["Year"] || record[:Year],
-                  family: record["family"] || record[:family] || "",
+                  family: family,
                   status: :pending,
                   selected: false,
                   lat_inserted: nil,

@@ -78,7 +78,8 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
                 type_code: record.type_code,
                 Year: record.year,
                 Number: record.number,
-                si_code: record.si_code
+                si_code: record.si_code,
+                family: record.family
               }
             end)
 
@@ -148,7 +149,8 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
                 type_code: record.type_code,
                 Year: record.year,
                 Number: record.number,
-                si_code: record.si_code
+                si_code: record.si_code,
+                family: record.family
               }
             end)
 
