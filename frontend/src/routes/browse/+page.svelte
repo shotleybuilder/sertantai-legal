@@ -7,8 +7,10 @@
 	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
 	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
 	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
-	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
-	import type { ViewConfig, SavedView, SavedViewInput, ViewStoreBundle } from '@shotleybuilder/svelte-gridlite-views';
+	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
+	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
+	import { seedDefaultViews as seedDefaults, seedDefaultGroups, assignViewsToGroups } from '$lib/views/seed-defaults';
+	import type { GroupDef } from '$lib/views/seed-defaults';
 
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
@@ -173,15 +175,6 @@
 	const repealedLawsGrouping: GroupConfig[] = [{ column: 'latest_rescind_date_year' }, { column: 'latest_rescind_date_month' }];
 	const repealedLawsLiveFilter: FilterCondition = { id: 'live-filter', field: 'live', operator: 'equals', value: '❌ Revoked / Repealed / Abolished' };
 
-	// View group definitions (for sidebar — will be used when gridlite-views sidebar is ready)
-	interface ViewGroupDef { id: string; name: string; order: number }
-	const viewGroups: ViewGroupDef[] = [
-		{ id: 'new-laws', name: 'New Laws', order: 0 },
-		{ id: 'amended-laws', name: 'Amended Laws', order: 1 },
-		{ id: 'repealed-laws', name: 'Repealed Laws', order: 2 },
-		{ id: 'classification', name: 'Classification', order: 3 }
-	];
-
 	const viewGroupMapping: Record<string, string> = {
 		'This Month': 'new-laws', 'Last Month': 'new-laws', 'This Quarter': 'new-laws',
 		'Last Quarter': 'new-laws', 'This Year': 'new-laws', 'Last Year': 'new-laws', 'Last 3 Years': 'new-laws',
@@ -276,65 +269,57 @@
 			config: makeViewConfig({ visibleCols: ['name', 'title_en', 'geo_extent', 'geo_region', 'year', 'type_code', 'live'], sorting: [{ column: 'md_date', direction: 'desc' }], grouping: [{ column: 'geo_extent' }] }) }
 	];
 
-	const viewOrderMap = new Map(defaultViews.map((v, i) => [v.name, i]));
+	// Default group definitions for ViewSidebar seeding
+	const defaultGroupDefs: GroupDef[] = [
+		{ name: 'New Laws', icon: '📋' },
+		{ name: 'Amended Laws', icon: '✏️' },
+		{ name: 'Repealed Laws', icon: '❌' },
+		{ name: 'Classification', icon: '🏷️' }
+	];
 
-	// Sidebar state — grouped views list built from viewStore
-	let sidebarOpen = false;
-
-	interface SidebarViewItem { id: string; name: string; groupId: string; order: number; isDefault?: boolean }
-	let sidebarViews: SidebarViewItem[] = [];
-
-	function rebuildSidebarViews(views: SavedView[]) {
-		sidebarViews = views
-			.map((v): SidebarViewItem => ({
-				id: v.id,
-				name: v.name,
-				groupId: viewGroupMapping[v.name] || 'custom',
-				order: viewOrderMap.get(v.name) ?? 1000,
-				isDefault: defaultViews.find((dv) => dv.name === v.name)?.isDefault
-			}))
-			.sort((a, b) => a.order - b.order);
+	// Map view name → group name
+	const viewToGroupName: Record<string, string> = {};
+	for (const v of defaultViews) {
+		viewToGroupName[v.name] = viewGroupMapping[v.name]
+			? { 'new-laws': 'New Laws', 'amended-laws': 'Amended Laws', 'repealed-laws': 'Repealed Laws', 'classification': 'Classification' }[viewGroupMapping[v.name]] ?? 'New Laws'
+			: 'New Laws';
 	}
 
-	// Seed default views into PGLite-backed store
+	// Sidebar state
+	let sidebarVisible = false;
+
+	// Active visible columns — set by switchToView()
+	let activeVisibleColumns: string[] = newLawsColumns;
+
+	function switchToView(viewName: string, savedConfig?: ViewConfig) {
+		if (savedConfig?.columnVisibility) {
+			activeVisibleColumns = Object.entries(savedConfig.columnVisibility)
+				.filter(([, visible]) => visible)
+				.map(([name]) => name);
+		} else {
+			const viewDef = defaultViews.find((v) => v.name === viewName);
+			activeVisibleColumns = viewDef?.config.columnOrder ?? newLawsColumns;
+		}
+	}
+
+	// Seed default views using shared helper (same pattern as admin pages)
 	async function seedDefaultViews() {
 		if (!viewStore) return;
-		const { actions, savedViews: svStore } = viewStore;
+		const { actions, savedViews: svStore, groupActions, savedGroups: grpStore } = viewStore;
 		await actions.waitForReady();
 
 		let currentViews: SavedView[] = [];
 		const unsub = svStore.subscribe((v) => { currentViews = v; });
 
-		// Deduplicate
-		const existingViews = new Map<string, string>();
-		for (const view of currentViews) {
-			if (existingViews.has(view.name)) {
-				try { await actions.delete(view.id); } catch { /* dedup */ }
-			} else {
-				existingViews.set(view.name, view.id);
-			}
-		}
+		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
 
-		// Seed missing
-		const missingViews = defaultViews.filter((v) => !existingViews.has(v.name));
-		let defaultViewId: string | null = null;
-
-		const defaultViewDef = defaultViews.find((v) => v.isDefault);
-		if (defaultViewDef && existingViews.has(defaultViewDef.name)) {
-			defaultViewId = existingViews.get(defaultViewDef.name) || null;
-		}
-
-		for (const view of missingViews) {
-			try {
-				const saved = await actions.save({ name: view.name, description: view.description, config: view.config });
-				if (view.isDefault && saved?.id) {
-					defaultViewId = saved.id;
-				}
-				existingViews.set(view.name, saved?.id || '');
-			} catch (err) {
-				console.error('[Browse] Failed to seed view:', view.name, err);
-			}
-		}
+		// Seed groups and assign views to groups
+		let currentGroups: ViewGroup[] = [];
+		const unsubGrp = grpStore.subscribe((g) => { currentGroups = g; });
+		const groupNameToId = await seedDefaultGroups(defaultGroupDefs, currentGroups, groupActions);
+		svStore.subscribe((v) => { currentViews = v; })();
+		await assignViewsToGroups(viewToGroupName, groupNameToId, currentViews, groupActions);
+		unsubGrp();
 
 		// Auto-select default view
 		let activeId: string | null = null;
@@ -343,15 +328,16 @@
 			const loadedView = await actions.load(defaultViewId);
 			if (loadedView) {
 				applyViewToGrid(loadedView);
+				const defaultDef = defaultViews.find((v) => v.isDefault);
+				if (defaultDef) switchToView(defaultDef.name);
 			}
+		} else if (activeId) {
+			let activeView: SavedView | null = null;
+			svStore.subscribe((views) => { activeView = views.find((v) => v.id === activeId) ?? null; })();
+			if (activeView) switchToView((activeView as SavedView).name);
 		}
 
-		// Rebuild sidebar
-		rebuildSidebarViews(currentViews);
 		unsub();
-
-		// Subscribe for future updates
-		svStore.subscribe((views) => rebuildSidebarViews(views));
 	}
 
 	// Apply a saved view to the GridLite instance
@@ -366,14 +352,12 @@
 		});
 	}
 
-	// Handle sidebar view selection
-	async function handleViewSelect(viewItem: SidebarViewItem) {
-		if (!viewStore) return;
-		const view = await viewStore.actions.load(viewItem.id);
-		if (view) {
-			applyViewToGrid(view);
-		}
-		sidebarOpen = false;
+	// Handle ViewSidebar view selection
+	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
+		const view = e.detail.view;
+		switchToView(view.name, view.config);
+		applyViewToGrid(view);
+		sidebarVisible = false;
 	}
 
 	// Capture current grid state for saving as a view
@@ -406,12 +390,34 @@
 		console.log('[Browse] View saved:', event.detail.name);
 	}
 
+	// Handle update existing view
+	async function handleUpdateView() {
+		if (!viewStore || !latestGridState) return;
+		let activeId: string | null = null;
+		viewStore.activeViewId.subscribe((v) => { activeId = v; })();
+		if (!activeId) return;
+		try {
+			const config = captureCurrentConfig(latestGridState);
+			await viewStore.actions.update(activeId, { config });
+		} catch (err) {
+			console.error('[Browse] Failed to update view:', err);
+		}
+	}
+
 	// Monitor sync errors
 	$: if ($syncStatus.error) {
 		error = $syncStatus.error;
 	}
 
 	$: isLoading = !$syncStatus.connected && !ready;
+
+	// Track active view for save/update buttons
+	let hasActiveView = false;
+	let activeViewUnsub: (() => void) | null = null;
+	$: if (viewStore) {
+		activeViewUnsub?.();
+		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
+	}
 
 	onMount(async () => {
 		if (browser) {
@@ -431,44 +437,37 @@
 	});
 
 	onDestroy(() => {
+		activeViewUnsub?.();
 		viewStore?.destroy();
 	});
 </script>
 
 <div class="flex h-full relative">
 	<!-- Mobile sidebar overlay -->
-	{#if sidebarOpen}
+	{#if sidebarVisible}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarOpen = false)} />
+		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarVisible = false)} />
 	{/if}
 
-	<!-- View Sidebar (simple list until gridlite-views sidebar component is released) -->
-	<div class="shrink-0 {sidebarOpen ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
-		<div class="w-[220px] h-full bg-white border-r border-gray-200 overflow-y-auto py-2">
-			{#each viewGroups as group}
-				{@const groupViews = sidebarViews.filter((v) => v.groupId === group.id)}
-				{#if groupViews.length > 0}
-					<div class="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">{group.name}</div>
-					{#each groupViews as view}
-						<button
-							class="w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 truncate"
-							on:click={() => handleViewSelect(view)}
-						>
-							{view.name}
-						</button>
-					{/each}
-				{/if}
-			{/each}
+	<!-- View Sidebar -->
+	{#if viewStore}
+		<div class="shrink-0 {sidebarVisible ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
+			<ViewSidebar
+				{viewStore}
+				storageKey="browse-sidebar"
+				isDocked={true}
+				on:viewSelected={handleViewSelected}
+			/>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Main Content -->
 	<div class="flex-1 overflow-auto px-6 py-4">
 		<div class="mb-4 flex items-center gap-3">
 			<button
 				class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
-				on:click={() => (sidebarOpen = !sidebarOpen)}
+				on:click={() => (sidebarVisible = !sidebarVisible)}
 				title="Toggle views sidebar"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,10 +526,9 @@
 				config={{
 					id: 'browse',
 					columns,
-					defaultFilters: [{ id: 'default-date', field: 'md_date', operator: 'is_after', value: thisMonthStart }],
-					defaultSorting: [{ column: 'md_date_year', direction: 'desc' }, { column: 'md_date_month', direction: 'desc' }],
-					defaultGrouping: [{ column: 'md_date_year' }, { column: 'md_date_month' }],
-					defaultVisibleColumns: newLawsColumns,
+					defaultSorting: [{ column: 'name', direction: 'asc' }],
+					defaultVisibleColumns: activeVisibleColumns,
+					defaultColumnOrder: activeVisibleColumns,
 					pagination: { pageSize: 25 }
 				}}
 				features={{
@@ -545,18 +543,42 @@
 					rowDetail: true
 				}}
 			>
-				<!-- Save View Button -->
+				<!-- Save View Buttons -->
 				<svelte:fragment slot="toolbar-start">
-					<button
-						type="button"
-						on:click={handleSaveView}
-						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-					>
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-						</svg>
-						Save View
-					</button>
+					{#if hasActiveView}
+						<div class="inline-flex rounded-md shadow-sm">
+							<button
+								type="button"
+								on:click={handleUpdateView}
+								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-l-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+							>
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+								</svg>
+								Save View
+							</button>
+							<button
+								type="button"
+								on:click={handleSaveView}
+								class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-emerald-600 border-l border-emerald-500 rounded-r-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+							>
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+								</svg>
+							</button>
+						</div>
+					{:else}
+						<button
+							type="button"
+							on:click={handleSaveView}
+							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+							</svg>
+							Save View
+						</button>
+					{/if}
 				</svelte:fragment>
 
 				<!-- Custom cell rendering -->

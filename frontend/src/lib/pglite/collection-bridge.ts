@@ -32,14 +32,17 @@ type Row = Record<string, unknown>;
 const PGLITE_INTERNAL_FIELDS = new Set(['__op__', '__changed_columns__', '__after__']);
 
 /**
- * Strip PGLite internal fields from a change row,
- * returning a clean value for TanStack DB.
+ * Strip PGLite internal fields from a change row and normalize values
+ * for TanStack DB compatibility. PGLite returns DATE/TIMESTAMP columns
+ * as JS Date objects — convert to ISO strings so TanStack DB's gt/lt
+ * comparisons work correctly with string filter values.
  */
 function stripInternalFields(row: Record<string, unknown>): Row {
 	const clean: Row = {};
 	for (const key of Object.keys(row)) {
 		if (!PGLITE_INTERNAL_FIELDS.has(key)) {
-			clean[key] = row[key];
+			const val = row[key];
+			clean[key] = val instanceof Date ? val.toISOString().split('T')[0] : val;
 		}
 	}
 	return clean;
@@ -68,7 +71,13 @@ export function pgliteCollectionOptions(
 
 				(async () => {
 					// Subscribe to live changes — returns initialChanges + subscribe
-					const result = await db.live.changes<Row>(query, null, primaryKey);
+					let result: LiveChanges<Row>;
+					try {
+						result = await db.live.changes<Row>(query, null, primaryKey);
+					} catch (err) {
+						console.error(`[collection-bridge] live.changes() failed for "${id}":`, err);
+						return;
+					}
 					if (destroyed) return;
 
 					liveChanges = result;
