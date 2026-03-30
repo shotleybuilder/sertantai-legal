@@ -4,6 +4,7 @@
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -77,6 +78,7 @@
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
 	let gridRef: GridLite;
+	let adapter: ReturnType<typeof createPGLiteAdapter> | null = null;
 	let error: string | null = null;
 
 	// View store
@@ -823,6 +825,11 @@
 
 	$: isLoading = !$syncStatus.connected && !ready;
 
+	// Create adapter when db + query are ready (recreates on query change)
+	$: if (db && currentQuery) {
+		adapter = createPGLiteAdapter({ db, query: currentQuery });
+	}
+
 	// Track total records for stats (get from PGLite count)
 	let totalRecordCount = 0;
 
@@ -994,12 +1001,11 @@
 		</div>
 
 		<!-- GridLite Table -->
-		{#if currentQuery}
-		{#key currentQuery}
+		{#if adapter}
+		{#key adapter}
 		<GridLite
 			bind:this={gridRef}
-			{db}
-			query={currentQuery}
+			{adapter}
 			onStateChange={handleStateChange}
 			config={{
 				id: 'lrt-admin',

@@ -6,6 +6,7 @@
 /* Include gridlite-kit packages for Tailwind scanning */
 @source "../node_modules/@shotleybuilder/svelte-gridlite-kit";
 @source "../node_modules/@shotleybuilder/svelte-gridlite-views";
+@source "../node_modules/@shotleybuilder/gridlite-adapter-pglite";
 
 /* Custom base styles */
 @layer base {

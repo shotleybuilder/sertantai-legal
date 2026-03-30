@@ -4,6 +4,7 @@
 	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
 	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, SavedViewInput, ViewStoreBundle } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -14,6 +15,7 @@
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
 	let gridRef: GridLite;
+	let adapter: ReturnType<typeof createPGLiteAdapter> | null = null;
 	let error: string | null = null;
 
 	// View store (initialized after PGLite is ready)
@@ -401,6 +403,7 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'browse');
+			adapter = createPGLiteAdapter({ db, table: 'uk_lrt' });
 			ready = true;
 			// Wait for next tick so GridLite renders, then seed views
 			setTimeout(() => seedDefaultViews(), 100);
@@ -469,7 +472,7 @@
 				<p class="text-red-600">{error}</p>
 				<button class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" on:click={() => window.location.reload()}>Retry</button>
 			</div>
-		{:else if ready && db}
+		{:else if ready && adapter}
 			<!-- Stats -->
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 				<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
@@ -499,8 +502,7 @@
 			<!-- GridLite Table -->
 			<GridLite
 				bind:this={gridRef}
-				{db}
-				table="uk_lrt"
+				{adapter}
 				onStateChange={handleStateChange}
 				config={{
 					id: 'browse',

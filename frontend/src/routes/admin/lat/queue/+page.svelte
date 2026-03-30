@@ -5,6 +5,7 @@
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -28,6 +29,7 @@
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
 	let gridRef: GridLite;
+	let adapter: ReturnType<typeof createPGLiteAdapter> | null = null;
 	let error: string | null = null;
 
 	// View store
@@ -644,6 +646,11 @@
 	$: if ($syncStatus.error) { error = $syncStatus.error; }
 	$: isLoading = !$syncStatus.connected && !ready;
 
+	// Create adapter when db + query are ready (recreates on query change)
+	$: if (db && currentQuery) {
+		adapter = createPGLiteAdapter({ db, query: currentQuery });
+	}
+
 	let hasActiveView = false;
 	let activeViewUnsub: (() => void) | null = null;
 	$: if (viewStore) {
@@ -840,11 +847,10 @@
 				<p class="text-red-600">{error}</p>
 				<button class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" on:click={() => window.location.reload()}>Retry</button>
 			</div>
-		{:else if ready && db && currentQuery}
+		{:else if ready && adapter}
 			<GridLite
 				bind:this={gridRef}
-				{db}
-				query={currentQuery}
+				{adapter}
 				onStateChange={handleStateChange}
 				config={{
 					id: 'lat-queue',
