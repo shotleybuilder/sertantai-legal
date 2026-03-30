@@ -4,7 +4,9 @@
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
-	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
+	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
+	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
+	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -78,7 +80,7 @@
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
 	let gridRef: GridLite;
-	let adapter: ReturnType<typeof createPGLiteAdapter> | null = null;
+	let adapter: ReturnType<typeof createTanStackDBAdapter> | null = null;
 	let error: string | null = null;
 
 	// View store
@@ -187,7 +189,16 @@
 	];
 
 	// LRT columns queried from PGLite
-	const LRT_COLUMNS = 'id, name, title_en, year, number, type_code, type_desc, family, family_ii, si_code, md_subjects, md_date, geo_extent, function, is_making, has_fitness, lat_count, duty_type, live, live_from_changes, latest_amend_date, latest_rescind_date, created_at';
+	const LRT_COLUMNS_LIST = [
+		'id', 'name', 'title_en', 'year', 'number', 'type_code', 'type_desc',
+		'family', 'family_ii', 'si_code', 'md_subjects', 'md_date', 'geo_extent',
+		'function', 'is_making', 'has_fitness', 'lat_count', 'duty_type', 'live',
+		'live_from_changes', 'latest_amend_date', 'latest_rescind_date', 'created_at'
+	];
+	const LRT_COLUMNS = LRT_COLUMNS_LIST.join(', ');
+	const lrtColumnMetadata = UK_LRT_COLUMN_METADATA.filter(
+		(c) => LRT_COLUMNS_LIST.includes(c.name)
+	);
 
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
@@ -825,10 +836,8 @@
 
 	$: isLoading = !$syncStatus.connected && !ready;
 
-	// Create adapter when db + query are ready (recreates on query change)
-	$: if (db && currentQuery) {
-		adapter = createPGLiteAdapter({ db, query: currentQuery });
-	}
+	// Adapter is created once in onMount via createPGLiteCollection + createTanStackDBAdapter.
+	// Filtering is handled by GridLite's filter descriptors, not by changing the SQL query.
 
 	// Track total records for stats (get from PGLite count)
 	let totalRecordCount = 0;
@@ -847,9 +856,14 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lrt-admin');
+			const collection = createPGLiteCollection({
+				db, query: BASE_QUERY, id: 'lrt-admin-uk-lrt'
+			});
+			adapter = createTanStackDBAdapter({ collection, columns: lrtColumnMetadata });
+			await adapter.init();
 			ready = true;
 			await refreshTotalCount();
-			// Default query until views load — filters applied by applyViewToGrid after seeding
+			// Keep for reparse feature (PGLite SQL query)
 			currentQuery = BASE_QUERY;
 			currentFamily = familyViewDefs[0].family;
 			// Wait for next tick so GridLite renders, then seed views
@@ -1002,7 +1016,6 @@
 
 		<!-- GridLite Table -->
 		{#if adapter}
-		{#key adapter}
 		<GridLite
 			bind:this={gridRef}
 			{adapter}
@@ -1247,7 +1260,6 @@
 				{/if}
 			</svelte:fragment>
 		</GridLite>
-		{/key}
 		{/if}
 
 		<!-- Instructions -->

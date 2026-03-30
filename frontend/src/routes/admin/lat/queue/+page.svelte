@@ -5,7 +5,9 @@
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
-	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
+	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
+	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
+	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
 
@@ -29,7 +31,7 @@
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
 	let gridRef: GridLite;
-	let adapter: ReturnType<typeof createPGLiteAdapter> | null = null;
+	let adapter: ReturnType<typeof createTanStackDBAdapter> | null = null;
 	let error: string | null = null;
 
 	// View store
@@ -46,8 +48,18 @@
 
 	// ── Query + Filter constants ────────────────────────────────────
 
-	const QUEUE_COLUMNS = 'id, name, title_en, year, type_code, family, family_ii, is_making, making_classification, live, live_from_changes, function, updated_at, lat_count, latest_lat_updated_at';
-	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS} FROM uk_lrt`;
+	const QUEUE_COLUMNS_LIST = [
+		'id', 'name', 'title_en', 'year', 'type_code', 'family', 'family_ii',
+		'is_making', 'making_classification', 'live', 'live_from_changes',
+		'function', 'updated_at', 'lat_count', 'latest_lat_updated_at'
+	];
+	const QUEUE_COLUMNS = QUEUE_COLUMNS_LIST.join(', ');
+	// Pre-compute lat_stale: true when LRT was updated > 6 months after LAT was last parsed
+	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM uk_lrt`;
+	const queueColumnMetadata = [
+		...UK_LRT_COLUMN_METADATA.filter((c) => QUEUE_COLUMNS_LIST.includes(c.name)),
+		{ name: 'lat_stale', dataType: 'boolean' as const, postgresType: 'bool', nullable: true, hasDefault: false }
+	];
 
 	// Core filters (always apply): candidates for LAT parsing, not revoked
 	// making_classification != 'not_making' (includes 'making', 'uncertain', and NULL/unclassified)
@@ -78,17 +90,11 @@
 	// Full base filters for broad views (no specific family)
 	const QUEUE_BASE_FILTERS: FilterNode[] = [...QUEUE_CORE_FILTERS, ...QUEUE_BROAD_GUARDS];
 
-	// LAT queue filter: missing OR stale (updated_at > latest_lat_updated_at + 6 months)
+	// LAT queue filter: missing OR stale (lat_stale pre-computed in SQL)
 	const QUEUE_LAT_FILTER: FilterNode = {
 		id: 'q-lat-need', logic: 'or' as const, children: [
 			{ id: 'q-lat-zero', field: 'lat_count', operator: 'equals', value: 0 },
-			{
-				id: 'q-lat-stale', logic: 'and' as const, children: [
-					{ id: 'q-upd-set', field: 'updated_at', operator: 'is_not_empty', value: '' },
-					{ id: 'q-lat-upd-set', field: 'latest_lat_updated_at', operator: 'is_not_empty', value: '' },
-					{ id: 'q-lat-outdated', field: 'updated_at', operator: 'greater_than', value: '', valueColumn: 'latest_lat_updated_at', intervalOffset: '6 months' }
-				]
-			}
+			{ id: 'q-lat-stale', field: 'lat_stale', operator: 'equals', value: true }
 		]
 	};
 
@@ -467,9 +473,7 @@
 				filters: [
 					...QUEUE_BASE_FILTERS,
 					{ id: 'q-lat-gt0', field: 'lat_count', operator: 'greater_than', value: 0 },
-					{ id: 'q-upd-set2', field: 'updated_at', operator: 'is_not_empty', value: '' },
-					{ id: 'q-lat-upd-set2', field: 'latest_lat_updated_at', operator: 'is_not_empty', value: '' },
-					{ id: 'q-lat-outdated2', field: 'updated_at', operator: 'greater_than', value: '', valueColumn: 'latest_lat_updated_at', intervalOffset: '6 months' }
+					{ id: 'q-lat-stale2', field: 'lat_stale', operator: 'equals', value: true }
 				]
 			})
 		},
@@ -515,7 +519,7 @@
 
 		// One-time wipe of stale views (pre-filter-conversion format)
 		const versionKey = 'lat-queue-view-version';
-		if (localStorage.getItem(versionKey) !== '10') {
+		if (localStorage.getItem(versionKey) !== '11') {
 			let existingViews: SavedView[] = [];
 			svStore.subscribe((v) => { existingViews = v; })();
 			if (existingViews.length > 0) {
@@ -524,7 +528,7 @@
 				// Wait for live query to propagate the deletion before re-reading
 				await new Promise((r) => setTimeout(r, 200));
 			}
-			localStorage.setItem(versionKey, '10');
+			localStorage.setItem(versionKey, '11');
 		}
 
 		let currentViews: SavedView[] = [];
@@ -646,10 +650,8 @@
 	$: if ($syncStatus.error) { error = $syncStatus.error; }
 	$: isLoading = !$syncStatus.connected && !ready;
 
-	// Create adapter when db + query are ready (recreates on query change)
-	$: if (db && currentQuery) {
-		adapter = createPGLiteAdapter({ db, query: currentQuery });
-	}
+	// Adapter is created once in onMount via createPGLiteCollection + createTanStackDBAdapter.
+	// Filtering is handled by GridLite's filter descriptors, not by changing the SQL query.
 
 	let hasActiveView = false;
 	let activeViewUnsub: (() => void) | null = null;
@@ -702,7 +704,12 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
-			// Default query until views load — filters applied by applyViewToGrid after seeding
+			const collection = createPGLiteCollection({
+				db, query: BASE_QUERY, id: 'lat-queue-uk-lrt'
+			});
+			adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
+			await adapter.init();
+			// Keep for reparse feature (PGLite SQL query)
 			currentQuery = BASE_QUERY;
 			ready = true;
 			// Wait for GridLite to render, then seed views

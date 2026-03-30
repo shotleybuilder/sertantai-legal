@@ -4,18 +4,34 @@
 	import { GridLite } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
 	import type { ColumnConfig, GridState, FilterCondition, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
-	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
+	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
+	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
+	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import { initViewStore, SaveViewModal, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
 	import type { ViewConfig, SavedView, SavedViewInput, ViewStoreBundle } from '@shotleybuilder/svelte-gridlite-views';
 
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
 
+	// Columns queried from PGLite for the browse page
+	const BROWSE_COLUMNS = [
+		'id', 'name', 'title_en', 'year', 'type_code', 'number', 'type_class',
+		'md_date_year', 'md_date_month', 'family', 'family_ii', 'function',
+		'si_code', 'live', 'geo_extent', 'geo_region', 'md_date',
+		'md_made_date', 'md_coming_into_force_date', 'latest_amend_date',
+		'latest_amend_date_year', 'latest_amend_date_month', 'latest_rescind_date',
+		'latest_rescind_date_year', 'latest_rescind_date_month'
+	];
+	const BROWSE_SQL = `SELECT ${BROWSE_COLUMNS.join(', ')} FROM uk_lrt`;
+	const browseColumnMetadata = UK_LRT_COLUMN_METADATA.filter(
+		(c) => BROWSE_COLUMNS.includes(c.name)
+	);
+
 	// PGLite + GridLite state
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
 	let gridRef: GridLite;
-	let adapter: ReturnType<typeof createPGLiteAdapter> | null = null;
+	let adapter: ReturnType<typeof createTanStackDBAdapter> | null = null;
 	let error: string | null = null;
 
 	// View store (initialized after PGLite is ready)
@@ -403,7 +419,11 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'browse');
-			adapter = createPGLiteAdapter({ db, table: 'uk_lrt' });
+			const collection = createPGLiteCollection({
+				db, query: BROWSE_SQL, id: 'browse-uk-lrt'
+			});
+			adapter = createTanStackDBAdapter({ collection, columns: browseColumnMetadata });
+			await adapter.init();
 			ready = true;
 			// Wait for next tick so GridLite renders, then seed views
 			setTimeout(() => seedDefaultViews(), 100);
