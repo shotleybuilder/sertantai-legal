@@ -2,9 +2,11 @@ End session with BRIEF summary:
 
 1. Check `.claude/sessions/.current-session` for active session
 2. If no active session, inform user there's nothing to end
-3. Append MINIMAL summary to session file:
+3. Collect git commit hashes made during this session (check git log since session start timestamp)
+4. Append MINIMAL summary to session file:
    ```
    **Ended**: [timestamp]
+   **Commits**: [comma-separated short hashes, e.g. `a1b2c3f`, `d4e5f6g`] or "None"
 
    ## Summary
    - Completed: [X of Y todos]
@@ -12,8 +14,12 @@ End session with BRIEF summary:
    - Outcome: [1-2 sentence summary]
    - Next: [what's left for the Issue]
    ```
-4. Empty `.claude/sessions/.current-session` file
-5. Remind user to add detailed documentation to the GitHub Issue
+5. Add a row to `.claude/sessions/README.md` in the appropriate category table:
+   - Match the session to the correct area group (Scraper, LAT, Electric/PGLite/Sync, GridLite/Table Views, Admin UI, Browse UI, Auth, Infrastructure, Data Quality/Schema, AI)
+   - Insert row at the TOP of the group's table (newest first)
+   - Format: `| YYYY-MM-DD | [session-name](filename.md) | [#N](issue-url) or — | One-line summary |`
+6. Empty `.claude/sessions/.current-session` file
+7. Remind user to add detailed documentation to the GitHub Issue
 
 **IMPORTANT**:
 - Keep summary under 10 lines
