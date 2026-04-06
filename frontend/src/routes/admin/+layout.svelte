@@ -19,7 +19,6 @@
 			]
 		},
 		{ href: '/admin/scrape/cascade', label: 'Cascade', exact: false },
-		{ href: '/admin/sync', label: 'Sync', exact: false },
 		{ href: '/admin/zenoh', label: 'Zenoh', exact: false }
 	];
 

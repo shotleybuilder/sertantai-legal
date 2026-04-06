@@ -104,6 +104,21 @@ defmodule SertantaiLegalWeb.Router do
     patch("/uk-lrt/:id", UkLrtController, :update)
     delete("/uk-lrt/:id", UkLrtController, :delete)
     post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
+
+    # Sync management endpoints (org-scoped, any authenticated user)
+    get("/sync/entitlement", SyncController, :entitlement)
+    get("/sync/profiles", SyncController, :list_profiles)
+    post("/sync/profiles", SyncController, :create_profile)
+    post("/sync/profiles/preview", SyncController, :preview_profile)
+    patch("/sync/profiles/:id", SyncController, :update_profile)
+    delete("/sync/profiles/:id", SyncController, :delete_profile)
+    get("/sync/configurations", SyncController, :list_configurations)
+    post("/sync/configurations", SyncController, :create_configuration)
+    patch("/sync/configurations/:id", SyncController, :update_configuration)
+    delete("/sync/configurations/:id", SyncController, :delete_configuration)
+    post("/sync/configurations/:id/test", SyncController, :test_connection)
+    post("/sync/configurations/:id/sync", SyncController, :trigger_sync)
+    get("/sync/jobs", SyncController, :list_jobs)
   end
 
   # Admin API endpoints (JWT auth + admin role)
@@ -171,21 +186,6 @@ defmodule SertantaiLegalWeb.Router do
     delete("/cascade/processed", CascadeController, :clear_processed)
     delete("/cascade/session/:session_id", CascadeController, :clear_session)
     delete("/cascade/:id", CascadeController, :delete)
-
-    # Sync management endpoints
-    get("/sync/entitlement", SyncController, :entitlement)
-    get("/sync/profiles", SyncController, :list_profiles)
-    post("/sync/profiles", SyncController, :create_profile)
-    post("/sync/profiles/preview", SyncController, :preview_profile)
-    patch("/sync/profiles/:id", SyncController, :update_profile)
-    delete("/sync/profiles/:id", SyncController, :delete_profile)
-    get("/sync/configurations", SyncController, :list_configurations)
-    post("/sync/configurations", SyncController, :create_configuration)
-    patch("/sync/configurations/:id", SyncController, :update_configuration)
-    delete("/sync/configurations/:id", SyncController, :delete_configuration)
-    post("/sync/configurations/:id/test", SyncController, :test_connection)
-    post("/sync/configurations/:id/sync", SyncController, :trigger_sync)
-    get("/sync/jobs", SyncController, :list_jobs)
 
     # Analytics endpoints
     get("/analytics/changes", AnalyticsController, :changes)
