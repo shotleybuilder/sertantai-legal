@@ -84,15 +84,9 @@ cd /home/jason/Desktop/sertantai-legal/backend
 unset DATABASE_URL
 mix ash_postgres.migrate
 
-# Step 1: Import base records from legacy SQL dump
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
-  -f /home/jason/Documents/sertantai-data/import_uk_lrt.sql
-
-# Step 2: Enrich with canonical Airtable CSV data
-mix run ../scripts/data/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
-mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
-
-# Verify: should show 19089+
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
-  -c "SELECT COUNT(*) FROM uk_lrt;"
+# Restore all tables from NAS snapshot (preferred)
+cd /home/jason/Desktop/sertantai-legal
+./scripts/nas/import-snapshot.sh
 ```
+
+If the NAS is unavailable, see the legacy fallback in CLAUDE.md under "Legacy Data Import".

@@ -135,49 +135,34 @@ unset DATABASE_URL  # Ensure local config is used, not stale env vars
 mix ash.setup
 ```
 
-4. **Import UK LRT data** (two-step: SQL base + CSV enrichment):
+4. **Import data from NAS snapshot** (preferred method):
 ```bash
-# Step 1: Import base records from pg_dump
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
-  -f /home/jason/Documents/sertantai-data/import_uk_lrt.sql
+# Ensure NAS is mounted (auto-mounts on first access via fstab)
+ls /mnt/nas/sertantai-data/data/snapshots/latest/manifest.json
 
-# Step 2: Enrich with Airtable CSV data (function, taxa, holders)
-cd backend
-unset DATABASE_URL
-mix run ../scripts/data/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
-mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+# Restore all tables from snapshot
+./scripts/nas/import-snapshot.sh
 ```
 
 5. **Verify import**:
 ```bash
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
   -c "SELECT COUNT(*) FROM uk_lrt;"
-# Should show: 19089+
+# Should show: 19330+
 ```
 
-### Data Import Files
+### NAS Data Store
 
-| File | Location | Purpose |
-|------|----------|---------|
-| `import_uk_lrt.sql` | `~/Documents/sertantai-data/` | **Legacy** base import — creates temp table, imports, maps columns. Carries stale TEXT values for `function`/`is_making` fields; these are corrected by the CSV enrichment scripts below |
-| `uk_lrt_data.sql` | `~/Documents/sertantai-data/` | Raw INSERT statements used by import_uk_lrt.sql |
-| `gen_dump.py` | `scripts/` | Generates a modern pg_dump with prod-compatible columns (preferred for new dumps) |
-| `UK-EXPORT.csv` | `~/Documents/Airtable_Exports/` | **Canonical source** for function, taxa, holders, duty_type, purpose |
+Database snapshots are stored on the office NAS (UGREEN DXP2800, SMB3) at `/mnt/nas/sertantai-data/data/`. Auto-mounts via fstab on first access.
 
-### CSV Enrichment Scripts (run after SQL import)
-
-The SQL dump carries stale/missing values for several fields. These CSV scripts apply the canonical Airtable data:
-
+**Scripts** (from repo root):
 ```bash
-cd backend
-unset DATABASE_URL
-# Function tags (Making, Amending, etc.) + is_making boolean
-mix run ../scripts/data/update_uk_lrt_function.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
-# Taxa: holders, duty_type, purpose, role, POPIMAR
-mix run ../scripts/data/update_uk_lrt_taxa.exs ~/Documents/Airtable_Exports/UK-EXPORT.csv
+./scripts/nas/export-snapshot.sh              # Dump dev DB → NAS
+./scripts/nas/import-snapshot.sh              # Restore NAS → dev DB
+./scripts/nas/import-snapshot.sh --verify-only # Check checksums only
 ```
 
-> **Note**: The SQL dump (`import_uk_lrt.sql`) writes stale TEXT values for `function` (e.g., `'Amendment'` instead of `{"Amending": true}`) and incorrect `is_making` values (TEXT `'Act'`/`'SI'` instead of boolean). The CSV enrichment scripts correct these. Always run both steps when setting up from scratch.
+For full NAS details (mount config, troubleshooting, new device setup), see the `nas-data-sync` skill.
 
 ### Environment Variable Warning
 

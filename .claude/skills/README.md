@@ -80,6 +80,16 @@ Complete guide for:
 - zenohex API quick reference
 - Troubleshooting and common pitfalls
 
+### 💾 [NAS Data Sync](nas-data-sync/)
+
+**Use when:** Exporting/importing database snapshots, bootstrapping a new dev machine, or troubleshooting NAS mount issues
+
+Complete guide for:
+- NAS mount configuration (UGREEN DXP2800 via SMB3)
+- Export/import snapshot scripts
+- New device bootstrap procedure
+- Troubleshooting mount failures and known UGREEN firmware issues
+
 ### 🚀 [Production Deployment](production-deployment/)
 
 **Use when:** Deploying sertantai-legal (or a new microservice) to Hetzner production

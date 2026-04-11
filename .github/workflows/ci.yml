@@ -2,15 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   MIX_ENV: test
-  ELIXIR_VERSION: '1.18.4'
-  OTP_VERSION: '27.2'
-  NODE_VERSION: '20.x'
+  ELIXIR_VERSION: "1.18.4"
+  OTP_VERSION: "27.2"
+  NODE_VERSION: "20.x"
 
 jobs:
   backend-checks:
@@ -23,7 +23,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: starter_app_test
+          POSTGRES_DB: sertantai_legal_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -31,6 +31,9 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+    env:
+      DB_PORT: "5432"
 
     steps:
       - name: Checkout code
@@ -120,7 +123,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
@@ -146,4 +149,3 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
-
