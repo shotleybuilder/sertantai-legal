@@ -1,0 +1,85 @@
+defmodule SertantaiLegal.Sync.Delta.Config do
+  @moduledoc "Table configuration for delta sync."
+
+  # Columns that exist only in dev (not in prod) — exclude from delta export.
+  # Update this list as prod catches up with migrations.
+  @dev_only_columns %{
+    "uk_lrt" => [],
+    "lat" => [],
+    "amendment_annotations" => [],
+    "scrape_sessions" => [],
+    "scrape_session_records" => [],
+    "cascade_affected_laws" => []
+  }
+
+  # Columns auto-populated by triggers or GENERATED ALWAYS — never write
+  @generated_columns %{
+    "uk_lrt" => [
+      "number_int",
+      "leg_gov_uk_url",
+      "has_fitness",
+      "md_date_year",
+      "md_date_month",
+      "lat_count",
+      "latest_lat_updated_at"
+    ],
+    "lat" => [],
+    "amendment_annotations" => [],
+    "scrape_sessions" => [],
+    "scrape_session_records" => [],
+    "cascade_affected_laws" => []
+  }
+
+  @tables [
+    %{
+      name: "uk_lrt",
+      resource: SertantaiLegal.Legal.UkLrt,
+      pk: "id",
+      timestamp_col: "updated_at",
+      order: 1
+    },
+    %{
+      name: "lat",
+      resource: SertantaiLegal.Legal.Lat,
+      pk: "section_id",
+      timestamp_col: "updated_at",
+      order: 2
+    },
+    %{
+      name: "amendment_annotations",
+      resource: SertantaiLegal.Legal.AmendmentAnnotation,
+      pk: "id",
+      timestamp_col: "updated_at",
+      order: 3
+    },
+    %{
+      name: "scrape_sessions",
+      resource: SertantaiLegal.Scraper.ScrapeSession,
+      pk: "id",
+      timestamp_col: "updated_at",
+      order: 4
+    },
+    %{
+      name: "scrape_session_records",
+      resource: SertantaiLegal.Scraper.ScrapeSessionRecord,
+      pk: "id",
+      timestamp_col: "updated_at",
+      order: 5
+    },
+    %{
+      name: "cascade_affected_laws",
+      resource: SertantaiLegal.Scraper.CascadeAffectedLaw,
+      pk: "id",
+      timestamp_col: "updated_at",
+      order: 6
+    }
+  ]
+
+  def tables, do: @tables |> Enum.sort_by(& &1.order)
+
+  def excluded_columns(table_name) do
+    dev_only = Map.get(@dev_only_columns, table_name, [])
+    generated = Map.get(@generated_columns, table_name, [])
+    dev_only ++ generated
+  end
+end

@@ -186,12 +186,17 @@ cd backend && unset DATABASE_URL && mix ash.setup && cd ..
 - Airtable CSV files NOT moved to NAS — not needed for postgres-to-postgres sync
 - `enrichment/` directory exists but unused
 
-### Phase 2: Delta Export/Import (dev→prod)
-- [ ] Create `Mix.Tasks.Data.ExportDelta` — timestamp-based differential export
-- [ ] Create `Mix.Tasks.Data.ApplyDelta` — transactional import with conflict detection
-- [ ] Add `sync_watermark` table to track last sync timestamp per direction per table
-- [ ] Test: export from dev, apply to a fresh DB, verify row counts and content
-- [ ] Document the promotion workflow
+### Phase 2: Delta Export/Import (dev→prod) — COMPLETED 2026-04-11
+- [x] Delta export script (`scripts/sync/export_delta.exs`) — standalone Elixir script
+- [x] Delta apply script (`scripts/sync/apply_delta.exs`) — standalone Elixir script
+- [x] Core modules in `backend/lib/sertantai_legal/sync/delta/` (Config, ColumnMapper, SqlGenerator, Exporter, Applier)
+- [x] Mix task wrappers: `mix data.export_delta`, `mix data.apply_delta`
+- [x] Sync tables migration (`20260321194736_add_sync_tables.exs`) + 5 Ash resources
+- [x] Watermark tracking via `scripts/sync/last_sync.json`
+- [x] End-to-end test: export → fresh DB → apply → verify (10 rows, idempotent re-apply confirmed)
+- [x] Promotion workflow documented (see SOP below)
+
+**Note**: `--limit N` with FK-dependent tables (e.g., lat→uk_lrt) will fail if parent rows aren't included. Use `--limit` only with `--tables` on single tables, or omit it for production exports.
 
 ### Phase 3: Automated Snapshot Rotation
 - [ ] Post-promotion hook: auto-generate new snapshot after successful prod sync
@@ -227,4 +232,102 @@ cd backend && unset DATABASE_URL && mix ash.setup && cd ..
 | Schema drift between dev and prod | High — delta SQL may fail | Always run migrations on prod before applying deltas |
 | Large snapshot sizes | Low — actual first snapshot is ~60MB (19K LRT + 152K LAT + 38K other) | pg_dump custom format is well-compressed; archive rotation available via `--archive` flag |
 | Enrichment data loss during promotion | Medium — taxa fields could be overwritten | Delta export includes all columns; `record_change_log` provides rollback data |
-| Accidental prod write from dev tooling | High | `ApplyDelta` requires explicit `--target prod` flag + confirmation prompt |
+| Accidental prod write from dev tooling | High | `ApplyDelta` requires explicit `TARGET_DATABASE_URL` + confirmation prompt |
+
+---
+
+## Dev → Prod Promotion SOP
+
+Step-by-step procedure for promoting dev database changes to production.
+
+### Prerequisites
+
+1. **Prod migrations are current** — prod schema must match dev. If prod is behind:
+   ```bash
+   ssh sertantai-hz "cd ~/infrastructure/docker && docker compose exec sertantai-legal bin/sertantai_legal eval 'SertantaiLegal.Release.migrate()'"
+   ```
+2. **SSH tunnel to prod PostgreSQL** (if applying remotely):
+   ```bash
+   ssh -L 5437:postgres:5432 sertantai-hz
+   # Tunnel maps localhost:5437 → prod postgres:5432
+   ```
+
+### Step 1: Export Delta
+
+```bash
+cd backend
+unset DATABASE_URL
+
+# Option A: Export all changes since last sync (uses watermarks)
+mix data.export_delta
+
+# Option B: Export changes since a specific date
+mix data.export_delta --since "2026-04-01T00:00:00Z"
+
+# Option C: Dry run first to check counts
+mix data.export_delta --dry-run
+```
+
+Output: `scripts/sync/delta_TIMESTAMP.sql` + `_manifest.json`
+
+### Step 2: Review Delta
+
+Inspect the generated SQL file. Look for:
+- Unexpected row counts (did a bulk update touch more than expected?)
+- Tables you didn't intend to promote
+- Data that isn't ready for prod
+
+```bash
+# Quick summary from manifest
+cat scripts/sync/delta_*_manifest.json | jq '.tables | to_entries[] | "\(.key): \(.value.rows) rows"'
+
+# Inspect actual SQL if needed
+less scripts/sync/delta_*.sql
+```
+
+### Step 3: Apply to Prod
+
+```bash
+cd backend
+
+# Via SSH tunnel (localhost:5437 → prod postgres)
+TARGET_DATABASE_URL=postgresql://postgres:PASSWORD@localhost:5437/sertantai_legal_prod \
+  mix data.apply_delta delta_TIMESTAMP.sql
+
+# With auto-confirm (no interactive prompt)
+TARGET_DATABASE_URL=postgresql://postgres:PASSWORD@localhost:5437/sertantai_legal_prod \
+  mix data.apply_delta delta_TIMESTAMP.sql --confirm
+```
+
+Safety checks (automatic):
+- Refuses `_dev` databases or port 5436
+- SHA256 checksum verification against manifest
+- Interactive confirmation with row count summary
+- Single transaction — all or nothing
+
+### Step 4: Verify
+
+```bash
+# Check row counts on prod
+PGPASSWORD=PASSWORD psql -h localhost -p 5437 -U postgres -d sertantai_legal_prod \
+  -c "SELECT 'uk_lrt' AS t, COUNT(*) FROM uk_lrt UNION ALL SELECT 'lat', COUNT(*) FROM lat;"
+```
+
+### Step 5: Archive (Optional)
+
+After a successful promotion, take a fresh NAS snapshot:
+```bash
+./scripts/nas/export-snapshot.sh --archive
+```
+
+### Quick Reference
+
+| Command | Purpose |
+|---------|---------|
+| `mix data.export_delta` | Export using saved watermarks |
+| `mix data.export_delta --since DATE` | Export since specific date |
+| `mix data.export_delta --tables uk_lrt` | Export single table |
+| `mix data.export_delta --dry-run` | Preview counts only |
+| `mix data.apply_delta FILE` | Apply with confirmation |
+| `mix data.apply_delta FILE --confirm` | Apply without prompt |
+| `mix data.apply_delta FILE --dry-run` | Validate only |

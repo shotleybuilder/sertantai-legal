@@ -1,0 +1,41 @@
+{
+  "sha256": "46e687a68e330c21e116b7125185bda4365e003cf859866831e017429af901a2",
+  "tables": {
+    "amendment_annotations": {
+      "rows": 2,
+      "max_updated_at": null
+    },
+    "cascade_affected_laws": {
+      "rows": 2,
+      "max_updated_at": null
+    },
+    "lat": {
+      "rows": 2,
+      "max_updated_at": null
+    },
+    "scrape_session_records": {
+      "rows": 2,
+      "max_updated_at": null
+    },
+    "scrape_sessions": {
+      "rows": 2,
+      "max_updated_at": null
+    },
+    "uk_lrt": {
+      "rows": 2,
+      "max_updated_at": null
+    }
+  },
+  "total_rows": 12,
+  "exported_at": "2026-04-11T17:33:31.699410Z",
+  "source_db": "sertantai_legal_dev",
+  "watermark_used": {
+    "amendment_annotations": "2026-01-01T00:00:00Z",
+    "cascade_affected_laws": "2026-01-01T00:00:00Z",
+    "lat": "2026-01-01T00:00:00Z",
+    "scrape_session_records": "2026-01-01T00:00:00Z",
+    "scrape_sessions": "2026-01-01T00:00:00Z",
+    "uk_lrt": "2026-01-01T00:00:00Z"
+  },
+  "sql_file": "delta_2026-04-11T17-33-31.sql"
+}
