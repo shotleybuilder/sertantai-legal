@@ -22,15 +22,6 @@
 		{ href: '/admin/zenoh', label: 'Zenoh', exact: false }
 	];
 
-	type NavItem =
-		| { href: string; label: string; exact: boolean; dropdown?: undefined }
-		| {
-				label: string;
-				dropdown: { href: string; label: string }[];
-				href?: undefined;
-				exact?: undefined;
-		  };
-
 	let openDropdown: string | null = null;
 
 	function toggleDropdown(label: string) {

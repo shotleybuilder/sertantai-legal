@@ -308,10 +308,6 @@
 		const d = new Date(iso);
 		return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 	}
-
-	function fieldLabel(field: string): string {
-		return field.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-	}
 </script>
 
 <svelte:head>
@@ -934,7 +930,7 @@
 					<div class="bg-white rounded-lg border border-gray-200 p-4">
 						<h3 class="text-sm font-medium text-gray-700 mb-3">Top Changed Fields</h3>
 						<div class="space-y-1.5">
-							{#each changeStats.top_changed_fields as { field, count }, i}
+							{#each changeStats.top_changed_fields as { field, count }, _i}
 								{@const maxCount = changeStats.top_changed_fields[0]?.count ?? 1}
 								<div class="flex items-center gap-2 text-sm">
 									<div

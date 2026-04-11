@@ -247,7 +247,7 @@
 
 					<!-- Live Status -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1">Live Status</label>
+						<span class="block text-sm font-medium text-gray-700 mb-1">Live Status</span>
 						<div class="flex flex-wrap gap-3">
 							{#each liveOptions as opt}
 								<label class="inline-flex items-center gap-1.5 text-sm">
@@ -272,7 +272,7 @@
 
 					<!-- Function -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-1">Function</label>
+						<span class="block text-sm font-medium text-gray-700 mb-1">Function</span>
 						<div class="flex flex-wrap gap-2">
 							{#each functionOptions as fn}
 								<button

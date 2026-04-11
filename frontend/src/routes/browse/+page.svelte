@@ -36,6 +36,7 @@
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
 
 	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
+	// eslint-disable-next-line svelte/valid-compile
 	export let params: Record<string, string> = {};
 
 	// Columns queried from PGLite for the browse page
@@ -88,9 +89,6 @@
 	// Type helpers for Svelte template (no `as` casts in templates)
 	function asStr(v: unknown): string | null {
 		return v as string | null;
-	}
-	function asStrArr(v: unknown): string[] | null {
-		return v as string[] | null;
 	}
 	function asRec(v: unknown): Record<string, unknown> {
 		return v as Record<string, unknown>;
@@ -1163,7 +1161,7 @@
 				</svelte:fragment>
 
 				<!-- Custom row detail -->
-				<div slot="row-detail" let:row let:close>
+				<div slot="row-detail" let:row let:close={_close}>
 					{#if row}
 						{@const r = asRec(row)}
 						{@const familyDisplay = getFamilyDisplay(asStr(r.family))}

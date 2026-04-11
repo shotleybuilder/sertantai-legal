@@ -71,7 +71,7 @@
 				if (val.length === 0) return '(none)';
 				return val.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v))).join(', ');
 
-			case 'json':
+			case 'json': {
 				if (typeof val !== 'object') return String(val);
 				// Handle {values: [...]} format
 				const obj = val as Record<string, unknown>;
@@ -94,6 +94,7 @@
 					return trueKeys.join(', ');
 				}
 				return JSON.stringify(val);
+			}
 
 			case 'url':
 				return String(val);

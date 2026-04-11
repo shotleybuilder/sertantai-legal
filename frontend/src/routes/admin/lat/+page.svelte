@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import {
 		useLatStatsQuery,
 		useLatLawsQuery,
@@ -7,7 +6,7 @@
 		useAnnotationsQuery,
 		useReparseMutation
 	} from '$lib/query/lat';
-	import type { LawSummary, LatRow, AnnotationRow } from '$lib/api/lat';
+	import type { LawSummary, LatRow } from '$lib/api/lat';
 
 	// ── State ────────────────────────────────────────────────────────
 
@@ -78,10 +77,6 @@
 		latOffset += latLimit;
 	}
 
-	function resetPagination() {
-		latOffset = 0;
-	}
-
 	// ── Row expansion ───────────────────────────────────────────────
 
 	function toggleRow(sectionId: string) {
@@ -90,7 +85,7 @@
 		} else {
 			expandedRows.add(sectionId);
 		}
-		expandedRows = expandedRows; // trigger reactivity
+		expandedRows = expandedRows; // eslint-disable-line no-self-assign
 	}
 
 	// ── Re-parse ────────────────────────────────────────────────────

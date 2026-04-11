@@ -9,7 +9,7 @@
  */
 
 import { browser } from '$app/environment';
-import { PGlite, type PGliteInterfaceExtensions } from '@electric-sql/pglite';
+import { PGlite } from '@electric-sql/pglite';
 import { live, type LiveNamespace } from '@electric-sql/pglite/live';
 import { electricSync, type SyncNamespaceObj } from '@electric-sql/pglite-sync';
 

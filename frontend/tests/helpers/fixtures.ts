@@ -17,7 +17,7 @@ type LegalFixtures = {
 };
 
 export const test = base.extend<LegalFixtures>({
-	createUser: async ({}, use) => {
+	createUser: async (_opts, use) => {
 		const users: SeededUser[] = [];
 
 		const fn = async (opts: SeedUserOptions = {}) => {

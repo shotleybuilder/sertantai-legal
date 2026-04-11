@@ -259,6 +259,7 @@
 	}
 
 	// Sort order for change types
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const typeOrder: Record<ChangeType, number> = { deleted: 0, modified: 1, added: 2 };
 
 	// Get field order within a group for sorting

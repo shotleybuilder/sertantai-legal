@@ -88,7 +88,7 @@
 	}
 
 	function handleModalComplete(
-		event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
+		_event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
 	) {
 		showModal = false;
 		// Records query will auto-refresh via invalidation in the mutation

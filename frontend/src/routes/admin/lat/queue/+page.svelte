@@ -1,5 +1,4 @@
 <script lang="ts">
-	/* eslint-disable no-undef */
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
@@ -30,7 +29,7 @@
 
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import { reparseLat, createLatSessionFromView, type QueueItem } from '$lib/api/lat';
+	import { reparseLat, createLatSessionFromView } from '$lib/api/lat';
 	import { authFetch } from '$lib/api/client';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';

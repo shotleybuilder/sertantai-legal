@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import {
 		getAffectedLaws,
 		batchReparse,
@@ -91,7 +91,7 @@
 					metadataResults.set(law.name, law.metadata as ParseMetadataResult['record']);
 				}
 			}
-			metadataResults = metadataResults;
+			metadataResults = metadataResults; // eslint-disable-line no-self-assign
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load affected laws';
 		} finally {
@@ -122,7 +122,8 @@
 
 	// Auto-save mode: batch re-parse without review (kept for future use)
 	// Uses filteredInDb to respect layer filter
-	async function handleReparseAll() {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async function _handleReparseAll() {
 		if (!affectedLaws || filteredInDb.length === 0) return;
 
 		reparseInProgress = true;
@@ -138,7 +139,8 @@
 		}
 	}
 
-	async function handleReparseSelected() {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async function _handleReparseSelected() {
 		if (selectedInDb.size === 0) return;
 
 		reparseInProgress = true;
@@ -307,15 +309,15 @@
 			try {
 				const result = await parseMetadata(sessionId, name);
 				metadataResults.set(name, result.record);
-				metadataResults = metadataResults; // Trigger reactivity
+				metadataResults = metadataResults; // eslint-disable-line no-self-assign
 				// Persist to cascade entry so it survives modal reopen
 				saveCascadeMetadata(sessionId, name, result.record);
 			} catch (e) {
 				metadataErrors.set(name, e instanceof Error ? e.message : 'Failed');
-				metadataErrors = metadataErrors;
+				metadataErrors = metadataErrors; // eslint-disable-line no-self-assign
 			} finally {
 				metadataFetching.delete(name);
-				metadataFetching = metadataFetching;
+				metadataFetching = metadataFetching; // eslint-disable-line no-self-assign
 			}
 		}
 	}
@@ -363,7 +365,7 @@
 		} else {
 			selectedInDb.add(name);
 		}
-		selectedInDb = selectedInDb; // Trigger reactivity
+		selectedInDb = selectedInDb; // eslint-disable-line no-self-assign
 	}
 
 	function toggleNotInDbSelection(name: string) {
@@ -372,7 +374,7 @@
 		} else {
 			selectedNotInDb.add(name);
 		}
-		selectedNotInDb = selectedNotInDb; // Trigger reactivity
+		selectedNotInDb = selectedNotInDb; // eslint-disable-line no-self-assign
 	}
 
 	function selectAllInDb() {
@@ -392,7 +394,7 @@
 		} else {
 			selectedEnactingParents.add(name);
 		}
-		selectedEnactingParents = selectedEnactingParents; // Trigger reactivity
+		selectedEnactingParents = selectedEnactingParents; // eslint-disable-line no-self-assign
 	}
 
 	function selectAllEnactingParents() {

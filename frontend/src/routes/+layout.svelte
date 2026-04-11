@@ -6,6 +6,7 @@
 	import { adminAuth } from '$lib/stores/auth';
 
 	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
+	// eslint-disable-next-line svelte/valid-compile
 	export let params: Record<string, string> = {};
 
 	// Restore auth from localStorage at module scope — runs during script

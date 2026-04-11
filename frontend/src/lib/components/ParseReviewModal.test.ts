@@ -222,7 +222,7 @@ describe('ParseReviewModal state logic', () => {
 		/**
 		 * Simulates handleComplete setting workflowComplete before clearing lastParsedName
 		 */
-		function simulateHandleComplete(state: {
+		function simulateHandleComplete(_state: {
 			workflowComplete: boolean;
 			lastParsedName: string | null;
 		}): { workflowComplete: boolean; lastParsedName: string | null } {

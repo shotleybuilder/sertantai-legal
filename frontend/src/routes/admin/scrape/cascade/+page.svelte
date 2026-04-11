@@ -63,8 +63,6 @@
 	let showParseModal = false;
 	let parseModalRecords: ScrapeRecord[] = [];
 	let parseModalSessionId = '';
-	let parseCompleteMessage = '';
-
 	// Helper to format source laws with titles for hover tooltip
 	function formatSourceLawsTooltip(entry: CascadeEntry): string {
 		if (entry.source_laws_details && entry.source_laws_details.length > 0) {
@@ -302,6 +300,7 @@
 	}
 
 	// Legacy: Add laws without metadata preview (kept for batch operations)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	async function handleAddMissingLaws() {
 		if (selectedReparseMissing.size === 0) return;
 		operationResults = null;

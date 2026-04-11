@@ -236,6 +236,7 @@
 
 					<!-- Function (optional) -->
 					<div>
+						<!-- svelte-ignore a11y-label-has-associated-control -->
 						<label class="block text-sm font-medium text-gray-700 mb-1">Function</label>
 						<div class="flex flex-wrap gap-2">
 							{#each functionOptions as fn}

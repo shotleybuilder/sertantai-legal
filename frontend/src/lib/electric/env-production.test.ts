@@ -14,6 +14,7 @@ import { resolve } from 'path';
 
 describe('.env.production Electric URL (issue #41 regression)', () => {
 	// Vitest cwd is the frontend/ directory
+	// eslint-disable-next-line no-undef
 	const envPath = resolve(process.cwd(), '.env.production');
 	let envContent: string;
 

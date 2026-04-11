@@ -46,7 +46,6 @@
 
 	// Cascade Update Modal State
 	let showCascadeModal = false;
-	let affectedLawsCount = 0;
 	let cascadePendingCount = 0;
 	let cascadeProcessedCount = 0;
 
@@ -60,7 +59,7 @@
 			const affected = await getAffectedLaws(sessionId);
 			cascadePendingCount = affected.pending_count;
 			cascadeProcessedCount = affected.processed_count;
-		} catch (e) {
+		} catch {
 			// No cascade data or error - that's fine
 			cascadePendingCount = 0;
 			cascadeProcessedCount = 0;
@@ -185,7 +184,6 @@
 			try {
 				const affected = await getAffectedLaws(sessionId);
 				if (affected.total_affected > 0 || affected.total_enacting_parents > 0) {
-					affectedLawsCount = affected.total_affected;
 					// Show cascade modal after a brief delay
 					setTimeout(() => {
 						showCascadeModal = true;
@@ -258,7 +256,7 @@
 		}
 	}
 
-	function handleRowClick(record: ScrapeRecord, index: number) {
+	function handleRowClick(record: ScrapeRecord, _index: number) {
 		// Open modal for single record
 		parseModalRecords = [record];
 		parseModalStartIndex = 0;

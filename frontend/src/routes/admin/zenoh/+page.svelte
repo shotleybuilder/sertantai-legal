@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { format } from 'date-fns';
 	import { useSubscriptionsQuery, useQueryablesQuery } from '$lib/query/zenoh';
-	import type { ActivityEntry } from '$lib/api/zenoh';
 
 	let activeTab: 'subscriptions' | 'queryables' = 'subscriptions';
 

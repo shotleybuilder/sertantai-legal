@@ -24,7 +24,7 @@
 			});
 			// Navigate to session detail
 			goto(`/admin/scrape/sessions/${session.session_id}`);
-		} catch (error) {
+		} catch {
 			// Error is handled by mutation state
 		}
 	}

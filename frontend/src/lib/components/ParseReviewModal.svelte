@@ -58,6 +58,7 @@
 	// Streaming progress state
 	let isParsing = false;
 	let parseError: string | null = null;
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let currentStage: ParseStage | null = null;
 	let cleanupStream: (() => void) | null = null;
 
@@ -398,26 +399,6 @@
 			default:
 				return '?';
 		}
-	}
-
-	function formatValue(value: unknown): string {
-		if (value === null || value === undefined) return '-';
-		if (Array.isArray(value)) {
-			if (value.length === 0) return '(none)';
-			return value.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v))).join(', ');
-		}
-		// Handle JSONB format {items: [...]} used by Taxa fields
-		if (typeof value === 'object' && value !== null) {
-			const obj = value as Record<string, unknown>;
-			if ('items' in obj && Array.isArray(obj.items)) {
-				if (obj.items.length === 0) return '(none)';
-				return obj.items
-					.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v)))
-					.join(', ');
-			}
-			return JSON.stringify(value);
-		}
-		return String(value);
 	}
 
 	function formatDate(dateStr: unknown): string {
