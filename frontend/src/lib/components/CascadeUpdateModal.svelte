@@ -297,9 +297,7 @@
 		if (selectedNotInDb.size === 0) return;
 
 		// Filter to only selected laws in the current layer filter
-		const names = filteredNotInDb
-			.filter((law) => selectedNotInDb.has(law.name))
-			.map((l) => l.name);
+		const names = filteredNotInDb.filter((law) => selectedNotInDb.has(law.name)).map((l) => l.name);
 		if (names.length === 0) return;
 
 		metadataFetching = new Set(names);
@@ -405,7 +403,9 @@
 	function selectNoneEnactingParents() {
 		// Deselect all from the filtered list
 		const filteredNames = new Set(filteredEnactingParents.map((l) => l.name));
-		selectedEnactingParents = new Set([...selectedEnactingParents].filter((name) => !filteredNames.has(name)));
+		selectedEnactingParents = new Set(
+			[...selectedEnactingParents].filter((name) => !filteredNames.has(name))
+		);
 	}
 
 	function getStatusIcon(status: string): string {
@@ -538,7 +538,12 @@
 								{#each affectedLaws.layers as l}
 									<button
 										on:click={() => toggleLayerFilter(l.layer)}
-										class="px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-blue-400 {selectedLayer === l.layer ? 'bg-blue-600 text-white ring-2 ring-blue-400' : selectedLayer === null && l.layer === affectedLaws.current_layer ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600'}"
+										class="px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-blue-400 {selectedLayer ===
+										l.layer
+											? 'bg-blue-600 text-white ring-2 ring-blue-400'
+											: selectedLayer === null && l.layer === affectedLaws.current_layer
+												? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
+												: 'bg-gray-100 text-gray-600'}"
 									>
 										L{l.layer}: {l.count}
 									</button>
@@ -698,21 +703,29 @@
 						<div class="mb-6">
 							<div class="flex justify-between items-center mb-2">
 								<h3 class="font-semibold text-gray-900">
-									Affected Laws in Database ({filteredInDb.length}{#if selectedLayer !== null} of {affectedLaws.in_db_count}{/if})
+									Affected Laws in Database ({filteredInDb.length}{#if selectedLayer !== null}
+										of {affectedLaws.in_db_count}{/if})
 								</h3>
 								<div class="flex items-center gap-4 text-sm">
-									<label class="flex items-center gap-2 cursor-pointer" title={fullReparse
-										? 'All 5 stages will be re-parsed'
-										: 'Only amended_by stage'}>
+									<label
+										class="flex items-center gap-2 cursor-pointer"
+										title={fullReparse ? 'All 5 stages will be re-parsed' : 'Only amended_by stage'}
+									>
 										<span class="text-gray-500">{fullReparse ? 'Full' : 'Min'}</span>
 										<button
 											type="button"
 											role="switch"
 											aria-checked={fullReparse}
-											on:click={() => fullReparse = !fullReparse}
-											class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors {fullReparse ? 'bg-blue-600' : 'bg-gray-300'}"
+											on:click={() => (fullReparse = !fullReparse)}
+											class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors {fullReparse
+												? 'bg-blue-600'
+												: 'bg-gray-300'}"
 										>
-											<span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform {fullReparse ? 'translate-x-4.5' : 'translate-x-0.5'}" />
+											<span
+												class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform {fullReparse
+													? 'translate-x-4.5'
+													: 'translate-x-0.5'}"
+											/>
 										</button>
 									</label>
 									<span class="text-gray-300">|</span>
@@ -753,14 +766,26 @@
 						<div class="mb-6">
 							<div class="flex justify-between items-center mb-2">
 								<h3 class="font-semibold text-gray-900">
-									Affected Laws <span class="text-yellow-600">NOT</span> in Database ({filteredNotInDb.length}{#if selectedLayer !== null} of {affectedLaws.not_in_db_count}{/if})
+									Affected Laws <span class="text-yellow-600">NOT</span> in Database ({filteredNotInDb.length}{#if selectedLayer !== null}
+										of {affectedLaws.not_in_db_count}{/if})
 								</h3>
 								<div class="flex gap-2 text-sm">
-									<button on:click={() => { if (affectedLaws) selectedNotInDb = new Set(affectedLaws.not_in_db.map(l => l.name)); }} class="text-yellow-600 hover:underline">
+									<button
+										on:click={() => {
+											if (affectedLaws)
+												selectedNotInDb = new Set(affectedLaws.not_in_db.map((l) => l.name));
+										}}
+										class="text-yellow-600 hover:underline"
+									>
 										Select All
 									</button>
 									<span class="text-gray-300">|</span>
-									<button on:click={() => { selectedNotInDb = new Set(); }} class="text-yellow-600 hover:underline">
+									<button
+										on:click={() => {
+											selectedNotInDb = new Set();
+										}}
+										class="text-yellow-600 hover:underline"
+									>
 										Select None
 									</button>
 								</div>
@@ -787,18 +812,23 @@
 										<div class="flex-1 min-w-0">
 											<div class="font-mono text-sm text-gray-700">{law.name}</div>
 											{#if isFetching}
-												<div class="text-xs text-yellow-600 animate-pulse">Fetching metadata...</div>
+												<div class="text-xs text-yellow-600 animate-pulse">
+													Fetching metadata...
+												</div>
 											{:else if fetchError}
 												<div class="text-xs text-red-500">{fetchError}</div>
 											{:else if meta}
 												<div class="text-sm text-gray-800 truncate">{meta.title_en}</div>
 												<div class="text-xs text-gray-500">
-													{meta.type_code} {meta.year}/{meta.number}
+													{meta.type_code}
+													{meta.year}/{meta.number}
 												</div>
 											{/if}
 										</div>
 										{#if meta}
-											<span class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded">Ready</span>
+											<span class="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded"
+												>Ready</span
+											>
 										{/if}
 									</div>
 								{/each}
@@ -811,7 +841,8 @@
 						<div class="mb-6">
 							<div class="flex justify-between items-center mb-2">
 								<h3 class="font-semibold text-gray-900">
-									<span class="text-purple-600">Enacting Parents</span> in Database ({filteredEnactingParents.length}{#if selectedLayer !== null} of {affectedLaws.enacting_parents_in_db_count}{/if})
+									<span class="text-purple-600">Enacting Parents</span> in Database ({filteredEnactingParents.length}{#if selectedLayer !== null}
+										of {affectedLaws.enacting_parents_in_db_count}{/if})
 								</h3>
 								<div class="flex gap-2 text-sm">
 									<button
@@ -890,7 +921,10 @@
 					{#if affectedLaws && affectedLaws.in_db_count > 0 && !reparseResults}
 						<button
 							on:click={handleReviewSelected}
-							disabled={reparseInProgress || enactingUpdateInProgress || autoReparseActive || selectedInDbCount === 0}
+							disabled={reparseInProgress ||
+								enactingUpdateInProgress ||
+								autoReparseActive ||
+								selectedInDbCount === 0}
 							class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Review Selected ({selectedInDbCount})
@@ -904,7 +938,10 @@
 						</button>
 						<button
 							on:click={handleAutoReparse}
-							disabled={reparseInProgress || enactingUpdateInProgress || autoReparseActive || selectedInDbCount === 0}
+							disabled={reparseInProgress ||
+								enactingUpdateInProgress ||
+								autoReparseActive ||
+								selectedInDbCount === 0}
 							class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{#if autoReparseActive}

@@ -92,7 +92,9 @@
 		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
 		on:click|self={handleClose}
 	>
-		<div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+		<div
+			class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+		>
 			<!-- Header -->
 			<div class="px-6 py-4 border-b border-gray-200">
 				<div class="flex justify-between items-start">
@@ -116,7 +118,12 @@
 					</div>
 					<button on:click={handleClose} class="ml-4 text-gray-400 hover:text-gray-600">
 						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						</svg>
 					</button>
 				</div>
@@ -142,7 +149,10 @@
 					<div>
 						<span class="text-gray-500">Making:</span>
 						{#if record.is_making}
-							<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700">Yes</span>
+							<span
+								class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700"
+								>Yes</span
+							>
 						{:else}
 							<span class="ml-1 text-gray-400">No</span>
 						{/if}
@@ -153,7 +163,9 @@
 			<!-- Content -->
 			<div class="flex-1 overflow-y-auto p-6">
 				{#if heavyError}
-					<div class="mb-4 px-4 py-3 text-sm bg-red-50 text-red-700 rounded-lg border border-red-200">
+					<div
+						class="mb-4 px-4 py-3 text-sm bg-red-50 text-red-700 rounded-lg border border-red-200"
+					>
 						Failed to load detailed data: {heavyError}
 						<button
 							on:click={loadHeavyFields}
@@ -176,7 +188,11 @@
 			<div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
 				<div class="text-sm text-gray-500">
 					{#if record.updated_at}
-						Last updated: {new Date(String(record.updated_at)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+						Last updated: {new Date(String(record.updated_at)).toLocaleDateString('en-GB', {
+							day: '2-digit',
+							month: 'short',
+							year: 'numeric'
+						})}
 					{/if}
 				</div>
 				<div class="flex items-center gap-3">
@@ -191,7 +207,12 @@
 						class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 flex items-center gap-2"
 					>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+							/>
 						</svg>
 						Parse & Review
 					</button>
@@ -204,13 +225,15 @@
 <!-- Parse & Review sub-modal -->
 {#if parseModalOpen && record}
 	<ParseReviewModal
-		records={[{
-			name: String(record.name ?? ''),
-			Title_EN: String(record.title_en ?? ''),
-			type_code: String(record.type_code ?? ''),
-			Year: Number(record.year ?? 0),
-			Number: String(record.number ?? '')
-		}]}
+		records={[
+			{
+				name: String(record.name ?? ''),
+				Title_EN: String(record.title_en ?? ''),
+				type_code: String(record.type_code ?? ''),
+				Year: Number(record.year ?? 0),
+				Number: String(record.number ?? '')
+			}
+		]}
 		recordId={recordId ?? undefined}
 		open={parseModalOpen}
 		on:close={closeParseReview}

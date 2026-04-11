@@ -87,7 +87,9 @@
 		showModal = true;
 	}
 
-	function handleModalComplete(event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>) {
+	function handleModalComplete(
+		event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
+	) {
 		showModal = false;
 		// Records query will auto-refresh via invalidation in the mutation
 	}
@@ -110,7 +112,11 @@
 			</div>
 			{#if $sessionQuery.data}
 				<div class="flex items-center space-x-3 mt-1">
-					<span class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor($sessionQuery.data.status)}">
+					<span
+						class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor(
+							$sessionQuery.data.status
+						)}"
+					>
 						{$sessionQuery.data.status}
 					</span>
 				</div>
@@ -209,11 +215,13 @@
 				<thead class="bg-gray-50">
 					<tr>
 						<th class="px-3 py-3 w-10"></th>
-						<th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Law Name</th>
+						<th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Law Name</th
+						>
 						<th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
 						<th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Family</th>
 						<th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Year</th>
-						<th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+						<th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th
+						>
 						<th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">LAT</th>
 						<th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ann.</th>
 						<th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Time</th>
@@ -221,10 +229,7 @@
 				</thead>
 				<tbody class="divide-y divide-gray-200">
 					{#each records as record}
-						<tr
-							class="hover:bg-gray-50 cursor-pointer"
-							on:click={() => openSingleRecord(record)}
-						>
+						<tr class="hover:bg-gray-50 cursor-pointer" on:click={() => openSingleRecord(record)}>
 							<!-- svelte-ignore a11y-click-events-have-key-events -->
 							<td class="px-3 py-2" on:click|stopPropagation>
 								<input
@@ -247,7 +252,9 @@
 								{record.year || '-'}
 							</td>
 							<td class="px-3 py-2 text-center">
-								<span class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor(record.status)}">
+								<span
+									class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor(record.status)}"
+								>
 									{record.status}
 								</span>
 							</td>
@@ -258,7 +265,9 @@
 								{record.annotations_inserted ?? '-'}
 							</td>
 							<td class="px-3 py-2 text-sm text-right text-gray-500">
-								{record.parse_duration_ms ? `${(record.parse_duration_ms / 1000).toFixed(1)}s` : '-'}
+								{record.parse_duration_ms
+									? `${(record.parse_duration_ms / 1000).toFixed(1)}s`
+									: '-'}
 							</td>
 						</tr>
 						{#if record.parse_error}

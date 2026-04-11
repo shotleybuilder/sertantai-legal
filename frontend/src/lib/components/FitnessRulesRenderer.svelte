@@ -26,12 +26,22 @@
 	let groupMode: GroupMode = 'article';
 
 	/** Facet keys to display (excluding article, polarity, and the grouping key) */
-	const FACET_KEYS: (keyof FitnessRule)[] = ['person', 'place', 'plant', 'process', 'property', 'sector'];
+	const FACET_KEYS: (keyof FitnessRule)[] = [
+		'person',
+		'place',
+		'plant',
+		'process',
+		'property',
+		'sector'
+	];
 
 	/** Split comma-separated string into trimmed items */
 	function splitFacet(val: string | null): string[] {
 		if (!val) return [];
-		return val.split(',').map(s => s.trim()).filter(Boolean);
+		return val
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean);
 	}
 
 	/** Group rules by article */
@@ -88,18 +98,24 @@
 	<div class="px-4 py-2 flex items-center gap-2 border-b border-gray-100">
 		<span class="text-xs text-gray-500">Group by:</span>
 		<button
-			class="px-2 py-0.5 text-xs rounded {groupMode === 'article' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}"
-			on:click={() => groupMode = 'article'}
+			class="px-2 py-0.5 text-xs rounded {groupMode === 'article'
+				? 'bg-indigo-100 text-indigo-700 font-medium'
+				: 'text-gray-600 hover:bg-gray-100'}"
+			on:click={() => (groupMode = 'article')}
 		>
 			Article
 		</button>
 		<button
-			class="px-2 py-0.5 text-xs rounded {groupMode === 'person' ? 'bg-indigo-100 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}"
-			on:click={() => groupMode = 'person'}
+			class="px-2 py-0.5 text-xs rounded {groupMode === 'person'
+				? 'bg-indigo-100 text-indigo-700 font-medium'
+				: 'text-gray-600 hover:bg-gray-100'}"
+			on:click={() => (groupMode = 'person')}
 		>
 			Person
 		</button>
-		<span class="ml-auto text-xs text-gray-400">{rules.length} rule{rules.length !== 1 ? 's' : ''}</span>
+		<span class="ml-auto text-xs text-gray-400"
+			>{rules.length} rule{rules.length !== 1 ? 's' : ''}</span
+		>
 	</div>
 
 	<!-- Grouped rules -->
@@ -118,11 +134,19 @@
 						<div class="flex items-start gap-2 text-xs">
 							<!-- Polarity badge -->
 							{#if rule.polarity === 'AppliesTo'}
-								<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">Applies</span>
+								<span
+									class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium"
+									>Applies</span
+								>
 							{:else if rule.polarity === 'DisappliesTo'}
-								<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium">Disapplies</span>
+								<span
+									class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium"
+									>Disapplies</span
+								>
 							{:else}
-								<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">{rule.polarity || '?'}</span>
+								<span class="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-gray-100 text-gray-600"
+									>{rule.polarity || '?'}</span
+								>
 							{/if}
 
 							<!-- Article reference (shown when grouping by person) -->

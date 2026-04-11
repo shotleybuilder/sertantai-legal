@@ -402,8 +402,7 @@
 										class="h-2 rounded-full bg-green-400"
 										style="width: {pctNum(count, totalRecords)}%"
 									></div>
-									<span class="text-gray-600 whitespace-nowrap truncate max-w-[200px]"
-										>{label}</span
+									<span class="text-gray-600 whitespace-nowrap truncate max-w-[200px]">{label}</span
 									>
 									<span class="text-gray-400 ml-auto">{fmt(count)}</span>
 								</div>
@@ -493,11 +492,13 @@
 										{fmt(row.populated)}
 										<span class="text-gray-400">/ {fmt(row.total)}</span>
 									</td>
-									<td class="px-4 py-2 text-sm text-right font-medium {percentage > 20
-										? 'text-green-600'
-										: percentage > 0
-											? 'text-amber-600'
-											: 'text-gray-400'}">
+									<td
+										class="px-4 py-2 text-sm text-right font-medium {percentage > 20
+											? 'text-green-600'
+											: percentage > 0
+												? 'text-amber-600'
+												: 'text-gray-400'}"
+									>
 										{pct(row.populated, row.total)}%
 									</td>
 									<td class="px-4 py-2">
@@ -633,7 +634,9 @@
 							? 'bg-red-50 border-red-300'
 							: 'bg-green-50 border-green-300'}"
 					>
-						<div class="text-sm {liveStatusData.misclassified > 0 ? 'text-red-700' : 'text-green-700'}">
+						<div
+							class="text-sm {liveStatusData.misclassified > 0 ? 'text-red-700' : 'text-green-700'}"
+						>
 							Misclassified
 						</div>
 						<div
@@ -643,8 +646,14 @@
 						>
 							{fmt(liveStatusData.misclassified)}
 						</div>
-						<div class="text-xs {liveStatusData.misclassified > 0 ? 'text-red-500' : 'text-green-500'} mt-0.5">
-							{liveStatusData.misclassified > 0 ? 'JSONB shows revoked but live != Revoked' : 'All consistent'}
+						<div
+							class="text-xs {liveStatusData.misclassified > 0
+								? 'text-red-500'
+								: 'text-green-500'} mt-0.5"
+						>
+							{liveStatusData.misclassified > 0
+								? 'JSONB shows revoked but live != Revoked'
+								: 'All consistent'}
 						</div>
 						{#if liveStatusData.misclassified > 0}
 							<button
@@ -653,7 +662,9 @@
 								class="mt-2 w-full px-3 py-1.5 text-xs font-medium rounded
 									bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
 							>
-								{reparseLoading ? 'Creating session...' : `Reparse ${fmt(liveStatusData.misclassified)} records`}
+								{reparseLoading
+									? 'Creating session...'
+									: `Reparse ${fmt(liveStatusData.misclassified)} records`}
 							</button>
 							{#if reparseError}
 								<div class="text-xs text-red-600 mt-1">{reparseError}</div>
@@ -681,7 +692,9 @@
 								style="width: {pctNum(cov.airtable_only, cov.total)}%"
 								title="Airtable only: {fmt(cov.airtable_only)}"
 							>
-								{pctNum(cov.airtable_only, cov.total) > 8 ? `${pct(cov.airtable_only, cov.total)}%` : ''}
+								{pctNum(cov.airtable_only, cov.total) > 8
+									? `${pct(cov.airtable_only, cov.total)}%`
+									: ''}
 							</div>
 						{/if}
 						{#if cov.no_status > 0}
@@ -928,8 +941,7 @@
 										class="h-2 rounded-full bg-orange-400 flex-shrink-0"
 										style="width: {(count / maxCount) * 100}%"
 									></div>
-									<span class="text-gray-600 truncate max-w-[180px] font-mono text-xs"
-										>{field}</span
+									<span class="text-gray-600 truncate max-w-[180px] font-mono text-xs">{field}</span
 									>
 									<span class="text-gray-400 ml-auto">{fmt(count)}</span>
 								</div>
@@ -960,9 +972,7 @@
 				{#if changeStats.timeline.length > 0}
 					{@const maxTimelineCount = Math.max(...changeStats.timeline.map((t) => t.count))}
 					<div class="bg-white rounded-lg border border-gray-200 p-4 mt-4">
-						<h3 class="text-sm font-medium text-gray-700 mb-3">
-							Change Timeline (last 90 days)
-						</h3>
+						<h3 class="text-sm font-medium text-gray-700 mb-3">Change Timeline (last 90 days)</h3>
 						<div class="flex items-end gap-px h-24">
 							{#each changeStats.timeline.slice().reverse() as { date, count }}
 								<div
@@ -1043,24 +1053,19 @@
 						<table class="min-w-full divide-y divide-gray-200">
 							<thead class="bg-gray-50">
 								<tr>
-									<th
-										class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 										>Type</th
 									>
-									<th
-										class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 										>Status</th
 									>
-									<th
-										class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+									<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 										>Sessions</th
 									>
-									<th
-										class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+									<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 										>Group 1</th
 									>
-									<th
-										class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+									<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 										>Persisted</th
 									>
 								</tr>
@@ -1112,28 +1117,22 @@
 							<table class="min-w-full divide-y divide-gray-200">
 								<thead class="bg-gray-50">
 									<tr>
-										<th
-											class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 											>Session</th
 										>
-										<th
-											class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 											>Type</th
 										>
-										<th
-											class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"
 											>Status</th
 										>
-										<th
-											class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 											>G1</th
 										>
-										<th
-											class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 											>Persisted</th
 										>
-										<th
-											class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase"
 											>Created</th
 										>
 									</tr>

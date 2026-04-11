@@ -6,7 +6,13 @@
 		useFamilyOptionsQuery
 	} from '$lib/query/scraper';
 	import type { ParseOneResult, ScrapeRecord, ParseStage } from '$lib/api/scraper';
-	import { parseOneStream, parseRecordStream, mapParseError, mapStageError, updateUkLrtRecord } from '$lib/api/scraper';
+	import {
+		parseOneStream,
+		parseRecordStream,
+		mapParseError,
+		mapStageError,
+		updateUkLrtRecord
+	} from '$lib/api/scraper';
 	import RecordDiff from './RecordDiff.svelte';
 	import CollapsibleSection from './CollapsibleSection.svelte';
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
@@ -72,13 +78,7 @@
 	};
 
 	// All stages in order
-	const ALL_STAGES: ParseStage[] = [
-		'metadata',
-		'extent',
-		'enacted_by',
-		'amending',
-		'amended_by'
-	];
+	const ALL_STAGES: ParseStage[] = ['metadata', 'extent', 'enacted_by', 'amending', 'amended_by'];
 
 	// Human-readable stage names
 	const STAGE_LABELS: Record<ParseStage, string> = {
@@ -95,9 +95,7 @@
 
 	// Derive effective display mode:
 	// Create (no duplicate) or Update (has duplicate) based on parse result
-	$: effectiveMode = (parseResult?.duplicate?.exists
-		? 'update'
-		: 'create') as DisplayMode;
+	$: effectiveMode = (parseResult?.duplicate?.exists ? 'update' : 'create') as DisplayMode;
 
 	// For display: merge DB record with parsed changes in Update mode
 	$: displayRecord = parseResult?.record
@@ -175,11 +173,23 @@
 		// If stages prop is set, mark non-selected stages as 'skipped' from the start
 		const activeStages = stages || ALL_STAGES;
 		stageProgress = {
-			metadata: { status: activeStages.includes('metadata') ? 'pending' : 'skipped', summary: null },
+			metadata: {
+				status: activeStages.includes('metadata') ? 'pending' : 'skipped',
+				summary: null
+			},
 			extent: { status: activeStages.includes('extent') ? 'pending' : 'skipped', summary: null },
-			enacted_by: { status: activeStages.includes('enacted_by') ? 'pending' : 'skipped', summary: null },
-			amending: { status: activeStages.includes('amending') ? 'pending' : 'skipped', summary: null },
-			amended_by: { status: activeStages.includes('amended_by') ? 'pending' : 'skipped', summary: null }
+			enacted_by: {
+				status: activeStages.includes('enacted_by') ? 'pending' : 'skipped',
+				summary: null
+			},
+			amending: {
+				status: activeStages.includes('amending') ? 'pending' : 'skipped',
+				summary: null
+			},
+			amended_by: {
+				status: activeStages.includes('amended_by') ? 'pending' : 'skipped',
+				summary: null
+			}
 		};
 	}
 
@@ -207,7 +217,11 @@
 				currentStage = stage;
 				stageProgress = { ...stageProgress, [stage]: { status: 'running', summary: null } };
 			},
-			onStageComplete: (stage: ParseStage, status: 'ok' | 'error' | 'skipped', summary: string | null) => {
+			onStageComplete: (
+				stage: ParseStage,
+				status: 'ok' | 'error' | 'skipped',
+				summary: string | null
+			) => {
 				stageProgress = { ...stageProgress, [stage]: { status, summary } };
 			},
 			onComplete: (result: ParseOneResult) => {
@@ -633,10 +647,11 @@
 							New Record
 						{/if}
 					</h2>
-					<span class="px-2 py-0.5 text-xs font-medium rounded-full {
-						effectiveMode === 'update' ? 'bg-amber-100 text-amber-700' :
-						'bg-green-100 text-green-700'
-					}">
+					<span
+						class="px-2 py-0.5 text-xs font-medium rounded-full {effectiveMode === 'update'
+							? 'bg-amber-100 text-amber-700'
+							: 'bg-green-100 text-green-700'}"
+					>
 						{effectiveMode === 'update' ? 'Update' : 'Create'}
 					</span>
 					{#if autoConfirm}
@@ -786,16 +801,27 @@
 								</div>
 								<div>
 									<span class="text-gray-500">Family:</span>
-									<span class="ml-1 text-gray-900">{getField(displayRecord, 'family') || 'Uncategorized'}</span>
+									<span class="ml-1 text-gray-900"
+										>{getField(displayRecord, 'family') || 'Uncategorized'}</span
+									>
 								</div>
 								<div>
 									<span class="text-gray-500">Making:</span>
 									{#if getField(displayRecord, 'making_classification') === 'making'}
-										<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700">Making</span>
+										<span
+											class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700"
+											>Making</span
+										>
 									{:else if getField(displayRecord, 'making_classification') === 'not_making'}
-										<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600">Not Making</span>
+										<span
+											class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-600"
+											>Not Making</span
+										>
 									{:else if getField(displayRecord, 'making_classification') === 'uncertain'}
-										<span class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-700">Uncertain</span>
+										<span
+											class="ml-1 px-1.5 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-700"
+											>Uncertain</span
+										>
 									{:else}
 										<span class="ml-1 text-gray-400">-</span>
 									{/if}
@@ -806,8 +832,18 @@
 						<!-- Update Notice -->
 						<div class="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
 							<div class="flex items-start">
-								<svg class="h-5 w-5 text-amber-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+								<svg
+									class="h-5 w-5 text-amber-400 mr-2 flex-shrink-0"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+									/>
 								</svg>
 								<div class="text-sm">
 									<span class="font-medium text-amber-800">Updating existing record</span>
@@ -828,105 +864,105 @@
 
 					<!-- Parse Stages Status -->
 					{#if parseResult}
-					<div class="mb-6 bg-gray-50 rounded-lg p-4">
-						<h4 class="text-sm font-medium text-gray-700 mb-3">Parse Stages</h4>
-						<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-							{#each Object.entries(parseResult.stages) as [stage, result]}
-								<div
-									class="flex items-center space-x-2 bg-white rounded px-3 py-2 border {result.status ===
-									'error'
-										? 'border-red-200 bg-red-50'
-										: 'border-gray-200'}"
-								>
-									<span class="font-mono text-lg {getStageIcon(result.status)}">
-										{getStageSymbol(result.status)}
-									</span>
-									<span class="text-sm text-gray-700 capitalize">{stage.replace('_', ' ')}</span>
-								</div>
-							{/each}
-						</div>
-						{#if parseResult.has_errors}
-							<div class="mt-4 rounded-md bg-amber-50 border border-amber-200 p-3">
-								<div class="flex">
-									<svg
-										class="h-5 w-5 text-amber-400 mr-2 flex-shrink-0"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
+						<div class="mb-6 bg-gray-50 rounded-lg p-4">
+							<h4 class="text-sm font-medium text-gray-700 mb-3">Parse Stages</h4>
+							<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+								{#each Object.entries(parseResult.stages) as [stage, result]}
+									<div
+										class="flex items-center space-x-2 bg-white rounded px-3 py-2 border {result.status ===
+										'error'
+											? 'border-red-200 bg-red-50'
+											: 'border-gray-200'}"
 									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-										/>
-									</svg>
-									<div class="flex-1">
-										<div class="flex justify-between items-start">
-											<h4 class="text-sm font-medium text-amber-800">Partial Parse Results</h4>
-											<button
-												on:click={retryFailedStages}
-												disabled={isRetrying}
-												class="ml-3 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-											>
-												{#if isRetrying}
-													<svg
-														class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 text-amber-700"
-														fill="none"
-														viewBox="0 0 24 24"
-													>
-														<circle
-															class="opacity-25"
-															cx="12"
-															cy="12"
-															r="10"
+										<span class="font-mono text-lg {getStageIcon(result.status)}">
+											{getStageSymbol(result.status)}
+										</span>
+										<span class="text-sm text-gray-700 capitalize">{stage.replace('_', ' ')}</span>
+									</div>
+								{/each}
+							</div>
+							{#if parseResult.has_errors}
+								<div class="mt-4 rounded-md bg-amber-50 border border-amber-200 p-3">
+									<div class="flex">
+										<svg
+											class="h-5 w-5 text-amber-400 mr-2 flex-shrink-0"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+											/>
+										</svg>
+										<div class="flex-1">
+											<div class="flex justify-between items-start">
+												<h4 class="text-sm font-medium text-amber-800">Partial Parse Results</h4>
+												<button
+													on:click={retryFailedStages}
+													disabled={isRetrying}
+													class="ml-3 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+												>
+													{#if isRetrying}
+														<svg
+															class="animate-spin -ml-0.5 mr-1.5 h-3 w-3 text-amber-700"
+															fill="none"
+															viewBox="0 0 24 24"
+														>
+															<circle
+																class="opacity-25"
+																cx="12"
+																cy="12"
+																r="10"
+																stroke="currentColor"
+																stroke-width="4"
+															></circle>
+															<path
+																class="opacity-75"
+																fill="currentColor"
+																d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+															></path>
+														</svg>
+														Retrying...
+													{:else}
+														<svg
+															class="mr-1 h-3 w-3"
+															fill="none"
 															stroke="currentColor"
-															stroke-width="4"
-														></circle>
-														<path
-															class="opacity-75"
-															fill="currentColor"
-															d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-														></path>
-													</svg>
-													Retrying...
-												{:else}
-													<svg
-														class="mr-1 h-3 w-3"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															stroke-linecap="round"
-															stroke-linejoin="round"
-															stroke-width="2"
-															d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-														/>
-													</svg>
-													Retry Failed
-												{/if}
-											</button>
+															viewBox="0 0 24 24"
+														>
+															<path
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																stroke-width="2"
+																d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+															/>
+														</svg>
+														Retry Failed
+													{/if}
+												</button>
+											</div>
+											<p class="text-sm text-amber-700 mt-1">
+												Some stages could not complete. Data from successful stages is still
+												available and can be saved.
+											</p>
+											<ul class="list-disc list-inside mt-2 text-sm text-amber-600">
+												{#each parseResult.errors as error}
+													{@const [stage, ...rest] = error.split(': ')}
+													<li>{mapStageError(stage, rest.join(': '))}</li>
+												{/each}
+											</ul>
 										</div>
-										<p class="text-sm text-amber-700 mt-1">
-											Some stages could not complete. Data from successful stages is still available
-											and can be saved.
-										</p>
-										<ul class="list-disc list-inside mt-2 text-sm text-amber-600">
-											{#each parseResult.errors as error}
-												{@const [stage, ...rest] = error.split(': ')}
-												<li>{mapStageError(stage, rest.join(': '))}</li>
-											{/each}
-										</ul>
 									</div>
 								</div>
-							</div>
-						{/if}
-					</div>
+							{/if}
+						</div>
 					{/if}
 
 					<!-- STAGE 1 💠 metadata -->
-					{@const stage1Config = SECTION_CONFIG.find(s => s.id === 'stage1_metadata')}
+					{@const stage1Config = SECTION_CONFIG.find((s) => s.id === 'stage1_metadata')}
 					{#if stage1Config?.subsections}
 						<CollapsibleSection
 							title={stage1Config.title}
@@ -945,7 +981,9 @@
 										{@const fieldValue = getFieldValue(displayRecord, field)}
 										{#if field.editable && field.key === 'family'}
 											<!-- Special: Family dropdown (editable in Create/Update modes) -->
-											<div class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0">
+											<div
+												class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0"
+											>
 												<span class="text-sm text-gray-500">
 													{field.label} <span class="text-xs text-gray-400">({field.key})</span>
 												</span>
@@ -981,7 +1019,9 @@
 											</div>
 										{:else if field.editable && field.key === 'family_ii'}
 											<!-- Special: Sub-Family dropdown (editable in Create/Update modes) -->
-											<div class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0">
+											<div
+												class="grid grid-cols-3 px-4 py-2 items-center border-b border-gray-100 last:border-b-0"
+											>
 												<span class="text-sm text-gray-500">
 													{field.label} <span class="text-xs text-gray-400">({field.key})</span>
 												</span>
@@ -1025,7 +1065,7 @@
 					{/if}
 
 					<!-- STAGE 2 📍 geographic extent -->
-					{@const stage2Config = SECTION_CONFIG.find(s => s.id === 'stage2_extent')}
+					{@const stage2Config = SECTION_CONFIG.find((s) => s.id === 'stage2_extent')}
 					{#if stage2Config?.fields}
 						<CollapsibleSection
 							title={stage2Config.title}
@@ -1044,7 +1084,7 @@
 					{/if}
 
 					<!-- STAGE 3 🚀 enacted_by -->
-					{@const stage3Config = SECTION_CONFIG.find(s => s.id === 'stage3_enacted_by')}
+					{@const stage3Config = SECTION_CONFIG.find((s) => s.id === 'stage3_enacted_by')}
 					{#if stage3Config?.fields}
 						<CollapsibleSection
 							title={stage3Config.title}
@@ -1063,12 +1103,16 @@
 					{/if}
 
 					<!-- STAGE 4 🔄 amending (this law affects others) -->
-					{@const stage4Config = SECTION_CONFIG.find(s => s.id === 'stage4_amending')}
+					{@const stage4Config = SECTION_CONFIG.find((s) => s.id === 'stage4_amending')}
 					{#if stage4Config?.subsections}
 						<CollapsibleSection
 							title={stage4Config.title}
 							expanded={shouldExpand(stage4Config.defaultExpanded)}
-							badge={displayRecord?.is_amending ? 'Amending' : displayRecord?.is_rescinding ? 'Rescinding' : ''}
+							badge={displayRecord?.is_amending
+								? 'Amending'
+								: displayRecord?.is_rescinding
+									? 'Rescinding'
+									: ''}
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
 							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'amending'}
@@ -1092,7 +1136,7 @@
 					{/if}
 
 					<!-- STAGE 5 🔄 amended_by (this law affected by others) -->
-					{@const stage5Config = SECTION_CONFIG.find(s => s.id === 'stage5_amended_by')}
+					{@const stage5Config = SECTION_CONFIG.find((s) => s.id === 'stage5_amended_by')}
 					{#if stage5Config?.subsections}
 						<CollapsibleSection
 							title={stage5Config.title}
@@ -1119,9 +1163,12 @@
 					{/if}
 
 					<!-- SECTION 8: CHANGE LOGS -->
-					{@const changeLogsConfig = SECTION_CONFIG.find(s => s.id === 'change_logs')}
+					{@const changeLogsConfig = SECTION_CONFIG.find((s) => s.id === 'change_logs')}
 					{#if changeLogsConfig?.fields}
-						<CollapsibleSection title={changeLogsConfig.title} expanded={shouldExpand(changeLogsConfig.defaultExpanded)}>
+						<CollapsibleSection
+							title={changeLogsConfig.title}
+							expanded={shouldExpand(changeLogsConfig.defaultExpanded)}
+						>
 							{#each changeLogsConfig.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -1132,9 +1179,12 @@
 					{/if}
 
 					<!-- SECTION 9: TIMESTAMPS -->
-					{@const timestampsConfig = SECTION_CONFIG.find(s => s.id === 'timestamps')}
+					{@const timestampsConfig = SECTION_CONFIG.find((s) => s.id === 'timestamps')}
 					{#if timestampsConfig?.fields}
-						<CollapsibleSection title={timestampsConfig.title} expanded={shouldExpand(timestampsConfig.defaultExpanded)}>
+						<CollapsibleSection
+							title={timestampsConfig.title}
+							expanded={shouldExpand(timestampsConfig.defaultExpanded)}
+						>
 							{#each timestampsConfig.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
 								{#if !field.hideWhenEmpty || fieldHasData(fieldValue)}
@@ -1143,7 +1193,6 @@
 							{/each}
 						</CollapsibleSection>
 					{/if}
-
 				{/if}
 			</div>
 
@@ -1153,7 +1202,8 @@
 					Record {currentIndex + 1} of {records.length}
 					{#if confirmedCount > 0 || errorCount > 0}
 						<span class="ml-2">
-							({confirmedCount} confirmed{#if skippedCount > 0}, {skippedCount} skipped{/if}{#if errorCount > 0}, {errorCount} errors{/if})
+							({confirmedCount} confirmed{#if skippedCount > 0}, {skippedCount} skipped{/if}{#if errorCount > 0},
+								{errorCount} errors{/if})
 						</span>
 					{/if}
 				</div>
@@ -1161,14 +1211,35 @@
 					{#if autoConfirm}
 						<!-- Auto-confirm mode: show stop button + status -->
 						<span class="text-sm text-blue-600 font-medium flex items-center">
-							<svg class="animate-spin -ml-0.5 mr-1.5 h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+							<svg
+								class="animate-spin -ml-0.5 mr-1.5 h-4 w-4 text-blue-600"
+								fill="none"
+								viewBox="0 0 24 24"
+							>
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								></circle>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								></path>
 							</svg>
 							Auto-parsing...
 						</span>
 						<button
-							on:click={() => { autoConfirm = false; if (autoConfirmTimer) { clearTimeout(autoConfirmTimer); autoConfirmTimer = null; } }}
+							on:click={() => {
+								autoConfirm = false;
+								if (autoConfirmTimer) {
+									clearTimeout(autoConfirmTimer);
+									autoConfirmTimer = null;
+								}
+							}}
 							class="px-4 py-2 text-sm text-amber-700 border border-amber-300 bg-amber-50 rounded-md hover:bg-amber-100"
 						>
 							Stop

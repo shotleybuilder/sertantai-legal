@@ -114,11 +114,7 @@
 			'latest_rescind_date'
 		],
 		// STAGE 5 🔄 amended_by - Status (resolved after amended_by)
-		Status: [
-			'live',
-			'live_description',
-			'live_from_changes'
-		],
+		Status: ['live', 'live_description', 'live_from_changes'],
 		// STAGE 6 🦋 taxa - Purpose
 		Purpose: ['purpose'],
 		// STAGE 7 🦋 taxa - Roles
@@ -151,18 +147,30 @@
 		// Purpose
 		'purpose',
 		// Roles
-		'role', 'role_details', 'role_gvt', 'role_gvt_details',
+		'role',
+		'role_details',
+		'role_gvt',
+		'role_gvt_details',
 		// Duty Type
-		'duty_type', 'duty_type_article', 'article_duty_type',
+		'duty_type',
+		'duty_type_article',
+		'article_duty_type',
 		// Holders (DRRP)
-		'duty_holder', 'duties',
-		'rights_holder', 'rights',
-		'responsibility_holder', 'responsibilities',
-		'power_holder', 'powers',
+		'duty_holder',
+		'duties',
+		'rights_holder',
+		'rights',
+		'responsibility_holder',
+		'responsibilities',
+		'power_holder',
+		'powers',
 		// POPIMAR
-		'popimar', 'popimar_details',
-		'popimar_article', 'popimar_article_clause',
-		'article_popimar', 'article_popimar_clause'
+		'popimar',
+		'popimar_details',
+		'popimar_article',
+		'popimar_article_clause',
+		'article_popimar',
+		'article_popimar_clause'
 	]);
 
 	// Compute diff between existing and incoming records, excluding taxa fields
@@ -338,7 +346,10 @@
 	// Get truncated preview of a value
 	function getPreview(value: unknown): string {
 		if (Array.isArray(value)) {
-			const preview = value.slice(0, 3).map(v => typeof v === 'string' ? v : JSON.stringify(v)).join(', ');
+			const preview = value
+				.slice(0, 3)
+				.map((v) => (typeof v === 'string' ? v : JSON.stringify(v)))
+				.join(', ');
 			return `[${preview}${value.length > 3 ? `, ... +${value.length - 3} more` : ''}]`;
 		}
 		const formatted = formatValue(value);
@@ -431,91 +442,116 @@
 								</span>
 							</div>
 							<svg
-								class="w-4 h-4 text-gray-500 transform transition-transform {expandedGroups[group.name] !== false ? 'rotate-180' : ''}"
+								class="w-4 h-4 text-gray-500 transform transition-transform {expandedGroups[
+									group.name
+								] !== false
+									? 'rotate-180'
+									: ''}"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
 							>
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M19 9l-7 7-7-7"
+								/>
 							</svg>
 						</button>
 						<!-- Group Content -->
 						{#if expandedGroups[group.name] !== false}
-						<div class="divide-y divide-gray-100">
-							{#each group.changes as change}
-								{@const fieldKey = `${group.name}-${change.field}`}
-								{@const oldIsLong = isLongValue(change.oldValue)}
-								{@const newIsLong = isLongValue(change.newValue)}
-								{@const isFieldExpanded = expandedFields[fieldKey]}
-								<div class="px-4 py-3">
-									<div class="flex items-start gap-3">
-										<span
-											class="shrink-0 w-16 text-xs font-medium px-2 py-0.5 rounded {change.type ===
-											'deleted'
-												? 'bg-red-100 text-red-700'
-												: change.type === 'added'
-													? 'bg-green-100 text-green-700'
-													: 'bg-amber-100 text-amber-700'}"
-										>
-											{change.type === 'deleted'
-												? 'Removed'
-												: change.type === 'added'
-													? 'Added'
-													: 'Updated'}
-										</span>
-										<div class="flex-1 min-w-0">
-											<!-- Field header with optional expand toggle -->
-											<div class="flex items-center justify-between mb-1">
-												<div class="text-sm font-medium text-indigo-600">
-													{getFieldLabel(change.field)} <span class="font-mono text-xs text-gray-400">({change.field})</span>
-													{#if getArrayInfo(change.newValue || change.oldValue)}
-														<span class="ml-1 text-xs text-gray-400">
-															{getArrayInfo(change.newValue || change.oldValue)}
-														</span>
+							<div class="divide-y divide-gray-100">
+								{#each group.changes as change}
+									{@const fieldKey = `${group.name}-${change.field}`}
+									{@const oldIsLong = isLongValue(change.oldValue)}
+									{@const newIsLong = isLongValue(change.newValue)}
+									{@const isFieldExpanded = expandedFields[fieldKey]}
+									<div class="px-4 py-3">
+										<div class="flex items-start gap-3">
+											<span
+												class="shrink-0 w-16 text-xs font-medium px-2 py-0.5 rounded {change.type ===
+												'deleted'
+													? 'bg-red-100 text-red-700'
+													: change.type === 'added'
+														? 'bg-green-100 text-green-700'
+														: 'bg-amber-100 text-amber-700'}"
+											>
+												{change.type === 'deleted'
+													? 'Removed'
+													: change.type === 'added'
+														? 'Added'
+														: 'Updated'}
+											</span>
+											<div class="flex-1 min-w-0">
+												<!-- Field header with optional expand toggle -->
+												<div class="flex items-center justify-between mb-1">
+													<div class="text-sm font-medium text-indigo-600">
+														{getFieldLabel(change.field)}
+														<span class="font-mono text-xs text-gray-400">({change.field})</span>
+														{#if getArrayInfo(change.newValue || change.oldValue)}
+															<span class="ml-1 text-xs text-gray-400">
+																{getArrayInfo(change.newValue || change.oldValue)}
+															</span>
+														{/if}
+													</div>
+													{#if oldIsLong || newIsLong}
+														<button
+															type="button"
+															on:click={() => toggleField(fieldKey)}
+															class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+														>
+															{isFieldExpanded ? 'Collapse' : 'Expand'}
+															<svg
+																class="w-3 h-3 transform transition-transform {isFieldExpanded
+																	? 'rotate-180'
+																	: ''}"
+																fill="none"
+																stroke="currentColor"
+																viewBox="0 0 24 24"
+															>
+																<path
+																	stroke-linecap="round"
+																	stroke-linejoin="round"
+																	stroke-width="2"
+																	d="M19 9l-7 7-7-7"
+																/>
+															</svg>
+														</button>
 													{/if}
 												</div>
-												{#if oldIsLong || newIsLong}
-													<button
-														type="button"
-														on:click={() => toggleField(fieldKey)}
-														class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-													>
-														{isFieldExpanded ? 'Collapse' : 'Expand'}
-														<svg
-															class="w-3 h-3 transform transition-transform {isFieldExpanded ? 'rotate-180' : ''}"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-														</svg>
-													</button>
+												<!-- Field values -->
+												{#if change.type === 'deleted'}
+													<div class="diff-value deleted">
+														<pre>{oldIsLong && !isFieldExpanded
+																? getPreview(change.oldValue)
+																: formatValue(change.oldValue)}</pre>
+													</div>
+												{:else if change.type === 'added'}
+													<div class="diff-value added">
+														<pre>{newIsLong && !isFieldExpanded
+																? getPreview(change.newValue)
+																: formatValue(change.newValue)}</pre>
+													</div>
+												{:else}
+													<div class="space-y-1">
+														<div class="diff-value deleted">
+															<pre>{oldIsLong && !isFieldExpanded
+																	? getPreview(change.oldValue)
+																	: formatValue(change.oldValue)}</pre>
+														</div>
+														<div class="diff-value added">
+															<pre>{newIsLong && !isFieldExpanded
+																	? getPreview(change.newValue)
+																	: formatValue(change.newValue)}</pre>
+														</div>
+													</div>
 												{/if}
 											</div>
-											<!-- Field values -->
-											{#if change.type === 'deleted'}
-												<div class="diff-value deleted">
-													<pre>{(oldIsLong && !isFieldExpanded) ? getPreview(change.oldValue) : formatValue(change.oldValue)}</pre>
-												</div>
-											{:else if change.type === 'added'}
-												<div class="diff-value added">
-													<pre>{(newIsLong && !isFieldExpanded) ? getPreview(change.newValue) : formatValue(change.newValue)}</pre>
-												</div>
-											{:else}
-												<div class="space-y-1">
-													<div class="diff-value deleted">
-														<pre>{(oldIsLong && !isFieldExpanded) ? getPreview(change.oldValue) : formatValue(change.oldValue)}</pre>
-													</div>
-													<div class="diff-value added">
-														<pre>{(newIsLong && !isFieldExpanded) ? getPreview(change.newValue) : formatValue(change.newValue)}</pre>
-													</div>
-												</div>
-											{/if}
 										</div>
 									</div>
-								</div>
-							{/each}
-						</div>
+								{/each}
+							</div>
 						{/if}
 					</div>
 				{/each}

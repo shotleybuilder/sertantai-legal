@@ -54,9 +54,9 @@ export { expect } from '@playwright/test';
 async function injectToken(page: Page, token: string): Promise<void> {
 	// Navigate to the app first so localStorage is on the correct origin
 	await page.goto('/');
-	await page.evaluate(
-		([key, value]) => localStorage.setItem(key, value),
-		[TOKEN_KEY, token] as const
-	);
+	await page.evaluate(([key, value]) => localStorage.setItem(key, value), [
+		TOKEN_KEY,
+		token
+	] as const);
 	await page.goto('/admin');
 }

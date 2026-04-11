@@ -24,7 +24,12 @@
 
 	type NavItem =
 		| { href: string; label: string; exact: boolean; dropdown?: undefined }
-		| { label: string; dropdown: { href: string; label: string }[]; href?: undefined; exact?: undefined };
+		| {
+				label: string;
+				dropdown: { href: string; label: string }[];
+				href?: undefined;
+				exact?: undefined;
+		  };
 
 	let openDropdown: string | null = null;
 
@@ -37,7 +42,9 @@
 	}
 
 	function isDropdownActive(currentPath: string, items: { href: string }[]): boolean {
-		return items.some((item) => currentPath === item.href || currentPath.startsWith(item.href + '/'));
+		return items.some(
+			(item) => currentPath === item.href || currentPath.startsWith(item.href + '/')
+		);
 	}
 
 	// Reactive pathname for proper updates on navigation
@@ -75,11 +82,9 @@
 	<div class="flex min-h-screen items-center justify-center bg-gray-50">
 		<div class="text-center">
 			<h1 class="mb-4 text-2xl font-bold text-gray-900">Not Signed In</h1>
-			<p class="mb-6 text-sm text-gray-500">
-				You need to sign in to access the admin area.
-			</p>
+			<p class="mb-6 text-sm text-gray-500">You need to sign in to access the admin area.</p>
 			<a
-				href="{HUB_URL}"
+				href={HUB_URL}
 				class="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
 			>
 				Go to SertantAI Hub
@@ -91,8 +96,8 @@
 		<div class="text-center">
 			<h1 class="mb-4 text-2xl font-bold text-gray-900">Access Denied</h1>
 			<p class="mb-4 text-sm text-gray-500">
-				This area is restricted to administrators. If you believe you should have access,
-				contact your organisation owner.
+				This area is restricted to administrators. If you believe you should have access, contact
+				your organisation owner.
 			</p>
 			<div class="flex items-center justify-center gap-4">
 				<a
@@ -101,10 +106,7 @@
 				>
 					Browse Laws
 				</a>
-				<button
-					on:click={signOut}
-					class="text-sm text-gray-400 hover:text-gray-600"
-				>
+				<button on:click={signOut} class="text-sm text-gray-400 hover:text-gray-600">
 					Sign out
 				</button>
 			</div>
@@ -136,14 +138,26 @@
 												: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}"
 										>
 											{item.label}
-											<svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+											<svg
+												class="ml-1 h-4 w-4"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M19 9l-7 7-7-7"
+												/>
 											</svg>
 										</button>
 										{#if openDropdown === item.label}
 											<!-- svelte-ignore a11y-no-static-element-interactions -->
 											<div class="fixed inset-0 z-10" on:click={closeDropdown}></div>
-											<div class="absolute left-0 z-20 mt-1 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+											<div
+												class="absolute left-0 z-20 mt-1 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+											>
 												{#each item.dropdown as sub}
 													<a
 														href={sub.href}
@@ -177,10 +191,7 @@
 					<div class="flex items-center gap-3">
 						<span class="text-sm text-gray-600">{user.name || user.email}</span>
 						<span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">{user.role}</span>
-						<button
-							on:click={signOut}
-							class="text-sm text-gray-400 hover:text-gray-600"
-						>
+						<button on:click={signOut} class="text-sm text-gray-400 hover:text-gray-600">
 							Sign out
 						</button>
 					</div>

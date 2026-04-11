@@ -212,7 +212,9 @@
 		fetchCascadeStatus();
 	}
 
-	function handleCascadeReviewLaws(event: CustomEvent<{ laws: AffectedLaw[]; stages?: import('$lib/api/scraper').ParseStage[] }>) {
+	function handleCascadeReviewLaws(
+		event: CustomEvent<{ laws: AffectedLaw[]; stages?: import('$lib/api/scraper').ParseStage[] }>
+	) {
 		// Close cascade modal and open parse review modal with the selected laws
 		showCascadeModal = false;
 		const { laws, stages } = event.detail;

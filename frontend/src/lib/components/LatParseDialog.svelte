@@ -26,7 +26,11 @@
 		{ value: '❌ Revoked / Repealed / Abolished', label: 'Revoked' }
 	];
 	// Default: all checked (no live filter sent — backend excludes revoked by default)
-	let selectedLive: string[] = ['✔ In force', '⭕ Part Revocation / Repeal', '❌ Revoked / Repealed / Abolished'];
+	let selectedLive: string[] = [
+		'✔ In force',
+		'⭕ Part Revocation / Repeal',
+		'❌ Revoked / Repealed / Abolished'
+	];
 
 	// Preview state
 	let previewCount: number | null = null;
@@ -88,7 +92,13 @@
 	}
 
 	// Preview count — debounced
-	$: _filterKey = [selectedFamily, selectedTypeCode, selectedFunction, selectedQueueReason, selectedLive];
+	$: _filterKey = [
+		selectedFamily,
+		selectedTypeCode,
+		selectedFunction,
+		selectedQueueReason,
+		selectedLive
+	];
 	let previewTimeout: ReturnType<typeof setTimeout>;
 	$: if (_filterKey) {
 		if (selectedFamily) {
@@ -134,7 +144,11 @@
 		selectedTypeCode = '';
 		selectedFunction = '';
 		selectedQueueReason = '';
-		selectedLive = ['✔ In force', '⭕ Part Revocation / Repeal', '❌ Revoked / Repealed / Abolished'];
+		selectedLive = [
+			'✔ In force',
+			'⭕ Part Revocation / Repeal',
+			'❌ Revoked / Repealed / Abolished'
+		];
 		previewCount = null;
 		previewError = '';
 		createError = '';
@@ -152,8 +166,8 @@
 			<div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
 				<h2 class="text-lg font-semibold text-gray-900 mb-4">Parse LAT Family</h2>
 				<p class="text-sm text-gray-500 mb-5">
-					Create a LAT parse session. Select a family and optional filters to choose which laws
-					to parse for legal articles and annotations.
+					Create a LAT parse session. Select a family and optional filters to choose which laws to
+					parse for legal articles and annotations.
 				</p>
 
 				<div class="space-y-4">
@@ -168,7 +182,11 @@
 							disabled={$familyOptionsQuery.isLoading}
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
 						>
-							<option value="">{$familyOptionsQuery.isLoading ? 'Loading families...' : '-- Select Family --'}</option>
+							<option value=""
+								>{$familyOptionsQuery.isLoading
+									? 'Loading families...'
+									: '-- Select Family --'}</option
+							>
 							{#if $familyOptionsQuery.data?.grouped}
 								<optgroup label="Health & Safety">
 									{#each $familyOptionsQuery.data.grouped.health_safety || [] as opt}
@@ -188,7 +206,9 @@
 							{/if}
 						</select>
 						{#if $familyOptionsQuery.isError}
-							<p class="mt-1 text-xs text-red-600">Failed to load families: {$familyOptionsQuery.error?.message}</p>
+							<p class="mt-1 text-xs text-red-600">
+								Failed to load families: {$familyOptionsQuery.error?.message}
+							</p>
 						{/if}
 					</div>
 
@@ -260,8 +280,7 @@
 									class="px-3 py-1 text-sm rounded-full border {selectedFunction === fn
 										? 'bg-blue-100 border-blue-500 text-blue-700'
 										: 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}"
-									on:click={() =>
-										(selectedFunction = selectedFunction === fn ? '' : fn)}
+									on:click={() => (selectedFunction = selectedFunction === fn ? '' : fn)}
 								>
 									{fn}
 								</button>

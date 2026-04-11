@@ -85,7 +85,9 @@
 		<div class="text-center py-12 text-gray-500">Loading sessions...</div>
 	{:else if $sessionsQuery.isError}
 		<div class="rounded-md bg-red-50 p-4">
-			<p class="text-sm text-red-700">{$sessionsQuery.error?.message || 'Failed to load sessions'}</p>
+			<p class="text-sm text-red-700">
+				{$sessionsQuery.error?.message || 'Failed to load sessions'}
+			</p>
 		</div>
 	{:else if ($sessionsQuery.data?.sessions?.length ?? 0) === 0}
 		<div class="text-center py-12">
@@ -102,13 +104,21 @@
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50">
 					<tr>
-						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Session ID</th>
+						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+							>Session ID</th
+						>
 						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Records</th>
-						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">LAT Rows</th>
-						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Annotations</th>
+						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Records</th
+						>
+						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+							>LAT Rows</th
+						>
+						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+							>Annotations</th
+						>
 						<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+						<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th
+						>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
@@ -123,7 +133,9 @@
 								</a>
 							</td>
 							<td class="px-4 py-3">
-								<span class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor(session.status)}">
+								<span
+									class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor(session.status)}"
+								>
 									{session.status}
 								</span>
 							</td>
@@ -164,4 +176,8 @@
 	{/if}
 </div>
 
-<LatParseDialog bind:open={showDialog} on:close={() => (showDialog = false)} on:created={handleCreated} />
+<LatParseDialog
+	bind:open={showDialog}
+	on:close={() => (showDialog = false)}
+	on:created={handleCreated}
+/>

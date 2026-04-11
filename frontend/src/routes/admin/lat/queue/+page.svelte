@@ -4,12 +4,29 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
-	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import type {
+		ColumnConfig,
+		GridState,
+		FilterCondition,
+		FilterNode,
+		SortConfig,
+		GroupConfig
+	} from '@shotleybuilder/svelte-gridlite-kit';
 	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
 	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
 	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
-	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
-	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
+	import {
+		initViewStore,
+		SaveViewModal,
+		ViewSidebar,
+		runViewMigrations
+	} from '@shotleybuilder/svelte-gridlite-views';
+	import type {
+		ViewConfig,
+		SavedView,
+		ViewStoreBundle,
+		ViewGroup
+	} from '@shotleybuilder/svelte-gridlite-views';
 
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -21,7 +38,11 @@
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import LatParseDialog from '$lib/components/LatParseDialog.svelte';
-	import { seedDefaultViews as seedDefaults, seedDefaultGroups, assignViewsToGroups } from '$lib/views/seed-defaults';
+	import {
+		seedDefaultViews as seedDefaults,
+		seedDefaultGroups,
+		assignViewsToGroups
+	} from '$lib/views/seed-defaults';
 	import type { GroupDef } from '$lib/views/seed-defaults';
 
 	const queryClient = useQueryClient();
@@ -49,34 +70,66 @@
 	// ── Query + Filter constants ────────────────────────────────────
 
 	const QUEUE_COLUMNS_LIST = [
-		'id', 'name', 'title_en', 'year', 'type_code', 'family', 'family_ii',
-		'is_making', 'making_classification', 'live', 'live_from_changes',
-		'function', 'updated_at', 'lat_count', 'latest_lat_updated_at'
+		'id',
+		'name',
+		'title_en',
+		'year',
+		'type_code',
+		'family',
+		'family_ii',
+		'is_making',
+		'making_classification',
+		'live',
+		'live_from_changes',
+		'function',
+		'updated_at',
+		'lat_count',
+		'latest_lat_updated_at'
 	];
 	const QUEUE_COLUMNS = QUEUE_COLUMNS_LIST.join(', ');
 	// Pre-compute lat_stale: true when LRT was updated > 6 months after LAT was last parsed
 	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM uk_lrt`;
 	const queueColumnMetadata = [
 		...UK_LRT_COLUMN_METADATA.filter((c) => QUEUE_COLUMNS_LIST.includes(c.name)),
-		{ name: 'lat_stale', dataType: 'boolean' as const, postgresType: 'bool', nullable: true, hasDefault: false }
+		{
+			name: 'lat_stale',
+			dataType: 'boolean' as const,
+			postgresType: 'bool',
+			nullable: true,
+			hasDefault: false
+		}
 	];
 
 	// Core filters (always apply): candidates for LAT parsing, not revoked
 	// making_classification != 'not_making' (includes 'making', 'uncertain', and NULL/unclassified)
 	const QUEUE_CORE_FILTERS: FilterNode[] = [
 		{
-			id: 'q-class-ok', logic: 'or' as const, children: [
+			id: 'q-class-ok',
+			logic: 'or' as const,
+			children: [
 				{ id: 'q-class-null', field: 'making_classification', operator: 'is_empty', value: '' },
-				{ id: 'q-class-ne', field: 'making_classification', operator: 'not_equals', value: 'not_making' }
+				{
+					id: 'q-class-ne',
+					field: 'making_classification',
+					operator: 'not_equals',
+					value: 'not_making'
+				}
 			]
 		},
 		// live IS NULL OR != '❌ Revoked / Repealed / Abolished' → OR group
 		{
-			id: 'q-live-ok', logic: 'or' as const, children: [
+			id: 'q-live-ok',
+			logic: 'or' as const,
+			children: [
 				{ id: 'q-live-null', field: 'live', operator: 'is_empty', value: '' },
-				{ id: 'q-live-ne', field: 'live', operator: 'not_equals', value: '❌ Revoked / Repealed / Abolished' }
+				{
+					id: 'q-live-ne',
+					field: 'live',
+					operator: 'not_equals',
+					value: '❌ Revoked / Repealed / Abolished'
+				}
 			]
-		},
+		}
 	];
 
 	// Guard filters — only needed for broad views without a specific family
@@ -92,7 +145,9 @@
 
 	// LAT queue filter: missing OR stale (lat_stale pre-computed in SQL)
 	const QUEUE_LAT_FILTER: FilterNode = {
-		id: 'q-lat-need', logic: 'or' as const, children: [
+		id: 'q-lat-need',
+		logic: 'or' as const,
+		children: [
 			{ id: 'q-lat-zero', field: 'lat_count', operator: 'equals', value: 0 },
 			{ id: 'q-lat-stale', field: 'lat_stale', operator: 'equals', value: true }
 		]
@@ -205,12 +260,20 @@
 	// ── Helpers ──────────────────────────────────────────────────────
 
 	/** Template-safe cast helpers (Svelte 4 markup doesn't support TS `as`) */
-	function str(v: unknown): string { return String(v ?? ''); }
-	function bool(v: unknown): boolean { return Boolean(v); }
+	function str(v: unknown): string {
+		return String(v ?? '');
+	}
+	function bool(v: unknown): boolean {
+		return Boolean(v);
+	}
 
 	function formatDate(dateStr: string | null): string {
 		if (!dateStr) return '--';
-		return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+		return new Date(dateStr).toLocaleDateString('en-GB', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 
 	function formatNumber(n: number): string {
@@ -222,7 +285,9 @@
 		if (!fn) return null;
 		if (Array.isArray(fn)) return fn as string[];
 		if (typeof fn === 'object') {
-			return Object.keys(fn as Record<string, boolean>).filter((k) => (fn as Record<string, boolean>)[k]);
+			return Object.keys(fn as Record<string, boolean>).filter(
+				(k) => (fn as Record<string, boolean>)[k]
+			);
 		}
 		if (typeof fn === 'string') {
 			try {
@@ -230,7 +295,9 @@
 				if (typeof parsed === 'object' && !Array.isArray(parsed)) {
 					return Object.keys(parsed).filter((k) => parsed[k]);
 				}
-			} catch { /* not JSON */ }
+			} catch {
+				/* not JSON */
+			}
 		}
 		return null;
 	}
@@ -271,27 +338,62 @@
 
 	const familyOptions = {
 		health_safety: [
-			'💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD',
-			'💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety',
-			'💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries',
-			'💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC',
-			'💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety',
-			'💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety',
+			'💙 FIRE',
+			'💙 FIRE: Dangerous and Explosive Substances',
+			'💙 FOOD',
+			'💙 HEALTH: Coronavirus',
+			'💙 HEALTH: Drug & Medicine Safety',
+			'💙 HEALTH: Patient Safety',
+			'💙 HEALTH: Public',
+			'💙 OH&S: Gas & Electrical Safety',
+			'💙 OH&S: Mines & Quarries',
+			'💙 OH&S: Occupational / Personal Safety',
+			'💙 OH&S: Offshore Safety',
+			'💙 PUBLIC',
+			'💙 PUBLIC: Building Safety',
+			'💙 PUBLIC: Consumer / Product Safety',
+			'💙 TRANSPORT: Air Safety',
+			'💙 TRANSPORT: Rail Safety',
+			'💙 TRANSPORT: Road Safety',
 			'💙 TRANSPORT: Maritime Safety'
 		],
 		environment: [
-			'💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY',
-			'💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE',
-			'💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING',
-			'💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE',
-			'💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM',
-			'💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION',
-			'💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TRANSPORT: Aviation',
-			'💚 TRANSPORT: Harbours & Shipping', '💚 TRANSPORT: Railways & Rail Transport',
-			'💚 TRANSPORT: Roads & Vehicles', '💚 TREES: Forestry & Timber', '💚 WASTE',
-			'💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'
+			'💚 AGRICULTURE',
+			'💚 AGRICULTURE: Pesticides',
+			'💚 AIR QUALITY',
+			'💚 ANIMALS & ANIMAL HEALTH',
+			'💚 ANTARCTICA',
+			'💚 BUILDINGS',
+			'💚 CLIMATE CHANGE',
+			'💚 ENERGY',
+			'💚 ENVIRONMENTAL PROTECTION',
+			'💚 FINANCE',
+			'💚 FISHERIES & FISHING',
+			'💚 GMOs',
+			'💚 HISTORIC ENVIRONMENT',
+			'💚 MARINE & RIVERINE',
+			'💚 NOISE',
+			'💚 NUCLEAR & RADIOLOGICAL',
+			'💚 OIL & GAS - OFFSHORE - PETROLEUM',
+			'💚 PLANNING & INFRASTRUCTURE',
+			'💚 PLANT HEALTH',
+			'💚 POLLUTION',
+			'💚 TOWN & COUNTRY PLANNING',
+			'💚 TRANSPORT',
+			'💚 TRANSPORT: Aviation',
+			'💚 TRANSPORT: Harbours & Shipping',
+			'💚 TRANSPORT: Railways & Rail Transport',
+			'💚 TRANSPORT: Roads & Vehicles',
+			'💚 TREES: Forestry & Timber',
+			'💚 WASTE',
+			'💚 WATER & WASTEWATER',
+			'💚 WILDLIFE & COUNTRYSIDE'
 		],
-		hr: ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time']
+		hr: [
+			'💜 HR: Employment',
+			'💜 HR: Insurance / Compensation / Wages / Benefits',
+			'💜 HR: Working Time'
+		]
 	};
 
 	const makingClassificationOptions = [
@@ -313,14 +415,38 @@
 		{ name: 'family', label: 'Family', width: 200, dataType: 'text' },
 		{ name: 'family_ii', label: 'Family II', width: 200, dataType: 'text' },
 		{ name: 'is_making', label: 'Is Making', width: 90, dataType: 'text' },
-		{ name: 'making_classification', label: 'Making Classification', width: 160, dataType: 'text', selectOptions: makingClassificationOptions },
+		{
+			name: 'making_classification',
+			label: 'Making Classification',
+			width: 160,
+			dataType: 'text',
+			selectOptions: makingClassificationOptions
+		},
 		{ name: 'year', label: 'Year', width: 80, dataType: 'number' },
-		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
+		{
+			name: 'live',
+			label: 'Status',
+			width: 100,
+			dataType: 'text',
+			selectOptions: liveStatusOptions
+		},
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
 		{ name: 'function', label: 'Function', width: 150, dataType: 'json' },
 		{ name: 'lat_count', label: 'LAT Rows', width: 80, dataType: 'number' },
-		{ name: 'updated_at', label: 'LRT Updated', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) },
-		{ name: 'latest_lat_updated_at', label: 'LAT Updated', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) }
+		{
+			name: 'updated_at',
+			label: 'LRT Updated',
+			width: 110,
+			dataType: 'date',
+			format: (v) => formatDate(v as string | null)
+		},
+		{
+			name: 'latest_lat_updated_at',
+			label: 'LAT Updated',
+			width: 110,
+			dataType: 'date',
+			format: (v) => formatDate(v as string | null)
+		}
 	];
 
 	// ── Family-based view definitions ───────────────────────────────
@@ -333,19 +459,35 @@
 
 	const familyViewDefs: FamilyViewDef[] = [
 		{ name: 'Fire', family: '💙 FIRE', group: 'safety' },
-		{ name: 'Fire: Dangerous & Explosive', family: '💙 FIRE: Dangerous and Explosive Substances', group: 'safety' },
+		{
+			name: 'Fire: Dangerous & Explosive',
+			family: '💙 FIRE: Dangerous and Explosive Substances',
+			group: 'safety'
+		},
 		{ name: 'Food', family: '💙 FOOD', group: 'safety' },
 		{ name: 'Health: Coronavirus', family: '💙 HEALTH: Coronavirus', group: 'safety' },
-		{ name: 'Health: Drug & Medicine', family: '💙 HEALTH: Drug & Medicine Safety', group: 'safety' },
+		{
+			name: 'Health: Drug & Medicine',
+			family: '💙 HEALTH: Drug & Medicine Safety',
+			group: 'safety'
+		},
 		{ name: 'Health: Patient Safety', family: '💙 HEALTH: Patient Safety', group: 'safety' },
 		{ name: 'Health: Public', family: '💙 HEALTH: Public', group: 'safety' },
 		{ name: 'OHS: Gas & Electrical', family: '💙 OH&S: Gas & Electrical Safety', group: 'safety' },
 		{ name: 'OHS: Mines & Quarries', family: '💙 OH&S: Mines & Quarries', group: 'safety' },
-		{ name: 'OHS: Occupational', family: '💙 OH&S: Occupational / Personal Safety', group: 'safety' },
+		{
+			name: 'OHS: Occupational',
+			family: '💙 OH&S: Occupational / Personal Safety',
+			group: 'safety'
+		},
 		{ name: 'OHS: Offshore', family: '💙 OH&S: Offshore Safety', group: 'safety' },
 		{ name: 'Public', family: '💙 PUBLIC', group: 'safety' },
 		{ name: 'Public: Building Safety', family: '💙 PUBLIC: Building Safety', group: 'safety' },
-		{ name: 'Public: Consumer / Product', family: '💙 PUBLIC: Consumer / Product Safety', group: 'safety' },
+		{
+			name: 'Public: Consumer / Product',
+			family: '💙 PUBLIC: Consumer / Product Safety',
+			group: 'safety'
+		},
 		{ name: 'Transport: Air Safety', family: '💙 TRANSPORT: Air Safety', group: 'safety' },
 		{ name: 'Transport: Rail Safety', family: '💙 TRANSPORT: Rail Safety', group: 'safety' },
 		{ name: 'Transport: Road Safety', family: '💙 TRANSPORT: Road Safety', group: 'safety' },
@@ -358,7 +500,11 @@
 		{ name: 'Buildings', family: '💚 BUILDINGS', group: 'environment' },
 		{ name: 'Climate Change', family: '💚 CLIMATE CHANGE', group: 'environment' },
 		{ name: 'Energy', family: '💚 ENERGY', group: 'environment' },
-		{ name: 'Environmental Protection', family: '💚 ENVIRONMENTAL PROTECTION', group: 'environment' },
+		{
+			name: 'Environmental Protection',
+			family: '💚 ENVIRONMENTAL PROTECTION',
+			group: 'environment'
+		},
 		{ name: 'Finance', family: '💚 FINANCE', group: 'environment' },
 		{ name: 'Fisheries & Fishing', family: '💚 FISHERIES & FISHING', group: 'environment' },
 		{ name: 'GMOs', family: '💚 GMOs', group: 'environment' },
@@ -366,23 +512,51 @@
 		{ name: 'Marine & Riverine', family: '💚 MARINE & RIVERINE', group: 'environment' },
 		{ name: 'Noise', family: '💚 NOISE', group: 'environment' },
 		{ name: 'Nuclear & Radiological', family: '💚 NUCLEAR & RADIOLOGICAL', group: 'environment' },
-		{ name: 'Oil & Gas / Offshore', family: '💚 OIL & GAS - OFFSHORE - PETROLEUM', group: 'environment' },
-		{ name: 'Planning & Infrastructure', family: '💚 PLANNING & INFRASTRUCTURE', group: 'environment' },
+		{
+			name: 'Oil & Gas / Offshore',
+			family: '💚 OIL & GAS - OFFSHORE - PETROLEUM',
+			group: 'environment'
+		},
+		{
+			name: 'Planning & Infrastructure',
+			family: '💚 PLANNING & INFRASTRUCTURE',
+			group: 'environment'
+		},
 		{ name: 'Plant Health', family: '💚 PLANT HEALTH', group: 'environment' },
 		{ name: 'Pollution', family: '💚 POLLUTION', group: 'environment' },
 		{ name: 'Town & Country Planning', family: '💚 TOWN & COUNTRY PLANNING', group: 'environment' },
 		{ name: 'Transport', family: '💚 TRANSPORT', group: 'environment' },
 		{ name: 'Transport: Aviation', family: '💚 TRANSPORT: Aviation', group: 'environment' },
-		{ name: 'Transport: Harbours & Shipping', family: '💚 TRANSPORT: Harbours & Shipping', group: 'environment' },
-		{ name: 'Transport: Railways', family: '💚 TRANSPORT: Railways & Rail Transport', group: 'environment' },
-		{ name: 'Transport: Roads & Vehicles', family: '💚 TRANSPORT: Roads & Vehicles', group: 'environment' },
-		{ name: 'Trees: Forestry & Timber', family: '💚 TREES: Forestry & Timber', group: 'environment' },
+		{
+			name: 'Transport: Harbours & Shipping',
+			family: '💚 TRANSPORT: Harbours & Shipping',
+			group: 'environment'
+		},
+		{
+			name: 'Transport: Railways',
+			family: '💚 TRANSPORT: Railways & Rail Transport',
+			group: 'environment'
+		},
+		{
+			name: 'Transport: Roads & Vehicles',
+			family: '💚 TRANSPORT: Roads & Vehicles',
+			group: 'environment'
+		},
+		{
+			name: 'Trees: Forestry & Timber',
+			family: '💚 TREES: Forestry & Timber',
+			group: 'environment'
+		},
 		{ name: 'Waste', family: '💚 WASTE', group: 'environment' },
 		{ name: 'Water & Wastewater', family: '💚 WATER & WASTEWATER', group: 'environment' },
 		{ name: 'Wildlife & Countryside', family: '💚 WILDLIFE & COUNTRYSIDE', group: 'environment' },
 		{ name: 'Employment', family: '💜 HR: Employment', group: 'hr' },
-		{ name: 'Insurance / Compensation', family: '💜 HR: Insurance / Compensation / Wages / Benefits', group: 'hr' },
-		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' },
+		{
+			name: 'Insurance / Compensation',
+			family: '💜 HR: Insurance / Compensation / Wages / Benefits',
+			group: 'hr'
+		},
+		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' }
 	];
 
 	// Mappings
@@ -401,7 +575,8 @@
 	// Map view name → group name (for seeding assignments)
 	const viewToGroupName: Record<string, string> = {};
 	for (const def of familyViewDefs) {
-		viewToGroupName[def.name] = def.group === 'safety' ? '💙 S' : def.group === 'environment' ? '💚 E' : '💜 HR';
+		viewToGroupName[def.name] =
+			def.group === 'safety' ? '💙 S' : def.group === 'environment' ? '💚 E' : '💜 HR';
 	}
 	viewToGroupName['All Queue'] = 'Queue';
 	viewToGroupName['Missing LAT'] = 'Queue';
@@ -410,7 +585,18 @@
 
 	// Column visibility sets
 	const allCols = columns.map((c) => c.name);
-	const familyCols = ['name', 'title_en', 'is_making', 'making_classification', 'year', 'live', 'function', 'lat_count', 'updated_at', 'latest_lat_updated_at'];
+	const familyCols = [
+		'name',
+		'title_en',
+		'is_making',
+		'making_classification',
+		'year',
+		'live',
+		'function',
+		'lat_count',
+		'updated_at',
+		'latest_lat_updated_at'
+	];
 	const liveCols = ['name', 'title_en', 'year', 'live', 'live_from_changes', 'lat_count'];
 
 	// Helper to build column visibility map
@@ -462,7 +648,10 @@
 			description: 'LRT records with making function that have no LAT data at all.',
 			config: makeViewConfig({
 				visibleCols: allCols,
-				filters: [...QUEUE_BASE_FILTERS, { id: 'q-lat-missing', field: 'lat_count', operator: 'equals', value: 0 }]
+				filters: [
+					...QUEUE_BASE_FILTERS,
+					{ id: 'q-lat-missing', field: 'lat_count', operator: 'equals', value: 0 }
+				]
 			})
 		},
 		{
@@ -477,27 +666,34 @@
 				]
 			})
 		},
-		...familyViewDefs.map((def, i): ViewDef => ({
-			name: def.name,
-			description: `${def.family} — LAT parse candidates`,
-			config: makeViewConfig({
-				visibleCols: familyCols,
-				filters: [
-					...QUEUE_CORE_FILTERS,
-					QUEUE_LAT_FILTER,
-					{ id: `q-fam-${i}`, field: 'family', operator: 'equals', value: def.family }
-				],
-				sorting: [{ column: 'name', direction: 'asc' }],
-				grouping: [{ column: 'year' }]
+		...familyViewDefs.map(
+			(def, i): ViewDef => ({
+				name: def.name,
+				description: `${def.family} — LAT parse candidates`,
+				config: makeViewConfig({
+					visibleCols: familyCols,
+					filters: [
+						...QUEUE_CORE_FILTERS,
+						QUEUE_LAT_FILTER,
+						{ id: `q-fam-${i}`, field: 'family', operator: 'equals', value: def.family }
+					],
+					sorting: [{ column: 'name', direction: 'asc' }],
+					grouping: [{ column: 'year' }]
+				})
 			})
-		})),
+		),
 		{
 			name: 'Live',
 			description: 'Live status reconciliation — OH&S Occupational / Personal Safety',
 			config: makeViewConfig({
 				visibleCols: liveCols,
 				filters: [
-					{ id: 'q-live-fam', field: 'family', operator: 'equals', value: '💙 OH&S: Occupational / Personal Safety' },
+					{
+						id: 'q-live-fam',
+						field: 'family',
+						operator: 'equals',
+						value: '💙 OH&S: Occupational / Personal Safety'
+					},
 					{ id: 'q-live-title', field: 'title_en', operator: 'is_not_empty', value: '' }
 				],
 				sorting: [{ column: 'name', direction: 'asc' }],
@@ -521,10 +717,14 @@
 		const versionKey = 'lat-queue-view-version';
 		if (localStorage.getItem(versionKey) !== '11') {
 			let existingViews: SavedView[] = [];
-			svStore.subscribe((v) => { existingViews = v; })();
+			svStore.subscribe((v) => {
+				existingViews = v;
+			})();
 			if (existingViews.length > 0) {
 				// Wipe via raw SQL to avoid live-query cascade from individual deletes
-				await db!.exec(`DELETE FROM _gridlite_views WHERE grid_id = 'lat-queue'; DELETE FROM _gridlite_view_groups WHERE grid_id = 'lat-queue'`);
+				await db!.exec(
+					`DELETE FROM _gridlite_views WHERE grid_id = 'lat-queue'; DELETE FROM _gridlite_view_groups WHERE grid_id = 'lat-queue'`
+				);
 				// Wait for live query to propagate the deletion before re-reading
 				await new Promise((r) => setTimeout(r, 200));
 			}
@@ -532,22 +732,30 @@
 		}
 
 		let currentViews: SavedView[] = [];
-		const unsub = svStore.subscribe((v) => { currentViews = v; });
+		const unsub = svStore.subscribe((v) => {
+			currentViews = v;
+		});
 
 		// Same pattern as working LRT page: dedup, update stale configs, seed missing
 		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
 
 		// Seed groups and assign views to groups
 		let currentGroups: ViewGroup[] = [];
-		const unsubGrp = grpStore.subscribe((g) => { currentGroups = g; });
+		const unsubGrp = grpStore.subscribe((g) => {
+			currentGroups = g;
+		});
 		const groupNameToId = await seedDefaultGroups(defaultGroupDefs, currentGroups, groupActions);
-		svStore.subscribe((v) => { currentViews = v; })();
+		svStore.subscribe((v) => {
+			currentViews = v;
+		})();
 		await assignViewsToGroups(viewToGroupName, groupNameToId, currentViews, groupActions);
 		unsubGrp();
 
 		// Auto-select default view
 		let activeId: string | null = null;
-		viewStore.activeViewId.subscribe((v) => { activeId = v; })();
+		viewStore.activeViewId.subscribe((v) => {
+			activeId = v;
+		})();
 		if (defaultViewId && !activeId) {
 			const loadedView = await actions.load(defaultViewId);
 			if (loadedView) {
@@ -556,7 +764,9 @@
 			}
 		} else if (activeId) {
 			let activeView: SavedView | null = null;
-			svStore.subscribe((views) => { activeView = views.find((v) => v.id === activeId) ?? null; })();
+			svStore.subscribe((views) => {
+				activeView = views.find((v) => v.id === activeId) ?? null;
+			})();
 			if (activeView) {
 				switchToView((activeView as SavedView).name);
 				applyViewToGrid(activeView as SavedView);
@@ -631,7 +841,9 @@
 	async function handleUpdateView() {
 		if (!viewStore || !latestGridState) return;
 		let activeId: string | null = null;
-		viewStore.activeViewId.subscribe((v) => { activeId = v; })();
+		viewStore.activeViewId.subscribe((v) => {
+			activeId = v;
+		})();
 		if (!activeId) return;
 		try {
 			const config = captureCurrentConfig(latestGridState);
@@ -647,7 +859,9 @@
 
 	// ── Reactive state ──────────────────────────────────────────────
 
-	$: if ($syncStatus.error) { error = $syncStatus.error; }
+	$: if ($syncStatus.error) {
+		error = $syncStatus.error;
+	}
 	$: isLoading = !$syncStatus.connected && !ready;
 
 	// Adapter is created once in onMount via createPGLiteCollection + createTanStackDBAdapter.
@@ -657,15 +871,21 @@
 	let activeViewUnsub: (() => void) | null = null;
 	$: if (viewStore) {
 		activeViewUnsub?.();
-		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
+		activeViewUnsub = viewStore.activeViewId.subscribe((v) => {
+			hasActiveView = !!v;
+		});
 	}
 
 	// Reparse view record count — use effective filtered query
 	$: if (showReparseViewDialog && db && currentQuery) {
 		const eff = getEffectiveQuery();
-		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params).then((r) => {
-			reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
-		}).catch(() => { reparseViewCount = 0; });
+		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params)
+			.then((r) => {
+				reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
+			})
+			.catch(() => {
+				reparseViewCount = 0;
+			});
 	}
 
 	// Stats from current filtered query
@@ -677,21 +897,29 @@
 		if (!db || !latestGridState) return;
 		try {
 			const { sql, params } = getEffectiveQuery();
-			const total = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${sql}) sub`, params);
+			const total = await db.query<{ count: string }>(
+				`SELECT COUNT(*) as count FROM (${sql}) sub`,
+				params
+			);
 			statTotal = parseInt(total.rows[0]?.count ?? '0', 10);
 			// For detailed stats, check if the filtered data includes lat_count-based filters
-			const hasLatFilters = latestGridState.filters.some((f: any) =>
-				f.field === 'lat_count' || f.id?.startsWith('q-lat')
+			const hasLatFilters = latestGridState.filters.some(
+				(f: any) => f.field === 'lat_count' || f.id?.startsWith('q-lat')
 			);
 			if (hasLatFilters) {
-				const missing = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${sql}) sub WHERE lat_count = 0`, params);
+				const missing = await db.query<{ count: string }>(
+					`SELECT COUNT(*) as count FROM (${sql}) sub WHERE lat_count = 0`,
+					params
+				);
 				statMissing = parseInt(missing.rows[0]?.count ?? '0', 10);
 				statStale = statTotal - statMissing;
 			} else {
 				statMissing = 0;
 				statStale = 0;
 			}
-		} catch { /* ignore */ }
+		} catch {
+			/* ignore */
+		}
 	}
 
 	$: if (ready && db && latestGridState) {
@@ -705,7 +933,9 @@
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
 			const collection = createPGLiteCollection({
-				db, query: BASE_QUERY, id: 'lat-queue-uk-lrt'
+				db,
+				query: BASE_QUERY,
+				id: 'lat-queue-uk-lrt'
 			});
 			adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
 			await adapter.init();
@@ -733,12 +963,19 @@
 	{#if sidebarVisible}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarVisible = false)} />
+		<div
+			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
+			on:click={() => (sidebarVisible = false)}
+		/>
 	{/if}
 
 	<!-- View Sidebar -->
 	{#if viewStore}
-		<div class="shrink-0 {sidebarVisible ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
+		<div
+			class="shrink-0 {sidebarVisible
+				? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto'
+				: 'hidden lg:block'}"
+		>
 			<ViewSidebar
 				{viewStore}
 				storageKey="lat-queue-sidebar"
@@ -759,7 +996,12 @@
 					title="Toggle views sidebar"
 				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M4 6h16M4 12h16M4 18h16"
+						/>
 					</svg>
 				</button>
 				<div>
@@ -846,13 +1088,18 @@
 		<!-- Table -->
 		{#if isLoading}
 			<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
-				<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+				<div
+					class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+				></div>
 				<p class="mt-4 text-gray-600">Loading queue...</p>
 			</div>
 		{:else if error}
 			<div class="px-4 py-8 bg-red-50 border border-red-200 rounded-lg">
 				<p class="text-red-600">{error}</p>
-				<button class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" on:click={() => window.location.reload()}>Retry</button>
+				<button
+					class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+					on:click={() => window.location.reload()}>Retry</button
+				>
 			</div>
 		{:else if ready && adapter}
 			<GridLite
@@ -887,7 +1134,12 @@
 								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 							>
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+									/>
 								</svg>
 								Save View
 							</button>
@@ -897,7 +1149,12 @@
 								class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 							>
 								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 4v16m8-8H4"
+									/>
 								</svg>
 							</button>
 						</div>
@@ -908,7 +1165,12 @@
 							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						>
 							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+								/>
 							</svg>
 							Save View
 						</button>
@@ -930,7 +1192,9 @@
 							<button
 								on:click={() => handleReparse(row)}
 								disabled={reparsingLaw === rowName}
-								class="px-1.5 py-0.5 text-xs font-medium rounded shrink-0 {reparsingLaw === rowName ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}"
+								class="px-1.5 py-0.5 text-xs font-medium rounded shrink-0 {reparsingLaw === rowName
+									? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+									: 'bg-blue-600 text-white hover:bg-blue-700'}"
 								title="Re-parse LAT articles and annotations"
 							>
 								{reparsingLaw === rowName ? '...' : 'LAT'}
@@ -950,7 +1214,8 @@
 							>
 								<option value="">-- None --</option>
 								<optgroup label="Health & Safety">
-									{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option>{/each}
+									{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option
+										>{/each}
 								</optgroup>
 								<optgroup label="Environment">
 									{#each familyOptions.environment as opt}<option value={opt}>{opt}</option>{/each}
@@ -979,7 +1244,8 @@
 							>
 								<option value="">-- None --</option>
 								<optgroup label="Health & Safety">
-									{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option>{/each}
+									{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option
+										>{/each}
 								</optgroup>
 								<optgroup label="Environment">
 									{#each familyOptions.environment as opt}<option value={opt}>{opt}</option>{/each}
@@ -1026,15 +1292,22 @@
 						{:else}
 							<button
 								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-								on:dblclick={() => startEdit(str(row.id), 'making_classification', str(value) || null)}
+								on:dblclick={() =>
+									startEdit(str(row.id), 'making_classification', str(value) || null)}
 								title="Double-click to edit"
 							>
 								{#if value === 'making'}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
+									<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700"
+										>Making</span
+									>
 								{:else if value === 'not_making'}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">Not Making</span>
+									<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700"
+										>Not Making</span
+									>
 								{:else if value === 'uncertain'}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700">Uncertain</span>
+									<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700"
+										>Uncertain</span
+									>
 								{:else}
 									<span class="text-gray-400">-</span>
 								{/if}
@@ -1042,7 +1315,13 @@
 						{/if}
 					{:else if column === 'live'}
 						{@const status = str(value)}
-						<span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {status === '✔ In force' ? 'bg-green-100 text-green-800' : status === '⭕ Part Revocation / Repeal' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}">
+						<span
+							class="inline-flex px-2 py-0.5 text-xs font-medium rounded {status === '✔ In force'
+								? 'bg-green-100 text-green-800'
+								: status === '⭕ Part Revocation / Repeal'
+									? 'bg-amber-100 text-amber-800'
+									: 'bg-gray-100 text-gray-800'}"
+						>
 							{status || '-'}
 						</span>
 					{:else if column === 'function'}
@@ -1063,7 +1342,12 @@
 
 <!-- Save View Modal -->
 {#if showSaveModal && capturedConfig && viewStore}
-	<SaveViewModal bind:open={showSaveModal} {viewStore} config={capturedConfig} on:save={handleViewSaved} />
+	<SaveViewModal
+		bind:open={showSaveModal}
+		{viewStore}
+		config={capturedConfig}
+		on:save={handleViewSaved}
+	/>
 {/if}
 
 <!-- LAT Parse Family Dialog -->
@@ -1076,13 +1360,15 @@
 <!-- LRT Refresh Modal (Parse & Review) -->
 {#if lrtModalRecord}
 	<ParseReviewModal
-		records={[{
-			name: str(lrtModalRecord.name),
-			Title_EN: str(lrtModalRecord.title_en),
-			type_code: String(lrtModalRecord.type_code ?? ''),
-			Year: Number(lrtModalRecord.year ?? 0),
-			Number: ''
-		}]}
+		records={[
+			{
+				name: str(lrtModalRecord.name),
+				Title_EN: str(lrtModalRecord.title_en),
+				type_code: String(lrtModalRecord.type_code ?? ''),
+				Year: Number(lrtModalRecord.year ?? 0),
+				Number: ''
+			}
+		]}
 		recordId={lrtModalRecordId}
 		open={lrtModalOpen}
 		on:close={closeLrtRefresh}
@@ -1093,7 +1379,10 @@
 {#if showReparseViewDialog}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" on:click|self={() => (showReparseViewDialog = false)}>
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+		on:click|self={() => (showReparseViewDialog = false)}
+	>
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
 			<div class="px-6 py-4 border-b border-gray-200">
 				<h3 class="text-lg font-semibold text-gray-900">Reparse View</h3>

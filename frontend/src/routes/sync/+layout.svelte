@@ -5,9 +5,7 @@
 
 	const HUB_URL = import.meta.env.VITE_HUB_URL || 'http://localhost:5173';
 
-	const navItems = [
-		{ href: '/sync', label: 'Sync', exact: false }
-	];
+	const navItems = [{ href: '/sync', label: 'Sync', exact: false }];
 
 	$: pathname = $page.url.pathname;
 
@@ -39,11 +37,9 @@
 	<div class="flex min-h-screen items-center justify-center bg-gray-50">
 		<div class="text-center">
 			<h1 class="mb-4 text-2xl font-bold text-gray-900">Not Signed In</h1>
-			<p class="mb-6 text-sm text-gray-500">
-				You need to sign in to access sync features.
-			</p>
+			<p class="mb-6 text-sm text-gray-500">You need to sign in to access sync features.</p>
 			<a
-				href="{HUB_URL}"
+				href={HUB_URL}
 				class="inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
 			>
 				Go to SertantAI Hub
@@ -78,10 +74,7 @@
 					<div class="flex items-center gap-3">
 						<span class="text-sm text-gray-600">{user.name || user.email}</span>
 						<span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">{user.role}</span>
-						<button
-							on:click={signOut}
-							class="text-sm text-gray-400 hover:text-gray-600"
-						>
+						<button on:click={signOut} class="text-sm text-gray-400 hover:text-gray-600">
 							Sign out
 						</button>
 					</div>

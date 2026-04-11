@@ -3,16 +3,37 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { GridLite, buildQuery } from '@shotleybuilder/svelte-gridlite-kit';
 	import '@shotleybuilder/svelte-gridlite-kit/styles';
-	import type { ColumnConfig, GridState, FilterCondition, FilterNode, SortConfig, GroupConfig } from '@shotleybuilder/svelte-gridlite-kit';
+	import type {
+		ColumnConfig,
+		GridState,
+		FilterCondition,
+		FilterNode,
+		SortConfig,
+		GroupConfig
+	} from '@shotleybuilder/svelte-gridlite-kit';
 	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
 	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
 	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
-	import { initViewStore, SaveViewModal, ViewSidebar, runViewMigrations } from '@shotleybuilder/svelte-gridlite-views';
-	import type { ViewConfig, SavedView, ViewStoreBundle, ViewGroup } from '@shotleybuilder/svelte-gridlite-views';
+	import {
+		initViewStore,
+		SaveViewModal,
+		ViewSidebar,
+		runViewMigrations
+	} from '@shotleybuilder/svelte-gridlite-views';
+	import type {
+		ViewConfig,
+		SavedView,
+		ViewStoreBundle,
+		ViewGroup
+	} from '@shotleybuilder/svelte-gridlite-views';
 
 	import { authFetch } from '$lib/api/client';
 	import { goto } from '$app/navigation';
-	import { seedDefaultViews as seedDefaults, seedDefaultGroups, assignViewsToGroups } from '$lib/views/seed-defaults';
+	import {
+		seedDefaultViews as seedDefaults,
+		seedDefaultGroups,
+		assignViewsToGroups
+	} from '$lib/views/seed-defaults';
 	import type { GroupDef } from '$lib/views/seed-defaults';
 
 	// PGLite sync
@@ -56,14 +77,18 @@
 	}
 
 	/** Template-safe row cast (Svelte 4 markup doesn't support TS `as`) */
-	function asLrt(row: Record<string, unknown>): UkLrtRecord { return row as UkLrtRecord; }
+	function asLrt(row: Record<string, unknown>): UkLrtRecord {
+		return row as UkLrtRecord;
+	}
 
 	/** Electric sends JSONB `function` as a JS object {Making: true, ...} — extract keys */
 	function parseFunctionKeys(fn: unknown): string[] | null {
 		if (!fn) return null;
 		if (Array.isArray(fn)) return fn as string[];
 		if (typeof fn === 'object') {
-			return Object.keys(fn as Record<string, boolean>).filter((k) => (fn as Record<string, boolean>)[k]);
+			return Object.keys(fn as Record<string, boolean>).filter(
+				(k) => (fn as Record<string, boolean>)[k]
+			);
 		}
 		if (typeof fn === 'string') {
 			try {
@@ -71,7 +96,9 @@
 				if (typeof parsed === 'object' && !Array.isArray(parsed)) {
 					return Object.keys(parsed).filter((k) => parsed[k]);
 				}
-			} catch { /* not JSON */ }
+			} catch {
+				/* not JSON */
+			}
 		}
 		return null;
 	}
@@ -148,7 +175,11 @@
 			'💚 WATER & WASTEWATER',
 			'💚 WILDLIFE & COUNTRYSIDE'
 		],
-		hr: ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time']
+		hr: [
+			'💜 HR: Employment',
+			'💜 HR: Insurance / Compensation / Wages / Benefits',
+			'💜 HR: Working Time'
+		]
 	};
 
 	// Function options
@@ -190,15 +221,32 @@
 
 	// LRT columns queried from PGLite
 	const LRT_COLUMNS_LIST = [
-		'id', 'name', 'title_en', 'year', 'number', 'type_code', 'type_desc',
-		'family', 'family_ii', 'si_code', 'md_subjects', 'md_date', 'geo_extent',
-		'function', 'is_making', 'has_fitness', 'lat_count', 'duty_type', 'live',
-		'live_from_changes', 'latest_amend_date', 'latest_rescind_date', 'created_at'
+		'id',
+		'name',
+		'title_en',
+		'year',
+		'number',
+		'type_code',
+		'type_desc',
+		'family',
+		'family_ii',
+		'si_code',
+		'md_subjects',
+		'md_date',
+		'geo_extent',
+		'function',
+		'is_making',
+		'has_fitness',
+		'lat_count',
+		'duty_type',
+		'live',
+		'live_from_changes',
+		'latest_amend_date',
+		'latest_rescind_date',
+		'created_at'
 	];
 	const LRT_COLUMNS = LRT_COLUMNS_LIST.join(', ');
-	const lrtColumnMetadata = UK_LRT_COLUMN_METADATA.filter(
-		(c) => LRT_COLUMNS_LIST.includes(c.name)
-	);
+	const lrtColumnMetadata = UK_LRT_COLUMN_METADATA.filter((c) => LRT_COLUMNS_LIST.includes(c.name));
 
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
@@ -206,36 +254,95 @@
 		{ name: 'title_en', label: 'Title', width: 300, dataType: 'text' },
 		{ name: 'year', label: 'Year', width: 70, dataType: 'number' },
 		{ name: 'number', label: 'Number', width: 80, dataType: 'text' },
-		{ name: 'type_code', label: 'Type Code', width: 80, dataType: 'text', selectOptions: typeCodeOptions },
+		{
+			name: 'type_code',
+			label: 'Type Code',
+			width: 80,
+			dataType: 'text',
+			selectOptions: typeCodeOptions
+		},
 		{ name: 'type_desc', label: 'Type', width: 180, dataType: 'text' },
 		{ name: 'family', label: 'Family', width: 200, dataType: 'text' },
 		{ name: 'family_ii', label: 'Family II', width: 200, dataType: 'text' },
 		{ name: 'si_code', label: 'SI Code', width: 180, dataType: 'text' },
 		{ name: 'function', label: 'Function', width: 150, dataType: 'json' },
 		{ name: 'is_making', label: 'Making?', width: 80, dataType: 'text' },
-		{ name: 'has_fitness', label: 'Fitness?', width: 80, dataType: 'select', selectOptions: [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }] },
+		{
+			name: 'has_fitness',
+			label: 'Fitness?',
+			width: 80,
+			dataType: 'select',
+			selectOptions: [
+				{ value: 'true', label: 'Yes' },
+				{ value: 'false', label: 'No' }
+			]
+		},
 		{ name: 'lat_count', label: 'LAT', width: 70, dataType: 'number' },
-		{ name: 'duty_type', label: 'Duty Type', width: 100, dataType: 'text',
+		{
+			name: 'duty_type',
+			label: 'Duty Type',
+			width: 100,
+			dataType: 'text',
 			format: (v) => {
 				const val = v as Record<string, unknown> | null;
 				if (!val || Object.keys(val).length === 0) return '-';
 				return Object.keys(val).join(', ');
 			}
 		},
-		{ name: 'live', label: 'Status', width: 100, dataType: 'text', selectOptions: liveStatusOptions },
+		{
+			name: 'live',
+			label: 'Status',
+			width: 100,
+			dataType: 'text',
+			selectOptions: liveStatusOptions
+		},
 		{ name: 'live_from_changes', label: 'From Changes', width: 130, dataType: 'text' },
-		{ name: 'geo_extent', label: 'Extent', width: 120, dataType: 'text', selectOptions: geoExtentOptions },
-		{ name: 'md_date', label: 'Primary Date', width: 100, dataType: 'date', format: (v) => formatDate(v as string | null) },
-		{ name: 'md_subjects', label: 'Subjects', width: 200, dataType: 'text',
+		{
+			name: 'geo_extent',
+			label: 'Extent',
+			width: 120,
+			dataType: 'text',
+			selectOptions: geoExtentOptions
+		},
+		{
+			name: 'md_date',
+			label: 'Primary Date',
+			width: 100,
+			dataType: 'date',
+			format: (v) => formatDate(v as string | null)
+		},
+		{
+			name: 'md_subjects',
+			label: 'Subjects',
+			width: 200,
+			dataType: 'text',
 			format: (v) => {
 				const val = v as Record<string, unknown> | null;
 				if (!val || Object.keys(val).length === 0) return '-';
 				return Object.keys(val).join(', ');
 			}
 		},
-		{ name: 'latest_amend_date', label: 'Last Amended', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) },
-		{ name: 'latest_rescind_date', label: 'Last Rescinded', width: 110, dataType: 'date', format: (v) => formatDate(v as string | null) },
-		{ name: 'created_at', label: 'Created', width: 100, dataType: 'date', format: (v) => formatDate(v as string | null) }
+		{
+			name: 'latest_amend_date',
+			label: 'Last Amended',
+			width: 110,
+			dataType: 'date',
+			format: (v) => formatDate(v as string | null)
+		},
+		{
+			name: 'latest_rescind_date',
+			label: 'Last Rescinded',
+			width: 110,
+			dataType: 'date',
+			format: (v) => formatDate(v as string | null)
+		},
+		{
+			name: 'created_at',
+			label: 'Created',
+			width: 100,
+			dataType: 'date',
+			format: (v) => formatDate(v as string | null)
+		}
 	];
 
 	// ── Family-based view definitions ───────────────────────────────
@@ -248,19 +355,35 @@
 
 	const familyViewDefs: FamilyViewDef[] = [
 		{ name: 'Fire', family: '💙 FIRE', group: 'safety' },
-		{ name: 'Fire: Dangerous & Explosive', family: '💙 FIRE: Dangerous and Explosive Substances', group: 'safety' },
+		{
+			name: 'Fire: Dangerous & Explosive',
+			family: '💙 FIRE: Dangerous and Explosive Substances',
+			group: 'safety'
+		},
 		{ name: 'Food', family: '💙 FOOD', group: 'safety' },
 		{ name: 'Health: Coronavirus', family: '💙 HEALTH: Coronavirus', group: 'safety' },
-		{ name: 'Health: Drug & Medicine', family: '💙 HEALTH: Drug & Medicine Safety', group: 'safety' },
+		{
+			name: 'Health: Drug & Medicine',
+			family: '💙 HEALTH: Drug & Medicine Safety',
+			group: 'safety'
+		},
 		{ name: 'Health: Patient Safety', family: '💙 HEALTH: Patient Safety', group: 'safety' },
 		{ name: 'Health: Public', family: '💙 HEALTH: Public', group: 'safety' },
 		{ name: 'OHS: Gas & Electrical', family: '💙 OH&S: Gas & Electrical Safety', group: 'safety' },
 		{ name: 'OHS: Mines & Quarries', family: '💙 OH&S: Mines & Quarries', group: 'safety' },
-		{ name: 'OHS: Occupational', family: '💙 OH&S: Occupational / Personal Safety', group: 'safety' },
+		{
+			name: 'OHS: Occupational',
+			family: '💙 OH&S: Occupational / Personal Safety',
+			group: 'safety'
+		},
 		{ name: 'OHS: Offshore', family: '💙 OH&S: Offshore Safety', group: 'safety' },
 		{ name: 'Public', family: '💙 PUBLIC', group: 'safety' },
 		{ name: 'Public: Building Safety', family: '💙 PUBLIC: Building Safety', group: 'safety' },
-		{ name: 'Public: Consumer / Product', family: '💙 PUBLIC: Consumer / Product Safety', group: 'safety' },
+		{
+			name: 'Public: Consumer / Product',
+			family: '💙 PUBLIC: Consumer / Product Safety',
+			group: 'safety'
+		},
 		{ name: 'Transport: Air Safety', family: '💙 TRANSPORT: Air Safety', group: 'safety' },
 		{ name: 'Transport: Rail Safety', family: '💙 TRANSPORT: Rail Safety', group: 'safety' },
 		{ name: 'Transport: Road Safety', family: '💙 TRANSPORT: Road Safety', group: 'safety' },
@@ -273,7 +396,11 @@
 		{ name: 'Buildings', family: '💚 BUILDINGS', group: 'environment' },
 		{ name: 'Climate Change', family: '💚 CLIMATE CHANGE', group: 'environment' },
 		{ name: 'Energy', family: '💚 ENERGY', group: 'environment' },
-		{ name: 'Environmental Protection', family: '💚 ENVIRONMENTAL PROTECTION', group: 'environment' },
+		{
+			name: 'Environmental Protection',
+			family: '💚 ENVIRONMENTAL PROTECTION',
+			group: 'environment'
+		},
 		{ name: 'Finance', family: '💚 FINANCE', group: 'environment' },
 		{ name: 'Fisheries & Fishing', family: '💚 FISHERIES & FISHING', group: 'environment' },
 		{ name: 'GMOs', family: '💚 GMOs', group: 'environment' },
@@ -281,23 +408,51 @@
 		{ name: 'Marine & Riverine', family: '💚 MARINE & RIVERINE', group: 'environment' },
 		{ name: 'Noise', family: '💚 NOISE', group: 'environment' },
 		{ name: 'Nuclear & Radiological', family: '💚 NUCLEAR & RADIOLOGICAL', group: 'environment' },
-		{ name: 'Oil & Gas / Offshore', family: '💚 OIL & GAS - OFFSHORE - PETROLEUM', group: 'environment' },
-		{ name: 'Planning & Infrastructure', family: '💚 PLANNING & INFRASTRUCTURE', group: 'environment' },
+		{
+			name: 'Oil & Gas / Offshore',
+			family: '💚 OIL & GAS - OFFSHORE - PETROLEUM',
+			group: 'environment'
+		},
+		{
+			name: 'Planning & Infrastructure',
+			family: '💚 PLANNING & INFRASTRUCTURE',
+			group: 'environment'
+		},
 		{ name: 'Plant Health', family: '💚 PLANT HEALTH', group: 'environment' },
 		{ name: 'Pollution', family: '💚 POLLUTION', group: 'environment' },
 		{ name: 'Town & Country Planning', family: '💚 TOWN & COUNTRY PLANNING', group: 'environment' },
 		{ name: 'Transport', family: '💚 TRANSPORT', group: 'environment' },
 		{ name: 'Transport: Aviation', family: '💚 TRANSPORT: Aviation', group: 'environment' },
-		{ name: 'Transport: Harbours & Shipping', family: '💚 TRANSPORT: Harbours & Shipping', group: 'environment' },
-		{ name: 'Transport: Railways', family: '💚 TRANSPORT: Railways & Rail Transport', group: 'environment' },
-		{ name: 'Transport: Roads & Vehicles', family: '💚 TRANSPORT: Roads & Vehicles', group: 'environment' },
-		{ name: 'Trees: Forestry & Timber', family: '💚 TREES: Forestry & Timber', group: 'environment' },
+		{
+			name: 'Transport: Harbours & Shipping',
+			family: '💚 TRANSPORT: Harbours & Shipping',
+			group: 'environment'
+		},
+		{
+			name: 'Transport: Railways',
+			family: '💚 TRANSPORT: Railways & Rail Transport',
+			group: 'environment'
+		},
+		{
+			name: 'Transport: Roads & Vehicles',
+			family: '💚 TRANSPORT: Roads & Vehicles',
+			group: 'environment'
+		},
+		{
+			name: 'Trees: Forestry & Timber',
+			family: '💚 TREES: Forestry & Timber',
+			group: 'environment'
+		},
 		{ name: 'Waste', family: '💚 WASTE', group: 'environment' },
 		{ name: 'Water & Wastewater', family: '💚 WATER & WASTEWATER', group: 'environment' },
 		{ name: 'Wildlife & Countryside', family: '💚 WILDLIFE & COUNTRYSIDE', group: 'environment' },
 		{ name: 'Employment', family: '💜 HR: Employment', group: 'hr' },
-		{ name: 'Insurance / Compensation', family: '💜 HR: Insurance / Compensation / Wages / Benefits', group: 'hr' },
-		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' },
+		{
+			name: 'Insurance / Compensation',
+			family: '💜 HR: Insurance / Compensation / Wages / Benefits',
+			group: 'hr'
+		},
+		{ name: 'Working Time', family: '💜 HR: Working Time', group: 'hr' }
 	];
 
 	// Default group definitions for ViewSidebar seeding
@@ -312,7 +467,8 @@
 	// Map view name → group name (for seeding assignments)
 	const viewToGroupName: Record<string, string> = {};
 	for (const def of familyViewDefs) {
-		viewToGroupName[def.name] = def.group === 'safety' ? '💙 S' : def.group === 'environment' ? '💚 E' : '💜 HR';
+		viewToGroupName[def.name] =
+			def.group === 'safety' ? '💙 S' : def.group === 'environment' ? '💚 E' : '💜 HR';
 	}
 	viewToGroupName['Recently Added'] = 'Recent';
 	viewToGroupName['Recently Amended'] = 'Recent';
@@ -333,10 +489,31 @@
 	const BASE_QUERY = `SELECT ${LRT_COLUMNS} FROM uk_lrt`;
 
 	// Column sets for view configs
-	const VIEW_COLUMNS = ['name', 'title_en', 'year', 'number', 'type_code', 'type_desc', 'live', 'function', 'is_making', 'geo_extent'];
+	const VIEW_COLUMNS = [
+		'name',
+		'title_en',
+		'year',
+		'number',
+		'type_code',
+		'type_desc',
+		'live',
+		'function',
+		'is_making',
+		'geo_extent'
+	];
 	const RECENT_COLUMNS = ['name', 'title_en', 'year', 'type_code', 'family', 'live'];
 	const LIVE_VIEW_COLUMNS = ['name', 'title_en', 'year', 'live', 'live_from_changes'];
-	const LAT_CLEANUP_COLUMNS = ['name', 'title_en', 'live', 'live_from_changes', 'function', 'is_making', 'duty_type', 'lat_count', 'family'];
+	const LAT_CLEANUP_COLUMNS = [
+		'name',
+		'title_en',
+		'live',
+		'live_from_changes',
+		'function',
+		'is_making',
+		'duty_type',
+		'lat_count',
+		'family'
+	];
 
 	// Date helpers for filter values
 	function oneMonthAgo(): string {
@@ -386,23 +563,27 @@
 
 	const defaultViews: ViewDef[] = [
 		// Family views — filter via GridLite FilterCondition, not SQL WHERE
-		...familyViewDefs.map((def, i): ViewDef => ({
-			name: def.name,
-			description: `${def.family} — grouped by type`,
-			config: makeViewConfig({
-				visibleCols: VIEW_COLUMNS,
-				filters: [{ id: `family-${i}`, field: 'family', operator: 'equals', value: def.family }]
-			}),
-			isDefault: i === 0,
-			family: def.family
-		})),
+		...familyViewDefs.map(
+			(def, i): ViewDef => ({
+				name: def.name,
+				description: `${def.family} — grouped by type`,
+				config: makeViewConfig({
+					visibleCols: VIEW_COLUMNS,
+					filters: [{ id: `family-${i}`, field: 'family', operator: 'equals', value: def.family }]
+				}),
+				isDefault: i === 0,
+				family: def.family
+			})
+		),
 		// Recent views
 		{
 			name: 'Recently Added',
 			description: 'Records added to the database in the last month.',
 			config: makeViewConfig({
 				visibleCols: [...RECENT_COLUMNS, 'created_at'],
-				filters: [{ id: 'recent-added', field: 'created_at', operator: 'is_after', value: oneMonthAgo() }],
+				filters: [
+					{ id: 'recent-added', field: 'created_at', operator: 'is_after', value: oneMonthAgo() }
+				],
 				sorting: [{ column: 'created_at', direction: 'desc' }],
 				grouping: [{ column: 'type_desc' }]
 			})
@@ -412,7 +593,14 @@
 			description: 'Laws amended in the last 3 years, sorted by most recent amendment date.',
 			config: makeViewConfig({
 				visibleCols: [...RECENT_COLUMNS, 'latest_amend_date'],
-				filters: [{ id: 'recent-amended', field: 'latest_amend_date', operator: 'is_after', value: twoYearsAgoJan1 }],
+				filters: [
+					{
+						id: 'recent-amended',
+						field: 'latest_amend_date',
+						operator: 'is_after',
+						value: twoYearsAgoJan1
+					}
+				],
 				sorting: [{ column: 'latest_amend_date', direction: 'desc' }],
 				grouping: [{ column: 'type_desc' }]
 			})
@@ -422,7 +610,14 @@
 			description: 'Laws rescinded (repealed/revoked) in the last 3 years.',
 			config: makeViewConfig({
 				visibleCols: [...RECENT_COLUMNS, 'latest_rescind_date'],
-				filters: [{ id: 'recent-rescinded', field: 'latest_rescind_date', operator: 'is_after', value: twoYearsAgoJan1 }],
+				filters: [
+					{
+						id: 'recent-rescinded',
+						field: 'latest_rescind_date',
+						operator: 'is_after',
+						value: twoYearsAgoJan1
+					}
+				],
 				sorting: [{ column: 'latest_rescind_date', direction: 'desc' }],
 				grouping: [{ column: 'type_desc' }]
 			})
@@ -434,7 +629,12 @@
 			config: makeViewConfig({
 				visibleCols: LIVE_VIEW_COLUMNS,
 				filters: [
-					{ id: 'live-family', field: 'family', operator: 'equals', value: '💙 OH&S: Occupational / Personal Safety' },
+					{
+						id: 'live-family',
+						field: 'family',
+						operator: 'equals',
+						value: '💙 OH&S: Occupational / Personal Safety'
+					},
 					{ id: 'live-title', field: 'title_en', operator: 'is_not_empty', value: '' }
 				],
 				sorting: [{ column: 'name', direction: 'asc' }],
@@ -443,18 +643,33 @@
 		},
 		{
 			name: 'LAT Cleanup',
-			description: 'Laws qualifying for LAT deletion — revoked/repealed or not-making with LAT data',
+			description:
+				'Laws qualifying for LAT deletion — revoked/repealed or not-making with LAT data',
 			config: makeViewConfig({
 				visibleCols: LAT_CLEANUP_COLUMNS,
 				filters: [
 					{ id: 'lat-has-data', field: 'lat_count', operator: 'greater_than', value: 0 },
 					{
-						id: 'cleanup-reason', logic: 'or' as const, children: [
-							{ id: 'revoked', field: 'live', operator: 'equals', value: '❌ Revoked / Repealed / Abolished' },
+						id: 'cleanup-reason',
+						logic: 'or' as const,
+						children: [
 							{
-								id: 'not-making', logic: 'and' as const, children: [
+								id: 'revoked',
+								field: 'live',
+								operator: 'equals',
+								value: '❌ Revoked / Repealed / Abolished'
+							},
+							{
+								id: 'not-making',
+								logic: 'and' as const,
+								children: [
 									{ id: 'is-making-true', field: 'is_making', operator: 'equals', value: true },
-									{ id: 'no-making-fn', field: 'function', operator: 'jsonb_not_has_key', value: 'Making' }
+									{
+										id: 'no-making-fn',
+										field: 'function',
+										operator: 'jsonb_not_has_key',
+										value: 'Making'
+									}
 								]
 							}
 						]
@@ -481,7 +696,12 @@
 			config: makeViewConfig({
 				visibleCols: LIVE_VIEW_COLUMNS,
 				filters: [
-					{ id: 'revoked', field: 'live', operator: 'equals', value: '❌ Revoked / Repealed / Abolished' },
+					{
+						id: 'revoked',
+						field: 'live',
+						operator: 'equals',
+						value: '❌ Revoked / Repealed / Abolished'
+					},
 					{ id: 'unverified', field: 'live_from_changes', operator: 'is_empty', value: '' }
 				],
 				sorting: [{ column: 'name', direction: 'asc' }],
@@ -606,7 +826,9 @@
 			}
 
 			const result = await response.json();
-			console.log(`[LAT Cleanup] Deleted ${result.lat_deleted} LAT rows, ${result.annotations_deleted} annotations for ${result.law_name}`);
+			console.log(
+				`[LAT Cleanup] Deleted ${result.lat_deleted} LAT rows, ${result.annotations_deleted} annotations for ${result.law_name}`
+			);
 
 			// Close dialog — PGLite will auto-update lat_count via Electric sync
 			deleteConfirmRecord = null;
@@ -619,7 +841,11 @@
 	}
 
 	// Update record via API
-	async function updateRecord(id: string, field: string, value: string | string[] | boolean | null) {
+	async function updateRecord(
+		id: string,
+		field: string,
+		value: string | string[] | boolean | null
+	) {
 		try {
 			const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
 				method: 'PATCH',
@@ -638,7 +864,11 @@
 	}
 
 	// Start editing
-	function startEdit(id: string, field: string, currentValue: string | string[] | Record<string, boolean> | null) {
+	function startEdit(
+		id: string,
+		field: string,
+		currentValue: string | string[] | Record<string, boolean> | null
+	) {
 		editingCell = { id, field };
 		if (field === 'function') {
 			editValue = parseFunctionKeys(currentValue) ?? [];
@@ -692,9 +922,28 @@
 	// Get family prefix and clean name
 	function getFamilyDisplay(family: string | null): { prefix: string; name: string } {
 		if (!family) return { prefix: '', name: '-' };
-		if (family.startsWith('HS:') || family.includes('OH&S') || family.includes('FIRE') || family.includes('FOOD') || family.includes('HEALTH') || family.includes('PUBLIC') || family.includes('TRANSPORT:'))
+		if (
+			family.startsWith('HS:') ||
+			family.includes('OH&S') ||
+			family.includes('FIRE') ||
+			family.includes('FOOD') ||
+			family.includes('HEALTH') ||
+			family.includes('PUBLIC') ||
+			family.includes('TRANSPORT:')
+		)
 			return { prefix: 'HS', name: family };
-		if (family.startsWith('E:') || family.includes('ENVIRONMENT') || family.includes('CLIMATE') || family.includes('WASTE') || family.includes('WATER') || family.includes('WILDLIFE') || family.includes('MARINE') || family.includes('POLLUTION') || family.includes('AGRICULTURE') || family.includes('ENERGY'))
+		if (
+			family.startsWith('E:') ||
+			family.includes('ENVIRONMENT') ||
+			family.includes('CLIMATE') ||
+			family.includes('WASTE') ||
+			family.includes('WATER') ||
+			family.includes('WILDLIFE') ||
+			family.includes('MARINE') ||
+			family.includes('POLLUTION') ||
+			family.includes('AGRICULTURE') ||
+			family.includes('ENERGY')
+		)
 			return { prefix: 'E', name: family };
 		if (family.startsWith('HR:') || family.includes('HR:')) return { prefix: 'HR', name: family };
 		return { prefix: '', name: family };
@@ -708,23 +957,31 @@
 		await actions.waitForReady();
 
 		let currentViews: SavedView[] = [];
-		const unsub = svStore.subscribe((v) => { currentViews = v; });
+		const unsub = svStore.subscribe((v) => {
+			currentViews = v;
+		});
 
 		// Dedup, update stale configs, seed missing — tested in seed-defaults.test.ts
 		const { defaultViewId } = await seedDefaults(defaultViews, currentViews, actions);
 
 		// Seed groups and assign views to groups
 		let currentGroups: ViewGroup[] = [];
-		const unsubGrp = grpStore.subscribe((g) => { currentGroups = g; });
+		const unsubGrp = grpStore.subscribe((g) => {
+			currentGroups = g;
+		});
 		const groupNameToId = await seedDefaultGroups(defaultGroupDefs, currentGroups, groupActions);
 		// Re-read views after seeding (IDs may have changed)
-		svStore.subscribe((v) => { currentViews = v; })();
+		svStore.subscribe((v) => {
+			currentViews = v;
+		})();
 		await assignViewsToGroups(viewToGroupName, groupNameToId, currentViews, groupActions);
 		unsubGrp();
 
 		// Auto-select default view
 		let activeId: string | null = null;
-		viewStore.activeViewId.subscribe((v) => { activeId = v; })();
+		viewStore.activeViewId.subscribe((v) => {
+			activeId = v;
+		})();
 		if (defaultViewId && !activeId) {
 			const loadedView = await actions.load(defaultViewId);
 			if (loadedView) {
@@ -814,7 +1071,9 @@
 	async function handleUpdateView() {
 		if (!viewStore || !latestGridState) return;
 		let activeId: string | null = null;
-		viewStore.activeViewId.subscribe((v) => { activeId = v; })();
+		viewStore.activeViewId.subscribe((v) => {
+			activeId = v;
+		})();
 		if (!activeId) return;
 
 		try {
@@ -847,7 +1106,9 @@
 		try {
 			const result = await db.query<{ count: string }>('SELECT COUNT(*) as count FROM uk_lrt');
 			totalRecordCount = parseInt(result.rows[0]?.count ?? '0', 10);
-		} catch { /* ignore */ }
+		} catch {
+			/* ignore */
+		}
 	}
 
 	onMount(async () => {
@@ -857,7 +1118,9 @@
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lrt-admin');
 			const collection = createPGLiteCollection({
-				db, query: BASE_QUERY, id: 'lrt-admin-uk-lrt'
+				db,
+				query: BASE_QUERY,
+				id: 'lrt-admin-uk-lrt'
 			});
 			adapter = createTanStackDBAdapter({ collection, columns: lrtColumnMetadata });
 			await adapter.init();
@@ -881,16 +1144,22 @@
 	let activeViewUnsub: (() => void) | null = null;
 	$: if (viewStore) {
 		activeViewUnsub?.();
-		activeViewUnsub = viewStore.activeViewId.subscribe((v) => { hasActiveView = !!v; });
+		activeViewUnsub = viewStore.activeViewId.subscribe((v) => {
+			hasActiveView = !!v;
+		});
 	}
 
 	// Reparse view record count — use effective filtered query to count
 	let reparseViewCount = 0;
 	$: if (showReparseViewDialog && db && currentQuery) {
 		const eff = getEffectiveQuery();
-		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params).then((r) => {
-			reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
-		}).catch(() => { reparseViewCount = 0; });
+		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params)
+			.then((r) => {
+				reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
+			})
+			.catch(() => {
+				reparseViewCount = 0;
+			});
 	}
 </script>
 
@@ -899,12 +1168,19 @@
 	{#if sidebarVisible}
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class="fixed inset-0 bg-black/30 z-30 lg:hidden" on:click={() => (sidebarVisible = false)} />
+		<div
+			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
+			on:click={() => (sidebarVisible = false)}
+		/>
 	{/if}
 
 	<!-- View Sidebar -->
 	{#if viewStore}
-		<div class="shrink-0 {sidebarVisible ? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto' : 'hidden lg:block'}">
+		<div
+			class="shrink-0 {sidebarVisible
+				? 'fixed inset-y-0 left-0 z-40 lg:static lg:z-auto'
+				: 'hidden lg:block'}"
+		>
 			<ViewSidebar
 				{viewStore}
 				storageKey="lrt-admin-sidebar"
@@ -924,13 +1200,19 @@
 				title="Toggle views sidebar"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 6h16M4 12h16M4 18h16"
+					/>
 				</svg>
 			</button>
 			<div class="flex-1">
 				<h1 class="text-2xl font-bold text-gray-900">UK LRT Data</h1>
 				<p class="mt-1 text-sm text-gray-500">
-					Manage UK Legal Register Table records. Inline edit Family, Family II, and Function fields.
+					Manage UK Legal Register Table records. Inline edit Family, Family II, and Function
+					fields.
 				</p>
 			</div>
 			<button
@@ -938,7 +1220,12 @@
 				on:click={() => (showReparseDialog = true)}
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+					/>
 				</svg>
 				Reparse Family
 			</button>
@@ -948,337 +1235,421 @@
 				disabled={!currentQuery}
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+					/>
 				</svg>
 				Reparse View
 			</button>
 		</div>
 
-	{#if isLoading}
-		<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
-			<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-			<p class="mt-4 text-gray-600">Loading UK LRT data...</p>
-		</div>
-	{:else if error}
-		<div class="px-4 py-8 bg-red-50 border border-red-200 rounded-lg">
-			<h3 class="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h3>
-			<p class="text-red-600">{error}</p>
-			<button class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" on:click={() => window.location.reload()}>Retry</button>
-		</div>
-	{:else if ready && db}
-		<!-- Stats -->
-		<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Total Records</div>
-				<div class="text-2xl font-bold text-gray-900">{totalRecordCount.toLocaleString()}</div>
+		{#if isLoading}
+			<div class="px-4 py-12 text-center bg-white rounded-lg border border-gray-200">
+				<div
+					class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+				></div>
+				<p class="mt-4 text-gray-600">Loading UK LRT data...</p>
 			</div>
-			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Sync Status</div>
-				<div class="flex items-center gap-2">
-					{#if $syncStatus.syncing}
-						<div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-						<span class="text-lg font-medium text-yellow-600">Syncing...</span>
-					{:else if $syncStatus.offline}
-						<div class="w-2 h-2 bg-red-500 rounded-full"></div>
-						<span class="text-lg font-medium text-red-600">Offline</span>
-						<button
-							class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
-							on:click={() => window.location.reload()}
-						>
-							Retry
-						</button>
-					{:else if $syncStatus.connected}
-						<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-						<span class="text-lg font-medium text-green-600">Connected</span>
-					{:else}
-						<div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-						<span class="text-lg font-medium text-gray-600">Disconnected</span>
-					{/if}
+		{:else if error}
+			<div class="px-4 py-8 bg-red-50 border border-red-200 rounded-lg">
+				<h3 class="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h3>
+				<p class="text-red-600">{error}</p>
+				<button
+					class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+					on:click={() => window.location.reload()}>Retry</button
+				>
+			</div>
+		{:else if ready && db}
+			<!-- Stats -->
+			<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+				<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
+					<div class="text-sm text-gray-600">Total Records</div>
+					<div class="text-2xl font-bold text-gray-900">{totalRecordCount.toLocaleString()}</div>
 				</div>
-			</div>
-			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Data Scope</div>
-				<div class="text-sm font-medium text-gray-700">
-					{#if $syncStatus.syncing}
-						Syncing... ({$syncStatus.recordCount.toLocaleString()})
-					{:else}
-						All records synced
-					{/if}
-				</div>
-			</div>
-			<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
-				<div class="text-sm text-gray-600">Currently Editing</div>
-				<div class="text-2xl font-bold text-gray-900">
-					{editingCell ? `${editingCell.field}` : 'None'}
-				</div>
-			</div>
-		</div>
-
-		<!-- GridLite Table -->
-		{#if adapter}
-		<GridLite
-			bind:this={gridRef}
-			{adapter}
-			onStateChange={handleStateChange}
-			config={{
-				id: 'lrt-admin',
-				columns,
-				defaultSorting: [{ column: 'name', direction: 'asc' }],
-				defaultVisibleColumns: activeVisibleColumns,
-				defaultColumnOrder: activeVisibleColumns,
-				pagination: { pageSize: 25 }
-			}}
-			features={{
-				columnVisibility: true,
-				columnResizing: true,
-				columnReordering: true,
-				filtering: true,
-				sorting: true,
-				pagination: true,
-				grouping: true,
-				globalSearch: true
-			}}
-		>
-			<!-- Save View Buttons -->
-			<svelte:fragment slot="toolbar-start">
-				{#if hasActiveView}
-					<div class="inline-flex rounded-md shadow-sm">
-						<button
-							type="button"
-							on:click={handleUpdateView}
-							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-						>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-							</svg>
-							Save View
-						</button>
-						<button
-							type="button"
-							on:click={handleSaveView}
-							class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-						>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-							</svg>
-						</button>
+				<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
+					<div class="text-sm text-gray-600">Sync Status</div>
+					<div class="flex items-center gap-2">
+						{#if $syncStatus.syncing}
+							<div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+							<span class="text-lg font-medium text-yellow-600">Syncing...</span>
+						{:else if $syncStatus.offline}
+							<div class="w-2 h-2 bg-red-500 rounded-full"></div>
+							<span class="text-lg font-medium text-red-600">Offline</span>
+							<button
+								class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
+								on:click={() => window.location.reload()}
+							>
+								Retry
+							</button>
+						{:else if $syncStatus.connected}
+							<div class="w-2 h-2 bg-green-500 rounded-full"></div>
+							<span class="text-lg font-medium text-green-600">Connected</span>
+						{:else}
+							<div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+							<span class="text-lg font-medium text-gray-600">Disconnected</span>
+						{/if}
 					</div>
-				{:else}
-					<button
-						type="button"
-						on:click={handleSaveView}
-						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-					>
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-						</svg>
-						Save View
-					</button>
-				{/if}
-			</svelte:fragment>
+				</div>
+				<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
+					<div class="text-sm text-gray-600">Data Scope</div>
+					<div class="text-sm font-medium text-gray-700">
+						{#if $syncStatus.syncing}
+							Syncing... ({$syncStatus.recordCount.toLocaleString()})
+						{:else}
+							All records synced
+						{/if}
+					</div>
+				</div>
+				<div class="bg-white rounded-lg border border-gray-200 px-4 py-3">
+					<div class="text-sm text-gray-600">Currently Editing</div>
+					<div class="text-2xl font-bold text-gray-900">
+						{editingCell ? `${editingCell.field}` : 'None'}
+					</div>
+				</div>
+			</div>
 
-			<!-- Custom cell rendering -->
-			<svelte:fragment slot="cell" let:value let:row let:column>
-				{@const r = asLrt(row)}
-				{#if column === 'family'}
-					{#if editingCell?.id === r.id && editingCell?.field === 'family'}
-						<select
-							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							bind:value={editValue}
-							on:blur={saveEdit}
-							on:keydown={handleEditKeydown}
-						>
-							<option value="">-- None --</option>
-							<optgroup label="Health & Safety">
-								{#each familyOptions.health_safety as opt}
-									<option value={opt}>{opt}</option>
-								{/each}
-							</optgroup>
-							<optgroup label="Environment">
-								{#each familyOptions.environment as opt}
-									<option value={opt}>{opt}</option>
-								{/each}
-							</optgroup>
-							<optgroup label="HR">
-								{#each familyOptions.hr as opt}
-									<option value={opt}>{opt}</option>
-								{/each}
-							</optgroup>
-						</select>
-					{:else}
-						{@const display = getFamilyDisplay(r.family)}
-						<button
-							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-							on:dblclick={() => startEdit(r.id, 'family', r.family)}
-							title="Double-click to edit"
-						>
-							{#if display.prefix}
-								<span class="inline-block px-1 text-xs font-medium rounded mr-1 {display.prefix === 'HS' ? 'bg-blue-100 text-blue-700' : display.prefix === 'E' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}">
-									{display.prefix}
-								</span>
-							{/if}
-							{display.name}
-						</button>
-					{/if}
-				{:else if column === 'family_ii'}
-					{#if editingCell?.id === r.id && editingCell?.field === 'family_ii'}
-						<select
-							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							bind:value={editValue}
-							on:blur={saveEdit}
-							on:keydown={handleEditKeydown}
-						>
-							<option value="">-- None --</option>
-							<optgroup label="Health & Safety">
-								{#each familyOptions.health_safety as opt}
-									<option value={opt}>{opt}</option>
-								{/each}
-							</optgroup>
-							<optgroup label="Environment">
-								{#each familyOptions.environment as opt}
-									<option value={opt}>{opt}</option>
-								{/each}
-							</optgroup>
-							<optgroup label="HR">
-								{#each familyOptions.hr as opt}
-									<option value={opt}>{opt}</option>
-								{/each}
-							</optgroup>
-						</select>
-					{:else}
-						<button
-							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-							on:dblclick={() => startEdit(r.id, 'family_ii', r.family_ii)}
-							title="Double-click to edit"
-						>
-							{r.family_ii || '-'}
-						</button>
-					{/if}
-				{:else if column === 'function'}
-					{#if editingCell?.id === r.id && editingCell?.field === 'function'}
-						<div class="flex flex-wrap gap-1 p-1 border border-blue-400 rounded bg-white">
-							{#each functionOptions as fn}
+			<!-- GridLite Table -->
+			{#if adapter}
+				<GridLite
+					bind:this={gridRef}
+					{adapter}
+					onStateChange={handleStateChange}
+					config={{
+						id: 'lrt-admin',
+						columns,
+						defaultSorting: [{ column: 'name', direction: 'asc' }],
+						defaultVisibleColumns: activeVisibleColumns,
+						defaultColumnOrder: activeVisibleColumns,
+						pagination: { pageSize: 25 }
+					}}
+					features={{
+						columnVisibility: true,
+						columnResizing: true,
+						columnReordering: true,
+						filtering: true,
+						sorting: true,
+						pagination: true,
+						grouping: true,
+						globalSearch: true
+					}}
+				>
+					<!-- Save View Buttons -->
+					<svelte:fragment slot="toolbar-start">
+						{#if hasActiveView}
+							<div class="inline-flex rounded-md shadow-sm">
 								<button
 									type="button"
-									class="px-2 py-0.5 text-xs rounded {Array.isArray(editValue) && editValue.includes(fn) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
-									on:click={() => toggleFunction(fn)}
+									on:click={handleUpdateView}
+									class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 								>
-									{fn}
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+										/>
+									</svg>
+									Save View
 								</button>
-							{/each}
-							<button type="button" class="px-2 py-0.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 ml-auto" on:click={saveEdit}>Save</button>
-							<button type="button" class="px-2 py-0.5 text-xs bg-gray-400 text-white rounded hover:bg-gray-500" on:click={cancelEdit}>Cancel</button>
-						</div>
-					{:else}
-						<button
-							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-							on:dblclick={() => startEdit(r.id, 'function', r.function)}
-							title="Double-click to edit"
-						>
-							{#if parseFunctionKeys(r.function)?.length}
-								<span class="flex flex-wrap gap-1">
-									{#each parseFunctionKeys(r.function) ?? [] as fn}
-										<span class="px-1.5 py-0.5 text-xs rounded {fn === 'Making' ? 'bg-green-100 text-green-700' : fn === 'Amending' ? 'bg-yellow-100 text-yellow-700' : fn === 'Revoking' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">
-											{fn}
+								<button
+									type="button"
+									on:click={handleSaveView}
+									class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 4v16m8-8H4"
+										/>
+									</svg>
+								</button>
+							</div>
+						{:else}
+							<button
+								type="button"
+								on:click={handleSaveView}
+								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							>
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+									/>
+								</svg>
+								Save View
+							</button>
+						{/if}
+					</svelte:fragment>
+
+					<!-- Custom cell rendering -->
+					<svelte:fragment slot="cell" let:value let:row let:column>
+						{@const r = asLrt(row)}
+						{#if column === 'family'}
+							{#if editingCell?.id === r.id && editingCell?.field === 'family'}
+								<select
+									class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+									bind:value={editValue}
+									on:blur={saveEdit}
+									on:keydown={handleEditKeydown}
+								>
+									<option value="">-- None --</option>
+									<optgroup label="Health & Safety">
+										{#each familyOptions.health_safety as opt}
+											<option value={opt}>{opt}</option>
+										{/each}
+									</optgroup>
+									<optgroup label="Environment">
+										{#each familyOptions.environment as opt}
+											<option value={opt}>{opt}</option>
+										{/each}
+									</optgroup>
+									<optgroup label="HR">
+										{#each familyOptions.hr as opt}
+											<option value={opt}>{opt}</option>
+										{/each}
+									</optgroup>
+								</select>
+							{:else}
+								{@const display = getFamilyDisplay(r.family)}
+								<button
+									class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+									on:dblclick={() => startEdit(r.id, 'family', r.family)}
+									title="Double-click to edit"
+								>
+									{#if display.prefix}
+										<span
+											class="inline-block px-1 text-xs font-medium rounded mr-1 {display.prefix ===
+											'HS'
+												? 'bg-blue-100 text-blue-700'
+												: display.prefix === 'E'
+													? 'bg-green-100 text-green-700'
+													: 'bg-purple-100 text-purple-700'}"
+										>
+											{display.prefix}
 										</span>
+									{/if}
+									{display.name}
+								</button>
+							{/if}
+						{:else if column === 'family_ii'}
+							{#if editingCell?.id === r.id && editingCell?.field === 'family_ii'}
+								<select
+									class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+									bind:value={editValue}
+									on:blur={saveEdit}
+									on:keydown={handleEditKeydown}
+								>
+									<option value="">-- None --</option>
+									<optgroup label="Health & Safety">
+										{#each familyOptions.health_safety as opt}
+											<option value={opt}>{opt}</option>
+										{/each}
+									</optgroup>
+									<optgroup label="Environment">
+										{#each familyOptions.environment as opt}
+											<option value={opt}>{opt}</option>
+										{/each}
+									</optgroup>
+									<optgroup label="HR">
+										{#each familyOptions.hr as opt}
+											<option value={opt}>{opt}</option>
+										{/each}
+									</optgroup>
+								</select>
+							{:else}
+								<button
+									class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+									on:dblclick={() => startEdit(r.id, 'family_ii', r.family_ii)}
+									title="Double-click to edit"
+								>
+									{r.family_ii || '-'}
+								</button>
+							{/if}
+						{:else if column === 'function'}
+							{#if editingCell?.id === r.id && editingCell?.field === 'function'}
+								<div class="flex flex-wrap gap-1 p-1 border border-blue-400 rounded bg-white">
+									{#each functionOptions as fn}
+										<button
+											type="button"
+											class="px-2 py-0.5 text-xs rounded {Array.isArray(editValue) &&
+											editValue.includes(fn)
+												? 'bg-blue-600 text-white'
+												: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+											on:click={() => toggleFunction(fn)}
+										>
+											{fn}
+										</button>
 									{/each}
-								</span>
+									<button
+										type="button"
+										class="px-2 py-0.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 ml-auto"
+										on:click={saveEdit}>Save</button
+									>
+									<button
+										type="button"
+										class="px-2 py-0.5 text-xs bg-gray-400 text-white rounded hover:bg-gray-500"
+										on:click={cancelEdit}>Cancel</button
+									>
+								</div>
+							{:else}
+								<button
+									class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+									on:dblclick={() => startEdit(r.id, 'function', r.function)}
+									title="Double-click to edit"
+								>
+									{#if parseFunctionKeys(r.function)?.length}
+										<span class="flex flex-wrap gap-1">
+											{#each parseFunctionKeys(r.function) ?? [] as fn}
+												<span
+													class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
+														? 'bg-green-100 text-green-700'
+														: fn === 'Amending'
+															? 'bg-yellow-100 text-yellow-700'
+															: fn === 'Revoking'
+																? 'bg-red-100 text-red-700'
+																: 'bg-gray-100 text-gray-700'}"
+												>
+													{fn}
+												</span>
+											{/each}
+										</span>
+									{:else}
+										<span class="text-gray-400">-</span>
+									{/if}
+								</button>
+							{/if}
+						{:else if column === 'title_en'}
+							<div class="whitespace-normal break-words">{value || '-'}</div>
+						{:else if column === 'is_making'}
+							<button
+								class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+								on:click={() => updateRecord(r.id, 'is_making', !r.is_making)}
+								title="Click to toggle"
+							>
+								{#if r.is_making}
+									<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
+								{:else}
+									<span class="text-gray-400">-</span>
+								{/if}
+							</button>
+						{:else if column === 'has_fitness'}
+							{#if r.has_fitness === 'true'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Yes</span>
 							{:else}
 								<span class="text-gray-400">-</span>
 							{/if}
-						</button>
-					{/if}
-				{:else if column === 'title_en'}
-					<div class="whitespace-normal break-words">{value || '-'}</div>
-				{:else if column === 'is_making'}
-					<button
-						class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-						on:click={() => updateRecord(r.id, 'is_making', !r.is_making)}
-						title="Click to toggle"
-					>
-						{#if r.is_making}
-							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
-						{:else}
-							<span class="text-gray-400">-</span>
-						{/if}
-					</button>
-				{:else if column === 'has_fitness'}
-					{#if r.has_fitness === 'true'}
-						<span class="px-1.5 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Yes</span>
-					{:else}
-						<span class="text-gray-400">-</span>
-					{/if}
-				{:else if column === 'live'}
-					<span class="inline-flex px-2 py-0.5 text-xs font-medium rounded {value === 'Live' ? 'bg-green-100 text-green-800' : value === 'Revoked' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
-						{value || '-'}
-					</span>
-				{:else if column === 'type_code'}
-					<span class="uppercase">{value || '-'}</span>
-				{:else if column === 'name'}
-					<div class="flex items-center gap-1">
-						<button
-							class="p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded shrink-0"
-							title="View record details"
-							on:click={() => openRecordCard(r)}
-						>
-							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-							</svg>
-						</button>
-						<button
-							class="p-0.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded shrink-0"
-							title="Parse & Review"
-							on:click={() => openParseReviewModal(r)}
-						>
-							<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-							</svg>
-						</button>
-						{#if activeViewName === 'LAT Cleanup' && (r.lat_count ?? 0) > 0}
-							<button
-								class="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded shrink-0"
-								title="Delete LAT data for this law"
-								on:click={() => { deleteConfirmRecord = r; }}
+						{:else if column === 'live'}
+							<span
+								class="inline-flex px-2 py-0.5 text-xs font-medium rounded {value === 'Live'
+									? 'bg-green-100 text-green-800'
+									: value === 'Revoked'
+										? 'bg-red-100 text-red-800'
+										: 'bg-gray-100 text-gray-800'}"
 							>
-								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-								</svg>
-							</button>
+								{value || '-'}
+							</span>
+						{:else if column === 'type_code'}
+							<span class="uppercase">{value || '-'}</span>
+						{:else if column === 'name'}
+							<div class="flex items-center gap-1">
+								<button
+									class="p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded shrink-0"
+									title="View record details"
+									on:click={() => openRecordCard(r)}
+								>
+									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+										/>
+									</svg>
+								</button>
+								<button
+									class="p-0.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded shrink-0"
+									title="Parse & Review"
+									on:click={() => openParseReviewModal(r)}
+								>
+									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+										/>
+									</svg>
+								</button>
+								{#if activeViewName === 'LAT Cleanup' && (r.lat_count ?? 0) > 0}
+									<button
+										class="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded shrink-0"
+										title="Delete LAT data for this law"
+										on:click={() => {
+											deleteConfirmRecord = r;
+										}}
+									>
+										<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+											/>
+										</svg>
+									</button>
+								{/if}
+								<span class="font-mono text-gray-700 truncate">{value}</span>
+							</div>
+						{:else if column === 'lat_count'}
+							{#if Number(value) > 0}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700 font-medium">
+									{Number(value).toLocaleString()}
+								</span>
+							{:else}
+								<span class="text-gray-400">0</span>
+							{/if}
+						{:else}
+							{value ?? '-'}
 						{/if}
-						<span class="font-mono text-gray-700 truncate">{value}</span>
-					</div>
-				{:else if column === 'lat_count'}
-					{#if Number(value) > 0}
-						<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700 font-medium">
-							{Number(value).toLocaleString()}
-						</span>
-					{:else}
-						<span class="text-gray-400">0</span>
-					{/if}
-				{:else}
-					{value ?? '-'}
-				{/if}
-			</svelte:fragment>
-		</GridLite>
-		{/if}
+					</svelte:fragment>
+				</GridLite>
+			{/if}
 
-		<!-- Instructions -->
-		<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-			<h4 class="font-medium text-blue-800 mb-2">Instructions</h4>
-			<ul class="list-disc list-inside text-blue-700 space-y-1">
-				<li><strong>Double-click</strong> Family, Family II, or Function cells to edit inline</li>
-				<li><strong>Parse & Review button</strong> (refresh icon) re-parses with streaming progress and shows diff for review before saving</li>
-				<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
-				<li><strong>Saved Views</strong> - Save your current table configuration for quick access later</li>
-			</ul>
-		</div>
-	{/if}
+			<!-- Instructions -->
+			<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+				<h4 class="font-medium text-blue-800 mb-2">Instructions</h4>
+				<ul class="list-disc list-inside text-blue-700 space-y-1">
+					<li><strong>Double-click</strong> Family, Family II, or Function cells to edit inline</li>
+					<li>
+						<strong>Parse & Review button</strong> (refresh icon) re-parses with streaming progress and
+						shows diff for review before saving
+					</li>
+					<li>Use column visibility controls to show/hide columns and reduce horizontal scroll</li>
+					<li>
+						<strong>Saved Views</strong> - Save your current table configuration for quick access later
+					</li>
+				</ul>
+			</div>
+		{/if}
 	</div>
 </div>
 
 <!-- Save View Modal -->
 {#if showSaveModal && capturedConfig && viewStore}
-	<SaveViewModal bind:open={showSaveModal} {viewStore} config={capturedConfig} on:save={handleViewSaved} />
+	<SaveViewModal
+		bind:open={showSaveModal}
+		{viewStore}
+		config={capturedConfig}
+		on:save={handleViewSaved}
+	/>
 {/if}
 
 <!-- Record Card Modal -->
@@ -1292,13 +1663,15 @@
 <!-- Parse Review Modal -->
 {#if viewModalRecord}
 	<ParseReviewModal
-		records={[{
-			name: viewModalRecord.name,
-			Title_EN: viewModalRecord.title_en,
-			type_code: String(viewModalRecord.type_code ?? ''),
-			Year: Number(viewModalRecord.year ?? 0),
-			Number: String(viewModalRecord.number ?? '')
-		}]}
+		records={[
+			{
+				name: viewModalRecord.name,
+				Title_EN: viewModalRecord.title_en,
+				type_code: String(viewModalRecord.type_code ?? ''),
+				Year: Number(viewModalRecord.year ?? 0),
+				Number: String(viewModalRecord.number ?? '')
+			}
+		]}
 		recordId={viewModalRecord.id}
 		open={viewModalOpen}
 		on:close={closeViewModal}
@@ -1316,7 +1689,10 @@
 {#if showReparseViewDialog}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" on:click|self={() => (showReparseViewDialog = false)}>
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+		on:click|self={() => (showReparseViewDialog = false)}
+	>
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
 			<div class="px-6 py-4 border-b border-gray-200">
 				<h3 class="text-lg font-semibold text-gray-900">Reparse View</h3>
@@ -1367,7 +1743,13 @@
 	{@const r = deleteConfirmRecord}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" on:click|self={() => { deleteConfirmRecord = null; deleteError = null; }}>
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+		on:click|self={() => {
+			deleteConfirmRecord = null;
+			deleteError = null;
+		}}
+	>
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
 			<div class="px-6 py-4 border-b border-gray-200">
 				<h3 class="text-lg font-semibold text-gray-900">Delete LAT Data</h3>
@@ -1377,15 +1759,18 @@
 					<p><span class="font-medium">Law:</span> <span class="font-mono">{r.name}</span></p>
 					<p class="mt-1 text-xs text-gray-500 line-clamp-2">{r.title_en}</p>
 					<p class="mt-2"><span class="font-medium">Status:</span> {r.live || '-'}</p>
-					<p><span class="font-medium">Function:</span> {parseFunctionKeys(r.function)?.join(', ') || 'None'}</p>
+					<p>
+						<span class="font-medium">Function:</span>
+						{parseFunctionKeys(r.function)?.join(', ') || 'None'}
+					</p>
 					<p><span class="font-medium">Making:</span> {r.is_making ? 'Yes' : 'No'}</p>
 					<p class="mt-3">
 						<span class="text-2xl font-bold text-red-600">{r.lat_count?.toLocaleString()}</span>
 						<span class="text-gray-500 ml-1">LAT rows will be permanently deleted</span>
 					</p>
 					<p class="mt-2 text-xs text-gray-500">
-						Amendment annotations for this law will also be deleted.
-						Taxa and fitness data will NOT be affected.
+						Amendment annotations for this law will also be deleted. Taxa and fitness data will NOT
+						be affected.
 					</p>
 				</div>
 				{#if deleteError}
@@ -1396,7 +1781,10 @@
 			</div>
 			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
 				<button
-					on:click={() => { deleteConfirmRecord = null; deleteError = null; }}
+					on:click={() => {
+						deleteConfirmRecord = null;
+						deleteError = null;
+					}}
 					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
 					disabled={deleteLoading}
 				>

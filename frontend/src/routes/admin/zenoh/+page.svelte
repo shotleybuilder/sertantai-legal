@@ -57,8 +57,7 @@
 	}
 
 	$: statsSince =
-		startedAt($subsQuery.data?.stats) ||
-		startedAt($queryablesQuery.data?.data_server?.stats);
+		startedAt($subsQuery.data?.stats) || startedAt($queryablesQuery.data?.data_server?.stats);
 </script>
 
 <div>
@@ -160,16 +159,12 @@
 					<table class="min-w-full divide-y divide-gray-200">
 						<thead class="bg-gray-50">
 							<tr>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-									>Time</th
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Event</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Details</th
 								>
 							</tr>
@@ -193,8 +188,7 @@
 											<span class="text-red-600">{entry.metadata.reason}</span>
 										{/if}
 										{#if entry.metadata.key_expr}
-											<code class="bg-gray-100 px-1 rounded text-xs"
-												>{entry.metadata.key_expr}</code
+											<code class="bg-gray-100 px-1 rounded text-xs">{entry.metadata.key_expr}</code
 											>
 										{/if}
 									</td>
@@ -280,20 +274,15 @@
 					<table class="min-w-full divide-y divide-gray-200">
 						<thead class="bg-gray-50">
 							<tr>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-									>Time</th
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Event</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Key Expression</th
 								>
-								<th
-									class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"
 									>Duration</th
 								>
 							</tr>
@@ -311,8 +300,7 @@
 									</td>
 									<td class="px-6 py-3 text-sm text-gray-500">
 										{#if entry.metadata.key_expr}
-											<code class="bg-gray-100 px-1 rounded text-xs"
-												>{entry.metadata.key_expr}</code
+											<code class="bg-gray-100 px-1 rounded text-xs">{entry.metadata.key_expr}</code
 											>
 										{/if}
 										{#if entry.metadata.reason}
@@ -384,20 +372,15 @@
 					<table class="min-w-full divide-y divide-gray-200">
 						<thead class="bg-gray-50">
 							<tr>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-									>Time</th
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Event</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Table</th
 								>
-								<th
-									class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
 									>Action</th
 								>
 							</tr>

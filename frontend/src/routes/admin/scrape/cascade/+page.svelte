@@ -9,7 +9,13 @@
 		useConfirmRecordMutation,
 		scraperKeys
 	} from '$lib/query/scraper';
-	import type { CascadeEntry, CascadeIndexResult, CascadeOperationResultItem, ParseMetadataResult, ScrapeRecord } from '$lib/api/scraper';
+	import type {
+		CascadeEntry,
+		CascadeIndexResult,
+		CascadeOperationResultItem,
+		ParseMetadataResult,
+		ScrapeRecord
+	} from '$lib/api/scraper';
 	import { parseMetadata, parseOne } from '$lib/api/scraper';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import { useQueryClient } from '@tanstack/svelte-query';
@@ -620,7 +626,9 @@
 										>
 										<td class="px-4 py-2 text-sm">{entry.year || '-'}</td>
 										<td class="px-4 py-2 text-center">
-											<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+											<span
+												class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700"
+											>
 												L{entry.layer}
 											</span>
 										</td>
@@ -884,7 +892,9 @@
 											{metadata?.si_code?.join(', ') || '-'}
 										</td>
 										<td class="px-2 py-2 text-center">
-											<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+											<span
+												class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700"
+											>
 												L{entry.layer}
 											</span>
 										</td>
@@ -991,14 +1001,19 @@
 											class="px-4 py-2 text-sm text-gray-600 max-w-xs truncate"
 											title={entry.title_en}>{entry.title_en || '-'}</td
 										>
-										<td class="px-4 py-2 text-xs text-gray-500 max-w-xs truncate" title={entry.current_enacting?.join(', ') || ''}>
+										<td
+											class="px-4 py-2 text-xs text-gray-500 max-w-xs truncate"
+											title={entry.current_enacting?.join(', ') || ''}
+										>
 											{#if entry.current_enacting && entry.current_enacting.length > 0}
 												{entry.current_enacting.join(', ')}
 											{:else}
 												<span class="text-gray-400">None</span>
 											{/if}
 										</td>
-										<td class="px-4 py-2 text-xs text-green-600 font-medium">{entry.source_laws.join(', ')}</td>
+										<td class="px-4 py-2 text-xs text-green-600 font-medium"
+											>{entry.source_laws.join(', ')}</td
+										>
 										<td class="px-4 py-2 text-right">
 											<button
 												on:click={() => handleDeleteEntry(entry.id)}

@@ -252,7 +252,10 @@ describe('RecordDiff diff logic', () => {
 			const changedFields = delta ? Object.keys(delta).filter((k) => !k.startsWith('_')) : [];
 
 			expect(changedFields).toEqual(['family']);
-			expect((delta as any).family).toEqual(['Environmental Protection', 'OH&S: Occupational Safety']);
+			expect((delta as any).family).toEqual([
+				'Environmental Protection',
+				'OH&S: Occupational Safety'
+			]);
 		});
 
 		it('detects multiple field changes during re-parse', () => {

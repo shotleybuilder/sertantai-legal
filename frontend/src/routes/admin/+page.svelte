@@ -35,12 +35,9 @@
 			]);
 
 			// LRT filters: families + years
-			const filtersData = filtersRes.ok
-				? await filtersRes.json()
-				: { families: [], years: [] };
+			const filtersData = filtersRes.ok ? await filtersRes.json() : { families: [], years: [] };
 			const years: number[] = filtersData.years ?? [];
-			const yearRange =
-				years.length > 0 ? `${years[years.length - 1]}–${years[0]}` : '—';
+			const yearRange = years.length > 0 ? `${years[years.length - 1]}–${years[0]}` : '—';
 
 			// LAT stats
 			const latData = latRes.ok ? await latRes.json() : null;

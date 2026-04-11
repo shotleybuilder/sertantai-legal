@@ -7,10 +7,7 @@
 import { test, expect } from './helpers/fixtures';
 
 test.describe('Auth callback', () => {
-	test('stores token and redirects to /admin on valid token', async ({
-		page,
-		createUser
-	}) => {
+	test('stores token and redirects to /admin on valid token', async ({ page, createUser }) => {
 		const user = await createUser({ role: 'admin' });
 
 		await page.goto(`/auth/callback?token=${user.token}`);
@@ -22,9 +19,7 @@ test.describe('Auth callback', () => {
 		await page.waitForURL('/admin');
 
 		// Token should be stored in localStorage
-		const storedToken = await page.evaluate(() =>
-			localStorage.getItem('sertantai_token')
-		);
+		const storedToken = await page.evaluate(() => localStorage.getItem('sertantai_token'));
 		expect(storedToken).toBe(user.token);
 
 		// Should see the admin dashboard (authenticated)

@@ -69,9 +69,7 @@
 			case 'array':
 				if (!Array.isArray(val)) return String(val);
 				if (val.length === 0) return '(none)';
-				return val
-					.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v)))
-					.join(', ');
+				return val.map((v) => (typeof v === 'object' ? JSON.stringify(v) : String(v))).join(', ');
 
 			case 'json':
 				if (typeof val !== 'object') return String(val);

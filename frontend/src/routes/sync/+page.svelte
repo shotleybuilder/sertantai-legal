@@ -155,19 +155,34 @@
 
 	function resetProfileForm() {
 		profileForm = {
-			name: '', families: [], geo_regions: null, function_filter: null,
-			fitness_person: null, fitness_process: null, fitness_place: null,
-			fitness_plant: null, fitness_sector: null, live_filter: null,
-			include_lat: false, include_amendments: false
+			name: '',
+			families: [],
+			geo_regions: null,
+			function_filter: null,
+			fitness_person: null,
+			fitness_process: null,
+			fitness_place: null,
+			fitness_plant: null,
+			fitness_sector: null,
+			live_filter: null,
+			include_lat: false,
+			include_amendments: false
 		};
 		previewCount = null;
 	}
 
 	function resetConfigForm() {
 		configForm = {
-			name: '', sync_profile_id: '', provider: 'baserow',
-			base_url: '', lrt_table_id: '', lat_table_id: '', database_token: '',
-			sync_frequency: 'manual', on_filter_change: 'delete', on_entitlement_change: 'delete'
+			name: '',
+			sync_profile_id: '',
+			provider: 'baserow',
+			base_url: '',
+			lrt_table_id: '',
+			lat_table_id: '',
+			database_token: '',
+			sync_frequency: 'manual',
+			on_filter_change: 'delete',
+			on_entitlement_change: 'delete'
 		};
 		testResult = null;
 	}
@@ -182,11 +197,18 @@
 
 	function statusColor(status: string): string {
 		switch (status) {
-			case 'completed': return 'bg-green-100 text-green-700';
-			case 'running': case 'syncing': case 'queued': return 'bg-blue-100 text-blue-700';
-			case 'failed': return 'bg-red-100 text-red-700';
-			case 'idle': return 'bg-gray-100 text-gray-600';
-			default: return 'bg-gray-100 text-gray-600';
+			case 'completed':
+				return 'bg-green-100 text-green-700';
+			case 'running':
+			case 'syncing':
+			case 'queued':
+				return 'bg-blue-100 text-blue-700';
+			case 'failed':
+				return 'bg-red-100 text-red-700';
+			case 'idle':
+				return 'bg-gray-100 text-gray-600';
+			default:
+				return 'bg-gray-100 text-gray-600';
 		}
 	}
 
@@ -208,7 +230,9 @@
 		<div class="text-gray-500">Loading...</div>
 	{:else}
 		{#if error}
-			<div class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+			<div class="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+				{error}
+			</div>
 		{/if}
 
 		<!-- Entitlement Section -->
@@ -241,7 +265,8 @@
 				</div>
 			{:else}
 				<div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-					No entitlement found. Entitlements are pushed from the Hub when your organisation subscribes.
+					No entitlement found. Entitlements are pushed from the Hub when your organisation
+					subscribes.
 				</div>
 			{/if}
 		</section>
@@ -251,7 +276,10 @@
 			<div class="mb-3 flex items-center justify-between">
 				<h2 class="text-lg font-semibold text-gray-800">Sync Profiles</h2>
 				<button
-					on:click={() => { showProfileForm = !showProfileForm; if (!showProfileForm) resetProfileForm(); }}
+					on:click={() => {
+						showProfileForm = !showProfileForm;
+						if (!showProfileForm) resetProfileForm();
+					}}
 					class="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
 				>
 					{showProfileForm ? 'Cancel' : 'New Profile'}
@@ -263,8 +291,13 @@
 					<div class="space-y-4">
 						<div>
 							<label for="profile-name" class="block text-sm font-medium text-gray-700">Name</label>
-							<input id="profile-name" bind:value={profileForm.name} type="text" placeholder="e.g. Construction H&S"
-								class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+							<input
+								id="profile-name"
+								bind:value={profileForm.name}
+								type="text"
+								placeholder="e.g. Construction H&S"
+								class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+							/>
 						</div>
 
 						{#if entitlement}
@@ -273,8 +306,11 @@
 								<div class="mt-1 max-h-48 overflow-y-auto rounded border border-gray-200 p-2">
 									{#each entitlement.families as family}
 										<label class="flex items-center gap-2 py-0.5 text-sm">
-											<input type="checkbox" checked={profileForm.families.includes(family)}
-												on:change={() => toggleFamily(family)} />
+											<input
+												type="checkbox"
+												checked={profileForm.families.includes(family)}
+												on:change={() => toggleFamily(family)}
+											/>
 											{family}
 										</label>
 									{/each}
@@ -294,9 +330,11 @@
 						</div>
 
 						<div class="flex items-center gap-3">
-							<button on:click={handlePreview}
+							<button
+								on:click={handlePreview}
 								class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
-								disabled={profileForm.families.length === 0}>
+								disabled={profileForm.families.length === 0}
+							>
 								Preview Count
 							</button>
 							{#if previewCount}
@@ -306,9 +344,11 @@
 							{/if}
 						</div>
 
-						<button on:click={handleCreateProfile}
+						<button
+							on:click={handleCreateProfile}
 							class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-							disabled={!profileForm.name || profileForm.families.length === 0}>
+							disabled={!profileForm.name || profileForm.families.length === 0}
+						>
 							Create Profile
 						</button>
 					</div>
@@ -320,12 +360,16 @@
 			{:else}
 				<div class="space-y-2">
 					{#each profiles as profile}
-						<div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3">
+						<div
+							class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3"
+						>
 							<div>
 								<div class="flex items-center gap-2">
 									<span class="font-medium text-gray-900">{profile.name}</span>
 									{#if !profile.is_active}
-										<span class="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">Inactive</span>
+										<span class="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700"
+											>Inactive</span
+										>
 									{/if}
 								</div>
 								<div class="mt-1 text-xs text-gray-500">
@@ -338,8 +382,10 @@
 									{/if}
 								</div>
 							</div>
-							<button on:click={() => handleDeleteProfile(profile.id)}
-								class="text-sm text-red-500 hover:text-red-700">Delete</button>
+							<button
+								on:click={() => handleDeleteProfile(profile.id)}
+								class="text-sm text-red-500 hover:text-red-700">Delete</button
+							>
 						</div>
 					{/each}
 				</div>
@@ -351,7 +397,10 @@
 			<div class="mb-3 flex items-center justify-between">
 				<h2 class="text-lg font-semibold text-gray-800">Sync Configurations</h2>
 				<button
-					on:click={() => { showConfigForm = !showConfigForm; if (!showConfigForm) resetConfigForm(); }}
+					on:click={() => {
+						showConfigForm = !showConfigForm;
+						if (!showConfigForm) resetConfigForm();
+					}}
 					class="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
 					disabled={profiles.length === 0}
 				>
@@ -364,16 +413,26 @@
 					<div class="space-y-4">
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label for="config-name" class="block text-sm font-medium text-gray-700">Name</label>
-								<input id="config-name" bind:value={configForm.name} type="text"
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+								<label for="config-name" class="block text-sm font-medium text-gray-700">Name</label
+								>
+								<input
+									id="config-name"
+									bind:value={configForm.name}
+									type="text"
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								/>
 							</div>
 							<div>
-								<label for="config-profile" class="block text-sm font-medium text-gray-700">Profile</label>
-								<select id="config-profile" bind:value={configForm.sync_profile_id}
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm">
+								<label for="config-profile" class="block text-sm font-medium text-gray-700"
+									>Profile</label
+								>
+								<select
+									id="config-profile"
+									bind:value={configForm.sync_profile_id}
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								>
 									<option value="">Select profile...</option>
-									{#each profiles.filter(p => p.is_active) as p}
+									{#each profiles.filter((p) => p.is_active) as p}
 										<option value={p.id}>{p.name}</option>
 									{/each}
 								</select>
@@ -382,33 +441,62 @@
 
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label for="config-url" class="block text-sm font-medium text-gray-700">Baserow URL</label>
-								<input id="config-url" bind:value={configForm.base_url} type="text"
+								<label for="config-url" class="block text-sm font-medium text-gray-700"
+									>Baserow URL</label
+								>
+								<input
+									id="config-url"
+									bind:value={configForm.base_url}
+									type="text"
 									placeholder="https://baserow.example.com"
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								/>
 							</div>
 							<div>
-								<label for="config-token" class="block text-sm font-medium text-gray-700">Database Token</label>
-								<input id="config-token" bind:value={configForm.database_token} type="password"
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+								<label for="config-token" class="block text-sm font-medium text-gray-700"
+									>Database Token</label
+								>
+								<input
+									id="config-token"
+									bind:value={configForm.database_token}
+									type="password"
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								/>
 							</div>
 						</div>
 
 						<div class="grid grid-cols-3 gap-4">
 							<div>
-								<label for="config-lrt" class="block text-sm font-medium text-gray-700">LRT Table ID</label>
-								<input id="config-lrt" bind:value={configForm.lrt_table_id} type="text"
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+								<label for="config-lrt" class="block text-sm font-medium text-gray-700"
+									>LRT Table ID</label
+								>
+								<input
+									id="config-lrt"
+									bind:value={configForm.lrt_table_id}
+									type="text"
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								/>
 							</div>
 							<div>
-								<label for="config-lat" class="block text-sm font-medium text-gray-700">LAT Table ID (optional)</label>
-								<input id="config-lat" bind:value={configForm.lat_table_id} type="text"
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+								<label for="config-lat" class="block text-sm font-medium text-gray-700"
+									>LAT Table ID (optional)</label
+								>
+								<input
+									id="config-lat"
+									bind:value={configForm.lat_table_id}
+									type="text"
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								/>
 							</div>
 							<div>
-								<label for="config-freq" class="block text-sm font-medium text-gray-700">Frequency</label>
-								<select id="config-freq" bind:value={configForm.sync_frequency}
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm">
+								<label for="config-freq" class="block text-sm font-medium text-gray-700"
+									>Frequency</label
+								>
+								<select
+									id="config-freq"
+									bind:value={configForm.sync_frequency}
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								>
 									<option value="manual">Manual</option>
 									<option value="daily">Daily</option>
 									<option value="weekly">Weekly</option>
@@ -418,26 +506,42 @@
 
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label for="config-filter-change" class="block text-sm font-medium text-gray-700">On filter change</label>
-								<select id="config-filter-change" bind:value={configForm.on_filter_change}
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm">
+								<label for="config-filter-change" class="block text-sm font-medium text-gray-700"
+									>On filter change</label
+								>
+								<select
+									id="config-filter-change"
+									bind:value={configForm.on_filter_change}
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								>
 									<option value="delete">Delete rows from target</option>
 									<option value="retain">Retain rows (stop updating)</option>
 								</select>
 							</div>
 							<div>
-								<label for="config-ent-change" class="block text-sm font-medium text-gray-700">On entitlement change</label>
-								<select id="config-ent-change" bind:value={configForm.on_entitlement_change}
-									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm">
+								<label for="config-ent-change" class="block text-sm font-medium text-gray-700"
+									>On entitlement change</label
+								>
+								<select
+									id="config-ent-change"
+									bind:value={configForm.on_entitlement_change}
+									class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+								>
 									<option value="delete">Delete rows from target</option>
 									<option value="retain">Retain rows (stop updating)</option>
 								</select>
 							</div>
 						</div>
 
-						<button on:click={handleCreateConfig}
+						<button
+							on:click={handleCreateConfig}
 							class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-							disabled={!configForm.name || !configForm.sync_profile_id || !configForm.base_url || !configForm.database_token || !configForm.lrt_table_id}>
+							disabled={!configForm.name ||
+								!configForm.sync_profile_id ||
+								!configForm.base_url ||
+								!configForm.database_token ||
+								!configForm.lrt_table_id}
+						>
 							Create Configuration
 						</button>
 					</div>
@@ -457,7 +561,9 @@
 										<span class="rounded px-1.5 py-0.5 text-xs {statusColor(config.sync_status)}">
 											{config.sync_status}
 										</span>
-										<span class="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">{config.provider}</span>
+										<span class="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+											>{config.provider}</span
+										>
 									</div>
 									<div class="mt-1 text-xs text-gray-500">
 										{config.sync_frequency}
@@ -470,13 +576,17 @@
 									</div>
 								</div>
 								<div class="flex items-center gap-2">
-									<button on:click={() => handleTestConnection(config.id)}
-										class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50">
+									<button
+										on:click={() => handleTestConnection(config.id)}
+										class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+									>
 										Test
 									</button>
-									<button on:click={() => handleTriggerSync(config.id)}
+									<button
+										on:click={() => handleTriggerSync(config.id)}
 										class="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700"
-										disabled={config.sync_status === 'syncing' || config.sync_status === 'queued'}>
+										disabled={config.sync_status === 'syncing' || config.sync_status === 'queued'}
+									>
 										Sync Now
 									</button>
 								</div>
@@ -516,7 +626,9 @@
 							{#each jobs as job}
 								<tr class="border-b border-gray-100">
 									<td class="px-4 py-2">
-										<span class="rounded px-1.5 py-0.5 text-xs {statusColor(job.status)}">{job.status}</span>
+										<span class="rounded px-1.5 py-0.5 text-xs {statusColor(job.status)}"
+											>{job.status}</span
+										>
 									</td>
 									<td class="px-4 py-2 text-gray-600">{formatDate(job.started_at)}</td>
 									<td class="px-4 py-2 text-right">{job.law_count ?? '-'}</td>

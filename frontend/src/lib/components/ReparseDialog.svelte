@@ -201,10 +201,7 @@
 					<!-- Sub-Family (optional) -->
 					{#if subFamilyOptions.length > 0}
 						<div>
-							<label
-								for="reparse-family-ii"
-								class="block text-sm font-medium text-gray-700 mb-1"
-							>
+							<label for="reparse-family-ii" class="block text-sm font-medium text-gray-700 mb-1">
 								Sub-Family
 							</label>
 							<select
@@ -247,8 +244,7 @@
 									class="px-3 py-1 text-sm rounded-full border {selectedFunction === fn
 										? 'bg-blue-100 border-blue-500 text-blue-700'
 										: 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}"
-									on:click={() =>
-										(selectedFunction = selectedFunction === fn ? '' : fn)}
+									on:click={() => (selectedFunction = selectedFunction === fn ? '' : fn)}
 								>
 									{fn}
 								</button>

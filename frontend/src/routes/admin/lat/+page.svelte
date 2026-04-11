@@ -32,9 +32,7 @@
 
 	$: statsQuery = useLatStatsQuery();
 	$: lawsQuery = useLatLawsQuery(searchDebounced || undefined, typeFilter || undefined);
-	$: rowsQuery = selectedLaw
-		? useLatRowsQuery(selectedLaw.law_name, latLimit, latOffset)
-		: null;
+	$: rowsQuery = selectedLaw ? useLatRowsQuery(selectedLaw.law_name, latLimit, latOffset) : null;
 	$: annotationsQuery = selectedLaw ? useAnnotationsQuery(selectedLaw.law_name) : null;
 	$: reparseMutation = useReparseMutation();
 
@@ -189,10 +187,7 @@
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold text-gray-900">Legal Articles Table</h1>
 		{#if selectedLaw}
-			<button
-				on:click={deselectLaw}
-				class="text-sm text-gray-500 hover:text-gray-700"
-			>
+			<button on:click={deselectLaw} class="text-sm text-gray-500 hover:text-gray-700">
 				&larr; Back to law list
 			</button>
 		{/if}
@@ -355,11 +350,7 @@
 					>
 						{#if $reparseMutation?.isPending}
 							<span class="inline-flex items-center gap-1">
-								<svg
-									class="animate-spin h-3.5 w-3.5"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
+								<svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
 									<circle
 										class="opacity-25"
 										cx="12"
@@ -431,22 +422,16 @@
 						<table class="min-w-full divide-y divide-gray-200">
 							<thead class="bg-gray-50">
 								<tr>
-									<th
-										class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24"
-									>
+									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">
 										Type
 									</th>
-									<th
-										class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24"
-									>
+									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">
 										Citation
 									</th>
 									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
 										Text
 									</th>
-									<th
-										class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-16"
-									>
+									<th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-16">
 										Ann.
 									</th>
 								</tr>
@@ -511,7 +496,9 @@
 							</button>
 						</div>
 					{:else if totalLatCount > 0}
-						<div class="px-4 py-2 border-t border-gray-200 bg-gray-50 text-center text-xs text-gray-500">
+						<div
+							class="px-4 py-2 border-t border-gray-200 bg-gray-50 text-center text-xs text-gray-500"
+						>
 							Showing all {totalLatCount} rows
 						</div>
 					{/if}
@@ -529,22 +516,16 @@
 						<table class="min-w-full divide-y divide-gray-200">
 							<thead class="bg-gray-50">
 								<tr>
-									<th
-										class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20"
-									>
+									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">
 										Code
 									</th>
-									<th
-										class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-28"
-									>
+									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-28">
 										Type
 									</th>
 									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
 										Text
 									</th>
-									<th
-										class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-32"
-									>
+									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-32">
 										Source
 									</th>
 									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">

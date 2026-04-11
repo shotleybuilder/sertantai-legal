@@ -105,9 +105,7 @@ export async function fetchProfiles(): Promise<SyncProfile[]> {
 	return data.profiles;
 }
 
-export async function createProfile(
-	profile: Partial<SyncProfile>
-): Promise<SyncProfile> {
+export async function createProfile(profile: Partial<SyncProfile>): Promise<SyncProfile> {
 	const res = await adminFetch(`${API_URL}/api/sync/profiles`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -199,9 +197,7 @@ export async function testConnection(
 	return res.json();
 }
 
-export async function triggerSync(
-	id: string
-): Promise<{ ok: boolean; message: string }> {
+export async function triggerSync(id: string): Promise<{ ok: boolean; message: string }> {
 	const res = await adminFetch(`${API_URL}/api/sync/configurations/${id}/sync`, {
 		method: 'POST'
 	});
