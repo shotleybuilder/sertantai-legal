@@ -25,7 +25,8 @@ Three data stores need to stay in sync, and a new-device bootstrap story is miss
 
 | Capability | Mechanism | Notes |
 |------------|-----------|-------|
-| Dev DB seed from scratch | SQL dump + CSV enrichment scripts | Manual, ~10 min, documented in CLAUDE.md |
+| Dev DB seed from scratch | SQL dump + CSV enrichment scripts | Legacy method — replaced by NAS snapshot import |
+| **Dev DB portable snapshot** | **`scripts/nas/export-snapshot.sh` + `import-snapshot.sh`** | **6 tables, ~60MB compressed, SHA256 verified. NAS mount at `/mnt/nas/sertantai-data`** |
 | Dev → Prod column-safe export | `scripts/gen_dump.py` | TSV dump of uk_lrt, sessions, cascade — targets prod-compatible columns only |
 | Zenoh LRT/LAT pull | `DataServer` queryables | Fractalaw queries sertantai-legal for full table snapshots (Arrow IPC) |
 | Zenoh taxa push | `TaxaSubscriber` | Fractalaw pushes enrichment results back — auto-upserts UkLrt rows |
@@ -37,7 +38,7 @@ Three data stores need to stay in sync, and a new-device bootstrap story is miss
 
 - **No bidirectional dev↔prod sync** — only a one-way TSV export exists
 - **No automated promotion workflow** — deciding which dev changes go to prod is manual
-- **No portable dev DB snapshot** — new device requires SQL dump files that live outside the repo
+- ~~**No portable dev DB snapshot**~~ — **SOLVED**: NAS snapshot export/import (Layer 1)
 - **No conflict resolution strategy** — if both dev and prod diverge, no merge logic exists
 
 ---
@@ -57,48 +58,50 @@ Three data stores need to stay in sync, and a new-device bootstrap story is miss
 | **C. Git LFS in main repo** | Single clone | LFS storage costs, same growth problem as B |
 | **D. Object storage (S3/Hetzner)** | Scales indefinitely, accessible anywhere | Ongoing cost, requires infra, not offline-friendly |
 
-**Recommendation**: **Option A — Office NAS** as the primary data store, with the option to add Tailscale/WireGuard for off-site access later. Reasons:
+**Decision**: **Option A — Office NAS** implemented. See `nas-data-sync` skill for full details.
 
-- The dataset will grow significantly (more countries, full legislative text, embeddings) — git-based options hit scaling walls
-- A NAS provides versioned snapshots natively (ZFS/Btrfs snapshots or RAID with scheduled rsync)
-- No recurring cloud storage costs
-- The NAS can also serve as the canonical location for Airtable exports, SQL dumps, and enrichment artefacts that currently live in `~/Documents/`
+**Implementation details** (completed 2026-04-11):
+- **Hardware**: UGREEN DXP2800 (`dxp2800-7f35`), btrfs RAID 2, IP `192.168.1.80`
+- **Protocol**: SMB3 (NFS is broken on UGREEN firmware — `rpc.mountd` causes kernel soft lockup)
+- **Mount**: `/mnt/nas/sertantai-data` via fstab with `vers=3.0,x-systemd.automount,nofail`
+- **Credentials**: `/etc/nas-creds` (NAS password must not contain special characters)
+- **Network**: Linksys range extender switched from router mode to bridge mode to put dev machine on same `192.168.1.x` subnet as NAS
+- **Enrichment files**: NOT stored on NAS — the sync is between postgres instances, not Airtable CSVs
 
-**NAS directory structure**:
+**NAS directory structure** (as implemented):
 ```
-/nas/sertantai-data/                    # SMB/NFS mount
-├── snapshots/
-│   ├── latest/
-│   │   ├── uk_lrt.dump                 # pg_dump -Fc (custom format, compressed)
-│   │   ├── lat.dump
-│   │   ├── amendment_annotations.dump
-│   │   ├── scrape_sessions.dump
-│   │   ├── scrape_session_records.dump
-│   │   ├── cascade_affected_laws.dump
-│   │   └── manifest.json               # versions, row counts, checksums, date
-│   └── archive/                        # Timestamped older snapshots (auto-rotated)
-│       └── 2026-03-31/
-├── enrichment/
-│   └── UK-EXPORT.csv                   # Canonical Airtable export (moved from ~/Documents)
-├── deltas/                             # Dev→Prod delta SQL files (Layer 2)
-│   └── 2026-03-31-dev-to-prod.sql
-└── scripts/
-    ├── export-snapshot.sh              # Dumps dev DB → snapshots/latest/
-    └── import-snapshot.sh              # Restores snapshots/latest/ → dev DB
+/mnt/nas/sertantai-data/
+└── data/
+    ├── snapshots/
+    │   ├── latest/                     # Current pg_dump files + manifest.json
+    │   │   ├── uk_lrt.dump             # 19K rows, ~39MB
+    │   │   ├── lat.dump                # 152K rows, ~14MB
+    │   │   ├── amendment_annotations.dump  # 24K rows, ~800KB
+    │   │   ├── scrape_sessions.dump    # 53 rows
+    │   │   ├── scrape_session_records.dump  # 7K rows, ~5MB
+    │   │   ├── cascade_affected_laws.dump   # 6K rows, ~300KB
+    │   │   └── manifest.json           # date, row counts, file sizes, SHA256 checksums
+    │   └── archive/                    # Timestamped older snapshots
+    ├── deltas/                         # Dev→Prod delta SQL files (Layer 2, future)
+    └── scripts/                        # Standalone copies of export/import scripts
 ```
 
-**Local mount point**: `/mnt/nas/sertantai-data` or symlinked to `~/nas/sertantai-data`
+**Scripts** (in repo at `scripts/nas/`):
+```bash
+./scripts/nas/export-snapshot.sh              # Dump dev DB → NAS snapshots/latest/
+./scripts/nas/export-snapshot.sh --archive    # Archive previous snapshot first
+./scripts/nas/import-snapshot.sh              # Restore NAS → dev DB (with checksum verification)
+./scripts/nas/import-snapshot.sh --verify-only # Check checksums without restoring
+```
 
 **Bootstrap command** (new device on office LAN):
 ```bash
-# Mount NAS (one-time setup)
-sudo mount -t cifs //nas/sertantai-data /mnt/nas/sertantai-data -o credentials=/etc/nas-creds
-
-# Bootstrap database
+# One-time NAS mount setup — see nas-data-sync skill for details
+# Then:
 cd ~/Desktop/sertantai-legal
 docker-compose -f docker-compose.dev.yml up -d postgres
-mix ash.setup
-/mnt/nas/sertantai-data/scripts/import-snapshot.sh
+cd backend && unset DATABASE_URL && mix ash.setup && cd ..
+./scripts/nas/import-snapshot.sh
 ```
 
 **Off-site access** (future): Tailscale mesh or WireGuard tunnel to office network exposes the NAS mount. Alternatively, a periodic `rsync` of `snapshots/latest/` to Hetzner provides a cloud fallback.
@@ -167,15 +170,21 @@ mix ash.setup
 
 ## Implementation Phases
 
-### Phase 1: NAS Setup + Portable Snapshots (foundation)
-- [ ] Commission NAS — set up SMB/NFS share, create `sertantai-data` directory structure
-- [ ] Configure mount point on dev machine (`/mnt/nas/sertantai-data` or symlink)
-- [ ] Write `export-snapshot.sh` — dumps all tables from dev DB using `pg_dump -Fc` to NAS
-- [ ] Write `import-snapshot.sh` — restores from NAS snapshots into a fresh dev DB
-- [ ] Write `manifest.json` generator (row counts, checksums, date)
-- [ ] Move canonical data files from `~/Documents/` to NAS (Airtable exports, SQL dumps)
-- [ ] Update CLAUDE.md bootstrap docs to reference NAS + snapshot import
-- [ ] First snapshot: capture current dev DB state
+### Phase 1: NAS Setup + Portable Snapshots (foundation) — COMPLETED 2026-04-11
+- [x] Commission NAS — UGREEN DXP2800, btrfs RAID 2, SMB3 (`cf35bc5`)
+- [x] Configure mount point on dev machine (`/mnt/nas/sertantai-data`, fstab automount)
+- [x] Write `scripts/nas/export-snapshot.sh` — pg_dump custom format, compressed, 6 tables
+- [x] Write `scripts/nas/import-snapshot.sh` — restore with SHA256 checksum verification
+- [x] Manifest generated inline by export script (row counts, sizes, checksums, date)
+- [x] CLAUDE.md bootstrap docs updated — NAS snapshot is primary method
+- [x] `nas-data-sync` skill created with full mount config + troubleshooting
+- [x] First snapshot captured: 210K+ rows, ~60MB compressed
+- [x] Linksys range extender reconfigured to bridge mode (was isolating subnets)
+- [x] NFS evaluated and rejected — UGREEN firmware bug causes kernel soft lockup
+
+**Not done** (descoped):
+- Airtable CSV files NOT moved to NAS — not needed for postgres-to-postgres sync
+- `enrichment/` directory exists but unused
 
 ### Phase 2: Delta Export/Import (dev→prod)
 - [ ] Create `Mix.Tasks.Data.ExportDelta` — timestamp-based differential export
@@ -196,19 +205,17 @@ mix ash.setup
 
 ---
 
-## Key Decisions Needed
+## Key Decisions
 
-1. **Source of truth convention**: Is dev always the authoring environment, or will prod also be used for scraping? This determines whether Layer 3 is needed.
+### Decided
+1. **NAS configuration**: UGREEN DXP2800, btrfs RAID 2, SMB3 (NFS broken). Mount via fstab automount. Credentials in `/etc/nas-creds`.
+2. **Source of truth convention**: Dev is the authoring environment. Layer 3 (prod→dev) deferred unless prod scraping is introduced.
 
-2. **NAS configuration**: Filesystem (ZFS for snapshots? Btrfs? ext4 + rsync?), RAID level, SMB vs NFS, access credentials. Also: Tailscale/WireGuard for off-site NAS access — needed if working remotely.
-
+### Still Needed
 3. **Delta granularity**: Table-level (all changed rows) vs field-level (only changed columns)? Table-level is simpler and `record_change_log` provides auditability.
-
 4. **Cloud fallback**: Whether to periodically `rsync` NAS snapshots to Hetzner (or another cloud location) as a backup and for off-site bootstrap without VPN.
-
-4. **Sync frequency**: Manual (ad-hoc promotion) vs scheduled (e.g., weekly)? Start manual, automate later if needed.
-
-5. **Fractalaw WAN approach**: Needs its own analysis — impacts enrichment workflow significantly.
+5. **Sync frequency**: Manual (ad-hoc promotion) vs scheduled (e.g., weekly)? Start manual, automate later if needed.
+6. **Fractalaw WAN approach**: Needs its own analysis — impacts enrichment workflow significantly.
 
 ---
 
@@ -218,6 +225,6 @@ mix ash.setup
 |------|--------|------------|
 | ID collision (UUIDs) | Low — UUIDs are globally unique | No action needed |
 | Schema drift between dev and prod | High — delta SQL may fail | Always run migrations on prod before applying deltas |
-| Large snapshot sizes | Medium — 19K LRT + 97K LAT ~100-200MB compressed | pg_dump custom format is well-compressed; archive rotation |
+| Large snapshot sizes | Low — actual first snapshot is ~60MB (19K LRT + 152K LAT + 38K other) | pg_dump custom format is well-compressed; archive rotation available via `--archive` flag |
 | Enrichment data loss during promotion | Medium — taxa fields could be overwritten | Delta export includes all columns; `record_change_log` provides rollback data |
 | Accidental prod write from dev tooling | High | `ApplyDelta` requires explicit `--target prod` flag + confirmation prompt |

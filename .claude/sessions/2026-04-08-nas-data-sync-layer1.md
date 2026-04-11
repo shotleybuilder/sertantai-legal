@@ -3,22 +3,25 @@
 **Started**: 2026-04-08
 **Plan**: `.claude/plans/DATA-SYNC.md` — Layer 1, Option A (NAS)
 
-## Context
-- UGREEN NAS on LAN, btrfs, RAID 2
-- No directory structure exists yet — needs initial config
-- Goal: portable dev DB snapshots on NAS, secure sertantai directories
-
 ## Todo
-- [ ] Design NAS directory structure + permissions/security
-- [ ] Document NAS network config (SMB/NFS share setup)
-- [ ] Create mount point config for dev machine
-- [ ] Write `export-snapshot.sh` — dumps dev DB tables to NAS
-- [ ] Write `import-snapshot.sh` — restores from NAS snapshots
-- [ ] Write `manifest.json` generator (row counts, checksums, date)
-- [ ] Move canonical data files from ~/Documents/ to NAS
-- [ ] Update CLAUDE.md bootstrap docs to reference NAS
-- [ ] First snapshot: capture current dev DB state
+- [x] NAS setup: UGREEN DXP2800, btrfs RAID 2, SMB3
+- [x] Linksys range extender switched to bridge mode (was routing separate 10.203.1.x subnet)
+- [x] NFS attempted — broken on UGREEN firmware (kernel soft lockup in rpc.mountd)
+- [x] SMB3 mount working: `/mnt/nas/sertantai-data`
+- [x] fstab entry with `vers=3.0,x-systemd.automount,nofail`
+- [x] Directory structure created on NAS: `data/{snapshots/latest,snapshots/archive,deltas,scripts}`
+- [x] `scripts/nas/export-snapshot.sh` — pg_dump custom format + manifest
+- [x] `scripts/nas/import-snapshot.sh` — restore with checksum verification
+- [x] First snapshot captured: 210K+ rows, ~60MB (6 tables)
+- [x] `nas-data-sync` skill created (`.claude/skills/nas-data-sync/`)
+- [x] CLAUDE.md trimmed — NAS details moved to skill
+- [x] docker-restart skill updated with NAS recovery path
+- [x] CI fixes: package-lock.json tracked, DB port/name fixed in ci.yml + backend-ci.yml
+- [x] Committed + pushed: `cf35bc5`
+- [ ] Verify CI passes on GitHub
 
 ## Notes
-- NAS is btrfs RAID 2 — native snapshots available
-- Plan specifies: `/nas/sertantai-data/` with snapshots/, enrichment/, deltas/, scripts/
+- NAS IP: `192.168.1.80`, credentials in `/etc/nas-creds`
+- NAS password must not contain special characters (CIFS limitation)
+- NFS is unusable on this UGREEN firmware — do not re-enable
+- Layer 2 (dev→prod delta sync) not yet started
