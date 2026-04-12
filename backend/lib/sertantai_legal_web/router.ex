@@ -192,5 +192,8 @@ defmodule SertantaiLegalWeb.Router do
     get("/analytics/sessions", AnalyticsController, :sessions)
     get("/analytics/live-status", AnalyticsController, :live_status)
     get("/analytics/live-status/misclassified", AnalyticsController, :misclassified_names)
+
+    # Data sync pipeline visibility
+    get("/sync/status", SyncAdminController, :status)
   end
 end
