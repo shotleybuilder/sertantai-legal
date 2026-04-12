@@ -34,6 +34,27 @@ for arg in "$@"; do
     esac
 done
 
+# ============================================================================
+# Terminal emulator detection (Ubuntu=gnome-terminal, Bluefin/Fedora=ptyxis)
+# ============================================================================
+if command -v gnome-terminal &>/dev/null; then
+    TERMINAL_CMD="gnome-terminal"
+elif command -v ptyxis &>/dev/null; then
+    TERMINAL_CMD="ptyxis"
+else
+    echo "Error: No supported terminal emulator found (gnome-terminal or ptyxis)"
+    exit 1
+fi
+
+open_tab() {
+    local title="$1" dir="$2" cmd="$3"
+    if [ "$TERMINAL_CMD" = "gnome-terminal" ]; then
+        gnome-terminal --tab --title="$title" --working-directory="$dir" -- bash -c "$cmd" &
+    else
+        ptyxis --tab -T "$title" -d "$dir" -x "bash -c '$cmd'" &
+    fi
+}
+
 # Resolve symlink to get the actual script path
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
@@ -148,26 +169,14 @@ fi
 # ============================================================================
 echo "Opening terminal tabs..."
 
-LAUNCHER_SCRIPT=$(mktemp)
-
-cat > "$LAUNCHER_SCRIPT" << LAUNCHER_EOF
-#!/bin/bash
-
-PROJECT_ROOT="$PROJECT_ROOT"
-
 # Phoenix backend — unset AUTH_URL for admin-only mode
-gnome-terminal --tab --title="legal-admin-backend" --working-directory="\$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend (ADMIN-ONLY mode) on port 4003..."; echo "JWT tenant auth DISABLED (no sertantai-auth)"; echo "GitHub OAuth admin auth ENABLED"; echo ""; unset DATABASE_URL; unset AUTH_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+BACKEND_CMD='echo "Starting Phoenix backend (ADMIN-ONLY mode) on port 4003..."; echo "JWT tenant auth DISABLED (no sertantai-auth)"; echo "GitHub OAuth admin auth ENABLED"; echo ""; unset DATABASE_URL; unset AUTH_URL; mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read'
+open_tab "legal-admin-backend" "$PROJECT_ROOT/backend" "$BACKEND_CMD"
 sleep 0.3
 
 # SvelteKit frontend
-gnome-terminal --tab --title="legal-admin-frontend" --working-directory="\$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5175..."; echo ""; npm run dev; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
-
-wait
-LAUNCHER_EOF
-
-chmod +x "$LAUNCHER_SCRIPT"
-
-gnome-terminal --window -- bash -c "$LAUNCHER_SCRIPT; rm -f $LAUNCHER_SCRIPT"
+FRONTEND_CMD='echo "Starting SvelteKit frontend on port 5175..."; echo ""; npm run dev; echo ""; echo "Service stopped. Press Enter to close tab..."; read'
+open_tab "legal-admin-frontend" "$PROJECT_ROOT/frontend" "$FRONTEND_CMD"
 
 echo ""
 echo "Admin-only development servers starting!"

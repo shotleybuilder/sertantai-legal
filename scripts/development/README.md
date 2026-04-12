@@ -127,7 +127,7 @@ The scripts expect sertantai-hub at `~/Desktop/sertantai-hub`. If your layout di
 
 ## Prerequisites
 
-- **gnome-terminal** (Ubuntu default)
+- **gnome-terminal** (Ubuntu) or **ptyxis** (Bluefin/Fedora) — auto-detected
 - **Docker** + **docker compose**
 - **Elixir/Phoenix** backend in `backend/`
 - **SvelteKit** frontend in `frontend/`

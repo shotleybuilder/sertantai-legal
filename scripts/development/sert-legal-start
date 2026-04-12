@@ -38,6 +38,40 @@ for arg in "$@"; do
     esac
 done
 
+# ============================================================================
+# Terminal emulator detection (Ubuntu=gnome-terminal, Bluefin/Fedora=ptyxis)
+# ============================================================================
+if command -v gnome-terminal &>/dev/null; then
+    TERMINAL_CMD="gnome-terminal"
+elif command -v ptyxis &>/dev/null; then
+    TERMINAL_CMD="ptyxis"
+else
+    echo "Error: No supported terminal emulator found (gnome-terminal or ptyxis)"
+    exit 1
+fi
+
+# Open a new tab with a title, working directory, and command
+# Usage: open_tab "title" "working_dir" "command"
+open_tab() {
+    local title="$1" dir="$2" cmd="$3"
+    if [ "$TERMINAL_CMD" = "gnome-terminal" ]; then
+        gnome-terminal --tab --title="$title" --working-directory="$dir" -- bash -c "$cmd" &
+    else
+        ptyxis --tab -T "$title" -d "$dir" -x "bash -c '$cmd'" &
+    fi
+}
+
+# Open a new window running a command
+# Usage: open_window "command"
+open_window() {
+    local cmd="$1"
+    if [ "$TERMINAL_CMD" = "gnome-terminal" ]; then
+        gnome-terminal --window -- bash -c "$cmd"
+    else
+        ptyxis --new-window -x "bash -c '$cmd'"
+    fi
+}
+
 # Resolve symlink to get the actual script path
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
@@ -126,7 +160,7 @@ if [ "$MANAGE_AUTH" = true ]; then
 
         # Start auth Phoenix server in a terminal tab
         echo "   Starting sertantai-auth Phoenix server (port $AUTH_PORT)..."
-        gnome-terminal --tab --title="sertantai-auth-backend" --working-directory="$AUTH_PROJECT_ROOT" -- bash -c "echo 'Starting sertantai-auth on port $AUTH_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+        open_tab "sertantai-auth-backend" "$AUTH_PROJECT_ROOT" "echo 'Starting sertantai-auth on port $AUTH_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
 
         # Wait for auth to be healthy
         echo -n "   Waiting for sertantai-auth to be ready..."
@@ -198,7 +232,7 @@ if [ "$MANAGE_HUB" = true ]; then
 
         # Start hub Phoenix server in a terminal tab
         echo "   Starting sertantai-hub Phoenix server (port $HUB_PORT)..."
-        gnome-terminal --tab --title="sertantai-hub-backend" --working-directory="$HUB_PROJECT_ROOT/backend" -- bash -c "echo 'Starting sertantai-hub on port $HUB_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+        open_tab "sertantai-hub-backend" "$HUB_PROJECT_ROOT/backend" "echo 'Starting sertantai-hub on port $HUB_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
 
         # Wait for hub to be healthy
         echo -n "   Waiting for sertantai-hub to be ready..."
@@ -220,7 +254,7 @@ if [ "$MANAGE_HUB" = true ]; then
         echo "   sertantai-hub frontend already running on port $HUB_FRONTEND_PORT"
     else
         echo "   Starting sertantai-hub frontend (port $HUB_FRONTEND_PORT)..."
-        gnome-terminal --tab --title="sertantai-hub-frontend" --working-directory="$HUB_PROJECT_ROOT/frontend" -- bash -c "echo 'Starting sertantai-hub frontend on port $HUB_FRONTEND_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read" &
+        open_tab "sertantai-hub-frontend" "$HUB_PROJECT_ROOT/frontend" "echo 'Starting sertantai-hub frontend on port $HUB_FRONTEND_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
     fi
     echo ""
 else
@@ -331,38 +365,22 @@ fi
 # ============================================================================
 echo "Opening terminal tabs..."
 
-# Create a temporary launcher script
-LAUNCHER_SCRIPT=$(mktemp)
-
-cat > "$LAUNCHER_SCRIPT" << 'LAUNCHER_EOF'
-#!/bin/bash
-
-PROJECT_ROOT="__PROJECT_ROOT__"
+# Build Zenoh env/echo strings
+ZENOH_ENV=""
+ZENOH_ECHO=""
+if [ "$ENABLE_ZENOH" = true ]; then
+    ZENOH_ENV="ZENOH_ENABLED=true ZENOH_TENANT=dev "
+    ZENOH_ECHO='echo "Zenoh P2P: enabled"; '
+fi
 
 # Open Phoenix backend tab
-gnome-terminal --tab --title="sertantai-legal-backend" --working-directory="$PROJECT_ROOT/backend" -- bash -c 'echo "Starting Phoenix backend on port 4003..."; echo "Working directory: $(pwd)"; __ZENOH_ECHO__echo ""; unset DATABASE_URL; __ZENOH_ENV__mix phx.server; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
+BACKEND_CMD="${ZENOH_ECHO}echo 'Starting Phoenix backend on port 4003...'; echo 'Working directory: '\$(pwd); echo ''; unset DATABASE_URL; ${ZENOH_ENV}mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
+open_tab "sertantai-legal-backend" "$PROJECT_ROOT/backend" "$BACKEND_CMD"
 sleep 0.3
 
 # Open SvelteKit frontend tab
-gnome-terminal --tab --title="sertantai-legal-frontend" --working-directory="$PROJECT_ROOT/frontend" -- bash -c 'echo "Starting SvelteKit frontend on port 5175..."; echo "Working directory: $(pwd)"; echo ""; npm run dev; echo ""; echo "Service stopped. Press Enter to close tab..."; read' &
-
-# Wait for all background processes
-wait
-LAUNCHER_EOF
-
-# Replace placeholders
-sed -i "s|__PROJECT_ROOT__|$PROJECT_ROOT|g" "$LAUNCHER_SCRIPT"
-if [ "$ENABLE_ZENOH" = true ]; then
-    sed -i 's|__ZENOH_ENV__|ZENOH_ENABLED=true ZENOH_TENANT=dev |g' "$LAUNCHER_SCRIPT"
-    sed -i 's|__ZENOH_ECHO__|echo "Zenoh P2P: enabled"; |g' "$LAUNCHER_SCRIPT"
-else
-    sed -i 's|__ZENOH_ENV__||g' "$LAUNCHER_SCRIPT"
-    sed -i 's|__ZENOH_ECHO__||g' "$LAUNCHER_SCRIPT"
-fi
-chmod +x "$LAUNCHER_SCRIPT"
-
-# Execute the launcher script in a new gnome-terminal window
-gnome-terminal --window -- bash -c "$LAUNCHER_SCRIPT; rm -f $LAUNCHER_SCRIPT"
+FRONTEND_CMD="echo 'Starting SvelteKit frontend on port 5175...'; echo 'Working directory: '\$(pwd); echo ''; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
+open_tab "sertantai-legal-frontend" "$PROJECT_ROOT/frontend" "$FRONTEND_CMD"
 
 echo ""
 echo "Development servers starting in terminal tabs!"
