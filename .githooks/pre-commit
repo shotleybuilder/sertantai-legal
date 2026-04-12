@@ -322,15 +322,15 @@ check_md_sensitive_info() {
     # Patterns that suggest sensitive information
     # Each pattern: "regex|||description"
     PATTERNS=(
-        'password\s*[:=]\s*["\x27][^"\x27]{4,}'|||'Possible password value'
-        'secret_key_base\s*[:=]\s*["\x27][^"\x27]{8,}'|||'Possible SECRET_KEY_BASE value'
-        'ELECTRIC_SECRET\s*[:=]\s*["\x27][^"\x27]{4,}'|||'Possible ELECTRIC_SECRET value'
-        'SHARED_TOKEN_SECRET\s*[:=]\s*["\x27][^"\x27]{4,}'|||'Possible SHARED_TOKEN_SECRET value'
-        'Bearer\s+ey[A-Za-z0-9_-]{20,}'|||'Possible JWT token'
-        'POSTGRES_PASSWORD\s*=\s*[^\s$]{4,}'|||'Possible database password (not variable ref)'
-        'api[_-]?key\s*[:=]\s*["\x27][^"\x27]{8,}'|||'Possible API key value'
-        'ghp_[A-Za-z0-9]{36,}'|||'GitHub personal access token'
-        'sk-[A-Za-z0-9]{20,}'|||'Possible secret key (sk-...)'
+        'password\s*[:=]\s*["\x27][^"\x27]{4,}|||Possible password value'
+        'secret_key_base\s*[:=]\s*["\x27][^"\x27]{8,}|||Possible SECRET_KEY_BASE value'
+        'ELECTRIC_SECRET\s*[:=]\s*["\x27][^"\x27]{4,}|||Possible ELECTRIC_SECRET value'
+        'SHARED_TOKEN_SECRET\s*[:=]\s*["\x27][^"\x27]{4,}|||Possible SHARED_TOKEN_SECRET value'
+        'Bearer\s+ey[A-Za-z0-9_-]{20,}|||Possible JWT token'
+        'POSTGRES_PASSWORD\s*=\s*[^\s$]{4,}|||Possible database password (not variable ref)'
+        'api[_-]?key\s*[:=]\s*["\x27][^"\x27]{8,}|||Possible API key value'
+        'ghp_[A-Za-z0-9]{36,}|||GitHub personal access token'
+        'sk-[A-Za-z0-9]{20,}|||Possible secret key (sk-...)'
     )
 
     for PATTERN_DESC in "${PATTERNS[@]}"; do

@@ -100,7 +100,7 @@ for table in "${TABLES[@]}"; do
 
   # Restore
   pg_restore -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
-    --data-only --no-owner --no-privileges \
+    --data-only --no-owner --no-privileges --disable-triggers \
     "$dump_file"
 
   # Verify row count
