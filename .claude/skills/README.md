@@ -80,6 +80,18 @@ Complete guide for:
 - zenohex API quick reference
 - Troubleshooting and common pitfalls
 
+### 🔄 [Production Data Sync](prod-data-sync/)
+
+**Use when:** Promoting dev database changes to production, bulk-loading empty tables, or troubleshooting the SSH pipeline to prod PostgreSQL
+
+Complete guide for:
+- Incremental delta export (`mix data.export_delta`) and apply via SSH pipe
+- Bulk pg_restore for empty/full-replacement tables
+- SSH pipeline to Docker-hosted prod PostgreSQL (`docker exec -i` not SSH tunnels)
+- Trigger management during bulk loads (disable/re-enable/propagate stats)
+- Splitting large deltas by table for reliable imports
+- Troubleshooting: jsonb[] casts, UUID padding, trigger failures, transaction aborts
+
 ### 💾 [NAS Data Sync](nas-data-sync/)
 
 **Use when:** Exporting/importing database snapshots, bootstrapping a new dev machine, or troubleshooting NAS mount issues

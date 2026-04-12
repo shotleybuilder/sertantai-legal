@@ -198,10 +198,33 @@ cd backend && unset DATABASE_URL && mix ash.setup && cd ..
 
 **Note**: `--limit N` with FK-dependent tables (e.g., lat→uk_lrt) will fail if parent rows aren't included. Use `--limit` only with `--tables` on single tables, or omit it for production exports.
 
-### Phase 3: Automated Snapshot Rotation
-- [ ] Post-promotion hook: auto-generate new snapshot after successful prod sync
-- [ ] Archive previous snapshot with timestamp
-- [ ] Add snapshot age check to `sert-legal-start` — warn if snapshot is >7 days old
+### Phase 3: Dev → NAS → Prod Workflow & Admin Visibility
+
+**Goal**: Make the full promotion pipeline observable and reliable.
+
+**Correct ordering** (after a scrape/enrichment session):
+```
+1. Scrape/enrich on dev → data in dev DB
+2. NAS snapshot (safety net + bootstrap source)    ← before prod
+3. Delta export + apply to prod                    ← after NAS
+4. Watermarks updated automatically
+```
+
+**What's missing**:
+- NAS snapshot is manual (`./scripts/nas/export-snapshot.sh`) with no visibility into staleness
+- No admin UI to compare dev DB state vs NAS snapshot vs prod
+- No reminder/guard to snapshot before promoting to prod
+
+**Tasks**:
+- [ ] Admin `/admin/sync` page showing:
+  - Dev DB: row counts + max `updated_at` per table (live query)
+  - NAS snapshot: date, row counts from `manifest.json` (read from mount)
+  - Prod: row counts + max `updated_at` per table (SSH query or cached)
+  - Staleness indicators: NAS age vs dev, prod age vs dev
+- [ ] "Export to NAS" button (calls `export-snapshot.sh` via backend endpoint or Mix task)
+- [ ] Snapshot age warning on admin dashboard (>7 days = stale)
+- [ ] Archive previous NAS snapshot before overwriting (`--archive` flag)
+- [ ] Guard in `mix data.export_delta`: warn if NAS snapshot is older than dev's max `updated_at`
 
 ### Phase 4: Fractalaw WAN Access (separate plan)
 - [ ] Evaluate WireGuard vs Zenoh router vs HTTP adapter
@@ -242,17 +265,27 @@ Step-by-step procedure for promoting dev database changes to production.
 
 ### Prerequisites
 
-1. **Prod migrations are current** — prod schema must match dev. If prod is behind:
+1. **Prod migrations are current** — prod schema must match dev. Deploy first if behind:
    ```bash
-   ssh sertantai-hz "cd ~/infrastructure/docker && docker compose exec sertantai-legal bin/sertantai_legal eval 'SertantaiLegal.Release.migrate()'"
+   # Use /deploy skill, or manually:
+   ssh sertantai-hz "cd ~/infrastructure/docker && docker compose up -d sertantai-legal"
+   # Migrations run automatically on container startup
    ```
-2. **SSH tunnel to prod PostgreSQL** (if applying remotely):
+2. **NAS is mounted** — for snapshot step:
    ```bash
-   ssh -L 5437:postgres:5432 sertantai-hz
-   # Tunnel maps localhost:5437 → prod postgres:5432
+   ls /mnt/nas/sertantai-data/data/snapshots/latest/manifest.json
    ```
 
-### Step 1: Export Delta
+### Step 1: NAS Snapshot (safety net)
+
+```bash
+# Archive previous snapshot, then export current dev state
+./scripts/nas/export-snapshot.sh --archive
+```
+
+Verify: `cat /mnt/nas/sertantai-data/data/snapshots/latest/manifest.json | jq '.date, .tables | to_entries[] | "\(.key): \(.value.rows)"'`
+
+### Step 2: Export Delta
 
 ```bash
 cd backend
@@ -270,7 +303,7 @@ mix data.export_delta --dry-run
 
 Output: `scripts/sync/delta_TIMESTAMP.sql` + `_manifest.json`
 
-### Step 2: Review Delta
+### Step 3: Review Delta
 
 Inspect the generated SQL file. Look for:
 - Unexpected row counts (did a bulk update touch more than expected?)
@@ -285,7 +318,7 @@ cat scripts/sync/delta_*_manifest.json | jq '.tables | to_entries[] | "\(.key): 
 less scripts/sync/delta_*.sql
 ```
 
-### Step 3: Apply to Prod
+### Step 4: Apply to Prod
 
 ```bash
 cd backend
@@ -305,7 +338,7 @@ Safety checks (automatic):
 - Interactive confirmation with row count summary
 - Single transaction — all or nothing
 
-### Step 4: Verify
+### Step 5: Verify
 
 ```bash
 # Check row counts on prod
@@ -313,11 +346,9 @@ PGPASSWORD=PASSWORD psql -h localhost -p 5437 -U postgres -d sertantai_legal_pro
   -c "SELECT 'uk_lrt' AS t, COUNT(*) FROM uk_lrt UNION ALL SELECT 'lat', COUNT(*) FROM lat;"
 ```
 
-### Step 5: Archive (Optional)
-
-After a successful promotion, take a fresh NAS snapshot:
+Note: The SOP prerequisites mention SSH tunnels, but these don't work because `postgres` is a Docker-internal hostname. Use the SSH pipeline from the `prod-data-sync` skill instead:
 ```bash
-./scripts/nas/export-snapshot.sh --archive
+cat scripts/sync/delta_TIMESTAMP.sql | ssh sertantai-hz "docker exec -i shared_postgres psql -U postgres -d sertantai_legal_prod -v ON_ERROR_STOP=1"
 ```
 
 ### Quick Reference
