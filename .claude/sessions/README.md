@@ -60,6 +60,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-11 | [data-sync-phase2](2026-04-11-data-sync-phase2.md) | — | Delta export/import Mix tasks for dev→prod promotion |
 | 2026-03-21 | [issue-50-sync-phase1](2026-03-21-issue-50-sync-phase1.md) | [#50](https://github.com/shotleybuilder/sertantai-legal/issues/50) | Sync service Phase 1 |
 | 2026-03-19 | [subscription-sync-service-planning](2026-03-19-subscription-sync-service-planning.md) | — | Subscription/sync service foundational planning |
 | 2026-03-08 | [issue-46](2026-03-08-issue-46.md) | [#46](https://github.com/shotleybuilder/sertantai-legal/issues/46) | Filter triggers Electric shape deletion (now fixed by architecture change) |

@@ -168,11 +168,20 @@ defmodule DeltaSync.SqlGenerator do
     "'#{escape_string(json)}'::jsonb"
   end
 
-  # Arrays of maps/JSONB — the whole array is JSON
+  # Arrays of maps/JSONB — build ARRAY[elem::jsonb, ...] literal
   def escape_value(value, {:array, inner})
       when is_list(value) and inner in [:map, Ash.Type.Map] do
-    json = Jason.encode!(value)
-    "'#{escape_string(json)}'::jsonb"
+    if value == [] do
+      "'{}'"
+    else
+      elements =
+        Enum.map(value, fn elem ->
+          json = Jason.encode!(elem)
+          "'#{escape_string(json)}'::jsonb"
+        end)
+
+      "ARRAY[#{Enum.join(elements, ", ")}]"
+    end
   end
 
   # Arrays of strings
@@ -240,16 +249,10 @@ defmodule DeltaSync.SqlGenerator do
   defp escape_string(str), do: String.replace(str, "'", "''")
 
   defp format_uuid(<<a::32, b::16, c::16, d::16, e::48>>) do
-    [a, b, c, d, e]
-    |> Enum.map_join("-", fn
-      part when part < 0x10000 ->
-        Integer.to_string(part, 16) |> String.pad_leading(4, "0") |> String.downcase()
-
-      part when part < 0x100000000 ->
-        Integer.to_string(part, 16) |> String.pad_leading(8, "0") |> String.downcase()
-
-      part ->
-        Integer.to_string(part, 16) |> String.pad_leading(12, "0") |> String.downcase()
+    # Fixed widths per UUID spec: 8-4-4-4-12
+    [{a, 8}, {b, 4}, {c, 4}, {d, 4}, {e, 12}]
+    |> Enum.map_join("-", fn {part, width} ->
+      Integer.to_string(part, 16) |> String.pad_leading(width, "0") |> String.downcase()
     end)
   end
 end

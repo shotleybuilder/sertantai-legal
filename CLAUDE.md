@@ -131,7 +131,6 @@ docker ps --format "table {{.Names}}\t{{.Status}}" | grep sertantai-legal
 3. **Create schema with Ash** (from backend/):
 ```bash
 cd backend
-unset DATABASE_URL  # Ensure local config is used, not stale env vars
 mix ash.setup
 ```
 
@@ -163,20 +162,6 @@ Database snapshots are stored on the office NAS (UGREEN DXP2800, SMB3) at `/mnt/
 ```
 
 For full NAS details (mount config, troubleshooting, new device setup), see the `nas-data-sync` skill.
-
-### Environment Variable Warning
-
-A stale `DATABASE_URL` environment variable may exist from other projects (e.g., sertantai). Always unset it when running local commands:
-
-```bash
-unset DATABASE_URL
-mix phx.server
-```
-
-Or explicitly use the local database:
-```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5436/sertantai_legal_dev mix phx.server
-```
 
 ### Health Check Endpoints
 - Backend: http://localhost:4003/health
