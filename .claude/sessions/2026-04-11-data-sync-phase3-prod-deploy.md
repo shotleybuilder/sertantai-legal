@@ -12,9 +12,10 @@
 - [x] Verify prod row counts match dev — all 6 tables match exactly
 - [x] Create `prod-data-sync` skill documenting SSH pipeline, hybrid restore, pitfalls
 - [x] Update DATA-SYNC.md: Phase 3 rewrite, correct SOP ordering (NAS→prod), remove broken SSH tunnel docs
-- [ ] Admin `/admin/sync` page — dev vs NAS vs prod row counts + staleness indicators
-- [ ] "Export to NAS" trigger from admin UI
-- [ ] Snapshot age warning on admin dashboard
+- [x] Admin `/admin/sync` page — dev vs NAS vs prod row counts + staleness indicators (`d1b3eb4`)
+- [x] Fix empty watermarks in `last_sync.json` — set to current `max(updated_at)` per table
+- [ ] "Export to NAS" trigger from admin UI (deferred — CLI workflow is fine for now)
+- [ ] Snapshot age warning on admin dashboard (deferred — visible on /admin/sync)
 
 ## Staleness Model
 
@@ -59,6 +60,9 @@ Prod receives promoted data. Staleness = dev has rows that prod doesn't or that 
 | Last sync watermarks | File read | `scripts/sync/last_sync.json` |
 
 **Prod queries are expensive** (SSH round-trip). Cache on the backend with a "Refresh" button, not live polling.
+
+**Ended**: 2026-04-12
+**Commits**: `4be28a9`, `7472eb8`, `d1b3eb4`
 
 ## Notes
 - Prod deploy carried over from Phase 2 session
