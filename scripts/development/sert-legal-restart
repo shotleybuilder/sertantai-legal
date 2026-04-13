@@ -64,17 +64,16 @@ open_tab() {
     if [ "$TERMINAL_CMD" = "gnome-terminal" ]; then
         gnome-terminal --tab --title="$title" --working-directory="$dir" -- bash -c "$cmd" &
     else
-        ptyxis --tab -T "$title" -d "$dir" -x "bash -c '$cmd'" &
-    fi
-}
-
-# Open a new window running a command
-open_window() {
-    local cmd="$1"
-    if [ "$TERMINAL_CMD" = "gnome-terminal" ]; then
-        gnome-terminal --window -- bash -c "$cmd"
-    else
-        ptyxis --new-window -x "bash -c '$cmd'"
+        local tmpscript
+        tmpscript=$(mktemp /tmp/ptyxis-tab-XXXXXX.sh)
+        cat > "$tmpscript" << TABEOF
+#!/bin/bash -l
+cd "$dir"
+$cmd
+rm -f "$tmpscript"
+TABEOF
+        chmod +x "$tmpscript"
+        ptyxis --tab -T "$title" -x "$tmpscript" &
     fi
 }
 
