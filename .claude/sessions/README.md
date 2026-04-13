@@ -137,6 +137,7 @@ Deployment, Zenoh P2P, production, change notifications.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-12 | [nas-backup-family-apps](2026-04-12-nas-backup-family-apps.md) | — | PG 17 upgrade for hub + auth; NAS scripts deferred (no data) |
 | 2026-04-12 | [pg17-upgrade](2026-04-12-pg17-upgrade.md) | — | Upgrade dev PG 15→17, rebuild + NAS restore on laptop |
 | 2026-04-08 | [nas-data-sync-layer1](2026-04-08-nas-data-sync-layer1.md) | — | NAS data sync Layer 1: SMB mount, export/import scripts, CI fixes |
 | 2026-02-27 | [issue-34-change-notifications](2026-02-27-issue-34-change-notifications.md) | [#34](https://github.com/shotleybuilder/sertantai-legal/issues/34) | Wire up ChangeNotifier for sync events |
