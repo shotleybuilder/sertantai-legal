@@ -32,6 +32,10 @@ defmodule SertantaiLegal.Legal.UkLrt do
     repo(SertantaiLegal.Repo)
   end
 
+  identities do
+    identity(:unique_name, [:name])
+  end
+
   attributes do
     uuid_primary_key(:id, writable?: true)
 

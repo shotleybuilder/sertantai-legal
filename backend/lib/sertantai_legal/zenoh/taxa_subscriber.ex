@@ -168,6 +168,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp upsert_taxa(record, taxa) do
+    taxa = derive_making_classification(taxa)
     Ash.update(record, taxa, action: :update)
   end
 
@@ -197,6 +198,34 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     # Fitness detail — List<Struct> → {:array, :map} (passed through directly)
     |> put_list_of_maps(row, "fitness")
   end
+
+  # Derive is_making and making_classification from duty_type values.
+  # Mirrors taxa_parser.ex is_making_law?: "Duty" or "Responsibility" in duty_type.
+  #
+  # Three cases:
+  # 1. duty_type has Duty/Responsibility → making
+  # 2. duty_type present but no Duty/Responsibility → not_making
+  # 3. No duty_type but other taxa fields present (analysis ran, found nothing) → not_making
+  defp derive_making_classification(%{duty_type: %{values: values}} = taxa)
+       when is_list(values) do
+    is_making = "Duty" in values or "Responsibility" in values
+
+    classification =
+      if is_making, do: "making", else: "not_making"
+
+    taxa
+    |> Map.put(:is_making, is_making)
+    |> Map.put(:making_classification, classification)
+  end
+
+  defp derive_making_classification(taxa) when map_size(taxa) > 0 do
+    # Taxa analysis ran (has enrichment fields) but no duty_type → not making
+    taxa
+    |> Map.put(:is_making, false)
+    |> Map.put(:making_classification, "not_making")
+  end
+
+  defp derive_making_classification(taxa), do: taxa
 
   # List<Utf8> → %{values: ["a", "b"]} to match existing JSONB map format
   defp put_holder_map(acc, row, str_key) do

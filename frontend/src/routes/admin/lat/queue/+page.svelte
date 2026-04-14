@@ -13,6 +13,8 @@
 	} from '@shotleybuilder/svelte-gridlite-kit';
 	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
 	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
+	import { createTransaction } from '@tanstack/db';
+	import type { Collection } from '@tanstack/db';
 	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import {
 		initViewStore,
@@ -52,6 +54,8 @@
 	let ready = false;
 	let gridRef: GridLite;
 	let adapter: ReturnType<typeof createTanStackDBAdapter> | null = null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let collectionRef: Collection<any, any, any, any, any> | null = null;
 	let error: string | null = null;
 
 	// View store
@@ -213,17 +217,39 @@
 
 	async function updateRecord(id: string, field: string, value: string | boolean | null) {
 		try {
-			const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ [field]: value })
-			});
-
-			if (!response.ok) {
-				const err = await response.json();
-				throw new Error(err.error || 'Failed to update');
+			// Optimistic update via TanStack DB — grid reflects change immediately
+			if (collectionRef) {
+				const tx = createTransaction({
+					mutationFn: async () => {
+						const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
+							method: 'PATCH',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ [field]: value })
+						});
+						if (!response.ok) {
+							const err = await response.json();
+							throw new Error(err.error || 'Failed to update');
+						}
+					}
+				});
+				tx.mutate(() => {
+					collectionRef!.update(id, (draft) => {
+						(draft as Record<string, unknown>)[field] = value;
+					});
+				});
+				await tx.isPersisted.promise;
+			} else {
+				// Fallback: no collection, just PATCH directly
+				const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ [field]: value })
+				});
+				if (!response.ok) {
+					const err = await response.json();
+					throw new Error(err.error || 'Failed to update');
+				}
 			}
-			// Live query auto-updates when Electric syncs the change back to PGLite
 		} catch (e) {
 			alert(`Update failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
 		}
@@ -234,12 +260,20 @@
 		editValue = currentValue ?? '';
 	}
 
-	async function saveEdit() {
+	async function saveEdit(value?: string) {
 		if (!editingCell) return;
 		const { id, field } = editingCell;
-		await updateRecord(id, field, editValue || null);
+		const val = (value !== undefined ? value : editValue) || null;
+		// Clear state before await to prevent double-saves and give instant feedback
 		editingCell = null;
 		editValue = '';
+		await updateRecord(id, field, val);
+	}
+
+	/** Save on select change — reads value from DOM event to avoid bind:value race. */
+	function handleSelectSave(e: Event) {
+		const target = e.currentTarget as HTMLSelectElement;
+		saveEdit(target.value);
 	}
 
 	function cancelEdit() {
@@ -936,6 +970,7 @@
 				query: BASE_QUERY,
 				id: 'lat-queue-uk-lrt'
 			});
+			collectionRef = collection;
 			adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
 			await adapter.init();
 			// Keep for reparse feature (PGLite SQL query)
@@ -1208,6 +1243,7 @@
 							<select
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
+								on:change={handleSelectSave}
 								on:blur={saveEdit}
 								on:keydown={handleEditKeydown}
 							>
@@ -1238,6 +1274,7 @@
 							<select
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
+								on:change={handleSelectSave}
 								on:blur={saveEdit}
 								on:keydown={handleEditKeydown}
 							>
@@ -1280,6 +1317,7 @@
 							<select
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
+								on:change={handleSelectSave}
 								on:blur={saveEdit}
 								on:keydown={handleEditKeydown}
 							>
