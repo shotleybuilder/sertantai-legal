@@ -1379,8 +1379,16 @@
 						</span>
 					{:else if column === 'function'}
 						{@const fns = parseFunctionKeys(row.function)}
-						{#if fns?.includes('Making')}
-							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
+						{#if fns && fns.length > 0}
+							<div class="flex flex-wrap gap-1">
+								{#each fns as fn}
+									<span
+										class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
+											? 'bg-green-100 text-green-700'
+											: 'bg-blue-100 text-blue-700'}">{fn}</span
+									>
+								{/each}
+							</div>
 						{:else}
 							<span class="text-gray-400">-</span>
 						{/if}
