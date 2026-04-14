@@ -40,6 +40,12 @@ export interface PGLiteCollectionOptions {
 	id: string;
 	/** Primary key column name (default: 'id') */
 	primaryKey?: string;
+	/** Mutation handler: persist updates to backend + write to PGLite for instant feedback. */
+	onUpdate?: CollectionConfig<Row, string>['onUpdate'];
+	/** Mutation handler for inserts. */
+	onInsert?: CollectionConfig<Row, string>['onInsert'];
+	/** Mutation handler for deletes. */
+	onDelete?: CollectionConfig<Row, string>['onDelete'];
 }
 
 type Row = Record<string, unknown>;
@@ -72,13 +78,16 @@ function stripInternalFields(row: Record<string, unknown>): Row {
 export function pgliteCollectionOptions(
 	options: PGLiteCollectionOptions
 ): CollectionConfig<Row, string> {
-	const { db, query, id, primaryKey = 'id' } = options;
+	const { db, query, id, primaryKey = 'id', onUpdate, onInsert, onDelete } = options;
 
 	return {
 		id,
 		getKey: (item: Row) => item[primaryKey] as string,
 		defaultIndexType: BasicIndex,
 		autoIndex: 'eager' as const,
+		...(onUpdate && { onUpdate }),
+		...(onInsert && { onInsert }),
+		...(onDelete && { onDelete }),
 		sync: {
 			sync: ({ begin, write, commit, markReady }) => {
 				let destroyed = false;

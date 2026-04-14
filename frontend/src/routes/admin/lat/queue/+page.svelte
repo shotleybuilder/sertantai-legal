@@ -13,7 +13,6 @@
 	} from '@shotleybuilder/svelte-gridlite-kit';
 	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
 	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
-	import { createTransaction } from '@tanstack/db';
 	import type { Collection } from '@tanstack/db';
 	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import {
@@ -215,44 +214,20 @@
 	let editingCell: { id: string; field: string } | null = null;
 	let editValue: string = '';
 
-	async function updateRecord(id: string, field: string, value: string | boolean | null) {
-		try {
-			// Optimistic update via TanStack DB — grid reflects change immediately
-			if (collectionRef) {
-				const tx = createTransaction({
-					mutationFn: async () => {
-						const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
-							method: 'PATCH',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({ [field]: value })
-						});
-						if (!response.ok) {
-							const err = await response.json();
-							throw new Error(err.error || 'Failed to update');
-						}
-					}
-				});
-				tx.mutate(() => {
-					collectionRef!.update(id, (draft) => {
-						(draft as Record<string, unknown>)[field] = value;
-					});
-				});
-				await tx.isPersisted.promise;
-			} else {
-				// Fallback: no collection, just PATCH directly
-				const response = await authFetch(`${API_URL}/api/uk-lrt/${id}`, {
-					method: 'PATCH',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ [field]: value })
-				});
-				if (!response.ok) {
-					const err = await response.json();
-					throw new Error(err.error || 'Failed to update');
-				}
-			}
-		} catch (e) {
+	/**
+	 * Update a record via TanStack DB optimistic mutation.
+	 * The collection.update() call applies the change instantly (optimistic),
+	 * then the onUpdate handler persists to backend + PGLite asynchronously.
+	 */
+	function updateRecord(id: string, field: string, value: string | boolean | null) {
+		if (!collectionRef) return;
+		const tx = collectionRef.update(id, (draft: Record<string, unknown>) => {
+			draft[field] = value === '' ? null : value;
+		});
+		// Surface persistence errors to the user
+		tx.isPersisted.promise.catch((e: unknown) => {
 			alert(`Update failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
-		}
+		});
 	}
 
 	function startEdit(id: string, field: string, currentValue: string | null) {
@@ -965,10 +940,51 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
+			/** Editable fields — whitelist prevents SQL injection via column name in PGLite write. */
+			const EDITABLE_FIELDS = new Set([
+				'family',
+				'family_ii',
+				'making_classification',
+				'is_making'
+			]);
+
 			const collection = createPGLiteCollection({
 				db,
 				query: BASE_QUERY,
-				id: 'lat-queue-uk-lrt'
+				id: 'lat-queue-uk-lrt',
+				onUpdate: async ({ transaction }) => {
+					for (const m of transaction.mutations) {
+						// Filter to whitelisted fields only (SQL injection safety for PGLite write)
+						const safeChanges: Record<string, unknown> = {};
+						for (const [field, value] of Object.entries(m.changes as Record<string, unknown>)) {
+							if (EDITABLE_FIELDS.has(field)) {
+								safeChanges[field] = value;
+							}
+						}
+						if (Object.keys(safeChanges).length === 0) continue;
+
+						// 1. Persist to backend (PostgreSQL)
+						const response = await authFetch(`${API_URL}/api/uk-lrt/${m.key}`, {
+							method: 'PATCH',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(safeChanges)
+						});
+						if (!response.ok) {
+							const err = await response.json();
+							throw new Error(err.error || 'Failed to update');
+						}
+
+						// 2. Write to PGLite so live.changes() confirms the optimistic state.
+						//    Electric will eventually sync the same value (no conflict).
+						const fields = Object.keys(safeChanges);
+						const values = Object.values(safeChanges);
+						const setClauses = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
+						await db!.query(`UPDATE uk_lrt SET ${setClauses} WHERE id = $${fields.length + 1}`, [
+							...values,
+							m.key
+						]);
+					}
+				}
 			});
 			collectionRef = collection;
 			adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
@@ -1244,7 +1260,7 @@
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
 								on:change={handleSelectSave}
-								on:blur={saveEdit}
+								on:blur={() => saveEdit()}
 								on:keydown={handleEditKeydown}
 							>
 								<option value="">-- None --</option>
@@ -1275,7 +1291,7 @@
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
 								on:change={handleSelectSave}
-								on:blur={saveEdit}
+								on:blur={() => saveEdit()}
 								on:keydown={handleEditKeydown}
 							>
 								<option value="">-- None --</option>
@@ -1318,7 +1334,7 @@
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
 								on:change={handleSelectSave}
-								on:blur={saveEdit}
+								on:blur={() => saveEdit()}
 								on:keydown={handleEditKeydown}
 							>
 								<option value="">-- None --</option>

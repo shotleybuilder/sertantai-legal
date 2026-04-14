@@ -50,6 +50,28 @@ Complete guide for:
 - Shape error recovery with singleton reset
 - Common pitfalls (MissingHeadersError, generated columns, wrong sync mode)
 
+### 🔌 [PGLite Collection Bridge](pglite-collection-bridge/)
+
+**Use when:** Understanding or modifying PGLite-backed TanStack DB collections, adding write/mutation support, or debugging live query change detection
+
+Complete guide for:
+- Architecture: PGLite → `live.changes()` → TanStack DB → GridLite
+- How PGLite detects changes (PostgreSQL triggers + `pg_notify()`, source-agnostic)
+- Writing data: direct PGLite writes for instant UI feedback after backend PATCH
+- When to use PGLite-backed vs Electric-backed collections
+- Common pitfalls (optimistic state overwritten by sync, live.changes() not firing)
+
+### ✏️ [TanStack DB Mutations with Custom Sync](tanstack-db-mutations/)
+
+**Use when:** Implementing optimistic mutations on TanStack DB collections with custom sync providers
+
+Complete guide for:
+- Three mutation patterns: `onUpdate` handlers, `createTransaction`, direct writes
+- Adding `onUpdate`/`onInsert`/`onDelete` to the PGLite collection bridge
+- Five strategies for dropping optimistic state (sync confirmation, polling, fire-and-forget)
+- Component-level usage: `collection.update(id, draft => { ... })`
+- Trade-offs between patterns (instant optimistic vs simplicity vs rollback support)
+
 ### 💾 [IndexedDB Persistence for ElectricSQL](indexeddb-electric-persistence/) *(LEGACY)*
 
 **Status:** Not currently used. Retained for reference.
