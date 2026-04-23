@@ -355,40 +355,48 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   @doc """
   Build the full sort_key for a LAT row.
 
-  The sort key depends on section_type:
-  - section/article/sub_* rows: normalize the provision number
-  - heading rows: normalize the heading_group value
-  - structural rows (title, part, chapter, schedule, signed, etc.): "000.000.000"
-  - paragraph/sub_paragraph: normalize the paragraph number
+  Encodes the complete structural hierarchy as a composite key so that
+  `ORDER BY sort_key` recovers correct document order within a law.
 
-  Appends `~extent` suffix for parallel territorial provisions.
+  Format: `{schedule}.{part}.{chapter}.{heading}.{provision}.{sub}.{paragraph}.{sub_paragraph}~{extent}`
+
+  Each segment is a 3-digit zero-padded provision number (via `normalize_provision_to_sort_key/1`).
+  Schedule segment uses "S" prefix (e.g., "S01") to sort after body content.
   """
   @spec build_sort_key(String.t(), keyword()) :: String.t()
-  def build_sort_key(section_type, opts \\ []) do
-    provision = Keyword.get(opts, :provision)
+  def build_sort_key(_section_type, opts \\ []) do
+    schedule = Keyword.get(opts, :schedule)
+    part = Keyword.get(opts, :part)
+    chapter = Keyword.get(opts, :chapter)
     heading_group = Keyword.get(opts, :heading_group)
+    provision = Keyword.get(opts, :provision)
+    sub = Keyword.get(opts, :sub)
     paragraph = Keyword.get(opts, :paragraph)
+    sub_paragraph = Keyword.get(opts, :sub_paragraph)
     extent = Keyword.get(opts, :extent)
 
-    base =
-      case section_type do
-        t when t in ["section", "sub_section", "article", "sub_article"] ->
-          normalize_provision_to_sort_key(provision)
+    n = &normalize_provision_to_sort_key/1
 
-        "heading" ->
-          normalize_provision_to_sort_key(heading_group)
+    # Schedule prefix: "S01" sorts after "000" (body content)
+    sch_segment = if schedule, do: "S#{String.pad_leading(schedule, 2, "0")}", else: "000"
 
-        t when t in ["paragraph", "sub_paragraph"] ->
-          normalize_provision_to_sort_key(paragraph || provision)
-
-        _ ->
-          "000.000.000"
-      end
+    segments =
+      [
+        sch_segment,
+        n.(part),
+        n.(chapter),
+        n.(heading_group),
+        n.(provision),
+        n.(sub),
+        n.(paragraph),
+        n.(sub_paragraph)
+      ]
+      |> Enum.join(".")
 
     if extent do
-      "#{base}~#{extent}"
+      "#{segments}~#{extent}"
     else
-      "#{base}~"
+      "#{segments}~"
     end
   end
 

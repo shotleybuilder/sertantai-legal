@@ -489,9 +489,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
       sort_key =
         Transforms.build_sort_key(section_type,
-          provision: row.provision,
+          schedule: row.schedule,
+          part: row.part,
+          chapter: row.chapter,
           heading_group: row.heading_group,
+          provision: row.provision,
+          sub: row.sub,
           paragraph: row.paragraph,
+          sub_paragraph: row.sub_paragraph,
           extent: nil
         )
 

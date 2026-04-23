@@ -251,6 +251,18 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert String.ends_with?(s23_ews.sort_key, "~E+W+S")
       assert String.ends_with?(s23_ni.sort_key, "~NI")
     end
+
+    test "sort_keys produce correct document order for non-parallel provisions" do
+      # Use simple_act fixture (no parallel provisions) for clean sort_key == position check
+      xml = read_fixture("simple_act.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+
+      sorted_by_key = Enum.sort_by(rows, & &1.sort_key)
+      sorted_by_pos = Enum.sort_by(rows, & &1.position)
+
+      assert Enum.map(sorted_by_key, & &1.position) == Enum.map(sorted_by_pos, & &1.position),
+             "ORDER BY sort_key should match ORDER BY position"
+    end
   end
 
   # ── Skip Elements ──────────────────────────────────────────────

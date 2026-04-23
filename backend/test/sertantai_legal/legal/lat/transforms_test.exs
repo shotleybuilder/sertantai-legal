@@ -336,32 +336,108 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
   end
 
   describe "build_sort_key/2" do
-    test "section uses provision" do
-      assert T.build_sort_key("section", provision: "25A") == "025.010.000~"
+    test "section in Part I encodes part and provision" do
+      key = T.build_sort_key("section", part: "I", provision: "25A")
+      assert String.ends_with?(key, "~")
+      # Part "I" encodes via normalize (letter I = 090)
+      # Provision "25A" encodes as 025.010.000
+      assert String.contains?(key, "025.010.000")
+      # Part segment should be non-zero (not "000.000.000" like a bare provision)
+      refute String.starts_with?(key, "000.000.000.000.000.000.000.000.000.000.025")
     end
 
-    test "heading uses heading_group" do
-      assert T.build_sort_key("heading", heading_group: "18") == "018.000.000~"
+    test "section with only provision" do
+      key = T.build_sort_key("section", provision: "25A")
+      assert String.ends_with?(key, "~")
+      assert String.contains?(key, "025.010.000")
     end
 
-    test "paragraph uses paragraph value" do
-      assert T.build_sort_key("paragraph", paragraph: "3") == "003.000.000~"
+    test "paragraph encodes provision + paragraph" do
+      key1 = T.build_sort_key("paragraph", provision: "3", sub: "1", paragraph: "a")
+      key2 = T.build_sort_key("paragraph", provision: "125", sub: "1", paragraph: "a")
+      # key1 (s.3(1)(a)) should sort before key2 (s.125(1)(a))
+      assert key1 < key2
     end
 
-    test "structural types use 000.000.000" do
-      assert T.build_sort_key("title", []) == "000.000.000~"
-      assert T.build_sort_key("part", []) == "000.000.000~"
-      assert T.build_sort_key("schedule", []) == "000.000.000~"
-      assert T.build_sort_key("signed", []) == "000.000.000~"
+    test "structural types encode their hierarchy level" do
+      part_key = T.build_sort_key("part", part: "3")
+      chapter_key = T.build_sort_key("chapter", part: "3", chapter: "1")
+      section_key = T.build_sort_key("section", part: "3", chapter: "1", provision: "12")
+      # Part sorts before its chapters, chapters before their sections
+      assert part_key < chapter_key
+      assert chapter_key < section_key
+    end
+
+    test "schedules sort after body content" do
+      body_key = T.build_sort_key("section", part: "1", provision: "99")
+      schedule_key = T.build_sort_key("schedule", schedule: "1")
+      assert body_key < schedule_key, "schedule should sort after body"
     end
 
     test "appends extent suffix" do
-      assert T.build_sort_key("section", provision: "23", extent: "E+W") ==
-               "023.000.000~E+W"
+      key = T.build_sort_key("section", provision: "23", extent: "E+W")
+      assert String.ends_with?(key, "~E+W")
     end
 
     test "empty extent gives trailing tilde" do
-      assert T.build_sort_key("section", provision: "23") == "023.000.000~"
+      key = T.build_sort_key("section", provision: "23")
+      assert String.ends_with?(key, "~")
+      refute String.ends_with?(key, "~~")
+    end
+
+    test "paragraphs from different sections produce different sort_keys" do
+      # This was the original bug — all (a) paragraphs got the same sort_key
+      key_s3a = T.build_sort_key("paragraph", provision: "3", paragraph: "a")
+      key_s125a = T.build_sort_key("paragraph", provision: "125", paragraph: "a")
+      assert key_s3a != key_s125a
+      assert key_s3a < key_s125a
+    end
+
+    test "sub_sections within same provision sort correctly" do
+      key_s1_1 = T.build_sort_key("sub_section", provision: "1", sub: "1")
+      key_s1_2 = T.build_sort_key("sub_section", provision: "1", sub: "2")
+      assert key_s1_1 < key_s1_2
+    end
+
+    test "full depth: part > chapter > heading > section > sub > paragraph > sub_paragraph" do
+      keys =
+        [
+          T.build_sort_key("part", part: "3"),
+          T.build_sort_key("chapter", part: "3", chapter: "1"),
+          T.build_sort_key("heading", part: "3", chapter: "1", heading_group: "12"),
+          T.build_sort_key("section",
+            part: "3",
+            chapter: "1",
+            heading_group: "12",
+            provision: "12"
+          ),
+          T.build_sort_key("sub_section",
+            part: "3",
+            chapter: "1",
+            heading_group: "12",
+            provision: "12",
+            sub: "1"
+          ),
+          T.build_sort_key("paragraph",
+            part: "3",
+            chapter: "1",
+            heading_group: "12",
+            provision: "12",
+            sub: "1",
+            paragraph: "a"
+          ),
+          T.build_sort_key("sub_paragraph",
+            part: "3",
+            chapter: "1",
+            heading_group: "12",
+            provision: "12",
+            sub: "1",
+            paragraph: "a",
+            sub_paragraph: "i"
+          )
+        ]
+
+      assert keys == Enum.sort(keys), "sort_keys should already be in document order"
     end
   end
 

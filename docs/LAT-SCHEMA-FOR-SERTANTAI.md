@@ -14,7 +14,7 @@ Current dataset: **97,522 rows from 452 UK laws** (17 CSV source files covering 
 |--------|---------|----------|-------------|
 | `law_name` | TEXT | NOT NULL | Parent law identifier. Format: `{JURISDICTION}_{type_code}_{year}_{number}`. Example: `UK_ukpga_1974_37` (Health and Safety at Work etc. Act 1974). FK to the legislation register (LRT). |
 | `section_id` | TEXT | NOT NULL | **Primary key.** Structural citation — the canonical legal address. Format: `{law_name}:{citation}[{extent}]`. Stable across amendments — parliament assigns citations that never change. See examples and rules below. |
-| `sort_key` | TEXT | NOT NULL | Machine-sortable string encoding parliamentary insertion ordering. `ORDER BY sort_key` recovers correct document order within a law. Derived from the citation. See encoding rules below. |
+| `sort_key` | TEXT | NOT NULL | Machine-sortable composite key encoding the full structural hierarchy. `ORDER BY sort_key` recovers correct document order within a law. Format: `{schedule}.{part}.{chapter}.{heading}.{provision}.{sub}.{paragraph}.{sub_paragraph}~{extent}` — each segment is a 3-digit zero-padded provision key (via `normalize_provision_to_sort_key`). Schedule segment uses "S" prefix (e.g. `S01`) to sort after body content. See encoding rules below. |
 | `position` | INTEGER | NOT NULL | Snapshot document-order index (1-based) within the law at export time. Useful for range queries. Reassigned on re-export — not a stable identifier. |
 | `section_type` | TEXT | NOT NULL | Structural type enum — see Section Types below. |
 | `hierarchy_path` | TEXT | NULL | Slash-separated path in document structure. Example: `part.1/heading.2/provision.3/sub.1`. NULL for root-level rows (title). |

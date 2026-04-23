@@ -99,6 +99,7 @@ Admin pages, modals, dashboard, record cards, analytics.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-23 | [issue-71](2026-04-23-issue-71.md) | [#71](https://github.com/shotleybuilder/sertantai-legal/issues/71) | /admin/lat Structure tab: outline view with collapse, position ordering, search |
 | 2026-03-26 | [issue-54-analytics-fitness-column](2026-03-26-issue-54-analytics-fitness-column.md) | [#54](https://github.com/shotleybuilder/sertantai-legal/issues/54) | Fix analytics page — "fitness" column doesn't exist in PGLite |
 | 2026-03-10 | [lrt-record-card](2026-03-10-lrt-record-card.md) | — | LRT record card (back of card) |
 | 2026-03-08 | [issue-45](2026-03-08-issue-45.md) | [#45](https://github.com/shotleybuilder/sertantai-legal/issues/45) | Analytics dashboard for reparse sessions |
