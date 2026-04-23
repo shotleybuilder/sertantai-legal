@@ -125,13 +125,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
       name == "Part" ->
         part_num = extract_number(node, "Part")
         new_ctx = %{ctx | part: part_num, chapter: nil, heading_group: nil}
-        row = emit_row("Part", new_ctx, node, extent)
+        row = emit_structural_row("Part", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "Chapter" ->
         chapter_num = extract_number(node, "Chapter")
         new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
-        row = emit_row("Chapter", new_ctx, node, extent)
+        row = emit_structural_row("Chapter", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "Pblock" ->
@@ -181,7 +181,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
             sub_paragraph: nil
         }
 
-        row = emit_row("Schedule", new_ctx, node, extent)
+        row = emit_structural_row("Schedule", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "SignedSection" ->
@@ -204,6 +204,30 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp emit_row(element, ctx, node, extent) do
     text = extract_element_text(node)
+    {commentary_counts, commentary_refs} = collect_commentary_refs(node)
+
+    %{
+      element: element,
+      part: ctx.part,
+      chapter: ctx.chapter,
+      heading_group: ctx.heading_group,
+      schedule: ctx.schedule,
+      provision: ctx.provision,
+      sub: ctx.sub,
+      paragraph: ctx.paragraph,
+      sub_paragraph: ctx.sub_paragraph,
+      extent_code: extent,
+      text: text,
+      amendment_count: Map.get(commentary_counts, :f),
+      modification_count: Map.get(commentary_counts, :c),
+      commencement_count: Map.get(commentary_counts, :i),
+      extent_count: Map.get(commentary_counts, :e),
+      commentary_refs: commentary_refs
+    }
+  end
+
+  defp emit_structural_row(element, ctx, node, extent) do
+    text = extract_structural_text(node)
     {commentary_counts, commentary_refs} = collect_commentary_refs(node)
 
     %{
@@ -351,6 +375,45 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> case do
       "" -> nil
       t -> t
+    end
+  end
+
+  # For structural containers (Part, Chapter, Schedule): extract only title/header
+  # text and any direct introductory Para content — NOT text from nested child
+  # provisions (P1/P2/P3). Child section text is emitted at section level.
+  # Falls back to full text extraction if no child provisions exist.
+  defp extract_structural_text(node) do
+    has_child_provisions =
+      xpath(node, ~x".//P1[1]"o) != nil ||
+        xpath(node, ~x".//P2[1]"o) != nil ||
+        xpath(node, ~x".//Pblock[1]"o) != nil
+
+    if has_child_provisions do
+      # Title/Number text for the structural header
+      title = extract_title(node)
+
+      # Direct Para/Text children only (introductory text not inside P1/P2/etc.)
+      direct_texts =
+        (safe_xpath_texts(node, ~x"./Para//text()"ls) ++
+           safe_xpath_texts(node, ~x"./Text//text()"ls))
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+        |> Enum.uniq()
+        |> Enum.join(" ")
+
+      [title, direct_texts]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.join(" ")
+      |> String.replace(~r/\s+/, " ")
+      |> String.trim()
+      |> case do
+        "" -> nil
+        t -> t
+      end
+    else
+      # No child provisions — keep full text (rare: leaf structural element)
+      extract_element_text(node)
     end
   end
 

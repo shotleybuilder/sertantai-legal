@@ -36,6 +36,9 @@ LAT parsing, sessions, queue, cleanup, taxa classification.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-14 | [issue-57](2026-04-14-issue-57.md) | [#57](https://github.com/shotleybuilder/sertantai-legal/issues/57) | Audit: LAT session DB persistence already in place; closed stale issue |
+| 2026-04-21 | [lat-queue-bugs](2026-04-14-lat-queue-bugs.md) | — | Reopened: raised gridlite-kit#28 (applyConfig columns) + #29 (grouped view static snapshots) |
+| 2026-04-14 | [lat-queue-bugs](2026-04-14-lat-queue-bugs.md) | — | LAT queue: inline edit persistence, duplicates, function display, TanStack DB mutations |
 | 2026-03-30 | [issue-58](2026-03-30-issue-58.md) | [#58](https://github.com/shotleybuilder/sertantai-legal/issues/58) | LAT session records missing Family column |
 | 2026-03-26 | [issue-56-lat-deletion](2026-03-26-issue-56-lat-deletion.md) | [#56](https://github.com/shotleybuilder/sertantai-legal/issues/56) | Admin option to delete LAT rows for revoked laws |
 | 2026-03-23 | [issue-55-lat-queue-bugs](2026-03-23-issue-55-lat-queue-bugs.md) | [#55](https://github.com/shotleybuilder/sertantai-legal/issues/55) | LAT queue shows parsed records + dialog shows 0 eligible |

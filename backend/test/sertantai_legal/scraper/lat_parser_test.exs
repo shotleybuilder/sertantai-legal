@@ -28,12 +28,17 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert length(ids) == length(Enum.uniq(ids))
     end
 
-    test "first row is Part I", %{rows: rows} do
+    test "first row is Part I with header-only text", %{rows: rows} do
       first = hd(rows)
       assert first.section_type == "part"
       assert first.section_id == "UK_ukpga_2024_1:pt.I"
       assert first.part == "I"
       assert first.position == 1
+
+      # Part row should contain only title text, not child section text
+      assert first.text == "General Provisions"
+      refute String.contains?(first.text || "", "health and safety")
+      refute String.contains?(first.text || "", "employer")
     end
 
     test "emits heading rows from Pblock", %{rows: rows} do
@@ -449,6 +454,264 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       refute Map.has_key?(first, :element)
       refute Map.has_key?(first, :citation)
       refute Map.has_key?(first, :commentary_refs)
+    end
+  end
+
+  # ── Structural Text Extraction ────────────────────────────────
+
+  describe "structural text extraction" do
+    test "Part rows get title-only text, not child section text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <Part id="part-I">
+          <Number>Part I</Number>
+          <Title>General Provisions</Title>
+          <Pblock>
+            <Title>Preliminary</Title>
+            <P1group>
+              <P1 id="section-1"><Pnumber>1</Pnumber>
+                <P1para><Text>This is section one text about safety.</Text></P1para>
+              </P1>
+              <P1 id="section-2"><Pnumber>2</Pnumber>
+                <P1para><Text>This is section two text about duties.</Text></P1para>
+              </P1>
+            </P1group>
+          </Pblock>
+        </Part>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      part = Enum.find(rows, &(&1.section_type == "part"))
+
+      assert part.text == "General Provisions"
+      refute String.contains?(part.text || "", "safety")
+      refute String.contains?(part.text || "", "duties")
+    end
+
+    test "Chapter rows get title-only text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <Part id="part-I">
+          <Number>Part I</Number>
+          <Title>Part Title</Title>
+          <Chapter id="chapter-1">
+            <Number>Chapter 1</Number>
+            <Title>Chapter Title</Title>
+            <P1group>
+              <P1 id="section-1"><Pnumber>1</Pnumber>
+                <P1para><Text>Chapter section text.</Text></P1para>
+              </P1>
+            </P1group>
+          </Chapter>
+        </Part>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      chapter = Enum.find(rows, &(&1.section_type == "chapter"))
+
+      assert chapter.text == "Chapter Title"
+      refute String.contains?(chapter.text || "", "Chapter section text")
+    end
+
+    test "Schedule rows get title-only text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S">
+      <Secondary><Body>
+        <P1group>
+          <P1 id="reg-1"><Pnumber>1</Pnumber>
+            <P1para><Text>Body text.</Text></P1para>
+          </P1>
+        </P1group>
+      </Body></Secondary>
+      <Schedules>
+        <Schedule id="schedule-1">
+          <Number>SCHEDULE 1</Number>
+          <Title>Schedule Title</Title>
+          <ScheduleBody>
+            <P1group>
+              <P1 id="sch1-reg-1"><Pnumber>1</Pnumber>
+                <P1para><Text>Schedule provision text.</Text></P1para>
+              </P1>
+            </P1group>
+          </ScheduleBody>
+        </Schedule>
+      </Schedules>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+      schedule = Enum.find(rows, &(&1.section_type == "schedule"))
+
+      assert schedule.text == "Schedule Title"
+      refute String.contains?(schedule.text || "", "Schedule provision text")
+    end
+
+    test "Part with direct introductory Para preserves that text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <Part id="part-I">
+          <Number>Part I</Number>
+          <Title>General Provisions</Title>
+          <Para><Text>This Part applies to England and Wales only.</Text></Para>
+          <Pblock>
+            <Title>Main duties</Title>
+            <P1group>
+              <P1 id="section-1"><Pnumber>1</Pnumber>
+                <P1para><Text>Section text.</Text></P1para>
+              </P1>
+            </P1group>
+          </Pblock>
+        </Part>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      part = Enum.find(rows, &(&1.section_type == "part"))
+
+      assert String.contains?(part.text, "General Provisions")
+      assert String.contains?(part.text, "This Part applies to England and Wales only.")
+      refute String.contains?(part.text || "", "Section text")
+    end
+
+    test "Part with no child provisions keeps full text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <Part id="part-I">
+          <Number>Part I</Number>
+          <Title>Interpretation</Title>
+          <Para><Text>In this Act, the following definitions apply.</Text></Para>
+        </Part>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      part = Enum.find(rows, &(&1.section_type == "part"))
+
+      # No child P1/P2/Pblock — should get full text
+      assert String.contains?(part.text, "following definitions apply")
+    end
+  end
+
+  # ── Diagnostics ──────────────────────────────────────────────
+
+  describe "Diagnostics.validate/1" do
+    alias SertantaiLegal.Scraper.LatParser.Diagnostics
+
+    test "clean parse returns {:ok, []}" do
+      xml = read_fixture("simple_act.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+
+      assert {:ok, warnings} = Diagnostics.validate(rows)
+      # After the fix, structural rows should have small text — no blob errors
+      errors = Enum.filter(warnings, &(&1.severity == :error))
+      assert errors == []
+    end
+
+    test "detects structural blob when Part has large duplicated text" do
+      # Simulate a bad parse: Part row with child section text baked in
+      bad_rows = [
+        %{
+          section_id: "TEST:pt.I",
+          section_type: "part",
+          text: String.duplicate("This is a very long Part text blob. ", 100),
+          part: "I",
+          chapter: nil,
+          schedule: nil,
+          heading_group: nil,
+          provision: nil,
+          sub: nil,
+          paragraph: nil,
+          sub_paragraph: nil,
+          position: 1
+        },
+        %{
+          section_id: "TEST:s.1",
+          section_type: "section",
+          text: "Section one text.",
+          part: "I",
+          chapter: nil,
+          schedule: nil,
+          heading_group: nil,
+          provision: "1",
+          sub: nil,
+          paragraph: nil,
+          sub_paragraph: nil,
+          position: 2
+        }
+      ]
+
+      assert {:error, errors} = Diagnostics.validate(bad_rows)
+      assert Enum.any?(errors, &(&1.check == :structural_blob))
+    end
+
+    test "detects empty sections" do
+      rows = [
+        %{
+          section_id: "TEST:s.1",
+          section_type: "section",
+          text: nil,
+          part: nil,
+          chapter: nil,
+          schedule: nil,
+          heading_group: nil,
+          provision: "1",
+          sub: nil,
+          paragraph: nil,
+          sub_paragraph: nil,
+          position: 1
+        }
+      ]
+
+      assert {:ok, warnings} = Diagnostics.validate(rows)
+      assert Enum.any?(warnings, &(&1.check == :empty_section))
+    end
+
+    test "detects missing provisions (structural only, no sections)" do
+      rows = [
+        %{
+          section_id: "TEST:pt.I",
+          section_type: "part",
+          text: "Part I Title",
+          part: "I",
+          chapter: nil,
+          schedule: nil,
+          heading_group: nil,
+          provision: nil,
+          sub: nil,
+          paragraph: nil,
+          sub_paragraph: nil,
+          position: 1
+        }
+      ]
+
+      assert {:error, errors} = Diagnostics.validate(rows)
+      assert Enum.any?(errors, &(&1.check == :missing_provisions))
+    end
+  end
+
+  describe "Diagnostics.summary/1" do
+    alias SertantaiLegal.Scraper.LatParser.Diagnostics
+
+    test "returns correct metrics for simple act" do
+      xml = read_fixture("simple_act.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      summary = Diagnostics.summary(rows)
+
+      assert summary.total_rows == 13
+      assert summary.structural_rows == 2
+      assert summary.section_rows > 0
+      # After the fix, structural text % should be very small
+      assert summary.structural_text_pct < 10.0
     end
   end
 
