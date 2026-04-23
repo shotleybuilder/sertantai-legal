@@ -77,7 +77,7 @@
 		latOffset += latLimit;
 	}
 
-	// ── Row expansion ───────────────────────────────────────────────
+	// ── Row expansion (text detail) ─────────────────────────────────
 
 	function toggleRow(sectionId: string) {
 		if (expandedRows.has(sectionId)) {
@@ -87,6 +87,66 @@
 		}
 		expandedRows = expandedRows; // eslint-disable-line no-self-assign
 	}
+
+	// ── Section collapse (hide children) ────────────────────────────
+
+	const COLLAPSIBLE_TYPES = new Set(['part', 'chapter', 'heading', 'schedule']);
+
+	// Tracks positions of collapsed structural rows
+	let collapsedSections = new Set<number>();
+
+	function toggleCollapse(position: number) {
+		if (collapsedSections.has(position)) {
+			collapsedSections.delete(position);
+		} else {
+			collapsedSections.add(position);
+		}
+		collapsedSections = collapsedSections; // eslint-disable-line no-self-assign
+	}
+
+	function collapseAll() {
+		collapsedSections = new Set(
+			latRows.filter((r) => COLLAPSIBLE_TYPES.has(r.section_type)).map((r) => r.position)
+		);
+	}
+
+	function expandAll() {
+		collapsedSections = new Set();
+	}
+
+	// Determine which rows are visible based on collapsed parents.
+	// A row is hidden if any preceding structural row at lower depth is collapsed.
+	$: visibleRows = (() => {
+		const rows = filteredLatRows;
+		if (collapsedSections.size === 0) return rows;
+
+		const visible: typeof rows = [];
+		// Stack of collapsed boundaries: [position, depth]
+		// A collapsed row at depth D hides all subsequent rows with depth > D
+		// until we encounter a row with depth <= D.
+		const collapseStack: number[] = []; // stack of depths that are currently hiding children
+
+		for (const row of rows) {
+			// Pop any collapse boundaries that this row escapes (same or lower depth)
+			while (collapseStack.length > 0 && row.depth <= collapseStack[collapseStack.length - 1]) {
+				collapseStack.pop();
+			}
+
+			if (collapseStack.length > 0) {
+				// Hidden by an ancestor collapse
+				continue;
+			}
+
+			visible.push(row);
+
+			// If this row is collapsed, push its depth to hide children
+			if (collapsedSections.has(row.position)) {
+				collapseStack.push(row.depth);
+			}
+		}
+
+		return visible;
+	})();
 
 	// ── Re-parse ────────────────────────────────────────────────────
 
@@ -109,19 +169,33 @@
 
 	// ── Formatting helpers ──────────────────────────────────────────
 
+	// Structure search
+	let structureSearch = '';
+
+	$: filteredLatRows = structureSearch
+		? latRows.filter(
+				(r) =>
+					(r.text && r.text.toLowerCase().includes(structureSearch.toLowerCase())) ||
+					(r.section_id && r.section_id.toLowerCase().includes(structureSearch.toLowerCase()))
+			)
+		: latRows;
+
 	const sectionTypeColors: Record<string, string> = {
 		title: 'bg-purple-100 text-purple-700',
-		part: 'bg-blue-100 text-blue-700',
-		chapter: 'bg-indigo-100 text-indigo-700',
+		part: 'bg-blue-600 text-white',
+		chapter: 'bg-indigo-500 text-white',
 		heading: 'bg-cyan-100 text-cyan-700',
 		section: 'bg-green-100 text-green-700',
+		sub_section: 'bg-green-50 text-green-600',
 		article: 'bg-green-100 text-green-700',
-		regulation: 'bg-green-100 text-green-700',
-		rule: 'bg-green-100 text-green-700',
+		sub_article: 'bg-green-50 text-green-600',
 		paragraph: 'bg-gray-100 text-gray-600',
-		sub_paragraph: 'bg-gray-100 text-gray-500',
-		schedule: 'bg-amber-100 text-amber-700',
-		schedule_paragraph: 'bg-amber-100 text-amber-600'
+		sub_paragraph: 'bg-gray-50 text-gray-500',
+		schedule: 'bg-amber-500 text-white',
+		table: 'bg-slate-200 text-slate-600',
+		note: 'bg-slate-100 text-slate-500',
+		signed: 'bg-slate-200 text-slate-600',
+		commencement: 'bg-violet-100 text-violet-600'
 	};
 
 	const codeTypeColors: Record<string, string> = {
@@ -145,17 +219,19 @@
 	}
 
 	function formatCitation(row: LatRow): string {
+		const parts: string[] = [];
+		if (row.schedule) parts.push(`Sch.${row.schedule}`);
+		if (row.part) parts.push(`Pt.${row.part}`);
+		if (row.chapter) parts.push(`Ch.${row.chapter}`);
 		if (row.provision) {
-			const prefix = row.section_type === 'article' ? 'art.' : 's.';
+			const prefix =
+				row.section_type === 'article' || row.section_type === 'sub_article' ? 'art.' : 's.';
 			let cite = `${prefix}${row.provision}`;
 			if (row.paragraph) cite += `(${row.paragraph})`;
 			if (row.sub_paragraph) cite += `(${row.sub_paragraph})`;
-			return cite;
+			parts.push(cite);
 		}
-		if (row.schedule) return `Sch.${row.schedule}`;
-		if (row.part) return `Pt.${row.part}`;
-		if (row.chapter) return `Ch.${row.chapter}`;
-		return '';
+		return parts.join(' > ');
 	}
 
 	function totalAnnotationCount(row: LatRow): number {
@@ -412,34 +488,111 @@
 			{:else if latRows.length === 0}
 				<div class="text-center py-8 text-gray-500">No LAT rows found for this law.</div>
 			{:else}
-				<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-					<div class="overflow-x-auto">
-						<table class="min-w-full divide-y divide-gray-200">
-							<thead class="bg-gray-50">
-								<tr>
-									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">
-										Type
-									</th>
-									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">
-										Citation
-									</th>
-									<th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-										Text
-									</th>
-									<th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-16">
-										Ann.
-									</th>
-								</tr>
-							</thead>
-							<tbody class="divide-y divide-gray-100">
-								{#each latRows as row (row.section_id)}
-									{@const isExpanded = expandedRows.has(row.section_id)}
-									{@const annCount = totalAnnotationCount(row)}
-									<tr
-										class="hover:bg-gray-50 cursor-pointer transition-colors"
-										on:click={() => toggleRow(row.section_id)}
+				<!-- Toolbar: search + expand/collapse -->
+				<div class="flex items-center gap-3 mb-3 flex-wrap">
+					<input
+						type="text"
+						placeholder="Search text or citation..."
+						bind:value={structureSearch}
+						class="px-3 py-1.5 border rounded-lg text-sm w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+					/>
+					{#if structureSearch}
+						<span class="text-sm text-gray-500">
+							{filteredLatRows.length} of {latRows.length} rows
+						</span>
+						<button
+							class="text-xs text-gray-400 hover:text-gray-600"
+							on:click={() => (structureSearch = '')}
+						>
+							Clear
+						</button>
+					{/if}
+					<div class="ml-auto flex gap-2">
+						<button
+							on:click={collapseAll}
+							class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+						>
+							Collapse all
+						</button>
+						<button
+							on:click={expandAll}
+							class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
+						>
+							Expand all
+						</button>
+					</div>
+				</div>
+
+				<div
+					class="bg-white rounded-lg border border-gray-200 overflow-y-auto"
+					style="max-height: calc(100vh - 280px)"
+				>
+					<table class="w-full">
+						<thead class="bg-gray-50 border-b sticky top-0 z-10">
+							<tr>
+								<th
+									class="px-2 py-2 text-right text-xs font-medium text-gray-400 w-12"
+									title="Document position">#</th
+								>
+								<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 w-28">Type</th>
+								<th class="px-2 py-2 text-left text-xs font-medium text-gray-500 w-44">Citation</th>
+								<th class="px-2 py-2 text-left text-xs font-medium text-gray-500">Text</th>
+								<th
+									class="px-2 py-2 text-center text-xs font-medium text-gray-500 w-24"
+									title="Amendments / Modifications / Commencements / Extent">Ann.</th
+								>
+							</tr>
+						</thead>
+						<tbody>
+							{#each visibleRows as row (row.section_id)}
+								{@const isExpanded = expandedRows.has(row.section_id)}
+								{@const isStructural = ['part', 'chapter', 'schedule'].includes(row.section_type)}
+								{@const isCollapsible = COLLAPSIBLE_TYPES.has(row.section_type)}
+								{@const isCollapsed = collapsedSections.has(row.position)}
+								{@const isHeading = row.section_type === 'heading'}
+								<tr
+									class="border-b border-gray-100 cursor-pointer transition-colors
+											{isStructural
+										? 'bg-gray-50 hover:bg-gray-100'
+										: isHeading
+											? 'bg-slate-50 hover:bg-slate-100'
+											: 'hover:bg-blue-50'}"
+									on:click={() => toggleRow(row.section_id)}
+								>
+									<!-- Position -->
+									<td
+										class="px-2 py-1 text-right text-xs text-gray-300 font-mono tabular-nums align-top"
 									>
-										<td class="px-3 py-1.5" style="padding-left: {12 + row.depth * 16}px">
+										{row.position}
+									</td>
+									<!-- Type badge with depth indentation + collapse chevron -->
+									<td class="py-1 align-top" style="padding-left: {4 + row.depth * 20}px">
+										<span class="inline-flex items-center gap-1">
+											{#if isCollapsible}
+												<button
+													class="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded transition-transform {isCollapsed
+														? ''
+														: 'rotate-90'}"
+													on:click|stopPropagation={() => toggleCollapse(row.position)}
+													title={isCollapsed ? 'Expand section' : 'Collapse section'}
+												>
+													<svg
+														class="w-3 h-3"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M9 5l7 7-7 7"
+														/>
+													</svg>
+												</button>
+											{:else}
+												<span class="w-4" />
+											{/if}
 											<span
 												class="inline-block px-1.5 py-0.5 rounded text-xs font-medium {sectionTypeClass(
 													row.section_type
@@ -447,38 +600,89 @@
 											>
 												{row.section_type}
 											</span>
-										</td>
-										<td class="px-3 py-1.5 text-sm font-mono text-gray-600 whitespace-nowrap">
-											{formatCitation(row)}
-										</td>
-										<td class="px-3 py-1.5 text-sm text-gray-800">
-											{#if isExpanded}
-												<div class="whitespace-pre-wrap">{row.text}</div>
+										</span>
+									</td>
+									<!-- Citation with hierarchy -->
+									<td
+										class="px-2 py-1 text-sm font-mono whitespace-nowrap align-top
+												{isStructural ? 'text-gray-900 font-semibold' : 'text-gray-500'}"
+									>
+										{formatCitation(row)}
+									</td>
+									<!-- Text -->
+									<td class="px-2 py-1 text-sm align-top">
+										{#if isExpanded}
+											<div
+												class="whitespace-pre-wrap {isStructural
+													? 'font-semibold text-gray-900'
+													: 'text-gray-700'}"
+											>
+												{row.text || ''}
+											</div>
+											<div class="flex flex-wrap gap-1.5 mt-1">
 												{#if row.extent_code}
 													<span
-														class="inline-block mt-1 px-1.5 py-0.5 rounded text-xs bg-yellow-50 text-yellow-700"
+														class="px-1.5 py-0.5 rounded text-xs bg-yellow-50 text-yellow-700 border border-yellow-200"
 													>
 														Extent: {row.extent_code}
 													</span>
 												{/if}
-											{:else}
-												{truncateText(row.text)}
-											{/if}
-										</td>
-										<td class="px-3 py-1.5 text-sm text-right">
-											{#if annCount > 0}
+												{#if row.hierarchy_path}
+													<span
+														class="px-1.5 py-0.5 rounded text-xs bg-gray-50 text-gray-500 border border-gray-200 font-mono"
+													>
+														{row.hierarchy_path}
+													</span>
+												{/if}
 												<span
-													class="inline-block px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-700"
+													class="px-1.5 py-0.5 rounded text-xs bg-gray-50 text-gray-400 border border-gray-200 font-mono"
 												>
-													{annCount}
+													depth:{row.depth} pos:{row.position}
 												</span>
-											{/if}
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
+											</div>
+										{:else}
+											<span
+												class={isStructural
+													? 'font-semibold text-gray-900'
+													: isHeading
+														? 'font-medium text-cyan-800 italic'
+														: 'text-gray-700'}
+											>
+												{truncateText(row.text || '', isStructural ? 200 : 120)}
+											</span>
+										{/if}
+									</td>
+									<!-- Annotation badges -->
+									<td class="px-2 py-1 text-center align-top whitespace-nowrap">
+										{#if row.amendment_count}
+											<span
+												class="inline-block px-1 py-0.5 rounded text-xs bg-red-100 text-red-600"
+												title="Amendments">F{row.amendment_count}</span
+											>
+										{/if}
+										{#if row.modification_count}
+											<span
+												class="inline-block px-1 py-0.5 rounded text-xs bg-orange-100 text-orange-600"
+												title="Modifications">C{row.modification_count}</span
+											>
+										{/if}
+										{#if row.commencement_count}
+											<span
+												class="inline-block px-1 py-0.5 rounded text-xs bg-blue-100 text-blue-600"
+												title="Commencements">I{row.commencement_count}</span
+											>
+										{/if}
+										{#if row.extent_count}
+											<span
+												class="inline-block px-1 py-0.5 rounded text-xs bg-gray-100 text-gray-500"
+												title="Extent">E{row.extent_count}</span
+											>
+										{/if}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
 
 					<!-- Pagination -->
 					{#if hasMoreLat}

@@ -317,7 +317,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
     l.created_at, l.updated_at
   FROM lat l
   WHERE l.law_name = $1
-  ORDER BY l.sort_key ASC
+  ORDER BY l.position ASC
   LIMIT $2 OFFSET $3
   """
 
