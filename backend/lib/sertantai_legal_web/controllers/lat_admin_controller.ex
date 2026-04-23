@@ -19,6 +19,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
   alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
+  alias SertantaiLegal.Scraper.LatParser.Diagnostics
   alias SertantaiLegal.Zenoh.ChangeNotifier
 
   require Ash.Query
@@ -834,6 +835,168 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
       _ ->
         :ok
+    end
+  end
+
+  # ── Audit ─────────────────────────────────────────────────────────
+
+  @audit_per_law_sql """
+  SELECT
+    l.law_name,
+    u.title_en,
+    u.family,
+    u.year,
+    COUNT(*) AS total_rows,
+    COUNT(*) FILTER (WHERE l.section_type IN ('part', 'chapter', 'schedule')) AS structural_rows,
+    COUNT(*) FILTER (WHERE l.section_type IN ('section', 'sub_section', 'article', 'sub_article', 'paragraph', 'sub_paragraph')) AS section_rows,
+    SUM(octet_length(COALESCE(l.text, ''))) AS total_text_bytes,
+    SUM(octet_length(COALESCE(l.text, ''))) FILTER (WHERE l.section_type IN ('part', 'chapter', 'schedule')) AS structural_text_bytes,
+    MAX(octet_length(COALESCE(l.text, ''))) AS max_row_bytes,
+    COUNT(*) FILTER (WHERE l.section_type IN ('section', 'sub_section', 'article', 'sub_article', 'paragraph', 'sub_paragraph') AND (l.text IS NULL OR l.text = '')) AS empty_section_count,
+    COUNT(*) FILTER (WHERE l.section_type IN ('part', 'chapter', 'schedule') AND octet_length(COALESCE(l.text, '')) > 1000) AS blob_count
+  FROM lat l
+  JOIN uk_lrt u ON u.id = l.law_id
+  GROUP BY l.law_name, u.title_en, u.family, u.year
+  ORDER BY l.law_name
+  """
+
+  @audit_corpus_sql """
+  SELECT
+    COUNT(*) AS total_rows,
+    COUNT(DISTINCT law_name) AS total_laws,
+    COUNT(*) FILTER (WHERE section_type IN ('part', 'chapter', 'schedule')) AS structural_rows,
+    COUNT(*) FILTER (WHERE section_type IN ('section', 'sub_section', 'article', 'sub_article', 'paragraph', 'sub_paragraph')) AS section_rows,
+    SUM(octet_length(COALESCE(text, ''))) AS total_text_bytes,
+    SUM(octet_length(COALESCE(text, ''))) FILTER (WHERE section_type IN ('part', 'chapter', 'schedule')) AS structural_text_bytes,
+    COUNT(*) FILTER (WHERE section_type IN ('section', 'sub_section', 'article', 'sub_article', 'paragraph', 'sub_paragraph') AND (text IS NULL OR text = '')) AS empty_section_count,
+    COUNT(*) FILTER (WHERE section_type IN ('part', 'chapter', 'schedule') AND octet_length(COALESCE(text, '')) > 1000) AS blob_count
+  FROM lat
+  """
+
+  def audit(conn, params) do
+    family = params["family"]
+
+    # Corpus-level summary
+    {:ok, %{columns: corpus_cols, rows: [corpus_row]}} = Repo.query(@audit_corpus_sql)
+    corpus = Enum.zip(corpus_cols, corpus_row) |> Map.new()
+
+    # Per-law results
+    {:ok, %{columns: cols, rows: rows}} = Repo.query(@audit_per_law_sql)
+
+    laws =
+      rows
+      |> Enum.map(fn row -> Enum.zip(cols, row) |> Map.new() end)
+      |> Enum.map(fn law ->
+        total = law["total_text_bytes"] || 0
+        structural = law["structural_text_bytes"] || 0
+
+        pct =
+          if total > 0,
+            do: Float.round(structural / total * 100, 1),
+            else: 0.0
+
+        status =
+          cond do
+            (law["blob_count"] || 0) > 0 -> "error"
+            (law["empty_section_count"] || 0) > 0 -> "warning"
+            true -> "clean"
+          end
+
+        %{
+          law_name: law["law_name"],
+          title: law["title_en"],
+          family: law["family"],
+          year: law["year"],
+          total_rows: law["total_rows"],
+          structural_rows: law["structural_rows"],
+          section_rows: law["section_rows"],
+          total_text_bytes: total,
+          structural_text_bytes: structural,
+          structural_text_pct: pct,
+          max_row_bytes: law["max_row_bytes"],
+          empty_section_count: law["empty_section_count"],
+          blob_count: law["blob_count"],
+          status: status
+        }
+      end)
+      |> then(fn laws ->
+        if family && family != "" do
+          Enum.filter(laws, fn l -> l.family && String.contains?(l.family, family) end)
+        else
+          laws
+        end
+      end)
+
+    total_bytes = corpus["total_text_bytes"] || 0
+    structural_bytes = corpus["structural_text_bytes"] || 0
+
+    json(conn, %{
+      corpus: %{
+        total_rows: corpus["total_rows"],
+        total_laws: corpus["total_laws"],
+        structural_rows: corpus["structural_rows"],
+        section_rows: corpus["section_rows"],
+        total_text_bytes: total_bytes,
+        structural_text_bytes: structural_bytes,
+        structural_text_pct:
+          if(total_bytes > 0, do: Float.round(structural_bytes / total_bytes * 100, 1), else: 0.0),
+        empty_section_count: corpus["empty_section_count"],
+        blob_count: corpus["blob_count"]
+      },
+      laws: laws,
+      counts: %{
+        total: length(laws),
+        clean: Enum.count(laws, &(&1.status == "clean")),
+        warning: Enum.count(laws, &(&1.status == "warning")),
+        error: Enum.count(laws, &(&1.status == "error"))
+      }
+    })
+  end
+
+  def audit_law(conn, %{"law_name" => law_name}) do
+    import Ecto.Query
+
+    rows =
+      from(l in "lat",
+        where: l.law_name == ^law_name,
+        select: %{
+          section_id: l.section_id,
+          section_type: l.section_type,
+          text: l.text,
+          part: l.part,
+          chapter: l.chapter,
+          schedule: l.schedule,
+          heading_group: l.heading_group,
+          provision: l.provision,
+          sub: fragment("\"sub\""),
+          paragraph: l.paragraph,
+          sub_paragraph: l.sub_paragraph,
+          position: l.position
+        },
+        order_by: l.position
+      )
+      |> Repo.all()
+
+    if rows == [] do
+      conn |> put_status(:not_found) |> json(%{error: "No LAT rows for #{law_name}"})
+    else
+      {result, warnings} = Diagnostics.validate(rows)
+      summary = Diagnostics.summary(rows)
+
+      json(conn, %{
+        law_name: law_name,
+        status: if(result == :ok, do: "ok", else: "error"),
+        summary: summary,
+        warnings:
+          Enum.map(warnings, fn w ->
+            %{
+              check: w.check,
+              severity: w.severity,
+              message: w.message,
+              detail: w.detail
+            }
+          end)
+      })
     end
   end
 end

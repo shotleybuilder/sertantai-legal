@@ -169,6 +169,8 @@ defmodule SertantaiLegalWeb.Router do
     delete("/lat/sessions/:id", LatAdminController, :lat_delete)
 
     # LAT admin endpoints
+    get("/lat/audit", LatAdminController, :audit)
+    get("/lat/audit/:law_name", LatAdminController, :audit_law)
     get("/lat/stats", LatAdminController, :stats)
     get("/lat/queue", LatAdminController, :queue)
     get("/lat/laws", LatAdminController, :laws)

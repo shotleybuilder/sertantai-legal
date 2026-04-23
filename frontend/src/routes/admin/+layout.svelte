@@ -10,6 +10,7 @@
 		{ href: '/admin/lrt', label: 'LRT Data', exact: false },
 		{ href: '/admin/lat', label: 'LAT Data', exact: true },
 		{ href: '/admin/lat/queue', label: 'LAT Queue', exact: false },
+		{ href: '/admin/lat/audit', label: 'LAT Audit', exact: true },
 		{ href: '/admin/scrape', label: 'New Scrape', exact: true },
 		{
 			label: 'Sessions',
