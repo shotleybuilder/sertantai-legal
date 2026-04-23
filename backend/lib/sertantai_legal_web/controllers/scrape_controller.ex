@@ -1550,14 +1550,21 @@ defmodule SertantaiLegalWeb.ScrapeController do
     end)
   end
 
-  # Convert string keys to atoms for overrides
+  # Convert string keys to atoms for overrides.
+  # Uses to_existing_atom/1 — keys must already exist as atoms (safe from DoS).
+  # Silently drops keys that don't map to existing atoms.
   defp atomize_keys(map) when is_map(map) do
-    map
-    |> Enum.map(fn
-      {k, v} when is_binary(k) -> {String.to_atom(k), v}
-      {k, v} -> {k, v}
+    Map.new(map, fn
+      {k, v} when is_binary(k) ->
+        try do
+          {String.to_existing_atom(k), v}
+        rescue
+          ArgumentError -> {k, v}
+        end
+
+      {k, v} ->
+        {k, v}
     end)
-    |> Enum.into(%{})
   end
 
   defp atomize_keys(other), do: other

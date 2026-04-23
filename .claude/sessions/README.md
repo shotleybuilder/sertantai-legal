@@ -36,6 +36,7 @@ LAT parsing, sessions, queue, cleanup, taxa classification.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-21 | [issue-69](2026-04-21-issue-69.md) | [#69](https://github.com/shotleybuilder/sertantai-legal/issues/69) | Fix Part/Ch/Sch blob duplication + Diagnostics module + mix lat.audit |
 | 2026-04-14 | [issue-57](2026-04-14-issue-57.md) | [#57](https://github.com/shotleybuilder/sertantai-legal/issues/57) | Audit: LAT session DB persistence already in place; closed stale issue |
 | 2026-04-21 | [lat-queue-bugs](2026-04-14-lat-queue-bugs.md) | — | Reopened: raised gridlite-kit#28 (applyConfig columns) + #29 (grouped view static snapshots) |
 | 2026-04-14 | [lat-queue-bugs](2026-04-14-lat-queue-bugs.md) | — | LAT queue: inline edit persistence, duplicates, function display, TanStack DB mutations |
