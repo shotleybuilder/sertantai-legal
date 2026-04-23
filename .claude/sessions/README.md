@@ -161,6 +161,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-23 | [issue-73](2026-04-23-issue-73.md) | [#73](https://github.com/shotleybuilder/sertantai-legal/issues/73) | Fix sort_key: encode full hierarchy, not just provision/paragraph |
 | 2026-03-26 | [issue-60-status-parser-bug](2026-03-26-issue-60-status-parser-bug.md) | [#60](https://github.com/shotleybuilder/sertantai-legal/issues/60) | Status parser incorrectly marks in-force laws as revoked |
 | 2026-03-12 | [live-status-assurance-metrics](2026-03-12-live-status-assurance-metrics.md) | — | Live status assurance metrics |
 | 2026-03-12 | [ohs-data-quality-audit](2026-03-12-ohs-data-quality-audit.md) | — | OH&S data quality audit |

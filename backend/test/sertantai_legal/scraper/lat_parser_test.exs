@@ -612,6 +612,100 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       # No child P1/P2/Pblock — should get full text
       assert String.contains?(part.text, "following definitions apply")
     end
+
+    test "section (P1) with sub_sections only gets direct text, not child text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para>
+              <Text>This section introduces the main duties.</Text>
+              <P2 id="section-1-1"><Pnumber>1</Pnumber>
+                <P2para><Text>Every employer shall ensure safety.</Text></P2para>
+              </P2>
+              <P2 id="section-1-2"><Pnumber>2</Pnumber>
+                <P2para><Text>Every employee shall cooperate.</Text></P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+      subs = Enum.filter(rows, &(&1.section_type == "sub_section"))
+
+      # Section should only have its direct intro text
+      assert section.text == "This section introduces the main duties."
+      refute String.contains?(section.text || "", "employer")
+      refute String.contains?(section.text || "", "employee")
+
+      # Sub_sections should have their own text
+      assert length(subs) == 2
+      assert Enum.any?(subs, &String.contains?(&1.text, "employer"))
+      assert Enum.any?(subs, &String.contains?(&1.text, "employee"))
+    end
+
+    test "sub_section (P2) with paragraphs only gets direct text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para>
+              <P2 id="section-1-1"><Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>The duties include—</Text>
+                  <P3 id="section-1-1-a"><Pnumber>a</Pnumber>
+                    <P3para><Text>maintaining safe equipment;</Text></P3para>
+                  </P3>
+                  <P3 id="section-1-1-b"><Pnumber>b</Pnumber>
+                    <P3para><Text>providing adequate training.</Text></P3para>
+                  </P3>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      sub = Enum.find(rows, &(&1.section_type == "sub_section"))
+      paras = Enum.filter(rows, &(&1.section_type == "paragraph"))
+
+      # Sub_section should only have its intro text
+      assert sub.text == "The duties include—"
+      refute String.contains?(sub.text || "", "equipment")
+      refute String.contains?(sub.text || "", "training")
+
+      # Paragraphs should have their own text
+      assert length(paras) == 2
+    end
+
+    test "section without sub_sections keeps full text" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para><Text>This Act may be cited as the Example Act 2024.</Text></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      # No P2 children — full text preserved
+      assert section.text == "This Act may be cited as the Example Act 2024."
+    end
   end
 
   # ── Diagnostics ──────────────────────────────────────────────

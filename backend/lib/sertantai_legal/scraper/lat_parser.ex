@@ -145,19 +145,19 @@ defmodule SertantaiLegal.Scraper.LatParser do
       name == "P1" ->
         provision = extract_pnumber(node)
         new_ctx = %{ctx | provision: provision, sub: nil, paragraph: nil, sub_paragraph: nil}
-        row = emit_row("P1", new_ctx, node, extent)
+        row = emit_structural_row("P1", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "P2" ->
         sub = extract_pnumber(node)
         new_ctx = %{ctx | sub: sub, paragraph: nil, sub_paragraph: nil}
-        row = emit_row("P2", new_ctx, node, extent)
+        row = emit_structural_row("P2", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "P3" ->
         paragraph = extract_pnumber(node)
         new_ctx = %{ctx | paragraph: paragraph, sub_paragraph: nil}
-        row = emit_row("P3", new_ctx, node, extent)
+        row = emit_structural_row("P3", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "P4" ->
@@ -378,24 +378,31 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  # For structural containers (Part, Chapter, Schedule): extract only title/header
-  # text and any direct introductory Para content — NOT text from nested child
-  # provisions (P1/P2/P3). Child section text is emitted at section level.
+  # Extract text without descending into child provision elements.
+  # Used for any node that has children emitted as separate rows (Part, Chapter,
+  # Schedule, P1, P2, P3). Extracts only direct Para/Text + Title content.
   # Falls back to full text extraction if no child provisions exist.
   defp extract_structural_text(node) do
     has_child_provisions =
       xpath(node, ~x".//P1[1]"o) != nil ||
         xpath(node, ~x".//P2[1]"o) != nil ||
+        xpath(node, ~x".//P3[1]"o) != nil ||
+        xpath(node, ~x".//P4[1]"o) != nil ||
         xpath(node, ~x".//Pblock[1]"o) != nil
 
     if has_child_provisions do
-      # Title/Number text for the structural header
+      # Title/Number text for the structural header (if any)
       title = extract_title(node)
 
-      # Direct Para/Text children only (introductory text not inside P1/P2/etc.)
+      # Direct Para/Text children, plus Text inside P1para/P2para/P3para wrappers
+      # (but NOT text inside nested P1/P2/P3/P4 child provisions)
       direct_texts =
         (safe_xpath_texts(node, ~x"./Para//text()"ls) ++
-           safe_xpath_texts(node, ~x"./Text//text()"ls))
+           safe_xpath_texts(node, ~x"./Text//text()"ls) ++
+           safe_xpath_texts(node, ~x"./P1para/Text//text()"ls) ++
+           safe_xpath_texts(node, ~x"./P2para/Text//text()"ls) ++
+           safe_xpath_texts(node, ~x"./P3para/Text//text()"ls) ++
+           safe_xpath_texts(node, ~x"./P4para/Text//text()"ls))
         |> Enum.map(&String.trim/1)
         |> Enum.reject(&(&1 == ""))
         |> Enum.uniq()
@@ -412,7 +419,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         t -> t
       end
     else
-      # No child provisions — keep full text (rare: leaf structural element)
+      # No child provisions — keep full text (leaf node)
       extract_element_text(node)
     end
   end
