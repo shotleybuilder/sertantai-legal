@@ -64,9 +64,9 @@
 		});
 	}
 
-	// Bulk reparse all error laws
+	// Bulk reparse all laws in current filtered view
 	async function handleBulkReparse() {
-		const errorLaws = filteredLaws.filter((l) => l.status === 'error');
+		const errorLaws = filteredLaws;
 		if (errorLaws.length === 0) return;
 
 		bulkReparsing = true;
@@ -243,20 +243,128 @@
 				class="px-3 py-1.5 border rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 			/>
 			<span class="text-sm text-gray-500">{filteredLaws.length} laws shown</span>
-			{#if counts && counts.error > 0}
+			{#if filteredLaws.length > 0}
 				<button
-					class="ml-auto px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+					class="ml-auto px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
 					disabled={bulkReparsing}
 					on:click={handleBulkReparse}
 				>
 					{#if bulkReparsing}
 						Re-parsing {bulkProgress}/{bulkTotal}...
 					{:else}
-						Re-parse all errors ({counts.error})
+						Re-parse shown ({filteredLaws.length})
 					{/if}
 				</button>
 			{/if}
 		</div>
+
+		<!-- Law Detail Panel (above table so it's always visible) -->
+		{#if selectedLaw}
+			<div class="bg-white rounded-lg border p-5 space-y-4 shadow-lg">
+				<div class="flex items-center justify-between">
+					<h2 class="text-lg font-semibold text-gray-900">
+						Diagnostics: {selectedLaw}
+					</h2>
+					<div class="flex items-center gap-3">
+						<a
+							href="/admin/lat?law={encodeURIComponent(selectedLaw)}"
+							class="text-sm text-indigo-600 hover:text-indigo-800"
+						>
+							View in LAT browser
+						</a>
+						<button
+							class="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
+							disabled={$reparseMutation.isPending}
+							on:click={() => handleReparse(selectedLaw ?? '')}
+						>
+							{#if $reparseMutation.isPending}
+								Re-parsing...
+							{:else}
+								Re-parse LAT
+							{/if}
+						</button>
+						<button
+							class="text-sm text-gray-400 hover:text-gray-600"
+							on:click={() => (selectedLaw = null)}
+						>
+							Close
+						</button>
+					</div>
+				</div>
+
+				{#if $lawDetailQuery?.isLoading}
+					<div class="text-sm text-gray-500">Running diagnostics...</div>
+				{:else if $lawDetailQuery?.error}
+					<div class="text-sm text-red-600">
+						Error: {$lawDetailQuery.error.message}
+					</div>
+				{:else if lawDetail}
+					<div class="grid grid-cols-3 md:grid-cols-6 gap-3 text-sm">
+						<div class="bg-gray-50 rounded p-2">
+							<div class="font-semibold">{lawDetail.summary.total_rows}</div>
+							<div class="text-xs text-gray-500">Total</div>
+						</div>
+						<div class="bg-gray-50 rounded p-2">
+							<div class="font-semibold">{lawDetail.summary.structural_rows}</div>
+							<div class="text-xs text-gray-500">Structural</div>
+						</div>
+						<div class="bg-gray-50 rounded p-2">
+							<div class="font-semibold">{lawDetail.summary.section_rows}</div>
+							<div class="text-xs text-gray-500">Sections</div>
+						</div>
+						<div class="bg-gray-50 rounded p-2">
+							<div class="font-semibold">{lawDetail.summary.structural_text_pct}%</div>
+							<div class="text-xs text-gray-500">Struct text</div>
+						</div>
+						<div class="bg-gray-50 rounded p-2">
+							<div class="font-semibold">
+								{formatBytes(lawDetail.summary.max_row_text_bytes)}
+							</div>
+							<div class="text-xs text-gray-500">Largest row</div>
+						</div>
+						<div class="bg-gray-50 rounded p-2">
+							<div class="font-semibold">{formatBytes(lawDetail.summary.total_text_bytes)}</div>
+							<div class="text-xs text-gray-500">Total text</div>
+						</div>
+					</div>
+
+					<div class="flex flex-wrap gap-2">
+						{#each Object.entries(lawDetail.summary.type_counts) as [type, count]}
+							<span class="px-2 py-0.5 text-xs rounded bg-indigo-50 text-indigo-700">
+								{type}: {count}
+							</span>
+						{/each}
+					</div>
+
+					{#if lawDetail.warnings.length > 0}
+						<div class="space-y-2">
+							<h3 class="text-sm font-medium text-gray-700">
+								{lawDetail.warnings.length} issue{lawDetail.warnings.length !== 1 ? 's' : ''}
+							</h3>
+							{#each lawDetail.warnings as warning}
+								<div
+									class="flex items-start gap-2 text-sm border rounded p-3 {warning.severity ===
+									'error'
+										? 'border-red-200 bg-red-50'
+										: 'border-yellow-200 bg-yellow-50'}"
+								>
+									<span
+										class="inline-block px-1.5 py-0.5 text-xs font-medium rounded {severityBadge(
+											warning.severity
+										)}"
+									>
+										{warning.check}
+									</span>
+									<span class="text-gray-700">{warning.message}</span>
+								</div>
+							{/each}
+						</div>
+					{:else}
+						<div class="text-sm text-green-600">No issues found</div>
+					{/if}
+				{/if}
+			</div>
+		{/if}
 
 		<!-- Per-Law Results Table -->
 		<div class="bg-white rounded-lg border overflow-hidden">
@@ -416,117 +524,6 @@
 		{#if reparseError}
 			<div class="px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg border border-red-200">
 				{reparseError}
-			</div>
-		{/if}
-
-		<!-- Law Detail Panel -->
-		{#if selectedLaw}
-			<div class="bg-white rounded-lg border p-5 space-y-4">
-				<div class="flex items-center justify-between">
-					<h2 class="text-lg font-semibold text-gray-900">
-						Diagnostics: {selectedLaw}
-					</h2>
-					<div class="flex items-center gap-3">
-						<a
-							href="/admin/lat?law={encodeURIComponent(selectedLaw)}"
-							class="text-sm text-indigo-600 hover:text-indigo-800"
-						>
-							View in LAT browser
-						</a>
-						<button
-							class="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
-							disabled={$reparseMutation.isPending}
-							on:click={() => handleReparse(selectedLaw ?? '')}
-						>
-							{#if $reparseMutation.isPending}
-								Re-parsing...
-							{:else}
-								Re-parse LAT
-							{/if}
-						</button>
-						<button
-							class="text-sm text-gray-400 hover:text-gray-600"
-							on:click={() => (selectedLaw = null)}
-						>
-							Close
-						</button>
-					</div>
-				</div>
-
-				{#if $lawDetailQuery?.isLoading}
-					<div class="text-sm text-gray-500">Running diagnostics...</div>
-				{:else if $lawDetailQuery?.error}
-					<div class="text-sm text-red-600">
-						Error: {$lawDetailQuery.error.message}
-					</div>
-				{:else if lawDetail}
-					<!-- Summary Grid -->
-					<div class="grid grid-cols-3 md:grid-cols-6 gap-3 text-sm">
-						<div class="bg-gray-50 rounded p-2">
-							<div class="font-semibold">{lawDetail.summary.total_rows}</div>
-							<div class="text-xs text-gray-500">Total</div>
-						</div>
-						<div class="bg-gray-50 rounded p-2">
-							<div class="font-semibold">{lawDetail.summary.structural_rows}</div>
-							<div class="text-xs text-gray-500">Structural</div>
-						</div>
-						<div class="bg-gray-50 rounded p-2">
-							<div class="font-semibold">{lawDetail.summary.section_rows}</div>
-							<div class="text-xs text-gray-500">Sections</div>
-						</div>
-						<div class="bg-gray-50 rounded p-2">
-							<div class="font-semibold">{lawDetail.summary.structural_text_pct}%</div>
-							<div class="text-xs text-gray-500">Struct text</div>
-						</div>
-						<div class="bg-gray-50 rounded p-2">
-							<div class="font-semibold">
-								{formatBytes(lawDetail.summary.max_row_text_bytes)}
-							</div>
-							<div class="text-xs text-gray-500">Largest row</div>
-						</div>
-						<div class="bg-gray-50 rounded p-2">
-							<div class="font-semibold">{formatBytes(lawDetail.summary.total_text_bytes)}</div>
-							<div class="text-xs text-gray-500">Total text</div>
-						</div>
-					</div>
-
-					<!-- Type Counts -->
-					<div class="flex flex-wrap gap-2">
-						{#each Object.entries(lawDetail.summary.type_counts) as [type, count]}
-							<span class="px-2 py-0.5 text-xs rounded bg-indigo-50 text-indigo-700">
-								{type}: {count}
-							</span>
-						{/each}
-					</div>
-
-					<!-- Warnings -->
-					{#if lawDetail.warnings.length > 0}
-						<div class="space-y-2">
-							<h3 class="text-sm font-medium text-gray-700">
-								{lawDetail.warnings.length} issue{lawDetail.warnings.length !== 1 ? 's' : ''}
-							</h3>
-							{#each lawDetail.warnings as warning}
-								<div
-									class="flex items-start gap-2 text-sm border rounded p-3 {warning.severity ===
-									'error'
-										? 'border-red-200 bg-red-50'
-										: 'border-yellow-200 bg-yellow-50'}"
-								>
-									<span
-										class="inline-block px-1.5 py-0.5 text-xs font-medium rounded {severityBadge(
-											warning.severity
-										)}"
-									>
-										{warning.check}
-									</span>
-									<span class="text-gray-700">{warning.message}</span>
-								</div>
-							{/each}
-						</div>
-					{:else}
-						<div class="text-sm text-green-600">No issues found</div>
-					{/if}
-				{/if}
 			</div>
 		{/if}
 	{/if}
