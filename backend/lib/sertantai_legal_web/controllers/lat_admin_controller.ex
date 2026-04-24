@@ -968,7 +968,6 @@ defmodule SertantaiLegalWeb.LatAdminController do
           schedule: l.schedule,
           heading_group: l.heading_group,
           provision: l.provision,
-          sub: fragment("\"sub\""),
           paragraph: l.paragraph,
           sub_paragraph: l.sub_paragraph,
           position: l.position

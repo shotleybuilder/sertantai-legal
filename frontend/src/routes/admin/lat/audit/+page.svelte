@@ -29,12 +29,15 @@
 	$: corpus = data?.corpus;
 	$: counts = data?.counts;
 
+	// Derive unique families from loaded data for picker
+	$: allFamilies = [
+		...new Set((data?.laws ?? []).map((l) => l.family).filter(Boolean))
+	].sort() as string[];
+
 	$: filteredLaws = (data?.laws ?? [])
 		.filter((l) => {
 			if (statusFilter !== 'all' && l.status !== statusFilter) return false;
-			if (familyFilter && l.family && !l.family.toLowerCase().includes(familyFilter.toLowerCase()))
-				return false;
-			if (familyFilter && !l.family) return false;
+			if (familyFilter && l.family !== familyFilter) return false;
 			return true;
 		})
 		.sort((a, b) => {
@@ -236,12 +239,15 @@
 
 		<!-- Family Filter + Bulk Actions -->
 		<div class="flex items-center gap-3 flex-wrap">
-			<input
-				type="text"
-				placeholder="Filter by family..."
+			<select
 				bind:value={familyFilter}
-				class="px-3 py-1.5 border rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-			/>
+				class="px-3 py-1.5 border rounded-lg text-sm w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+			>
+				<option value="">All families</option>
+				{#each allFamilies as fam}
+					<option value={fam}>{fam}</option>
+				{/each}
+			</select>
 			<span class="text-sm text-gray-500">{filteredLaws.length} laws shown</span>
 			{#if filteredLaws.length > 0}
 				<button
