@@ -566,11 +566,15 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp mark_repealed_provisions(rows, mode) do
     marker = if mode == :section, do: "[Repealed]", else: "[Revoked]"
+    indexed = Enum.with_index(rows)
 
-    Enum.map(rows, fn row ->
+    Enum.map(indexed, fn {row, idx} ->
       cond do
-        # Empty provision with any commentary refs → repealed/revoked
-        (row.text == nil or row.text == "") and (row.commentary_refs || []) != [] ->
+        # Empty provision with commentary refs AND no children → repealed/revoked.
+        # If the next row has deeper depth, this row has active children
+        # (empty text is from structural extraction, not repeal).
+        (row.text == nil or row.text == "") and (row.commentary_refs || []) != [] and
+            not has_children?(rows, idx) ->
           %{row | text: marker}
 
         # Dots-only heading (". . . . . .") → repealed heading group
@@ -582,6 +586,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
           row
       end
     end)
+  end
+
+  defp has_children?(rows, idx) do
+    current_depth = Enum.at(rows, idx).depth
+    next_row = Enum.at(rows, idx + 1)
+    next_row != nil and next_row.depth > current_depth
   end
 
   # P3/P4 inside body sections cite as section extensions: s.1(1)(a), s.1(1)(a)(i)

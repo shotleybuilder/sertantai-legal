@@ -1086,6 +1086,31 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       refute section.text == "[Repealed]"
     end
 
+    test "section with sub_sections is NOT marked even with empty text and refs" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-4"><Pnumber><CommentaryRef Ref="c123"/>4</Pnumber>
+            <P1para>
+              <P2 id="section-4-1"><Pnumber>1</Pnumber>
+                <P2para><Text>Active sub-section text.</Text></P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1962_58", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      # Section has empty direct text (structural extraction) + commentary refs,
+      # but has children → should NOT be marked as repealed
+      refute section.text == "[Repealed]"
+    end
+
     test "empty section WITHOUT F-code refs is NOT marked" do
       xml = """
       <Legislation RestrictExtent="E+W+S+N.I.">
