@@ -1024,6 +1024,26 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert article.text == "[Revoked]"
     end
 
+    test "empty section with hash-style ref IDs gets [Repealed]" do
+      # Real-world: legislation.gov.uk uses hash IDs like c7375871, not F-prefix
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-2"><Pnumber><CommentaryRef Ref="c7375871"/>2</Pnumber>
+            <P1para><Text/></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1962_58", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert section.text == "[Repealed]"
+    end
+
     test "dots-only heading gets replaced with marker" do
       xml = """
       <Legislation RestrictExtent="E+W+S+N.I.">

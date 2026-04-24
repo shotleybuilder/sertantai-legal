@@ -560,7 +560,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # Detect provisions that have been repealed (Acts) or revoked (SIs) and
   # inject a helpful marker. Indicators:
-  # - Empty/nil text with F-code (textual amendment) commentary refs
+  # - Empty/nil text with any commentary refs (F-prefix or hash-style IDs)
   # - Dots-only heading text (". . . . . .")
   @dots_pattern ~r/\A[\s.]+\z/
 
@@ -569,8 +569,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
     Enum.map(rows, fn row ->
       cond do
-        # Empty provision with amendment refs → repealed/revoked
-        (row.text == nil or row.text == "") and (row.amendment_count || 0) > 0 ->
+        # Empty provision with any commentary refs → repealed/revoked
+        (row.text == nil or row.text == "") and (row.commentary_refs || []) != [] ->
           %{row | text: marker}
 
         # Dots-only heading (". . . . . .") → repealed heading group
