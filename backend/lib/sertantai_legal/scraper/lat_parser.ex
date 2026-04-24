@@ -59,6 +59,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   def parse(xml, context) when is_binary(xml) do
     mode = provision_mode(context.type_code)
     law_name = context.law_name
+    doc = parse_xml(xml)
 
     initial_ctx = %{
       part: nil,
@@ -70,13 +71,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
       paragraph: nil,
       sub_paragraph: nil,
       default_extent: extract_root_extent(xml),
-      mode: mode
+      mode: mode,
+      ref_type_lookup: build_ref_type_lookup(doc)
     }
 
-    raw_rows =
-      xml
-      |> parse_xml()
-      |> walk_children(initial_ctx)
+    raw_rows = walk_children(doc, initial_ctx)
 
     raw_rows
     |> assign_positions()
@@ -100,6 +99,23 @@ defmodule SertantaiLegal.Scraper.LatParser do
       nil -> nil
       "" -> nil
       val -> Transforms.normalize_xml_extent(to_string(val))
+    end
+  end
+
+  # Build a lookup from CommentaryRef ID → type letter (F/C/I/E) by parsing
+  # the <Commentaries> block in the same XML document. This handles hash-style
+  # IDs (c7375871, key-abc123) where the type can't be inferred from the ID.
+  defp build_ref_type_lookup(doc) do
+    case xpath(doc, ~x"//Commentary"l) do
+      nil ->
+        %{}
+
+      commentaries ->
+        Map.new(commentaries, fn c ->
+          id = xpath(c, ~x"./@id"s) |> to_string()
+          type = xpath(c, ~x"./@Type"s) |> to_string() |> String.upcase()
+          {id, type}
+        end)
     end
   end
 
@@ -205,7 +221,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp emit_row(element, ctx, node, extent) do
     text = extract_element_text(node)
-    {commentary_counts, commentary_refs} = collect_commentary_refs(node)
+    {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
       element: element,
@@ -229,7 +245,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp emit_structural_row(element, ctx, node, extent) do
     text = extract_structural_text(node)
-    {commentary_counts, commentary_refs} = collect_commentary_refs(node)
+    {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
       element: element,
@@ -252,7 +268,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp emit_heading_row(ctx, node, extent, heading_text) do
-    {commentary_counts, commentary_refs} = collect_commentary_refs(node)
+    {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
       element: "Pblock",
@@ -450,28 +466,48 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # ── Commentary Ref Collection & Counting ──────────────────────────
 
-  defp collect_commentary_refs(node) do
+  # Classify each CommentaryRef by looking up its type in the Commentaries block.
+  # Falls back to ID prefix matching (F1→amendment) for backwards compatibility.
+  defp collect_commentary_refs(node, ref_type_lookup) do
     refs =
       case xpath(node, ~x".//CommentaryRef/@Ref"ls) do
         nil -> []
         list -> Enum.map(list, &to_string/1)
       end
 
-    counts = %{
-      f: count_prefix(refs, "F") |> nil_if_zero(),
-      c: count_prefix(refs, "C") |> nil_if_zero(),
-      i: count_prefix(refs, "I") |> nil_if_zero(),
-      e: count_prefix(refs, "E") |> nil_if_zero()
+    counts =
+      refs
+      |> Enum.map(fn ref_id -> classify_ref(ref_id, ref_type_lookup) end)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.frequencies()
+
+    typed_counts = %{
+      f: Map.get(counts, "F") |> nil_if_zero(),
+      c: Map.get(counts, "C") |> nil_if_zero(),
+      i: Map.get(counts, "I") |> nil_if_zero(),
+      e: Map.get(counts, "E") |> nil_if_zero()
     }
 
-    {counts, refs}
+    {typed_counts, refs}
   end
 
-  defp count_prefix(refs, prefix) do
-    # Match refs like "F3", "C1", "I2", "E5" — uppercase letter followed by digit(s)
-    Enum.count(refs, fn ref ->
-      String.match?(ref, ~r/^#{prefix}\d/)
-    end)
+  # Classify a ref ID: first try the lookup (handles hash-style IDs),
+  # then fall back to prefix matching (F1, C2, I3, E4).
+  defp classify_ref(ref_id, lookup) do
+    case Map.get(lookup, ref_id) do
+      type when type in ["F", "C", "I", "E"] -> type
+      _ -> classify_ref_by_prefix(ref_id)
+    end
+  end
+
+  defp classify_ref_by_prefix(ref_id) do
+    cond do
+      String.match?(ref_id, ~r/^F\d/) -> "F"
+      String.match?(ref_id, ~r/^C\d/) -> "C"
+      String.match?(ref_id, ~r/^I\d/) -> "I"
+      String.match?(ref_id, ~r/^E\d/) -> "E"
+      true -> nil
+    end
   end
 
   defp nil_if_zero(0), do: nil

@@ -396,6 +396,69 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  describe "commentary refs with hash-style IDs and Commentaries block" do
+    test "hash-style ref IDs are classified via Commentaries Type attribute" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1">
+            <Pnumber><CommentaryRef Ref="c7375871"/><CommentaryRef Ref="key-abc123"/>1</Pnumber>
+            <P1para><Text>Some text.</Text></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      <Commentaries>
+        <Commentary id="c7375871" Type="F">
+          <Para><Text>S. 1 repealed by Example Act 2020</Text></Para>
+        </Commentary>
+        <Commentary id="key-abc123" Type="C">
+          <Para><Text>S. 1 modified by SI 2021/100</Text></Para>
+        </Commentary>
+      </Commentaries>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1962_58", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      # Hash-style refs classified via Commentaries block
+      assert section.amendment_count == 1
+      assert section.modification_count == 1
+      assert "c7375871" in section.commentary_refs
+      assert "key-abc123" in section.commentary_refs
+    end
+
+    test "mixed prefix and hash-style refs both classified correctly" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1">
+            <Pnumber><CommentaryRef Ref="F1"/><CommentaryRef Ref="key-xyz"/>1</Pnumber>
+            <P1para><Text>Some text.</Text></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      <Commentaries>
+        <Commentary id="F1" Type="F">
+          <Para><Text>Amendment note</Text></Para>
+        </Commentary>
+        <Commentary id="key-xyz" Type="I">
+          <Para><Text>Commencement note</Text></Para>
+        </Commentary>
+      </Commentaries>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert section.amendment_count == 1
+      assert section.commencement_count == 1
+    end
+  end
+
   describe "commentary refs in simple_act fixture" do
     setup do
       xml = read_fixture("simple_act.xml")
