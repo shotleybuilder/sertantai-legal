@@ -360,11 +360,19 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
+  # Extract text from Para/Text elements, preserving inline element order.
+  # Text nodes within a single element are joined without extra spaces (they're
+  # fragments split by inline markup like <Term>, <Addition>, etc.).
+  # Separate Para/Text elements are joined with a space.
   defp extract_element_text(node) do
+    para_elements = xpath(node, ~x".//Para"l) || []
+    text_elements = xpath(node, ~x".//Text"l) || []
+
+    all_elements = para_elements ++ text_elements
+
     texts =
-      (safe_xpath_texts(node, ~x".//Para//text()"ls) ++
-         safe_xpath_texts(node, ~x".//Text//text()"ls))
-      |> Enum.map(&String.trim/1)
+      all_elements
+      |> Enum.map(&extract_inline_text/1)
       |> Enum.reject(&(&1 == ""))
       |> Enum.uniq()
       |> Enum.join(" ")
@@ -376,6 +384,17 @@ defmodule SertantaiLegal.Scraper.LatParser do
       "" -> nil
       t -> t
     end
+  end
+
+  # Extract text from a single element, joining inline text nodes without
+  # extra spaces so that "<Term>X</Term>" produces "X" not " X ".
+  defp extract_inline_text(element) do
+    element
+    |> xpath(~x"descendant-or-self::text()"ls)
+    |> Enum.map(&to_string/1)
+    |> Enum.join("")
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
   end
 
   # Extract text without descending into child provision elements.
@@ -395,15 +414,19 @@ defmodule SertantaiLegal.Scraper.LatParser do
       title = extract_title(node)
 
       # Direct Para/Text children, plus Text inside P1para/P2para/P3para wrappers
-      # (but NOT text inside nested P1/P2/P3/P4 child provisions)
+      # (but NOT text inside nested P1/P2/P3/P4 child provisions).
+      # Each element's inline text nodes joined without extra spaces.
+      direct_elements =
+        (xpath(node, ~x"./Para"l) || []) ++
+          (xpath(node, ~x"./Text"l) || []) ++
+          (xpath(node, ~x"./P1para/Text"l) || []) ++
+          (xpath(node, ~x"./P2para/Text"l) || []) ++
+          (xpath(node, ~x"./P3para/Text"l) || []) ++
+          (xpath(node, ~x"./P4para/Text"l) || [])
+
       direct_texts =
-        (safe_xpath_texts(node, ~x"./Para//text()"ls) ++
-           safe_xpath_texts(node, ~x"./Text//text()"ls) ++
-           safe_xpath_texts(node, ~x"./P1para/Text//text()"ls) ++
-           safe_xpath_texts(node, ~x"./P2para/Text//text()"ls) ++
-           safe_xpath_texts(node, ~x"./P3para/Text//text()"ls) ++
-           safe_xpath_texts(node, ~x"./P4para/Text//text()"ls))
-        |> Enum.map(&String.trim/1)
+        direct_elements
+        |> Enum.map(&extract_inline_text/1)
         |> Enum.reject(&(&1 == ""))
         |> Enum.uniq()
         |> Enum.join(" ")
@@ -421,14 +444,6 @@ defmodule SertantaiLegal.Scraper.LatParser do
     else
       # No child provisions — keep full text (leaf node)
       extract_element_text(node)
-    end
-  end
-
-  defp safe_xpath_texts(node, path) do
-    case xpath(node, path) do
-      nil -> []
-      texts when is_list(texts) -> Enum.map(texts, &to_string/1)
-      text -> [to_string(text)]
     end
   end
 

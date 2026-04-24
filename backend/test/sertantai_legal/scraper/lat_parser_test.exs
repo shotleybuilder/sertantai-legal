@@ -708,6 +708,130 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  # ── Inline Element Text Order ────────────────────────────────
+
+  describe "inline element text extraction" do
+    test "Term element text appears in correct position within quotes" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-4"><Pnumber>4</Pnumber>
+            <P1para>
+              <P2 id="section-4-3"><Pnumber>3</Pnumber>
+                <P2para>
+                  <Text>&#x201C;<Term id="term-part-3-service">Part 3 service</Term>&#x201D; means a regulated user-to-user service or a regulated search service.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2023_50", type_code: "ukpga"})
+      sub = Enum.find(rows, &(&1.section_type == "sub_section"))
+
+      assert sub != nil
+      # The defined term should appear between the quotes, not displaced
+      assert String.contains?(sub.text, "Part 3 service")
+      assert String.contains?(sub.text, "means a regulated")
+      # Term should be between the quote marks (allowing for smart quotes)
+      refute Regex.match?(~r/["\N{U+201C}]\s*["\N{U+201D}]/u, sub.text),
+             "Quotes should not be empty — Term text should be between them"
+    end
+
+    test "Addition element text appears in correct position" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para>
+              <Text>The <Addition>inserted words</Addition> apply to this section.</Text>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert String.contains?(section.text, "inserted words")
+      # "inserted words" should appear between "The" and "apply"
+      assert Regex.match?(~r/The.*inserted words.*apply/, section.text)
+    end
+
+    test "Substitution element text appears in correct position" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para>
+              <Text>The <Substitution>new text</Substitution> replaces the original.</Text>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert Regex.match?(~r/The.*new text.*replaces/, section.text)
+    end
+
+    test "multiple inline elements preserve order" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para>
+              <Text>&#x201C;<Term id="t1">Part 3</Term>&#x201D; means a <Addition>regulated</Addition> service.</Text>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert String.contains?(section.text, "Part 3")
+      assert String.contains?(section.text, "regulated")
+      # Verify order: Part 3 before regulated before service
+      assert Regex.match?(~r/Part 3.*regulated.*service/, section.text)
+    end
+
+    test "Repeal element text preserved in position" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para>
+              <Text>Section <Repeal>5 of the 1974 Act</Repeal> is hereby repealed.</Text>
+            </P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert Regex.match?(~r/Section.*5 of the 1974 Act.*repealed/, section.text)
+    end
+  end
+
   # ── Diagnostics ──────────────────────────────────────────────
 
   describe "Diagnostics.validate/1" do
