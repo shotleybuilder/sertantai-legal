@@ -1,12 +1,28 @@
 <script lang="ts">
-	import { useAuditSummaryQuery, useAuditLawQuery } from '$lib/query/audit';
+	import { useAuditSummaryQuery, useAuditLawQuery, auditKeys } from '$lib/query/audit';
+	import { useReparseMutation } from '$lib/query/lat';
+	import { useQueryClient } from '@tanstack/svelte-query';
 	import type { AuditLawResult, AuditWarning } from '$lib/api/audit';
+	import { reparseLat } from '$lib/api/lat';
 
 	let familyFilter = '';
 	let statusFilter: 'all' | 'clean' | 'warning' | 'error' = 'all';
 	let selectedLaw: string | null = null;
 	let sortColumn: keyof AuditLawResult = 'blob_count';
 	let sortDirection: 'asc' | 'desc' = 'desc';
+
+	// Reparse state
+	const queryClient = useQueryClient();
+	$: reparseMutation = useReparseMutation();
+	let reparseMessage = '';
+	let reparseError = '';
+
+	// Bulk reparse state
+	let bulkReparsing = false;
+	let bulkProgress = 0;
+	let bulkTotal = 0;
+	let bulkCurrentLaw = '';
+	let bulkResults: { law: string; status: 'ok' | 'error'; message: string }[] = [];
 
 	$: summaryQuery = useAuditSummaryQuery();
 	$: data = $summaryQuery?.data;
@@ -31,6 +47,63 @@
 
 	$: lawDetailQuery = selectedLaw ? useAuditLawQuery(selectedLaw) : null;
 	$: lawDetail = lawDetailQuery ? $lawDetailQuery?.data : null;
+
+	// Single-law reparse
+	function handleReparse(lawName: string) {
+		reparseMessage = '';
+		reparseError = '';
+		$reparseMutation.mutate(lawName, {
+			onSuccess: (result) => {
+				reparseMessage = `Re-parsed ${lawName}: ${result.lat.inserted} rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
+				// Refresh audit data
+				queryClient.invalidateQueries({ queryKey: auditKeys.all });
+			},
+			onError: (err) => {
+				reparseError = `Failed to reparse ${lawName}: ${err.message}`;
+			}
+		});
+	}
+
+	// Bulk reparse all error laws
+	async function handleBulkReparse() {
+		const errorLaws = filteredLaws.filter((l) => l.status === 'error');
+		if (errorLaws.length === 0) return;
+
+		bulkReparsing = true;
+		bulkProgress = 0;
+		bulkTotal = errorLaws.length;
+		bulkResults = [];
+
+		for (const law of errorLaws) {
+			bulkCurrentLaw = law.law_name;
+			try {
+				const result = await reparseLat(law.law_name);
+				bulkResults = [
+					...bulkResults,
+					{
+						law: law.law_name,
+						status: 'ok',
+						message: `${result.lat.inserted} rows (${result.duration_ms}ms)`
+					}
+				];
+			} catch (err) {
+				bulkResults = [
+					...bulkResults,
+					{
+						law: law.law_name,
+						status: 'error',
+						message: err instanceof Error ? err.message : 'Unknown error'
+					}
+				];
+			}
+			bulkProgress++;
+		}
+
+		bulkCurrentLaw = '';
+		bulkReparsing = false;
+		// Refresh audit data
+		queryClient.invalidateQueries({ queryKey: auditKeys.all });
+	}
 
 	function toggleSort(col: keyof AuditLawResult) {
 		if (sortColumn === col) {
@@ -161,8 +234,8 @@
 			{/if}
 		</div>
 
-		<!-- Family Filter -->
-		<div class="flex items-center gap-3">
+		<!-- Family Filter + Bulk Actions -->
+		<div class="flex items-center gap-3 flex-wrap">
 			<input
 				type="text"
 				placeholder="Filter by family..."
@@ -170,6 +243,19 @@
 				class="px-3 py-1.5 border rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 			/>
 			<span class="text-sm text-gray-500">{filteredLaws.length} laws shown</span>
+			{#if counts && counts.error > 0}
+				<button
+					class="ml-auto px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+					disabled={bulkReparsing}
+					on:click={handleBulkReparse}
+				>
+					{#if bulkReparsing}
+						Re-parsing {bulkProgress}/{bulkTotal}...
+					{:else}
+						Re-parse all errors ({counts.error})
+					{/if}
+				</button>
+			{/if}
 		</div>
 
 		<!-- Per-Law Results Table -->
@@ -282,6 +368,57 @@
 			</div>
 		</div>
 
+		<!-- Bulk Reparse Progress -->
+		{#if bulkReparsing || bulkResults.length > 0}
+			<div class="bg-white rounded-lg border p-4 space-y-3">
+				<div class="flex items-center justify-between">
+					<h3 class="text-sm font-semibold text-gray-900">
+						{#if bulkReparsing}
+							Re-parsing {bulkProgress + 1} of {bulkTotal}: {bulkCurrentLaw}
+						{:else}
+							Bulk reparse complete: {bulkResults.filter((r) => r.status === 'ok')
+								.length}/{bulkResults.length} succeeded
+						{/if}
+					</h3>
+					{#if !bulkReparsing}
+						<button
+							class="text-xs text-gray-400 hover:text-gray-600"
+							on:click={() => (bulkResults = [])}
+						>
+							Dismiss
+						</button>
+					{/if}
+				</div>
+				{#if bulkReparsing}
+					<div class="w-full bg-gray-200 rounded-full h-2">
+						<div
+							class="bg-indigo-600 h-2 rounded-full transition-all"
+							style="width: {((bulkProgress / bulkTotal) * 100).toFixed(0)}%"
+						/>
+					</div>
+				{/if}
+				{#if bulkResults.some((r) => r.status === 'error')}
+					<div class="text-xs space-y-1 max-h-32 overflow-y-auto">
+						{#each bulkResults.filter((r) => r.status === 'error') as r}
+							<div class="text-red-600">{r.law}: {r.message}</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Reparse feedback -->
+		{#if reparseMessage}
+			<div class="px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg border border-green-200">
+				{reparseMessage}
+			</div>
+		{/if}
+		{#if reparseError}
+			<div class="px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg border border-red-200">
+				{reparseError}
+			</div>
+		{/if}
+
 		<!-- Law Detail Panel -->
 		{#if selectedLaw}
 			<div class="bg-white rounded-lg border p-5 space-y-4">
@@ -289,12 +426,31 @@
 					<h2 class="text-lg font-semibold text-gray-900">
 						Diagnostics: {selectedLaw}
 					</h2>
-					<button
-						class="text-sm text-gray-400 hover:text-gray-600"
-						on:click={() => (selectedLaw = null)}
-					>
-						Close
-					</button>
+					<div class="flex items-center gap-3">
+						<a
+							href="/admin/lat?law={encodeURIComponent(selectedLaw)}"
+							class="text-sm text-indigo-600 hover:text-indigo-800"
+						>
+							View in LAT browser
+						</a>
+						<button
+							class="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
+							disabled={$reparseMutation.isPending}
+							on:click={() => handleReparse(selectedLaw ?? '')}
+						>
+							{#if $reparseMutation.isPending}
+								Re-parsing...
+							{:else}
+								Re-parse LAT
+							{/if}
+						</button>
+						<button
+							class="text-sm text-gray-400 hover:text-gray-600"
+							on:click={() => (selectedLaw = null)}
+						>
+							Close
+						</button>
+					</div>
 				</div>
 
 				{#if lawDetailQuery && $lawDetailQuery?.isLoading}

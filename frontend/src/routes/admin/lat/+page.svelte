@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import {
 		useLatStatsQuery,
 		useLatLawsQuery,
@@ -53,7 +56,7 @@
 		}, 300);
 	}
 
-	// ── Law selection ───────────────────────────────────────────────
+	// ── Law selection with URL deep-linking ─────────────────────────
 
 	function selectLaw(law: LawSummary) {
 		selectedLaw = law;
@@ -62,6 +65,10 @@
 		expandedRows = new Set();
 		reparseMessage = '';
 		reparseError = '';
+		// Update URL without navigation
+		const url = new URL(window.location.href);
+		url.searchParams.set('law', law.law_name);
+		goto(url.pathname + url.search, { replaceState: true, noScroll: true });
 	}
 
 	function deselectLaw() {
@@ -69,7 +76,27 @@
 		expandedRows = new Set();
 		reparseMessage = '';
 		reparseError = '';
+		const url = new URL(window.location.href);
+		url.searchParams.delete('law');
+		goto(url.pathname + url.search, { replaceState: true, noScroll: true });
 	}
+
+	// Auto-select law from ?law= URL param on mount
+	onMount(() => {
+		const lawParam = $page.url.searchParams.get('law');
+		if (lawParam && !selectedLaw) {
+			// Create a minimal LawSummary to select — full data loads from query
+			selectLaw({
+				law_name: lawParam,
+				law_id: '',
+				title_en: '',
+				year: 0,
+				type_code: '',
+				lat_count: 0,
+				annotation_count: 0
+			} as LawSummary);
+		}
+	});
 
 	// ── Pagination ──────────────────────────────────────────────────
 
@@ -408,6 +435,9 @@
 					<p class="text-sm text-gray-500 font-mono">{selectedLaw.law_name}</p>
 				</div>
 				<div class="flex items-center gap-3">
+					<a href="/admin/lat/audit" class="text-sm text-indigo-600 hover:text-indigo-800">
+						View audit
+					</a>
 					<span class="text-sm text-gray-500">
 						{selectedLaw.lat_count} rows &middot; {selectedLaw.annotation_count} annotations
 					</span>

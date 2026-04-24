@@ -36,6 +36,7 @@ LAT parsing, sessions, queue, cleanup, taxa classification.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-24 | [issue-77](2026-04-24-issue-77.md) | [#77](https://github.com/shotleybuilder/sertantai-legal/issues/77) | Fix annotation counts — classify refs via Commentaries block lookup |
 | 2026-04-24 | [issue-76](2026-04-24-issue-76.md) | [#76](https://github.com/shotleybuilder/sertantai-legal/issues/76) | Inject [Repealed]/[Revoked] markers for empty provisions |
 | 2026-04-24 | [issue-75](2026-04-24-issue-75.md) | [#75](https://github.com/shotleybuilder/sertantai-legal/issues/75) | Fix inline element text order — Term, Addition, Substitution, Repeal |
 | 2026-04-23 | [issue-70](2026-04-23-issue-70.md) | [#70](https://github.com/shotleybuilder/sertantai-legal/issues/70) | LAT parse audit dashboard at /admin/lat/audit |
