@@ -641,15 +641,22 @@
 												</span>
 											</div>
 										{:else}
-											<span
-												class={isStructural
-													? 'font-semibold text-gray-900'
-													: isHeading
-														? 'font-medium text-cyan-800 italic'
-														: 'text-gray-700'}
-											>
-												{truncateText(row.text || '', isStructural ? 200 : 120)}
-											</span>
+											{@const isRepealed = row.text === '[Repealed]' || row.text === '[Revoked]'}
+											{#if isRepealed}
+												<span class="text-gray-400 italic text-xs">
+													{row.text}
+												</span>
+											{:else}
+												<span
+													class={isStructural
+														? 'font-semibold text-gray-900'
+														: isHeading
+															? 'font-medium text-cyan-800 italic'
+															: 'text-gray-700'}
+												>
+													{truncateText(row.text || '', isStructural ? 200 : 120)}
+												</span>
+											{/if}
 										{/if}
 									</td>
 									<!-- Annotation badges -->

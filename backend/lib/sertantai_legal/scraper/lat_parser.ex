@@ -81,6 +81,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     raw_rows
     |> assign_positions()
     |> build_row_fields(law_name, mode)
+    |> mark_repealed_provisions(mode)
     |> detect_and_qualify_parallels()
     |> disambiguate_section_ids()
   end
@@ -552,6 +553,34 @@ defmodule SertantaiLegal.Scraper.LatParser do
       |> Map.put(:sort_key, sort_key)
       |> Map.put(:hierarchy_path, hierarchy_path)
       |> Map.put(:depth, depth)
+    end)
+  end
+
+  # ── Repealed/Revoked Provision Markers ──────────────────────────
+
+  # Detect provisions that have been repealed (Acts) or revoked (SIs) and
+  # inject a helpful marker. Indicators:
+  # - Empty/nil text with F-code (textual amendment) commentary refs
+  # - Dots-only heading text (". . . . . .")
+  @dots_pattern ~r/\A[\s.]+\z/
+
+  defp mark_repealed_provisions(rows, mode) do
+    marker = if mode == :section, do: "[Repealed]", else: "[Revoked]"
+
+    Enum.map(rows, fn row ->
+      cond do
+        # Empty provision with amendment refs → repealed/revoked
+        (row.text == nil or row.text == "") and (row.amendment_count || 0) > 0 ->
+          %{row | text: marker}
+
+        # Dots-only heading (". . . . . .") → repealed heading group
+        row.section_type == "heading" and row.text != nil and
+            Regex.match?(@dots_pattern, row.text) ->
+          %{row | text: marker}
+
+        true ->
+          row
+      end
     end)
   end
 

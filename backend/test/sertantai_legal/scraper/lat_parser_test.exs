@@ -982,4 +982,108 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert "sub_article" in types
     end
   end
+
+  # ── Repealed/Revoked Markers ──────────────────────────────────
+
+  describe "repealed/revoked provision markers" do
+    test "empty section with F-code refs gets [Repealed] for Acts" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-2"><Pnumber><CommentaryRef Ref="F1"/>2</Pnumber>
+            <P1para><Text/></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1962_58", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert section.text == "[Repealed]"
+    end
+
+    test "empty section with F-code refs gets [Revoked] for SIs" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S">
+      <Secondary><Body>
+        <P1group>
+          <P1 id="reg-3"><Pnumber><CommentaryRef Ref="F5"/>3</Pnumber>
+            <P1para><Text/></P1para>
+          </P1>
+        </P1group>
+      </Body></Secondary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2002_100", type_code: "uksi"})
+      article = Enum.find(rows, &(&1.section_type == "article"))
+
+      assert article.text == "[Revoked]"
+    end
+
+    test "dots-only heading gets replaced with marker" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <Pblock>
+          <Title>. . . . . . . . . . . . . . . . . . . .</Title>
+          <P1group>
+            <P1 id="section-3"><Pnumber><CommentaryRef Ref="F2"/>3</Pnumber>
+              <P1para><Text/></P1para>
+            </P1>
+          </P1group>
+        </Pblock>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1962_58", type_code: "ukpga"})
+      heading = Enum.find(rows, &(&1.section_type == "heading"))
+
+      assert heading.text == "[Repealed]"
+    end
+
+    test "section with actual text is NOT marked as repealed" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para><Text>This section is in force.</Text></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      assert section.text == "This section is in force."
+      refute section.text == "[Repealed]"
+    end
+
+    test "empty section WITHOUT F-code refs is NOT marked" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group>
+          <P1 id="section-1"><Pnumber>1</Pnumber>
+            <P1para><Text/></P1para>
+          </P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      section = Enum.find(rows, &(&1.section_type == "section"))
+
+      # No amendment refs — should stay empty, not get a marker
+      assert section.text == nil or section.text == ""
+    end
+  end
 end

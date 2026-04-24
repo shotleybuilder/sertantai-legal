@@ -36,6 +36,7 @@ LAT parsing, sessions, queue, cleanup, taxa classification.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-24 | [issue-75](2026-04-24-issue-75.md) | [#75](https://github.com/shotleybuilder/sertantai-legal/issues/75) | Fix inline element text order — Term, Addition, Substitution, Repeal |
 | 2026-04-23 | [issue-70](2026-04-23-issue-70.md) | [#70](https://github.com/shotleybuilder/sertantai-legal/issues/70) | LAT parse audit dashboard at /admin/lat/audit |
 | 2026-04-21 | [issue-69](2026-04-21-issue-69.md) | [#69](https://github.com/shotleybuilder/sertantai-legal/issues/69) | Fix Part/Ch/Sch blob duplication + Diagnostics module + mix lat.audit |
 | 2026-04-14 | [issue-57](2026-04-14-issue-57.md) | [#57](https://github.com/shotleybuilder/sertantai-legal/issues/57) | Audit: LAT session DB persistence already in place; closed stale issue |
