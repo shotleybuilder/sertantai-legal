@@ -45,8 +45,8 @@
 			return 0;
 		});
 
-	$: lawDetailQuery = selectedLaw ? useAuditLawQuery(selectedLaw) : null;
-	$: lawDetail = lawDetailQuery ? $lawDetailQuery?.data : null;
+	$: lawDetailQuery = useAuditLawQuery(selectedLaw);
+	$: lawDetail = $lawDetailQuery?.data ?? null;
 
 	// Single-law reparse
 	function handleReparse(lawName: string) {
@@ -453,9 +453,9 @@
 					</div>
 				</div>
 
-				{#if lawDetailQuery && $lawDetailQuery?.isLoading}
+				{#if $lawDetailQuery?.isLoading}
 					<div class="text-sm text-gray-500">Running diagnostics...</div>
-				{:else if lawDetailQuery && $lawDetailQuery?.error}
+				{:else if $lawDetailQuery?.error}
 					<div class="text-sm text-red-600">
 						Error: {$lawDetailQuery.error.message}
 					</div>

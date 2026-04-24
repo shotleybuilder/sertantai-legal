@@ -23,10 +23,10 @@ export function useAuditSummaryQuery(family?: string) {
 	});
 }
 
-export function useAuditLawQuery(lawName: string) {
+export function useAuditLawQuery(lawName: string | null) {
 	return createQuery<AuditLawDetail>({
-		queryKey: auditKeys.law(lawName),
-		queryFn: () => getAuditLaw(lawName),
+		queryKey: auditKeys.law(lawName ?? ''),
+		queryFn: () => getAuditLaw(lawName!),
 		enabled: !!lawName
 	});
 }
