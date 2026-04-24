@@ -188,10 +188,14 @@ defmodule SertantaiLegal.Scraper.LatParser.Diagnostics do
   end
 
   @doc false
+  # Only flag leaf-level provisions (paragraph, sub_paragraph) as empty.
+  # Sections/sub_sections with nil text often have children (structural dedup by design).
+  # [Repealed]/[Revoked] markers are not empty.
+  @leaf_types ~w(paragraph sub_paragraph)
   def check_empty_sections(rows) do
     rows
     |> Enum.filter(fn r ->
-      r.section_type in @section_types and (r.text == nil or r.text == "")
+      r.section_type in @leaf_types and (r.text == nil or r.text == "")
     end)
     |> Enum.map(fn r ->
       %{

@@ -852,7 +852,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
     SUM(octet_length(COALESCE(l.text, ''))) AS total_text_bytes,
     SUM(octet_length(COALESCE(l.text, ''))) FILTER (WHERE l.section_type IN ('part', 'chapter', 'schedule')) AS structural_text_bytes,
     MAX(octet_length(COALESCE(l.text, ''))) AS max_row_bytes,
-    COUNT(*) FILTER (WHERE l.section_type IN ('section', 'sub_section', 'article', 'sub_article', 'paragraph', 'sub_paragraph') AND (l.text IS NULL OR l.text = '')) AS empty_section_count,
+    COUNT(*) FILTER (WHERE l.section_type IN ('paragraph', 'sub_paragraph') AND (l.text IS NULL OR l.text = '')) AS empty_section_count,
     COUNT(*) FILTER (WHERE l.section_type IN ('part', 'chapter', 'schedule') AND octet_length(COALESCE(l.text, '')) > 1000) AS blob_count
   FROM lat l
   JOIN uk_lrt u ON u.id = l.law_id

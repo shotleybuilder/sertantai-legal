@@ -947,7 +947,29 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert Enum.any?(errors, &(&1.check == :structural_blob))
     end
 
-    test "detects empty sections" do
+    test "detects empty leaf provisions (paragraph/sub_paragraph)" do
+      rows = [
+        %{
+          section_id: "TEST:s.1(a)",
+          section_type: "paragraph",
+          text: nil,
+          part: nil,
+          chapter: nil,
+          schedule: nil,
+          heading_group: nil,
+          provision: "1",
+          sub: nil,
+          paragraph: "a",
+          sub_paragraph: nil,
+          position: 1
+        }
+      ]
+
+      assert {:ok, warnings} = Diagnostics.validate(rows)
+      assert Enum.any?(warnings, &(&1.check == :empty_section))
+    end
+
+    test "does NOT flag empty section (may have children via structural dedup)" do
       rows = [
         %{
           section_id: "TEST:s.1",
@@ -966,7 +988,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       ]
 
       assert {:ok, warnings} = Diagnostics.validate(rows)
-      assert Enum.any?(warnings, &(&1.check == :empty_section))
+      refute Enum.any?(warnings, &(&1.check == :empty_section))
     end
 
     test "detects missing provisions (structural only, no sections)" do
