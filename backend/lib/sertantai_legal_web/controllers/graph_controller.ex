@@ -44,25 +44,25 @@ defmodule SertantaiLegalWeb.GraphController do
     u.title_en AS title,
     u.si_code,
     u.md_description,
+    u.family AS assigned_family,
     u.family_ii,
-    e.source_family AS assigned_family,
     e.target_law AS parent_law,
     p.id::text AS parent_id,
     p.title_en AS parent_title,
-    p.family_ii AS parent_family_ii,
-    e.target_family AS parent_family
+    p.family AS parent_family,
+    p.family_ii AS parent_family_ii
   FROM law_edges e
   JOIN uk_lrt u ON u.name = e.source_law
   JOIN uk_lrt p ON p.name = e.target_law
   WHERE e.edge_type = 'enacted_by'
-    AND e.source_family IS NOT NULL
-    AND e.source_family != '🖤 X: No Family'
-    AND e.source_family != '_todo'
-    AND e.target_family IS NOT NULL
-    AND e.target_family != '🖤 X: No Family'
-    AND e.target_family != '_todo'
-    AND e.source_family != e.target_family
-    AND split_part(e.source_family, ':', 1) != split_part(e.target_family, ':', 1)
+    AND u.family IS NOT NULL
+    AND u.family != '🖤 X: No Family'
+    AND u.family != '_todo'
+    AND p.family IS NOT NULL
+    AND p.family != '🖤 X: No Family'
+    AND p.family != '_todo'
+    AND u.family != p.family
+    AND split_part(u.family, ':', 1) != split_part(p.family, ':', 1)
   ORDER BY e.source_law
   """
 
@@ -71,20 +71,22 @@ defmodule SertantaiLegalWeb.GraphController do
   @amends_sql """
   SELECT
     e.source_law AS law_name,
-    e.source_family AS assigned_family,
-    e.target_family,
+    u.family AS assigned_family,
+    t.family AS target_family,
     COUNT(*) AS edge_count
   FROM law_edges e
+  JOIN uk_lrt u ON u.name = e.source_law
+  JOIN uk_lrt t ON t.name = e.target_law
   WHERE e.edge_type = 'amends'
-    AND e.source_family IS NOT NULL
-    AND e.source_family != '🖤 X: No Family'
-    AND e.source_family != '_todo'
-    AND e.target_family IS NOT NULL
-    AND e.target_family != '🖤 X: No Family'
-    AND e.target_family != '_todo'
-    AND e.source_family != e.target_family
-    AND split_part(e.source_family, ':', 1) != split_part(e.target_family, ':', 1)
-  GROUP BY e.source_law, e.source_family, e.target_family
+    AND u.family IS NOT NULL
+    AND u.family != '🖤 X: No Family'
+    AND u.family != '_todo'
+    AND t.family IS NOT NULL
+    AND t.family != '🖤 X: No Family'
+    AND t.family != '_todo'
+    AND u.family != t.family
+    AND split_part(u.family, ':', 1) != split_part(t.family, ':', 1)
+  GROUP BY e.source_law, u.family, t.family
   ORDER BY e.source_law, edge_count DESC
   """
 
@@ -94,22 +96,22 @@ defmodule SertantaiLegalWeb.GraphController do
   SELECT
     e.source_law AS law_name,
     u.title_en AS title,
-    e.source_family AS assigned_family,
+    u.family AS assigned_family,
     e.target_law AS rescinded_law,
     p.title_en AS rescinded_title,
-    e.target_family AS rescinded_family
+    p.family AS rescinded_family
   FROM law_edges e
   JOIN uk_lrt u ON u.name = e.source_law
   JOIN uk_lrt p ON p.name = e.target_law
   WHERE e.edge_type = 'rescinds'
-    AND e.source_family IS NOT NULL
-    AND e.source_family != '🖤 X: No Family'
-    AND e.source_family != '_todo'
-    AND e.target_family IS NOT NULL
-    AND e.target_family != '🖤 X: No Family'
-    AND e.target_family != '_todo'
-    AND e.source_family != e.target_family
-    AND split_part(e.source_family, ':', 1) != split_part(e.target_family, ':', 1)
+    AND u.family IS NOT NULL
+    AND u.family != '🖤 X: No Family'
+    AND u.family != '_todo'
+    AND p.family IS NOT NULL
+    AND p.family != '🖤 X: No Family'
+    AND p.family != '_todo'
+    AND u.family != p.family
+    AND split_part(u.family, ':', 1) != split_part(p.family, ':', 1)
   ORDER BY e.source_law
   """
 
