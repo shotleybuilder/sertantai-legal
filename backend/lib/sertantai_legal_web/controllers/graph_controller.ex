@@ -11,7 +11,7 @@ defmodule SertantaiLegalWeb.GraphController do
 
   use SertantaiLegalWeb, :controller
 
-  alias SertantaiLegal.Legal.FamilyInference
+  alias SertantaiLegal.Legal.{FamilyInference, FamilyRules}
   alias SertantaiLegal.Repo
 
   def stats(conn, _params) do
@@ -108,63 +108,6 @@ defmodule SertantaiLegalWeb.GraphController do
   ORDER BY e.source_law
   """
 
-  # Family → title keywords that confirm the assignment is correct.
-  # If the law's title contains these keywords AND the family matches,
-  # the mismatch is noise (law is correctly classified, parent is just different).
-  @title_confirms %{
-    "💚 GMOs" => ["genetically modified"],
-    "💙 FIRE" => ["fire"],
-    "💙 FIRE: Dangerous and Explosive Substances" => [
-      "explosive",
-      "petroleum",
-      "dangerous substance"
-    ],
-    "💚 CLIMATE CHANGE" => ["climate change", "greenhouse gas", "carbon"],
-    "💙 HEALTH: Coronavirus" => ["coronavirus", "covid"],
-    "💙 HEALTH: Drug & Medicine Safety" => ["medicine", "pharmaceutical", "drug"],
-    "💙 HEALTH: Patient Safety" => ["patient safety", "medical device"],
-    "💙 HEALTH: Public" => ["public health"],
-    "💙 OH&S: Gas & Electrical Safety" => ["gas safety", "electrical safety", "electricity"],
-    "💙 OH&S: Mines & Quarries" => ["mines", "quarries"],
-    "💙 OH&S: Occupational / Personal Safety" => ["health and safety", "workplace"],
-    "💙 OH&S: Offshore Safety" => ["offshore"],
-    "💙 PUBLIC: Building Safety" => ["building"],
-    "💙 PUBLIC: Consumer / Product Safety" => ["consumer", "product safety"],
-    "💙 TRANSPORT: Air Safety" => ["aviation", "air navigation", "aircraft"],
-    "💙 TRANSPORT: Rail Safety" => ["railway", "rail"],
-    "💙 TRANSPORT: Road Safety" => ["road traffic", "motor vehicle", "road safety"],
-    "💙 TRANSPORT: Maritime Safety" => ["merchant shipping", "maritime"],
-    "💚 AGRICULTURE" => ["agriculture", "agricultural"],
-    "💚 AGRICULTURE: Pesticides" => ["pesticide", "biocidal"],
-    "💚 AIR QUALITY" => ["air quality", "clean air", "emission"],
-    "💚 ANIMALS & ANIMAL HEALTH" => ["animal health", "animal welfare"],
-    "💚 BUILDINGS" => ["building regulation"],
-    "💚 ENERGY" => ["energy efficiency", "renewable energy"],
-    "💚 ENVIRONMENTAL PROTECTION" => ["environmental protection", "environment act"],
-    "💚 FISHERIES & FISHING" => ["fisheries", "fishing", "sea fish"],
-    "💚 MARINE & RIVERINE" => ["marine", "coastal"],
-    "💚 NOISE" => ["noise"],
-    "💚 NUCLEAR & RADIOLOGICAL" => ["nuclear", "radioactive", "radiological"],
-    "💚 PLANNING & INFRASTRUCTURE" => ["planning", "infrastructure"],
-    "💚 PLANT HEALTH" => ["plant health"],
-    "💚 POLLUTION" => ["pollution", "contaminated land"],
-    "💚 WASTE" => ["waste", "landfill", "fly-tipping"],
-    "💚 TOWN & COUNTRY PLANNING" => ["town and country planning", "planning framework"],
-    "💚 WATER & WASTEWATER" => ["water supply", "water industry", "wastewater", "sewerage"],
-    "💚 WILDLIFE & COUNTRYSIDE" => ["wildlife", "countryside", "conservation"],
-    "💜 HR: Employment" => ["employment"],
-    "💜 HR: Working Time" => ["working time"]
-  }
-
-  defp title_confirms_family?(nil, _family), do: false
-  defp title_confirms_family?(_title, nil), do: false
-
-  defp title_confirms_family?(title, family) do
-    keywords = Map.get(@title_confirms, family, [])
-    lower_title = String.downcase(title)
-    Enum.any?(keywords, fn kw -> String.contains?(lower_title, kw) end)
-  end
-
   def family_mismatches(conn, %{"type" => "enacted_by"}) do
     {:ok, %{columns: cols, rows: rows}} = Repo.query(@enacted_by_sql)
 
@@ -186,7 +129,7 @@ defmodule SertantaiLegalWeb.GraphController do
           parent_law: r["parent_law"],
           parent_title: r["parent_title"],
           parent_family: r["parent_family"],
-          title_confirmed: title_confirms_family?(r["title"], r["assigned_family"])
+          title_confirmed: FamilyRules.title_confirms_family?(r["title"], r["assigned_family"])
         }
       end)
 
