@@ -250,7 +250,7 @@ defmodule SertantaiLegalWeb.GraphController do
         t1 = System.monotonic_time(:millisecond)
 
         # Persist the parsed result
-        parsed_law = result[:law] || result.law
+        parsed_law = Map.get(result, :law)
 
         case Persister.persist_record(parsed_law) do
           {:ok, _} ->
