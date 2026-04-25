@@ -262,7 +262,12 @@
 					<div class="flex items-center gap-3">
 						<a
 							href="/admin/lat?law={encodeURIComponent(selectedRow.law_name)}"
-							class="text-sm text-indigo-600 hover:text-indigo-800">View in LAT browser</a
+							class="text-sm text-indigo-600 hover:text-indigo-800">LAT browser</a
+						>
+						<a
+							href="/admin/lrt?law={encodeURIComponent(selectedRow.law_name)}"
+							class="px-3 py-1 text-sm font-medium text-white bg-orange-600 rounded hover:bg-orange-700 inline-block"
+							>Re-scrape LRT</a
 						>
 						<button
 							class="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
