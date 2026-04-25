@@ -365,24 +365,21 @@
 							<div class="font-mono text-xs text-gray-400">{selectedRow.law_name}</div>
 							<div class="flex gap-2 flex-wrap">
 								<a
-									href="/admin/lat?law={encodeURIComponent(selectedRow.law_name)}"
-									class="text-xs text-indigo-600 hover:text-indigo-800">LAT browser</a
-								>
-								<a
 									href="/admin/lrt?law={encodeURIComponent(selectedRow.law_name)}"
-									class="text-xs text-orange-600 hover:text-orange-800">Re-scrape LRT</a
+									class="px-2 py-1 text-xs font-medium text-white bg-orange-600 rounded hover:bg-orange-700"
+									>Re-scrape LRT</a
 								>
 								<button
-									class="text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+									class="px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
 									disabled={reparsing}
 									on:click={handleReparse}>{reparsing ? 'Re-parsing...' : 'Re-parse LAT'}</button
 								>
+								<a
+									href="/admin/lat?law={encodeURIComponent(selectedRow.law_name)}"
+									class="px-2 py-1 text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 rounded"
+									>LAT browser</a
+								>
 							</div>
-							{#if selectedRow.md_description}
-								<p class="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded p-2">
-									{selectedRow.md_description}
-								</p>
-							{/if}
 							<div class="border rounded p-3 space-y-2">
 								<h4 class="text-xs font-medium text-gray-700">Enacted Law</h4>
 								<div>
@@ -511,6 +508,14 @@
 							{#if editError}<div class="text-xs text-red-700 bg-red-50 rounded p-2">
 									{editError}
 								</div>{/if}
+							{#if selectedRow.md_description}
+								<div class="border-t pt-3 mt-2">
+									<h4 class="text-xs font-medium text-gray-500 mb-1">Description</h4>
+									<p class="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded p-2">
+										{selectedRow.md_description}
+									</p>
+								</div>
+							{/if}
 						</div>
 					{/if}
 				</div>
