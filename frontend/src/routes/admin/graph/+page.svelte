@@ -13,6 +13,65 @@
 
 	const queryClient = useQueryClient();
 
+	// Family options — single source for all dropdowns
+	const HS_FAMILIES = [
+		'💙 FIRE',
+		'💙 FIRE: Dangerous and Explosive Substances',
+		'💙 FOOD',
+		'💙 HEALTH: Coronavirus',
+		'💙 HEALTH: Drug & Medicine Safety',
+		'💙 HEALTH: Patient Safety',
+		'💙 HEALTH: Public',
+		'💙 OH&S: Gas & Electrical Safety',
+		'💙 OH&S: Mines & Quarries',
+		'💙 OH&S: Occupational / Personal Safety',
+		'💙 OH&S: Offshore Safety',
+		'💙 PUBLIC',
+		'💙 PUBLIC: Building Safety',
+		'💙 PUBLIC: Consumer / Product Safety',
+		'💙 TRANSPORT: Air Safety',
+		'💙 TRANSPORT: Rail Safety',
+		'💙 TRANSPORT: Road Safety',
+		'💙 TRANSPORT: Maritime Safety'
+	];
+	const ENV_FAMILIES = [
+		'💚 AGRICULTURE',
+		'💚 AGRICULTURE: Pesticides',
+		'💚 AIR QUALITY',
+		'💚 ANIMALS & ANIMAL HEALTH',
+		'💚 ANTARCTICA',
+		'💚 BUILDINGS',
+		'💚 CLIMATE CHANGE',
+		'💚 ENERGY',
+		'💚 ENVIRONMENTAL PROTECTION',
+		'💚 FINANCE',
+		'💚 FISHERIES & FISHING',
+		'💚 GMOs',
+		'💚 HISTORIC ENVIRONMENT',
+		'💚 MARINE & RIVERINE',
+		'💚 NOISE',
+		'💚 NUCLEAR & RADIOLOGICAL',
+		'💚 OIL & GAS - OFFSHORE - PETROLEUM',
+		'💚 PLANNING & INFRASTRUCTURE',
+		'💚 PLANT HEALTH',
+		'💚 POLLUTION',
+		'💚 TOWN & COUNTRY PLANNING',
+		'💚 TRANSPORT',
+		'💚 TRANSPORT: Aviation',
+		'💚 TRANSPORT: Harbours & Shipping',
+		'💚 TRANSPORT: Railways & Rail Transport',
+		'💚 TRANSPORT: Roads & Vehicles',
+		'💚 TREES: Forestry & Timber',
+		'💚 WASTE',
+		'💚 WATER & WASTEWATER',
+		'💚 WILDLIFE & COUNTRYSIDE'
+	];
+	const HR_FAMILIES = [
+		'💜 HR: Employment',
+		'💜 HR: Insurance / Compensation / Wages / Benefits',
+		'💜 HR: Working Time'
+	];
+
 	let activeTab: 'enacted_by' | 'amends' | 'rescinds' = 'enacted_by';
 	let familyFilter = '';
 	let hideTitleConfirmed = true;
@@ -408,19 +467,14 @@
 									>
 										<option value="">-- None --</option>
 										<optgroup label="H&S"
-											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HS_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 										<optgroup label="Env"
-											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
-													value={opt}>{opt}</option
+											>{#each ENV_FAMILIES as opt}<option value={opt}>{opt}</option
 												>{/each}</optgroup
 										>
 										<optgroup label="HR"
-											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HR_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 									</select>
 								</div>
@@ -432,19 +486,14 @@
 									>
 										<option value="">-- None --</option>
 										<optgroup label="H&S"
-											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HS_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 										<optgroup label="Env"
-											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
-													value={opt}>{opt}</option
+											>{#each ENV_FAMILIES as opt}<option value={opt}>{opt}</option
 												>{/each}</optgroup
 										>
 										<optgroup label="HR"
-											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HR_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 									</select>
 								</div>
@@ -468,19 +517,14 @@
 									>
 										<option value="">-- None --</option>
 										<optgroup label="H&S"
-											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HS_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 										<optgroup label="Env"
-											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
-													value={opt}>{opt}</option
+											>{#each ENV_FAMILIES as opt}<option value={opt}>{opt}</option
 												>{/each}</optgroup
 										>
 										<optgroup label="HR"
-											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HR_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 									</select>
 								</div>
@@ -492,19 +536,14 @@
 									>
 										<option value="">-- None --</option>
 										<optgroup label="H&S"
-											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HS_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 										<optgroup label="Env"
-											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
-													value={opt}>{opt}</option
+											>{#each ENV_FAMILIES as opt}<option value={opt}>{opt}</option
 												>{/each}</optgroup
 										>
 										<optgroup label="HR"
-											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
-													value={opt}>{opt}</option
-												>{/each}</optgroup
+											>{#each HR_FAMILIES as opt}<option value={opt}>{opt}</option>{/each}</optgroup
 										>
 									</select>
 								</div>
