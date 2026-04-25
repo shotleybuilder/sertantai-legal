@@ -43,6 +43,8 @@ defmodule SertantaiLegal.Legal.FamilyRules do
     ],
     "💚 AGRICULTURE: Pesticides" => ["pesticide", "biocidal", "plant protection products"],
     "💚 AIR QUALITY" => ["air quality", "clean air", "emission"],
+    # Note: keep keywords specific — avoid bare "animal" which would clash with
+    # WILDLIFE's "dangerous wild animals" and AGRICULTURE's "animals and animal products"
     "💚 ANIMALS & ANIMAL HEALTH" => ["animal health", "animal welfare", "welfare of animals"],
     "💚 BUILDINGS" => ["building regulation"],
     "💚 CLIMATE CHANGE" => ["climate change", "greenhouse gas", "carbon"],
