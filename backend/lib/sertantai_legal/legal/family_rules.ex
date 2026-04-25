@@ -78,7 +78,8 @@ defmodule SertantaiLegal.Legal.FamilyRules do
       "wildlife",
       "countryside",
       "conservation",
-      "environmentally sensitive areas"
+      "environmentally sensitive areas",
+      "dangerous wild animals"
     ],
     "💜 HR: Employment" => ["employment"],
     "💜 HR: Working Time" => ["working time"]
