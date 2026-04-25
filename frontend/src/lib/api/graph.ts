@@ -14,21 +14,43 @@ export interface GraphStats {
 	potential_mismatches: number;
 }
 
-export interface FamilyMismatch {
+export interface EnactedByMismatch {
 	law_name: string;
 	title: string | null;
 	si_code: string[];
 	assigned_family: string | null;
-	suggested_family: string | null;
-	confidence: string;
-	parent_families: [string, number][];
-	target_families: [string, number][];
+	parent_law: string;
+	parent_title: string | null;
+	parent_family: string;
 }
 
-export interface FamilyMismatchResponse {
-	mismatches: FamilyMismatch[];
+export interface AmendsMismatch {
+	law_name: string;
+	assigned_family: string | null;
+	suggested_family: string;
+	consensus_pct: number;
+	total_amends: number;
+	target_families: { family: string; count: number }[];
+}
+
+export interface RescindsMismatch {
+	law_name: string;
+	title: string | null;
+	assigned_family: string | null;
+	rescinded_law: string;
+	rescinded_title: string | null;
+	rescinded_family: string;
+}
+
+export interface MismatchResponse<T> {
+	items: T[];
 	count: number;
-	total: number;
+}
+
+export interface MismatchCounts {
+	enacted_by: number;
+	amends: number;
+	rescinds: number;
 }
 
 export interface FamilyInference {
@@ -53,11 +75,20 @@ export async function getGraphStats(): Promise<GraphStats> {
 	return fetchJson(`${API_URL}/api/graph/stats`);
 }
 
-export async function getFamilyMismatches(limit?: number): Promise<FamilyMismatchResponse> {
-	const params = new URLSearchParams();
-	if (limit) params.set('limit', String(limit));
-	const qs = params.toString();
-	return fetchJson(`${API_URL}/api/graph/family-mismatches${qs ? `?${qs}` : ''}`);
+export async function getMismatchCounts(): Promise<MismatchCounts> {
+	return fetchJson(`${API_URL}/api/graph/family-mismatches`);
+}
+
+export async function getEnactedByMismatches(): Promise<MismatchResponse<EnactedByMismatch>> {
+	return fetchJson(`${API_URL}/api/graph/family-mismatches?type=enacted_by`);
+}
+
+export async function getAmendsMismatches(): Promise<MismatchResponse<AmendsMismatch>> {
+	return fetchJson(`${API_URL}/api/graph/family-mismatches?type=amends`);
+}
+
+export async function getRescindsMismatches(): Promise<MismatchResponse<RescindsMismatch>> {
+	return fetchJson(`${API_URL}/api/graph/family-mismatches?type=rescinds`);
 }
 
 export async function getFamilyInference(lawName: string): Promise<FamilyInference> {

@@ -5,17 +5,27 @@
 import { createQuery } from '@tanstack/svelte-query';
 import {
 	getGraphStats,
-	getFamilyMismatches,
+	getMismatchCounts,
+	getEnactedByMismatches,
+	getAmendsMismatches,
+	getRescindsMismatches,
 	getFamilyInference,
 	type GraphStats,
-	type FamilyMismatchResponse,
+	type MismatchCounts,
+	type MismatchResponse,
+	type EnactedByMismatch,
+	type AmendsMismatch,
+	type RescindsMismatch,
 	type FamilyInference
 } from '$lib/api/graph';
 
 export const graphKeys = {
 	all: ['graph'] as const,
 	stats: () => [...graphKeys.all, 'stats'] as const,
-	mismatches: () => [...graphKeys.all, 'mismatches'] as const,
+	counts: () => [...graphKeys.all, 'counts'] as const,
+	enactedBy: () => [...graphKeys.all, 'enacted_by'] as const,
+	amends: () => [...graphKeys.all, 'amends'] as const,
+	rescinds: () => [...graphKeys.all, 'rescinds'] as const,
 	inference: (lawName: string) => [...graphKeys.all, 'inference', lawName] as const
 };
 
@@ -26,10 +36,31 @@ export function useGraphStatsQuery() {
 	});
 }
 
-export function useFamilyMismatchesQuery() {
-	return createQuery<FamilyMismatchResponse>({
-		queryKey: graphKeys.mismatches(),
-		queryFn: () => getFamilyMismatches(500)
+export function useMismatchCountsQuery() {
+	return createQuery<MismatchCounts>({
+		queryKey: graphKeys.counts(),
+		queryFn: getMismatchCounts
+	});
+}
+
+export function useEnactedByQuery() {
+	return createQuery<MismatchResponse<EnactedByMismatch>>({
+		queryKey: graphKeys.enactedBy(),
+		queryFn: getEnactedByMismatches
+	});
+}
+
+export function useAmendsQuery() {
+	return createQuery<MismatchResponse<AmendsMismatch>>({
+		queryKey: graphKeys.amends(),
+		queryFn: getAmendsMismatches
+	});
+}
+
+export function useRescindsQuery() {
+	return createQuery<MismatchResponse<RescindsMismatch>>({
+		queryKey: graphKeys.rescinds(),
+		queryFn: getRescindsMismatches
 	});
 }
 
