@@ -250,7 +250,11 @@ defmodule SertantaiLegalWeb.GraphController do
         case StagedParser.parse(input) do
           {:ok, result} ->
             t1 = System.monotonic_time(:millisecond)
-            parsed_law = Map.get(result, :law) || Map.get(result, :record)
+            # Convert ParsedLaw struct to plain map — Persister uses Access (record[key])
+            raw_law = Map.get(result, :law) || Map.get(result, :record)
+
+            parsed_law =
+              if is_struct(raw_law), do: Map.from_struct(raw_law), else: raw_law
 
             case Persister.persist_record(parsed_law) do
               {:ok, _} ->
