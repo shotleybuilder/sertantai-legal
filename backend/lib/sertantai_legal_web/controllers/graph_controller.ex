@@ -57,6 +57,7 @@ defmodule SertantaiLegalWeb.GraphController do
     AND e.target_family != '🖤 X: No Family'
     AND e.target_family != '_todo'
     AND e.source_family != e.target_family
+    AND split_part(e.source_family, ':', 1) != split_part(e.target_family, ':', 1)
   ORDER BY e.source_law
   """
 
@@ -77,6 +78,7 @@ defmodule SertantaiLegalWeb.GraphController do
     AND e.target_family != '🖤 X: No Family'
     AND e.target_family != '_todo'
     AND e.source_family != e.target_family
+    AND split_part(e.source_family, ':', 1) != split_part(e.target_family, ':', 1)
   GROUP BY e.source_law, e.source_family, e.target_family
   ORDER BY e.source_law, edge_count DESC
   """
@@ -102,6 +104,7 @@ defmodule SertantaiLegalWeb.GraphController do
     AND e.target_family != '🖤 X: No Family'
     AND e.target_family != '_todo'
     AND e.source_family != e.target_family
+    AND split_part(e.source_family, ':', 1) != split_part(e.target_family, ':', 1)
   ORDER BY e.source_law
   """
 
@@ -188,22 +191,17 @@ defmodule SertantaiLegalWeb.GraphController do
     json(conn, %{items: items, count: length(items)})
   end
 
+  @count_base "SELECT COUNT(DISTINCT source_law) FROM law_edges WHERE source_family != target_family AND source_family NOT IN ('🖤 X: No Family', '_todo') AND target_family NOT IN ('🖤 X: No Family', '_todo') AND split_part(source_family, ':', 1) != split_part(target_family, ':', 1)"
+
   def family_mismatches(conn, _params) do
-    # Default: return counts per type
     {:ok, %{rows: [[enacted]]}} =
-      Repo.query(
-        "SELECT COUNT(DISTINCT source_law) FROM law_edges WHERE edge_type = 'enacted_by' AND source_family != target_family AND source_family NOT IN ('🖤 X: No Family', '_todo') AND target_family NOT IN ('🖤 X: No Family', '_todo')"
-      )
+      Repo.query(@count_base <> " AND edge_type = 'enacted_by'")
 
     {:ok, %{rows: [[amends]]}} =
-      Repo.query(
-        "SELECT COUNT(DISTINCT source_law) FROM law_edges WHERE edge_type = 'amends' AND source_family != target_family AND source_family NOT IN ('🖤 X: No Family', '_todo') AND target_family NOT IN ('🖤 X: No Family', '_todo')"
-      )
+      Repo.query(@count_base <> " AND edge_type = 'amends'")
 
     {:ok, %{rows: [[rescinds]]}} =
-      Repo.query(
-        "SELECT COUNT(DISTINCT source_law) FROM law_edges WHERE edge_type = 'rescinds' AND source_family != target_family AND source_family NOT IN ('🖤 X: No Family', '_todo') AND target_family NOT IN ('🖤 X: No Family', '_todo')"
-      )
+      Repo.query(@count_base <> " AND edge_type = 'rescinds'")
 
     json(conn, %{enacted_by: enacted, amends: amends, rescinds: rescinds})
   end
