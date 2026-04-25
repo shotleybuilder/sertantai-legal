@@ -40,11 +40,16 @@ defmodule SertantaiLegalWeb.GraphController do
   @enacted_by_sql """
   SELECT
     e.source_law AS law_name,
+    u.id::text AS law_id,
     u.title_en AS title,
     u.si_code,
+    u.md_description,
+    u.family_ii,
     e.source_family AS assigned_family,
     e.target_law AS parent_law,
+    p.id::text AS parent_id,
     p.title_en AS parent_title,
+    p.family_ii AS parent_family_ii,
     e.target_family AS parent_family
   FROM law_edges e
   JOIN uk_lrt u ON u.name = e.source_law
@@ -123,12 +128,17 @@ defmodule SertantaiLegalWeb.GraphController do
 
         %{
           law_name: r["law_name"],
+          law_id: r["law_id"],
           title: r["title"],
           si_code: si_values,
+          md_description: r["md_description"],
           assigned_family: r["assigned_family"],
+          family_ii: r["family_ii"],
           parent_law: r["parent_law"],
+          parent_id: r["parent_id"],
           parent_title: r["parent_title"],
           parent_family: r["parent_family"],
+          parent_family_ii: r["parent_family_ii"],
           title_confirmed: FamilyRules.title_confirms_family?(r["title"], r["assigned_family"])
         }
       end)

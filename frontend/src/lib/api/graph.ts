@@ -16,12 +16,17 @@ export interface GraphStats {
 
 export interface EnactedByMismatch {
 	law_name: string;
+	law_id: string;
 	title: string | null;
 	si_code: string[];
+	md_description: string | null;
 	assigned_family: string | null;
+	family_ii: string | null;
 	parent_law: string;
+	parent_id: string;
 	parent_title: string | null;
 	parent_family: string;
+	parent_family_ii: string | null;
 	title_confirmed: boolean;
 }
 
@@ -90,6 +95,21 @@ export async function getAmendsMismatches(): Promise<MismatchResponse<AmendsMism
 
 export async function getRescindsMismatches(): Promise<MismatchResponse<RescindsMismatch>> {
 	return fetchJson(`${API_URL}/api/graph/family-mismatches?type=rescinds`);
+}
+
+export async function updateLawFamily(
+	lawId: string,
+	updates: { family?: string | null; family_ii?: string | null }
+): Promise<void> {
+	const response = await authFetch(`${API_URL}/api/uk-lrt/${lawId}`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(updates)
+	});
+	if (!response.ok) {
+		const body = await response.json().catch(() => ({ error: response.statusText }));
+		throw new Error(body.error || `HTTP ${response.status}`);
+	}
 }
 
 export async function getFamilyInference(lawName: string): Promise<FamilyInference> {
