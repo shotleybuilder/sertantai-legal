@@ -74,7 +74,12 @@ defmodule SertantaiLegal.Legal.FamilyRules do
       "single use carrier bag"
     ],
     "💚 WATER & WASTEWATER" => ["water supply", "water industry", "wastewater", "sewerage"],
-    "💚 WILDLIFE & COUNTRYSIDE" => ["wildlife", "countryside", "conservation"],
+    "💚 WILDLIFE & COUNTRYSIDE" => [
+      "wildlife",
+      "countryside",
+      "conservation",
+      "environmentally sensitive areas"
+    ],
     "💜 HR: Employment" => ["employment"],
     "💜 HR: Working Time" => ["working time"]
   }
