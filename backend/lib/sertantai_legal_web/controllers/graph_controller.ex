@@ -246,30 +246,38 @@ defmodule SertantaiLegalWeb.GraphController do
         }
 
         t0 = System.monotonic_time(:millisecond)
-        result = StagedParser.parse(input)
-        t1 = System.monotonic_time(:millisecond)
 
-        # Persist the parsed result
-        parsed_law = Map.get(result, :law)
+        case StagedParser.parse(input) do
+          {:ok, result} ->
+            t1 = System.monotonic_time(:millisecond)
+            parsed_law = Map.get(result, :law) || Map.get(result, :record)
 
-        case Persister.persist_record(parsed_law) do
-          {:ok, _} ->
-            stage_statuses =
-              Map.new(result.stages, fn {stage, data} ->
-                {stage, data.status}
-              end)
+            case Persister.persist_record(parsed_law) do
+              {:ok, _} ->
+                stage_statuses =
+                  result
+                  |> Map.get(:stages, %{})
+                  |> Map.new(fn {stage, data} ->
+                    {stage, if(is_map(data), do: Map.get(data, :status, :unknown), else: data)}
+                  end)
 
-            json(conn, %{
-              law_name: law_name,
-              status: if(result.has_errors, do: "partial", else: "ok"),
-              stages: stage_statuses,
-              duration_ms: t1 - t0
-            })
+                json(conn, %{
+                  law_name: law_name,
+                  status: if(Map.get(result, :has_errors, false), do: "partial", else: "ok"),
+                  stages: stage_statuses,
+                  duration_ms: t1 - t0
+                })
+
+              {:error, reason} ->
+                conn
+                |> put_status(:unprocessable_entity)
+                |> json(%{error: "Persist failed: #{inspect(reason)}"})
+            end
 
           {:error, reason} ->
             conn
             |> put_status(:unprocessable_entity)
-            |> json(%{error: "Persist failed: #{inspect(reason)}"})
+            |> json(%{error: "Parse failed: #{inspect(reason)}"})
         end
 
       _ ->
