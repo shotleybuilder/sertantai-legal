@@ -112,6 +112,27 @@ export async function updateLawFamily(
 	}
 }
 
+export interface RescrapeResult {
+	law_name: string;
+	status: string;
+	stages: Record<string, string>;
+	duration_ms: number;
+}
+
+export async function rescrapeLrt(lawName: string): Promise<RescrapeResult> {
+	const response = await authFetch(
+		`${API_URL}/api/graph/rescrape-lrt/${encodeURIComponent(lawName)}`,
+		{
+			method: 'POST'
+		}
+	);
+	if (!response.ok) {
+		const body = await response.json().catch(() => ({ error: response.statusText }));
+		throw new Error(body.error || `HTTP ${response.status}`);
+	}
+	return response.json();
+}
+
 export async function getFamilyInference(lawName: string): Promise<FamilyInference> {
 	return fetchJson(`${API_URL}/api/graph/family-inference/${encodeURIComponent(lawName)}`);
 }

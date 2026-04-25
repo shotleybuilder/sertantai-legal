@@ -7,7 +7,7 @@
 		useRescindsQuery,
 		graphKeys
 	} from '$lib/query/graph';
-	import { updateLawFamily, type EnactedByMismatch } from '$lib/api/graph';
+	import { updateLawFamily, rescrapeLrt, type EnactedByMismatch } from '$lib/api/graph';
 	import { reparseLat } from '$lib/api/lat';
 	import { useQueryClient } from '@tanstack/svelte-query';
 
@@ -27,6 +27,7 @@
 	let editError = '';
 	let saving = false;
 	let reparsing = false;
+	let rescraping = false;
 
 	function selectEnactedRow(m: EnactedByMismatch) {
 		if (selectedRow?.law_name === m.law_name && selectedRow?.parent_law === m.parent_law) {
@@ -64,11 +65,27 @@
 		editError = '';
 		try {
 			const result = await reparseLat(selectedRow.law_name);
-			editMessage = `Re-parsed: ${result.lat.inserted} rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
+			editMessage = `LAT re-parsed: ${result.lat.inserted} rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
 		} catch (e) {
-			editError = e instanceof Error ? e.message : 'Reparse failed';
+			editError = e instanceof Error ? e.message : 'LAT reparse failed';
 		} finally {
 			reparsing = false;
+		}
+	}
+
+	async function handleRescrape() {
+		if (!selectedRow) return;
+		rescraping = true;
+		editMessage = '';
+		editError = '';
+		try {
+			const result = await rescrapeLrt(selectedRow.law_name);
+			editMessage = `LRT re-scraped (${result.status}) in ${result.duration_ms}ms`;
+			queryClient.invalidateQueries({ queryKey: graphKeys.all });
+		} catch (e) {
+			editError = e instanceof Error ? e.message : 'LRT rescrape failed';
+		} finally {
+			rescraping = false;
 		}
 	}
 
@@ -364,10 +381,11 @@
 							</div>
 							<div class="font-mono text-xs text-gray-400">{selectedRow.law_name}</div>
 							<div class="flex gap-2 flex-wrap">
-								<a
-									href="/admin/lrt?law={encodeURIComponent(selectedRow.law_name)}"
-									class="px-2 py-1 text-xs font-medium text-white bg-orange-600 rounded hover:bg-orange-700"
-									>Re-scrape LRT</a
+								<button
+									class="px-2 py-1 text-xs font-medium text-white bg-orange-600 rounded hover:bg-orange-700 disabled:opacity-50"
+									disabled={rescraping}
+									on:click={handleRescrape}
+									>{rescraping ? 'Re-scraping...' : 'Re-scrape LRT'}</button
 								>
 								<button
 									class="px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"

@@ -223,4 +223,59 @@ defmodule SertantaiLegalWeb.GraphController do
     inference = FamilyInference.infer(law_name)
     json(conn, inference)
   end
+
+  @doc """
+  Synchronous LRT rescrape — runs all 5 stages and persists the result.
+  Stays on the current page (no SSE streaming, no navigation).
+  """
+  def rescrape_lrt(conn, %{"law_name" => law_name}) do
+    alias SertantaiLegal.Scraper.{StagedParser, Persister}
+
+    # Look up the law by name
+    case Repo.query(
+           "SELECT type_code, year, number, title_en, name FROM uk_lrt WHERE name = $1",
+           [law_name]
+         ) do
+      {:ok, %{rows: [[type_code, year, number, title_en, name]]}} ->
+        input = %{
+          type_code: type_code,
+          Year: year,
+          Number: to_string(number),
+          Title_EN: title_en,
+          name: name
+        }
+
+        t0 = System.monotonic_time(:millisecond)
+        result = StagedParser.parse(input)
+        t1 = System.monotonic_time(:millisecond)
+
+        # Persist the parsed result
+        parsed_law = result[:law] || result.law
+
+        case Persister.persist_record(parsed_law) do
+          {:ok, _} ->
+            stage_statuses =
+              Map.new(result.stages, fn {stage, data} ->
+                {stage, data.status}
+              end)
+
+            json(conn, %{
+              law_name: law_name,
+              status: if(result.has_errors, do: "partial", else: "ok"),
+              stages: stage_statuses,
+              duration_ms: t1 - t0
+            })
+
+          {:error, reason} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Persist failed: #{inspect(reason)}"})
+        end
+
+      _ ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Law not found: #{law_name}"})
+    end
+  end
 end
