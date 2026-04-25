@@ -197,6 +197,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Statutory Instrument code classification (JSONB)")
     end
 
+    attribute :enacted_si_codes, :map do
+      allow_nil?(true)
+
+      description(
+        "Aggregated SI codes from enacted child laws (JSONB frequency map). Derived from law_edges graph — Acts don't have their own si_code from legislation.gov.uk."
+      )
+    end
+
     attribute :md_subjects, :map do
       allow_nil?(true)
       description("Subject matter classification (JSONB)")
