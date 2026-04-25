@@ -148,7 +148,7 @@ defmodule SertantaiLegalWeb.GraphController do
     "💚 PLANNING & INFRASTRUCTURE" => ["planning", "infrastructure"],
     "💚 PLANT HEALTH" => ["plant health"],
     "💚 POLLUTION" => ["pollution", "contaminated land"],
-    "💚 WASTE" => ["waste"],
+    "💚 WASTE" => ["waste", "landfill"],
     "💚 WATER & WASTEWATER" => ["water supply", "water industry", "wastewater", "sewerage"],
     "💚 WILDLIFE & COUNTRYSIDE" => ["wildlife", "countryside", "conservation"],
     "💜 HR: Employment" => ["employment"],
