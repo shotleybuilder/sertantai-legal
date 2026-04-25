@@ -51,30 +51,35 @@
 	$: amendsItems = $amendsQuery?.data?.items ?? [];
 	$: rescindsItems = $rescindsQuery?.data?.items ?? [];
 
-	// Filter enacted_by by family + title-confirmed toggle
-	// Reference sortCol and sortDir so Svelte re-triggers on sort changes
+	// Reactive sort key — changes when sort state changes, triggering re-sort
+	$: _sortKey = `${sortCol}:${sortDir}`;
+
+	// Filter + sort
 	$: titleConfirmedCount = enactedByItems.filter((m) => m.title_confirmed).length;
-	$: ((filteredEnacted = sortCol),
-		sortDir,
-		sortRows(
+	$: filteredEnacted = (() => {
+		void _sortKey;
+		return sortRows(
 			enactedByItems.filter((m) => {
 				if (familyFilter && m.assigned_family !== familyFilter) return false;
 				if (hideTitleConfirmed && m.title_confirmed) return false;
 				return true;
 			})
-		));
+		);
+	})();
 
-	$: ((filteredAmends = sortCol),
-		sortDir,
-		sortRows(
+	$: filteredAmends = (() => {
+		void _sortKey;
+		return sortRows(
 			familyFilter ? amendsItems.filter((m) => m.assigned_family === familyFilter) : amendsItems
-		));
+		);
+	})();
 
-	$: ((filteredRescinds = sortCol),
-		sortDir,
-		sortRows(
+	$: filteredRescinds = (() => {
+		void _sortKey;
+		return sortRows(
 			familyFilter ? rescindsItems.filter((m) => m.assigned_family === familyFilter) : rescindsItems
-		));
+		);
+	})();
 
 	$: allFamilies = [
 		...new Set(
