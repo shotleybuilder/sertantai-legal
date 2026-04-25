@@ -35,22 +35,70 @@ defmodule SertantaiLegalWeb.GraphController do
     })
   end
 
-  def family_mismatches(conn, params) do
-    limit = min(String.to_integer(params["limit"] || "100"), 500)
+  @mismatches_sql """
+  SELECT
+    e.source_law AS law_name,
+    e.source_family AS assigned_family,
+    e.edge_type,
+    e.target_family AS suggested_family,
+    COUNT(*) AS edge_count
+  FROM law_edges e
+  WHERE e.source_family IS NOT NULL
+    AND e.source_family != '🖤 X: No Family'
+    AND e.source_family != '_todo'
+    AND e.target_family IS NOT NULL
+    AND e.target_family != '🖤 X: No Family'
+    AND e.target_family != '_todo'
+    AND e.source_family != e.target_family
+    AND e.edge_type IN ('enacted_by', 'amends')
+  GROUP BY e.source_law, e.source_family, e.edge_type, e.target_family
+  ORDER BY e.source_law, edge_count DESC
+  """
 
+  def family_mismatches(conn, _params) do
+    {:ok, %{columns: cols, rows: rows}} = Repo.query(@mismatches_sql)
+
+    # Group by law_name, pick the top suggested family per law
     mismatches =
-      FamilyInference.find_mismatches()
-      |> Enum.take(limit)
-      |> Enum.map(fn m ->
+      rows
+      |> Enum.map(fn row -> Enum.zip(cols, row) |> Map.new() end)
+      |> Enum.group_by(& &1["law_name"])
+      |> Enum.map(fn {law_name, edges} ->
+        assigned = hd(edges)["assigned_family"]
+
+        # Group evidence by type
+        parent_edges = Enum.filter(edges, &(&1["edge_type"] == "enacted_by"))
+        target_edges = Enum.filter(edges, &(&1["edge_type"] == "amends"))
+
+        parent_families =
+          Enum.map(parent_edges, fn e -> [e["suggested_family"], e["edge_count"]] end)
+
+        target_families =
+          Enum.map(target_edges, fn e -> [e["suggested_family"], e["edge_count"]] end)
+
+        # Pick suggestion: parent > target consensus
+        {suggested, confidence} =
+          cond do
+            parent_families != [] ->
+              {hd(parent_edges)["suggested_family"], "parent_inferred"}
+
+            target_families != [] ->
+              {hd(target_edges)["suggested_family"], "target_consensus"}
+
+            true ->
+              {nil, "unknown"}
+          end
+
         %{
-          law_name: m.law_name,
-          assigned_family: m.assigned_family,
-          suggested_family: m.suggested_family,
-          confidence: m.confidence,
-          parent_families: m.parent_families,
-          target_families: m.target_families
+          law_name: law_name,
+          assigned_family: assigned,
+          suggested_family: suggested,
+          confidence: confidence,
+          parent_families: parent_families,
+          target_families: target_families
         }
       end)
+      |> Enum.sort_by(& &1.law_name)
 
     json(conn, %{
       mismatches: mismatches,
