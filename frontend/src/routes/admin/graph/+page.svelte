@@ -52,22 +52,29 @@
 	$: rescindsItems = $rescindsQuery?.data?.items ?? [];
 
 	// Filter enacted_by by family + title-confirmed toggle
+	// Reference sortCol and sortDir so Svelte re-triggers on sort changes
 	$: titleConfirmedCount = enactedByItems.filter((m) => m.title_confirmed).length;
-	$: filteredEnacted = sortRows(
-		enactedByItems.filter((m) => {
-			if (familyFilter && m.assigned_family !== familyFilter) return false;
-			if (hideTitleConfirmed && m.title_confirmed) return false;
-			return true;
-		})
-	);
+	$: ((filteredEnacted = sortCol),
+		sortDir,
+		sortRows(
+			enactedByItems.filter((m) => {
+				if (familyFilter && m.assigned_family !== familyFilter) return false;
+				if (hideTitleConfirmed && m.title_confirmed) return false;
+				return true;
+			})
+		));
 
-	$: filteredAmends = sortRows(
-		familyFilter ? amendsItems.filter((m) => m.assigned_family === familyFilter) : amendsItems
-	);
+	$: ((filteredAmends = sortCol),
+		sortDir,
+		sortRows(
+			familyFilter ? amendsItems.filter((m) => m.assigned_family === familyFilter) : amendsItems
+		));
 
-	$: filteredRescinds = sortRows(
-		familyFilter ? rescindsItems.filter((m) => m.assigned_family === familyFilter) : rescindsItems
-	);
+	$: ((filteredRescinds = sortCol),
+		sortDir,
+		sortRows(
+			familyFilter ? rescindsItems.filter((m) => m.assigned_family === familyFilter) : rescindsItems
+		));
 
 	$: allFamilies = [
 		...new Set(
