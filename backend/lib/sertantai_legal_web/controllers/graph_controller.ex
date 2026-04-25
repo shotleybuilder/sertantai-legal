@@ -49,6 +49,7 @@ defmodule SertantaiLegalWeb.GraphController do
     e.target_law AS parent_law,
     p.id::text AS parent_id,
     p.title_en AS parent_title,
+    p.enacted_si_codes,
     p.family AS parent_family,
     p.family_ii AS parent_family_ii
   FROM law_edges e
@@ -139,6 +140,7 @@ defmodule SertantaiLegalWeb.GraphController do
           parent_law: r["parent_law"],
           parent_id: r["parent_id"],
           parent_title: r["parent_title"],
+          parent_enacted_si_codes: r["enacted_si_codes"] || %{},
           parent_family: r["parent_family"],
           parent_family_ii: r["parent_family_ii"],
           title_confirmed: FamilyRules.title_confirms_family?(r["title"], r["assigned_family"])
