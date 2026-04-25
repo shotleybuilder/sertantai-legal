@@ -26,6 +26,7 @@ export interface EnactedByMismatch {
 	parent_id: string;
 	parent_title: string | null;
 	parent_enacted_si_codes: Record<string, number>;
+	parent_enacted_families: Record<string, number>;
 	parent_family: string;
 	parent_family_ii: string | null;
 	title_confirmed: boolean;

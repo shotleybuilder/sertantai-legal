@@ -64,8 +64,13 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
 
     # Derive enacted_si_codes for Acts
     Mix.shell().info("\nDeriving enacted_si_codes for parent Acts...")
-    enacted_count = derive_enacted_si_codes()
-    Mix.shell().info("Updated #{format_number(enacted_count)} Acts with enacted_si_codes")
+    si_count = derive_enacted_si_codes()
+    Mix.shell().info("Updated #{format_number(si_count)} Acts with enacted_si_codes")
+
+    # Derive enacted_families for Acts
+    Mix.shell().info("Deriving enacted_families for parent Acts...")
+    fam_count = derive_enacted_families()
+    Mix.shell().info("Updated #{format_number(fam_count)} Acts with enacted_families")
   end
 
   # Aggregate si_codes from enacted child laws into the parent Act.
@@ -88,6 +93,32 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
         AND child.si_code IS NOT NULL
         AND child.si_code != 'null'::jsonb
       GROUP BY e.target_law
+    ) derived
+    WHERE parent.name = derived.law_name
+    """
+
+    {:ok, result} = Repo.query(sql)
+    result.num_rows
+  end
+
+  defp derive_enacted_families do
+    sql = """
+    UPDATE uk_lrt parent SET enacted_families = derived.families
+    FROM (
+      SELECT
+        target_law AS law_name,
+        jsonb_object_agg(fam, cnt) AS families
+      FROM (
+        SELECT e.target_law, child.family AS fam, COUNT(*) AS cnt
+        FROM law_edges e
+        JOIN uk_lrt child ON child.name = e.source_law
+        WHERE e.edge_type = 'enacted_by'
+          AND child.family IS NOT NULL
+          AND child.family != '🖤 X: No Family'
+          AND child.family != '_todo'
+        GROUP BY e.target_law, child.family
+      ) counts
+      GROUP BY target_law
     ) derived
     WHERE parent.name = derived.law_name
     """

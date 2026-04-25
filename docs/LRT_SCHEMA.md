@@ -88,6 +88,7 @@ This document provides a comprehensive comparison between the original PostgreSQ
 | `popimar` | jsonb | POPIMAR framework | ✅ Included |
 | `si_code` | jsonb | SI code classification | ✅ Included |
 | `enacted_si_codes` | jsonb | Aggregated SI codes from enacted child laws. JSONB frequency map: `{"HEALTH AND SAFETY": 45, "FIRE": 12}`. Derived from `law_edges` graph — Acts don't have their own si_code from legislation.gov.uk. Populated by `mix law_edges.rebuild`. | ✅ Included |
+| `enacted_families` | jsonb | Aggregated family classifications from enacted child laws. JSONB frequency map: `{"💚 AGRICULTURE": 236, "💚 PLANT HEALTH": 158}`. Derived from `law_edges` graph. Populated by `mix law_edges.rebuild`. | ✅ Included |
 
 *(Note: `geo_country` counted in Geographic section)*
 

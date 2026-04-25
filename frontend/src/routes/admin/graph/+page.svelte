@@ -374,6 +374,7 @@
 										>Parent Act{sortIcon('parent_title')}</th
 									>
 									<th class="text-left px-3 py-2 font-medium text-gray-600">Enacted SI Codes</th>
+									<th class="text-left px-3 py-2 font-medium text-gray-600">Enacted Families</th>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
 										on:click={() => toggleSort('parent_family')}
@@ -428,6 +429,25 @@
 												<span class="text-gray-300">-</span>
 											{/if}
 										</td>
+										<td class="px-3 py-2 text-xs text-gray-500 max-w-40">
+											{#if m.parent_enacted_families && Object.keys(m.parent_enacted_families).length > 0}
+												{#each Object.entries(m.parent_enacted_families)
+													.sort((a, b) => b[1] - a[1])
+													.slice(0, 3) as [fam, count]}
+													<span
+														class="inline-block mr-1 mb-0.5 px-1 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs"
+														>{fam} ({count})</span
+													>
+												{/each}
+												{#if Object.keys(m.parent_enacted_families).length > 3}
+													<span class="text-gray-400"
+														>+{Object.keys(m.parent_enacted_families).length - 3}</span
+													>
+												{/if}
+											{:else}
+												<span class="text-gray-300">-</span>
+											{/if}
+										</td>
 										<td class="px-3 py-2 text-xs text-red-700 font-medium max-w-40 truncate"
 											>{m.parent_family}</td
 										>
@@ -435,7 +455,7 @@
 								{/each}
 								{#if filteredEnacted.length === 0}
 									<tr
-										><td colspan="6" class="px-3 py-8 text-center text-gray-400">No mismatches</td
+										><td colspan="7" class="px-3 py-8 text-center text-gray-400">No mismatches</td
 										></tr
 									>
 								{/if}

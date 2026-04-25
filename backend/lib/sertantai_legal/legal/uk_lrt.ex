@@ -205,6 +205,14 @@ defmodule SertantaiLegal.Legal.UkLrt do
       )
     end
 
+    attribute :enacted_families, :map do
+      allow_nil?(true)
+
+      description(
+        "Aggregated family classifications from enacted child laws (JSONB frequency map). Derived from law_edges graph."
+      )
+    end
+
     attribute :md_subjects, :map do
       allow_nil?(true)
       description("Subject matter classification (JSONB)")
