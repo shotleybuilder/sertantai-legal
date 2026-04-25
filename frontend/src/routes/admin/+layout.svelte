@@ -7,19 +7,24 @@
 
 	const navItems = [
 		{ href: '/admin/analytics', label: 'Analytics', exact: true },
-		{ href: '/admin/lrt', label: 'LRT Data', exact: false },
-		{ href: '/admin/lat', label: 'LAT Data', exact: true },
-		{ href: '/admin/lat/queue', label: 'LAT Queue', exact: false },
-		{ href: '/admin/lat/audit', label: 'LAT Audit', exact: true },
-		{ href: '/admin/scrape', label: 'New Scrape', exact: true },
+		{ href: '/admin/lrt', label: 'LRT', exact: false },
 		{
-			label: 'Sessions',
+			label: 'LAT',
 			dropdown: [
-				{ href: '/admin/scrape/sessions', label: 'LRT Sessions' },
-				{ href: '/admin/lat/sessions', label: 'LAT Sessions' }
+				{ href: '/admin/lat', label: 'LAT Browser' },
+				{ href: '/admin/lat/queue', label: 'Parse Queue' },
+				{ href: '/admin/lat/audit', label: 'Parse Audit' },
+				{ href: '/admin/lat/sessions', label: 'Parse Sessions' }
 			]
 		},
-		{ href: '/admin/scrape/cascade', label: 'Cascade', exact: false },
+		{
+			label: 'Scrape',
+			dropdown: [
+				{ href: '/admin/scrape', label: 'New Scrape' },
+				{ href: '/admin/scrape/sessions', label: 'LRT Sessions' },
+				{ href: '/admin/scrape/cascade', label: 'Cascade' }
+			]
+		},
 		{ href: '/admin/graph', label: 'Graph', exact: true },
 		{ href: '/admin/zenoh', label: 'Zenoh', exact: false },
 		{ href: '/admin/sync', label: 'Sync', exact: true }
