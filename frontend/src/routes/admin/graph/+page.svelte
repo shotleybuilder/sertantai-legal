@@ -9,6 +9,7 @@
 
 	let activeTab: 'enacted_by' | 'amends' | 'rescinds' = 'enacted_by';
 	let familyFilter = '';
+	let hideTitleConfirmed = true;
 
 	$: statsQuery = useGraphStatsQuery();
 	$: countsQuery = useMismatchCountsQuery();
@@ -22,10 +23,13 @@
 	$: amendsItems = $amendsQuery?.data?.items ?? [];
 	$: rescindsItems = $rescindsQuery?.data?.items ?? [];
 
-	// Filter enacted_by by family
-	$: filteredEnacted = familyFilter
-		? enactedByItems.filter((m) => m.assigned_family === familyFilter)
-		: enactedByItems;
+	// Filter enacted_by by family + title-confirmed toggle
+	$: titleConfirmedCount = enactedByItems.filter((m) => m.title_confirmed).length;
+	$: filteredEnacted = enactedByItems.filter((m) => {
+		if (familyFilter && m.assigned_family !== familyFilter) return false;
+		if (hideTitleConfirmed && m.title_confirmed) return false;
+		return true;
+	});
 
 	$: filteredAmends = familyFilter
 		? amendsItems.filter((m) => m.assigned_family === familyFilter)
@@ -151,6 +155,17 @@
 			{#if $enactedByQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading...</div>
 			{:else}
+				<!-- Filter Rules -->
+				<div class="flex gap-2 flex-wrap">
+					<button
+						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+							{hideTitleConfirmed ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
+						on:click={() => (hideTitleConfirmed = !hideTitleConfirmed)}
+					>
+						{hideTitleConfirmed ? 'Hiding' : 'Show'} title-confirmed ({titleConfirmedCount})
+					</button>
+				</div>
+
 				<div class="bg-white rounded-lg border overflow-hidden">
 					<table class="w-full text-sm">
 						<thead class="bg-gray-50 border-b">

@@ -22,6 +22,7 @@ export interface EnactedByMismatch {
 	parent_law: string;
 	parent_title: string | null;
 	parent_family: string;
+	title_confirmed: boolean;
 }
 
 export interface AmendsMismatch {
