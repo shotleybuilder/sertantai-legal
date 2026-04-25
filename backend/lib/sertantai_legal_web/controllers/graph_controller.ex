@@ -135,7 +135,7 @@ defmodule SertantaiLegalWeb.GraphController do
     "💙 TRANSPORT: Road Safety" => ["road traffic", "motor vehicle", "road safety"],
     "💙 TRANSPORT: Maritime Safety" => ["merchant shipping", "maritime"],
     "💚 AGRICULTURE" => ["agriculture", "agricultural"],
-    "💚 AGRICULTURE: Pesticides" => ["pesticide"],
+    "💚 AGRICULTURE: Pesticides" => ["pesticide", "biocidal"],
     "💚 AIR QUALITY" => ["air quality", "clean air", "emission"],
     "💚 ANIMALS & ANIMAL HEALTH" => ["animal health", "animal welfare"],
     "💚 BUILDINGS" => ["building regulation"],
