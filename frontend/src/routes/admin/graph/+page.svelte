@@ -252,190 +252,6 @@
 			</span>
 		</div>
 
-		<!-- Edit Panel (above table) -->
-		{#if selectedRow && activeTab === 'enacted_by'}
-			<div class="bg-white rounded-lg border p-5 space-y-4 shadow-lg">
-				<div class="flex items-center justify-between">
-					<h2 class="text-lg font-semibold text-gray-900">
-						{selectedRow.title || selectedRow.law_name}
-					</h2>
-					<div class="flex items-center gap-3">
-						<a
-							href="/admin/lat?law={encodeURIComponent(selectedRow.law_name)}"
-							class="text-sm text-indigo-600 hover:text-indigo-800">LAT browser</a
-						>
-						<a
-							href="/admin/lrt?law={encodeURIComponent(selectedRow.law_name)}"
-							class="px-3 py-1 text-sm font-medium text-white bg-orange-600 rounded hover:bg-orange-700 inline-block"
-							>Re-scrape LRT</a
-						>
-						<button
-							class="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
-							disabled={reparsing}
-							on:click={handleReparse}
-						>
-							{reparsing ? 'Re-parsing...' : 'Re-parse LAT'}
-						</button>
-						<button
-							class="text-sm text-gray-400 hover:text-gray-600"
-							on:click={() => (selectedRow = null)}>Close</button
-						>
-					</div>
-				</div>
-
-				<!-- Description -->
-				{#if selectedRow.md_description}
-					<p class="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded p-3">
-						{selectedRow.md_description}
-					</p>
-				{/if}
-
-				<!-- Edit: Enacted Law -->
-				<div class="border rounded p-4 space-y-3">
-					<h3 class="text-sm font-medium text-gray-700">
-						Enacted Law: <span class="font-mono text-gray-500">{selectedRow.law_name}</span>
-					</h3>
-					<div class="grid grid-cols-2 gap-3">
-						<div>
-							<label class="text-xs text-gray-500">Family</label>
-							<select
-								bind:value={editFamily}
-								class="w-full px-2 py-1.5 border rounded text-sm bg-white"
-							>
-								<option value="">-- None --</option>
-								<optgroup label="Health & Safety">
-									{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="Environment">
-									{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="HR">
-									{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-							</select>
-						</div>
-						<div>
-							<label class="text-xs text-gray-500">Family II</label>
-							<select
-								bind:value={editFamilyII}
-								class="w-full px-2 py-1.5 border rounded text-sm bg-white"
-							>
-								<option value="">-- None --</option>
-								<optgroup label="Health & Safety">
-									{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="Environment">
-									{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="HR">
-									{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-							</select>
-						</div>
-					</div>
-					<button
-						class="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
-						disabled={saving}
-						on:click={() =>
-							saveFamily(selectedRow?.law_id ?? '', editFamily, editFamilyII, 'Enacted law')}
-					>
-						{saving ? 'Saving...' : 'Save Enacted Law'}
-					</button>
-				</div>
-
-				<!-- Edit: Parent Law -->
-				<div class="border rounded p-4 space-y-3">
-					<h3 class="text-sm font-medium text-gray-700">
-						Parent Act: <span class="font-mono text-gray-500">{selectedRow.parent_law}</span>
-					</h3>
-					<p class="text-xs text-gray-500">{selectedRow.parent_title || ''}</p>
-					<div class="grid grid-cols-2 gap-3">
-						<div>
-							<label class="text-xs text-gray-500">Family</label>
-							<select
-								bind:value={editParentFamily}
-								class="w-full px-2 py-1.5 border rounded text-sm bg-white"
-							>
-								<option value="">-- None --</option>
-								<optgroup label="Health & Safety">
-									{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="Environment">
-									{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="HR">
-									{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-							</select>
-						</div>
-						<div>
-							<label class="text-xs text-gray-500">Family II</label>
-							<select
-								bind:value={editParentFamilyII}
-								class="w-full px-2 py-1.5 border rounded text-sm bg-white"
-							>
-								<option value="">-- None --</option>
-								<optgroup label="Health & Safety">
-									{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="Environment">
-									{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-								<optgroup label="HR">
-									{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}
-										<option value={opt}>{opt}</option>
-									{/each}
-								</optgroup>
-							</select>
-						</div>
-					</div>
-					<button
-						class="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
-						disabled={saving}
-						on:click={() =>
-							saveFamily(
-								selectedRow?.parent_id ?? '',
-								editParentFamily,
-								editParentFamilyII,
-								'Parent Act'
-							)}
-					>
-						{saving ? 'Saving...' : 'Save Parent Act'}
-					</button>
-				</div>
-
-				<!-- Feedback -->
-				{#if editMessage}
-					<div class="text-sm text-green-700 bg-green-50 rounded p-2">{editMessage}</div>
-				{/if}
-				{#if editError}
-					<div class="text-sm text-red-700 bg-red-50 rounded p-2">{editError}</div>
-				{/if}
-			</div>
-		{/if}
-
 		<!-- Tab Content -->
 		{#if activeTab === 'enacted_by'}
 			<!-- Enacted By Tab -->
@@ -453,76 +269,250 @@
 					</button>
 				</div>
 
-				<div class="bg-white rounded-lg border overflow-hidden">
-					<table class="w-full text-sm">
-						<thead class="bg-gray-50 border-b">
-							<tr>
-								<th
-									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('title')}>Law{sortIcon('title')}</th
-								>
-								<th
-									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('si_code')}>SI Code{sortIcon('si_code')}</th
-								>
-								<th
-									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('assigned_family')}
-									>Assigned Family{sortIcon('assigned_family')}</th
-								>
-								<th
-									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('parent_title')}
-									>Parent Act{sortIcon('parent_title')}</th
-								>
-								<th
-									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('parent_family')}
-									>Parent Family{sortIcon('parent_family')}</th
-								>
-							</tr>
-						</thead>
-						<tbody class="divide-y divide-gray-100">
-							{#each filteredEnacted as m (m.law_name + m.parent_law)}
-								<tr
-									class="hover:bg-gray-50 cursor-pointer transition-colors"
-									class:bg-blue-50={selectedRow?.law_name === m.law_name &&
-										selectedRow?.parent_law === m.parent_law}
-									on:click={() => selectEnactedRow(m)}
-								>
-									<td class="px-3 py-2">
-										<div class="font-medium text-gray-900 text-xs">{m.title || m.law_name}</div>
-										<div class="font-mono text-xs text-gray-400">{m.law_name}</div>
-									</td>
-									<td class="px-3 py-2 text-xs text-gray-500 max-w-36 truncate">
-										{#if m.si_code && m.si_code.length > 0}
-											{m.si_code.join(', ')}
-										{:else}
-											<span class="text-gray-300">-</span>
-										{/if}
-									</td>
-									<td class="px-3 py-2 text-xs text-gray-600 max-w-40 truncate"
-										>{m.assigned_family || '-'}</td
+				<div class="flex gap-4">
+					<!-- Table (left) -->
+					<div
+						class="bg-white rounded-lg border overflow-hidden {selectedRow
+							? 'flex-1 min-w-0'
+							: 'w-full'}"
+					>
+						<table class="w-full text-sm">
+							<thead class="bg-gray-50 border-b">
+								<tr>
+									<th
+										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+										on:click={() => toggleSort('title')}>Law{sortIcon('title')}</th
 									>
-									<td class="px-3 py-2">
-										<div class="text-xs font-medium text-gray-900">
-											{m.parent_title || m.parent_law}
-										</div>
-										<div class="font-mono text-xs text-gray-400">{m.parent_law}</div>
-									</td>
-									<td class="px-3 py-2 text-xs text-red-700 font-medium max-w-40 truncate"
-										>{m.parent_family}</td
+									<th
+										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+										on:click={() => toggleSort('si_code')}>SI Code{sortIcon('si_code')}</th
+									>
+									<th
+										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+										on:click={() => toggleSort('assigned_family')}
+										>Assigned Family{sortIcon('assigned_family')}</th
+									>
+									<th
+										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+										on:click={() => toggleSort('parent_title')}
+										>Parent Act{sortIcon('parent_title')}</th
+									>
+									<th
+										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+										on:click={() => toggleSort('parent_family')}
+										>Parent Family{sortIcon('parent_family')}</th
 									>
 								</tr>
-							{/each}
-							{#if filteredEnacted.length === 0}
-								<tr
-									><td colspan="5" class="px-3 py-8 text-center text-gray-400">No mismatches</td
-									></tr
+							</thead>
+							<tbody class="divide-y divide-gray-100">
+								{#each filteredEnacted as m (m.law_name + m.parent_law)}
+									<tr
+										class="hover:bg-gray-50 cursor-pointer transition-colors"
+										class:bg-blue-50={selectedRow?.law_name === m.law_name &&
+											selectedRow?.parent_law === m.parent_law}
+										on:click={() => selectEnactedRow(m)}
+									>
+										<td class="px-3 py-2">
+											<div class="font-medium text-gray-900 text-xs">{m.title || m.law_name}</div>
+											<div class="font-mono text-xs text-gray-400">{m.law_name}</div>
+										</td>
+										<td class="px-3 py-2 text-xs text-gray-500 max-w-36 truncate">
+											{#if m.si_code && m.si_code.length > 0}
+												{m.si_code.join(', ')}
+											{:else}
+												<span class="text-gray-300">-</span>
+											{/if}
+										</td>
+										<td class="px-3 py-2 text-xs text-gray-600 max-w-40 truncate"
+											>{m.assigned_family || '-'}</td
+										>
+										<td class="px-3 py-2">
+											<div class="text-xs font-medium text-gray-900">
+												{m.parent_title || m.parent_law}
+											</div>
+											<div class="font-mono text-xs text-gray-400">{m.parent_law}</div>
+										</td>
+										<td class="px-3 py-2 text-xs text-red-700 font-medium max-w-40 truncate"
+											>{m.parent_family}</td
+										>
+									</tr>
+								{/each}
+								{#if filteredEnacted.length === 0}
+									<tr
+										><td colspan="5" class="px-3 py-8 text-center text-gray-400">No mismatches</td
+										></tr
+									>
+								{/if}
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Side Panel (right) -->
+					{#if selectedRow}
+						<div
+							class="w-96 flex-shrink-0 bg-white rounded-lg border p-4 space-y-4 sticky top-4 self-start overflow-y-auto"
+							style="max-height: calc(100vh - 200px)"
+						>
+							<div class="flex items-center justify-between">
+								<h3 class="text-sm font-semibold text-gray-900 truncate pr-2">
+									{selectedRow.title || selectedRow.law_name}
+								</h3>
+								<button
+									class="text-gray-400 hover:text-gray-600 text-lg flex-shrink-0"
+									on:click={() => (selectedRow = null)}>x</button
 								>
+							</div>
+							<div class="font-mono text-xs text-gray-400">{selectedRow.law_name}</div>
+							<div class="flex gap-2 flex-wrap">
+								<a
+									href="/admin/lat?law={encodeURIComponent(selectedRow.law_name)}"
+									class="text-xs text-indigo-600 hover:text-indigo-800">LAT browser</a
+								>
+								<a
+									href="/admin/lrt?law={encodeURIComponent(selectedRow.law_name)}"
+									class="text-xs text-orange-600 hover:text-orange-800">Re-scrape LRT</a
+								>
+								<button
+									class="text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+									disabled={reparsing}
+									on:click={handleReparse}>{reparsing ? 'Re-parsing...' : 'Re-parse LAT'}</button
+								>
+							</div>
+							{#if selectedRow.md_description}
+								<p class="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded p-2">
+									{selectedRow.md_description}
+								</p>
 							{/if}
-						</tbody>
-					</table>
+							<div class="border rounded p-3 space-y-2">
+								<h4 class="text-xs font-medium text-gray-700">Enacted Law</h4>
+								<div>
+									<label class="text-xs text-gray-500">Family</label>
+									<select
+										bind:value={editFamily}
+										class="w-full px-2 py-1 border rounded text-xs bg-white"
+									>
+										<option value="">-- None --</option>
+										<optgroup label="H&S"
+											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="Env"
+											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="HR"
+											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+									</select>
+								</div>
+								<div>
+									<label class="text-xs text-gray-500">Family II</label>
+									<select
+										bind:value={editFamilyII}
+										class="w-full px-2 py-1 border rounded text-xs bg-white"
+									>
+										<option value="">-- None --</option>
+										<optgroup label="H&S"
+											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="Env"
+											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="HR"
+											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+									</select>
+								</div>
+								<button
+									class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 w-full"
+									disabled={saving}
+									on:click={() =>
+										saveFamily(selectedRow?.law_id ?? '', editFamily, editFamilyII, 'Enacted law')}
+									>{saving ? 'Saving...' : 'Save Enacted Law'}</button
+								>
+							</div>
+							<div class="border rounded p-3 space-y-2">
+								<h4 class="text-xs font-medium text-gray-700 truncate">
+									Parent: {selectedRow.parent_title || selectedRow.parent_law}
+								</h4>
+								<div>
+									<label class="text-xs text-gray-500">Family</label>
+									<select
+										bind:value={editParentFamily}
+										class="w-full px-2 py-1 border rounded text-xs bg-white"
+									>
+										<option value="">-- None --</option>
+										<optgroup label="H&S"
+											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="Env"
+											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="HR"
+											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+									</select>
+								</div>
+								<div>
+									<label class="text-xs text-gray-500">Family II</label>
+									<select
+										bind:value={editParentFamilyII}
+										class="w-full px-2 py-1 border rounded text-xs bg-white"
+									>
+										<option value="">-- None --</option>
+										<optgroup label="H&S"
+											>{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="Env"
+											>{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+										<optgroup label="HR"
+											>{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}<option
+													value={opt}>{opt}</option
+												>{/each}</optgroup
+										>
+									</select>
+								</div>
+								<button
+									class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 w-full"
+									disabled={saving}
+									on:click={() =>
+										saveFamily(
+											selectedRow?.parent_id ?? '',
+											editParentFamily,
+											editParentFamilyII,
+											'Parent Act'
+										)}>{saving ? 'Saving...' : 'Save Parent Act'}</button
+								>
+							</div>
+							{#if editMessage}<div class="text-xs text-green-700 bg-green-50 rounded p-2">
+									{editMessage}
+								</div>{/if}
+							{#if editError}<div class="text-xs text-red-700 bg-red-50 rounded p-2">
+									{editError}
+								</div>{/if}
+						</div>
+					{/if}
 				</div>
 			{/if}
 		{:else if activeTab === 'amends'}
