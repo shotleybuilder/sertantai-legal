@@ -11,6 +11,34 @@
 	let familyFilter = '';
 	let hideTitleConfirmed = true;
 
+	// Sort state
+	let sortCol = '';
+	let sortDir: 'asc' | 'desc' = 'asc';
+
+	function toggleSort(col: string) {
+		if (sortCol === col) {
+			sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortCol = col;
+			sortDir = 'asc';
+		}
+	}
+
+	function sortIcon(col: string): string {
+		if (sortCol !== col) return '';
+		return sortDir === 'asc' ? ' ↑' : ' ↓';
+	}
+
+	function sortRows<T>(rows: T[]): T[] {
+		if (!sortCol) return rows;
+		return [...rows].sort((a, b) => {
+			const av = (a as Record<string, unknown>)[sortCol] ?? '';
+			const bv = (b as Record<string, unknown>)[sortCol] ?? '';
+			const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
+			return sortDir === 'asc' ? cmp : -cmp;
+		});
+	}
+
 	$: statsQuery = useGraphStatsQuery();
 	$: countsQuery = useMismatchCountsQuery();
 	$: enactedByQuery = useEnactedByQuery();
@@ -25,19 +53,21 @@
 
 	// Filter enacted_by by family + title-confirmed toggle
 	$: titleConfirmedCount = enactedByItems.filter((m) => m.title_confirmed).length;
-	$: filteredEnacted = enactedByItems.filter((m) => {
-		if (familyFilter && m.assigned_family !== familyFilter) return false;
-		if (hideTitleConfirmed && m.title_confirmed) return false;
-		return true;
-	});
+	$: filteredEnacted = sortRows(
+		enactedByItems.filter((m) => {
+			if (familyFilter && m.assigned_family !== familyFilter) return false;
+			if (hideTitleConfirmed && m.title_confirmed) return false;
+			return true;
+		})
+	);
 
-	$: filteredAmends = familyFilter
-		? amendsItems.filter((m) => m.assigned_family === familyFilter)
-		: amendsItems;
+	$: filteredAmends = sortRows(
+		familyFilter ? amendsItems.filter((m) => m.assigned_family === familyFilter) : amendsItems
+	);
 
-	$: filteredRescinds = familyFilter
-		? rescindsItems.filter((m) => m.assigned_family === familyFilter)
-		: rescindsItems;
+	$: filteredRescinds = sortRows(
+		familyFilter ? rescindsItems.filter((m) => m.assigned_family === familyFilter) : rescindsItems
+	);
 
 	$: allFamilies = [
 		...new Set(
@@ -170,11 +200,29 @@
 					<table class="w-full text-sm">
 						<thead class="bg-gray-50 border-b">
 							<tr>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Law</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">SI Code</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Assigned Family</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Parent Act</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Parent Family</th>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('title')}>Law{sortIcon('title')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('si_code')}>SI Code{sortIcon('si_code')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('assigned_family')}
+									>Assigned Family{sortIcon('assigned_family')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('parent_title')}
+									>Parent Act{sortIcon('parent_title')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('parent_family')}
+									>Parent Family{sortIcon('parent_family')}</th
+								>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-gray-100">
@@ -224,11 +272,29 @@
 					<table class="w-full text-sm">
 						<thead class="bg-gray-50 border-b">
 							<tr>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Law</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Assigned Family</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Top Target Family</th>
-								<th class="text-right px-3 py-2 font-medium text-gray-600">Consensus</th>
-								<th class="text-right px-3 py-2 font-medium text-gray-600">Total</th>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('law_name')}>Law{sortIcon('law_name')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('assigned_family')}
+									>Assigned Family{sortIcon('assigned_family')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('suggested_family')}
+									>Top Target Family{sortIcon('suggested_family')}</th
+								>
+								<th
+									class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('consensus_pct')}
+									>Consensus{sortIcon('consensus_pct')}</th
+								>
+								<th
+									class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('total_amends')}>Total{sortIcon('total_amends')}</th
+								>
 								<th class="text-left px-3 py-2 font-medium text-gray-600">Target Families</th>
 							</tr>
 						</thead>
@@ -282,10 +348,25 @@
 					<table class="w-full text-sm">
 						<thead class="bg-gray-50 border-b">
 							<tr>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Law</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Assigned Family</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Rescinded Law</th>
-								<th class="text-left px-3 py-2 font-medium text-gray-600">Rescinded Family</th>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('title')}>Law{sortIcon('title')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('assigned_family')}
+									>Assigned Family{sortIcon('assigned_family')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('rescinded_title')}
+									>Rescinded Law{sortIcon('rescinded_title')}</th
+								>
+								<th
+									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+									on:click={() => toggleSort('rescinded_family')}
+									>Rescinded Family{sortIcon('rescinded_family')}</th
+								>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-gray-100">
