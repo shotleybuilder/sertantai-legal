@@ -84,9 +84,10 @@ check_dialyzer() {
 
     # dialyxir 1.4.7 cannot handle the :exact_compare warning type added in OTP 28.
     # It either throws or exits with status 2 printing the raw atom. Treat as non-blocking.
-    if echo "$DIALYZER_OUTPUT" | grep -q ':exact_compare'; then
-        print_warning "Dialyzer hit unknown warning type :exact_compare (dialyxir vs OTP 28)"
-        print_info "Upgrade dialyxir when a fix is available"
+    # Also catch dialyzer infrastructure errors (missing beam files after OTP upgrade).
+    if echo "$DIALYZER_OUTPUT" | grep -q ':exact_compare\|:dialyzer.run error\|File not found.*beam'; then
+        print_warning "Dialyzer infrastructure issue (dialyxir vs OTP 28)"
+        print_info "Run 'cd backend && mix dialyzer --plt' to rebuild PLT, or upgrade dialyxir"
         return 0
     fi
 

@@ -20,6 +20,7 @@
 			]
 		},
 		{ href: '/admin/scrape/cascade', label: 'Cascade', exact: false },
+		{ href: '/admin/graph', label: 'Graph', exact: true },
 		{ href: '/admin/zenoh', label: 'Zenoh', exact: false },
 		{ href: '/admin/sync', label: 'Sync', exact: true }
 	];

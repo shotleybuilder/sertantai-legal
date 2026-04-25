@@ -179,6 +179,11 @@ defmodule SertantaiLegalWeb.Router do
     post("/lat/laws/:law_name/reparse", LatAdminController, :reparse)
     delete("/lat/laws/:law_name/data", LatAdminController, :delete_lat)
 
+    # Graph / family inference endpoints
+    get("/graph/family-mismatches", GraphController, :family_mismatches)
+    get("/graph/family-inference/:law_name", GraphController, :family_inference)
+    get("/graph/stats", GraphController, :stats)
+
     # Cascade management endpoints (standalone page)
     get("/cascade", CascadeController, :index)
     get("/cascade/sessions", CascadeController, :sessions)
