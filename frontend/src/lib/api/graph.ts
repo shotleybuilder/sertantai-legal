@@ -16,6 +16,8 @@ export interface GraphStats {
 
 export interface FamilyMismatch {
 	law_name: string;
+	title: string | null;
+	si_code: string[];
 	assigned_family: string | null;
 	suggested_family: string | null;
 	confidence: string;

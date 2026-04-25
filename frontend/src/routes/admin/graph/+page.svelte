@@ -174,6 +174,7 @@
 				<thead class="bg-gray-50 border-b">
 					<tr>
 						<th class="text-left px-3 py-2 font-medium text-gray-600">Law</th>
+						<th class="text-left px-3 py-2 font-medium text-gray-600">SI Code</th>
 						<th class="text-left px-3 py-2 font-medium text-gray-600">Assigned Family</th>
 						<th class="text-left px-3 py-2 font-medium text-gray-600">Suggested</th>
 						<th class="text-left px-3 py-2 font-medium text-gray-600">Confidence</th>
@@ -187,9 +188,21 @@
 							class:bg-blue-50={selectedLaw === m.law_name}
 							on:click={() => (selectedLaw = selectedLaw === m.law_name ? null : m.law_name)}
 						>
-							<td class="px-3 py-2 font-mono text-xs text-gray-700">{m.law_name}</td>
-							<td class="px-3 py-2 text-gray-600 max-w-48 truncate">{m.assigned_family || '-'}</td>
-							<td class="px-3 py-2 text-red-700 font-medium max-w-48 truncate"
+							<td class="px-3 py-2">
+								<div class="font-medium text-gray-900 text-xs">{m.title || m.law_name}</div>
+								<div class="font-mono text-xs text-gray-400">{m.law_name}</div>
+							</td>
+							<td class="px-3 py-2 text-xs text-gray-500 max-w-36 truncate">
+								{#if m.si_code && m.si_code.length > 0}
+									{m.si_code.join(', ')}
+								{:else}
+									<span class="text-gray-300">-</span>
+								{/if}
+							</td>
+							<td class="px-3 py-2 text-gray-600 max-w-40 truncate text-xs"
+								>{m.assigned_family || '-'}</td
+							>
+							<td class="px-3 py-2 text-red-700 font-medium max-w-40 truncate text-xs"
 								>{m.suggested_family || '-'}</td
 							>
 							<td class="px-3 py-2">

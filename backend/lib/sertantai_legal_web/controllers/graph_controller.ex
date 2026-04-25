@@ -59,12 +59,40 @@ defmodule SertantaiLegalWeb.GraphController do
     {:ok, %{columns: cols, rows: rows}} = Repo.query(@mismatches_sql)
 
     # Group by law_name, pick the top suggested family per law
-    mismatches =
+    grouped =
       rows
       |> Enum.map(fn row -> Enum.zip(cols, row) |> Map.new() end)
       |> Enum.group_by(& &1["law_name"])
+
+    # Fetch metadata (title, si_code) for all mismatch laws in one query
+    law_names = Map.keys(grouped)
+
+    metadata =
+      if law_names != [] do
+        {:ok, %{rows: meta_rows}} =
+          Repo.query(
+            "SELECT name, title_en, si_code FROM uk_lrt WHERE name = ANY($1)",
+            [law_names]
+          )
+
+        Map.new(meta_rows, fn [name, title, si_code] ->
+          si_values =
+            case si_code do
+              %{"values" => v} when is_list(v) -> v
+              _ -> []
+            end
+
+          {name, %{title: title, si_code: si_values}}
+        end)
+      else
+        %{}
+      end
+
+    mismatches =
+      grouped
       |> Enum.map(fn {law_name, edges} ->
         assigned = hd(edges)["assigned_family"]
+        meta = Map.get(metadata, law_name, %{title: nil, si_code: []})
 
         # Group evidence by type
         parent_edges = Enum.filter(edges, &(&1["edge_type"] == "enacted_by"))
@@ -91,6 +119,8 @@ defmodule SertantaiLegalWeb.GraphController do
 
         %{
           law_name: law_name,
+          title: meta.title,
+          si_code: meta.si_code,
           assigned_family: assigned,
           suggested_family: suggested,
           confidence: confidence,
