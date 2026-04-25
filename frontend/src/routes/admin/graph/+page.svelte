@@ -317,12 +317,27 @@
 						</div>
 						<div>
 							<label class="text-xs text-gray-500">Family II</label>
-							<input
-								type="text"
+							<select
 								bind:value={editFamilyII}
-								class="w-full px-2 py-1.5 border rounded text-sm"
-								placeholder="Secondary classification"
-							/>
+								class="w-full px-2 py-1.5 border rounded text-sm bg-white"
+							>
+								<option value="">-- None --</option>
+								<optgroup label="Health & Safety">
+									{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="Environment">
+									{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="HR">
+									{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+							</select>
 						</div>
 					</div>
 					<button
@@ -368,12 +383,27 @@
 						</div>
 						<div>
 							<label class="text-xs text-gray-500">Family II</label>
-							<input
-								type="text"
+							<select
 								bind:value={editParentFamilyII}
-								class="w-full px-2 py-1.5 border rounded text-sm"
-								placeholder="Secondary classification"
-							/>
+								class="w-full px-2 py-1.5 border rounded text-sm bg-white"
+							>
+								<option value="">-- None --</option>
+								<optgroup label="Health & Safety">
+									{#each ['💙 FIRE', '💙 FIRE: Dangerous and Explosive Substances', '💙 FOOD', '💙 HEALTH: Coronavirus', '💙 HEALTH: Drug & Medicine Safety', '💙 HEALTH: Patient Safety', '💙 HEALTH: Public', '💙 OH&S: Gas & Electrical Safety', '💙 OH&S: Mines & Quarries', '💙 OH&S: Occupational / Personal Safety', '💙 OH&S: Offshore Safety', '💙 PUBLIC', '💙 PUBLIC: Building Safety', '💙 PUBLIC: Consumer / Product Safety', '💙 TRANSPORT: Air Safety', '💙 TRANSPORT: Rail Safety', '💙 TRANSPORT: Road Safety', '💙 TRANSPORT: Maritime Safety'] as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="Environment">
+									{#each ['💚 AGRICULTURE', '💚 AGRICULTURE: Pesticides', '💚 AIR QUALITY', '💚 ANIMALS & ANIMAL HEALTH', '💚 ANTARCTICA', '💚 BUILDINGS', '💚 CLIMATE CHANGE', '💚 ENERGY', '💚 ENVIRONMENTAL PROTECTION', '💚 FINANCE', '💚 FISHERIES & FISHING', '💚 GMOs', '💚 HISTORIC ENVIRONMENT', '💚 MARINE & RIVERINE', '💚 NOISE', '💚 NUCLEAR & RADIOLOGICAL', '💚 OIL & GAS - OFFSHORE - PETROLEUM', '💚 PLANNING & INFRASTRUCTURE', '💚 PLANT HEALTH', '💚 POLLUTION', '💚 TOWN & COUNTRY PLANNING', '💚 TRANSPORT', '💚 TREES: Forestry & Timber', '💚 WASTE', '💚 WATER & WASTEWATER', '💚 WILDLIFE & COUNTRYSIDE'] as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="HR">
+									{#each ['💜 HR: Employment', '💜 HR: Insurance / Compensation / Wages / Benefits', '💜 HR: Working Time'] as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+							</select>
 						</div>
 					</div>
 					<button
