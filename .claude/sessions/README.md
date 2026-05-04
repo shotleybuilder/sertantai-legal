@@ -102,6 +102,7 @@ Admin pages, modals, dashboard, record cards, analytics.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-04 | [amends-tab](2026-05-04-amends-tab.md) | [#79](https://github.com/shotleybuilder/sertantai-legal/issues/79) | Amends tab: title column, amends-family-qa skill, 💙 family QA via amends consensus |
 | 2026-04-24 | [issue-78](2026-04-24-issue-78.md) | [#78](https://github.com/shotleybuilder/sertantai-legal/issues/78) | Reparse from audit, bulk reparse, deep-links, family picker |
 | 2026-04-23 | [issue-71](2026-04-23-issue-71.md) | [#71](https://github.com/shotleybuilder/sertantai-legal/issues/71) | /admin/lat Structure tab: outline view with collapse, position ordering, search |
 | 2026-03-26 | [issue-54-analytics-fitness-column](2026-03-26-issue-54-analytics-fitness-column.md) | [#54](https://github.com/shotleybuilder/sertantai-legal/issues/54) | Fix analytics page — "fitness" column doesn't exist in PGLite |

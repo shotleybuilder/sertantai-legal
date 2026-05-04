@@ -1,7 +1,9 @@
 # Amends tab on /admin/graph
 
 **Started**: 2026-05-04
+**Ended**: 2026-05-04
 **Issue**: https://github.com/shotleybuilder/sertantai-legal/issues/79
+**Commits**: `8e771c9`, `91efa23`
 
 ## Todo
 
