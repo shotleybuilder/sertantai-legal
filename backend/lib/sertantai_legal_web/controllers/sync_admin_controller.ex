@@ -146,7 +146,7 @@ defmodule SertantaiLegalWeb.SyncAdminController do
   Runs scripts/nas/export-snapshot.sh --archive and returns the output.
   """
   def snapshot_export(conn, _params) do
-    script = Path.expand("../../scripts/nas/export-snapshot.sh")
+    script = Path.expand("../scripts/nas/export-snapshot.sh")
 
     unless File.exists?(script) do
       conn |> put_status(500) |> json(%{error: "Script not found: #{script}"})
