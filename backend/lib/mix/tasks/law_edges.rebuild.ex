@@ -71,6 +71,11 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
     Mix.shell().info("Deriving enacted_families for parent Acts...")
     fam_count = derive_enacted_families()
     Mix.shell().info("Updated #{format_number(fam_count)} Acts with enacted_families")
+
+    # Derive si_code_families mapping
+    Mix.shell().info("\nDeriving si_code_families mapping...")
+    scf_count = derive_si_code_families()
+    Mix.shell().info("Inserted #{format_number(scf_count)} si_code → family mappings")
   end
 
   # Aggregate si_codes from enacted child laws into the parent Act.
@@ -122,6 +127,36 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
       GROUP BY target_law
     ) derived
     WHERE parent.name = derived.law_name
+    """
+
+    {:ok, result} = Repo.query(sql)
+    result.num_rows
+  end
+
+  defp derive_si_code_families do
+    Repo.query!("TRUNCATE si_code_families")
+
+    sql = """
+    INSERT INTO si_code_families (si_code, family, law_count, pct)
+    SELECT
+      si_code,
+      family,
+      law_count,
+      ROUND(law_count::numeric / total * 100, 1) AS pct
+    FROM (
+      SELECT
+        val AS si_code,
+        u.family,
+        COUNT(*) AS law_count,
+        SUM(COUNT(*)) OVER (PARTITION BY val) AS total
+      FROM uk_lrt u
+      CROSS JOIN LATERAL jsonb_array_elements_text(u.si_code->'values') AS val
+      WHERE u.family IS NOT NULL
+        AND u.si_code IS NOT NULL
+        AND u.si_code != 'null'::jsonb
+        AND val != '[]'
+      GROUP BY val, u.family
+    ) counts
     """
 
     {:ok, result} = Repo.query(sql)

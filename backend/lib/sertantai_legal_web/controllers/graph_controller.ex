@@ -12,7 +12,6 @@ defmodule SertantaiLegalWeb.GraphController do
   use SertantaiLegalWeb, :controller
 
   alias SertantaiLegal.Legal.{FamilyInference, FamilyRules}
-  alias SertantaiLegal.Scraper.Models
   alias SertantaiLegal.Repo
 
   def stats(conn, _params) do
@@ -102,8 +101,16 @@ defmodule SertantaiLegalWeb.GraphController do
   ORDER BY e.source_law
   """
 
-  # SI code → family lookup, built once at compile time
-  @si_code_family_map Models.ehs_si_code_family()
+  # Load si_code → compatible families from derived table (refreshed by mix law_edges.rebuild)
+  defp load_si_code_families do
+    case Repo.query("SELECT si_code, family FROM si_code_families") do
+      {:ok, %{rows: rows}} ->
+        Enum.group_by(rows, fn [code, _] -> code end, fn [_, fam] -> fam end)
+
+      _ ->
+        %{}
+    end
+  end
 
   defp parent_type(name) when is_binary(name) do
     cond do
@@ -129,6 +136,7 @@ defmodule SertantaiLegalWeb.GraphController do
 
   def family_mismatches(conn, %{"type" => "enacted_by"}) do
     {:ok, %{columns: cols, rows: rows}} = Repo.query(@enacted_by_sql)
+    si_code_map = load_si_code_families()
 
     items =
       rows
@@ -144,13 +152,19 @@ defmodule SertantaiLegalWeb.GraphController do
         enacted_fams = r["enacted_families"] || %{}
         p_type = parent_type(r["parent_law"])
 
-        # SI code cross-validation: map child's SI codes through models.ex
-        si_code_family =
+        # SI code cross-validation: check if assigned family is in the
+        # si_code_families compatible list (derived from corpus data)
+        compatible_families =
           si_values
-          |> Enum.find_value(fn code -> Map.get(@si_code_family_map, code) end)
+          |> Enum.flat_map(fn code -> Map.get(si_code_map, code, []) end)
+          |> Enum.uniq()
+
+        si_code_family =
+          if compatible_families != [], do: hd(compatible_families), else: nil
 
         si_code_mismatch =
-          si_code_family != nil and assigned != nil and si_code_family != assigned
+          compatible_families != [] and assigned != nil and
+            assigned not in compatible_families
 
         # Outlier detection: child's family % within parent's enacted_families
         {outlier, outlier_pct} = compute_outlier(assigned, enacted_fams)
