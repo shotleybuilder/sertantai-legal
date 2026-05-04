@@ -134,6 +134,44 @@ but the law is about workplace safety. "Agriculture (Safety)" matches AGRICULTUR
 is about OH&S in agricultural settings. Use semantic judgment in Step 3 — the keyword is a
 signal, not a verdict.
 
+#### 2d. Title-confirmed false positives — keyword match is incidental
+
+Laws that PASS title-confirmed can still be misclassified if the keyword match is
+incidental rather than definitional. Example: "Leasehold and Freehold Reform Act" has
+SI code "BUILDING AND BUILDINGS" and matches the "building" keyword for Building Safety,
+but it's actually property/tenancy reform law.
+
+Scan the title-confirmed population for titles that semantically don't fit the family
+despite the keyword match. Look for domain words that suggest a different context:
+
+```sql
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT name, title_en, si_code->'values' as si_codes
+FROM uk_lrt
+WHERE family = '[TARGET_FAMILY]'
+  AND title_en IS NOT NULL
+  AND (
+    -- Add domain-specific terms that suggest false positive matches
+    -- These vary by family — adjust per QA run
+    title_en ILIKE '%leasehold%' OR title_en ILIKE '%freehold%'
+    OR title_en ILIKE '%tenant%' OR title_en ILIKE '%housing%'
+    OR title_en ILIKE '%transfer of functions%'
+    OR title_en ILIKE '%designation%' OR title_en ILIKE '%commencement%'
+    OR title_en ILIKE '%consequential%'
+  )
+ORDER BY title_en;
+"
+```
+
+The search terms above are examples — adapt them per family. The goal is to find laws
+where a generic/procedural title (commencement, transfer, designation, consequential)
+or a domain mismatch (housing in building safety, employment in fire) indicates the
+keyword match is a false positive.
+
+**This step catches what 2c misses**: 2c finds laws whose title confirms a DIFFERENT
+family. 2d finds laws whose title confirms the ASSIGNED family but shouldn't — the
+keyword match is noise.
+
 ### Step 3: Triage — AI analysis of each suspect law
 
 For each suspect law from step 2, assess:
