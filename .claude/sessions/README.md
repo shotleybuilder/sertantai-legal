@@ -165,6 +165,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-04-25 | [issue-79](2026-04-25-issue-79.md) | [#79](https://github.com/shotleybuilder/sertantai-legal/issues/79) | law_edges table, Model B family QA, si_code_families, enacted-by-qa skill |
 | 2026-04-23 | [issue-74](2026-04-23-issue-74.md) | [#74](https://github.com/shotleybuilder/sertantai-legal/issues/74) | Fix section/sub_section text duplication — same class as #69 |
 | 2026-04-23 | [issue-73](2026-04-23-issue-73.md) | [#73](https://github.com/shotleybuilder/sertantai-legal/issues/73) | Fix sort_key: encode full hierarchy, not just provision/paragraph |
 | 2026-03-26 | [issue-60-status-parser-bug](2026-03-26-issue-60-status-parser-bug.md) | [#60](https://github.com/shotleybuilder/sertantai-legal/issues/60) | Status parser incorrectly marks in-force laws as revoked |
