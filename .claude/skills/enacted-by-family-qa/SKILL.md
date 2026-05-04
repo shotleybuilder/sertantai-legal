@@ -94,23 +94,45 @@ LIMIT 30;
 "
 ```
 
-#### 2c. Title keyword mismatch — title doesn't confirm family
+#### 2c. Title keyword cross-check — title confirms a DIFFERENT family
 
-Laws where FamilyRules title keywords don't match. Less reliable (many valid laws
-won't have keywords) but useful as a supplementary signal.
+Check every law in the target family against ALL family keyword rules.
+Flag laws where the title matches a different family but NOT the assigned one.
+This catches misclassifications that the other queries miss.
 
-```sql
--- Run via Elixir to use FamilyRules.title_confirms_family?
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT name, title_en, family, si_code->'values' as si_codes
-FROM uk_lrt
-WHERE family = '[TARGET_FAMILY]'
-  AND title_en IS NOT NULL
-ORDER BY name
-LIMIT 200;
-"
--- Then filter in analysis: laws where title suggests a DIFFERENT family
+Run via Elixir to use FamilyRules:
+
+```elixir
+cd backend && mix run -e '
+alias SertantaiLegal.Legal.FamilyRules
+
+target = "[TARGET_FAMILY]"
+all_keywords = FamilyRules.title_keywords()
+
+{:ok, %{rows: rows}} = SertantaiLegal.Repo.query(
+  "SELECT name, title_en, si_code->$$values$$ as si_codes FROM uk_lrt WHERE family = \$1 AND title_en IS NOT NULL ORDER BY name",
+  [target]
+)
+
+for [name, title, si_codes] <- rows do
+  confirms_assigned = FamilyRules.title_confirms_family?(title, target)
+  other_matches =
+    all_keywords
+    |> Enum.filter(fn {fam, _} -> fam != target end)
+    |> Enum.filter(fn {fam, _} -> FamilyRules.title_confirms_family?(title, fam) end)
+    |> Enum.map(fn {fam, _} -> fam end)
+
+  if !confirms_assigned and other_matches != [] do
+    IO.puts("#{name} | #{title} | SI: #{inspect(si_codes)} | suggests: #{Enum.join(other_matches, ", ")}")
+  end
+end
+'
 ```
+
+**Important**: Many keyword matches are false positives. "Railway Premises" matches TRANSPORT
+but the law is about workplace safety. "Agriculture (Safety)" matches AGRICULTURE but the law
+is about OH&S in agricultural settings. Use semantic judgment in Step 3 — the keyword is a
+signal, not a verdict.
 
 ### Step 3: Triage — AI analysis of each suspect law
 
@@ -127,30 +149,58 @@ For each suspect law from step 2, assess:
    A law enacted under the Health and Safety at Work Act is probably OH&S.
    A law enacted under the European Communities Act could be anything.
 
-4. **Suggest action**:
+4. **Dual classification** — uk_lrt has TWO family columns: `family` (general) and `family_ii`
+   (more specific). Always consider whether the law spans two families:
+   - `family` = the broader/primary classification
+   - `family_ii` = the secondary/specialist classification
+   
+   **Flow: Family = general → Family II = more specific.**
+   
+   Examples:
+   - Low Voltage Electrical Equipment (Safety) Regs → family: Consumer/Product Safety,
+     family_ii: Gas & Electrical Safety (product safety is primary, electrical is the domain)
+   - Product Security and Telecommunications Infrastructure Act → family: Consumer/Product Safety,
+     family_ii: PUBLIC: Data (product safety primary, digital domain secondary)
+   - Marine pollution regulations → family: POLLUTION, family_ii: MARINE & RIVERINE
+
+5. **Suggest action**:
    - **keep** — assignment is correct despite being a statistical outlier
-   - **reclassify to [family]** — assignment is wrong, suggest specific alternative
+   - **reclassify to [family]** — family is wrong, suggest specific alternative
+   - **reclassify + set family_ii** — change family AND set the secondary classification
    - **review** — ambiguous, needs human judgment
 
-5. **Confidence**: high (clear title + SI code agreement) / medium / low
+6. **Confidence**: high (clear title + SI code agreement) / medium / low
 
 ### Step 4: Present — show batch summary
 
-Present findings as a markdown table for the user to review:
+Present a SINGLE summary table with all reclassification recommendations.
+The user decides from THIS table alone — they should NOT need to scroll back to the
+triage detail. Include the law title (the most important human-readable signal).
+
+Only show laws recommended for reclassification, not "keep" items.
+Mention the "keep" count as a summary line above the table.
 
 ```
 ## Family QA: 💙 OH&S: Occupational / Personal Safety
 
-Found N suspect laws. Recommendations:
+Analysed N suspects. M confirmed correct (keep). K recommended for reclassification:
 
-| # | Law | Title | SI Codes | Current | Suggested | Reason | Conf |
-|---|-----|-------|----------|---------|-----------|--------|------|
-| 1 | UK_uksi_2025_904 | Data (Use and Access) Act... | DATA, DATA PROTECTION | OH&S: Occup... | 💙 PUBLIC: Data | title + SI codes | high |
-| 2 | UK_uksi_2008_1765 | Employers' Liability... | INSURANCE | OH&S: Occup... | keep | enacted by HSWA | high |
+| # | Law | Title | Family → | Family II → | Reason | Conf |
+|---|-----|-------|----------|-------------|--------|------|
+| 1 | UK_nisr_1975_256 | Highly Flammable Liquids and LPG Regulations (NI) | 💙 FIRE: Dangerous and Explosive Substances | — | petroleum/flammable = FIRE | high |
+| 2 | UK_uksi_1989_728 | Low Voltage Electrical Equipment (Safety) Regulations | 💙 PUBLIC: Consumer / Product Safety | 💙 OH&S: Gas & Electrical Safety | product safety + electrical domain | high |
 ...
 
-Approve all reclassifications? Or specify by number to approve/reject individually.
+Approve all? Or specify by number (e.g. "approve 1, 3" or "reject 2").
 ```
+
+**Presentation rules:**
+- Title column is MANDATORY — it's how the user judges correctness
+- Keep the title readable (don't truncate to abbreviations)
+- "Reason" should be concise (5-10 words) explaining WHY the reclassification
+- Only show reclassifications in the table, not "keep" items
+- Summarise keeps as a count above the table
+- If there are 0 reclassifications, say "Family is clean" and suggest the next family
 
 ### Step 5: Confirm — user approves changes
 
@@ -162,10 +212,14 @@ Wait for user confirmation. Accept:
 
 ### Step 6: Update — apply confirmed changes
 
+For family-only changes:
 ```sql
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
 UPDATE uk_lrt SET family = '[NEW_FAMILY]' WHERE name = '[LAW_NAME]';
-"
+```
+
+For dual classification (family + family_ii):
+```sql
+UPDATE uk_lrt SET family = '[NEW_FAMILY]', family_ii = '[FAMILY_II]' WHERE name = '[LAW_NAME]';
 ```
 
 Report: "Updated N laws. Changes: [list]"
