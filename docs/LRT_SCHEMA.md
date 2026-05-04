@@ -5,7 +5,7 @@ This document provides a comprehensive comparison between the original PostgreSQ
 **Source Schema**: `~/Documents/sertantai-data/uk_lrt_schema.sql` (123 columns)
 **New Ash Resource**: `backend/lib/sertantai_legal/legal/uk_lrt.ex` (64 attributes)
 
-**Last Updated**: 2025-12-21 (after adding md_ metadata, linked_ graph fields, and screening fields)
+**Last Updated**: 2025-12-21 (after adding md_ metadata and screening fields)
 
 ---
 
@@ -21,7 +21,7 @@ This document provides a comprehensive comparison between the original PostgreSQ
 | Arrays (role/tags) | 2 | 2 | 0 | ✅ Complete |
 | Dates (Core) | 10 | 9 | 1 | ✅ Added rescind/restriction dates |
 | Date Components | 8 | 0 | 8 | Denormalized, derive with SQL |
-| Amendment Arrays | 11 | 11 | 0 | ✅ Complete (incl. linked_ graph) |
+| Amendment Arrays | 6 | 6 | 0 | ✅ Complete (linked_* removed #82) |
 | Boolean/Screening Flags | 5 | 5 | 0 | ✅ Complete (incl. is_making) |
 | Document Stats (md_) | 5 | 5 | 0 | ✅ Complete (legislation.gov.uk) |
 | Amendment Counts | 9 | 0 | 9 | Computed, derive with queries |
@@ -179,15 +179,6 @@ This document provides a comprehensive comparison between the original PostgreSQ
 | `md_attachment_paras` | smallint | Attachment paragraph count | Low usage, LAT data |
 | `md_images` | smallint | Image count | Low usage, LAT data |
 
-#### Amendment Arrays - Excluded (5)
-| Column | Type | Purpose | Reason for Exclusion |
-|--------|------|---------|---------------------|
-| `linked_amending` | text[] | Linked amending laws | **CONSIDER**: Relationship graph |
-| `linked_amended_by` | text[] | Linked amended by | **CONSIDER**: Relationship graph |
-| `linked_rescinding` | text[] | Linked rescinding laws | **CONSIDER**: Relationship graph |
-| `linked_rescinded_by` | text[] | Linked rescinded by | **CONSIDER**: Relationship graph |
-| `linked_enacted_by` | text[] | Linked enacted by | **CONSIDER**: Relationship graph |
-
 #### Amendment Counts - Excluded (9) - COMPUTED METRICS
 | Column | Type | Purpose | Reason for Exclusion |
 |--------|------|---------|---------------------|
@@ -280,17 +271,11 @@ These columns have been added to the Ash resource:
 | `latest_rescind_date` | date | ✅ Added |
 | `is_making` | decimal | ✅ Added |
 | `is_commencing` | decimal | ✅ Added |
-| `linked_amending` | text[] | ✅ Added |
-| `linked_amended_by` | text[] | ✅ Added |
-
 ### ✅ IMPLEMENTED - MEDIUM PRIORITY
 
 | Column | Type | Status |
 |--------|------|--------|
 | `number_int` | integer | ✅ Added |
-| `linked_rescinding` | text[] | ✅ Added |
-| `linked_rescinded_by` | text[] | ✅ Added |
-| `linked_enacted_by` | text[] | ✅ Added |
 | `md_dct_valid_date` | date | ✅ Added |
 
 ### ✅ IMPLEMENTED - LEGISLATION.GOV.UK METADATA
@@ -362,8 +347,7 @@ INSERT INTO uk_lrt (
   purpose, function, popimar, si_code, md_subjects, role, role_gvt, tags,
   md_description, md_total_paras, md_body_paras, md_schedule_paras,
   md_attachment_paras, md_images, amending, amended_by, rescinding, rescinded_by,
-  enacting, enacted_by, linked_amending, linked_amended_by, linked_rescinding,
-  linked_rescinded_by, linked_enacted_by, is_amending, is_rescinding, is_enacting,
+  enacting, enacted_by, is_amending, is_rescinding, is_enacting,
   is_making, is_commencing, created_at, md_date, md_made_date, md_enactment_date,
   md_coming_into_force_date, md_dct_valid_date, md_restrict_start_date,
   latest_amend_date, latest_change_date, latest_rescind_date, leg_gov_uk_url
@@ -376,8 +360,7 @@ SELECT
   purpose, function, popimar, si_code, md_subjects, role, role_gvt, tags,
   md_description, md_total_paras, md_body_paras, md_schedule_paras,
   md_attachment_paras, md_images, amending, amended_by, rescinding, rescinded_by,
-  enacting, enacted_by, linked_amending, linked_amended_by, linked_rescinding,
-  linked_rescinded_by, linked_enacted_by, is_amending, is_rescinding, is_enacting,
+  enacting, enacted_by, is_amending, is_rescinding, is_enacting,
   is_making, is_commencing, created_at, md_date, md_made_date, md_enactment_date,
   md_coming_into_force_date, md_dct_valid_date, md_restrict_start_date,
   latest_amend_date, latest_change_date, latest_rescind_date, leg_gov_uk_url
@@ -415,10 +398,10 @@ latest_rescind_date_year, latest_rescind_date_month, duty_holder, power_holder,
 rights_holder, responsibility_holder, role_gvt, geo_extent, geo_region,
 geo_country, md_restrict_extent, md_subjects, purpose, function, popimar,
 si_code, md_total_paras, md_body_paras, md_schedule_paras, md_attachment_paras,
-md_images, md_change_log, amending, amended_by, linked_amending,
-linked_amended_by, is_amending, "△_#_amd_by_law", "▽_#_amd_of_law", rescinding,
-rescinded_by, linked_rescinding, linked_rescinded_by, is_rescinding,
-"△_#_laws_rsc_law", "▽_#_laws_rsc_law", enacting, enacted_by, linked_enacted_by,
+md_images, md_change_log, amending, amended_by,
+is_amending, "△_#_amd_by_law", "▽_#_amd_of_law", rescinding,
+rescinded_by, is_rescinding,
+"△_#_laws_rsc_law", "▽_#_laws_rsc_law", enacting, enacted_by,
 is_enacting, enacted_by_description, article_role, role_article,
 article_duty_holder, duty_holder_article, article_power_holder,
 power_holder_article, article_rights_holder, rights_holder_article,

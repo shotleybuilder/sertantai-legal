@@ -137,7 +137,6 @@
   | `enacted_by_meta` | Enacted By (Meta) | `enacted_by_meta` | `map[]` (JSONB) | No | `[{"name": "UK_ukpga_2008_29", "uri": "http://..."}]` | enacted_by |
   | `is_enacting` | Is Enacting | `is_enacting` | `boolean` | Yes (686) | `false` | 🧮_derived <- 🚀 enacted_by |
   | `enacting` | Enacts | `enacting` | `text[]` | Yes (686) | | 🧮_derived <- 🚀 enacted_by |
-  | `linked_enacted_by` | Linked Enacted By | `linked_enacted_by` | `text[]` | Yes (7839) | `{UK_ukpga_1972_68}` | 🧮_derived <- 🚀 enacted_by 🔗 |
 
 ---
 
@@ -208,7 +207,6 @@
     | `🔺_stats_affected_laws_count` | Affected Laws Count | `amending_stats_affected_laws_count` | `integer` | Yes (15042) | `2` | 🔄 amendments |
     | `🔺_affects_stats_per_law` | **Affects Stats Per Law** | `affects_stats_per_law` | `map` (JSONB) | Yes (9079) | See below | 🔄 amendments |
     | `amending` | Amends | `amending` | `text[]` | Yes (9866) | `{UK_ukpga_2000_5,UK_ukpga_1978_25}` | 🔄 amendments |
-    | `linked_amending` | Linked Amends | `linked_amending` | `text[]` | Yes (9673) | `{UK_uksi_2024_436,UK_ukpga_2021_30}` | 🧮_derived <- 🔄 amendments |
     
     > **Removed (2026-02-02)**: `🔺_stats_affects_count_per_law` and `🔺_stats_affects_count_per_law_detailed` were removed. Data consolidated into `🔺_affects_stats_per_law` JSONB.
   
@@ -224,7 +222,6 @@
     | `🔺_stats_rescinding_laws_count` | Rescinded Laws Count | `rescinding_stats_rescinding_laws_count` | `integer` | Yes (14979) | | 🔄 amendments |
     | `🔺_rescinding_stats_per_law` | **Rescinding Stats Per Law** | `rescinding_stats_per_law` | `map` (JSONB) | Yes (2481) | See below | 🔄 amendments |
     | `rescinding` | Rescinds | `rescinding` | `text[]` | Yes (2458) | | 🔄 amendments |
-    | `linked_rescinding` | Linked Rescinds | `linked_rescinding` | `text[]` | Yes (2014) | `{UK_uksi_2002_119}` | 🧮_derived <- 🔄 amendments |
     
     > **Removed (2026-02-02)**: `🔺_stats_rescinding_count_per_law` and `🔺_stats_rescinding_count_per_law_detailed` were removed. Data consolidated into `🔺_rescinding_stats_per_law` JSONB.
     
@@ -242,7 +239,6 @@
     | `🔻_stats_affected_by_count` | Count of Amendments Made to this Law | `amended_by_stats_affected_by_count` | `integer` | Yes (16757) | | 🔄 amendments |
     | `🔻_affected_by_stats_per_law` | Details of Amendments Made to this Law | `affected_by_stats_per_law` | `map` (JSONB) | Yes (6243) | See below | 🔄 amendments |
     | `amended_by` | Amended By | `amended_by` | `text[]` | Yes (6338) | | 🔄 amendments |
-    | `linked_amended_by` | Linked Amended By | `linked_amended_by` | `text[]` | Yes (6180) | `{UK_uksi_2023_381}` | 🧮_derived |
     | `latest_amend_date` | Latest Amendment | `latest_amend_date` | `date` | Yes (5512) | | 🧮_derived <- 🔄 amendments |
     | `latest_amend_date_year` | Latest Amendment (Year) | - | `integer` | Yes | `2024` | 🧮_derived <- `latest_amend_date` (trigger) |
     | `latest_amend_date_month` | Latest Amendment (Month) | - | `integer` | Yes | `6` | 🧮_derived <- `latest_amend_date` (trigger) |
@@ -261,7 +257,6 @@
     | `🔻_stats_rescinded_by_laws_count` | Rescinding Laws Count | `rescinded_by_stats_rescinded_by_laws_count` | `integer` | Yes (14939) | | 🔄 amendments |
     | `🔻_rescinded_by_stats_per_law` | **Rescinded By Stats Per Law** | `rescinded_by_stats_per_law` | `map` (JSONB) | Yes (5714) | See below | 🔄 amendments |
     | `rescinded_by` | Rescinded By | `rescinded_by` | `text[]` | Yes (5789) | | 🔄 amendments |
-    | `linked_rescinded_by` | Linked Rescinded By | `linked_rescinded_by` | `text[]` | Yes (5600) | `{UK_uksi_2015_1640}` | 🧮_derived |
     | `latest_rescind_date` | Latest Rescind | `latest_rescind_date` | `date` | Yes (4379) | | 🧮_derived <- 🔄 amendments |
     | `latest_rescind_date_year` | Latest Rescind (Year) | - | `integer` | Yes | `2023` | 🧮_derived <- `latest_rescind_date` (trigger) |
     | `latest_rescind_date_month` | Latest Rescind (Month) | - | `integer` | Yes | `12` | 🧮_derived <- `latest_rescind_date` (trigger) |
@@ -504,10 +499,6 @@
     | **No** | Column is empty (new or not yet populated) |
     | **?** | Not checked |
 
-  ## Linked (Graph Edges) 'linked_xxxx'
-
-    These columns contain **resolved** self-referential links to other `uk_lrt` records. They enable navigation between related laws. Only references that exist in the database are included.
-  
 ---
 
 ## Related Documents

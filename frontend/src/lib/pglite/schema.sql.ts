@@ -96,16 +96,11 @@ CREATE TABLE IF NOT EXISTS uk_lrt (
   -- Amendment links
   amending TEXT[],
   amended_by TEXT[],
-  linked_amending TEXT[],
-  linked_amended_by TEXT[],
   is_amending BOOLEAN,
   rescinding TEXT[],
   rescinded_by TEXT[],
-  linked_rescinding TEXT[],
-  linked_rescinded_by TEXT[],
   is_rescinding BOOLEAN,
   enacted_by TEXT[],
-  linked_enacted_by TEXT[],
   is_enacting BOOLEAN,
   enacted_by_meta JSONB[],
 

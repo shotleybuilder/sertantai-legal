@@ -13,11 +13,11 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
 
   | Source Array | Edge Type | Direction |
   |-------------|-----------|-----------|
-  | linked_amending | amends | source amends target |
-  | linked_amended_by | amended_by | source is amended by target |
-  | linked_rescinding | rescinds | source rescinds target |
-  | linked_rescinded_by | rescinded_by | source is rescinded by target |
-  | linked_enacted_by | enacted_by | source is enacted by target |
+  | amending | amends | source amends target |
+  | amended_by | amended_by | source is amended by target |
+  | rescinding | rescinds | source rescinds target |
+  | rescinded_by | rescinded_by | source is rescinded by target |
+  | enacted_by | enacted_by | source is enacted by target |
   """
 
   use Mix.Task
@@ -25,11 +25,11 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
   alias SertantaiLegal.Repo
 
   @edge_sources [
-    {"linked_amending", "amends"},
-    {"linked_amended_by", "amended_by"},
-    {"linked_rescinding", "rescinds"},
-    {"linked_rescinded_by", "rescinded_by"},
-    {"linked_enacted_by", "enacted_by"}
+    {"amending", "amends"},
+    {"amended_by", "amended_by"},
+    {"rescinding", "rescinds"},
+    {"rescinded_by", "rescinded_by"},
+    {"enacted_by", "enacted_by"}
   ]
 
   @impl Mix.Task

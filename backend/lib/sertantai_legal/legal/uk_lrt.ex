@@ -416,32 +416,6 @@ defmodule SertantaiLegal.Legal.UkLrt do
       description("Parent enabling legislation metadata (name, number, uri, year, type_code)")
     end
 
-    # Linked Relationship Arrays (for graph visualization)
-    attribute :linked_amending, {:array, :string} do
-      allow_nil?(true)
-      description("Linked laws this legislation amends (graph edges)")
-    end
-
-    attribute :linked_amended_by, {:array, :string} do
-      allow_nil?(true)
-      description("Linked laws that amended this (graph edges)")
-    end
-
-    attribute :linked_rescinding, {:array, :string} do
-      allow_nil?(true)
-      description("Linked laws this rescinds/revokes (graph edges)")
-    end
-
-    attribute :linked_rescinded_by, {:array, :string} do
-      allow_nil?(true)
-      description("Linked laws that rescinded this (graph edges)")
-    end
-
-    attribute :linked_enacted_by, {:array, :string} do
-      allow_nil?(true)
-      description("Linked parent enabling legislation (graph edges)")
-    end
-
     # Boolean Flags
     attribute :is_amending, :boolean do
       allow_nil?(true)
@@ -761,11 +735,6 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :enacting,
         :enacted_by,
         :enacted_by_meta,
-        :linked_amending,
-        :linked_amended_by,
-        :linked_rescinding,
-        :linked_rescinded_by,
-        :linked_enacted_by,
         :is_amending,
         :is_rescinding,
         :is_enacting,
@@ -875,11 +844,6 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :enacting,
         :enacted_by,
         :enacted_by_meta,
-        :linked_amending,
-        :linked_amended_by,
-        :linked_rescinding,
-        :linked_rescinded_by,
-        :linked_enacted_by,
         :is_amending,
         :is_rescinding,
         :is_enacting,

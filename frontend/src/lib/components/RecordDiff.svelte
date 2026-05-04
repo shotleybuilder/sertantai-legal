@@ -70,7 +70,7 @@
 		// STAGE 2 📍 geographic extent
 		'Geographic Extent': ['geo_extent', 'geo_region', 'geo_detail'],
 		// STAGE 3 🚀 enacted_by
-		'Enacted By': ['enacted_by', 'enacted_by_meta', 'is_enacting', 'enacting', 'linked_enacted_by'],
+		'Enacted By': ['enacted_by', 'enacted_by_meta', 'is_enacting', 'enacting'],
 		// STAGE 4 🔄 amending - Function flags
 		Function: ['function', 'is_making', 'is_commencing'],
 		// STAGE 4 🔄 amending - Self-Affects
@@ -82,7 +82,6 @@
 			'amending_stats_affected_laws_count',
 			'affects_stats_per_law',
 			'amending',
-			'linked_amending',
 			'amending_change_log'
 		],
 		// STAGE 4 🔄 amending - Rescinding (this law rescinds others)
@@ -90,8 +89,7 @@
 			'is_rescinding',
 			'rescinding_stats_rescinding_laws_count',
 			'rescinding_stats_per_law',
-			'rescinding',
-			'linked_rescinding'
+			'rescinding'
 		],
 		// STAGE 5 🔄 amended_by - Amended By (this law is affected by others)
 		// Order matches LRT-SCHEMA.md: laws_count, count, details, amended_by, linked, dates
@@ -100,7 +98,6 @@
 			'amended_by_stats_affected_by_count',
 			'affected_by_stats_per_law',
 			'amended_by',
-			'linked_amended_by',
 			'latest_amend_date',
 			'latest_change_date',
 			'amended_by_change_log'
@@ -110,7 +107,6 @@
 			'rescinded_by_stats_rescinded_by_laws_count',
 			'rescinded_by_stats_per_law',
 			'rescinded_by',
-			'linked_rescinded_by',
 			'latest_rescind_date'
 		],
 		// STAGE 5 🔄 amended_by - Status (resolved after amended_by)

@@ -117,13 +117,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           rescinded_by: [String.t()],
           rescinding: [String.t()],
 
-          # === FUNCTION (Linked - graph edges) ===
-          linked_enacted_by: [String.t()],
-          linked_amending: [String.t()],
-          linked_amended_by: [String.t()],
-          linked_rescinding: [String.t()],
-          linked_rescinded_by: [String.t()],
-
           # === TAXA (Roles - lists internally, JSONB {key: true} in DB) ===
           role: [String.t()],
           role_gvt: [String.t()],
@@ -260,13 +253,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     amending: [],
     rescinded_by: [],
     rescinding: [],
-
-    # Function (Linked)
-    linked_enacted_by: [],
-    linked_amending: [],
-    linked_amended_by: [],
-    linked_rescinding: [],
-    linked_rescinded_by: [],
 
     # Taxa (Roles)
     role: [],
@@ -499,13 +485,6 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       amending: get_name_list(normalized, :amending),
       rescinded_by: get_name_list(normalized, :rescinded_by),
       rescinding: get_name_list(normalized, :rescinding),
-
-      # Function (Linked)
-      linked_enacted_by: get_list(normalized, :linked_enacted_by),
-      linked_amending: get_list(normalized, :linked_amending),
-      linked_amended_by: get_list(normalized, :linked_amended_by),
-      linked_rescinding: get_list(normalized, :linked_rescinding),
-      linked_rescinded_by: get_list(normalized, :linked_rescinded_by),
 
       # Taxa (Roles)
       role: get_list(normalized, :role),

@@ -323,20 +323,6 @@ export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
 		hasDefault: false
 	},
 	{
-		name: 'linked_amending',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'linked_amended_by',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
 		name: 'is_amending',
 		dataType: 'boolean',
 		postgresType: 'boolean',
@@ -358,20 +344,6 @@ export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
 		hasDefault: false
 	},
 	{
-		name: 'linked_rescinding',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'linked_rescinded_by',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
 		name: 'is_rescinding',
 		dataType: 'boolean',
 		postgresType: 'boolean',
@@ -380,13 +352,6 @@ export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
 	},
 	{
 		name: 'enacted_by',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'linked_enacted_by',
 		dataType: 'json',
 		postgresType: 'text[]',
 		nullable: true,

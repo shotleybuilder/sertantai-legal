@@ -104,13 +104,6 @@ export const FIELD_LABELS: Record<string, string> = {
 	rescinded_by_stats_per_law: '🔻 Rescinded By Stats Per Law',
 	rescinded_by: 'Rescinded By',
 
-	// Function - Linked (Graph Edges)
-	linked_enacted_by: 'Linked Enacted By',
-	linked_amending: 'Linked Amends',
-	linked_amended_by: 'Linked Amended By',
-	linked_rescinding: 'Linked Rescinds',
-	linked_rescinded_by: 'Linked Rescinded By',
-
 	// Taxa - Purpose
 	purpose: 'Purpose',
 
@@ -482,14 +475,7 @@ export const SECTION_CONFIG: SectionConfig[] = [
 				hideWhenEmpty: true
 			},
 			{ key: 'is_enacting', label: 'Is Enacting', type: 'boolean', stage: 'derived' },
-			{ key: 'enacting', label: 'Enacts', type: 'array', stage: 'derived', hideWhenEmpty: true },
-			{
-				key: 'linked_enacted_by',
-				label: 'Linked Enacted By',
-				type: 'array',
-				stage: 'derived',
-				hideWhenEmpty: true
-			}
+			{ key: 'enacting', label: 'Enacts', type: 'array', stage: 'derived', hideWhenEmpty: true }
 		]
 	},
 	// ==========================================
@@ -574,13 +560,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						type: 'array',
 						stage: 'amending',
 						hideWhenEmpty: true
-					},
-					{
-						key: 'linked_amending',
-						label: 'Linked Amends',
-						type: 'array',
-						stage: 'derived',
-						hideWhenEmpty: true
 					}
 				]
 			},
@@ -610,13 +589,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						label: 'Rescinds',
 						type: 'array',
 						stage: 'amending',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'linked_rescinding',
-						label: 'Linked Rescinds',
-						type: 'array',
-						stage: 'derived',
 						hideWhenEmpty: true
 					}
 				]
@@ -667,13 +639,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						hideWhenEmpty: true
 					},
 					{
-						key: 'linked_amended_by',
-						label: 'Linked Amended By',
-						type: 'array',
-						stage: 'derived',
-						hideWhenEmpty: true
-					},
-					{
 						key: 'latest_amend_date',
 						label: 'Latest Amendment',
 						type: 'date',
@@ -714,13 +679,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						label: 'Rescinded By',
 						type: 'array',
 						stage: 'amended_by',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'linked_rescinded_by',
-						label: 'Linked Rescinded By',
-						type: 'array',
-						stage: 'derived',
 						hideWhenEmpty: true
 					},
 					{

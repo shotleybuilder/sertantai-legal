@@ -80,7 +80,6 @@ Metadata overrides only when it says revoked — this is always a hard, definiti
 |--------|---------|------|-------------|
 | `rescinded_by_stats_per_law` | `🔻_rescinded_by_stats_per_law` | `jsonb` | Per-law breakdown of all revocation entries affecting this law. Keyed by law name. Each entry has `name`, `title`, `url`, `count`, and `details[]` array with `{target, affect, applied}`. This is the authoritative revocation detail — `determine_live_status` operates on the same underlying data. |
 | `rescinded_by` | `rescinded_by` | `text[]` | Array of law names that revoke/repeal this law (e.g. `["UK_uksi_2020_100"]`) |
-| `linked_rescinded_by` | `linked_rescinded_by` | `text[]` | Same as `rescinded_by` but with linked records resolved |
 | `stats_rescinded_by_laws_count` | `🔻_stats_rescinded_by_laws_count` | `bigint` | Count of distinct laws revoking this law |
 | `latest_rescind_date` | `latest_rescind_date` | `date` | Most recent revocation date |
 | `latest_rescind_date_year` | `latest_rescind_date_year` | `integer` | Year component of latest revocation date |
@@ -92,7 +91,6 @@ Metadata overrides only when it says revoked — this is always a hard, definiti
 |--------|---------|------|-------------|
 | `is_rescinding` | `is_rescinding` | `boolean` | Whether this law revokes/repeals other laws |
 | `rescinding` | `rescinding` | `text[]` | Array of law names this law revokes |
-| `linked_rescinding` | `linked_rescinding` | `text[]` | Same with linked records resolved |
 | `rescinding_stats_per_law` | `🔺_rescinding_stats_per_law` | `jsonb` | Per-law breakdown (same structure as `🔻` version) |
 | `stats_rescinding_laws_count` | `🔺_stats_rescinding_laws_count` | `bigint` | Count of distinct laws this law revokes |
 
