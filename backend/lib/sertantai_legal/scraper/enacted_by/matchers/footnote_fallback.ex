@@ -97,10 +97,10 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.FootnoteFallback do
 
   defp extract_law_id_from_url(_), do: nil
 
-  # Filter to only legislation types that can "enact" other legislation
-  # Primary legislation (Acts) and EU retained law can enable SIs
-  # But SIs cannot enable other SIs (those are just amendment references)
-  @enabling_types ~w[ukpga anaw asp nia apni ukla eur eudr eut]
+  # Filter to only legislation types that can "enact" other legislation.
+  # Only domestic primary legislation can confer regulation-making powers.
+  # EU regulations/directives (eur, eudr, eut) don't confer domestic powers.
+  @enabling_types ~w[ukpga anaw asp nia apni ukla]
   defp is_enabling_legislation?(law_id) when is_binary(law_id) do
     case String.split(law_id, "/") do
       [type_code | _] -> type_code in @enabling_types

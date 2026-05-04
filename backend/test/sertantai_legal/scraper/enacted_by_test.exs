@@ -125,17 +125,20 @@ defmodule SertantaiLegal.Scraper.EnactedByTest do
       assert "ukpga/2020/1" in result
     end
 
-    test "handles EU directive URLs" do
-      # Include year in text so the year-matching logic works
-      text = "Under directive 2019 f00001"
+    test "filters out EU regulations and directives — they don't confer domestic powers" do
+      # EU law is referenced for definitions but doesn't enable domestic SIs.
+      # Authority comes from ECA s.2(2) or EU Withdrawal Act.
+      text = "Under directive 2019 f00001 and powers conferred by f00002"
 
       urls = %{
-        "f00001" => ["http://www.legislation.gov.uk/european/directive/2019/904"]
+        "f00001" => ["http://www.legislation.gov.uk/european/directive/2019/904"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"]
       }
 
       result = EnactedBy.find_enacting_laws(text, urls)
 
-      assert "eudr/2019/904" in result
+      refute "eudr/2019/904" in result, "EU directives should be filtered out"
+      assert "ukpga/1972/68" in result, "Domestic Act should be retained"
     end
 
     test "finds back-referenced enabling Act before 'powers conferred' phrase" do
