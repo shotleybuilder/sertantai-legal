@@ -94,7 +94,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   @queue_exclusions """
   AND u.title_en IS NOT NULL
   AND u.family IS NOT NULL
-  AND u.family NOT IN ('_todo', '🖤 X: No Family')
+  AND u.family != '_todo'
   """
 
   @queue_sql @queue_base_select <>

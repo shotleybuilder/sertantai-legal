@@ -80,19 +80,22 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
     UPDATE uk_lrt parent SET enacted_si_codes = derived.codes
     FROM (
       SELECT
-        e.target_law AS law_name,
+        law_name,
         jsonb_object_agg(code, cnt) AS codes
-      FROM law_edges e
-      JOIN uk_lrt child ON child.name = e.source_law
-      CROSS JOIN LATERAL (
-        SELECT value AS code, COUNT(*) AS cnt
-        FROM jsonb_array_elements_text(child.si_code->'values') AS value
-        GROUP BY value
-      ) codes
-      WHERE e.edge_type = 'enacted_by'
-        AND child.si_code IS NOT NULL
-        AND child.si_code != 'null'::jsonb
-      GROUP BY e.target_law
+      FROM (
+        SELECT
+          e.target_law AS law_name,
+          val AS code,
+          COUNT(*) AS cnt
+        FROM law_edges e
+        JOIN uk_lrt child ON child.name = e.source_law
+        CROSS JOIN LATERAL jsonb_array_elements_text(child.si_code->'values') AS val
+        WHERE e.edge_type = 'enacted_by'
+          AND child.si_code IS NOT NULL
+          AND child.si_code != 'null'::jsonb
+        GROUP BY e.target_law, val
+      ) counts
+      GROUP BY law_name
     ) derived
     WHERE parent.name = derived.law_name
     """
@@ -114,8 +117,6 @@ defmodule Mix.Tasks.LawEdges.Rebuild do
         JOIN uk_lrt child ON child.name = e.source_law
         WHERE e.edge_type = 'enacted_by'
           AND child.family IS NOT NULL
-          AND child.family != '🖤 X: No Family'
-          AND child.family != '_todo'
         GROUP BY e.target_law, child.family
       ) counts
       GROUP BY target_law

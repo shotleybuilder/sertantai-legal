@@ -138,8 +138,7 @@
 	const QUEUE_BROAD_GUARDS: FilterNode[] = [
 		{ id: 'q-has-title', field: 'title_en', operator: 'is_not_empty', value: '' },
 		{ id: 'q-has-family', field: 'family', operator: 'is_not_empty', value: '' },
-		{ id: 'q-not-todo', field: 'family', operator: 'not_equals', value: '_todo' },
-		{ id: 'q-not-nofam', field: 'family', operator: 'not_equals', value: '🖤 X: No Family' }
+		{ id: 'q-not-todo', field: 'family', operator: 'not_equals', value: '_todo' }
 	];
 
 	// Full base filters for broad views (no specific family)

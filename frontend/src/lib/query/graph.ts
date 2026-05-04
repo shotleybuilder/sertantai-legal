@@ -13,7 +13,7 @@ import {
 	type GraphStats,
 	type MismatchCounts,
 	type MismatchResponse,
-	type EnactedByMismatch,
+	type EnactedByItem,
 	type AmendsMismatch,
 	type RescindsMismatch,
 	type FamilyInference
@@ -44,7 +44,7 @@ export function useMismatchCountsQuery() {
 }
 
 export function useEnactedByQuery() {
-	return createQuery<MismatchResponse<EnactedByMismatch>>({
+	return createQuery<MismatchResponse<EnactedByItem>>({
 		queryKey: graphKeys.enactedBy(),
 		queryFn: getEnactedByMismatches
 	});

@@ -14,7 +14,7 @@ export interface GraphStats {
 	potential_mismatches: number;
 }
 
-export interface EnactedByMismatch {
+export interface EnactedByItem {
 	law_name: string;
 	law_id: string;
 	title: string | null;
@@ -30,7 +30,17 @@ export interface EnactedByMismatch {
 	parent_family: string;
 	parent_family_ii: string | null;
 	title_confirmed: boolean;
+	// QA signals
+	si_code_family: string | null;
+	si_code_mismatch: boolean;
+	outlier: boolean;
+	outlier_pct: number;
+	parent_type: 'act' | 'ni_order' | 'si' | 'other';
+	si_enacts_si: boolean;
 }
+
+/** @deprecated Use EnactedByItem instead */
+export type EnactedByMismatch = EnactedByItem;
 
 export interface AmendsMismatch {
 	law_name: string;
@@ -87,7 +97,7 @@ export async function getMismatchCounts(): Promise<MismatchCounts> {
 	return fetchJson(`${API_URL}/api/graph/family-mismatches`);
 }
 
-export async function getEnactedByMismatches(): Promise<MismatchResponse<EnactedByMismatch>> {
+export async function getEnactedByMismatches(): Promise<MismatchResponse<EnactedByItem>> {
 	return fetchJson(`${API_URL}/api/graph/family-mismatches?type=enacted_by`);
 }
 

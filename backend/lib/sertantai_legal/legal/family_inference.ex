@@ -17,8 +17,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
 
   alias SertantaiLegal.Repo
 
-  @no_family "🖤 X: No Family"
-  @todo_family "_todo"
+  @placeholder_families [nil, "", "_todo"]
 
   @type inference :: %{
           assigned_family: String.t() | nil,
@@ -52,7 +51,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
     {suggested, confidence} =
       cond do
         # No assigned family at all
-        assigned == nil or assigned == "" or assigned == @no_family or assigned == @todo_family ->
+        assigned in @placeholder_families ->
           suggest_from_graph(meaningful_parents, meaningful_targets)
 
         # Assigned family matches top parent — confirmed
@@ -99,11 +98,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
     FROM law_edges e
     WHERE e.edge_type IN ('enacted_by', 'amends')
       AND e.source_family IS NOT NULL
-      AND e.source_family != '🖤 X: No Family'
-      AND e.source_family != '_todo'
       AND e.target_family IS NOT NULL
-      AND e.target_family != '🖤 X: No Family'
-      AND e.target_family != '_todo'
       AND e.source_family != e.target_family
     ORDER BY e.source_law
     """
@@ -130,16 +125,11 @@ defmodule SertantaiLegal.Legal.FamilyInference do
       COUNT(DISTINCT source_law) FILTER (
         WHERE source_family IS NOT NULL
           AND target_family IS NOT NULL
-          AND source_family != '🖤 X: No Family'
-          AND target_family != '🖤 X: No Family'
-          AND source_family != '_todo'
-          AND target_family != '_todo'
           AND source_family != target_family
       ) AS potential_mismatches,
       COUNT(DISTINCT source_law) FILTER (
         WHERE edge_type = 'enacted_by'
           AND target_family IS NOT NULL
-          AND target_family != '🖤 X: No Family'
       ) AS laws_with_classified_parents
     FROM law_edges
     """
@@ -175,7 +165,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
   end
 
   defp reject_placeholder_families(families) do
-    Enum.reject(families, fn {fam, _} -> fam in [@no_family, @todo_family, nil] end)
+    Enum.reject(families, fn {fam, _} -> fam in @placeholder_families end)
   end
 
   defp matches_top?(assigned, families) do

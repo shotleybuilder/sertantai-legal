@@ -12,6 +12,7 @@ defmodule SertantaiLegalWeb.GraphController do
   use SertantaiLegalWeb, :controller
 
   alias SertantaiLegal.Legal.{FamilyInference, FamilyRules}
+  alias SertantaiLegal.Scraper.Models
   alias SertantaiLegal.Repo
 
   def stats(conn, _params) do
@@ -35,7 +36,7 @@ defmodule SertantaiLegalWeb.GraphController do
     })
   end
 
-  # ── Enacted By: parent family mismatches ──────────────────────────
+  # ── Enacted By: all enacted_by edges with QA signals ──────────────
 
   @enacted_by_sql """
   SELECT
@@ -57,14 +58,6 @@ defmodule SertantaiLegalWeb.GraphController do
   JOIN uk_lrt u ON u.name = e.source_law
   JOIN uk_lrt p ON p.name = e.target_law
   WHERE e.edge_type = 'enacted_by'
-    AND u.family IS NOT NULL
-    AND u.family != '🖤 X: No Family'
-    AND u.family != '_todo'
-    AND p.family IS NOT NULL
-    AND p.family != '🖤 X: No Family'
-    AND p.family != '_todo'
-    AND u.family != p.family
-    AND split_part(u.family, ':', 1) != split_part(p.family, ':', 1)
   ORDER BY e.source_law
   """
 
@@ -81,11 +74,7 @@ defmodule SertantaiLegalWeb.GraphController do
   JOIN uk_lrt t ON t.name = e.target_law
   WHERE e.edge_type = 'amends'
     AND u.family IS NOT NULL
-    AND u.family != '🖤 X: No Family'
-    AND u.family != '_todo'
     AND t.family IS NOT NULL
-    AND t.family != '🖤 X: No Family'
-    AND t.family != '_todo'
     AND u.family != t.family
     AND split_part(u.family, ':', 1) != split_part(t.family, ':', 1)
   GROUP BY e.source_law, u.family, t.family
@@ -107,15 +96,36 @@ defmodule SertantaiLegalWeb.GraphController do
   JOIN uk_lrt p ON p.name = e.target_law
   WHERE e.edge_type = 'rescinds'
     AND u.family IS NOT NULL
-    AND u.family != '🖤 X: No Family'
-    AND u.family != '_todo'
     AND p.family IS NOT NULL
-    AND p.family != '🖤 X: No Family'
-    AND p.family != '_todo'
     AND u.family != p.family
     AND split_part(u.family, ':', 1) != split_part(p.family, ':', 1)
   ORDER BY e.source_law
   """
+
+  # SI code → family lookup, built once at compile time
+  @si_code_family_map Models.ehs_si_code_family()
+
+  defp parent_type(name) when is_binary(name) do
+    cond do
+      name =~ ~r/_ukpga_|_ukla_|_asp_|_anaw_|_nia_|_apni_|_aep_/ -> "act"
+      name =~ ~r/_nisi_/ -> "ni_order"
+      name =~ ~r/_uksi_|_ssi_|_wsi_|_nisr_|_ukdsi_/ -> "si"
+      true -> "other"
+    end
+  end
+
+  defp parent_type(_), do: "other"
+
+  defp compute_outlier(assigned_family, enacted_families)
+       when is_binary(assigned_family) and is_map(enacted_families) and
+              map_size(enacted_families) > 0 do
+    total = enacted_families |> Map.values() |> Enum.sum()
+    count = Map.get(enacted_families, assigned_family, 0)
+    pct = if total > 0, do: Float.round(count / total * 100, 1), else: 0.0
+    {pct < 5.0 and count > 0, pct}
+  end
+
+  defp compute_outlier(_, _), do: {false, 0.0}
 
   def family_mismatches(conn, %{"type" => "enacted_by"}) do
     {:ok, %{columns: cols, rows: rows}} = Repo.query(@enacted_by_sql)
@@ -130,22 +140,43 @@ defmodule SertantaiLegalWeb.GraphController do
             _ -> []
           end
 
+        assigned = r["assigned_family"]
+        enacted_fams = r["enacted_families"] || %{}
+        p_type = parent_type(r["parent_law"])
+
+        # SI code cross-validation: map child's SI codes through models.ex
+        si_code_family =
+          si_values
+          |> Enum.find_value(fn code -> Map.get(@si_code_family_map, code) end)
+
+        si_code_mismatch =
+          si_code_family != nil and assigned != nil and si_code_family != assigned
+
+        # Outlier detection: child's family % within parent's enacted_families
+        {outlier, outlier_pct} = compute_outlier(assigned, enacted_fams)
+
         %{
           law_name: r["law_name"],
           law_id: r["law_id"],
           title: r["title"],
           si_code: si_values,
           md_description: r["md_description"],
-          assigned_family: r["assigned_family"],
+          assigned_family: assigned,
           family_ii: r["family_ii"],
           parent_law: r["parent_law"],
           parent_id: r["parent_id"],
           parent_title: r["parent_title"],
           parent_enacted_si_codes: r["enacted_si_codes"] || %{},
-          parent_enacted_families: r["enacted_families"] || %{},
+          parent_enacted_families: enacted_fams,
           parent_family: r["parent_family"],
           parent_family_ii: r["parent_family_ii"],
-          title_confirmed: FamilyRules.title_confirms_family?(r["title"], r["assigned_family"])
+          title_confirmed: FamilyRules.title_confirms_family?(r["title"], assigned),
+          si_code_family: si_code_family,
+          si_code_mismatch: si_code_mismatch,
+          outlier: outlier,
+          outlier_pct: outlier_pct,
+          parent_type: p_type,
+          si_enacts_si: p_type == "si"
         }
       end)
 
@@ -208,7 +239,7 @@ defmodule SertantaiLegalWeb.GraphController do
     json(conn, %{items: items, count: length(items)})
   end
 
-  @count_base "SELECT COUNT(DISTINCT source_law) FROM law_edges WHERE source_family != target_family AND source_family NOT IN ('🖤 X: No Family', '_todo') AND target_family NOT IN ('🖤 X: No Family', '_todo') AND split_part(source_family, ':', 1) != split_part(target_family, ':', 1)"
+  @count_base "SELECT COUNT(DISTINCT source_law) FROM law_edges WHERE source_family IS NOT NULL AND target_family IS NOT NULL AND source_family != target_family AND split_part(source_family, ':', 1) != split_part(target_family, ':', 1)"
 
   def family_mismatches(conn, _params) do
     {:ok, %{rows: [[enacted]]}} =

@@ -7,7 +7,7 @@
 		useRescindsQuery,
 		graphKeys
 	} from '$lib/query/graph';
-	import { updateLawFamily, rescrapeLrt, type EnactedByMismatch } from '$lib/api/graph';
+	import { updateLawFamily, rescrapeLrt, type EnactedByItem } from '$lib/api/graph';
 	import { reparseLat } from '$lib/api/lat';
 	import { useQueryClient } from '@tanstack/svelte-query';
 
@@ -75,9 +75,10 @@
 	let activeTab: 'enacted_by' | 'amends' | 'rescinds' = 'enacted_by';
 	let familyFilter = '';
 	let hideTitleConfirmed = true;
+	let activeQaFilter: 'si_code_mismatch' | 'outlier' | 'si_enacts_si' | 'no_enacted_fams' | '' = '';
 
 	// Detail panel state
-	let selectedRow: EnactedByMismatch | null = null;
+	let selectedRow: EnactedByItem | null = null;
 	let editFamily = '';
 	let editFamilyII = '';
 	let editParentFamily = '';
@@ -88,7 +89,42 @@
 	let reparsing = false;
 	let rescraping = false;
 
-	function selectEnactedRow(m: EnactedByMismatch) {
+	let reparsingParent = false;
+
+	async function handleReparseParent() {
+		if (!selectedRow) return;
+		reparsingParent = true;
+		editMessage = '';
+		editError = '';
+		try {
+			const result = await reparseLat(selectedRow.parent_law);
+			editMessage = `Parent LAT re-parsed: ${result.lat.inserted} rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
+		} catch (e) {
+			editError = e instanceof Error ? e.message : 'Parent LAT reparse failed';
+		} finally {
+			reparsingParent = false;
+		}
+	}
+
+	let rescrapingParent = false;
+
+	async function handleRescrapeParent() {
+		if (!selectedRow) return;
+		rescrapingParent = true;
+		editMessage = '';
+		editError = '';
+		try {
+			const result = await rescrapeLrt(selectedRow.parent_law);
+			editMessage = `Parent LRT re-scraped (${result.status}) in ${result.duration_ms}ms`;
+			queryClient.invalidateQueries({ queryKey: graphKeys.all });
+		} catch (e) {
+			editError = e instanceof Error ? e.message : 'Parent LRT rescrape failed';
+		} finally {
+			rescrapingParent = false;
+		}
+	}
+
+	function selectEnactedRow(m: EnactedByItem) {
 		if (selectedRow?.law_name === m.law_name && selectedRow?.parent_law === m.parent_law) {
 			selectedRow = null;
 			return;
@@ -191,14 +227,32 @@
 	// Reactive sort key — changes when sort state changes, triggering re-sort
 	$: _sortKey = `${sortCol}:${sortDir}`;
 
-	// Filter + sort
+	// QA filter counts
 	$: titleConfirmedCount = enactedByItems.filter((m) => m.title_confirmed).length;
+	$: siMismatchCount = enactedByItems.filter((m) => m.si_code_mismatch).length;
+	$: outlierCount = enactedByItems.filter((m) => m.outlier).length;
+	$: siEnactsSiCount = enactedByItems.filter((m) => m.si_enacts_si).length;
+	$: noEnactedFamsCount = enactedByItems.filter(
+		(m) => !m.parent_enacted_families || Object.keys(m.parent_enacted_families).length === 0
+	).length;
+
+	// Filter + sort
 	$: filteredEnacted = (() => {
 		void _sortKey;
 		return sortRows(
 			enactedByItems.filter((m) => {
 				if (familyFilter && m.assigned_family !== familyFilter) return false;
 				if (hideTitleConfirmed && m.title_confirmed) return false;
+				// "show only" QA filters
+				if (activeQaFilter === 'si_code_mismatch' && !m.si_code_mismatch) return false;
+				if (activeQaFilter === 'outlier' && !m.outlier) return false;
+				if (activeQaFilter === 'si_enacts_si' && !m.si_enacts_si) return false;
+				if (
+					activeQaFilter === 'no_enacted_fams' &&
+					m.parent_enacted_families &&
+					Object.keys(m.parent_enacted_families).length > 0
+				)
+					return false;
 				return true;
 			})
 		);
@@ -321,10 +375,11 @@
 				{/each}
 			</select>
 			<span class="text-sm text-gray-500">
-				{#if activeTab === 'enacted_by'}{filteredEnacted.length}
+				{#if activeTab === 'enacted_by'}{filteredEnacted.length} of {enactedByItems.length} shown
 				{:else if activeTab === 'amends'}{filteredAmends.length}
 				{:else}{filteredRescinds.length}
-				{/if} mismatches shown
+				{/if}{#if activeTab !== 'enacted_by'}
+					mismatches shown{/if}
 			</span>
 		</div>
 
@@ -334,7 +389,7 @@
 			{#if $enactedByQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading...</div>
 			{:else}
-				<!-- Filter Rules -->
+				<!-- QA Filter Rules -->
 				<div class="flex gap-2 flex-wrap">
 					<button
 						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
@@ -342,6 +397,45 @@
 						on:click={() => (hideTitleConfirmed = !hideTitleConfirmed)}
 					>
 						{hideTitleConfirmed ? 'Hiding' : 'Show'} title-confirmed ({titleConfirmedCount})
+					</button>
+					<button
+						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+							{activeQaFilter === 'si_code_mismatch'
+							? 'bg-amber-600 text-white'
+							: 'bg-amber-100 text-amber-700 hover:bg-amber-200'}"
+						on:click={() =>
+							(activeQaFilter = activeQaFilter === 'si_code_mismatch' ? '' : 'si_code_mismatch')}
+					>
+						SI mismatch ({siMismatchCount})
+					</button>
+					<button
+						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+							{activeQaFilter === 'outlier'
+							? 'bg-red-600 text-white'
+							: 'bg-red-100 text-red-700 hover:bg-red-200'}"
+						on:click={() => (activeQaFilter = activeQaFilter === 'outlier' ? '' : 'outlier')}
+					>
+						Outlier &lt;5% ({outlierCount})
+					</button>
+					<button
+						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+							{activeQaFilter === 'si_enacts_si'
+							? 'bg-purple-600 text-white'
+							: 'bg-purple-100 text-purple-700 hover:bg-purple-200'}"
+						on:click={() =>
+							(activeQaFilter = activeQaFilter === 'si_enacts_si' ? '' : 'si_enacts_si')}
+					>
+						SI enacts SI ({siEnactsSiCount})
+					</button>
+					<button
+						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+							{activeQaFilter === 'no_enacted_fams'
+							? 'bg-blue-600 text-white'
+							: 'bg-blue-100 text-blue-700 hover:bg-blue-200'}"
+						on:click={() =>
+							(activeQaFilter = activeQaFilter === 'no_enacted_fams' ? '' : 'no_enacted_fams')}
+					>
+						No enacted fams ({noEnactedFamsCount})
 					</button>
 				</div>
 
@@ -455,7 +549,8 @@
 								{/each}
 								{#if filteredEnacted.length === 0}
 									<tr
-										><td colspan="7" class="px-3 py-8 text-center text-gray-400">No mismatches</td
+										><td colspan="7" class="px-3 py-8 text-center text-gray-400"
+											>No items match filters</td
 										></tr
 									>
 								{/if}
@@ -545,10 +640,68 @@
 									>{saving ? 'Saving...' : 'Save Enacted Law'}</button
 								>
 							</div>
+							<!-- QA Signals -->
+							<div class="border rounded p-3 space-y-1.5">
+								<h4 class="text-xs font-medium text-gray-700">QA Signals</h4>
+								<div class="flex flex-wrap gap-1.5">
+									{#if selectedRow.title_confirmed}
+										<span class="px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700"
+											>title confirmed</span
+										>
+									{/if}
+									{#if selectedRow.si_code_mismatch}
+										<span class="px-1.5 py-0.5 rounded text-xs bg-amber-100 text-amber-700"
+											>SI mismatch: {selectedRow.si_code_family}</span
+										>
+									{:else if selectedRow.si_code_family}
+										<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600"
+											>SI code: {selectedRow.si_code_family}</span
+										>
+									{/if}
+									{#if selectedRow.outlier}
+										<span class="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-700"
+											>outlier {selectedRow.outlier_pct}%</span
+										>
+									{:else if selectedRow.outlier_pct > 0}
+										<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600"
+											>{selectedRow.outlier_pct}% of parent</span
+										>
+									{/if}
+									{#if selectedRow.si_enacts_si}
+										<span class="px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700"
+											>SI enacts SI</span
+										>
+									{/if}
+									<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-500"
+										>parent: {selectedRow.parent_type}</span
+									>
+								</div>
+							</div>
+
 							<div class="border rounded p-3 space-y-2">
 								<h4 class="text-xs font-medium text-gray-700 truncate">
 									Parent: {selectedRow.parent_title || selectedRow.parent_law}
 								</h4>
+								<div class="font-mono text-xs text-gray-400 mb-1">{selectedRow.parent_law}</div>
+								<div class="flex gap-2 flex-wrap mb-2">
+									<button
+										class="px-2 py-1 text-xs font-medium text-white bg-orange-600 rounded hover:bg-orange-700 disabled:opacity-50"
+										disabled={rescrapingParent}
+										on:click={handleRescrapeParent}
+										>{rescrapingParent ? 'Re-scraping...' : 'Re-scrape LRT'}</button
+									>
+									<button
+										class="px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
+										disabled={reparsingParent}
+										on:click={handleReparseParent}
+										>{reparsingParent ? 'Re-parsing...' : 'Re-parse LAT'}</button
+									>
+									<a
+										href="/admin/lat?law={encodeURIComponent(selectedRow.parent_law)}"
+										class="px-2 py-1 text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 rounded"
+										>LAT browser</a
+									>
+								</div>
 								<div>
 									<label class="text-xs text-gray-500">Family</label>
 									<select
