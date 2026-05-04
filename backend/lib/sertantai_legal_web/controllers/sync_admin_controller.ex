@@ -140,6 +140,48 @@ defmodule SertantaiLegalWeb.SyncAdminController do
     end
   end
 
+  @doc """
+  POST /api/sync/snapshot-export
+
+  Runs scripts/nas/export-snapshot.sh --archive and returns the output.
+  """
+  def snapshot_export(conn, _params) do
+    script = Path.expand("../../scripts/nas/export-snapshot.sh")
+
+    unless File.exists?(script) do
+      conn |> put_status(500) |> json(%{error: "Script not found: #{script}"})
+    else
+      case System.cmd("bash", [script, "--archive"],
+             stderr_to_stdout: true,
+             env: [{"PGPASSWORD", "postgres"}]
+           ) do
+        {output, 0} ->
+          json(conn, %{ok: true, output: output})
+
+        {output, code} ->
+          conn |> put_status(500) |> json(%{error: "Exit code #{code}", output: output})
+      end
+    end
+  end
+
+  @doc """
+  POST /api/sync/delta-export
+
+  Runs the delta export and returns a structured summary.
+  """
+  def delta_export(conn, _params) do
+    case SertantaiLegal.Sync.Delta.Exporter.export() do
+      {:ok, :no_changes} ->
+        json(conn, %{ok: true, no_changes: true, message: "No pending changes to export."})
+
+      {:ok, result} ->
+        json(conn, %{ok: true, no_changes: false} |> Map.merge(result))
+
+      {:error, message} ->
+        conn |> put_status(500) |> json(%{error: message})
+    end
+  end
+
   defp format_timestamp(nil), do: nil
   defp format_timestamp(%NaiveDateTime{} = ts), do: NaiveDateTime.to_iso8601(ts)
   defp format_timestamp(%DateTime{} = ts), do: DateTime.to_iso8601(ts)

@@ -22,6 +22,20 @@
 	let loading = true;
 	let error = '';
 
+	// Action state
+	let snapshotRunning = false;
+	let snapshotResult: { ok: boolean; output?: string; error?: string } | null = null;
+	let deltaRunning = false;
+	let deltaResult: {
+		ok: boolean;
+		no_changes?: boolean;
+		message?: string;
+		total_rows?: number;
+		delta_file?: string;
+		tables?: { name: string; rows: number }[];
+		error?: string;
+	} | null = null;
+
 	onMount(() => {
 		fetchStatus();
 	});
@@ -37,6 +51,38 @@
 			error = e instanceof Error ? e.message : 'Failed to load sync status';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function runSnapshotExport() {
+		if (
+			!confirm('Export dev database snapshot to NAS?\n\nThis will archive the previous snapshot.')
+		)
+			return;
+		snapshotRunning = true;
+		snapshotResult = null;
+		try {
+			const res = await authFetch(`${API_URL}/api/sync/snapshot-export`, { method: 'POST' });
+			snapshotResult = await res.json();
+			if (snapshotResult?.ok) fetchStatus();
+		} catch (e) {
+			snapshotResult = { ok: false, error: e instanceof Error ? e.message : 'Request failed' };
+		} finally {
+			snapshotRunning = false;
+		}
+	}
+
+	async function runDeltaExport() {
+		deltaRunning = true;
+		deltaResult = null;
+		try {
+			const res = await authFetch(`${API_URL}/api/sync/delta-export`, { method: 'POST' });
+			deltaResult = await res.json();
+			if (deltaResult?.ok) fetchStatus();
+		} catch (e) {
+			deltaResult = { ok: false, error: e instanceof Error ? e.message : 'Request failed' };
+		} finally {
+			deltaRunning = false;
 		}
 	}
 
@@ -242,6 +288,81 @@
 						{/each}
 					</tbody>
 				</table>
+			</div>
+		</section>
+
+		<!-- Actions -->
+		<section>
+			<h2 class="mb-3 text-lg font-semibold text-gray-800">Actions</h2>
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+				<!-- NAS Snapshot Export -->
+				<div class="rounded-lg border border-gray-200 bg-white p-5">
+					<div class="flex items-center justify-between">
+						<div>
+							<div class="font-medium text-gray-900">NAS Snapshot</div>
+							<div class="mt-0.5 text-xs text-gray-500">
+								Export dev DB to NAS (archives previous)
+							</div>
+						</div>
+						<button
+							on:click={runSnapshotExport}
+							disabled={snapshotRunning}
+							class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+						>
+							{snapshotRunning ? 'Exporting...' : 'Export Snapshot'}
+						</button>
+					</div>
+					{#if snapshotResult}
+						<div
+							class="mt-3 max-h-40 overflow-auto rounded border px-3 py-2 text-xs {snapshotResult.ok
+								? 'border-green-200 bg-green-50 text-green-800'
+								: 'border-red-200 bg-red-50 text-red-800'}"
+						>
+							<pre class="whitespace-pre-wrap">{snapshotResult.output || snapshotResult.error}</pre>
+						</div>
+					{/if}
+				</div>
+
+				<!-- Delta Export -->
+				<div class="rounded-lg border border-gray-200 bg-white p-5">
+					<div class="flex items-center justify-between">
+						<div>
+							<div class="font-medium text-gray-900">Delta Export</div>
+							<div class="mt-0.5 text-xs text-gray-500">Generate delta SQL for prod promotion</div>
+						</div>
+						<button
+							on:click={runDeltaExport}
+							disabled={deltaRunning}
+							class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+						>
+							{deltaRunning ? 'Exporting...' : 'Export Delta'}
+						</button>
+					</div>
+					{#if deltaResult}
+						<div
+							class="mt-3 rounded border px-3 py-2 text-xs {deltaResult.ok
+								? 'border-green-200 bg-green-50 text-green-800'
+								: 'border-red-200 bg-red-50 text-red-800'}"
+						>
+							{#if deltaResult.error}
+								{deltaResult.error}
+							{:else if deltaResult.no_changes}
+								{deltaResult.message}
+							{:else}
+								<div class="font-medium">
+									{deltaResult.total_rows} rows exported to {deltaResult.delta_file}
+								</div>
+								{#if deltaResult.tables}
+									<ul class="mt-1 space-y-0.5">
+										{#each deltaResult.tables as t}
+											<li>{t.name}: {t.rows} rows</li>
+										{/each}
+									</ul>
+								{/if}
+							{/if}
+						</div>
+					{/if}
+				</div>
 			</div>
 		</section>
 

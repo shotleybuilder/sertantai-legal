@@ -202,7 +202,9 @@ defmodule SertantaiLegalWeb.Router do
     get("/analytics/live-status", AnalyticsController, :live_status)
     get("/analytics/live-status/misclassified", AnalyticsController, :misclassified_names)
 
-    # Data sync pipeline visibility
+    # Data sync pipeline visibility + actions
     get("/sync/status", SyncAdminController, :status)
+    post("/sync/snapshot-export", SyncAdminController, :snapshot_export)
+    post("/sync/delta-export", SyncAdminController, :delta_export)
   end
 end

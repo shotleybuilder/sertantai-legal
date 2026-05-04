@@ -15,6 +15,9 @@ defmodule SertantaiLegal.Sync.Delta.Exporter do
 
   defp watermark_file, do: Path.join(default_output_dir(), "last_sync.json")
 
+  @doc """
+  Run the delta export with IO output (for Mix task / CLI use).
+  """
   def run(opts) do
     since = Keyword.get(opts, :since)
     tables_filter = Keyword.get(opts, :tables)
@@ -70,6 +73,71 @@ defmodule SertantaiLegal.Sync.Delta.Exporter do
       end
     end
   end
+
+  @doc """
+  Export delta and return structured results (for API / controller use).
+
+  Returns `{:ok, result_map}` on success or `{:ok, :no_changes}` if nothing to export.
+  """
+  def export(opts \\ []) do
+    output_dir = Keyword.get(opts, :output_dir, default_output_dir())
+    watermarks = load_watermarks()
+    tables = Config.tables()
+
+    results =
+      Enum.map(tables, fn table ->
+        table_since = Map.get(watermarks, table.name)
+        process_table(table, table_since, nil)
+      end)
+
+    total_rows = Enum.sum(Enum.map(results, fn {_, count, _, _} -> count end))
+
+    if total_rows == 0 do
+      {:ok, :no_changes}
+    else
+      write_delta(results, output_dir, watermarks, nil)
+
+      watermark_data = read_watermark_file()
+
+      table_summary =
+        Enum.map(results, fn {table_name, count, _sql, max_ts} ->
+          %{
+            name: table_name,
+            rows: count,
+            max_updated_at: format_ts(max_ts)
+          }
+        end)
+
+      {:ok,
+       %{
+         tables: table_summary,
+         total_rows: total_rows,
+         delta_file: Map.get(watermark_data, "last_delta_file"),
+         exported_at: Map.get(watermark_data, "last_export_at")
+       }}
+    end
+  rescue
+    e -> {:error, Exception.message(e)}
+  end
+
+  defp read_watermark_file do
+    wf = watermark_file()
+
+    case File.read(wf) do
+      {:ok, content} ->
+        case Jason.decode(content) do
+          {:ok, data} -> data
+          _ -> %{}
+        end
+
+      _ ->
+        %{}
+    end
+  end
+
+  defp format_ts(nil), do: nil
+  defp format_ts(%DateTime{} = dt), do: DateTime.to_iso8601(dt)
+  defp format_ts(other), do: to_string(other)
 
   defp process_table(table, since, limit) do
     excluded = Config.excluded_columns(table.name)
