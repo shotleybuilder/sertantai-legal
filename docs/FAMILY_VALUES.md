@@ -20,6 +20,7 @@ The `family` field is the primary classification for UK EHS legislation.
 | 💙 PUBLIC | General public safety |
 | 💙 PUBLIC: Building Safety | Building regulations |
 | 💙 PUBLIC: Consumer / Product Safety | Consumer protection |
+| 💙 PUBLIC: Data | Data protection, online safety |
 | 💙 TRANSPORT: Air Safety | Aviation |
 | 💙 TRANSPORT: Rail Safety | Railways |
 | 💙 TRANSPORT: Road Safety | Road transport |

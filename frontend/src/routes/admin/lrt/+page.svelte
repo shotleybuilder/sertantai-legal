@@ -138,6 +138,7 @@
 			'💙 PUBLIC',
 			'💙 PUBLIC: Building Safety',
 			'💙 PUBLIC: Consumer / Product Safety',
+			'💙 PUBLIC: Data',
 			'💙 TRANSPORT: Air Safety',
 			'💙 TRANSPORT: Rail Safety',
 			'💙 TRANSPORT: Road Safety',
@@ -384,6 +385,7 @@
 			family: '💙 PUBLIC: Consumer / Product Safety',
 			group: 'safety'
 		},
+		{ name: 'Public: Data', family: '💙 PUBLIC: Data', group: 'safety' },
 		{ name: 'Transport: Air Safety', family: '💙 TRANSPORT: Air Safety', group: 'safety' },
 		{ name: 'Transport: Rail Safety', family: '💙 TRANSPORT: Rail Safety', group: 'safety' },
 		{ name: 'Transport: Road Safety', family: '💙 TRANSPORT: Road Safety', group: 'safety' },

@@ -55,6 +55,10 @@ defmodule SertantaiLegal.Scraper.Models do
       base: "appnTQBGljRQgVUhU",
       si_codes: ["CONSUMER PROTECTION"]
     ],
+    "💙 PUBLIC: Data": [
+      base: "",
+      si_codes: ["DATA PROTECTION", "ONLINE SAFETY"]
+    ],
     "💙 TRANSPORT: Air Safety": [base: "", si_codes: ["CIVIL AVIATION"]],
     "💙 TRANSPORT: Rail Safety": [base: "", si_codes: []],
     "💙 TRANSPORT: Road Safety": [base: "", si_codes: []],

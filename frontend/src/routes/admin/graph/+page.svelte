@@ -29,6 +29,7 @@
 		'💙 PUBLIC',
 		'💙 PUBLIC: Building Safety',
 		'💙 PUBLIC: Consumer / Product Safety',
+		'💙 PUBLIC: Data',
 		'💙 TRANSPORT: Air Safety',
 		'💙 TRANSPORT: Rail Safety',
 		'💙 TRANSPORT: Road Safety',

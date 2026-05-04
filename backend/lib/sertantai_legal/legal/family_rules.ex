@@ -29,6 +29,7 @@ defmodule SertantaiLegal.Legal.FamilyRules do
     "💙 PUBLIC" => ["public safety"],
     "💙 PUBLIC: Building Safety" => ["building"],
     "💙 PUBLIC: Consumer / Product Safety" => ["consumer", "product safety"],
+    "💙 PUBLIC: Data" => ["data protection", "online safety", "digital information"],
     "💙 TRANSPORT: Air Safety" => ["aviation", "air navigation", "aircraft"],
     "💙 TRANSPORT: Rail Safety" => ["railway", "rail"],
     "💙 TRANSPORT: Road Safety" => ["road traffic", "motor vehicle", "road safety"],

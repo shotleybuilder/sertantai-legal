@@ -160,6 +160,7 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
       "💜 HR: Employment": @hr_employment,
       "💙 PUBLIC": @public_safety,
       "💙 PUBLIC: Building Safety": @building_safety,
+      "💙 PUBLIC: Data": ["data protection", "online safety"],
       "💙 FIRE: Dangerous and Explosive Substances": @dangerous_explosive_substances,
       "💙 OH&S: Gas & Electrical Safety": @gas_electric_safety,
       "💙 HEALTH: Drug & Medicine Safety": @drug_safety,
