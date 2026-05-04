@@ -13,6 +13,13 @@
 ### Skill
 - [x] Create amends-family-qa skill (follow enacted-by-family-qa pattern)
 
+### Amends QA completed (all 💙 families)
+- [x] OH&S: Occupational — 3 reclassified (phytosanitary, azo dyes, hazardous substances)
+- [x] OH&S sub-families (Gas & Electrical, Mines, Offshore) — 2 family_ii added
+- [x] TRANSPORT Safety (Air, Maritime, Road, Rail) — 2 nulled, 2 kept after review
+- [x] FIRE + FIRE: D&E — 1 reclassified (firearms→PUBLIC), 1 family_ii added (fertiliser→AGRICULTURE)
+
 ## Notes
-- Amends tab currently shows law_name only, no title
-- Enacted By tab pattern: title + monospace law_name below
+- Amends consensus >80% is very strong signal for reclassification
+- 60-80% needs judgment — cross-family amendments are sometimes legitimate
+- "Firearms" matching FIRE keyword is a recurring false positive
