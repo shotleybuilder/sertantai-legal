@@ -138,6 +138,37 @@ defmodule SertantaiLegal.Scraper.EnactedByTest do
       assert "eudr/2019/904" in result
     end
 
+    test "finds back-referenced enabling Act before 'powers conferred' phrase" do
+      # Pattern: "Minister designated f00001 for the purposes of section 2(2) of the
+      # European Communities Act 1972 f00002 ... in exercise of the powers conferred
+      # by the said section 2(2) and ... the Finance Act 1973 f00003"
+      # The ECA (f00002) is referenced BEFORE "powers conferred" — parser must scan
+      # the full sentence, not just text after the match.
+      text =
+        "The Secretary of State, being the Minister designated f00001 " <>
+          "for the purposes of section 2(2) of the European Communities Act 1972 f00002 " <>
+          "in relation to measures relating to the control of laboratories, " <>
+          "in exercise of the powers conferred by the said section 2(2) and, " <>
+          "with the consent of the Treasury, the powers conferred by section 56(1) " <>
+          "and (2) of the Finance Act 1973 f00003 , and of all other powers enabling " <>
+          "him in that behalf, hereby makes the following Regulations"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/uksi/1991/755"],
+        "f00002" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"],
+        "f00003" => ["http://www.legislation.gov.uk/id/ukpga/1973/51"]
+      }
+
+      result = EnactedBy.find_enacting_laws(text, urls)
+
+      # Must find BOTH enabling Acts, not just the Finance Act
+      assert "ukpga/1972/68" in result, "Should find European Communities Act (back-referenced)"
+      assert "ukpga/1973/51" in result, "Should find Finance Act"
+      # Should NOT include the SI (f00001) — SIs can't enact other SIs
+      refute Enum.any?(result, &String.starts_with?(&1, "uksi/")),
+             "Should filter out non-enabling legislation"
+    end
+
     test "deduplicates results" do
       text = """
       Health and Safety at Work etc. Act 1974.

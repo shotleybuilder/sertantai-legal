@@ -31,21 +31,23 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.PowersClause do
         :no_match
 
       [matched_text | _] ->
-        # Found a "powers conferred by" clause - now extract the full enacting sentence
-        # The enacting clause typically ends at the first period followed by a capital letter
-        # or at "The Secretary of State—" pattern
-        enacting_clause = extract_enacting_clause(text, matched_text)
+        # Found a "powers conferred by" clause - extract the full enacting SENTENCE
+        # not just the text after "powers conferred". The enabling Act may be referenced
+        # earlier in the same sentence via back-references like "the said section 2(2)"
+        # e.g. "Minister designated f00001 for...section 2(2) of the ECA f00002...
+        #        in exercise of the powers conferred by the said section 2(2)"
+        enacting_sentence = extract_enacting_sentence(text, matched_text)
 
         # Extract citation refs (c00001) and footnote refs (f00001) separately
         # Inline citations point directly to enabling Acts
         # Footnotes may contain amendment history (multiple Acts that touched the section)
         citation_refs =
-          Regex.scan(~r/c\d{5}/, enacting_clause)
+          Regex.scan(~r/c\d{5}/, enacting_sentence)
           |> List.flatten()
           |> Enum.uniq()
 
         footnote_refs =
-          Regex.scan(~r/f\d{5}/, enacting_clause)
+          Regex.scan(~r/f\d{5}/, enacting_sentence)
           |> List.flatten()
           |> Enum.uniq()
 
@@ -89,28 +91,45 @@ defmodule SertantaiLegal.Scraper.EnactedBy.Matchers.PowersClause do
              citation_refs: citation_refs,
              footnote_refs: footnote_refs,
              refs_used: refs_to_use,
-             enacting_clause: enacting_clause
+             enacting_clause: enacting_sentence
            }}
         end
     end
   end
 
-  # Extract the enacting clause from the text
-  # Starts from "powers conferred" and ends at the first sentence boundary
-  defp extract_enacting_clause(text, matched_text) do
-    # Find where the matched text starts
+  # Extract the full enacting SENTENCE containing the "powers conferred" phrase.
+  # Scans backwards to the sentence start (previous ". " + capital, or start of text)
+  # and forwards to the sentence end. This captures footnote refs that appear before
+  # the "powers conferred" phrase — needed for back-reference patterns like:
+  #   "Minister designated f00001 for...the ECA f00002...
+  #    in exercise of the powers conferred by the said section 2(2)"
+  defp extract_enacting_sentence(text, matched_text) do
     case :binary.match(text, matched_text) do
-      {start_pos, _} ->
-        # Get text from start of match to end
-        remaining = String.slice(text, start_pos, String.length(text) - start_pos)
+      {match_pos, _} ->
+        # Find sentence start: scan backwards for ". [A-Z]" or start of text
+        before = String.slice(text, 0, match_pos)
 
-        # Find the end of the enacting clause - typically ends with:
-        # - A period followed by space and capital letter (new sentence)
-        # - "The Secretary of State" starting a new clause
-        case Regex.run(~r/^(.*?)\.\s+(?:[A-Z]|The Secretary)/, remaining, capture: :all) do
-          [_, clause] -> clause <> "."
-          nil -> String.slice(remaining, 0, 500)
-        end
+        sentence_start =
+          case Regex.scan(~r/\.\s+[A-Z]/, before, return: :index) do
+            [] ->
+              0
+
+            matches ->
+              # Take the last match (closest to our position)
+              [{pos, len}] = List.last(matches)
+              pos + len
+          end
+
+        # Find sentence end: scan forwards from match for ". [A-Z]" or end of text
+        remaining = String.slice(text, match_pos, String.length(text) - match_pos)
+
+        sentence_end =
+          case Regex.run(~r/^(.*?)\.\s*(?:[A-Z]|$)/, remaining, capture: :all) do
+            [_, clause] -> match_pos + String.length(clause) + 1
+            nil -> String.length(text)
+          end
+
+        String.slice(text, sentence_start, sentence_end - sentence_start)
 
       :nomatch ->
         matched_text
