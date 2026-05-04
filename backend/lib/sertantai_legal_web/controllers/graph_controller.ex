@@ -26,12 +26,35 @@ defmodule SertantaiLegalWeb.GraphController do
 
     edge_types = Map.new(type_rows, fn [type, count] -> {type, count} end)
 
+    # Staleness: count uk_lrt records modified after the most recent law_edges rebuild.
+    # law_edges has no timestamp, so we use the max updated_at across all source laws
+    # that contribute edges vs the max updated_at across laws already in law_edges.
+    {:ok, %{rows: [[stale_count]]}} =
+      Repo.query("""
+      SELECT COUNT(*)
+      FROM uk_lrt u
+      WHERE u.updated_at > (
+        SELECT COALESCE(MAX(u2.updated_at), '1970-01-01')
+        FROM law_edges e
+        JOIN uk_lrt u2 ON u2.name = e.source_law
+        WHERE e.edge_type = 'enacted_by'
+      )
+      AND (
+        u.enacted_by IS NOT NULL AND array_length(u.enacted_by, 1) > 0
+        OR u.amending IS NOT NULL AND array_length(u.amending, 1) > 0
+        OR u.amended_by IS NOT NULL AND array_length(u.amended_by, 1) > 0
+        OR u.rescinding IS NOT NULL AND array_length(u.rescinding, 1) > 0
+        OR u.rescinded_by IS NOT NULL AND array_length(u.rescinded_by, 1) > 0
+      )
+      """)
+
     json(conn, %{
       total_edges: edge_count,
       edge_types: edge_types,
       laws_with_edges: inference_stats["laws_with_edges"],
       laws_with_classified_parents: inference_stats["laws_with_classified_parents"],
-      potential_mismatches: inference_stats["potential_mismatches"]
+      potential_mismatches: inference_stats["potential_mismatches"],
+      stale_count: stale_count
     })
   end
 
@@ -271,6 +294,24 @@ defmodule SertantaiLegalWeb.GraphController do
   def family_inference(conn, %{"law_name" => law_name}) do
     inference = FamilyInference.infer(law_name)
     json(conn, inference)
+  end
+
+  @doc """
+  Rebuild the law_edges table and derived data (enacted_si_codes, enacted_families, si_code_families).
+  Equivalent to running `mix law_edges.rebuild` from the admin UI.
+  """
+  def rebuild_edges(conn, _params) do
+    t0 = System.monotonic_time(:millisecond)
+    Mix.Task.rerun("law_edges.rebuild")
+    t1 = System.monotonic_time(:millisecond)
+
+    {:ok, %{rows: [[edge_count]]}} = Repo.query("SELECT COUNT(*) FROM law_edges")
+
+    json(conn, %{
+      status: "ok",
+      total_edges: edge_count,
+      duration_ms: t1 - t0
+    })
   end
 
   @doc """

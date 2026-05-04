@@ -7,7 +7,7 @@
 		useRescindsQuery,
 		graphKeys
 	} from '$lib/query/graph';
-	import { updateLawFamily, rescrapeLrt, type EnactedByItem } from '$lib/api/graph';
+	import { updateLawFamily, rescrapeLrt, rebuildEdges, type EnactedByItem } from '$lib/api/graph';
 	import { reparseLat } from '$lib/api/lat';
 	import { useQueryClient } from '@tanstack/svelte-query';
 
@@ -89,6 +89,22 @@
 	let saving = false;
 	let reparsing = false;
 	let rescraping = false;
+	let rebuilding = false;
+	let rebuildMessage = '';
+
+	async function handleRebuildEdges() {
+		rebuilding = true;
+		rebuildMessage = '';
+		try {
+			const result = await rebuildEdges();
+			rebuildMessage = `Rebuilt: ${result.total_edges.toLocaleString()} edges (${result.duration_ms}ms)`;
+			queryClient.invalidateQueries({ queryKey: graphKeys.all });
+		} catch (e) {
+			rebuildMessage = e instanceof Error ? e.message : 'Rebuild failed';
+		} finally {
+			rebuilding = false;
+		}
+	}
 
 	let reparsingParent = false;
 
@@ -331,6 +347,29 @@
 					{/each}
 				</div>
 			</div>
+		</div>
+
+		<!-- Rebuild bar -->
+		<div class="flex items-center gap-3">
+			<button
+				class="px-3 py-1.5 text-xs font-medium rounded transition-colors
+					{stats.stale_count > 0
+					? 'bg-amber-600 text-white hover:bg-amber-700'
+					: 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+					disabled:opacity-50"
+				disabled={rebuilding}
+				on:click={handleRebuildEdges}
+			>
+				{rebuilding ? 'Rebuilding...' : 'Rebuild edges'}
+			</button>
+			{#if stats.stale_count > 0}
+				<span class="text-xs text-amber-600">
+					{stats.stale_count} laws modified since last rebuild
+				</span>
+			{/if}
+			{#if rebuildMessage}
+				<span class="text-xs text-green-700">{rebuildMessage}</span>
+			{/if}
 		</div>
 
 		<!-- Tabs -->

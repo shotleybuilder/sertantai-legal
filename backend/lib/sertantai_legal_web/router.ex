@@ -183,6 +183,7 @@ defmodule SertantaiLegalWeb.Router do
     get("/graph/family-mismatches", GraphController, :family_mismatches)
     get("/graph/family-inference/:law_name", GraphController, :family_inference)
     post("/graph/rescrape-lrt/:law_name", GraphController, :rescrape_lrt)
+    post("/graph/rebuild-edges", GraphController, :rebuild_edges)
     get("/graph/stats", GraphController, :stats)
 
     # Cascade management endpoints (standalone page)

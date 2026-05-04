@@ -12,6 +12,7 @@ export interface GraphStats {
 	laws_with_edges: number;
 	laws_with_classified_parents: number;
 	potential_mismatches: number;
+	stale_count: number;
 }
 
 export interface EnactedByItem {
@@ -129,6 +130,21 @@ export interface RescrapeResult {
 	status: string;
 	stages: Record<string, string>;
 	duration_ms: number;
+}
+
+export interface RebuildEdgesResult {
+	status: string;
+	total_edges: number;
+	duration_ms: number;
+}
+
+export async function rebuildEdges(): Promise<RebuildEdgesResult> {
+	const response = await authFetch(`${API_URL}/api/graph/rebuild-edges`, { method: 'POST' });
+	if (!response.ok) {
+		const body = await response.json().catch(() => ({ error: response.statusText }));
+		throw new Error(body.error || `HTTP ${response.status}`);
+	}
+	return response.json();
 }
 
 export async function rescrapeLrt(lawName: string): Promise<RescrapeResult> {
