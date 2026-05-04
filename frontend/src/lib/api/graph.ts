@@ -45,6 +45,7 @@ export type EnactedByMismatch = EnactedByItem;
 
 export interface AmendsMismatch {
 	law_name: string;
+	title: string | null;
 	assigned_family: string | null;
 	suggested_family: string;
 	consensus_pct: number;

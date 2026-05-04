@@ -88,6 +88,7 @@ defmodule SertantaiLegalWeb.GraphController do
   @amends_sql """
   SELECT
     e.source_law AS law_name,
+    u.title_en AS title,
     u.family AS assigned_family,
     t.family AS target_family,
     COUNT(*) AS edge_count
@@ -99,7 +100,7 @@ defmodule SertantaiLegalWeb.GraphController do
     AND t.family IS NOT NULL
     AND u.family != t.family
     AND split_part(u.family, ':', 1) != split_part(t.family, ':', 1)
-  GROUP BY e.source_law, u.family, t.family
+  GROUP BY e.source_law, u.title_en, u.family, t.family
   ORDER BY e.source_law, edge_count DESC
   """
 
@@ -244,6 +245,7 @@ defmodule SertantaiLegalWeb.GraphController do
 
         %{
           law_name: law_name,
+          title: hd(edges)["title"],
           assigned_family: assigned,
           suggested_family: top.family,
           consensus_pct: consensus_pct,

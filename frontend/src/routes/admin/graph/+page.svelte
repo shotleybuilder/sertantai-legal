@@ -848,7 +848,10 @@
 						<tbody class="divide-y divide-gray-100">
 							{#each filteredAmends as m (m.law_name)}
 								<tr class="hover:bg-gray-50">
-									<td class="px-3 py-2 font-mono text-xs text-gray-700">{m.law_name}</td>
+									<td class="px-3 py-2">
+										<div class="font-medium text-gray-900 text-xs">{m.title || m.law_name}</div>
+										<div class="font-mono text-xs text-gray-400">{m.law_name}</div>
+									</td>
 									<td class="px-3 py-2 text-xs text-gray-600 max-w-40 truncate"
 										>{m.assigned_family || '-'}</td
 									>
