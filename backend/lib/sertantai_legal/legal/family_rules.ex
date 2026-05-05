@@ -50,12 +50,15 @@ defmodule SertantaiLegal.Legal.FamilyRules do
     "💚 BUILDINGS" => ["building regulation"],
     "💚 CLIMATE CHANGE" => ["climate change", "greenhouse gas", "carbon"],
     "💚 ENERGY" => ["energy efficiency", "renewable energy"],
+    # Note: "environmental permitting" also implies family_ii = POLLUTION
+    # Note: "ozone-depleting" also implies family_ii = CLIMATE CHANGE
     "💚 ENVIRONMENTAL PROTECTION" => [
       "environmental protection",
       "environment act",
       "environmental permitting",
       "environmental impact assessment",
-      "environmental assessment"
+      "environmental assessment",
+      "ozone-depleting"
     ],
     "💚 FISHERIES & FISHING" => ["fisheries", "fishing", "sea fish"],
     "💚 GMOs" => ["genetically modified"],
@@ -64,7 +67,6 @@ defmodule SertantaiLegal.Legal.FamilyRules do
     "💚 NUCLEAR & RADIOLOGICAL" => ["nuclear", "radioactive", "radiological"],
     "💚 PLANNING & INFRASTRUCTURE" => ["planning", "infrastructure"],
     "💚 PLANT HEALTH" => ["plant health"],
-    # Note: "environmental permitting" also implies family_ii = POLLUTION
     "💚 POLLUTION" => ["pollution", "contaminated land"],
     "💚 TOWN & COUNTRY PLANNING" => ["town and country planning", "planning framework"],
     "💚 WASTE" => [

@@ -137,7 +137,7 @@ defmodule SertantaiLegal.Scraper.Models do
     "💚 BUILDINGS": [base: "", si_codes: []],
     "💚 CLIMATE CHANGE": [
       base: "appGv6qmDJK2Kdr3U",
-      si_codes: ["CLIMATE CHANGE", "EMISSIONS TRADING"]
+      si_codes: ["CLIMATE CHANGE", "CLIMATE CHANGE LEVY", "EMISSIONS TRADING"]
     ],
     "💚 ENERGY": [
       base: "app4L95N2NbK7x4M0",
@@ -145,24 +145,28 @@ defmodule SertantaiLegal.Scraper.Models do
         "ENERGY",
         "ENERGY CONSERVATION",
         "HEAT NETWORKS",
+        "OIL TAX",
         "SUSTAINABLE AND RENEWABLE FUELS"
       ]
     ],
     "💚 ENVIRONMENTAL PROTECTION": [
       base: "appPFUz8wfo9RU7gN",
-      si_codes: ["ENVIRONMENT", "ENVIRONMENTAL PROTECTION", "ENVIRONMENTAL PROTECTIONS"]
-    ],
-    "💚 FINANCE": [
-      base: "appokFoa6ERUUAIkF",
       si_codes: [
         "AGGREGATES LEVY",
-        "CLIMATE CHANGE LEVY",
-        "LANDFILL TAX",
-        "OIL TAX",
-        "PLASTIC PACKAGING TAX",
-        "STAMP DUTY LAND TAX"
+        "ENVIRONMENT",
+        "ENVIRONMENTAL PROTECTION",
+        "ENVIRONMENTAL PROTECTIONS"
       ]
     ],
+    # NOTE: 💚 FINANCE is a family_ii-only class (mechanism, not domain).
+    # Fiscal SI codes are mapped to their DOMAIN family instead:
+    # - AGGREGATES LEVY → 💚 ENVIRONMENTAL PROTECTION (quarrying impact tax)
+    # - CLIMATE CHANGE LEVY → 💚 CLIMATE CHANGE
+    # - LANDFILL TAX → 💚 WASTE
+    # - OIL TAX → 💚 ENERGY
+    # - PLASTIC PACKAGING TAX → 💚 WASTE
+    # - STAMP DUTY LAND TAX → not EHS (excluded)
+    # These laws should get family_ii = 💚 FINANCE via issue #83.
     "💚 FISHERIES & FISHING": [
       base: "",
       si_codes: [
@@ -269,6 +273,8 @@ defmodule SertantaiLegal.Scraper.Models do
         "DUMPING AT SEA",
         "GENERAL WASTE MATERIALS",
         "GENERAL WASTE MATERIALS RECLAMATION",
+        "LANDFILL TAX",
+        "PLASTIC PACKAGING TAX",
         "SCRAP METAL DEALERS",
         "WASTE",
         "WASTE PRODUCTS RECLAMATION"
