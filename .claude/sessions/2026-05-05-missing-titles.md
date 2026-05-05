@@ -25,3 +25,12 @@
 - 4 set manually from tags (3 EU Decisions/Directives, 1 REACH regulation with no URL)
 - Method: `curl -sL "$url" | grep -oP '<h1[^>]*>\K[^<]+' | head -1 | sed strip`
 - 2s sleep between requests — no rate limiting issues
+
+**Ended**: 2026-05-05T19:50:00+01:00
+**Commits**: `ea4a095`
+
+## Summary
+- Completed: 14 of 14 todos
+- Files touched: database only (uk_lrt.title_en column)
+- Outcome: All 1,546 missing title_en values populated. Zero remaining across all families.
+- Next: Issue #83 closed. Family_ii auto-assignment in parser remains a future enhancement.
