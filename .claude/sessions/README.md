@@ -166,6 +166,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-05 | [family-qa-green](2026-05-05-family-qa-green.md) | [#83](https://github.com/shotleybuilder/sertantai-legal/issues/83) | Family QA all 💚 families: ~260 reclassifications, FINANCE eliminated as primary, 91 titles populated, parser updated |
 | 2026-05-04 | [issue-79-enacted-by](2026-05-04-issue-79-enacted-by.md) | [#79](https://github.com/shotleybuilder/sertantai-legal/issues/79) | Enacted By tab: parser fixes, PUBLIC: Data family, family QA across all 💙 families (~60 reclassifications) |
 | 2026-05-04 | [issue-82](2026-05-04-issue-82.md) | [#82](https://github.com/shotleybuilder/sertantai-legal/issues/82) | Remove 5 redundant linked_* columns, +45,921 edges from source columns |
 | 2026-04-25 | [issue-79](2026-04-25-issue-79.md) | [#79](https://github.com/shotleybuilder/sertantai-legal/issues/79) | law_edges table, Model B family QA, si_code_families, enacted-by-qa skill |
