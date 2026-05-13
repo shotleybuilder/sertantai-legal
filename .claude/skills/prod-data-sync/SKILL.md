@@ -78,7 +78,35 @@ ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_lega
 \""
 ```
 
-### Pitfall 3: `--limit N` with FK tables
+### Pitfall 3: Delta sync does NOT propagate deletes
+
+`mix data.export_delta` generates INSERT ON CONFLICT (upsert) statements. Rows deleted in dev are **not** deleted from prod. After large cleanup/QA sessions in dev, prod will accumulate orphaned rows.
+
+**Solution**: After applying a delta, compare counts. If prod has more rows than dev, run an orphan cleanup (see Pattern 5).
+
+### Pitfall 4: Derived tables must be rebuilt on prod, not synced
+
+Some tables (e.g., `si_code_families`) are **derived/materialized** from canonical data — they're rebuilt by mix tasks like `mix law_edges.rebuild`, not managed as Ash resources. These should NOT be added to the delta config because:
+
+- They have no Ash resource (the delta exporter relies on Ash resources for column mapping)
+- They're downstream artifacts — syncing them creates divergence risk if the rebuild task runs later
+- The correct approach is to rebuild them on prod after syncing the upstream canonical tables
+
+```bash
+# After syncing uk_lrt to prod, rebuild derived tables:
+ssh sertantai-hz "docker exec sertantai_legal_app bin/sertantai_legal eval 'Mix.install([]); Mix.Task.run(\"law_edges.rebuild\")'"
+
+# Or for first-time population, bulk copy from dev:
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+  COPY (SELECT si_code, family, law_count, pct FROM si_code_families ORDER BY si_code, family) 
+  TO STDOUT WITH CSV HEADER
+" | ssh sertantai-hz "docker exec -i shared_postgres psql -U postgres -d sertantai_legal_prod -c \"
+  TRUNCATE si_code_families;
+  COPY si_code_families(si_code, family, law_count, pct) FROM STDIN WITH CSV HEADER;
+\""
+```
+
+### Pitfall 5: `--limit N` with FK tables
 
 Using `mix data.export_delta --limit 5` exports 5 rows per table, but child table rows may reference parent rows not in that 5-row slice. Use `--limit` only with `--tables` on a single table, or omit it for production exports.
 
@@ -129,7 +157,36 @@ ssh sertantai-hz "gunzip -c ~/split_1.sql.gz | docker exec -i shared_postgres \
   psql -U postgres -d sertantai_legal_prod -v ON_ERROR_STOP=1"
 ```
 
-### Pattern 4: Check prod state before sync
+### Pattern 4: Clean up orphaned rows on prod after delta sync
+
+Delta sync only upserts — it never deletes. After large dev cleanup/QA sessions, prod accumulates rows that no longer exist in dev. Clean up by exporting dev IDs and deleting non-matching rows on prod.
+
+**Delete order is reverse FK order** (children before parents):
+
+```bash
+# 1. Export dev PKs for each table to CSV
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev \
+  -c "COPY (SELECT id FROM TABLE_NAME) TO STDOUT" > /tmp/TABLE_dev_ids.csv
+
+# 2. Upload to server, load into temp table, delete orphans
+#    Use NOT EXISTS (faster than NOT IN for large sets — avoids NULL-safety overhead)
+cat /tmp/TABLE_dev_ids.csv | ssh sertantai-hz "docker exec -i shared_postgres psql -U postgres -d sertantai_legal_prod -c \"
+  CREATE TEMP TABLE dev_ids (id UUID);
+  COPY dev_ids FROM STDIN;
+  CREATE INDEX ON dev_ids(id);
+  DELETE FROM TABLE_NAME t WHERE NOT EXISTS (SELECT 1 FROM dev_ids d WHERE d.id = t.id);
+  DROP TABLE dev_ids;
+\""
+```
+
+**Important considerations:**
+- The PK column varies by table: `id` (uuid) for most, `section_id` (text) for `lat`. Adjust the temp table type accordingly.
+- Index the temp table before the DELETE — for 100K+ rows this makes a huge difference.
+- Disable triggers on `lat` before deleting (see Pitfall 2), re-enable + propagate stats after.
+- Delete children before parents: `lat` and `amendment_annotations` before `uk_lrt`.
+- Always verify counts match dev after cleanup.
+
+### Pattern 5: Check prod state before sync
 
 ```bash
 ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c \"
@@ -138,7 +195,8 @@ ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_lega
   UNION ALL SELECT 'amendments', COUNT(*), MAX(updated_at) FROM amendment_annotations
   UNION ALL SELECT 'scrape_sessions', COUNT(*), MAX(updated_at) FROM scrape_sessions
   UNION ALL SELECT 'scrape_session_records', COUNT(*), MAX(updated_at) FROM scrape_session_records
-  UNION ALL SELECT 'cascade_affected_laws', COUNT(*), MAX(updated_at) FROM cascade_affected_laws;
+  UNION ALL SELECT 'cascade_affected_laws', COUNT(*), MAX(updated_at) FROM cascade_affected_laws
+  UNION ALL SELECT 'si_code_families', COUNT(*), NULL::timestamp FROM si_code_families;
 \""
 ```
 
