@@ -1,3 +1,8 @@
+---
+name: Production Deployment
+description: Deploy sertantai-legal to production on Hetzner. Build Docker images, push to GHCR, deploy via SSH, and manage ElectricSQL/Nginx/PostgreSQL infrastructure.
+---
+
 # SKILL: Production Deployment to Hetzner
 
 **Purpose:** Deploy sertantai-legal (or a new microservice) to the shared Hetzner infrastructure
