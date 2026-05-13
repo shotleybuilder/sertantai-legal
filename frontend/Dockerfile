@@ -1,7 +1,7 @@
 ################################################################################
 # Builder Stage
 ################################################################################
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including devDependencies for build)
-RUN npm ci
+# Using npm install instead of npm ci for cross-npm-version lockfile compatibility
+# (local npm 11 generates lockfiles that npm 10 in node:22-alpine rejects with npm ci)
+RUN npm install
 
 # Copy application code
 COPY . .
@@ -20,7 +22,7 @@ RUN npm run build
 ################################################################################
 # Runner Stage
 ################################################################################
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Install production dependencies for serving
 RUN npm install -g serve@14

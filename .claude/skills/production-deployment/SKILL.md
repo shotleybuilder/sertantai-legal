@@ -20,44 +20,46 @@
 5. **Alpine versions must match** — The Docker builder stage and runner stage must use the same Alpine/OpenSSL version or NIF libraries will fail to load
 6. **No host port mappings** — All services communicate via the `infra_network` Docker network. Health checks must use `docker inspect` or `docker exec`, not `curl localhost`.
 
-## Deployment Scripts & Aliases
+## Deployment Scripts
 
-All deployment scripts live in `scripts/deployment/`. Shell aliases are defined in `~/.bashrc`:
+All deployment scripts live in `scripts/deployment/` (run from the repo root):
 
-| Alias | Script | Purpose |
-|-------|--------|---------|
-| `sert-legal-fe` | `build-frontend.sh` | Build frontend Docker image |
-| `sert-legal-be` | `build-backend.sh` | Build backend Docker image |
-| `sert-legal-push-fe` | `push-frontend.sh` | Push frontend image to GHCR |
-| `sert-legal-push-be` | `push-backend.sh` | Push backend image to GHCR |
-| `sert-legal-deploy` | `deploy-prod.sh` | Deploy to production server |
+| Script | Purpose |
+|--------|---------|
+| `./scripts/deployment/build-frontend.sh` | Build frontend Docker image |
+| `./scripts/deployment/build-backend.sh` | Build backend Docker image |
+| `./scripts/deployment/push-frontend.sh` | Push frontend image to GHCR |
+| `./scripts/deployment/push-backend.sh` | Push backend image to GHCR |
+| `./scripts/deployment/deploy-prod.sh` | Deploy to production server |
+
+Shell aliases (`sert-legal-fe`, `sert-legal-be`, etc.) exist in `~/.bashrc` but are **not available inside Claude Code sessions**. Always use the full script paths.
 
 ### deploy-prod.sh Options
 
 ```bash
-sert-legal-deploy                    # Deploy frontend + backend (default)
-sert-legal-deploy --frontend         # Frontend only
-sert-legal-deploy --backend          # Backend only
-sert-legal-deploy --electric         # Restart ElectricSQL only
-sert-legal-deploy --with-electric    # Backend + ElectricSQL
-sert-legal-deploy --electric-clear-cache  # Recreate Electric (clears shape cache)
-sert-legal-deploy --migrate          # Run database migrations after restart
-sert-legal-deploy --check-only       # Check status without deploying
-sert-legal-deploy --logs             # Follow logs after deployment
+./scripts/deployment/deploy-prod.sh                    # Deploy frontend + backend (default)
+./scripts/deployment/deploy-prod.sh --frontend         # Frontend only
+./scripts/deployment/deploy-prod.sh --backend          # Backend only
+./scripts/deployment/deploy-prod.sh --electric         # Restart ElectricSQL only
+./scripts/deployment/deploy-prod.sh --with-electric    # Backend + ElectricSQL
+./scripts/deployment/deploy-prod.sh --electric-clear-cache  # Recreate Electric (clears shape cache)
+./scripts/deployment/deploy-prod.sh --migrate          # Run database migrations after restart
+./scripts/deployment/deploy-prod.sh --check-only       # Check status without deploying
+./scripts/deployment/deploy-prod.sh --logs             # Follow logs after deployment
 ```
 
 ### Typical Deploy Workflow
 
 ```bash
 # 1. Build and push (on laptop)
-sert-legal-fe && sert-legal-push-fe
-sert-legal-be && sert-legal-push-be
+./scripts/deployment/build-frontend.sh && ./scripts/deployment/push-frontend.sh
+./scripts/deployment/build-backend.sh && ./scripts/deployment/push-backend.sh
 
 # 2. Deploy to server (SSHs automatically)
-sert-legal-deploy
+./scripts/deployment/deploy-prod.sh
 
 # Or frontend only:
-sert-legal-fe && sert-legal-push-fe && sert-legal-deploy --frontend
+./scripts/deployment/build-frontend.sh && ./scripts/deployment/push-frontend.sh && ./scripts/deployment/deploy-prod.sh --frontend
 ```
 
 ## Infrastructure Files to Modify
@@ -228,12 +230,12 @@ git push
 
 ```bash
 # Build
-sert-legal-be
-sert-legal-fe
+./scripts/deployment/build-backend.sh
+./scripts/deployment/build-frontend.sh
 
 # Push (ensure GHCR login is current)
-sert-legal-push-be
-sert-legal-push-fe
+./scripts/deployment/push-backend.sh
+./scripts/deployment/push-frontend.sh
 ```
 
 ### Phase 3: Server Setup (SSH to hetzner — first time only)
@@ -270,12 +272,12 @@ docker compose -f docker/docker-compose.yml start nginx
 
 ```bash
 # From laptop — handles SSH, pull, restart, health checks automatically:
-sert-legal-deploy
+./scripts/deployment/deploy-prod.sh
 
 # Or deploy individual components:
-sert-legal-deploy --frontend
-sert-legal-deploy --backend
-sert-legal-deploy --backend --with-electric
+./scripts/deployment/deploy-prod.sh --frontend
+./scripts/deployment/deploy-prod.sh --backend
+./scripts/deployment/deploy-prod.sh --backend --with-electric
 ```
 
 ### Phase 5: Populate Data (on laptop, then server)
@@ -393,13 +395,17 @@ ghcr.io/shotleybuilder/sertantai-legal-frontend:latest
 ### Rebuild and deploy cycle
 ```bash
 # On laptop — full cycle
-sert-legal-be && sert-legal-push-be && sert-legal-fe && sert-legal-push-fe && sert-legal-deploy
+./scripts/deployment/build-backend.sh && ./scripts/deployment/push-backend.sh && \
+./scripts/deployment/build-frontend.sh && ./scripts/deployment/push-frontend.sh && \
+./scripts/deployment/deploy-prod.sh
 
 # Frontend only
-sert-legal-fe && sert-legal-push-fe && sert-legal-deploy --frontend
+./scripts/deployment/build-frontend.sh && ./scripts/deployment/push-frontend.sh && \
+./scripts/deployment/deploy-prod.sh --frontend
 
 # Backend only
-sert-legal-be && sert-legal-push-be && sert-legal-deploy --backend
+./scripts/deployment/build-backend.sh && ./scripts/deployment/push-backend.sh && \
+./scripts/deployment/deploy-prod.sh --backend
 ```
 
 ## Related Skills
@@ -410,7 +416,7 @@ sert-legal-be && sert-legal-push-be && sert-legal-deploy --backend
 
 ## Key Takeaways
 
-- **Use the deployment scripts** — `sert-legal-deploy` handles SSH, pulling, restarting, and health checks
+- **Use the deployment scripts** — `./scripts/deployment/deploy-prod.sh` handles SSH, pulling, restarting, and health checks
 - **Always use `--format=custom`** for pg_dump/pg_restore — never plain SQL text
 - **Always verify schema parity** before restoring data
 - **Always use `ELECTRIC_REPLICATION_STREAM_ID`** when running multiple Electric instances
