@@ -20,6 +20,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   alias SertantaiLegal.Scraper.Models
   alias SertantaiLegal.Scraper.TypeClass
   alias SertantaiLegal.Scraper.ParsedLaw
+  alias SertantaiLegal.Scraper.ScrapeSessionRecord
 
   require Ash.Query
 
@@ -763,7 +764,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     overrides = params["overrides"] || %{}
     pre_parsed_record = params["record"]
 
-    with {:ok, _session} <- SessionManager.get(session_id) do
+    with {:ok, session} <- SessionManager.get(session_id) do
       # Use pre-parsed record if provided, otherwise this is an error
       # (the frontend should always send the record to avoid redundant parsing)
       case pre_parsed_record do
@@ -785,6 +786,9 @@ defmodule SertantaiLegalWeb.ScrapeController do
             {:ok, persisted} ->
               # Mark record as reviewed in session (with parsed data for table display)
               mark_record_reviewed(session_id, name, record_to_persist)
+
+              # Update session aggregates (persisted_count and status)
+              update_session_after_confirm(session)
 
               # Mark any pending cascade entry for this law as processed
               # and determine its cascade layer for propagation
@@ -851,6 +855,87 @@ defmodule SertantaiLegalWeb.ScrapeController do
     conn
     |> put_status(:bad_request)
     |> json(%{error: "Missing required parameter: name"})
+  end
+
+  @doc """
+  POST /api/sessions/:id/skip
+
+  Mark session records as skipped (reviewed but not relevant for persistence).
+
+  ## Parameters
+  - names: list of law names to skip, OR
+  - group: skip all pending records in a group ("1", "2", or "3")
+  """
+  def skip(conn, %{"id" => session_id, "names" => names}) when is_list(names) do
+    with {:ok, session} <- SessionManager.get(session_id) do
+      results =
+        Enum.map(names, fn name ->
+          case Storage.get_session_record(session_id, name) do
+            {:ok, record} when not is_nil(record) ->
+              case ScrapeSessionRecord.mark_skipped(record) do
+                {:ok, _} -> {:ok, name}
+                {:error, reason} -> {:error, name, reason}
+              end
+
+            _ ->
+              {:error, name, "not found"}
+          end
+        end)
+
+      skipped = Enum.count(results, &match?({:ok, _}, &1))
+
+      # Update session status after skipping
+      update_session_after_skip(session)
+
+      json(conn, %{
+        message: "#{skipped} record(s) skipped",
+        skipped: skipped,
+        total: length(names)
+      })
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn |> put_status(:not_found) |> json(%{error: "Session not found"})
+        else
+          conn |> put_status(:internal_server_error) |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  def skip(conn, %{"id" => session_id, "group" => group_str}) do
+    with {:ok, group} <- parse_group(group_str),
+         {:ok, session} <- SessionManager.get(session_id),
+         {:ok, records} <- ScrapeSessionRecord.by_session_and_group(session_id, group) do
+      pending = Enum.filter(records, &(&1.status == :pending))
+
+      Enum.each(pending, fn record ->
+        ScrapeSessionRecord.mark_skipped(record)
+      end)
+
+      # Update session status after skipping
+      update_session_after_skip(session)
+
+      json(conn, %{
+        message: "#{length(pending)} pending record(s) in group #{group_str} skipped",
+        skipped: length(pending)
+      })
+    else
+      {:error, :invalid_group} ->
+        conn |> put_status(:bad_request) |> json(%{error: "Invalid group. Use 1, 2, or 3"})
+
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn |> put_status(:not_found) |> json(%{error: "Session not found"})
+        else
+          conn |> put_status(:internal_server_error) |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
+  def skip(conn, %{"id" => _session_id}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Missing required parameter: names (list) or group (1/2/3)"})
   end
 
   @doc """
@@ -2055,6 +2140,62 @@ defmodule SertantaiLegalWeb.ScrapeController do
           |> put_status(:internal_server_error)
           |> json(%{error: format_error(reason)})
         end
+    end
+  end
+
+  # Update session persisted_count and status after a record is confirmed.
+  # Advances status to :reviewing if still :categorized.
+  # Auto-completes session if all records are resolved (confirmed or skipped).
+  defp update_session_after_confirm(session) do
+    new_count = (session.persisted_count || 0) + 1
+
+    updates =
+      if session.status == :categorized do
+        %{persisted_count: new_count, status: :reviewing}
+      else
+        %{persisted_count: new_count}
+      end
+
+    case ScrapeSession.update(session, updates) do
+      {:ok, updated} -> maybe_auto_complete(updated)
+      _ -> :ok
+    end
+  end
+
+  # Update session status after records are skipped.
+  # Advances status to :reviewing if still :categorized.
+  # Auto-completes session if all records are resolved.
+  defp update_session_after_skip(session) do
+    if session.status == :categorized do
+      case ScrapeSession.update(session, %{status: :reviewing}) do
+        {:ok, updated} -> maybe_auto_complete(updated)
+        _ -> :ok
+      end
+    else
+      maybe_auto_complete(session)
+    end
+  end
+
+  # Auto-complete session when all records are confirmed or skipped.
+  defp maybe_auto_complete(session) do
+    case ScrapeSessionRecord.by_session(session.session_id) do
+      {:ok, records} when records != [] ->
+        all_resolved =
+          Enum.all?(records, fn r -> r.status in [:confirmed, :skipped] end)
+
+        if all_resolved do
+          # Re-read to get latest persisted_count
+          case ScrapeSession.by_session_id(session.session_id) do
+            {:ok, fresh} ->
+              ScrapeSession.mark_completed(fresh, %{persisted_count: fresh.persisted_count})
+
+            _ ->
+              :ok
+          end
+        end
+
+      _ ->
+        :ok
     end
   end
 end

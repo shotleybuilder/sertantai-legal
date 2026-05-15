@@ -45,6 +45,7 @@ export interface ScrapeRecord {
 	si_code?: string;
 	SICode?: string[];
 	matched_terms?: string[];
+	status?: 'pending' | 'parsed' | 'confirmed' | 'skipped';
 	selected?: boolean;
 	_index?: string;
 }
@@ -223,6 +224,28 @@ export async function updateSelection(
 	if (!response.ok) {
 		const error = await response.json();
 		throw new Error(error.error || 'Failed to update selection');
+	}
+
+	return response.json();
+}
+
+/**
+ * Skip records (mark as reviewed but not relevant for persistence).
+ * Pass names for specific records, or group to skip all pending in a group.
+ */
+export async function skipRecords(
+	sessionId: string,
+	params: { names: string[] } | { group: 1 | 2 | 3 }
+): Promise<{ message: string; skipped: number }> {
+	const response = await adminFetch(`${API_URL}/api/sessions/${sessionId}/skip`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(params)
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.error || 'Failed to skip records');
 	}
 
 	return response.json();

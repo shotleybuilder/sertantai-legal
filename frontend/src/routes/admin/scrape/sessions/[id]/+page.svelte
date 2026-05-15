@@ -30,6 +30,10 @@
 	$: selectedCount = records.filter((r) => r.selected).length;
 	$: allSelected = records.length > 0 && selectedCount === records.length;
 	$: someSelected = selectedCount > 0 && selectedCount < records.length;
+	$: pendingRecords = records.filter((r) => !r.status || r.status === 'pending');
+	$: selectedPendingCount = records.filter(
+		(r) => r.selected && (!r.status || r.status === 'pending')
+	).length;
 
 	// Set of names that exist in database (for "In DB" column indicator)
 	$: existingNamesSet = new Set($dbStatusQuery.data?.existing_names ?? []);
@@ -295,11 +299,59 @@
 		});
 	}
 
+	async function handleSelectPending() {
+		// Deselect all first, then select only pending
+		const allNames = records.map((r) => r.name);
+		const pendingNames = records
+			.filter((r) => !r.status || r.status === 'pending')
+			.map((r) => r.name);
+
+		if (allNames.length > 0) {
+			await $selectionMutation.mutateAsync({
+				sessionId,
+				group: activeGroup,
+				names: allNames,
+				selected: false
+			});
+		}
+		if (pendingNames.length > 0) {
+			await $selectionMutation.mutateAsync({
+				sessionId,
+				group: activeGroup,
+				names: pendingNames,
+				selected: true
+			});
+		}
+	}
+
 	async function handleToggleAll() {
 		if (allSelected) {
 			await handleDeselectAll();
 		} else {
 			await handleSelectAll();
+		}
+	}
+
+	let skipLoading = false;
+
+	async function handleSkipSelected() {
+		const toSkip = records
+			.filter((r) => r.selected && (!r.status || r.status === 'pending'))
+			.map((r) => r.name);
+		if (toSkip.length === 0) return;
+
+		skipLoading = true;
+		try {
+			const { skipRecords } = await import('$lib/api/scraper');
+			const result = await skipRecords(sessionId, { names: toSkip });
+			parseCompleteMessage = `${result.skipped} record(s) skipped`;
+			// Refresh group data to reflect status change
+			$groupQuery.refetch();
+			$sessionQuery.refetch();
+		} catch (e) {
+			parseCompleteMessage = `Skip failed: ${e instanceof Error ? e.message : 'Unknown error'}`;
+		} finally {
+			skipLoading = false;
 		}
 	}
 </script>
@@ -516,6 +568,15 @@
 					>
 						Deselect All
 					</button>
+					{#if pendingRecords.length > 0 && pendingRecords.length < records.length}
+						<button
+							on:click={handleSelectPending}
+							disabled={$selectionMutation.isPending}
+							class="inline-flex items-center px-3 py-1.5 border border-amber-400 text-xs font-medium rounded-md text-amber-700 bg-amber-50 hover:bg-amber-100 disabled:bg-gray-100 disabled:cursor-not-allowed"
+						>
+							Select Pending ({pendingRecords.length})
+						</button>
+					{/if}
 					{#if selectedCount > 0}
 						<span class="text-sm text-gray-500">
 							{selectedCount} of {records.length} selected
@@ -523,6 +584,15 @@
 					{/if}
 				</div>
 				<div class="flex items-center space-x-2">
+					{#if selectedPendingCount > 0}
+						<button
+							on:click={handleSkipSelected}
+							disabled={skipLoading}
+							class="inline-flex items-center px-4 py-2 border border-gray-400 text-sm font-medium rounded-md text-gray-600 bg-white hover:bg-gray-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+						>
+							{skipLoading ? 'Skipping...' : `Skip Pending (${selectedPendingCount})`}
+						</button>
+					{/if}
 					<button
 						on:click={handleInteractiveParse}
 						disabled={records.length === 0}
@@ -720,32 +790,46 @@
 											</td>
 										{/if}
 										<td class="px-4 py-3 text-right">
-											<button
-												on:click|stopPropagation={() => handleRowClick(record, 0)}
-												class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-												title="Parse and review this record"
-											>
-												<svg
-													class="w-4 h-4 mr-1"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
+											{#if record.status === 'confirmed'}
+												<span
+													class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-50 rounded"
 												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														stroke-width="2"
-														d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-													/>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														stroke-width="2"
-														d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-													/>
-												</svg>
-												Review
-											</button>
+													Confirmed
+												</span>
+											{:else if record.status === 'skipped'}
+												<span
+													class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-500 bg-gray-100 rounded"
+												>
+													Skipped
+												</span>
+											{:else}
+												<button
+													on:click|stopPropagation={() => handleRowClick(record, 0)}
+													class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+													title="Parse and review this record"
+												>
+													<svg
+														class="w-4 h-4 mr-1"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+														/>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+														/>
+													</svg>
+													Review
+												</button>
+											{/if}
 										</td>
 									</tr>
 								{/each}

@@ -102,6 +102,18 @@ Complete guide for:
 - zenohex API quick reference
 - Troubleshooting and common pitfalls
 
+### 🔬 [LRT Scrape Session](lrt-scrape-session/)
+
+**Use when:** Running a monthly LRT scrape session — invocable as `/lrt-scrape March 2026`
+
+Human-AI partnered workflow:
+- Scope definition (parse month/date range from arguments)
+- Human-driven scrape via admin UI
+- AI post-scrape QA: count reconciliation, data completeness, family sense-check, relationship integrity, duplicate check
+- NAS sync with post-sync verification
+- Production sync with post-sync verification
+- QA stage gates between each promotion step
+
 ### 🔄 [Production Data Sync](prod-data-sync/)
 
 **Use when:** Promoting dev database changes to production, bulk-loading empty tables, or troubleshooting the SSH pipeline to prod PostgreSQL
