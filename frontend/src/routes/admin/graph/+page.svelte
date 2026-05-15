@@ -482,12 +482,13 @@
 				<div class="flex gap-4">
 					<!-- Table (left) -->
 					<div
-						class="bg-white rounded-lg border overflow-hidden {selectedRow
+						class="bg-white rounded-lg border overflow-auto {selectedRow
 							? 'flex-1 min-w-0'
 							: 'w-full'}"
+						style="max-height: calc(100vh - 300px)"
 					>
 						<table class="w-full text-sm">
-							<thead class="bg-gray-50 border-b">
+							<thead class="bg-gray-50 border-b sticky top-0 z-10">
 								<tr>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
