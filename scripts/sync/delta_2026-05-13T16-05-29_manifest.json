@@ -1,0 +1,16 @@
+{
+  "sha256": "6573702db9eca060517d83997505b2c6c5b850dc8d3bf0762fc73ecaac197d6d",
+  "tables": {
+    "uk_lrt": {
+      "rows": 1,
+      "max_updated_at": null
+    }
+  },
+  "exported_at": "2026-05-13T16:05:29.068561Z",
+  "total_rows": 1,
+  "source_db": "sertantai_legal_dev",
+  "sql_file": "delta_2026-05-13T16-05-29.sql",
+  "watermark_used": {
+    "uk_lrt": "2026-05-05T16:00:00Z"
+  }
+}

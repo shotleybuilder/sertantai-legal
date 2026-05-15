@@ -33,6 +33,7 @@ coverage/
 
 # Data exports
 data/
+scripts/sync/delta_*.sql
 
 # Docker volumes
 volumes/
