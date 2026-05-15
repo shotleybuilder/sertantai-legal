@@ -460,10 +460,17 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   defp is_making_true?(_), do: false
 
   defp add_making(function, record) do
-    if get_boolean_flag(record, :is_making) do
-      Map.put(function, "Making", true)
-    else
-      function
+    cond do
+      # Confirmed by LAT parser (duty_type contains Duty or Responsibility)
+      get_boolean_flag(record, :is_making) ->
+        Map.put(function, "Making", true)
+
+      # Provisional from MakingDetector (title patterns, structural signals)
+      get_field(record, :making_classification) == "making" ->
+        Map.put(function, "Making", true)
+
+      true ->
+        function
     end
   end
 

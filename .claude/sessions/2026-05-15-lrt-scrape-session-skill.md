@@ -16,7 +16,10 @@
 - [x] Fix: ~w[] sigil bug in health_safety.ex and environment.ex
 - [x] Fix: LawParser.persist_direct doesn't calculate Function flags
 - [x] Add missing terms: riddor, plant health, fire safety phrases, data (use and access)
-- [ ] Commit and push bug fixes
+- [x] Committed and pushed (e942eb5)
+- [x] Fix: FunctionCalculator.add_making falls back to making_classification="making"
+- [x] Backfill Function flags: 257 records got flags, 3 from provisional making_classification
+- [ ] Continue post-scrape QA / NAS sync
 
 ## Notes
 - ~w[] with backslash-escaped spaces does NOT preserve phrases in Elixir
@@ -24,5 +27,7 @@
   - "fire" was too broad (matched "firearms") — replaced with specific fire phrases
   - Added "riddor" to OH&S, plant health terms to environment, data terms
 - LawParser.persist_direct now calls FunctionCalculator.calculate_immediate_function_of_law
-  - Both create_record and update_record calculate and merge Function flags
-  - Feb 2026 records still have NULL function (will need backfill on re-scrape)
+- FunctionCalculator.add_making now uses making_classification="making" as provisional fallback
+  - Pipeline: MakingDetector (guess) → LAT parser (confirmed) → FunctionCalculator (derived)
+  - 6,130 records still null function — no relationship data AND not classified as making
+  - These need LAT parsing to confirm is_making before Function can be set
