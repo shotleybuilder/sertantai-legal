@@ -3,144 +3,152 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
   Health & Safety related search terms for filtering UK legislation.
 
   Ported from Legl.Countries.Uk.UkSearch.Terms.HealthSafety
+
+  NOTE: Terms use explicit string lists, NOT ~w[]. The ~w[] sigil splits
+  backslash-escaped spaces into individual words, producing false matches
+  from fragments like "and", "at", "of".
   """
 
-  @building_safety ~w[
-    building\ safety
-    building\ regulation
-    building\ standard
+  @building_safety [
+    "building safety",
+    "building regulation",
+    "building standard"
   ]
 
-  @dangerous_explosive_substances ~w[
-    explosive
-    dangerous
+  @dangerous_explosive_substances [
+    "explosive",
+    "dangerous"
   ]
 
-  @oh_s ~w[
-    health\ and\ safety
-    safety\ and\ security
-    accident
-    consultation\ of\ employee
-    protection\ at\ work
-    reach
+  @oh_s [
+    "health and safety",
+    "safety and security",
+    "accident",
+    "consultation of employee",
+    "protection at work",
+    "reach",
+    "riddor"
   ]
 
-  @fire_safety ~w[
-    fire\
-    explosive
+  @fire_safety [
+    "fire safety",
+    "fire precaution",
+    "fire service",
+    "fire and rescue",
+    "explosive"
   ]
 
-  @food_safety ~w[
-    food
-    food\ safety
-    contact\ with\ food
-    hygiene
-    food\ irradiation
+  @food_safety [
+    "food",
+    "food safety",
+    "contact with food",
+    "hygiene",
+    "food irradiation"
   ]
 
-  @gas_electric_safety ~w[
-    gas\ safety
-    electricity\ safety
+  @gas_electric_safety [
+    "gas safety",
+    "electricity safety"
   ]
 
-  @hr_employment ~w[
-    workers
-    working\ time
-    agency\ worker
-    employment\ right
-    employment\ tribunal
-    employment\ relation
-    maternity
-    protection\ from\ redundancy
+  @hr_employment [
+    "workers",
+    "working time",
+    "agency worker",
+    "employment right",
+    "employment tribunal",
+    "employment relation",
+    "maternity",
+    "protection from redundancy"
   ]
 
-  @hr_pay ~w[
-    mesothelioma
-    pneumoconiosis
-    wage
-    industrial\ injuries
-    unpaid\ work
+  @hr_pay [
+    "mesothelioma",
+    "pneumoconiosis",
+    "wage",
+    "industrial injuries",
+    "unpaid work"
   ]
 
-  @hr_working_time ~w[
-    working\ time
+  @hr_working_time [
+    "working time"
   ]
 
-  @mine_quarry_safety ~w[
-    mine
-    quarrie
-    coal\ industry
+  @mine_quarry_safety [
+    "mine",
+    "quarrie",
+    "coal industry"
   ]
 
-  @offshore_safety ~w[
-    offshore\ installation
-    offshore\ safety
+  @offshore_safety [
+    "offshore installation",
+    "offshore safety"
   ]
 
-  @patient_safety ~w[
-    medical\ device
-    national\ health\ service
-    nhs
+  @patient_safety [
+    "medical device",
+    "national health service",
+    "nhs"
   ]
 
-  @product_safety ~w[
-    product\ safety
-    cosmetic\ products
-    toys
-    consumer
+  @product_safety [
+    "product safety",
+    "cosmetic products",
+    "toys",
+    "consumer"
   ]
 
-  @public_safety ~w[
-    firework
-    firearm
-    sex-based\ harassment
+  @public_safety [
+    "firework",
+    "firearm",
+    "sex-based harassment"
   ]
 
-  @public_health ~w[
-    public\ health
-    smoking
-    smoke_free
-    health\ protection
-    coronavirus
-    care
-    cqc
-    nutritional\ requirements
+  @public_health [
+    "public health",
+    "smoking",
+    "smoke_free",
+    "health protection",
+    "coronavirus",
+    "care",
+    "cqc",
+    "nutritional requirements"
   ]
 
-  @air_safety ~w[
-    aviation\ safety
-    air\ navigation
-    air\ traffic
-    civil\ aviation
+  @air_safety [
+    "aviation safety",
+    "air navigation",
+    "air traffic",
+    "civil aviation"
   ]
 
-  @rail_safety ~w[
-    railway
-    rail\ vehicle
-    train\ driv
+  @rail_safety [
+    "railway",
+    "rail vehicle",
+    "train driv"
   ]
 
-  @ship_safety ~w[
-    merchant\ shipping
+  @ship_safety [
+    "merchant shipping"
   ]
 
-  @road_safety ~w[
-    road\ transport
-    road\ safety
-    road\ traffic
-    road\ vehicle
-    motor\ vehicle
-    goods\ vehicle
-    passenger
-    driver
-    pedestrian
-    disabled\ persons'\ vehicles
-    parking
+  @road_safety [
+    "road transport",
+    "road safety",
+    "road traffic",
+    "road vehicle",
+    "motor vehicle",
+    "goods vehicle",
+    "passenger",
+    "driver",
+    "pedestrian",
+    "disabled persons' vehicles",
+    "parking"
   ]
 
-  @drug_safety ~w[
-    drug
-    medicine
+  @drug_safety [
+    "drug",
+    "medicine"
   ]
 
   @doc """
@@ -160,7 +168,7 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
       "💜 HR: Employment": @hr_employment,
       "💙 PUBLIC": @public_safety,
       "💙 PUBLIC: Building Safety": @building_safety,
-      "💙 PUBLIC: Data": ["data protection", "online safety"],
+      "💙 PUBLIC: Data": ["data protection", "online safety", "data (use and access)"],
       "💙 FIRE: Dangerous and Explosive Substances": @dangerous_explosive_substances,
       "💙 OH&S: Gas & Electrical Safety": @gas_electric_safety,
       "💙 HEALTH: Drug & Medicine Safety": @drug_safety,

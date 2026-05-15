@@ -46,6 +46,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.FunctionCalculator
 
   require Ash.Query
 
@@ -416,6 +417,16 @@ defmodule SertantaiLegal.Scraper.LawParser do
   defp create_record(record) do
     attrs = build_attrs(record)
 
+    # Calculate immediate Function flags (Making, Commencing)
+    immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
+
+    attrs =
+      if map_size(immediate_function) > 0 do
+        Map.put(attrs, :function, immediate_function)
+      else
+        attrs
+      end
+
     case UkLrt
          |> Ash.Changeset.for_create(:create, attrs)
          |> Ash.create() do
@@ -432,6 +443,18 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   defp update_record(existing, record) do
     attrs = build_attrs(record)
+
+    # Calculate immediate Function flags (Making, Commencing) and merge with existing
+    immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
+    existing_function = existing.function || %{}
+    merged_function = Map.merge(existing_function, immediate_function)
+
+    attrs =
+      if map_size(merged_function) > 0 do
+        Map.put(attrs, :function, merged_function)
+      else
+        attrs
+      end
 
     # Build change log entry before applying updates
     attrs_with_log =
