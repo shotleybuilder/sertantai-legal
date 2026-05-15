@@ -86,6 +86,7 @@ GridLite kit, TanStack DB adapter, saved views, table components.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-13 | [gridlite-upgrade](2026-05-13-gridlite-upgrade.md) | — | Upgrade gridlite-kit 0.5.1→0.6.1, adapters→0.7.1; raised lib #30 (workspace:^ leak) + #31 (TDZ bug) |
 | 2026-03-30 | [issue-68](2026-03-30-issue-68.md) | [#68](https://github.com/shotleybuilder/sertantai-legal/issues/68) | TanStack DB index suggestions + console cleanup |
 | 2026-03-30 | [issue-67](2026-03-30-issue-67.md) | [#67](https://github.com/shotleybuilder/sertantai-legal/issues/67) | GridLite groups show (Empty) labels |
 | 2026-03-30 | [issue-66](2026-03-30-issue-66.md) | [#66](https://github.com/shotleybuilder/sertantai-legal/issues/66) | Migrate to svelte-gridlite-kit 0.5.0 |
