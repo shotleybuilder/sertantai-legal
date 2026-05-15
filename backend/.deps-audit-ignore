@@ -1,0 +1,7 @@
+# Ignored advisories for mix deps.audit
+# Format: one advisory ID per line
+#
+# decimal (GHSA-rhv4-8758-jx7v) — moderate DoS via unbounded exponent
+# Cannot upgrade to decimal 3.0 yet: transitive dependency of ecto/phoenix/ash.
+# Tracked upstream; no user-facing input reaches Decimal.new in this service.
+GHSA-rhv4-8758-jx7v
