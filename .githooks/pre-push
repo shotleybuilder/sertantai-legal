@@ -168,8 +168,15 @@ check_security_audit() {
         return 0
     fi
 
-    # Run security audit
-    AUDIT_OUTPUT=$(mix deps.audit 2>&1)
+    # Run security audit (with ignore file for known/accepted advisories)
+    AUDIT_IGNORE_ARGS=""
+    if [ -f ".deps-audit-ignore" ]; then
+        IGNORE_IDS=$(grep -v '^#' .deps-audit-ignore | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
+        if [ -n "$IGNORE_IDS" ]; then
+            AUDIT_IGNORE_ARGS="--ignore-advisory-ids=$IGNORE_IDS"
+        fi
+    fi
+    AUDIT_OUTPUT=$(mix deps.audit $AUDIT_IGNORE_ARGS 2>&1)
     AUDIT_STATUS=$?
 
     # Return to root
