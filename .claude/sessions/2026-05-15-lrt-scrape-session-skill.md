@@ -1,7 +1,9 @@
 # Title: LRT Scrape Session Skill
 
 **Started**: 2026-05-15
+**Ended**: 2026-05-15
 **Issue**: None
+**Commits**: `d591417`, `e942eb5`, `88cf5a3`
 
 ## Todo
 - [x] Design the skill workflow stages
@@ -19,7 +21,9 @@
 - [x] Committed and pushed (e942eb5)
 - [x] Fix: FunctionCalculator.add_making falls back to making_classification="making"
 - [x] Backfill Function flags: 257 records got flags, 3 from provisional making_classification
-- [ ] Continue post-scrape QA / NAS sync
+- [x] NAS sync + post-NAS QA passed
+- [x] Prod sync + post-prod QA passed
+- [x] Committed and pushed (88cf5a3)
 
 ## Notes
 - ~w[] with backslash-escaped spaces does NOT preserve phrases in Elixir

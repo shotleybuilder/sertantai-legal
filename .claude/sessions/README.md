@@ -8,6 +8,7 @@ LRT scraping from legislation.gov.uk, parsing pipeline, cascade, session managem
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-15 | [lrt-scrape-session-skill](2026-05-15-lrt-scrape-session-skill.md) | — | /lrt-scrape skill, skip workflow, ~w[] sigil fix, Function calc fixes, Feb 2026 scrape QA+sync |
 | 2026-03-10 | [fallback-metadata-research](2026-03-10-fallback-metadata-research.md) | — | Research: fallback metadata sources for older UK laws |
 | 2026-03-07 | [issue-43](2026-03-07-issue-43.md) | [#43](https://github.com/shotleybuilder/sertantai-legal/issues/43) | Auto Parse All fails with JSON file enoent on reparse |
 | 2026-03-07 | [issue-44](2026-03-07-issue-44.md) | [#44](https://github.com/shotleybuilder/sertantai-legal/issues/44) | Session detail rows don't update after confirm/save |

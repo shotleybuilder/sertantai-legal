@@ -1,6 +1,4 @@
 {
-  "last_delta_file": "delta_2026-05-13T16-07-02.sql",
-  "last_export_at": "2026-05-13T16:07:02.516699Z",
   "watermarks": {
     "amendment_annotations": "2026-03-28T07:46:59.000000Z",
     "cascade_affected_laws": "2026-03-27T11:34:27.635312Z",
@@ -8,5 +6,7 @@
     "scrape_session_records": "2026-03-28T07:47:05.916902Z",
     "scrape_sessions": "2026-03-28T07:47:05.923312Z",
     "uk_lrt": "2026-03-29T10:56:20.467024Z"
-  }
+  },
+  "last_export_at": "2026-05-16T08:13:11.441277Z",
+  "last_delta_file": "delta_2026-05-16T08-13-11.sql"
 }
