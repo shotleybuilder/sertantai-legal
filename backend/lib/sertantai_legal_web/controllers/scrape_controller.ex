@@ -1062,6 +1062,36 @@ defmodule SertantaiLegalWeb.ScrapeController do
     end
   end
 
+  @doc """
+  GET /api/sessions/:id/law-names
+
+  Return the list of law names from a session's records.
+  Useful for filtering other views (e.g. LAT queue) to a specific session.
+  """
+  def law_names(conn, %{"id" => session_id}) do
+    with {:ok, _session} <- SessionManager.get(session_id),
+         {:ok, records} <- ScrapeSessionRecord.by_session(session_id) do
+      # Only return law names for records that were persisted (confirmed) to uk_lrt
+      names =
+        records
+        |> Enum.filter(&(&1.status == :confirmed))
+        |> Enum.map(& &1.law_name)
+
+      json(conn, %{law_names: names, count: length(names)})
+    else
+      {:error, reason} ->
+        if not_found_error?(reason) do
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "Session not found"})
+        else
+          conn
+          |> put_status(:internal_server_error)
+          |> json(%{error: format_error(reason)})
+        end
+    end
+  end
+
   # Private helpers
 
   defp get_integer_param(params, field) do

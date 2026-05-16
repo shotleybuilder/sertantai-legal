@@ -146,6 +146,7 @@ defmodule SertantaiLegalWeb.Router do
     post("/sessions/:id/confirm", ScrapeController, :confirm)
     post("/sessions/:id/skip", ScrapeController, :skip)
     delete("/sessions/:id", ScrapeController, :delete)
+    get("/sessions/:id/law-names", ScrapeController, :law_names)
 
     # Cascade update endpoints
     get("/sessions/:id/affected-laws", ScrapeController, :affected_laws)

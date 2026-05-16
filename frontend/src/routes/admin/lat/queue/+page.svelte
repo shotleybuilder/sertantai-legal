@@ -69,6 +69,21 @@
 	let currentFamily: string | null = null;
 	let currentViewName: string | null = null;
 
+	// Session filter state
+	interface SessionSummary {
+		session_id: string;
+		status: string;
+		year: number;
+		month: number;
+		day_from: number | null;
+		day_to: number | null;
+		persisted_count: number;
+		group1_count: number;
+	}
+	let recentSessions: SessionSummary[] = [];
+	let selectedSessionId: string | null = null;
+	let sessionFilterLoading = false;
+
 	// ── Query + Filter constants ────────────────────────────────────
 
 	const QUEUE_COLUMNS_LIST = [
@@ -206,6 +221,168 @@
 			reparseViewError = err instanceof Error ? err.message : String(err);
 		} finally {
 			reparseViewLoading = false;
+		}
+	}
+
+	// ── Session filter ──────────────────────────────────────────────
+
+	/** Editable fields — whitelist prevents SQL injection via column name in PGLite write. */
+	const EDITABLE_FIELDS = new Set(['family', 'family_ii', 'making_classification', 'is_making']);
+
+	/** Rebuild collection + adapter with a new SQL query. Preserves view state. */
+	async function rebuildCollection(query: string) {
+		if (!db) return;
+		ready = false;
+
+		const collection = createPGLiteCollection({
+			db,
+			query,
+			id: `lat-queue-uk-lrt-${Date.now()}`,
+			onUpdate: async ({ transaction }) => {
+				for (const m of transaction.mutations) {
+					const safeChanges: Record<string, unknown> = {};
+					for (const [field, value] of Object.entries(m.changes as Record<string, unknown>)) {
+						if (EDITABLE_FIELDS.has(field)) {
+							safeChanges[field] = value;
+						}
+					}
+					if (Object.keys(safeChanges).length === 0) continue;
+
+					const response = await authFetch(`${API_URL}/api/uk-lrt/${m.key}`, {
+						method: 'PATCH',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(safeChanges)
+					});
+					if (!response.ok) {
+						const err = await response.json();
+						throw new Error(err.error || 'Failed to update');
+					}
+
+					const fields = Object.keys(safeChanges);
+					const values = Object.values(safeChanges);
+					const setClauses = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
+					await db!.query(`UPDATE uk_lrt SET ${setClauses} WHERE id = $${fields.length + 1}`, [
+						...values,
+						m.key
+					]);
+				}
+			}
+		});
+		collectionRef = collection;
+		adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
+		await adapter.init();
+		currentQuery = query;
+		ready = true;
+	}
+
+	async function fetchRecentSessions() {
+		try {
+			const res = await authFetch(`${API_URL}/api/sessions`);
+			if (!res.ok) return;
+			const data = await res.json();
+			recentSessions = (data.sessions || [])
+				.filter((s: SessionSummary) => s.status === 'completed')
+				.slice(0, 12);
+		} catch {
+			/* non-critical — dropdown just stays empty */
+		}
+	}
+
+	function formatSessionLabel(s: SessionSummary): string {
+		const month = String(s.month).padStart(2, '0');
+		const days = s.day_from && s.day_to ? ` (${s.day_from}–${s.day_to})` : '';
+		const count = s.persisted_count || s.group1_count || 0;
+		return `${s.year}-${month}${days} · ${count} laws`;
+	}
+
+	// Session view: flat list showing classification status of all session laws
+	const sessionViewCols = [
+		'name',
+		'title_en',
+		'family',
+		'family_ii',
+		'making_classification',
+		'function',
+		'live',
+		'is_making'
+	];
+
+	async function handleSessionFilter(e: Event) {
+		const sessionId = (e.currentTarget as HTMLSelectElement).value || null;
+		selectedSessionId = sessionId;
+		if (!db) return;
+
+		sessionFilterLoading = true;
+		try {
+			if (sessionId) {
+				const res = await authFetch(`${API_URL}/api/sessions/${sessionId}/law-names`);
+				if (!res.ok) throw new Error('Failed to fetch session law names');
+				const data = await res.json();
+				let query = BASE_QUERY;
+				if (data.law_names.length > 0) {
+					const escaped = data.law_names.map((n: string) => n.replace(/'/g, "''"));
+					const inList = escaped.map((n: string) => `'${n}'`).join(',');
+					query = `${BASE_QUERY} WHERE name IN (${inList})`;
+				}
+
+				// Rebuild with session-scoped query (no queue filters — show ALL session laws)
+				await rebuildCollection(query);
+				activeVisibleColumns = sessionViewCols;
+
+				// Apply session-specific layout: grouped by classification, no queue filters
+				await new Promise((r) => setTimeout(r, 100));
+				if (gridRef) {
+					const vis: Record<string, boolean> = {};
+					for (const c of columns) vis[c.name] = sessionViewCols.includes(c.name);
+					gridRef.applyConfig({
+						filters: [] as FilterCondition[],
+						filterLogic: 'and',
+						sorting: [
+							{ column: 'making_classification', direction: 'asc' },
+							{ column: 'title_en', direction: 'asc' }
+						],
+						grouping: [{ column: 'making_classification' }],
+						columnVisibility: vis,
+						columnOrder: sessionViewCols,
+						columnSizing: {
+							name: 160,
+							title_en: 260,
+							family: 150,
+							family_ii: 130,
+							making_classification: 100,
+							function: 100,
+							live: 100,
+							is_making: 70
+						}
+					});
+				}
+			} else {
+				// Clearing session — restore base query and reapply active view
+				await rebuildCollection(BASE_QUERY);
+
+				if (viewStore) {
+					await new Promise((r) => setTimeout(r, 100));
+					let activeId: string | null = null;
+					viewStore.activeViewId.subscribe((v) => {
+						activeId = v;
+					})();
+					if (activeId) {
+						let activeView: SavedView | null = null;
+						viewStore.savedViews.subscribe((views) => {
+							activeView = views.find((v) => v.id === activeId) ?? null;
+						})();
+						if (activeView) {
+							switchToView((activeView as SavedView).name, (activeView as SavedView).config);
+							applyViewToGrid(activeView as SavedView);
+						}
+					}
+				}
+			}
+		} catch (err) {
+			console.error('[LAT Queue] Session filter error:', err);
+			selectedSessionId = null;
+		} finally {
+			sessionFilterLoading = false;
 		}
 	}
 
@@ -941,61 +1118,12 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
-			/** Editable fields — whitelist prevents SQL injection via column name in PGLite write. */
-			const EDITABLE_FIELDS = new Set([
-				'family',
-				'family_ii',
-				'making_classification',
-				'is_making'
-			]);
-
-			const collection = createPGLiteCollection({
-				db,
-				query: BASE_QUERY,
-				id: 'lat-queue-uk-lrt',
-				onUpdate: async ({ transaction }) => {
-					for (const m of transaction.mutations) {
-						// Filter to whitelisted fields only (SQL injection safety for PGLite write)
-						const safeChanges: Record<string, unknown> = {};
-						for (const [field, value] of Object.entries(m.changes as Record<string, unknown>)) {
-							if (EDITABLE_FIELDS.has(field)) {
-								safeChanges[field] = value;
-							}
-						}
-						if (Object.keys(safeChanges).length === 0) continue;
-
-						// 1. Persist to backend (PostgreSQL)
-						const response = await authFetch(`${API_URL}/api/uk-lrt/${m.key}`, {
-							method: 'PATCH',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify(safeChanges)
-						});
-						if (!response.ok) {
-							const err = await response.json();
-							throw new Error(err.error || 'Failed to update');
-						}
-
-						// 2. Write to PGLite so live.changes() confirms the optimistic state.
-						//    Electric will eventually sync the same value (no conflict).
-						const fields = Object.keys(safeChanges);
-						const values = Object.values(safeChanges);
-						const setClauses = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
-						await db!.query(`UPDATE uk_lrt SET ${setClauses} WHERE id = $${fields.length + 1}`, [
-							...values,
-							m.key
-						]);
-					}
-				}
-			});
-			collectionRef = collection;
-			adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
-			await adapter.init();
-			// Keep for reparse feature (PGLite SQL query)
-			currentQuery = BASE_QUERY;
-			ready = true;
+			await rebuildCollection(BASE_QUERY);
 			// Wait for GridLite to render, then seed views
 			await new Promise((r) => setTimeout(r, 100));
 			await seedDefaultViews();
+			// Fetch recent sessions for the session filter dropdown (non-blocking)
+			fetchRecentSessions();
 		}
 	});
 
@@ -1075,6 +1203,21 @@
 				>
 					Sessions
 				</a>
+				{#if recentSessions.length > 0}
+					<select
+						on:change={handleSessionFilter}
+						value={selectedSessionId ?? ''}
+						disabled={sessionFilterLoading}
+						class="px-3 py-2 text-sm font-medium border rounded-md {selectedSessionId
+							? 'border-blue-500 bg-blue-50 text-blue-700'
+							: 'border-gray-300 bg-white text-gray-700'} hover:bg-gray-50 disabled:opacity-50"
+					>
+						<option value="">All laws</option>
+						{#each recentSessions as session}
+							<option value={session.session_id}>{formatSessionLabel(session)}</option>
+						{/each}
+					</select>
+				{/if}
 				<button
 					on:click={() => (showLatDialog = true)}
 					class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
