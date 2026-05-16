@@ -18,6 +18,8 @@ A human-AI partnered workflow for ingesting new UK legislation into the LRT data
         ↓
  2. SCRAPE         Human runs the scrape session via admin UI
         ↓
+ 2b. REVIEW SKIPPED   AI reviews skipped records for errors ← CHECKPOINT
+        ↓
  3. QA: POST-SCRAPE   AI validates persisted data ← STAGE GATE
         ↓
  4. NAS SYNC       AI exports snapshot to NAS
@@ -72,6 +74,40 @@ The AI waits for the human to complete the scrape. The human will:
 4. Confirm and persist records to uk_lrt
 
 **AI can assist during this stage if asked** (e.g., explain a record, check a family assignment, look up an SI code).
+
+---
+
+## Stage 2b: REVIEW SKIPPED
+
+After the human finishes scraping, AI reviews records marked as `skipped` to catch laws that were dismissed in error. Some laws have titles that look irrelevant but are actually in-scope for EHS compliance.
+
+```bash
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT ssr.law_name, ssr.\"group\",
+       COALESCE(ssr.parsed_data->>'Title_EN', u.title_en, ssr.law_name) as title
+FROM scrape_session_records ssr
+LEFT JOIN uk_lrt u ON u.name = ssr.law_name
+WHERE ssr.session_id = '{session_id}' AND ssr.status = 'skipped'
+  AND ssr.\"group\" IN ('group1', 'group2')
+ORDER BY ssr.\"group\", ssr.law_name;
+"
+```
+
+**Why only Group 1 and Group 2**: Group 3 records were excluded by the categorizer (no SI code or term match) — they're genuinely out of scope. Group 1 (SI match) and Group 2 (term match) were flagged as potentially relevant by the rules, so skipping them deserves a second look.
+
+**AI reviews each skipped title and flags**:
+- **RESTORE** — this looks like it should have been confirmed (e.g. an amendment to a key EHS Act, a safety regulation with an unusual title)
+- **OK** — skip was correct (e.g. procedural, fees-only, geographical orders not relevant)
+
+Present RESTOREs to the human. If agreed, the human can re-open the record in the UI (parse + confirm), or the AI can unskip it via:
+```bash
+# Unskip a record back to pending so it can be re-reviewed
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+UPDATE scrape_session_records
+SET status = 'pending'
+WHERE session_id = '{session_id}' AND law_name = '{law_name}' AND status = 'skipped';
+"
+```
 
 ---
 

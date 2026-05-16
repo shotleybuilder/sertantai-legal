@@ -216,4 +216,127 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
       assert length(excluded) == 1
     end
   end
+
+  describe "si_code_filter family assignment" do
+    test "ELECTRICITY renewables → ENERGY not Gas & Electrical Safety" do
+      records = [
+        %{Title_EN: "Renewables Obligation (Amendment) Order", si_code: ["ELECTRICITY"]}
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💚 ENERGY"
+    end
+
+    test "ELECTRICITY safety → Gas & Electrical Safety" do
+      records = [
+        %{
+          Title_EN: "Electricity Safety, Quality and Continuity Regulations",
+          si_code: ["ELECTRICITY"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 OH&S: Gas & Electrical Safety"
+    end
+
+    test "MERCHANT SHIPPING ISM → Maritime Safety" do
+      records = [
+        %{Title_EN: "Merchant Shipping (ISM Code) Regulations", si_code: ["MERCHANT SHIPPING"]}
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 TRANSPORT: Maritime Safety"
+    end
+
+    test "MERCHANT SHIPPING CO2 → POLLUTION" do
+      records = [
+        %{
+          Title_EN: "Merchant Shipping (Carbon Dioxide Emissions) Regulations",
+          si_code: ["MERCHANT SHIPPING"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💚 POLLUTION"
+    end
+
+    test "ROAD TRAFFIC driving → Road Safety" do
+      records = [
+        %{Title_EN: "Motor Vehicles (Driving Licences) Regulations", si_code: ["ROAD TRAFFIC"]}
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 TRANSPORT: Road Safety"
+    end
+
+    test "ROAD TRAFFIC emissions → Roads & Vehicles (env)" do
+      records = [
+        %{Title_EN: "Road Traffic (Vehicle Emissions) Regulations", si_code: ["ROAD TRAFFIC"]}
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💚 TRANSPORT: Roads & Vehicles"
+    end
+
+    test "TERMS AND CONDITIONS OF EMPLOYMENT → HR: Employment" do
+      records = [
+        %{
+          Title_EN: "Employment Rights (Increase of Limits) Order",
+          si_code: ["TERMS AND CONDITIONS OF EMPLOYMENT"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💜 HR: Employment"
+    end
+
+    test "FIRE AND RESCUE SERVICES → FIRE" do
+      records = [
+        %{
+          Title_EN: "Fire and Rescue Services (National Framework) Order",
+          si_code: ["FIRE AND RESCUE SERVICES"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 FIRE"
+    end
+
+    test "HEALTH AND SAFETY → OH&S (unchanged)" do
+      records = [
+        %{
+          Title_EN: "Health and Safety at Work Act (Application) Order",
+          si_code: ["HEALTH AND SAFETY"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 OH&S: Occupational / Personal Safety"
+    end
+
+    test "multi SI code with FIRE AND RESCUE SERVICES takes priority" do
+      records = [
+        %{
+          Title_EN: "Firefighters' Pension Scheme (Amendment) Order",
+          si_code: ["FIRE AND RESCUE SERVICES", "PENSIONS"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 FIRE"
+    end
+
+    test "Carbon Capture with HEALTH AND SAFETY SI → OH&S (direct Models mapping)" do
+      # HEALTH AND SAFETY has a direct mapping in Models, so disambiguation doesn't override it
+      records = [
+        %{
+          Title_EN: "Carbon Capture (Miscellaneous Amendments) Regulations",
+          si_code: ["HEALTH AND SAFETY"]
+        }
+      ]
+
+      {:ok, {[matched], _}} = Filters.si_code_filter(records)
+      assert matched[:Family] == "💙 OH&S: Occupational / Personal Safety"
+    end
+  end
 end

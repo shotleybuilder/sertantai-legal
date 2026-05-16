@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Scraper.Filters do
   alias SertantaiLegal.Scraper.Terms.Environment
   alias SertantaiLegal.Scraper.Terms.HealthSafety
   alias SertantaiLegal.Scraper.Terms.SICodes
+  alias SertantaiLegal.Scraper.Terms.SICodeDisambiguation
   alias SertantaiLegal.Scraper.Models
 
   @exclusion_patterns [
@@ -150,6 +151,7 @@ defmodule SertantaiLegal.Scraper.Filters do
     result =
       Enum.reduce(records, {[], []}, fn record, {inc, exc} ->
         si_code = record[:si_code] || record["si_code"]
+        title = record[:Title_EN] || record["Title_EN"] || ""
 
         case si_code do
           nil ->
@@ -166,7 +168,7 @@ defmodule SertantaiLegal.Scraper.Filters do
 
             case si_code_member?(si_codes) do
               true ->
-                record = Map.put(record, :Family, si_code_family(si_codes))
+                record = Map.put(record, :Family, si_code_family(si_codes, title))
                 {[record | inc], exc}
 
               false ->
@@ -176,7 +178,7 @@ defmodule SertantaiLegal.Scraper.Filters do
           codes when is_list(codes) ->
             case si_code_member?(codes) do
               true ->
-                record = Map.put(record, :Family, si_code_family(codes))
+                record = Map.put(record, :Family, si_code_family(codes, title))
                 {[record | inc], exc}
 
               false ->
@@ -199,9 +201,11 @@ defmodule SertantaiLegal.Scraper.Filters do
             _ -> []
           end
 
+        title = law[:Title_EN] || law["Title_EN"] || ""
+
         case si_code_member?(si_codes) do
           true ->
-            law = Map.put(law, :Family, si_code_family(si_codes))
+            law = Map.put(law, :Family, si_code_family(si_codes, title))
             {[law | inc], exc}
 
           false ->
@@ -225,34 +229,48 @@ defmodule SertantaiLegal.Scraper.Filters do
     end)
   end
 
-  defp si_code_family(si_codes) when is_list(si_codes) do
+  defp si_code_family(si_codes, title) when is_list(si_codes) do
     si_codes
-    |> Enum.map(&si_code_family/1)
+    |> Enum.map(&si_code_family(&1, title))
     |> Enum.uniq()
     |> Enum.filter(&(&1 != nil))
     |> List.first()
   end
 
-  defp si_code_family(si_code) when is_binary(si_code) do
+  defp si_code_family(si_code, title) when is_binary(si_code) do
     # Use Models module for granular SI code -> family mapping
     si_code_map = Models.ehs_si_code_family()
 
     case Map.get(si_code_map, si_code) do
       nil ->
-        # Fallback to broad category if no specific mapping exists
-        cond do
-          MapSet.member?(SICodes.hs_si_codes(), si_code) ->
-            "💙 OH&S: Occupational / Personal Safety"
+        # Try disambiguation (ambiguous codes) or direct mapping (unmapped codes)
+        case SICodeDisambiguation.resolve(si_code, title) do
+          nil ->
+            # Final fallback for codes not in any mapping
+            cond do
+              MapSet.member?(SICodes.hs_si_codes(), si_code) ->
+                "💙 OH&S: Occupational / Personal Safety"
 
-          MapSet.member?(SICodes.e_si_codes(), si_code) ->
-            "💚 ENVIRONMENTAL PROTECTION"
+              MapSet.member?(SICodes.e_si_codes(), si_code) ->
+                "💚 ENVIRONMENTAL PROTECTION"
 
-          true ->
-            nil
+              true ->
+                nil
+            end
+
+          family ->
+            family
         end
 
       family ->
-        family
+        # Check if this mapped code is ambiguous and should be overridden
+        # (e.g. ELECTRICITY maps to Gas & Electrical Safety in Models,
+        # but may actually be Energy based on the title)
+        if SICodeDisambiguation.ambiguous?(si_code) do
+          SICodeDisambiguation.disambiguate(si_code, title)
+        else
+          family
+        end
     end
   end
 
