@@ -9,12 +9,10 @@
 ## Todo
 - [x] Add LRT session filter to LAT queue view (`/admin/lat/queue`)
 - [x] Show `making_classification` column in LAT queue (already existed)
-- [ ] Create LAT parsing skill (`.claude/skills/lat-parse-session.md`)
+- [x] Create LAT parsing skill (`.claude/skills/lat-parse-session/SKILL.md`)
 
 ## Notes
-- LRT scrape skill exists at `.claude/skills/lrt-scrape-session.md`
-- LAT queue: http://localhost:5175/admin/lat/queue
-- LRT sessions: http://localhost:5175/admin/scrape/sessions
-- Only "making" laws get LAT parsing
-- GridLite `in` operator: shotleybuilder/svelte-gridlite-kit#32 (implemented in core@0.7.0, adapter@0.8.0)
+- LRT scrape skill exists at `.claude/skills/lrt-scrape-session/SKILL.md`
+- LAT parse skill at `.claude/skills/lat-parse-session/SKILL.md`
+- GridLite `in` operator: shotleybuilder/svelte-gridlite-kit#32 (core@0.7.0, adapter@0.8.0)
 - Adapter `fn.where` doesn't work for live queries — used SQL-level collection rebuild instead
