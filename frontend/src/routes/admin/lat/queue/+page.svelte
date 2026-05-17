@@ -856,7 +856,11 @@
 			grouping: opts.grouping ?? [{ column: 'family' }, { column: 'year' }],
 			columnVisibility: colVis(opts.visibleCols),
 			columnOrder: opts.visibleCols,
-			columnWidths: {},
+			columnWidths: Object.fromEntries(
+				columns
+					.filter((c) => opts.visibleCols.includes(c.name) && c.width != null)
+					.map((c) => [c.name, c.width!])
+			),
 			pageSize: 50
 		};
 	}
