@@ -368,6 +368,7 @@ defmodule DeltaSync.Export do
       end
 
     # Track max timestamp for watermark update
+    # updated_at is `timestamp without time zone` → Postgrex returns NaiveDateTime
     max_ts =
       if Enum.empty?(row_maps) do
         nil
@@ -375,7 +376,7 @@ defmodule DeltaSync.Export do
         row_maps
         |> Enum.map(fn row -> Map.get(row, table.timestamp_col) end)
         |> Enum.reject(&is_nil/1)
-        |> Enum.max(DateTime, fn -> nil end)
+        |> Enum.max(NaiveDateTime, fn -> nil end)
       end
 
     count = length(row_maps)
@@ -440,6 +441,7 @@ defmodule DeltaSync.Export do
           ts_str =
             case max_ts do
               %DateTime{} -> DateTime.to_iso8601(max_ts)
+              %NaiveDateTime{} -> NaiveDateTime.to_iso8601(max_ts) <> "Z"
               other -> to_string(other)
             end
 
@@ -467,6 +469,7 @@ defmodule DeltaSync.Export do
                  do:
                    case max_ts do
                      %DateTime{} -> DateTime.to_iso8601(max_ts)
+                     %NaiveDateTime{} -> NaiveDateTime.to_iso8601(max_ts) <> "Z"
                      other -> to_string(other)
                    end,
                  else: nil
