@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   use GenServer
   require Logger
   require Ash.Query
+  import Ecto.Query, only: [from: 2]
 
   alias SertantaiLegal.Legal.UkLrt
   alias SertantaiLegal.Zenoh.ActivityLog
@@ -168,7 +169,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp upsert_taxa(record, taxa) do
-    taxa = derive_making_classification(taxa)
+    taxa = derive_enrichment_result(record, taxa)
     Ash.update(record, taxa, action: :update)
   end
 
@@ -199,33 +200,79 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_list_of_maps(row, "fitness")
   end
 
-  # Derive is_making and making_classification from duty_type values.
-  # Mirrors taxa_parser.ex is_making_law?: "Duty" or "Responsibility" in duty_type.
+  # Derive enrichment result from taxa fields and set function labels.
   #
-  # Three cases:
-  # 1. duty_type has Duty/Responsibility → making
-  # 2. duty_type present but no Duty/Responsibility → not_making
-  # 3. No duty_type but other taxa fields present (analysis ran, found nothing) → not_making
-  defp derive_making_classification(%{duty_type: %{values: values}} = taxa)
+  # Three enrichment outcomes:
+  # 1. Making:      duty_type has Duty/Responsibility → is_making=true, function gets "Making"
+  # 2. Empowering:  duty_type present but no Duty/Responsibility (powers/rights only) → is_making=false, function gets "Empowering"
+  # 3. Housekeeping: no taxa fields at all → function gets "Housekeeping", LAT pruned
+  #
+  # Note: does NOT overwrite making_classification (immutable auto-detection result).
+  defp derive_enrichment_result(record, %{duty_type: %{values: values}} = taxa)
        when is_list(values) do
     is_making = "Duty" in values or "Responsibility" in values
 
-    classification =
-      if is_making, do: "making", else: "not_making"
+    enrichment_label = if is_making, do: "Making", else: "Empowering"
+    function = merge_enrichment_function(record, enrichment_label)
 
     taxa
     |> Map.put(:is_making, is_making)
-    |> Map.put(:making_classification, classification)
+    |> Map.put(:function, function)
+    |> maybe_prune_lat(record, enrichment_label)
   end
 
-  defp derive_making_classification(taxa) when map_size(taxa) > 0 do
-    # Taxa analysis ran (has enrichment fields) but no duty_type → not making
+  defp derive_enrichment_result(record, taxa) when map_size(taxa) > 0 do
+    # Taxa analysis ran (has enrichment fields) but no duty_type → Empowering
+    # This covers cases where only role/role_gvt/fitness are present without duty_type
+    function = merge_enrichment_function(record, "Empowering")
+
     taxa
     |> Map.put(:is_making, false)
-    |> Map.put(:making_classification, "not_making")
+    |> Map.put(:function, function)
+    |> maybe_prune_lat(record, "Empowering")
   end
 
-  defp derive_making_classification(taxa), do: taxa
+  defp derive_enrichment_result(record, taxa) do
+    # Empty taxa — no DRRP signal at all → Housekeeping
+    function = merge_enrichment_function(record, "Housekeeping")
+
+    taxa
+    |> Map.put(:function, function)
+    |> maybe_prune_lat(record, "Housekeeping")
+  end
+
+  # Merge enrichment function label into existing function JSONB.
+  # Enrichment labels (Making, Empowering, Housekeeping) are mutually exclusive —
+  # remove any existing enrichment label before adding the new one.
+  # Relationship labels (Amending, Revoking, etc.) are preserved.
+  @enrichment_labels ["Making", "Empowering", "Housekeeping"]
+
+  defp merge_enrichment_function(record, new_label) do
+    existing = record.function || %{}
+
+    existing
+    |> Map.drop(@enrichment_labels)
+    |> Map.put(new_label, true)
+  end
+
+  # Prune LAT rows for non-making enrichment results.
+  # Empowering and Housekeeping laws don't need per-provision text for duty tracking.
+  defp maybe_prune_lat(taxa, record, "Making"), do: taxa
+
+  defp maybe_prune_lat(taxa, record, _label) do
+    law_id = record.id
+
+    {deleted, _} =
+      SertantaiLegal.Repo.delete_all(from(l in "lat", where: l.law_id == ^law_id))
+
+    if deleted > 0 do
+      Logger.info(
+        "[Zenoh.TaxaSubscriber] Pruned #{deleted} LAT rows for #{record.name} (non-making)"
+      )
+    end
+
+    taxa
+  end
 
   # List<Utf8> → %{values: ["a", "b"]} to match existing JSONB map format
   defp put_holder_map(acc, row, str_key) do

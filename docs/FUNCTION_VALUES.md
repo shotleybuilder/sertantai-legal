@@ -6,11 +6,20 @@ Initial data: seeded from Airtable `Function` multi-select column (one-time impo
 
 ## Valid Values
 
-### Base Functions (what the law does)
+### Enrichment Functions (set by taxa pipeline — definitive)
+
+These are mutually exclusive. Their presence means enrichment has run on this law.
+
+| Value | Description | Set When | Screening Relevance |
+|-------|-------------|----------|---------------------|
+| **Making** | Creates duties/responsibilities | duty_type contains Duty or Responsibility | Primary — laws that create obligations for compliance |
+| **Empowering** | Grants powers/rights but no duties | duty_type present but no Duty/Responsibility | May affect rights holders; no compliance obligations |
+| **Housekeeping** | Procedural/administrative — zero DRRP output | Taxa parser found nothing extractable | No ESH relevance — commencement, fees, corrections |
+
+### Relationship Functions (set by relationship analysis)
 
 | Value | Description | Screening Relevance |
 |-------|-------------|---------------------|
-| **Making** | Creates new substantive duties/obligations | Primary - laws that create duties for compliance |
 | **Amending** | Modifies existing legislation (targets are non-makers) | Changes to existing obligations |
 | **Revoking** | Repeals/revokes other laws (targets are non-makers) | Removes obligations |
 | **Commencing** | Brings other laws into force | Triggers when obligations start |
@@ -43,17 +52,21 @@ Stage 2: Human-AI Review (LAT session scoping)
   → making_review_at records when the review happened
   → Overrides making_classification for queue filtering and Function derivation
 
-Stage 3: LAT Parser (Rust service, resource-heavy full-text analysis)
+Stage 3: Taxa Enrichment (fractalaw DRRP pipeline via Zenoh)
   → Extracts duty_type from legislation body (Duty, Responsibility, Right, Power)
-  → Derives is_making: true if duty_type contains "Duty" or "Responsibility"
-  → This is the CONFIRMED answer — overrides all prior stages
+  → Sets enrichment function label in function JSONB:
+     - Making:      duty_type has Duty or Responsibility → is_making=true
+     - Empowering:  duty_type has Power/Right but no Duty → is_making=false
+     - Housekeeping: no DRRP signal at all → procedural/administrative
+  → Enrichment labels are mutually exclusive and definitive
+  → Empowering and Housekeeping prune LAT rows (not needed for duty tracking)
 
-FunctionCalculator (Elixir, post-LAT)
-  → Builds the function JSONB map using priority cascade:
-     1. is_making (definitive, from taxa/full-text)
-     2. making_review (human-AI confirmed, pre-parse)
-     3. making_classification (auto-detected, provisional)
-  → "Making": true added when any of the above resolves to making/true
+FunctionCalculator (Elixir, for batch recalculation)
+  → Builds the function JSONB map:
+     1. If Empowering or Housekeeping already set → enrichment ran, skip Making
+     2. is_making = true → Making (definitive, from taxa)
+     3. making_review = "making" → Making (provisional, pre-enrichment)
+     4. making_classification = "making" → Making (provisional, pre-enrichment)
   → Relationship labels (Amending Maker, etc.) depend on target law's is_making
 ```
 
@@ -62,19 +75,28 @@ FunctionCalculator (Elixir, post-LAT)
 | Field | Stage | Certainty | Purpose |
 |-------|-------|-----------|---------|
 | `making_classification` | LRT scrape | Auto-guess | Immutable auto-detection from title/metadata signals |
-| `making_review` | LAT session scoping | Human-confirmed | Human-AI review, overrides auto for queue and Function |
-| `is_making` | LAT parse | Definitive | Gold standard — law creates duties/responsibilities |
-| `function` | Post-LAT | Derived | JSONB map built from priority cascade + relationship analysis |
+| `making_review` | LAT session scoping | Human-confirmed | Human-AI review, overrides auto for queue filtering |
+| `is_making` | Taxa enrichment | Definitive | Gold standard — law creates duties/responsibilities |
+| `function` | Taxa enrichment | Definitive | Enrichment labels (Making/Empowering/Housekeeping) + relationship labels |
 
 ### Effective classification
 
 The **effective classification** is `COALESCE(making_review, making_classification)` — the review takes precedence when present, otherwise the auto-detection is used. This drives:
 - LAT Queue filtering (which laws appear as parse candidates)
-- FunctionCalculator `Making` label (when `is_making` is not yet set)
+- FunctionCalculator `Making` label (provisional, before enrichment runs)
+
+### Post-enrichment actions
+
+| Enrichment Result | LAT Rows | uk_lrt DRRP Fields | Function Label |
+|-------------------|----------|-------------------|----------------|
+| Making | Retained | Populated (duties, holders, fitness) | `{"Making": true}` |
+| Empowering | **Pruned** | Populated (powers/rights, holders) | `{"Empowering": true}` |
+| Housekeeping | **Pruned** | Empty (nothing to retain) | `{"Housekeeping": true}` |
 
 ## Usage
 
 - A law can have multiple functions (e.g., both "Making" and "Amending Maker")
+- Enrichment labels (Making, Empowering, Housekeeping) are mutually exclusive
 - For applicability screening, filter on `function` containing "Making"
 - For the LAT parse queue, filter on effective classification (not `is_making`)
 

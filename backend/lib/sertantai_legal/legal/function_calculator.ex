@@ -459,8 +459,21 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   defp is_making_true?(true), do: true
   defp is_making_true?(_), do: false
 
+  # Enrichment labels — mutually exclusive with Making.
+  # If enrichment has run and set Empowering or Housekeeping, don't add provisional Making.
+  @enrichment_non_making_labels ["Empowering", "Housekeeping"]
+
   defp add_making(function, record) do
+    existing_function = get_field(record, :function) || %{}
+
+    enrichment_ran =
+      Enum.any?(@enrichment_non_making_labels, &Map.has_key?(existing_function, &1))
+
     cond do
+      # Enrichment confirmed non-making — do not add Making
+      enrichment_ran ->
+        function
+
       # Stage 3: Definitive — confirmed by taxa/full-text analysis
       get_boolean_flag(record, :is_making) ->
         Map.put(function, "Making", true)
