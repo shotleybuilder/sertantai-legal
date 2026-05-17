@@ -11,6 +11,7 @@
   > **Issue #39 (2026-03-06)**: Added 7 fitness columns for applicability matching (person, process, place, plant, property, sector, detail).
   > **Making Detection (2026-02-24)**: Added 4 making classification columns for AI-assisted function detection.
   > **Issue #60 (2026-03-27)**: Simplified live status to "changes-primary, metadata-override". Removed 4 columns: `live_from_metadata`, `live_conflict`, `live_conflict_detail`, `live_source`. Removed `repeal_revoke` parser stage (redundant with metadata stage). See [Live Status Values](./LIVE_STATUS_VALUES.md).
+  > **Making Review (2026-05-17)**: Added `making_review` and `making_review_at` columns for human-AI review stage, separating auto-detection from manual review. See [Function Values](./FUNCTION_VALUES.md).
   
   The `uk_lrt` table stores metadata for UK legislation including acts, statutory instruments, and regulations. This is shared reference data accessible to all tenants.
 
@@ -154,23 +155,52 @@
     | `is_making` | Is Making | `is_making` | `boolean` | Yes (19089) | `true` | 🧮_derived |
     | `is_commencing` | Is Commencing | `is_commencing` | `boolean` | Yes (19089) | `false` | 🧮_derived |
 
-  ## Making Classification
+  ## Making Classification (Three-Stage Lifecycle)
 
-    Added in migration `20260224190132_add_making_detection`. These columns support the AI-assisted making detection pipeline that classifies laws based on title patterns, type code heuristics, and amendment graph signals.
+    The making classification progresses through three stages of increasing certainty:
+
+    1. **Auto-detection** (Stage 1): MakingDetector runs during LRT scrape using title patterns, structure, and metadata signals. Immutable after scrape.
+    2. **Human-AI review** (Stage 2): Human reviews auto-classification with AI sense-checking during LAT session scoping. Overrides auto-detection for queue filtering and Function derivation.
+    3. **Definitive** (Stage 3): LAT parser analyses full legislation text; taxa service derives `is_making` from duty_type. Overrides all prior stages.
+
+    The **effective classification** is `COALESCE(making_review, making_classification)` — review takes precedence when present.
+
+    ### Stage 1: Auto-Detection
+
+    Added in migration `20260224190132_add_making_detection`. These columns support the AI-assisted making detection pipeline that classifies laws based on title patterns, type code heuristics, and amendment graph signals. Immutable after scrape.
 
     | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
     |--------|---------------|---------------|------|:--------:|---------|-------|
-    | `making_classification` | Making Classification | - | `text` | Yes (257) | `making`, `not_making`, `uncertain` | 🤖 system |
+    | `making_classification` | Auto Classification | - | `text` | Yes (257) | `making`, `not_making`, `uncertain` | 🤖 system |
     | `making_confidence` | Making Confidence | - | `float8` | Yes (257) | `0.85` | 🤖 system |
     | `making_detection_tier` | Detection Tier | - | `bigint` | Yes (257) | `0`, `3`, `4` | 🤖 system |
     | `making_detection_signals` | Detection Signals | - | `map` (JSONB) | Yes (257) | See below | 🤖 system |
 
-    **Classification Values:**
+    ### Stage 2: Human-AI Review
+
+    Added in migration `20260517085152_add_making_review`. Set during LAT session scoping when human reviews auto-classification with AI assistance. NULL means unreviewed (falls back to auto-detection).
+
+    | Column | Friendly Name | ParsedLaw Key | Type | Has Data | Example | Stage |
+    |--------|---------------|---------------|------|:--------:|---------|-------|
+    | `making_review` | Review Classification | - | `text` | - | `making`, `not_making`, `uncertain` | 🤖 system (human-set) |
+    | `making_review_at` | Review Timestamp | - | `utc_datetime_usec` | - | `2026-05-17T09:30:00Z` | 🤖 system (auto-stamped) |
+
+    ### Classification Values
+
+    Shared by both `making_classification` and `making_review`:
+
     | Value | Meaning |
     |-------|---------|
     | `making` | Law creates new legal obligations (confirmed making function) |
     | `not_making` | Law does not create obligations (amending, revoking, commencing only) |
     | `uncertain` | Insufficient signals to classify confidently |
+
+    ### FunctionCalculator Priority Cascade
+
+    When determining `"Making": true` in the `function` JSONB map:
+    1. `is_making == true` → Making (definitive, from taxa/full-text)
+    2. `making_review == "making"` → Making (human-confirmed, pre-parse)
+    3. `making_classification == "making"` → Making (auto-detected, provisional)
 
     **Detection Signals Structure:**
     ```json

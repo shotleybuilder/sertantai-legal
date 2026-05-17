@@ -28,24 +28,32 @@ The "Maker" suffix means the target law of the relationship has `Making` in its 
 
 ## Pipeline: How Function is Determined
 
+The making classification has a three-stage lifecycle, each refining certainty:
+
 ```
-LRT Scraper (metadata only, lightweight)
+Stage 1: LRT Scraper (metadata only, lightweight)
   → making_classification = "making" / "not_making" / "uncertain"
   → MakingDetector: title patterns, structure, metadata signals
   → This is a GUESS — no full text parsing
+  → Immutable after scrape (never overwritten)
 
-LAT Queue (frontend)
-  → Shows candidates where making_classification != "not_making"
-  → These are laws that MIGHT create duties and need full-text parsing
+Stage 2: Human-AI Review (LAT session scoping)
+  → making_review = "making" / "not_making" / "uncertain" / NULL
+  → AI sense-checks auto-classification, human confirms
+  → making_review_at records when the review happened
+  → Overrides making_classification for queue filtering and Function derivation
 
-LAT Parser (Rust service, resource-heavy full-text analysis)
+Stage 3: LAT Parser (Rust service, resource-heavy full-text analysis)
   → Extracts duty_type from legislation body (Duty, Responsibility, Right, Power)
   → Derives is_making: true if duty_type contains "Duty" or "Responsibility"
-  → This is the CONFIRMED answer
+  → This is the CONFIRMED answer — overrides all prior stages
 
 FunctionCalculator (Elixir, post-LAT)
-  → Builds the function JSONB map using is_making as input
-  → "Making": true added when is_making = true
+  → Builds the function JSONB map using priority cascade:
+     1. is_making (definitive, from taxa/full-text)
+     2. making_review (human-AI confirmed, pre-parse)
+     3. making_classification (auto-detected, provisional)
+  → "Making": true added when any of the above resolves to making/true
   → Relationship labels (Amending Maker, etc.) depend on target law's is_making
 ```
 
@@ -53,15 +61,22 @@ FunctionCalculator (Elixir, post-LAT)
 
 | Field | Stage | Certainty | Purpose |
 |-------|-------|-----------|---------|
-| `making_classification` | LRT parse | Guess | Builds the LAT queue — candidates for full-text parsing |
-| `is_making` | LAT parse | Confirmed | Gold standard — law creates duties/responsibilities |
-| `function` | Post-LAT | Derived | JSONB map built from `is_making` + relationship analysis |
+| `making_classification` | LRT scrape | Auto-guess | Immutable auto-detection from title/metadata signals |
+| `making_review` | LAT session scoping | Human-confirmed | Human-AI review, overrides auto for queue and Function |
+| `is_making` | LAT parse | Definitive | Gold standard — law creates duties/responsibilities |
+| `function` | Post-LAT | Derived | JSONB map built from priority cascade + relationship analysis |
+
+### Effective classification
+
+The **effective classification** is `COALESCE(making_review, making_classification)` — the review takes precedence when present, otherwise the auto-detection is used. This drives:
+- LAT Queue filtering (which laws appear as parse candidates)
+- FunctionCalculator `Making` label (when `is_making` is not yet set)
 
 ## Usage
 
 - A law can have multiple functions (e.g., both "Making" and "Amending Maker")
 - For applicability screening, filter on `function` containing "Making"
-- For the LAT parse queue, filter on `making_classification` (not `is_making`)
+- For the LAT parse queue, filter on effective classification (not `is_making`)
 
 ## DB Columns
 
@@ -85,9 +100,24 @@ FunctionCalculator (Elixir, post-LAT)
 
 - **Column**: `making_classification`
 - **Type**: `string` — `"making"`, `"not_making"`, or `"uncertain"`
-- **Purpose**: Lightweight guess from LRT metadata — used to build the LAT parse queue
+- **Purpose**: Auto-detected guess from LRT metadata — immutable after scrape
 - **Set by**: MakingDetector during LRT scraper stage (title patterns, structural signals)
-- **Can be manually overridden**: via inline editing in the LAT queue UI
+- **Not manually editable**: preserved as the auto-detection record; human edits go to `making_review`
+
+### `making_review` (string)
+
+- **Column**: `making_review`
+- **Type**: `string` — `"making"`, `"not_making"`, `"uncertain"`, or `NULL` (unreviewed)
+- **Purpose**: Human-AI review classification — overrides `making_classification` for filtering and Function
+- **Set by**: Human via LAT Queue grid (double-click "Review" column), auto-stamps `making_review_at`
+- **NULL means**: unreviewed — effective classification falls back to `making_classification`
+
+### `making_review_at` (utc_datetime_usec)
+
+- **Column**: `making_review_at`
+- **Type**: `utc_datetime_usec`
+- **Purpose**: Audit timestamp — when `making_review` was last set
+- **Set by**: Auto-stamped when `making_review` changes in the LAT Queue UI
 
 ### `is_commencing` (boolean)
 
@@ -98,15 +128,17 @@ FunctionCalculator (Elixir, post-LAT)
 
 ## Related Fields
 
-| Field | Type | Set By | Purpose |
-|-------|------|--------|---------|
-| `making_classification` | string | MakingDetector (LRT scraper) | Guess — builds LAT queue |
-| `making_confidence` | float | MakingDetector (LRT scraper) | Confidence score (0.0–1.0) |
-| `is_making` | boolean | LAT parser (Rust) | Confirmed — has Duty or Responsibility |
-| `is_commencing` | boolean | FunctionCalculator | Brings other laws into force |
-| `is_amending` | boolean | Derived from relationships | Primary purpose is amending |
-| `is_rescinding` | boolean | Derived from relationships | Primary purpose is revoking |
-| `is_enacting` | boolean | Derived from relationships | Is enabling legislation |
+| Field | Type | Set By | Stage | Purpose |
+|-------|------|--------|-------|---------|
+| `making_classification` | string | MakingDetector (LRT scraper) | 1: Auto | Immutable auto-guess — builds initial LAT queue |
+| `making_confidence` | float | MakingDetector (LRT scraper) | 1: Auto | Confidence score (0.0–1.0) |
+| `making_review` | string | Human via LAT Queue UI | 2: Review | Human-AI review — overrides auto for queue/Function |
+| `making_review_at` | datetime | Auto-stamped on review | 2: Review | Audit timestamp |
+| `is_making` | boolean | LAT parser (Rust) | 3: Definitive | Confirmed — has Duty or Responsibility |
+| `is_commencing` | boolean | FunctionCalculator | Derived | Brings other laws into force |
+| `is_amending` | boolean | Derived from relationships | Derived | Primary purpose is amending |
+| `is_rescinding` | boolean | Derived from relationships | Derived | Primary purpose is revoking |
+| `is_enacting` | boolean | Derived from relationships | Derived | Is enabling legislation |
 
 ## Airtable Statistics (initial seed)
 
