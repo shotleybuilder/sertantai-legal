@@ -450,7 +450,24 @@ defmodule SertantaiLegal.Legal.UkLrt do
 
     attribute :making_classification, :string do
       allow_nil?(true)
-      description("Making detection classification: making, not_making, or uncertain")
+
+      description(
+        "Auto-detected classification from MakingDetector: making, not_making, or uncertain. Immutable after scrape."
+      )
+    end
+
+    # Human-AI review classification (Stage 2 of making lifecycle)
+    attribute :making_review, :string do
+      allow_nil?(true)
+
+      description(
+        "Human-AI review classification: making, not_making, or uncertain. Set during LAT session scoping."
+      )
+    end
+
+    attribute :making_review_at, :utc_datetime_usec do
+      allow_nil?(true)
+      description("Timestamp of most recent making_review change")
     end
 
     attribute :making_detection_tier, :integer do
@@ -742,6 +759,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :is_commencing,
         :making_confidence,
         :making_classification,
+        :making_review,
+        :making_review_at,
         :making_detection_tier,
         :making_detection_signals,
         :function,
@@ -851,6 +870,8 @@ defmodule SertantaiLegal.Legal.UkLrt do
         :is_commencing,
         :making_confidence,
         :making_classification,
+        :making_review,
+        :making_review_at,
         :making_detection_tier,
         :making_detection_signals,
         :function,

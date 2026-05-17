@@ -351,6 +351,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Domain" => join_array(lrt.domain),
       "Geographic Region" => join_array(lrt.geo_region),
       "Making Classification" => lrt.making_classification,
+      "Making Review" => lrt.making_review,
       "Is Making" => lrt.is_making || false,
       "Fitness Person" => join_array(lrt.fitness_person),
       "Fitness Process" => join_array(lrt.fitness_process),

@@ -461,11 +461,15 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
 
   defp add_making(function, record) do
     cond do
-      # Confirmed by LAT parser (duty_type contains Duty or Responsibility)
+      # Stage 3: Definitive — confirmed by taxa/full-text analysis
       get_boolean_flag(record, :is_making) ->
         Map.put(function, "Making", true)
 
-      # Provisional from MakingDetector (title patterns, structural signals)
+      # Stage 2: Human-AI review during LAT session scoping
+      get_field(record, :making_review) == "making" ->
+        Map.put(function, "Making", true)
+
+      # Stage 1: Provisional — auto-detected by MakingDetector (title patterns, structural signals)
       get_field(record, :making_classification) == "making" ->
         Map.put(function, "Making", true)
 

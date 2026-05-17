@@ -95,6 +95,7 @@ export interface QueueItem {
 	family_ii: string | null;
 	is_making: boolean | null;
 	making_classification: string | null;
+	making_review: string | null;
 	live: string | null;
 	live_from_changes: string | null;
 	function: string[] | null;

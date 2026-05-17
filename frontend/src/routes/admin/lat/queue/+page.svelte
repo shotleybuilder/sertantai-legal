@@ -96,6 +96,7 @@
 		'family_ii',
 		'is_making',
 		'making_classification',
+		'making_review',
 		'live',
 		'live_from_changes',
 		'function',
@@ -105,7 +106,8 @@
 	];
 	const QUEUE_COLUMNS = QUEUE_COLUMNS_LIST.join(', ');
 	// Pre-compute lat_stale: true when LRT was updated > 6 months after LAT was last parsed
-	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM uk_lrt`;
+	// effective_classification: making_review takes precedence over making_classification
+	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale, COALESCE(making_review, making_classification) AS effective_classification FROM uk_lrt`;
 	const queueColumnMetadata = [
 		...UK_LRT_COLUMN_METADATA.filter((c) => QUEUE_COLUMNS_LIST.includes(c.name)),
 		{
@@ -114,20 +116,33 @@
 			postgresType: 'bool',
 			nullable: true,
 			hasDefault: false
+		},
+		{
+			name: 'effective_classification',
+			dataType: 'text' as const,
+			postgresType: 'text',
+			nullable: true,
+			hasDefault: false
 		}
 	];
 
 	// Core filters (always apply): candidates for LAT parsing, not revoked
-	// making_classification != 'not_making' (includes 'making', 'uncertain', and NULL/unclassified)
+	// effective_classification = COALESCE(making_review, making_classification)
+	// Exclude records where effective classification is 'not_making'
 	const QUEUE_CORE_FILTERS: FilterNode[] = [
 		{
 			id: 'q-class-ok',
 			logic: 'or' as const,
 			children: [
-				{ id: 'q-class-null', field: 'making_classification', operator: 'is_empty', value: '' },
 				{
-					id: 'q-class-ne',
-					field: 'making_classification',
+					id: 'q-eff-null',
+					field: 'effective_classification',
+					operator: 'is_empty',
+					value: ''
+				},
+				{
+					id: 'q-eff-ne',
+					field: 'effective_classification',
 					operator: 'not_equals',
 					value: 'not_making'
 				}
@@ -227,7 +242,13 @@
 	// ── Session filter ──────────────────────────────────────────────
 
 	/** Editable fields — whitelist prevents SQL injection via column name in PGLite write. */
-	const EDITABLE_FIELDS = new Set(['family', 'family_ii', 'making_classification', 'is_making']);
+	const EDITABLE_FIELDS = new Set([
+		'family',
+		'family_ii',
+		'making_review',
+		'making_review_at',
+		'is_making'
+	]);
 
 	/** Rebuild collection + adapter with a new SQL query. Preserves view state. */
 	async function rebuildCollection(query: string) {
@@ -301,6 +322,7 @@
 		'title_en',
 		'family',
 		'family_ii',
+		'making_review',
 		'making_classification',
 		'function',
 		'live',
@@ -338,10 +360,10 @@
 						filters: [] as FilterCondition[],
 						filterLogic: 'and',
 						sorting: [
-							{ column: 'making_classification', direction: 'asc' },
+							{ column: 'making_review', direction: 'asc' },
 							{ column: 'title_en', direction: 'asc' }
 						],
-						grouping: [{ column: 'making_classification' }],
+						grouping: [{ column: 'making_review' }],
 						columnVisibility: vis,
 						columnOrder: sessionViewCols,
 						columnSizing: {
@@ -349,6 +371,7 @@
 							title_en: 260,
 							family: 150,
 							family_ii: 130,
+							making_review: 100,
 							making_classification: 100,
 							function: 100,
 							live: 100,
@@ -399,6 +422,10 @@
 		if (!collectionRef) return;
 		const tx = collectionRef.update(id, (draft: Record<string, unknown>) => {
 			draft[field] = value === '' ? null : value;
+			// Auto-stamp making_review_at when making_review changes
+			if (field === 'making_review') {
+				draft['making_review_at'] = new Date().toISOString();
+			}
 		});
 		// Surface persistence errors to the user
 		tx.isPersisted.promise.catch((e: unknown) => {
@@ -601,9 +628,23 @@
 		{ name: 'family_ii', label: 'Family II', width: 200, dataType: 'text' },
 		{ name: 'is_making', label: 'Is Making', width: 90, dataType: 'text' },
 		{
+			name: 'making_review',
+			label: 'Review',
+			width: 130,
+			dataType: 'text',
+			selectOptions: makingClassificationOptions
+		},
+		{
 			name: 'making_classification',
-			label: 'Making Classification',
-			width: 160,
+			label: 'Auto Classification',
+			width: 140,
+			dataType: 'text',
+			selectOptions: makingClassificationOptions
+		},
+		{
+			name: 'effective_classification',
+			label: 'Effective',
+			width: 120,
 			dataType: 'text',
 			selectOptions: makingClassificationOptions
 		},
@@ -775,6 +816,7 @@
 		'name',
 		'title_en',
 		'is_making',
+		'making_review',
 		'making_classification',
 		'year',
 		'live',
@@ -1471,9 +1513,9 @@
 								<span class="text-gray-400">-</span>
 							{/if}
 						</button>
-					{:else if column === 'making_classification'}
+					{:else if column === 'making_review'}
 						{@const rowId3 = str(row.id)}
-						{#if editingCell?.id === rowId3 && editingCell?.field === 'making_classification'}
+						{#if editingCell?.id === rowId3 && editingCell?.field === 'making_review'}
 							<select
 								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								bind:value={editValue}
@@ -1489,8 +1531,7 @@
 						{:else}
 							<button
 								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-								on:dblclick={() =>
-									startEdit(str(row.id), 'making_classification', str(value) || null)}
+								on:dblclick={() => startEdit(str(row.id), 'making_review', str(value) || null)}
 								title="Double-click to edit"
 							>
 								{#if value === 'making'}
@@ -1509,6 +1550,18 @@
 									<span class="text-gray-400">-</span>
 								{/if}
 							</button>
+						{/if}
+					{:else if column === 'making_classification' || column === 'effective_classification'}
+						{#if value === 'making'}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
+						{:else if value === 'not_making'}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">Not Making</span>
+						{:else if value === 'uncertain'}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700"
+								>Uncertain</span
+							>
+						{:else}
+							<span class="text-gray-400">-</span>
 						{/if}
 					{:else if column === 'live'}
 						{@const status = str(value)}

@@ -92,6 +92,8 @@ CREATE TABLE IF NOT EXISTS uk_lrt (
   is_making BOOLEAN,
   is_commencing BOOLEAN,
   making_classification TEXT,
+  making_review TEXT,
+  making_review_at TIMESTAMPTZ,
 
   -- Amendment links
   amending TEXT[],
@@ -137,7 +139,7 @@ CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_cl
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 12; // Bump: remove live_source, live_conflict, live_from_metadata, live_conflict_detail (Issue #60)
+const SCHEMA_VERSION = 13; // Bump: add making_review, making_review_at columns
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;

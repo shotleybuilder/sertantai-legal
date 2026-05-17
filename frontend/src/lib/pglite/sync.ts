@@ -108,7 +108,9 @@ const UK_LRT_ALL_COLUMNS: string[] = [
 	'fitness_property',
 	'fitness_sector',
 	'fitness',
-	'making_classification'
+	'making_classification',
+	'making_review',
+	'making_review_at'
 ];
 
 /**

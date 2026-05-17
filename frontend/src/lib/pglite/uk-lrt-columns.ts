@@ -312,6 +312,20 @@ export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
 		nullable: true,
 		hasDefault: false
 	},
+	{
+		name: 'making_review',
+		dataType: 'text',
+		postgresType: 'text',
+		nullable: true,
+		hasDefault: false
+	},
+	{
+		name: 'making_review_at',
+		dataType: 'date',
+		postgresType: 'timestamptz',
+		nullable: true,
+		hasDefault: false
+	},
 
 	// Amendment links
 	{ name: 'amending', dataType: 'json', postgresType: 'text[]', nullable: true, hasDefault: false },

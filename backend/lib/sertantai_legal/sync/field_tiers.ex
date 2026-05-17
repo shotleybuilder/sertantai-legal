@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Sync.FieldTiers do
                         :domain,
                         :geo_region,
                         :making_classification,
+                        :making_review,
                         :is_making,
                         :fitness_person,
                         :fitness_process,

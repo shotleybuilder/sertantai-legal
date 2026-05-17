@@ -203,12 +203,19 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
 
   # Build an Ash query from filters.
   # Base filters match the LAT queue page: candidates for LAT parsing.
-  # making_classification != "not_making" (includes "making", "uncertain", and NULL).
+  # Prefers making_review (human-AI) over making_classification (auto-detected).
+  # A law is eligible if:
+  #   - reviewed and not excluded (making_review != "not_making"), OR
+  #   - unreviewed and auto-detected as parse-worthy (making_classification != "not_making")
   # Then applies user-selected optional filters on top.
   defp build_query(family, filters) do
     UkLrt
     |> Ash.Query.filter(family == ^family)
-    |> Ash.Query.filter(is_nil(making_classification) or making_classification != "not_making")
+    |> Ash.Query.filter(
+      (not is_nil(making_review) and making_review != "not_making") or
+        (is_nil(making_review) and
+           (is_nil(making_classification) or making_classification != "not_making"))
+    )
     |> Ash.Query.filter(not is_nil(title_en))
     |> Ash.Query.filter(is_nil(live) or live != "❌ Revoked / Repealed / Abolished")
     |> maybe_filter_type_code(filters["type_code"])
