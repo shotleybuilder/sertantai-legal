@@ -137,11 +137,24 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   # --- Internal ---
 
   defp decode_and_upsert(law_name, ipc_bytes) do
-    with {:ok, taxa} <- decode_arrow_ipc(ipc_bytes),
-         {:ok, record} <- find_record(law_name),
-         {:ok, _updated} <- upsert_taxa(record, taxa) do
-      Logger.info("[Zenoh.TaxaSubscriber] Updated taxa for #{law_name}")
-      :ok
+    case decode_arrow_ipc(ipc_bytes) do
+      {:ok, taxa} ->
+        with {:ok, record} <- find_record(law_name),
+             {:ok, _updated} <- upsert_taxa(record, taxa) do
+          Logger.info("[Zenoh.TaxaSubscriber] Updated taxa for #{law_name}")
+          :ok
+        end
+
+      {:error, :empty_payload} ->
+        # No taxa data at all — Housekeeping (procedural/administrative law)
+        with {:ok, record} <- find_record(law_name),
+             {:ok, _updated} <- apply_housekeeping(record) do
+          Logger.info("[Zenoh.TaxaSubscriber] Housekeeping for #{law_name} (empty payload)")
+          :ok
+        end
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -170,8 +183,50 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   defp upsert_taxa(record, taxa) do
     taxa = derive_enrichment_result(record, taxa)
-    Ash.update(record, taxa, action: :update)
+
+    Logger.info(
+      "[Zenoh.TaxaSubscriber] Upserting #{record.name}: " <>
+        "taxa_keys=#{inspect(Map.keys(taxa))}, " <>
+        "function=#{inspect(taxa[:function])}, " <>
+        "is_making=#{inspect(taxa[:is_making])}"
+    )
+
+    case Ash.update(record, taxa, action: :update) do
+      {:ok, _} = result ->
+        result
+
+      {:error, reason} = err ->
+        Logger.error(
+          "[Zenoh.TaxaSubscriber] Ash.update failed for #{record.name}: #{inspect(reason)}"
+        )
+
+        err
+    end
   end
+
+  # Handle empty Arrow payload — enrichment ran but no taxa data was sent.
+  # Determine label from existing record state:
+  # - If record already has duty_type (from prior enrichment) → Empowering
+  # - If record has no duty_type → Housekeeping
+  defp apply_housekeeping(record) do
+    label =
+      case record.duty_type do
+        %{values: values} when is_list(values) and values != [] -> "Empowering"
+        _ -> "Housekeeping"
+      end
+
+    function = merge_enrichment_function(record, label)
+
+    params =
+      %{function: function}
+      |> maybe_set_is_making(label)
+      |> maybe_prune_lat(record, label)
+
+    Ash.update(record, params, action: :update)
+  end
+
+  defp maybe_set_is_making(params, "Empowering"), do: Map.put(params, :is_making, false)
+  defp maybe_set_is_making(params, _label), do: params
 
   @doc false
   def normalize_taxa(row) do
@@ -257,13 +312,15 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   # Prune LAT rows for non-making enrichment results.
   # Empowering and Housekeeping laws don't need per-provision text for duty tracking.
-  defp maybe_prune_lat(taxa, record, "Making"), do: taxa
+  defp maybe_prune_lat(taxa, _record, "Making"), do: taxa
 
   defp maybe_prune_lat(taxa, record, _label) do
     law_id = record.id
 
     {deleted, _} =
-      SertantaiLegal.Repo.delete_all(from(l in "lat", where: l.law_id == ^law_id))
+      SertantaiLegal.Repo.delete_all(
+        from(l in "lat", where: l.law_id == type(^law_id, Ecto.UUID))
+      )
 
     if deleted > 0 do
       Logger.info(
