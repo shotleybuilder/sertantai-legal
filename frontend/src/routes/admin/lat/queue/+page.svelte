@@ -106,8 +106,7 @@
 	];
 	const QUEUE_COLUMNS = QUEUE_COLUMNS_LIST.join(', ');
 	// Pre-compute lat_stale: true when LRT was updated > 6 months after LAT was last parsed
-	// effective_classification: making_review takes precedence over making_classification
-	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale, COALESCE(making_review, making_classification) AS effective_classification FROM uk_lrt`;
+	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM uk_lrt`;
 	const queueColumnMetadata = [
 		...UK_LRT_COLUMN_METADATA.filter((c) => QUEUE_COLUMNS_LIST.includes(c.name)),
 		{
@@ -116,33 +115,39 @@
 			postgresType: 'bool',
 			nullable: true,
 			hasDefault: false
-		},
-		{
-			name: 'effective_classification',
-			dataType: 'text' as const,
-			postgresType: 'text',
-			nullable: true,
-			hasDefault: false
 		}
 	];
 
 	// Core filters (always apply): candidates for LAT parsing, not revoked
-	// effective_classification = COALESCE(making_review, making_classification)
-	// Exclude records where effective classification is 'not_making'
+	// Exclude records where the effective classification is 'not_making':
+	//   - reviewed as making or uncertain → eligible
+	//   - unreviewed: auto != not_making or auto is NULL → eligible
+	//   - reviewed as not_making → excluded (unless auto overrides — but review takes precedence)
 	const QUEUE_CORE_FILTERS: FilterNode[] = [
 		{
 			id: 'q-class-ok',
 			logic: 'or' as const,
 			children: [
+				// Reviewed as making or uncertain → eligible
+				{ id: 'q-review-making', field: 'making_review', operator: 'equals', value: 'making' },
 				{
-					id: 'q-eff-null',
-					field: 'effective_classification',
+					id: 'q-review-uncertain',
+					field: 'making_review',
+					operator: 'equals',
+					value: 'uncertain'
+				},
+				// Unreviewed AND (auto is NULL or auto != not_making) → eligible
+				// Since gridlite OR groups are flat, we include both unreviewed fallback conditions.
+				// A record with making_review = 'not_making' won't match any of these.
+				{
+					id: 'q-unreviewed-null-auto',
+					field: 'making_classification',
 					operator: 'is_empty',
 					value: ''
 				},
 				{
-					id: 'q-eff-ne',
-					field: 'effective_classification',
+					id: 'q-unreviewed-auto-ne',
+					field: 'making_classification',
 					operator: 'not_equals',
 					value: 'not_making'
 				}
@@ -226,9 +231,9 @@
 		reparseViewError = null;
 		try {
 			const { sql, params } = getEffectiveQuery();
-			// Filter to parseable laws: effective_classification != 'not_making'
-			const result = await db?.query<{ name: string; effective_classification: string | null }>(
-				`SELECT * FROM (${sql}) sub WHERE effective_classification IS NULL OR effective_classification != 'not_making'`,
+			// Filter to parseable laws: review takes precedence, fall back to auto
+			const result = await db?.query<{ name: string }>(
+				`SELECT * FROM (${sql}) sub WHERE making_review = 'making' OR making_review = 'uncertain' OR (making_review IS NULL AND (making_classification IS NULL OR making_classification != 'not_making'))`,
 				params
 			);
 			const names = result?.rows.map((r) => r.name) ?? [];
@@ -368,7 +373,7 @@
 							{ column: 'making_review', direction: 'asc' },
 							{ column: 'title_en', direction: 'asc' }
 						],
-						grouping: [{ column: 'making_classification' }, { column: 'making_review' }],
+						grouping: [{ column: 'making_classification' }],
 						columnVisibility: vis,
 						columnOrder: sessionViewCols,
 						columnSizing: {
@@ -427,11 +432,9 @@
 		if (!collectionRef) return;
 		const tx = collectionRef.update(id, (draft: Record<string, unknown>) => {
 			draft[field] = value === '' ? null : value;
-			// Auto-stamp making_review_at and recompute effective_classification
+			// Auto-stamp making_review_at when making_review changes
 			if (field === 'making_review') {
 				draft['making_review_at'] = new Date().toISOString();
-				draft['effective_classification'] =
-					(value === '' ? null : value) ?? draft['making_classification'] ?? null;
 			}
 		});
 		// Surface persistence errors to the user
@@ -645,13 +648,6 @@
 			name: 'making_classification',
 			label: 'Auto Classification',
 			width: 140,
-			dataType: 'text',
-			selectOptions: makingClassificationOptions
-		},
-		{
-			name: 'effective_classification',
-			label: 'Effective',
-			width: 120,
 			dataType: 'text',
 			selectOptions: makingClassificationOptions
 		},
@@ -1115,11 +1111,11 @@
 		});
 	}
 
-	// Reparse view record count — only parseable laws (effective_classification != 'not_making')
+	// Reparse view record count — only parseable laws
 	$: if (showReparseViewDialog && db && currentQuery) {
 		const eff = getEffectiveQuery();
 		db.query<{ count: string }>(
-			`SELECT COUNT(*) as count FROM (${eff.sql}) sub WHERE effective_classification IS NULL OR effective_classification != 'not_making'`,
+			`SELECT COUNT(*) as count FROM (${eff.sql}) sub WHERE making_review = 'making' OR making_review = 'uncertain' OR (making_review IS NULL AND (making_classification IS NULL OR making_classification != 'not_making'))`,
 			eff.params
 		)
 			.then((r) => {
@@ -1145,9 +1141,9 @@
 				params
 			);
 			statTotal = parseInt(total.rows[0]?.count ?? '0', 10);
-			// Count parseable: effective_classification != 'not_making'
+			// Count parseable: review takes precedence, fall back to auto
 			const parseable = await db.query<{ count: string }>(
-				`SELECT COUNT(*) as count FROM (${sql}) sub WHERE effective_classification IS NULL OR effective_classification != 'not_making'`,
+				`SELECT COUNT(*) as count FROM (${sql}) sub WHERE making_review = 'making' OR making_review = 'uncertain' OR (making_review IS NULL AND (making_classification IS NULL OR making_classification != 'not_making'))`,
 				params
 			);
 			statParseable = parseInt(parseable.rows[0]?.count ?? '0', 10);
@@ -1572,7 +1568,7 @@
 								{/if}
 							</button>
 						{/if}
-					{:else if column === 'making_classification' || column === 'effective_classification'}
+					{:else if column === 'making_classification'}
 						{#if value === 'making'}
 							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
 						{:else if value === 'not_making'}
