@@ -65,29 +65,35 @@ ORDER BY inserted_at DESC LIMIT 10;
 
 ### 1b. Review Making Classification
 
-This is the critical pre-parse QA step. The LAT parser only produces meaningful results for "making" laws (those that create duties/responsibilities). Before parsing, review the `making_classification` for all target laws.
+This is the critical pre-parse QA step. The LAT parser only produces meaningful results for "making" laws (those that create duties/responsibilities). Before parsing, review the auto-detected `making_classification` and set `making_review` for all target laws.
+
+**Three-stage making lifecycle:**
+1. `making_classification` — auto-detected by MakingDetector during scrape (immutable)
+2. `making_review` — human-AI review set during this stage (overrides auto for queue/Function)
+3. `is_making` — definitive, set by taxa after full-text parsing
 
 ```bash
-# Show making_classification distribution for a session's laws
+# Show auto-classification distribution for a session's laws
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.making_classification, COUNT(*) as count
+SELECT u.making_classification AS auto, u.making_review AS review, COUNT(*) as count
 FROM uk_lrt u
 JOIN scrape_session_records ssr ON ssr.law_name = u.name
 WHERE ssr.session_id = '{lrt_session_id}' AND ssr.status = 'confirmed'
-GROUP BY u.making_classification
-ORDER BY u.making_classification;
+GROUP BY u.making_classification, u.making_review
+ORDER BY u.making_classification, u.making_review;
 "
 ```
 
 ```bash
-# List laws needing classification review (uncertain or NULL)
+# List laws needing review (uncertain, NULL auto-classification, or no review yet)
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.name, u.title_en, u.making_classification, u.type_code
+SELECT u.name, u.title_en, u.making_classification AS auto, u.making_review AS review, u.type_code
 FROM uk_lrt u
 JOIN scrape_session_records ssr ON ssr.law_name = u.name
 WHERE ssr.session_id = '{lrt_session_id}' AND ssr.status = 'confirmed'
-  AND (u.making_classification IS NULL OR u.making_classification = 'uncertain')
-ORDER BY u.name;
+  AND u.making_review IS NULL
+  AND (u.making_classification IS NULL OR u.making_classification != 'not_making')
+ORDER BY u.making_classification, u.name;
 "
 ```
 
@@ -103,20 +109,48 @@ ORDER BY u.name;
 - "Amendment Regulations" with safety/environment parent → making
 - Acts with "Safety", "Health", "Environment", "Protection" in title → making
 
-Present recommendations to the human. They can update classifications inline in the LAT Queue grid (double-click the making_classification cell).
+Present recommendations to the human. They can update reviews inline in the LAT Queue grid (double-click the "Review" column) or AI can apply via SQL.
 
-### 1c. Confirm Scope
+### 1c. Confirm Scope and Apply Reviews
 
-Once classifications are reviewed:
+Once the human confirms which laws to parse:
+
+1. **Set `making_review = 'making'`** for laws selected for parsing
+2. **Infer `making_review = 'not_making'`** for all unselected session laws — by choosing not to parse them, the human implicitly reviewed them as not_making
 
 ```bash
-# Final count of laws to parse (making + uncertain, excluding not_making)
+# Apply reviews: selected laws → making
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+UPDATE uk_lrt SET making_review = 'making', making_review_at = NOW()
+WHERE name IN ({selected_law_names_comma_separated})
+RETURNING name, making_classification AS auto, making_review AS review;
+"
+```
+
+```bash
+# Infer reviews: unselected session laws → not_making
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+UPDATE uk_lrt SET making_review = 'not_making', making_review_at = NOW()
+WHERE name IN (
+  SELECT u.name FROM uk_lrt u
+  JOIN scrape_session_records ssr ON ssr.law_name = u.name
+  WHERE ssr.session_id = '{lrt_session_id}' AND ssr.status = 'confirmed'
+    AND u.making_review IS NULL
+)
+RETURNING name, making_classification AS auto, making_review AS review;
+"
+```
+
+This ensures every session law has a `making_review` after scoping — no NULLs left.
+
+```bash
+# Final count: laws to parse (making_review = 'making')
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
 SELECT COUNT(*) as laws_to_parse
 FROM uk_lrt u
 JOIN scrape_session_records ssr ON ssr.law_name = u.name
 WHERE ssr.session_id = '{lrt_session_id}' AND ssr.status = 'confirmed'
-  AND (u.making_classification IS NULL OR u.making_classification != 'not_making');
+  AND u.making_review = 'making';
 "
 ```
 
@@ -132,7 +166,7 @@ ORDER BY inserted_at DESC LIMIT 5;
 "
 ```
 
-**Confirm with the human**: "{N} laws to parse from session {lrt_session_id}. {M} classified as making, {K} uncertain. Proceed?"
+**Confirm with the human**: "{N} laws reviewed as making from session {lrt_session_id}. {M} reviewed as not_making (inferred from non-selection). Proceed to session creation?"
 
 ---
 

@@ -226,7 +226,11 @@
 		reparseViewError = null;
 		try {
 			const { sql, params } = getEffectiveQuery();
-			const result = await db?.query<{ name: string }>(sql, params);
+			// Filter to parseable laws: effective_classification != 'not_making'
+			const result = await db?.query<{ name: string; effective_classification: string | null }>(
+				`SELECT * FROM (${sql}) sub WHERE effective_classification IS NULL OR effective_classification != 'not_making'`,
+				params
+			);
 			const names = result?.rows.map((r) => r.name) ?? [];
 			const label = currentViewName || 'view';
 			const sessionResult = await createLatSessionFromView(names, label);
@@ -360,10 +364,11 @@
 						filters: [] as FilterCondition[],
 						filterLogic: 'and',
 						sorting: [
+							{ column: 'making_classification', direction: 'asc' },
 							{ column: 'making_review', direction: 'asc' },
 							{ column: 'title_en', direction: 'asc' }
 						],
-						grouping: [{ column: 'making_review' }],
+						grouping: [{ column: 'making_classification' }, { column: 'making_review' }],
 						columnVisibility: vis,
 						columnOrder: sessionViewCols,
 						columnSizing: {
@@ -422,9 +427,11 @@
 		if (!collectionRef) return;
 		const tx = collectionRef.update(id, (draft: Record<string, unknown>) => {
 			draft[field] = value === '' ? null : value;
-			// Auto-stamp making_review_at when making_review changes
+			// Auto-stamp making_review_at and recompute effective_classification
 			if (field === 'making_review') {
 				draft['making_review_at'] = new Date().toISOString();
+				draft['effective_classification'] =
+					(value === '' ? null : value) ?? draft['making_classification'] ?? null;
 			}
 		});
 		// Surface persistence errors to the user
@@ -1118,6 +1125,7 @@
 
 	// Stats from current filtered query
 	let statTotal = 0;
+	let statParseable = 0;
 	let statMissing = 0;
 	let statStale = 0;
 
@@ -1130,6 +1138,12 @@
 				params
 			);
 			statTotal = parseInt(total.rows[0]?.count ?? '0', 10);
+			// Count parseable: effective_classification != 'not_making'
+			const parseable = await db.query<{ count: string }>(
+				`SELECT COUNT(*) as count FROM (${sql}) sub WHERE effective_classification IS NULL OR effective_classification != 'not_making'`,
+				params
+			);
+			statParseable = parseInt(parseable.rows[0]?.count ?? '0', 10);
 			// For detailed stats, check if the filtered data includes lat_count-based filters
 			const hasLatFilters = latestGridState.filters.some(
 				(f: any) => f.field === 'lat_count' || f.id?.startsWith('q-lat')
@@ -1271,7 +1285,7 @@
 					disabled={!currentQuery}
 					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Reparse View ({statTotal})
+					Reparse View ({statParseable})
 				</button>
 			</div>
 		</div>
