@@ -1111,10 +1111,13 @@
 		});
 	}
 
-	// Reparse view record count — use effective filtered query
+	// Reparse view record count — only parseable laws (effective_classification != 'not_making')
 	$: if (showReparseViewDialog && db && currentQuery) {
 		const eff = getEffectiveQuery();
-		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params)
+		db.query<{ count: string }>(
+			`SELECT COUNT(*) as count FROM (${eff.sql}) sub WHERE effective_classification IS NULL OR effective_classification != 'not_making'`,
+			eff.params
+		)
 			.then((r) => {
 				reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
 			})
