@@ -18,15 +18,15 @@ A human-AI partnered workflow for parsing UK legislation body text into structur
 ```
  1. SCOPE & CLASSIFY    Human selects LRT session or family; AI reviews making_classification
         ↓
- 2. SESSION CREATION    AI creates LAT parse session from confirmed scope
+ 2. SESSION CREATION    Human creates LAT parse session via UI
         ↓
  3. PARSE               Human runs parsing via admin UI (SSE streaming)
         ↓
  4. QA: LAT SHAPE       AI validates LAT record structure ← STAGE GATE
         ↓
- 5. TAXA ENRICHMENT     AI triggers Zenoh taxa service, verifies results
+ 5. TAXA ENRICHMENT     Human triggers fractalaw enrichment; AI monitors
         ↓
- 6. QA: TAXA RESULTS    AI validates taxa/fitness data ← STAGE GATE
+ 6. QA: ENRICHMENT      AI validates function labels, DRRP, fitness, LAT pruning ← STAGE GATE
         ↓
  7. NAS SYNC            AI exports snapshot to NAS
         ↓
@@ -70,7 +70,7 @@ This is the critical pre-parse QA step. The LAT parser only produces meaningful 
 **Three-stage making lifecycle:**
 1. `making_classification` — auto-detected by MakingDetector during scrape (immutable)
 2. `making_review` — human-AI review set during this stage (overrides auto for queue/Function)
-3. `is_making` — definitive, set by taxa after full-text parsing
+3. `is_making` — definitive, set by taxa after full-text enrichment
 
 ```bash
 # Show auto-classification distribution for a session's laws
@@ -154,18 +154,6 @@ WHERE ssr.session_id = '{lrt_session_id}' AND ssr.status = 'confirmed'
 "
 ```
 
-Check for existing LAT sessions covering the same scope:
-
-```bash
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT session_id, status, group1_count, persisted_count,
-       lat_total_inserted, lat_total_annotations
-FROM scrape_sessions
-WHERE session_type = 'lat_parse'
-ORDER BY inserted_at DESC LIMIT 5;
-"
-```
-
 **Confirm with the human**: "{N} laws reviewed as making from session {lrt_session_id}. {M} reviewed as not_making (inferred from non-selection). Proceed to session creation?"
 
 ---
@@ -173,9 +161,9 @@ ORDER BY inserted_at DESC LIMIT 5;
 ## Stage 2: SESSION CREATION
 
 The human creates the LAT session via the UI:
-- **From session filter**: Click "Reparse View" button in the LAT Queue (uses all filtered records)
-- **From family**: Click "Parse Family" and select family/filters
-- **Individual laws**: Select records and use "LAT" button per-row
+- **From session filter**: Click "Reparse View ({N})" button in the LAT Queue — the count and session only include parseable laws (effective_classification != not_making)
+- **From family**: Click "Parse Family" and select family/filters — backend query respects making_review
+- **Individual laws**: Select records and use "LAT" button per-row (does not create a session)
 
 The UI navigates to `/admin/lat/sessions/{session_id}` after creation.
 
@@ -237,19 +225,16 @@ GROUP BY status;
 ### 4b. LAT Row Counts
 
 ```bash
-# LAT rows per parsed law — flag outliers
+# LAT rows per parsed law — uses trigger-maintained lat_count on uk_lrt
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.name, u.title_en, u.type_code,
-       COUNT(l.id) as lat_rows,
-       COUNT(DISTINCT l.section_type) as distinct_types,
+SELECT u.name, u.title_en, u.type_code, u.lat_count,
        COUNT(aa.id) as annotation_count
 FROM scrape_session_records ssr
 JOIN uk_lrt u ON u.name = ssr.law_name
-LEFT JOIN lat l ON l.law_id = u.id
 LEFT JOIN amendment_annotations aa ON aa.law_name = u.name
 WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
-GROUP BY u.name, u.title_en, u.type_code
-ORDER BY lat_rows;
+GROUP BY u.name, u.title_en, u.type_code, u.lat_count
+ORDER BY u.lat_count;
 "
 ```
 
@@ -275,10 +260,12 @@ ORDER BY count DESC;
 ```
 
 **Expected distribution** for a well-parsed law:
-- `section` or `article` — the bulk of rows (actual legal provisions)
+- `article` / `sub_article` — the bulk of rows (actual legal provisions for SIs)
+- `section` — for primary Acts
 - `part`, `chapter`, `heading` — structural grouping (fewer)
 - `schedule` — appendices (some laws have many)
 - `paragraph`, `sub_paragraph` — fine-grained subdivisions
+- `signed` — signature blocks (a few per law)
 
 **Flag**:
 - Only `title` type present → body parsing failed
@@ -301,24 +288,10 @@ GROUP BY u.name;
 ```
 
 ```bash
-# Check for empty text on provision-level rows (section, article, paragraph)
+# Check sort_key ordering is consistent (no duplicates per law)
+# Note: position duplicates are a known edge case with nested regulation structures
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.name, l.section_type, l.section_id, l.depth
-FROM lat l
-JOIN uk_lrt u ON u.id = l.law_id
-JOIN scrape_session_records ssr ON ssr.law_name = u.name
-WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
-  AND l.section_type IN ('section', 'article', 'paragraph', 'sub_paragraph')
-  AND (l.text IS NULL OR l.text = '')
-LIMIT 20;
-"
-```
-
-```bash
-# Check sort_key ordering is consistent (no gaps or duplicates per law)
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.name,
-       COUNT(*) as total,
+SELECT u.name, COUNT(*) as total,
        COUNT(DISTINCT l.sort_key) as distinct_sort_keys,
        COUNT(DISTINCT l.position) as distinct_positions
 FROM lat l
@@ -331,7 +304,7 @@ HAVING COUNT(*) != COUNT(DISTINCT l.sort_key)
 "
 ```
 
-**Flag**: Any rows returned indicate sort_key or position collisions — a parser bug.
+**Flag**: Rows returned indicate sort_key or position collisions. Minor sort_key duplicates (1-2 per law) with unique positions are a known parser edge case. Large numbers indicate a bug.
 
 ### 4e. Annotation Sanity Check
 
@@ -348,7 +321,7 @@ ORDER BY count DESC;
 "
 ```
 
-**Expected code_types**: F (textual amendments), C (modifications), I (commencement), E (extent), Editorial notes.
+**Expected code_types**: F (textual amendments), C (modifications), I (commencement), E (extent), Editorial notes. New 2026 SIs may have 0 annotations — this is normal.
 
 ### QA Gate Decision
 
@@ -367,11 +340,10 @@ Present a summary to the human:
 | Zero-row laws | {count} (PASS if 0) |
 | Section type distribution | {types_found} types across {laws} laws |
 | NULL section_type | {count} (PASS if 0) |
-| Empty text on provisions | {count} (PASS if 0) |
-| Sort key integrity | PASS/FAIL |
+| Sort key integrity | PASS/WARN ({n} laws with duplicates) |
 | Annotations | {total} across {laws_with_ann} laws |
 
-**Recommendation**: PROCEED to taxa / HOLD (fix issues first)
+**Recommendation**: PROCEED to enrichment / HOLD (fix issues first)
 ```
 
 The human decides whether to proceed to taxa enrichment.
@@ -380,125 +352,233 @@ The human decides whether to proceed to taxa enrichment.
 
 ## Stage 5: TAXA ENRICHMENT
 
-After LAT parsing, the taxa service (fractalaw) analyses the parsed text to extract duty holders, responsibilities, fitness classifications, and other structured metadata. This is triggered via Zenoh P2P mesh.
+After LAT parsing, the fractalaw DRRP pipeline analyses the parsed text to extract duties, rights, responsibilities, powers, fitness classifications, and other structured metadata. Results are published back via Zenoh.
 
-### 5a. Trigger Taxa Parsing
+**Important**: The Zenoh TaxaSubscriber is a GenServer — it does NOT hot-reload. If code changes were made to the subscriber, the Phoenix server must be restarted before triggering enrichment.
 
-The taxa service runs in fractalaw and subscribes to Zenoh topics. Triggering it depends on the fractalaw deployment:
+### 5a. Verify Zenoh Connectivity
 
-```bash
-# Check Zenoh subscriptions are active
-curl -s http://localhost:4003/api/zenoh/subscriptions | python3 -m json.tool
-```
+Check the admin Zenoh dashboard at `/admin/zenoh`:
+- **DataServer (Queryables)**: Should show `ready` with LAT queryable registered
+- **TaxaSubscriber**: Should show `ready` with `fractalaw/@dev/taxa/enrichment/*` subscription
 
-```bash
-# Check Zenoh queryables are registered
-curl -s http://localhost:4003/api/zenoh/queryables | python3 -m json.tool
-```
+### 5b. Trigger Enrichment
 
-If the taxa service needs to be invoked manually, the human will do this in their fractalaw environment. The AI should ask: "Are the taxa services running? Shall I wait for enrichment results?"
+The human triggers enrichment from fractalaw. Two approaches:
 
-### 5b. Monitor Enrichment
+1. **Automatic** (`fractalaw sync watch`): Already running, triggers on LAT persist events
+2. **Manual** (`fractalaw sync publish --laws ...`): For re-enrichment after code changes
 
-```bash
-# Check which session laws have taxa data populated
-PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.name, u.title_en,
-       CASE WHEN u.duty_type IS NOT NULL THEN 'yes' ELSE 'no' END as has_duty_type,
-       CASE WHEN u.has_fitness THEN 'yes' ELSE 'no' END as has_fitness,
-       u.is_making
-FROM uk_lrt u
-JOIN scrape_session_records ssr ON ssr.law_name = u.name
-WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
-ORDER BY u.name;
-"
-```
+The AI should ask: "Is fractalaw watching for events, or do you need to trigger enrichment manually?"
 
-**Wait until** all (or most) session laws show `has_duty_type = yes`. The Zenoh subscriber processes asynchronously — it may take a few minutes for all laws to be enriched.
+### 5c. Monitor Enrichment
+
+Watch the TaxaSubscriber section on `/admin/zenoh`:
+- **Received**: Number of enrichment payloads received
+- **Updated**: Successfully processed (should equal Received)
+- **Failed**: Processing errors (should be 0)
+
+If Received > Updated + Failed, some laws were silently dropped — check server logs for errors.
+
+### 5d. Three Enrichment Outcomes
+
+Fractalaw produces one of three results per law. All three publish an Arrow IPC payload:
+
+| Outcome | is_making | function label | duty_type | LAT |
+|---------|-----------|----------------|-----------|-----|
+| **Making** | `true` | `Making` | Has Duty/Responsibility | Retained |
+| **Empowering** | `false` | `Empowering` | Has Power/Right only | **Pruned** |
+| **Housekeeping** | NULL | `Housekeeping` | NULL (nothing found) | **Pruned** |
+
+See `FUNCTION_VALUES.md` for full documentation of enrichment function labels.
 
 ---
 
-## Stage 6: QA — Taxa Results
+## Stage 6: QA — Enrichment Results
 
-### 6a. Duty Type Validation
+### 6a. Function Label Validation
+
+The primary check — every enriched law should have exactly one enrichment label (Making, Empowering, or Housekeeping) in its function JSONB.
 
 ```bash
-# Check duty_type distribution — confirms is_making derivation
+# Check enrichment labels and is_making for all session laws
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT u.name, u.title_en,
-       u.making_classification,
-       u.is_making,
-       u.duty_type,
-       CASE WHEN u.function ? 'Making' THEN 'yes' ELSE 'no' END as function_making
+SELECT u.name, u.title_en, u.is_making,
+       u.function,
+       CASE
+         WHEN u.function ? 'Making' THEN 'Making'
+         WHEN u.function ? 'Empowering' THEN 'Empowering'
+         WHEN u.function ? 'Housekeeping' THEN 'Housekeeping'
+         ELSE '** NOT ENRICHED **'
+       END as enrichment_label
 FROM uk_lrt u
 JOIN scrape_session_records ssr ON ssr.law_name = u.name
 WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
-ORDER BY u.is_making DESC, u.name;
+ORDER BY enrichment_label, u.name;
 "
 ```
 
-**Check for**:
-- `making_classification = 'making'` but `is_making = false` → taxa didn't find duties (review the law's text)
-- `making_classification = 'not_making'` but `is_making = true` → classification was wrong (good catch by taxa!)
-- `duty_type` is NULL for confirmed making laws → taxa service may not have processed yet
+**Flag**:
+- `** NOT ENRICHED **` — enrichment didn't reach this law (check Zenoh logs)
+- `Making` but `is_making` is NULL or false → mismatch, investigate
+- `Empowering` or `Housekeeping` but `is_making = true` → conflicting state
 
-### 6b. Fitness Field Validation
+### 6b. DRRP JSONB Validation (Making laws)
+
+For Making laws, validate that the DRRP columns are populated with structured data.
 
 ```bash
-# Check fitness field population
+# Check DRRP column population for Making laws
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
 SELECT u.name,
-       u.has_fitness,
-       array_length(u.fitness_person, 1) as person_tags,
-       array_length(u.fitness_process, 1) as process_tags,
-       array_length(u.fitness_place, 1) as place_tags,
-       array_length(u.fitness_plant, 1) as plant_tags,
-       array_length(u.fitness_sector, 1) as sector_tags
+       u.duty_type,
+       CASE WHEN u.duties IS NOT NULL THEN jsonb_array_length(u.duties->'entries') END as duty_entries,
+       CASE WHEN u.rights IS NOT NULL THEN jsonb_array_length(u.rights->'entries') END as right_entries,
+       CASE WHEN u.responsibilities IS NOT NULL THEN jsonb_array_length(u.responsibilities->'entries') END as resp_entries,
+       CASE WHEN u.powers IS NOT NULL THEN jsonb_array_length(u.powers->'entries') END as power_entries
 FROM uk_lrt u
 JOIN scrape_session_records ssr ON ssr.law_name = u.name
 WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
-  AND u.is_making = true
+  AND u.function ? 'Making'
 ORDER BY u.name;
 "
 ```
 
 **Flag**:
-- Making laws with `has_fitness = false` — taxa service may have failed for this law
-- Laws with very few fitness tags (< 3 across all categories) — may be correctly sparse, but worth a spot-check
-
-### 6c. Making Classification Reconciliation
+- Making law with 0 duty_entries and 0 resp_entries → is_making may be wrong
+- Very high entry counts (> 100) → spot-check for parser noise
 
 ```bash
-# Compare pre-parse classification with post-taxa is_making
+# Check holder columns are populated for Making laws
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT
-  u.making_classification as pre_parse,
-  u.is_making as post_taxa,
-  COUNT(*) as count
+SELECT u.name,
+       CASE WHEN u.duty_holder IS NOT NULL THEN 'yes' ELSE 'no' END as has_duty_holder,
+       CASE WHEN u.rights_holder IS NOT NULL THEN 'yes' ELSE 'no' END as has_rights_holder,
+       CASE WHEN u.responsibility_holder IS NOT NULL THEN 'yes' ELSE 'no' END as has_resp_holder,
+       CASE WHEN u.power_holder IS NOT NULL THEN 'yes' ELSE 'no' END as has_power_holder
 FROM uk_lrt u
 JOIN scrape_session_records ssr ON ssr.law_name = u.name
 WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
-GROUP BY u.making_classification, u.is_making
-ORDER BY u.making_classification;
+  AND u.function ? 'Making'
+ORDER BY u.name;
 "
 ```
 
-**Expected**: Most `making` → `is_making=true`, most `not_making` → `is_making=false`. Mismatches are interesting — they show where the lightweight title-based classification diverged from the full-text analysis.
+### 6c. DRRP JSONB Validation (Empowering laws)
+
+Empowering laws should have powers/rights data but no duties/responsibilities.
+
+```bash
+# Check Empowering laws have powers/rights but not duties
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.duty_type,
+       CASE WHEN u.powers IS NOT NULL THEN jsonb_array_length(u.powers->'entries') END as power_entries,
+       CASE WHEN u.rights IS NOT NULL THEN jsonb_array_length(u.rights->'entries') END as right_entries,
+       CASE WHEN u.duties IS NOT NULL THEN 'UNEXPECTED' ELSE 'ok' END as duties_check
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
+  AND u.function ? 'Empowering'
+ORDER BY u.name;
+"
+```
+
+### 6d. Fitness Validation
+
+```bash
+# Check fitness field population for Making laws
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.has_fitness,
+       array_length(u.fitness_person, 1) as person,
+       array_length(u.fitness_process, 1) as process,
+       array_length(u.fitness_place, 1) as place,
+       array_length(u.fitness_plant, 1) as plant,
+       array_length(u.fitness_sector, 1) as sector,
+       CASE WHEN u.fitness IS NOT NULL THEN array_length(u.fitness, 1) END as fitness_rules
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
+  AND u.function ? 'Making'
+ORDER BY u.name;
+"
+```
+
+**Flag**:
+- Making laws with `has_fitness = false` — taxa found duties but no applicability signals. May be correct for narrow/procedural duty-creating laws.
+- Fitness tag arrays populated but `fitness` detail array is NULL — partial enrichment.
+
+### 6e. LAT Pruning Verification
+
+Empowering and Housekeeping laws should have their LAT rows pruned.
+
+```bash
+# Verify LAT was pruned for non-making enrichment results
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.lat_count,
+       (SELECT COUNT(*) FROM lat l WHERE l.law_id = u.id) as actual_lat,
+       CASE
+         WHEN u.function ? 'Making' THEN 'Making (retain)'
+         WHEN u.function ? 'Empowering' THEN 'Empowering (prune)'
+         WHEN u.function ? 'Housekeeping' THEN 'Housekeeping (prune)'
+       END as expected_action
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
+ORDER BY u.name;
+"
+```
+
+**Flag**:
+- Empowering/Housekeeping with `actual_lat > 0` → pruning failed
+- Making with `actual_lat = 0` → LAT was incorrectly pruned
+- `lat_count` doesn't match `actual_lat` → trigger propagation needed
+
+### 6f. Review Reconciliation
+
+Compare the human's pre-parse making_review against the enrichment outcome.
+
+```bash
+# Review vs enrichment — flag disagreements
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.making_review AS review,
+       CASE
+         WHEN u.function ? 'Making' THEN 'Making'
+         WHEN u.function ? 'Empowering' THEN 'Empowering'
+         WHEN u.function ? 'Housekeeping' THEN 'Housekeeping'
+       END as enrichment,
+       CASE
+         WHEN u.making_review = 'making' AND u.function ? 'Making' THEN 'agree'
+         WHEN u.making_review = 'making' AND (u.function ? 'Empowering' OR u.function ? 'Housekeeping') THEN 'DISAGREE — review said making'
+         WHEN u.making_review = 'not_making' AND u.function ? 'Making' THEN 'DISAGREE — review said not_making'
+         ELSE 'ok'
+       END as agreement
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = '{lat_session_id}' AND ssr.status = 'confirmed'
+ORDER BY agreement DESC, u.name;
+"
+```
+
+Disagreements are informative, not errors. They show where the lightweight title-based review diverged from full-text analysis. Common: amendment orders reviewed as "making" that turn out to be Empowering (powers only) or Housekeeping (purely procedural).
 
 ### QA Gate Decision
 
 ```
-## Post-Taxa QA Summary
+## Post-Enrichment QA Summary
 
 **Session**: {lat_session_id}
 **Laws enriched**: {enriched_count}/{total_count}
 
 | Check | Result |
 |-------|--------|
-| Taxa coverage | {enriched}/{total} laws have duty_type |
-| Fitness coverage | {with_fitness}/{making_count} making laws have fitness |
-| Classification agreement | {agree}% making_classification matches is_making |
-| Mismatches | {mismatch_count} (review list above) |
+| Enrichment coverage | {enriched}/{total} have enrichment label |
+| Making | {making_count} laws (is_making=true, LAT retained) |
+| Empowering | {empowering_count} laws (powers/rights, LAT pruned) |
+| Housekeeping | {housekeeping_count} laws (no DRRP, LAT pruned) |
+| DRRP population | {with_drrp}/{making_count} Making laws have DRRP entries |
+| Fitness coverage | {with_fitness}/{making_count} Making laws have fitness |
+| LAT pruning | PASS/FAIL ({unpruned} Empowering/Housekeeping with LAT remaining) |
+| Review agreement | {agree_count}/{total} ({disagree_count} disagreements) |
 
 **Recommendation**: PROCEED to NAS sync / HOLD
 ```
@@ -526,25 +606,19 @@ ls /mnt/nas/sertantai-data/data/snapshots/latest/
 ## Stage 8: QA — Post-NAS Sync
 
 ```bash
-cat /mnt/nas/sertantai-data/data/snapshots/latest/manifest.json | python3 -m json.tool
+# Verify checksums
+./scripts/nas/import-snapshot.sh --verify-only
 ```
 
-**Verify**:
-1. Manifest timestamp is fresh (within last hour)
-2. All tables present with non-zero row counts
-3. Checksums match:
-   ```bash
-   ./scripts/nas/import-snapshot.sh --verify-only
-   ```
-4. LAT row count matches dev:
-   ```bash
-   PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-   SELECT
-     (SELECT COUNT(*) FROM uk_lrt) as uk_lrt,
-     (SELECT COUNT(*) FROM lat) as lat,
-     (SELECT COUNT(*) FROM amendment_annotations) as annotations;
-   "
-   ```
+```bash
+# Compare row counts with dev
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT
+  (SELECT COUNT(*) FROM uk_lrt) as uk_lrt,
+  (SELECT COUNT(*) FROM lat) as lat,
+  (SELECT COUNT(*) FROM amendment_annotations) as annotations;
+"
+```
 
 ### QA Gate Decision
 
@@ -565,41 +639,54 @@ cat /mnt/nas/sertantai-data/data/snapshots/latest/manifest.json | python3 -m jso
 
 ## Stage 9: Production Sync
 
-Export delta and apply to production. LAT sync must include uk_lrt (taxa fields), lat, and amendment_annotations.
+Export delta and apply to production. See the `prod-data-sync` skill for detailed patterns, pitfalls, and troubleshooting.
 
-### 9a. Export Delta
+### 9a. Pre-flight: Schema Parity
+
+If new columns were added (e.g., migrations), deploy the backend to production first so migrations run before the delta is applied.
+
+```bash
+# Build, push, deploy with --migrate
+./scripts/deployment/build-backend.sh
+# Push requires interactive GHCR auth — human runs: ! ./scripts/deployment/push-backend.sh
+./scripts/deployment/deploy-prod.sh --backend --migrate
+```
+
+### 9b. Export Delta
 
 ```bash
 cd /var/home/jason/Desktop/sertantai-legal/backend
 
-# Export changes since last sync
-mix run ../scripts/sync/export_delta.exs --since "{last_sync_timestamp}" --output-dir ../scripts/sync/
+# Export changes since last sync (uses watermarks from last_sync.json)
+mix data.export_delta
 ```
 
-### 9b. Review Delta
+### 9c. Review Delta Size
 
 ```bash
-cat ../scripts/sync/delta_*_manifest.json | python3 -m json.tool
+# Check file size and row counts
+ls -lh ../scripts/sync/delta_*.sql
+grep -n "^-- .* rows)" ../scripts/sync/delta_{timestamp}.sql
 ```
 
-Check: Row counts per table, no unexpected tables, file size reasonable.
+### 9d. Apply to Production
 
-### 9c. Apply to Production
+**For small deltas (< 50MB)**: Pipe directly through SSH.
 
 ```bash
-# Apply via SSH pipeline
-cat ../scripts/sync/{delta_file}.sql | ssh sertantai-hz "docker exec -i shared_postgres psql -U postgres -d sertantai_legal_prod"
+cat ../scripts/sync/delta_{timestamp}.sql | \
+  ssh sertantai-hz "docker exec -i shared_postgres psql -U postgres \
+  -d sertantai_legal_prod -v ON_ERROR_STOP=1"
 ```
 
-**Important**: If the delta includes bulk LAT inserts, consider disabling the `propagate_lat_stats` trigger during import:
+**For large deltas (> 50MB)**: Split by table to avoid single-transaction memory issues. See `prod-data-sync` skill Pattern 3.
+
 ```bash
-ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c '
-ALTER TABLE lat DISABLE TRIGGER propagate_lat_stats;
-'"
-# ... apply delta ...
-ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c '
-ALTER TABLE lat ENABLE TRIGGER propagate_lat_stats;
-'"
+# Split into per-table files
+grep -n "^-- .* rows)" ../scripts/sync/delta_{timestamp}.sql
+# Use awk to extract sections, add BEGIN/COMMIT wrappers
+# Upload compressed, apply individually in FK order:
+# 1. uk_lrt → 2. lat → 3. amendment_annotations → 4. sessions → 5. session_records → 6. cascade
 ```
 
 ---
@@ -607,20 +694,24 @@ ALTER TABLE lat ENABLE TRIGGER propagate_lat_stats;
 ## Stage 10: QA — Post-Production Sync
 
 ```bash
-# Production counts
-ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c '
-SELECT
-  (SELECT COUNT(*) FROM uk_lrt) as uk_lrt,
-  (SELECT COUNT(*) FROM lat) as lat,
-  (SELECT COUNT(*) FROM amendment_annotations) as annotations;
-'"
+# Compare all 6 tables
+ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c \"
+  SELECT 'uk_lrt' AS t, COUNT(*) FROM uk_lrt
+  UNION ALL SELECT 'lat', COUNT(*) FROM lat
+  UNION ALL SELECT 'amendments', COUNT(*) FROM amendment_annotations
+  UNION ALL SELECT 'scrape_sessions', COUNT(*) FROM scrape_sessions
+  UNION ALL SELECT 'scrape_session_records', COUNT(*) FROM scrape_session_records
+  UNION ALL SELECT 'cascade_affected_laws', COUNT(*) FROM cascade_affected_laws;
+\""
 
 # Compare with dev
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
-SELECT
-  (SELECT COUNT(*) FROM uk_lrt) as uk_lrt,
-  (SELECT COUNT(*) FROM lat) as lat,
-  (SELECT COUNT(*) FROM amendment_annotations) as annotations;
+  SELECT 'uk_lrt' AS t, COUNT(*) FROM uk_lrt
+  UNION ALL SELECT 'lat', COUNT(*) FROM lat
+  UNION ALL SELECT 'amendments', COUNT(*) FROM amendment_annotations
+  UNION ALL SELECT 'scrape_sessions', COUNT(*) FROM scrape_sessions
+  UNION ALL SELECT 'scrape_session_records', COUNT(*) FROM scrape_session_records
+  UNION ALL SELECT 'cascade_affected_laws', COUNT(*) FROM cascade_affected_laws;
 "
 ```
 
@@ -629,14 +720,19 @@ SELECT
 ```
 ## Post-Production QA Summary
 
-| Table | Dev | Prod | Delta |
+| Table | Dev | Prod | Match |
 |-------|-----|------|-------|
-| uk_lrt | {dev} | {prod} | {diff} |
-| lat | {dev} | {prod} | {diff} |
-| amendment_annotations | {dev} | {prod} | {diff} |
+| uk_lrt | {dev} | {prod} | Yes/No |
+| lat | {dev} | {prod} | Yes/No |
+| amendment_annotations | {dev} | {prod} | Yes/No |
+| scrape_sessions | {dev} | {prod} | Yes/No |
+| scrape_session_records | {dev} | {prod} | Yes/No |
+| cascade_affected_laws | {dev} | {prod} | Yes/No |
 
 **Recommendation**: COMPLETE / INVESTIGATE (counts diverge)
 ```
+
+Note: Delta sync does not propagate deletes. If prod has MORE rows than dev, see `prod-data-sync` skill Pattern 4 for orphan cleanup.
 
 ---
 
@@ -649,13 +745,15 @@ All stage gates passed. Summarise the session:
 
 **LRT Session**: {lrt_session_id}
 **LAT Session**: {lat_session_id}
+**Laws reviewed**: {total_reviewed} ({making_count} making, {not_making_count} not_making)
 **Laws parsed**: {confirmed_count}
-**LAT rows created**: {total_lat_rows}
-**Annotations created**: {total_annotations}
-**Taxa enriched**: {enriched_count} laws ({making_count} confirmed making)
-**Classification accuracy**: {agree}% (pre-parse classification vs post-taxa)
+**Enrichment results**:
+  - {making_count} Making — LAT retained
+  - {empowering_count} Empowering — LAT pruned, DRRP retained
+  - {housekeeping_count} Housekeeping — LAT pruned, no DRRP
+**Review accuracy**: {agree_count}/{total} ({disagree_count} disagreements)
 **NAS snapshot**: Updated ({timestamp})
-**Production sync**: Applied ({delta_file})
+**Production sync**: Applied ({delta_summary})
 **All QA gates**: PASSED
 ```
 
@@ -673,15 +771,16 @@ All stage gates passed. Summarise the session:
 | LAT Session Detail UI | `frontend/src/routes/admin/lat/sessions/[id]/+page.svelte` |
 | LAT Queue UI | `frontend/src/routes/admin/lat/queue/+page.svelte` |
 | Zenoh Taxa Subscriber | `backend/lib/sertantai_legal/zenoh/taxa_subscriber.ex` |
+| Function Calculator | `backend/lib/sertantai_legal/legal/function_calculator.ex` |
 | UK LRT Resource | `backend/lib/sertantai_legal/legal/uk_lrt.ex` |
 | NAS Export Script | `scripts/nas/export-snapshot.sh` |
-| Delta Export | `scripts/sync/export_delta.exs` |
-| Delta Apply | `scripts/sync/apply_delta.exs` |
+| Delta Export Task | `backend/lib/mix/tasks/data.export_delta.ex` |
 
 ## Related Skills
 
 - [LRT Scrape Session](../lrt-scrape-session/) — Prerequisite: ingest laws into uk_lrt before LAT parsing
 - [NAS Data Sync](../nas-data-sync/) — NAS mount config, export/import details
-- [Production Data Sync](../prod-data-sync/) — Delta export/apply, SSH pipeline, trigger management
+- [Production Data Sync](../prod-data-sync/) — Delta export/apply, SSH pipeline, split-by-table, trigger management
+- [Production Deployment](../production-deployment/) — Build, push, deploy Docker images, run migrations
 - [Zenoh P2P Publishing](../zenoh-p2p-publishing/) — Zenoh mesh architecture and taxa queryables
 - [Enacted By QA](../enacted-by-qa/) — Complementary QA of enacted_by parser results
