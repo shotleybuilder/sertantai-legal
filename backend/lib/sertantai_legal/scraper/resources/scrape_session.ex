@@ -242,8 +242,9 @@ defmodule SertantaiLegal.Scraper.ScrapeSession do
     end
 
     read :recent do
-      description("Get recent sessions")
-      prepare(build(sort: [inserted_at: :desc], limit: 10))
+      description("Get recent LRT scrape sessions (excludes LAT parse sessions)")
+      filter(expr(is_nil(session_type) or session_type != "lat_parse"))
+      prepare(build(sort: [inserted_at: :desc], limit: 20))
     end
 
     read :by_status do

@@ -310,9 +310,13 @@
 			const res = await authFetch(`${API_URL}/api/sessions`);
 			if (!res.ok) return;
 			const data = await res.json();
+			// Only show monthly scrape sessions (YYYY-MM-DD-to-DD), not ad-hoc reparse sessions
+			const monthlyPattern = /^\d{4}-\d{2}-\d{2}-to-\d+$/;
 			recentSessions = (data.sessions || [])
-				.filter((s: SessionSummary) => s.status === 'completed')
-				.slice(0, 12);
+				.filter(
+					(s: SessionSummary) => s.status === 'completed' && monthlyPattern.test(s.session_id)
+				)
+				.slice(0, 24);
 		} catch {
 			/* non-critical — dropdown just stays empty */
 		}
