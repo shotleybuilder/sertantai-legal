@@ -1,6 +1,6 @@
 {
-  "last_delta_file": "delta_2026-05-17T17-20-00.sql",
-  "last_export_at": "2026-05-17T17:20:00.491068Z",
+  "last_delta_file": "delta_2026-05-17T19-45-26.sql",
+  "last_export_at": "2026-05-17T19:45:26.304078Z",
   "watermarks": {
     "amendment_annotations": "2026-05-17T17:09:31.000000Z",
     "cascade_affected_laws": "2026-05-15T15:39:11.031943Z",
