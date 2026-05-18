@@ -74,3 +74,12 @@
 - Old table names kept as views so existing code works during transition
 - ElectricSQL REPLICA IDENTITY FULL needed on new tables
 - 65 migrations in chain — single new migration wraps entire transition
+
+**Ended**: 2026-05-18
+**Commits**: `b13aa2a`
+
+## Summary
+- Completed: 18 of 18 todos
+- Files: `20260518000001_partition_legal_register.exs`, `export-snapshot.sh`, `import-snapshot.sh`, `delta/config.ex`, `nas-data-sync/SKILL.md`, `prod-data-sync/SKILL.md`
+- Outcome: Migrated uk_lrt/lat to partitioned legal_register/legal_articles tables with backwards-compat views. All 1,211 tests pass. NAS scripts, delta sync config, and skill docs updated for new table names.
+- Next: Phase 1.2 — Backend resource generalisation (new Ash resource, API route generalisation)
