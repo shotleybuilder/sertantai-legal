@@ -12,6 +12,7 @@
 export const CREATE_UK_LRT_SQL = `
 CREATE TABLE IF NOT EXISTS uk_lrt (
   id UUID PRIMARY KEY,
+  country TEXT DEFAULT 'uk',
 
   -- Credentials
   name VARCHAR,
@@ -139,7 +140,7 @@ CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_cl
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 13; // Bump: add making_review, making_review_at columns
+const SCHEMA_VERSION = 14; // Bump: add country column for partitioned legal_register
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;

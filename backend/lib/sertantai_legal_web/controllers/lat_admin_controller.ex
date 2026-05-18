@@ -15,7 +15,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   use SertantaiLegalWeb, :controller
 
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
   alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
@@ -557,7 +557,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
         names = Enum.map(records, fn r -> r["name"] || r[:name] end)
 
         family_lookup =
-          case Ash.read(Ash.Query.filter(UkLrt, name in ^names)) do
+          case Ash.read(Ash.Query.filter(LegalRegister, name in ^names)) do
             {:ok, lrt_records} ->
               Map.new(lrt_records, fn r -> {r.name, r.family} end)
 

@@ -335,9 +335,9 @@ defmodule SertantaiLegal.Scraper.ParsedLawTest do
     end
 
     test "handles struct input" do
-      # Simulate a UkLrt struct
+      # Simulate a LegalRegister struct
       record = %{
-        __struct__: SertantaiLegal.Legal.UkLrt,
+        __struct__: SertantaiLegal.Legal.LegalRegister,
         __meta__: %{},
         id: "test-id",
         title_en: "Test Act",

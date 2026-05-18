@@ -19,10 +19,14 @@ defmodule SertantaiLegal.Api do
   use Ash.Domain
 
   resources do
-    # UK Legal Register Table - shared reference data (no organization_id)
-    resource(SertantaiLegal.Legal.UkLrt)
+    # Multi-jurisdiction Legal Register (partitioned by country)
+    resource(SertantaiLegal.Legal.LegalRegister)
 
-    # Legal Articles Table - one row per structural unit of legal text (belongs to UkLrt)
+    # Multi-jurisdiction Legal Articles (partitioned by country)
+    resource(SertantaiLegal.Legal.LegalArticle)
+
+    # Legacy aliases — backed by views, kept for backwards compatibility during transition
+    resource(SertantaiLegal.Legal.UkLrt)
     resource(SertantaiLegal.Legal.Lat)
 
     # Amendment Annotations - legislative change footnotes linked to LAT sections

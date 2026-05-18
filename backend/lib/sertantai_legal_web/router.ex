@@ -53,12 +53,20 @@ defmodule SertantaiLegalWeb.Router do
     get("/health/detailed", HealthController, :show)
   end
 
-  # Public API endpoints — UK LRT reference data (read-only, no auth)
+  # Public API endpoints — legal register reference data (read-only, no auth)
   scope "/api", SertantaiLegalWeb do
     pipe_through(:api)
     get("/hello", HelloController, :index)
 
-    # UK LRT read endpoints (public reference data)
+    # Legal register read endpoints (multi-jurisdiction, public reference data)
+    get("/laws", UkLrtController, :index)
+    get("/laws/filters", UkLrtController, :filters)
+    get("/laws/search", UkLrtController, :search)
+    get("/laws/exists/*name", UkLrtController, :exists)
+    post("/laws/batch-exists", UkLrtController, :batch_exists)
+    get("/laws/:id", UkLrtController, :show)
+
+    # Legacy aliases (kept for frontend backwards compatibility)
     get("/uk-lrt", UkLrtController, :index)
     get("/uk-lrt/filters", UkLrtController, :filters)
     get("/uk-lrt/search", UkLrtController, :search)
@@ -92,6 +100,7 @@ defmodule SertantaiLegalWeb.Router do
   scope "/api", SertantaiLegalWeb do
     pipe_through([:sse, :sse_authenticated])
     get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
+    get("/laws/:id/parse-stream", UkLrtController, :parse_stream)
     get("/uk-lrt/:id/parse-stream", UkLrtController, :parse_stream)
     get("/lat/sessions/:id/parse-stream", LatAdminController, :lat_parse_stream)
   end
@@ -100,7 +109,12 @@ defmodule SertantaiLegalWeb.Router do
   scope "/api", SertantaiLegalWeb do
     pipe_through(:api_authenticated)
 
-    # UK LRT write endpoints (require org_id from JWT)
+    # Legal register write endpoints (require org_id from JWT)
+    patch("/laws/:id", UkLrtController, :update)
+    delete("/laws/:id", UkLrtController, :delete)
+    post("/laws/:id/rescrape", UkLrtController, :rescrape)
+
+    # Legacy aliases
     patch("/uk-lrt/:id", UkLrtController, :update)
     delete("/uk-lrt/:id", UkLrtController, :delete)
     post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)

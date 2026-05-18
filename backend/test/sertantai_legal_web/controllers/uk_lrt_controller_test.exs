@@ -3,9 +3,9 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
 
   setup :setup_auth
 
-  # Note: The UkLrt resource has an issue with `accept :*` not working correctly
-  # in test environment. Tests are written to work with existing database records
-  # or to test error paths. Full CRUD testing requires fixing the Ash action config.
+  # Note: Controller now uses LegalRegister resource (backed by partitioned legal_register table).
+  # Legacy /api/uk-lrt routes still work via router aliases.
+  # Tests use existing database records or test error paths.
 
   describe "GET /api/uk-lrt" do
     test "returns list structure", %{conn: conn} do

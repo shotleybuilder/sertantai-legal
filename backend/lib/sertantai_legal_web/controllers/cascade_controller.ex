@@ -12,7 +12,7 @@ defmodule SertantaiLegalWeb.CascadeController do
   alias SertantaiLegal.Scraper.SessionManager
   alias SertantaiLegal.Scraper.StagedParser
   alias SertantaiLegal.Scraper.LawParser
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
 
   require Ash.Query
 
@@ -627,7 +627,7 @@ defmodule SertantaiLegalWeb.CascadeController do
     if Enum.empty?(names) do
       %{}
     else
-      UkLrt
+      LegalRegister
       |> Ash.Query.filter(name in ^names)
       |> Ash.Query.select([:name, :title_en, :year, :type_code, :family, :enacting, :is_enacting])
       |> Ash.read!()
@@ -667,7 +667,7 @@ defmodule SertantaiLegalWeb.CascadeController do
     source_laws = entry.source_laws || []
 
     # Look up parent law
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^parent_name)
          |> Ash.Query.select([:id, :name, :enacting, :is_enacting])
          |> Ash.read_one() do
@@ -729,7 +729,7 @@ defmodule SertantaiLegalWeb.CascadeController do
 
     # Check if already exists (Ash.read_one always returns {:ok, result | nil})
     {:ok, existing} =
-      UkLrt
+      LegalRegister
       |> Ash.Query.filter(name == ^law_name)
       |> Ash.read_one()
 

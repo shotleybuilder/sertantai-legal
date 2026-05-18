@@ -111,7 +111,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   Returns counts for each group and total.
   """
   def db_status(conn, %{"id" => session_id}) do
-    alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Legal.LegalRegister
 
     with {:ok, _session} <- SessionManager.get(session_id) do
       # Collect all record names from groups 1 and 2 (group 3 is excluded)
@@ -131,7 +131,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
       # Query DB for existing records with updated_at
       existing_records =
         if length(names) > 0 do
-          UkLrt
+          LegalRegister
           |> Ash.Query.filter(name in ^names)
           |> Ash.Query.select([:name, :updated_at])
           |> Ash.read!()
@@ -1575,14 +1575,14 @@ defmodule SertantaiLegalWeb.ScrapeController do
   # Returns the full existing record for diff comparison
   # Optional scraped_keys filters the existing record to only include keys the scraper produces
   defp check_duplicate(name, scraped_keys \\ nil) do
-    alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Legal.LegalRegister
     alias SertantaiLegal.Scraper.IdField
     require Ash.Query
 
     # Normalize name to database format (uksi/2025/622 -> UK_uksi_2025_622)
     db_name = IdField.normalize_to_db_name(name)
 
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^db_name)
          |> Ash.read() do
       {:ok, [existing | _]} ->
@@ -1599,7 +1599,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     end
   end
 
-  # Convert an existing UkLrt struct to a map for JSON serialization and diff comparison
+  # Convert an existing LegalRegister struct to a map for JSON serialization and diff comparison
   # Uses ParsedLaw.from_db_record/1 to unwrap JSONB fields to list format
   # Always returns the full record - frontend handles diff display appropriately
   # (RecordDiff filters out changes where both values are empty)
@@ -1707,7 +1707,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   - not_in_db: Laws that don't exist (can be scraped)
   """
   def affected_laws(conn, %{"id" => session_id}) do
-    alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Legal.LegalRegister
 
     with {:ok, _session} <- SessionManager.get(session_id) do
       summary = Storage.get_affected_laws_summary(session_id)
@@ -1724,7 +1724,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
         else
           # Query DB for existing laws
           existing =
-            UkLrt
+            LegalRegister
             |> Ash.Query.filter(name in ^all_affected)
             |> Ash.Query.select([:id, :name, :title_en, :year, :type_code])
             |> Ash.read!()
@@ -1767,7 +1767,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
           {[], []}
         else
           existing =
-            UkLrt
+            LegalRegister
             |> Ash.Query.filter(name in ^enacting_parents)
             |> Ash.Query.select([
               :id,
@@ -1853,7 +1853,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   def batch_reparse(conn, %{"id" => session_id} = params) do
     alias SertantaiLegal.Scraper.StagedParser
     alias SertantaiLegal.Scraper.LawParser
-    alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Legal.LegalRegister
 
     names = params["names"]
 
@@ -1866,7 +1866,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
           # Default to all affected laws in DB
           summary = Storage.get_affected_laws_summary(session_id)
 
-          UkLrt
+          LegalRegister
           |> Ash.Query.filter(name in ^summary.all_affected)
           |> Ash.Query.select([:name])
           |> Ash.read!()
@@ -1946,7 +1946,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
   Progress and results for each parent law updated.
   """
   def update_enacting_links(conn, %{"id" => session_id} = params) do
-    alias SertantaiLegal.Legal.UkLrt
+    alias SertantaiLegal.Legal.LegalRegister
     alias SertantaiLegal.Scraper.CascadeAffectedLaw
 
     names = params["names"]
@@ -2028,7 +2028,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
               %{name: parent_name, status: "skipped", message: "No source laws to add"}
             else
               # Find the parent law in DB
-              case UkLrt
+              case LegalRegister
                    |> Ash.Query.filter(name == ^parent_name)
                    |> Ash.read_one() do
                 {:ok, nil} ->

@@ -518,7 +518,7 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
     end
 
     test "updates enacting array on parent law", %{conn: conn} do
-      alias SertantaiLegal.Legal.UkLrt
+      alias SertantaiLegal.Legal.LegalRegister
 
       # Create a parent law with empty enacting array
       parent_law =
@@ -550,13 +550,13 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       assert "uksi/2025/100" in result["added"]
 
       # Verify the database was updated
-      {:ok, updated_law} = Ash.get(UkLrt, parent_law.id)
+      {:ok, updated_law} = Ash.get(LegalRegister, parent_law.id)
       assert "uksi/2025/100" in updated_law.enacting
       assert updated_law.is_enacting == true
     end
 
     test "appends to existing enacting array", %{conn: conn} do
-      alias SertantaiLegal.Legal.UkLrt
+      alias SertantaiLegal.Legal.LegalRegister
 
       # Create a parent law with existing enacting entry
       parent_law =
@@ -579,7 +579,7 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       assert response["success"] == 1
 
       # Verify the new entry was appended
-      {:ok, updated_law} = Ash.get(UkLrt, parent_law.id)
+      {:ok, updated_law} = Ash.get(LegalRegister, parent_law.id)
       assert "uksi/2024/50" in updated_law.enacting
       assert "uksi/2025/100" in updated_law.enacting
       assert length(updated_law.enacting) == 2
@@ -669,7 +669,7 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
     end
 
     test "handles multiple source laws for same parent", %{conn: conn} do
-      alias SertantaiLegal.Legal.UkLrt
+      alias SertantaiLegal.Legal.LegalRegister
 
       parent_law =
         create_uk_lrt_record(%{
@@ -695,7 +695,7 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       assert result["added_count"] == 2
 
       # Verify both were added
-      {:ok, updated_law} = Ash.get(UkLrt, parent_law.id)
+      {:ok, updated_law} = Ash.get(LegalRegister, parent_law.id)
       assert "uksi/2025/100" in updated_law.enacting
       assert "uksi/2025/101" in updated_law.enacting
     end
@@ -963,7 +963,7 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
     end
 
     test "returns duplicate with full record when record exists in uk_lrt", %{conn: _conn} do
-      alias SertantaiLegal.Legal.UkLrt
+      alias SertantaiLegal.Legal.LegalRegister
       require Ash.Query
 
       # Create an existing record in uk_lrt with various fields
@@ -987,7 +987,7 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       # 2. Or testing the check_duplicate function directly
 
       # For now, verify the record exists in DB
-      {:ok, [record]} = UkLrt |> Ash.Query.filter(name == "uksi/2024/100") |> Ash.read()
+      {:ok, [record]} = LegalRegister |> Ash.Query.filter(name == "uksi/2024/100") |> Ash.read()
       assert record.family == "Environmental Protection"
       assert record.live == "In Force"
     end
@@ -1051,9 +1051,12 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
 
       # Verify the record was persisted correctly
       # Note: title_en is cleaned (year suffix removed) by ParsedLaw.from_map
-      alias SertantaiLegal.Legal.UkLrt
+      alias SertantaiLegal.Legal.LegalRegister
       require Ash.Query
-      {:ok, [record]} = UkLrt |> Ash.Query.filter(name == "UK_uksi_2024_888") |> Ash.read()
+
+      {:ok, [record]} =
+        LegalRegister |> Ash.Query.filter(name == "UK_uksi_2024_888") |> Ash.read()
+
       assert record.title_en == "Test Regulations"
       assert record.family == "Environmental Protection"
     end
@@ -1083,9 +1086,12 @@ defmodule SertantaiLegalWeb.ScrapeControllerTest do
       assert response["message"] == "Record persisted successfully"
 
       # Verify both family and override were applied
-      alias SertantaiLegal.Legal.UkLrt
+      alias SertantaiLegal.Legal.LegalRegister
       require Ash.Query
-      {:ok, [record]} = UkLrt |> Ash.Query.filter(name == "UK_uksi_2024_777") |> Ash.read()
+
+      {:ok, [record]} =
+        LegalRegister |> Ash.Query.filter(name == "UK_uksi_2024_777") |> Ash.read()
+
       assert record.family == "Health & Safety"
       assert record.family_ii == "Workplace Safety"
     end

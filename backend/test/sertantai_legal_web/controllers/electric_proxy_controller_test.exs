@@ -63,7 +63,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
-      assert body["table"] == "uk_lrt"
+      assert body["table"] == "legal_register_uk"
     end
 
     test "proxies lat without auth (public reference data)", %{conn: conn} do
@@ -71,7 +71,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
-      assert body["table"] == "lat"
+      assert body["table"] == "legal_articles_uk"
     end
 
     test "proxies amendment_annotations without auth", %{conn: conn} do
@@ -94,7 +94,9 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["where"] == "year >= 2024"
     end
 
-    test "forwards columns for public tables", %{conn: conn} do
+    test "forwards columns for public tables (injects country PK for partitioned tables)", %{
+      conn: conn
+    } do
       conn =
         get(conn, "/api/electric/v1/shape", %{
           "table" => "uk_lrt",
@@ -103,7 +105,8 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
-      assert body["params"]["columns"] == ~s("id","name","year")
+      # Proxy injects "country" PK column required by partitioned table
+      assert body["params"]["columns"] == ~s("id","name","year",country)
     end
 
     test "forwards passthrough params (offset, handle, live, cursor, replica)", %{conn: conn} do
@@ -174,7 +177,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
-      assert body["params"]["table"] == "uk_lrt"
+      assert body["params"]["table"] == "legal_register_uk"
       assert body["params"]["handle"] == "12345-678"
     end
   end

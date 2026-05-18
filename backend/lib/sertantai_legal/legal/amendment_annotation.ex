@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
   Amendment Annotations — one row per legislative change annotation.
 
   Links amendment footnotes (F-codes, C-codes, I-codes, E-codes) from
-  legislation.gov.uk to the LAT sections they affect.
+  legislation portals to the legal article sections they affect.
 
   This is SHARED REFERENCE DATA — no organization_id (accessible to all tenants).
 
@@ -12,8 +12,8 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
   Example: `UK_ukpga_1974_37:amendment:1`
 
   ## Relationship
-  Many annotations belong to one LRT record (uk_lrt) via `law_id`.
-  The `affected_sections` array references LAT `section_id` values.
+  Many annotations belong to one LegalRegister record via `law_id`.
+  The `affected_sections` array references LegalArticle `section_id` values.
   """
 
   use Ash.Resource,
@@ -31,6 +31,12 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
       primary_key?(true)
       writable?(true)
       description("Synthetic key: {law_name}:{code_type}:{seq}")
+    end
+
+    attribute :country, :string do
+      allow_nil?(false)
+      default("uk")
+      description("Country code: uk, au, nz, etc.")
     end
 
     attribute :law_name, :string do
@@ -73,12 +79,12 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
   end
 
   relationships do
-    belongs_to :uk_lrt, SertantaiLegal.Legal.UkLrt do
+    belongs_to :legal_register, SertantaiLegal.Legal.LegalRegister do
       source_attribute(:law_id)
       destination_attribute(:id)
       allow_nil?(false)
       attribute_type(:uuid)
-      description("Parent law in the Legal Register Table")
+      description("Parent law in the Legal Register")
     end
   end
 
@@ -91,6 +97,7 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
 
       accept([
         :id,
+        :country,
         :law_name,
         :law_id,
         :code,

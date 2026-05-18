@@ -11,7 +11,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
 
   use SertantaiLegalWeb, :controller
 
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
 
   require Ash.Query
 
@@ -34,6 +34,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
     offset = parse_integer(params["offset"], 0)
 
     query_args = %{
+      country: params["country"],
       family: params["family"],
       year: parse_integer_or_nil(params["year"]),
       type_code: params["type_code"],
@@ -41,7 +42,8 @@ defmodule SertantaiLegalWeb.UkLrtController do
       search: params["search"]
     }
 
-    case UkLrt.paginated(
+    case LegalRegister.paginated(
+           query_args.country,
            query_args.family,
            query_args.year,
            query_args.type_code,
@@ -71,7 +73,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
   Get a single UK LRT record by ID.
   """
   def show(conn, %{"id" => id}) do
-    case UkLrt.by_id(id) do
+    case LegalRegister.by_id(id) do
       {:ok, record} ->
         json(conn, record_to_json(record))
 
@@ -102,7 +104,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
   def update(conn, %{"id" => id} = params) do
     # Filter to only fields accepted by the :update action to avoid Ash NoSuchInput errors
     accepted_keys =
-      Ash.Resource.Info.action(UkLrt, :update).accept
+      Ash.Resource.Info.action(LegalRegister, :update).accept
       |> MapSet.new(&to_string/1)
 
     attrs =
@@ -111,7 +113,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
       |> Map.filter(fn {k, _v} -> MapSet.member?(accepted_keys, k) end)
       |> wrap_values_jsonb()
 
-    case UkLrt.by_id(id) do
+    case LegalRegister.by_id(id) do
       {:ok, record} ->
         case record
              |> Ash.Changeset.for_update(:update, attrs)
@@ -144,7 +146,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
   Delete a UK LRT record.
   """
   def delete(conn, %{"id" => id}) do
-    case UkLrt.by_id(id) do
+    case LegalRegister.by_id(id) do
       {:ok, record} ->
         case Ash.destroy(record) do
           :ok ->
@@ -185,8 +187,8 @@ defmodule SertantaiLegalWeb.UkLrtController do
   Get available filter values (families, years, type_codes, statuses).
   """
   def filters(conn, _params) do
-    with {:ok, families} <- UkLrt.distinct_families(),
-         {:ok, years} <- UkLrt.distinct_years() do
+    with {:ok, families} <- LegalRegister.distinct_families(),
+         {:ok, years} <- LegalRegister.distinct_years() do
       json(conn, %{
         families: families |> Enum.map(& &1.family) |> Enum.reject(&is_nil/1) |> Enum.sort(),
         years: years |> Enum.map(& &1.year) |> Enum.reject(&is_nil/1) |> Enum.sort(:desc)
@@ -213,7 +215,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
         name when is_binary(name) -> URI.decode(name)
       end
 
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^decoded_name)
          |> Ash.read() do
       {:ok, [existing | _]} ->
@@ -250,7 +252,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
   """
   def batch_exists(conn, %{"names" => names}) when is_list(names) do
     existing =
-      UkLrt
+      LegalRegister
       |> Ash.Query.filter(name in ^names)
       |> Ash.Query.select([:id, :name, :title_en, :year, :type_code])
       |> Ash.read!()
@@ -323,7 +325,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
     alias SertantaiLegal.Scraper.StagedParser
     alias SertantaiLegal.Scraper.ParsedLaw
 
-    case UkLrt.by_id(id) do
+    case LegalRegister.by_id(id) do
       {:ok, record} ->
         # Build the input record for StagedParser
         input = %{
@@ -405,6 +407,8 @@ defmodule SertantaiLegalWeb.UkLrtController do
   defp record_to_json(record) do
     %{
       id: record.id,
+      country: record.country,
+      jurisdiction: record.jurisdiction,
       name: record.name,
       title_en: record.title_en,
       year: record.year,
@@ -420,7 +424,8 @@ defmodule SertantaiLegalWeb.UkLrtController do
       geo_detail: record.geo_detail,
       md_restrict_extent: record.md_restrict_extent,
       acronym: record.acronym,
-      leg_gov_uk_url: record.leg_gov_uk_url,
+      source_url: record.source_url,
+      leg_gov_uk_url: record.source_url,
       md_description: record.md_description,
       md_subjects: record.md_subjects,
       si_code: record.si_code,
@@ -649,7 +654,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
 
     db_name = IdField.normalize_to_db_name(name)
 
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^db_name)
          |> Ash.read() do
       {:ok, [existing | _]} ->

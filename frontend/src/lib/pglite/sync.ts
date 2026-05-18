@@ -183,6 +183,16 @@ export async function startSync(): Promise<void> {
 		);
 		const existingCount = countResult.rows[0]?.count ?? 0;
 
+		// Always clear stale subscription before starting sync.
+		// After the partition migration (legal_register_uk), old subscriptions
+		// targeting the uk_lrt view are invalid and cause "Already syncing" errors.
+		try {
+			await pg.electric.deleteSubscription('uk-lrt');
+			console.log('[PGLite Sync] Cleared previous subscription');
+		} catch {
+			// No subscription to delete — first time
+		}
+
 		if (existingCount > 0) {
 			console.log(`[PGLite Sync] Warm start: ${existingCount} existing records`);
 			syncStatus.set({
@@ -194,15 +204,6 @@ export async function startSync(): Promise<void> {
 				error: null
 			});
 		} else {
-			// Table is empty — clear any stale subscription state so pglite-sync
-			// does a full initial sync instead of resuming from a stale offset.
-			try {
-				await pg.electric.deleteSubscription('uk-lrt');
-				console.log('[PGLite Sync] Cleared stale subscription — starting fresh');
-			} catch {
-				// No subscription to delete — first time
-			}
-
 			console.log('[PGLite Sync] Cold start: syncing full dataset');
 			syncStatus.set({
 				connected: true,

@@ -38,6 +38,16 @@ Generalise the platform so that any second country can be added. No AU-specific 
   - Source URL builder (legislation.gov.uk)
 - Define country behaviour/protocol that new countries must implement
 - Existing taxa modules (`making_detector`, `purpose_classifier`, `function_calculator`) become UK-namespaced
+- **Deferred from 1.2**: Update internal `UkLrt` references in scraper/taxa/zenoh modules to use `LegalRegister`:
+  - `scraper/persister.ex` — creates/updates records via Ash (6 refs)
+  - `scraper/staged_parser.ex` — looks up existing record (1 ref)
+  - `scraper/law_parser.ex` — looks up existing record (2 refs)
+  - `scraper/lat_session_manager.ex` — queries for making classification (2 refs)
+  - `scraper/reparse_manager.ex` — looks up/updates records (2 refs)
+  - `legal/function_calculator.ex` — persists function results (6 refs)
+  - `zenoh/data_server.ex` — Ecto queries for P2P publishing (4 refs)
+  - `zenoh/taxa_subscriber.ex` — upserts taxa fields (1 ref)
+  - `legal/lat.ex` — belongs_to relationship (1 ref, update to LegalRegister)
 
 ### 1.4 — Scraper Abstraction
 
@@ -53,6 +63,10 @@ Generalise the platform so that any second country can be added. No AU-specific 
 - Add country selector/filter to browse and admin views
 - Generalise API calls: `/api/uk-lrt/` → `/api/laws/?country=uk`
 - Update PGlite schema and ElectricSQL shape definitions
+- Move `country` column injection from Electric proxy into frontend properly:
+  - Add `country` to `UK_LRT_ALL_COLUMNS` / `UK_LRT_ADMIN_COLUMNS` in `sync.ts`
+  - Update PGlite `syncShapeToTable` to request `table: 'legal_register_uk'` directly (remove proxy rewrite dependency)
+  - Remove `@table_rewrites` and `@extra_pk_columns` from `ElectricProxyController` once frontend handles it natively
 - External links driven by country module (not hardcoded legislation.gov.uk)
 
 ### 1.6 — Verification & Cleanup
