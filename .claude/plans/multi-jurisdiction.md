@@ -49,12 +49,15 @@ Generalise the platform so that any second country can be added. No AU-specific 
   - `zenoh/taxa_subscriber.ex` — upserts taxa fields (1 ref)
   - `legal/lat.ex` — belongs_to relationship (1 ref, update to LegalRegister)
 
-### 1.4 — Scraper Abstraction
+### 1.4 — Scraper Abstraction (SKIPPED — audit found no work needed)
 
-- Extract scraper interface/behaviour from existing legislation.gov.uk scraper
-- Move existing scraper into `SertantaiLegal.Scraper.Uk` namespace
-- Session management stays generic (already mostly is)
-- Scrape/persist/review workflow remains country-agnostic
+Audit (2026-05-18) concluded: 30 of 35 scraper files are UK-specific. Mass-moving into
+`Scraper.Uk/` would touch every alias and test for no architectural gain. Instead:
+- UK scraper code stays in `Scraper/` as the default (it works)
+- `legislation_gov_uk/` subdirectory is already correctly namespaced
+- Generic infrastructure (persister, storage, sessions) confirmed country-agnostic
+- When AU scraper is added (Phase 2.2), create `Scraper.Au/` alongside
+- No shared behaviour — UK and AU scrapers are architecturally too different
 
 ### 1.5 — Frontend Generalisation
 
