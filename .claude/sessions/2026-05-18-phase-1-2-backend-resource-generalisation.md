@@ -23,3 +23,12 @@
 - Phase 1.1 created backwards-compat views — old resources still work during transition
 - Can keep old UkLrt resource temporarily alongside new LegalRegister
 - Old `/api/uk-lrt/*` routes should redirect or alias to `/api/laws/?country=uk`
+
+**Ended**: 2026-05-18
+**Commits**: `dddadb9`
+
+## Summary
+- Completed: 13 of 14 todos (1 deferred to Phase 1.3/1.4 by design)
+- Files: `legal_register.ex`, `legal_article.ex`, `amendment_annotation.ex`, `api.ex`, `uk_lrt_controller.ex`, `scrape_controller.ex`, `cascade_controller.ex`, `lat_admin_controller.ex`, `router.ex`, `electric_proxy_controller.ex`, `sync.ts`, `schema.sql.ts`
+- Outcome: New LegalRegister/LegalArticle Ash resources backed by partitioned tables. Controllers, API routes, Electric proxy, and PGlite schema all updated. 19,492 records sync successfully to frontend.
+- Next: Phase 1.3 — Country module pattern (extract UK-specific logic, update remaining ~25 internal UkLrt references in scrapers/taxa/zenoh)

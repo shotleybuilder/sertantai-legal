@@ -168,6 +168,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-18 | [phase-1-2-backend-resource-generalisation](2026-05-18-phase-1-2-backend-resource-generalisation.md) | — | Phase 1.2: LegalRegister/LegalArticle resources, API routes, controllers, Electric proxy rewrite |
 | 2026-05-18 | [phase-1-1-schema-migration](2026-05-18-phase-1-1-schema-migration.md) | — | Phase 1.1: Partition uk_lrt→legal_register, lat→legal_articles by country, backwards-compat views |
 | 2026-05-17 | [australian-ehs-hr-research](2026-05-17-australian-ehs-hr-research.md) | — | Research: AU EHS/HR law expansion, codebase audit, ADR-1 table partitioning, 11-session implementation plan |
 | 2026-05-05 | [missing-titles](2026-05-05-missing-titles.md) | [#83](https://github.com/shotleybuilder/sertantai-legal/issues/83) | Fetched 1,546 missing title_en from legislation.gov.uk — zero remaining |
