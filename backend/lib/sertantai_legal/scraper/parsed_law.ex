@@ -610,7 +610,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
   end
 
   @doc """
-  Create a ParsedLaw from a UkLrt database record.
+  Create a ParsedLaw from a LegalRegister database record.
 
   Unwraps JSONB fields back to lists for internal use.
   """

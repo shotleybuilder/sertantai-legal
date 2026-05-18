@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.ReparseManager do
   """
 
   alias SertantaiLegal.Scraper.{ScrapeSession, Storage}
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
 
   require Ash.Query
   require Logger
@@ -113,7 +113,7 @@ defmodule SertantaiLegal.Scraper.ReparseManager do
   def create_from_names(%{"names" => names, "label" => label})
       when is_list(names) and names != [] do
     query =
-      UkLrt
+      LegalRegister
       |> Ash.Query.filter(name in ^names)
       |> Ash.Query.sort(name: :asc)
 
@@ -195,7 +195,7 @@ defmodule SertantaiLegal.Scraper.ReparseManager do
 
   # Build an Ash query from filters
   defp build_query(family, filters) do
-    UkLrt
+    LegalRegister
     |> Ash.Query.filter(family == ^family)
     |> maybe_filter_family_ii(filters["family_ii"])
     |> maybe_filter_type_code(filters["type_code"])

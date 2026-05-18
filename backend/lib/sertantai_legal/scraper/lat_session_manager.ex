@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
   """
 
   alias SertantaiLegal.Scraper.{ScrapeSession, Storage}
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
 
   require Ash.Query
   require Logger
@@ -117,7 +117,7 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
   def create_from_names(%{"names" => names, "label" => label})
       when is_list(names) and names != [] do
     query =
-      UkLrt
+      LegalRegister
       |> Ash.Query.filter(name in ^names)
       |> Ash.Query.sort(name: :asc)
 
@@ -209,7 +209,7 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
   #   - unreviewed and auto-detected as parse-worthy (making_classification != "not_making")
   # Then applies user-selected optional filters on top.
   defp build_query(family, filters) do
-    UkLrt
+    LegalRegister
     |> Ash.Query.filter(family == ^family)
     |> Ash.Query.filter(
       (not is_nil(making_review) and making_review != "not_making") or

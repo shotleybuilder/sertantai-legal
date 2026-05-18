@@ -2,7 +2,7 @@ defmodule SertantaiLegal.Scraper.Persister do
   @moduledoc """
   Persists categorized laws to the uk_lrt table.
 
-  Reads group JSON files and creates/updates UkLrt records.
+  Reads group JSON files and creates/updates LegalRegister records.
   Handles duplicate detection by name (type_code/year/number).
 
   ## Function Calculation Workflow
@@ -29,7 +29,7 @@ defmodule SertantaiLegal.Scraper.Persister do
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Scraper.ParsedLaw
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.FunctionCalculator
   alias SertantaiLegal.Integrations.HubNotifier
   alias SertantaiLegal.Zenoh.ChangeNotifier
@@ -212,7 +212,9 @@ defmodule SertantaiLegal.Scraper.Persister do
         attrs
       end
 
-    case UkLrt |> Ash.Changeset.for_create(:create, attrs_with_function) |> Ash.create() do
+    case LegalRegister
+         |> Ash.Changeset.for_create(:create, attrs_with_function)
+         |> Ash.create() do
       {:ok, law} -> {:ok, law}
       {:error, reason} -> {:error, reason}
     end
@@ -326,7 +328,7 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   # Find existing record by name
   defp find_by_name(name) when is_binary(name) and name != "" do
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^name)
          |> Ash.read() do
       {:ok, [existing | _]} -> existing
@@ -337,17 +339,17 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   defp find_by_name(_), do: nil
 
-  # Create a new UkLrt record (without Function - used by persist_record/1)
+  # Create a new LegalRegister record (without Function - used by persist_record/1)
   defp create_record(record) do
     attrs = build_attrs(record)
 
-    case UkLrt |> Ash.Changeset.for_create(:create, attrs) |> Ash.create() do
+    case LegalRegister |> Ash.Changeset.for_create(:create, attrs) |> Ash.create() do
       {:ok, _} -> {:ok, :created}
       {:error, reason} -> {:error, reason}
     end
   end
 
-  # Update an existing UkLrt record (without Function - used by persist_record/1)
+  # Update an existing LegalRegister record (without Function - used by persist_record/1)
   defp update_record(existing, record) do
     attrs = build_attrs(record)
     update_attrs = filter_update_attrs(attrs, existing)

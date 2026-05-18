@@ -4,7 +4,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   Fractalaw publishes DRRP (duties, rights, responsibilities, powers) data
   as Arrow IPC streaming payloads. This subscriber decodes them with Explorer
-  and upserts the taxa fields into existing UkLrt records.
+  and upserts the taxa fields into existing LegalRegister records.
 
   Key expression: fractalaw/@{tenant}/taxa/enrichment/{law_name}
   """
@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   require Ash.Query
   import Ecto.Query, only: [from: 2]
 
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Static map from Arrow column name (string) → Ash attribute (atom).
@@ -171,7 +171,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp find_record(law_name) do
-    UkLrt
+    LegalRegister
     |> Ash.Query.filter(name == ^law_name)
     |> Ash.read()
     |> case do

@@ -294,7 +294,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   # ── Row Formatting ────────────────────────────────────────────────
 
   @doc """
-  Formats a UkLrt record into a Baserow row map at the given field tier.
+  Formats a LegalRegister record into a Baserow row map at the given field tier.
   Uses user_field_names so keys are human-readable.
   """
   def format_lrt_row(lrt, field_tier) do

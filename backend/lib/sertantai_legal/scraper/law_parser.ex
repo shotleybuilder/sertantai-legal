@@ -45,7 +45,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   alias SertantaiLegal.Scraper.TypeClass
   alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Scraper.ParsedLaw
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.FunctionCalculator
 
   require Ash.Query
@@ -403,7 +403,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   end
 
   defp find_by_name(name) when is_binary(name) and name != "" do
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^name)
          |> Ash.read() do
       {:ok, [existing | _]} -> existing
@@ -427,7 +427,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
         attrs
       end
 
-    case UkLrt
+    case LegalRegister
          |> Ash.Changeset.for_create(:create, attrs)
          |> Ash.create() do
       {:ok, created} ->

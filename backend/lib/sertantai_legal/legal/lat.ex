@@ -201,12 +201,12 @@ defmodule SertantaiLegal.Legal.Lat do
   end
 
   relationships do
-    belongs_to :uk_lrt, SertantaiLegal.Legal.UkLrt do
+    belongs_to :legal_register, SertantaiLegal.Legal.LegalRegister do
       source_attribute(:law_id)
       destination_attribute(:id)
       allow_nil?(false)
       attribute_type(:uuid)
-      description("Parent law in the Legal Register Table")
+      description("Parent law in the Legal Register")
     end
   end
 

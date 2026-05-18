@@ -44,7 +44,7 @@ defmodule SertantaiLegal.Sync.Delta.Config do
   @tables [
     %{
       name: "uk_lrt",
-      resource: SertantaiLegal.Legal.UkLrt,
+      resource: SertantaiLegal.Legal.LegalRegister,
       pk: "id",
       timestamp_col: "updated_at",
       order: 1

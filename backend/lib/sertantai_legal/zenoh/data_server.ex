@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   import Ecto.Query
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Legal.{UkLrt, Lat, AmendmentAnnotation}
+  alias SertantaiLegal.Legal.{LegalRegister, Lat, AmendmentAnnotation}
   alias SertantaiLegal.Zenoh.ActivityLog
 
   @poll_interval :timer.seconds(2)
@@ -160,7 +160,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
   defp fetch_all_lrt(:json) do
     records =
-      from(u in UkLrt, order_by: [asc: u.name])
+      from(u in LegalRegister, order_by: [asc: u.name])
       |> Repo.all()
       |> Enum.map(&serialize_lrt/1)
 
@@ -168,19 +168,19 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   end
 
   defp fetch_all_lrt(:arrow) do
-    records = from(u in UkLrt, order_by: [asc: u.name]) |> Repo.all()
+    records = from(u in LegalRegister, order_by: [asc: u.name]) |> Repo.all()
     lrt_to_arrow(records)
   end
 
   defp fetch_lrt_by_name(law_name, :json) do
-    case Repo.one(from(u in UkLrt, where: u.name == ^law_name)) do
+    case Repo.one(from(u in LegalRegister, where: u.name == ^law_name)) do
       nil -> {:error, :not_found}
       record -> {:ok, Jason.encode!(serialize_lrt(record))}
     end
   end
 
   defp fetch_lrt_by_name(law_name, :arrow) do
-    case Repo.one(from(u in UkLrt, where: u.name == ^law_name)) do
+    case Repo.one(from(u in LegalRegister, where: u.name == ^law_name)) do
       nil -> {:error, :not_found}
       record -> lrt_to_arrow([record])
     end

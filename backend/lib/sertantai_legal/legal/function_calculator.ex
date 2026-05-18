@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
 
   import Ecto.Query
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
 
   require Ash.Query
 
@@ -182,7 +182,7 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   Fetches the record, calculates function, and updates the database.
   """
   @spec calculate_and_persist_function_of_law(Ecto.UUID.t()) ::
-          {:ok, UkLrt.t()} | {:error, any()}
+          {:ok, LegalRegister.t()} | {:error, any()}
   def calculate_and_persist_function_of_law(law_id) do
     case get_law_by_id(law_id) do
       {:ok, law} ->
@@ -197,7 +197,8 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   @doc """
   Persist a calculated function to a law record.
   """
-  @spec persist_function_of_law(UkLrt.t(), map()) :: {:ok, UkLrt.t()} | {:error, any()}
+  @spec persist_function_of_law(LegalRegister.t(), map()) ::
+          {:ok, LegalRegister.t()} | {:error, any()}
   def persist_function_of_law(law, function) do
     function_to_persist = if map_size(function) == 0, do: nil, else: function
 
@@ -251,7 +252,7 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   {:ok, updated_parent} or {:error, reason}
   """
   @spec add_child_to_enacting_of_parent_law(String.t(), String.t(), boolean()) ::
-          {:ok, UkLrt.t()} | {:error, any()}
+          {:ok, LegalRegister.t()} | {:error, any()}
   def add_child_to_enacting_of_parent_law(parent_name, child_name, child_is_making) do
     case get_law_by_name(parent_name) do
       {:ok, parent} ->
@@ -329,7 +330,7 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   # ============================================================================
 
   defp get_law_by_id(id) do
-    UkLrt
+    LegalRegister
     |> Ash.Query.filter(id == ^id)
     |> Ash.read_one()
   end
@@ -337,13 +338,13 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   defp get_law_by_name(name) do
     normalized = normalize_name(name)
 
-    UkLrt
+    LegalRegister
     |> Ash.Query.filter(name == ^normalized)
     |> Ash.read_one()
   end
 
   defp get_laws_by_ids(ids) do
-    UkLrt
+    LegalRegister
     |> Ash.Query.filter(id in ^ids)
     |> Ash.read()
   end

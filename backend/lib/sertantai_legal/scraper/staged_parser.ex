@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   import SweetXml
 
-  alias SertantaiLegal.Legal.UkLrt
+  alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Scraper.CommentaryParser
@@ -888,7 +888,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp lookup_law_title(name) do
     require Ash.Query
 
-    case UkLrt
+    case LegalRegister
          |> Ash.Query.filter(name == ^name)
          |> Ash.Query.select([:title_en])
          |> Ash.read_one() do
