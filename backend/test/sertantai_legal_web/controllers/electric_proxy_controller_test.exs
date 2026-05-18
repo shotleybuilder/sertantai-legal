@@ -58,16 +58,16 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
   # --- Public tables bypass Gatekeeper ---
 
   describe "GET /api/electric/v1/shape - public tables (no auth)" do
-    test "proxies uk_lrt without auth (public reference data)", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+    test "proxies legal_register_uk without auth (public reference data)", %{conn: conn} do
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
       assert body["table"] == "legal_register_uk"
     end
 
-    test "proxies lat without auth (public reference data)", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "lat"})
+    test "proxies legal_articles_uk without auth (public reference data)", %{conn: conn} do
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_articles_uk"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
@@ -85,7 +85,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     test "forwards where clause for public tables", %{conn: conn} do
       conn =
         get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
+          "table" => "legal_register_uk",
           "where" => "year >= 2024"
         })
 
@@ -94,25 +94,22 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
       assert body["params"]["where"] == "year >= 2024"
     end
 
-    test "forwards columns for public tables (injects country PK for partitioned tables)", %{
-      conn: conn
-    } do
+    test "forwards columns for public tables", %{conn: conn} do
       conn =
         get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
+          "table" => "legal_register_uk",
           "columns" => ~s("id","name","year")
         })
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
-      # Proxy injects "country" PK column required by partitioned table
-      assert body["params"]["columns"] == ~s("id","name","year",country)
+      assert body["params"]["columns"] == ~s("id","name","year")
     end
 
     test "forwards passthrough params (offset, handle, live, cursor, replica)", %{conn: conn} do
       conn =
         get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
+          "table" => "legal_register_uk",
           "offset" => "0_5",
           "live" => "true",
           "cursor" => "abc",
@@ -130,7 +127,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     test "forwards subset and log params for progressive sync", %{conn: conn} do
       conn =
         get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
+          "table" => "legal_register_uk",
           "offset" => "0_0",
           "log" => "changes_only",
           "subset__where" => "year >= 2024",
@@ -149,7 +146,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end
 
     test "forwards electric headers to client", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 200
       assert get_resp_header(conn, "electric-handle") == ["test-handle-123"]
@@ -158,7 +155,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     end
 
     test "sets access-control-expose-headers for CORS", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 200
       [expose_header] = get_resp_header(conn, "access-control-expose-headers")
@@ -170,7 +167,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
     test "handle-based requests also work for public tables", %{conn: conn} do
       conn =
         get(conn, "/api/electric/v1/shape", %{
-          "table" => "uk_lrt",
+          "table" => "legal_register_uk",
           "handle" => "12345-678",
           "offset" => "0_inf"
         })
@@ -411,8 +408,8 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
   # --- DELETE shape recovery ---
 
   describe "DELETE /api/electric/v1/shape" do
-    test "deletes uk_lrt shape for recovery", %{conn: conn} do
-      conn = delete(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+    test "deletes legal_register_uk shape for recovery", %{conn: conn} do
+      conn = delete(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 202
     end
@@ -440,7 +437,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
 
   describe "Electric secret handling" do
     test "does not include secret when not configured", %{conn: conn} do
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 200
       body = Jason.decode!(conn.resp_body)
@@ -461,7 +458,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
           |> Plug.Conn.send_resp(200, Jason.encode!(%{params: query}))
         end)
 
-        conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+        conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
         assert conn.status == 200
         body = Jason.decode!(conn.resp_body)
@@ -484,7 +481,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
         Plug.Conn.send_resp(conn, 503, "Service Unavailable")
       end)
 
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 503
     end
@@ -496,7 +493,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
         |> Plug.Conn.send_resp(400, Jason.encode!(%{error: "offset out of bounds"}))
       end)
 
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 400
     end
@@ -508,7 +505,7 @@ defmodule SertantaiLegalWeb.ElectricProxyControllerTest do
         |> Plug.Conn.send_resp(409, Jason.encode!(%{error: "shape handle mismatch"}))
       end)
 
-      conn = get(conn, "/api/electric/v1/shape", %{"table" => "uk_lrt"})
+      conn = get(conn, "/api/electric/v1/shape", %{"table" => "legal_register_uk"})
 
       assert conn.status == 409
     end

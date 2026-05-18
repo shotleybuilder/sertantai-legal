@@ -109,11 +109,12 @@ describe('transformUkLrtRecord', () => {
 	it('handles URL fields', () => {
 		const raw = {
 			id: 'uuid-123',
-			leg_gov_uk_url: 'https://www.legislation.gov.uk/uksi/2024/100'
+			source_url: 'https://www.legislation.gov.uk/uksi/2024/100'
 		};
 
 		const result = transformUkLrtRecord(raw);
 
+		expect(result.source_url).toBe('https://www.legislation.gov.uk/uksi/2024/100');
 		expect(result.leg_gov_uk_url).toBe('https://www.legislation.gov.uk/uksi/2024/100');
 	});
 
@@ -239,7 +240,7 @@ describe('transformUkLrtRecord', () => {
 			md_made_date: '2024-02-15',
 			md_coming_into_force_date: '2024-04-06',
 			md_total_paras: 25,
-			leg_gov_uk_url: 'https://www.legislation.gov.uk/uksi/2024/100',
+			source_url: 'https://www.legislation.gov.uk/uksi/2024/100',
 			created_at: '2024-01-10T10:00:00Z',
 			updated_at: '2024-03-01T15:30:00Z'
 		};
@@ -400,6 +401,7 @@ describe('UkLrtRecord type', () => {
 	it('should have required id field', () => {
 		const record: UkLrtRecord = {
 			id: 'test-id',
+			country: 'uk',
 			name: '',
 			title_en: '',
 			year: 0,
@@ -460,6 +462,7 @@ describe('UkLrtRecord type', () => {
 			md_images: null,
 			latest_amend_date: null,
 			latest_rescind_date: null,
+			source_url: null,
 			leg_gov_uk_url: null,
 			created_at: null,
 			updated_at: null,

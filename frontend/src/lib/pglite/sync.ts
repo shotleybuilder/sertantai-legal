@@ -1,12 +1,10 @@
 /**
  * PGLite Shape Sync Manager
  *
- * Connects a single Electric shape subscription to the local PGLite uk_lrt table.
- * Uses `shapeKey` for persistent offset — on warm starts, only delta changes
- * are fetched instead of re-downloading the full ~48MB dataset.
- *
- * Replaces three separate TanStack DB collections (admin progressive,
- * browse on-demand, LAT queue eager) with one persistent local table.
+ * Connects an Electric shape subscription from `legal_register_uk` (server partition)
+ * to the local PGLite `uk_lrt` table. Uses `shapeKey` for persistent offset —
+ * on warm starts, only delta changes are fetched instead of re-downloading
+ * the full ~48MB dataset.
  */
 
 import { browser } from '$app/environment';
@@ -19,11 +17,12 @@ import { electricFetchClient } from '$lib/electric/fetch-client';
 // ── Column Sets ─────────────────────────────────────────────────────────────
 
 /**
- * All syncable columns from uk_lrt table.
- * Excludes PostgreSQL generated columns (leg_gov_uk_url, number_int) which Electric cannot sync.
+ * All syncable columns from legal_register_uk table.
+ * Excludes PostgreSQL generated columns (number_int, has_fitness) which Electric cannot sync.
  */
 const UK_LRT_ALL_COLUMNS: string[] = [
 	'id',
+	'country',
 	'family',
 	'family_ii',
 	'name',
@@ -110,7 +109,8 @@ const UK_LRT_ALL_COLUMNS: string[] = [
 	'fitness',
 	'making_classification',
 	'making_review',
-	'making_review_at'
+	'making_review_at',
+	'source_url'
 ];
 
 /**
@@ -215,13 +215,13 @@ export async function startSync(): Promise<void> {
 			});
 		}
 
-		// Start shape sync
+		// Start shape sync — request from the actual partition table (not the view)
 		const result = await pg.electric.syncShapeToTable({
 			shape: {
 				url: `${ELECTRIC_URL}/v1/shape`,
 				fetchClient: electricFetchClient,
 				params: {
-					table: 'uk_lrt',
+					table: 'legal_register_uk',
 					columns: UK_LRT_ADMIN_COLUMNS
 				}
 			},
@@ -295,9 +295,10 @@ export async function startSync(): Promise<void> {
 					try {
 						// Delete the server-side shape
 						const colParam = encodeURIComponent(UK_LRT_ADMIN_COLUMNS.join(','));
-						await electricFetchClient(`${ELECTRIC_URL}/v1/shape?table=uk_lrt&columns=${colParam}`, {
-							method: 'DELETE'
-						});
+						await electricFetchClient(
+							`${ELECTRIC_URL}/v1/shape?table=legal_register_uk&columns=${colParam}`,
+							{ method: 'DELETE' }
+						);
 					} catch {
 						// DELETE may not be available
 					}

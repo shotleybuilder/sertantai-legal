@@ -52,7 +52,7 @@
 		heavyError = null;
 
 		try {
-			const response = await authFetch(`${API_URL}/api/uk-lrt/${recordId}`);
+			const response = await authFetch(`${API_URL}/api/laws/${recordId}`);
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
 			}

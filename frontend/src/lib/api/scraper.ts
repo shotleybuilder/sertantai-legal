@@ -467,7 +467,7 @@ export async function confirmRecord(
  * Check if a record exists in uk_lrt by name
  */
 export async function checkExists(name: string): Promise<ExistsResult> {
-	const response = await adminFetch(`${API_URL}/api/uk-lrt/exists/${encodeURIComponent(name)}`);
+	const response = await adminFetch(`${API_URL}/api/laws/exists/${encodeURIComponent(name)}`);
 
 	if (!response.ok) {
 		const error = await response.json();
@@ -1159,7 +1159,7 @@ export function parseRecordStream(
 	callbacks: ParseProgressCallbacks,
 	stages?: ParseStage[]
 ): () => void {
-	let url = `${API_URL}/api/uk-lrt/${recordId}/parse-stream`;
+	let url = `${API_URL}/api/laws/${recordId}/parse-stream`;
 	if (stages && stages.length > 0) {
 		url += `?stages=${stages.join(',')}`;
 	}
@@ -1259,7 +1259,7 @@ export async function updateUkLrtRecord(
 	recordId: string,
 	data: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
-	const response = await adminFetch(`${API_URL}/api/uk-lrt/${recordId}`, {
+	const response = await adminFetch(`${API_URL}/api/laws/${recordId}`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data)

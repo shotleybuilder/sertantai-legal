@@ -1,7 +1,8 @@
 /**
- * UK LRT Record Schema
+ * Legal Register Record Schema
  *
- * Type definition for UK Legal/Regulatory Transport records.
+ * Type definition for legal register records (multi-jurisdiction).
+ * Backed by the partitioned `legal_register` table.
  */
 
 /**
@@ -79,10 +80,13 @@ export interface FitnessEntry {
 }
 
 /**
- * UK LRT Record type matching the database schema
+ * Legal Register Record type matching the database schema.
+ * Named UkLrtRecord for backwards compatibility — will be renamed to LegalRecord
+ * when the frontend is fully generalised for multi-country.
  */
 export interface UkLrtRecord {
 	id: string;
+	country: string;
 	name: string;
 	title_en: string;
 	year: number;
@@ -151,6 +155,8 @@ export interface UkLrtRecord {
 	md_images: number | null;
 	latest_amend_date: string | null;
 	latest_rescind_date: string | null;
+	source_url: string | null;
+	/** @deprecated Use source_url */
 	leg_gov_uk_url: string | null;
 	created_at: string | null;
 	updated_at: string | null;
@@ -174,6 +180,7 @@ export interface UkLrtRecord {
 export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord {
 	return {
 		id: String(data.id),
+		country: String(data.country || 'uk'),
 		name: String(data.name || ''),
 		title_en: String(data.title_en || ''),
 		year: parseNumber(data.year) ?? 0,
@@ -234,7 +241,8 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		md_images: parseNumber(data.md_images),
 		latest_amend_date: parseString(data.latest_amend_date),
 		latest_rescind_date: parseString(data.latest_rescind_date),
-		leg_gov_uk_url: parseString(data.leg_gov_uk_url),
+		source_url: parseString(data.source_url),
+		leg_gov_uk_url: parseString(data.source_url),
 		created_at: parseString(data.created_at),
 		updated_at: parseString(data.updated_at),
 		// LAT stats

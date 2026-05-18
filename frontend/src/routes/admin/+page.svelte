@@ -29,7 +29,7 @@
 	onMount(async () => {
 		try {
 			const [filtersRes, latRes, sessionsRes] = await Promise.all([
-				authFetch(`${API_URL}/api/uk-lrt/filters`),
+				authFetch(`${API_URL}/api/laws/filters`),
 				authFetch(`${API_URL}/api/lat/stats`),
 				authFetch(`${API_URL}/api/sessions`)
 			]);

@@ -1,5 +1,5 @@
 /**
- * uk-lrt-columns.ts — Column metadata for uk_lrt records.
+ * uk-lrt-columns.ts — Column metadata for legal register records.
  *
  * Used by gridlite-adapter-tanstack-db which cannot auto-introspect
  * column types (unlike the PGLite adapter which reads information_schema).
@@ -10,8 +10,15 @@
 import type { ColumnMetadata } from '@shotleybuilder/svelte-gridlite-kit/types';
 
 export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
-	// Credentials
+	// Identity
 	{ name: 'id', dataType: 'text', postgresType: 'uuid', nullable: false, hasDefault: true },
+	{
+		name: 'country',
+		dataType: 'text',
+		postgresType: 'text',
+		nullable: false,
+		hasDefault: true
+	},
 	{ name: 'name', dataType: 'text', postgresType: 'varchar', nullable: true, hasDefault: false },
 	{ name: 'title_en', dataType: 'text', postgresType: 'text', nullable: true, hasDefault: false },
 	{ name: 'acronym', dataType: 'text', postgresType: 'text', nullable: true, hasDefault: false },

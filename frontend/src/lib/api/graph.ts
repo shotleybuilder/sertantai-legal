@@ -115,7 +115,7 @@ export async function updateLawFamily(
 	lawId: string,
 	updates: { family?: string | null; family_ii?: string | null }
 ): Promise<void> {
-	const response = await authFetch(`${API_URL}/api/uk-lrt/${lawId}`, {
+	const response = await authFetch(`${API_URL}/api/laws/${lawId}`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(updates)

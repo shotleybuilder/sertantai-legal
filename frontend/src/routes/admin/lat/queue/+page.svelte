@@ -278,7 +278,7 @@
 					}
 					if (Object.keys(safeChanges).length === 0) continue;
 
-					const response = await authFetch(`${API_URL}/api/uk-lrt/${m.key}`, {
+					const response = await authFetch(`${API_URL}/api/laws/${m.key}`, {
 						method: 'PATCH',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify(safeChanges)

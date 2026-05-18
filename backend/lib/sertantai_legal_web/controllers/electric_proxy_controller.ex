@@ -22,19 +22,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
 
   # Tables allowed for shape recovery (DELETE). Kept as a simple static list
   # since DELETE doesn't need full Gatekeeper validation.
-  @allowed_tables ~w(uk_lrt organization_locations location_screenings lat amendment_annotations)
+  @allowed_tables ~w(legal_register_uk legal_articles_uk amendment_annotations organization_locations location_screenings)
 
   # Public reference tables — no auth required, bypass Gatekeeper.
-  # These mirror the public REST API routes (e.g. GET /api/uk-lrt).
-  @public_tables ~w(uk_lrt lat amendment_annotations)
-
-  # Table name rewriting: views can't be synced by Electric (no WAL entries).
-  # The frontend requests shape for "uk_lrt" (view), but Electric needs the
-  # actual partition table "legal_register_uk" (which has REPLICA IDENTITY FULL).
-  @table_rewrites %{
-    "uk_lrt" => "legal_register_uk",
-    "lat" => "legal_articles_uk"
-  }
+  # Partition tables synced directly by the frontend via Electric.
+  @public_tables ~w(legal_register_uk legal_articles_uk amendment_annotations)
 
   @doc """
   Proxy GET /api/electric/v1/shape to Electric's HTTP API.
@@ -83,14 +75,14 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
         raise "electric_url not configured"
       end
 
-      shape_params = %{"table" => rewrite_table(table)}
+      shape_params = %{"table" => table}
 
       # Pass through columns param if provided — Electric validates columns
       # even on DELETE, and rejects shapes that include generated columns.
       shape_params =
         case params["columns"] do
           cols when is_binary(cols) and cols != "" ->
-            Map.put(shape_params, "columns", inject_partition_pk(table, cols))
+            Map.put(shape_params, "columns", cols)
 
           _ ->
             shape_params
@@ -139,15 +131,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
       raise "electric_url not configured"
     end
 
-    original_table = params["table"]
-
     query_params =
       params
       |> Map.take(["table", "where", "columns" | @passthrough_params])
       |> Enum.reject(fn {_k, v} -> is_nil(v) end)
       |> Map.new()
-      |> Map.update("columns", nil, &inject_partition_pk(original_table, &1))
-      |> Map.update("table", nil, &rewrite_table/1)
       |> maybe_add_secret()
       |> encode_electric_query()
 
@@ -164,8 +152,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
       raise "electric_url not configured"
     end
 
-    original_table = params["table"]
-
     # Pass through all client params (table, where, columns, offset, handle, etc.)
     # and append the server-side secret.
     query_params =
@@ -173,8 +159,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
       |> Map.take(["table", "where", "columns" | @passthrough_params])
       |> Enum.reject(fn {_k, v} -> is_nil(v) end)
       |> Map.new()
-      |> Map.update("columns", nil, &inject_partition_pk(original_table, &1))
-      |> Map.update("table", nil, &rewrite_table/1)
       |> maybe_add_secret()
       |> encode_electric_query()
 
@@ -267,8 +251,7 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
     end
 
     # Use table and where from Gatekeeper response (org-scoped WHERE injected by auth)
-    # Rewrite view names to partition tables for Electric
-    shape_params = %{"table" => rewrite_table(validated_shape["table"])}
+    shape_params = %{"table" => validated_shape["table"]}
 
     shape_params =
       case validated_shape["where"] do
@@ -307,27 +290,6 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   end
 
   # --- Helpers ---
-
-  # Rewrite view names to partition table names for Electric sync.
-  # Electric can't sync views (no WAL), so we translate to the actual partition.
-  defp rewrite_table(table), do: Map.get(@table_rewrites, table, table)
-
-  # Partitioned tables have composite PKs (id, country) / (section_id, country).
-  # Electric requires all PK columns in the shape. The frontend doesn't know about
-  # `country` yet, so inject it when the table is rewritten.
-  @extra_pk_columns %{
-    "uk_lrt" => "country",
-    "lat" => "country"
-  }
-
-  defp inject_partition_pk(table, columns) when is_binary(columns) and columns != "" do
-    case Map.get(@extra_pk_columns, table) do
-      nil -> columns
-      extra -> if String.contains?(columns, extra), do: columns, else: columns <> "," <> extra
-    end
-  end
-
-  defp inject_partition_pk(_table, columns), do: columns
 
   # Extract client-safe params that pass through to Electric
   defp passthrough_params(params) do
