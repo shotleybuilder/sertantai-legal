@@ -46,7 +46,8 @@ defmodule SertantaiLegal.Countries.Country do
 
   defp registry do
     %{
-      "uk" => SertantaiLegal.Countries.Uk
+      "uk" => SertantaiLegal.Countries.Uk,
+      "au" => SertantaiLegal.Countries.Au
     }
   end
 
