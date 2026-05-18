@@ -74,11 +74,23 @@ Audit (2026-05-18) concluded: 30 of 35 scraper files are UK-specific. Mass-movin
 
 ### 1.6 — Verification & Cleanup
 
-- All existing UK workflows pass (browse, admin, scrape, parse, LAT queue, graph)
-- Remove old `uk_lrt` table/views once transition confirmed
-- Update ElectricSQL shape definitions
-- NAS snapshot scripts handle new table names
-- Production deployment with data migration
+- Dropped 5 `_old` backup tables
+- Removed 9 legacy `/api/uk-lrt/*` route aliases
+- Views (`uk_lrt`, `lat`) kept — ~70 raw SQL refs depend on them, zero cost
+- Production deployment deferred (separate concern)
+
+---
+
+## Phase 1 Summary (completed 2026-05-18)
+
+| Phase | Session | Key Outcome |
+|-------|---------|-------------|
+| 1.1 | Schema migration | Partitioned `legal_register`/`legal_articles` tables, backwards-compat views |
+| 1.2 | Backend resources | `LegalRegister`/`LegalArticle` Ash resources, `/api/laws/` routes, Electric proxy fixes |
+| 1.3 | Country module | `Countries.Country` behaviour + `Countries.Uk` implementation, all `UkLrt` refs migrated |
+| 1.4 | Scraper audit | Skipped — architecture already sound, AU gets `Scraper.Au/` in Phase 2 |
+| 1.5 | Frontend | Direct partition sync, new API routes, `country`+`source_url` in types |
+| 1.6 | Cleanup | Dropped `_old` tables, removed legacy `/api/uk-lrt/` routes |
 
 ---
 
