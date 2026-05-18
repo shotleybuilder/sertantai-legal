@@ -315,7 +315,7 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
 
   describe "integration with router" do
     test "public UK LRT endpoint works without auth", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt")
+      conn = get(conn, "/api/laws")
       assert conn.status == 200
     end
 
@@ -328,7 +328,7 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
       conn =
         conn
         |> put_req_header("content-type", "application/json")
-        |> patch("/api/uk-lrt/#{Ecto.UUID.generate()}", Jason.encode!(%{}))
+        |> patch("/api/laws/#{Ecto.UUID.generate()}", Jason.encode!(%{}))
 
       assert conn.status == 401
     end
@@ -344,7 +344,7 @@ defmodule SertantaiLegalWeb.AuthPlugTest do
         conn
         |> put_auth_header()
         |> put_req_header("content-type", "application/json")
-        |> patch("/api/uk-lrt/#{Ecto.UUID.generate()}", Jason.encode!(%{}))
+        |> patch("/api/laws/#{Ecto.UUID.generate()}", Jason.encode!(%{}))
 
       # 404/422/400 means JWT auth passed (resource not found)
       assert conn.status in [400, 404, 422]

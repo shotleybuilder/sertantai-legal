@@ -4,12 +4,12 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
   setup :setup_auth
 
   # Note: Controller now uses LegalRegister resource (backed by partitioned legal_register table).
-  # Legacy /api/uk-lrt routes still work via router aliases.
+  # Legacy /api/laws routes still work via router aliases.
   # Tests use existing database records or test error paths.
 
-  describe "GET /api/uk-lrt" do
+  describe "GET /api/laws" do
     test "returns list structure", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt")
+      conn = get(conn, "/api/laws")
 
       response = json_response(conn, 200)
       assert is_list(response["records"])
@@ -20,7 +20,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "supports pagination with limit and offset", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{limit: "10", offset: "0"})
+      conn = get(conn, "/api/laws", %{limit: "10", offset: "0"})
 
       response = json_response(conn, 200)
       assert response["limit"] == 10
@@ -28,21 +28,21 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "respects max limit of 100", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{limit: "500"})
+      conn = get(conn, "/api/laws", %{limit: "500"})
 
       response = json_response(conn, 200)
       assert response["limit"] == 100
     end
 
     test "defaults limit to 50", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt")
+      conn = get(conn, "/api/laws")
 
       response = json_response(conn, 200)
       assert response["limit"] == 50
     end
 
     test "accepts family filter parameter", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{family: "Environment"})
+      conn = get(conn, "/api/laws", %{family: "Environment"})
 
       response = json_response(conn, 200)
       # All returned records should have the specified family (if any)
@@ -52,7 +52,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "accepts year filter parameter", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{year: "2024"})
+      conn = get(conn, "/api/laws", %{year: "2024"})
 
       response = json_response(conn, 200)
 
@@ -62,7 +62,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "accepts type_code filter parameter", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{type_code: "uksi"})
+      conn = get(conn, "/api/laws", %{type_code: "uksi"})
 
       response = json_response(conn, 200)
 
@@ -72,14 +72,14 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "accepts search parameter", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{search: "regulations"})
+      conn = get(conn, "/api/laws", %{search: "regulations"})
 
       response = json_response(conn, 200)
       assert is_list(response["records"])
     end
 
     test "handles invalid limit gracefully", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt", %{limit: "not-a-number"})
+      conn = get(conn, "/api/laws", %{limit: "not-a-number"})
 
       response = json_response(conn, 200)
       # Should fall back to default
@@ -87,26 +87,26 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
   end
 
-  describe "GET /api/uk-lrt/:id" do
+  describe "GET /api/laws/:id" do
     test "returns 404 when record not found", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = get(conn, "/api/uk-lrt/#{fake_id}")
+      conn = get(conn, "/api/laws/#{fake_id}")
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt/not-a-valid-uuid")
+      conn = get(conn, "/api/laws/not-a-valid-uuid")
 
       # Should return error (either 400 or 500 depending on error handling)
       assert conn.status in [400, 404, 500]
     end
   end
 
-  describe "PATCH /api/uk-lrt/:id" do
+  describe "PATCH /api/laws/:id" do
     test "returns 401 without auth", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = patch(conn, "/api/uk-lrt/#{fake_id}", %{title_en: "New Title"})
+      conn = patch(conn, "/api/laws/#{fake_id}", %{title_en: "New Title"})
 
       assert conn.status == 401
     end
@@ -115,44 +115,44 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
       fake_id = Ecto.UUID.generate()
 
       conn =
-        conn |> put_auth_header() |> patch("/api/uk-lrt/#{fake_id}", %{title_en: "New Title"})
+        conn |> put_auth_header() |> patch("/api/laws/#{fake_id}", %{title_en: "New Title"})
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
       conn =
-        conn |> put_auth_header() |> patch("/api/uk-lrt/invalid-uuid", %{title_en: "New Title"})
+        conn |> put_auth_header() |> patch("/api/laws/invalid-uuid", %{title_en: "New Title"})
 
       assert conn.status in [400, 404, 500]
     end
   end
 
-  describe "DELETE /api/uk-lrt/:id" do
+  describe "DELETE /api/laws/:id" do
     test "returns 401 without auth", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = delete(conn, "/api/uk-lrt/#{fake_id}")
+      conn = delete(conn, "/api/laws/#{fake_id}")
 
       assert conn.status == 401
     end
 
     test "returns 404 when record not found", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = conn |> put_auth_header() |> delete("/api/uk-lrt/#{fake_id}")
+      conn = conn |> put_auth_header() |> delete("/api/laws/#{fake_id}")
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
-      conn = conn |> put_auth_header() |> delete("/api/uk-lrt/invalid-uuid")
+      conn = conn |> put_auth_header() |> delete("/api/laws/invalid-uuid")
 
       assert conn.status in [400, 404, 500]
     end
   end
 
-  describe "GET /api/uk-lrt/search" do
+  describe "GET /api/laws/search" do
     test "works as alias for index", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt/search", %{search: "health"})
+      conn = get(conn, "/api/laws/search", %{search: "health"})
 
       response = json_response(conn, 200)
       assert is_list(response["records"])
@@ -160,31 +160,31 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
   end
 
-  describe "GET /api/uk-lrt/:id/parse-stream" do
+  describe "GET /api/laws/:id/parse-stream" do
     test "returns 401 without auth", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = get(conn, "/api/uk-lrt/#{fake_id}/parse-stream")
+      conn = get(conn, "/api/laws/#{fake_id}/parse-stream")
 
       assert conn.status == 401
     end
 
     test "returns 404 when record not found", %{conn: conn} do
       fake_id = Ecto.UUID.generate()
-      conn = conn |> put_auth_header() |> get("/api/uk-lrt/#{fake_id}/parse-stream")
+      conn = conn |> put_auth_header() |> get("/api/laws/#{fake_id}/parse-stream")
 
       assert json_response(conn, 404)["error"] == "Record not found"
     end
 
     test "returns error for invalid UUID format", %{conn: conn} do
-      conn = conn |> put_auth_header() |> get("/api/uk-lrt/invalid-uuid/parse-stream")
+      conn = conn |> put_auth_header() |> get("/api/laws/invalid-uuid/parse-stream")
 
       assert conn.status in [400, 404, 500]
     end
   end
 
-  describe "GET /api/uk-lrt/filters" do
+  describe "GET /api/laws/filters" do
     test "returns filter structure", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt/filters")
+      conn = get(conn, "/api/laws/filters")
 
       response = json_response(conn, 200)
       assert is_list(response["families"])
@@ -192,7 +192,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "families are sorted alphabetically", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt/filters")
+      conn = get(conn, "/api/laws/filters")
 
       response = json_response(conn, 200)
       families = response["families"]
@@ -203,7 +203,7 @@ defmodule SertantaiLegalWeb.UkLrtControllerTest do
     end
 
     test "years are sorted descending", %{conn: conn} do
-      conn = get(conn, "/api/uk-lrt/filters")
+      conn = get(conn, "/api/laws/filters")
 
       response = json_response(conn, 200)
       years = response["years"]

@@ -65,14 +65,6 @@ defmodule SertantaiLegalWeb.Router do
     get("/laws/exists/*name", UkLrtController, :exists)
     post("/laws/batch-exists", UkLrtController, :batch_exists)
     get("/laws/:id", UkLrtController, :show)
-
-    # Legacy aliases (kept for frontend backwards compatibility)
-    get("/uk-lrt", UkLrtController, :index)
-    get("/uk-lrt/filters", UkLrtController, :filters)
-    get("/uk-lrt/search", UkLrtController, :search)
-    get("/uk-lrt/exists/*name", UkLrtController, :exists)
-    post("/uk-lrt/batch-exists", UkLrtController, :batch_exists)
-    get("/uk-lrt/:id", UkLrtController, :show)
   end
 
   # AI service endpoints — machine-to-machine (API key auth)
@@ -101,7 +93,6 @@ defmodule SertantaiLegalWeb.Router do
     pipe_through([:sse, :sse_authenticated])
     get("/sessions/:id/parse-stream", ScrapeController, :parse_stream)
     get("/laws/:id/parse-stream", UkLrtController, :parse_stream)
-    get("/uk-lrt/:id/parse-stream", UkLrtController, :parse_stream)
     get("/lat/sessions/:id/parse-stream", LatAdminController, :lat_parse_stream)
   end
 
@@ -113,11 +104,6 @@ defmodule SertantaiLegalWeb.Router do
     patch("/laws/:id", UkLrtController, :update)
     delete("/laws/:id", UkLrtController, :delete)
     post("/laws/:id/rescrape", UkLrtController, :rescrape)
-
-    # Legacy aliases
-    patch("/uk-lrt/:id", UkLrtController, :update)
-    delete("/uk-lrt/:id", UkLrtController, :delete)
-    post("/uk-lrt/:id/rescrape", UkLrtController, :rescrape)
 
     # Sync management endpoints (org-scoped, any authenticated user)
     get("/sync/entitlement", SyncController, :entitlement)
