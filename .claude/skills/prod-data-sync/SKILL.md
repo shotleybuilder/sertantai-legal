@@ -34,12 +34,19 @@ cat file.sql | ssh sertantai-hz "docker exec -i shared_postgres psql -U postgres
 ### 3. FK ordering matters
 
 Always restore/apply in this order (parents before children):
-1. `uk_lrt` (parent)
-2. `lat` (FK to uk_lrt)
-3. `amendment_annotations` (FK to uk_lrt)
+1. `legal_register_uk` (parent — was `uk_lrt`)
+2. `legal_articles_uk` (FK to legal_register — was `lat`)
+3. `amendment_annotations` (FK to legal_register)
 4. `scrape_sessions`
 5. `scrape_session_records` (FK to scrape_sessions)
 6. `cascade_affected_laws`
+7. `law_edges` (no FK, text name refs)
+8. `si_code_families` (derived/materialized)
+
+> **Note**: After the partition migration (2026-05-18), `uk_lrt` and `lat` are views
+> backed by `legal_register` (partitioned) and `legal_articles` (partitioned).
+> Delta sync uses the views transparently. Bulk pg_restore/dump must target the
+> partition tables (`legal_register_uk`, `legal_articles_uk`) directly.
 
 ---
 
@@ -57,24 +64,25 @@ The `propagate_lat_stats()` trigger on `lat` tries to UPDATE `uk_lrt` during COP
 
 **Solution**: Disable triggers before restore, re-enable after, then propagate stats manually:
 ```bash
-# Disable
+# Disable triggers on the partition (not the view)
 ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod \
-  -c 'ALTER TABLE lat DISABLE TRIGGER ALL;'"
+  -c 'ALTER TABLE legal_articles_uk DISABLE TRIGGER ALL;'"
 
 # Restore
-gzip -c /mnt/nas/sertantai-data/data/snapshots/latest/lat.dump | \
+gzip -c /mnt/nas/sertantai-data/data/snapshots/latest/legal_articles_uk.dump | \
   ssh sertantai-hz "gunzip | docker exec -i shared_postgres pg_restore \
   -U postgres -d sertantai_legal_prod --data-only --no-owner"
 
 # Re-enable
 ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod \
-  -c 'ALTER TABLE lat ENABLE TRIGGER ALL;'"
+  -c 'ALTER TABLE legal_articles_uk ENABLE TRIGGER ALL;'"
 
 # Propagate stats manually
 ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c \"
-  UPDATE uk_lrt
-  SET lat_count = COALESCE((SELECT COUNT(*) FROM lat WHERE law_id = uk_lrt.id), 0),
-      latest_lat_updated_at = (SELECT MAX(updated_at) FROM lat WHERE law_id = uk_lrt.id);
+  UPDATE legal_register
+  SET lat_count = COALESCE((SELECT COUNT(*) FROM legal_articles WHERE law_id = legal_register.id AND country = legal_register.country), 0),
+      latest_lat_updated_at = (SELECT MAX(updated_at) FROM legal_articles WHERE law_id = legal_register.id AND country = legal_register.country)
+  WHERE country = 'uk';
 \""
 ```
 
@@ -190,12 +198,13 @@ cat /tmp/TABLE_dev_ids.csv | ssh sertantai-hz "docker exec -i shared_postgres ps
 
 ```bash
 ssh sertantai-hz "docker exec shared_postgres psql -U postgres -d sertantai_legal_prod -c \"
-  SELECT 'uk_lrt' AS t, COUNT(*), MAX(updated_at) FROM uk_lrt
-  UNION ALL SELECT 'lat', COUNT(*), MAX(updated_at) FROM lat
+  SELECT 'legal_register' AS t, COUNT(*), MAX(updated_at) FROM legal_register
+  UNION ALL SELECT 'legal_articles', COUNT(*), MAX(updated_at) FROM legal_articles
   UNION ALL SELECT 'amendments', COUNT(*), MAX(updated_at) FROM amendment_annotations
   UNION ALL SELECT 'scrape_sessions', COUNT(*), MAX(updated_at) FROM scrape_sessions
   UNION ALL SELECT 'scrape_session_records', COUNT(*), MAX(updated_at) FROM scrape_session_records
   UNION ALL SELECT 'cascade_affected_laws', COUNT(*), MAX(updated_at) FROM cascade_affected_laws
+  UNION ALL SELECT 'law_edges', COUNT(*), NULL::timestamp FROM law_edges
   UNION ALL SELECT 'si_code_families', COUNT(*), NULL::timestamp FROM si_code_families;
 \""
 ```

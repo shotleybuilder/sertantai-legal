@@ -29,17 +29,23 @@ Database snapshots are stored on an office NAS (UGREEN DXP2800, btrfs RAID 2) mo
 └── data/
     ├── snapshots/
     │   ├── latest/          # Current pg_dump files + manifest.json
-    │   │   ├── uk_lrt.dump
-    │   │   ├── lat.dump
+    │   │   ├── legal_register_uk.dump
+    │   │   ├── legal_articles_uk.dump
     │   │   ├── amendment_annotations.dump
     │   │   ├── scrape_sessions.dump
     │   │   ├── scrape_session_records.dump
     │   │   ├── cascade_affected_laws.dump
+    │   │   ├── law_edges.dump
+    │   │   ├── si_code_families.dump
     │   │   └── manifest.json
     │   └── archive/         # Timestamped older snapshots
     ├── deltas/              # Dev→prod delta SQL files (Layer 2, future)
     └── scripts/             # Standalone copies of export/import scripts
 ```
+
+> **Note**: After the partition migration (2026-05-18), `uk_lrt` and `lat` are now views
+> backed by partitioned tables `legal_register` and `legal_articles`. Snapshots target
+> the UK partitions (`legal_register_uk`, `legal_articles_uk`) directly.
 
 ## Export Snapshot (Dev DB → NAS)
 
@@ -56,12 +62,14 @@ cd ~/Desktop/sertantai-legal
 ```
 
 **Tables exported** (in FK dependency order):
-1. `uk_lrt` (19K+ rows, ~39MB)
-2. `lat` (152K+ rows, ~14MB)
-3. `amendment_annotations` (24K+ rows, ~800KB)
+1. `legal_register_uk` (19K+ rows, ~39MB) — was `uk_lrt`
+2. `legal_articles_uk` (175K+ rows, ~14MB) — was `lat`
+3. `amendment_annotations` (28K+ rows, ~800KB)
 4. `scrape_sessions` (53 rows)
 5. `scrape_session_records` (7K+ rows, ~5MB)
 6. `cascade_affected_laws` (6K+ rows, ~300KB)
+7. `law_edges` (168K+ rows)
+8. `si_code_families` (1K+ rows)
 
 **Manifest** (`manifest.json`) includes: date, database, row counts, file sizes, SHA256 checksums per table.
 

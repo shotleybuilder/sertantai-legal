@@ -15,13 +15,16 @@ DB_USER="${DB_USER:-postgres}"
 DB_NAME="${DB_NAME:-sertantai_legal_dev}"
 
 # Tables to snapshot (order matters for FK dependencies on restore)
+# After partition migration: uk_lrt → legal_register_uk, lat → legal_articles_uk
 TABLES=(
-  uk_lrt
-  lat
+  legal_register_uk
+  legal_articles_uk
   amendment_annotations
   scrape_sessions
   scrape_session_records
   cascade_affected_laws
+  law_edges
+  si_code_families
 )
 
 # Check NAS is mounted

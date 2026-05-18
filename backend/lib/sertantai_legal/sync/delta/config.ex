@@ -3,6 +3,11 @@ defmodule SertantaiLegal.Sync.Delta.Config do
 
   # Columns that exist only in dev (not in prod) — exclude from delta export.
   # Update this list as prod catches up with migrations.
+  #
+  # NOTE: Delta export uses Ash resources which still point at the uk_lrt/lat views.
+  # The views proxy to legal_register/legal_articles transparently.
+  # The "country" and "jurisdiction" columns are set by the view triggers,
+  # so they don't appear in the Ash resource and don't need excluding.
   @dev_only_columns %{
     "uk_lrt" => [],
     "lat" => [],
@@ -12,11 +17,17 @@ defmodule SertantaiLegal.Sync.Delta.Config do
     "cascade_affected_laws" => []
   }
 
-  # Columns auto-populated by triggers or GENERATED ALWAYS — never write
+  # Columns auto-populated by triggers or GENERATED ALWAYS — never write.
+  #
+  # After the partition migration (legal_register):
+  #   - number_int and has_fitness are GENERATED ALWAYS on the underlying table
+  #   - leg_gov_uk_url is now a view alias for source_url (not generated)
+  #   - md_date_year/month are populated by trigger
+  #   - lat_count/latest_lat_updated_at are populated by trigger
+  #   - source_url is a regular column written via the view as leg_gov_uk_url
   @generated_columns %{
     "uk_lrt" => [
       "number_int",
-      "leg_gov_uk_url",
       "has_fitness",
       "md_date_year",
       "md_date_month",
