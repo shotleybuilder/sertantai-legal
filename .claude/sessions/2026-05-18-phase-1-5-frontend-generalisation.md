@@ -33,3 +33,6 @@
 - Country selector/filter UI deferred to Phase 2 (no second country yet)
 - External link generalisation deferred (legislation.gov.uk hardcoded OK for now)
 - Focus: remove proxy workarounds, point frontend at real table names and new API routes
+
+**Ended**: 2026-05-18
+**Commits**: `bf66e70`

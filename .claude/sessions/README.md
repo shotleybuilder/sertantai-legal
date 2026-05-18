@@ -168,6 +168,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-18 | [phase-1-5-frontend-generalisation](2026-05-18-phase-1-5-frontend-generalisation.md) | — | Phase 1.5: Direct partition sync, /api/laws/ routes, country+source_url in types |
 | 2026-05-18 | [phase-1-4-scraper-abstraction](2026-05-18-phase-1-4-scraper-abstraction.md) | — | Phase 1.4: Audit-only — scraper already sound, skipped mass-move, plan updated |
 | 2026-05-18 | [phase-1-3-country-module-pattern](2026-05-18-phase-1-3-country-module-pattern.md) | — | Phase 1.3: Countries behaviour + Uk module, all internal UkLrt→LegalRegister refs migrated |
 | 2026-05-18 | [phase-1-2-backend-resource-generalisation](2026-05-18-phase-1-2-backend-resource-generalisation.md) | — | Phase 1.2: LegalRegister/LegalArticle resources, API routes, controllers, Electric proxy rewrite |
