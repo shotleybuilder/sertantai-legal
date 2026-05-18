@@ -168,6 +168,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-18 | [phase-1-3-country-module-pattern](2026-05-18-phase-1-3-country-module-pattern.md) | — | Phase 1.3: Countries behaviour + Uk module, all internal UkLrt→LegalRegister refs migrated |
 | 2026-05-18 | [phase-1-2-backend-resource-generalisation](2026-05-18-phase-1-2-backend-resource-generalisation.md) | — | Phase 1.2: LegalRegister/LegalArticle resources, API routes, controllers, Electric proxy rewrite |
 | 2026-05-18 | [phase-1-1-schema-migration](2026-05-18-phase-1-1-schema-migration.md) | — | Phase 1.1: Partition uk_lrt→legal_register, lat→legal_articles by country, backwards-compat views |
 | 2026-05-17 | [australian-ehs-hr-research](2026-05-17-australian-ehs-hr-research.md) | — | Research: AU EHS/HR law expansion, codebase audit, ADR-1 table partitioning, 11-session implementation plan |

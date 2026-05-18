@@ -35,3 +35,6 @@
 - Country behaviour defines the interface; Uk module is the first implementation
 - Taxa modules (making_detector, purpose_classifier) stay in current location but may call country module for data
 - Scraper abstraction is Phase 1.4 — don't move scraper files yet
+
+**Ended**: 2026-05-18
+**Commits**: `65b4fe0`
