@@ -20,3 +20,6 @@
 - First real multi-country data — proves the Phase 1 architecture works
 - Research findings in `.claude/sessions/2026-05-17-australian-ehs-hr-research.md`
 - No data import yet — that's Phase 2.2
+
+**Ended**: 2026-05-18
+**Commits**: `e251f50`
