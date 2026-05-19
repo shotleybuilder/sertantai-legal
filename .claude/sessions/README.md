@@ -168,6 +168,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-19 | [phase-2-2-au-data-acquisition](2026-05-19-phase-2-2-au-data-acquisition.md) | — | Phase 2.2: AU seed import — 885 records, 98% family coverage, category-aware classification |
 | 2026-05-18 | [phase-2-1-au-country-module](2026-05-18-phase-2-1-au-country-module.md) | — | Phase 2.1: Countries.Au module, AU partitions, 16 tests, first multi-country addition |
 | 2026-05-18 | [phase-1-6-verification-cleanup](2026-05-18-phase-1-6-verification-cleanup.md) | — | Phase 1.6: Drop _old tables, remove legacy /api/uk-lrt/ routes, Phase 1 complete |
 | 2026-05-18 | [phase-1-5-frontend-generalisation](2026-05-18-phase-1-5-frontend-generalisation.md) | — | Phase 1.5: Direct partition sync, /api/laws/ routes, country+source_url in types |

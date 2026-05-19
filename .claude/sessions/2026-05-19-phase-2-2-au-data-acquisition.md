@@ -37,3 +37,6 @@
 - Some are model/national laws (Safe Work Australia, national codes) → jurisdiction = "cth"
 - No source_url available from seed data — will be populated in a later scraping pass
 - Entries without a year or identifiable jurisdiction may need manual review
+
+**Ended**: 2026-05-19
+**Commits**: `c7c56bc`
