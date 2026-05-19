@@ -77,20 +77,115 @@ defmodule SertantaiLegal.Scraper.Au.FederalClient do
   end
 
   @doc """
-  Get amendments/affects for a title by ID.
+  Get all versions for a title, ordered newest first.
+
+  Each version includes `reasons` listing which laws caused that compilation
+  (amendments, repeals). This is the primary source for relationship data.
   """
-  @spec get_affects(String.t(), keyword()) :: {:ok, [map()]} | {:error, any()}
-  def get_affects(title_id, opts \\ []) do
+  @spec get_versions(String.t(), keyword()) :: {:ok, [map()]} | {:error, any()}
+  def get_versions(title_id, opts \\ []) do
     top = Keyword.get(opts, :top, 50)
 
     params = %{
       "$filter" => "TitleId eq '#{escape_odata(title_id)}'",
+      "$orderby" => "start desc",
       "$top" => to_string(top)
     }
 
-    case get("Affect", params) do
-      {:ok, %{"value" => affects}} -> {:ok, affects}
+    case get("Versions", params) do
+      {:ok, %{"value" => versions}} -> {:ok, versions}
       error -> error
+    end
+  end
+
+  @doc """
+  Get recently registered versions across all titles.
+
+  Used for cascade detection: when a new amending law is published,
+  affected laws get new compilations that reference the amending law.
+  """
+  @spec get_recent_versions(String.t(), keyword()) :: {:ok, [map()]} | {:error, any()}
+  def get_recent_versions(since_date, opts \\ []) do
+    top = Keyword.get(opts, :top, 100)
+
+    params = %{
+      "$filter" => "registeredAt gt #{since_date}",
+      "$orderby" => "registeredAt desc",
+      "$top" => to_string(top)
+    }
+
+    case get("Versions", params) do
+      {:ok, %{"value" => versions}} -> {:ok, versions}
+      error -> error
+    end
+  end
+
+  @doc """
+  Extract all relationships from a title's versions and status history.
+
+  Returns a map with:
+  - `amended_by`: list of `%{title_id, name, provisions}` — laws that amended this one
+  - `rescinded_by`: list of `%{title_id, name, provisions}` — laws that repealed this one
+  - `latest_amend_date`: date of most recent amendment compilation
+  - `latest_rescind_date`: date of repeal (if repealed)
+  """
+  @spec extract_relationships(String.t()) :: {:ok, map()} | {:error, any()}
+  def extract_relationships(title_id) do
+    with {:ok, title} <- get_title(title_id),
+         {:ok, versions} <- get_versions(title_id, top: 100) do
+      # Extract amended_by from Versions reasons
+      amended_by =
+        versions
+        |> Enum.flat_map(fn v -> v["reasons"] || [] end)
+        |> Enum.filter(&(&1["affect"] == "Amend"))
+        |> Enum.map(fn r ->
+          t = r["affectedByTitle"] || %{}
+
+          %{
+            title_id: t["titleId"],
+            name: t["name"],
+            provisions: t["provisions"]
+          }
+        end)
+        |> Enum.uniq_by(& &1.title_id)
+
+      # Extract rescinded_by from Titles statusHistory
+      rescinded_by =
+        (title.status_history || [])
+        |> Enum.flat_map(fn sh -> sh["reasons"] || [] end)
+        |> Enum.filter(&(&1["affect"] == "Repeal"))
+        |> Enum.map(fn r ->
+          t = r["affectedByTitle"] || %{}
+
+          %{
+            title_id: t["titleId"],
+            name: t["name"],
+            provisions: t["provisions"]
+          }
+        end)
+        |> Enum.uniq_by(& &1.title_id)
+
+      # Latest amendment date = start date of most recent version with reasons
+      latest_amend_date =
+        versions
+        |> Enum.filter(fn v -> (v["reasons"] || []) != [] end)
+        |> Enum.map(fn v -> v["start"] end)
+        |> List.first()
+
+      # Repeal date
+      latest_rescind_date =
+        (title.status_history || [])
+        |> Enum.filter(&(&1["status"] == "Repealed"))
+        |> Enum.map(& &1["start"])
+        |> List.first()
+
+      {:ok,
+       %{
+         amended_by: amended_by,
+         rescinded_by: rescinded_by,
+         latest_amend_date: latest_amend_date,
+         latest_rescind_date: latest_rescind_date
+       }}
     end
   end
 

@@ -153,7 +153,14 @@ Build per-jurisdiction parsers for state legislation portals:
 
 ### 2.8 — AU Law Discovery & Monitoring
 
-Two workflows for expanding and maintaining the AU register beyond the initial seed:
+Three workflows for expanding and maintaining the AU register:
+
+**Harvesting from relationship chains (highest value):**
+- Extract unique title_ids from amended_by/rescinded_by across all records
+- Filter out laws already in register → candidates for import
+- Priority: recent amending laws, especially those that repeal/revoke
+- These are strong candidates because they change the compliance landscape
+- 2,201 amendment relationships already collected → ~1,598 candidate laws
 
 **Discovering existing laws not in seed:**
 - Query federal OData API `Titles` endpoint with EHS/HR-relevant filters (collection, keywords)
@@ -162,9 +169,9 @@ Two workflows for expanding and maintaining the AU register beyond the initial s
 
 **Monitoring for newly published laws:**
 - Equivalent of UK monthly scrape sessions
-- Query `Titles` with `$filter` by `asMadeRegisteredAt` date range for new Acts/LIs
-- Filter by EHS/HR relevance (keywords, portfolio, classification)
-- Could be a mix task (`mix au.scrape_new`) or integrated into session workflow
+- Query `Versions?$filter=registeredAt gt {last_check}` for recently recompiled laws
+- New compilations list the amending law in their `reasons` — cascade handled by the register
+- Query `Titles` with `$filter` by `asMadeRegisteredAt` for brand new Acts/LIs
 - State monitoring: RSS feeds or periodic scrape of state portal "recent" pages
 
 ---

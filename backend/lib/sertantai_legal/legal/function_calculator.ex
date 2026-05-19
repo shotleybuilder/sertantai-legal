@@ -465,30 +465,13 @@ defmodule SertantaiLegal.Legal.FunctionCalculator do
   @enrichment_non_making_labels ["Empowering", "Housekeeping"]
 
   defp add_making(function, record) do
-    existing_function = get_field(record, :function) || %{}
-
-    enrichment_ran =
-      Enum.any?(@enrichment_non_making_labels, &Map.has_key?(existing_function, &1))
-
-    cond do
-      # Enrichment confirmed non-making — do not add Making
-      enrichment_ran ->
-        function
-
-      # Stage 3: Definitive — confirmed by taxa/full-text analysis
-      get_boolean_flag(record, :is_making) ->
-        Map.put(function, "Making", true)
-
-      # Stage 2: Human-AI review during LAT session scoping
-      get_field(record, :making_review) == "making" ->
-        Map.put(function, "Making", true)
-
-      # Stage 1: Provisional — auto-detected by MakingDetector (title patterns, structural signals)
-      get_field(record, :making_classification) == "making" ->
-        Map.put(function, "Making", true)
-
-      true ->
-        function
+    # Making is set ONLY when is_making = true (confirmed by LAT parsing).
+    # making_review and making_classification are scoping/pre-filtering signals
+    # that drive the LAT parse queue — they do NOT determine function.
+    if get_boolean_flag(record, :is_making) do
+      Map.put(function, "Making", true)
+    else
+      function
     end
   end
 
