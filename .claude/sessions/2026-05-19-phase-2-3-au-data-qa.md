@@ -71,6 +71,12 @@ ID, number, status, making_date, source_url, amendment history.
 - Remaining cth without match: 37 (standards, covenants, non-legislation — exported to `data/au-unmatched-cth.md`)
 - State records (need state portal parsers, Phase 2.5): 691
 - Bugs fixed: task now filters `jurisdiction = 'cth'`; core-phrase fallback handles em-dash/space mismatches
+- Canonical federal IDs saved as `name` field (AU_C2011A00137 format) — direct lookups without searching
+- 14 false positive fuzzy matches cleared (duplicate federal IDs)
+- Plan updated: 2.3 status, added 2.8 (AU law discovery & monitoring)
+
+**Ended**: 2026-05-19
+**Commits**: `c2870e4`
 
 ## Format Notes
 - State files have markdown links: `[Title](enhesa-url)` — extract title, discard URL
