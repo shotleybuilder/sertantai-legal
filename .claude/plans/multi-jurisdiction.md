@@ -98,53 +98,77 @@ Audit (2026-05-18) concluded: 30 of 35 scraper files are UK-specific. Mass-movin
 
 With the multi-jurisdiction architecture in place, add Australia as the first additional country.
 
-### 2.1 — AU Country Module
+### 2.1 — AU Country Module (done 2026-05-18)
 
-- Implement `SertantaiLegal.Countries.Au` module
-  - Type codes (cth_act, cth_li, nsw_act, nsw_reg, vic_act, cop, award, etc.)
-  - Jurisdiction definitions (cth, nsw, vic, qld, wa, sa, tas, act, nt)
-  - Geographic extent logic (federal vs state/territory)
-  - Family taxonomy (reuse existing where applicable, add AU-specific: Modern Awards, Superannuation, Anti-Discrimination)
-  - Actor definitions (PCBU, workers, officers, Safe Work Australia, Comcare, Fair Work Commission, state regulators)
-  - Source URL builders per jurisdiction (legislation.gov.au, legislation.nsw.gov.au, etc.)
+- Countries.Au module: 24 type codes, 9 jurisdictions, 35 families, 48 actor patterns
+- AU partitions: legal_register_au + legal_articles_au
+- 16 tests
 
-### 2.2 — AU Data Acquisition & Scraper
+### 2.2 — AU Seed Import (done 2026-05-19)
 
-- Build `SertantaiLegal.Scraper.Au` implementing scraper behaviour
-- Start with ALRC DataHub CSV import for federal legislation metadata
-- Add Queensland API integration (best-documented state API — proves the pattern)
-- Scraper adapters for remaining state legislation portals
-- Handle Model WHS Act → state implementation linking (`model_law_reference`)
-- Initial target: federal EHS + HR laws (~250-350 records)
+- `mix au.import_seed` — parsed markdown seed, 891 records imported
+- Category-aware family classification (98.2% coverage)
+- Family + family_ii from multi-category entries
 
-### 2.3 — AU Data Population & QA
+### 2.3 — AU Jurisdiction & Federal Enrichment (done 2026-05-19)
 
-- Create `legal_register_au` partition
-- Import initial AU dataset (federal + one state as proof)
-- Run family classification (reuse existing families + AU additions)
-- Assign duty types, holders, POPIMAR where applicable
-- QA pass: verify duty holder concepts map correctly (esp. PCBU)
-- Expand to remaining states/territories
+- `mix au.import_state` — per-state markdown files assign correct jurisdiction
+- State files imported: NSW, NT, VIC, QLD, SA, ACT (TAS/WA not available)
+- Jurisdiction: cth dropped from 832 → 177 (79% reclassified to states)
+- `Scraper.Au.FederalClient` — OData API client for api.prod.legislation.gov.au
+- `mix au.enrich_federal` — 50 federal records enriched (source_url, number, status, dates)
+- 144 unmatched cth records exported for manual review (standards, model CoPs, state laws without state files)
 
-### 2.4 — AU-Specific Taxa & Enrichment
+### 2.4 — AU Federal Parse Pipeline
 
-- AU-specific making/function detection rules (if needed — may be simpler than UK)
-- AU actor definition patterns (state regulators, PCBU variants)
-- Modern Award handling (coverage rules, annual wage review tracking)
-- Sunsetting date tracking for AU delegated legislation
+Build the multi-stage enrichment pipeline for confirmed federal laws (mirrors UK LRT flow):
+- Stage 1: Metadata — title, year, number, type, status, dates (done via OData Titles endpoint)
+- Stage 2: Relationships — amending/amended_by, enacted_by (from OData Affects endpoint)
+- Stage 3: Status history — commencement, repeal, sunsetting dates (from OData statusHistory)
+- Run pipeline against 50 enriched federal records
+- QA: spot-check relationships, status accuracy
+
+### 2.5 — AU State Portal Parsers
+
+Build per-jurisdiction parsers for state legislation portals:
+- Each state has different URL patterns, HTML structure, metadata availability
+- Priority: NSW (largest set, 154 records), VIC (115), QLD (134, has API)
+- Minimum viable: resolve source_url + status for state records
+- LAT-level article parsing deferred (different HTML structure per portal)
+
+### 2.6 — AU Taxa & Enrichment
+
+- AU-specific making/function detection rules
+- Duty type classification (PCBU model)
+- Modern Award handling
+- Sunsetting date tracking for legislative instruments
 - Victoria OHS Act special handling (non-harmonised)
 
-### 2.5 — Frontend AU Integration & Verification
+### 2.7 — Frontend AU Integration & Verification
 
 - Verify country filter shows AU records in browse/admin views
 - AU-specific type code and jurisdiction labels render correctly
 - External links route to correct AU legislation portals
-- Scrape session workflow works for AU data sources
-- LAT parsing tested against AU legislation structure (if applicable)
 - End-to-end: AU law appears in screening/applicability workflow
+
+### 2.8 — AU Law Discovery & Monitoring
+
+Two workflows for expanding and maintaining the AU register beyond the initial seed:
+
+**Discovering existing laws not in seed:**
+- Query federal OData API `Titles` endpoint with EHS/HR-relevant filters (collection, keywords)
+- Compare against existing records — import new finds
+- Estimate: seed covers ~143 federal laws; full EHS/HR scope likely 300-500+
+
+**Monitoring for newly published laws:**
+- Equivalent of UK monthly scrape sessions
+- Query `Titles` with `$filter` by `asMadeRegisteredAt` date range for new Acts/LIs
+- Filter by EHS/HR relevance (keywords, portfolio, classification)
+- Could be a mix task (`mix au.scrape_new`) or integrated into session workflow
+- State monitoring: RSS feeds or periodic scrape of state portal "recent" pages
 
 ---
 
 ## Session Sizing Notes
 
-Each numbered stage (1.1, 1.2, etc.) is scoped as one development session. Stages within a phase are sequential — each builds on the previous. Phase 2 cannot start until Phase 1.6 is verified.
+Each numbered stage maps to one development session. Stages within a phase are sequential — each builds on the previous.

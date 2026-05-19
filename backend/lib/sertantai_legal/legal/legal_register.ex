@@ -767,6 +767,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Update an existing legal register record")
 
       accept([
+        :jurisdiction,
         :name,
         :title_en,
         :type_code,
