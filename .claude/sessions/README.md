@@ -168,6 +168,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-05-20 | [phase-2-5-au-state-portal-parsers](2026-05-19-phase-2-5-au-state-portal-parsers.md) | — | Phase 2.5: State enrichment — VIC/NT slugs, NSW feed, QLD tables, ACT client. 544/887 enriched, 99+ repealed |
 | 2026-05-19 | [phase-2-4-au-federal-parse-pipeline](2026-05-19-phase-2-4-au-federal-parse-pipeline.md) | — | Phase 2.4: Relationships from Versions API, making_review scoping, FunctionCalculator bug fix |
 | 2026-05-19 | [phase-2-3-au-data-qa](2026-05-19-phase-2-3-au-data-qa.md) | — | Phase 2.3: State file jurisdiction fix, federal OData enrichment (143 records), canonical IDs |
 | 2026-05-19 | [phase-2-2-au-data-acquisition](2026-05-19-phase-2-2-au-data-acquisition.md) | — | Phase 2.2: AU seed import — 885 records, 98% family coverage, category-aware classification |

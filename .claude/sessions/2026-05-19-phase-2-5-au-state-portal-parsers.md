@@ -29,7 +29,11 @@
 - [x] NEPM type_code added, NPI Objective classified correctly
 - [x] QLD enriched via in-force legislative tables (Acts 573 + Regs 446) + manual annotations
 - [x] QLD: 110/133 with URLs, 26 repealed, 0 legislation remaining
-- [ ] SA, ACT — pending (tables or manual annotation needed)
+- [x] ACT enriched: 65 verified from website (43 repealed, 22 in force), 21 stale determinations deleted
+- [ ] SA — blocked (Cloudflare + PDF-only, no parseable data). Manual annotation future task
+
+**Ended**: 2026-05-20
+**Commits**: `af8480e`, `c651ddb`, `e445f6e`, `4da66f9`, `cf097f7`, (pending)
 
 ## Portal URL Patterns
 
@@ -56,9 +60,11 @@
 | **Total** | **887** | **544** | **423** | **56** |
 
 Key findings:
-- 56+ ENHESA seed laws confirmed repealed
+- **ENHESA staleness is severe**: ACT shows 66% repeal rate (43/65 verified as repealed)
+- Total confirmed repealed across all states: 56+ (NSW/QLD) + 43 (ACT) = 99+
 - ACT: 21 stale determinations deleted, ni/di type_codes added
-- ACT client built for metadata scraping (status, dates from HTML)
+- ACT client built — fetches real metadata from website (status confirmed vs assumed)
+- Dry-run comparison mode catches conflicts between DB and website status
 - SA remains untouched (403 blocked, no feed or tables found)
 
 ## Notes

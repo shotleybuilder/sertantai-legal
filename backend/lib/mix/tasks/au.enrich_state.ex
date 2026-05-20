@@ -126,9 +126,25 @@ defmodule Mix.Tasks.Au.EnrichState do
     end)
   end
 
-  defp process_metadata(records, _jurisdiction, dry_run?, total) do
-    # Only process records that have a source_url (number already applied)
-    records
+  defp process_metadata(records, jurisdiction, dry_run?, total) do
+    # Include records WITH source_url that need status verification,
+    # plus unenriched records without source_url
+    all_records =
+      case LegalRegister
+           |> Ash.Query.filter(
+             country == "au" and jurisdiction == ^jurisdiction and
+               not is_nil(source_url) and
+               type_code not in ["standard", "model_cop", "cop", "nepm"]
+           )
+           |> Ash.read() do
+        {:ok, with_urls} when is_list(with_urls) -> with_urls
+        _ -> []
+      end
+
+    total = length(all_records)
+    Mix.shell().info("  (#{total} records with URLs to verify)")
+
+    all_records
     |> Enum.with_index(1)
     |> Enum.reduce({0, 0, 0}, fn {record, idx}, {f, nf, e} ->
       if rem(idx, 10) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
@@ -141,8 +157,14 @@ defmodule Mix.Tasks.Au.EnrichState do
       else
         case ActClient.fetch_url(url) do
           {:ok, %{status: status} = meta} when not is_nil(status) ->
+            # Compare fetched status with what we have
+            status_match = is_nil(record.live) or record.live == status
+            flag = if status_match, do: "✓", else: "⚠"
+
             if dry_run? do
-              Mix.shell().info("  ✓ #{record.title_en} → #{status}")
+              msg = "  #{flag} #{record.title_en} → #{status}"
+              msg = if not status_match, do: msg <> " (DB has: #{record.live})", else: msg
+              Mix.shell().info(msg)
             else
               attrs = %{live: status}
 
@@ -162,12 +184,15 @@ defmodule Mix.Tasks.Au.EnrichState do
             {f + 1, nf, e}
 
           {:ok, nil} ->
+            if dry_run?, do: Mix.shell().info("  ✗ #{record.title_en} → 404 (bad URL?)")
             {f, nf + 1, e}
 
           {:ok, %{status: nil}} ->
+            if dry_run?, do: Mix.shell().info("  ? #{record.title_en} → no status found")
             {f, nf + 1, e}
 
-          {:error, _} ->
+          {:error, reason} ->
+            if dry_run?, do: Mix.shell().info("  ! #{record.title_en} → #{inspect(reason)}")
             {f, nf, e + 1}
         end
       end
