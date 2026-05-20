@@ -209,21 +209,17 @@ defmodule Mix.Tasks.Au.ImportState do
     end
   end
 
-  defp infer_type_code(title, jurisdiction) do
-    type =
-      cond do
-        Regex.match?(~r/\bAct\b/, title) -> "act"
-        Regex.match?(~r/\bRegulations?\b/, title) -> "reg"
-        Regex.match?(~r/\bRules?\b/, title) -> "rule"
-        Regex.match?(~r/Code of [Pp]ractice|Compliance [Cc]ode/i, title) -> "cop"
-        Regex.match?(~r/\bAS(?:\/NZS)?\s/, title) -> "standard"
-        true -> "li"
-      end
-
-    case type do
-      "cop" -> "cop"
-      "standard" -> "standard"
-      _ -> "#{jurisdiction}_#{type}"
+  defp infer_type_code(title, _jurisdiction) do
+    cond do
+      Regex.match?(~r/\bAct\b/, title) -> "act"
+      Regex.match?(~r/\bRegulations?\b/, title) -> "reg"
+      Regex.match?(~r/\bRules?\b/, title) -> "rule"
+      Regex.match?(~r/\bObjective\b/, title) -> "obj"
+      Regex.match?(~r/Code of [Pp]ractice|Compliance [Cc]ode/i, title) -> "cop"
+      Regex.match?(~r/\bAS(?:\/NZS)?\s/, title) -> "standard"
+      Regex.match?(~r/\bNEPM\b|National Environment Protection.*Measure/i, title) -> "nepm"
+      Regex.match?(~r/\bOrder\b|\bDetermination\b|\bNotice\b|\bPolicy\b/, title) -> "li"
+      true -> "li"
     end
   end
 

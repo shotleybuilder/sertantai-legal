@@ -223,26 +223,16 @@ defmodule Mix.Tasks.Au.ImportSeed do
   # ── Type Code Inference ─────────────────────────────────────────────
 
   defp infer_type_code(title) do
-    jurisdiction = infer_jurisdiction(title)
-
-    type_class =
-      cond do
-        Regex.match?(~r/\bAct\b/, title) -> "act"
-        Regex.match?(~r/\bRegulations?\b/, title) -> "reg"
-        Regex.match?(~r/\bRules?\b/, title) -> "rule"
-        Regex.match?(~r/Code of [Pp]ractice|Compliance [Cc]ode/i, title) -> "cop"
-        Regex.match?(~r/\bAS(?:\/NZS)?\s/, title) -> "standard"
-        Regex.match?(~r/\bOrder\b/, title) -> "reg"
-        Regex.match?(~r/\bDetermination\b/, title) -> "reg"
-        Regex.match?(~r/\bNotice\b/, title) -> "reg"
-        Regex.match?(~r/\bPolicy\b/, title) -> "reg"
-        true -> "li"
-      end
-
-    case type_class do
-      "cop" -> "cop"
-      "standard" -> "standard"
-      _ -> "#{jurisdiction}_#{type_class}"
+    cond do
+      Regex.match?(~r/\bAct\b/, title) -> "act"
+      Regex.match?(~r/\bRegulations?\b/, title) -> "reg"
+      Regex.match?(~r/\bRules?\b/, title) -> "rule"
+      Regex.match?(~r/\bObjective\b/, title) -> "obj"
+      Regex.match?(~r/Code of [Pp]ractice|Compliance [Cc]ode/i, title) -> "cop"
+      Regex.match?(~r/\bAS(?:\/NZS)?\s/, title) -> "standard"
+      Regex.match?(~r/\bNEPM\b|National Environment Protection.*Measure/i, title) -> "nepm"
+      Regex.match?(~r/\bOrder\b|\bDetermination\b|\bNotice\b|\bPolicy\b/, title) -> "li"
+      true -> "li"
     end
   end
 

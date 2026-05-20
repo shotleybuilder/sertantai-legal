@@ -38,14 +38,17 @@ defmodule SertantaiLegal.Countries.AuTest do
     test "returns map of type codes" do
       codes = Au.type_codes()
       assert is_map(codes)
-      assert map_size(codes) > 20
+      assert map_size(codes) >= 10
     end
 
     test "type_code_name returns correct names" do
-      assert Au.type_code_name("cth_act") == "Commonwealth Act"
-      assert Au.type_code_name("nsw_reg") == "New South Wales Regulation"
+      assert Au.type_code_name("act") == "Act of Parliament"
+      assert Au.type_code_name("reg") == "Regulation"
+      assert Au.type_code_name("li") == "Legislative Instrument (general subordinate)"
       assert Au.type_code_name("award") == "Modern Award (Fair Work Commission)"
       assert Au.type_code_name("cop") == "Code of Practice"
+      assert Au.type_code_name("nepm") == "National Environment Protection Measure"
+      assert Au.type_code_name("obj") == "Objective (subordinate instrument)"
       assert Au.type_code_name("unknown") == nil
     end
 
@@ -117,7 +120,7 @@ defmodule SertantaiLegal.Countries.AuTest do
 
   describe "source_url" do
     test "returns nil (AU URLs not predictable)" do
-      assert Au.source_url("cth_act", 2011, "137") == nil
+      assert Au.source_url("act", 2011, "137") == nil
     end
 
     test "portal_url returns correct URLs" do
@@ -135,9 +138,9 @@ defmodule SertantaiLegal.Countries.AuTest do
         |> Ash.Changeset.for_create(:create, %{
           country: "au",
           jurisdiction: "cth",
-          name: "AU_cth_act_2011_137",
+          name: "AU_test_act_2011_137",
           title_en: "Work Health and Safety Act 2011",
-          type_code: "cth_act",
+          type_code: "act",
           year: 2011,
           number: "137",
           family: "💙 OH&S: Occupational / Personal Safety"
@@ -146,7 +149,7 @@ defmodule SertantaiLegal.Countries.AuTest do
 
       assert law.country == "au"
       assert law.jurisdiction == "cth"
-      assert law.name == "AU_cth_act_2011_137"
+      assert law.name == "AU_test_act_2011_137"
 
       # Read back via by_country (returns paginated result)
       {:ok, page} = LegalRegister.by_country("au")

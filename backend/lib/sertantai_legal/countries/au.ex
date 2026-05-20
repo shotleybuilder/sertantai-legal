@@ -44,39 +44,19 @@ defmodule SertantaiLegal.Countries.Au do
 
   # ── Type Codes ────────────────────────────────────────────────────
 
+  # Type taxonomy — jurisdiction-neutral. Jurisdiction is in the `jurisdiction` column.
+  # Matches the federal register's flat taxonomy (Act vs LegislativeInstrument)
+  # with finer distinctions derived from title text.
   @type_codes %{
-    # Commonwealth
-    "cth_act" => "Commonwealth Act",
-    "cth_li" => "Commonwealth Legislative Instrument",
-    "cth_reg" => "Commonwealth Regulation",
-    "cth_rule" => "Commonwealth Rule",
-    # New South Wales
-    "nsw_act" => "New South Wales Act",
-    "nsw_reg" => "New South Wales Regulation",
-    # Victoria
-    "vic_act" => "Victorian Act",
-    "vic_reg" => "Victorian Regulation",
-    # Queensland
-    "qld_act" => "Queensland Act",
-    "qld_reg" => "Queensland Regulation",
-    # Western Australia
-    "wa_act" => "Western Australian Act",
-    "wa_reg" => "Western Australian Regulation",
-    # South Australia
-    "sa_act" => "South Australian Act",
-    "sa_reg" => "South Australian Regulation",
-    # Tasmania
-    "tas_act" => "Tasmanian Act",
-    "tas_reg" => "Tasmanian Regulation",
-    # ACT
-    "act_act" => "ACT Act",
-    "act_reg" => "ACT Regulation",
-    # Northern Territory
-    "nt_act" => "Northern Territory Act",
-    "nt_reg" => "Northern Territory Regulation",
-    # Cross-jurisdiction instruments
+    "act" => "Act of Parliament",
+    "reg" => "Regulation",
+    "rule" => "Rules",
+    "li" => "Legislative Instrument (general subordinate)",
+    "obj" => "Objective (subordinate instrument)",
     "cop" => "Code of Practice",
     "model_cop" => "Model Code of Practice (Safe Work Australia)",
+    "standard" => "Australian/NZ Standard",
+    "nepm" => "National Environment Protection Measure",
     "award" => "Modern Award (Fair Work Commission)",
     "nes" => "National Employment Standard"
   }

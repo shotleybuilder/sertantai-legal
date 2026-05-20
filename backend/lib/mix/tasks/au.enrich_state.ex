@@ -20,14 +20,18 @@ defmodule Mix.Tasks.Au.EnrichState do
 
   require Ash.Query
 
-  # Portal URL builders per jurisdiction.
-  # Returns {base_url, slug_fn} or nil if not supported.
-  @portals %{
+  alias SertantaiLegal.Scraper.Au.NswFeedClient
+
+  # Slug-based portals: construct URL from title, verify with HEAD request.
+  @slug_portals %{
     "vic" => {"https://www.legislation.vic.gov.au/in-force", &__MODULE__.vic_slug/1},
     "nt" => {"https://legislation.nt.gov.au/Legislation", &__MODULE__.nt_slug/1}
   }
 
-  @supported_jurisdictions Map.keys(@portals)
+  # Feed-based portals: search by title via Atom feed.
+  @feed_portals ~w(nsw)
+
+  @supported_jurisdictions Map.keys(@slug_portals) ++ @feed_portals
 
   @impl Mix.Task
   def run(args) do
@@ -72,29 +76,13 @@ defmodule Mix.Tasks.Au.EnrichState do
       return_ok()
     end
 
-    {base_url, slug_fn} = Map.fetch!(@portals, jurisdiction)
-
     {found, not_found, errors} =
-      records
-      |> Enum.with_index(1)
-      |> Enum.reduce({0, 0, 0}, fn {record, idx}, {f, nf, e} ->
-        if rem(idx, 20) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
-
-        slug = slug_fn.(record)
-        url = "#{base_url}/#{slug}"
-
-        case verify_url(url) do
-          :ok ->
-            unless dry_run?, do: update_source_url(record, url)
-            {f + 1, nf, e}
-
-          :not_found ->
-            {f, nf + 1, e}
-
-          :error ->
-            {f, nf, e + 1}
-        end
-      end)
+      if jurisdiction in @feed_portals do
+        process_feed(records, jurisdiction, dry_run?, total)
+      else
+        {base_url, slug_fn} = Map.fetch!(@slug_portals, jurisdiction)
+        process_slugs(records, base_url, slug_fn, dry_run?, total)
+      end
 
     prefix = if dry_run?, do: "[DRY RUN] ", else: ""
 
@@ -106,13 +94,68 @@ defmodule Mix.Tasks.Au.EnrichState do
     """)
   end
 
+  defp process_slugs(records, base_url, slug_fn, dry_run?, total) do
+    records
+    |> Enum.with_index(1)
+    |> Enum.reduce({0, 0, 0}, fn {record, idx}, {f, nf, e} ->
+      if rem(idx, 20) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
+
+      slug = slug_fn.(record)
+      url = "#{base_url}/#{slug}"
+
+      case verify_url(url) do
+        :ok ->
+          unless dry_run?, do: update_source_url(record, url)
+          {f + 1, nf, e}
+
+        :not_found ->
+          {f, nf + 1, e}
+
+        :error ->
+          {f, nf, e + 1}
+      end
+    end)
+  end
+
+  defp process_feed(records, _jurisdiction, dry_run?, total) do
+    records
+    |> Enum.with_index(1)
+    |> Enum.reduce({0, 0, 0}, fn {record, idx}, {f, nf, e} ->
+      if rem(idx, 20) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
+      Process.sleep(200)
+
+      case NswFeedClient.search_by_title(record.title_en) do
+        {:ok, [best | _]} ->
+          if dry_run? do
+            Mix.shell().info("  ✓ #{record.title_en} → #{best.source_url}")
+          else
+            attrs = %{source_url: best.source_url}
+            attrs = if best.number, do: Map.put(attrs, :number, best.number), else: attrs
+            attrs = if best.status, do: Map.put(attrs, :live, best.status), else: attrs
+
+            record |> Ash.Changeset.for_update(:update, attrs) |> Ash.update()
+          end
+
+          {f + 1, nf, e}
+
+        {:ok, []} ->
+          {f, nf + 1, e}
+
+        {:error, _} ->
+          {f, nf, e + 1}
+      end
+    end)
+  end
+
   defp return_ok, do: :ok
 
   defp fetch_unenriched(jurisdiction, limit) do
+    # Exclude non-legislation (standards, model CoPs) — they won't be on any legal register
     query =
       LegalRegister
       |> Ash.Query.filter(
-        country == "au" and jurisdiction == ^jurisdiction and is_nil(source_url)
+        country == "au" and jurisdiction == ^jurisdiction and is_nil(source_url) and
+          type_code not in ["standard", "model_cop", "cop"]
       )
       |> Ash.Query.sort(name: :asc)
 

@@ -18,7 +18,15 @@
 - [x] Build `mix au.enrich_state` — slug-based URL construction + HEAD verification
 - [x] VIC enrichment: 55/115 (48%)
 - [x] NT enrichment: 46/77 (60%)
-- [ ] NSW, QLD, SA, ACT — need different approaches (403 blocks, number-based URLs)
+- [x] Manual corrections: WHS Act→cth, Building Act 1993→vic, COVID-19→act, WHS Reg→qld
+- [x] Marked 174 records as non-legislation (standard, cop) — excluded from enrichment
+- [x] Enrichment tasks now skip standards/CoPs
+- [x] NSW feed client built — Atom feed bypasses 403 block, title search works
+- [x] NSW initial run: 3/50 matched (39 errors — rate limited, needs slower delay)
+- [x] Type codes stripped of jurisdiction prefix (act, reg, li, obj, nepm, etc.)
+- [x] NEPM type_code added, NPI Objective classified correctly
+- [ ] NSW: tune rate limiting, run full enrichment
+- [ ] QLD, SA, ACT — investigate feed/API options
 
 ## Portal URL Patterns
 
