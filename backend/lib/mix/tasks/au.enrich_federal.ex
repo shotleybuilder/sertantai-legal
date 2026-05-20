@@ -86,9 +86,13 @@ defmodule Mix.Tasks.Au.EnrichFederal do
   defp return_ok, do: :ok
 
   defp fetch_unenriched_records(limit, group) do
+    # Exclude non-legislation (standards, model CoPs) — they won't be on any legal register
     query =
       LegalRegister
-      |> Ash.Query.filter(country == "au" and jurisdiction == "cth" and is_nil(source_url))
+      |> Ash.Query.filter(
+        country == "au" and jurisdiction == "cth" and is_nil(source_url) and
+          type_code not in ["standard", "model_cop", "cop"]
+      )
       |> Ash.Query.sort(name: :asc)
 
     # Filter by type group
