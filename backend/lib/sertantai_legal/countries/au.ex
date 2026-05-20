@@ -53,6 +53,7 @@ defmodule SertantaiLegal.Countries.Au do
     "rule" => "Rules",
     "li" => "Legislative Instrument (general subordinate)",
     "obj" => "Objective (subordinate instrument)",
+    "epi" => "Environmental Planning Instrument",
     "cop" => "Code of Practice",
     "model_cop" => "Model Code of Practice (Safe Work Australia)",
     "standard" => "Australian/NZ Standard",

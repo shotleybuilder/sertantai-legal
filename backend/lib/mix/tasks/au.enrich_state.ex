@@ -121,8 +121,9 @@ defmodule Mix.Tasks.Au.EnrichState do
     records
     |> Enum.with_index(1)
     |> Enum.reduce({0, 0, 0}, fn {record, idx}, {f, nf, e} ->
-      if rem(idx, 20) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
-      Process.sleep(200)
+      if rem(idx, 10) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
+      # NSW feed rate limits aggressively — 10s between requests
+      Process.sleep(10_000)
 
       case NswFeedClient.search_by_title(record.title_en) do
         {:ok, [best | _]} ->

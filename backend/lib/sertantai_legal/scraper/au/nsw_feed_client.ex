@@ -39,17 +39,7 @@ defmodule SertantaiLegal.Scraper.Au.NswFeedClient do
           "query" => query
         })
 
-    case Req.get(url, receive_timeout: 15_000, retry: false) do
-      {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
-        {:ok, parse_feed(body)}
-
-      {:ok, %Req.Response{status: status}} ->
-        {:error, {:http_error, status}}
-
-      {:error, reason} ->
-        Logger.error("[NSW Feed] Request failed: #{inspect(reason)}")
-        {:error, reason}
-    end
+    fetch_with_retry(url, 3)
   end
 
   # ── Feed Parsing ────────────────────────────────────────────────────
@@ -89,6 +79,27 @@ defmodule SertantaiLegal.Scraper.Au.NswFeedClient do
     case Regex.run(~r/\/(act|sl|epi)-(\d\d\d\d)-(\d+)/, url) do
       [_, type, year, number] -> {type, String.to_integer(year), number}
       _ -> {nil, nil, nil}
+    end
+  end
+
+  defp fetch_with_retry(_url, 0), do: {:error, :rate_limited}
+
+  defp fetch_with_retry(url, retries) do
+    case Req.get(url, receive_timeout: 15_000, retry: false) do
+      {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
+        {:ok, parse_feed(body)}
+
+      {:ok, %Req.Response{status: 429}} ->
+        Logger.info("[NSW Feed] Rate limited, waiting 30s (#{retries - 1} retries left)")
+        Process.sleep(30_000)
+        fetch_with_retry(url, retries - 1)
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:http_error, status}}
+
+      {:error, reason} ->
+        Logger.error("[NSW Feed] Request failed: #{inspect(reason)}")
+        {:error, reason}
     end
   end
 

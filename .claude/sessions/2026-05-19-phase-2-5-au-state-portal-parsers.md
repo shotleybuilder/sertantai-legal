@@ -22,11 +22,12 @@
 - [x] Marked 174 records as non-legislation (standard, cop) — excluded from enrichment
 - [x] Enrichment tasks now skip standards/CoPs
 - [x] NSW feed client built — Atom feed bypasses 403 block, title search works
-- [x] NSW initial run: 3/50 matched (39 errors — rate limited, needs slower delay)
+- [x] NSW feed tuned (10s delay, 30s retry on 429)
+- [x] NSW manual annotation applied: 88 updated, 13 created, 6 repealed marked
+- [x] NSW now: 176 records, 114 with URLs, 117 with numbers, 110 with status
 - [x] Type codes stripped of jurisdiction prefix (act, reg, li, obj, nepm, etc.)
 - [x] NEPM type_code added, NPI Objective classified correctly
-- [ ] NSW: tune rate limiting, run full enrichment
-- [ ] QLD, SA, ACT — investigate feed/API options
+- [ ] QLD, SA, ACT — investigate feed/API options or manual annotation
 
 ## Portal URL Patterns
 
