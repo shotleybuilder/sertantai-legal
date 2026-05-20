@@ -116,25 +116,48 @@ With the multi-jurisdiction architecture in place, add Australia as the first ad
 - State files imported: NSW, NT, VIC, QLD, SA, ACT (TAS/WA not available)
 - Jurisdiction: cth dropped from 832 → 177 (79% reclassified to states)
 - `Scraper.Au.FederalClient` — OData API client for api.prod.legislation.gov.au
-- `mix au.enrich_federal` — 50 federal records enriched (source_url, number, status, dates)
-- 144 unmatched cth records exported for manual review (standards, model CoPs, state laws without state files)
+- `mix au.enrich_federal` — 143 federal records enriched with canonical IDs (AU_C2011A00137)
+- Fuzzy matching with core-phrase fallback for em-dash/space mismatches
+- Type codes stripped of jurisdiction prefix (cth_act → act) — jurisdiction in column only
 
-### 2.4 — AU Federal Parse Pipeline
+### 2.4 — AU Federal Parse Pipeline (done 2026-05-19)
 
-Build the multi-stage enrichment pipeline for confirmed federal laws (mirrors UK LRT flow):
-- Stage 1: Metadata — title, year, number, type, status, dates (done via OData Titles endpoint)
-- Stage 2: Relationships — amending/amended_by, enacted_by (from OData Affects endpoint)
-- Stage 3: Status history — commencement, repeal, sunsetting dates (from OData statusHistory)
-- Run pipeline against 50 enriched federal records
-- QA: spot-check relationships, status accuracy
+- Versions endpoint provides amendment relationships (affect="Amend"/"Repeal")
+- `extract_relationships/1` in FederalClient: 87/137 have amended_by, 14 have rescinded_by
+- `mix au.enrich_relationships`: 2-pass (collect inbound → derive reverse), 2,201 relationships
+- Cascade workflow: poll `Versions?$filter=registeredAt gt {date}` for new compilations
+- `making_review = 'making'` set for 696 ENHESA-sourced Acts/Regs (LAT parse scoping)
+- BUG FIX: FunctionCalculator.add_making was incorrectly driven by making_review/making_classification — now only by is_making=true
 
-### 2.5 — AU State Portal Parsers
+### 2.5 — AU State Portal Parsers (done 2026-05-20)
 
-Build per-jurisdiction parsers for state legislation portals:
-- Each state has different URL patterns, HTML structure, metadata availability
-- Priority: NSW (largest set, 154 records), VIC (115), QLD (134, has API)
-- Minimum viable: resolve source_url + status for state records
-- LAT-level article parsing deferred (different HTML structure per portal)
+Per-state enrichment using different approaches per portal:
+
+| Jurisdiction | Approach | Records | Enriched | Repealed |
+|---|---|---|---|---|
+| cth | OData API | 178 | 138 | 14 |
+| NSW | Atom feed + manual annotation | 176 | 126 | 12 |
+| QLD | In-force legislative tables (browser) + manual | 133 | 110 | 26 |
+| ACT | HTML scraping client + manual annotation | 104 | 65 | 43 |
+| VIC | Title-slug URL verification | 116 | 56 | — |
+| NT | Title-slug URL verification | 75 | 47 | — |
+| SA | Blocked (Cloudflare + PDF only) | 104 | 2 | 1 |
+| **Total** | | **887** | **544 (61%)** | **99+** |
+
+Key tools built:
+- `Scraper.Au.NswFeedClient` — Atom feed bypasses NSW 403 block
+- `Scraper.Au.ActClient` — HTML scraping for metadata (status, dates)
+- `mix au.enrich_state` — supports slug, feed, and metadata-scraping portals
+- `mix au.apply_nsw_annotations` — applies manually annotated NSW data
+- Dry-run comparison mode flags DB vs website status conflicts
+
+Type taxonomy expanded: ni (Notifiable Instrument), di (Disallowable Instrument), epi (Environmental Planning Instrument), obj (Objective), nepm (NEPM)
+
+**Major finding: ENHESA seed data staleness**
+- ACT: 66% of verified laws are repealed (43/65)
+- 99+ laws confirmed repealed across all states
+- Many seed laws replaced by newer versions not in the ENHESA export
+- Pre-2025 ACT Determinations (21) deleted — remade annually
 
 ### 2.6 — AU Taxa & Enrichment
 
@@ -159,20 +182,16 @@ Three workflows for expanding and maintaining the AU register:
 - Extract unique title_ids from amended_by/rescinded_by across all records
 - Filter out laws already in register → candidates for import
 - Priority: recent amending laws, especially those that repeal/revoke
-- These are strong candidates because they change the compliance landscape
-- 2,201 amendment relationships already collected → ~1,598 candidate laws
+- 2,201 amendment relationships collected → ~1,598 candidate laws
 
 **Discovering existing laws not in seed:**
-- Query federal OData API `Titles` endpoint with EHS/HR-relevant filters (collection, keywords)
+- Query federal OData API `Titles` endpoint with EHS/HR-relevant filters
 - Compare against existing records — import new finds
-- Estimate: seed covers ~143 federal laws; full EHS/HR scope likely 300-500+
 
 **Monitoring for newly published laws:**
-- Equivalent of UK monthly scrape sessions
 - Query `Versions?$filter=registeredAt gt {last_check}` for recently recompiled laws
-- New compilations list the amending law in their `reasons` — cascade handled by the register
-- Query `Titles` with `$filter` by `asMadeRegisteredAt` for brand new Acts/LIs
-- State monitoring: RSS feeds or periodic scrape of state portal "recent" pages
+- New compilations list the amending law in `reasons` — cascade handled by register
+- State monitoring: QLD feed (`feed?id=newinforce`), ACT HTML scraping
 
 ---
 
