@@ -21,6 +21,7 @@ defmodule Mix.Tasks.Au.EnrichState do
   require Ash.Query
 
   alias SertantaiLegal.Scraper.Au.NswFeedClient
+  alias SertantaiLegal.Scraper.Au.ActClient
 
   # Slug-based portals: construct URL from title, verify with HEAD request.
   @slug_portals %{
@@ -31,7 +32,10 @@ defmodule Mix.Tasks.Au.EnrichState do
   # Feed-based portals: search by title via Atom feed.
   @feed_portals ~w(nsw)
 
-  @supported_jurisdictions Map.keys(@slug_portals) ++ @feed_portals
+  # Metadata-scraping portals: fetch page and parse HTML for status/dates.
+  @metadata_portals ~w(act)
+
+  @supported_jurisdictions Map.keys(@slug_portals) ++ @feed_portals ++ @metadata_portals
 
   @impl Mix.Task
   def run(args) do
@@ -77,11 +81,16 @@ defmodule Mix.Tasks.Au.EnrichState do
     end
 
     {found, not_found, errors} =
-      if jurisdiction in @feed_portals do
-        process_feed(records, jurisdiction, dry_run?, total)
-      else
-        {base_url, slug_fn} = Map.fetch!(@slug_portals, jurisdiction)
-        process_slugs(records, base_url, slug_fn, dry_run?, total)
+      cond do
+        jurisdiction in @metadata_portals ->
+          process_metadata(records, jurisdiction, dry_run?, total)
+
+        jurisdiction in @feed_portals ->
+          process_feed(records, jurisdiction, dry_run?, total)
+
+        true ->
+          {base_url, slug_fn} = Map.fetch!(@slug_portals, jurisdiction)
+          process_slugs(records, base_url, slug_fn, dry_run?, total)
       end
 
     prefix = if dry_run?, do: "[DRY RUN] ", else: ""
@@ -113,6 +122,54 @@ defmodule Mix.Tasks.Au.EnrichState do
 
         :error ->
           {f, nf, e + 1}
+      end
+    end)
+  end
+
+  defp process_metadata(records, _jurisdiction, dry_run?, total) do
+    # Only process records that have a source_url (number already applied)
+    records
+    |> Enum.with_index(1)
+    |> Enum.reduce({0, 0, 0}, fn {record, idx}, {f, nf, e} ->
+      if rem(idx, 10) == 0, do: Mix.shell().info("  Processing #{idx}/#{total}...")
+      Process.sleep(1000)
+
+      url = record.source_url
+
+      if is_nil(url) do
+        {f, nf + 1, e}
+      else
+        case ActClient.fetch_url(url) do
+          {:ok, %{status: status} = meta} when not is_nil(status) ->
+            if dry_run? do
+              Mix.shell().info("  ✓ #{record.title_en} → #{status}")
+            else
+              attrs = %{live: status}
+
+              attrs =
+                if meta.commenced_date,
+                  do: Map.put(attrs, :md_coming_into_force_date, meta.commenced_date),
+                  else: attrs
+
+              attrs =
+                if meta.repeal_date,
+                  do: Map.put(attrs, :latest_rescind_date, meta.repeal_date),
+                  else: attrs
+
+              record |> Ash.Changeset.for_update(:update, attrs) |> Ash.update()
+            end
+
+            {f + 1, nf, e}
+
+          {:ok, nil} ->
+            {f, nf + 1, e}
+
+          {:ok, %{status: nil}} ->
+            {f, nf + 1, e}
+
+          {:error, _} ->
+            {f, nf, e + 1}
+        end
       end
     end)
   end

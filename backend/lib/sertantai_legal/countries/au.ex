@@ -52,6 +52,8 @@ defmodule SertantaiLegal.Countries.Au do
     "reg" => "Regulation",
     "rule" => "Rules",
     "li" => "Legislative Instrument (general subordinate)",
+    "ni" => "Notifiable Instrument",
+    "di" => "Disallowable Instrument",
     "obj" => "Objective (subordinate instrument)",
     "epi" => "Environmental Planning Instrument",
     "cop" => "Code of Practice",

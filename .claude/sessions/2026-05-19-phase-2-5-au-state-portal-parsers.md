@@ -27,7 +27,9 @@
 - [x] NSW now: 176 records, 114 with URLs, 117 with numbers, 110 with status
 - [x] Type codes stripped of jurisdiction prefix (act, reg, li, obj, nepm, etc.)
 - [x] NEPM type_code added, NPI Objective classified correctly
-- [ ] QLD, SA, ACT — investigate feed/API options or manual annotation
+- [x] QLD enriched via in-force legislative tables (Acts 573 + Regs 446) + manual annotations
+- [x] QLD: 110/133 with URLs, 26 repealed, 0 legislation remaining
+- [ ] SA, ACT — pending (tables or manual annotation needed)
 
 ## Portal URL Patterns
 
@@ -42,15 +44,22 @@
 
 ## Enrichment Summary
 
-| Jurisdiction | Total | Enriched | Rate |
-|---|---|---|---|
-| cth | 177 | 137 | 77% |
-| vic | 115 | 55 | 48% |
-| nt | 77 | 46 | 60% |
-| nsw | 154 | 2 | 1% |
-| qld | 134 | 0 | 0% |
-| act | 124 | 2 | 2% |
-| sa | 104 | 2 | 2% |
+| Jurisdiction | Total | Has URL | Has Status | Repealed |
+|---|---|---|---|---|
+| cth | 178 | 138 | 137 | 14 |
+| nsw | 176 | 126 | 120 | 12 |
+| qld | 133 | 110 | 106 | 26 |
+| act | 104 | 65 | 58 | 3 |
+| vic | 116 | 56 | 0 | — |
+| sa | 104 | 2 | 2 | 1 |
+| nt | 75 | 47 | 0 | — |
+| **Total** | **887** | **544** | **423** | **56** |
+
+Key findings:
+- 56+ ENHESA seed laws confirmed repealed
+- ACT: 21 stale determinations deleted, ni/di type_codes added
+- ACT client built for metadata scraping (status, dates from HTML)
+- SA remains untouched (403 blocked, no feed or tables found)
 
 ## Notes
 - From Phase 2.3 research: NSW returns 403, QLD has Swagger API (but 401), VIC has slug-based URLs
