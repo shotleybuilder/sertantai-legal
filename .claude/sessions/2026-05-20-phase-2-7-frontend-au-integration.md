@@ -168,6 +168,9 @@ No architectural change needed — just narrowing the WHERE clause.
 3. **Page title still says "UK LRT Data"**: should adapt to selected country
 4. **Browse page**: not yet tested with country switching (same collection pattern needed)
 
+**Ended**: 2026-05-21
+**Commits**: `a110673`, `d815d83`, `eb2381b`
+
 ## Gemini AI Reflections
 
 This is a classic architectural crossroads when building local-first applications with ElectricSQL. Balancing sync overhead, PGlite memory constraints, and tenant isolation is tricky.
