@@ -1107,7 +1107,9 @@
 	async function refreshTotalCount() {
 		if (!db) return;
 		try {
-			const result = await db.query<{ count: string }>(`SELECT COUNT(*) as count FROM laws WHERE country = '${$selectedCountry}'`);
+			const result = await db.query<{ count: string }>(
+				`SELECT COUNT(*) as count FROM laws WHERE country = '${$selectedCountry}'`
+			);
 			totalRecordCount = parseInt(result.rows[0]?.count ?? '0', 10);
 		} catch {
 			/* ignore */
@@ -1136,6 +1138,22 @@
 			setTimeout(() => seedDefaultViews(), 100);
 		}
 	});
+
+	// Re-initialise collection when country changes
+	let prevCountry = $selectedCountry;
+	$: if ($selectedCountry !== prevCountry && db && ready) {
+		prevCountry = $selectedCountry;
+		(async () => {
+			const collection = createPGLiteCollection({
+				db: db!,
+				query: BASE_QUERY,
+				id: `lrt-admin-${$selectedCountry}`
+			});
+			adapter = createTanStackDBAdapter({ collection, columns: lrtColumnMetadata });
+			await adapter.init();
+			await refreshTotalCount();
+		})();
+	}
 
 	onDestroy(() => {
 		activeViewUnsub?.();

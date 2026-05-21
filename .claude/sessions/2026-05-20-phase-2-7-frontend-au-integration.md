@@ -157,9 +157,16 @@ No architectural change needed — just narrowing the WHERE clause.
 - [x] Country selector store (`$lib/stores/country.ts`)
 - [x] Updated all PGlite SQL queries: `FROM uk_lrt` → `FROM laws` (admin/lrt, browse, analytics, LAT queue)
 - [x] All tests pass (131 FE, 1227 BE)
-- [ ] Country selector UI component in admin/browse views
-- [ ] Type code / jurisdiction labels from country module
-- [ ] Verify AU records visible after hard refresh
+- [x] Country selector UI in admin nav bar
+- [x] Wired country filter into LRT, browse, analytics, LAT queue queries
+- [x] Collection recreates on country switch (LRT page)
+- [x] Verified: 887 AU records visible when Australia selected
+
+## Observations / Follow-up Items
+1. **AU data quality**: wrong family allocations and missing Type content visible in grid — needs QA pass (Phase 2.6 taxa work)
+2. **View doesn't auto-refresh on country switch**: have to click a View to reload — the active view's query doesn't re-fire when the collection changes
+3. **Page title still says "UK LRT Data"**: should adapt to selected country
+4. **Browse page**: not yet tested with country switching (same collection pattern needed)
 
 ## Gemini AI Reflections
 
