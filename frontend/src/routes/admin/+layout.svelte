@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { adminAuth, isAdmin, type AuthUser } from '$lib/stores/auth';
+	import { selectedCountry, COUNTRIES } from '$lib/stores/country';
 
 	const HUB_URL = import.meta.env.VITE_HUB_URL || 'http://localhost:5173';
 
@@ -186,8 +187,16 @@
 						</div>
 					</div>
 
-					<!-- Right side: user info -->
+					<!-- Right side: country selector + user info -->
 					<div class="flex items-center gap-3">
+						<select
+							bind:value={$selectedCountry}
+							class="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						>
+							{#each COUNTRIES as country}
+								<option value={country.code}>{country.name}</option>
+							{/each}
+						</select>
 						<span class="text-sm text-gray-600">{user.name || user.email}</span>
 						<span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">{user.role}</span>
 						<button on:click={signOut} class="text-sm text-gray-400 hover:text-gray-600">

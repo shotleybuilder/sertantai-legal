@@ -291,7 +291,7 @@
 					const fields = Object.keys(safeChanges);
 					const values = Object.values(safeChanges);
 					const setClauses = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
-					await db!.query(`UPDATE uk_lrt SET ${setClauses} WHERE id = $${fields.length + 1}`, [
+					await db!.query(`UPDATE laws SET ${setClauses} WHERE id = $${fields.length + 1}`, [
 						...values,
 						m.key
 					]);

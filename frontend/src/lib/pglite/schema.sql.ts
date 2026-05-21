@@ -1,18 +1,18 @@
 /**
- * PGLite Schema for uk_lrt
+ * PGLite Schema for laws table (multi-jurisdiction legal register).
  *
- * Mirrors the server-side uk_lrt table for columns synced via Electric.
- * Column types match the server schema where possible. Electric sends all
- * values as strings, but PGLite's Postgres engine handles type coercion.
+ * Mirrors the server-side legal_register table for columns synced via Electric.
+ * Multiple country partitions sync into this single local table.
+ * Column types match the server schema where possible.
  *
- * Only includes columns from UK_LRT_ADMIN_COLUMNS (excludes heavy JSONB
+ * Only includes columns from ADMIN_COLUMNS (excludes heavy JSONB
  * like role_details, duties, rights, responsibilities, powers, popimar_details).
  */
 
-export const CREATE_UK_LRT_SQL = `
-CREATE TABLE IF NOT EXISTS uk_lrt (
+export const CREATE_LAWS_SQL = `
+CREATE TABLE IF NOT EXISTS laws (
   id UUID PRIMARY KEY,
-  country TEXT DEFAULT 'uk',
+  country TEXT NOT NULL DEFAULT 'uk',
 
   -- Credentials
   name VARCHAR,
@@ -129,21 +129,22 @@ CREATE TABLE IF NOT EXISTS uk_lrt (
 );
 `;
 
-export const CREATE_UK_LRT_INDEXES_SQL = `
-CREATE INDEX IF NOT EXISTS idx_uk_lrt_name ON uk_lrt (name);
-CREATE INDEX IF NOT EXISTS idx_uk_lrt_year ON uk_lrt (year);
-CREATE INDEX IF NOT EXISTS idx_uk_lrt_family ON uk_lrt (family);
-CREATE INDEX IF NOT EXISTS idx_uk_lrt_live ON uk_lrt (live);
-CREATE INDEX IF NOT EXISTS idx_uk_lrt_is_making ON uk_lrt (is_making);
-CREATE INDEX IF NOT EXISTS idx_uk_lrt_making_classification ON uk_lrt (making_classification);
+export const CREATE_LAWS_INDEXES_SQL = `
+CREATE INDEX IF NOT EXISTS idx_laws_country ON laws (country);
+CREATE INDEX IF NOT EXISTS idx_laws_name ON laws (name);
+CREATE INDEX IF NOT EXISTS idx_laws_year ON laws (year);
+CREATE INDEX IF NOT EXISTS idx_laws_family ON laws (family);
+CREATE INDEX IF NOT EXISTS idx_laws_live ON laws (live);
+CREATE INDEX IF NOT EXISTS idx_laws_is_making ON laws (is_making);
+CREATE INDEX IF NOT EXISTS idx_laws_making_classification ON laws (making_classification);
 `;
 
 /**
- * Initialize the uk_lrt schema in PGLite.
+ * Initialize the laws schema in PGLite.
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 15; // Bump: add source_url column, frontend now requests legal_register_uk directly
+const SCHEMA_VERSION = 16; // Bump: rename uk_lrt → laws for multi-country support
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;
@@ -152,28 +153,29 @@ export async function initSchema(pg: {
 	// Check stored schema version
 	await pg.exec(`CREATE TABLE IF NOT EXISTS _pglite_meta (key TEXT PRIMARY KEY, value TEXT)`);
 	const result = await pg.query<{ value: string }>(
-		`SELECT value FROM _pglite_meta WHERE key = 'uk_lrt_schema_version'`
+		`SELECT value FROM _pglite_meta WHERE key = 'laws_schema_version'`
 	);
 	const currentVersion = result.rows[0] ? parseInt(result.rows[0].value, 10) : 0;
 
 	if (currentVersion < SCHEMA_VERSION) {
-		// Schema changed — drop and recreate
+		// Schema changed — drop old tables and recreate
 		console.log(
-			`[PGLite] Schema version ${currentVersion} → ${SCHEMA_VERSION}, recreating uk_lrt table`
+			`[PGLite] Schema version ${currentVersion} → ${SCHEMA_VERSION}, recreating laws table`
 		);
 		await pg.exec('DROP TABLE IF EXISTS uk_lrt CASCADE');
+		await pg.exec('DROP TABLE IF EXISTS laws CASCADE');
 		// Drop all gridlite tables so both kit and views packages recreate cleanly
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_column_state CASCADE');
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_views CASCADE');
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_meta CASCADE');
-		await pg.exec(CREATE_UK_LRT_SQL);
-		await pg.exec(CREATE_UK_LRT_INDEXES_SQL);
+		await pg.exec(CREATE_LAWS_SQL);
+		await pg.exec(CREATE_LAWS_INDEXES_SQL);
 		await pg.exec(
-			`INSERT INTO _pglite_meta (key, value) VALUES ('uk_lrt_schema_version', '${SCHEMA_VERSION}') ON CONFLICT (key) DO UPDATE SET value = '${SCHEMA_VERSION}'`
+			`INSERT INTO _pglite_meta (key, value) VALUES ('laws_schema_version', '${SCHEMA_VERSION}') ON CONFLICT (key) DO UPDATE SET value = '${SCHEMA_VERSION}'`
 		);
 	} else {
-		await pg.exec(CREATE_UK_LRT_SQL);
-		await pg.exec(CREATE_UK_LRT_INDEXES_SQL);
+		await pg.exec(CREATE_LAWS_SQL);
+		await pg.exec(CREATE_LAWS_INDEXES_SQL);
 	}
 
 	// Fix incompatible _gridlite_column_state from svelte-gridlite-views (lacks grid_id).
@@ -196,5 +198,5 @@ export async function initSchema(pg: {
 		/* table doesn't exist yet — fine */
 	}
 
-	console.log('[PGLite] uk_lrt schema initialized');
+	console.log('[PGLite] laws schema initialized');
 }

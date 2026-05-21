@@ -122,19 +122,19 @@
 					SELECT COUNT(*)::int AS total,
 					       COUNT(*) FILTER (WHERE family IS NULL)::int AS null_family,
 					       COUNT(*) FILTER (WHERE title_en IS NULL)::int AS null_title_en
-					FROM uk_lrt
+					FROM laws
 				`),
 				pg.query<{ family: string; count: number }>(`
 					SELECT COALESCE(family, '(null)') AS family, COUNT(*)::int AS count
-					FROM uk_lrt GROUP BY family ORDER BY count DESC LIMIT 30
+					FROM laws GROUP BY family ORDER BY count DESC LIMIT 30
 				`),
 				pg.query<{ label: string; count: number }>(`
 					SELECT COALESCE(making_classification, '(unclassified)') AS label, COUNT(*)::int AS count
-					FROM uk_lrt GROUP BY making_classification ORDER BY count DESC
+					FROM laws GROUP BY making_classification ORDER BY count DESC
 				`),
 				pg.query<{ label: string; count: number }>(`
 					SELECT COALESCE(live, '(null)') AS label, COUNT(*)::int AS count
-					FROM uk_lrt GROUP BY live ORDER BY count DESC
+					FROM laws GROUP BY live ORDER BY count DESC
 				`)
 			]);
 
@@ -178,7 +178,7 @@
 					COUNT(*) FILTER (WHERE fitness_property IS NOT NULL AND array_length(fitness_property, 1) > 0)::int AS fitness_property_pop,
 					COUNT(*) FILTER (WHERE fitness_sector IS NOT NULL AND array_length(fitness_sector, 1) > 0)::int AS fitness_sector_pop,
 					COUNT(*) FILTER (WHERE has_fitness = 'true')::int AS has_fitness_pop
-				FROM uk_lrt
+				FROM laws
 			`);
 
 			const p = popRes.rows[0];
@@ -224,7 +224,7 @@
 					COUNT(*) FILTER (WHERE lat_count BETWEEN 11 AND 50)::int AS bucket_11_50,
 					COUNT(*) FILTER (WHERE lat_count > 50)::int AS bucket_50_plus,
 					COUNT(*) FILTER (WHERE is_making = true AND lat_count = 0)::int AS making_no_lat
-				FROM uk_lrt
+				FROM laws
 			`);
 
 			const l = latRes.rows[0];

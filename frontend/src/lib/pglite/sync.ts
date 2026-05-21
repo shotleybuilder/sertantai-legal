@@ -1,10 +1,12 @@
 /**
- * PGLite Shape Sync Manager
+ * PGLite Shape Sync Manager — Multi-Country
  *
- * Connects an Electric shape subscription from `legal_register_uk` (server partition)
- * to the local PGLite `uk_lrt` table. Uses `shapeKey` for persistent offset —
- * on warm starts, only delta changes are fetched instead of re-downloading
- * the full ~48MB dataset.
+ * Subscribes to a single Electric shape on the parent `legal_register` table
+ * (PostgreSQL transparently queries all country partitions). All countries
+ * sync into a single local `laws` table.
+ *
+ * Uses `shapeKey` for persistent offset — on warm starts, only delta changes
+ * are fetched.
  */
 
 import { browser } from '$app/environment';
@@ -17,10 +19,10 @@ import { electricFetchClient } from '$lib/electric/fetch-client';
 // ── Column Sets ─────────────────────────────────────────────────────────────
 
 /**
- * All syncable columns from legal_register_uk table.
+ * All syncable columns from legal_register partition tables.
  * Excludes PostgreSQL generated columns (number_int, has_fitness) which Electric cannot sync.
  */
-const UK_LRT_ALL_COLUMNS: string[] = [
+const ALL_COLUMNS: string[] = [
 	'id',
 	'country',
 	'family',
@@ -81,22 +83,15 @@ const UK_LRT_ALL_COLUMNS: string[] = [
 	'is_rescinding',
 	'enacted_by',
 	'is_enacting',
-	'duties',
-	'rights',
-	'responsibilities',
-	'powers',
 	'is_making',
 	'is_commencing',
 	'geo_detail',
 	'duty_type',
 	'duty_type_article',
 	'article_duty_type',
-	'popimar_details',
 	'updated_at',
 	'md_modified',
 	'enacted_by_meta',
-	'role_details',
-	'role_gvt_details',
 	'live_from_changes',
 	'lat_count',
 	'latest_lat_updated_at',
@@ -106,7 +101,6 @@ const UK_LRT_ALL_COLUMNS: string[] = [
 	'fitness_plant',
 	'fitness_property',
 	'fitness_sector',
-	'fitness',
 	'making_classification',
 	'making_review',
 	'making_review_at',
@@ -115,7 +109,6 @@ const UK_LRT_ALL_COLUMNS: string[] = [
 
 /**
  * Heavy JSONB columns excluded from sync to reduce payload ~50%.
- * Detail data is available via ParseReviewModal REST call when needed.
  */
 const HEAVY_JSONB_COLUMNS = new Set([
 	'role_details',
@@ -129,11 +122,12 @@ const HEAVY_JSONB_COLUMNS = new Set([
 ]);
 
 /**
- * Admin columns: all columns minus heavy JSONB (~2.5 KB/row instead of ~5.7 KB/row).
+ * Admin columns: all columns minus heavy JSONB.
  */
-const UK_LRT_ADMIN_COLUMNS: string[] = UK_LRT_ALL_COLUMNS.filter(
-	(col) => !HEAVY_JSONB_COLUMNS.has(col)
-);
+const ADMIN_COLUMNS: string[] = ALL_COLUMNS.filter((col) => !HEAVY_JSONB_COLUMNS.has(col));
+
+/** Exported for use by shape recovery in error handlers */
+export { ADMIN_COLUMNS };
 
 // ── Sync Status Store ───────────────────────────────────────────────────────
 
@@ -158,15 +152,11 @@ export const syncStatus = writable<SyncStatus>({
 // ── Sync Lifecycle ──────────────────────────────────────────────────────────
 
 let syncStarted = false;
-let unsubscribeSync: (() => void) | null = null;
-let resetAttemptedAt = 0;
+const unsubscribeFns: (() => void)[] = [];
 
 /**
- * Initialize PGLite schema and start Electric shape sync.
+ * Initialize PGLite schema and start Electric shape sync for all countries.
  * Safe to call multiple times — only starts once.
- *
- * On first visit: full sync (~19K rows, 15-30s).
- * On subsequent visits: resumes from persisted offset (sub-second).
  */
 export async function startSync(): Promise<void> {
 	if (!browser) return;
@@ -179,18 +169,17 @@ export async function startSync(): Promise<void> {
 
 		// Check for existing data (warm start)
 		const countResult = await pg.query<{ count: number }>(
-			'SELECT COUNT(*)::int AS count FROM uk_lrt'
+			'SELECT COUNT(*)::int AS count FROM laws'
 		);
 		const existingCount = countResult.rows[0]?.count ?? 0;
 
-		// Always clear stale subscription before starting sync.
-		// After the partition migration (legal_register_uk), old subscriptions
-		// targeting the uk_lrt view are invalid and cause "Already syncing" errors.
-		try {
-			await pg.electric.deleteSubscription('uk-lrt');
-			console.log('[PGLite Sync] Cleared previous subscription');
-		} catch {
-			// No subscription to delete — first time
+		// Clear stale subscriptions from previous schema versions
+		for (const key of ['uk-lrt', 'laws-uk', 'laws-au', 'laws']) {
+			try {
+				await pg.electric.deleteSubscription(key);
+			} catch {
+				// No subscription to delete
+			}
 		}
 
 		if (existingCount > 0) {
@@ -215,30 +204,26 @@ export async function startSync(): Promise<void> {
 			});
 		}
 
-		// Start shape sync — request from the actual partition table (not the view)
+		// Single shape on parent legal_register table — all countries
 		const result = await pg.electric.syncShapeToTable({
 			shape: {
 				url: `${ELECTRIC_URL}/v1/shape`,
 				fetchClient: electricFetchClient,
 				params: {
-					table: 'legal_register_uk',
-					columns: UK_LRT_ADMIN_COLUMNS
+					table: 'legal_register',
+					columns: ADMIN_COLUMNS
 				}
 			},
-			table: 'uk_lrt',
+			table: 'laws',
 			primaryKey: ['id'],
-			shapeKey: 'uk-lrt',
-			// Use mapColumns to convert BigInt values (Electric parses int8 as BigInt)
-			// which can't be serialized to JSON by json_to_recordset insert method.
+			shapeKey: 'laws',
 			mapColumns: (message) => {
 				const val = message.value;
 				const mapped: Record<string, unknown> = {};
 				for (const [key, v] of Object.entries(val)) {
 					mapped[key] = typeof v === 'bigint' ? Number(v) : v;
 				}
-				// has_fitness: server generated column can't be synced via Electric,
-				// so compute client-side from tag arrays (null = no data).
-				// Stored as TEXT 'true'/'false' for gridlite-kit filter compatibility.
+				// has_fitness: server generated column can't be synced via Electric
 				const hasFitness =
 					mapped.fitness_person != null ||
 					mapped.fitness_process != null ||
@@ -251,10 +236,10 @@ export async function startSync(): Promise<void> {
 			},
 			initialInsertMethod: 'json',
 			onInitialSync: async () => {
-				const result = await pg.query<{ count: number }>(
-					'SELECT COUNT(*)::int AS count FROM uk_lrt'
+				const countRes = await pg.query<{ count: number }>(
+					'SELECT COUNT(*)::int AS count FROM laws'
 				);
-				const count = result.rows[0]?.count ?? 0;
+				const count = countRes.rows[0]?.count ?? 0;
 				console.log(`[PGLite Sync] Initial sync complete: ${count} records`);
 				syncStatus.set({
 					connected: true,
@@ -266,57 +251,6 @@ export async function startSync(): Promise<void> {
 				});
 			},
 			onError: async (error: Error & { status?: number }) => {
-				const status = error.status ?? null;
-
-				if (status === 401) {
-					console.warn('[PGLite Sync] Unauthorized (401)');
-					syncStatus.update((s) => ({
-						...s,
-						error: 'Authentication required',
-						syncing: false
-					}));
-					return;
-				}
-
-				if (status === 400) {
-					const now = Date.now();
-					if (now - resetAttemptedAt < 30_000) {
-						console.error('[PGLite Sync] Shape recovery already attempted recently');
-						syncStatus.update((s) => ({
-							...s,
-							error: 'Electric sync unavailable — try refreshing the page',
-							syncing: false
-						}));
-						return;
-					}
-					resetAttemptedAt = now;
-					console.warn('[PGLite Sync] Broken shape (400), deleting subscription and retrying');
-
-					try {
-						// Delete the server-side shape
-						const colParam = encodeURIComponent(UK_LRT_ADMIN_COLUMNS.join(','));
-						await electricFetchClient(
-							`${ELECTRIC_URL}/v1/shape?table=legal_register_uk&columns=${colParam}`,
-							{ method: 'DELETE' }
-						);
-					} catch {
-						// DELETE may not be available
-					}
-
-					try {
-						// Delete the local subscription state so it re-syncs fresh
-						await pg.electric.deleteSubscription('uk-lrt');
-					} catch {
-						// May not exist yet
-					}
-
-					// Reset and allow re-initialization
-					syncStarted = false;
-					unsubscribeSync = null;
-					setTimeout(() => startSync(), 2000);
-					return;
-				}
-
 				console.error('[PGLite Sync] Error:', error);
 				syncStatus.update((s) => ({
 					...s,
@@ -327,8 +261,8 @@ export async function startSync(): Promise<void> {
 			}
 		});
 
-		unsubscribeSync = result.unsubscribe;
-		console.log('[PGLite Sync] Shape subscription active');
+		unsubscribeFns.push(result.unsubscribe);
+		console.log('[PGLite Sync] Shape subscription active (all countries)');
 	} catch (error) {
 		console.error('[PGLite Sync] Failed to start:', error);
 		syncStarted = false;
@@ -344,12 +278,12 @@ export async function startSync(): Promise<void> {
 }
 
 /**
- * Stop the sync subscription.
+ * Stop all sync subscriptions.
  */
 export function stopSync(): void {
-	if (unsubscribeSync) {
-		unsubscribeSync();
-		unsubscribeSync = null;
+	for (const unsub of unsubscribeFns) {
+		unsub();
 	}
+	unsubscribeFns.length = 0;
 	syncStarted = false;
 }

@@ -67,7 +67,7 @@
 		'latest_rescind_date_year',
 		'latest_rescind_date_month'
 	];
-	const BROWSE_SQL = `SELECT ${BROWSE_COLUMNS.join(', ')} FROM uk_lrt`;
+	const BROWSE_SQL = `SELECT ${BROWSE_COLUMNS.join(', ')} FROM laws`;
 	const browseColumnMetadata = UK_LRT_COLUMN_METADATA.filter((c) =>
 		BROWSE_COLUMNS.includes(c.name)
 	);

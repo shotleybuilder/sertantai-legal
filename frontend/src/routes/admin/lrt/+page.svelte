@@ -488,7 +488,7 @@
 
 	// Query constants
 	const currentYear = new Date().getFullYear();
-	const BASE_QUERY = `SELECT ${LRT_COLUMNS} FROM uk_lrt`;
+	const BASE_QUERY = `SELECT ${LRT_COLUMNS} FROM laws`;
 
 	// Column sets for view configs
 	const VIEW_COLUMNS = [
@@ -1106,7 +1106,7 @@
 	async function refreshTotalCount() {
 		if (!db) return;
 		try {
-			const result = await db.query<{ count: string }>('SELECT COUNT(*) as count FROM uk_lrt');
+			const result = await db.query<{ count: string }>('SELECT COUNT(*) as count FROM laws');
 			totalRecordCount = parseInt(result.rows[0]?.count ?? '0', 10);
 		} catch {
 			/* ignore */

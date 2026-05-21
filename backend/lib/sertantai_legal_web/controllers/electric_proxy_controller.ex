@@ -22,11 +22,11 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
 
   # Tables allowed for shape recovery (DELETE). Kept as a simple static list
   # since DELETE doesn't need full Gatekeeper validation.
-  @allowed_tables ~w(legal_register_uk legal_articles_uk amendment_annotations organization_locations location_screenings)
+  @allowed_tables ~w(legal_register legal_register_uk legal_register_au legal_articles_uk legal_articles_au amendment_annotations organization_locations location_screenings)
 
   # Public reference tables — no auth required, bypass Gatekeeper.
-  # Partition tables synced directly by the frontend via Electric.
-  @public_tables ~w(legal_register_uk legal_articles_uk amendment_annotations)
+  # legal_register = parent partitioned table (syncs all countries at once).
+  @public_tables ~w(legal_register legal_register_uk legal_register_au legal_articles_uk legal_articles_au amendment_annotations)
 
   @doc """
   Proxy GET /api/electric/v1/shape to Electric's HTTP API.
