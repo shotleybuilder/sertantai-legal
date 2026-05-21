@@ -31,6 +31,7 @@
 		assignViewsToGroups
 	} from '$lib/views/seed-defaults';
 	import type { GroupDef } from '$lib/views/seed-defaults';
+	import { selectedCountry } from '$lib/stores/country';
 
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
@@ -67,7 +68,7 @@
 		'latest_rescind_date_year',
 		'latest_rescind_date_month'
 	];
-	const BROWSE_SQL = `SELECT ${BROWSE_COLUMNS.join(', ')} FROM laws`;
+	$: BROWSE_SQL = `SELECT ${BROWSE_COLUMNS.join(', ')} FROM laws WHERE country = '${$selectedCountry}'`;
 	const browseColumnMetadata = UK_LRT_COLUMN_METADATA.filter((c) =>
 		BROWSE_COLUMNS.includes(c.name)
 	);
