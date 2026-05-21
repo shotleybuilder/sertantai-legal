@@ -167,12 +167,29 @@ Type taxonomy expanded: ni (Notifiable Instrument), di (Disallowable Instrument)
 - Sunsetting date tracking for legislative instruments
 - Victoria OHS Act special handling (non-harmonised)
 
-### 2.7 — Frontend AU Integration & Verification
+### 2.7 — Frontend AU Integration & Verification (done 2026-05-21)
 
-- Verify country filter shows AU records in browse/admin views
-- AU-specific type code and jurisdiction labels render correctly
-- External links route to correct AU legislation portals
-- End-to-end: AU law appears in screening/applicability workflow
+**Architecture decision**: Single Electric shape on parent `legal_register` table (all countries).
+PGlite constraint: only one shape per local table — rules out shape-per-country to same table.
+Evolution: same pattern, add WHERE clause for customer scoping (country + family + profile).
+
+**Done**:
+- PGlite table renamed `uk_lrt` → `laws` (schema v16)
+- Single shape sync: 20,379 records (19,492 UK + 887 AU) in one subscription
+- Country selector in admin nav bar (store-driven, persists across pages)
+- LRT page collection recreates on country switch — 887 AU records visible
+- All PGlite SQL queries updated with `WHERE country = $selectedCountry`
+
+**Follow-ups** (not blocking):
+- Active gridlite view doesn't auto-refresh on country switch (need to click a view)
+- Page title still says "UK LRT Data" regardless of country
+- Browse page not yet wired for country reactivity
+- AU data quality: wrong family allocations and missing type content visible
+
+**Multi-service sync architecture**:
+- **-legal** (admin): single unscoped shape, all countries, local filter
+- **-hub**: needs `countries` in entitlement + sync profile (not yet built)
+- **-compliance**: WHERE-scoped shape from profile (country + family + fitness)
 
 ### 2.8 — AU Law Discovery & Monitoring
 
