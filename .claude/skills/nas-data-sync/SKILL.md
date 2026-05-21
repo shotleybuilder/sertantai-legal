@@ -30,7 +30,9 @@ Database snapshots are stored on an office NAS (UGREEN DXP2800, btrfs RAID 2) mo
     ├── snapshots/
     │   ├── latest/          # Current pg_dump files + manifest.json
     │   │   ├── legal_register_uk.dump
+    │   │   ├── legal_register_au.dump
     │   │   ├── legal_articles_uk.dump
+    │   │   ├── legal_articles_au.dump
     │   │   ├── amendment_annotations.dump
     │   │   ├── scrape_sessions.dump
     │   │   ├── scrape_session_records.dump
@@ -62,8 +64,10 @@ cd ~/Desktop/sertantai-legal
 ```
 
 **Tables exported** (in FK dependency order):
-1. `legal_register_uk` (19K+ rows, ~39MB) — was `uk_lrt`
-2. `legal_articles_uk` (175K+ rows, ~14MB) — was `lat`
+1. `legal_register_uk` (19K+ rows, ~39MB)
+2. `legal_register_au` (887 rows, ~2.5MB)
+3. `legal_articles_uk` (175K+ rows, ~14MB)
+4. `legal_articles_au` (0 rows — LAT not yet parsed for AU)
 3. `amendment_annotations` (28K+ rows, ~800KB)
 4. `scrape_sessions` (53 rows)
 5. `scrape_session_records` (7K+ rows, ~5MB)

@@ -14,10 +14,12 @@ DB_USER="${DB_USER:-postgres}"
 DB_NAME="${DB_NAME:-sertantai_legal_dev}"
 
 # Restore order: parents before children (FK dependencies)
-# After partition migration: uk_lrt → legal_register_uk, lat → legal_articles_uk
+# Partition tables per country, then shared tables
 TABLES=(
   legal_register_uk
+  legal_register_au
   legal_articles_uk
+  legal_articles_au
   amendment_annotations
   scrape_sessions
   scrape_session_records
