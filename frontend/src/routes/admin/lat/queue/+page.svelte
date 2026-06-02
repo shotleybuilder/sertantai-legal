@@ -107,7 +107,7 @@
 	];
 	const QUEUE_COLUMNS = QUEUE_COLUMNS_LIST.join(', ');
 	// Pre-compute lat_stale: true when LRT was updated > 6 months after LAT was last parsed
-	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM uk_lrt`;
+	const BASE_QUERY = `SELECT ${QUEUE_COLUMNS}, (updated_at IS NOT NULL AND latest_lat_updated_at IS NOT NULL AND updated_at > latest_lat_updated_at + INTERVAL '6 months') AS lat_stale FROM laws`;
 	const queueColumnMetadata = [
 		...UK_LRT_COLUMN_METADATA.filter((c) => QUEUE_COLUMNS_LIST.includes(c.name)),
 		{
