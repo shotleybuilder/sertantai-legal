@@ -15,5 +15,6 @@ defmodule SertantaiLegal.Sync do
     resource(SertantaiLegal.Sync.SyncConfiguration)
     resource(SertantaiLegal.Sync.SyncJob)
     resource(SertantaiLegal.Sync.SyncRowMapping)
+    resource(SertantaiLegal.Sync.OrgApplicability)
   end
 end
