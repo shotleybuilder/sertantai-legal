@@ -365,11 +365,24 @@ defmodule Mix.Tasks.Legal.ImportRegister do
         {expand_year(parse_int(b_str)), to_string(a)}
 
       :year_number ->
-        # Validate that a looks like a year; if not, swap
-        if a >= 1900 and a <= Date.utc_today().year + 1 do
-          {a, b_str}
-        else
-          {expand_year(parse_int(b_str)), to_string(a)}
+        cond do
+          # a is a full 4-digit year
+          a >= 1900 and a <= Date.utc_today().year + 1 ->
+            {a, b_str}
+
+          # a is a 2-digit year (e.g. 89 from "89/391/EEC") — expand it
+          a < 100 ->
+            {expand_year(a), b_str}
+
+          # a is not a year at all — b must be the year
+          true ->
+            b = parse_int(b_str)
+
+            cond do
+              b >= 1900 and b <= Date.utc_today().year + 1 -> {b, to_string(a)}
+              b < 100 -> {expand_year(b), to_string(a)}
+              true -> {a, b_str}
+            end
         end
 
       :disambiguate ->
