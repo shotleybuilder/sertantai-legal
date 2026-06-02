@@ -4,10 +4,15 @@
 **Meta-plan**: .claude/plans/customer-onboarding.md (Phase 3)
 
 ## Todo
-- [ ] 3.1 — Design the screener (Fitness field analysis, scoring model, org profile shape)
-- [ ] 3.2 — Build screening logic in Legal (module + mix task, validate vs Enhesa 345)
-- [ ] 3.3 — Aggregate site CSVs (validation set from QQ sites)
-- [ ] 3.4 — Extract API shape once proven (endpoint for Hub to call)
+- [x] 3.1 — Design: screener lives in Legal, Hub provides org profile — 39afec6
+- [x] 3.2a — OrgApplicability resource + enums + migration — 39afec6
+- [x] 3.2b — mix sync.seed_applicability + QQ/BSC seeded (204 yes, 82 no) — 39afec6
+- [x] 3.2c — Enhesa data QA: OH&S Personal Safety analysed, draft skill created
+- [ ] 3.2d — API endpoints for applicability CRUD (needs auth context)
+- [ ] 3.2e — Sync engine integration (Baserow Applicability column)
+- [ ] 3.3 — Aggregate more QQ site CSVs through import pipeline
+- [ ] 3.4 — Fitness-based screener (once Fitness coverage improves beyond safety families)
+- [ ] 3.5 — Extract API shape for Hub to call
 
 ## Architecture Decision
 - Screener lives in *-legal (close to the data, domain knowledge)
