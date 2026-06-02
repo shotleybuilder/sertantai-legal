@@ -147,6 +147,17 @@ Battle-tested guide covering:
 - Data migration with pg_dump/pg_restore (custom format only)
 - 8 common pitfalls with solutions (Alpine mismatch, Electric slot conflicts, GHCR auth, schema drift, etc.)
 
+### 📋 [Customer Onboarding - Legacy Register Import](customer-onboarding-import/)
+
+**Use when:** A new customer provides a legacy legal register CSV (from Enhesa, Nimonik, etc.) and you need to import, match against LRT, and identify gaps
+
+Phase 1 of customer onboarding:
+- Extract and infer type codes from vendor CSV
+- Match against LRT using the unique key (type_code + year + number)
+- Group results: matched (ready for sync), scrapeable (create scrape session), not handled (ACOPs, intl)
+- Archive outputs to NAS
+- Feeds into LRT Scrape Session skill for missing laws
+
 ## How to Use
 
 ### For AI Assistants (Claude Code)
