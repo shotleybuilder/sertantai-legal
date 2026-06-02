@@ -44,7 +44,8 @@ defmodule SertantaiLegal.Scraper.Terms.SICodes do
                  "ROAD TRAFFIC",
                  "ROAD TRAFFIC AND VEHICLES",
                  "SAFETY",
-                 "SAFETY, HEALTH AND WELFARE"
+                 "SAFETY, HEALTH AND WELFARE",
+                 "WEIGHTS AND MEASURES"
                ])
 
   @e_si_codes MapSet.new([

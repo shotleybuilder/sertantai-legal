@@ -151,7 +151,8 @@ defmodule SertantaiLegal.Scraper.Terms.SICodeDisambiguation do
     "RISK ASSESSMENT" => "💚 ENVIRONMENTAL PROTECTION",
     "FUEL" => "💚 ENERGY",
     "CONTROL OF FUEL AND ELECTRICITY" => "💚 ENERGY",
-    "TRANSPORT ENGLAND" => "💚 TRANSPORT"
+    "TRANSPORT ENGLAND" => "💚 TRANSPORT",
+    "WEIGHTS AND MEASURES" => "💙 PUBLIC: Consumer / Product Safety"
   }
 
   @doc """

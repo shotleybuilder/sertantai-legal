@@ -372,5 +372,10 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
       family = Filters.si_code_family("ROAD TRAFFIC", "Motor Vehicles (Driving Licences)")
       assert family == "💙 TRANSPORT: Road Safety"
     end
+
+    test "WEIGHTS AND MEASURES → Consumer / Product Safety" do
+      assert Filters.si_code_family("WEIGHTS AND MEASURES", "Measuring Instruments Regulations") ==
+               "💙 PUBLIC: Consumer / Product Safety"
+    end
   end
 end
