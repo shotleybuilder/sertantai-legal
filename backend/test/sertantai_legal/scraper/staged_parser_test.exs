@@ -298,6 +298,92 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
     end
   end
 
+  describe "assign_family_from_si_codes (Issue #84)" do
+    test "assigns family from known SI code when family is nil" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_1975_1584",
+        title_en: "Health and Safety (First-Aid) Regulations",
+        si_code: ["HEALTH AND SAFETY"],
+        family: nil
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == "💙 OH&S: Occupational / Personal Safety"
+    end
+
+    test "assigns family from ROAD TRAFFIC SI code" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_1988_370",
+        title_en: "Road Traffic (Driving Licences) Regulations",
+        si_code: ["ROAD TRAFFIC"],
+        family: nil
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == "💙 TRANSPORT: Road Safety"
+    end
+
+    test "does not override existing family" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2020_100",
+        title_en: "Test Regulations",
+        si_code: ["HEALTH AND SAFETY"],
+        family: "💚 ENVIRONMENTAL PROTECTION"
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == "💚 ENVIRONMENTAL PROTECTION"
+    end
+
+    test "does not override non-empty family string" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2020_101",
+        title_en: "Test Regulations",
+        si_code: ["ENVIRONMENT"],
+        family: "💙 FIRE"
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == "💙 FIRE"
+    end
+
+    test "returns law unchanged when si_code is empty list" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2020_102",
+        title_en: "Test Regulations",
+        si_code: [],
+        family: nil
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == nil
+    end
+
+    test "returns law unchanged when SI code has no mapping" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2020_103",
+        title_en: "Test Regulations",
+        si_code: ["COMPLETELY UNKNOWN CODE"],
+        family: nil
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == nil
+    end
+
+    test "handles nil si_code gracefully" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2020_104",
+        title_en: "Test Regulations",
+        si_code: nil,
+        family: nil
+      }
+
+      result = StagedParser.test_assign_family_from_si_codes(law)
+      assert result.family == nil
+    end
+  end
+
   describe "cancellation support" do
     # These tests verify the abort/cancellation callback behavior.
     # Tests that abort at stage_start avoid HTTP calls entirely.

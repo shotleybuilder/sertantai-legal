@@ -229,7 +229,17 @@ defmodule SertantaiLegal.Scraper.Filters do
     end)
   end
 
-  defp si_code_family(si_codes, title) when is_list(si_codes) do
+  @doc """
+  Look up the family for a given SI code (or list of SI codes) and title.
+
+  Returns the family string (e.g., "💙 OH&S: Occupational / Personal Safety") or nil
+  if the SI code has no mapping.
+
+  Used by `si_code_filter/1` for batch categorization and by `StagedParser`
+  for per-record family assignment after the metadata stage.
+  """
+  @spec si_code_family([String.t()] | String.t(), String.t()) :: String.t() | nil
+  def si_code_family(si_codes, title) when is_list(si_codes) do
     si_codes
     |> Enum.map(&si_code_family(&1, title))
     |> Enum.uniq()
@@ -237,7 +247,7 @@ defmodule SertantaiLegal.Scraper.Filters do
     |> List.first()
   end
 
-  defp si_code_family(si_code, title) when is_binary(si_code) do
+  def si_code_family(si_code, title) when is_binary(si_code) do
     # Use Models module for granular SI code -> family mapping
     si_code_map = Models.ehs_si_code_family()
 

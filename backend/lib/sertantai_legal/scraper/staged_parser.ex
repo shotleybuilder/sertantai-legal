@@ -49,6 +49,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Scraper.TaxaParser
   alias SertantaiLegal.Legal.Taxa.MakingDetector
+  alias SertantaiLegal.Scraper.Filters
 
   # Taxa stage removed — now handled by external Rust service over Zenoh P2P.
   # MakingDetector still runs after metadata (stage 1) as a lightweight proxy.
@@ -406,9 +407,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       end
 
     # After metadata stage completes, run lightweight Making detection pre-filter
+    # and assign family from SI codes (mirrors Categorizer.categorize_records/1)
     new_law =
       if stage == :metadata and stage_result.status == :ok do
-        run_making_detection(new_law)
+        new_law
+        |> run_making_detection()
+        |> assign_family_from_si_codes()
       else
         new_law
       end
@@ -445,6 +449,31 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     fields = MakingDetector.to_parsed_law_fields(result)
 
     ParsedLaw.merge(law, fields)
+  end
+
+  # Assign family from SI codes after metadata stage.
+  # Mirrors the SI code → family lookup in Categorizer.categorize_records/1
+  # so that Auto Parse records get the same family assignment as batch scrapes.
+  defp assign_family_from_si_codes(%{family: existing} = law)
+       when is_binary(existing) and existing != "" do
+    # Already has a family (e.g., from the input record) — don't override
+    law
+  end
+
+  defp assign_family_from_si_codes(law) do
+    si_codes = law.si_code || []
+    title = law.title_en || ""
+
+    case si_codes do
+      [] ->
+        law
+
+      codes ->
+        case Filters.si_code_family(codes, title) do
+          nil -> law
+          family -> ParsedLaw.merge(law, %{family: family})
+        end
+    end
   end
 
   # ============================================================================
@@ -1306,5 +1335,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     @doc false
     def live_revoked, do: @live_revoked
+
+    @doc false
+    def test_assign_family_from_si_codes(law), do: assign_family_from_si_codes(law)
   end
 end

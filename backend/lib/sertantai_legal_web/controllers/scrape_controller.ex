@@ -775,10 +775,12 @@ defmodule SertantaiLegalWeb.ScrapeController do
 
         record_data when is_map(record_data) ->
           # Atomize keys and merge family/overrides
+          # Only override family if explicitly provided (non-nil) — the record
+          # from parse_one may already have family assigned from SI codes
           record_to_persist =
             record_data
             |> atomize_keys()
-            |> Map.put(:Family, family)
+            |> then(fn r -> if family, do: Map.put(r, :Family, family), else: r end)
             |> Map.merge(atomize_keys(overrides))
 
           # Persist directly - record already has full metadata from parse_one

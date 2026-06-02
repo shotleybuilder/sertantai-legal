@@ -339,4 +339,38 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
       assert matched[:Family] == "💙 OH&S: Occupational / Personal Safety"
     end
   end
+
+  describe "si_code_family/2 (public API)" do
+    test "returns family for known SI code" do
+      assert Filters.si_code_family("HEALTH AND SAFETY", "Some Title") ==
+               "💙 OH&S: Occupational / Personal Safety"
+    end
+
+    test "returns family for list of SI codes" do
+      assert Filters.si_code_family(["HEALTH AND SAFETY"], "Some Title") ==
+               "💙 OH&S: Occupational / Personal Safety"
+    end
+
+    test "returns nil for unknown SI code" do
+      assert Filters.si_code_family("COMPLETELY UNKNOWN", "Some Title") == nil
+    end
+
+    test "returns nil for empty list" do
+      assert Filters.si_code_family([], "Some Title") == nil
+    end
+
+    test "disambiguates ELECTRICITY by title" do
+      assert Filters.si_code_family("ELECTRICITY", "Renewables Obligation Order") ==
+               "💚 ENERGY"
+
+      assert Filters.si_code_family("ELECTRICITY", "Electrical Safety Regulations") ==
+               "💙 OH&S: Gas & Electrical Safety"
+    end
+
+    test "falls back to SICodes membership for unmapped codes" do
+      # ROAD TRAFFIC is in hs_si_codes but also has disambiguation
+      family = Filters.si_code_family("ROAD TRAFFIC", "Motor Vehicles (Driving Licences)")
+      assert family == "💙 TRANSPORT: Road Safety"
+    end
+  end
 end
