@@ -464,7 +464,7 @@ defmodule Mix.Tasks.Legal.ImportRegister do
 
   # --- EU Directive: YY/NNN/EC or YY/NNN/EEC or YYYY/NNN/EU ---
   def match_directive_yy_nnn_suffix?(%{title: t}) do
-    Regex.match?(~r/^(?:Council\s+)?(?:Commission\s+)?Directive\b/i, t) and
+    is_directive_title?(t) and
       Regex.match?(~r/\d{2,4}\/\d+\/(?:EC|EEC|EU|Euratom)/i, t)
   end
 
@@ -475,8 +475,7 @@ defmodule Mix.Tasks.Legal.ImportRegister do
 
   # --- EU Directive: (EU) YYYY/NNN ---
   def match_directive_paren_eu?(%{title: t}) do
-    Regex.match?(~r/^(?:Council\s+)?(?:Commission\s+)?Directive\b/i, t) and
-      Regex.match?(~r/\(EU\)\s+\d{4}\/\d+/i, t)
+    is_directive_title?(t) and Regex.match?(~r/\(EU\)\s+\d{4}\/\d+/i, t)
   end
 
   def transform_directive_paren_eu(%{title: t}) do
@@ -486,8 +485,7 @@ defmodule Mix.Tasks.Legal.ImportRegister do
 
   # --- EU Directive: EU/A/B ---
   def match_directive_eu_slash?(%{title: t}) do
-    Regex.match?(~r/^(?:Council\s+)?(?:Commission\s+)?Directive\b/i, t) and
-      Regex.match?(~r/EU\/\d+\/\d+/i, t)
+    is_directive_title?(t) and Regex.match?(~r/EU\/\d+\/\d+/i, t)
   end
 
   def transform_directive_eu_slash(%{title: t}) do
@@ -542,8 +540,7 @@ defmodule Mix.Tasks.Legal.ImportRegister do
 
   # --- EU Decision ---
   def match_decision?(%{title: t}) do
-    Regex.match?(~r/^(?:Commission\s+)?(?:Implementing\s+)?Decision\b/i, t) and
-      Regex.match?(~r/\d+\/\d+/, t)
+    is_decision_title?(t) and Regex.match?(~r/\d+\/\d+/, t)
   end
 
   def transform_decision(%{title: t}) do
@@ -572,6 +569,22 @@ defmodule Mix.Tasks.Legal.ImportRegister do
   end
 
   # --- Helpers ---
+
+  # Title prefix checks — does the title describe this TYPE of EU law?
+  # Covers all known vendor prefix variants (Council, Commission, European Parliament, Implementing, Delegated)
+  defp is_directive_title?(title) do
+    Regex.match?(
+      ~r/^(?:(?:European\s+Parliament\s+and\s+)?Council\s+|Commission\s+(?:Implementing\s+|Delegated\s+)?)?Directive\b/i,
+      title
+    )
+  end
+
+  defp is_decision_title?(title) do
+    Regex.match?(
+      ~r/^(?:Council\s+|Commission\s+(?:Implementing\s+|Delegated\s+)?)?Decision\b/i,
+      title
+    )
+  end
 
   defp is_regulation_title?(title) do
     Regex.match?(
