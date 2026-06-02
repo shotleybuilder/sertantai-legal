@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
           confidence: atom(),
           parent_families: [{String.t(), non_neg_integer()}],
           target_families: [{String.t(), non_neg_integer()}],
+          amender_families: [{String.t(), non_neg_integer()}],
           mismatch: boolean()
         }
 
@@ -44,15 +45,20 @@ defmodule SertantaiLegal.Legal.FamilyInference do
     # Amendment target families (what does this law amend?)
     target_families = edge_families(law_name, "amends", :target)
 
+    # Amender families (what laws amend this law?) — reverse direction
+    # Important for EU retained law which has no SI codes but is amended by UK SIs with families
+    amender_families = reverse_edge_families(law_name, "amends")
+
     # Filter out "No Family" and todo
     meaningful_parents = reject_placeholder_families(parent_families)
     meaningful_targets = reject_placeholder_families(target_families)
+    meaningful_amenders = reject_placeholder_families(amender_families)
 
     {suggested, confidence} =
       cond do
         # No assigned family at all
         assigned in @placeholder_families ->
-          suggest_from_graph(meaningful_parents, meaningful_targets)
+          suggest_from_graph(meaningful_parents, meaningful_targets, meaningful_amenders)
 
         # Assigned family matches top parent — confirmed
         meaningful_parents != [] and matches_top?(assigned, meaningful_parents) ->
@@ -62,6 +68,10 @@ defmodule SertantaiLegal.Legal.FamilyInference do
         meaningful_targets != [] and consensus_match?(assigned, meaningful_targets) ->
           {assigned, :confirmed}
 
+        # Assigned family matches amender consensus — confirmed
+        meaningful_amenders != [] and consensus_match?(assigned, meaningful_amenders) ->
+          {assigned, :confirmed}
+
         # Parent suggests different family
         meaningful_parents != [] ->
           {top_family(meaningful_parents), :parent_inferred}
@@ -69,6 +79,10 @@ defmodule SertantaiLegal.Legal.FamilyInference do
         # Target consensus suggests different family
         meaningful_targets != [] and has_consensus?(meaningful_targets) ->
           {top_family(meaningful_targets), :target_consensus}
+
+        # Amender consensus suggests different family
+        meaningful_amenders != [] and has_consensus?(meaningful_amenders) ->
+          {top_family(meaningful_amenders), :amender_consensus}
 
         # No graph signal
         true ->
@@ -81,6 +95,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
       confidence: confidence,
       parent_families: meaningful_parents,
       target_families: Enum.take(meaningful_targets, 5),
+      amender_families: Enum.take(meaningful_amenders, 5),
       mismatch: suggested != nil and assigned != nil and suggested != assigned
     }
   end
@@ -196,11 +211,29 @@ defmodule SertantaiLegal.Legal.FamilyInference do
   defp top_family([{fam, _} | _]), do: fam
   defp top_family(_), do: nil
 
-  defp suggest_from_graph(parents, targets) do
+  defp suggest_from_graph(parents, targets, amenders \\ []) do
     cond do
       parents != [] -> {top_family(parents), :parent_inferred}
       targets != [] and has_consensus?(targets) -> {top_family(targets), :target_consensus}
+      amenders != [] and has_consensus?(amenders) -> {top_family(amenders), :amender_consensus}
       true -> {nil, :no_family}
+    end
+  end
+
+  # Reverse direction: families of laws that have edges pointing TO this law
+  # e.g., for "amends" edge_type, finds source_family of laws that amend this law
+  defp reverse_edge_families(law_name, edge_type) do
+    sql = """
+    SELECT source_family, COUNT(*) AS cnt
+    FROM law_edges
+    WHERE target_law = $1 AND edge_type = $2 AND source_family IS NOT NULL
+    GROUP BY source_family
+    ORDER BY cnt DESC
+    """
+
+    case Repo.query(sql, [law_name, edge_type]) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [fam, cnt] -> {fam, cnt} end)
+      _ -> []
     end
   end
 end
