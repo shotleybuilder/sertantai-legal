@@ -252,7 +252,53 @@ mix legal.import_register backend/data/<filename>.csv \
   --qa --status-report --create-scrape-session
 ```
 
-## Step 7: Archive to NAS
+## Step 7: Family QA
+
+Family is assigned **deterministically by the parser** during scraping. After scraping, run Family QA
+to check assignments and identify parser gaps. This is the **LRT Scrape Session skill Stage 3c**.
+
+**For import sessions**: query by session_id, split into domestic and EU:
+
+```bash
+# Domestic laws (uksi, ukpga) — should have family from parser
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.title_en, u.family, u.type_code
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = 'import-{customer}-{site}' AND ssr.status = 'confirmed'
+  AND u.type_code IN ('uksi', 'ukpga')
+ORDER BY u.family NULLS FIRST, u.name;
+"
+
+# EU retained laws (eur, eudr, eudn) — likely NULL family (known parser gap)
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.title_en, u.family, u.type_code
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = 'import-{customer}-{site}' AND ssr.status = 'confirmed'
+  AND u.type_code IN ('eur', 'eudr', 'eudn')
+ORDER BY u.family NULLS FIRST, u.name;
+"
+```
+
+**AI reviews each record** using the verdicts from the LRT Scrape Session skill:
+- **OK** — family assignment is sensible
+- **QUERY** — plausible but worth a second look
+- **SUSPECT** — family doesn't match title's domain
+- **GAP** — NULL family, parser has no rule for this type
+
+**EU family gap**: EU retained laws (eur/eudr/eudn) typically have NULL family after scraping
+because the parser relies on UK SI codes which EU laws don't have. EU family can be inferred from:
+- The title/subject matter
+- The UK transposing SI's family (if the relationship exists)
+- Manual assignment during QA
+
+This is a known parser limitation, not a scrape error. Address EU family assignment as a separate
+improvement pass after the initial onboarding is complete.
+
+See: [LRT Scrape Session skill Stage 3c](../lrt-scrape-session/) for the full Family QA procedure.
+
+## Step 8: Archive to NAS
 
 ```bash
 # Ensure NAS is mounted

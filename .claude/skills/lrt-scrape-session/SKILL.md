@@ -185,10 +185,28 @@ ORDER BY name;
 
 **Flag** (not fail) records where `family` is NULL — these may be Group 3 records intentionally persisted without family, but should be noted.
 
-### 3c. Family Sense-Check (AI Judgement)
+### 3c. Family Sense-Check (AI Judgement) — Parser Improvement Loop
 
-This is the key AI-value-add QA step. For each new record, read the title and the assigned family, then assess whether the family assignment makes sense.
+**Purpose**: Family is assigned **deterministically by the parser** during scraping, based on SI codes,
+title keyword matching, and enacted_by relationships. This QA step uses the LLM to **review those
+assignments and identify parser gaps**. Findings feed back into improving the parser — this is an
+iterative loop, not a one-off check.
 
+**What this step does**:
+1. Review each newly scraped record's family assignment
+2. Flag mismatches (parser assigned wrong family) and gaps (parser returned NULL)
+3. For mismatches: correct the record AND investigate why the parser got it wrong
+4. For gaps: determine the correct family AND identify what parser rule could cover it
+
+**Known parser gaps**:
+- **EU retained law** (eur, eudr, eudn) — parser has limited family assignment for EU types because
+  they don't have UK SI codes. Many EU laws will have NULL family after scraping. This is a known
+  gap, not an error. Family for EU laws needs to be inferred from title/subject or from the UK
+  transposing SI's family.
+- **Cross-domain laws** — some laws span multiple domains (e.g., energy laws touching both environment
+  and OH&S). The parser picks one; the QA step checks if it's the right one.
+
+**For monthly scrapes** (standard session):
 ```bash
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
 SELECT name, title_en, family, type_code,
@@ -200,12 +218,21 @@ ORDER BY name;
 "
 ```
 
-**How to sense-check**:
+**For import sessions** (customer onboarding):
+```bash
+PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
+SELECT u.name, u.title_en, u.family, u.type_code
+FROM uk_lrt u
+JOIN scrape_session_records ssr ON ssr.law_name = u.name
+WHERE ssr.session_id = '{session_id}' AND ssr.status = 'confirmed'
+ORDER BY u.type_code, u.name;
+"
+```
 
-The 51 families fall into 3 domains with emoji prefixes:
-- **Blue heart** Health & Safety (OH&S, Fire, Food, Transport Safety, etc.)
-- **Green heart** Environment (Waste, Water, Agriculture, Climate, etc.)
-- **Purple heart** HR (Employment, Working Time, Insurance/Compensation)
+**The 51 families** fall into 3 domains with emoji prefixes:
+- **💙 Blue heart** Health & Safety (OH&S, Fire, Food, Transport Safety, etc.)
+- **💚 Green heart** Environment (Waste, Water, Agriculture, Climate, etc.)
+- **💜 Purple heart** HR (Employment, Working Time, Insurance/Compensation)
 
 For each record, ask: "Does the title of this law logically fit the assigned family?"
 
@@ -220,10 +247,12 @@ For each record, ask: "Does the title of this law logically fit the assigned fam
 - **OK** — family assignment is sensible
 - **QUERY** — family is plausible but worth a second look (explain why)
 - **SUSPECT** — family doesn't match the title's domain (suggest correct family)
+- **GAP** — family is NULL and parser has no rule for this law type (suggest family + parser improvement)
 
-Present QUERYs and SUSPECTs to the human for decision. The human may:
+Present QUERYs, SUSPECTs, and GAPs to the human for decision. The human may:
 - Confirm the assignment is correct (override AI judgement)
 - Agree and ask AI to update the family
+- File a parser improvement (for GAPs that recur across sessions)
 - Defer to a later review
 
 ### 3d. Relationship Integrity

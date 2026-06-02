@@ -79,6 +79,7 @@
 		day_to: number | null;
 		persisted_count: number;
 		group1_count: number;
+		group2_count: number;
 	}
 	let recentSessions: SessionSummary[] = [];
 	let selectedSessionId: string | null = null;
@@ -310,11 +311,14 @@
 			const res = await authFetch(`${API_URL}/api/sessions`);
 			if (!res.ok) return;
 			const data = await res.json();
-			// Only show monthly scrape sessions (YYYY-MM-DD-to-DD), not ad-hoc reparse sessions
+			// Show monthly scrape sessions and import sessions, exclude ad-hoc reparse sessions
 			const monthlyPattern = /^\d{4}-\d{2}-\d{2}-to-\d+$/;
+			const importPattern = /^import-/;
 			recentSessions = (data.sessions || [])
 				.filter(
-					(s: SessionSummary) => s.status === 'completed' && monthlyPattern.test(s.session_id)
+					(s: SessionSummary) =>
+						s.status === 'completed' &&
+						(monthlyPattern.test(s.session_id) || importPattern.test(s.session_id))
 				)
 				.slice(0, 24);
 		} catch {
@@ -323,6 +327,10 @@
 	}
 
 	function formatSessionLabel(s: SessionSummary): string {
+		if (s.session_id.startsWith('import-')) {
+			const count = (s.group1_count || 0) + (s.group2_count || 0);
+			return `${s.session_id} · ${count} laws`;
+		}
 		const month = String(s.month).padStart(2, '0');
 		const days = s.day_from && s.day_to ? ` (${s.day_from}–${s.day_to})` : '';
 		const count = s.persisted_count || s.group1_count || 0;
