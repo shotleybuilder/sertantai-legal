@@ -224,7 +224,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
     ORDER BY u.family, u.name
     """
 
-    case Repo.query(sql, [org_id]) do
+    case Repo.query(sql, [Ecto.UUID.dump!(org_id)]) do
       {:ok, %{rows: rows}} ->
         law_names = Enum.map(rows, fn [name] -> name end)
         json(conn, %{law_names: law_names, count: length(law_names)})
