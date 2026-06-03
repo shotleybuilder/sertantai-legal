@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Sync.Engine do
     field_tier = entitlement.field_tier
 
     with {:ok, provider_config} <- authenticate_provider(sync_config.provider, provider_config),
+         :ok <- prepare_tables(sync_config.provider, provider_config, sync_config),
          {:ok, lrt_rows} <-
            ProfileQuery.query_lrt(profile, field_tier,
              organization_id: sync_config.organization_id
@@ -44,10 +45,11 @@ defmodule SertantaiLegal.Sync.Engine do
            maybe_sync_lat(provider_config, lrt_rows, profile, entitlement, sync_config, job) do
       checkpoint = max_updated_at(lrt_rows)
 
-      complete_job(job, %{
-        law_count: length(lrt_rows),
-        sync_checkpoint: checkpoint
-      })
+      {:ok, job} =
+        complete_job(job, %{
+          law_count: length(lrt_rows),
+          sync_checkpoint: checkpoint
+        })
 
       update_sync_config_status(sync_config, :completed, job)
 
@@ -187,6 +189,13 @@ defmodule SertantaiLegal.Sync.Engine do
 
   defp authenticate_provider(:baserow, config), do: Baserow.authenticate(config)
   defp authenticate_provider(_, config), do: {:ok, config}
+
+  defp prepare_tables(:baserow, config, sync_config) do
+    lrt_name = sync_config.target_config["lrt_table_name"] || "Legal Register"
+    Baserow.prepare_table(config, :lrt, lrt_name)
+  end
+
+  defp prepare_tables(_, _, _), do: :ok
 
   defp create_job(sync_config) do
     SertantaiLegal.Sync.SyncJob

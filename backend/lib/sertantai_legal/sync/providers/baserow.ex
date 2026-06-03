@@ -49,7 +49,10 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @impl true
   def ensure_fields(config, table_key, field_specs) do
-    with {:ok, existing} <- list_fields(config, table_key) do
+    with {:ok, existing} <- list_fields(config, table_key),
+         :ok <- clean_default_fields(config, table_key, existing, field_specs) do
+      # Re-fetch after cleanup
+      {:ok, existing} = list_fields(config, table_key)
       existing_names = MapSet.new(existing, & &1["name"])
 
       missing =
@@ -136,6 +139,21 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     end)
   end
 
+  @doc """
+  Prepare a Baserow table for first sync: rename from default "Table" to
+  a meaningful name, delete default empty rows, and remove default columns
+  (Notes, Active, etc.) that Baserow creates automatically.
+
+  Call this before `ensure_fields` on first sync. Idempotent — skips
+  rename if already named correctly, skips cleanup if no default fields.
+  """
+  def prepare_table(config, table_key, table_name) do
+    with :ok <- rename_table(config, table_key, table_name),
+         :ok <- clean_default_rows(config, table_key) do
+      :ok
+    end
+  end
+
   # ── Internals ─────────────────────────────────────────────────────
 
   defp table_id(config, :lrt), do: config["lrt_table_id"] || config[:lrt_table_id]
@@ -214,6 +232,91 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       json: body,
       receive_timeout: 60_000
     )
+  end
+
+  defp api_delete(config, path) do
+    url = base_url(config) <> path
+
+    Req.delete(url,
+      headers: [auth_header(config), {"Content-Type", "application/json"}],
+      receive_timeout: 30_000
+    )
+  end
+
+  # Delete default Baserow fields that aren't in our field specs.
+  # Baserow creates "Notes" (long_text), "Active" (boolean), and "Name" (text)
+  # by default. We keep any that match our specs, delete the rest.
+  defp clean_default_fields(config, _table_key, existing_fields, desired_specs) do
+    desired_names = MapSet.new(desired_specs, & &1.name)
+
+    # Baserow's default fields — only delete these, never user-created fields
+    default_names = MapSet.new(["Notes", "Active"])
+
+    to_delete =
+      existing_fields
+      |> Enum.filter(fn f ->
+        MapSet.member?(default_names, f["name"]) and not MapSet.member?(desired_names, f["name"])
+      end)
+
+    Enum.reduce_while(to_delete, :ok, fn field, :ok ->
+      case api_delete(config, "/api/database/fields/#{field["id"]}/") do
+        {:ok, %{status: status}} when status in [200, 204] ->
+          {:cont, :ok}
+
+        {:ok, %{status: s, body: b}} ->
+          {:halt, {:error, "Delete field #{field["name"]}: #{s} #{inspect(b)}"}}
+
+        {:error, reason} ->
+          {:halt, {:error, "Delete field #{field["name"]}: #{inspect(reason)}"}}
+      end
+    end)
+  end
+
+  defp rename_table(config, table_key, desired_name) do
+    table = table_id(config, table_key)
+
+    case api_patch(config, "/api/database/tables/#{table}/", %{"name" => desired_name}) do
+      {:ok, %{status: 200}} -> :ok
+      {:ok, %{status: s, body: b}} -> {:error, "Rename table: #{s} #{inspect(b)}"}
+      {:error, reason} -> {:error, "Rename table: #{inspect(reason)}"}
+    end
+  end
+
+  defp clean_default_rows(config, table_key) do
+    table = table_id(config, table_key)
+
+    # Fetch existing rows — if few and empty, delete them (default Baserow rows)
+    case api_get(config, "/api/database/rows/table/#{table}/?size=200") do
+      {:ok, %{status: 200, body: %{"count" => count, "results" => rows}}} when count <= 10 ->
+        # Only delete rows that look like defaults (no meaningful data)
+        default_ids =
+          rows
+          |> Enum.filter(fn row ->
+            # Default rows have only system fields (id, order) + empty user fields
+            user_values =
+              row
+              |> Map.drop(["id", "order"])
+              |> Map.values()
+              |> Enum.reject(&is_nil/1)
+              |> Enum.reject(&(&1 == ""))
+              |> Enum.reject(&(&1 == false))
+
+            user_values == []
+          end)
+          |> Enum.map(& &1["id"])
+
+        if default_ids != [] do
+          api_post(config, "/api/database/rows/table/#{table}/batch-delete/", %{
+            "items" => default_ids
+          })
+        end
+
+        :ok
+
+      # Table has real data or is empty — don't touch
+      _ ->
+        :ok
+    end
   end
 
   defp create_fields_sequentially(_, _, []), do: :ok

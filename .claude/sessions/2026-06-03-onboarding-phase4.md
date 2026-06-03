@@ -9,6 +9,12 @@
 - [x] 4.3 — Sync profile (QQ Legal Register) + Baserow JWT config — 2b98afa
 - [x] 4.4 — Initial sync: 106 L3 laws in Baserow, verified in UI — 2b98afa
 
+## Housekeeping
+- [ ] Fix complete_job — Ash.update return not propagating, job stays :running
+- [ ] Rename Baserow table from default "Table" to "Legal Register" via API
+- [ ] Clean Baserow table before sync — delete default empty rows + dummy columns (Notes, Active)
+- [ ] Goal: customer just creates the DB, we handle the rest
+
 ## Notes
 - Baserow database tokens can't create fields — switched to JWT auth (email/password)
 - Engine fixes: Ash Query/Changeset API, UUID binary handling, NaiveDateTime checkpoint
