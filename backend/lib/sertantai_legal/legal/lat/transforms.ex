@@ -425,11 +425,17 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
     paragraph = Keyword.get(opts, :paragraph)
     sub_paragraph = Keyword.get(opts, :sub_paragraph)
     extent = Keyword.get(opts, :extent)
+    position = Keyword.get(opts, :position)
 
     n = &normalize_provision_to_sort_key/1
 
     # Schedule prefix: "S01" sorts after "000" (body content)
     sch_segment = if schedule, do: "S#{String.pad_leading(schedule, 2, "0")}", else: "000"
+
+    # Position as final tiebreaker — ensures rows at the same hierarchy
+    # position but different types (article vs note) get distinct sort keys
+    pos_segment =
+      if position, do: String.pad_leading(Integer.to_string(position), 4, "0"), else: "0000"
 
     segments =
       [
@@ -440,7 +446,8 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
         n.(provision),
         n.(sub),
         n.(paragraph),
-        n.(sub_paragraph)
+        n.(sub_paragraph),
+        pos_segment
       ]
       |> Enum.join(".")
 

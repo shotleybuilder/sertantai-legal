@@ -556,6 +556,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
           sub: row.sub,
           paragraph: row.paragraph,
           sub_paragraph: row.sub_paragraph,
+          position: row.position,
           extent: nil
         )
 
