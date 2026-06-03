@@ -310,6 +310,9 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
     if s == "" do
       "000.000.000"
     else
+      # Convert Roman numerals to integers before parsing
+      s = maybe_convert_roman(s)
+
       {base_num, suffix} = extract_leading_digits(s)
       segments = [base_num | parse_letter_suffixes(suffix, [])]
       segments = pad_segments(segments, 3)
@@ -318,6 +321,54 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
       |> Enum.map(&String.pad_leading(Integer.to_string(&1), 3, "0"))
       |> Enum.join(".")
     end
+  end
+
+  # Roman numeral detection and conversion.
+  # Handles pure Roman (I, II, III, IV, ..., L) and Roman+suffix (IIA, IIIB).
+  @roman_values %{
+    "I" => 1,
+    "V" => 5,
+    "X" => 10,
+    "L" => 50,
+    "C" => 100,
+    "D" => 500,
+    "M" => 1000
+  }
+  @roman_chars MapSet.new(~w(I V X L C D M))
+
+  defp maybe_convert_roman(s) do
+    # Only convert if the string starts with Roman-only characters
+    case Regex.run(~r/^([IVXLCDM]+)(.*)$/i, s) do
+      [_, roman_part, suffix] ->
+        # Verify it's a valid Roman numeral (not just random letters like "MIX")
+        if String.length(roman_part) <= 8 and valid_roman?(roman_part) do
+          Integer.to_string(roman_to_int(roman_part)) <> suffix
+        else
+          s
+        end
+
+      _ ->
+        s
+    end
+  end
+
+  defp valid_roman?(s) do
+    s |> String.graphemes() |> Enum.all?(&MapSet.member?(@roman_chars, &1))
+  end
+
+  defp roman_to_int(s) do
+    chars = String.graphemes(s)
+
+    chars
+    |> Enum.with_index()
+    |> Enum.reduce(0, fn {ch, i}, acc ->
+      val = Map.get(@roman_values, ch, 0)
+
+      next_val =
+        if i + 1 < length(chars), do: Map.get(@roman_values, Enum.at(chars, i + 1), 0), else: 0
+
+      if val < next_val, do: acc - val, else: acc + val
+    end)
   end
 
   defp extract_leading_digits(s) do
