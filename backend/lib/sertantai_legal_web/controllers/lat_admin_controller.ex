@@ -186,6 +186,35 @@ defmodule SertantaiLegalWeb.LatAdminController do
     })
   end
 
+  @doc """
+  GET /api/lat/queue/org-law-names/:org_id
+
+  Returns law names for an org's L3 yes-applicable laws. Used by the
+  LAT queue frontend to filter by customer applicability.
+  """
+  def org_law_names(conn, %{"org_id" => org_id}) do
+    sql = """
+    SELECT a.law_name
+    FROM org_applicabilities a
+    JOIN uk_lrt u ON u.name = a.law_name
+    WHERE a.organization_id = $1
+      AND a.status = 'yes'
+      AND u.live NOT LIKE '%❌%'
+    ORDER BY u.family, u.name
+    """
+
+    case Repo.query(sql, [org_id]) do
+      {:ok, %{rows: rows}} ->
+        law_names = Enum.map(rows, fn [name] -> name end)
+        json(conn, %{law_names: law_names, count: length(law_names)})
+
+      {:error, reason} ->
+        conn
+        |> put_status(:internal_server_error)
+        |> json(%{error: inspect(reason)})
+    end
+  end
+
   # ── Laws list ──────────────────────────────────────────────────────
 
   @laws_sql """

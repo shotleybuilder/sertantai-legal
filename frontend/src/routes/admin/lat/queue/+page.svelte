@@ -82,6 +82,7 @@
 		group2_count: number;
 	}
 	let recentSessions: SessionSummary[] = [];
+	let orgApplicabilityOptions: { org_id: string; label: string; count: number }[] = [];
 	let selectedSessionId: string | null = null;
 	let sessionFilterLoading = false;
 
@@ -326,6 +327,33 @@
 		}
 	}
 
+	async function fetchOrgApplicabilityOptions() {
+		try {
+			const res = await authFetch(`${API_URL}/api/sync/entitlement`);
+			if (!res.ok) return;
+			const data = await res.json();
+			// If entitlement exists, add as a filter option
+			if (data.entitlement) {
+				const ent = data.entitlement;
+				const countRes = await authFetch(
+					`${API_URL}/api/lat/queue/org-law-names/${ent.organization_id}`
+				);
+				if (countRes.ok) {
+					const countData = await countRes.json();
+					orgApplicabilityOptions = [
+						{
+							org_id: ent.organization_id,
+							label: `L3 Applicable · ${countData.count} laws`,
+							count: countData.count
+						}
+					];
+				}
+			}
+		} catch {
+			/* non-critical */
+		}
+	}
+
 	function formatSessionLabel(s: SessionSummary): string {
 		if (s.session_id.startsWith('import-')) {
 			const count = (s.group1_count || 0) + (s.group2_count || 0);
@@ -357,7 +385,28 @@
 
 		sessionFilterLoading = true;
 		try {
-			if (sessionId) {
+			if (sessionId && sessionId.startsWith('org:')) {
+				// Org applicability filter
+				const orgId = sessionId.slice(4);
+				const res = await authFetch(`${API_URL}/api/lat/queue/org-law-names/${orgId}`);
+				if (!res.ok) throw new Error('Failed to fetch org law names');
+				const data = await res.json();
+				let query = BASE_QUERY;
+				if (data.law_names.length > 0) {
+					const escaped = data.law_names.map((n: string) => n.replace(/'/g, "''"));
+					const inList = escaped.map((n: string) => `'${n}'`).join(',');
+					query = `${BASE_QUERY} WHERE name IN (${inList})`;
+				}
+				await rebuildCollection(query);
+				activeVisibleColumns = sessionViewCols;
+
+				await new Promise((r) => setTimeout(r, 100));
+				if (gridRef) {
+					const vis: Record<string, boolean> = {};
+					for (const c of columns) vis[c.name] = sessionViewCols.includes(c.name);
+					gridRef.applyConfig({ columnVisibility: vis });
+				}
+			} else if (sessionId) {
 				const res = await authFetch(`${API_URL}/api/sessions/${sessionId}/law-names`);
 				if (!res.ok) throw new Error('Failed to fetch session law names');
 				const data = await res.json();
@@ -1195,6 +1244,7 @@
 			await seedDefaultViews();
 			// Fetch recent sessions for the session filter dropdown (non-blocking)
 			fetchRecentSessions();
+			fetchOrgApplicabilityOptions();
 		}
 	});
 
@@ -1284,9 +1334,18 @@
 							: 'border-gray-300 bg-white text-gray-700'} hover:bg-gray-50 disabled:opacity-50"
 					>
 						<option value="">All laws</option>
-						{#each recentSessions as session}
-							<option value={session.session_id}>{formatSessionLabel(session)}</option>
-						{/each}
+						{#if orgApplicabilityOptions.length > 0}
+							<optgroup label="Customer Applicability">
+								{#each orgApplicabilityOptions as opt}
+									<option value="org:{opt.org_id}">{opt.label}</option>
+								{/each}
+							</optgroup>
+						{/if}
+						<optgroup label="Sessions">
+							{#each recentSessions as session}
+								<option value={session.session_id}>{formatSessionLabel(session)}</option>
+							{/each}
+						</optgroup>
 					</select>
 				{/if}
 				<button

@@ -175,6 +175,7 @@ defmodule SertantaiLegalWeb.Router do
     get("/lat/audit/:law_name", LatAdminController, :audit_law)
     get("/lat/stats", LatAdminController, :stats)
     get("/lat/queue", LatAdminController, :queue)
+    get("/lat/queue/org-law-names/:org_id", LatAdminController, :org_law_names)
     get("/lat/laws", LatAdminController, :laws)
     get("/lat/laws/:law_name", LatAdminController, :show)
     get("/lat/laws/:law_name/annotations", LatAdminController, :annotations)
