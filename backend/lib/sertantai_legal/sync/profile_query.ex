@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
     # Always include updated_at for checkpoint tracking
     select_columns = Enum.uniq(columns ++ [:updated_at])
     checkpoint = Keyword.get(opts, :checkpoint)
+    organization_id = Keyword.get(opts, :organization_id)
 
     query =
       from(u in "uk_lrt",
@@ -37,6 +38,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       |> apply_fitness_filter(:fitness_place, profile.fitness_place)
       |> apply_fitness_filter(:fitness_plant, profile.fitness_plant)
       |> apply_fitness_filter(:fitness_sector, profile.fitness_sector)
+      |> apply_applicability_filter(organization_id)
       |> apply_checkpoint(checkpoint)
       |> order_by([u], [u.family, u.year, u.name])
 
@@ -139,6 +141,19 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
 
   defp apply_fitness_filter(query, column, values) when is_list(values) do
     where(query, [u], fragment("? && ?", field(u, ^column), ^values))
+  end
+
+  defp apply_applicability_filter(query, nil), do: query
+
+  defp apply_applicability_filter(query, organization_id) do
+    org_uuid =
+      if is_binary(organization_id), do: Ecto.UUID.dump!(organization_id), else: organization_id
+
+    from(u in query,
+      inner_join: oa in "org_applicabilities",
+      on: oa.law_name == u.name and oa.organization_id == ^org_uuid,
+      where: oa.status == "yes"
+    )
   end
 
   defp apply_checkpoint(query, nil), do: query

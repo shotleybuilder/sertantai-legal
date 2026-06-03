@@ -34,7 +34,10 @@ defmodule SertantaiLegal.Sync.Engine do
     provider_config = build_provider_config(sync_config, credentials)
     field_tier = entitlement.field_tier
 
-    with {:ok, lrt_rows} <- ProfileQuery.query_lrt(profile, field_tier),
+    with {:ok, lrt_rows} <-
+           ProfileQuery.query_lrt(profile, field_tier,
+             organization_id: sync_config.organization_id
+           ),
          {:ok, job} <- sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job),
          {:ok, job} <-
            maybe_sync_lat(provider_config, lrt_rows, profile, entitlement, sync_config, job) do
