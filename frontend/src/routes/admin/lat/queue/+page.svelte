@@ -361,6 +361,7 @@
 		'title_en',
 		'family',
 		'family_ii',
+		'type_code',
 		'making_review',
 		'making_classification',
 		'function',
