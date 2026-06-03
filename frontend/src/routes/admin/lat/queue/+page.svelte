@@ -672,6 +672,7 @@
 
 	const columns: ColumnConfig[] = [
 		{ name: 'name', label: 'Law Name', width: 160, dataType: 'text' },
+		{ name: 'type_code', label: 'Type', width: 80, dataType: 'text' },
 		{ name: 'title_en', label: 'Title', width: 350, dataType: 'text' },
 		{ name: 'family', label: 'Family', width: 200, dataType: 'text' },
 		{ name: 'family_ii', label: 'Family II', width: 200, dataType: 'text' },
