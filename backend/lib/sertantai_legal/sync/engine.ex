@@ -34,7 +34,8 @@ defmodule SertantaiLegal.Sync.Engine do
     provider_config = build_provider_config(sync_config, credentials)
     field_tier = entitlement.field_tier
 
-    with {:ok, lrt_rows} <-
+    with {:ok, provider_config} <- authenticate_provider(sync_config.provider, provider_config),
+         {:ok, lrt_rows} <-
            ProfileQuery.query_lrt(profile, field_tier,
              organization_id: sync_config.organization_id
            ),
@@ -146,10 +147,9 @@ defmodule SertantaiLegal.Sync.Engine do
   end
 
   defp load_entitlement(organization_id) do
-    case Ash.read(SertantaiLegal.Sync.OrgEntitlement,
-           action: :by_organization,
-           arguments: %{organization_id: organization_id}
-         ) do
+    case SertantaiLegal.Sync.OrgEntitlement
+         |> Ash.Query.for_read(:by_organization, %{organization_id: organization_id})
+         |> Ash.read() do
       {:ok, [entitlement | _]} -> {:ok, entitlement}
       {:ok, []} -> {:error, "No entitlement found for organization #{organization_id}"}
       {:error, reason} -> {:error, reason}
@@ -185,25 +185,37 @@ defmodule SertantaiLegal.Sync.Engine do
   defp provider_module(:baserow), do: SertantaiLegal.Sync.Providers.Baserow
   # Future: :airtable, :notion, :zapier
 
+  defp authenticate_provider(:baserow, config), do: Baserow.authenticate(config)
+  defp authenticate_provider(_, config), do: {:ok, config}
+
   defp create_job(sync_config) do
-    Ash.create(SertantaiLegal.Sync.SyncJob, %{
+    SertantaiLegal.Sync.SyncJob
+    |> Ash.Changeset.for_create(:create, %{
       sync_configuration_id: sync_config.id,
       organization_id: sync_config.organization_id,
       status: :queued
     })
+    |> Ash.create()
   end
 
   defp start_job(job) do
-    Ash.update(job, action: :start)
+    job
+    |> Ash.Changeset.for_update(:start, %{})
+    |> Ash.update()
   end
 
   defp complete_job(job, attrs) do
-    Ash.update(job, Map.merge(attrs, %{}), action: :complete)
+    job
+    |> Ash.Changeset.for_update(:complete, attrs)
+    |> Ash.update()
   end
 
   defp fail_job(job, reason) do
     message = if is_binary(reason), do: reason, else: inspect(reason)
-    Ash.update(job, %{error_message: message}, action: :fail)
+
+    job
+    |> Ash.Changeset.for_update(:fail, %{error_message: message})
+    |> Ash.update()
   end
 
   defp update_sync_config_status(sync_config, status, job) do
@@ -217,15 +229,13 @@ defmodule SertantaiLegal.Sync.Engine do
         }
       end
 
-    Ash.update(
-      sync_config,
-      %{
-        sync_status: status,
-        last_synced_at: DateTime.utc_now(),
-        last_sync_summary: summary
-      },
-      action: :update_sync_status
-    )
+    sync_config
+    |> Ash.Changeset.for_update(:update_sync_status, %{
+      sync_status: status,
+      last_synced_at: DateTime.utc_now(),
+      last_sync_summary: summary
+    })
+    |> Ash.update()
   end
 
   defp save_row_mappings(sync_config_id, source_type, mappings, _source_rows) do
@@ -253,10 +263,12 @@ defmodule SertantaiLegal.Sync.Engine do
   end
 
   defp load_lrt_mappings(sync_config_id) do
-    case Ash.read(SertantaiLegal.Sync.SyncRowMapping,
-           action: :by_configuration_and_type,
-           arguments: %{sync_configuration_id: sync_config_id, source_type: :lrt}
-         ) do
+    case SertantaiLegal.Sync.SyncRowMapping
+         |> Ash.Query.for_read(:by_configuration_and_type, %{
+           sync_configuration_id: sync_config_id,
+           source_type: :lrt
+         })
+         |> Ash.read() do
       {:ok, mappings} ->
         Map.new(mappings, fn m -> {m.source_id, m.external_row_id} end)
 
@@ -271,6 +283,10 @@ defmodule SertantaiLegal.Sync.Engine do
     rows
     |> Enum.map(& &1.updated_at)
     |> Enum.reject(&is_nil/1)
-    |> Enum.max(DateTime, fn -> nil end)
+    |> Enum.max(NaiveDateTime, fn -> nil end)
+    |> case do
+      %NaiveDateTime{} = ndt -> DateTime.from_naive!(ndt, "Etc/UTC")
+      other -> other
+    end
   end
 end

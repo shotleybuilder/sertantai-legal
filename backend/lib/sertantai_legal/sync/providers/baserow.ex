@@ -1,9 +1,16 @@
 defmodule SertantaiLegal.Sync.Providers.Baserow do
   @moduledoc """
-  Baserow sync provider — pushes LRT/LAT data to a self-hosted Baserow instance.
+  Baserow sync provider — pushes LRT/LAT data to Baserow (SaaS or self-hosted).
 
-  Uses the Baserow REST API with database tokens and `?user_field_names=true`.
-  Self-hosted Baserow has no rate limits; we batch at 200 rows for courtesy.
+  Uses JWT auth (email/password login) for full API access including schema
+  management (field creation). The JWT is obtained at the start of each sync
+  run and used for all operations.
+
+  Credentials stored in SyncConfiguration (AES-256 encrypted):
+  - `email`: Baserow account email
+  - `password`: Baserow account password
+
+  Rows are batched at 200 with `?user_field_names=true`.
   """
 
   @behaviour SertantaiLegal.Sync.ProviderBehaviour
@@ -138,10 +145,46 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp credentials(config), do: config["credentials"] || config[:credentials]
 
-  defp auth_header(config) do
+  @doc """
+  Authenticate with Baserow and return config with JWT attached.
+
+  Credentials must contain `email` and `password`. The returned config
+  has `jwt` set, which `auth_header/1` uses for all subsequent calls.
+  """
+  def authenticate(config) do
     creds = credentials(config)
-    token = creds["database_token"] || creds[:database_token]
-    {"Authorization", "Token #{token}"}
+    email = creds["email"] || creds[:email]
+    password = creds["password"] || creds[:password]
+
+    url = base_url(config) <> "/api/user/token-auth/"
+
+    case Req.post(url,
+           headers: [{"Content-Type", "application/json"}],
+           json: %{"email" => email, "password" => password},
+           receive_timeout: 15_000
+         ) do
+      {:ok, %{status: 200, body: %{"token" => jwt}}} ->
+        {:ok, Map.put(config, "jwt", jwt)}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, "Baserow auth failed (#{status}): #{inspect(body)}"}
+
+      {:error, reason} ->
+        {:error, "Baserow auth request failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp auth_header(config) do
+    case config["jwt"] do
+      jwt when is_binary(jwt) ->
+        {"Authorization", "JWT #{jwt}"}
+
+      _ ->
+        # Fallback to database token for backwards compatibility
+        creds = credentials(config)
+        token = creds["database_token"] || creds[:database_token]
+        {"Authorization", "Token #{token}"}
+    end
   end
 
   defp api_get(config, path) do
@@ -299,7 +342,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   """
   def format_lrt_row(lrt, field_tier) do
     essential = %{
-      "_source_id" => to_string(lrt.id),
+      "_source_id" => format_uuid(lrt.id),
       "Name" => lrt.name,
       "Title" => lrt.title_en,
       "Family" => lrt.family,
@@ -392,4 +435,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp format_date(nil), do: nil
   defp format_date(%Date{} = d), do: Date.to_iso8601(d)
   defp format_date(other), do: to_string(other)
+
+  # Raw binary UUIDs from string-table queries need casting to string format
+  defp format_uuid(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
+  defp format_uuid(uuid) when is_binary(uuid), do: uuid
+  defp format_uuid(nil), do: nil
 end

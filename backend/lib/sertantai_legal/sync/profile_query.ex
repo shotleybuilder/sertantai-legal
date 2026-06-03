@@ -146,12 +146,11 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
   defp apply_applicability_filter(query, nil), do: query
 
   defp apply_applicability_filter(query, organization_id) do
-    org_uuid =
-      if is_binary(organization_id), do: Ecto.UUID.dump!(organization_id), else: organization_id
-
     from(u in query,
       inner_join: oa in "org_applicabilities",
-      on: oa.law_name == u.name and oa.organization_id == ^org_uuid,
+      on:
+        oa.law_name == u.name and
+          oa.organization_id == type(^organization_id, Ecto.UUID),
       where: oa.status == "yes"
     )
   end
