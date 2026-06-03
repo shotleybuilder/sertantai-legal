@@ -354,6 +354,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @doc """
   Returns Baserow field specs for LRT columns at the given field tier.
+
+  For standard/full tiers, pass `rows` to extract multi-select options
+  from the actual data (holder vocabularies vary across laws).
   """
   def lrt_field_specs(field_tier) do
     essential_fields() ++ tier_fields(field_tier)
@@ -396,8 +399,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     ]
   end
 
-  defp tier_fields(:essential), do: []
-
   @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
   @duty_type_options ["Duty", "Power", "Responsibility", "Right", "Rule"]
   @purpose_options [
@@ -418,12 +419,217 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     "Transitional Arrangement"
   ]
 
-  # Actor taxonomy from ActorDefinitions — ordered by group for clean dropdown UX
-  # Government actors, then Governed (Business → Person → Public → Specialist → SC)
-  @holder_options (SertantaiLegal.Legal.Taxa.ActorDefinitions.dutyholder_library()
-                   |> Enum.map(fn {k, _pattern} -> to_string(k) end)
-                   |> Enum.uniq()) ++
-                    ["Operator", "Organisation", "Public"]
+  # Master holder vocabulary — sourced from ActorDefinitions taxonomy + observed data values.
+  # Ordered by group: Government → Business → Person → Public → Specialist → Supply Chain → Other.
+  # If fractalaw evolves the taxonomy, new values surface as a sync validation error
+  # rather than silently failing. Fix by adding the new values here.
+  # Values to filter out of holder data — parser artifacts, not real actors
+  @holder_exclusions MapSet.new([": He"])
+
+  @holder_options [
+    # Government
+    "Crown",
+    "EU: Commission",
+    "EU: Commission (inferred)",
+    "Gvt: Agency",
+    "Gvt: Agency (inferred)",
+    "Gvt: Agency:",
+    "Gvt: Agency: Environment Agency",
+    "Gvt: Agency: Health and Safety Executive",
+    "Gvt: Agency: Health and Safety Executive (inferred)",
+    "Gvt: Agency: Health and Safety Executive for Northern Ireland",
+    "Gvt: Agency: Maritime and Coastguard Agency",
+    "Gvt: Agency: Natural Resources Body for Wales",
+    "Gvt: Agency: OFCOM",
+    "Gvt: Agency: Office for Nuclear Regulation",
+    "Gvt: Agency: Office of Rail and Road",
+    "Gvt: Agency: Oil and Gas Authority",
+    "Gvt: Agency: Scottish Environment Protection Agency",
+    "Gvt: Appropriate Person",
+    "Gvt: Authority",
+    "Gvt: Authority (inferred)",
+    "Gvt: Authority: Energy",
+    "Gvt: Authority: Enforcement",
+    "Gvt: Authority: Fire and Rescue",
+    "Gvt: Authority: Harbour",
+    "Gvt: Authority: Licensing",
+    "Gvt: Authority: Local",
+    "Gvt: Authority: Local (inferred)",
+    "Gvt: Authority: Market",
+    "Gvt: Authority: Planning",
+    "Gvt: Authority: Planning (inferred)",
+    "Gvt: Authority: Public",
+    "Gvt: Authority: Traffic",
+    "Gvt: Authority: Waste",
+    "Gvt: Commissioners",
+    "Gvt: Commissioners (inferred)",
+    "Gvt: Devolved Admin",
+    "Gvt: Devolved Admin:",
+    "Gvt: Devolved Admin: National Assembly for Wales",
+    "Gvt: Devolved Admin: Northern Ireland Assembly",
+    "Gvt: Devolved Admin: Scottish Parliament",
+    "Gvt: Emergency Services",
+    "Gvt: Emergency Services: Police",
+    "Gvt: Judiciary",
+    "Gvt: Judiciary (inferred)",
+    "Gvt: Minister",
+    "Gvt: Minister (inferred)",
+    "Gvt: Minister: Attorney General",
+    "Gvt: Minister: Secretary of State for Defence",
+    "Gvt: Minister: Secretary of State for Transport",
+    "Gvt: Ministry",
+    "Gvt: Ministry:",
+    "Gvt: Ministry: Department of Enterprise, Trade and Investment",
+    "Gvt: Ministry: Department of the Environment",
+    "Gvt: Ministry: HMRC",
+    "Gvt: Ministry: Ministry of Defence",
+    "Gvt: Ministry: Treasury",
+    "Gvt: Officer",
+    "Gvt: Official",
+    "HM Forces",
+    # Business / Organisation
+    "Operator",
+    "Operator (inferred)",
+    "Organisation",
+    "Org: Company",
+    "Org: Employer",
+    "Org: Employer (inferred)",
+    "Org: Investor",
+    "Org: Landlord",
+    "Org: Landlord (inferred)",
+    "Org: Lessee",
+    "Org: Occupier",
+    "Org: Occupier (inferred)",
+    "Org: Owner",
+    "Org: Owner (inferred)",
+    "Org: Partnership",
+    # Person
+    "Ind: Applicant",
+    "Ind: Appointed Person",
+    "Ind: Authorised Person",
+    "Ind: Chair",
+    "Ind: Competent Person",
+    "Ind: Diver",
+    "Ind: Duty Holder",
+    "Ind: Duty Holder (inferred)",
+    "Ind: Dutyholder",
+    "Ind: Employee",
+    "Ind: Employee (inferred)",
+    "Ind: Holder",
+    "Ind: Licence Holder",
+    "Ind: Licensee",
+    "Ind: Manager",
+    "Ind: Manager (inferred)",
+    "Ind: Person",
+    "Ind: Person (inferred)",
+    "Ind: Relevant Person",
+    "Ind: Responsible Person",
+    "Ind: Responsible Person (inferred)",
+    "Ind: Self-employed Worker",
+    "Ind: Suitable Person",
+    "Ind: Supervisor",
+    "Ind: Supervisor (inferred)",
+    "Ind: User",
+    "Ind: User (inferred)",
+    "Ind: Worker",
+    "Ind: Worker (inferred)",
+    "Ind: Young Person",
+    # Public
+    "Public",
+    "Public (inferred)",
+    "Public: Parents",
+    # Specialist
+    "Spc: Advisor",
+    "Spc: Assessor",
+    "Spc: Body",
+    "Spc: Employees' Representative",
+    "Spc: Engineer",
+    "Spc: Inspector",
+    "Spc: Inspector (inferred)",
+    "Spc: OH Advisor",
+    "Spc: Representative",
+    "Spc: Surveyor",
+    "Spc: Technician",
+    "Spc: Trade Union",
+    # Supply Chain
+    "SC: Agent",
+    "SC: C: Constructor",
+    "SC: C: Contractor",
+    "SC: C: Designer",
+    "SC: C: Designer (inferred)",
+    "SC: C: Principal Contractor",
+    "SC: C: Principal Designer",
+    "SC: Client",
+    "SC: Client (inferred)",
+    "SC: Consumer",
+    "SC: Customer",
+    "SC: Dealer",
+    "SC: Distributor",
+    "SC: Domestic Client",
+    "SC: Exporter",
+    "SC: Generator",
+    "SC: Importer",
+    "SC: Keeper",
+    "SC: Manufacturer",
+    "SC: Manufacturer (inferred)",
+    "SC: Marketer",
+    "SC: Producer",
+    "SC: Retailer",
+    "SC: Seller",
+    "SC: Storer",
+    "SC: Supplier",
+    "SC: Supplier (inferred)",
+    "SC: T&L: Carrier",
+    "SC: T&L: Carrier (inferred)",
+    "SC: T&L: Consignee",
+    "SC: T&L: Consignor",
+    "SC: T&L: Driver",
+    "SC: T&L: Handler",
+    # Service
+    "Svc: Installer",
+    "Svc: Installer (inferred)",
+    "Svc: Maintainer",
+    "Svc: Repairer",
+    # Maritime
+    "Maritime: crew",
+    "Maritime: master",
+    # Offshore
+    "Offshore: Licensee",
+    "Offshore: Licensee (inferred)",
+    # Environment
+    "Env: Disposer",
+    "Env: Polluter",
+    "Env: Recycler",
+    "Env: Reuser",
+    "Env: Treater"
+  ]
+
+  @doc """
+  Validate that all holder values in the rows are in the master list.
+  Returns `:ok` or `{:error, unknown_values}`. Call before sync to
+  catch taxonomy drift from fractalaw early.
+  """
+  def validate_holder_vocabulary(rows) do
+    known = MapSet.new(@holder_options)
+
+    unknown =
+      rows
+      |> Enum.flat_map(fn row ->
+        extract_holder_list(row.duty_holder) ++
+          extract_holder_list(row.power_holder) ++
+          extract_holder_list(row.rights_holder)
+      end)
+      |> Enum.uniq()
+      |> Enum.reject(&MapSet.member?(known, &1))
+      |> Enum.sort()
+
+    case unknown do
+      [] -> :ok
+      vals -> {:error, vals}
+    end
+  end
+
+  defp tier_fields(:essential), do: []
 
   defp tier_fields(:standard) do
     [
@@ -527,9 +733,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Function" => format_function(lrt.function),
       "Duty Type" => extract_values_list(lrt.duty_type),
       "Purpose" => extract_values_list(lrt.purpose),
-      "Duty Holder" => extract_values_list(lrt.duty_holder),
-      "Power Holder" => extract_values_list(lrt.power_holder),
-      "Rights Holder" => extract_values_list(lrt.rights_holder),
+      "Duty Holder" => extract_holder_list(lrt.duty_holder),
+      "Power Holder" => extract_holder_list(lrt.power_holder),
+      "Rights Holder" => extract_holder_list(lrt.rights_holder),
       "Domain" => join_array(lrt.domain),
       "Geographic Region" => join_array(lrt.geo_region),
       "Making Classification" => lrt.making_classification,
@@ -573,6 +779,12 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   end
 
   defp format_function(_), do: []
+
+  # Extract holder values, filtering out known artifacts
+  defp extract_holder_list(field) do
+    extract_values_list(field)
+    |> Enum.reject(&MapSet.member?(@holder_exclusions, &1))
+  end
 
   # Extract values from JSONB fields as a list (for multiple_select columns)
   defp extract_values_list(nil), do: []
