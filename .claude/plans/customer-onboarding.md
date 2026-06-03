@@ -96,25 +96,52 @@ Call `POST /api/webhooks/entitlement-change` with QQ's subscribed families and t
 - Union of all site Yes laws = org-level validation set
 - Compare screener output vs actual site selections for accuracy
 
+### 4.6 — Fix JSONB column formatting for Baserow
+
+Currently `format_lrt_row` serialises JSONB fields (Function, Duty Holder, Power Holder, Rights Holder, Purpose, Duty Type) as raw JSON strings — customer sees `{"Making":true}` and `{"values":["Gvt: Authority",...]}`. Unusable.
+
+Fix: convert to Baserow-friendly formats:
+- **Function** → multiple boolean columns (Making, Amending, Revoking, Commencing) or a multi_select
+- **Holder fields** (duty_holder, power_holder, rights_holder) → extract `values` array → multi_select or comma-separated text
+- **Purpose, Duty Type** → extract `values` array → multi_select or text
+- Update `lrt_field_specs` and `format_lrt_row` in Baserow provider
+
 ---
 
-## Phase 5: Production Deployment
+## Phase 5: Sync LAT to Baserow
 
-### 5.1 — Prod data sync
+### 5.1 — Create LAT table in Baserow
+
+Sync engine already supports LAT via `maybe_sync_lat`. Need to:
+- Create a second table in the Baserow database (or auto-create via API)
+- Add `lat_table_id` to `target_config`
+- LAT table has link_row field back to LRT table (parent law relationship)
+
+### 5.2 — Verify LAT sync
+
+- Trigger sync with `include_lat: true` (already set on QQ profile)
+- Verify LAT rows land correctly with parent law links
+- Check text rendering, section hierarchy, provision ordering
+
+---
+
+## Phase 6: Production Deployment
+
+### 6.1 — Prod data sync
 
 Run lrt-scrape stages 6-7: delta export, apply to prod via SSH pipe, post-prod QA.
 
-### 5.2 — Deploy sync infrastructure
+### 6.2 — Deploy sync infrastructure
 
 Ensure sync service, Electric, and Baserow proxy are deployed and configured for prod.
 
-### 5.3 — End-to-end test
+### 6.3 — End-to-end test
 
 Prod backend → ElectricSQL → sync engine → Baserow SaaS. Verify the full pipeline works.
 
 ---
 
-## Phase 6: L3 Screening UI
+## Phase 7: L3 Screening UI
 
 Frontend within sertantai-legal (or sertantai-compliance) for org-level applicability screening.
 
@@ -140,7 +167,7 @@ Frontend within sertantai-legal (or sertantai-compliance) for org-level applicab
 
 ---
 
-## Phase 7: Automated L3 Screening (Taxa + Fitness)
+## Phase 8: Automated L3 Screening (Taxa + Fitness)
 
 Use Taxa (DRRP roles) and Fitness fields to automate L3 applicability recommendations, replacing manual curation.
 
@@ -170,8 +197,31 @@ Compare automated recommendations to Enhesa Yes/No decisions and manual QA findi
 
 ---
 
+## Phase 9: Multi-Jurisdiction Sync
+
+QQ operates in UK, AU, DE, CN, and US. SertantAI currently supports UK and AU.
+
+### 9.1 — Baserow architecture for multi-jurisdiction
+
+Decide the table structure:
+- **Option A**: One LRT table per jurisdiction (UK Legal Register, AU Legal Register) — cleaner separation, simpler queries
+- **Option B**: Single unified table with Country column — easier cross-jurisdiction views, but wider schema
+- Consider: each jurisdiction may have different field sets (UK has SI codes, AU has state/territory)
+
+### 9.2 — SyncProfile per jurisdiction
+
+- Extend SyncProfile to support country filtering (already have `country` on legal_register)
+- One sync config per jurisdiction table, or one config with multiple table targets
+
+### 9.3 — DE, CN, US jurisdictions
+
+- Not yet supported in sertantai-legal
+- Will need separate data acquisition pipelines per jurisdiction
+- Baserow sync can accommodate once data exists
+
+---
+
 ## Future Work
 
 - **Site-level applicability**: per-site selections within the org register
 - **More vendors**: Nimonik, Wolters Kluwer CSV formats (add `extract/2` clauses)
-- **AU jurisdiction**: import pipeline works for AU once AU scraper is complete
