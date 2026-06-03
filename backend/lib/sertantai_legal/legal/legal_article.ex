@@ -157,6 +157,98 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       description("Editorial notes")
     end
 
+    # ── Taxa / DRRP Classification (from fractalaw) ──────────────────
+    # Populated via zenoh subscriber from fractalaw provision-level enrichment.
+    # NULL until fractalaw processes this provision.
+
+    attribute :drrp_types, {:array, :string} do
+      allow_nil?(true)
+      description("Duty/Right/Responsibility/Power classifications")
+    end
+
+    attribute :governed_actors, {:array, :string} do
+      allow_nil?(true)
+      description("Regulated actors (Org: Employer, Ind: Employee, etc.)")
+    end
+
+    attribute :government_actors, {:array, :string} do
+      allow_nil?(true)
+      description("Government actors (Gvt: Authority, Gvt: Minister, etc.)")
+    end
+
+    attribute :duty_family, :string do
+      allow_nil?(true)
+      description("Duty family classification")
+    end
+
+    attribute :duty_sub_type, :string do
+      allow_nil?(true)
+      description("Duty sub-type classification")
+    end
+
+    attribute :clause_refined, :string do
+      allow_nil?(true)
+      description("AI extraction: 'who must do what' summary of the provision")
+    end
+
+    attribute :purposes, {:array, :string} do
+      allow_nil?(true)
+      description("Purpose/function classifications (Application+Scope, Enforcement, etc.)")
+    end
+
+    attribute :popimar, {:array, :string} do
+      allow_nil?(true)
+      description("POPIMAR management system categories")
+    end
+
+    attribute :taxa_confidence, :float do
+      allow_nil?(true)
+      description("Classification confidence score (0.0–1.0)")
+    end
+
+    # ── Fitness Dimensions (from fractalaw) ─────────────────────────
+    # Per-provision applicability scope — who/what/where this provision applies to.
+
+    attribute :fitness_polarity, {:array, :string} do
+      allow_nil?(true)
+      description("AppliesTo / DisappliesTo / ExtendsTo")
+    end
+
+    attribute :fitness_person, {:array, :string} do
+      allow_nil?(true)
+      description("Person/role dimension (employer, employee, self-employed, etc.)")
+    end
+
+    attribute :fitness_process, {:array, :string} do
+      allow_nil?(true)
+      description("Process dimension (carriage of goods, risk assessment, etc.)")
+    end
+
+    attribute :fitness_place, {:array, :string} do
+      allow_nil?(true)
+      description("Place dimension (premises, offshore, ship, etc.)")
+    end
+
+    attribute :fitness_plant, {:array, :string} do
+      allow_nil?(true)
+      description("Plant/equipment dimension (explosives, chemicals, PPE, etc.)")
+    end
+
+    attribute :fitness_property, {:array, :string} do
+      allow_nil?(true)
+      description("Property/condition dimension (at work, normal shipboard activities, etc.)")
+    end
+
+    attribute :fitness_sector, {:array, :string} do
+      allow_nil?(true)
+      description("Sector/industry dimension (maritime, nuclear, mining, etc.)")
+    end
+
+    attribute :taxa_enriched_at, :utc_datetime_usec do
+      allow_nil?(true)
+      description("When taxa/fitness data was last received from fractalaw")
+    end
+
     # ── Embeddings (populated later) ─────────────────────────────────
 
     attribute :embedding, {:array, :float} do
@@ -287,6 +379,30 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       ])
     end
 
+    update :update_taxa do
+      description("Update taxa/fitness enrichment from fractalaw")
+
+      accept([
+        :drrp_types,
+        :governed_actors,
+        :government_actors,
+        :duty_family,
+        :duty_sub_type,
+        :clause_refined,
+        :purposes,
+        :popimar,
+        :taxa_confidence,
+        :fitness_polarity,
+        :fitness_person,
+        :fitness_process,
+        :fitness_place,
+        :fitness_plant,
+        :fitness_property,
+        :fitness_sector,
+        :taxa_enriched_at
+      ])
+    end
+
     read :by_law do
       description("Get all articles for a law by law_id, in document order")
       argument(:law_id, :uuid, allow_nil?: false)
@@ -319,6 +435,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
     define(:by_section_type, args: [:section_type])
     define(:create)
     define(:update)
+    define(:update_taxa)
     define(:destroy)
   end
 end

@@ -110,20 +110,27 @@ Workaround: call sync steps directly outside the engine.
 
 ---
 
-## Phase 5: Sync LAT to Baserow
+## Phase 5: Sync LAT to Baserow ✅ + LAT Taxa Enrichment
 
-### 5.1 — Create LAT table in Baserow
+### 5.1 — Create LAT table in Baserow ✅
 
-Sync engine already supports LAT via `maybe_sync_lat`. Need to:
-- Create a second table in the Baserow database (or auto-create via API)
-- Add `lat_table_id` to `target_config`
-- LAT table has link_row field back to LRT table (parent law relationship)
+LAT table created (ID 1008280), section_type filter in ProfileQuery, 623 provision-level
+rows synced for OH&S with parent law links. 729 total rows within Baserow free tier.
 
-### 5.2 — Verify LAT sync
+### 5.2 — Wire up LAT Taxa/Fitness enrichment from fractalaw
 
-- Trigger sync with `include_lat: true` (already set on QQ profile)
-- Verify LAT rows land correctly with parent law links
-- Check text rendering, section hierarchy, provision ordering
+Fractalaw now publishes provision-level DRRP via zenoh topic
+`fractalaw/@{tenant}/taxa/provisions/{law_name}`. 17 columns per provision including
+drrp_types, governed/government_actors, duty_family, clause_refined, fitness dimensions.
+
+Sertantai side (this repo):
+- Add taxa/fitness columns to `legal_articles` table (Ash migration)
+- New zenoh subscriber for `taxa/provisions/{law_name}` topic
+- Upsert by `section_id` — match incoming Arrow IPC to existing LAT rows
+- Expose taxa columns in the `lat` view and Baserow LAT sync
+- End-to-end test: fractalaw enrich → publish provisions → sertantai query
+
+Reference: `~/fractalaw/.claude/sessions/06-03-26-lat-taxa-fitness-columns.md`
 
 ---
 
@@ -225,6 +232,5 @@ Decide the table structure:
 
 ## Future Work
 
-- **LAT Taxa/Fitness enrichment**: LAT schema has no duty_holder, role, fitness columns — all Taxa/DRRP data is at law level (uk_lrt) not article level (lat). Needs fractalaw parser to output per-section enrichment, then LAT schema migration to store it. Key for "this section creates a duty for employers" UX.
 - **Site-level applicability**: per-site selections within the org register
 - **More vendors**: Nimonik, Wolters Kluwer CSV formats (add `extract/2` clauses)
