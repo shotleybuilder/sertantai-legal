@@ -329,26 +329,16 @@
 
 	async function fetchOrgApplicabilityOptions() {
 		try {
-			const res = await authFetch(`${API_URL}/api/sync/entitlement`);
+			const res = await authFetch(`${API_URL}/api/lat/queue/org-applicabilities`);
 			if (!res.ok) return;
 			const data = await res.json();
-			// If entitlement exists, add as a filter option
-			if (data.entitlement) {
-				const ent = data.entitlement;
-				const countRes = await authFetch(
-					`${API_URL}/api/lat/queue/org-law-names/${ent.organization_id}`
-				);
-				if (countRes.ok) {
-					const countData = await countRes.json();
-					orgApplicabilityOptions = [
-						{
-							org_id: ent.organization_id,
-							label: `L3 Applicable · ${countData.count} laws`,
-							count: countData.count
-						}
-					];
-				}
-			}
+			orgApplicabilityOptions = (data.orgs || []).map(
+				(o: { org_id: string; law_count: number }) => ({
+					org_id: o.org_id,
+					label: `L3 Applicable · ${o.law_count} laws`,
+					count: o.law_count
+				})
+			);
 		} catch {
 			/* non-critical */
 		}

@@ -187,6 +187,27 @@ defmodule SertantaiLegalWeb.LatAdminController do
   end
 
   @doc """
+  GET /api/lat/queue/org-applicabilities
+
+  Returns orgs that have applicability records, with counts.
+  Used to populate the LAT queue session picker dropdown.
+  """
+  def org_applicabilities(conn, _params) do
+    sql = """
+    SELECT a.organization_id::text, COUNT(*) AS law_count
+    FROM org_applicabilities a
+    WHERE a.status = 'yes'
+    GROUP BY a.organization_id
+    ORDER BY law_count DESC
+    """
+
+    {:ok, %{rows: rows}} = Repo.query(sql)
+
+    orgs = Enum.map(rows, fn [org_id, count] -> %{org_id: org_id, law_count: count} end)
+    json(conn, %{orgs: orgs})
+  end
+
+  @doc """
   GET /api/lat/queue/org-law-names/:org_id
 
   Returns law names for an org's L3 yes-applicable laws. Used by the
