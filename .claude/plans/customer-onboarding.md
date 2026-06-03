@@ -96,15 +96,17 @@ Call `POST /api/webhooks/entitlement-change` with QQ's subscribed families and t
 - Union of all site Yes laws = org-level validation set
 - Compare screener output vs actual site selections for accuracy
 
-### 4.6 — Fix JSONB column formatting for Baserow
+### 4.6 — Fix JSONB column formatting for Baserow ✅
 
-Currently `format_lrt_row` serialises JSONB fields (Function, Duty Holder, Power Holder, Rights Holder, Purpose, Duty Type) as raw JSON strings — customer sees `{"Making":true}` and `{"values":["Gvt: Authority",...]}`. Unusable.
+Function, Duty Type, Purpose, Holders all converted to Baserow `multiple_select` fields.
+Master holder vocabulary (165 options) hardcoded from ActorDefinitions + observed data.
+Vocabulary validation stops sync if fractalaw introduces unrecognised actors.
 
-Fix: convert to Baserow-friendly formats:
-- **Function** → multiple boolean columns (Making, Amending, Revoking, Commencing) or a multi_select
-- **Holder fields** (duty_holder, power_holder, rights_holder) → extract `values` array → multi_select or comma-separated text
-- **Purpose, Duty Type** → extract `values` array → multi_select or text
-- Update `lrt_field_specs` and `format_lrt_row` in Baserow provider
+### 4.7 — Fix Engine.run sync flow (#87)
+
+`Engine.run` creates rows but they don't persist. Direct calls work fine.
+Suspected: `with` chain return value issue or `prepare_tables` interference.
+Workaround: call sync steps directly outside the engine.
 
 ---
 
@@ -223,5 +225,6 @@ Decide the table structure:
 
 ## Future Work
 
+- **LAT Taxa/Fitness enrichment**: LAT schema has no duty_holder, role, fitness columns — all Taxa/DRRP data is at law level (uk_lrt) not article level (lat). Needs fractalaw parser to output per-section enrichment, then LAT schema migration to store it. Key for "this section creates a duty for employers" UX.
 - **Site-level applicability**: per-site selections within the org register
 - **More vendors**: Nimonik, Wolters Kluwer CSV formats (add `extract/2` clauses)
