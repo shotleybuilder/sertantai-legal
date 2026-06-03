@@ -398,18 +398,44 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp tier_fields(:essential), do: []
 
+  @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
+  @duty_type_options ["Duty", "Power", "Responsibility", "Right", "Rule"]
+  @purpose_options [
+    "Amendment",
+    "Application+Scope",
+    "Charge+Fee",
+    "Defence+Appeal",
+    "Enactment+Citation+Commencement",
+    "Enforcement+Prosecution",
+    "Exemption",
+    "Extent",
+    "Interpretation+Definition",
+    "Liability",
+    "Offence",
+    "Power Conferred",
+    "Process+Rule+Constraint+Condition",
+    "Repeal+Revocation",
+    "Transitional Arrangement"
+  ]
+
+  # Actor taxonomy from ActorDefinitions — ordered by group for clean dropdown UX
+  # Government actors, then Governed (Business → Person → Public → Specialist → SC)
+  @holder_options (SertantaiLegal.Legal.Taxa.ActorDefinitions.dutyholder_library()
+                   |> Enum.map(fn {k, _pattern} -> to_string(k) end)
+                   |> Enum.uniq()) ++
+                    ["Operator", "Organisation", "Public"]
+
   defp tier_fields(:standard) do
     [
-      %{name: "Function", type: "long_text"},
-      %{name: "Duty Holder", type: "long_text"},
-      %{name: "Power Holder", type: "long_text"},
-      %{name: "Rights Holder", type: "long_text"},
-      %{name: "Purpose", type: "long_text"},
-      %{name: "Duty Type", type: "long_text"},
+      multi_select_spec("Function", @function_options),
+      multi_select_spec("Duty Type", @duty_type_options),
+      multi_select_spec("Purpose", @purpose_options),
+      multi_select_spec("Duty Holder", @holder_options),
+      multi_select_spec("Power Holder", @holder_options),
+      multi_select_spec("Rights Holder", @holder_options),
       %{name: "Domain", type: "text"},
       %{name: "Geographic Region", type: "text"},
       %{name: "Making Classification", type: "text"},
-      %{name: "Is Making", type: "boolean"},
       %{name: "Fitness Person", type: "text"},
       %{name: "Fitness Process", type: "text"},
       %{name: "Fitness Place", type: "text"},
@@ -435,6 +461,16 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
         %{name: "Coming Into Force Date", type: "date"},
         %{name: "Latest Amendment Date", type: "date"}
       ]
+  end
+
+  defp multi_select_spec(name, options) do
+    %{
+      name: name,
+      type: "multiple_select",
+      opts: %{
+        "select_options" => Enum.map(options, &%{"value" => &1, "color" => "light-gray"})
+      }
+    }
   end
 
   # ── Row Formatting ────────────────────────────────────────────────
@@ -488,17 +524,15 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp maybe_add_standard(row, lrt, _tier) do
     Map.merge(row, %{
-      "Function" => json_or_nil(lrt.function),
-      "Duty Holder" => json_or_nil(lrt.duty_holder),
-      "Power Holder" => json_or_nil(lrt.power_holder),
-      "Rights Holder" => json_or_nil(lrt.rights_holder),
-      "Purpose" => json_or_nil(lrt.purpose),
-      "Duty Type" => json_or_nil(lrt.duty_type),
+      "Function" => format_function(lrt.function),
+      "Duty Type" => extract_values_list(lrt.duty_type),
+      "Purpose" => extract_values_list(lrt.purpose),
+      "Duty Holder" => extract_values_list(lrt.duty_holder),
+      "Power Holder" => extract_values_list(lrt.power_holder),
+      "Rights Holder" => extract_values_list(lrt.rights_holder),
       "Domain" => join_array(lrt.domain),
       "Geographic Region" => join_array(lrt.geo_region),
       "Making Classification" => lrt.making_classification,
-      "Making Review" => lrt.making_review,
-      "Is Making" => lrt.is_making || false,
       "Fitness Person" => join_array(lrt.fitness_person),
       "Fitness Process" => join_array(lrt.fitness_process),
       "Fitness Place" => join_array(lrt.fitness_place),
@@ -511,8 +545,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp maybe_add_full(row, lrt, :full) do
     Map.merge(row, %{
-      "POPIMAR" => json_or_nil(lrt.popimar),
-      "SI Code" => json_or_nil(lrt.si_code),
+      "POPIMAR" => extract_values(lrt.popimar),
+      "SI Code" => extract_values(lrt.si_code),
       "Description" => lrt.md_description,
       "Role" => join_array(lrt.role),
       "Amending" => join_array(lrt.amending),
@@ -527,9 +561,53 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     })
   end
 
-  defp json_or_nil(nil), do: nil
-  defp json_or_nil(map) when is_map(map), do: Jason.encode!(map)
-  defp json_or_nil(other), do: inspect(other)
+  # Function map {"Making": true, "Amending": true} → ["Making", "Amending"]
+  # Baserow multiple_select expects a list of option value strings
+  defp format_function(nil), do: []
+
+  defp format_function(func) when is_map(func) do
+    func
+    |> Enum.filter(fn {_k, v} -> v == true end)
+    |> Enum.map(fn {k, _} -> to_string(k) end)
+    |> Enum.filter(&(&1 in @function_options))
+  end
+
+  defp format_function(_), do: []
+
+  # Extract values from JSONB fields as a list (for multiple_select columns)
+  defp extract_values_list(nil), do: []
+  defp extract_values_list(%{"values" => values}) when is_list(values), do: values
+
+  defp extract_values_list(map) when is_map(map) do
+    map
+    |> Enum.filter(fn {_k, v} -> v == true end)
+    |> Enum.map(fn {k, _} -> to_string(k) end)
+  end
+
+  defp extract_values_list(list) when is_list(list), do: list
+  defp extract_values_list(_), do: []
+
+  # Extract values from JSONB fields into comma-separated text.
+  # Handles multiple storage formats:
+  #   {"values": ["a", "b"]}           → "a, b"
+  #   {"a": true, "b": true, "c": false} → "a, b"  (boolean-map, like function)
+  #   ["a", "b"]                       → "a, b"
+  defp extract_values(nil), do: nil
+  defp extract_values(%{"values" => values}) when is_list(values), do: Enum.join(values, ", ")
+
+  defp extract_values(map) when is_map(map) do
+    # Boolean-map format: keys with truthy values
+    map
+    |> Enum.filter(fn {_k, v} -> v == true end)
+    |> Enum.map(fn {k, _} -> to_string(k) end)
+    |> case do
+      [] -> nil
+      vals -> Enum.join(vals, ", ")
+    end
+  end
+
+  defp extract_values(list) when is_list(list), do: Enum.join(list, ", ")
+  defp extract_values(other), do: to_string(other)
 
   defp join_array(nil), do: nil
   defp join_array(list) when is_list(list), do: Enum.join(list, ", ")
