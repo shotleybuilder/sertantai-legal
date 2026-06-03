@@ -4,12 +4,13 @@
 **Meta-plan**: .claude/plans/customer-onboarding.md (Phase 4, excluding 4.5)
 
 ## Todo
-- [ ] 4.1 — Set up org + user in sertantai-auth
-- [ ] 4.2 — Push entitlement to sertantai-legal (webhook or direct)
-- [ ] 4.3 — Create sync profile + Baserow config
-- [ ] 4.4 — Trigger initial sync, verify data in Baserow
+- [x] 4.1 — QinetiQ org in auth, user linked as owner — c075d56b
+- [x] 4.2 — Entitlement: 32 families, lrt_lat, standard — d72b5c2a
+- [x] 4.3 — Sync profile (QQ Legal Register) + Baserow JWT config — 2b98afa
+- [x] 4.4 — Initial sync: 106 L3 laws in Baserow, verified in UI — 2b98afa
 
 ## Notes
-- Phase 3 complete: OrgApplicability seeded (204 yes), sync engine filters to L3
-- 4.5 (more CSVs) deferred — rinse and repeat later
-- Auth DB on port 5438, Hub DB on port 5435 — may not be running
+- Baserow database tokens can't create fields — switched to JWT auth (email/password)
+- Engine fixes: Ash Query/Changeset API, UUID binary handling, NaiveDateTime checkpoint
+- Applicability records migrated from test UUID to real org ID
+- Auth on port 4000, DB on port 5438
