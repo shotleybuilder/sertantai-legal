@@ -366,19 +366,28 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Returns Baserow field specs for the LAT table.
   Includes a link_row field back to the LRT table.
   """
+  @drrp_type_options ["Duty", "Responsibility", "Power", "Right", "Rule"]
+  @duty_sub_type_options [
+    "Prescriptive",
+    "Prohibitive",
+    "GeneralDuty",
+    "SfairpDuty",
+    "ReasonablyPracticable",
+    "Informational",
+    "Procedural"
+  ]
+
   def lat_field_specs(lrt_table_id) do
     [
-      %{name: "Section ID", type: "text"},
+      %{name: "Duty Summary", type: "long_text"},
+      multi_select_spec("Type", @drrp_type_options),
+      multi_select_spec("Duty Type", @duty_sub_type_options),
+      multi_select_spec("Regulated Actors", @holder_options),
+      %{name: "Provision Text", type: "long_text"},
       %{name: "Law Name", type: "text"},
-      %{name: "Section Type", type: "text"},
-      %{name: "Text", type: "long_text"},
-      %{name: "Part", type: "text"},
-      %{name: "Chapter", type: "text"},
       %{name: "Provision", type: "text"},
-      %{name: "Paragraph", type: "text"},
-      %{name: "Depth", type: "number", opts: %{"number_decimal_places" => 0}},
-      %{name: "Position", type: "number", opts: %{"number_decimal_places" => 0}},
-      %{name: "Language", type: "text"},
+      %{name: "Section Type", type: "text"},
+      %{name: "_source_id", type: "text"},
       %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
     ]
   end
@@ -712,16 +721,14 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     %{
       "Name" => lat.section_id,
       "_source_id" => lat.section_id,
-      "Section ID" => lat.section_id,
+      "Duty Summary" => lat.clause_refined,
+      "Type" => lat.drrp_types || [],
+      "Duty Type" => if(lat.duty_sub_type, do: [lat.duty_sub_type], else: []),
+      "Regulated Actors" => extract_holder_list(lat.governed_actors),
+      "Provision Text" => lat.text,
       "Law Name" => lat.law_name,
-      "Section Type" => to_string(lat.section_type),
-      "Text" => lat.text,
-      "Part" => lat.part,
-      "Chapter" => lat.chapter,
       "Provision" => lat.provision,
-      "Paragraph" => lat.paragraph,
-      "Depth" => lat.depth,
-      "Position" => lat.position,
+      "Section Type" => to_string(lat.section_type),
       "Language" => lat.language,
       "Parent Law" => [lrt_external_row_id]
     }

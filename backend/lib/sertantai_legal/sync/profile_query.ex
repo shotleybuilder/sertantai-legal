@@ -69,6 +69,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
   """
   def query_lat(lrt_ids, opts \\ []) when is_list(lrt_ids) do
     section_types = Keyword.get(opts, :section_types)
+    drrp_filter = Keyword.get(opts, :drrp_types)
 
     query =
       from(l in "lat",
@@ -87,11 +88,16 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
             :depth,
             :position,
             :language,
-            :sort_key
+            :sort_key,
+            :drrp_types,
+            :governed_actors,
+            :duty_sub_type,
+            :clause_refined
           ]),
         order_by: [l.law_name, l.sort_key]
       )
       |> apply_section_type_filter(section_types)
+      |> apply_drrp_filter(drrp_filter)
 
     {:ok, Repo.all(query)}
   end
@@ -164,6 +170,14 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
   defp apply_section_type_filter(query, types) when is_list(types) do
     type_strings = Enum.map(types, &to_string/1)
     where(query, [l], l.section_type in ^type_strings)
+  end
+
+  defp apply_drrp_filter(query, nil), do: query
+  defp apply_drrp_filter(query, []), do: query
+
+  defp apply_drrp_filter(query, types) when is_list(types) do
+    # Filter to provisions where drrp_types array overlaps with the given types
+    where(query, [l], fragment("? && ?", l.drrp_types, ^types))
   end
 
   defp apply_checkpoint(query, nil), do: query

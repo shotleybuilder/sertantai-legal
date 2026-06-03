@@ -122,8 +122,13 @@ defmodule SertantaiLegal.Sync.Engine do
       lrt_table_id = get_in(sync_config.target_config, ["lrt_table_id"])
 
       lat_section_types = get_in(sync_config.target_config, ["lat_section_types"])
+      lat_drrp_types = get_in(sync_config.target_config, ["lat_drrp_types"])
 
-      with {:ok, lat_rows} <- ProfileQuery.query_lat(lrt_ids, section_types: lat_section_types),
+      with {:ok, lat_rows} <-
+             ProfileQuery.query_lat(lrt_ids,
+               section_types: lat_section_types,
+               drrp_types: lat_drrp_types
+             ),
            field_specs = Baserow.lat_field_specs(lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :lat, field_specs) do
         # Format LAT rows with link_row references to parent LRT
