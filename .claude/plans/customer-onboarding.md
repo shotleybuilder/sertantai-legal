@@ -44,9 +44,9 @@ Use `/admin/lat/queue` with the `import-qq-bsc` session to identify laws needing
 
 ---
 
-## Phase 3: Org-Level Applicability Screener (Level 3)
+## Phase 3: Org-Level Applicability (Level 3) ✅
 
-The key value-add vs just dumping all making laws.
+Persist per-law applicability selections and wire into sync engine.
 
 ### Applicability model
 
@@ -54,29 +54,14 @@ The key value-add vs just dumping all making laws.
 |---|---|---|
 | L1 | Family subscription | 38 families, 1,836 laws |
 | L2 | Making laws in those families | 1,665 laws |
-| L3 | Org-level screened (Fitness-informed) | ~300-400 target |
+| L3 | Org-level screened | ~300-400 target |
 | Site | Per-site selection within L3 | 126 (BSC Yes) |
 
-SertantAI L2 (1,665) is too broad — 13x the site's actual needs. Enhesa's curated list (345) sits where L3 should land. The Fitness-informed screener replaces Enhesa's manual curation.
-
-### 3.1 — Design the screener
-
-- Decide: lives in sertantai-hub or sertantai-legal?
-- Input: org's subscribed families + org profile (industry, activities)
-- Filter: making laws where Fitness fields indicate relevance to org's profile
-- Output: org-level register (~300-400 laws for a typical EHS org)
-
-### 3.2 — Build the screener
-
-- API endpoint for screening
-- UI for org to review and adjust (accept/reject individual laws)
-- Persist org-level selections
-
-### 3.3 — Aggregate site CSVs
-
-- Load more QQ site CSVs through the import pipeline
-- Union of all site Yes laws = org-level validation set
-- Compare screener output vs actual site selections for accuracy
+- OrgApplicability Ash resource (yes/no/excluded/unreviewed per org+law)
+- `mix sync.seed_applicability` pre-populates from Enhesa CSV
+- Sync engine INNER JOINs on applicability — only yes laws reach Baserow
+- QA skill: `customer-onboarding-applicability-qa` (draft, 8 codified patterns)
+- QQ/BSC seeded: 204 yes, 82 no from Enhesa import
 
 ---
 
@@ -102,7 +87,14 @@ Call `POST /api/webhooks/entitlement-change` with QQ's subscribed families and t
 
 - Verify data lands in Baserow correctly
 - Check field mapping, row counts, LAT links
-- Pre-populate applicability column from Enhesa Answer data
+- Sync filters to L3 (yes-applicable laws only)
+
+### 4.5 — Aggregate more QQ site CSVs
+
+- Load additional QQ site CSVs through import pipeline (rinse and repeat Phase 1)
+- Seed applicability from each site's Enhesa Answer data
+- Union of all site Yes laws = org-level validation set
+- Compare screener output vs actual site selections for accuracy
 
 ---
 
@@ -122,9 +114,64 @@ Prod backend → ElectricSQL → sync engine → Baserow SaaS. Verify the full p
 
 ---
 
+## Phase 6: L3 Screening UI
+
+Frontend within sertantai-legal (or sertantai-compliance) for org-level applicability screening.
+
+### 6.1 — API endpoints for applicability CRUD
+
+- `GET /sync/applicabilities` — list, filter by status
+- `PUT /sync/applicabilities/:law_name` — set status
+- `PATCH /sync/applicabilities/bulk` — bulk update
+- `GET /sync/applicabilities/stats` — counts by status
+- Org-scoped via JWT, follows existing sync controller patterns
+
+### 6.2 — Screening UI
+
+- Browse L2 laws grouped by family, with applicability status
+- Inline accept/reject with Fitness/Taxa signals as guidance
+- Bulk actions (accept all in family, reject sector-mismatched)
+- Progress dashboard: reviewed vs unreviewed vs total
+
+### 6.3 — Hub integration
+
+- Hub calls Legal's screening API with org profile
+- Entitlement webhook triggers applicability refresh when families change
+
+---
+
+## Phase 7: Automated L3 Screening (Taxa + Fitness)
+
+Use Taxa (DRRP roles) and Fitness fields to automate L3 applicability recommendations, replacing manual curation.
+
+### 7.1 — Org profile model
+
+Define what we know about an org: sector, activities, site types, workforce composition. This drives Fitness matching. Lives in Hub (org owns it) but Legal consumes it for screening.
+
+### 7.2 — Fitness-based scoring
+
+For laws with Fitness data, score relevance to org profile:
+- fitness_sector matches org sector → strong signal
+- fitness_person includes employer/employee → broadly applicable
+- fitness_place matches org site types → relevant
+- Combine into a recommendation (yes/no/review) with confidence
+
+### 7.3 — Taxa-based signals
+
+Use DRRP role data to identify broadly-applicable vs sector-specific laws:
+- "Org: Employer" + "Ind: Employee" → general workplace law
+- Specialist roles (Maritime: master, etc.) → sector-specific
+
+### 7.4 — Validation against Enhesa
+
+Compare automated recommendations to Enhesa Yes/No decisions and manual QA findings. Measure precision/recall per family. Iterate rules.
+
+**Prerequisite**: Fitness coverage must expand beyond safety families (currently 7.4% of making laws). Fractalaw parser is iteratively improving this, one family at a time.
+
+---
+
 ## Future Work
 
 - **Site-level applicability**: per-site selections within the org register
 - **More vendors**: Nimonik, Wolters Kluwer CSV formats (add `extract/2` clauses)
 - **AU jurisdiction**: import pipeline works for AU once AU scraper is complete
-- **Automated screening**: ML/rules-based Fitness matching to replace manual L3 selection
