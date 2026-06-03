@@ -108,6 +108,7 @@ ORDER BY u.making_classification, u.name;
 - "Fees Regulations" → not_making (financial, not duty-setting)
 - "Amendment Regulations" with safety/environment parent → making
 - Acts with "Safety", "Health", "Environment", "Protection" in title → making
+- **Revoked laws** → exclude from review entirely (dead law, no customer value)
 
 Present recommendations to the human. They can update reviews inline in the LAT Queue grid (double-click the "Review" column) or AI can apply via SQL.
 
@@ -118,11 +119,16 @@ Once the human confirms which laws to parse:
 1. **Set `making_review = 'making'`** for laws selected for parsing
 2. **Infer `making_review = 'not_making'`** for all unselected session laws — by choosing not to parse them, the human implicitly reviewed them as not_making
 
+**IMPORTANT**: Always exclude revoked laws from bulk making_review updates. A revoked law
+showing up in the parse queue wastes enrichment time and produces misleading results (e.g.
+Housekeeping classification for dead law). Filter with `AND u.live NOT LIKE '%evok%'`.
+
 ```bash
-# Apply reviews: selected laws → making
+# Apply reviews: selected laws → making (exclude revoked)
 PGPASSWORD=postgres psql -h localhost -p 5436 -U postgres -d sertantai_legal_dev -c "
 UPDATE uk_lrt SET making_review = 'making', making_review_at = NOW()
 WHERE name IN ({selected_law_names_comma_separated})
+  AND live NOT LIKE '%evok%'
 RETURNING name, making_classification AS auto, making_review AS review;
 "
 ```
