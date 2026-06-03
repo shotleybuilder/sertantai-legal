@@ -395,7 +395,7 @@
 				if (gridRef) {
 					const vis: Record<string, boolean> = {};
 					for (const c of columns) vis[c.name] = sessionViewCols.includes(c.name);
-					gridRef.applyConfig({ columnVisibility: vis });
+					gridRef.applyConfig({ columnVisibility: vis, columnFilters: [] });
 				}
 			} else if (sessionId) {
 				const res = await authFetch(`${API_URL}/api/sessions/${sessionId}/law-names`);
