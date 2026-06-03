@@ -710,6 +710,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   """
   def format_lat_row(lat, lrt_external_row_id) do
     %{
+      "Name" => lat.section_id,
       "_source_id" => lat.section_id,
       "Section ID" => lat.section_id,
       "Law Name" => lat.law_name,
