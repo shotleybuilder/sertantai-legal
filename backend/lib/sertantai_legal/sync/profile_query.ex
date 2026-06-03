@@ -67,7 +67,9 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
   @doc """
   Query LAT rows for the given LRT IDs. Returns `{:ok, [map]}`.
   """
-  def query_lat(lrt_ids) when is_list(lrt_ids) do
+  def query_lat(lrt_ids, opts \\ []) when is_list(lrt_ids) do
+    section_types = Keyword.get(opts, :section_types)
+
     query =
       from(l in "lat",
         where: l.law_id in ^lrt_ids,
@@ -89,6 +91,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
           ]),
         order_by: [l.law_name, l.sort_key]
       )
+      |> apply_section_type_filter(section_types)
 
     {:ok, Repo.all(query)}
   end
@@ -153,6 +156,14 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
           oa.organization_id == type(^organization_id, Ecto.UUID),
       where: oa.status == "yes"
     )
+  end
+
+  defp apply_section_type_filter(query, nil), do: query
+  defp apply_section_type_filter(query, []), do: query
+
+  defp apply_section_type_filter(query, types) when is_list(types) do
+    type_strings = Enum.map(types, &to_string/1)
+    where(query, [l], l.section_type in ^type_strings)
   end
 
   defp apply_checkpoint(query, nil), do: query
