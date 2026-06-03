@@ -553,6 +553,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     "SC: Exporter",
     "SC: Generator",
     "SC: Importer",
+    "SC: Importer (inferred)",
     "SC: Keeper",
     "SC: Manufacturer",
     "SC: Manufacturer (inferred)",
@@ -617,13 +618,19 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @drrp_type_options ["Duty", "Responsibility", "Power", "Right", "Rule"]
   @duty_sub_type_options [
+    "Delegation",
+    "Enabling",
+    "Enforcement",
+    "Fees",
+    "GeneralDuty",
+    "InformationDuty",
+    "ParliamentaryReporting",
     "Prescriptive",
     "Prohibitive",
-    "GeneralDuty",
+    "RiskAssessment",
     "SfairpDuty",
-    "ReasonablyPracticable",
-    "Informational",
-    "Procedural"
+    "ThingObligation",
+    "TrainingDuty"
   ]
 
   @doc """
