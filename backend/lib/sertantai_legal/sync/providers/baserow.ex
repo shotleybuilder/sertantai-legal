@@ -366,31 +366,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Returns Baserow field specs for the LAT table.
   Includes a link_row field back to the LRT table.
   """
-  @drrp_type_options ["Duty", "Responsibility", "Power", "Right", "Rule"]
-  @duty_sub_type_options [
-    "Prescriptive",
-    "Prohibitive",
-    "GeneralDuty",
-    "SfairpDuty",
-    "ReasonablyPracticable",
-    "Informational",
-    "Procedural"
-  ]
-
-  def lat_field_specs(lrt_table_id) do
-    [
-      %{name: "Duty Summary", type: "long_text"},
-      multi_select_spec("Type", @drrp_type_options),
-      multi_select_spec("Duty Type", @duty_sub_type_options),
-      multi_select_spec("Regulated Actors", @holder_options),
-      %{name: "Provision Text", type: "long_text"},
-      %{name: "Law Name", type: "text"},
-      %{name: "Provision", type: "text"},
-      %{name: "Section Type", type: "text"},
-      %{name: "_source_id", type: "text"},
-      %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
-    ]
-  end
 
   defp essential_fields do
     [
@@ -637,6 +612,40 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       vals -> {:error, vals}
     end
   end
+
+  # ── LAT Field Specs ───────────────────────────────────────────────
+
+  @drrp_type_options ["Duty", "Responsibility", "Power", "Right", "Rule"]
+  @duty_sub_type_options [
+    "Prescriptive",
+    "Prohibitive",
+    "GeneralDuty",
+    "SfairpDuty",
+    "ReasonablyPracticable",
+    "Informational",
+    "Procedural"
+  ]
+
+  @doc """
+  Returns Baserow field specs for the LAT table (duty-focused).
+  Only provisions with Duty/Responsibility DRRP types are synced.
+  """
+  def lat_field_specs(lrt_table_id) do
+    [
+      %{name: "Duty Summary", type: "long_text"},
+      multi_select_spec("Type", @drrp_type_options),
+      multi_select_spec("Duty Type", @duty_sub_type_options),
+      multi_select_spec("Regulated Actors", @holder_options),
+      %{name: "Provision Text", type: "long_text"},
+      %{name: "Law Name", type: "text"},
+      %{name: "Provision", type: "text"},
+      %{name: "Section Type", type: "text"},
+      %{name: "_source_id", type: "text"},
+      %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
+    ]
+  end
+
+  # ── LRT Field Specs ──────────────────────────────────────────────
 
   defp tier_fields(:essential), do: []
 
