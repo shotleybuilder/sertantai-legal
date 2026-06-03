@@ -392,6 +392,10 @@
 				activeVisibleColumns = sessionViewCols;
 
 				await new Promise((r) => setTimeout(r, 100));
+				// Clear filters from previous view to avoid "Column not found" errors
+				if (latestGridState) {
+					latestGridState = { ...latestGridState, filters: [], filterLogic: 'and' };
+				}
 				if (gridRef) {
 					const vis: Record<string, boolean> = {};
 					for (const c of columns) vis[c.name] = sessionViewCols.includes(c.name);
