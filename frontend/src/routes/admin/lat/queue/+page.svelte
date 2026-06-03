@@ -30,14 +30,13 @@
 
 	import { goto } from '$app/navigation';
 	import { useQueryClient } from '@tanstack/svelte-query';
-	import { reparseLat, createLatSessionFromView } from '$lib/api/lat';
+	import { createLatSessionFromView } from '$lib/api/lat';
 	import { authFetch } from '$lib/api/client';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
-	import LatParseDialog from '$lib/components/LatParseDialog.svelte';
 	import {
 		seedDefaultViews as seedDefaults,
 		seedDefaultGroups,
@@ -203,20 +202,45 @@
 	let lrtModalRecordId: string | undefined = undefined;
 
 	// LAT Parse Dialog state
-	let showLatDialog = false;
+	// Selection state for Parse button
+	let selectedLawNames: Set<string> = new Set();
+	let parseLoading = false;
 
-	function handleLatSessionCreated(event: CustomEvent<{ session_id: string }>) {
-		showLatDialog = false;
-		goto(`/admin/lat/sessions/${event.detail.session_id}`);
+	function toggleSelection(name: string) {
+		if (selectedLawNames.has(name)) {
+			selectedLawNames.delete(name);
+		} else {
+			selectedLawNames.add(name);
+		}
+		selectedLawNames = selectedLawNames; // trigger reactivity
 	}
 
-	// Reparse View dialog state
-	let showReparseViewDialog = false;
-	let reparseViewLoading = false;
-	let reparseViewError: string | null = null;
-	let reparseViewCount = 0;
+	async function selectAll() {
+		if (!db || !currentQuery) return;
+		const { sql, params } = getEffectiveQuery();
+		const result = await db.query<{ name: string }>(`SELECT name FROM (${sql}) sub`, params);
+		selectedLawNames = new Set(result.rows.map((r) => r.name));
+	}
 
-	// Build the effective SQL query including GridLite filters (for reparse operations)
+	function deselectAll() {
+		selectedLawNames = new Set();
+	}
+
+	async function handleParse() {
+		if (selectedLawNames.size === 0) return;
+		parseLoading = true;
+		try {
+			const names = Array.from(selectedLawNames);
+			const sessionResult = await createLatSessionFromView(names, 'queue-selection');
+			goto(`/admin/lat/sessions/${sessionResult.session_id}`);
+		} catch (err) {
+			console.error('Failed to create parse session:', err);
+		} finally {
+			parseLoading = false;
+		}
+	}
+
+	// Build the effective SQL query including GridLite filters
 	function getEffectiveQuery(): { sql: string; params: unknown[] } {
 		if (!latestGridState) return { sql: currentQuery, params: [] };
 		return buildQuery({
@@ -226,28 +250,6 @@
 			sorting: latestGridState.sorting as SortConfig[],
 			allowedColumns: columns.map((c) => c.name)
 		});
-	}
-
-	async function handleReparseViewConfirm() {
-		reparseViewLoading = true;
-		reparseViewError = null;
-		try {
-			const { sql, params } = getEffectiveQuery();
-			// Filter to parseable laws: review takes precedence, fall back to auto
-			const result = await db?.query<{ name: string }>(
-				`SELECT * FROM (${sql}) sub WHERE making_review = 'making' OR making_review = 'uncertain' OR (making_review IS NULL AND (making_classification IS NULL OR making_classification != 'not_making'))`,
-				params
-			);
-			const names = result?.rows.map((r) => r.name) ?? [];
-			const label = currentViewName || 'view';
-			const sessionResult = await createLatSessionFromView(names, label);
-			showReparseViewDialog = false;
-			goto(`/admin/lat/sessions/${sessionResult.session_id}`);
-		} catch (err) {
-			reparseViewError = err instanceof Error ? err.message : String(err);
-		} finally {
-			reparseViewLoading = false;
-		}
 	}
 
 	// ── Session filter ──────────────────────────────────────────────
@@ -399,7 +401,7 @@
 				if (gridRef) {
 					const vis: Record<string, boolean> = {};
 					for (const c of columns) vis[c.name] = sessionViewCols.includes(c.name);
-					gridRef.applyConfig({ columnVisibility: vis, columnFilters: [] });
+					gridRef.applyConfig({ columnVisibility: vis });
 				}
 			} else if (sessionId) {
 				const res = await authFetch(`${API_URL}/api/sessions/${sessionId}/law-names`);
@@ -577,25 +579,6 @@
 			}
 		}
 		return null;
-	}
-
-	// ── Reparse ─────────────────────────────────────────────────────
-
-	async function handleReparse(row: Record<string, unknown>) {
-		const lawName = row.name as string;
-		reparsingLaw = lawName;
-		reparseMessage = '';
-		reparseError = '';
-
-		try {
-			const result = await reparseLat(lawName);
-			reparsingLaw = null;
-			reparseMessage = `Re-parsed ${lawName}: ${result.lat.inserted} LAT rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
-			queryClient.invalidateQueries({ queryKey: ['lat'] });
-		} catch (e) {
-			reparsingLaw = null;
-			reparseError = `Failed to re-parse ${lawName}: ${e instanceof Error ? e.message : 'Unknown error'}`;
-		}
 	}
 
 	// LRT Refresh (Parse & Review modal)
@@ -1167,21 +1150,6 @@
 		});
 	}
 
-	// Reparse view record count — only parseable laws
-	$: if (showReparseViewDialog && db && currentQuery) {
-		const eff = getEffectiveQuery();
-		db.query<{ count: string }>(
-			`SELECT COUNT(*) as count FROM (${eff.sql}) sub WHERE making_review = 'making' OR making_review = 'uncertain' OR (making_review IS NULL AND (making_classification IS NULL OR making_classification != 'not_making'))`,
-			eff.params
-		)
-			.then((r) => {
-				reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
-			})
-			.catch(() => {
-				reparseViewCount = 0;
-			});
-	}
-
 	// Stats from current filtered query
 	let statTotal = 0;
 	let statParseable = 0;
@@ -1344,17 +1312,28 @@
 					</select>
 				{/if}
 				<button
-					on:click={() => (showLatDialog = true)}
-					class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+					on:click={selectAll}
+					class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
 				>
-					Parse Family
+					Select All
 				</button>
 				<button
-					on:click={() => (showReparseViewDialog = true)}
-					disabled={!currentQuery}
+					on:click={deselectAll}
+					disabled={selectedLawNames.size === 0}
+					class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+				>
+					Deselect
+				</button>
+				<button
+					on:click={handleParse}
+					disabled={selectedLawNames.size === 0 || parseLoading}
 					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Reparse View ({statParseable})
+					{#if parseLoading}
+						Creating...
+					{:else}
+						Parse ({selectedLawNames.size})
+					{/if}
 				</button>
 			</div>
 		</div>
@@ -1500,24 +1479,13 @@
 				<svelte:fragment slot="cell" let:value let:row let:column>
 					{#if column === 'name'}
 						{@const rowName = str(row.name)}
-						<div class="flex items-center gap-1">
-							<button
-								on:click={() => openLrtRefresh(row)}
-								class="px-1.5 py-0.5 text-xs font-medium rounded bg-indigo-600 text-white hover:bg-indigo-700 shrink-0"
-								title="Refresh LRT metadata from legislation.gov.uk"
-							>
-								LRT
-							</button>
-							<button
-								on:click={() => handleReparse(row)}
-								disabled={reparsingLaw === rowName}
-								class="px-1.5 py-0.5 text-xs font-medium rounded shrink-0 {reparsingLaw === rowName
-									? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-									: 'bg-blue-600 text-white hover:bg-blue-700'}"
-								title="Re-parse LAT articles and annotations"
-							>
-								{reparsingLaw === rowName ? '...' : 'LAT'}
-							</button>
+						<div class="flex items-center gap-1.5">
+							<input
+								type="checkbox"
+								checked={selectedLawNames.has(rowName)}
+								on:change={() => toggleSelection(rowName)}
+								class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+							/>
 							<span class="font-mono text-gray-700 truncate">{value}</span>
 						</div>
 					{:else if column === 'title_en'}
@@ -1691,13 +1659,6 @@
 	/>
 {/if}
 
-<!-- LAT Parse Family Dialog -->
-<LatParseDialog
-	bind:open={showLatDialog}
-	on:close={() => (showLatDialog = false)}
-	on:created={handleLatSessionCreated}
-/>
-
 <!-- LRT Refresh Modal (Parse & Review) -->
 {#if lrtModalRecord}
 	<ParseReviewModal
@@ -1714,57 +1675,4 @@
 		open={lrtModalOpen}
 		on:close={closeLrtRefresh}
 	/>
-{/if}
-
-<!-- Reparse View Confirmation Dialog -->
-{#if showReparseViewDialog}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-		on:click|self={() => (showReparseViewDialog = false)}
-	>
-		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-			<div class="px-6 py-4 border-b border-gray-200">
-				<h3 class="text-lg font-semibold text-gray-900">Reparse View</h3>
-			</div>
-			<div class="px-6 py-4 space-y-3">
-				<div class="text-sm text-gray-600">
-					<p><span class="font-medium">View:</span> {currentViewName || 'All Queue'}</p>
-					{#if currentFamily}
-						<p><span class="font-medium">Family:</span> {currentFamily}</p>
-					{/if}
-					<p class="mt-2">
-						<span class="text-2xl font-bold text-gray-900">{reparseViewCount}</span>
-						<span class="text-gray-500 ml-1">records will be added to a new parse session</span>
-					</p>
-				</div>
-				{#if reparseViewError}
-					<div class="px-3 py-2 text-sm bg-red-50 text-red-700 rounded border border-red-200">
-						{reparseViewError}
-					</div>
-				{/if}
-			</div>
-			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-				<button
-					on:click={() => (showReparseViewDialog = false)}
-					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-					disabled={reparseViewLoading}
-				>
-					Cancel
-				</button>
-				<button
-					on:click={handleReparseViewConfirm}
-					disabled={reparseViewLoading || reparseViewCount === 0}
-					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-				>
-					{#if reparseViewLoading}
-						Creating...
-					{:else}
-						Create Reparse Session
-					{/if}
-				</button>
-			</div>
-		</div>
-	</div>
 {/if}
