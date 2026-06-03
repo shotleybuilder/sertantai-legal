@@ -37,6 +37,7 @@ LAT parsing, sessions, queue, cleanup, taxa classification.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-03 | [onboarding-phase5b-lat-taxa](2026-06-03-onboarding-phase5b-lat-taxa.md) | [#88](https://github.com/shotleybuilder/sertantai-legal/issues/88), [#89](https://github.com/shotleybuilder/sertantai-legal/issues/89), [#90](https://github.com/shotleybuilder/sertantai-legal/issues/90) | LAT taxa schema + ProvisionSubscriber + DataServer fix, end-to-end enrichment proven |
 | 2026-04-24 | [issue-77](2026-04-24-issue-77.md) | [#77](https://github.com/shotleybuilder/sertantai-legal/issues/77) | Fix annotation counts — classify refs via Commentaries block lookup |
 | 2026-04-24 | [issue-76](2026-04-24-issue-76.md) | [#76](https://github.com/shotleybuilder/sertantai-legal/issues/76) | Inject [Repealed]/[Revoked] markers for empty provisions |
 | 2026-04-24 | [issue-75](2026-04-24-issue-75.md) | [#75](https://github.com/shotleybuilder/sertantai-legal/issues/75) | Fix inline element text order — Term, Addition, Substitution, Repeal |
