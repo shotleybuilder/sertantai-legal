@@ -30,9 +30,18 @@ Parser bug: Auto Parse doesn't apply SI code → family mapping. 22 domestic law
 
 9 SI codes not in Models: ROAD TRAFFIC, WEIGHTS AND MEASURES, FIRE AND RESCUE SERVICES, plus 6 ambiguous codes needing disambiguation rules.
 
-### 2.3 — EU law family assignment (#86)
+### 2.3 — EU law family assignment (#86) — partially done
 
-204 EU retained laws (eur/eudr/eudn) have NULL family. Parser has no family path for EU types (no SI codes). Approaches: transpose from UK transposing SI, EU subject mapping, title keywords, or LLM-assisted batch.
+Graph inference assigned 140/507 EU families. 367 remain NULL.
+
+**Root cause**: EU laws have NO SI codes and NO dc:subject on legislation.gov.uk.
+These fields simply don't exist for EU retained law — structural gap, not parser bug.
+
+**Remaining work** (separate session):
+1. Title keyword matching — EU titles are descriptive, map well to families
+2. Type-based making classification — eur=making, eudr=varies, eudn=varies
+3. Manual/LLM batch — for ~200+ with no keyword or graph signal
+4. LAT parsing for EU laws that have body XML on legislation.gov.uk
 
 ### 2.4 — Confirm making classification
 
