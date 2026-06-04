@@ -471,6 +471,54 @@ for site in bsc frn has mlv; do
 done
 ```
 
+### Create scrape session for missing laws
+
+After importing all sites, some laws may exist in Enhesa but not in LRT (the first
+site's scrape session may not have covered them all). Create a scrape session for
+any laws referenced in import sessions but missing from uk_lrt:
+
+```bash
+ZENOH_ENABLED=false mix run -e '
+{:ok, %{rows: rows}} = SertantaiLegal.Repo.query("
+  SELECT DISTINCT ssr.law_name
+  FROM scrape_session_records ssr
+  WHERE ssr.session_id LIKE $1
+    AND ssr.law_name IS NOT NULL AND ssr.law_name != $2
+    AND NOT EXISTS (SELECT 1 FROM uk_lrt u WHERE u.name = ssr.law_name)
+  ORDER BY ssr.law_name
+", ["import-qq-%", ""])
+
+names = Enum.map(rows, fn [name] -> name end)
+IO.puts("Missing from LRT: #{length(names)}")
+
+if names != [] do
+  alias SertantaiLegal.Scraper.{ScrapeSession, Storage}
+  today = Date.utc_today()
+  session_id = "scrape-qq-missing-#{Date.to_iso8601(today)}"
+
+  {:ok, _} = ScrapeSession
+  |> Ash.Changeset.for_create(:create, %{
+    session_id: session_id, year: today.year, month: today.month,
+    day_from: today.day, day_to: today.day,
+    status: :reviewing, group1_count: length(names)
+  })
+  |> Ash.create()
+
+  records = Enum.map(names, fn name ->
+    [_, type_code, year, number] = String.split(name, "_")
+    %{name: name, type_code: type_code, Year: String.to_integer(year), Number: number}
+  end)
+
+  {:ok, count} = Storage.save_session_records(session_id, records, :group1)
+  IO.puts("Session: #{session_id} with #{count} records")
+else
+  IO.puts("All import laws already in LRT — no scraping needed")
+end
+'
+```
+
+Then scrape via the admin UI: `/admin/scrape/sessions/<session_id>` → Select All → Auto Parse All.
+
 ### Verify org-level totals
 
 ```sql
