@@ -125,8 +125,11 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
       {:ok, records} when records != [] ->
         today = Date.utc_today()
 
+        # Include HH:MM to avoid collisions when recreating on the same day
+        time_suffix = Calendar.strftime(DateTime.utc_now(), "%H%M")
+
         session_id =
-          find_unique_session_id("lat-parse-#{slugify(label)}-#{Date.to_iso8601(today)}")
+          find_unique_session_id("lat-parse-#{slugify(label)}-#{Date.to_iso8601(today)}-#{time_suffix}")
 
         session_attrs = %{
           session_id: session_id,

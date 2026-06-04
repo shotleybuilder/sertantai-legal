@@ -245,10 +245,23 @@ ORDER BY u.lat_count;
 ```
 
 **Flag**:
-- Laws with 0 LAT rows (parse may have failed silently)
+- Laws with 0 LAT rows — but **do NOT treat as failures yet**. After taxa enrichment
+  (Stage 5-6), fractalaw classifies each law as Making, Empowering, or Housekeeping.
+  Empowering and Housekeeping laws have their LAT **pruned** (deleted). So 0 LAT rows
+  is the expected final state for non-making laws. Only flag 0-LAT as a parse failure
+  if the law's `function` still shows no enrichment label after Stage 6.
 - Laws with only 1-2 LAT rows (likely only got the title, body wasn't parsed)
 - Laws with unusually high counts (> 500 rows) — worth a spot-check
 - Laws with 0 annotations — may be correct (new laws have no amendments) but note it
+
+**IMPORTANT: LAT count lifecycle**:
+1. After parse (Stage 4): all laws have LAT rows (the parser extracted body text)
+2. After taxa enrichment (Stage 6): Empowering/Housekeeping laws → LAT pruned to 0
+3. Final state: only Making laws retain LAT rows
+
+The `lat_inserted` count on session records shows what the parser produced. The live
+`lat_count` on uk_lrt reflects the post-enrichment state. A mismatch (session says
+inserted > 0, but lat_count = 0) is normal for non-making laws after enrichment.
 
 ### 4c. Section Type Distribution
 
@@ -343,7 +356,7 @@ Present a summary to the human:
 |-------|--------|
 | Session reconciliation | PASS/FAIL ({pending} pending) |
 | LAT row counts | {n} laws, {total} rows ({min}-{max} range) |
-| Zero-row laws | {count} (PASS if 0) |
+| Zero-row laws | {count} (defer to Stage 6 — enrichment prunes non-making) |
 | Section type distribution | {types_found} types across {laws} laws |
 | NULL section_type | {count} (PASS if 0) |
 | Sort key integrity | PASS/WARN ({n} laws with duplicates) |

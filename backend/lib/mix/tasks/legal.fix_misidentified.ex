@@ -39,7 +39,7 @@ defmodule Mix.Tasks.Legal.FixMisidentified do
         strict: [law: :string, apply: :string, apply_all: :boolean]
       )
 
-    session_id = List.first(positional) || "scrape-qq-missing-2026-06-04"
+    session_id = List.first(positional) || "import-qq-missing-2026-06-04"
 
     cond do
       opts[:apply] ->

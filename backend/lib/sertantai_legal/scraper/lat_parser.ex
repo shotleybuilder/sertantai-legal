@@ -744,6 +744,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         depth: row.depth,
         hierarchy_path: row.hierarchy_path,
         text: row.text || "",
+        country: country_from_law_name(row.law_name),
         language: "en",
         amendment_count: row.amendment_count,
         modification_count: row.modification_count,
@@ -754,5 +755,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
         updated_at: now
       }
     end)
+  end
+
+  defp country_from_law_name(law_name) when is_binary(law_name) do
+    case String.split(law_name, "_", parts: 2) do
+      [prefix | _] -> String.downcase(prefix)
+      _ -> "uk"
+    end
   end
 end

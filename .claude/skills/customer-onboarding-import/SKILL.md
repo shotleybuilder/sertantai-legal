@@ -270,6 +270,17 @@ After the human scrapes group 1 via the admin UI at `/admin/scrape/sessions`:
 3. Re-run `--status-report` with updated matches
 4. Proceed to group 2 (EU retained)
 
+### Post-Scrape: LAT Parse + QA
+
+After LRT scraping is complete, the scraped laws need LAT parsing (body text → structured provisions). This is driven by the human via the LAT Queue (`/admin/lat/queue`):
+
+1. **Filter** the LAT Queue to the import session or L3 applicability list
+2. **Select** laws and create a LAT parse session
+3. **Parse** via the session detail page (Auto Parse Selected)
+4. **QA** using the [LAT Parse Session skill](../lat-parse-session/) — Stage 4 (LAT Shape) onwards
+
+The LAT parse session skill covers post-parse QA (row counts, section type distribution, hierarchy integrity, annotation sanity), taxa enrichment via Zenoh, and data promotion through NAS/prod sync.
+
 ### Combined Run
 
 All flags can be combined in a single invocation:
@@ -494,7 +505,11 @@ IO.puts("Missing from LRT: #{length(names)}")
 if names != [] do
   alias SertantaiLegal.Scraper.{ScrapeSession, Storage}
   today = Date.utc_today()
-  session_id = "scrape-qq-missing-#{Date.to_iso8601(today)}"
+  # IMPORTANT: Session ID MUST use "import-" prefix so it appears in the
+  # LAT Queue session picker (which filters for monthly or import-* patterns).
+  # Wrong: "scrape-qq-missing-2026-06-04" (won't show in picker)
+  # Right: "import-qq-missing-2026-06-04" (shows in picker)
+  session_id = "import-qq-missing-#{Date.to_iso8601(today)}"
 
   {:ok, _} = ScrapeSession
   |> Ash.Changeset.for_create(:create, %{
