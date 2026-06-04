@@ -103,6 +103,94 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
   end
 
   @doc """
+  Query LAT rows aggregated at the provision level (Goldilocks model).
+
+  Groups all children (sub_articles, paragraphs, sub_paragraphs) under their
+  parent provision number. Each result row is one complete, self-contained
+  obligation with full concatenated text and union of DRRP/actor classifications.
+
+  Options:
+    - `:drrp_types` — only include provisions where at least one child has matching DRRP type
+  """
+  def query_lat_aggregated(lrt_ids, opts \\ []) when is_list(lrt_ids) do
+    drrp_types = Keyword.get(opts, :drrp_types)
+
+    drrp_clause =
+      if drrp_types do
+        "AND EXISTS (
+          SELECT 1 FROM lat child
+          WHERE child.law_id = la.law_id AND child.provision = la.provision
+            AND child.drrp_types && $2
+        )"
+      else
+        ""
+      end
+
+    sql = """
+    SELECT
+      la.law_name,
+      la.law_id,
+      la.provision,
+      la.law_name || ':' ||
+        CASE WHEN la.law_name LIKE 'UK_ukpga%' OR la.law_name LIKE 'UK_ukla%'
+          THEN 's.' ELSE 'reg.' END
+        || la.provision AS section_id,
+      string_agg(
+        CASE
+          WHEN la.section_type = 'sub_article' THEN '(' || coalesce(la.paragraph, '') || ') ' || la.text
+          WHEN la.section_type = 'paragraph' THEN '  (' || coalesce(la.paragraph, '') || ') ' || la.text
+          WHEN la.section_type = 'sub_paragraph' THEN '    (' || coalesce(la.sub_paragraph, '') || ') ' || la.text
+          WHEN la.text IS NOT NULL AND la.text != '' THEN la.text
+          ELSE ''
+        END,
+        E'\\n' ORDER BY la.sort_key
+      ) AS text,
+      (SELECT array_agg(DISTINCT dt)
+        FROM lat c, unnest(c.drrp_types) dt
+        WHERE c.law_id = la.law_id AND c.provision = la.provision AND dt IS NOT NULL
+      ) AS drrp_types,
+      (SELECT array_agg(DISTINCT ga)
+        FROM lat c, unnest(c.governed_actors) ga
+        WHERE c.law_id = la.law_id AND c.provision = la.provision AND ga IS NOT NULL
+      ) AS governed_actors,
+      (SELECT c.duty_sub_type FROM lat c
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.duty_sub_type IS NOT NULL
+        ORDER BY c.sort_key LIMIT 1
+      ) AS duty_sub_type,
+      count(*) AS child_count
+    FROM lat la
+    WHERE la.law_id = ANY($1)
+      AND la.provision IS NOT NULL
+      #{drrp_clause}
+    GROUP BY la.law_name, la.law_id, la.provision
+    ORDER BY la.law_name, min(la.sort_key)
+    """
+
+    params =
+      if drrp_types do
+        [lrt_ids, drrp_types]
+      else
+        [lrt_ids]
+      end
+
+    case Repo.query(sql, params) do
+      {:ok, %{columns: cols, rows: rows}} ->
+        result =
+          Enum.map(rows, fn row ->
+            cols
+            |> Enum.zip(row)
+            |> Map.new(fn {col, val} -> {String.to_atom(col), val} end)
+          end)
+
+        {:ok, result}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
   Count LAT rows for the given LRT IDs (for preview).
   """
   def count_lat(lrt_ids) when is_list(lrt_ids) do
