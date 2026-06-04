@@ -291,4 +291,27 @@ defmodule SertantaiLegal.Scraper.Filters do
   def all_search_terms do
     HealthSafety.search_terms() ++ Environment.search_terms()
   end
+
+  @doc """
+  Match a single title against the EHS keyword library and return the family.
+
+  Returns the family string or nil if no match. Used by StagedParser
+  for EU laws that have no SI codes — their long titles often contain
+  keywords that map to families.
+  """
+  @spec title_to_family(String.t()) :: String.t() | nil
+  def title_to_family(title) when is_binary(title) do
+    title_lower = String.downcase(title)
+    search_terms = HealthSafety.search_terms() ++ Environment.search_terms()
+
+    Enum.reduce_while(search_terms, nil, fn {family, terms}, _acc ->
+      if Enum.any?(terms, &String.contains?(title_lower, &1)) do
+        {:halt, Atom.to_string(family)}
+      else
+        {:cont, nil}
+      end
+    end)
+  end
+
+  def title_to_family(_), do: nil
 end

@@ -467,13 +467,29 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     case si_codes do
       [] ->
-        law
+        # No SI codes — try title keyword matching (especially useful for EU laws)
+        assign_family_from_title_keywords(law)
 
       codes ->
         case Filters.si_code_family(codes, title) do
-          nil -> law
+          nil -> assign_family_from_title_keywords(law)
           family -> ParsedLaw.merge(law, %{family: family})
         end
+    end
+  end
+
+  # Fall through to title keyword matching when SI codes don't yield a family.
+  # EU laws never have SI codes, but their long descriptive titles often contain
+  # keywords that map directly to families (e.g. "waste", "chemicals", "energy").
+  defp assign_family_from_title_keywords(%{family: existing} = law)
+       when is_binary(existing) and existing != "" do
+    law
+  end
+
+  defp assign_family_from_title_keywords(law) do
+    case Filters.title_to_family(law.title_en) do
+      nil -> law
+      family -> ParsedLaw.merge(law, %{family: family})
     end
   end
 
