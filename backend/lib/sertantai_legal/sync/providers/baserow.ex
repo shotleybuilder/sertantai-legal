@@ -634,19 +634,19 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   ]
 
   @doc """
-  Returns Baserow field specs for the LAT table (duty-focused).
-  Only provisions with Duty/Responsibility DRRP types are synced.
+  Returns Baserow field specs for the LAT table (duty-focused, aggregated).
+
+  Each row is one complete provision (regulation/section) with all sub-parts
+  concatenated. Duty Summary dropped (clause_refined echoes text verbatim).
   """
   def lat_field_specs(lrt_table_id) do
     [
-      %{name: "Duty Summary", type: "long_text"},
       multi_select_spec("Type", @drrp_type_options),
       multi_select_spec("Duty Type", @duty_sub_type_options),
       multi_select_spec("Regulated Actors", @holder_options),
       %{name: "Provision Text", type: "long_text"},
       %{name: "Law Name", type: "text"},
       %{name: "Provision", type: "text"},
-      %{name: "Section Type", type: "text"},
       %{name: "_source_id", type: "text"},
       %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
     ]
@@ -737,15 +737,12 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     %{
       "Name" => lat.section_id,
       "_source_id" => lat.section_id,
-      "Duty Summary" => lat.clause_refined,
       "Type" => lat.drrp_types || [],
       "Duty Type" => if(lat.duty_sub_type, do: [lat.duty_sub_type], else: []),
-      "Regulated Actors" => extract_holder_list(lat.governed_actors),
+      "Regulated Actors" => lat.governed_actors || [],
       "Provision Text" => lat.text,
       "Law Name" => lat.law_name,
       "Provision" => lat.provision,
-      "Section Type" => to_string(lat.section_type),
-      "Language" => lat.language,
       "Parent Law" => [lrt_external_row_id]
     }
   end
