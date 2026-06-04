@@ -645,7 +645,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       multi_select_spec("Duty Type", @duty_sub_type_options),
       multi_select_spec("Regulated Actors", @holder_options),
       %{name: "Provision Text", type: "long_text"},
-      %{name: "Law Name", type: "text"},
       %{name: "Provision", type: "text"},
       %{name: "_source_id", type: "text"},
       %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
@@ -741,7 +740,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Duty Type" => if(lat.duty_sub_type, do: [lat.duty_sub_type], else: []),
       "Regulated Actors" => lat.governed_actors || [],
       "Provision Text" => lat.text,
-      "Law Name" => lat.law_name,
       "Provision" => lat.provision,
       "Parent Law" => [lrt_external_row_id]
     }
