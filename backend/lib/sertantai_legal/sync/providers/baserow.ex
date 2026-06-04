@@ -367,18 +367,45 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Includes a link_row field back to the LRT table.
   """
 
+  @family_options (SertantaiLegal.Scraper.Models.ehs_family() ++
+                     SertantaiLegal.Scraper.Models.hr_family())
+                  |> Enum.sort()
+
+  @type_desc_options [
+    "Public General Act of the United Kingdom Parliament",
+    "UK Statutory Instrument"
+  ]
+
+  @status_options [
+    "✔ In force",
+    "⭕ Part Revocation / Repeal",
+    "❌ Revoked / Repealed / Abolished"
+  ]
+
+  @geo_extent_options [
+    "E",
+    "E+S",
+    "E+W",
+    "E+W+NI",
+    "E+W+S",
+    "E+W+S+NI",
+    "GB",
+    "NI",
+    "S",
+    "UK",
+    "W"
+  ]
+
   defp essential_fields do
     [
-      %{name: "Name", type: "text"},
       %{name: "Title", type: "long_text"},
-      %{name: "Family", type: "text"},
+      single_select_spec("Family", @family_options),
       %{name: "Year", type: "number", opts: %{"number_decimal_places" => 0}},
       %{name: "Number", type: "text"},
-      %{name: "Type", type: "text"},
-      %{name: "Status", type: "text"},
-      %{name: "Geographic Extent", type: "text"},
+      single_select_spec("Type", @type_desc_options),
+      single_select_spec("Status", @status_options),
+      single_select_spec("Geographic Extent", @geo_extent_options),
       %{name: "Legislation URL", type: "url"},
-      # Hidden source ID for mapping — always included
       %{name: "_source_id", type: "text"}
     ]
   end
@@ -655,6 +682,11 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp tier_fields(:essential), do: []
 
+  @domain_options ["environment", "governance", "health_safety", "human_resources"]
+  @geo_region_options ["England", "Northern Ireland", "Scotland", "Wales"]
+  @fitness_person_options ~w(Crown\ application Crown\ service agency\ worker appointed\ person chief\ inspector client competent\ person contractor crew designer domestic\ client duty\ holder employee employer enforcing\ authority fire\ authority importer installer licensing\ authority manufacturer master\ of\ ship occupier operator owner person\ at\ work responsible\ person self-employed\ person sub-contractor supplier worker young\ person)
+  @fitness_sector_options ~w(maritime mining nuclear offshore\ oil\ &\ gas waste\ management water\ industry)
+
   defp tier_fields(:standard) do
     [
       multi_select_spec("Function", @function_options),
@@ -663,14 +695,13 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       multi_select_spec("Duty Holder", @holder_options),
       multi_select_spec("Power Holder", @holder_options),
       multi_select_spec("Rights Holder", @holder_options),
-      %{name: "Domain", type: "text"},
-      %{name: "Geographic Region", type: "text"},
-      %{name: "Making Classification", type: "text"},
-      %{name: "Fitness Person", type: "text"},
+      multi_select_spec("Domain", @domain_options),
+      multi_select_spec("Geographic Region", @geo_region_options),
+      multi_select_spec("Fitness Person", @fitness_person_options),
+      multi_select_spec("Fitness Sector", @fitness_sector_options),
       %{name: "Fitness Process", type: "text"},
       %{name: "Fitness Place", type: "text"},
-      %{name: "Fitness Plant", type: "text"},
-      %{name: "Fitness Sector", type: "text"}
+      %{name: "Fitness Plant", type: "text"}
     ]
   end
 
@@ -691,6 +722,16 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
         %{name: "Coming Into Force Date", type: "date"},
         %{name: "Latest Amendment Date", type: "date"}
       ]
+  end
+
+  defp single_select_spec(name, options) do
+    %{
+      name: name,
+      type: "single_select",
+      opts: %{
+        "select_options" => Enum.map(options, &%{"value" => &1, "color" => "light-gray"})
+      }
+    }
   end
 
   defp multi_select_spec(name, options) do
@@ -755,9 +796,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Duty Holder" => extract_holder_list(lrt.duty_holder),
       "Power Holder" => extract_holder_list(lrt.power_holder),
       "Rights Holder" => extract_holder_list(lrt.rights_holder),
-      "Domain" => join_array(lrt.domain),
-      "Geographic Region" => join_array(lrt.geo_region),
-      "Making Classification" => lrt.making_classification,
+      "Domain" => lrt.domain || [],
+      "Geographic Region" => lrt.geo_region || [],
       "Fitness Person" => join_array(lrt.fitness_person),
       "Fitness Process" => join_array(lrt.fitness_process),
       "Fitness Place" => join_array(lrt.fitness_place),
