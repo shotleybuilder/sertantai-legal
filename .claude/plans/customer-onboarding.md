@@ -111,10 +111,9 @@ Function, Duty Type, Purpose, Holders all converted to Baserow `multiple_select`
 Master holder vocabulary (165 options) hardcoded from ActorDefinitions + observed data.
 Vocabulary validation stops sync if fractalaw introduces unrecognised actors.
 
-### 4.8 — LRT field type refinements for Baserow
+### 4.8 — LRT field type refinements for Baserow ✅
 
-Several LRT columns are synced as plain text but should be single/multi-selects for
-better Baserow UX (filtering, grouping, colour coding):
+LRT columns converted to proper Baserow select types:
 
 | Column | Current | Should be | Notes |
 |---|---|---|---|
