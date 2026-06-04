@@ -52,18 +52,25 @@ cp ~/Downloads/en_UKD_-_B_Regulation_Questions.csv backend/data/
 
 ## Step 2: Extract + Dry Run
 
-Run the import task in dry-run mode first to verify extraction and type code inference:
+**IMPORTANT**: The import task requires explicit stage flags. Without them, nothing runs.
+
+Run extract only first to verify CSV parsing and type code inference:
 
 ```bash
-mix legal.import_register backend/data/<filename>.csv \
-  --customer <slug> --site <slug> --dry-run
+ZENOH_ENABLED=false mix legal.import_register backend/data/<filename>.csv \
+  --customer <slug> --site <slug> --extract \
+  --output-dir data/imports/<customer>/<site>
 ```
 
 Example:
 ```bash
-mix legal.import_register backend/data/en_UKD_-_B_Regulation_Questions.csv \
-  --customer qq --site bsc --dry-run
+ZENOH_ENABLED=false mix legal.import_register backend/data/en_UKD_-_B_Regulation_Questions.csv \
+  --customer qq --site bsc --extract \
+  --output-dir data/imports/qq/bsc
 ```
+
+**Note**: Use `ZENOH_ENABLED=false` if the Phoenix dev server is running (holds the Zenoh port).
+If the dev server is stopped, this isn't needed.
 
 ### What the Extraction Does
 
@@ -100,14 +107,35 @@ Review the output for:
 
 If unknowns remain, investigate the titles and consider adding inference rules to `infer_identity/1` in the mix task.
 
-## Step 3: Full Run (Match + Group)
+## Step 3: Full Run (Extract + Transform + Match + Session)
+
+Run all stages in one go:
 
 ```bash
-mix legal.import_register backend/data/<filename>.csv \
-  --customer <slug> --site <slug>
+ZENOH_ENABLED=false mix legal.import_register data/imports/<customer>/<site>/source.csv \
+  --customer <slug> --site <slug> \
+  --output-dir data/imports/<customer>/<site> \
+  --extract --transform --match --status-report --create-scrape-session
 ```
 
-This adds Step 2 (DB matching) and Step 3 (grouping) to the extraction:
+Example:
+```bash
+ZENOH_ENABLED=false mix legal.import_register data/imports/qq/frn/source.csv \
+  --customer qq --site frn \
+  --output-dir data/imports/qq/frn \
+  --extract --transform --match --status-report --create-scrape-session
+```
+
+Available flags:
+- `--extract` — parse CSV, write extracted.json
+- `--transform` — apply type code rules, write transformed.json
+- `--match` — match against LRT, write matched.json
+- `--status-report` — generate status-report.json
+- `--create-scrape-session` — create session for scrapeable laws
+- `--qa` — run QA checks on matched data
+- `--no-create-scrape-session` — skip session creation (e.g. for additional sites with overlap)
+
+This runs extraction, type code inference, DB matching, and grouping:
 
 ### Matching Strategy
 
@@ -402,6 +430,60 @@ skill, but the data promotion pipeline is identical:
 - Status report (`--status-report`) replaces the family sense-check stage — revoked laws are already flagged
 
 See the [LRT Scrape Session skill](../lrt-scrape-session/) for the full NAS/prod pipeline details.
+
+## Multi-Site Import Workflow
+
+When a customer has multiple sites, each with their own Enhesa register CSV:
+
+### Setup
+
+1. Place each CSV in `backend/data/imports/<customer>/` with descriptive names
+2. Extract 3-letter site acronym from filename (e.g. `en_UKD_-_FRN_Regulation_Questions.csv` → `frn`)
+3. Create site folder and copy as `source.csv`:
+
+```bash
+mkdir -p data/imports/qq/frn
+cp data/imports/qq/en_UKD_-_FRN_Regulation_Questions.csv data/imports/qq/frn/source.csv
+```
+
+### Process each site
+
+```bash
+for site in frn has mlv; do
+  ZENOH_ENABLED=false mix legal.import_register data/imports/qq/$site/source.csv \
+    --customer qq --site $site \
+    --output-dir data/imports/qq/$site \
+    --extract --transform --match --status-report --create-scrape-session
+done
+```
+
+### Seed applicability (union semantics)
+
+After importing, seed org-level applicability from each site's Answer data.
+**Order doesn't matter** — the seeder uses union semantics (yes always wins,
+never downgrades yes→no from a later site).
+
+```bash
+ORG_ID="c075d56b-8420-4408-b695-ccfbc1ba15ec"
+for site in bsc frn has mlv; do
+  ZENOH_ENABLED=false mix sync.seed_applicability \
+    data/imports/qq/$site/matched.json $ORG_ID
+done
+```
+
+### Verify org-level totals
+
+```sql
+SELECT status, count(*) FROM org_applicabilities
+WHERE organization_id = '<org_id>'
+GROUP BY status;
+```
+
+### Overlap is expected
+
+Enhesa uses the same base register across sites for a customer. Most laws
+will match across all sites. The import creates per-site sessions (useful
+for tracking) but the applicability is org-level (union of all sites).
 
 ## Related Skills
 
