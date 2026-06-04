@@ -103,20 +103,42 @@ defmodule Mix.Tasks.Sync.SeedApplicability do
   defp apply_rows(rows) do
     IO.puts("\n=== Applying #{length(rows)} applicability records ===")
 
-    {ok, err} =
-      Enum.reduce(rows, {0, 0}, fn params, {ok_count, err_count} ->
-        case OrgApplicability.upsert(params) do
-          {:ok, _} ->
-            {ok_count + 1, err_count}
+    # Union semantics: yes always wins. Never downgrade yes→no.
+    # Only upsert if: new status is :yes, OR no existing record.
+    {ok, skipped, err} =
+      Enum.reduce(rows, {0, 0, 0}, fn params, {ok_count, skip_count, err_count} ->
+        if params.status == :no do
+          # Check if already yes — don't downgrade
+          case OrgApplicability.by_organization_and_status(params.organization_id, :yes) do
+            {:ok, existing} ->
+              if Enum.any?(existing, &(&1.law_name == params.law_name)) do
+                {ok_count, skip_count + 1, err_count}
+              else
+                do_upsert(params, ok_count, skip_count, err_count)
+              end
 
-          {:error, e} ->
-            IO.puts("  Error for #{params.law_name}: #{inspect(e)}")
-            {ok_count, err_count + 1}
+            _ ->
+              do_upsert(params, ok_count, skip_count, err_count)
+          end
+        else
+          do_upsert(params, ok_count, skip_count, err_count)
         end
       end)
 
     IO.puts("\n  Applied: #{ok}")
+    IO.puts("  Skipped: #{skipped} (already yes, not downgrading)")
     IO.puts("  Errors:  #{err}")
+  end
+
+  defp do_upsert(params, ok_count, skip_count, err_count) do
+    case OrgApplicability.upsert(params) do
+      {:ok, _} ->
+        {ok_count + 1, skip_count, err_count}
+
+      {:error, e} ->
+        IO.puts("  Error for #{params.law_name}: #{inspect(e)}")
+        {ok_count, skip_count, err_count + 1}
+    end
   end
 
   defp map_answer("Yes"), do: :yes
