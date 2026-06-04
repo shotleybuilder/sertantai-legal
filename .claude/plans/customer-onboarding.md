@@ -135,55 +135,33 @@ better Baserow UX (filtering, grouping, colour coding):
 - Function, Family, Holders for overview
 - Fitness enables L3 screening: filter by sector, place, person to find relevant laws
 
-**Duties & Responsibilities (LAT)** = "What must I do?"
-- DRRP fields only — duty summary, regulated actors, duty type, provision text
+**Duties (LAT)** = "What must I do?"
+- DRRP fields only — regulated actors, duty type, provision text (Duty Summary deferred)
 - NO fitness fields — fitness lives on application provisions (reg.1/s.1), not duty provisions
-- Zero overlap: 0 of 2,454 duty provisions have fitness data (confirmed by data)
-- Each row is a COMPLETE duty — see aggregation model below
+- Each row is a COMPLETE provision — aggregated from sub_articles via Goldilocks model
+- Commercial orgs: Duty only. Government: Responsibility + Power
+- 748 rows for QQ (down from 2,386 fragments)
 
-### 4.12 — Drop Duty Summary from LAT table (clause_refined not yet useful)
+### 4.12 — Drop Duty Summary from LAT table ✅
 
-`clause_refined` from fractalaw currently echoes raw provision text verbatim — not
-producing an actual "who must do what" summary yet. Redundant with Provision Text.
+Removed — clause_refined echoes text verbatim. Re-add when fractalaw produces genuine summaries.
 
-Remove "Duty Summary" column from LAT Baserow sync until fractalaw delivers genuine
-AI-extracted summaries. Re-add when clause_refined is meaningfully different from text.
+### 4.11 — Provision-level aggregation (Goldilocks model) ✅
 
-### 4.11 — Provision-level aggregation for Baserow LAT (separate session)
+`query_lat_aggregated/2` groups all children under parent provision. Each row is a
+complete, self-contained obligation with numbered sub-parts and indentation.
 
-Current sync exports each sub_article as a separate row. This fragments duties:
-e.g. PUWER reg.32(1) "Every employer shall ensure... unless—" is incomplete
-without its sub-paragraphs (a), (b), (c). A compliance officer needs the full
-regulation as one self-contained obligation.
+Result: 748 aggregated duties vs 1,529 fragments (51% reduction).
+PUWER reg.32: 21 fragments → 1 complete regulation.
+Total Baserow: 853 rows (105 LRT + 748 LAT).
 
-**Goldilocks model**: aggregate at the provision (regulation/section) level:
-- Group sub_articles by parent provision number
-- Concatenate text: parent + all children → one coherent block
-- DRRP classification: highest-confidence child or union of actors
-- clause_refined: from the parent provision (fractalaw's "who must do what")
-- One row per regulation = one complete, actionable duty
+### DRRP filtering by org type ✅
 
-This controls row count (fewer rows, richer content) AND provides compliance
-context (the full obligation, not fragments).
-
-Implementation options:
-1. **Query-time aggregation** — GROUP BY provision in ProfileQuery.query_lat
-2. **Materialised view** — pre-aggregate in Postgres
-3. **Fractalaw-side** — publish aggregated provisions instead of individual sub_articles
-
-Requires coordination with fractalaw on how clause_refined and DRRP relate
-across parent/child provisions. Separate session.
-
-### DRRP filtering by org type
-
-The LAT table should only sync DRRP types relevant to the customer:
-- **Commercial org** (QQ): Duty only → governed actors (1,529 rows, not 2,386)
+LAT syncs only DRRP types relevant to the customer:
+- **Commercial org** (QQ): Duty only → governed actors
 - **Government org**: Responsibility + Power → government actors
 
-Configurable via `target_config.lat_drrp_types` on SyncConfiguration.
-Reduces row count and removes irrelevant obligations from the customer view.
-
-Currently set to ["Duty", "Responsibility"] — update to ["Duty"] for QQ.
+Configured via `target_config.lat_drrp_types`. QQ set to `["Duty"]`.
 
 ### DRRP ↔ Actor class alignment
 
