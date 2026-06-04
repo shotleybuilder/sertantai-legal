@@ -58,7 +58,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetector do
 
   # Tier weights for composite score calculation.
   # Higher tiers have less weight since they are less certain.
-  @tier_weights %{1 => 0.95, 2 => 0.75, 3 => 0.50, 4 => 0.65}
+  @tier_weights %{0 => 0.98, 1 => 0.95, 2 => 0.75, 3 => 0.50, 4 => 0.65}
 
   # Current detection algorithm version
   # v2: Added positive title signals (Regulations, Rules), negative title signals
@@ -85,6 +85,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetector do
   def detect(metadata) when is_map(metadata) do
     signals =
       []
+      |> tier0_eu_type_code(metadata)
       |> Signals.tier1_title_definitive(metadata)
       |> Signals.tier2_title_strong(metadata)
       |> Signals.tier3_structural(metadata)
@@ -102,6 +103,48 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetector do
       version: @version
     }
   end
+
+  # Tier 0: EU type code — definitive signal based on instrument type.
+  # EU Regulations (eur) have direct effect and create obligations → making.
+  # EU Directives (eudr) require transposition, no direct duties → not_making.
+  # EU Decisions (eudn) vary — some create obligations, some don't → uncertain.
+  defp tier0_eu_type_code(signals, %{type_code: "eur"}) do
+    [
+      %{
+        tier: 0,
+        direction: :making,
+        confidence: 0.95,
+        reason: "EU Regulation — direct effect, creates obligations"
+      }
+      | signals
+    ]
+  end
+
+  defp tier0_eu_type_code(signals, %{type_code: "eudr"}) do
+    [
+      %{
+        tier: 0,
+        direction: :not_making,
+        confidence: 0.9,
+        reason: "EU Directive — requires transposition, no direct duties"
+      }
+      | signals
+    ]
+  end
+
+  defp tier0_eu_type_code(signals, %{type_code: "eudn"}) do
+    [
+      %{
+        tier: 0,
+        direction: :not_making,
+        confidence: 0.5,
+        reason: "EU Decision — varies, weak not-making signal"
+      }
+      | signals
+    ]
+  end
+
+  defp tier0_eu_type_code(signals, _metadata), do: signals
 
   @doc """
   Convert detection result to a map of fields for ParsedLaw merge.

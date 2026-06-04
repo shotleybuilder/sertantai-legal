@@ -442,7 +442,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       md_description: law.md_description,
       md_body_paras: law.md_body_paras,
       md_schedule_paras: law.md_schedule_paras,
-      md_attachment_paras: law.md_attachment_paras
+      md_attachment_paras: law.md_attachment_paras,
+      type_code: law.type_code
     }
 
     result = MakingDetector.detect(metadata)
