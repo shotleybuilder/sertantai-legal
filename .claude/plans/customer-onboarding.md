@@ -94,13 +94,124 @@ Call `POST /api/webhooks/entitlement-change` with QQ's subscribed families and t
 - Load additional QQ site CSVs through import pipeline (rinse and repeat Phase 1)
 - Seed applicability from each site's Enhesa Answer data
 - Union of all site Yes laws = org-level validation set
-- Compare screener output vs actual site selections for accuracy
+
+### 4.9 — Enhesa data quality report (after all sites aggregated)
+
+Deferred until all QQ site CSVs are imported. The report needs the full org-level
+applicability picture (union of all sites), not just one site.
+
+- Law-by-law enrichment coverage
+- Applicability sense-check (revoked in Yes set, coverage gaps, false positives)
+- Compare across sites for consistency
+- Use `customer-onboarding-applicability-qa` skill
 
 ### 4.6 — Fix JSONB column formatting for Baserow ✅
 
 Function, Duty Type, Purpose, Holders all converted to Baserow `multiple_select` fields.
 Master holder vocabulary (165 options) hardcoded from ActorDefinitions + observed data.
 Vocabulary validation stops sync if fractalaw introduces unrecognised actors.
+
+### 4.8 — LRT field type refinements for Baserow
+
+Several LRT columns are synced as plain text but should be single/multi-selects for
+better Baserow UX (filtering, grouping, colour coding):
+
+| Column | Current | Should be | Notes |
+|---|---|---|---|
+| Family | text | single_select | ~40 known values |
+| Type | text | single_select | ~10 type_desc values |
+| Status | text | single_select | 3 live status values |
+| Geographic Extent | text | single_select | ~8 extent codes |
+| Domain | text | multiple_select | array field |
+| Geographic Region | text | multiple_select | array field |
+| Making Classification | text | REMOVE | not customer-facing |
+| Fitness * (person/process/place/plant/sector) | text | multiple_select | array fields — key for L3 screening |
+| _source_id | text | HIDDEN or REMOVE | internal sync mapping, not customer-facing |
+
+### Baserow table design principles
+
+**Legal Register (LRT)** = "Which laws apply to my organisation?"
+- Fitness fields belong HERE — they define applicability scope (who/where/what the law covers)
+- Function, Family, Holders for overview
+- Fitness enables L3 screening: filter by sector, place, person to find relevant laws
+
+**Duties & Responsibilities (LAT)** = "What must I do?"
+- DRRP fields only — duty summary, regulated actors, duty type, provision text
+- NO fitness fields — fitness lives on application provisions (reg.1/s.1), not duty provisions
+- Zero overlap: 0 of 2,454 duty provisions have fitness data (confirmed by data)
+- Each row is a COMPLETE duty — see aggregation model below
+
+### 4.12 — Drop Duty Summary from LAT table (clause_refined not yet useful)
+
+`clause_refined` from fractalaw currently echoes raw provision text verbatim — not
+producing an actual "who must do what" summary yet. Redundant with Provision Text.
+
+Remove "Duty Summary" column from LAT Baserow sync until fractalaw delivers genuine
+AI-extracted summaries. Re-add when clause_refined is meaningfully different from text.
+
+### 4.11 — Provision-level aggregation for Baserow LAT (separate session)
+
+Current sync exports each sub_article as a separate row. This fragments duties:
+e.g. PUWER reg.32(1) "Every employer shall ensure... unless—" is incomplete
+without its sub-paragraphs (a), (b), (c). A compliance officer needs the full
+regulation as one self-contained obligation.
+
+**Goldilocks model**: aggregate at the provision (regulation/section) level:
+- Group sub_articles by parent provision number
+- Concatenate text: parent + all children → one coherent block
+- DRRP classification: highest-confidence child or union of actors
+- clause_refined: from the parent provision (fractalaw's "who must do what")
+- One row per regulation = one complete, actionable duty
+
+This controls row count (fewer rows, richer content) AND provides compliance
+context (the full obligation, not fragments).
+
+Implementation options:
+1. **Query-time aggregation** — GROUP BY provision in ProfileQuery.query_lat
+2. **Materialised view** — pre-aggregate in Postgres
+3. **Fractalaw-side** — publish aggregated provisions instead of individual sub_articles
+
+Requires coordination with fractalaw on how clause_refined and DRRP relate
+across parent/child provisions. Separate session.
+
+### DRRP filtering by org type
+
+The LAT table should only sync DRRP types relevant to the customer:
+- **Commercial org** (QQ): Duty only → governed actors (1,529 rows, not 2,386)
+- **Government org**: Responsibility + Power → government actors
+
+Configurable via `target_config.lat_drrp_types` on SyncConfiguration.
+Reduces row count and removes irrelevant obligations from the customer view.
+
+Currently set to ["Duty", "Responsibility"] — update to ["Duty"] for QQ.
+
+### DRRP ↔ Actor class alignment
+
+Governed actors (Org:, Ind:, SC:, Spc:, etc.) hold Duties and Rights.
+Government actors (Gvt:, Crown, HM Forces, EU:) hold Responsibilities and Powers.
+
+| DRRP | Actor class | Baserow column options |
+|---|---|---|
+| Duty | Governed only | Org: Employer, Ind: Employee, SC: Manufacturer, etc. |
+| Responsibility | Government only | Gvt: Authority, Gvt: Minister, Crown, etc. |
+| Right | Governed only | Same as Duty actors |
+| Power | Government only | Same as Responsibility actors |
+
+The Baserow multi-select for each holder column should use its correct actor subset,
+not the full 165-option list. This makes filtering much easier for customers.
+
+### 4.10 — Holder data quality audit + reparse (separate session)
+
+The original Airtable-era data may have governed actors in government holder columns
+and vice versa. Fractalaw's enrichment gets this right, but laws that haven't been
+re-enriched since the Airtable import may have cross-contaminated data.
+
+Scope: full corpus audit, not just QQ laws. Steps:
+1. Query for governed actors (Org:/Ind:/SC:) in responsibility_holder/power_holder → flag
+2. Query for government actors (Gvt:/Crown) in duty_holder/rights_holder → flag
+3. Quantify: how many laws are affected?
+4. Fix: re-enrich via fractalaw (taxa pipeline cleans holder assignment)
+5. Update Baserow multi-select options per column (governed vs government subsets)
 
 ### 4.7 — Fix Engine.run sync flow (#87)
 

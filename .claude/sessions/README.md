@@ -71,6 +71,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-03 | [baserow-lat-resync](2026-06-03-baserow-lat-resync.md) | [#91](https://github.com/shotleybuilder/sertantai-legal/issues/91), [#92](https://github.com/shotleybuilder/sertantai-legal/issues/92), [#93](https://github.com/shotleybuilder/sertantai-legal/issues/93), [#94](https://github.com/shotleybuilder/sertantai-legal/issues/94) | Duty-focused LAT schema, DRRP filter, queue refactor, 2491 rows synced, meta-plan design decisions |
 | 2026-06-03 | [onboarding-phase5](2026-06-03-onboarding-phase5.md) | [#87](https://github.com/shotleybuilder/sertantai-legal/issues/87) | Multi-select fields, master holder vocabulary, LAT sync with parent links, 729 rows in Baserow |
 | 2026-06-03 | [onboarding-phase4](2026-06-03-onboarding-phase4.md) | — | First customer sync: QinetiQ auth org, Baserow JWT auth, 106 L3 laws synced, table preparation |
 | 2026-06-02 | [onboarding-phase3](2026-06-02-onboarding-phase3.md) | — | OrgApplicability resource, Enhesa seed, sync engine L3 filter, applicability QA skill |
