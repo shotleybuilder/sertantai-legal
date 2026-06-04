@@ -64,6 +64,10 @@ defmodule Mix.Tasks.Legal.ImportRegister do
     {:intl, "International conventions (ADR, RID, ICAO, IMDG)", &__MODULE__.match_intl?/1,
      &__MODULE__.mark_intl/1},
 
+    # --- Scottish Statutory Instruments (must match BEFORE generic S.I. rules) ---
+    {:ssi_explicit, "S.S.I. NNN — Scottish Statutory Instrument", &__MODULE__.match_ssi?/1,
+     &__MODULE__.transform_ssi/1},
+
     # --- UK Statutory Instruments (high confidence — explicit S.I. reference) ---
     {:uksi_si_yyyy_slash_nnn, "S.I. YYYY/NNN — explicit SI with slash",
      &__MODULE__.match_si_yyyy_slash_nnn?/1, &__MODULE__.transform_si_yyyy_slash_nnn/1},
@@ -386,6 +390,22 @@ defmodule Mix.Tasks.Legal.ImportRegister do
   end
 
   def mark_intl(_row), do: %{type_code: "intl", year: nil, number: nil}
+
+  # --- Scottish SI: S.S.I. NNN ---
+  # Matches (S.S.I. NNN), (S.S.I.NNN), S.S.I. NNN — must run before S.I. rules
+  def match_ssi?(%{title: t}), do: Regex.match?(~r/S\.S\.I\.?\s*\d+/, t)
+
+  def transform_ssi(%{title: t, year: csv_year}) do
+    [_, number] = Regex.run(~r/S\.S\.I\.?\s*(\d+)/, t)
+    # Year from title pattern "... YYYY (S.S.I. NNN)" or fall back to CSV year
+    year =
+      case Regex.run(~r/(\d{4})\s*\(S\.S\.I/, t) do
+        [_, y] -> parse_int(y)
+        _ -> csv_year
+      end
+
+    %{type_code: "ssi", year: year, number: number}
+  end
 
   # --- UK SI: S.I. YYYY/NNN ---
   def match_si_yyyy_slash_nnn?(%{title: t}), do: Regex.match?(~r/S\.I\.?\s*\d{4}\/\d+/, t)
