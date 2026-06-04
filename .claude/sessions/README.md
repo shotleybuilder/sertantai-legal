@@ -71,6 +71,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-04 | [baserow-polish](2026-06-04-baserow-polish.md) | — | LRT field refinements: Family/Status/Type→single_select, Domain/Region/Fitness→multi_select |
 | 2026-06-04 | [goldilocks-model](2026-06-04-goldilocks-model.md) | — | Provision-level LAT aggregation: 748 complete duties vs 1,529 fragments, 853 total Baserow rows |
 | 2026-06-03 | [baserow-lat-resync](2026-06-03-baserow-lat-resync.md) | [#91](https://github.com/shotleybuilder/sertantai-legal/issues/91), [#92](https://github.com/shotleybuilder/sertantai-legal/issues/92), [#93](https://github.com/shotleybuilder/sertantai-legal/issues/93), [#94](https://github.com/shotleybuilder/sertantai-legal/issues/94) | Duty-focused LAT schema, DRRP filter, queue refactor, 2491 rows synced, meta-plan design decisions |
 | 2026-06-03 | [onboarding-phase5](2026-06-03-onboarding-phase5.md) | [#87](https://github.com/shotleybuilder/sertantai-legal/issues/87) | Multi-select fields, master holder vocabulary, LAT sync with parent links, 729 rows in Baserow |
