@@ -684,8 +684,47 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @domain_options ["environment", "governance", "health_safety", "human_resources"]
   @geo_region_options ["England", "Northern Ireland", "Scotland", "Wales"]
-  @fitness_person_options ~w(Crown\ application Crown\ service agency\ worker appointed\ person chief\ inspector client competent\ person contractor crew designer domestic\ client duty\ holder employee employer enforcing\ authority fire\ authority importer installer licensing\ authority manufacturer master\ of\ ship occupier operator owner person\ at\ work responsible\ person self-employed\ person sub-contractor supplier worker young\ person)
-  @fitness_sector_options ~w(maritime mining nuclear offshore\ oil\ &\ gas waste\ management water\ industry)
+  @fitness_person_options [
+    "Crown application",
+    "Crown service",
+    "agency worker",
+    "appointed person",
+    "chief inspector",
+    "client",
+    "competent person",
+    "contractor",
+    "crew",
+    "designer",
+    "domestic client",
+    "duty holder",
+    "employee",
+    "employer",
+    "enforcing authority",
+    "fire authority",
+    "importer",
+    "installer",
+    "licensing authority",
+    "manufacturer",
+    "master of ship",
+    "occupier",
+    "operator",
+    "owner",
+    "person at work",
+    "responsible person",
+    "self-employed person",
+    "sub-contractor",
+    "supplier",
+    "worker",
+    "young person"
+  ]
+  @fitness_sector_options [
+    "maritime",
+    "mining",
+    "nuclear",
+    "offshore oil & gas",
+    "waste management",
+    "water industry"
+  ]
 
   defp tier_fields(:standard) do
     [
@@ -798,11 +837,11 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Rights Holder" => extract_holder_list(lrt.rights_holder),
       "Domain" => lrt.domain || [],
       "Geographic Region" => lrt.geo_region || [],
-      "Fitness Person" => join_array(lrt.fitness_person),
+      "Fitness Person" => lrt.fitness_person || [],
+      "Fitness Sector" => lrt.fitness_sector || [],
       "Fitness Process" => join_array(lrt.fitness_process),
       "Fitness Place" => join_array(lrt.fitness_place),
-      "Fitness Plant" => join_array(lrt.fitness_plant),
-      "Fitness Sector" => join_array(lrt.fitness_sector)
+      "Fitness Plant" => join_array(lrt.fitness_plant)
     })
   end
 
