@@ -177,6 +177,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-05 | [enhesa-quality-report](2026-06-05-enhesa-quality-report.md) | — | Enhesa QA report: 76% precision, 90% recall. customer-quality-report skill created |
 | 2026-06-04 | [aggregate-qq-sites](2026-06-04-aggregate-qq-sites.md) | — | All 24 QQ CSVs imported, ~45 misidentified SSIs fixed, 34 laws LAT-parsed, NAS snapshot |
 | 2026-06-02 | [onboarding-phase2](2026-06-02-onboarding-phase2.md) | [#84](https://github.com/shotleybuilder/sertantai-legal/issues/84), [#85](https://github.com/shotleybuilder/sertantai-legal/issues/85), [#86](https://github.com/shotleybuilder/sertantai-legal/issues/86) | Customer onboarding Phase 2: fix Auto Parse family assignment, SI code mappings, EU graph-based family inference |
 | 2026-05-21 | [phase-2-7-frontend-au-integration](2026-05-20-phase-2-7-frontend-au-integration.md) | — | Phase 2.7: Multi-country frontend — single shape sync, country selector, 20K+ records |
