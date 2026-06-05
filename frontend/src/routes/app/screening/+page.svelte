@@ -369,6 +369,7 @@
 	}
 
 	// ── Grid state ──────────────────────────────────────────────────
+	// URL state persistence deferred — blocked on gridlite-kit#34
 
 	function handleLeftStateChange(_state: GridState) {
 		refreshStats();
