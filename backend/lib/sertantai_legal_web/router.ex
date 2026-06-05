@@ -105,6 +105,13 @@ defmodule SertantaiLegalWeb.Router do
     delete("/laws/:id", UkLrtController, :delete)
     post("/laws/:id/rescrape", UkLrtController, :rescrape)
 
+    # Screening endpoints (org-scoped, customer-facing)
+    get("/screening/applicabilities", ScreeningController, :index)
+    put("/screening/applicabilities/:law_name", ScreeningController, :upsert)
+    post("/screening/applicabilities/bulk", ScreeningController, :bulk_upsert)
+    get("/screening/stats", ScreeningController, :stats)
+    post("/screening/sync", ScreeningController, :trigger_sync)
+
     # Sync management endpoints (org-scoped, any authenticated user)
     get("/sync/entitlement", SyncController, :entitlement)
     get("/sync/profiles", SyncController, :list_profiles)
