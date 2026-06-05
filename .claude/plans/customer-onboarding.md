@@ -30,20 +30,22 @@ Parser bug: Auto Parse doesn't apply SI code → family mapping. 22 domestic law
 
 9 SI codes not in Models: ROAD TRAFFIC, WEIGHTS AND MEASURES, FIRE AND RESCUE SERVICES, plus 6 ambiguous codes needing disambiguation rules.
 
-### 2.3 — EU law family assignment (#86) — partially done
+### 2.3 — EU law family assignment (#86) — mostly done
 
-Graph inference assigned 140/507 EU families. 367 remain NULL.
+Graph inference assigned 140/507 EU families. Title keywords now cover 96% of QQ EU corpus.
 
 **Root cause**: EU laws have NO SI codes and NO dc:subject on legislation.gov.uk.
 These fields simply don't exist for EU retained law — structural gap, not parser bug.
 
 **Completed**:
-1. ✅ Title keyword matching — `title_to_family/1` in Filters, covers 48% of NULL-family EU laws
+1. ✅ Title keyword matching — `title_to_family/1` in Filters, expanded with EU-specific terms
 2. ✅ Type-based making classification — Tier 0 in MakingDetector (eur=making 0.95, eudr=not_making 0.9, eudn=not_making 0.5)
+3. ✅ QQ EU corpus: 67/70 applicable laws have family (96%). 3 remain (1 empty title, 2 niche)
+4. ✅ LAT parsing for EU laws — parser extended for EURetained/EUBody XML, 70 laws parsed (9,090 LAT rows)
 
-**Remaining work** (separate session):
-3. Manual/LLM batch — for ~200+ with no keyword or graph signal
-4. LAT parsing for EU laws that have body XML on legislation.gov.uk
+**Remaining work**:
+- Manual/LLM batch — for ~200+ non-QQ EU laws with no keyword or graph signal
+- Fractalaw EU fitness dictionaries — DRRP extraction works (13-49% hit rate), fitness sparse (21%)
 
 ### 2.4 — Confirm making classification
 
@@ -111,15 +113,21 @@ Call `POST /api/webhooks/entitlement-change` with QQ's subscribed families and t
 - Tool: `mix legal.fix_misidentified` for analysing/fixing wrong type_code assignments
 - Raised: #95 (phantom grid rows on inline edit), #96 (session auto-complete)
 
-### 4.9 — Enhesa data quality report (after all sites aggregated)
+### 4.9 — Enhesa data quality report ✅
 
-Deferred until all QQ site CSVs are imported. The report needs the full org-level
-applicability picture (union of all sites), not just one site.
+Full QQ corpus (24 sites, 334 laws) analysed. Report at `data/reports/qq/enhesa-quality-report.md`.
 
-- Law-by-law enrichment coverage
-- Applicability sense-check (revoked in Yes set, coverage gaps, false positives)
-- Compare across sites for consistency
-- Use `customer-onboarding-applicability-qa` skill
+**Headlines**: 76% precision, 90% recall. 208 TP, 66 FP (22 revoked, 20 no duties), 23 FN.
+All assessable laws fully parsed and enriched. Skill: `customer-quality-report`.
+
+**Artifacts suitable for customer-facing report page** (not Enhesa-specific):
+- Family distribution — law count + duty count by domain
+- Duty density — top laws by duty count (where compliance burden sits)
+- EU vs UK jurisdiction split
+- Making/Empowering/Housekeeping breakdown
+- Total duties, total laws, total provisions
+
+These are SertantAI data shape metrics — useful for any customer, not just Enhesa migrations.
 
 ### 4.6 — Fix JSONB column formatting for Baserow ✅
 
@@ -228,6 +236,17 @@ rows synced for OH&S with parent law links. 729 total rows within Baserow free t
 - DataServer LRT queryable fixed — `leg_gov_uk_url` → `source_url` (6b596a1)
 - End-to-end tested: fractalaw enrich → publish → sertantai receives law + provision taxa
 - 22 laws processed: 10 Making (672 provisions enriched), 12 Empowering, 1 Housekeeping
+
+### 5.4 — EU LAT parsing + enrichment ✅
+
+- LAT parser extended for EU retained law XML (EURetained/EUBody, EUTitle→Part, EUChapter→Chapter)
+- EU laws use `art.` citation prefix (not `reg.`), 24 new tests + 2 XML fixtures
+- 70 QQ-applicable EU laws parsed: 9,090 LAT rows, 2,012 annotations
+- Enrichment: 61 Making, 2 Empowering, 3 Housekeeping, 4 not enriched
+- DRRP hit rate: 13-49% depending on law type (directives better than regulations)
+- EU actor model: 13 new actors added (EU: Member State, ECHA, EFSA, SC: Downstream User, etc.)
+- Fitness: 13/61 Making laws (21%) — fractalaw EU fitness dictionaries pending
+- NAS snapshot exported with EU LAT data
 
 ### 5.3 — Open issues from Phase 5
 

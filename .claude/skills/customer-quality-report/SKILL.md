@@ -56,32 +56,37 @@ Compares a customer's legacy vendor applicability data (Enhesa Yes/No) against S
 
 ## Step 1: Pull Confusion Matrix
 
+**IMPORTANT**: Use a single `sertantai` classification column (`applicable` / `not_applicable`)
+derived in one place. Do NOT compute enrichment and live_status separately and combine them
+in FILTER clauses — this caused count mismatches when the FP breakdown query grouped differently
+from the matrix query.
+
 ```sql
-WITH enhesa AS (
-  SELECT law_name, status as enhesa_status
-  FROM org_applicabilities
-  WHERE organization_id = '{org_id}'
-),
-assessed AS (
-  SELECT u.name,
-         CASE WHEN u.function ? 'Making' THEN 'Making'
-              WHEN u.function ? 'Empowering' THEN 'Empowering'
-              WHEN u.function ? 'Housekeeping' THEN 'Housekeeping'
-              ELSE 'Not enriched' END as enrichment,
-         CASE WHEN u.live LIKE '%Revoked%' OR u.live LIKE '%Repealed%' OR u.live LIKE '%Abolished%' THEN 'fully_revoked'
-              WHEN u.live LIKE '%Part%' THEN 'part_revoked'
-              ELSE 'in_force' END as live_status
-  FROM uk_lrt u
+-- Single-classification approach: each law gets exactly one label
+WITH classified AS (
+  SELECT oa.law_name, oa.status as enhesa,
+         CASE
+           WHEN u.function ? 'Making'
+                AND NOT (u.live LIKE '%Revoked%' OR u.live LIKE '%Repealed%' OR u.live LIKE '%Abolished%')
+           THEN 'applicable'
+           ELSE 'not_applicable'
+         END as sertantai
+  FROM org_applicabilities oa
+  JOIN uk_lrt u ON u.name = oa.law_name
+  WHERE oa.organization_id = '{org_id}'
 )
 SELECT
-  COUNT(*) FILTER (WHERE e.enhesa_status = 'yes' AND a.enrichment = 'Making' AND a.live_status != 'fully_revoked') as true_positive,
-  COUNT(*) FILTER (WHERE e.enhesa_status = 'yes' AND (a.live_status = 'fully_revoked' OR a.enrichment NOT IN ('Making'))) as false_positive,
-  COUNT(*) FILTER (WHERE e.enhesa_status = 'no' AND (a.enrichment != 'Making' OR a.live_status = 'fully_revoked')) as true_negative,
-  COUNT(*) FILTER (WHERE e.enhesa_status = 'no' AND a.enrichment = 'Making' AND a.live_status != 'fully_revoked') as false_negative,
+  COUNT(*) FILTER (WHERE enhesa = 'yes' AND sertantai = 'applicable') as TP,
+  COUNT(*) FILTER (WHERE enhesa = 'yes' AND sertantai = 'not_applicable') as FP,
+  COUNT(*) FILTER (WHERE enhesa = 'no' AND sertantai = 'not_applicable') as TN,
+  COUNT(*) FILTER (WHERE enhesa = 'no' AND sertantai = 'applicable') as FN,
   COUNT(*) as total
-FROM enhesa e
-JOIN assessed a ON a.name = e.law_name;
+FROM classified;
 ```
+
+**Key**: Part-revoked laws (`⭕ Part Revocation / Repeal`) are treated as applicable —
+they still have active provisions. Only `❌ Revoked / Repealed / Abolished` is fully revoked.
+The LIKE patterns must match the exact emoji-prefixed strings stored in `uk_lrt.live`.
 
 **Metrics to compute**:
 - Precision: TP / (TP + FP) — "what % of vendor's Yes list is genuinely applicable"
@@ -90,19 +95,43 @@ JOIN assessed a ON a.name = e.law_name;
 
 ## Step 2: False Positive Breakdown
 
-Break FP into reasons so the customer understands *why* each law is questionable:
+Break FP into reasons so the customer understands *why* each law is questionable.
+
+**IMPORTANT**: This query MUST produce counts that sum to the FP total from Step 1.
+Use the same classification logic — a law is FP if `enhesa = 'yes'` AND it's not
+(`Making` AND not fully revoked). Then sub-classify the reason:
 
 ```sql
--- Group by reason
-CASE
-  WHEN live_status = 'fully_revoked' THEN 'Fully revoked (' || enrichment || ')'
-  WHEN enrichment = 'Empowering' THEN 'Empowering (no duties, in force)'
-  WHEN enrichment = 'Housekeeping' THEN 'Housekeeping (no duties, in force)'
-  WHEN enrichment = 'Not enriched' THEN 'Not yet assessed (needs LAT parsing)'
-END as fp_reason
+WITH fp_laws AS (
+  SELECT u.name,
+         CASE WHEN u.function ? 'Making' THEN 'Making'
+              WHEN u.function ? 'Empowering' THEN 'Empowering'
+              WHEN u.function ? 'Housekeeping' THEN 'Housekeeping'
+              ELSE 'Not enriched' END as enrichment,
+         CASE WHEN u.live LIKE '%Revoked%' OR u.live LIKE '%Repealed%' OR u.live LIKE '%Abolished%' THEN 'fully_revoked'
+              ELSE 'active' END as live_status,
+         u.lat_count
+  FROM org_applicabilities oa
+  JOIN uk_lrt u ON u.name = oa.law_name
+  WHERE oa.organization_id = '{org_id}'
+    AND oa.status = 'yes'
+    AND NOT (
+      u.function ? 'Making'
+      AND NOT (u.live LIKE '%Revoked%' OR u.live LIKE '%Repealed%' OR u.live LIKE '%Abolished%')
+    )
+)
+SELECT
+  CASE
+    WHEN live_status = 'fully_revoked' THEN 'Fully revoked (' || enrichment || ')'
+    WHEN enrichment = 'Empowering' THEN 'Empowering (no duties)'
+    WHEN enrichment = 'Housekeeping' THEN 'Housekeeping (no duties)'
+    WHEN enrichment = 'Not enriched' AND lat_count > 0 THEN 'Parsed but not enriched'
+    WHEN enrichment = 'Not enriched' AND lat_count = 0 THEN 'No parseable body'
+  END as reason, COUNT(*)
+FROM fp_laws GROUP BY reason ORDER BY count DESC;
 ```
 
-**Presentation note**: Separate "definitively wrong" (revoked, no duties) from "pending assessment" (not enriched). The headline FP count should call out both.
+**Presentation note**: Separate "definitively wrong" (revoked, no duties) from edge cases (no body text). Ideally all laws should be fully parsed and enriched before generating the final report — run LAT parse sessions for any "Not enriched" items first.
 
 ## Step 3: False Negatives
 

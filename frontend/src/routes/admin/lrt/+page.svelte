@@ -1696,6 +1696,7 @@
 		recordId={viewModalRecord.id}
 		open={viewModalOpen}
 		on:close={closeViewModal}
+		on:complete={closeViewModal}
 	/>
 {/if}
 

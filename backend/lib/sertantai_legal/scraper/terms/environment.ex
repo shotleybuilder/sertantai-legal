@@ -36,6 +36,11 @@ defmodule SertantaiLegal.Scraper.Terms.Environment do
     "rural payments"
   ]
 
+  @pesticides [
+    "pesticide",
+    "pest"
+  ]
+
   @air [
     "air quality",
     "sulphur",
@@ -193,6 +198,7 @@ defmodule SertantaiLegal.Scraper.Terms.Environment do
   def search_terms do
     [
       "💚 AGRICULTURE": @agriculture,
+      "💚 AGRICULTURE: Pesticides": @pesticides,
       "💚 AIR QUALITY": @air,
       "💚 CLIMATE CHANGE": @climate_change,
       "💚 ENERGY": @energy,
