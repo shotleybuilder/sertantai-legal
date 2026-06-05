@@ -16,7 +16,9 @@
 - [x] Complete 118-law scrape — done, cleaned to 44 valid records
 - [x] Fix misidentified Scottish/Welsh laws — ~45 SSIs redirected from uksi, 3 Acts (asp/asc/ukpga) fixed, 2 manual Enhesa SI→chapter corrections
 - [x] Clean scrape session — removed 66 pre-existing laws, added 1 missing SSI (ssi_2006_140)
-- [ ] LAT parse for domestic yes-laws missing LAT
+- [x] LAT parse for 34 new laws — 20 Making, 7 Empowering, 6 Housekeeping, 1 not enriched
+- [x] Post-parse + enrichment QA — PASS
+- [x] NAS snapshot exported
 - [ ] Re-sync Baserow with expanded dataset
 
 ## Notes
@@ -27,3 +29,15 @@
 - Misidentified law patterns: Enhesa S.S.I. refs matched as uksi, scraped completely wrong English laws
 - Tool edge cases: Enhesa "S.I." (not "S.S.I.") for Scottish laws, Acts coded as S.I. (wrong chapter numbers)
 - 8 uksi laws kept — valid sertantai laws that happened to share year/number with Enhesa SSIs
+- LAT partition bug: legal_articles partitioned by country, lat_parser wasn't setting country → rows vanished silently
+- LAT session ID collision: date-based IDs + PGLite cache = ghost data after delete/recreate
+- LAT pruning: 0 LAT rows is expected for Empowering/Housekeeping laws after taxa enrichment
+
+**Ended**: 2026-06-04 21:35
+**Commits**: `00e71a0`, `79ca648`, `83d37b4`, `92c259a`, `760897b`, `e7631b9`, `c29e641`, `299c6db`, `4acedc0`
+
+## Summary
+- Completed: 11 of 12 todos (Baserow re-sync deferred)
+- Files: legal.fix_misidentified.ex, lat_parser.ex, lat_session_manager.ex, customer-onboarding-import SKILL, lat-parse-session SKILL
+- Outcome: All 24 QQ site CSVs processed, ~45 misidentified SSIs fixed, 34 new laws LAT-parsed and enriched, NAS snapshot exported. Raised #95 (phantom grid rows), #96 (session auto-complete).
+- Next: Re-sync Baserow with expanded dataset, prod sync

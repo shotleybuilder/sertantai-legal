@@ -37,9 +37,11 @@ Graph inference assigned 140/507 EU families. 367 remain NULL.
 **Root cause**: EU laws have NO SI codes and NO dc:subject on legislation.gov.uk.
 These fields simply don't exist for EU retained law — structural gap, not parser bug.
 
+**Completed**:
+1. ✅ Title keyword matching — `title_to_family/1` in Filters, covers 48% of NULL-family EU laws
+2. ✅ Type-based making classification — Tier 0 in MakingDetector (eur=making 0.95, eudr=not_making 0.9, eudn=not_making 0.5)
+
 **Remaining work** (separate session):
-1. Title keyword matching — EU titles are descriptive, map well to families
-2. Type-based making classification — eur=making, eudr=varies, eudn=varies
 3. Manual/LLM batch — for ~200+ with no keyword or graph signal
 4. LAT parsing for EU laws that have body XML on legislation.gov.uk
 
@@ -98,11 +100,16 @@ Call `POST /api/webhooks/entitlement-change` with QQ's subscribed families and t
 - Check field mapping, row counts, LAT links
 - Sync filters to L3 (yes-applicable laws only)
 
-### 4.5 — Aggregate more QQ site CSVs
+### 4.5 — Aggregate more QQ site CSVs ✅
 
-- Load additional QQ site CSVs through import pipeline (rinse and repeat Phase 1)
-- Seed applicability from each site's Enhesa Answer data
-- Union of all site Yes laws = org-level validation set
+- All 24 QQ site CSVs processed (20 new + BSC = 24 total, E+S+W coverage, no NI)
+- Applicability seeded with union semantics: 275 yes, 60 no
+- ~45 misidentified SSIs fixed (Enhesa S.S.I. refs matched as uksi), 3 Acts corrected (asp/asc/ukpga)
+- 118-law scrape session cleaned to 44 valid records, 34 new laws LAT-parsed
+- Enrichment: 20 Making, 7 Empowering, 6 Housekeeping, 1 not enriched (no body text)
+- NAS snapshot exported
+- Tool: `mix legal.fix_misidentified` for analysing/fixing wrong type_code assignments
+- Raised: #95 (phantom grid rows on inline edit), #96 (session auto-complete)
 
 ### 4.9 — Enhesa data quality report (after all sites aggregated)
 
@@ -229,7 +236,9 @@ rows synced for OH&S with parent law links. 729 total rows within Baserow free t
 | #87 | Engine.run sync flow drops rows | Open — workaround: direct calls |
 | #88 | LAT parser 0 rows for 6 laws with valid XML | Open — older SI format? |
 | #89 | Skip fully revoked laws in LAT queue + parser | Open |
-| #90 | LAT queue: filter by customer L3 applicability | Open — needed for remaining ~170 QQ laws |
+| #90 | LAT queue: filter by customer L3 applicability | Done — org applicability dropdown in queue |
+| #95 | Phantom null rows after inline edit on grid | Open — TanStack DB mutation reconciliation |
+| #96 | LAT session doesn't auto-complete when all parsed | Open — manual SQL workaround |
 
 Reference: `~/fractalaw/.claude/sessions/06-03-26-lat-taxa-fitness-columns.md`
 

@@ -37,6 +37,7 @@ LAT parsing, sessions, queue, cleanup, taxa classification.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-05 | [eu-lat-parsing](2026-06-05-eu-lat-parsing.md) | — | EU LAT parser extension, 24 tests, DRRP enrichment QA, family keywords 24%→96% |
 | 2026-06-03 | [lat-parser-fixes-l3-queue](2026-06-03-lat-parser-fixes-l3-queue.md) | [#73](https://github.com/shotleybuilder/sertantai-legal/issues/73), [#88](https://github.com/shotleybuilder/sertantai-legal/issues/88), [#90](https://github.com/shotleybuilder/sertantai-legal/issues/90) | Sort key Roman numeral + position fix, L3 applicability queue filter |
 | 2026-06-03 | [onboarding-phase5b-lat-taxa](2026-06-03-onboarding-phase5b-lat-taxa.md) | [#88](https://github.com/shotleybuilder/sertantai-legal/issues/88), [#89](https://github.com/shotleybuilder/sertantai-legal/issues/89), [#90](https://github.com/shotleybuilder/sertantai-legal/issues/90) | LAT taxa schema + ProvisionSubscriber + DataServer fix, end-to-end enrichment proven |
 | 2026-04-24 | [issue-77](2026-04-24-issue-77.md) | [#77](https://github.com/shotleybuilder/sertantai-legal/issues/77) | Fix annotation counts — classify refs via Commentaries block lookup |
@@ -176,6 +177,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-04 | [aggregate-qq-sites](2026-06-04-aggregate-qq-sites.md) | — | All 24 QQ CSVs imported, ~45 misidentified SSIs fixed, 34 laws LAT-parsed, NAS snapshot |
 | 2026-06-02 | [onboarding-phase2](2026-06-02-onboarding-phase2.md) | [#84](https://github.com/shotleybuilder/sertantai-legal/issues/84), [#85](https://github.com/shotleybuilder/sertantai-legal/issues/85), [#86](https://github.com/shotleybuilder/sertantai-legal/issues/86) | Customer onboarding Phase 2: fix Auto Parse family assignment, SI code mappings, EU graph-based family inference |
 | 2026-05-21 | [phase-2-7-frontend-au-integration](2026-05-20-phase-2-7-frontend-au-integration.md) | — | Phase 2.7: Multi-country frontend — single shape sync, country selector, 20K+ records |
 | 2026-05-20 | [phase-2-5-au-state-portal-parsers](2026-05-19-phase-2-5-au-state-portal-parsers.md) | — | Phase 2.5: State enrichment — VIC/NT slugs, NSW feed, QLD tables, ACT client. 544/887 enriched, 99+ repealed |
