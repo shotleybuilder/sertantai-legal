@@ -15,6 +15,7 @@ import { getPglite } from './client';
 import { initSchema } from './schema.sql';
 import { ELECTRIC_URL } from '$lib/electric/client';
 import { electricFetchClient } from '$lib/electric/fetch-client';
+import { getAuthToken } from '$lib/stores/auth';
 
 // ── Column Sets ─────────────────────────────────────────────────────────────
 
@@ -128,6 +129,21 @@ const ADMIN_COLUMNS: string[] = ALL_COLUMNS.filter((col) => !HEAVY_JSONB_COLUMNS
 
 /** Exported for use by shape recovery in error handlers */
 export { ADMIN_COLUMNS };
+
+// ── Auth Helpers ────────────────────────────────────────────────────────────
+
+/** Extract org_id from JWT token in localStorage (no signature verification). */
+function getOrgIdFromToken(): string | null {
+	const token = getAuthToken();
+	if (!token) return null;
+	try {
+		const payload = token.split('.')[1];
+		const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+		return decoded.org_id ?? null;
+	} catch {
+		return null;
+	}
+}
 
 // ── Sync Status Store ───────────────────────────────────────────────────────
 
@@ -263,6 +279,50 @@ export async function startSync(): Promise<void> {
 
 		unsubscribeFns.push(result.unsubscribe);
 		console.log('[PGLite Sync] Shape subscription active (all countries)');
+
+		// Org-scoped applicabilities shape (auth-gated)
+		const orgId = getOrgIdFromToken();
+		if (orgId) {
+			try {
+				// Clear stale applicabilities subscription
+				try {
+					await pg.electric.deleteSubscription(`org-applicabilities-${orgId}`);
+				} catch {
+					// No subscription to delete
+				}
+
+				const oaResult = await pg.electric.syncShapeToTable({
+					shape: {
+						url: `${ELECTRIC_URL}/v1/shape`,
+						fetchClient: electricFetchClient,
+						params: {
+							table: 'org_applicabilities',
+							where: `organization_id = '${orgId}'`
+						}
+					},
+					table: 'org_applicabilities',
+					primaryKey: ['id'],
+					shapeKey: `org-applicabilities-${orgId}`,
+					onInitialSync: async () => {
+						const countRes = await pg.query<{ count: number }>(
+							'SELECT COUNT(*)::int AS count FROM org_applicabilities'
+						);
+						console.log(
+							`[PGLite Sync] Applicabilities synced: ${countRes.rows[0]?.count ?? 0} records`
+						);
+					},
+					onError: async (error: Error) => {
+						console.error('[PGLite Sync] Applicabilities sync error:', error);
+					}
+				});
+				unsubscribeFns.push(oaResult.unsubscribe);
+				console.log(`[PGLite Sync] Applicabilities shape active for org ${orgId}`);
+			} catch (error) {
+				console.warn('[PGLite Sync] Applicabilities shape failed (auth may be required):', error);
+			}
+		} else {
+			console.log('[PGLite Sync] No org_id — skipping applicabilities shape');
+		}
 	} catch (error) {
 		console.error('[PGLite Sync] Failed to start:', error);
 		syncStarted = false;
