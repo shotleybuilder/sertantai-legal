@@ -129,7 +129,9 @@ defmodule SertantaiLegal.Scraper.LatSessionManager do
         time_suffix = Calendar.strftime(DateTime.utc_now(), "%H%M")
 
         session_id =
-          find_unique_session_id("lat-parse-#{slugify(label)}-#{Date.to_iso8601(today)}-#{time_suffix}")
+          find_unique_session_id(
+            "lat-parse-#{slugify(label)}-#{Date.to_iso8601(today)}-#{time_suffix}"
+          )
 
         session_attrs = %{
           session_id: session_id,

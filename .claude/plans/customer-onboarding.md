@@ -279,41 +279,74 @@ Prod backend → ElectricSQL → sync engine → Baserow SaaS. Verify the full p
 
 ---
 
-## Phase 7: L3 Screening UI
+## Phase 7: L3 Screening UI ✅ (MVP)
 
-Frontend within sertantai-legal (or sertantai-compliance) for org-level applicability screening.
+Customer-facing applicability screening at `/app/screening` + `/app/stats`.
 
-### 6.1 — API endpoints for applicability CRUD
+### 7.1 — Backend API ✅
 
-- `GET /sync/applicabilities` — list, filter by status
-- `PUT /sync/applicabilities/:law_name` — set status
-- `PATCH /sync/applicabilities/bulk` — bulk update
-- `GET /sync/applicabilities/stats` — counts by status
-- Org-scoped via JWT, follows existing sync controller patterns
+ScreeningController with 5 endpoints in `api_authenticated` scope:
+- `GET /api/screening/applicabilities` — list org's decisions
+- `PUT /api/screening/applicabilities/:law_name` — upsert (single-click persist)
+- `POST /api/screening/applicabilities/bulk` — batch add/remove
+- `GET /api/screening/stats` — aggregate counts by status, family
+- `POST /api/screening/sync` — trigger Baserow sync
+- 8 controller tests
 
-### 6.2 — Screening UI
+### 7.2 — Local-first infrastructure ✅
 
-- Browse L2 laws grouped by family, with applicability status
-- Inline accept/reject with Fitness/Taxa signals as guidance
-- Bulk actions (accept all in family, reject sector-mismatched)
-- Progress dashboard: reviewed vs unreviewed vs total
+- PGLite schema v17: `org_applicabilities` table + indexes
+- Electric shape subscription (org-scoped via JWT, Gatekeeper auth)
+- Migration: REPLICA IDENTITY FULL for ElectricSQL
 
-### 6.3 — Hub integration
+### 7.3 — Screening UI ✅
 
-- Hub calls Legal's screening API with org profile
-- Entitlement webhook triggers applicability refresh when families change
+Two-panel split view (Available pool ↔ My Register):
+- Left panel: available Making laws + explicitly excluded
+- Right panel: organisation's legal register (Yes laws)
+- Single-click [+] / [×] / [exclude] / [restore] — instant persist, no save buttons
+- Batch operations via checkbox selection
+- Both panels are full GridLite instances with search, filter, sort, group
+- Inline editable notes on register laws
+
+### 7.4 — Stats Dashboard ✅
+
+`/app/stats` — all computed locally from PGLite:
+- Overview cards (total making, register, excluded, unreviewed)
+- Screening progress bar with segmented legend
+- Family distribution with per-family progress bars
+- EU vs UK jurisdiction split
+- Fitness coverage percentage
+
+### 7.5 — Open issues + future enhancements
+
+| # | Issue | Status |
+|---|---|---|
+| #97 | Zenoh dashboard: ProvisionSubscriber + persist activity | Open |
+| #98 | Column visibility, inline row actions, hide law code | Open |
+| #99 | Audit trail and change reversal | Open |
+| #100 | Download My Register as .md/.csv | Open |
+| #101 | Row detail card (Airtable pattern) | Open |
+| #102 | AI-seeded register from org profile + questionnaire | Open |
+| #103 | Saved views using svelte-gridlite-views | Open |
+| #104 | URL state persistence (blocked on gridlite-kit#34) | Blocked |
+
+### 7.6 — Remaining
+
+- Phase 6: Baserow sync trigger button in UI (backend endpoint exists)
+- Hub integration: entitlement webhook triggers applicability refresh
 
 ---
 
 ## Phase 8: Automated L3 Screening (Taxa + Fitness)
 
-Use Taxa (DRRP roles) and Fitness fields to automate L3 applicability recommendations, replacing manual curation.
+Use Taxa (DRRP roles) and Fitness fields to automate L3 applicability recommendations, replacing manual curation. Tracked in #102.
 
-### 7.1 — Org profile model
+### 8.1 — Org profile model
 
 Define what we know about an org: sector, activities, site types, workforce composition. This drives Fitness matching. Lives in Hub (org owns it) but Legal consumes it for screening.
 
-### 7.2 — Fitness-based scoring
+### 8.2 — Fitness-based scoring
 
 For laws with Fitness data, score relevance to org profile:
 - fitness_sector matches org sector → strong signal
@@ -321,17 +354,18 @@ For laws with Fitness data, score relevance to org profile:
 - fitness_place matches org site types → relevant
 - Combine into a recommendation (yes/no/review) with confidence
 
-### 7.3 — Taxa-based signals
+### 8.3 — Seeding workflow (additive only)
 
-Use DRRP role data to identify broadly-applicable vs sector-specific laws:
-- "Org: Employer" + "Ind: Employee" → general workplace law
-- Specialist roles (Maritime: master, etc.) → sector-specific
+- Customer presses "Seed" → laws matching fitness profile added to register
+- Seeded laws use `source: 'screener'` (distinguished from manual)
+- Visual badge until confirmed by user
+- Repeatable: re-seeding finds the delta
 
-### 7.4 — Validation against Enhesa
+### 8.4 — Validation against Enhesa
 
-Compare automated recommendations to Enhesa Yes/No decisions and manual QA findings. Measure precision/recall per family. Iterate rules.
+Compare automated recommendations to Enhesa Yes/No decisions. Measure precision/recall per family.
 
-**Prerequisite**: Fitness coverage must expand beyond safety families (currently 7.4% of making laws). Fractalaw parser is iteratively improving this, one family at a time.
+**Prerequisite**: Fitness coverage improving — currently 44% for EU laws (up from 21%), ~50% for UK domestic. Fractalaw iteratively expanding.
 
 ---
 
