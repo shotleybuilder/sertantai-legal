@@ -606,10 +606,10 @@ defmodule SertantaiLegalWeb.LatAdminController do
         # Batch-lookup from uk_lrt for any records missing family.
         names = Enum.map(records, fn r -> r["name"] || r[:name] end)
 
-        family_lookup =
+        lrt_lookup =
           case Ash.read(Ash.Query.filter(LegalRegister, name in ^names)) do
             {:ok, lrt_records} ->
-              Map.new(lrt_records, fn r -> {r.name, r.family} end)
+              Map.new(lrt_records, fn r -> {r.name, %{family: r.family, title_en: r.title_en}} end)
 
             _ ->
               %{}
@@ -618,15 +618,16 @@ defmodule SertantaiLegalWeb.LatAdminController do
         enriched =
           Enum.map(records, fn record ->
             name = record["name"] || record[:name]
+            lrt = Map.get(lrt_lookup, name, %{family: nil, title_en: nil})
             stored_family = record["family"] || record[:family] || ""
-            family = if stored_family == "", do: family_lookup[name] || "", else: stored_family
+            family = if stored_family == "", do: lrt[:family] || "", else: stored_family
 
             # Merge DB record fields (status, lat results) with stored data
             case Storage.get_session_record(session_id, name) do
               {:ok, db_record} when not is_nil(db_record) ->
                 %{
                   law_name: db_record.law_name,
-                  title_en: record["Title_EN"] || record[:Title_EN] || "",
+                  title_en: record["Title_EN"] || record[:Title_EN] || lrt[:title_en] || "",
                   type_code: record["type_code"] || record[:type_code] || "",
                   year: record["Year"] || record[:Year],
                   family: family,
@@ -643,7 +644,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
               _ ->
                 %{
                   law_name: name,
-                  title_en: record["Title_EN"] || record[:Title_EN] || "",
+                  title_en: record["Title_EN"] || record[:Title_EN] || lrt[:title_en] || "",
                   type_code: record["type_code"] || record[:type_code] || "",
                   year: record["Year"] || record[:Year],
                   family: family,
