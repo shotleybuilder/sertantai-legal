@@ -68,7 +68,7 @@
 		}>(
 			`SELECT l.family,
 			        COUNT(*)::text as total,
-			        COUNT(oa.id)::text FILTER (WHERE oa.status = 'yes') as in_register,
+			        SUM(CASE WHEN oa.status = 'yes' THEN 1 ELSE 0 END)::text as in_register,
 			        '0' as duty_count
 			 FROM laws l
 			 LEFT JOIN org_applicabilities oa ON oa.law_name = l.name
