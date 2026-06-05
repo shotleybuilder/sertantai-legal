@@ -36,7 +36,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
   @act_type_codes ~w(ukpga anaw asp nia apni aep)
   @container_elements ~w(Legislation Primary Secondary Body Schedules ScheduleBody
                          P1para P2para P3para P4para P1group P2group P3group
-                         ScheduleBody FragmentBody)
+                         ScheduleBody FragmentBody
+                         EURetained EUBody)
 
   # Elements to skip entirely — contain embedded P1/P2/P3 from OTHER laws or
   # alternative territorial versions that duplicate the primary text
@@ -79,7 +80,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
     raw_rows
     |> assign_positions()
-    |> build_row_fields(law_name, mode)
+    |> build_row_fields(law_name, mode, context.type_code)
     |> mark_repealed_provisions(mode)
     |> detect_and_qualify_parallels()
     |> disambiguate_section_ids()
@@ -145,7 +146,21 @@ defmodule SertantaiLegal.Scraper.LatParser do
         row = emit_structural_row("Part", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
+      name == "EUTitle" ->
+        # EU Title (e.g. "TITLE I: GENERAL ISSUES") — maps to Part in the hierarchy
+        part_num = extract_number(node, "Title")
+        new_ctx = %{ctx | part: part_num, chapter: nil, heading_group: nil}
+        row = emit_structural_row("Part", new_ctx, node, extent)
+        [row | walk_children(node, new_ctx)]
+
       name == "Chapter" ->
+        chapter_num = extract_number(node, "Chapter")
+        new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
+        row = emit_structural_row("Chapter", new_ctx, node, extent)
+        [row | walk_children(node, new_ctx)]
+
+      name == "EUChapter" ->
+        # EU Chapter — same semantics as UK Chapter
         chapter_num = extract_number(node, "Chapter")
         new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
         row = emit_structural_row("Chapter", new_ctx, node, extent)
@@ -523,10 +538,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # ── Field Building (citations, sort_keys, hierarchy, depth) ─────
 
-  defp build_row_fields(rows, law_name, mode) do
+  @eu_type_codes ~w(eur eudr eudn)
+
+  defp build_row_fields(rows, law_name, mode, type_code) do
     Enum.map(rows, fn row ->
       section_type = Transforms.xml_element_to_section_type(row.element, mode)
-      class = if mode == :article, do: "Regulation", else: nil
+      # UK SIs use "reg." prefix (Regulation 1, 2...), EU laws use "art." (Article 1, 2...)
+      class = if mode == :article and type_code not in @eu_type_codes, do: "Regulation", else: nil
 
       # For P3/P4 inside sections (not schedules), cite as section extension: s.1(1)(a)
       # For P3/P4 inside schedules (no provision), cite as schedule paragraph: sch.2.para.3

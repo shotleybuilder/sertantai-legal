@@ -895,6 +895,246 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  # ── EU Regulation ─────────────────────────────────────────────
+
+  describe "parse/2 with EU Regulation (EUTitle + EUChapter)" do
+    setup do
+      xml = read_fixture("simple_eu_regulation.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_eur_2024_100", type_code: "eur"})
+      %{rows: rows}
+    end
+
+    test "produces rows from EURetained/EUBody structure", %{rows: rows} do
+      assert length(rows) > 0
+    end
+
+    test "all section_ids are unique", %{rows: rows} do
+      ids = Enum.map(rows, & &1.section_id)
+      assert length(ids) == length(Enum.uniq(ids))
+    end
+
+    test "EUTitle maps to part in hierarchy", %{rows: rows} do
+      parts = Enum.filter(rows, &(&1.section_type == "part"))
+      assert length(parts) == 2
+
+      title_i = Enum.find(parts, &(&1.part == "I"))
+      assert title_i != nil
+      assert title_i.text == "GENERAL ISSUES"
+
+      title_ii = Enum.find(parts, &(&1.part == "II"))
+      assert title_ii != nil
+      assert title_ii.text == "EVALUATION"
+    end
+
+    test "EUChapter maps to chapter in hierarchy", %{rows: rows} do
+      chapters = Enum.filter(rows, &(&1.section_type == "chapter"))
+      assert length(chapters) == 2
+
+      ch1 = Enum.find(chapters, &(&1.chapter == "1"))
+      assert ch1 != nil
+      assert ch1.text == "Aim, scope and definitions"
+      assert ch1.part == "I"
+    end
+
+    test "uses article/sub_article mode (not section)", %{rows: rows} do
+      types = Enum.map(rows, & &1.section_type) |> Enum.uniq()
+      assert "article" in types
+      assert "sub_article" in types
+      refute "section" in types
+      refute "sub_section" in types
+    end
+
+    test "articles use art. prefix in section_id", %{rows: rows} do
+      art1 = Enum.find(rows, &(&1.provision == "Article 1" and &1.section_type == "article"))
+      assert art1 != nil
+      assert String.contains?(art1.section_id, "art.")
+    end
+
+    test "sub_articles nest under articles", %{rows: rows} do
+      subs = Enum.filter(rows, &(&1.section_type == "sub_article"))
+      assert length(subs) >= 2
+
+      sub1 = Enum.find(subs, &(&1.provision == "Article 1" and &1.sub == "1"))
+      assert sub1 != nil
+      assert String.contains?(sub1.text, "high level of protection")
+    end
+
+    test "paragraphs nest under sub_articles", %{rows: rows} do
+      paras = Enum.filter(rows, &(&1.section_type == "paragraph"))
+      assert length(paras) == 2
+
+      para_a = Enum.find(paras, &(&1.paragraph == "a"))
+      assert para_a != nil
+      assert String.contains?(para_a.text, "radioactive")
+    end
+
+    test "articles in Title II have correct part context", %{rows: rows} do
+      art4 = Enum.find(rows, &(&1.provision == "Article 4"))
+      assert art4 != nil
+      assert art4.part == "II"
+      assert String.contains?(art4.text, "evaluate all registrations")
+    end
+
+    test "emits signed section", %{rows: rows} do
+      signed = Enum.find(rows, &(&1.section_type == "signed"))
+      assert signed != nil
+      assert String.contains?(signed.text, "Brussels")
+    end
+
+    test "positions are sequential", %{rows: rows} do
+      positions = Enum.map(rows, & &1.position)
+      assert positions == Enum.to_list(1..length(rows))
+    end
+
+    test "extent propagates from root", %{rows: rows} do
+      for row <- rows do
+        assert row.extent_code == "E+W+S+NI"
+      end
+    end
+  end
+
+  # ── EU Directive ─────────────────────────────────────────────
+
+  describe "parse/2 with EU Directive (EUChapter only, no EUTitle)" do
+    setup do
+      xml = read_fixture("simple_eu_directive.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_eudr_2024_50", type_code: "eudr"})
+      %{rows: rows}
+    end
+
+    test "produces rows without EUTitle", %{rows: rows} do
+      assert length(rows) > 0
+    end
+
+    test "chapters have no part context (no EUTitle)", %{rows: rows} do
+      chapters = Enum.filter(rows, &(&1.section_type == "chapter"))
+      assert length(chapters) == 2
+
+      for ch <- chapters do
+        assert ch.part == nil
+      end
+    end
+
+    test "articles use article/sub_article types", %{rows: rows} do
+      types = Enum.map(rows, & &1.section_type) |> Enum.uniq()
+      assert "article" in types
+      assert "sub_article" in types
+    end
+
+    test "article 2 has two sub_articles", %{rows: rows} do
+      art2_subs =
+        Enum.filter(rows, &(&1.provision == "Article 2" and &1.section_type == "sub_article"))
+
+      assert length(art2_subs) == 2
+    end
+
+    test "chapter II article has correct chapter context", %{rows: rows} do
+      art3 = Enum.find(rows, &(&1.provision == "Article 3"))
+      assert art3 != nil
+      assert art3.chapter == "II"
+      assert String.contains?(art3.text, "permit")
+    end
+
+    test "all section_ids are unique", %{rows: rows} do
+      ids = Enum.map(rows, & &1.section_id)
+      assert length(ids) == length(Enum.uniq(ids))
+    end
+  end
+
+  # ── EU provision mode ────────────────────────────────────────
+
+  describe "provision mode for EU type codes" do
+    test "eur uses article/sub_article" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <EURetained><EUBody>
+        <P1group><P1 id="a-1"><Pnumber>Article 1</Pnumber>
+          <P1para><P2 id="a-1-1"><Pnumber>1</Pnumber><P2para><Text>T</Text></P2para></P2></P1para>
+        </P1></P1group>
+      </EUBody></EURetained>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_eur_2024_1", type_code: "eur"})
+      types = Enum.map(rows, & &1.section_type)
+      assert "article" in types
+      assert "sub_article" in types
+    end
+
+    test "eudr uses article/sub_article" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <EURetained><EUBody>
+        <P1group><P1 id="a-1"><Pnumber>Article 1</Pnumber>
+          <P1para><Text>Directive text.</Text></P1para>
+        </P1></P1group>
+      </EUBody></EURetained>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_eudr_2024_1", type_code: "eudr"})
+      types = Enum.map(rows, & &1.section_type)
+      assert "article" in types
+      refute "section" in types
+    end
+
+    test "eudn uses article/sub_article" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <EURetained><EUBody>
+        <P1group><P1 id="a-1"><Pnumber>Article 1</Pnumber>
+          <P1para><Text>Decision text.</Text></P1para>
+        </P1></P1group>
+      </EUBody></EURetained>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_eudn_2024_1", type_code: "eudn"})
+      types = Enum.map(rows, & &1.section_type)
+      assert "article" in types
+      refute "section" in types
+    end
+  end
+
+  # ── to_insert_maps country derivation ────────────────────────
+
+  describe "to_insert_maps/2 country field" do
+    @test_law_id "00000000-0000-0000-0000-000000000001"
+
+    test "UK law gets country 'uk'" do
+      xml = read_fixture("simple_si.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_100", type_code: "uksi"})
+      [first | _] = LatParser.to_insert_maps(rows, @test_law_id)
+
+      assert first.country == "uk"
+    end
+
+    test "EU regulation gets country 'uk' (UK_ prefix)" do
+      xml = read_fixture("simple_eu_regulation.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_eur_2024_100", type_code: "eur"})
+      [first | _] = LatParser.to_insert_maps(rows, @test_law_id)
+
+      assert first.country == "uk"
+    end
+
+    test "AU law gets country 'au'" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group><P1 id="s-1"><Pnumber>1</Pnumber>
+          <P1para><Text>Test.</Text></P1para>
+        </P1></P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "AU_act_2024_1", type_code: "act"})
+      [first | _] = LatParser.to_insert_maps(rows, @test_law_id)
+
+      assert first.country == "au"
+    end
+  end
+
   # ── Diagnostics ──────────────────────────────────────────────
 
   describe "Diagnostics.validate/1" do

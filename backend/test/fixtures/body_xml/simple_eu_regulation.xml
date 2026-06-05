@@ -1,0 +1,98 @@
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             DocumentURI="http://www.legislation.gov.uk/eur/2024/100"
+             RestrictExtent="E+W+S+N.I.">
+<EURetained>
+  <EUBody>
+    <EUTitle id="title-I">
+      <Number>TITLE I</Number>
+      <Title>GENERAL ISSUES</Title>
+
+      <EUChapter id="chapter-1">
+        <Number>CHAPTER 1</Number>
+        <Title>Aim, scope and definitions</Title>
+
+        <P1group>
+          <Title>Aim and scope</Title>
+
+          <P1 id="article-1">
+            <Pnumber>Article 1</Pnumber>
+            <P1para>
+              <P2 id="article-1-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>The purpose of this Regulation is to ensure a high level of protection of human health and the environment.</Text>
+                </P2para>
+              </P2>
+              <P2 id="article-1-2">
+                <Pnumber>2</Pnumber>
+                <P2para>
+                  <Text>This Regulation shall apply to the manufacture, placing on the market or use of substances.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+
+          <P1 id="article-2">
+            <Pnumber>Article 2</Pnumber>
+            <P1para>
+              <Text>This Regulation shall not apply to:</Text>
+              <P2 id="article-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <P3 id="article-2-1-a">
+                    <Pnumber PuncBefore="(" PuncAfter=")">a</Pnumber>
+                    <P3para>
+                      <Text>radioactive substances within the scope of Council Directive 96/29/Euratom;</Text>
+                    </P3para>
+                  </P3>
+                  <P3 id="article-2-1-b">
+                    <Pnumber PuncBefore="(" PuncAfter=")">b</Pnumber>
+                    <P3para>
+                      <Text>substances in transit which are under customs supervision.</Text>
+                    </P3para>
+                  </P3>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </P1group>
+      </EUChapter>
+
+      <EUChapter id="chapter-2">
+        <Number>CHAPTER 2</Number>
+        <Title>Registration of substances</Title>
+
+        <P1group>
+          <Title>General obligation to register</Title>
+
+          <P1 id="article-3">
+            <Pnumber>Article 3</Pnumber>
+            <P1para>
+              <Text>Any manufacturer or importer of a substance shall submit a registration to the Agency.</Text>
+            </P1para>
+          </P1>
+        </P1group>
+      </EUChapter>
+    </EUTitle>
+
+    <EUTitle id="title-II">
+      <Number>TITLE II</Number>
+      <Title>EVALUATION</Title>
+
+      <P1group>
+        <P1 id="article-4">
+          <Pnumber>Article 4</Pnumber>
+          <P1para>
+            <Text>The Agency shall evaluate all registrations for compliance.</Text>
+          </P1para>
+        </P1>
+      </P1group>
+    </EUTitle>
+
+    <SignedSection>
+      <Para><Text>Done at Brussels, 1 January 2024.</Text></Para>
+      <Para><Text>For the European Parliament</Text></Para>
+    </SignedSection>
+  </EUBody>
+</EURetained>
+</Legislation>

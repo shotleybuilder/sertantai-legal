@@ -1,0 +1,57 @@
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             DocumentURI="http://www.legislation.gov.uk/eudr/2024/50"
+             RestrictExtent="E+W+S+N.I.">
+<EURetained>
+  <EUBody>
+    <EUChapter id="chapter-I">
+      <Number>CHAPTER I</Number>
+      <Title>COMMON PROVISIONS</Title>
+
+      <P1group>
+        <Title>Subject matter</Title>
+
+        <P1 id="article-1">
+          <Pnumber>Article 1</Pnumber>
+          <P1para>
+            <Text>This Directive lays down rules on integrated prevention and control of pollution.</Text>
+          </P1para>
+        </P1>
+
+        <P1 id="article-2">
+          <Pnumber>Article 2</Pnumber>
+          <P1para>
+            <P2 id="article-2-1">
+              <Pnumber>1</Pnumber>
+              <P2para>
+                <Text>This Directive shall apply to the industrial activities listed in Annex I.</Text>
+              </P2para>
+            </P2>
+            <P2 id="article-2-2">
+              <Pnumber>2</Pnumber>
+              <P2para>
+                <Text>This Directive shall not apply to research activities.</Text>
+              </P2para>
+            </P2>
+          </P1para>
+        </P1>
+      </P1group>
+    </EUChapter>
+
+    <EUChapter id="chapter-II">
+      <Number>CHAPTER II</Number>
+      <Title>PROVISIONS FOR ACTIVITIES LISTED IN ANNEX I</Title>
+
+      <P1group>
+        <Title>Permits</Title>
+
+        <P1 id="article-3">
+          <Pnumber>Article 3</Pnumber>
+          <P1para>
+            <Text>No installation shall operate without a permit issued in accordance with this Directive.</Text>
+          </P1para>
+        </P1>
+      </P1group>
+    </EUChapter>
+  </EUBody>
+</EURetained>
+</Legislation>
