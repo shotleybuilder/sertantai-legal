@@ -83,6 +83,16 @@
 	$: isFirst = currentIndex === 0;
 	$: isLast = currentIndex === records.length - 1;
 
+	// Reset state when modal opens (allows re-parsing the same law)
+	$: if (open) {
+		lastParsedName = null;
+		failedNames = new Set();
+		workflowComplete = false;
+		parseResult = null;
+		parseError = null;
+		stageProgress = initStageProgress();
+	}
+
 	// Parse current record when index changes
 	$: if (
 		open &&
