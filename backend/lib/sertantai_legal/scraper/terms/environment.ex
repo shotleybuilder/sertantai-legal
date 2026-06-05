@@ -75,7 +75,9 @@ defmodule SertantaiLegal.Scraper.Terms.Environment do
 
   @general [
     "environment",
-    "circular economy"
+    "circular economy",
+    "mercury",
+    "sustainability"
   ]
 
   @gmos [
@@ -124,7 +126,8 @@ defmodule SertantaiLegal.Scraper.Terms.Environment do
   @radiological [
     "nuclear",
     "radioactive",
-    "atomic energy"
+    "atomic energy",
+    "ionising radiation"
   ]
 
   @tft [

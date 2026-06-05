@@ -22,12 +22,18 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
 
   @oh_s [
     "health and safety",
+    "safety and health",
     "safety and security",
     "accident",
     "consultation of employee",
     "protection at work",
     "reach",
-    "riddor"
+    "riddor",
+    "substances and mixtures",
+    "labelling and packaging",
+    "display screen",
+    "construction site",
+    "occupational exposure"
   ]
 
   @fire_safety [
@@ -59,7 +65,10 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
     "employment tribunal",
     "employment relation",
     "maternity",
-    "protection from redundancy"
+    "protection from redundancy",
+    "young people at work",
+    "equal treatment in employment",
+    "works council"
   ]
 
   @hr_pay [
@@ -95,7 +104,12 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
     "product safety",
     "cosmetic products",
     "toys",
-    "consumer"
+    "consumer",
+    "machinery",
+    "pressure equipment",
+    "pressure vessel",
+    "electromagnetic compatibility",
+    "lifts"
   ]
 
   @public_safety [
@@ -141,6 +155,7 @@ defmodule SertantaiLegal.Scraper.Terms.HealthSafety do
     "goods vehicle",
     "passenger",
     "driver",
+    "driving licence",
     "pedestrian",
     "disabled persons' vehicles",
     "parking"
