@@ -37,9 +37,11 @@
 
 	// Seed preview
 	let seedPreview: { name: string; title: string; family: string; score: number }[] | null = null;
+	let seedUncategorized: { name: string; title: string; family: string }[] | null = null;
 	let seedLoading = false;
 	let seedStrong = 0;
 	let seedSingle = 0;
+	let showUncategorized = false;
 
 	// Notes editing
 	let editingNotes: { name: string; value: string } | null = null;
@@ -350,6 +352,35 @@
 
 			seedStrong = seedPreview.filter((r) => r.score >= 2).length;
 			seedSingle = seedPreview.filter((r) => r.score === 1).length;
+
+			// Stage 3: Uncategorized — laws with NO fitness data but matching geo + has a family
+			const uncatResult = await db.query<{
+				name: string;
+				title_en: string;
+				family: string;
+			}>(
+				`SELECT l.name, l.title_en, COALESCE(l.family, '') as family
+				 FROM laws l
+				 LEFT JOIN org_applicabilities oa ON oa.law_name = l.name
+				 WHERE l.is_making = true
+				   AND (l.live IS NULL OR l.live NOT LIKE '%Revoked%')
+				   AND (oa.status IS NULL OR oa.status NOT IN ('yes'))
+				   AND l.family IS NOT NULL AND l.family != ''
+				   AND ($1::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $1)
+				   AND (l.fitness_person IS NULL OR l.fitness_person = '{}')
+				   AND (l.fitness_place IS NULL OR l.fitness_place = '{}')
+				   AND (l.fitness_plant IS NULL OR l.fitness_plant = '{}')
+				   AND (l.fitness_process IS NULL OR l.fitness_process = '{}')
+				   AND (l.fitness_sector IS NULL OR l.fitness_sector = '{}')
+				 ORDER BY l.family, l.name`,
+				[regions]
+			);
+
+			seedUncategorized = uncatResult.rows.map((r) => ({
+				name: r.name,
+				title: r.title_en || '',
+				family: r.family
+			}));
 		} catch (err) {
 			console.error('Seed preview failed:', err);
 			alert(`Seed preview failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -398,6 +429,8 @@
 
 	function closeSeedPreview() {
 		seedPreview = null;
+		seedUncategorized = null;
+		showUncategorized = false;
 	}
 
 	async function confirmLaw(lawName: string) {
@@ -474,6 +507,18 @@
 	}
 
 	// ── Helpers ──────────────────────────────────────────────────────
+
+	function groupByFamily(
+		laws: { name: string; title: string; family: string }[]
+	): [string, { name: string; title: string; family: string }[]][] {
+		const map = new Map<string, { name: string; title: string; family: string }[]>();
+		for (const law of laws) {
+			const fam = law.family || 'Unclassified';
+			if (!map.has(fam)) map.set(fam, []);
+			map.get(fam)!.push(law);
+		}
+		return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
+	}
 
 	function str(v: unknown): string {
 		return String(v ?? '');
@@ -981,6 +1026,9 @@
 				<h2 class="text-lg font-semibold text-gray-900">Seed Preview</h2>
 				<p class="text-sm text-gray-500 mt-1">
 					SertantAI found <strong>{seedPreview.length}</strong> laws matching your profile.
+					{#if seedUncategorized && seedUncategorized.length > 0}
+						Plus <strong>{seedUncategorized.length}</strong> uncategorized laws requiring manual review.
+					{/if}
 				</p>
 				<div class="flex gap-4 mt-2">
 					<span class="text-xs">
@@ -991,6 +1039,12 @@
 						<span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>
 						Single match: {seedSingle}
 					</span>
+					{#if seedUncategorized && seedUncategorized.length > 0}
+						<span class="text-xs">
+							<span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1"></span>
+							Uncategorized: {seedUncategorized.length}
+						</span>
+					{/if}
 				</div>
 			</div>
 
@@ -1026,6 +1080,53 @@
 						{/each}
 					</tbody>
 				</table>
+
+				{#if seedUncategorized && seedUncategorized.length > 0}
+					<div class="mt-4 border-t border-gray-200 pt-3">
+						<button
+							on:click={() => (showUncategorized = !showUncategorized)}
+							class="flex items-center gap-2 text-xs font-medium text-amber-700 hover:text-amber-800"
+						>
+							<svg
+								class="w-3 h-3 transition-transform {showUncategorized ? 'rotate-90' : ''}"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								><path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 5l7 7-7 7"
+								/></svg
+							>
+							Uncategorized — Requires Manual Review ({seedUncategorized.length})
+						</button>
+						<p class="text-xs text-gray-500 mt-1 ml-5">
+							These laws have no fitness data. They are NOT seeded automatically — review them
+							manually in the Available panel.
+						</p>
+
+						{#if showUncategorized}
+							{@const grouped = groupByFamily(seedUncategorized)}
+							<div class="mt-2 ml-5 space-y-2 max-h-48 overflow-auto">
+								{#each grouped as [family, laws]}
+									<div>
+										<div class="text-xs font-medium text-amber-600">
+											{family} ({laws.length})
+										</div>
+										<div class="ml-2 space-y-0.5">
+											{#each laws as law}
+												<div class="text-xs text-gray-600 truncate" title={law.name}>
+													{law.title || law.name}
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 
 			<div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
