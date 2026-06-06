@@ -587,4 +587,169 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       assert latest_event == "restored"
     end
   end
+
+  # ── Activity feed endpoints ────────────────────────────────────
+
+  describe "GET /api/screening/events" do
+    test "returns empty list when no events exist", %{conn: conn} do
+      conn =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/events")
+
+      body = json_response(conn, 200)
+      assert body["events"] == []
+      assert body["total"] == 0
+    end
+
+    test "returns events after applicability changes", %{conn: conn} do
+      # Create an applicability change
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      conn2 =
+        build_conn()
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/events")
+
+      body = json_response(conn2, 200)
+      assert body["total"] == 1
+      assert length(body["events"]) == 1
+      event = hd(body["events"])
+      assert event["law_name"] == "UK_uksi_2024_TEST1"
+      assert event["event"] == "added"
+    end
+
+    test "supports pagination", %{conn: conn} do
+      # Create two changes
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      build_conn()
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST2", %{status: "yes"})
+      |> json_response(200)
+
+      conn2 =
+        build_conn()
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/events?limit=1&offset=0")
+
+      body = json_response(conn2, 200)
+      assert body["total"] == 2
+      assert length(body["events"]) == 1
+    end
+  end
+
+  describe "GET /api/screening/events/:law_name" do
+    test "returns per-law history", %{conn: conn} do
+      # Add then remove
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      build_conn()
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "unreviewed"})
+      |> json_response(200)
+
+      conn2 =
+        build_conn()
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/events/UK_uksi_2024_TEST1")
+
+      body = json_response(conn2, 200)
+      assert body["law_name"] == "UK_uksi_2024_TEST1"
+      assert body["count"] == 2
+      # Most recent first
+      [first, second] = body["events"]
+      assert first["event"] == "removed"
+      assert second["event"] == "added"
+    end
+  end
+
+  # ── Undo endpoint ──────────────────────────────────────────────
+
+  describe "POST /api/screening/undo" do
+    test "undoes the most recent action", %{conn: conn, org_id_binary: org_id_binary} do
+      # Add a law
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      # Undo it
+      conn2 =
+        build_conn()
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> post("/api/screening/undo")
+
+      body = json_response(conn2, 200)
+      assert body["undone"] == true
+      assert body["law_name"] == "UK_uksi_2024_TEST1"
+      assert body["restored_to"] == "unreviewed"
+
+      # Verify the applicability record was deleted (first event, no status_before)
+      {:ok, %{rows: rows}} =
+        Repo.query(
+          "SELECT status FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+          [org_id_binary, "UK_uksi_2024_TEST1"]
+        )
+
+      assert rows == []
+    end
+
+    test "undoes removal (restores to yes)", %{conn: conn, org_id_binary: org_id_binary} do
+      # Add then remove
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      build_conn()
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "unreviewed"})
+      |> json_response(200)
+
+      # Undo the removal
+      conn2 =
+        build_conn()
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> post("/api/screening/undo")
+
+      body = json_response(conn2, 200)
+      assert body["restored_to"] == "yes"
+
+      # Verify restored
+      {:ok, %{rows: [[status]]}} =
+        Repo.query(
+          "SELECT status FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+          [org_id_binary, "UK_uksi_2024_TEST1"]
+        )
+
+      assert status == "yes"
+    end
+
+    test "returns 404 when no events to undo", %{conn: conn} do
+      conn =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> post("/api/screening/undo")
+
+      assert json_response(conn, 404)["error"] == "No events to undo"
+    end
+  end
 end

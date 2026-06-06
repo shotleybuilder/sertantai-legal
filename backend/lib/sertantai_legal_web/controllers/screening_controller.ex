@@ -303,6 +303,69 @@ defmodule SertantaiLegalWeb.ScreeningController do
     json(conn, %{law_name: law_name, events: events, count: length(events)})
   end
 
+  @doc "POST /api/screening/undo — undo the most recent screening action"
+  def undo(conn, _params) do
+    org_id = conn.assigns.organization_id
+    user_id = conn.assigns[:current_user_id] || "unknown"
+    {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+
+    # Find most recent event
+    case Repo.query(
+           "SELECT id, law_name, event, status_before, status_after, source FROM applicability_events WHERE organization_id = $1 ORDER BY inserted_at DESC LIMIT 1",
+           [org_id_binary]
+         ) do
+      {:ok, %{rows: [[event_id, law_name, event, status_before, _status_after, _source]]}} ->
+        if event == "restored" do
+          conn |> put_status(400) |> json(%{error: "Cannot undo an undo"})
+        else
+          # Reverse: apply status_before
+          if status_before do
+            OrgApplicability.upsert(%{
+              organization_id: org_id,
+              law_name: law_name,
+              status: status_before,
+              source: :manual,
+              reviewed_at: DateTime.utc_now(),
+              reviewed_by: user_id
+            })
+          else
+            # First event — delete the record entirely
+            {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+
+            Repo.query(
+              "DELETE FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+              [org_id_binary, law_name]
+            )
+          end
+
+          # Log the undo as a 'restored' event
+          log_event(
+            org_id,
+            law_name,
+            "restored",
+            user_id,
+            nil,
+            status_before || "unreviewed",
+            "manual",
+            %{undone_event_id: Ecto.UUID.load!(event_id)}
+          )
+
+          json(conn, %{
+            undone: true,
+            law_name: law_name,
+            event: event,
+            restored_to: status_before || "unreviewed"
+          })
+        end
+
+      {:ok, %{rows: []}} ->
+        conn |> put_status(404) |> json(%{error: "No events to undo"})
+
+      {:error, reason} ->
+        conn |> put_status(500) |> json(%{error: inspect(reason)})
+    end
+  end
+
   # ── Profile endpoints ───────────────────────────────────────────
 
   @doc "GET /api/screening/profile — get org's screening profile"

@@ -43,6 +43,10 @@
 	let seedSingle = 0;
 	let showUncategorized = false;
 
+	// Undo toast
+	let undoToast: { lawName: string; action: string } | null = null;
+	let undoTimer: ReturnType<typeof setTimeout> | null = null;
+
 	// Notes editing
 	let editingNotes: { name: string; value: string } | null = null;
 
@@ -223,6 +227,12 @@
 
 		// 3. Rebuild both panels to reflect the move
 		await rebuildPanels();
+
+		// 4. Show undo toast
+		showUndoToast(
+			lawName,
+			status === 'yes' ? 'Added' : status === 'excluded' ? 'Excluded' : 'Removed'
+		);
 	}
 
 	async function bulkSetStatus(lawNames: string[], status: string) {
@@ -272,6 +282,59 @@
 		);
 
 		editingNotes = null;
+	}
+
+	// ── Undo ────────────────────────────────────────────────────────
+
+	function showUndoToast(lawName: string, action: string) {
+		if (undoTimer) clearTimeout(undoTimer);
+		undoToast = { lawName, action };
+		undoTimer = setTimeout(() => {
+			undoToast = null;
+			undoTimer = null;
+		}, 5000);
+	}
+
+	async function handleUndo() {
+		if (!undoToast) return;
+		undoToast = null;
+		if (undoTimer) {
+			clearTimeout(undoTimer);
+			undoTimer = null;
+		}
+
+		try {
+			const response = await authFetch(`${API_URL}/api/screening/undo`, {
+				method: 'POST'
+			});
+			if (!response.ok) {
+				const err = await response.json().catch(() => ({ error: 'Unknown' }));
+				console.warn('Undo failed:', err.error);
+				return;
+			}
+
+			const result = await response.json();
+
+			// Write-back to PGLite
+			const user = $adminAuth;
+			if (db && user?.org_id) {
+				if (result.restored_to === 'unreviewed') {
+					await db.query('DELETE FROM org_applicabilities WHERE law_name = $1', [result.law_name]);
+				} else {
+					await db.query(
+						`INSERT INTO org_applicabilities (id, organization_id, law_name, status, source, reviewed_at, reviewed_by, inserted_at, updated_at)
+						 VALUES (gen_random_uuid(), $1, $2, $3, 'manual', NOW(), $4, NOW(), NOW())
+						 ON CONFLICT (organization_id, law_name) DO UPDATE SET
+						   status = $3, reviewed_at = NOW(), reviewed_by = $4, updated_at = NOW()`,
+						[user.org_id, result.law_name, result.restored_to, user.email || user.id || null]
+					);
+				}
+			}
+
+			await rebuildPanels();
+		} catch (err) {
+			console.error('Undo error:', err);
+		}
 	}
 
 	// ── Seed preview ────────────────────────────────────────────────
@@ -1088,6 +1151,31 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Undo Toast -->
+{#if undoToast}
+	<div
+		class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-lg shadow-lg"
+	>
+		<span class="text-sm">{undoToast.action}: {undoToast.lawName}</span>
+		<button
+			on:click={handleUndo}
+			class="px-3 py-1 text-sm font-medium bg-white text-gray-900 rounded hover:bg-gray-100"
+		>
+			Undo
+		</button>
+		<button on:click={() => (undoToast = null)} class="text-gray-400 hover:text-white">
+			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+				><path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M6 18L18 6M6 6l12 12"
+				/></svg
+			>
+		</button>
+	</div>
+{/if}
 
 <!-- Seed Preview Modal -->
 {#if seedPreview}
