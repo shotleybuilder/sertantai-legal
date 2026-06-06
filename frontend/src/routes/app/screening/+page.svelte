@@ -70,7 +70,9 @@
 		SELECT ${SHARED_COLUMNS},
 		       oa.status as app_status,
 		       oa.notes as app_notes,
-		       oa.reviewed_at
+		       oa.reviewed_at,
+		       oa.reviewed_by,
+		       oa.source as app_source
 		FROM laws l
 		INNER JOIN org_applicabilities oa ON oa.law_name = l.name
 		WHERE oa.status = 'yes'
@@ -168,6 +170,20 @@
 			name: 'reviewed_at',
 			dataType: 'date',
 			postgresType: 'timestamptz',
+			nullable: true,
+			hasDefault: false
+		},
+		{
+			name: 'reviewed_by',
+			dataType: 'text',
+			postgresType: 'text',
+			nullable: true,
+			hasDefault: false
+		},
+		{
+			name: 'app_source',
+			dataType: 'text',
+			postgresType: 'text',
 			nullable: true,
 			hasDefault: false
 		}
@@ -384,6 +400,26 @@
 		seedPreview = null;
 	}
 
+	async function confirmLaw(lawName: string) {
+		// Transfer ownership from SertantAI to user
+		const user = $adminAuth;
+		if (!user?.org_id || !db) return;
+
+		await authFetch(`${API_URL}/api/screening/applicabilities/${encodeURIComponent(lawName)}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ status: 'yes', notes: null })
+		});
+
+		await db.query(
+			`UPDATE org_applicabilities SET source = 'manual', reviewed_by = $1, reviewed_at = NOW(), updated_at = NOW()
+			 WHERE law_name = $2`,
+			[user.email || user.id || null, lawName]
+		);
+
+		await rebuildPanels();
+	}
+
 	// ── Panel builders ──────────────────────────────────────────────
 
 	async function rebuildPanels() {
@@ -530,7 +566,8 @@
 		{ name: 'name', label: 'Law', width: 140, dataType: 'text' },
 		{ name: 'title_en', label: 'Title', width: 250, dataType: 'text' },
 		{ name: 'family', label: 'Family', width: 150, dataType: 'text' },
-		{ name: 'app_notes', label: 'Notes', width: 180, dataType: 'text' },
+		{ name: 'app_source', label: 'Source', width: 90, dataType: 'text' },
+		{ name: 'app_notes', label: 'Notes', width: 160, dataType: 'text' },
 		{ name: 'duty_holder', label: 'Duty Holders', width: 150, dataType: 'json' },
 		{ name: 'reviewed_at', label: 'Added', width: 80, dataType: 'date' }
 	];
@@ -809,6 +846,7 @@
 								'name',
 								'title_en',
 								'family',
+								'app_source',
 								'app_notes',
 								'duty_holder',
 								'reviewed_at'
@@ -885,6 +923,38 @@
 									</div>
 								{:else}
 									<span class="text-gray-300">-</span>
+								{/if}
+							{:else if column === 'app_source'}
+								{@const source = str(value)}
+								{@const lawName = str(row.name)}
+								{#if source === 'screener'}
+									<div class="flex items-center gap-1">
+										<span class="px-1.5 py-0.5 text-xs rounded-full bg-violet-100 text-violet-700"
+											>SertantAI</span
+										>
+										<button
+											on:click={() => confirmLaw(lawName)}
+											class="p-0.5 text-violet-400 hover:text-emerald-600 hover:bg-emerald-50 rounded"
+											title="Confirm — transfer to your ownership"
+										>
+											<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+												><path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M5 13l4 4L19 7"
+												/></svg
+											>
+										</button>
+									</div>
+								{:else if source === 'enhesa_import'}
+									<span class="px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600"
+										>Import</span
+									>
+								{:else}
+									<span class="px-1.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700"
+										>Confirmed</span
+									>
 								{/if}
 							{:else if column === 'reviewed_at'}
 								<span class="text-xs text-gray-500">{formatDate(str(value))}</span>
