@@ -224,6 +224,85 @@ defmodule SertantaiLegalWeb.ScreeningController do
     end
   end
 
+  # ── Event feed endpoints ────────────────────────────────────────
+
+  @doc "GET /api/screening/events — activity feed for the org (paginated)"
+  def events(conn, params) do
+    org_id = conn.assigns.organization_id
+    limit = min(String.to_integer(params["limit"] || "50"), 200)
+    offset = String.to_integer(params["offset"] || "0")
+
+    {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+
+    {:ok, %{rows: rows}} =
+      Repo.query(
+        """
+        SELECT id, law_name, event, actor, status_before, status_after, source, metadata, inserted_at
+        FROM applicability_events
+        WHERE organization_id = $1
+        ORDER BY inserted_at DESC
+        LIMIT $2 OFFSET $3
+        """,
+        [org_id_binary, limit, offset]
+      )
+
+    {:ok, %{rows: [[total]]}} =
+      Repo.query(
+        "SELECT COUNT(*) FROM applicability_events WHERE organization_id = $1",
+        [org_id_binary]
+      )
+
+    events =
+      Enum.map(rows, fn [id, law_name, event, actor, before, after_, source, metadata, at] ->
+        %{
+          id: Ecto.UUID.load!(id),
+          law_name: law_name,
+          event: event,
+          actor: actor,
+          status_before: before,
+          status_after: after_,
+          source: source,
+          metadata: metadata,
+          inserted_at: at
+        }
+      end)
+
+    json(conn, %{events: events, total: total, limit: limit, offset: offset})
+  end
+
+  @doc "GET /api/screening/events/:law_name — per-law history"
+  def law_events(conn, %{"law_name" => law_name}) do
+    org_id = conn.assigns.organization_id
+    {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+
+    {:ok, %{rows: rows}} =
+      Repo.query(
+        """
+        SELECT id, event, actor, status_before, status_after, source, metadata, inserted_at
+        FROM applicability_events
+        WHERE organization_id = $1 AND law_name = $2
+        ORDER BY inserted_at DESC
+        """,
+        [org_id_binary, law_name]
+      )
+
+    events =
+      Enum.map(rows, fn [id, event, actor, before, after_, source, metadata, at] ->
+        %{
+          id: Ecto.UUID.load!(id),
+          event: event,
+          actor: actor,
+          status_before: before,
+          status_after: after_,
+          source: source,
+          metadata: metadata,
+          inserted_at: at
+        }
+      end)
+
+    json(conn, %{law_name: law_name, events: events, count: length(events)})
+  end
+
   # ── Profile endpoints ───────────────────────────────────────────
 
   @doc "GET /api/screening/profile — get org's screening profile"

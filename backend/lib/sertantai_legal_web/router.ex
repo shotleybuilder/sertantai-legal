@@ -114,6 +114,8 @@ defmodule SertantaiLegalWeb.Router do
     get("/screening/profile", ScreeningController, :get_profile)
     put("/screening/profile", ScreeningController, :upsert_profile)
     get("/screening/vocabulary", ScreeningController, :vocabulary)
+    get("/screening/events", ScreeningController, :events)
+    get("/screening/events/:law_name", ScreeningController, :law_events)
     post("/screening/debug-dump", ScreeningController, :debug_dump)
 
     # Sync management endpoints (org-scoped, any authenticated user)

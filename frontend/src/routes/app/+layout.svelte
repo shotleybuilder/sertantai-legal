@@ -8,6 +8,7 @@
 	const navItems = [
 		{ href: '/app/screening', label: 'Screening' },
 		{ href: '/app/profile', label: 'Profile' },
+		{ href: '/app/activity', label: 'Activity' },
 		{ href: '/app/stats', label: 'Stats' }
 	];
 
