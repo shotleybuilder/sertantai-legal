@@ -199,11 +199,11 @@
 						<p class="text-xs text-gray-400 italic">No tags available for this dimension yet.</p>
 					{:else}
 						<div class="flex flex-wrap gap-1.5">
-							{#each tags as tag}
+							{#each tags as tag (dim.key + ':' + tag + ':' + selected.includes(tag))}
 								<button
 									on:click={() => toggleTag(dim.key, tag)}
 									class="px-2.5 py-1 text-xs rounded-full border transition-colors
-										{isSelected(dim.key, tag)
+										{selected.includes(tag)
 										? 'bg-emerald-100 border-emerald-300 text-emerald-800 font-medium'
 										: 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'}"
 								>

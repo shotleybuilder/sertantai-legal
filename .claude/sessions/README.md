@@ -228,6 +228,7 @@ AI integration, responsibility parsing, DRRP, taxa enrichment.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-06 | [auto-screening-build](2026-06-06-auto-screening-build.md) | [#102](https://github.com/shotleybuilder/sertantai-legal/issues/102) | Phase 8a-8d: org profile, scored matching, seed preview, source badges, uncategorized tier |
 | 2026-06-05 | [auto-screening](2026-06-05-auto-screening.md) | [#102](https://github.com/shotleybuilder/sertantai-legal/issues/102) | Auto-screening plan: scored matching, 3 external reviews, governance guidelines |
 | 2026-02-24 | [taxa-rust-migration-package](2026-02-24-taxa-rust-migration-package.md) | — | Taxa Rust migration package |
 | 2026-02-24 | [duty-detection-research](2026-02-24-duty-detection-research.md) | — | Duty detection research |
