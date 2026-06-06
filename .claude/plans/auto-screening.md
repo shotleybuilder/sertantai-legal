@@ -20,14 +20,22 @@ Model the profile as **tag selections** across dimensions. Tags come directly fr
 
 | Dimension | Example tags | Primary source | Notes |
 |-----------|-------------|---------------|-------|
-| **Country/Region** | UK, England, Scotland, Wales | `geo_extent`, `geo_region` | Primary geographic filter — not fitness |
-| **Activities** | employer, manufacturer, supplier, operator, importer | `fitness_person` | What roles the org plays |
+| **Country/Region** | England, Scotland, Wales | `geo_region` | Primary geographic filter |
+| **Governed Actors** | Org: Employer, SC: Contractor, Ind: Employee | `duty_holder`, `rights_holder` | DRRP actors with duties/rights — commercial orgs |
+| **Government Actors** | Gvt: Authority, Gvt: Minister, EU: Commission | `responsibility_holder`, `power_holder` | DRRP actors with responsibilities/powers — gov agencies |
 | **Locations** | premises, offshore, ship, aircraft | `fitness_place` | Physical site types (not geography) |
 | **Materials** | chemicals, explosives, asbestos, lead, dangerous goods | `fitness_plant` | What substances/equipment they work with |
 | **Processes** | construction work, diving operations, gas work | `fitness_process` | What activities they perform |
 | **Sector** | maritime, nuclear, water industry, offshore oil & gas | `fitness_sector` | Industry vertical |
 
-**Key distinction**: Country/Region uses the dedicated `geo_extent`/`geo_region` columns (primary filter), not `fitness_place`. Fitness place covers physical site types (premises, offshore, ship). Don't conflate geographic applicability with fitness.
+**Key distinctions**:
+- Country/Region uses `geo_region` (primary filter), not `fitness_place`
+- **Governed/Government actors use DRRP holder columns, NOT fitness_person**. `fitness_person`
+  has tags like "Crown application" which are too narrow. `duty_holder` has the actual actor
+  taxonomy: "Org: Employer", "SC: Contractor", "Ind: Employee". This is where the DRRP
+  making classification pays off — laws classified as Making have duty holders annotated.
+- A commercial company selects governed actors. A government agency selects government actors.
+  Some may select both.
 
 ### Where the profile lives
 
@@ -37,20 +45,23 @@ Model the profile as **tag selections** across dimensions. Tags come directly fr
 - Scoped by organization_id
 - Managed via `/app/profile` page
 
-> **BUILT (Phase 8a — commit 8321a79)**:
+> **BUILT (Phase 8a — commit 8321a79, updated 79d5c5c)**:
 > - Ash resource: `backend/lib/sertantai_legal/sync/org_screening_profile.ex`
-> - Migration: `priv/repo/migrations/20260606063125_add_org_screening_profile.exs`
-> - Array columns: `regions`, `activities`, `locations`, `materials`, `processes`, `sector`
+> - Migrations: `20260606063125` (initial) + `20260606111457` (add actor columns)
+> - Array columns: `regions`, `governed_actors`, `government_actors`, `activities` (legacy),
+>   `locations`, `materials`, `processes`, `sector`
 > - Upsert on `organization_id` (one profile per org)
 > - 3 endpoints on ScreeningController: `GET/PUT /api/screening/profile`, `GET /api/screening/vocabulary`
-> - Vocabulary endpoint auto-populates tags from actual fitness values in the corpus (unnest + distinct)
-> - Locations vocabulary excludes geographic regions (England, Scotland etc.) — those go in `regions`
-> - `/app/profile` page: tag picker pills per dimension, auto-save on every click, profile summary panel
-> - Profile nav added to `/app` layout
+> - **Vocabulary endpoint redesigned**: governed_actors from `duty_holder`/`rights_holder` JSONB,
+>   government_actors from `responsibility_holder`/`power_holder` JSONB. Filters governed vs
+>   government by prefix (Gvt:/EU:/HM/Crown = government, everything else = governed).
+> - Locations vocabulary excludes geographic regions — those go in `regions`
+> - `/app/profile` page: two actor sections ("Your Organisation & People" + "Government & Regulators"),
+>   tag picker pills per dimension, auto-save on every click, profile summary panel
 
 ## Matching Algorithm
 
-### Two-stage filter: Geography first, then Fitness
+### Three-stage filter: Family → Geography → DRRP Actors + Fitness
 
 **Stage 0: Family subscription filter** (using `OrgEntitlement.families`)
 ```
@@ -68,35 +79,45 @@ law.geo_extent overlaps profile.country_region
 ```
 This filters down to laws that apply to the customer's jurisdictions. A Scottish company doesn't need Welsh-only laws.
 
-**Stage 2: Scored fitness matching** (on the geo-filtered set)
+**Stage 2: Scored DRRP actor + fitness matching** (on the geo-filtered set)
 
-Simple OR across all dimensions produces too many false positives — a law matching
-`employer` (thousands of laws) floods the register and buries the specific `asbestos`
-laws the customer actually cares about. Instead, use a **match score**:
+Simple OR across all dimensions produces too many false positives. Instead, use a **match score**
+across 6 dimensions — DRRP actors (the primary signal) plus fitness (secondary):
 
 ```sql
 SELECT l.name,
-       (CASE WHEN l.fitness_person  && $1 THEN 1 ELSE 0 END +
-        CASE WHEN l.fitness_place   && $2 THEN 1 ELSE 0 END +
-        CASE WHEN l.fitness_plant   && $3 THEN 1 ELSE 0 END +
-        CASE WHEN l.fitness_process && $4 THEN 1 ELSE 0 END +
-        CASE WHEN l.fitness_sector  && $5 THEN 1 ELSE 0 END) as match_score
-FROM laws l
-WHERE l.is_making = true
-  AND match_score > 0
-ORDER BY match_score DESC
+       (CASE WHEN duty_holder matches governed_actors    THEN 1 ELSE 0 END +  -- DRRP
+        CASE WHEN resp_holder matches government_actors  THEN 1 ELSE 0 END +  -- DRRP
+        CASE WHEN fitness_place  && locations            THEN 1 ELSE 0 END +  -- Fitness
+        CASE WHEN fitness_plant  && materials            THEN 1 ELSE 0 END +  -- Fitness
+        CASE WHEN fitness_process && processes           THEN 1 ELSE 0 END +  -- Fitness
+        CASE WHEN fitness_sector && sector               THEN 1 ELSE 0 END)   -- Fitness
+       as match_score
 ```
 
-Laws matching more dimensions score higher and sort first. The UI can then offer:
-- **Default**: Match ANY (score > 0) — inclusive, shows everything that touches the profile
-- **Strict**: Match 2+ dimensions — reduces noise, surfaces laws most relevant to the org
-- User toggle between modes
+**Critical design decision**: DRRP actors (duty_holder, responsibility_holder) are the primary
+matching dimension, NOT fitness_person. `fitness_person` has narrow tags like "Crown application"
+that miss broad applicability. `duty_holder` has the actual actor taxonomy: "Org: Employer"
+appears on HSWA 1974 and every law that imposes duties on employers. This is where the Making
+classification investment pays off — every Making law has duty holders annotated by fractalaw.
 
-> **BUILT (Phase 8b — commit df330dd)**:
+**Result**: Using DRRP actors increased recall from 27 to 65 laws (+140%) for a test org
+with just `Org: Employer` selected. HSWA 1974 (the foundational UK safety law) was missing
+with fitness_person matching but found immediately with duty_holder matching.
+
+DRRP actor matching uses `jsonb_array_elements_text(duty_holder->'values')` to extract the
+values array from the JSONB column and check for ANY match against the profile's actor list.
+
+Laws matching more dimensions score higher and sort first.
+
+> **BUILT (Phase 8b — commit df330dd, updated 79d5c5c)**:
 > - Matching query runs entirely in PGLite (instant, no backend round-trip)
-> - Profile loaded from backend API, then matched against local PGLite `laws` table
-> - Query includes NULL-safety on fitness arrays: `l.fitness_person IS NOT NULL AND l.fitness_person && $1`
-> - Geo filter: `$6::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $6`
+> - Profile loaded from backend API, entitlement families loaded for Stage 0 filter
+> - 6 scoring dimensions: governed_actors→duty_holder, government_actors→responsibility_holder,
+>   locations→fitness_place, materials→fitness_plant, processes→fitness_process, sector→fitness_sector
+> - DRRP matching via `jsonb_array_elements_text(duty_holder->'values') v WHERE v = ANY($1)`
+> - Geo filter: `$7::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $7`
+> - Family filter: `l.family = ANY($8)` when entitlement exists
 > - Excludes laws already in register: `oa.status IS NULL OR oa.status NOT IN ('yes')`
 > - Sync gate: button disabled when `$syncStatus.syncing` is true
 > - "Seed My Register" button in screening page stats bar
