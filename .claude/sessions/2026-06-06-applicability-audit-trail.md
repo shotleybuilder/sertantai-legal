@@ -10,7 +10,7 @@
 - [x] Phase 1: Event table + logging (d4dbd6b)
 - [x] Phase 2: Activity feed endpoints + /app/activity page (4bfc1d5)
 - [x] Phase 3: Undo endpoint + toast (61ec126)
-- [ ] Phase 4: Match reason display (tooltip on seeded laws, deprecation preview)
+- [x] Phase 4: Match reason display — per-law metadata, tooltips, activity feed (1b1016d)
 
 ## Notes
 - Plan at ~/.claude/plans/spicy-churning-widget.md
@@ -21,3 +21,13 @@
 - **13:45** Phase 1: ApplicabilityEvent resource + migration + event logging in upsert/bulk_upsert
 - **14:00** Phase 2: GET events (paginated) + GET events/:law_name + /app/activity page
 - **14:15** Phase 3: POST undo + undo toast in screening page (5s auto-dismiss)
+- **14:45** Phase 4: per-law match_reason in seed metadata, source tooltips, activity feed display
+
+**Ended**: 2026-06-06 15:00
+**Commits**: `d4dbd6b`, `4bfc1d5`, `61ec126`, `1b1016d`
+
+## Summary
+- Completed: 4 of 4 phases
+- Files: applicability_event.ex, screening_controller.ex, router.ex, 2 migrations, /app/activity/+page.svelte, /app/screening/+page.svelte, /app/+layout.svelte
+- Outcome: Full audit trail built — insert-only event table, activity feed page, undo with toast, per-law match_reason explainability. 32 screening controller tests.
+- Next: Deprecation preview (re-seed shows stale laws), match_reason stored on applicability record for richer tooltips
