@@ -262,7 +262,7 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
   end
 
   describe "GET /api/screening/vocabulary" do
-    test "returns fitness tag vocabulary from corpus", %{conn: conn} do
+    test "returns DRRP actor + fitness vocabulary from corpus", %{conn: conn} do
       conn =
         conn
         |> put_auth_header(%{"org_id" => @test_org_id})
@@ -270,10 +270,11 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
 
       body = json_response(conn, 200)
 
-      # Should contain tags from our test laws
-      assert is_list(body["activities"])
-      assert "employer" in body["activities"]
-      assert "operator" in body["activities"]
+      # Governed actors from duty_holder JSONB (real corpus has Org: Employer etc.)
+      assert is_list(body["governed_actors"])
+
+      # Government actors from responsibility_holder JSONB
+      assert is_list(body["government_actors"])
 
       assert is_list(body["regions"])
       assert "England" in body["regions"]
