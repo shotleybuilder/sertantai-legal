@@ -189,8 +189,9 @@ export async function startSync(): Promise<void> {
 		);
 		const existingCount = countResult.rows[0]?.count ?? 0;
 
-		// Clear stale subscriptions from previous schema versions
-		for (const key of ['uk-lrt', 'laws-uk', 'laws-au', 'laws']) {
+		// Clear stale subscriptions from OLD schema versions only
+		// (don't clear 'laws' — that would force a full re-sync and cause duplicate key errors)
+		for (const key of ['uk-lrt', 'laws-uk', 'laws-au']) {
 			try {
 				await pg.electric.deleteSubscription(key);
 			} catch {
