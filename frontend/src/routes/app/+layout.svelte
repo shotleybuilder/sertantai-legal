@@ -41,7 +41,17 @@
 	<div class="h-screen flex items-center justify-center bg-gray-50">
 		<div class="text-center">
 			<h1 class="text-xl font-semibold text-gray-900 mb-2">No Organisation</h1>
-			<p class="text-gray-600">Your account is not associated with an organisation.</p>
+			<p class="text-gray-600 mb-4">
+				Your account is not linked to an organisation. The compliance dashboard requires an
+				organisation context.
+			</p>
+			{#if user.role === 'admin'}
+				<p class="text-sm text-gray-500 mb-4">
+					You are signed in as a platform admin. Use the
+					<a href="/admin" class="text-emerald-600 underline font-medium">Admin panel</a>
+					for platform management, or sign in with an organisation account to access screening.
+				</p>
+			{/if}
 		</div>
 	</div>
 {:else}
