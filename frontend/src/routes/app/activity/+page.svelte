@@ -55,6 +55,15 @@
 		}
 	}
 
+	function getMatchFamily(metadata: Record<string, unknown> | null): string {
+		if (!metadata || !metadata['match_reason']) return '';
+		const reason = metadata['match_reason'];
+		if (typeof reason === 'object' && reason !== null && 'family' in reason) {
+			return String((reason as Record<string, unknown>)['family'] || '');
+		}
+		return '';
+	}
+
 	function getMatchScore(metadata: Record<string, unknown> | null): string {
 		if (!metadata || !metadata['match_reason']) return '';
 		const reason = metadata['match_reason'];
@@ -206,7 +215,10 @@
 						{/if}
 						{#if event.metadata && event.metadata['match_reason']}
 							<div class="text-xs text-violet-500 mt-0.5">
-								Matched: score {getMatchScore(event.metadata)}
+								Score: {getMatchScore(event.metadata)}
+								{#if getMatchFamily(event.metadata)}
+									· {getMatchFamily(event.metadata)}
+								{/if}
 							</div>
 						{/if}
 					</div>

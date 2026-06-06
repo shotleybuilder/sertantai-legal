@@ -5,17 +5,19 @@
 **Plan refs**: .claude/plans/auto-screening.md (G5 explainability, G6 defensibility, deprecation preview)
 
 ## Todo
-- [ ] Review #99 + related plan items (G5, G6, deprecation preview)
-- [ ] Design audit trail schema (event log table)
-- [ ] Design: what gets tracked (add/remove/confirm/seed/exclude)
-- [ ] Design: rollback UX (undo last change? restore to point in time?)
-- [ ] Implementation
-- [ ] match_reason JSONB for explainability (G5)
+- [x] Review #99 + related plan items (G5, G6, deprecation preview)
+- [x] Design audit trail schema — separate event table, JSONB metadata
+- [x] Phase 1: Event table + logging (d4dbd6b)
+- [x] Phase 2: Activity feed endpoints + /app/activity page (4bfc1d5)
+- [x] Phase 3: Undo endpoint + toast (61ec126)
+- [ ] Phase 4: Match reason display (tooltip on seeded laws, deprecation preview)
 
 ## Notes
-- Current: org_applicabilities stores only latest state (reviewed_at, reviewed_by, source)
-- Need: insert-only event log showing who changed what and when
-- "SertantAI recommends; the duty holder decides" — audit is the defensibility argument (G6)
-- Deprecation preview needs to compare current match_score=0 against screener-seeded laws
-- Related: #99 (audit trail), G5 (explainability), G6 (defensibility), G9 (per-tag metrics)
-- **13:00** Plan approved: separate event table (applicability_events), insert-only, JSONB metadata for match_reason. 4 phases: event logging → activity feed → undo → match reason display
+- Plan at ~/.claude/plans/spicy-churning-widget.md
+- Separate `applicability_events` table (insert-only, JSONB metadata)
+- 7 event types: added, removed, excluded, seeded, confirmed, restored, bulk_seeded
+- 31 screening controller tests total (12 new for audit trail)
+- **13:00** Plan approved
+- **13:45** Phase 1: ApplicabilityEvent resource + migration + event logging in upsert/bulk_upsert
+- **14:00** Phase 2: GET events (paginated) + GET events/:law_name + /app/activity page
+- **14:15** Phase 3: POST undo + undo toast in screening page (5s auto-dismiss)

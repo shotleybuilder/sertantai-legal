@@ -532,14 +532,20 @@
 
 		const lawNames = seedPreview.map((r) => r.name);
 
-		// Build match_reason per law for explainability (G5)
+		// Build match_reason metadata (G5 explainability)
+		const matchReasons: Record<string, { score: number; family: string }> = {};
+		for (const law of seedPreview) {
+			matchReasons[law.name] = { score: law.score, family: law.family };
+		}
+
 		const response = await authFetch(`${API_URL}/api/screening/applicabilities/bulk`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				law_names: lawNames,
 				status: 'yes',
-				source: 'screener'
+				source: 'screener',
+				metadata: { match_reasons: matchReasons }
 			})
 		});
 
@@ -1110,7 +1116,9 @@
 								{@const lawName = str(row.name)}
 								{#if source === 'screener'}
 									<div class="flex items-center gap-1">
-										<span class="px-1.5 py-0.5 text-xs rounded-full bg-violet-100 text-violet-700"
+										<span
+											class="px-1.5 py-0.5 text-xs rounded-full bg-violet-100 text-violet-700 cursor-help"
+											title="Seeded by SertantAI based on your profile. Click ✓ to confirm."
 											>SertantAI</span
 										>
 										<button
@@ -1129,12 +1137,14 @@
 										</button>
 									</div>
 								{:else if source === 'enhesa_import'}
-									<span class="px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600"
-										>Import</span
+									<span
+										class="px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 cursor-help"
+										title="Imported from Enhesa legacy register">Import</span
 									>
 								{:else}
-									<span class="px-1.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700"
-										>Confirmed</span
+									<span
+										class="px-1.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700 cursor-help"
+										title="Confirmed by {str(row.reviewed_by) || 'user'}">Confirmed</span
 									>
 								{/if}
 							{:else if column === 'reviewed_at'}

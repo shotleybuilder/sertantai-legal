@@ -99,6 +99,19 @@ defmodule SertantaiLegalWeb.ScreeningController do
 
         case result do
           {:ok, _} ->
+            # Extract per-law match_reason if available (G5 explainability)
+            per_law_metadata =
+              case params["metadata"] do
+                %{"match_reasons" => reasons} when is_map(reasons) ->
+                  case Map.get(reasons, law_name) do
+                    nil -> params["metadata"]
+                    reason -> %{"match_reason" => reason}
+                  end
+
+                other ->
+                  other
+              end
+
             log_event(
               org_id,
               law_name,
@@ -107,7 +120,7 @@ defmodule SertantaiLegalWeb.ScreeningController do
               previous,
               status,
               source_str,
-              params["metadata"]
+              per_law_metadata
             )
 
           _ ->

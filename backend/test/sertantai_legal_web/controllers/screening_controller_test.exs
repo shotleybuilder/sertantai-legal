@@ -743,6 +743,51 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       assert status == "yes"
     end
 
+    test "seeded events capture per-law match_reason in metadata", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> post("/api/screening/applicabilities/bulk", %{
+        law_names: ["UK_uksi_2024_TEST1", "UK_uksi_2024_TEST2"],
+        status: "yes",
+        source: "screener",
+        metadata: %{
+          match_reasons: %{
+            "UK_uksi_2024_TEST1" => %{score: 2, family: "OH&S"},
+            "UK_uksi_2024_TEST2" => %{score: 1, family: "Fire"}
+          }
+        }
+      })
+      |> json_response(200)
+
+      # Verify per-law match_reason in event metadata
+      {:ok, %{rows: rows}} =
+        Repo.query(
+          "SELECT law_name, metadata FROM applicability_events WHERE organization_id = $1 ORDER BY law_name",
+          [org_id_binary]
+        )
+
+      assert length(rows) == 2
+
+      for [law_name, metadata] <- rows do
+        assert metadata != nil
+        assert metadata["match_reason"] != nil
+
+        case law_name do
+          "UK_uksi_2024_TEST1" ->
+            assert metadata["match_reason"]["score"] == 2
+            assert metadata["match_reason"]["family"] == "OH&S"
+
+          "UK_uksi_2024_TEST2" ->
+            assert metadata["match_reason"]["score"] == 1
+            assert metadata["match_reason"]["family"] == "Fire"
+        end
+      end
+    end
+
     test "returns 404 when no events to undo", %{conn: conn} do
       conn =
         conn
