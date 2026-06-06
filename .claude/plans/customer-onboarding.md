@@ -338,34 +338,55 @@ Two-panel split view (Available pool ↔ My Register):
 
 ---
 
-## Phase 8: Automated L3 Screening (Taxa + Fitness)
+## Phase 8: Automated L3 Screening (DRRP Actors + Fitness) ✅
 
-Use Taxa (DRRP roles) and Fitness fields to automate L3 applicability recommendations, replacing manual curation. Tracked in #102.
+Deterministic applicability screening using DRRP actors as primary signal, fitness as secondary.
+Plan: `.claude/plans/auto-screening.md`. Tracked in #102.
 
-### 8.1 — Org profile model
+### 8.1 — Org profile model ✅
 
-Define what we know about an org: sector, activities, site types, workforce composition. This drives Fitness matching. Lives in Hub (org owns it) but Legal consumes it for screening.
+- `OrgScreeningProfile` resource with array columns per dimension
+- Profile dimensions: regions, governed_actors, government_actors, locations, materials, processes, sector
+- Governed actors from `duty_holder`/`rights_holder` (commercial orgs pick Org: Employer etc.)
+- Government actors from `responsibility_holder`/`power_holder` (gov agencies pick Gvt: Authority etc.)
+- `/app/profile` page with tag picker, auto-save, profile summary
+- Vocabulary auto-populated from actual DRRP holder values in the corpus
 
-### 8.2 — Fitness-based scoring
+### 8.2 — DRRP actor + fitness scoring ✅
 
-For laws with Fitness data, score relevance to org profile:
-- fitness_sector matches org sector → strong signal
-- fitness_person includes employer/employee → broadly applicable
-- fitness_place matches org site types → relevant
-- Combine into a recommendation (yes/no/review) with confidence
+Three-stage filter: Family subscription → Geographic → DRRP actors + Fitness scoring.
 
-### 8.3 — Seeding workflow (additive only)
+**Critical insight**: DRRP actors (`duty_holder`) are the primary matching dimension, not `fitness_person`.
+`fitness_person` has narrow tags ("Crown application") that miss broad applicability.
+`duty_holder` has the actual actor taxonomy ("Org: Employer") from fractalaw's Making classification.
+Result: 27→65 laws (+140% recall) for a test org with just `Org: Employer` selected.
+HSWA 1974 found via `duty_holder` but invisible to `fitness_person`.
 
-- Customer presses "Seed" → laws matching fitness profile added to register
-- Seeded laws use `source: 'screener'` (distinguished from manual)
-- Visual badge until confirmed by user
-- Repeatable: re-seeding finds the delta
+### 8.3 — Seeding workflow ✅
 
-### 8.4 — Validation against Enhesa
+- "Seed My Register" button with preview modal (Strong 2+ / Single 1 / Uncategorized tiers)
+- Seed execution: bulk upsert with `source: 'screener'`, `reviewed_by: 'sertantai'`
+- Source badges in register: SertantAI (violet) / Confirmed (green) / Import (grey)
+- Confirm button transfers ownership from SertantAI to user
+- Additive only, family-only fallback tier grouped by family in accordion
+- Debug dump endpoint for testing (`POST /api/screening/debug-dump`)
 
-Compare automated recommendations to Enhesa Yes/No decisions. Measure precision/recall per family.
+### 8.4 — Org model ✅ (#105)
 
-**Prerequisite**: Fitness coverage improving — currently 44% for EU laws (up from 21%), ~50% for UK domestic. Fractalaw iteratively expanding.
+- No org switcher needed — per-org user accounts instead
+- `/admin` = platform admin (no org), `/app` = org user (JWT carries org_id)
+- Per-user PGLite IndexedDB stores (#106) — `idb://sertantai-legal-{org_slug}`
+- Auth DB: admin (gmail, no org), QQ owner, test org + test user
+
+### 8.5 — Remaining
+
+- Validation against QQ Enhesa data (compare seeded vs Enhesa Yes set)
+- Dimension weighting (G2) — `plant: asbestos` more specific than `person: employer`
+- Explainability (G5) — `match_reason` JSONB showing why each law matched
+- Deprecation preview — surface `source='screener' AND match_score=0` on re-seed
+- Foundational tier governance (G4) — which laws qualify as near-universal
+- Coverage KPI in stats dashboard (G7)
+- Open issues: #97-#106
 
 ---
 
