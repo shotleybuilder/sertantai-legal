@@ -89,6 +89,16 @@ How to use `GET /api/ai/drrp/clause/queue`:
 - Composite key for Phase 2 write-back
 - curl examples for common scenarios
 
+### 🔍 [Gemini Review](gemini-review/)
+
+**Use when:** Getting external AI review of a plan, design document, or technical decision
+
+Send a document to Google Gemini for independent review:
+- Answer open questions with concrete recommendations
+- Identify gaps, missing scenarios, or edge cases
+- Challenge design decisions
+- Uses `GEMINI_API_KEY` from environment (Gemini 2.5 Flash)
+
 ### 🌐 [Zenoh P2P Publishing](zenoh-p2p-publishing/)
 
 **Use when:** Working with Zenoh mesh integration, adding new queryables, or troubleshooting P2P data sharing with fractalaw
