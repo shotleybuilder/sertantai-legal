@@ -2,18 +2,48 @@
 	import { page } from '$app/stores';
 	import { adminAuth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { onMount, onDestroy } from 'svelte';
+	import { authFetch } from '$lib/api/client';
 
 	const HUB_URL = import.meta.env.VITE_HUB_URL || 'http://localhost:4001';
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
 	const navItems = [
 		{ href: '/app/screening', label: 'Screening' },
+		{ href: '/app/changes', label: 'Changes' },
 		{ href: '/app/profile', label: 'Profile' },
 		{ href: '/app/activity', label: 'Activity' },
 		{ href: '/app/stats', label: 'Stats' }
 	];
 
+	let pendingCount = 0;
+	let overdueCount = 0;
+	let pollTimer: ReturnType<typeof setInterval> | null = null;
+
 	$: pathname = $page.url.pathname;
 	$: user = $adminAuth;
+
+	async function fetchChangeSummary() {
+		try {
+			const res = await authFetch(`${API_URL}/api/screening/changes/summary`);
+			if (res.ok) {
+				const data = await res.json();
+				pendingCount = data.total_pending || 0;
+				overdueCount = data.overdue || 0;
+			}
+		} catch {
+			// Silently fail — badge just won't show
+		}
+	}
+
+	onMount(() => {
+		fetchChangeSummary();
+		pollTimer = setInterval(fetchChangeSummary, 60_000);
+	});
+
+	onDestroy(() => {
+		if (pollTimer) clearInterval(pollTimer);
+	});
 
 	function isActive(currentPath: string, href: string): boolean {
 		return currentPath === href || currentPath.startsWith(href + '/');
@@ -70,12 +100,20 @@
 							{#each navItems as item}
 								<a
 									href={item.href}
-									class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md
+									class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md
 									{isActive(pathname, item.href)
 										? 'bg-emerald-100 text-emerald-700'
 										: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}"
 								>
 									{item.label}
+									{#if item.label === 'Changes' && pendingCount > 0}
+										<span
+											class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full
+											{overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-amber-400 text-amber-900'}"
+										>
+											{pendingCount}
+										</span>
+									{/if}
 								</a>
 							{/each}
 						</div>
@@ -103,12 +141,20 @@
 					{#each navItems as item}
 						<a
 							href={item.href}
-							class="px-3 py-2 text-sm font-medium rounded-md
+							class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md
 							{isActive(pathname, item.href)
 								? 'bg-emerald-100 text-emerald-700'
 								: 'text-gray-600 hover:bg-gray-100'}"
 						>
 							{item.label}
+							{#if item.label === 'Changes' && pendingCount > 0}
+								<span
+									class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-bold rounded-full
+									{overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-amber-400 text-amber-900'}"
+								>
+									{pendingCount}
+								</span>
+							{/if}
 						</a>
 					{/each}
 				</div>

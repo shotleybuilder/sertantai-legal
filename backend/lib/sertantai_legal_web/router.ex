@@ -119,6 +119,11 @@ defmodule SertantaiLegalWeb.Router do
     post("/screening/undo", ScreeningController, :undo)
     post("/screening/debug-dump", ScreeningController, :debug_dump)
 
+    # Change management endpoints (Phase B)
+    get("/screening/changes/summary", ScreeningController, :changes_summary)
+    get("/screening/changes", ScreeningController, :changes_list)
+    put("/screening/changes/:id/decide", ScreeningController, :decide_change)
+
     # Sync management endpoints (org-scoped, any authenticated user)
     get("/sync/entitlement", SyncController, :entitlement)
     get("/sync/profiles", SyncController, :list_profiles)

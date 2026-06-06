@@ -514,6 +514,244 @@ defmodule SertantaiLegalWeb.ScreeningController do
     }
   end
 
+  # ── Change management endpoints ────────────────────────────────
+
+  @doc "GET /api/screening/changes/summary — pending change counts for nav badge + dashboard"
+  def changes_summary(conn, _params) do
+    org_id = conn.assigns.organization_id
+    {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+
+    # Counts by materiality (for dashboard severity bands)
+    {:ok, %{rows: materiality_rows}} =
+      Repo.query(
+        """
+        SELECT materiality, COUNT(*)
+        FROM applicability_events
+        WHERE organization_id = $1
+          AND decision IS NULL
+          AND event IN ('law_status_changed', 'new_law_available', 'match_score_changed')
+        GROUP BY materiality
+        """,
+        [org_id_binary]
+      )
+
+    by_materiality =
+      Map.new(materiality_rows, fn [mat, count] -> {mat || "unclassified", count} end)
+
+    # Counts by event type (for category breakdown)
+    {:ok, %{rows: event_rows}} =
+      Repo.query(
+        """
+        SELECT event, COUNT(*)
+        FROM applicability_events
+        WHERE organization_id = $1
+          AND decision IS NULL
+          AND event IN ('law_status_changed', 'new_law_available', 'match_score_changed')
+        GROUP BY event
+        """,
+        [org_id_binary]
+      )
+
+    by_event = Map.new(event_rows, fn [event, count] -> {event, count} end)
+
+    # Overdue reviews
+    {:ok, %{rows: [[overdue_count]]}} =
+      Repo.query(
+        """
+        SELECT COUNT(*)
+        FROM applicability_events
+        WHERE organization_id = $1
+          AND decision IS NULL
+          AND review_due_date IS NOT NULL
+          AND review_due_date < CURRENT_DATE
+        """,
+        [org_id_binary]
+      )
+
+    total =
+      Enum.reduce(materiality_rows, 0, fn [_mat, count], acc -> acc + count end)
+
+    json(conn, %{
+      total_pending: total,
+      overdue: overdue_count,
+      by_materiality: %{
+        major: Map.get(by_materiality, "major", 0),
+        moderate: Map.get(by_materiality, "moderate", 0),
+        minor: Map.get(by_materiality, "minor", 0),
+        informational: Map.get(by_materiality, "informational", 0)
+      },
+      by_event: %{
+        law_status_changed: Map.get(by_event, "law_status_changed", 0),
+        new_law_available: Map.get(by_event, "new_law_available", 0),
+        match_score_changed: Map.get(by_event, "match_score_changed", 0)
+      }
+    })
+  end
+
+  @doc "GET /api/screening/changes — list pending changes with details"
+  def changes_list(conn, params) do
+    org_id = conn.assigns.organization_id
+    {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+
+    materiality_filter = Map.get(params, "materiality")
+    event_filter = Map.get(params, "event")
+    limit = Map.get(params, "limit", "50") |> to_string() |> String.to_integer()
+    offset = Map.get(params, "offset", "0") |> to_string() |> String.to_integer()
+
+    {where_clauses, query_params} =
+      build_changes_filter(org_id_binary, materiality_filter, event_filter)
+
+    {:ok, %{rows: rows, columns: columns}} =
+      Repo.query(
+        """
+        SELECT ae.id, ae.law_name, ae.event, ae.materiality, ae.review_due_date,
+               ae.decision, ae.decision_reason, ae.metadata, ae.inserted_at
+        FROM applicability_events ae
+        WHERE #{where_clauses}
+        ORDER BY
+          CASE ae.materiality
+            WHEN 'major' THEN 1
+            WHEN 'moderate' THEN 2
+            WHEN 'minor' THEN 3
+            WHEN 'informational' THEN 4
+            ELSE 5
+          END,
+          ae.inserted_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+        """,
+        query_params
+      )
+
+    changes =
+      Enum.map(rows, fn row ->
+        map = Enum.zip(columns, row) |> Map.new()
+
+        %{
+          id: Ecto.UUID.load!(map["id"]),
+          law_name: map["law_name"],
+          event: map["event"],
+          materiality: map["materiality"],
+          review_due_date: map["review_due_date"],
+          decision: map["decision"],
+          decision_reason: map["decision_reason"],
+          metadata: map["metadata"],
+          inserted_at: map["inserted_at"],
+          title: get_in(map, ["metadata", "title"]),
+          overdue:
+            map["review_due_date"] != nil and
+              Date.compare(map["review_due_date"], Date.utc_today()) == :lt
+        }
+      end)
+
+    json(conn, %{changes: changes, count: length(changes)})
+  end
+
+  @doc "PUT /api/screening/changes/:id/decide — record a decision on a change"
+  def decide_change(conn, %{"id" => event_id} = params) do
+    org_id = conn.assigns.organization_id
+    actor = conn.assigns[:current_user_email] || conn.assigns[:current_user_id] || "unknown"
+    decision = Map.get(params, "decision")
+    reason = Map.get(params, "decision_reason")
+
+    unless decision in ["archive", "keep", "dismiss", "add"] do
+      conn
+      |> put_status(422)
+      |> json(%{error: "decision must be one of: archive, keep, dismiss, add"})
+    else
+      {:ok, org_id_binary} = Ecto.UUID.dump(org_id)
+      {:ok, event_id_binary} = Ecto.UUID.dump(event_id)
+
+      # Verify the event belongs to this org and is pending
+      case Repo.query(
+             """
+             SELECT law_name, event, materiality
+             FROM applicability_events
+             WHERE id = $1 AND organization_id = $2 AND decision IS NULL
+             """,
+             [event_id_binary, org_id_binary]
+           ) do
+        {:ok, %{rows: [[law_name, original_event, materiality]]}} ->
+          # Enforce reason requirement for major/moderate
+          if materiality in ["major", "moderate"] and (reason == nil or reason == "") do
+            conn
+            |> put_status(422)
+            |> json(%{
+              error: "decision_reason is required for #{materiality} changes"
+            })
+          else
+            # Log the decision event
+            decision_event =
+              case decision do
+                "archive" -> "change_archived"
+                "keep" -> "change_kept"
+                "dismiss" -> "change_dismissed"
+                "add" -> "change_accepted"
+              end
+
+            ApplicabilityEvent.log(%{
+              organization_id: org_id,
+              law_name: law_name,
+              event: decision_event,
+              actor: actor,
+              status_before: "yes",
+              status_after: "yes",
+              source: "manual",
+              decision: decision,
+              decision_reason: reason,
+              metadata: %{
+                "original_event_id" => event_id,
+                "original_event" => original_event
+              }
+            })
+
+            # Mark the original event as decided
+            Repo.query!(
+              """
+              UPDATE applicability_events
+              SET decision = $1, decision_reason = $2
+              WHERE id = $3
+              """,
+              [decision, reason, event_id_binary]
+            )
+
+            json(conn, %{status: "ok", decision: decision, law_name: law_name})
+          end
+
+        {:ok, %{rows: []}} ->
+          conn
+          |> put_status(404)
+          |> json(%{error: "Change event not found or already decided"})
+
+        {:error, reason} ->
+          conn |> put_status(500) |> json(%{error: inspect(reason)})
+      end
+    end
+  end
+
+  defp build_changes_filter(org_id_binary, materiality_filter, event_filter) do
+    base =
+      "ae.organization_id = $1 AND ae.event IN ('law_status_changed', 'new_law_available', 'match_score_changed')"
+
+    params = [org_id_binary]
+    idx = 2
+
+    {base, params, idx} =
+      if materiality_filter do
+        {"#{base} AND ae.materiality = $#{idx}", params ++ [materiality_filter], idx + 1}
+      else
+        {base, params, idx}
+      end
+
+    {base, params, _idx} =
+      if event_filter do
+        {"#{base} AND ae.event = $#{idx}", params ++ [event_filter], idx + 1}
+      else
+        {base, params, idx}
+      end
+
+    {base, params}
+  end
+
   # ── Audit trail helpers ────────────────────────────────────────
 
   defp log_event(

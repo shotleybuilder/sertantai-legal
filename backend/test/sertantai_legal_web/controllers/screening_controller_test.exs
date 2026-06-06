@@ -797,4 +797,234 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       assert json_response(conn, 404)["error"] == "No events to undo"
     end
   end
+
+  # ── Change management endpoints ─────────────────────────────────
+
+  describe "GET /api/screening/changes/summary" do
+    test "returns zero counts when no change events exist", %{conn: conn} do
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/changes/summary")
+        |> json_response(200)
+
+      assert body["total_pending"] == 0
+      assert body["overdue"] == 0
+      assert body["by_materiality"]["major"] == 0
+      assert body["by_event"]["law_status_changed"] == 0
+    end
+
+    test "returns counts after change detection", %{conn: conn, org_id_binary: org_id_binary} do
+      # Seed a change detection event
+      Repo.query!(
+        """
+        INSERT INTO applicability_events
+          (id, organization_id, law_name, event, actor, status_before, status_after,
+           source, materiality, review_due_date, metadata, inserted_at)
+        VALUES
+          (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+           'yes', 'yes', 'change_detection', 'major', $2,
+           '{"change_type": "repealed", "title": "Test Revoked Regulations"}',
+           NOW())
+        """,
+        [org_id_binary, Date.add(Date.utc_today(), 30)]
+      )
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/changes/summary")
+        |> json_response(200)
+
+      assert body["total_pending"] == 1
+      assert body["by_materiality"]["major"] == 1
+      assert body["by_event"]["law_status_changed"] == 1
+      assert body["overdue"] == 0
+    end
+
+    test "counts overdue reviews", %{conn: conn, org_id_binary: org_id_binary} do
+      # Seed an overdue event (review_due_date in the past)
+      Repo.query!(
+        """
+        INSERT INTO applicability_events
+          (id, organization_id, law_name, event, actor, status_before, status_after,
+           source, materiality, review_due_date, metadata, inserted_at)
+        VALUES
+          (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+           'yes', 'yes', 'change_detection', 'major', $2,
+           '{"change_type": "repealed"}', NOW())
+        """,
+        [org_id_binary, Date.add(Date.utc_today(), -10)]
+      )
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/changes/summary")
+        |> json_response(200)
+
+      assert body["overdue"] == 1
+    end
+  end
+
+  describe "GET /api/screening/changes" do
+    test "returns pending changes sorted by materiality", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      # Seed two events: one major, one minor
+      Repo.query!(
+        """
+        INSERT INTO applicability_events
+          (id, organization_id, law_name, event, actor, status_before, status_after,
+           source, materiality, metadata, inserted_at)
+        VALUES
+          (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+           'yes', 'yes', 'change_detection', 'major',
+           '{"change_type": "repealed", "title": "Test Revoked"}', NOW()),
+          (gen_random_uuid(), $1, 'UK_uksi_2024_TEST1', 'match_score_changed', 'sertantai',
+           'yes', 'yes', 'enrichment', 'minor',
+           '{"change_type": "enrichment_update", "title": "Test Safety"}', NOW())
+        """,
+        [org_id_binary]
+      )
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/changes")
+        |> json_response(200)
+
+      assert body["count"] == 2
+      changes = body["changes"]
+      # Major should come first
+      assert Enum.at(changes, 0)["materiality"] == "major"
+      assert Enum.at(changes, 1)["materiality"] == "minor"
+    end
+
+    test "filters by materiality", %{conn: conn, org_id_binary: org_id_binary} do
+      Repo.query!(
+        """
+        INSERT INTO applicability_events
+          (id, organization_id, law_name, event, actor, status_before, status_after,
+           source, materiality, metadata, inserted_at)
+        VALUES
+          (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+           'yes', 'yes', 'change_detection', 'major',
+           '{"change_type": "repealed"}', NOW()),
+          (gen_random_uuid(), $1, 'UK_uksi_2024_TEST1', 'match_score_changed', 'sertantai',
+           'yes', 'yes', 'enrichment', 'minor',
+           '{"change_type": "enrichment_update"}', NOW())
+        """,
+        [org_id_binary]
+      )
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> get("/api/screening/changes?materiality=major")
+        |> json_response(200)
+
+      assert body["count"] == 1
+      assert Enum.at(body["changes"], 0)["materiality"] == "major"
+    end
+  end
+
+  describe "PUT /api/screening/changes/:id/decide" do
+    test "records a decision on a pending change", %{conn: conn, org_id_binary: org_id_binary} do
+      # Seed a pending event
+      {:ok, %{rows: [[event_id]]}} =
+        Repo.query(
+          """
+          INSERT INTO applicability_events
+            (id, organization_id, law_name, event, actor, status_before, status_after,
+             source, materiality, review_due_date, metadata, inserted_at)
+          VALUES
+            (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+             'yes', 'yes', 'change_detection', 'major', $2,
+             '{"change_type": "repealed", "title": "Test Revoked"}', NOW())
+          RETURNING id
+          """,
+          [org_id_binary, Date.add(Date.utc_today(), 30)]
+        )
+
+      event_uuid = Ecto.UUID.load!(event_id)
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> put_req_header("content-type", "application/json")
+        |> put("/api/screening/changes/#{event_uuid}/decide", %{
+          decision: "keep",
+          decision_reason: "Historical projects still reference it"
+        })
+        |> json_response(200)
+
+      assert body["status"] == "ok"
+      assert body["decision"] == "keep"
+
+      # Original event should now have decision set
+      {:ok, %{rows: [[decision]]}} =
+        Repo.query(
+          "SELECT decision FROM applicability_events WHERE id = $1",
+          [event_id]
+        )
+
+      assert decision == "keep"
+    end
+
+    test "requires reason for major materiality", %{conn: conn, org_id_binary: org_id_binary} do
+      {:ok, %{rows: [[event_id]]}} =
+        Repo.query(
+          """
+          INSERT INTO applicability_events
+            (id, organization_id, law_name, event, actor, status_before, status_after,
+             source, materiality, metadata, inserted_at)
+          VALUES
+            (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+             'yes', 'yes', 'change_detection', 'major',
+             '{"change_type": "repealed"}', NOW())
+          RETURNING id
+          """,
+          [org_id_binary]
+        )
+
+      event_uuid = Ecto.UUID.load!(event_id)
+
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/changes/#{event_uuid}/decide", %{
+        decision: "archive"
+      })
+      |> json_response(422)
+    end
+
+    test "rejects invalid decision values", %{conn: conn, org_id_binary: org_id_binary} do
+      {:ok, %{rows: [[event_id]]}} =
+        Repo.query(
+          """
+          INSERT INTO applicability_events
+            (id, organization_id, law_name, event, actor, status_before, status_after,
+             source, materiality, metadata, inserted_at)
+          VALUES
+            (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+             'yes', 'yes', 'change_detection', 'minor',
+             '{"change_type": "repealed"}', NOW())
+          RETURNING id
+          """,
+          [org_id_binary]
+        )
+
+      event_uuid = Ecto.UUID.load!(event_id)
+
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/changes/#{event_uuid}/decide", %{
+        decision: "invalid_value"
+      })
+      |> json_response(422)
+    end
+  end
 end
