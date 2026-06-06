@@ -111,6 +111,9 @@ defmodule SertantaiLegalWeb.Router do
     post("/screening/applicabilities/bulk", ScreeningController, :bulk_upsert)
     get("/screening/stats", ScreeningController, :stats)
     post("/screening/sync", ScreeningController, :trigger_sync)
+    get("/screening/profile", ScreeningController, :get_profile)
+    put("/screening/profile", ScreeningController, :upsert_profile)
+    get("/screening/vocabulary", ScreeningController, :vocabulary)
 
     # Sync management endpoints (org-scoped, any authenticated user)
     get("/sync/entitlement", SyncController, :entitlement)

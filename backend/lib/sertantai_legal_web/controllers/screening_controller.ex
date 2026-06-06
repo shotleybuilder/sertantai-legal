@@ -8,6 +8,7 @@ defmodule SertantaiLegalWeb.ScreeningController do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Sync.OrgApplicability
+  alias SertantaiLegal.Sync.OrgScreeningProfile
 
   require Logger
 
@@ -175,6 +176,95 @@ defmodule SertantaiLegalWeb.ScreeningController do
       {:error, reason} ->
         conn |> put_status(500) |> json(%{error: inspect(reason)})
     end
+  end
+
+  # ── Profile endpoints ───────────────────────────────────────────
+
+  @doc "GET /api/screening/profile — get org's screening profile"
+  def get_profile(conn, _params) do
+    org_id = conn.assigns.organization_id
+
+    case OrgScreeningProfile.by_organization(org_id) do
+      {:ok, profile} ->
+        json(conn, serialize_profile(profile))
+
+      {:error, _} ->
+        # No profile yet — return empty defaults
+        json(conn, %{
+          regions: [],
+          activities: [],
+          locations: [],
+          materials: [],
+          processes: [],
+          sector: []
+        })
+    end
+  end
+
+  @doc "PUT /api/screening/profile — create or update org's screening profile"
+  def upsert_profile(conn, params) do
+    org_id = conn.assigns.organization_id
+
+    attrs = %{
+      organization_id: org_id,
+      regions: params["regions"] || [],
+      activities: params["activities"] || [],
+      locations: params["locations"] || [],
+      materials: params["materials"] || [],
+      processes: params["processes"] || [],
+      sector: params["sector"] || []
+    }
+
+    case OrgScreeningProfile.upsert(attrs) do
+      {:ok, profile} ->
+        json(conn, serialize_profile(profile))
+
+      {:error, reason} ->
+        conn |> put_status(422) |> json(%{error: inspect(reason)})
+    end
+  end
+
+  @doc "GET /api/screening/vocabulary — distinct fitness tag values from the law corpus"
+  def vocabulary(conn, _params) do
+    queries = [
+      {"activities",
+       "SELECT DISTINCT val FROM (SELECT unnest(fitness_person) as val FROM uk_lrt WHERE fitness_person IS NOT NULL) sub ORDER BY val"},
+      {"locations",
+       "SELECT DISTINCT val FROM (SELECT unnest(fitness_place) as val FROM uk_lrt WHERE fitness_place IS NOT NULL) sub WHERE val NOT IN ('England', 'Scotland', 'Wales', 'Northern Ireland', 'Great Britain', 'United Kingdom') ORDER BY val"},
+      {"materials",
+       "SELECT DISTINCT val FROM (SELECT unnest(fitness_plant) as val FROM uk_lrt WHERE fitness_plant IS NOT NULL) sub ORDER BY val"},
+      {"processes",
+       "SELECT DISTINCT val FROM (SELECT unnest(fitness_process) as val FROM uk_lrt WHERE fitness_process IS NOT NULL) sub ORDER BY val"},
+      {"sector",
+       "SELECT DISTINCT val FROM (SELECT unnest(fitness_sector) as val FROM uk_lrt WHERE fitness_sector IS NOT NULL) sub ORDER BY val"},
+      {"regions",
+       "SELECT DISTINCT val FROM (SELECT unnest(geo_region) as val FROM uk_lrt WHERE geo_region IS NOT NULL) sub ORDER BY val"}
+    ]
+
+    vocab =
+      Map.new(queries, fn {key, sql} ->
+        case Repo.query(sql) do
+          {:ok, %{rows: rows}} -> {key, Enum.map(rows, fn [val] -> val end)}
+          _ -> {key, []}
+        end
+      end)
+
+    json(conn, vocab)
+  end
+
+  defp serialize_profile(profile) do
+    %{
+      id: profile.id,
+      organization_id: profile.organization_id,
+      regions: profile.regions || [],
+      activities: profile.activities || [],
+      locations: profile.locations || [],
+      materials: profile.materials || [],
+      processes: profile.processes || [],
+      sector: profile.sector || [],
+      inserted_at: profile.inserted_at,
+      updated_at: profile.updated_at
+    }
   end
 
   defp serialize(record) do
