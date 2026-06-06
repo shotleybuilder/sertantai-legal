@@ -9,6 +9,7 @@ defmodule SertantaiLegalWeb.ScreeningController do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Sync.OrgApplicability
   alias SertantaiLegal.Sync.OrgScreeningProfile
+  alias SertantaiLegal.Sync.ApplicabilityEvent
 
   require Logger
 
@@ -32,11 +33,15 @@ defmodule SertantaiLegalWeb.ScreeningController do
   def upsert(conn, %{"law_name" => law_name} = params) do
     org_id = conn.assigns.organization_id
     user_id = conn.assigns[:current_user_id]
+    new_status = params["status"] || "unreviewed"
+
+    # Get previous status for audit trail
+    previous = get_current_status(org_id, law_name)
 
     attrs = %{
       organization_id: org_id,
       law_name: law_name,
-      status: params["status"] || "unreviewed",
+      status: new_status,
       source: :manual,
       notes: params["notes"],
       reviewed_at: DateTime.utc_now(),
@@ -45,6 +50,19 @@ defmodule SertantaiLegalWeb.ScreeningController do
 
     case OrgApplicability.upsert(attrs) do
       {:ok, record} ->
+        event_type = infer_event_type(previous, new_status)
+
+        log_event(
+          org_id,
+          law_name,
+          event_type,
+          user_id || "unknown",
+          previous,
+          new_status,
+          "manual",
+          %{notes: params["notes"]}
+        )
+
         json(conn, serialize(record))
 
       {:error, changeset} ->
@@ -61,16 +79,42 @@ defmodule SertantaiLegalWeb.ScreeningController do
     source = if params["source"] == "screener", do: :screener, else: :manual
     reviewed_by = if source == :screener, do: "sertantai", else: user_id
 
+    source_str = to_string(source)
+    actor = reviewed_by || "unknown"
+    event_type = if source == :screener, do: "seeded", else: "added"
+
     results =
       Enum.map(law_names, fn law_name ->
-        OrgApplicability.upsert(%{
-          organization_id: org_id,
-          law_name: law_name,
-          status: status,
-          source: source,
-          reviewed_at: now,
-          reviewed_by: reviewed_by
-        })
+        previous = get_current_status(org_id, law_name)
+
+        result =
+          OrgApplicability.upsert(%{
+            organization_id: org_id,
+            law_name: law_name,
+            status: status,
+            source: source,
+            reviewed_at: now,
+            reviewed_by: reviewed_by
+          })
+
+        case result do
+          {:ok, _} ->
+            log_event(
+              org_id,
+              law_name,
+              event_type,
+              actor,
+              previous,
+              status,
+              source_str,
+              params["metadata"]
+            )
+
+          _ ->
+            nil
+        end
+
+        result
       end)
 
     succeeded = Enum.count(results, &match?({:ok, _}, &1))
@@ -314,4 +358,51 @@ defmodule SertantaiLegalWeb.ScreeningController do
       updated_at: record.updated_at
     }
   end
+
+  # ── Audit trail helpers ────────────────────────────────────────
+
+  defp log_event(
+         org_id,
+         law_name,
+         event,
+         actor,
+         status_before,
+         status_after,
+         source,
+         metadata \\ nil
+       ) do
+    ApplicabilityEvent.log(%{
+      organization_id: org_id,
+      law_name: law_name,
+      event: event,
+      actor: actor || "unknown",
+      status_before: status_before,
+      status_after: status_after,
+      source: source,
+      metadata: metadata
+    })
+  end
+
+  defp get_current_status(org_id, law_name) do
+    case Repo.query(
+           "SELECT status FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+           [Ecto.UUID.dump!(org_id), law_name]
+         ) do
+      {:ok, %{rows: [[status]]}} -> status
+      _ -> nil
+    end
+  end
+
+  defp infer_event_type(nil, "yes"), do: "added"
+  defp infer_event_type(nil, "excluded"), do: "excluded"
+  defp infer_event_type(nil, _), do: "added"
+  defp infer_event_type("yes", "unreviewed"), do: "removed"
+  defp infer_event_type("yes", "excluded"), do: "excluded"
+  defp infer_event_type("excluded", "unreviewed"), do: "restored"
+  defp infer_event_type("excluded", "yes"), do: "added"
+  defp infer_event_type("unreviewed", "yes"), do: "added"
+  defp infer_event_type(_, "yes"), do: "added"
+  defp infer_event_type(_, "excluded"), do: "excluded"
+  defp infer_event_type(_, "unreviewed"), do: "removed"
+  defp infer_event_type(_, _), do: "changed"
 end

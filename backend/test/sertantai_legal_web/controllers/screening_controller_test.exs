@@ -456,4 +456,135 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       assert count == 1
     end
   end
+
+  # ── Audit trail: event logging ─────────────────────────────────
+
+  describe "applicability event logging" do
+    test "upsert logs an 'added' event", %{conn: conn, org_id_binary: org_id_binary} do
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      {:ok, %{rows: rows}} =
+        Repo.query(
+          "SELECT event, actor, status_before, status_after, source FROM applicability_events WHERE organization_id = $1 AND law_name = $2 ORDER BY inserted_at DESC LIMIT 1",
+          [org_id_binary, "UK_uksi_2024_TEST1"]
+        )
+
+      assert length(rows) == 1
+      [[event, _actor, status_before, status_after, source]] = rows
+      assert event == "added"
+      assert status_before == nil
+      assert status_after == "yes"
+      assert source == "manual"
+    end
+
+    test "removing a law logs a 'removed' event", %{conn: conn, org_id_binary: org_id_binary} do
+      # First add
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "yes"})
+      |> json_response(200)
+
+      # Then remove
+      build_conn()
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "unreviewed"})
+      |> json_response(200)
+
+      {:ok, %{rows: rows}} =
+        Repo.query(
+          "SELECT event, status_before, status_after FROM applicability_events WHERE organization_id = $1 AND law_name = $2 ORDER BY inserted_at DESC",
+          [org_id_binary, "UK_uksi_2024_TEST1"]
+        )
+
+      assert length(rows) == 2
+      # Most recent event should be 'removed'
+      [[event, status_before, status_after] | _] = rows
+      assert event == "removed"
+      assert status_before == "yes"
+      assert status_after == "unreviewed"
+    end
+
+    test "bulk seeding logs 'seeded' events with sertantai actor", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> post("/api/screening/applicabilities/bulk", %{
+        law_names: ["UK_uksi_2024_TEST1", "UK_uksi_2024_TEST2"],
+        status: "yes",
+        source: "screener"
+      })
+      |> json_response(200)
+
+      {:ok, %{rows: rows}} =
+        Repo.query(
+          "SELECT law_name, event, actor, source FROM applicability_events WHERE organization_id = $1 ORDER BY law_name",
+          [org_id_binary]
+        )
+
+      assert length(rows) == 2
+
+      for [_law, event, actor, source] <- rows do
+        assert event == "seeded"
+        assert actor == "sertantai"
+        assert source == "screener"
+      end
+    end
+
+    test "excluding a law logs an 'excluded' event", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "excluded"})
+      |> json_response(200)
+
+      {:ok, %{rows: [[event]]}} =
+        Repo.query(
+          "SELECT event FROM applicability_events WHERE organization_id = $1 AND law_name = $2",
+          [org_id_binary, "UK_uksi_2024_TEST1"]
+        )
+
+      assert event == "excluded"
+    end
+
+    test "restoring an excluded law logs a 'restored' event", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      # Exclude first
+      conn
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "excluded"})
+      |> json_response(200)
+
+      # Then restore
+      build_conn()
+      |> put_auth_header(%{"org_id" => @test_org_id})
+      |> put_req_header("content-type", "application/json")
+      |> put("/api/screening/applicabilities/UK_uksi_2024_TEST1", %{status: "unreviewed"})
+      |> json_response(200)
+
+      {:ok, %{rows: rows}} =
+        Repo.query(
+          "SELECT event FROM applicability_events WHERE organization_id = $1 AND law_name = $2 ORDER BY inserted_at DESC",
+          [org_id_binary, "UK_uksi_2024_TEST1"]
+        )
+
+      assert length(rows) == 2
+      [[latest_event] | _] = rows
+      assert latest_event == "restored"
+    end
+  end
 end
