@@ -53,11 +53,13 @@ defmodule SertantaiLegalWeb.ScreeningController do
   end
 
   @doc "POST /api/screening/applicabilities/bulk — bulk set status for multiple laws"
-  def bulk_upsert(conn, %{"law_names" => law_names, "status" => status})
+  def bulk_upsert(conn, %{"law_names" => law_names, "status" => status} = params)
       when is_list(law_names) do
     org_id = conn.assigns.organization_id
     user_id = conn.assigns[:current_user_id]
     now = DateTime.utc_now()
+    source = if params["source"] == "screener", do: :screener, else: :manual
+    reviewed_by = if source == :screener, do: "sertantai", else: user_id
 
     results =
       Enum.map(law_names, fn law_name ->
@@ -65,9 +67,9 @@ defmodule SertantaiLegalWeb.ScreeningController do
           organization_id: org_id,
           law_name: law_name,
           status: status,
-          source: :manual,
+          source: source,
           reviewed_at: now,
-          reviewed_by: user_id
+          reviewed_by: reviewed_by
         })
       end)
 

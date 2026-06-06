@@ -35,6 +35,12 @@
 	let statRegister = 0;
 	let statExcluded = 0;
 
+	// Seed preview
+	let seedPreview: { name: string; title: string; family: string; score: number }[] | null = null;
+	let seedLoading = false;
+	let seedStrong = 0;
+	let seedSingle = 0;
+
 	// Notes editing
 	let editingNotes: { name: string; value: string } | null = null;
 
@@ -250,6 +256,134 @@
 		editingNotes = null;
 	}
 
+	// ── Seed preview ────────────────────────────────────────────────
+
+	async function runSeedPreview() {
+		if (!db || $syncStatus.syncing) return;
+		seedLoading = true;
+		seedPreview = null;
+
+		try {
+			// Load profile from backend
+			const profileRes = await authFetch(`${API_URL}/api/screening/profile`);
+			if (!profileRes.ok) {
+				alert('No profile configured. Go to Profile to set up your organisation.');
+				seedLoading = false;
+				return;
+			}
+			const profile = await profileRes.json();
+
+			// Check profile has at least one tag
+			const allTags = [
+				...(profile.regions || []),
+				...(profile.activities || []),
+				...(profile.locations || []),
+				...(profile.materials || []),
+				...(profile.processes || []),
+				...(profile.sector || [])
+			];
+			if (allTags.length === 0) {
+				alert('Profile is empty. Go to Profile and select some tags first.');
+				seedLoading = false;
+				return;
+			}
+
+			// Build scored matching query in PGLite
+			// Stage 1: geo filter via geo_region overlap
+			// Stage 2: fitness intersection with match_score
+			const regions = profile.regions || [];
+			const activities = profile.activities || [];
+			const locations = profile.locations || [];
+			const materials = profile.materials || [];
+			const processes = profile.processes || [];
+			const sector = profile.sector || [];
+
+			const result = await db.query<{
+				name: string;
+				title_en: string;
+				family: string;
+				match_score: string;
+			}>(
+				`SELECT l.name, l.title_en, COALESCE(l.family, '') as family,
+				        (CASE WHEN l.fitness_person IS NOT NULL AND l.fitness_person && $1 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $2 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $3 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $4 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $5 THEN 1 ELSE 0 END)::text as match_score
+				 FROM laws l
+				 LEFT JOIN org_applicabilities oa ON oa.law_name = l.name
+				 WHERE l.is_making = true
+				   AND (l.live IS NULL OR l.live NOT LIKE '%Revoked%')
+				   AND (oa.status IS NULL OR oa.status NOT IN ('yes'))
+				   AND ($6::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $6)
+				   AND (CASE WHEN l.fitness_person IS NOT NULL AND l.fitness_person && $1 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $2 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $3 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $4 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $5 THEN 1 ELSE 0 END) > 0
+				 ORDER BY match_score DESC, l.family, l.name`,
+				[activities, locations, materials, processes, sector, regions]
+			);
+
+			seedPreview = result.rows.map((r) => ({
+				name: r.name,
+				title: r.title_en || '',
+				family: r.family,
+				score: parseInt(r.match_score)
+			}));
+
+			seedStrong = seedPreview.filter((r) => r.score >= 2).length;
+			seedSingle = seedPreview.filter((r) => r.score === 1).length;
+		} catch (err) {
+			console.error('Seed preview failed:', err);
+			alert(`Seed preview failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+		} finally {
+			seedLoading = false;
+		}
+	}
+
+	async function executeSeed() {
+		if (!seedPreview || seedPreview.length === 0) return;
+		const user = $adminAuth;
+		if (!user?.org_id || !db) return;
+
+		const lawNames = seedPreview.map((r) => r.name);
+
+		// Build match_reason per law for explainability (G5)
+		const response = await authFetch(`${API_URL}/api/screening/applicabilities/bulk`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				law_names: lawNames,
+				status: 'yes',
+				source: 'screener'
+			})
+		});
+
+		if (!response.ok) {
+			alert('Seed failed');
+			return;
+		}
+
+		// Write-back to PGLite
+		for (const law of seedPreview) {
+			await db.query(
+				`INSERT INTO org_applicabilities (id, organization_id, law_name, status, source, reviewed_at, reviewed_by, inserted_at, updated_at)
+				 VALUES (gen_random_uuid(), $1, $2, 'yes', 'screener', NOW(), 'sertantai', NOW(), NOW())
+				 ON CONFLICT (organization_id, law_name) DO UPDATE SET
+				   status = 'yes', source = 'screener', reviewed_at = NOW(), reviewed_by = 'sertantai', updated_at = NOW()`,
+				[user.org_id, law.name]
+			);
+		}
+
+		seedPreview = null;
+		await rebuildPanels();
+	}
+
+	function closeSeedPreview() {
+		seedPreview = null;
+	}
+
 	// ── Panel builders ──────────────────────────────────────────────
 
 	async function rebuildPanels() {
@@ -438,6 +572,17 @@
 				<span class="text-lg font-semibold text-gray-400">{statExcluded}</span>
 			</div>
 			<div class="flex-1"></div>
+			<button
+				on:click={runSeedPreview}
+				disabled={seedLoading || $syncStatus.syncing}
+				class="px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 disabled:opacity-50"
+			>
+				{#if seedLoading}
+					Matching...
+				{:else}
+					Seed My Register
+				{/if}
+			</button>
 			<div
 				class="h-2 w-48 bg-gray-200 rounded-full overflow-hidden"
 				title="{statRegister} of {statAvailable + statRegister} screened"
@@ -755,3 +900,83 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Seed Preview Modal -->
+{#if seedPreview}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+		<div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+			<div class="px-6 py-4 border-b border-gray-200">
+				<h2 class="text-lg font-semibold text-gray-900">Seed Preview</h2>
+				<p class="text-sm text-gray-500 mt-1">
+					SertantAI found <strong>{seedPreview.length}</strong> laws matching your profile.
+				</p>
+				<div class="flex gap-4 mt-2">
+					<span class="text-xs">
+						<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>
+						Strong match (2+): {seedStrong}
+					</span>
+					<span class="text-xs">
+						<span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>
+						Single match: {seedSingle}
+					</span>
+				</div>
+			</div>
+
+			<div class="flex-1 overflow-auto px-6 py-3">
+				<table class="w-full text-sm">
+					<thead class="sticky top-0 bg-white">
+						<tr class="text-left text-xs text-gray-500 border-b">
+							<th class="pb-2 pr-3">Law</th>
+							<th class="pb-2 pr-3">Family</th>
+							<th class="pb-2 text-center">Score</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each seedPreview as law}
+							<tr class="border-b border-gray-100 hover:bg-gray-50">
+								<td class="py-1.5 pr-3">
+									<div class="text-gray-900 text-xs">{law.title || law.name}</div>
+									<div class="text-gray-400 text-xs font-mono">{law.name}</div>
+								</td>
+								<td class="py-1.5 pr-3 text-xs text-gray-600">{law.family || '-'}</td>
+								<td class="py-1.5 text-center">
+									{#if law.score >= 2}
+										<span class="px-1.5 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-700"
+											>{law.score}</span
+										>
+									{:else}
+										<span class="px-1.5 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700"
+											>{law.score}</span
+										>
+									{/if}
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+
+			<div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+				<p class="text-xs text-gray-500">
+					Laws will be added with source "SertantAI". You can confirm or remove them later.
+				</p>
+				<div class="flex gap-3">
+					<button
+						on:click={closeSeedPreview}
+						class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+					>
+						Cancel
+					</button>
+					<button
+						on:click={executeSeed}
+						class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700"
+					>
+						Add {seedPreview.length} laws to register
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
