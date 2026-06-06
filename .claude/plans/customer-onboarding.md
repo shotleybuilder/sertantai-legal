@@ -324,17 +324,31 @@ Two-panel split view (Available pool ↔ My Register):
 |---|---|---|
 | #97 | Zenoh dashboard: ProvisionSubscriber + persist activity | Open |
 | #98 | Column visibility, inline row actions, hide law code | Open |
-| #99 | Audit trail and change reversal | Open |
+| #99 | Audit trail and change reversal | **Done** — event table, activity feed, undo, match reason |
 | #100 | Download My Register as .md/.csv | Open |
 | #101 | Row detail card (Airtable pattern) | Open |
-| #102 | AI-seeded register from org profile + questionnaire | Open |
+| #102 | AI-seeded register from org profile + questionnaire | **Done** — DRRP actor matching, profile, seed preview |
 | #103 | Saved views using svelte-gridlite-views | Open |
 | #104 | URL state persistence (blocked on gridlite-kit#34) | Blocked |
+| #105 | Admin org switcher / multi-org | **Done** — per-org users, no switcher needed |
+| #106 | PGLite IndexedDB shared across users | **Done** — per-user store naming |
 
-### 7.6 — Remaining
+### 7.6 — Audit Trail ✅ (#99)
+
+Insert-only `applicability_events` table with JSONB metadata. Every screening change logged.
+
+- **Event types**: added, removed, excluded, seeded, confirmed, restored
+- **Activity feed**: `/app/activity` page with chronological events, pagination, per-law history
+- **Undo**: `POST /api/screening/undo` reverses most recent action + toast in screening page
+- **Explainability (G5)**: per-law `match_reason` in seed event metadata (score + family)
+- **Defensibility (G6)**: source badges with tooltips, confirmation transfers ownership
+- 32 screening controller tests (13 for audit trail)
+
+### 7.7 — Remaining
 
 - Phase 6: Baserow sync trigger button in UI (backend endpoint exists)
 - Hub integration: entitlement webhook triggers applicability refresh
+- Deprecation preview: surface stale screener-seeded laws on re-seed
 
 ---
 
