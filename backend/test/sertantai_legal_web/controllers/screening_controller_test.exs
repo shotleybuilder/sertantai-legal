@@ -1026,5 +1026,154 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       })
       |> json_response(422)
     end
+
+    test "'add' decision creates org_applicability record", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      # Seed a new_law_available event for TEST4 (not yet in register)
+      {:ok, %{rows: [[event_id]]}} =
+        Repo.query(
+          """
+          INSERT INTO applicability_events
+            (id, organization_id, law_name, event, actor, status_before, status_after,
+             source, materiality, metadata, inserted_at)
+          VALUES
+            (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'new_law_available', 'sertantai',
+             NULL, 'unreviewed', 'change_detection', 'major',
+             '{"title": "Test Revoked Regulations", "match_score": 1}', NOW())
+          RETURNING id
+          """,
+          [org_id_binary]
+        )
+
+      event_uuid = Ecto.UUID.load!(event_id)
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> put_req_header("content-type", "application/json")
+        |> put("/api/screening/changes/#{event_uuid}/decide", %{
+          decision: "add",
+          decision_reason: "Matches our OH&S profile"
+        })
+        |> json_response(200)
+
+      assert body["register_changed"] == true
+
+      # Verify law is now in the register
+      {:ok, %{rows: [[status]]}} =
+        Repo.query(
+          "SELECT status FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+          [org_id_binary, "UK_uksi_2024_TEST4"]
+        )
+
+      assert status == "yes"
+    end
+
+    test "'archive' decision excludes law from register", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      # First add the law to the register
+      Repo.query!(
+        """
+        INSERT INTO org_applicabilities (id, organization_id, law_name, status, source, inserted_at, updated_at)
+        VALUES (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'yes', 'manual', NOW(), NOW())
+        """,
+        [org_id_binary]
+      )
+
+      # Seed a law_status_changed event
+      {:ok, %{rows: [[event_id]]}} =
+        Repo.query(
+          """
+          INSERT INTO applicability_events
+            (id, organization_id, law_name, event, actor, status_before, status_after,
+             source, materiality, metadata, inserted_at)
+          VALUES
+            (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+             'yes', 'yes', 'change_detection', 'major',
+             '{"change_type": "repealed", "title": "Test Revoked"}', NOW())
+          RETURNING id
+          """,
+          [org_id_binary]
+        )
+
+      event_uuid = Ecto.UUID.load!(event_id)
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> put_req_header("content-type", "application/json")
+        |> put("/api/screening/changes/#{event_uuid}/decide", %{
+          decision: "archive",
+          decision_reason: "Law repealed, no longer relevant"
+        })
+        |> json_response(200)
+
+      assert body["register_changed"] == true
+
+      # Verify law is now excluded
+      {:ok, %{rows: [[status]]}} =
+        Repo.query(
+          "SELECT status FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+          [org_id_binary, "UK_uksi_2024_TEST4"]
+        )
+
+      assert status == "excluded"
+    end
+
+    test "'keep' decision does not change register", %{
+      conn: conn,
+      org_id_binary: org_id_binary
+    } do
+      # Add law to register
+      Repo.query!(
+        """
+        INSERT INTO org_applicabilities (id, organization_id, law_name, status, source, inserted_at, updated_at)
+        VALUES (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'yes', 'manual', NOW(), NOW())
+        """,
+        [org_id_binary]
+      )
+
+      {:ok, %{rows: [[event_id]]}} =
+        Repo.query(
+          """
+          INSERT INTO applicability_events
+            (id, organization_id, law_name, event, actor, status_before, status_after,
+             source, materiality, metadata, inserted_at)
+          VALUES
+            (gen_random_uuid(), $1, 'UK_uksi_2024_TEST4', 'law_status_changed', 'sertantai',
+             'yes', 'yes', 'change_detection', 'major',
+             '{"change_type": "repealed"}', NOW())
+          RETURNING id
+          """,
+          [org_id_binary]
+        )
+
+      event_uuid = Ecto.UUID.load!(event_id)
+
+      body =
+        conn
+        |> put_auth_header(%{"org_id" => @test_org_id})
+        |> put_req_header("content-type", "application/json")
+        |> put("/api/screening/changes/#{event_uuid}/decide", %{
+          decision: "keep",
+          decision_reason: "Historical reference needed"
+        })
+        |> json_response(200)
+
+      assert body["register_changed"] == false
+
+      # Law should still be 'yes'
+      {:ok, %{rows: [[status]]}} =
+        Repo.query(
+          "SELECT status FROM org_applicabilities WHERE organization_id = $1 AND law_name = $2",
+          [org_id_binary, "UK_uksi_2024_TEST4"]
+        )
+
+      assert status == "yes"
+    end
   end
 end

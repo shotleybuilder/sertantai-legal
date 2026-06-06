@@ -680,12 +680,19 @@ defmodule SertantaiLegalWeb.ScreeningController do
             })
           else
             # Log the decision event
-            decision_event =
+            {decision_event, status_after} =
               case decision do
-                "archive" -> "change_archived"
-                "keep" -> "change_kept"
-                "dismiss" -> "change_dismissed"
-                "add" -> "change_accepted"
+                "archive" -> {"change_archived", "excluded"}
+                "keep" -> {"change_kept", "yes"}
+                "dismiss" -> {"change_dismissed", "unreviewed"}
+                "add" -> {"change_accepted", "yes"}
+              end
+
+            # status_before depends on original event type
+            status_before =
+              case original_event do
+                "new_law_available" -> nil
+                _ -> "yes"
               end
 
             ApplicabilityEvent.log(%{
@@ -693,8 +700,8 @@ defmodule SertantaiLegalWeb.ScreeningController do
               law_name: law_name,
               event: decision_event,
               actor: actor,
-              status_before: "yes",
-              status_after: "yes",
+              status_before: status_before,
+              status_after: status_after,
               source: "manual",
               decision: decision,
               decision_reason: reason,
@@ -714,7 +721,15 @@ defmodule SertantaiLegalWeb.ScreeningController do
               [decision, reason, event_id_binary]
             )
 
-            json(conn, %{status: "ok", decision: decision, law_name: law_name})
+            # Apply register changes based on decision
+            register_result = apply_decision_to_register(org_id, law_name, decision, actor)
+
+            json(conn, %{
+              status: "ok",
+              decision: decision,
+              law_name: law_name,
+              register_changed: register_result != :noop
+            })
           end
 
         {:ok, %{rows: []}} ->
@@ -751,6 +766,35 @@ defmodule SertantaiLegalWeb.ScreeningController do
 
     {base, params}
   end
+
+  # ── Decision → register helpers ─────────────────────────────────
+
+  # "add" → upsert law into register as yes (new_law_available → accepted)
+  defp apply_decision_to_register(org_id, law_name, "add", actor) do
+    OrgApplicability.upsert(%{
+      organization_id: org_id,
+      law_name: law_name,
+      status: :yes,
+      source: :manual,
+      reviewed_at: DateTime.utc_now(),
+      reviewed_by: actor
+    })
+  end
+
+  # "archive" → mark law as excluded in register (repealed law → archived)
+  defp apply_decision_to_register(org_id, law_name, "archive", actor) do
+    OrgApplicability.upsert(%{
+      organization_id: org_id,
+      law_name: law_name,
+      status: :excluded,
+      source: :manual,
+      reviewed_at: DateTime.utc_now(),
+      reviewed_by: actor
+    })
+  end
+
+  # "keep" / "dismiss" → no register change
+  defp apply_decision_to_register(_org_id, _law_name, _decision, _actor), do: :noop
 
   # ── Audit trail helpers ────────────────────────────────────────
 

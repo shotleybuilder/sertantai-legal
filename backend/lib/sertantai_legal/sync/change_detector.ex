@@ -65,6 +65,11 @@ defmodule SertantaiLegal.Sync.ChangeDetector do
           "#{total.new_laws} new laws, " <>
           "#{total.score_changes} score changes"
       )
+
+      # Generate summaries and notify (email stub)
+      if total.status_changes + total.new_laws + total.score_changes > 0 do
+        SertantaiLegal.Sync.ChangeNotifier.notify_all()
+      end
     end)
   end
 

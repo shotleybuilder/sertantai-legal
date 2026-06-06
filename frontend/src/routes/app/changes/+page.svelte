@@ -49,6 +49,27 @@
 		match_score_changed: 'Score Changed'
 	};
 
+	const eventGroupOrder = ['law_status_changed', 'new_law_available', 'match_score_changed'];
+	const eventGroupLabels: Record<string, string> = {
+		law_status_changed: 'Repealed / Status Changes',
+		new_law_available: 'New Law Matches',
+		match_score_changed: 'Enrichment Updates'
+	};
+
+	let groupByEvent = true;
+
+	function groupChanges(
+		items: ChangeEvent[]
+	): { label: string; event: string; items: ChangeEvent[] }[] {
+		const groups: Record<string, ChangeEvent[]> = {};
+		for (const item of items) {
+			(groups[item.event] ??= []).push(item);
+		}
+		return eventGroupOrder
+			.filter((e) => groups[e]?.length)
+			.map((e) => ({ label: eventGroupLabels[e] || e, event: e, items: groups[e] }));
+	}
+
 	async function load() {
 		loading = true;
 		const [summaryRes, changesRes] = await Promise.all([
@@ -127,6 +148,18 @@
 				</div>
 			{/if}
 
+			<!-- Group toggle -->
+			{#if changes.length > 0}
+				<div class="flex items-center gap-2 mb-4">
+					<button
+						on:click={() => (groupByEvent = !groupByEvent)}
+						class="text-sm text-gray-500 hover:text-gray-700"
+					>
+						{groupByEvent ? 'Flat view' : 'Group by type'}
+					</button>
+				</div>
+			{/if}
+
 			<!-- Changes list -->
 			{#if changes.length === 0}
 				<div class="text-center py-12 text-gray-500">
@@ -139,6 +172,111 @@
 						No pending changes. Your register is up to date.
 					{/if}
 				</div>
+			{:else if groupByEvent}
+				{#each groupChanges(changes) as group}
+					<div class="mb-6">
+						<h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+							{group.label}
+							<span class="text-gray-400 font-normal">({group.items.length})</span>
+						</h2>
+						<div class="space-y-3">
+							{#each group.items as change (change.id)}
+								{@const mc =
+									materialityColors[change.materiality] || materialityColors.informational}
+								<div
+									class="bg-white rounded-lg border p-4
+										{change.overdue ? 'border-red-300' : 'border-gray-200'}"
+								>
+									<div class="flex items-start justify-between gap-4">
+										<div class="flex-1 min-w-0">
+											<div class="flex items-center gap-2 mb-1">
+												<span
+													class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {mc.bg} {mc.text}"
+												>
+													{mc.label}
+												</span>
+												{#if change.overdue}
+													<span class="text-xs font-medium text-red-600">Overdue</span>
+												{/if}
+											</div>
+											<div class="font-medium text-gray-900 truncate">
+												{change.title || change.law_name}
+											</div>
+											<div class="text-sm text-gray-500 mt-0.5">
+												{change.law_name}
+												{#if change.metadata?.change_type}
+													&middot; {change.metadata.change_type}
+												{/if}
+												{#if change.review_due_date}
+													&middot; Due {change.review_due_date}
+												{/if}
+											</div>
+										</div>
+
+										<div class="flex-shrink-0 flex items-center gap-2">
+											{#if decidingId === change.id}
+												<div class="flex items-center gap-2">
+													{#if change.materiality === 'major' || change.materiality === 'moderate'}
+														<input
+															type="text"
+															bind:value={decisionReason}
+															placeholder="Reason (required)"
+															class="text-sm border rounded px-2 py-1 w-48"
+														/>
+													{/if}
+													{#if change.event === 'law_status_changed'}
+														<button
+															on:click={() => decide(change.id, 'archive')}
+															class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+															>Archive</button
+														>
+														<button
+															on:click={() => decide(change.id, 'keep')}
+															class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+															>Keep</button
+														>
+													{:else if change.event === 'new_law_available'}
+														<button
+															on:click={() => decide(change.id, 'add')}
+															class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+															>Add</button
+														>
+														<button
+															on:click={() => decide(change.id, 'dismiss')}
+															class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+															>Dismiss</button
+														>
+													{:else}
+														<button
+															on:click={() => decide(change.id, 'keep')}
+															class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+															>Acknowledge</button
+														>
+													{/if}
+													<button
+														on:click={() => {
+															decidingId = null;
+															decisionReason = '';
+														}}
+														class="px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
+														>Cancel</button
+													>
+												</div>
+											{:else}
+												<button
+													on:click={() => (decidingId = change.id)}
+													class="px-3 py-1.5 text-xs font-medium bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200"
+												>
+													Review
+												</button>
+											{/if}
+										</div>
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/each}
 			{:else}
 				<div class="space-y-3">
 					{#each changes as change (change.id)}
