@@ -105,6 +105,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
         ActivityLog.increment(:taxa_subscriber, :updated)
         ActivityLog.record(:taxa_subscriber, :updated, %{law_name: law_name})
 
+        # Notify change detection for any org that has this law in their register
+        notify_enrichment_change(law_name)
+
       {:error, reason} ->
         ActivityLog.increment(:taxa_subscriber, :failed)
 
@@ -329,6 +332,76 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     end
 
     taxa
+  end
+
+  # --- Change detection hook ---
+
+  # If this law is in any org's register (status = 'yes'), log a
+  # match_score_changed event so the Change Review Dashboard picks it up.
+  # Runs inline but is a single lightweight query + insert per affected org.
+  defp notify_enrichment_change(law_name) do
+    alias SertantaiLegal.Sync.ApplicabilityEvent
+
+    query = """
+    SELECT oa.organization_id, oa.source
+    FROM org_applicabilities oa
+    WHERE oa.law_name = $1
+      AND oa.status = 'yes'
+      AND NOT EXISTS (
+        SELECT 1 FROM applicability_events ae
+        WHERE ae.organization_id = oa.organization_id
+          AND ae.law_name = $1
+          AND ae.event = 'match_score_changed'
+          AND ae.inserted_at > (now() - interval '1 hour')
+      )
+    """
+
+    case SertantaiLegal.Repo.query(query, [law_name]) do
+      {:ok, %{rows: rows}} when rows != [] ->
+        Enum.each(rows, fn [org_id, source] ->
+          # Screener-sourced = moderate (profile match may have changed)
+          # Manually confirmed = minor (informational, won't auto-remove)
+          materiality = if source == "screener", do: "moderate", else: "minor"
+
+          review_due_days = %{"moderate" => 60, "minor" => 90}
+          due = Date.add(Date.utc_today(), review_due_days[materiality] || 90)
+
+          org_id_str =
+            case Ecto.UUID.load(org_id) do
+              {:ok, str} -> str
+              _ -> org_id
+            end
+
+          ApplicabilityEvent.log(%{
+            organization_id: org_id_str,
+            law_name: law_name,
+            event: "match_score_changed",
+            actor: "sertantai",
+            status_before: "yes",
+            status_after: "yes",
+            source: "enrichment",
+            materiality: materiality,
+            review_due_date: due,
+            metadata: %{
+              "change_type" => "enrichment_update",
+              "source" => "taxa_subscriber"
+            }
+          })
+        end)
+
+        Logger.debug(
+          "[Zenoh.TaxaSubscriber] Logged enrichment change for #{law_name} " <>
+            "affecting #{length(rows)} org(s)"
+        )
+
+      _ ->
+        :ok
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.TaxaSubscriber] Failed to notify enrichment change for #{law_name}: #{Exception.message(e)}"
+      )
   end
 
   # List<Utf8> → %{values: ["a", "b"]} to match existing JSONB map format
