@@ -30,10 +30,27 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
       description("Geographic regions: England, Scotland, Wales, Northern Ireland, etc.")
     end
 
+    # DRRP actor dimensions (matched against duty/rights/responsibility/power holders)
+    attribute :governed_actors, {:array, :string} do
+      default([])
+
+      description(
+        "Governed actors with duties/rights: Org: Employer, SC: Contractor, Ind: Employee, etc."
+      )
+    end
+
+    attribute :government_actors, {:array, :string} do
+      default([])
+
+      description(
+        "Government actors with responsibilities/powers: Gvt: Authority, Gvt: Minister, etc."
+      )
+    end
+
     # Fitness dimensions (secondary filter — matched against law fitness arrays)
     attribute :activities, {:array, :string} do
       default([])
-      description("Roles/activities: employer, manufacturer, supplier, operator, importer, etc.")
+      description("Legacy — use governed_actors/government_actors instead. Kept for migration.")
     end
 
     attribute :locations, {:array, :string} do
@@ -77,6 +94,8 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
       accept([
         :organization_id,
         :regions,
+        :governed_actors,
+        :government_actors,
         :activities,
         :locations,
         :materials,
@@ -88,6 +107,8 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
     update :update do
       accept([
         :regions,
+        :governed_actors,
+        :government_actors,
         :activities,
         :locations,
         :materials,
@@ -100,6 +121,8 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
       accept([
         :organization_id,
         :regions,
+        :governed_actors,
+        :government_actors,
         :activities,
         :locations,
         :materials,
@@ -112,6 +135,8 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
 
       upsert_fields([
         :regions,
+        :governed_actors,
+        :government_actors,
         :activities,
         :locations,
         :materials,

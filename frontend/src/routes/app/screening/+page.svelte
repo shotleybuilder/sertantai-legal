@@ -291,6 +291,21 @@
 			}
 			const profile = await profileRes.json();
 
+			// Load org entitlement (subscribed families)
+			let subscribedFamilies: string[] = [];
+			try {
+				const entRes = await authFetch(`${API_URL}/api/sync/entitlement`);
+				if (entRes.ok) {
+					const ent = await entRes.json();
+					subscribedFamilies = ent.families || [];
+					console.log(`[Seed] Entitlement: ${subscribedFamilies.length} families`);
+				} else {
+					console.warn(`[Seed] Entitlement fetch failed: ${entRes.status}`);
+				}
+			} catch (err) {
+				console.warn('[Seed] Entitlement fetch error:', err);
+			}
+
 			// Check profile has at least one tag
 			const allTags = [
 				...(profile.regions || []),
@@ -307,15 +322,34 @@
 			}
 
 			// Build scored matching query in PGLite
+			// Stage 0: family subscription filter
 			// Stage 1: geo filter via geo_region overlap
-			// Stage 2: fitness intersection with match_score
+			// Stage 2: DRRP actors + fitness intersection with match_score
 			const regions = profile.regions || [];
-			const activities = profile.activities || [];
+			const governedActors = profile.governed_actors || [];
+			const governmentActors = profile.government_actors || [];
 			const locations = profile.locations || [];
 			const materials = profile.materials || [];
 			const processes = profile.processes || [];
 			const sector = profile.sector || [];
 
+			// Family filter: use entitlement families if available
+			const familyFilter = subscribedFamilies.length > 0 ? `AND l.family = ANY($8)` : '';
+
+			const params: unknown[] = [
+				governedActors, // $1
+				governmentActors, // $2
+				locations, // $3
+				materials, // $4
+				processes, // $5
+				sector, // $6
+				regions // $7
+			];
+			if (subscribedFamilies.length > 0) params.push(subscribedFamilies); // $8
+
+			// Match governed actors against duty_holder JSONB, government actors against responsibility_holder
+			// duty_holder format: {"values": ["Org: Employer", "Ind: Employee", ...]}
+			// Use jsonb_array_elements_text to extract values for array overlap check
 			const result = await db.query<{
 				name: string;
 				title_en: string;
@@ -323,24 +357,35 @@
 				match_score: string;
 			}>(
 				`SELECT l.name, l.title_en, COALESCE(l.family, '') as family,
-				        (CASE WHEN l.fitness_person IS NOT NULL AND l.fitness_person && $1 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $2 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $3 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $4 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $5 THEN 1 ELSE 0 END)::text as match_score
+				        (CASE WHEN $1::text[] != '{}' AND l.duty_holder IS NOT NULL AND EXISTS (
+				           SELECT 1 FROM jsonb_array_elements_text(l.duty_holder->'values') v WHERE v = ANY($1)
+				         ) THEN 1 ELSE 0 END +
+				         CASE WHEN $2::text[] != '{}' AND l.responsibility_holder IS NOT NULL AND EXISTS (
+				           SELECT 1 FROM jsonb_array_elements_text(l.responsibility_holder->'values') v WHERE v = ANY($2)
+				         ) THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $3 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $4 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $5 THEN 1 ELSE 0 END +
+				         CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $6 THEN 1 ELSE 0 END)::text as match_score
 				 FROM laws l
 				 LEFT JOIN org_applicabilities oa ON oa.law_name = l.name
 				 WHERE l.is_making = true
 				   AND (l.live IS NULL OR l.live NOT LIKE '%Revoked%')
 				   AND (oa.status IS NULL OR oa.status NOT IN ('yes'))
-				   AND ($6::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $6)
-				   AND (CASE WHEN l.fitness_person IS NOT NULL AND l.fitness_person && $1 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $2 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $3 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $4 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $5 THEN 1 ELSE 0 END) > 0
+				   AND ($7::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $7)
+				   ${familyFilter}
+				   AND (CASE WHEN $1::text[] != '{}' AND l.duty_holder IS NOT NULL AND EXISTS (
+				          SELECT 1 FROM jsonb_array_elements_text(l.duty_holder->'values') v WHERE v = ANY($1)
+				        ) THEN 1 ELSE 0 END +
+				        CASE WHEN $2::text[] != '{}' AND l.responsibility_holder IS NOT NULL AND EXISTS (
+				          SELECT 1 FROM jsonb_array_elements_text(l.responsibility_holder->'values') v WHERE v = ANY($2)
+				        ) THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $3 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $4 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $5 THEN 1 ELSE 0 END +
+				        CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $6 THEN 1 ELSE 0 END) > 0
 				 ORDER BY match_score DESC, l.family, l.name`,
-				[activities, locations, materials, processes, sector, regions]
+				params
 			);
 
 			seedPreview = result.rows.map((r) => ({
@@ -353,7 +398,34 @@
 			seedStrong = seedPreview.filter((r) => r.score >= 2).length;
 			seedSingle = seedPreview.filter((r) => r.score === 1).length;
 
-			// Stage 3: Uncategorized — laws with NO fitness data but matching geo + has a family
+			// Dev: dump preview to console + downloadable JSON
+			if (browser) {
+				const dump = {
+					profile,
+					subscribed_families: subscribedFamilies,
+					timestamp: new Date().toISOString(),
+					fitness_matched: seedPreview,
+					strong: seedStrong,
+					single: seedSingle,
+					uncategorized_count: seedUncategorized?.length ?? 0
+				};
+				console.log('[Seed Preview]', dump);
+				// Save to backend data dir via API (dev only)
+				try {
+					await authFetch(`${API_URL}/api/screening/debug-dump`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(dump)
+					});
+				} catch {
+					// Non-critical — debug endpoint may not exist
+				}
+			}
+
+			// Stage 3: Uncategorized — laws with NO fitness data but matching geo + family subscription
+			const uncatFamilyFilter = subscribedFamilies.length > 0 ? `AND l.family = ANY($2)` : '';
+			const uncatParams = subscribedFamilies.length > 0 ? [regions, subscribedFamilies] : [regions];
+
 			const uncatResult = await db.query<{
 				name: string;
 				title_en: string;
@@ -367,13 +439,14 @@
 				   AND (oa.status IS NULL OR oa.status NOT IN ('yes'))
 				   AND l.family IS NOT NULL AND l.family != ''
 				   AND ($1::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $1)
+				   ${uncatFamilyFilter}
 				   AND (l.fitness_person IS NULL OR l.fitness_person = '{}')
 				   AND (l.fitness_place IS NULL OR l.fitness_place = '{}')
 				   AND (l.fitness_plant IS NULL OR l.fitness_plant = '{}')
 				   AND (l.fitness_process IS NULL OR l.fitness_process = '{}')
 				   AND (l.fitness_sector IS NULL OR l.fitness_sector = '{}')
 				 ORDER BY l.family, l.name`,
-				[regions]
+				uncatParams
 			);
 
 			seedUncategorized = uncatResult.rows.map((r) => ({

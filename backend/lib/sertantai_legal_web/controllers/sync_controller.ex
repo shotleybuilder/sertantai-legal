@@ -16,12 +16,12 @@ defmodule SertantaiLegalWeb.SyncController do
   def entitlement(conn, _params) do
     org_id = conn.assigns.organization_id
 
-    case Ash.read(Sync.OrgEntitlement,
-           action: :by_organization,
-           arguments: %{organization_id: org_id}
-         ) do
+    case Sync.OrgEntitlement
+         |> Ash.Query.for_read(:by_organization, %{organization_id: org_id})
+         |> Ash.read() do
       {:ok, [ent | _]} -> json(conn, format_entitlement(ent))
       {:ok, []} -> conn |> put_status(404) |> json(%{error: "No entitlement found"})
+      {:error, _} -> conn |> put_status(404) |> json(%{error: "No entitlement found"})
     end
   end
 

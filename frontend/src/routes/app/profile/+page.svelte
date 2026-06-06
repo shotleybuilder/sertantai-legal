@@ -8,7 +8,8 @@
 	// Profile state
 	let profile: Record<string, string[]> = {
 		regions: [],
-		activities: [],
+		governed_actors: [],
+		government_actors: [],
 		locations: [],
 		materials: [],
 		processes: [],
@@ -18,7 +19,8 @@
 	// Vocabulary (available tags per dimension)
 	let vocabulary: Record<string, string[]> = {
 		regions: [],
-		activities: [],
+		governed_actors: [],
+		government_actors: [],
 		locations: [],
 		materials: [],
 		processes: [],
@@ -42,10 +44,17 @@
 			icon: '🌍'
 		},
 		{
-			key: 'activities',
-			label: 'Activities & Roles',
-			description: 'What roles does your organisation play?',
-			icon: '👤'
+			key: 'governed_actors',
+			label: 'Your Organisation & People',
+			description: 'What roles does your organisation play? These have legal duties and rights.',
+			icon: '🏢'
+		},
+		{
+			key: 'government_actors',
+			label: 'Government & Regulators',
+			description:
+				'Select if you are a government body. These have legal responsibilities and powers.',
+			icon: '🏛️'
 		},
 		{
 			key: 'locations',
@@ -84,7 +93,8 @@
 				const data = await profileRes.json();
 				profile = {
 					regions: data.regions || [],
-					activities: data.activities || [],
+					governed_actors: data.governed_actors || [],
+					government_actors: data.government_actors || [],
 					locations: data.locations || [],
 					materials: data.materials || [],
 					processes: data.processes || [],
@@ -150,7 +160,7 @@
 	<title>Organisation Profile - SertantAI</title>
 </svelte:head>
 
-<div class="overflow-auto px-6 py-6 space-y-6 max-w-4xl mx-auto">
+<div class="h-full overflow-auto px-6 py-6 space-y-6 max-w-4xl mx-auto">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="text-2xl font-bold text-gray-900">Organisation Profile</h1>

@@ -1,6 +1,6 @@
 # Auto Applicability Screening — Draft Plan
 
-**Status**: DRAFT v2 — incorporating feedback
+**Status**: IMPLEMENTED — Phases 8a-8d built 2026-06-06
 **Issue**: #102
 **Meta-plan**: Phase 8
 
@@ -37,15 +37,36 @@ Model the profile as **tag selections** across dimensions. Tags come directly fr
 - Scoped by organization_id
 - Managed via `/app/profile` page
 
+> **BUILT (Phase 8a — commit 8321a79)**:
+> - Ash resource: `backend/lib/sertantai_legal/sync/org_screening_profile.ex`
+> - Migration: `priv/repo/migrations/20260606063125_add_org_screening_profile.exs`
+> - Array columns: `regions`, `activities`, `locations`, `materials`, `processes`, `sector`
+> - Upsert on `organization_id` (one profile per org)
+> - 3 endpoints on ScreeningController: `GET/PUT /api/screening/profile`, `GET /api/screening/vocabulary`
+> - Vocabulary endpoint auto-populates tags from actual fitness values in the corpus (unnest + distinct)
+> - Locations vocabulary excludes geographic regions (England, Scotland etc.) — those go in `regions`
+> - `/app/profile` page: tag picker pills per dimension, auto-save on every click, profile summary panel
+> - Profile nav added to `/app` layout
+
 ## Matching Algorithm
 
 ### Two-stage filter: Geography first, then Fitness
+
+**Stage 0: Family subscription filter** (using `OrgEntitlement.families`)
+```
+law.family IN org_entitlement.families
+```
+Filters the full corpus down to the org's subscribed families. An industrial org doesn't need
+agricultural or fisheries laws. This is the coarsest filter and reduces the population significantly.
+
+> **BUILT (post-review fix)**: Added to seed query — loads entitlement families from backend,
+> filters PGLite query with `l.family IN (...)`. Falls back to all families if no entitlement exists.
 
 **Stage 1: Geographic filter** (using `geo_extent`, `geo_region`)
 ```
 law.geo_extent overlaps profile.country_region
 ```
-This filters the ~1,800 Making laws down to the laws that apply to the customer's jurisdictions. A Scottish company doesn't need Welsh-only laws.
+This filters down to laws that apply to the customer's jurisdictions. A Scottish company doesn't need Welsh-only laws.
 
 **Stage 2: Scored fitness matching** (on the geo-filtered set)
 
@@ -70,6 +91,18 @@ Laws matching more dimensions score higher and sort first. The UI can then offer
 - **Default**: Match ANY (score > 0) — inclusive, shows everything that touches the profile
 - **Strict**: Match 2+ dimensions — reduces noise, surfaces laws most relevant to the org
 - User toggle between modes
+
+> **BUILT (Phase 8b — commit df330dd)**:
+> - Matching query runs entirely in PGLite (instant, no backend round-trip)
+> - Profile loaded from backend API, then matched against local PGLite `laws` table
+> - Query includes NULL-safety on fitness arrays: `l.fitness_person IS NOT NULL AND l.fitness_person && $1`
+> - Geo filter: `$6::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $6`
+> - Excludes laws already in register: `oa.status IS NULL OR oa.status NOT IN ('yes')`
+> - Sync gate: button disabled when `$syncStatus.syncing` is true
+> - "Seed My Register" button in screening page stats bar
+> - Preview modal shows tier breakdown (Strong 2+ / Single 1) with law table
+> - GIN indexes NOT added (deferred — PGLite WASM compatibility uncertain, <10ms unindexed)
+> - User toggle (strict vs inclusive) NOT yet built — preview shows all matches sorted by score
 
 ### Tag hierarchy (future — address false negatives)
 
@@ -157,6 +190,15 @@ In the screening UI right panel (My Register):
 
 This is **deterministic** screening, not AI. The term "AI-seeded" in #102 is misleading — it's structured data matching. The UI should reflect this: "Seeded by SertantAI based on your profile" not "AI recommends".
 
+> **BUILT (Phase 8c — commit aa0fb3f)**:
+> - Source badge column in My Register right panel: violet "SertantAI", green "Confirmed", grey "Import"
+> - Confirm button (checkmark icon) on screener-seeded laws — calls `PUT /api/screening/applicabilities/:law_name`
+> - Confirming changes `source` to `'manual'` and `reviewed_by` to the user's email
+> - `bulk_upsert` endpoint updated to accept `source` parameter: `source: 'screener'` sets `reviewed_by: 'sertantai'`
+> - RIGHT_QUERY includes `oa.source as app_source` and `oa.reviewed_by`
+> - Preview modal footer: "Laws will be added with source 'SertantAI'. You can confirm or remove them later."
+> - `executeSeed()` calls bulk endpoint with `source: 'screener'`, writes PGLite with `reviewed_by: 'sertantai'`
+
 ## Implementation Phases
 
 ## PGLite Performance + Data Integrity
@@ -192,6 +234,13 @@ This is **deterministic** screening, not AI. The term "AI-seeded" in #102 is mis
 - Laws with no fitness data but in subscribed families + geo match
 - Amber "may apply" tier in UI
 - Separate from fitness-matched (green) tier
+
+> **BUILT (Phase 8d — commit 7015eec)**:
+> - Separate PGLite query for uncategorized laws: all fitness arrays NULL or empty, has family, geo match
+> - Shown in seed preview modal as collapsible "Uncategorized — Requires Manual Review" section
+> - Grouped by family in accordion (prevents flat-list decision fatigue)
+> - NOT auto-seeded — informational only, customer reviews manually in Available panel
+> - Count shown in preview header alongside Strong/Single counts with amber dot
 
 ## Resolved Questions
 
@@ -353,16 +402,18 @@ Measure:
 - % of seeded laws retained after review
 - % of manually-added laws that should have been seeded
 
-## Pre-implementation Checklist
+## Implementation Checklist
 
-- [ ] Validate `USING GIN` in PGLite WASM — fall back gracefully if unsupported
-- [ ] Group Uncategorized tier by family in UI accordions
-- [ ] Deprecation preview uses global match_score=0 query, not profile diff
-- [ ] Track `NOT LIKE '%Revoked%'` brittleness as tech debt — consider `is_active` boolean
-- [ ] Add `match_reason` JSONB column to org_applicabilities (G5)
-- [ ] Document G3 positioning statement for customer guides
-- [ ] Decide on Foundational tier governance (G4) — which laws qualify?
-- [ ] Surface coverage KPI in stats dashboard (G7)
+- [x] Validate `USING GIN` in PGLite WASM — **deferred**, unindexed scan <10ms, not blocking
+- [x] Group Uncategorized tier by family in UI accordions — **done** (Phase 8d)
+- [ ] Deprecation preview uses global match_score=0 query — **not yet built** (future)
+- [ ] Track `NOT LIKE '%Revoked%'` brittleness as tech debt — **noted**, emoji values consistent for now
+- [ ] Add `match_reason` JSONB column to org_applicabilities (G5) — **not yet built**
+- [ ] Document G3 positioning statement for customer guides — **not yet written**
+- [ ] Decide on Foundational tier governance (G4) — **not yet decided**
+- [ ] Surface coverage KPI in stats dashboard (G7) — **not yet built**
+- [ ] User toggle strict (2+) vs inclusive (1+) in seed preview — **not yet built**
+- [ ] End-to-end testing — **blocked on #105** (org switcher for test org)
 
 ## Validation
 
@@ -377,8 +428,23 @@ Test against QQ's Enhesa data:
 | Purpose | Path |
 |---------|------|
 | OrgApplicability resource | `backend/lib/sertantai_legal/sync/org_applicability.ex` |
+| **OrgScreeningProfile resource** | `backend/lib/sertantai_legal/sync/org_screening_profile.ex` |
 | ApplicabilitySource enum | `backend/lib/sertantai_legal/sync/applicability_source.ex` |
-| Screening page | `frontend/src/routes/app/screening/+page.svelte` |
-| PGLite schema | `frontend/src/lib/pglite/schema.sql.ts` |
+| **ScreeningController** (11 endpoints) | `backend/lib/sertantai_legal_web/controllers/screening_controller.ex` |
+| **Controller tests** (19 tests) | `backend/test/sertantai_legal_web/controllers/screening_controller_test.exs` |
+| Screening page (two-panel + seed) | `frontend/src/routes/app/screening/+page.svelte` |
+| **Profile page** (tag pickers) | `frontend/src/routes/app/profile/+page.svelte` |
+| Stats dashboard | `frontend/src/routes/app/stats/+page.svelte` |
+| App layout (auth gate + nav) | `frontend/src/routes/app/+layout.svelte` |
+| PGLite schema (v17) | `frontend/src/lib/pglite/schema.sql.ts` |
+| PGLite sync (org shape) | `frontend/src/lib/pglite/sync.ts` |
 | Fitness data (law level) | `uk_lrt.fitness_person/place/plant/process/sector` |
-| ScreeningController | `backend/lib/sertantai_legal_web/controllers/screening_controller.ex` |
+
+## Test Coverage
+
+19 backend tests covering:
+- Applicability CRUD (index, upsert, bulk, auth)
+- Profile CRUD (create, upsert, get empty/saved)
+- Vocabulary endpoint (auto-populated, geography/location separation)
+- Screener source handling (`source='screener'` → `reviewed_by='sertantai'`)
+- Design intent (revoked exclusion, one-per-org profile, additive seeding)

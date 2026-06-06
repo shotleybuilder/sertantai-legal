@@ -210,6 +210,8 @@ defmodule SertantaiLegalWeb.ScreeningController do
     attrs = %{
       organization_id: org_id,
       regions: params["regions"] || [],
+      governed_actors: params["governed_actors"] || [],
+      government_actors: params["government_actors"] || [],
       activities: params["activities"] || [],
       locations: params["locations"] || [],
       materials: params["materials"] || [],
@@ -229,8 +231,22 @@ defmodule SertantaiLegalWeb.ScreeningController do
   @doc "GET /api/screening/vocabulary — distinct fitness tag values from the law corpus"
   def vocabulary(conn, _params) do
     queries = [
-      {"activities",
-       "SELECT DISTINCT val FROM (SELECT unnest(fitness_person) as val FROM uk_lrt WHERE fitness_person IS NOT NULL) sub ORDER BY val"},
+      {"governed_actors",
+       "SELECT DISTINCT val FROM (
+          SELECT jsonb_array_elements_text(duty_holder->'values') as val
+          FROM uk_lrt WHERE duty_holder IS NOT NULL AND duty_holder != 'null'
+          UNION
+          SELECT jsonb_array_elements_text(rights_holder->'values') as val
+          FROM uk_lrt WHERE rights_holder IS NOT NULL AND rights_holder != 'null'
+        ) sub WHERE val NOT LIKE 'Gvt:%' AND val NOT LIKE 'EU:%' AND val NOT LIKE 'HM %' AND val NOT LIKE 'Crown%' ORDER BY val"},
+      {"government_actors",
+       "SELECT DISTINCT val FROM (
+          SELECT jsonb_array_elements_text(responsibility_holder->'values') as val
+          FROM uk_lrt WHERE responsibility_holder IS NOT NULL AND responsibility_holder != 'null'
+          UNION
+          SELECT jsonb_array_elements_text(power_holder->'values') as val
+          FROM uk_lrt WHERE power_holder IS NOT NULL AND power_holder != 'null'
+        ) sub WHERE val LIKE 'Gvt:%' OR val LIKE 'EU:%' OR val LIKE 'HM %' OR val LIKE 'Crown%' ORDER BY val"},
       {"locations",
        "SELECT DISTINCT val FROM (SELECT unnest(fitness_place) as val FROM uk_lrt WHERE fitness_place IS NOT NULL) sub WHERE val NOT IN ('England', 'Scotland', 'Wales', 'Northern Ireland', 'Great Britain', 'United Kingdom') ORDER BY val"},
       {"materials",
@@ -254,11 +270,26 @@ defmodule SertantaiLegalWeb.ScreeningController do
     json(conn, vocab)
   end
 
+  @doc "POST /api/screening/debug-dump — dev-only: save seed preview JSON to data dir"
+  def debug_dump(conn, params) do
+    if Mix.env() == :prod do
+      conn |> put_status(404) |> json(%{error: "Not available"})
+    else
+      path = Path.join(["data", "seed-preview-dump.json"])
+      File.mkdir_p!("data")
+      File.write!(path, Jason.encode!(params, pretty: true))
+      Logger.info("[ScreeningController] Debug dump saved to #{path}")
+      json(conn, %{saved: path})
+    end
+  end
+
   defp serialize_profile(profile) do
     %{
       id: profile.id,
       organization_id: profile.organization_id,
       regions: profile.regions || [],
+      governed_actors: profile.governed_actors || [],
+      government_actors: profile.government_actors || [],
       activities: profile.activities || [],
       locations: profile.locations || [],
       materials: profile.materials || [],

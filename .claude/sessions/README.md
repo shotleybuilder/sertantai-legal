@@ -72,6 +72,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-06 | [org-model-admin](2026-06-06-org-model-admin.md) | [#105](https://github.com/shotleybuilder/sertantai-legal/issues/105), [#106](https://github.com/shotleybuilder/sertantai-legal/issues/106) | Org model (per-org users), DRRP actor matching, per-user PGLite stores, family filter |
 | 2026-06-05 | [applicability-screening-ui](2026-06-05-applicability-screening-ui.md) | #98-#104 | Screening UI: two-panel split, /app layout, stats dashboard, 5 API endpoints |
 |------|---------|-------|---------|
 | 2026-06-04 | [baserow-polish](2026-06-04-baserow-polish.md) | — | LRT field refinements: Family/Status/Type→single_select, Domain/Region/Fitness→multi_select |
