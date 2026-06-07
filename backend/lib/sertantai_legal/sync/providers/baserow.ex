@@ -32,10 +32,13 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   end
 
   @impl true
-  def list_fields(config, table_key) do
-    table_id = table_id(config, table_key)
+  def list_fields(config, table_key_or_id) do
+    tid =
+      if is_atom(table_key_or_id),
+        do: table_id(config, table_key_or_id),
+        else: table_key_or_id
 
-    case api_get(config, "/api/database/fields/table/#{table_id}/") do
+    case api_get(config, "/api/database/fields/table/#{tid}/") do
       {:ok, %{status: 200, body: fields}} when is_list(fields) ->
         {:ok, fields}
 

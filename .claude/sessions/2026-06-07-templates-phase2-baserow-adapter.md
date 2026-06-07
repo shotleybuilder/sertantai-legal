@@ -4,13 +4,14 @@
 **Plan**: .claude/plans/baserow-compliance-templates.md (Phase 2)
 
 ## Todo
-- [ ] Implement create_table on Providers.Baserow
-- [ ] Implement create_field with universal type → Baserow type mapping
-- [ ] Implement create_view (grid, kanban, calendar, form, gallery)
-- [ ] Implement create_webhook
-- [ ] Implement capabilities callback
-- [ ] Baserow webhook payload → common event struct parser
-- [ ] Refactor existing Engine.run to use template infrastructure (or leave as-is if scope creep)
+- [x] Implement create_table on Providers.Baserow
+- [x] Implement create_field with universal type → Baserow type mapping
+- [x] Implement create_view (grid, kanban, calendar, form, gallery)
+- [x] Implement create_webhook
+- [x] Implement capabilities callback
+- [x] Baserow webhook payload → common event struct parser
+- [x] Fix list_fields to accept integer table_id (not just atom key)
+- [ ] Refactor existing Engine.run → deferred to Phase 3 (Foundation template wraps or replaces Engine.run)
 
 ## Notes
 - Phase 1 infrastructure done: FieldTypes, SubPatterns, TemplateBehaviour, Registry, Applicator
