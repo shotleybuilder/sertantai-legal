@@ -1,6 +1,6 @@
 # Baserow Compliance Templates — Plan
 
-**Status**: DRAFT — Round 1 reviewed (Gemini 2.5 Flash, 2026-06-07)
+**Status**: DRAFT — Round 2 reviewed (Gemini 2.5 Flash, 2026-06-07)
 **Meta-plan**: Phase 5 (Baserow sync) extension
 
 ## Problem
@@ -72,6 +72,25 @@ Templates come in two flavours based on how the customer stores artifacts:
 | **Reference** | Pointers to external systems (SharePoint, Confluence, Google Drive) | `url` + `text` fields (link + title) | Enterprise orgs with established document management |
 
 Template modules accept a `storage_mode` parameter (`:embedded` or `:reference`) that controls whether artifact fields are file uploads or URL references. Same table structures, different field types.
+
+### Customer archetype bundles
+
+| Bundle | Who it's for | Templates included | Complexity |
+|--------|-------------|-------------------|-----------|
+| **Quick Start** | SMEs, low maturity, starting from scratch | Foundation, Personnel, Assessments (simplified), Actions | Minimal fields, basic views, no advanced risk scoring |
+| **Standard** | Mid-size orgs, moderate maturity | All Quick Start + Evidence, Incidents, Review Calendar | Full risk scoring, kanban/calendar views |
+| **Enterprise** | Regulated industries, high maturity, migrating from GRC tools | All templates | Full fields, advanced rollups, RACI, Document Control, Audits, Training |
+
+Quick Start omits Likelihood/Impact fields on Assessments (uses simple Risk Level single-select). Customers can upgrade bundles — additive only, never destructive.
+
+### View-based patterns (no new tables)
+
+| Pattern | Who it's for | What it adds | Notes |
+|---------|-------------|-------------|-------|
+| **Management Dashboard** | Executives/board | Read-only grid views with rollup KPIs, risk heatmap grouping | View-level permissions = read-only for exec role |
+| **Self-Assessment Forms** | Operational staff | Baserow Form views on Assessments, Incidents, Evidence | Pre-filtered by department, curated field subset |
+| **Regulatory Reporting** | Compliance team | Filtered grid views structured for specific reporting requirements | Views per regulation (e.g., "GDPR Article 30 Records") |
+| **PDCA Tracker** | ISO management system owners | New `Improvement Initiatives` table (Plan/Do/Check/Act phases) | Links to Assessments and Actions |
 
 ### Authentication
 
@@ -336,6 +355,61 @@ Templates draw from common elements across:
 
 The template design prioritises elements common across all five frameworks.
 
+## Data Security
+
+*Reviewed by Gemini 2.5 Flash (Round 2, 2026-06-07)*
+
+### Data boundary: what SertantAI sees vs what stays in Baserow
+
+| SertantAI sees | SertantAI NEVER sees |
+|---------------|---------------------|
+| Baserow row/table/database IDs | Gap descriptions, notes, free-text fields |
+| Status field values (Compliant/Non-Compliant) | Evidence files, audit reports, training certificates |
+| Aggregate counts (laws assessed, actions overdue) | Personnel PII (names, emails, employee IDs) |
+| Dates (review due, action due) | Incident details, root cause analysis |
+| Link IDs (which assessment links to which law) | Document content |
+
+**Principle**: SertantAI is the orchestrator and analytics layer, not the custodian of sensitive compliance records. Webhooks send minimal payloads — row ID + changed field value only.
+
+### Webhook security
+
+- HTTPS/TLS 1.2+ for all webhook traffic
+- Baserow webhook signature verification on sertantai endpoint
+- Minimal payloads: row ID + specific changed field, never full row data
+- Dedicated webhook endpoints per data type
+
+### Data residency
+
+- UK customer data must stay in UK — Baserow instance and SertantAI webhook processing must both be UK-hosted
+- Regional deployment strategy: sertantai backend has UK endpoint for UK customers
+- Data flow documented: Baserow UK → SertantAI UK endpoint → SertantAI UK processing
+
+### Customer churn
+
+The Baserow-centric model makes churn clean:
+1. Customer retains their Baserow workspace and all compliance data (it's theirs)
+2. SertantAI stops syncing, deregisters webhooks
+3. SertantAI purges all SyncConfiguration, SyncRowMapping, and aggregate metrics for the customer
+4. SertantAI's own audit logs retained per retention policy (contain no customer compliance data)
+
+### Encryption
+
+- **In transit**: HTTPS/TLS 1.2+ mandatory for all API calls and webhooks
+- **At rest**: Baserow encrypts customer data on their infrastructure. SertantAI encrypts credentials (AES-256-CBC, per-record IV) and its own metadata
+
+### Audit logs
+
+Baserow's Advanced plan audit logs are a **component**, not the complete solution. Customers must combine:
+1. Baserow's workspace-level audit logs (who changed what in Baserow)
+2. SertantAI's own logs (when it synced, what templates were applied, what webhooks were processed)
+3. Their other systems' logs (DMS access, training systems, etc.)
+
+SertantAI guides customers on coverage gaps but doesn't claim Baserow's logs alone satisfy regulatory requirements.
+
+### Same database, not separate databases
+
+Customer-owned tables and SertantAI-managed tables live in the **same Baserow database** (with `SA_` prefix delineation). Separate databases would break cross-table linking (the core value proposition). Field-level permissions (Advanced plan) protect SertantAI-owned fields from customer edits.
+
 ## Implementation
 
 ### Template module pattern
@@ -453,13 +527,19 @@ When SertantAI syncs updated law data:
 
 6. **Customer customisation** — **SA_ prefix convention** on all SertantAI-managed tables and fields. Customers create their own fields/tables without the prefix. Clear documentation: never modify SA_-prefixed elements. This prevents conflicts during sync and template upgrades.
 
+## Resolved Questions (continued)
+
+*From Gemini Round 2 (2026-06-07):*
+
+7. **Template rollback** — **Idempotent re-apply, not rollback.** All creation steps check if the element already exists (by SA_ prefix) before creating. If application fails mid-way, status is marked "Failed" in SyncConfiguration. Customer clicks "Retry" — the idempotent applicator picks up where it left off. Never auto-delete partially created tables.
+
+8. **New provision auto-seeding** — **Yes, auto-create "Not Assessed" rows.** When LAT sync adds new provisions, the Assessment template runs incremental seeding — finds provisions without a corresponding Assessment row and creates them with defaults. New compliance obligations should never go untracked.
+
+9. **RACI granularity** — **Provision-level as default.** Different provisions within a law have different responsible parties — law-level RACI is too coarse to be actionable. Thousands of rows are fine for Baserow. Complexity managed via filtered views (by department, by role, by law family).
+
 ## Open Questions (Remaining)
 
-7. **Template rollback** — If template application fails mid-way (e.g., 3 of 5 tables created, then API error), how do we recover? Delete partially created tables, or leave them and retry?
-
-8. **New provision auto-seeding** — When enrichment adds new provisions to an existing law, should the Assessment template auto-create "Not Assessed" rows for them? Or only seed on initial template application?
-
-9. **RACI granularity** — Per-provision RACI could create thousands of rows (200 laws × 30 provisions). Should law-level be the default, with provision-level as an advanced option?
+None — all resolved.
 
 ## Key Files
 
