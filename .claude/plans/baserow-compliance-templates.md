@@ -62,6 +62,21 @@ Templates are not Baserow's native template feature (which is snapshot-based and
 
 Templates are **composable** — a customer picks which they want. Each template checks for prerequisites (e.g., Action Tracker requires Assessments table).
 
+### Deployment patterns
+
+Templates come in two flavours based on how the customer stores artifacts:
+
+| Pattern | Artifact storage | Evidence/Document fields | Suits |
+|---------|-----------------|------------------------|-------|
+| **Embedded** | Files stored directly in Baserow | `file` fields | Smaller orgs, no existing DMS |
+| **Reference** | Pointers to external systems (SharePoint, Confluence, Google Drive) | `url` + `text` fields (link + title) | Enterprise orgs with established document management |
+
+Template modules accept a `storage_mode` parameter (`:embedded` or `:reference`) that controls whether artifact fields are file uploads or URL references. Same table structures, different field types.
+
+### Authentication
+
+Baserow supports SSO via Active Directory / Okta (Enterprise plan) or SAML. We assume the customer has provisioned their Baserow users via their IdP. The Personnel table links to these provisioned users — SertantAI doesn't manage user accounts.
+
 ### Naming convention
 
 All SertantAI-managed tables and fields are prefixed with `SA_` (e.g., `SA_Assessments`, `SA_Compliance_Status`). Customers create their own fields/tables without the prefix. This clearly delineates managed vs custom and prevents conflicts during sync or template upgrades.
