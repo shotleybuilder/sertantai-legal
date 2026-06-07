@@ -12,12 +12,12 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
   """
   def all do
     %{
-      # Phase 3 templates (to be implemented):
-      # :foundation => SertantaiLegal.Sync.Templates.Foundation,
-      # :personnel => SertantaiLegal.Sync.Templates.Personnel,
-      # :compliance_assessment => SertantaiLegal.Sync.Templates.ComplianceAssessment,
-      # :action_tracker => SertantaiLegal.Sync.Templates.ActionTracker,
-      # :evidence_vault => SertantaiLegal.Sync.Templates.EvidenceVault,
+      foundation: SertantaiLegal.Sync.Templates.Foundation,
+      personnel: SertantaiLegal.Sync.Templates.Personnel,
+      compliance_assessment: SertantaiLegal.Sync.Templates.ComplianceAssessment
+      # Phase 4:
+      # action_tracker: SertantaiLegal.Sync.Templates.ActionTracker,
+      # evidence_vault: SertantaiLegal.Sync.Templates.EvidenceVault,
     }
   end
 
@@ -87,13 +87,12 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
     end)
   end
 
+  # In-degree = how many dependencies a node has that haven't been resolved yet.
+  # graph maps: node → [nodes it depends on]
+  # So in-degree of X = length of graph[X] (its dependency list).
   defp compute_in_degree(ids, graph) do
-    base = Map.new(ids, &{&1, 0})
-
-    Enum.reduce(graph, base, fn {_id, deps}, acc ->
-      Enum.reduce(deps, acc, fn dep, acc2 ->
-        Map.update(acc2, dep, 1, &(&1 + 1))
-      end)
+    Map.new(ids, fn id ->
+      {id, length(Map.get(graph, id, []))}
     end)
   end
 
@@ -108,7 +107,7 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
   end
 
   defp do_sort([id | rest], graph, in_degree, result) do
-    # Remove this node — decrease in-degree for all nodes that depend on it
+    # This node is resolved — decrease in-degree for all nodes that depend on it
     dependents =
       Enum.filter(Map.keys(graph), fn other_id ->
         id in Map.get(graph, other_id, [])
