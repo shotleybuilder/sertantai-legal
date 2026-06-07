@@ -72,6 +72,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-07 | [baserow-compliance-templates](2026-06-07-baserow-compliance-templates.md) | — | Phase 1: provider-agnostic template infrastructure (types, behaviour, registry, applicator) |
 | 2026-06-06 | [change-plan-phase-cd](2026-06-06-change-plan-phase-cd.md) | — | Phase C: decide→register wiring, grouped view, ChangeNotifier summaries + email stub |
 | 2026-06-06 | [change-plan-phase-b](2026-06-06-change-plan-phase-b.md) | — | Change notifications: summary/list/decide endpoints, nav badge, /app/changes review page |
 | 2026-06-06 | [change-mgmt-phase-a](2026-06-06-change-mgmt-phase-a.md) | — | Change detection: status changes, new law matching, enrichment hooks, materiality, 18 tests |

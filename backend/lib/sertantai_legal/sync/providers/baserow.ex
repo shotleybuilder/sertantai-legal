@@ -154,6 +154,271 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     end
   end
 
+  # ── Template Schema Operations ─────────────────────────────────
+  # These implement the extended ProviderBehaviour for TemplateApplicator.
+  # They work with universal field types from Templates.FieldTypes and
+  # translate to Baserow-specific API calls.
+
+  @impl true
+  @doc "Provider capabilities for template feature gating."
+  def capabilities do
+    %{
+      view_types: [:grid, :kanban, :calendar, :form, :gallery],
+      field_level_permissions: true,
+      webhooks: true,
+      webhook_includes_old_values: false,
+      webhook_includes_user_id: false,
+      batch_size: 200
+    }
+  end
+
+  @impl true
+  @doc "Create a new table in the Baserow database. Returns the table ID."
+  def create_table(config, name) do
+    database_id = config["database_id"] || config[:database_id]
+
+    case api_post(config, "/api/database/tables/database/#{database_id}/", %{"name" => name}) do
+      {:ok, %{status: 200, body: %{"id" => table_id}}} ->
+        {:ok, table_id}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, "Create table '#{name}': #{status} #{inspect(body)}"}
+
+      {:error, reason} ->
+        {:error, "Create table '#{name}': #{inspect(reason)}"}
+    end
+  end
+
+  @impl true
+  @doc """
+  Create a field on a Baserow table from a universal field spec.
+
+  Translates universal types (`:text`, `:single_select`, `:link_row`, etc.)
+  to Baserow API parameters.
+  """
+  def create_field(config, table_id, field_spec) do
+    body = translate_field_spec(field_spec, config)
+
+    case api_post(config, "/api/database/fields/table/#{table_id}/", body) do
+      {:ok, %{status: 200, body: %{"id" => field_id}}} ->
+        {:ok, field_id}
+
+      {:ok, %{status: status, body: resp}} ->
+        {:error, "Create field '#{field_spec.name}': #{status} #{inspect(resp)}"}
+
+      {:error, reason} ->
+        {:error, "Create field '#{field_spec.name}': #{inspect(reason)}"}
+    end
+  end
+
+  @impl true
+  @doc "Create a view on a Baserow table from a universal view spec."
+  def create_view(config, table_id, view_spec) do
+    body = %{
+      "name" => view_spec.name,
+      "type" => translate_view_type(view_spec.type)
+    }
+
+    case api_post(config, "/api/database/views/table/#{table_id}/", body) do
+      {:ok, %{status: 200, body: %{"id" => view_id}}} ->
+        # Apply filters and sorts if specified
+        maybe_apply_filters(config, view_id, view_spec)
+        maybe_apply_sorts(config, view_id, view_spec)
+        {:ok, view_id}
+
+      {:ok, %{status: status, body: resp}} ->
+        {:error, "Create view '#{view_spec.name}': #{status} #{inspect(resp)}"}
+
+      {:error, reason} ->
+        {:error, "Create view '#{view_spec.name}': #{inspect(reason)}"}
+    end
+  end
+
+  @impl true
+  @doc "Register a webhook on a Baserow table."
+  def create_webhook(config, table_id, webhook_spec) do
+    events = Enum.map(webhook_spec.events, &translate_webhook_event/1)
+    callback_url = config["webhook_url"] || config[:webhook_url]
+
+    body = %{
+      "table_id" => table_id,
+      "url" => callback_url,
+      "events" => events,
+      "active" => true
+    }
+
+    case api_post(config, "/api/database/webhooks/table/#{table_id}/", body) do
+      {:ok, %{status: 200, body: %{"id" => webhook_id}}} ->
+        {:ok, webhook_id}
+
+      {:ok, %{status: status, body: resp}} ->
+        {:error, "Create webhook: #{status} #{inspect(resp)}"}
+
+      {:error, reason} ->
+        {:error, "Create webhook: #{inspect(reason)}"}
+    end
+  end
+
+  # ── Universal → Baserow Type Translation ──────────────────────
+
+  @universal_to_baserow %{
+    text: "text",
+    long_text: "long_text",
+    number: "number",
+    date: "date",
+    boolean: "boolean",
+    single_select: "single_select",
+    multi_select: "multiple_select",
+    link_row: "link_row",
+    lookup: "lookup",
+    rollup: "rollup",
+    formula: "formula",
+    file: "file",
+    url: "url",
+    email: "email"
+  }
+
+  defp translate_field_spec(spec, config) do
+    baserow_type = Map.get(@universal_to_baserow, spec.type, to_string(spec.type))
+
+    body = %{"name" => spec.name, "type" => baserow_type}
+
+    body
+    |> maybe_add_select_options(spec)
+    |> maybe_add_link_row(spec, config)
+    |> maybe_add_lookup(spec)
+    |> maybe_add_rollup(spec)
+    |> maybe_add_formula(spec)
+  end
+
+  defp maybe_add_select_options(body, %{type: type, options: options})
+       when type in [:single_select, :multi_select] and is_list(options) do
+    Map.put(body, "select_options", Enum.map(options, fn opt -> %{"value" => opt} end))
+  end
+
+  defp maybe_add_select_options(body, _), do: body
+
+  defp maybe_add_link_row(body, %{type: :link_row, target: target}, config) do
+    # Resolve target table key to Baserow table ID from config
+    target_id =
+      config["table_ids"][target] ||
+        config["#{target}_table_id"] ||
+        config[:"#{target}_table_id"]
+
+    if target_id do
+      Map.put(body, "link_row_table_id", target_id)
+    else
+      body
+    end
+  end
+
+  defp maybe_add_link_row(body, _, _), do: body
+
+  defp maybe_add_lookup(body, %{type: :lookup, target: target, target_field: field}) do
+    body
+    |> Map.put("through_field_name", to_string(target))
+    |> Map.put("target_field_name", field)
+  end
+
+  defp maybe_add_lookup(body, _), do: body
+
+  defp maybe_add_rollup(body, %{
+         type: :rollup,
+         target: target,
+         target_field: field,
+         rollup_function: func
+       }) do
+    body
+    |> Map.put("through_field_name", to_string(target))
+    |> Map.put("target_field_name", field)
+    |> Map.put("rollup_function", to_string(func))
+  end
+
+  defp maybe_add_rollup(body, _), do: body
+
+  defp maybe_add_formula(body, %{type: :formula, expression: expr}) when is_binary(expr) do
+    Map.put(body, "formula", expr)
+  end
+
+  defp maybe_add_formula(body, %{type: :formula, expression: %{baserow: expr}}) do
+    Map.put(body, "formula", expr)
+  end
+
+  defp maybe_add_formula(body, _), do: body
+
+  @view_type_map %{
+    grid: "grid",
+    kanban: "kanban",
+    calendar: "calendar",
+    form: "form",
+    gallery: "gallery",
+    timeline: "timeline"
+  }
+
+  defp translate_view_type(type), do: Map.get(@view_type_map, type, to_string(type))
+
+  defp translate_webhook_event(:created), do: "rows.created"
+  defp translate_webhook_event(:updated), do: "rows.updated"
+  defp translate_webhook_event(:deleted), do: "rows.deleted"
+  defp translate_webhook_event(event), do: to_string(event)
+
+  defp maybe_apply_filters(_config, _view_id, %{filters: filters})
+       when is_list(filters) and filters != [] do
+    # TODO: POST /api/database/views/{view_id}/filters/ for each filter
+    :ok
+  end
+
+  defp maybe_apply_filters(_, _, _), do: :ok
+
+  defp maybe_apply_sorts(_config, _view_id, %{sorts: sorts})
+       when is_list(sorts) and sorts != [] do
+    # TODO: POST /api/database/views/{view_id}/sortings/ for each sort
+    :ok
+  end
+
+  defp maybe_apply_sorts(_, _, _), do: :ok
+
+  # ── Webhook Event Parsing ─────────────────────────────────────
+
+  @doc """
+  Parse a Baserow webhook payload into a common event struct.
+
+  Baserow sends: `%{"table_id" => ..., "event_type" => "rows.updated", "items" => [...]}`
+  """
+  def parse_webhook_event(payload) do
+    event_type =
+      case payload["event_type"] do
+        "rows.created" -> :row_created
+        "rows.updated" -> :row_updated
+        "rows.deleted" -> :row_deleted
+        other -> other
+      end
+
+    items = payload["items"] || payload["row_ids"] || []
+
+    Enum.map(items, fn item ->
+      %{
+        event_id: nil,
+        provider: :baserow,
+        table_id: payload["table_id"],
+        row_id: item["id"] || item,
+        event_type: event_type,
+        changed_fields: extract_changed_fields(item),
+        old_values: nil,
+        user_id: nil,
+        timestamp: DateTime.utc_now()
+      }
+    end)
+  end
+
+  defp extract_changed_fields(item) when is_map(item) do
+    item
+    |> Map.drop(["id", "order"])
+    |> Map.reject(fn {_k, v} -> is_nil(v) end)
+  end
+
+  defp extract_changed_fields(_), do: %{}
+
   # ── Internals ─────────────────────────────────────────────────────
 
   defp table_id(config, :lrt), do: config["lrt_table_id"] || config[:lrt_table_id]
