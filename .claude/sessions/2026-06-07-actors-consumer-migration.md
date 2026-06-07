@@ -8,7 +8,7 @@
 - [x] Profile query aggregation: switch governed_actors unnest → actors struct jsonb query
 - [x] Document actor tag usage map → backend/data/actor-tag-usage-map.md
 - [x] Remove governed_actors/government_actors from ProvisionSubscriber @field_atoms
-- [ ] Clarify actor tag semantics in reference doc (carried forward)
+- [x] Clarify actor tag semantics — covered in actor-tag-usage-map.md (positions, DRRP mapping, label sources)
 
 ## Notes
 - Fractalaw briefing updated: role→position, holder→active, recipient→counterparty (Hohfeldian)
