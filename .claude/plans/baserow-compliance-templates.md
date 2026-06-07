@@ -73,24 +73,42 @@ Templates come in two flavours based on how the customer stores artifacts:
 
 Template modules accept a `storage_mode` parameter (`:embedded` or `:reference`) that controls whether artifact fields are file uploads or URL references. Same table structures, different field types.
 
-### Customer archetype bundles
+### Sub-patterns (mix and match)
 
-| Bundle | Who it's for | Templates included | Complexity |
-|--------|-------------|-------------------|-----------|
-| **Quick Start** | SMEs, low maturity, starting from scratch | Foundation, Personnel, Assessments (simplified), Actions | Minimal fields, basic views, no advanced risk scoring |
-| **Standard** | Mid-size orgs, moderate maturity | All Quick Start + Evidence, Incidents, Review Calendar | Full risk scoring, kanban/calendar views |
-| **Enterprise** | Regulated industries, high maturity, migrating from GRC tools | All templates | Full fields, advanced rollups, RACI, Document Control, Audits, Training |
+Rather than one-size-fits-all archetypes, each template dimension offers **sub-patterns** the customer selects independently. The workspace is assembled from choices across dimensions, not from a fixed bundle.
 
-Quick Start omits Likelihood/Impact fields on Assessments (uses simple Risk Level single-select). Customers can upgrade bundles — additive only, never destructive.
+| Dimension | Sub-patterns | What varies |
+|-----------|-------------|-------------|
+| **Artifact storage** | Embedded (files in Baserow) / Reference (URLs to SharePoint/DMS) | File fields vs URL+text fields |
+| **Risk scoring** | Simple (single Risk Level select) / Matrix (Likelihood × Impact formula) | Fields on Assessments |
+| **People** | Flat (text fields) / Linked (Personnel table with link_row) | All "assigned to" / "assessed by" fields |
+| **Org structure** | Flat / Department / Site / Division-Site | How work is scoped and filtered (see below) |
+| **Assessment grain** | Law-level / Provision-level | One Assessment per law vs one per provision |
+| **Review cycle** | Manual / Scheduled (frequency + auto-calculated due dates) | Fields + formula fields on Assessments |
+| **Reporting** | Standard views / Management dashboard (read-only rollup views) | Additional views + rollup formulas |
+| **Data collection** | Grid-only / Forms (self-assessment form views for operational staff) | Form views on Assessments, Incidents, Evidence |
+| **Improvement** | None / PDCA tracker (Plan-Do-Check-Act cycle table) | Additional Improvement Initiatives table |
 
-### View-based patterns (no new tables)
+A customer building their workspace might choose: Reference storage + Matrix risk + Linked people + Site-based org + Provision-level assessment + Scheduled reviews + Dashboard reporting + Forms. Each choice is independent.
 
-| Pattern | Who it's for | What it adds | Notes |
-|---------|-------------|-------------|-------|
-| **Management Dashboard** | Executives/board | Read-only grid views with rollup KPIs, risk heatmap grouping | View-level permissions = read-only for exec role |
-| **Self-Assessment Forms** | Operational staff | Baserow Form views on Assessments, Incidents, Evidence | Pre-filtered by department, curated field subset |
-| **Regulatory Reporting** | Compliance team | Filtered grid views structured for specific reporting requirements | Views per regulation (e.g., "GDPR Article 30 Records") |
-| **PDCA Tracker** | ISO management system owners | New `Improvement Initiatives` table (Plan/Do/Check/Act phases) | Links to Assessments and Actions |
+### Org structure sub-patterns
+
+How the customer's organisation maps onto the compliance workspace. This affects how assessments, actions, and responsibilities are scoped and filtered.
+
+| Pattern | Tables/fields added | Suits |
+|---------|-------------------|-------|
+| **Flat** | No org structure tables. Personnel has Role + Department fields only. | Single-site SMEs |
+| **Department** | Department field on Personnel (single_select). Views grouped/filtered by department. | Single-site, departmental structure |
+| **Site** | New `Sites` table (Name, Address, Region). Personnel links to Site. Assessments can be scoped per site. | Multi-site orgs, same jurisdiction |
+| **Division-Site** | New `Divisions` table + `Sites` table. Division → Sites hierarchy. Personnel links to Division + Site. Assessments and Actions inherit site/division scope. | Large enterprises, matrix orgs |
+
+The org structure pattern determines:
+- How Personnel are grouped (by department, site, division)
+- How Assessments are filtered (all-org vs per-site vs per-division)
+- How Actions are assigned (within a site team vs cross-org)
+- How dashboards aggregate (site-level compliance % vs org-wide)
+- How RACI responsibilities map (different sites may have different responsible persons for the same law)
+
 
 ### Authentication
 
