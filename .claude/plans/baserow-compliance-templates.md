@@ -1,6 +1,6 @@
 # Baserow Compliance Templates — Plan
 
-**Status**: DRAFT — Round 2 reviewed (Gemini 2.5 Flash, 2026-06-07)
+**Status**: DRAFT — Round 3 reviewed (Gemini 2.5 Flash, 2026-06-07), provider-agnostic architecture
 **Meta-plan**: Phase 5 (Baserow sync) extension
 
 ## Problem
@@ -377,17 +377,17 @@ The template design prioritises elements common across all five frameworks.
 
 *Reviewed by Gemini 2.5 Flash (Round 2, 2026-06-07)*
 
-### Data boundary: what SertantAI sees vs what stays in Baserow
+### Data boundary: what SertantAI sees vs what stays in the customer's workspace
 
 | SertantAI sees | SertantAI NEVER sees |
 |---------------|---------------------|
-| Baserow row/table/database IDs | Gap descriptions, notes, free-text fields |
+| Provider row/table/database IDs | Gap descriptions, notes, free-text fields |
 | Status field values (Compliant/Non-Compliant) | Evidence files, audit reports, training certificates |
 | Aggregate counts (laws assessed, actions overdue) | Personnel PII (names, emails, employee IDs) |
 | Dates (review due, action due) | Incident details, root cause analysis |
 | Link IDs (which assessment links to which law) | Document content |
 
-**Principle**: SertantAI is the orchestrator and analytics layer, not the custodian of sensitive compliance records. Webhooks send minimal payloads — row ID + changed field value only.
+**Principle**: SertantAI is the orchestrator and analytics layer, not the custodian of sensitive compliance records. The customer's compliance data lives in their chosen provider (Baserow, Airtable, etc.) — SertantAI receives only minimal webhook payloads (row ID + changed field value).
 
 ### Webhook security
 
@@ -424,46 +424,187 @@ Baserow's Advanced plan audit logs are a **component**, not the complete solutio
 
 SertantAI guides customers on coverage gaps but doesn't claim Baserow's logs alone satisfy regulatory requirements.
 
-### Same database, not separate databases
+### Same workspace, not separate workspaces
 
-Customer-owned tables and SertantAI-managed tables live in the **same Baserow database** (with `SA_` prefix delineation). Separate databases would break cross-table linking (the core value proposition). Field-level permissions (Advanced plan) protect SertantAI-owned fields from customer edits.
+Customer-owned tables and SertantAI-managed tables live in the **same workspace/database** (with `SA_` prefix delineation). Separate databases would break cross-table linking (the core value proposition). Where the provider supports it (Baserow Advanced, Airtable Pro), field-level permissions protect SertantAI-owned fields from customer edits.
 
-## Implementation
+## Architecture
 
-### Template module pattern
+### Three-layer design
 
-Each template is an Elixir module under `SertantaiLegal.Sync.Templates`:
+Templates are **provider-agnostic**. Baserow is the first supported provider but not the only one — customers may use Airtable, NocoDB, Monday.com, Notion, or others.
+
+```
+Template Definition (universal schema)
+    ↓
+Provider Adapter (translates to API)
+    ↓
+Provider API (Baserow, Airtable, NocoDB, ...)
+```
+
+### Layer 1: Template definitions
+
+Each template is an Elixir module under `SertantaiLegal.Sync.Templates` that defines abstract schemas using universal field types:
 
 ```elixir
 defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
   @behaviour SertantaiLegal.Sync.TemplateBehaviour
 
   def name, do: "Compliance Assessment"
-  def requires, do: [:foundation]
+  def requires, do: [:foundation, :personnel]
   def tables, do: [:assessments]
-  def field_specs, do: [...]
-  def view_specs, do: [...]
-  def rollup_specs, do: [...]  # fields added to OTHER tables
-  def seed(config, lrt_mappings), do: ...  # create initial rows
+
+  def field_specs(sub_patterns) do
+    # Returns universal field definitions, adapted by sub-pattern choices
+    [
+      %{name: "SA_Law", type: :link_row, target: :lrt},
+      %{name: "SA_Compliance_Status", type: :single_select,
+        options: ["Compliant", "Partially Compliant", "Non-Compliant", "Not Assessed", "Not Applicable"]},
+      %{name: "SA_Assessment_Owner", type: :link_row, target: :personnel},
+      %{name: "SA_Next_Review_Date", type: :date},
+      %{name: "SA_Days_Until_Review", type: :formula,
+        expression: "date_diff('day', today(), field('SA_Next_Review_Date'))"},
+      # ... conditional on sub_patterns.risk_scoring
+    ] ++ risk_fields(sub_patterns.risk_scoring)
+  end
+
+  def view_specs(sub_patterns), do: [...]
+  def rollup_specs, do: [...]       # fields added to OTHER tables
+  def seed(context), do: ...         # create initial rows
 end
 ```
 
-### Apply flow
+**Universal field types**: `:text`, `:long_text`, `:number`, `:date`, `:boolean`, `:single_select`, `:multi_select`, `:link_row`, `:lookup`, `:rollup`, `:formula`, `:file`, `:url`, `:email`
 
-1. Customer selects templates via UI (or API)
-2. System checks prerequisites (`:foundation` must be synced first)
-3. Creates tables → fields → views → rollups in dependency order
-4. Seeds initial data (e.g., one Assessment per LRT law)
-5. Registers webhooks for change notifications
-6. Stores template metadata in SyncConfiguration
+**Sub-patterns** are passed as a config map — the template adapts its field specs, views, and seed logic based on the customer's choices.
+
+### Layer 2: Provider adapters
+
+Each provider adapter implements `SertantaiLegal.Sync.ProviderBehaviour` (extended beyond current row CRUD):
+
+```elixir
+defmodule SertantaiLegal.Sync.ProviderBehaviour do
+  # Existing (row operations)
+  @callback batch_create(config, table_key, rows) :: {:ok, mappings} | {:error, reason}
+  @callback batch_update(config, table_key, rows) :: {:ok, count} | {:error, reason}
+  @callback batch_delete(config, table_key, ids) :: {:ok, count} | {:error, reason}
+
+  # Schema operations (new)
+  @callback create_table(config, name) :: {:ok, table_id} | {:error, reason}
+  @callback create_field(config, table_id, field_spec) :: {:ok, field_id} | {:error, reason}
+  @callback create_view(config, table_id, view_spec) :: {:ok, view_id} | {:error, reason}
+  @callback create_webhook(config, table_id, webhook_spec) :: {:ok, webhook_id} | {:error, reason}
+
+  # Existing
+  @callback list_fields(config, table_key) :: {:ok, fields} | {:error, reason}
+  @callback ensure_fields(config, table_key, field_specs) :: :ok | {:error, reason}
+  @callback test_connection(config) :: {:ok, info} | {:error, reason}
+end
+```
+
+The **Baserow adapter** (`Providers.Baserow`) translates universal types:
+- `:text` → `"text"` / `:long_text` → `"long_text"`
+- `:single_select` → `"single_select"` with `select_options`
+- `:link_row` → `"link_row"` with `linked_table_id`
+- `:formula` → `"formula"` with `formula` expression (Baserow formula syntax)
+- `:file` → `"file"` / `:url` → `"url"` (switched by storage_mode sub-pattern)
+
+Future adapters (Airtable, NocoDB) implement the same callbacks with their own type mappings and API calls.
+
+### Provider capability matrix
+
+Each adapter declares what it supports via a `capabilities/0` callback:
+
+```elixir
+def capabilities do
+  %{
+    view_types: [:grid, :kanban, :calendar, :form, :gallery],
+    field_level_permissions: true,
+    webhooks: true,
+    webhook_includes_old_values: false,
+    webhook_includes_user_id: false,
+    batch_size: 200
+  }
+end
+```
+
+The `TemplateApplicator` checks capabilities before creating views or features. If a provider doesn't support a required feature, it fails with a clear error. If it's optional (e.g., timeline view), it skips and logs a warning. Grid view is always the fallback.
+
+### Formula strategy
+
+Formulas are the hardest to abstract — every provider has different syntax. Strategy:
+
+1. **Start with provider-specific formula strings** (get Baserow templates shipping)
+2. **Formalise `field('SA_Field_Name')` referencing** as a minimal internal convention
+3. **Incrementally build compilers** for core universal functions (`DATE_DIFF`, `TODAY`, `IF`, `AND`, basic arithmetic) as new providers are added
+4. **Accept provider-specific strings for complex/unique formulas** stored as `%{baserow: "...", airtable: "..."}`
+
+No full formula DSL upfront — evolve towards one pragmatically.
+
+### Webhook common event struct
+
+Each provider's webhook payload is normalised to:
+
+```elixir
+%{
+  event_id: "...",
+  provider: :baserow,
+  table_id: "...",
+  row_id: "...",
+  event_type: :row_updated,     # :row_created | :row_updated | :row_deleted
+  changed_fields: %{"SA_Compliance_Status" => "Non-Compliant"},
+  old_values: nil,               # not available from all providers
+  user_id: nil,                  # not available from all providers
+  timestamp: ~U[2026-06-07 12:00:00Z]
+}
+```
+
+Known gaps: Baserow webhooks don't include old values or user IDs. SertantAI handles these as optional — if critical for audit trails, a polling reconciliation fills the gaps.
+
+### What NOT to abstract
+
+- **Native automations** — stay with webhooks + sertantai backend (Baserow doesn't support API automation creation, others may)
+- **Provider-specific UI features** — Airtable Interfaces, Notion embeds, etc.
+- **Deep RBAC beyond field/table level** — too variable across providers
+- **Provider migration data** — re-apply templates to new provider (schema), but data migration is a separate, manual export/import process
+
+### Layer 3: Template applicator
+
+Orchestrates template application across any provider:
+
+```elixir
+TemplateApplicator.apply(
+  config,              # SyncConfiguration with provider details
+  [:foundation, :personnel, :compliance_assessment, :action_tracker],
+  %{
+    storage_mode: :reference,
+    risk_scoring: :matrix,
+    people: :linked,
+    org_structure: :site,
+    assessment_grain: :law,
+    review_cycle: :scheduled,
+    reporting: :dashboard,
+    data_collection: :forms,
+    improvement: :none
+  }
+)
+```
+
+1. Resolves dependency order from template `requires`
+2. For each template: creates tables → fields → views → rollups (idempotent)
+3. Seeds initial data
+4. Registers webhooks
+5. Stores template metadata + sub-pattern config in SyncConfiguration
 
 ### Webhook integration
 
-When a customer updates data in Baserow (changes compliance status, completes an action, uploads evidence), webhooks notify sertantai. This enables:
+When a customer updates data (changes compliance status, completes an action, uploads evidence), webhooks notify sertantai. This enables:
 
 - Compliance dashboard in `/app/stats` showing real-time assessment status
 - Change detection: "Customer marked 3 laws as non-compliant since last review"
 - Evidence tracking: count of evidence items per law
+
+Webhook handling is also provider-agnostic — each adapter parses its provider's webhook payload format into a common event struct.
 
 ## Sync Strategy
 
@@ -498,36 +639,41 @@ When SertantAI syncs updated law data:
 
 ## Phases
 
-### Phase 1: Template infrastructure
-- `TemplateBehaviour` behaviour module
-- Template registry (which templates are available)
-- `TemplateApplicator` — orchestrates create tables → fields → views → seed
-- Store applied templates in SyncConfiguration metadata
+### Phase 1: Provider-agnostic infrastructure
+- Universal field type system (`:text`, `:link_row`, `:formula`, etc.)
+- `TemplateBehaviour` behaviour module with `field_specs(sub_patterns)` callback
+- Extended `ProviderBehaviour` with schema operations (`create_table`, `create_field`, `create_view`, `create_webhook`)
+- Sub-pattern config struct (9 dimensions)
+- Template registry with dependency resolution
+- `TemplateApplicator` — idempotent orchestration across any provider
 
-### Phase 2: Compliance Assessment template
-- Table + fields + views + formulas
-- Seed from LRT register
+### Phase 2: Baserow adapter (extend existing)
+- Implement new `ProviderBehaviour` callbacks on existing `Providers.Baserow`
+- Universal type → Baserow type mapping
+- Baserow webhook payload → common event struct parsing
+- Refactor existing `Engine.run` to use template infrastructure
+
+### Phase 3: Foundation + Personnel + Compliance Assessment
+- Foundation template (refactor existing LRT/LAT sync into template pattern)
+- Personnel template
+- Compliance Assessment template with sub-pattern support
+- Seed logic (one Assessment per law, linked to LRT)
 - Rollups on LRT (assessment count, compliance %)
-- Webhook for compliance status changes
 
-### Phase 3: Action Tracker template
-- Table + fields + views
+### Phase 4: Action Tracker + Evidence Vault
+- Action Tracker with kanban/calendar views
+- Evidence Vault with storage_mode sub-pattern (file vs URL)
 - Rollups on Assessments (open action count)
-- Kanban and calendar views
-
-### Phase 4: Evidence Vault template
-- Table + fields + views
-- File upload support
-- Expiry tracking
 
 ### Phase 5: Webhook → sertantai pipeline
-- Receive Baserow webhooks
+- Receive provider webhooks (provider-agnostic event struct)
 - Update compliance metrics in sertantai
 - Surface in `/app/stats` dashboard
 
-### Phase 6: RACI template (future)
-- Maps actors struct to organisational roles
-- Requires actors struct migration complete
+### Phase 6: Remaining templates
+- Incident Register, Audit Management, Training Tracker, Document Control
+- RACI template (maps actors struct to organisational roles)
+- PDCA / Improvement Initiatives template
 
 ## Resolved Questions
 
