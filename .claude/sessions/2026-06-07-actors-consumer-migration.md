@@ -2,6 +2,8 @@
 
 **Started**: 2026-06-07 00:30
 **Briefing**: backend/data/fractalaw-actors-struct-migration.md
+**Ended**: 2026-06-07 11:30
+**Commits**: `c07785c`, `702a439`, `60d6f0f`
 
 ## Todo
 - [x] Baserow LAT sync: switch "Regulated Actors" → actors where position=active (extract_active_actors/1)
@@ -11,9 +13,9 @@
 - [x] Clarify actor tag semantics — covered in actor-tag-usage-map.md (positions, DRRP mapping, label sources)
 
 ## Notes
-- Fractalaw briefing updated: role→position, holder→active, recipient→counterparty (Hohfeldian)
-- New fields: relates_to (pairwise actor relations), reason (LLM reasoning)
-- position=active gives duty/responsibility/power holders — the "Regulated Actors"
-- Label prefix (Org:/Gvt:) available for display grouping but position is primary axis
-- Current OH&S data has old schema (holder/recipient/etc.) — republish with new schema imminent
-- Falls back to deprecated governed_actors flat column if actors is nil
+- Fractalaw briefing updated mid-session: role→position, holder→active (Hohfeldian)
+- 68 OH&S laws republished with new schema: 6,279 provisions, 9,742 active actors
+- QQ register: 153/274 laws enriched (55.8%), 31,366 provisions
+- ProvisionSubscriber log noise fixed: per-section "not found" folded into summary line
+- Fixed mcp-proxy: path /var/home, streamablehttp transport
+- #107 updated with PGLite IDB crash stack trace during bulk enrichment
