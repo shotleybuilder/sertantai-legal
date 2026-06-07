@@ -800,7 +800,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "_source_id" => lat.section_id,
       "Type" => lat.drrp_types || [],
       "Duty Type" => if(lat.duty_sub_type, do: [lat.duty_sub_type], else: []),
-      "Regulated Actors" => lat.governed_actors || [],
+      "Regulated Actors" => extract_active_actors(lat),
       "Provision Text" => lat.text,
       "Provision" => lat.provision,
       "Parent Law" => [lrt_external_row_id]
@@ -859,6 +859,24 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   end
 
   defp format_function(_), do: []
+
+  # Extract active actor labels from the actors struct column.
+  # Active = position is "active" (duty/responsibility/power holders).
+  # Falls back to deprecated governed_actors flat column if actors is nil.
+  defp extract_active_actors(%{actors: actors}) when is_list(actors) and actors != [] do
+    actors
+    |> Enum.filter(fn a ->
+      pos = a["position"] || a[:position]
+      pos in ["active"]
+    end)
+    |> Enum.map(fn a -> a["label"] || a[:label] end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.reject(&MapSet.member?(@holder_exclusions, &1))
+    |> Enum.uniq()
+  end
+
+  defp extract_active_actors(%{governed_actors: ga}) when is_list(ga), do: ga
+  defp extract_active_actors(_), do: []
 
   # Extract holder values, filtering out known artifacts
   defp extract_holder_list(field) do

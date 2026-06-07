@@ -91,6 +91,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
             :sort_key,
             :drrp_types,
             :governed_actors,
+            :actors,
             :duty_sub_type,
             :clause_refined
           ]),
@@ -155,9 +156,11 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         FROM lat c, unnest(c.drrp_types) dt
         WHERE c.law_id = la.law_id AND c.provision = la.provision AND dt IS NOT NULL
       ) AS drrp_types,
-      (SELECT array_agg(DISTINCT ga)
-        FROM lat c, unnest(c.governed_actors) ga
-        WHERE c.law_id = la.law_id AND c.provision = la.provision AND ga IS NOT NULL
+      (SELECT array_agg(DISTINCT a->>'label')
+        FROM lat c, jsonb_array_elements(c.actors) a
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND a->>'position' = 'active'
+          AND a->>'label' IS NOT NULL
       ) AS governed_actors,
       (SELECT c.duty_sub_type FROM lat c
         WHERE c.law_id = la.law_id AND c.provision = la.provision

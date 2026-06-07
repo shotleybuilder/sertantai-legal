@@ -17,10 +17,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
   # Arrow column name → Ash attribute atom.
   # Simple arrays/scalars — mapped directly without JSONB wrappers.
+  # Note: governed_actors/government_actors removed — fractalaw no longer sends
+  # flat actor columns. Use actors struct column instead (see @struct_columns).
   @field_atoms %{
     "drrp_types" => :drrp_types,
-    "governed_actors" => :governed_actors,
-    "government_actors" => :government_actors,
     "duty_family" => :duty_family,
     "duty_sub_type" => :duty_sub_type,
     "clause_refined" => :clause_refined,
@@ -37,8 +37,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     "extraction_method" => :extraction_method
   }
 
-  # Arrow List<Struct> column — needs special handling (array of maps, not flat array)
-  @struct_columns ["actors"]
+  # Arrow List<Struct> columns — needs special handling (array of maps, not flat array)
+  @struct_atoms %{
+    "actors" => :actors
+  }
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -146,15 +148,24 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
         now = DateTime.utc_now()
         results = Enum.map(rows, &upsert_provision(&1, now))
         ok_count = Enum.count(results, &match?(:ok, &1))
-        err_count = Enum.count(results, &match?({:error, _}, &1))
+        not_found = Enum.count(results, &match?({:error, {:not_found, _}}, &1))
 
-        if err_count > 0 do
+        real_errors =
+          Enum.count(results, fn
+            {:error, {:not_found, _}} -> false
+            {:error, _} -> true
+            _ -> false
+          end)
+
+        skipped = if not_found > 0, do: " (#{not_found} skipped — not in LAT)", else: ""
+
+        if real_errors > 0 do
           Logger.warning(
-            "[Zenoh.ProvisionSubscriber] #{law_name}: #{ok_count} ok, #{err_count} failed"
+            "[Zenoh.ProvisionSubscriber] #{law_name}: #{ok_count} ok, #{real_errors} failed#{skipped}"
           )
         else
           Logger.info(
-            "[Zenoh.ProvisionSubscriber] Updated #{ok_count} provisions for #{law_name}"
+            "[Zenoh.ProvisionSubscriber] Updated #{ok_count} provisions for #{law_name}#{skipped}"
           )
         end
 
@@ -199,8 +210,8 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
           end
 
         {:error, {:not_found, _}} ->
-          # Provision exists in fractalaw but not yet parsed in sertantai — skip
-          Logger.debug("[Zenoh.ProvisionSubscriber] Section not found: #{section_id}")
+          # Provision exists in fractalaw but not yet parsed in sertantai — skip silently.
+          # Common for jurisdiction-specific IDs (s.23[E+W]) and structural sections (title, pt).
           {:error, {:not_found, section_id}}
 
         {:error, reason} ->
@@ -228,10 +239,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
       end)
 
     # Struct columns (List<Struct> → {:array, :map})
-    Enum.reduce(@struct_columns, acc, fn str_key, acc ->
+    Enum.reduce(@struct_atoms, acc, fn {str_key, atom_key}, acc ->
       case Map.get(row, str_key) do
         nil -> acc
-        entries when is_list(entries) -> Map.put(acc, String.to_existing_atom(str_key), entries)
+        entries when is_list(entries) -> Map.put(acc, atom_key, entries)
         _ -> acc
       end
     end)
