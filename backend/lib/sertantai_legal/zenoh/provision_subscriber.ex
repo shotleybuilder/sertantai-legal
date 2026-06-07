@@ -16,7 +16,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Arrow column name → Ash attribute atom.
-  # All provision-level taxa fields are simple arrays or scalars — no JSONB wrappers.
+  # Simple arrays/scalars — mapped directly without JSONB wrappers.
   @field_atoms %{
     "drrp_types" => :drrp_types,
     "governed_actors" => :governed_actors,
@@ -33,8 +33,12 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     "fitness_place" => :fitness_place,
     "fitness_plant" => :fitness_plant,
     "fitness_property" => :fitness_property,
-    "fitness_sector" => :fitness_sector
+    "fitness_sector" => :fitness_sector,
+    "extraction_method" => :extraction_method
   }
+
+  # Arrow List<Struct> column — needs special handling (array of maps, not flat array)
+  @struct_columns ["actors"]
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -214,10 +218,21 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
   @doc false
   def normalize_taxa(row) do
-    Enum.reduce(@field_atoms, %{}, fn {str_key, atom_key}, acc ->
+    # Simple fields (scalars + flat arrays)
+    acc =
+      Enum.reduce(@field_atoms, %{}, fn {str_key, atom_key}, acc ->
+        case Map.get(row, str_key) do
+          nil -> acc
+          value -> Map.put(acc, atom_key, value)
+        end
+      end)
+
+    # Struct columns (List<Struct> → {:array, :map})
+    Enum.reduce(@struct_columns, acc, fn str_key, acc ->
       case Map.get(row, str_key) do
         nil -> acc
-        value -> Map.put(acc, atom_key, value)
+        entries when is_list(entries) -> Map.put(acc, String.to_existing_atom(str_key), entries)
+        _ -> acc
       end
     end)
   end

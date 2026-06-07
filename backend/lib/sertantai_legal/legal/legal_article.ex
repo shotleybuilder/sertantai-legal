@@ -168,12 +168,33 @@ defmodule SertantaiLegal.Legal.LegalArticle do
 
     attribute :governed_actors, {:array, :string} do
       allow_nil?(true)
-      description("Regulated actors (Org: Employer, Ind: Employee, etc.)")
+
+      description(
+        "DEPRECATED — use actors column. Regulated actors flat list, dual-written for backward compat."
+      )
     end
 
     attribute :government_actors, {:array, :string} do
       allow_nil?(true)
-      description("Government actors (Gvt: Authority, Gvt: Minister, etc.)")
+
+      description(
+        "DEPRECATED — use actors column. Government actors flat list, dual-written for backward compat."
+      )
+    end
+
+    attribute :actors, {:array, :map} do
+      allow_nil?(true)
+
+      description(
+        "Structured actors per provision. Each entry: {label, role, recipient_type, label_source}. " <>
+          "role: holder|recipient|beneficiary|mentioned. label_source: canonical|invented."
+      )
+    end
+
+    attribute :extraction_method, :string do
+      allow_nil?(true)
+
+      description("How actors were determined: regex|inherited|agentic|agentic_unvalidated")
     end
 
     attribute :duty_family, :string do
@@ -386,6 +407,8 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :drrp_types,
         :governed_actors,
         :government_actors,
+        :actors,
+        :extraction_method,
         :duty_family,
         :duty_sub_type,
         :clause_refined,

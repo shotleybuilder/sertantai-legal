@@ -404,14 +404,36 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
       )
   end
 
-  # List<Utf8> → %{values: ["a", "b"]} to match existing JSONB map format
+  # List<Utf8> → %{values: ["a", "b"]} to match existing JSONB map format.
+  # Strips "(inferred)" suffix and trailing bare colons from actor labels —
+  # these are extraction_method indicators, not distinct actors.
   defp put_holder_map(acc, row, str_key) do
     case Map.get(row, str_key) do
-      nil -> acc
-      values when is_list(values) -> Map.put(acc, @field_atoms[str_key], %{values: values})
-      _ -> acc
+      nil ->
+        acc
+
+      values when is_list(values) ->
+        cleaned =
+          values
+          |> Enum.map(&clean_actor_label/1)
+          |> Enum.reject(&(&1 == ""))
+          |> Enum.uniq()
+
+        Map.put(acc, @field_atoms[str_key], %{values: cleaned})
+
+      _ ->
+        acc
     end
   end
+
+  defp clean_actor_label(label) when is_binary(label) do
+    label
+    |> String.replace(~r/\s*\(inferred\)\s*$/, "")
+    |> String.replace(~r/:+\s*$/, "")
+    |> String.trim()
+  end
+
+  defp clean_actor_label(label), do: label
 
   # role is {:array, :string} not :map
   defp put_list_field(acc, row, str_key) do

@@ -72,6 +72,8 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-06 | [change-plan-phase-cd](2026-06-06-change-plan-phase-cd.md) | — | Phase C: decide→register wiring, grouped view, ChangeNotifier summaries + email stub |
+| 2026-06-06 | [change-plan-phase-b](2026-06-06-change-plan-phase-b.md) | — | Change notifications: summary/list/decide endpoints, nav badge, /app/changes review page |
 | 2026-06-06 | [change-mgmt-phase-a](2026-06-06-change-mgmt-phase-a.md) | — | Change detection: status changes, new law matching, enrichment hooks, materiality, 18 tests |
 | 2026-06-06 | [applicability-audit-trail](2026-06-06-applicability-audit-trail.md) | [#99](https://github.com/shotleybuilder/sertantai-legal/issues/99) | Audit trail: event table, activity feed, undo, match reason explainability |
 | 2026-06-06 | [org-model-admin](2026-06-06-org-model-admin.md) | [#105](https://github.com/shotleybuilder/sertantai-legal/issues/105), [#106](https://github.com/shotleybuilder/sertantai-legal/issues/106) | Org model (per-org users), DRRP actor matching, per-user PGLite stores, family filter |
