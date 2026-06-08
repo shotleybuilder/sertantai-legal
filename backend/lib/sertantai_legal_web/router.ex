@@ -81,6 +81,12 @@ defmodule SertantaiLegalWeb.Router do
     post("/entitlement-change", WebhookController, :entitlement_change)
   end
 
+  # Template webhook endpoints — provider callbacks (no auth pipeline, verified by secret)
+  scope "/api/webhooks/template", SertantaiLegalWeb do
+    pipe_through(:api)
+    post("/:provider/:org_id", TemplateWebhookController, :handle)
+  end
+
   # Electric proxy — public shapes (UK LRT reference data)
   scope "/api/electric", SertantaiLegalWeb do
     pipe_through(:sse)
@@ -120,6 +126,7 @@ defmodule SertantaiLegalWeb.Router do
     post("/screening/debug-dump", ScreeningController, :debug_dump)
 
     # Change management endpoints (Phase B)
+    get("/screening/compliance-metrics", ScreeningController, :compliance_metrics)
     get("/screening/changes/summary", ScreeningController, :changes_summary)
     get("/screening/changes", ScreeningController, :changes_list)
     put("/screening/changes/:id/decide", ScreeningController, :decide_change)

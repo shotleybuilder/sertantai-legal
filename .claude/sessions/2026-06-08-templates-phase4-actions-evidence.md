@@ -2,16 +2,17 @@
 
 **Started**: 2026-06-08 00:00
 **Plan**: .claude/plans/baserow-compliance-templates.md (Phase 4)
+**Ended**: 2026-06-08 00:30
+**Commits**: `ecb031c`
 
 ## Todo
-- [ ] Action Tracker template (table + fields + kanban/calendar views)
-- [ ] Evidence Vault template with storage_mode sub-pattern (file vs URL)
-- [ ] Rollups on Assessments (open action count)
-- [ ] Register in Registry
-- [ ] Tests
+- [x] Action Tracker template (status, priority, type, kanban, calendar, overdue formula)
+- [x] Evidence Vault template with storage_mode sub-pattern (embedded=file, reference=url)
+- [x] Rollups on Assessments (open action count + evidence count)
+- [x] Register in Registry
+- [x] Tests (16 new, 41 total template tests)
 
 ## Notes
-- Action Tracker requires Assessments (link_row → assessments)
-- Evidence links to both Assessments and Actions
-- storage_mode: :embedded → file fields, :reference → url + text fields
-- Action types: Corrective / Preventative / Improvement / Maintenance
+- ActionTracker links to assessments, has rollup for open actions
+- EvidenceVault links to both assessments and actions
+- Full dependency chain resolves: foundation → personnel → assessment → actions/evidence

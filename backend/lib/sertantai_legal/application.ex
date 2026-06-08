@@ -13,6 +13,9 @@ defmodule SertantaiLegal.Application do
       SertantaiLegal.Metrics.TelemetryHandler.attach()
     end
 
+    # Initialize compliance metrics ETS table
+    SertantaiLegal.Sync.Templates.ComplianceMetrics.init()
+
     children =
       [
         SertantaiLegalWeb.Telemetry,

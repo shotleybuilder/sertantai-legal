@@ -514,6 +514,18 @@ defmodule SertantaiLegalWeb.ScreeningController do
     }
   end
 
+  # ── Compliance metrics endpoint ─────────────────────────────────
+
+  @doc "GET /api/screening/compliance-metrics — aggregate compliance posture from webhook data"
+  def compliance_metrics(conn, _params) do
+    org_id = conn.assigns.organization_id
+
+    metrics =
+      SertantaiLegal.Sync.Templates.ComplianceMetrics.get_metrics(org_id)
+
+    json(conn, metrics)
+  end
+
   # ── Change management endpoints ────────────────────────────────
 
   @doc "GET /api/screening/changes/summary — pending change counts for nav badge + dashboard"
