@@ -2,18 +2,19 @@
 
 **Started**: 2026-06-07 19:15
 **Plan**: .claude/plans/baserow-compliance-templates.md (Phase 3)
+**Ended**: 2026-06-08 00:00
+**Commits**: `1fc4c0b`
 
 ## Todo
-- [ ] Foundation template (wrap existing LRT/LAT sync as a TemplateBehaviour module)
-- [ ] Personnel template (table + field specs + views)
-- [ ] Compliance Assessment template (table + field specs with sub-pattern support)
-- [ ] Seed logic (one Assessment per law, linked to LRT)
-- [ ] Rollups on LRT (assessment count, compliance %)
-- [ ] Register templates in Registry
-- [ ] Test: Applicator resolves and applies Foundation → Personnel → Assessment in order
+- [x] Foundation template (declares LRT/LAT, Engine.run handles rows)
+- [x] Personnel template (6 fields, 4 views)
+- [x] Compliance Assessment template (sub-pattern-aware: risk, people, review, grain)
+- [x] Seed logic (law-level and provision-level from row mappings)
+- [x] Rollups on LRT (assessment count via cross_table_fields)
+- [x] Register templates in Registry
+- [x] Tests: 25 tests covering dependency resolution, sub-patterns, field adaptation
 
 ## Notes
-- Phase 1 (infrastructure) + Phase 2 (Baserow adapter) done
-- Foundation template may just declare the existing LRT/LAT tables without recreating them
-- Engine.run refactor deferred — Foundation template declares tables but Engine.run still does the row sync
-- Sub-patterns affecting Assessment: risk_scoring (simple/matrix), assessment_grain (law/provision), review_cycle (manual/scheduled), people (flat/linked)
+- Fixed topological sort bug (in-degree was inverted)
+- Foundation doesn't create tables — declares them so other templates can reference :lrt/:lat
+- Assessment has 6 views including kanban (compliance status) and calendar (review dates)

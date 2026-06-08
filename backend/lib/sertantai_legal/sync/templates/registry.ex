@@ -14,10 +14,9 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
     %{
       foundation: SertantaiLegal.Sync.Templates.Foundation,
       personnel: SertantaiLegal.Sync.Templates.Personnel,
-      compliance_assessment: SertantaiLegal.Sync.Templates.ComplianceAssessment
-      # Phase 4:
-      # action_tracker: SertantaiLegal.Sync.Templates.ActionTracker,
-      # evidence_vault: SertantaiLegal.Sync.Templates.EvidenceVault,
+      compliance_assessment: SertantaiLegal.Sync.Templates.ComplianceAssessment,
+      action_tracker: SertantaiLegal.Sync.Templates.ActionTracker,
+      evidence_vault: SertantaiLegal.Sync.Templates.EvidenceVault
     }
   end
 
