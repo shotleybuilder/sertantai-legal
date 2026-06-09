@@ -15,6 +15,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @behaviour SertantaiLegal.Sync.ProviderBehaviour
 
+  require Logger
+
   @batch_size 200
 
   # ── Public API ────────────────────────────────────────────────────

@@ -132,11 +132,15 @@ defmodule SertantaiLegal.Sync.Engine do
            field_specs = Baserow.lat_field_specs(lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :lat, field_specs) do
         # Format LAT rows with link_row references to parent LRT
+        # Skip rows where the parent LRT mapping is missing (orphaned provisions)
         formatted =
-          Enum.map(lat_rows, fn lat ->
+          lat_rows
+          |> Enum.map(fn lat ->
             lrt_external_id = Map.get(lrt_mappings, to_string(lat.law_id))
-            Baserow.format_lat_row(lat, lrt_external_id)
+            {lat, lrt_external_id}
           end)
+          |> Enum.reject(fn {_lat, ext_id} -> is_nil(ext_id) end)
+          |> Enum.map(fn {lat, ext_id} -> Baserow.format_lat_row(lat, ext_id) end)
 
         case provider.batch_create(provider_config, :lat, formatted) do
           {:ok, mappings} ->
