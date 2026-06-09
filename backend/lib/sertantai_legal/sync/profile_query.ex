@@ -157,7 +157,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         WHERE c.law_id = la.law_id AND c.provision = la.provision AND dt IS NOT NULL
       ) AS drrp_types,
       (SELECT array_agg(DISTINCT a->>'label')
-        FROM lat c, jsonb_array_elements(c.actors) a
+        FROM lat c, unnest(c.actors) a
         WHERE c.law_id = la.law_id AND c.provision = la.provision
           AND a->>'position' = 'active'
           AND a->>'label' IS NOT NULL
