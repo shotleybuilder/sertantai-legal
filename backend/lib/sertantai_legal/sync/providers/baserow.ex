@@ -707,18 +707,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
                      SertantaiLegal.Scraper.Models.hr_family())
                   |> Enum.sort()
 
-  @type_desc_options [
-    "Act of the National Assembly for Wales 2012-2020",
-    "Act of the Scottish Parliament",
-    "EU Decision",
-    "EU Directive",
-    "EU Regulation",
-    "EU Retained Legislation",
-    "Northern Ireland Order in Council",
-    "Northern Ireland Statutory Rule",
-    "Public General Act of the United Kingdom Parliament",
-    "UK Statutory Instrument"
-  ]
+  # @type_desc_options removed — now queried dynamically via type_desc_options()
 
   @status_options [
     "✔ In force",
@@ -746,7 +735,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       single_select_spec("Family", @family_options),
       %{name: "Year", type: "number", opts: %{"number_decimal_places" => 0}},
       %{name: "Number", type: "text"},
-      single_select_spec("Type", @type_desc_options),
+      single_select_spec("Type", type_desc_options()),
       single_select_spec("Status", @status_options),
       single_select_spec("Geographic Extent", @geo_extent_options),
       %{name: "Legislation URL", type: "url"},
@@ -756,24 +745,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
   @duty_type_options ["Duty", "Power", "Responsibility", "Right", "Rule"]
-  @purpose_options [
-    "Amendment",
-    "Application+Scope",
-    "Charge+Fee",
-    "Defence+Appeal",
-    "Enactment+Citation+Commencement",
-    "Enforcement+Prosecution",
-    "Exemption",
-    "Extent",
-    "Interpretation+Definition",
-    "Liability",
-    "Offence",
-    "Power Conferred",
-    "Process+Rule+Constraint+Condition",
-    "Repeal+Revocation",
-    "Transitional Arrangement"
-  ]
-
   # Values to filter out of holder data — parser artifacts, not real actors
   @holder_exclusions MapSet.new([": He"])
 
@@ -849,62 +820,60 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp tier_fields(:essential), do: []
 
-  @domain_options ["environment", "governance", "health_safety", "human_resources"]
-  @geo_region_options ["England", "Northern Ireland", "Scotland", "Wales"]
-  @fitness_person_options [
-    "Crown application",
-    "Crown service",
-    "agency worker",
-    "appointed person",
-    "chief inspector",
-    "client",
-    "competent person",
-    "contractor",
-    "crew",
-    "designer",
-    "domestic client",
-    "duty holder",
-    "employee",
-    "employer",
-    "enforcing authority",
-    "fire authority",
-    "importer",
-    "installer",
-    "licensing authority",
-    "manufacturer",
-    "master of ship",
-    "occupier",
-    "operator",
-    "owner",
-    "person at work",
-    "responsible person",
-    "self-employed person",
-    "sub-contractor",
-    "supplier",
-    "worker",
-    "young person"
-  ]
-  @fitness_sector_options [
-    "maritime",
-    "mining",
-    "nuclear",
-    "offshore oil & gas",
-    "waste management",
-    "water industry"
-  ]
+  # domain_options and geo_region_options now queried dynamically
+  # Fitness and taxonomy options are queried from the DB at sync time,
+  # not hardcoded. This accommodates evolving fractalaw taxonomy.
+
+  defp fitness_person_options, do: distinct_array_values("fitness_person")
+  defp fitness_sector_options, do: distinct_array_values("fitness_sector")
+  defp fitness_process_options, do: distinct_array_values("fitness_process")
+  defp fitness_place_options, do: distinct_array_values("fitness_place")
+  defp fitness_plant_options, do: distinct_array_values("fitness_plant")
+  defp domain_options, do: distinct_array_values("domain")
+  defp geo_region_options, do: distinct_array_values("geo_region")
+  defp purpose_options, do: distinct_jsonb_values("purpose")
+
+  defp type_desc_options, do: distinct_values("type_desc")
+
+  defp distinct_array_values(column) do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT val FROM (SELECT unnest(#{column}) as val FROM uk_lrt WHERE #{column} IS NOT NULL) sub WHERE val IS NOT NULL AND val != '' ORDER BY val"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
+
+  defp distinct_values(column) do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT #{column} FROM uk_lrt WHERE #{column} IS NOT NULL AND #{column} != '' ORDER BY #{column}"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
+
+  defp distinct_jsonb_values(column) do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT val FROM (SELECT jsonb_array_elements_text(#{column}->'values') as val FROM uk_lrt WHERE #{column} IS NOT NULL) sub WHERE val IS NOT NULL ORDER BY val"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
 
   defp tier_fields(:standard) do
     [
       multi_select_spec("Function", @function_options),
       multi_select_spec("Duty Type", @duty_type_options),
-      multi_select_spec("Purpose", @purpose_options),
+      multi_select_spec("Purpose", purpose_options()),
       multi_select_spec("Duty Holder", holder_options()),
       multi_select_spec("Power Holder", holder_options()),
       multi_select_spec("Rights Holder", holder_options()),
-      multi_select_spec("Domain", @domain_options),
-      multi_select_spec("Geographic Region", @geo_region_options),
-      multi_select_spec("Fitness Person", @fitness_person_options),
-      multi_select_spec("Fitness Sector", @fitness_sector_options),
+      multi_select_spec("Domain", domain_options()),
+      multi_select_spec("Geographic Region", geo_region_options()),
+      multi_select_spec("Fitness Person", fitness_person_options()),
+      multi_select_spec("Fitness Sector", fitness_sector_options()),
       %{name: "Fitness Process", type: "text"},
       %{name: "Fitness Place", type: "text"},
       %{name: "Fitness Plant", type: "text"}
