@@ -427,25 +427,16 @@ defmodule SertantaiLegalWeb.ScreeningController do
     end
   end
 
-  @doc "GET /api/screening/vocabulary — distinct fitness tag values from the law corpus"
+  @doc "GET /api/screening/vocabulary — actor labels from dictionary + fitness tags from corpus"
   def vocabulary(conn, _params) do
-    queries = [
-      {"governed_actors",
-       "SELECT DISTINCT val FROM (
-          SELECT jsonb_array_elements_text(duty_holder->'values') as val
-          FROM uk_lrt WHERE duty_holder IS NOT NULL AND duty_holder != 'null'
-          UNION
-          SELECT jsonb_array_elements_text(rights_holder->'values') as val
-          FROM uk_lrt WHERE rights_holder IS NOT NULL AND rights_holder != 'null'
-        ) sub WHERE val NOT LIKE 'Gvt:%' AND val NOT LIKE 'EU:%' AND val NOT LIKE 'HM %' AND val NOT LIKE 'Crown%' ORDER BY val"},
-      {"government_actors",
-       "SELECT DISTINCT val FROM (
-          SELECT jsonb_array_elements_text(responsibility_holder->'values') as val
-          FROM uk_lrt WHERE responsibility_holder IS NOT NULL AND responsibility_holder != 'null'
-          UNION
-          SELECT jsonb_array_elements_text(power_holder->'values') as val
-          FROM uk_lrt WHERE power_holder IS NOT NULL AND power_holder != 'null'
-        ) sub WHERE val LIKE 'Gvt:%' OR val LIKE 'EU:%' OR val LIKE 'HM %' OR val LIKE 'Crown%' ORDER BY val"},
+    alias SertantaiLegal.Legal.ActorDictionary
+
+    # Actor labels from the shared dictionary (category-based split, not DB queries)
+    governed_actors = ActorDictionary.governed_labels()
+    government_actors = ActorDictionary.government_labels()
+
+    # Fitness dimensions still from DB (law-level, not in actor dictionary)
+    fitness_queries = [
       {"locations",
        "SELECT DISTINCT val FROM (SELECT unnest(fitness_place) as val FROM uk_lrt WHERE fitness_place IS NOT NULL) sub WHERE val NOT IN ('England', 'Scotland', 'Wales', 'Northern Ireland', 'Great Britain', 'United Kingdom') ORDER BY val"},
       {"materials",
@@ -458,13 +449,19 @@ defmodule SertantaiLegalWeb.ScreeningController do
        "SELECT DISTINCT val FROM (SELECT unnest(geo_region) as val FROM uk_lrt WHERE geo_region IS NOT NULL) sub ORDER BY val"}
     ]
 
-    vocab =
-      Map.new(queries, fn {key, sql} ->
+    fitness_vocab =
+      Map.new(fitness_queries, fn {key, sql} ->
         case Repo.query(sql) do
           {:ok, %{rows: rows}} -> {key, Enum.map(rows, fn [val] -> val end)}
           _ -> {key, []}
         end
       end)
+
+    vocab =
+      Map.merge(fitness_vocab, %{
+        "governed_actors" => governed_actors,
+        "government_actors" => government_actors
+      })
 
     json(conn, vocab)
   end

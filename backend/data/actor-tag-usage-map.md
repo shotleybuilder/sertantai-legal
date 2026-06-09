@@ -15,7 +15,9 @@ JSONB columns on the law record. Aggregated across all provisions by fractalaw's
 | `responsibility_holder` | `{"values": ["Gvt: Authority", ...]}` | Government actors with responsibilities |
 | `power_holder` | `{"values": ["Gvt: Minister", ...]}` | Government actors with powers |
 
-**Used for**: profile matching, screening, change detection scoring, Baserow LRT sync, vocabulary endpoint. These are NOT changing.
+**Used for**: profile matching, screening, change detection scoring, Baserow LRT sync. These are NOT changing.
+
+**Note**: The vocabulary endpoint no longer queries these columns for actor labels. It reads from the ActorDictionary (Zenoh + YAML snapshot) instead.
 
 ### Provision-level actors (legal_articles)
 
@@ -86,6 +88,29 @@ For "Regulated Actors" in Baserow: **actors where `position = 'active'`** — th
 | `profile_query.ex` | `unnest(governed_actors)` | `jsonb_array_elements(actors)` where `position = 'active'` | LAT aggregation for export |
 | `provision_subscriber.ex` | `governed_actors`, `government_actors` in @field_atoms | Removed — no longer sent by fractalaw | Zenoh payload parsing |
 
+## Actor Dictionary
+
+Single source of truth for canonical actor labels. Loaded from fractalaw via Zenoh, falls back to YAML snapshot.
+
+**Source**: `fractalaw/@{tenant}/dictionary/actors` (Zenoh queryable + subscriber)
+**Snapshot**: `backend/priv/data/actor-dictionary.yaml`
+**Module**: `SertantaiLegal.Legal.ActorDictionary`
+
+| Function | Returns | Used by |
+|----------|---------|---------|
+| `canonical_labels/0` | All canonical labels | Baserow vocabulary validation |
+| `governed_labels/0` | Non-government labels (Org, Ind, SC, etc.) | Vocabulary endpoint, profile tag picker |
+| `government_labels/0` | Government labels (Gvt, EU) | Vocabulary endpoint, profile tag picker |
+| `category/1` | Category for a label ("Org", "Gvt", etc.) | Display grouping |
+| `valid?/1` | Is this label in the dictionary? | Filter invented labels |
+| `government?/1` | Is this a government actor? | Governed/government split |
+
+**Replaces**:
+- Hardcoded `@holder_options` list in baserow.ex (was 156 entries, now dynamic)
+- DB queries for actor labels in vocabulary endpoint (was querying `duty_holder->'values'`)
+
+**Auto-updates**: Subscribes to Zenoh dictionary publishes. When fractalaw discovers new actors and updates the YAML, sertantai picks them up automatically.
+
 ## Label Source
 
 | Value | Meaning | UI treatment |
@@ -95,9 +120,13 @@ For "Regulated Actors" in Baserow: **actors where `position = 'active'`** — th
 
 ## Extraction Method
 
-| Value | Meaning | Confidence |
-|-------|---------|-----------|
-| `regex` | Pattern-matched directly in provision text | High |
-| `inherited` | Propagated from parent clause (Tier 1) | Medium-high |
-| `agentic` | LLM classified, all labels canonical | Medium |
-| `agentic_unvalidated` | LLM classified, some labels invented | Lower |
+| Value | Meaning | Finds positions | Confidence |
+|-------|---------|----------------|-----------|
+| `regex` | Pattern-matched in provision text. Used for sub-provision fragments (paragraphs, schedules, headings) | Active only | High |
+| `classifier` | Trained logistic regression model (86.4% accuracy). Runs on regulation-level provisions (article, section) | Active + counterparty + mentioned | High |
+| `inherited` | Propagated from parent clause (Tier 1 deterministic) | Active only | Medium-high |
+| `agentic` | Gemini 2.5 Flash LLM, all labels canonical. Highest quality | All 4 positions | Medium |
+| `agentic_unvalidated` | LLM classified, some labels invented | All 4 positions | Lower |
+| `local` | Local Gemma 4B via Ollama (dev/testing) | Varies | Dev only |
+
+**Note**: The classifier deliberately skips sub-provision fragments (paragraphs, sub_paragraphs, schedules, etc.) — these keep `extraction_method = "regex"` and inherit actors from their parent regulation. This is expected behaviour, not a gap.
