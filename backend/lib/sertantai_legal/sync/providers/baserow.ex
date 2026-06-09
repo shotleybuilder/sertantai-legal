@@ -56,14 +56,18 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
          :ok <- clean_default_fields(config, table_key, existing, field_specs) do
       # Re-fetch after cleanup
       {:ok, existing} = list_fields(config, table_key)
-      existing_names = MapSet.new(existing, & &1["name"])
+      existing_by_name = Map.new(existing, &{&1["name"], &1})
 
-      missing =
-        Enum.reject(field_specs, fn spec ->
-          MapSet.member?(existing_names, spec.name)
+      {missing, needs_update} =
+        Enum.split_with(field_specs, fn spec ->
+          not Map.has_key?(existing_by_name, spec.name)
         end)
 
-      create_fields_sequentially(config, table_key, missing)
+      # Create missing fields
+      with :ok <- create_fields_sequentially(config, table_key, missing) do
+        # Update existing select fields that have new options
+        update_select_options(config, existing_by_name, needs_update)
+      end
     end
   end
 
@@ -608,6 +612,70 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     end
   end
 
+  # Update select options on existing fields when our spec has options
+  # that Baserow doesn't have yet. Additive only — never removes options.
+  defp update_select_options(_config, _existing_by_name, []), do: :ok
+
+  defp update_select_options(config, existing_by_name, field_specs) do
+    select_specs =
+      Enum.filter(field_specs, fn spec ->
+        opts = spec[:opts] || %{}
+        opts["select_options"] != nil
+      end)
+
+    Enum.reduce_while(select_specs, :ok, fn spec, :ok ->
+      case Map.get(existing_by_name, spec.name) do
+        nil ->
+          {:cont, :ok}
+
+        existing_field ->
+          case maybe_add_select_options_to_field(config, existing_field, spec) do
+            :ok -> {:cont, :ok}
+            {:error, reason} -> {:halt, {:error, reason}}
+          end
+      end
+    end)
+  end
+
+  defp maybe_add_select_options_to_field(config, existing_field, spec) do
+    existing_options =
+      (existing_field["select_options"] || [])
+      |> MapSet.new(& &1["value"])
+
+    desired_options = (spec[:opts] || %{})["select_options"] || []
+
+    missing =
+      desired_options
+      |> Enum.reject(&MapSet.member?(existing_options, &1["value"]))
+
+    if missing == [] do
+      :ok
+    else
+      field_id = existing_field["id"]
+
+      # Baserow: PATCH field with select_options appends new options
+      # when you include existing ones + new ones
+      all_options =
+        (existing_field["select_options"] || []) ++
+          Enum.map(missing, fn opt -> %{"value" => opt["value"], "color" => "light-gray"} end)
+
+      body = %{"select_options" => all_options}
+
+      case api_patch(config, "/api/database/fields/#{field_id}/", body) do
+        {:ok, %{status: 200}} ->
+          Logger.info("[Baserow] Updated #{spec.name}: added #{length(missing)} select option(s)")
+
+          :ok
+
+        {:ok, %{status: status, body: resp}} ->
+          {:error, "Update select options for '#{spec.name}': #{status} #{inspect(resp)}"}
+
+        {:error, reason} ->
+          {:error, "Update select options for '#{spec.name}': #{inspect(reason)}"}
+      end
+    end
+  end
+
   defp extract_mappings(created_rows) do
     Enum.map(created_rows, fn row ->
       %{
@@ -640,6 +708,14 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
                   |> Enum.sort()
 
   @type_desc_options [
+    "Act of the National Assembly for Wales 2012-2020",
+    "Act of the Scottish Parliament",
+    "EU Decision",
+    "EU Directive",
+    "EU Regulation",
+    "EU Retained Legislation",
+    "Northern Ireland Order in Council",
+    "Northern Ireland Statutory Rule",
     "Public General Act of the United Kingdom Parliament",
     "UK Statutory Instrument"
   ]

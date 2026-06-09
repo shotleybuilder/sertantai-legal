@@ -65,17 +65,17 @@ defmodule SertantaiLegal.Sync.Engine do
   defp sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job) do
     provider = provider_module(sync_config.provider)
 
-    # Ensure fields exist on target
-    # Validate holder vocabulary before syncing — stop early if fractalaw
-    # has introduced new actor values not in the master list
+    # Validate holder vocabulary — warn on drift but don't block sync.
+    # Unknown labels are logged; they'll appear as plain text in Baserow
+    # multi-selects until the actor dictionary is updated.
     case Baserow.validate_holder_vocabulary(lrt_rows) do
       :ok ->
         :ok
 
       {:error, unknown} ->
-        Logger.error("Unknown holder values not in master list: #{inspect(unknown)}")
-
-        raise "Holder vocabulary drift: #{length(unknown)} unknown values. Update @holder_options in Baserow provider."
+        Logger.warning(
+          "[Sync] #{length(unknown)} actor labels not in dictionary (will sync as-is): #{inspect(unknown)}"
+        )
     end
 
     field_specs = Baserow.lrt_field_specs(field_tier)
