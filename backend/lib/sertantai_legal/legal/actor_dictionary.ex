@@ -103,6 +103,7 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
   def init(_opts) do
     :ets.new(@table, [:named_table, :public, :set])
     load_dictionary()
+    subscribe_to_updates()
     {:ok, %{}}
   end
 
@@ -110,6 +111,55 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
   def handle_call(:reload, _from, state) do
     load_dictionary()
     {:reply, :ok, state}
+  end
+
+  @impl true
+  def handle_info(%Zenohex.Sample{} = sample, state) do
+    case parse_yaml(sample.payload) do
+      {:ok, entries} ->
+        populate_ets(entries)
+        Logger.info("[ActorDictionary] Reloaded #{length(entries)} actors from Zenoh publish")
+
+      {:error, reason} ->
+        Logger.warning("[ActorDictionary] Failed to parse dictionary update: #{reason}")
+    end
+
+    {:noreply, state}
+  end
+
+  def handle_info(_msg, state), do: {:noreply, state}
+
+  # ── Subscription ────────────────────────────────────────────
+
+  defp subscribe_to_updates do
+    if Application.get_env(:sertantai_legal, :test_mode, false) do
+      :ok
+    else
+      do_subscribe()
+    end
+  end
+
+  defp do_subscribe do
+    case SertantaiLegal.Zenoh.Session.session_id() do
+      {:ok, session_id} ->
+        tenant = Application.get_env(:sertantai_legal, :zenoh)[:tenant] || "dev"
+        key_expr = "fractalaw/@#{tenant}/dictionary/actors"
+
+        case Zenohex.Session.declare_subscriber(session_id, key_expr, self()) do
+          {:ok, _subscriber_id} ->
+            Logger.info("[ActorDictionary] Subscribed to #{key_expr}")
+
+          {:error, reason} ->
+            Logger.warning("[ActorDictionary] Failed to subscribe: #{inspect(reason)}")
+        end
+
+      {:error, _reason} ->
+        Logger.debug("[ActorDictionary] Zenoh not ready, skipping subscription")
+    end
+  rescue
+    e -> Logger.warning("[ActorDictionary] Subscribe failed: #{Exception.message(e)}")
+  catch
+    :exit, _reason -> Logger.debug("[ActorDictionary] Zenoh not running, skipping subscription")
   end
 
   # ── Loading ─────────────────────────────────────────────────
