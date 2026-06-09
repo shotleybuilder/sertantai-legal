@@ -698,181 +698,22 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     "Transitional Arrangement"
   ]
 
-  # Master holder vocabulary — sourced from ActorDefinitions taxonomy + observed data values.
-  # Ordered by group: Government → Business → Person → Public → Specialist → Supply Chain → Other.
-  # If fractalaw evolves the taxonomy, new values surface as a sync validation error
-  # rather than silently failing. Fix by adding the new values here.
-  # Values to filter out of holder data — parser artifacts, not real actors
   # Values to filter out of holder data — parser artifacts, not real actors
   @holder_exclusions MapSet.new([": He"])
 
-  # Canonical actor labels only — no "(inferred)" suffixes or bare trailing colons.
-  # The "(inferred)" suffix was a fractalaw extraction_method indicator that leaked
-  # into Baserow single-selects as duplicate options. Now stripped by normalize_holder/1.
-  @holder_options [
-    # Government
-    "Crown",
-    "EU: Agency: ECHA",
-    "EU: Agency: EEA",
-    "EU: Agency: EFSA",
-    "EU: Commission",
-    "EU: Member State",
-    "Gvt: Agency",
-    "Gvt: Agency: Environment Agency",
-    "Gvt: Agency: Health and Safety Executive",
-    "Gvt: Agency: Health and Safety Executive for Northern Ireland",
-    "Gvt: Agency: Maritime and Coastguard Agency",
-    "Gvt: Agency: Natural Resources Body for Wales",
-    "Gvt: Agency: OFCOM",
-    "Gvt: Agency: Office for Environmental Protection",
-    "Gvt: Agency: Office for Nuclear Regulation",
-    "Gvt: Agency: Office of Rail and Road",
-    "Gvt: Agency: Oil and Gas Authority",
-    "Gvt: Agency: Scottish Environment Protection Agency",
-    "Gvt: Appropriate Person",
-    "Gvt: Authority",
-    "Gvt: Authority: Energy",
-    "Gvt: Authority: Enforcement",
-    "Gvt: Authority: Fire and Rescue",
-    "Gvt: Authority: Harbour",
-    "Gvt: Authority: Licensing",
-    "Gvt: Authority: Local",
-    "Gvt: Authority: Market",
-    "Gvt: Authority: Planning",
-    "Gvt: Authority: Public",
-    "Gvt: Authority: Traffic",
-    "Gvt: Authority: Waste",
-    "Gvt: Commissioners",
-    "Gvt: Devolved Admin",
-    "Gvt: Devolved Admin: National Assembly for Wales",
-    "Gvt: Devolved Admin: Northern Ireland Assembly",
-    "Gvt: Devolved Admin: Scottish Parliament",
-    "Gvt: Emergency Services",
-    "Gvt: Emergency Services: Police",
-    "Gvt: Judiciary",
-    "Gvt: Minister",
-    "Gvt: Minister: Attorney General",
-    "Gvt: Minister: Secretary of State for Defence",
-    "Gvt: Minister: Secretary of State for Transport",
-    "Gvt: Ministry",
-    "Gvt: Ministry: Department of Enterprise, Trade and Investment",
-    "Gvt: Ministry: Department of the Environment",
-    "Gvt: Ministry: HMRC",
-    "Gvt: Ministry: Ministry of Defence",
-    "Gvt: Ministry: Treasury",
-    "Gvt: Officer",
-    "Gvt: Official",
-    "HM Forces",
-    # Business / Organisation
-    "Operator",
-    "Organisation",
-    "Org: Company",
-    "Org: Employer",
-    "Org: Investor",
-    "Org: Landlord",
-    "Org: Lessee",
-    "Org: Occupier",
-    "Org: Owner",
-    "Org: Partnership",
-    # Person
-    "Ind: Applicant",
-    "Ind: Appointed Person",
-    "Ind: Authorised Person",
-    "Ind: Chair",
-    "Ind: Competent Person",
-    "Ind: Diver",
-    "Ind: Duty Holder",
-    "Ind: Dutyholder",
-    "Ind: Employee",
-    "Ind: Holder",
-    "Ind: Licence Holder",
-    "Ind: Licensee",
-    "Ind: Manager",
-    "Ind: Person",
-    "Ind: Relevant Person",
-    "Ind: Responsible Person",
-    "Ind: Self-employed Worker",
-    "Ind: Suitable Person",
-    "Ind: Supervisor",
-    "Ind: User",
-    "Ind: Worker",
-    "Ind: Young Person",
-    # Public
-    "Public",
-    "Public: Dealer",
-    "Public: Keeper",
-    "Public: Parents",
-    "Public: Provider",
-    # Specialist
-    "Spc: Advisor",
-    "Spc: Assessor",
-    "Spc: Body",
-    "Spc: Employees' Representative",
-    "Spc: Engineer",
-    "Spc: Inspector",
-    "Spc: OH Advisor",
-    "Spc: Representative",
-    "Spc: Surveyor",
-    "Spc: Technician",
-    "Spc: Trade Union",
-    # Supply Chain
-    "SC: Agent",
-    "SC: C: Constructor",
-    "SC: C: Contractor",
-    "SC: C: Designer",
-    "SC: C: Principal Contractor",
-    "SC: C: Principal Designer",
-    "SC: Applicant",
-    "SC: Authorised Representative",
-    "SC: Client",
-    "SC: Consumer",
-    "SC: Customer",
-    "SC: Dealer",
-    "SC: Distributor",
-    "SC: Downstream User",
-    "SC: Domestic Client",
-    "SC: Exporter",
-    "SC: Generator",
-    "SC: Importer",
-    "SC: Keeper",
-    "SC: Manufacturer",
-    "SC: Marketer",
-    "SC: Notified Body",
-    "SC: Producer",
-    "SC: Registrant",
-    "SC: Retailer",
-    "SC: Seller",
-    "SC: Storer",
-    "SC: Supplier",
-    "SC: T&L: Carrier",
-    "SC: T&L: Consignee",
-    "SC: T&L: Consignor",
-    "SC: T&L: Driver",
-    "SC: T&L: Handler",
-    # Service
-    "Svc: Installer",
-    "Svc: Maintainer",
-    "Svc: Repairer",
-    # Maritime
-    "Maritime: crew",
-    "Maritime: master",
-    # Offshore
-    "Offshore: Licensee",
-    # Environment
-    "Env: Disposer",
-    "Env: Polluter",
-    "Env: Recycler",
-    "Env: Reuser",
-    "Env: Treater"
-  ]
+  # Actor vocabulary now loaded from ActorDictionary (Zenoh queryable + YAML snapshot).
+  # No more hardcoded holder_options() list.
+  alias SertantaiLegal.Legal.ActorDictionary
+
+  defp holder_options, do: ActorDictionary.canonical_labels()
 
   @doc """
-  Validate that all holder values in the rows are in the master list.
+  Validate that all holder values in the rows are in the actor dictionary.
   Returns `:ok` or `{:error, unknown_values}`. Call before sync to
   catch taxonomy drift from fractalaw early.
   """
   def validate_holder_vocabulary(rows) do
-    known = MapSet.new(@holder_options)
+    known = MapSet.new(holder_options())
 
     unknown =
       rows
@@ -920,7 +761,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     [
       multi_select_spec("Type", @drrp_type_options),
       multi_select_spec("Duty Type", @duty_sub_type_options),
-      multi_select_spec("Regulated Actors", @holder_options),
+      multi_select_spec("Regulated Actors", holder_options()),
       %{name: "Provision Text", type: "long_text"},
       %{name: "Provision", type: "text"},
       %{name: "_source_id", type: "text"},
@@ -981,9 +822,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       multi_select_spec("Function", @function_options),
       multi_select_spec("Duty Type", @duty_type_options),
       multi_select_spec("Purpose", @purpose_options),
-      multi_select_spec("Duty Holder", @holder_options),
-      multi_select_spec("Power Holder", @holder_options),
-      multi_select_spec("Rights Holder", @holder_options),
+      multi_select_spec("Duty Holder", holder_options()),
+      multi_select_spec("Power Holder", holder_options()),
+      multi_select_spec("Rights Holder", holder_options()),
       multi_select_spec("Domain", @domain_options),
       multi_select_spec("Geographic Region", @geo_region_options),
       multi_select_spec("Fitness Person", @fitness_person_options),

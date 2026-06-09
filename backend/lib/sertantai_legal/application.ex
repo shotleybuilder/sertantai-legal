@@ -25,6 +25,8 @@ defmodule SertantaiLegal.Application do
         # JWKS client — fetches EdDSA public key from sertantai-auth for JWT verification
         # In test mode, skips HTTP fetch — tests call set_test_key/1 instead
         SertantaiLegal.Auth.JwksClient,
+        # Actor dictionary — loaded from Zenoh, falls back to bundled YAML snapshot
+        SertantaiLegal.Legal.ActorDictionary,
         # Supervised async tasks (used by HubNotifier for fire-and-forget HTTP)
         {Task.Supervisor, name: SertantaiLegal.TaskSupervisor},
         # Zenoh P2P mesh — publishes LRT/LAT/amendments to fractalaw

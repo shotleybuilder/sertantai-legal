@@ -36,6 +36,7 @@ defmodule SertantaiLegal.MixProject do
     [
       {:usage_rules, "~> 0.1", only: [:dev]},
       {:tidewave, "~> 0.5", only: [:dev]},
+      {:yaml_elixir, "~> 2.11"},
       {:phoenix, "~> 1.7.21"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
