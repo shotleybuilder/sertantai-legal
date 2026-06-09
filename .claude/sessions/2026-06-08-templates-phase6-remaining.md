@@ -2,21 +2,21 @@
 
 **Started**: 2026-06-08 01:15
 **Plan**: .claude/plans/baserow-compliance-templates.md (Phase 6)
+**Ended**: 2026-06-09 00:00
+**Commits**: `63a3274`
 
 ## Todo
-- [ ] Incident Register template (non-conformances, near misses, root cause, corrective/preventative actions)
-- [ ] Audit Management template (plan, conduct, track audits, ISO 19011)
-- [ ] Training Tracker template (mandatory training by law/provision, expiry tracking)
-- [ ] Document Control template (policies, procedures, versioning, review dates)
-- [ ] RACI template (maps Hohfeldian actors to org roles, provision-level)
-- [ ] PDCA / Improvement Initiatives template (Plan-Do-Check-Act cycle)
-- [ ] Org structure sub-patterns: Sites table, Divisions table
-- [ ] Register all in Registry
-- [ ] Tests
+- [x] Incident Register template (severity, root cause, corrective/preventative actions, form view)
+- [x] Audit Management template (ISO 19011, storage_mode for reports, calendar)
+- [x] Training Tracker template (frequency, certificate tracking, expiry formula)
+- [x] Document Control template (versioning, review calendar, related laws)
+- [x] RACI template (Hohfeldian → org roles, provision/law grain sub-pattern)
+- [x] PDCA / Improvement Initiatives template (Plan-Do-Check-Act phases)
+- [x] Org structure sub-patterns: Sites + Divisions tables (flat/site/division_site)
+- [x] Register all 12 templates in Registry
+- [x] Tests (24 new, 65 total template tests)
 
 ## Notes
-- All follow same TemplateBehaviour pattern as Phases 3-4
-- Incident + Audit + Training require Personnel (link_row for reported by, auditor, assigned to)
-- RACI requires Foundation + Personnel, maps actors struct position=active to Responsible/Accountable
-- Org structure tables are standalone (no template dependency) but affect view filtering across all templates
-- PDCA links to Assessments + Actions
+- All 12 templates follow same TemplateBehaviour pattern
+- Full dependency chain resolves correctly across entire palette
+- 1408 total tests in suite, 0 failures

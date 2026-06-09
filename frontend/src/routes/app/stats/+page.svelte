@@ -3,6 +3,9 @@
 	import { onMount } from 'svelte';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite, type PGLiteWithExtensions } from '$lib/pglite/client';
+	import { authFetch } from '$lib/api/client';
+
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
 	let db: PGLiteWithExtensions | null = null;
 	let ready = false;
@@ -36,6 +39,27 @@
 
 	let fitnessCount = 0;
 	let noFitnessCount = 0;
+
+	// Server-side compliance metrics (from webhook data)
+	interface ComplianceMetrics {
+		compliant: number;
+		non_compliant: number;
+		partially_compliant: number;
+		not_assessed: number;
+		actions_open: number;
+		actions_completed: number;
+		last_assessment_at: string | null;
+		last_synced_at: string | null;
+	}
+	let complianceMetrics: ComplianceMetrics | null = null;
+
+	// Change summary (from change detection)
+	interface ChangeSummary {
+		total_pending: number;
+		overdue: number;
+		by_materiality: { major: number; moderate: number; minor: number; informational: number };
+	}
+	let changeSummary: ChangeSummary | null = null;
 
 	async function loadStats() {
 		if (!db) return;
@@ -124,11 +148,25 @@
 		return Math.round((n / total) * 100).toString();
 	}
 
+	async function loadServerMetrics() {
+		try {
+			const [metricsRes, changesRes] = await Promise.all([
+				authFetch(`${API_URL}/api/screening/compliance-metrics`),
+				authFetch(`${API_URL}/api/screening/changes/summary`)
+			]);
+
+			if (metricsRes.ok) complianceMetrics = await metricsRes.json();
+			if (changesRes.ok) changeSummary = await changesRes.json();
+		} catch {
+			// Server metrics unavailable — dashboard still shows PGLite stats
+		}
+	}
+
 	onMount(async () => {
 		if (browser) {
 			await startSync();
 			db = await getPglite();
-			await loadStats();
+			await Promise.all([loadStats(), loadServerMetrics()]);
 		}
 	});
 </script>
@@ -284,5 +322,134 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Compliance Assessment Posture (server-side metrics) -->
+		{#if complianceMetrics}
+			{@const total =
+				complianceMetrics.compliant +
+				complianceMetrics.non_compliant +
+				complianceMetrics.partially_compliant}
+			<div class="bg-white rounded-lg border border-gray-200 p-4">
+				<h2 class="text-sm font-semibold text-gray-700 mb-3">Compliance Assessment Posture</h2>
+				{#if total > 0}
+					<div class="grid grid-cols-3 gap-4 mb-4">
+						<div class="text-center">
+							<div class="text-2xl font-bold text-green-600">
+								{complianceMetrics.compliant}
+							</div>
+							<div class="text-xs text-gray-500">Compliant</div>
+						</div>
+						<div class="text-center">
+							<div class="text-2xl font-bold text-amber-600">
+								{complianceMetrics.partially_compliant}
+							</div>
+							<div class="text-xs text-gray-500">Partial</div>
+						</div>
+						<div class="text-center">
+							<div class="text-2xl font-bold text-red-600">
+								{complianceMetrics.non_compliant}
+							</div>
+							<div class="text-xs text-gray-500">Non-Compliant</div>
+						</div>
+					</div>
+					<div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden flex">
+						<div
+							class="h-full bg-green-500"
+							style="width: {pct(complianceMetrics.compliant, total)}%"
+						></div>
+						<div
+							class="h-full bg-amber-400"
+							style="width: {pct(complianceMetrics.partially_compliant, total)}%"
+						></div>
+						<div
+							class="h-full bg-red-500"
+							style="width: {pct(complianceMetrics.non_compliant, total)}%"
+						></div>
+					</div>
+					<div class="text-xs text-gray-500 mt-2">
+						{pct(complianceMetrics.compliant, total)}% compliant across {total} assessed laws
+					</div>
+				{:else}
+					<div class="text-sm text-gray-400">
+						No assessment data yet. Assessment metrics appear once compliance status is tracked in
+						your workspace.
+					</div>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Action Status (server-side metrics) -->
+		{#if complianceMetrics && (complianceMetrics.actions_open > 0 || complianceMetrics.actions_completed > 0)}
+			{@const totalActions = complianceMetrics.actions_open + complianceMetrics.actions_completed}
+			<div class="bg-white rounded-lg border border-gray-200 p-4">
+				<h2 class="text-sm font-semibold text-gray-700 mb-3">Action Status</h2>
+				<div class="flex gap-8">
+					<div class="text-center">
+						<div class="text-2xl font-bold text-amber-600">
+							{complianceMetrics.actions_open}
+						</div>
+						<div class="text-xs text-gray-500">Open</div>
+					</div>
+					<div class="text-center">
+						<div class="text-2xl font-bold text-green-600">
+							{complianceMetrics.actions_completed}
+						</div>
+						<div class="text-xs text-gray-500">Completed</div>
+					</div>
+				</div>
+				{#if totalActions > 0}
+					<div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden flex mt-3">
+						<div
+							class="h-full bg-green-500"
+							style="width: {pct(complianceMetrics.actions_completed, totalActions)}%"
+						></div>
+						<div
+							class="h-full bg-amber-400"
+							style="width: {pct(complianceMetrics.actions_open, totalActions)}%"
+						></div>
+					</div>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Pending Changes (from change detection) -->
+		{#if changeSummary && changeSummary.total_pending > 0}
+			<div
+				class="bg-white rounded-lg border p-4
+					{changeSummary.overdue > 0 ? 'border-red-300' : 'border-amber-200'}"
+			>
+				<h2 class="text-sm font-semibold text-gray-700 mb-2">Pending Legal Changes</h2>
+				<div class="flex gap-4 text-sm">
+					{#if changeSummary.by_materiality.major > 0}
+						<span class="text-red-600 font-medium">
+							{changeSummary.by_materiality.major} major
+						</span>
+					{/if}
+					{#if changeSummary.by_materiality.moderate > 0}
+						<span class="text-amber-600 font-medium">
+							{changeSummary.by_materiality.moderate} moderate
+						</span>
+					{/if}
+					{#if changeSummary.by_materiality.minor > 0}
+						<span class="text-blue-600">
+							{changeSummary.by_materiality.minor} minor
+						</span>
+					{/if}
+					{#if changeSummary.by_materiality.informational > 0}
+						<span class="text-gray-500">
+							{changeSummary.by_materiality.informational} info
+						</span>
+					{/if}
+				</div>
+				{#if changeSummary.overdue > 0}
+					<div class="text-xs text-red-600 mt-1 font-medium">
+						{changeSummary.overdue} overdue for review
+					</div>
+				{/if}
+				<a href="/app/changes" class="text-xs text-emerald-600 hover:underline mt-2 inline-block">
+					Review changes
+				</a>
+			</div>
+		{/if}
 	{/if}
 </div>
