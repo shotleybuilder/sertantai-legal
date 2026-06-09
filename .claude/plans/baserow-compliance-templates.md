@@ -1,6 +1,6 @@
 # Baserow Compliance Templates — Plan
 
-**Status**: DRAFT — Round 3 reviewed (Gemini 2.5 Flash, 2026-06-07), provider-agnostic architecture
+**Status**: IMPLEMENTED — Phases 1-7 complete (2026-06-07 to 2026-06-09). Round 3 reviewed (Gemini 2.5 Flash).
 **Meta-plan**: Phase 5 (Baserow sync) extension
 
 ## Problem
@@ -639,41 +639,50 @@ When SertantAI syncs updated law data:
 
 ## Phases
 
-### Phase 1: Provider-agnostic infrastructure
-- Universal field type system (`:text`, `:link_row`, `:formula`, etc.)
-- `TemplateBehaviour` behaviour module with `field_specs(sub_patterns)` callback
-- Extended `ProviderBehaviour` with schema operations (`create_table`, `create_field`, `create_view`, `create_webhook`)
-- Sub-pattern config struct (9 dimensions)
-- Template registry with dependency resolution
-- `TemplateApplicator` — idempotent orchestration across any provider
+### Phase 1: Provider-agnostic infrastructure -- DONE (`6b0b099`)
+- Universal field type system, SubPatterns config struct (9 dimensions)
+- TemplateBehaviour, extended ProviderBehaviour with schema ops + capabilities
+- Template registry with topological dependency resolution
+- Idempotent TemplateApplicator
 
-### Phase 2: Baserow adapter (extend existing)
-- Implement new `ProviderBehaviour` callbacks on existing `Providers.Baserow`
-- Universal type → Baserow type mapping
-- Baserow webhook payload → common event struct parsing
-- Refactor existing `Engine.run` to use template infrastructure
+### Phase 2: Baserow adapter -- DONE (`442a6a5`, `bc5c04b`)
+- create_table, create_field, create_view, create_webhook, capabilities on Providers.Baserow
+- Universal → Baserow type mapping for all 14 field types
+- Webhook payload parser to common event struct
+- Engine.run refactor deferred (Foundation template wraps it)
 
-### Phase 3: Foundation + Personnel + Compliance Assessment
-- Foundation template (refactor existing LRT/LAT sync into template pattern)
-- Personnel template
-- Compliance Assessment template with sub-pattern support
-- Seed logic (one Assessment per law, linked to LRT)
-- Rollups on LRT (assessment count, compliance %)
+### Phase 3: First templates -- DONE (`1fc4c0b`)
+- Foundation (declares LRT/LAT), Personnel (6 fields, 4 views)
+- ComplianceAssessment (sub-pattern-aware: risk, people, review, grain)
+- Seed logic, cross-table rollups, webhooks. 25 tests.
 
-### Phase 4: Action Tracker + Evidence Vault
-- Action Tracker with kanban/calendar views
-- Evidence Vault with storage_mode sub-pattern (file vs URL)
-- Rollups on Assessments (open action count)
+### Phase 4: Action Tracker + Evidence Vault -- DONE (`ecb031c`)
+- ActionTracker (kanban, calendar, overdue formula, rollup on assessments)
+- EvidenceVault (embedded/reference storage_mode, gallery view, expiry tracking)
+- 16 new tests.
 
-### Phase 5: Webhook → sertantai pipeline
-- Receive provider webhooks (provider-agnostic event struct)
-- Update compliance metrics in sertantai
-- Surface in `/app/stats` dashboard
+### Phase 5: Webhook pipeline -- DONE (`c165969`)
+- WebhookEvent common struct, ComplianceMetrics ETS processor
+- TemplateWebhookController at /api/webhooks/template/:provider/:org_id
+- 11 new tests.
 
-### Phase 6: Remaining templates
-- Incident Register, Audit Management, Training Tracker, Document Control
-- RACI template (maps actors struct to organisational roles)
-- PDCA / Improvement Initiatives template
+### Phase 6: Remaining templates -- DONE (`63a3274`)
+- IncidentRegister, AuditManagement, TrainingTracker, DocumentControl, RACI, PDCA, OrgStructure
+- 12 templates total. 65 template tests.
+
+### Phase 7: Dashboard + polling -- DONE (`e255a63`)
+- /app/stats extended with compliance posture, action status, pending changes
+- CompliancePoller GenServer for 6-hour reconciliation against Baserow
+
+### Implementation summary
+
+| Metric | Value |
+|--------|-------|
+| Templates | 12 (Foundation, Personnel, Assessment, Actions, Evidence, Incidents, Audits, Training, Documents, RACI, PDCA, OrgStructure) |
+| Sub-pattern dimensions | 9 (storage, risk, people, org structure, grain, review, reporting, data collection, improvement) |
+| Template tests | 76 |
+| Total test suite | 1408 |
+| Commits | 7 phases across 2026-06-07 to 2026-06-09 |
 
 ## Resolved Questions
 

@@ -404,11 +404,52 @@ HSWA 1974 found via `duty_holder` but invisible to `fitness_person`.
 
 ---
 
-## Phase 9: Multi-Jurisdiction Sync
+## Phase 9: Compliance Templates ✅
+
+Provider-agnostic template system for bootstrapping compliance workspaces in Baserow (or other no-code databases). Plan: `.claude/plans/baserow-compliance-templates.md`.
+
+### 9.1 — Infrastructure ✅
+- Universal field type system, SubPatterns (9 dimensions), TemplateBehaviour
+- Extended ProviderBehaviour with schema ops + capabilities declaration
+- Template registry with topological dependency resolution
+- Idempotent TemplateApplicator orchestration
+
+### 9.2 — Baserow adapter ✅
+- create_table, create_field, create_view, create_webhook on Providers.Baserow
+- Universal → Baserow type mapping for 14 field types
+- Webhook payload parser to common event struct
+
+### 9.3 — 12 compliance templates ✅
+- Foundation (LRT + LAT), Personnel, ComplianceAssessment, ActionTracker, EvidenceVault
+- IncidentRegister, AuditManagement, TrainingTracker, DocumentControl, RACI, PDCA, OrgStructure
+- Sub-pattern-aware: storage_mode (embedded/reference), risk_scoring (simple/matrix), people (flat/linked), org_structure (flat/dept/site/division), assessment_grain (law/provision), review_cycle (manual/scheduled)
+
+### 9.4 — Webhook pipeline + dashboard ✅
+- WebhookEvent common struct, ComplianceMetrics ETS processor
+- /app/stats extended with compliance posture, action status, pending changes
+- CompliancePoller GenServer for 6-hour reconciliation
+
+### 9.5 — Key design decisions
+- Provider-agnostic: templates are universal, Baserow is first adapter
+- SA_ prefix delineates SertantAI-managed vs customer-owned fields
+- SertantAI never stores customer compliance data — only aggregate metrics via webhooks
+- Additive-only template upgrades — never modify or delete existing fields
+- Baserow Advanced plan required for field-level permissions
+
+### 9.6 — Remaining
+- Engine.run refactor to use template infrastructure (Foundation template wraps it)
+- CompliancePoller not yet in supervisor tree (manual start or add for production)
+- View filter/sort application (stubbed in Baserow adapter)
+- Second provider adapter (Airtable, NocoDB)
+- Formula DSL (currently provider-specific strings)
+
+---
+
+## Phase 10: Multi-Jurisdiction Sync
 
 QQ operates in UK, AU, DE, CN, and US. SertantAI currently supports UK and AU.
 
-### 9.1 — Baserow architecture for multi-jurisdiction
+### 10.1 — Baserow architecture for multi-jurisdiction
 
 Decide the table structure:
 - **Option A**: One LRT table per jurisdiction (UK Legal Register, AU Legal Register) — cleaner separation, simpler queries
