@@ -8,7 +8,14 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     Personnel,
     ComplianceAssessment,
     ActionTracker,
-    EvidenceVault
+    EvidenceVault,
+    IncidentRegister,
+    AuditManagement,
+    TrainingTracker,
+    DocumentControl,
+    RACI,
+    PDCA,
+    OrgStructure
   }
 
   describe "Registry.resolve/1" do
@@ -347,6 +354,213 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
 
       rollup = hd(cross.assessments)
       assert rollup.name == "SA_Evidence_Count"
+    end
+  end
+
+  # ── Phase 6 templates ─────────────────────────────────────────
+
+  describe "IncidentRegister template" do
+    test "requires assessment + action tracker" do
+      assert :compliance_assessment in IncidentRegister.requires()
+      assert :action_tracker in IncidentRegister.requires()
+    end
+
+    test "has corrective and preventative action links" do
+      sp = SubPatterns.new()
+      %{incidents: fields} = IncidentRegister.field_specs(sp)
+      names = Enum.map(fields, & &1.name)
+      assert "SA_Corrective_Action" in names
+      assert "SA_Preventative_Action" in names
+    end
+
+    test "has form view for reporting" do
+      sp = SubPatterns.new()
+      %{incidents: views} = IncidentRegister.view_specs(sp)
+      types = Enum.map(views, & &1.type)
+      assert :form in types
+    end
+  end
+
+  describe "AuditManagement template" do
+    test "adapts report field by storage_mode" do
+      embedded = SubPatterns.new(storage_mode: :embedded)
+      %{audits: fields_e} = AuditManagement.field_specs(embedded)
+      names_e = Enum.map(fields_e, & &1.name)
+      assert "SA_Report" in names_e
+
+      reference = SubPatterns.new(storage_mode: :reference)
+      %{audits: fields_r} = AuditManagement.field_specs(reference)
+      names_r = Enum.map(fields_r, & &1.name)
+      assert "SA_Report_URL" in names_r
+      refute "SA_Report" in names_r
+    end
+
+    test "has calendar view for next audit dates" do
+      sp = SubPatterns.new()
+      %{audits: views} = AuditManagement.view_specs(sp)
+      calendar = Enum.find(views, &(&1.type == :calendar))
+      assert calendar.date_field == "SA_Next_Audit_Date"
+    end
+  end
+
+  describe "TrainingTracker template" do
+    test "requires only foundation" do
+      assert TrainingTracker.requires() == [:foundation]
+    end
+
+    test "has days until due formula" do
+      sp = SubPatterns.new()
+      %{training: fields} = TrainingTracker.field_specs(sp)
+      formula = Enum.find(fields, &(&1.name == "SA_Days_Until_Due"))
+      assert formula.type == :formula
+    end
+
+    test "adapts certificate by storage_mode" do
+      embedded = SubPatterns.new(storage_mode: :embedded)
+      %{training: fields} = TrainingTracker.field_specs(embedded)
+      names = Enum.map(fields, & &1.name)
+      assert "SA_Certificate" in names
+
+      reference = SubPatterns.new(storage_mode: :reference)
+      %{training: fields_r} = TrainingTracker.field_specs(reference)
+      names_r = Enum.map(fields_r, & &1.name)
+      assert "SA_Certificate_URL" in names_r
+    end
+  end
+
+  describe "DocumentControl template" do
+    test "requires only foundation" do
+      assert DocumentControl.requires() == [:foundation]
+    end
+
+    test "links to LRT for related laws" do
+      sp = SubPatterns.new()
+      %{documents: fields} = DocumentControl.field_specs(sp)
+      related = Enum.find(fields, &(&1.name == "SA_Related_Laws"))
+      assert related.type == :link_row
+      assert related.target == :lrt
+    end
+
+    test "has review calendar" do
+      sp = SubPatterns.new()
+      %{documents: views} = DocumentControl.view_specs(sp)
+      calendar = Enum.find(views, &(&1.type == :calendar))
+      assert calendar.date_field == "SA_Review_Date"
+    end
+  end
+
+  describe "RACI template" do
+    test "requires only foundation" do
+      assert RACI.requires() == [:foundation]
+    end
+
+    test "provision grain links to LAT" do
+      sp = SubPatterns.new(assessment_grain: :provision)
+      %{raci: fields} = RACI.field_specs(sp)
+      provision = Enum.find(fields, &(&1.name == "SA_Provision"))
+      assert provision.type == :link_row
+      assert provision.target == :lat
+    end
+
+    test "law grain links to LRT" do
+      sp = SubPatterns.new(assessment_grain: :law)
+      %{raci: fields} = RACI.field_specs(sp)
+      law = Enum.find(fields, &(&1.name == "SA_Law"))
+      assert law.type == :link_row
+      assert law.target == :lrt
+    end
+
+    test "linked people has all four RACI roles as link_row" do
+      sp = SubPatterns.new(people: :linked)
+      %{raci: fields} = RACI.field_specs(sp)
+      link_names = fields |> Enum.filter(&(&1.type == :link_row)) |> Enum.map(& &1.name)
+      assert "SA_Responsible" in link_names
+      assert "SA_Accountable" in link_names
+      assert "SA_Consulted" in link_names
+      assert "SA_Informed" in link_names
+    end
+  end
+
+  describe "PDCA template" do
+    test "requires assessment + action tracker" do
+      assert :compliance_assessment in PDCA.requires()
+      assert :action_tracker in PDCA.requires()
+    end
+
+    test "has PDCA phases" do
+      sp = SubPatterns.new()
+      %{improvements: fields} = PDCA.field_specs(sp)
+      phase = Enum.find(fields, &(&1.name == "SA_Phase"))
+      assert "Plan" in phase.options
+      assert "Do" in phase.options
+      assert "Check" in phase.options
+      assert "Act" in phase.options
+    end
+
+    test "has kanban board by phase" do
+      sp = SubPatterns.new()
+      %{improvements: views} = PDCA.view_specs(sp)
+      kanban = Enum.find(views, &(&1.type == :kanban))
+      assert kanban.stack_by == "SA_Phase"
+    end
+  end
+
+  describe "OrgStructure template" do
+    test "site pattern creates sites table only" do
+      sp = SubPatterns.new(org_structure: :site)
+      specs = OrgStructure.field_specs(sp)
+      assert Map.has_key?(specs, :sites)
+      refute Map.has_key?(specs, :divisions)
+    end
+
+    test "division_site pattern creates both tables" do
+      sp = SubPatterns.new(org_structure: :division_site)
+      specs = OrgStructure.field_specs(sp)
+      assert Map.has_key?(specs, :sites)
+      assert Map.has_key?(specs, :divisions)
+    end
+
+    test "division_site sites link to divisions" do
+      sp = SubPatterns.new(org_structure: :division_site)
+      %{sites: fields} = OrgStructure.field_specs(sp)
+      div_link = Enum.find(fields, &(&1.name == "SA_Division"))
+      assert div_link.type == :link_row
+      assert div_link.target == :divisions
+    end
+
+    test "flat pattern produces no field specs" do
+      sp = SubPatterns.new(org_structure: :flat)
+      assert OrgStructure.field_specs(sp) == %{}
+    end
+  end
+
+  describe "Registry — full template set" do
+    test "all 12 templates registered" do
+      assert map_size(Registry.all()) == 12
+    end
+
+    test "resolves full stack" do
+      {:ok, modules} =
+        Registry.resolve([
+          :incident_register,
+          :audit_management,
+          :training_tracker,
+          :document_control,
+          :raci,
+          :pdca,
+          :org_structure
+        ])
+
+      ids = Enum.map(modules, & &1.id())
+
+      # All 12 should be present (transitive deps pull in foundation, personnel, assessment, actions, evidence isn't needed)
+      assert :foundation in ids
+      assert :personnel in ids
+      assert :compliance_assessment in ids
+      assert :action_tracker in ids
+      assert :incident_register in ids
+      assert :raci in ids
+      assert :pdca in ids
     end
   end
 end

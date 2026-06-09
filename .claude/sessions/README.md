@@ -72,6 +72,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-08 | [templates-phase5-webhooks](2026-06-08-templates-phase5-webhooks.md) | — | Phase 5: Webhook pipeline, ComplianceMetrics ETS processor, 11 new tests |
 | 2026-06-08 | [templates-phase4-actions-evidence](2026-06-08-templates-phase4-actions-evidence.md) | — | Phase 4: Action Tracker + Evidence Vault, storage_mode sub-pattern, 16 new tests |
 | 2026-06-08 | [templates-phase3-first-templates](2026-06-07-templates-phase3-first-templates.md) | — | Phase 3: Foundation + Personnel + Assessment templates, 25 tests, sub-pattern field adaptation |
 | 2026-06-07 | [templates-phase2-baserow-adapter](2026-06-07-templates-phase2-baserow-adapter.md) | — | Phase 2: Baserow adapter — create_table/field/view/webhook, type mapping, webhook parser |

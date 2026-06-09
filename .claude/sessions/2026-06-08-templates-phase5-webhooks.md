@@ -2,18 +2,19 @@
 
 **Started**: 2026-06-08 00:30
 **Plan**: .claude/plans/baserow-compliance-templates.md (Phase 5)
+**Ended**: 2026-06-08 01:15
+**Commits**: `ecb031c` (Phase 4), `c165969`
 
 ## Todo
-- [ ] Webhook common event struct module
-- [ ] Webhook controller endpoint to receive provider callbacks
-- [ ] Baserow webhook payload parsing (already stubbed in baserow.ex)
-- [ ] Route webhook events to compliance metrics update logic
-- [ ] Surface compliance metrics in /app/stats dashboard
-- [ ] Polling fallback (6-12 hour reconciliation for missed webhooks)
+- [x] Webhook common event struct module (WebhookEvent)
+- [x] Webhook controller endpoint (POST /api/webhooks/template/:provider/:org_id)
+- [x] Baserow webhook payload parsing (parse_webhook_event)
+- [x] Route webhook events to ComplianceMetrics (ETS-backed processor)
+- [ ] Surface compliance metrics in /app/stats dashboard → **deferred to Phase 7**
+- [ ] Polling fallback (6-12 hour reconciliation for missed webhooks) → **deferred to Phase 7**
 
 ## Notes
-- Baserow webhooks: fire-and-forget, no old values, no user ID
-- Common event struct: event_type, table_id, row_id, changed_fields, timestamp
-- Webhooks only carry status field values — never free text, files, or PII
-- /app/stats already exists with PGLite-local stats — extend with server-side compliance data
-- Polling fallback critical for compliance: can't lose "Non-Compliant" status changes
+- ComplianceMetrics tracks: compliant/non-compliant/partially counts, action open/completed, timestamps
+- Per-org isolation via ETS
+- 11 new tests
+- Dashboard UI and polling are operational — deferred to Phase 7 (frontend + infrastructure)

@@ -16,7 +16,14 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
       personnel: SertantaiLegal.Sync.Templates.Personnel,
       compliance_assessment: SertantaiLegal.Sync.Templates.ComplianceAssessment,
       action_tracker: SertantaiLegal.Sync.Templates.ActionTracker,
-      evidence_vault: SertantaiLegal.Sync.Templates.EvidenceVault
+      evidence_vault: SertantaiLegal.Sync.Templates.EvidenceVault,
+      incident_register: SertantaiLegal.Sync.Templates.IncidentRegister,
+      audit_management: SertantaiLegal.Sync.Templates.AuditManagement,
+      training_tracker: SertantaiLegal.Sync.Templates.TrainingTracker,
+      document_control: SertantaiLegal.Sync.Templates.DocumentControl,
+      raci: SertantaiLegal.Sync.Templates.RACI,
+      pdca: SertantaiLegal.Sync.Templates.PDCA,
+      org_structure: SertantaiLegal.Sync.Templates.OrgStructure
     }
   end
 
