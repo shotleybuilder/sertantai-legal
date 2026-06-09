@@ -152,6 +152,8 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
     end
   rescue
     e -> {:error, Exception.message(e)}
+  catch
+    :exit, reason -> {:error, {:exit, inspect(reason)}}
   end
 
   defp load_from_snapshot do
