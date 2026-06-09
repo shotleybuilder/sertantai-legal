@@ -746,7 +746,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   end
 
   @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
-  @duty_type_options ["Duty", "Power", "Responsibility", "Right", "Rule"]
+  defp duty_type_options, do: distinct_jsonb_values("duty_type")
   # Values to filter out of holder data — parser artifacts, not real actors
   @holder_exclusions MapSet.new([": He"])
 
@@ -783,22 +783,24 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   # ── LAT Field Specs ───────────────────────────────────────────────
 
-  @drrp_type_options ["Duty", "Responsibility", "Power", "Right", "Rule"]
-  @duty_sub_type_options [
-    "Delegation",
-    "Enabling",
-    "Enforcement",
-    "Fees",
-    "GeneralDuty",
-    "InformationDuty",
-    "ParliamentaryReporting",
-    "Prescriptive",
-    "Prohibitive",
-    "RiskAssessment",
-    "SfairpDuty",
-    "ThingObligation",
-    "TrainingDuty"
-  ]
+  defp drrp_type_options do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT unnest(drrp_types) as val FROM legal_articles WHERE drrp_types IS NOT NULL ORDER BY val"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> ["Duty", "Responsibility", "Power", "Right", "Rule"]
+    end
+  end
+
+  # duty_sub_type_options — queried from LAT data (not uk_lrt)
+  defp duty_sub_type_options do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT duty_sub_type FROM legal_articles WHERE duty_sub_type IS NOT NULL AND duty_sub_type != '' ORDER BY duty_sub_type"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
 
   @doc """
   Returns Baserow field specs for the LAT table (duty-focused, aggregated).
@@ -808,9 +810,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   """
   def lat_field_specs(lrt_table_id) do
     [
-      multi_select_spec("Type", @drrp_type_options),
-      multi_select_spec("Duty Type", @duty_sub_type_options),
-      multi_select_spec("Regulated Actors", holder_options()),
+      multi_select_spec("Type", drrp_type_options()),
+      multi_select_spec("Duty Type", duty_sub_type_options()),
+      multi_select_spec("Regulated Actors", regulated_actor_options()),
       %{name: "Provision Text", type: "long_text"},
       %{name: "Provision", type: "text"},
       %{name: "_source_id", type: "text"},
@@ -836,6 +838,21 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp purpose_options, do: distinct_jsonb_values("purpose")
 
   defp type_desc_options, do: distinct_values("type_desc")
+
+  defp regulated_actor_options do
+    # Union of dictionary labels + actual active actor labels from LAT data
+    dict_labels = holder_options()
+
+    data_labels =
+      case SertantaiLegal.Repo.query(
+             "SELECT DISTINCT a->>'label' FROM legal_articles la, unnest(la.actors) a WHERE a->>'position' = 'active' AND a->>'label' IS NOT NULL AND a->>'label_source' = 'canonical' ORDER BY 1"
+           ) do
+        {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+        _ -> []
+      end
+
+    (dict_labels ++ data_labels) |> Enum.uniq() |> Enum.sort()
+  end
 
   defp distinct_array_values(column) do
     case SertantaiLegal.Repo.query(
@@ -867,7 +884,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp tier_fields(:standard) do
     [
       multi_select_spec("Function", @function_options),
-      multi_select_spec("Duty Type", @duty_type_options),
+      multi_select_spec("Duty Type", duty_type_options()),
       multi_select_spec("Purpose", purpose_options()),
       multi_select_spec("Duty Holder", holder_options()),
       multi_select_spec("Power Holder", holder_options()),
@@ -1023,7 +1040,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     actors
     |> Enum.filter(fn a ->
       pos = a["position"] || a[:position]
-      pos in ["active"]
+      source = a["label_source"] || a[:label_source]
+      pos in ["active"] and source != "invented"
     end)
     |> Enum.map(fn a -> a["label"] || a[:label] end)
     |> Enum.reject(&is_nil/1)

@@ -145,7 +145,14 @@ defmodule SertantaiLegal.Sync.Engine do
         formatted =
           lat_rows
           |> Enum.map(fn lat ->
-            lrt_external_id = Map.get(lrt_mappings, to_string(lat.law_id))
+            law_id_str =
+              case lat.law_id do
+                <<_::128>> -> Ecto.UUID.load!(lat.law_id)
+                id when is_binary(id) -> id
+                _ -> to_string(lat.law_id)
+              end
+
+            lrt_external_id = Map.get(lrt_mappings, law_id_str)
             {lat, lrt_external_id}
           end)
           |> Enum.reject(fn {_lat, ext_id} -> is_nil(ext_id) end)
