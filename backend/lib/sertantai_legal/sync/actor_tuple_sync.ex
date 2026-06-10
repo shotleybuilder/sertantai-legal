@@ -118,11 +118,14 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
   """
   def format_rows(tuples) do
     Enum.map(tuples, fn t ->
+      source_id = "#{t.actor}|#{t.position}|#{t.drrp_type}"
+
       %{
+        "Name" => source_id,
         "Actor" => t.actor,
         "Position" => t.position,
         "DRRP Type" => t.drrp_type,
-        "_source_id" => "#{t.actor}|#{t.position}|#{t.drrp_type}"
+        "_source_id" => source_id
       }
     end)
   end

@@ -4,6 +4,9 @@
 
 ## Todo
 - [x] Bug: aggregation drops actors when provisions have flat governed_actors but null actors struct — fixed with union fallback + 8 tests
+- [x] Bug: aggregation didn't filter invented labels — fixed with label_source=canonical filter
+- [x] Bug: provision text rolled up without numbers or separators — fixed with "3(1)" prefix + blank lines + 4 tests
+- [x] Bug: Actor Tuples Name column empty — fixed by populating with _source_id composite key
 - [ ] Bug: lat view missing actors/extraction_method columns after schema change — needs migration not manual DDL
 - [ ] Bug: duplicate LRT/LAT rows from failed sync retries — need idempotent sync (check-before-create or delta)
 - [ ] Bug: fractalaw position classification wrong for s.3 HSWA (employer as counterparty) — fractalaw fix pending
