@@ -6,6 +6,7 @@ defmodule SertantaiLegal.Sync.SourceType do
   use Ash.Type.Enum,
     values: [
       :lrt,
-      :lat
+      :lat,
+      :actor_tuples
     ]
 end
