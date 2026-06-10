@@ -433,6 +433,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp table_id(config, :lrt), do: config["lrt_table_id"] || config[:lrt_table_id]
   defp table_id(config, :lat), do: config["lat_table_id"] || config[:lat_table_id]
 
+  defp table_id(config, :actor_tuples),
+    do: config["actor_tuples_table_id"] || config[:actor_tuples_table_id]
+
   defp base_url(config), do: String.trim_trailing(config["base_url"] || config[:base_url], "/")
 
   defp credentials(config), do: config["credentials"] || config[:credentials]

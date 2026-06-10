@@ -7,6 +7,7 @@ defmodule SertantaiLegal.Sync.Engine do
   require Logger
 
   alias SertantaiLegal.Sync.{
+    ActorTupleSync,
     Credentials,
     ProfileQuery,
     Providers.Baserow
@@ -42,7 +43,9 @@ defmodule SertantaiLegal.Sync.Engine do
            ),
          {:ok, job} <- sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job),
          {:ok, job} <-
-           maybe_sync_lat(provider_config, lrt_rows, profile, entitlement, sync_config, job) do
+           maybe_sync_lat(provider_config, lrt_rows, profile, entitlement, sync_config, job),
+         {:ok, job} <-
+           maybe_sync_actor_tuples(provider_config, sync_config, job) do
       checkpoint = max_updated_at(lrt_rows)
 
       {:ok, job} =
@@ -171,6 +174,36 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
+  # ── Actor Tuples ──────────────────────────────────────────────────
+
+  defp maybe_sync_actor_tuples(provider_config, sync_config, job) do
+    actor_table_id = get_in(sync_config.target_config, ["actor_tuples_table_id"])
+
+    if is_nil(actor_table_id) do
+      # No actor tuples table configured — skip
+      {:ok, job}
+    else
+      org_id = sync_config.organization_id
+      provider = provider_module(sync_config.provider)
+
+      with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id),
+           field_specs = ActorTupleSync.field_specs(tuples),
+           :ok <- provider.ensure_fields(provider_config, :actor_tuples, field_specs) do
+        formatted = ActorTupleSync.format_rows(tuples)
+
+        case provider.batch_create(provider_config, :actor_tuples, formatted) do
+          {:ok, mappings} ->
+            save_row_mappings(sync_config.id, :actor_tuples, mappings, tuples)
+            Logger.info("[Sync] Created #{length(mappings)} actor tuples")
+            {:ok, job}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end
+    end
+  end
+
   # ── Helpers ───────────────────────────────────────────────────────
 
   defp load_sync_config(id) do
@@ -214,12 +247,15 @@ defmodule SertantaiLegal.Sync.Engine do
   end
 
   defp build_provider_config(sync_config, credentials) do
+    tc = sync_config.target_config
+
     %{
-      "target_config" => sync_config.target_config,
+      "target_config" => tc,
       "credentials" => credentials,
-      "base_url" => sync_config.target_config["base_url"],
-      "lrt_table_id" => sync_config.target_config["lrt_table_id"],
-      "lat_table_id" => sync_config.target_config["lat_table_id"]
+      "base_url" => tc["base_url"],
+      "lrt_table_id" => tc["lrt_table_id"],
+      "lat_table_id" => tc["lat_table_id"],
+      "actor_tuples_table_id" => tc["actor_tuples_table_id"]
     }
   end
 
