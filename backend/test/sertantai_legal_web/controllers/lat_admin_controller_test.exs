@@ -23,6 +23,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
     Repo.insert_all("lat", [
       %{
         section_id: "UK_ukpga_2024_1:title",
+        country: "uk",
         law_name: "UK_ukpga_2024_1",
         law_id: law_id_binary,
         section_type: "title",
@@ -36,6 +37,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
       },
       %{
         section_id: "UK_ukpga_2024_1:s.1",
+        country: "uk",
         law_name: "UK_ukpga_2024_1",
         law_id: law_id_binary,
         section_type: "section",
@@ -50,6 +52,7 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
       },
       %{
         section_id: "UK_ukpga_2024_1:s.2",
+        country: "uk",
         law_name: "UK_ukpga_2024_1",
         law_id: law_id_binary,
         section_type: "section",

@@ -156,12 +156,22 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         FROM lat c, unnest(c.drrp_types) dt
         WHERE c.law_id = la.law_id AND c.provision = la.provision AND dt IS NOT NULL
       ) AS drrp_types,
-      (SELECT array_agg(DISTINCT a->>'label')
+      (SELECT array_agg(DISTINCT label) FROM (
+        -- Primary: actors struct (position=active, canonical only)
+        SELECT a->>'label' as label
         FROM lat c, unnest(c.actors) a
         WHERE c.law_id = la.law_id AND c.provision = la.provision
           AND a->>'position' = 'active'
           AND a->>'label' IS NOT NULL
-      ) AS governed_actors,
+          AND a->>'label_source' = 'canonical'
+        UNION
+        -- Fallback: flat governed_actors for provisions without actors struct
+        SELECT ga as label
+        FROM lat c, unnest(c.governed_actors) ga
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.actors IS NULL
+          AND ga IS NOT NULL
+      ) sub) AS governed_actors,
       (SELECT c.duty_sub_type FROM lat c
         WHERE c.law_id = la.law_id AND c.provision = la.provision
           AND c.duty_sub_type IS NOT NULL
