@@ -160,4 +160,39 @@ defmodule SertantaiLegal.Sync.ProfileQueryTest do
       assert rows == []
     end
   end
+
+  describe "query_lat_aggregated/2 — provision text formatting" do
+    test "sub-sections include provision number prefix", %{law_id_binary: law_id} do
+      {:ok, rows} = ProfileQuery.query_lat_aggregated([law_id])
+
+      s1 = Enum.find(rows, &(&1.provision == "1"))
+      # Sub-sections should have "1(1)" and "1(2)" prefixes
+      assert s1.text =~ "1(1) The employer shall ensure safety"
+      assert s1.text =~ "1(2) Workers shall comply with instructions"
+    end
+
+    test "blank line separates sub-sections", %{law_id_binary: law_id} do
+      {:ok, rows} = ProfileQuery.query_lat_aggregated([law_id])
+
+      s1 = Enum.find(rows, &(&1.provision == "1"))
+      # Should have blank line (double newline) between sub-sections
+      assert s1.text =~ ~r/safety\n\n1\(2\)/
+    end
+
+    test "parent section text appears first without number prefix", %{law_id_binary: law_id} do
+      {:ok, rows} = ProfileQuery.query_lat_aggregated([law_id])
+
+      s1 = Enum.find(rows, &(&1.provision == "1"))
+      # Parent section text should be at the start, no number prefix
+      assert String.starts_with?(String.trim(s1.text), "Test section 1")
+    end
+
+    test "standalone section without sub-sections has plain text", %{law_id_binary: law_id} do
+      {:ok, rows} = ProfileQuery.query_lat_aggregated([law_id])
+
+      s2 = Enum.find(rows, &(&1.provision == "2"))
+      # s.2 is a standalone section — just the text, no sub-section formatting
+      assert String.trim(s2.text) == "Manufacturer duties"
+    end
+  end
 end

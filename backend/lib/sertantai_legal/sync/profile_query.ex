@@ -138,14 +138,16 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         || la.provision AS section_id,
       string_agg(
         CASE
-          WHEN la.section_type = 'article' AND (la.text IS NULL OR la.text = '') THEN NULL
-          WHEN la.section_type = 'sub_article' THEN
-            '(' || coalesce(
+          WHEN la.section_type IN ('article', 'section') AND (la.text IS NULL OR la.text = '') THEN NULL
+          WHEN la.section_type IN ('article', 'section') THEN
+            coalesce(la.text, '')
+          WHEN la.section_type IN ('sub_article', 'sub_section') THEN
+            E'\n' || coalesce(la.provision, '') || '(' || coalesce(
               (regexp_match(la.section_id, '\\(([^)]+)\\)$'))[1],
               ''
             ) || ') ' || coalesce(la.text, '')
           WHEN la.section_type = 'paragraph' THEN
-            '  (' || coalesce(la.paragraph, '') || ') ' || coalesce(la.text, '')
+            E'\n  (' || coalesce(la.paragraph, '') || ') ' || coalesce(la.text, '')
           WHEN la.section_type = 'sub_paragraph' THEN
             '    (' || coalesce(la.sub_paragraph, '') || ') ' || coalesce(la.text, '')
           ELSE coalesce(la.text, '')

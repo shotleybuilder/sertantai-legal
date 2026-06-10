@@ -72,6 +72,8 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-10 | [templates-v0.2-actor-tuples](2026-06-10-templates-v0.2-actor-tuples.md) | — | Actor Tuples table: normalised actor↔DRRP, many-to-many LAT links, 8 profile_query tests |
+| 2026-06-09 | [actor-dictionary](2026-06-09-actor-dictionary.md) | — | ActorDictionary GenServer: Zenoh queryable + YAML snapshot, replaces hardcoded @holder_options |
 | 2026-06-09 | [templates-phase7-dashboard-polling](2026-06-09-templates-phase7-dashboard-polling.md) | — | Phase 7: Dashboard compliance metrics, CompliancePoller GenServer for webhook reconciliation |
 | 2026-06-09 | [templates-phase6-remaining](2026-06-08-templates-phase6-remaining.md) | — | Phase 6: 7 templates (Incident, Audit, Training, Documents, RACI, PDCA, OrgStructure), 24 tests |
 | 2026-06-08 | [templates-phase5-webhooks](2026-06-08-templates-phase5-webhooks.md) | — | Phase 5: Webhook pipeline, ComplianceMetrics ETS processor, 11 new tests |
