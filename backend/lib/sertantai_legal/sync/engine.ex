@@ -186,21 +186,169 @@ defmodule SertantaiLegal.Sync.Engine do
       org_id = sync_config.organization_id
       provider = provider_module(sync_config.provider)
 
+      lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
+
       with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id),
            field_specs = ActorTupleSync.field_specs(tuples),
            :ok <- provider.ensure_fields(provider_config, :actor_tuples, field_specs) do
         formatted = ActorTupleSync.format_rows(tuples)
 
         case provider.batch_create(provider_config, :actor_tuples, formatted) do
-          {:ok, mappings} ->
-            save_row_mappings(sync_config.id, :actor_tuples, mappings, tuples)
-            Logger.info("[Sync] Created #{length(mappings)} actor tuples")
+          {:ok, tuple_mappings} ->
+            save_row_mappings(sync_config.id, :actor_tuples, tuple_mappings, tuples)
+            Logger.info("[Sync] Created #{length(tuple_mappings)} actor tuples")
+
+            # Link LAT provisions to their matching tuples
+            link_lat_to_tuples(
+              provider_config,
+              provider,
+              sync_config,
+              lat_table_id,
+              actor_table_id,
+              tuple_mappings
+            )
+
             {:ok, job}
 
           {:error, reason} ->
             {:error, reason}
         end
       end
+    end
+  end
+
+  defp link_lat_to_tuples(
+         provider_config,
+         provider,
+         sync_config,
+         lat_table_id,
+         actor_table_id,
+         tuple_mappings
+       ) do
+    # Ensure the link_row field exists on LAT
+    # Ensure link_row field exists on LAT → Actor Tuples
+    case provider.list_fields(provider_config, :lat) do
+      {:ok, fields} ->
+        unless Enum.any?(fields, &(&1["name"] == "Actor Roles")) do
+          body = %{
+            "name" => "Actor Roles",
+            "type" => "link_row",
+            "link_row_table_id" => actor_table_id
+          }
+
+          h = [
+            {"Authorization", "JWT #{provider_config["jwt"]}"},
+            {"Content-Type", "application/json"}
+          ]
+
+          case Req.post(
+                 "#{provider_config["base_url"]}/api/database/fields/table/#{lat_table_id}/",
+                 headers: h,
+                 json: body,
+                 receive_timeout: 30_000
+               ) do
+            {:ok, %{status: 200}} ->
+              Logger.info("[Sync] Created 'Actor Roles' link field on LAT")
+
+            {:ok, %{status: s, body: b}} ->
+              Logger.warning("[Sync] Failed to create link field: #{s} #{inspect(b)}")
+
+            {:error, reason} ->
+              Logger.warning("[Sync] Failed to create link field: #{inspect(reason)}")
+          end
+        end
+
+      _ ->
+        :ok
+    end
+
+    # Build tuple lookup from mappings
+    tuple_lookup =
+      Map.new(tuple_mappings, fn m ->
+        source_id = m.source_id || m[:source_id]
+        ext_id = m.external_row_id || m[:external_row_id]
+        {source_id, ext_id}
+      end)
+
+    # Load LAT row mappings
+    lat_mappings = load_lat_mappings(sync_config.id)
+
+    # Load LAT provisions with their actors from the DB
+    lat_section_ids = Map.keys(lat_mappings)
+
+    if lat_section_ids == [] do
+      Logger.debug("[Sync] No LAT mappings — skipping tuple linking")
+    else
+      # Query actors for each LAT provision
+      {:ok, org_bin} = Ecto.UUID.dump(sync_config.organization_id)
+
+      {:ok, %{rows: rows}} =
+        SertantaiLegal.Repo.query(
+          """
+          SELECT la.section_id,
+            (SELECT array_agg(
+              jsonb_build_object('label', a->>'label', 'position', a->>'position', 'label_source', a->>'label_source')
+            ) FROM unnest(la.actors) a
+              WHERE a->>'position' IS NOT NULL AND a->>'label_source' = 'canonical'
+            ) as actors_json,
+            la.drrp_types
+          FROM legal_articles la
+          JOIN org_applicabilities oa ON oa.law_name = la.law_name
+            AND oa.organization_id = $1 AND oa.status = 'yes'
+          WHERE la.section_id = ANY($2)
+          """,
+          [org_bin, lat_section_ids]
+        )
+
+      # Build update rows: each LAT row gets its matching tuple IDs
+      updates =
+        rows
+        |> Enum.map(fn [section_id, actors_json, drrp_types] ->
+          lat_ext_id = Map.get(lat_mappings, section_id)
+          actors = actors_json || []
+          drrps = drrp_types || []
+
+          tuple_ids =
+            for a <- actors,
+                dt <- drrps,
+                label = a["label"],
+                position = a["position"],
+                label != nil and position != nil,
+                key = "#{label}|#{position}|#{dt}",
+                ext_id = Map.get(tuple_lookup, key),
+                ext_id != nil,
+                do: ext_id
+
+          if lat_ext_id && tuple_ids != [] do
+            %{"id" => lat_ext_id, "Actor Roles" => Enum.uniq(tuple_ids)}
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+
+      if updates != [] do
+        case provider.batch_update(provider_config, :lat, updates) do
+          {:ok, count} ->
+            Logger.info("[Sync] Linked #{count} LAT provisions to actor tuples")
+
+          {:error, reason} ->
+            Logger.warning("[Sync] Failed to link LAT to tuples: #{reason}")
+        end
+      end
+    end
+  end
+
+  defp load_lat_mappings(sync_config_id) do
+    case SertantaiLegal.Sync.SyncRowMapping
+         |> Ash.Query.for_read(:by_configuration_and_type, %{
+           sync_configuration_id: sync_config_id,
+           source_type: :lat
+         })
+         |> Ash.read() do
+      {:ok, mappings} ->
+        Map.new(mappings, fn m -> {m.source_id, m.external_row_id} end)
+
+      _ ->
+        %{}
     end
   end
 
