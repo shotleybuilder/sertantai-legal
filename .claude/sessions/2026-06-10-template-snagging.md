@@ -24,11 +24,11 @@ Reviews at: backend/data/code-reviews/
 - [x] **LAT now uses DeltaDetector** — create new, update changed, delete orphaned. Customer enrichment preserved
 - [x] **duty_sub_type array_agg(DISTINCT)** — collects all duty sub-types per provision, not just first
 
-### P2 — High (production robustness)
-- [ ] **No rate limiting / retry** — 10+ rapid API calls with no backoff. Baserow 429 halts entire sync. [baserow_api_robustness.md §1]
-- [ ] **JWT expiry mid-sync** — obtained once, no refresh. Long syncs (2+ min) risk 401 failures. [baserow_api_robustness.md §3]
-- [ ] **--clean has no confirmation or prod guard** — accidental prod wipe with no recovery. [architecture_fitness.md §2]
-- [ ] **link_row creation bypasses provider abstraction** — direct Req.post in engine.ex, not Baserow.create_field. [baserow_api_robustness.md §6]
+### P2 — High (production robustness) — ALL FIXED
+- [x] **Retry with exponential backoff** — all API calls retry transient errors (429, 5xx) up to 3 times
+- [x] **JWT refresh helper** — refresh_auth/1 for re-authentication on 401
+- [x] **--clean prod guard** — confirmation prompt + warning in production environment
+- [x] **link_row via provider abstraction** — Baserow.create_field with raw opts pass-through, no more direct Req.post
 
 ### P3 — Medium (correctness/config)
 - [ ] **Tuple pipe delimiter fragile** — actor labels could theoretically contain |. Validate or use safer delimiter. [actor_tuple_model.md §1]

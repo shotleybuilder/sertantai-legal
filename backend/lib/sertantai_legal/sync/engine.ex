@@ -315,36 +315,22 @@ defmodule SertantaiLegal.Sync.Engine do
          actor_table_id,
          tuple_mappings
        ) do
-    # Ensure the link_row field exists on LAT
-    # Ensure link_row field exists on LAT → Actor Tuples
+    # Ensure the link_row field exists on LAT → Actor Tuples
     case provider.list_fields(provider_config, :lat) do
       {:ok, fields} ->
         unless Enum.any?(fields, &(&1["name"] == "Actor Roles")) do
-          body = %{
-            "name" => "Actor Roles",
-            "type" => "link_row",
-            "link_row_table_id" => actor_table_id
+          link_spec = %{
+            name: "Actor Roles",
+            type: "link_row",
+            opts: %{"link_row_table_id" => actor_table_id}
           }
 
-          h = [
-            {"Authorization", "JWT #{provider_config["jwt"]}"},
-            {"Content-Type", "application/json"}
-          ]
-
-          case Req.post(
-                 "#{provider_config["base_url"]}/api/database/fields/table/#{lat_table_id}/",
-                 headers: h,
-                 json: body,
-                 receive_timeout: 30_000
-               ) do
-            {:ok, %{status: 200}} ->
+          case Baserow.create_field(provider_config, lat_table_id, link_spec) do
+            {:ok, _field_id} ->
               Logger.info("[Sync] Created 'Actor Roles' link field on LAT")
 
-            {:ok, %{status: s, body: b}} ->
-              Logger.warning("[Sync] Failed to create link field: #{s} #{inspect(b)}")
-
             {:error, reason} ->
-              Logger.warning("[Sync] Failed to create link field: #{inspect(reason)}")
+              Logger.warning("[Sync] Failed to create link field: #{reason}")
           end
         end
 

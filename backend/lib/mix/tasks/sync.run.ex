@@ -42,6 +42,19 @@ defmodule Mix.Tasks.Sync.Run do
     Mix.shell().info("Sync configuration: #{config_id}")
 
     if opts[:clean] do
+      if Mix.env() == :prod do
+        Mix.shell().error("""
+        WARNING: You are about to delete ALL synced data from Baserow in PRODUCTION.
+        This will destroy any customer enrichment (notes, actions, evidence).
+        This action is IRREVERSIBLE.
+        """)
+
+        unless Mix.shell().yes?("Are you sure you want to proceed?") do
+          Mix.shell().info("Aborted.")
+          System.halt(0)
+        end
+      end
+
       Mix.shell().info("Cleaning existing Baserow data...")
       clean_baserow(config_id)
     end

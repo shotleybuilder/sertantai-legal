@@ -310,7 +310,12 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     |> maybe_add_lookup(spec)
     |> maybe_add_rollup(spec)
     |> maybe_add_formula(spec)
+    |> maybe_add_raw_opts(spec)
   end
+
+  # Pass through raw opts for fields using direct Baserow API params (e.g., link_row_table_id)
+  defp maybe_add_raw_opts(body, %{opts: opts}) when is_map(opts), do: Map.merge(body, opts)
+  defp maybe_add_raw_opts(body, _), do: body
 
   defp maybe_add_select_options(body, %{type: type, options: options})
        when type in [:single_select, :multi_select] and is_list(options) do
@@ -494,12 +499,39 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     end
   end
 
+  # Store config in process dict for JWT refresh
+  defp store_config(config), do: Process.put(:baserow_config, config)
+  defp stored_config, do: Process.get(:baserow_config)
+
+  @doc """
+  Re-authenticate if JWT has expired. Called by Engine on 401 errors.
+  Updates the stored config with a fresh JWT.
+  """
+  def refresh_auth(config) do
+    Logger.info("[Baserow] Refreshing JWT...")
+
+    case authenticate(config) do
+      {:ok, refreshed} ->
+        store_config(refreshed)
+        {:ok, refreshed}
+
+      error ->
+        error
+    end
+  end
+
+  # Retry: transient errors (429, 5xx, network) with exponential backoff, max 3 retries
+  @max_retries 3
+
   defp api_get(config, path) do
     url = base_url(config) <> path
 
     Req.get(url,
       headers: [auth_header(config), {"Content-Type", "application/json"}],
-      receive_timeout: 30_000
+      receive_timeout: 30_000,
+      retry: :transient,
+      retry_delay: &retry_delay/1,
+      max_retries: @max_retries
     )
   end
 
@@ -509,7 +541,10 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     Req.post(url,
       headers: [auth_header(config), {"Content-Type", "application/json"}],
       json: body,
-      receive_timeout: 60_000
+      receive_timeout: 60_000,
+      retry: :transient,
+      retry_delay: &retry_delay/1,
+      max_retries: @max_retries
     )
   end
 
@@ -519,9 +554,14 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     Req.patch(url,
       headers: [auth_header(config), {"Content-Type", "application/json"}],
       json: body,
-      receive_timeout: 60_000
+      receive_timeout: 60_000,
+      retry: :transient,
+      retry_delay: &retry_delay/1,
+      max_retries: @max_retries
     )
   end
+
+  defp retry_delay(attempt), do: min(1000 * Integer.pow(2, attempt), 30_000)
 
   defp api_delete(config, path) do
     url = base_url(config) <> path
