@@ -825,17 +825,14 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   # ── LRT Field Specs ──────────────────────────────────────────────
 
-  defp tier_fields(:essential), do: []
-
   # domain_options and geo_region_options now queried dynamically
   # Fitness and taxonomy options are queried from the DB at sync time,
   # not hardcoded. This accommodates evolving fractalaw taxonomy.
 
   defp fitness_person_options, do: distinct_array_values("fitness_person")
   defp fitness_sector_options, do: distinct_array_values("fitness_sector")
-  defp fitness_process_options, do: distinct_array_values("fitness_process")
-  defp fitness_place_options, do: distinct_array_values("fitness_place")
-  defp fitness_plant_options, do: distinct_array_values("fitness_plant")
+  # fitness_process/place/plant are text fields (not multi-select) in the current
+  # LRT spec. Add dynamic option functions here if they become multi-select.
   defp domain_options, do: distinct_array_values("domain")
   defp geo_region_options, do: distinct_array_values("geo_region")
   defp purpose_options, do: distinct_jsonb_values("purpose")
@@ -883,6 +880,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       _ -> []
     end
   end
+
+  defp tier_fields(:essential), do: []
 
   defp tier_fields(:standard) do
     [

@@ -7,11 +7,11 @@
 - [x] Bug: aggregation didn't filter invented labels — fixed with label_source=canonical filter
 - [x] Bug: provision text rolled up without numbers or separators — fixed with "3(1)" prefix + blank lines + 4 tests
 - [x] Bug: Actor Tuples Name column empty — fixed by populating with _source_id composite key
-- [ ] Bug: lat view missing actors/extraction_method columns after schema change — needs migration not manual DDL
-- [ ] Bug: duplicate LRT/LAT rows from failed sync retries — need idempotent sync (check-before-create or delta)
-- [ ] Bug: fractalaw position classification wrong for s.3 HSWA (employer as counterparty) — fractalaw fix pending
-- [ ] Polish: clean up unused fitness_*_options functions (compiler warnings)
-- [ ] Polish: group tier_fields clauses together (compiler warning)
+- [x] Bug: lat view missing actors/extraction_method columns — migration 20260611000001 recreates view
+- [x] Polish: removed unused fitness_process/place/plant_options functions
+- [x] Polish: grouped tier_fields clauses together (all 3 baserow.ex warnings resolved)
+- [ ] Bug: duplicate LRT/LAT rows from failed sync retries — need idempotent sync (delta mode)
+- [ ] Bug: fractalaw position classification wrong for s.3 HSWA — fractalaw fix pending
 
 ## Notes
 - First bug found by user reviewing Baserow PoC — s.3 HSWA missing Org: Employer
