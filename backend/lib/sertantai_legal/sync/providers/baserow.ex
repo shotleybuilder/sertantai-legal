@@ -1104,7 +1104,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp format_date(other), do: to_string(other)
 
   # Raw binary UUIDs from string-table queries need casting to string format
-  defp format_uuid(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
-  defp format_uuid(uuid) when is_binary(uuid), do: uuid
-  defp format_uuid(nil), do: nil
+  @doc false
+  def format_uuid(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
+  def format_uuid(uuid) when is_binary(uuid), do: uuid
+  def format_uuid(nil), do: nil
 end

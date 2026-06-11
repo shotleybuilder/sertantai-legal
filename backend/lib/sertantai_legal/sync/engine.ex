@@ -9,6 +9,7 @@ defmodule SertantaiLegal.Sync.Engine do
   alias SertantaiLegal.Sync.{
     ActorTupleSync,
     Credentials,
+    DeltaDetector,
     ProfileQuery,
     Providers.Baserow
   }
@@ -90,14 +91,72 @@ defmodule SertantaiLegal.Sync.Engine do
           Baserow.format_lrt_row(row, field_tier)
         end)
 
-      case provider.batch_create(provider_config, :lrt, formatted) do
-        {:ok, mappings} ->
-          save_row_mappings(sync_config.id, :lrt, mappings, lrt_rows)
-          {:ok, %{job | rows_created: length(mappings)}}
+      # Load existing mappings for delta detection
+      existing_mappings = load_mappings(sync_config.id, :lrt)
 
-        {:error, reason} ->
-          {:error, reason}
-      end
+      # Build source timestamp map for change detection
+      source_timestamps =
+        Map.new(lrt_rows, fn row ->
+          {Baserow.format_uuid(row.id), row.updated_at}
+        end)
+
+      delta = DeltaDetector.detect(formatted, existing_mappings, source_timestamps)
+
+      Logger.info(
+        "[Sync] LRT delta: #{length(delta.new)} new, #{length(delta.updated)} updated, " <>
+          "#{length(delta.deleted)} deleted, #{delta.unchanged} unchanged"
+      )
+
+      job = %{job | rows_created: 0, rows_updated: 0, rows_deleted: 0}
+
+      # 1. Create new rows
+      job =
+        if delta.new != [] do
+          case provider.batch_create(provider_config, :lrt, delta.new) do
+            {:ok, mappings} ->
+              save_row_mappings(sync_config.id, :lrt, mappings, lrt_rows)
+              %{job | rows_created: length(mappings)}
+
+            {:error, reason} ->
+              Logger.error("[Sync] LRT create failed: #{inspect(reason)}")
+              job
+          end
+        else
+          job
+        end
+
+      # 2. Update changed rows
+      job =
+        if delta.updated != [] do
+          case provider.batch_update(provider_config, :lrt, delta.updated) do
+            {:ok, count} ->
+              # Update mapping timestamps
+              Enum.each(delta.updated, fn row ->
+                update_mapping_timestamp(sync_config.id, :lrt, row["_source_id"])
+              end)
+
+              %{job | rows_updated: count}
+
+            {:error, reason} ->
+              Logger.warning("[Sync] LRT update failed: #{reason}")
+              job
+          end
+        else
+          job
+        end
+
+      # 3. Handle deleted rows per policy
+      job =
+        if delta.deleted != [] do
+          deleted_count =
+            handle_deletions(provider, provider_config, :lrt, sync_config, delta.deleted)
+
+          %{job | rows_deleted: deleted_count}
+        else
+          job
+        end
+
+      {:ok, job}
     end
   end
 
@@ -494,19 +553,73 @@ defmodule SertantaiLegal.Sync.Engine do
     end)
   end
 
-  defp load_lrt_mappings(sync_config_id) do
+  # Generic mapping loader — returns full mapping records for DeltaDetector
+  defp load_mappings(sync_config_id, source_type) do
     case SertantaiLegal.Sync.SyncRowMapping
          |> Ash.Query.for_read(:by_configuration_and_type, %{
            sync_configuration_id: sync_config_id,
-           source_type: :lrt
+           source_type: source_type
          })
          |> Ash.read() do
-      {:ok, mappings} ->
-        Map.new(mappings, fn m -> {m.source_id, m.external_row_id} end)
+      {:ok, mappings} -> mappings
+      _ -> []
+    end
+  end
+
+  # Backwards compat: returns Map source_id → external_row_id
+  defp load_lrt_mappings(sync_config_id) do
+    load_mappings(sync_config_id, :lrt)
+    |> Map.new(fn m -> {m.source_id, m.external_row_id} end)
+  end
+
+  defp update_mapping_timestamp(sync_config_id, source_type, source_id) do
+    Ash.create(
+      SertantaiLegal.Sync.SyncRowMapping,
+      %{
+        sync_configuration_id: sync_config_id,
+        source_type: source_type,
+        source_id: to_string(source_id),
+        external_row_id: 0,
+        last_synced_at: DateTime.utc_now()
+      },
+      action: :upsert
+    )
+  end
+
+  defp handle_deletions(provider, provider_config, table_key, sync_config, deleted) do
+    policy = sync_config.on_filter_change || :delete
+    ext_ids = Enum.map(deleted, & &1.external_row_id)
+
+    case policy do
+      :delete ->
+        case provider.batch_delete(provider_config, table_key, ext_ids) do
+          {:ok, count} ->
+            # Remove mappings for deleted rows
+            Enum.each(deleted, fn d ->
+              remove_mapping(sync_config.id, table_key, d.source_id)
+            end)
+
+            count
+
+          {:error, reason} ->
+            Logger.warning("[Sync] Delete failed: #{reason}")
+            0
+        end
 
       _ ->
-        %{}
+        # :archive or :ignore — don't delete
+        Logger.info("[Sync] #{length(deleted)} orphaned rows (policy: #{policy})")
+        0
     end
+  end
+
+  defp remove_mapping(sync_config_id, source_type, source_id) do
+    {:ok, bin} = Ecto.UUID.dump(sync_config_id)
+
+    SertantaiLegal.Repo.query(
+      "DELETE FROM sync_row_mappings WHERE sync_configuration_id = $1 AND source_type = $2 AND source_id = $3",
+      [bin, to_string(source_type), to_string(source_id)]
+    )
   end
 
   defp max_updated_at([]), do: nil

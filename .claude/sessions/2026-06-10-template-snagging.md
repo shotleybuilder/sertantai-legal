@@ -10,8 +10,10 @@
 - [x] Bug: lat view missing actors/extraction_method columns — migration 20260611000001 recreates view
 - [x] Polish: removed unused fitness_process/place/plant_options functions
 - [x] Polish: grouped tier_fields clauses together (all 3 baserow.ex warnings resolved)
-- [ ] Bug: duplicate LRT/LAT rows from failed sync retries — need idempotent sync (delta mode)
+- [x] Bug: duplicate LRT rows — DeltaDetector module + Engine.sync_lrt refactor (create/update/delete)
+- [x] mix sync.run task — proper single-command Baserow sync with --clean flag
 - [ ] Bug: fractalaw position classification wrong for s.3 HSWA — fractalaw fix pending
+- [ ] Delta sync for LAT and Actor Tuples (LRT done, LAT/tuples still batch_create)
 
 ## Notes
 - First bug found by user reviewing Baserow PoC — s.3 HSWA missing Org: Employer
