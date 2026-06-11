@@ -369,8 +369,16 @@ defmodule SertantaiLegal.Sync.Engine do
         # Update changed LAT rows
         if lat_delta.updated != [] do
           case provider.batch_update(provider_config, :lat, lat_delta.updated) do
-            {:ok, count} -> Logger.info("[Sync] LAT updated #{count} rows")
-            {:error, reason} -> Logger.warning("[Sync] LAT update failed: #{reason}")
+            {:ok, count} ->
+              # Update mapping timestamps so next run sees them as unchanged
+              Enum.each(lat_delta.updated, fn row ->
+                update_mapping_timestamp(sync_config.id, :lat, row["_source_id"])
+              end)
+
+              Logger.info("[Sync] LAT updated #{count} rows")
+
+            {:error, reason} ->
+              Logger.warning("[Sync] LAT update failed: #{reason}")
           end
         end
 
@@ -404,29 +412,60 @@ defmodule SertantaiLegal.Sync.Engine do
            :ok <- provider.ensure_fields(provider_config, :actor_tuples, field_specs) do
         formatted = ActorTupleSync.format_rows(tuples)
 
-        tuple_on_batch = fn batch_mappings ->
-          save_row_mappings(sync_config.id, :actor_tuples, batch_mappings, tuples)
+        # Delta detection for actor tuples
+        existing_tuple_mappings = load_mappings(sync_config.id, :actor_tuples)
+        tuple_delta = DeltaDetector.detect(formatted, existing_tuple_mappings)
+
+        Logger.info(
+          "[Sync] Actor Tuples delta: #{length(tuple_delta.new)} new, " <>
+            "#{length(tuple_delta.deleted)} deleted, #{tuple_delta.unchanged} unchanged"
+        )
+
+        # 1. Create new tuples
+        if tuple_delta.new != [] do
+          tuple_on_batch = fn batch_mappings ->
+            save_row_mappings(sync_config.id, :actor_tuples, batch_mappings, tuples)
+          end
+
+          case Baserow.batch_create(
+                 provider_config,
+                 :actor_tuples,
+                 tuple_delta.new,
+                 tuple_on_batch
+               ) do
+            {:ok, _} ->
+              Logger.info("[Sync] Created #{length(tuple_delta.new)} new actor tuples")
+
+            {:error, reason} ->
+              Logger.error("[Sync] Actor tuple create failed: #{reason}")
+          end
         end
 
-        case Baserow.batch_create(provider_config, :actor_tuples, formatted, tuple_on_batch) do
-          {:ok, tuple_mappings} ->
-            Logger.info("[Sync] Created #{length(tuple_mappings)} actor tuples")
-
-            # Link LAT provisions to their matching tuples
-            link_lat_to_tuples(
-              provider_config,
-              provider,
-              sync_config,
-              lat_table_id,
-              actor_table_id,
-              tuple_mappings
-            )
-
-            {:ok, job}
-
-          {:error, reason} ->
-            {:error, reason}
+        # 2. Delete orphaned tuples (no customer enrichment on tuples — safe to delete)
+        if tuple_delta.deleted != [] do
+          handle_deletions(
+            provider,
+            provider_config,
+            :actor_tuples,
+            sync_config,
+            tuple_delta.deleted
+          )
         end
+
+        # 3. Re-link LAT provisions to current tuple set (idempotent)
+        # Load fresh mappings (includes newly created + existing unchanged)
+        all_tuple_mappings = load_mappings(sync_config.id, :actor_tuples)
+
+        link_lat_to_tuples(
+          provider_config,
+          provider,
+          sync_config,
+          lat_table_id,
+          actor_table_id,
+          all_tuple_mappings
+        )
+
+        {:ok, job}
       end
     end
   end

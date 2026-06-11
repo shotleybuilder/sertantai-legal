@@ -36,20 +36,17 @@ Reviews at: backend/data/code-reviews/
 - [x] **actors empty array handled** — fallback checks IS NULL OR array_length IS NULL
 - [x] **section_id multi-jurisdiction** — EU art., Welsh/Scottish Acts s., NI regs reg.
 
-### P4 — Future (architecture)
-- [ ] **Sync should be async job (Oban)** — mix task blocks, no progress, no retry. [architecture_fitness.md §3]
-- [ ] **Multi-tenant misconfiguration risk** — wrong table IDs = cross-org data leak. Needs validation. [architecture_fitness.md §5]
-- [ ] **Monitoring/telemetry** — no structured metrics, no alerting on failure. [architecture_fitness.md §7]
+### P4 — Future (architecture) — DONE (separate session)
+- [x] **Sync should be async job (Oban)** — `b8c5218` SyncWorker + SchedulerWorker, persistent queue with retry
+- [x] **Multi-tenant misconfiguration risk** — `b8c5218` workspace validation before sync (all tables same workspace)
+- [x] **Monitoring/telemetry** — `b8c5218` telemetry events for sync job completion, TelemetryHandler extended
 
 **Ended**: 2026-06-11 04:30
 **Commits**: `59fcaff`, `dbad92d`, `29f3d75`, `11b9ef3`, `705ffe5`, `9ca77d5`, `172abe9`, `99da084`, `7b0510e`, `31f4d2d`, `ec4c278`, `054928b`
 
 ## Carried Forward
 - Fractalaw position bug (s.3 HSWA) — external dependency
-- Delta sync for LAT and Actor Tuples — new session
-- P4: Oban async jobs — new session
-- P4: Multi-tenant validation — new session
-- P4: Monitoring/telemetry — future
+- Delta sync for LAT and Actor Tuples — future session
 
 ## Notes
 - First bug found by user reviewing Baserow PoC — s.3 HSWA missing Org: Employer

@@ -21,3 +21,6 @@
 - Oban gives: persistent queue, retries with backoff, concurrency limits, web dashboard
 - P4 from Gemini code review (2026-06-11)
 - Multi-tenant validation carried forward from template-snagging session
+
+**Ended**: 2026-06-11 20:55
+**Commits**: `b8c5218`

@@ -72,7 +72,8 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
-| 2026-06-10 | [template-snagging](2026-06-10-template-snagging.md) | — | Sync bugs + polish: aggregation, delta detect, mix sync.run, Gemini code review P1-P3 fixed |
+| 2026-06-11 | [oban-refactor](2026-06-11-oban-refactor.md) | — | Oban job queue: SyncWorker, SchedulerWorker, Engine.clean, workspace validation, telemetry |
+| 2026-06-10 | [template-snagging](2026-06-10-template-snagging.md) | — | Sync bugs + polish: aggregation, delta detect, mix sync.run, Gemini code review P1-P4 fixed |
 | 2026-06-10 | [templates-v0.2-actor-tuples](2026-06-10-templates-v0.2-actor-tuples.md) | — | Actor Tuples table: normalised actor↔DRRP, many-to-many LAT links, 8 profile_query tests |
 | 2026-06-09 | [actor-dictionary](2026-06-09-actor-dictionary.md) | — | ActorDictionary GenServer: Zenoh queryable + YAML snapshot, replaces hardcoded @holder_options |
 | 2026-06-09 | [templates-phase7-dashboard-polling](2026-06-09-templates-phase7-dashboard-polling.md) | — | Phase 7: Dashboard compliance metrics, CompliancePoller GenServer for webhook reconciliation |
