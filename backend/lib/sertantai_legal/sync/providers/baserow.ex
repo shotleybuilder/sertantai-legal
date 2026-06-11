@@ -75,6 +75,17 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @impl true
   def batch_create(config, table_key, rows) when is_list(rows) do
+    batch_create(config, table_key, rows, nil)
+  end
+
+  @doc """
+  Create rows with optional per-batch callback.
+
+  If `on_batch` is provided, it's called with each batch's mappings immediately
+  after that batch succeeds — ensuring mappings are saved even if a later batch fails.
+  Signature: `on_batch.(batch_mappings)`
+  """
+  def batch_create(config, table_key, rows, on_batch) when is_list(rows) do
     table_id = table_id(config, table_key)
 
     rows
@@ -89,6 +100,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
            ) do
         {:ok, %{status: 200, body: %{"items" => created}}} ->
           mappings = extract_mappings(created)
+          if is_function(on_batch, 1), do: on_batch.(mappings)
           {:cont, {:ok, acc ++ mappings}}
 
         {:ok, %{status: status, body: body}} ->
@@ -974,7 +986,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Name" => lat.section_id,
       "_source_id" => lat.section_id,
       "Type" => lat.drrp_types || [],
-      "Duty Type" => if(lat.duty_sub_type, do: [lat.duty_sub_type], else: []),
+      "Duty Type" => lat.duty_sub_type || [],
       "Regulated Actors" => extract_active_actors(lat),
       "Provision Text" => lat.text,
       "Provision" => lat.provision,

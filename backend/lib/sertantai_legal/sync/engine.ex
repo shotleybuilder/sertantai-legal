@@ -109,12 +109,15 @@ defmodule SertantaiLegal.Sync.Engine do
 
       job = %{job | rows_created: 0, rows_updated: 0, rows_deleted: 0}
 
-      # 1. Create new rows
+      # 1. Create new rows (mappings saved per-batch for crash safety)
       job =
         if delta.new != [] do
-          case provider.batch_create(provider_config, :lrt, delta.new) do
+          on_batch = fn batch_mappings ->
+            save_row_mappings(sync_config.id, :lrt, batch_mappings, lrt_rows)
+          end
+
+          case Baserow.batch_create(provider_config, :lrt, delta.new, on_batch) do
             {:ok, mappings} ->
-              save_row_mappings(sync_config.id, :lrt, mappings, lrt_rows)
               %{job | rows_created: length(mappings)}
 
             {:error, reason} ->
@@ -203,7 +206,6 @@ defmodule SertantaiLegal.Sync.Engine do
            field_specs = Baserow.lat_field_specs(lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :lat, field_specs) do
         # Format LAT rows with link_row references to parent LRT
-        # Skip rows where the parent LRT mapping is missing (orphaned provisions)
         formatted =
           lat_rows
           |> Enum.map(fn lat ->
@@ -220,15 +222,41 @@ defmodule SertantaiLegal.Sync.Engine do
           |> Enum.reject(fn {_lat, ext_id} -> is_nil(ext_id) end)
           |> Enum.map(fn {lat, ext_id} -> Baserow.format_lat_row(lat, ext_id) end)
 
-        case provider.batch_create(provider_config, :lat, formatted) do
-          {:ok, mappings} ->
-            save_row_mappings(sync_config.id, :lat, mappings, lat_rows)
+        # Delta detection for LAT (no timestamps — all matched rows treated as updated)
+        existing_lat_mappings = load_mappings(sync_config.id, :lat)
+        lat_delta = DeltaDetector.detect(formatted, existing_lat_mappings)
 
-            {:ok, Map.update(job, :lat_count, length(lat_rows), fn _ -> length(lat_rows) end)}
+        Logger.info(
+          "[Sync] LAT delta: #{length(lat_delta.new)} new, #{length(lat_delta.updated)} updated, " <>
+            "#{length(lat_delta.deleted)} deleted, #{lat_delta.unchanged} unchanged"
+        )
 
-          {:error, reason} ->
-            {:error, reason}
+        # Create new LAT rows
+        if lat_delta.new != [] do
+          lat_on_batch = fn batch_mappings ->
+            save_row_mappings(sync_config.id, :lat, batch_mappings, lat_rows)
+          end
+
+          case Baserow.batch_create(provider_config, :lat, lat_delta.new, lat_on_batch) do
+            {:ok, _} -> :ok
+            {:error, reason} -> Logger.error("[Sync] LAT create failed: #{reason}")
+          end
         end
+
+        # Update changed LAT rows
+        if lat_delta.updated != [] do
+          case provider.batch_update(provider_config, :lat, lat_delta.updated) do
+            {:ok, count} -> Logger.info("[Sync] LAT updated #{count} rows")
+            {:error, reason} -> Logger.warning("[Sync] LAT update failed: #{reason}")
+          end
+        end
+
+        # Handle deleted LAT rows
+        if lat_delta.deleted != [] do
+          handle_deletions(provider, provider_config, :lat, sync_config, lat_delta.deleted)
+        end
+
+        {:ok, Map.update(job, :lat_count, length(lat_rows), fn _ -> length(lat_rows) end)}
       end
     end
   end
@@ -252,9 +280,12 @@ defmodule SertantaiLegal.Sync.Engine do
            :ok <- provider.ensure_fields(provider_config, :actor_tuples, field_specs) do
         formatted = ActorTupleSync.format_rows(tuples)
 
-        case provider.batch_create(provider_config, :actor_tuples, formatted) do
+        tuple_on_batch = fn batch_mappings ->
+          save_row_mappings(sync_config.id, :actor_tuples, batch_mappings, tuples)
+        end
+
+        case Baserow.batch_create(provider_config, :actor_tuples, formatted, tuple_on_batch) do
           {:ok, tuple_mappings} ->
-            save_row_mappings(sync_config.id, :actor_tuples, tuple_mappings, tuples)
             Logger.info("[Sync] Created #{length(tuple_mappings)} actor tuples")
 
             # Link LAT provisions to their matching tuples

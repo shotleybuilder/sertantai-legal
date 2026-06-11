@@ -174,10 +174,9 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
           AND c.actors IS NULL
           AND ga IS NOT NULL
       ) sub) AS governed_actors,
-      (SELECT c.duty_sub_type FROM lat c
+      (SELECT array_agg(DISTINCT c.duty_sub_type) FROM lat c
         WHERE c.law_id = la.law_id AND c.provision = la.provision
           AND c.duty_sub_type IS NOT NULL
-        ORDER BY c.sort_key LIMIT 1
       ) AS duty_sub_type,
       count(*) AS child_count
     FROM lat la
