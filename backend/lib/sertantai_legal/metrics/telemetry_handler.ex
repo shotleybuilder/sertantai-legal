@@ -10,6 +10,8 @@ defmodule SertantaiLegal.Metrics.TelemetryHandler do
   - `[:taxa, :classify, :complete]` - Taxa classification complete
   - `[:staged_parser, :parse, :complete]` - Full parse complete (all 7 stages)
   - `[:staged_parser, :stage, :complete]` - Individual stage complete
+  - `[:sync, :phase, :complete]` - Sync phase complete (lrt, lat, actor_tuples)
+  - `[:sync, :job, :complete]` - Full sync job complete
 
   ## Usage
 
@@ -38,7 +40,9 @@ defmodule SertantaiLegal.Metrics.TelemetryHandler do
     events = [
       [:taxa, :classify, :complete],
       [:staged_parser, :parse, :complete],
-      [:staged_parser, :stage, :complete]
+      [:staged_parser, :stage, :complete],
+      [:sync, :phase, :complete],
+      [:sync, :job, :complete]
     ]
 
     :telemetry.attach_many(
@@ -81,6 +85,14 @@ defmodule SertantaiLegal.Metrics.TelemetryHandler do
 
   def handle_event([:staged_parser, :stage, :complete], measurements, metadata, _config) do
     FileStore.record(:stage, measurements, metadata)
+  end
+
+  def handle_event([:sync, :phase, :complete], measurements, metadata, _config) do
+    FileStore.record(:sync_phase, measurements, metadata)
+  end
+
+  def handle_event([:sync, :job, :complete], measurements, metadata, _config) do
+    FileStore.record(:sync_job, measurements, metadata)
   end
 
   def handle_event(_event, _measurements, _metadata, _config) do

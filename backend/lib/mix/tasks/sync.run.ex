@@ -8,19 +8,21 @@ defmodule Mix.Tasks.Sync.Run do
       mix sync.run CONFIG_UUID              # Specific config
       mix sync.run --clean                  # Delete existing rows first (fresh sync)
       mix sync.run --clean --config UUID    # Clean + specific config
+      mix sync.run --wait                   # Enqueue via Oban and wait for completion
+      mix sync.run --direct                 # Bypass Oban, run Engine directly
 
   ## What it does
 
-  1. Authenticates with Baserow
-  2. (If --clean) Deletes all existing rows from LRT, LAT, and Actor Tuples tables
-  3. Clears row mappings (if --clean)
-  4. Runs Engine.run (creates LRT → LAT → Actor Tuples → links)
-  5. Reports results
+  By default, enqueues an Oban job for persistent, retryable execution.
+  Use --wait to block until the job completes.
+  Use --direct to bypass Oban and run Engine.run directly (debugging).
   """
 
   use Mix.Task
 
-  @shortdoc "Run Baserow sync (--clean for fresh sync)"
+  alias SertantaiLegal.Sync.Workers.SyncWorker
+
+  @shortdoc "Run Baserow sync (--clean for fresh, --wait to block)"
 
   @impl Mix.Task
   def run(args) do
@@ -28,8 +30,8 @@ defmodule Mix.Tasks.Sync.Run do
 
     {opts, positional, _} =
       OptionParser.parse(args,
-        strict: [clean: :boolean, config: :string],
-        aliases: [c: :clean]
+        strict: [clean: :boolean, config: :string, wait: :boolean, direct: :boolean],
+        aliases: [c: :clean, w: :wait, d: :direct]
       )
 
     config_id = opts[:config] || List.first(positional) || find_default_config()
@@ -41,25 +43,43 @@ defmodule Mix.Tasks.Sync.Run do
 
     Mix.shell().info("Sync configuration: #{config_id}")
 
-    if opts[:clean] do
-      if Mix.env() == :prod do
-        Mix.shell().error("""
-        WARNING: You are about to delete ALL synced data from Baserow in PRODUCTION.
-        This will destroy any customer enrichment (notes, actions, evidence).
-        This action is IRREVERSIBLE.
-        """)
+    if opts[:clean] && Mix.env() == :prod do
+      Mix.shell().error("""
+      WARNING: You are about to delete ALL synced data from Baserow in PRODUCTION.
+      This will destroy any customer enrichment (notes, actions, evidence).
+      This action is IRREVERSIBLE.
+      """)
 
-        unless Mix.shell().yes?("Are you sure you want to proceed?") do
-          Mix.shell().info("Aborted.")
-          System.halt(0)
-        end
+      unless Mix.shell().yes?("Are you sure you want to proceed?") do
+        Mix.shell().info("Aborted.")
+        System.halt(0)
       end
-
-      Mix.shell().info("Cleaning existing Baserow data...")
-      clean_baserow(config_id)
     end
 
-    Mix.shell().info("Running sync...")
+    if opts[:direct] do
+      run_direct(config_id, opts)
+    else
+      run_via_oban(config_id, opts)
+    end
+  end
+
+  defp run_direct(config_id, opts) do
+    if opts[:clean] do
+      Mix.shell().info("Cleaning existing Baserow data...")
+
+      case SertantaiLegal.Sync.Engine.clean(config_id) do
+        {:ok, result} ->
+          Mix.shell().info(
+            "  Cleaned: #{result.rows_deleted} rows from #{result.tables_cleaned} tables"
+          )
+
+        {:error, reason} ->
+          Mix.shell().error("Clean failed: #{inspect(reason)}")
+          System.halt(1)
+      end
+    end
+
+    Mix.shell().info("Running sync directly (bypassing Oban)...")
 
     case SertantaiLegal.Sync.Engine.run(config_id) do
       {:ok, job} ->
@@ -77,84 +97,73 @@ defmodule Mix.Tasks.Sync.Run do
     end
   end
 
+  defp run_via_oban(config_id, opts) do
+    operation = if opts[:clean], do: "clean_and_sync", else: "sync"
+
+    case SyncWorker.new(%{"sync_config_id" => config_id, "operation" => operation})
+         |> Oban.insert() do
+      {:ok, oban_job} ->
+        Mix.shell().info("Sync job enqueued (Oban ##{oban_job.id}, operation: #{operation})")
+
+        if opts[:wait] do
+          Mix.shell().info("Waiting for completion...")
+          wait_for_completion(oban_job.id)
+        else
+          Mix.shell().info("Job will run in background. Use --wait to block until complete.")
+        end
+
+      {:error, changeset} ->
+        Mix.shell().error("Failed to enqueue: #{inspect(changeset)}")
+    end
+  end
+
+  defp wait_for_completion(oban_job_id) do
+    case poll_job(oban_job_id, 0) do
+      :completed ->
+        Mix.shell().info("Sync completed successfully.")
+
+      {:failed, errors} ->
+        Mix.shell().error("Sync failed: #{inspect(errors)}")
+
+      :timeout ->
+        Mix.shell().error("Timed out waiting for job (30 min). Check oban_jobs table.")
+    end
+  end
+
+  defp poll_job(_id, attempts) when attempts > 360 do
+    # 360 * 5s = 30 min timeout
+    :timeout
+  end
+
+  defp poll_job(id, attempts) do
+    Process.sleep(5_000)
+
+    case SertantaiLegal.Repo.query(
+           "SELECT state, errors FROM oban_jobs WHERE id = $1",
+           [id]
+         ) do
+      {:ok, %{rows: [["completed", _]]}} ->
+        :completed
+
+      {:ok, %{rows: [["discarded", errors]]}} ->
+        {:failed, errors}
+
+      {:ok, %{rows: [[state, errors]]}} when state in ["retryable", "cancelled"] ->
+        {:failed, errors}
+
+      _ ->
+        if rem(attempts, 12) == 0 do
+          Mix.shell().info("  Still running... (#{div(attempts * 5, 60)} min)")
+        end
+
+        poll_job(id, attempts + 1)
+    end
+  end
+
   defp find_default_config do
     case SertantaiLegal.Repo.query("SELECT id FROM sync_configurations LIMIT 1") do
       {:ok, %{rows: [[id]]}} -> Ecto.UUID.load!(id)
       _ -> nil
-    end
-  end
-
-  defp clean_baserow(config_id) do
-    alias SertantaiLegal.Repo
-    alias SertantaiLegal.Sync.{Credentials, Providers.Baserow}
-
-    {:ok, bin} = Ecto.UUID.dump(config_id)
-
-    {:ok, %{rows: [[cj, ec, iv]]}} =
-      Repo.query(
-        "SELECT target_config, encrypted_credentials, credentials_iv FROM sync_configurations WHERE id = $1",
-        [bin]
-      )
-
-    config = Map.merge(cj, %{"credentials" => Credentials.decrypt(ec, iv)})
-    {:ok, config} = Baserow.authenticate(config)
-
-    headers = [
-      {"Authorization", "JWT #{config["jwt"]}"},
-      {"Content-Type", "application/json"}
-    ]
-
-    tables =
-      [
-        {config["lrt_table_id"], "LRT"},
-        {config["lat_table_id"], "LAT"},
-        {config["actor_tuples_table_id"], "Actor Tuples"}
-      ]
-      |> Enum.reject(fn {id, _} -> is_nil(id) end)
-
-    for {table_id, label} <- tables do
-      delete_all_rows(config["base_url"], headers, table_id, label)
-    end
-
-    # Clear row mappings
-    Repo.query!("DELETE FROM sync_row_mappings WHERE sync_configuration_id = $1", [bin])
-    Mix.shell().info("  Row mappings cleared")
-  end
-
-  defp delete_all_rows(base_url, headers, table_id, label) do
-    {:ok, %{body: %{"count" => count}}} =
-      Req.get("#{base_url}/api/database/rows/table/#{table_id}/?size=1",
-        headers: headers,
-        receive_timeout: 30_000
-      )
-
-    if count > 0 do
-      ids =
-        Enum.flat_map(1..max(ceil(count / 200), 1), fn page ->
-          {:ok, %{body: %{"results" => results}}} =
-            Req.get(
-              "#{base_url}/api/database/rows/table/#{table_id}/?size=200&page=#{page}&fields=",
-              headers: headers,
-              receive_timeout: 30_000
-            )
-
-          Enum.map(results, & &1["id"])
-        end)
-
-      ids
-      |> Enum.chunk_every(200)
-      |> Enum.each(fn chunk ->
-        Req.post!(
-          "#{base_url}/api/database/rows/table/#{table_id}/batch-delete/",
-          headers: headers,
-          json: %{"items" => chunk},
-          receive_timeout: 120_000
-        )
-      end)
-
-      Mix.shell().info("  #{label}: deleted #{length(ids)} rows")
-    else
-      Mix.shell().info("  #{label}: empty")
     end
   end
 

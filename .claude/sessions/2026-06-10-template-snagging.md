@@ -41,6 +41,16 @@ Reviews at: backend/data/code-reviews/
 - [ ] **Multi-tenant misconfiguration risk** — wrong table IDs = cross-org data leak. Needs validation. [architecture_fitness.md §5]
 - [ ] **Monitoring/telemetry** — no structured metrics, no alerting on failure. [architecture_fitness.md §7]
 
+**Ended**: 2026-06-11 04:30
+**Commits**: `59fcaff`, `dbad92d`, `29f3d75`, `11b9ef3`, `705ffe5`, `9ca77d5`, `172abe9`, `99da084`, `7b0510e`, `31f4d2d`, `ec4c278`, `054928b`
+
+## Carried Forward
+- Fractalaw position bug (s.3 HSWA) — external dependency
+- Delta sync for LAT and Actor Tuples — new session
+- P4: Oban async jobs — new session
+- P4: Multi-tenant validation — new session
+- P4: Monitoring/telemetry — future
+
 ## Notes
 - First bug found by user reviewing Baserow PoC — s.3 HSWA missing Org: Employer
 - Root cause was two-fold: fractalaw position bug + our aggregation not falling back to flat

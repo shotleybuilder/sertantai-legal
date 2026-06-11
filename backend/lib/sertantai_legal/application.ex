@@ -20,6 +20,7 @@ defmodule SertantaiLegal.Application do
       [
         SertantaiLegalWeb.Telemetry,
         SertantaiLegal.Repo,
+        {Oban, Application.fetch_env!(:sertantai_legal, Oban)},
         {DNSCluster, query: Application.get_env(:sertantai_legal, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: SertantaiLegal.PubSub},
         # JWKS client — fetches EdDSA public key from sertantai-auth for JWT verification

@@ -29,14 +29,115 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
+  @doc """
+  Delete all synced rows from the provider and clear row mappings.
+  Used by --clean flag and "clean" Oban operation.
+  """
+  def clean(sync_config_id) do
+    with {:ok, sync_config} <- load_sync_config(sync_config_id) do
+      credentials = decrypt_credentials(sync_config)
+      provider_config = build_provider_config(sync_config, credentials)
+
+      with {:ok, provider_config} <-
+             authenticate_provider(sync_config.provider, provider_config) do
+        provider = provider_module(sync_config.provider)
+
+        tables =
+          [
+            {:lrt, provider_config["lrt_table_id"]},
+            {:lat, provider_config["lat_table_id"]},
+            {:actor_tuples, provider_config["actor_tuples_table_id"]}
+          ]
+          |> Enum.reject(fn {_, id} -> is_nil(id) end)
+
+        total_deleted =
+          Enum.reduce(tables, 0, fn {label, table_id}, acc ->
+            case clean_table(provider, provider_config, table_id) do
+              {:ok, count} ->
+                Logger.info("[Sync] Cleaned #{label}: deleted #{count} rows")
+                acc + count
+
+              {:error, reason} ->
+                Logger.warning("[Sync] Failed to clean #{label}: #{reason}")
+                acc
+            end
+          end)
+
+        # Clear all row mappings for this config
+        {:ok, bin} = Ecto.UUID.dump(sync_config_id)
+
+        SertantaiLegal.Repo.query!(
+          "DELETE FROM sync_row_mappings WHERE sync_configuration_id = $1",
+          [bin]
+        )
+
+        Logger.info("[Sync] Row mappings cleared for config #{sync_config_id}")
+
+        {:ok, %{tables_cleaned: length(tables), rows_deleted: total_deleted}}
+      end
+    end
+  end
+
+  defp clean_table(_provider, provider_config, table_id) do
+    # List all row IDs via direct API, then batch-delete via direct API
+    # (We bypass the provider's batch_delete because we need the raw table_id,
+    # not a table_key like :lrt/:lat)
+    base_url = provider_config["base_url"]
+    jwt = provider_config["jwt"]
+
+    headers = [
+      {"Authorization", "JWT #{jwt}"},
+      {"Content-Type", "application/json"}
+    ]
+
+    with {:ok, %{body: %{"count" => count}}} <-
+           Req.get("#{base_url}/api/database/rows/table/#{table_id}/?size=1",
+             headers: headers,
+             receive_timeout: 30_000
+           ) do
+      if count == 0 do
+        {:ok, 0}
+      else
+        pages = max(ceil(count / 200), 1)
+
+        ids =
+          Enum.flat_map(1..pages, fn page ->
+            {:ok, %{body: %{"results" => results}}} =
+              Req.get(
+                "#{base_url}/api/database/rows/table/#{table_id}/?size=200&page=#{page}&fields=",
+                headers: headers,
+                receive_timeout: 30_000
+              )
+
+            Enum.map(results, & &1["id"])
+          end)
+
+        ids
+        |> Enum.chunk_every(200)
+        |> Enum.each(fn chunk ->
+          Req.post!(
+            "#{base_url}/api/database/rows/table/#{table_id}/batch-delete/",
+            headers: headers,
+            json: %{"items" => chunk},
+            receive_timeout: 120_000
+          )
+        end)
+
+        {:ok, length(ids)}
+      end
+    end
+  end
+
   # ── Execution ─────────────────────────────────────────────────────
 
   defp execute_sync(sync_config, profile, entitlement, job) do
     credentials = decrypt_credentials(sync_config)
     provider_config = build_provider_config(sync_config, credentials)
     field_tier = entitlement.field_tier
+    start_time = System.monotonic_time()
 
     with {:ok, provider_config} <- authenticate_provider(sync_config.provider, provider_config),
+         :ok <- validate_workspace(provider_config, sync_config),
          :ok <- prepare_tables(sync_config.provider, provider_config, sync_config),
          {:ok, lrt_rows} <-
            ProfileQuery.query_lrt(profile, field_tier,
@@ -57,11 +158,33 @@ defmodule SertantaiLegal.Sync.Engine do
 
       update_sync_config_status(sync_config, :completed, job)
 
+      duration = System.monotonic_time() - start_time
+
+      :telemetry.execute([:sync, :job, :complete], %{duration: duration}, %{
+        sync_config_id: sync_config.id,
+        organization_id: sync_config.organization_id,
+        status: :completed,
+        law_count: job.law_count,
+        rows_created: Map.get(job, :rows_created, 0),
+        rows_updated: Map.get(job, :rows_updated, 0),
+        rows_deleted: Map.get(job, :rows_deleted, 0)
+      })
+
       {:ok, job}
     else
       {:error, reason} ->
         fail_job(job, reason)
         update_sync_config_status(sync_config, :failed, nil)
+
+        duration = System.monotonic_time() - start_time
+
+        :telemetry.execute([:sync, :job, :complete], %{duration: duration}, %{
+          sync_config_id: sync_config.id,
+          organization_id: sync_config.organization_id,
+          status: :failed,
+          error: inspect(reason)
+        })
+
         {:error, reason}
     end
   end
@@ -426,6 +549,95 @@ defmodule SertantaiLegal.Sync.Engine do
 
       _ ->
         %{}
+    end
+  end
+
+  # ── Workspace Validation ──────────────────────────────────────────
+
+  defp validate_workspace(provider_config, sync_config) do
+    expected_workspace_id = sync_config.target_config["workspace_id"]
+    base_url = provider_config["base_url"]
+    jwt = provider_config["jwt"]
+
+    table_ids =
+      [
+        provider_config["lrt_table_id"],
+        provider_config["lat_table_id"],
+        provider_config["actor_tuples_table_id"]
+      ]
+      |> Enum.reject(&is_nil/1)
+
+    if table_ids == [] do
+      {:error, "No table IDs configured"}
+    else
+      workspace_ids =
+        Enum.reduce_while(table_ids, {:ok, []}, fn table_id, {:ok, acc} ->
+          case fetch_table_workspace(base_url, jwt, table_id) do
+            {:ok, workspace_id} -> {:cont, {:ok, [workspace_id | acc]}}
+            {:error, reason} -> {:halt, {:error, reason}}
+          end
+        end)
+
+      case workspace_ids do
+        {:ok, ids} ->
+          unique_ids = Enum.uniq(ids)
+
+          cond do
+            length(unique_ids) > 1 ->
+              {:error,
+               "Tables belong to different workspaces: #{inspect(unique_ids)}. All tables must be in the same workspace."}
+
+            expected_workspace_id && hd(unique_ids) != expected_workspace_id ->
+              {:error,
+               "Tables belong to workspace #{hd(unique_ids)}, expected #{expected_workspace_id}"}
+
+            true ->
+              :ok
+          end
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+    end
+  end
+
+  defp fetch_table_workspace(base_url, jwt, table_id) do
+    headers = [
+      {"Authorization", "JWT #{jwt}"},
+      {"Content-Type", "application/json"}
+    ]
+
+    case Req.get("#{base_url}/api/database/tables/#{table_id}/",
+           headers: headers,
+           receive_timeout: 15_000
+         ) do
+      {:ok, %{status: 200, body: %{"database" => %{"group" => %{"id" => workspace_id}}}}} ->
+        {:ok, workspace_id}
+
+      {:ok, %{status: 200, body: %{"database" => %{"workspace" => %{"id" => workspace_id}}}}} ->
+        # Newer Baserow versions use "workspace" instead of "group"
+        {:ok, workspace_id}
+
+      {:ok, %{status: 200, body: body}} ->
+        # Extract workspace_id from nested structure — fallback
+        db = body["database"] || %{}
+        ws_id = get_in(db, ["group", "id"]) || get_in(db, ["workspace", "id"])
+
+        if ws_id do
+          {:ok, ws_id}
+        else
+          Logger.warning("[Sync] Could not extract workspace ID from table #{table_id} response")
+          {:ok, :unknown}
+        end
+
+      {:ok, %{status: 404}} ->
+        {:error, "Table #{table_id} not found in Baserow"}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, "Baserow table lookup returned #{status}: #{inspect(body)}"}
+
+      {:error, reason} ->
+        {:error, "Failed to fetch table #{table_id}: #{inspect(reason)}"}
     end
   end
 

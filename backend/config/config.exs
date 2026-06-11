@@ -28,6 +28,19 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+# Oban job queue
+config :sertantai_legal, Oban,
+  repo: SertantaiLegal.Repo,
+  queues: [default: 10, sync: 2],
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 7 * 24 * 60 * 60},
+    {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)},
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"0 */6 * * *", SertantaiLegal.Sync.Workers.SchedulerWorker}
+     ]}
+  ]
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

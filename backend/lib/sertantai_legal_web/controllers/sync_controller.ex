@@ -9,7 +9,8 @@ defmodule SertantaiLegalWeb.SyncController do
   require Logger
 
   alias SertantaiLegal.Sync
-  alias SertantaiLegal.Sync.{Credentials, Engine, ProfileQuery}
+  alias SertantaiLegal.Sync.{Credentials, ProfileQuery}
+  alias SertantaiLegal.Sync.Workers.SyncWorker
 
   # ── Entitlements ──────────────────────────────────────────────────
 
@@ -215,13 +216,15 @@ defmodule SertantaiLegalWeb.SyncController do
   def trigger_sync(conn, %{"id" => id}) do
     with {:ok, config} <- Ash.get(Sync.SyncConfiguration, id),
          :ok <- verify_org(conn, config.organization_id) do
-      # Run sync in a Task to not block the request
-      Task.start(fn -> Engine.run(config.id) end)
+      # Enqueue persistent Oban job (replaces fire-and-forget Task.start)
+      {:ok, oban_job} =
+        SyncWorker.new(%{"sync_config_id" => config.id, "operation" => "sync"})
+        |> Oban.insert()
 
       # Update status to queued
       Ash.update(config, %{sync_status: :queued}, action: :update_sync_status)
 
-      json(conn, %{ok: true, message: "Sync queued"})
+      json(conn, %{ok: true, message: "Sync queued", oban_job_id: oban_job.id})
     else
       {:error, :unauthorized} ->
         conn |> put_status(403) |> json(%{error: "Unauthorized"})
