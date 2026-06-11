@@ -133,8 +133,11 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       la.law_id,
       la.provision,
       la.law_name || ':' ||
-        CASE WHEN la.law_name LIKE 'UK_ukpga%' OR la.law_name LIKE 'UK_ukla%'
-          THEN 's.' ELSE 'reg.' END
+        CASE
+          WHEN la.law_name LIKE 'UK_ukpga%' OR la.law_name LIKE 'UK_ukla%' OR la.law_name LIKE 'UK_anaw%' OR la.law_name LIKE 'UK_asc%' THEN 's.'
+          WHEN la.law_name LIKE 'UK_eur%' OR la.law_name LIKE 'UK_eudr%' OR la.law_name LIKE 'UK_eudn%' THEN 'art.'
+          ELSE 'reg.'
+        END
         || la.provision AS section_id,
       string_agg(
         CASE
@@ -171,7 +174,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         SELECT ga as label
         FROM lat c, unnest(c.governed_actors) ga
         WHERE c.law_id = la.law_id AND c.provision = la.provision
-          AND c.actors IS NULL
+          AND (c.actors IS NULL OR array_length(c.actors, 1) IS NULL)
           AND ga IS NOT NULL
       ) sub) AS governed_actors,
       (SELECT array_agg(DISTINCT c.duty_sub_type) FROM lat c

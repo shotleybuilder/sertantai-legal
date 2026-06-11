@@ -30,11 +30,11 @@ Reviews at: backend/data/code-reviews/
 - [x] **--clean prod guard** — confirmation prompt + warning in production environment
 - [x] **link_row via provider abstraction** — Baserow.create_field with raw opts pass-through, no more direct Req.post
 
-### P3 — Medium (correctness/config)
-- [ ] **Tuple pipe delimiter fragile** — actor labels could theoretically contain |. Validate or use safer delimiter. [actor_tuple_model.md §1]
-- [ ] **governed_only not configurable** — hardcoded default excludes government actors. Gov agencies can't see their responsibilities. [actor_tuple_model.md §4]
-- [ ] **actors empty array vs NULL** — fallback checks IS NULL but not empty array. Legacy data with [] actors misses flat fallback. [provision_aggregation.md §2]
-- [ ] **section_id format hardcoded to UK** — s./reg. prefix doesn't handle EU art., Welsh, NI formats. [provision_aggregation.md §5]
+### P3 — Medium (correctness/config) — ALL FIXED
+- [x] **Pipe delimiter sanitised** — actor labels have | replaced with _ in composite key
+- [x] **governed_only configurable** — reads from target_config["governed_only"], defaults true
+- [x] **actors empty array handled** — fallback checks IS NULL OR array_length IS NULL
+- [x] **section_id multi-jurisdiction** — EU art., Welsh/Scottish Acts s., NI regs reg.
 
 ### P4 — Future (architecture)
 - [ ] **Sync should be async job (Oban)** — mix task blocks, no progress, no retry. [architecture_fitness.md §3]

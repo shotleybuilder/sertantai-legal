@@ -118,7 +118,9 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
   """
   def format_rows(tuples) do
     Enum.map(tuples, fn t ->
-      source_id = "#{t.actor}|#{t.position}|#{t.drrp_type}"
+      # Sanitise pipe from actor labels (safe delimiter for composite key)
+      safe_actor = String.replace(t.actor, "|", "_")
+      source_id = "#{safe_actor}|#{t.position}|#{t.drrp_type}"
 
       %{
         "Name" => source_id,

@@ -272,10 +272,11 @@ defmodule SertantaiLegal.Sync.Engine do
     else
       org_id = sync_config.organization_id
       provider = provider_module(sync_config.provider)
+      governed_only = get_in(sync_config.target_config, ["governed_only"]) != false
 
       lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
 
-      with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id),
+      with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id, governed_only: governed_only),
            field_specs = ActorTupleSync.field_specs(tuples),
            :ok <- provider.ensure_fields(provider_config, :actor_tuples, field_specs) do
         formatted = ActorTupleSync.format_rows(tuples)
