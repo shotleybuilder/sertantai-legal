@@ -186,15 +186,27 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       allow_nil?(true)
 
       description(
-        "Structured actors per provision. Each entry: {label, role, recipient_type, label_source}. " <>
-          "role: holder|recipient|beneficiary|mentioned. label_source: canonical|invented."
+        "Structured actors per provision. Each entry: {label, position, relates_to, label_source, reason}. " <>
+          "position: active|counterparty|beneficiary|mentioned. label_source: canonical|invented."
       )
     end
 
     attribute :extraction_method, :string do
       allow_nil?(true)
 
-      description("How actors were determined: regex|inherited|agentic|agentic_unvalidated")
+      description(
+        "How actors were determined: regex|inherited|classifier|local|agentic|agentic_unvalidated"
+      )
+    end
+
+    attribute :holder_inferred_from, :string do
+      allow_nil?(true)
+      description("Source of actor inference: self, parent, or comma-separated ancestors")
+    end
+
+    attribute :ancestor_distance, :integer do
+      allow_nil?(true)
+      description("Clause distance when actors inherited from parent provision")
     end
 
     attribute :duty_family, :string do
@@ -409,6 +421,8 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :government_actors,
         :actors,
         :extraction_method,
+        :holder_inferred_from,
+        :ancestor_distance,
         :duty_family,
         :duty_sub_type,
         :clause_refined,

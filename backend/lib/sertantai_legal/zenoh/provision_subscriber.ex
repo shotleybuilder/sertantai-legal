@@ -34,7 +34,9 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     "fitness_plant" => :fitness_plant,
     "fitness_property" => :fitness_property,
     "fitness_sector" => :fitness_sector,
-    "extraction_method" => :extraction_method
+    "extraction_method" => :extraction_method,
+    "holder_inferred_from" => :holder_inferred_from,
+    "ancestor_distance" => :ancestor_distance
   }
 
   # Arrow List<Struct> columns — needs special handling (array of maps, not flat array)

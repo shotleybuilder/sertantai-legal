@@ -76,8 +76,43 @@ The label prefixes (`Org:`, `Gvt:`, etc.) remain available for display grouping 
 Per-provision (not per-actor), indicates how actors were determined:
 - `regex` — actors found directly in the provision text by pattern matching
 - `inherited` — actors propagated from a parent clause (Tier 1 deterministic)
-- `agentic` — LLM (Gemini 2.5 Flash) classified positions, all labels canonical
-- `agentic_unvalidated` — LLM classified positions but one or more labels are `invented`
+- `classifier` — trained logistic regression model (86.4% accuracy, embedding + modal features). This is the production classifier that replaced LLM calls for bulk processing.
+- `local` — local Gemma 4B model via Ollama (CPU inference, development/testing)
+- `agentic` — Gemini 2.5 Flash classified positions, all labels canonical. Highest quality — development/QA workflow.
+- `agentic_unvalidated` — Gemini/Gemma classified positions but one or more labels are `invented`. Filter `label_source: invented` actors from user-facing selects.
+
+### Actor Dictionary — Single Source of Truth
+
+The canonical actor labels and their trigger phrases are defined in a shared YAML file:
+
+**`fractalaw/docs/actor-dictionary.yaml`** (tracked in git)
+
+Sertantai should use this file as its actor label reference. The YAML provides:
+
+```yaml
+- canonical: "Org: Employer"
+  category: Org
+  triggers: [employer, employers, the employer]
+```
+
+- `canonical` — the label that appears in the actors struct
+- `category` — the prefix group (Org, Gvt, Ind, SC, etc.) for display grouping
+- `triggers` — natural language names that map to this label (lowercase)
+
+**How to use:**
+- Load the YAML on startup or deployment
+- Use `canonical` for data storage and filtering
+- Use `category` for UI grouping (governed vs government)
+- Use `triggers` if sertantai needs to do its own actor name matching
+- The YAML is version-controlled — changes are tracked via git
+
+**Label format:** Colon-space prefixed (e.g., `Org: Employer`, `Gvt: Agency: HSE`). Sertantai can display these as-is or map to a different format for its UI.
+
+**Discoveries:** The LLM may name actors not in the dictionary. These get `label_source: invented` in the actors struct. Sertantai should filter invented labels from user-facing single-selects. Discoveries are reviewed and added to the YAML periodically — sertantai picks them up on next refresh.
+
+### Schedule provisions
+
+Fractalaw's LanceDB may contain schedule-level provisions that sertantai's LAT parser doesn't produce. These are expected orphans — sertantai correctly skips them during ingest ("N skipped — not in LAT"). Schedule provisions don't create new DRRP — they amplify the main body regulations.
 
 ## Examples
 
