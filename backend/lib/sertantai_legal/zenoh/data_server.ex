@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     fractalaw/@{tenant}/data/legislation/lrt/{name}    -- single LRT by name
     fractalaw/@{tenant}/data/legislation/lat/{name}    -- LAT sections for a law
     fractalaw/@{tenant}/data/legislation/amendments/{name} -- annotations for a law
+    fractalaw/@{tenant}/sertantai/customers/{id}/laws  -- law names for a customer
   """
 
   use GenServer
@@ -98,6 +99,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   defp handle_query(%Zenohex.Query{key_expr: key_expr, parameters: params, zenoh_query: zq}) do
     tenant = tenant_id()
     prefix = "fractalaw/@#{tenant}/data/legislation"
+    customers_prefix = "fractalaw/@#{tenant}/sertantai/customers"
     format = parse_format(params)
 
     {duration_us, result} =
@@ -114,6 +116,12 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
           ^prefix <> "/amendments/" <> law_name ->
             fetch_amendments_by_law(law_name, format)
+
+          ^customers_prefix <> "/" <> rest ->
+            case String.split(rest, "/") do
+              [customer_id, "laws"] -> fetch_customer_laws(customer_id)
+              _ -> {:error, :unknown_key}
+            end
 
           _ ->
             {:error, :unknown_key}
@@ -308,6 +316,21 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     }
   end
 
+  defp fetch_customer_laws(customer_id) do
+    query =
+      from(oa in "org_applicabilities",
+        where: oa.organization_id == type(^customer_id, :binary_id),
+        where: oa.status == "yes",
+        select: oa.law_name,
+        order_by: [asc: oa.law_name]
+      )
+
+    case Repo.all(query) do
+      [] -> {:error, :not_found}
+      law_names -> {:ok, Jason.encode!(law_names)}
+    end
+  end
+
   # --- Arrow IPC Serialization ---
 
   defp lat_to_arrow([]), do: {:ok, <<>>}
@@ -415,11 +438,14 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     tenant = tenant_id()
     prefix = "fractalaw/@#{tenant}/data/legislation"
 
+    customers_prefix = "fractalaw/@#{tenant}/sertantai/customers"
+
     keys = [
       "#{prefix}/lrt",
       "#{prefix}/lrt/*",
       "#{prefix}/lat/*",
-      "#{prefix}/amendments/*"
+      "#{prefix}/amendments/*",
+      "#{customers_prefix}/*/laws"
     ]
 
     queryable_ids =

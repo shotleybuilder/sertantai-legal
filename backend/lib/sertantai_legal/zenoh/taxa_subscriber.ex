@@ -313,26 +313,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> Map.put(new_label, true)
   end
 
-  # Prune LAT rows for non-making enrichment results.
-  # Empowering and Housekeeping laws don't need per-provision text for duty tracking.
-  defp maybe_prune_lat(taxa, _record, "Making"), do: taxa
-
-  defp maybe_prune_lat(taxa, record, _label) do
-    law_id = record.id
-
-    {deleted, _} =
-      SertantaiLegal.Repo.delete_all(
-        from(l in "lat", where: l.law_id == type(^law_id, Ecto.UUID))
-      )
-
-    if deleted > 0 do
-      Logger.info(
-        "[Zenoh.TaxaSubscriber] Pruned #{deleted} LAT rows for #{record.name} (non-making)"
-      )
-    end
-
-    taxa
-  end
+  # DISABLED — see #110. Pruner incorrectly classified HSWA as non-making and
+  # deleted 835 LAT rows. Destructive action needs UI visibility before re-enabling.
+  defp maybe_prune_lat(taxa, _record, _label), do: taxa
 
   # --- Change detection hook ---
 

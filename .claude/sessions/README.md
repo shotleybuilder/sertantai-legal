@@ -245,6 +245,7 @@ AI integration, responsibility parsing, DRRP, taxa enrichment.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-22 | [fractalaw-arrow-schema-adaptation](2026-06-22-fractalaw-arrow-schema-adaptation.md) | — | Adapt to fractalaw Arrow breaking change: holder_inferred_from, ancestor_distance, description fixes |
 | 2026-06-07 | [actors-consumer-migration](2026-06-07-actors-consumer-migration.md) | [#107](https://github.com/shotleybuilder/sertantai-legal/issues/107) | Migrate consumers to Hohfeldian actors struct (position=active), usage map, log cleanup |
 | 2026-06-07 | [fractalaw-actors-migration](2026-06-06-fractalaw-actors-migration.md) | [#107](https://github.com/shotleybuilder/sertantai-legal/issues/107) | Actors struct + extraction_method on LegalArticle, (inferred) cleanup, 4800 provisions populated |
 | 2026-06-06 | [auto-screening-build](2026-06-06-auto-screening-build.md) | [#102](https://github.com/shotleybuilder/sertantai-legal/issues/102) | Phase 8a-8d: org profile, scored matching, seed preview, source badges, uncategorized tier |
