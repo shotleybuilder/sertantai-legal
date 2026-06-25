@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   use GenServer
   require Logger
   require Ash.Query
-  import Ecto.Query, only: [from: 2]
+  # import Ecto.Query, only: [from: 2]  # Removed with pruner (#110)
 
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Zenoh.ActivityLog
