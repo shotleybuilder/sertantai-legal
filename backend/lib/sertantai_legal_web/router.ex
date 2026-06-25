@@ -65,6 +65,9 @@ defmodule SertantaiLegalWeb.Router do
     get("/laws/exists/*name", UkLrtController, :exists)
     post("/laws/batch-exists", UkLrtController, :batch_exists)
     get("/laws/:id", UkLrtController, :show)
+
+    # Zenoh query proxy (dev/internal — proxies GET to remote queryables)
+    post("/zenoh/query", ZenohController, :proxy_query)
   end
 
   # AI service endpoints — machine-to-machine (API key auth)
