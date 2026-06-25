@@ -178,6 +178,7 @@ Deployment, Zenoh P2P, production, change notifications.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-06-25 | [fractalaw-customer-laws-queryable](2026-06-25-fractalaw-customer-laws-queryable.md) | [#110](https://github.com/shotleybuilder/sertantai-legal/issues/110), [#111](https://github.com/shotleybuilder/sertantai-legal/issues/111) | Customer laws queryable, disable LAT pruner, HSWA end-to-end proven |
 | 2026-04-23 | [issue-72](2026-04-23-issue-72.md) | [#72](https://github.com/shotleybuilder/sertantai-legal/issues/72) | Fix pre-push: Node 25 localStorage, sobelow to_atom, dialyxir OTP 28 crash |
 | 2026-04-12 | [nas-backup-family-apps](2026-04-12-nas-backup-family-apps.md) | — | PG 17 upgrade for hub + auth; NAS scripts deferred (no data) |
 | 2026-04-12 | [pg17-upgrade](2026-04-12-pg17-upgrade.md) | — | Upgrade dev PG 15→17, rebuild + NAS restore on laptop |

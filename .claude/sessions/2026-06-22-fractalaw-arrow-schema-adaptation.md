@@ -12,7 +12,7 @@
 - [x] Fix `extraction_method` description (add classifier, local)
 - [x] Migration `20260622000001` — add columns + recreate lat view
 - [x] Verify migration runs clean
-- [x] Run tests
+- [x] Run tests (1461 pass, 0 failures)
 - [x] Commit
 
 ## Notes
@@ -20,3 +20,12 @@
 - Baserow fallback to governed_actors kept — needed for historical data
 - Law-level taxa payload unchanged
 - duty_actor.ex/duty_type.ex unchanged — sertantai's own regex extractors
+
+**Ended**: 2026-06-22
+**Commits**: `84b3d03`, `cb5a9d3`
+
+## Summary
+- Completed: 10 of 10 todos
+- Files: `legal_article.ex`, `provision_subscriber.ex`, migration `20260622000001`, `provision_subscriber_test.exs`
+- Outcome: sertantai-legal now accepts the restructured fractalaw provision taxa payload with holder_inferred_from and ancestor_distance fields
+- Next: none — adaptation complete, ready for next fractalaw enrichment run

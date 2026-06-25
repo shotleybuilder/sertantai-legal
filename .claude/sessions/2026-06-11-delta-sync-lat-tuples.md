@@ -14,3 +14,7 @@
 - Tuples are immutable identity rows — no "update" needed, only create/delete
 - Re-link LAT→tuples runs every sync (idempotent)
 - 1453 tests, 0 failures
+- Idempotency verification carried forward to live test session
+
+**Ended**: 2026-06-11 21:40
+**Commits**: `55da3ef`
