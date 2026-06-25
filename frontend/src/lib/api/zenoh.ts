@@ -44,9 +44,8 @@ export interface NotifierStatus extends ServiceStatus {
 }
 
 export interface SubscriptionsResponse {
-	status: SubscriberStatus;
-	stats: ServiceStats;
-	recent: ActivityEntry[];
+	taxa_subscriber: ServiceData<SubscriberStatus>;
+	provision_subscriber: ServiceData<SubscriberStatus>;
 }
 
 export interface ServiceData<S = ServiceStatus> {

@@ -11,22 +11,32 @@ defmodule SertantaiLegalWeb.ZenohController do
 
   use SertantaiLegalWeb, :controller
 
-  alias SertantaiLegal.Zenoh.{ActivityLog, TaxaSubscriber, DataServer, ChangeNotifier}
+  alias SertantaiLegal.Zenoh.{
+    ActivityLog,
+    TaxaSubscriber,
+    ProvisionSubscriber,
+    DataServer,
+    ChangeNotifier
+  }
 
-  @doc "GET /api/zenoh/subscriptions — TaxaSubscriber status + activity"
+  @doc "GET /api/zenoh/subscriptions — TaxaSubscriber + ProvisionSubscriber status + activity"
   def subscriptions(conn, _params) do
     if zenoh_enabled?() do
-      status = TaxaSubscriber.status()
-      stats = safe_get_stats(:taxa_subscriber)
-      recent = safe_get_recent(:taxa_subscriber)
-
-      json(conn, %{status: status, stats: stats, recent: recent})
-    else
       json(conn, %{
-        status: %{state: :disabled},
-        stats: %{status: :disabled},
-        recent: []
+        taxa_subscriber: %{
+          status: TaxaSubscriber.status(),
+          stats: safe_get_stats(:taxa_subscriber),
+          recent: safe_get_recent(:taxa_subscriber)
+        },
+        provision_subscriber: %{
+          status: ProvisionSubscriber.status(),
+          stats: safe_get_stats(:provision_subscriber),
+          recent: safe_get_recent(:provision_subscriber)
+        }
       })
+    else
+      disabled = %{status: %{state: :disabled}, stats: %{status: :disabled}, recent: []}
+      json(conn, %{taxa_subscriber: disabled, provision_subscriber: disabled})
     end
   end
 
