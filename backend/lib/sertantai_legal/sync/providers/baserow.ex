@@ -786,6 +786,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     "W"
   ]
 
+  @significance_options ["HIGH", "MEDIUM", "LOW"]
+
   defp essential_fields do
     [
       %{name: "Title", type: "long_text"},
@@ -796,6 +798,13 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       single_select_spec("Status", @status_options),
       single_select_spec("Geographic Extent", @geo_extent_options),
       %{name: "Legislation URL", type: "url"},
+      # Significance (law-level)
+      single_select_spec("Significance", @significance_options),
+      %{name: "Significance Score", type: "number", opts: %{"number_decimal_places" => 1}},
+      %{name: "HIGH Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
+      %{name: "MEDIUM Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
+      %{name: "LOW Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
+      %{name: "Total Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
       %{name: "_source_id", type: "text"}
     ]
   end
@@ -870,6 +879,12 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       multi_select_spec("Regulated Actors", regulated_actor_options()),
       %{name: "Provision Text", type: "long_text"},
       %{name: "Provision", type: "text"},
+      # Significance (provision-level)
+      single_select_spec("Significance", @significance_options),
+      single_select_spec("Gravity", @significance_options),
+      single_select_spec("Scope: Duty Bearer", @significance_options),
+      single_select_spec("Strength", @significance_options),
+      %{name: "Confidence", type: "number", opts: %{"number_decimal_places" => 2}},
       %{name: "_source_id", type: "text"},
       %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
     ]
@@ -1009,7 +1024,13 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Type" => lrt.type_desc,
       "Status" => lrt.live,
       "Geographic Extent" => lrt.geo_extent,
-      "Legislation URL" => lrt.leg_gov_uk_url
+      "Legislation URL" => lrt.source_url,
+      "Significance" => lrt.significance_rating,
+      "Significance Score" => round_score(lrt.significance_score),
+      "HIGH Obligations" => lrt.significance_high_count,
+      "MEDIUM Obligations" => lrt.significance_medium_count,
+      "LOW Obligations" => lrt.significance_low_count,
+      "Total Obligations" => lrt.significance_total_obligations
     }
 
     essential
@@ -1030,6 +1051,11 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Regulated Actors" => extract_active_actors(lat),
       "Provision Text" => lat.text,
       "Provision" => lat.provision,
+      "Significance" => lat[:significance_overall],
+      "Gravity" => lat[:significance_gravity],
+      "Scope: Duty Bearer" => lat[:significance_scope_duty_bearer],
+      "Strength" => lat[:significance_strength],
+      "Confidence" => round_float(lat[:significance_confidence], 2),
       "Parent Law" => [lrt_external_row_id]
     }
   end
@@ -1106,10 +1132,15 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp extract_active_actors(%{governed_actors: ga}) when is_list(ga), do: ga
   defp extract_active_actors(_), do: []
 
-  # Extract holder values, filtering out known artifacts
+  # Extract holder values, filtering out known artifacts and unknown labels.
+  # Unknown labels (invented by fractalaw LLM, not in actor dictionary) are
+  # excluded to avoid Baserow select option validation errors.
   defp extract_holder_list(field) do
+    known = MapSet.new(holder_options())
+
     extract_values_list(field)
     |> Enum.reject(&MapSet.member?(@holder_exclusions, &1))
+    |> Enum.filter(&MapSet.member?(known, &1))
   end
 
   # Extract values from JSONB fields as a list (for multiple_select columns)
@@ -1146,6 +1177,14 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp extract_values(list) when is_list(list), do: Enum.join(list, ", ")
   defp extract_values(other), do: to_string(other)
+
+  defp round_score(nil), do: nil
+  defp round_score(score) when is_float(score), do: Float.round(score, 1)
+  defp round_score(score), do: score
+
+  defp round_float(nil, _), do: nil
+  defp round_float(val, decimals) when is_float(val), do: Float.round(val, decimals)
+  defp round_float(val, _), do: val
 
   defp join_array(nil), do: nil
   defp join_array(list) when is_list(list), do: Enum.join(list, ", ")

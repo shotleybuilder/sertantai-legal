@@ -115,6 +115,8 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
   """
   def query_lat_aggregated(lrt_ids, opts \\ []) when is_list(lrt_ids) do
     drrp_types = Keyword.get(opts, :drrp_types)
+    governed_only = Keyword.get(opts, :governed_only, false)
+    min_significance = Keyword.get(opts, :min_significance)
 
     drrp_clause =
       if drrp_types do
@@ -125,6 +127,41 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         )"
       else
         ""
+      end
+
+    governed_clause =
+      if governed_only do
+        "AND EXISTS (
+          SELECT 1 FROM lat child, unnest(child.actors) a
+          WHERE child.law_id = la.law_id AND child.provision = la.provision
+            AND a->>'position' = 'active'
+            AND a->>'label' NOT LIKE 'Gvt:%'
+            AND a->>'label' NOT LIKE 'EU:%'
+        )"
+      else
+        ""
+      end
+
+    # Filter by minimum provision significance (HIGH or MEDIUM)
+    # Uses MAX across child provisions — if any child is HIGH/MEDIUM, include the group
+    significance_clause =
+      case min_significance do
+        "HIGH" ->
+          "AND EXISTS (
+            SELECT 1 FROM lat child
+            WHERE child.law_id = la.law_id AND child.provision = la.provision
+              AND child.significance_overall = 'HIGH'
+          )"
+
+        "MEDIUM" ->
+          "AND EXISTS (
+            SELECT 1 FROM lat child
+            WHERE child.law_id = la.law_id AND child.provision = la.provision
+              AND child.significance_overall IN ('HIGH', 'MEDIUM')
+          )"
+
+        _ ->
+          ""
       end
 
     sql = """
@@ -181,11 +218,34 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
         WHERE c.law_id = la.law_id AND c.provision = la.provision
           AND c.duty_sub_type IS NOT NULL
       ) AS duty_sub_type,
+      -- Significance: take the best (MAX) across child provisions
+      (SELECT MAX(c.significance_overall) FROM lat c
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.significance_overall IS NOT NULL
+      ) AS significance_overall,
+      (SELECT MAX(c.significance_gravity) FROM lat c
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.significance_gravity IS NOT NULL
+      ) AS significance_gravity,
+      (SELECT MAX(c.significance_scope_duty_bearer) FROM lat c
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.significance_scope_duty_bearer IS NOT NULL
+      ) AS significance_scope_duty_bearer,
+      (SELECT MAX(c.significance_strength) FROM lat c
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.significance_strength IS NOT NULL
+      ) AS significance_strength,
+      (SELECT MAX(c.significance_confidence) FROM lat c
+        WHERE c.law_id = la.law_id AND c.provision = la.provision
+          AND c.significance_confidence IS NOT NULL
+      ) AS significance_confidence,
       count(*) AS child_count
     FROM lat la
     WHERE la.law_id = ANY($1)
       AND la.provision IS NOT NULL
       #{drrp_clause}
+      #{governed_clause}
+      #{significance_clause}
     GROUP BY la.law_name, la.law_id, la.provision
     ORDER BY la.law_name, min(la.sort_key)
     """

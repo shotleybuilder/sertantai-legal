@@ -14,7 +14,13 @@ defmodule SertantaiLegal.Sync.FieldTiers do
     :type_desc,
     :live,
     :geo_extent,
-    :leg_gov_uk_url
+    :source_url,
+    :significance_rating,
+    :significance_score,
+    :significance_high_count,
+    :significance_medium_count,
+    :significance_low_count,
+    :significance_total_obligations
   ]
 
   @standard_columns @essential_columns ++

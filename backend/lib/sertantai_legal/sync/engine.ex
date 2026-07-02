@@ -302,7 +302,17 @@ defmodule SertantaiLegal.Sync.Engine do
       Logger.warning("LAT sync requested but no lat_table_id configured")
       {:ok, job}
     else
-      lrt_ids = Enum.map(lrt_rows, & &1.id)
+      # Only query LAT for in-force laws (exclude revoked from duty table)
+      in_force_lrt =
+        Enum.reject(lrt_rows, fn row ->
+          live = Map.get(row, :live) || Map.get(row, "live")
+
+          is_binary(live) and
+            (String.contains?(live, "Revoked") or String.contains?(live, "Repealed") or
+               String.contains?(live, "Abolished"))
+        end)
+
+      lrt_ids = Enum.map(in_force_lrt, & &1.id)
       provider = provider_module(sync_config.provider)
 
       # Load LRT row mappings so we can set link_row values
@@ -313,9 +323,21 @@ defmodule SertantaiLegal.Sync.Engine do
       lat_drrp_types = get_in(sync_config.target_config, ["lat_drrp_types"])
       lat_aggregated = get_in(sync_config.target_config, ["lat_aggregated"]) == true
 
+      lat_governed_only =
+        get_in(sync_config.target_config, ["lat_governed_only"]) == true
+
+      lat_min_significance =
+        get_in(sync_config.target_config, ["lat_min_provision_significance"])
+
       lat_query_fn =
         if lat_aggregated do
-          fn ids -> ProfileQuery.query_lat_aggregated(ids, drrp_types: lat_drrp_types) end
+          fn ids ->
+            ProfileQuery.query_lat_aggregated(ids,
+              drrp_types: lat_drrp_types,
+              governed_only: lat_governed_only,
+              min_significance: lat_min_significance
+            )
+          end
         else
           fn ids ->
             ProfileQuery.query_lat(ids,
