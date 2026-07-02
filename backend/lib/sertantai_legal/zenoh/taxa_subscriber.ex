@@ -45,7 +45,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "significance_high_count" => :significance_high_count,
     "significance_medium_count" => :significance_medium_count,
     "significance_low_count" => :significance_low_count,
-    "significance_total_obligations" => :significance_total_obligations
+    "significance_total_obligations" => :significance_total_obligations,
+    "significance_parts" => :significance_parts
   }
 
   @poll_interval :timer.seconds(2)
@@ -270,6 +271,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_scalar(row, "significance_medium_count")
     |> put_scalar(row, "significance_low_count")
     |> put_scalar(row, "significance_total_obligations")
+    # significance_parts — Utf8 (JSON string) → {:array, :map}
+    |> put_json_field(row, "significance_parts")
   end
 
   # Derive enrichment result from taxa fields and set function labels.
@@ -468,6 +471,25 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     case Map.get(row, str_key) do
       nil -> acc
       value -> Map.put(acc, @field_atoms[str_key], value)
+    end
+  end
+
+  defp put_json_field(acc, row, str_key) do
+    case Map.get(row, str_key) do
+      nil ->
+        acc
+
+      value when is_list(value) ->
+        Map.put(acc, @field_atoms[str_key], value)
+
+      value when is_binary(value) ->
+        case Jason.decode(value) do
+          {:ok, parsed} when is_list(parsed) -> Map.put(acc, @field_atoms[str_key], parsed)
+          _ -> acc
+        end
+
+      _ ->
+        acc
     end
   end
 end

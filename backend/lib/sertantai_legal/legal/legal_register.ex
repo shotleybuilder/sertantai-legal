@@ -352,6 +352,15 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Total Obligation provisions rated for significance")
     end
 
+    attribute :significance_parts, {:array, :map} do
+      allow_nil?(true)
+
+      description(
+        "Part-level significance breakdown for large Acts (≥50 rated provisions). " <>
+          "Each entry: {part, high, medium, low, total}. Null for SIs and small Acts."
+      )
+    end
+
     # Generated column: true when any fitness tag array is populated
     attribute :has_fitness, :boolean do
       allow_nil?(false)
@@ -904,7 +913,8 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :significance_high_count,
         :significance_medium_count,
         :significance_low_count,
-        :significance_total_obligations
+        :significance_total_obligations,
+        :significance_parts
       ])
     end
 

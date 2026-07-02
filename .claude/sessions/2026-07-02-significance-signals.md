@@ -15,8 +15,14 @@
 - [ ] Test with live publish
 - [ ] Update pipeline status skill to include significance
 
+- [ ] Add `significance_parts` (JSON) to LegalRegister — part-level breakdown for large Acts
+- [ ] Map `significance_parts` in TaxaSubscriber
+- [ ] Migration for significance_parts column
+- [ ] Test with HSWA publish (has Part structure)
+
 ## Notes
 - Law-level: significance_rating (H/M/L), significance_score (float), K-profile counts
 - Provision-level: 5 dimensions (gravity, scope_duty_bearer, scope_protected_class, strength, hierarchy) + confidence + overall
+- Part-level: significance_parts JSON array `[{part, high, medium, low, total}]` — only for Acts with ≥50 rated provisions
 - actors column now JSON string not Arrow struct — ProvisionSubscriber needs to parse
 - extraction_method values changed from old vocab
