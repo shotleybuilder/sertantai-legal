@@ -37,7 +37,7 @@
 ## Todo — Documentation & Skills (done)
 - [x] Create `docs/SIGNIFICANCE-SCOPING-GUIDE.md` — reference for customer register builds
 - [x] Create `baserow-sync` skill
-- [ ] Commit and push
+- [x] Commit and push
 
 ## Notes
 - Strategy C for PoC: H+M provisions only, ~2,400 duties, under 3K Baserow limit
@@ -45,3 +45,6 @@
 - Revoked laws included in LRT but excluded from LAT query in Engine
 - Actor labels filtered to dictionary-known values to avoid Baserow select option errors
 - `uk_lrt` view had to be recreated to pick up new legal_register columns
+
+**Ended**: 2026-07-02
+**Commits**: `1f8105f`, `cf89bb6`, `81f17e2`
