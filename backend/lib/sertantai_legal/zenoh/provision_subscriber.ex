@@ -36,13 +36,20 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     "fitness_sector" => :fitness_sector,
     "extraction_method" => :extraction_method,
     "holder_inferred_from" => :holder_inferred_from,
-    "ancestor_distance" => :ancestor_distance
+    "ancestor_distance" => :ancestor_distance,
+    # Significance (provision-level)
+    "significance_scope_duty_bearer" => :significance_scope_duty_bearer,
+    "significance_scope_protected_class" => :significance_scope_protected_class,
+    "significance_gravity" => :significance_gravity,
+    "significance_strength" => :significance_strength,
+    "significance_hierarchy" => :significance_hierarchy,
+    "significance_confidence" => :significance_confidence,
+    "significance_overall" => :significance_overall
   }
 
-  # Arrow List<Struct> columns — needs special handling (array of maps, not flat array)
-  @struct_atoms %{
-    "actors" => :actors
-  }
+  # Actors column — now Utf8 (JSON string), was List<Struct>.
+  # Handled separately in normalize_taxa/1 via JSON decode.
+  @actors_key "actors"
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -240,13 +247,23 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
         end
       end)
 
-    # Struct columns (List<Struct> → {:array, :map})
-    Enum.reduce(@struct_atoms, acc, fn {str_key, atom_key}, acc ->
-      case Map.get(row, str_key) do
-        nil -> acc
-        entries when is_list(entries) -> Map.put(acc, atom_key, entries)
-        _ -> acc
-      end
-    end)
+    # Actors — now Utf8 (JSON string) instead of List<Struct>.
+    # Decode JSON string to list of maps, or pass through if already a list.
+    case Map.get(row, @actors_key) do
+      nil ->
+        acc
+
+      actors when is_list(actors) ->
+        Map.put(acc, :actors, actors)
+
+      actors when is_binary(actors) ->
+        case Jason.decode(actors) do
+          {:ok, parsed} when is_list(parsed) -> Map.put(acc, :actors, parsed)
+          _ -> acc
+        end
+
+      _ ->
+        acc
+    end
   end
 end

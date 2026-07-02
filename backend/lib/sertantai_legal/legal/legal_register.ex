@@ -321,6 +321,37 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       )
     end
 
+    # Significance (from fractalaw — law-level aggregate of provision significance)
+    attribute :significance_rating, :string do
+      allow_nil?(true)
+      description("Law-level significance: HIGH, MEDIUM, or LOW (percentile rank)")
+    end
+
+    attribute :significance_score, :float do
+      allow_nil?(true)
+      description("Raw L-score: avg_provision_significance x log2(total_obligations + 1)")
+    end
+
+    attribute :significance_high_count, :integer do
+      allow_nil?(true)
+      description("Count of HIGH-significance Obligation provisions")
+    end
+
+    attribute :significance_medium_count, :integer do
+      allow_nil?(true)
+      description("Count of MEDIUM-significance Obligation provisions")
+    end
+
+    attribute :significance_low_count, :integer do
+      allow_nil?(true)
+      description("Count of LOW-significance Obligation provisions")
+    end
+
+    attribute :significance_total_obligations, :integer do
+      allow_nil?(true)
+      description("Total Obligation provisions rated for significance")
+    end
+
     # Generated column: true when any fitness tag array is populated
     attribute :has_fitness, :boolean do
       allow_nil?(false)
@@ -867,7 +898,13 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :record_change_log,
         :enacted_si_codes,
         :enacted_families,
-        :source_url
+        :source_url,
+        :significance_rating,
+        :significance_score,
+        :significance_high_count,
+        :significance_medium_count,
+        :significance_low_count,
+        :significance_total_obligations
       ])
     end
 

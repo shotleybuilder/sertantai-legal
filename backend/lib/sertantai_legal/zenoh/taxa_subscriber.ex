@@ -38,7 +38,14 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "fitness_plant" => :fitness_plant,
     "fitness_property" => :fitness_property,
     "fitness_sector" => :fitness_sector,
-    "fitness" => :fitness
+    "fitness" => :fitness,
+    # Significance (law-level aggregate)
+    "significance_rating" => :significance_rating,
+    "significance_score" => :significance_score,
+    "significance_high_count" => :significance_high_count,
+    "significance_medium_count" => :significance_medium_count,
+    "significance_low_count" => :significance_low_count,
+    "significance_total_obligations" => :significance_total_obligations
   }
 
   @poll_interval :timer.seconds(2)
@@ -256,6 +263,13 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_list_field(row, "fitness_sector")
     # Fitness detail — List<Struct> → {:array, :map} (passed through directly)
     |> put_list_of_maps(row, "fitness")
+    # Significance — simple scalars (string, float, int)
+    |> put_scalar(row, "significance_rating")
+    |> put_scalar(row, "significance_score")
+    |> put_scalar(row, "significance_high_count")
+    |> put_scalar(row, "significance_medium_count")
+    |> put_scalar(row, "significance_low_count")
+    |> put_scalar(row, "significance_total_obligations")
   end
 
   # Derive enrichment result from taxa fields and set function labels.
@@ -447,6 +461,13 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
       nil -> acc
       entries when is_list(entries) -> Map.put(acc, @field_atoms[str_key], entries)
       _ -> acc
+    end
+  end
+
+  defp put_scalar(acc, row, str_key) do
+    case Map.get(row, str_key) do
+      nil -> acc
+      value -> Map.put(acc, @field_atoms[str_key], value)
     end
   end
 end

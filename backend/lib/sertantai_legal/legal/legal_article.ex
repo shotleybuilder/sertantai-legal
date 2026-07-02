@@ -194,9 +194,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
     attribute :extraction_method, :string do
       allow_nil?(true)
 
-      description(
-        "How actors were determined: regex|inherited|classifier|local|agentic|agentic_unvalidated"
-      )
+      description("How actors were determined: regex|reconciled|slm|llm|inferred")
     end
 
     attribute :holder_inferred_from, :string do
@@ -280,6 +278,44 @@ defmodule SertantaiLegal.Legal.LegalArticle do
     attribute :taxa_enriched_at, :utc_datetime_usec do
       allow_nil?(true)
       description("When taxa/fitness data was last received from fractalaw")
+    end
+
+    # ── Significance (from fractalaw — per-provision) ────────────────
+    # Null for non-Obligation provisions and provisions not yet rated.
+
+    attribute :significance_scope_duty_bearer, :string do
+      allow_nil?(true)
+      description("HIGH/MEDIUM/LOW — breadth of duty bearer")
+    end
+
+    attribute :significance_scope_protected_class, :string do
+      allow_nil?(true)
+      description("HIGH/MEDIUM/LOW — breadth of protected class")
+    end
+
+    attribute :significance_gravity, :string do
+      allow_nil?(true)
+      description("HIGH/MEDIUM/LOW — what's at stake (health/property/admin)")
+    end
+
+    attribute :significance_strength, :string do
+      allow_nil?(true)
+      description("HIGH/MEDIUM/LOW — obligation strength (absolute/qualified/procedural)")
+    end
+
+    attribute :significance_hierarchy, :string do
+      allow_nil?(true)
+      description("HIGH/MEDIUM/LOW — structural position in the law")
+    end
+
+    attribute :significance_confidence, :float do
+      allow_nil?(true)
+      description("SLM logprobs average (0-1) — confidence of significance rating")
+    end
+
+    attribute :significance_overall, :string do
+      allow_nil?(true)
+      description("HIGH/MEDIUM/LOW — weighted aggregate of all 5 dimensions")
     end
 
     # ── Embeddings (populated later) ─────────────────────────────────
@@ -436,7 +472,14 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :fitness_plant,
         :fitness_property,
         :fitness_sector,
-        :taxa_enriched_at
+        :taxa_enriched_at,
+        :significance_scope_duty_bearer,
+        :significance_scope_protected_class,
+        :significance_gravity,
+        :significance_strength,
+        :significance_hierarchy,
+        :significance_confidence,
+        :significance_overall
       ])
     end
 
