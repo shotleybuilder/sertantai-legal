@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Sync.Templates.SubPatterns do
   @type t :: %__MODULE__{
           storage_mode: :embedded | :reference,
           risk_scoring: :simple | :matrix,
-          people: :flat | :linked | :collaborator | :hybrid,
+          people: :flat | :linked | :workspace_member | :hybrid,
           org_structure: :flat | :department | :site | :division_site,
           assessment_grain: :law | :provision,
           review_cycle: :manual | :scheduled,
@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Sync.Templates.SubPatterns do
       []
       |> check(:storage_mode, sp.storage_mode, [:embedded, :reference])
       |> check(:risk_scoring, sp.risk_scoring, [:simple, :matrix])
-      |> check(:people, sp.people, [:flat, :linked, :collaborator, :hybrid])
+      |> check(:people, sp.people, [:flat, :linked, :workspace_member, :hybrid])
       |> check(:org_structure, sp.org_structure, [:flat, :department, :site, :division_site])
       |> check(:assessment_grain, sp.assessment_grain, [:law, :provision])
       |> check(:review_cycle, sp.review_cycle, [:manual, :scheduled])

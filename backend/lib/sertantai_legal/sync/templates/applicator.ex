@@ -70,7 +70,7 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
   # ── Internal ──────────────────────────────────────────────────
 
   defp apply_templates([], context) do
-    {:ok, context.results}
+    {:ok, Map.put(context.results, :table_ids, context.table_ids)}
   end
 
   defp apply_templates([mod | rest], context) do
@@ -98,6 +98,7 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
 
   defp create_tables(mod, context) do
     tables = mod.tables()
+    field_map = mod.field_specs(context.sub_patterns)
 
     Enum.reduce_while(tables, {:ok, context}, fn table_key, {:ok, ctx} ->
       table_name = table_key |> to_string() |> Macro.camelize()
@@ -109,6 +110,13 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
         case ctx.provider.create_table(ctx.config, table_name) do
           {:ok, table_id} ->
             Logger.info("[TemplateApplicator] Created table #{table_name} (#{table_id})")
+
+            # Clean up provider defaults (Baserow: delete Notes, handle Name/Active)
+            field_specs = Map.get(field_map, table_key, [])
+
+            if function_exported?(ctx.provider, :cleanup_table_defaults, 3) do
+              ctx.provider.cleanup_table_defaults(ctx.config, table_id, field_specs)
+            end
 
             ctx = %{
               ctx

@@ -5,7 +5,7 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
   Adapts based on `people` sub-pattern:
 
   - `:flat` — no table created, downstream templates use text fields
-  - `:collaborator` — no table created, downstream templates use Baserow Collaborators fields
+  - `:workspace_member` — no table created, downstream templates use Baserow Collaborators fields
   - `:linked` — Personnel table created, downstream templates use link_row fields
   - `:hybrid` — Personnel table created, downstream templates use both Collaborators + link_row
   """
@@ -30,6 +30,12 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
       mode when mode in [:linked, :hybrid] ->
         %{
           personnel: [
+            %{
+              name: "Employee_ID",
+              type: :text,
+              primary: true,
+              description: "Unique employee reference"
+            },
             %{name: "Name", type: :text, description: "Full name"},
             %{name: "Email", type: :email, description: "Email address"},
             %{
@@ -55,12 +61,16 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
               options: [],
               description: "Department — customer populates options"
             },
-            %{name: "Employee_ID", type: :text, description: "Internal reference"},
-            %{name: "Active", type: :boolean, description: "Currently employed/active"}
+            %{name: "Active", type: :boolean, description: "Currently employed/active"},
+            %{
+              name: "Baserow User",
+              type: :workspace_member,
+              description: "Linked Baserow workspace member"
+            }
           ]
         }
 
-      # :flat and :collaborator — no table needed
+      # :flat and :workspace_member — no table needed
       _ ->
         %{}
     end

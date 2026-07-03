@@ -165,10 +165,10 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
     ]
   end
 
-  defp people_fields(:collaborator) do
+  defp people_fields(:workspace_member) do
     [
-      %{name: "Assessment_Owner", type: :collaborator, description: "Accountable person"},
-      %{name: "Assessed_By", type: :collaborator, description: "Who performed assessment"},
+      %{name: "Assessment_Owner", type: :workspace_member, description: "Accountable person"},
+      %{name: "Assessed_By", type: :workspace_member, description: "Who performed assessment"},
       %{name: "Assessment_Date", type: :date, description: "When last assessed"}
     ]
   end
@@ -177,7 +177,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
     [
       %{
         name: "Assessment_Owner",
-        type: :collaborator,
+        type: :workspace_member,
         description: "Accountable person (Baserow user)"
       },
       %{
@@ -186,7 +186,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
         target: :personnel,
         description: "Responsible in org"
       },
-      %{name: "Assessed_By", type: :collaborator, description: "Who performed assessment"},
+      %{name: "Assessed_By", type: :workspace_member, description: "Who performed assessment"},
       %{name: "Assessment_Date", type: :date, description: "When last assessed"}
     ]
   end
@@ -211,7 +211,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
       %{
         name: "Days_Until_Review",
         type: :formula,
-        expression: %{baserow: "date_diff('day', field('SA_Next_Review_Date'), today())"},
+        expression: %{baserow: "date_diff('day', field('Next_Review_Date'), today())"},
         description: "Days until next review (negative = overdue)"
       },
       %{
@@ -219,7 +219,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
         type: :formula,
         expression: %{
           baserow:
-            "if(field('SA_Days_Until_Review') < 0, 'OVERDUE', if(field('SA_Days_Until_Review') < 30, 'Due Soon', 'OK'))"
+            "if(field('Days_Until_Review') < 0, 'OVERDUE', if(field('Days_Until_Review') < 30, 'Due Soon', 'OK'))"
         },
         description: "OVERDUE / Due Soon / OK"
       }
@@ -243,17 +243,17 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
         expression: %{
           baserow: """
           if(
-            and(field('SA_Likelihood') != '', field('SA_Impact') != ''),
+            and(field('Likelihood') != '', field('Impact') != ''),
             (
-              if(field('SA_Likelihood') = 'Almost Certain', 5,
-              if(field('SA_Likelihood') = 'Likely', 4,
-              if(field('SA_Likelihood') = 'Possible', 3,
-              if(field('SA_Likelihood') = 'Unlikely', 2, 1))))
+              if(field('Likelihood') = 'Almost Certain', 5,
+              if(field('Likelihood') = 'Likely', 4,
+              if(field('Likelihood') = 'Possible', 3,
+              if(field('Likelihood') = 'Unlikely', 2, 1))))
             ) * (
-              if(field('SA_Impact') = 'Catastrophic', 5,
-              if(field('SA_Impact') = 'Major', 4,
-              if(field('SA_Impact') = 'Moderate', 3,
-              if(field('SA_Impact') = 'Minor', 2, 1))))
+              if(field('Impact') = 'Catastrophic', 5,
+              if(field('Impact') = 'Major', 4,
+              if(field('Impact') = 'Moderate', 3,
+              if(field('Impact') = 'Minor', 2, 1))))
             ),
             0
           )

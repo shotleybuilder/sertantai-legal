@@ -110,7 +110,7 @@ defmodule SertantaiLegal.Sync.Templates.CompliancePoller do
       url =
         "#{base_url}/api/database/rows/table/#{table_id}/" <>
           "?user_field_names=true&size=1&count=true" <>
-          "&filter__SA_Compliance_Status__not_empty=true"
+          "&filter__Compliance_Status__not_empty=true"
 
       case Req.get(url,
              headers: [

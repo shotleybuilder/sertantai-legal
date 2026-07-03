@@ -73,12 +73,12 @@ defmodule SertantaiLegal.Sync.Templates.PDCA do
     [%{name: "Owner", type: :link_row, target: :personnel, description: "Initiative owner"}]
   end
 
-  defp people_fields(:collaborator) do
-    [%{name: "Owner", type: :collaborator, description: "Initiative owner"}]
+  defp people_fields(:workspace_member) do
+    [%{name: "Owner", type: :workspace_member, description: "Initiative owner"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "Owner", type: :collaborator, description: "Initiative owner"}]
+    [%{name: "Owner", type: :workspace_member, description: "Initiative owner"}]
   end
 
   defp people_fields(:flat) do

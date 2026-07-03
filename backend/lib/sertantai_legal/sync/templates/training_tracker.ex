@@ -48,7 +48,7 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
             %{
               name: "Days_Until_Due",
               type: :formula,
-              expression: %{baserow: "date_diff('day', field('SA_Next_Due'), today())"},
+              expression: %{baserow: "date_diff('day', field('Next_Due'), today())"},
               description: "Days until due (negative = overdue)"
             }
           ]
@@ -82,13 +82,17 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
     ]
   end
 
-  defp people_fields(:collaborator) do
-    [%{name: "Assigned_To", type: :collaborator, description: "Who needs this training"}]
+  defp people_fields(:workspace_member) do
+    [%{name: "Assigned_To", type: :workspace_member, description: "Who needs this training"}]
   end
 
   defp people_fields(:hybrid) do
     [
-      %{name: "Assigned_To", type: :collaborator, description: "Task assignee (Baserow user)"},
+      %{
+        name: "Assigned_To",
+        type: :workspace_member,
+        description: "Task assignee (Baserow user)"
+      },
       %{
         name: "Trainee",
         type: :link_row,

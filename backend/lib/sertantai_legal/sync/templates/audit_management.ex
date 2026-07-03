@@ -66,12 +66,12 @@ defmodule SertantaiLegal.Sync.Templates.AuditManagement do
     [%{name: "Auditor", type: :link_row, target: :personnel, description: "Who conducted"}]
   end
 
-  defp people_fields(:collaborator) do
-    [%{name: "Auditor", type: :collaborator, description: "Who conducted"}]
+  defp people_fields(:workspace_member) do
+    [%{name: "Auditor", type: :workspace_member, description: "Who conducted"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "Auditor", type: :collaborator, description: "Who conducted"}]
+    [%{name: "Auditor", type: :workspace_member, description: "Who conducted"}]
   end
 
   defp people_fields(:flat) do

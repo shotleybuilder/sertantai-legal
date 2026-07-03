@@ -5,6 +5,9 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
   Resolves dependencies and returns templates in creation order.
   """
 
+  @doc "All registered template IDs."
+  def all_ids, do: Map.keys(all())
+
   @doc """
   All registered template modules, keyed by ID.
 

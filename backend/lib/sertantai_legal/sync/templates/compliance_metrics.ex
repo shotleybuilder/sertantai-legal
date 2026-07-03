@@ -30,9 +30,9 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceMetrics do
   Process a webhook event and update compliance metrics.
 
   Only handles events with compliance-relevant fields:
-  - SA_Compliance_Status changes on Assessments
-  - SA_Status changes on Actions
-  - SA_Status changes on Evidence (expiry tracking)
+  - Compliance_Status changes on Assessments
+  - Status changes on Actions
+  - Status changes on Evidence (expiry tracking)
   """
   def process_event(%WebhookEvent{event_type: :row_updated} = event, org_id) do
     cond do

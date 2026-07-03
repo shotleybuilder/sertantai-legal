@@ -1,7 +1,7 @@
-# Zenoh Publication Spec: sertantai-legal → fractalaw
+# Zenoh Publication Spec: sertantai-legal ↔ fractalaw
 
-**Version**: 1.0
-**Date**: 2026-02-26
+**Version**: 2.0
+**Date**: 2026-07-02
 **Commit**: 4b73387
 **Source**: `backend/lib/sertantai_legal/zenoh/data_server.ex`
 
@@ -330,14 +330,152 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+---
+
+## Fractalaw → Sertantai (Pub/Sub — Taxa Enrichment)
+
+Fractalaw publishes enriched taxa data back to sertantai via Zenoh pub/sub. All payloads are **Arrow IPC** (not JSON) — RecordBatch serialized with `arrow::ipc::writer::StreamWriter`.
+
+Sertantai subscribes to these key expressions and decodes the Arrow IPC payload.
+
+### Key Expressions
+
+| Key Expression | Direction | Payload |
+|---------------|-----------|---------|
+| `fractalaw/@{tenant}/taxa/enrichment/{law_name}` | fractalaw → sertantai | Arrow IPC — law-level enrichment (1 row per law) |
+| `fractalaw/@{tenant}/taxa/provisions/{law_name}` | fractalaw → sertantai | Arrow IPC — per-provision taxa (N rows per law) |
+| `fractalaw/@{tenant}/taxa/dictionary` | fractalaw → sertantai | Raw YAML — actor dictionary (24KB) |
+
+### Taxa Enrichment Record (law-level)
+
+One row per law. Published from DuckDB `legislation` table.
+
+| Field | Arrow Type | Description |
+|-------|-----------|-------------|
+| `name` | `Utf8` | Canonical law identifier |
+| `duty_holder` | `List<Utf8>` | Duty holder actor labels |
+| `rights_holder` | `List<Utf8>` | Rights holder actor labels |
+| `responsibility_holder` | `List<Utf8>` | Responsibility holder actor labels |
+| `power_holder` | `List<Utf8>` | Power holder actor labels |
+| `duty_type` | `List<Utf8>` | Duty type classifications |
+| `role` | `List<Utf8>` | Role tags |
+| `role_gvt` | `List<Utf8>` | Government role tags |
+| `duties` | `List<Struct>` | Structured duty records (holder, duty_type, clause, article) |
+| `rights` | `List<Struct>` | Structured rights records |
+| `responsibilities` | `List<Struct>` | Structured responsibility records |
+| `powers` | `List<Struct>` | Structured power records |
+| `fitness_person` | `List<Utf8>` | POPIMAR fitness — person |
+| `fitness_process` | `List<Utf8>` | POPIMAR fitness — process |
+| `fitness_place` | `List<Utf8>` | POPIMAR fitness — place |
+| `fitness_plant` | `List<Utf8>` | POPIMAR fitness — plant |
+| `fitness_property` | `List<Utf8>` | POPIMAR fitness — property |
+| `fitness_sector` | `List<Utf8>` | POPIMAR fitness — sector |
+| `fitness` | `List<Struct>` | Structured fitness records (polarity, person, process, ...) |
+| `significance_rating` | `Utf8` | Law-level significance: `HIGH`, `MEDIUM`, or `LOW` |
+| `significance_score` | `Float32` | Raw L-score (`avg_sig × log2(total+1)`) for custom sorting |
+| `significance_high_count` | `Int32` | Count of HIGH-significance Obligation provisions |
+| `significance_medium_count` | `Int32` | Count of MEDIUM-significance Obligation provisions |
+| `significance_low_count` | `Int32` | Count of LOW-significance Obligation provisions |
+| `significance_total_obligations` | `Int32` | Total Obligation provisions rated |
+| `significance_parts` | `Utf8` (JSON) | Part-level breakdown for large Acts (see below). `null` for laws with <50 rated provisions or no Part structure. |
+
+> **Significance fields** are `null` for laws with no rated Obligation provisions.
+
+#### Part-level significance breakdown
+
+For Acts with ≥50 rated Obligation provisions and Part structural rows, `significance_parts` contains a JSON array:
+
+```json
+[
+  {"part": "pt.I", "high": 31, "medium": 35, "low": 69, "total": 135},
+  {"part": "pt.III", "high": 0, "medium": 3, "low": 10, "total": 13},
+  {"part": "pt.IV", "high": 0, "medium": 10, "low": 14, "total": 24}
+]
+```
+
+Parts with zero rated provisions are omitted. The `part` field is the Part identifier from the law's structural hierarchy (e.g., `pt.I`, `pt.1`, `pt.2A`).
+
+Sertantai can use this to display per-Part significance within large Acts, helping compliance officers identify which Part of a foundational statute contains the critical duties.
+
+#### Law-level significance formula
+
+`significance_score = avg_provision_significance × log2(total_obligations + 1)`
+
+Where `avg_provision_significance = (3 × high + 2 × medium + 1 × low) / total`.
+
+`significance_rating` is derived from percentile rank across all laws: top 20% → HIGH, bottom 33% → LOW, else MEDIUM.
+
+The K-profile fields (`high_count`, `medium_count`, `low_count`, `total_obligations`) provide the full distribution for drill-down display.
+
+---
+
+### Taxa Provisions Record (per-provision)
+
+N rows per law (one per enriched provision). Published from Postgres `legislation_text` table.
+
+| Field | Arrow Type | Description |
+|-------|-----------|-------------|
+| `section_id` | `Utf8` | Primary key — matches LAT `section_id` |
+| `drrp_types` | `List<Utf8>` | DRRP classifications: `Obligation`, `Liberty` |
+| `duty_family` | `Utf8` | Duty family classification |
+| `duty_sub_type` | `Utf8` | Duty sub-type |
+| `popimar` | `List<Utf8>` | POPIMAR tags |
+| `purposes` | `List<Utf8>` | Purpose classifications |
+| `clause_refined` | `Utf8` | Refined clause text |
+| `taxa_confidence` | `Float32` | Classification confidence (0-1) |
+| `taxa_classified_at` | `Utf8` | ISO 8601 timestamp |
+| `fitness_polarity` | `List<Utf8>` | POPIMAR fitness polarity |
+| `fitness_person` | `List<Utf8>` | POPIMAR fitness — person |
+| `fitness_process` | `List<Utf8>` | POPIMAR fitness — process |
+| `fitness_place` | `List<Utf8>` | POPIMAR fitness — place |
+| `fitness_plant` | `List<Utf8>` | POPIMAR fitness — plant |
+| `fitness_property` | `List<Utf8>` | POPIMAR fitness — property |
+| `fitness_sector` | `List<Utf8>` | POPIMAR fitness — sector |
+| `extraction_method` | `Utf8` | How taxa was determined: `regex`, `reconciled`, `slm`, `llm`, `inferred` |
+| `holder_inferred_from` | `Utf8` | Source of inferred holder (if extraction_method = `inferred`) |
+| `ancestor_distance` | `Int32` | Structural distance from ancestor with direct actors |
+| `actors` | `Utf8` (JSON) | JSONB array of actor objects: `[{label, position, label_source, reason, relates_to}]` |
+| `significance_scope_duty_bearer` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — breadth of duty bearer |
+| `significance_scope_protected_class` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — breadth of protected class |
+| `significance_gravity` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — what's at stake (health/property/admin) |
+| `significance_strength` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — obligation strength (absolute/qualified/procedural) |
+| `significance_hierarchy` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — structural position in the law (metadata-derived) |
+| `significance_confidence` | `Float32` | SLM logprobs average (0-1) — confidence of the 4 SLM-rated dimensions |
+| `significance_overall` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — weighted aggregate of all 5 dimensions |
+
+> **Significance fields** are `null` for non-Obligation provisions and provisions not yet rated.
+
+#### Provision-level significance formula (Approach B)
+
+`overall = 0.35 × gravity + 0.20 × scope_duty_bearer + 0.20 × scope_protected_class + 0.15 × strength + 0.10 × hierarchy`
+
+Where HIGH=3, MEDIUM=2, LOW=1. Thresholds: ≥2.5 → HIGH, ≥1.75 → MEDIUM, else LOW.
+
+#### Provision counts
+
+~40,468 Obligation provisions rated across 553 laws. A typical law publishes 10–800 provision rows.
+
+---
+
+### Actor Dictionary
+
+Published once at the start of each publish session. Raw YAML file (`docs/actor-dictionary.yaml`, ~24KB).
+
+Sertantai uses this to resolve canonical actor labels to display names and categories.
+
+---
+
 ## Data Volumes
 
-| Table | Records | Typical Response Size |
-|-------|---------|----------------------|
-| LRT (all) | ~19,000 | ~25–40 MB JSON |
-| LRT (single) | 1 | ~2–5 KB JSON |
-| LAT (per law) | 50–1,500 | ~50 KB – 2 MB JSON |
-| Amendments (per law) | 0–500 | ~5 KB – 500 KB JSON |
-| Change notification | 1 | ~100–200 bytes JSON |
+| Channel | Records | Typical Payload Size | Encoding |
+|---------|---------|---------------------|----------|
+| LRT (all) | ~19,000 | ~25–40 MB | JSON |
+| LRT (single) | 1 | ~2–5 KB | JSON |
+| LAT (per law) | 50–1,500 | ~50 KB – 2 MB | JSON |
+| Amendments (per law) | 0–500 | ~5 KB – 500 KB | JSON |
+| Change notification | 1 | ~100–200 bytes | JSON |
+| Taxa enrichment (per law) | 1 | ~2–10 KB | Arrow IPC |
+| Taxa provisions (per law) | 10–800 | ~5 KB – 500 KB | Arrow IPC |
+| Actor dictionary | 1 | ~24 KB | YAML |
 
 For the full LRT dump (~19K records), consider querying once on startup and then using change notifications for incremental updates. Per-law queries for LAT and amendments are lightweight.

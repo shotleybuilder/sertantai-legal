@@ -67,7 +67,7 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
             %{
               name: "Days_Until_Due",
               type: :formula,
-              expression: %{baserow: "date_diff('day', field('SA_Due_Date'), today())"},
+              expression: %{baserow: "date_diff('day', field('Due_Date'), today())"},
               description: "Days until deadline (negative = overdue)"
             },
             %{
@@ -75,7 +75,7 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
               type: :formula,
               expression: %{
                 baserow:
-                  "if(and(field('SA_Status') != 'Completed', field('SA_Status') != 'Cancelled', field('SA_Days_Until_Due') < 0), 'OVERDUE', '')"
+                  "if(and(field('Status') != 'Completed', field('Status') != 'Cancelled', field('Days_Until_Due') < 0), 'OVERDUE', '')"
               },
               description: "OVERDUE if past due and not completed"
             }
@@ -133,13 +133,17 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
     ]
   end
 
-  defp people_fields(:collaborator) do
-    [%{name: "Assigned_To", type: :collaborator, description: "Person responsible"}]
+  defp people_fields(:workspace_member) do
+    [%{name: "Assigned_To", type: :workspace_member, description: "Person responsible"}]
   end
 
   defp people_fields(:hybrid) do
     [
-      %{name: "Assigned_To", type: :collaborator, description: "Task assignee (Baserow user)"},
+      %{
+        name: "Assigned_To",
+        type: :workspace_member,
+        description: "Task assignee (Baserow user)"
+      },
       %{
         name: "Responsible_Person",
         type: :link_row,

@@ -145,12 +145,12 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
     ]
   end
 
-  defp people_fields(:collaborator) do
-    [%{name: "Uploaded_By", type: :collaborator, description: "Who uploaded/referenced"}]
+  defp people_fields(:workspace_member) do
+    [%{name: "Uploaded_By", type: :workspace_member, description: "Who uploaded/referenced"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "Uploaded_By", type: :collaborator, description: "Who uploaded/referenced"}]
+    [%{name: "Uploaded_By", type: :workspace_member, description: "Who uploaded/referenced"}]
   end
 
   defp people_fields(:flat) do

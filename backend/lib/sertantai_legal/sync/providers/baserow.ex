@@ -13,6 +13,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Rows are batched at 200 with `?user_field_names=true`.
   """
 
+  @managed_description "🚫 Managed by SertantAI — do not rename or delete"
+
   @behaviour SertantaiLegal.Sync.ProviderBehaviour
 
   require Logger
@@ -210,6 +212,97 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     end
   end
 
+  @doc """
+  Clean up Baserow default columns after table creation.
+
+  Baserow auto-creates Name (primary, can't delete), Notes, and Active on
+  every new table. This function:
+  1. Deletes the Notes column (unwanted)
+  2. Renames/updates the primary Name field to match the template's primary field
+  3. Deletes Active if the template doesn't define one
+
+  `field_specs` is the list of template field specs for this table.
+  """
+  def cleanup_table_defaults(config, table_id, field_specs) do
+    case list_fields(config, table_id) do
+      {:ok, existing_fields} ->
+        template_names = MapSet.new(field_specs, & &1.name)
+        primary_spec = Enum.find(field_specs, & &1[:primary])
+
+        # Delete Notes (always unwanted)
+        delete_default_field(config, existing_fields, "Notes")
+
+        # Handle Active: delete if template doesn't define it, update description if it does
+        active_field = Enum.find(existing_fields, &(&1["name"] == "Active"))
+
+        if active_field do
+          if MapSet.member?(template_names, "Active") do
+            # Template wants Active — update the default's description
+            active_spec = Enum.find(field_specs, &(&1.name == "Active"))
+            desc = active_spec[:description] || "Active status"
+
+            update_field(config, active_field["id"], %{
+              "description" => "#{@managed_description}\n#{desc}"
+            })
+          else
+            delete_default_field(config, existing_fields, "Active")
+          end
+        end
+
+        # Handle primary field (Name) — rename to match template's primary if different
+        name_field = Enum.find(existing_fields, &(&1["name"] == "Name" && &1["primary"]))
+
+        if name_field && primary_spec && primary_spec.name != "Name" do
+          # Rename Baserow's Name to template's primary field name
+          update_field(config, name_field["id"], %{
+            "name" => primary_spec.name,
+            "description" => "#{@managed_description}\n#{primary_spec[:description] || ""}"
+          })
+        else
+          if name_field do
+            # Just add managed description to the default Name
+            update_field(config, name_field["id"], %{
+              "description" =>
+                "#{@managed_description}\n#{primary_spec[:description] || "Primary field"}"
+            })
+          end
+        end
+
+        :ok
+
+      {:error, reason} ->
+        Logger.warning("[Baserow] Failed to clean defaults for table #{table_id}: #{reason}")
+        :ok
+    end
+  end
+
+  @doc "Update an existing Baserow field by ID."
+  def update_field(config, field_id, updates) do
+    case api_patch(config, "/api/database/fields/#{field_id}/", updates) do
+      {:ok, %{status: 200}} -> :ok
+      {:ok, %{status: s, body: b}} -> {:error, "Update field #{field_id}: #{s} #{inspect(b)}"}
+      {:error, reason} -> {:error, "Update field #{field_id}: #{inspect(reason)}"}
+    end
+  end
+
+  defp delete_default_field(config, existing_fields, name) do
+    case Enum.find(existing_fields, &(&1["name"] == name)) do
+      nil ->
+        :ok
+
+      field ->
+        case api_delete(config, "/api/database/fields/#{field["id"]}/") do
+          {:ok, %{status: status}} when status in [200, 204] ->
+            Logger.debug("[Baserow] Deleted default field '#{name}'")
+            :ok
+
+          _ ->
+            Logger.warning("[Baserow] Failed to delete default field '#{name}'")
+            :ok
+        end
+    end
+  end
+
   @impl true
   @doc """
   Create a field on a Baserow table from a universal field spec.
@@ -297,7 +390,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     file: "file",
     url: "url",
     email: "email",
-    collaborator: "multiple_collaborators"
+    workspace_member: "multiple_collaborators"
   }
 
   defp translate_field_spec(spec, config) do
@@ -314,8 +407,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     |> maybe_add_formula(spec)
     |> maybe_add_raw_opts(spec)
   end
-
-  @managed_description "🚫 Managed by SertantAI — do not rename or delete"
 
   defp maybe_add_description(body, %{description: desc}) when is_binary(desc) do
     Map.put(body, "description", "#{@managed_description}\n#{desc}")

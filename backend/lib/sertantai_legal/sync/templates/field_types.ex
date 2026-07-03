@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Sync.Templates.FieldTypes do
           | :file
           | :url
           | :email
-          | :collaborator
+          | :workspace_member
 
   @type field_spec :: %{
           required(:name) => String.t(),
@@ -76,7 +76,7 @@ defmodule SertantaiLegal.Sync.Templates.FieldTypes do
       :file,
       :url,
       :email,
-      :collaborator
+      :workspace_member
     ]
   end
 
