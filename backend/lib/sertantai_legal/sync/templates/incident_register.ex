@@ -88,6 +88,14 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
     [%{name: "SA_Reported_By", type: :link_row, target: :personnel, description: "Who reported"}]
   end
 
+  defp people_fields(:collaborator) do
+    [%{name: "SA_Reported_By", type: :collaborator, description: "Who reported"}]
+  end
+
+  defp people_fields(:hybrid) do
+    [%{name: "SA_Reported_By", type: :collaborator, description: "Who reported"}]
+  end
+
   defp people_fields(:flat) do
     [%{name: "SA_Reported_By", type: :text, description: "Who reported"}]
   end

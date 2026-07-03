@@ -296,7 +296,8 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     formula: "formula",
     file: "file",
     url: "url",
-    email: "email"
+    email: "email",
+    collaborator: "multiple_collaborators"
   }
 
   defp translate_field_spec(spec, config) do

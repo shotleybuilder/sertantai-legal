@@ -68,6 +68,14 @@ defmodule SertantaiLegal.Sync.Templates.DocumentControl do
     [%{name: "SA_Owner", type: :link_row, target: :personnel, description: "Document owner"}]
   end
 
+  defp people_fields(:collaborator) do
+    [%{name: "SA_Owner", type: :collaborator, description: "Document owner"}]
+  end
+
+  defp people_fields(:hybrid) do
+    [%{name: "SA_Owner", type: :collaborator, description: "Document owner"}]
+  end
+
   defp people_fields(:flat) do
     [%{name: "SA_Owner", type: :text, description: "Document owner"}]
   end

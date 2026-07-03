@@ -82,6 +82,22 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
     ]
   end
 
+  defp people_fields(:collaborator) do
+    [%{name: "SA_Assigned_To", type: :collaborator, description: "Who needs this training"}]
+  end
+
+  defp people_fields(:hybrid) do
+    [
+      %{name: "SA_Assigned_To", type: :collaborator, description: "Task assignee (Baserow user)"},
+      %{
+        name: "SA_Trainee",
+        type: :link_row,
+        target: :personnel,
+        description: "Who needs this training"
+      }
+    ]
+  end
+
   defp people_fields(:flat) do
     [%{name: "SA_Assigned_To", type: :text, description: "Who needs this training"}]
   end

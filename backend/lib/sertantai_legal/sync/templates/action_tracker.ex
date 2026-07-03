@@ -133,6 +133,22 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
     ]
   end
 
+  defp people_fields(:collaborator) do
+    [%{name: "SA_Assigned_To", type: :collaborator, description: "Person responsible"}]
+  end
+
+  defp people_fields(:hybrid) do
+    [
+      %{name: "SA_Assigned_To", type: :collaborator, description: "Task assignee (Baserow user)"},
+      %{
+        name: "SA_Responsible_Person",
+        type: :link_row,
+        target: :personnel,
+        description: "Responsible in org"
+      }
+    ]
+  end
+
   defp people_fields(:flat) do
     [%{name: "SA_Assigned_To", type: :text, description: "Person responsible"}]
   end

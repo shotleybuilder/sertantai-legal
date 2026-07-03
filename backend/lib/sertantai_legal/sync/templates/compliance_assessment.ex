@@ -165,6 +165,32 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
     ]
   end
 
+  defp people_fields(:collaborator) do
+    [
+      %{name: "SA_Assessment_Owner", type: :collaborator, description: "Accountable person"},
+      %{name: "SA_Assessed_By", type: :collaborator, description: "Who performed assessment"},
+      %{name: "SA_Assessment_Date", type: :date, description: "When last assessed"}
+    ]
+  end
+
+  defp people_fields(:hybrid) do
+    [
+      %{
+        name: "SA_Assessment_Owner",
+        type: :collaborator,
+        description: "Accountable person (Baserow user)"
+      },
+      %{
+        name: "SA_Responsible_Person",
+        type: :link_row,
+        target: :personnel,
+        description: "Responsible in org"
+      },
+      %{name: "SA_Assessed_By", type: :collaborator, description: "Who performed assessment"},
+      %{name: "SA_Assessment_Date", type: :date, description: "When last assessed"}
+    ]
+  end
+
   defp people_fields(:flat) do
     [
       %{name: "SA_Assessment_Owner", type: :text, description: "Accountable person"},
