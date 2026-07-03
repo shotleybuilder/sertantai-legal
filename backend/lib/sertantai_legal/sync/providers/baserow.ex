@@ -798,13 +798,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       single_select_spec("Status", @status_options),
       single_select_spec("Geographic Extent", @geo_extent_options),
       %{name: "Legislation URL", type: "url"},
-      # Significance (law-level)
+      # Significance (law-level — rating + score only; counts are Baserow Rollups)
       single_select_spec("Significance", @significance_options),
       %{name: "Significance Score", type: "number", opts: %{"number_decimal_places" => 1}},
-      %{name: "HIGH Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
-      %{name: "MEDIUM Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
-      %{name: "LOW Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
-      %{name: "Total Obligations", type: "number", opts: %{"number_decimal_places" => 0}},
       %{name: "_source_id", type: "text"}
     ]
   end
@@ -1026,11 +1022,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Geographic Extent" => lrt.geo_extent,
       "Legislation URL" => lrt.source_url,
       "Significance" => lrt.significance_rating,
-      "Significance Score" => round_score(lrt.significance_score),
-      "HIGH Obligations" => lrt.significance_high_count,
-      "MEDIUM Obligations" => lrt.significance_medium_count,
-      "LOW Obligations" => lrt.significance_low_count,
-      "Total Obligations" => lrt.significance_total_obligations
+      "Significance Score" => round_score(lrt.significance_score)
     }
 
     essential
