@@ -4,32 +4,25 @@ Manual configuration steps for a customer's Baserow workspace. These are done in
 
 ---
 
-## 1. Obligation Count Rollups (Legal Register)
+## 1. Obligation Count (Legal Register)
 
-**Purpose**: Show how many HIGH/MEDIUM/LOW duties each law has, computed live from the linked Duties table.
+**Purpose**: Show how many duties each law has, computed live from the linked Duties table.
 
-**Prerequisite**: The Duties table has a `Parent Law` link_row field pointing to the Legal Register table, and a `Significance` single_select field with HIGH/MEDIUM/LOW values.
+**Prerequisite**: The Duties table has a `Parent Law` link_row field pointing to the Legal Register table.
 
 ### Steps
 
 1. Open the **Legal Register** table
 2. Click `+` to add a new field
-3. Create **4 Rollup fields**:
+3. Create a **Count field**:
 
 | Field Name | Type | Settings |
 |------------|------|----------|
-| HIGH Obligations | Rollup | Link: `Duties` → `Parent Law`, Rollup field: `Significance`, Function: `Count`, Filter: `Significance = HIGH` |
-| MEDIUM Obligations | Rollup | Link: `Duties` → `Parent Law`, Rollup field: `Significance`, Function: `Count`, Filter: `Significance = MEDIUM` |
-| LOW Obligations | Rollup | Link: `Duties` → `Parent Law`, Rollup field: `Significance`, Function: `Count`, Filter: `Significance = LOW` |
-| Total Obligations | Count | Link: `Duties` → `Parent Law` (count all linked rows) |
+| Total Obligations | Count | Link: `Duties` → `Parent Law` (counts all linked rows) |
 
-**Result**: These columns update automatically when duties are added, removed, or re-rated. No sync needed to refresh them.
+**Result**: Updates automatically when duties are added or removed. No sync needed.
 
-**Note**: If Baserow's Rollup doesn't support filtering by value, use a Count field for Total and create Formula fields instead:
-```
-// HIGH Obligations (formula alternative)
-rollup(field("Duties"), "count", filter("Significance", "HIGH"))
-```
+**Note on H/M/L breakdown**: Baserow's Rollup field does not support filtering by value (unlike Airtable). To see the HIGH/MEDIUM/LOW distribution for a law, expand the row and view linked Duties, or use a filtered Duties view grouped by Parent Law. The law-level `Significance` and `Significance Score` columns (synced from fractalaw) provide the aggregate rating without needing per-level counts.
 
 ---
 
