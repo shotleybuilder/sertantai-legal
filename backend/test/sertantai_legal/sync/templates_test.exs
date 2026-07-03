@@ -111,11 +111,11 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{personnel: fields} = Personnel.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Name" in names
-      assert "SA_Email" in names
-      assert "SA_Role" in names
-      assert "SA_Department" in names
-      assert "SA_Active" in names
+      assert "Name" in names
+      assert "Email" in names
+      assert "Role" in names
+      assert "Department" in names
+      assert "Active" in names
     end
 
     test "has views" do
@@ -136,12 +136,12 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Law" in names
-      assert "SA_Compliance_Status" in names
-      assert "SA_Risk_Level" in names
-      refute "SA_Likelihood" in names
-      refute "SA_Impact" in names
-      refute "SA_Risk_Score" in names
+      assert "Law" in names
+      assert "Compliance_Status" in names
+      assert "Risk_Level" in names
+      refute "Likelihood" in names
+      refute "Impact" in names
+      refute "Risk_Score" in names
     end
 
     test "field specs with matrix risk" do
@@ -149,17 +149,17 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Risk_Level" in names
-      assert "SA_Likelihood" in names
-      assert "SA_Impact" in names
-      assert "SA_Risk_Score" in names
+      assert "Risk_Level" in names
+      assert "Likelihood" in names
+      assert "Impact" in names
+      assert "Risk_Score" in names
     end
 
     test "linked people sub-pattern uses link_row" do
       sp = SubPatterns.new(people: :linked)
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
-      owner = Enum.find(fields, &(&1.name == "SA_Assessment_Owner"))
+      owner = Enum.find(fields, &(&1.name == "Assessment_Owner"))
       assert owner.type == :link_row
       assert owner.target == :personnel
     end
@@ -168,7 +168,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new(people: :flat)
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
-      owner = Enum.find(fields, &(&1.name == "SA_Assessment_Owner"))
+      owner = Enum.find(fields, &(&1.name == "Assessment_Owner"))
       assert owner.type == :text
     end
 
@@ -177,9 +177,9 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Review_Frequency" in names
-      assert "SA_Days_Until_Review" in names
-      assert "SA_Review_Status" in names
+      assert "Review_Frequency" in names
+      assert "Days_Until_Review" in names
+      assert "Review_Status" in names
     end
 
     test "manual review has only next review date" do
@@ -187,9 +187,9 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Next_Review_Date" in names
-      refute "SA_Review_Frequency" in names
-      refute "SA_Days_Until_Review" in names
+      assert "Next_Review_Date" in names
+      refute "Review_Frequency" in names
+      refute "Days_Until_Review" in names
     end
 
     test "has cross-table rollup on LRT" do
@@ -229,20 +229,20 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{actions: fields} = ActionTracker.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Title" in names
-      assert "SA_Assessment" in names
-      assert "SA_Status" in names
-      assert "SA_Priority" in names
-      assert "SA_Action_Type" in names
-      assert "SA_Due_Date" in names
-      assert "SA_Overdue" in names
+      assert "Title" in names
+      assert "Assessment" in names
+      assert "Status" in names
+      assert "Priority" in names
+      assert "Action_Type" in names
+      assert "Due_Date" in names
+      assert "Overdue" in names
     end
 
     test "linked people uses link_row for assigned to" do
       sp = SubPatterns.new(people: :linked)
       %{actions: fields} = ActionTracker.field_specs(sp)
 
-      assigned = Enum.find(fields, &(&1.name == "SA_Assigned_To"))
+      assigned = Enum.find(fields, &(&1.name == "Assigned_To"))
       assert assigned.type == :link_row
       assert assigned.target == :personnel
     end
@@ -251,7 +251,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new(people: :flat)
       %{actions: fields} = ActionTracker.field_specs(sp)
 
-      assigned = Enum.find(fields, &(&1.name == "SA_Assigned_To"))
+      assigned = Enum.find(fields, &(&1.name == "Assigned_To"))
       assert assigned.type == :text
     end
 
@@ -270,7 +270,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       assert Map.has_key?(cross, :assessments)
 
       rollup = hd(cross.assessments)
-      assert rollup.name == "SA_Open_Actions"
+      assert rollup.name == "Open_Actions"
       assert rollup.type == :rollup
     end
 
@@ -303,8 +303,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{evidence: fields} = EvidenceVault.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_File" in names
-      refute "SA_Document_URL" in names
+      assert "File" in names
+      refute "Document_URL" in names
     end
 
     test "reference storage_mode uses url fields" do
@@ -312,9 +312,9 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{evidence: fields} = EvidenceVault.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Document_URL" in names
-      assert "SA_Document_Location" in names
-      refute "SA_File" in names
+      assert "Document_URL" in names
+      assert "Document_Location" in names
+      refute "File" in names
     end
 
     test "links to both assessments and actions" do
@@ -335,9 +335,9 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{evidence: fields} = EvidenceVault.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "SA_Expiry_Date" in names
-      assert "SA_Status" in names
-      assert "SA_Version" in names
+      assert "Expiry_Date" in names
+      assert "Status" in names
+      assert "Version" in names
     end
 
     test "has gallery view" do
@@ -353,7 +353,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       cross = EvidenceVault.cross_table_fields(sp)
 
       rollup = hd(cross.assessments)
-      assert rollup.name == "SA_Evidence_Count"
+      assert rollup.name == "Evidence_Count"
     end
   end
 
@@ -369,8 +369,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new()
       %{incidents: fields} = IncidentRegister.field_specs(sp)
       names = Enum.map(fields, & &1.name)
-      assert "SA_Corrective_Action" in names
-      assert "SA_Preventative_Action" in names
+      assert "Corrective_Action" in names
+      assert "Preventative_Action" in names
     end
 
     test "has form view for reporting" do
@@ -386,20 +386,20 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       embedded = SubPatterns.new(storage_mode: :embedded)
       %{audits: fields_e} = AuditManagement.field_specs(embedded)
       names_e = Enum.map(fields_e, & &1.name)
-      assert "SA_Report" in names_e
+      assert "Report" in names_e
 
       reference = SubPatterns.new(storage_mode: :reference)
       %{audits: fields_r} = AuditManagement.field_specs(reference)
       names_r = Enum.map(fields_r, & &1.name)
-      assert "SA_Report_URL" in names_r
-      refute "SA_Report" in names_r
+      assert "Report_URL" in names_r
+      refute "Report" in names_r
     end
 
     test "has calendar view for next audit dates" do
       sp = SubPatterns.new()
       %{audits: views} = AuditManagement.view_specs(sp)
       calendar = Enum.find(views, &(&1.type == :calendar))
-      assert calendar.date_field == "SA_Next_Audit_Date"
+      assert calendar.date_field == "Next_Audit_Date"
     end
   end
 
@@ -411,7 +411,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "has days until due formula" do
       sp = SubPatterns.new()
       %{training: fields} = TrainingTracker.field_specs(sp)
-      formula = Enum.find(fields, &(&1.name == "SA_Days_Until_Due"))
+      formula = Enum.find(fields, &(&1.name == "Days_Until_Due"))
       assert formula.type == :formula
     end
 
@@ -419,12 +419,12 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       embedded = SubPatterns.new(storage_mode: :embedded)
       %{training: fields} = TrainingTracker.field_specs(embedded)
       names = Enum.map(fields, & &1.name)
-      assert "SA_Certificate" in names
+      assert "Certificate" in names
 
       reference = SubPatterns.new(storage_mode: :reference)
       %{training: fields_r} = TrainingTracker.field_specs(reference)
       names_r = Enum.map(fields_r, & &1.name)
-      assert "SA_Certificate_URL" in names_r
+      assert "Certificate_URL" in names_r
     end
   end
 
@@ -436,7 +436,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "links to LRT for related laws" do
       sp = SubPatterns.new()
       %{documents: fields} = DocumentControl.field_specs(sp)
-      related = Enum.find(fields, &(&1.name == "SA_Related_Laws"))
+      related = Enum.find(fields, &(&1.name == "Related_Laws"))
       assert related.type == :link_row
       assert related.target == :lrt
     end
@@ -445,7 +445,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new()
       %{documents: views} = DocumentControl.view_specs(sp)
       calendar = Enum.find(views, &(&1.type == :calendar))
-      assert calendar.date_field == "SA_Review_Date"
+      assert calendar.date_field == "Review_Date"
     end
   end
 
@@ -457,7 +457,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "provision grain links to LAT" do
       sp = SubPatterns.new(assessment_grain: :provision)
       %{raci: fields} = RACI.field_specs(sp)
-      provision = Enum.find(fields, &(&1.name == "SA_Provision"))
+      provision = Enum.find(fields, &(&1.name == "Provision"))
       assert provision.type == :link_row
       assert provision.target == :lat
     end
@@ -465,7 +465,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "law grain links to LRT" do
       sp = SubPatterns.new(assessment_grain: :law)
       %{raci: fields} = RACI.field_specs(sp)
-      law = Enum.find(fields, &(&1.name == "SA_Law"))
+      law = Enum.find(fields, &(&1.name == "Law"))
       assert law.type == :link_row
       assert law.target == :lrt
     end
@@ -474,10 +474,10 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new(people: :linked)
       %{raci: fields} = RACI.field_specs(sp)
       link_names = fields |> Enum.filter(&(&1.type == :link_row)) |> Enum.map(& &1.name)
-      assert "SA_Responsible" in link_names
-      assert "SA_Accountable" in link_names
-      assert "SA_Consulted" in link_names
-      assert "SA_Informed" in link_names
+      assert "Responsible" in link_names
+      assert "Accountable" in link_names
+      assert "Consulted" in link_names
+      assert "Informed" in link_names
     end
   end
 
@@ -490,7 +490,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "has PDCA phases" do
       sp = SubPatterns.new()
       %{improvements: fields} = PDCA.field_specs(sp)
-      phase = Enum.find(fields, &(&1.name == "SA_Phase"))
+      phase = Enum.find(fields, &(&1.name == "Phase"))
       assert "Plan" in phase.options
       assert "Do" in phase.options
       assert "Check" in phase.options
@@ -501,7 +501,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new()
       %{improvements: views} = PDCA.view_specs(sp)
       kanban = Enum.find(views, &(&1.type == :kanban))
-      assert kanban.stack_by == "SA_Phase"
+      assert kanban.stack_by == "Phase"
     end
   end
 
@@ -523,7 +523,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "division_site sites link to divisions" do
       sp = SubPatterns.new(org_structure: :division_site)
       %{sites: fields} = OrgStructure.field_specs(sp)
-      div_link = Enum.find(fields, &(&1.name == "SA_Division"))
+      div_link = Enum.find(fields, &(&1.name == "Division"))
       assert div_link.type == :link_row
       assert div_link.target == :divisions
     end

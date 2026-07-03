@@ -30,10 +30,10 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
       mode when mode in [:linked, :hybrid] ->
         %{
           personnel: [
-            %{name: "SA_Name", type: :text, description: "Full name"},
-            %{name: "SA_Email", type: :email, description: "Email address"},
+            %{name: "Name", type: :text, description: "Full name"},
+            %{name: "Email", type: :email, description: "Email address"},
             %{
-              name: "SA_Role",
+              name: "Role",
               type: :single_select,
               options: [
                 "Compliance Manager",
@@ -50,13 +50,13 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
               description: "Organisational role"
             },
             %{
-              name: "SA_Department",
+              name: "Department",
               type: :single_select,
               options: [],
               description: "Department — customer populates options"
             },
-            %{name: "SA_Employee_ID", type: :text, description: "Internal reference"},
-            %{name: "SA_Active", type: :boolean, description: "Currently employed/active"}
+            %{name: "Employee_ID", type: :text, description: "Internal reference"},
+            %{name: "Active", type: :boolean, description: "Currently employed/active"}
           ]
         }
 
@@ -76,10 +76,10 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
             %{
               name: "Active",
               type: :grid,
-              filters: [%{field: "SA_Active", op: :equal, value: true}]
+              filters: [%{field: "Active", op: :equal, value: true}]
             },
-            %{name: "By Role", type: :grid, group_by: "SA_Role"},
-            %{name: "By Department", type: :grid, group_by: "SA_Department"}
+            %{name: "By Role", type: :grid, group_by: "Role"},
+            %{name: "By Department", type: :grid, group_by: "Department"}
           ]
         }
 

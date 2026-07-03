@@ -28,25 +28,25 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
     %{
       incidents:
         [
-          %{name: "SA_Title", type: :text, description: "Incident description"},
-          %{name: "SA_Date", type: :date, description: "When it occurred"},
-          %{name: "SA_Severity", type: :single_select, options: @severities},
-          %{name: "SA_Description", type: :long_text, description: "Full details"},
-          %{name: "SA_Root_Cause", type: :long_text, description: "Investigation findings"},
+          %{name: "Title", type: :text, description: "Incident description"},
+          %{name: "Date", type: :date, description: "When it occurred"},
+          %{name: "Severity", type: :single_select, options: @severities},
+          %{name: "Description", type: :long_text, description: "Full details"},
+          %{name: "Root_Cause", type: :long_text, description: "Investigation findings"},
           %{
-            name: "SA_Assessment",
+            name: "Assessment",
             type: :link_row,
             target: :assessments,
             description: "Related compliance gap"
           },
           %{
-            name: "SA_Corrective_Action",
+            name: "Corrective_Action",
             type: :link_row,
             target: :actions,
             description: "Corrective action taken"
           },
           %{
-            name: "SA_Preventative_Action",
+            name: "Preventative_Action",
             type: :link_row,
             target: :actions,
             description: "Preventative action"
@@ -54,7 +54,7 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
         ] ++
           people_fields(sp.people) ++
           [
-            %{name: "SA_Status", type: :single_select, options: @statuses}
+            %{name: "Status", type: :single_select, options: @statuses}
           ]
     }
   end
@@ -67,10 +67,10 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
         %{
           name: "Open",
           type: :grid,
-          filters: [%{field: "SA_Status", op: :not_equal, value: "Closed"}]
+          filters: [%{field: "Status", op: :not_equal, value: "Closed"}]
         },
-        %{name: "By Severity", type: :grid, group_by: "SA_Severity"},
-        %{name: "Incident Board", type: :kanban, stack_by: "SA_Status"},
+        %{name: "By Severity", type: :grid, group_by: "Severity"},
+        %{name: "Incident Board", type: :kanban, stack_by: "Status"},
         %{
           name: "Report Form",
           type: :form
@@ -85,18 +85,18 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
   end
 
   defp people_fields(:linked) do
-    [%{name: "SA_Reported_By", type: :link_row, target: :personnel, description: "Who reported"}]
+    [%{name: "Reported_By", type: :link_row, target: :personnel, description: "Who reported"}]
   end
 
   defp people_fields(:collaborator) do
-    [%{name: "SA_Reported_By", type: :collaborator, description: "Who reported"}]
+    [%{name: "Reported_By", type: :collaborator, description: "Who reported"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "SA_Reported_By", type: :collaborator, description: "Who reported"}]
+    [%{name: "Reported_By", type: :collaborator, description: "Who reported"}]
   end
 
   defp people_fields(:flat) do
-    [%{name: "SA_Reported_By", type: :text, description: "Who reported"}]
+    [%{name: "Reported_By", type: :text, description: "Who reported"}]
   end
 end

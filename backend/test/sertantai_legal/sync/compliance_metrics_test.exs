@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
 
   describe "process_event/2 — assessment status changes" do
     test "tracks compliant status" do
-      event = build_event(%{"SA_Compliance_Status" => "Compliant"})
+      event = build_event(%{"Compliance_Status" => "Compliant"})
       assert :ok = ComplianceMetrics.process_event(event, @test_org_id)
 
       metrics = ComplianceMetrics.get_metrics(@test_org_id)
@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
     end
 
     test "tracks non-compliant status" do
-      event = build_event(%{"SA_Compliance_Status" => "Non-Compliant"})
+      event = build_event(%{"Compliance_Status" => "Non-Compliant"})
       assert :ok = ComplianceMetrics.process_event(event, @test_org_id)
 
       metrics = ComplianceMetrics.get_metrics(@test_org_id)
@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
     end
 
     test "tracks partially compliant status" do
-      event = build_event(%{"SA_Compliance_Status" => "Partially Compliant"})
+      event = build_event(%{"Compliance_Status" => "Partially Compliant"})
       assert :ok = ComplianceMetrics.process_event(event, @test_org_id)
 
       metrics = ComplianceMetrics.get_metrics(@test_org_id)
@@ -39,17 +39,17 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
 
     test "accumulates multiple events" do
       ComplianceMetrics.process_event(
-        build_event(%{"SA_Compliance_Status" => "Compliant"}),
+        build_event(%{"Compliance_Status" => "Compliant"}),
         @test_org_id
       )
 
       ComplianceMetrics.process_event(
-        build_event(%{"SA_Compliance_Status" => "Compliant"}),
+        build_event(%{"Compliance_Status" => "Compliant"}),
         @test_org_id
       )
 
       ComplianceMetrics.process_event(
-        build_event(%{"SA_Compliance_Status" => "Non-Compliant"}),
+        build_event(%{"Compliance_Status" => "Non-Compliant"}),
         @test_org_id
       )
 
@@ -59,7 +59,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
     end
 
     test "updates last_assessment_at timestamp" do
-      event = build_event(%{"SA_Compliance_Status" => "Compliant"})
+      event = build_event(%{"Compliance_Status" => "Compliant"})
       ComplianceMetrics.process_event(event, @test_org_id)
 
       metrics = ComplianceMetrics.get_metrics(@test_org_id)
@@ -69,7 +69,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
 
   describe "process_event/2 — action status changes" do
     test "tracks completed actions" do
-      event = build_event(%{"SA_Status" => "Completed"})
+      event = build_event(%{"Status" => "Completed"})
       assert :ok = ComplianceMetrics.process_event(event, @test_org_id)
 
       metrics = ComplianceMetrics.get_metrics(@test_org_id)
@@ -79,7 +79,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
     test "tracks open actions on create" do
       event = %WebhookEvent{
         event_type: :row_created,
-        changed_fields: %{"SA_Status" => "Open"},
+        changed_fields: %{"Status" => "Open"},
         timestamp: DateTime.utc_now(),
         provider: :baserow,
         table_id: 1,
@@ -95,7 +95,7 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
 
   describe "process_event/2 — irrelevant events" do
     test "ignores events without compliance fields" do
-      event = build_event(%{"SA_Notes" => "some text"})
+      event = build_event(%{"Notes" => "some text"})
       assert :ignored = ComplianceMetrics.process_event(event, @test_org_id)
     end
 
@@ -125,12 +125,12 @@ defmodule SertantaiLegal.Sync.ComplianceMetricsTest do
   describe "isolation between orgs" do
     test "metrics are per-org" do
       ComplianceMetrics.process_event(
-        build_event(%{"SA_Compliance_Status" => "Compliant"}),
+        build_event(%{"Compliance_Status" => "Compliant"}),
         "org-a"
       )
 
       ComplianceMetrics.process_event(
-        build_event(%{"SA_Compliance_Status" => "Non-Compliant"}),
+        build_event(%{"Compliance_Status" => "Non-Compliant"}),
         "org-b"
       )
 

@@ -38,7 +38,7 @@ defmodule SertantaiLegal.Sync.Templates.OrgStructure do
             site_fields() ++
               [
                 %{
-                  name: "SA_Division",
+                  name: "Division",
                   type: :link_row,
                   target: :divisions,
                   description: "Parent division"
@@ -62,7 +62,7 @@ defmodule SertantaiLegal.Sync.Templates.OrgStructure do
           divisions: [%{name: "All Divisions", type: :grid}],
           sites: [
             %{name: "All Sites", type: :grid},
-            %{name: "By Division", type: :grid, group_by: "SA_Division"}
+            %{name: "By Division", type: :grid, group_by: "Division"}
           ]
         }
 
@@ -73,23 +73,23 @@ defmodule SertantaiLegal.Sync.Templates.OrgStructure do
 
   defp site_fields do
     [
-      %{name: "SA_Site_Name", type: :text, description: "Site name"},
-      %{name: "SA_Address", type: :long_text, description: "Address"},
+      %{name: "Site_Name", type: :text, description: "Site name"},
+      %{name: "Address", type: :long_text, description: "Address"},
       %{
-        name: "SA_Region",
+        name: "Region",
         type: :single_select,
         options: [],
         description: "Geographic region — customer populates"
       },
-      %{name: "SA_Active", type: :boolean, description: "Currently operational"}
+      %{name: "Active", type: :boolean, description: "Currently operational"}
     ]
   end
 
   defp division_fields do
     [
-      %{name: "SA_Division_Name", type: :text, description: "Division/business unit name"},
-      %{name: "SA_Code", type: :text, description: "Internal code"},
-      %{name: "SA_Active", type: :boolean, description: "Currently active"}
+      %{name: "Division_Name", type: :text, description: "Division/business unit name"},
+      %{name: "Code", type: :text, description: "Internal code"},
+      %{name: "Active", type: :boolean, description: "Currently active"}
     ]
   end
 end

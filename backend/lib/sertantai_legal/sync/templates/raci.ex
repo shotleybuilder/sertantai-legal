@@ -37,12 +37,12 @@ defmodule SertantaiLegal.Sync.Templates.RACI do
         link_fields(sp.assessment_grain) ++
           [
             %{
-              name: "SA_Actor_Label",
+              name: "Actor_Label",
               type: :text,
               description: "Actor from law (e.g., Org: Employer)"
             },
             %{
-              name: "SA_Actor_Position",
+              name: "Actor_Position",
               type: :single_select,
               options: ["active", "counterparty", "beneficiary", "mentioned"],
               description: "Hohfeldian position from fractalaw"
@@ -57,47 +57,47 @@ defmodule SertantaiLegal.Sync.Templates.RACI do
     %{
       raci: [
         %{name: "All RACI", type: :grid},
-        %{name: "By Actor Position", type: :grid, group_by: "SA_Actor_Position"},
-        %{name: "RACI Board", type: :kanban, stack_by: "SA_Actor_Position"}
+        %{name: "By Actor Position", type: :grid, group_by: "Actor_Position"},
+        %{name: "RACI Board", type: :kanban, stack_by: "Actor_Position"}
       ]
     }
   end
 
   defp link_fields(:provision) do
     [
-      %{name: "SA_Provision", type: :link_row, target: :lat, description: "Which provision"},
-      %{name: "SA_Law", type: :lookup, target: :lat, target_field: "Parent Law"}
+      %{name: "Provision", type: :link_row, target: :lat, description: "Which provision"},
+      %{name: "Law", type: :lookup, target: :lat, target_field: "Parent Law"}
     ]
   end
 
   defp link_fields(:law) do
     [
-      %{name: "SA_Law", type: :link_row, target: :lrt, description: "Which law"}
+      %{name: "Law", type: :link_row, target: :lrt, description: "Which law"}
     ]
   end
 
   defp role_fields(:linked) do
     [
       %{
-        name: "SA_Responsible",
+        name: "Responsible",
         type: :link_row,
         target: :personnel,
         description: "Who does the work"
       },
       %{
-        name: "SA_Accountable",
+        name: "Accountable",
         type: :link_row,
         target: :personnel,
         description: "Who owns the outcome"
       },
       %{
-        name: "SA_Consulted",
+        name: "Consulted",
         type: :link_row,
         target: :personnel,
         description: "Who provides input"
       },
       %{
-        name: "SA_Informed",
+        name: "Informed",
         type: :link_row,
         target: :personnel,
         description: "Who is kept informed"
@@ -107,10 +107,10 @@ defmodule SertantaiLegal.Sync.Templates.RACI do
 
   defp role_fields(:flat) do
     [
-      %{name: "SA_Responsible", type: :text, description: "Who does the work"},
-      %{name: "SA_Accountable", type: :text, description: "Who owns the outcome"},
-      %{name: "SA_Consulted", type: :text, description: "Who provides input"},
-      %{name: "SA_Informed", type: :text, description: "Who is kept informed"}
+      %{name: "Responsible", type: :text, description: "Who does the work"},
+      %{name: "Accountable", type: :text, description: "Who owns the outcome"},
+      %{name: "Consulted", type: :text, description: "Who provides input"},
+      %{name: "Informed", type: :text, description: "Who is kept informed"}
     ]
   end
 end

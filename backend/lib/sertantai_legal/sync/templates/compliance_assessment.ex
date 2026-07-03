@@ -78,19 +78,19 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
           name: "Non-Compliant",
           type: :grid,
           filters: [
-            %{field: "SA_Compliance_Status", op: :contains, value: "Non-Compliant"}
+            %{field: "Compliance_Status", op: :contains, value: "Non-Compliant"}
           ]
         },
         %{
           name: "Overdue Reviews",
           type: :grid,
           filters: [
-            %{field: "SA_Review_Status", op: :equal, value: "OVERDUE"}
+            %{field: "Review_Status", op: :equal, value: "OVERDUE"}
           ]
         },
-        %{name: "By Family", type: :grid, group_by: "SA_Family"},
-        %{name: "Compliance Board", type: :kanban, stack_by: "SA_Compliance_Status"},
-        %{name: "Review Calendar", type: :calendar, date_field: "SA_Next_Review_Date"}
+        %{name: "By Family", type: :grid, group_by: "Family"},
+        %{name: "Compliance Board", type: :kanban, stack_by: "Compliance_Status"},
+        %{name: "Review Calendar", type: :calendar, date_field: "Next_Review_Date"}
       ]
     }
   end
@@ -100,10 +100,10 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
     %{
       lrt: [
         %{
-          name: "SA_Assessment_Count",
+          name: "Assessment_Count",
           type: :rollup,
           target: :assessments,
-          target_field: "SA_Compliance_Status",
+          target_field: "Compliance_Status",
           rollup_function: :count,
           description: "Number of assessments linked to this law"
         }
@@ -131,91 +131,91 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
   defp core_fields do
     [
       %{
-        name: "SA_Law",
+        name: "Law",
         type: :link_row,
         target: :lrt,
         description: "Which law is being assessed"
       },
       %{
-        name: "SA_Compliance_Status",
+        name: "Compliance_Status",
         type: :single_select,
         options: @compliance_statuses,
         description: "Current compliance status"
       },
-      %{name: "SA_Family", type: :lookup, target: :lrt, target_field: "Family"},
-      %{name: "SA_Law_Status", type: :lookup, target: :lrt, target_field: "Status"}
+      %{name: "Family", type: :lookup, target: :lrt, target_field: "Family"},
+      %{name: "Law_Status", type: :lookup, target: :lrt, target_field: "Status"}
     ]
   end
 
   defp people_fields(:linked) do
     [
       %{
-        name: "SA_Assessment_Owner",
+        name: "Assessment_Owner",
         type: :link_row,
         target: :personnel,
         description: "Accountable person"
       },
       %{
-        name: "SA_Assessed_By",
+        name: "Assessed_By",
         type: :link_row,
         target: :personnel,
         description: "Who performed assessment"
       },
-      %{name: "SA_Assessment_Date", type: :date, description: "When last assessed"}
+      %{name: "Assessment_Date", type: :date, description: "When last assessed"}
     ]
   end
 
   defp people_fields(:collaborator) do
     [
-      %{name: "SA_Assessment_Owner", type: :collaborator, description: "Accountable person"},
-      %{name: "SA_Assessed_By", type: :collaborator, description: "Who performed assessment"},
-      %{name: "SA_Assessment_Date", type: :date, description: "When last assessed"}
+      %{name: "Assessment_Owner", type: :collaborator, description: "Accountable person"},
+      %{name: "Assessed_By", type: :collaborator, description: "Who performed assessment"},
+      %{name: "Assessment_Date", type: :date, description: "When last assessed"}
     ]
   end
 
   defp people_fields(:hybrid) do
     [
       %{
-        name: "SA_Assessment_Owner",
+        name: "Assessment_Owner",
         type: :collaborator,
         description: "Accountable person (Baserow user)"
       },
       %{
-        name: "SA_Responsible_Person",
+        name: "Responsible_Person",
         type: :link_row,
         target: :personnel,
         description: "Responsible in org"
       },
-      %{name: "SA_Assessed_By", type: :collaborator, description: "Who performed assessment"},
-      %{name: "SA_Assessment_Date", type: :date, description: "When last assessed"}
+      %{name: "Assessed_By", type: :collaborator, description: "Who performed assessment"},
+      %{name: "Assessment_Date", type: :date, description: "When last assessed"}
     ]
   end
 
   defp people_fields(:flat) do
     [
-      %{name: "SA_Assessment_Owner", type: :text, description: "Accountable person"},
-      %{name: "SA_Assessed_By", type: :text, description: "Who performed assessment"},
-      %{name: "SA_Assessment_Date", type: :date, description: "When last assessed"}
+      %{name: "Assessment_Owner", type: :text, description: "Accountable person"},
+      %{name: "Assessed_By", type: :text, description: "Who performed assessment"},
+      %{name: "Assessment_Date", type: :date, description: "When last assessed"}
     ]
   end
 
   defp review_fields(:scheduled) do
     [
       %{
-        name: "SA_Review_Frequency",
+        name: "Review_Frequency",
         type: :single_select,
         options: @review_frequencies,
         description: "How often to reassess"
       },
-      %{name: "SA_Next_Review_Date", type: :date, description: "When to reassess"},
+      %{name: "Next_Review_Date", type: :date, description: "When to reassess"},
       %{
-        name: "SA_Days_Until_Review",
+        name: "Days_Until_Review",
         type: :formula,
         expression: %{baserow: "date_diff('day', field('SA_Next_Review_Date'), today())"},
         description: "Days until next review (negative = overdue)"
       },
       %{
-        name: "SA_Review_Status",
+        name: "Review_Status",
         type: :formula,
         expression: %{
           baserow:
@@ -228,17 +228,17 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
 
   defp review_fields(:manual) do
     [
-      %{name: "SA_Next_Review_Date", type: :date, description: "When to reassess"}
+      %{name: "Next_Review_Date", type: :date, description: "When to reassess"}
     ]
   end
 
   defp risk_fields(:matrix) do
     [
-      %{name: "SA_Risk_Level", type: :single_select, options: @risk_levels},
-      %{name: "SA_Likelihood", type: :single_select, options: @likelihood_options},
-      %{name: "SA_Impact", type: :single_select, options: @impact_options},
+      %{name: "Risk_Level", type: :single_select, options: @risk_levels},
+      %{name: "Likelihood", type: :single_select, options: @likelihood_options},
+      %{name: "Impact", type: :single_select, options: @impact_options},
       %{
-        name: "SA_Risk_Score",
+        name: "Risk_Score",
         type: :formula,
         expression: %{
           baserow: """
@@ -266,19 +266,19 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
 
   defp risk_fields(:simple) do
     [
-      %{name: "SA_Risk_Level", type: :single_select, options: @risk_levels}
+      %{name: "Risk_Level", type: :single_select, options: @risk_levels}
     ]
   end
 
   defp detail_fields do
     [
       %{
-        name: "SA_Gap_Description",
+        name: "Gap_Description",
         type: :long_text,
         description: "What's missing or non-compliant"
       },
-      %{name: "SA_Notes", type: :long_text, description: "General notes"},
-      %{name: "SA_Reference", type: :text, description: "Internal ID or cross-reference"}
+      %{name: "Notes", type: :long_text, description: "General notes"},
+      %{name: "Reference", type: :text, description: "Internal ID or cross-reference"}
     ]
   end
 
@@ -294,9 +294,9 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
       rows =
         Enum.map(lrt_mappings, fn mapping ->
           %{
-            "SA_Law" => [mapping.external_row_id],
-            "SA_Compliance_Status" => "Not Assessed",
-            "SA_Next_Review_Date" => Date.add(Date.utc_today(), 90) |> Date.to_iso8601()
+            "Law" => [mapping.external_row_id],
+            "Compliance_Status" => "Not Assessed",
+            "Next_Review_Date" => Date.add(Date.utc_today(), 90) |> Date.to_iso8601()
           }
         end)
 
@@ -319,8 +319,8 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
       rows =
         Enum.map(lat_mappings, fn mapping ->
           %{
-            "SA_Compliance_Status" => "Not Assessed",
-            "SA_Next_Review_Date" => Date.add(Date.utc_today(), 90) |> Date.to_iso8601()
+            "Compliance_Status" => "Not Assessed",
+            "Next_Review_Date" => Date.add(Date.utc_today(), 90) |> Date.to_iso8601()
           }
         end)
 

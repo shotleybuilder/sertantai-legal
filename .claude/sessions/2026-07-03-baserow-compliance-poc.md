@@ -1,6 +1,7 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
+**Status**: SUSPENDED — blocked on Mix task for Baserow table management
 **Context**: Baserow upgraded to 50K rows. Base data synced (274 LRT, 2400 Duties, 485 Actor Tuples). Need to decide what compliance solution to build on top.
 
 ## Todo — Research (done)

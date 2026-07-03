@@ -27,16 +27,16 @@ defmodule SertantaiLegal.Sync.Templates.AuditManagement do
     %{
       audits:
         [
-          %{name: "SA_Audit_Name", type: :text, description: "Title/scope"},
-          %{name: "SA_Type", type: :single_select, options: @audit_types}
+          %{name: "Audit_Name", type: :text, description: "Title/scope"},
+          %{name: "Type", type: :single_select, options: @audit_types}
         ] ++
           people_fields(sp.people) ++
           [
-            %{name: "SA_Audit_Date", type: :date, description: "When conducted"},
-            %{name: "SA_Scope", type: :long_text, description: "What was audited"},
-            %{name: "SA_Findings", type: :long_text, description: "Summary of findings"},
+            %{name: "Audit_Date", type: :date, description: "When conducted"},
+            %{name: "Scope", type: :long_text, description: "What was audited"},
+            %{name: "Findings", type: :long_text, description: "Summary of findings"},
             %{
-              name: "SA_Related_Actions",
+              name: "Related_Actions",
               type: :link_row,
               target: :actions,
               description: "Actions raised from audit"
@@ -44,8 +44,8 @@ defmodule SertantaiLegal.Sync.Templates.AuditManagement do
           ] ++
           report_fields(sp.storage_mode) ++
           [
-            %{name: "SA_Conclusion", type: :single_select, options: @conclusions},
-            %{name: "SA_Next_Audit_Date", type: :date, description: "Scheduled follow-up"}
+            %{name: "Conclusion", type: :single_select, options: @conclusions},
+            %{name: "Next_Audit_Date", type: :date, description: "Scheduled follow-up"}
           ]
     }
   end
@@ -55,34 +55,34 @@ defmodule SertantaiLegal.Sync.Templates.AuditManagement do
     %{
       audits: [
         %{name: "All Audits", type: :grid},
-        %{name: "By Type", type: :grid, group_by: "SA_Type"},
-        %{name: "Audit Calendar", type: :calendar, date_field: "SA_Next_Audit_Date"},
-        %{name: "By Conclusion", type: :grid, group_by: "SA_Conclusion"}
+        %{name: "By Type", type: :grid, group_by: "Type"},
+        %{name: "Audit Calendar", type: :calendar, date_field: "Next_Audit_Date"},
+        %{name: "By Conclusion", type: :grid, group_by: "Conclusion"}
       ]
     }
   end
 
   defp people_fields(:linked) do
-    [%{name: "SA_Auditor", type: :link_row, target: :personnel, description: "Who conducted"}]
+    [%{name: "Auditor", type: :link_row, target: :personnel, description: "Who conducted"}]
   end
 
   defp people_fields(:collaborator) do
-    [%{name: "SA_Auditor", type: :collaborator, description: "Who conducted"}]
+    [%{name: "Auditor", type: :collaborator, description: "Who conducted"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "SA_Auditor", type: :collaborator, description: "Who conducted"}]
+    [%{name: "Auditor", type: :collaborator, description: "Who conducted"}]
   end
 
   defp people_fields(:flat) do
-    [%{name: "SA_Auditor", type: :text, description: "Who conducted"}]
+    [%{name: "Auditor", type: :text, description: "Who conducted"}]
   end
 
   defp report_fields(:embedded) do
-    [%{name: "SA_Report", type: :file, description: "Audit report document"}]
+    [%{name: "Report", type: :file, description: "Audit report document"}]
   end
 
   defp report_fields(:reference) do
-    [%{name: "SA_Report_URL", type: :url, description: "Link to audit report in DMS"}]
+    [%{name: "Report_URL", type: :url, description: "Link to audit report in DMS"}]
   end
 end

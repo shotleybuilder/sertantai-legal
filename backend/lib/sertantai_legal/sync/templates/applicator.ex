@@ -100,7 +100,7 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
     tables = mod.tables()
 
     Enum.reduce_while(tables, {:ok, context}, fn table_key, {:ok, ctx} ->
-      table_name = "SA_#{table_key |> to_string() |> Macro.camelize()}"
+      table_name = table_key |> to_string() |> Macro.camelize()
 
       if Map.has_key?(ctx.table_ids, table_key) do
         Logger.debug("[TemplateApplicator] Table #{table_name} already exists, skipping")

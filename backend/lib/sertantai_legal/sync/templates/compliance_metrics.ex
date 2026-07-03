@@ -74,15 +74,15 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceMetrics do
   # ── Internal ──────────────────────────────────────────────────
 
   defp compliance_status_changed?(%{changed_fields: fields}) do
-    Map.has_key?(fields, "SA_Compliance_Status")
+    Map.has_key?(fields, "Compliance_Status")
   end
 
   defp action_status_changed?(%{changed_fields: fields}) do
-    Map.has_key?(fields, "SA_Status")
+    Map.has_key?(fields, "Status")
   end
 
   defp update_assessment_metric(org_id, event) do
-    new_status = event.changed_fields["SA_Compliance_Status"]
+    new_status = event.changed_fields["Compliance_Status"]
     metrics = get_metrics(org_id)
 
     updated =
@@ -116,7 +116,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceMetrics do
   end
 
   defp update_action_metric(org_id, event) do
-    new_status = event.changed_fields["SA_Status"]
+    new_status = event.changed_fields["Status"]
     metrics = get_metrics(org_id)
 
     updated =

@@ -29,25 +29,25 @@ defmodule SertantaiLegal.Sync.Templates.DocumentControl do
     %{
       documents:
         [
-          %{name: "SA_Document_Title", type: :text, description: "Name"},
-          %{name: "SA_Type", type: :single_select, options: @doc_types},
-          %{name: "SA_Version", type: :text, description: "Current version"}
+          %{name: "Document_Title", type: :text, description: "Name"},
+          %{name: "Type", type: :single_select, options: @doc_types},
+          %{name: "Version", type: :text, description: "Current version"}
         ] ++
           people_fields(sp.people) ++
           [
-            %{name: "SA_Approval_Date", type: :date, description: "When approved"},
-            %{name: "SA_Review_Date", type: :date, description: "When next review due"},
-            %{name: "SA_Status", type: :single_select, options: @statuses}
+            %{name: "Approval_Date", type: :date, description: "When approved"},
+            %{name: "Review_Date", type: :date, description: "When next review due"},
+            %{name: "Status", type: :single_select, options: @statuses}
           ] ++
           file_fields(sp.storage_mode) ++
           [
             %{
-              name: "SA_Related_Laws",
+              name: "Related_Laws",
               type: :link_row,
               target: :lrt,
               description: "Laws this document addresses"
             },
-            %{name: "SA_Notes", type: :long_text, description: "Context"}
+            %{name: "Notes", type: :long_text, description: "Context"}
           ]
     }
   end
@@ -57,34 +57,34 @@ defmodule SertantaiLegal.Sync.Templates.DocumentControl do
     %{
       documents: [
         %{name: "All Documents", type: :grid},
-        %{name: "By Type", type: :grid, group_by: "SA_Type"},
-        %{name: "By Status", type: :kanban, stack_by: "SA_Status"},
-        %{name: "Review Calendar", type: :calendar, date_field: "SA_Review_Date"}
+        %{name: "By Type", type: :grid, group_by: "Type"},
+        %{name: "By Status", type: :kanban, stack_by: "Status"},
+        %{name: "Review Calendar", type: :calendar, date_field: "Review_Date"}
       ]
     }
   end
 
   defp people_fields(:linked) do
-    [%{name: "SA_Owner", type: :link_row, target: :personnel, description: "Document owner"}]
+    [%{name: "Owner", type: :link_row, target: :personnel, description: "Document owner"}]
   end
 
   defp people_fields(:collaborator) do
-    [%{name: "SA_Owner", type: :collaborator, description: "Document owner"}]
+    [%{name: "Owner", type: :collaborator, description: "Document owner"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "SA_Owner", type: :collaborator, description: "Document owner"}]
+    [%{name: "Owner", type: :collaborator, description: "Document owner"}]
   end
 
   defp people_fields(:flat) do
-    [%{name: "SA_Owner", type: :text, description: "Document owner"}]
+    [%{name: "Owner", type: :text, description: "Document owner"}]
   end
 
   defp file_fields(:embedded) do
-    [%{name: "SA_File", type: :file, description: "The document"}]
+    [%{name: "File", type: :file, description: "The document"}]
   end
 
   defp file_fields(:reference) do
-    [%{name: "SA_Document_URL", type: :url, description: "Link to document in DMS"}]
+    [%{name: "Document_URL", type: :url, description: "Link to document in DMS"}]
   end
 end

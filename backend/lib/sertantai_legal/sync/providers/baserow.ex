@@ -306,6 +306,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     body = %{"name" => spec.name, "type" => baserow_type}
 
     body
+    |> maybe_add_description(spec)
     |> maybe_add_select_options(spec)
     |> maybe_add_link_row(spec, config)
     |> maybe_add_lookup(spec)
@@ -314,13 +315,25 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     |> maybe_add_raw_opts(spec)
   end
 
+  @managed_description "🚫 Managed by SertantAI — do not rename or delete"
+
+  defp maybe_add_description(body, %{description: desc}) when is_binary(desc) do
+    Map.put(body, "description", "#{@managed_description}\n#{desc}")
+  end
+
+  defp maybe_add_description(body, _), do: Map.put(body, "description", @managed_description)
+
   # Pass through raw opts for fields using direct Baserow API params (e.g., link_row_table_id)
   defp maybe_add_raw_opts(body, %{opts: opts}) when is_map(opts), do: Map.merge(body, opts)
   defp maybe_add_raw_opts(body, _), do: body
 
   defp maybe_add_select_options(body, %{type: type, options: options})
        when type in [:single_select, :multi_select] and is_list(options) do
-    Map.put(body, "select_options", Enum.map(options, fn opt -> %{"value" => opt} end))
+    Map.put(
+      body,
+      "select_options",
+      Enum.map(options, fn opt -> %{"value" => opt, "color" => "light-gray"} end)
+    )
   end
 
   defp maybe_add_select_options(body, _), do: body

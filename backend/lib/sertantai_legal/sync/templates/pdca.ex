@@ -28,29 +28,29 @@ defmodule SertantaiLegal.Sync.Templates.PDCA do
     %{
       improvements:
         [
-          %{name: "SA_Title", type: :text, description: "Initiative title"},
-          %{name: "SA_Goal", type: :long_text, description: "What we're trying to achieve"},
-          %{name: "SA_Phase", type: :single_select, options: @phases}
+          %{name: "Title", type: :text, description: "Initiative title"},
+          %{name: "Goal", type: :long_text, description: "What we're trying to achieve"},
+          %{name: "Phase", type: :single_select, options: @phases}
         ] ++
           people_fields(sp.people) ++
           [
-            %{name: "SA_Start_Date", type: :date},
-            %{name: "SA_Due_Date", type: :date},
+            %{name: "Start_Date", type: :date},
+            %{name: "Due_Date", type: :date},
             %{
-              name: "SA_Related_Assessments",
+              name: "Related_Assessments",
               type: :link_row,
               target: :assessments,
               description: "Which compliance gaps this addresses"
             },
             %{
-              name: "SA_Related_Actions",
+              name: "Related_Actions",
               type: :link_row,
               target: :actions,
               description: "Actions within this initiative"
             },
-            %{name: "SA_Outcome", type: :long_text, description: "Results and lessons learned"},
+            %{name: "Outcome", type: :long_text, description: "Results and lessons learned"},
             %{
-              name: "SA_Effectiveness_Review_Date",
+              name: "Effectiveness_Review_Date",
               type: :date,
               description: "When to verify effectiveness"
             }
@@ -63,25 +63,25 @@ defmodule SertantaiLegal.Sync.Templates.PDCA do
     %{
       improvements: [
         %{name: "All Initiatives", type: :grid},
-        %{name: "PDCA Board", type: :kanban, stack_by: "SA_Phase"},
-        %{name: "Timeline", type: :calendar, date_field: "SA_Due_Date"}
+        %{name: "PDCA Board", type: :kanban, stack_by: "Phase"},
+        %{name: "Timeline", type: :calendar, date_field: "Due_Date"}
       ]
     }
   end
 
   defp people_fields(:linked) do
-    [%{name: "SA_Owner", type: :link_row, target: :personnel, description: "Initiative owner"}]
+    [%{name: "Owner", type: :link_row, target: :personnel, description: "Initiative owner"}]
   end
 
   defp people_fields(:collaborator) do
-    [%{name: "SA_Owner", type: :collaborator, description: "Initiative owner"}]
+    [%{name: "Owner", type: :collaborator, description: "Initiative owner"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "SA_Owner", type: :collaborator, description: "Initiative owner"}]
+    [%{name: "Owner", type: :collaborator, description: "Initiative owner"}]
   end
 
   defp people_fields(:flat) do
-    [%{name: "SA_Owner", type: :text, description: "Initiative owner"}]
+    [%{name: "Owner", type: :text, description: "Initiative owner"}]
   end
 end

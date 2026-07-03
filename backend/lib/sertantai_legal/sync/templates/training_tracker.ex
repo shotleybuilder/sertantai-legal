@@ -28,25 +28,25 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
     %{
       training:
         [
-          %{name: "SA_Course_Name", type: :text, description: "Training title"},
+          %{name: "Course_Name", type: :text, description: "Training title"},
           %{
-            name: "SA_Required_By",
+            name: "Required_By",
             type: :link_row,
             target: :lrt,
             description: "Which law requires this"
           },
-          %{name: "SA_Frequency", type: :single_select, options: @frequencies}
+          %{name: "Frequency", type: :single_select, options: @frequencies}
         ] ++
           people_fields(sp.people) ++
           [
-            %{name: "SA_Completed_Date", type: :date, description: "When last completed"},
-            %{name: "SA_Next_Due", type: :date, description: "When renewal due"}
+            %{name: "Completed_Date", type: :date, description: "When last completed"},
+            %{name: "Next_Due", type: :date, description: "When renewal due"}
           ] ++
           certificate_fields(sp.storage_mode) ++
           [
-            %{name: "SA_Status", type: :single_select, options: @statuses},
+            %{name: "Status", type: :single_select, options: @statuses},
             %{
-              name: "SA_Days_Until_Due",
+              name: "Days_Until_Due",
               type: :formula,
               expression: %{baserow: "date_diff('day', field('SA_Next_Due'), today())"},
               description: "Days until due (negative = overdue)"
@@ -63,10 +63,10 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
         %{
           name: "Overdue",
           type: :grid,
-          filters: [%{field: "SA_Status", op: :equal, value: "Overdue"}]
+          filters: [%{field: "Status", op: :equal, value: "Overdue"}]
         },
-        %{name: "Training Calendar", type: :calendar, date_field: "SA_Next_Due"},
-        %{name: "By Status", type: :kanban, stack_by: "SA_Status"}
+        %{name: "Training Calendar", type: :calendar, date_field: "Next_Due"},
+        %{name: "By Status", type: :kanban, stack_by: "Status"}
       ]
     }
   end
@@ -74,7 +74,7 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
   defp people_fields(:linked) do
     [
       %{
-        name: "SA_Assigned_To",
+        name: "Assigned_To",
         type: :link_row,
         target: :personnel,
         description: "Who needs this training"
@@ -83,14 +83,14 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
   end
 
   defp people_fields(:collaborator) do
-    [%{name: "SA_Assigned_To", type: :collaborator, description: "Who needs this training"}]
+    [%{name: "Assigned_To", type: :collaborator, description: "Who needs this training"}]
   end
 
   defp people_fields(:hybrid) do
     [
-      %{name: "SA_Assigned_To", type: :collaborator, description: "Task assignee (Baserow user)"},
+      %{name: "Assigned_To", type: :collaborator, description: "Task assignee (Baserow user)"},
       %{
-        name: "SA_Trainee",
+        name: "Trainee",
         type: :link_row,
         target: :personnel,
         description: "Who needs this training"
@@ -99,14 +99,14 @@ defmodule SertantaiLegal.Sync.Templates.TrainingTracker do
   end
 
   defp people_fields(:flat) do
-    [%{name: "SA_Assigned_To", type: :text, description: "Who needs this training"}]
+    [%{name: "Assigned_To", type: :text, description: "Who needs this training"}]
   end
 
   defp certificate_fields(:embedded) do
-    [%{name: "SA_Certificate", type: :file, description: "Completion certificate"}]
+    [%{name: "Certificate", type: :file, description: "Completion certificate"}]
   end
 
   defp certificate_fields(:reference) do
-    [%{name: "SA_Certificate_URL", type: :url, description: "Link to certificate in DMS"}]
+    [%{name: "Certificate_URL", type: :url, description: "Link to certificate in DMS"}]
   end
 end

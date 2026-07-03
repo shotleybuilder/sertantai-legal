@@ -42,20 +42,20 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
     %{
       evidence:
         [
-          %{name: "SA_Title", type: :text, description: "Evidence description"},
+          %{name: "Title", type: :text, description: "Evidence description"},
           %{
-            name: "SA_Type",
+            name: "Type",
             type: :single_select,
             options: @evidence_types
           },
           %{
-            name: "SA_Assessment",
+            name: "Assessment",
             type: :link_row,
             target: :assessments,
             description: "Which assessment this supports"
           },
           %{
-            name: "SA_Action",
+            name: "Action",
             type: :link_row,
             target: :actions,
             description: "Which action this completes"
@@ -64,18 +64,18 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
           artifact_fields(sp.storage_mode) ++
           people_fields(sp.people) ++
           [
-            %{name: "SA_Version", type: :text, description: "Document version"},
+            %{name: "Version", type: :text, description: "Document version"},
             %{
-              name: "SA_Expiry_Date",
+              name: "Expiry_Date",
               type: :date,
               description: "When this evidence expires (e.g., certificate renewal)"
             },
             %{
-              name: "SA_Status",
+              name: "Status",
               type: :single_select,
               options: @evidence_statuses
             },
-            %{name: "SA_Notes", type: :long_text, description: "Context"}
+            %{name: "Notes", type: :long_text, description: "Context"}
           ]
     }
   end
@@ -88,10 +88,10 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
         %{
           name: "Expiring Soon",
           type: :grid,
-          filters: [%{field: "SA_Status", op: :equal, value: "Current"}],
-          sorts: [%{field: "SA_Expiry_Date", direction: :asc}]
+          filters: [%{field: "Status", op: :equal, value: "Current"}],
+          sorts: [%{field: "Expiry_Date", direction: :asc}]
         },
-        %{name: "By Type", type: :grid, group_by: "SA_Type"},
+        %{name: "By Type", type: :grid, group_by: "Type"},
         %{name: "Gallery", type: :gallery}
       ]
     }
@@ -102,10 +102,10 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
     %{
       assessments: [
         %{
-          name: "SA_Evidence_Count",
+          name: "Evidence_Count",
           type: :rollup,
           target: :evidence,
-          target_field: "SA_Title",
+          target_field: "Title",
           rollup_function: :count,
           description: "Number of evidence items linked"
         }
@@ -117,27 +117,27 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
 
   defp artifact_fields(:embedded) do
     [
-      %{name: "SA_File", type: :file, description: "Uploaded document"},
-      %{name: "SA_Upload_Date", type: :date, description: "When uploaded"}
+      %{name: "File", type: :file, description: "Uploaded document"},
+      %{name: "Upload_Date", type: :date, description: "When uploaded"}
     ]
   end
 
   defp artifact_fields(:reference) do
     [
-      %{name: "SA_Document_URL", type: :url, description: "Link to document in DMS"},
+      %{name: "Document_URL", type: :url, description: "Link to document in DMS"},
       %{
-        name: "SA_Document_Location",
+        name: "Document_Location",
         type: :text,
         description: "Where the document is stored (e.g., SharePoint path)"
       },
-      %{name: "SA_Upload_Date", type: :date, description: "When referenced"}
+      %{name: "Upload_Date", type: :date, description: "When referenced"}
     ]
   end
 
   defp people_fields(:linked) do
     [
       %{
-        name: "SA_Uploaded_By",
+        name: "Uploaded_By",
         type: :link_row,
         target: :personnel,
         description: "Who uploaded/referenced"
@@ -146,14 +146,14 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
   end
 
   defp people_fields(:collaborator) do
-    [%{name: "SA_Uploaded_By", type: :collaborator, description: "Who uploaded/referenced"}]
+    [%{name: "Uploaded_By", type: :collaborator, description: "Who uploaded/referenced"}]
   end
 
   defp people_fields(:hybrid) do
-    [%{name: "SA_Uploaded_By", type: :collaborator, description: "Who uploaded/referenced"}]
+    [%{name: "Uploaded_By", type: :collaborator, description: "Who uploaded/referenced"}]
   end
 
   defp people_fields(:flat) do
-    [%{name: "SA_Uploaded_By", type: :text, description: "Who uploaded/referenced"}]
+    [%{name: "Uploaded_By", type: :text, description: "Who uploaded/referenced"}]
   end
 end
