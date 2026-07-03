@@ -79,6 +79,7 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
 
     with {:ok, context} <- create_tables(mod, context),
          {:ok, context} <- create_fields(mod, context),
+         :ok <- finalize_primary_formulas(mod, context),
          {:ok, context} <- create_cross_table_fields(mod, context),
          {:ok, context} <- create_views(mod, context),
          {:ok, context} <- create_webhooks(mod, context),
@@ -138,6 +139,21 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
     do_create_fields(field_map, context)
   end
 
+  defp finalize_primary_formulas(mod, context) do
+    if function_exported?(context.provider, :finalize_primary_formula, 3) do
+      field_map = mod.field_specs(context.sub_patterns)
+
+      Enum.each(field_map, fn {table_key, fields} ->
+        table_id = Map.get(context.table_ids, table_key)
+
+        if table_id,
+          do: context.provider.finalize_primary_formula(context.config, table_id, fields)
+      end)
+    end
+
+    :ok
+  end
+
   defp create_cross_table_fields(mod, context) do
     if function_exported?(mod, :cross_table_fields, 1) do
       field_map = mod.cross_table_fields(context.sub_patterns)
@@ -171,22 +187,31 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
   end
 
   defp create_fields_for_table(ctx, table_id, fields) do
+    # Inject table_ids into config so the adapter can resolve link_row targets
+    config_with_tables = Map.put(ctx.config, "table_ids", ctx.table_ids)
+
     # Get existing fields to skip duplicates (idempotent)
     existing =
-      case ctx.provider.list_fields(ctx.config, table_id) do
+      case ctx.provider.list_fields(config_with_tables, table_id) do
         {:ok, fields} -> MapSet.new(fields, & &1["name"])
         _ -> MapSet.new()
       end
 
     results =
       Enum.reduce_while(fields, {:ok, 0}, fn field, {:ok, count} ->
-        if MapSet.member?(existing, field.name) do
-          {:cont, {:ok, count}}
-        else
-          case ctx.provider.create_field(ctx.config, table_id, field) do
-            {:ok, _field_id} -> {:cont, {:ok, count + 1}}
-            {:error, reason} -> {:halt, {:error, {:create_field_failed, field.name, reason}}}
-          end
+        cond do
+          # Skip primary fields — handled by cleanup_table_defaults + finalize
+          field[:primary] ->
+            {:cont, {:ok, count}}
+
+          MapSet.member?(existing, field.name) ->
+            {:cont, {:ok, count}}
+
+          true ->
+            case ctx.provider.create_field(config_with_tables, table_id, field) do
+              {:ok, _field_id} -> {:cont, {:ok, count + 1}}
+              {:error, reason} -> {:halt, {:error, {:create_field_failed, field.name, reason}}}
+            end
         end
       end)
 

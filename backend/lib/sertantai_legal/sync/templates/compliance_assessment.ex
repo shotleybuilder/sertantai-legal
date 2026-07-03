@@ -97,18 +97,10 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
 
   @impl true
   def cross_table_fields(_sp) do
-    %{
-      lrt: [
-        %{
-          name: "Assessment_Count",
-          type: :rollup,
-          target: :assessments,
-          target_field: "Compliance_Status",
-          rollup_function: :count,
-          description: "Number of assessments linked to this law"
-        }
-      ]
-    }
+    # Rollup on LRT requires knowing the reverse link_row field name that
+    # Baserow auto-creates. Deferred to Phase 2 reconciliation.
+    # For PoC: use Baserow's native Count field (see BASEROW-CONFIG-RECIPES.md)
+    %{}
   end
 
   @impl true
@@ -131,6 +123,15 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
   defp core_fields do
     [
       %{
+        name: "Assessment_ID",
+        type: :formula,
+        primary: true,
+        expression: %{
+          baserow: "concat(field('Law'), '_', field('Compliance_Status'))"
+        },
+        description: "Auto-generated: Law_ComplianceStatus"
+      },
+      %{
         name: "Law",
         type: :link_row,
         target: :lrt,
@@ -142,8 +143,8 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
         options: @compliance_statuses,
         description: "Current compliance status"
       },
-      %{name: "Family", type: :lookup, target: :lrt, target_field: "Family"},
-      %{name: "Law_Status", type: :lookup, target: :lrt, target_field: "Status"}
+      %{name: "Family", type: :lookup, target: "Law", target_field: "Family"},
+      %{name: "Law_Status", type: :lookup, target: "Law", target_field: "Status"}
     ]
   end
 

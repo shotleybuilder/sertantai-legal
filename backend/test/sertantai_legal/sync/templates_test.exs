@@ -192,11 +192,10 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       refute "Days_Until_Review" in names
     end
 
-    test "has cross-table rollup on LRT" do
+    test "cross-table fields returns empty map (rollup deferred to Phase 2)" do
       sp = SubPatterns.new()
       cross = ComplianceAssessment.cross_table_fields(sp)
-      assert Map.has_key?(cross, :lrt)
-      assert length(cross.lrt) >= 1
+      assert cross == %{}
     end
 
     test "has webhook spec for assessments updates" do

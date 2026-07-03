@@ -1,7 +1,7 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
-**Status**: SUSPENDED — blocked on Mix task for Baserow table management
+**Status**: ACTIVE
 **Context**: Baserow upgraded to 50K rows. Base data synced (274 LRT, 2400 Duties, 485 Actor Tuples). Need to decide what compliance solution to build on top.
 
 ## Todo — Research (done)
@@ -18,8 +18,8 @@
 - [x] Update 8 templates with `:collaborator` and `:hybrid` people_fields clauses (Assessment, Action Tracker, Evidence, Incident, Audit, Training, Document Control, PDCA)
 - [x] RACI has no people_fields — uses actor mapping, no change needed
 - [x] Compile + 1461 tests pass
-- [ ] Test: apply Personnel with each mode to QQ Baserow
-- [ ] Apply Personnel template to QQ Baserow workspace
+- [x] Apply Personnel template to QQ Baserow workspace (linked mode, via mix templates.apply)
+- [x] Personnel table verified: Employee_ID primary, 7 fields, all with 🚫 descriptions
 
 ## Todo — Next (after Personnel)
 - [ ] Apply Compliance Assessment template

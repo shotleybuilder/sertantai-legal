@@ -72,6 +72,8 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-03 | [baserow-mix-task](2026-07-03-baserow-mix-task.md) | — | mix templates.apply/status, default column cleanup, :workspace_member rename, SA_ strip, Personnel table |
+| 2026-07-03 | [baserow-compliance-poc](2026-07-03-baserow-compliance-poc.md) | — | SUSPENDED — PoC solution design, Personnel pattern research, 4 people modes |
 | 2026-07-02 | [significance-signals](2026-07-02-significance-signals.md) | — | Significance signals from fractalaw: law+provision+part-level, Baserow sync with Strategy C, scoping guide |
 | 2026-06-11 | [delta-sync-lat-tuples](2026-06-11-delta-sync-lat-tuples.md) | — | Delta sync for LAT + Actor Tuples: DeltaDetector, orphan deletion, mapping timestamps |
 | 2026-06-11 | [oban-refactor](2026-06-11-oban-refactor.md) | — | Oban job queue: SyncWorker, SchedulerWorker, Engine.clean, workspace validation, telemetry |

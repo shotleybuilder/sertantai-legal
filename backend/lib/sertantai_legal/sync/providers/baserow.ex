@@ -249,18 +249,20 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
           end
         end
 
-        # Handle primary field (Name) — rename to match template's primary if different
+        # Handle primary field (Name) — rename/convert to match template's primary
         name_field = Enum.find(existing_fields, &(&1["name"] == "Name" && &1["primary"]))
 
-        if name_field && primary_spec && primary_spec.name != "Name" do
-          # Rename Baserow's Name to template's primary field name
-          update_field(config, name_field["id"], %{
+        if name_field && primary_spec do
+          # Rename the primary field — formula conversion happens later
+          # (after all fields are created, so formula references resolve)
+          updates = %{
             "name" => primary_spec.name,
             "description" => "#{@managed_description}\n#{primary_spec[:description] || ""}"
-          })
+          }
+
+          update_field(config, name_field["id"], updates)
         else
           if name_field do
-            # Just add managed description to the default Name
             update_field(config, name_field["id"], %{
               "description" =>
                 "#{@managed_description}\n#{primary_spec[:description] || "Primary field"}"
@@ -273,6 +275,43 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       {:error, reason} ->
         Logger.warning("[Baserow] Failed to clean defaults for table #{table_id}: #{reason}")
         :ok
+    end
+  end
+
+  @doc """
+  Convert the primary field to a formula after all other fields are created.
+  Only needed when the template's primary field is type :formula.
+  """
+  def finalize_primary_formula(config, table_id, field_specs) do
+    primary_spec = Enum.find(field_specs, &(&1[:primary] && &1.type == :formula))
+
+    if primary_spec do
+      case list_fields(config, table_id) do
+        {:ok, fields} ->
+          primary_field = Enum.find(fields, &(&1["name"] == primary_spec.name && &1["primary"]))
+
+          if primary_field do
+            expression =
+              case primary_spec[:expression] do
+                %{baserow: expr} -> expr
+                expr when is_binary(expr) -> expr
+                _ -> ""
+              end
+
+            update_field(config, primary_field["id"], %{
+              "type" => "formula",
+              "formula" => expression,
+              "formula_type" => "text"
+            })
+          else
+            :ok
+          end
+
+        _ ->
+          :ok
+      end
+    else
+      :ok
     end
   end
 

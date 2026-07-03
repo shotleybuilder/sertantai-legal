@@ -143,7 +143,7 @@ defmodule Mix.Tasks.Templates.Apply do
     str
     |> String.split(",")
     |> Enum.map(&String.trim/1)
-    |> Enum.map(&String.to_existing_atom/1)
+    |> Enum.map(&String.to_atom/1)
   end
 
   defp build_sub_patterns(opts) do
