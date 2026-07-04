@@ -1,42 +1,70 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
-**Status**: ACTIVE
-**Context**: Baserow upgraded to 50K rows. Base data synced (274 LRT, 2400 Duties, 485 Actor Tuples). Need to decide what compliance solution to build on top.
+**Status**: SUSPENDED
 
-## Todo — Research (done)
+## Todo — Completed
 - [x] Review previous template work (Phase 3-7 sessions from June)
 - [x] Research Baserow Collaborators field, SSO, Teams, RBAC
 - [x] Document Personnel patterns (`docs/BASEROW-PERSONNEL-PATTERNS.md`)
-
-## Todo — Personnel Template Extension
-- [x] Add `:collaborator` to `people` sub-pattern in `sub_patterns.ex`
-- [x] Add `:hybrid` to `people` sub-pattern in `sub_patterns.ex`
-- [x] Update Personnel template: skip table creation for `:collaborator`, create for `:linked` and `:hybrid`
-- [x] Add Collaborators field type to `field_types.ex` universal type system
-- [x] Map `:collaborator` type in Baserow adapter (`providers/baserow.ex`) → `multiple_collaborators`
-- [x] Update 8 templates with `:collaborator` and `:hybrid` people_fields clauses (Assessment, Action Tracker, Evidence, Incident, Audit, Training, Document Control, PDCA)
-- [x] RACI has no people_fields — uses actor mapping, no change needed
-- [x] Compile + 1461 tests pass
-- [x] Apply Personnel template to QQ Baserow workspace (linked mode, via mix templates.apply)
-- [x] Personnel table verified: Employee_ID primary, 7 fields, all with 🚫 descriptions
-
-## Todo — Next (after Personnel)
+- [x] Personnel template extension (4 people modes, :workspace_member rename)
+- [x] Apply Personnel template to QQ Baserow (linked mode, Employee_ID primary)
 - [x] Apply Compliance Assessment template (formula primary: field('Law'))
-- [x] Apply Action Tracker template (formula primary needs manual fix in Baserow)
-- [ ] Validate end-to-end: LRT → Duties → Assessment → Actions
-- [ ] Commit and push
+- [x] Apply Action Tracker template (formula primary needs manual fix)
+- [x] 7-Layer architecture mapping (`docs/BASEROW-7-LAYERS.md`)
+- [x] L3 Controls design with ontology (`docs/BASEROW-CONTROLS-DESIGN.md`)
+- [x] Hierarchy table design (adjacency list, multi-hierarchy)
+- [x] Control Mapping design (lean join: Law + Obligation + Control + Strength)
+- [x] Schema doc (`docs/BASEROW-SCHEMA.md`)
+- [x] Commit and push docs
+
+## Todo — When Resumed
+
+### Build new templates
+- [ ] Build Hierarchy template (adjacency list: Name, Hierarchy, Type, Parent, Description)
+- [ ] Build Controls template (Properties/Methods/Events/Distance ontology, Org_Unit + Location links to Hierarchy)
+- [ ] Build Control Mappings template (Law + Obligation + Control + Strength)
+- [ ] Update Action Tracker template: add Control link_row field
+- [ ] Update Evidence Vault template: add Control link_row field
+
+### Apply to QQ Baserow
+- [ ] Apply Hierarchy template — seed with QQ org structure + locations
+- [ ] Apply Controls template
+- [ ] Apply Control Mappings template
+- [ ] Re-apply Action Tracker with Control link
+- [ ] Validate end-to-end: LRT → Control Mappings → Controls → Actions → Evidence
+
+### Remaining templates
+- [ ] Apply Evidence Vault
+- [ ] Apply Incident Register
+- [ ] Apply Audit Management
+- [ ] Apply Training Tracker
+
+## Key Design Decisions Made
+
+1. **Control Mapping is a lean join** — 4 fields: Law, Obligation (optional), Control, Strength (Primary/Supporting/Ancillary). No status, justification, or inheritance metadata.
+2. **Two-tier obligation mapping** — Law field always populated (coarse), Obligation field optional (provision-level for targeted controls).
+3. **Hierarchy as adjacency list** — single table, self-referential Parent, multi-hierarchy via Hierarchy field (org/geo/finance). Replaces chained Sites/Divisions tables.
+4. **Controls carry organisational context** — two link_row fields to Hierarchy (Org_Unit, Location). Not on the mapping.
+5. **Actions target Controls** — you can only change compliance by changing controls. Actions fix/improve/create controls.
+6. **Two assessments coexist** — Compliance Assessment (L2, per law, human judgement) and Control Effectiveness (L5, per control, tested via audits). A broken control ≠ automatic non-compliance (redundancy).
+7. **Control ontology** — Properties (type, nature, domain, owner, tier), Methods (consequence/exposure/likelihood, blast radius), Events (frequency, demand mode), Distance (Westrum information distance).
+8. **DRY via hierarchy** — inheritance implied by tree position, not duplicate records. Corporate control visible at all tiers without re-mapping.
+9. **Primary fields are descriptive formulas** — for link_row dropdown display. No UUID needed (row_id() exists if needed).
+
+## Docs Created
+- `docs/BASEROW-7-LAYERS.md` — layer status mapping
+- `docs/BASEROW-CONTROLS-DESIGN.md` — L3 detailed design
+- `docs/BASEROW-SCHEMA.md` — full workspace table relationships
+- `docs/BASEROW-TEMPLATES.md` — template module reference
+- `docs/BASEROW-COMPLIANCE-ASSESSMENT-PATTERNS.md` — assessment options
+- `docs/BASEROW-ACTION-TRACKER-PATTERNS.md` — action tracker options
+- `docs/BASEROW-PERSONNEL-PATTERNS.md` — personnel people modes
+- `docs/BASEROW-CONFIG-RECIPES.md` — manual Baserow UI configuration
+- `docs/reviews/2026-07-03-gemini-baserow-template-architecture.md` — Gemini architecture review
 
 ## Known Issues
-- Action primary field created as text not formula on second run (cleanup_table_defaults skipped for existing tables)
-- Cross-table rollups deferred (Baserow auto-names reverse link fields — Phase 2)
-- Baserow and() only takes 2 args (fixed with nested and())
+- Action primary field created as text not formula on second run (cleanup skipped for existing tables)
+- Cross-table rollups deferred (Baserow auto-names reverse link fields — Phase 2 #112)
 - Schema updates to existing tables need reconciliation (Phase 2 #112)
-
-## Notes
-- 50K row budget: ~3K used by base data, ~47K available for compliance tables
-- 12 templates built in June (Phase 1-7), all production-ready
-- Personnel has 4 modes: flat, collaborator, linked, hybrid
-- Baserow Collaborators = workspace members only, JIT SSO, no SCIM
-- API needs integer user ID for Collaborators (not email)
-- Teams can model departments but no IdP group sync
+- Baserow and() only takes 2 args (fixed with nested and())
