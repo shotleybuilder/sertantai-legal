@@ -24,7 +24,7 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
   def name, do: "Action Tracker"
 
   @impl true
-  def requires, do: [:compliance_assessment]
+  def requires, do: [:compliance_assessment, :controls]
 
   @impl true
   def tables, do: [:actions]
@@ -75,6 +75,12 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
         ] ++
           people_fields(sp.people) ++
           [
+            %{
+              name: "Control",
+              type: :link_row,
+              target: :controls,
+              description: "Which control to fix/improve/create"
+            },
             %{name: "Due_Date", type: :date, description: "Deadline"},
             %{name: "Completed_Date", type: :date, description: "When completed"},
             %{name: "Notes", type: :long_text, description: "Progress notes"},

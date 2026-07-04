@@ -32,7 +32,7 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
   def name, do: "Evidence Vault"
 
   @impl true
-  def requires, do: [:compliance_assessment]
+  def requires, do: [:compliance_assessment, :controls]
 
   @impl true
   def tables, do: [:evidence]
@@ -59,6 +59,12 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
             type: :link_row,
             target: :actions,
             description: "Which action this completes"
+          },
+          %{
+            name: "Control",
+            type: :link_row,
+            target: :controls,
+            description: "Which control this proves operated"
           }
         ] ++
           artifact_fields(sp.storage_mode) ++

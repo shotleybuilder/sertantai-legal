@@ -1,7 +1,7 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
-**Status**: SUSPENDED
+**Status**: ACTIVE
 
 ## Todo — Completed
 - [x] Review previous template work (Phase 3-7 sessions from June)
@@ -21,18 +21,18 @@
 ## Todo — When Resumed
 
 ### Build new templates
-- [ ] Build Hierarchy template (adjacency list: Name, Hierarchy, Type, Parent, Description)
-- [ ] Build Controls template (Properties/Methods/Events/Distance ontology, Org_Unit + Location links to Hierarchy)
-- [ ] Build Control Mappings template (Law + Obligation + Control + Strength)
-- [ ] Update Action Tracker template: add Control link_row field
-- [ ] Update Evidence Vault template: add Control link_row field
+- [x] Build Hierarchy template (adjacency list: Name, Hierarchy, Type, Parent, Description)
+- [x] Build Controls template (Properties/Methods/Events/Distance ontology, Org_Unit + Location links to Hierarchy)
+- [x] Build Control Mappings template (Law + Obligation + Control + Strength)
+- [x] Update Action Tracker template: add Control link_row field
+- [x] Update Evidence Vault template: add Control link_row field
 
 ### Apply to QQ Baserow
-- [ ] Apply Hierarchy template — seed with QQ org structure + locations
-- [ ] Apply Controls template
-- [ ] Apply Control Mappings template
-- [ ] Re-apply Action Tracker with Control link
-- [ ] Validate end-to-end: LRT → Control Mappings → Controls → Actions → Evidence
+- [x] Apply Hierarchy template (table 1060575, no seed this session)
+- [x] Apply Controls template (table 1060576)
+- [x] Apply Control Mappings template (table 1060577)
+- [x] Re-apply Action Tracker with Control link (Control field added to existing table 1059861)
+- [x] Validate end-to-end: LRT → Control Mappings → Controls → Actions (9 tables, all links verified)
 
 ### Remaining templates
 - [ ] Apply Evidence Vault

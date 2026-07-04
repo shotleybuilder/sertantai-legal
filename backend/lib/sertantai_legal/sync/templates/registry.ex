@@ -26,7 +26,10 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
       document_control: SertantaiLegal.Sync.Templates.DocumentControl,
       raci: SertantaiLegal.Sync.Templates.RACI,
       pdca: SertantaiLegal.Sync.Templates.PDCA,
-      org_structure: SertantaiLegal.Sync.Templates.OrgStructure
+      org_structure: SertantaiLegal.Sync.Templates.OrgStructure,
+      hierarchy: SertantaiLegal.Sync.Templates.Hierarchy,
+      controls: SertantaiLegal.Sync.Templates.Controls,
+      control_mappings: SertantaiLegal.Sync.Templates.ControlMappings
     }
   end
 

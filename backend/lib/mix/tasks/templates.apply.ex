@@ -207,6 +207,9 @@ defmodule Mix.Tasks.Templates.Apply do
     |> maybe_put_table(:pdca, target_config["pdca_table_id"])
     |> maybe_put_table(:sites, target_config["sites_table_id"])
     |> maybe_put_table(:divisions, target_config["divisions_table_id"])
+    |> maybe_put_table(:hierarchy, target_config["hierarchy_table_id"])
+    |> maybe_put_table(:controls, target_config["controls_table_id"])
+    |> maybe_put_table(:control_mappings, target_config["control_mappings_table_id"])
   end
 
   defp maybe_put_table(map, _key, nil), do: map
@@ -226,7 +229,10 @@ defmodule Mix.Tasks.Templates.Apply do
       :raci,
       :pdca,
       :sites,
-      :divisions
+      :divisions,
+      :hierarchy,
+      :controls,
+      :control_mappings
     ]
 
     updates =
