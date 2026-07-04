@@ -123,13 +123,11 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
   defp core_fields do
     [
       %{
-        name: "Assessment_ID",
+        name: "Assessment",
         type: :formula,
         primary: true,
-        expression: %{
-          baserow: "concat(field('Law'), '_', field('Compliance_Status'))"
-        },
-        description: "Auto-generated: Law_ComplianceStatus"
+        expression: %{baserow: "field('Law')"},
+        description: "Display: law name (1:1 with Legal Register)"
       },
       %{
         name: "Law",

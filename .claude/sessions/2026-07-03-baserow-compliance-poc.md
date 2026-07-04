@@ -22,9 +22,16 @@
 - [x] Personnel table verified: Employee_ID primary, 7 fields, all with 🚫 descriptions
 
 ## Todo — Next (after Personnel)
-- [ ] Apply Compliance Assessment template
-- [ ] Apply Action Tracker template
+- [x] Apply Compliance Assessment template (formula primary: field('Law'))
+- [x] Apply Action Tracker template (formula primary needs manual fix in Baserow)
 - [ ] Validate end-to-end: LRT → Duties → Assessment → Actions
+- [ ] Commit and push
+
+## Known Issues
+- Action primary field created as text not formula on second run (cleanup_table_defaults skipped for existing tables)
+- Cross-table rollups deferred (Baserow auto-names reverse link fields — Phase 2)
+- Baserow and() only takes 2 args (fixed with nested and())
+- Schema updates to existing tables need reconciliation (Phase 2 #112)
 
 ## Notes
 - 50K row budget: ~3K used by base data, ~47K available for compliance tables

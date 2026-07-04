@@ -263,14 +263,10 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       assert :calendar in types
     end
 
-    test "adds rollup to assessments table" do
+    test "cross-table fields returns empty map (rollup deferred to Phase 2)" do
       sp = SubPatterns.new()
       cross = ActionTracker.cross_table_fields(sp)
-      assert Map.has_key?(cross, :assessments)
-
-      rollup = hd(cross.assessments)
-      assert rollup.name == "Open_Actions"
-      assert rollup.type == :rollup
+      assert cross == %{}
     end
 
     test "resolves full dependency chain" do

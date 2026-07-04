@@ -34,14 +34,28 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
     %{
       actions:
         [
-          %{name: "Title", type: :text, description: "Action description"},
+          %{
+            name: "Action",
+            type: :formula,
+            primary: true,
+            expression: %{
+              baserow: "concat(field('Assessment'), ' — ', field('Title'))"
+            },
+            description: "Display: Assessment — Title"
+          },
+          %{
+            name: "Title",
+            type: :text,
+            description:
+              "Short action phrase (e.g. 'Develop lone working RA'). Use Notes for detail."
+          },
           %{
             name: "Assessment",
             type: :link_row,
             target: :assessments,
             description: "Which gap this addresses"
           },
-          %{name: "Law", type: :lookup, target: :assessments, target_field: "Law"},
+          %{name: "Law", type: :lookup, target: "Assessment", target_field: "Law"},
           %{
             name: "Status",
             type: :single_select,
@@ -75,7 +89,7 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
               type: :formula,
               expression: %{
                 baserow:
-                  "if(and(field('Status') != 'Completed', field('Status') != 'Cancelled', field('Days_Until_Due') < 0), 'OVERDUE', '')"
+                  "if(and(and(field('Status') != 'Completed', field('Status') != 'Cancelled'), field('Days_Until_Due') < 0), 'OVERDUE', '')"
               },
               description: "OVERDUE if past due and not completed"
             }
@@ -103,18 +117,9 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
 
   @impl true
   def cross_table_fields(_sp) do
-    %{
-      assessments: [
-        %{
-          name: "Open_Actions",
-          type: :rollup,
-          target: :actions,
-          target_field: "Status",
-          rollup_function: :count,
-          description: "Number of linked actions"
-        }
-      ]
-    }
+    # Rollup on Assessments requires the reverse link_row field name.
+    # Deferred to Phase 2. Use Baserow Count field manually.
+    %{}
   end
 
   @impl true
