@@ -2,6 +2,8 @@
 
 How the Evidence Vault template adapts to customer needs. The template creates an **Evidence** table linked to Assessments, Actions, and Controls, with fields and views controlled by `storage_mode` and `people` sub-pattern dimensions.
 
+The Evidence Vault handles two fundamentally different kinds of evidence: **artifacts** (documents, logs, certificates — proof that the *form* of a control exists) and **judgements** (a named person's assessed conclusion — proof that the *substance* of a control works). The distinction matters because a vault full of artifacts can go green while the load-bearing reality goes unwatched.
+
 ---
 
 ## The Evidence Problem
@@ -46,6 +48,7 @@ Evidence is not just documents. ISA 500 and NIST SP 800-53A identify distinct ca
 | **Attestation** | Formal statement that something is true | Low-Medium | Self-declarations, management assertions, signed statements |
 | **Measurement** | Quantitative data from testing or monitoring | High | Air quality readings, noise levels, water sample results |
 | **Certificate** | Third-party confirmation of a status | High | ISO certificates, training qualifications, equipment test certificates |
+| **Judgement Record** | Named person's assessed conclusion with reasoning | Varies (depends on calibration) | "This risk assessment is adequate because...", "These barriers are intact based on..." |
 
 **Reliability hierarchy** (from ISA 500):
 1. External source > internal source
@@ -54,7 +57,18 @@ Evidence is not just documents. ISA 500 and NIST SP 800-53A identify distinct ca
 4. Documentary > oral
 5. Originals > copies
 
-**Design implication**: The Evidence Vault should capture `Evidence_Type` as a single select and `Source` to distinguish manual from automated evidence. Higher-reliability evidence needs less volume to demonstrate compliance.
+### Evidence Nature: Artifact vs Judgement
+
+Orthogonal to type, every evidence item has a **nature** — what kind of proof it provides:
+
+| Nature | What it proves | Record structure | Example |
+|--------|---------------|-----------------|---------|
+| **Artifact** | The *form* of the control — that it exists, was executed, produced output | Document, log, certificate, photo — the thing itself | Backup log, training certificate, signed permit, sensor reading |
+| **Judgement** | The *substance* of the control — that it actually works | Who judged, what they observed, their reasoning, their confidence | "This risk assessment is adequate to the hazard because [reasoning]" |
+
+An artifact answers "did it happen?" A judgement answers "is it any good?" Both are necessary. The danger is a vault full of the first and empty of the second.
+
+**Design implication**: The Evidence Vault captures `Evidence_Type` as a single select (what kind of thing) and `Evidence_Nature` as a single select (artifact or judgement). Judgement evidence carries additional fields: Judged_By, Basis, Reasoning, Confidence. See [The Operationalisation Paradox](#the-operationalisation-paradox) for the full rationale.
 
 ---
 
@@ -412,6 +426,98 @@ The 2×2 of Info_Distance × Staleness, weighted by Blast_Radius, has grounding 
 
 The common thread: **evidence requirements are not uniform across controls, and the control's own properties tell you what's needed.** The Evidence Vault is not a flat repository — it is a risk-stratified system where the Controls table drives the evidence strategy.
 
+**However**: the entire strategy above operates in the legible column. It tells you *how much* evidence and *what form* — but every dimension (Nature, Frequency, Blast_Radius, Info_Distance) is itself a measurable property. The strategy sizes the evidence programme without distinguishing evidence-of-proxy from evidence-of-reality. The next section addresses this blind spot.
+
+---
+
+## The Operationalisation Paradox
+
+> *The more a safety requirement actually keeps people safe, the harder it is to measure — so any system that rewards what is easy to measure quietly drifts toward checking the things that matter least.*
+
+This structural trap, identified in safety science (Rae & Provan 2018, Hubbard 2007, Scott 1998), applies to all compliance evidence. It has two key concepts:
+
+- A requirement is **legible** when it reduces cleanly to a tick — countable, schedulable, unambiguous. *"The permit was issued." "The training record exists." "The audit was done on time."*
+- A requirement is **load-bearing** when it actually carries the weight of keeping people safe (or the organisation compliant) — when its failure is what causes harm. *"The energy is genuinely dead." "This person can actually do the job safely." "This risk assessment is actually adequate."*
+
+**These two properties tend to run in opposite directions.** The load-bearing requirements are soaked in *judgement* — adequacy, competence, independence, sufficiency. Judgement is exactly the thing that resists being turned into a tick. The moment you force a judgement into a checkable box, you replace the judgement with a proxy — and the proxy captures the *form* while letting the *substance* slip away.
+
+### What this means for the Evidence Vault
+
+The evidence strategy from the previous section — Types, Lifecycle, Quality Signals, the Control-property lookup — is entirely artifact-based evidence. It answers "does evidence exist, is it current, is there enough of it?" These are legible questions. An Evidence Vault that only contains artifacts can go fully green — every Control has linked evidence, every item is Current, nothing is Expired, the counts are healthy — while the load-bearing reality goes unwatched.
+
+| What the vault shows (legible) | What actually matters (load-bearing) |
+|---|----|
+| "Risk assessment exists and was reviewed on schedule" | *Is this risk assessment actually adequate to the hazard?* |
+| "Training record complete, refresher done" | *Can this person actually do this job safely, today?* |
+| "Permit-to-work issued and filed" | *Is the energy genuinely dead at the point of work?* |
+| "Number of inspection reports linked" | *Did anyone act on what was found?* |
+| "100% of controls have evidence" | *Are the controls actually working?* |
+
+Read down the right-hand column: every entry contains a word that resists a tick — *adequate, actually, genuinely*. That is the load-bearing judgement. That is what artifacts cannot hold.
+
+### The two tempting responses — and why both fail
+
+- **"Try harder to operationalise it."** Build a more elaborate checklist for "adequacy." This deepens the trap: you get a more sophisticated proxy that still isn't the thing, and now it *looks* rigorous, so it commands even more false confidence.
+- **"Stop measuring; trust the experts."** Abandon the proxies and rely on professional judgement. But now nothing is auditable, nothing is defensible to a regulator, and judgement drifts with no signal.
+
+Both fail because both assume you must *either* render judgement legible *or* give up checking.
+
+### The way through: two natures of evidence
+
+The resolution is to stop pretending load-bearing evidence can be ticked, and handle the two kinds differently and honestly:
+
+**For legible evidence (artifacts), let the system watch.** Documents, logs, certificates, sensor data — the current evidence model handles this well. Track existence, currency, expiry, counts. This is the right tool for the legible column.
+
+**For load-bearing evidence (judgements), record the judgement and its reasoning, not a tick.** The evidence is not a document — it is a named person's professional conclusion. The record captures:
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| **Judged_By** | Named, accountable person who exercised judgement | "Jane Smith, Senior EHS Officer" |
+| **Basis** | What they observed, reviewed, or tested | "Walked site, observed 12 PTW completions, interviewed 3 operators, reviewed last 6 months of isolation records" |
+| **Reasoning** | Why they concluded what they did | "Controls adequate: isolation procedure consistently followed, operators demonstrated competence, no deviations in records. Weakness: signage at Panel B unclear — action raised." |
+| **Confidence** | How certain they are | High / Medium / Low |
+
+The audit object becomes **the exercise of judgement over time** — is the same person consistently reaching the same conclusion? Has their basis been thorough? Has their confidence been well-calibrated? This is defensible to a regulator in a way that a tick is not, because it shows the *reasoning*, not just the outcome.
+
+### Which controls need judgement evidence?
+
+Not all controls need both natures. The Control table's existing properties signal which need judgements:
+
+| Control property | Artifact sufficient | Judgement needed |
+|-----------------|--------------------|-----------------| 
+| **Nature: Automated** | Usually yes — system logs prove operation | Only if the system's design adequacy is in question |
+| **Nature: Manual** | Proves the activity happened | Yes — did the person exercise adequate judgement? |
+| **Info_Distance: Direct** | Often yes — the manager can see it working | Less urgently — observability provides natural assurance |
+| **Info_Distance: Remote** | Proves a form was filed | Yes — remote attestations need corroboration by judgement |
+| **Demand_Mode: Emergency** | Proves the procedure was activated | Yes — was the response actually proportionate and effective? |
+| **Blast_Radius: Enterprise** | Proves the policy exists | Yes — does the policy actually protect at scale? |
+| **Control_Type: Directive** | Proves the policy was communicated | Yes — are people actually following it? |
+
+The pattern: **controls where a human's judgement is the active ingredient in the control's effectiveness need judgement evidence.** Automated controls with Direct information distance and Local blast radius rarely do. Manual, Remote, Enterprise-blast-radius controls almost always do.
+
+### The green dashboard warning
+
+A fully green Evidence Vault is the **most dangerous** state, not the most reassuring. Green means "the things we can check are checking out." It does not mean "compliant" or "safe."
+
+The standing question alongside any green dashboard: **what load-bearing judgement is not on this board at all?**
+
+In the Evidence Vault, this manifests as:
+- Controls with artifact evidence but no judgement evidence — the form is checked, the substance is not
+- Controls with no evidence at all — the gap is invisible unless you look for it
+- Judgement evidence that hasn't been refreshed — the person judged it adequate 18 months ago; has anything changed?
+
+The "Judgements" and "Judgements Due" views surface the first two. The third requires the calibration discipline: periodically asking the named person whether their judgement still holds, and recording a fresh assessment.
+
+### Calibration
+
+Even good evidence rots. "Verified" slides from "energy is dead" to "a form was signed." A judgement from 2024 that the risk assessment was adequate does not mean it's adequate in 2026 after the process changed.
+
+The calibration discipline:
+1. **Re-judge on a schedule tied to the control's risk profile** — the same Info_Distance × Staleness × Blast_Radius logic from the evidence strategy
+2. **Compare judgements over time** — is the same person consistently reaching the same conclusion? If so, are they still looking carefully, or has the judgement become routine?
+3. **Rotate judges** — a fresh pair of eyes may see what the habitual assessor no longer notices
+4. **Ask the named person: "what would change your mind?"** — if they can't answer, the judgement has calcified
+
 ---
 
 ## Anti-Patterns
@@ -420,9 +526,11 @@ The common thread: **evidence requirements are not uniform across controls, and 
 
 **The problem**: Sophisticated documentation of activity while actual controls are ineffective. A manufacturer has a documented safety management system with risk assessments, training records, and inspection checklists — but workers routinely bypass guards and supervisors don't enforce procedures.
 
-**How it manifests in Baserow**: Every law has evidence linked. The evidence vault is full. But the evidence is generic templates, undated assessments, or documents that bear no relation to observed workplace conditions.
+**How it manifests in Baserow**: Every law has evidence linked. The evidence vault is full. But all evidence is artifact-natured — documents exist, dates are current, counts are healthy. No judgement evidence anywhere. Nobody has actually assessed whether the controls work. The dashboard is green. The vault is hollow.
 
-**The fix**: Evidence-by-design. If the evidence is a byproduct of the control operating (system log, digital checklist completion, sensor data), it can't be fabricated separately from the control execution. The L5 Assurance layer (audits) verifies that evidence reflects reality.
+**The deeper mechanism**: the legible evidence (artifacts) substitutes for knowledge of the load-bearing reality (judgements). The organisation does more of the visible, countable thing — and feels more compliant — while the question "do these controls actually work?" goes unasked, sometimes *because* the artifact collection consumed the attention that asking the question would have needed.
+
+**The fix**: Evidence-by-design for artifacts (system logs, automated records). Judgement records for load-bearing requirements (who judged, what they saw, why they concluded, their confidence). The presence of artifact evidence without corresponding judgement evidence is itself a signal — it means the form is checked but the substance is not.
 
 ### Evidence Hoarding
 
@@ -541,6 +649,9 @@ See [Embedded vs Referenced Evidence](#embedded-vs-referenced-evidence) above.
 | All Evidence | Grid | Default view — all rows |
 | Expiring Soon | Grid | Filtered: Status = "Current", sorted by Expiry_Date ascending |
 | By Type | Grid | Grouped by evidence Type |
+| Judgements | Grid | Filtered: Evidence_Nature = "Judgement" — all load-bearing judgement records |
+| Artefacts | Grid | Filtered: Evidence_Nature = "Artifact" — all legible artifact evidence |
+| By Control | Grid | Grouped by Control — see all evidence per control, spot controls with artifacts but no judgements |
 | Gallery | Gallery | Visual browse of evidence items |
 
 ---
@@ -592,6 +703,12 @@ The Control link is the primary relationship. Assessment and Action are secondar
 - IIA Three Lines Model (2020) — Combined Assurance, risk-proportional assurance intensity
 - Bow-tie barrier model — Preventive vs recovery barrier evidence strategies
 - Westrum (2004) "A Typology of Organisational Cultures" — information distance and fidelity degradation
+- Rae & Provan (2018) "Safety work versus the safety of work" — the operationalisation paradox: visible performance of safety vs actual state of being safe
+- Hubbard (2007) *How to Measure Anything* — the Measurement Inversion: we measure low-information-value variables and ignore high-value ones
+- Scott (1998) *Seeing Like a State* — legibility as a governing tool that can destroy the tacit knowledge that makes things work
+- Polanyi (1966) *The Tacit Dimension* — "we know more than we can tell": expert judgement resists full codification
+- Hopkins (2008) *Failure to Learn: the BP Texas City Disaster* — green personal-safety dashboard blind to process-safety catastrophe
+- Goodhart's Law (1975) — "when a measure becomes a target, it ceases to be a good measure"
 - MHSWR 1999 Regulation 3(1) — Suitable and sufficient risk assessment
 - EA Compliance Classification Scheme — Environmental permit compliance scoring
 - FCA PS21/3 — Operational Resilience requirements

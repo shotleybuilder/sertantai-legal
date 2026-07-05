@@ -343,12 +343,10 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       assert :gallery in types
     end
 
-    test "adds evidence count rollup to assessments" do
+    test "cross_table_fields deferred to Phase 2" do
       sp = SubPatterns.new()
       cross = EvidenceVault.cross_table_fields(sp)
-
-      rollup = hd(cross.assessments)
-      assert rollup.name == "Evidence_Count"
+      assert cross == %{}
     end
   end
 

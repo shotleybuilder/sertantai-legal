@@ -1,12 +1,21 @@
 defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
   @moduledoc """
-  Evidence Vault template — documents, certificates, and records proving compliance.
+  Evidence Vault template — artifacts and judgement records proving compliance.
+
+  Handles two natures of evidence:
+  - **Artifact** — documents, logs, certificates proving the *form* of a control
+  - **Judgement** — a named person's assessed conclusion proving the *substance*
+
+  Judgement evidence carries additional fields (Judged_By, Basis, Reasoning,
+  Confidence) to record the exercise of professional judgement, not a tick.
 
   Sub-pattern support:
   - `storage_mode: :embedded` — File field for direct uploads into Baserow
   - `storage_mode: :reference` — URL + text fields pointing to SharePoint/DMS
-  - `people: :linked` — Uploaded By links to Personnel table
-  - `people: :flat` — Uploaded By is a text field
+  - `people: :linked` — Uploaded By / Judged By link to Personnel table
+  - `people: :flat` — text fields for names
+
+  See `docs/EVIDENCE-VAULT-PATTERNS.md` § The Operationalisation Paradox.
   """
 
   @behaviour SertantaiLegal.Sync.Templates.TemplateBehaviour
@@ -20,9 +29,12 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
     "Risk Assessment",
     "Permit",
     "Licence",
+    "Judgement Record",
     "Other"
   ]
 
+  @evidence_natures ["Artifact", "Judgement"]
+  @confidence_levels ["High", "Medium", "Low"]
   @evidence_statuses ["Current", "Expired", "Superseded"]
 
   @impl true
@@ -65,10 +77,18 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
             type: :link_row,
             target: :controls,
             description: "Which control this proves operated"
+          },
+          %{
+            name: "Evidence_Nature",
+            type: :single_select,
+            options: @evidence_natures,
+            description:
+              "Artifact (document/log proves form) or Judgement (person's conclusion proves substance)"
           }
         ] ++
           artifact_fields(sp.storage_mode) ++
           people_fields(sp.people) ++
+          judgement_fields(sp.people) ++
           [
             %{name: "Version", type: :text, description: "Document version"},
             %{
@@ -98,6 +118,17 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
           sorts: [%{field: "Expiry_Date", direction: :asc}]
         },
         %{name: "By Type", type: :grid, group_by: "Type"},
+        %{
+          name: "Judgements",
+          type: :grid,
+          filters: [%{field: "Evidence_Nature", op: :equal, value: "Judgement"}]
+        },
+        %{
+          name: "Artifacts",
+          type: :grid,
+          filters: [%{field: "Evidence_Nature", op: :equal, value: "Artifact"}]
+        },
+        %{name: "By Control", type: :grid, group_by: "Control"},
         %{name: "Gallery", type: :gallery}
       ]
     }
@@ -105,18 +136,10 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
 
   @impl true
   def cross_table_fields(_sp) do
-    %{
-      assessments: [
-        %{
-          name: "Evidence_Count",
-          type: :rollup,
-          target: :evidence,
-          target_field: "Title",
-          rollup_function: :count,
-          description: "Number of evidence items linked"
-        }
-      ]
-    }
+    # Rollup on Assessments requires the reverse link_row field name that
+    # Baserow auto-creates. Deferred to Phase 2 reconciliation (#112).
+    # For PoC: use Baserow's native Count field (see BASEROW-CONFIG-RECIPES.md)
+    %{}
   end
 
   # ── Sub-pattern field builders ────────────────────────────────
@@ -139,6 +162,111 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
       %{name: "Upload_Date", type: :date, description: "When referenced"}
     ]
   end
+
+  # ── Judgement fields (load-bearing evidence) ──────────────────
+
+  defp judgement_fields(:linked) do
+    [
+      %{
+        name: "Judged_By",
+        type: :link_row,
+        target: :personnel,
+        description: "Named person who exercised professional judgement"
+      },
+      %{
+        name: "Basis",
+        type: :long_text,
+        description: "What was observed, reviewed, or tested to form the judgement"
+      },
+      %{
+        name: "Reasoning",
+        type: :long_text,
+        description: "Why the conclusion was reached — the professional rationale"
+      },
+      %{
+        name: "Confidence",
+        type: :single_select,
+        options: @confidence_levels,
+        description: "How confident the judgement is"
+      }
+    ]
+  end
+
+  defp judgement_fields(:workspace_member) do
+    [
+      %{
+        name: "Judged_By",
+        type: :workspace_member,
+        description: "Person who exercised judgement"
+      },
+      %{
+        name: "Basis",
+        type: :long_text,
+        description: "What was observed, reviewed, or tested to form the judgement"
+      },
+      %{
+        name: "Reasoning",
+        type: :long_text,
+        description: "Why the conclusion was reached — the professional rationale"
+      },
+      %{
+        name: "Confidence",
+        type: :single_select,
+        options: @confidence_levels,
+        description: "How confident the judgement is"
+      }
+    ]
+  end
+
+  defp judgement_fields(:hybrid) do
+    [
+      %{
+        name: "Judged_By",
+        type: :workspace_member,
+        description: "Person who exercised judgement"
+      },
+      %{
+        name: "Basis",
+        type: :long_text,
+        description: "What was observed, reviewed, or tested to form the judgement"
+      },
+      %{
+        name: "Reasoning",
+        type: :long_text,
+        description: "Why the conclusion was reached — the professional rationale"
+      },
+      %{
+        name: "Confidence",
+        type: :single_select,
+        options: @confidence_levels,
+        description: "How confident the judgement is"
+      }
+    ]
+  end
+
+  defp judgement_fields(:flat) do
+    [
+      %{name: "Judged_By", type: :text, description: "Named person who exercised judgement"},
+      %{
+        name: "Basis",
+        type: :long_text,
+        description: "What was observed, reviewed, or tested to form the judgement"
+      },
+      %{
+        name: "Reasoning",
+        type: :long_text,
+        description: "Why the conclusion was reached — the professional rationale"
+      },
+      %{
+        name: "Confidence",
+        type: :single_select,
+        options: @confidence_levels,
+        description: "How confident the judgement is"
+      }
+    ]
+  end
+
+  # ── People fields (who uploaded/referenced) ──────────────────
 
   defp people_fields(:linked) do
     [

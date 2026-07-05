@@ -1,7 +1,7 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
-**Status**: ACTIVE
+**Status**: SUSPENDED
 
 ## Todo — Completed
 - [x] Review previous template work (Phase 3-7 sessions from June)
@@ -35,7 +35,7 @@
 - [x] Validate end-to-end: LRT → Control Mappings → Controls → Actions (9 tables, all links verified)
 
 ### Remaining templates
-- [ ] Apply Evidence Vault
+- [x] Apply Evidence Vault (table 1061002, with Artifact/Judgement nature, judgement fields)
 - [ ] Apply Incident Register
 - [ ] Apply Audit Management
 - [ ] Apply Training Tracker
@@ -51,6 +51,7 @@
 7. **Control ontology** — Properties (type, nature, domain, owner, tier), Methods (consequence/exposure/likelihood, blast radius), Events (frequency, demand mode), Distance (Westrum information distance).
 8. **DRY via hierarchy** — inheritance implied by tree position, not duplicate records. Corporate control visible at all tiers without re-mapping.
 9. **Primary fields are descriptive formulas** — for link_row dropdown display. No UUID needed (row_id() exists if needed).
+10. **Evidence has two natures: Artifact and Judgement** — Artifacts prove the *form* (document exists, log recorded). Judgements prove the *substance* (named person's assessed conclusion with basis, reasoning, confidence). A vault full of artifacts with no judgements has the legible boxes ticked but the load-bearing reality unwatched. Driven by the operationalisation paradox (Rae & Provan 2018, Hubbard 2007).
 
 ## Docs Created
 - `docs/BASEROW-7-LAYERS.md` — layer status mapping
@@ -61,6 +62,7 @@
 - `docs/BASEROW-ACTION-TRACKER-PATTERNS.md` — action tracker options
 - `docs/BASEROW-PERSONNEL-PATTERNS.md` — personnel people modes
 - `docs/BASEROW-CONFIG-RECIPES.md` — manual Baserow UI configuration
+- `docs/EVIDENCE-VAULT-PATTERNS.md` — L4 evidence design, operationalisation paradox, control-driven evidence strategy
 - `docs/reviews/2026-07-03-gemini-baserow-template-architecture.md` — Gemini architecture review
 
 ## Known Issues
