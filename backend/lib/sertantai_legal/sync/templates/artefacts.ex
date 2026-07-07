@@ -43,6 +43,19 @@ defmodule SertantaiLegal.Sync.Templates.Artefacts do
 
   @argument_legs ["Compliance", "ALARP", "Hazard Log"]
 
+  @assurance_lines ["1st Line", "2nd Line", "3rd Line", "External"]
+
+  @assurance_ratings ["Full", "Substantial", "Limited", "No Assurance"]
+
+  @source_activity_types [
+    "Inspection",
+    "Review",
+    "Audit",
+    "External Audit",
+    "Regulatory Inspection",
+    "Self-Assessment"
+  ]
+
   @statuses ["Current", "Expired", "Superseded"]
 
   @impl true
@@ -102,6 +115,7 @@ defmodule SertantaiLegal.Sync.Templates.Artefacts do
           }
         ] ++
           safety_argument_fields(sp.safety_argument) ++
+          assurance_fields() ++
           artifact_fields(sp.storage_mode) ++
           people_fields(sp.people) ++
           [
@@ -135,6 +149,11 @@ defmodule SertantaiLegal.Sync.Templates.Artefacts do
         %{name: "By Type", type: :grid, group_by: "Artefact_Type"},
         %{name: "By Class", type: :grid, group_by: "Artefact_Class"},
         %{name: "By Control", type: :grid, group_by: "Control"},
+        %{
+          name: "Assurance Findings",
+          type: :grid,
+          filters: [%{field: "Assurance_Line", op: :not_empty, value: true}]
+        },
         %{name: "Gallery", type: :gallery}
       ]
     }
@@ -167,6 +186,38 @@ defmodule SertantaiLegal.Sync.Templates.Artefacts do
   end
 
   defp safety_argument_fields(_), do: []
+
+  # ── Assurance seam fields (L5 interface) ─────────────────────
+
+  defp assurance_fields do
+    [
+      %{
+        name: "Assurance_Ref",
+        type: :text,
+        description:
+          "External reference to the audit/inspection that produced this artefact (audit number, inspection ID)"
+      },
+      %{
+        name: "Assurance_Line",
+        type: :single_select,
+        options: @assurance_lines,
+        description: "Which line of assurance produced this artefact (1st/2nd/3rd/External)"
+      },
+      %{
+        name: "Assurance_Rating",
+        type: :single_select,
+        options: @assurance_ratings,
+        description:
+          "The assurance opinion associated with this finding (Full/Substantial/Limited/No Assurance)"
+      },
+      %{
+        name: "Source_Activity_Type",
+        type: :single_select,
+        options: @source_activity_types,
+        description: "What kind of assurance activity produced this artefact"
+      }
+    ]
+  end
 
   # ── Storage mode fields ──────────────────────────────────────
 

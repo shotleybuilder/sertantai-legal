@@ -1,7 +1,7 @@
 # Title: Evidence & Calibration Tier — L4 Redesign
 
 **Started**: 2026-07-05
-**Status**: ACTIVE
+**Status**: SUSPENDED
 
 ## Context
 
@@ -140,58 +140,25 @@ Then Baserow views are trivial: `WHERE Coverage_Status != 'Calibration Current'`
 - [x] Express as provider-agnostic types with Baserow projection notes
 - [ ] Peer review the schema before building templates
 
-#### 2a. Build **Calibrations** template (Baserow projection of canonical schema)
-- Primary: `Calibration` formula — `concat(field('Control'), ' — ', field('Finding'))`
-- `Control`: link_row → Controls
-- `Calibrator`: link_row → Personnel (people sub-pattern)
-- `Calibration_Method`: single select — Visual Inspection / Functional Test / Simulation / Interview / Observation / Exercise / Document Review
-- `Basis`: long text — what was observed, reviewed, or tested
-- `Finding`: single select — Still True / Drifted / Retired
-- `Verified_Meaning`: long text — what "verified" means right now (re-anchored meaning)
-- `Next_Due`: date
-- `Assessment`: link_row → Assessments (optional)
-- `Notes`: long text
-- **Immutability principle**: calibration records are never edited. New judgement = new record.
-- Views: All Calibrations, By Control, By Finding (kanban), Due Soon, By Calibrator, By Method
-- Requires: [:controls, :personnel]
+#### 2a–2g. Build Baserow templates — DONE (child session)
+Completed in `2026-07-07-evidence-schema-baserow.md`:
+- [x] Artefacts template (14 fields basic, +2 safety_argument) — replaces Evidence Vault
+- [x] Judgements template (11 fields basic, +6 full_hubbard + safety_argument) — renamed from Calibrations
+- [x] Gaps template (11 fields, three exits)
+- [x] Judgement↔Artefact join (link_row, full_hubbard only)
+- [x] Personnel updated (calibrator quality: score, sample_size, domains, last_cal_test)
+- [x] Controls updated (Coverage_Status, Recommended/Scheduled_Next_Due, Override_Reason)
+- [x] Action Tracker updated (Gap link_row)
+- [x] Incidents updated (Judgement + Control falsification links)
+- [x] Registry (18 templates), mix task (table_ids + CLI opts), tests (65 pass)
+- [x] SubPatterns: calibration_mode (:basic/:calibrator_aware/:full_hubbard), safety_argument (:off/:on)
+- [x] Applied to QQ Baserow (14 tables). Commits: cc1c944, 49e0801.
 
-#### 2b. Build **Gaps** template (new table)
-- Primary: `Gap` formula — `concat(field('Calibration'), ' → ', field('Exit_Decision'))`
-- `Calibration`: link_row → Calibrations (which calibration identified this gap)
-- `Control`: link_row → Controls (denormalised for view convenience)
-- `Gap_Type`: single select — Drift / Non-Conformance / Deviation / Near Miss
-- `Exit_Decision`: single select — Correct Work / Amend Constraint / Protect Adaptation
-- `Reason`: long text — why this exit was chosen
-- `Status`: single select — Open / Resolved / Accepted
-- `Owner`: link_row → Personnel (who owns the resolution)
-- `Action`: link_row → Actions (created if Exit = Correct Work)
-- `Notes`: long text
-- Views: All Gaps, Open Gaps, By Exit (kanban: Correct/Amend/Protect), By Control
-- Requires: [:calibrations, :controls, :personnel]
-
-#### 2c. Refactor **Evidence** template (strip judgement fields)
-- Remove: Evidence_Nature, Judged_By, Basis, Reasoning, Confidence
-- Keep: Title, Type, Assessment, Action, Control, artifact fields, Uploaded_By, Version, Expiry_Date, Status, Notes
-- Add: `Evidence_Class` single select — Activity / Outcome (Type-A / Type-B)
-- Update requires: [:compliance_assessment, :controls] (no longer depends on Calibrations)
-
-#### 2d. Update **Personnel** template — calibrator quality
-- `Calibration_Score`: number (Hubbard-style, 0-100)
-- `Last_Cal_Test`: date
-- `Calibrated_Domains`: multi-select
-
-#### 2e. Update **Action Tracker** template
-- Add: `Calibration` link_row → Calibrations (which calibration triggered this action, via the Gap)
-- Add: `Gap` link_row → Gaps (which gap this action resolves)
-
-#### 2f. Add **Coverage_Status** to Controls template
-- `Coverage_Status`: single select — No Calibration / Artifact Only / Calibration Current / Calibration Stale / Unknown
-- Computed by fractalaw, written via API. Not manually set.
-
-#### 2g. Registry, mix task, tests
-- Register Calibrations + Gaps in Registry
-- Update templates.apply (table_ids load/save)
-- Update test count and add specs for new templates
+**Entity naming resolved during design sessions**:
+- Evidence → **Artefacts** (things registered)
+- Calibrations → **Judgements** (acts performed)
+- Readings dissolved (all artefacts feed judgement)
+- See `docs/compliance/l4-evidence/EVIDENCE-CALIBRATION.md` for terminology
 
 ### Phase 3: fractalaw observation signals (edge AI)
 - [ ] Design observation signal app:

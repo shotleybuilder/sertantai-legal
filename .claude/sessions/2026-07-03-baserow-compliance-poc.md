@@ -1,7 +1,7 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
-**Status**: SUSPENDED
+**Status**: ACTIVE
 
 ## Todo — Completed
 - [x] Review previous template work (Phase 3-7 sessions from June)
@@ -34,11 +34,25 @@
 - [x] Re-apply Action Tracker with Control link (Control field added to existing table 1059861)
 - [x] Validate end-to-end: LRT → Control Mappings → Controls → Actions (9 tables, all links verified)
 
+### L4 Evidence — DONE (child sessions)
+- [x] Apply Evidence Vault (superseded by Artefacts/Judgements/Gaps — see evidence-calibration-tier + evidence-schema-baserow sessions)
+- [x] Apply Incident Register (table 1065051, with Judgement + Control falsification links)
+
+### L5 Assurance — the seam
+L5 is an interface (seam), not an audit management system. The assurance programme lives in the organisation's own tools. The compliance framework provides inputs, access, and a receiver for findings. See `docs/compliance/l5-assurance/ASSURANCE-INTERFACE.md`.
+
+- [x] Research assurance patterns (1st/2nd/3rd line, defence, ISO 19011, IIA Three Lines) → `docs/compliance/l5-assurance/ASSURANCE-PATTERNS.md`
+- [x] Design the assurance interface (3 flows: out/access/back) → `docs/compliance/l5-assurance/ASSURANCE-INTERFACE.md`
+- [x] Distinguish L5 from L4 (L4 = first-line judgement; L5 = independent verification via the seam)
+- [x] Extend Artefacts canonical schema: `assurance_ref`, `assurance_line`, `assurance_rating`, `source_activity_type` + enums
+- [x] Extend Artefacts template with assurance fields (always present, nullable) + "Assurance Findings" view
+- [ ] Define standard queries/reports for assurance planning (controls by VoI, coverage gaps, judgement quality)
+- [x] Apply updated Artefacts template to QQ Baserow (4 new fields added to existing table)
+
 ### Remaining templates
-- [x] Apply Evidence Vault (table 1061002, with Artifact/Judgement nature, judgement fields)
-- [ ] Apply Incident Register
-- [ ] Apply Audit Management
-- [ ] Apply Training Tracker
+- [ ] Apply Document Control
+- [ ] Apply PDCA
+- [ ] Review Training Tracker — is it L5 (competence assurance) or L3/L4 (training records)? Likely split.
 
 ## Key Design Decisions Made
 

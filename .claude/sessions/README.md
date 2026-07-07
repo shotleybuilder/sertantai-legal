@@ -72,9 +72,10 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
-| 2026-07-05 | [evidence-calibration-tier](2026-07-05-evidence-calibration-tier.md) | — | ACTIVE — L4 redesign: split Evidence/Calibrations, calibrator quality, three exits, fractalaw edge AI signals |
+| 2026-07-07 | [evidence-schema-baserow](2026-07-07-evidence-schema-baserow.md) | — | L4 Artefacts/Judgements/Gaps templates built, sub-patterns (calibration_mode, safety_argument), applied to QQ (14 tables) |
+| 2026-07-05 | [evidence-calibration-tier](2026-07-05-evidence-calibration-tier.md) | — | SUSPENDED — L4 redesign: Phases 1-2 done (schema + templates), Phases 3-6 remain (fractalaw, workflow, docs) |
 | 2026-07-03 | [baserow-mix-task](2026-07-03-baserow-mix-task.md) | — | mix templates.apply/status, default column cleanup, :workspace_member rename, SA_ strip, Personnel table |
-| 2026-07-03 | [baserow-compliance-poc](2026-07-03-baserow-compliance-poc.md) | — | SUSPENDED — PoC solution design, L3 Controls + Hierarchy + Control Mappings, Evidence Vault with Artifact/Judgement |
+| 2026-07-03 | [baserow-compliance-poc](2026-07-03-baserow-compliance-poc.md) | — | ACTIVE — PoC solution design, L1-L4 templates built, remaining: Audit/Training/PDCA + QQ validation |
 | 2026-07-02 | [significance-signals](2026-07-02-significance-signals.md) | — | Significance signals from fractalaw: law+provision+part-level, Baserow sync with Strategy C, scoping guide |
 | 2026-06-11 | [delta-sync-lat-tuples](2026-06-11-delta-sync-lat-tuples.md) | — | Delta sync for LAT + Actor Tuples: DeltaDetector, orphan deletion, mapping timestamps |
 | 2026-06-11 | [oban-refactor](2026-06-11-oban-refactor.md) | — | Oban job queue: SyncWorker, SchedulerWorker, Engine.clean, workspace validation, telemetry |

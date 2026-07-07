@@ -61,6 +61,10 @@ Each artefact is a signal to judgement. Some signals are high-confidence (a func
 | `source` | enum | yes | See values | Where this artefact comes from |
 | `argument_legs` | enum[] | yes | See values | Which safety argument legs this artefact serves (horizontal evidence) |
 | `configuration_ref` | text | yes | | System version, configuration, or operating context this artefact applies to |
+| `assurance_ref` | text | yes | | External reference to the audit/inspection that produced this artefact (L5 seam) |
+| `assurance_line` | enum | yes | See values | Which line of assurance produced this artefact (L5 seam) |
+| `assurance_rating` | enum | yes | See values | Assurance opinion associated with this finding (L5 seam) |
+| `source_activity_type` | enum | yes | See values | What kind of assurance activity produced this artefact (L5 seam) |
 | `version` | text | yes | | Document version |
 | `expiry_date` | date | yes | | When this artefact expires |
 | `status` | enum | no | See values | Lifecycle state |
@@ -106,6 +110,17 @@ argument_legs: Compliance | ALARP | Hazard Log
   -- A test report may serve Compliance (standard met), ALARP (good practice applied),
      and Hazard Log (mitigation effective) — all from a single record.
   -- Null / empty for customers not doing safety arguments.
+
+assurance_line: 1st Line | 2nd Line | 3rd Line | External
+  -- Which line of assurance produced this artefact (L5 seam).
+  -- Null for artefacts not sourced from assurance activities.
+
+assurance_rating: Full | Substantial | Limited | No Assurance
+  -- The assurance opinion associated with this finding.
+
+source_activity_type: Inspection | Review | Audit | External Audit |
+                      Regulatory Inspection | Self-Assessment
+  -- What kind of assurance activity produced this artefact.
 
 status: Current | Expired | Superseded
 ```
