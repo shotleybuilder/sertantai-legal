@@ -271,3 +271,6 @@ Comfortably within 50K Baserow limit.
 - [`BASEROW-COMPLIANCE-ASSESSMENT-PATTERNS.md`](BASEROW-COMPLIANCE-ASSESSMENT-PATTERNS.md) — L2 assessment options
 - [`BASEROW-ACTION-TRACKER-PATTERNS.md`](BASEROW-ACTION-TRACKER-PATTERNS.md) — L2 remediation tracking
 - [`BASEROW-PERSONNEL-PATTERNS.md`](BASEROW-PERSONNEL-PATTERNS.md) — people patterns across all layers
+- [`EVIDENCE-SCHEMA.md`](EVIDENCE-SCHEMA.md) — L4 canonical schema (Evidence, Calibrations, Gaps)
+- [`EVIDENCE-VAULT-PATTERNS.md`](EVIDENCE-VAULT-PATTERNS.md) — L4 evidence design patterns
+- [`BASEROW-CONTROLS-DESIGN.md`](BASEROW-CONTROLS-DESIGN.md) — L3 Controls ontology

@@ -48,7 +48,7 @@ This matters because:
 - Baserow limitations (no conditional fields, no computed cross-table queries, no scheduling) are handled by *constraining the projection*, not by warping the schema.
 - The L1–L3 templates were Baserow-first — and we'll eventually extract their canonical schemas *from* Baserow. For L4, we don't create that debt.
 
-**Deliverable**: `docs/CALIBRATION-SCHEMA.md` — the canonical L4 entity model with relationships, constraints, and lifecycle rules. The Baserow template is derived from it, not the other way around.
+**Deliverable**: `docs/EVIDENCE-SCHEMA.md` — the canonical L4 entity model with relationships, constraints, and lifecycle rules. The Baserow template is derived from it, not the other way around.
 
 ## The L4 entity model
 
@@ -128,15 +128,16 @@ Then Baserow views are trivial: `WHERE Coverage_Status != 'Calibration Current'`
 
 ### Phase 2: Canonical schema + Baserow projection
 
-#### 2.0 Define canonical L4 schema (`docs/CALIBRATION-SCHEMA.md`)
-- [ ] Define all 5 entities (Evidence, Readings, Calibrations, Gaps, Decisions) with:
+#### 2.0 Define canonical L4 schema (`docs/EVIDENCE-SCHEMA.md`)
+- [x] Define all 5 entities (Evidence, Readings, Calibrations, Gaps, Decisions) with:
   - Fields, types, constraints (NOT NULL, enums, foreign keys)
   - Lifecycle rules (immutability, state transitions)
   - Relationships (cardinality, cascades)
   - Which are built now vs deferred (Readings, Decisions)
-- [ ] Define the Calibrator quality extension to People/Personnel
-- [ ] Define Coverage_Status as a computed/materialised attribute on Controls
-- [ ] Express as provider-agnostic SQL (Ash/Ecto-ready) — Baserow is a projection, not the source
+- [x] Define the Calibrator quality extension to People/Personnel
+- [x] Define Coverage_Status + audited override (recommended/scheduled/override_reason) on Controls
+- [x] Define Incidents falsification link (calibration_id, control_id, vindication feedback loop)
+- [x] Express as provider-agnostic types with Baserow projection notes
 - [ ] Peer review the schema before building templates
 
 #### 2a. Build **Calibrations** template (Baserow projection of canonical schema)
@@ -243,7 +244,7 @@ Then Baserow views are trivial: `WHERE Coverage_Status != 'Calibration Current'`
 - [ ] Validate end-to-end: Control → Calibration → Gap → Exit → Action → Evidence
 
 ### Phase 6: Documentation
-- [ ] Finalise `docs/CALIBRATION-SCHEMA.md` — canonical L4 entity model (created in Phase 2.0, refined through implementation)
+- [ ] Finalise `docs/EVIDENCE-SCHEMA.md` — canonical L4 entity model (created in Phase 2.0, refined through implementation)
 - [ ] Update `docs/EVIDENCE-VAULT-PATTERNS.md` with final design (two tables, Type-A/B, no confidence)
 - [ ] Update `docs/BASEROW-SCHEMA.md` with new tables/relationships
 - [ ] Update `docs/BASEROW-TEMPLATES.md` with new/modified templates

@@ -20,11 +20,11 @@ Our `Confidence` field is a single select: High / Medium / Low. This is exactly 
 
 The build spec has **three separate tables** with distinct purposes:
 
-| Build spec table | Purpose | Our equivalent |
-|---|---|---|
-| `readings` | The is — does the predicate hold right now? | (nothing — we don't have readings) |
-| `calibrations` | Periodic re-truing — does the gauge still mean what it claims? | A Judgement row in Evidence Vault |
-| `decisions` | The decision trail — what was seen, what was chosen, why | (nothing) |
+| Build spec table | Purpose                                                        | Our equivalent                     |
+| ---------------- | -------------------------------------------------------------- | ---------------------------------- |
+| `readings`       | The is — does the predicate hold right now?                    | (nothing — we don't have readings) |
+| `calibrations`   | Periodic re-truing — does the gauge still mean what it claims? | A Judgement row in Evidence Vault  |
+| `decisions`      | The decision trail — what was seen, what was chosen, why       | (nothing)                          |
 
 Our Evidence Vault tries to be all three. A Judgement evidence row is part calibration entry (Basis, Reasoning), part evidence artifact (linked to a Control), and part decision record (Confidence). But it's none of them properly. A calibration entry in the build spec has structured fields: `finding` (still-true / drifted / retired), `what_verified_now_means` (the re-anchored meaning), `action` (re-true / amend / retire), `next_due`. These are **structured choices**, not free text. Our `Reasoning` field is a long_text — it invites prose, which is the document-library pattern the dialectic explicitly rejects: *"the source of truth is structured data, not documents."*
 
@@ -61,6 +61,7 @@ Our evidence vault records a judgement. If the judgement is negative, it can lin
 The build spec: *"a green ledger must never render as 'safe' — only as 'the gauges we have read true.'"* It has a `coverage_status` on hazards and a coverage report (hazards with no constraint, constraints with no recent reading).
 
 Our vault has no "what's missing" mechanism. The "By Control" view shows evidence per control, but there is no view showing:
+
 - Controls with **no evidence at all** (invisible on the evidence table)
 - Controls with **artifact evidence but no judgement evidence** (legible proxy standing in for load-bearing reality)
 - Obligations with **no control mapping** (the wiring is absent)
@@ -88,16 +89,16 @@ Not everything falls:
 
 ## Summary: what would need to change
 
-| Issue | Severity | Fix |
-|---|---|---|
-| Confidence is H/M/L, not calibrated probability | High | Replace with numeric confidence (%) or at minimum add calibrator quality tracking on Personnel |
-| No calibrator quality tracking | High | Add `calibration_score`, `last_cal_test`, `calibrated_domains` to Personnel template |
-| Reasoning is free text, not structured | Medium | Add structured fields: `Finding` (still-true / drifted / retired), `Action_Taken` (re-true / amend / retire) |
-| No drift_interval / scheduling mechanism | High | Beyond Baserow PoC scope — needs agent/scheduler. Flag in doc. |
-| Type-A/Type-B not distinguished | Medium | Add to evidence taxonomy or Evidence_Nature options |
-| No three-exit classification on gaps | Medium | Add to Action Tracker: `Gap_Exit` (correct-work / amend-constraint / protect-adaptation) |
-| No "what's missing" mechanism | Medium | Cross-table concern; document the standing questions even if Baserow can't automate them |
-| Calibration is a row in Evidence, not its own entity | Structural | Right for Baserow PoC; wrong for the full SMS build. Flag the seam. |
+| Issue                                                | Severity   | Fix                                                                                                          |
+| ---------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| Confidence is H/M/L, not calibrated probability      | High       | Replace with numeric confidence (%) or at minimum add calibrator quality tracking on Personnel               |
+| No calibrator quality tracking                       | High       | Add `calibration_score`, `last_cal_test`, `calibrated_domains` to Personnel template                         |
+| Reasoning is free text, not structured               | Medium     | Add structured fields: `Finding` (still-true / drifted / retired), `Action_Taken` (re-true / amend / retire) |
+| No drift_interval / scheduling mechanism             | High       | Beyond Baserow PoC scope — needs agent/scheduler. Flag in doc.                                               |
+| Type-A/Type-B not distinguished                      | Medium     | Add to evidence taxonomy or Evidence_Nature options                                                          |
+| No three-exit classification on gaps                 | Medium     | Add to Action Tracker: `Gap_Exit` (correct-work / amend-constraint / protect-adaptation)                     |
+| No "what's missing" mechanism                        | Medium     | Cross-table concern; document the standing questions even if Baserow can't automate them                     |
+| Calibration is a row in Evidence, not its own entity | Structural | Right for Baserow PoC; wrong for the full SMS build. Flag the seam.                                          |
 
 The deepest challenge: **our Evidence Vault is still a document repository with extra fields, not a calibration ledger.** The build spec separates readings, calibrations, and decisions into distinct entities with distinct lifecycles. We've bolted calibration concepts onto an evidence table — which is, structurally, the "try harder to operationalise it" response the paradox brief warns both fails and commands false confidence.
 

@@ -2,7 +2,7 @@
 
 How the Evidence Vault template adapts to customer needs. The template creates an **Evidence** table linked to Assessments, Actions, and Controls, with fields and views controlled by `storage_mode` and `people` sub-pattern dimensions.
 
-The Evidence Vault handles two fundamentally different kinds of evidence: **artifacts** (documents, logs, certificates — proof that the *form* of a control exists) and **judgements** (a named person's assessed conclusion — proof that the *substance* of a control works). The distinction matters because a vault full of artifacts can go green while the load-bearing reality goes unwatched.
+The Evidence Vault handles two fundamentally different kinds of evidence: **artefacts** (documents, logs, certificates — proof that the *form* of a control exists) and **judgements** (a named person's assessed conclusion — proof that the *substance* of a control works). The distinction matters because a vault full of artefacts can go green while the load-bearing reality goes unwatched.
 
 ---
 
@@ -18,17 +18,18 @@ The L4 layer in the 7-layer architecture should aim for **evidence-by-design**: 
 
 The principle: **if executing a control does not automatically produce a record, the control design is incomplete.**
 
-| Control | Evidence-by-design | Anti-pattern |
-|---------|-------------------|-------------|
-| Backup procedure | Backup system's own log (timestamp, success/failure, data volume) | Someone screenshots the backup console weekly |
-| Permit-to-work | Digital sign-off record in the permit system | Paper permits filed in a cabinet, photographed before audit |
-| Emissions monitoring | Continuous monitor logging readings every 15 minutes | Monthly manual reading transcribed to a spreadsheet |
-| Confined space entry | Entry/exit system recording who, when, gas test results | Handwritten log book scanned quarterly |
-| Safety training | LMS completion record with date, score, certificate | Attendance sheet signed at the door |
+| Control              | Evidence-by-design                                                | Anti-pattern                                                |
+| -------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------- |
+| Backup procedure     | Backup system's own log (timestamp, success/failure, data volume) | Someone screenshots the backup console weekly               |
+| Permit-to-work       | Digital sign-off record in the permit system                      | Paper permits filed in a cabinet, photographed before audit |
+| Emissions monitoring | Continuous monitor logging readings every 15 minutes              | Monthly manual reading transcribed to a spreadsheet         |
+| Confined space entry | Entry/exit system recording who, when, gas test results           | Handwritten log book scanned quarterly                      |
+| Safety training      | LMS completion record with date, score, certificate               | Attendance sheet signed at the door                         |
 
 **The design constraint**: When creating a Control (L3), the compliance team should answer "how will we know this control operated?" If the answer involves a human remembering to document something after the fact, the control is fragile. Evidence-by-design means the control execution and the evidence capture are the same act, or the evidence capture is automated.
 
 In the Baserow workspace, this means:
+
 - Controls with `Nature: Automated` should reference system-generated evidence (logs, sensor data, system records)
 - Controls with `Nature: Manual` need a mechanism that makes the evidence a byproduct (digital checklists, sign-off workflows, timestamped forms)
 - Controls with `Nature: IT-dependent manual` sit in between — the system captures the evidence, the human does the work
@@ -39,32 +40,33 @@ In the Baserow workspace, this means:
 
 Evidence is not just documents. ISA 500 and NIST SP 800-53A identify distinct categories:
 
-| Type | Description | Reliability | Examples |
-|------|-------------|-------------|----------|
-| **Document** | Written records with their own lifecycle | Medium-High | Policies, procedures, permits, contracts, risk assessments |
-| **Record** | Completed forms, checklists, register entries | Medium-High | Inspection checklists, training sign-off, meeting minutes |
-| **Log / System-Generated** | Automated output from operational systems | High | Access logs, backup logs, emissions data, sensor readings |
-| **Observation** | Direct witness account of a process operating | Medium | Site walkthrough notes, audit observation, photo/video |
-| **Attestation** | Formal statement that something is true | Low-Medium | Self-declarations, management assertions, signed statements |
-| **Measurement** | Quantitative data from testing or monitoring | High | Air quality readings, noise levels, water sample results |
-| **Certificate** | Third-party confirmation of a status | High | ISO certificates, training qualifications, equipment test certificates |
-| **Judgement Record** | Named person's assessed conclusion with reasoning | Varies (depends on calibration) | "This risk assessment is adequate because...", "These barriers are intact based on..." |
+| Type                       | Description                                       | Reliability                     | Examples                                                                               |
+| -------------------------- | ------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------- |
+| **Document**               | Written records with their own lifecycle          | Medium-High                     | Policies, procedures, permits, contracts, risk assessments                             |
+| **Record**                 | Completed forms, checklists, register entries     | Medium-High                     | Inspection checklists, training sign-off, meeting minutes                              |
+| **Log / System-Generated** | Automated output from operational systems         | High                            | Access logs, backup logs, emissions data, sensor readings                              |
+| **Observation**            | Direct witness account of a process operating     | Medium                          | Site walkthrough notes, audit observation, photo/video                                 |
+| **Attestation**            | Formal statement that something is true           | Low-Medium                      | Self-declarations, management assertions, signed statements                            |
+| **Measurement**            | Quantitative data from testing or monitoring      | High                            | Air quality readings, noise levels, water sample results                               |
+| **Certificate**            | Third-party confirmation of a status              | High                            | ISO certificates, training qualifications, equipment test certificates                 |
+| **Judgement Record**       | Named person's assessed conclusion with reasoning | Varies (depends on calibration) | "This risk assessment is adequate because...", "These barriers are intact based on..." |
 
 **Reliability hierarchy** (from ISA 500):
+
 1. External source > internal source
 2. System-generated > human-generated
 3. Auditor-obtained > entity-provided
 4. Documentary > oral
 5. Originals > copies
 
-### Evidence Nature: Artifact vs Judgement
+### Evidence Nature: Artefact vs Judgement
 
 Orthogonal to type, every evidence item has a **nature** — what kind of proof it provides:
 
-| Nature | What it proves | Record structure | Example |
-|--------|---------------|-----------------|---------|
-| **Artifact** | The *form* of the control — that it exists, was executed, produced output | Document, log, certificate, photo — the thing itself | Backup log, training certificate, signed permit, sensor reading |
-| **Judgement** | The *substance* of the control — that it actually works | Who judged, what they observed, their reasoning, their confidence | "This risk assessment is adequate to the hazard because [reasoning]" |
+| Nature        | What it proves                                                            | Record structure                                                  | Example                                                              |
+| ------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Artefact**  | The *form* of the control — that it exists, was executed, produced output | Document, log, certificate, photo — the thing itself              | Backup log, training certificate, signed permit, sensor reading      |
+| **Judgement** | The *substance* of the control — that it actually works                   | Who judged, what they observed, their reasoning, their confidence | "This risk assessment is adequate to the hazard because [reasoning]" |
 
 An artifact answers "did it happen?" A judgement answers "is it any good?" Both are necessary. The danger is a vault full of the first and empty of the second.
 
@@ -86,17 +88,17 @@ Draft ──► Submitted ──► Under Review ──► Accepted ──► Ac
                           (rework)
 ```
 
-| State | Meaning | Who acts |
-|-------|---------|----------|
-| **Draft** | Evidence captured but not yet submitted for review | Control owner / operator |
-| **Submitted** | Uploaded/referenced, awaiting review | Control owner |
-| **Under Review** | Being checked for completeness, relevance, authenticity | Compliance officer |
-| **Accepted** | Confirmed as adequate evidence for the linked control | Compliance officer |
-| **Active** | Current, valid evidence in the repository | — |
-| **Expiring** | Within the renewal window (e.g., certificate expires in 30 days) | Control owner (notified) |
-| **Expired** | Past its validity date — creates a gap | Flagged for action |
-| **Superseded** | Replaced by a newer version | — |
-| **Archived** | No longer current but retained for regulatory retention | — |
+| State            | Meaning                                                          | Who acts                 |
+| ---------------- | ---------------------------------------------------------------- | ------------------------ |
+| **Draft**        | Evidence captured but not yet submitted for review               | Control owner / operator |
+| **Submitted**    | Uploaded/referenced, awaiting review                             | Control owner            |
+| **Under Review** | Being checked for completeness, relevance, authenticity          | Compliance officer       |
+| **Accepted**     | Confirmed as adequate evidence for the linked control            | Compliance officer       |
+| **Active**       | Current, valid evidence in the repository                        | —                        |
+| **Expiring**     | Within the renewal window (e.g., certificate expires in 30 days) | Control owner (notified) |
+| **Expired**      | Past its validity date — creates a gap                           | Flagged for action       |
+| **Superseded**   | Replaced by a newer version                                      | —                        |
+| **Archived**     | No longer current but retained for regulatory retention          | —                        |
 
 **For the Baserow PoC**, the full lifecycle is too heavy. The template uses a simplified three-state model: **Current / Expired / Superseded**. Customers with formal evidence review workflows can extend this.
 
@@ -114,11 +116,13 @@ Action (L2) ◄────────┘ (secondary — "which action does thi
 ```
 
 **Why Control is the primary link**:
+
 - A control is the operational mechanism. Evidence proves it worked.
 - One control may satisfy multiple obligations (via Control Mappings). Evidence collected once serves all of them.
 - The obligation→control→evidence chain gives traceability without duplicating evidence per obligation.
 
 **Why Assessment and Action are secondary links**:
+
 - An assessment may reference evidence to justify a compliance judgement ("Compliant because: [linked evidence]").
 - An action may require evidence to close ("evidence that the corrective action was completed").
 - These are usage relationships, not ownership relationships. The evidence exists because a control operated, not because an assessment needed it.
@@ -135,14 +139,15 @@ The template adapts based on the `storage_mode` sub-pattern.
 
 Evidence artifacts are uploaded directly as file attachments in the Evidence table.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| File | File | Uploaded document, photo, certificate |
-| Upload_Date | Date | When uploaded |
+| Field       | Type | Description                           |
+| ----------- | ---- | ------------------------------------- |
+| File        | File | Uploaded document, photo, certificate |
+| Upload_Date | Date | When uploaded                         |
 
 **Best for**: Small teams, simple setups, evidence that doesn't exist elsewhere (photos from site walks, ad-hoc documents).
 
 **Trade-offs**:
+
 - (+) Everything in one place, no external dependencies
 - (+) No link rot — the file is in Baserow
 - (−) No advanced DMS features (versioning, retention, access control)
@@ -153,15 +158,16 @@ Evidence artifacts are uploaded directly as file attachments in the Evidence tab
 
 Evidence artifacts stay in the customer's document management system. The Evidence table stores metadata and a URL.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| Document_URL | URL | Link to document in DMS (SharePoint, Google Drive, S3) |
+| Field             | Type | Description                                                              |
+| ----------------- | ---- | ------------------------------------------------------------------------ |
+| Document_URL      | URL  | Link to document in DMS (SharePoint, Google Drive, S3)                   |
 | Document_Location | Text | Path or description (e.g., "SharePoint > EHS > Risk Assessments > 2026") |
-| Upload_Date | Date | When referenced |
+| Upload_Date       | Date | When referenced                                                          |
 
 **Best for**: Enterprises with existing DMS, documents that need their own lifecycle management, large files.
 
 **Trade-offs**:
+
 - (+) Single source of truth — no duplication
 - (+) DMS handles versioning, access, retention
 - (+) No storage pressure on Baserow
@@ -186,6 +192,7 @@ How do you know if evidence is adequate? ISA 500 defines two dimensions: **suffi
 ### Sufficiency
 
 The amount of evidence needed depends on:
+
 - **Risk level** of the obligation/control — higher risk requires more evidence
 - **Quality of individual items** — higher quality means fewer items needed
 - **Control environment strength** — weaker environments need more testing
@@ -196,25 +203,27 @@ There is no magic number. A single system-generated log from an authoritative so
 
 Evidence quality is assessed on:
 
-| Dimension | Question | High quality | Low quality |
-|-----------|----------|-------------|------------|
-| **Relevance** | Does it relate to the specific control? | Inspection report for this site, this month | Generic template, undated |
-| **Freshness** | Is it current? | Within the control's operating period | From two years ago |
-| **Source authority** | Who/what produced it? | System log, third-party auditor | Self-declaration |
-| **Completeness** | Does it cover the full assertion? | All staff trained (100%) | Training record for 3 of 50 staff |
-| **Independence** | Produced by someone other than the control owner? | External audit finding | Control owner's own attestation |
-| **Authenticity** | Can it be tampered with? | Immutable system log with audit trail | Editable spreadsheet |
-| **Timeliness** | Captured at point of control execution? | Real-time sensor data | Retrospective reconstruction |
+| Dimension            | Question                                          | High quality                                | Low quality                       |
+| -------------------- | ------------------------------------------------- | ------------------------------------------- | --------------------------------- |
+| **Relevance**        | Does it relate to the specific control?           | Inspection report for this site, this month | Generic template, undated         |
+| **Freshness**        | Is it current?                                    | Within the control's operating period       | From two years ago                |
+| **Source authority** | Who/what produced it?                             | System log, third-party auditor             | Self-declaration                  |
+| **Completeness**     | Does it cover the full assertion?                 | All staff trained (100%)                    | Training record for 3 of 50 staff |
+| **Independence**     | Produced by someone other than the control owner? | External audit finding                      | Control owner's own attestation   |
+| **Authenticity**     | Can it be tampered with?                          | Immutable system log with audit trail       | Editable spreadsheet              |
+| **Timeliness**       | Captured at point of control execution?           | Real-time sensor data                       | Retrospective reconstruction      |
 
 ### Template fields for quality
 
 The template captures quality signals through:
+
 - `Type` (single select) — implicitly indicates reliability (Log > Certificate > Document > Attestation)
 - `Expiry_Date` — freshness signal
 - `Status` — Current/Expired/Superseded lifecycle
 - `Version` — currency of the document
 
 **Not in the PoC template** (but available for enterprise extension):
+
 - Source_Authority: who/what produced this (manual / system-generated / third-party)
 - Independence_Level: self / internal-independent / external
 - Completeness_Flag: partial / complete
@@ -266,11 +275,11 @@ The Controls template has dimensions that map to evidence strategy decisions:
 
 The strongest determinant. From PCAOB AS 2201 / SOX practice:
 
-| Nature | Evidence Strategy | Rationale |
-|--------|------------------|-----------|
-| **Automated** | Benchmark once, then rely on IT general controls (change management, access controls). Re-test only if config changes. | If the system hasn't changed, the control hasn't changed. Evidence = system configuration + change log + access controls. |
-| **Manual** | Sample-based testing every period. Sample size driven by frequency and risk. | Human controls can degrade silently. Must verify ongoing execution. |
-| **IT-dependent manual** | Hybrid: benchmark the system output, sample the human review. | Test that the system produces the right exception report AND that the human acts on it. |
+| Nature                  | Evidence Strategy                                                                                                      | Rationale                                                                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Automated**           | Benchmark once, then rely on IT general controls (change management, access controls). Re-test only if config changes. | If the system hasn't changed, the control hasn't changed. Evidence = system configuration + change log + access controls. |
+| **Manual**              | Sample-based testing every period. Sample size driven by frequency and risk.                                           | Human controls can degrade silently. Must verify ongoing execution.                                                       |
+| **IT-dependent manual** | Hybrid: benchmark the system output, sample the human review.                                                          | Test that the system produces the right exception report AND that the human acts on it.                                   |
 
 This is the single most important split. Automated controls need evidence of system integrity (ITGCs). Manual controls need evidence of ongoing human execution (samples, observations, records).
 
@@ -278,15 +287,15 @@ This is the single most important split. Automated controls need evidence of sys
 
 From SOX practitioner consensus (PCAOB AS 2315 statistical tables):
 
-| Control Frequency | Evidence Sample Size | Population |
-|-------------------|---------------------|------------|
-| Continuous / Automated (with ITGCs) | 1 (benchmark) | N/A |
-| Annual | 1 | 1 |
-| Quarterly | 2 | 4 |
-| Monthly | 2–5 | 12 |
-| Weekly | 5–15 | 52 |
-| Daily | 20–40 | ~250 |
-| Ad-hoc | All occurrences | Variable |
+| Control Frequency                   | Evidence Sample Size | Population |
+| ----------------------------------- | -------------------- | ---------- |
+| Continuous / Automated (with ITGCs) | 1 (benchmark)        | N/A        |
+| Annual                              | 1                    | 1          |
+| Quarterly                           | 2                    | 4          |
+| Monthly                             | 2–5                  | 12         |
+| Weekly                              | 5–15                 | 52         |
+| Daily                               | 20–40                | ~250       |
+| Ad-hoc                              | All occurrences      | Variable   |
 
 The key insight: **sample size scales sub-linearly with population**. You don't need to evidence every execution of a daily control — a statistically meaningful sample across the assessment period provides assurance. But for annual controls, you test every occurrence because the population is 1.
 
@@ -296,12 +305,12 @@ The key insight: **sample size scales sub-linearly with population**. You don't 
 
 From the bow-tie barrier model used in process safety:
 
-| Control Type | Evidence Question | Evidence Form |
-|-------------|-------------------|---------------|
-| **Preventive** | "Was the barrier available when needed?" | Readiness evidence: inspection records, maintenance logs, proof test results, configuration checks |
-| **Detective** | "Did the barrier identify what it should have?" | Artifact evidence: exception reports, monitoring outputs, alert records, inspection findings |
-| **Corrective** | "Did the barrier restore the safe state?" | Performance evidence: response time metrics, post-incident reviews, remediation records |
-| **Directive** | "Did people follow the guidance?" | Compliance evidence: training records, acknowledgement logs, observation records |
+| Control Type   | Evidence Question                               | Evidence Form                                                                                      |
+| -------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Preventive** | "Was the barrier available when needed?"        | Readiness evidence: inspection records, maintenance logs, proof test results, configuration checks |
+| **Detective**  | "Did the barrier identify what it should have?" | Artifact evidence: exception reports, monitoring outputs, alert records, inspection findings       |
+| **Corrective** | "Did the barrier restore the safe state?"       | Performance evidence: response time metrics, post-incident reviews, remediation records            |
+| **Directive**  | "Did people follow the guidance?"               | Compliance evidence: training records, acknowledgement logs, observation records                   |
 
 Preventive controls present a paradox: if they work perfectly, nothing happens. Evidence of prevention is inherently evidence of absence — the incident didn't occur. This is why preventive controls need readiness evidence (proof the barrier was in place) rather than performance evidence (proof the barrier fired).
 
@@ -311,12 +320,12 @@ Detective controls have inherent evidence: the detection mechanism produces arti
 
 From NIST SP 800-53A depth/coverage levels and SIL proof-test requirements:
 
-| Blast Radius | NIST Depth | Evidence Standard | SIL Parallel |
-|-------------|-----------|-------------------|-------------|
+| Blast Radius   | NIST Depth    | Evidence Standard                                                    | SIL Parallel                                             |
+| -------------- | ------------- | -------------------------------------------------------------------- | -------------------------------------------------------- |
 | **Enterprise** | Comprehensive | Full documentation, independent verification, corroboration required | SIL 3–4: quarterly proof tests, architectural redundancy |
-| **Site** | Focused | Documented evidence, periodic independent review | SIL 2: annual proof tests |
-| **Area** | Focused | Documented evidence, management review | SIL 1: periodic proof tests |
-| **Local** | Basic | Observation, supervisor sign-off, self-attestation acceptable | Below SIL: maintenance records |
+| **Site**       | Focused       | Documented evidence, periodic independent review                     | SIL 2: annual proof tests                                |
+| **Area**       | Focused       | Documented evidence, management review                               | SIL 1: periodic proof tests                              |
+| **Local**      | Basic         | Observation, supervisor sign-off, self-attestation acceptable        | Below SIL: maintenance records                           |
 
 The SIL framework provides the theoretical basis: **PFD_avg = (λ_DU × T_proof) / 2** — the probability of failure on demand increases linearly with the proof test interval. Generalised: confidence in any control degrades linearly with time since last verified, and the acceptable degradation rate is inversely proportional to blast radius. An Enterprise control going stale is fundamentally more dangerous than a Local control going stale.
 
@@ -324,12 +333,12 @@ The SIL framework provides the theoretical basis: **PFD_avg = (λ_DU × T_proof)
 
 From COSO 2009 Monitoring Guidance (direct vs indirect information):
 
-| Info Distance | Information Quality | Evidence Requirement |
-|--------------|--------------------|--------------------|
-| **Direct** | High fidelity, immediate, contextual | Observation and self-attestation often sufficient. The manager can see the control operating. |
-| **Adjacent** | Good fidelity, minor delay | Supervisor records, team-level reports. One hop of trust. |
-| **Mediated** | Reduced fidelity, aggregated, delayed | Formal reports, dashboards, exception-based monitoring. The mediating system's design determines what is preserved and what is lost. |
-| **Remote** | Degraded fidelity, significant delay, framing shift | Independent audit, third-party verification, corroborated evidence. Self-reported evidence from Remote distance is inherently less reliable. |
+| Info Distance | Information Quality                                 | Evidence Requirement                                                                                                                         |
+| ------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Direct**    | High fidelity, immediate, contextual                | Observation and self-attestation often sufficient. The manager can see the control operating.                                                |
+| **Adjacent**  | Good fidelity, minor delay                          | Supervisor records, team-level reports. One hop of trust.                                                                                    |
+| **Mediated**  | Reduced fidelity, aggregated, delayed               | Formal reports, dashboards, exception-based monitoring. The mediating system's design determines what is preserved and what is lost.         |
+| **Remote**    | Degraded fidelity, significant delay, framing shift | Independent audit, third-party verification, corroborated evidence. Self-reported evidence from Remote distance is inherently less reliable. |
 
 **COSO's key principle**: indirect information is less persuasive and requires corroboration. If the only evidence for a Remote control is a self-reported attestation from the entity being controlled (e.g., a subsidiary claiming it follows the corporate policy), the evidence is weak. Independent verification — audit findings, system logs, third-party certificates — provides corroboration.
 
@@ -337,21 +346,21 @@ From COSO 2009 Monitoring Guidance (direct vs indirect information):
 
 From LOPA IPL criteria and ISACA emergency control guidance:
 
-| Demand Mode | Evidence Scope |
-|------------|---------------|
-| **Normal** | Standard evidence of routine operation (inspections, logs, samples) |
-| **Abnormal** | Evidence of elevated operation + authorization for the deviation |
+| Demand Mode   | Evidence Scope                                                                   |
+| ------------- | -------------------------------------------------------------------------------- |
+| **Normal**    | Standard evidence of routine operation (inspections, logs, samples)              |
+| **Abnormal**  | Evidence of elevated operation + authorization for the deviation                 |
 | **Emergency** | Evidence of activation + authorization + post-incident review + return to normal |
 
 Emergency controls need evidence beyond "it operated": did the right person authorize the emergency response? Was the response proportionate? Was a post-incident review conducted? Was normal operation restored? LOPA states that an undocumented control receives zero credit for risk reduction purposes, regardless of whether it functions — the auditability criterion is constitutive, not descriptive.
 
 #### Tier → Inheritance of Evidence
 
-| Tier | Evidence Inheritance |
-|------|---------------------|
-| **Corporate** | Evidence at corporate tier flows down. A group-wide penetration test report serves as evidence for all jurisdictions and contracts. |
-| **Jurisdiction** | Supplements corporate evidence with jurisdiction-specific records (local inspections, regulatory submissions). |
-| **Contract** | Supplements inherited evidence with contract-specific deliverables (customer-mandated reports, certifications). |
+| Tier             | Evidence Inheritance                                                                                                                |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Corporate**    | Evidence at corporate tier flows down. A group-wide penetration test report serves as evidence for all jurisdictions and contracts. |
+| **Jurisdiction** | Supplements corporate evidence with jurisdiction-specific records (local inspections, regulatory submissions).                      |
+| **Contract**     | Supplements inherited evidence with contract-specific deliverables (customer-mandated reports, certifications).                     |
 
 A single evidence item can serve multiple obligations across multiple frameworks because it proves a control operated, and that control maps to obligations at all tiers. This is the "evidence reuse" pattern that eliminates duplicate evidence collection across audits.
 
@@ -404,15 +413,15 @@ Combining the dimensions into a practical decision model:
 
 ### Practical Example: Three Controls, Three Strategies
 
-| | Corporate confined space policy | Site gas detection system | Worker PPE |
-|---|---|---|---|
-| **Nature** | Manual (directive) | Automated | Manual |
-| **Blast_Radius** | Site | Area | Local |
-| **Info_Distance** | Remote | Direct | Direct |
-| **Frequency** | Ad-hoc (on entry) | Continuous | Daily |
-| **Control_Type** | Directive | Detective | Preventive |
-| **Evidence strategy** | Formal: training records, permit completion, audit findings, independent verification needed because Remote | System log of readings + alarms, ITGC evidence for the monitoring system. Benchmark — low effort because automated and Direct | Supervisor observation at shift start. Self-attestation acceptable. Low formal evidence because Direct, Local, observable |
-| **Staleness tolerance** | Low — Remote + Site blast radius means stale evidence is a red flag | Medium — automated + Direct means system self-reports, but sensor calibration needs periodic verification | High — Direct observation refreshes evidence daily |
+|                         | Corporate confined space policy                                                                             | Site gas detection system                                                                                                     | Worker PPE                                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Nature**              | Manual (directive)                                                                                          | Automated                                                                                                                     | Manual                                                                                                                    |
+| **Blast_Radius**        | Site                                                                                                        | Area                                                                                                                          | Local                                                                                                                     |
+| **Info_Distance**       | Remote                                                                                                      | Direct                                                                                                                        | Direct                                                                                                                    |
+| **Frequency**           | Ad-hoc (on entry)                                                                                           | Continuous                                                                                                                    | Daily                                                                                                                     |
+| **Control_Type**        | Directive                                                                                                   | Detective                                                                                                                     | Preventive                                                                                                                |
+| **Evidence strategy**   | Formal: training records, permit completion, audit findings, independent verification needed because Remote | System log of readings + alarms, ITGC evidence for the monitoring system. Benchmark — low effort because automated and Direct | Supervisor observation at shift start. Self-attestation acceptable. Low formal evidence because Direct, Local, observable |
+| **Staleness tolerance** | Low — Remote + Site blast radius means stale evidence is a red flag                                         | Medium — automated + Direct means system self-reports, but sensor calibration needs periodic verification                     | High — Direct observation refreshes evidence daily                                                                        |
 
 ### Theoretical Foundation
 
@@ -445,13 +454,13 @@ This structural trap, identified in safety science (Rae & Provan 2018, Hubbard 2
 
 The evidence strategy from the previous section — Types, Lifecycle, Quality Signals, the Control-property lookup — is entirely artifact-based evidence. It answers "does evidence exist, is it current, is there enough of it?" These are legible questions. An Evidence Vault that only contains artifacts can go fully green — every Control has linked evidence, every item is Current, nothing is Expired, the counts are healthy — while the load-bearing reality goes unwatched.
 
-| What the vault shows (legible) | What actually matters (load-bearing) |
-|---|----|
+| What the vault shows (legible)                        | What actually matters (load-bearing)                       |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
 | "Risk assessment exists and was reviewed on schedule" | *Is this risk assessment actually adequate to the hazard?* |
-| "Training record complete, refresher done" | *Can this person actually do this job safely, today?* |
-| "Permit-to-work issued and filed" | *Is the energy genuinely dead at the point of work?* |
-| "Number of inspection reports linked" | *Did anyone act on what was found?* |
-| "100% of controls have evidence" | *Are the controls actually working?* |
+| "Training record complete, refresher done"            | *Can this person actually do this job safely, today?*      |
+| "Permit-to-work issued and filed"                     | *Is the energy genuinely dead at the point of work?*       |
+| "Number of inspection reports linked"                 | *Did anyone act on what was found?*                        |
+| "100% of controls have evidence"                      | *Are the controls actually working?*                       |
 
 Read down the right-hand column: every entry contains a word that resists a tick — *adequate, actually, genuinely*. That is the load-bearing judgement. That is what artifacts cannot hold.
 
@@ -470,12 +479,12 @@ The resolution is to stop pretending load-bearing evidence can be ticked, and ha
 
 **For load-bearing evidence (judgements), record the judgement and its reasoning, not a tick.** The evidence is not a document — it is a named person's professional conclusion. The record captures:
 
-| Field | Purpose | Example |
-|-------|---------|---------|
-| **Judged_By** | Named, accountable person who exercised judgement | "Jane Smith, Senior EHS Officer" |
-| **Basis** | What they observed, reviewed, or tested | "Walked site, observed 12 PTW completions, interviewed 3 operators, reviewed last 6 months of isolation records" |
-| **Reasoning** | Why they concluded what they did | "Controls adequate: isolation procedure consistently followed, operators demonstrated competence, no deviations in records. Weakness: signage at Panel B unclear — action raised." |
-| **Confidence** | How certain they are | High / Medium / Low |
+| Field          | Purpose                                           | Example                                                                                                                                                                            |
+| -------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Judged_By**  | Named, accountable person who exercised judgement | "Jane Smith, Senior EHS Officer"                                                                                                                                                   |
+| **Basis**      | What they observed, reviewed, or tested           | "Walked site, observed 12 PTW completions, interviewed 3 operators, reviewed last 6 months of isolation records"                                                                   |
+| **Reasoning**  | Why they concluded what they did                  | "Controls adequate: isolation procedure consistently followed, operators demonstrated competence, no deviations in records. Weakness: signage at Panel B unclear — action raised." |
+| **Confidence** | How certain they are                              | High / Medium / Low                                                                                                                                                                |
 
 The audit object becomes **the exercise of judgement over time** — is the same person consistently reaching the same conclusion? Has their basis been thorough? Has their confidence been well-calibrated? This is defensible to a regulator in a way that a tick is not, because it shows the *reasoning*, not just the outcome.
 
@@ -483,15 +492,15 @@ The audit object becomes **the exercise of judgement over time** — is the same
 
 Not all controls need both natures. The Control table's existing properties signal which need judgements:
 
-| Control property | Artifact sufficient | Judgement needed |
-|-----------------|--------------------|-----------------| 
-| **Nature: Automated** | Usually yes — system logs prove operation | Only if the system's design adequacy is in question |
-| **Nature: Manual** | Proves the activity happened | Yes — did the person exercise adequate judgement? |
-| **Info_Distance: Direct** | Often yes — the manager can see it working | Less urgently — observability provides natural assurance |
-| **Info_Distance: Remote** | Proves a form was filed | Yes — remote attestations need corroboration by judgement |
-| **Demand_Mode: Emergency** | Proves the procedure was activated | Yes — was the response actually proportionate and effective? |
-| **Blast_Radius: Enterprise** | Proves the policy exists | Yes — does the policy actually protect at scale? |
-| **Control_Type: Directive** | Proves the policy was communicated | Yes — are people actually following it? |
+| Control property             | Artifact sufficient                        | Judgement needed                                             |
+| ---------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| **Nature: Automated**        | Usually yes — system logs prove operation  | Only if the system's design adequacy is in question          |
+| **Nature: Manual**           | Proves the activity happened               | Yes — did the person exercise adequate judgement?            |
+| **Info_Distance: Direct**    | Often yes — the manager can see it working | Less urgently — observability provides natural assurance     |
+| **Info_Distance: Remote**    | Proves a form was filed                    | Yes — remote attestations need corroboration by judgement    |
+| **Demand_Mode: Emergency**   | Proves the procedure was activated         | Yes — was the response actually proportionate and effective? |
+| **Blast_Radius: Enterprise** | Proves the policy exists                   | Yes — does the policy actually protect at scale?             |
+| **Control_Type: Directive**  | Proves the policy was communicated         | Yes — are people actually following it?                      |
 
 The pattern: **controls where a human's judgement is the active ingredient in the control's effectiveness need judgement evidence.** Automated controls with Direct information distance and Local blast radius rarely do. Manual, Remote, Enterprise-blast-radius controls almost always do.
 
@@ -502,6 +511,7 @@ A fully green Evidence Vault is the **most dangerous** state, not the most reass
 The standing question alongside any green dashboard: **what load-bearing judgement is not on this board at all?**
 
 In the Evidence Vault, this manifests as:
+
 - Controls with artifact evidence but no judgement evidence — the form is checked, the substance is not
 - Controls with no evidence at all — the gap is invisible unless you look for it
 - Judgement evidence that hasn't been refreshed — the person judged it adequate 18 months ago; has anything changed?
@@ -513,6 +523,7 @@ The "Judgements" and "Judgements Due" views surface the first two. The third req
 Even good evidence rots. "Verified" slides from "energy is dead" to "a form was signed." A judgement from 2024 that the risk assessment was adequate does not mean it's adequate in 2026 after the process changed.
 
 The calibration discipline:
+
 1. **Re-judge on a schedule tied to the control's risk profile** — the same Info_Distance × Staleness × Blast_Radius logic from the evidence strategy
 2. **Compare judgements over time** — is the same person consistently reaching the same conclusion? If so, are they still looking carefully, or has the judgement become routine?
 3. **Rotate judges** — a fresh pair of eyes may see what the habitual assessor no longer notices
@@ -618,20 +629,20 @@ Controls who uploaded/referenced the evidence.
 
 ### `:linked` — Personnel table references
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field       | Type                 | Description             |
+| ----------- | -------------------- | ----------------------- |
 | Uploaded_By | Link_row → Personnel | Who uploaded/referenced |
 
 ### `:workspace_member` / `:hybrid` — Baserow Collaborators
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field       | Type          | Description             |
+| ----------- | ------------- | ----------------------- |
 | Uploaded_By | Collaborators | Who uploaded/referenced |
 
 ### `:flat` — Text field
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field       | Type | Description             |
+| ----------- | ---- | ----------------------- |
 | Uploaded_By | Text | Who uploaded/referenced |
 
 ---
@@ -644,33 +655,33 @@ See [Embedded vs Referenced Evidence](#embedded-vs-referenced-evidence) above.
 
 ## Views
 
-| View | Type | Purpose |
-|------|------|---------|
-| All Evidence | Grid | Default view — all rows |
-| Expiring Soon | Grid | Filtered: Status = "Current", sorted by Expiry_Date ascending |
-| By Type | Grid | Grouped by evidence Type |
-| Judgements | Grid | Filtered: Evidence_Nature = "Judgement" — all load-bearing judgement records |
-| Artefacts | Grid | Filtered: Evidence_Nature = "Artifact" — all legible artifact evidence |
-| By Control | Grid | Grouped by Control — see all evidence per control, spot controls with artifacts but no judgements |
-| Gallery | Gallery | Visual browse of evidence items |
+| View          | Type    | Purpose                                                                                           |
+| ------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| All Evidence  | Grid    | Default view — all rows                                                                           |
+| Expiring Soon | Grid    | Filtered: Status = "Current", sorted by Expiry_Date ascending                                     |
+| By Type       | Grid    | Grouped by evidence Type                                                                          |
+| Judgements    | Grid    | Filtered: Evidence_Nature = "Judgement" — all load-bearing judgement records                      |
+| Artefacts     | Grid    | Filtered: Evidence_Nature = "Artifact" — all legible artifact evidence                            |
+| By Control    | Grid    | Grouped by Control — see all evidence per control, spot controls with artifacts but no judgements |
+| Gallery       | Gallery | Visual browse of evidence items                                                                   |
 
 ---
 
 ## Cross-Table Fields
 
-| Target Table | Field | Type | Purpose |
-|-------------|-------|------|---------|
-| Assessments | Evidence_Count | Rollup (count) | Number of evidence items linked to each assessment |
+| Target Table | Field          | Type           | Purpose                                            |
+| ------------ | -------------- | -------------- | -------------------------------------------------- |
+| Assessments  | Evidence_Count | Rollup (count) | Number of evidence items linked to each assessment |
 
 ---
 
 ## Link Relationships
 
-| Field | Target | Cardinality | Purpose |
-|-------|--------|-------------|---------|
-| Assessment | Assessments | many:1 | Which assessment this supports |
-| Action | Actions | many:1 | Which action this completes |
-| Control | Controls | many:1 | Which control this proves operated |
+| Field      | Target      | Cardinality | Purpose                            |
+| ---------- | ----------- | ----------- | ---------------------------------- |
+| Assessment | Assessments | many:1      | Which assessment this supports     |
+| Action     | Actions     | many:1      | Which action this completes        |
+| Control    | Controls    | many:1      | Which control this proves operated |
 
 The Control link is the primary relationship. Assessment and Action are secondary (usage, not ownership).
 
@@ -678,10 +689,10 @@ The Control link is the primary relationship. Assessment and Action are secondar
 
 ## Recommended Configuration
 
-| Customer Profile | Storage | People | Notes |
-|-----------------|---------|--------|-------|
-| Small team, no DMS | `:embedded` | `:flat` | Everything in Baserow, simple setup |
-| Mid-size with SharePoint | `:reference` | `:linked` | Pointers to DMS, Personnel cross-refs |
+| Customer Profile          | Storage      | People    | Notes                                           |
+| ------------------------- | ------------ | --------- | ----------------------------------------------- |
+| Small team, no DMS        | `:embedded`  | `:flat`   | Everything in Baserow, simple setup             |
+| Mid-size with SharePoint  | `:reference` | `:linked` | Pointers to DMS, Personnel cross-refs           |
 | Enterprise with SSO + DMS | `:reference` | `:hybrid` | DMS handles artifacts, Baserow handles metadata |
 
 **QQ PoC**: `--storage embedded --people linked` — file uploads directly into Baserow, Personnel links for accountability. QQ doesn't have a centralised DMS yet.

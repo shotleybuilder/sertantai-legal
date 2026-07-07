@@ -31,6 +31,9 @@ build/
 coverage/
 .nyc_output/
 
+# Customer-specific documents (not for public repo)
+docs/qq/
+
 # Data exports
 data/
 scripts/sync/delta_*.sql
