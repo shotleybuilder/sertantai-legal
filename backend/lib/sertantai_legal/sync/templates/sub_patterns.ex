@@ -16,7 +16,9 @@ defmodule SertantaiLegal.Sync.Templates.SubPatterns do
           review_cycle: :manual | :scheduled,
           reporting: :standard | :dashboard,
           data_collection: :grid_only | :forms,
-          improvement: :none | :pdca
+          improvement: :none | :pdca,
+          calibration_mode: :basic | :calibrator_aware | :full_hubbard,
+          safety_argument: :off | :on
         }
 
   defstruct storage_mode: :embedded,
@@ -27,7 +29,9 @@ defmodule SertantaiLegal.Sync.Templates.SubPatterns do
             review_cycle: :scheduled,
             reporting: :standard,
             data_collection: :grid_only,
-            improvement: :none
+            improvement: :none,
+            calibration_mode: :basic,
+            safety_argument: :off
 
   @doc "Build a SubPatterns struct from a keyword list or map, using defaults for missing keys."
   def new(opts \\ []) do
@@ -47,6 +51,8 @@ defmodule SertantaiLegal.Sync.Templates.SubPatterns do
       |> check(:reporting, sp.reporting, [:standard, :dashboard])
       |> check(:data_collection, sp.data_collection, [:grid_only, :forms])
       |> check(:improvement, sp.improvement, [:none, :pdca])
+      |> check(:calibration_mode, sp.calibration_mode, [:basic, :calibrator_aware, :full_hubbard])
+      |> check(:safety_argument, sp.safety_argument, [:off, :on])
 
     case errors do
       [] -> :ok

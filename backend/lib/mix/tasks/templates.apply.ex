@@ -47,6 +47,8 @@ defmodule Mix.Tasks.Templates.Apply do
           grain: :string,
           review: :string,
           storage: :string,
+          calibration: :string,
+          safety_argument: :string,
           list: :boolean,
           help: :boolean
         ]
@@ -154,6 +156,8 @@ defmodule Mix.Tasks.Templates.Apply do
       |> maybe_add(:assessment_grain, opts[:grain])
       |> maybe_add(:review_cycle, opts[:review])
       |> maybe_add(:storage_mode, opts[:storage])
+      |> maybe_add(:calibration_mode, opts[:calibration])
+      |> maybe_add(:safety_argument, opts[:safety_argument])
 
     SubPatterns.new(overrides)
   end
@@ -210,6 +214,9 @@ defmodule Mix.Tasks.Templates.Apply do
     |> maybe_put_table(:hierarchy, target_config["hierarchy_table_id"])
     |> maybe_put_table(:controls, target_config["controls_table_id"])
     |> maybe_put_table(:control_mappings, target_config["control_mappings_table_id"])
+    |> maybe_put_table(:artefacts, target_config["artefacts_table_id"])
+    |> maybe_put_table(:judgements, target_config["judgements_table_id"])
+    |> maybe_put_table(:gaps, target_config["gaps_table_id"])
   end
 
   defp maybe_put_table(map, _key, nil), do: map
@@ -232,7 +239,10 @@ defmodule Mix.Tasks.Templates.Apply do
       :divisions,
       :hierarchy,
       :controls,
-      :control_mappings
+      :control_mappings,
+      :artefacts,
+      :judgements,
+      :gaps
     ]
 
     updates =

@@ -29,7 +29,10 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
       org_structure: SertantaiLegal.Sync.Templates.OrgStructure,
       hierarchy: SertantaiLegal.Sync.Templates.Hierarchy,
       controls: SertantaiLegal.Sync.Templates.Controls,
-      control_mappings: SertantaiLegal.Sync.Templates.ControlMappings
+      control_mappings: SertantaiLegal.Sync.Templates.ControlMappings,
+      artefacts: SertantaiLegal.Sync.Templates.Artefacts,
+      judgements: SertantaiLegal.Sync.Templates.Judgements,
+      gaps: SertantaiLegal.Sync.Templates.Gaps
     }
   end
 

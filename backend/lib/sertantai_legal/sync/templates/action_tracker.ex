@@ -57,6 +57,12 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
           },
           %{name: "Law", type: :lookup, target: "Assessment", target_field: "Law"},
           %{
+            name: "Gap",
+            type: :link_row,
+            target: :gaps,
+            description: "Which gap this action resolves (if created from a Gap exit)"
+          },
+          %{
             name: "Status",
             type: :single_select,
             options: @statuses,

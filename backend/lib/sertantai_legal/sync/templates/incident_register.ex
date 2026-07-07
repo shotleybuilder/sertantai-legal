@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
   def name, do: "Incident Register"
 
   @impl true
-  def requires, do: [:compliance_assessment, :action_tracker]
+  def requires, do: [:compliance_assessment, :action_tracker, :judgements]
 
   @impl true
   def tables, do: [:incidents]
@@ -50,6 +50,20 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
             type: :link_row,
             target: :actions,
             description: "Preventative action"
+          },
+          %{
+            name: "Judgement",
+            type: :link_row,
+            target: :judgements,
+            description:
+              "Which prior judgement this incident vindicates or contradicts (falsification link)"
+          },
+          %{
+            name: "Control",
+            type: :link_row,
+            target: :controls,
+            description:
+              "Which control failed (enables 'failed despite Judgement Current' analysis)"
           }
         ] ++
           people_fields(sp.people) ++

@@ -29,45 +29,46 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
     case sub_patterns.people do
       mode when mode in [:linked, :hybrid] ->
         %{
-          personnel: [
-            %{
-              name: "Employee_ID",
-              type: :text,
-              primary: true,
-              description: "Unique employee reference"
-            },
-            %{name: "Name", type: :text, description: "Full name"},
-            %{name: "Email", type: :email, description: "Email address"},
-            %{
-              name: "Role",
-              type: :single_select,
-              options: [
-                "Compliance Manager",
-                "Safety Officer",
-                "Environmental Officer",
-                "Legal Counsel",
-                "Line Manager",
-                "Engineer",
-                "Operative",
-                "Contractor",
-                "Director",
-                "Other"
-              ],
-              description: "Organisational role"
-            },
-            %{
-              name: "Department",
-              type: :single_select,
-              options: [],
-              description: "Department — customer populates options"
-            },
-            %{name: "Active", type: :boolean, description: "Currently employed/active"},
-            %{
-              name: "Baserow User",
-              type: :workspace_member,
-              description: "Linked Baserow workspace member"
-            }
-          ]
+          personnel:
+            [
+              %{
+                name: "Employee_ID",
+                type: :text,
+                primary: true,
+                description: "Unique employee reference"
+              },
+              %{name: "Name", type: :text, description: "Full name"},
+              %{name: "Email", type: :email, description: "Email address"},
+              %{
+                name: "Role",
+                type: :single_select,
+                options: [
+                  "Compliance Manager",
+                  "Safety Officer",
+                  "Environmental Officer",
+                  "Legal Counsel",
+                  "Line Manager",
+                  "Engineer",
+                  "Operative",
+                  "Contractor",
+                  "Director",
+                  "Other"
+                ],
+                description: "Organisational role"
+              },
+              %{
+                name: "Department",
+                type: :single_select,
+                options: [],
+                description: "Department — customer populates options"
+              },
+              %{name: "Active", type: :boolean, description: "Currently employed/active"},
+              %{
+                name: "Baserow User",
+                type: :workspace_member,
+                description: "Linked Baserow workspace member"
+              }
+            ] ++ calibrator_fields(sub_patterns.calibration_mode)
         }
 
       # :flat and :workspace_member — no table needed
@@ -99,4 +100,46 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
   end
 
   # No seed — customer populates their own people.
+
+  # ── Calibrator quality fields ────────────────────────────────
+
+  defp calibrator_fields(mode) when mode in [:calibrator_aware, :full_hubbard] do
+    [
+      %{
+        name: "Calibration_Score",
+        type: :number,
+        description:
+          "Accuracy % (Hubbard-style, 0-100). Measured, not self-assessed. Firewalled from HR."
+      },
+      %{
+        name: "Calibration_Sample_Size",
+        type: :number,
+        description:
+          "How many judgements the score is based on. 85 (n=200) is solid; 85 (n=5) is preliminary."
+      },
+      %{
+        name: "Last_Cal_Test",
+        type: :date,
+        description: "When calibration accuracy was last tested"
+      },
+      %{
+        name: "Calibrated_Domains",
+        type: :multi_select,
+        options: [
+          "EHS",
+          "Environmental",
+          "Fire",
+          "Electrical",
+          "Process Safety",
+          "Information Security",
+          "Quality",
+          "Regulatory",
+          "Other"
+        ],
+        description: "Which domains this person is calibrated to judge"
+      }
+    ]
+  end
+
+  defp calibrator_fields(_), do: []
 end

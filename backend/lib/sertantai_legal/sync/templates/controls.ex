@@ -178,6 +178,34 @@ defmodule SertantaiLegal.Sync.Templates.Controls do
               name: "Notes",
               type: :long_text,
               description: "Implementation notes, conditions, limitations"
+            },
+            # Coverage & scheduling (computed by fractalaw, written via API)
+            %{
+              name: "Coverage_Status",
+              type: :single_select,
+              options: [
+                "No Artefact",
+                "Artefact Only",
+                "Judgement Current",
+                "Judgement Stale",
+                "Unknown"
+              ],
+              description: "Computed by fractalaw — not manually set"
+            },
+            %{
+              name: "Recommended_Next_Due",
+              type: :date,
+              description: "Computed by fractalaw from control properties (read-only)"
+            },
+            %{
+              name: "Scheduled_Next_Due",
+              type: :date,
+              description: "User-editable. Single source of truth for alerting."
+            },
+            %{
+              name: "Next_Due_Override_Reason",
+              type: :text,
+              description: "Required if Scheduled differs from Recommended"
             }
           ]
     }
