@@ -193,6 +193,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp upsert_taxa(record, taxa) do
+    taxa = convert_duty_type(taxa)
     taxa = derive_enrichment_result(record, taxa)
 
     Logger.info(
@@ -275,17 +276,59 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_json_field(row, "significance_parts")
   end
 
+  # Derive proper DRRP duty_type from structured entry columns.
+  # Fractalaw places entries in the correct columns (duties, rights, responsibilities,
+  # powers) but sends raw Obligation/Liberty labels in duty_type. We derive the
+  # canonical DRRP vocabulary from which columns have entries.
+  # Falls back to fractalaw's raw duty_type if no structured entries exist.
+  defp convert_duty_type(taxa) do
+    derived =
+      []
+      |> maybe_add_drrp("Duty", taxa[:duties])
+      |> maybe_add_drrp("Right", taxa[:rights])
+      |> maybe_add_drrp("Responsibility", taxa[:responsibilities])
+      |> maybe_add_drrp("Power", taxa[:powers])
+
+    if derived != [] do
+      Map.put(taxa, :duty_type, %{values: Enum.reverse(derived)})
+    else
+      taxa
+    end
+  end
+
+  defp maybe_add_drrp(list, label, %{entries: entries})
+       when is_list(entries) and entries != [],
+       do: [label | list]
+
+  defp maybe_add_drrp(list, _label, _), do: list
+
+  @doc """
+  Classify enrichment result from taxa fields. Public for testing.
+
+  Returns the taxa map with `:is_making` and `:function` set based on duty_type values.
+  """
+  @spec classify_enrichment(map(), map()) :: map()
+  def classify_enrichment(record, taxa) do
+    taxa
+    |> convert_duty_type()
+    |> then(&derive_enrichment_result(record, &1))
+  end
+
+  # DRRP types that indicate the law creates substantive obligations.
+  # Supports both old vocabulary (Duty, Responsibility) and new (Obligation).
+  @making_duty_types ["Duty", "Responsibility", "Obligation"]
+
   # Derive enrichment result from taxa fields and set function labels.
   #
   # Three enrichment outcomes:
-  # 1. Making:      duty_type has Duty/Responsibility → is_making=true, function gets "Making"
-  # 2. Empowering:  duty_type present but no Duty/Responsibility (powers/rights only) → is_making=false, function gets "Empowering"
+  # 1. Making:      duty_type has Duty/Responsibility/Obligation → is_making=true, function gets "Making"
+  # 2. Empowering:  duty_type present but no making types (powers/rights only) → is_making=false, function gets "Empowering"
   # 3. Housekeeping: no taxa fields at all → function gets "Housekeeping", LAT pruned
   #
   # Note: does NOT overwrite making_classification (immutable auto-detection result).
   defp derive_enrichment_result(record, %{duty_type: %{values: values}} = taxa)
        when is_list(values) do
-    is_making = "Duty" in values or "Responsibility" in values
+    is_making = Enum.any?(values, &(&1 in @making_duty_types))
 
     enrichment_label = if is_making, do: "Making", else: "Empowering"
     function = merge_enrichment_function(record, enrichment_label)

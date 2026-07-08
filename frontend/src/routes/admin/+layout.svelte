@@ -116,7 +116,7 @@
 	<div class="min-h-screen bg-gray-50">
 		<!-- Top Navigation -->
 		<nav class="border-b border-gray-200 bg-white">
-			<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+			<div class="mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex h-16 justify-between">
 					<div class="flex">
 						<!-- Logo/Home -->
@@ -239,7 +239,7 @@
 		</nav>
 
 		<!-- Main Content -->
-		<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+		<main class="mx-auto px-4 py-8 sm:px-6 lg:px-8">
 			<slot />
 		</main>
 	</div>

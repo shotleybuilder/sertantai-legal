@@ -617,16 +617,15 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     case Metadata.fetch(fetch_record) do
       {:ok, metadata} ->
-        # Only protect title_en from being overwritten - the introduction XML
-        # may have a different Title_EN than the original scrape.
-        # All other metadata fields (md_description, md_subjects, dates, etc.)
-        # should be refreshed on reparse.
-        protected_fields = [:title_en]
-
+        # For title_en: if the XML source returns a different title than what's
+        # already in the record (e.g. from a session's parsed_data), prefer the
+        # XML value as it's the canonical legislation.gov.uk title.
+        # All other metadata fields are always refreshed.
         filtered_metadata =
           metadata
-          |> Enum.reject(fn {key, _value} ->
-            key in protected_fields and has_key?(existing_record, key)
+          |> Enum.reject(fn {key, value} ->
+            key == :title_en and has_key?(existing_record, key) and
+              values_match?(existing_record, key, value)
           end)
           |> Enum.into(%{})
 
@@ -666,6 +665,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   rescue
     ArgumentError -> record[key] != nil
   end
+
+  # Check if the existing record's value for a key matches the new value.
+  # Used to skip overwriting title_en when the XML source agrees with what's stored.
+  defp values_match?(%ParsedLaw{} = law, key, new_value) when is_atom(key) do
+    Map.get(law, key) == new_value
+  end
+
+  defp values_match?(record, key, new_value) when is_atom(key) do
+    existing = record[key] || record[Atom.to_string(key)]
+    existing == new_value
+  end
+
+  defp values_match?(_record, _key, _new_value), do: false
 
   # ============================================================================
   # Stage 2: Extent

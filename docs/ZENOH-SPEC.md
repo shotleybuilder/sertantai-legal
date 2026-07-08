@@ -1,7 +1,7 @@
 # Zenoh Publication Spec: sertantai-legal ↔ fractalaw
 
-**Version**: 2.0
-**Date**: 2026-07-02
+**Version**: 2.1
+**Date**: 2026-07-04
 **Commit**: 4b73387
 **Source**: `backend/lib/sertantai_legal/zenoh/data_server.ex`
 
@@ -332,6 +332,118 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ---
 
+## Fractalaw → Sertantai (Queryables)
+
+Fractalaw runs queryables that sertantai can query on demand.
+
+### Key Expressions
+
+| Key Expression | Pattern | Returns |
+|---------------|---------|---------|
+| `fractalaw/@{tenant}/triage` | Exact | JSON array of triage results (see below) |
+| `fractalaw/@{tenant}/status` | Exact | JSON array of pipeline status per law |
+| `fractalaw/@{tenant}/dictionary/actors` | Exact | Raw YAML — actor dictionary (~24KB) |
+
+### Query Parameters
+
+Both `triage` and `status` accept law names via:
+- URL parameters: `?laws=UK_ukpga_1974_37,UK_uksi_2015_51` (comma-separated, URL-encoded)
+- Body payload: JSON array of law name strings `["UK_ukpga_1974_37"]`
+
+### Triage Response
+
+Returns per-law making/not-making classification based on provision text analysis (regex only, no LLM). Used for fast classification of newly-scraped laws during onboarding.
+
+```json
+[
+  {
+    "law_name": "UK_ukpga_1974_37",
+    "classification": "making",
+    "confidence": 0.955,
+    "tier": 5,
+    "counts": {
+      "total": 840,
+      "process_rule": 278,
+      "amendment": 27,
+      "enactment": 0,
+      "interpretation": 43,
+      "with_actor": 485,
+      "with_obligation": 263,
+      "with_enabling": 52
+    },
+    "sertantai_is_making": true,
+    "agrees": true
+  }
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `law_name` | `string` | Canonical law identifier |
+| `classification` | `string` (enum) | `"making"`, `"not_making"`, or `"uncertain"` |
+| `confidence` | `number` | Bayesian posterior probability (0.0–1.0) |
+| `tier` | `integer` | Highest signal tier that contributed (1–5) |
+| `counts.total` | `integer` | Total provisions scanned |
+| `counts.process_rule` | `integer` | Provisions with substantive rules as primary purpose |
+| `counts.amendment` | `integer` | Provisions with amendment purpose |
+| `counts.enactment` | `integer` | Provisions with enactment/commencement purpose |
+| `counts.interpretation` | `integer` | Provisions with interpretation/definition purpose |
+| `counts.with_actor` | `integer` | Provisions with at least one governed actor |
+| `counts.with_obligation` | `integer` | Provisions with obligation modals (shall/must) |
+| `counts.with_enabling` | `integer` | Provisions with enabling modals (may/power to) |
+| `sertantai_is_making` | `boolean \| null` | Sertantai's existing `is_making` from LRT (for comparison) |
+| `agrees` | `boolean` | Whether triage agrees with sertantai's `is_making` |
+
+> **Performance**: Triage is CPU-only (regex + Bayesian inference). Response time depends on provision count — typically <1s for laws with <500 provisions.
+
+### Status Response
+
+Returns pipeline stage for each requested law.
+
+```json
+[
+  {
+    "law_name": "UK_ukpga_1974_37",
+    "stage": "published",
+    "lat_pulled_at": "2026-06-15T10:30:00Z",
+    "embedded_at": "2026-06-15T10:35:00Z",
+    "parsed_at": "2026-06-15T10:36:00Z",
+    "classified_at": "2026-06-15T11:00:00Z",
+    "validated_at": "2026-06-16T09:00:00Z",
+    "adjudicated_at": null,
+    "published_at": "2026-06-16T14:00:00Z"
+  }
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `law_name` | `string` | Canonical law identifier |
+| `stage` | `string` (enum) | Current pipeline stage: `needs_lat`, `needs_embed`, `needs_parse`, `needs_classify`, `needs_validate`, `ready_to_publish`, `published` |
+| `*_at` | `string \| null` | ISO 8601 timestamps for each completed stage |
+
+---
+
+### Pub/Sub (fractalaw publishes, sertantai subscribes)
+
+| Key Expression | Direction | Payload |
+|---------------|-----------|---------|
+| `fractalaw/@{tenant}/ack/{law_name}` | fractalaw → sertantai | JSON — ingestion acknowledgement |
+
+#### Acknowledgement
+
+Published after fractalaw successfully pulls and stores LAT for a law.
+
+```json
+{
+  "law_name": "UK_ukpga_1974_37",
+  "state": "ingested",
+  "provisions": 840
+}
+```
+
+---
+
 ## Fractalaw → Sertantai (Pub/Sub — Taxa Enrichment)
 
 Fractalaw publishes enriched taxa data back to sertantai via Zenoh pub/sub. All payloads are **Arrow IPC** (not JSON) — RecordBatch serialized with `arrow::ipc::writer::StreamWriter`.
@@ -474,6 +586,9 @@ Sertantai uses this to resolve canonical actor labels to display names and categ
 | LAT (per law) | 50–1,500 | ~50 KB – 2 MB | JSON |
 | Amendments (per law) | 0–500 | ~5 KB – 500 KB | JSON |
 | Change notification | 1 | ~100–200 bytes | JSON |
+| Triage (per query) | 1–100 | ~200 bytes – 20 KB | JSON |
+| Status (per query) | 1–100 | ~200 bytes – 20 KB | JSON |
+| Ack (per law) | 1 | ~80 bytes | JSON |
 | Taxa enrichment (per law) | 1 | ~2–10 KB | Arrow IPC |
 | Taxa provisions (per law) | 10–800 | ~5 KB – 500 KB | Arrow IPC |
 | Actor dictionary | 1 | ~24 KB | YAML |

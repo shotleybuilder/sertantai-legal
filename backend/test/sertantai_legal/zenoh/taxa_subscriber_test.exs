@@ -173,4 +173,208 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert Enum.all?(Map.keys(result), &is_atom/1)
     end
   end
+
+  describe "derive_enrichment_result/2 (via normalize + derive)" do
+    # derive_enrichment_result is private, so we test via the module's
+    # classify_enrichment/2 helper (exposed for testing).
+    # These tests document the DRRP vocabulary contract.
+
+    test "duty_type with 'Duty' → Making" do
+      taxa = %{duty_type: %{values: ["Duty", "Power"]}}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == true
+      assert result.function == %{"Making" => true}
+    end
+
+    test "duty_type with 'Responsibility' → Making" do
+      taxa = %{duty_type: %{values: ["Responsibility"]}}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == true
+      assert result.function == %{"Making" => true}
+    end
+
+    test "duty_type with 'Obligation' → Making (new DRRP vocabulary)" do
+      taxa = %{duty_type: %{values: ["Obligation", "Liberty"]}}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == true,
+             "Obligation should be treated as making — this is the new DRRP vocabulary equivalent of Duty"
+
+      assert result.function == %{"Making" => true}
+    end
+
+    test "duty_type with only 'Power' → Empowering" do
+      taxa = %{duty_type: %{values: ["Power"]}}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == false
+      assert result.function == %{"Empowering" => true}
+    end
+
+    test "duty_type with only 'Liberty' → Empowering" do
+      taxa = %{duty_type: %{values: ["Liberty"]}}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == false
+      assert result.function == %{"Empowering" => true}
+    end
+
+    test "duty_type with only 'Right' → Empowering" do
+      taxa = %{duty_type: %{values: ["Right"]}}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == false
+      assert result.function == %{"Empowering" => true}
+    end
+
+    test "empty taxa → Housekeeping" do
+      taxa = %{}
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.function == %{"Housekeeping" => true}
+    end
+
+    test "preserves existing relationship function labels" do
+      taxa = %{duty_type: %{values: ["Duty"]}}
+      record = %{function: %{"Amending Maker" => true, "Revoking" => true}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == true
+      assert result.function == %{"Making" => true, "Amending Maker" => true, "Revoking" => true}
+    end
+
+    test "replaces existing enrichment label" do
+      taxa = %{duty_type: %{values: ["Obligation"]}}
+      record = %{function: %{"Empowering" => true, "Amending" => true}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.is_making == true
+      assert result.function == %{"Making" => true, "Amending" => true}
+      refute Map.has_key?(result.function, "Empowering")
+    end
+  end
+
+  describe "convert_duty_type (via classify_enrichment)" do
+    test "derives Duty from duties entries" do
+      taxa = %{
+        duty_type: %{values: ["Obligation"]},
+        duties: %{entries: [%{"holder" => "Employer", "clause" => "s.2(1)"}]},
+        rights: %{entries: []},
+        responsibilities: nil,
+        powers: nil
+      }
+
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert %{values: values} = result.duty_type
+      assert "Duty" in values
+      refute "Obligation" in values
+      assert result.is_making == true
+    end
+
+    test "derives Right from rights entries" do
+      taxa = %{
+        duty_type: %{values: ["Liberty"]},
+        duties: nil,
+        rights: %{entries: [%{"holder" => "Employee", "clause" => "s.5"}]},
+        responsibilities: nil,
+        powers: nil
+      }
+
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert %{values: values} = result.duty_type
+      assert "Right" in values
+      refute "Liberty" in values
+    end
+
+    test "derives all four DRRP types from mixed entries" do
+      taxa = %{
+        duty_type: %{values: ["Obligation", "Liberty"]},
+        duties: %{entries: [%{"holder" => "Employer"}]},
+        rights: %{entries: [%{"holder" => "Employee"}]},
+        responsibilities: %{entries: [%{"holder" => "HSE"}]},
+        powers: %{entries: [%{"holder" => "Inspector"}]}
+      }
+
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert %{values: values} = result.duty_type
+      assert "Duty" in values
+      assert "Right" in values
+      assert "Responsibility" in values
+      assert "Power" in values
+      refute "Obligation" in values
+      refute "Liberty" in values
+      assert result.is_making == true
+    end
+
+    test "falls back to raw duty_type when no structured entries" do
+      taxa = %{
+        duty_type: %{values: ["Obligation"]},
+        duties: nil,
+        rights: nil,
+        responsibilities: nil,
+        powers: nil
+      }
+
+      record = %{function: %{}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      # Raw Obligation kept as fallback, still classified as Making
+      assert %{values: ["Obligation"]} = result.duty_type
+      assert result.is_making == true
+    end
+
+    test "Confined Spaces scenario: Obligation vocab + duties entries → Making" do
+      # Real-world case: Confined Spaces Regulations was misclassified as Empowering
+      taxa = %{
+        duty_type: %{values: ["Liberty", "Obligation"]},
+        duty_holder: %{values: ["Org: Employer", "Ind: Self-employed Worker"]},
+        rights_holder: %{values: ["Ind: Person"]},
+        responsibility_holder: %{values: ["Gvt: Agency: Health and Safety Executive"]},
+        power_holder: %{values: ["Gvt: Agency: Health and Safety Executive"]},
+        duties: %{entries: [%{"holder" => "Employer", "clause" => "reg.4"}]},
+        rights: %{entries: [%{"holder" => "Person", "clause" => "reg.5"}]},
+        responsibilities: %{entries: [%{"holder" => "HSE", "clause" => "reg.10"}]},
+        powers: %{entries: [%{"holder" => "Inspector", "clause" => "reg.11"}]}
+      }
+
+      record = %{function: %{"Empowering" => true}}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert %{values: values} = result.duty_type
+      assert "Duty" in values
+      assert "Responsibility" in values
+      assert result.is_making == true
+      assert result.function == %{"Making" => true}
+      refute Map.has_key?(result.function, "Empowering")
+    end
+  end
 end

@@ -238,10 +238,10 @@ defmodule SertantaiLegal.Legal.Taxa.MakingDetector do
   defp signal_to_map(signal) do
     %{
       "tier" => signal.tier,
-      "signal" => signal.signal,
+      "signal" => Map.get(signal, :signal) || Map.get(signal, :reason, ""),
       "direction" => Atom.to_string(signal.direction),
       "confidence" => signal.confidence,
-      "value" => to_string(signal.value)
+      "value" => to_string(Map.get(signal, :value, ""))
     }
   end
 end
