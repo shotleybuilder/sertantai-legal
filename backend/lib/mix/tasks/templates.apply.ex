@@ -217,6 +217,7 @@ defmodule Mix.Tasks.Templates.Apply do
     |> maybe_put_table(:artefacts, target_config["artefacts_table_id"])
     |> maybe_put_table(:judgements, target_config["judgements_table_id"])
     |> maybe_put_table(:gaps, target_config["gaps_table_id"])
+    |> maybe_put_table(:compliance_events, target_config["compliance_events_table_id"])
   end
 
   defp maybe_put_table(map, _key, nil), do: map
@@ -242,7 +243,8 @@ defmodule Mix.Tasks.Templates.Apply do
       :control_mappings,
       :artefacts,
       :judgements,
-      :gaps
+      :gaps,
+      :compliance_events
     ]
 
     updates =

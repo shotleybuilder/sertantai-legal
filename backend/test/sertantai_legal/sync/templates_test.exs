@@ -528,8 +528,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   end
 
   describe "Registry — full template set" do
-    test "all 18 templates registered" do
-      assert map_size(Registry.all()) == 18
+    test "all 19 templates registered" do
+      assert map_size(Registry.all()) == 19
     end
 
     test "resolves full stack" do

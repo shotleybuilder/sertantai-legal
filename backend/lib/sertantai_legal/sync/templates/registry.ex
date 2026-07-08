@@ -32,7 +32,8 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
       control_mappings: SertantaiLegal.Sync.Templates.ControlMappings,
       artefacts: SertantaiLegal.Sync.Templates.Artefacts,
       judgements: SertantaiLegal.Sync.Templates.Judgements,
-      gaps: SertantaiLegal.Sync.Templates.Gaps
+      gaps: SertantaiLegal.Sync.Templates.Gaps,
+      compliance_events: SertantaiLegal.Sync.Templates.ComplianceEvents
     }
   end
 

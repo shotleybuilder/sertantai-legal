@@ -49,6 +49,17 @@ L5 is an interface (seam), not an audit management system. The assurance program
 - [ ] Define standard queries/reports for assurance planning (controls by VoI, coverage gaps, judgement quality)
 - [x] Apply updated Artefacts template to QQ Baserow (4 new fields added to existing table)
 
+### L6 Events & Change Intelligence — the interface
+L6 is an interface for internal and external events, not the event generator. The compliance framework receives event signals; generating them (horizon scanning, market sensing, regulatory monitoring) is a separate concern.
+
+- [x] Research events patterns → `docs/compliance/l6-events/EVENTS-PATTERNS.md`
+- [x] Design events schema (Compliance Events entity, lifecycle, impact mapping, LRT signal sources) → `docs/compliance/l6-events/EVENTS-SCHEMA.md`
+- [x] Build Compliance Events template (21 fields: event_type, event_source, signal_source/ref, urgency, triage/response status, impact links, owner)
+- [x] Add 7 views: All Events, Open Events, Material Events, By Type, By Urgency (kanban), Event Board (lifecycle kanban), Monitoring
+- [x] Register template (19 total), update mix task, update test count (65 pass)
+- [x] Apply to QQ Baserow (table 1065389, 20 fields created)
+- [ ] Validate: fractalaw ChangeDetector → Event creation pathway (existing Zenoh signals → new L6 records)
+
 ### Remaining templates
 - [ ] Apply Document Control
 - [ ] Apply PDCA
