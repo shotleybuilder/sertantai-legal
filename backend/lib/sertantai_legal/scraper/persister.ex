@@ -371,11 +371,14 @@ defmodule SertantaiLegal.Scraper.Persister do
     is_rescinding = has_array_field?(record, :rescinding)
 
     # Build enriched map with derived fields
+    # Only default live to "🆕 Newly Published" if not already set by the parser
+    existing_live = record[:live] || record["live"]
+
     enriched =
       record
       |> Map.put(:is_amending, is_amending)
       |> Map.put(:is_rescinding, is_rescinding)
-      |> Map.put(:live, "🆕 Newly Published")
+      |> then(fn r -> if existing_live, do: r, else: Map.put(r, :live, "🆕 Newly Published") end)
 
     # Use ParsedLaw for consistent field handling and JSONB conversion
     enriched
@@ -383,14 +386,66 @@ defmodule SertantaiLegal.Scraper.Persister do
     |> ParsedLaw.to_db_attrs()
   end
 
-  # Only update fields that are nil in existing record
+  # Fields that should always be refreshed from the latest legislation.gov.uk data,
+  # even when the existing record already has a non-nil value. These fields change
+  # over the life of a law as new amendments, revocations, and commencements happen.
+  #
+  # Protected (only set if nil): name, title_en, type_code, year, number, family,
+  # si_code, geo_extent, geo_region, md_description, md_subjects, enactment dates
+  @always_update_fields [
+    # Live status — changes when law is amended/revoked
+    :live,
+    :live_from_changes,
+    :live_description,
+    # Relationship arrays — grow as new laws reference this one
+    :amended_by,
+    :rescinded_by,
+    :amending,
+    :rescinding,
+    :enacting,
+    :enacted_by,
+    :enacted_by_meta,
+    # Boolean flags derived from relationships
+    :is_amending,
+    :is_rescinding,
+    :is_enacting,
+    :is_commencing,
+    # Date fields that track latest changes
+    :latest_amend_date,
+    :latest_amend_date_year,
+    :latest_amend_date_month,
+    :latest_change_date,
+    :latest_rescind_date,
+    :latest_rescind_date_year,
+    :latest_rescind_date_month,
+    :md_modified,
+    # Amendment/revocation stats
+    :"🔺🔻_stats_self_affects_count",
+    :"🔺_stats_affects_count",
+    :"🔺_stats_affected_laws_count",
+    :"🔻_stats_affected_by_count",
+    :"🔻_stats_affected_by_laws_count",
+    :"🔺_stats_rescinding_laws_count",
+    :"🔻_stats_rescinded_by_laws_count",
+    :"🔺🔻_stats_self_affects_count_per_law_detailed",
+    :"🔺_affects_stats_per_law",
+    :"🔺_rescinding_stats_per_law",
+    :"🔻_affected_by_stats_per_law",
+    :"🔻_rescinded_by_stats_per_law",
+    :amending_change_log,
+    :amended_by_change_log
+  ]
+
   defp filter_update_attrs(attrs, existing) do
     attrs
     |> Enum.filter(fn {key, _value} ->
-      existing_value = Map.get(existing, key)
+      key in @always_update_fields ||
+        (fn ->
+           existing_value = Map.get(existing, key)
 
-      is_nil(existing_value) || existing_value == "" || existing_value == [] ||
-        existing_value == %{}
+           is_nil(existing_value) || existing_value == "" || existing_value == [] ||
+             existing_value == %{}
+         end).()
     end)
     |> Map.new()
   end

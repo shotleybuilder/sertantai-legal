@@ -19,7 +19,14 @@ defmodule SertantaiLegal.Scraper.LatPersister do
 
   require Logger
 
-  @batch_size 500
+  # Batch size for insert_all. Larger batches = fewer round-trips.
+  # 2000 rows per batch handles most laws in 1-3 batches.
+  @batch_size 2000
+
+  # Transaction timeout scales with row count.
+  # Base 30s covers DELETE + small inserts; each 1000 rows adds 10s.
+  @base_timeout_ms 30_000
+  @timeout_per_1000_rows 10_000
 
   @doc """
   Delete existing LAT rows for `law_name` and insert `rows` in a transaction.
@@ -37,31 +44,38 @@ defmodule SertantaiLegal.Scraper.LatPersister do
           | {:error, String.t()}
   def persist(rows, law_name, law_id) when is_list(rows) and is_binary(law_name) do
     insert_maps = LatParser.to_insert_maps(rows, law_id)
+    row_count = length(insert_maps)
+    timeout = @base_timeout_ms + div(row_count * @timeout_per_1000_rows, 1000)
 
-    Repo.transaction(fn ->
-      # DELETE existing rows for this law
-      {deleted, _} =
-        Repo.query!(
-          "DELETE FROM lat WHERE law_name = $1",
-          [law_name]
+    Repo.transaction(
+      fn ->
+        # DELETE existing rows for this law
+        {deleted, _} =
+          Repo.query!(
+            "DELETE FROM lat WHERE law_name = $1",
+            [law_name]
+          )
+          |> then(fn %{num_rows: n} -> {n, nil} end)
+
+        # INSERT in batches
+        inserted =
+          insert_maps
+          |> Enum.chunk_every(@batch_size)
+          |> Enum.reduce(0, fn batch, acc ->
+            {count, _} = Repo.insert_all("lat", batch)
+            acc + count
+          end)
+
+        Logger.info(
+          "[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted} (#{row_count} rows, timeout #{timeout}ms)"
         )
-        |> then(fn %{num_rows: n} -> {n, nil} end)
 
-      # INSERT in batches
-      inserted =
-        insert_maps
-        |> Enum.chunk_every(@batch_size)
-        |> Enum.reduce(0, fn batch, acc ->
-          {count, _} = Repo.insert_all("lat", batch)
-          acc + count
-        end)
+        ChangeNotifier.notify("lat", "persist", %{law_name: law_name, count: inserted})
 
-      Logger.info("[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted}")
-
-      ChangeNotifier.notify("lat", "persist", %{law_name: law_name, count: inserted})
-
-      %{inserted: inserted, deleted: deleted}
-    end)
+        %{inserted: inserted, deleted: deleted}
+      end,
+      timeout: timeout
+    )
   rescue
     e ->
       Logger.error("[LatPersister] Failed for #{law_name}: #{Exception.message(e)}")
