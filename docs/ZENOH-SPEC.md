@@ -273,19 +273,24 @@ The `{customer_id}` is the organization UUID (e.g., `c075d56b-8420-4408-b695-ccf
 
 ```json
 [
-  "UK_ukpga_1974_37",
-  "UK_uksi_1999_3242",
-  "UK_uksi_2005_1541",
-  "UK_uksi_2015_51"
+  {"law_name": "UK_ukpga_1974_37", "live": "✔ In force"},
+  {"law_name": "UK_uksi_1999_3242", "live": "⭕ Part Revocation / Repeal"},
+  {"law_name": "UK_uksi_2005_1541", "live": "✔ In force"},
+  {"law_name": "UK_uksi_2015_51", "live": "❌ Revoked / Repealed / Abolished"}
 ]
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `law_name` | `string` | Canonical law identifier |
+| `live` | `string \| null` | In-force status: `✔ In force`, `⭕ Part Revocation / Repeal`, `❌ Revoked / Repealed / Abolished`, or `null` (not yet enriched) |
+
 | Aspect | Detail |
 |--------|--------|
-| Source table | `org_applicabilities` |
+| Source tables | `org_applicabilities` joined to `legal_register` |
 | Filter | `organization_id = {customer_id}` AND `status = 'yes'` |
 | Order | Ascending by `law_name` |
-| Typical size | 200–500 law names (~5–15 KB) |
+| Typical size | 200–500 records (~10–25 KB) |
 
 Use this to scope fractalaw's enrichment pipeline to only the laws a customer cares about, rather than processing the full ~19K LRT corpus.
 
@@ -305,11 +310,16 @@ let customers: Vec<Customer> = query("fractalaw/@dev/sertantai/customers");
 // 2. Find UUID by name
 let qq = customers.iter().find(|c| c.name == config.customer_name).unwrap();
 
-// 3. Fetch applicable laws
-let laws: Vec<String> = query(&format!(
+// 3. Fetch applicable laws (with in-force status)
+let laws: Vec<CustomerLaw> = query(&format!(
     "fractalaw/@dev/sertantai/customers/{}/laws", qq.id
 ));
-// ["UK_ukpga_1974_37", "UK_uksi_2015_51", ...]
+// [{"law_name": "UK_ukpga_1974_37", "live": "✔ In force"}, ...]
+
+// 4. Filter to in-force laws only
+let active: Vec<_> = laws.iter()
+    .filter(|l| !l.live.as_deref().unwrap_or("").starts_with("❌"))
+    .collect();
 ```
 
 ---

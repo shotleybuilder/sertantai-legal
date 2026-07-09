@@ -219,7 +219,7 @@
 						>
 						<th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
 						<th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Family</th>
-						<th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Year</th>
+						<th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Live</th>
 						<th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th
 						>
 						<th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">LAT</th>
@@ -248,8 +248,16 @@
 							<td class="px-3 py-2 text-sm text-gray-600 max-w-[120px] truncate">
 								{record.family || '-'}
 							</td>
-							<td class="px-3 py-2 text-sm text-gray-600 text-center">
-								{record.year || '-'}
+							<td class="px-3 py-2 text-center text-sm">
+								{#if record.live?.startsWith('✔')}
+									<span class="text-green-600" title="In force">✔</span>
+								{:else if record.live?.startsWith('❌')}
+									<span class="text-red-600" title="Revoked / Repealed">❌</span>
+								{:else if record.live?.startsWith('⭕')}
+									<span class="text-orange-500" title="Part Revocation">⭕</span>
+								{:else}
+									<span class="text-gray-400">-</span>
+								{/if}
 							</td>
 							<td class="px-3 py-2 text-center">
 								<span
@@ -273,7 +281,7 @@
 						{#if record.parse_error}
 							<tr class="bg-red-50">
 								<td></td>
-								<td colspan="8" class="px-3 py-1 text-xs text-red-600">
+								<td colspan="9" class="px-3 py-1 text-xs text-red-600">
 									{record.parse_error}
 								</td>
 							</tr>

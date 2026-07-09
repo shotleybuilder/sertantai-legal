@@ -609,7 +609,9 @@ defmodule SertantaiLegalWeb.LatAdminController do
         lrt_lookup =
           case Ash.read(Ash.Query.filter(LegalRegister, name in ^names)) do
             {:ok, lrt_records} ->
-              Map.new(lrt_records, fn r -> {r.name, %{family: r.family, title_en: r.title_en}} end)
+              Map.new(lrt_records, fn r ->
+                {r.name, %{family: r.family, title_en: r.title_en, live: r.live}}
+              end)
 
             _ ->
               %{}
@@ -631,6 +633,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
                   type_code: record["type_code"] || record[:type_code] || "",
                   year: record["Year"] || record[:Year],
                   family: family,
+                  live: lrt[:live],
                   status: db_record.status,
                   selected: db_record.selected,
                   lat_inserted: db_record.lat_inserted,
@@ -648,6 +651,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
                   type_code: record["type_code"] || record[:type_code] || "",
                   year: record["Year"] || record[:Year],
                   family: family,
+                  live: lrt[:live],
                   status: :pending,
                   selected: false,
                   lat_inserted: nil,

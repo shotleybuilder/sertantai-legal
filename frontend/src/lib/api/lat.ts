@@ -145,6 +145,7 @@ export interface LatSessionRecord {
 	type_code: string;
 	year: number | null;
 	family: string;
+	live: string | null;
 	status: string;
 	selected: boolean;
 	lat_inserted: number | null;

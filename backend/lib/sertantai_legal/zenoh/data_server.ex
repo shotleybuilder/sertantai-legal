@@ -344,15 +344,20 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   defp fetch_customer_laws(customer_id) do
     query =
       from(oa in "org_applicabilities",
+        join: lr in "legal_register",
+        on: lr.name == oa.law_name,
         where: oa.organization_id == type(^customer_id, :binary_id),
         where: oa.status == "yes",
-        select: oa.law_name,
+        select: %{
+          law_name: oa.law_name,
+          live: lr.live
+        },
         order_by: [asc: oa.law_name]
       )
 
     case Repo.all(query) do
       [] -> {:error, :not_found}
-      law_names -> {:ok, Jason.encode!(law_names)}
+      laws -> {:ok, Jason.encode!(laws)}
     end
   end
 
