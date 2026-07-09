@@ -181,7 +181,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "duty_type with 'Duty' → Making" do
       taxa = %{duty_type: %{values: ["Duty", "Power"]}}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -191,7 +191,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "duty_type with 'Responsibility' → Making" do
       taxa = %{duty_type: %{values: ["Responsibility"]}}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -201,7 +201,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "duty_type with 'Obligation' → Making (new DRRP vocabulary)" do
       taxa = %{duty_type: %{values: ["Obligation", "Liberty"]}}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -213,7 +213,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "duty_type with only 'Power' → Empowering" do
       taxa = %{duty_type: %{values: ["Power"]}}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -223,7 +223,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "duty_type with only 'Liberty' → Empowering" do
       taxa = %{duty_type: %{values: ["Liberty"]}}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -233,7 +233,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "duty_type with only 'Right' → Empowering" do
       taxa = %{duty_type: %{values: ["Right"]}}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -243,7 +243,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "empty taxa → Housekeeping" do
       taxa = %{}
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -252,7 +252,14 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "preserves existing relationship function labels" do
       taxa = %{duty_type: %{values: ["Duty"]}}
-      record = %{function: %{"Amending Maker" => true, "Revoking" => true}}
+
+      record = %{
+        function: %{"Amending Maker" => true, "Revoking" => true},
+        duties: nil,
+        rights: nil,
+        responsibilities: nil,
+        powers: nil
+      }
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -262,7 +269,14 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "replaces existing enrichment label" do
       taxa = %{duty_type: %{values: ["Obligation"]}}
-      record = %{function: %{"Empowering" => true, "Amending" => true}}
+
+      record = %{
+        function: %{"Empowering" => true, "Amending" => true},
+        duties: nil,
+        rights: nil,
+        responsibilities: nil,
+        powers: nil
+      }
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -282,7 +296,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
         powers: nil
       }
 
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -301,7 +315,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
         powers: nil
       }
 
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -319,7 +333,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
         powers: %{entries: [%{"holder" => "Inspector"}]}
       }
 
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
@@ -333,7 +347,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.is_making == true
     end
 
-    test "falls back to raw duty_type when no structured entries" do
+    test "falls back to raw duty_type when no structured entries anywhere" do
       taxa = %{
         duty_type: %{values: ["Obligation"]},
         duties: nil,
@@ -342,12 +356,38 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
         powers: nil
       }
 
-      record = %{function: %{}}
+      record = %{function: %{}, duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
       # Raw Obligation kept as fallback, still classified as Making
       assert %{values: ["Obligation"]} = result.duty_type
+      assert result.is_making == true
+    end
+
+    test "falls back to record's entries when taxa has none (amendment SI scenario)" do
+      # Law-level enrichment arrives with no duties entries, but the record
+      # already has duties from a prior provision-level enrichment
+      taxa = %{
+        duty_type: %{values: ["Obligation"]},
+        duties: nil,
+        rights: nil,
+        responsibilities: nil,
+        powers: nil
+      }
+
+      record = %{
+        function: %{},
+        duties: %{entries: [%{"holder" => "Operator", "clause" => "reg.6"}]},
+        rights: nil,
+        responsibilities: nil,
+        powers: nil
+      }
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert %{values: values} = result.duty_type
+      assert "Duty" in values
       assert result.is_making == true
     end
 

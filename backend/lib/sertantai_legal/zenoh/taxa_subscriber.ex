@@ -193,7 +193,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp upsert_taxa(record, taxa) do
-    taxa = convert_duty_type(taxa)
+    taxa = convert_duty_type(taxa, record)
     taxa = derive_enrichment_result(record, taxa)
 
     Logger.info(
@@ -280,14 +280,16 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   # Fractalaw places entries in the correct columns (duties, rights, responsibilities,
   # powers) but sends raw Obligation/Liberty labels in duty_type. We derive the
   # canonical DRRP vocabulary from which columns have entries.
-  # Falls back to fractalaw's raw duty_type if no structured entries exist.
-  defp convert_duty_type(taxa) do
+  # Checks the incoming taxa first, then falls back to the existing record's entries
+  # (covers the case where law-level enrichment arrives before provision-level).
+  # Falls back to fractalaw's raw duty_type if no structured entries anywhere.
+  defp convert_duty_type(taxa, record) do
     derived =
       []
-      |> maybe_add_drrp("Duty", taxa[:duties])
-      |> maybe_add_drrp("Right", taxa[:rights])
-      |> maybe_add_drrp("Responsibility", taxa[:responsibilities])
-      |> maybe_add_drrp("Power", taxa[:powers])
+      |> maybe_add_drrp("Duty", taxa[:duties] || record.duties)
+      |> maybe_add_drrp("Right", taxa[:rights] || record.rights)
+      |> maybe_add_drrp("Responsibility", taxa[:responsibilities] || record.responsibilities)
+      |> maybe_add_drrp("Power", taxa[:powers] || record.powers)
 
     if derived != [] do
       Map.put(taxa, :duty_type, %{values: Enum.reverse(derived)})
@@ -310,7 +312,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   @spec classify_enrichment(map(), map()) :: map()
   def classify_enrichment(record, taxa) do
     taxa
-    |> convert_duty_type()
+    |> convert_duty_type(record)
     |> then(&derive_enrichment_result(record, &1))
   end
 
