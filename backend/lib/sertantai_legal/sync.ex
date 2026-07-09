@@ -10,6 +10,7 @@ defmodule SertantaiLegal.Sync do
   use Ash.Domain
 
   resources do
+    resource(SertantaiLegal.Sync.Organization)
     resource(SertantaiLegal.Sync.OrgEntitlement)
     resource(SertantaiLegal.Sync.SyncProfile)
     resource(SertantaiLegal.Sync.SyncConfiguration)

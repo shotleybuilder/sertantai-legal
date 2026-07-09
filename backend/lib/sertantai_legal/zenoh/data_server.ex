@@ -117,6 +117,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
           ^prefix <> "/amendments/" <> law_name ->
             fetch_amendments_by_law(law_name, format)
 
+          ^customers_prefix ->
+            fetch_customer_list()
+
           ^customers_prefix <> "/" <> rest ->
             case String.split(rest, "/") do
               [customer_id, "laws"] -> fetch_customer_laws(customer_id)
@@ -316,6 +319,28 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     }
   end
 
+  defp fetch_customer_list do
+    query =
+      from(oa in "org_applicabilities",
+        join: o in "organizations",
+        on: o.id == oa.organization_id,
+        where: oa.status == "yes",
+        group_by: [oa.organization_id, o.name, oa.source],
+        select: %{
+          id: oa.organization_id,
+          name: o.name,
+          source: oa.source,
+          law_count: count(oa.id)
+        },
+        order_by: [asc: o.name]
+      )
+
+    case Repo.all(query) do
+      [] -> {:error, :not_found}
+      customers -> {:ok, Jason.encode!(customers)}
+    end
+  end
+
   defp fetch_customer_laws(customer_id) do
     query =
       from(oa in "org_applicabilities",
@@ -445,6 +470,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       "#{prefix}/lrt/*",
       "#{prefix}/lat/*",
       "#{prefix}/amendments/*",
+      "#{customers_prefix}",
       "#{customers_prefix}/*/laws"
     ]
 

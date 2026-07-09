@@ -40,6 +40,8 @@ All key expressions are prefixed with `fractalaw/@{tenant}/` where `{tenant}` de
 | `fractalaw/@{tenant}/data/legislation/lrt/{law_name}` | Wildcard `*` | JSON object — single LRT record, or `{"error":"not_found"}` |
 | `fractalaw/@{tenant}/data/legislation/lat/{law_name}` | Wildcard `*` | JSON array of LAT sections for that law, sorted by `sort_key` |
 | `fractalaw/@{tenant}/data/legislation/amendments/{law_name}` | Wildcard `*` | JSON array of amendment annotations for that law, sorted by `id` |
+| `fractalaw/@{tenant}/sertantai/customers` | Exact | JSON array of customers with applicable laws (see [Customer Discovery](#customer-discovery) below) |
+| `fractalaw/@{tenant}/sertantai/customers/{customer_id}/laws` | Wildcard `*` | JSON array of applicable law names for a customer (see [Customer Applicability](#customer-applicability) below) |
 
 ### Pub/Sub (sertantai-legal publishes, fractalaw subscribes)
 
@@ -234,6 +236,81 @@ Returned by `/amendments/{law_name}` as an array sorted by `id`.
 | `source` | `string \| null` | Data provenance (e.g., `csv_import`, `lat_parser`) |
 | `affected_sections` | `string[] \| null` | Array of `section_id` values from LAT |
 | `updated_at` | `string` (ISO 8601) | Last update timestamp |
+
+---
+
+### Customer Discovery
+
+Returned by `/sertantai/customers` as a JSON array of customer objects.
+
+```json
+[
+  {
+    "id": "c075d56b-8420-4408-b695-ccfbc1ba15ec",
+    "name": "QQ",
+    "source": "enhesa_import",
+    "law_count": 428
+  }
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` (UUID) | Organization ID — use as `{customer_id}` in `/customers/{customer_id}/laws` |
+| `name` | `string` | Organization display name |
+| `source` | `string` | How the applicability data was imported (e.g., `enhesa_import`, `screener`) |
+| `law_count` | `integer` | Number of applicable laws (`status = 'yes'`) |
+
+> Only customers with at least one applicable law are returned.
+
+---
+
+### Customer Applicability
+
+Returned by `/sertantai/customers/{customer_id}/laws` as a JSON array of law name strings.
+
+The `{customer_id}` is the organization UUID (e.g., `c075d56b-8420-4408-b695-ccfbc1ba15ec`). Only laws with applicability `status = "yes"` are returned — laws marked "no" (not applicable) are excluded.
+
+```json
+[
+  "UK_ukpga_1974_37",
+  "UK_uksi_1999_3242",
+  "UK_uksi_2005_1541",
+  "UK_uksi_2015_51"
+]
+```
+
+| Aspect | Detail |
+|--------|--------|
+| Source table | `org_applicabilities` |
+| Filter | `organization_id = {customer_id}` AND `status = 'yes'` |
+| Order | Ascending by `law_name` |
+| Typical size | 200–500 law names (~5–15 KB) |
+
+Use this to scope fractalaw's enrichment pipeline to only the laws a customer cares about, rather than processing the full ~19K LRT corpus.
+
+### Customer Workflow (Two-Step Discovery)
+
+Fractalaw does not persist customer data. To get a customer's applicable laws:
+
+1. **Discover** — query `/sertantai/customers` to get the list of customers with names and UUIDs
+2. **Select** — match by customer name (a config value in fractalaw) to get the UUID
+3. **Fetch** — query `/sertantai/customers/{uuid}/laws` to get the applicable law names
+
+```rust
+// 1. Discover customers
+let customers: Vec<Customer> = query("fractalaw/@dev/sertantai/customers");
+// [{"id": "c075d56b-...", "name": "QQ", "law_count": 428}, ...]
+
+// 2. Find UUID by name
+let qq = customers.iter().find(|c| c.name == config.customer_name).unwrap();
+
+// 3. Fetch applicable laws
+let laws: Vec<String> = query(&format!(
+    "fractalaw/@dev/sertantai/customers/{}/laws", qq.id
+));
+// ["UK_ukpga_1974_37", "UK_uksi_2015_51", ...]
+```
 
 ---
 
@@ -585,6 +662,7 @@ Sertantai uses this to resolve canonical actor labels to display names and categ
 | LRT (single) | 1 | ~2–5 KB | JSON |
 | LAT (per law) | 50–1,500 | ~50 KB – 2 MB | JSON |
 | Amendments (per law) | 0–500 | ~5 KB – 500 KB | JSON |
+| Customer laws | 200–500 | ~5–15 KB | JSON |
 | Change notification | 1 | ~100–200 bytes | JSON |
 | Triage (per query) | 1–100 | ~200 bytes – 20 KB | JSON |
 | Status (per query) | 1–100 | ~200 bytes – 20 KB | JSON |
