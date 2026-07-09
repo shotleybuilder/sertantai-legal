@@ -102,7 +102,15 @@ defmodule SertantaiLegal.Sync.DeltaDetector do
   defp needs_update?(nil, _last_synced), do: true
   # If never synced before, always update
   defp needs_update?(_source, nil), do: true
-  # Compare timestamps
+  # Compare timestamps (handle NaiveDateTime from DB vs DateTime from mappings)
+  defp needs_update?(%NaiveDateTime{} = source, last_synced) do
+    needs_update?(DateTime.from_naive!(source, "Etc/UTC"), last_synced)
+  end
+
+  defp needs_update?(source, %NaiveDateTime{} = last_synced) do
+    needs_update?(source, DateTime.from_naive!(last_synced, "Etc/UTC"))
+  end
+
   defp needs_update?(source_updated, last_synced) do
     DateTime.compare(source_updated, last_synced) == :gt
   end
