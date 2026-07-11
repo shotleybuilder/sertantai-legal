@@ -429,6 +429,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         is_enacting: Enum.map(records, & &1.is_enacting),
         is_commencing: Enum.map(records, & &1.is_commencing),
         source_url: Enum.map(records, & &1.source_url),
+        explanatory_note: Enum.map(records, & &1.explanatory_note),
         updated_at: Enum.map(records, & &1.updated_at)
       })
 
