@@ -18,6 +18,11 @@ defmodule SertantaiLegal.Scraper.ExplanatoryNote do
 
   require Logger
 
+  # Truncate notes longer than 10K chars. Full Act explanatory notes can be
+  # 100K-1.6M chars (essentially books) — too large for quick reference.
+  @max_chars 10_000
+  @truncation_marker "\n\n[Truncated — full Explanatory Note available at legislation.gov.uk]"
+
   @doc """
   Fetch and parse the Explanatory Note for a law.
 
@@ -50,7 +55,7 @@ defmodule SertantaiLegal.Scraper.ExplanatoryNote do
       {:ok, xml} ->
         case parse(xml) do
           {:ok, ""} -> fetch_first(rest)
-          {:ok, text} -> {:ok, text}
+          {:ok, text} -> {:ok, maybe_truncate(text)}
           {:error, _} -> fetch_first(rest)
         end
 
@@ -118,5 +123,11 @@ defmodule SertantaiLegal.Scraper.ExplanatoryNote do
     else
       Enum.join(paragraphs, "\n\n")
     end
+  end
+
+  defp maybe_truncate(text) when byte_size(text) <= @max_chars, do: text
+
+  defp maybe_truncate(text) do
+    String.slice(text, 0, @max_chars) <> @truncation_marker
   end
 end
