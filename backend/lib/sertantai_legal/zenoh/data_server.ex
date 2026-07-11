@@ -328,7 +328,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         where: oa.status == "yes",
         group_by: [oa.organization_id, o.name, oa.source],
         select: %{
-          id: oa.organization_id,
+          id: type(oa.organization_id, Ecto.UUID),
           name: o.name,
           source: oa.source,
           law_count: count(oa.id)
