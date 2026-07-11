@@ -90,22 +90,33 @@ defmodule SertantaiLegal.Scraper.ExplanatoryNote do
   end
 
   # Extract plain text from ExplanatoryNotes elements.
-  # Uses Floki.text on the whole node for clean extraction, avoiding
-  # duplication from nested elements (e.g. NumberedPara containing Title + Text).
+  # Walks paragraph-level elements to preserve line breaks between them.
   defp extract_text([]), do: ""
 
   defp extract_text(nodes) do
-    text =
+    # Find all paragraph-bearing elements
+    # SIs use <P1>, <P2>, <P3>; Acts use <NumberedPara>, <Para>
+    # Floki lowercases all element names
+    paragraphs =
+      nodes
+      |> Floki.find("p1, p2, p3, p, numberedpara, para, division > title, subdivision > title")
+      |> Enum.map(fn node ->
+        Floki.text(node)
+        |> String.replace(~r/<[^>]+>/, "")
+        |> String.replace(~r/[ \t]+/, " ")
+        |> String.trim()
+      end)
+      |> Enum.reject(&(&1 == ""))
+
+    if paragraphs == [] do
+      # Fallback: just get all text if no paragraph elements found
       nodes
       |> Enum.map(&Floki.text/1)
       |> Enum.join("\n")
-
-    text
-    # Clean up any XML artifacts that Floki.text doesn't strip
-    |> String.replace(~r/<[^>]+>/, "")
-    # Collapse whitespace
-    |> String.replace(~r/[ \t]+/, " ")
-    |> String.replace(~r/\n{3,}/, "\n\n")
-    |> String.trim()
+      |> String.replace(~r/[ \t]+/, " ")
+      |> String.trim()
+    else
+      Enum.join(paragraphs, "\n\n")
+    end
   end
 end
