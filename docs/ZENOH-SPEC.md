@@ -107,6 +107,7 @@ Returned by `/lrt` (as array) and `/lrt/{law_name}` (as single object).
   "enacting": ["string"],
   "enacted_by": ["string"],
   "leg_gov_uk_url": "https://www.legislation.gov.uk/ukpga/1974/37",
+  "explanatory_note": "string | null",
   "updated_at": "2026-02-26T06:32:22Z"
 }
 ```
@@ -150,6 +151,7 @@ Returned by `/lrt` (as array) and `/lrt/{law_name}` (as single object).
 | `enacting` | `string[]` | Law names this law enacts |
 | `enacted_by` | `string[]` | Law names that enact this law |
 | `leg_gov_uk_url` | `string` | legislation.gov.uk URL |
+| `explanatory_note` | `string \| null` | Plain-text Explanatory Note/Memorandum (truncated at 10K chars). `null` for older Acts, EU retained law |
 | `updated_at` | `string` (ISO 8601) | Last update timestamp |
 
 > **Note on JSONB fields**: `function`, `duty_holder`, `power_holder`, `rights_holder`, `responsibility_holder`, `purpose`, `duty_type`, `popimar` are stored as PostgreSQL JSONB. Their internal structure varies per record. Treat as opaque maps unless you need specific subfields.

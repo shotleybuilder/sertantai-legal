@@ -282,6 +282,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       enacting: r.enacting,
       enacted_by: r.enacted_by,
       leg_gov_uk_url: r.leg_gov_uk_url,
+      explanatory_note: r.explanatory_note,
       updated_at: r.updated_at
     }
   end
