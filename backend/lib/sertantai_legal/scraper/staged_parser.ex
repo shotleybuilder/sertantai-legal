@@ -55,7 +55,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # MakingDetector still runs after metadata (stage 1) as a lightweight proxy.
   # repeal_revoke stage removed (Issue #60 Bug 4) — redundant with metadata stage's
   # title-based revocation detection. Live status now resolved after amended_by.
-  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by]
+  alias SertantaiLegal.Scraper.ExplanatoryNote
+
+  @stages [:metadata, :extent, :enacted_by, :amending, :amended_by, :explanatory_note]
 
   # Live status codes (matching legl conventions)
   # @live_part_revoked is only used in test helpers but must be a module attribute
@@ -597,6 +599,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     run_amended_by_stage(type_code, year, number)
   end
 
+  defp run_stage(:explanatory_note, type_code, year, number, _record) do
+    IO.puts("  [6/6] Explanatory Note...")
+    run_explanatory_note_stage(type_code, year, number)
+  end
+
   defp run_stage(:taxa, type_code, year, number, record) do
     IO.puts("  [7/7] Taxa Classification...")
     run_taxa_stage(type_code, year, number, record)
@@ -1070,6 +1077,27 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # - DutyActor: Extracts actors (employers, authorities, etc.)
   # - DutyType: Classifies duty types (Duty, Right, Responsibility, Power)
   # - Popimar: Classifies by POPIMAR management framework
+
+  defp run_explanatory_note_stage(type_code, year, number) do
+    case ExplanatoryNote.fetch(type_code, year, number) do
+      {:ok, text} ->
+        char_count = String.length(text)
+        IO.puts("    ✓ Explanatory Note: #{char_count} chars")
+        %{status: :ok, data: %{explanatory_note: text}, error: nil}
+
+      {:error, :not_found} ->
+        IO.puts("    ⊘ No Explanatory Note available")
+        %{status: :ok, data: %{}, error: nil}
+
+      {:error, :empty} ->
+        IO.puts("    ⊘ Explanatory Note empty")
+        %{status: :ok, data: %{}, error: nil}
+
+      {:error, reason} ->
+        IO.puts("    ✗ Explanatory Note failed: #{reason}")
+        %{status: :error, data: nil, error: reason}
+    end
+  end
 
   defp run_taxa_stage(type_code, year, number, record) do
     case TaxaParser.run_with_body(type_code, year, number) do

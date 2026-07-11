@@ -293,7 +293,8 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
                :extent,
                :enacted_by,
                :amending,
-               :amended_by
+               :amended_by,
+               :explanatory_note
              ]
     end
   end

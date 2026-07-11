@@ -198,6 +198,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     si_code: [],
     tags: [],
     md_description: nil,
+    explanatory_note: nil,
     md_subjects: [],
 
     # Status
@@ -430,6 +431,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       si_code: get_list(normalized, :si_code),
       tags: get_list(normalized, :tags),
       md_description: get_string(normalized, :md_description),
+      explanatory_note: get_string(normalized, :explanatory_note),
       md_subjects: get_list(normalized, :md_subjects),
 
       # Status

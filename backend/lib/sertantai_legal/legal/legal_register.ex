@@ -380,6 +380,11 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Markdown description of the legislation")
     end
 
+    attribute :explanatory_note, :string do
+      allow_nil?(true)
+      description("Plain-text Explanatory Note/Memorandum from legislation.gov.uk")
+    end
+
     # Document Statistics
     attribute :md_total_paras, :integer do
       allow_nil?(true)
@@ -723,6 +728,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :si_code,
         :md_subjects,
         :md_description,
+        :explanatory_note,
         :md_total_paras,
         :md_body_paras,
         :md_schedule_paras,
@@ -831,6 +837,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :si_code,
         :md_subjects,
         :md_description,
+        :explanatory_note,
         :md_total_paras,
         :md_body_paras,
         :md_schedule_paras,
