@@ -56,6 +56,8 @@
 		l.id, l.name, l.title_en, l.family, l.family_ii, l.year,
 		l.type_code, l.live, l.is_making,
 		l.duty_holder, l.power_holder, l.rights_holder, l.responsibility_holder,
+		l.fitness_entities, l.fitness_scope_dimensions,
+		l.fitness_mention_count, l.fitness_applies_count, l.fitness_disapplies_count,
 		l.fitness_person, l.fitness_process, l.fitness_place,
 		l.fitness_plant, l.fitness_sector, l.has_fitness,
 		l.si_code, l.function, l.source_url
@@ -134,6 +136,13 @@
 			name: 'duty_holder',
 			dataType: 'json',
 			postgresType: 'jsonb',
+			nullable: true,
+			hasDefault: false
+		},
+		{
+			name: 'fitness_entities',
+			dataType: 'text',
+			postgresType: 'text[]',
 			nullable: true,
 			hasDefault: false
 		},
@@ -396,8 +405,17 @@
 			const processes = profile.processes || [];
 			const sector = profile.sector || [];
 
+			// Combine all profile terms for fitness_entities overlap (v0.3)
+			const profileEntities = [
+				...regions.map((r: string) => r),
+				...locations,
+				...materials,
+				...processes,
+				...sector
+			];
+
 			// Family filter: use entitlement families if available
-			const familyFilter = subscribedFamilies.length > 0 ? `AND l.family = ANY($8)` : '';
+			const familyFilter = subscribedFamilies.length > 0 ? `AND l.family = ANY($9)` : '';
 
 			const params: unknown[] = [
 				governedActors, // $1
@@ -406,13 +424,15 @@
 				materials, // $4
 				processes, // $5
 				sector, // $6
-				regions // $7
+				regions, // $7
+				profileEntities // $8
 			];
-			if (subscribedFamilies.length > 0) params.push(subscribedFamilies); // $8
+			if (subscribedFamilies.length > 0) params.push(subscribedFamilies); // $9
 
 			// Match governed actors against duty_holder JSONB, government actors against responsibility_holder
 			// duty_holder format: {"values": ["Org: Employer", "Ind: Employee", ...]}
 			// Use jsonb_array_elements_text to extract values for array overlap check
+			// fitness_entities: v0.3 reconciled entities matched against all profile terms
 			const result = await db.query<{
 				name: string;
 				title_en: string;
@@ -426,6 +446,7 @@
 				         CASE WHEN $2::text[] != '{}' AND l.responsibility_holder IS NOT NULL AND EXISTS (
 				           SELECT 1 FROM jsonb_array_elements_text(l.responsibility_holder->'values') v WHERE v = ANY($2)
 				         ) THEN 1 ELSE 0 END +
+				         CASE WHEN $8::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $8 THEN 1 ELSE 0 END +
 				         CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $3 THEN 1 ELSE 0 END +
 				         CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $4 THEN 1 ELSE 0 END +
 				         CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $5 THEN 1 ELSE 0 END +
@@ -443,6 +464,7 @@
 				        CASE WHEN $2::text[] != '{}' AND l.responsibility_holder IS NOT NULL AND EXISTS (
 				          SELECT 1 FROM jsonb_array_elements_text(l.responsibility_holder->'values') v WHERE v = ANY($2)
 				        ) THEN 1 ELSE 0 END +
+				        CASE WHEN $8::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $8 THEN 1 ELSE 0 END +
 				        CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $3 THEN 1 ELSE 0 END +
 				        CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $4 THEN 1 ELSE 0 END +
 				        CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $5 THEN 1 ELSE 0 END +

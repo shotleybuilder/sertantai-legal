@@ -140,7 +140,13 @@ export const FIELD_LABELS: Record<string, string> = {
 	article_popimar: 'Article POPIMAR',
 	article_popimar_clause: 'Article POPIMAR Clause',
 
-	// Fitness / Applicability
+	// Fitness / Applicability (v0.3)
+	fitness_entities: 'Applicability Entities',
+	fitness_scope_dimensions: 'Scope Dimensions',
+	fitness_mention_count: 'Mention Count',
+	fitness_applies_count: 'Applies Count',
+	fitness_disapplies_count: 'Disapplies Count',
+	// Fitness / Applicability (legacy P-dimensions)
 	fitness: 'Fitness Rules',
 	fitness_person: 'Person',
 	fitness_place: 'Place',
@@ -903,9 +909,51 @@ export const SECTION_CONFIG: SectionConfig[] = [
 		defaultExpanded: true,
 		subsections: [
 			{
-				id: 'fitness_tags',
-				title: 'Fitness Tags',
+				id: 'fitness_entities',
+				title: 'Applicability Entities',
 				defaultExpanded: true,
+				fields: [
+					{
+						key: 'fitness_entities',
+						label: 'Entities',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_scope_dimensions',
+						label: 'Scope Dimensions',
+						type: 'array',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_mention_count',
+						label: 'Mention Count',
+						type: 'number',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_applies_count',
+						label: 'Applies Count',
+						type: 'number',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					},
+					{
+						key: 'fitness_disapplies_count',
+						label: 'Disapplies Count',
+						type: 'number',
+						stage: 'fitness',
+						hideWhenEmpty: true
+					}
+				]
+			},
+			{
+				id: 'fitness_tags',
+				title: 'Fitness Tags (Legacy)',
+				defaultExpanded: false,
 				fields: [
 					{
 						key: 'fitness_person',

@@ -96,6 +96,11 @@ const ALL_COLUMNS: string[] = [
 	'live_from_changes',
 	'lat_count',
 	'latest_lat_updated_at',
+	'fitness_entities',
+	'fitness_scope_dimensions',
+	'fitness_mention_count',
+	'fitness_applies_count',
+	'fitness_disapplies_count',
 	'fitness_person',
 	'fitness_process',
 	'fitness_place',
@@ -242,6 +247,7 @@ export async function startSync(): Promise<void> {
 				}
 				// has_fitness: server generated column can't be synced via Electric
 				const hasFitness =
+					mapped.fitness_entities != null ||
 					mapped.fitness_person != null ||
 					mapped.fitness_process != null ||
 					mapped.fitness_place != null ||

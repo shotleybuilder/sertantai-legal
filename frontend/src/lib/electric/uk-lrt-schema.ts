@@ -163,7 +163,13 @@ export interface UkLrtRecord {
 	// LAT stats (trigger-maintained)
 	lat_count: number | null;
 	latest_lat_updated_at: string | null;
-	// Fitness/applicability columns (Issue #39)
+	// Fitness v0.3 (reconciled entities from fractalaw)
+	fitness_entities: string[] | null;
+	fitness_scope_dimensions: string[] | null;
+	fitness_mention_count: number | null;
+	fitness_applies_count: number | null;
+	fitness_disapplies_count: number | null;
+	// Fitness legacy (Issue #39)
 	fitness_person: string[] | null;
 	fitness_process: string[] | null;
 	fitness_place: string[] | null;
@@ -248,7 +254,13 @@ export function transformUkLrtRecord(data: Record<string, unknown>): UkLrtRecord
 		// LAT stats
 		lat_count: parseNumber(data.lat_count),
 		latest_lat_updated_at: parseString(data.latest_lat_updated_at),
-		// Fitness/applicability columns (Issue #39)
+		// Fitness v0.3 (reconciled entities from fractalaw)
+		fitness_entities: parseArray(data.fitness_entities),
+		fitness_scope_dimensions: parseArray(data.fitness_scope_dimensions),
+		fitness_mention_count: parseNumber(data.fitness_mention_count),
+		fitness_applies_count: parseNumber(data.fitness_applies_count),
+		fitness_disapplies_count: parseNumber(data.fitness_disapplies_count),
+		// Fitness legacy (Issue #39)
 		fitness_person: parseArray(data.fitness_person),
 		fitness_process: parseArray(data.fitness_process),
 		fitness_place: parseArray(data.fitness_place),

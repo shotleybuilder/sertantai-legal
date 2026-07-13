@@ -469,7 +469,13 @@ describe('UkLrtRecord type', () => {
 			// LAT stats
 			lat_count: null,
 			latest_lat_updated_at: null,
-			// Fitness/applicability columns (Issue #39)
+			// Fitness v0.3
+			fitness_entities: null,
+			fitness_scope_dimensions: null,
+			fitness_mention_count: null,
+			fitness_applies_count: null,
+			fitness_disapplies_count: null,
+			// Fitness legacy (Issue #39)
 			fitness_person: null,
 			fitness_process: null,
 			fitness_place: null,

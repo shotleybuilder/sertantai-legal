@@ -38,6 +38,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       |> apply_fitness_filter(:fitness_place, profile.fitness_place)
       |> apply_fitness_filter(:fitness_plant, profile.fitness_plant)
       |> apply_fitness_filter(:fitness_sector, profile.fitness_sector)
+      |> apply_fitness_entities_filter(Map.get(profile, :fitness_entities))
       |> apply_applicability_filter(organization_id)
       |> apply_checkpoint(checkpoint)
       |> order_by([u], [u.family, u.year, u.name])
@@ -60,6 +61,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       |> apply_fitness_filter(:fitness_place, profile.fitness_place)
       |> apply_fitness_filter(:fitness_plant, profile.fitness_plant)
       |> apply_fitness_filter(:fitness_sector, profile.fitness_sector)
+      |> apply_fitness_entities_filter(Map.get(profile, :fitness_entities))
 
     Repo.one(query)
   end
@@ -321,6 +323,13 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
 
   defp apply_fitness_filter(query, column, values) when is_list(values) do
     where(query, [u], fragment("? && ?", field(u, ^column), ^values))
+  end
+
+  defp apply_fitness_entities_filter(query, nil), do: query
+  defp apply_fitness_entities_filter(query, []), do: query
+
+  defp apply_fitness_entities_filter(query, entities) when is_list(entities) do
+    where(query, [u], fragment("fitness_entities && ?::text[]", ^entities))
   end
 
   defp apply_applicability_filter(query, nil), do: query

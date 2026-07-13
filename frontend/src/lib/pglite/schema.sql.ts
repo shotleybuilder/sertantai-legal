@@ -111,7 +111,14 @@ CREATE TABLE IF NOT EXISTS laws (
   lat_count INTEGER NOT NULL DEFAULT 0,
   latest_lat_updated_at TIMESTAMPTZ,
 
-  -- Fitness (tag arrays synced; fitness JSONB[] is heavy, fetched via REST)
+  -- Fitness v0.3 (reconciled entities from fractalaw)
+  fitness_entities TEXT[],
+  fitness_scope_dimensions TEXT[],
+  fitness_mention_count INTEGER,
+  fitness_applies_count INTEGER,
+  fitness_disapplies_count INTEGER,
+
+  -- Fitness legacy (tag arrays synced; fitness JSONB[] is heavy, fetched via REST)
   fitness_person TEXT[],
   fitness_process TEXT[],
   fitness_place TEXT[],

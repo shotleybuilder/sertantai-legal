@@ -409,7 +409,44 @@ export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
 		hasDefault: false
 	},
 
-	// Fitness
+	// Fitness v0.3
+	{
+		name: 'fitness_entities',
+		dataType: 'json',
+		postgresType: 'text[]',
+		nullable: true,
+		hasDefault: false
+	},
+	{
+		name: 'fitness_scope_dimensions',
+		dataType: 'json',
+		postgresType: 'text[]',
+		nullable: true,
+		hasDefault: false
+	},
+	{
+		name: 'fitness_mention_count',
+		dataType: 'number',
+		postgresType: 'integer',
+		nullable: true,
+		hasDefault: false
+	},
+	{
+		name: 'fitness_applies_count',
+		dataType: 'number',
+		postgresType: 'integer',
+		nullable: true,
+		hasDefault: false
+	},
+	{
+		name: 'fitness_disapplies_count',
+		dataType: 'number',
+		postgresType: 'integer',
+		nullable: true,
+		hasDefault: false
+	},
+
+	// Fitness legacy
 	{
 		name: 'fitness_person',
 		dataType: 'json',

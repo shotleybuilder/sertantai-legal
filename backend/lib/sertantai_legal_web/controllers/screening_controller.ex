@@ -435,7 +435,12 @@ defmodule SertantaiLegalWeb.ScreeningController do
     governed_actors = ActorDictionary.governed_labels()
     government_actors = ActorDictionary.government_labels()
 
-    # Fitness dimensions still from DB (law-level, not in actor dictionary)
+    # Fitness entities from v0.3 corpus (GIN-indexed, replaces P-dimension queries)
+    alias SertantaiLegal.Fitness.EntityIndex
+
+    fitness_entities = EntityIndex.list_entities(min_count: 2, country: "uk")
+
+    # Legacy fitness dimensions from DB (kept for backwards compatibility)
     fitness_queries = [
       {"locations",
        "SELECT DISTINCT val FROM (SELECT unnest(fitness_place) as val FROM uk_lrt WHERE fitness_place IS NOT NULL) sub WHERE val NOT IN ('England', 'Scotland', 'Wales', 'Northern Ireland', 'Great Britain', 'United Kingdom') ORDER BY val"},
@@ -458,10 +463,10 @@ defmodule SertantaiLegalWeb.ScreeningController do
       end)
 
     vocab =
-      Map.merge(fitness_vocab, %{
-        "governed_actors" => governed_actors,
-        "government_actors" => government_actors
-      })
+      fitness_vocab
+      |> Map.put("governed_actors", governed_actors)
+      |> Map.put("government_actors", government_actors)
+      |> Map.put("fitness_entities", fitness_entities)
 
     json(conn, vocab)
   end

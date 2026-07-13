@@ -68,6 +68,7 @@
 		function: Record<string, boolean> | string[] | null;
 		is_making: boolean | null;
 		has_fitness: string;
+		fitness_entities: string[] | null;
 		lat_count: number;
 		duty_type: Record<string, unknown> | null;
 		live: string | null;
@@ -239,6 +240,7 @@
 		'function',
 		'is_making',
 		'has_fitness',
+		'fitness_entities',
 		'lat_count',
 		'duty_type',
 		'live',
@@ -278,6 +280,17 @@
 				{ value: 'true', label: 'Yes' },
 				{ value: 'false', label: 'No' }
 			]
+		},
+		{
+			name: 'fitness_entities',
+			label: 'Applicability Entities',
+			width: 200,
+			dataType: 'json',
+			format: (v) => {
+				const arr = v as string[] | null;
+				if (!arr || arr.length === 0) return '-';
+				return arr.slice(0, 5).join(', ') + (arr.length > 5 ? ` (+${arr.length - 5})` : '');
+			}
 		},
 		{ name: 'lat_count', label: 'LAT', width: 70, dataType: 'number' },
 		{
