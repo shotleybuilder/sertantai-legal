@@ -207,6 +207,49 @@ After migration, ensure the Ash resource attribute matches the DB column type:
 
 Mismatches cause runtime errors like `cannot cast type jsonb to jsonb[]`.
 
+## Generated Columns (GENERATED ALWAYS AS)
+
+You **cannot** ALTER a generated column's expression. You must DROP and re-ADD:
+
+```elixir
+# Drop the generated column
+execute("ALTER TABLE legal_register DROP COLUMN has_fitness")
+
+# Recreate with new expression
+execute("""
+ALTER TABLE legal_register ADD COLUMN has_fitness boolean
+GENERATED ALWAYS AS (
+  (fitness_entities IS NOT NULL) OR
+  (fitness_person IS NOT NULL) OR (fitness_process IS NOT NULL)
+) STORED
+""")
+```
+
+Do this **after** adding any new columns the expression references, and **before** recreating the view (the view needs to see the column).
+
+## Ash Codegen Migration (No-Op Pattern)
+
+After a manual migration, `mix ash_postgres.generate_migrations` will create a codegen migration for the snapshot sync. The columns already exist, so make it a no-op:
+
+```elixir
+defmodule SertantaiLegal.Repo.Migrations.AddNewColumnCodegen do
+  @moduledoc """
+  No-op — columns already added by manual migration 20260713000001.
+  Keeps Ash snapshot in sync.
+  """
+  use Ecto.Migration
+
+  def up do
+    # Columns already exist from manual migration
+  end
+
+  def down do
+  end
+end
+```
+
+**The no-op migration must still be run** (`mix ash_postgres.migrate`). Phoenix's `CheckRepoStatus` plug will block the server with `PendingMigrationError` if the migration is not recorded as applied, even if the body is empty.
+
 ## After Migration
 
 Server must be restarted to pick up schema changes — the compiled Ash resource has the old schema cached.
@@ -218,6 +261,8 @@ Server must be restarted to pick up schema changes — the compiled Ash resource
 | `20260518000001` | Original uk_lrt view + triggers |
 | `20260703000001` | Fixed view after accidental DROP (restored triggers) |
 | `20260708000001` | Changed `significance_parts` jsonb → jsonb[] |
+| `20260711000001` | Added `explanatory_note` text column |
+| `20260713000001` | Added 5 fitness v0.3 columns + updated `has_fitness` generated column |
 
 ## Key Files
 

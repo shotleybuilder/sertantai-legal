@@ -8,6 +8,8 @@ LRT scraping from legislation.gov.uk, parsing pipeline, cascade, session managem
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-11 | [issue-118](2026-07-11-issue-118.md) | [#118](https://github.com/shotleybuilder/sertantai-legal/issues/118) | Not-a-bug: reg./art. duplicates are fractalaw legacy data, parser correct |
+| 2026-07-11 | [issue-117](2026-07-11-issue-117.md) | [#117](https://github.com/shotleybuilder/sertantai-legal/issues/117) | Explanatory Notes: scrape, backfill (311 laws), 10K truncation, Zenoh queryable |
 | 2026-05-15 | [lrt-scrape-session-skill](2026-05-15-lrt-scrape-session-skill.md) | — | /lrt-scrape skill, skip workflow, ~w[] sigil fix, Function calc fixes, Feb 2026 scrape QA+sync |
 | 2026-03-10 | [fallback-metadata-research](2026-03-10-fallback-metadata-research.md) | — | Research: fallback metadata sources for older UK laws |
 | 2026-03-07 | [issue-43](2026-03-07-issue-43.md) | [#43](https://github.com/shotleybuilder/sertantai-legal/issues/43) | Auto Parse All fails with JSON file enoent on reparse |
@@ -72,10 +74,14 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-13 | [fitness-legacy-cleanup](2026-07-13-fitness-legacy-cleanup.md) | — | Drop all legacy P-dimension fitness columns (19 columns across 3 tables, 27 files) |
+| 2026-07-13 | [fitness-phase3-expression-trees](2026-07-13-fitness-phase3-expression-trees.md) | — | Phase 3: compiled applicability trees, recursive evaluator, territorial hierarchy, 694 laws |
+| 2026-07-13 | [fitness-rules-engine](2026-07-13-fitness-rules-engine.md) | — | Fitness rules engine: GIN entity index, ProfileQuery filter, admin column, customer screening scoring |
+| 2026-07-10 | [issue-116](2026-07-10-issue-116.md) | [#116](https://github.com/shotleybuilder/sertantai-legal/issues/116) | Not-a-bug: missing Baserow provisions have counterparty actors, governed_only filter correct |
 | 2026-07-07 | [evidence-schema-baserow](2026-07-07-evidence-schema-baserow.md) | — | L4 Artefacts/Judgements/Gaps templates built, sub-patterns (calibration_mode, safety_argument), applied to QQ (14 tables) |
 | 2026-07-05 | [evidence-calibration-tier](2026-07-05-evidence-calibration-tier.md) | — | SUSPENDED — L4 redesign: Phases 1-2 done (schema + templates), Phases 3-6 remain (fractalaw, workflow, docs) |
 | 2026-07-03 | [baserow-mix-task](2026-07-03-baserow-mix-task.md) | — | mix templates.apply/status, default column cleanup, :workspace_member rename, SA_ strip, Personnel table |
-| 2026-07-03 | [baserow-compliance-poc](2026-07-03-baserow-compliance-poc.md) | — | ACTIVE — PoC solution design, L1-L4 templates built, remaining: Audit/Training/PDCA + QQ validation |
+| 2026-07-03 | [baserow-compliance-poc](2026-07-03-baserow-compliance-poc.md) | — | SUSPENDED — L1-L7 designed, L1-L6 built + applied to QQ. Remaining: L7 build, Document Control, PDCA, Training Tracker |
 | 2026-07-02 | [significance-signals](2026-07-02-significance-signals.md) | — | Significance signals from fractalaw: law+provision+part-level, Baserow sync with Strategy C, scoping guide |
 | 2026-06-11 | [delta-sync-lat-tuples](2026-06-11-delta-sync-lat-tuples.md) | — | Delta sync for LAT + Actor Tuples: DeltaDetector, orphan deletion, mapping timestamps |
 | 2026-06-11 | [oban-refactor](2026-06-11-oban-refactor.md) | — | Oban job queue: SyncWorker, SchedulerWorker, Engine.clean, workspace validation, telemetry |
@@ -203,6 +209,8 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-13 | [fitness-schema-migration](2026-07-13-fitness-schema-migration.md) | — | Fitness v0.3: 5 new columns (entities, scope, counts), view+trigger rebuild, TaxaSubscriber wired |
+| 2026-07-08 | [reconcile-qq-legal-register](2026-07-08-reconcile-qq-legal-register.md) | [#114](https://github.com/shotleybuilder/sertantai-legal/issues/114) [#115](https://github.com/shotleybuilder/sertantai-legal/issues/115) [#116](https://github.com/shotleybuilder/sertantai-legal/issues/116) | QQ register 334→488 laws, DRRP vocab fix, live status fix, orgs table, Zenoh customer discovery, Baserow sync 2564 duties |
 | 2026-07-03 | [uk-lrt-view-trigger-fix](2026-07-03-uk-lrt-view-trigger-fix.md) | — | Fix 59 test failures: restore uk_lrt INSTEAD OF triggers destroyed by SELECT * view recreation |
 | 2026-06-05 | [enhesa-quality-report](2026-06-05-enhesa-quality-report.md) | — | Enhesa QA report: 76% precision, 90% recall. customer-quality-report skill created |
 | 2026-06-04 | [aggregate-qq-sites](2026-06-04-aggregate-qq-sites.md) | — | All 24 QQ CSVs imported, ~45 misidentified SSIs fixed, 34 laws LAT-parsed, NAS snapshot |
