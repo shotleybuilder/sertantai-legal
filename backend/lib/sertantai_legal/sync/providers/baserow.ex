@@ -1036,10 +1036,6 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   # Fitness and taxonomy options are queried from the DB at sync time,
   # not hardcoded. This accommodates evolving fractalaw taxonomy.
 
-  defp fitness_person_options, do: distinct_array_values("fitness_person")
-  defp fitness_sector_options, do: distinct_array_values("fitness_sector")
-  # fitness_process/place/plant are text fields (not multi-select) in the current
-  # LRT spec. Add dynamic option functions here if they become multi-select.
   defp domain_options, do: distinct_array_values("domain")
   defp geo_region_options, do: distinct_array_values("geo_region")
   defp purpose_options, do: distinct_jsonb_values("purpose")
@@ -1100,11 +1096,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       multi_select_spec("Rights Holder", holder_options()),
       multi_select_spec("Domain", domain_options()),
       multi_select_spec("Geographic Region", geo_region_options()),
-      multi_select_spec("Fitness Person", fitness_person_options()),
-      multi_select_spec("Fitness Sector", fitness_sector_options()),
-      %{name: "Fitness Process", type: "text"},
-      %{name: "Fitness Place", type: "text"},
-      %{name: "Fitness Plant", type: "text"}
+      %{name: "Fitness Entities", type: "long_text"}
     ]
   end
 
@@ -1208,11 +1200,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Rights Holder" => extract_holder_list(lrt.rights_holder),
       "Domain" => lrt.domain || [],
       "Geographic Region" => lrt.geo_region || [],
-      "Fitness Person" => lrt.fitness_person || [],
-      "Fitness Sector" => lrt.fitness_sector || [],
-      "Fitness Process" => join_array(lrt.fitness_process),
-      "Fitness Place" => join_array(lrt.fitness_place),
-      "Fitness Plant" => join_array(lrt.fitness_plant)
+      "Fitness Entities" => join_array(lrt.fitness_entities)
     })
   end
 

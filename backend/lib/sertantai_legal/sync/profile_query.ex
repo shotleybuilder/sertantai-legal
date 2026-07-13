@@ -33,11 +33,6 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       |> apply_geo_filter(profile.geo_regions)
       |> apply_function_filter(profile.function_filter)
       |> apply_live_filter(profile.live_filter)
-      |> apply_fitness_filter(:fitness_person, profile.fitness_person)
-      |> apply_fitness_filter(:fitness_process, profile.fitness_process)
-      |> apply_fitness_filter(:fitness_place, profile.fitness_place)
-      |> apply_fitness_filter(:fitness_plant, profile.fitness_plant)
-      |> apply_fitness_filter(:fitness_sector, profile.fitness_sector)
       |> apply_fitness_entities_filter(Map.get(profile, :fitness_entities))
       |> apply_applicability_filter(organization_id)
       |> apply_checkpoint(checkpoint)
@@ -56,11 +51,6 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       |> apply_geo_filter(profile.geo_regions)
       |> apply_function_filter(profile.function_filter)
       |> apply_live_filter(profile.live_filter)
-      |> apply_fitness_filter(:fitness_person, profile.fitness_person)
-      |> apply_fitness_filter(:fitness_process, profile.fitness_process)
-      |> apply_fitness_filter(:fitness_place, profile.fitness_place)
-      |> apply_fitness_filter(:fitness_plant, profile.fitness_plant)
-      |> apply_fitness_filter(:fitness_sector, profile.fitness_sector)
       |> apply_fitness_entities_filter(Map.get(profile, :fitness_entities))
 
     Repo.one(query)
@@ -316,13 +306,6 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
 
   defp apply_live_filter(query, statuses) when is_list(statuses) do
     where(query, [u], u.live in ^statuses)
-  end
-
-  defp apply_fitness_filter(query, _column, nil), do: query
-  defp apply_fitness_filter(query, _column, []), do: query
-
-  defp apply_fitness_filter(query, column, values) when is_list(values) do
-    where(query, [u], fragment("? && ?", field(u, ^column), ^values))
   end
 
   defp apply_fitness_entities_filter(query, nil), do: query

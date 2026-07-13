@@ -58,8 +58,7 @@
 		l.duty_holder, l.power_holder, l.rights_holder, l.responsibility_holder,
 		l.fitness_entities, l.fitness_scope_dimensions,
 		l.fitness_mention_count, l.fitness_applies_count, l.fitness_disapplies_count,
-		l.fitness_person, l.fitness_process, l.fitness_place,
-		l.fitness_plant, l.fitness_sector, l.has_fitness,
+		l.has_fitness,
 		l.si_code, l.function, l.source_url
 	`;
 
@@ -141,27 +140,6 @@
 		},
 		{
 			name: 'fitness_entities',
-			dataType: 'text',
-			postgresType: 'text[]',
-			nullable: true,
-			hasDefault: false
-		},
-		{
-			name: 'fitness_person',
-			dataType: 'text',
-			postgresType: 'text[]',
-			nullable: true,
-			hasDefault: false
-		},
-		{
-			name: 'fitness_place',
-			dataType: 'text',
-			postgresType: 'text[]',
-			nullable: true,
-			hasDefault: false
-		},
-		{
-			name: 'fitness_sector',
 			dataType: 'text',
 			postgresType: 'text[]',
 			nullable: true,
@@ -400,38 +378,27 @@
 			const regions = profile.regions || [];
 			const governedActors = profile.governed_actors || [];
 			const governmentActors = profile.government_actors || [];
-			const locations = profile.locations || [];
-			const materials = profile.materials || [];
-			const processes = profile.processes || [];
-			const sector = profile.sector || [];
 
-			// Combine all profile terms for fitness_entities overlap (v0.3)
+			// Combine all profile terms for fitness_entities overlap
 			const profileEntities = [
-				...regions.map((r: string) => r),
-				...locations,
-				...materials,
-				...processes,
-				...sector
+				...regions,
+				...(profile.locations || []),
+				...(profile.materials || []),
+				...(profile.processes || []),
+				...(profile.sector || [])
 			];
 
 			// Family filter: use entitlement families if available
-			const familyFilter = subscribedFamilies.length > 0 ? `AND l.family = ANY($9)` : '';
+			const familyFilter = subscribedFamilies.length > 0 ? `AND l.family = ANY($4)` : '';
 
 			const params: unknown[] = [
 				governedActors, // $1
 				governmentActors, // $2
-				locations, // $3
-				materials, // $4
-				processes, // $5
-				sector, // $6
-				regions, // $7
-				profileEntities // $8
+				profileEntities // $3
 			];
-			if (subscribedFamilies.length > 0) params.push(subscribedFamilies); // $9
+			if (subscribedFamilies.length > 0) params.push(subscribedFamilies); // $4
 
 			// Match governed actors against duty_holder JSONB, government actors against responsibility_holder
-			// duty_holder format: {"values": ["Org: Employer", "Ind: Employee", ...]}
-			// Use jsonb_array_elements_text to extract values for array overlap check
 			// fitness_entities: v0.3 reconciled entities matched against all profile terms
 			const result = await db.query<{
 				name: string;
@@ -446,17 +413,13 @@
 				         CASE WHEN $2::text[] != '{}' AND l.responsibility_holder IS NOT NULL AND EXISTS (
 				           SELECT 1 FROM jsonb_array_elements_text(l.responsibility_holder->'values') v WHERE v = ANY($2)
 				         ) THEN 1 ELSE 0 END +
-				         CASE WHEN $8::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $8 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $3 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $4 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $5 THEN 1 ELSE 0 END +
-				         CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $6 THEN 1 ELSE 0 END)::text as match_score
+				         CASE WHEN $3::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $3 THEN 1 ELSE 0 END
+				        )::text as match_score
 				 FROM laws l
 				 LEFT JOIN org_applicabilities oa ON oa.law_name = l.name
 				 WHERE l.is_making = true
 				   AND (l.live IS NULL OR l.live NOT LIKE '%Revoked%')
 				   AND (oa.status IS NULL OR oa.status NOT IN ('yes'))
-				   AND ($7::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $7)
 				   ${familyFilter}
 				   AND (CASE WHEN $1::text[] != '{}' AND l.duty_holder IS NOT NULL AND EXISTS (
 				          SELECT 1 FROM jsonb_array_elements_text(l.duty_holder->'values') v WHERE v = ANY($1)
@@ -464,11 +427,8 @@
 				        CASE WHEN $2::text[] != '{}' AND l.responsibility_holder IS NOT NULL AND EXISTS (
 				          SELECT 1 FROM jsonb_array_elements_text(l.responsibility_holder->'values') v WHERE v = ANY($2)
 				        ) THEN 1 ELSE 0 END +
-				        CASE WHEN $8::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $8 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $3 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $4 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $5 THEN 1 ELSE 0 END +
-				        CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $6 THEN 1 ELSE 0 END) > 0
+				        CASE WHEN $3::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $3 THEN 1 ELSE 0 END
+				       ) > 0
 				 ORDER BY match_score DESC, l.family, l.name`,
 				params
 			);
@@ -525,11 +485,7 @@
 				   AND l.family IS NOT NULL AND l.family != ''
 				   AND ($1::text[] = '{}' OR l.geo_region IS NOT NULL AND l.geo_region && $1)
 				   ${uncatFamilyFilter}
-				   AND (l.fitness_person IS NULL OR l.fitness_person = '{}')
-				   AND (l.fitness_place IS NULL OR l.fitness_place = '{}')
-				   AND (l.fitness_plant IS NULL OR l.fitness_plant = '{}')
-				   AND (l.fitness_process IS NULL OR l.fitness_process = '{}')
-				   AND (l.fitness_sector IS NULL OR l.fitness_sector = '{}')
+				   AND (l.fitness_entities IS NULL OR l.fitness_entities = '{}')
 				 ORDER BY l.family, l.name`,
 				uncatParams
 			);
@@ -765,8 +721,7 @@
 		{ name: 'title_en', label: 'Title', width: 250, dataType: 'text' },
 		{ name: 'family', label: 'Family', width: 150, dataType: 'text' },
 		{ name: 'duty_holder', label: 'Duty Holders', width: 150, dataType: 'json' },
-		{ name: 'fitness_person', label: 'Person', width: 100, dataType: 'text' },
-		{ name: 'fitness_place', label: 'Place', width: 100, dataType: 'text' },
+		{ name: 'fitness_entities', label: 'Fitness Entities', width: 150, dataType: 'text' },
 		{ name: 'live', label: 'Status', width: 80, dataType: 'text' },
 		{ name: 'app_status', label: '', width: 50, dataType: 'text' }
 	];
@@ -897,7 +852,7 @@
 								'title_en',
 								'family',
 								'duty_holder',
-								'fitness_person',
+								'fitness_entities',
 								'live',
 								'app_status'
 							],
@@ -995,7 +950,7 @@
 								{:else}
 									<span class="text-gray-300">-</span>
 								{/if}
-							{:else if column === 'fitness_person' || column === 'fitness_place'}
+							{:else if column === 'fitness_entities'}
 								{@const items = parseArray(value)}
 								{#if items.length > 0}
 									<div class="flex flex-wrap gap-0.5">

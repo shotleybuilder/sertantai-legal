@@ -146,14 +146,6 @@ export const FIELD_LABELS: Record<string, string> = {
 	fitness_mention_count: 'Mention Count',
 	fitness_applies_count: 'Applies Count',
 	fitness_disapplies_count: 'Disapplies Count',
-	// Fitness / Applicability (legacy P-dimensions)
-	fitness: 'Fitness Rules',
-	fitness_person: 'Person',
-	fitness_place: 'Place',
-	fitness_plant: 'Plant',
-	fitness_process: 'Process',
-	fitness_property: 'Property',
-	fitness_sector: 'Sector',
 
 	// Change Logs
 	amending_change_log: 'Amending Change Log',
@@ -945,69 +937,6 @@ export const SECTION_CONFIG: SectionConfig[] = [
 						key: 'fitness_disapplies_count',
 						label: 'Disapplies Count',
 						type: 'number',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					}
-				]
-			},
-			{
-				id: 'fitness_tags',
-				title: 'Fitness Tags (Legacy)',
-				defaultExpanded: false,
-				fields: [
-					{
-						key: 'fitness_person',
-						label: 'Person',
-						type: 'array',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'fitness_place',
-						label: 'Place',
-						type: 'array',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'fitness_plant',
-						label: 'Plant',
-						type: 'array',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'fitness_process',
-						label: 'Process',
-						type: 'array',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'fitness_property',
-						label: 'Property',
-						type: 'array',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					},
-					{
-						key: 'fitness_sector',
-						label: 'Sector',
-						type: 'array',
-						stage: 'fitness',
-						hideWhenEmpty: true
-					}
-				]
-			},
-			{
-				id: 'fitness_rules',
-				title: 'Fitness Rules (Detail)',
-				defaultExpanded: false,
-				fields: [
-					{
-						key: 'fitness',
-						label: 'Fitness Rules',
-						type: 'json',
 						stage: 'fitness',
 						hideWhenEmpty: true
 					}

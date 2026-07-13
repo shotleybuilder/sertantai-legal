@@ -282,46 +282,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Consolidated power holder/article/clause data as JSONB")
     end
 
-    # Fitness / Applicability columns
-    attribute :fitness_person, {:array, :string} do
-      allow_nil?(true)
-      description("Fitness: person terms (e.g. employer, worker)")
-    end
-
-    attribute :fitness_process, {:array, :string} do
-      allow_nil?(true)
-      description("Fitness: process terms (e.g. construction work)")
-    end
-
-    attribute :fitness_place, {:array, :string} do
-      allow_nil?(true)
-      description("Fitness: place terms (e.g. Great Britain, offshore)")
-    end
-
-    attribute :fitness_plant, {:array, :string} do
-      allow_nil?(true)
-      description("Fitness: plant terms (e.g. asbestos)")
-    end
-
-    attribute :fitness_property, {:array, :string} do
-      allow_nil?(true)
-      description("Fitness: property terms (e.g. at work)")
-    end
-
-    attribute :fitness_sector, {:array, :string} do
-      allow_nil?(true)
-      description("Fitness: sector terms (e.g. construction)")
-    end
-
-    attribute :fitness, {:array, :map} do
-      allow_nil?(true)
-
-      description(
-        "Fitness applicability rules: [{polarity, person, process, place, plant, property, sector, article}]"
-      )
-    end
-
-    # Fitness v0.3 — reconciled entities and scope dimensions (replaces P-dimension columns)
+    # Fitness / Applicability (v0.3 — reconciled entities and scope dimensions)
     attribute :fitness_entities, {:array, :string} do
       allow_nil?(true)
       description("Reconciled applicability entity names (canonical from regex+SLM extraction)")
@@ -817,13 +778,6 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :rights,
         :responsibilities,
         :powers,
-        :fitness_person,
-        :fitness_process,
-        :fitness_place,
-        :fitness_plant,
-        :fitness_property,
-        :fitness_sector,
-        :fitness,
         :fitness_entities,
         :fitness_scope_dimensions,
         :fitness_mention_count,
@@ -932,13 +886,6 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :rights,
         :responsibilities,
         :powers,
-        :fitness_person,
-        :fitness_process,
-        :fitness_place,
-        :fitness_plant,
-        :fitness_property,
-        :fitness_sector,
-        :fitness,
         :fitness_entities,
         :fitness_scope_dimensions,
         :fitness_mention_count,

@@ -32,11 +32,7 @@ export interface SyncProfile {
 	families: string[];
 	geo_regions: string[] | null;
 	function_filter: Record<string, unknown> | null;
-	fitness_person: string[] | null;
-	fitness_process: string[] | null;
-	fitness_place: string[] | null;
-	fitness_plant: string[] | null;
-	fitness_sector: string[] | null;
+	fitness_entities: string[] | null;
 	live_filter: string[] | null;
 	include_lat: boolean;
 	include_amendments: boolean;

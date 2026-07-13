@@ -435,38 +435,26 @@ defmodule SertantaiLegalWeb.ScreeningController do
     governed_actors = ActorDictionary.governed_labels()
     government_actors = ActorDictionary.government_labels()
 
-    # Fitness entities from v0.3 corpus (GIN-indexed, replaces P-dimension queries)
+    # Fitness entities from v0.3 corpus (GIN-indexed)
     alias SertantaiLegal.Fitness.EntityIndex
 
     fitness_entities = EntityIndex.list_entities(min_count: 2, country: "uk")
 
-    # Legacy fitness dimensions from DB (kept for backwards compatibility)
-    fitness_queries = [
-      {"locations",
-       "SELECT DISTINCT val FROM (SELECT unnest(fitness_place) as val FROM uk_lrt WHERE fitness_place IS NOT NULL) sub WHERE val NOT IN ('England', 'Scotland', 'Wales', 'Northern Ireland', 'Great Britain', 'United Kingdom') ORDER BY val"},
-      {"materials",
-       "SELECT DISTINCT val FROM (SELECT unnest(fitness_plant) as val FROM uk_lrt WHERE fitness_plant IS NOT NULL) sub ORDER BY val"},
-      {"processes",
-       "SELECT DISTINCT val FROM (SELECT unnest(fitness_process) as val FROM uk_lrt WHERE fitness_process IS NOT NULL) sub ORDER BY val"},
-      {"sector",
-       "SELECT DISTINCT val FROM (SELECT unnest(fitness_sector) as val FROM uk_lrt WHERE fitness_sector IS NOT NULL) sub ORDER BY val"},
-      {"regions",
-       "SELECT DISTINCT val FROM (SELECT unnest(geo_region) as val FROM uk_lrt WHERE geo_region IS NOT NULL) sub ORDER BY val"}
-    ]
+    # Regions from geo_region
+    regions =
+      case Repo.query(
+             "SELECT DISTINCT val FROM (SELECT unnest(geo_region) as val FROM uk_lrt WHERE geo_region IS NOT NULL) sub ORDER BY val"
+           ) do
+        {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+        _ -> []
+      end
 
-    fitness_vocab =
-      Map.new(fitness_queries, fn {key, sql} ->
-        case Repo.query(sql) do
-          {:ok, %{rows: rows}} -> {key, Enum.map(rows, fn [val] -> val end)}
-          _ -> {key, []}
-        end
-      end)
-
-    vocab =
-      fitness_vocab
-      |> Map.put("governed_actors", governed_actors)
-      |> Map.put("government_actors", government_actors)
-      |> Map.put("fitness_entities", fitness_entities)
+    vocab = %{
+      "governed_actors" => governed_actors,
+      "government_actors" => government_actors,
+      "fitness_entities" => fitness_entities,
+      "regions" => regions
+    }
 
     json(conn, vocab)
   end

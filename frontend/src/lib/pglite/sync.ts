@@ -101,12 +101,6 @@ const ALL_COLUMNS: string[] = [
 	'fitness_mention_count',
 	'fitness_applies_count',
 	'fitness_disapplies_count',
-	'fitness_person',
-	'fitness_process',
-	'fitness_place',
-	'fitness_plant',
-	'fitness_property',
-	'fitness_sector',
 	'making_classification',
 	'making_review',
 	'making_review_at',
@@ -246,14 +240,7 @@ export async function startSync(): Promise<void> {
 					mapped[key] = typeof v === 'bigint' ? Number(v) : v;
 				}
 				// has_fitness: server generated column can't be synced via Electric
-				const hasFitness =
-					mapped.fitness_entities != null ||
-					mapped.fitness_person != null ||
-					mapped.fitness_process != null ||
-					mapped.fitness_place != null ||
-					mapped.fitness_plant != null ||
-					mapped.fitness_property != null ||
-					mapped.fitness_sector != null;
+				const hasFitness = mapped.fitness_entities != null;
 				mapped.has_fitness = hasFitness ? 'true' : 'false';
 				return mapped;
 			},

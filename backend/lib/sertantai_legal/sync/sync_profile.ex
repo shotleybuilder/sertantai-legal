@@ -51,30 +51,10 @@ defmodule SertantaiLegal.Sync.SyncProfile do
       description("e.g. {is_making: true} or NULL = all")
     end
 
-    # Fitness filters — AND across categories, OR within
-    attribute :fitness_person, {:array, :string} do
+    # Fitness filter — entity overlap
+    attribute :fitness_entities, {:array, :string} do
       allow_nil?(true)
-      description("e.g. ['employer', 'employee']")
-    end
-
-    attribute :fitness_process, {:array, :string} do
-      allow_nil?(true)
-      description("e.g. ['construction work']")
-    end
-
-    attribute :fitness_place, {:array, :string} do
-      allow_nil?(true)
-      description("e.g. ['workplace', 'construction site']")
-    end
-
-    attribute :fitness_plant, {:array, :string} do
-      allow_nil?(true)
-      description("e.g. ['asbestos', 'machinery']")
-    end
-
-    attribute :fitness_sector, {:array, :string} do
-      allow_nil?(true)
-      description("e.g. ['construction']")
+      description("Fitness entity filter terms (matched against fitness_entities column)")
     end
 
     # Status filter
@@ -130,11 +110,7 @@ defmodule SertantaiLegal.Sync.SyncProfile do
         :families,
         :geo_regions,
         :function_filter,
-        :fitness_person,
-        :fitness_process,
-        :fitness_place,
-        :fitness_plant,
-        :fitness_sector,
+        :fitness_entities,
         :live_filter,
         :include_lat,
         :include_amendments
@@ -148,11 +124,7 @@ defmodule SertantaiLegal.Sync.SyncProfile do
         :families,
         :geo_regions,
         :function_filter,
-        :fitness_person,
-        :fitness_process,
-        :fitness_place,
-        :fitness_plant,
-        :fitness_sector,
+        :fitness_entities,
         :live_filter,
         :include_lat,
         :include_amendments,

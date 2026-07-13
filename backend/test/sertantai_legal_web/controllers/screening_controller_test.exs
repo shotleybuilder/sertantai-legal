@@ -25,17 +25,17 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
 
     Repo.query!(
       "INSERT INTO legal_register (id, name, country, jurisdiction, title_en, year, type_code, is_making, live,
-         fitness_person, fitness_place, fitness_plant, fitness_process, fitness_sector, geo_region,
+         fitness_entities, geo_region,
          created_at, updated_at)
        VALUES
          (gen_random_uuid(), $1, 'uk', 'UK', 'Test Safety Regulations', 2024, 'uksi', true, '✔ In force',
-          '{employer,employee}', '{premises}', NULL, NULL, NULL, '{England,Wales}', NOW(), NOW()),
+          '{employer,employee,premises}', '{England,Wales}', NOW(), NOW()),
          (gen_random_uuid(), $2, 'uk', 'UK', 'Test Environment Regulations', 2024, 'uksi', true, '✔ In force',
-          '{operator}', NULL, '{chemicals}', NULL, '{water industry}', '{England,Scotland}', NOW(), NOW()),
+          '{operator,chemicals,water industry}', '{England,Scotland}', NOW(), NOW()),
          (gen_random_uuid(), $3, 'uk', 'UK', 'Test Diving Regulations', 2024, 'uksi', true, '✔ In force',
-          '{employer}', '{offshore}', NULL, '{diving operations}', '{maritime}', '{United Kingdom}', NOW(), NOW()),
+          '{employer,offshore,diving operations,maritime}', '{United Kingdom}', NOW(), NOW()),
          (gen_random_uuid(), $4, 'uk', 'UK', 'Test Revoked Regulations', 2024, 'uksi', true, '❌ Revoked / Repealed / Abolished',
-          '{employer}', '{premises}', NULL, NULL, NULL, '{England}', NOW(), NOW())",
+          '{employer,premises}', '{England}', NOW(), NOW())",
       @test_law_names
     )
 
@@ -279,8 +279,7 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       assert is_list(body["regions"])
       assert "England" in body["regions"]
 
-      assert is_list(body["sector"])
-      assert "maritime" in body["sector"]
+      assert is_list(body["fitness_entities"])
     end
   end
 
@@ -409,9 +408,7 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
       assert body["total_making"] > 0
     end
 
-    test "vocabulary excludes geographic regions from locations", %{conn: conn} do
-      # The plan says: locations = physical site types, NOT geography
-      # Geography uses geo_region, locations uses fitness_place
+    test "vocabulary returns regions and fitness_entities", %{conn: conn} do
       conn =
         conn
         |> put_auth_header(%{"org_id" => @test_org_id})
@@ -419,16 +416,12 @@ defmodule SertantaiLegalWeb.ScreeningControllerTest do
 
       body = json_response(conn, 200)
 
-      # Locations should have site types like "premises", "offshore"
-      # but NOT country names (those are in regions)
-      locations = body["locations"] || []
-      refute "England" in locations
-      refute "Scotland" in locations
-      refute "Wales" in locations
-
-      # Regions should have country/state names
+      # Regions from geo_region
       regions = body["regions"] || []
       assert "England" in regions
+
+      # fitness_entities from corpus
+      assert is_list(body["fitness_entities"])
     end
 
     test "profile is one-per-org (upsert, not duplicate)", %{conn: conn} do

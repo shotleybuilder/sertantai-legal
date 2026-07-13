@@ -210,10 +210,16 @@ defmodule SertantaiLegal.Sync.ChangeDetector do
   defp do_detect_new_laws(org_id, profile, families) do
     governed = Map.get(profile, :governed_actors, [])
     government = Map.get(profile, :government_actors, [])
-    locations = Map.get(profile, :locations, [])
-    materials = Map.get(profile, :materials, [])
-    processes = Map.get(profile, :processes, [])
-    sector = Map.get(profile, :sector, [])
+
+    # Combine profile terms for fitness_entities overlap
+    profile_entities =
+      Enum.concat([
+        Map.get(profile, :regions, []),
+        Map.get(profile, :locations, []),
+        Map.get(profile, :materials, []),
+        Map.get(profile, :processes, []),
+        Map.get(profile, :sector, [])
+      ])
 
     # Find Making laws in subscribed families, not already in register,
     # not already flagged as new_law_available, with match_score > 0
@@ -221,7 +227,7 @@ defmodule SertantaiLegal.Sync.ChangeDetector do
     WITH scored AS (
       SELECT l.name, l.title_en, l.family, l.year, l.live,
              l.duty_holder, l.responsibility_holder,
-             l.fitness_place, l.fitness_plant, l.fitness_process, l.fitness_sector,
+             l.fitness_entities,
              (
                COALESCE(array_length(
                  ARRAY(SELECT unnest(
@@ -235,10 +241,7 @@ defmodule SertantaiLegal.Sync.ChangeDetector do
                         THEN ARRAY(SELECT jsonb_array_elements_text(l.responsibility_holder->'values'))
                         ELSE '{}'::text[] END
                  ) INTERSECT SELECT unnest($4::text[])), 1), 0)
-             + CASE WHEN l.fitness_place IS NOT NULL AND l.fitness_place && $5::text[] THEN 1 ELSE 0 END
-             + CASE WHEN l.fitness_plant IS NOT NULL AND l.fitness_plant && $6::text[] THEN 1 ELSE 0 END
-             + CASE WHEN l.fitness_process IS NOT NULL AND l.fitness_process && $7::text[] THEN 1 ELSE 0 END
-             + CASE WHEN l.fitness_sector IS NOT NULL AND l.fitness_sector && $8::text[] THEN 1 ELSE 0 END
+             + CASE WHEN $5::text[] != '{}' AND l.fitness_entities IS NOT NULL AND l.fitness_entities && $5::text[] THEN 1 ELSE 0 END
              ) as match_score
       FROM uk_lrt l
       WHERE l.is_making = true
@@ -266,10 +269,7 @@ defmodule SertantaiLegal.Sync.ChangeDetector do
       families,
       governed,
       government,
-      locations,
-      materials,
-      processes,
-      sector
+      profile_entities
     ]
 
     case Repo.query(query, params) do
@@ -304,7 +304,7 @@ defmodule SertantaiLegal.Sync.ChangeDetector do
     else
       query = """
       SELECT u.name, u.title_en, u.duty_holder, u.responsibility_holder,
-             u.fitness_place, u.fitness_plant, u.fitness_process, u.fitness_sector,
+             u.fitness_entities,
              oa.source
       FROM org_applicabilities oa
       JOIN uk_lrt u ON u.name = oa.law_name

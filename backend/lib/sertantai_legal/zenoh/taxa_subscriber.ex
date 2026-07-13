@@ -31,15 +31,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "rights" => :rights,
     "responsibilities" => :responsibilities,
     "powers" => :powers,
-    # Fitness / Applicability columns (Issue #39)
-    "fitness_person" => :fitness_person,
-    "fitness_process" => :fitness_process,
-    "fitness_place" => :fitness_place,
-    "fitness_plant" => :fitness_plant,
-    "fitness_property" => :fitness_property,
-    "fitness_sector" => :fitness_sector,
-    "fitness" => :fitness,
-    # Fitness v0.3 — reconciled entities and scope dimensions
+    # Fitness / Applicability (v0.3)
     "fitness_entities" => :fitness_entities,
     "fitness_scope_dimensions" => :fitness_scope_dimensions,
     "fitness_mention_count" => :fitness_mention_count,
@@ -264,15 +256,6 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_entries_map(row, "rights")
     |> put_entries_map(row, "responsibilities")
     |> put_entries_map(row, "powers")
-    # Fitness tag columns — List<Utf8> → text[] (same as role)
-    |> put_list_field(row, "fitness_person")
-    |> put_list_field(row, "fitness_process")
-    |> put_list_field(row, "fitness_place")
-    |> put_list_field(row, "fitness_plant")
-    |> put_list_field(row, "fitness_property")
-    |> put_list_field(row, "fitness_sector")
-    # Fitness detail — List<Struct> → {:array, :map} (passed through directly)
-    |> put_list_of_maps(row, "fitness")
     # Fitness v0.3 — reconciled entities and scope dimensions
     |> put_list_field(row, "fitness_entities")
     |> put_list_field(row, "fitness_scope_dimensions")

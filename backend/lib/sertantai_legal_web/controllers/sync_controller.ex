@@ -76,11 +76,7 @@ defmodule SertantaiLegalWeb.SyncController do
       families: params["families"] || [],
       geo_regions: params["geo_regions"],
       function_filter: params["function_filter"],
-      fitness_person: params["fitness_person"],
-      fitness_process: params["fitness_process"],
-      fitness_place: params["fitness_place"],
-      fitness_plant: params["fitness_plant"],
-      fitness_sector: params["fitness_sector"],
+      fitness_entities: params["fitness_entities"],
       live_filter: params["live_filter"]
     }
 
@@ -289,11 +285,7 @@ defmodule SertantaiLegalWeb.SyncController do
       families: p.families,
       geo_regions: p.geo_regions,
       function_filter: p.function_filter,
-      fitness_person: p.fitness_person,
-      fitness_process: p.fitness_process,
-      fitness_place: p.fitness_place,
-      fitness_plant: p.fitness_plant,
-      fitness_sector: p.fitness_sector,
+      fitness_entities: p.fitness_entities,
       live_filter: p.live_filter,
       include_lat: p.include_lat,
       include_amendments: p.include_amendments,

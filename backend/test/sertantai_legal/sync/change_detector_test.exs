@@ -34,21 +34,21 @@ defmodule SertantaiLegal.Sync.ChangeDetectorTest do
     Repo.query!(
       """
       INSERT INTO legal_register (id, name, country, jurisdiction, title_en, year, type_code,
-                                   is_making, live, family, duty_holder, fitness_place,
+                                   is_making, live, family, duty_holder, fitness_entities,
                                    geo_region, created_at, updated_at)
       VALUES
         (gen_random_uuid(), $1, 'uk', 'UK', 'Active Safety Regs', 2024, 'uksi',
          true, '✔ In force', '💙 OH&S: Occupational / Personal Safety',
-         '{"values": ["Org: Employer"]}', '{premises}', '{England}', NOW(), NOW()),
+         '{"values": ["Org: Employer"]}', '{employer,premises}', '{England}', NOW(), NOW()),
         (gen_random_uuid(), $2, 'uk', 'UK', 'Revoked Safety Regs', 2024, 'uksi',
          true, '❌ Revoked / Repealed / Abolished', '💙 OH&S: Occupational / Personal Safety',
-         '{"values": ["Org: Employer"]}', '{premises}', '{England}', NOW(), NOW()),
+         '{"values": ["Org: Employer"]}', '{employer,premises}', '{England}', NOW(), NOW()),
         (gen_random_uuid(), $3, 'uk', 'UK', 'Part Revoked Safety Regs', 2024, 'uksi',
          true, '⭕ Part Revocation / Repeal', '💙 OH&S: Occupational / Personal Safety',
-         '{"values": ["Org: Employer"]}', '{premises}', '{England}', NOW(), NOW()),
+         '{"values": ["Org: Employer"]}', '{employer,premises}', '{England}', NOW(), NOW()),
         (gen_random_uuid(), $4, 'uk', 'UK', 'New Matching Safety Regs', 2024, 'uksi',
          true, '✔ In force', '💙 OH&S: Occupational / Personal Safety',
-         '{"values": ["Org: Employer"]}', '{premises}', '{England}', NOW(), NOW()),
+         '{"values": ["Org: Employer"]}', '{employer,premises}', '{England}', NOW(), NOW()),
         (gen_random_uuid(), $5, 'uk', 'UK', 'New Non-Matching Regs', 2024, 'uksi',
          true, '✔ In force', '💚 WASTE',
          '{"values": ["Gvt: Authority"]}', '{landfill}', '{England}', NOW(), NOW())

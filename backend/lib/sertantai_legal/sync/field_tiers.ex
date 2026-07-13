@@ -32,11 +32,8 @@ defmodule SertantaiLegal.Sync.FieldTiers do
                         :making_classification,
                         :making_review,
                         :is_making,
-                        :fitness_person,
-                        :fitness_process,
-                        :fitness_place,
-                        :fitness_plant,
-                        :fitness_sector
+                        :fitness_entities,
+                        :fitness_scope_dimensions
                       ]
 
   @full_columns @standard_columns ++

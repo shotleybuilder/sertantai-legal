@@ -446,49 +446,6 @@ export const UK_LRT_COLUMN_METADATA: ColumnMetadata[] = [
 		hasDefault: false
 	},
 
-	// Fitness legacy
-	{
-		name: 'fitness_person',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'fitness_process',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'fitness_place',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'fitness_plant',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'fitness_property',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
-	{
-		name: 'fitness_sector',
-		dataType: 'json',
-		postgresType: 'text[]',
-		nullable: true,
-		hasDefault: false
-	},
 	{
 		name: 'has_fitness',
 		dataType: 'text',

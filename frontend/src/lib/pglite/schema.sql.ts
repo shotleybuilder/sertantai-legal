@@ -118,13 +118,6 @@ CREATE TABLE IF NOT EXISTS laws (
   fitness_applies_count INTEGER,
   fitness_disapplies_count INTEGER,
 
-  -- Fitness legacy (tag arrays synced; fitness JSONB[] is heavy, fetched via REST)
-  fitness_person TEXT[],
-  fitness_process TEXT[],
-  fitness_place TEXT[],
-  fitness_plant TEXT[],
-  fitness_property TEXT[],
-  fitness_sector TEXT[],
   has_fitness TEXT NOT NULL DEFAULT 'false',
 
   -- Source URL (replaces generated leg_gov_uk_url)

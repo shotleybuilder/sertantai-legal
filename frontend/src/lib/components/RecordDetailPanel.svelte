@@ -14,7 +14,6 @@
 	import { createEventDispatcher } from 'svelte';
 	import CollapsibleSection from './CollapsibleSection.svelte';
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
-	import FitnessRulesRenderer from './FitnessRulesRenderer.svelte';
 	import { SECTION_CONFIG, type SectionConfig } from './parse-review/field-config';
 
 	/** The record data to display */
@@ -66,13 +65,7 @@
 		'role_gvt',
 		'popimar',
 		// Fitness fields (not synced to PGLite)
-		'fitness',
-		'fitness_person',
-		'fitness_place',
-		'fitness_plant',
-		'fitness_process',
-		'fitness_property',
-		'fitness_sector'
+		'compiled_applicability'
 	]);
 
 	/** Check if a section (or its subsections) contains any heavy fields */
@@ -198,11 +191,7 @@
 								{#each subsection.fields as field}
 									{@const fieldValue = getFieldValue(record, field)}
 									{#if !hideEmpty || !field.hideWhenEmpty || fieldHasData(fieldValue)}
-										{#if field.key === 'fitness' && Array.isArray(fieldValue)}
-											<FitnessRulesRenderer rules={fieldValue} />
-										{:else}
-											<FieldRow config={field} value={fieldValue} showFieldKey={showFieldKeys} />
-										{/if}
+										<FieldRow config={field} value={fieldValue} showFieldKey={showFieldKeys} />
 									{/if}
 								{/each}
 							{/if}

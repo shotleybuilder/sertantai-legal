@@ -156,12 +156,7 @@
 				responsibility_holder_pop: number;
 				duty_type_pop: number;
 				role_pop: number;
-				fitness_person_pop: number;
-				fitness_process_pop: number;
-				fitness_place_pop: number;
-				fitness_plant_pop: number;
-				fitness_property_pop: number;
-				fitness_sector_pop: number;
+				fitness_entities_pop: number;
 				has_fitness_pop: number;
 			}>(`
 				SELECT
@@ -172,12 +167,7 @@
 					COUNT(*) FILTER (WHERE responsibility_holder IS NOT NULL AND responsibility_holder::text NOT IN ('{}', 'null'))::int AS responsibility_holder_pop,
 					COUNT(*) FILTER (WHERE duty_type IS NOT NULL AND duty_type::text NOT IN ('{}', 'null'))::int AS duty_type_pop,
 					COUNT(*) FILTER (WHERE role IS NOT NULL AND array_length(role, 1) > 0)::int AS role_pop,
-					COUNT(*) FILTER (WHERE fitness_person IS NOT NULL AND array_length(fitness_person, 1) > 0)::int AS fitness_person_pop,
-					COUNT(*) FILTER (WHERE fitness_process IS NOT NULL AND array_length(fitness_process, 1) > 0)::int AS fitness_process_pop,
-					COUNT(*) FILTER (WHERE fitness_place IS NOT NULL AND array_length(fitness_place, 1) > 0)::int AS fitness_place_pop,
-					COUNT(*) FILTER (WHERE fitness_plant IS NOT NULL AND array_length(fitness_plant, 1) > 0)::int AS fitness_plant_pop,
-					COUNT(*) FILTER (WHERE fitness_property IS NOT NULL AND array_length(fitness_property, 1) > 0)::int AS fitness_property_pop,
-					COUNT(*) FILTER (WHERE fitness_sector IS NOT NULL AND array_length(fitness_sector, 1) > 0)::int AS fitness_sector_pop,
+					COUNT(*) FILTER (WHERE fitness_entities IS NOT NULL AND array_length(fitness_entities, 1) > 0)::int AS fitness_entities_pop,
 					COUNT(*) FILTER (WHERE has_fitness = 'true')::int AS has_fitness_pop
 				FROM laws WHERE country = '${$selectedCountry}'
 			`);
@@ -192,12 +182,7 @@
 					['responsibility_holder', p.responsibility_holder_pop],
 					['duty_type', p.duty_type_pop],
 					['role', p.role_pop],
-					['fitness_person', p.fitness_person_pop],
-					['fitness_process', p.fitness_process_pop],
-					['fitness_place', p.fitness_place_pop],
-					['fitness_plant', p.fitness_plant_pop],
-					['fitness_property', p.fitness_property_pop],
-					['fitness_sector', p.fitness_sector_pop],
+					['fitness_entities', p.fitness_entities_pop],
 					['has_fitness (any)', p.has_fitness_pop]
 				];
 				populationStats = fields.map(([field, populated]) => ({
