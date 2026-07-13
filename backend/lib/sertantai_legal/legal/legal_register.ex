@@ -321,6 +321,35 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       )
     end
 
+    # Fitness v0.3 — reconciled entities and scope dimensions (replaces P-dimension columns)
+    attribute :fitness_entities, {:array, :string} do
+      allow_nil?(true)
+      description("Reconciled applicability entity names (canonical from regex+SLM extraction)")
+    end
+
+    attribute :fitness_scope_dimensions, {:array, :string} do
+      allow_nil?(true)
+
+      description(
+        "Scope dimensions present: personal, material, territorial, temporal, conditional"
+      )
+    end
+
+    attribute :fitness_mention_count, :integer do
+      allow_nil?(true)
+      description("Total fitness mentions extracted from this law's provisions")
+    end
+
+    attribute :fitness_applies_count, :integer do
+      allow_nil?(true)
+      description("Fitness mentions with AppliesTo polarity")
+    end
+
+    attribute :fitness_disapplies_count, :integer do
+      allow_nil?(true)
+      description("Fitness mentions with DisappliesTo polarity")
+    end
+
     # Significance (from fractalaw — law-level aggregate of provision significance)
     attribute :significance_rating, :string do
       allow_nil?(true)
@@ -786,6 +815,11 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :fitness_property,
         :fitness_sector,
         :fitness,
+        :fitness_entities,
+        :fitness_scope_dimensions,
+        :fitness_mention_count,
+        :fitness_applies_count,
+        :fitness_disapplies_count,
         :popimar_details,
         :tags,
         :stats_self_affects_count,
@@ -895,6 +929,11 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :fitness_property,
         :fitness_sector,
         :fitness,
+        :fitness_entities,
+        :fitness_scope_dimensions,
+        :fitness_mention_count,
+        :fitness_applies_count,
+        :fitness_disapplies_count,
         :popimar_details,
         :tags,
         :stats_self_affects_count,

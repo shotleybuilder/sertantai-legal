@@ -39,6 +39,12 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "fitness_property" => :fitness_property,
     "fitness_sector" => :fitness_sector,
     "fitness" => :fitness,
+    # Fitness v0.3 — reconciled entities and scope dimensions
+    "fitness_entities" => :fitness_entities,
+    "fitness_scope_dimensions" => :fitness_scope_dimensions,
+    "fitness_mention_count" => :fitness_mention_count,
+    "fitness_applies_count" => :fitness_applies_count,
+    "fitness_disapplies_count" => :fitness_disapplies_count,
     # Significance (law-level aggregate)
     "significance_rating" => :significance_rating,
     "significance_score" => :significance_score,
@@ -265,6 +271,12 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_list_field(row, "fitness_sector")
     # Fitness detail — List<Struct> → {:array, :map} (passed through directly)
     |> put_list_of_maps(row, "fitness")
+    # Fitness v0.3 — reconciled entities and scope dimensions
+    |> put_list_field(row, "fitness_entities")
+    |> put_list_field(row, "fitness_scope_dimensions")
+    |> put_scalar(row, "fitness_mention_count")
+    |> put_scalar(row, "fitness_applies_count")
+    |> put_scalar(row, "fitness_disapplies_count")
     # Significance — simple scalars (string, float, int)
     |> put_scalar(row, "significance_rating")
     |> put_scalar(row, "significance_score")
