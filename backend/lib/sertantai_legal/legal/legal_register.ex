@@ -350,6 +350,15 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Fitness mentions with DisappliesTo polarity")
     end
 
+    # Compiled applicability tree (from fractalaw — JSON expression tree for rules engine)
+    attribute :compiled_applicability, :map do
+      allow_nil?(true)
+
+      description(
+        "Compiled applicability expression tree (JSON). Evaluated against customer profiles."
+      )
+    end
+
     # Significance (from fractalaw — law-level aggregate of provision significance)
     attribute :significance_rating, :string do
       allow_nil?(true)
@@ -820,6 +829,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :fitness_mention_count,
         :fitness_applies_count,
         :fitness_disapplies_count,
+        :compiled_applicability,
         :popimar_details,
         :tags,
         :stats_self_affects_count,
@@ -934,6 +944,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :fitness_mention_count,
         :fitness_applies_count,
         :fitness_disapplies_count,
+        :compiled_applicability,
         :popimar_details,
         :tags,
         :stats_self_affects_count,

@@ -45,6 +45,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "fitness_mention_count" => :fitness_mention_count,
     "fitness_applies_count" => :fitness_applies_count,
     "fitness_disapplies_count" => :fitness_disapplies_count,
+    # Compiled applicability tree (JSON expression tree)
+    "compiled_applicability" => :compiled_applicability,
     # Significance (law-level aggregate)
     "significance_rating" => :significance_rating,
     "significance_score" => :significance_score,
@@ -277,6 +279,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_scalar(row, "fitness_mention_count")
     |> put_scalar(row, "fitness_applies_count")
     |> put_scalar(row, "fitness_disapplies_count")
+    # Compiled applicability tree — Utf8 (JSON string) → map
+    |> put_json_field(row, "compiled_applicability")
     # Significance — simple scalars (string, float, int)
     |> put_scalar(row, "significance_rating")
     |> put_scalar(row, "significance_score")
@@ -539,10 +543,16 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
       value when is_list(value) ->
         Map.put(acc, @field_atoms[str_key], value)
 
+      value when is_map(value) ->
+        Map.put(acc, @field_atoms[str_key], value)
+
       value when is_binary(value) ->
         case Jason.decode(value) do
-          {:ok, parsed} when is_list(parsed) -> Map.put(acc, @field_atoms[str_key], parsed)
-          _ -> acc
+          {:ok, parsed} when is_list(parsed) or is_map(parsed) ->
+            Map.put(acc, @field_atoms[str_key], parsed)
+
+          _ ->
+            acc
         end
 
       _ ->
