@@ -9,7 +9,6 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
         "drrp_types" => ["DUTY"],
         "duty_family" => "General Safety",
         "extraction_method" => "regex",
-        "fitness_person" => ["employer", "employee"],
         "taxa_confidence" => 0.95
       }
 
@@ -18,7 +17,6 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert result.drrp_types == ["DUTY"]
       assert result.duty_family == "General Safety"
       assert result.extraction_method == "regex"
-      assert result.fitness_person == ["employer", "employee"]
       assert result.taxa_confidence == 0.95
     end
 
@@ -125,13 +123,6 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
         "extraction_method" => "regex",
         "holder_inferred_from" => "self",
         "ancestor_distance" => nil,
-        "fitness_polarity" => ["AppliesTo"],
-        "fitness_person" => ["employer", "employee"],
-        "fitness_process" => [],
-        "fitness_place" => ["premises"],
-        "fitness_plant" => [],
-        "fitness_property" => [],
-        "fitness_sector" => [],
         "actors" => [
           %{
             "label" => "Org: Employer",
@@ -166,7 +157,6 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
 
       # Array fields
       assert result.drrp_types == ["DUTY"]
-      assert result.fitness_person == ["employer", "employee"]
 
       # Struct column
       assert length(result.actors) == 2

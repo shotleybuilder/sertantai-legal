@@ -237,44 +237,6 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       description("Classification confidence score (0.0–1.0)")
     end
 
-    # ── Fitness Dimensions (from fractalaw) ─────────────────────────
-    # Per-provision applicability scope — who/what/where this provision applies to.
-
-    attribute :fitness_polarity, {:array, :string} do
-      allow_nil?(true)
-      description("AppliesTo / DisappliesTo / ExtendsTo")
-    end
-
-    attribute :fitness_person, {:array, :string} do
-      allow_nil?(true)
-      description("Person/role dimension (employer, employee, self-employed, etc.)")
-    end
-
-    attribute :fitness_process, {:array, :string} do
-      allow_nil?(true)
-      description("Process dimension (carriage of goods, risk assessment, etc.)")
-    end
-
-    attribute :fitness_place, {:array, :string} do
-      allow_nil?(true)
-      description("Place dimension (premises, offshore, ship, etc.)")
-    end
-
-    attribute :fitness_plant, {:array, :string} do
-      allow_nil?(true)
-      description("Plant/equipment dimension (explosives, chemicals, PPE, etc.)")
-    end
-
-    attribute :fitness_property, {:array, :string} do
-      allow_nil?(true)
-      description("Property/condition dimension (at work, normal shipboard activities, etc.)")
-    end
-
-    attribute :fitness_sector, {:array, :string} do
-      allow_nil?(true)
-      description("Sector/industry dimension (maritime, nuclear, mining, etc.)")
-    end
-
     attribute :taxa_enriched_at, :utc_datetime_usec do
       allow_nil?(true)
       description("When taxa/fitness data was last received from fractalaw")
@@ -465,13 +427,6 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :purposes,
         :popimar,
         :taxa_confidence,
-        :fitness_polarity,
-        :fitness_person,
-        :fitness_process,
-        :fitness_place,
-        :fitness_plant,
-        :fitness_property,
-        :fitness_sector,
         :taxa_enriched_at,
         :significance_scope_duty_bearer,
         :significance_scope_protected_class,
