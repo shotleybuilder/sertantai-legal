@@ -32,6 +32,10 @@ defmodule SertantaiLegal.Api do
     # Amendment Annotations - legislative change footnotes linked to LAT sections
     resource(SertantaiLegal.Legal.AmendmentAnnotation)
 
+    # AI-generated controls and provision mappings (from fractalaw)
+    resource(SertantaiLegal.Legal.Control)
+    resource(SertantaiLegal.Legal.ControlMapping)
+
     # Scraper session tracking
     resource(SertantaiLegal.Scraper.ScrapeSession)
     resource(SertantaiLegal.Scraper.ScrapeSessionRecord)

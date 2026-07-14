@@ -46,7 +46,9 @@ defmodule SertantaiLegal.Sync.Engine do
           [
             {:lrt, provider_config["lrt_table_id"]},
             {:lat, provider_config["lat_table_id"]},
-            {:actor_tuples, provider_config["actor_tuples_table_id"]}
+            {:actor_tuples, provider_config["actor_tuples_table_id"]},
+            {:controls, provider_config["controls_table_id"]},
+            {:control_mappings, provider_config["control_mappings_table_id"]}
           ]
           |> Enum.reject(fn {_, id} -> is_nil(id) end)
 
@@ -147,7 +149,11 @@ defmodule SertantaiLegal.Sync.Engine do
          {:ok, job} <-
            maybe_sync_lat(provider_config, lrt_rows, profile, entitlement, sync_config, job),
          {:ok, job} <-
-           maybe_sync_actor_tuples(provider_config, sync_config, job) do
+           maybe_sync_actor_tuples(provider_config, sync_config, job),
+         {:ok, job} <-
+           maybe_sync_controls(provider_config, lrt_rows, sync_config, job),
+         {:ok, job} <-
+           maybe_sync_control_mappings(provider_config, sync_config, job) do
       checkpoint = max_updated_at(lrt_rows)
 
       {:ok, job} =
@@ -492,6 +498,201 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
+  # ── Controls sync ─────────────────────────────────────────────────
+
+  defp maybe_sync_controls(provider_config, lrt_rows, sync_config, job) do
+    controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
+
+    if is_nil(controls_table_id) do
+      {:ok, job}
+    else
+      provider = provider_module(sync_config.provider)
+      lrt_table_id = get_in(sync_config.target_config, ["lrt_table_id"])
+
+      # Get law_names from the org's LRT rows
+      law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
+
+      with {:ok, controls} <-
+             SertantaiLegal.Legal.Control
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           field_specs = Baserow.controls_field_specs(lrt_table_id),
+           :ok <- provider.ensure_fields(provider_config, :controls, field_specs) do
+        # Build LRT source_id → external_row_id mapping for Parent Law link
+        lrt_mappings = load_lrt_mappings(sync_config.id)
+
+        formatted =
+          Enum.map(controls, fn control ->
+            # LRT rows use UUID as source_id; find the external row ID
+            lrt_ext_id =
+              Enum.find_value(lrt_rows, fn row ->
+                source_id = format_uuid_for_mapping(row.id)
+
+                if row.name == control.law_name do
+                  Map.get(lrt_mappings, source_id)
+                end
+              end)
+
+            Baserow.format_control_row(control, lrt_ext_id)
+          end)
+
+        # Delta detection
+        existing_mappings = load_mappings(sync_config.id, :controls)
+        delta = DeltaDetector.detect(formatted, existing_mappings)
+
+        Logger.info(
+          "[Sync] Controls delta: #{length(delta.new)} new, " <>
+            "#{length(delta.updated)} updated, " <>
+            "#{length(delta.deleted)} deleted, #{delta.unchanged} unchanged"
+        )
+
+        # Create new
+        if delta.new != [] do
+          on_batch = fn batch_mappings ->
+            save_row_mappings(sync_config.id, :controls, batch_mappings, controls)
+          end
+
+          case Baserow.batch_create(provider_config, :controls, delta.new, on_batch) do
+            {:ok, _} ->
+              Logger.info("[Sync] Created #{length(delta.new)} new controls")
+
+            {:error, reason} ->
+              Logger.error("[Sync] Controls create failed: #{reason}")
+          end
+        end
+
+        # Update existing
+        if delta.updated != [] do
+          case provider.batch_update(provider_config, :controls, delta.updated) do
+            {:ok, _} ->
+              Enum.each(delta.updated, fn row ->
+                update_mapping_timestamp(sync_config.id, :controls, row["_source_id"])
+              end)
+
+              Logger.info("[Sync] Updated #{length(delta.updated)} controls")
+
+            {:error, reason} ->
+              Logger.error("[Sync] Controls update failed: #{reason}")
+          end
+        end
+
+        # Delete removed
+        if delta.deleted != [] do
+          handle_deletions(provider, provider_config, :controls, sync_config, delta.deleted)
+        end
+
+        {:ok, job}
+      end
+    end
+  end
+
+  defp maybe_sync_control_mappings(provider_config, sync_config, job) do
+    cm_table_id = get_in(sync_config.target_config, ["control_mappings_table_id"])
+
+    if is_nil(cm_table_id) do
+      {:ok, job}
+    else
+      provider = provider_module(sync_config.provider)
+      controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
+      lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
+
+      # Get law_names from controls already synced (via controls mappings)
+      controls_mappings = load_mappings(sync_config.id, :controls)
+
+      # Extract law_names from controls source_ids (format: "law_name:control_id")
+      law_names =
+        controls_mappings
+        |> Enum.map(fn m ->
+          case String.split(m.source_id, ":", parts: 2) do
+            [law_name, _] -> law_name
+            _ -> nil
+          end
+        end)
+        |> Enum.reject(&is_nil/1)
+        |> Enum.uniq()
+
+      with {:ok, mappings} <-
+             SertantaiLegal.Legal.ControlMapping
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           field_specs = Baserow.control_mappings_field_specs(controls_table_id, lat_table_id),
+           :ok <- provider.ensure_fields(provider_config, :control_mappings, field_specs) do
+        # Build lookup maps for link_row resolution
+        controls_by_source =
+          Map.new(controls_mappings, fn m -> {m.source_id, m.external_row_id} end)
+
+        lat_mappings =
+          if lat_table_id do
+            load_mappings(sync_config.id, :lat)
+            |> Map.new(fn m -> {m.source_id, m.external_row_id} end)
+          else
+            %{}
+          end
+
+        formatted =
+          Enum.map(mappings, fn mapping ->
+            # Resolve control link: source_id format is "law_name:control_id"
+            control_source_id = "#{mapping.law_name}:#{find_control_id(mapping.control_id)}"
+            control_ext_id = Map.get(controls_by_source, control_source_id)
+
+            # Resolve obligation link: section_id matches LAT source_id
+            lat_ext_id = Map.get(lat_mappings, mapping.section_id)
+
+            Baserow.format_control_mapping_row(mapping, control_ext_id, lat_ext_id)
+          end)
+
+        # Delta detection
+        existing_mappings = load_mappings(sync_config.id, :control_mappings)
+        delta = DeltaDetector.detect(formatted, existing_mappings)
+
+        Logger.info(
+          "[Sync] Control Mappings delta: #{length(delta.new)} new, " <>
+            "#{length(delta.deleted)} deleted, #{delta.unchanged} unchanged"
+        )
+
+        if delta.new != [] do
+          on_batch = fn batch_mappings ->
+            save_row_mappings(sync_config.id, :control_mappings, batch_mappings, mappings)
+          end
+
+          case Baserow.batch_create(provider_config, :control_mappings, delta.new, on_batch) do
+            {:ok, _} ->
+              Logger.info("[Sync] Created #{length(delta.new)} new control mappings")
+
+            {:error, reason} ->
+              Logger.error("[Sync] Control mappings create failed: #{reason}")
+          end
+        end
+
+        if delta.deleted != [] do
+          handle_deletions(
+            provider,
+            provider_config,
+            :control_mappings,
+            sync_config,
+            delta.deleted
+          )
+        end
+
+        {:ok, job}
+      end
+    end
+  end
+
+  # Look up the control_id (fractalaw's UUID) from the Postgres UUID PK.
+  # The control source_id format is "law_name:control_id" where control_id
+  # is fractalaw's stable identifier, not the Postgres PK.
+  defp find_control_id(postgres_uuid) do
+    case Ash.get(SertantaiLegal.Legal.Control, postgres_uuid) do
+      {:ok, control} -> control.control_id
+      _ -> to_string(postgres_uuid)
+    end
+  end
+
+  defp format_uuid_for_mapping(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
+  defp format_uuid_for_mapping(uuid) when is_binary(uuid), do: uuid
+  defp format_uuid_for_mapping(nil), do: nil
+
   defp link_lat_to_tuples(
          provider_config,
          provider,
@@ -624,7 +825,9 @@ defmodule SertantaiLegal.Sync.Engine do
       [
         provider_config["lrt_table_id"],
         provider_config["lat_table_id"],
-        provider_config["actor_tuples_table_id"]
+        provider_config["actor_tuples_table_id"],
+        provider_config["controls_table_id"],
+        provider_config["control_mappings_table_id"]
       ]
       |> Enum.reject(&is_nil/1)
 
@@ -753,7 +956,9 @@ defmodule SertantaiLegal.Sync.Engine do
       "base_url" => tc["base_url"],
       "lrt_table_id" => tc["lrt_table_id"],
       "lat_table_id" => tc["lat_table_id"],
-      "actor_tuples_table_id" => tc["actor_tuples_table_id"]
+      "actor_tuples_table_id" => tc["actor_tuples_table_id"],
+      "controls_table_id" => tc["controls_table_id"],
+      "control_mappings_table_id" => tc["control_mappings_table_id"]
     }
   end
 

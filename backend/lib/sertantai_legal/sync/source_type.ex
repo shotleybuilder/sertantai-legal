@@ -7,6 +7,8 @@ defmodule SertantaiLegal.Sync.SourceType do
     values: [
       :lrt,
       :lat,
-      :actor_tuples
+      :actor_tuples,
+      :controls,
+      :control_mappings
     ]
 end

@@ -597,6 +597,12 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp table_id(config, :actor_tuples),
     do: config["actor_tuples_table_id"] || config[:actor_tuples_table_id]
 
+  defp table_id(config, :controls),
+    do: config["controls_table_id"] || config[:controls_table_id]
+
+  defp table_id(config, :control_mappings),
+    do: config["control_mappings_table_id"] || config[:control_mappings_table_id]
+
   defp base_url(config), do: String.trim_trailing(config["base_url"] || config[:base_url], "/")
 
   defp credentials(config), do: config["credentials"] || config[:credentials]
@@ -1323,4 +1329,148 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   def format_uuid(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
   def format_uuid(uuid) when is_binary(uuid), do: uuid
   def format_uuid(nil), do: nil
+
+  # ── Controls field specs and formatting ─────────────────────────
+
+  @control_types ["Preventive", "Detective", "Corrective", "Directive"]
+  @control_natures ["Manual", "Automated", "IT-dependent manual"]
+  @control_domains ["Organisational", "People", "Physical", "Technical"]
+  @control_statuses ["Active", "Under Review", "Planned", "Retired"]
+  @control_tiers ["Corporate", "Jurisdiction", "Contract"]
+  @control_frequencies [
+    "Continuous",
+    "Daily",
+    "Weekly",
+    "Monthly",
+    "Quarterly",
+    "Annual",
+    "Ad-hoc"
+  ]
+  @info_distances ["Direct", "Adjacent", "Mediated", "Remote"]
+  @blast_radii ["Local", "Area", "Site", "Enterprise"]
+  @mapping_strengths ["Primary", "Supporting", "Ancillary"]
+  @demand_modes ["Normal", "Abnormal", "Emergency"]
+  @effectiveness ["Effective", "Ineffective", "Not Tested"]
+
+  @doc """
+  Field specs for the Controls Baserow table.
+
+  Combines AI-generated fields (populated by sync from Postgres) with
+  customer-set fields (created empty for manual population in Baserow).
+  """
+  def controls_field_specs(lrt_table_id) do
+    [
+      # AI-generated fields
+      %{name: "Title", type: "text"},
+      %{name: "Description", type: "long_text"},
+      %{name: "What It Checks", type: "long_text"},
+      single_select_spec("Control Type", @control_types),
+      single_select_spec("Nature", @control_natures),
+      single_select_spec("Domain", @control_domains),
+      single_select_spec("Frequency", @control_frequencies),
+      single_select_spec("Info Distance", @info_distances),
+      single_select_spec("Blast Radius", @blast_radii),
+      %{name: "Expected Touch Frequency", type: "text"},
+      single_select_spec("Mapping Strength", @mapping_strengths),
+      %{name: "Load Bearing Judgement", type: "long_text"},
+      %{name: "Evidence Type A", type: "long_text"},
+      %{name: "Evidence Type B", type: "long_text"},
+      %{name: "Honest Limit", type: "long_text"},
+      single_select_spec("Status", @control_statuses),
+      single_select_spec("Tier", @control_tiers),
+      %{name: "Is Predicate", type: "boolean"},
+      %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}},
+      # Customer-set fields (created empty)
+      %{name: "Owner", type: "text"},
+      %{name: "External Ref", type: "url"},
+      single_select_spec("Demand Mode", @demand_modes),
+      single_select_spec("Design Effectiveness", @effectiveness),
+      single_select_spec("Operating Effectiveness", @effectiveness),
+      %{name: "Last Verified", type: "date"},
+      %{name: "Notes", type: "long_text"},
+      # System
+      %{name: "_source_id", type: "text"}
+    ]
+  end
+
+  @doc """
+  Format a Control Ash resource into a Baserow row map.
+
+  `lrt_external_row_id` is the Baserow row ID of the parent law in the
+  Legal Register table (for the Parent Law link_row field).
+  """
+  def format_control_row(control, lrt_external_row_id) do
+    row = %{
+      "_source_id" => "#{control.law_name}:#{control.control_id}",
+      "Title" => control.title,
+      "Description" => control.description,
+      "What It Checks" => control.what_it_checks,
+      "Control Type" => control.control_type,
+      "Nature" => control.nature,
+      "Domain" => control.domain,
+      "Frequency" => control.frequency,
+      "Info Distance" => control.info_distance,
+      "Blast Radius" => control.blast_radius,
+      "Expected Touch Frequency" => control.expected_touch_frequency,
+      "Mapping Strength" => control.mapping_strength,
+      "Load Bearing Judgement" => control.load_bearing_judgement,
+      "Evidence Type A" => control.evidence_type_a,
+      "Evidence Type B" => control.evidence_type_b,
+      "Honest Limit" => control.honest_limit,
+      "Status" => control.status,
+      "Tier" => control.tier,
+      "Is Predicate" => control.is_predicate
+    }
+
+    if lrt_external_row_id do
+      Map.put(row, "Parent Law", [lrt_external_row_id])
+    else
+      row
+    end
+  end
+
+  @doc """
+  Field specs for the Control Mappings Baserow table.
+  """
+  def control_mappings_field_specs(controls_table_id, lat_table_id) do
+    specs = [
+      %{
+        name: "Control",
+        type: "link_row",
+        opts: %{"link_row_table_id" => controls_table_id}
+      },
+      single_select_spec("Strength", @mapping_strengths),
+      %{name: "Short Ref", type: "text"},
+      %{name: "_source_id", type: "text"}
+    ]
+
+    if lat_table_id do
+      specs ++
+        [
+          %{
+            name: "Obligation",
+            type: "link_row",
+            opts: %{"link_row_table_id" => lat_table_id}
+          }
+        ]
+    else
+      specs
+    end
+  end
+
+  @doc """
+  Format a ControlMapping Ash resource into a Baserow row map.
+
+  `control_ext_id` and `lat_ext_id` are Baserow row IDs for the link_row fields.
+  """
+  def format_control_mapping_row(mapping, control_ext_id, lat_ext_id) do
+    row = %{
+      "_source_id" => "#{mapping.control_id}:#{mapping.section_id}",
+      "Strength" => mapping.mapping_strength,
+      "Short Ref" => mapping.short_ref
+    }
+
+    row = if control_ext_id, do: Map.put(row, "Control", [control_ext_id]), else: row
+    if lat_ext_id, do: Map.put(row, "Obligation", [lat_ext_id]), else: row
+  end
 end
