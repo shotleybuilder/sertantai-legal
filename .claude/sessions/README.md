@@ -74,6 +74,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-13 | [compliance-controls](2026-07-13-compliance-controls.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | Control + ControlMapping resources, Zenoh subscriber, Baserow sync. 1,341 controls ingested, 96.3% mapping resolution. Found LAT parser section_id bug (#120) |
 | 2026-07-13 | [fitness-legacy-cleanup](2026-07-13-fitness-legacy-cleanup.md) | — | Drop all legacy P-dimension fitness columns (19 columns across 3 tables, 27 files) |
 | 2026-07-13 | [fitness-phase3-expression-trees](2026-07-13-fitness-phase3-expression-trees.md) | — | Phase 3: compiled applicability trees, recursive evaluator, territorial hierarchy, 694 laws |
 | 2026-07-13 | [fitness-rules-engine](2026-07-13-fitness-rules-engine.md) | — | Fitness rules engine: GIN entity index, ProfileQuery filter, admin column, customer screening scoring |

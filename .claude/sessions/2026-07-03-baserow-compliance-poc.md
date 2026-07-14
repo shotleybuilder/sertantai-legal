@@ -1,7 +1,7 @@
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03
-**Status**: ACTIVE
+**Status**: SUSPENDED
 
 ## Todo — Completed
 - [x] Review previous template work (Phase 3-7 sessions from June)
@@ -59,6 +59,20 @@ L6 is an interface for internal and external events, not the event generator. Th
 - [x] Register template (19 total), update mix task, update test count (65 pass)
 - [x] Apply to QQ Baserow (table 1065389, 20 fields created)
 - [ ] Validate: fractalaw ChangeDetector → Event creation pathway (existing Zenoh signals → new L6 records)
+
+### L7 Decisions & Governance — the meta-layer
+L7 governs the compliance framework itself. Six functions: policy, risk appetite, management review, senior reporting, accountability, decision provenance. Interface pattern — governance uses its own tools, compliance framework provides data and receives decisions.
+
+- [x] Research governance patterns → `docs/compliance/l7-governance/GOVERNANCE-PATTERNS.md`
+- [x] Determine L7 schema → `docs/compliance/l7-governance/GOVERNANCE-SCHEMA.md`
+  - One entity: Governance Parameters (key-value with provenance, version-controlled by supersession)
+  - Decisions entity repositioned from L4 to L7 (deferred — governance decisions in external tools for now)
+  - Policy documents are Artefacts (artefact_type = Policy)
+  - Accountability = governance_role field on Personnel
+  - Reports = projections/views on L1–L6 data, not persisted
+- [ ] Build Governance Parameters template
+- [ ] Add governance_role field to Personnel template
+- [ ] Apply to QQ Baserow
 
 ### Remaining templates
 - [ ] Apply Document Control
