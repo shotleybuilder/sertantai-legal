@@ -518,6 +518,44 @@ Returns pipeline stage for each requested law.
 | Key Expression | Direction | Payload |
 |---------------|-----------|---------|
 | `fractalaw/@{tenant}/ack/{law_name}` | fractalaw → sertantai | JSON — ingestion acknowledgement |
+| `fractalaw/@{tenant}/triage/{law_name}` | fractalaw → sertantai | JSON — triage result (making/not-making classification) |
+
+#### Triage Result
+
+Published after fractalaw triages a newly-ingested law. Sent as part of the sync watch pipeline: pull LAT → triage → **publish triage result** → ack → queue if making.
+
+```json
+{
+  "law_name": "UK_ukpga_1974_37",
+  "classification": "making",
+  "confidence": 0.955,
+  "tier": 5,
+  "counts": {
+    "total": 840,
+    "process_rule": 278,
+    "amendment": 27,
+    "enactment": 0,
+    "interpretation": 43,
+    "with_actor": 485,
+    "with_obligation": 263,
+    "with_enabling": 52
+  },
+  "sertantai_is_making": true,
+  "agrees": true
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `law_name` | `string` | Canonical law identifier |
+| `classification` | `string` (enum) | `"making"`, `"not_making"`, or `"uncertain"` |
+| `confidence` | `number` | Bayesian posterior probability (0.0–1.0) |
+| `tier` | `integer` | Highest signal tier that contributed (1–5) |
+| `counts` | `object` | Provision counts by category (same schema as triage queryable response) |
+| `sertantai_is_making` | `boolean \| null` | Sertantai's existing `is_making` from LRT (for comparison) |
+| `agrees` | `boolean` | Whether fractalaw's triage agrees with sertantai's `is_making` |
+
+> **When published**: Automatically during sync watch for every law that receives new LAT. Sertantai can use this to update its own making/not-making classification and decide whether to queue the law for compliance enrichment.
 
 #### Acknowledgement
 

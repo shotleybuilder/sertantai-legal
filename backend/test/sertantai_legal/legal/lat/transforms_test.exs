@@ -275,6 +275,34 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
       assert T.build_citation("paragraph", schedule: "2", paragraph: "3") == "sch.2.para.3"
     end
 
+    # ── Issue #120: build_citation itself is correct ──────────────
+    # The P2 wrapper fix is in the parser (lat_parser.ex), which nils
+    # out sub when P2 is a structural wrapper. build_citation receives
+    # already-corrected values.
+
+    test "article with provision == sub still produces doubled citation (parser handles this)" do
+      # build_citation doesn't know about P2 wrappers — it builds what it's given.
+      # The parser nils out sub before calling build_citation.
+      assert T.build_citation("article", provision: "30", sub: "30", class: "Regulation") ==
+               "reg.30(30)"
+    end
+
+    test "article with nil sub produces clean citation" do
+      # This is what the parser sends after detecting a P2 wrapper
+      assert T.build_citation("article", provision: "30", sub: nil, class: "Regulation") ==
+               "reg.30"
+    end
+
+    test "article with nil sub keeps paragraph" do
+      # Parser nils sub, paragraph flows through
+      assert T.build_citation("sub_article",
+               provision: "30",
+               sub: nil,
+               paragraph: "2",
+               class: "Regulation"
+             ) == "reg.30(2)"
+    end
+
     test "position fallback when provision missing" do
       assert T.build_citation("section", position: 42) == "s.42"
     end

@@ -71,6 +71,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       sub: nil,
       paragraph: nil,
       sub_paragraph: nil,
+      p2_is_wrapper: false,
       default_extent: extract_root_extent(xml),
       mode: mode,
       ref_type_lookup: build_ref_type_lookup(doc)
@@ -176,15 +177,33 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
       name == "P1" ->
         provision = extract_pnumber(node)
-        new_ctx = %{ctx | provision: provision, sub: nil, paragraph: nil, sub_paragraph: nil}
+        wrapper = p2_is_wrapper?(node, provision)
+
+        new_ctx = %{
+          ctx
+          | provision: provision,
+            sub: nil,
+            paragraph: nil,
+            sub_paragraph: nil,
+            p2_is_wrapper: wrapper
+        }
+
         row = emit_structural_row("P1", new_ctx, node, extent)
         [row | walk_children(node, new_ctx)]
 
       name == "P2" ->
         sub = extract_pnumber(node)
-        new_ctx = %{ctx | sub: sub, paragraph: nil, sub_paragraph: nil}
-        row = emit_structural_row("P2", new_ctx, node, extent)
-        [row | walk_children(node, new_ctx)]
+        # If P2 is a structural wrapper (single P2 with same number as P1),
+        # nil out sub to avoid doubled citations like reg.30(30)
+        # and skip emitting a row (the wrapper has no distinct identity)
+        if ctx.p2_is_wrapper and sub == ctx.provision do
+          new_ctx = %{ctx | sub: nil, paragraph: nil, sub_paragraph: nil}
+          walk_children(node, new_ctx)
+        else
+          new_ctx = %{ctx | sub: sub, paragraph: nil, sub_paragraph: nil}
+          row = emit_structural_row("P2", new_ctx, node, extent)
+          [row | walk_children(node, new_ctx)]
+        end
 
       name == "P3" ->
         paragraph = extract_pnumber(node)
@@ -240,6 +259,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
     %{
       element: element,
+      xml_id: extract_xml_id(node),
       part: ctx.part,
       chapter: ctx.chapter,
       heading_group: ctx.heading_group,
@@ -264,6 +284,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
     %{
       element: element,
+      xml_id: extract_xml_id(node),
       part: ctx.part,
       chapter: ctx.chapter,
       heading_group: ctx.heading_group,
@@ -287,6 +308,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
     %{
       element: "Pblock",
+      xml_id: extract_xml_id(node),
       part: ctx.part,
       chapter: ctx.chapter,
       heading_group: ctx.heading_group,
@@ -317,6 +339,31 @@ defmodule SertantaiLegal.Scraper.LatParser do
       "" -> nil
       val -> Transforms.normalize_xml_extent(to_string(val))
     end
+  end
+
+  # Extract the XML id attribute from a node (e.g. id="section-1-1-a").
+  # Used as a stable join key for section_id migration — these are assigned by
+  # legislation.gov.uk and don't change regardless of how we parse P2 wrappers.
+  defp extract_xml_id(node) do
+    case xpath(node, ~x"./@id"s) do
+      nil -> nil
+      "" -> nil
+      id -> to_string(id)
+    end
+  end
+
+  # Detect if a P1 node's P2 children are structural wrappers.
+  # True when there is exactly one P2 child and its Pnumber matches the P1 provision.
+  # In this case the P2 is a container, not a true subsection.
+  defp p2_is_wrapper?(p1_node, provision) do
+    p2_numbers =
+      p1_node
+      |> xpath(~x".//P2"l)
+      |> Enum.map(&extract_pnumber/1)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+
+    p2_numbers == [provision]
   end
 
   defp extract_pnumber(node) do

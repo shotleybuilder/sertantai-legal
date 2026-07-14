@@ -15,6 +15,8 @@ defmodule SertantaiLegalWeb.ZenohController do
     ActivityLog,
     TaxaSubscriber,
     ProvisionSubscriber,
+    ControlsSubscriber,
+    TriageSubscriber,
     DataServer,
     ChangeNotifier
   }
@@ -32,11 +34,27 @@ defmodule SertantaiLegalWeb.ZenohController do
           status: ProvisionSubscriber.status(),
           stats: safe_get_stats(:provision_subscriber),
           recent: safe_get_recent(:provision_subscriber)
+        },
+        controls_subscriber: %{
+          status: ControlsSubscriber.status(),
+          stats: safe_get_stats(:controls_subscriber),
+          recent: safe_get_recent(:controls_subscriber)
+        },
+        triage_subscriber: %{
+          status: TriageSubscriber.status(),
+          stats: safe_get_stats(:triage_subscriber),
+          recent: safe_get_recent(:triage_subscriber)
         }
       })
     else
       disabled = %{status: %{state: :disabled}, stats: %{status: :disabled}, recent: []}
-      json(conn, %{taxa_subscriber: disabled, provision_subscriber: disabled})
+
+      json(conn, %{
+        taxa_subscriber: disabled,
+        provision_subscriber: disabled,
+        controls_subscriber: disabled,
+        triage_subscriber: disabled
+      })
     end
   end
 

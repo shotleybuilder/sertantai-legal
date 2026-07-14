@@ -713,22 +713,26 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
 
     test "sub_section (P2) with paragraphs only gets direct text" do
+      # P2 numbers (1,2) differ from P1 (2) → not a wrapper, sub_section emitted
       xml = """
       <Legislation RestrictExtent="E+W+S+N.I.">
       <Primary><Body>
         <P1group>
-          <P1 id="section-1"><Pnumber>1</Pnumber>
+          <P1 id="section-2"><Pnumber>2</Pnumber>
             <P1para>
-              <P2 id="section-1-1"><Pnumber>1</Pnumber>
+              <P2 id="section-2-1"><Pnumber>1</Pnumber>
                 <P2para>
                   <Text>The duties include—</Text>
-                  <P3 id="section-1-1-a"><Pnumber>a</Pnumber>
+                  <P3 id="section-2-1-a"><Pnumber>a</Pnumber>
                     <P3para><Text>maintaining safe equipment;</Text></P3para>
                   </P3>
-                  <P3 id="section-1-1-b"><Pnumber>b</Pnumber>
+                  <P3 id="section-2-1-b"><Pnumber>b</Pnumber>
                     <P3para><Text>providing adequate training.</Text></P3para>
                   </P3>
                 </P2para>
+              </P2>
+              <P2 id="section-2-2"><Pnumber>2</Pnumber>
+                <P2para><Text>The employer shall review these duties.</Text></P2para>
               </P2>
             </P1para>
           </P1>
@@ -1274,11 +1278,15 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
   describe "provision mode" do
     test "ukpga uses section/sub_section" do
+      # P2 numbers (1,2) differ from P1 (2) → not a wrapper, sub_section emitted
       xml = """
       <Legislation RestrictExtent="E+W+S+N.I.">
       <Primary><Body>
-        <P1group><P1 id="s-1"><Pnumber>1</Pnumber>
-          <P1para><P2 id="s-1-1"><Pnumber>1</Pnumber><P2para><Text>T</Text></P2para></P2></P1para>
+        <P1group><P1 id="s-2"><Pnumber>2</Pnumber>
+          <P1para>
+            <P2 id="s-2-1"><Pnumber>1</Pnumber><P2para><Text>T1</Text></P2para></P2>
+            <P2 id="s-2-2"><Pnumber>2</Pnumber><P2para><Text>T2</Text></P2para></P2>
+          </P1para>
         </P1></P1group>
       </Body></Primary>
       </Legislation>
@@ -1291,11 +1299,15 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
 
     test "uksi uses article/sub_article" do
+      # P2 numbers (1,2) differ from P1 (2) → not a wrapper, sub_article emitted
       xml = """
       <Legislation RestrictExtent="E+W+S">
       <Secondary><Body>
-        <P1group><P1 id="r-1"><Pnumber>1</Pnumber>
-          <P1para><P2 id="r-1-1"><Pnumber>1</Pnumber><P2para><Text>T</Text></P2para></P2></P1para>
+        <P1group><P1 id="r-2"><Pnumber>2</Pnumber>
+          <P1para>
+            <P2 id="r-2-1"><Pnumber>1</Pnumber><P2para><Text>T1</Text></P2para></P2>
+            <P2 id="r-2-2"><Pnumber>2</Pnumber><P2para><Text>T2</Text></P2para></P2>
+          </P1para>
         </P1></P1group>
       </Body></Secondary>
       </Legislation>
@@ -1454,6 +1466,69 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       # No amendment refs — should stay empty, not get a marker
       assert section.text == nil or section.text == ""
+    end
+  end
+
+  # ── Issue #120: P2 wrapper detection ─────────────────────────────
+
+  describe "parse/2 P2 wrapper detection (Issue #120)" do
+    setup do
+      xml = read_fixture("p2_wrapper_si.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+      %{rows: rows}
+    end
+
+    test "reg.30 with P2 wrapper: section_id omits doubled number", %{rows: rows} do
+      # P1 Pnumber=30, single P2 Pnumber=30 → wrapper, should produce reg.30 not reg.30(30)
+      reg30 = Enum.find(rows, &(&1.provision == "30" && &1.section_type == "article"))
+      assert reg30.section_id == "UK_uksi_2024_1:reg.30"
+    end
+
+    test "reg.30 paragraphs: section_id uses (a) not (30)(a)", %{rows: rows} do
+      # P3 under the wrapper P2 should produce reg.30(a) not reg.30(30)(a)
+      para_a =
+        Enum.find(rows, fn r ->
+          r.provision == "30" && r.paragraph == "a" && r.section_type == "paragraph"
+        end)
+
+      assert para_a.section_id == "UK_uksi_2024_1:reg.30(a)"
+    end
+
+    test "reg.3 with multiple P2s: subsections are legitimate", %{rows: rows} do
+      # P1 Pnumber=3, P2 Pnumbers=1,2,3 → NOT a wrapper, s.3(1) is legitimate
+      sub1 =
+        Enum.find(rows, fn r ->
+          r.provision == "3" && r.sub == "1" && r.section_type == "sub_article"
+        end)
+
+      assert sub1.section_id == "UK_uksi_2024_1:reg.3(1)"
+    end
+
+    test "reg.3(3) with multiple P2s: provision==sub is legitimate", %{rows: rows} do
+      # reg.3(3) is section 3 subsection 3 — NOT a wrapper because P1 has P2s 1,2,3
+      sub3 =
+        Enum.find(rows, fn r ->
+          r.provision == "3" && r.sub == "3" && r.section_type == "sub_article"
+        end)
+
+      assert sub3.section_id == "UK_uksi_2024_1:reg.3(3)"
+    end
+
+    test "reg.1 with single P2 wrapper: section_id omits doubled number", %{rows: rows} do
+      # P1 Pnumber=1, single P2 Pnumber=1 → wrapper
+      reg1 = Enum.find(rows, &(&1.provision == "1" && &1.section_type == "article"))
+      assert reg1.section_id == "UK_uksi_2024_1:reg.1"
+    end
+
+    test "all section_ids use reg. prefix (not art.)", %{rows: rows} do
+      articles =
+        Enum.filter(rows, &(&1.section_type in ["article", "sub_article", "paragraph"]))
+
+      for row <- articles do
+        assert String.contains?(row.section_id, ":reg.") or
+                 not String.contains?(row.section_id, ":art."),
+               "Expected reg. prefix, got: #{row.section_id}"
+      end
     end
   end
 end

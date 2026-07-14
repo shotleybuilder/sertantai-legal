@@ -2,7 +2,7 @@
 	import { format } from 'date-fns';
 	import { useSubscriptionsQuery, useQueryablesQuery } from '$lib/query/zenoh';
 
-	let activeTab: 'subscriptions' | 'queryables' = 'subscriptions';
+	let activeTab: 'taxa' | 'provisions' | 'controls' | 'triage' | 'queryables' = 'taxa';
 
 	const subsQuery = useSubscriptionsQuery();
 	const queryablesQuery = useQueryablesQuery();
@@ -55,9 +55,43 @@
 		return typeof v === 'string' ? v : null;
 	}
 
+	const tabs = [
+		{ id: 'taxa' as const, label: 'Taxa' },
+		{ id: 'provisions' as const, label: 'Provisions' },
+		{ id: 'controls' as const, label: 'Controls' },
+		{ id: 'triage' as const, label: 'Triage' },
+		{ id: 'queryables' as const, label: 'Queryables & Publishers' }
+	];
+
 	$: statsSince =
 		startedAt($subsQuery.data?.taxa_subscriber?.stats) ||
 		startedAt($queryablesQuery.data?.data_server?.stats);
+
+	// Map tab id to subscriber data
+	$: subscriberMap = $subsQuery.data
+		? {
+				taxa: {
+					label: 'TaxaSubscriber',
+					sublabel: 'Law-level enrichment',
+					data: $subsQuery.data.taxa_subscriber
+				},
+				provisions: {
+					label: 'ProvisionSubscriber',
+					sublabel: 'Per-provision DRRP & actors',
+					data: $subsQuery.data.provision_subscriber
+				},
+				controls: {
+					label: 'ControlsSubscriber',
+					sublabel: 'AI-generated controls & predicates',
+					data: $subsQuery.data.controls_subscriber
+				},
+				triage: {
+					label: 'TriageSubscriber',
+					sublabel: 'Making/not-making classification',
+					data: $subsQuery.data.triage_subscriber
+				}
+			}
+		: null;
 </script>
 
 <div>
@@ -73,28 +107,39 @@
 
 	<!-- Tabs -->
 	<div class="flex gap-1 border-b border-gray-200 mb-6">
-		<button
-			on:click={() => (activeTab = 'subscriptions')}
-			class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
-				{activeTab === 'subscriptions'
-				? 'border-blue-500 text-blue-600'
-				: 'border-transparent text-gray-500 hover:text-gray-700'}"
-		>
-			Subscriptions
-		</button>
-		<button
-			on:click={() => (activeTab = 'queryables')}
-			class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
-				{activeTab === 'queryables'
-				? 'border-blue-500 text-blue-600'
-				: 'border-transparent text-gray-500 hover:text-gray-700'}"
-		>
-			Queryables & Publishers
-		</button>
+		{#each tabs as tab}
+			<button
+				on:click={() => (activeTab = tab.id)}
+				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
+					{activeTab === tab.id
+					? 'border-blue-500 text-blue-600'
+					: 'border-transparent text-gray-500 hover:text-gray-700'}"
+			>
+				{tab.label}
+				{#if tab.id !== 'queryables' && $subsQuery.data}
+					{@const subData =
+						tab.id === 'taxa'
+							? $subsQuery.data.taxa_subscriber
+							: tab.id === 'provisions'
+								? $subsQuery.data.provision_subscriber
+								: tab.id === 'controls'
+									? $subsQuery.data.controls_subscriber
+									: $subsQuery.data.triage_subscriber}
+					<span
+						class="ml-1.5 inline-flex items-center w-2 h-2 rounded-full {subData.status.state ===
+						'ready'
+							? 'bg-green-500'
+							: subData.status.state === 'connecting'
+								? 'bg-yellow-500'
+								: 'bg-gray-400'}"
+					></span>
+				{/if}
+			</button>
+		{/each}
 	</div>
 
-	<!-- Subscriptions Tab -->
-	{#if activeTab === 'subscriptions'}
+	<!-- Subscriber Tabs (Taxa, Provisions, Controls) -->
+	{#if activeTab === 'taxa' || activeTab === 'provisions' || activeTab === 'controls' || activeTab === 'triage'}
 		{#if $subsQuery.isLoading}
 			<div class="flex justify-center py-12">
 				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -105,116 +150,121 @@
 					{$subsQuery.error?.message || 'Failed to load subscription data'}
 				</p>
 			</div>
-		{:else if $subsQuery.data}
-			{@const subs = $subsQuery.data}
+		{:else if subscriberMap}
+			{@const sub = subscriberMap[activeTab]}
 
-			{#each [{ label: 'TaxaSubscriber', sublabel: 'Law-level enrichment', data: subs.taxa_subscriber }, { label: 'ProvisionSubscriber', sublabel: 'Per-provision DRRP & actors', data: subs.provision_subscriber }] as sub}
-				<!-- Status -->
-				<div class="bg-white shadow rounded-lg p-6 mb-6">
-					<div class="flex items-center justify-between mb-4">
-						<div>
-							<h2 class="text-lg font-semibold text-gray-900">{sub.label}</h2>
-							<p class="text-xs text-gray-400">{sub.sublabel}</p>
-						</div>
-						<span
-							class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {stateColor(
-								sub.data.status.state
-							)}"
-						>
-							{sub.data.status.state}
-						</span>
+			<!-- Status -->
+			<div class="bg-white shadow rounded-lg p-6 mb-6">
+				<div class="flex items-center justify-between mb-4">
+					<div>
+						<h2 class="text-lg font-semibold text-gray-900">{sub.label}</h2>
+						<p class="text-xs text-gray-400">{sub.sublabel}</p>
 					</div>
-					{#if sub.data.status.key_expr}
-						<p class="text-sm text-gray-500 mb-4">
-							Key: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs"
-								>{sub.data.status.key_expr}</code
-							>
-						</p>
-					{/if}
+					<span
+						class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {stateColor(
+							sub.data.status.state
+						)}"
+					>
+						{sub.data.status.state}
+					</span>
+				</div>
+				{#if sub.data.status.key_expr}
+					<p class="text-sm text-gray-500 mb-4">
+						Key: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs"
+							>{sub.data.status.key_expr}</code
+						>
+					</p>
+				{/if}
 
-					<!-- Counters -->
-					<div class="grid grid-cols-3 gap-4">
-						<div class="bg-blue-50 rounded-lg p-4 text-center">
-							<div class="text-2xl font-bold text-blue-700">
-								{statValue(sub.data.stats, 'received')}
-							</div>
-							<div class="text-xs text-blue-600 mt-1">Received</div>
+				<!-- Counters -->
+				<div class="grid grid-cols-3 gap-4">
+					<div class="bg-blue-50 rounded-lg p-4 text-center">
+						<div class="text-2xl font-bold text-blue-700">
+							{statValue(sub.data.stats, 'received')}
 						</div>
-						<div class="bg-green-50 rounded-lg p-4 text-center">
-							<div class="text-2xl font-bold text-green-700">
-								{statValue(sub.data.stats, 'updated')}
-							</div>
-							<div class="text-xs text-green-600 mt-1">Updated</div>
+						<div class="text-xs text-blue-600 mt-1">Received</div>
+					</div>
+					<div class="bg-green-50 rounded-lg p-4 text-center">
+						<div class="text-2xl font-bold text-green-700">
+							{statValue(sub.data.stats, 'updated')}
 						</div>
-						<div class="bg-red-50 rounded-lg p-4 text-center">
-							<div class="text-2xl font-bold text-red-700">
-								{statValue(sub.data.stats, 'failed')}
-							</div>
-							<div class="text-xs text-red-600 mt-1">Failed</div>
+						<div class="text-xs text-green-600 mt-1">Updated</div>
+					</div>
+					<div class="bg-red-50 rounded-lg p-4 text-center">
+						<div class="text-2xl font-bold text-red-700">
+							{statValue(sub.data.stats, 'failed')}
 						</div>
+						<div class="text-xs text-red-600 mt-1">Failed</div>
 					</div>
 				</div>
+			</div>
 
-				<!-- Recent Activity -->
-				{#if sub.data.recent.length > 0}
-					<div class="bg-white shadow overflow-hidden rounded-lg mb-6">
-						<div class="px-6 py-4 border-b border-gray-200">
-							<h3 class="text-sm font-medium text-gray-900">{sub.label} Activity</h3>
-						</div>
-						<table class="min-w-full divide-y divide-gray-200">
-							<thead class="bg-gray-50">
-								<tr>
-									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-										>Time</th
-									>
-									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-										>Event</th
-									>
-									<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-										>Details</th
-									>
+			<!-- Recent Activity -->
+			{#if sub.data.recent.length > 0}
+				<div class="bg-white shadow overflow-hidden rounded-lg mb-6">
+					<div class="px-6 py-4 border-b border-gray-200">
+						<h3 class="text-sm font-medium text-gray-900">Recent Activity</h3>
+					</div>
+					<table class="min-w-full divide-y divide-gray-200">
+						<thead class="bg-gray-50">
+							<tr>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th
+								>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+									>Event</th
+								>
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+									>Details</th
+								>
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-gray-200">
+							{#each sub.data.recent as entry}
+								<tr class="hover:bg-gray-50">
+									<td class="px-6 py-3 whitespace-nowrap text-xs text-gray-500">
+										{formatTs(entry.timestamp)}
+									</td>
+									<td class="px-6 py-3 whitespace-nowrap">
+										<span class="text-sm font-medium {eventColor(entry.event)}">
+											{entry.event}
+										</span>
+									</td>
+									<td class="px-6 py-3 text-sm text-gray-500">
+										{#if entry.metadata.law_name}
+											{entry.metadata.law_name}
+										{/if}
+										{#if entry.metadata.provisions}
+											<span class="text-gray-400 ml-1"
+												>({entry.metadata.provisions} provisions)</span
+											>
+										{/if}
+										{#if entry.metadata.controls}
+											<span class="text-gray-400 ml-1">({entry.metadata.controls} controls)</span>
+										{/if}
+										{#if entry.metadata.is_predicate}
+											<span
+												class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700"
+												>predicate</span
+											>
+										{/if}
+										{#if entry.metadata.reason}
+											<span class="text-red-600">{entry.metadata.reason}</span>
+										{/if}
+										{#if entry.metadata.key_expr}
+											<code class="bg-gray-100 px-1 rounded text-xs">{entry.metadata.key_expr}</code
+											>
+										{/if}
+									</td>
 								</tr>
-							</thead>
-							<tbody class="bg-white divide-y divide-gray-200">
-								{#each sub.data.recent as entry}
-									<tr class="hover:bg-gray-50">
-										<td class="px-6 py-3 whitespace-nowrap text-xs text-gray-500">
-											{formatTs(entry.timestamp)}
-										</td>
-										<td class="px-6 py-3 whitespace-nowrap">
-											<span class="text-sm font-medium {eventColor(entry.event)}">
-												{entry.event}
-											</span>
-										</td>
-										<td class="px-6 py-3 text-sm text-gray-500">
-											{#if entry.metadata.law_name}
-												{entry.metadata.law_name}
-											{/if}
-											{#if entry.metadata.provisions}
-												<span class="text-gray-400 ml-1"
-													>({entry.metadata.provisions} provisions)</span
-												>
-											{/if}
-											{#if entry.metadata.reason}
-												<span class="text-red-600">{entry.metadata.reason}</span>
-											{/if}
-											{#if entry.metadata.key_expr}
-												<code class="bg-gray-100 px-1 rounded text-xs"
-													>{entry.metadata.key_expr}</code
-												>
-											{/if}
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</div>
-				{:else}
-					<div class="text-center py-8 bg-white rounded-lg shadow mb-6">
-						<p class="text-sm text-gray-500">No {sub.label} activity recorded yet</p>
-					</div>
-				{/if}
-			{/each}
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{:else}
+				<div class="text-center py-8 bg-white rounded-lg shadow mb-6">
+					<p class="text-sm text-gray-500">No activity recorded yet</p>
+				</div>
+			{/if}
 		{/if}
 
 		<!-- Queryables & Publishers Tab -->

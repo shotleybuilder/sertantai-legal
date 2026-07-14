@@ -1,0 +1,76 @@
+<Legislation RestrictExtent="E+W+S">
+<Secondary>
+<Body>
+  <Part id="part-1">
+    <Number><Strong>PART 1</Strong></Number>
+    <Title>Preliminary</Title>
+    <!-- Reg 1: single P2 wrapper — P2.Pnumber (1) != P1.Pnumber (1) but only one P2 with same number -->
+    <P1group>
+      <P1 id="regulation-1">
+        <Pnumber>1</Pnumber>
+        <P1para>
+          <P2 id="regulation-1-1">
+            <Pnumber>1</Pnumber>
+            <P2para>
+              <Text>These Regulations may be cited as the Test Regulations 2024.</Text>
+            </P2para>
+          </P2>
+        </P1para>
+      </P1>
+    </P1group>
+  </Part>
+  <Part id="part-2">
+    <Number><Strong>PART 2</Strong></Number>
+    <Title>General Duties</Title>
+    <!-- Reg 3: normal multi-P2 — P2 numbers (1,2,3) differ from P1 (3) -->
+    <P1group>
+      <P1 id="regulation-3">
+        <Pnumber>3</Pnumber>
+        <P1para>
+          <P2 id="regulation-3-1">
+            <Pnumber>1</Pnumber>
+            <P2para>
+              <Text>Every employer shall make a suitable assessment.</Text>
+            </P2para>
+          </P2>
+          <P2 id="regulation-3-2">
+            <Pnumber>2</Pnumber>
+            <P2para>
+              <Text>The assessment shall be reviewed.</Text>
+            </P2para>
+          </P2>
+          <P2 id="regulation-3-3">
+            <Pnumber>3</Pnumber>
+            <P2para>
+              <Text>The employer shall record the assessment.</Text>
+            </P2para>
+          </P2>
+        </P1para>
+      </P1>
+    </P1group>
+    <!-- Reg 30: P2 WRAPPER — single P2 with Pnumber 30 == P1 Pnumber 30 -->
+    <P1group>
+      <P1 id="regulation-30">
+        <Pnumber>30</Pnumber>
+        <P1para>
+          <P2 id="regulation-30-30">
+            <Pnumber>30</Pnumber>
+            <P2para>
+              <Text>The responsible person shall—</Text>
+              <P3 id="regulation-30-30-a">
+                <Pnumber>a</Pnumber>
+                <P3para><Text>take general fire precautions;</Text></P3para>
+              </P3>
+              <P3 id="regulation-30-30-b">
+                <Pnumber>b</Pnumber>
+                <P3para><Text>ensure a suitable fire risk assessment.</Text></P3para>
+              </P3>
+            </P2para>
+          </P2>
+        </P1para>
+      </P1>
+    </P1group>
+  </Part>
+</Body>
+</Secondary>
+</Legislation>
