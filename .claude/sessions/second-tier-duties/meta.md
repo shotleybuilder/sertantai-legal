@@ -7,14 +7,14 @@ Meta session — stays open while daughter sessions implement each phase.
 Another Claude instance is concurrently working on Baserow sync (no conflict).
 
 ## Phases (from plan)
-- [ ] Phase 1: Data Model & Manual Registration
+- [x] Phase 1: Data Model & Manual Registration (4221961, 2026-07-15)
 - [ ] Phase 2: Provision Parsing
 - [ ] Phase 3: Enrichment & Controls
 - [ ] Phase 4: Sync & Templates
 - [ ] Phase 5: Applicability Automation
 
 ## Daughter Sessions
-_(opened/closed per phase or sub-task)_
+- [x] [phase-1-data-model.md](phase-1-data-model.md) — 3 resources, 4 migrations, 29 ACoPs seeded
 
 ## Decisions Log
 - `legal_weight` enum added to SecondarySource schema (reverse_burden | regard_had_to | contractual | state_of_art | best_practice)

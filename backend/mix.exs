@@ -39,7 +39,7 @@ defmodule SertantaiLegal.MixProject do
       {:yaml_elixir, "~> 2.11"},
       {:phoenix, "~> 1.7.21"},
       {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.10"},
+      {:ecto_sql, "~> 3.14"},
       {:postgrex, ">= 0.0.0"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -71,7 +71,15 @@ defmodule SertantaiLegal.MixProject do
       {:zenohex, "~> 0.7.2"},
 
       # Arrow IPC decoding for Zenoh taxa subscriber (wraps Polars)
-      {:explorer, "~> 0.11"},
+      {:explorer, "~> 0.12"},
+
+      # PDF extraction for second-tier source parsing (ACoPs, JSPs, standards)
+      {:extractous_ex, "~> 0.2"},
+      {:pdf_elixide, "~> 0.5"},
+
+      # Override: rustler is optional in explorer/zenohex/pdf_elixide (all precompiled)
+      # but they pin incompatible versions. Since none compile from source, any version works.
+      {:rustler, "~> 0.38", optional: true, override: true},
 
       # Scraper dependencies
       {:req, "~> 0.5"},

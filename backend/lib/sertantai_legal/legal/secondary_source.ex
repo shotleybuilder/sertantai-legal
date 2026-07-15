@@ -162,5 +162,11 @@ defmodule SertantaiLegal.Legal.SecondarySource do
       destination_attribute(:secondary_source_id)
       description("Links to primary legislation this source relates to")
     end
+
+    has_many :provisions, SertantaiLegal.Legal.SecondarySourceProvision do
+      source_attribute(:id)
+      destination_attribute(:secondary_source_id)
+      description("Parsed structural provisions within this document")
+    end
   end
 end
