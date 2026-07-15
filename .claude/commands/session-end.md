@@ -1,6 +1,6 @@
 End the current lightweight session:
 
-1. Check `.claude/sessions/.current-session` for active session
+1. Find the active session: look in `.claude/sessions/` for the most recently modified open session file (no YAML frontmatter with `status: closed`)
 2. If no active session, inform user there's nothing to end
 3. **CHECK FOR INCOMPLETE TASKS**: Read the session file and check for any unchecked todo items (`- [ ]`). If there are incomplete items:
    - List the incomplete items clearly
@@ -59,8 +59,6 @@ enables:
    - Match the session to the correct area group (Scraper, LAT, Electric/PGLite/Sync, GridLite/Table Views, Admin UI, Browse UI, Auth, Infrastructure, Data Quality/Schema, AI)
    - Insert row at the TOP of the group's table (newest first)
    - Format: `| YYYY-MM-DD | [session-name](filename.md) | [#N](issue-url) or — | One-line summary |`
-10. Empty `.claude/sessions/.current-session` file
-
 ## Guidelines
 
 - **Lessons are the most valuable section.** Capture what would save someone time next time. "DROP VIEW uk_lrt destroys INSTEAD OF triggers" is a good lesson. "We updated the view" is not.

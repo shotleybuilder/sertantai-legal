@@ -19,8 +19,6 @@ Start a new lightweight development session.  The session can be tied to a GitHu
    - [Keep brief]
    ```
 
-4. Update `.claude/sessions/.current-session` with the filename
-
 **Session Guidelines**:
 - ✅ Brief todos and status updates
 - ✅ File paths and line numbers (not full code)

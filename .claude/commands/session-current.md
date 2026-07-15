@@ -1,6 +1,6 @@
 Show the current lightweight session status:
 
-1. Check if `.claude/sessions/.current-session` exists
+1. Look in `.claude/sessions/` for the most recently modified open session file (no YAML frontmatter with `status: closed`)
 2. If no active session, inform user and suggest starting one with `/project:session-start`
 3. If active session exists, show BRIEF summary:
    - GitHub Issue # and link

@@ -2,7 +2,7 @@ Update the current session with LIGHTWEIGHT notes.
 
 **CRITICAL**: Keep updates MINIMAL. This is a quick tracker, not documentation.
 
-1. Check `.claude/sessions/.current-session` for active session
+1. Find the active session: look in `.claude/sessions/` for the most recently modified open session file (no YAML frontmatter with `status: closed`)
 2. If no active session, inform user to start one
 3. Append BRIEF update to session file:
    ```

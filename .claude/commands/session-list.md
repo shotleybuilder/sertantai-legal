@@ -1,7 +1,7 @@
 List all development sessions:
 
 1. Check if `.claude/sessions/` directory exists
-2. List all `.md` files (excluding `.current-session`)
+2. List all `.md` files
 3. For each session, show BRIEF info:
    - Date
    - GitHub Issue # (extract from filename/content)

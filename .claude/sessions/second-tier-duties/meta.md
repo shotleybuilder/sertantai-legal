@@ -1,0 +1,29 @@
+# Meta Session: Second-Tier Duties
+
+**Started**: 2026-07-15
+**Plan**: `.claude/plans/second-tier-duties.md`
+
+Meta session — stays open while daughter sessions implement each phase.
+Another Claude instance is concurrently working on Baserow sync (no conflict).
+
+## Phases (from plan)
+- [ ] Phase 1: Data Model & Manual Registration
+- [ ] Phase 2: Provision Parsing
+- [ ] Phase 3: Enrichment & Controls
+- [ ] Phase 4: Sync & Templates
+- [ ] Phase 5: Applicability Automation
+
+## Daughter Sessions
+_(opened/closed per phase or sub-task)_
+
+## Decisions Log
+- `legal_weight` enum added to SecondarySource schema (reverse_burden | regard_had_to | contractual | state_of_art | best_practice)
+- `text_source` enum added to SecondarySourceProvision (full_text | summary | heading_only)
+- `secondary_section_id` added to SourceLink for provision-to-provision traceability
+- Section_id convention: `{TYPE}_{issuer}_{year}_{id}:{locator}` (4 segments before colon)
+- PDF toolchain: `extractous_ex` (try first) + `ex_pdfium` (fallback) — stays in sertantai-legal
+- PARKED: DRRP on non-legislative text, cross-tier reporting, change detection for secondary sources
+
+## Notes
+- ACoPs/JSPs feed into controls that anchor to statutory duties — no parallel obligation hierarchy
+- ~30 current HSE ACoPs — manual seed is a one-afternoon job

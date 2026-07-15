@@ -1,6 +1,6 @@
 End session with git commit and YAML frontmatter:
 
-1. Check `.claude/sessions/.current-session` for active session
+1. Find the active session: look in `.claude/sessions/` for the most recently modified open session file (no YAML frontmatter with `status: closed`)
 2. If no active session, inform user there's nothing to end
 3. **CHECK FOR INCOMPLETE TASKS**: Read the session file and check for any unchecked todo items (`- [ ]`). If there are incomplete items:
    - List the incomplete items clearly
@@ -60,8 +60,7 @@ enables:
    - Match the session to the correct area group
    - Insert row at the TOP of the group's table (newest first)
    - Format: `| YYYY-MM-DD | [session-name](filename.md) | [#N](issue-url) or — | One-line summary |`
-11. Empty `.claude/sessions/.current-session` file
-12. Remind user to update GitHub Issue with detailed outcomes
+11. Remind user to update GitHub Issue with detailed outcomes
 
 ## Guidelines
 
