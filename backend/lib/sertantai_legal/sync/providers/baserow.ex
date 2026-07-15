@@ -2,9 +2,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   @moduledoc """
   Baserow sync provider — pushes LRT/LAT data to Baserow (SaaS or self-hosted).
 
-  Uses JWT auth (email/password login) for full API access including schema
-  management (field creation). The JWT is obtained at the start of each sync
-  run and used for all operations.
+  Delegates all Baserow API calls to `SertantaiLegal.Baserow.Client` and
+  implements `SertantaiLegal.Sync.ProviderBehaviour` with domain-specific
+  field specs and row formatters.
 
   Credentials stored in SyncConfiguration (AES-256 encrypted):
   - `email`: Baserow account email
@@ -13,908 +13,17 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Rows are batched at 200 with `?user_field_names=true`.
   """
 
-  @managed_description "🚫 Managed by SertantAI — do not rename or delete"
-
   @behaviour SertantaiLegal.Sync.ProviderBehaviour
 
   require Logger
 
-  @batch_size 200
+  alias SertantaiLegal.Baserow.Client
 
-  # ── Public API ────────────────────────────────────────────────────
+  # Values to filter out of holder data — parser artifacts, not real actors
+  @holder_exclusions MapSet.new([": He"])
 
-  @impl true
-  def test_connection(config) do
-    # Lightweight check: list fields on the LRT table
-    case list_fields(config, :lrt) do
-      {:ok, fields} ->
-        {:ok, %{lrt_field_count: length(fields)}}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
-
-  @impl true
-  def list_fields(config, table_key_or_id) do
-    tid =
-      if is_atom(table_key_or_id),
-        do: table_id(config, table_key_or_id),
-        else: table_key_or_id
-
-    case api_get(config, "/api/database/fields/table/#{tid}/") do
-      {:ok, %{status: 200, body: fields}} when is_list(fields) ->
-        {:ok, fields}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, "Baserow list_fields returned #{status}: #{inspect(body)}"}
-
-      {:error, reason} ->
-        {:error, "Baserow list_fields failed: #{inspect(reason)}"}
-    end
-  end
-
-  @impl true
-  def ensure_fields(config, table_key, field_specs) do
-    with {:ok, existing} <- list_fields(config, table_key),
-         :ok <- clean_default_fields(config, table_key, existing, field_specs) do
-      # Re-fetch after cleanup
-      {:ok, existing} = list_fields(config, table_key)
-      existing_by_name = Map.new(existing, &{&1["name"], &1})
-
-      {missing, needs_update} =
-        Enum.split_with(field_specs, fn spec ->
-          not Map.has_key?(existing_by_name, spec.name)
-        end)
-
-      # Create missing fields
-      with :ok <- create_fields_sequentially(config, table_key, missing) do
-        # Update existing select fields that have new options
-        update_select_options(config, existing_by_name, needs_update)
-      end
-    end
-  end
-
-  @impl true
-  def batch_create(config, table_key, rows) when is_list(rows) do
-    batch_create(config, table_key, rows, nil)
-  end
-
-  @doc """
-  Create rows with optional per-batch callback.
-
-  If `on_batch` is provided, it's called with each batch's mappings immediately
-  after that batch succeeds — ensuring mappings are saved even if a later batch fails.
-  Signature: `on_batch.(batch_mappings)`
-  """
-  def batch_create(config, table_key, rows, on_batch) when is_list(rows) do
-    table_id = table_id(config, table_key)
-
-    rows
-    |> Enum.chunk_every(@batch_size)
-    |> Enum.reduce_while({:ok, []}, fn chunk, {:ok, acc} ->
-      body = %{"items" => chunk}
-
-      case api_post(
-             config,
-             "/api/database/rows/table/#{table_id}/batch/?user_field_names=true",
-             body
-           ) do
-        {:ok, %{status: 200, body: %{"items" => created}}} ->
-          mappings = extract_mappings(created)
-          if is_function(on_batch, 1), do: on_batch.(mappings)
-          {:cont, {:ok, acc ++ mappings}}
-
-        {:ok, %{status: status, body: body}} ->
-          {:halt, {:error, "Baserow batch_create returned #{status}: #{inspect(body)}"}}
-
-        {:error, reason} ->
-          {:halt, {:error, "Baserow batch_create failed: #{inspect(reason)}"}}
-      end
-    end)
-  end
-
-  @impl true
-  def batch_update(config, table_key, rows) when is_list(rows) do
-    table_id = table_id(config, table_key)
-
-    rows
-    |> Enum.chunk_every(@batch_size)
-    |> Enum.reduce_while({:ok, 0}, fn chunk, {:ok, count} ->
-      body = %{"items" => chunk}
-
-      case api_patch(
-             config,
-             "/api/database/rows/table/#{table_id}/batch/?user_field_names=true",
-             body
-           ) do
-        {:ok, %{status: 200, body: %{"items" => updated}}} ->
-          {:cont, {:ok, count + length(updated)}}
-
-        {:ok, %{status: status, body: body}} ->
-          {:halt, {:error, "Baserow batch_update returned #{status}: #{inspect(body)}"}}
-
-        {:error, reason} ->
-          {:halt, {:error, "Baserow batch_update failed: #{inspect(reason)}"}}
-      end
-    end)
-  end
-
-  @impl true
-  def batch_delete(config, table_key, external_row_ids) when is_list(external_row_ids) do
-    table_id = table_id(config, table_key)
-
-    external_row_ids
-    |> Enum.chunk_every(@batch_size)
-    |> Enum.reduce_while({:ok, 0}, fn chunk, {:ok, count} ->
-      body = %{"items" => chunk}
-
-      case api_post(config, "/api/database/rows/table/#{table_id}/batch-delete/", body) do
-        {:ok, %{status: status}} when status in [200, 204] ->
-          {:cont, {:ok, count + length(chunk)}}
-
-        {:ok, %{status: status, body: body}} ->
-          {:halt, {:error, "Baserow batch_delete returned #{status}: #{inspect(body)}"}}
-
-        {:error, reason} ->
-          {:halt, {:error, "Baserow batch_delete failed: #{inspect(reason)}"}}
-      end
-    end)
-  end
-
-  @doc """
-  Prepare a Baserow table for first sync: rename from default "Table" to
-  a meaningful name, delete default empty rows, and remove default columns
-  (Notes, Active, etc.) that Baserow creates automatically.
-
-  Call this before `ensure_fields` on first sync. Idempotent — skips
-  rename if already named correctly, skips cleanup if no default fields.
-  """
-  def prepare_table(config, table_key, table_name) do
-    with :ok <- rename_table(config, table_key, table_name),
-         :ok <- clean_default_rows(config, table_key) do
-      :ok
-    end
-  end
-
-  # ── Template Schema Operations ─────────────────────────────────
-  # These implement the extended ProviderBehaviour for TemplateApplicator.
-  # They work with universal field types from Templates.FieldTypes and
-  # translate to Baserow-specific API calls.
-
-  @impl true
-  @doc "Provider capabilities for template feature gating."
-  def capabilities do
-    %{
-      view_types: [:grid, :kanban, :calendar, :form, :gallery],
-      field_level_permissions: true,
-      webhooks: true,
-      webhook_includes_old_values: false,
-      webhook_includes_user_id: false,
-      batch_size: 200
-    }
-  end
-
-  @impl true
-  @doc "Create a new table in the Baserow database. Returns the table ID."
-  def create_table(config, name) do
-    database_id = config["database_id"] || config[:database_id]
-
-    case api_post(config, "/api/database/tables/database/#{database_id}/", %{"name" => name}) do
-      {:ok, %{status: 200, body: %{"id" => table_id}}} ->
-        {:ok, table_id}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, "Create table '#{name}': #{status} #{inspect(body)}"}
-
-      {:error, reason} ->
-        {:error, "Create table '#{name}': #{inspect(reason)}"}
-    end
-  end
-
-  @doc """
-  Clean up Baserow default columns after table creation.
-
-  Baserow auto-creates Name (primary, can't delete), Notes, and Active on
-  every new table. This function:
-  1. Deletes the Notes column (unwanted)
-  2. Renames/updates the primary Name field to match the template's primary field
-  3. Deletes Active if the template doesn't define one
-
-  `field_specs` is the list of template field specs for this table.
-  """
-  def cleanup_table_defaults(config, table_id, field_specs) do
-    case list_fields(config, table_id) do
-      {:ok, existing_fields} ->
-        template_names = MapSet.new(field_specs, & &1.name)
-        primary_spec = Enum.find(field_specs, & &1[:primary])
-
-        # Delete Notes (always unwanted)
-        delete_default_field(config, existing_fields, "Notes")
-
-        # Handle Active: delete if template doesn't define it, update description if it does
-        active_field = Enum.find(existing_fields, &(&1["name"] == "Active"))
-
-        if active_field do
-          if MapSet.member?(template_names, "Active") do
-            # Template wants Active — update the default's description
-            active_spec = Enum.find(field_specs, &(&1.name == "Active"))
-            desc = active_spec[:description] || "Active status"
-
-            update_field(config, active_field["id"], %{
-              "description" => "#{@managed_description}\n#{desc}"
-            })
-          else
-            delete_default_field(config, existing_fields, "Active")
-          end
-        end
-
-        # Handle primary field (Name) — rename/convert to match template's primary
-        name_field = Enum.find(existing_fields, &(&1["name"] == "Name" && &1["primary"]))
-
-        if name_field && primary_spec do
-          # Rename the primary field — formula conversion happens later
-          # (after all fields are created, so formula references resolve)
-          updates = %{
-            "name" => primary_spec.name,
-            "description" => "#{@managed_description}\n#{primary_spec[:description] || ""}"
-          }
-
-          update_field(config, name_field["id"], updates)
-        else
-          if name_field do
-            update_field(config, name_field["id"], %{
-              "description" =>
-                "#{@managed_description}\n#{primary_spec[:description] || "Primary field"}"
-            })
-          end
-        end
-
-        :ok
-
-      {:error, reason} ->
-        Logger.warning("[Baserow] Failed to clean defaults for table #{table_id}: #{reason}")
-        :ok
-    end
-  end
-
-  @doc """
-  Convert the primary field to a formula after all other fields are created.
-  Only needed when the template's primary field is type :formula.
-  """
-  def finalize_primary_formula(config, table_id, field_specs) do
-    primary_spec = Enum.find(field_specs, &(&1[:primary] && &1.type == :formula))
-
-    if primary_spec do
-      case list_fields(config, table_id) do
-        {:ok, fields} ->
-          primary_field = Enum.find(fields, &(&1["name"] == primary_spec.name && &1["primary"]))
-
-          if primary_field do
-            expression =
-              case primary_spec[:expression] do
-                %{baserow: expr} -> expr
-                expr when is_binary(expr) -> expr
-                _ -> ""
-              end
-
-            update_field(config, primary_field["id"], %{
-              "type" => "formula",
-              "formula" => expression,
-              "formula_type" => "text"
-            })
-          else
-            :ok
-          end
-
-        _ ->
-          :ok
-      end
-    else
-      :ok
-    end
-  end
-
-  @doc "Update an existing Baserow field by ID."
-  def update_field(config, field_id, updates) do
-    case api_patch(config, "/api/database/fields/#{field_id}/", updates) do
-      {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: s, body: b}} -> {:error, "Update field #{field_id}: #{s} #{inspect(b)}"}
-      {:error, reason} -> {:error, "Update field #{field_id}: #{inspect(reason)}"}
-    end
-  end
-
-  defp delete_default_field(config, existing_fields, name) do
-    case Enum.find(existing_fields, &(&1["name"] == name)) do
-      nil ->
-        :ok
-
-      field ->
-        case api_delete(config, "/api/database/fields/#{field["id"]}/") do
-          {:ok, %{status: status}} when status in [200, 204] ->
-            Logger.debug("[Baserow] Deleted default field '#{name}'")
-            :ok
-
-          _ ->
-            Logger.warning("[Baserow] Failed to delete default field '#{name}'")
-            :ok
-        end
-    end
-  end
-
-  @impl true
-  @doc """
-  Create a field on a Baserow table from a universal field spec.
-
-  Translates universal types (`:text`, `:single_select`, `:link_row`, etc.)
-  to Baserow API parameters.
-  """
-  def create_field(config, table_id, field_spec) do
-    body = translate_field_spec(field_spec, config)
-
-    case api_post(config, "/api/database/fields/table/#{table_id}/", body) do
-      {:ok, %{status: 200, body: %{"id" => field_id}}} ->
-        {:ok, field_id}
-
-      {:ok, %{status: status, body: resp}} ->
-        {:error, "Create field '#{field_spec.name}': #{status} #{inspect(resp)}"}
-
-      {:error, reason} ->
-        {:error, "Create field '#{field_spec.name}': #{inspect(reason)}"}
-    end
-  end
-
-  @impl true
-  @doc "Create a view on a Baserow table from a universal view spec."
-  def create_view(config, table_id, view_spec) do
-    body = %{
-      "name" => view_spec.name,
-      "type" => translate_view_type(view_spec.type)
-    }
-
-    case api_post(config, "/api/database/views/table/#{table_id}/", body) do
-      {:ok, %{status: 200, body: %{"id" => view_id}}} ->
-        # Apply filters and sorts if specified
-        maybe_apply_filters(config, view_id, view_spec)
-        maybe_apply_sorts(config, view_id, view_spec)
-        {:ok, view_id}
-
-      {:ok, %{status: status, body: resp}} ->
-        {:error, "Create view '#{view_spec.name}': #{status} #{inspect(resp)}"}
-
-      {:error, reason} ->
-        {:error, "Create view '#{view_spec.name}': #{inspect(reason)}"}
-    end
-  end
-
-  @impl true
-  @doc "Register a webhook on a Baserow table."
-  def create_webhook(config, table_id, webhook_spec) do
-    events = Enum.map(webhook_spec.events, &translate_webhook_event/1)
-    callback_url = config["webhook_url"] || config[:webhook_url]
-
-    body = %{
-      "table_id" => table_id,
-      "url" => callback_url,
-      "events" => events,
-      "active" => true
-    }
-
-    case api_post(config, "/api/database/webhooks/table/#{table_id}/", body) do
-      {:ok, %{status: 200, body: %{"id" => webhook_id}}} ->
-        {:ok, webhook_id}
-
-      {:ok, %{status: status, body: resp}} ->
-        {:error, "Create webhook: #{status} #{inspect(resp)}"}
-
-      {:error, reason} ->
-        {:error, "Create webhook: #{inspect(reason)}"}
-    end
-  end
-
-  # ── Universal → Baserow Type Translation ──────────────────────
-
-  @universal_to_baserow %{
-    text: "text",
-    long_text: "long_text",
-    number: "number",
-    date: "date",
-    boolean: "boolean",
-    single_select: "single_select",
-    multi_select: "multiple_select",
-    link_row: "link_row",
-    lookup: "lookup",
-    rollup: "rollup",
-    formula: "formula",
-    file: "file",
-    url: "url",
-    email: "email",
-    workspace_member: "multiple_collaborators"
-  }
-
-  defp translate_field_spec(spec, config) do
-    baserow_type = Map.get(@universal_to_baserow, spec.type, to_string(spec.type))
-
-    body = %{"name" => spec.name, "type" => baserow_type}
-
-    body
-    |> maybe_add_description(spec)
-    |> maybe_add_select_options(spec)
-    |> maybe_add_link_row(spec, config)
-    |> maybe_add_lookup(spec)
-    |> maybe_add_rollup(spec)
-    |> maybe_add_formula(spec)
-    |> maybe_add_raw_opts(spec)
-  end
-
-  defp maybe_add_description(body, %{description: desc}) when is_binary(desc) do
-    Map.put(body, "description", "#{@managed_description}\n#{desc}")
-  end
-
-  defp maybe_add_description(body, _), do: Map.put(body, "description", @managed_description)
-
-  # Pass through raw opts for fields using direct Baserow API params (e.g., link_row_table_id)
-  defp maybe_add_raw_opts(body, %{opts: opts}) when is_map(opts), do: Map.merge(body, opts)
-  defp maybe_add_raw_opts(body, _), do: body
-
-  defp maybe_add_select_options(body, %{type: type, options: options})
-       when type in [:single_select, :multi_select] and is_list(options) do
-    Map.put(
-      body,
-      "select_options",
-      Enum.map(options, fn opt -> %{"value" => opt, "color" => "light-gray"} end)
-    )
-  end
-
-  defp maybe_add_select_options(body, _), do: body
-
-  defp maybe_add_link_row(body, %{type: :link_row, target: target}, config) do
-    # Resolve target table key to Baserow table ID from config
-    target_id =
-      config["table_ids"][target] ||
-        config["#{target}_table_id"] ||
-        config[:"#{target}_table_id"]
-
-    if target_id do
-      Map.put(body, "link_row_table_id", target_id)
-    else
-      body
-    end
-  end
-
-  defp maybe_add_link_row(body, _, _), do: body
-
-  defp maybe_add_lookup(body, %{type: :lookup, target: target, target_field: field}) do
-    body
-    |> Map.put("through_field_name", to_string(target))
-    |> Map.put("target_field_name", field)
-  end
-
-  defp maybe_add_lookup(body, _), do: body
-
-  defp maybe_add_rollup(body, %{
-         type: :rollup,
-         target: target,
-         target_field: field,
-         rollup_function: func
-       }) do
-    body
-    |> Map.put("through_field_name", to_string(target))
-    |> Map.put("target_field_name", field)
-    |> Map.put("rollup_function", to_string(func))
-  end
-
-  defp maybe_add_rollup(body, _), do: body
-
-  defp maybe_add_formula(body, %{type: :formula, expression: expr}) when is_binary(expr) do
-    Map.put(body, "formula", expr)
-  end
-
-  defp maybe_add_formula(body, %{type: :formula, expression: %{baserow: expr}}) do
-    Map.put(body, "formula", expr)
-  end
-
-  defp maybe_add_formula(body, _), do: body
-
-  @view_type_map %{
-    grid: "grid",
-    kanban: "kanban",
-    calendar: "calendar",
-    form: "form",
-    gallery: "gallery",
-    timeline: "timeline"
-  }
-
-  defp translate_view_type(type), do: Map.get(@view_type_map, type, to_string(type))
-
-  defp translate_webhook_event(:created), do: "rows.created"
-  defp translate_webhook_event(:updated), do: "rows.updated"
-  defp translate_webhook_event(:deleted), do: "rows.deleted"
-  defp translate_webhook_event(event), do: to_string(event)
-
-  defp maybe_apply_filters(_config, _view_id, %{filters: filters})
-       when is_list(filters) and filters != [] do
-    # TODO: POST /api/database/views/{view_id}/filters/ for each filter
-    :ok
-  end
-
-  defp maybe_apply_filters(_, _, _), do: :ok
-
-  defp maybe_apply_sorts(_config, _view_id, %{sorts: sorts})
-       when is_list(sorts) and sorts != [] do
-    # TODO: POST /api/database/views/{view_id}/sortings/ for each sort
-    :ok
-  end
-
-  defp maybe_apply_sorts(_, _, _), do: :ok
-
-  # ── Webhook Event Parsing ─────────────────────────────────────
-
-  @doc """
-  Parse a Baserow webhook payload into a common event struct.
-
-  Baserow sends: `%{"table_id" => ..., "event_type" => "rows.updated", "items" => [...]}`
-  """
-  def parse_webhook_event(payload) do
-    event_type =
-      case payload["event_type"] do
-        "rows.created" -> :row_created
-        "rows.updated" -> :row_updated
-        "rows.deleted" -> :row_deleted
-        other -> other
-      end
-
-    items = payload["items"] || payload["row_ids"] || []
-
-    Enum.map(items, fn item ->
-      %{
-        event_id: nil,
-        provider: :baserow,
-        table_id: payload["table_id"],
-        row_id: item["id"] || item,
-        event_type: event_type,
-        changed_fields: extract_changed_fields(item),
-        old_values: nil,
-        user_id: nil,
-        timestamp: DateTime.utc_now()
-      }
-    end)
-  end
-
-  defp extract_changed_fields(item) when is_map(item) do
-    item
-    |> Map.drop(["id", "order"])
-    |> Map.reject(fn {_k, v} -> is_nil(v) end)
-  end
-
-  defp extract_changed_fields(_), do: %{}
-
-  # ── Internals ─────────────────────────────────────────────────────
-
-  defp table_id(config, :lrt), do: config["lrt_table_id"] || config[:lrt_table_id]
-  defp table_id(config, :lat), do: config["lat_table_id"] || config[:lat_table_id]
-
-  defp table_id(config, :actor_tuples),
-    do: config["actor_tuples_table_id"] || config[:actor_tuples_table_id]
-
-  defp table_id(config, :controls),
-    do: config["controls_table_id"] || config[:controls_table_id]
-
-  defp table_id(config, :control_mappings),
-    do: config["control_mappings_table_id"] || config[:control_mappings_table_id]
-
-  defp base_url(config), do: String.trim_trailing(config["base_url"] || config[:base_url], "/")
-
-  defp credentials(config), do: config["credentials"] || config[:credentials]
-
-  @doc """
-  Authenticate with Baserow and return config with JWT attached.
-
-  Credentials must contain `email` and `password`. The returned config
-  has `jwt` set, which `auth_header/1` uses for all subsequent calls.
-  """
-  def authenticate(config) do
-    creds = credentials(config)
-    email = creds["email"] || creds[:email]
-    password = creds["password"] || creds[:password]
-
-    url = base_url(config) <> "/api/user/token-auth/"
-
-    case Req.post(url,
-           headers: [{"Content-Type", "application/json"}],
-           json: %{"email" => email, "password" => password},
-           receive_timeout: 15_000
-         ) do
-      {:ok, %{status: 200, body: %{"token" => jwt}}} ->
-        {:ok, Map.put(config, "jwt", jwt)}
-
-      {:ok, %{status: status, body: body}} ->
-        {:error, "Baserow auth failed (#{status}): #{inspect(body)}"}
-
-      {:error, reason} ->
-        {:error, "Baserow auth request failed: #{inspect(reason)}"}
-    end
-  end
-
-  defp auth_header(config) do
-    case config["jwt"] do
-      jwt when is_binary(jwt) ->
-        {"Authorization", "JWT #{jwt}"}
-
-      _ ->
-        # Fallback to database token for backwards compatibility
-        creds = credentials(config)
-        token = creds["database_token"] || creds[:database_token]
-        {"Authorization", "Token #{token}"}
-    end
-  end
-
-  # Store config in process dict for JWT refresh
-  defp store_config(config), do: Process.put(:baserow_config, config)
-  defp stored_config, do: Process.get(:baserow_config)
-
-  @doc """
-  Re-authenticate if JWT has expired. Called by Engine on 401 errors.
-  Updates the stored config with a fresh JWT.
-  """
-  def refresh_auth(config) do
-    Logger.info("[Baserow] Refreshing JWT...")
-
-    case authenticate(config) do
-      {:ok, refreshed} ->
-        store_config(refreshed)
-        {:ok, refreshed}
-
-      error ->
-        error
-    end
-  end
-
-  # Retry: transient errors (429, 5xx, network) with exponential backoff, max 3 retries
-  @max_retries 3
-
-  defp api_get(config, path) do
-    url = base_url(config) <> path
-
-    Req.get(url,
-      headers: [auth_header(config), {"Content-Type", "application/json"}],
-      receive_timeout: 30_000,
-      retry: :transient,
-      retry_delay: &retry_delay/1,
-      max_retries: @max_retries
-    )
-  end
-
-  defp api_post(config, path, body) do
-    url = base_url(config) <> path
-
-    Req.post(url,
-      headers: [auth_header(config), {"Content-Type", "application/json"}],
-      json: body,
-      receive_timeout: 60_000,
-      retry: :transient,
-      retry_delay: &retry_delay/1,
-      max_retries: @max_retries
-    )
-  end
-
-  defp api_patch(config, path, body) do
-    url = base_url(config) <> path
-
-    Req.patch(url,
-      headers: [auth_header(config), {"Content-Type", "application/json"}],
-      json: body,
-      receive_timeout: 60_000,
-      retry: :transient,
-      retry_delay: &retry_delay/1,
-      max_retries: @max_retries
-    )
-  end
-
-  defp retry_delay(attempt), do: min(1000 * Integer.pow(2, attempt), 30_000)
-
-  defp api_delete(config, path) do
-    url = base_url(config) <> path
-
-    Req.delete(url,
-      headers: [auth_header(config), {"Content-Type", "application/json"}],
-      receive_timeout: 30_000
-    )
-  end
-
-  # Delete default Baserow fields that aren't in our field specs.
-  # Baserow creates "Notes" (long_text), "Active" (boolean), and "Name" (text)
-  # by default. We keep any that match our specs, delete the rest.
-  defp clean_default_fields(config, _table_key, existing_fields, desired_specs) do
-    desired_names = MapSet.new(desired_specs, & &1.name)
-
-    # Baserow's default fields — only delete these, never user-created fields
-    default_names = MapSet.new(["Notes", "Active"])
-
-    to_delete =
-      existing_fields
-      |> Enum.filter(fn f ->
-        MapSet.member?(default_names, f["name"]) and not MapSet.member?(desired_names, f["name"])
-      end)
-
-    Enum.reduce_while(to_delete, :ok, fn field, :ok ->
-      case api_delete(config, "/api/database/fields/#{field["id"]}/") do
-        {:ok, %{status: status}} when status in [200, 204] ->
-          {:cont, :ok}
-
-        {:ok, %{status: s, body: b}} ->
-          {:halt, {:error, "Delete field #{field["name"]}: #{s} #{inspect(b)}"}}
-
-        {:error, reason} ->
-          {:halt, {:error, "Delete field #{field["name"]}: #{inspect(reason)}"}}
-      end
-    end)
-  end
-
-  defp rename_table(config, table_key, desired_name) do
-    table = table_id(config, table_key)
-
-    case api_patch(config, "/api/database/tables/#{table}/", %{"name" => desired_name}) do
-      {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: s, body: b}} -> {:error, "Rename table: #{s} #{inspect(b)}"}
-      {:error, reason} -> {:error, "Rename table: #{inspect(reason)}"}
-    end
-  end
-
-  defp clean_default_rows(config, table_key) do
-    table = table_id(config, table_key)
-
-    # Fetch existing rows — if few and empty, delete them (default Baserow rows)
-    case api_get(config, "/api/database/rows/table/#{table}/?size=200") do
-      {:ok, %{status: 200, body: %{"count" => count, "results" => rows}}} when count <= 10 ->
-        # Only delete rows that look like defaults (no meaningful data)
-        default_ids =
-          rows
-          |> Enum.filter(fn row ->
-            # Default rows have only system fields (id, order) + empty user fields
-            user_values =
-              row
-              |> Map.drop(["id", "order"])
-              |> Map.values()
-              |> Enum.reject(&is_nil/1)
-              |> Enum.reject(&(&1 == ""))
-              |> Enum.reject(&(&1 == false))
-
-            user_values == []
-          end)
-          |> Enum.map(& &1["id"])
-
-        if default_ids != [] do
-          api_post(config, "/api/database/rows/table/#{table}/batch-delete/", %{
-            "items" => default_ids
-          })
-        end
-
-        :ok
-
-      # Table has real data or is empty — don't touch
-      _ ->
-        :ok
-    end
-  end
-
-  defp create_fields_sequentially(_, _, []), do: :ok
-
-  defp create_fields_sequentially(config, table_key, [spec | rest]) do
-    table_id = table_id(config, table_key)
-
-    body =
-      %{"name" => spec.name, "type" => spec.type}
-      |> Map.merge(spec[:opts] || %{})
-
-    case api_post(config, "/api/database/fields/table/#{table_id}/", body) do
-      {:ok, %{status: 200}} ->
-        create_fields_sequentially(config, table_key, rest)
-
-      {:ok, %{status: status, body: resp_body}} ->
-        {:error, "Failed to create field '#{spec.name}': #{status} #{inspect(resp_body)}"}
-
-      {:error, reason} ->
-        {:error, "Failed to create field '#{spec.name}': #{inspect(reason)}"}
-    end
-  end
-
-  # Update select options on existing fields when our spec has options
-  # that Baserow doesn't have yet. Additive only — never removes options.
-  defp update_select_options(_config, _existing_by_name, []), do: :ok
-
-  defp update_select_options(config, existing_by_name, field_specs) do
-    select_specs =
-      Enum.filter(field_specs, fn spec ->
-        opts = spec[:opts] || %{}
-        opts["select_options"] != nil
-      end)
-
-    Enum.reduce_while(select_specs, :ok, fn spec, :ok ->
-      case Map.get(existing_by_name, spec.name) do
-        nil ->
-          {:cont, :ok}
-
-        existing_field ->
-          case maybe_add_select_options_to_field(config, existing_field, spec) do
-            :ok -> {:cont, :ok}
-            {:error, reason} -> {:halt, {:error, reason}}
-          end
-      end
-    end)
-  end
-
-  defp maybe_add_select_options_to_field(config, existing_field, spec) do
-    existing_options =
-      (existing_field["select_options"] || [])
-      |> MapSet.new(& &1["value"])
-
-    desired_options = (spec[:opts] || %{})["select_options"] || []
-
-    missing =
-      desired_options
-      |> Enum.reject(&MapSet.member?(existing_options, &1["value"]))
-
-    if missing == [] do
-      :ok
-    else
-      field_id = existing_field["id"]
-
-      # Baserow: PATCH field with select_options appends new options
-      # when you include existing ones + new ones
-      all_options =
-        (existing_field["select_options"] || []) ++
-          Enum.map(missing, fn opt -> %{"value" => opt["value"], "color" => "light-gray"} end)
-
-      body = %{"select_options" => all_options}
-
-      case api_patch(config, "/api/database/fields/#{field_id}/", body) do
-        {:ok, %{status: 200}} ->
-          Logger.info("[Baserow] Updated #{spec.name}: added #{length(missing)} select option(s)")
-
-          :ok
-
-        {:ok, %{status: status, body: resp}} ->
-          {:error, "Update select options for '#{spec.name}': #{status} #{inspect(resp)}"}
-
-        {:error, reason} ->
-          {:error, "Update select options for '#{spec.name}': #{inspect(reason)}"}
-      end
-    end
-  end
-
-  defp extract_mappings(created_rows) do
-    Enum.map(created_rows, fn row ->
-      %{
-        external_row_id: row["id"],
-        # The source_id is set by the caller who knows the mapping
-        source_id: row["_source_id"]
-      }
-    end)
-  end
-
-  # ── Field Spec Helpers ────────────────────────────────────────────
-
-  @doc """
-  Returns Baserow field specs for LRT columns at the given field tier.
-
-  For standard/full tiers, pass `rows` to extract multi-select options
-  from the actual data (holder vocabularies vary across laws).
-  """
-  def lrt_field_specs(field_tier) do
-    essential_fields() ++ tier_fields(field_tier)
-  end
-
-  @doc """
-  Returns Baserow field specs for the LAT table.
-  Includes a link_row field back to the LRT table.
-  """
-
-  @family_options (SertantaiLegal.Scraper.Models.ehs_family() ++
-                     SertantaiLegal.Scraper.Models.hr_family())
-                  |> Enum.sort()
-
-  # @type_desc_options removed — now queried dynamically via type_desc_options()
+  @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
+  @significance_options ["HIGH", "MEDIUM", "LOW"]
 
   @status_options [
     "✔ In force",
@@ -936,35 +45,205 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     "W"
   ]
 
-  @significance_options ["HIGH", "MEDIUM", "LOW"]
+  @family_options (SertantaiLegal.Scraper.Models.ehs_family() ++
+                     SertantaiLegal.Scraper.Models.hr_family())
+                  |> Enum.sort()
 
-  defp essential_fields do
-    [
-      %{name: "Title", type: "long_text"},
-      single_select_spec("Family", @family_options),
-      %{name: "Year", type: "number", opts: %{"number_decimal_places" => 0}},
-      %{name: "Number", type: "text"},
-      single_select_spec("Type", type_desc_options()),
-      single_select_spec("Status", @status_options),
-      single_select_spec("Geographic Extent", @geo_extent_options),
-      %{name: "Legislation URL", type: "url"},
-      # Significance (law-level — rating + score only; counts are Baserow Rollups)
-      single_select_spec("Significance", @significance_options),
-      %{name: "Significance Score", type: "number", opts: %{"number_decimal_places" => 1}},
-      %{name: "_source_id", type: "text"}
-    ]
-  end
+  @control_types ["Preventive", "Detective", "Corrective", "Directive"]
+  @control_natures ["Manual", "Automated", "IT-dependent manual"]
+  @control_domains ["Organisational", "People", "Physical", "Technical"]
+  @control_statuses ["Active", "Under Review", "Planned", "Retired"]
+  @control_tiers ["Corporate", "Jurisdiction", "Contract"]
+  @control_frequencies [
+    "Continuous",
+    "Daily",
+    "Weekly",
+    "Monthly",
+    "Quarterly",
+    "Annual",
+    "Ad-hoc"
+  ]
+  @info_distances ["Direct", "Adjacent", "Mediated", "Remote"]
+  @blast_radii ["Local", "Area", "Site", "Enterprise"]
+  @mapping_strengths ["Primary", "Supporting", "Ancillary"]
+  @demand_modes ["Normal", "Abnormal", "Emergency"]
+  @effectiveness ["Effective", "Ineffective", "Not Tested"]
 
-  @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
-  defp duty_type_options, do: distinct_jsonb_values("duty_type")
-  # Values to filter out of holder data — parser artifacts, not real actors
-  @holder_exclusions MapSet.new([": He"])
-
-  # Actor vocabulary now loaded from ActorDictionary (Zenoh queryable + YAML snapshot).
-  # No more hardcoded holder_options() list.
+  # Actor vocabulary loaded from ActorDictionary (Zenoh queryable + YAML snapshot).
   alias SertantaiLegal.Legal.ActorDictionary
 
-  defp holder_options, do: ActorDictionary.canonical_labels()
+  # ── ProviderBehaviour Implementation ─────────────────────────────
+
+  @impl true
+  defdelegate test_connection(config), to: Client
+
+  @impl true
+  defdelegate list_fields(config, table_key_or_id), to: Client
+
+  @impl true
+  def ensure_fields(config, table_key, field_specs) do
+    with {:ok, existing} <- Client.list_fields(config, table_key),
+         :ok <- Client.clean_default_fields(config, table_key, existing, field_specs) do
+      # Re-fetch after cleanup
+      {:ok, existing} = Client.list_fields(config, table_key)
+      existing_by_name = Map.new(existing, &{&1["name"], &1})
+
+      {missing, needs_update} =
+        Enum.split_with(field_specs, fn spec ->
+          not Map.has_key?(existing_by_name, spec.name)
+        end)
+
+      # Create missing fields
+      with :ok <- Client.create_fields_sequentially(config, table_key, missing) do
+        # Update existing select fields that have new options
+        Client.update_select_options(config, existing_by_name, needs_update)
+      end
+    end
+  end
+
+  @impl true
+  defdelegate batch_create(config, table_key, rows), to: Client
+
+  @doc """
+  Create rows with optional per-batch callback.
+
+  If `on_batch` is provided, it's called with each batch's mappings immediately
+  after that batch succeeds — ensuring mappings are saved even if a later batch fails.
+  Signature: `on_batch.(batch_mappings)`
+  """
+  defdelegate batch_create(config, table_key, rows, on_batch), to: Client
+
+  @impl true
+  defdelegate batch_update(config, table_key, rows), to: Client
+
+  @impl true
+  defdelegate batch_delete(config, table_key, external_row_ids), to: Client
+
+  @doc """
+  Prepare a Baserow table for first sync: rename from default "Table" to
+  a meaningful name, delete default empty rows, and remove default columns
+  (Notes, Active, etc.) that Baserow creates automatically.
+
+  Call this before `ensure_fields` on first sync. Idempotent — skips
+  rename if already named correctly, skips cleanup if no default fields.
+  """
+  defdelegate prepare_table(config, table_key, table_name), to: Client
+
+  # ── Template Schema Operations ─────────────────────────────────
+  # These implement the extended ProviderBehaviour for TemplateApplicator.
+  # They work with universal field types from Templates.FieldTypes and
+  # translate to Baserow-specific API calls.
+
+  @impl true
+  @doc "Provider capabilities for template feature gating."
+  def capabilities do
+    %{
+      view_types: [:grid, :kanban, :calendar, :form, :gallery],
+      field_level_permissions: true,
+      webhooks: true,
+      webhook_includes_old_values: false,
+      webhook_includes_user_id: false,
+      batch_size: 200
+    }
+  end
+
+  @impl true
+  @doc "Create a new table in the Baserow database. Returns the table ID."
+  defdelegate create_table(config, name), to: Client
+
+  @doc """
+  Clean up Baserow default columns after table creation.
+
+  Baserow auto-creates Name (primary, can't delete), Notes, and Active on
+  every new table. This function:
+  1. Deletes the Notes column (unwanted)
+  2. Renames/updates the primary Name field to match the template's primary field
+  3. Deletes Active if the template doesn't define one
+
+  `field_specs` is the list of template field specs for this table.
+  """
+  defdelegate cleanup_table_defaults(config, table_id, field_specs), to: Client
+
+  @doc """
+  Convert the primary field to a formula after all other fields are created.
+  Only needed when the template's primary field is type :formula.
+  """
+  defdelegate finalize_primary_formula(config, table_id, field_specs), to: Client
+
+  @doc "Update an existing Baserow field by ID."
+  defdelegate update_field(config, field_id, updates), to: Client
+
+  @impl true
+  @doc """
+  Create a field on a Baserow table from a universal field spec.
+
+  Translates universal types (`:text`, `:single_select`, `:link_row`, etc.)
+  to Baserow API parameters.
+  """
+  defdelegate create_field(config, table_id, field_spec), to: Client
+
+  @impl true
+  @doc "Create a view on a Baserow table from a universal view spec."
+  defdelegate create_view(config, table_id, view_spec), to: Client
+
+  @impl true
+  @doc "Register a webhook on a Baserow table."
+  defdelegate create_webhook(config, table_id, webhook_spec), to: Client
+
+  @doc """
+  Parse a Baserow webhook payload into a common event struct.
+
+  Baserow sends: `%{"table_id" => ..., "event_type" => "rows.updated", "items" => [...]}`
+  """
+  defdelegate parse_webhook_event(payload), to: Client
+
+  @doc """
+  Authenticate with Baserow and return config with JWT attached.
+
+  Credentials must contain `email` and `password`. The returned config
+  has `jwt` set, which `auth_header/1` uses for all subsequent calls.
+  """
+  defdelegate authenticate(config), to: Client
+
+  @doc """
+  Re-authenticate if JWT has expired. Called by Engine on 401 errors.
+  Updates the stored config with a fresh JWT.
+  """
+  defdelegate refresh_auth(config), to: Client
+
+  # ── Field Spec Helpers ────────────────────────────────────────────
+
+  @doc """
+  Returns Baserow field specs for LRT columns at the given field tier.
+
+  For standard/full tiers, pass `rows` to extract multi-select options
+  from the actual data (holder vocabularies vary across laws).
+  """
+  def lrt_field_specs(field_tier) do
+    essential_fields() ++ tier_fields(field_tier)
+  end
+
+  @doc """
+  Returns Baserow field specs for the LAT table.
+  Includes a link_row field back to the LRT table.
+  """
+  def lat_field_specs(lrt_table_id) do
+    [
+      Client.multi_select_spec("Type", drrp_type_options()),
+      Client.multi_select_spec("Duty Type", duty_sub_type_options()),
+      Client.multi_select_spec("Regulated Actors", regulated_actor_options()),
+      %{name: "Provision Text", type: "long_text"},
+      %{name: "Provision", type: "text"},
+      # Significance (provision-level)
+      Client.single_select_spec("Significance", @significance_options),
+      Client.single_select_spec("Gravity", @significance_options),
+      Client.single_select_spec("Scope: Duty Bearer", @significance_options),
+      Client.single_select_spec("Strength", @significance_options),
+      %{name: "Confidence", type: "number", opts: %{"number_decimal_places" => 2}},
+      %{name: "_source_id", type: "text"},
+      %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
+    ]
+  end
 
   @doc """
   Validate that all holder values in the rows are in the actor dictionary.
@@ -991,158 +270,150 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     end
   end
 
-  # ── LAT Field Specs ───────────────────────────────────────────────
+  # ── Controls field specs and formatting ─────────────────────────
 
-  defp drrp_type_options do
-    case SertantaiLegal.Repo.query(
-           "SELECT DISTINCT unnest(drrp_types) as val FROM legal_articles WHERE drrp_types IS NOT NULL ORDER BY val"
-         ) do
-      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
-      _ -> ["Duty", "Responsibility", "Power", "Right", "Rule"]
-    end
+  @doc """
+  Field specs for the Controls Baserow table.
+
+  Combines AI-generated fields (populated by sync from Postgres) with
+  customer-set fields (created empty for manual population in Baserow).
+  """
+  def controls_field_specs(lrt_table_id) do
+    [
+      # AI-generated fields — names match template (underscores)
+      %{name: "Title", type: "text"},
+      %{name: "Description", type: "long_text"},
+      %{name: "What_It_Checks", type: "long_text"},
+      Client.single_select_spec("Control_Type", @control_types),
+      Client.single_select_spec("Nature", @control_natures),
+      Client.single_select_spec("Domain", @control_domains),
+      Client.single_select_spec("Frequency", @control_frequencies),
+      Client.single_select_spec("Info_Distance", @info_distances),
+      Client.single_select_spec("Blast_Radius", @blast_radii),
+      %{name: "Expected_Touch_Frequency", type: "text"},
+      Client.single_select_spec("Mapping_Strength", @mapping_strengths),
+      %{name: "Load_Bearing_Judgement", type: "long_text"},
+      %{name: "Evidence_Type_A", type: "long_text"},
+      %{name: "Evidence_Type_B", type: "long_text"},
+      %{name: "Honest_Limit", type: "long_text"},
+      Client.single_select_spec("Status", @control_statuses),
+      Client.single_select_spec("Tier", @control_tiers),
+      %{name: "Is_Predicate", type: "boolean"},
+      %{name: "Legal_Register", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}},
+      # Customer-set fields (created empty)
+      %{name: "Owner", type: "text"},
+      %{name: "External_Ref", type: "url"},
+      Client.single_select_spec("Demand_Mode", @demand_modes),
+      Client.single_select_spec("Design_Effectiveness", @effectiveness),
+      Client.single_select_spec("Operating_Effectiveness", @effectiveness),
+      %{name: "Last_Verified", type: "date"},
+      %{name: "Notes", type: "long_text"},
+      # System
+      %{name: "_source_id", type: "text"}
+    ]
   end
 
-  # duty_sub_type_options — queried from LAT data (not uk_lrt)
-  defp duty_sub_type_options do
-    case SertantaiLegal.Repo.query(
-           "SELECT DISTINCT duty_sub_type FROM legal_articles WHERE duty_sub_type IS NOT NULL AND duty_sub_type != '' ORDER BY duty_sub_type"
-         ) do
-      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
-      _ -> []
+  @doc """
+  Format a Control Ash resource into a Baserow row map.
+
+  `lrt_external_row_id` is the Baserow row ID of the parent law in the
+  Legal Register table (for the Parent Law link_row field).
+  """
+  def format_control_row(control, lrt_name) do
+    source_id = "#{control.law_name}:#{control.control_id}"
+
+    row = %{
+      "Name" => source_id,
+      "_source_id" => source_id,
+      "Title" => control.title,
+      "Description" => control.description,
+      "What_It_Checks" => control.what_it_checks,
+      "Control_Type" => control.control_type,
+      "Nature" => control.nature,
+      "Domain" => control.domain,
+      "Frequency" => control.frequency,
+      "Info_Distance" => control.info_distance,
+      "Blast_Radius" => control.blast_radius,
+      "Expected_Touch_Frequency" => control.expected_touch_frequency,
+      "Mapping_Strength" => control.mapping_strength,
+      "Load_Bearing_Judgement" => control.load_bearing_judgement,
+      "Evidence_Type_A" => control.evidence_type_a,
+      "Evidence_Type_B" => control.evidence_type_b,
+      "Honest_Limit" => control.honest_limit,
+      "Status" => control.status,
+      "Tier" => control.tier,
+      "Is_Predicate" => control.is_predicate
+    }
+
+    if lrt_name do
+      Map.put(row, "Legal_Register", lrt_name)
+    else
+      row
     end
   end
 
   @doc """
-  Returns Baserow field specs for the LAT table (duty-focused, aggregated).
-
-  Each row is one complete provision (regulation/section) with all sub-parts
-  concatenated. Duty Summary dropped (clause_refined echoes text verbatim).
+  Field specs for the Control Mappings Baserow table.
   """
-  def lat_field_specs(lrt_table_id) do
-    [
-      multi_select_spec("Type", drrp_type_options()),
-      multi_select_spec("Duty Type", duty_sub_type_options()),
-      multi_select_spec("Regulated Actors", regulated_actor_options()),
-      %{name: "Provision Text", type: "long_text"},
-      %{name: "Provision", type: "text"},
-      # Significance (provision-level)
-      single_select_spec("Significance", @significance_options),
-      single_select_spec("Gravity", @significance_options),
-      single_select_spec("Scope: Duty Bearer", @significance_options),
-      single_select_spec("Strength", @significance_options),
-      %{name: "Confidence", type: "number", opts: %{"number_decimal_places" => 2}},
-      %{name: "_source_id", type: "text"},
-      %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}}
+  def control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id \\ nil) do
+    specs = [
+      %{
+        name: "Controls",
+        type: "link_row",
+        opts: %{"link_row_table_id" => controls_table_id}
+      },
+      Client.single_select_spec("Strength", @mapping_strengths),
+      %{name: "Short_Ref", type: "text"},
+      %{name: "_source_id", type: "text"}
     ]
-  end
 
-  # ── LRT Field Specs ──────────────────────────────────────────────
-
-  # domain_options and geo_region_options now queried dynamically
-  # Fitness and taxonomy options are queried from the DB at sync time,
-  # not hardcoded. This accommodates evolving fractalaw taxonomy.
-
-  defp domain_options, do: distinct_array_values("domain")
-  defp geo_region_options, do: distinct_array_values("geo_region")
-  defp purpose_options, do: distinct_jsonb_values("purpose")
-
-  defp type_desc_options, do: distinct_values("type_desc")
-
-  defp regulated_actor_options do
-    # Union of dictionary labels + actual active actor labels from LAT data
-    dict_labels = holder_options()
-
-    data_labels =
-      case SertantaiLegal.Repo.query(
-             "SELECT DISTINCT a->>'label' FROM legal_articles la, unnest(la.actors) a WHERE a->>'position' = 'active' AND a->>'label' IS NOT NULL AND a->>'label_source' = 'canonical' ORDER BY 1"
-           ) do
-        {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
-        _ -> []
+    specs =
+      if lrt_table_id do
+        specs ++
+          [
+            %{
+              name: "Legal_Register",
+              type: "link_row",
+              opts: %{"link_row_table_id" => lrt_table_id}
+            }
+          ]
+      else
+        specs
       end
 
-    (dict_labels ++ data_labels) |> Enum.uniq() |> Enum.sort()
-  end
-
-  defp distinct_array_values(column) do
-    case SertantaiLegal.Repo.query(
-           "SELECT DISTINCT val FROM (SELECT unnest(#{column}) as val FROM uk_lrt WHERE #{column} IS NOT NULL) sub WHERE val IS NOT NULL AND val != '' ORDER BY val"
-         ) do
-      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
-      _ -> []
+    if lat_table_id do
+      specs ++
+        [
+          %{
+            name: "Duties",
+            type: "link_row",
+            opts: %{"link_row_table_id" => lat_table_id}
+          }
+        ]
+    else
+      specs
     end
   end
 
-  defp distinct_values(column) do
-    case SertantaiLegal.Repo.query(
-           "SELECT DISTINCT #{column} FROM uk_lrt WHERE #{column} IS NOT NULL AND #{column} != '' ORDER BY #{column}"
-         ) do
-      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
-      _ -> []
-    end
-  end
+  @doc """
+  Format a ControlMapping Ash resource into a Baserow row map.
 
-  defp distinct_jsonb_values(column) do
-    case SertantaiLegal.Repo.query(
-           "SELECT DISTINCT val FROM (SELECT jsonb_array_elements_text(#{column}->'values') as val FROM uk_lrt WHERE #{column} IS NOT NULL) sub WHERE val IS NOT NULL ORDER BY val"
-         ) do
-      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
-      _ -> []
-    end
-  end
+  All link_row fields use text values — Baserow resolves by matching
+  the target table's primary field. No row ID tracking needed.
+  """
+  def format_control_mapping_row(mapping, control_name, duties_name, lrt_name \\ nil) do
+    source_id = "#{mapping.control_id}:#{mapping.section_id}"
 
-  defp tier_fields(:essential), do: []
-
-  defp tier_fields(:standard) do
-    [
-      multi_select_spec("Function", @function_options),
-      multi_select_spec("Duty Type", duty_type_options()),
-      multi_select_spec("Purpose", purpose_options()),
-      multi_select_spec("Duty Holder", holder_options()),
-      multi_select_spec("Power Holder", holder_options()),
-      multi_select_spec("Rights Holder", holder_options()),
-      multi_select_spec("Domain", domain_options()),
-      multi_select_spec("Geographic Region", geo_region_options()),
-      %{name: "Fitness Entities", type: "long_text"}
-    ]
-  end
-
-  defp tier_fields(:full) do
-    tier_fields(:standard) ++
-      [
-        %{name: "POPIMAR", type: "long_text"},
-        %{name: "SI Code", type: "long_text"},
-        %{name: "Description", type: "long_text"},
-        %{name: "Role", type: "text"},
-        %{name: "Amending", type: "long_text"},
-        %{name: "Amended By", type: "long_text"},
-        %{name: "Rescinding", type: "long_text"},
-        %{name: "Rescinded By", type: "long_text"},
-        %{name: "Date", type: "date"},
-        %{name: "Made Date", type: "date"},
-        %{name: "Enactment Date", type: "date"},
-        %{name: "Coming Into Force Date", type: "date"},
-        %{name: "Latest Amendment Date", type: "date"}
-      ]
-  end
-
-  defp single_select_spec(name, options) do
-    %{
-      name: name,
-      type: "single_select",
-      opts: %{
-        "select_options" => Enum.map(options, &%{"value" => &1, "color" => "light-gray"})
-      }
+    row = %{
+      "Name" => source_id,
+      "_source_id" => source_id,
+      "Strength" => mapping.mapping_strength,
+      "Short_Ref" => mapping.short_ref
     }
-  end
 
-  defp multi_select_spec(name, options) do
-    %{
-      name: name,
-      type: "multiple_select",
-      opts: %{
-        "select_options" => Enum.map(options, &%{"value" => &1, "color" => "light-gray"})
-      }
-    }
+    row = if control_name, do: Map.put(row, "Controls", control_name), else: row
+    row = if lrt_name, do: Map.put(row, "Legal_Register", lrt_name), else: row
+    if duties_name, do: Map.put(row, "Duties", duties_name), else: row
   end
 
   # ── Row Formatting ────────────────────────────────────────────────
@@ -1193,6 +464,139 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Parent Law" => [lrt_external_row_id]
     }
   end
+
+  # Raw binary UUIDs from string-table queries need casting to string format
+  @doc false
+  def format_uuid(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
+  def format_uuid(uuid) when is_binary(uuid), do: uuid
+  def format_uuid(nil), do: nil
+
+  # ── Private: Essential / Tier Field Specs ────────────────────────
+
+  defp essential_fields do
+    [
+      %{name: "Title", type: "long_text"},
+      Client.single_select_spec("Family", @family_options),
+      %{name: "Year", type: "number", opts: %{"number_decimal_places" => 0}},
+      %{name: "Number", type: "text"},
+      Client.single_select_spec("Type", type_desc_options()),
+      Client.single_select_spec("Status", @status_options),
+      Client.single_select_spec("Geographic Extent", @geo_extent_options),
+      %{name: "Legislation URL", type: "url"},
+      # Significance (law-level — rating + score only; counts are Baserow Rollups)
+      Client.single_select_spec("Significance", @significance_options),
+      %{name: "Significance Score", type: "number", opts: %{"number_decimal_places" => 1}},
+      %{name: "_source_id", type: "text"}
+    ]
+  end
+
+  defp tier_fields(:essential), do: []
+
+  defp tier_fields(:standard) do
+    [
+      Client.multi_select_spec("Function", @function_options),
+      Client.multi_select_spec("Duty Type", duty_type_options()),
+      Client.multi_select_spec("Purpose", purpose_options()),
+      Client.multi_select_spec("Duty Holder", holder_options()),
+      Client.multi_select_spec("Power Holder", holder_options()),
+      Client.multi_select_spec("Rights Holder", holder_options()),
+      Client.multi_select_spec("Domain", domain_options()),
+      Client.multi_select_spec("Geographic Region", geo_region_options()),
+      %{name: "Fitness Entities", type: "long_text"}
+    ]
+  end
+
+  defp tier_fields(:full) do
+    tier_fields(:standard) ++
+      [
+        %{name: "POPIMAR", type: "long_text"},
+        %{name: "SI Code", type: "long_text"},
+        %{name: "Description", type: "long_text"},
+        %{name: "Role", type: "text"},
+        %{name: "Amending", type: "long_text"},
+        %{name: "Amended By", type: "long_text"},
+        %{name: "Rescinding", type: "long_text"},
+        %{name: "Rescinded By", type: "long_text"},
+        %{name: "Date", type: "date"},
+        %{name: "Made Date", type: "date"},
+        %{name: "Enactment Date", type: "date"},
+        %{name: "Coming Into Force Date", type: "date"},
+        %{name: "Latest Amendment Date", type: "date"}
+      ]
+  end
+
+  # ── Private: Dynamic Option Queries ──────────────────────────────
+
+  defp holder_options, do: ActorDictionary.canonical_labels()
+
+  defp duty_type_options, do: distinct_jsonb_values("duty_type")
+
+  defp drrp_type_options do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT unnest(drrp_types) as val FROM legal_articles WHERE drrp_types IS NOT NULL ORDER BY val"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> ["Duty", "Responsibility", "Power", "Right", "Rule"]
+    end
+  end
+
+  defp duty_sub_type_options do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT duty_sub_type FROM legal_articles WHERE duty_sub_type IS NOT NULL AND duty_sub_type != '' ORDER BY duty_sub_type"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
+
+  defp domain_options, do: distinct_array_values("domain")
+  defp geo_region_options, do: distinct_array_values("geo_region")
+  defp purpose_options, do: distinct_jsonb_values("purpose")
+  defp type_desc_options, do: distinct_values("type_desc")
+
+  defp regulated_actor_options do
+    # Union of dictionary labels + actual active actor labels from LAT data
+    dict_labels = holder_options()
+
+    data_labels =
+      case SertantaiLegal.Repo.query(
+             "SELECT DISTINCT a->>'label' FROM legal_articles la, unnest(la.actors) a WHERE a->>'position' = 'active' AND a->>'label' IS NOT NULL AND a->>'label_source' = 'canonical' ORDER BY 1"
+           ) do
+        {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+        _ -> []
+      end
+
+    (dict_labels ++ data_labels) |> Enum.uniq() |> Enum.sort()
+  end
+
+  defp distinct_array_values(column) do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT val FROM (SELECT unnest(#{column}) as val FROM uk_lrt WHERE #{column} IS NOT NULL) sub WHERE val IS NOT NULL AND val != '' ORDER BY val"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
+
+  defp distinct_values(column) do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT #{column} FROM uk_lrt WHERE #{column} IS NOT NULL AND #{column} != '' ORDER BY #{column}"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
+
+  defp distinct_jsonb_values(column) do
+    case SertantaiLegal.Repo.query(
+           "SELECT DISTINCT val FROM (SELECT jsonb_array_elements_text(#{column}->'values') as val FROM uk_lrt WHERE #{column} IS NOT NULL) sub WHERE val IS NOT NULL ORDER BY val"
+         ) do
+      {:ok, %{rows: rows}} -> Enum.map(rows, fn [val] -> val end)
+      _ -> []
+    end
+  end
+
+  # ── Private: Row Formatting Helpers ──────────────────────────────
 
   defp maybe_add_standard(row, _lrt, :essential), do: row
 
@@ -1323,181 +727,4 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp format_date(nil), do: nil
   defp format_date(%Date{} = d), do: Date.to_iso8601(d)
   defp format_date(other), do: to_string(other)
-
-  # Raw binary UUIDs from string-table queries need casting to string format
-  @doc false
-  def format_uuid(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
-  def format_uuid(uuid) when is_binary(uuid), do: uuid
-  def format_uuid(nil), do: nil
-
-  # ── Controls field specs and formatting ─────────────────────────
-
-  @control_types ["Preventive", "Detective", "Corrective", "Directive"]
-  @control_natures ["Manual", "Automated", "IT-dependent manual"]
-  @control_domains ["Organisational", "People", "Physical", "Technical"]
-  @control_statuses ["Active", "Under Review", "Planned", "Retired"]
-  @control_tiers ["Corporate", "Jurisdiction", "Contract"]
-  @control_frequencies [
-    "Continuous",
-    "Daily",
-    "Weekly",
-    "Monthly",
-    "Quarterly",
-    "Annual",
-    "Ad-hoc"
-  ]
-  @info_distances ["Direct", "Adjacent", "Mediated", "Remote"]
-  @blast_radii ["Local", "Area", "Site", "Enterprise"]
-  @mapping_strengths ["Primary", "Supporting", "Ancillary"]
-  @demand_modes ["Normal", "Abnormal", "Emergency"]
-  @effectiveness ["Effective", "Ineffective", "Not Tested"]
-
-  @doc """
-  Field specs for the Controls Baserow table.
-
-  Combines AI-generated fields (populated by sync from Postgres) with
-  customer-set fields (created empty for manual population in Baserow).
-  """
-  def controls_field_specs(lrt_table_id) do
-    [
-      # AI-generated fields — names match template (underscores)
-      %{name: "Title", type: "text"},
-      %{name: "Description", type: "long_text"},
-      %{name: "What_It_Checks", type: "long_text"},
-      single_select_spec("Control_Type", @control_types),
-      single_select_spec("Nature", @control_natures),
-      single_select_spec("Domain", @control_domains),
-      single_select_spec("Frequency", @control_frequencies),
-      single_select_spec("Info_Distance", @info_distances),
-      single_select_spec("Blast_Radius", @blast_radii),
-      %{name: "Expected_Touch_Frequency", type: "text"},
-      single_select_spec("Mapping_Strength", @mapping_strengths),
-      %{name: "Load_Bearing_Judgement", type: "long_text"},
-      %{name: "Evidence_Type_A", type: "long_text"},
-      %{name: "Evidence_Type_B", type: "long_text"},
-      %{name: "Honest_Limit", type: "long_text"},
-      single_select_spec("Status", @control_statuses),
-      single_select_spec("Tier", @control_tiers),
-      %{name: "Is_Predicate", type: "boolean"},
-      %{name: "Legal_Register", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}},
-      # Customer-set fields (created empty)
-      %{name: "Owner", type: "text"},
-      %{name: "External_Ref", type: "url"},
-      single_select_spec("Demand_Mode", @demand_modes),
-      single_select_spec("Design_Effectiveness", @effectiveness),
-      single_select_spec("Operating_Effectiveness", @effectiveness),
-      %{name: "Last_Verified", type: "date"},
-      %{name: "Notes", type: "long_text"},
-      # System
-      %{name: "_source_id", type: "text"}
-    ]
-  end
-
-  @doc """
-  Format a Control Ash resource into a Baserow row map.
-
-  `lrt_external_row_id` is the Baserow row ID of the parent law in the
-  Legal Register table (for the Parent Law link_row field).
-  """
-  def format_control_row(control, lrt_name) do
-    source_id = "#{control.law_name}:#{control.control_id}"
-
-    row = %{
-      "Name" => source_id,
-      "_source_id" => source_id,
-      "Title" => control.title,
-      "Description" => control.description,
-      "What_It_Checks" => control.what_it_checks,
-      "Control_Type" => control.control_type,
-      "Nature" => control.nature,
-      "Domain" => control.domain,
-      "Frequency" => control.frequency,
-      "Info_Distance" => control.info_distance,
-      "Blast_Radius" => control.blast_radius,
-      "Expected_Touch_Frequency" => control.expected_touch_frequency,
-      "Mapping_Strength" => control.mapping_strength,
-      "Load_Bearing_Judgement" => control.load_bearing_judgement,
-      "Evidence_Type_A" => control.evidence_type_a,
-      "Evidence_Type_B" => control.evidence_type_b,
-      "Honest_Limit" => control.honest_limit,
-      "Status" => control.status,
-      "Tier" => control.tier,
-      "Is_Predicate" => control.is_predicate
-    }
-
-    if lrt_name do
-      Map.put(row, "Legal_Register", lrt_name)
-    else
-      row
-    end
-  end
-
-  @doc """
-  Field specs for the Control Mappings Baserow table.
-  """
-  def control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id \\ nil) do
-    specs = [
-      %{
-        name: "Controls",
-        type: "link_row",
-        opts: %{"link_row_table_id" => controls_table_id}
-      },
-      single_select_spec("Strength", @mapping_strengths),
-      %{name: "Short_Ref", type: "text"},
-      %{name: "_source_id", type: "text"}
-    ]
-
-    specs =
-      if lrt_table_id do
-        specs ++
-          [
-            %{
-              name: "Legal_Register",
-              type: "link_row",
-              opts: %{"link_row_table_id" => lrt_table_id}
-            }
-          ]
-      else
-        specs
-      end
-
-    if lat_table_id do
-      specs ++
-        [
-          %{
-            name: "Duties",
-            type: "link_row",
-            opts: %{"link_row_table_id" => lat_table_id}
-          }
-        ]
-    else
-      specs
-    end
-  end
-
-  @doc """
-  Format a ControlMapping Ash resource into a Baserow row map.
-
-  `control_ext_id` and `lat_ext_id` are Baserow row IDs for the link_row fields.
-  """
-  @doc """
-  Format a ControlMapping Ash resource into a Baserow row map.
-
-  All link_row fields use text values — Baserow resolves by matching
-  the target table's primary field. No row ID tracking needed.
-  """
-  def format_control_mapping_row(mapping, control_name, duties_name, lrt_name \\ nil) do
-    source_id = "#{mapping.control_id}:#{mapping.section_id}"
-
-    row = %{
-      "Name" => source_id,
-      "_source_id" => source_id,
-      "Strength" => mapping.mapping_strength,
-      "Short_Ref" => mapping.short_ref
-    }
-
-    row = if control_name, do: Map.put(row, "Controls", control_name), else: row
-    row = if lrt_name, do: Map.put(row, "Legal_Register", lrt_name), else: row
-    if duties_name, do: Map.put(row, "Duties", duties_name), else: row
-  end
 end

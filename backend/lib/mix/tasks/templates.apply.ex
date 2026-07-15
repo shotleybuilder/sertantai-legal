@@ -151,18 +151,24 @@ defmodule Mix.Tasks.Templates.Apply do
     sp = build_sub_patterns(opts)
     Mix.shell().info("Sub-patterns: people=#{sp.people}, risk=#{sp.risk_scoring}")
 
-    # Apply
-    Mix.shell().info("\nApplying templates: #{inspect(template_ids)}")
+    # Build table specs from templates
+    {:ok, table_specs} = Applicator.build_table_specs(template_ids, sp)
+    Mix.shell().info("Table specs: #{length(table_specs)} tables")
+    Mix.shell().info("\nApplying schema (4-phase)...")
 
-    case Applicator.apply(authed_config, Baserow, template_ids, sp, table_ids: table_ids) do
+    # Apply via SchemaManager (4-phase: tables → fields → formulas → views)
+    case SertantaiLegal.Baserow.SchemaManager.apply_schema(
+           authed_config,
+           database_id,
+           table_specs
+         ) do
       {:ok, result} ->
         Mix.shell().info("\nSuccess!")
-        Mix.shell().info("  Templates: #{inspect(result.templates_applied)}")
         Mix.shell().info("  Tables created: #{result.tables_created}")
         Mix.shell().info("  Fields created: #{result.fields_created}")
         Mix.shell().info("  Views created: #{result.views_created}")
 
-        # Save new table IDs back to sync config
+        # Save table IDs back to sync config
         save_table_ids(sync_config, result.table_ids)
 
         Mix.shell().info("\nDone.")

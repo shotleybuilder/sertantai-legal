@@ -392,4 +392,45 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
       table_key |> to_string() |> String.replace("_", " ") |> String.capitalize()
     )
   end
+
+  @doc """
+  Build table specs from resolved template modules for SchemaManager.
+
+  Converts template definitions into the flat list format SchemaManager expects:
+  `[%{key: :controls, name: "Controls", fields: [...], views: [...], cross_table_fields: %{}}]`
+  """
+  def build_table_specs(template_ids, sub_patterns \\ []) do
+    sp =
+      if is_struct(sub_patterns, SubPatterns),
+        do: sub_patterns,
+        else: SubPatterns.new(sub_patterns)
+
+    with {:ok, modules} <- Registry.resolve(template_ids) do
+      specs =
+        Enum.flat_map(modules, fn mod ->
+          tables = mod.tables()
+          field_map = mod.field_specs(sp)
+          view_map = if function_exported?(mod, :view_specs, 1), do: mod.view_specs(sp), else: %{}
+
+          cross_table =
+            if function_exported?(mod, :cross_table_fields, 1),
+              do: mod.cross_table_fields(sp),
+              else: %{}
+
+          Enum.map(tables, fn table_key ->
+            %{
+              key: table_key,
+              name: humanize_table_name(table_key),
+              fields: Map.get(field_map, table_key, []),
+              views: Map.get(view_map, table_key, []),
+              cross_table_fields: cross_table
+            }
+          end)
+        end)
+        # Deduplicate — dependency resolution may include the same table twice
+        |> Enum.uniq_by(& &1.key)
+
+      {:ok, specs}
+    end
+  end
 end

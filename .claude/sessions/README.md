@@ -211,6 +211,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-15 | [second-tier-duties/phase-1](second-tier-duties/phase-1-data-model.md) | — | Second-tier Phase 1: SecondarySource, SourceLink, OrgSecondaryApplicability + 29 ACoPs seeded |
 | 2026-07-13 | [issue-120](2026-07-13-issue-120.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | LAT parser P2 wrapper fix, 172 laws re-parsed, art.→reg. prefix fix, TriageSubscriber, LAT QA tooling, 100% control_mapping resolution, Baserow primary field pattern |
 | 2026-07-13 | [fitness-schema-migration](2026-07-13-fitness-schema-migration.md) | — | Fitness v0.3: 5 new columns (entities, scope, counts), view+trigger rebuild, TaxaSubscriber wired |
 | 2026-07-08 | [reconcile-qq-legal-register](2026-07-08-reconcile-qq-legal-register.md) | [#114](https://github.com/shotleybuilder/sertantai-legal/issues/114) [#115](https://github.com/shotleybuilder/sertantai-legal/issues/115) [#116](https://github.com/shotleybuilder/sertantai-legal/issues/116) | QQ register 334→488 laws, DRRP vocab fix, live status fix, orgs table, Zenoh customer discovery, Baserow sync 2564 duties |
