@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Secondary.Parse do
   alias SertantaiLegal.Legal.SecondarySourceProvision
   alias SertantaiLegal.Legal.SecondarySource.PdfParser
 
-  @switches [dry_run: :boolean, clear: :boolean]
+  @switches [dry_run: :boolean, clear: :boolean, profile: :string]
 
   @impl Mix.Task
   def run(args) do
@@ -38,9 +38,15 @@ defmodule Mix.Tasks.Secondary.Parse do
     dry_run? = Keyword.get(opts, :dry_run, false)
     clear? = Keyword.get(opts, :clear, false)
 
+    parse_opts =
+      case Keyword.get(opts, :profile) do
+        nil -> []
+        p -> [profile: String.to_atom(p)]
+      end
+
     case positional do
       [source_id, pdf_path] ->
-        parse(source_id, pdf_path, dry_run?, clear?)
+        parse(source_id, pdf_path, dry_run?, clear?, parse_opts)
 
       _ ->
         IO.puts("Usage: mix secondary.parse <source_id> <pdf_path> [--dry-run] [--clear]")
@@ -48,7 +54,7 @@ defmodule Mix.Tasks.Secondary.Parse do
     end
   end
 
-  defp parse(source_id, pdf_path, dry_run?, clear?) do
+  defp parse(source_id, pdf_path, dry_run?, clear?, parse_opts) do
     # Validate PDF exists
     unless File.exists?(pdf_path) do
       IO.puts("Error: PDF not found at #{pdf_path}")
@@ -77,8 +83,9 @@ defmodule Mix.Tasks.Secondary.Parse do
     IO.puts("")
 
     # Parse PDF
-    case PdfParser.parse(pdf_path, source) do
-      {:ok, provisions} ->
+    case PdfParser.parse(pdf_path, source, parse_opts) do
+      {:ok, provisions, profile} ->
+        IO.puts("Profile: #{profile.name} (body=#{profile.fonts.body_size}pt)")
         IO.puts("Parsed #{length(provisions)} provisions\n")
         print_provisions(provisions)
 

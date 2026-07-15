@@ -2,27 +2,26 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
   @moduledoc """
   Parses a PDF document into structured provisions using pdf_elixide.
 
-  Uses font size, bold/italic flags, and numbering patterns to classify
-  text lines into a provision hierarchy. Designed for UK government
-  compliance documents (JSPs, ACoPs, HSE guidance) which follow
-  predictable formatting conventions.
+  Uses publisher-specific profiles to classify text lines into a provision
+  hierarchy. Each profile encapsulates font thresholds, numbering patterns,
+  and skip rules for a document type.
 
-  ## Font size hierarchy (typical JSP/ACoP pattern)
+  ## Profiles
 
-  - 24pt bold → chapter title / part heading
-  - 14-16pt bold → section heading
-  - 12pt bold → sub-section heading / label
-  - 12pt regular → body paragraph
-  - ≤11pt → table content / footnotes / annexes
+  - `:mod_jsp` — MoD Joint Service Publications (12pt body, "N." numbering)
+  - `:hse_acop` — HSE Approved Codes of Practice (10pt body, "N" numbering)
+
+  Profile is auto-detected from font analysis + publisher heuristics, or
+  can be overridden via the `--profile` flag on `mix secondary.parse`.
 
   ## Usage
 
-      provisions = PdfParser.parse(pdf_path, source)
-
-  Returns a list of provision maps ready for `SecondarySourceProvision.upsert`.
+      {:ok, provisions, profile} = PdfParser.parse(pdf_path, source)
+      {:ok, provisions, profile} = PdfParser.parse(pdf_path, source, profile: :hse_acop)
   """
 
   alias PdfElixide.Document
+  alias SertantaiLegal.Legal.SecondarySource.ParserProfile
 
   @type_prefix_map %{
     acop: "ACOP",
@@ -35,131 +34,203 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
   @doc """
   Parse a PDF file into a list of provision maps.
 
-  `source` is a `SecondarySource` struct (needs source_id, source_type, issuer, edition).
-  Returns `{:ok, provisions}` or `{:error, reason}`.
+  Options:
+  - `:profile` — force a specific profile (`:mod_jsp`, `:hse_acop`)
   """
-  def parse(pdf_path, source) do
+  def parse(pdf_path, source, opts \\ []) do
     with {:ok, doc} <- Document.open(pdf_path) do
       page_count = Document.page_count!(doc)
 
-      raw_lines =
-        for page_idx <- 0..(page_count - 1), reduce: [] do
-          acc ->
-            lines = Document.text_lines!(doc, page_idx)
+      raw_lines = extract_lines(doc, page_count)
 
-            page_lines =
-              Enum.map(lines, fn line ->
-                words = line.words
-                first_word = List.first(words)
-
-                %{
-                  text: Enum.map_join(words, " ", & &1.text) |> String.trim(),
-                  font_size: first_word && Float.round(first_word.font_size, 1),
-                  bold: first_word && first_word.bold?,
-                  italic: first_word && first_word.italic?,
-                  font: first_word && first_word.font,
-                  page: page_idx + 1,
-                  x: first_word && Float.round(first_word.bbox.x, 1)
-                }
-              end)
-              |> Enum.reject(&(&1.text == "" or &1.font_size == nil))
-
-            acc ++ page_lines
+      profile =
+        case Keyword.get(opts, :profile) do
+          nil -> ParserProfile.detect(raw_lines, source)
+          name -> ParserProfile.build(name, detect_body_size(raw_lines))
         end
 
-      provisions = classify_and_group(raw_lines, source)
-      {:ok, provisions}
+      provisions = classify_and_group(raw_lines, source, profile)
+      {:ok, provisions, profile}
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # Classification
-  # ---------------------------------------------------------------------------
+  defp extract_lines(doc, page_count) do
+    for page_idx <- 0..(page_count - 1), reduce: [] do
+      acc ->
+        lines = Document.text_lines!(doc, page_idx)
 
-  defp classify_and_group(lines, source) do
-    # First pass: classify each line
-    classified =
-      lines
-      |> Enum.map(&classify_line/1)
-      |> Enum.reject(&(&1.role == :skip))
+        page_lines =
+          Enum.map(lines, fn line ->
+            words = line.words
+            first_word = List.first(words)
 
-    # Second pass: merge consecutive same-role lines (multi-line headings)
-    heading_merged = merge_same_role_lines(classified)
+            %{
+              text: Enum.map_join(words, " ", & &1.text) |> String.trim(),
+              font_size: first_word && Float.round(first_word.font_size, 1),
+              bold: first_word && first_word.bold?,
+              italic: first_word && first_word.italic?,
+              font: first_word && first_word.font,
+              page: page_idx + 1,
+              x: first_word && Float.round(first_word.bbox.x, 1)
+            }
+          end)
+          |> Enum.reject(&(&1.text == "" or &1.font_size == nil))
 
-    # Third pass: merge body/continuation lines into paragraphs
-    merged = merge_body_lines(heading_merged)
-
-    # Fourth pass: build provisions with section_ids and hierarchy
-    build_provisions(merged, source)
+        acc ++ page_lines
+    end
   end
 
-  defp classify_line(line) do
-    role = determine_role(line)
+  defp detect_body_size(lines) do
+    lines
+    |> Enum.filter(&(&1.bold == false and &1.font_size != nil))
+    |> Enum.frequencies_by(& &1.font_size)
+    |> Enum.max_by(fn {_size, count} -> count end, fn -> {12.0, 0} end)
+    |> elem(0)
+  end
+
+  # ---------------------------------------------------------------------------
+  # Classification pipeline
+  # ---------------------------------------------------------------------------
+
+  defp classify_and_group(lines, source, profile) do
+    classified =
+      lines
+      |> Enum.map(&classify_line(&1, profile))
+      |> Enum.reject(&(&1.role == :skip))
+
+    classified
+    |> merge_same_role_lines()
+    |> merge_body_lines()
+    |> build_provisions(source)
+  end
+
+  defp classify_line(line, profile) do
+    role = determine_role(profile.name, line, profile.fonts)
     Map.put(line, :role, role)
   end
 
-  defp determine_role(%{font_size: sz, bold: true, text: text}) when sz >= 20.0 do
-    if page_header?(text), do: :skip, else: :chapter_title
+  # ===========================================================================
+  # Profile-specific classification via pattern matching
+  #
+  # Each profile has its own set of determine_role/3 clauses. Adding a new
+  # profile means adding new clauses — no changes to existing profiles.
+  # ===========================================================================
+
+  # --- MoD JSP profile ---
+
+  defp determine_role(:mod_jsp, %{text: text, font_size: sz}, fonts)
+       when sz >= fonts.title_min do
+    if skip_header?(text, :mod_jsp), do: :skip, else: :chapter_title
   end
 
-  defp determine_role(%{font_size: sz, bold: true, text: text}) when sz >= 14.0 do
-    if page_header?(text), do: :skip, else: :section_heading
+  defp determine_role(:mod_jsp, %{text: text, bold: true, font_size: sz}, fonts)
+       when sz >= fonts.section_min do
+    if skip_header?(text, :mod_jsp), do: :skip, else: :section_heading
   end
 
-  defp determine_role(%{font_size: sz, bold: true, text: text}) when sz >= 12.0 do
+  defp determine_role(:mod_jsp, %{text: text, bold: true, font_size: sz}, fonts)
+       when sz >= fonts.sub_heading_min do
     cond do
-      page_header?(text) -> :skip
+      skip_header?(text, :mod_jsp) -> :skip
       bold_continuation?(text) -> :body
       true -> :sub_heading
     end
   end
 
-  defp determine_role(%{font_size: sz, bold: false, text: text}) when sz >= 12.0 do
+  defp determine_role(:mod_jsp, %{text: text, bold: false, font_size: sz}, fonts)
+       when sz >= fonts.sub_heading_min do
     cond do
-      page_header?(text) -> :skip
-      numbered_paragraph?(text) -> :numbered_para
+      skip_header?(text, :mod_jsp) -> :skip
+      jsp_numbered?(text) -> :numbered_para
       true -> :body
     end
   end
 
-  defp determine_role(%{font_size: sz}) when sz <= 8.0, do: :footnote
-  defp determine_role(%{font_size: sz, bold: false}) when sz < 12.0, do: :minor_text
-  defp determine_role(%{font_size: sz, bold: true}) when sz < 12.0, do: :minor_heading
-  defp determine_role(_), do: :body
+  defp determine_role(:mod_jsp, %{font_size: sz}, fonts)
+       when sz <= fonts.footnote_max,
+       do: :footnote
 
-  # Page headers/footers — "JSP 375 Vol 1 Chapter 8 (V1.7 Jun 25)"
-  defp page_header?(text) do
-    Regex.match?(~r/^\s*\d+\s+JSP\s+375/i, text) or
-      Regex.match?(~r/^JSP\s+375.*Chapter/i, text)
+  defp determine_role(:mod_jsp, %{bold: false}, _fonts), do: :minor_text
+  defp determine_role(:mod_jsp, %{bold: true}, _fonts), do: :minor_heading
+
+  # --- HSE ACoP profile ---
+
+  defp determine_role(:hse_acop, %{font_size: sz}, fonts)
+       when sz >= fonts.title_min do
+    :chapter_title
   end
 
-  # Bold continuation lines — start lowercase or with common continuation words.
-  # These are body text that happens to be bold, not structural headings.
+  defp determine_role(:hse_acop, %{text: text, bold: true, font_size: sz}, fonts)
+       when sz >= fonts.section_min do
+    if skip_header?(text, :hse_acop), do: :skip, else: :section_heading
+  end
+
+  defp determine_role(:hse_acop, %{text: text, bold: true, font_size: sz}, fonts)
+       when sz >= fonts.sub_heading_min do
+    cond do
+      skip_header?(text, :hse_acop) -> :skip
+      bold_continuation?(text) -> :body
+      true -> :sub_heading
+    end
+  end
+
+  defp determine_role(:hse_acop, %{text: text, bold: false, font_size: sz}, fonts)
+       when sz >= fonts.sub_heading_min do
+    if acop_numbered?(text), do: :numbered_para, else: :body
+  end
+
+  defp determine_role(:hse_acop, %{font_size: sz}, fonts)
+       when sz <= fonts.footnote_max,
+       do: :footnote
+
+  defp determine_role(:hse_acop, %{bold: false}, _fonts), do: :minor_text
+  defp determine_role(:hse_acop, %{bold: true}, _fonts), do: :minor_heading
+
+  # --- Fallback (unknown profile) ---
+
+  defp determine_role(_profile, _line, _fonts), do: :body
+
+  # ===========================================================================
+  # Profile-specific helpers
+  # ===========================================================================
+
+  # JSP numbering: "1. Text" or "10. Text" (dot required)
+  defp jsp_numbered?(text), do: Regex.match?(~r/^\d+\.\s/, text)
+
+  # ACoP numbering: "13 Text" (no dot, capital letter follows)
+  defp acop_numbered?(text), do: Regex.match?(~r/^\d+\s+[A-Z]/, text)
+
+  # Extract paragraph number — handles both "N." and "N " styles
+  defp extract_para_number(text) do
+    case Regex.run(~r/^(\d+)\.?\s/, text) do
+      [_, num] -> num
+      _ -> "0"
+    end
+  end
+
+  # Page headers/footers by profile
+  defp skip_header?(text, :mod_jsp) do
+    Regex.match?(~r/^\s*\d+\s+JSP\s+/i, text) or
+      Regex.match?(~r/^JSP\s+\d+.*(?:Chapter|Element|Vol)/i, text)
+  end
+
+  defp skip_header?(text, :hse_acop) do
+    Regex.match?(~r/^Page\s+\d+\s+of\s+\d+/i, text)
+  end
+
+  defp skip_header?(_text, _profile), do: false
+
+  # Bold continuation — common across all profiles
   defp bold_continuation?(text) do
     first_char = String.first(text)
 
-    starts_lowercase =
-      first_char != nil and first_char == String.downcase(first_char) and
-        first_char != String.upcase(first_char)
-
-    starts_with_continuation =
-      Regex.match?(
-        ~r/^(must|and|or|the|with|to|from|for|that|which|where|when|if|as|by|in|on|of|their|its|this|these|followed|control|necessary)\b/i,
-        text
-      ) and starts_lowercase
-
-    starts_lowercase or starts_with_continuation
-  end
-
-  defp numbered_paragraph?(text) do
-    Regex.match?(~r/^\d+\.\s/, text)
+    first_char != nil and
+      first_char == String.downcase(first_char) and
+      first_char != String.upcase(first_char)
   end
 
   # ---------------------------------------------------------------------------
-  # Merge consecutive same-role lines (multi-line headings)
-  #
-  # A chapter title split across two lines ("8 Safety risk assessment and safe"
-  # / "systems of work") should be one provision, not two.
+  # Merge passes (shared across all profiles)
   # ---------------------------------------------------------------------------
 
   defp merge_same_role_lines(lines) do
@@ -188,27 +259,19 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
     |> Enum.reject(&is_list/1)
   end
 
-  # ---------------------------------------------------------------------------
-  # Merge consecutive body/continuation lines
-  # ---------------------------------------------------------------------------
-
   defp merge_body_lines(lines) do
     lines
     |> Enum.chunk_while(
       nil,
       fn line, acc ->
         cond do
-          # Start new chunk for structural elements
           line.role in [:chapter_title, :section_heading, :sub_heading, :numbered_para] ->
             if acc, do: {:cont, acc, line}, else: {:cont, line}
 
-          # Body/continuation lines merge into the current chunk
           line.role in [:body, :minor_text, :footnote, :minor_heading] and acc != nil and
               acc.role in [:body, :numbered_para] ->
-            merged = %{acc | text: acc.text <> " " <> line.text}
-            {:cont, merged}
+            {:cont, %{acc | text: acc.text <> " " <> line.text}}
 
-          # Everything else starts a new chunk
           true ->
             if acc, do: {:cont, acc, line}, else: {:cont, line}
         end
@@ -223,7 +286,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
   end
 
   # ---------------------------------------------------------------------------
-  # Build provisions
+  # Build provisions (shared across all profiles)
   # ---------------------------------------------------------------------------
 
   defp build_provisions(lines, source) do
@@ -232,7 +295,14 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
     {provisions, _state} =
       Enum.reduce(
         lines,
-        {[], %{position: 0, path: [], current_chapter: nil, current_section: nil}},
+        {[],
+         %{
+           position: 0,
+           path: [],
+           current_chapter: nil,
+           current_section: nil,
+           seen_ids: MapSet.new()
+         }},
         fn line, {provs, state} ->
           case line.role do
             :chapter_title ->
@@ -260,6 +330,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
                 text_source: :heading_only
               }
 
+              {prov, state} = dedup_provision(prov, state)
               {[prov | provs], state}
 
             :section_heading ->
@@ -288,6 +359,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
                 text_source: :heading_only
               }
 
+              {prov, state} = dedup_provision(prov, state)
               {[prov | provs], state}
 
             :sub_heading ->
@@ -310,6 +382,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
                 text_source: :heading_only
               }
 
+              {prov, state} = dedup_provision(prov, state)
               {[prov | provs], state}
 
             :numbered_para ->
@@ -336,10 +409,10 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
                 text_source: :full_text
               }
 
+              {prov, state} = dedup_provision(prov, state)
               {[prov | provs], state}
 
             _other ->
-              # Skip unclassified lines (footnotes, minor text not attached to a paragraph)
               {provs, state}
           end
         end
@@ -349,8 +422,27 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
   end
 
   # ---------------------------------------------------------------------------
-  # Helpers
+  # Dedup, helpers
   # ---------------------------------------------------------------------------
+
+  defp dedup_provision(prov, state) do
+    {unique_id, seen} = dedup_id(prov.section_id, state.seen_ids)
+    prov = %{prov | section_id: unique_id}
+    state = %{state | seen_ids: MapSet.put(seen, unique_id)}
+    {prov, state}
+  end
+
+  defp dedup_id(id, seen) do
+    if MapSet.member?(seen, id) do
+      suffix =
+        Stream.iterate(2, &(&1 + 1))
+        |> Enum.find(fn n -> not MapSet.member?(seen, "#{id}-#{n}") end)
+
+      {"#{id}-#{suffix}", seen}
+    else
+      {id, seen}
+    end
+  end
 
   defp section_id_prefix(source) do
     type_prefix = Map.get(@type_prefix_map, source.source_type, "SEC")
@@ -397,13 +489,6 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
       String.contains?(text_lower, "annex") -> :annex
       String.contains?(text_lower, "schedule") -> :schedule
       true -> :chapter
-    end
-  end
-
-  defp extract_para_number(text) do
-    case Regex.run(~r/^(\d+)\./, text) do
-      [_, num] -> num
-      _ -> "0"
     end
   end
 end
