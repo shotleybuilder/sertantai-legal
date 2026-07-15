@@ -201,7 +201,7 @@ defmodule SertantaiLegal.Sync.Engine do
     # Validate holder vocabulary — warn on drift but don't block sync.
     # Unknown labels are logged; they'll appear as plain text in Baserow
     # multi-selects until the actor dictionary is updated.
-    case Baserow.validate_holder_vocabulary(lrt_rows) do
+    case provider.validate_holder_vocabulary(lrt_rows) do
       :ok ->
         :ok
 
@@ -211,13 +211,13 @@ defmodule SertantaiLegal.Sync.Engine do
         )
     end
 
-    field_specs = Baserow.lrt_field_specs(field_tier)
+    field_specs = provider.lrt_field_specs(field_tier)
 
     with :ok <- provider.ensure_fields(provider_config, :lrt, field_specs) do
       # Format rows for the provider
       formatted =
         Enum.map(lrt_rows, fn row ->
-          Baserow.format_lrt_row(row, field_tier)
+          provider.format_lrt_row(row, field_tier)
         end)
 
       # Load existing mappings for delta detection
@@ -226,7 +226,7 @@ defmodule SertantaiLegal.Sync.Engine do
       # Build source timestamp map for change detection
       source_timestamps =
         Map.new(lrt_rows, fn row ->
-          {Baserow.format_uuid(row.id), row.updated_at}
+          {provider.format_uuid(row.id), row.updated_at}
         end)
 
       delta = DeltaDetector.detect(formatted, existing_mappings, source_timestamps)
@@ -245,7 +245,7 @@ defmodule SertantaiLegal.Sync.Engine do
             save_row_mappings(sync_config.id, :lrt, batch_mappings, lrt_rows)
           end
 
-          case Baserow.batch_create(provider_config, :lrt, delta.new, on_batch) do
+          case provider.batch_create(provider_config, :lrt, delta.new, on_batch) do
             {:ok, mappings} ->
               %{job | rows_created: length(mappings)}
 
@@ -354,24 +354,14 @@ defmodule SertantaiLegal.Sync.Engine do
         end
 
       with {:ok, lat_rows} <- lat_query_fn.(lrt_ids),
-           field_specs = Baserow.lat_field_specs(lrt_table_id),
+           field_specs = provider.lat_field_specs(lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :lat, field_specs) do
         # Format LAT rows with link_row references to parent LRT
         formatted =
-          lat_rows
-          |> Enum.map(fn lat ->
-            law_id_str =
-              case lat.law_id do
-                <<_::128>> -> Ecto.UUID.load!(lat.law_id)
-                id when is_binary(id) -> id
-                _ -> to_string(lat.law_id)
-              end
-
-            lrt_external_id = Map.get(lrt_mappings, law_id_str)
-            {lat, lrt_external_id}
+          Enum.map(lat_rows, fn lat ->
+            # Legal_Register link: text value (law_name matches LRT primary field)
+            provider.format_lat_row(lat, lat.law_name)
           end)
-          |> Enum.reject(fn {_lat, ext_id} -> is_nil(ext_id) end)
-          |> Enum.map(fn {lat, ext_id} -> Baserow.format_lat_row(lat, ext_id) end)
 
         # Delta detection for LAT (no timestamps — all matched rows treated as updated)
         existing_lat_mappings = load_mappings(sync_config.id, :lat)
@@ -388,7 +378,7 @@ defmodule SertantaiLegal.Sync.Engine do
             save_row_mappings(sync_config.id, :lat, batch_mappings, lat_rows)
           end
 
-          case Baserow.batch_create(provider_config, :lat, lat_delta.new, lat_on_batch) do
+          case provider.batch_create(provider_config, :lat, lat_delta.new, lat_on_batch) do
             {:ok, _} -> :ok
             {:error, reason} -> Logger.error("[Sync] LAT create failed: #{reason}")
           end
@@ -455,7 +445,7 @@ defmodule SertantaiLegal.Sync.Engine do
             save_row_mappings(sync_config.id, :actor_tuples, batch_mappings, tuples)
           end
 
-          case Baserow.batch_create(
+          case provider.batch_create(
                  provider_config,
                  :actor_tuples,
                  tuple_delta.new,
@@ -516,12 +506,12 @@ defmodule SertantaiLegal.Sync.Engine do
              SertantaiLegal.Legal.Control
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
              |> Ash.read(),
-           field_specs = Baserow.controls_field_specs(lrt_table_id),
+           field_specs = provider.controls_field_specs(lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :controls, field_specs) do
         formatted =
           Enum.map(controls, fn control ->
             # Legal_Register link: text value (law_name matches LRT primary field)
-            Baserow.format_control_row(control, control.law_name)
+            provider.format_control_row(control, control.law_name)
           end)
 
         # Delta detection
@@ -540,7 +530,7 @@ defmodule SertantaiLegal.Sync.Engine do
             save_row_mappings(sync_config.id, :controls, batch_mappings, controls)
           end
 
-          case Baserow.batch_create(provider_config, :controls, delta.new, on_batch) do
+          case provider.batch_create(provider_config, :controls, delta.new, on_batch) do
             {:ok, _} ->
               Logger.info("[Sync] Created #{length(delta.new)} new controls")
 
@@ -605,7 +595,7 @@ defmodule SertantaiLegal.Sync.Engine do
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
              |> Ash.read(),
            field_specs =
-             Baserow.control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id),
+             provider.control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :control_mappings, field_specs) do
         # All links use text values — Baserow resolves by matching target table's primary field.
         # No row ID tracking needed.
@@ -630,7 +620,7 @@ defmodule SertantaiLegal.Sync.Engine do
             # Duties link: section_id or nearest parent in Baserow
             duties_name = find_parent_lat_source_id(mapping.section_id, lat_source_ids)
 
-            Baserow.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
+            provider.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
           end)
 
         # Delta detection
@@ -647,7 +637,7 @@ defmodule SertantaiLegal.Sync.Engine do
             save_row_mappings(sync_config.id, :control_mappings, batch_mappings, mappings)
           end
 
-          case Baserow.batch_create(provider_config, :control_mappings, delta.new, on_batch) do
+          case provider.batch_create(provider_config, :control_mappings, delta.new, on_batch) do
             {:ok, _} ->
               Logger.info("[Sync] Created #{length(delta.new)} new control mappings")
 
@@ -739,7 +729,7 @@ defmodule SertantaiLegal.Sync.Engine do
             opts: %{"link_row_table_id" => actor_table_id}
           }
 
-          case Baserow.create_field(provider_config, lat_table_id, link_spec) do
+          case provider.create_field(provider_config, lat_table_id, link_spec) do
             {:ok, _field_id} ->
               Logger.info("[Sync] Created 'Actors' link field on LAT")
 
@@ -752,13 +742,9 @@ defmodule SertantaiLegal.Sync.Engine do
         :ok
     end
 
-    # Build tuple lookup from mappings
-    tuple_lookup =
-      Map.new(tuple_mappings, fn m ->
-        source_id = m.source_id || m[:source_id]
-        ext_id = m.external_row_id || m[:external_row_id]
-        {source_id, ext_id}
-      end)
+    # Build set of known Actor Names for text-based linking
+    tuple_names =
+      MapSet.new(tuple_mappings, fn m -> m.source_id || m[:source_id] end)
 
     # Load LAT row mappings
     lat_mappings = load_lat_mappings(sync_config.id)
@@ -790,7 +776,7 @@ defmodule SertantaiLegal.Sync.Engine do
           [org_bin, lat_section_ids]
         )
 
-      # Build update rows: each LAT row gets its matching tuple IDs
+      # Build update rows: each LAT row gets its matching Actor Names (text-based linking)
       updates =
         rows
         |> Enum.map(fn [section_id, actors_json, drrp_types] ->
@@ -798,19 +784,18 @@ defmodule SertantaiLegal.Sync.Engine do
           actors = actors_json || []
           drrps = drrp_types || []
 
-          tuple_ids =
+          actor_names =
             for a <- actors,
                 dt <- drrps,
                 label = a["label"],
                 position = a["position"],
                 label != nil and position != nil,
-                key = "#{label}|#{position}|#{dt}",
-                ext_id = Map.get(tuple_lookup, key),
-                ext_id != nil,
-                do: ext_id
+                name = "#{label}|#{position}|#{dt}",
+                MapSet.member?(tuple_names, name),
+                do: name
 
-          if lat_ext_id && tuple_ids != [] do
-            %{"id" => lat_ext_id, "Actors" => Enum.uniq(tuple_ids)}
+          if lat_ext_id && actor_names != [] do
+            %{"id" => lat_ext_id, "Actors" => Enum.uniq(actor_names)}
           end
         end)
         |> Enum.reject(&is_nil/1)

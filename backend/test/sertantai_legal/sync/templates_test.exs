@@ -90,10 +90,23 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       assert Foundation.tables() == [:lrt, :lat]
     end
 
-    test "field specs are empty (managed by Engine.run)" do
+    test "field specs define complete LRT and LAT schemas" do
       sp = SubPatterns.new()
       specs = Foundation.field_specs(sp)
-      assert specs == %{lrt: [], lat: []}
+      lrt_names = Enum.map(specs.lrt, & &1.name)
+      lat_names = Enum.map(specs.lat, & &1.name)
+
+      assert "Name" in lrt_names
+      assert "Title" in lrt_names
+      assert "Family" in lrt_names
+      assert "Status" in lrt_names
+      assert "_source_id" in lrt_names
+
+      assert "Name" in lat_names
+      assert "Provision_Text" in lat_names
+      assert "Significance" in lat_names
+      assert "Legal_Register" in lat_names
+      assert "_source_id" in lat_names
     end
   end
 

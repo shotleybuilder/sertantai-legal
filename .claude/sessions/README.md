@@ -74,6 +74,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-14 | [baserow-applicator-v2](baserow/2026-07-14-baserow-applicator-v2.md) | — | Three-layer architecture (Client/SchemaManager/Provider), 4-phase creation, 13 tables + 180 fields to qq DB |
 | 2026-07-14 | [baserow-primary-field-refactor](baserow/2026-07-14-baserow-primary-field-refactor.md) | — | Text primary field pattern, template rename, applicator bugs exposed, architecture spec created |
 | 2026-07-13 | [compliance-controls](2026-07-13-compliance-controls.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | Control + ControlMapping resources, Zenoh subscriber, Baserow sync. 1,341 controls ingested, 96.3% mapping resolution. Found LAT parser section_id bug (#120) |
 | 2026-07-13 | [fitness-legacy-cleanup](2026-07-13-fitness-legacy-cleanup.md) | — | Drop all legacy P-dimension fitness columns (19 columns across 3 tables, 27 files) |

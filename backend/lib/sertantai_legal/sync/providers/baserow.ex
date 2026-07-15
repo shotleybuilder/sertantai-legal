@@ -432,10 +432,10 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
       "Number" => lrt.number,
       "Type" => lrt.type_desc,
       "Status" => lrt.live,
-      "Geographic Extent" => lrt.geo_extent,
-      "Legislation URL" => lrt.source_url,
+      "Geographic_Extent" => lrt.geo_extent,
+      "Legislation_URL" => lrt.source_url,
       "Significance" => lrt.significance_rating,
-      "Significance Score" => round_score(lrt.significance_score)
+      "Significance_Score" => round_score(lrt.significance_score)
     }
 
     essential
@@ -447,22 +447,23 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Formats a LAT record into a Baserow row map.
   `lrt_external_row_id` is the Baserow row ID of the parent LRT record (for link_row).
   """
-  def format_lat_row(lat, lrt_external_row_id) do
-    %{
+  def format_lat_row(lat, lrt_name) do
+    row = %{
       "Name" => lat.section_id,
       "_source_id" => lat.section_id,
       "Type" => lat.drrp_types || [],
-      "Duty Type" => lat.duty_sub_type || [],
-      "Regulated Actors" => extract_active_actors(lat),
-      "Provision Text" => lat.text,
+      "Duty_Type" => lat.duty_sub_type || [],
+      "Regulated_Actors" => extract_active_actors(lat),
+      "Provision_Text" => lat.text,
       "Provision" => lat.provision,
       "Significance" => lat[:significance_overall],
       "Gravity" => lat[:significance_gravity],
-      "Scope: Duty Bearer" => lat[:significance_scope_duty_bearer],
+      "Scope_Duty_Bearer" => lat[:significance_scope_duty_bearer],
       "Strength" => lat[:significance_strength],
-      "Confidence" => round_float(lat[:significance_confidence], 2),
-      "Parent Law" => [lrt_external_row_id]
+      "Confidence" => round_float(lat[:significance_confidence], 2)
     }
+
+    if lrt_name, do: Map.put(row, "Legal_Register", lrt_name), else: row
   end
 
   # Raw binary UUIDs from string-table queries need casting to string format
@@ -603,14 +604,14 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp maybe_add_standard(row, lrt, _tier) do
     Map.merge(row, %{
       "Function" => format_function(lrt.function),
-      "Duty Type" => extract_values_list(lrt.duty_type),
+      "Duty_Type" => extract_values_list(lrt.duty_type),
       "Purpose" => extract_values_list(lrt.purpose),
-      "Duty Holder" => extract_holder_list(lrt.duty_holder),
-      "Power Holder" => extract_holder_list(lrt.power_holder),
-      "Rights Holder" => extract_holder_list(lrt.rights_holder),
+      "Duty_Holder" => extract_holder_list(lrt.duty_holder),
+      "Power_Holder" => extract_holder_list(lrt.power_holder),
+      "Rights_Holder" => extract_holder_list(lrt.rights_holder),
       "Domain" => lrt.domain || [],
-      "Geographic Region" => lrt.geo_region || [],
-      "Fitness Entities" => join_array(lrt.fitness_entities)
+      "Geographic_Region" => lrt.geo_region || [],
+      "Fitness_Entities" => join_array(lrt.fitness_entities)
     })
   end
 
@@ -619,18 +620,18 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defp maybe_add_full(row, lrt, :full) do
     Map.merge(row, %{
       "POPIMAR" => extract_values(lrt.popimar),
-      "SI Code" => extract_values(lrt.si_code),
+      "SI_Code" => extract_values(lrt.si_code),
       "Description" => lrt.md_description,
       "Role" => join_array(lrt.role),
       "Amending" => join_array(lrt.amending),
-      "Amended By" => join_array(lrt.amended_by),
+      "Amended_By" => join_array(lrt.amended_by),
       "Rescinding" => join_array(lrt.rescinding),
-      "Rescinded By" => join_array(lrt.rescinded_by),
+      "Rescinded_By" => join_array(lrt.rescinded_by),
       "Date" => format_date(lrt.md_date),
-      "Made Date" => format_date(lrt.md_made_date),
-      "Enactment Date" => format_date(lrt.md_enactment_date),
-      "Coming Into Force Date" => format_date(lrt.md_coming_into_force_date),
-      "Latest Amendment Date" => format_date(lrt.latest_amend_date)
+      "Made_Date" => format_date(lrt.md_made_date),
+      "Enactment_Date" => format_date(lrt.md_enactment_date),
+      "Coming_Into_Force_Date" => format_date(lrt.md_coming_into_force_date),
+      "Latest_Amendment_Date" => format_date(lrt.latest_amend_date)
     })
   end
 
