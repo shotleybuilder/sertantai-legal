@@ -36,6 +36,9 @@ defmodule SertantaiLegal.Api do
     resource(SertantaiLegal.Legal.Control)
     resource(SertantaiLegal.Legal.ControlMapping)
 
+    # Second-tier compliance requirements (ACoPs, standards, JSPs, guidance)
+    resource(SertantaiLegal.Legal.SecondarySource)
+
     # Scraper session tracking
     resource(SertantaiLegal.Scraper.ScrapeSession)
     resource(SertantaiLegal.Scraper.ScrapeSessionRecord)

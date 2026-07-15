@@ -33,29 +33,34 @@ defmodule SertantaiLegal.Sync.Templates.ControlMappings do
     %{
       control_mappings: [
         %{
-          name: "Mapping",
-          type: :formula,
+          name: "Name",
+          type: :text,
           primary: true,
-          expression: %{
-            baserow:
-              "if(field('Obligation') != '', concat(field('Obligation'), ' ↔ ', field('Control')), concat(field('Law'), ' ↔ ', field('Control')))"
-          },
-          description: "Display: Obligation ↔ Control (or Law ↔ Control for law-level mappings)"
+          description: "Stable ID: control_uuid:section_id"
         },
         %{
-          name: "Law",
+          name: "Mapping",
+          type: :formula,
+          expression: %{
+            baserow:
+              "if(field('Duties') != '', concat(field('Duties'), ' ↔ ', field('Controls')), concat(field('Legal_Register'), ' ↔ ', field('Controls')))"
+          },
+          description: "Display: Duties ↔ Controls (or Legal_Register ↔ Controls for law-level)"
+        },
+        %{
+          name: "Legal_Register",
           type: :link_row,
           target: :lrt,
           description: "Law-level mapping (always populated)"
         },
         %{
-          name: "Obligation",
+          name: "Duties",
           type: :link_row,
           target: :lat,
           description: "Provision-level mapping (empty for law-level mappings)"
         },
         %{
-          name: "Control",
+          name: "Controls",
           type: :link_row,
           target: :controls,
           description: "Which control addresses this obligation"
@@ -76,8 +81,8 @@ defmodule SertantaiLegal.Sync.Templates.ControlMappings do
     %{
       control_mappings: [
         %{name: "All Mappings", type: :grid},
-        %{name: "By Control", type: :grid, group_by: "Control"},
-        %{name: "By Law", type: :grid, group_by: "Law"},
+        %{name: "By Control", type: :grid, group_by: "Controls"},
+        %{name: "By Law", type: :grid, group_by: "Legal_Register"},
         %{name: "By Strength", type: :grid, group_by: "Strength"}
       ]
     }

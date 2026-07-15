@@ -90,19 +90,19 @@ defmodule SertantaiLegal.Sync.Templates.Artefacts do
               "Activity (Type-A, proves activity happened) or Outcome (Type-B, proves a result)"
           },
           %{
-            name: "Control",
+            name: "Controls",
             type: :link_row,
             target: :controls,
             description: "Which control this relates to (primary link)"
           },
           %{
-            name: "Assessment",
+            name: "Assessments",
             type: :link_row,
             target: :assessments,
             description: "Which assessment this supports"
           },
           %{
-            name: "Action",
+            name: "Actions",
             type: :link_row,
             target: :actions,
             description: "Which action this completes"
@@ -148,7 +148,7 @@ defmodule SertantaiLegal.Sync.Templates.Artefacts do
         },
         %{name: "By Type", type: :grid, group_by: "Artefact_Type"},
         %{name: "By Class", type: :grid, group_by: "Artefact_Class"},
-        %{name: "By Control", type: :grid, group_by: "Control"},
+        %{name: "By Control", type: :grid, group_by: "Controls"},
         %{
           name: "Assurance Findings",
           type: :grid,

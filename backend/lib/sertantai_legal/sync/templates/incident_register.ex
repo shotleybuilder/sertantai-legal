@@ -28,38 +28,44 @@ defmodule SertantaiLegal.Sync.Templates.IncidentRegister do
     %{
       incidents:
         [
+          %{
+            name: "Name",
+            type: :text,
+            primary: true,
+            description: "Incident name"
+          },
           %{name: "Title", type: :text, description: "Incident description"},
           %{name: "Date", type: :date, description: "When it occurred"},
           %{name: "Severity", type: :single_select, options: @severities},
           %{name: "Description", type: :long_text, description: "Full details"},
           %{name: "Root_Cause", type: :long_text, description: "Investigation findings"},
           %{
-            name: "Assessment",
+            name: "Assessments",
             type: :link_row,
             target: :assessments,
             description: "Related compliance gap"
           },
           %{
-            name: "Corrective_Action",
+            name: "Actions",
             type: :link_row,
             target: :actions,
             description: "Corrective action taken"
           },
           %{
-            name: "Preventative_Action",
+            name: "Preventative_Actions",
             type: :link_row,
             target: :actions,
             description: "Preventative action"
           },
           %{
-            name: "Judgement",
+            name: "Judgements",
             type: :link_row,
             target: :judgements,
             description:
               "Which prior judgement this incident vindicates or contradicts (falsification link)"
           },
           %{
-            name: "Control",
+            name: "Controls",
             type: :link_row,
             target: :controls,
             description:

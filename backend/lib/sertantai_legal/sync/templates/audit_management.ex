@@ -36,7 +36,7 @@ defmodule SertantaiLegal.Sync.Templates.AuditManagement do
             %{name: "Scope", type: :long_text, description: "What was audited"},
             %{name: "Findings", type: :long_text, description: "Summary of findings"},
             %{
-              name: "Related_Actions",
+              name: "Actions",
               type: :link_row,
               target: :actions,
               description: "Actions raised from audit"

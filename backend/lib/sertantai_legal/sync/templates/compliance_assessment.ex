@@ -123,14 +123,19 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
   defp core_fields do
     [
       %{
+        name: "Name",
+        type: :text,
+        primary: true,
+        description: "Assessment name"
+      },
+      %{
         name: "Assessment",
         type: :formula,
-        primary: true,
-        expression: %{baserow: "field('Law')"},
+        expression: %{baserow: "field('Legal_Register')"},
         description: "Display: law name (1:1 with Legal Register)"
       },
       %{
-        name: "Law",
+        name: "Legal_Register",
         type: :link_row,
         target: :lrt,
         description: "Which law is being assessed"
@@ -141,8 +146,8 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
         options: @compliance_statuses,
         description: "Current compliance status"
       },
-      %{name: "Family", type: :lookup, target: "Law", target_field: "Family"},
-      %{name: "Law_Status", type: :lookup, target: "Law", target_field: "Status"}
+      %{name: "Family", type: :lookup, target: "Legal_Register", target_field: "Family"},
+      %{name: "Law_Status", type: :lookup, target: "Legal_Register", target_field: "Status"}
     ]
   end
 
@@ -293,7 +298,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
       rows =
         Enum.map(lrt_mappings, fn mapping ->
           %{
-            "Law" => [mapping.external_row_id],
+            "Legal_Register" => [mapping.external_row_id],
             "Compliance_Status" => "Not Assessed",
             "Next_Review_Date" => Date.add(Date.utc_today(), 90) |> Date.to_iso8601()
           }

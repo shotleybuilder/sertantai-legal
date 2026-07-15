@@ -102,7 +102,7 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
     field_map = mod.field_specs(context.sub_patterns)
 
     Enum.reduce_while(tables, {:ok, context}, fn table_key, {:ok, ctx} ->
-      table_name = table_key |> to_string() |> Macro.camelize()
+      table_name = humanize_table_name(table_key)
 
       if Map.has_key?(ctx.table_ids, table_key) do
         Logger.debug("[TemplateApplicator] Table #{table_name} already exists, skipping")
@@ -197,8 +197,15 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
         _ -> MapSet.new()
       end
 
+    # Create non-formula/lookup fields first, then formulas, then lookups
+    # (lookups depend on link_row + target fields existing)
+    {lookup_fields, rest} = Enum.split_with(fields, fn f -> f[:type] == :lookup end)
+    {formula_fields, regular_fields} = Enum.split_with(rest, fn f -> f[:type] == :formula end)
+
+    ordered_fields = regular_fields ++ formula_fields ++ lookup_fields
+
     results =
-      Enum.reduce_while(fields, {:ok, 0}, fn field, {:ok, count} ->
+      Enum.reduce_while(ordered_fields, {:ok, 0}, fn field, {:ok, count} ->
         cond do
           # Skip primary fields — handled by cleanup_table_defaults + finalize
           field[:primary] ->
@@ -209,8 +216,19 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
 
           true ->
             case ctx.provider.create_field(config_with_tables, table_id, field) do
-              {:ok, _field_id} -> {:cont, {:ok, count + 1}}
-              {:error, reason} -> {:halt, {:error, {:create_field_failed, field.name, reason}}}
+              {:ok, _field_id} ->
+                {:cont, {:ok, count + 1}}
+
+              {:error, reason} ->
+                if field[:type] == :lookup do
+                  # Lookup fields may fail if target field doesn't exist yet
+                  # (created by sync, not by template). Skip gracefully.
+                  Logger.warning("[TemplateApplicator] Skipping lookup #{field.name}: #{reason}")
+
+                  {:cont, {:ok, count}}
+                else
+                  {:halt, {:error, {:create_field_failed, field.name, reason}}}
+                end
             end
         end
       end)
@@ -344,5 +362,34 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
         batch_size: 100
       }
     end
+  end
+
+  # Human-friendly Baserow table names.
+  # Internal keys use snake_case atoms; Baserow tables use readable names.
+  @table_names %{
+    lrt: "Legal Register",
+    lat: "Duties",
+    actor_tuples: "Actors",
+    controls: "Controls",
+    control_mappings: "Control Mappings",
+    assessments: "Assessments",
+    actions: "Actions",
+    personnel: "Personnel",
+    hierarchy: "Hierarchy",
+    incidents: "Incidents",
+    improvements: "Improvements",
+    artefacts: "Artefacts",
+    judgements: "Judgements",
+    gaps: "Gaps",
+    raci: "RACI",
+    compliance_events: "Compliance Events"
+  }
+
+  defp humanize_table_name(table_key) do
+    Map.get(
+      @table_names,
+      table_key,
+      table_key |> to_string() |> String.replace("_", " ") |> String.capitalize()
+    )
   end
 end

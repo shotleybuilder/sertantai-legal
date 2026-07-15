@@ -53,14 +53,19 @@ defmodule SertantaiLegal.Sync.Templates.Judgements do
       judgements:
         [
           %{
+            name: "Name",
+            type: :text,
+            primary: true,
+            description: "Judgement name"
+          },
+          %{
             name: "Judgement",
             type: :formula,
-            primary: true,
-            expression: %{baserow: "concat(field('Control'), ' — ', field('Finding'))"},
+            expression: %{baserow: "concat(field('Controls'), ' — ', field('Finding'))"},
             description: "Display: Control — Finding"
           },
           %{
-            name: "Control",
+            name: "Controls",
             type: :link_row,
             target: :controls,
             description: "Which control was assessed"
@@ -94,7 +99,7 @@ defmodule SertantaiLegal.Sync.Templates.Judgements do
             },
             %{name: "Next_Due", type: :date, description: "When this control needs reassessing"},
             %{
-              name: "Assessment",
+              name: "Assessments",
               type: :link_row,
               target: :assessments,
               description: "Which assessment this informs (optional)"
@@ -121,7 +126,7 @@ defmodule SertantaiLegal.Sync.Templates.Judgements do
     %{
       judgements: [
         %{name: "All Judgements", type: :grid},
-        %{name: "By Control", type: :grid, group_by: "Control"},
+        %{name: "By Control", type: :grid, group_by: "Controls"},
         %{name: "By Finding", type: :kanban, stack_by: "Finding"},
         %{
           name: "Due Soon",

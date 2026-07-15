@@ -61,19 +61,19 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
             options: @evidence_types
           },
           %{
-            name: "Assessment",
+            name: "Assessments",
             type: :link_row,
             target: :assessments,
             description: "Which assessment this supports"
           },
           %{
-            name: "Action",
+            name: "Actions",
             type: :link_row,
             target: :actions,
             description: "Which action this completes"
           },
           %{
-            name: "Control",
+            name: "Controls",
             type: :link_row,
             target: :controls,
             description: "Which control this proves operated"
@@ -128,7 +128,7 @@ defmodule SertantaiLegal.Sync.Templates.EvidenceVault do
           type: :grid,
           filters: [%{field: "Evidence_Nature", op: :equal, value: "Artifact"}]
         },
-        %{name: "By Control", type: :grid, group_by: "Control"},
+        %{name: "By Control", type: :grid, group_by: "Controls"},
         %{name: "Gallery", type: :gallery}
       ]
     }

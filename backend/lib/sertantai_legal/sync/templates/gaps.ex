@@ -41,22 +41,27 @@ defmodule SertantaiLegal.Sync.Templates.Gaps do
       gaps:
         [
           %{
+            name: "Name",
+            type: :text,
+            primary: true,
+            description: "Gap name"
+          },
+          %{
             name: "Gap",
             type: :formula,
-            primary: true,
             expression: %{
-              baserow: "concat(field('Control'), ' — ', field('Exit_Decision'))"
+              baserow: "concat(field('Controls'), ' — ', field('Exit_Decision'))"
             },
             description: "Display: Control — Exit Decision"
           },
           %{
-            name: "Judgement",
+            name: "Judgements",
             type: :link_row,
             target: :judgements,
             description: "Which judgement identified this gap"
           },
           %{
-            name: "Control",
+            name: "Controls",
             type: :link_row,
             target: :controls,
             description: "Which control has the gap (denormalised)"
@@ -94,7 +99,7 @@ defmodule SertantaiLegal.Sync.Templates.Gaps do
           owner_fields(sp.people) ++
           [
             %{
-              name: "Action",
+              name: "Actions",
               type: :link_row,
               target: :actions,
               description: "Created if Exit = Correct Work"
@@ -115,7 +120,7 @@ defmodule SertantaiLegal.Sync.Templates.Gaps do
           filters: [%{field: "Status", op: :equal, value: "Open"}]
         },
         %{name: "By Exit", type: :kanban, stack_by: "Exit_Decision"},
-        %{name: "By Control", type: :grid, group_by: "Control"},
+        %{name: "By Control", type: :grid, group_by: "Controls"},
         %{name: "By Type", type: :grid, group_by: "Gap_Type"}
       ]
     }

@@ -74,28 +74,29 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-14 | [baserow-primary-field-refactor](baserow/2026-07-14-baserow-primary-field-refactor.md) | — | Text primary field pattern, template rename, applicator bugs exposed, architecture spec created |
 | 2026-07-13 | [compliance-controls](2026-07-13-compliance-controls.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | Control + ControlMapping resources, Zenoh subscriber, Baserow sync. 1,341 controls ingested, 96.3% mapping resolution. Found LAT parser section_id bug (#120) |
 | 2026-07-13 | [fitness-legacy-cleanup](2026-07-13-fitness-legacy-cleanup.md) | — | Drop all legacy P-dimension fitness columns (19 columns across 3 tables, 27 files) |
 | 2026-07-13 | [fitness-phase3-expression-trees](2026-07-13-fitness-phase3-expression-trees.md) | — | Phase 3: compiled applicability trees, recursive evaluator, territorial hierarchy, 694 laws |
 | 2026-07-13 | [fitness-rules-engine](2026-07-13-fitness-rules-engine.md) | — | Fitness rules engine: GIN entity index, ProfileQuery filter, admin column, customer screening scoring |
 | 2026-07-10 | [issue-116](2026-07-10-issue-116.md) | [#116](https://github.com/shotleybuilder/sertantai-legal/issues/116) | Not-a-bug: missing Baserow provisions have counterparty actors, governed_only filter correct |
-| 2026-07-07 | [evidence-schema-baserow](2026-07-07-evidence-schema-baserow.md) | — | L4 Artefacts/Judgements/Gaps templates built, sub-patterns (calibration_mode, safety_argument), applied to QQ (14 tables) |
+| 2026-07-07 | [evidence-schema-baserow](baserow/2026-07-07-evidence-schema-baserow.md) | — | L4 Artefacts/Judgements/Gaps templates built, sub-patterns (calibration_mode, safety_argument), applied to QQ (14 tables) |
 | 2026-07-05 | [evidence-calibration-tier](2026-07-05-evidence-calibration-tier.md) | — | SUSPENDED — L4 redesign: Phases 1-2 done (schema + templates), Phases 3-6 remain (fractalaw, workflow, docs) |
-| 2026-07-03 | [baserow-mix-task](2026-07-03-baserow-mix-task.md) | — | mix templates.apply/status, default column cleanup, :workspace_member rename, SA_ strip, Personnel table |
-| 2026-07-03 | [baserow-compliance-poc](2026-07-03-baserow-compliance-poc.md) | — | SUSPENDED — L1-L7 designed, L1-L6 built + applied to QQ. Remaining: L7 build, Document Control, PDCA, Training Tracker |
+| 2026-07-03 | [baserow-mix-task](baserow/2026-07-03-baserow-mix-task.md) | — | mix templates.apply/status, default column cleanup, :workspace_member rename, SA_ strip, Personnel table |
+| 2026-07-03 | [baserow-compliance-poc](baserow/2026-07-03-baserow-compliance-poc.md) | — | SUSPENDED — L1-L7 designed, L1-L6 built + applied to QQ. Remaining: L7 build, Document Control, PDCA, Training Tracker |
 | 2026-07-02 | [significance-signals](2026-07-02-significance-signals.md) | — | Significance signals from fractalaw: law+provision+part-level, Baserow sync with Strategy C, scoping guide |
 | 2026-06-11 | [delta-sync-lat-tuples](2026-06-11-delta-sync-lat-tuples.md) | — | Delta sync for LAT + Actor Tuples: DeltaDetector, orphan deletion, mapping timestamps |
 | 2026-06-11 | [oban-refactor](2026-06-11-oban-refactor.md) | — | Oban job queue: SyncWorker, SchedulerWorker, Engine.clean, workspace validation, telemetry |
-| 2026-06-10 | [template-snagging](2026-06-10-template-snagging.md) | — | Sync bugs + polish: aggregation, delta detect, mix sync.run, Gemini code review P1-P4 fixed |
-| 2026-06-10 | [templates-v0.2-actor-tuples](2026-06-10-templates-v0.2-actor-tuples.md) | — | Actor Tuples table: normalised actor↔DRRP, many-to-many LAT links, 8 profile_query tests |
+| 2026-06-10 | [template-snagging](baserow/2026-06-10-template-snagging.md) | — | Sync bugs + polish: aggregation, delta detect, mix sync.run, Gemini code review P1-P4 fixed |
+| 2026-06-10 | [templates-v0.2-actor-tuples](baserow/2026-06-10-templates-v0.2-actor-tuples.md) | — | Actor Tuples table: normalised actor↔DRRP, many-to-many LAT links, 8 profile_query tests |
 | 2026-06-09 | [actor-dictionary](2026-06-09-actor-dictionary.md) | — | ActorDictionary GenServer: Zenoh queryable + YAML snapshot, replaces hardcoded @holder_options |
-| 2026-06-09 | [templates-phase7-dashboard-polling](2026-06-09-templates-phase7-dashboard-polling.md) | — | Phase 7: Dashboard compliance metrics, CompliancePoller GenServer for webhook reconciliation |
-| 2026-06-09 | [templates-phase6-remaining](2026-06-08-templates-phase6-remaining.md) | — | Phase 6: 7 templates (Incident, Audit, Training, Documents, RACI, PDCA, OrgStructure), 24 tests |
-| 2026-06-08 | [templates-phase5-webhooks](2026-06-08-templates-phase5-webhooks.md) | — | Phase 5: Webhook pipeline, ComplianceMetrics ETS processor, 11 new tests |
-| 2026-06-08 | [templates-phase4-actions-evidence](2026-06-08-templates-phase4-actions-evidence.md) | — | Phase 4: Action Tracker + Evidence Vault, storage_mode sub-pattern, 16 new tests |
-| 2026-06-08 | [templates-phase3-first-templates](2026-06-07-templates-phase3-first-templates.md) | — | Phase 3: Foundation + Personnel + Assessment templates, 25 tests, sub-pattern field adaptation |
-| 2026-06-07 | [templates-phase2-baserow-adapter](2026-06-07-templates-phase2-baserow-adapter.md) | — | Phase 2: Baserow adapter — create_table/field/view/webhook, type mapping, webhook parser |
-| 2026-06-07 | [baserow-compliance-templates](2026-06-07-baserow-compliance-templates.md) | — | Phase 1: provider-agnostic template infrastructure (types, behaviour, registry, applicator) |
+| 2026-06-09 | [templates-phase7-dashboard-polling](baserow/2026-06-09-templates-phase7-dashboard-polling.md) | — | Phase 7: Dashboard compliance metrics, CompliancePoller GenServer for webhook reconciliation |
+| 2026-06-09 | [templates-phase6-remaining](baserow/2026-06-08-templates-phase6-remaining.md) | — | Phase 6: 7 templates (Incident, Audit, Training, Documents, RACI, PDCA, OrgStructure), 24 tests |
+| 2026-06-08 | [templates-phase5-webhooks](baserow/2026-06-08-templates-phase5-webhooks.md) | — | Phase 5: Webhook pipeline, ComplianceMetrics ETS processor, 11 new tests |
+| 2026-06-08 | [templates-phase4-actions-evidence](baserow/2026-06-08-templates-phase4-actions-evidence.md) | — | Phase 4: Action Tracker + Evidence Vault, storage_mode sub-pattern, 16 new tests |
+| 2026-06-08 | [templates-phase3-first-templates](baserow/2026-06-07-templates-phase3-first-templates.md) | — | Phase 3: Foundation + Personnel + Assessment templates, 25 tests, sub-pattern field adaptation |
+| 2026-06-07 | [templates-phase2-baserow-adapter](baserow/2026-06-07-templates-phase2-baserow-adapter.md) | — | Phase 2: Baserow adapter — create_table/field/view/webhook, type mapping, webhook parser |
+| 2026-06-07 | [baserow-compliance-templates](baserow/2026-06-07-baserow-compliance-templates.md) | — | Phase 1: provider-agnostic template infrastructure (types, behaviour, registry, applicator) |
 | 2026-06-06 | [change-plan-phase-cd](2026-06-06-change-plan-phase-cd.md) | — | Phase C: decide→register wiring, grouped view, ChangeNotifier summaries + email stub |
 | 2026-06-06 | [change-plan-phase-b](2026-06-06-change-plan-phase-b.md) | — | Change notifications: summary/list/decide endpoints, nav badge, /app/changes review page |
 | 2026-06-06 | [change-mgmt-phase-a](2026-06-06-change-mgmt-phase-a.md) | — | Change detection: status changes, new law matching, enrichment hooks, materiality, 18 tests |
@@ -103,9 +104,9 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 | 2026-06-06 | [org-model-admin](2026-06-06-org-model-admin.md) | [#105](https://github.com/shotleybuilder/sertantai-legal/issues/105), [#106](https://github.com/shotleybuilder/sertantai-legal/issues/106) | Org model (per-org users), DRRP actor matching, per-user PGLite stores, family filter |
 | 2026-06-05 | [applicability-screening-ui](2026-06-05-applicability-screening-ui.md) | #98-#104 | Screening UI: two-panel split, /app layout, stats dashboard, 5 API endpoints |
 |------|---------|-------|---------|
-| 2026-06-04 | [baserow-polish](2026-06-04-baserow-polish.md) | — | LRT field refinements: Family/Status/Type→single_select, Domain/Region/Fitness→multi_select |
+| 2026-06-04 | [baserow-polish](baserow/2026-06-04-baserow-polish.md) | — | LRT field refinements: Family/Status/Type→single_select, Domain/Region/Fitness→multi_select |
 | 2026-06-04 | [goldilocks-model](2026-06-04-goldilocks-model.md) | — | Provision-level LAT aggregation: 748 complete duties vs 1,529 fragments, 853 total Baserow rows |
-| 2026-06-03 | [baserow-lat-resync](2026-06-03-baserow-lat-resync.md) | [#91](https://github.com/shotleybuilder/sertantai-legal/issues/91), [#92](https://github.com/shotleybuilder/sertantai-legal/issues/92), [#93](https://github.com/shotleybuilder/sertantai-legal/issues/93), [#94](https://github.com/shotleybuilder/sertantai-legal/issues/94) | Duty-focused LAT schema, DRRP filter, queue refactor, 2491 rows synced, meta-plan design decisions |
+| 2026-06-03 | [baserow-lat-resync](baserow/2026-06-03-baserow-lat-resync.md) | [#91](https://github.com/shotleybuilder/sertantai-legal/issues/91), [#92](https://github.com/shotleybuilder/sertantai-legal/issues/92), [#93](https://github.com/shotleybuilder/sertantai-legal/issues/93), [#94](https://github.com/shotleybuilder/sertantai-legal/issues/94) | Duty-focused LAT schema, DRRP filter, queue refactor, 2491 rows synced, meta-plan design decisions |
 | 2026-06-03 | [onboarding-phase5](2026-06-03-onboarding-phase5.md) | [#87](https://github.com/shotleybuilder/sertantai-legal/issues/87) | Multi-select fields, master holder vocabulary, LAT sync with parent links, 729 rows in Baserow |
 | 2026-06-03 | [onboarding-phase4](2026-06-03-onboarding-phase4.md) | — | First customer sync: QinetiQ auth org, Baserow JWT auth, 106 L3 laws synced, table preparation |
 | 2026-06-02 | [onboarding-phase3](2026-06-02-onboarding-phase3.md) | — | OrgApplicability resource, Enhesa seed, sync engine L3 filter, applicability QA skill |
@@ -210,6 +211,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-13 | [issue-120](2026-07-13-issue-120.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | LAT parser P2 wrapper fix, 172 laws re-parsed, art.→reg. prefix fix, TriageSubscriber, LAT QA tooling, 100% control_mapping resolution, Baserow primary field pattern |
 | 2026-07-13 | [fitness-schema-migration](2026-07-13-fitness-schema-migration.md) | — | Fitness v0.3: 5 new columns (entities, scope, counts), view+trigger rebuild, TaxaSubscriber wired |
 | 2026-07-08 | [reconcile-qq-legal-register](2026-07-08-reconcile-qq-legal-register.md) | [#114](https://github.com/shotleybuilder/sertantai-legal/issues/114) [#115](https://github.com/shotleybuilder/sertantai-legal/issues/115) [#116](https://github.com/shotleybuilder/sertantai-legal/issues/116) | QQ register 334→488 laws, DRRP vocab fix, live status fix, orgs table, Zenoh customer discovery, Baserow sync 2564 duties |
 | 2026-07-03 | [uk-lrt-view-trigger-fix](2026-07-03-uk-lrt-view-trigger-fix.md) | — | Fix 59 test failures: restore uk_lrt INSTEAD OF triggers destroyed by SELECT * view recreation |

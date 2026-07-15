@@ -32,12 +32,16 @@ defmodule SertantaiLegal.Sync.Templates.Personnel do
           personnel:
             [
               %{
-                name: "Employee_ID",
+                name: "Name",
                 type: :text,
                 primary: true,
+                description: "Full name"
+              },
+              %{
+                name: "Employee_ID",
+                type: :text,
                 description: "Unique employee reference"
               },
-              %{name: "Name", type: :text, description: "Full name"},
               %{name: "Email", type: :email, description: "Email address"},
               %{
                 name: "Role",

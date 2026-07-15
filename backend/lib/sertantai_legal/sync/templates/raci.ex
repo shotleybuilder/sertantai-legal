@@ -72,7 +72,7 @@ defmodule SertantaiLegal.Sync.Templates.RACI do
 
   defp link_fields(:law) do
     [
-      %{name: "Law", type: :link_row, target: :lrt, description: "Which law"}
+      %{name: "Legal_Register", type: :link_row, target: :lrt, description: "Which law"}
     ]
   end
 

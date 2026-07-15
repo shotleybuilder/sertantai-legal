@@ -35,11 +35,16 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
       actions:
         [
           %{
+            name: "Name",
+            type: :text,
+            primary: true,
+            description: "Action name"
+          },
+          %{
             name: "Action",
             type: :formula,
-            primary: true,
             expression: %{
-              baserow: "concat(field('Assessment'), ' — ', field('Title'))"
+              baserow: "concat(field('Assessments'), ' — ', field('Title'))"
             },
             description: "Display: Assessment — Title"
           },
@@ -50,14 +55,14 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
               "Short action phrase (e.g. 'Develop lone working RA'). Use Notes for detail."
           },
           %{
-            name: "Assessment",
+            name: "Assessments",
             type: :link_row,
             target: :assessments,
             description: "Which gap this addresses"
           },
-          %{name: "Law", type: :lookup, target: "Assessment", target_field: "Law"},
+          %{name: "Law", type: :lookup, target: "Assessments", target_field: "Legal_Register"},
           %{
-            name: "Gap",
+            name: "Gaps",
             type: :link_row,
             target: :gaps,
             description: "Which gap this action resolves (if created from a Gap exit)"
@@ -82,7 +87,7 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
           people_fields(sp.people) ++
           [
             %{
-              name: "Control",
+              name: "Controls",
               type: :link_row,
               target: :controls,
               description: "Which control to fix/improve/create"

@@ -37,13 +37,13 @@ defmodule SertantaiLegal.Sync.Templates.PDCA do
             %{name: "Start_Date", type: :date},
             %{name: "Due_Date", type: :date},
             %{
-              name: "Related_Assessments",
+              name: "Assessments",
               type: :link_row,
               target: :assessments,
               description: "Which compliance gaps this addresses"
             },
             %{
-              name: "Related_Actions",
+              name: "Actions",
               type: :link_row,
               target: :actions,
               description: "Actions within this initiative"

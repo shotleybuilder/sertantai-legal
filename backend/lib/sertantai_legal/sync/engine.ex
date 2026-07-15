@@ -518,22 +518,10 @@ defmodule SertantaiLegal.Sync.Engine do
              |> Ash.read(),
            field_specs = Baserow.controls_field_specs(lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :controls, field_specs) do
-        # Build LRT source_id → external_row_id mapping for Parent Law link
-        lrt_mappings = load_lrt_mappings(sync_config.id)
-
         formatted =
           Enum.map(controls, fn control ->
-            # LRT rows use UUID as source_id; find the external row ID
-            lrt_ext_id =
-              Enum.find_value(lrt_rows, fn row ->
-                source_id = format_uuid_for_mapping(row.id)
-
-                if row.name == control.law_name do
-                  Map.get(lrt_mappings, source_id)
-                end
-              end)
-
-            Baserow.format_control_row(control, lrt_ext_id)
+            # Legal_Register link: text value (law_name matches LRT primary field)
+            Baserow.format_control_row(control, control.law_name)
           end)
 
         # Delta detection
@@ -595,6 +583,7 @@ defmodule SertantaiLegal.Sync.Engine do
       provider = provider_module(sync_config.provider)
       controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
       lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
+      lrt_table_id = get_in(sync_config.target_config, ["lrt_table_id"])
 
       # Get law_names from controls already synced (via controls mappings)
       controls_mappings = load_mappings(sync_config.id, :controls)
@@ -615,30 +604,33 @@ defmodule SertantaiLegal.Sync.Engine do
              SertantaiLegal.Legal.ControlMapping
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
              |> Ash.read(),
-           field_specs = Baserow.control_mappings_field_specs(controls_table_id, lat_table_id),
+           field_specs =
+             Baserow.control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id),
            :ok <- provider.ensure_fields(provider_config, :control_mappings, field_specs) do
-        # Build lookup maps for link_row resolution
-        controls_by_source =
-          Map.new(controls_mappings, fn m -> {m.source_id, m.external_row_id} end)
+        # All links use text values — Baserow resolves by matching target table's primary field.
+        # No row ID tracking needed.
 
-        lat_mappings =
+        # LAT source_ids for walking up section_id hierarchy
+        lat_source_ids =
           if lat_table_id do
             load_mappings(sync_config.id, :lat)
-            |> Map.new(fn m -> {m.source_id, m.external_row_id} end)
+            |> MapSet.new(fn m -> m.source_id end)
           else
-            %{}
+            MapSet.new()
           end
 
         formatted =
           Enum.map(mappings, fn mapping ->
-            # Resolve control link: source_id format is "law_name:control_id"
-            control_source_id = "#{mapping.law_name}:#{find_control_id(mapping.control_id)}"
-            control_ext_id = Map.get(controls_by_source, control_source_id)
+            # Controls link: _source_id (matches Controls primary field "Name")
+            control_name = "#{mapping.law_name}:#{find_control_id(mapping.control_id)}"
 
-            # Resolve obligation link: section_id matches LAT source_id
-            lat_ext_id = Map.get(lat_mappings, mapping.section_id)
+            # Legal_Register link: law_name (matches LRT primary field)
+            lrt_name = mapping.law_name
 
-            Baserow.format_control_mapping_row(mapping, control_ext_id, lat_ext_id)
+            # Duties link: section_id or nearest parent in Baserow
+            duties_name = find_parent_lat_source_id(mapping.section_id, lat_source_ids)
+
+            Baserow.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
           end)
 
         # Delta detection
@@ -689,6 +681,42 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
+  # Build a map of law_name → Baserow external_row_id for the LRT table.
+  # LRT sync_row_mappings use the law's UUID as source_id, so we join
+  # through legal_register to get law_name.
+  defp build_lrt_name_lookup(sync_config_id) do
+    query = """
+    SELECT lr.name, srm.external_row_id
+    FROM sync_row_mappings srm
+    JOIN legal_register lr ON lr.id::text = srm.source_id
+    WHERE srm.sync_configuration_id = $1
+      AND srm.source_type = 'lrt'
+    """
+
+    {:ok, bin} = Ecto.UUID.dump(sync_config_id)
+
+    case SertantaiLegal.Repo.query(query, [bin]) do
+      {:ok, %{rows: rows}} ->
+        Map.new(rows, fn [name, ext_id] -> {name, ext_id} end)
+
+      _ ->
+        %{}
+    end
+  end
+
+  # Walk up the section_id hierarchy stripping trailing parentheticals
+  # until we find a match in the LAT mappings.
+  # e.g. UK_uksi_1999_3242:reg.3(1)(a) → reg.3(1) → reg.3
+  defp find_parent_lat_ext_id(section_id, lat_mappings) do
+    parent = Regex.replace(~r/\([^()]*\)$/, section_id, "")
+
+    cond do
+      parent == section_id -> nil
+      Map.has_key?(lat_mappings, parent) -> Map.get(lat_mappings, parent)
+      true -> find_parent_lat_ext_id(parent, lat_mappings)
+    end
+  end
+
   defp format_uuid_for_mapping(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
   defp format_uuid_for_mapping(uuid) when is_binary(uuid), do: uuid
   defp format_uuid_for_mapping(nil), do: nil
@@ -701,19 +729,19 @@ defmodule SertantaiLegal.Sync.Engine do
          actor_table_id,
          tuple_mappings
        ) do
-    # Ensure the link_row field exists on LAT → Actor Tuples
+    # Ensure the link_row field exists on LAT → Actors
     case provider.list_fields(provider_config, :lat) do
       {:ok, fields} ->
-        unless Enum.any?(fields, &(&1["name"] == "Actor Roles")) do
+        unless Enum.any?(fields, &(&1["name"] == "Actors")) do
           link_spec = %{
-            name: "Actor Roles",
+            name: "Actors",
             type: "link_row",
             opts: %{"link_row_table_id" => actor_table_id}
           }
 
           case Baserow.create_field(provider_config, lat_table_id, link_spec) do
             {:ok, _field_id} ->
-              Logger.info("[Sync] Created 'Actor Roles' link field on LAT")
+              Logger.info("[Sync] Created 'Actors' link field on LAT")
 
             {:error, reason} ->
               Logger.warning("[Sync] Failed to create link field: #{reason}")
@@ -782,7 +810,7 @@ defmodule SertantaiLegal.Sync.Engine do
                 do: ext_id
 
           if lat_ext_id && tuple_ids != [] do
-            %{"id" => lat_ext_id, "Actor Roles" => Enum.uniq(tuple_ids)}
+            %{"id" => lat_ext_id, "Actors" => Enum.uniq(tuple_ids)}
           end
         end)
         |> Enum.reject(&is_nil/1)
@@ -1066,6 +1094,32 @@ defmodule SertantaiLegal.Sync.Engine do
   defp load_lrt_mappings(sync_config_id) do
     load_mappings(sync_config_id, :lrt)
     |> Map.new(fn m -> {m.source_id, m.external_row_id} end)
+  end
+
+  # Look up the fractalaw control_id (stable UUID) from the Postgres UUID PK.
+  # Used to build _source_id for text-based link_row matching.
+  defp find_control_id(postgres_uuid) do
+    case Ash.get(SertantaiLegal.Legal.Control, postgres_uuid) do
+      {:ok, control} -> control.control_id
+      _ -> to_string(postgres_uuid)
+    end
+  end
+
+  # Walk up the section_id hierarchy stripping trailing parentheticals
+  # until we find a match in the LAT source_ids set.
+  # Returns the matching source_id string for text-based link_row.
+  defp find_parent_lat_source_id(section_id, lat_source_ids) do
+    if MapSet.member?(lat_source_ids, section_id) do
+      section_id
+    else
+      parent = Regex.replace(~r/\([^()]*\)$/, section_id, "")
+
+      cond do
+        parent == section_id -> nil
+        MapSet.member?(lat_source_ids, parent) -> parent
+        true -> find_parent_lat_source_id(parent, lat_source_ids)
+      end
+    end
   end
 
   defp update_mapping_timestamp(sync_config_id, source_type, source_id) do

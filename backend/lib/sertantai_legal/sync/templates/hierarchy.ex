@@ -43,28 +43,29 @@ defmodule SertantaiLegal.Sync.Templates.Hierarchy do
     %{
       hierarchy: [
         %{
-          name: "Node",
-          type: :formula,
-          primary: true,
-          expression: %{baserow: "concat(field('Type'), ': ', field('Name'))"},
-          description: "Display: Type: Name"
-        },
-        %{
           name: "Name",
           type: :text,
+          primary: true,
           description: "Node name (e.g. 'Manchester', 'EHS Department')"
         },
         %{
-          name: "Hierarchy",
+          name: "Hierarchy_Type",
           type: :single_select,
           options: @hierarchies,
-          description: "Which hierarchy this node belongs to"
+          description: "Which hierarchy this node belongs to: org, geo, finance, reporting"
         },
         %{
           name: "Type",
           type: :single_select,
           options: @node_types,
           description: "Node type — customer may add options"
+        },
+        # Node formula AFTER Type and Name (its dependencies)
+        %{
+          name: "Node",
+          type: :formula,
+          expression: %{baserow: "concat(field('Type'), ': ', field('Name'))"},
+          description: "Display: Type: Name"
         },
         %{
           name: "Parent",
@@ -85,17 +86,17 @@ defmodule SertantaiLegal.Sync.Templates.Hierarchy do
         %{
           name: "Org Structure",
           type: :grid,
-          filters: [%{field: "Hierarchy", op: :equal, value: "org"}]
+          filters: [%{field: "Hierarchy_Type", op: :equal, value: "org"}]
         },
         %{
           name: "Locations",
           type: :grid,
-          filters: [%{field: "Hierarchy", op: :equal, value: "geo"}]
+          filters: [%{field: "Hierarchy_Type", op: :equal, value: "geo"}]
         },
         %{
           name: "Cost Centres",
           type: :grid,
-          filters: [%{field: "Hierarchy", op: :equal, value: "finance"}]
+          filters: [%{field: "Hierarchy_Type", op: :equal, value: "finance"}]
         },
         %{
           name: "Top Level",

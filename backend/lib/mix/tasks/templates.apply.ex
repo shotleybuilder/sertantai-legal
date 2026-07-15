@@ -13,7 +13,8 @@ defmodule Mix.Tasks.Templates.Apply do
       mix templates.apply                                    # default config, personnel template
       mix templates.apply --templates personnel              # specific template
       mix templates.apply --templates personnel,compliance_assessment
-      mix templates.apply --config UUID                      # specific sync config
+      mix templates.apply --config UUID                      # specific sync config (customer)
+      mix templates.apply --database-id 494412               # target a specific Baserow database
       mix templates.apply --people linked                    # sub-pattern override
       mix templates.apply --list                             # show available templates
       mix templates.apply --help
@@ -41,6 +42,8 @@ defmodule Mix.Tasks.Templates.Apply do
       OptionParser.parse(args,
         strict: [
           config: :string,
+          database_id: :integer,
+          fresh: :boolean,
           templates: :string,
           people: :string,
           risk: :string,
@@ -85,13 +88,60 @@ defmodule Mix.Tasks.Templates.Apply do
     {:ok, authed_config} = Baserow.authenticate(provider_config)
     Mix.shell().info("Authenticated with Baserow")
 
-    # Resolve database_id from existing table IDs
-    database_id = resolve_database_id(authed_config, sync_config.target_config)
+    # Resolve database_id: CLI flag > target_config > infer from existing tables
+    database_id =
+      opts[:database_id] ||
+        sync_config.target_config["database_id"] ||
+        resolve_database_id_from_tables(authed_config, sync_config.target_config)
+
     authed_config = Map.put(authed_config, "database_id", database_id)
     Mix.shell().info("Database ID: #{database_id}")
 
-    # Load existing table IDs from sync config
-    table_ids = load_table_ids(sync_config.target_config)
+    # If --database-id was explicitly provided and differs from stored,
+    # clear old table IDs (fresh DB, start clean)
+    {sync_config, table_ids} =
+      if opts[:fresh] ||
+           (opts[:database_id] && sync_config.target_config["database_id"] != database_id) do
+        # Strip all old table IDs, keep non-table settings
+        keep_keys = [
+          "base_url",
+          "lat_aggregated",
+          "lat_drrp_types",
+          "lat_governed_only",
+          "lat_min_provision_significance"
+        ]
+
+        clean_config =
+          sync_config.target_config
+          |> Map.take(keep_keys)
+          |> Map.put("database_id", database_id)
+
+        {:ok, id_bin} = Ecto.UUID.dump(sync_config.id)
+
+        SertantaiLegal.Repo.query!(
+          "UPDATE sync_configurations SET target_config = $1 WHERE id = $2",
+          [clean_config, id_bin]
+        )
+
+        Mix.shell().info("  New database #{database_id} — cleared old table IDs")
+        {%{sync_config | target_config: clean_config}, %{}}
+      else
+        # Persist database_id if not already there
+        unless sync_config.target_config["database_id"] == database_id do
+          new_config = Map.put(sync_config.target_config, "database_id", database_id)
+          {:ok, id_bin} = Ecto.UUID.dump(sync_config.id)
+
+          SertantaiLegal.Repo.query!(
+            "UPDATE sync_configurations SET target_config = $1 WHERE id = $2",
+            [new_config, id_bin]
+          )
+
+          Mix.shell().info("  Saved database_id #{database_id} to sync config")
+        end
+
+        {sync_config, load_table_ids(sync_config.target_config)}
+      end
+
     Mix.shell().info("Existing tables: #{map_size(table_ids)}")
 
     # Parse templates
@@ -165,8 +215,8 @@ defmodule Mix.Tasks.Templates.Apply do
   defp maybe_add(acc, _key, nil), do: acc
   defp maybe_add(acc, key, value), do: [{key, String.to_atom(value)} | acc]
 
-  defp resolve_database_id(config, target_config) do
-    # Try to get database_id from any existing table
+  # Fallback: infer database_id from an existing table ID via the Baserow API
+  defp resolve_database_id_from_tables(config, target_config) do
     table_id =
       target_config["lrt_table_id"] ||
         target_config["lat_table_id"] ||
@@ -187,7 +237,11 @@ defmodule Mix.Tasks.Templates.Apply do
           System.halt(1)
       end
     else
-      Mix.shell().error("No existing table IDs in sync config — cannot resolve database_id")
+      Mix.shell().error(
+        "No database_id in config and no existing tables to infer from.\n" <>
+          "Use --database-id N or set database_id in target_config."
+      )
+
       System.halt(1)
     end
   end
@@ -224,35 +278,10 @@ defmodule Mix.Tasks.Templates.Apply do
   defp maybe_put_table(map, key, id), do: Map.put(map, key, id)
 
   defp save_table_ids(sync_config, table_ids) do
-    # Build updates: only save template table IDs (not base data tables)
-    template_keys = [
-      :personnel,
-      :assessments,
-      :actions,
-      :evidence,
-      :incidents,
-      :audits,
-      :training,
-      :documents,
-      :raci,
-      :pdca,
-      :sites,
-      :divisions,
-      :hierarchy,
-      :controls,
-      :control_mappings,
-      :artefacts,
-      :judgements,
-      :gaps,
-      :compliance_events
-    ]
-
+    # Save ALL table IDs — foundation (lrt, lat) and templates
     updates =
-      Enum.reduce(template_keys, %{}, fn key, acc ->
-        case Map.get(table_ids, key) do
-          nil -> acc
-          id -> Map.put(acc, "#{key}_table_id", id)
-        end
+      Enum.reduce(table_ids, %{}, fn {key, id}, acc ->
+        Map.put(acc, "#{key}_table_id", id)
       end)
 
     if map_size(updates) > 0 do

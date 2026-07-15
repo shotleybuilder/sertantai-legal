@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Templates.Status do
     Mix.shell().info("  Base Data:")
     print_table_status("Legal Register", tc["lrt_table_id"])
     print_table_status("Duties", tc["lat_table_id"])
-    print_table_status("Actor Tuples", tc["actor_tuples_table_id"])
+    print_table_status("Actors", tc["actor_tuples_table_id"])
 
     Mix.shell().info("")
     Mix.shell().info("  Templates:")

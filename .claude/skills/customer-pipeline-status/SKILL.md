@@ -56,7 +56,48 @@ Columnar table: law_name, title, live status, LAT count, taxa %, fractalaw stage
 4. Taxa enriched (legal_articles.taxa_enriched_at)
 5. Fractalaw stage (needs_lat → needs_embed → needs_parse → needs_classify → needs_validate → ready_to_publish → published)
 6. Governed duties (Obligation DRRP + non-Gvt active actors, aggregated to provision level)
+7. Controls (AI-generated controls from fractalaw, linked to provisions via control_mappings)
 ```
+
+## Control Mapping QA
+
+After controls are published, check the resolution rate of control_mappings against LAT:
+
+```sql
+-- Overall resolution rate
+SELECT 
+  COUNT(*) AS total_mappings,
+  COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM lat WHERE lat.section_id = cm.section_id)) AS resolved,
+  COUNT(*) FILTER (WHERE NOT EXISTS (SELECT 1 FROM lat WHERE lat.section_id = cm.section_id)) AS unresolved,
+  ROUND(100.0 * COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM lat WHERE lat.section_id = cm.section_id)) / NULLIF(COUNT(*), 0), 1) AS pct
+FROM control_mappings cm;
+
+-- Unresolved by law
+SELECT cm.law_name, COUNT(*) AS unresolved
+FROM control_mappings cm
+WHERE NOT EXISTS (SELECT 1 FROM lat WHERE lat.section_id = cm.section_id)
+GROUP BY cm.law_name ORDER BY unresolved DESC;
+
+-- Controls summary for a customer's applicable laws
+SELECT 
+  COUNT(DISTINCT c.law_name) AS laws_with_controls,
+  COUNT(*) FILTER (WHERE NOT c.is_predicate) AS controls,
+  COUNT(*) FILTER (WHERE c.is_predicate) AS predicates
+FROM controls c
+WHERE c.law_name IN (
+  SELECT law_name FROM org_applicabilities WHERE status = 'yes'
+);
+```
+
+### Common unresolved causes
+
+| Pattern | Cause | Fix |
+|---------|-------|-----|
+| `reg.N(N)(M)` | Doubled section_id from old fractalaw publish | Republish controls after fractalaw re-ingests fixed LAT |
+| `art.` on domestic SI | Wrong prefix | Fixed by ControlsSubscriber art.→reg. normalization |
+| `s.11A(1)` | Lettered sections | LAT parser limitation — doesn't parse lettered section variants |
+| `#position` suffix | Disambiguator leaked into fractalaw | fractalaw LLM prompt fix |
+| Stale mappings after re-parse | Old control_mappings not overwritten | Delete orphaned: `DELETE FROM control_mappings WHERE NOT EXISTS (SELECT 1 FROM lat WHERE lat.section_id = control_mappings.section_id)` |
 
 ## Notes
 

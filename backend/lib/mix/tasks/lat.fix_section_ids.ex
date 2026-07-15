@@ -2,59 +2,55 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
   @moduledoc """
   Fix corrupted section_ids in legal_articles (Issue #120).
 
-  Re-parses laws with the fixed parser, diffs against existing data using
-  xml_id as the stable join key, builds a corrections table, and optionally
-  applies the corrections.
+  Re-parses laws with the fixed parser, compares against existing data
+  using provision text as the stable join key, builds a corrections
+  table, and optionally applies the corrections.
 
   ## Usage
 
-      # Dry run — single law (builds corrections, does not apply)
+      # Dry run — single law
       mix lat.fix_section_ids UK_ssi_2009_140
 
-      # Dry run — all affected laws
+      # Dry run — all affected laws (with doubled section_ids)
       mix lat.fix_section_ids --all
 
       # Apply corrections
       mix lat.fix_section_ids UK_ssi_2009_140 --apply
 
+      # Batch of 50
+      mix lat.fix_section_ids --all --batch 50 --apply
+
   ## How it works
 
-  1. Fetches the XML from legislation.gov.uk
-  2. Parses with the fixed parser → new rows with (xml_id, new_section_id)
-  3. Walks the XML to extract all xml_ids in document order (including wrapper P2s)
-  4. Matches xml_ids to existing legal_articles rows by (law_name, position)
-  5. Builds corrections: old_section_id → new_section_id → action
-  6. Reports sense checks and corrections summary
-  7. If --apply: updates legal_articles + downstream tables in a transaction
+  1. Fetches body XML from legislation.gov.uk
+  2. Parses with the fixed parser → new rows with correct section_ids
+  3. Joins existing → new on (law_name, text) to match rows
+  4. Where section_id differs → rewrite correction
+  5. Existing rows with no text match in new → delete (wrapper P2s)
+  6. If --apply: updates legal_articles + downstream in a transaction
   """
 
   use Mix.Task
   require Logger
-  import SweetXml
 
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Repo
 
   @shortdoc "Fix doubled section_ids (Issue #120)"
-
-  # Elements the parser emits rows for (must match walk_element in lat_parser.ex)
-  @structural_elements ~w(Part EUTitle Chapter EUChapter Pblock P1 P2 P3 P4 Schedule SignedSection Tabular Figure)
-
-  # Elements the parser skips
-  @skip_elements ~w(BlockAmendment OrderedList UnorderedList Addition Repeal Substitution)
-
-  # Container elements the parser recurses through
-  @container_elements ~w(Body Primary Secondary P1para P2para P3para P1group Schedules
-    EUPart EUSection EUSubsection EUPreamble Recitals)
 
   def run(args) do
     Mix.Task.run("app.start")
 
     {opts, positional, _} =
-      OptionParser.parse(args, switches: [apply: :boolean, all: :boolean], aliases: [])
+      OptionParser.parse(args,
+        switches: [apply: :boolean, all: :boolean, batch: :integer],
+        aliases: []
+      )
 
     apply? = Keyword.get(opts, :apply, false)
+    batch_size = Keyword.get(opts, :batch, nil)
 
     law_names =
       if Keyword.get(opts, :all, false) do
@@ -62,8 +58,15 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
       else
         case positional do
           [name] -> [name]
-          _ -> Mix.raise("Usage: mix lat.fix_section_ids LAW_NAME [--apply] or --all")
+          _ -> Mix.raise("Usage: mix lat.fix_section_ids LAW_NAME [--apply] or --all [--batch N]")
         end
+      end
+
+    law_names =
+      if batch_size do
+        Enum.take(law_names, batch_size)
+      else
+        law_names
       end
 
     IO.puts("Processing #{length(law_names)} law(s)...\n")
@@ -81,18 +84,25 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
       end)
 
     # Summary
-    rewrites = Enum.count(all_corrections, &(&1.action == :rewrite))
-    deletes = Enum.count(all_corrections, &(&1.action == :delete))
+    rewrites = Enum.filter(all_corrections, &(&1.action == :rewrite))
+    deletes = Enum.filter(all_corrections, &(&1.action == :delete))
     no_change = Enum.count(all_corrections, &(&1.action == :no_change))
+    unmatched = Enum.filter(all_corrections, &(&1.action == :unmatched_new))
+    dupes = Enum.filter(all_corrections, &(&1.action == :duplicate_text))
 
     IO.puts("\n── Summary ──")
-    IO.puts("  #{no_change} unchanged, #{rewrites} rewrites, #{deletes} deletes")
 
-    if apply? and (rewrites > 0 or deletes > 0) do
+    IO.puts(
+      "  #{no_change} unchanged, #{length(rewrites)} rewrites, " <>
+        "#{length(deletes)} deletes, #{length(unmatched)} unmatched new, " <>
+        "#{length(dupes)} duplicate text"
+    )
+
+    if apply? and (rewrites != [] or deletes != []) do
       IO.puts("\nApplying corrections...")
-      apply_corrections(all_corrections)
+      apply_corrections(rewrites, deletes)
     else
-      if rewrites > 0 or deletes > 0 do
+      if rewrites != [] or deletes != [] do
         IO.puts("\nDry run — use --apply to execute corrections")
       end
     end
@@ -103,153 +113,235 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
   defp process_law(law_name) do
     IO.puts("── #{law_name} ──")
 
-    # Look up the law record for type_code
-    case lookup_law(law_name) do
-      {:ok, law} ->
-        type_code = law.type_code
+    with {:ok, type_code} <- lookup_type_code(law_name),
+         {:ok, xml} <- fetch_xml(law_name) do
+      # Re-parse with fixed parser
+      new_rows = LatParser.parse(xml, %{law_name: law_name, type_code: type_code})
 
-        # Step 1: Fetch XML
-        case fetch_xml(law_name, type_code) do
-          {:ok, xml} ->
-            # Step 2: Re-parse with fixed parser → new rows with xml_id
-            new_rows = LatParser.parse(xml, %{law_name: law_name, type_code: type_code})
+      # Load existing rows
+      existing_rows = load_existing_rows(law_name)
 
-            # Step 3: Walk XML to extract all xml_ids in document order (including wrapper P2s)
-            old_xml_ids = extract_xml_ids_in_document_order(xml)
+      # Sense checks
+      IO.puts(
+        "  rows: #{length(existing_rows)} existing → #{length(new_rows)} new " <>
+          "(#{length(existing_rows) - length(new_rows)} removed)"
+      )
 
-            # Step 4: Load existing rows, match by position
-            existing_rows = load_existing_rows(law_name)
+      # Build corrections by text match
+      corrections = build_corrections(existing_rows, new_rows)
 
-            # Sense checks
-            sense_check(law_name, existing_rows, new_rows, old_xml_ids)
+      rewrites = Enum.count(corrections, &(&1.action == :rewrite))
+      deletes = Enum.count(corrections, &(&1.action == :delete))
+      no_change = Enum.count(corrections, &(&1.action == :no_change))
+      dupes = Enum.count(corrections, &(&1.action == :duplicate_text))
 
-            # Step 5: Build corrections
-            corrections = build_corrections(law_name, existing_rows, new_rows, old_xml_ids)
+      IO.puts("  #{no_change} ok, #{rewrites} rewrite, #{deletes} delete, #{dupes} dupe text")
 
-            rewrites = Enum.count(corrections, &(&1.action == :rewrite))
-            deletes = Enum.count(corrections, &(&1.action == :delete))
-            no_change = Enum.count(corrections, &(&1.action == :no_change))
-            unmatched = Enum.count(corrections, &(&1.action == :unmatched))
+      # Show rewrites
+      corrections
+      |> Enum.filter(&(&1.action == :rewrite))
+      |> Enum.take(5)
+      |> Enum.each(fn c ->
+        IO.puts("    #{c.old_section_id} → #{c.new_section_id}")
+      end)
 
-            IO.puts(
-              "  #{no_change} ok, #{rewrites} rewrite, #{deletes} delete, #{unmatched} unmatched"
-            )
+      if rewrites > 5 do
+        IO.puts("    ... and #{rewrites - 5} more")
+      end
 
-            # Show rewrites
-            corrections
-            |> Enum.filter(&(&1.action == :rewrite))
-            |> Enum.take(10)
-            |> Enum.each(fn c ->
-              IO.puts("    #{c.old_section_id} → #{c.new_section_id}")
-            end)
-
-            if rewrites > 10 do
-              IO.puts("    ... and #{rewrites - 10} more")
-            end
-
-            {:ok, corrections}
-
-          {:error, reason} ->
-            {:error, reason}
-        end
-
-      {:error, reason} ->
-        {:error, reason}
+      {:ok, corrections}
     end
   end
 
-  # ── XML ID Extraction ─────────────────────────────────────────────
+  # ── Build corrections via text match ──────────────────────────────
 
-  @doc """
-  Walk the XML in document order, extracting (xml_id, element_name) for
-  every element that the OLD parser would have emitted a row for.
-  This includes wrapper P2 rows that the new parser skips.
-  Returns a list in document order — position is the 1-based index.
-  """
-  def extract_xml_ids_in_document_order(xml) do
-    doc = SweetXml.parse(xml)
+  defp build_corrections(existing_rows, new_rows) do
+    # Index new rows by (law_name, text) — text is the stable key
+    # Handle duplicate texts: first match wins, flag the rest
+    {new_by_text, new_dupes} = index_by_text(new_rows, :section_id)
 
-    doc
-    |> walk_for_ids()
-    |> List.flatten()
-    |> Enum.with_index(1)
-    |> Enum.map(fn {{xml_id, el_name}, position} ->
-      %{xml_id: xml_id, element: el_name, position: position}
+    # Match existing rows against new
+    {matched_texts, corrections} =
+      Enum.reduce(existing_rows, {MapSet.new(), []}, fn old, {seen, acc} ->
+        key = {old.law_name, old.text}
+
+        cond do
+          # Null/empty text — can't match, flag for deletion
+          is_nil(old.text) or old.text == "" ->
+            correction = %{
+              old_section_id: old.section_id,
+              new_section_id: nil,
+              action: :delete,
+              law_name: old.law_name
+            }
+
+            {seen, [correction | acc]}
+
+          # Already matched this text — duplicate in existing (wrapper P2 has same text as parent)
+          MapSet.member?(seen, key) ->
+            correction = %{
+              old_section_id: old.section_id,
+              new_section_id: nil,
+              action: :delete,
+              law_name: old.law_name
+            }
+
+            {seen, [correction | acc]}
+
+          # Text match found in new
+          Map.has_key?(new_by_text, key) ->
+            new_section_id = Map.get(new_by_text, key)
+
+            action =
+              if old.section_id == new_section_id, do: :no_change, else: :rewrite
+
+            correction = %{
+              old_section_id: old.section_id,
+              new_section_id: new_section_id,
+              action: action,
+              law_name: old.law_name
+            }
+
+            {MapSet.put(seen, key), [correction | acc]}
+
+          # No match in new — old row doesn't exist after re-parse
+          true ->
+            correction = %{
+              old_section_id: old.section_id,
+              new_section_id: nil,
+              action: :delete,
+              law_name: old.law_name
+            }
+
+            {seen, [correction | acc]}
+        end
+      end)
+
+    # Check for new rows that have no match in existing (shouldn't happen for fixes)
+    unmatched_new =
+      new_rows
+      |> Enum.reject(fn r ->
+        key = {r.law_name, r[:text]}
+        MapSet.member?(matched_texts, key) or is_nil(r[:text]) or r[:text] == ""
+      end)
+      |> Enum.map(fn r ->
+        %{
+          old_section_id: nil,
+          new_section_id: r.section_id,
+          action: :unmatched_new,
+          law_name: r.law_name
+        }
+      end)
+
+    # Flag duplicate text entries
+    dupe_corrections =
+      Enum.map(new_dupes, fn {key, section_ids} ->
+        {law_name, _text} = key
+
+        %{
+          old_section_id: nil,
+          new_section_id: Enum.join(section_ids, ", "),
+          action: :duplicate_text,
+          law_name: law_name
+        }
+      end)
+
+    Enum.reverse(corrections) ++ unmatched_new ++ dupe_corrections
+  end
+
+  # Build a map of {law_name, text} → section_id, tracking duplicates
+  defp index_by_text(rows, id_field) do
+    Enum.reduce(rows, {%{}, []}, fn row, {index, dupes} ->
+      text = Map.get(row, :text) || row[:text]
+      law_name = Map.get(row, :law_name) || row[:law_name]
+      section_id = Map.get(row, id_field)
+
+      if is_nil(text) or text == "" do
+        {index, dupes}
+      else
+        key = {law_name, text}
+
+        if Map.has_key?(index, key) do
+          existing_id = Map.get(index, key)
+          {index, [{key, [existing_id, section_id]} | dupes]}
+        else
+          {Map.put(index, key, section_id), dupes}
+        end
+      end
     end)
   end
 
-  defp walk_for_ids(node) do
-    name = get_element_name(node)
+  # ── Apply corrections ────────────────────────────────────────────
 
-    cond do
-      name in @skip_elements ->
-        []
+  defp apply_corrections(rewrites, deletes) do
+    Repo.transaction(fn ->
+      # Update downstream tables first
+      Enum.each(rewrites, fn c ->
+        Repo.query!(
+          "UPDATE control_mappings SET section_id = $1 WHERE section_id = $2",
+          [c.new_section_id, c.old_section_id]
+        )
 
-      name in @container_elements or
-          name in [
-            "Legislation",
-            "Body",
-            "Primary",
-            "Secondary",
-            "Schedules",
-            "EUBody",
-            "EUPreamble",
-            "Recitals"
-          ] ->
-        get_children_ids(node)
+        Repo.query!(
+          "UPDATE amendment_annotations SET affected_sections = array_replace(affected_sections, $1, $2) WHERE $1 = ANY(affected_sections)",
+          [c.old_section_id, c.new_section_id]
+        )
+      end)
 
-      name in @structural_elements ->
-        xml_id = xpath(node, ~x"./@id"os) |> to_string_or_nil()
-        entry = {xml_id, name}
-        [entry | get_children_ids(node)]
+      # Delete downstream references for removed rows
+      Enum.each(deletes, fn c ->
+        Repo.query!(
+          "DELETE FROM control_mappings WHERE section_id = $1",
+          [c.old_section_id]
+        )
 
-      true ->
-        get_children_ids(node)
-    end
+        Repo.query!(
+          "UPDATE amendment_annotations SET affected_sections = array_remove(affected_sections, $1) WHERE $1 = ANY(affected_sections)",
+          [c.old_section_id]
+        )
+      end)
+
+      # Rewrite section_ids in legal_articles
+      Enum.each(rewrites, fn c ->
+        Repo.query!(
+          "UPDATE legal_articles SET section_id = $1 WHERE section_id = $2",
+          [c.new_section_id, c.old_section_id]
+        )
+      end)
+
+      # Delete wrapper P2 rows from legal_articles
+      Enum.each(deletes, fn c ->
+        Repo.query!(
+          "DELETE FROM legal_articles WHERE section_id = $1",
+          [c.old_section_id]
+        )
+      end)
+
+      IO.puts("  Applied #{length(rewrites)} rewrites, #{length(deletes)} deletes")
+    end)
   end
 
-  defp get_children_ids(node) do
-    case xpath(node, ~x"./*"l) do
-      nil -> []
-      children -> Enum.flat_map(children, &walk_for_ids/1)
-    end
-  end
+  # ── Data loading ──────────────────────────────────────────────────
 
-  defp get_element_name(node) do
-    case xpath(node, ~x"name()"s) do
-      nil -> nil
-      "" -> nil
-      name -> to_string(name)
-    end
-  end
-
-  defp to_string_or_nil(nil), do: nil
-  defp to_string_or_nil(""), do: nil
-  defp to_string_or_nil(val), do: to_string(val)
-
-  # ── Data Loading ──────────────────────────────────────────────────
-
-  defp lookup_law(law_name) do
-    query = "SELECT type_code FROM legal_register WHERE name = $1 LIMIT 1"
-
-    case SertantaiLegal.Repo.query(query, [law_name]) do
-      {:ok, %{rows: [[type_code]]}} -> {:ok, %{type_code: type_code}}
+  defp lookup_type_code(law_name) do
+    case Repo.query("SELECT type_code FROM legal_register WHERE name = $1 LIMIT 1", [law_name]) do
+      {:ok, %{rows: [[type_code]]}} -> {:ok, type_code}
       _ -> {:error, "law not found in legal_register"}
     end
   end
 
   defp load_existing_rows(law_name) do
     query = """
-    SELECT section_id, position, section_type
+    SELECT section_id, law_name, text
     FROM legal_articles
     WHERE law_name = $1
     ORDER BY position
     """
 
-    case SertantaiLegal.Repo.query(query, [law_name]) do
+    case Repo.query(query, [law_name]) do
       {:ok, %{rows: rows}} ->
-        Enum.map(rows, fn [section_id, position, section_type] ->
-          %{section_id: section_id, position: position, section_type: section_type}
+        Enum.map(rows, fn [section_id, law_name, text] ->
+          %{section_id: section_id, law_name: law_name, text: text}
         end)
 
       _ ->
@@ -257,7 +349,7 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
     end
   end
 
-  defp fetch_xml(law_name, _type_code) do
+  defp fetch_xml(law_name) do
     slash_path = IdField.normalize_to_slash_format(law_name)
     path = "/#{slash_path}/body/data.xml"
 
@@ -268,172 +360,25 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
     end
   end
 
-  # ── Sense Checks ──────────────────────────────────────────────────
-
-  defp sense_check(law_name, existing_rows, new_rows, old_xml_ids) do
-    old_count = length(existing_rows)
-    new_count = length(new_rows)
-    xml_id_count = length(old_xml_ids)
-
-    # Old xml_id count should match existing row count (same traversal)
-    if xml_id_count != old_count do
-      IO.puts("  ⚠ xml_id count (#{xml_id_count}) != existing rows (#{old_count})")
-    end
-
-    # New count should be <= old count (wrapper P2s removed)
-    if new_count > old_count do
-      IO.puts("  ⚠ new rows (#{new_count}) > old rows (#{old_count}) — unexpected!")
-    end
-
-    # New count shouldn't drop too far
-    if new_count < old_count * 0.8 do
-      IO.puts("  ⚠ new rows (#{new_count}) < 80% of old rows (#{old_count}) — large change!")
-    end
-
-    IO.puts("  rows: #{old_count} old → #{new_count} new (#{old_count - new_count} removed)")
-  end
-
-  # ── Build Corrections ────────────────────────────────────────────
-
-  defp build_corrections(_law_name, existing_rows, new_rows, old_xml_ids) do
-    # Map old xml_ids (with position) to existing section_ids
-    old_by_xml_id =
-      old_xml_ids
-      |> Enum.zip(existing_rows)
-      |> Enum.reduce(%{}, fn {xml_entry, existing}, acc ->
-        if xml_entry.xml_id do
-          Map.put(acc, xml_entry.xml_id, existing.section_id)
-        else
-          # No xml_id — use position as fallback key
-          Map.put(acc, "pos:#{xml_entry.position}", existing.section_id)
-        end
-      end)
-
-    # Map new rows by xml_id
-    new_by_xml_id =
-      new_rows
-      |> Enum.reduce(%{}, fn row, acc ->
-        if row.xml_id do
-          Map.put(acc, row.xml_id, row.section_id)
-        else
-          Map.put(acc, "pos:#{row.position}", row.section_id)
-        end
-      end)
-
-    # Build corrections from old side
-    corrections =
-      Enum.map(old_by_xml_id, fn {xml_id, old_section_id} ->
-        case Map.get(new_by_xml_id, xml_id) do
-          nil ->
-            # Old row has no match in new parse → wrapper P2, delete
-            %{
-              xml_id: xml_id,
-              old_section_id: old_section_id,
-              new_section_id: nil,
-              action: :delete
-            }
-
-          ^old_section_id ->
-            # Same section_id → no change
-            %{
-              xml_id: xml_id,
-              old_section_id: old_section_id,
-              new_section_id: old_section_id,
-              action: :no_change
-            }
-
-          new_section_id ->
-            # Different section_id → rewrite
-            %{
-              xml_id: xml_id,
-              old_section_id: old_section_id,
-              new_section_id: new_section_id,
-              action: :rewrite
-            }
-        end
-      end)
-
-    # Check for new rows that have no old match (shouldn't happen, but flag it)
-    new_only_xml_ids = Map.keys(new_by_xml_id) -- Map.keys(old_by_xml_id)
-
-    unmatched =
-      Enum.map(new_only_xml_ids, fn xml_id ->
-        %{
-          xml_id: xml_id,
-          old_section_id: nil,
-          new_section_id: Map.get(new_by_xml_id, xml_id),
-          action: :unmatched
-        }
-      end)
-
-    corrections ++ unmatched
-  end
-
-  # ── Apply Corrections ────────────────────────────────────────────
-
-  defp apply_corrections(corrections) do
-    rewrites = Enum.filter(corrections, &(&1.action == :rewrite))
-    deletes = Enum.filter(corrections, &(&1.action == :delete))
-
-    SertantaiLegal.Repo.transaction(fn ->
-      # Update downstream tables first (before PK changes)
-      Enum.each(rewrites, fn c ->
-        # control_mappings
-        SertantaiLegal.Repo.query!(
-          "UPDATE control_mappings SET section_id = $1 WHERE section_id = $2",
-          [c.new_section_id, c.old_section_id]
-        )
-
-        # amendment_annotations.affected_sections (text array)
-        SertantaiLegal.Repo.query!(
-          "UPDATE amendment_annotations SET affected_sections = array_replace(affected_sections, $1, $2) WHERE $1 = ANY(affected_sections)",
-          [c.old_section_id, c.new_section_id]
-        )
-      end)
-
-      # Delete wrapper P2 rows from downstream tables
-      Enum.each(deletes, fn c ->
-        SertantaiLegal.Repo.query!(
-          "DELETE FROM control_mappings WHERE section_id = $1",
-          [c.old_section_id]
-        )
-
-        SertantaiLegal.Repo.query!(
-          "UPDATE amendment_annotations SET affected_sections = array_remove(affected_sections, $1) WHERE $1 = ANY(affected_sections)",
-          [c.old_section_id]
-        )
-      end)
-
-      # Now update the PKs in legal_articles
-      Enum.each(rewrites, fn c ->
-        SertantaiLegal.Repo.query!(
-          "UPDATE legal_articles SET section_id = $1 WHERE section_id = $2",
-          [c.new_section_id, c.old_section_id]
-        )
-      end)
-
-      # Delete wrapper P2 rows from legal_articles
-      Enum.each(deletes, fn c ->
-        SertantaiLegal.Repo.query!(
-          "DELETE FROM legal_articles WHERE section_id = $1",
-          [c.old_section_id]
-        )
-      end)
-
-      IO.puts("  Applied #{length(rewrites)} rewrites, #{length(deletes)} deletes")
-    end)
-  end
-
   # ── Find affected laws ────────────────────────────────────────────
 
   defp find_affected_laws do
     query = """
-    SELECT DISTINCT law_name FROM legal_articles
-    WHERE section_id ~ '\\.(\\d+[A-Za-z]*)\\(\\1\\)'
+    WITH doubled AS (
+      SELECT DISTINCT law_name FROM legal_articles
+      WHERE section_id ~ '\\.(\\d+[A-Za-z]*)\\(\\1\\)'
+    )
+    SELECT law_name FROM doubled
+    WHERE NOT EXISTS (
+      SELECT 1 FROM legal_articles la2
+      WHERE la2.law_name = doubled.law_name
+        AND la2.section_type = 'paragraph'
+        AND 1 = 0
+    )
     ORDER BY law_name
     """
 
-    case SertantaiLegal.Repo.query(query, []) do
+    case Repo.query(query, []) do
       {:ok, %{rows: rows}} -> Enum.map(rows, fn [name] -> name end)
       _ -> []
     end

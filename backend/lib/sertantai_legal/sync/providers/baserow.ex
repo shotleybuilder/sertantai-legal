@@ -1360,33 +1360,33 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   """
   def controls_field_specs(lrt_table_id) do
     [
-      # AI-generated fields
+      # AI-generated fields — names match template (underscores)
       %{name: "Title", type: "text"},
       %{name: "Description", type: "long_text"},
-      %{name: "What It Checks", type: "long_text"},
-      single_select_spec("Control Type", @control_types),
+      %{name: "What_It_Checks", type: "long_text"},
+      single_select_spec("Control_Type", @control_types),
       single_select_spec("Nature", @control_natures),
       single_select_spec("Domain", @control_domains),
       single_select_spec("Frequency", @control_frequencies),
-      single_select_spec("Info Distance", @info_distances),
-      single_select_spec("Blast Radius", @blast_radii),
-      %{name: "Expected Touch Frequency", type: "text"},
-      single_select_spec("Mapping Strength", @mapping_strengths),
-      %{name: "Load Bearing Judgement", type: "long_text"},
-      %{name: "Evidence Type A", type: "long_text"},
-      %{name: "Evidence Type B", type: "long_text"},
-      %{name: "Honest Limit", type: "long_text"},
+      single_select_spec("Info_Distance", @info_distances),
+      single_select_spec("Blast_Radius", @blast_radii),
+      %{name: "Expected_Touch_Frequency", type: "text"},
+      single_select_spec("Mapping_Strength", @mapping_strengths),
+      %{name: "Load_Bearing_Judgement", type: "long_text"},
+      %{name: "Evidence_Type_A", type: "long_text"},
+      %{name: "Evidence_Type_B", type: "long_text"},
+      %{name: "Honest_Limit", type: "long_text"},
       single_select_spec("Status", @control_statuses),
       single_select_spec("Tier", @control_tiers),
-      %{name: "Is Predicate", type: "boolean"},
-      %{name: "Parent Law", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}},
+      %{name: "Is_Predicate", type: "boolean"},
+      %{name: "Legal_Register", type: "link_row", opts: %{"link_row_table_id" => lrt_table_id}},
       # Customer-set fields (created empty)
       %{name: "Owner", type: "text"},
-      %{name: "External Ref", type: "url"},
-      single_select_spec("Demand Mode", @demand_modes),
-      single_select_spec("Design Effectiveness", @effectiveness),
-      single_select_spec("Operating Effectiveness", @effectiveness),
-      %{name: "Last Verified", type: "date"},
+      %{name: "External_Ref", type: "url"},
+      single_select_spec("Demand_Mode", @demand_modes),
+      single_select_spec("Design_Effectiveness", @effectiveness),
+      single_select_spec("Operating_Effectiveness", @effectiveness),
+      %{name: "Last_Verified", type: "date"},
       %{name: "Notes", type: "long_text"},
       # System
       %{name: "_source_id", type: "text"}
@@ -1399,31 +1399,34 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   `lrt_external_row_id` is the Baserow row ID of the parent law in the
   Legal Register table (for the Parent Law link_row field).
   """
-  def format_control_row(control, lrt_external_row_id) do
+  def format_control_row(control, lrt_name) do
+    source_id = "#{control.law_name}:#{control.control_id}"
+
     row = %{
-      "_source_id" => "#{control.law_name}:#{control.control_id}",
+      "Name" => source_id,
+      "_source_id" => source_id,
       "Title" => control.title,
       "Description" => control.description,
-      "What It Checks" => control.what_it_checks,
-      "Control Type" => control.control_type,
+      "What_It_Checks" => control.what_it_checks,
+      "Control_Type" => control.control_type,
       "Nature" => control.nature,
       "Domain" => control.domain,
       "Frequency" => control.frequency,
-      "Info Distance" => control.info_distance,
-      "Blast Radius" => control.blast_radius,
-      "Expected Touch Frequency" => control.expected_touch_frequency,
-      "Mapping Strength" => control.mapping_strength,
-      "Load Bearing Judgement" => control.load_bearing_judgement,
-      "Evidence Type A" => control.evidence_type_a,
-      "Evidence Type B" => control.evidence_type_b,
-      "Honest Limit" => control.honest_limit,
+      "Info_Distance" => control.info_distance,
+      "Blast_Radius" => control.blast_radius,
+      "Expected_Touch_Frequency" => control.expected_touch_frequency,
+      "Mapping_Strength" => control.mapping_strength,
+      "Load_Bearing_Judgement" => control.load_bearing_judgement,
+      "Evidence_Type_A" => control.evidence_type_a,
+      "Evidence_Type_B" => control.evidence_type_b,
+      "Honest_Limit" => control.honest_limit,
       "Status" => control.status,
       "Tier" => control.tier,
-      "Is Predicate" => control.is_predicate
+      "Is_Predicate" => control.is_predicate
     }
 
-    if lrt_external_row_id do
-      Map.put(row, "Parent Law", [lrt_external_row_id])
+    if lrt_name do
+      Map.put(row, "Legal_Register", lrt_name)
     else
       row
     end
@@ -1432,23 +1435,37 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   @doc """
   Field specs for the Control Mappings Baserow table.
   """
-  def control_mappings_field_specs(controls_table_id, lat_table_id) do
+  def control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id \\ nil) do
     specs = [
       %{
-        name: "Control",
+        name: "Controls",
         type: "link_row",
         opts: %{"link_row_table_id" => controls_table_id}
       },
       single_select_spec("Strength", @mapping_strengths),
-      %{name: "Short Ref", type: "text"},
+      %{name: "Short_Ref", type: "text"},
       %{name: "_source_id", type: "text"}
     ]
+
+    specs =
+      if lrt_table_id do
+        specs ++
+          [
+            %{
+              name: "Legal_Register",
+              type: "link_row",
+              opts: %{"link_row_table_id" => lrt_table_id}
+            }
+          ]
+      else
+        specs
+      end
 
     if lat_table_id do
       specs ++
         [
           %{
-            name: "Obligation",
+            name: "Duties",
             type: "link_row",
             opts: %{"link_row_table_id" => lat_table_id}
           }
@@ -1463,14 +1480,24 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   `control_ext_id` and `lat_ext_id` are Baserow row IDs for the link_row fields.
   """
-  def format_control_mapping_row(mapping, control_ext_id, lat_ext_id) do
+  @doc """
+  Format a ControlMapping Ash resource into a Baserow row map.
+
+  All link_row fields use text values — Baserow resolves by matching
+  the target table's primary field. No row ID tracking needed.
+  """
+  def format_control_mapping_row(mapping, control_name, duties_name, lrt_name \\ nil) do
+    source_id = "#{mapping.control_id}:#{mapping.section_id}"
+
     row = %{
-      "_source_id" => "#{mapping.control_id}:#{mapping.section_id}",
+      "Name" => source_id,
+      "_source_id" => source_id,
       "Strength" => mapping.mapping_strength,
-      "Short Ref" => mapping.short_ref
+      "Short_Ref" => mapping.short_ref
     }
 
-    row = if control_ext_id, do: Map.put(row, "Control", [control_ext_id]), else: row
-    if lat_ext_id, do: Map.put(row, "Obligation", [lat_ext_id]), else: row
+    row = if control_name, do: Map.put(row, "Controls", control_name), else: row
+    row = if lrt_name, do: Map.put(row, "Legal_Register", lrt_name), else: row
+    if duties_name, do: Map.put(row, "Duties", duties_name), else: row
   end
 end

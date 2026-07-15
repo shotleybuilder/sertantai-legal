@@ -70,9 +70,14 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceEvents do
       compliance_events:
         [
           %{
+            name: "Name",
+            type: :text,
+            primary: true,
+            description: "Event name"
+          },
+          %{
             name: "Event",
             type: :formula,
-            primary: true,
             expression: %{baserow: "concat(field('Event_Type'), ': ', field('Title'))"},
             description: "Display: Event Type: Title"
           },
@@ -138,25 +143,25 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceEvents do
             description: "Detected / Triaged / Assessing Impact / Responding / Closed"
           },
           %{
-            name: "Affected_Laws",
+            name: "Legal_Register",
             type: :link_row,
             target: :lrt,
             description: "Which laws are affected by this event"
           },
           %{
-            name: "Affected_Controls",
+            name: "Controls",
             type: :link_row,
             target: :controls,
             description: "Which controls need review because of this event"
           },
           %{
-            name: "Affected_Assessments",
+            name: "Assessments",
             type: :link_row,
             target: :assessments,
             description: "Which assessments need re-evaluation"
           },
           %{
-            name: "Related_Artefact",
+            name: "Artefacts",
             type: :link_row,
             target: :artefacts,
             description:

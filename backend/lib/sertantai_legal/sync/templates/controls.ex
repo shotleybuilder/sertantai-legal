@@ -53,11 +53,17 @@ defmodule SertantaiLegal.Sync.Templates.Controls do
     %{
       controls:
         [
-          # Primary formula
+          # Primary — stable text identifier for API linking
+          %{
+            name: "Name",
+            type: :text,
+            primary: true,
+            description: "Stable ID: law_name:control_id (e.g. UK_uksi_1997_1713:e75a4f8c-...)"
+          },
+          # Display formula (non-primary)
           %{
             name: "Control",
             type: :formula,
-            primary: true,
             expression: %{baserow: "concat(field('Control_Type'), ' — ', field('Title'))"},
             description: "Display: Control_Type — Title"
           },

@@ -136,7 +136,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       %{assessments: fields} = ComplianceAssessment.field_specs(sp)
 
       names = Enum.map(fields, & &1.name)
-      assert "Law" in names
+      assert "Legal_Register" in names
       assert "Compliance_Status" in names
       assert "Risk_Level" in names
       refute "Likelihood" in names
@@ -229,7 +229,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
 
       names = Enum.map(fields, & &1.name)
       assert "Title" in names
-      assert "Assessment" in names
+      assert "Assessments" in names
       assert "Status" in names
       assert "Priority" in names
       assert "Action_Type" in names
@@ -362,8 +362,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       sp = SubPatterns.new()
       %{incidents: fields} = IncidentRegister.field_specs(sp)
       names = Enum.map(fields, & &1.name)
-      assert "Corrective_Action" in names
-      assert "Preventative_Action" in names
+      assert "Actions" in names
+      assert "Preventative_Actions" in names
     end
 
     test "has form view for reporting" do
@@ -458,7 +458,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     test "law grain links to LRT" do
       sp = SubPatterns.new(assessment_grain: :law)
       %{raci: fields} = RACI.field_specs(sp)
-      law = Enum.find(fields, &(&1.name == "Law"))
+      law = Enum.find(fields, &(&1.name == "Legal_Register"))
       assert law.type == :link_row
       assert law.target == :lrt
     end
