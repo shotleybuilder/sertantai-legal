@@ -54,7 +54,10 @@ defmodule SertantaiLegal.Legal.SecondarySource do
     # Legal status
     attribute :legal_weight, SertantaiLegal.Legal.SecondarySource.LegalWeight do
       allow_nil?(false)
-      description("Compliance enforceability: reverse_burden / regard_had_to / contractual / state_of_art / best_practice")
+
+      description(
+        "Compliance enforceability: reverse_burden / regard_had_to / contractual / state_of_art / best_practice"
+      )
     end
 
     attribute :status, SertantaiLegal.Legal.SecondarySource.DocumentStatus do
@@ -150,6 +153,14 @@ defmodule SertantaiLegal.Legal.SecondarySource do
     read :current do
       description("All secondary sources with status = current")
       filter(expr(status == :current))
+    end
+  end
+
+  relationships do
+    has_many :source_links, SertantaiLegal.Legal.SourceLink do
+      source_attribute(:id)
+      destination_attribute(:secondary_source_id)
+      description("Links to primary legislation this source relates to")
     end
   end
 end

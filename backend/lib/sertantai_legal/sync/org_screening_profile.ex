@@ -79,6 +79,20 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
       )
     end
 
+    # Second-tier screening dimensions (matched against secondary sources)
+    attribute :certifications, {:array, :string} do
+      default([])
+      description("Management system certifications: iso_45001, iso_14001, iso_9001, etc.")
+    end
+
+    attribute :contract_requirements, {:array, :string} do
+      default([])
+
+      description(
+        "Contractual requirement sets: jsp_375, cdm_client, etc. Drives JSP/contract-tier applicability."
+      )
+    end
+
     create_timestamp(:inserted_at)
     update_timestamp(:updated_at)
   end
@@ -100,7 +114,9 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
         :locations,
         :materials,
         :processes,
-        :sector
+        :sector,
+        :certifications,
+        :contract_requirements
       ])
     end
 
@@ -113,7 +129,9 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
         :locations,
         :materials,
         :processes,
-        :sector
+        :sector,
+        :certifications,
+        :contract_requirements
       ])
     end
 
@@ -127,7 +145,9 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
         :locations,
         :materials,
         :processes,
-        :sector
+        :sector,
+        :certifications,
+        :contract_requirements
       ])
 
       upsert?(true)
@@ -141,7 +161,9 @@ defmodule SertantaiLegal.Sync.OrgScreeningProfile do
         :locations,
         :materials,
         :processes,
-        :sector
+        :sector,
+        :certifications,
+        :contract_requirements
       ])
     end
 
