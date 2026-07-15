@@ -11,7 +11,8 @@ defmodule SertantaiLegal.Sync.Engine do
     Credentials,
     DeltaDetector,
     ProfileQuery,
-    Providers.Baserow
+    Providers.Baserow,
+    Templates.Foundation
   }
 
   @doc """
@@ -138,6 +139,9 @@ defmodule SertantaiLegal.Sync.Engine do
     field_tier = entitlement.field_tier
     start_time = System.monotonic_time()
 
+    # Load field specs from templates — single source of truth
+    template_specs = load_template_specs()
+
     with {:ok, provider_config} <- authenticate_provider(sync_config.provider, provider_config),
          :ok <- validate_workspace(provider_config, sync_config),
          :ok <- prepare_tables(sync_config.provider, provider_config, sync_config),
@@ -145,15 +149,24 @@ defmodule SertantaiLegal.Sync.Engine do
            ProfileQuery.query_lrt(profile, field_tier,
              organization_id: sync_config.organization_id
            ),
-         {:ok, job} <- sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job),
          {:ok, job} <-
-           maybe_sync_lat(provider_config, lrt_rows, profile, entitlement, sync_config, job),
+           sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job, template_specs),
+         {:ok, job} <-
+           maybe_sync_lat(
+             provider_config,
+             lrt_rows,
+             profile,
+             entitlement,
+             sync_config,
+             job,
+             template_specs
+           ),
          {:ok, job} <-
            maybe_sync_actor_tuples(provider_config, sync_config, job),
          {:ok, job} <-
-           maybe_sync_controls(provider_config, lrt_rows, sync_config, job),
+           maybe_sync_controls(provider_config, lrt_rows, sync_config, job, template_specs),
          {:ok, job} <-
-           maybe_sync_control_mappings(provider_config, sync_config, job) do
+           maybe_sync_control_mappings(provider_config, sync_config, job, template_specs) do
       checkpoint = max_updated_at(lrt_rows)
 
       {:ok, job} =
@@ -195,12 +208,10 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
-  defp sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job) do
+  defp sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job, template_specs) do
     provider = provider_module(sync_config.provider)
 
     # Validate holder vocabulary — warn on drift but don't block sync.
-    # Unknown labels are logged; they'll appear as plain text in Baserow
-    # multi-selects until the actor dictionary is updated.
     case provider.validate_holder_vocabulary(lrt_rows) do
       :ok ->
         :ok
@@ -211,7 +222,7 @@ defmodule SertantaiLegal.Sync.Engine do
         )
     end
 
-    field_specs = provider.lrt_field_specs(field_tier)
+    field_specs = template_specs[:lrt] || []
 
     with :ok <- provider.ensure_fields(provider_config, :lrt, field_specs) do
       # Format rows for the provider
@@ -292,15 +303,23 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
-  defp maybe_sync_lat(_config, _lrt_rows, %{include_lat: false}, _ent, _sc, job) do
+  defp maybe_sync_lat(_config, _lrt_rows, %{include_lat: false}, _ent, _sc, job, _ts) do
     {:ok, job}
   end
 
-  defp maybe_sync_lat(_config, _lrt_rows, _profile, %{data_tier: :lrt_only}, _sc, job) do
+  defp maybe_sync_lat(_config, _lrt_rows, _profile, %{data_tier: :lrt_only}, _sc, job, _ts) do
     {:ok, job}
   end
 
-  defp maybe_sync_lat(provider_config, lrt_rows, _profile, _entitlement, sync_config, job) do
+  defp maybe_sync_lat(
+         provider_config,
+         lrt_rows,
+         _profile,
+         _entitlement,
+         sync_config,
+         job,
+         template_specs
+       ) do
     # Check LAT table is configured
     lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
 
@@ -354,7 +373,7 @@ defmodule SertantaiLegal.Sync.Engine do
         end
 
       with {:ok, lat_rows} <- lat_query_fn.(lrt_ids),
-           field_specs = provider.lat_field_specs(lrt_table_id),
+           field_specs = template_specs[:lat] || [],
            :ok <- provider.ensure_fields(provider_config, :lat, field_specs) do
         # Format LAT rows with link_row references to parent LRT
         formatted =
@@ -490,7 +509,7 @@ defmodule SertantaiLegal.Sync.Engine do
 
   # ── Controls sync ─────────────────────────────────────────────────
 
-  defp maybe_sync_controls(provider_config, lrt_rows, sync_config, job) do
+  defp maybe_sync_controls(provider_config, lrt_rows, sync_config, job, template_specs) do
     controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
 
     if is_nil(controls_table_id) do
@@ -506,7 +525,7 @@ defmodule SertantaiLegal.Sync.Engine do
              SertantaiLegal.Legal.Control
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
              |> Ash.read(),
-           field_specs = provider.controls_field_specs(lrt_table_id),
+           field_specs = template_specs[:controls] || [],
            :ok <- provider.ensure_fields(provider_config, :controls, field_specs) do
         formatted =
           Enum.map(controls, fn control ->
@@ -564,7 +583,7 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
-  defp maybe_sync_control_mappings(provider_config, sync_config, job) do
+  defp maybe_sync_control_mappings(provider_config, sync_config, job, template_specs) do
     cm_table_id = get_in(sync_config.target_config, ["control_mappings_table_id"])
 
     if is_nil(cm_table_id) do
@@ -594,8 +613,7 @@ defmodule SertantaiLegal.Sync.Engine do
              SertantaiLegal.Legal.ControlMapping
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
              |> Ash.read(),
-           field_specs =
-             provider.control_mappings_field_specs(controls_table_id, lat_table_id, lrt_table_id),
+           field_specs = template_specs[:control_mappings] || [],
            :ok <- provider.ensure_fields(provider_config, :control_mappings, field_specs) do
         # All links use text values — Baserow resolves by matching target table's primary field.
         # No row ID tracking needed.
@@ -719,29 +737,6 @@ defmodule SertantaiLegal.Sync.Engine do
          actor_table_id,
          tuple_mappings
        ) do
-    # Ensure the link_row field exists on LAT → Actors
-    case provider.list_fields(provider_config, :lat) do
-      {:ok, fields} ->
-        unless Enum.any?(fields, &(&1["name"] == "Actors")) do
-          link_spec = %{
-            name: "Actors",
-            type: "link_row",
-            opts: %{"link_row_table_id" => actor_table_id}
-          }
-
-          case provider.create_field(provider_config, lat_table_id, link_spec) do
-            {:ok, _field_id} ->
-              Logger.info("[Sync] Created 'Actors' link field on LAT")
-
-            {:error, reason} ->
-              Logger.warning("[Sync] Failed to create link field: #{reason}")
-          end
-        end
-
-      _ ->
-        :ok
-    end
-
     # Build set of known Actor Names for text-based linking
     tuple_names =
       MapSet.new(tuple_mappings, fn m -> m.source_id || m[:source_id] end)
@@ -1155,6 +1150,18 @@ defmodule SertantaiLegal.Sync.Engine do
       "DELETE FROM sync_row_mappings WHERE sync_configuration_id = $1 AND source_type = $2 AND source_id = $3",
       [bin, to_string(source_type), to_string(source_id)]
     )
+  end
+
+  # Load field specs from all sync-relevant templates.
+  # Templates are the single source of truth for field definitions.
+  defp load_template_specs do
+    sp = SertantaiLegal.Sync.Templates.SubPatterns.new()
+
+    foundation = Foundation.field_specs(sp)
+    controls = SertantaiLegal.Sync.Templates.Controls.field_specs(sp)
+    control_mappings = SertantaiLegal.Sync.Templates.ControlMappings.field_specs(sp)
+
+    Map.merge(foundation, controls) |> Map.merge(control_mappings)
   end
 
   defp max_updated_at([]), do: nil

@@ -82,22 +82,30 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   @impl true
   def ensure_fields(config, table_key, field_specs) do
-    with {:ok, existing} <- Client.list_fields(config, table_key),
-         :ok <- Client.clean_default_fields(config, table_key, existing, field_specs) do
-      # Re-fetch after cleanup
-      {:ok, existing} = Client.list_fields(config, table_key)
-      existing_by_name = Map.new(existing, &{&1["name"], &1})
+    # Schema is managed by template applicator (SchemaManager).
+    # This function validates fields exist and updates select options
+    # with new values from data — it does NOT create missing fields.
+    case Client.list_fields(config, table_key) do
+      {:ok, existing} ->
+        existing_by_name = Map.new(existing, &{&1["name"], &1})
 
-      {missing, needs_update} =
-        Enum.split_with(field_specs, fn spec ->
-          not Map.has_key?(existing_by_name, spec.name)
-        end)
+        missing =
+          field_specs
+          |> Enum.filter(fn spec -> not Map.has_key?(existing_by_name, spec.name) end)
+          |> Enum.map(& &1.name)
 
-      # Create missing fields
-      with :ok <- Client.create_fields_sequentially(config, table_key, missing) do
-        # Update existing select fields that have new options
-        Client.update_select_options(config, existing_by_name, needs_update)
-      end
+        if missing != [] do
+          Logger.warning(
+            "[Sync] Missing fields on #{table_key}: #{inspect(missing)}. " <>
+              "Run mix templates.apply to create schema."
+          )
+        end
+
+        # Update select options with new values from data (dynamic vocabularies)
+        Client.update_select_options(config, existing_by_name, field_specs)
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

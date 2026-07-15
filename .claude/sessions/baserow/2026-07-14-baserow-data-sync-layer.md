@@ -10,10 +10,10 @@
 - [x] LAT formatter: text-based Legal_Register link (law_name, not row ID)
 - [x] Actors link: text-based array linking (Name strings, not row IDs)
 - [x] All link_row fields now use text values — zero row IDs in entire sync pipeline
-- [ ] Remove provider field_specs (lrt_field_specs etc.) — templates own schema
-- [ ] Move Actors link_row creation from engine to foundation template
-- [ ] Deprecate ensure_fields — validate only, don't create (D1)
-- [ ] Remove reverse link_row definitions from templates (D2)
+- [x] Refactor engine to load field specs from templates via load_template_specs() (not provider)
+- [x] Move Actors link_row creation from engine to foundation template
+- [x] Deprecate ensure_fields — validate-only mode (warns on missing, updates select options, no creation)
+- [x] Remove reverse link_row definitions from templates (D2) — verified already clean for active 14
 - [ ] Sync data to qq DB — LRT, LAT, Actors, Controls, Control Mappings
 - [ ] Verify text-based linking works end-to-end in Baserow
 
@@ -23,6 +23,13 @@
 3. `lrt_field_specs`, `lat_field_specs`, `controls_field_specs` in Provider AND in templates — two sources of truth
 4. Engine creates `Actors` link_row field on LAT at sync time — schema management in data sync
 5. `ensure_fields` still called by engine — creates fields instead of validating
+
+## Principles
+- We're building a stable, tolerant, extendable way of working with db-as-spreadsheet services
+- Not finding the fastest path to getting data into Baserow
+- Refactor properly — templates are the single source of truth for field specs
+- Engine loads field specs from templates, not from provider-specific functions
+- No shortcuts that create technical debt we'll need to undo later
 
 ## Notes
 - qq DB has 13 tables with correct schema from applicator v2

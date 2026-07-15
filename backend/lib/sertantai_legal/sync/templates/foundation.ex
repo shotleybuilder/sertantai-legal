@@ -179,6 +179,12 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
         },
         %{name: "Confidence", type: :number, description: "Classification confidence"},
         %{name: "Legal_Register", type: :link_row, target: :lrt, description: "Parent law"},
+        %{
+          name: "Actors",
+          type: :link_row,
+          target: :actor_tuples,
+          description: "Actor combinations for this provision"
+        },
         %{name: "_source_id", type: :text, description: "Sync source identifier"}
       ]
     }
