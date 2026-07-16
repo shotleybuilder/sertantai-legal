@@ -588,9 +588,8 @@ defmodule SertantaiLegal.Sync.Engine do
 
           formatted =
             Enum.map(mappings, fn mapping ->
-              # Controls link: "law_name:control_id" (matches Controls primary field "Name")
-              # TODO: control_id here is Postgres UUID, not fractalaw ID — see GH issue
-              control_name = "#{mapping.law_name}:#{mapping.control_id}"
+              # Controls link: Postgres PK (matches Controls primary field "Name")
+              control_name = to_string(mapping.control_id)
 
               # Legal_Register link: law_name (matches LRT primary field)
               lrt_name = mapping.law_name

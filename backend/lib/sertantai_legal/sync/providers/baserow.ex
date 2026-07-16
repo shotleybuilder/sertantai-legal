@@ -331,11 +331,11 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   Legal Register table (for the Parent Law link_row field).
   """
   def format_control_row(control, lrt_name) do
-    source_id = "#{control.law_name}:#{control.control_id}"
+    pg_id = to_string(control.id)
 
     row = %{
-      "Name" => source_id,
-      "_source_id" => source_id,
+      "Name" => pg_id,
+      "_source_id" => pg_id,
       "Title" => control.title,
       "Description" => control.description,
       "What_It_Checks" => control.what_it_checks,
