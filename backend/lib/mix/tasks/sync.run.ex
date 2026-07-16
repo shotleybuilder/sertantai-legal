@@ -10,6 +10,12 @@ defmodule Mix.Tasks.Sync.Run do
       mix sync.run --clean --config UUID    # Clean + specific config
       mix sync.run --wait                   # Enqueue via Oban and wait for completion
       mix sync.run --direct                 # Bypass Oban, run Engine directly
+      mix sync.run --direct --tables control_mappings  # Sync specific tables only
+      mix sync.run --direct --tables controls,control_mappings
+
+  ## Tables
+
+  Valid table names: lrt, lat, actor_tuples, controls, control_mappings
 
   ## What it does
 
@@ -30,8 +36,14 @@ defmodule Mix.Tasks.Sync.Run do
 
     {opts, positional, _} =
       OptionParser.parse(args,
-        strict: [clean: :boolean, config: :string, wait: :boolean, direct: :boolean],
-        aliases: [c: :clean, w: :wait, d: :direct]
+        strict: [
+          clean: :boolean,
+          config: :string,
+          wait: :boolean,
+          direct: :boolean,
+          tables: :string
+        ],
+        aliases: [c: :clean, w: :wait, d: :direct, t: :tables]
       )
 
     config_id = opts[:config] || List.first(positional) || find_default_config()
@@ -79,9 +91,19 @@ defmodule Mix.Tasks.Sync.Run do
       end
     end
 
-    Mix.shell().info("Running sync directly (bypassing Oban)...")
+    only_tables =
+      case opts[:tables] do
+        nil -> nil
+        tables_str -> tables_str |> String.split(",") |> Enum.map(&String.to_atom/1)
+      end
 
-    case SertantaiLegal.Sync.Engine.run(config_id) do
+    if only_tables do
+      Mix.shell().info("Running sync directly — tables: #{inspect(only_tables)}")
+    else
+      Mix.shell().info("Running sync directly (bypassing Oban)...")
+    end
+
+    case SertantaiLegal.Sync.Engine.run(config_id, only_tables: only_tables) do
       {:ok, job} ->
         Mix.shell().info("""
 

@@ -23,14 +23,14 @@ defmodule SertantaiLegal.Sync.Engine do
   Execute a full sync for the given sync configuration.
   Creates a job record, runs the sync, and updates job status.
   """
-  def run(sync_config_id) do
+  def run(sync_config_id, opts \\ []) do
     with {:ok, sync_config} <- load_sync_config(sync_config_id),
          {:ok, profile} <- load_profile(sync_config.sync_profile_id),
          {:ok, entitlement} <- load_entitlement(sync_config.organization_id),
          :ok <- validate_profile_against_entitlement(profile, entitlement),
          {:ok, job} <- create_job(sync_config),
          {:ok, job} <- start_job(job) do
-      execute_sync(sync_config, profile, entitlement, job)
+      execute_sync(sync_config, profile, entitlement, job, opts)
     end
   end
 
@@ -140,11 +140,13 @@ defmodule SertantaiLegal.Sync.Engine do
 
   # ── Execution ─────────────────────────────────────────────────────
 
-  defp execute_sync(sync_config, profile, entitlement, job) do
+  defp execute_sync(sync_config, profile, entitlement, job, opts) do
     credentials = decrypt_credentials(sync_config)
     provider_config = build_provider_config(sync_config, credentials)
     field_tier = entitlement.field_tier
     start_time = System.monotonic_time()
+    only_tables = Keyword.get(opts, :only_tables)
+    sync_table? = fn table -> is_nil(only_tables) or table in only_tables end
 
     with {:ok, provider_config} <- authenticate_provider(sync_config.provider, provider_config),
          :ok <- validate_workspace(provider_config, sync_config),
@@ -154,22 +156,48 @@ defmodule SertantaiLegal.Sync.Engine do
              organization_id: sync_config.organization_id
            ),
          {:ok, job} <-
-           sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job),
-         {:ok, job} <-
-           maybe_sync_lat(
-             provider_config,
-             lrt_rows,
-             profile,
-             entitlement,
-             sync_config,
-             job
+           if(sync_table?.(:lrt),
+             do: sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job),
+             else: {:ok, job}
            ),
          {:ok, job} <-
-           maybe_sync_actor_tuples(provider_config, sync_config, job),
+           if(sync_table?.(:lat),
+             do:
+               maybe_sync_lat(
+                 provider_config,
+                 lrt_rows,
+                 profile,
+                 entitlement,
+                 sync_config,
+                 job
+               ),
+             else: {:ok, job}
+           ),
          {:ok, job} <-
-           maybe_sync_controls(provider_config, lrt_rows, sync_config, job),
+           if(sync_table?.(:actor_tuples),
+             do: maybe_sync_actor_tuples(provider_config, sync_config, job),
+             else: {:ok, job}
+           ),
+         candidate_duties <-
+           build_candidate_duties(lrt_rows, sync_config),
          {:ok, job} <-
-           maybe_sync_control_mappings(provider_config, sync_config, job) do
+           if(sync_table?.(:controls),
+             do:
+               maybe_sync_controls(provider_config, lrt_rows, candidate_duties, sync_config, job),
+             else: {:ok, job}
+           ),
+         {:ok, job} <-
+           if(sync_table?.(:control_mappings),
+             do:
+               maybe_sync_control_mappings(
+                 provider_config,
+                 lrt_rows,
+                 candidate_duties,
+                 sync_config,
+                 job
+               ),
+             else: {:ok, job}
+           ) do
       checkpoint = max_updated_at(lrt_rows)
 
       {:ok, job} =
@@ -503,7 +531,7 @@ defmodule SertantaiLegal.Sync.Engine do
 
   # ── Controls sync ─────────────────────────────────────────────────
 
-  defp maybe_sync_controls(provider_config, lrt_rows, sync_config, job) do
+  defp maybe_sync_controls(provider_config, lrt_rows, candidate_duties, sync_config, job) do
     controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
 
     if is_nil(controls_table_id) do
@@ -517,14 +545,32 @@ defmodule SertantaiLegal.Sync.Engine do
       with {:ok, controls} <-
              SertantaiLegal.Legal.Control
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           {:ok, all_mappings} <-
+             SertantaiLegal.Legal.ControlMapping
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
              |> Ash.read() do
+        # Only push controls that have at least one CM linking to a customer Duty.
+        # A control may map to 5 provisions but only 2 are in the customer's Duties —
+        # the control still pushes, partial match is fine.
+        control_ids_with_duties =
+          all_mappings
+          |> Enum.filter(fn m -> find_parent_in_set(m.section_id, candidate_duties) != nil end)
+          |> Enum.map(& &1.control_id)
+          |> MapSet.new()
+
+        applicable_controls =
+          Enum.filter(controls, fn c -> MapSet.member?(control_ids_with_duties, c.id) end)
+
+        Logger.info(
+          "[Sync] Controls scoped: #{length(applicable_controls)} of #{length(controls)} have customer Duties"
+        )
+
         formatted =
-          Enum.map(controls, fn control ->
-            # Legal_Register link: text value (law_name matches LRT primary field)
+          Enum.map(applicable_controls, fn control ->
             provider.format_control_row(control, control.law_name)
           end)
 
-        # Collect all Postgres Names for delete reconciliation
         postgres_names =
           Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
 
@@ -546,79 +592,111 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
-  defp maybe_sync_control_mappings(provider_config, sync_config, job) do
+  defp maybe_sync_control_mappings(provider_config, lrt_rows, candidate_duties, sync_config, job) do
     cm_table_id = get_in(sync_config.target_config, ["control_mappings_table_id"])
 
     if is_nil(cm_table_id) do
       {:ok, job}
     else
       provider = provider_module(sync_config.provider)
-      lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
+      law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
 
-      # Get law_names from the org's synced controls (query directly from Postgres)
-      # We need controls that are applicable to this org's law register
-      with {:ok, sync_config} <- {:ok, sync_config},
-           {:ok, profile} <- load_profile(sync_config.sync_profile_id),
-           {:ok, entitlement} <- load_entitlement(sync_config.organization_id),
-           {:ok, lrt_rows} <-
-             ProfileQuery.query_lrt(profile, entitlement.field_tier,
-               organization_id: sync_config.organization_id
+      with {:ok, mappings} <-
+             SertantaiLegal.Legal.ControlMapping
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read() do
+        # Only include CMs whose control is in the customer's scoped Controls set
+        # (i.e. the control has at least one CM linking to a customer Duty).
+        # Build the same control_ids_with_duties set used by maybe_sync_controls.
+        control_ids_with_duties =
+          mappings
+          |> Enum.filter(fn m -> find_parent_in_set(m.section_id, candidate_duties) != nil end)
+          |> Enum.map(& &1.control_id)
+          |> MapSet.new()
+
+        applicable_mappings =
+          Enum.filter(mappings, fn m ->
+            MapSet.member?(control_ids_with_duties, m.control_id)
+          end)
+
+        formatted =
+          Enum.map(applicable_mappings, fn mapping ->
+            # Controls link: Postgres PK (matches Controls primary field "Name")
+            control_name = to_string(mapping.control_id)
+
+            # Legal_Register link: law_name (matches LRT primary field)
+            lrt_name = mapping.law_name
+
+            # Duties link: resolve to nearest parent in customer's Duties set.
+            # nil if this specific mapping's provision isn't in the customer's Duties.
+            duties_name = find_parent_in_set(mapping.section_id, candidate_duties)
+
+            provider.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
+          end)
+
+        postgres_names =
+          Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
+
+        case sync_table(
+               provider,
+               provider_config,
+               :control_mappings,
+               formatted,
+               postgres_names,
+               sync_config
              ) do
-        law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
+          {:ok, _counts, _remote_map} ->
+            {:ok, job}
 
-        with {:ok, mappings} <-
-               SertantaiLegal.Legal.ControlMapping
-               |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
-               |> Ash.read() do
-          # All links use text values — Baserow resolves by matching target table's primary field.
-
-          # Build a set of LAT section_ids from Postgres
-          # TODO: this matches raw section_ids, not aggregated Duties Names — see GH issue
-          lat_postgres_names =
-            if lat_table_id do
-              lrt_ids = Enum.map(lrt_rows, & &1.id)
-
-              case ProfileQuery.query_lat(lrt_ids) do
-                {:ok, lat_rows} -> MapSet.new(lat_rows, fn lat -> lat.section_id end)
-                _ -> MapSet.new()
-              end
-            else
-              MapSet.new()
-            end
-
-          formatted =
-            Enum.map(mappings, fn mapping ->
-              # Controls link: Postgres PK (matches Controls primary field "Name")
-              control_name = to_string(mapping.control_id)
-
-              # Legal_Register link: law_name (matches LRT primary field)
-              lrt_name = mapping.law_name
-
-              # Duties link: section_id or nearest parent in LAT table
-              duties_name = find_parent_in_set(mapping.section_id, lat_postgres_names)
-
-              provider.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
-            end)
-
-          # Collect all Postgres Names for delete reconciliation
-          postgres_names =
-            Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
-
-          case sync_table(
-                 provider,
-                 provider_config,
-                 :control_mappings,
-                 formatted,
-                 postgres_names,
-                 sync_config
-               ) do
-            {:ok, _counts, _remote_map} ->
-              {:ok, job}
-
-            {:error, reason} ->
-              {:error, reason}
-          end
+          {:error, reason} ->
+            {:error, reason}
         end
+      end
+    end
+  end
+
+  # Build the set of Duties Names that exist in the customer's synced LAT.
+  # Uses the same query + filters as the LAT sync so the set is consistent.
+  # Controls and CMs are scoped by this set — only push what the customer has.
+  defp build_candidate_duties(lrt_rows, sync_config) do
+    lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
+
+    if is_nil(lat_table_id) do
+      MapSet.new()
+    else
+      # Same in-force filter as maybe_sync_lat
+      in_force_lrt =
+        Enum.reject(lrt_rows, fn row ->
+          live = Map.get(row, :live) || Map.get(row, "live")
+
+          is_binary(live) and
+            (String.contains?(live, "Revoked") or String.contains?(live, "Repealed") or
+               String.contains?(live, "Abolished"))
+        end)
+
+      lrt_ids = Enum.map(in_force_lrt, & &1.id)
+      lat_aggregated = get_in(sync_config.target_config, ["lat_aggregated"]) == true
+
+      lat_query_result =
+        if lat_aggregated do
+          lat_drrp_types = get_in(sync_config.target_config, ["lat_drrp_types"])
+          lat_governed_only = get_in(sync_config.target_config, ["lat_governed_only"]) == true
+
+          lat_min_significance =
+            get_in(sync_config.target_config, ["lat_min_provision_significance"])
+
+          ProfileQuery.query_lat_aggregated(lrt_ids,
+            drrp_types: lat_drrp_types,
+            governed_only: lat_governed_only,
+            min_significance: lat_min_significance
+          )
+        else
+          ProfileQuery.query_lat(lrt_ids)
+        end
+
+      case lat_query_result do
+        {:ok, lat_rows} -> MapSet.new(lat_rows, fn lat -> lat.section_id end)
+        _ -> MapSet.new()
       end
     end
   end
