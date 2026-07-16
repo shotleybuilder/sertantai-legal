@@ -16,6 +16,8 @@ Another Claude instance is concurrently working on Baserow sync (no conflict).
 ## Daughter Sessions
 - [x] [phase-1-data-model.md](phase-1-data-model.md) — 3 resources, 4 migrations, 29 ACoPs seeded
 - [x] [phase-2-provision-parsing.md](phase-2-provision-parsing.md) — profile-based PDF parser, 5 documents, 887 provisions
+- [x] [phase-2b-hsg-and-jsp-corpus.md](phase-2b-hsg-and-jsp-corpus.md) — full JSP corpus, 167 PDFs, 13,143 provisions, actor model analysis
+- [x] [issue-123-section-id-collision.md](issue-123-section-id-collision.md) — per-chapter source registration fix, 13,854 provisions restored
 
 ## Decisions Log
 - `legal_weight` enum added to SecondarySource schema (reverse_burden | regard_had_to | contractual | state_of_art | best_practice)

@@ -74,6 +74,7 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-16 | [issue-121](2026-07-14-issue-121.md) | [#121](https://github.com/shotleybuilder/sertantai-legal/issues/121) | Controls Name: fractalaw UUID → Postgres PK. 1,754 rows rebuilt. CM blocked by #122 (Duties link) |
 | 2026-07-14 | [dynamic-selects](baserow/2026-07-14-dynamic-selects.md) | — | Auto-ensure select options in Client.batch_create. All 5 tables synced to qq DB. CM blocked by sync ordering |
 | 2026-07-14 | [baserow-data-sync-layer](baserow/2026-07-14-baserow-data-sync-layer.md) | — | Provider-agnostic engine, text-based linking, underscore field names. LAT blocked by dynamic select options |
 | 2026-07-14 | [baserow-applicator-v2](baserow/2026-07-14-baserow-applicator-v2.md) | — | Three-layer architecture (Client/SchemaManager/Provider), 4-phase creation, 13 tables + 180 fields to qq DB |
@@ -214,6 +215,8 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-16 | [second-tier-duties/issue-123](second-tier-duties/issue-123-section-id-collision.md) | [#123](https://github.com/shotleybuilder/sertantai-legal/issues/123) | Fix section_id collision: per-chapter source registration, 13,854 provisions restored |
+| 2026-07-16 | [second-tier-duties/phase-2b](second-tier-duties/phase-2b-hsg-and-jsp-corpus.md) | — | Second-tier Phase 2b: full JSP corpus (167 PDFs, 13,143 provisions), HSG profile, actor model analysis |
 | 2026-07-15 | [second-tier-duties/phase-2](second-tier-duties/phase-2-provision-parsing.md) | — | Second-tier Phase 2: profile-based PDF parser, 5 documents (3 JSP, 1 ACoP, 1 HSG), 887 provisions |
 | 2026-07-15 | [second-tier-duties/phase-1](second-tier-duties/phase-1-data-model.md) | — | Second-tier Phase 1: SecondarySource, SourceLink, OrgSecondaryApplicability + 29 ACoPs seeded |
 | 2026-07-13 | [issue-120](2026-07-13-issue-120.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | LAT parser P2 wrapper fix, 172 laws re-parsed, art.→reg. prefix fix, TriageSubscriber, LAT QA tooling, 100% control_mapping resolution, Baserow primary field pattern |

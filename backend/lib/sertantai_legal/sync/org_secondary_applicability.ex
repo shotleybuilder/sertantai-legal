@@ -5,9 +5,24 @@ defmodule SertantaiLegal.Sync.OrgSecondaryApplicability do
   Parallels `OrgApplicability` (which tracks per-law applicability) but
   for second-tier requirements: ACoPs, standards, JSPs, guidance.
 
-  Can be auto-populated via parent law inheritance (if HSWA applies,
-  ACoPs approved under HSWA are candidates) or sector/certification
-  screening, then refined by manual review.
+  ## Applicability granularity
+
+  Applicability can be set at two levels:
+
+  - **Parent level** (e.g. `JSP-375`): marks the whole JSP as applicable.
+    All chapters are candidates, but the customer may only need specific ones.
+  - **Chapter level** (e.g. `JSP-375-CH23`): marks a specific chapter as applicable.
+    The parent JSP's applicability is the aggregation of its chapters'.
+
+  The `source_id` field references `secondary_sources.source_id`, which can be
+  either a parent (`JSP-375`) or a chapter (`JSP-375-CH23`).
+
+  ## Population sources
+
+  - **Inherited**: auto-populated from parent law applicability (if HSWA applies,
+    ACoPs approved under HSWA are candidates)
+  - **Screener**: sector/certification-based screening via `OrgScreeningProfile`
+  - **Manual**: compliance officer marks specific sources as applicable
   """
 
   use Ash.Resource,
