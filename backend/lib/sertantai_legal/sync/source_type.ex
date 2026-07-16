@@ -9,6 +9,8 @@ defmodule SertantaiLegal.Sync.SourceType do
       :lat,
       :actor_tuples,
       :controls,
-      :control_mappings
+      :control_mappings,
+      :evidence_patterns,
+      :artefact_templates
     ]
 end

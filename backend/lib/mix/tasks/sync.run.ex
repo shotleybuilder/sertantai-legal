@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Sync.Run do
 
   ## Tables
 
-  Valid table names: lrt, lat, actor_tuples, controls, control_mappings
+  Valid table names: lrt, lat, actor_tuples, controls, control_mappings, evidence_patterns, artefact_templates
 
   ## What it does
 

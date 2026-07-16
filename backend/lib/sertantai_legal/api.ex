@@ -36,6 +36,10 @@ defmodule SertantaiLegal.Api do
     resource(SertantaiLegal.Legal.Control)
     resource(SertantaiLegal.Legal.ControlMapping)
 
+    # AI-generated evidence patterns and artefact templates (from fractalaw)
+    resource(SertantaiLegal.Legal.EvidencePattern)
+    resource(SertantaiLegal.Legal.ArtefactTemplate)
+
     # Second-tier compliance requirements (ACoPs, standards, JSPs, guidance)
     resource(SertantaiLegal.Legal.SecondarySource)
     resource(SertantaiLegal.Legal.SecondarySourceProvision)

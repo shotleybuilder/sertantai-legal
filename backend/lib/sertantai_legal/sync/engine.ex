@@ -53,7 +53,9 @@ defmodule SertantaiLegal.Sync.Engine do
             {:lat, provider_config["lat_table_id"]},
             {:actor_tuples, provider_config["actor_tuples_table_id"]},
             {:controls, provider_config["controls_table_id"]},
-            {:control_mappings, provider_config["control_mappings_table_id"]}
+            {:control_mappings, provider_config["control_mappings_table_id"]},
+            {:evidence_patterns, provider_config["evidence_patterns_table_id"]},
+            {:artefact_templates, provider_config["artefact_templates_table_id"]}
           ]
           |> Enum.reject(fn {_, id} -> is_nil(id) end)
 
@@ -190,6 +192,30 @@ defmodule SertantaiLegal.Sync.Engine do
            if(sync_table?.(:control_mappings),
              do:
                maybe_sync_control_mappings(
+                 provider_config,
+                 lrt_rows,
+                 candidate_duties,
+                 sync_config,
+                 job
+               ),
+             else: {:ok, job}
+           ),
+         {:ok, job} <-
+           if(sync_table?.(:evidence_patterns),
+             do:
+               maybe_sync_evidence_patterns(
+                 provider_config,
+                 lrt_rows,
+                 candidate_duties,
+                 sync_config,
+                 job
+               ),
+             else: {:ok, job}
+           ),
+         {:ok, job} <-
+           if(sync_table?.(:artefact_templates),
+             do:
+               maybe_sync_artefact_templates(
                  provider_config,
                  lrt_rows,
                  candidate_duties,
@@ -718,6 +744,185 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
+  # ── Evidence Patterns sync ───────────────────────────────────────
+
+  defp maybe_sync_evidence_patterns(provider_config, lrt_rows, candidate_duties, sync_config, job) do
+    ep_table_id = get_in(sync_config.target_config, ["evidence_patterns_table_id"])
+
+    if is_nil(ep_table_id) do
+      {:ok, job}
+    else
+      provider = provider_module(sync_config.provider)
+      law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
+
+      with {:ok, evidence_patterns} <-
+             SertantaiLegal.Legal.EvidencePattern
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           {:ok, all_mappings} <-
+             SertantaiLegal.Legal.ControlMapping
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           {:ok, controls} <-
+             SertantaiLegal.Legal.Control
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read() do
+        # Same scoping as Controls: only push evidence patterns whose control
+        # has at least one mapping to a customer Duty.
+        control_ids_with_duties =
+          all_mappings
+          |> Enum.filter(fn m -> find_parent_in_set(m.section_id, candidate_duties) != nil end)
+          |> Enum.map(& &1.control_id)
+          |> MapSet.new()
+
+        # Build control_id (fractalaw UUID) → Postgres PK map for FK resolution
+        control_lookup =
+          Map.new(controls, fn c -> {c.control_id, c} end)
+
+        applicable_patterns =
+          Enum.filter(evidence_patterns, fn ep ->
+            case Map.get(control_lookup, ep.control_id) do
+              nil -> false
+              control -> MapSet.member?(control_ids_with_duties, control.id)
+            end
+          end)
+
+        Logger.info(
+          "[Sync] Evidence patterns scoped: #{length(applicable_patterns)} of #{length(evidence_patterns)} have customer Duties"
+        )
+
+        formatted =
+          Enum.map(applicable_patterns, fn ep ->
+            # Controls link: find the Control's Postgres PK (matches Controls table Name)
+            control = Map.get(control_lookup, ep.control_id)
+            control_name = if control, do: to_string(control.id), else: nil
+            provider.format_evidence_pattern_row(ep, control_name)
+          end)
+
+        postgres_names =
+          Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
+
+        case sync_table(
+               provider,
+               provider_config,
+               :evidence_patterns,
+               formatted,
+               postgres_names,
+               sync_config
+             ) do
+          {:ok, _counts, _remote_map} ->
+            {:ok, job}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end
+    end
+  end
+
+  # ── Artefact Templates sync ─────────────────────────────────────
+
+  defp maybe_sync_artefact_templates(
+         provider_config,
+         lrt_rows,
+         candidate_duties,
+         sync_config,
+         job
+       ) do
+    at_table_id = get_in(sync_config.target_config, ["artefact_templates_table_id"])
+
+    if is_nil(at_table_id) do
+      {:ok, job}
+    else
+      provider = provider_module(sync_config.provider)
+      law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
+
+      with {:ok, evidence_patterns} <-
+             SertantaiLegal.Legal.EvidencePattern
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           {:ok, all_mappings} <-
+             SertantaiLegal.Legal.ControlMapping
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read(),
+           {:ok, controls} <-
+             SertantaiLegal.Legal.Control
+             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+             |> Ash.read() do
+        # Same scoping as evidence patterns
+        control_ids_with_duties =
+          all_mappings
+          |> Enum.filter(fn m -> find_parent_in_set(m.section_id, candidate_duties) != nil end)
+          |> Enum.map(& &1.control_id)
+          |> MapSet.new()
+
+        control_lookup =
+          Map.new(controls, fn c -> {c.control_id, c} end)
+
+        applicable_patterns =
+          Enum.filter(evidence_patterns, fn ep ->
+            case Map.get(control_lookup, ep.control_id) do
+              nil -> false
+              control -> MapSet.member?(control_ids_with_duties, control.id)
+            end
+          end)
+
+        # Fetch all artefact templates for applicable patterns
+        pattern_ids = Enum.map(applicable_patterns, & &1.id)
+
+        {:ok, artefact_templates} =
+          if pattern_ids == [] do
+            {:ok, []}
+          else
+            SertantaiLegal.Legal.ArtefactTemplate
+            |> Ash.Query.for_read(:by_evidence_pattern_ids, %{evidence_pattern_ids: pattern_ids})
+            |> Ash.read()
+          end
+
+        Logger.info(
+          "[Sync] Artefact templates: #{length(artefact_templates)} for #{length(applicable_patterns)} evidence patterns"
+        )
+
+        # Build evidence_pattern_id → control lookup for links
+        ep_to_control =
+          Map.new(applicable_patterns, fn ep ->
+            control = Map.get(control_lookup, ep.control_id)
+            {ep.id, control}
+          end)
+
+        formatted =
+          Enum.map(artefact_templates, fn at ->
+            # Evidence_Patterns link: Postgres PK of parent evidence pattern
+            evidence_pattern_name = to_string(at.evidence_pattern_id)
+
+            # Controls link: find the Control's Postgres PK via the evidence pattern
+            control = Map.get(ep_to_control, at.evidence_pattern_id)
+            control_name = if control, do: to_string(control.id), else: nil
+
+            provider.format_artefact_template_row(at, evidence_pattern_name, control_name)
+          end)
+
+        postgres_names =
+          Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
+
+        case sync_table(
+               provider,
+               provider_config,
+               :artefact_templates,
+               formatted,
+               postgres_names,
+               sync_config
+             ) do
+          {:ok, _counts, _remote_map} ->
+            {:ok, job}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end
+    end
+  end
+
   # ── LAT ↔ Actor Tuple linking ────────────────────────────────────
 
   defp link_lat_to_tuples(
@@ -943,7 +1148,9 @@ defmodule SertantaiLegal.Sync.Engine do
       "lat_table_id" => tc["lat_table_id"],
       "actor_tuples_table_id" => tc["actor_tuples_table_id"],
       "controls_table_id" => tc["controls_table_id"],
-      "control_mappings_table_id" => tc["control_mappings_table_id"]
+      "control_mappings_table_id" => tc["control_mappings_table_id"],
+      "evidence_patterns_table_id" => tc["evidence_patterns_table_id"],
+      "artefact_templates_table_id" => tc["artefact_templates_table_id"]
     }
   end
 

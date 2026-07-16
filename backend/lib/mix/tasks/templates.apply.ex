@@ -274,6 +274,8 @@ defmodule Mix.Tasks.Templates.Apply do
     |> maybe_put_table(:hierarchy, target_config["hierarchy_table_id"])
     |> maybe_put_table(:controls, target_config["controls_table_id"])
     |> maybe_put_table(:control_mappings, target_config["control_mappings_table_id"])
+    |> maybe_put_table(:evidence_patterns, target_config["evidence_patterns_table_id"])
+    |> maybe_put_table(:artefact_templates, target_config["artefact_templates_table_id"])
     |> maybe_put_table(:artefacts, target_config["artefacts_table_id"])
     |> maybe_put_table(:judgements, target_config["judgements_table_id"])
     |> maybe_put_table(:gaps, target_config["gaps_table_id"])

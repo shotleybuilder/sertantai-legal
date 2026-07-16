@@ -69,6 +69,38 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   @demand_modes ["Normal", "Abnormal", "Emergency"]
   @effectiveness ["Effective", "Ineffective", "Not Tested"]
 
+  # Evidence pattern select options
+  @voi_quadrants ["Table Stakes", "No-Brainer", "Judgement", "Waste"]
+  @evidence_standards ["Basic", "Focused", "Comprehensive"]
+  @staleness_tolerances ["Low", "Medium", "High"]
+  @judgement_methods [
+    "Visual Inspection",
+    "Functional Test",
+    "Simulation",
+    "Interview",
+    "Observation",
+    "Exercise",
+    "Document Review"
+  ]
+
+  # Artefact template select options
+  @artefact_types [
+    "Policy",
+    "Procedure",
+    "Certificate",
+    "Training Record",
+    "Report",
+    "Risk Assessment",
+    "Permit",
+    "Licence",
+    "Test Result",
+    "Sensor Reading",
+    "Other"
+  ]
+  @artefact_classes ["Activity", "Outcome"]
+  @artefact_sources ["Upload", "System Generated", "Sensor", "External", "Linked System"]
+  @likelihood_ratios ["Low", "Medium", "High"]
+
   # Actor vocabulary loaded from ActorDictionary (Zenoh queryable + YAML snapshot).
   alias SertantaiLegal.Legal.ActorDictionary
 
@@ -425,6 +457,116 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     row = if control_name, do: Map.put(row, "Controls", control_name), else: row
     row = if lrt_name, do: Map.put(row, "Legal_Register", lrt_name), else: row
     if duties_name, do: Map.put(row, "Duties", duties_name), else: row
+  end
+
+  # ── Evidence Patterns field specs and formatting ─────────────────
+
+  @doc """
+  Field specs for the Evidence Patterns Baserow table.
+  """
+  def evidence_patterns_field_specs(controls_table_id) do
+    [
+      # AI-generated fields
+      %{name: "Control_Title", type: "text"},
+      %{name: "Controls", type: "link_row", opts: %{"link_row_table_id" => controls_table_id}},
+      %{name: "Needs_Judgement", type: "boolean"},
+      %{name: "Judgement_Rationale", type: "long_text"},
+      Client.single_select_spec("Recommended_Method", @judgement_methods),
+      %{name: "Basis_Guidance", type: "long_text"},
+      %{name: "Discriminating_Question", type: "long_text"},
+      %{name: "Drift_Signal", type: "long_text"},
+      %{name: "Drift_Conditions", type: "long_text"},
+      Client.single_select_spec("VoI_Quadrant", @voi_quadrants),
+      %{name: "VoI_Rationale", type: "long_text"},
+      Client.single_select_spec("Evidence_Standard", @evidence_standards),
+      %{name: "Recommended_Interval", type: "text"},
+      %{name: "Sample_Size_Guidance", type: "text"},
+      Client.single_select_spec("Staleness_Tolerance", @staleness_tolerances),
+      %{name: "Nature_Strategy", type: "long_text"},
+      # System
+      %{name: "_source_id", type: "text"}
+    ]
+  end
+
+  @doc """
+  Format an EvidencePattern Ash resource into a Baserow row map.
+  """
+  def format_evidence_pattern_row(pattern, control_name) do
+    pg_id = to_string(pattern.id)
+
+    row = %{
+      "Name" => pg_id,
+      "_source_id" => pg_id,
+      "Control_Title" => pattern.control_title,
+      "Needs_Judgement" => pattern.needs_judgement,
+      "Judgement_Rationale" => pattern.judgement_rationale,
+      "Recommended_Method" => pattern.recommended_method,
+      "Basis_Guidance" => pattern.basis_guidance,
+      "Discriminating_Question" => pattern.discriminating_question,
+      "Drift_Signal" => pattern.drift_signal,
+      "Drift_Conditions" => pattern.drift_conditions,
+      "VoI_Quadrant" => pattern.voi_quadrant,
+      "VoI_Rationale" => pattern.voi_rationale,
+      "Evidence_Standard" => pattern.evidence_standard,
+      "Recommended_Interval" => pattern.recommended_interval,
+      "Sample_Size_Guidance" => pattern.sample_size_guidance,
+      "Staleness_Tolerance" => pattern.staleness_tolerance,
+      "Nature_Strategy" => pattern.nature_strategy
+    }
+
+    if control_name, do: Map.put(row, "Controls", control_name), else: row
+  end
+
+  # ── Artefact Templates field specs and formatting ────────────────
+
+  @doc """
+  Field specs for the Artefact Templates Baserow table.
+  """
+  def artefact_templates_field_specs(evidence_patterns_table_id, controls_table_id) do
+    [
+      # AI-generated fields
+      %{
+        name: "Evidence_Patterns",
+        type: "link_row",
+        opts: %{"link_row_table_id" => evidence_patterns_table_id}
+      },
+      %{name: "Controls", type: "link_row", opts: %{"link_row_table_id" => controls_table_id}},
+      Client.single_select_spec("Artefact_Type", @artefact_types),
+      Client.single_select_spec("Artefact_Class", @artefact_classes),
+      %{name: "What_It_Proves", type: "long_text"},
+      Client.single_select_spec("Source", @artefact_sources),
+      Client.single_select_spec("Likelihood_Ratio", @likelihood_ratios),
+      %{name: "Recommended_Frequency", type: "text"},
+      %{name: "Evidence_By_Design", type: "boolean"},
+      # System
+      %{name: "_source_id", type: "text"}
+    ]
+  end
+
+  @doc """
+  Format an ArtefactTemplate Ash resource into a Baserow row map.
+  """
+  def format_artefact_template_row(template, evidence_pattern_name, control_name) do
+    source_id = "#{template.evidence_pattern_id}:#{template.title}"
+
+    row = %{
+      "Name" => source_id,
+      "_source_id" => source_id,
+      "Artefact_Type" => template.artefact_type,
+      "Artefact_Class" => template.artefact_class,
+      "What_It_Proves" => template.what_it_proves,
+      "Source" => template.source,
+      "Likelihood_Ratio" => template.likelihood_ratio,
+      "Recommended_Frequency" => template.recommended_frequency,
+      "Evidence_By_Design" => template.evidence_by_design
+    }
+
+    row =
+      if evidence_pattern_name,
+        do: Map.put(row, "Evidence_Patterns", evidence_pattern_name),
+        else: row
+
+    if control_name, do: Map.put(row, "Controls", control_name), else: row
   end
 
   # ── Row Formatting ────────────────────────────────────────────────

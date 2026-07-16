@@ -2,7 +2,7 @@
 	import { format } from 'date-fns';
 	import { useSubscriptionsQuery, useQueryablesQuery } from '$lib/query/zenoh';
 
-	let activeTab: 'taxa' | 'provisions' | 'controls' | 'triage' | 'queryables' = 'taxa';
+	let activeTab: 'taxa' | 'provisions' | 'controls' | 'evidence' | 'triage' | 'queryables' = 'taxa';
 
 	const subsQuery = useSubscriptionsQuery();
 	const queryablesQuery = useQueryablesQuery();
@@ -59,6 +59,7 @@
 		{ id: 'taxa' as const, label: 'Taxa' },
 		{ id: 'provisions' as const, label: 'Provisions' },
 		{ id: 'controls' as const, label: 'Controls' },
+		{ id: 'evidence' as const, label: 'Evidence' },
 		{ id: 'triage' as const, label: 'Triage' },
 		{ id: 'queryables' as const, label: 'Queryables & Publishers' }
 	];
@@ -84,6 +85,11 @@
 					label: 'ControlsSubscriber',
 					sublabel: 'AI-generated controls & predicates',
 					data: $subsQuery.data.controls_subscriber
+				},
+				evidence: {
+					label: 'EvidenceSubscriber',
+					sublabel: 'Evidence patterns & artefact templates',
+					data: $subsQuery.data.evidence_subscriber
 				},
 				triage: {
 					label: 'TriageSubscriber',
@@ -124,7 +130,9 @@
 								? $subsQuery.data.provision_subscriber
 								: tab.id === 'controls'
 									? $subsQuery.data.controls_subscriber
-									: $subsQuery.data.triage_subscriber}
+									: tab.id === 'evidence'
+										? $subsQuery.data.evidence_subscriber
+										: $subsQuery.data.triage_subscriber}
 					<span
 						class="ml-1.5 inline-flex items-center w-2 h-2 rounded-full {subData.status.state ===
 						'ready'
@@ -139,7 +147,7 @@
 	</div>
 
 	<!-- Subscriber Tabs (Taxa, Provisions, Controls) -->
-	{#if activeTab === 'taxa' || activeTab === 'provisions' || activeTab === 'controls' || activeTab === 'triage'}
+	{#if activeTab === 'taxa' || activeTab === 'provisions' || activeTab === 'controls' || activeTab === 'evidence' || activeTab === 'triage'}
 		{#if $subsQuery.isLoading}
 			<div class="flex justify-center py-12">
 				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -240,6 +248,9 @@
 										{/if}
 										{#if entry.metadata.controls}
 											<span class="text-gray-400 ml-1">({entry.metadata.controls} controls)</span>
+										{/if}
+										{#if entry.metadata.patterns}
+											<span class="text-gray-400 ml-1">({entry.metadata.patterns} patterns)</span>
 										{/if}
 										{#if entry.metadata.is_predicate}
 											<span

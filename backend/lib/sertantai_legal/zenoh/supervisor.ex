@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Zenoh.Supervisor do
       SertantaiLegal.Zenoh.TaxaSubscriber,
       SertantaiLegal.Zenoh.ProvisionSubscriber,
       SertantaiLegal.Zenoh.ControlsSubscriber,
+      SertantaiLegal.Zenoh.EvidenceSubscriber,
       SertantaiLegal.Zenoh.TriageSubscriber
     ]
 

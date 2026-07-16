@@ -30,6 +30,8 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
       hierarchy: SertantaiLegal.Sync.Templates.Hierarchy,
       controls: SertantaiLegal.Sync.Templates.Controls,
       control_mappings: SertantaiLegal.Sync.Templates.ControlMappings,
+      evidence_patterns: SertantaiLegal.Sync.Templates.EvidencePatterns,
+      artefact_templates: SertantaiLegal.Sync.Templates.ArtefactTemplates,
       artefacts: SertantaiLegal.Sync.Templates.Artefacts,
       judgements: SertantaiLegal.Sync.Templates.Judgements,
       gaps: SertantaiLegal.Sync.Templates.Gaps,

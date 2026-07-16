@@ -47,6 +47,7 @@ export interface SubscriptionsResponse {
 	taxa_subscriber: ServiceData<SubscriberStatus>;
 	provision_subscriber: ServiceData<SubscriberStatus>;
 	controls_subscriber: ServiceData<SubscriberStatus>;
+	evidence_subscriber: ServiceData<SubscriberStatus>;
 	triage_subscriber: ServiceData<SubscriberStatus>;
 }
 
