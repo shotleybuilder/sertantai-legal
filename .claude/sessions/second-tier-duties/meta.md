@@ -9,7 +9,7 @@ Another Claude instance is concurrently working on Baserow sync (no conflict).
 ## Phases (from plan)
 - [x] Phase 1: Data Model & Manual Registration (4221961, 2026-07-15)
 - [x] Phase 2: Provision Parsing (422d45c..0002f05, 2026-07-15)
-- [ ] Phase 3: Enrichment & Controls
+- [x] Phase 3: Enrichment & Controls (queryables only — subscription later)
 - [ ] Phase 4: Sync & Templates
 - [ ] Phase 5: Applicability Automation
 
@@ -20,6 +20,8 @@ Another Claude instance is concurrently working on Baserow sync (no conflict).
 - [x] [issue-123-section-id-collision.md](issue-123-section-id-collision.md) — per-chapter source registration fix, 13,854 provisions restored
 - [x] [parse-acops.md](parse-acops.md) — 21 ACoPs parsed, 12,321 provisions, 100% current coverage
 - [x] [parse-hsgs.md](parse-hsgs.md) — 29 HSGs parsed, 19,454 provisions, OGL confirmed
+- [x] [parse-environmental-guidance.md](parse-environmental-guidance.md) — DEFERRED: research captured, landscape too fragmented
+- [x] [phase-3-zenoh-queryables.md](phase-3-zenoh-queryables.md) — 3 queryables for secondary sources/provisions, spec published
 
 ## Decisions Log
 - `legal_weight` enum added to SecondarySource schema (reverse_burden | regard_had_to | contractual | state_of_art | best_practice)

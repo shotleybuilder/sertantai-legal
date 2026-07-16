@@ -217,6 +217,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-16 | [second-tier-duties/phase-3](second-tier-duties/phase-3-zenoh-queryables.md) | — | Phase 3: Zenoh queryables for secondary sources/provisions, spec published |
 | 2026-07-16 | [second-tier-duties/parse-hsgs](second-tier-duties/parse-hsgs.md) | — | Parse 29 HSGs: 19,454 provisions, OGL confirmed, corpus total 45,049 |
 | 2026-07-16 | [second-tier-duties/parse-acops](second-tier-duties/parse-acops.md) | — | Parse 21 HSE ACoPs: 12,321 provisions, 100% current coverage, 0 errors |
 | 2026-07-16 | [second-tier-duties/issue-123](second-tier-duties/issue-123-section-id-collision.md) | [#123](https://github.com/shotleybuilder/sertantai-legal/issues/123) | Fix section_id collision: per-chapter source registration, 13,854 provisions restored |

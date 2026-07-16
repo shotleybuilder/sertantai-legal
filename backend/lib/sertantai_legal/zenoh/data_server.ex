@@ -1,17 +1,20 @@
 defmodule SertantaiLegal.Zenoh.DataServer do
   @moduledoc """
-  Declares Zenoh queryables for LRT, LAT, and AmendmentAnnotation tables.
+  Declares Zenoh queryables for legislation and secondary source data.
 
-  Fractalaw queries these key expressions to pull legislation data on demand.
+  Fractalaw queries these key expressions to pull data on demand.
   Default response format is Arrow IPC streaming. Append `?format=json` to the
   query parameters for JSON.
 
   Key expressions:
-    fractalaw/@{tenant}/data/legislation/lrt           -- all LRT records
-    fractalaw/@{tenant}/data/legislation/lrt/{name}    -- single LRT by name
-    fractalaw/@{tenant}/data/legislation/lat/{name}    -- LAT sections for a law
+    fractalaw/@{tenant}/data/legislation/lrt              -- all LRT records
+    fractalaw/@{tenant}/data/legislation/lrt/{name}       -- single LRT by name
+    fractalaw/@{tenant}/data/legislation/lat/{name}       -- LAT sections for a law
     fractalaw/@{tenant}/data/legislation/amendments/{name} -- annotations for a law
-    fractalaw/@{tenant}/sertantai/customers/{id}/laws  -- law names for a customer
+    fractalaw/@{tenant}/data/secondary/sources            -- all secondary sources
+    fractalaw/@{tenant}/data/secondary/sources/{source_id} -- single source metadata
+    fractalaw/@{tenant}/data/secondary/provisions/{source_id} -- provisions for a source
+    fractalaw/@{tenant}/sertantai/customers/{id}/laws     -- law names for a customer
   """
 
   use GenServer
@@ -20,7 +23,15 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   import Ecto.Query
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Legal.{LegalRegister, Lat, AmendmentAnnotation}
+
+  alias SertantaiLegal.Legal.{
+    LegalRegister,
+    Lat,
+    AmendmentAnnotation,
+    SecondarySource,
+    SecondarySourceProvision
+  }
+
   alias SertantaiLegal.Zenoh.ActivityLog
 
   @poll_interval :timer.seconds(2)
@@ -99,6 +110,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   defp handle_query(%Zenohex.Query{key_expr: key_expr, parameters: params, zenoh_query: zq}) do
     tenant = tenant_id()
     prefix = "fractalaw/@#{tenant}/data/legislation"
+    secondary_prefix = "fractalaw/@#{tenant}/data/secondary"
     customers_prefix = "fractalaw/@#{tenant}/sertantai/customers"
     format = parse_format(params)
 
@@ -116,6 +128,15 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
           ^prefix <> "/amendments/" <> law_name ->
             fetch_amendments_by_law(law_name, format)
+
+          ^secondary_prefix <> "/sources" ->
+            fetch_all_secondary_sources()
+
+          ^secondary_prefix <> "/sources/" <> source_id ->
+            fetch_secondary_source(source_id)
+
+          ^secondary_prefix <> "/provisions/" <> source_id ->
+            fetch_secondary_provisions(source_id, format)
 
           ^customers_prefix ->
             fetch_customer_list()
@@ -456,6 +477,105 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     Explorer.DataFrame.dump_ipc_stream(df)
   end
 
+  # --- Secondary Source Fetching ---
+
+  defp fetch_all_secondary_sources do
+    records =
+      from(s in SecondarySource, order_by: [asc: s.source_id])
+      |> Repo.all()
+      |> Enum.map(&serialize_secondary_source/1)
+
+    {:ok, Jason.encode!(records)}
+  end
+
+  defp fetch_secondary_source(source_id) do
+    case Repo.all(from(s in SecondarySource, where: s.source_id == ^source_id)) do
+      [source] -> {:ok, Jason.encode!(serialize_secondary_source(source))}
+      [] -> {:error, :not_found}
+    end
+  end
+
+  defp fetch_secondary_provisions(source_id, :json) do
+    records =
+      from(p in SecondarySourceProvision,
+        where: p.source_id == ^source_id,
+        order_by: [asc: p.position]
+      )
+      |> Repo.all()
+      |> Enum.map(&serialize_secondary_provision/1)
+
+    {:ok, Jason.encode!(records)}
+  end
+
+  defp fetch_secondary_provisions(source_id, :arrow) do
+    records =
+      from(p in SecondarySourceProvision,
+        where: p.source_id == ^source_id,
+        order_by: [asc: p.position]
+      )
+      |> Repo.all()
+
+    secondary_provisions_to_arrow(records)
+  end
+
+  defp serialize_secondary_source(s) do
+    %{
+      id: s.id,
+      source_id: s.source_id,
+      source_type: to_string(s.source_type),
+      title: s.title,
+      issuer: s.issuer,
+      legal_weight: to_string(s.legal_weight),
+      status: to_string(s.status),
+      edition: s.edition,
+      parent_source_id: s.parent_source_id,
+      updated_at: s.updated_at
+    }
+  end
+
+  defp serialize_secondary_provision(p) do
+    %{
+      id: p.id,
+      section_id: p.section_id,
+      source_id: p.source_id,
+      sort_key: p.sort_key,
+      position: p.position,
+      section_type: to_string(p.section_type),
+      depth: p.depth,
+      hierarchy_path: p.hierarchy_path,
+      heading: p.heading,
+      text: p.text,
+      text_source: to_string(p.text_source),
+      drrp_types: p.drrp_types,
+      actors: p.actors,
+      governed_actors: p.governed_actors,
+      popimar: p.popimar,
+      significance_overall: p.significance_overall,
+      taxa_enriched_at: p.taxa_enriched_at,
+      updated_at: p.updated_at
+    }
+  end
+
+  defp secondary_provisions_to_arrow([]), do: {:ok, <<>>}
+
+  defp secondary_provisions_to_arrow(records) do
+    df =
+      Explorer.DataFrame.new(%{
+        id: Enum.map(records, & &1.id),
+        section_id: Enum.map(records, & &1.section_id),
+        source_id: Enum.map(records, & &1.source_id),
+        position: Enum.map(records, & &1.position),
+        section_type: Enum.map(records, &to_string(&1.section_type)),
+        depth: Enum.map(records, & &1.depth),
+        heading: Enum.map(records, & &1.heading),
+        text: Enum.map(records, & &1.text),
+        text_source: Enum.map(records, &to_string(&1.text_source)),
+        updated_at: Enum.map(records, & &1.updated_at)
+      })
+
+    Explorer.DataFrame.dump_ipc_stream(df)
+  end
+
   defp cast_columns(df, col_names, dtype) do
     Enum.reduce(col_names, df, fn col, acc ->
       series = Explorer.DataFrame.pull(acc, col)
@@ -469,7 +589,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   defp declare_queryables(session_id) do
     tenant = tenant_id()
     prefix = "fractalaw/@#{tenant}/data/legislation"
-
+    secondary_prefix = "fractalaw/@#{tenant}/data/secondary"
     customers_prefix = "fractalaw/@#{tenant}/sertantai/customers"
 
     keys = [
@@ -477,6 +597,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       "#{prefix}/lrt/*",
       "#{prefix}/lat/*",
       "#{prefix}/amendments/*",
+      "#{secondary_prefix}/sources",
+      "#{secondary_prefix}/sources/*",
+      "#{secondary_prefix}/provisions/*",
       "#{customers_prefix}",
       "#{customers_prefix}/*/laws"
     ]
