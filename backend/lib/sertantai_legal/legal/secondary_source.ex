@@ -77,6 +77,15 @@ defmodule SertantaiLegal.Legal.SecondarySource do
       description("Date this edition became effective")
     end
 
+    # Parent grouping (chapter → JSP)
+    attribute :parent_source_id, :uuid do
+      allow_nil?(true)
+
+      description(
+        "FK to parent secondary_source — groups chapters/elements/leaflets under their JSP"
+      )
+    end
+
     # Version chain
     attribute :supersedes_id, :uuid do
       allow_nil?(true)
@@ -118,6 +127,7 @@ defmodule SertantaiLegal.Legal.SecondarySource do
         :status,
         :edition,
         :effective_date,
+        :parent_source_id,
         :supersedes_id,
         :source_url,
         :structure_type,
@@ -131,6 +141,7 @@ defmodule SertantaiLegal.Legal.SecondarySource do
         :status,
         :edition,
         :effective_date,
+        :parent_source_id,
         :supersedes_id,
         :source_url,
         :structure_type,
@@ -154,9 +165,33 @@ defmodule SertantaiLegal.Legal.SecondarySource do
       description("All secondary sources with status = current")
       filter(expr(status == :current))
     end
+
+    read :by_parent do
+      description("All chapters/elements/leaflets under a parent JSP")
+      argument(:parent_source_id, :uuid, allow_nil?: false)
+      filter(expr(parent_source_id == ^arg(:parent_source_id)))
+    end
+
+    read :top_level do
+      description("All sources with no parent (JSP-level or standalone)")
+      filter(expr(is_nil(parent_source_id)))
+    end
   end
 
   relationships do
+    belongs_to :parent, SertantaiLegal.Legal.SecondarySource do
+      source_attribute(:parent_source_id)
+      destination_attribute(:id)
+      define_attribute?(false)
+      allow_nil?(true)
+    end
+
+    has_many :chapters, SertantaiLegal.Legal.SecondarySource do
+      source_attribute(:id)
+      destination_attribute(:parent_source_id)
+      description("Child chapters/elements/leaflets under this JSP")
+    end
+
     has_many :source_links, SertantaiLegal.Legal.SourceLink do
       source_attribute(:id)
       destination_attribute(:secondary_source_id)

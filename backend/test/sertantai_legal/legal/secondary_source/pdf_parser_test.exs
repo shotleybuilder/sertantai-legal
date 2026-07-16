@@ -379,6 +379,38 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParserTest do
   end
 
   # ---------------------------------------------------------------------------
+  # Per-chapter namespace isolation (issue #123)
+  # ---------------------------------------------------------------------------
+
+  describe "per-chapter namespace isolation" do
+    test "two chapters with identical headings produce different section_ids" do
+      profile = ParserProfile.build(:mod_jsp, 12.0)
+
+      # Chapter 8 and Chapter 23 both have "Part 2: Guidance" and "Introduction"
+      ch8_source = fake_source(%{source_id: "JSP-375-CH08"})
+      ch23_source = fake_source(%{source_id: "JSP-375-CH23"})
+
+      lines = [
+        line("Introduction", 14.0, true),
+        line("1. First paragraph of guidance.", 12.0)
+      ]
+
+      {:ok, ch8_provisions} = PdfParser.classify_lines(lines, ch8_source, profile)
+      {:ok, ch23_provisions} = PdfParser.classify_lines(lines, ch23_source, profile)
+
+      ch8_ids = Enum.map(ch8_provisions, & &1.section_id)
+      ch23_ids = Enum.map(ch23_provisions, & &1.section_id)
+
+      # No overlap — different source_ids produce different section_id prefixes
+      assert MapSet.disjoint?(MapSet.new(ch8_ids), MapSet.new(ch23_ids))
+
+      # Both contain the expected paragraph
+      assert Enum.any?(ch8_ids, &(&1 =~ "JSP375CH08"))
+      assert Enum.any?(ch23_ids, &(&1 =~ "JSP375CH23"))
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # Integration tests — real PDFs (skipped if not present)
   # ---------------------------------------------------------------------------
 
@@ -393,7 +425,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParserTest do
         source =
           fake_source(%{
             source_type: :jsp,
-            source_id: "JSP-375",
+            source_id: "JSP-375-CH08",
             issuer: "MoD",
             edition: "Current"
           })
