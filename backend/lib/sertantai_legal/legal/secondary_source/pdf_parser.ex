@@ -32,6 +32,17 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
   }
 
   @doc """
+  Classify raw extracted lines into provisions using the given profile.
+
+  This is the pure logic pipeline — no PDF I/O. Used by tests to verify
+  classification without needing PDF fixtures.
+  """
+  def classify_lines(raw_lines, source, profile) do
+    provisions = classify_and_group(raw_lines, source, profile)
+    {:ok, provisions}
+  end
+
+  @doc """
   Parse a PDF file into a list of provision maps.
 
   Options:
@@ -186,6 +197,44 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
   defp determine_role(:hse_acop, %{bold: false}, _fonts), do: :minor_text
   defp determine_role(:hse_acop, %{bold: true}, _fonts), do: :minor_heading
 
+  # --- HSE Guidance profile ---
+  # Like :hse_acop but captures unnumbered prose body text as provisions.
+
+  defp determine_role(:hse_guidance, %{font_size: sz}, fonts)
+       when sz >= fonts.title_min do
+    :chapter_title
+  end
+
+  defp determine_role(:hse_guidance, %{text: text, bold: true, font_size: sz}, fonts)
+       when sz >= fonts.section_min do
+    if skip_header?(text, :hse_acop), do: :skip, else: :section_heading
+  end
+
+  defp determine_role(:hse_guidance, %{text: text, bold: true, font_size: sz}, fonts)
+       when sz >= fonts.sub_heading_min do
+    cond do
+      skip_header?(text, :hse_acop) -> :skip
+      bold_continuation?(text) -> :body
+      true -> :sub_heading
+    end
+  end
+
+  defp determine_role(:hse_guidance, %{text: text, bold: false, font_size: sz}, fonts)
+       when sz >= fonts.sub_heading_min do
+    cond do
+      acop_numbered?(text) -> :numbered_para
+      String.length(text) > 20 -> :prose_body
+      true -> :body
+    end
+  end
+
+  defp determine_role(:hse_guidance, %{font_size: sz}, fonts)
+       when sz <= fonts.footnote_max,
+       do: :footnote
+
+  defp determine_role(:hse_guidance, %{bold: false}, _fonts), do: :minor_text
+  defp determine_role(:hse_guidance, %{bold: true}, _fonts), do: :minor_heading
+
   # --- Fallback (unknown profile) ---
 
   defp determine_role(_profile, _line, _fonts), do: :body
@@ -268,8 +317,16 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
           line.role in [:chapter_title, :section_heading, :sub_heading, :numbered_para] ->
             if acc, do: {:cont, acc, line}, else: {:cont, line}
 
+          # Prose body starts a new chunk (each prose block → one provision)
+          line.role == :prose_body and (acc == nil or acc.role != :prose_body) ->
+            if acc, do: {:cont, acc, line}, else: {:cont, line}
+
+          # Consecutive prose body lines merge
+          line.role == :prose_body and acc != nil and acc.role == :prose_body ->
+            {:cont, %{acc | text: acc.text <> " " <> line.text}}
+
           line.role in [:body, :minor_text, :footnote, :minor_heading] and acc != nil and
-              acc.role in [:body, :numbered_para] ->
+              acc.role in [:body, :numbered_para, :prose_body] ->
             {:cont, %{acc | text: acc.text <> " " <> line.text}}
 
           true ->
@@ -301,7 +358,8 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
            path: [],
            current_chapter: nil,
            current_section: nil,
-           seen_ids: MapSet.new()
+           seen_ids: MapSet.new(),
+           prose_counter: 0
          }},
         fn line, {provs, state} ->
           case line.role do
@@ -340,7 +398,8 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
                 state
                 | position: state.position + 1,
                   current_section: slug,
-                  path: [state.current_chapter, slug] |> Enum.reject(&is_nil/1)
+                  path: [state.current_chapter, slug] |> Enum.reject(&is_nil/1),
+                  prose_counter: 0
               }
 
               path = Enum.join(state.path, "/")
@@ -394,6 +453,33 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
                 if parent_path == "",
                   do: "para.#{para_num}",
                   else: "#{parent_path}.para.#{para_num}"
+
+              prov = %{
+                section_id: "#{prefix}:#{locator}",
+                secondary_source_id: source.id,
+                source_id: source.source_id,
+                sort_key: String.pad_leading("#{state.position}", 5, "0"),
+                position: state.position,
+                section_type: :paragraph,
+                depth: if(parent_path == "", do: 1, else: length(state.path) + 1),
+                hierarchy_path: "/#{locator}",
+                heading: nil,
+                text: String.trim(line.text),
+                text_source: :full_text
+              }
+
+              {prov, state} = dedup_provision(prov, state)
+              {[prov | provs], state}
+
+            :prose_body ->
+              prose_num = state.prose_counter + 1
+              state = %{state | position: state.position + 1, prose_counter: prose_num}
+              parent_path = state.path |> Enum.join("/")
+
+              locator =
+                if parent_path == "",
+                  do: "prose.#{prose_num}",
+                  else: "#{parent_path}.prose.#{prose_num}"
 
               prov = %{
                 section_id: "#{prefix}:#{locator}",

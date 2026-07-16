@@ -1,3 +1,67 @@
+---
+session: Phase 2 — Second-Tier Provision Parsing
+project: sertantai-legal
+status: closed
+opened: 2026-07-15
+closed: 2026-07-15
+outcome: success
+commits: [422d45c, f46063d, 0002f05]
+
+summary: >
+  Built profile-based PDF parser for secondary source provisions. Tested on 5
+  documents across 2 publishers (3 MoD JSPs, 1 HSE ACoP, 1 HSE guidance).
+  887 provisions persisted. Parser auto-detects publisher profile via font
+  analysis and pattern matching.
+
+decisions:
+  - what: Profile-based parser dispatch via Elixir pattern matching
+    why: One-size-fits-all rules broke across publishers — loosening ACoP regex broke JSP paragraph counts
+    result: :mod_jsp and :hse_acop profiles isolated, zero cross-contamination
+  - what: pdf_elixide over ex_pdfium for PDF extraction
+    why: ex_pdfium rustler ~> 0.38 conflicts with zenohex; pdf_elixide uses rustler_precompiled
+    result: Word-level extraction with font_size, bold, italic, bounding boxes
+  - what: Bumped ecto 3.14 + explorer 0.12 + ash 3.29 to unblock PDF deps
+    why: explorer 0.12 moved to rustler ~> 0.38 + decimal ~> 3.0, ecto 3.14 moved to decimal ~> 3.0
+    result: Full dep chain resolved, extractous_ex + pdf_elixide both available
+
+metrics:
+  provisions_total: 887
+  documents_parsed: { JSP-375: 186, JSP-815: 71, JSP-418: 241, L8: 168, HSG65: 221 }
+  profiles: { mod_jsp: 3, hse_acop: 2 }
+  tune_cycles: 6
+  dep_upgrades: { ecto: "3.13→3.14", explorer: "0.11→0.12", ash: "3.23→3.29", decimal: "2.4→3.1" }
+
+lessons:
+  - title: Rustler version pinning is the Elixir NIF ecosystem's worst pain point
+    detail: "zenohex pins rustler 0.37.1 (exact), explorer 0.11 pins ~> 0.36, explorer 0.12 needs ~> 0.38. All use precompiled NIFs so rustler is never actually compiled. Fixed with {:rustler, \"~> 0.38\", optional: true, override: true}."
+    tag: infrastructure
+  - title: Profile-based parser dispatch is the right pattern for multi-publisher PDF parsing
+    detail: "First attempt used adaptive thresholds (body size × multiplier). Worked for one publisher but cross-publisher tuning was impossible — fixing ACoP numbering regex broke JSP counts. Pattern matching on {profile_name, line, fonts} isolates each publisher completely."
+    tag: tooling
+  - title: HSE guidance (HSG series) is prose, not numbered provisions
+    detail: "L8 ACoP has numbered paragraphs (99 captured). HSG65 is flowing prose with bullet points — 0 paragraphs captured. Structural skeleton (headings, sections) is correct. Prose body capture needs a dedicated :hse_guidance profile."
+    tag: data
+  - title: pdf_elixide Word struct uses bbox not rect, bold? not bold, font not font_name
+    detail: "The field names in PdfElixide.Document.Word don't match the research notes. Always check the actual struct definition in deps/pdf_elixide/lib/pdf_elixide/document/word.ex."
+    tag: tooling
+
+artifacts:
+  - backend/lib/sertantai_legal/legal/secondary_source/pdf_parser.ex
+  - backend/lib/sertantai_legal/legal/secondary_source/parser_profile.ex
+  - backend/lib/sertantai_legal/legal/secondary_source_provision.ex
+  - backend/lib/mix/tasks/secondary.parse.ex
+  - .claude/skills/secondary-source-parsing/SKILL.md
+
+depends_on:
+  - second-tier-duties/phase-1-data-model.md
+
+enables:
+  - Phase 3 enrichment (fractalaw taxa classification of secondary provisions)
+  - Phase 4 sync (SecondaryProvisionsTemplate for Baserow)
+  - :hse_guidance profile for prose body text capture
+  - mix secondary.qa tooling
+---
+
 # Title: Phase 2 — Second-Tier Provision Parsing (JSP focus)
 
 **Started**: 2026-07-15
@@ -13,8 +77,8 @@
 - [x] Build hierarchy classifier (PdfParser module)
 - [x] Section_id generator (TYPE_issuer_year_id:locator)
 - [x] Mix task: `mix secondary.parse`
-- [ ] **BLOCKED**: Parse JSP 375 validation — engine.ex compile error from other Claude's Baserow WIP
-- [ ] QA tooling: `mix secondary.qa`
+- [x] Parse JSP 375 validation — resolved after Baserow WIP landed
+- [ ] QA tooling: `mix secondary.qa` (deferred)
 
 ## Tuning pattern
 Parse → persist → inspect in SQL → fix classifier → re-parse with `--clear`.
@@ -46,9 +110,18 @@ across 3-4 document types. Don't reference from source_links/control_mappings un
 - Auto-detect profile from font analysis + publisher heuristics on first page
 - Same pattern as LAT parser's jurisdiction dispatch (UK/AU/EU)
 
-### Next documents to test
-- [ ] L8 ACoP with :hse_acop profile
-- [ ] HSG guidance (HSG65 — may need :hse_hsg profile or share :hse_acop)
+### Tune cycle 5: L8 ACoP (28 pages)
+- Profile auto-detected as :hse_acop (10pt body)
+- 168 provisions (99 paragraphs, 56 headings, 12 sections, 1 chapter)
+- ACoP "N Text" numbering (no dot) handled by acop_numbered?/1
+
+### Tune cycle 6: HSG65 guidance (62 pages)
+- Profile auto-detected as :hse_acop (10pt body, same publisher)
+- 221 provisions but **0 paragraphs** — prose guidance, no numbered paragraphs
+- Structural skeleton captured (196 headings, 18 chapters, 3 sections, 4 parts)
+- **Known gap**: prose body text not captured as provisions. Needs future
+  :hse_guidance profile that treats unnumbered body blocks as paragraph provisions.
+- Bullet points at 8pt ("■ items") classified as minor_text, lost
 
 ## Notes
 - Bumped ecto 3.14, explorer 0.12, ash 3.29 — unlocked extractous_ex + pdf_elixide

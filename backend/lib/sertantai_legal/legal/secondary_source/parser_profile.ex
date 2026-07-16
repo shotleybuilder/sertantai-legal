@@ -60,7 +60,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.ParserProfile do
     case name do
       :mod_jsp -> mod_jsp(body_size)
       :hse_acop -> hse_acop(body_size)
-      :hse_guidance -> hse_acop(body_size)
+      :hse_guidance -> hse_guidance(body_size)
       _ -> mod_jsp(body_size)
     end
   end
@@ -86,6 +86,20 @@ defmodule SertantaiLegal.Legal.SecondarySource.ParserProfile do
   defp hse_acop(body_size) do
     %__MODULE__{
       name: :hse_acop,
+      publisher: "HSE",
+      fonts: %{
+        body_size: body_size,
+        title_min: body_size * 2.5,
+        section_min: body_size + 4.0,
+        sub_heading_min: body_size,
+        footnote_max: body_size * 0.75
+      }
+    }
+  end
+
+  defp hse_guidance(body_size) do
+    %__MODULE__{
+      name: :hse_guidance,
       publisher: "HSE",
       fonts: %{
         body_size: body_size,
