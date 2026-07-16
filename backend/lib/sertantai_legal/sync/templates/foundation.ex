@@ -48,7 +48,7 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
   def requires, do: []
 
   @impl true
-  def tables, do: [:lrt, :lat]
+  def tables, do: [:lrt, :lat, :actor_tuples]
 
   @impl true
   def field_specs(_sub_patterns) do
@@ -67,7 +67,12 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
           options: @family_options,
           description: "Primary classification"
         },
-        %{name: "Year", type: :number, description: "Year of enactment"},
+        %{
+          name: "Year",
+          type: :number,
+          opts: %{"number_decimal_places" => 0},
+          description: "Year of enactment"
+        },
         %{name: "Number", type: :text, description: "Legislation number"},
         %{
           name: "Type",
@@ -94,7 +99,12 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
           options: @significance_options,
           description: "Law-level significance rating"
         },
-        %{name: "Significance_Score", type: :number, description: "Raw L-score"},
+        %{
+          name: "Significance_Score",
+          type: :number,
+          opts: %{"number_decimal_places" => 1},
+          description: "Raw L-score"
+        },
         %{
           name: "Function",
           type: :multi_select,
@@ -177,13 +187,40 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
           options: @significance_options,
           description: "Strength rating"
         },
-        %{name: "Confidence", type: :number, description: "Classification confidence"},
+        %{
+          name: "Confidence",
+          type: :number,
+          opts: %{"number_decimal_places" => 2},
+          description: "Classification confidence"
+        },
         %{name: "Legal_Register", type: :link_row, target: :lrt, description: "Parent law"},
         %{
           name: "Actors",
           type: :link_row,
           target: :actor_tuples,
           description: "Actor combinations for this provision"
+        },
+        %{name: "_source_id", type: :text, description: "Sync source identifier"}
+      ],
+      actor_tuples: [
+        %{
+          name: "Name",
+          type: :text,
+          primary: true,
+          description: "Composite key: actor|position|drrp_type"
+        },
+        %{name: "Actor", type: :single_select, options: [], description: "Actor label"},
+        %{
+          name: "Position",
+          type: :single_select,
+          options: [],
+          description: "Actor position (active/passive)"
+        },
+        %{
+          name: "DRRP_Type",
+          type: :single_select,
+          options: [],
+          description: "Obligation/Right/Power/etc."
         },
         %{name: "_source_id", type: :text, description: "Sync source identifier"}
       ]

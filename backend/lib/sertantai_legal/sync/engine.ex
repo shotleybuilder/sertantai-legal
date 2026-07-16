@@ -1,7 +1,13 @@
 defmodule SertantaiLegal.Sync.Engine do
   @moduledoc """
   Orchestrates a sync execution: loads config, queries data, pushes to provider,
-  tracks row mappings, and records the job result.
+  and records the job result.
+
+  Uses a map-based CUD algorithm:
+  1. Fetch all Baserow rows for a table → Name → row_id map
+  2. Format Postgres rows and split into creates/updates by checking Name against the map
+  3. Delete reconciliation: Baserow Names not in Postgres set → deletes
+  4. Batch creates, updates, deletes via provider
   """
 
   require Logger
@@ -9,10 +15,8 @@ defmodule SertantaiLegal.Sync.Engine do
   alias SertantaiLegal.Sync.{
     ActorTupleSync,
     Credentials,
-    DeltaDetector,
     ProfileQuery,
-    Providers.Baserow,
-    Templates.Foundation
+    Providers.Baserow
   }
 
   @doc """
@@ -75,6 +79,9 @@ defmodule SertantaiLegal.Sync.Engine do
         )
 
         Logger.info("[Sync] Row mappings cleared for config #{sync_config_id}")
+
+        # Clear per-table last_synced_at timestamps
+        update_target_config(sync_config, Map.delete(sync_config.target_config, "last_synced_at"))
 
         {:ok, %{tables_cleaned: length(tables), rows_deleted: total_deleted}}
       end
@@ -139,9 +146,6 @@ defmodule SertantaiLegal.Sync.Engine do
     field_tier = entitlement.field_tier
     start_time = System.monotonic_time()
 
-    # Load field specs from templates — single source of truth
-    template_specs = load_template_specs()
-
     with {:ok, provider_config} <- authenticate_provider(sync_config.provider, provider_config),
          :ok <- validate_workspace(provider_config, sync_config),
          :ok <- prepare_tables(sync_config.provider, provider_config, sync_config),
@@ -150,7 +154,7 @@ defmodule SertantaiLegal.Sync.Engine do
              organization_id: sync_config.organization_id
            ),
          {:ok, job} <-
-           sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job, template_specs),
+           sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job),
          {:ok, job} <-
            maybe_sync_lat(
              provider_config,
@@ -158,15 +162,14 @@ defmodule SertantaiLegal.Sync.Engine do
              profile,
              entitlement,
              sync_config,
-             job,
-             template_specs
+             job
            ),
          {:ok, job} <-
            maybe_sync_actor_tuples(provider_config, sync_config, job),
          {:ok, job} <-
-           maybe_sync_controls(provider_config, lrt_rows, sync_config, job, template_specs),
+           maybe_sync_controls(provider_config, lrt_rows, sync_config, job),
          {:ok, job} <-
-           maybe_sync_control_mappings(provider_config, sync_config, job, template_specs) do
+           maybe_sync_control_mappings(provider_config, sync_config, job) do
       checkpoint = max_updated_at(lrt_rows)
 
       {:ok, job} =
@@ -208,7 +211,126 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
-  defp sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job, template_specs) do
+  # ── Generic sync_table ───────────────────────────────────────────
+
+  @doc false
+  defp sync_table(
+         provider,
+         provider_config,
+         table_key,
+         formatted_rows,
+         postgres_names,
+         sync_config
+       ) do
+    sync_start_time = DateTime.utc_now()
+
+    # 1. Fetch Baserow Name → row_id map
+    with {:ok, remote_map} <- provider.list_all_rows(provider_config, table_key) do
+      # 2. Split formatted rows into creates and updates
+      {creates, updates} = split_cud(formatted_rows, remote_map)
+
+      # 3. Delete reconciliation
+      deletes = find_deletes(remote_map, postgres_names)
+
+      Logger.info(
+        "[Sync] #{table_key} CUD: #{length(creates)} create, #{length(updates)} update, " <>
+          "#{length(deletes)} delete"
+      )
+
+      # 4. Execute creates
+      created_count =
+        if creates != [] do
+          case provider.batch_create(provider_config, table_key, creates) do
+            {:ok, mappings} ->
+              length(mappings)
+
+            {:error, reason} ->
+              Logger.error("[Sync] #{table_key} create failed: #{inspect(reason)}")
+              0
+          end
+        else
+          0
+        end
+
+      # 5. Execute updates
+      updated_count =
+        if updates != [] do
+          case provider.batch_update(provider_config, table_key, updates) do
+            {:ok, count} ->
+              count
+
+            {:error, reason} ->
+              Logger.warning("[Sync] #{table_key} update failed: #{inspect(reason)}")
+              0
+          end
+        else
+          0
+        end
+
+      # 6. Execute deletes
+      deleted_count =
+        if deletes != [] do
+          policy = sync_config.on_filter_change || :delete
+
+          case policy do
+            :delete ->
+              ext_ids = Enum.map(deletes, fn {_name, row_id} -> row_id end)
+
+              case provider.batch_delete(provider_config, table_key, ext_ids) do
+                {:ok, count} ->
+                  count
+
+                {:error, reason} ->
+                  Logger.warning("[Sync] #{table_key} delete failed: #{inspect(reason)}")
+                  0
+              end
+
+            _ ->
+              Logger.info("[Sync] #{length(deletes)} orphaned rows (policy: #{policy})")
+              0
+          end
+        else
+          0
+        end
+
+      # 7. Update per-table last_synced_at
+      update_table_synced_at(sync_config, table_key, sync_start_time)
+
+      {:ok, %{created: created_count, updated: updated_count, deleted: deleted_count}, remote_map}
+    end
+  end
+
+  # Split formatted rows into creates and updates by checking Name against remote_map.
+  # Updates get "id" injected (the Baserow row_id).
+  defp split_cud(formatted_rows, remote_map) do
+    Enum.reduce(formatted_rows, {[], []}, fn row, {creates, updates} ->
+      name = row["Name"]
+
+      case Map.get(remote_map, name) do
+        nil ->
+          {[row | creates], updates}
+
+        row_id ->
+          updated_row = Map.put(row, "id", row_id)
+          {creates, [updated_row | updates]}
+      end
+    end)
+    |> then(fn {creates, updates} -> {Enum.reverse(creates), Enum.reverse(updates)} end)
+  end
+
+  # Find Baserow names that are NOT in the Postgres set → delete candidates.
+  # Returns list of {name, row_id} tuples.
+  defp find_deletes(remote_map, postgres_names) do
+    postgres_name_set = MapSet.new(postgres_names)
+
+    remote_map
+    |> Enum.reject(fn {name, _row_id} -> MapSet.member?(postgres_name_set, name) end)
+    |> Enum.map(fn {name, row_id} -> {name, row_id} end)
+  end
+
+  # ── LRT Sync ─────────────────────────────────────────────────────
+
+  defp sync_lrt(provider_config, lrt_rows, field_tier, sync_config, job) do
     provider = provider_module(sync_config.provider)
 
     # Validate holder vocabulary — warn on drift but don't block sync.
@@ -222,92 +344,31 @@ defmodule SertantaiLegal.Sync.Engine do
         )
     end
 
-    field_specs = template_specs[:lrt] || []
+    # Format rows for the provider
+    formatted =
+      Enum.map(lrt_rows, fn row ->
+        provider.format_lrt_row(row, field_tier)
+      end)
 
-    with :ok <- provider.ensure_fields(provider_config, :lrt, field_specs) do
-      # Format rows for the provider
-      formatted =
-        Enum.map(lrt_rows, fn row ->
-          provider.format_lrt_row(row, field_tier)
-        end)
+    # Collect all Postgres Names for delete reconciliation
+    postgres_names = Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
 
-      # Load existing mappings for delta detection
-      existing_mappings = load_mappings(sync_config.id, :lrt)
+    case sync_table(provider, provider_config, :lrt, formatted, postgres_names, sync_config) do
+      {:ok, %{created: c, updated: u, deleted: d}, _remote_map} ->
+        {:ok, %{job | rows_created: c, rows_updated: u, rows_deleted: d}}
 
-      # Build source timestamp map for change detection
-      source_timestamps =
-        Map.new(lrt_rows, fn row ->
-          {provider.format_uuid(row.id), row.updated_at}
-        end)
-
-      delta = DeltaDetector.detect(formatted, existing_mappings, source_timestamps)
-
-      Logger.info(
-        "[Sync] LRT delta: #{length(delta.new)} new, #{length(delta.updated)} updated, " <>
-          "#{length(delta.deleted)} deleted, #{delta.unchanged} unchanged"
-      )
-
-      job = %{job | rows_created: 0, rows_updated: 0, rows_deleted: 0}
-
-      # 1. Create new rows (mappings saved per-batch for crash safety)
-      job =
-        if delta.new != [] do
-          on_batch = fn batch_mappings ->
-            save_row_mappings(sync_config.id, :lrt, batch_mappings, lrt_rows)
-          end
-
-          case provider.batch_create(provider_config, :lrt, delta.new, on_batch) do
-            {:ok, mappings} ->
-              %{job | rows_created: length(mappings)}
-
-            {:error, reason} ->
-              Logger.error("[Sync] LRT create failed: #{inspect(reason)}")
-              job
-          end
-        else
-          job
-        end
-
-      # 2. Update changed rows
-      job =
-        if delta.updated != [] do
-          case provider.batch_update(provider_config, :lrt, delta.updated) do
-            {:ok, count} ->
-              # Update mapping timestamps
-              Enum.each(delta.updated, fn row ->
-                update_mapping_timestamp(sync_config.id, :lrt, row["_source_id"])
-              end)
-
-              %{job | rows_updated: count}
-
-            {:error, reason} ->
-              Logger.warning("[Sync] LRT update failed: #{reason}")
-              job
-          end
-        else
-          job
-        end
-
-      # 3. Handle deleted rows per policy
-      job =
-        if delta.deleted != [] do
-          deleted_count =
-            handle_deletions(provider, provider_config, :lrt, sync_config, delta.deleted)
-
-          %{job | rows_deleted: deleted_count}
-        else
-          job
-        end
-
-      {:ok, job}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
-  defp maybe_sync_lat(_config, _lrt_rows, %{include_lat: false}, _ent, _sc, job, _ts) do
+  # ── LAT Sync ─────────────────────────────────────────────────────
+
+  defp maybe_sync_lat(_config, _lrt_rows, %{include_lat: false}, _ent, _sc, job) do
     {:ok, job}
   end
 
-  defp maybe_sync_lat(_config, _lrt_rows, _profile, %{data_tier: :lrt_only}, _sc, job, _ts) do
+  defp maybe_sync_lat(_config, _lrt_rows, _profile, %{data_tier: :lrt_only}, _sc, job) do
     {:ok, job}
   end
 
@@ -317,8 +378,7 @@ defmodule SertantaiLegal.Sync.Engine do
          _profile,
          _entitlement,
          sync_config,
-         job,
-         template_specs
+         job
        ) do
     # Check LAT table is configured
     lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
@@ -339,10 +399,6 @@ defmodule SertantaiLegal.Sync.Engine do
 
       lrt_ids = Enum.map(in_force_lrt, & &1.id)
       provider = provider_module(sync_config.provider)
-
-      # Load LRT row mappings so we can set link_row values
-      lrt_mappings = load_lrt_mappings(sync_config.id)
-      lrt_table_id = get_in(sync_config.target_config, ["lrt_table_id"])
 
       lat_section_types = get_in(sync_config.target_config, ["lat_section_types"])
       lat_drrp_types = get_in(sync_config.target_config, ["lat_drrp_types"])
@@ -372,9 +428,7 @@ defmodule SertantaiLegal.Sync.Engine do
           end
         end
 
-      with {:ok, lat_rows} <- lat_query_fn.(lrt_ids),
-           field_specs = template_specs[:lat] || [],
-           :ok <- provider.ensure_fields(provider_config, :lat, field_specs) do
+      with {:ok, lat_rows} <- lat_query_fn.(lrt_ids) do
         # Format LAT rows with link_row references to parent LRT
         formatted =
           Enum.map(lat_rows, fn lat ->
@@ -382,49 +436,17 @@ defmodule SertantaiLegal.Sync.Engine do
             provider.format_lat_row(lat, lat.law_name)
           end)
 
-        # Delta detection for LAT (no timestamps — all matched rows treated as updated)
-        existing_lat_mappings = load_mappings(sync_config.id, :lat)
-        lat_delta = DeltaDetector.detect(formatted, existing_lat_mappings)
+        # Collect all Postgres Names (section_ids) for delete reconciliation
+        postgres_names =
+          Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
 
-        Logger.info(
-          "[Sync] LAT delta: #{length(lat_delta.new)} new, #{length(lat_delta.updated)} updated, " <>
-            "#{length(lat_delta.deleted)} deleted, #{lat_delta.unchanged} unchanged"
-        )
+        case sync_table(provider, provider_config, :lat, formatted, postgres_names, sync_config) do
+          {:ok, _counts, _remote_map} ->
+            {:ok, Map.update(job, :lat_count, length(lat_rows), fn _ -> length(lat_rows) end)}
 
-        # Create new LAT rows
-        if lat_delta.new != [] do
-          lat_on_batch = fn batch_mappings ->
-            save_row_mappings(sync_config.id, :lat, batch_mappings, lat_rows)
-          end
-
-          case provider.batch_create(provider_config, :lat, lat_delta.new, lat_on_batch) do
-            {:ok, _} -> :ok
-            {:error, reason} -> Logger.error("[Sync] LAT create failed: #{reason}")
-          end
+          {:error, reason} ->
+            {:error, reason}
         end
-
-        # Update changed LAT rows
-        if lat_delta.updated != [] do
-          case provider.batch_update(provider_config, :lat, lat_delta.updated) do
-            {:ok, count} ->
-              # Update mapping timestamps so next run sees them as unchanged
-              Enum.each(lat_delta.updated, fn row ->
-                update_mapping_timestamp(sync_config.id, :lat, row["_source_id"])
-              end)
-
-              Logger.info("[Sync] LAT updated #{count} rows")
-
-            {:error, reason} ->
-              Logger.warning("[Sync] LAT update failed: #{reason}")
-          end
-        end
-
-        # Handle deleted LAT rows
-        if lat_delta.deleted != [] do
-          handle_deletions(provider, provider_config, :lat, sync_config, lat_delta.deleted)
-        end
-
-        {:ok, Map.update(job, :lat_count, length(lat_rows), fn _ -> length(lat_rows) end)}
       end
     end
   end
@@ -444,79 +466,50 @@ defmodule SertantaiLegal.Sync.Engine do
 
       lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
 
-      with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id, governed_only: governed_only),
-           field_specs = ActorTupleSync.field_specs(tuples),
-           :ok <- provider.ensure_fields(provider_config, :actor_tuples, field_specs) do
+      with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id, governed_only: governed_only) do
         formatted = ActorTupleSync.format_rows(tuples)
 
-        # Delta detection for actor tuples
-        existing_tuple_mappings = load_mappings(sync_config.id, :actor_tuples)
-        tuple_delta = DeltaDetector.detect(formatted, existing_tuple_mappings)
+        # Collect all Postgres Names for delete reconciliation
+        postgres_names =
+          Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
 
-        Logger.info(
-          "[Sync] Actor Tuples delta: #{length(tuple_delta.new)} new, " <>
-            "#{length(tuple_delta.deleted)} deleted, #{tuple_delta.unchanged} unchanged"
-        )
+        case sync_table(
+               provider,
+               provider_config,
+               :actor_tuples,
+               formatted,
+               postgres_names,
+               sync_config
+             ) do
+          {:ok, _counts, _remote_map} ->
+            # Re-link LAT provisions to current tuple set (idempotent)
+            if lat_table_id do
+              link_lat_to_tuples(
+                provider_config,
+                provider,
+                sync_config,
+                postgres_names
+              )
+            end
 
-        # 1. Create new tuples
-        if tuple_delta.new != [] do
-          tuple_on_batch = fn batch_mappings ->
-            save_row_mappings(sync_config.id, :actor_tuples, batch_mappings, tuples)
-          end
+            {:ok, job}
 
-          case provider.batch_create(
-                 provider_config,
-                 :actor_tuples,
-                 tuple_delta.new,
-                 tuple_on_batch
-               ) do
-            {:ok, _} ->
-              Logger.info("[Sync] Created #{length(tuple_delta.new)} new actor tuples")
-
-            {:error, reason} ->
-              Logger.error("[Sync] Actor tuple create failed: #{reason}")
-          end
+          {:error, reason} ->
+            {:error, reason}
         end
-
-        # 2. Delete orphaned tuples (no customer enrichment on tuples — safe to delete)
-        if tuple_delta.deleted != [] do
-          handle_deletions(
-            provider,
-            provider_config,
-            :actor_tuples,
-            sync_config,
-            tuple_delta.deleted
-          )
-        end
-
-        # 3. Re-link LAT provisions to current tuple set (idempotent)
-        # Load fresh mappings (includes newly created + existing unchanged)
-        all_tuple_mappings = load_mappings(sync_config.id, :actor_tuples)
-
-        link_lat_to_tuples(
-          provider_config,
-          provider,
-          sync_config,
-          lat_table_id,
-          actor_table_id,
-          all_tuple_mappings
-        )
-
-        {:ok, job}
       end
     end
   end
 
   # ── Controls sync ─────────────────────────────────────────────────
 
-  defp maybe_sync_controls(provider_config, lrt_rows, sync_config, job, template_specs) do
+  defp maybe_sync_controls(provider_config, lrt_rows, sync_config, job) do
     controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
 
     if is_nil(controls_table_id) do
       {:ok, job}
     else
       provider = provider_module(sync_config.provider)
-      lrt_table_id = get_in(sync_config.target_config, ["lrt_table_id"])
 
       # Get law_names from the org's LRT rows
       law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
@@ -524,301 +517,208 @@ defmodule SertantaiLegal.Sync.Engine do
       with {:ok, controls} <-
              SertantaiLegal.Legal.Control
              |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
-             |> Ash.read(),
-           field_specs = template_specs[:controls] || [],
-           :ok <- provider.ensure_fields(provider_config, :controls, field_specs) do
+             |> Ash.read() do
         formatted =
           Enum.map(controls, fn control ->
             # Legal_Register link: text value (law_name matches LRT primary field)
             provider.format_control_row(control, control.law_name)
           end)
 
-        # Delta detection
-        existing_mappings = load_mappings(sync_config.id, :controls)
-        delta = DeltaDetector.detect(formatted, existing_mappings)
+        # Collect all Postgres Names for delete reconciliation
+        postgres_names =
+          Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
 
-        Logger.info(
-          "[Sync] Controls delta: #{length(delta.new)} new, " <>
-            "#{length(delta.updated)} updated, " <>
-            "#{length(delta.deleted)} deleted, #{delta.unchanged} unchanged"
-        )
+        case sync_table(
+               provider,
+               provider_config,
+               :controls,
+               formatted,
+               postgres_names,
+               sync_config
+             ) do
+          {:ok, _counts, _remote_map} ->
+            {:ok, job}
 
-        # Create new
-        if delta.new != [] do
-          on_batch = fn batch_mappings ->
-            save_row_mappings(sync_config.id, :controls, batch_mappings, controls)
-          end
-
-          case provider.batch_create(provider_config, :controls, delta.new, on_batch) do
-            {:ok, _} ->
-              Logger.info("[Sync] Created #{length(delta.new)} new controls")
-
-            {:error, reason} ->
-              Logger.error("[Sync] Controls create failed: #{reason}")
-          end
+          {:error, reason} ->
+            {:error, reason}
         end
-
-        # Update existing
-        if delta.updated != [] do
-          case provider.batch_update(provider_config, :controls, delta.updated) do
-            {:ok, _} ->
-              Enum.each(delta.updated, fn row ->
-                update_mapping_timestamp(sync_config.id, :controls, row["_source_id"])
-              end)
-
-              Logger.info("[Sync] Updated #{length(delta.updated)} controls")
-
-            {:error, reason} ->
-              Logger.error("[Sync] Controls update failed: #{reason}")
-          end
-        end
-
-        # Delete removed
-        if delta.deleted != [] do
-          handle_deletions(provider, provider_config, :controls, sync_config, delta.deleted)
-        end
-
-        {:ok, job}
       end
     end
   end
 
-  defp maybe_sync_control_mappings(provider_config, sync_config, job, template_specs) do
+  defp maybe_sync_control_mappings(provider_config, sync_config, job) do
     cm_table_id = get_in(sync_config.target_config, ["control_mappings_table_id"])
 
     if is_nil(cm_table_id) do
       {:ok, job}
     else
       provider = provider_module(sync_config.provider)
-      controls_table_id = get_in(sync_config.target_config, ["controls_table_id"])
       lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
-      lrt_table_id = get_in(sync_config.target_config, ["lrt_table_id"])
 
-      # Get law_names from controls already synced (via controls mappings)
-      controls_mappings = load_mappings(sync_config.id, :controls)
+      # Get law_names from the org's synced controls (query directly from Postgres)
+      # We need controls that are applicable to this org's law register
+      with {:ok, sync_config} <- {:ok, sync_config},
+           {:ok, profile} <- load_profile(sync_config.sync_profile_id),
+           {:ok, entitlement} <- load_entitlement(sync_config.organization_id),
+           {:ok, lrt_rows} <-
+             ProfileQuery.query_lrt(profile, entitlement.field_tier,
+               organization_id: sync_config.organization_id
+             ) do
+        law_names = Enum.map(lrt_rows, & &1.name) |> Enum.reject(&is_nil/1)
 
-      # Extract law_names from controls source_ids (format: "law_name:control_id")
-      law_names =
-        controls_mappings
-        |> Enum.map(fn m ->
-          case String.split(m.source_id, ":", parts: 2) do
-            [law_name, _] -> law_name
-            _ -> nil
-          end
-        end)
-        |> Enum.reject(&is_nil/1)
-        |> Enum.uniq()
+        with {:ok, mappings} <-
+               SertantaiLegal.Legal.ControlMapping
+               |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
+               |> Ash.read() do
+          # All links use text values — Baserow resolves by matching target table's primary field.
 
-      with {:ok, mappings} <-
-             SertantaiLegal.Legal.ControlMapping
-             |> Ash.Query.for_read(:by_law_names, %{law_names: law_names})
-             |> Ash.read(),
-           field_specs = template_specs[:control_mappings] || [],
-           :ok <- provider.ensure_fields(provider_config, :control_mappings, field_specs) do
-        # All links use text values — Baserow resolves by matching target table's primary field.
-        # No row ID tracking needed.
+          # Build a set of LAT section_ids from Postgres
+          # TODO: this matches raw section_ids, not aggregated Duties Names — see GH issue
+          lat_postgres_names =
+            if lat_table_id do
+              lrt_ids = Enum.map(lrt_rows, & &1.id)
 
-        # LAT source_ids for walking up section_id hierarchy
-        lat_source_ids =
-          if lat_table_id do
-            load_mappings(sync_config.id, :lat)
-            |> MapSet.new(fn m -> m.source_id end)
-          else
-            MapSet.new()
-          end
+              case ProfileQuery.query_lat(lrt_ids) do
+                {:ok, lat_rows} -> MapSet.new(lat_rows, fn lat -> lat.section_id end)
+                _ -> MapSet.new()
+              end
+            else
+              MapSet.new()
+            end
 
-        formatted =
-          Enum.map(mappings, fn mapping ->
-            # Controls link: _source_id (matches Controls primary field "Name")
-            control_name = "#{mapping.law_name}:#{find_control_id(mapping.control_id)}"
+          formatted =
+            Enum.map(mappings, fn mapping ->
+              # Controls link: "law_name:control_id" (matches Controls primary field "Name")
+              # TODO: control_id here is Postgres UUID, not fractalaw ID — see GH issue
+              control_name = "#{mapping.law_name}:#{mapping.control_id}"
 
-            # Legal_Register link: law_name (matches LRT primary field)
-            lrt_name = mapping.law_name
+              # Legal_Register link: law_name (matches LRT primary field)
+              lrt_name = mapping.law_name
 
-            # Duties link: section_id or nearest parent in Baserow
-            duties_name = find_parent_lat_source_id(mapping.section_id, lat_source_ids)
+              # Duties link: section_id or nearest parent in LAT table
+              duties_name = find_parent_in_set(mapping.section_id, lat_postgres_names)
 
-            provider.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
-          end)
+              provider.format_control_mapping_row(mapping, control_name, duties_name, lrt_name)
+            end)
 
-        # Delta detection
-        existing_mappings = load_mappings(sync_config.id, :control_mappings)
-        delta = DeltaDetector.detect(formatted, existing_mappings)
+          # Collect all Postgres Names for delete reconciliation
+          postgres_names =
+            Enum.map(formatted, fn row -> row["Name"] end) |> Enum.reject(&is_nil/1)
 
-        Logger.info(
-          "[Sync] Control Mappings delta: #{length(delta.new)} new, " <>
-            "#{length(delta.deleted)} deleted, #{delta.unchanged} unchanged"
-        )
-
-        if delta.new != [] do
-          on_batch = fn batch_mappings ->
-            save_row_mappings(sync_config.id, :control_mappings, batch_mappings, mappings)
-          end
-
-          case provider.batch_create(provider_config, :control_mappings, delta.new, on_batch) do
-            {:ok, _} ->
-              Logger.info("[Sync] Created #{length(delta.new)} new control mappings")
+          case sync_table(
+                 provider,
+                 provider_config,
+                 :control_mappings,
+                 formatted,
+                 postgres_names,
+                 sync_config
+               ) do
+            {:ok, _counts, _remote_map} ->
+              {:ok, job}
 
             {:error, reason} ->
-              Logger.error("[Sync] Control mappings create failed: #{reason}")
+              {:error, reason}
           end
         end
-
-        if delta.deleted != [] do
-          handle_deletions(
-            provider,
-            provider_config,
-            :control_mappings,
-            sync_config,
-            delta.deleted
-          )
-        end
-
-        {:ok, job}
       end
     end
   end
 
-  # Look up the control_id (fractalaw's UUID) from the Postgres UUID PK.
-  # The control source_id format is "law_name:control_id" where control_id
-  # is fractalaw's stable identifier, not the Postgres PK.
-  defp find_control_id(postgres_uuid) do
-    case Ash.get(SertantaiLegal.Legal.Control, postgres_uuid) do
-      {:ok, control} -> control.control_id
-      _ -> to_string(postgres_uuid)
-    end
-  end
-
-  # Build a map of law_name → Baserow external_row_id for the LRT table.
-  # LRT sync_row_mappings use the law's UUID as source_id, so we join
-  # through legal_register to get law_name.
-  defp build_lrt_name_lookup(sync_config_id) do
-    query = """
-    SELECT lr.name, srm.external_row_id
-    FROM sync_row_mappings srm
-    JOIN legal_register lr ON lr.id::text = srm.source_id
-    WHERE srm.sync_configuration_id = $1
-      AND srm.source_type = 'lrt'
-    """
-
-    {:ok, bin} = Ecto.UUID.dump(sync_config_id)
-
-    case SertantaiLegal.Repo.query(query, [bin]) do
-      {:ok, %{rows: rows}} ->
-        Map.new(rows, fn [name, ext_id] -> {name, ext_id} end)
-
-      _ ->
-        %{}
-    end
-  end
-
   # Walk up the section_id hierarchy stripping trailing parentheticals
-  # until we find a match in the LAT mappings.
-  # e.g. UK_uksi_1999_3242:reg.3(1)(a) → reg.3(1) → reg.3
-  defp find_parent_lat_ext_id(section_id, lat_mappings) do
-    parent = Regex.replace(~r/\([^()]*\)$/, section_id, "")
+  # until we find a match in the given set.
+  # e.g. UK_uksi_1999_3242:reg.3(1)(a) -> reg.3(1) -> reg.3
+  defp find_parent_in_set(section_id, name_set) do
+    if MapSet.member?(name_set, section_id) do
+      section_id
+    else
+      parent = Regex.replace(~r/\([^()]*\)$/, section_id, "")
 
-    cond do
-      parent == section_id -> nil
-      Map.has_key?(lat_mappings, parent) -> Map.get(lat_mappings, parent)
-      true -> find_parent_lat_ext_id(parent, lat_mappings)
+      cond do
+        parent == section_id -> nil
+        MapSet.member?(name_set, parent) -> parent
+        true -> find_parent_in_set(parent, name_set)
+      end
     end
   end
 
-  defp format_uuid_for_mapping(<<_::128>> = raw), do: Ecto.UUID.load!(raw)
-  defp format_uuid_for_mapping(uuid) when is_binary(uuid), do: uuid
-  defp format_uuid_for_mapping(nil), do: nil
+  # ── LAT ↔ Actor Tuple linking ────────────────────────────────────
 
   defp link_lat_to_tuples(
          provider_config,
          provider,
          sync_config,
-         lat_table_id,
-         actor_table_id,
-         tuple_mappings
+         tuple_names
        ) do
     # Build set of known Actor Names for text-based linking
-    tuple_names =
-      MapSet.new(tuple_mappings, fn m -> m.source_id || m[:source_id] end)
+    tuple_name_set = MapSet.new(tuple_names)
 
-    # Load LAT row mappings
-    lat_mappings = load_lat_mappings(sync_config.id)
+    # Fetch LAT remote_map to look up row IDs by section_id (Name)
+    case provider.list_all_rows(provider_config, :lat) do
+      {:ok, lat_remote_map} ->
+        lat_section_ids = Map.keys(lat_remote_map)
 
-    # Load LAT provisions with their actors from the DB
-    lat_section_ids = Map.keys(lat_mappings)
+        if lat_section_ids == [] do
+          Logger.debug("[Sync] No LAT rows in Baserow — skipping tuple linking")
+        else
+          # Query actors for each LAT provision
+          {:ok, org_bin} = Ecto.UUID.dump(sync_config.organization_id)
 
-    if lat_section_ids == [] do
-      Logger.debug("[Sync] No LAT mappings — skipping tuple linking")
-    else
-      # Query actors for each LAT provision
-      {:ok, org_bin} = Ecto.UUID.dump(sync_config.organization_id)
+          {:ok, %{rows: rows}} =
+            SertantaiLegal.Repo.query(
+              """
+              SELECT la.section_id,
+                (SELECT array_agg(
+                  jsonb_build_object('label', a->>'label', 'position', a->>'position', 'label_source', a->>'label_source')
+                ) FROM unnest(la.actors) a
+                  WHERE a->>'position' IS NOT NULL AND a->>'label_source' = 'canonical'
+                ) as actors_json,
+                la.drrp_types
+              FROM legal_articles la
+              JOIN org_applicabilities oa ON oa.law_name = la.law_name
+                AND oa.organization_id = $1 AND oa.status = 'yes'
+              WHERE la.section_id = ANY($2)
+              """,
+              [org_bin, lat_section_ids]
+            )
 
-      {:ok, %{rows: rows}} =
-        SertantaiLegal.Repo.query(
-          """
-          SELECT la.section_id,
-            (SELECT array_agg(
-              jsonb_build_object('label', a->>'label', 'position', a->>'position', 'label_source', a->>'label_source')
-            ) FROM unnest(la.actors) a
-              WHERE a->>'position' IS NOT NULL AND a->>'label_source' = 'canonical'
-            ) as actors_json,
-            la.drrp_types
-          FROM legal_articles la
-          JOIN org_applicabilities oa ON oa.law_name = la.law_name
-            AND oa.organization_id = $1 AND oa.status = 'yes'
-          WHERE la.section_id = ANY($2)
-          """,
-          [org_bin, lat_section_ids]
-        )
+          # Build update rows: each LAT row gets its matching Actor Names (text-based linking)
+          updates =
+            rows
+            |> Enum.map(fn [section_id, actors_json, drrp_types] ->
+              # Look up Baserow row_id from the LAT remote_map
+              lat_row_id = Map.get(lat_remote_map, section_id)
+              actors = actors_json || []
+              drrps = drrp_types || []
 
-      # Build update rows: each LAT row gets its matching Actor Names (text-based linking)
-      updates =
-        rows
-        |> Enum.map(fn [section_id, actors_json, drrp_types] ->
-          lat_ext_id = Map.get(lat_mappings, section_id)
-          actors = actors_json || []
-          drrps = drrp_types || []
+              actor_names =
+                for a <- actors,
+                    dt <- drrps,
+                    label = a["label"],
+                    position = a["position"],
+                    label != nil and position != nil,
+                    name = "#{label}|#{position}|#{dt}",
+                    MapSet.member?(tuple_name_set, name),
+                    do: name
 
-          actor_names =
-            for a <- actors,
-                dt <- drrps,
-                label = a["label"],
-                position = a["position"],
-                label != nil and position != nil,
-                name = "#{label}|#{position}|#{dt}",
-                MapSet.member?(tuple_names, name),
-                do: name
+              if lat_row_id && actor_names != [] do
+                %{"id" => lat_row_id, "Actors" => Enum.uniq(actor_names)}
+              end
+            end)
+            |> Enum.reject(&is_nil/1)
 
-          if lat_ext_id && actor_names != [] do
-            %{"id" => lat_ext_id, "Actors" => Enum.uniq(actor_names)}
+          if updates != [] do
+            case provider.batch_update(provider_config, :lat, updates) do
+              {:ok, count} ->
+                Logger.info("[Sync] Linked #{count} LAT provisions to actor tuples")
+
+              {:error, reason} ->
+                Logger.warning("[Sync] Failed to link LAT to tuples: #{reason}")
+            end
           end
-        end)
-        |> Enum.reject(&is_nil/1)
-
-      if updates != [] do
-        case provider.batch_update(provider_config, :lat, updates) do
-          {:ok, count} ->
-            Logger.info("[Sync] Linked #{count} LAT provisions to actor tuples")
-
-          {:error, reason} ->
-            Logger.warning("[Sync] Failed to link LAT to tuples: #{reason}")
         end
-      end
-    end
-  end
 
-  defp load_lat_mappings(sync_config_id) do
-    case SertantaiLegal.Sync.SyncRowMapping
-         |> Ash.Query.for_read(:by_configuration_and_type, %{
-           sync_configuration_id: sync_config_id,
-           source_type: :lat
-         })
-         |> Ash.read() do
-      {:ok, mappings} ->
-        Map.new(mappings, fn m -> {m.source_id, m.external_row_id} end)
-
-      _ ->
-        %{}
+      {:error, reason} ->
+        Logger.warning("[Sync] Failed to fetch LAT rows for tuple linking: #{inspect(reason)}")
     end
   end
 
@@ -1033,135 +933,22 @@ defmodule SertantaiLegal.Sync.Engine do
     |> Ash.update()
   end
 
-  defp save_row_mappings(sync_config_id, source_type, mappings, _source_rows) do
-    now = DateTime.utc_now()
+  # Update per-table last_synced_at in target_config
+  defp update_table_synced_at(sync_config, table_key, timestamp) do
+    tc = sync_config.target_config
+    table_timestamps = Map.get(tc, "last_synced_at", %{})
 
-    # Build source_id lookup from _source_id in mappings
-    Enum.each(mappings, fn mapping ->
-      source_id = mapping.source_id || mapping[:source_id]
-      external_row_id = mapping.external_row_id || mapping[:external_row_id]
+    updated_timestamps =
+      Map.put(table_timestamps, to_string(table_key), DateTime.to_iso8601(timestamp))
 
-      if source_id && external_row_id do
-        Ash.create(
-          SertantaiLegal.Sync.SyncRowMapping,
-          %{
-            sync_configuration_id: sync_config_id,
-            source_type: source_type,
-            source_id: to_string(source_id),
-            external_row_id: external_row_id,
-            last_synced_at: now
-          },
-          action: :upsert
-        )
-      end
-    end)
+    updated_tc = Map.put(tc, "last_synced_at", updated_timestamps)
+    update_target_config(sync_config, updated_tc)
   end
 
-  # Generic mapping loader — returns full mapping records for DeltaDetector
-  defp load_mappings(sync_config_id, source_type) do
-    case SertantaiLegal.Sync.SyncRowMapping
-         |> Ash.Query.for_read(:by_configuration_and_type, %{
-           sync_configuration_id: sync_config_id,
-           source_type: source_type
-         })
-         |> Ash.read() do
-      {:ok, mappings} -> mappings
-      _ -> []
-    end
-  end
-
-  # Backwards compat: returns Map source_id → external_row_id
-  defp load_lrt_mappings(sync_config_id) do
-    load_mappings(sync_config_id, :lrt)
-    |> Map.new(fn m -> {m.source_id, m.external_row_id} end)
-  end
-
-  # Look up the fractalaw control_id (stable UUID) from the Postgres UUID PK.
-  # Used to build _source_id for text-based link_row matching.
-  defp find_control_id(postgres_uuid) do
-    case Ash.get(SertantaiLegal.Legal.Control, postgres_uuid) do
-      {:ok, control} -> control.control_id
-      _ -> to_string(postgres_uuid)
-    end
-  end
-
-  # Walk up the section_id hierarchy stripping trailing parentheticals
-  # until we find a match in the LAT source_ids set.
-  # Returns the matching source_id string for text-based link_row.
-  defp find_parent_lat_source_id(section_id, lat_source_ids) do
-    if MapSet.member?(lat_source_ids, section_id) do
-      section_id
-    else
-      parent = Regex.replace(~r/\([^()]*\)$/, section_id, "")
-
-      cond do
-        parent == section_id -> nil
-        MapSet.member?(lat_source_ids, parent) -> parent
-        true -> find_parent_lat_source_id(parent, lat_source_ids)
-      end
-    end
-  end
-
-  defp update_mapping_timestamp(sync_config_id, source_type, source_id) do
-    Ash.create(
-      SertantaiLegal.Sync.SyncRowMapping,
-      %{
-        sync_configuration_id: sync_config_id,
-        source_type: source_type,
-        source_id: to_string(source_id),
-        external_row_id: 0,
-        last_synced_at: DateTime.utc_now()
-      },
-      action: :upsert
-    )
-  end
-
-  defp handle_deletions(provider, provider_config, table_key, sync_config, deleted) do
-    policy = sync_config.on_filter_change || :delete
-    ext_ids = Enum.map(deleted, & &1.external_row_id)
-
-    case policy do
-      :delete ->
-        case provider.batch_delete(provider_config, table_key, ext_ids) do
-          {:ok, count} ->
-            # Remove mappings for deleted rows
-            Enum.each(deleted, fn d ->
-              remove_mapping(sync_config.id, table_key, d.source_id)
-            end)
-
-            count
-
-          {:error, reason} ->
-            Logger.warning("[Sync] Delete failed: #{reason}")
-            0
-        end
-
-      _ ->
-        # :archive or :ignore — don't delete
-        Logger.info("[Sync] #{length(deleted)} orphaned rows (policy: #{policy})")
-        0
-    end
-  end
-
-  defp remove_mapping(sync_config_id, source_type, source_id) do
-    {:ok, bin} = Ecto.UUID.dump(sync_config_id)
-
-    SertantaiLegal.Repo.query(
-      "DELETE FROM sync_row_mappings WHERE sync_configuration_id = $1 AND source_type = $2 AND source_id = $3",
-      [bin, to_string(source_type), to_string(source_id)]
-    )
-  end
-
-  # Load field specs from all sync-relevant templates.
-  # Templates are the single source of truth for field definitions.
-  defp load_template_specs do
-    sp = SertantaiLegal.Sync.Templates.SubPatterns.new()
-
-    foundation = Foundation.field_specs(sp)
-    controls = SertantaiLegal.Sync.Templates.Controls.field_specs(sp)
-    control_mappings = SertantaiLegal.Sync.Templates.ControlMappings.field_specs(sp)
-
-    Map.merge(foundation, controls) |> Map.merge(control_mappings)
+  defp update_target_config(sync_config, new_target_config) do
+    sync_config
+    |> Ash.Changeset.for_update(:update, %{target_config: new_target_config})
+    |> Ash.update()
   end
 
   defp max_updated_at([]), do: nil

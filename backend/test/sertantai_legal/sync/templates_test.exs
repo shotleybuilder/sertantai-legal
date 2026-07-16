@@ -86,8 +86,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
       assert Foundation.requires() == []
     end
 
-    test "declares lrt and lat tables" do
-      assert Foundation.tables() == [:lrt, :lat]
+    test "declares lrt, lat, and actor_tuples tables" do
+      assert Foundation.tables() == [:lrt, :lat, :actor_tuples]
     end
 
     test "field specs define complete LRT and LAT schemas" do

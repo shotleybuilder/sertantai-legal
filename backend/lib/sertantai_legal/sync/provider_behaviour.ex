@@ -42,6 +42,15 @@ defmodule SertantaiLegal.Sync.ProviderBehaviour do
   @doc "List existing fields on the target table."
   @callback list_fields(config(), table_key :: atom()) :: {:ok, [map()]} | {:error, String.t()}
 
+  @doc """
+  Fetch all rows from the target table and return a Name → row_id map.
+  Name is the primary field value (our Postgres identifier).
+  row_id is an opaque provider term (Baserow integer, Airtable rec_XXX string).
+  Used by the engine for CUD decisions and delete reconciliation.
+  """
+  @callback list_all_rows(config(), table_key :: atom()) ::
+              {:ok, %{String.t() => term()}} | {:error, String.t()}
+
   @doc "Create missing fields on the target table to match our schema."
   @callback ensure_fields(config(), table_key :: atom(), [field_spec()]) ::
               :ok | {:error, String.t()}

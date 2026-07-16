@@ -81,6 +81,9 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   defdelegate list_fields(config, table_key_or_id), to: Client
 
   @impl true
+  defdelegate list_all_rows(config, table_key), to: Client
+
+  @impl true
   def ensure_fields(config, table_key, field_specs) do
     # Schema is managed by template applicator (SchemaManager).
     # This function validates fields exist and updates select options
@@ -459,15 +462,15 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
     row = %{
       "Name" => lat.section_id,
       "_source_id" => lat.section_id,
-      "Type" => lat.drrp_types || [],
-      "Duty_Type" => lat.duty_sub_type || [],
+      "Type" => clean_multi_select(lat.drrp_types),
+      "Duty_Type" => clean_multi_select(lat.duty_sub_type),
       "Regulated_Actors" => extract_active_actors(lat),
       "Provision_Text" => lat.text,
       "Provision" => lat.provision,
-      "Significance" => lat[:significance_overall],
-      "Gravity" => lat[:significance_gravity],
-      "Scope_Duty_Bearer" => lat[:significance_scope_duty_bearer],
-      "Strength" => lat[:significance_strength],
+      "Significance" => clean_select(lat[:significance_overall]),
+      "Gravity" => clean_select(lat[:significance_gravity]),
+      "Scope_Duty_Bearer" => clean_select(lat[:significance_scope_duty_bearer]),
+      "Strength" => clean_select(lat[:significance_strength]),
       "Confidence" => round_float(lat[:significance_confidence], 2)
     }
 
@@ -720,6 +723,15 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
 
   defp extract_values(list) when is_list(list), do: Enum.join(list, ", ")
   defp extract_values(other), do: to_string(other)
+
+  # Clean select values — reject invalid options like "none"
+  defp clean_select(nil), do: nil
+  defp clean_select("none"), do: nil
+  defp clean_select(val), do: val
+
+  defp clean_multi_select(nil), do: []
+  defp clean_multi_select(list) when is_list(list), do: Enum.reject(list, &(&1 == "none"))
+  defp clean_multi_select(val) when is_binary(val), do: if(val == "none", do: [], else: [val])
 
   defp round_score(nil), do: nil
   defp round_score(score) when is_float(score), do: Float.round(score, 1)

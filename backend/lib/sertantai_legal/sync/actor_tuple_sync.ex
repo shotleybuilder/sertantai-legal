@@ -101,7 +101,7 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
         }
       },
       %{
-        name: "DRRP Type",
+        name: "DRRP_Type",
         type: "single_select",
         opts: %{
           "select_options" => Enum.map(drrp_types, &%{"value" => &1, "color" => "light-gray"})
@@ -126,7 +126,7 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
         "Name" => source_id,
         "Actor" => t.actor,
         "Position" => t.position,
-        "DRRP Type" => t.drrp_type,
+        "DRRP_Type" => t.drrp_type,
         "_source_id" => source_id
       }
     end)

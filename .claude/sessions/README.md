@@ -74,6 +74,8 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-14 | [dynamic-selects](baserow/2026-07-14-dynamic-selects.md) | — | Auto-ensure select options in Client.batch_create. All 5 tables synced to qq DB. CM blocked by sync ordering |
+| 2026-07-14 | [baserow-data-sync-layer](baserow/2026-07-14-baserow-data-sync-layer.md) | — | Provider-agnostic engine, text-based linking, underscore field names. LAT blocked by dynamic select options |
 | 2026-07-14 | [baserow-applicator-v2](baserow/2026-07-14-baserow-applicator-v2.md) | — | Three-layer architecture (Client/SchemaManager/Provider), 4-phase creation, 13 tables + 180 fields to qq DB |
 | 2026-07-14 | [baserow-primary-field-refactor](baserow/2026-07-14-baserow-primary-field-refactor.md) | — | Text primary field pattern, template rename, applicator bugs exposed, architecture spec created |
 | 2026-07-13 | [compliance-controls](2026-07-13-compliance-controls.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | Control + ControlMapping resources, Zenoh subscriber, Baserow sync. 1,341 controls ingested, 96.3% mapping resolution. Found LAT parser section_id bug (#120) |
@@ -212,6 +214,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-15 | [second-tier-duties/phase-2](second-tier-duties/phase-2-provision-parsing.md) | — | Second-tier Phase 2: profile-based PDF parser, 5 documents (3 JSP, 1 ACoP, 1 HSG), 887 provisions |
 | 2026-07-15 | [second-tier-duties/phase-1](second-tier-duties/phase-1-data-model.md) | — | Second-tier Phase 1: SecondarySource, SourceLink, OrgSecondaryApplicability + 29 ACoPs seeded |
 | 2026-07-13 | [issue-120](2026-07-13-issue-120.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | LAT parser P2 wrapper fix, 172 laws re-parsed, art.→reg. prefix fix, TriageSubscriber, LAT QA tooling, 100% control_mapping resolution, Baserow primary field pattern |
 | 2026-07-13 | [fitness-schema-migration](2026-07-13-fitness-schema-migration.md) | — | Fitness v0.3: 5 new columns (entities, scope, counts), view+trigger rebuild, TaxaSubscriber wired |

@@ -83,6 +83,50 @@ defmodule SertantaiLegal.Baserow.Client do
     end
   end
 
+  # ── Row Listing ──────────────────────────────────────────────────
+
+  @doc """
+  Fetch all rows from a Baserow table, returning a Name → row_id map.
+
+  Paginates through all rows (200/page), extracting the primary field
+  value (Name) and the Baserow row ID for each row. Used by the sync
+  engine for CUD decisions and delete reconciliation.
+  """
+  def list_all_rows(config, table_key_or_id) do
+    tid =
+      if is_atom(table_key_or_id),
+        do: table_id(config, table_key_or_id),
+        else: table_key_or_id
+
+    fetch_all_rows_paginated(config, tid, 1, %{})
+  end
+
+  defp fetch_all_rows_paginated(config, table_id, page, acc) do
+    case api_get(
+           config,
+           "/api/database/rows/table/#{table_id}/?user_field_names=true&size=#{@batch_size}&page=#{page}"
+         ) do
+      {:ok, %{status: 200, body: %{"results" => results, "next" => next}}} ->
+        new_acc =
+          Enum.reduce(results, acc, fn row, map ->
+            name = row["Name"]
+            if name, do: Map.put(map, name, row["id"]), else: map
+          end)
+
+        if next do
+          fetch_all_rows_paginated(config, table_id, page + 1, new_acc)
+        else
+          {:ok, new_acc}
+        end
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, "Baserow list_all_rows returned #{status}: #{inspect(body)}"}
+
+      {:error, reason} ->
+        {:error, "Baserow list_all_rows failed: #{inspect(reason)}"}
+    end
+  end
+
   # ── Field Operations ─────────────────────────────────────────────
 
   @doc "List all fields on a Baserow table."
@@ -337,6 +381,9 @@ defmodule SertantaiLegal.Baserow.Client do
   def batch_create(config, table_key, rows, on_batch) when is_list(rows) do
     table_id = table_id(config, table_key)
 
+    # Ensure all select option values exist before creating rows
+    ensure_select_options(config, table_id, rows)
+
     rows
     |> Enum.chunk_every(@batch_size)
     |> Enum.reduce_while({:ok, []}, fn chunk, {:ok, acc} ->
@@ -364,6 +411,9 @@ defmodule SertantaiLegal.Baserow.Client do
   @doc "Update rows in batches. Returns `{:ok, count}` or `{:error, reason}`."
   def batch_update(config, table_key, rows) when is_list(rows) do
     table_id = table_id(config, table_key)
+
+    # Ensure all select option values exist before updating rows
+    ensure_select_options(config, table_id, rows)
 
     rows
     |> Enum.chunk_every(@batch_size)
@@ -826,6 +876,78 @@ defmodule SertantaiLegal.Baserow.Client do
   end
 
   # Update select options on existing fields when our spec has options
+  # ── Dynamic Select Options ─────────────────────────────────────
+
+  # Scan rows for select field values, ensure they exist as Baserow options.
+  # Called automatically by batch_create and batch_update before posting data.
+  # Idempotent — only PATCHes fields that have new, unknown values.
+  @invalid_option_values MapSet.new([nil, "", "none"])
+
+  defp ensure_select_options(_config, _table_id, []), do: :ok
+
+  defp ensure_select_options(config, table_id, rows) do
+    case list_fields(config, table_id) do
+      {:ok, fields} ->
+        select_fields =
+          Enum.filter(fields, &(&1["type"] in ["single_select", "multiple_select"]))
+
+        Enum.each(select_fields, fn field ->
+          field_name = field["name"]
+
+          existing_options =
+            (field["select_options"] || [])
+            |> MapSet.new(& &1["value"])
+
+          # Extract unique values from rows for this field
+          row_values =
+            rows
+            |> Enum.flat_map(fn row ->
+              case Map.get(row, field_name) do
+                nil -> []
+                val when is_list(val) -> val
+                val when is_binary(val) -> [val]
+                _ -> []
+              end
+            end)
+            |> Enum.uniq()
+            |> Enum.reject(&MapSet.member?(@invalid_option_values, &1))
+
+          missing =
+            Enum.reject(row_values, &MapSet.member?(existing_options, &1))
+
+          if missing != [] do
+            all_options =
+              (field["select_options"] || []) ++
+                Enum.map(missing, &%{"value" => &1, "color" => "light-gray"})
+
+            case api_patch(config, "/api/database/fields/#{field["id"]}/", %{
+                   "select_options" => all_options
+                 }) do
+              {:ok, %{status: 200}} ->
+                Logger.info(
+                  "[Baserow] Added #{length(missing)} option(s) to #{field_name}: #{Enum.take(missing, 5) |> inspect()}"
+                )
+
+              {:ok, %{status: status, body: resp}} ->
+                Logger.warning(
+                  "[Baserow] Failed to add options to #{field_name}: #{status} #{inspect(resp)}"
+                )
+
+              {:error, reason} ->
+                Logger.warning(
+                  "[Baserow] Failed to add options to #{field_name}: #{inspect(reason)}"
+                )
+            end
+          end
+        end)
+
+      {:error, reason} ->
+        Logger.warning(
+          "[Baserow] Could not list fields for select option check: #{inspect(reason)}"
+        )
+    end
+  end
+
   # that Baserow doesn't have yet. Additive only -- never removes options.
   @doc false
   def update_select_options(_config, _existing_by_name, []), do: :ok
