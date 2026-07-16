@@ -383,7 +383,7 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParserTest do
   # ---------------------------------------------------------------------------
 
   describe "integration: real PDFs" do
-    @jsp375_path "../data/secondary-sources/jsp/jsp375_v1_ch08.pdf"
+    @jsp375_path "../data/secondary-sources/jsp/jsp375/jsp375_ch08.pdf"
     @l8_path "../data/secondary-sources/acop/l8.pdf"
     @hsg65_path "../data/secondary-sources/guidance/hsg65.pdf"
 

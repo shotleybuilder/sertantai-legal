@@ -156,7 +156,7 @@ Database snapshots are stored on the office NAS (UGREEN DXP2800, SMB3) at `/mnt/
 
 **Scripts** (from repo root):
 ```bash
-./scripts/nas/export-snapshot.sh              # Dump dev DB → NAS
+./scripts/nas/nas-backup.sh                   # Backup dev DB + project data → NAS
 ./scripts/nas/import-snapshot.sh              # Restore NAS → dev DB
 ./scripts/nas/import-snapshot.sh --verify-only # Check checksums only
 ```

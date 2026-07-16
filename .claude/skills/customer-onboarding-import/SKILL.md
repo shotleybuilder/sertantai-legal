@@ -430,7 +430,7 @@ After import, QA, and scraping are complete, promote the data using the **LRT Sc
 stages 4-8. The import-specific QA (title comparison, status report) replaces stages 1-3 of that
 skill, but the data promotion pipeline is identical:
 
-1. **NAS Sync** (lrt-scrape Stage 4): `./scripts/nas/export-snapshot.sh --archive`
+1. **NAS Sync** (lrt-scrape Stage 4): `./scripts/nas/nas-backup.sh --archive`
 2. **Post-NAS QA** (lrt-scrape Stage 5): verify manifest, checksums, row counts
 3. **Prod Sync** (lrt-scrape Stage 6): export delta, review, apply via SSH pipe
 4. **Post-Prod QA** (lrt-scrape Stage 7): compare dev vs prod counts

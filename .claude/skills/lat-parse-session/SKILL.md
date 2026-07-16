@@ -615,7 +615,7 @@ cd /var/home/jason/Desktop/sertantai-legal
 ls /mnt/nas/sertantai-data/data/snapshots/latest/
 
 # Archive previous and export
-./scripts/nas/export-snapshot.sh --archive
+./scripts/nas/nas-backup.sh --archive
 ```
 
 **Tables exported** (FK dependency order): uk_lrt → lat → amendment_annotations → scrape_sessions → scrape_session_records → cascade_affected_laws.
@@ -792,7 +792,7 @@ All stage gates passed. Summarise the session:
 | Zenoh Taxa Subscriber | `backend/lib/sertantai_legal/zenoh/taxa_subscriber.ex` |
 | Function Calculator | `backend/lib/sertantai_legal/legal/function_calculator.ex` |
 | UK LRT Resource | `backend/lib/sertantai_legal/legal/uk_lrt.ex` |
-| NAS Export Script | `scripts/nas/export-snapshot.sh` |
+| NAS Export Script | `scripts/nas/nas-backup.sh` |
 | Delta Export Task | `backend/lib/mix/tasks/data.export_delta.ex` |
 
 ## Related Skills

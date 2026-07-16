@@ -17,7 +17,7 @@ defmodule Mix.Tasks.Secondary.Parse do
 
   ## Example
 
-      mix secondary.parse JSP-375 data/secondary-sources/jsp/jsp375_v1_ch08.pdf --dry-run
+      mix secondary.parse JSP-375 data/secondary-sources/jsp/jsp375/jsp375_ch08.pdf --dry-run
   """
 
   use Mix.Task

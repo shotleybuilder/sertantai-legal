@@ -26,7 +26,7 @@ Three data stores need to stay in sync, and a new-device bootstrap story is miss
 | Capability | Mechanism | Notes |
 |------------|-----------|-------|
 | Dev DB seed from scratch | SQL dump + CSV enrichment scripts | Legacy method — replaced by NAS snapshot import |
-| **Dev DB portable snapshot** | **`scripts/nas/export-snapshot.sh` + `import-snapshot.sh`** | **6 tables, ~60MB compressed, SHA256 verified. NAS mount at `/mnt/nas/sertantai-data`** |
+| **Dev DB portable snapshot** | **`scripts/nas/nas-backup.sh` + `import-snapshot.sh`** | **6 tables, ~60MB compressed, SHA256 verified. NAS mount at `/mnt/nas/sertantai-data`** |
 | Dev → Prod column-safe export | `scripts/gen_dump.py` | TSV dump of uk_lrt, sessions, cascade — targets prod-compatible columns only |
 | Zenoh LRT/LAT pull | `DataServer` queryables | Fractalaw queries sertantai-legal for full table snapshots (Arrow IPC) |
 | Zenoh taxa push | `TaxaSubscriber` | Fractalaw pushes enrichment results back — auto-upserts UkLrt rows |
@@ -88,8 +88,8 @@ Three data stores need to stay in sync, and a new-device bootstrap story is miss
 
 **Scripts** (in repo at `scripts/nas/`):
 ```bash
-./scripts/nas/export-snapshot.sh              # Dump dev DB → NAS snapshots/latest/
-./scripts/nas/export-snapshot.sh --archive    # Archive previous snapshot first
+./scripts/nas/nas-backup.sh              # Dump dev DB → NAS snapshots/latest/
+./scripts/nas/nas-backup.sh --archive    # Archive previous snapshot first
 ./scripts/nas/import-snapshot.sh              # Restore NAS → dev DB (with checksum verification)
 ./scripts/nas/import-snapshot.sh --verify-only # Check checksums without restoring
 ```
@@ -173,7 +173,7 @@ cd backend && unset DATABASE_URL && mix ash.setup && cd ..
 ### Phase 1: NAS Setup + Portable Snapshots (foundation) — COMPLETED 2026-04-11
 - [x] Commission NAS — UGREEN DXP2800, btrfs RAID 2, SMB3 (`cf35bc5`)
 - [x] Configure mount point on dev machine (`/mnt/nas/sertantai-data`, fstab automount)
-- [x] Write `scripts/nas/export-snapshot.sh` — pg_dump custom format, compressed, 6 tables
+- [x] Write `scripts/nas/nas-backup.sh` — pg_dump custom format, compressed, 6 tables
 - [x] Write `scripts/nas/import-snapshot.sh` — restore with SHA256 checksum verification
 - [x] Manifest generated inline by export script (row counts, sizes, checksums, date)
 - [x] CLAUDE.md bootstrap docs updated — NAS snapshot is primary method
@@ -211,7 +211,7 @@ cd backend && unset DATABASE_URL && mix ash.setup && cd ..
 ```
 
 **What's missing**:
-- NAS snapshot is manual (`./scripts/nas/export-snapshot.sh`) with no visibility into staleness
+- NAS snapshot is manual (`./scripts/nas/nas-backup.sh`) with no visibility into staleness
 - No admin UI to compare dev DB state vs NAS snapshot vs prod
 - No reminder/guard to snapshot before promoting to prod
 
@@ -221,7 +221,7 @@ cd backend && unset DATABASE_URL && mix ash.setup && cd ..
   - NAS snapshot: date, row counts from `manifest.json` (read from mount)
   - Prod: row counts + max `updated_at` per table (SSH query or cached)
   - Staleness indicators: NAS age vs dev, prod age vs dev
-- [ ] "Export to NAS" button (calls `export-snapshot.sh` via backend endpoint or Mix task)
+- [ ] "Export to NAS" button (calls `nas-backup.sh` via backend endpoint or Mix task)
 - [ ] Snapshot age warning on admin dashboard (>7 days = stale)
 - [ ] Archive previous NAS snapshot before overwriting (`--archive` flag)
 - [ ] Guard in `mix data.export_delta`: warn if NAS snapshot is older than dev's max `updated_at`
@@ -280,7 +280,7 @@ Step-by-step procedure for promoting dev database changes to production.
 
 ```bash
 # Archive previous snapshot, then export current dev state
-./scripts/nas/export-snapshot.sh --archive
+./scripts/nas/nas-backup.sh --archive
 ```
 
 Verify: `cat /mnt/nas/sertantai-data/data/snapshots/latest/manifest.json | jq '.date, .tables | to_entries[] | "\(.key): \(.value.rows)"'`

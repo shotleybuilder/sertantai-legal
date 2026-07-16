@@ -57,10 +57,10 @@ Dumps all data tables from the dev database as compressed pg_dump custom-format 
 cd ~/Desktop/sertantai-legal
 
 # Standard export (overwrites latest/)
-./scripts/nas/export-snapshot.sh
+./scripts/nas/nas-backup.sh
 
 # Archive previous snapshot first, then export
-./scripts/nas/export-snapshot.sh --archive
+./scripts/nas/nas-backup.sh --archive
 ```
 
 **Tables exported** (in FK dependency order):
@@ -196,7 +196,7 @@ Access at `http://192.168.1.80:9999/desktop/#/`. SSH can be enabled under **Cont
 
 | File | Purpose |
 |------|---------|
-| `scripts/nas/export-snapshot.sh` | Dump dev DB → NAS |
+| `scripts/nas/nas-backup.sh` | Backup dev DB + project data → NAS |
 | `scripts/nas/import-snapshot.sh` | Restore NAS → dev DB |
 | `/etc/nas-creds` | SMB credentials (on dev machine) |
 | `/etc/fstab` | Automount config (on dev machine) |

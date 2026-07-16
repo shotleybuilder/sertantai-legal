@@ -335,7 +335,7 @@ Export the dev database snapshot to NAS:
 cd /var/home/jason/Desktop/sertantai-legal
 
 # Archive the previous snapshot first
-./scripts/nas/export-snapshot.sh --archive
+./scripts/nas/nas-backup.sh --archive
 ```
 
 **Pre-flight checks**:
@@ -519,7 +519,7 @@ All stage gates passed. Summarise the session:
 | HS search terms | `backend/lib/sertantai_legal/scraper/terms/health_safety.ex` |
 | Env search terms | `backend/lib/sertantai_legal/scraper/terms/environment.ex` |
 | SI code registry | `backend/lib/sertantai_legal/scraper/terms/si_codes.ex` |
-| NAS export script | `scripts/nas/export-snapshot.sh` |
+| NAS export script | `scripts/nas/nas-backup.sh` |
 | NAS import script | `scripts/nas/import-snapshot.sh` |
 | Delta export | `scripts/sync/export_delta.exs` |
 | Delta apply | `scripts/sync/apply_delta.exs` |
