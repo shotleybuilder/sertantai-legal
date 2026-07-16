@@ -23,6 +23,20 @@ Another Claude instance is concurrently working on Baserow sync (no conflict).
 - [x] [parse-environmental-guidance.md](parse-environmental-guidance.md) — DEFERRED: research captured, landscape too fragmented
 - [x] [phase-3-zenoh-queryables.md](phase-3-zenoh-queryables.md) — 3 queryables for secondary sources/provisions, spec published
 
+### Ad-hoc additions
+- HSR25 (Electricity at Work Regs guidance) — 747 provisions, linked to UK_uksi_1989_635
+- HSR29 (Dangerous Substances Notification/Marking) — 305 provisions, linked to UK_uksi_1990_304
+
+## Snagging List
+- [ ] Update chapter source titles from parsed headings (e.g. "Chapter 23" → "Chapter 23: Electrical Safety")
+- [ ] `mix secondary.list --tree` provision count queries are N+1 — optimise for large corpus
+- [ ] L44 (Electrical Testing ACoP) not downloadable — no provisions parsed
+- [ ] JSP-319 parked (ODT-only) — needs LibreOffice or text-based classifier
+- [ ] JSP-520 volumes marked withdrawn — may be replaced, monitor
+- [ ] `mix secondary.qa` tooling not built
+- [ ] Withdrawn ACoP seed records (L1, L21, L44, L127, L134-137) still in DB with 0 provisions — clean up or mark withdrawn
+- [ ] Scan for more HSR series publications (regulation guidance — stronger than HSG)
+
 ## Decisions Log
 - `legal_weight` enum added to SecondarySource schema (reverse_burden | regard_had_to | contractual | state_of_art | best_practice)
 - `text_source` enum added to SecondarySourceProvision (full_text | summary | heading_only)
