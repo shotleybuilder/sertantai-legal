@@ -19,6 +19,7 @@ Another Claude instance is concurrently working on Baserow sync (no conflict).
 - [x] [phase-2b-hsg-and-jsp-corpus.md](phase-2b-hsg-and-jsp-corpus.md) — full JSP corpus, 167 PDFs, 13,143 provisions, actor model analysis
 - [x] [issue-123-section-id-collision.md](issue-123-section-id-collision.md) — per-chapter source registration fix, 13,854 provisions restored
 - [x] [parse-acops.md](parse-acops.md) — 21 ACoPs parsed, 12,321 provisions, 100% current coverage
+- [x] [parse-hsgs.md](parse-hsgs.md) — 29 HSGs parsed, 19,454 provisions, OGL confirmed
 
 ## Decisions Log
 - `legal_weight` enum added to SecondarySource schema (reverse_burden | regard_had_to | contractual | state_of_art | best_practice)

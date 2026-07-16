@@ -74,7 +74,9 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
-| 2026-07-16 | [issue-121](2026-07-14-issue-121.md) | [#121](https://github.com/shotleybuilder/sertantai-legal/issues/121) | Controls Name: fractalaw UUID → Postgres PK. 1,754 rows rebuilt. CM blocked by #122 (Duties link) |
+| 2026-07-16 | [sync-engine-redesign](baserow/2026-07-14-sync-engine-redesign.md) | [#121](https://github.com/shotleybuilder/sertantai-legal/issues/121) [#122](https://github.com/shotleybuilder/sertantai-legal/issues/122) | Map-based CUD, eliminate DeltaDetector+sync_row_mappings. All 6 tables synced. Controls scoped to customer Duties. --tables flag |
+| 2026-07-16 | [issue-122](baserow/2026-07-16-issue-122.md) | [#122](https://github.com/shotleybuilder/sertantai-legal/issues/122) | CM section_id aggregation: candidate_duties from Postgres, Controls+CMs scoped to customer Duties |
+| 2026-07-16 | [issue-121](baserow/2026-07-14-issue-121.md) | [#121](https://github.com/shotleybuilder/sertantai-legal/issues/121) | Controls Name: fractalaw UUID → Postgres PK. 1,754 rows rebuilt. CM blocked by #122 (Duties link) |
 | 2026-07-14 | [dynamic-selects](baserow/2026-07-14-dynamic-selects.md) | — | Auto-ensure select options in Client.batch_create. All 5 tables synced to qq DB. CM blocked by sync ordering |
 | 2026-07-14 | [baserow-data-sync-layer](baserow/2026-07-14-baserow-data-sync-layer.md) | — | Provider-agnostic engine, text-based linking, underscore field names. LAT blocked by dynamic select options |
 | 2026-07-14 | [baserow-applicator-v2](baserow/2026-07-14-baserow-applicator-v2.md) | — | Three-layer architecture (Client/SchemaManager/Provider), 4-phase creation, 13 tables + 180 fields to qq DB |
@@ -215,6 +217,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-16 | [second-tier-duties/parse-hsgs](second-tier-duties/parse-hsgs.md) | — | Parse 29 HSGs: 19,454 provisions, OGL confirmed, corpus total 45,049 |
 | 2026-07-16 | [second-tier-duties/parse-acops](second-tier-duties/parse-acops.md) | — | Parse 21 HSE ACoPs: 12,321 provisions, 100% current coverage, 0 errors |
 | 2026-07-16 | [second-tier-duties/issue-123](second-tier-duties/issue-123-section-id-collision.md) | [#123](https://github.com/shotleybuilder/sertantai-legal/issues/123) | Fix section_id collision: per-chapter source registration, 13,854 provisions restored |
 | 2026-07-16 | [second-tier-duties/phase-2b](second-tier-duties/phase-2b-hsg-and-jsp-corpus.md) | — | Second-tier Phase 2b: full JSP corpus (167 PDFs, 13,143 provisions), HSG profile, actor model analysis |
