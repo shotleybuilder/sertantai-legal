@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
 
   use GenServer
   require Logger
+  require Ash.Query
 
   alias SertantaiLegal.Legal.SecondarySourceProvision
   alias SertantaiLegal.Zenoh.ActivityLog
@@ -206,9 +207,13 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   end
 
   defp find_provision(section_id) do
-    case Ash.get(SecondarySourceProvision, section_id) do
+    SecondarySourceProvision
+    |> Ash.Query.filter(section_id == ^section_id)
+    |> Ash.read_one()
+    |> case do
+      {:ok, nil} -> {:error, {:not_found, section_id}}
       {:ok, provision} -> {:ok, provision}
-      {:error, _} -> {:error, {:not_found, section_id}}
+      {:error, reason} -> {:error, reason}
     end
   end
 
