@@ -4,30 +4,72 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
   alias SertantaiLegal.Zenoh.SecondaryTaxaSubscriber
 
   describe "normalize_taxa/1" do
-    test "maps drrp_types directly" do
-      row = %{
-        "drrp_types" => ["Obligation", "Recommendation"]
-      }
+    # --- Comma-separated string inputs (DuckDB format) ---
+
+    test "splits comma-separated drrp_types string" do
+      row = %{"drrp_types" => "Obligation,Permission"}
+
+      result = SecondaryTaxaSubscriber.normalize_taxa(row)
+
+      assert result.drrp_types == ["Obligation", "Permission"]
+    end
+
+    test "splits comma-separated governed_actors string" do
+      row = %{"governed_actors" => "MoD: Commanding Officer,MoD: Contractor"}
+
+      result = SecondaryTaxaSubscriber.normalize_taxa(row)
+
+      assert result.governed_actors == ["MoD: Commanding Officer", "MoD: Contractor"]
+    end
+
+    test "handles single-value string (no comma)" do
+      row = %{"drrp_types" => "Obligation"}
+
+      result = SecondaryTaxaSubscriber.normalize_taxa(row)
+
+      assert result.drrp_types == ["Obligation"]
+    end
+
+    test "trims whitespace around comma-separated values" do
+      row = %{"drrp_types" => "Obligation , Permission , Recommendation"}
+
+      result = SecondaryTaxaSubscriber.normalize_taxa(row)
+
+      assert result.drrp_types == ["Obligation", "Permission", "Recommendation"]
+    end
+
+    test "handles empty string as no values" do
+      row = %{"drrp_types" => ""}
+
+      result = SecondaryTaxaSubscriber.normalize_taxa(row)
+
+      assert result == %{}
+    end
+
+    # --- List inputs (still supported for compatibility) ---
+
+    test "passes through list values" do
+      row = %{"drrp_types" => ["Obligation", "Recommendation"]}
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
 
       assert result.drrp_types == ["Obligation", "Recommendation"]
     end
 
-    test "maps governed_actors directly" do
-      row = %{
-        "governed_actors" => ["CO", "ODH", "Contractor"]
-      }
+    test "passes through governed_actors list" do
+      row = %{"governed_actors" => ["CO", "ODH", "Contractor"]}
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
 
       assert result.governed_actors == ["CO", "ODH", "Contractor"]
     end
 
-    test "merges government_actors into governed_actors" do
+    # --- government_actors merging ---
+
+    test "merges comma-separated government_actors into governed_actors" do
       row = %{
-        "governed_actors" => ["CO", "ODH"],
-        "government_actors" => ["DSA", "Minister"]
+        "governed_actors" => "CO,ODH",
+        "government_actors" => "DSA,Minister"
       }
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
@@ -36,9 +78,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
     end
 
     test "government_actors alone populates governed_actors" do
-      row = %{
-        "government_actors" => ["DSA"]
-      }
+      row = %{"government_actors" => "DSA"}
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
 
@@ -47,8 +87,8 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
 
     test "deduplicates when merging government_actors" do
       row = %{
-        "governed_actors" => ["CO", "DSA"],
-        "government_actors" => ["DSA", "Minister"]
+        "governed_actors" => "CO,DSA",
+        "government_actors" => "DSA,Minister"
       }
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
@@ -56,9 +96,11 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
       assert result.governed_actors == ["CO", "DSA", "Minister"]
     end
 
+    # --- Phase 2 / ignored columns ---
+
     test "ignores Phase 2 columns" do
       row = %{
-        "drrp_types" => ["Obligation"],
+        "drrp_types" => "Obligation",
         "obligation_strength" => "Mandatory",
         "modal_verb" => "shall",
         "clause_refined" => "The commander must ensure..."
@@ -75,7 +117,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
     test "ignores section_id (handled separately)" do
       row = %{
         "section_id" => "JSP_mod_2026_JSP375CH23:part-1-directive/policy-statements.para.23",
-        "drrp_types" => ["Obligation"]
+        "drrp_types" => "Obligation"
       }
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
@@ -86,7 +128,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
 
     test "ignores unknown columns" do
       row = %{
-        "drrp_types" => ["Obligation"],
+        "drrp_types" => "Obligation",
         "some_future_column" => "unexpected"
       }
 
@@ -96,6 +138,8 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
       refute Map.has_key?(result, :some_future_column)
       refute Map.has_key?(result, "some_future_column")
     end
+
+    # --- Edge cases ---
 
     test "omits nil values" do
       row = %{
@@ -115,9 +159,9 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
 
     test "all keys are atoms" do
       row = %{
-        "drrp_types" => ["Obligation"],
-        "governed_actors" => ["CO"],
-        "government_actors" => ["DSA"]
+        "drrp_types" => "Obligation",
+        "governed_actors" => "CO",
+        "government_actors" => "DSA"
       }
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
@@ -125,12 +169,14 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
       assert Enum.all?(Map.keys(result), &is_atom/1)
     end
 
+    # --- Full realistic payload (DuckDB format) ---
+
     test "full realistic secondary source payload" do
       row = %{
         "section_id" => "JSP_mod_2026_JSP375CH23:part-1-directive/policy-statements.para.23",
-        "drrp_types" => ["Obligation", "Permission"],
-        "governed_actors" => ["CO", "ODH", "Contractor"],
-        "government_actors" => ["DSA"],
+        "drrp_types" => "Obligation,Permission",
+        "governed_actors" => "MoD: Commanding Officer,MoD: ODH,MoD: Contractor",
+        "government_actors" => "MoD: Defence Safety Authority",
         "obligation_strength" => "Mandatory",
         "modal_verb" => "shall",
         "clause_refined" => "As part of the risk assessment the commander must..."
@@ -138,9 +184,15 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
 
       result = SecondaryTaxaSubscriber.normalize_taxa(row)
 
-      # Mapped fields
+      # Mapped fields — comma-separated strings split into arrays
       assert result.drrp_types == ["Obligation", "Permission"]
-      assert result.governed_actors == ["CO", "ODH", "Contractor", "DSA"]
+
+      assert result.governed_actors == [
+               "MoD: Commanding Officer",
+               "MoD: ODH",
+               "MoD: Contractor",
+               "MoD: Defence Safety Authority"
+             ]
 
       # Phase 2 ignored
       refute Map.has_key?(result, :obligation_strength)

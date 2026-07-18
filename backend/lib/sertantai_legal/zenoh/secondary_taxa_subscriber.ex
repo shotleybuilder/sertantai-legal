@@ -221,9 +221,12 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   Normalize an Arrow IPC row into Ash-compatible taxa fields.
 
   Maps payload columns to SecondarySourceProvision attributes:
-  - `drrp_types` → `:drrp_types` (direct)
+  - `drrp_types` → `:drrp_types`
   - `governed_actors` + `government_actors` → merged `:governed_actors`
   - Phase 2 columns (obligation_strength, modal_verb, clause_refined) → ignored
+
+  DuckDB sends array columns as comma-separated Utf8 strings (not Arrow List<Utf8>).
+  The subscriber splits on "," and trims whitespace.
 
   Public for testing.
   """
@@ -231,10 +234,9 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   def normalize_taxa(row) do
     acc =
       Enum.reduce(@field_atoms, %{}, fn {str_key, atom_key}, acc ->
-        case Map.get(row, str_key) do
-          nil -> acc
-          value when is_list(value) -> Map.put(acc, atom_key, value)
-          _ -> acc
+        case to_string_list(Map.get(row, str_key)) do
+          [] -> acc
+          values -> Map.put(acc, atom_key, values)
         end
       end)
 
@@ -242,19 +244,31 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
     merge_government_actors(acc, row)
   end
 
-  # Merge government_actors list into governed_actors, deduplicating.
+  # Convert a value to a list of strings, handling:
+  # - nil → []
+  # - "" → []
+  # - "Obligation,Permission" → ["Obligation", "Permission"]
+  # - ["Obligation", "Permission"] → ["Obligation", "Permission"] (passthrough)
+  defp to_string_list(nil), do: []
+  defp to_string_list(""), do: []
+
+  defp to_string_list(value) when is_binary(value) do
+    value |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.reject(&(&1 == ""))
+  end
+
+  defp to_string_list(value) when is_list(value), do: value
+  defp to_string_list(_), do: []
+
+  # Merge government_actors into governed_actors, deduplicating.
   defp merge_government_actors(acc, row) do
-    case Map.get(row, "government_actors") do
-      nil ->
+    case to_string_list(Map.get(row, "government_actors")) do
+      [] ->
         acc
 
-      gov_actors when is_list(gov_actors) and gov_actors != [] ->
+      gov_actors ->
         existing = Map.get(acc, :governed_actors, [])
         merged = Enum.uniq(existing ++ gov_actors)
         Map.put(acc, :governed_actors, merged)
-
-      _ ->
-        acc
     end
   end
 end
