@@ -29,6 +29,7 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
   def extract_tuples(org_id, opts \\ []) do
     governed_only = Keyword.get(opts, :governed_only, true)
     canonical_only = Keyword.get(opts, :canonical_only, true)
+    candidate_duties = Keyword.get(opts, :candidate_duties)
 
     gov_filter =
       if governed_only do
@@ -40,6 +41,20 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
     canonical_filter =
       if canonical_only do
         "AND a->>'label_source' = 'canonical'"
+      else
+        ""
+      end
+
+    # When candidate_duties is provided, only include tuples from provisions
+    # that appear in the customer's Duties table (same scoping as Controls)
+    duties_filter =
+      if candidate_duties && MapSet.size(candidate_duties) > 0 do
+        duties_list =
+          candidate_duties
+          |> MapSet.to_list()
+          |> Enum.map_join(",", &"'#{String.replace(&1, "'", "''")}'")
+
+        "AND la.section_id IN (#{duties_list})"
       else
         ""
       end
@@ -60,6 +75,7 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
     WHERE a->>'position' IS NOT NULL AND a->>'position' != ''
       #{gov_filter}
       #{canonical_filter}
+      #{duties_filter}
     ORDER BY actor, drrp_type, position
     """
 

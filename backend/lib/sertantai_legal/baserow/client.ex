@@ -86,11 +86,15 @@ defmodule SertantaiLegal.Baserow.Client do
   # ── Row Listing ──────────────────────────────────────────────────
 
   @doc """
-  Fetch all rows from a Baserow table, returning a Name → row_id map.
+  Fetch all rows from a Baserow table, returning a Name → row_ids map.
 
   Paginates through all rows (200/page), extracting the primary field
   value (Name) and the Baserow row ID for each row. Used by the sync
   engine for CUD decisions and delete reconciliation.
+
+  Returns `Name → [row_id, ...]` — a list of row_ids per Name to handle
+  duplicates. Multiple syncs or format changes can create rows with the
+  same Name; collecting all IDs ensures delete reconciliation catches them all.
   """
   def list_all_rows(config, table_key_or_id) do
     tid =
@@ -110,7 +114,12 @@ defmodule SertantaiLegal.Baserow.Client do
         new_acc =
           Enum.reduce(results, acc, fn row, map ->
             name = row["Name"]
-            if name, do: Map.put(map, name, row["id"]), else: map
+
+            if name do
+              Map.update(map, name, [row["id"]], fn ids -> [row["id"] | ids] end)
+            else
+              map
+            end
           end)
 
         if next do

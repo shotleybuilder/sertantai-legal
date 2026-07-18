@@ -175,13 +175,19 @@ defmodule SertantaiLegal.Sync.Engine do
                ),
              else: {:ok, job}
            ),
-         {:ok, job} <-
-           if(sync_table?.(:actor_tuples),
-             do: maybe_sync_actor_tuples(provider_config, sync_config, job),
-             else: {:ok, job}
-           ),
          candidate_duties <-
            build_candidate_duties(lrt_rows, sync_config),
+         {:ok, job} <-
+           if(sync_table?.(:actor_tuples),
+             do:
+               maybe_sync_actor_tuples(
+                 provider_config,
+                 candidate_duties,
+                 sync_config,
+                 job
+               ),
+             else: {:ok, job}
+           ),
          {:ok, job} <-
            if(sync_table?.(:controls),
              do:
@@ -278,17 +284,17 @@ defmodule SertantaiLegal.Sync.Engine do
        ) do
     sync_start_time = DateTime.utc_now()
 
-    # 1. Fetch Baserow Name → row_id map
+    # 1. Fetch Baserow Name → [row_ids] map
     with {:ok, remote_map} <- provider.list_all_rows(provider_config, table_key) do
-      # 2. Split formatted rows into creates and updates
-      {creates, updates} = split_cud(formatted_rows, remote_map)
+      # 2. Split formatted rows into creates, updates, and duplicate row_ids
+      {creates, updates, duplicate_ids} = split_cud(formatted_rows, remote_map)
 
-      # 3. Delete reconciliation
-      deletes = find_deletes(remote_map, postgres_names)
+      # 3. Delete reconciliation — orphaned Names + duplicate row_ids
+      delete_ids = find_deletes(remote_map, postgres_names, duplicate_ids)
 
       Logger.info(
         "[Sync] #{table_key} CUD: #{length(creates)} create, #{length(updates)} update, " <>
-          "#{length(deletes)} delete"
+          "#{length(delete_ids)} delete"
       )
 
       # 4. Execute creates
@@ -323,14 +329,12 @@ defmodule SertantaiLegal.Sync.Engine do
 
       # 6. Execute deletes
       deleted_count =
-        if deletes != [] do
+        if delete_ids != [] do
           policy = sync_config.on_filter_change || :delete
 
           case policy do
             :delete ->
-              ext_ids = Enum.map(deletes, fn {_name, row_id} -> row_id end)
-
-              case provider.batch_delete(provider_config, table_key, ext_ids) do
+              case provider.batch_delete(provider_config, table_key, delete_ids) do
                 {:ok, count} ->
                   count
 
@@ -340,7 +344,7 @@ defmodule SertantaiLegal.Sync.Engine do
               end
 
             _ ->
-              Logger.info("[Sync] #{length(deletes)} orphaned rows (policy: #{policy})")
+              Logger.info("[Sync] #{length(delete_ids)} orphaned rows (policy: #{policy})")
               0
           end
         else
@@ -355,31 +359,41 @@ defmodule SertantaiLegal.Sync.Engine do
   end
 
   # Split formatted rows into creates and updates by checking Name against remote_map.
-  # Updates get "id" injected (the Baserow row_id).
+  # remote_map is Name → [row_ids] (list to handle duplicates).
+  # Updates target the first row_id; duplicate row_ids are collected for deletion.
   defp split_cud(formatted_rows, remote_map) do
-    Enum.reduce(formatted_rows, {[], []}, fn row, {creates, updates} ->
-      name = row["Name"]
+    {creates, updates, duplicate_ids} =
+      Enum.reduce(formatted_rows, {[], [], []}, fn row, {creates, updates, dup_ids} ->
+        name = row["Name"]
 
-      case Map.get(remote_map, name) do
-        nil ->
-          {[row | creates], updates}
+        case Map.get(remote_map, name) do
+          nil ->
+            {[row | creates], updates, dup_ids}
 
-        row_id ->
-          updated_row = Map.put(row, "id", row_id)
-          {creates, [updated_row | updates]}
-      end
-    end)
-    |> then(fn {creates, updates} -> {Enum.reverse(creates), Enum.reverse(updates)} end)
+          [row_id | rest] ->
+            updated_row = Map.put(row, "id", row_id)
+            {creates, [updated_row | updates], rest ++ dup_ids}
+
+          [] ->
+            {[row | creates], updates, dup_ids}
+        end
+      end)
+
+    {Enum.reverse(creates), Enum.reverse(updates), duplicate_ids}
   end
 
-  # Find Baserow names that are NOT in the Postgres set → delete candidates.
-  # Returns list of {name, row_id} tuples.
-  defp find_deletes(remote_map, postgres_names) do
+  # Find Baserow row_ids that should be deleted:
+  # 1. All row_ids for Names NOT in the Postgres set (orphaned rows)
+  # 2. Duplicate row_ids passed from split_cud (extra copies of valid Names)
+  defp find_deletes(remote_map, postgres_names, duplicate_ids) do
     postgres_name_set = MapSet.new(postgres_names)
 
-    remote_map
-    |> Enum.reject(fn {name, _row_id} -> MapSet.member?(postgres_name_set, name) end)
-    |> Enum.map(fn {name, row_id} -> {name, row_id} end)
+    orphan_ids =
+      remote_map
+      |> Enum.reject(fn {name, _ids} -> MapSet.member?(postgres_name_set, name) end)
+      |> Enum.flat_map(fn {_name, ids} -> ids end)
+
+    orphan_ids ++ duplicate_ids
   end
 
   # ── LRT Sync ─────────────────────────────────────────────────────
@@ -507,7 +521,7 @@ defmodule SertantaiLegal.Sync.Engine do
 
   # ── Actor Tuples ──────────────────────────────────────────────────
 
-  defp maybe_sync_actor_tuples(provider_config, sync_config, job) do
+  defp maybe_sync_actor_tuples(provider_config, candidate_duties, sync_config, job) do
     actor_table_id = get_in(sync_config.target_config, ["actor_tuples_table_id"])
 
     if is_nil(actor_table_id) do
@@ -520,7 +534,11 @@ defmodule SertantaiLegal.Sync.Engine do
 
       lat_table_id = get_in(sync_config.target_config, ["lat_table_id"])
 
-      with {:ok, tuples} <- ActorTupleSync.extract_tuples(org_id, governed_only: governed_only) do
+      with {:ok, tuples} <-
+             ActorTupleSync.extract_tuples(org_id,
+               governed_only: governed_only,
+               candidate_duties: candidate_duties
+             ) do
         formatted = ActorTupleSync.format_rows(tuples)
 
         # Collect all Postgres Names for delete reconciliation

@@ -43,9 +43,10 @@ defmodule SertantaiLegal.Sync.Templates.ControlMappings do
           type: :formula,
           expression: %{
             baserow:
-              "if(field('Duties') != '', concat(field('Duties'), ' ↔ ', field('Controls')), concat(field('Legal_Register'), ' ↔ ', field('Controls')))"
+              "if(isblank(join(field('Duties'), '')), concat(join(field('Legal_Register'), ', '), ' ↔ ', join(lookup('Controls', 'Title'), ', ')), concat(join(field('Duties'), ', '), ' ↔ ', join(lookup('Controls', 'Title'), ', ')))"
           },
-          description: "Display: Duties ↔ Controls (or Legal_Register ↔ Controls for law-level)"
+          description:
+            "Display: Duties ↔ Control Title (or Legal_Register ↔ Control Title for law-level)"
         },
         %{
           name: "Legal_Register",
