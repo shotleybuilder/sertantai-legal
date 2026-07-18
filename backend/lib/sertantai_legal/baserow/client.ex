@@ -762,12 +762,18 @@ defmodule SertantaiLegal.Baserow.Client do
 
   defp build_field_name_map(config, table_id) do
     case list_fields(config, table_id) do
-      {:ok, fields} -> Map.new(fields, fn f -> {f["name"], f["id"]} end)
-      _ -> %{}
+      {:ok, fields} ->
+        Map.new(fields, fn f -> {f["name"], %{id: f["id"], type: f["type"]}} end)
+
+      _ ->
+        %{}
     end
   end
 
-  @filter_type_map %{
+  # Baserow filter types that need a field-type prefix for select fields
+  @select_field_types ["single_select", "multiple_select"]
+
+  @base_filter_type_map %{
     equal: "equal",
     not_equal: "not_equal",
     empty: "empty",
@@ -777,15 +783,34 @@ defmodule SertantaiLegal.Baserow.Client do
     lower_than: "lower_than"
   }
 
+  # Baserow requires "single_select_equal" instead of "equal" for single_select fields,
+  # and "boolean" instead of "equal" for boolean fields.
+  defp resolve_filter_type(op, field_type) do
+    base = Map.get(@base_filter_type_map, op, to_string(op))
+
+    cond do
+      field_type in @select_field_types and base in ["equal", "not_equal"] ->
+        "#{field_type}_#{base}"
+
+      field_type == "boolean" and base == "equal" ->
+        "boolean"
+
+      true ->
+        base
+    end
+  end
+
   defp maybe_apply_filters(config, view_id, %{filters: filters}, field_map)
        when is_list(filters) and filters != [] do
     Enum.each(filters, fn filter ->
-      field_id = Map.get(field_map, filter.field)
+      field_info = Map.get(field_map, filter.field)
 
-      if field_id do
+      if field_info do
+        filter_type = resolve_filter_type(filter.op, field_info.type)
+
         body = %{
-          "field" => field_id,
-          "type" => Map.get(@filter_type_map, filter.op, to_string(filter.op)),
+          "field" => field_info.id,
+          "type" => filter_type,
           "value" => to_string(Map.get(filter, :value, ""))
         }
 
@@ -804,11 +829,11 @@ defmodule SertantaiLegal.Baserow.Client do
   defp maybe_apply_sorts(config, view_id, %{sorts: sorts}, field_map)
        when is_list(sorts) and sorts != [] do
     Enum.each(sorts, fn sort ->
-      field_id = Map.get(field_map, sort.field)
+      field_info = Map.get(field_map, sort.field)
 
-      if field_id do
+      if field_info do
         body = %{
-          "field" => field_id,
+          "field" => field_info.id,
           "order" => if(sort.direction == :desc, do: "DESC", else: "ASC")
         }
 
@@ -826,11 +851,11 @@ defmodule SertantaiLegal.Baserow.Client do
 
   defp maybe_apply_grouping(config, view_id, %{group_by: group_field}, field_map)
        when is_binary(group_field) do
-    field_id = Map.get(field_map, group_field)
+    field_info = Map.get(field_map, group_field)
 
-    if field_id do
+    if field_info do
       body = %{
-        "field" => field_id,
+        "field" => field_info.id,
         "order" => "ASC"
       }
 
