@@ -326,6 +326,29 @@ defmodule SertantaiLegal.Baserow.Client do
   # ── View Operations ──────────────────────────────────────────────
 
   @doc "Create a view on a Baserow table from a universal view spec."
+  @doc "List all views for a Baserow table. Returns a list of view maps."
+  def list_views(config, table_id) do
+    case api_get(config, "/api/database/views/table/#{table_id}/") do
+      {:ok, %{status: 200, body: views}} when is_list(views) ->
+        {:ok, views}
+
+      {:ok, %{status: status, body: body}} ->
+        {:error, "List views: #{status} #{inspect(body)}"}
+
+      {:error, reason} ->
+        {:error, "List views: #{inspect(reason)}"}
+    end
+  end
+
+  @doc "Delete a Baserow view by ID."
+  def delete_view(config, view_id) do
+    case api_delete(config, "/api/database/views/#{view_id}/") do
+      {:ok, %{status: status}} when status in [200, 204] -> :ok
+      {:ok, %{status: status, body: body}} -> {:error, "Delete view: #{status} #{inspect(body)}"}
+      {:error, reason} -> {:error, "Delete view: #{inspect(reason)}"}
+    end
+  end
+
   def create_view(config, table_id, view_spec) do
     body = %{
       "name" => view_spec.name,
@@ -334,9 +357,11 @@ defmodule SertantaiLegal.Baserow.Client do
 
     case api_post(config, "/api/database/views/table/#{table_id}/", body) do
       {:ok, %{status: 200, body: %{"id" => view_id}}} ->
-        # Apply filters and sorts if specified
-        maybe_apply_filters(config, view_id, view_spec)
-        maybe_apply_sorts(config, view_id, view_spec)
+        # Resolve field names → IDs for filters, sorts, grouping
+        field_map = build_field_name_map(config, table_id)
+        maybe_apply_filters(config, view_id, view_spec, field_map)
+        maybe_apply_sorts(config, view_id, view_spec, field_map)
+        maybe_apply_grouping(config, view_id, view_spec, field_map)
         {:ok, view_id}
 
       {:ok, %{status: status, body: resp}} ->
@@ -735,21 +760,90 @@ defmodule SertantaiLegal.Baserow.Client do
   defp translate_webhook_event(:deleted), do: "rows.deleted"
   defp translate_webhook_event(event), do: to_string(event)
 
-  defp maybe_apply_filters(_config, _view_id, %{filters: filters})
+  defp build_field_name_map(config, table_id) do
+    case list_fields(config, table_id) do
+      {:ok, fields} -> Map.new(fields, fn f -> {f["name"], f["id"]} end)
+      _ -> %{}
+    end
+  end
+
+  @filter_type_map %{
+    equal: "equal",
+    not_equal: "not_equal",
+    empty: "empty",
+    not_empty: "not_empty",
+    contains: "contains",
+    higher_than: "higher_than",
+    lower_than: "lower_than"
+  }
+
+  defp maybe_apply_filters(config, view_id, %{filters: filters}, field_map)
        when is_list(filters) and filters != [] do
-    # TODO: POST /api/database/views/{view_id}/filters/ for each filter
-    :ok
+    Enum.each(filters, fn filter ->
+      field_id = Map.get(field_map, filter.field)
+
+      if field_id do
+        body = %{
+          "field" => field_id,
+          "type" => Map.get(@filter_type_map, filter.op, to_string(filter.op)),
+          "value" => to_string(Map.get(filter, :value, ""))
+        }
+
+        case api_post(config, "/api/database/views/#{view_id}/filters/", body) do
+          {:ok, %{status: 200}} -> :ok
+          other -> Logger.warning("[Baserow] Filter on #{filter.field} failed: #{inspect(other)}")
+        end
+      else
+        Logger.warning("[Baserow] Filter field '#{filter.field}' not found")
+      end
+    end)
   end
 
-  defp maybe_apply_filters(_, _, _), do: :ok
+  defp maybe_apply_filters(_, _, _, _), do: :ok
 
-  defp maybe_apply_sorts(_config, _view_id, %{sorts: sorts})
+  defp maybe_apply_sorts(config, view_id, %{sorts: sorts}, field_map)
        when is_list(sorts) and sorts != [] do
-    # TODO: POST /api/database/views/{view_id}/sortings/ for each sort
-    :ok
+    Enum.each(sorts, fn sort ->
+      field_id = Map.get(field_map, sort.field)
+
+      if field_id do
+        body = %{
+          "field" => field_id,
+          "order" => if(sort.direction == :desc, do: "DESC", else: "ASC")
+        }
+
+        case api_post(config, "/api/database/views/#{view_id}/sortings/", body) do
+          {:ok, %{status: 200}} -> :ok
+          other -> Logger.warning("[Baserow] Sort on #{sort.field} failed: #{inspect(other)}")
+        end
+      else
+        Logger.warning("[Baserow] Sort field '#{sort.field}' not found")
+      end
+    end)
   end
 
-  defp maybe_apply_sorts(_, _, _), do: :ok
+  defp maybe_apply_sorts(_, _, _, _), do: :ok
+
+  defp maybe_apply_grouping(config, view_id, %{group_by: group_field}, field_map)
+       when is_binary(group_field) do
+    field_id = Map.get(field_map, group_field)
+
+    if field_id do
+      body = %{
+        "field" => field_id,
+        "order" => "ASC"
+      }
+
+      case api_post(config, "/api/database/views/#{view_id}/group_bys/", body) do
+        {:ok, %{status: 200}} -> :ok
+        other -> Logger.warning("[Baserow] Group by #{group_field} failed: #{inspect(other)}")
+      end
+    else
+      Logger.warning("[Baserow] Group field '#{group_field}' not found")
+    end
+  end
+
+  defp maybe_apply_grouping(_, _, _, _), do: :ok
 
   # ── Private: Misc Helpers ────────────────────────────────────────
 

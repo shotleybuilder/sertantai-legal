@@ -201,15 +201,27 @@ defmodule SertantaiLegal.Baserow.SchemaManager do
       if is_nil(table_id) or views == [] do
         {:cont, {:ok, total}}
       else
+        # Get existing view names to skip duplicates
+        existing_names =
+          case Client.list_views(config, table_id) do
+            {:ok, views_list} -> MapSet.new(views_list, & &1["name"])
+            _ -> MapSet.new()
+          end
+
         count =
           Enum.reduce(views, 0, fn view, acc ->
-            case Client.create_view(config, table_id, view) do
-              {:ok, _} ->
-                acc + 1
+            if MapSet.member?(existing_names, view.name) do
+              acc
+            else
+              case Client.create_view(config, table_id, view) do
+                {:ok, _} ->
+                  acc + 1
 
-              {:error, reason} ->
-                Logger.warning("[SchemaManager] Skipping view #{view.name}: #{inspect(reason)}")
-                acc
+                {:error, reason} ->
+                  Logger.warning("[SchemaManager] Skipping view #{view.name}: #{inspect(reason)}")
+
+                  acc
+              end
             end
           end)
 

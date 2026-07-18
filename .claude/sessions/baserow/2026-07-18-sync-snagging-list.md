@@ -9,6 +9,9 @@
 - [x] Fix list_all_rows dedup bug — Name → [row_ids] list instead of single row_id. split_cud returns duplicate_ids, find_deletes merges orphans + duplicates
 - [x] Controls re-synced: 3,508 deleted (was 1,754 — caught all duplicates), 1,178 remain
 - [x] Fix ControlMappings Mapping formula — `join()` needed for link_row fields in Baserow formulas, `lookup('Controls', 'Title')` instead of UUID, `isblank(join(field(...), ''))` for empty check
+- [x] Fix duplicate views — SchemaManager phase_4 now checks existing views before creating. 146 duplicates cleaned. Added `list_views` + `delete_view` to Client.
+- [x] Implement view filters/sorts/groups — was TODO stubs. 86 views recreated. Filters/sorts/groups now applied via Baserow API.
+- [ ] Fix single_select filter type — Baserow needs `single_select_equal` not `equal` for single_select fields (12 filter failures)
 - [ ] Check for other tables with orphaned rows (no links)
 
 ## Notes
