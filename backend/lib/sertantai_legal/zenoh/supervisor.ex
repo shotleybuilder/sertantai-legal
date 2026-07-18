@@ -26,7 +26,8 @@ defmodule SertantaiLegal.Zenoh.Supervisor do
       SertantaiLegal.Zenoh.ProvisionSubscriber,
       SertantaiLegal.Zenoh.ControlsSubscriber,
       SertantaiLegal.Zenoh.EvidenceSubscriber,
-      SertantaiLegal.Zenoh.TriageSubscriber
+      SertantaiLegal.Zenoh.TriageSubscriber,
+      SertantaiLegal.Zenoh.SecondaryTaxaSubscriber
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)

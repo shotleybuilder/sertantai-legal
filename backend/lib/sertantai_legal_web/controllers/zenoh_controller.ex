@@ -18,6 +18,7 @@ defmodule SertantaiLegalWeb.ZenohController do
     ControlsSubscriber,
     EvidenceSubscriber,
     TriageSubscriber,
+    SecondaryTaxaSubscriber,
     DataServer,
     ChangeNotifier
   }
@@ -50,6 +51,11 @@ defmodule SertantaiLegalWeb.ZenohController do
           status: TriageSubscriber.status(),
           stats: safe_get_stats(:triage_subscriber),
           recent: safe_get_recent(:triage_subscriber)
+        },
+        secondary_taxa_subscriber: %{
+          status: SecondaryTaxaSubscriber.status(),
+          stats: safe_get_stats(:secondary_taxa_subscriber),
+          recent: safe_get_recent(:secondary_taxa_subscriber)
         }
       })
     else
@@ -60,7 +66,8 @@ defmodule SertantaiLegalWeb.ZenohController do
         provision_subscriber: disabled,
         controls_subscriber: disabled,
         evidence_subscriber: disabled,
-        triage_subscriber: disabled
+        triage_subscriber: disabled,
+        secondary_taxa_subscriber: disabled
       })
     end
   end
