@@ -174,7 +174,10 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
           Logger.info("[ActorDictionary] Loaded #{length(entries)} actors from Zenoh")
 
         {:error, reason} ->
-          Logger.warning("[ActorDictionary] Zenoh unavailable (#{reason}), loading snapshot")
+          Logger.warning(
+            "[ActorDictionary] Zenoh unavailable (#{inspect(reason)}), loading snapshot"
+          )
+
           load_from_snapshot()
       end
     end

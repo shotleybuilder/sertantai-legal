@@ -29,7 +29,8 @@ defmodule SertantaiLegal.Application do
         # Supervised async tasks (used by HubNotifier for fire-and-forget HTTP)
         {Task.Supervisor, name: SertantaiLegal.TaskSupervisor},
         # Zenoh P2P mesh — publishes LRT/LAT/amendments to fractalaw
-        if(Application.get_env(:sertantai_legal, :zenoh)[:enabled],
+        # Suppressed in mix task context to avoid port conflicts with the running server
+        if(Application.get_env(:sertantai_legal, :zenoh)[:enabled] and server_mode?(),
           do: SertantaiLegal.Zenoh.Supervisor
         ),
         # Actor dictionary — loaded from Zenoh (must start after Zenoh), falls back to YAML snapshot
@@ -43,6 +44,12 @@ defmodule SertantaiLegal.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: SertantaiLegal.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  # mix phx.server sets server: true; plain mix tasks don't.
+  # Used to suppress Zenoh in mix task context (avoids port 7447 conflict).
+  defp server_mode? do
+    Application.get_env(:sertantai_legal, SertantaiLegalWeb.Endpoint)[:server] == true
   end
 
   # Tell Phoenix to update the endpoint configuration
