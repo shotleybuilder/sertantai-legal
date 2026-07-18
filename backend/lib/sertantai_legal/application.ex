@@ -46,10 +46,11 @@ defmodule SertantaiLegal.Application do
     Supervisor.start_link(children, opts)
   end
 
-  # mix phx.server sets server: true; plain mix tasks don't.
-  # Used to suppress Zenoh in mix task context (avoids port 7447 conflict).
+  # Suppress Zenoh in mix task context to avoid port conflicts with the running server.
+  # Cannot check Endpoint[:server] — Phoenix sets it after Application.start/2.
+  # Instead, check :phoenix :serve_endpoints which mix phx.server sets before app start.
   defp server_mode? do
-    Application.get_env(:sertantai_legal, SertantaiLegalWeb.Endpoint)[:server] == true
+    Application.get_env(:phoenix, :serve_endpoints, false) == true
   end
 
   # Tell Phoenix to update the endpoint configuration
