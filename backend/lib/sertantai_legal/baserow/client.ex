@@ -571,6 +571,18 @@ defmodule SertantaiLegal.Baserow.Client do
   def table_id(config, :artefact_templates),
     do: config["artefact_templates_table_id"] || config[:artefact_templates_table_id]
 
+  def table_id(config, :assessments),
+    do: config["assessments_table_id"] || config[:assessments_table_id]
+
+  def table_id(config, :personnel),
+    do: config["personnel_table_id"] || config[:personnel_table_id]
+
+  def table_id(config, :actions),
+    do: config["actions_table_id"] || config[:actions_table_id]
+
+  def table_id(config, :hierarchy),
+    do: config["hierarchy_table_id"] || config[:hierarchy_table_id]
+
   # ── Private: HTTP Transport ──────────────────────────────────────
 
   # Retry: transient errors (429, 5xx, network) with exponential backoff, max 3 retries

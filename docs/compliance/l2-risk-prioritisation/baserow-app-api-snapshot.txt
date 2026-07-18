@@ -1,0 +1,1946 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 92 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, skipping subscription
+[info] JWKS public key fetched successfully
+=== QUEUE PAGE (1069371) ===
+
+--- Data Sources ---
+%{
+  "default_result_count" => 20,
+  "filter_type" => "AND",
+  "filters" => [],
+  "id" => 1952708,
+  "integration_id" => 182002,
+  "name" => "All Assessments",
+  "order" => "1.00000000000000000000",
+  "page_id" => 1069371,
+  "search_query" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "sortings" => [],
+  "table_id" => 1079908,
+  "type" => "local_baserow_list_rows",
+  "view_id" => nil
+}
+
+--- Elements ---
+%{
+  "css_classes" => "",
+  "id" => 14046133,
+  "level" => 1,
+  "page_id" => 1069371,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "styles" => %{},
+  "type" => "heading",
+  "value" => %{
+    "formula" => "'Compliance Assessment Review'",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "button_load_more_label" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "css_classes" => "",
+  "data_source_id" => 1952708,
+  "fields" => [
+    %{
+      "id" => 10394053,
+      "name" => "Law",
+      "styles" => %{},
+      "type" => "text",
+      "uid" => "79718386-2532-4efb-9ab8-c459e3f998a1",
+      "value" => %{
+        "formula" => "get(\"current_record.field_9564708.*.value\")",
+        "mode" => "simple",
+        "version" => "0.1"
+      }
+    },
+    %{
+      "id" => 10394054,
+      "name" => "Status",
+      "styles" => %{},
+      "type" => "text",
+      "uid" => "d0caff08-44d0-4a0d-8d0e-1ac8375330bb",
+      "value" => %{
+        "formula" => "get(\"current_record.field_9564710.value\")",
+        "mode" => "simple",
+        "version" => "0.1"
+      }
+    },
+    %{
+      "id" => 10394055,
+      "name" => "Risk",
+      "styles" => %{},
+      "type" => "text",
+      "uid" => "d79345d4-3db7-4b16-b4aa-a1c7e9aec07f",
+      "value" => %{
+        "formula" => "get(\"current_record.field_9564718.value\")",
+        "mode" => "simple",
+        "version" => "0.1"
+      }
+    },
+    %{
+      "id" => 10394056,
+      "name" => "Owner",
+      "styles" => %{},
+      "type" => "text",
+      "uid" => "c81604c5-c874-42e7-a8b9-e2def7422ba0",
+      "value" => %{
+        "formula" => "get(\"current_record.field_9564711.*.value\")",
+        "mode" => "simple",
+        "version" => "0.1"
+      }
+    },
+    %{
+      "id" => 10394057,
+      "name" => "Review Due",
+      "styles" => %{},
+      "type" => "text",
+      "uid" => "cf816b93-a19e-4909-acb8-09d13d57332d",
+      "value" => %{
+        "formula" => "get(\"current_record.field_9564717\")",
+        "mode" => "simple",
+        "version" => "0.1"
+      }
+    },
+    %{
+      "id" => 10394058,
+      "link_name" => %{
+        "formula" => "'Review →'",
+        "mode" => "simple",
+        "version" => "0.1"
+      },
+      "name" => "Review",
+      "navigate_to_page_id" => 1069372,
+      "navigate_to_url" => %{
+        "formula" => "",
+        "mode" => "simple",
+        "version" => "0.1"
+      },
+      "navigation_type" => "page",
+      "page_parameters" => [
+        %{
+          "name" => "id",
+          "value" => %{
+            "formula" => "get(\"current_record.id\")",
+            "mode" => "simple",
+            "version" => "0.1"
+          }
+        }
+      ],
+      "query_parameters" => [],
+      "styles" => %{},
+      "target" => "self",
+      "type" => "link",
+      "uid" => "79ad201c-eb27-4411-8fa8-dbcb18aec2ab",
+      "variant" => "link"
+    }
+  ],
+  "id" => 14046134,
+  "is_publicly_filterable" => true,
+  "is_publicly_searchable" => true,
+  "is_publicly_sortable" => true,
+  "items_per_page" => 20,
+  "orientation" => %{
+    "desktop" => "horizontal",
+    "smartphone" => "horizontal",
+    "tablet" => "horizontal"
+  },
+  "page_id" => 1069371,
+  "property_options" => [],
+  "role_type" => "allow_all",
+  "roles" => [],
+  "schema_property" => nil,
+  "styles" => %{},
+  "type" => "table",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+
+=== FORM PAGE (1069372) ===
+
+--- Data Sources ---
+%{
+  "filter_type" => "AND",
+  "filters" => [],
+  "id" => 1952801,
+  "integration_id" => 182002,
+  "name" => "Current Assessment",
+  "order" => "1.00000000000000000000",
+  "page_id" => 1069372,
+  "row_id" => %{
+    "formula" => "get(\"page_parameter.id\")",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "search_query" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "sortings" => [],
+  "table_id" => 1079908,
+  "type" => "local_baserow_get_row",
+  "view_id" => nil
+}
+
+--- Elements ---
+%{
+  "css_classes" => "",
+  "id" => 14047013,
+  "navigate_to_page_id" => 1069371,
+  "navigate_to_url" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "navigation_type" => "page",
+  "page_id" => 1069372,
+  "page_parameters" => [],
+  "query_parameters" => [],
+  "role_type" => "allow_all",
+  "roles" => [],
+  "styles" => %{},
+  "target" => "self",
+  "type" => "link",
+  "value" => %{
+    "formula" => "\"← Back to Queue\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "variant" => "link",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "css_classes" => "",
+  "id" => 14047014,
+  "level" => 2,
+  "page_id" => 1069372,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "styles" => %{},
+  "type" => "heading",
+  "value" => %{
+    "formula" => "get(\"data_source.1952801.field_9564708.*.value\")",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "css_classes" => "",
+  "id" => 14047015,
+  "page_id" => 1069372,
+  "reset_initial_values_post_submission" => false,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "styles" => %{},
+  "submit_button_label" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "type" => "form_container",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "css_classes" => "",
+  "default_value" => %{
+    "formula" => "get(\"data_source.1952801.field_9564710.value\")",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "formula_name" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "formula_value" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "id" => 14047519,
+  "label" => %{
+    "formula" => "\"Compliance Status\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "multiple" => false,
+  "option_type" => "manual",
+  "options" => [
+    %{"id" => 1315863, "name" => "Compliant", "value" => "Compliant"},
+    %{
+      "id" => 1315864,
+      "name" => "Partially Compliant",
+      "value" => "Partially Compliant"
+    },
+    %{"id" => 1315865, "name" => "Non-Compliant", "value" => "Non-Compliant"},
+    %{"id" => 1315866, "name" => "Not Assessed", "value" => "Not Assessed"},
+    %{"id" => 1315867, "name" => "Not Applicable", "value" => "Not Applicable"}
+  ],
+  "page_id" => 1069372,
+  "placeholder" => %{
+    "formula" => "\"Select status...\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "required" => false,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "show_as_dropdown" => true,
+  "styles" => %{},
+  "type" => "choice",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "css_classes" => "",
+  "default_value" => %{
+    "formula" => "get(\"data_source.1952801.field_9564718.value\")",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "formula_name" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "formula_value" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "id" => 14047520,
+  "label" => %{
+    "formula" => "\"Risk Level\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "multiple" => false,
+  "option_type" => "manual",
+  "options" => [
+    %{"id" => 1315868, "name" => "Critical", "value" => "Critical"},
+    %{"id" => 1315869, "name" => "High", "value" => "High"},
+    %{"id" => 1315870, "name" => "Medium", "value" => "Medium"},
+    %{"id" => 1315871, "name" => "Low", "value" => "Low"}
+  ],
+  "page_id" => 1069372,
+  "placeholder" => %{"formula" => "", "mode" => "simple", "version" => "0.1"},
+  "required" => false,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "show_as_dropdown" => true,
+  "styles" => %{},
+  "type" => "choice",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "css_classes" => "",
+  "default_value" => %{
+    "formula" => "get(\"data_source.1952801.field_9564719\")",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "id" => 14047521,
+  "input_type" => "text",
+  "is_multiline" => true,
+  "label" => %{
+    "formula" => "\"Gap Description\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "page_id" => 1069372,
+  "placeholder" => %{
+    "formula" => "\"What is missing or non-compliant?\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "required" => false,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "rows" => 3,
+  "styles" => %{},
+  "type" => "input_text",
+  "validation_type" => "any",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+%{
+  "css_classes" => "",
+  "default_value" => %{
+    "formula" => "get(\"data_source.1952801.field_9617776\")",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "id" => 14047522,
+  "input_type" => "text",
+  "is_multiline" => true,
+  "label" => %{"formula" => "\"Notes\"", "mode" => "simple", "version" => "0.1"},
+  "page_id" => 1069372,
+  "placeholder" => %{
+    "formula" => "\"General notes...\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "required" => false,
+  "role_type" => "allow_all",
+  "roles" => [],
+  "rows" => 3,
+  "styles" => %{},
+  "type" => "input_text",
+  "validation_type" => "any",
+  "visibility" => "all",
+  "visibility_condition" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  }
+}
+
+--- Workflow Actions ---
+%{
+  "element_id" => 14047015,
+  "event" => "submit",
+  "id" => 2550173,
+  "order" => 1,
+  "service" => %{
+    "context_data" => %{
+      "field_9564710" => [
+        %{"color" => "light-gray", "id" => 6830855, "value" => "Compliant"},
+        %{
+          "color" => "light-gray",
+          "id" => 6830856,
+          "value" => "Partially Compliant"
+        },
+        %{"color" => "light-gray", "id" => 6830857, "value" => "Non-Compliant"},
+        %{"color" => "light-gray", "id" => 6830858, "value" => "Not Assessed"},
+        %{"color" => "light-gray", "id" => 6830859, "value" => "Not Applicable"}
+      ],
+      "field_9564716" => [
+        %{"color" => "light-gray", "id" => 6830860, "value" => "Quarterly"},
+        %{"color" => "light-gray", "id" => 6830861, "value" => "Bi-annually"},
+        %{"color" => "light-gray", "id" => 6830862, "value" => "Annually"},
+        %{"color" => "light-gray", "id" => 6830863, "value" => "Biennial"}
+      ],
+      "field_9564718" => [
+        %{"color" => "light-gray", "id" => 6830864, "value" => "Critical"},
+        %{"color" => "light-gray", "id" => 6830865, "value" => "High"},
+        %{"color" => "light-gray", "id" => 6830866, "value" => "Medium"},
+        %{"color" => "light-gray", "id" => 6830867, "value" => "Low"}
+      ]
+    },
+    "context_data_schema" => %{
+      "properties" => %{
+        "field_9564710" => %{
+          "default" => nil,
+          "items" => %{
+            "properties" => %{
+              "color" => %{"type" => "string"},
+              "id" => %{"type" => "number"},
+              "value" => %{"type" => "string"}
+            },
+            "type" => "object"
+          },
+          "title" => "Compliance_Status",
+          "type" => "array"
+        },
+        "field_9564716" => %{
+          "default" => nil,
+          "items" => %{
+            "properties" => %{
+              "color" => %{"type" => "string"},
+              "id" => %{"type" => "number"},
+              "value" => %{"type" => "string"}
+            },
+            "type" => "object"
+          },
+          "title" => "Review_Frequency",
+          "type" => "array"
+        },
+        "field_9564718" => %{
+          "default" => nil,
+          "items" => %{
+            "properties" => %{
+              "color" => %{"type" => "string"},
+              "id" => %{"type" => "number"},
+              "value" => %{"type" => "string"}
+            },
+            "type" => "object"
+          },
+          "title" => "Risk_Level",
+          "type" => "array"
+        }
+      },
+      "title" => "Table1079908Schema",
+      "type" => "object"
+    },
+    "field_mappings" => [
+      %{
+        "enabled" => true,
+        "field_id" => 9564710,
+        "value" => %{
+          "formula" => "get('form_data.14047519')",
+          "mode" => "simple",
+          "version" => "0.1"
+        }
+      },
+      %{
+        "enabled" => true,
+        "field_id" => 9564718,
+        "value" => %{
+          "formula" => "get('form_data.14047520')",
+          "mode" => "simple",
+          "version" => "0.1"
+        }
+      },
+      %{
+        "enabled" => true,
+        "field_id" => 9564719,
+        "value" => %{
+          "formula" => "get('form_data.14047521')",
+          "mode" => "simple",
+          "version" => "0.1"
+        }
+      },
+      %{
+        "enabled" => true,
+        "field_id" => 9617776,
+        "value" => %{
+          "formula" => "get('form_data.14047522')",
+          "mode" => "simple",
+          "version" => "0.1"
+        }
+      }
+    ],
+    "id" => 2707071,
+    "integration_id" => 182002,
+    "row_id" => %{
+      "formula" => "get('page_parameter.id')",
+      "mode" => "simple",
+      "version" => "0.1"
+    },
+    "sample_data" => %{
+      "data" => %{"id" => 7, "order" => "7.00000000000000000000"},
+      "output_uid" => "",
+      "status" => 200
+    },
+    "schema" => %{
+      "properties" => %{
+        "field_9564642" => %{
+          "default" => "",
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nAssessment name",
+            "field_constraints" => [],
+            "id" => 9564642,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Name",
+            "order" => 0,
+            "primary" => true,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "text_default" => "",
+            "type" => "text",
+            "workspace_id" => 128789
+          },
+          "original_type" => "text",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Name",
+          "type" => "string"
+        },
+        "field_9564708" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nWhich law is being assessed",
+            "field_constraints" => [],
+            "id" => 9564708,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564709,
+            "link_row_related_field_id" => 9564709,
+            "link_row_table" => 1079905,
+            "link_row_table_id" => 1079905,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nLaw name (e.g. UK_uksi_1997_1713)",
+              "field_constraints" => [],
+              "id" => 9564633,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079905,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Legal_Register",
+            "order" => 1,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Legal_Register",
+          "type" => "array"
+        },
+        "field_9564710" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nCurrent compliance status",
+            "field_constraints" => [],
+            "id" => 9564710,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Compliance_Status",
+            "order" => 2,
+            "primary" => false,
+            "read_only" => false,
+            "select_options" => [
+              %{
+                "color" => "light-gray",
+                "id" => 6830855,
+                "value" => "Compliant"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6830856,
+                "value" => "Partially Compliant"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6830857,
+                "value" => "Non-Compliant"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6830858,
+                "value" => "Not Assessed"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6830859,
+                "value" => "Not Applicable"
+              }
+            ],
+            "single_select_default" => nil,
+            "table_id" => 1079908,
+            "type" => "single_select",
+            "workspace_id" => 128789
+          },
+          "original_type" => "single_select",
+          "properties" => %{
+            "color" => %{"title" => "color", "type" => "string"},
+            "id" => %{"title" => "id", "type" => "number"},
+            "value" => %{"title" => "value", "type" => "string"}
+          },
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Compliance_Status",
+          "type" => "object"
+        },
+        "field_9564711" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nAccountable person",
+            "field_constraints" => [],
+            "id" => 9564711,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564712,
+            "link_row_related_field_id" => 9564712,
+            "link_row_table" => 1079903,
+            "link_row_table_id" => 1079903,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nFull name",
+              "field_constraints" => [],
+              "id" => 9564627,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079903,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Assessment_Owner",
+            "order" => 3,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Assessment_Owner",
+          "type" => "array"
+        },
+        "field_9564713" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nWho performed assessment",
+            "field_constraints" => [],
+            "id" => 9564713,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564714,
+            "link_row_related_field_id" => 9564714,
+            "link_row_table" => 1079903,
+            "link_row_table_id" => 1079903,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nFull name",
+              "field_constraints" => [],
+              "id" => 9564627,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079903,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Assessed_By",
+            "order" => 4,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Assessed_By",
+          "type" => "array"
+        },
+        "field_9564715" => %{
+          "default" => nil,
+          "filterable" => true,
+          "format" => "date",
+          "metadata" => %{
+            "database_id" => 494412,
+            "date_force_timezone" => nil,
+            "date_format" => "EU",
+            "date_include_time" => false,
+            "date_show_tzinfo" => false,
+            "date_time_format" => "24",
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nWhen last assessed",
+            "field_constraints" => [],
+            "id" => 9564715,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Assessment_Date",
+            "order" => 5,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "date",
+            "workspace_id" => 128789
+          },
+          "original_type" => "date",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Assessment_Date",
+          "type" => "string"
+        },
+        "field_9564716" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nHow often to reassess",
+            "field_constraints" => [],
+            "id" => 9564716,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Review_Frequency",
+            "order" => 6,
+            "primary" => false,
+            "read_only" => false,
+            "select_options" => [
+              %{
+                "color" => "light-gray",
+                "id" => 6830860,
+                "value" => "Quarterly"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6830861,
+                "value" => "Bi-annually"
+              },
+              %{"color" => "light-gray", "id" => 6830862, "value" => "Annually"},
+              %{"color" => "light-gray", "id" => 6830863, "value" => "Biennial"}
+            ],
+            "single_select_default" => nil,
+            "table_id" => 1079908,
+            "type" => "single_select",
+            "workspace_id" => 128789
+          },
+          "original_type" => "single_select",
+          "properties" => %{
+            "color" => %{"title" => "color", "type" => "string"},
+            "id" => %{"title" => "id", "type" => "number"},
+            "value" => %{"title" => "value", "type" => "string"}
+          },
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Review_Frequency",
+          "type" => "object"
+        },
+        "field_9564717" => %{
+          "default" => nil,
+          "filterable" => true,
+          "format" => "date",
+          "metadata" => %{
+            "database_id" => 494412,
+            "date_force_timezone" => nil,
+            "date_format" => "EU",
+            "date_include_time" => false,
+            "date_show_tzinfo" => false,
+            "date_time_format" => "24",
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nWhen to reassess",
+            "field_constraints" => [],
+            "id" => 9564717,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Next_Review_Date",
+            "order" => 7,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "date",
+            "workspace_id" => 128789
+          },
+          "original_type" => "date",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Next_Review_Date",
+          "type" => "string"
+        },
+        "field_9564718" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete",
+            "field_constraints" => [],
+            "id" => 9564718,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Risk_Level",
+            "order" => 8,
+            "primary" => false,
+            "read_only" => false,
+            "select_options" => [
+              %{"color" => "light-gray", "id" => 6830864, "value" => "Critical"},
+              %{"color" => "light-gray", "id" => 6830865, "value" => "High"},
+              %{"color" => "light-gray", "id" => 6830866, "value" => "Medium"},
+              %{"color" => "light-gray", "id" => 6830867, "value" => "Low"}
+            ],
+            "single_select_default" => nil,
+            "table_id" => 1079908,
+            "type" => "single_select",
+            "workspace_id" => 128789
+          },
+          "original_type" => "single_select",
+          "properties" => %{
+            "color" => %{"title" => "color", "type" => "string"},
+            "id" => %{"title" => "id", "type" => "number"},
+            "value" => %{"title" => "value", "type" => "string"}
+          },
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Risk_Level",
+          "type" => "object"
+        },
+        "field_9564719" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nWhat's missing or non-compliant",
+            "field_constraints" => [],
+            "id" => 9564719,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "long_text_enable_rich_text" => nil,
+            "name" => "Gap_Description",
+            "order" => 9,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "long_text",
+            "workspace_id" => 128789
+          },
+          "original_type" => "long_text",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Gap_Description",
+          "type" => "string"
+        },
+        "field_9564721" => %{
+          "default" => "",
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nInternal ID or cross-reference",
+            "field_constraints" => [],
+            "id" => 9564721,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Reference",
+            "order" => 11,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "text_default" => "",
+            "type" => "text",
+            "workspace_id" => 128789
+          },
+          "original_type" => "text",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Reference",
+          "type" => "string"
+        },
+        "field_9564739" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => nil,
+            "field_constraints" => [],
+            "id" => 9564739,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564738,
+            "link_row_related_field_id" => 9564738,
+            "link_row_table" => 1079910,
+            "link_row_table_id" => 1079910,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nJudgement name",
+              "field_constraints" => [],
+              "id" => 9564648,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079910,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Judgements",
+            "order" => 12,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Judgements",
+          "type" => "array"
+        },
+        "field_9564748" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => nil,
+            "field_constraints" => [],
+            "id" => 9564748,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564747,
+            "link_row_related_field_id" => 9564747,
+            "link_row_table" => 1079911,
+            "link_row_table_id" => 1079911,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => nil,
+              "field_constraints" => [],
+              "id" => 9564651,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079911,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Artefacts",
+            "order" => 13,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Artefacts",
+          "type" => "array"
+        },
+        "field_9564783" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => nil,
+            "field_constraints" => [],
+            "id" => 9564783,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564782,
+            "link_row_related_field_id" => 9564782,
+            "link_row_table" => 1079912,
+            "link_row_table_id" => 1079912,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nEvent name",
+              "field_constraints" => [],
+              "id" => 9564654,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079912,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Compliance Events",
+            "order" => 14,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Compliance Events",
+          "type" => "array"
+        },
+        "field_9564791" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => nil,
+            "field_constraints" => [],
+            "id" => 9564791,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564790,
+            "link_row_related_field_id" => 9564790,
+            "link_row_table" => 1079913,
+            "link_row_table_id" => 1079913,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nAction name",
+              "field_constraints" => [],
+              "id" => 9564657,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079913,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Actions",
+            "order" => 15,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Actions",
+          "type" => "array"
+        },
+        "field_9564822" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => nil,
+            "field_constraints" => [],
+            "id" => 9564822,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9564821,
+            "link_row_related_field_id" => 9564821,
+            "link_row_table" => 1079915,
+            "link_row_table_id" => 1079915,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => "🚫 Managed by SertantAI — do not rename or delete\nIncident name",
+              "field_constraints" => [],
+              "id" => 9564663,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1079915,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Incidents",
+            "order" => 16,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Incidents",
+          "type" => "array"
+        },
+        "field_9564837" => %{
+          "default" => nil,
+          "filterable" => true,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "array_formula_type" => "text",
+            "available_collaborators" => [
+              %{"id" => 118716, "name" => "Jason Michael Woodruff"}
+            ],
+            "database_id" => 494412,
+            "date_force_timezone" => nil,
+            "date_format" => nil,
+            "date_include_time" => nil,
+            "date_show_tzinfo" => nil,
+            "date_time_format" => nil,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nDisplay: law name (1:1 with Legal Register)",
+            "duration_format" => nil,
+            "error" => nil,
+            "field_constraints" => [],
+            "formula" => "field('Legal_Register')",
+            "formula_type" => "array",
+            "id" => 9564837,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Assessment",
+            "nullable" => true,
+            "number_decimal_places" => nil,
+            "number_negative" => true,
+            "number_prefix" => "",
+            "number_separator" => "",
+            "number_suffix" => "",
+            "order" => 17,
+            "primary" => false,
+            "read_only" => true,
+            "select_options" => [],
+            "table_id" => 1079908,
+            "type" => "formula",
+            "workspace_id" => 128789
+          },
+          "original_type" => "formula",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Assessment",
+          "type" => "array"
+        },
+        "field_9564838" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "array_formula_type" => nil,
+            "available_collaborators" => [],
+            "database_id" => 494412,
+            "date_force_timezone" => nil,
+            "date_format" => nil,
+            "date_include_time" => nil,
+            "date_show_tzinfo" => nil,
+            "date_time_format" => nil,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nDays until next review (negative = overdue)",
+            "duration_format" => nil,
+            "error" => nil,
+            "field_constraints" => [],
+            "formula" => "date_diff('day', field('Next_Review_Date'), today())",
+            "formula_type" => "number",
+            "id" => 9564838,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Days_Until_Review",
+            "nullable" => true,
+            "number_decimal_places" => 0,
+            "number_negative" => true,
+            "number_prefix" => "",
+            "number_separator" => "",
+            "number_suffix" => "",
+            "order" => 18,
+            "primary" => false,
+            "read_only" => true,
+            "select_options" => [],
+            "table_id" => 1079908,
+            "type" => "formula",
+            "workspace_id" => 128789
+          },
+          "original_type" => "formula",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Days_Until_Review",
+          "type" => "string"
+        },
+        "field_9564839" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "array_formula_type" => nil,
+            "available_collaborators" => [],
+            "database_id" => 494412,
+            "date_force_timezone" => nil,
+            "date_format" => nil,
+            "date_include_time" => nil,
+            "date_show_tzinfo" => nil,
+            "date_time_format" => nil,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nOVERDUE / Due Soon / OK",
+            "duration_format" => nil,
+            "error" => nil,
+            "field_constraints" => [],
+            "formula" => "if(field('Days_Until_Review') < 0, 'OVERDUE', if(field('Days_Until_Review') < 30, 'Due Soon', 'OK'))",
+            "formula_type" => "text",
+            "id" => 9564839,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "name" => "Review_Status",
+            "nullable" => false,
+            "number_decimal_places" => nil,
+            "number_negative" => true,
+            "number_prefix" => "",
+            "number_separator" => "",
+            "number_suffix" => "",
+            "order" => 19,
+            "primary" => false,
+            "read_only" => true,
+            "select_options" => [],
+            "table_id" => 1079908,
+            "type" => "formula",
+            "workspace_id" => 128789
+          },
+          "original_type" => "formula",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Review_Status",
+          "type" => "string"
+        },
+        "field_9565244" => %{
+          "default" => nil,
+          "filterable" => true,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "value" => %{
+                "properties" => %{
+                  "color" => %{"title" => "color", "type" => "string"},
+                  "id" => %{"title" => "id", "type" => "number"},
+                  "value" => %{"title" => "value", "type" => "string"}
+                },
+                "title" => "value",
+                "type" => "object"
+              }
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "db_index" => false,
+            "duration_format" => nil,
+            "date_force_timezone" => nil,
+            "nullable" => true,
+            "array_formula_type" => "single_select",
+            "type" => "lookup",
+            "table_id" => 1079908,
+            "date_time_format" => nil,
+            "number_separator" => "",
+            "immutable_type" => false,
+            "date_include_time" => nil,
+            "available_collaborators" => [
+              %{"id" => 118716, "name" => "Jason Michael Woodruff"}
+            ],
+            "number_prefix" => "",
+            "primary" => false,
+            "target_field_id" => 9565191,
+            "number_negative" => true,
+            "date_show_tzinfo" => nil,
+            "select_options" => [
+              %{
+                "color" => "light-gray",
+                "id" => 6831136,
+                "value" => "💙 FIRE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831137,
+                "value" => "💙 FIRE: Dangerous and Explosive Substances"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831138,
+                "value" => "💙 FOOD"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831139,
+                "value" => "💙 HEALTH: Coronavirus"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831140,
+                "value" => "💙 HEALTH: Drug & Medicine Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831141,
+                "value" => "💙 HEALTH: Patient Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831142,
+                "value" => "💙 HEALTH: Public"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831143,
+                "value" => "💙 OH&S: Gas & Electrical Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831144,
+                "value" => "💙 OH&S: Mines & Quarries"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831145,
+                "value" => "💙 OH&S: Occupational / Personal Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831146,
+                "value" => "💙 OH&S: Offshore Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831147,
+                "value" => "💙 PUBLIC"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831148,
+                "value" => "💙 PUBLIC: Building Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831149,
+                "value" => "💙 PUBLIC: Consumer / Product Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831150,
+                "value" => "💙 PUBLIC: Data"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831151,
+                "value" => "💙 TRANSPORT: Air Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831152,
+                "value" => "💙 TRANSPORT: Maritime Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831153,
+                "value" => "💙 TRANSPORT: Rail Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831154,
+                "value" => "💙 TRANSPORT: Road Safety"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831155,
+                "value" => "💚 AGRICULTURE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831156,
+                "value" => "💚 AGRICULTURE: Pesticides"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831157,
+                "value" => "💚 AIR QUALITY"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831158,
+                "value" => "💚 ANIMALS & ANIMAL HEALTH"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831159,
+                "value" => "💚 ANTARCTICA"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831160,
+                "value" => "💚 BUILDINGS"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831161,
+                "value" => "💚 CLIMATE CHANGE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831162,
+                "value" => "💚 ENERGY"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831163,
+                "value" => "💚 ENVIRONMENTAL PROTECTION"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831164,
+                "value" => "💚 FISHERIES & FISHING"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831165,
+                "value" => "💚 GMOs"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831166,
+                "value" => "💚 HISTORIC ENVIRONMENT"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831167,
+                "value" => "💚 MARINE & RIVERINE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831168,
+                "value" => "💚 NOISE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831169,
+                "value" => "💚 NUCLEAR & RADIOLOGICAL"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831170,
+                "value" => "💚 OIL & GAS - OFFSHORE - PETROLEUM"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831171,
+                "value" => "💚 PLANNING & INFRASTRUCTURE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831172,
+                "value" => "💚 PLANT HEALTH"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831173,
+                "value" => "💚 POLLUTION"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831174,
+                "value" => "💚 TOWN & COUNTRY PLANNING"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831175,
+                "value" => "💚 TRANSPORT"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831176,
+                "value" => "💚 TRANSPORT: Aviation"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831177,
+                "value" => "💚 TRANSPORT: Harbours & Shipping"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831178,
+                "value" => "💚 TRANSPORT: Railways & Rail Transport"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831179,
+                "value" => "💚 TRANSPORT: Roads & Vehicles"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831180,
+                "value" => "💚 TREES: Forestry & Timber"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831181,
+                "value" => "💚 WASTE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831182,
+                "value" => "💚 WATER & WASTEWATER"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831183,
+                "value" => "💚 WILDLIFE & COUNTRYSIDE"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831184,
+                "value" => "💜 HR: Employment"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831185,
+                "value" => "💜 HR: Insurance / Compensation / Wages / Benefits"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831186,
+                "value" => "💜 HR: Working Time"
+              }
+            ],
+            "description" => "🚫 Managed by SertantAI — do not rename or delete",
+            "name" => "Family",
+            "id" => 9565244,
+            "database_id" => 494412,
+            "error" => nil,
+            "field_constraints" => [],
+            "number_decimal_places" => nil,
+            "workspace_id" => 128789,
+            "order" => 21,
+            "target_field_name" => "Family",
+            "read_only" => true,
+            "number_suffix" => "",
+            "formula_type" => "array",
+            "immutable_properties" => false,
+            "date_format" => nil,
+            "through_field_id" => 9564708,
+            "through_field_name" => "Legal_Register"
+          },
+          "original_type" => "lookup",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Family",
+          "type" => "array"
+        },
+        "field_9565250" => %{
+          "default" => nil,
+          "filterable" => true,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "value" => %{
+                "properties" => %{
+                  "color" => %{"title" => "color", "type" => "string"},
+                  "id" => %{"title" => "id", "type" => "number"},
+                  "value" => %{"title" => "value", "type" => "string"}
+                },
+                "title" => "value",
+                "type" => "object"
+              }
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "db_index" => false,
+            "duration_format" => nil,
+            "date_force_timezone" => nil,
+            "nullable" => true,
+            "array_formula_type" => "single_select",
+            "type" => "lookup",
+            "table_id" => 1079908,
+            "date_time_format" => nil,
+            "number_separator" => "",
+            "immutable_type" => false,
+            "date_include_time" => nil,
+            "available_collaborators" => [
+              %{"id" => 118716, "name" => "Jason Michael Woodruff"}
+            ],
+            "number_prefix" => "",
+            "primary" => false,
+            "target_field_id" => 9565195,
+            "number_negative" => true,
+            "date_show_tzinfo" => nil,
+            "select_options" => [
+              %{
+                "color" => "light-gray",
+                "id" => 6831187,
+                "value" => "✔ In force"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831188,
+                "value" => "⭕ Part Revocation / Repeal"
+              },
+              %{
+                "color" => "light-gray",
+                "id" => 6831189,
+                "value" => "❌ Revoked / Repealed / Abolished"
+              }
+            ],
+            "description" => "🚫 Managed by SertantAI — do not rename or delete",
+            "name" => "Law_Status",
+            "id" => 9565250,
+            "database_id" => 494412,
+            "error" => nil,
+            "field_constraints" => [],
+            "number_decimal_places" => nil,
+            "workspace_id" => 128789,
+            "order" => 22,
+            "target_field_name" => "Status",
+            "read_only" => true,
+            "number_suffix" => "",
+            "formula_type" => "array",
+            "immutable_properties" => false,
+            "date_format" => nil,
+            "through_field_id" => 9564708,
+            "through_field_name" => "Legal_Register"
+          },
+          "original_type" => "lookup",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Law_Status",
+          "type" => "array"
+        },
+        "field_9617387" => %{
+          "default" => nil,
+          "filterable" => false,
+          "items" => %{
+            "properties" => %{
+              "id" => %{"title" => "id", "type" => "number"},
+              "order" => %{"title" => "order", "type" => "string"},
+              "value" => %{"title" => "value", "type" => "string"}
+            },
+            "type" => "object"
+          },
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => nil,
+            "field_constraints" => [],
+            "id" => 9617387,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "link_row_limit_selection_view_id" => nil,
+            "link_row_multiple_relationships" => true,
+            "link_row_related_field" => 9617386,
+            "link_row_related_field_id" => 9617386,
+            "link_row_table" => 1085143,
+            "link_row_table_id" => 1085143,
+            "link_row_table_primary_field" => %{
+              "database_id" => 494412,
+              "db_index" => false,
+              "description" => nil,
+              "field_constraints" => [],
+              "id" => 9617376,
+              "immutable_properties" => false,
+              "immutable_type" => false,
+              "name" => "Name",
+              "order" => 0,
+              "primary" => true,
+              "read_only" => false,
+              "table_id" => 1085143,
+              "text_default" => "",
+              "type" => "text",
+              "workspace_id" => 128789
+            },
+            "name" => "Evidence",
+            "order" => 24,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "link_row",
+            "workspace_id" => 128789
+          },
+          "original_type" => "link_row",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Evidence",
+          "type" => "array"
+        },
+        "field_9617776" => %{
+          "default" => nil,
+          "filterable" => true,
+          "metadata" => %{
+            "database_id" => 494412,
+            "db_index" => false,
+            "description" => "🚫 Managed by SertantAI — do not rename or delete\nGeneral notes",
+            "field_constraints" => [],
+            "id" => 9617776,
+            "immutable_properties" => false,
+            "immutable_type" => false,
+            "long_text_enable_rich_text" => nil,
+            "name" => "Notes",
+            "order" => 25,
+            "primary" => false,
+            "read_only" => false,
+            "table_id" => 1079908,
+            "type" => "long_text",
+            "workspace_id" => 128789
+          },
+          "original_type" => "long_text",
+          "searchable" => true,
+          "sortable" => true,
+          "title" => "Notes",
+          "type" => "string"
+        },
+        "id" => %{
+          "filterable" => false,
+          "searchable" => false,
+          "sortable" => false,
+          "title" => "Id",
+          "type" => "number"
+        }
+      },
+      "title" => "Table1079908Schema",
+      "type" => "object"
+    },
+    "table_id" => 1079908,
+    "type" => "local_baserow_upsert_row"
+  },
+  "type" => "update_row"
+}
+%{
+  "description" => %{
+    "formula" => "\"Your assessment has been saved.\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "element_id" => 14047015,
+  "event" => "submit",
+  "id" => 2550153,
+  "order" => 2,
+  "title" => %{
+    "formula" => "\"Assessment Saved\"",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "type" => "notification"
+}
+%{
+  "element_id" => 14047015,
+  "event" => "submit",
+  "id" => 2550151,
+  "navigate_to_page_id" => 1069371,
+  "navigate_to_url" => %{
+    "formula" => "",
+    "mode" => "simple",
+    "version" => "0.1"
+  },
+  "navigation_type" => "page",
+  "order" => 3,
+  "page_parameters" => [],
+  "query_parameters" => [],
+  "target" => "self",
+  "type" => "open_page"
+}
