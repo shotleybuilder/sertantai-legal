@@ -6,13 +6,16 @@
 ## Todo
 - [x] Reverted Assessment Queue page to original (was wrongly repurposed)
 - [x] Create Legal Register page from LRT table (page 1071076, DS 1955715)
-- [x] Table columns: Title, Year, Family, Status, Significance + Assessment/Actions links
+- [x] Table columns: Title, Year, Family, Status, Significance, Assessment Status
 - [x] Legal Register set as home page (`/`), Assessment Queue moved to `/assess-queue`
+- [x] Assessment_Status lookup field created on LRT table (9627086)
+- [x] Emoji compliance statuses on Assessments table (✅⚠️❌⬜➖)
+- [x] Assessment Status column working with single-quote formula
+- [x] Assess link → Assessment Form (/assess/:id) with correct row ID via reverse link
+- [x] Actions link removed (two-hop — deferred to Phase 5)
+- [x] Assess link text set in UI
 - [x] Published
-- [ ] Set link text: "Assess →" and "Actions →" in UI
-- [ ] Assessment link param — needs to resolve LRT→Assessment row ID via reverse link
-- [ ] CSS styling
-- [ ] Final re-publish
+- [ ] CSS styling — deferred, needs QQ branding guidelines (deferred)
 
 ## Design Change
 Original plan was to repurpose the Assessment Queue. Wrong approach — the Legal Register
@@ -20,6 +23,8 @@ is a different data source (LRT table, not Assessments table). The Assessment an
 pages remain as-is, linked FROM the Legal Register hub.
 
 ## Notes
-- LRT table: 1079905 — has Title (9565190), Year (9565192), Family (9565191), Status (9565195)
-- Need to link LRT rows to their Assessment rows and Action rows
-- Created Law_Title (9627030) and Law_Year (9627031) lookup fields on Assessments table — may still be useful
+- LRT table: 1079905
+- Assessment_Status lookup: field 9627086 (through Assessments reverse link 9564709, target Compliance_Status 9564710)
+- Assess link uses: `get('current_record.field_9564709.0.id')` — first Assessment row ID
+- Single quotes required in App Builder formulas for complex paths like `.*.value.value`
+- Created Law_Title (9627030) and Law_Year (9627031) lookup fields on Assessments table
