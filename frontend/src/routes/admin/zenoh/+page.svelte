@@ -2,7 +2,14 @@
 	import { format } from 'date-fns';
 	import { useSubscriptionsQuery, useQueryablesQuery } from '$lib/query/zenoh';
 
-	let activeTab: 'taxa' | 'provisions' | 'controls' | 'evidence' | 'triage' | 'queryables' = 'taxa';
+	let activeTab:
+		| 'taxa'
+		| 'provisions'
+		| 'controls'
+		| 'evidence'
+		| 'triage'
+		| 'secondary_sources'
+		| 'queryables' = 'triage';
 
 	const subsQuery = useSubscriptionsQuery();
 	const queryablesQuery = useQueryablesQuery();
@@ -56,11 +63,12 @@
 	}
 
 	const tabs = [
+		{ id: 'triage' as const, label: 'Triage' },
 		{ id: 'taxa' as const, label: 'Taxa' },
 		{ id: 'provisions' as const, label: 'Provisions' },
 		{ id: 'controls' as const, label: 'Controls' },
 		{ id: 'evidence' as const, label: 'Evidence' },
-		{ id: 'triage' as const, label: 'Triage' },
+		{ id: 'secondary_sources' as const, label: 'Secondary Sources' },
 		{ id: 'queryables' as const, label: 'Queryables & Publishers' }
 	];
 
@@ -75,6 +83,11 @@
 					label: 'TaxaSubscriber',
 					sublabel: 'Law-level enrichment',
 					data: $subsQuery.data.taxa_subscriber
+				},
+				triage: {
+					label: 'TriageSubscriber',
+					sublabel: 'Making/not-making classification',
+					data: $subsQuery.data.triage_subscriber
 				},
 				provisions: {
 					label: 'ProvisionSubscriber',
@@ -91,10 +104,10 @@
 					sublabel: 'Evidence patterns & artefact templates',
 					data: $subsQuery.data.evidence_subscriber
 				},
-				triage: {
-					label: 'TriageSubscriber',
-					sublabel: 'Making/not-making classification',
-					data: $subsQuery.data.triage_subscriber
+				secondary_sources: {
+					label: 'SecondaryTaxaSubscriber',
+					sublabel: 'ACoP / JSP / HSG provision enrichment',
+					data: $subsQuery.data.secondary_taxa_subscriber
 				}
 			}
 		: null;
@@ -122,17 +135,8 @@
 					: 'border-transparent text-gray-500 hover:text-gray-700'}"
 			>
 				{tab.label}
-				{#if tab.id !== 'queryables' && $subsQuery.data}
-					{@const subData =
-						tab.id === 'taxa'
-							? $subsQuery.data.taxa_subscriber
-							: tab.id === 'provisions'
-								? $subsQuery.data.provision_subscriber
-								: tab.id === 'controls'
-									? $subsQuery.data.controls_subscriber
-									: tab.id === 'evidence'
-										? $subsQuery.data.evidence_subscriber
-										: $subsQuery.data.triage_subscriber}
+				{#if tab.id !== 'queryables' && subscriberMap}
+					{@const subData = subscriberMap[tab.id].data}
 					<span
 						class="ml-1.5 inline-flex items-center w-2 h-2 rounded-full {subData.status.state ===
 						'ready'
@@ -147,7 +151,7 @@
 	</div>
 
 	<!-- Subscriber Tabs (Taxa, Provisions, Controls) -->
-	{#if activeTab === 'taxa' || activeTab === 'provisions' || activeTab === 'controls' || activeTab === 'evidence' || activeTab === 'triage'}
+	{#if activeTab === 'taxa' || activeTab === 'provisions' || activeTab === 'controls' || activeTab === 'evidence' || activeTab === 'triage' || activeTab === 'secondary_sources'}
 		{#if $subsQuery.isLoading}
 			<div class="flex justify-center py-12">
 				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -240,6 +244,9 @@
 									<td class="px-6 py-3 text-sm text-gray-500">
 										{#if entry.metadata.law_name}
 											{entry.metadata.law_name}
+										{/if}
+										{#if entry.metadata.source_id}
+											{entry.metadata.source_id}
 										{/if}
 										{#if entry.metadata.provisions}
 											<span class="text-gray-400 ml-1"

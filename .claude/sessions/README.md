@@ -74,6 +74,12 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-18 | [phase-1-continuation](baserow-app/2026-07-18-phase-1-continuation.md) | — | Assessment App complete: form page, Update Row, published to sertantai-compliance.baserow.site. Full API patterns documented |
+| 2026-07-18 | [phase-1-assessment-app](baserow-app/2026-07-18-phase-1-assessment-app.md) | — | Assessment App: 428 rows seeded, Compliance Workbench app created via API, queue page with 6 columns + link. Form page deferred |
+| 2026-07-18 | [baserow-app-dashboards](baserow-app/2026-07-18-baserow-app-dashboards.md) | — | Scoped BR App Builder + Dashboards. Assessment App designed. Views fixed. Meta session created |
+| 2026-07-18 | [sync-snagging-list](baserow/2026-07-18-sync-snagging-list.md) | — | Dedup fix (Name→[row_ids]), actor tuple scoping (499→151), CM formula (join/lookup), view dedup+filters/sorts/groups. 2 items deferred |
+| 2026-07-18 | [issue-124](baserow/2026-07-18-issue-124.md) | [#124](https://github.com/shotleybuilder/sertantai-legal/issues/124) | Suppress Zenoh in mix tasks via server_mode?() — 5-line fix. Evaluated 4 proposals (HTTP/Node.connect/Oban/DynamicSupervisor) via Gemini+ChatGPT+agent |
+| 2026-07-16 | [evidence-layer](2026-07-16-evidence-layer.md) | — | Evidence layer: EvidencePattern + ArtefactTemplate resources, Zenoh subscriber, Baserow sync. 1,333 patterns, 4,532 artefacts. #124 raised |
 | 2026-07-16 | [sync-engine-redesign](baserow/2026-07-14-sync-engine-redesign.md) | [#121](https://github.com/shotleybuilder/sertantai-legal/issues/121) [#122](https://github.com/shotleybuilder/sertantai-legal/issues/122) | Map-based CUD, eliminate DeltaDetector+sync_row_mappings. All 6 tables synced. Controls scoped to customer Duties. --tables flag |
 | 2026-07-16 | [issue-122](baserow/2026-07-16-issue-122.md) | [#122](https://github.com/shotleybuilder/sertantai-legal/issues/122) | CM section_id aggregation: candidate_duties from Postgres, Controls+CMs scoped to customer Duties |
 | 2026-07-16 | [issue-121](baserow/2026-07-14-issue-121.md) | [#121](https://github.com/shotleybuilder/sertantai-legal/issues/121) | Controls Name: fractalaw UUID → Postgres PK. 1,754 rows rebuilt. CM blocked by #122 (Duties link) |
@@ -197,6 +203,7 @@ Deployment, Zenoh P2P, production, change notifications.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-19 | [zenoh-admin-tab](second-tier-duties/2026-07-19-zenoh-admin-tab.md) | — | Secondary Sources tab in Zenoh admin, tab reorder (Triage first), session naming fix |
 | 2026-06-25 | [issue-111-provision-subscriber-ui](2026-06-25-issue-111-provision-subscriber-ui.md) | [#111](https://github.com/shotleybuilder/sertantai-legal/issues/111) | ProvisionSubscriber added to Zenoh admin dashboard |
 | 2026-06-25 | [fractalaw-customer-laws-queryable](2026-06-25-fractalaw-customer-laws-queryable.md) | [#110](https://github.com/shotleybuilder/sertantai-legal/issues/110), [#111](https://github.com/shotleybuilder/sertantai-legal/issues/111) | Customer laws queryable, disable LAT pruner, HSWA end-to-end proven |
 | 2026-04-23 | [issue-72](2026-04-23-issue-72.md) | [#72](https://github.com/shotleybuilder/sertantai-legal/issues/72) | Fix pre-push: Node 25 localStorage, sobelow to_atom, dialyxir OTP 28 crash |
@@ -217,13 +224,13 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
-| 2026-07-16 | [second-tier-duties/phase-3](second-tier-duties/phase-3-zenoh-queryables.md) | — | Phase 3: Zenoh queryables for secondary sources/provisions, spec published |
-| 2026-07-16 | [second-tier-duties/parse-hsgs](second-tier-duties/parse-hsgs.md) | — | Parse 29 HSGs: 19,454 provisions, OGL confirmed, corpus total 45,049 |
-| 2026-07-16 | [second-tier-duties/parse-acops](second-tier-duties/parse-acops.md) | — | Parse 21 HSE ACoPs: 12,321 provisions, 100% current coverage, 0 errors |
-| 2026-07-16 | [second-tier-duties/issue-123](second-tier-duties/issue-123-section-id-collision.md) | [#123](https://github.com/shotleybuilder/sertantai-legal/issues/123) | Fix section_id collision: per-chapter source registration, 13,854 provisions restored |
-| 2026-07-16 | [second-tier-duties/phase-2b](second-tier-duties/phase-2b-hsg-and-jsp-corpus.md) | — | Second-tier Phase 2b: full JSP corpus (167 PDFs, 13,143 provisions), HSG profile, actor model analysis |
-| 2026-07-15 | [second-tier-duties/phase-2](second-tier-duties/phase-2-provision-parsing.md) | — | Second-tier Phase 2: profile-based PDF parser, 5 documents (3 JSP, 1 ACoP, 1 HSG), 887 provisions |
-| 2026-07-15 | [second-tier-duties/phase-1](second-tier-duties/phase-1-data-model.md) | — | Second-tier Phase 1: SecondarySource, SourceLink, OrgSecondaryApplicability + 29 ACoPs seeded |
+| 2026-07-16 | [second-tier-duties/phase-3](second-tier-duties/2026-07-16-phase-3-zenoh-queryables.md) | — | Phase 3: Zenoh queryables for secondary sources/provisions, spec published |
+| 2026-07-16 | [second-tier-duties/parse-hsgs](second-tier-duties/2026-07-16-parse-hsgs.md) | — | Parse 29 HSGs: 19,454 provisions, OGL confirmed, corpus total 45,049 |
+| 2026-07-16 | [second-tier-duties/parse-acops](second-tier-duties/2026-07-16-parse-acops.md) | — | Parse 21 HSE ACoPs: 12,321 provisions, 100% current coverage, 0 errors |
+| 2026-07-16 | [second-tier-duties/issue-123](second-tier-duties/2026-07-16-issue-123-section-id-collision.md) | [#123](https://github.com/shotleybuilder/sertantai-legal/issues/123) | Fix section_id collision: per-chapter source registration, 13,854 provisions restored |
+| 2026-07-16 | [second-tier-duties/phase-2b](second-tier-duties/2026-07-16-phase-2b-hsg-and-jsp-corpus.md) | — | Second-tier Phase 2b: full JSP corpus (167 PDFs, 13,143 provisions), HSG profile, actor model analysis |
+| 2026-07-15 | [second-tier-duties/phase-2](second-tier-duties/2026-07-15-phase-2-provision-parsing.md) | — | Second-tier Phase 2: profile-based PDF parser, 5 documents (3 JSP, 1 ACoP, 1 HSG), 887 provisions |
+| 2026-07-15 | [second-tier-duties/phase-1](second-tier-duties/2026-07-15-phase-1-data-model.md) | — | Second-tier Phase 1: SecondarySource, SourceLink, OrgSecondaryApplicability + 29 ACoPs seeded |
 | 2026-07-13 | [issue-120](2026-07-13-issue-120.md) | [#120](https://github.com/shotleybuilder/sertantai-legal/issues/120) | LAT parser P2 wrapper fix, 172 laws re-parsed, art.→reg. prefix fix, TriageSubscriber, LAT QA tooling, 100% control_mapping resolution, Baserow primary field pattern |
 | 2026-07-13 | [fitness-schema-migration](2026-07-13-fitness-schema-migration.md) | — | Fitness v0.3: 5 new columns (entities, scope, counts), view+trigger rebuild, TaxaSubscriber wired |
 | 2026-07-08 | [reconcile-qq-legal-register](2026-07-08-reconcile-qq-legal-register.md) | [#114](https://github.com/shotleybuilder/sertantai-legal/issues/114) [#115](https://github.com/shotleybuilder/sertantai-legal/issues/115) [#116](https://github.com/shotleybuilder/sertantai-legal/issues/116) | QQ register 334→488 laws, DRRP vocab fix, live status fix, orgs table, Zenoh customer discovery, Baserow sync 2564 duties |
@@ -277,6 +284,7 @@ AI integration, responsibility parsing, DRRP, taxa enrichment.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-16 | [ai-instruction-generation](2026-07-16-ai-instruction-generation.md) | — | Programmatic BMS Instruction generation via Gemini: Controls + Evidence + secondary sources → populated template (EWR 1989 test case, 249 lines) |
 | 2026-06-22 | [fractalaw-arrow-schema-adaptation](2026-06-22-fractalaw-arrow-schema-adaptation.md) | — | Adapt to fractalaw Arrow breaking change: holder_inferred_from, ancestor_distance, description fixes |
 | 2026-06-07 | [actors-consumer-migration](2026-06-07-actors-consumer-migration.md) | [#107](https://github.com/shotleybuilder/sertantai-legal/issues/107) | Migrate consumers to Hohfeldian actors struct (position=active), usage map, log cleanup |
 | 2026-06-07 | [fractalaw-actors-migration](2026-06-06-fractalaw-actors-migration.md) | [#107](https://github.com/shotleybuilder/sertantai-legal/issues/107) | Actors struct + extraction_method on LegalArticle, (inferred) cleanup, 4800 provisions populated |

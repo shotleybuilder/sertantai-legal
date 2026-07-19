@@ -49,6 +49,7 @@ export interface SubscriptionsResponse {
 	controls_subscriber: ServiceData<SubscriberStatus>;
 	evidence_subscriber: ServiceData<SubscriberStatus>;
 	triage_subscriber: ServiceData<SubscriberStatus>;
+	secondary_taxa_subscriber: ServiceData<SubscriberStatus>;
 }
 
 export interface ServiceData<S = ServiceStatus> {
