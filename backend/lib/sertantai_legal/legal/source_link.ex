@@ -78,7 +78,7 @@ defmodule SertantaiLegal.Legal.SourceLink do
   end
 
   actions do
-    defaults([:read, :destroy])
+    defaults([:read, :destroy, update: [:notes]])
 
     create :create do
       accept([
@@ -89,6 +89,23 @@ defmodule SertantaiLegal.Legal.SourceLink do
         :link_type,
         :notes
       ])
+    end
+
+    create :upsert do
+      description("Create or update a source link (used by SecondaryTaxaSubscriber)")
+
+      accept([
+        :secondary_source_id,
+        :secondary_section_id,
+        :law_name,
+        :section_id,
+        :link_type,
+        :notes
+      ])
+
+      upsert?(true)
+      upsert_identity(:unique_link)
+      upsert_fields([:notes])
     end
 
     read :by_secondary_source do

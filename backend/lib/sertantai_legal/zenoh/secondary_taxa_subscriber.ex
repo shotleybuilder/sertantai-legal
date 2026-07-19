@@ -20,7 +20,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   require Logger
   require Ash.Query
 
-  alias SertantaiLegal.Legal.SecondarySourceProvision
+  alias SertantaiLegal.Legal.{SecondarySource, SecondarySourceProvision, SourceLink}
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Arrow column name → Ash attribute atom.
@@ -145,15 +145,24 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             _ -> false
           end)
 
+        # Count legislation refs created and JSP cross-refs skipped
+        ref_counts = count_references(rows)
+
         skipped = if not_found > 0, do: " (#{not_found} skipped — not in provisions)", else: ""
+
+        refs_info =
+          if ref_counts.legislation > 0, do: ", #{ref_counts.legislation} law refs", else: ""
+
+        jsp_info =
+          if ref_counts.jsp > 0, do: ", #{ref_counts.jsp} JSP cross-refs parked", else: ""
 
         if real_errors > 0 do
           Logger.warning(
-            "[Zenoh.SecondaryTaxaSubscriber] #{source_id}: #{ok_count} ok, #{real_errors} failed#{skipped}"
+            "[Zenoh.SecondaryTaxaSubscriber] #{source_id}: #{ok_count} ok, #{real_errors} failed#{skipped}#{refs_info}#{jsp_info}"
           )
         else
           Logger.info(
-            "[Zenoh.SecondaryTaxaSubscriber] Updated #{ok_count} provisions for #{source_id}#{skipped}"
+            "[Zenoh.SecondaryTaxaSubscriber] Updated #{ok_count} provisions for #{source_id}#{skipped}#{refs_info}#{jsp_info}"
           )
         end
 
@@ -190,10 +199,14 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
 
       case find_provision(section_id) do
         {:ok, provision} ->
-          case provision
-               |> Ash.Changeset.for_update(:update_taxa, taxa)
-               |> Ash.update() do
-            {:ok, _} -> :ok
+          with {:ok, _} <-
+                 provision
+                 |> Ash.Changeset.for_update(:update_taxa, taxa)
+                 |> Ash.update() do
+            # Process references if present (fire-and-forget — don't fail the taxa update)
+            process_references(row, provision)
+            :ok
+          else
             {:error, reason} -> {:error, {:update_failed, section_id, reason}}
           end
 
@@ -270,5 +283,190 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
         merged = Enum.uniq(existing ++ gov_actors)
         Map.put(acc, :governed_actors, merged)
     end
+  end
+
+  # Count references by type across all rows in the batch (for summary logging).
+  defp count_references(rows) do
+    Enum.reduce(rows, %{legislation: 0, jsp: 0}, fn row, acc ->
+      refs = parse_references(Map.get(row, "references_json"))
+
+      %{
+        legislation: acc.legislation + Enum.count(refs, &(&1["target_type"] == "legislation")),
+        jsp: acc.jsp + Enum.count(refs, &(&1["target_type"] == "jsp"))
+      }
+    end)
+  end
+
+  # --- References processing ---
+
+  defp process_references(row, provision) do
+    case parse_references(Map.get(row, "references_json")) do
+      [] ->
+        :ok
+
+      refs ->
+        case resolve_secondary_source_id(provision.source_id) do
+          {:ok, secondary_source_id} ->
+            legislation_refs = Enum.filter(refs, &(&1["target_type"] == "legislation"))
+
+            Enum.each(legislation_refs, fn ref ->
+              upsert_source_link(secondary_source_id, provision.section_id, ref)
+            end)
+
+          {:error, reason} ->
+            Logger.warning(
+              "[Zenoh.SecondaryTaxaSubscriber] Cannot process references for #{provision.source_id}: #{inspect(reason)}"
+            )
+        end
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] References processing failed for #{provision.section_id}: #{Exception.message(e)}"
+      )
+  end
+
+  defp upsert_source_link(secondary_source_id, secondary_section_id, ref) do
+    target_id = ref["target_id"]
+
+    if is_nil(target_id) or target_id == "" do
+      :ok
+    else
+      # Check if link already exists (can't rely on upsert identity — NULL columns
+      # break PostgreSQL unique index semantics: NULL != NULL)
+      existing =
+        SourceLink
+        |> Ash.Query.filter(
+          secondary_source_id == ^secondary_source_id and
+            secondary_section_id == ^secondary_section_id and
+            law_name == ^target_id and
+            is_nil(section_id) and
+            link_type == :references
+        )
+        |> Ash.read_one()
+
+      case existing do
+        {:ok, %SourceLink{} = link} ->
+          # Update notes if citation changed
+          citation = ref["citation"]
+
+          if link.notes != citation do
+            link
+            |> Ash.Changeset.for_update(:update, %{notes: citation})
+            |> Ash.update()
+          end
+
+          :ok
+
+        {:ok, nil} ->
+          params = %{
+            secondary_source_id: secondary_source_id,
+            secondary_section_id: secondary_section_id,
+            law_name: target_id,
+            section_id: nil,
+            link_type: :references,
+            notes: ref["citation"]
+          }
+
+          case SourceLink
+               |> Ash.Changeset.for_create(:create, params)
+               |> Ash.create() do
+            {:ok, _} ->
+              :ok
+
+            {:error, reason} ->
+              Logger.debug(
+                "[Zenoh.SecondaryTaxaSubscriber] source_link create failed: #{inspect(reason)}"
+              )
+          end
+
+        {:error, reason} ->
+          Logger.debug(
+            "[Zenoh.SecondaryTaxaSubscriber] source_link lookup failed: #{inspect(reason)}"
+          )
+      end
+    end
+  end
+
+  # Resolve source_id (e.g. "JSP-375-CH23") → secondary_sources.id (UUID).
+  # Uses process dictionary as a simple per-batch cache.
+  defp resolve_secondary_source_id(source_id) do
+    cache_key = {:secondary_source_id_cache, source_id}
+
+    case Process.get(cache_key) do
+      nil ->
+        result =
+          SecondarySource
+          |> Ash.Query.filter(source_id == ^source_id)
+          |> Ash.read_one()
+          |> case do
+            {:ok, %{id: id}} -> {:ok, id}
+            {:ok, nil} -> {:error, {:not_found, source_id}}
+            {:error, reason} -> {:error, reason}
+          end
+
+        if match?({:ok, _}, result), do: Process.put(cache_key, result)
+        result
+
+      cached ->
+        cached
+    end
+  end
+
+  @doc """
+  Parse a DuckDB references_json string into a list of maps.
+
+  Handles both JSON format and DuckDB struct syntax:
+  - JSON: `[{"target_type": "legislation", ...}]`
+  - DuckDB: `[{'target_type': legislation, 'target_id': UK_uksi_1989_635, ...}]`
+
+  Public for testing.
+  """
+  @spec parse_references(term()) :: [map()]
+  def parse_references(nil), do: []
+  def parse_references(""), do: []
+
+  def parse_references(value) when is_binary(value) do
+    # Try JSON first (spec says JSON, but DuckDB may send struct syntax)
+    case Jason.decode(value) do
+      {:ok, refs} when is_list(refs) ->
+        refs
+
+      _ ->
+        # Normalise DuckDB struct syntax → JSON, then parse
+        case value |> normalise_duckdb_structs() |> Jason.decode() do
+          {:ok, refs} when is_list(refs) ->
+            refs
+
+          _ ->
+            Logger.warning(
+              "[Zenoh.SecondaryTaxaSubscriber] Could not parse references_json: #{String.slice(value, 0, 200)}"
+            )
+
+            []
+        end
+    end
+  end
+
+  def parse_references(value) when is_list(value), do: value
+  def parse_references(_), do: []
+
+  # Convert DuckDB list-of-structs syntax to JSON.
+  # DuckDB uses single-quoted keys, and values that are either unquoted or single-quoted
+  # (when they contain commas). Examples:
+  #   {'target_type': legislation, 'citation': the Electricity at Work Regulations 1989}
+  #   {'target_type': jsp, 'citation': 'JSP 375 Volume 3, Chapter 3'}
+  defp normalise_duckdb_structs(str) do
+    str
+    # Step 1: Convert single-quoted keys to double-quoted: 'key': → "key":
+    |> String.replace(~r/'([^']+)'\s*:/, "\"\\1\":")
+    # Step 2: Convert single-quoted values to double-quoted: : 'value' → : "value"
+    |> String.replace(~r/:\s*'([^']*)'/, ": \"\\1\"")
+    # Step 3: Convert remaining unquoted values to double-quoted
+    # Matches ": value" where value is not already quoted, runs until , or }
+    |> String.replace(~r/:\s+([^"\[\{,\}][^,\}]*?)(?=\s*[,\}])/, fn match ->
+      [_, value] = Regex.run(~r/:\s+(.+)/, match)
+      ": \"#{String.trim(value)}\""
+    end)
   end
 end

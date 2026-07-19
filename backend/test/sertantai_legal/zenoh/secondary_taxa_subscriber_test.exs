@@ -206,4 +206,94 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
       assert Enum.all?(Map.keys(result), &is_atom/1)
     end
   end
+
+  describe "parse_references/1" do
+    test "parses JSON array" do
+      json =
+        ~s([{"target_type": "legislation", "target_id": "UK_uksi_1989_635", "citation": "Electricity at Work Regulations 1989"}])
+
+      result = SecondaryTaxaSubscriber.parse_references(json)
+
+      assert length(result) == 1
+      assert hd(result)["target_type"] == "legislation"
+      assert hd(result)["target_id"] == "UK_uksi_1989_635"
+      assert hd(result)["citation"] == "Electricity at Work Regulations 1989"
+    end
+
+    test "parses DuckDB struct syntax" do
+      duckdb =
+        "[{'target_type': legislation, 'target_id': UK_uksi_1989_635, 'citation': Electricity at Work Regulations 1989}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 1
+      assert hd(result)["target_type"] == "legislation"
+      assert hd(result)["target_id"] == "UK_uksi_1989_635"
+      assert hd(result)["citation"] == "Electricity at Work Regulations 1989"
+    end
+
+    test "parses multiple references" do
+      json =
+        ~s([{"target_type": "legislation", "target_id": "UK_uksi_1989_635", "citation": "EWR 1989"}, {"target_type": "jsp", "target_id": "JSP-375-CH08", "citation": "JSP 375 Ch 8"}])
+
+      result = SecondaryTaxaSubscriber.parse_references(json)
+
+      assert length(result) == 2
+      assert Enum.at(result, 0)["target_type"] == "legislation"
+      assert Enum.at(result, 1)["target_type"] == "jsp"
+    end
+
+    test "returns empty list for nil" do
+      assert SecondaryTaxaSubscriber.parse_references(nil) == []
+    end
+
+    test "returns empty list for empty string" do
+      assert SecondaryTaxaSubscriber.parse_references("") == []
+    end
+
+    test "passes through list values" do
+      refs = [%{"target_type" => "legislation", "target_id" => "UK_uksi_1989_635"}]
+      assert SecondaryTaxaSubscriber.parse_references(refs) == refs
+    end
+
+    test "returns empty list for unparseable string" do
+      assert SecondaryTaxaSubscriber.parse_references("not valid at all") == []
+    end
+
+    test "DuckDB with unquoted citation" do
+      duckdb =
+        "[{'target_type': legislation, 'target_id': UK_ukpga_1974_37, 'citation': Health and Safety at Work etc. Act 1974}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 1
+      assert hd(result)["target_id"] == "UK_ukpga_1974_37"
+      assert hd(result)["citation"] == "Health and Safety at Work etc. Act 1974"
+    end
+
+    test "DuckDB with single-quoted value containing commas" do
+      duckdb =
+        "[{'target_type': jsp, 'target_id': JSP-375-CH03, 'citation': 'JSP 375 Volume 3, Chapter 3'}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 1
+      assert hd(result)["target_type"] == "jsp"
+      assert hd(result)["target_id"] == "JSP-375-CH03"
+      assert hd(result)["citation"] == "JSP 375 Volume 3, Chapter 3"
+    end
+
+    test "DuckDB multiple structs with mixed quoting" do
+      duckdb =
+        "[{'target_type': legislation, 'target_id': UK_uksi_1989_635, 'citation': the Electricity at Work Regulations 1989}, {'target_type': jsp, 'target_id': JSP-375-CH08, 'citation': 'JSP 375 Volume 1, Chapter 8'}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 2
+      assert Enum.at(result, 0)["target_type"] == "legislation"
+      assert Enum.at(result, 0)["target_id"] == "UK_uksi_1989_635"
+      assert Enum.at(result, 1)["target_type"] == "jsp"
+      assert Enum.at(result, 1)["citation"] == "JSP 375 Volume 1, Chapter 8"
+    end
+  end
 end
