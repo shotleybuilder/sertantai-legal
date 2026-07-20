@@ -1,0 +1,74 @@
+page:
+  name: Assessment Form
+  path: "/assess/:id"
+  path_params:
+    - name: id
+      type: numeric
+
+data_sources:
+  - name: Current Assessment
+    type: get_row
+    table: assessments
+    row_id: "get('page_parameter.id')"
+
+elements:
+  - type: link
+    value: "← Back to Queue"
+    navigate_to: assessment_queue
+
+  - type: heading
+    value: "get('data_source.{Current Assessment}.field_{Legal_Register}.*.value')"
+    level: 2
+
+  - type: form_container
+    submit_label: "Save Assessment"
+    children:
+      - type: choice
+        label: Compliance Status
+        options:
+          - "✅ Compliant"
+          - "⚠️ Partially Compliant"
+          - "❌ Non-Compliant"
+          - "⬜ Not Assessed"
+          - "➖ Not Applicable"
+        default_from: "{Current Assessment}.Compliance_Status.value"
+
+      - type: choice
+        label: Risk Level
+        options: [Critical, High, Medium, Low]
+        default_from: "{Current Assessment}.Risk_Level.value"
+
+      - type: input_text
+        label: Gap Description
+        placeholder: "What is missing or non-compliant?"
+        multiline: true
+        default_from: "{Current Assessment}.Gap_Description"
+
+      - type: input_text
+        label: Notes
+        placeholder: "General notes..."
+        multiline: true
+        default_from: "{Current Assessment}.Notes"
+
+    # Manual: drag children into form container in UI
+    manual_nesting: true
+
+workflow:
+  on_submit:
+    - type: update_row
+      table: assessments
+      row_id: "page_parameter.id"
+      # Manual: configure field mappings in UI
+      manual_config: true
+      fields:
+        Compliance_Status: "form.compliance_status"
+        Risk_Level: "form.risk_level"
+        Gap_Description: "form.gap_description"
+        Notes: "form.notes"
+
+    - type: notification
+      title: "Assessment Saved"
+      description: "Your assessment has been saved."
+
+    - type: open_page
+      target: assessment_queue

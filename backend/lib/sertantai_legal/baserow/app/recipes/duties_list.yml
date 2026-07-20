@@ -1,0 +1,57 @@
+page:
+  name: Legal Duties
+  path: /duties
+  query_params:
+    - name: law
+      type: text
+
+data_sources:
+  - name: Duties
+    type: list_rows
+    table: lat
+    # Manual: filter by Legal_Register contains query parameter "law"
+    manual_config: true
+
+elements:
+  - type: heading
+    value: "Legal Duties"
+    level: 1
+
+  - type: link
+    value: "← Legal Register"
+    navigate_to: legal_register
+
+  - type: table
+    data_source: Duties
+    items_per_page: 25
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Provision
+        type: text
+        field: Provision
+
+      - name: Duty Text
+        type: text
+        field: Provision_Text
+
+      - name: Type
+        type: tags
+        field: Type
+
+      - name: Actors
+        type: tags
+        field: Regulated_Actors
+
+      - name: Significance
+        type: text
+        field: Significance
+        accessor: .value
+
+      - name: Details
+        type: link
+        navigate_to: duty_detail
+        params:
+          id: "get('current_record.id')"
+        link_text: "Details"

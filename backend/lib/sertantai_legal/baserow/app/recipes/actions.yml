@@ -1,0 +1,141 @@
+page:
+  name: Actions
+  path: /actions
+  query_params:
+    - name: edit
+      type: numeric
+
+data_sources:
+  - name: All Actions
+    type: list_rows
+    table: actions
+
+  - name: Edit Action
+    type: get_row
+    table: actions
+    row_id: "get('query_parameter.edit')"
+    manual_config: true
+
+  - name: Personnel
+    type: list_rows
+    table: personnel
+
+  - name: Assessments
+    type: list_rows
+    table: assessments
+
+elements:
+  - type: heading
+    value: "Action Tracker"
+    level: 1
+
+  - type: button
+    value: "+ Add Action"
+    events:
+      on_click:
+        - type: create_row
+          table: actions
+        - type: open_page
+          target: _self
+          query:
+            edit: "Previous action > Create a row > Id"
+          manual_config: true
+
+  - type: table
+    data_source: All Actions
+    items_per_page: 25
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Action
+        type: text
+        formula: "concat(get('current_record.field_{Assessments}.*.value'), ' — ', get('current_record.field_{Title}'))"
+
+      - name: Status
+        type: text
+        field: Status
+        accessor: .value
+
+      - name: Priority
+        type: text
+        field: Priority
+        accessor: .value
+
+      - name: Assigned To
+        type: text
+        field: Assigned_To
+        accessor: ".*.value"
+
+      - name: Due Date
+        type: text
+        field: Due_Date
+
+      - name: Overdue
+        type: text
+        field: Overdue
+
+      - name: Edit
+        type: link
+        navigate_to: _self
+        query:
+          edit: "get('current_record.id')"
+        link_text: "Edit"
+
+  - type: form_container
+    submit_label: "Save Action"
+    manual_nesting: true
+    children:
+      - type: input_text
+        label: Title
+        placeholder: "Short action phrase (e.g. 'Develop lone working RA')"
+        default_from: "{Edit Action}.Title"
+
+      - type: choice
+        label: Status
+        options: ["Open", "In Progress", "Completed", "Cancelled"]
+        default_from: "{Edit Action}.Status.value"
+
+      - type: choice
+        label: Priority
+        options: [Critical, High, Medium, Low]
+        default_from: "{Edit Action}.Priority.value"
+
+      - type: choice
+        label: Action Type
+        options: [Corrective, Preventative, Improvement, Maintenance]
+        default_from: "{Edit Action}.Action_Type.value"
+
+      - type: record_selector
+        label: Assigned To
+        placeholder: "Select person..."
+        data_source: Personnel
+
+      - type: record_selector
+        label: Assessment
+        placeholder: "Link to assessment..."
+        data_source: Assessments
+
+      - type: datetime_picker
+        label: Due Date
+        default_from: "{Edit Action}.Due_Date"
+
+      - type: input_text
+        label: Notes
+        placeholder: "Progress notes..."
+        multiline: true
+        default_from: "{Edit Action}.Notes"
+
+workflow:
+  on_submit:
+    - type: update_row
+      table: actions
+      row_id: "query_parameter.edit"
+      manual_config: true
+
+    - type: notification
+      title: "Action Saved"
+      description: "The action has been updated."
+
+    - type: refresh_data_source
+      target: All Actions

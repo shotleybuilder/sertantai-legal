@@ -1,0 +1,51 @@
+page:
+  name: Assessment Queue
+  path: /assess-queue
+
+data_sources:
+  - name: All Assessments
+    type: list_rows
+    table: assessments
+
+elements:
+  - type: heading
+    value: "Compliance Assessment Review"
+    level: 1
+
+  - type: table
+    data_source: All Assessments
+    items_per_page: 25
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Law
+        type: text
+        field: Legal_Register
+        accessor: ".*.value"
+
+      - name: Status
+        type: text
+        field: Compliance_Status
+        accessor: .value
+
+      - name: Risk
+        type: text
+        field: Risk_Level
+        accessor: .value
+
+      - name: Owner
+        type: text
+        field: Assessment_Owner
+        accessor: ".*.value"
+
+      - name: Review Due
+        type: text
+        field: Next_Review_Date
+
+      - name: Review
+        type: link
+        navigate_to: assessment_form
+        params:
+          id: "get('current_record.id')"
+        link_text: "Review →"

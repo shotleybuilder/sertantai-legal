@@ -1,0 +1,65 @@
+page:
+  name: Legal Register
+  path: /
+  home: true
+
+data_sources:
+  - name: Legal Register
+    type: list_rows
+    table: lrt
+
+elements:
+  - type: heading
+    value: "Legal Register"
+    level: 1
+
+  - type: table
+    data_source: Legal Register
+    items_per_page: 25
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Title
+        type: text
+        field: Title
+
+      - name: Year
+        type: text
+        field: Year
+
+      - name: Family
+        type: text
+        field: Family
+        accessor: .value
+
+      - name: Status
+        type: text
+        field: Status
+        accessor: .value
+
+      - name: Significance
+        type: text
+        field: Significance
+        accessor: .value
+
+      - name: Assessment
+        type: text
+        field: Assessment_Status
+        accessor: ".*.value.value"
+
+      - name: Actions
+        type: text
+        formula: "concat('✅ ', get('current_record.field_{Actions_Done}.*.value'), ' | ⚠️ ', get('current_record.field_{Actions_Overdue}.*.value'), ' | 🔵 ', get('current_record.field_{Actions_Open}.*.value'))"
+
+      - name: Assess
+        type: link
+        navigate_to: assessment_form
+        params:
+          id: "get('current_record.field_{Assessments}.0.id')"
+
+      - name: Duties
+        type: link
+        navigate_to: duties_list
+        query:
+          law: "get('current_record.field_{Name}')"

@@ -1,0 +1,138 @@
+page:
+  name: Organisation
+  path: /org
+  query_params:
+    - name: edit
+      type: numeric
+
+data_sources:
+  - name: All Nodes
+    type: list_rows
+    table: hierarchy
+
+  - name: Edit Node
+    type: get_row
+    table: hierarchy
+    row_id: "get('query_parameter.edit')"
+    # Manual: set Row ID to Query parameter > edit
+    manual_config: true
+
+elements:
+  - type: heading
+    value: "Organisation Structure"
+    level: 1
+
+  - type: button
+    value: "+ Add Node"
+    events:
+      on_click:
+        - type: create_row
+          table: hierarchy
+        - type: open_page
+          target: _self
+          query:
+            edit: "Previous action > Create a row > Id"
+          # Manual: configure navigate query param
+          manual_config: true
+
+  - type: table
+    data_source: All Nodes
+    items_per_page: 50
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Node
+        type: text
+        field: Node
+
+      - name: Hierarchy
+        type: text
+        field: Hierarchy_Type
+        accessor: .value
+
+      - name: Type
+        type: text
+        field: Type
+        accessor: .value
+
+      - name: Parent
+        type: text
+        field: Parent
+        accessor: ".*.value"
+
+      - name: Description
+        type: text
+        field: Description
+
+      - name: Edit
+        type: link
+        navigate_to: _self
+        query:
+          edit: "get('current_record.id')"
+        link_text: "Edit"
+
+  - type: form_container
+    submit_label: "Update Node"
+    manual_nesting: true
+    children:
+      - type: input_text
+        label: Node Name
+        placeholder: "e.g. Manchester, EHS Department"
+        required: true
+        default_from: "{Edit Node}.Name"
+
+      - type: choice
+        label: Hierarchy
+        required: true
+        options:
+          - name: Organisation
+            value: org
+          - name: Geography
+            value: geo
+          - name: Finance
+            value: finance
+          - name: Reporting
+            value: reporting
+        default_from: "{Edit Node}.Hierarchy_Type.value"
+
+      - type: choice
+        label: Node Type
+        required: true
+        options:
+          - Organisation
+          - Division
+          - Department
+          - Function
+          - Site
+          - Building
+          - Floor
+          - Region
+          - Country
+          - Cost Centre
+        default_from: "{Edit Node}.Type.value"
+
+      - type: record_selector
+        label: Parent Node
+        placeholder: "Select parent (empty = root)"
+        data_source: All Nodes
+
+      - type: input_text
+        label: Description
+        placeholder: "Notes about this node"
+        multiline: true
+        default_from: "{Edit Node}.Description"
+
+workflow:
+  on_submit:
+    - type: update_row
+      table: hierarchy
+      row_id: "query_parameter.edit"
+      manual_config: true
+
+    - type: notification
+      title: "Node Saved"
+      description: "The hierarchy node has been updated."
+
+    - type: refresh_data_source
+      target: All Nodes

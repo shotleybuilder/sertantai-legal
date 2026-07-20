@@ -1,0 +1,47 @@
+page:
+  name: Duty Detail
+  path: "/duty/:id"
+  path_params:
+    - name: id
+      type: numeric
+
+data_sources:
+  - name: Current Duty
+    type: get_row
+    table: lat
+    row_id: "get('page_parameter.id')"
+    # Manual: set Row ID to Path parameter > id
+    manual_config: true
+
+elements:
+  - type: link
+    value: "← Back to Duties"
+    navigate_to: duties_list
+
+  - type: heading
+    value: "get('data_source.{Current Duty}.field_{Provision}')"
+    level: 2
+
+  - type: text
+    value: "concat('Type: ', get('data_source.{Current Duty}.field_{Type}.*.value'), ' | Significance: ', get('data_source.{Current Duty}.field_{Significance}.value'), ' | Gravity: ', get('data_source.{Current Duty}.field_{Gravity}.value'), ' | Strength: ', get('data_source.{Current Duty}.field_{Strength}.value'))"
+
+  - type: heading
+    value: "Regulated Actors"
+    level: 3
+
+  - type: text
+    value: "get('data_source.{Current Duty}.field_{Regulated_Actors}.*.value')"
+
+  - type: heading
+    value: "Provision Text"
+    level: 3
+
+  - type: text
+    value: "get('data_source.{Current Duty}.field_{Provision_Text}')"
+
+  - type: heading
+    value: "Mapped Controls"
+    level: 3
+
+  - type: text
+    value: "get('data_source.{Current Duty}.field_{Control Mappings}.*.value')"
