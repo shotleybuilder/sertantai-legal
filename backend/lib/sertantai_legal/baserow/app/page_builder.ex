@@ -50,12 +50,16 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               page_body
             end
 
-          {:ok, %{status: 200, body: p}} =
-            Req.post("#{base}/api/builder/#{builder_id}/pages/",
-              headers: headers, json: page_body, receive_timeout: 15_000)
+          case Req.post("#{base}/api/builder/#{builder_id}/pages/",
+                 headers: headers, json: page_body, receive_timeout: 15_000) do
+            {:ok, %{status: 200, body: p}} ->
+              Logger.info("[AppBuilder] Created page #{p["name"]} (#{p["id"]})")
+              p
 
-          Logger.info("[AppBuilder] Created page #{p["name"]} (#{p["id"]})")
-          p
+            {:ok, %{status: status, body: err}} ->
+              Logger.error("[AppBuilder] Failed to create page #{page_spec["name"]}: #{status} #{inspect(err, limit: 5)}")
+              raise "Page creation failed: #{status}"
+          end
 
         existing ->
           Logger.info("[AppBuilder] Found page #{existing["name"]} (#{existing["id"]})")
@@ -372,6 +376,13 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 end)
 
               Map.put(link, "query_parameters", query)
+            else
+              link
+            end
+
+          link =
+            if col["link_name"] do
+              Map.put(link, "link_name", formula.("\"#{col["link_name"]}\""))
             else
               link
             end

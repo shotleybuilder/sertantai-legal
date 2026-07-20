@@ -1,6 +1,6 @@
 page:
   name: Duty Detail
-  path: "/duty/:id"
+  path: "/legal-duty/:id"
   path_params:
     - name: id
       type: numeric

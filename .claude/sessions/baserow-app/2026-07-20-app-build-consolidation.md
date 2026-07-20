@@ -1,3 +1,78 @@
+---
+session: App Build Consolidation
+project: sertantai-legal
+status: closed
+opened: 2026-07-20
+closed: 2026-07-20
+outcome: success
+commits: [6a2911d]
+
+summary: >
+  Replaced 10 ad-hoc scripts (1,400+ lines) with a recipe-driven app builder.
+  7 YAML recipes define pages declaratively. Builder resolves field names → IDs
+  at build time. Namespaced under Baserow.App.* for future multi-platform support.
+
+decisions:
+  - what: YAML recipes per page, not one big script
+    why: User wanted change as easy as one config update. YAML is readable, diffable, and separates WHAT from HOW.
+    result: 7 recipes (50-140 lines each) replace 1,400+ lines of imperative scripts
+
+  - what: Namespace under baserow/app/ not app/
+    why: Recipes contain Baserow-specific formula syntax and element types. Future platforms (Airtable, Notion) would have their own recipes. Database templates are provider-agnostic, app recipes are not.
+    result: Clean separation — baserow/ for platform-specific, sync/templates/ for provider-agnostic
+
+  - what: Field names in recipes, IDs resolved at build time
+    why: Field IDs are customer-specific (created by templates.apply). Recipes must be reusable across customers without editing IDs.
+    result: FieldResolver queries table fields once, interpolates {Field_Name} → field_ID in formulas
+
+metrics:
+  recipes: 7
+  modules: 4
+  ad_hoc_scripts_replaced: 10
+  lines_of_scripts: 1400
+  lines_of_recipes: 573
+
+lessons:
+  - title: Recipes should reference field names not IDs — IDs are customer-specific
+    detail: >
+      Every Baserow workspace has different field IDs for the same logical fields.
+      Recipes that hardcode IDs only work for one customer. The FieldResolver pattern
+      queries the table's fields at build time and interpolates {Name} → ID in formulas.
+    tag: baserow
+
+  - title: Two-pass page building avoids cross-page reference chicken-and-egg
+    detail: >
+      Pages that link to each other (Legal Register → Duties, Duties → Legal Register)
+      create a dependency cycle. Pass 1 creates all pages to build the page_registry
+      (key → page_id). Pass 2 populates elements using the registry for cross-page links.
+    tag: baserow
+
+  - title: Platform-specific recipes under the platform namespace, not a shared app/ dir
+    detail: >
+      Initial implementation put recipes in app/. User pointed out this needs to support
+      multiple platforms. Moved to baserow/app/recipes/ — each platform gets its own
+      recipe format and builder implementation.
+    tag: tooling
+
+artifacts:
+  - backend/lib/sertantai_legal/baserow/app/builder.ex
+  - backend/lib/sertantai_legal/baserow/app/page_builder.ex
+  - backend/lib/sertantai_legal/baserow/app/field_resolver.ex
+  - backend/lib/sertantai_legal/baserow/app/recipe_parser.ex
+  - backend/lib/sertantai_legal/baserow/app/recipes/
+  - backend/lib/mix/tasks/app.build.ex
+
+depends_on:
+  - 2026-07-19-phase-4-legal-register-hub.md
+  - 2026-07-20-phase-5-action-rollups.md
+  - 2026-07-20-phase-6-legal-duties.md
+
+enables:
+  - Repeatable customer onboarding (templates.apply → app.build → manual steps → publish)
+  - Multi-platform app building (Airtable, Notion — same recipe pattern, different builder)
+  - Phase 6 completion (duties page build via recipe, not ad-hoc script)
+---
+
 # App Build Consolidation
 
 **Started**: 2026-07-20 11:00
@@ -156,8 +231,8 @@ by its recipe key.
 - [x] Build `mix app.build` task
 - [x] Write 7 recipes: legal_register, assessment_queue, assessment_form, hierarchy, actions, duties_list, duty_detail
 - [x] Manual steps extracted from recipe `manual_config` / `manual_nesting` annotations
-- [ ] Test `mix app.build` on fresh workspace
-- [ ] Delete ad-hoc scripts after confirmed working
+- [ ] Test `mix app.build` on fresh workspace (deferred — test incrementally on QQ build)
+- [ ] Delete ad-hoc scripts after confirmed working (deferred — remove as each recipe is validated)
 
 ## Patterns to abstract
 

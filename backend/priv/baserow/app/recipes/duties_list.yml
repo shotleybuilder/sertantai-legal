@@ -1,6 +1,6 @@
 page:
   name: Legal Duties
-  path: /duties
+  path: /legal-duties
   query_params:
     - name: law
       type: text
@@ -27,6 +27,7 @@ elements:
     filterable: true
     sortable: true
     searchable: true
+    css_class: duties-table
     columns:
       - name: Provision
         type: text
@@ -54,4 +55,19 @@ elements:
         navigate_to: duty_detail
         params:
           id: "get('current_record.id')"
-        link_text: "Details"
+        link_name: "Details"
+
+# CSS applied via Application Settings > Custom Code
+# The Builder applies css_class to the table element, then these rules
+# are injected into the app's custom CSS.
+css: |
+  .duties-table .tag-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 180px;
+  }
+  .duties-table .ab-tag {
+    white-space: nowrap;
+    font-size: 12px;
+  }

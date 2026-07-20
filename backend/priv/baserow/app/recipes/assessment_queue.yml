@@ -48,4 +48,4 @@ elements:
         navigate_to: assessment_form
         params:
           id: "get('current_record.id')"
-        link_text: "Review →"
+        link_name: "Review →"

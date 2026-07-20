@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Baserow.App.RecipeParser do
   Parses YAML recipe files into structured maps for the Builder.
   """
 
-  @recipe_dir "lib/sertantai_legal/baserow/app/recipes"
+  @recipe_dir "priv/baserow/app/recipes"
 
   @doc """
   Load all recipes from the recipes directory.

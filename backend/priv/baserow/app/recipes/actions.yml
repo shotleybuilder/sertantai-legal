@@ -80,7 +80,7 @@ elements:
         navigate_to: _self
         query:
           edit: "get('current_record.id')"
-        link_text: "Edit"
+        link_name: "Edit"
 
   - type: form_container
     submit_label: "Save Action"
