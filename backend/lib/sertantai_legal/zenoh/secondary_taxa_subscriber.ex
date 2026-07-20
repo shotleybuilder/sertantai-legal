@@ -21,7 +21,9 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   require Ash.Query
 
   alias SertantaiLegal.Legal.{
+    Control,
     SecondaryMandatedArtefact,
+    SecondaryTerm,
     SecondaryObligation,
     SecondaryRaci,
     SecondarySource,
@@ -147,6 +149,8 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
         # (full replace). Obligations use upsert so don't need clearing.
         clear_raci_for_source(source_id)
         clear_artefacts_for_source(source_id)
+        clear_terms_for_source(source_id)
+        clear_jsp_controls_for_source(source_id)
 
         results = Enum.map(rows, &upsert_provision(&1, now))
         ok_count = Enum.count(results, &match?(:ok, &1))
@@ -164,6 +168,9 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
         ob_count = count_non_empty(rows, "obligations_json")
         raci_count = count_non_empty(rows, "raci_json")
         artefact_count = count_non_empty(rows, "mandated_artefacts_json")
+        terms_count = count_non_empty(rows, "terms_json")
+        # JSP controls are derived from artefacts — count same column
+        jsp_controls_count = artefact_count
 
         skipped = if not_found > 0, do: " (#{not_found} skipped — not in provisions)", else: ""
 
@@ -173,7 +180,9 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             if(ref_counts.jsp > 0, do: "#{ref_counts.jsp} JSP cross-refs parked"),
             if(ob_count > 0, do: "#{ob_count} obligations"),
             if(raci_count > 0, do: "#{raci_count} RACI"),
-            if(artefact_count > 0, do: "#{artefact_count} artefacts")
+            if(artefact_count > 0, do: "#{artefact_count} artefacts"),
+            if(terms_count > 0, do: "#{terms_count} terms"),
+            if(jsp_controls_count > 0, do: "#{jsp_controls_count} JSP controls")
           ]
           |> Enum.reject(&is_nil/1)
           |> Enum.join(", ")
@@ -232,6 +241,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             process_obligations(row, provision)
             process_raci(row, provision)
             process_mandated_artefacts(row, provision)
+            process_terms(row, provision)
             :ok
           else
             {:error, reason} -> {:error, {:update_failed, section_id, reason}}
@@ -676,12 +686,18 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
         :ok
 
       artefacts ->
+        # Look up which laws this JSP chapter references (for control.law_name)
+        law_names = resolve_law_names_for_source(provision.source_id)
+        # Look up RACI roles for building control titles
+        raci_entries = parse_references(Map.get(row, "raci_json"))
+
         Enum.each(artefacts, fn entry ->
           obligation_id = entry["obligation_id"]
           artefact_type = entry["artefact_type"]
 
           if obligation_id && artefact_type do
-            params = %{
+            # 1. Create artefact row
+            artefact_params = %{
               obligation_id: obligation_id,
               section_id: provision.section_id,
               source_id: provision.source_id,
@@ -690,7 +706,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             }
 
             case SecondaryMandatedArtefact
-                 |> Ash.Changeset.for_create(:create, params)
+                 |> Ash.Changeset.for_create(:create, artefact_params)
                  |> Ash.create() do
               {:ok, _} ->
                 :ok
@@ -700,6 +716,15 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
                   "[Zenoh.SecondaryTaxaSubscriber] artefact create failed: #{inspect(reason)}"
                 )
             end
+
+            # 2. Create JSP control for each artefact × law_name
+            create_jsp_controls(
+              provision,
+              obligation_id,
+              artefact_type,
+              law_names,
+              raci_entries
+            )
           end
         end)
     end
@@ -707,6 +732,147 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
     e ->
       Logger.warning(
         "[Zenoh.SecondaryTaxaSubscriber] Artefacts processing failed for #{provision.section_id}: #{Exception.message(e)}"
+      )
+  end
+
+  # Clear JSP-derived controls for a source (full replace per publish).
+  # Only deletes controls WHERE source_id = $1 — legislation controls (source_id IS NULL) untouched.
+  defp clear_jsp_controls_for_source(source_id) do
+    SertantaiLegal.Repo.query(
+      "DELETE FROM controls WHERE source_id = $1",
+      [source_id]
+    )
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Failed to clear JSP controls for #{source_id}: #{Exception.message(e)}"
+      )
+  end
+
+  # Look up law_names that this JSP chapter references (from source_links).
+  defp resolve_law_names_for_source(source_id) do
+    case resolve_secondary_source_id(source_id) do
+      {:ok, secondary_source_id} ->
+        {:ok, uuid_binary} = Ecto.UUID.dump(secondary_source_id)
+
+        query = """
+        SELECT DISTINCT law_name FROM source_links
+        WHERE secondary_source_id = $1 AND link_type = 'references'
+        """
+
+        case SertantaiLegal.Repo.query(query, [uuid_binary]) do
+          {:ok, %{rows: rows}} -> Enum.map(rows, fn [name] -> name end)
+          _ -> []
+        end
+
+      _ ->
+        []
+    end
+  end
+
+  # Build the responsible role label from RACI entries for a given obligation_index.
+  defp responsible_role_for(raci_entries, obligation_id) do
+    raci_entries
+    |> Enum.find(fn entry ->
+      ob_idx = entry["obligation_index"] || 0
+      candidate_id = String.replace(obligation_id, ~r/:ob\.\d+$/, ":ob.#{ob_idx}")
+      candidate_id == obligation_id and entry["assignment_type"] == "R"
+    end)
+    |> case do
+      %{"role_label" => role} when is_binary(role) -> role
+      _ -> "the responsible person"
+    end
+  end
+
+  defp create_jsp_controls(provision, obligation_id, artefact_type, law_names, raci_entries) do
+    role = responsible_role_for(raci_entries, obligation_id)
+    article = if String.match?(artefact_type, ~r/^[AEIOUaeiou]/), do: "An", else: "A"
+    title = "#{article} #{artefact_type} is maintained by #{role}"
+
+    Enum.each(law_names, fn law_name ->
+      # Deterministic control_id: hash of obligation + artefact + law
+      control_id = "jsp:#{obligation_id}:#{artefact_type}:#{law_name}"
+
+      params = %{
+        law_name: law_name,
+        control_id: control_id,
+        source_id: provision.source_id,
+        title: title,
+        control_type: "specific",
+        status: "generated",
+        tier: "Sector",
+        linked_provisions: [provision.section_id],
+        generation_model: "sertantai:jsp-artefact-v1"
+      }
+
+      case Control
+           |> Ash.Changeset.for_create(:upsert_from_fractalaw, params)
+           |> Ash.create() do
+        {:ok, _} ->
+          :ok
+
+        {:error, reason} ->
+          Logger.debug(
+            "[Zenoh.SecondaryTaxaSubscriber] JSP control upsert failed for #{control_id}: #{inspect(reason)}"
+          )
+      end
+    end)
+  end
+
+  # --- Terms processing ---
+
+  defp clear_terms_for_source(source_id) do
+    SertantaiLegal.Repo.query(
+      "DELETE FROM secondary_terms WHERE source_id = $1",
+      [source_id]
+    )
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Failed to clear terms for #{source_id}: #{Exception.message(e)}"
+      )
+  end
+
+  defp process_terms(row, provision) do
+    case parse_references(Map.get(row, "terms_json")) do
+      [] ->
+        :ok
+
+      terms ->
+        Enum.each(terms, fn entry ->
+          normalised = entry["normalised"]
+          term_text = entry["term"]
+
+          if normalised && term_text do
+            term_id = "#{provision.source_id}:#{normalised}"
+
+            params = %{
+              term_id: term_id,
+              section_id: provision.section_id,
+              source_id: provision.source_id,
+              term: term_text,
+              acronym: entry["acronym"],
+              normalised: normalised
+            }
+
+            case SecondaryTerm
+                 |> Ash.Changeset.for_create(:upsert, params)
+                 |> Ash.create() do
+              {:ok, _} ->
+                :ok
+
+              {:error, reason} ->
+                Logger.debug(
+                  "[Zenoh.SecondaryTaxaSubscriber] term upsert failed for #{term_id}: #{inspect(reason)}"
+                )
+            end
+          end
+        end)
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Terms processing failed for #{provision.section_id}: #{Exception.message(e)}"
       )
   end
 end

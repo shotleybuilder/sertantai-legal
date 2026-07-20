@@ -45,6 +45,19 @@ defmodule SertantaiLegal.Legal.Control do
       description("UUID from fractalaw — stable identifier for three-way merge")
     end
 
+    attribute :source_id, :string do
+      allow_nil?(true)
+
+      description(
+        "NULL for legislation controls, JSP chapter ID for JSP controls (e.g. JSP-375-CH23)"
+      )
+    end
+
+    attribute :related_control_ids, :string do
+      allow_nil?(true)
+      description("Comma-separated IDs of legislation controls this JSP control implements")
+    end
+
     # Control content
     attribute :title, :string do
       allow_nil?(true)
@@ -177,6 +190,8 @@ defmodule SertantaiLegal.Legal.Control do
       accept([
         :law_name,
         :control_id,
+        :source_id,
+        :related_control_ids,
         :title,
         :description,
         :what_it_checks,
@@ -204,6 +219,8 @@ defmodule SertantaiLegal.Legal.Control do
       upsert_identity(:unique_control)
 
       upsert_fields([
+        :source_id,
+        :related_control_ids,
         :title,
         :description,
         :what_it_checks,
