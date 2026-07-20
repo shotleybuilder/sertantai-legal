@@ -121,7 +121,7 @@ defmodule SertantaiLegal.Baserow.SchemaManager do
         # Filter to non-formula, non-lookup, non-primary fields
         simple_fields =
           Enum.filter(spec.fields, fn f ->
-            f[:type] not in [:formula, :lookup] and !f[:primary]
+            f[:type] not in [:formula, :lookup, :rollup] and !f[:primary]
           end)
 
         case create_fields_verified(config, table_id, simple_fields) do
@@ -146,7 +146,7 @@ defmodule SertantaiLegal.Baserow.SchemaManager do
         table_id = Map.get(table_ids, spec.key)
 
         spec.fields
-        |> Enum.filter(fn f -> f[:type] in [:formula, :lookup] and !f[:primary] end)
+        |> Enum.filter(fn f -> f[:type] in [:formula, :lookup, :rollup] and !f[:primary] end)
         |> Enum.map(fn f -> {spec.key, table_id, f} end)
       end)
 

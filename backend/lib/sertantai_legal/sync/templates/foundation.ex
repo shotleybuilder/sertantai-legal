@@ -139,7 +139,36 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
         %{name: "Duty_Type", type: :multi_select, options: [], description: "DRRP duty types"},
         %{name: "Purpose", type: :multi_select, options: [], description: "Legal purposes"},
         %{name: "Fitness_Entities", type: :long_text, description: "Applicability entity tags"},
-        %{name: "_source_id", type: :text, description: "Sync source identifier"}
+        %{name: "_source_id", type: :text, description: "Sync source identifier"},
+        # Cross-table lookups through Assessments reverse link
+        %{
+          name: "Assessment_Status",
+          type: :lookup,
+          target: "Assessments",
+          target_field: "Compliance_Status",
+          description: "Compliance status from linked Assessment"
+        },
+        %{
+          name: "Actions_Open",
+          type: :lookup,
+          target: "Assessments",
+          target_field: "Actions_Open",
+          description: "Count of open actions (from Assessment rollup)"
+        },
+        %{
+          name: "Actions_Overdue",
+          type: :lookup,
+          target: "Assessments",
+          target_field: "Actions_Overdue",
+          description: "Count of overdue actions (from Assessment rollup)"
+        },
+        %{
+          name: "Actions_Done",
+          type: :lookup,
+          target: "Assessments",
+          target_field: "Actions_Done",
+          description: "Count of completed actions (from Assessment rollup)"
+        }
       ],
       lat: [
         %{

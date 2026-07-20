@@ -65,7 +65,8 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
           people_fields(sp.people) ++
           review_fields(sp.review_cycle) ++
           risk_fields(sp.risk_scoring) ++
-          detail_fields()
+          detail_fields() ++
+          action_rollup_fields()
     }
   end
 
@@ -283,6 +284,36 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
       },
       %{name: "Notes", type: :long_text, description: "General notes"},
       %{name: "Reference", type: :text, description: "Internal ID or cross-reference"}
+    ]
+  end
+
+  # Action count rollups — sum of 1/0 formula fields on linked Actions
+  defp action_rollup_fields do
+    [
+      %{
+        name: "Actions_Open",
+        type: :rollup,
+        target: "Actions",
+        target_field: "Is_Open",
+        rollup_function: :sum,
+        description: "Count of Open/In Progress actions"
+      },
+      %{
+        name: "Actions_Overdue",
+        type: :rollup,
+        target: "Actions",
+        target_field: "Is_Overdue",
+        rollup_function: :sum,
+        description: "Count of overdue actions"
+      },
+      %{
+        name: "Actions_Done",
+        type: :rollup,
+        target: "Actions",
+        target_field: "Is_Done",
+        rollup_function: :sum,
+        description: "Count of completed actions"
+      }
     ]
   end
 

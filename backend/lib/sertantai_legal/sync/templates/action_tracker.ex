@@ -109,6 +109,28 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
                   "if(and(and(field('Status') != 'Completed', field('Status') != 'Cancelled'), field('Days_Until_Due') < 0), 'OVERDUE', '')"
               },
               description: "OVERDUE if past due and not completed"
+            },
+            # Rollup helper fields — return 1 or 0 for filtered counting via sum rollup
+            %{
+              name: "Is_Open",
+              type: :formula,
+              expression: %{
+                baserow:
+                  "if(or(field('Status')='Open', field('Status')='In Progress'), 1, 0)"
+              },
+              description: "1 if Open or In Progress, 0 otherwise — for rollup sum"
+            },
+            %{
+              name: "Is_Overdue",
+              type: :formula,
+              expression: %{baserow: "if(field('Overdue')='OVERDUE', 1, 0)"},
+              description: "1 if overdue, 0 otherwise — for rollup sum"
+            },
+            %{
+              name: "Is_Done",
+              type: :formula,
+              expression: %{baserow: "if(field('Status')='Completed', 1, 0)"},
+              description: "1 if completed, 0 otherwise — for rollup sum"
             }
           ]
     }

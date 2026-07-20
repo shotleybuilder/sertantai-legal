@@ -74,6 +74,10 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-20 | [phase-5-action-rollups](baserow-app/2026-07-20-phase-5-action-rollups.md) | — | Action count rollups (formula 1/0 + sum), integrated into templates. Unified page build deferred |
+| 2026-07-19 | [phase-4-legal-register](baserow-app/2026-07-19-phase-4-legal-register-hub.md) | — | Legal Register hub from LRT: Assessment Status emoji lookup, Assess link via reverse link, single-quote formula discovery |
+| 2026-07-19 | [phase-3-actions](baserow-app/2026-07-19-phase-3-actions.md) | — | Actions page: codify-first approach, 3 bugs caught (~w split, datetime_picker, formula JSON), all fixed in script |
+| 2026-07-19 | [phase-2-hierarchy](baserow-app/2026-07-19-phase-2-hierarchy.md) | — | Hierarchy page: same-page create+edit pattern, "Previous action > Create a row > Id" discovery, published |
 | 2026-07-18 | [phase-1-continuation](baserow-app/2026-07-18-phase-1-continuation.md) | — | Assessment App complete: form page, Update Row, published to sertantai-compliance.baserow.site. Full API patterns documented |
 | 2026-07-18 | [phase-1-assessment-app](baserow-app/2026-07-18-phase-1-assessment-app.md) | — | Assessment App: 428 rows seeded, Compliance Workbench app created via API, queue page with 6 columns + link. Form page deferred |
 | 2026-07-18 | [baserow-app-dashboards](baserow-app/2026-07-18-baserow-app-dashboards.md) | — | Scoped BR App Builder + Dashboards. Assessment App designed. Views fixed. Meta session created |
@@ -203,6 +207,7 @@ Deployment, Zenoh P2P, production, change notifications.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-19 | [references-extension](second-tier-duties/2026-07-19-references-extension.md) | — | SecondaryTaxaSubscriber: parse references_json, create source_links for legislation cross-refs (9 links, 8 laws) |
 | 2026-07-19 | [zenoh-admin-tab](second-tier-duties/2026-07-19-zenoh-admin-tab.md) | — | Secondary Sources tab in Zenoh admin, tab reorder (Triage first), session naming fix |
 | 2026-06-25 | [issue-111-provision-subscriber-ui](2026-06-25-issue-111-provision-subscriber-ui.md) | [#111](https://github.com/shotleybuilder/sertantai-legal/issues/111) | ProvisionSubscriber added to Zenoh admin dashboard |
 | 2026-06-25 | [fractalaw-customer-laws-queryable](2026-06-25-fractalaw-customer-laws-queryable.md) | [#110](https://github.com/shotleybuilder/sertantai-legal/issues/110), [#111](https://github.com/shotleybuilder/sertantai-legal/issues/111) | Customer laws queryable, disable LAT pruner, HSWA end-to-end proven |
@@ -224,6 +229,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-19 | [obligations-raci](second-tier-duties/2026-07-19-obligations-raci.md) | [#126](https://github.com/shotleybuilder/sertantai-legal/issues/126) | SecondaryObligation + SecondaryRaci tables, DuckDB struct parser rewrite. 117 obligations, 32 RACI from JSP-375-CH23 |
 | 2026-07-16 | [second-tier-duties/phase-3](second-tier-duties/2026-07-16-phase-3-zenoh-queryables.md) | — | Phase 3: Zenoh queryables for secondary sources/provisions, spec published |
 | 2026-07-16 | [second-tier-duties/parse-hsgs](second-tier-duties/2026-07-16-parse-hsgs.md) | — | Parse 29 HSGs: 19,454 provisions, OGL confirmed, corpus total 45,049 |
 | 2026-07-16 | [second-tier-duties/parse-acops](second-tier-duties/2026-07-16-parse-acops.md) | — | Parse 21 HSE ACoPs: 12,321 provisions, 100% current coverage, 0 errors |
