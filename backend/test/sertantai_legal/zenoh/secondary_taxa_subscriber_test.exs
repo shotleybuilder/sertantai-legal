@@ -256,6 +256,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
       assert SecondaryTaxaSubscriber.parse_references(refs) == refs
     end
 
+    @tag capture_log: true
     test "returns empty list for unparseable string" do
       assert SecondaryTaxaSubscriber.parse_references("not valid at all") == []
     end
@@ -294,6 +295,44 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriberTest do
       assert Enum.at(result, 0)["target_id"] == "UK_uksi_1989_635"
       assert Enum.at(result, 1)["target_type"] == "jsp"
       assert Enum.at(result, 1)["citation"] == "JSP 375 Volume 1, Chapter 8"
+    end
+
+    test "DuckDB obligation with embedded colons and lettered list" do
+      duckdb =
+        "[{'obligation_index': 0, 'text': 'In the event of any fire you must follow these key safety points: a. Do not attempt to extinguish the fire', 'modal_verb': must, 'strength': Mandatory, 'clause_refined': commander must follow safety points, 'competence': NULL}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 1
+      ob = hd(result)
+      assert ob["obligation_index"] == 0
+      assert ob["modal_verb"] == "must"
+      assert ob["strength"] == "Mandatory"
+      assert String.contains?(ob["text"], "key safety points: a. Do not attempt")
+    end
+
+    test "DuckDB obligation with embedded single-quoted text" do
+      duckdb =
+        "[{'obligation_index': 0, 'text': 'Items should be identified as ' Unsafe – Do Not Use' by using signage', 'modal_verb': should, 'strength': Recommended, 'clause_refined': NULL, 'competence': NULL}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 1
+      assert String.contains?(hd(result)["text"], "Unsafe")
+    end
+
+    test "DuckDB RACI entries with colons in role labels" do
+      duckdb =
+        "[{'role_label': MoD: Accountable Person, 'assignment_type': R, 'obligation_index': 0}, {'role_label': MoD: Defence Safety Authority, 'assignment_type': I, 'obligation_index': 0}]"
+
+      result = SecondaryTaxaSubscriber.parse_references(duckdb)
+
+      assert length(result) == 2
+      assert Enum.at(result, 0)["role_label"] == "MoD: Accountable Person"
+      assert Enum.at(result, 0)["assignment_type"] == "R"
+      assert Enum.at(result, 0)["obligation_index"] == 0
+      assert Enum.at(result, 1)["role_label"] == "MoD: Defence Safety Authority"
+      assert Enum.at(result, 1)["assignment_type"] == "I"
     end
   end
 end

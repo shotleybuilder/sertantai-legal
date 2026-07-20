@@ -20,7 +20,14 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   require Logger
   require Ash.Query
 
-  alias SertantaiLegal.Legal.{SecondarySource, SecondarySourceProvision, SourceLink}
+  alias SertantaiLegal.Legal.{
+    SecondaryObligation,
+    SecondaryRaci,
+    SecondarySource,
+    SecondarySourceProvision,
+    SourceLink
+  }
+
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Arrow column name → Ash attribute atom.
@@ -134,6 +141,11 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
     case decode_arrow_ipc(ipc_bytes) do
       {:ok, rows} ->
         now = DateTime.utc_now()
+
+        # Clear existing RACI for this source before re-inserting (full replace).
+        # Obligations use upsert so don't need clearing.
+        clear_raci_for_source(source_id)
+
         results = Enum.map(rows, &upsert_provision(&1, now))
         ok_count = Enum.count(results, &match?(:ok, &1))
         not_found = Enum.count(results, &match?({:error, {:not_found, _}}, &1))
@@ -145,24 +157,32 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             _ -> false
           end)
 
-        # Count legislation refs created and JSP cross-refs skipped
+        # Count enrichment extras for summary logging
         ref_counts = count_references(rows)
+        ob_count = count_non_empty(rows, "obligations_json")
+        raci_count = count_non_empty(rows, "raci_json")
 
         skipped = if not_found > 0, do: " (#{not_found} skipped — not in provisions)", else: ""
 
-        refs_info =
-          if ref_counts.legislation > 0, do: ", #{ref_counts.legislation} law refs", else: ""
+        extras =
+          [
+            if(ref_counts.legislation > 0, do: "#{ref_counts.legislation} law refs"),
+            if(ref_counts.jsp > 0, do: "#{ref_counts.jsp} JSP cross-refs parked"),
+            if(ob_count > 0, do: "#{ob_count} obligations"),
+            if(raci_count > 0, do: "#{raci_count} RACI")
+          ]
+          |> Enum.reject(&is_nil/1)
+          |> Enum.join(", ")
 
-        jsp_info =
-          if ref_counts.jsp > 0, do: ", #{ref_counts.jsp} JSP cross-refs parked", else: ""
+        extras_info = if extras != "", do: ", #{extras}", else: ""
 
         if real_errors > 0 do
           Logger.warning(
-            "[Zenoh.SecondaryTaxaSubscriber] #{source_id}: #{ok_count} ok, #{real_errors} failed#{skipped}#{refs_info}#{jsp_info}"
+            "[Zenoh.SecondaryTaxaSubscriber] #{source_id}: #{ok_count} ok, #{real_errors} failed#{skipped}#{extras_info}"
           )
         else
           Logger.info(
-            "[Zenoh.SecondaryTaxaSubscriber] Updated #{ok_count} provisions for #{source_id}#{skipped}#{refs_info}#{jsp_info}"
+            "[Zenoh.SecondaryTaxaSubscriber] Updated #{ok_count} provisions for #{source_id}#{skipped}#{extras_info}"
           )
         end
 
@@ -203,8 +223,10 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
                  provision
                  |> Ash.Changeset.for_update(:update_taxa, taxa)
                  |> Ash.update() do
-            # Process references if present (fire-and-forget — don't fail the taxa update)
+            # Process enrichment extras (fire-and-forget — don't fail the taxa update)
             process_references(row, provision)
+            process_obligations(row, provision)
+            process_raci(row, provision)
             :ok
           else
             {:error, reason} -> {:error, {:update_failed, section_id, reason}}
@@ -294,6 +316,14 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
         legislation: acc.legislation + Enum.count(refs, &(&1["target_type"] == "legislation")),
         jsp: acc.jsp + Enum.count(refs, &(&1["target_type"] == "jsp"))
       }
+    end)
+  end
+
+  # Count rows that have a non-nil, non-empty value for a given column.
+  defp count_non_empty(rows, column) do
+    Enum.count(rows, fn row ->
+      val = Map.get(row, column)
+      not is_nil(val) and val != ""
     end)
   end
 
@@ -427,23 +457,23 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   def parse_references(""), do: []
 
   def parse_references(value) when is_binary(value) do
-    # Try JSON first (spec says JSON, but DuckDB may send struct syntax)
+    # Try JSON first (spec says JSON)
     case Jason.decode(value) do
       {:ok, refs} when is_list(refs) ->
         refs
 
       _ ->
-        # Normalise DuckDB struct syntax → JSON, then parse
-        case value |> normalise_duckdb_structs() |> Jason.decode() do
-          {:ok, refs} when is_list(refs) ->
-            refs
-
-          _ ->
+        # Fall back to DuckDB struct syntax parser
+        case parse_duckdb_structs(value) do
+          [] ->
             Logger.warning(
-              "[Zenoh.SecondaryTaxaSubscriber] Could not parse references_json: #{String.slice(value, 0, 200)}"
+              "[Zenoh.SecondaryTaxaSubscriber] Could not parse DuckDB structs: #{String.slice(value, 0, 200)}"
             )
 
             []
+
+          structs ->
+            structs
         end
     end
   end
@@ -451,22 +481,173 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   def parse_references(value) when is_list(value), do: value
   def parse_references(_), do: []
 
-  # Convert DuckDB list-of-structs syntax to JSON.
-  # DuckDB uses single-quoted keys, and values that are either unquoted or single-quoted
-  # (when they contain commas). Examples:
-  #   {'target_type': legislation, 'citation': the Electricity at Work Regulations 1989}
-  #   {'target_type': jsp, 'citation': 'JSP 375 Volume 3, Chapter 3'}
-  defp normalise_duckdb_structs(str) do
-    str
-    # Step 1: Convert single-quoted keys to double-quoted: 'key': → "key":
-    |> String.replace(~r/'([^']+)'\s*:/, "\"\\1\":")
-    # Step 2: Convert single-quoted values to double-quoted: : 'value' → : "value"
-    |> String.replace(~r/:\s*'([^']*)'/, ": \"\\1\"")
-    # Step 3: Convert remaining unquoted values to double-quoted
-    # Matches ": value" where value is not already quoted, runs until , or }
-    |> String.replace(~r/:\s+([^"\[\{,\}][^,\}]*?)(?=\s*[,\}])/, fn match ->
-      [_, value] = Regex.run(~r/:\s+(.+)/, match)
-      ": \"#{String.trim(value)}\""
-    end)
+  # Parse DuckDB list-of-structs syntax directly to a list of maps.
+  # DuckDB serialises structs with single-quoted keys and values that may contain
+  # embedded quotes, colons, and commas. Regex normalisation to JSON is fragile,
+  # so we scan for key boundaries (`'key':`) and extract values between them.
+  @doc false
+  def parse_duckdb_structs(str) do
+    # Extract content of each {...} block
+    Regex.scan(~r/\{(.+?)\}(?=\s*(?:,\s*\{|$|\]))/s, str, capture: :all_but_first)
+    |> Enum.map(fn [content] -> parse_duckdb_struct(content) end)
+    |> Enum.reject(&(&1 == %{}))
+  end
+
+  defp parse_duckdb_struct(content) do
+    # Find all 'key': positions — these are the field boundaries.
+    # This works because embedded quotes in values won't match 'word':
+    key_matches = Regex.scan(~r/'(\w+)':\s*/, content, return: :index)
+    key_names = Regex.scan(~r/'(\w+)':\s*/, content) |> Enum.map(fn [_, k] -> k end)
+
+    if key_matches == [] do
+      %{}
+    else
+      # For each key, extract the value from the end of the key match
+      # to the start of the next key match (minus trailing ", ")
+      positions =
+        Enum.map(key_matches, fn [{start, len}, _cap] -> {start, start + len} end)
+
+      Enum.zip(key_names, Enum.with_index(positions))
+      |> Enum.map(fn {key, {{_start, val_start}, idx}} ->
+        val_end =
+          case Enum.at(positions, idx + 1) do
+            {next_start, _} ->
+              # Back up past ", " separator
+              content
+              |> String.slice(0, next_start)
+              |> String.trim_trailing()
+              |> String.trim_trailing(",")
+              |> String.length()
+
+            nil ->
+              String.length(content)
+          end
+
+        len = max(val_end - val_start, 0)
+        raw = String.slice(content, val_start, len) |> String.trim()
+        value = strip_duckdb_quotes(raw)
+        {key, coerce_duckdb_value(value)}
+      end)
+      |> Map.new()
+    end
+  end
+
+  # Strip surrounding single quotes from DuckDB values
+  defp strip_duckdb_quotes("'" <> rest) do
+    if String.ends_with?(rest, "'") do
+      String.slice(rest, 0, String.length(rest) - 1)
+    else
+      "'" <> rest
+    end
+  end
+
+  defp strip_duckdb_quotes(value), do: value
+
+  # Coerce DuckDB unquoted values: integers stay as integers, rest as strings
+  defp coerce_duckdb_value(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {int, ""} -> int
+      _ -> value
+    end
+  end
+
+  defp coerce_duckdb_value(value), do: value
+
+  # --- Obligations processing ---
+
+  defp process_obligations(row, provision) do
+    case parse_references(Map.get(row, "obligations_json")) do
+      [] ->
+        :ok
+
+      obligations ->
+        Enum.each(obligations, fn ob ->
+          index = ob["obligation_index"] || 0
+          obligation_id = "#{provision.section_id}:ob.#{index}"
+
+          params = %{
+            obligation_id: obligation_id,
+            section_id: provision.section_id,
+            source_id: provision.source_id,
+            obligation_index: index,
+            text: ob["text"],
+            modal_verb: ob["modal_verb"],
+            strength: ob["strength"],
+            clause_refined: ob["clause_refined"],
+            competence_requirements: ob["competence"]
+          }
+
+          case SecondaryObligation
+               |> Ash.Changeset.for_create(:upsert, params)
+               |> Ash.create() do
+            {:ok, _} ->
+              :ok
+
+            {:error, reason} ->
+              Logger.debug(
+                "[Zenoh.SecondaryTaxaSubscriber] obligation upsert failed for #{obligation_id}: #{inspect(reason)}"
+              )
+          end
+        end)
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Obligations processing failed for #{provision.section_id}: #{Exception.message(e)}"
+      )
+  end
+
+  # Clear all RACI entries for a source before re-inserting (full replace per publish).
+  defp clear_raci_for_source(source_id) do
+    SertantaiLegal.Repo.query("DELETE FROM secondary_raci WHERE source_id = $1", [source_id])
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Failed to clear RACI for #{source_id}: #{Exception.message(e)}"
+      )
+  end
+
+  # --- RACI processing ---
+
+  defp process_raci(row, provision) do
+    case parse_references(Map.get(row, "raci_json")) do
+      [] ->
+        :ok
+
+      raci_entries ->
+        Enum.each(raci_entries, fn entry ->
+          index = entry["obligation_index"] || 0
+          obligation_id = "#{provision.section_id}:ob.#{index}"
+
+          params = %{
+            obligation_id: obligation_id,
+            section_id: provision.section_id,
+            source_id: provision.source_id,
+            role_label: entry["role_label"],
+            assignment_type: entry["assignment_type"],
+            obligation_index: index
+          }
+
+          # Skip if missing required fields
+          if params.role_label && params.assignment_type do
+            case SecondaryRaci
+                 |> Ash.Changeset.for_create(:create, params)
+                 |> Ash.create() do
+              {:ok, _} ->
+                :ok
+
+              {:error, reason} ->
+                Logger.debug(
+                  "[Zenoh.SecondaryTaxaSubscriber] RACI create failed for #{obligation_id}: #{inspect(reason)}"
+                )
+            end
+          end
+        end)
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] RACI processing failed for #{provision.section_id}: #{Exception.message(e)}"
+      )
   end
 end
