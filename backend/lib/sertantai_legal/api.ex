@@ -46,6 +46,7 @@ defmodule SertantaiLegal.Api do
     resource(SertantaiLegal.Legal.SourceLink)
     resource(SertantaiLegal.Legal.SecondaryObligation)
     resource(SertantaiLegal.Legal.SecondaryRaci)
+    resource(SertantaiLegal.Legal.SecondaryMandatedArtefact)
 
     # Scraper session tracking
     resource(SertantaiLegal.Scraper.ScrapeSession)

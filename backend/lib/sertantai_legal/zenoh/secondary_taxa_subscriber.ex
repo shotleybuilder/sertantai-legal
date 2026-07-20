@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
   require Ash.Query
 
   alias SertantaiLegal.Legal.{
+    SecondaryMandatedArtefact,
     SecondaryObligation,
     SecondaryRaci,
     SecondarySource,
@@ -142,9 +143,10 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
       {:ok, rows} ->
         now = DateTime.utc_now()
 
-        # Clear existing RACI for this source before re-inserting (full replace).
-        # Obligations use upsert so don't need clearing.
+        # Clear existing RACI + mandated artefacts for this source before re-inserting
+        # (full replace). Obligations use upsert so don't need clearing.
         clear_raci_for_source(source_id)
+        clear_artefacts_for_source(source_id)
 
         results = Enum.map(rows, &upsert_provision(&1, now))
         ok_count = Enum.count(results, &match?(:ok, &1))
@@ -161,6 +163,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
         ref_counts = count_references(rows)
         ob_count = count_non_empty(rows, "obligations_json")
         raci_count = count_non_empty(rows, "raci_json")
+        artefact_count = count_non_empty(rows, "mandated_artefacts_json")
 
         skipped = if not_found > 0, do: " (#{not_found} skipped — not in provisions)", else: ""
 
@@ -169,7 +172,8 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             if(ref_counts.legislation > 0, do: "#{ref_counts.legislation} law refs"),
             if(ref_counts.jsp > 0, do: "#{ref_counts.jsp} JSP cross-refs parked"),
             if(ob_count > 0, do: "#{ob_count} obligations"),
-            if(raci_count > 0, do: "#{raci_count} RACI")
+            if(raci_count > 0, do: "#{raci_count} RACI"),
+            if(artefact_count > 0, do: "#{artefact_count} artefacts")
           ]
           |> Enum.reject(&is_nil/1)
           |> Enum.join(", ")
@@ -227,6 +231,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
             process_references(row, provision)
             process_obligations(row, provision)
             process_raci(row, provision)
+            process_mandated_artefacts(row, provision)
             :ok
           else
             {:error, reason} -> {:error, {:update_failed, section_id, reason}}
@@ -648,6 +653,60 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
     e ->
       Logger.warning(
         "[Zenoh.SecondaryTaxaSubscriber] RACI processing failed for #{provision.section_id}: #{Exception.message(e)}"
+      )
+  end
+
+  # --- Mandated artefacts processing ---
+
+  defp clear_artefacts_for_source(source_id) do
+    SertantaiLegal.Repo.query(
+      "DELETE FROM secondary_mandated_artefacts WHERE source_id = $1",
+      [source_id]
+    )
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Failed to clear artefacts for #{source_id}: #{Exception.message(e)}"
+      )
+  end
+
+  defp process_mandated_artefacts(row, provision) do
+    case parse_references(Map.get(row, "mandated_artefacts_json")) do
+      [] ->
+        :ok
+
+      artefacts ->
+        Enum.each(artefacts, fn entry ->
+          obligation_id = entry["obligation_id"]
+          artefact_type = entry["artefact_type"]
+
+          if obligation_id && artefact_type do
+            params = %{
+              obligation_id: obligation_id,
+              section_id: provision.section_id,
+              source_id: provision.source_id,
+              artefact_type: artefact_type,
+              matched_text: entry["matched_text"]
+            }
+
+            case SecondaryMandatedArtefact
+                 |> Ash.Changeset.for_create(:create, params)
+                 |> Ash.create() do
+              {:ok, _} ->
+                :ok
+
+              {:error, reason} ->
+                Logger.debug(
+                  "[Zenoh.SecondaryTaxaSubscriber] artefact create failed: #{inspect(reason)}"
+                )
+            end
+          end
+        end)
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.SecondaryTaxaSubscriber] Artefacts processing failed for #{provision.section_id}: #{Exception.message(e)}"
       )
   end
 end
