@@ -86,7 +86,7 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
       {:ok, page_id}
     else
       # Create data sources
-      ds_registry = create_data_sources(recipe, page_id, integration_id, table_ids, headers, base)
+      ds_registry = create_data_sources(recipe, page_id, integration_id, table_ids, resolver, headers, base)
 
       # Determine which table this page primarily uses
       primary_table =
@@ -128,7 +128,7 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
   # ── Data Sources ────────────────────────────────────────
 
-  defp create_data_sources(recipe, page_id, integration_id, table_ids, headers, base) do
+  defp create_data_sources(recipe, page_id, integration_id, table_ids, resolver, headers, base) do
     (recipe["data_sources"] || [])
     |> Enum.reduce(%{}, fn ds_spec, registry ->
       table_key = String.to_atom(ds_spec["table"])
@@ -161,6 +161,41 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
         Req.patch("#{base}/api/builder/data-source/#{ds["id"]}/",
           headers: headers, json: %{"row_id" => formula}, receive_timeout: 15_000)
+      end
+
+      # Set filters if specified
+      if ds_spec["filters"] do
+        table_key_atom = String.to_atom(ds_spec["table"])
+
+        filters =
+          Enum.map(ds_spec["filters"], fn filter_spec ->
+            field_id = FieldResolver.resolve(resolver, table_key_atom, filter_spec["field"])
+
+            filter = %{
+              "field" => field_id,
+              "type" => filter_spec["type"]
+            }
+
+            filter =
+              if filter_spec["value_is_formula"] do
+                filter
+                |> Map.put("value", %{
+                  "formula" => filter_spec["value"],
+                  "mode" => "simple",
+                  "version" => "0.1"
+                })
+                |> Map.put("value_is_formula", true)
+              else
+                Map.put(filter, "value", filter_spec["value"] || "")
+              end
+
+            filter
+          end)
+
+        Req.patch("#{base}/api/builder/data-source/#{ds["id"]}/",
+          headers: headers, json: %{"filters" => filters}, receive_timeout: 15_000)
+
+        Logger.info("[AppBuilder]   Filters: #{length(filters)} applied")
       end
 
       Map.put(registry, ds_spec["name"], ds["id"])
@@ -245,8 +280,26 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
           # Configure columns
           columns = build_table_columns(el["columns"] || [], resolver, table_key, page_id, page_registry, ds_registry)
 
+          patch_body = %{"fields" => columns}
+
+          # Configure CSS class
+          patch_body =
+            if el["css_class"],
+              do: Map.put(patch_body, "css_classes", el["css_class"]),
+              else: patch_body
+
           Req.patch!("#{base}/api/builder/element/#{table_el["id"]}/",
-            headers: headers, json: %{"fields" => columns})
+            headers: headers, json: patch_body)
+
+          # Configure user_actions (filter/sort/search per field)
+          if el["user_actions"] do
+            property_options = build_property_options(el["user_actions"], resolver, table_key)
+
+            Req.patch!("#{base}/api/builder/element/#{table_el["id"]}/",
+              headers: headers, json: %{"property_options" => property_options})
+
+            Logger.info("[AppBuilder]   User actions: #{length(property_options)} fields configured")
+          end
 
           Logger.info("[AppBuilder]   Table: #{table_el["id"]} (#{length(columns)} columns)")
 
@@ -392,6 +445,21 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
         _ ->
           %{"name" => col["name"], "type" => "text", "value" => formula.("''")}
       end
+    end)
+  end
+
+  # ── Property Options (user filter/sort/search) ───────────
+
+  defp build_property_options(user_actions, resolver, table_key) do
+    Enum.map(user_actions, fn action ->
+      field_id = FieldResolver.resolve(resolver, table_key, action["field"])
+
+      %{
+        "schema_property" => "field_#{field_id}",
+        "filterable" => action["filterable"] || false,
+        "sortable" => action["sortable"] || false,
+        "searchable" => action["searchable"] || false
+      }
     end)
   end
 

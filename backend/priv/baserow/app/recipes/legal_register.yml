@@ -57,9 +57,11 @@ elements:
         navigate_to: assessment_form
         params:
           id: "get('current_record.field_{Assessments}.0.id')"
+        link_name: "Assess →"
 
       - name: Duties
         type: link
         navigate_to: duties_list
         query:
           law: "get('current_record.field_{Name}')"
+        link_name: "Duties →"

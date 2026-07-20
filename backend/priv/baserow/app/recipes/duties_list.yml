@@ -9,8 +9,11 @@ data_sources:
   - name: Duties
     type: list_rows
     table: lat
-    # Manual: filter by Legal_Register contains query parameter "law"
-    manual_config: true
+    filters:
+      - field: Legal_Register
+        type: link_row_contains
+        value: "get('page_parameter.law')"
+        value_is_formula: true
 
 elements:
   - type: heading
@@ -29,6 +32,11 @@ elements:
     searchable: true
     css_class: duties-table
     columns:
+      - name: Law
+        type: text
+        field: Legal_Register
+        accessor: ".*.value"
+
       - name: Provision
         type: text
         field: Provision
@@ -57,6 +65,24 @@ elements:
           id: "get('current_record.id')"
         link_name: "Details"
 
+    # Per-field filter/sort/search (maps to property_options)
+    # Note: link_row and link columns don't support filter
+    user_actions:
+      - field: Type
+        filterable: true
+      - field: Significance
+        filterable: true
+        sortable: true
+      - field: Legal_Register
+        sortable: true
+        searchable: true
+      - field: Provision
+        searchable: true
+      - field: Provision_Text
+        searchable: true
+      - field: Regulated_Actors
+        filterable: true
+
 # CSS applied via Application Settings > Custom Code
 # The Builder applies css_class to the table element, then these rules
 # are injected into the app's custom CSS.
@@ -70,4 +96,13 @@ css: |
   .duties-table .ab-tag {
     white-space: nowrap;
     font-size: 12px;
+  }
+  /* Duty text: first para only, ellipsis at truncation */
+  .duties-table td:nth-child(3) .ab-table__cell-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
