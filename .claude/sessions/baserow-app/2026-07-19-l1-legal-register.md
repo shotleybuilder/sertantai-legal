@@ -85,15 +85,36 @@ enables:
 - [x] Assess link text set in UI
 - [x] Published
 - [ ] CSS styling — deferred, needs QQ branding guidelines (deferred)
+- [x] Law Detail page created (`/law/:id`) — master→detail pattern
+- [x] Legal Register table: 4 nav columns (Assess/Controls/Duties/Events) → 1 "View →" link
+- [x] Hierarchy_Filter formula field on LRT: `concat(field('Hierarchy'), '')` — flattens link_row to filterable text
+- [x] Hierarchy filterable via Filter/Sort/Search settings — no column needed, no CSS
+- [x] View → link working (uses `current_record.id` not `field_id`)
+- [x] Law Detail DS Row ID set to `page_parameter.id` via API (no manual step)
+- [x] Test: View → navigates to Law Detail — title, metadata, sites, nav links all working
+- [x] Legal Register Detail: all 4 nav links fixed to use field names not field IDs
+- [x] Assessment Form: changed from `/assess/:id` (Get Row) to `/assess?law=NAME` (List Rows + link_row_contains filter)
+- [x] All nav links now consistent: `?law=NAME` pattern (Controls, Duties, Events, Assess)
+- [x] Data source formulas use `data_source.DS_NAME.FIELD_NAME` not `field_{ID}` syntax
+- [ ] CSS styling — deferred, needs QQ branding guidelines
+- [ ] Test: Assess → from Legal Register Detail loads correct assessment
 
-## Design Change
-Original plan was to repurpose the Assessment Queue. Wrong approach — the Legal Register
-is a different data source (LRT table, not Assessments table). The Assessment and Actions
-pages remain as-is, linked FROM the Legal Register hub.
+## Design Changes
+
+### Original: Assessment Queue repurpose (rejected)
+Wrong approach — the Legal Register is a different data source (LRT table, not Assessments).
+
+### Legal Register redesign (2026-07-21)
+- **List page**: 8 columns (Title, Year, Family, Status, Significance, Assessment, Actions, View →)
+- **Detail page**: `/law/:id` — full law info, sites, and nav links
+- **Hierarchy filtering**: Hierarchy_Filter formula field (`concat(field('Hierarchy'), '')`) enabled in Filter/Sort/Search settings — no visible column needed
+- **All nav links use `?law=NAME`**: Controls, Duties, Events, Assess — consistent pattern, no Baserow row IDs in URLs
+- **Assessment Form**: changed from Get Row by `:id` path param to List Rows filtered by `link_row_contains Legal_Register` with `?law=` query param
 
 ## Notes
 - LRT table: 1079905
-- Assessment_Status lookup: field 9627086 (through Assessments reverse link 9564709, target Compliance_Status 9564710)
-- Assess link uses: `get('current_record.field_9564709.0.id')` — first Assessment row ID
+- Legal Register Detail page: 1075303 (`/law/:id`)
+- Data source formulas: use `data_source.DS_NAME.FIELD_NAME` (field names, not `field_ID`)
+- Table column formulas: still use `current_record.field_ID` (different context)
+- Assessment_Status lookup: field 9627086
 - Single quotes required in App Builder formulas for complex paths like `.*.value.value`
-- Created Law_Title (9627030) and Law_Year (9627031) lookup fields on Assessments table

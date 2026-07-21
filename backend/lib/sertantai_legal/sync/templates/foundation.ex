@@ -45,7 +45,7 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
   def name, do: "Foundation — Legal Register + Provisions"
 
   @impl true
-  def requires, do: []
+  def requires, do: [:hierarchy]
 
   @impl true
   def tables, do: [:lrt, :lat, :actor_tuples]
@@ -139,6 +139,18 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
         %{name: "Duty_Type", type: :multi_select, options: [], description: "DRRP duty types"},
         %{name: "Purpose", type: :multi_select, options: [], description: "Legal purposes"},
         %{name: "Fitness_Entities", type: :long_text, description: "Applicability entity tags"},
+        %{
+          name: "Hierarchy",
+          type: :link_row,
+          target: :hierarchy,
+          description: "Linked hierarchy nodes (sites, org units, etc.)"
+        },
+        %{
+          name: "Hierarchy_Filter",
+          type: :formula,
+          expression: %{baserow: "concat(field('Hierarchy'), '')"},
+          description: "Flattened hierarchy node names for App Builder filtering"
+        },
         %{name: "_source_id", type: :text, description: "Sync source identifier"},
         # Cross-table lookups through Assessments reverse link
         %{

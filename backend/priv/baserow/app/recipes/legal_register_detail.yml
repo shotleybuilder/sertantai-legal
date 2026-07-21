@@ -1,0 +1,66 @@
+page:
+  name: Legal Register Detail
+  path: "/law/:id"
+  path_params:
+    - name: id
+      type: numeric
+
+data_sources:
+  - name: Current Law
+    type: get_row
+    table: lrt
+    row_id: "get('page_parameter.id')"
+
+elements:
+  - type: link
+    value: "← Legal Register"
+    navigate_to: legal_register
+
+  - type: heading
+    value: "get('data_source.Current Law.Title')"
+    level: 2
+
+  - type: text
+    value: "concat('Year: ', get('data_source.Current Law.Year'), ' | Family: ', get('data_source.Current Law.Family.value'), ' | Status: ', get('data_source.Current Law.Status.value'), ' | Significance: ', get('data_source.Current Law.Significance.value'))"
+
+  - type: text
+    value: "concat('Assessment: ', get('data_source.Current Law.Assessment_Status.*.value.value'), ' | Actions: ✅ ', get('data_source.Current Law.Actions_Done.*.value'), ' ⚠️ ', get('data_source.Current Law.Actions_Overdue.*.value'), ' 🔵 ', get('data_source.Current Law.Actions_Open.*.value'))"
+
+  - type: heading
+    value: "Sites"
+    level: 3
+
+  - type: text
+    value: "get('data_source.Current Law.Hierarchy.*.value')"
+
+  - type: heading
+    value: "Navigate"
+    level: 3
+
+  - type: link
+    value: "Assess →"
+    navigate_to: assessment_form
+    query:
+      law: "get('data_source.Current Law.Name')"
+
+  - type: link
+    value: "Controls →"
+    navigate_to: controls_list
+    query:
+      law: "get('data_source.Current Law.Name')"
+
+  - type: link
+    value: "Duties →"
+    navigate_to: duties_list
+    query:
+      law: "get('data_source.Current Law.Name')"
+
+  - type: link
+    value: "Events →"
+    navigate_to: compliance_events
+    query:
+      law: "get('data_source.Current Law.Name')"
+
+  - type: link
+    value: "View on legislation.gov.uk →"
+    url: "get('data_source.Current Law.Legislation_URL')"

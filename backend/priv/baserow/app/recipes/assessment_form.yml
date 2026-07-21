@@ -1,15 +1,19 @@
 page:
   name: Assessment Form
-  path: "/assess/:id"
-  path_params:
-    - name: id
-      type: numeric
+  path: /assess
+  query_params:
+    - name: law
+      type: text
 
 data_sources:
   - name: Current Assessment
-    type: get_row
+    type: list_rows
     table: assessments
-    row_id: "get('page_parameter.id')"
+    filters:
+      - field: Legal_Register
+        type: link_row_contains
+        value: "get('page_parameter.law')"
+        value_is_formula: true
 
 elements:
   - type: link

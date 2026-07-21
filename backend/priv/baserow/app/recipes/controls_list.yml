@@ -2,7 +2,7 @@ page:
   name: Controls
   path: /controls
   query_params:
-    - name: provision
+    - name: law
       type: text
 
 data_sources:
