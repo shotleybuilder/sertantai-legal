@@ -5,6 +5,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
     Registry,
     SubPatterns,
     Foundation,
+    Hierarchy,
     Personnel,
     ComplianceAssessment,
     ActionTracker,
@@ -19,9 +20,9 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   }
 
   describe "Registry.resolve/1" do
-    test "resolves foundation alone" do
+    test "resolves foundation with hierarchy dependency" do
       {:ok, modules} = Registry.resolve([:foundation])
-      assert modules == [Foundation]
+      assert modules == [Hierarchy, Foundation]
     end
 
     test "resolves personnel alone" do
@@ -82,8 +83,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   end
 
   describe "Foundation template" do
-    test "has no dependencies" do
-      assert Foundation.requires() == []
+    test "requires hierarchy for LRT Hierarchy link" do
+      assert Foundation.requires() == [:hierarchy]
     end
 
     test "declares lrt, lat, and actor_tuples tables" do
