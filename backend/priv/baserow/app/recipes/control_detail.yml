@@ -1,0 +1,50 @@
+page:
+  name: Control Detail
+  path: "/control/:id"
+  path_params:
+    - name: id
+      type: numeric
+
+data_sources:
+  - name: Current Control
+    type: get_row
+    table: controls
+    row_id: "get('page_parameter.id')"
+
+elements:
+  - type: link
+    value: "← Back to Controls"
+    navigate_to: controls_list
+
+  - type: heading
+    value: "get('data_source.{Current Control}.field_{Title}')"
+    level: 2
+
+  - type: text
+    value: "concat('Type: ', get('data_source.{Current Control}.field_{Control_Type}.value'), ' | Nature: ', get('data_source.{Current Control}.field_{Nature}.value'), ' | Domain: ', get('data_source.{Current Control}.field_{Domain}.value'), ' | Status: ', get('data_source.{Current Control}.field_{Status}.value'))"
+
+  - type: heading
+    value: "Description"
+    level: 3
+
+  - type: text
+    value: "get('data_source.{Current Control}.field_{Description}')"
+
+  - type: heading
+    value: "Evidence & Measurement"
+    level: 3
+
+  - type: text
+    value: "concat('Frequency: ', get('data_source.{Current Control}.field_{Frequency}.value'), ' | Info Distance: ', get('data_source.{Current Control}.field_{Info_Distance}.value'), ' | Blast Radius: ', get('data_source.{Current Control}.field_{Blast_Radius}.value'))"
+
+  - type: heading
+    value: "Mapped Provisions"
+    level: 3
+
+  - type: text
+    value: "get('data_source.{Current Control}.field_{Control Mappings}.*.value')"
+
+  - type: link
+    value: "View Evidence Pattern →"
+    navigate_to: evidence_detail
+    # Pass control Name (PG UUID) as query param for evidence lookup

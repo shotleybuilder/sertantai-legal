@@ -93,7 +93,7 @@ enables:
 - [x] Fix ControlMappings Mapping formula — `join()` needed for link_row fields in Baserow formulas, `lookup('Controls', 'Title')` instead of UUID, `isblank(join(field(...), ''))` for empty check
 - [x] Fix duplicate views — SchemaManager phase_4 now checks existing views before creating. 146 duplicates cleaned. Added `list_views` + `delete_view` to Client.
 - [x] Implement view filters/sorts/groups — was TODO stubs. 86 views recreated. Filters/sorts/groups now applied via Baserow API.
-- [ ] Fix single_select filter type — Baserow needs `single_select_equal` not `equal` for single_select fields (12 filter failures) (deferred)
+- [x] Fix single_select filter type — field type-aware resolve_filter_type/2, views rebuilt with 0 filter failures (1 group_by on link_row unsupported)
 - [ ] Check for other tables with orphaned rows (no links) (deferred)
 
 ## Notes

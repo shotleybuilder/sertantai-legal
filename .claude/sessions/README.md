@@ -74,13 +74,15 @@ ElectricSQL, PGLite local store, shape management, data sync service.
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
-| 2026-07-20 | [phase-5-action-rollups](baserow-app/2026-07-20-phase-5-action-rollups.md) | — | Action count rollups (formula 1/0 + sum), integrated into templates. Unified page build deferred |
-| 2026-07-19 | [phase-4-legal-register](baserow-app/2026-07-19-phase-4-legal-register-hub.md) | — | Legal Register hub from LRT: Assessment Status emoji lookup, Assess link via reverse link, single-quote formula discovery |
-| 2026-07-19 | [phase-3-actions](baserow-app/2026-07-19-phase-3-actions.md) | — | Actions page: codify-first approach, 3 bugs caught (~w split, datetime_picker, formula JSON), all fixed in script |
-| 2026-07-19 | [phase-2-hierarchy](baserow-app/2026-07-19-phase-2-hierarchy.md) | — | Hierarchy page: same-page create+edit pattern, "Previous action > Create a row > Id" discovery, published |
-| 2026-07-18 | [phase-1-continuation](baserow-app/2026-07-18-phase-1-continuation.md) | — | Assessment App complete: form page, Update Row, published to sertantai-compliance.baserow.site. Full API patterns documented |
-| 2026-07-18 | [phase-1-assessment-app](baserow-app/2026-07-18-phase-1-assessment-app.md) | — | Assessment App: 428 rows seeded, Compliance Workbench app created via API, queue page with 6 columns + link. Form page deferred |
-| 2026-07-18 | [baserow-app-dashboards](baserow-app/2026-07-18-baserow-app-dashboards.md) | — | Scoped BR App Builder + Dashboards. Assessment App designed. Views fixed. Meta session created |
+| 2026-07-20 | [build](baserow-app/2026-07-20-build.md) | — | Recipe-driven app builder: 7 YAML recipes, 4 modules, mix app.build. Replaces 10 ad-hoc scripts. Namespaced under baserow/app/ |
+| 2026-07-20 | [l1-duties](baserow-app/2026-07-20-l1-duties.md) | — | Duties pages complete: recipe-driven, zero manual steps. Discovered link_name, value_is_formula, page_parameter, link_row_contains, CSS custom_code |
+| 2026-07-20 | [l2-action-rollups](baserow-app/2026-07-20-l2-action-rollups.md) | — | Action count rollups (formula 1/0 + sum), integrated into templates. Unified page build deferred |
+| 2026-07-19 | [l1-legal-register](baserow-app/2026-07-19-l1-legal-register.md) | — | Legal Register hub from LRT: Assessment Status emoji lookup, Assess link via reverse link, single-quote formula discovery |
+| 2026-07-19 | [actions](baserow-app/2026-07-19-actions.md) | — | Actions page: codify-first approach, 3 bugs caught (~w split, datetime_picker, formula JSON), all fixed in script |
+| 2026-07-19 | [hierarchy](baserow-app/2026-07-19-hierarchy.md) | — | Hierarchy page: same-page create+edit pattern, "Previous action > Create a row > Id" discovery, published |
+| 2026-07-18 | [l2-assessment-cont](baserow-app/2026-07-18-l2-assessment-cont.md) | — | Assessment App complete: form page, Update Row, published to sertantai-compliance.baserow.site. Full API patterns documented |
+| 2026-07-18 | [l2-assessment](baserow-app/2026-07-18-l2-assessment.md) | — | Assessment App: 428 rows seeded, Compliance Workbench app created via API, queue page with 6 columns + link. Form page deferred |
+| 2026-07-18 | [scoping](baserow-app/2026-07-18-scoping.md) | — | Scoped BR App Builder + Dashboards. Assessment App designed. Views fixed. Meta session created |
 | 2026-07-18 | [sync-snagging-list](baserow/2026-07-18-sync-snagging-list.md) | — | Dedup fix (Name→[row_ids]), actor tuple scoping (499→151), CM formula (join/lookup), view dedup+filters/sorts/groups. 2 items deferred |
 | 2026-07-18 | [issue-124](baserow/2026-07-18-issue-124.md) | [#124](https://github.com/shotleybuilder/sertantai-legal/issues/124) | Suppress Zenoh in mix tasks via server_mode?() — 5-line fix. Evaluated 4 proposals (HTTP/Node.connect/Oban/DynamicSupervisor) via Gemini+ChatGPT+agent |
 | 2026-07-16 | [evidence-layer](2026-07-16-evidence-layer.md) | — | Evidence layer: EvidencePattern + ArtefactTemplate resources, Zenoh subscriber, Baserow sync. 1,333 patterns, 4,532 artefacts. #124 raised |
@@ -229,6 +231,8 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-20 | [terms-jsp-controls](second-tier-duties/2026-07-20-terms.md) | — | SecondaryTerm table + JSP-derived controls from artefacts. 29 terms, 256 JSP controls, source_id column on controls |
+| 2026-07-20 | [mandated-artefacts](second-tier-duties/2026-07-20-mandated-artefacts.md) | — | SecondaryMandatedArtefact table — Phase 4 enrichment. 32 artefacts across 8 types from JSP-375-CH23 |
 | 2026-07-19 | [obligations-raci](second-tier-duties/2026-07-19-obligations-raci.md) | [#126](https://github.com/shotleybuilder/sertantai-legal/issues/126) | SecondaryObligation + SecondaryRaci tables, DuckDB struct parser rewrite. 117 obligations, 32 RACI from JSP-375-CH23 |
 | 2026-07-16 | [second-tier-duties/phase-3](second-tier-duties/2026-07-16-phase-3-zenoh-queryables.md) | — | Phase 3: Zenoh queryables for secondary sources/provisions, spec published |
 | 2026-07-16 | [second-tier-duties/parse-hsgs](second-tier-duties/2026-07-16-parse-hsgs.md) | — | Parse 29 HSGs: 19,454 provisions, OGL confirmed, corpus total 45,049 |

@@ -1,0 +1,88 @@
+page:
+  name: Controls
+  path: /controls
+  query_params:
+    - name: provision
+      type: text
+
+data_sources:
+  - name: Controls
+    type: list_rows
+    table: controls
+    filters:
+      - field: Legal_Register
+        type: link_row_contains
+        value: "get('page_parameter.law')"
+        value_is_formula: true
+
+elements:
+  - type: heading
+    value: "Controls"
+    level: 1
+
+  - type: link
+    value: "← Back to Duties"
+    navigate_to: duties_list
+
+  - type: table
+    data_source: Controls
+    items_per_page: 25
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Title
+        type: text
+        field: Title
+
+      - name: Type
+        type: text
+        field: Control_Type
+        accessor: .value
+
+      - name: Nature
+        type: text
+        field: Nature
+        accessor: .value
+
+      - name: Domain
+        type: text
+        field: Domain
+        accessor: .value
+
+      - name: Status
+        type: text
+        field: Status
+        accessor: .value
+
+      - name: Frequency
+        type: text
+        field: Frequency
+        accessor: .value
+
+      - name: Evidence
+        type: link
+        navigate_to: evidence_detail
+        query:
+          control: "get('current_record.field_{Name}')"
+        link_name: "Evidence →"
+
+      - name: Details
+        type: link
+        navigate_to: control_detail
+        params:
+          id: "get('current_record.id')"
+        link_name: "Details →"
+
+    user_actions:
+      - field: Control_Type
+        filterable: true
+      - field: Nature
+        filterable: true
+      - field: Domain
+        filterable: true
+      - field: Status
+        filterable: true
+        sortable: true
+      - field: Title
+        searchable: true

@@ -52,11 +52,11 @@ artifacts:
   - backend/scripts/add_actions_summary_column.exs
 
 depends_on:
-  - 2026-07-19-phase-4-legal-register-hub.md
+  - 2026-07-19-l1-legal-register.md
   - 2026-07-18-meta.md
 
 enables:
-  - 2026-07-20-legal-register-page-build.md (pending — unified page build)
+  - 2026-07-20-build-pending.md (pending — unified page build)
 ---
 
 # Action Status Rollups — Phase 5
@@ -81,7 +81,7 @@ Integrate into repeatable build:
 - [x] Add Actions_Open/Overdue/Done rollup fields to ComplianceAssessment template
 - [x] Add Actions_Open/Overdue/Done + Assessment_Status lookup fields to Foundation (LRT) template
 - [x] SchemaManager: add `:rollup` to Phase 3 deferred field types
-- [ ] Integrate Legal Register page build into unified app build script (deferred → pending session `2026-07-20-legal-register-page-build.md`)
+- [ ] Integrate Legal Register page build into unified app build script (deferred → pending session `2026-07-20-build-pending.md`)
 - [ ] Test full onboarding flow: templates.apply → seed → build app → publish (deferred → pending session)
 
 ## Approach

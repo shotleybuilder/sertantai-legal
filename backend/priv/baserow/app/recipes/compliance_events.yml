@@ -1,0 +1,219 @@
+page:
+  name: Compliance Events
+  path: /events
+  query_params:
+    - name: law
+      type: text
+    - name: edit
+      type: numeric
+
+data_sources:
+  - name: All Events
+    type: list_rows
+    table: compliance_events
+    filters:
+      - field: Legal_Register
+        type: link_row_contains
+        value: "get('page_parameter.law')"
+        value_is_formula: true
+
+  - name: Edit Event
+    type: get_row
+    table: compliance_events
+    row_id: "get('page_parameter.edit')"
+
+  - name: Personnel
+    type: list_rows
+    table: personnel
+
+elements:
+  - type: heading
+    value: "Compliance Events"
+    level: 1
+
+  - type: link
+    value: "← Legal Register"
+    navigate_to: legal_register
+
+  - type: button
+    value: "+ Log Event"
+    events:
+      on_click:
+        - type: create_row
+          table: compliance_events
+        - type: open_page
+          target: _self
+          query:
+            edit: "Previous action > Create a row > Id"
+          manual_config: true
+
+  - type: table
+    data_source: All Events
+    items_per_page: 25
+    filterable: true
+    sortable: true
+    searchable: true
+    columns:
+      - name: Title
+        type: text
+        field: Title
+
+      - name: Type
+        type: text
+        field: Event_Type
+        accessor: .value
+
+      - name: Urgency
+        type: text
+        field: Urgency
+        accessor: .value
+
+      - name: Triage
+        type: text
+        field: Triage_Status
+        accessor: .value
+
+      - name: Response
+        type: text
+        field: Response_Status
+        accessor: .value
+
+      - name: Detected
+        type: text
+        field: Date_Detected
+
+      - name: Owner
+        type: text
+        field: Owner
+        accessor: ".*.value"
+
+      - name: Edit
+        type: link
+        navigate_to: _self
+        query:
+          edit: "get('current_record.id')"
+        link_name: "Edit"
+
+    user_actions:
+      - field: Event_Type
+        filterable: true
+      - field: Urgency
+        filterable: true
+        sortable: true
+      - field: Triage_Status
+        filterable: true
+      - field: Response_Status
+        filterable: true
+        sortable: true
+      - field: Title
+        searchable: true
+
+  - type: form_container
+    submit_label: "Save Event"
+    manual_nesting: true
+    children:
+      - type: input_text
+        label: Title
+        required: true
+        default_from: "{Edit Event}.Title"
+
+      - type: choice
+        label: Event Type
+        options:
+          - Regulatory Change
+          - Enforcement Action
+          - Permit Change
+          - Reputational
+          - Internal Control Failure
+          - Internal Organisational
+          - Audit Finding
+          - Whistleblowing
+        default_from: "{Edit Event}.Event_Type.value"
+
+      - type: choice
+        label: Event Source
+        options:
+          - External Regulatory
+          - External Enforcement
+          - External Reputational
+          - Internal Operational
+          - Internal Organisational
+        default_from: "{Edit Event}.Event_Source.value"
+
+      - type: choice
+        label: Urgency
+        options:
+          - Immediate
+          - Scheduled
+          - Monitoring
+          - Background
+        default_from: "{Edit Event}.Urgency.value"
+
+      - type: choice
+        label: Triage Status
+        options:
+          - Material
+          - Monitor
+          - Not Applicable
+        default_from: "{Edit Event}.Triage_Status.value"
+
+      - type: choice
+        label: Response Status
+        options:
+          - Detected
+          - Triaged
+          - Assessing Impact
+          - Responding
+          - Closed
+        default_from: "{Edit Event}.Response_Status.value"
+
+      - type: record_selector
+        label: Owner
+        placeholder: "Who owns the response?"
+        data_source: Personnel
+
+      - type: datetime_picker
+        label: Date Detected
+        default_from: "{Edit Event}.Date_Detected"
+
+      - type: datetime_picker
+        label: Date Effective
+        default_from: "{Edit Event}.Date_Effective"
+
+      - type: input_text
+        label: Description
+        placeholder: "Full description of the event..."
+        multiline: true
+        default_from: "{Edit Event}.Description"
+
+      - type: input_text
+        label: Impact Summary
+        placeholder: "What parts of the compliance register are affected?"
+        multiline: true
+        default_from: "{Edit Event}.Impact_Summary"
+
+      - type: input_text
+        label: Triage Rationale
+        placeholder: "Why this triage decision?"
+        multiline: true
+        default_from: "{Edit Event}.Triage_Rationale"
+
+      - type: input_text
+        label: Notes
+        placeholder: "Additional notes..."
+        multiline: true
+        default_from: "{Edit Event}.Notes"
+
+workflow:
+  on_submit:
+    - type: update_row
+      table: compliance_events
+      row_id: "page_parameter.edit"
+      manual_config: true
+
+    - type: notification
+      title: "Event Saved"
+      description: "The compliance event has been updated."
+
+    - type: refresh_data_source
+      target: All Events

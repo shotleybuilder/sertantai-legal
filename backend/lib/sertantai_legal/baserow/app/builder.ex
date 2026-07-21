@@ -26,15 +26,17 @@ defmodule SertantaiLegal.Baserow.App.Builder do
   @doc """
   Build the complete Compliance Workbench app from recipes.
   """
-  def build(sync_config_id) do
-    Logger.info("[AppBuilder] Starting build")
+  def build(sync_config_id, opts \\ []) do
+    only = Keyword.get(opts, :only)
+    Logger.info("[AppBuilder] Starting build#{if only, do: " (only: #{inspect(only)})", else: ""}")
 
     with {:ok, config, sc} <- authenticate(sync_config_id),
          {:ok, builder_id, integration_id} <- ensure_app_and_integration(config),
-         {:ok, recipes} <- load_recipes(),
+         {:ok, all_recipes} <- load_recipes(),
+         recipes <- filter_recipes(all_recipes, only),
          {:ok, table_ids} <- resolve_table_ids(sc),
          {:ok, resolver} <- build_resolver(config, table_ids),
-         {:ok, page_registry} <- build_pages(recipes, config, builder_id, integration_id, table_ids, resolver),
+         {:ok, page_registry} <- build_pages(all_recipes, recipes, config, builder_id, integration_id, table_ids, resolver),
          {:ok, manual_steps} <- generate_manual_steps(recipes),
          {:ok, _} <- publish(config, builder_id) do
       Logger.info("[AppBuilder] Build complete — #{map_size(page_registry)} pages")
@@ -109,6 +111,14 @@ defmodule SertantaiLegal.Baserow.App.Builder do
     {:ok, builder["id"], integration["id"]}
   end
 
+  # ── Recipe Filtering ─────────────────────────────────────
+
+  defp filter_recipes(all_recipes, nil), do: all_recipes
+
+  defp filter_recipes(all_recipes, only) when is_list(only) do
+    Map.take(all_recipes, only)
+  end
+
   # ── Recipes ─────────────────────────────────────────────
 
   defp load_recipes do
@@ -154,10 +164,10 @@ defmodule SertantaiLegal.Baserow.App.Builder do
   # pages that link FROM. We do two passes: first create all pages (to get IDs),
   # then populate elements.
 
-  defp build_pages(recipes, config, builder_id, integration_id, table_ids, resolver) do
-    # Pass 1: create all pages to build the page registry
+  defp build_pages(all_recipes, recipes_to_build, config, builder_id, integration_id, table_ids, resolver) do
+    # Pass 1: create/find pages for ALL recipes (need full registry for cross-page links)
     page_registry =
-      Enum.reduce(recipes, %{}, fn {key, recipe}, registry ->
+      Enum.reduce(all_recipes, %{}, fn {key, recipe}, registry ->
         page_spec = recipe["page"]
         headers = auth_headers(config)
         base = config["base_url"]
@@ -199,8 +209,8 @@ defmodule SertantaiLegal.Baserow.App.Builder do
 
     Logger.info("[AppBuilder] Page registry: #{inspect(Map.keys(page_registry))}")
 
-    # Pass 2: build page content (elements, data sources, workflows)
-    Enum.each(recipes, fn {key, recipe} ->
+    # Pass 2: build page content ONLY for requested recipes
+    Enum.each(recipes_to_build, fn {key, recipe} ->
       Logger.info("[AppBuilder] Building: #{key}")
 
       PageBuilder.build(recipe,

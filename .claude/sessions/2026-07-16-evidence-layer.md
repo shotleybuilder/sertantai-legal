@@ -1,3 +1,77 @@
+---
+session: Evidence layer — fractalaw → Postgres → Baserow
+project: sertantai-legal
+status: closed
+opened: 2026-07-16
+closed: 2026-07-16
+outcome: success
+commits: [1fd788d]
+
+summary: >
+  Built the full Evidence layer mirroring the Controls pattern: EvidencePattern + ArtefactTemplate
+  Ash resources, EvidenceSubscriber for Zenoh Arrow IPC, and Baserow sync with customer duty scoping.
+  1,333 patterns ingested from fractalaw across 220 laws, 1,126 synced to QQ Baserow with 3,851
+  artefact templates. End-to-end pipeline proven.
+
+decisions:
+  - what: Evidence patterns are shared reference data (no org_id), like Controls
+    why: Evidence is generated from law text via fractalaw, not customer-specific. Customer scoping happens at Baserow sync time by filtering to controls that map to customer Duties.
+    result: Simple upsert model, no multi-tenancy on evidence_patterns/artefact_templates tables
+
+  - what: No Postgres FK from evidence_patterns to controls — key on (law_name, control_id) as strings
+    why: 1:1 logical relationship with Controls. String-based identity allows evidence to arrive in any order and resolves at query/sync time. Same pattern as Controls using law_name as string reference to LegalRegister.
+    result: No ordering dependency between control and evidence publication
+
+  - what: TemplateBehaviour modules for evidence_patterns and artefact_templates
+    why: User challenged false distinction between "sync-engine data tables" and "customer-facing templates" — Controls is both, and Evidence is identical.
+    result: Tables created via mix templates.apply like all other Baserow tables
+
+metrics:
+  evidence_patterns: { total: 1333, laws: 220, control_coverage_pct: 89 }
+  artefact_templates: { total: 4532, avg_per_pattern: 3.4, min: 1, max: 7 }
+  voi_distribution: { Judgement: "76%", No-Brainer: "23%", Table_Stakes: "<1%", Waste: "<1%" }
+  baserow_qq_sync: { patterns: 1126, artefacts: 3851, filtered_by_duties: 207 }
+
+lessons:
+  - title: Don't draw false distinctions between template tables and sync-engine tables
+    detail: >
+      Controls and Evidence Patterns are both AI-generated data synced from Postgres AND
+      customer-visible Baserow tables. The template system (TemplateBehaviour, SchemaManager,
+      mix templates.apply) handles all Baserow table creation — there's no separate category.
+    tag: baserow
+
+  - title: mix tasks that start full OTP app fight the running server for Zenoh ports
+    detail: >
+      mix sync.run --direct and mix templates.apply start a second Elixir application instance,
+      causing 30 Zenoh session retry attempts before giving up. The running Phoenix server already
+      has all connections. Raised #124 to refactor to API endpoints.
+    tag: tooling
+
+  - title: artefacts_json unpacking follows the same delete+recreate pattern as control_mappings
+    detail: >
+      EvidenceSubscriber unpacks the artefacts_json string into individual ArtefactTemplate records
+      using the same pattern as ControlsSubscriber.rebuild_mappings — delete existing children,
+      create new ones from the payload. Upsert identity on (evidence_pattern_id, title).
+    tag: zenoh
+
+artifacts:
+  - backend/lib/sertantai_legal/legal/evidence_pattern.ex
+  - backend/lib/sertantai_legal/legal/artefact_template.ex
+  - backend/lib/sertantai_legal/zenoh/evidence_subscriber.ex
+  - backend/lib/sertantai_legal/sync/templates/evidence_patterns.ex
+  - backend/lib/sertantai_legal/sync/templates/artefact_templates.ex
+  - backend/priv/repo/migrations/20260716135644_add_evidence_patterns.exs
+  - docs/zenoh/ZENOH-EVIDENCE-SPEC.md
+
+depends_on:
+  - 2026-07-13-compliance-controls.md
+
+enables:
+  - BMS instruction generation from Controls + Evidence
+  - Customer evidence workflow (Artefacts/Judgements/Gaps populated from templates)
+  - Three-way merge on evidence regeneration
+---
+
 # Evidence Layer — fractalaw → sertantai-legal → Baserow
 
 **Started**: 2026-07-16 13:11

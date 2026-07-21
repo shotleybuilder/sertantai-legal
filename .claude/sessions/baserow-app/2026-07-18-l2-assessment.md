@@ -62,7 +62,7 @@ artifacts:
   - backend/scripts/build_assessment_app.exs
 
 depends_on:
-  - 2026-07-18-baserow-app-dashboards.md
+  - 2026-07-18-scoping.md
 
 enables:
   - Phase 1 continuation (form page, events, publish)

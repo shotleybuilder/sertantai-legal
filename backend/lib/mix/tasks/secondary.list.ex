@@ -109,7 +109,9 @@ defmodule Mix.Tasks.Secondary.List do
 
     total_provisions = count_provisions(sources)
 
-    IO.puts("=== Secondary Sources (#{length(sources)} records, #{total_provisions} provisions) ===\n")
+    IO.puts(
+      "=== Secondary Sources (#{length(sources)} records, #{total_provisions} provisions) ===\n"
+    )
 
     # Print parents with their children
     Enum.each(with_children, fn parent ->
@@ -117,7 +119,10 @@ defmodule Mix.Tasks.Secondary.List do
       prov_count = count_provisions_for(parent.id, kids)
 
       IO.puts("#{parent.source_id} — #{parent.title}")
-      IO.puts("  #{to_string(parent.source_type)} | #{to_string(parent.legal_weight)} | #{length(kids)} chapters | #{prov_count} provisions")
+
+      IO.puts(
+        "  #{to_string(parent.source_type)} | #{to_string(parent.legal_weight)} | #{length(kids)} chapters | #{prov_count} provisions"
+      )
 
       if verbose? do
         print_links(parent)
@@ -136,7 +141,10 @@ defmodule Mix.Tasks.Secondary.List do
       Enum.each(standalone, fn source ->
         provs = count_provisions_for_source(source.source_id)
         IO.puts("#{source.source_id} — #{truncate(source.title, 50)}")
-        IO.puts("  #{to_string(source.source_type)} | #{to_string(source.legal_weight)} | #{provs} provisions")
+
+        IO.puts(
+          "  #{to_string(source.source_type)} | #{to_string(source.legal_weight)} | #{provs} provisions"
+        )
 
         if verbose? do
           print_links(source)

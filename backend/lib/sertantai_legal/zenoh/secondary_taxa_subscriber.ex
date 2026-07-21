@@ -843,7 +843,7 @@ defmodule SertantaiLegal.Zenoh.SecondaryTaxaSubscriber do
           normalised = entry["normalised"]
           term_text = entry["term"]
 
-          if normalised && term_text do
+          if normalised && normalised != "" && term_text && term_text != "" do
             term_id = "#{provision.source_id}:#{normalised}"
 
             params = %{

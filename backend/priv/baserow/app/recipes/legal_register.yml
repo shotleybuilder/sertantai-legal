@@ -59,9 +59,23 @@ elements:
           id: "get('current_record.field_{Assessments}.0.id')"
         link_name: "Assess →"
 
+      - name: Controls
+        type: link
+        navigate_to: controls_list
+        query:
+          law: "get('current_record.field_{Name}')"
+        link_name: "Controls →"
+
       - name: Duties
         type: link
         navigate_to: duties_list
         query:
           law: "get('current_record.field_{Name}')"
         link_name: "Duties →"
+
+      - name: Events
+        type: link
+        navigate_to: compliance_events
+        query:
+          law: "get('current_record.field_{Name}')"
+        link_name: "Events →"

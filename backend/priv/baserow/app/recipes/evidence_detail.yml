@@ -1,0 +1,107 @@
+page:
+  name: Evidence
+  path: /evidence
+  query_params:
+    - name: control
+      type: text
+
+data_sources:
+  - name: Evidence Patterns
+    type: list_rows
+    table: evidence_patterns
+    filters:
+      - field: Controls
+        type: link_row_contains
+        value: "get('page_parameter.control')"
+        value_is_formula: true
+
+  - name: Artefact Templates
+    type: list_rows
+    table: artefact_templates
+
+elements:
+  - type: heading
+    value: "Evidence Pattern"
+    level: 1
+
+  - type: link
+    value: "← Back to Controls"
+    navigate_to: controls_list
+
+  # Evidence pattern summary table
+  - type: table
+    data_source: Evidence Patterns
+    items_per_page: 5
+    columns:
+      - name: Control
+        type: text
+        field: Control_Title
+
+      - name: VoI Quadrant
+        type: text
+        field: VoI_Quadrant
+        accessor: .value
+
+      - name: Evidence Standard
+        type: text
+        field: Evidence_Standard
+        accessor: .value
+
+      - name: Needs Judgement
+        type: text
+        field: Needs_Judgement
+
+      - name: Recommended Method
+        type: text
+        field: Recommended_Method
+        accessor: .value
+
+      - name: Interval
+        type: text
+        field: Recommended_Interval
+
+      - name: Staleness
+        type: text
+        field: Staleness_Tolerance
+        accessor: .value
+
+  # Artefact templates table
+  - type: heading
+    value: "Artefact Templates"
+    level: 2
+
+  - type: table
+    data_source: Artefact Templates
+    items_per_page: 10
+    columns:
+      - name: Title
+        type: text
+        field: Name
+
+      - name: Type
+        type: text
+        field: Artefact_Type
+        accessor: .value
+
+      - name: Class
+        type: text
+        field: Artefact_Class
+        accessor: .value
+
+      - name: What It Proves
+        type: text
+        field: What_It_Proves
+
+      - name: Source
+        type: text
+        field: Source
+        accessor: .value
+
+      - name: Likelihood
+        type: text
+        field: Likelihood_Ratio
+        accessor: .value
+
+      - name: By Design
+        type: text
+        field: Evidence_By_Design

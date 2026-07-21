@@ -28,7 +28,6 @@ def build_code_context():
 
     files = [
         (f"{base}/sync/engine.ex", "Engine — sync orchestration (LRT → LAT → Actor Tuples → linking)"),
-        (f"{base}/sync/delta_detector.ex", "DeltaDetector — new/updated/deleted row classification"),
         (f"{base}/sync/actor_tuple_sync.ex", "ActorTupleSync — normalised actor↔DRRP tuple table"),
         (f"{base}/sync/providers/baserow.ex", "Baserow provider — API operations, field specs, type mapping"),
         (f"{base}/sync/profile_query.ex", "ProfileQuery — LRT/LAT queries with checkpoint and aggregation"),
@@ -62,17 +61,16 @@ def build_code_context():
 
 REVIEW_PROMPTS = [
     {
-        "id": "delta_sync_correctness",
-        "title": "Delta Sync Correctness",
-        "prompt": """Review the DeltaDetector module and how Engine.sync_lrt uses it.
+        "id": "map_based_cud",
+        "title": "Map-Based CUD Correctness",
+        "prompt": """Review the map-based CUD algorithm in Engine (sync_table, split_cud, find_deletes).
 
 Specifically:
-1. Is the three-way classification (new/updated/deleted/unchanged) correct? Are there edge cases where a row could be misclassified?
-2. The timestamp comparison: source.updated_at > mapping.last_synced_at. What if clocks drift? What if a row is updated but updated_at doesn't change (e.g., only JSONB subfield changed)?
-3. When no source_timestamps are provided, all matched rows are treated as "updated" (safe default). Is this the right behaviour for LAT/Actor Tuples which don't have updated_at?
-4. The deleted detection: source_id in mappings but not in source. This correctly detects profile-filtered-out laws. But what about laws whose family was removed from the sync profile — should they be deleted or archived?
-5. The batch_update path injects "id" (Baserow row ID) into the row map. Is this safe? Could it conflict with a field named "id"?
-6. Are there race conditions if two sync runs overlap?"""
+1. sync_table fetches all Baserow rows via list_all_rows to build a Name→row_id map, then splits Postgres rows into creates/updates. Is this correct for all table sizes?
+2. find_deletes compares Baserow Names against Postgres Names — Baserow-only Names are deleted. Could this incorrectly delete rows if the Postgres query is filtered differently than expected?
+3. Controls and CMs are scoped by candidate_duties (the customer's aggregated LAT set). Could scoping cause orphaned rows if the customer's Duties set changes between syncs?
+4. find_parent_in_set walks up the section_id hierarchy stripping trailing parentheticals. Are there edge cases where this fails (e.g. suffixed IDs like reg.10A)?
+5. Are there race conditions if two sync runs overlap?"""
     },
     {
         "id": "actor_tuple_model",
@@ -166,7 +164,7 @@ Key domain concepts:
 Focus your review on: correctness, edge cases, production robustness, data integrity, and missed failure modes. Be specific — cite function names, line patterns, and give concrete scenarios. Don't suggest style changes.""",
             "contents": [
                 {"role": "user", "parts": [{"text": f"Here is the complete Baserow sync pipeline source code for review:\n\n{code_context}"}]},
-                {"role": "model", "parts": [{"text": "I've loaded the Baserow sync pipeline source code including Engine, DeltaDetector, ActorTupleSync, Baserow provider, ProfileQuery, configurations, and supporting modules. Ready for targeted review questions."}]},
+                {"role": "model", "parts": [{"text": "I've loaded the Baserow sync pipeline source code including Engine, ActorTupleSync, Baserow provider, ProfileQuery, configurations, and supporting modules. Ready for targeted review questions."}]},
             ],
             "ttl": "3600s",
         },

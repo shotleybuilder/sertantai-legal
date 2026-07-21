@@ -4,20 +4,22 @@ defmodule Mix.Tasks.App.Build do
   @moduledoc """
   Build the Compliance Workbench Baserow app from YAML recipes.
 
-  Reads recipe files from `lib/sertantai_legal/app/recipes/`,
+  Reads recipe files from `priv/baserow/app/recipes/`,
   resolves field names to IDs, creates pages/elements/workflows,
   and publishes.
 
   ## Usage
 
-      mix app.build                    # Uses default sync config
-      mix app.build --config UUID      # Specific sync config
+      mix app.build                           # Build ALL recipes
+      mix app.build --only controls_list      # Build single recipe
+      mix app.build --only controls_list,evidence_detail  # Build specific recipes
+      mix app.build --config UUID             # Specific sync config
 
   ## What it does
 
   1. Authenticates with Baserow
   2. Creates or finds the Compliance Workbench app
-  3. Loads all YAML recipes
+  3. Loads YAML recipes (all or --only subset)
   4. Resolves field names → IDs for each table
   5. Creates pages, data sources, elements, workflow actions
   6. Publishes to baserow.site
@@ -32,8 +34,8 @@ defmodule Mix.Tasks.App.Build do
 
     {opts, positional, _} =
       OptionParser.parse(args,
-        strict: [config: :string],
-        aliases: [c: :config]
+        strict: [config: :string, only: :string],
+        aliases: [c: :config, o: :only]
       )
 
     config_id =
@@ -44,10 +46,21 @@ defmodule Mix.Tasks.App.Build do
       System.halt(1)
     end
 
-    Mix.shell().info("Building Compliance Workbench from recipes...")
+    only_recipes =
+      case opts[:only] do
+        nil -> nil
+        str -> str |> String.split(",") |> Enum.map(&String.trim/1) |> Enum.map(&String.to_atom/1)
+      end
+
+    if only_recipes do
+      Mix.shell().info("Building recipes: #{Enum.join(only_recipes, ", ")}")
+    else
+      Mix.shell().info("Building ALL recipes")
+    end
+
     Mix.shell().info("Config: #{config_id}\n")
 
-    case SertantaiLegal.Baserow.App.Builder.build(config_id) do
+    case SertantaiLegal.Baserow.App.Builder.build(config_id, only: only_recipes) do
       {:ok, result} ->
         Mix.shell().info("\n=== Build Complete ===")
         Mix.shell().info("Pages: #{map_size(result.pages)}")

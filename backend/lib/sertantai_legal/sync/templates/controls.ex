@@ -67,6 +67,13 @@ defmodule SertantaiLegal.Sync.Templates.Controls do
             expression: %{baserow: "concat(field('Control_Type'), ' — ', field('Title'))"},
             description: "Display: Control_Type — Title"
           },
+          # Law link — enables filtering Controls by law from Legal Register
+          %{
+            name: "Legal_Register",
+            type: :link_row,
+            target: :lrt,
+            description: "Parent law (for navigation from Legal Register)"
+          },
           # Properties (static)
           %{
             name: "Title",

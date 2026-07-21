@@ -45,6 +45,34 @@ N rows per law — one per generated control. Published from DuckDB `suggested_c
 - `evidence_type_a` and `evidence_type_b` are flattened from the JSON `evidence_hint` object for Arrow compatibility.
 - Customer-set fields (`Owner`, `Org_Unit`, `Location`, `External_Ref`, `Demand_Mode`, `Design_Effectiveness`, `Operating_Effectiveness`, `Last_Verified`) are NOT published. They are created empty on the sertantai side for the customer to fill.
 
+### JSP-Derived Controls
+
+JSP controls are **additive** — they live in the same `suggested_controls` table
+as legislation controls but are sector-specific (defence only). Two additional
+columns distinguish them:
+
+| Field | Arrow Type | Description |
+|-------|-----------|-------------|
+| `source_id` | `Utf8` | JSP chapter identifier (e.g., `JSP-375-CH23`). NULL for legislation controls. |
+| `related_control_ids` | `Utf8` | Comma-separated IDs of legislation controls this JSP control implements. NULL if no link established. |
+
+**Key differences from legislation controls:**
+
+- `law_name` is the legislation the JSP implements (from resolved cross-references),
+  not the JSP itself. This allows filtering "all controls for a law" to return both
+  legislation and JSP controls.
+- `linked_provisions` contains JSP `section_id`s, not legislative section_ids.
+- `control_json` contains additional JSP-specific fields: `artefact_type`,
+  `responsible_role`, `competence_requirements`, `source: "jsp"`.
+- Sertantai filters by `source_id IS NULL` for non-defence customers,
+  `source_id IS NOT NULL` for JSP controls, or no filter for defence customers
+  who see both.
+
+**JSP controls are NOT published via the controls key expression.** They travel
+in the consolidated secondary enrichment payload (`taxa/secondary/{source_id}`)
+as part of the per-provision data. Sertantai creates control records from the
+mandated artefacts and obligation data in the enrichment payload.
+
 ## Policy Predicate Record
 
 1 row per law — the law's "big idea" as a checkable proposition.
