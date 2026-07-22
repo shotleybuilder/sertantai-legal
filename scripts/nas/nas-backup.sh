@@ -159,6 +159,7 @@ fi
 if [ "$DO_DATA" = true ]; then
   echo "--- Stage 2: Project Data Sync ---"
 
+  # Sync project-level data/ (secondary sources, etc.)
   src="${PROJECT_DIR}/${DATA_DIR}"
   dest="${NAS_DATA_DIR}/${DATA_DIR}"
 
@@ -171,6 +172,21 @@ if [ "$DO_DATA" = true ]; then
     echo "    ${file_count} files, ${dir_size}"
   else
     echo "  SKIP ${DATA_DIR} (not found)"
+  fi
+
+  # Sync backend/data/ (QQ working data, SQLite DBs, imports, reports)
+  backend_data="${PROJECT_DIR}/backend/data"
+  backend_dest="${NAS_DATA_DIR}/backend-data"
+
+  if [ -d "$backend_data" ]; then
+    mkdir -p "$backend_dest"
+    echo "  rsync backend/data/ → ${backend_dest}/"
+    rsync -a --delete "$backend_data/" "$backend_dest/"
+    file_count=$(find "$backend_data" -type f | wc -l)
+    dir_size=$(du -sh "$backend_data" | cut -f1)
+    echo "    ${file_count} files, ${dir_size}"
+  else
+    echo "  SKIP backend/data (not found)"
   fi
 
   echo ""
