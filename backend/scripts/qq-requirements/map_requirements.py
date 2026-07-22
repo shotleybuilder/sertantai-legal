@@ -885,6 +885,195 @@ def cmd_report(args):
 
 
 # ===========================================================================
+# Command: aggregate
+# ===========================================================================
+
+def cmd_aggregate(args):
+    """Aggregate compliance per law (and optionally per provision) across all sites.
+
+    For each law: if every Applicable row across all sites is Compliant,
+    the law is COMPLIANT at org level. Any Action Required → ACTION_REQUIRED.
+    Any Undetermined with no Action Required → PARTIAL. No Applicable rows → NOT_APPLICABLE.
+    """
+    conn = init_db(args.db)
+
+    sites = [r[0] for r in conn.execute(
+        "SELECT DISTINCT site_code FROM site_applicability ORDER BY site_code"
+    ).fetchall()]
+    print(f"Aggregating across {len(sites)} sites...")
+
+    # --- Law-level aggregation ---
+    # For each matched law (lrt.name), collect all (site, applicability, compliance) tuples
+    rows = conn.execute(
+        """SELECT lrt.name, lrt.title_en, sa.site_code, sa.applicability, sa.compliance
+           FROM lrt
+           JOIN requirements r ON lrt.requirement_id = r.id
+           JOIN site_applicability sa ON sa.requirement_id = r.id
+           WHERE lrt.name IS NOT NULL
+           ORDER BY lrt.name, sa.site_code"""
+    ).fetchall()
+
+    # Group by law
+    from collections import defaultdict
+    law_data: dict[str, dict] = {}
+    for name, title_en, site, applicability, compliance in rows:
+        if name not in law_data:
+            law_data[name] = {"title_en": title_en, "sites": defaultdict(list)}
+        law_data[name]["sites"][site].append((applicability, compliance))
+
+    # Derive org-level status per law
+    org_laws = []
+    for name, data in sorted(law_data.items()):
+        all_pairs = []
+        for site, pairs in data["sites"].items():
+            all_pairs.extend(pairs)
+
+        applicable = [(a, c) for a, c in all_pairs if a == "Applicable"]
+        n_sites = len(data["sites"])
+
+        if not applicable:
+            org_status = "NOT_APPLICABLE"
+        elif all(c == "Compliant" for _, c in applicable):
+            org_status = "COMPLIANT"
+        elif any(c == "Action Required" for _, c in applicable):
+            org_status = "ACTION_REQUIRED"
+        else:
+            org_status = "PARTIAL"
+
+        # Count per-site breakdown
+        sites_applicable = sum(
+            1 for s, pairs in data["sites"].items()
+            if any(a == "Applicable" for a, c in pairs)
+        )
+        sites_action = sum(
+            1 for s, pairs in data["sites"].items()
+            if any(a == "Applicable" and c == "Action Required" for a, c in pairs)
+        )
+
+        org_laws.append({
+            "name": name,
+            "title_en": data["title_en"],
+            "org_status": org_status,
+            "sites_total": n_sites,
+            "sites_applicable": sites_applicable,
+            "sites_action_required": sites_action,
+            "applicable_count": len(applicable),
+        })
+
+    # Summary
+    from collections import Counter
+    status_counts = Counter(l["org_status"] for l in org_laws)
+    print(f"\nOrg-level law compliance ({len(org_laws)} matched laws):")
+    print(f"  {'Status':<20s} {'Count':>6s}")
+    print(f"  {'-'*26}")
+    for status in ["COMPLIANT", "ACTION_REQUIRED", "PARTIAL", "NOT_APPLICABLE"]:
+        print(f"  {status:<20s} {status_counts.get(status, 0):>6d}")
+
+    # Show ACTION_REQUIRED laws
+    action_laws = [l for l in org_laws if l["org_status"] == "ACTION_REQUIRED"]
+    if action_laws:
+        print(f"\n{'=' * 70}")
+        print(f"ACTION_REQUIRED laws ({len(action_laws)}):\n")
+        print(f"  {'Name':<25s} {'Title':<40s} {'Sites w/AR':>10s}")
+        print(f"  {'-'*75}")
+        for l in sorted(action_laws, key=lambda x: -x["sites_action_required"]):
+            title = (l["title_en"] or "")[:38]
+            print(f"  {l['name']:<25s} {title:<40s} {l['sites_action_required']:>10d}")
+
+    # Show PARTIAL laws
+    partial_laws = [l for l in org_laws if l["org_status"] == "PARTIAL"]
+    if partial_laws:
+        print(f"\nPARTIAL laws ({len(partial_laws)}):")
+        for l in sorted(partial_laws, key=lambda x: x["name"]):
+            print(f"  {l['name']}: {l['title_en']}")
+
+    # --- Provision-level aggregation (if --provisions) ---
+    if args.provisions:
+        print(f"\n{'=' * 70}")
+        print(f"Provision-level aggregation\n")
+
+        prov_rows = conn.execute(
+            """SELECT lrt.name, lat.section_id, lat.short_ref,
+                      sa.site_code, sa.applicability, sa.compliance
+               FROM lat
+               JOIN lrt ON lat.lrt_row_id = lrt.id
+               JOIN requirements r ON lrt.requirement_id = r.id
+               JOIN site_applicability sa ON sa.requirement_id = r.id
+               WHERE lrt.name IS NOT NULL AND lat.section_id IS NOT NULL
+               ORDER BY lrt.name, lat.section_id"""
+        ).fetchall()
+
+        prov_data: dict[str, dict] = {}
+        for name, section_id, short_ref, site, applicability, compliance in prov_rows:
+            if section_id not in prov_data:
+                prov_data[section_id] = {"law": name, "short_ref": short_ref, "sites": defaultdict(list)}
+            prov_data[section_id]["sites"][site].append((applicability, compliance))
+
+        prov_results = []
+        for section_id, data in sorted(prov_data.items()):
+            all_pairs = []
+            for site, pairs in data["sites"].items():
+                all_pairs.extend(pairs)
+            applicable = [(a, c) for a, c in all_pairs if a == "Applicable"]
+
+            if not applicable:
+                org_status = "NOT_APPLICABLE"
+            elif all(c == "Compliant" for _, c in applicable):
+                org_status = "COMPLIANT"
+            elif any(c == "Action Required" for _, c in applicable):
+                org_status = "ACTION_REQUIRED"
+            else:
+                org_status = "PARTIAL"
+
+            prov_results.append({
+                "section_id": section_id,
+                "law": data["law"],
+                "short_ref": data["short_ref"],
+                "org_status": org_status,
+            })
+
+        prov_counts = Counter(p["org_status"] for p in prov_results)
+        print(f"Org-level provision compliance ({len(prov_results)} matched provisions):")
+        print(f"  {'Status':<20s} {'Count':>6s}")
+        print(f"  {'-'*26}")
+        for status in ["COMPLIANT", "ACTION_REQUIRED", "PARTIAL", "NOT_APPLICABLE"]:
+            print(f"  {status:<20s} {prov_counts.get(status, 0):>6d}")
+
+        action_provs = [p for p in prov_results if p["org_status"] == "ACTION_REQUIRED"]
+        if action_provs:
+            print(f"\nACTION_REQUIRED provisions ({len(action_provs)}):")
+            for p in sorted(action_provs, key=lambda x: x["section_id"]):
+                print(f"  {p['section_id']}")
+
+    # CSV export
+    if args.csv:
+        output_dir = os.path.join(os.path.dirname(os.path.abspath(args.db)), "output")
+        os.makedirs(output_dir, exist_ok=True)
+        csv_path = os.path.join(output_dir, "org_compliance_by_law.csv")
+
+        fieldnames = ["name", "title_en", "org_status", "sites_total",
+                      "sites_applicable", "sites_action_required", "applicable_count"]
+        with open(csv_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for l in sorted(org_laws, key=lambda x: x["name"]):
+                writer.writerow(l)
+        print(f"\n  Wrote {len(org_laws)} laws → {csv_path}")
+
+        if args.provisions:
+            prov_csv_path = os.path.join(output_dir, "org_compliance_by_provision.csv")
+            prov_fields = ["section_id", "law", "short_ref", "org_status"]
+            with open(prov_csv_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=prov_fields)
+                writer.writeheader()
+                for p in sorted(prov_results, key=lambda x: x["section_id"]):
+                    writer.writerow(p)
+            print(f"  Wrote {len(prov_results)} provisions → {prov_csv_path}")
+
+    conn.close()
+
+
+# ===========================================================================
 # Main
 # ===========================================================================
 
@@ -916,9 +1105,16 @@ def main():
     p_report.add_argument("--site", default="all", help="Site code or 'all' (default: all)")
     p_report.add_argument("--csv", action="store_true", help="Export enriched CSV")
 
+    # aggregate
+    p_agg = sub.add_parser("aggregate", help="Org-level compliance per law/provision")
+    p_agg.add_argument("--db", default=DB_DEFAULT, help=f"SQLite DB path (default: {DB_DEFAULT})")
+    p_agg.add_argument("--provisions", action="store_true", help="Also aggregate at provision level")
+    p_agg.add_argument("--csv", action="store_true", help="Export org compliance CSV")
+
     args = parser.parse_args()
 
-    {"import": cmd_import, "match": cmd_match, "review": cmd_review, "report": cmd_report}[args.command](args)
+    {"import": cmd_import, "match": cmd_match, "review": cmd_review,
+     "report": cmd_report, "aggregate": cmd_aggregate}[args.command](args)
 
 
 if __name__ == "__main__":
