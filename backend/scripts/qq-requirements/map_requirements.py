@@ -950,6 +950,22 @@ def cmd_aggregate(args):
             if any(a == "Applicable" and c == "Action Required" for a, c in pairs)
         )
 
+        # Build per-site breakdown string
+        site_lines = []
+        for site in sorted(data["sites"].keys()):
+            pairs = data["sites"][site]
+            app_pairs = [(a, c) for a, c in pairs if a == "Applicable"]
+            if not app_pairs:
+                site_lines.append(f"{site}: Not Applicable")
+            elif all(c == "Compliant" for _, c in app_pairs):
+                site_lines.append(f"{site}: Compliant")
+            elif any(c == "Action Required" for _, c in app_pairs):
+                ar_count = sum(1 for _, c in app_pairs if c == "Action Required")
+                site_lines.append(f"{site}: Action Required ({ar_count})")
+            else:
+                site_lines.append(f"{site}: Undetermined")
+        site_breakdown = "; ".join(site_lines)
+
         org_laws.append({
             "name": name,
             "title_en": data["title_en"],
@@ -958,6 +974,7 @@ def cmd_aggregate(args):
             "sites_applicable": sites_applicable,
             "sites_action_required": sites_action,
             "applicable_count": len(applicable),
+            "site_breakdown": site_breakdown,
         })
 
     # Summary
@@ -1052,7 +1069,8 @@ def cmd_aggregate(args):
         csv_path = os.path.join(output_dir, "org_compliance_by_law.csv")
 
         fieldnames = ["name", "title_en", "org_status", "sites_total",
-                      "sites_applicable", "sites_action_required", "applicable_count"]
+                      "sites_applicable", "sites_action_required", "applicable_count",
+                      "site_breakdown"]
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()

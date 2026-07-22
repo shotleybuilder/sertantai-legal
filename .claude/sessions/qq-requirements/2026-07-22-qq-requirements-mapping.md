@@ -240,6 +240,31 @@ only new site_applicability rows. Cross-site aggregation works.
 - [x] report command (per-site + cross-site + CSV export)
 - [x] BCE end-to-end validation
 - [x] Deduplication verified (re-import as second site)
-- [ ] Second real site CSV import
+- [x] All 22 site CSVs imported (3 jurisdictions: England ×14, Scotland ×5, Wales ×3)
+- [x] aggregate command — org-level compliance per law and provision
+- [ ] Update Baserow Assessments table with org-level compliance from aggregate
 - [ ] Review 36 unmatched UK law titles
 - [ ] Review 434 no_lat provisions (law found, provision not in LAT)
+
+## Aggregate Results (22 sites)
+
+| Metric | Value |
+|--------|-------|
+| Unique requirements | 1,771 |
+| Matched laws | 227 |
+| COMPLIANT (org) | 139 |
+| ACTION_REQUIRED (org) | 53 |
+| NOT_APPLICABLE (org) | 35 |
+
+**Thresholds for Baserow Compliance_Status:**
+- Action Required at >5 sites → 🔴 Non-Compliant
+- Action Required at >2 sites → 🟡 Partially Compliant
+- All sites Compliant → 🟢 Compliant
+- Notes column: per-site breakdown
+
+**Baserow integration:**
+- Assessments table linked to Legal Register via `Legal_Register` (link_row, uses Name)
+- `Compliance_Status` single select: Compliant / Partially Compliant / Non-Compliant / Not Assessed
+- `Notes` long text: site breakdown
+- API: `batch_update` with row IDs, auth via SyncConfiguration encrypted credentials
+- Table ID from `sync_configurations.target_config["assessments_table_id"]`
