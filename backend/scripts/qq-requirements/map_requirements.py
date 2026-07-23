@@ -158,6 +158,125 @@ GUIDANCE_MARKERS = [
     'UN Recommendations', 'Charging Scheme', 'Model Regulations',
 ]
 
+# ---------------------------------------------------------------------------
+# Title whitelist — hard matches for QQ titles the parser can't resolve.
+# Maps raw_title → LRT name, or "guidance"/"skip" for non-law entries.
+# ---------------------------------------------------------------------------
+TITLE_WHITELIST: dict[str, str | None] = {
+    # --- Scottish S.S.I. (type_code=ssi, number from S.S.I. ref) ---
+    "The Environmental Authorisations (Scotland) Regulations 2018 (S.S.I. 219) (EASR)":
+        "UK_ssi_2018_219",
+    "The Assessment of Energy Performance of Non-domestic Buildings (Scotland) Regulations 2016 (S.S.I. 146)":
+        "UK_ssi_2016_146",
+    "The Building (Fees) (Scotland) Regulations 2004 (S.S.I. 508)":
+        "UK_ssi_2004_508",
+    "The Energy Performance of Buildings (Scotland) Regulations 2008 (S.S.I. 309)":
+        "UK_ssi_2008_309",
+    "The Environmental Liability (Scotland) Regulations 2009 (S.S.I 266)":
+        "UK_ssi_2009_266",
+    "The Environmental Protection (Disposal of Polychlorinated Biphenyls and other Dangerous Substances) (Scotland) Regulations 2000 (S.S.I. 95)":
+        "UK_ssi_2000_95",
+    "The Private Water Supplies (Scotland) Regulations 2006 (S.S.I. 209)":
+        "UK_ssi_2006_209",
+    "The Waste (Scotland) Regulations 2011 (S.S.I.226)":
+        "UK_ssi_2011_226",
+    "The Waste (Scotland) Regulations 2012 (S.S.I. 148)":
+        "UK_ssi_2012_148",
+    "The Waste Information (Scotland) Regulations 2010 (S.S.I. 435)":
+        "UK_ssi_2010_435",
+    "The Water Environment (Controlled Activities) (Scotland) Regulations 2011 (S.S.I. 209)":
+        "UK_ssi_2011_209",
+    "The Water Environment (Oil Storage) (Scotland) Regulations 2006 (S.S.I. 133)":
+        "UK_ssi_2006_133",
+    "The Water Intended for Human Consumption (Private Supplies) (Scotland) Regulations 2017 (S.S.I. 282)":
+        "UK_ssi_2017_282",
+    "The Town and Country Planning (Environmental Impact Assessment) (Scotland) Regulations 2017 (S.S.I. 102)":
+        "UK_ssi_2017_102",
+    "The Town and Country Planning (Hazardous Substances) (Scotland) Regulations 2015 (S.S.I 2015/181)":
+        "UK_ssi_2015_181",
+    "The Special Waste Amendment (Scotland) Regulations 2004 (S.S.I. 112)":
+        "UK_ssi_2004_112",
+    "The Scottish Landfill Tax (Qualifying Material) Order 2016 (S.S.I. 93)":
+        "UK_ssi_2016_93",
+    "The Scottish Landfill Tax (Standard Rate and Lower Rate) Order 2023 (S.S.I.50)":
+        "UK_ssi_2023_50",
+    # Pre-devolution Scottish SI — still uksi in our register
+    "The Town and Country Planning (General Permitted Development) (Scotland) Order 1992 (S.S.I. 223)":
+        "UK_uksi_1992_223",
+
+    # --- Scottish Acts (asp) ---
+    "The Building (Scotland) Act 2003 Ch.8":
+        "UK_asp_2003_8",
+    "The Landfill Tax (Scotland) Act 2014 (asp 2)":
+        "UK_asp_2014_2",
+
+    # --- Scottish transitional (uksi, not ssi) ---
+    "The Environmental Authorisations (Scotland) Regulations 2018 (Transitional and Savings Provisions) Order 2021 (No. 1309 (S. 2))":
+        "UK_uksi_2021_1309",
+
+    # --- Welsh S.I. (wsi) ---
+    "The Environmental Civil Sanctions (Wales) Order 2010 (S.I. 1821/W.178)":
+        "UK_wsi_2010_1821",
+    "The Environmental Damage (Prevention and Remediation) (Wales) Regulations 2009 (S.I.995/W.81)":
+        "UK_wsi_2009_995",
+    "The Private Water Supplies (Wales) Regulations 2017 (S.I. 1041/W.270)":
+        "UK_wsi_2017_1041",
+    "The Single Use Carrier Bags Charge (Wales) Regulations 2010 (S.I. 2880/W.238)":
+        "UK_wsi_2010_2880",
+    "The Smoke-free Premises and Vehicles (Wales) Regulations 2020 (S.I.1211/W.273)":
+        "UK_wsi_2020_1211",
+    "The Water Supply (Water Quality) Regulations 2018 (S.I. 647/W. 121)":
+        "UK_wsi_2018_647",
+    "The Waste Separation Requirements (Wales) Regulations 2023 (No. 1290)":
+        "UK_wsi_2023_1290",
+
+    # --- S.I. No. format (number after "No.") ---
+    "The Air Navigation (Dangerous Goods) Regulations 2002 (S.I. No. 2786)":
+        "UK_uksi_2002_2786",
+    "The Ozone-Depleting Substances Regulations 2015 (S.I. No. 168)":
+        "UK_uksi_2015_168",
+    "The Passenger and Goods Vehicles (Recording Equipment) (Downloading and Retention of Data) Regulations 2008 (S.I. No. 198)":
+        "UK_uksi_2008_198",
+    "The Controlled Drugs (Drug Precursors) (Intra-Community Trade) Regulations 2008 (S.I. No. 295)":
+        "UK_uksi_2008_295",
+
+    # --- Acts without chapter number / special char ---
+    "Occupiers\u00b4 Liability Act 1957":       "UK_ukpga_1957_31",
+    "Occupiers\u00b4 Liability Act 1984":       "UK_ukpga_1984_3",
+    "Occupiers' Liability (Scotland) Act 1960": "UK_ukpga_1960_30",
+    "The Employment of Women, Young Persons and Children Act 1920":
+        "UK_ukpga_1920_65",
+
+    # --- SIs without any number in title ---
+    "The Controlled Drugs (Drug Precursors) (Community External Trade) Regulations 2008":
+        "UK_uksi_2008_296",
+    "The Sulphur Content of Liquid Fuels (England and Wales) (Amendment) Regulations 2014 (Oil & Gas)":
+        "UK_uksi_2014_1975",
+    "The Water Protection Zone (River Dee Catchment) Procedural and Other Provisions Regulations 1999":
+        "UK_uksi_1999_916",
+
+    # --- (2015 No. XXX) format ---
+    "The Smoke Control Areas (Exempted Fireplaces) (England) Order 2015 (2015 No. 307)":
+        "UK_uksi_2015_307",
+
+    # --- Misparses (QQ data errors) ---
+    "Pests Act 1954 (c.18)":        "UK_ukpga_1954_68",   # QQ has wrong chapter (c.18 → c.68)
+    "The Road Vehicles (Authorisation of Special Types)(General) Order 2003 (S.I. 1998)":
+        "UK_uksi_2003_1998",
+
+    # --- International codes → guidance ---
+    "International Maritime Dangerous Goods (IMDG) Code, 42-24 Edition": "guidance",
+    "The International Civil Aviation Organization (ICAO) Technical Instructions for the Safe Transport of Dangerous Goods by Air 2025-2026 Edition":
+        "guidance",
+
+    # --- Data artefacts (bare provision refs, not law titles) ---
+    "Regulation 3": "skip",
+    "Section 9":    "skip",
+
+    # --- Not in our register ---
+    "The Water Supply (Water Fittings) (Scotland) Byelaws 2014": None,
+}
+
 
 def parse_law_title(title: str) -> LawRef:
     law = LawRef(raw_title=title)
@@ -583,6 +702,7 @@ def cmd_match(args):
 
     lrt_by_key = {}
     lrt_by_title = {}
+    lrt_by_name = {}
     for rid, name, type_code, year, number, title_en in cur.fetchall():
         try:
             number_int = int(number)
@@ -598,6 +718,8 @@ def cmd_match(args):
             if norm.startswith("the "):
                 norm = norm[4:]
             lrt_by_title[norm] = entry
+        if name:
+            lrt_by_name[name] = entry
     print(f"  {len(lrt_by_key)} LRT entries by key")
 
     print("Loading LAT section_ids from PostgreSQL...")
@@ -607,6 +729,20 @@ def cmd_match(args):
     cur.close()
     pg.close()
 
+    # --rematch: reset no_lrt rows so they get re-processed (picks up whitelist)
+    if getattr(args, "rematch", False):
+        reset = conn.execute(
+            "UPDATE lrt SET match_status = 'pending' WHERE match_status = 'no_lrt'"
+        ).rowcount
+        # Also reset their child lat rows
+        conn.execute(
+            """UPDATE lat SET match_status = 'pending', section_id = NULL, lat_match = 0
+               WHERE lrt_row_id IN (SELECT id FROM lrt WHERE match_status = 'pending')
+                 AND match_status != 'dash'"""
+        )
+        conn.commit()
+        print(f"  Reset {reset} no_lrt rows for re-matching")
+
     # Match pending lrt rows
     pending = conn.execute(
         "SELECT id, raw_title, category, type_code, year, number FROM lrt WHERE match_status = 'pending'"
@@ -614,7 +750,34 @@ def cmd_match(args):
     print(f"\nMatching {len(pending)} pending lrt rows...")
 
     matched_lrt = 0
+    whitelist_hits = 0
     for row_id, raw_title, category, type_code, year, number in pending:
+        # 1. Whitelist — hard matches for known QQ titles
+        if raw_title in TITLE_WHITELIST:
+            wl = TITLE_WHITELIST[raw_title]
+            if wl in ("guidance", "skip"):
+                conn.execute("UPDATE lrt SET match_status = 'guidance' WHERE id = ?", (row_id,))
+                whitelist_hits += 1
+                continue
+            if wl is None:
+                # Triaged as not in our register — stays no_lrt
+                conn.execute("UPDATE lrt SET match_status = 'no_lrt' WHERE id = ?", (row_id,))
+                whitelist_hits += 1
+                continue
+            entry = lrt_by_name.get(wl)
+            if entry:
+                conn.execute(
+                    """UPDATE lrt SET name = ?, lrt_id = ?, title_en = ?,
+                       match_status = 'matched' WHERE id = ?""",
+                    (entry["name"], entry["id"], entry["title_en"], row_id),
+                )
+                matched_lrt += 1
+                whitelist_hits += 1
+                continue
+            else:
+                print(f"  WARNING: whitelist name '{wl}' not found in PG for: {raw_title}")
+
+        # 2. Category shortcuts
         if category == "eu":
             conn.execute("UPDATE lrt SET match_status = 'eu_law' WHERE id = ?", (row_id,))
             continue
@@ -622,7 +785,7 @@ def cmd_match(args):
             conn.execute("UPDATE lrt SET match_status = 'guidance' WHERE id = ?", (row_id,))
             continue
 
-        # Try direct key match
+        # 3. Direct key match (type_code + year + number)
         number_int = None
         if number:
             try:
@@ -634,14 +797,14 @@ def cmd_match(args):
         if type_code and year and number_int is not None:
             entry = lrt_by_key.get((type_code, year, number_int))
 
-        # Try across SI type codes
+        # 4. Cross-type-code fallback
         if not entry and year and number_int is not None:
             for tc in ("uksi", "ssi", "wsi", "nisr"):
                 entry = lrt_by_key.get((tc, year, number_int))
                 if entry:
                     break
 
-        # Title fuzzy match
+        # 5. Title fuzzy match
         if not entry and raw_title:
             norm = normalise_title_for_match(raw_title)
             entry = lrt_by_title.get(norm)
@@ -655,6 +818,9 @@ def cmd_match(args):
             matched_lrt += 1
         else:
             conn.execute("UPDATE lrt SET match_status = 'no_lrt' WHERE id = ?", (row_id,))
+
+    if whitelist_hits:
+        print(f"  Whitelist resolved: {whitelist_hits}")
 
     # Match pending lat rows (only where parent lrt matched)
     pending_lat = conn.execute(
@@ -1112,6 +1278,8 @@ def main():
     p_match = sub.add_parser("match", help="Resolve pending citations against PostgreSQL")
     p_match.add_argument("--db", default=DB_DEFAULT, help=f"SQLite DB path (default: {DB_DEFAULT})")
     p_match.add_argument("--pg-url", default=PG_DEFAULT, help=f"PostgreSQL URL (default: {PG_DEFAULT})")
+    p_match.add_argument("--rematch", action="store_true",
+                         help="Re-process no_lrt rows (picks up whitelist additions)")
 
     # review
     p_review = sub.add_parser("review", help="Show unmatched/unparsed citations")
