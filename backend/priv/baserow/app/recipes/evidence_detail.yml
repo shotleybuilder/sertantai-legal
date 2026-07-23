@@ -4,6 +4,7 @@ page:
   query_params:
     - name: control
       type: text
+  visibility: logged-in
 
 data_sources:
   - name: Evidence Patterns

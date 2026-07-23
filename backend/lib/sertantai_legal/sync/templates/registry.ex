@@ -35,7 +35,8 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
       artefacts: SertantaiLegal.Sync.Templates.Artefacts,
       judgements: SertantaiLegal.Sync.Templates.Judgements,
       gaps: SertantaiLegal.Sync.Templates.Gaps,
-      compliance_events: SertantaiLegal.Sync.Templates.ComplianceEvents
+      compliance_events: SertantaiLegal.Sync.Templates.ComplianceEvents,
+      app_users: SertantaiLegal.Sync.Templates.AppUsers
     }
   end
 

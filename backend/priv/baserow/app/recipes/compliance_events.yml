@@ -6,6 +6,7 @@ page:
       type: text
     - name: edit
       type: numeric
+  visibility: logged-in
 
 data_sources:
   - name: All Events

@@ -583,6 +583,9 @@ defmodule SertantaiLegal.Baserow.Client do
   def table_id(config, :hierarchy),
     do: config["hierarchy_table_id"] || config[:hierarchy_table_id]
 
+  def table_id(config, :app_users),
+    do: config["app_users_table_id"] || config[:app_users_table_id]
+
   # ── Private: HTTP Transport ──────────────────────────────────────
 
   # Retry: transient errors (429, 5xx, network) with exponential backoff, max 3 retries
@@ -676,6 +679,7 @@ defmodule SertantaiLegal.Baserow.Client do
     file: "file",
     url: "url",
     email: "email",
+    password: "password",
     workspace_member: "multiple_collaborators"
   }
 

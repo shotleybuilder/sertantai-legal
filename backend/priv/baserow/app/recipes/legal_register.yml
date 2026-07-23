@@ -2,6 +2,7 @@ page:
   name: Legal Register
   path: /
   home: true
+  visibility: logged-in
 
 data_sources:
   - name: Legal Register

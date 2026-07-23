@@ -1,0 +1,12 @@
+page:
+  name: Login
+  path: /login
+  visibility: all
+
+elements:
+  - type: heading
+    value: "Compliance Workbench"
+    level: 1
+
+  - type: auth_form
+    user_source: App Users

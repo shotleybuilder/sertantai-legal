@@ -4,6 +4,7 @@ page:
   query_params:
     - name: edit
       type: numeric
+  visibility: logged-in
 
 data_sources:
   - name: All Actions

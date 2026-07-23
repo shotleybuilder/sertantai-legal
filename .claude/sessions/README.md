@@ -231,6 +231,7 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-22 | [qq-requirements-mapping](qq-requirements/2026-07-22-qq-requirements-mapping.md) | — | QQ site CSV → LRT/LAT mapping pipeline: 22 sites, 1,771 reqs, SQLite working store, Baserow assessment update |
 | 2026-07-20 | [terms-jsp-controls](second-tier-duties/2026-07-20-terms.md) | — | SecondaryTerm table + JSP-derived controls from artefacts. 29 terms, 256 JSP controls, source_id column on controls |
 | 2026-07-20 | [mandated-artefacts](second-tier-duties/2026-07-20-mandated-artefacts.md) | — | SecondaryMandatedArtefact table — Phase 4 enrichment. 32 artefacts across 8 types from JSP-375-CH23 |
 | 2026-07-19 | [obligations-raci](second-tier-duties/2026-07-19-obligations-raci.md) | [#126](https://github.com/shotleybuilder/sertantai-legal/issues/126) | SecondaryObligation + SecondaryRaci tables, DuckDB struct parser rewrite. 117 obligations, 32 RACI from JSP-375-CH23 |

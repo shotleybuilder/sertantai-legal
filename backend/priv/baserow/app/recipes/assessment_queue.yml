@@ -1,6 +1,7 @@
 page:
   name: Assessment Queue
   path: /assess-queue
+  visibility: logged-in
 
 data_sources:
   - name: All Assessments

@@ -4,6 +4,7 @@ page:
   path_params:
     - name: id
       type: numeric
+  visibility: logged-in
 
 data_sources:
   - name: Current Law
