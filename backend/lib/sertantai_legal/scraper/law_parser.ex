@@ -444,7 +444,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
   defp update_record(existing, record) do
     attrs = build_attrs(record)
 
-    # Calculate immediate Function flags (Making, Commencing) and merge with existing
+    # Calculate immediate Function flags (Commencing) and merge with existing
     immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
     existing_function = existing.function || %{}
     merged_function = Map.merge(existing_function, immediate_function)

@@ -76,14 +76,14 @@ describe('transformUkLrtRecord', () => {
 		const raw = {
 			id: 'uuid-123',
 			tags: '["health", "safety", "workplace"]',
-			function: ['Making', 'Amending'],
+			function: ['Amending', 'Commencing'],
 			role: null
 		};
 
 		const result = transformUkLrtRecord(raw);
 
 		expect(result.tags).toEqual(['health', 'safety', 'workplace']);
-		expect(result.function).toEqual(['Making', 'Amending']);
+		expect(result.function).toEqual(['Amending', 'Commencing']);
 		expect(result.role).toBeNull();
 	});
 

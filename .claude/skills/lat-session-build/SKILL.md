@@ -17,6 +17,14 @@ applicable set, a reconciliation output, a query, or a manual list.
 
 From the user's prompt, derive a session name: `lat-parse-{purpose}-{YYYY-MM-DD}`
 
+**Naming convention matters for UI visibility:**
+- `lat-parse-*` — appears in the LAT queue dropdown at `/admin/lat/queue`
+- `import-*` — also appears in the LAT queue dropdown
+- Any other prefix — will NOT appear in the queue dropdown
+
+Use `lat-parse-` for sessions the user will work with in the queue UI.
+Use a different prefix only if the session should be hidden from the queue picker.
+
 Examples:
 - "parse the QQ gap laws" → `lat-parse-qq-gaps-2026-07-23`
 - "LAT session for the Scotland making laws" → `lat-parse-scotland-making-2026-07-23`

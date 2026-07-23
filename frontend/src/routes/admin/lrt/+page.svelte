@@ -83,7 +83,7 @@
 		return row as UkLrtRecord;
 	}
 
-	/** Electric sends JSONB `function` as a JS object {Making: true, ...} — extract keys */
+	/** Electric sends JSONB `function` as a JS object {Amending: true, ...} — extract keys */
 	function parseFunctionKeys(fn: unknown): string[] | null {
 		if (!fn) return null;
 		if (Array.isArray(fn)) return fn as string[];
@@ -186,7 +186,7 @@
 	};
 
 	// Function options
-	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
+	const functionOptions = ['Amending', 'Revoking', 'Commencing', 'Enacting'];
 
 	// Select options for filtering
 	const typeCodeOptions = [

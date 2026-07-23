@@ -1071,13 +1071,20 @@ defmodule SertantaiLegalWeb.ScrapeController do
   Useful for filtering other views (e.g. LAT queue) to a specific session.
   """
   def law_names(conn, %{"id" => session_id}) do
-    with {:ok, _session} <- SessionManager.get(session_id),
+    with {:ok, session} <- SessionManager.get(session_id),
          {:ok, records} <- ScrapeSessionRecord.by_session(session_id) do
-      # Only return law names for records that were persisted (confirmed) to uk_lrt
+      # For LAT parse sessions, include all non-skipped records (they need parsing).
+      # For scrape sessions, only return confirmed (persisted to uk_lrt).
       names =
-        records
-        |> Enum.filter(&(&1.status == :confirmed))
-        |> Enum.map(& &1.law_name)
+        if session.session_type == "lat_parse" do
+          records
+          |> Enum.reject(&(&1.status == :skipped))
+          |> Enum.map(& &1.law_name)
+        else
+          records
+          |> Enum.filter(&(&1.status == :confirmed))
+          |> Enum.map(& &1.law_name)
+        end
 
       json(conn, %{law_names: names, count: length(names)})
     else

@@ -18,10 +18,18 @@ query, a list, a CSV, or the user's description of what they want.
 From the user's prompt, derive a session name following the convention:
 `{purpose}-{YYYY-MM-DD}`
 
+**Naming convention matters for UI visibility:**
+- `import-*` — appears in the LAT queue dropdown at `/admin/lat/queue`
+- `YYYY-MM-DD-to-NN` — appears in the LAT queue dropdown (monthly scrape pattern)
+- Any other prefix — will NOT appear in the LAT queue dropdown
+
+For LRT scrape/rescrape sessions that don't need to appear in the LAT queue,
+any descriptive prefix is fine (e.g. `qq-revoked-verify-`).
+
 Examples:
 - "reparse the 11 revoked QQ laws" → `qq-revoked-reparse-2026-07-23`
-- "create a LAT parse session for the Scotland laws" → `scotland-lat-parse-2026-07-23`
 - "scrape session for the new July SIs" → `july-2026-new-si-2026-07-23`
+- "import session for customer onboarding" → `import-acme-onboard-2026-07-23`
 
 **Present the proposed name to the user and ask for confirmation before proceeding.**
 

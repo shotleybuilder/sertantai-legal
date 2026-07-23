@@ -22,7 +22,7 @@ defmodule SertantaiLegal.Sync.Providers.Baserow do
   # Values to filter out of holder data — parser artifacts, not real actors
   @holder_exclusions MapSet.new([": He"])
 
-  @function_options ["Making", "Amending", "Revoking", "Commencing", "Enacting"]
+  @function_options ["Amending", "Revoking", "Commencing", "Enacting"]
   @significance_options ["HIGH", "MEDIUM", "LOW"]
 
   @status_options [

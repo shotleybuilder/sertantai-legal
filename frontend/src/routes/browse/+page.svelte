@@ -95,7 +95,7 @@
 		return v as Record<string, unknown>;
 	}
 
-	/** Electric sends JSONB `function` as a JS object {Making: true, ...} — extract keys */
+	/** Electric sends JSONB `function` as a JS object {Amending: true, ...} — extract keys */
 	function parseFunctionKeys(fn: unknown): string[] | null {
 		if (!fn) return null;
 		if (Array.isArray(fn)) return fn as string[];

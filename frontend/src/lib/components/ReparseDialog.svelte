@@ -41,7 +41,7 @@
 		{ value: 'anaw', label: 'Welsh Act' }
 	];
 
-	const functionOptions = ['Making', 'Amending', 'Revoking', 'Commencing', 'Enacting'];
+	const functionOptions = ['Amending', 'Revoking', 'Commencing', 'Enacting'];
 
 	// Derive sub-family options from selected family
 	$: familyGrouped = $familyOptionsQuery.data?.grouped;

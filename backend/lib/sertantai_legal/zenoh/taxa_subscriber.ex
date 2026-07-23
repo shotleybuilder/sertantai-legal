@@ -194,12 +194,11 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   defp upsert_taxa(record, taxa) do
     taxa = convert_duty_type(taxa, record)
-    taxa = derive_enrichment_result(record, taxa)
+    taxa = derive_is_making(taxa)
 
     Logger.info(
       "[Zenoh.TaxaSubscriber] Upserting #{record.name}: " <>
         "taxa_keys=#{inspect(Map.keys(taxa))}, " <>
-        "function=#{inspect(taxa[:function])}, " <>
         "is_making=#{inspect(taxa[:is_making])}"
     )
 
@@ -217,28 +216,10 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   # Handle empty Arrow payload — enrichment ran but no taxa data was sent.
-  # Determine label from existing record state:
-  # - If record already has duty_type (from prior enrichment) → Empowering
-  # - If record has no duty_type → Housekeeping
+  # Empty payload means no substantive obligations → is_making = false.
   defp apply_housekeeping(record) do
-    label =
-      case record.duty_type do
-        %{values: values} when is_list(values) and values != [] -> "Empowering"
-        _ -> "Housekeeping"
-      end
-
-    function = merge_enrichment_function(record, label)
-
-    params =
-      %{function: function}
-      |> maybe_set_is_making(label)
-      |> maybe_prune_lat(record, label)
-
-    Ash.update(record, params, action: :update)
+    Ash.update(record, %{is_making: false}, action: :update)
   end
-
-  defp maybe_set_is_making(params, "Empowering"), do: Map.put(params, :is_making, false)
-  defp maybe_set_is_making(params, _label), do: params
 
   @doc false
   def normalize_taxa(row) do
@@ -306,77 +287,35 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   @doc """
   Classify enrichment result from taxa fields. Public for testing.
 
-  Returns the taxa map with `:is_making` and `:function` set based on duty_type values.
+  Returns the taxa map with `:is_making` set based on duty_type values.
+  Does not touch the `function` column — function stores structural role only.
   """
   @spec classify_enrichment(map(), map()) :: map()
   def classify_enrichment(record, taxa) do
     taxa
     |> convert_duty_type(record)
-    |> then(&derive_enrichment_result(record, &1))
+    |> derive_is_making()
   end
 
   # DRRP types that indicate the law creates substantive obligations.
   # Supports both old vocabulary (Duty, Responsibility) and new (Obligation).
   @making_duty_types ["Duty", "Responsibility", "Obligation"]
 
-  # Derive enrichment result from taxa fields and set function labels.
-  #
-  # Three enrichment outcomes:
-  # 1. Making:      duty_type has Duty/Responsibility/Obligation → is_making=true, function gets "Making"
-  # 2. Empowering:  duty_type present but no making types (powers/rights only) → is_making=false, function gets "Empowering"
-  # 3. Housekeeping: no taxa fields at all → function gets "Housekeeping", LAT pruned
-  #
-  # Note: does NOT overwrite making_classification (immutable auto-detection result).
-  defp derive_enrichment_result(record, %{duty_type: %{values: values}} = taxa)
-       when is_list(values) do
+  # Derive is_making from duty_type values.
+  # Function column is not touched — it stores structural role only (Amending,
+  # Revoking, Commencing, Enacting). Obligation-content classification (Making,
+  # Empowering, Housekeeping) is derivable from is_making + duty_type.
+  defp derive_is_making(%{duty_type: %{values: values}} = taxa) when is_list(values) do
     is_making = Enum.any?(values, &(&1 in @making_duty_types))
-
-    enrichment_label = if is_making, do: "Making", else: "Empowering"
-    function = merge_enrichment_function(record, enrichment_label)
-
-    taxa
-    |> Map.put(:is_making, is_making)
-    |> Map.put(:function, function)
-    |> maybe_prune_lat(record, enrichment_label)
+    Map.put(taxa, :is_making, is_making)
   end
 
-  defp derive_enrichment_result(record, taxa) when map_size(taxa) > 0 do
-    # Taxa analysis ran (has enrichment fields) but no duty_type → Empowering
-    # This covers cases where only role/role_gvt/fitness are present without duty_type
-    function = merge_enrichment_function(record, "Empowering")
-
-    taxa
-    |> Map.put(:is_making, false)
-    |> Map.put(:function, function)
-    |> maybe_prune_lat(record, "Empowering")
+  defp derive_is_making(taxa) when map_size(taxa) > 0 do
+    # Taxa fields present but no duty_type → not making
+    Map.put(taxa, :is_making, false)
   end
 
-  defp derive_enrichment_result(record, taxa) do
-    # Empty taxa — no DRRP signal at all → Housekeeping
-    function = merge_enrichment_function(record, "Housekeeping")
-
-    taxa
-    |> Map.put(:function, function)
-    |> maybe_prune_lat(record, "Housekeeping")
-  end
-
-  # Merge enrichment function label into existing function JSONB.
-  # Enrichment labels (Making, Empowering, Housekeeping) are mutually exclusive —
-  # remove any existing enrichment label before adding the new one.
-  # Relationship labels (Amending, Revoking, etc.) are preserved.
-  @enrichment_labels ["Making", "Empowering", "Housekeeping"]
-
-  defp merge_enrichment_function(record, new_label) do
-    existing = record.function || %{}
-
-    existing
-    |> Map.drop(@enrichment_labels)
-    |> Map.put(new_label, true)
-  end
-
-  # DISABLED — see #110. Pruner incorrectly classified HSWA as non-making and
-  # deleted 835 LAT rows. Destructive action needs UI visibility before re-enabling.
-  defp maybe_prune_lat(taxa, _record, _label), do: taxa
+  defp derive_is_making(taxa), do: taxa
 
   # --- Change detection hook ---
 

@@ -49,8 +49,11 @@ metrics:
   org_compliant: 163
   org_action_required: 60
   org_not_applicable: 46
-  zero_lat_revoked: 10
+  zero_lat_revoked: 11            # confirmed via rescrape session qq-revoked-verify-2026-07-23
   zero_lat_making_in_force: 19    # genuine LAT parse backlog
+  revoked_site_req_rows: 252      # site×requirement rows against revoked laws
+  revoked_applicable: 126         # marked Applicable against revoked laws
+  revoked_action_required: 3      # open actions against revoked laws
 
 lessons:
   - title: Whitelist beats regex at the tail — known finite set of mismatches
@@ -76,19 +79,37 @@ lessons:
       289 of 783 no_lat provisions are schedule refs — expected, not a gap.
     tag: data
 
-  - title: QQ register is stale — 10 fully revoked laws still cited
+  - title: QQ register is stale — 11 fully revoked laws still cited
     detail: >
-      Of 54 zero-LAT laws, 10 are fully revoked/repealed (Explosives Act 1923,
-      Conservation Regs 1994, Pressure Equipment Regs 1999, etc.). QQ/Enhesa
-      data isn't up to date. Only 19 are genuinely making + in-force = real
-      LAT parse backlog. The making_classification column on legal_register
-      distinguishes duty-carrying from non-duty laws.
+      Of 54 zero-LAT laws, 11 are fully revoked/repealed. All 11 confirmed via
+      rescrape session (qq-revoked-verify-2026-07-23). 126 applicability assessments
+      and 3 open actions maintained against revoked laws across 22 sites.
+      The making_classification column on legal_register distinguishes
+      duty-carrying from non-duty laws.
     tag: data
+
+  - title: legislation.gov.uk applied field is editorial status, not legal status
+    detail: >
+      The `applied: "Not yet"` field in rescinded_by annotations means legislation.gov.uk
+      hasn't updated their published text — NOT that the revocation hasn't legally taken
+      effect. UK_ssi_2006_133 has applied="Not yet" but the revoking law (SSI 2017/389)
+      came into force 2018-01-01. The revocation is legally effective; leg.gov.uk just
+      has a data processing backlog. Our live derivation is correct.
+    tag: data
+
+  - title: lrt-create-session skill refactored from SQL templates to Mix task
+    detail: >
+      Replaced raw SQL templates (8 critical rules to remember) with
+      `mix lrt.create_session` — validates laws, enriches parsed_data, enforces
+      constraints via Ash. Skill doc now just describes the workflow and CLI flags.
+    tag: tooling
 
 artifacts:
   - backend/scripts/qq-requirements/map_requirements.py  # TITLE_WHITELIST + --rematch
   - backend/data/qq/requirements/output/org_compliance_by_law.csv  # updated aggregate
   - backend/data/qq/requirements/output/zero_lat_laws_making_status.csv
+  - backend/data/qq/requirements/output/qq-exec-brief.md  # executive brief (in progress)
+  - backend/lib/mix/tasks/lrt.create_session.ex  # new Mix task replacing SQL templates
   - .claude/sessions/second-tier-duties/2026-07-23-qq-secondary-requirements.md
 
 depends_on:
@@ -158,7 +179,7 @@ strings directly to the correct LRT `name`.
 
 | Status | Laws | Notes |
 |--------|------|-------|
-| ❌ Fully revoked | 10 | QQ out of date — Explosives Act 1923, Pressure Equipment 1999, etc. |
+| ❌ Fully revoked | 11 | QQ out of date — confirmed via rescrape session |
 | ⭕ Part revoked | 14 | 7 making, 7 unclassified |
 | ✔ In force, making | 12 | **Genuine LAT parse backlog** |
 | ✔ In force, not making | 6 | No LAT expected (amendment-only, transitional) |
@@ -189,6 +210,38 @@ laws not yet in the Assessments table. Will appear at next Assessments seed.
 that should map to existing secondary sources. Pending session raised:
 `.claude/sessions/second-tier-duties/2026-07-23-qq-secondary-requirements.md`
 
+## Revoked Laws — Deep Dive
+
+### Rescrape verification
+
+Created session `qq-revoked-verify-2026-07-23` (11 laws) via `mix lrt.create_session`.
+All 11 confirmed revoked/repealed after rescrape.
+
+### `applied: "Not yet"` investigation
+
+UK_ssi_2006_133 flagged as suspicious — legislation.gov.uk doesn't show the usual
+revocation banner. The `applied` field in our rescinded_by annotations says "Not yet".
+
+**Finding**: `applied` is an editorial status on legislation.gov.uk — it means they
+haven't updated their published text to reflect the change. It does NOT mean the
+revocation hasn't legally taken effect. The revoking law (SSI 2017/389) came into force
+on 2018-01-01, so the revocation has been legally effective for 7+ years. Legislation.gov.uk
+just has a data processing backlog for applying the change to the published text.
+
+Our `live` derivation is correct — no bug.
+
+### Executive brief
+
+Started `backend/data/qq/requirements/output/qq-exec-brief.md` with revoked laws
+findings: 126 applicability assessments, 124 compliant records, and 3 open actions
+maintained against laws that no longer exist. Building incrementally.
+
+## Skill Refactor: lrt-create-session
+
+Replaced raw SQL templates with `mix lrt.create_session` Mix task. The 8 critical
+rules from the old skill doc are now enforced by the Ash resource layer. Skill doc
+rewritten to describe the workflow (infer name → confirm laws → run task).
+
 ## Tasks
 
 - [x] Categorise the 46 no_lrt titles (missing vs format vs artefact)
@@ -197,8 +250,13 @@ that should map to existing secondary sources. Pending session raised:
 - [x] Verify all whitelist entries against PG (names exist)
 - [x] Run rematch — 219 → 7 no_lrt rows
 - [x] Classify no_lat provisions (schedule gaps, zero-LAT laws, format mismatch)
-- [x] Check revocation status of zero-LAT laws (10 revoked, 19 making+in-force)
+- [x] Check revocation status of zero-LAT laws (11 revoked, 19 making+in-force)
 - [x] Re-run aggregate with reconciled data (269 laws)
 - [x] Update Baserow Assessments (196 rows updated)
 - [x] Raise pending session for QQ secondary requirements → ACoP mapping
 - [x] Export zero-LAT laws making status CSV
+- [x] Create rescrape session for 11 revoked laws (qq-revoked-verify-2026-07-23)
+- [x] Confirm all 11 revoked via rescrape
+- [x] Investigate `applied: "Not yet"` on UK_ssi_2006_133 — editorial status, not legal
+- [x] Refactor lrt-create-session skill → Mix task
+- [x] Start executive brief (revoked laws section)

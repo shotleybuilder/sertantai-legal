@@ -7,16 +7,16 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   ## Function Calculation Workflow
 
-  Function calculation follows a staged approach:
+  Function stores structural role only (Amending, Revoking, Commencing, Enacting).
+  Obligation-content labels (Making etc.) live in `is_making` / `duty_type`.
 
-  1. **Immediate** (at persist time): Making, Commencing
-     - These depend only on the law's own properties
+  1. **Immediate** (at persist time): Commencing
+     - Depends only on the law's own is_commencing flag
 
-  2. **End-of-batch** (after all persists): Amending/Revoking Maker
-     - These depend on is_making of target laws
-     - Target laws' is_making may change during cascade rescraping
+  2. **End-of-batch** (after all persists): Amending, Revoking
+     - Checks whether amending[] / rescinding[] arrays are non-empty
 
-  3. **Dynamic** (enacted_by → enacting): Enacting/Enacting Maker
+  3. **Dynamic** (enacted_by → enacting): Enacting
      - Parent's enacting[] updated when child declares enacted_by
 
   ## Change Logging
@@ -64,8 +64,8 @@ defmodule SertantaiLegal.Scraper.Persister do
   Persist a list of records to the uk_lrt table.
 
   Includes Function calculation:
-  1. Immediate Function (Making, Commencing) after each record
-  2. End-of-batch relationship Function (Amending/Revoking Maker)
+  1. Immediate Function (Commencing) after each record
+  2. End-of-batch relationship Function (Amending, Revoking)
   3. Update parent enacting[] from child enacted_by
   """
   @spec persist_records(list(map())) :: {:ok, non_neg_integer()} | {:error, any()}
@@ -114,7 +114,7 @@ defmodule SertantaiLegal.Scraper.Persister do
       IO.puts("Updated #{enacting_count} parent laws with enacting[]")
     end
 
-    # Phase 3: Calculate relationship Function for laws with amending/rescinding
+    # Phase 3: Calculate relationship Function (Amending, Revoking) for laws with targets
     if Enum.any?(laws_needing_relationship_calc) do
       IO.puts(
         "Calculating relationship Function for #{Enum.count(laws_needing_relationship_calc)} laws..."
@@ -225,30 +225,32 @@ defmodule SertantaiLegal.Scraper.Persister do
     attrs = build_attrs(record)
     update_attrs = filter_update_attrs(attrs, existing)
 
-    # Merge immediate Function with existing function
+    # Merge immediate Function (structural labels only) with existing function
     immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
     existing_function = existing.function || %{}
     merged_function = Map.merge(existing_function, immediate_function)
 
     # is_making must be updated even if existing is false (filter_update_attrs
     # skips non-nil values). Taxa derives is_making from duty_type and it must
-    # propagate to the DB alongside the function map.
+    # propagate to the DB.
     new_is_making = get_field(record, :is_making) == true
 
     update_attrs_with_function =
-      if map_size(merged_function) > 0 do
-        update_attrs
-        |> Map.put(:function, merged_function)
-        |> then(fn attrs ->
-          if new_is_making and existing.is_making != true do
-            Map.put(attrs, :is_making, true)
-          else
-            attrs
-          end
-        end)
-      else
-        update_attrs
-      end
+      update_attrs
+      |> then(fn attrs ->
+        if map_size(merged_function) > 0 do
+          Map.put(attrs, :function, merged_function)
+        else
+          attrs
+        end
+      end)
+      |> then(fn attrs ->
+        if new_is_making and existing.is_making != true do
+          Map.put(attrs, :is_making, true)
+        else
+          attrs
+        end
+      end)
 
     if map_size(update_attrs_with_function) == 0 do
       {:ok, existing}
@@ -306,7 +308,7 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   # Calculate relationship Function for a batch of laws
   defp calculate_relationship_function_of_persisted_laws(laws) do
-    # Calculate relationship Functions (Amending/Revoking Maker)
+    # Calculate relationship Functions (Amending, Revoking, Enacting)
     results = FunctionCalculator.calculate_relationship_function_of_laws(laws)
 
     # Persist the relationship Function merged with existing

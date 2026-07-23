@@ -311,17 +311,28 @@
 
 	async function fetchRecentSessions() {
 		try {
-			const res = await authFetch(`${API_URL}/api/sessions`);
-			if (!res.ok) return;
-			const data = await res.json();
-			// Show monthly scrape sessions and import sessions, exclude ad-hoc reparse sessions
+			// Fetch from both endpoints: /api/sessions (scrape/import) and /api/lat/sessions (lat_parse)
+			const [scrapeRes, latRes] = await Promise.all([
+				authFetch(`${API_URL}/api/sessions`),
+				authFetch(`${API_URL}/api/lat/sessions`)
+			]);
+
+			const scrapeSessions = scrapeRes.ok ? (await scrapeRes.json()).sessions || [] : [];
+			const latSessions = latRes.ok ? (await latRes.json()).sessions || [] : [];
+
+			const allSessions = [...scrapeSessions, ...latSessions];
+
+			// Show completed scrape/import sessions and any lat-parse sessions with records
 			const monthlyPattern = /^\d{4}-\d{2}-\d{2}-to-\d+$/;
 			const importPattern = /^import-/;
-			recentSessions = (data.sessions || [])
+			const latParsePattern = /^lat-parse-/;
+			recentSessions = allSessions
 				.filter(
 					(s: SessionSummary) =>
-						s.status === 'completed' &&
-						(monthlyPattern.test(s.session_id) || importPattern.test(s.session_id))
+						(latParsePattern.test(s.session_id) &&
+							['completed', 'categorized', 'reviewing'].includes(s.status)) ||
+						(s.status === 'completed' &&
+							(monthlyPattern.test(s.session_id) || importPattern.test(s.session_id)))
 				)
 				.slice(0, 24);
 		} catch {
@@ -347,7 +358,7 @@
 	}
 
 	function formatSessionLabel(s: SessionSummary): string {
-		if (s.session_id.startsWith('import-')) {
+		if (s.session_id.startsWith('import-') || s.session_id.startsWith('lat-parse-')) {
 			const count = (s.group1_count || 0) + (s.group2_count || 0);
 			return `${s.session_id} · ${count} laws`;
 		}
@@ -559,7 +570,7 @@
 		return n.toLocaleString();
 	}
 
-	// Electric sends JSONB `function` as a JS object {Making: true, ...}
+	// Electric sends JSONB `function` as a JS object {Amending: true, ...}
 	function parseFunctionKeys(fn: unknown): string[] | null {
 		if (!fn) return null;
 		if (Array.isArray(fn)) return fn as string[];
