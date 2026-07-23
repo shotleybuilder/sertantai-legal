@@ -40,8 +40,13 @@ metrics:
   lrt_unique_titles_resolved: 45
   lrt_unique_titles_remaining: 1  # Water Supply Byelaws — not in register
   lrt_matched_laws: 269           # up from 227 (aggregate)
-  lat_no_lat: 783
-  lat_orphan_schedules: 289       # expected — schedules don't carry obligations
+  lat_no_lat_initial: 783
+  lat_no_lat_after_lat_parse: 695 # after parsing 42 zero-LAT laws (+88 matched)
+  lat_no_lat_final: 447           # after schedule resolution (+248 matched)
+  lat_matched_final: 1622         # up from 1286
+  lat_orphan_schedules: 289       # schedules don't carry obligations
+  lat_schedules_resolved: 248     # reverse-lookup into body provisions (85.8%)
+  lat_schedules_unresolvable: 40  # no body text references schedule
   lat_under_zero_lat_laws: 263    # 54 laws, 10 revoked, 19 making+in-force
   lat_format_mismatch: 231        # range refs, compound refs etc.
   baserow_rows_updated: 196       # up from 174
@@ -236,11 +241,51 @@ Started `backend/data/qq/requirements/output/qq-exec-brief.md` with revoked laws
 findings: 126 applicability assessments, 124 compliant records, and 3 open actions
 maintained against laws that no longer exist. Building incrementally.
 
-## Skill Refactor: lrt-create-session
+## Skill Refactors
 
-Replaced raw SQL templates with `mix lrt.create_session` Mix task. The 8 critical
-rules from the old skill doc are now enforced by the Ash resource layer. Skill doc
-rewritten to describe the workflow (infer name → confirm laws → run task).
+- `lrt-create-session` → `mix lrt.create_session` Mix task (8 critical rules now enforced by Ash)
+- `lat-session-build` → `mix lat.create_session` Mix task (with built-in filtering)
+- Both skill docs updated with naming convention for LAT queue dropdown visibility
+- LAT queue dropdown fixed to fetch from `/api/lat/sessions` and show `lat-parse-*` sessions
+- `/api/sessions/:id/law-names` updated to return all non-skipped records for lat_parse sessions
+- Raised #129 for stale `function` column after fractalaw updates `is_making`
+
+## LAT Parse Session
+
+Created `lat-parse-qq-gaps-2026-07-23` with 42 laws (53 input, 11 revoked excluded).
+40 of 42 parsed successfully. LAT section_ids grew from 277,545 → 291,950.
+Re-running match resolved 88 additional provisions (1,286 → 1,374).
+
+## Schedule Orphan Resolution
+
+289 orphan schedule refs — QQ cites a schedule but not the body provision that
+references it. Schedules don't carry obligations; the body text does.
+
+**Approach**: Reverse-lookup from schedule into LAT text. For each orphan `sch.N`,
+search `legal_articles.text` for body provisions (reg/s/art) containing
+"Schedule N" or "Sch. N". Store resolved body provision(s) in new `resolved_ref`
+column on the SQLite lat row.
+
+**Results**:
+
+| Category | Count |
+|----------|-------|
+| Resolved (1+ body provision found) | 248 (85.8%) |
+| -- Clean (exactly 1 match) | 45 |
+| -- Ambiguous (2+ matches) | 203 |
+| Unresolvable (0 matches) | 40 |
+| -- No LAT for law | 2 |
+| -- Schedule not referenced in body text | 38 |
+
+**Final LAT match status**:
+
+| Status | Count |
+|--------|-------|
+| matched | 1,622 |
+| no_lat | 447 |
+| dash | 736 |
+| pending | 890 |
+| unparsed | 6 |
 
 ## Tasks
 
@@ -259,4 +304,11 @@ rewritten to describe the workflow (infer name → confirm laws → run task).
 - [x] Confirm all 11 revoked via rescrape
 - [x] Investigate `applied: "Not yet"` on UK_ssi_2006_133 — editorial status, not legal
 - [x] Refactor lrt-create-session skill → Mix task
+- [x] Refactor lat-session-build skill → Mix task
+- [x] Fix LAT queue dropdown to show lat-parse-* sessions
+- [x] Fix law_names endpoint for lat_parse sessions (include pending records)
 - [x] Start executive brief (revoked laws section)
+- [x] Create LAT parse session (lat-parse-qq-gaps-2026-07-23, 42 laws)
+- [x] Re-run match after LAT parse (+88 provisions)
+- [x] Resolve orphan schedule refs via reverse-lookup (+248 provisions)
+- [x] Raise #129 for stale function column
