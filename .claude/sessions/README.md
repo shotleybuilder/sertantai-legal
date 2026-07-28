@@ -231,6 +231,8 @@ Schema alignment, data migration, CSV import, audits, analytics, field consolida
 
 | Date | Session | Issue | Summary |
 |------|---------|-------|---------|
+| 2026-07-28 | [bms-register](qq-requirements/2026-07-28-bms-register.md) | [#130](https://github.com/shotleybuilder/sertantai-legal/issues/130) | BMS pre-Enhesa register: 361 laws matched, 19 scraped, 223 added to QQ, site×law matrix, Baserow hierarchy links. Scraper bug fix (61e8913) |
+| 2026-07-23 | [issue-129](2026-07-23-issue-129.md) | [#129](https://github.com/shotleybuilder/sertantai-legal/issues/129) | Function JSONB simplified to 4 structural labels; removed Making/Empowering/Housekeeping/Maker tags; 8,812 records cleaned |
 | 2026-07-22 | [qq-requirements-mapping](qq-requirements/2026-07-22-qq-requirements-mapping.md) | — | QQ site CSV → LRT/LAT mapping pipeline: 22 sites, 1,771 reqs, SQLite working store, Baserow assessment update |
 | 2026-07-20 | [terms-jsp-controls](second-tier-duties/2026-07-20-terms.md) | — | SecondaryTerm table + JSP-derived controls from artefacts. 29 terms, 256 JSP controls, source_id column on controls |
 | 2026-07-20 | [mandated-artefacts](second-tier-duties/2026-07-20-mandated-artefacts.md) | — | SecondaryMandatedArtefact table — Phase 4 enrichment. 32 artefacts across 8 types from JSP-375-CH23 |
