@@ -362,4 +362,79 @@ defmodule SertantaiLegal.Scraper.StorageTest do
       assert :ok = Storage.clear_affected_laws("nonexistent-session")
     end
   end
+
+  # ============================================================================
+  # DB-backed session records (read_session_records)
+  # ============================================================================
+
+  describe "read_session_records/2 from DB" do
+    alias SertantaiLegal.Scraper.ScrapeSession
+    alias SertantaiLegal.Scraper.ScrapeSessionRecord
+
+    setup do
+      session_id = "test-db-records-#{:rand.uniform(100_000)}"
+
+      # Create a scrape session
+      {:ok, _session} =
+        ScrapeSession
+        |> Ash.Changeset.for_create(:create, %{
+          session_id: session_id,
+          year: 2019,
+          month: 7,
+          day_from: 1,
+          day_to: 31,
+          status: "categorized",
+          group1_count: 1
+        })
+        |> Ash.create()
+
+      # Create a session record
+      {:ok, _record} =
+        ScrapeSessionRecord
+        |> Ash.Changeset.for_create(:create, %{
+          session_id: session_id,
+          law_name: "UK_ukpga_2019_17",
+          group: "group1",
+          status: "pending"
+        })
+        |> Ash.create()
+
+      on_exit(fn ->
+        # Clean up DB records
+        import Ecto.Query
+
+        SertantaiLegal.Repo.delete_all(
+          from(r in "scrape_session_records", where: r.session_id == ^session_id)
+        )
+
+        SertantaiLegal.Repo.delete_all(
+          from(s in "scrape_sessions", where: s.session_id == ^session_id)
+        )
+      end)
+
+      %{session_id: session_id}
+    end
+
+    test "includes type_code, Year, Number decomposed from law_name", %{session_id: session_id} do
+      {:ok, records} = Storage.read_session_records(session_id, :group1)
+
+      assert length(records) == 1
+      record = hd(records)
+
+      assert record[:name] == "UK_ukpga_2019_17"
+      assert record[:type_code] == "ukpga"
+      assert record[:Year] == 2019
+      assert record[:Number] == "17"
+    end
+
+    test "decomposed fields are present even without parsed_data", %{session_id: session_id} do
+      {:ok, records} = Storage.read_session_records(session_id, :group1)
+      record = hd(records)
+
+      # These must be present for StagedParser.parse to construct the correct name
+      refute is_nil(record[:type_code])
+      refute is_nil(record[:Year])
+      refute is_nil(record[:Number])
+    end
+  end
 end

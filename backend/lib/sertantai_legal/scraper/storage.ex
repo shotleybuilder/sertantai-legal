@@ -1133,6 +1133,9 @@ defmodule SertantaiLegal.Scraper.Storage do
       parse_count: record.parse_count
     }
 
+    # Decompose law_name into type_code/Year/Number for StagedParser compatibility
+    base = decompose_law_name(base, record.law_name)
+
     # Merge in parsed_data if present
     if record.parsed_data do
       Map.merge(base, atomize_keys(record.parsed_data))
@@ -1140,6 +1143,24 @@ defmodule SertantaiLegal.Scraper.Storage do
       base
     end
   end
+
+  # Decompose a law_name like "UK_uksi_2019_1169" into type_code, Year, Number
+  defp decompose_law_name(map, law_name) when is_binary(law_name) do
+    case law_name
+         |> String.replace("UK_", "")
+         |> String.split("_") do
+      [type_code, year_str, number] ->
+        case Integer.parse(year_str) do
+          {year, ""} -> Map.merge(map, %{type_code: type_code, Year: year, Number: number})
+          _ -> map
+        end
+
+      _ ->
+        map
+    end
+  end
+
+  defp decompose_law_name(map, _), do: map
 
   defp atomize_keys(map) when is_map(map) do
     Map.new(map, fn
