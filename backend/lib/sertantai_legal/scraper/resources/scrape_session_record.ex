@@ -48,7 +48,7 @@ defmodule SertantaiLegal.Scraper.ScrapeSessionRecord do
     end
 
     attribute :status, :atom do
-      constraints(one_of: [:pending, :parsed, :confirmed, :skipped])
+      constraints(one_of: [:pending, :parsed, :confirmed, :skipped, :cleaned])
       default(:pending)
       allow_nil?(false)
       description("Processing status")

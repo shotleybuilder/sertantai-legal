@@ -2220,7 +2220,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
     case ScrapeSessionRecord.by_session(session.session_id) do
       {:ok, records} when records != [] ->
         all_resolved =
-          Enum.all?(records, fn r -> r.status in [:confirmed, :skipped] end)
+          Enum.all?(records, fn r -> r.status in [:confirmed, :skipped, :cleaned] end)
 
         if all_resolved do
           # Re-read to get latest persisted_count

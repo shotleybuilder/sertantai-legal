@@ -610,11 +610,22 @@ defmodule SertantaiLegalWeb.LatAdminController do
           case Ash.read(Ash.Query.filter(LegalRegister, name in ^names)) do
             {:ok, lrt_records} ->
               Map.new(lrt_records, fn r ->
-                {r.name, %{family: r.family, title_en: r.title_en, live: r.live}}
+                {r.name,
+                 %{family: r.family, title_en: r.title_en, live: r.live, lat_count: r.lat_count}}
               end)
 
             _ ->
               %{}
+          end
+
+        # Batch-lookup live annotation counts
+        annotation_counts =
+          case SertantaiLegal.Repo.query(
+                 "SELECT law_name, COUNT(*) FROM amendment_annotations WHERE law_name = ANY($1) GROUP BY law_name",
+                 [names]
+               ) do
+            {:ok, %{rows: rows}} -> Map.new(rows, fn [name, count] -> {name, count} end)
+            _ -> %{}
           end
 
         enriched =
@@ -636,9 +647,10 @@ defmodule SertantaiLegalWeb.LatAdminController do
                   live: lrt[:live],
                   status: db_record.status,
                   selected: db_record.selected,
-                  lat_inserted: db_record.lat_inserted,
+                  lat_inserted: lrt[:lat_count] || db_record.lat_inserted,
                   lat_deleted: db_record.lat_deleted,
-                  annotations_inserted: db_record.annotations_inserted,
+                  annotations_inserted:
+                    Map.get(annotation_counts, name) || db_record.annotations_inserted,
                   parse_duration_ms: db_record.parse_duration_ms,
                   parse_error: db_record.parse_error,
                   parse_count: db_record.parse_count
@@ -654,9 +666,9 @@ defmodule SertantaiLegalWeb.LatAdminController do
                   live: lrt[:live],
                   status: :pending,
                   selected: false,
-                  lat_inserted: nil,
+                  lat_inserted: lrt[:lat_count],
                   lat_deleted: nil,
-                  annotations_inserted: nil,
+                  annotations_inserted: Map.get(annotation_counts, name),
                   parse_duration_ms: nil,
                   parse_error: nil,
                   parse_count: 0

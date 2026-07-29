@@ -38,6 +38,8 @@
 				return 'bg-blue-100 text-blue-800';
 			case 'skipped':
 				return 'bg-red-100 text-red-800';
+			case 'cleaned':
+				return 'bg-amber-100 text-amber-800';
 			case 'pending':
 			case 'ready':
 				return 'bg-gray-100 text-gray-800';
