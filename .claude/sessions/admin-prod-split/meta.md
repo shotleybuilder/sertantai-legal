@@ -14,7 +14,7 @@ Implementing the admin/production split plan (.claude/plans/admin-prod-split.md)
 
 - ✅ Phase 0+1: Prepare and bootstrap compliance
 - ✅ Phase 2: Move customer backend
-- ⬜ Phase 3: Move customer frontend
+- ✅ Phase 3: Move customer frontend
 - ⬜ Phase 4: Strip legal
 - ⬜ Phase 5: Production cutover
 
@@ -40,7 +40,7 @@ Move all customer-facing Svelte code. Routes, stores, components, and E2E verifi
 
 | Session | Scope | Status |
 |---------|-------|--------|
-| `03-customer-frontend.md` | Move /app/*, /browse, /sync, /auth/callback routes. Auth store, PGLite/Electric sync, GridLite adapter, components. E2E verification. | pending |
+| `03-customer-frontend.md` | Move /app/*, /browse, /sync, /auth/callback routes. Auth store, PGLite/Electric sync, GridLite adapter, components. E2E verification. | **closed** |
 
 ## Phase 4: Strip Legal
 
