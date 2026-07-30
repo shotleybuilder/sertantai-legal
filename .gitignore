@@ -57,5 +57,6 @@ rel/
 !.claude/skills/
 !.claude/sessions/
 .claude/sessions/.current-session
+.claude/sessions/sessions.db
 !.claude/plans/
 !.claude/commands/

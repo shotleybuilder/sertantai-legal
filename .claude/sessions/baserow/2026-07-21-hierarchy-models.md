@@ -1,3 +1,9 @@
+---
+session: Hierarchy Models — LRT → Hierarchy Link
+status: closed
+opened: 2026-07-21
+closed: 2026-07-21
+---
 # Hierarchy Models — LRT → Hierarchy Link
 
 **Started**: 2026-07-21

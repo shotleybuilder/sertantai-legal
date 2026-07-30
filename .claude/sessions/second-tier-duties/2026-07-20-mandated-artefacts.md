@@ -36,7 +36,7 @@ depends_on:
 
 enables:
   - Baserow sync of mandated artefacts for customer compliance workbench
-  - "What artefacts does this JSP require?" query for BMS instruction generation
+  - "\"What artefacts does this JSP require?\" query for BMS instruction generation"
 ---
 
 # Mandated Artefacts Extension to SecondaryTaxaSubscriber

@@ -29,7 +29,7 @@ metrics:
   workflow_actions: 5
 
 lessons:
-  - title: "Previous action > Create a row > Id" chains action results in Baserow workflows
+  - title: "\"Previous action > Create a row > Id\" chains action results in Baserow workflows"
     detail: >
       When a button click triggers Create Row followed by Open Page, the navigate action
       can reference the new row's ID via Previous action > Create a row > Id. This is the

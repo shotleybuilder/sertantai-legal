@@ -67,8 +67,8 @@ depends_on:
 
 enables:
   - Baserow sync of obligations and RACI for customer compliance workbench
-  - "All obligations for role X across applicable JSPs" query
-  - Phase 4: mandated_artefacts_json column in same payload
+  - "\"All obligations for role X across applicable JSPs\" query"
+  - "Phase 4: mandated_artefacts_json column in same payload"
 ---
 
 # Obligations & RACI Extension to SecondaryTaxaSubscriber

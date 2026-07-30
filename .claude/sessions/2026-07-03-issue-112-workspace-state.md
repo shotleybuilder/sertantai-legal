@@ -1,3 +1,8 @@
+---
+session: Workspace Resource State + Configuration Tables
+status: pending
+opened: 2026-07-03
+---
 # Issue #112: Workspace Resource State + Configuration Tables
 
 **Started**: 2026-07-03

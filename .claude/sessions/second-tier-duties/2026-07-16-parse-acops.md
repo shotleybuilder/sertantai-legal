@@ -28,8 +28,8 @@ metrics:
   largest_acop: { id: "L121", provisions: 1128, paragraphs: 551 }
 
 lessons:
-  - title: "Missing" HSE ACoP PDFs are withdrawn editions, not paywalled content
-    detail: "Initial assumption was that 8 ACoPs were priced publications behind a paywall. Checking the HSE book pages revealed they're all withdrawn — L127 superseded by L143, L134-137 consolidated into L138 (both already parsed). L1/L21/L44 have no page at all (removed). Always check the book page before assuming access restrictions."
+  - title: "\"Missing\" HSE ACoP PDFs are withdrawn editions, not paywalled content"
+    detail: "Initial assumption was that 8 ACoPs were priced publications behind a paywall. Checking the HSE book pages revealed they're all withdrawn -- L127 superseded by L143, L134-137 consolidated into L138 (both already parsed). L1/L21/L44 have no page at all (removed). Always check the book page before assuming access restrictions."
     tag: data
   - title: The :hse_acop profile handled all 21 ACoPs without any tuning
     detail: "Every ACoP parsed first time with the 10pt body / 'N Text' numbering profile. HSE formatting is remarkably consistent across the L-series. No profile adaptation needed unlike JSPs which needed multiple tune cycles."

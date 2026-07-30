@@ -1,3 +1,8 @@
+---
+session: Baserow Compliance PoC — Solution Design
+status: suspended
+opened: 2026-07-03
+---
 # Title: Baserow Compliance PoC — Solution Design
 
 **Started**: 2026-07-03

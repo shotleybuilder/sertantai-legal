@@ -1,3 +1,9 @@
+---
+session: SecondaryTaxaSubscriber
+status: closed
+opened: 2026-07-18
+closed: 2026-07-18
+---
 # SecondaryTaxaSubscriber
 
 **Started**: 2026-07-18

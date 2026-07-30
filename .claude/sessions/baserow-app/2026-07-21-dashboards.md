@@ -1,3 +1,9 @@
+---
+session: Dashboards — First Use Case
+status: closed
+opened: 2026-07-21
+closed: 2026-07-21
+---
 # Dashboards — First Use Case
 
 **Started**: 2026-07-21

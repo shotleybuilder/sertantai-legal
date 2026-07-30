@@ -1,3 +1,8 @@
+---
+session: Oban-Driven Template Application with UI Config
+status: pending
+opened: 2026-07-03
+---
 # Issue #113: Oban-Driven Template Application with UI Config
 
 **Started**: 2026-07-03

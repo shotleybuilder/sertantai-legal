@@ -1,3 +1,9 @@
+---
+session: Significance Signals from Fractalaw
+status: closed
+opened: 2026-07-02
+closed: 2026-07-02
+---
 # Title: Significance Signals from Fractalaw
 
 **Started**: 2026-07-02

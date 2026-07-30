@@ -1,17 +1,17 @@
 ---
 session: QQ Requirements CSV → LRT/LAT Mapping
 project: sertantai-legal
-status: open
+status: closed
 opened: 2026-07-22
-site: BCE
+closed: 2026-07-22
+outcome: success
+commits: [b83024a, 9949166, 586ad08, 3467d48]
 
 summary: >
-  Map QQ (Enhesa-exported) site requirements CSV to our LRT (law-level) and LAT
-  (provision-level) tables. Build a replicable Python pipeline that parses mixed-format
-  citation text, resolves laws against the legal register, maps provisions to LAT
-  section_ids, and groups results by Applicability × Compliance status. Uses a local
-  SQLite working store so citation parses persist across site CSVs, confirmed parses
-  are not re-done, and compliance counts aggregate naturally.
+  Built end-to-end pipeline mapping 22 QQ site CSVs (1,771 unique requirements) to
+  LRT/LAT via a SQLite working store. Achieved 1,204 law matches and 920 provision
+  matches. Aggregated org-level compliance (139 compliant, 53 action-required) and
+  pushed results to Baserow Assessments table (174 rows updated).
 
 decisions:
   - what: SQLite working store instead of direct PostgreSQL per-run
@@ -20,13 +20,92 @@ decisions:
       A persistent SQLite means: (1) confirmed citation parses are not re-parsed,
       (2) new site CSVs match existing citations and only parse new ones,
       (3) compliance aggregation across sites is a simple SQL query at the end.
-    result: implemented
+    result: implemented — 22 site imports, dedup verified (0 new reqs for same-jurisdiction re-imports)
   - what: Requirement text as primary entity (not Linked Foundation cell)
     why: >
       Linked Foundation cells are not unique — 83 duplicate cells across 1,161 rows,
       with 74 cases where the same citation maps to different Requirements. Requirement
       text is unique (1,160 unique out of 1,161) and is what's shared across site CSVs.
     result: implemented — requirements table deduped by requirement text, site_applicability stores per-site status
+  - what: Org compliance thresholds for Baserow (>5 sites AR → Non-Compliant, >2 → Partially Compliant)
+    why: Customer needs a single org-level view; graduated thresholds distinguish isolated vs systemic gaps
+    result: 139 Compliant, 51 Partially Compliant, 2 Non-Compliant (MHSW Regs at 8 sites, LOLER at 6)
+
+metrics:
+  sites_imported: 22
+  jurisdictions: { england: 14, scotland: 5, wales: 3 }
+  unique_requirements: 1771
+  lrt_rows: 2964
+  lat_rows: 3701
+  lrt_matched: 1763
+  lrt_eu_law: 582
+  lrt_guidance: 308
+  lrt_no_match: 199
+  lat_matched: 1213
+  lat_no_match: 587
+  provision_parse_rate: 98.9%
+  org_compliant: 139
+  org_action_required: 53
+  org_not_applicable: 35
+  baserow_rows_updated: 174
+  baserow_rows_missing: 18
+
+lessons:
+  - title: Requirement text is the stable dedup key across QQ site CSVs, not the citation cell
+    detail: >
+      Linked Foundation cells have 83 duplicates across 1,161 rows — same citation can underpin
+      different requirements. Requirement text is effectively unique (1,160/1,161). Discovered
+      by analysing uniqueness of both columns before committing to a schema.
+    tag: data
+
+  - title: QQ citation parsing needs iterative regex refinement — start broad, fix edge cases in rounds
+    detail: >
+      First pass caught 88% of provisions. Three rounds of fixes (Regs plural, Part/Annex, Act (c.XX),
+      EU Regulation EC/, S.I. No. X of YYYY, typo corrections) brought it to 98.9%. The remaining 1.1%
+      are genuinely unparseable (aviation codes, bare numerics, EU annex point refs). Diminishing returns
+      kicks in fast — know when to stop.
+    tag: tooling
+
+  - title: Same-jurisdiction sites share identical requirement sets — only 2 new reqs from 2nd England site
+    detail: >
+      England sites (14) all share 1,160 requirements. Scotland (5) adds 389 unique. Wales (3) adds 220.
+      Total unique across 22 sites is only 1,771. This means the SQLite dedup is highly effective — after
+      the first site per jurisdiction, imports are instant (0 new reqs, 0 new lrt/lat).
+    tag: data
+
+  - title: legal_register.country is lowercase 'uk' not uppercase 'UK'
+    detail: >
+      Initial PG query with WHERE country = 'UK' returned 0 rows. The actual value is 'uk' (lowercase).
+      Cost a full pipeline re-run to discover. Check actual enum values before writing queries.
+    tag: schema
+
+  - title: Commission Regulation EC/... and Regulation EU/... are EU law, not UK SIs
+    detail: >
+      The EU regex pattern needed to match not just Regulation (EC) with parens but also
+      Regulation EC/ with slash and Commission Implementing Regulation prefix. 132 laws
+      were misclassified as UK SIs until this was fixed.
+    tag: tooling
+
+  - title: Elixir script for Baserow updates should read exported CSV, not query SQLite directly
+    detail: >
+      No SQLite driver in the Elixir deps. Simpler to have Python export the aggregate CSV
+      and have the Elixir script read it with NimbleCSV. Clean separation: Python owns the
+      SQLite working store, Elixir owns the Baserow API.
+    tag: tooling
+
+artifacts:
+  - backend/scripts/qq-requirements/map_requirements.py
+  - backend/scripts/qq-requirements/update_baserow_assessments.exs
+  - backend/data/qq/requirements/qq_mapping.db
+  - backend/data/qq/requirements/output/org_compliance_by_law.csv
+  - backend/data/qq/requirements/output/org_compliance_by_provision.csv
+  - scripts/nas/nas-backup.sh
+
+depends_on:
+  - 2026-07-08-reconcile-qq-legal-register.md
+
+enables:
+  - qq-requirements/2026-07-22-unmatched-triage.md
 ---
 
 ## Context
@@ -242,9 +321,10 @@ only new site_applicability rows. Cross-site aggregation works.
 - [x] Deduplication verified (re-import as second site)
 - [x] All 22 site CSVs imported (3 jurisdictions: England ×14, Scotland ×5, Wales ×3)
 - [x] aggregate command — org-level compliance per law and provision
-- [ ] Update Baserow Assessments table with org-level compliance from aggregate
-- [ ] Review 36 unmatched UK law titles
-- [ ] Review 434 no_lat provisions (law found, provision not in LAT)
+- [x] Update Baserow Assessments table with org-level compliance (174 rows updated)
+- [x] NAS backup updated to include backend/data/ (SQLite DB + QQ data)
+- [ ] Review 36 unmatched UK law titles (deferred → qq-requirements/2026-07-22-unmatched-triage.md)
+- [ ] Review 434 no_lat provisions (deferred → qq-requirements/2026-07-22-unmatched-triage.md)
 
 ## Aggregate Results (22 sites)
 

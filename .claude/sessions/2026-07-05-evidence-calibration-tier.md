@@ -1,3 +1,8 @@
+---
+session: Evidence & Calibration Tier — L4 Redesign
+status: suspended
+opened: 2026-07-05
+---
 # Title: Evidence & Calibration Tier — L4 Redesign
 
 **Started**: 2026-07-05

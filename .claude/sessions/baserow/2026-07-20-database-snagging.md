@@ -1,3 +1,8 @@
+---
+session: Database Snagging List
+status: suspended
+opened: 2026-07-20
+---
 # Database Snagging List
 
 **Started**: 2026-07-20

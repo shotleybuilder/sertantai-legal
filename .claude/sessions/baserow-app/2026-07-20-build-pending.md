@@ -1,3 +1,8 @@
+---
+session: Legal Register Page — Unified Build Script
+status: pending
+opened: 2026-07-20
+---
 # Legal Register Page — Unified Build Script
 
 **Status**: pending

@@ -18,7 +18,7 @@ decisions:
     result: 7 columns dropped from legal_articles, lat view recreated (simple view, no triggers)
   - what: has_fitness generated column simplified to only check fitness_entities
     why: Old expression referenced fitness_person through fitness_sector (all dropped). Must drop has_fitness before dropping the columns it depends on.
-    result: "ALTER TABLE legal_register DROP COLUMN has_fitness" then re-add with simple expression
+    result: "\"ALTER TABLE legal_register DROP COLUMN has_fitness\" then re-add with simple expression"
   - what: FitnessRulesRenderer.svelte kept as dead code (not deleted)
     why: Component is no longer imported anywhere but deletion is a separate concern. Import was removed from RecordDetailPanel.
     result: File exists but unused — can be deleted in a future cleanup

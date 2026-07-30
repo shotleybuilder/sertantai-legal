@@ -1,3 +1,9 @@
+---
+session: "Meta Session: Second-Tier Duties"
+status: closed
+opened: 2026-07-15
+closed: 2026-07-15
+---
 # Meta Session: Second-Tier Duties
 
 **Started**: 2026-07-15
