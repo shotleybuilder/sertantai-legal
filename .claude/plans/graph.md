@@ -1,3 +1,11 @@
+---
+plan: "Graph Architecture for UK Legislation Relationships"
+status: active
+created: 2026-04-25
+
+summary: >
+  Options for materialising UK legislation relationships into a queryable graph for family QA, impact analysis, and analytics.
+---
 # Graph Architecture for UK Legislation Relationships
 
 ## Current State

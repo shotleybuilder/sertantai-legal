@@ -1,3 +1,11 @@
+---
+plan: "Section ID Namespace Options"
+status: active
+created: 2026-07-16
+
+summary: >
+  Options analysis for stable section IDs when parsing multi-chapter PDFs (JSP-375 collision bug).
+---
 # Issue #123: Section ID Namespace Options
 
 ## Problem

@@ -1,3 +1,11 @@
+---
+plan: "Customer Onboarding"
+status: active
+created: 2026-06-02
+
+summary: >
+  Repeatable workflow for onboarding customers from legacy compliance platforms (Enhesa etc.) into SertantAI with Baserow sync.
+---
 # Customer Onboarding
 
 **Created**: 2026-06-02

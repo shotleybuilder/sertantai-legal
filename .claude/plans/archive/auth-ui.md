@@ -1,3 +1,13 @@
+---
+plan: "Auth UI for sertantai-hub"
+status: superseded
+created: 2026-02-23
+completed: 2026-02-23
+outcome: superseded
+
+summary: >
+  Hub-proxy auth UI pattern. Superseded by direct JWT validation from sertantai-auth.
+---
 # Plan: Auth UI for sertantai-hub
 
 ## Context

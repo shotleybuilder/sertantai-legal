@@ -1,3 +1,13 @@
+---
+plan: "Baserow Compliance Templates"
+status: completed
+created: 2026-06-07
+completed: 2026-06-09
+outcome: shipped
+
+summary: >
+  Provider-agnostic compliance workspace templates (12 templates, 9 sub-pattern dimensions). Phases 1-7 complete.
+---
 # Baserow Compliance Templates — Plan
 
 **Status**: IMPLEMENTED — Phases 1-7 complete (2026-06-07 to 2026-06-09). Round 3 reviewed (Gemini 2.5 Flash).

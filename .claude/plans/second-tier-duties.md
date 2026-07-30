@@ -1,3 +1,11 @@
+---
+plan: "Second-Tier Requirements Architecture"
+status: active
+created: 2026-07-15
+
+summary: >
+  Architecture for second-tier compliance requirements (ACoPs, JSPs, standards, guidance). Phase 1 done, phases 3-5 open.
+---
 # Second-Tier Requirements: Architecture Plan
 
 ## Problem Statement

@@ -1,3 +1,13 @@
+---
+plan: "Oban Sync Refactor"
+status: completed
+created: 2026-06-11
+completed: 2026-06-11
+outcome: shipped
+
+summary: >
+  Wrap sync Engine.run in Oban workers for persistent job queuing, retry, scheduling, and crash recovery.
+---
 # Oban Sync Refactor — Async Job Queue for Baserow Sync
 
 ## Context

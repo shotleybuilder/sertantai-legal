@@ -1,3 +1,14 @@
+---
+plan: "sertantai-compliance: AI-Augmented Compliance Assessment"
+status: active
+created: 2026-04-06
+
+summary: >
+  Architecture for a separate sertantai-compliance microservice with 4-stage AI-augmented compliance workflow (screening, matching, gap analysis, closure).
+
+enables:
+  - admin-prod-split
+---
 # sertantai-compliance: AI-Augmented Compliance Assessment Service
 
 > **Status**: Conceptual architecture design

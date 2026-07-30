@@ -1,3 +1,15 @@
+---
+plan: "Proxy vs Gatekeeper Auth Reference"
+status: superseded
+created: 2026-02-19
+completed: 2026-02-19
+outcome: superseded
+
+summary: >
+  Background research comparing Proxy Auth vs Gatekeeper Auth patterns for ElectricSQL. Decision made: Gatekeeper chosen.
+
+superseded_by: proxy-to-gatekeeper-migration.md
+---
 In the context of [ElectricSQL](https://electric-sql.com/docs/guides/auth), both **Proxy Auth** and **Gatekeeper Auth** are patterns used to secure "Shapes" (the data streams synced to the client).
 
 The fundamental difference is **where the authorization logic lives** and **how often it runs**.

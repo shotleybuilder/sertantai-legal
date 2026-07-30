@@ -1,3 +1,13 @@
+---
+plan: "AI Service Sync Endpoints for LAT & Amendments"
+status: completed
+created: 2026-02-23
+completed: 2026-02-23
+outcome: shipped
+
+summary: >
+  AI service sync endpoints (GET /api/ai/sync/lat and /annotations) for incremental pull-based sync.
+---
 # Phase 5: AI Service Sync Endpoints for LAT & Amendments
 
 ## Context

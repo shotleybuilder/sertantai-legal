@@ -1,3 +1,11 @@
+---
+plan: "Change Management — New Laws, Updates, Repeals"
+status: active
+created: 2026-06-06
+
+summary: >
+  Framework for detecting and propagating law changes to customer registers and Baserow. Design finalised, not built.
+---
 # Change Management — New Laws, Updates, Repeals + Sync
 
 **Status**: DRAFT — Round 3 reviewed (Gemini 2.5 Flash x2 + ChatGPT o3, 2026-06-06)

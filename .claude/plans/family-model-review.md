@@ -1,3 +1,11 @@
+---
+plan: "Family / Family II Model Review"
+status: active
+created: 2026-05-05
+
+summary: >
+  Analysis of the 51-family taxonomy with recommendations to split, merge, or improve family_ii coverage.
+---
 # Family / Family II Model Review
 
 **Date**: 2026-05-05

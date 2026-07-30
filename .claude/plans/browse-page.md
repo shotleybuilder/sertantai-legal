@@ -1,3 +1,11 @@
+---
+plan: "Blanket Bog Browse Page"
+status: active
+created: 2026-02-09
+
+summary: >
+  Read-only UK LRT browse page using ElectricSQL + TanStack TableKit. Phase 1 shipped, residual bugs remain.
+---
 # Plan: Blanket Bog Browse Page
 
 ## Status: Implemented (Phase 1 Complete)

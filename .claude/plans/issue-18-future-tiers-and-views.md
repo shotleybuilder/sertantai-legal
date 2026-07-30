@@ -1,3 +1,11 @@
+---
+plan: "Future Tiers, View Sidebar, and Auth"
+status: active
+created: 2026-02-09
+
+summary: >
+  Plan for a view sidebar (20+ grouped views), three-tier access model, and JWT-based feature gating.
+---
 # Plan: Issue #18 — Future Tiers, View Sidebar, and Auth
 
 Extracted from the Blanket Bog session (2026-02-05 to 2026-02-09) to separate completed browse-page work from planned future features.

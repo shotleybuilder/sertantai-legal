@@ -1,3 +1,11 @@
+---
+plan: "Data Sync Architecture"
+status: active
+created: 2026-04-06
+
+summary: >
+  Three-layer plan to keep dev DB, prod DB, and fractalaw in sync plus portable NAS snapshots. Phases 1-2 done.
+---
 # Data Sync Architecture Plan
 
 ## Problem Statement

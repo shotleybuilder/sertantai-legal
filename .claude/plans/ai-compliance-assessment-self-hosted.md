@@ -1,3 +1,14 @@
+---
+plan: "sertantai-compliance: Self-Hosted Deployment Tiers"
+status: active
+created: 2026-04-06
+
+summary: >
+  Self-hosted deployment tiers (connected VPS, customer-cloud AI, air-gapped) for the compliance service.
+
+depends_on:
+  - ai-compliance-assessment.md
+---
 # sertantai-compliance: Self-Hosted Deployment
 
 > **Status**: Conceptual architecture design

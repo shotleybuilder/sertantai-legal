@@ -1,3 +1,11 @@
+---
+plan: "Multi-Jurisdiction Legal Register"
+status: active
+created: 2026-05-17
+
+summary: >
+  Extend the platform from UK-only to multi-country, starting with Australia EHS & HR laws. AU phases 1-2 done.
+---
 # Multi-Jurisdiction Legal Register
 
 **Created**: 2026-05-17

@@ -1,3 +1,13 @@
+---
+plan: "Auto Applicability Screening"
+status: completed
+created: 2026-06-06
+completed: 2026-06-06
+outcome: shipped
+
+summary: >
+  Deterministic profile-based applicability screening using fitness/DRRP data. All 4 phases built.
+---
 # Auto Applicability Screening — Draft Plan
 
 **Status**: IMPLEMENTED — Phases 8a-8d built 2026-06-06
