@@ -13,7 +13,7 @@ Implementing the admin/production split plan (.claude/plans/admin-prod-split.md)
 ## Todo
 
 - ✅ Phase 0+1: Prepare and bootstrap compliance
-- ⬜ Phase 2: Move customer backend
+- ✅ Phase 2: Move customer backend
 - ⬜ Phase 3: Move customer frontend
 - ⬜ Phase 4: Strip legal
 - ⬜ Phase 5: Production cutover
@@ -32,7 +32,7 @@ Move all customer-facing Elixir code. Screening/fitness and sync/webhooks are ti
 
 | Session | Scope | Status |
 |---------|-------|--------|
-| `02-customer-backend.md` | Move screening controller, fitness module, sync engine + 27 templates, webhook controllers, org resources. Verify API parity. | pending |
+| `02-customer-backend.md` | Move screening controller, fitness module, sync engine + 27 templates, webhook controllers, org resources. Verify API parity. | **closed** |
 
 ## Phase 3: Move Customer Frontend
 
