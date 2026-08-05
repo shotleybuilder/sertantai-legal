@@ -95,10 +95,9 @@ defmodule SertantaiLegal.Sync.Engine do
     # (We bypass the provider's batch_delete because we need the raw table_id,
     # not a table_key like :lrt/:lat)
     base_url = provider_config["base_url"]
-    jwt = provider_config["jwt"]
 
     headers = [
-      {"Authorization", "JWT #{jwt}"},
+      auth_header(provider_config),
       {"Content-Type", "application/json"}
     ]
 
@@ -155,7 +154,8 @@ defmodule SertantaiLegal.Sync.Engine do
          :ok <- prepare_tables(sync_config.provider, provider_config, sync_config),
          {:ok, lrt_rows} <-
            ProfileQuery.query_lrt(profile, field_tier,
-             organization_id: sync_config.organization_id
+             organization_id: sync_config.organization_id,
+             demo: sync_config.target_config["demo"] == true
            ),
          {:ok, job} <-
            if(sync_table?.(:lrt),
@@ -1025,9 +1025,19 @@ defmodule SertantaiLegal.Sync.Engine do
   # ── Workspace Validation ──────────────────────────────────────────
 
   defp validate_workspace(provider_config, sync_config) do
+    # Database tokens can't access table metadata endpoints — skip validation
+    if is_nil(provider_config["jwt"]) do
+      Logger.info("[Sync] Skipping workspace validation (database token auth)")
+      :ok
+    else
+      do_validate_workspace(provider_config, sync_config)
+    end
+  end
+
+  defp do_validate_workspace(provider_config, sync_config) do
     expected_workspace_id = sync_config.target_config["workspace_id"]
     base_url = provider_config["base_url"]
-    jwt = provider_config["jwt"]
+    auth = auth_header(provider_config)
 
     table_ids =
       [
@@ -1044,7 +1054,7 @@ defmodule SertantaiLegal.Sync.Engine do
     else
       workspace_ids =
         Enum.reduce_while(table_ids, {:ok, []}, fn table_id, {:ok, acc} ->
-          case fetch_table_workspace(base_url, jwt, table_id) do
+          case fetch_table_workspace(base_url, auth, table_id) do
             {:ok, workspace_id} -> {:cont, {:ok, [workspace_id | acc]}}
             {:error, reason} -> {:halt, {:error, reason}}
           end
@@ -1073,9 +1083,9 @@ defmodule SertantaiLegal.Sync.Engine do
     end
   end
 
-  defp fetch_table_workspace(base_url, jwt, table_id) do
+  defp fetch_table_workspace(base_url, auth, table_id) do
     headers = [
-      {"Authorization", "JWT #{jwt}"},
+      auth,
       {"Content-Type", "application/json"}
     ]
 
@@ -1114,6 +1124,18 @@ defmodule SertantaiLegal.Sync.Engine do
   end
 
   # ── Helpers ───────────────────────────────────────────────────────
+
+  defp auth_header(provider_config) do
+    case provider_config["jwt"] do
+      jwt when is_binary(jwt) ->
+        {"Authorization", "JWT #{jwt}"}
+
+      _ ->
+        creds = provider_config["credentials"] || %{}
+        token = creds["database_token"] || creds[:database_token]
+        {"Authorization", "Token #{token}"}
+    end
+  end
 
   defp load_sync_config(id) do
     case Ash.get(SertantaiLegal.Sync.SyncConfiguration, id) do
@@ -1179,8 +1201,15 @@ defmodule SertantaiLegal.Sync.Engine do
   defp authenticate_provider(_, config), do: {:ok, config}
 
   defp prepare_tables(:baserow, config, sync_config) do
-    lrt_name = sync_config.target_config["lrt_table_name"] || "Legal Register"
-    Baserow.prepare_table(config, :lrt, lrt_name)
+    # Database tokens can't access table metadata endpoints — skip preparation
+    # (tables are already named correctly from templates.apply)
+    if is_nil(config["jwt"]) do
+      Logger.info("[Sync] Skipping table preparation (database token auth)")
+      :ok
+    else
+      lrt_name = sync_config.target_config["lrt_table_name"] || "Legal Register"
+      Baserow.prepare_table(config, :lrt, lrt_name)
+    end
   end
 
   defp prepare_tables(_, _, _), do: :ok

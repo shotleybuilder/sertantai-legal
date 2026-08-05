@@ -256,6 +256,7 @@ defmodule Mix.Tasks.Templates.Apply do
     base = %{}
 
     base
+    |> maybe_put_table(:customers, target_config["customers_table_id"])
     |> maybe_put_table(:lrt, target_config["lrt_table_id"])
     |> maybe_put_table(:lat, target_config["lat_table_id"])
     |> maybe_put_table(:actor_tuples, target_config["actor_tuples_table_id"])

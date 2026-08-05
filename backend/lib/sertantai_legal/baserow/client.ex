@@ -32,24 +32,31 @@ defmodule SertantaiLegal.Baserow.Client do
   """
   def authenticate(config) do
     creds = credentials(config)
-    email = creds["email"] || creds[:email]
-    password = creds["password"] || creds[:password]
 
-    url = base_url(config) <> "/api/user/token-auth/"
+    # Database tokens don't need JWT auth — they're permanent
+    if creds["database_token"] || creds[:database_token] do
+      Logger.info("[Baserow] Using database token (no JWT auth needed)")
+      {:ok, config}
+    else
+      email = creds["email"] || creds[:email]
+      password = creds["password"] || creds[:password]
 
-    case Req.post(url,
-           headers: [{"Content-Type", "application/json"}],
-           json: %{"email" => email, "password" => password},
-           receive_timeout: 15_000
-         ) do
-      {:ok, %{status: 200, body: %{"token" => jwt}}} ->
-        {:ok, Map.put(config, "jwt", jwt)}
+      url = base_url(config) <> "/api/user/token-auth/"
 
-      {:ok, %{status: status, body: body}} ->
-        {:error, "Baserow auth failed (#{status}): #{inspect(body)}"}
+      case Req.post(url,
+             headers: [{"Content-Type", "application/json"}],
+             json: %{"email" => email, "password" => password},
+             receive_timeout: 15_000
+           ) do
+        {:ok, %{status: 200, body: %{"token" => jwt}}} ->
+          {:ok, Map.put(config, "jwt", jwt)}
 
-      {:error, reason} ->
-        {:error, "Baserow auth request failed: #{inspect(reason)}"}
+        {:ok, %{status: status, body: body}} ->
+          {:error, "Baserow auth failed (#{status}): #{inspect(body)}"}
+
+        {:error, reason} ->
+          {:error, "Baserow auth request failed: #{inspect(reason)}"}
+      end
     end
   end
 
@@ -164,17 +171,21 @@ defmodule SertantaiLegal.Baserow.Client do
   to Baserow API parameters.
   """
   def create_field(config, table_id, field_spec) do
-    body = translate_field_spec(field_spec, config)
+    case translate_field_spec(field_spec, config) do
+      :skip ->
+        {:ok, :skipped}
 
-    case api_post(config, "/api/database/fields/table/#{table_id}/", body) do
-      {:ok, %{status: 200, body: %{"id" => field_id}}} ->
-        {:ok, field_id}
+      body ->
+        case api_post(config, "/api/database/fields/table/#{table_id}/", body) do
+          {:ok, %{status: 200, body: %{"id" => field_id}}} ->
+            {:ok, field_id}
 
-      {:ok, %{status: status, body: resp}} ->
-        {:error, "Create field '#{field_spec.name}': #{status} #{inspect(resp)}"}
+          {:ok, %{status: status, body: resp}} ->
+            {:error, "Create field '#{field_spec.name}': #{status} #{inspect(resp)}"}
 
-      {:error, reason} ->
-        {:error, "Create field '#{field_spec.name}': #{inspect(reason)}"}
+          {:error, reason} ->
+            {:error, "Create field '#{field_spec.name}': #{inspect(reason)}"}
+        end
     end
   end
 
@@ -688,14 +699,23 @@ defmodule SertantaiLegal.Baserow.Client do
 
     body = %{"name" => spec.name, "type" => baserow_type}
 
-    body
-    |> maybe_add_description(spec)
-    |> maybe_add_select_options(spec)
-    |> maybe_add_link_row(spec, config)
-    |> maybe_add_lookup(spec)
-    |> maybe_add_rollup(spec)
-    |> maybe_add_formula(spec)
-    |> maybe_add_raw_opts(spec)
+    result =
+      body
+      |> maybe_add_description(spec)
+      |> maybe_add_select_options(spec)
+      |> maybe_add_link_row(spec, config)
+
+    case result do
+      :skip ->
+        :skip
+
+      body ->
+        body
+        |> maybe_add_lookup(spec)
+        |> maybe_add_rollup(spec)
+        |> maybe_add_formula(spec)
+        |> maybe_add_raw_opts(spec)
+    end
   end
 
   defp maybe_add_description(body, %{description: desc}) when is_binary(desc) do
@@ -729,7 +749,11 @@ defmodule SertantaiLegal.Baserow.Client do
     if target_id do
       Map.put(body, "link_row_table_id", target_id)
     else
-      body
+      Logger.warning(
+        "[Client] Skipping link_row target #{target} — table not in config (optional template?)"
+      )
+
+      :skip
     end
   end
 

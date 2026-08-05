@@ -24,6 +24,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
     select_columns = Enum.uniq(columns ++ [:updated_at])
     checkpoint = Keyword.get(opts, :checkpoint)
     organization_id = Keyword.get(opts, :organization_id)
+    demo = Keyword.get(opts, :demo, false)
 
     query =
       from(u in "uk_lrt",
@@ -34,7 +35,7 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
       |> apply_function_filter(profile.function_filter)
       |> apply_live_filter(profile.live_filter)
       |> apply_fitness_entities_filter(Map.get(profile, :fitness_entities))
-      |> apply_applicability_filter(organization_id)
+      |> apply_applicability_filter(organization_id, demo)
       |> apply_checkpoint(checkpoint)
       |> order_by([u], [u.family, u.year, u.name])
 
@@ -315,9 +316,23 @@ defmodule SertantaiLegal.Sync.ProfileQuery do
     where(query, [u], fragment("fitness_entities && ?::text[]", ^entities))
   end
 
-  defp apply_applicability_filter(query, nil), do: query
+  defp apply_applicability_filter(query, nil, _demo), do: query
 
-  defp apply_applicability_filter(query, organization_id) do
+  defp apply_applicability_filter(query, _organization_id, true = _demo) do
+    # Demo mode: union of ALL organizations' applicable laws (deduplicated)
+    from(u in query,
+      where:
+        u.name in subquery(
+          from(oa in "org_applicabilities",
+            where: oa.status == "yes",
+            distinct: true,
+            select: oa.law_name
+          )
+        )
+    )
+  end
+
+  defp apply_applicability_filter(query, organization_id, _demo) do
     from(u in query,
       inner_join: oa in "org_applicabilities",
       on:

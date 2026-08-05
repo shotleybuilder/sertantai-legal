@@ -367,6 +367,7 @@ defmodule SertantaiLegal.Sync.Templates.Applicator do
   # Human-friendly Baserow table names.
   # Internal keys use snake_case atoms; Baserow tables use readable names.
   @table_names %{
+    customers: "Customers",
     lrt: "Legal Register",
     lat: "Duties",
     actor_tuples: "Actors",

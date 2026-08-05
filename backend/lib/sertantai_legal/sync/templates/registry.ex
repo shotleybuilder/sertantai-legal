@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Sync.Templates.Registry do
   """
   def all do
     %{
+      customers: SertantaiLegal.Sync.Templates.Customers,
       foundation: SertantaiLegal.Sync.Templates.Foundation,
       personnel: SertantaiLegal.Sync.Templates.Personnel,
       compliance_assessment: SertantaiLegal.Sync.Templates.ComplianceAssessment,

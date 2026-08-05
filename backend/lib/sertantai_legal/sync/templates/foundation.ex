@@ -45,7 +45,7 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
   def name, do: "Foundation — Legal Register + Provisions"
 
   @impl true
-  def requires, do: [:hierarchy]
+  def requires, do: [:customers, :hierarchy]
 
   @impl true
   def tables, do: [:lrt, :lat, :actor_tuples]
@@ -139,6 +139,12 @@ defmodule SertantaiLegal.Sync.Templates.Foundation do
         %{name: "Duty_Type", type: :multi_select, options: [], description: "DRRP duty types"},
         %{name: "Purpose", type: :multi_select, options: [], description: "Legal purposes"},
         %{name: "Fitness_Entities", type: :long_text, description: "Applicability entity tags"},
+        %{
+          name: "Customers",
+          type: :link_row,
+          target: :customers,
+          description: "Demo customers this law applies to"
+        },
         %{
           name: "Hierarchy",
           type: :link_row,

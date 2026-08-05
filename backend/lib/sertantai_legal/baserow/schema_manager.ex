@@ -177,8 +177,10 @@ defmodule SertantaiLegal.Baserow.SchemaManager do
             {:cont, {:ok, total}}
 
           {:error, reason} ->
-            if field[:type] == :lookup do
-              Logger.warning("[SchemaManager] Skipping lookup #{field.name}: #{inspect(reason)}")
+            if field[:type] in [:lookup, :rollup] do
+              Logger.warning(
+                "[SchemaManager] Skipping #{field[:type]} #{field.name}: #{inspect(reason)}"
+              )
 
               {:cont, {:ok, total}}
             else
