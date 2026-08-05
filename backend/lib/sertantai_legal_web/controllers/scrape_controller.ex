@@ -2226,12 +2226,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
           # Re-read to get latest persisted_count
           case ScrapeSession.by_session_id(session.session_id) do
             {:ok, fresh} ->
-              result =
-                ScrapeSession.mark_completed(fresh, %{persisted_count: fresh.persisted_count})
-
-              # Trigger change detection for all orgs asynchronously
-              SertantaiLegal.Sync.ChangeDetector.trigger_async()
-              result
+              ScrapeSession.mark_completed(fresh, %{persisted_count: fresh.persisted_count})
 
             _ ->
               :ok

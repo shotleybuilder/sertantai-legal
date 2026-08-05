@@ -7,6 +7,6 @@
 	export let params: Record<string, string> = {};
 
 	onMount(() => {
-		goto('/browse', { replaceState: true });
+		goto('/admin', { replaceState: true });
 	});
 </script>

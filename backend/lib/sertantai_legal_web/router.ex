@@ -7,13 +7,6 @@ defmodule SertantaiLegalWeb.Router do
     plug(:accepts, ["json"])
   end
 
-  # Authenticated API pipeline — validates JWT from sertantai-auth
-  pipeline :api_authenticated do
-    plug(:accepts, ["json"])
-    plug(SertantaiLegalWeb.LoadFromCookie)
-    plug(SertantaiLegalWeb.AuthPlug)
-  end
-
   # Admin API pipeline — JWT auth + admin/owner role check
   pipeline :api_admin do
     plug(:accepts, ["json"])
@@ -38,12 +31,6 @@ defmodule SertantaiLegalWeb.Router do
   pipeline :api_ai do
     plug(:accepts, ["json"])
     plug(SertantaiLegalWeb.AiApiKeyPlug)
-  end
-
-  # Webhook pipeline — API key auth for hub-to-legal webhooks
-  pipeline :api_webhook do
-    plug(:accepts, ["json"])
-    plug(SertantaiLegalWeb.WebhookApiKeyPlug)
   end
 
   # Health check endpoints (no /api prefix, no authentication required)
@@ -78,25 +65,6 @@ defmodule SertantaiLegalWeb.Router do
     get("/sync/annotations", AiSyncController, :annotations)
   end
 
-  # Webhook endpoints — hub-to-legal (API key auth)
-  scope "/api/webhooks", SertantaiLegalWeb do
-    pipe_through(:api_webhook)
-    post("/entitlement-change", WebhookController, :entitlement_change)
-  end
-
-  # Template webhook endpoints — provider callbacks (no auth pipeline, verified by secret)
-  scope "/api/webhooks/template", SertantaiLegalWeb do
-    pipe_through(:api)
-    post("/:provider/:org_id", TemplateWebhookController, :handle)
-  end
-
-  # Electric proxy — public shapes (UK LRT reference data)
-  scope "/api/electric", SertantaiLegalWeb do
-    pipe_through(:sse)
-    get("/v1/shape", ElectricProxyController, :shape)
-    delete("/v1/shape", ElectricProxyController, :delete_shape)
-  end
-
   # Authenticated SSE streaming (JWT auth)
   scope "/api", SertantaiLegalWeb do
     pipe_through([:sse, :sse_authenticated])
@@ -105,49 +73,13 @@ defmodule SertantaiLegalWeb.Router do
     get("/lat/sessions/:id/parse-stream", LatAdminController, :lat_parse_stream)
   end
 
-  # Tenant-scoped API endpoints (JWT auth from sertantai-auth)
+  # Legal register write endpoints (admin-only, moved from api_authenticated)
   scope "/api", SertantaiLegalWeb do
-    pipe_through(:api_authenticated)
+    pipe_through(:api_admin)
 
-    # Legal register write endpoints (require org_id from JWT)
     patch("/laws/:id", UkLrtController, :update)
     delete("/laws/:id", UkLrtController, :delete)
     post("/laws/:id/rescrape", UkLrtController, :rescrape)
-
-    # Screening endpoints (org-scoped, customer-facing)
-    get("/screening/applicabilities", ScreeningController, :index)
-    put("/screening/applicabilities/:law_name", ScreeningController, :upsert)
-    post("/screening/applicabilities/bulk", ScreeningController, :bulk_upsert)
-    get("/screening/stats", ScreeningController, :stats)
-    post("/screening/sync", ScreeningController, :trigger_sync)
-    get("/screening/profile", ScreeningController, :get_profile)
-    put("/screening/profile", ScreeningController, :upsert_profile)
-    get("/screening/vocabulary", ScreeningController, :vocabulary)
-    get("/screening/events", ScreeningController, :events)
-    get("/screening/events/:law_name", ScreeningController, :law_events)
-    post("/screening/undo", ScreeningController, :undo)
-    post("/screening/debug-dump", ScreeningController, :debug_dump)
-
-    # Change management endpoints (Phase B)
-    get("/screening/compliance-metrics", ScreeningController, :compliance_metrics)
-    get("/screening/changes/summary", ScreeningController, :changes_summary)
-    get("/screening/changes", ScreeningController, :changes_list)
-    put("/screening/changes/:id/decide", ScreeningController, :decide_change)
-
-    # Sync management endpoints (org-scoped, any authenticated user)
-    get("/sync/entitlement", SyncController, :entitlement)
-    get("/sync/profiles", SyncController, :list_profiles)
-    post("/sync/profiles", SyncController, :create_profile)
-    post("/sync/profiles/preview", SyncController, :preview_profile)
-    patch("/sync/profiles/:id", SyncController, :update_profile)
-    delete("/sync/profiles/:id", SyncController, :delete_profile)
-    get("/sync/configurations", SyncController, :list_configurations)
-    post("/sync/configurations", SyncController, :create_configuration)
-    patch("/sync/configurations/:id", SyncController, :update_configuration)
-    delete("/sync/configurations/:id", SyncController, :delete_configuration)
-    post("/sync/configurations/:id/test", SyncController, :test_connection)
-    post("/sync/configurations/:id/sync", SyncController, :trigger_sync)
-    get("/sync/jobs", SyncController, :list_jobs)
   end
 
   # Admin API endpoints (JWT auth + admin role)

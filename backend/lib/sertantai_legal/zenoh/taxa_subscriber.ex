@@ -323,10 +323,18 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   # match_score_changed event so the Change Review Dashboard picks it up.
   # Runs inline but is a single lightweight query + insert per affected org.
   defp notify_enrichment_change(law_name) do
-    alias SertantaiLegal.Sync.ApplicabilityEvent
-
-    query = """
-    SELECT oa.organization_id, oa.source
+    # Direct SQL insert into applicability_events — avoids depending on the
+    # Sync.ApplicabilityEvent Ash resource (moved to sertantai-compliance).
+    # The table exists in the shared database.
+    insert_sql = """
+    INSERT INTO applicability_events (id, organization_id, law_name, event, actor,
+      status_before, status_after, source, materiality, review_due_date, metadata, inserted_at, updated_at)
+    SELECT gen_random_uuid(), oa.organization_id, $1, 'match_score_changed', 'sertantai',
+      'yes', 'yes', 'enrichment',
+      CASE WHEN oa.source = 'screener' THEN 'moderate' ELSE 'minor' END,
+      CURRENT_DATE + CASE WHEN oa.source = 'screener' THEN 60 ELSE 90 END,
+      '{"change_type": "enrichment_update", "source": "taxa_subscriber"}'::jsonb,
+      now(), now()
     FROM org_applicabilities oa
     WHERE oa.law_name = $1
       AND oa.status = 'yes'
@@ -339,42 +347,11 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
       )
     """
 
-    case SertantaiLegal.Repo.query(query, [law_name]) do
-      {:ok, %{rows: rows}} when rows != [] ->
-        Enum.each(rows, fn [org_id, source] ->
-          # Screener-sourced = moderate (profile match may have changed)
-          # Manually confirmed = minor (informational, won't auto-remove)
-          materiality = if source == "screener", do: "moderate", else: "minor"
-
-          review_due_days = %{"moderate" => 60, "minor" => 90}
-          due = Date.add(Date.utc_today(), review_due_days[materiality] || 90)
-
-          org_id_str =
-            case Ecto.UUID.load(org_id) do
-              {:ok, str} -> str
-              _ -> org_id
-            end
-
-          ApplicabilityEvent.log(%{
-            organization_id: org_id_str,
-            law_name: law_name,
-            event: "match_score_changed",
-            actor: "sertantai",
-            status_before: "yes",
-            status_after: "yes",
-            source: "enrichment",
-            materiality: materiality,
-            review_due_date: due,
-            metadata: %{
-              "change_type" => "enrichment_update",
-              "source" => "taxa_subscriber"
-            }
-          })
-        end)
-
+    case SertantaiLegal.Repo.query(insert_sql, [law_name]) do
+      {:ok, %{num_rows: n}} when n > 0 ->
         Logger.debug(
           "[Zenoh.TaxaSubscriber] Logged enrichment change for #{law_name} " <>
-            "affecting #{length(rows)} org(s)"
+            "affecting #{n} org(s)"
         )
 
       _ ->

@@ -1,32 +1,42 @@
-# Sertantai-Legal: UK Legal Compliance Microservice
+# Sertantai-Legal: Admin Data Workbench
 
-**Service Type**: Domain microservice in the SertantAI ecosystem
-**Domain**: UK Legal/Regulatory Transport (LRT) data and compliance screening
-**Coordinates With**: sertantai-hub (orchestration), sertantai-auth (authentication)
-**Infrastructure**: Shared PostgreSQL via ~/Desktop/infrastructure
+**Service Type**: Admin/enrichment microservice in the SertantAI ecosystem (local only, not deployed to production)
+**Domain**: UK/AU Legal/Regulatory data acquisition, parsing, enrichment, and quality assurance
+**Coordinates With**: sertantai-compliance (production SaaS, shared DB), sertantai-auth (authentication), fractalaw (P2P enrichment via Zenoh)
+**Infrastructure**: Local PostgreSQL via docker-compose.dev.yml
 
 ## Architecture Context
 
 ```
-                    SertantAI Hub (Orchestrator)
-                             ↓
-        ┌────────────────────┼────────────────────┬──────────────┐
-        ↓                    ↓                    ↓              ↓
-   sertantai-auth    sertantai-legal     sertantai-         sertantai-
-   (Identity)        (THIS SERVICE)      enforcement         controls
-                     UK LRT + Screening
+                    SertantAI Hub (Orchestrator, auth entry point)
+                                    ↓
+           ┌────────────────────────┼────────────────────────┐
+           ↓                        ↓                        ↓
+    sertantai-auth           sertantai-compliance      sertantai-legal
+    (Identity/JWT)           (PRODUCTION SaaS)         (THIS SERVICE)
+                             Screening, Sync,          ADMIN — local only
+                             Change Mgmt, Browse       Scraper, LAT parser,
+                             AI Assessments (future)   Graph, Enrichment, QA
 ```
 
 **This service provides**:
-- 19,000+ UK Legal/Regulatory Transport records
-- Organization location screening against UK regulations
-- Applicability matching (duty holders, rights holders, power holders)
-- Offline-first data sync via ElectricSQL
+- UK/AU legislation scraping from legislation.gov.uk and state portals
+- LAT (Legal Article Text) parsing and session management
+- Graph-based family inference and amendment relationship tracking
+- Taxa enrichment via Zenoh P2P mesh with fractalaw
+- Secondary source parsing (ACoPs, JSPs, standards)
+- Analytics and data quality assurance
+- Delta sync pipeline to push reference data to production (sertantai-compliance)
 
 **This service does NOT provide**:
+- Customer-facing applicability screening (moved to sertantai-compliance)
+- Baserow sync engine and templates (moved to sertantai-compliance)
+- Customer-facing frontend routes (moved to sertantai-compliance)
 - User authentication (comes from sertantai-auth)
-- Organization management (comes from hub)
-- Billing/subscriptions (comes from hub)
+
+## Relationship with sertantai-compliance
+
+Legal and compliance share the same development database (`sertantai_legal_dev` on port 5436). Legal writes reference data (legal_register, legal_articles, controls, etc.). Compliance reads it and serves customers. In production, legal pushes reference data to `sertantai_compliance_prod` via the delta sync pipeline (`mix data.export_delta` / `mix data.apply_delta`).
 
 ## Git Commit Rules
 

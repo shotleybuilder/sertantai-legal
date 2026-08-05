@@ -221,11 +221,7 @@ defmodule SertantaiLegal.Scraper.SessionManager do
   def persist_all(%ScrapeSession{} = session) do
     with {:ok, session} <- persist_group(session, :group1),
          {:ok, session} <- persist_group(session, :group2) do
-      result = ScrapeSession.mark_completed(session, %{persisted_count: session.persisted_count})
-
-      # Trigger change detection for all orgs asynchronously
-      SertantaiLegal.Sync.ChangeDetector.trigger_async()
-      result
+      ScrapeSession.mark_completed(session, %{persisted_count: session.persisted_count})
     end
   end
 
