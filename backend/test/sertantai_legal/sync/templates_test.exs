@@ -4,6 +4,7 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   alias SertantaiLegal.Sync.Templates.{
     Registry,
     SubPatterns,
+    Customers,
     Foundation,
     Hierarchy,
     Personnel,
@@ -20,9 +21,13 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   }
 
   describe "Registry.resolve/1" do
-    test "resolves foundation with hierarchy dependency" do
+    test "resolves foundation with customers and hierarchy dependencies" do
       {:ok, modules} = Registry.resolve([:foundation])
-      assert modules == [Hierarchy, Foundation]
+      assert Foundation in modules
+      assert Customers in modules
+      assert Hierarchy in modules
+      # Foundation must come after its dependencies
+      assert List.last(modules) == Foundation
     end
 
     test "resolves personnel alone" do
@@ -83,8 +88,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   end
 
   describe "Foundation template" do
-    test "requires hierarchy for LRT Hierarchy link" do
-      assert Foundation.requires() == [:hierarchy]
+    test "requires customers and hierarchy for LRT link_row fields" do
+      assert Foundation.requires() == [:customers, :hierarchy]
     end
 
     test "declares lrt, lat, and actor_tuples tables" do
@@ -542,8 +547,8 @@ defmodule SertantaiLegal.Sync.TemplatesTest do
   end
 
   describe "Registry — full template set" do
-    test "all 22 templates registered" do
-      assert map_size(Registry.all()) == 22
+    test "all 23 templates registered" do
+      assert map_size(Registry.all()) == 23
     end
 
     test "resolves full stack" do
