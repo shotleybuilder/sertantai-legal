@@ -1,10 +1,92 @@
 ---
 session: Baserow Cloud → Hetzner Migration
-status: active
+status: closed
 opened: 2026-08-05
+closed: 2026-08-05
+outcome: success
+
+summary: >
+  Migrated Baserow from cloud (api.baserow.io) to self-hosted Hetzner (baserow.sertantai.com)
+  with a new multi-customer demo architecture. Single database with Customers table and link_row
+  on Legal Register — all other tables shared. 651 rows synced, QQ customer linked, demo union
+  sync and baserow-new-customer skill created.
+
+decisions:
+  - what: Single database with customer dimension only on Legal Register
+    why: Avoids duplicating 19k LRT rows per customer. Controls, Evidence, etc. are shared reference data that "activate" through the LRT relationship chain. Customers don't edit demo data.
+    result: One Customers table, one link_row on LRT, all other tables unchanged
+
+  - what: Database token auth instead of JWT
+    why: Baserow JWTs expire after ~10 minutes. QQ sync takes 5+ minutes — JWT expired mid-sync on first attempt. Database tokens are permanent.
+    result: No more auth failures during long syncs. Required skipping metadata-only API calls (validate_workspace, prepare_tables) which need JWT.
+
+  - what: Demo union sync via target_config "demo"=true flag
+    why: Demo Baserow needs the union of all customers' applicable laws. Production customer Baserows must stay scoped to their org only. Using target_config JSONB avoids schema migration.
+    result: ProfileQuery uses subquery across all org_applicabilities when demo=true, inner_join on single org when false
+
+  - what: Customers template is opt-in, not always included
+    why: Customer production Baserow instances don't need a Customers table. The template is included via --templates flag on templates.apply. link_row fields gracefully skip when target table isn't in config.
+    result: Same Foundation template works for both demo and production — Customers link_row silently skipped when customers_table_id absent
+
+metrics:
+  tables_created: 14
+  rows_synced: 651
+  ssl_certs_renewed: 10
+  database_id: 230
+  customer_row_id: 4
+
+lessons:
+  - title: Baserow database tokens only work for row-level API, not table metadata
+    detail: >
+      Database tokens (Token auth) can access /api/database/rows/table/* endpoints but NOT
+      /api/database/tables/* endpoints. The Engine's validate_workspace and prepare_tables
+      functions call metadata endpoints and must be skipped for token auth. The Client's
+      auth_header already supported both modes but the Engine had hardcoded JWT headers in
+      3 places (validate_workspace, fetch_table_workspace, clean_table).
+    tag: baserow
+
+  - title: Baserow API requires user_field_names=true for database token requests to use field names
+    detail: >
+      Database tokens return field IDs (field_8778) not names (Name) by default. Both reads
+      and writes need ?user_field_names=true query param. Without it, row creation with
+      {"Name": "QQ"} silently creates a row with empty fields.
+    tag: baserow
+
+  - title: SchemaManager Phase 3 rollup ordering — rollups that depend on formulas in other tables fail on first run
+    detail: >
+      Actions_Open/Overdue/Done rollups on Assessments depend on Is_Open/Is_Overdue/Is_Done
+      formulas on Actions table. Both are Phase 3 (deferred fields). If assessments specs
+      are processed before actions specs, the rollups fail because target formulas don't exist
+      yet. Fix: made rollup failures non-fatal (skip like lookups). Multiple runs resolve all
+      fields. Pre-existing issue, not new to this migration.
+    tag: baserow
+
+  - title: Oban workers run with the module code loaded at app start — code changes require server restart
+    detail: >
+      Compiling new code in the backend doesn't affect running Oban workers. The Phoenix
+      server must be restarted for workers to pick up changes. This caused confusion when
+      the database token authenticate change compiled but the sync worker still used the old
+      email/password path.
+    tag: infrastructure
+
+artifacts:
+  - backend/lib/sertantai_legal/sync/templates/customers.ex
+  - backend/scripts/update_sync_target.exs
+  - backend/scripts/baserow_new_customer.exs
+  - .claude/skills/baserow-new-customer/SKILL.md
+
+depends_on:
+  - 2026-07-20-build.md
+  - 2026-07-14-baserow-data-sync-layer.md
+  - 2026-07-18-meta.md
+
+enables:
+  - Baserow App migration to self-hosted (multi-customer filtered apps)
+  - New demo customer onboarding via baserow-new-customer skill
+  - Decommission Baserow Cloud account
 ---
 
-# Session: Baserow Cloud → Hetzner Migration (ACTIVE)
+# Session: Baserow Cloud → Hetzner Migration (CLOSED)
 
 ## Problem
 
@@ -22,7 +104,7 @@ The QQ PoC Baserow app is running on Baserow Cloud (`api.baserow.io`). A self-ho
 - ✅ Make rollup failures non-fatal in SchemaManager Phase 3 (same as lookups)
 - ✅ Update sertantai-legal sync config: `base_url` → `https://baserow.sertantai.com`, new credentials
 - ✅ Run `mix templates.apply` — 14 tables, all fields/views created. Database ID 230 in workspace 111.
-- ⬜ Action rollup fields (Actions_Open/Overdue/Done) — pre-existing ordering issue, deferred
+- ⏸️ Action rollup fields (Actions_Open/Overdue/Done) — deferred, pre-existing Phase 3 ordering issue
 - ✅ Database token auth — JWT expires mid-sync; added database token support to Client, Engine, update_sync_target script
 - ✅ Engine: skip validate_workspace and prepare_tables for database token auth (metadata API requires JWT)
 - ✅ Run `mix sync.run` — 651 rows synced (LRT + LAT + Actors)
@@ -30,8 +112,8 @@ The QQ PoC Baserow app is running on Baserow Cloud (`api.baserow.io`). A self-ho
 - ✅ Verify data in Baserow UI — Customers table has QQ, Legal Register shows QQ in Customers column
 - ✅ Demo union sync — `"demo": true` in target_config, ProfileQuery unions all orgs' applicabilities
 - ✅ `baserow-new-customer` skill + `backend/scripts/baserow_new_customer.exs` script
-- ⬜ App build — deferred, needs separate design for multi-customer filtering
-- ⬜ Decommission Baserow Cloud account
+- ⏸️ App build — deferred to next session, needs multi-customer filtered data sources design
+- ⏸️ Decommission Baserow Cloud account — deferred until app migration confirmed working
 
 ## Multi-Customer Demo Architecture
 

@@ -1,9 +1,12 @@
 # Update a SyncConfiguration's base_url and credentials.
 #
-# Usage (email/password auth — JWT, expires):
+# Usage (both — recommended for self-hosted: JWT for app builder, token for sync):
+#   mix run scripts/update_sync_target.exs --url https://baserow.sertantai.com --email user@example.com --password secret --token YOUR_DATABASE_TOKEN
+#
+# Usage (email/password only — JWT auth, expires after ~10min):
 #   mix run scripts/update_sync_target.exs --url https://baserow.sertantai.com --email user@example.com --password secret
 #
-# Usage (database token auth — permanent, recommended):
+# Usage (database token only — permanent, sync only, no app builder):
 #   mix run scripts/update_sync_target.exs --url https://baserow.sertantai.com --token YOUR_DATABASE_TOKEN
 #
 # Options:
@@ -28,20 +31,38 @@ alias SertantaiLegal.Sync.Credentials
 url = opts[:url] || raise "Missing --url"
 fresh = opts[:fresh] || false
 
-# Build credentials map based on auth mode
+# Build credentials map — supports all three together
+creds = %{}
+
 creds =
-  cond do
-    opts[:token] ->
-      %{"database_token" => opts[:token]}
-
-    opts[:email] && opts[:password] ->
-      %{"email" => opts[:email], "password" => opts[:password]}
-
-    true ->
-      raise "Provide either --token or --email + --password"
+  if opts[:email] && opts[:password] do
+    Map.merge(creds, %{"email" => opts[:email], "password" => opts[:password]})
+  else
+    creds
   end
 
-auth_mode = if opts[:token], do: "database_token", else: "email/password"
+creds =
+  if opts[:token] do
+    Map.put(creds, "database_token", opts[:token])
+  else
+    creds
+  end
+
+if creds == %{} do
+  raise "Provide --token and/or --email + --password"
+end
+
+auth_mode =
+  cond do
+    Map.has_key?(creds, "email") && Map.has_key?(creds, "database_token") ->
+      "email/password + database_token"
+
+    Map.has_key?(creds, "email") ->
+      "email/password"
+
+    true ->
+      "database_token"
+  end
 
 # Find sync config
 config_id =

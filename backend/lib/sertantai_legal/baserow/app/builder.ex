@@ -28,7 +28,10 @@ defmodule SertantaiLegal.Baserow.App.Builder do
   """
   def build(sync_config_id, opts \\ []) do
     only = Keyword.get(opts, :only)
-    Logger.info("[AppBuilder] Starting build#{if only, do: " (only: #{inspect(only)})", else: ""}")
+
+    Logger.info(
+      "[AppBuilder] Starting build#{if only, do: " (only: #{inspect(only)})", else: ""}"
+    )
 
     with {:ok, config, sc} <- authenticate(sync_config_id),
          {:ok, builder_id, integration_id} <- ensure_app_and_integration(config),
@@ -36,7 +39,16 @@ defmodule SertantaiLegal.Baserow.App.Builder do
          recipes <- filter_recipes(all_recipes, only),
          {:ok, table_ids} <- resolve_table_ids(sc),
          {:ok, resolver} <- build_resolver(config, table_ids),
-         {:ok, page_registry} <- build_pages(all_recipes, recipes, config, builder_id, integration_id, table_ids, resolver),
+         {:ok, page_registry} <-
+           build_pages(
+             all_recipes,
+             recipes,
+             config,
+             builder_id,
+             integration_id,
+             table_ids,
+             resolver
+           ),
          {:ok, manual_steps} <- generate_manual_steps(recipes),
          {:ok, _} <- publish(config, builder_id) do
       Logger.info("[AppBuilder] Build complete — #{map_size(page_registry)} pages")
@@ -66,7 +78,9 @@ defmodule SertantaiLegal.Baserow.App.Builder do
     headers = auth_headers(config)
     base = config["base_url"]
 
-    {:ok, %{body: apps}} = Req.get("#{base}/api/applications/", headers: headers, receive_timeout: 15_000)
+    {:ok, %{body: apps}} =
+      Req.get("#{base}/api/applications/", headers: headers, receive_timeout: 15_000)
+
     workspace_id = hd(apps)["workspace"]["id"]
 
     # Find or create builder app
@@ -77,7 +91,8 @@ defmodule SertantaiLegal.Baserow.App.Builder do
             Req.post("#{base}/api/applications/workspace/#{workspace_id}/",
               headers: headers,
               json: %{"name" => @app_name, "type" => "builder"},
-              receive_timeout: 15_000)
+              receive_timeout: 15_000
+            )
 
           Logger.info("[AppBuilder] Created app: #{app["id"]}")
           app
@@ -90,7 +105,9 @@ defmodule SertantaiLegal.Baserow.App.Builder do
     # Find or create integration
     {:ok, %{body: integrations}} =
       Req.get("#{base}/api/application/#{builder["id"]}/integrations/",
-        headers: headers, receive_timeout: 15_000)
+        headers: headers,
+        receive_timeout: 15_000
+      )
 
     integration =
       case Enum.find(integrations, fn i -> i["type"] == "local_baserow" end) do
@@ -99,7 +116,8 @@ defmodule SertantaiLegal.Baserow.App.Builder do
             Req.post("#{base}/api/application/#{builder["id"]}/integrations/",
               headers: headers,
               json: %{"type" => "local_baserow", "name" => "Local Database"},
-              receive_timeout: 15_000)
+              receive_timeout: 15_000
+            )
 
           Logger.info("[AppBuilder] Created integration: #{intg["id"]}")
           intg
@@ -164,7 +182,15 @@ defmodule SertantaiLegal.Baserow.App.Builder do
   # pages that link FROM. We do two passes: first create all pages (to get IDs),
   # then populate elements.
 
-  defp build_pages(all_recipes, recipes_to_build, config, builder_id, integration_id, table_ids, resolver) do
+  defp build_pages(
+         all_recipes,
+         recipes_to_build,
+         config,
+         builder_id,
+         integration_id,
+         table_ids,
+         resolver
+       ) do
     # Pass 1: create/find pages for ALL recipes (need full registry for cross-page links)
     page_registry =
       Enum.reduce(all_recipes, %{}, fn {key, recipe}, registry ->
@@ -172,7 +198,9 @@ defmodule SertantaiLegal.Baserow.App.Builder do
         headers = auth_headers(config)
         base = config["base_url"]
 
-        {:ok, %{body: apps}} = Req.get("#{base}/api/applications/", headers: headers, receive_timeout: 15_000)
+        {:ok, %{body: apps}} =
+          Req.get("#{base}/api/applications/", headers: headers, receive_timeout: 15_000)
+
         builder = Enum.find(apps, fn a -> a["id"] == builder_id end)
         pages = (builder["pages"] || []) |> Enum.reject(fn p -> p["shared"] end)
 
@@ -188,7 +216,10 @@ defmodule SertantaiLegal.Baserow.App.Builder do
 
               {:ok, %{body: p}} =
                 Req.post("#{base}/api/builder/#{builder_id}/pages/",
-                  headers: headers, json: page_body, receive_timeout: 15_000)
+                  headers: headers,
+                  json: page_body,
+                  receive_timeout: 15_000
+                )
 
               p
 
@@ -201,7 +232,8 @@ defmodule SertantaiLegal.Baserow.App.Builder do
           Req.patch("#{base}/api/builder/pages/#{page["id"]}/",
             headers: headers,
             json: %{"query_params" => page_spec["query_params"]},
-            receive_timeout: 15_000)
+            receive_timeout: 15_000
+          )
         end
 
         Map.put(registry, key, page["id"])
@@ -261,32 +293,52 @@ defmodule SertantaiLegal.Baserow.App.Builder do
 
     {:ok, %{body: domains}} =
       Req.get("#{base}/api/builder/#{builder_id}/domains/",
-        headers: headers, receive_timeout: 15_000)
+        headers: headers,
+        receive_timeout: 15_000
+      )
 
-    domain =
-      case domains do
-        [] ->
-          {:ok, %{body: d}} =
-            Req.post("#{base}/api/builder/#{builder_id}/domains/",
-              headers: headers,
-              json: %{
-                "domain_name" => "#{@domain_prefix}.baserow.site",
-                "type" => "sub_domain"
-              },
-              receive_timeout: 15_000)
+    case domains do
+      [] ->
+        # Try SaaS subdomain first, skip on failure (self-hosted doesn't support it)
+        case Req.post("#{base}/api/builder/#{builder_id}/domains/",
+               headers: headers,
+               json: %{
+                 "domain_name" => "#{@domain_prefix}.baserow.site",
+                 "type" => "sub_domain"
+               },
+               receive_timeout: 15_000
+             ) do
+          {:ok, %{status: 200, body: domain}} ->
+            publish_domain(base, headers, domain)
 
-          d
+          {:ok, %{status: _}} ->
+            Logger.info("[AppBuilder] Skipping publish — no domain configured (self-hosted)")
+            {:ok, nil}
+        end
 
-        [d | _] ->
-          d
-      end
+      [domain | _] ->
+        publish_domain(base, headers, domain)
+    end
+  end
 
-    {:ok, %{status: s}} =
-      Req.post("#{base}/api/builder/domains/#{domain["id"]}/publish/async/",
-        headers: headers, json: %{}, receive_timeout: 15_000)
+  defp publish_domain(base, headers, domain) do
+    case Req.post("#{base}/api/builder/domains/#{domain["id"]}/publish/async/",
+           headers: headers,
+           json: %{},
+           receive_timeout: 15_000
+         ) do
+      {:ok, %{status: s}} when s in [200, 202, 204] ->
+        Logger.info("[AppBuilder] Published to #{domain["domain_name"]}")
+        {:ok, domain}
 
-    Logger.info("[AppBuilder] Published to #{domain["domain_name"]}: #{s}")
-    {:ok, domain}
+      {:ok, %{status: s}} ->
+        Logger.warning("[AppBuilder] Publish returned #{s} for #{domain["domain_name"]}")
+        {:ok, domain}
+
+      {:error, reason} ->
+        Logger.warning("[AppBuilder] Publish failed: #{inspect(reason)}")
+        {:ok, nil}
+    end
   end
 
   defp auth_headers(config) do

@@ -34,7 +34,9 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
     page_spec = recipe["page"]
 
     # Find or create page
-    {:ok, %{body: apps}} = Req.get("#{base}/api/applications/", headers: headers, receive_timeout: 15_000)
+    {:ok, %{body: apps}} =
+      Req.get("#{base}/api/applications/", headers: headers, receive_timeout: 15_000)
+
     builder = Enum.find(apps, fn a -> a["id"] == builder_id end)
     pages = (builder["pages"] || []) |> Enum.reject(fn p -> p["shared"] end)
 
@@ -51,13 +53,19 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
             end
 
           case Req.post("#{base}/api/builder/#{builder_id}/pages/",
-                 headers: headers, json: page_body, receive_timeout: 15_000) do
+                 headers: headers,
+                 json: page_body,
+                 receive_timeout: 15_000
+               ) do
             {:ok, %{status: 200, body: p}} ->
               Logger.info("[AppBuilder] Created page #{p["name"]} (#{p["id"]})")
               p
 
             {:ok, %{status: status, body: err}} ->
-              Logger.error("[AppBuilder] Failed to create page #{page_spec["name"]}: #{status} #{inspect(err, limit: 5)}")
+              Logger.error(
+                "[AppBuilder] Failed to create page #{page_spec["name"]}: #{status} #{inspect(err, limit: 5)}"
+              )
+
               raise "Page creation failed: #{status}"
           end
 
@@ -73,20 +81,27 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
       Req.patch("#{base}/api/builder/pages/#{page_id}/",
         headers: headers,
         json: %{"query_params" => page_spec["query_params"]},
-        receive_timeout: 15_000)
+        receive_timeout: 15_000
+      )
     end
 
     # Check if page already has elements
     {:ok, %{body: existing_els}} =
       Req.get("#{base}/api/builder/page/#{page_id}/elements/",
-        headers: headers, receive_timeout: 15_000)
+        headers: headers,
+        receive_timeout: 15_000
+      )
 
     if length(existing_els) > 0 do
-      Logger.info("[AppBuilder] Page #{page_spec["name"]} already has #{length(existing_els)} elements — skipping")
+      Logger.info(
+        "[AppBuilder] Page #{page_spec["name"]} already has #{length(existing_els)} elements — skipping"
+      )
+
       {:ok, page_id}
     else
       # Create data sources
-      ds_registry = create_data_sources(recipe, page_id, integration_id, table_ids, resolver, headers, base)
+      ds_registry =
+        create_data_sources(recipe, page_id, integration_id, table_ids, resolver, headers, base)
 
       # Determine which table this page primarily uses
       primary_table =
@@ -151,16 +166,14 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
             "integration_id" => integration_id,
             "table_id" => table_id
           },
-          receive_timeout: 15_000)
+          receive_timeout: 15_000
+        )
 
       Logger.info("[AppBuilder]   DS: #{ds_spec["name"]} (#{ds["id"]})")
 
       # Set row_id if specified and not manual
       if ds_spec["row_id"] && !ds_spec["manual_config"] do
-        formula = %{"formula" => ds_spec["row_id"], "mode" => "simple", "version" => "0.1"}
-
-        Req.patch("#{base}/api/builder/data-source/#{ds["id"]}/",
-          headers: headers, json: %{"row_id" => formula}, receive_timeout: 15_000)
+        set_data_source_row_id(base, headers, ds["id"], ds_spec["row_id"])
       end
 
       # Set filters if specified
@@ -193,7 +206,10 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
           end)
 
         Req.patch("#{base}/api/builder/data-source/#{ds["id"]}/",
-          headers: headers, json: %{"filters" => filters}, receive_timeout: 15_000)
+          headers: headers,
+          json: %{"filters" => filters},
+          receive_timeout: 15_000
+        )
 
         Logger.info("[AppBuilder]   Filters: #{length(filters)} applied")
       end
@@ -204,7 +220,18 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
   # ── Elements ────────────────────────────────────────────
 
-  defp create_elements(elements, page_id, ds_registry, resolver, table_key, table_ids, page_registry, integration_id, headers, base) do
+  defp create_elements(
+         elements,
+         page_id,
+         ds_registry,
+         resolver,
+         table_key,
+         table_ids,
+         page_registry,
+         integration_id,
+         headers,
+         base
+       ) do
     formula = fn expr -> %{"formula" => expr, "mode" => "simple", "version" => "0.1"} end
 
     Enum.each(elements, fn el ->
@@ -219,7 +246,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               "page_id" => page_id,
               "value" => formula.(value),
               "level" => el["level"] || 1
-            })
+            }
+          )
 
         "text" ->
           value = resolve_value(el["value"], resolver, table_key, ds_registry)
@@ -230,21 +258,51 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               "type" => "text",
               "page_id" => page_id,
               "value" => formula.(value)
-            })
+            }
+          )
 
         "link" ->
           target_page_id = resolve_page_target(el["navigate_to"], page_id, page_registry)
           value = resolve_value(el["value"], resolver, table_key, ds_registry)
 
+          link_json = %{
+            "type" => "link",
+            "page_id" => page_id,
+            "value" => formula.(value),
+            "navigate_to_page_id" => target_page_id,
+            "navigation_type" => "page"
+          }
+
+          link_json =
+            if el["params"] do
+              params =
+                Enum.map(el["params"], fn {k, v} ->
+                  resolved = resolve_value(v, resolver, table_key, ds_registry)
+                  %{"name" => k, "value" => resolved}
+                end)
+
+              Map.put(link_json, "page_parameters", params)
+            else
+              link_json
+            end
+
+          link_json =
+            if el["query"] do
+              query =
+                Enum.map(el["query"], fn {k, v} ->
+                  resolved = resolve_value(v, resolver, table_key, ds_registry)
+                  %{"name" => k, "value" => resolved}
+                end)
+
+              Map.put(link_json, "query_parameters", query)
+            else
+              link_json
+            end
+
           Req.post!("#{base}/api/builder/page/#{page_id}/elements/",
             headers: headers,
-            json: %{
-              "type" => "link",
-              "page_id" => page_id,
-              "value" => formula.(value),
-              "navigate_to_page_id" => target_page_id,
-              "navigation_type" => "page"
-            })
+            json: link_json
+          )
 
         "button" ->
           value = resolve_value(el["value"], resolver, table_key, ds_registry)
@@ -256,10 +314,20 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 "type" => "button",
                 "page_id" => page_id,
                 "value" => formula.(value)
-              })
+              }
+            )
 
           # Create button events
-          create_button_events(el["events"], btn["id"], page_id, table_ids, integration_id, page_registry, headers, base)
+          create_button_events(
+            el["events"],
+            btn["id"],
+            page_id,
+            table_ids,
+            integration_id,
+            page_registry,
+            headers,
+            base
+          )
 
         "table" ->
           ds_id = Map.get(ds_registry, el["data_source"])
@@ -275,10 +343,19 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 "is_publicly_filterable" => el["filterable"] || false,
                 "is_publicly_sortable" => el["sortable"] || false,
                 "is_publicly_searchable" => el["searchable"] || false
-              })
+              }
+            )
 
           # Configure columns
-          columns = build_table_columns(el["columns"] || [], resolver, table_key, page_id, page_registry, ds_registry)
+          columns =
+            build_table_columns(
+              el["columns"] || [],
+              resolver,
+              table_key,
+              page_id,
+              page_registry,
+              ds_registry
+            )
 
           patch_body = %{"fields" => columns}
 
@@ -289,16 +366,22 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               else: patch_body
 
           Req.patch!("#{base}/api/builder/element/#{table_el["id"]}/",
-            headers: headers, json: patch_body)
+            headers: headers,
+            json: patch_body
+          )
 
           # Configure user_actions (filter/sort/search per field)
           if el["user_actions"] do
             property_options = build_property_options(el["user_actions"], resolver, table_key)
 
             Req.patch!("#{base}/api/builder/element/#{table_el["id"]}/",
-              headers: headers, json: %{"property_options" => property_options})
+              headers: headers,
+              json: %{"property_options" => property_options}
+            )
 
-            Logger.info("[AppBuilder]   User actions: #{length(property_options)} fields configured")
+            Logger.info(
+              "[AppBuilder]   User actions: #{length(property_options)} fields configured"
+            )
           end
 
           Logger.info("[AppBuilder]   Table: #{table_el["id"]} (#{length(columns)} columns)")
@@ -311,7 +394,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 "type" => "form_container",
                 "page_id" => page_id,
                 "submit_button_label" => formula.("\"#{el["submit_label"] || "Submit"}\"")
-              })
+              }
+            )
 
           Logger.info("[AppBuilder]   Form: #{form["id"]}")
 
@@ -371,7 +455,10 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
     {:ok, %{body: el}} =
       Req.post("#{base}/api/builder/page/#{page_id}/elements/",
-        headers: headers, json: json, receive_timeout: 15_000)
+        headers: headers,
+        json: json,
+        receive_timeout: 15_000
+      )
 
     Logger.info("[AppBuilder]     #{child["type"]}: #{el["id"]} (#{child["label"]})")
   end
@@ -465,15 +552,36 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
   # ── Workflow Actions ────────────────────────────────────
 
-  defp create_workflow(nil, _page_id, _ds_registry, _table_ids, _integration_id, _page_registry, _headers, _base), do: :ok
+  defp create_workflow(
+         nil,
+         _page_id,
+         _ds_registry,
+         _table_ids,
+         _integration_id,
+         _page_registry,
+         _headers,
+         _base
+       ),
+       do: :ok
 
-  defp create_workflow(workflow, page_id, ds_registry, table_ids, integration_id, page_registry, headers, base) do
+  defp create_workflow(
+         workflow,
+         page_id,
+         ds_registry,
+         table_ids,
+         integration_id,
+         page_registry,
+         headers,
+         base
+       ) do
     formula = fn expr -> %{"formula" => expr, "mode" => "simple", "version" => "0.1"} end
 
     # Find the form container on this page
     {:ok, %{body: elements}} =
       Req.get("#{base}/api/builder/page/#{page_id}/elements/",
-        headers: headers, receive_timeout: 15_000)
+        headers: headers,
+        receive_timeout: 15_000
+      )
 
     form = Enum.find(elements, fn e -> e["type"] == "form_container" end)
     form_id = if form, do: form["id"], else: nil
@@ -497,7 +605,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 "integration_id" => integration_id,
                 "table_id" => table_id
               }
-            })
+            }
+          )
 
         "create_row" ->
           table_key = String.to_atom(action["table"])
@@ -514,7 +623,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 "integration_id" => integration_id,
                 "table_id" => table_id
               }
-            })
+            }
+          )
 
         "notification" ->
           Req.post!("#{base}/api/builder/page/#{page_id}/workflow_actions/",
@@ -525,7 +635,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               "event" => "submit",
               "title" => formula.("\"#{action["title"]}\""),
               "description" => formula.("\"#{action["description"]}\"")
-            })
+            }
+          )
 
         "open_page" ->
           target_page_id = resolve_page_target(action["target"], page_id, page_registry)
@@ -537,7 +648,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               "element_id" => element_id,
               "event" => "submit",
               "navigate_to_page_id" => target_page_id
-            })
+            }
+          )
 
         "refresh_data_source" ->
           ds_id = Map.get(ds_registry, action["target"])
@@ -549,7 +661,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               "element_id" => element_id,
               "event" => "submit",
               "data_source_id" => ds_id
-            })
+            }
+          )
 
         _ ->
           Logger.warning("[AppBuilder] Unknown workflow action: #{action["type"]}")
@@ -559,9 +672,28 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
   # ── Button Events ───────────────────────────────────────
 
-  defp create_button_events(nil, _btn_id, _page_id, _table_ids, _integration_id, _page_registry, _headers, _base), do: :ok
+  defp create_button_events(
+         nil,
+         _btn_id,
+         _page_id,
+         _table_ids,
+         _integration_id,
+         _page_registry,
+         _headers,
+         _base
+       ),
+       do: :ok
 
-  defp create_button_events(events, btn_id, page_id, table_ids, integration_id, page_registry, headers, base) do
+  defp create_button_events(
+         events,
+         btn_id,
+         page_id,
+         table_ids,
+         integration_id,
+         page_registry,
+         headers,
+         base
+       ) do
     Enum.each(events["on_click"] || [], fn action ->
       case action["type"] do
         "create_row" ->
@@ -579,7 +711,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
                 "integration_id" => integration_id,
                 "table_id" => table_id
               }
-            })
+            }
+          )
 
         "open_page" ->
           target_page_id = resolve_page_target(action["target"], page_id, page_registry)
@@ -591,7 +724,8 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
               "element_id" => btn_id,
               "event" => "click",
               "navigate_to_page_id" => target_page_id
-            })
+            }
+          )
 
         _ ->
           Logger.warning("[AppBuilder] Unknown button action: #{action["type"]}")
@@ -640,8 +774,47 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
   defp resolve_page_target(nil, _page_id, _registry), do: nil
 
   defp maybe_put(json, _key, nil, _formula_fn), do: json
-  defp maybe_put(json, key, value, formula_fn), do: Map.put(json, key, formula_fn.("\"#{value}\""))
+
+  defp maybe_put(json, key, value, formula_fn),
+    do: Map.put(json, key, formula_fn.("\"#{value}\""))
 
   defp maybe_put_bool(json, _key, nil), do: json
   defp maybe_put_bool(json, key, value), do: Map.put(json, key, value)
+
+  # Self-hosted Baserow expects row_id as plain string; SaaS uses a formula object.
+  # Try plain string first, fall back to formula object on validation error.
+  defp set_data_source_row_id(base, headers, ds_id, formula_str) do
+    case Req.patch("#{base}/api/builder/data-source/#{ds_id}/",
+           headers: headers,
+           json: %{"row_id" => formula_str},
+           receive_timeout: 15_000
+         ) do
+      {:ok, %{status: 200}} ->
+        Logger.info("[AppBuilder]   row_id set: #{formula_str}")
+
+      {:ok, %{status: 400}} ->
+        # Retry with formula object (SaaS format)
+        formula_obj = %{"formula" => formula_str, "mode" => "simple", "version" => "0.1"}
+
+        case Req.patch("#{base}/api/builder/data-source/#{ds_id}/",
+               headers: headers,
+               json: %{"row_id" => formula_obj},
+               receive_timeout: 15_000
+             ) do
+          {:ok, %{status: 200}} ->
+            Logger.info("[AppBuilder]   row_id set (SaaS format): #{formula_str}")
+
+          {:ok, %{status: s, body: b}} ->
+            Logger.warning(
+              "[AppBuilder]   row_id PATCH failed both formats (#{s}): #{inspect(b)}"
+            )
+
+          {:error, reason} ->
+            Logger.warning("[AppBuilder]   row_id PATCH error: #{inspect(reason)}")
+        end
+
+      {:error, reason} ->
+        Logger.warning("[AppBuilder]   row_id PATCH error: #{inspect(reason)}")
+    end
+  end
 end

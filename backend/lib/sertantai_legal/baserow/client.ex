@@ -32,15 +32,11 @@ defmodule SertantaiLegal.Baserow.Client do
   """
   def authenticate(config) do
     creds = credentials(config)
+    email = creds["email"] || creds[:email]
+    password = creds["password"] || creds[:password]
 
-    # Database tokens don't need JWT auth — they're permanent
-    if creds["database_token"] || creds[:database_token] do
-      Logger.info("[Baserow] Using database token (no JWT auth needed)")
-      {:ok, config}
-    else
-      email = creds["email"] || creds[:email]
-      password = creds["password"] || creds[:password]
-
+    if email && password do
+      # Email/password → JWT auth (needed for metadata + app builder APIs)
       url = base_url(config) <> "/api/user/token-auth/"
 
       case Req.post(url,
@@ -57,6 +53,10 @@ defmodule SertantaiLegal.Baserow.Client do
         {:error, reason} ->
           {:error, "Baserow auth request failed: #{inspect(reason)}"}
       end
+    else
+      # Database token only — permanent, no JWT needed for row-level ops
+      Logger.info("[Baserow] Using database token (no JWT auth needed)")
+      {:ok, config}
     end
   end
 
