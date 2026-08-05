@@ -1,10 +1,18 @@
 ---
 session: "Admin/Prod Split — Meta Tracker"
-status: active
+status: closed
 opened: 2026-07-30
+closed: 2026-08-05
+outcome: success
+
+summary: >
+  Split sertantai-legal into admin-only data workbench and sertantai-compliance
+  as production SaaS across 5 phases. 73 backend files + 35 frontend files migrated,
+  87 files stripped from legal (262→175), all data deployed to production (471K rows).
+  compliance.sertantai.com live and verified.
 ---
 
-# Session: Admin/Prod Split — Meta Tracker (ACTIVE)
+# Session: Admin/Prod Split — Meta Tracker (CLOSED)
 
 ## Problem
 
@@ -16,7 +24,7 @@ Implementing the admin/production split plan (.claude/plans/admin-prod-split.md)
 - ✅ Phase 2: Move customer backend
 - ✅ Phase 3: Move customer frontend
 - ✅ Phase 4: Strip legal
-- ⬜ Phase 5: Production cutover
+- ✅ Phase 5: Production cutover
 
 ## Phase 0+1: Prepare & Bootstrap Compliance
 
@@ -56,8 +64,7 @@ Deploy to Hetzner. This splits into prep (schema seed, data migration) and go-li
 
 | Session | Scope | Status |
 |---------|-------|--------|
-| `05a-prod-database.md` | Create compliance_prod, run schema seed + migrations, import reference data via delta sync, migrate customer data from legal_prod | pending |
-| `05b-deploy-and-verify.md` | Deploy compliance container, Nginx config, hub JWT update, production verification, decommission legal_prod | pending |
+| `05-production-cutover.md` | Deploy partition migrations, push 471K rows reference data, verify compliance.sertantai.com loads | **closed** |
 
 ## Dependencies
 

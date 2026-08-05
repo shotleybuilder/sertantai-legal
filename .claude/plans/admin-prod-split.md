@@ -1,7 +1,9 @@
 ---
 plan: "Admin/Production Split — Legal becomes Admin, Compliance becomes Production"
-status: active
+status: completed
 created: 2026-07-30
+completed: 2026-08-05
+outcome: shipped
 
 summary: >
   Split sertantai-legal into admin-only (local data workbench) and move all customer-facing

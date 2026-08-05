@@ -190,7 +190,7 @@ defmodule Mix.Tasks.Au.ImportSeed do
 
   # ── Jurisdiction Inference ──────────────────────────────────────────
 
-  @jurisdiction_patterns [
+  defp jurisdiction_patterns, do: [
     # Explicit parenthetical codes
     {~r/\(NSW\)/i, "nsw"},
     {~r/\(Qld\)|Queensland\)/i, "qld"},
@@ -215,7 +215,7 @@ defmodule Mix.Tasks.Au.ImportSeed do
   ]
 
   defp infer_jurisdiction(title) do
-    Enum.find_value(@jurisdiction_patterns, "cth", fn {pattern, jurisdiction} ->
+    Enum.find_value(jurisdiction_patterns(), "cth", fn {pattern, jurisdiction} ->
       if Regex.match?(pattern, title), do: jurisdiction
     end)
   end
