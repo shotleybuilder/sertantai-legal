@@ -15,7 +15,7 @@ Implementing the admin/production split plan (.claude/plans/admin-prod-split.md)
 - ✅ Phase 0+1: Prepare and bootstrap compliance
 - ✅ Phase 2: Move customer backend
 - ✅ Phase 3: Move customer frontend
-- ⬜ Phase 4: Strip legal
+- ✅ Phase 4: Strip legal
 - ⬜ Phase 5: Production cutover
 
 ## Phase 0+1: Prepare & Bootstrap Compliance
@@ -48,7 +48,7 @@ Remove customer code from legal. Small enough for one session.
 
 | Session | Scope | Status |
 |---------|-------|--------|
-| `04-strip-legal.md` | Remove customer routes/pages/controllers from legal. Update delta sync to target compliance_prod. Remove legal from Hetzner deploy. | pending |
+| `04-strip-legal.md` | Remove customer routes/pages/controllers from legal. Update delta sync to target compliance_prod. Remove legal from Hetzner deploy. | **closed** |
 
 ## Phase 5: Production Cutover
 
