@@ -101,10 +101,7 @@ defmodule SertantaiLegal.Baserow.SchemaManager do
   end
 
   defp cleanup_and_set_primary(config, table_id, field_specs) do
-    case Client.cleanup_table_defaults(config, table_id, field_specs) do
-      :ok -> :ok
-      {:error, reason} -> Logger.warning("[SchemaManager] Cleanup failed: #{inspect(reason)}")
-    end
+    :ok = Client.cleanup_table_defaults(config, table_id, field_specs)
   end
 
   # ── Phase 2: Simple Fields + Forward Link_Row ────────────────────

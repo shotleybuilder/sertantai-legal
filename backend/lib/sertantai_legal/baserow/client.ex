@@ -336,7 +336,6 @@ defmodule SertantaiLegal.Baserow.Client do
 
   # ── View Operations ──────────────────────────────────────────────
 
-  @doc "Create a view on a Baserow table from a universal view spec."
   @doc "List all views for a Baserow table. Returns a list of view maps."
   def list_views(config, table_id) do
     case api_get(config, "/api/database/views/table/#{table_id}/") do

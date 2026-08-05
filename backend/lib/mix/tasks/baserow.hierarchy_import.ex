@@ -49,7 +49,10 @@ defmodule Mix.Tasks.Baserow.HierarchyImport do
     csv_path = List.first(positional)
 
     unless csv_path && File.exists?(csv_path) do
-      Mix.shell().error("Usage: mix baserow.hierarchy_import <csv_path> [--config UUID] [--dry-run]")
+      Mix.shell().error(
+        "Usage: mix baserow.hierarchy_import <csv_path> [--config UUID] [--dry-run]"
+      )
+
       System.halt(1)
     end
 
@@ -208,9 +211,7 @@ defmodule Mix.Tasks.Baserow.HierarchyImport do
     Mix.shell().info("Created: #{created}")
 
     if errors != [] do
-      Mix.shell().error(
-        "Errors: #{length(errors)} — #{Enum.join(Enum.reverse(errors), ", ")}"
-      )
+      Mix.shell().error("Errors: #{length(errors)} — #{Enum.join(Enum.reverse(errors), ", ")}")
     end
   end
 

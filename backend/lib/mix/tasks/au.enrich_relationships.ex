@@ -106,7 +106,7 @@ defmodule Mix.Tasks.Au.EnrichRelationships do
     Enum.reduce(relationships, %{}, fn {target_name, %{relationships: rel}}, acc ->
       # Each entry in amended_by means that law amends this target
       acc =
-        Enum.reduce(rel.amended_by, acc, fn %{title_id: tid, name: name}, inner_acc ->
+        Enum.reduce(rel.amended_by, acc, fn %{title_id: tid, name: _name}, inner_acc ->
           amending_name = "AU_#{tid}"
 
           Map.update(inner_acc, amending_name, %{amending: [target_name], rescinding: []}, fn
@@ -115,7 +115,7 @@ defmodule Mix.Tasks.Au.EnrichRelationships do
         end)
 
       # Each entry in rescinded_by means that law rescinds this target
-      Enum.reduce(rel.rescinded_by, acc, fn %{title_id: tid, name: name}, inner_acc ->
+      Enum.reduce(rel.rescinded_by, acc, fn %{title_id: tid, name: _name}, inner_acc ->
         rescinding_name = "AU_#{tid}"
 
         Map.update(inner_acc, rescinding_name, %{amending: [], rescinding: [target_name]}, fn

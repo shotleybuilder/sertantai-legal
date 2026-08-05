@@ -369,11 +369,6 @@ defmodule SertantaiLegalWeb.GraphController do
                 |> put_status(:unprocessable_entity)
                 |> json(%{error: "Persist failed: #{inspect(reason)}"})
             end
-
-          {:error, reason} ->
-            conn
-            |> put_status(:unprocessable_entity)
-            |> json(%{error: "Parse failed: #{inspect(reason)}"})
         end
 
       _ ->

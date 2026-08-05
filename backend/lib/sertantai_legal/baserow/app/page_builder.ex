@@ -465,7 +465,7 @@ defmodule SertantaiLegal.Baserow.App.PageBuilder do
 
   # ── Table Columns ───────────────────────────────────────
 
-  defp build_table_columns(columns, resolver, table_key, page_id, page_registry, ds_registry) do
+  defp build_table_columns(columns, resolver, table_key, page_id, page_registry, _ds_registry) do
     formula = fn expr -> %{"formula" => expr, "mode" => "simple", "version" => "0.1"} end
 
     Enum.map(columns, fn col ->

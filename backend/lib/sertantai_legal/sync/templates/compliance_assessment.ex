@@ -352,7 +352,7 @@ defmodule SertantaiLegal.Sync.Templates.ComplianceAssessment do
       {:ok, 0}
     else
       rows =
-        Enum.map(lat_mappings, fn mapping ->
+        Enum.map(lat_mappings, fn _mapping ->
           %{
             "Compliance_Status" => "Not Assessed",
             "Next_Review_Date" => Date.add(Date.utc_today(), 90) |> Date.to_iso8601()

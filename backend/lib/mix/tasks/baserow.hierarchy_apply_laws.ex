@@ -168,7 +168,10 @@ defmodule Mix.Tasks.Baserow.HierarchyApplyLaws do
     Mix.shell().info("\nLaws: #{map_size(law_to_nodes)}")
     Mix.shell().info("Min sites per law: #{Enum.min(node_counts)}")
     Mix.shell().info("Max sites per law: #{Enum.max(node_counts)}")
-    Mix.shell().info("Avg sites per law: #{Float.round(Enum.sum(node_counts) / length(node_counts), 1)}")
+
+    Mix.shell().info(
+      "Avg sites per law: #{Float.round(Enum.sum(node_counts) / length(node_counts), 1)}"
+    )
   end
 
   # ── Apply mappings ──
@@ -190,7 +193,8 @@ defmodule Mix.Tasks.Baserow.HierarchyApplyLaws do
 
     # Build update rows: for each law, resolve node names → row IDs
     {updates, skipped_laws, missing_nodes} =
-      Enum.reduce(law_to_nodes, {[], 0, MapSet.new()}, fn {lrt_name, node_names}, {upd, skip, miss} ->
+      Enum.reduce(law_to_nodes, {[], 0, MapSet.new()}, fn {lrt_name, node_names},
+                                                          {upd, skip, miss} ->
         case Map.get(lrt_rows, lrt_name) do
           nil ->
             {upd, skip + 1, miss}

@@ -175,7 +175,7 @@ defmodule Mix.Tasks.Secondary.List do
     |> length()
   end
 
-  defp count_provisions_for(parent_id, kids) do
+  defp count_provisions_for(_parent_id, kids) do
     kid_ids = Enum.map(kids, & &1.source_id)
 
     SertantaiLegal.Legal.SecondarySourceProvision

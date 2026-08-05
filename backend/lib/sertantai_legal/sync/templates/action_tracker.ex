@@ -115,8 +115,7 @@ defmodule SertantaiLegal.Sync.Templates.ActionTracker do
               name: "Is_Open",
               type: :formula,
               expression: %{
-                baserow:
-                  "if(or(field('Status')='Open', field('Status')='In Progress'), 1, 0)"
+                baserow: "if(or(field('Status')='Open', field('Status')='In Progress'), 1, 0)"
               },
               description: "1 if Open or In Progress, 0 otherwise — for rollup sum"
             },

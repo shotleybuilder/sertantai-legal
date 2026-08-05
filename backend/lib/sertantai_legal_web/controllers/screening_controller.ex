@@ -808,7 +808,7 @@ defmodule SertantaiLegalWeb.ScreeningController do
          status_before,
          status_after,
          source,
-         metadata \\ nil
+         metadata
        ) do
     ApplicabilityEvent.log(%{
       organization_id: org_id,

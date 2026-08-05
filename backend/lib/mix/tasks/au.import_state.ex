@@ -243,6 +243,5 @@ defmodule Mix.Tasks.Au.ImportState do
     "AU_#{slug}"
   end
 
-  defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
 end

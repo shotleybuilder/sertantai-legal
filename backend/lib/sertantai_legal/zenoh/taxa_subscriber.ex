@@ -441,15 +441,6 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     end
   end
 
-  # List<Struct> → [{map}] — stored directly as {:array, :map} (no wrapper)
-  defp put_list_of_maps(acc, row, str_key) do
-    case Map.get(row, str_key) do
-      nil -> acc
-      entries when is_list(entries) -> Map.put(acc, @field_atoms[str_key], entries)
-      _ -> acc
-    end
-  end
-
   defp put_scalar(acc, row, str_key) do
     case Map.get(row, str_key) do
       nil -> acc

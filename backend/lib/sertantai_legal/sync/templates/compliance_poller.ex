@@ -88,18 +88,13 @@ defmodule SertantaiLegal.Sync.Templates.CompliancePoller do
     end
 
     if actions_table do
-      case poll_action_counts(config, actions_table) do
-        {:ok, counts} ->
-          reconcile_action_metrics(org_id, counts)
-
-        {:error, reason} ->
-          Logger.warning("[CompliancePoller] Failed to poll actions for #{org_id}: #{reason}")
-      end
+      {:ok, counts} = poll_action_counts(config, actions_table)
+      reconcile_action_metrics(org_id, counts)
     end
   end
 
   defp poll_assessment_counts(config, table_id) do
-    provider = SertantaiLegal.Sync.Providers.Baserow
+    _provider = SertantaiLegal.Sync.Providers.Baserow
 
     # Use Baserow's row list with field filters to count by status
     # This is a simple GET with search params — no batch needed

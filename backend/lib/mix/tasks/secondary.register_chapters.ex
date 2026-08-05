@@ -261,7 +261,7 @@ defmodule Mix.Tasks.Secondary.RegisterChapters do
     end
   end
 
-  defp derive_chapter_title(filename, chapter_id, parent_title) do
+  defp derive_chapter_title(_filename, chapter_id, parent_title) do
     "#{parent_title} — #{humanize_chapter_id(chapter_id)}"
   end
 

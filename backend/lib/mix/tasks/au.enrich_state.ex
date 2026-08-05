@@ -126,7 +126,7 @@ defmodule Mix.Tasks.Au.EnrichState do
     end)
   end
 
-  defp process_metadata(records, jurisdiction, dry_run?, total) do
+  defp process_metadata(_records, jurisdiction, dry_run?, _total) do
     # Include records WITH source_url that need status verification,
     # plus unenriched records without source_url
     all_records =

@@ -67,9 +67,6 @@ defmodule Mix.Tasks.Sync.DetectChanges do
             end)
 
           Mix.shell().info("\n#{total_orgs} orgs checked, #{total_events} events logged.")
-
-        {:error, reason} ->
-          Mix.shell().error("Failed: #{inspect(reason)}")
       end
     end
   end

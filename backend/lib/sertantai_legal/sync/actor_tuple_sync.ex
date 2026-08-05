@@ -153,7 +153,7 @@ defmodule SertantaiLegal.Sync.ActorTupleSync do
 
   Returns a map of `%{section_id => [tuple_external_row_ids]}`.
   """
-  def match_provisions_to_tuples(lat_rows, tuples, tuple_mappings) do
+  def match_provisions_to_tuples(lat_rows, _tuples, tuple_mappings) do
     # Build lookup: "actor|position|drrp_type" → external_row_id
     tuple_lookup =
       Map.new(tuple_mappings, fn m ->

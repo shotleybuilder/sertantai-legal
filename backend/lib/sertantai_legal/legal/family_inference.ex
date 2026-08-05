@@ -211,7 +211,7 @@ defmodule SertantaiLegal.Legal.FamilyInference do
   defp top_family([{fam, _} | _]), do: fam
   defp top_family(_), do: nil
 
-  defp suggest_from_graph(parents, targets, amenders \\ []) do
+  defp suggest_from_graph(parents, targets, amenders) do
     cond do
       parents != [] -> {top_family(parents), :parent_inferred}
       targets != [] and has_consensus?(targets) -> {top_family(targets), :target_consensus}
