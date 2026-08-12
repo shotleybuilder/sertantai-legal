@@ -1,11 +1,125 @@
 ---
 session: LRT/LAT Data Quality
-status: active
+status: closed
 opened: 2026-08-12
+closed: 2026-08-12
+outcome: success
 issues: [134, 135, 136, 137, 138]
+
+summary: >
+  Resolved five LRT/LAT data quality issues covering actor role classification,
+  DRRP holder filtering, Obligation/Liberty→DRRP vocabulary mapping, making
+  classifier provenance backfill, and sub-provision structural field. Total
+  ~360K provision rows and ~5K law records corrected across all five fixes.
+
+decisions:
+  - what: Single canonical actor_role/1 function in ActorDefinitions, not ActorDictionary
+    why: >
+      ActorDictionary relies on runtime ETS state from fractalaw's YAML dictionary,
+      which has Crown and HM Forces as category "other" (a backfill default).
+      ActorDefinitions has the hardcoded original taxonomy with correct classification.
+      Pure prefix/exact matching — no runtime dependency.
+    result: All 107K actor mentions correctly classified as governed/government
+
+  - what: Stamp role on actors JSONB at write time, not derive at read time
+    why: >
+      User requested single determination point so consumers don't need to know
+      prefix rules. Write-time enrichment in ProvisionSubscriber means every
+      downstream reader just checks actors[].role.
+    result: role field on all 71,426 provisions; new enrichments stamped automatically
+
+  - what: Map full Obligation/Liberty→DRRP vocabulary (all four mappings, not just Liberty→Right)
+    why: >
+      User correction — Obligation is fractalaw's term, sertantai uses Duty (governed)
+      and Responsibility (government). Initial implementation only mapped Liberty→Right.
+    result: 39,621 provisions mapped; 8,948 remain unmapped (no actors)
+
+  - what: Stamp MakingDetector provenance only, do not change is_making values
+    why: >
+      1,873 of 2,029 legacy laws disagree with the metadata-only detector. The existing
+      is_making values came from enrichment/import and are more authoritative. Detector
+      result is a pre-filter guess that records what metadata says.
+    result: Zero laws with is_making=true and no provenance remain
+
+  - what: Name the new column sub_provision (not sub_article)
+    why: >
+      Serves both Acts (sub_section — s.2(1)) and SIs (sub_article — reg.2(1)).
+      Generic name avoids type-specific naming in a shared column.
+    result: 240,476 provisions backfilled; reg.2(1) and reg.2(2) now distinguishable
+
+metrics:
+  actor_role_backfill: { provisions: 71426, governed_mentions: 60260, government_mentions: 47342 }
+  holder_filtering: { duty_holder_fixed: 698, rights_holder_fixed: 604, responsibility_fixed: 487, power_fixed: 411 }
+  drrp_mapping: { obligation_to_duty: 17217, obligation_to_responsibility: 8602, liberty_to_right: 7365, liberty_to_power: 6437, unmapped_remaining: 8948 }
+  making_provenance: { laws_stamped: 2029, detector_disagrees: 1873 }
+  sub_provision: { rows_backfilled: 240476 }
+  tests: { total_passing: 110, new_tests: 33 }
+
+lessons:
+  - title: Crown and HM Forces have category "other" in fractalaw dictionary — not the original taxonomy
+    detail: >
+      The actor dictionary YAML from fractalaw assigns category "other" to Crown and HM Forces.
+      This is a backfill default, not the original sertantai taxonomy. The hardcoded ActorDefinitions
+      lists in actor_definitions.ex are the canonical source — Crown and HM Forces are in the
+      government patterns list. Any classification logic must use ActorDefinitions, not ActorDictionary.
+    tag: data
+
+  - title: Obligation and Liberty are fractalaw vocabulary — sertantai uses Duty/Right/Responsibility/Power
+    detail: >
+      Fractalaw classifies provisions as Obligation or Liberty (Hohfeldian correlatives).
+      Sertantai needs the full DRRP split based on actor role. The complete mapping is
+      Obligation→Duty (governed) or Responsibility (government), Liberty→Right (governed) or
+      Power (government). This was initially implemented as Liberty→Right only — the user
+      corrected this forcefully ("this cannot be that hard to get right").
+    tag: data
+
+  - title: Bulk UPDATE on legal_articles triggers propagate_lat_stats which generates massive WAL
+    detail: >
+      The trg_propagate_lat_stats trigger fires on ANY update to legal_articles, not just
+      inserts/deletes. A 240K-row UPDATE generated 8GB of WAL that filled the disk (98%).
+      The Electric replication slot held all WAL preventing cleanup. Fix: disable trigger,
+      do the update, re-enable. For disk recovery: stop Electric, drop the replication slot,
+      checkpoint to release WAL. Electric recreates its slot on restart.
+    tag: infrastructure
+
+  - title: Tidewave MCP needs --transport streamablehttp flag with mcp-proxy
+    detail: >
+      Tidewave 0.6+ uses streamable HTTP protocol, not SSE. The mcp-proxy binary defaults
+      to SSE mode and gets 405 Method Not Allowed. Must pass --transport streamablehttp in
+      .mcp.json args. The streamable-http type value is not valid in Claude Code's MCP config
+      schema — must use stdio with mcp-proxy wrapper. Path to mcp-proxy on Fedora Silverblue
+      is /var/home/jason/.local/bin/mcp-proxy (not /home/jason/).
+    tag: tooling
+
+  - title: Stale Oban crontab reference from admin/prod split blocks app startup
+    detail: >
+      SertantaiLegal.Sync.Workers.SchedulerWorker was removed during the admin/prod split
+      but its Oban Cron plugin entry in config.exs was not. This caused app.start to fail
+      for mix tasks (not just phx.server). Fix: remove the entire Cron plugin config.
+    tag: infrastructure
+
+artifacts:
+  - backend/lib/sertantai_legal/legal/taxa/actor_definitions.ex
+  - backend/lib/sertantai_legal/zenoh/provision_subscriber.ex
+  - backend/lib/sertantai_legal/zenoh/taxa_subscriber.ex
+  - backend/lib/sertantai_legal/legal/legal_article.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser.ex
+  - backend/lib/mix/tasks/actors.backfill_role.ex
+  - backend/lib/mix/tasks/actors.fix_holders.ex
+  - backend/lib/mix/tasks/legal.backfill_making_provenance.ex
+  - backend/priv/repo/migrations/20260812203258_add_sub_provision.exs
+  - backend/test/sertantai_legal/legal/taxa/actor_definitions_test.exs
+  - docs/LAT-SCHEMA-FOR-SERTANTAI.md
+
+depends_on: []
+
+enables:
+  - sertantai-compliance#9 — compliance can now read actors[].role directly
+  - sertantai-compliance#7 — DRRP enrichment data now correct for screener display
+  - fractalatai/fractalatai#53 — fractalaw schema alignment for sub_provision
 ---
 
-# Session: LRT/LAT Data Quality (ACTIVE)
+# Session: LRT/LAT Data Quality (CLOSED)
 
 ## Problem
 
