@@ -76,12 +76,12 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "all holder map fields produce atom keys" do
       row = %{
-        "duty_holder" => ["A"],
-        "rights_holder" => ["B"],
-        "responsibility_holder" => ["C"],
-        "power_holder" => ["D"],
-        "duty_type" => ["E"],
-        "role_gvt" => ["F"]
+        "duty_holder" => ["Org: Employer"],
+        "rights_holder" => ["Ind: Employee"],
+        "responsibility_holder" => ["Gvt: Minister"],
+        "power_holder" => ["Gvt: Agency: Health and Safety Executive"],
+        "duty_type" => ["Absolute"],
+        "role_gvt" => ["Secretary of State"]
       }
 
       result = TaxaSubscriber.normalize_taxa(row)
@@ -117,22 +117,22 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
     test "full realistic payload" do
       row = %{
-        "duty_holder" => ["Employer", "Self-employed person"],
-        "rights_holder" => ["Employee"],
-        "responsibility_holder" => nil,
-        "power_holder" => ["HSE Inspector"],
+        "duty_holder" => ["Org: Employer", "Ind: Self-employed Worker"],
+        "rights_holder" => ["Ind: Employee"],
+        "responsibility_holder" => ["Gvt: Agency: Health and Safety Executive"],
+        "power_holder" => ["Gvt: Agency: Health and Safety Executive"],
         "duty_type" => ["Absolute", "Qualified"],
         "role" => ["Regulator"],
         "role_gvt" => ["Secretary of State"],
         "duties" => [
           %{
-            "holder" => "Employer",
+            "holder" => "Org: Employer",
             "duty_type" => "Absolute",
             "clause" => "s.2(1)",
             "article" => nil
           },
           %{
-            "holder" => "Self-employed",
+            "holder" => "Ind: Self-employed Worker",
             "duty_type" => "Qualified",
             "clause" => "s.3(2)",
             "article" => nil
@@ -142,7 +142,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
         "responsibilities" => nil,
         "powers" => [
           %{
-            "holder" => "HSE Inspector",
+            "holder" => "Gvt: Agency: Health and Safety Executive",
             "duty_type" => nil,
             "clause" => "s.20(1)",
             "article" => nil
@@ -152,13 +152,17 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.normalize_taxa(row)
 
-      # Holder maps
-      assert result.duty_holder == %{values: ["Employer", "Self-employed person"]}
-      assert result.rights_holder == %{values: ["Employee"]}
-      assert result.power_holder == %{values: ["HSE Inspector"]}
+      # Holder maps — filtered by DRRP constraint
+      assert result.duty_holder == %{values: ["Org: Employer", "Ind: Self-employed Worker"]}
+      assert result.rights_holder == %{values: ["Ind: Employee"]}
+
+      assert result.responsibility_holder == %{
+               values: ["Gvt: Agency: Health and Safety Executive"]
+             }
+
+      assert result.power_holder == %{values: ["Gvt: Agency: Health and Safety Executive"]}
       assert result.duty_type == %{values: ["Absolute", "Qualified"]}
       assert result.role_gvt == %{values: ["Secretary of State"]}
-      refute Map.has_key?(result, :responsibility_holder)
 
       # List field
       assert result.role == ["Regulator"]
@@ -171,6 +175,124 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       # All keys are atoms
       assert Enum.all?(Map.keys(result), &is_atom/1)
+    end
+  end
+
+  describe "enforce_drrp_holder_constraint/1" do
+    test "filters government actors out of duty_holder" do
+      taxa = %{
+        duty_holder: %{values: ["Org: Employer", "Gvt: Minister", "Crown", "Ind: Person"]}
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      assert result.duty_holder == %{values: ["Org: Employer", "Ind: Person"]}
+    end
+
+    test "filters government actors out of rights_holder" do
+      taxa = %{
+        rights_holder: %{
+          values: ["Ind: Person", "Gvt: Agency: Health and Safety Executive", "HM Forces"]
+        }
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      assert result.rights_holder == %{values: ["Ind: Person"]}
+    end
+
+    test "filters governed actors out of responsibility_holder" do
+      taxa = %{
+        responsibility_holder: %{
+          values: ["Gvt: Minister", "Org: Employer", "EU: Commission", "Ind: Person"]
+        }
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      assert result.responsibility_holder == %{values: ["Gvt: Minister", "EU: Commission"]}
+    end
+
+    test "filters governed actors out of power_holder" do
+      taxa = %{
+        power_holder: %{values: ["Crown", "SC: C: Contractor", "HM Forces: Navy"]}
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      assert result.power_holder == %{values: ["Crown", "HM Forces: Navy"]}
+    end
+
+    test "removes holder key entirely when all values filtered out" do
+      taxa = %{
+        duty_holder: %{values: ["Gvt: Minister"]},
+        power_holder: %{values: ["Ind: Person"]}
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      refute Map.has_key?(result, :duty_holder)
+      refute Map.has_key?(result, :power_holder)
+    end
+
+    test "passes through fields not present" do
+      taxa = %{duty_holder: %{values: ["Org: Employer"]}}
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      assert result.duty_holder == %{values: ["Org: Employer"]}
+      refute Map.has_key?(result, :rights_holder)
+      refute Map.has_key?(result, :responsibility_holder)
+      refute Map.has_key?(result, :power_holder)
+    end
+
+    test "handles mixed payload like Diving at Work Regulations (#138 example)" do
+      # From issue: 5 of 10 duty_holder actors are government
+      taxa = %{
+        duty_holder: %{
+          values: [
+            "Crown",
+            "EU: Commission",
+            "Gvt: Agency: Health and Safety Executive",
+            "Gvt: Minister",
+            "HM Forces",
+            "Ind: Person",
+            "Ind: Self-employed Worker",
+            "Ind: Supervisor",
+            "Org: Employer",
+            "SC: C: Contractor"
+          ]
+        },
+        responsibility_holder: %{
+          values: ["Gvt: Agency: Health and Safety Executive", "Org: Employer"]
+        },
+        power_holder: %{
+          values: ["Gvt: Agency: Health and Safety Executive", "Org: Employer"]
+        }
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      # duty_holder: only governed
+      assert result.duty_holder == %{
+               values: [
+                 "Ind: Person",
+                 "Ind: Self-employed Worker",
+                 "Ind: Supervisor",
+                 "Org: Employer",
+                 "SC: C: Contractor"
+               ]
+             }
+
+      # responsibility_holder: only government
+      assert result.responsibility_holder == %{
+               values: ["Gvt: Agency: Health and Safety Executive"]
+             }
+
+      # power_holder: only government
+      assert result.power_holder == %{
+               values: ["Gvt: Agency: Health and Safety Executive"]
+             }
     end
   end
 

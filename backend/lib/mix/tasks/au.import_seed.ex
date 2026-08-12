@@ -190,29 +190,30 @@ defmodule Mix.Tasks.Au.ImportSeed do
 
   # ── Jurisdiction Inference ──────────────────────────────────────────
 
-  defp jurisdiction_patterns, do: [
-    # Explicit parenthetical codes
-    {~r/\(NSW\)/i, "nsw"},
-    {~r/\(Qld\)|Queensland\)/i, "qld"},
-    {~r/\(ACT\)/i, "act"},
-    {~r/\(Vic\)/i, "vic"},
-    {~r/\(SA\)|South Australia\)/i, "sa"},
-    {~r/\(WA\)/i, "wa"},
-    {~r/\(Tas\)/i, "tas"},
-    {~r/\(NT\)|Northern Territory\)/i, "nt"},
-    # State names in title
-    {~r/New South Wales|(?<!\()NSW(?!\))/, "nsw"},
-    {~r/\bVictori(?:a|an)\b/, "vic"},
-    {~r/\bQueensland\b/, "qld"},
-    {~r/\bSouth Australi(?:a|an)\b/, "sa"},
-    {~r/\bWestern Australi(?:a|an)\b/, "wa"},
-    {~r/\bTasmani(?:a|an)\b/, "tas"},
-    {~r/\bNorthern Territory\b/, "nt"},
-    {~r/\bACT\b/, "act"},
-    # Commonwealth indicators
-    {~r/\bCommonwealth\b/i, "cth"},
-    {~r/\bNational Uniform Legislation\b/i, "cth"}
-  ]
+  defp jurisdiction_patterns,
+    do: [
+      # Explicit parenthetical codes
+      {~r/\(NSW\)/i, "nsw"},
+      {~r/\(Qld\)|Queensland\)/i, "qld"},
+      {~r/\(ACT\)/i, "act"},
+      {~r/\(Vic\)/i, "vic"},
+      {~r/\(SA\)|South Australia\)/i, "sa"},
+      {~r/\(WA\)/i, "wa"},
+      {~r/\(Tas\)/i, "tas"},
+      {~r/\(NT\)|Northern Territory\)/i, "nt"},
+      # State names in title
+      {~r/New South Wales|(?<!\()NSW(?!\))/, "nsw"},
+      {~r/\bVictori(?:a|an)\b/, "vic"},
+      {~r/\bQueensland\b/, "qld"},
+      {~r/\bSouth Australi(?:a|an)\b/, "sa"},
+      {~r/\bWestern Australi(?:a|an)\b/, "wa"},
+      {~r/\bTasmani(?:a|an)\b/, "tas"},
+      {~r/\bNorthern Territory\b/, "nt"},
+      {~r/\bACT\b/, "act"},
+      # Commonwealth indicators
+      {~r/\bCommonwealth\b/i, "cth"},
+      {~r/\bNational Uniform Legislation\b/i, "cth"}
+    ]
 
   defp infer_jurisdiction(title) do
     Enum.find_value(jurisdiction_patterns(), "cth", fn {pattern, jurisdiction} ->

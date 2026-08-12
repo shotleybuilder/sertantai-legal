@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   require Logger
 
   alias SertantaiLegal.Legal.LegalArticle
+  alias SertantaiLegal.Legal.Taxa.ActorDefinitions
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Arrow column name → Ash attribute atom.
@@ -242,21 +243,92 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
     # Actors — now Utf8 (JSON string) instead of List<Struct>.
     # Decode JSON string to list of maps, or pass through if already a list.
-    case Map.get(row, @actors_key) do
-      nil ->
-        acc
+    # Each actor entry is enriched with "role" => "governed" | "government"
+    # using ActorDefinitions.actor_role/1 — the single canonical classifier.
+    acc =
+      case Map.get(row, @actors_key) do
+        nil ->
+          acc
 
-      actors when is_list(actors) ->
-        Map.put(acc, :actors, actors)
+        actors when is_list(actors) ->
+          Map.put(acc, :actors, Enum.map(actors, &enrich_actor_role/1))
 
-      actors when is_binary(actors) ->
-        case Jason.decode(actors) do
-          {:ok, parsed} when is_list(parsed) -> Map.put(acc, :actors, parsed)
-          _ -> acc
-        end
+        actors when is_binary(actors) ->
+          case Jason.decode(actors) do
+            {:ok, parsed} when is_list(parsed) ->
+              Map.put(acc, :actors, Enum.map(parsed, &enrich_actor_role/1))
 
-      _ ->
-        acc
+            _ ->
+              acc
+          end
+
+        _ ->
+          acc
+      end
+
+    # Map fractalaw's Hohfeldian vocabulary to DRRP based on actor role (#134).
+    # Obligation → Duty (governed) / Responsibility (government)
+    # Liberty → Right (governed) / Power (government)
+    map_drrp_types(acc)
+  end
+
+  # Map fractalaw's Hohfeldian vocabulary to the DRRP vocabulary (#134).
+  #
+  # Fractalaw classifies provisions as Obligation or Liberty. We translate
+  # to the DRRP model based on which actor roles are present:
+  #
+  #   Obligation + governed  → Duty
+  #   Obligation + government → Responsibility
+  #   Liberty    + governed  → Right
+  #   Liberty    + government → Power
+  #
+  # When both governed and government actors are present, the governed
+  # mapping takes priority (Duty/Right) since those are the primary
+  # compliance-relevant classifications.
+  @doc false
+  def map_drrp_types(%{drrp_types: drrp_types, actors: actors} = taxa)
+      when is_list(drrp_types) and is_list(actors) do
+    has_governed = has_role?(actors, "governed")
+    has_government = has_role?(actors, "government")
+
+    needs_mapping =
+      Enum.any?(drrp_types, &(&1 in ["Obligation", "Liberty"]))
+
+    if needs_mapping and (has_governed or has_government) do
+      mapped =
+        Enum.map(drrp_types, fn
+          "Obligation" when has_governed -> "Duty"
+          "Obligation" when has_government -> "Responsibility"
+          "Liberty" when has_governed -> "Right"
+          "Liberty" when has_government -> "Power"
+          other -> other
+        end)
+
+      Map.put(taxa, :drrp_types, mapped)
+    else
+      taxa
     end
   end
+
+  def map_drrp_types(taxa), do: taxa
+
+  defp has_role?(actors, role) do
+    Enum.any?(actors, fn
+      %{"role" => ^role} -> true
+      %{role: ^role} -> true
+      _ -> false
+    end)
+  end
+
+  # Stamp each actor map with "role" => "governed" | "government".
+  # Handles both string-keyed maps (from JSON decode) and atom-keyed maps.
+  defp enrich_actor_role(%{"label" => label} = actor) do
+    Map.put(actor, "role", ActorDefinitions.actor_role(label))
+  end
+
+  defp enrich_actor_role(%{label: label} = actor) do
+    Map.put(actor, :role, ActorDefinitions.actor_role(label))
+  end
+
+  defp enrich_actor_role(actor), do: actor
 end

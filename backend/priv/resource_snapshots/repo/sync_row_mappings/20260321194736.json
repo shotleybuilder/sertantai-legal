@@ -120,6 +120,7 @@
   "check_constraints": [],
   "custom_indexes": [],
   "custom_statements": [],
+  "drop_table_opted_out": true,
   "has_create_action": true,
   "hash": "BBCB1405A45B94EA24301AE75E49362E39B6340A9544C22A7C8807D51D36FA57",
   "identities": [

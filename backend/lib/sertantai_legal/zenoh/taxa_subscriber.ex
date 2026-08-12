@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   # import Ecto.Query, only: [from: 2]  # Removed with pruner (#110)
 
   alias SertantaiLegal.Legal.LegalRegister
+  alias SertantaiLegal.Legal.Taxa.ActorDefinitions
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Static map from Arrow column name (string) → Ash attribute (atom).
@@ -230,6 +231,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_holder_map(row, "rights_holder")
     |> put_holder_map(row, "responsibility_holder")
     |> put_holder_map(row, "power_holder")
+    |> enforce_drrp_holder_constraint()
     |> put_holder_map(row, "duty_type")
     |> put_list_field(row, "role")
     |> put_holder_map(row, "role_gvt")
@@ -394,6 +396,35 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   end
 
   defp clean_actor_label(label), do: label
+
+  # DRRP holder constraint (#138):
+  # Governed actors (Ind:*, Org:*, SC:*, etc.) → duty_holder, rights_holder only
+  # Government actors (Gvt:*, EU:*, Crown, HM Forces) → responsibility_holder, power_holder only
+  # Fractalaw sends all actors in all holder fields; we filter here on receipt.
+  @doc false
+  def enforce_drrp_holder_constraint(taxa) do
+    taxa
+    |> filter_holder(:duty_holder, &(not ActorDefinitions.government_label?(&1)))
+    |> filter_holder(:rights_holder, &(not ActorDefinitions.government_label?(&1)))
+    |> filter_holder(:responsibility_holder, &ActorDefinitions.government_label?/1)
+    |> filter_holder(:power_holder, &ActorDefinitions.government_label?/1)
+  end
+
+  defp filter_holder(taxa, key, filter_fn) do
+    case Map.get(taxa, key) do
+      %{values: values} when is_list(values) ->
+        filtered = Enum.filter(values, filter_fn)
+
+        if filtered == [] do
+          Map.delete(taxa, key)
+        else
+          Map.put(taxa, key, %{values: filtered})
+        end
+
+      _ ->
+        taxa
+    end
+  end
 
   # role is {:array, :string} not :map
   defp put_list_field(acc, row, str_key) do

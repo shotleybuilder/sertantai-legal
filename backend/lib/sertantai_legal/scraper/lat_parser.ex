@@ -801,6 +801,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         heading_group: row.heading_group,
         schedule: row.schedule,
         provision: row.provision,
+        sub_provision: row.sub,
         paragraph: row.paragraph,
         sub_paragraph: row.sub_paragraph,
         extent_code: row.extent_code,

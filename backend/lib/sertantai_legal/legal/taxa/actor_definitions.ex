@@ -451,6 +451,64 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
   end
 
   # ============================================================================
+  # Actor Role Classification
+  # ============================================================================
+
+  # Government actor labels derived from @government_patterns_raw.
+  # All government labels either start with these prefixes or are exact matches.
+  @government_prefixes ["Gvt:", "EU:", "HM Forces"]
+  @government_exact MapSet.new(["Crown"])
+
+  @doc """
+  Classifies an actor label as `"government"` or `"governed"`.
+
+  This is the single canonical function for the governed/government split.
+  Derived from the hardcoded taxonomy: government actors are those in
+  `@government_patterns_raw`, everything else is governed.
+
+  ## Government actors
+  Labels starting with `Gvt:`, `EU:`, `HM Forces`, or exactly `Crown`.
+
+  ## Governed actors
+  Everything else: `Ind:*`, `Org:*`, `SC:*`, `Spc:*`, `Svc:*`, `Public*`,
+  `Operator`, `Maritime:*`, `Env:*`, `Offshore:*`, etc.
+
+  ## Examples
+
+      iex> ActorDefinitions.actor_role("Gvt: Minister")
+      "government"
+
+      iex> ActorDefinitions.actor_role("Crown")
+      "government"
+
+      iex> ActorDefinitions.actor_role("HM Forces: Navy")
+      "government"
+
+      iex> ActorDefinitions.actor_role("Org: Employer")
+      "governed"
+
+      iex> ActorDefinitions.actor_role("Public")
+      "governed"
+  """
+  @spec actor_role(String.t()) :: String.t()
+  def actor_role(label) when is_binary(label) do
+    if government_label?(label), do: "government", else: "governed"
+  end
+
+  @doc """
+  Returns true if the label is a government actor.
+
+  Checks against the hardcoded taxonomy (prefix and exact match).
+  Unlike `ActorDictionary.government?/1`, this does not depend on
+  runtime ETS state and correctly classifies `Crown` and `HM Forces`.
+  """
+  @spec government_label?(String.t()) :: boolean()
+  def government_label?(label) when is_binary(label) do
+    MapSet.member?(@government_exact, label) or
+      Enum.any?(@government_prefixes, &String.starts_with?(label, &1))
+  end
+
+  # ============================================================================
   # Library Processing
   # ============================================================================
 

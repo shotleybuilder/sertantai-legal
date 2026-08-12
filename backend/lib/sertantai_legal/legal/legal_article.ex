@@ -97,6 +97,15 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       description("Section (Acts) or article/regulation (SIs) number")
     end
 
+    attribute :sub_provision, :string do
+      allow_nil?(true)
+
+      description(
+        "Sub-section (Acts) or sub-article (SIs) number. " <>
+          "The (1) in s.2(1) or reg.2(1). NULL for section/article-level rows."
+      )
+    end
+
     attribute :paragraph, :string do
       allow_nil?(true)
       description("Paragraph number")
@@ -358,6 +367,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :chapter,
         :heading_group,
         :provision,
+        :sub_provision,
         :paragraph,
         :sub_paragraph,
         :schedule,
@@ -390,6 +400,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :chapter,
         :heading_group,
         :provision,
+        :sub_provision,
         :paragraph,
         :sub_paragraph,
         :schedule,

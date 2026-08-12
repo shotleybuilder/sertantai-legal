@@ -30,6 +30,7 @@ Materialised path columns. Each is populated only when relevant to the row's pos
 | `chapter` | TEXT | NULL | Chapter number |
 | `heading_group` | TEXT | NULL | Cross-heading group membership label. Value is the lead section/article number under the parent cross-heading (e.g., `18` means "under the cross-heading starting at section 18"). **Not a sequential counter** — values jump (1, 2, 18, 27...). NULL for rows outside any cross-heading group. Scoped to `(law_name, part/schedule)` — resets at schedule boundaries. The heading **text** is in the `text` column of `section_type = 'heading'` rows. |
 | `provision` | TEXT | NULL | Section number (UK Acts) or article/regulation number (UK SIs). Merges the old `section` and `article` columns — `section_type` distinguishes which. |
+| `sub_provision` | TEXT | NULL | Sub-section (Acts) or sub-article (SIs) number. The `(1)` in `s.2(1)` or `reg.2(1)`. NULL for section/article-level rows. Populated for sub_section/sub_article rows and their descendants (paragraphs, sub-paragraphs). |
 | `paragraph` | TEXT | NULL | Paragraph number (sub-section level) |
 | `sub_paragraph` | TEXT | NULL | Sub-paragraph number |
 | `schedule` | TEXT | NULL | Schedule/annex number |
@@ -242,6 +243,7 @@ CREATE TABLE legislation_text (
     chapter         TEXT,
     heading_group   TEXT,
     provision       TEXT,
+    sub_provision   TEXT,
     paragraph       TEXT,
     sub_paragraph   TEXT,
     schedule        TEXT,

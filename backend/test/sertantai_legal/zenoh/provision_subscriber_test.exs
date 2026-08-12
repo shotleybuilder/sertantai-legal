@@ -20,7 +20,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert result.taxa_confidence == 0.95
     end
 
-    test "maps actors struct column as array of maps" do
+    test "maps actors struct column as array of maps with role enrichment" do
       row = %{
         "actors" => [
           %{
@@ -45,6 +45,38 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert length(result.actors) == 2
       assert hd(result.actors)["label"] == "Org: Employer"
       assert hd(result.actors)["position"] == "active"
+      assert hd(result.actors)["role"] == "governed"
+    end
+
+    test "enriches government actors with role" do
+      row = %{
+        "actors" => [
+          %{"label" => "Gvt: Minister", "position" => "active"},
+          %{"label" => "Crown", "position" => "mentioned"},
+          %{"label" => "HM Forces", "position" => "mentioned"},
+          %{"label" => "Org: Employer", "position" => "active"}
+        ]
+      }
+
+      result = ProvisionSubscriber.normalize_taxa(row)
+
+      roles = Enum.map(result.actors, & &1["role"])
+      assert roles == ["government", "government", "government", "governed"]
+    end
+
+    test "enriches actors from JSON string with role" do
+      actors_json =
+        Jason.encode!([
+          %{"label" => "EU: Commission", "position" => "active"},
+          %{"label" => "Ind: Person", "position" => "mentioned"}
+        ])
+
+      row = %{"actors" => actors_json}
+      result = ProvisionSubscriber.normalize_taxa(row)
+
+      assert length(result.actors) == 2
+      assert Enum.at(result.actors, 0)["role"] == "government"
+      assert Enum.at(result.actors, 1)["role"] == "governed"
     end
 
     test "maps holder_inferred_from and ancestor_distance" do
@@ -163,6 +195,173 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
 
       # All atom keys
       assert Enum.all?(Map.keys(result), &is_atom/1)
+    end
+  end
+
+  describe "map_drrp_types/1 (#134)" do
+    # Obligation mappings
+    test "maps Obligation → Duty when provision has governed actor" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [%{"label" => "Org: Employer", "role" => "governed"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Duty"]
+    end
+
+    test "maps Obligation → Responsibility when provision has only government actors" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [%{"label" => "Gvt: Minister", "role" => "government"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Responsibility"]
+    end
+
+    # Liberty mappings
+    test "maps Liberty → Right when provision has governed actor" do
+      taxa = %{
+        drrp_types: ["Liberty"],
+        actors: [%{"label" => "Ind: Person", "role" => "governed"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Right"]
+    end
+
+    test "maps Liberty → Power when provision has only government actors" do
+      taxa = %{
+        drrp_types: ["Liberty"],
+        actors: [%{"label" => "Gvt: Minister", "role" => "government"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Power"]
+    end
+
+    # Mixed actor priority: governed wins
+    test "governed takes priority over government (Obligation → Duty)" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [
+          %{"label" => "Gvt: Agency: Health and Safety Executive", "role" => "government"},
+          %{"label" => "Org: Employer", "role" => "governed"}
+        ]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Duty"]
+    end
+
+    test "governed takes priority over government (Liberty → Right)" do
+      taxa = %{
+        drrp_types: ["Liberty"],
+        actors: [
+          %{"label" => "Gvt: Agency: Health and Safety Executive", "role" => "government"},
+          %{"label" => "Ind: Person", "role" => "governed"}
+        ]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Right"]
+    end
+
+    # Mixed drrp_types
+    test "maps both Obligation and Liberty in same provision" do
+      taxa = %{
+        drrp_types: ["Obligation", "Liberty"],
+        actors: [%{"label" => "Ind: Person", "role" => "governed"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Duty", "Right"]
+    end
+
+    test "maps both with government-only actors" do
+      taxa = %{
+        drrp_types: ["Obligation", "Liberty"],
+        actors: [%{"label" => "Gvt: Minister", "role" => "government"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Responsibility", "Power"]
+    end
+
+    # Edge cases
+    test "passes through when no drrp_types" do
+      taxa = %{actors: [%{"label" => "Ind: Person", "role" => "governed"}]}
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      refute Map.has_key?(result, :drrp_types)
+    end
+
+    test "passes through when no actors" do
+      taxa = %{drrp_types: ["Liberty"]}
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Liberty"]
+    end
+
+    test "does not touch already-mapped DRRP types" do
+      taxa = %{
+        drrp_types: ["Duty", "Right"],
+        actors: [%{"label" => "Org: Employer", "role" => "governed"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Duty", "Right"]
+    end
+
+    test "works with atom-keyed actor maps" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [%{label: "Org: Employer", role: "governed"}]
+      }
+
+      result = ProvisionSubscriber.map_drrp_types(taxa)
+
+      assert result.drrp_types == ["Duty"]
+    end
+
+    # End-to-end through normalize_taxa
+    test "normalize_taxa maps Obligation → Duty end-to-end" do
+      row = %{
+        "drrp_types" => ["Obligation"],
+        "duty_family" => "Governed",
+        "actors" => [%{"label" => "Org: Employer", "position" => "active"}]
+      }
+
+      result = ProvisionSubscriber.normalize_taxa(row)
+
+      assert result.drrp_types == ["Duty"]
+      assert hd(result.actors)["role"] == "governed"
+    end
+
+    test "normalize_taxa maps Liberty → Right end-to-end" do
+      row = %{
+        "drrp_types" => ["Liberty"],
+        "duty_family" => "Governed",
+        "duty_sub_type" => "Prohibitive",
+        "actors" => [%{"label" => "Ind: Person", "position" => "active"}]
+      }
+
+      result = ProvisionSubscriber.normalize_taxa(row)
+
+      assert result.drrp_types == ["Right"]
+      assert hd(result.actors)["role"] == "governed"
     end
   end
 end
