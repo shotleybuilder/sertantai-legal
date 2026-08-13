@@ -40,8 +40,8 @@ services:
       auth-postgres:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_prod
-      - SERTANTAI_AUTH_DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_prod
+      - DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_dev
+      - SERTANTAI_AUTH_DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_dev
       - SERTANTAI_AUTH_SECRET_KEY_BASE=dev_secret_key_base_at_least_64_chars_long_for_local_development_testing
       - SERTANTAI_AUTH_JWT_PRIVATE_KEY=${SERTANTAI_AUTH_JWT_PRIVATE_KEY}
       - SERTANTAI_AUTH_TOTP_ENCRYPTION_KEY=${SERTANTAI_AUTH_TOTP_ENCRYPTION_KEY}
@@ -117,7 +117,7 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@hub-postgres:5432/sertantai_hub_dev
-      - AUTH_DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_prod
+      - AUTH_DATABASE_URL=postgresql://postgres:postgres@auth-postgres:5432/sertantai_auth_dev
       - SECRET_KEY_BASE=dev_hub_secret_key_base_at_least_64_chars_long_for_local_development_testing
       - PHX_HOST=localhost
       - PHX_SERVER=true
