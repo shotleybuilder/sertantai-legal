@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             RestrictExtent="E+W">
+  <Contents>
+    <ContentsItem ContentRef="regulation-1" RestrictExtent="E+W">
+      Regulation 1 — Citation and commencement
+    </ContentsItem>
+    <ContentsItem ContentRef="regulation-2" RestrictExtent="E+W">
+      Regulation 2 — Amendments
+    </ContentsItem>
+  </Contents>
+</Legislation>

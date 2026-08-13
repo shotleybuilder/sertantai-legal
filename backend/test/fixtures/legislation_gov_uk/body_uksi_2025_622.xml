@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             RestrictExtent="E+W">
+<Primary>
+<Body>
+  <P1group>
+    <P1 id="regulation-1">
+      <Pnumber>Regulation 1</Pnumber>
+      <P1para>
+        <Text>These Regulations may be cited as the Infrastructure Planning (Interested
+        Parties and Miscellaneous Prescribed Provisions) (Amendment) Regulations 2025 and
+        come into force on 1st July 2025.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-2">
+      <Pnumber>Regulation 2</Pnumber>
+      <P1para>
+        <Text>The employer shall ensure that all persons working on nationally significant
+        infrastructure projects are informed of these amendments.</Text>
+      </P1para>
+    </P1>
+  </P1group>
+</Body>
+</Primary>
+</Legislation>

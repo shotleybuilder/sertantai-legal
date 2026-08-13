@@ -85,7 +85,7 @@ defmodule SertantaiLegal.Scraper.Au.NswFeedClient do
   defp fetch_with_retry(_url, 0), do: {:error, :rate_limited}
 
   defp fetch_with_retry(url, retries) do
-    case Req.get(url, receive_timeout: 15_000, retry: false) do
+    case Req.get(url, req_options(receive_timeout: 15_000, retry: false)) do
       {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
         {:ok, parse_feed(body)}
 
@@ -100,6 +100,15 @@ defmodule SertantaiLegal.Scraper.Au.NswFeedClient do
       {:error, reason} ->
         Logger.error("[NSW Feed] Request failed: #{inspect(reason)}")
         {:error, reason}
+    end
+  end
+
+  # Get Req options, using plug adapter in test environment
+  defp req_options(base_opts) do
+    if Application.get_env(:sertantai_legal, :test_mode, false) do
+      Keyword.put(base_opts, :plug, {Req.Test, __MODULE__})
+    else
+      base_opts
     end
   end
 

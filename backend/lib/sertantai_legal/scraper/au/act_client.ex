@@ -32,7 +32,7 @@ defmodule SertantaiLegal.Scraper.Au.ActClient do
   """
   @spec fetch_url(String.t()) :: {:ok, map()} | {:error, any()}
   def fetch_url(url) do
-    case Req.get(url, receive_timeout: 15_000, retry: false, redirect: true) do
+    case Req.get(url, req_options(receive_timeout: 15_000, retry: false, redirect: true)) do
       {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
         {:ok, parse_page(body, url)}
 
@@ -45,6 +45,15 @@ defmodule SertantaiLegal.Scraper.Au.ActClient do
       {:error, reason} ->
         Logger.error("[ACT Client] Request failed: #{inspect(reason)}")
         {:error, reason}
+    end
+  end
+
+  # Get Req options, using plug adapter in test environment
+  defp req_options(base_opts) do
+    if Application.get_env(:sertantai_legal, :test_mode, false) do
+      Keyword.put(base_opts, :plug, {Req.Test, __MODULE__})
+    else
+      base_opts
     end
   end
 

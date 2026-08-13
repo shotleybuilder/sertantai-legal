@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             RestrictExtent="E+W+S">
+  <Contents>
+    <ContentsItem ContentRef="regulation-3" RestrictExtent="E+W+S">
+      Regulation 3 — Duty of employer to make provision
+    </ContentsItem>
+    <ContentsItem ContentRef="regulation-4" RestrictExtent="E+W+S">
+      Regulation 4 — Duty of employer to provide first-aiders
+    </ContentsItem>
+    <ContentsItem ContentRef="regulation-5" RestrictExtent="E+W+S">
+      Regulation 5 — Equipment and facilities in mines
+    </ContentsItem>
+  </Contents>
+</Legislation>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             RestrictExtent="E+W+S+N.I.">
+<Primary>
+<Body>
+  <P1group>
+    <P1 id="regulation-1">
+      <Pnumber>Regulation 1</Pnumber>
+      <P1para>
+        <Text>These Regulations may be cited as the Financial Services and Markets Act 2000
+        (Market Abuse) Regulations 2016 and shall come into force on 3rd July 2016.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-2">
+      <Pnumber>Regulation 2</Pnumber>
+      <P1para>
+        <Text>In these Regulations the employer shall ensure that every worker receives
+        adequate information about market abuse provisions and their obligations under
+        these Regulations.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-3">
+      <Pnumber>Regulation 3</Pnumber>
+      <P1para>
+        <Text>The competent authority shall maintain a register of all persons who have
+        been granted permission to carry out regulated activities. Every operator of a
+        trading venue must notify the competent authority of any suspected instances of
+        market abuse.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-4">
+      <Pnumber>Regulation 4</Pnumber>
+      <P1para>
+        <Text>A person who manages or operates a trading venue shall establish and maintain
+        effective arrangements, systems and procedures aimed at preventing and detecting
+        insider dealing, market manipulation and attempted insider dealing and market
+        manipulation. The operator shall train all employees in the detection of suspicious
+        transactions and orders.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-5">
+      <Pnumber>Regulation 5</Pnumber>
+      <P1para>
+        <Text>The worker who discovers or suspects a breach of these Regulations has the
+        right to report it to the competent authority without fear of retaliation.
+        The employer shall protect whistleblowers from any form of discrimination or
+        disadvantage arising from their disclosure.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-6">
+      <Pnumber>Regulation 6</Pnumber>
+      <P1para>
+        <Text>The Secretary of State may by order amend the schedule to these Regulations
+        to add, remove or modify the descriptions of instruments or behaviours that
+        constitute market abuse. Any person who is professionally arranging or executing
+        transactions shall maintain records of all orders and transactions for a period
+        of not less than five years.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-7">
+      <Pnumber>Regulation 7</Pnumber>
+      <P1para>
+        <Text>The local authority shall cooperate with the competent authority in
+        the enforcement of these Regulations. The director or officer of a company
+        who knowingly permits market abuse is guilty of an offence. Every manufacturer
+        of financial instruments shall disclose the terms and conditions associated with
+        such instruments. The supplier of market data shall ensure accuracy and timeliness
+        of information provided to the market.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-8">
+      <Pnumber>Regulation 8</Pnumber>
+      <P1para>
+        <Text>The inspector appointed under these Regulations may require any person to
+        produce documents and provide explanations. The contractor engaged by an operator
+        shall comply with the same obligations as the operator in relation to record-keeping
+        and reporting. Where a sub-contractor is responsible for maintaining trading systems,
+        they shall ensure that those systems comply with the requirements of these Regulations.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-9">
+      <Pnumber>Regulation 9</Pnumber>
+      <P1para>
+        <Text>The Health and Safety Executive shall have regard to these Regulations when
+        carrying out its functions in relation to financial services workplaces. The owner
+        of premises where regulated activities take place shall ensure that adequate facilities
+        are provided for the maintenance of proper records. Any employee who fails to comply
+        with a requirement imposed under these Regulations is liable on summary conviction
+        to a fine.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-10">
+      <Pnumber>Regulation 10</Pnumber>
+      <P1para>
+        <Text>The occupier of any premises used for the purposes of carrying on a regulated
+        activity shall ensure that the premises are suitable for that purpose. The importer
+        of financial products from outside the United Kingdom shall comply with the
+        requirements of Part 3 of these Regulations.</Text>
+      </P1para>
+    </P1>
+  </P1group>
+</Body>
+</Primary>
+</Legislation>

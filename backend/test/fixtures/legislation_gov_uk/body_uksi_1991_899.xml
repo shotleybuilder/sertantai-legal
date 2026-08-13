@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+             RestrictExtent="E+W+S">
+<Primary>
+<Body>
+  <P1group>
+    <P1 id="regulation-3">
+      <Pnumber>Regulation 3</Pnumber>
+      <P1para>
+        <Text>Every employer shall ensure that adequate and appropriate equipment and
+        facilities are provided to enable first-aid to be rendered to his employees
+        if they are injured or become ill at work.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-4">
+      <Pnumber>Regulation 4</Pnumber>
+      <P1para>
+        <Text>Every employer shall provide, or ensure that there are provided, such number
+        of suitable persons as is adequate and appropriate in the circumstances for
+        rendering first-aid to his employees if they are injured or become ill at work.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-5">
+      <Pnumber>Regulation 5</Pnumber>
+      <P1para>
+        <Text>Where a worker is employed in a mine, the employer shall ensure that
+        at least one first-aid container is provided and maintained with a
+        sufficient supply of first-aid materials suitable for the circumstances.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-6">
+      <Pnumber>Regulation 6</Pnumber>
+      <P1para>
+        <Text>Every employer shall inform his employees of the arrangements that have
+        been made in connection with the provision of first-aid, including the
+        location of equipment, facilities and personnel.</Text>
+      </P1para>
+    </P1>
+
+    <P1 id="regulation-7">
+      <Pnumber>Regulation 7</Pnumber>
+      <P1para>
+        <Text>Every self-employed person shall provide, or ensure that there is provided,
+        such equipment, if any, as is adequate and appropriate in the circumstances
+        to enable him to render first-aid to himself while he is at work.</Text>
+      </P1para>
+    </P1>
+  </P1group>
+</Body>
+</Primary>
+</Legislation>

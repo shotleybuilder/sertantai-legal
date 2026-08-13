@@ -195,7 +195,7 @@ defmodule SertantaiLegal.Scraper.Au.FederalClient do
     query = URI.encode_query(params)
     url = if query == "", do: "#{@base_url}/#{path}", else: "#{@base_url}/#{path}?#{query}"
 
-    case Req.get(url, receive_timeout: 15_000, retry: :transient, max_retries: 2) do
+    case Req.get(url, req_options(receive_timeout: 15_000, retry: :transient, max_retries: 2)) do
       {:ok, %Req.Response{status: 200, body: body}} when is_map(body) ->
         {:ok, body}
 
@@ -212,6 +212,15 @@ defmodule SertantaiLegal.Scraper.Au.FederalClient do
       {:error, reason} ->
         Logger.error("[AU Federal API] Request failed: #{inspect(reason)}")
         {:error, reason}
+    end
+  end
+
+  # Get Req options, using plug adapter in test environment
+  defp req_options(base_opts) do
+    if Application.get_env(:sertantai_legal, :test_mode, false) do
+      Keyword.put(base_opts, :plug, {Req.Test, __MODULE__})
+    else
+      base_opts
     end
   end
 

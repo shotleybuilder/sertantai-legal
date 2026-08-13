@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation
+    xmlns="http://www.legislation.gov.uk/namespaces/legislation"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dct="http://purl.org/dc/terms/"
+    xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    RestrictExtent="E+W"
+    RestrictStartDate="2025-07-01">
+
+  <ukm:Metadata>
+    <dc:title>The Infrastructure Planning (Interested Parties and Miscellaneous Prescribed Provisions) (Amendment) Regulations 2025</dc:title>
+    <dc:description>Regulations amending interested parties provisions under the Planning Act 2008.</dc:description>
+    <dc:modified>2025-06-01</dc:modified>
+    <dc:subject scheme="SIheading">TOWN AND COUNTRY PLANNING</dc:subject>
+
+    <ukm:Statistics>
+      <ukm:TotalParagraphs Value="30"/>
+      <ukm:BodyParagraphs Value="25"/>
+      <ukm:ScheduleParagraphs Value="5"/>
+    </ukm:Statistics>
+
+    <ukm:PrimaryMetadata>
+      <ukm:DocumentClassification>
+        <ukm:DocumentCategory Value="secondary"/>
+        <ukm:DocumentMainType Value="UnitedKingdomStatutoryInstrument"/>
+      </ukm:DocumentClassification>
+      <ukm:Year Value="2025"/>
+      <ukm:Number Value="622"/>
+      <ukm:EnactmentDate Date="2025-06-15"/>
+      <ukm:Made Date="2025-06-12"/>
+      <ukm:ComingIntoForce>
+        <ukm:DateTime Date="2025-07-01"/>
+      </ukm:ComingIntoForce>
+    </ukm:PrimaryMetadata>
+  </ukm:Metadata>
+
+  <Secondary>
+    <SecondaryPrelims>
+      <IntroductoryText>
+        <P>
+          <Text>The Secretary of State makes the following Regulations in exercise of the powers
+          conferred by sections 88(3), 89(3), 102(4) and 232(1) of the Planning Act 2008
+          <FootnoteRef Ref="f00001"/>.</Text>
+        </P>
+      </IntroductoryText>
+      <EnactingText>
+        <Para>
+          <Text>In accordance with section 232(5) of that Act, a draft of this instrument has
+          been laid before, and approved by a resolution of, each House of Parliament.</Text>
+        </Para>
+      </EnactingText>
+    </SecondaryPrelims>
+
+    <Footnotes>
+      <Footnote id="f00001">
+        <FootnoteText>
+          <Citation URI="http://www.legislation.gov.uk/id/ukpga/2008/29" id="c00001">2008 c. 29</Citation>
+        </FootnoteText>
+      </Footnote>
+    </Footnotes>
+  </Secondary>
+
+</Legislation>
