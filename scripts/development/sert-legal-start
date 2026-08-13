@@ -1,15 +1,16 @@
 #!/bin/bash
 # sertantai-legal Development Server Starter
 # Starts backend (Phoenix) and frontend (SvelteKit) in terminal tabs
-# Optionally manages sertantai-auth dependency service
+#
+# Auth + Hub run as always-on containers (see docker-compose.services.yml).
+# This script auto-detects them and only opens tabs for legal.
 #
 # Usage:
-#   sert-legal-start                # Start servers (auto-starts Docker if not running)
+#   sert-legal-start                # Start legal (auto-starts Docker if needed)
 #   sert-legal-start --docker       # Force restart Docker containers + servers
-#   sert-legal-start --auth         # Also ensure sertantai-auth is running
-#   sert-legal-start --hub          # Also ensure sertantai-hub is running
-#   sert-legal-start --zenoh        # Enable Zenoh P2P mesh (taxa subscriber, data server)
-#   sert-legal-start --docker --auth --hub # Start everything including auth + hub
+#   sert-legal-start --zenoh        # Enable Zenoh P2P mesh
+#   sert-legal-start --auth         # Also start auth from source (legacy mode)
+#   sert-legal-start --hub          # Also start hub from source (legacy mode)
 #
 # Symlink Setup (to run from anywhere):
 #   sudo ln -s /home/jason/Desktop/sertantai-legal/scripts/development/sert-legal-start /usr/local/bin/sert-legal-start
@@ -75,12 +76,12 @@ TABEOF
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 
-# sertantai-auth project location
+# sertantai-auth project location (for legacy --auth mode)
 AUTH_PROJECT_ROOT="$HOME/Desktop/sertantai-auth"
 AUTH_PORT=4000
 AUTH_DB_PORT=5438
 
-# sertantai-hub project location
+# sertantai-hub project location (for legacy --hub mode)
 HUB_PROJECT_ROOT="$HOME/Desktop/sertantai-hub"
 HUB_PORT=4006
 HUB_FRONTEND_PORT=5173
@@ -88,7 +89,6 @@ HUB_DB_PORT=5435
 
 echo "Starting sertantai-legal development servers..."
 echo "Project root: $PROJECT_ROOT"
-echo "Frontend dir: $PROJECT_ROOT/frontend"
 echo ""
 
 # Verify PROJECT_ROOT exists
@@ -116,14 +116,30 @@ if lsof -ti:5175 >/dev/null 2>&1; then
 fi
 
 # ============================================================================
-# sertantai-auth dependency management
+# Auth + Hub service detection
 # ============================================================================
+# Prefer containerized services. Fall back to --auth/--hub source mode.
+
 check_auth_running() {
     curl -s -o /dev/null -w "%{http_code}" "http://localhost:$AUTH_PORT/health" 2>/dev/null | grep -q "200"
 }
 
+check_hub_running() {
+    curl -s -o /dev/null -w "%{http_code}" "http://localhost:$HUB_PORT/health" 2>/dev/null | grep -q "200"
+}
+
+check_auth_container() {
+    docker ps --format '{{.Names}}' 2>/dev/null | grep -q "sertantai-auth$"
+}
+
+check_hub_container() {
+    docker ps --format '{{.Names}}' 2>/dev/null | grep -q "sertantai-hub-backend"
+}
+
+# ── Auth status ──────────────────────────────────────────────────────────
 if [ "$MANAGE_AUTH" = true ]; then
-    echo "Checking sertantai-auth service..."
+    # Legacy mode: start auth from source
+    echo "Starting sertantai-auth from source (legacy --auth mode)..."
 
     if [ ! -d "$AUTH_PROJECT_ROOT" ]; then
         echo "Error: sertantai-auth project not found at $AUTH_PROJECT_ROOT"
@@ -133,8 +149,6 @@ if [ "$MANAGE_AUTH" = true ]; then
     if check_auth_running; then
         echo "   sertantai-auth already running on port $AUTH_PORT"
     else
-        echo "   sertantai-auth not running, starting it..."
-
         # Check/start auth postgres container
         if ! docker ps --format '{{.Names}}' | grep -q "sertantai-auth.*postgres"; then
             echo "   Starting sertantai-auth PostgreSQL (port $AUTH_DB_PORT)..."
@@ -146,56 +160,38 @@ if [ "$MANAGE_AUTH" = true ]; then
                     echo " ready"
                     break
                 fi
-                if [ "$i" -eq 15 ]; then
-                    echo " timeout (may still be starting)"
-                fi
-                sleep 1
-                echo -n "."
+                [ "$i" -eq 15 ] && echo " timeout"
+                sleep 1; echo -n "."
             done
             cd "$PROJECT_ROOT"
-        else
-            echo "   sertantai-auth PostgreSQL already running"
         fi
 
-        # Start auth Phoenix server in a terminal tab
         echo "   Starting sertantai-auth Phoenix server (port $AUTH_PORT)..."
-        open_tab "sertantai-auth-backend" "$AUTH_PROJECT_ROOT" "echo 'Starting sertantai-auth on port $AUTH_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
+        open_tab "sertantai-auth-backend" "$AUTH_PROJECT_ROOT" "echo 'Starting sertantai-auth on port $AUTH_PORT...'; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
 
-        # Wait for auth to be healthy
         echo -n "   Waiting for sertantai-auth to be ready..."
         for i in $(seq 1 30); do
-            if check_auth_running; then
-                echo " ready"
-                break
-            fi
-            if [ "$i" -eq 30 ]; then
-                echo " timeout (may still be starting)"
-            fi
-            sleep 1
-            echo -n "."
+            if check_auth_running; then echo " ready"; break; fi
+            [ "$i" -eq 30 ] && echo " timeout"
+            sleep 1; echo -n "."
         done
     fi
     echo ""
-else
-    # Check if auth is running (informational)
-    if check_auth_running; then
-        echo "sertantai-auth: running on port $AUTH_PORT"
+elif check_auth_running; then
+    if check_auth_container; then
+        echo "Auth:  running (container) on port $AUTH_PORT"
     else
-        echo "Note: sertantai-auth not running (port $AUTH_PORT)"
-        echo "   Tip: Use '--auth' flag to auto-start it"
+        echo "Auth:  running (source) on port $AUTH_PORT"
     fi
-    echo ""
+else
+    echo "Auth:  not running (port $AUTH_PORT)"
+    echo "   Run 'sert-services-up' to start auth + hub containers"
 fi
 
-# ============================================================================
-# sertantai-hub dependency management
-# ============================================================================
-check_hub_running() {
-    curl -s -o /dev/null -w "%{http_code}" "http://localhost:$HUB_PORT/health" 2>/dev/null | grep -q "200"
-}
-
+# ── Hub status ───────────────────────────────────────────────────────────
 if [ "$MANAGE_HUB" = true ]; then
-    echo "Checking sertantai-hub service..."
+    # Legacy mode: start hub from source
+    echo "Starting sertantai-hub from source (legacy --hub mode)..."
 
     if [ ! -d "$HUB_PROJECT_ROOT" ]; then
         echo "Error: sertantai-hub project not found at $HUB_PROJECT_ROOT"
@@ -205,8 +201,6 @@ if [ "$MANAGE_HUB" = true ]; then
     if check_hub_running; then
         echo "   sertantai-hub backend already running on port $HUB_PORT"
     else
-        echo "   sertantai-hub not running, starting it..."
-
         # Check/start hub postgres container
         if ! docker ps --format '{{.Names}}' | grep -q "sertantai-hub.*postgres"; then
             echo "   Starting sertantai-hub PostgreSQL (port $HUB_DB_PORT)..."
@@ -218,54 +212,43 @@ if [ "$MANAGE_HUB" = true ]; then
                     echo " ready"
                     break
                 fi
-                if [ "$i" -eq 15 ]; then
-                    echo " timeout (may still be starting)"
-                fi
-                sleep 1
-                echo -n "."
+                [ "$i" -eq 15 ] && echo " timeout"
+                sleep 1; echo -n "."
             done
             cd "$PROJECT_ROOT"
-        else
-            echo "   sertantai-hub PostgreSQL already running"
         fi
 
-        # Start hub Phoenix server in a terminal tab
         echo "   Starting sertantai-hub Phoenix server (port $HUB_PORT)..."
-        open_tab "sertantai-hub-backend" "$HUB_PROJECT_ROOT/backend" "echo 'Starting sertantai-hub on port $HUB_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
+        open_tab "sertantai-hub-backend" "$HUB_PROJECT_ROOT/backend" "echo 'Starting sertantai-hub on port $HUB_PORT...'; unset DATABASE_URL; mix phx.server; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
 
-        # Wait for hub to be healthy
         echo -n "   Waiting for sertantai-hub to be ready..."
         for i in $(seq 1 30); do
-            if check_hub_running; then
-                echo " ready"
-                break
-            fi
-            if [ "$i" -eq 30 ]; then
-                echo " timeout (may still be starting)"
-            fi
-            sleep 1
-            echo -n "."
+            if check_hub_running; then echo " ready"; break; fi
+            [ "$i" -eq 30 ] && echo " timeout"
+            sleep 1; echo -n "."
         done
     fi
 
-    # Start hub frontend independently (may need starting even if backend was already running)
+    # Start hub frontend
     if lsof -ti:$HUB_FRONTEND_PORT >/dev/null 2>&1; then
         echo "   sertantai-hub frontend already running on port $HUB_FRONTEND_PORT"
     else
         echo "   Starting sertantai-hub frontend (port $HUB_FRONTEND_PORT)..."
-        open_tab "sertantai-hub-frontend" "$HUB_PROJECT_ROOT/frontend" "echo 'Starting sertantai-hub frontend on port $HUB_FRONTEND_PORT...'; echo 'Working directory: \$(pwd)'; echo ''; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
+        open_tab "sertantai-hub-frontend" "$HUB_PROJECT_ROOT/frontend" "echo 'Starting sertantai-hub frontend on port $HUB_FRONTEND_PORT...'; npm run dev; echo ''; echo 'Service stopped. Press Enter to close tab...'; read"
     fi
     echo ""
-else
-    # Check if hub is running (informational)
-    if check_hub_running 2>/dev/null; then
-        echo "sertantai-hub: running on port $HUB_PORT"
+elif check_hub_running; then
+    if check_hub_container; then
+        echo "Hub:   running (container) — backend :$HUB_PORT, frontend :$HUB_FRONTEND_PORT"
     else
-        echo "Note: sertantai-hub not running (port $HUB_PORT)"
-        echo "   Tip: Use '--hub' flag to auto-start it"
+        echo "Hub:   running (source) on port $HUB_PORT"
     fi
-    echo ""
+else
+    echo "Hub:   not running (port $HUB_PORT)"
+    echo "   Run 'sert-services-up' to start auth + hub containers"
 fi
+
+echo ""
 
 # ============================================================================
 # Docker container management (sertantai-legal)
@@ -284,25 +267,18 @@ if [ "$MANAGE_DOCKER" = true ]; then
 
     if [ "$NEED_START" = true ]; then
         echo "   Starting Docker services (postgres + electric)..."
-        # Start postgres first, then electric with --no-deps to avoid
-        # dependency chain recreating postgres (see SKILLS.md)
         docker compose -f docker-compose.dev.yml up -d postgres
         echo "   Waiting for postgres to be healthy..."
         sleep 5
         docker compose -f docker-compose.dev.yml up -d --no-deps electric
 
-        # Wait for Electric to be ready (up to 30s)
         echo -n "   Waiting for ElectricSQL..."
         for i in $(seq 1 30); do
             if curl -s -o /dev/null -w "" http://localhost:3002/v1/health 2>/dev/null; then
-                echo " ready"
-                break
+                echo " ready"; break
             fi
-            if [ "$i" -eq 30 ]; then
-                echo " timeout (may still be starting)"
-            fi
-            sleep 1
-            echo -n "."
+            [ "$i" -eq 30 ] && echo " timeout"
+            sleep 1; echo -n "."
         done
     else
         echo "   Docker services already running"
@@ -319,11 +295,7 @@ else
     fi
     if ! docker ps | grep -q "sertantai-legal-electric"; then
         NEED_START=true
-        if [ -n "$MISSING" ]; then
-            MISSING="$MISSING, electric"
-        else
-            MISSING="electric"
-        fi
+        if [ -n "$MISSING" ]; then MISSING="$MISSING, electric"; else MISSING="electric"; fi
     fi
     if [ "$NEED_START" = true ]; then
         echo "Docker containers not running ($MISSING), starting..."
@@ -331,27 +303,19 @@ else
         echo -n "   Waiting for postgres..."
         for i in $(seq 1 15); do
             if docker compose -f docker-compose.dev.yml exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
-                echo " ready"
-                break
+                echo " ready"; break
             fi
-            if [ "$i" -eq 15 ]; then
-                echo " timeout (may still be starting)"
-            fi
-            sleep 1
-            echo -n "."
+            [ "$i" -eq 15 ] && echo " timeout"
+            sleep 1; echo -n "."
         done
         docker compose -f docker-compose.dev.yml up -d --no-deps electric
         echo -n "   Waiting for ElectricSQL..."
         for i in $(seq 1 30); do
             if curl -s -o /dev/null -w "" http://localhost:3002/v1/health 2>/dev/null; then
-                echo " ready"
-                break
+                echo " ready"; break
             fi
-            if [ "$i" -eq 30 ]; then
-                echo " timeout (may still be starting)"
-            fi
-            sleep 1
-            echo -n "."
+            [ "$i" -eq 30 ] && echo " timeout"
+            sleep 1; echo -n "."
         done
     else
         echo "Docker services already running (postgres + electric)"
@@ -388,12 +352,12 @@ echo "URLs:"
 echo "   Backend:  http://localhost:4003  (phoenix)"
 echo "   Frontend: http://localhost:5175  (svelte)"
 echo "   Electric: http://localhost:3002  (sync)"
-if [ "$MANAGE_AUTH" = true ] || check_auth_running 2>/dev/null; then
+if check_auth_running 2>/dev/null; then
     echo "   Auth:     http://localhost:$AUTH_PORT  (sertantai-auth)"
 fi
-if [ "$MANAGE_HUB" = true ] || check_hub_running 2>/dev/null; then
+if check_hub_running 2>/dev/null; then
     echo "   Hub:      http://localhost:$HUB_PORT  (sertantai-hub)"
-    echo "   Hub UI:   http://localhost:$HUB_FRONTEND_PORT  (sertantai-hub frontend)"
+    echo "   Hub UI:   http://localhost:$HUB_FRONTEND_PORT  (login)"
 fi
 if [ "$ENABLE_ZENOH" = true ]; then
     echo "   Zenoh:    enabled (tenant=dev, multicast scouting)"

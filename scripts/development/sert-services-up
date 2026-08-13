@@ -1,0 +1,148 @@
+#!/bin/bash
+# Bootstrap auth + hub dev containers from GHCR release images.
+#
+# First-time: pulls images, creates volumes, starts everything.
+# Subsequent: just ensures containers are running.
+# After reboot: containers auto-restart (restart: unless-stopped).
+#
+# Usage:
+#   sert-services-up              # Start (or verify running)
+#   sert-services-up --pull       # Pull latest GHCR images first
+#   sert-services-up --status     # Show container status only
+#   sert-services-up --stop       # Stop all service containers
+#
+# Symlink:
+#   sudo ln -sf $(pwd)/scripts/development/sert-services-up /usr/local/bin/sert-services-up
+
+set -e
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+COMPOSE_FILE="$PROJECT_ROOT/docker-compose.services.yml"
+
+PULL_IMAGES=false
+STATUS_ONLY=false
+STOP_ALL=false
+
+for arg in "$@"; do
+    case $arg in
+        --pull) PULL_IMAGES=true ;;
+        --status) STATUS_ONLY=true ;;
+        --stop) STOP_ALL=true ;;
+    esac
+done
+
+if [ "$STATUS_ONLY" = true ]; then
+    echo "Service container status:"
+    echo ""
+    docker compose -f "$COMPOSE_FILE" ps
+    exit 0
+fi
+
+if [ "$STOP_ALL" = true ]; then
+    echo "Stopping auth + hub service containers..."
+    docker compose -f "$COMPOSE_FILE" stop
+    echo ""
+    echo "Containers stopped. They will NOT auto-restart until you run: sert-services-up"
+    exit 0
+fi
+
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "Error: $COMPOSE_FILE not found"
+    exit 1
+fi
+
+# ── Check .env exists ────────────────────────────────────────────────────
+if [ ! -f "$PROJECT_ROOT/.env" ]; then
+    echo "Error: $PROJECT_ROOT/.env not found"
+    echo "  This file contains dev secrets (JWT key, TOTP key)."
+    echo "  Copy from .env.example or ask a team member."
+    exit 1
+fi
+
+# ── Ensure original volumes exist ────────────────────────────────────────
+# The compose uses external volumes from the auth/hub repos.
+# Create them if they don't exist yet (first-time setup).
+for vol in sertantai-auth_postgres_data sertantai-hub_postgres_data; do
+    if ! docker volume inspect "$vol" >/dev/null 2>&1; then
+        echo "Creating volume: $vol"
+        docker volume create "$vol"
+    fi
+done
+
+# ── Stop conflicting containers from individual repo composes ────────────
+echo "Checking for conflicting containers..."
+changed=false
+for name in sertantai_auth_postgres_dev sertantai_auth_app_dev; do
+    if docker ps -a --format '{{.Names}}' | grep -q "^${name}$"; then
+        echo "  Removing old container: $name"
+        docker rm -f "$name" 2>/dev/null || true
+        changed=true
+    fi
+done
+if [ "$changed" = false ]; then
+    echo "  No conflicts found"
+fi
+
+# ── Pull latest images if requested ─────────────────────────────────────
+if [ "$PULL_IMAGES" = true ]; then
+    echo ""
+    echo "Pulling latest GHCR images..."
+    docker pull ghcr.io/shotleybuilder/sertantai-auth:latest
+    docker pull ghcr.io/shotleybuilder/sertantai-hub-backend:latest
+    docker pull ghcr.io/shotleybuilder/sertantai-hub-frontend:latest
+fi
+
+# ── Start containers ─────────────────────────────────────────────────────
+echo ""
+echo "Starting auth + hub services..."
+cd "$PROJECT_ROOT"
+docker compose -f "$COMPOSE_FILE" up -d
+
+# ── Wait for health ─────────────────────────────────────────────────────
+echo ""
+echo -n "Waiting for auth (port 4000)..."
+for i in $(seq 1 30); do
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/health 2>/dev/null | grep -q "200"; then
+        echo " ready"; break
+    fi
+    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs auth)"
+    sleep 1; echo -n "."
+done
+
+echo -n "Waiting for hub backend (port 4006)..."
+for i in $(seq 1 45); do
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost:4006/health 2>/dev/null | grep -q "200"; then
+        echo " ready"; break
+    fi
+    [ "$i" -eq 45 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs hub-backend)"
+    sleep 1; echo -n "."
+done
+
+echo -n "Waiting for hub frontend (port 5173)..."
+for i in $(seq 1 30); do
+    if curl -s -o /dev/null http://localhost:5173 2>/dev/null; then
+        echo " ready"; break
+    fi
+    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs hub-frontend)"
+    sleep 1; echo -n "."
+done
+
+# ── Summary ──────────────────────────────────────────────────────────────
+echo ""
+echo "=========================================="
+echo " Auth + Hub services running"
+echo "=========================================="
+echo ""
+echo "  Auth:          http://localhost:4000"
+echo "  Hub backend:   http://localhost:4006"
+echo "  Hub frontend:  http://localhost:5173"
+echo ""
+echo "These containers auto-restart on boot."
+echo "To develop legal, just run: sert-legal-start"
+echo ""
+echo "Management:"
+echo "  sert-services-up --status    # check status"
+echo "  sert-services-up --stop      # stop (won't auto-restart)"
+echo "  sert-services-up --pull      # pull latest images + restart"
+echo ""
