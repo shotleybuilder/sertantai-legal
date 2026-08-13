@@ -74,9 +74,9 @@ defmodule SertantaiLegal.MixProject do
       {:explorer, "~> 0.12"},
 
       # PDF extraction for second-tier source parsing (ACoPs, JSPs, standards)
-      # NIF-based — no musl/alpine precompile available, dev-only
-      {:extractous_ex, "~> 0.2", only: [:dev]},
-      {:pdf_elixide, "~> 0.5", only: [:dev]},
+      # NIF-based — no musl/alpine precompile available, excluded from prod
+      {:extractous_ex, "~> 0.2", only: [:dev, :test]},
+      {:pdf_elixide, "~> 0.5", only: [:dev, :test]},
 
       # Override: rustler is optional in explorer/zenohex/pdf_elixide (all precompiled)
       # but they pin incompatible versions. Since none compile from source, any version works.
