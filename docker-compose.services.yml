@@ -143,6 +143,12 @@ services:
     container_name: sertantai-hub-frontend
     depends_on:
       - hub-backend
+    environment:
+      # Runtime env injection — docker-entrypoint.sh writes these into env-config.js
+      - VITE_API_URL=http://localhost:4006
+      - VITE_LEGAL_URL=http://localhost:5175
+      - VITE_ENFORCEMENT_URL=http://localhost:5174
+      - VITE_CONTROLS_URL=http://localhost:5176
     ports:
       - "5173:3000"
     healthcheck:
