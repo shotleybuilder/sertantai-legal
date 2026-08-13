@@ -1,10 +1,18 @@
 ---
 session: Fix Live Test Hits
-status: active
+status: closed
 opened: 2026-08-13
+closed: 2026-08-13
+learnings:
+  - type: finding
+    text: "Taxa stage is NOT in StagedParser's default @stages list — it runs only when explicitly passed via stages: [..., :taxa] option, and runs in parallel via Task.async"
+  - type: pattern
+    text: "When testing StagedParser with taxa stage, must use async: false + Req.Test.set_req_test_to_shared() because Task.async spawns a process that needs to see stubs"
+  - type: rule
+    text: "AU scraper clients (act_client, nsw_feed_client, federal_client) now have test_mode gating via req_options/1 — any future tests must use Req.Test.stub/2"
 ---
 
-# Session: Fix Live Test Hits (ACTIVE)
+# Session: Fix Live Test Hits (CLOSED)
 
 ## Problem
 
@@ -17,7 +25,7 @@ opened: 2026-08-13
 - ✅ Delete `staged_parser_live_test.exs` (live tests replaced by mocks)
 - ✅ Add `test_mode` / `Req.Test` plug gating to AU scraper clients (act_client, nsw_feed_client, federal_client)
 - ✅ Run `mix test` to confirm all new tests pass and no live HTTP calls remain (195 scraper tests, 0 failures)
-- ⬜ Commit
+- ✅ Commit (5e45a77)
 
 ## Dependencies
 
