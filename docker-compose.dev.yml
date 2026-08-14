@@ -36,28 +36,8 @@ services:
       - "-c"
       - "max_wal_senders=10"
 
-  # ElectricSQL sync service (v1.0 - new HTTP Shape API)
-  electric:
-    container_name: sertantai-legal-electric
-    image: electricsql/electric:latest
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sertantai_legal_dev
-      HTTP_PORT: 3000
-      ELECTRIC_INSECURE: "true" # Development only! Use ELECTRIC_SECRET in production
-      ELECTRIC_ENABLE_INTEGRATION_TESTING: "true" # Enables DELETE /v1/shape for stale shape cleanup
-      PG_PROXY_PASSWORD: proxy_password # Secure in production!
-    ports:
-      - "3002:3000" # HTTP API for Shape-based sync (port 3002 to avoid conflicts)
-    networks:
-      - sertantai_legal_network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
-  # Note: The new Electric has built-in HTTP API, no separate proxy needed
-  # Auth/authorization should be handled by your backend API
-  # Electric Shapes can be filtered by organization_id for multi-tenancy
+  # ElectricSQL runs as an always-on service in docker-compose.services.yml (port 3002)
+  # Shared by legal + compliance frontends. Managed by: sert-services-up
 
   # Phoenix backend
   backend:
@@ -83,8 +63,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      electric:
-        condition: service_started
     restart: unless-stopped
     command: mix phx.server
 

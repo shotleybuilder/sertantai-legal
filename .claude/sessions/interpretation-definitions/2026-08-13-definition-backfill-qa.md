@@ -1,10 +1,10 @@
 ---
 session: Definition Backfill & QA
-status: active
+status: suspended
 opened: 2026-08-13
 ---
 
-# Session: Definition Backfill & QA (ACTIVE)
+# Session: Definition Backfill & QA (SUSPENDED)
 
 ## Problem
 
@@ -34,9 +34,43 @@ opened: 2026-08-13
 - ✅ Add `definitions_parsed_at` column to `legal_register` — set by StagedParser after parsing (even if no definitions found)
 - ✅ Create `mix definitions.backfill` task — fetch body XML, parse, upsert with dedup
 - ✅ Prove approach: 20-law batch, 0 errors, 437 definitions upserted
-- ⬜ Run full backfill (3,223 remaining unparsed making laws, ~1.8 hours)
-- ⬜ Run CSV scope backfill (`--scope csv`, 1,987 laws for scope improvement)
+- ✅ Backfill all 💙 safety families (747 laws, 0 errors, 12,416 defs upserted)
+- ⬜ Backfill 💚 environmental families (~2,500 remaining unparsed laws)
+- ⬜ Run CSV scope backfill (`--scope csv` for scope improvement on legacy data)
 - ⬜ Update NAS snapshot after backfill
+
+## Resume Notes
+
+**To continue backfilling environmental families**, run these commands one at a time:
+
+```bash
+cd backend
+mix definitions.backfill --family "AGRICULTURE"
+mix definitions.backfill --family "FISHERIES"
+mix definitions.backfill --family "WILDLIFE"
+mix definitions.backfill --family "ENERGY"
+mix definitions.backfill --family "Harbours"
+mix definitions.backfill --family "ANIMALS"
+mix definitions.backfill --family "WATER"
+mix definitions.backfill --family "ENVIRONMENTAL PROTECTION"
+mix definitions.backfill --family "WASTE"
+mix definitions.backfill --family "TOWN & COUNTRY"
+mix definitions.backfill --family "PLANNING & INFRASTRUCTURE"
+mix definitions.backfill --family "CLIMATE"
+mix definitions.backfill --family "PLANT HEALTH"
+mix definitions.backfill --family "MARINE"
+mix definitions.backfill --family "Roads & Vehicles"
+mix definitions.backfill --family "Railways"
+mix definitions.backfill --family "NUCLEAR"
+mix definitions.backfill --family "POLLUTION"
+mix definitions.backfill --family "Employment"
+```
+
+Check remaining with: `mix definitions.backfill --dry-run`
+
+After all families done, run CSV scope backfill: `mix definitions.backfill --scope csv`
+
+Then NAS snapshot: `./scripts/nas/nas-backup.sh --db-only`
 
 ## Dependencies
 

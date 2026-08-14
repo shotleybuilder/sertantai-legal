@@ -128,15 +128,25 @@ for i in $(seq 1 30); do
     sleep 1; echo -n "."
 done
 
+echo -n "Waiting for Electric (port 3002)..."
+for i in $(seq 1 30); do
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/v1/health 2>/dev/null | grep -qE "200|204"; then
+        echo " ready"; break
+    fi
+    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs legal-electric)"
+    sleep 1; echo -n "."
+done
+
 # ── Summary ──────────────────────────────────────────────────────────────
 echo ""
 echo "=========================================="
-echo " Auth + Hub services running"
+echo " Auth + Hub + Electric services running"
 echo "=========================================="
 echo ""
 echo "  Auth:          http://localhost:4000"
 echo "  Hub backend:   http://localhost:4006"
 echo "  Hub frontend:  http://localhost:5173"
+echo "  Electric:      http://localhost:3002"
 echo ""
 echo "These containers auto-restart on boot."
 echo "To develop legal, just run: sert-legal-start"

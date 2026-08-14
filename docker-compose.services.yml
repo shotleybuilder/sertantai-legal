@@ -64,6 +64,24 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # ── Electric (shared) ───────────────────────────────────────────────────
+  # Shared Electric sync service for legal + compliance frontends.
+  # Both services request different shapes from the same instance.
+  # Connects to legal's postgres (the shared DB on port 5436).
+
+  legal-electric:
+    image: electricsql/electric:latest
+    container_name: sertantai-legal-electric
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5436/sertantai_legal_dev
+      HTTP_PORT: 3000
+      ELECTRIC_INSECURE: "true"
+    ports:
+      - "3002:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
   # ── Hub ─────────────────────────────────────────────────────────────────
   # GHCR release images (backend + frontend). Same pattern as production.
 
