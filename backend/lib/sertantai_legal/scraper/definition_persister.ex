@@ -35,6 +35,12 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
   def persist(definitions, law_name) when is_list(definitions) and is_binary(law_name) do
     now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
+    # Deduplicate on (law_name, term) — last occurrence wins
+    definitions =
+      definitions
+      |> Enum.reduce(%{}, fn d, acc -> Map.put(acc, {d.law_name, d.term}, d) end)
+      |> Map.values()
+
     insert_maps =
       Enum.map(definitions, fn d ->
         %{
@@ -46,6 +52,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
           section_id: d.section_id,
           scope: scope_to_string(d.scope),
           references_other_law: d.references_other_law,
+          source: "parser",
           inserted_at: now,
           updated_at: now
         }
@@ -61,7 +68,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
             batch,
             on_conflict:
               {:replace,
-               [:term_welsh, :definition, :section_id, :scope, :references_other_law, :updated_at]},
+               [:term_welsh, :definition, :section_id, :scope, :references_other_law, :source, :updated_at]},
             conflict_target: [:law_name, :term]
           )
 

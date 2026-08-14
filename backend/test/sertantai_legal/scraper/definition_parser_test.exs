@@ -139,6 +139,67 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
 
   # ── Edge cases ─────────────────────────────────────────────────
 
+  # ── Inline definitions (fallback text scan) ────────────────────
+
+  describe "parse/2 with inline definitions (no Class='Definition' list)" do
+    test "extracts definitions from inline text in P2 elements" do
+      # Minimal XML with an inline definition (no UnorderedList Class="Definition")
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations \u201ccoarse fish\u201d means fish of the following species.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = SertantaiLegal.Scraper.DefinitionParser.parse(xml, %{law_name: "UK_nisr_2009_378", type_code: "nisr"})
+
+      assert length(defs) == 1
+      assert hd(defs).term == "coarse fish"
+      assert hd(defs).scope == :law
+      assert hd(defs).section_id == "regulation-2-1"
+    end
+
+    test "extracts multiple inline definitions from one P2" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-6">
+            <Pnumber>6</Pnumber>
+            <P1para>
+              <P2 id="regulation-6-4">
+                <Pnumber>4</Pnumber>
+                <P2para>
+                  <Text>In this regulation \u201cvehicle\u201d means a motor car; \u201cwagon\u201d means a goods vehicle.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = SertantaiLegal.Scraper.DefinitionParser.parse(xml, %{law_name: "UK_test_2024_1", type_code: "uksi"})
+
+      assert length(defs) == 2
+      terms = Enum.map(defs, & &1.term) |> Enum.sort()
+      assert terms == ["vehicle", "wagon"]
+      assert Enum.all?(defs, &(&1.scope == :provision))
+    end
+  end
+
+  # ── Edge cases ─────────────────────────────────────────────────
+
   describe "parse/2 edge cases" do
     test "returns empty list for XML with no Definition lists" do
       xml = read_fixture("body_uksi_2016_680.xml")

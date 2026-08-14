@@ -32,6 +32,9 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
                          "\\A\\s*\u201c([^\u201d]+)\u201d\\s*,\\s*\u201c([^\u201d]+)\u201d\\s+and\\s+\u201c([^\u201d]+)\u201d"
                        )
 
+  # Inline definition detection: text containing "term" means/includes/has the meaning
+  @inline_def_pattern Regex.compile!("\u201c[^\u201d]+\u201d\\s+(?:means|includes|has the)")
+
   # Cross-reference patterns — definition text references another law
   @cross_ref_patterns [
     ~r/has?\s+the\s+(same\s+)?meanings?\s+(?:as\s+)?(?:in|given|assigned|they\s+bear)/iu,
@@ -67,7 +70,19 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
     parsed = SweetXml.parse(xml, quiet: true)
 
-    # Find all Definition-class unordered lists
+    # Strategy 1: structured Class="Definition" lists (preferred)
+    results = parse_definition_lists(parsed, law_name, is_welsh)
+
+    # Strategy 2: fallback text scan for inline definitions
+    if results == [] do
+      parse_inline_definitions(parsed, law_name, is_welsh)
+    else
+      results
+    end
+  end
+
+  # Parse structured <UnorderedList Class="Definition"> elements
+  defp parse_definition_lists(parsed, law_name, is_welsh) do
     definition_lists =
       case xpath(parsed, ~x"//UnorderedList[@Class='Definition']"l) do
         nil -> []
@@ -88,6 +103,66 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
       items
       |> Enum.flat_map(fn item ->
         extract_definitions(item, law_name, section_id, scope, is_welsh)
+      end)
+    end)
+  end
+
+  # Fallback: scan all <Text> elements for inline "term" means... patterns
+  defp parse_inline_definitions(parsed, law_name, is_welsh) do
+    # Find P2 elements that contain definition-like text
+    p2_elements =
+      case xpath(parsed, ~x"//P2[@id]"l) do
+        nil -> []
+        list -> list
+      end
+
+    p2_elements
+    |> Enum.flat_map(fn p2 ->
+      section_id = xpath(p2, ~x"./@id"s)
+      full_text = extract_plain_text(p2)
+
+      # Check if this P2 contains definition patterns
+      if Regex.match?(@inline_def_pattern, full_text) do
+        scope = detect_scope(full_text)
+        extract_inline_defs(full_text, law_name, section_id, scope, is_welsh)
+      else
+        []
+      end
+    end)
+  end
+
+  # Extract multiple definitions from a block of inline text
+  # Text may look like: In these Regulations "term1" means def1; "term2" means def2;
+  defp extract_inline_defs(text, law_name, section_id, scope, is_welsh) do
+    # Split text on definition boundaries: each \u201cterm\u201d starts a new definition
+    # Use Regex.split to break text at each opening curly quote, keeping the delimiter
+    chunks =
+      Regex.split(
+        Regex.compile!("(?=\u201c)"),
+        text,
+        trim: true
+      )
+      |> Enum.filter(fn chunk ->
+        # Only keep chunks that start with a quoted term followed by means/includes/has
+        String.starts_with?(chunk, "\u201c") and
+          Regex.match?(@inline_def_pattern, chunk)
+      end)
+
+    chunks
+    |> Enum.flat_map(fn chunk ->
+      extract_terms_from_text(chunk, is_welsh)
+      |> Enum.map(fn {term, term_welsh, definition} ->
+        definition = clean_definition(definition)
+
+        %{
+          law_name: law_name,
+          term: normalise_term(term),
+          term_welsh: if(term_welsh, do: String.downcase(term_welsh)),
+          definition: definition,
+          section_id: section_id,
+          scope: scope,
+          references_other_law: references_other_law?(definition)
+        }
       end)
     end)
   end
@@ -137,6 +212,10 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   end
 
   # Strategy 1: Extract term from <Term> XML element (modern legislation.gov.uk)
+  #
+  # Note: xpath(.//text()sl) returns text nodes in wrong order when <Term> elements
+  # are present (term text appears at end). Instead, we get the Term text directly
+  # and extract the definition from Text nodes that follow the closing quote.
   defp extract_via_term_element(item) do
     case xpath(item, ~x".//Term/text()"s) do
       nil ->
@@ -146,22 +225,20 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         :no_term_element
 
       term_text ->
-        # Get full text of the item, then extract the definition part
-        # (everything after the closing quote following the term)
-        full_text = extract_plain_text(item)
+        # Get all direct text content from Text elements (not Term children)
+        # The XML is: <Text>"<Term>term</Term>" means definition...</Text>
+        # We want everything after the closing quote: " means definition..."
+        text_nodes = xpath(item, ~x".//Text/text()"sl) || []
 
-        # The full text looks like: \u201cterm\u201d means definition...
-        # Find the term and take everything after it
+        # Text nodes from <Text> contain the parts outside <Term>:
+        # typically ['"', '" means the Mines and Quarries Act 1954 ;']
+        # Join and extract the definition part after the closing quote
+        raw = Enum.join(text_nodes, "") |> String.replace(~r/\s+/, " ") |> String.trim()
+
         definition =
-          case Regex.run(
-                 Regex.compile!(
-                   "\u201c" <> Regex.escape(term_text) <> "\u201d\\s*(.*)$",
-                   "s"
-                 ),
-                 full_text
-               ) do
+          case Regex.run(Regex.compile!("\u201d\\s*(.*)$", "s"), raw) do
             [_, rest] -> strip_definition_prefix(rest)
-            _ -> strip_definition_prefix(full_text)
+            _ -> strip_definition_prefix(raw)
           end
 
         {:ok, term_text, definition}
@@ -169,25 +246,16 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   end
 
   # Extract plain text from an XML node in document order
-  # Recursively walks the xmerl tree collecting text nodes
   defp extract_plain_text(node) do
-    node
-    |> collect_text_nodes()
-    |> IO.iodata_to_binary()
+    # For ListItems with <Term> elements, xpath text() ordering can be wrong
+    # (term text at end instead of start). For those, extract_via_term_element
+    # handles it. For all other uses (inline definitions, scope detection),
+    # xpath gives correct ordering.
+    (xpath(node, ~x".//text()"sl) || [])
+    |> Enum.join("")
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
   end
-
-  # Recursively collect text content from xmerl nodes in document order
-  defp collect_text_nodes({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}) do
-    Enum.map(children, &collect_text_nodes/1)
-  end
-
-  defp collect_text_nodes({:xmlText, _, _, _, value, _}) do
-    to_string(value)
-  end
-
-  defp collect_text_nodes(_), do: ""
 
   # Strategy 2: Extract terms from curly-quoted text using regex (legacy XML)
   # Returns a list of {term, term_welsh, definition} tuples — may be multiple for paired terms

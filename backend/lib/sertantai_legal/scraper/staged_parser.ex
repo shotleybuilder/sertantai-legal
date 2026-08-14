@@ -1185,6 +1185,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # Definition sub-stage: extract definitions from body XML and persist
+  # Sets definitions_parsed_at on the legal_register record regardless of whether
+  # definitions were found (prevents re-parsing laws with no interpretation section).
   defp maybe_run_definition_substage(body_xml, type_code, record)
        when is_binary(body_xml) do
     law_name = IdField.normalize_to_db_name(record.name)
@@ -1201,6 +1203,12 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           IO.puts("    ✗ Definitions persist failed: #{reason}")
       end
     end
+
+    # Mark law as parsed for definitions (even if none found)
+    Repo.query(
+      "UPDATE legal_register SET definitions_parsed_at = NOW() WHERE name = $1",
+      [law_name]
+    )
   end
 
   defp maybe_run_definition_substage(_body_xml, _type_code, _record), do: :ok

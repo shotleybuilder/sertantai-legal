@@ -68,6 +68,12 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
       description("Whether the definition references another law for its meaning")
     end
 
+    attribute :source, :string do
+      allow_nil?(false)
+      default("csv_import")
+      description("Data provenance: csv_import (legacy legl), parser (sertantai extraction)")
+    end
+
     create_timestamp :inserted_at do
       description("Record creation timestamp")
     end
@@ -91,7 +97,8 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :definition,
         :section_id,
         :scope,
-        :references_other_law
+        :references_other_law,
+        :source
       ])
     end
 
@@ -106,6 +113,7 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :section_id,
         :scope,
         :references_other_law,
+        :source,
         :updated_at
       ])
 
@@ -116,7 +124,8 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :definition,
         :section_id,
         :scope,
-        :references_other_law
+        :references_other_law,
+        :source
       ])
     end
 
