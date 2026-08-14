@@ -11,6 +11,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     fractalaw/@{tenant}/data/legislation/lrt/{name}       -- single LRT by name
     fractalaw/@{tenant}/data/legislation/lat/{name}       -- LAT sections for a law
     fractalaw/@{tenant}/data/legislation/amendments/{name} -- annotations for a law
+    fractalaw/@{tenant}/data/legislation/definitions/{name} -- definitions for a law
     fractalaw/@{tenant}/data/secondary/sources            -- all secondary sources
     fractalaw/@{tenant}/data/secondary/sources/{source_id} -- single source metadata
     fractalaw/@{tenant}/data/secondary/provisions/{source_id} -- provisions for a source
@@ -28,6 +29,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     LegalRegister,
     Lat,
     AmendmentAnnotation,
+    LegislativeDefinition,
     SecondarySource,
     SecondarySourceProvision
   }
@@ -128,6 +130,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
           ^prefix <> "/amendments/" <> law_name ->
             fetch_amendments_by_law(law_name, format)
+
+          ^prefix <> "/definitions/" <> law_name ->
+            fetch_definitions_by_law(law_name, format)
 
           ^secondary_prefix <> "/sources" ->
             fetch_all_secondary_sources()
@@ -264,6 +269,29 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     amendments_to_arrow(records)
   end
 
+  defp fetch_definitions_by_law(law_name, :json) do
+    records =
+      from(d in LegislativeDefinition,
+        where: d.law_name == ^law_name,
+        order_by: [asc: d.term]
+      )
+      |> Repo.all()
+      |> Enum.map(&serialize_definition/1)
+
+    {:ok, Jason.encode!(records)}
+  end
+
+  defp fetch_definitions_by_law(law_name, :arrow) do
+    records =
+      from(d in LegislativeDefinition,
+        where: d.law_name == ^law_name,
+        order_by: [asc: d.term]
+      )
+      |> Repo.all()
+
+    definitions_to_arrow(records)
+  end
+
   # --- Serialization ---
 
   defp serialize_lrt(r) do
@@ -338,6 +366,20 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       source: r.source,
       affected_sections: r.affected_sections,
       updated_at: r.updated_at
+    }
+  end
+
+  defp serialize_definition(d) do
+    %{
+      id: d.id,
+      law_name: d.law_name,
+      term: d.term,
+      term_welsh: d.term_welsh,
+      definition: d.definition,
+      section_id: d.section_id,
+      scope: d.scope,
+      references_other_law: d.references_other_law,
+      updated_at: d.updated_at
     }
   end
 
@@ -477,6 +519,25 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     Explorer.DataFrame.dump_ipc_stream(df)
   end
 
+  defp definitions_to_arrow([]), do: {:ok, <<>>}
+
+  defp definitions_to_arrow(records) do
+    df =
+      Explorer.DataFrame.new(%{
+        id: Enum.map(records, & &1.id),
+        law_name: Enum.map(records, & &1.law_name),
+        term: Enum.map(records, & &1.term),
+        term_welsh: Enum.map(records, & &1.term_welsh),
+        definition: Enum.map(records, & &1.definition),
+        section_id: Enum.map(records, & &1.section_id),
+        scope: Enum.map(records, &to_string(&1.scope || "")),
+        references_other_law: Enum.map(records, & &1.references_other_law),
+        updated_at: Enum.map(records, & &1.updated_at)
+      })
+
+    Explorer.DataFrame.dump_ipc_stream(df)
+  end
+
   # --- Secondary Source Fetching ---
 
   defp fetch_all_secondary_sources do
@@ -597,6 +658,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       "#{prefix}/lrt/*",
       "#{prefix}/lat/*",
       "#{prefix}/amendments/*",
+      "#{prefix}/definitions/*",
       "#{secondary_prefix}/sources",
       "#{secondary_prefix}/sources/*",
       "#{secondary_prefix}/provisions/*",

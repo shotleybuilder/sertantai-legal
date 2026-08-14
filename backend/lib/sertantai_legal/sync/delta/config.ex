@@ -12,6 +12,7 @@ defmodule SertantaiLegal.Sync.Delta.Config do
     "uk_lrt" => [],
     "lat" => [],
     "amendment_annotations" => [],
+    "legislative_definitions" => [],
     "scrape_sessions" => [],
     "scrape_session_records" => [],
     "cascade_affected_laws" => []
@@ -36,6 +37,7 @@ defmodule SertantaiLegal.Sync.Delta.Config do
     ],
     "lat" => [],
     "amendment_annotations" => [],
+    "legislative_definitions" => [],
     "scrape_sessions" => [],
     "scrape_session_records" => [],
     "cascade_affected_laws" => []
@@ -64,25 +66,32 @@ defmodule SertantaiLegal.Sync.Delta.Config do
       order: 3
     },
     %{
+      name: "legislative_definitions",
+      resource: SertantaiLegal.Legal.LegislativeDefinition,
+      pk: "id",
+      timestamp_col: "updated_at",
+      order: 4
+    },
+    %{
       name: "scrape_sessions",
       resource: SertantaiLegal.Scraper.ScrapeSession,
       pk: "id",
       timestamp_col: "updated_at",
-      order: 4
+      order: 5
     },
     %{
       name: "scrape_session_records",
       resource: SertantaiLegal.Scraper.ScrapeSessionRecord,
       pk: "id",
       timestamp_col: "updated_at",
-      order: 5
+      order: 6
     },
     %{
       name: "cascade_affected_laws",
       resource: SertantaiLegal.Scraper.CascadeAffectedLaw,
       pk: "id",
       timestamp_col: "updated_at",
-      order: 6
+      order: 7
     }
   ]
 

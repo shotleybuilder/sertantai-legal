@@ -53,6 +53,10 @@ defmodule SertantaiLegalWeb.Router do
     post("/laws/batch-exists", UkLrtController, :batch_exists)
     get("/laws/:id", UkLrtController, :show)
 
+    # Legislative definitions (public reference data)
+    get("/definitions", DefinitionController, :index)
+    get("/definitions/search", DefinitionController, :search)
+
     # Zenoh query proxy (dev/internal — proxies GET to remote queryables)
     post("/zenoh/query", ZenohController, :proxy_query)
   end
