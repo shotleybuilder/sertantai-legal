@@ -40,6 +40,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Scraper.CommentaryParser
   alias SertantaiLegal.Scraper.CommentaryPersister
+  alias SertantaiLegal.Scraper.DefinitionParser
+  alias SertantaiLegal.Scraper.DefinitionPersister
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LatPersister
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
@@ -1114,6 +1116,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         lat_count = maybe_run_lat_substage(taxa_data, body_xml, type_code, year, number, record)
         taxa_data = Map.put(taxa_data, :lat_rows_count, lat_count)
 
+        # Definition sub-stage: extract definitions from body XML (all laws)
+        maybe_run_definition_substage(body_xml, type_code, record)
+
         %{status: :ok, data: taxa_data, error: nil}
 
       {:error, reason} ->
@@ -1178,6 +1183,27 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       end
     end
   end
+
+  # Definition sub-stage: extract definitions from body XML and persist
+  defp maybe_run_definition_substage(body_xml, type_code, record)
+       when is_binary(body_xml) do
+    law_name = IdField.normalize_to_db_name(record.name)
+    definitions = DefinitionParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
+
+    if definitions == [] do
+      IO.puts("    ○ Definitions: none found in body XML")
+    else
+      case DefinitionPersister.persist(definitions, law_name) do
+        {:ok, %{upserted: upserted}} ->
+          IO.puts("    ✓ Definitions: #{upserted} upserted from body XML")
+
+        {:error, reason} ->
+          IO.puts("    ✗ Definitions persist failed: #{reason}")
+      end
+    end
+  end
+
+  defp maybe_run_definition_substage(_body_xml, _type_code, _record), do: :ok
 
   # Look up the uk_lrt database ID for a given law_name
   defp lookup_law_id(law_name) do
