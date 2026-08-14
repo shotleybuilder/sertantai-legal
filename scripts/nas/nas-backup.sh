@@ -39,6 +39,7 @@ TABLES=(
   sync_profiles
   sync_configurations
   organizations
+  legislative_definitions
   scrape_sessions
   scrape_session_records
   cascade_affected_laws

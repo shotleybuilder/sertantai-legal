@@ -21,6 +21,19 @@ TABLES=(
   legal_articles_uk
   legal_articles_au
   amendment_annotations
+  controls
+  control_mappings
+  secondary_sources
+  source_links
+  secondary_source_provisions
+  org_applicabilities
+  org_secondary_applicabilities
+  org_screening_profiles
+  org_entitlements
+  sync_profiles
+  sync_configurations
+  organizations
+  legislative_definitions
   scrape_sessions
   scrape_session_records
   cascade_affected_laws
@@ -50,8 +63,7 @@ all_ok=true
 for table in "${TABLES[@]}"; do
   dump_file="${SNAPSHOT_DIR}/${table}.dump"
   if [ ! -f "$dump_file" ]; then
-    echo "  MISSING: ${table}.dump"
-    all_ok=false
+    echo "  SKIP: ${table}.dump (not in snapshot)"
     continue
   fi
 
@@ -95,6 +107,10 @@ fi
 echo ""
 for table in "${TABLES[@]}"; do
   dump_file="${SNAPSHOT_DIR}/${table}.dump"
+  if [ ! -f "$dump_file" ]; then
+    continue
+  fi
+
   expected_rows=$(jq -r ".tables.\"${table}\".rows" "${SNAPSHOT_DIR}/manifest.json")
 
   echo -n "  ${table} (${expected_rows} rows)... "
