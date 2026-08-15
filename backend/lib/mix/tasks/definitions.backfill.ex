@@ -19,6 +19,7 @@ defmodule Mix.Tasks.Definitions.Backfill do
     * `--scope all` — All making laws not fully revoked
     * `--family FAMILY` — Filter by family (e.g. "OH&S")
     * `--law LAW_NAME` — Parse a single law (for testing)
+    * `--file PATH` — Read law names from a file (one per line)
     * `--limit N` — Process at most N laws
     * `--dry-run` — Show which laws would be processed, don't fetch or write
     * `--force` — Ignore definitions_parsed_at, re-parse even if already done
@@ -27,6 +28,9 @@ defmodule Mix.Tasks.Definitions.Backfill do
 
       # Parse a single law (test)
       mix definitions.backfill --law UK_uksi_1992_3004
+
+      # Parse a batch of laws from a file
+      mix definitions.backfill --file /tmp/reparse_batch_aa --force
 
       # Backfill first 10 unparsed making laws
       mix definitions.backfill --limit 10
@@ -56,6 +60,7 @@ defmodule Mix.Tasks.Definitions.Backfill do
           scope: :string,
           family: :string,
           law: :string,
+          file: :string,
           limit: :integer,
           dry_run: :boolean,
           force: :boolean
@@ -66,11 +71,12 @@ defmodule Mix.Tasks.Definitions.Backfill do
     scope = Keyword.get(opts, :scope, "unparsed")
     family = Keyword.get(opts, :family)
     single_law = Keyword.get(opts, :law)
+    file = Keyword.get(opts, :file)
     limit = Keyword.get(opts, :limit)
     dry_run? = Keyword.get(opts, :dry_run, false)
     force? = Keyword.get(opts, :force, false)
 
-    laws = fetch_target_laws(scope, family, single_law, limit, force?)
+    laws = fetch_target_laws(scope, family, single_law, file, limit, force?)
 
     Mix.shell().info("""
 
@@ -97,7 +103,7 @@ defmodule Mix.Tasks.Definitions.Backfill do
     end
   end
 
-  defp fetch_target_laws(scope, family, single_law, limit, force?) do
+  defp fetch_target_laws(scope, family, single_law, file, limit, force?) do
     cond do
       single_law ->
         # Single law mode
@@ -107,6 +113,30 @@ defmodule Mix.Tasks.Definitions.Backfill do
              ) do
           {:ok, %{rows: [[name, type_code]]}} -> [{name, type_code}]
           _ -> Mix.raise("Law not found: #{single_law}")
+        end
+
+      file ->
+        # File mode — read law names from file, look up type_codes
+        names =
+          file
+          |> File.read!()
+          |> String.split("\n", trim: true)
+          |> Enum.map(&String.trim/1)
+          |> Enum.reject(&(&1 == ""))
+
+        if names == [], do: Mix.raise("File is empty: #{file}")
+
+        placeholders = Enum.map_join(1..length(names), ", ", &"$#{&1}")
+
+        sql =
+          "SELECT name, type_code FROM legal_register WHERE name IN (#{placeholders}) ORDER BY name"
+
+        case Repo.query(sql, names) do
+          {:ok, %{rows: rows}} ->
+            Enum.map(rows, fn [name, type_code] -> {name, type_code} end)
+
+          {:error, err} ->
+            Mix.raise("Query failed: #{inspect(err)}")
         end
 
       true ->
@@ -183,8 +213,8 @@ defmodule Mix.Tasks.Definitions.Backfill do
       laws
       |> Enum.with_index(1)
       |> Enum.reduce(%{success: 0, no_defs: 0, errors: 0, total_defs: 0}, fn {{name, type_code},
-                                                                                idx},
-                                                                               stats ->
+                                                                              idx},
+                                                                             stats ->
         [_, _tc, year, number] = String.split(name, "_", parts: 4)
         path = "/#{type_code}/#{year}/#{number}/body/data.xml"
 
@@ -207,9 +237,7 @@ defmodule Mix.Tasks.Definitions.Backfill do
                     {:ok, count}
 
                   {:error, reason} ->
-                    Mix.shell().info(
-                      "  [#{idx}/#{total}] #{name} — persist error: #{reason}"
-                    )
+                    Mix.shell().info("  [#{idx}/#{total}] #{name} — persist error: #{reason}")
 
                     :error
                 end

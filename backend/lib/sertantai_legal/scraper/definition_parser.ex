@@ -169,7 +169,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
   # Extract definitions from a ListItem element (may return multiple for paired terms)
   defp extract_definitions(item, law_name, section_id, scope, is_welsh) do
-    # Try <Term> element first (modern XML), fall back to regex on text
+    # Try <Term> element first, then <Abbreviation>, then regex on plain text
     case extract_via_term_element(item) do
       {:ok, term, definition_text} ->
         definition = clean_definition(definition_text)
@@ -187,8 +187,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         ]
 
       :no_term_element ->
-        # Legacy XML — extract from plain text using regex
-        raw_text = extract_plain_text(item)
+        # Try <Abbreviation> element (law title abbreviations), then plain text
+        raw_text =
+          case extract_text_with_abbreviations(item) do
+            {:ok, text} -> text
+            :no_abbreviation -> extract_plain_text(item)
+          end
 
         if raw_text == "" do
           []
@@ -243,6 +247,58 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
         {:ok, term_text, definition}
     end
+  end
+
+  # Strategy 2: Reconstruct text when <Abbreviation> elements are present
+  #
+  # xpath(.//Text/text()) returns only direct text children of <Text>, skipping
+  # child element content. For:
+  #   <Text>\u201cthe <Abbreviation>2004 Act</Abbreviation>\u201d means ...</Text>
+  # it returns ["\u201cthe ", "\u201d means ..."] — missing "2004 Act".
+  #
+  # This function inserts Abbreviation text in the correct position.
+  defp extract_text_with_abbreviations(item) do
+    abbrev_texts =
+      case xpath(item, ~x".//Abbreviation/text()"sl) do
+        nil -> []
+        list -> list
+      end
+
+    if abbrev_texts == [] do
+      :no_abbreviation
+    else
+      text_parts = xpath(item, ~x".//Text/text()"sl) || []
+
+      # Interleave: each Abbreviation sits between consecutive text parts
+      # Text parts: [before_abbrev_1, after_abbrev_1_before_abbrev_2, ...]
+      # Abbreviations: [abbrev_1, abbrev_2, ...]
+      full_text = interleave_text_parts(text_parts, abbrev_texts)
+
+      text =
+        full_text
+        |> String.replace(~r/\s+/, " ")
+        |> String.trim()
+
+      if text == "", do: :no_abbreviation, else: {:ok, text}
+    end
+  end
+
+  # Interleave text node parts with abbreviation texts in document order
+  # Text parts come from direct children of <Text>, abbreviations from child elements
+  defp interleave_text_parts([], abbrevs), do: Enum.join(abbrevs, "")
+  defp interleave_text_parts(texts, []), do: Enum.join(texts, "")
+
+  defp interleave_text_parts([first_text | rest_texts], abbrevs) do
+    # Each abbreviation sits after one text part
+    {pairs, remaining_texts} =
+      Enum.reduce(abbrevs, {[first_text], rest_texts}, fn abbrev, {acc, texts} ->
+        case texts do
+          [next | rest] -> {acc ++ [abbrev, next], rest}
+          [] -> {acc ++ [abbrev], []}
+        end
+      end)
+
+    Enum.join(pairs ++ remaining_texts, "")
   end
 
   # Extract plain text from an XML node in document order

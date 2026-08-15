@@ -1,10 +1,10 @@
 ---
 session: Definition Backfill & QA
-status: suspended
+status: active
 opened: 2026-08-13
 ---
 
-# Session: Definition Backfill & QA (SUSPENDED)
+# Session: Definition Backfill & QA (ACTIVE)
 
 ## Problem
 

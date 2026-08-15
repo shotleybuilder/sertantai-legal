@@ -162,7 +162,11 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       </Legislation>
       """
 
-      defs = SertantaiLegal.Scraper.DefinitionParser.parse(xml, %{law_name: "UK_nisr_2009_378", type_code: "nisr"})
+      defs =
+        SertantaiLegal.Scraper.DefinitionParser.parse(xml, %{
+          law_name: "UK_nisr_2009_378",
+          type_code: "nisr"
+        })
 
       assert length(defs) == 1
       assert hd(defs).term == "coarse fish"
@@ -189,7 +193,11 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       </Legislation>
       """
 
-      defs = SertantaiLegal.Scraper.DefinitionParser.parse(xml, %{law_name: "UK_test_2024_1", type_code: "uksi"})
+      defs =
+        SertantaiLegal.Scraper.DefinitionParser.parse(xml, %{
+          law_name: "UK_test_2024_1",
+          type_code: "uksi"
+        })
 
       assert length(defs) == 2
       terms = Enum.map(defs, & &1.term) |> Enum.sort()
@@ -225,6 +233,203 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
         refute String.ends_with?(d.definition, ";"),
                "Definition for '#{d.term}' should not end with semicolon"
       end
+    end
+  end
+
+  # ── Abbreviation element handling ─────────────────────────────
+  # legislation.gov.uk wraps abbreviated law titles in <Abbreviation> elements:
+  #   \u201cthe <Abbreviation Expansion="...">2004 Act</Abbreviation>\u201d means ...
+  # The parser must extract the full quoted term, not produce an empty term.
+
+  describe "parse/2 with <Abbreviation> elements" do
+    test "extracts term from curly-quoted text wrapping an Abbreviation element" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cthe <Abbreviation Expansion="Housing Act 2004 c. 34">2004 Act</Abbreviation>\u201d means the Housing Act 2004;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2007_1667", type_code: "uksi"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "2004 act"
+      assert String.contains?(d.definition, "Housing Act 2004")
+      assert d.references_other_law == true
+    end
+
+    test "extracts term when Abbreviation has long expansion attribute" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cthe <Abbreviation Expansion="Health and Safety at Work (Northern Ireland) Order 1978 (S.I. 1978/1039 (N.I. 9))">1978 Order</Abbreviation>\u201d means the Health and Safety at Work (Northern Ireland) Order 1978;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_nisr_1994_1", type_code: "nisr"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "1978 order"
+      assert String.contains?(d.definition, "Health and Safety at Work")
+    end
+
+    test "handles mix of Abbreviation and plain definitions in same list" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cthe <Abbreviation Expansion="Housing Act 2004 c. 34">2004 Act</Abbreviation>\u201d means the Housing Act 2004;</Text>
+                      </Para>
+                    </ListItem>
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cresidential property\u201d means a building used wholly for residential purposes;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_test_abbrev_1", type_code: "uksi"})
+
+      assert length(defs) == 2
+      terms = Enum.map(defs, & &1.term) |> Enum.sort()
+      assert terms == ["2004 act", "residential property"]
+    end
+
+    test "no definition has an empty or nil term" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In this Order\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cthe <Abbreviation Expansion="Merchant Shipping Act 1995 c. 21">1995 Act</Abbreviation>\u201d means the Merchant Shipping Act 1995;</Text>
+                      </Para>
+                    </ListItem>
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cthe <Abbreviation Expansion="Corporation of Trinity House of Deptford Strond">Trinity House</Abbreviation>\u201d means the Corporation of Trinity House of Deptford Strond;</Text>
+                      </Para>
+                    </ListItem>
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cvessel\u201d means a ship or boat;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_1998_683", type_code: "uksi"})
+
+      assert length(defs) == 3
+
+      for d <- defs do
+        assert d.term != nil, "term should not be nil for #{inspect(d.definition)}"
+        assert d.term != "", "term should not be empty for #{inspect(d.definition)}"
+
+        assert String.trim(d.term) != "",
+               "term should not be whitespace for #{inspect(d.definition)}"
+      end
+    end
+
+    test "handles EU regulation Abbreviation with number prefix" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Abbreviation Expansion="Council Directive 92/43/EEC on the conservation of natural habitats and of wild fauna and flora">the Habitats Directive</Abbreviation>\u201d means Council Directive 92/43/EEC on the conservation of natural habitats and of wild fauna and flora;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_nisr_2001_435", type_code: "nisr"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "habitats directive"
+      assert String.contains?(d.definition, "Council Directive 92/43/EEC")
     end
   end
 end
