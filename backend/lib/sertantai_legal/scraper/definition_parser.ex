@@ -35,6 +35,9 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   # Inline definition detection: text containing "term" means/includes/has the meaning
   @inline_def_pattern Regex.compile!("\u201c[^\u201d]+\u201d\\s+(?:means|includes|has the)")
 
+  # Citation pattern — term is a law title abbreviation (e.g. "1961 act", "principal regulations")
+  @citation_pattern ~r/\A\d{4}\s+(act|order|regulations?|rules?|directive|code|scheme|measure|charter|convention|treaty|statute)s?\z|\A(principal|amending|original)\s+(act|order|regulations?|rules?|directive)\z/iu
+
   # Cross-reference patterns — definition text references another law
   @cross_ref_patterns [
     ~r/has?\s+the\s+(same\s+)?meanings?\s+(?:as\s+)?(?:in|given|assigned|they\s+bear)/iu,
@@ -93,6 +96,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     |> Enum.flat_map(fn def_list ->
       section_id = find_section_id(def_list, parsed)
       scope = detect_scope_from_context(def_list, parsed)
+      delegated_def = detect_delegated_preamble(def_list, parsed)
 
       items =
         case xpath(def_list, ~x"./ListItem"l) do
@@ -102,7 +106,20 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
       items
       |> Enum.flat_map(fn item ->
-        extract_definitions(item, law_name, section_id, scope, is_welsh)
+        defs = extract_definitions(item, law_name, section_id, scope, is_welsh)
+
+        # For delegated definitions with empty definition text, use the preamble
+        if delegated_def do
+          Enum.map(defs, fn d ->
+            if d.definition == nil or d.definition == "" do
+              %{d | definition: delegated_def, references_other_law: true}
+            else
+              d
+            end
+          end)
+        else
+          defs
+        end
       end)
     end)
   end
@@ -161,7 +178,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
           definition: definition,
           section_id: section_id,
           scope: scope,
-          references_other_law: references_other_law?(definition)
+          references_other_law: references_other_law?(definition),
+          citation: citation?(normalise_term(term))
         }
       end)
     end)
@@ -171,10 +189,10 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   defp extract_definitions(item, law_name, section_id, scope, is_welsh) do
     # Try <Term> element first, then <Abbreviation>, then regex on plain text
     case extract_via_term_element(item) do
-      {:ok, term, definition_text} ->
+      {:ok, terms, definition_text} ->
         definition = clean_definition(definition_text)
 
-        [
+        Enum.map(List.wrap(terms), fn term ->
           %{
             law_name: law_name,
             term: normalise_term(term),
@@ -182,9 +200,10 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
             definition: definition,
             section_id: section_id,
             scope: scope,
-            references_other_law: references_other_law?(definition)
+            references_other_law: references_other_law?(definition),
+            citation: citation?(normalise_term(term))
           }
-        ]
+        end)
 
       :no_term_element ->
         # Try <Abbreviation> element (law title abbreviations), then plain text
@@ -208,44 +227,67 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
               definition: definition,
               section_id: section_id,
               scope: scope,
-              references_other_law: references_other_law?(definition)
+              references_other_law: references_other_law?(definition),
+              citation: citation?(normalise_term(term))
             }
           end)
         end
     end
   end
 
-  # Strategy 1: Extract term from <Term> XML element (modern legislation.gov.uk)
+  # Strategy 1: Extract term(s) from <Term> XML element(s) (modern legislation.gov.uk)
   #
   # Note: xpath(.//text()sl) returns text nodes in wrong order when <Term> elements
   # are present (term text appears at end). Instead, we get the Term text directly
   # and extract the definition from Text nodes that follow the closing quote.
+  #
+  # Handles paired terms: multiple <Term> elements in one ListItem produce
+  # multiple definitions sharing the same definition text.
   defp extract_via_term_element(item) do
-    case xpath(item, ~x".//Term/text()"s) do
-      nil ->
+    # Get each <Term> element, then extract full text (including child elements
+    # like <Acronym>) by walking the xmerl tree in document order.
+    term_elements =
+      case xpath(item, ~x".//Term"l) do
+        nil -> []
+        list -> list
+      end
+
+    term_texts =
+      term_elements
+      |> Enum.map(fn term_el ->
+        xmerl_text(term_el) |> String.replace(~r/\s+/, " ") |> String.trim()
+      end)
+      |> Enum.reject(&(&1 == ""))
+
+    case term_texts do
+      [] ->
         :no_term_element
 
-      "" ->
-        :no_term_element
-
-      term_text ->
+      terms ->
         # Get all direct text content from Text elements (not Term children)
         # The XML is: <Text>"<Term>term</Term>" means definition...</Text>
-        # We want everything after the closing quote: " means definition..."
+        # We want everything after the last closing quote: " means definition..."
         text_nodes = xpath(item, ~x".//Text/text()"sl) || []
 
         # Text nodes from <Text> contain the parts outside <Term>:
         # typically ['"', '" means the Mines and Quarries Act 1954 ;']
-        # Join and extract the definition part after the closing quote
+        # Join and extract the definition part after the last closing quote
         raw = Enum.join(text_nodes, "") |> String.replace(~r/\s+/, " ") |> String.trim()
 
+        # Find definition after the last closing curly quote
+        last_quote_pattern = Regex.compile!("\u201d[^\"\u201c\u201d]*$", "su")
+        leading_quote_pattern = Regex.compile!("\\A\u201d\\s*")
+
         definition =
-          case Regex.run(Regex.compile!("\u201d\\s*(.*)$", "s"), raw) do
-            [_, rest] -> strip_definition_prefix(rest)
-            _ -> strip_definition_prefix(raw)
+          case Regex.run(last_quote_pattern, raw) do
+            [last_part] ->
+              strip_definition_prefix(Regex.replace(leading_quote_pattern, last_part, ""))
+
+            _ ->
+              strip_definition_prefix(raw)
           end
 
-        {:ok, term_text, definition}
+        {:ok, terms, definition}
     end
   end
 
@@ -300,6 +342,20 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
     Enum.join(pairs ++ remaining_texts, "")
   end
+
+  # Walk xmerl tree in true document order, concatenating all text nodes.
+  # Unlike xpath(.//text()), this preserves the position of child element text
+  # relative to surrounding text (e.g. <Term><Acronym>CEN</Acronym>/TS</Term>
+  # correctly yields "CEN/TS" not "/TSCEN").
+  defp xmerl_text(node) when is_tuple(node) do
+    case elem(node, 0) do
+      :xmlText -> to_string(elem(node, 4))
+      :xmlElement -> elem(node, 8) |> Enum.map_join("", &xmerl_text/1)
+      _ -> ""
+    end
+  end
+
+  defp xmerl_text(_), do: ""
 
   # Extract plain text from an XML node in document order
   defp extract_plain_text(node) do
@@ -368,9 +424,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     |> String.trim()
   end
 
-  # Normalise term: lowercase, strip leading articles
+  # Normalise term: strip quotes, amendment markers, lowercase, strip leading articles
+  @quotes_pattern Regex.compile!("[\"'`\u201c\u201d\u2018\u2019]", "u")
   defp normalise_term(term) do
     term
+    |> String.replace(@quotes_pattern, "")
+    |> String.replace(~r/\.\s*\.\s*\.\s*|\x{2026}/u, "")
     |> String.downcase()
     |> String.replace(~r/\A(?:the|a|an)\s+/u, "")
     |> String.trim()
@@ -392,6 +451,9 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   defp references_other_law?(definition) do
     Enum.any?(@cross_ref_patterns, &Regex.match?(&1, definition))
   end
+
+  # Check if a term is a law citation (e.g. "1961 act", "principal regulations")
+  defp citation?(term), do: Regex.match?(@citation_pattern, term)
 
   # Find the section_id from the nearest P2 or P1 ancestor
   defp find_section_id(def_list, parsed) do
@@ -458,6 +520,47 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     end
     |> String.trim()
     |> String.slice(0, 40)
+  end
+
+  # Detect if a definition list is delegated ("have the meanings given by...")
+  # Returns the preamble text as a definition string, or nil.
+  @delegated_pattern Regex.compile!(
+                       "(?:have|has)\\s+the\\s+(?:same\\s+)?meanings?\\s+(?:given|assigned|as)\\s+(?:by|in|to)\\s+",
+                       "iu"
+                     )
+  defp detect_delegated_preamble(def_list, parsed) do
+    fingerprint = first_item_fingerprint(def_list)
+
+    if fingerprint == "" do
+      nil
+    else
+      p2_elements =
+        case xpath(parsed, ~x"//P2[@id]"l) do
+          nil -> []
+          list -> list
+        end
+
+      case Enum.find(p2_elements, fn p2 ->
+             p2_text = xpath(p2, ~x".//text()"s) || ""
+             String.contains?(p2_text, fingerprint)
+           end) do
+        nil ->
+          nil
+
+        p2 ->
+          preamble = xpath(p2, ~x"./P2para/Text/text()"s) || ""
+
+          if Regex.match?(@delegated_pattern, preamble) do
+            # Extract the meaningful part: "have the meanings given by Article 2 of Regulation 996/2010"
+            preamble
+            |> String.replace(~r/\A.*?(?=(?:have|has)\s+the\s+)/iu, "")
+            |> String.replace(Regex.compile!("[\\-\u2014]\s*$"), "")
+            |> String.trim()
+          else
+            nil
+          end
+      end
+    end
   end
 
   defp detect_scope(text) do

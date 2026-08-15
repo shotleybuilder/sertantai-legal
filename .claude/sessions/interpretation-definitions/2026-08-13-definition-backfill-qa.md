@@ -1,10 +1,10 @@
 ---
 session: Definition Backfill & QA
-status: active
+status: suspended
 opened: 2026-08-13
 ---
 
-# Session: Definition Backfill & QA (ACTIVE)
+# Session: Definition Backfill & QA (SUSPENDED)
 
 ## Problem
 
@@ -35,42 +35,47 @@ opened: 2026-08-13
 - ✅ Create `mix definitions.backfill` task — fetch body XML, parse, upsert with dedup
 - ✅ Prove approach: 20-law batch, 0 errors, 437 definitions upserted
 - ✅ Backfill all 💙 safety families (747 laws, 0 errors, 12,416 defs upserted)
-- ⬜ Backfill 💚 environmental families (~2,500 remaining unparsed laws)
+- ✅ Backfill 💚 environmental families + all remaining making laws (0 errors)
+- ✅ Fix parser: `<Abbreviation>` elements causing 472 empty-term records
+- ✅ Re-parse 472 affected laws, delete orphaned empty-term records
+- ✅ Add `--file` flag to backfill task for batch re-parsing
+- ✅ Fix parser: strip all quote types (curly, straight, backtick) from terms
+- ✅ Fix parser: multiple `<Term>` elements in one ListItem (paired terms via `<Term>`)
+- ✅ Fix parser: `<Acronym>` child elements inside `<Term>` (xmerl tree walker)
+- ✅ Fix parser: strip `...` and `…` amendment markers from terms
+- ✅ Add `citation` boolean column — flags law title abbreviations (e.g. "1961 act")
+- ✅ Backfill citation flag (3,691 records) + parser now sets it automatically
+- ✅ Fix parser: delegated definitions — preamble text as definition for "meanings given by..." lists
+- ✅ Re-parsed 100 laws to restore empty-def records for investigation
+- ⬜ Investigate 1,086 empty-definition parser records across 89 laws (non-citation, real parser bugs)
+- ⬜ Fix 7 UTF-8 encoding errors in persister (truncated multi-byte sequences)
 - ⬜ Run CSV scope backfill (`--scope csv` for scope improvement on legacy data)
 - ⬜ Update NAS snapshot after backfill
 
 ## Resume Notes
 
-**To continue backfilling environmental families**, run these commands one at a time:
+**Status (2026-08-15)**: All making laws backfilled (66K+ definitions). Parser fixes committed but not pushed. 1,086 empty-definition records remain across 89 laws — these are **parser bugs to investigate**, not deletable noise.
 
-```bash
-cd backend
-mix definitions.backfill --family "AGRICULTURE"
-mix definitions.backfill --family "FISHERIES"
-mix definitions.backfill --family "WILDLIFE"
-mix definitions.backfill --family "ENERGY"
-mix definitions.backfill --family "Harbours"
-mix definitions.backfill --family "ANIMALS"
-mix definitions.backfill --family "WATER"
-mix definitions.backfill --family "ENVIRONMENTAL PROTECTION"
-mix definitions.backfill --family "WASTE"
-mix definitions.backfill --family "TOWN & COUNTRY"
-mix definitions.backfill --family "PLANNING & INFRASTRUCTURE"
-mix definitions.backfill --family "CLIMATE"
-mix definitions.backfill --family "PLANT HEALTH"
-mix definitions.backfill --family "MARINE"
-mix definitions.backfill --family "Roads & Vehicles"
-mix definitions.backfill --family "Railways"
-mix definitions.backfill --family "NUCLEAR"
-mix definitions.backfill --family "POLLUTION"
-mix definitions.backfill --family "Employment"
-```
+**Uncommitted changes**: Parser fixes + citation column. Run `git status` to see, then commit and push.
 
-Check remaining with: `mix definitions.backfill --dry-run`
+**Next step: investigate empty-definition parser bugs**
 
-After all families done, run CSV scope backfill: `mix definitions.backfill --scope csv`
+1. legislation.gov.uk was down (504) when we suspended. Wait for it to come back.
+2. Query the empty-def records: `SELECT term, law_name FROM legislative_definitions WHERE (definition IS NULL OR trim(definition) = '') AND source = 'parser' AND citation = false ORDER BY law_name;`
+3. Pick a law (e.g. `UK_uksi_1975_2116` — has "best practicable means" with empty def), fetch its body XML, and examine what the Definition list looks like.
+4. The pattern is: parser extracts the term from the ListItem but fails to extract the definition text. TDD: write a test with the failing XML, fix the parser, re-parse affected laws.
+5. After fixing, delete any remaining genuinely empty records.
 
-Then NAS snapshot: `./scripts/nas/nas-backup.sh --db-only`
+**After empty-def fix**:
+- Run CSV scope backfill: `mix definitions.backfill --scope csv`
+- NAS snapshot: `./scripts/nas/nas-backup.sh --db-only`
+
+**DB stats (2026-08-15)**:
+- Total definitions: ~65K (after 1,160 empty deletions + re-parse)
+- Parser-extracted: ~55K, CSV legacy: ~11K
+- Citation flagged: 3,691
+- Empty definitions: 1,086 (bug — to fix)
+- Null scope: ~41%
 
 ## Dependencies
 

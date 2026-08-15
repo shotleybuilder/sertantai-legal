@@ -52,6 +52,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
           section_id: d.section_id,
           scope: scope_to_string(d.scope),
           references_other_law: d.references_other_law,
+          citation: d[:citation] || false,
           source: "parser",
           inserted_at: now,
           updated_at: now
@@ -68,7 +69,16 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
             batch,
             on_conflict:
               {:replace,
-               [:term_welsh, :definition, :section_id, :scope, :references_other_law, :source, :updated_at]},
+               [
+                 :term_welsh,
+                 :definition,
+                 :section_id,
+                 :scope,
+                 :references_other_law,
+                 :citation,
+                 :source,
+                 :updated_at
+               ]},
             conflict_target: [:law_name, :term]
           )
 

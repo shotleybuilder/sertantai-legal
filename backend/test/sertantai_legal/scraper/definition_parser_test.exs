@@ -432,4 +432,202 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert String.contains?(d.definition, "Council Directive 92/43/EEC")
     end
   end
+
+  # ── Curly quotes in <Term> text ───────────────────────────────
+  # Some older XML has curly quotes inside the <Term> element:
+  #   <Text>"<Term>"approved place"</Term>" means ...</Text>
+  # The parser must strip quotes from the term.
+
+  describe "parse/2 with curly quotes inside <Term> elements" do
+    test "strips curly quotes from term text" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Term id="term-approved-place">\u201capproved place\u201d</Term>\u201d means a place approved by the Secretary of State;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_1979_628", type_code: "uksi"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "approved place"
+      refute String.contains?(d.term, "\u201c")
+      refute String.contains?(d.term, "\u201d")
+    end
+
+    test "handles multiple <Term> elements in one ListItem (paired terms)" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Term id="term-employer">\u201cemployer\u201d</Term>\u201d means, in relation to any person, the employer of that person and \u201c<Term id="term-employers">\u201cemployers\u201d</Term>\u201d shall be construed accordingly;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_1979_628", type_code: "uksi"})
+
+      assert length(defs) == 2
+      terms = Enum.map(defs, & &1.term) |> Enum.sort()
+      assert terms == ["employer", "employers"]
+    end
+  end
+
+  # ── Child elements inside <Term> ──────────────────────────────
+  # Some <Term> elements contain child elements like <Acronym>:
+  #   <Term><Acronym>CEN</Acronym>/TS 15359:2006</Term>
+  # The parser must reconstruct the full term text in document order.
+
+  describe "parse/2 with child elements inside <Term>" do
+    test "reconstructs term from <Acronym> child element in correct order" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Term id="term-cents-15359"><Acronym>CEN</Acronym>/TS 15359:2006</Term>\u201d means the document identified by Standard Number DD CEN/TS 15359;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_ssi_2009_140", type_code: "ssi"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "cen/ts 15359:2006"
+    end
+  end
+
+  # ── Delegated definitions ─────────────────────────────────────
+  # Some definition lists delegate meaning to another law:
+  #   "the following words have the meanings given by Article 2 of Regulation 996/2010—"
+  #   <ListItem>"accident";</ListItem>
+  #   <ListItem>"incident";</ListItem>
+  # The parser must use the preamble text as the definition, not leave it empty.
+
+  describe "parse/2 with delegated definitions" do
+    test "uses preamble text as definition for delegated meaning lists" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-2">
+                <Pnumber>2</Pnumber>
+                <P2para>
+                  <Text>In these Regulations the following words and expressions have the meanings given by Article 2 of Regulation 996/2010\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem><Para><Text>\u201caccident\u201d;</Text></Para></ListItem>
+                    <ListItem><Para><Text>\u201cincident\u201d;</Text></Para></ListItem>
+                    <ListItem><Para><Text>\u201cserious incident\u201d.</Text></Para></ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_uksi_2018_321", type_code: "uksi"})
+
+      assert length(defs) == 3
+      terms = Enum.map(defs, & &1.term) |> Enum.sort()
+      assert terms == ["accident", "incident", "serious incident"]
+
+      for d <- defs do
+        assert d.definition != nil
+        assert d.definition != ""
+        assert String.contains?(d.definition, "Regulation 996/2010")
+        assert d.references_other_law == true
+      end
+    end
+
+    test "uses preamble for 'same meaning as in' delegated lists" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In this Order the following expressions have the same meaning as in the Factories Act 1961\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem><Para><Text>\u201cfactory\u201d;</Text></Para></ListItem>
+                    <ListItem><Para><Text>\u201cworkplace\u201d.</Text></Para></ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_uksi_1981_569", type_code: "uksi"})
+
+      assert length(defs) == 2
+
+      for d <- defs do
+        assert String.contains?(d.definition, "Factories Act 1961")
+        assert d.references_other_law == true
+      end
+    end
+  end
 end

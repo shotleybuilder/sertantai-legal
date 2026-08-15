@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
   end
 
   attributes do
-    uuid_primary_key :id
+    uuid_primary_key(:id)
 
     attribute :law_name, :string do
       allow_nil?(false)
@@ -68,6 +68,15 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
       description("Whether the definition references another law for its meaning")
     end
 
+    attribute :citation, :boolean do
+      allow_nil?(false)
+      default(false)
+
+      description(
+        "Whether the term is a law citation (e.g. '1961 act') rather than a substantive definition"
+      )
+    end
+
     attribute :source, :string do
       allow_nil?(false)
       default("csv_import")
@@ -98,6 +107,7 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :section_id,
         :scope,
         :references_other_law,
+        :citation,
         :source
       ])
     end
@@ -113,6 +123,7 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :section_id,
         :scope,
         :references_other_law,
+        :citation,
         :source,
         :updated_at
       ])
@@ -125,6 +136,7 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :section_id,
         :scope,
         :references_other_law,
+        :citation,
         :source
       ])
     end
