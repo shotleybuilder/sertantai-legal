@@ -83,6 +83,19 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
       description("Data provenance: csv_import (legacy legl), parser (sertantai extraction)")
     end
 
+    attribute :root_definition_id, :uuid do
+      allow_nil?(true)
+      description("Self-FK to the originating definition this one cross-references")
+    end
+
+    attribute :referenced_law_citation, :string do
+      allow_nil?(true)
+
+      description(
+        "Extracted citation text from cross-ref definitions, e.g. 'Scotland Act 1998 s.126(1)'"
+      )
+    end
+
     create_timestamp :inserted_at do
       description("Record creation timestamp")
     end
@@ -108,7 +121,9 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :scope,
         :references_other_law,
         :citation,
-        :source
+        :source,
+        :root_definition_id,
+        :referenced_law_citation
       ])
     end
 
@@ -125,6 +140,8 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :references_other_law,
         :citation,
         :source,
+        :root_definition_id,
+        :referenced_law_citation,
         :updated_at
       ])
 
@@ -137,7 +154,9 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :scope,
         :references_other_law,
         :citation,
-        :source
+        :source,
+        :root_definition_id,
+        :referenced_law_citation
       ])
     end
 
@@ -158,6 +177,20 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
       argument(:term, :string, allow_nil?: false)
       argument(:law_name, :string, allow_nil?: false)
       filter(expr(term == ^arg(:term) and law_name == ^arg(:law_name)))
+    end
+  end
+
+  relationships do
+    belongs_to :root_definition, __MODULE__ do
+      attribute_type(:uuid)
+      source_attribute(:root_definition_id)
+      allow_nil?(true)
+      define_attribute?(false)
+    end
+
+    has_many :derivations, __MODULE__ do
+      source_attribute(:id)
+      destination_attribute(:root_definition_id)
     end
   end
 

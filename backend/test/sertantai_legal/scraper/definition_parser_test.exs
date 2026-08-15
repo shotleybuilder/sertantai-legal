@@ -508,6 +508,61 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── Section-level definitions (Term in P2 text, no Definition list) ───
+  # Some Acts define terms in substantive sections, not Interpretation sections.
+  # e.g. NRSWA 1991 s.49: "In this Part "the street authority" means..."
+  # The <Term> element appears inside running <Text> in a P2, with no
+  # UnorderedList Class="Definition" wrapper.
+
+  describe "parse/2 with section-level definitions (Term in P2 text)" do
+    test "extracts definition from Term element in running P2 text" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="section-49">
+            <Pnumber>49</Pnumber>
+            <P1para>
+              <P2 id="section-49-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In this Part \u201c<Term id="term-the-street-authority">the street authority</Term>\u201d in relation to a street means, subject to the following provisions\u2014</Text>
+                  <P3 id="section-49-1-a">
+                    <Pnumber>a</Pnumber>
+                    <P3para><Text>if the street is a maintainable highway, the highway authority, and</Text></P3para>
+                  </P3>
+                  <P3 id="section-49-1-b">
+                    <Pnumber>b</Pnumber>
+                    <P3para><Text>if the street is not a maintainable highway, the street managers.</Text></P3para>
+                  </P3>
+                </P2para>
+              </P2>
+              <P2 id="section-49-4">
+                <Pnumber>4</Pnumber>
+                <P2para>
+                  <Text>In this Part the expression \u201c<Term id="term-street-managers">street managers</Term>\u201d, used in relation to a street which is not a maintainable highway, means the authority, body or person liable to the public to maintain or repair the street.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_ukpga_1991_22", type_code: "ukpga"})
+
+      assert length(defs) == 2
+
+      sa = Enum.find(defs, &(&1.term == "street authority"))
+      assert sa != nil, "Expected 'street authority' to be extracted"
+      assert sa.scope == :part
+      assert String.contains?(sa.definition, "maintainable highway")
+
+      sm = Enum.find(defs, &(&1.term == "street managers"))
+      assert sm != nil, "Expected 'street managers' to be extracted"
+      assert String.contains?(sm.definition, "liable to the public")
+    end
+  end
+
   # ── Child elements inside <Term> ──────────────────────────────
   # Some <Term> elements contain child elements like <Acronym>:
   #   <Term><Acronym>CEN</Acronym>/TS 15359:2006</Term>

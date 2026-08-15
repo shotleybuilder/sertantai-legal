@@ -76,12 +76,23 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     # Strategy 1: structured Class="Definition" lists (preferred)
     results = parse_definition_lists(parsed, law_name, is_welsh)
 
-    # Strategy 2: fallback text scan for inline definitions
-    if results == [] do
-      parse_inline_definitions(parsed, law_name, is_welsh)
-    else
-      results
-    end
+    # Strategy 2: fallback text scan for inline definitions (only if S1 found nothing)
+    results =
+      if results == [] do
+        parse_inline_definitions(parsed, law_name, is_welsh)
+      else
+        results
+      end
+
+    # Strategy 3: <Term> elements in running text outside Definition lists
+    # (e.g. NRSWA 1991 s.49 defines "street authority" in a regular provision)
+    # Always runs — complements S1/S2 with section-level definitions
+    existing_terms = MapSet.new(results, & &1.term)
+    section_defs = parse_section_term_definitions(parsed, law_name, is_welsh)
+
+    # Only add terms not already found by S1/S2
+    new_defs = Enum.reject(section_defs, fn d -> MapSet.member?(existing_terms, d.term) end)
+    results ++ new_defs
   end
 
   # Parse structured <UnorderedList Class="Definition"> elements
@@ -122,6 +133,73 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         end
       end)
     end)
+  end
+
+  # Strategy 3: Find <Term> elements in P2 text outside Definition lists.
+  # These are section-level definitions like NRSWA 1991 s.49:
+  #   <Text>In this Part "<Term>the street authority</Term>" means...</Text>
+  defp parse_section_term_definitions(parsed, law_name, _is_welsh) do
+    (xpath(parsed, ~x"//P2[@id]"l) || [])
+    |> Enum.flat_map(&extract_section_terms(&1, law_name))
+  end
+
+  defp extract_section_terms(p2, law_name) do
+    section_id = xpath(p2, ~x"./@id"s)
+    term_elements = xpath(p2, ~x".//Term"l) || []
+    # Use xmerl_text for correct document-order text (extract_plain_text reorders Term text)
+    full_text = xmerl_text(p2) |> String.replace(~r/\s+/, " ") |> String.trim()
+
+    with [_ | _] <- term_elements,
+         true <- Regex.match?(~r/\bmeans\b|\bhas the (?:same )?meaning/iu, full_text) do
+      scope = detect_scope(full_text)
+
+      term_elements
+      |> Enum.map(fn el -> xmerl_text(el) |> String.replace(~r/\s+/, " ") |> String.trim() end)
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.flat_map(&build_section_def(&1, full_text, law_name, section_id, scope))
+    else
+      _ -> []
+    end
+  end
+
+  defp build_section_def(term_text, full_text, law_name, section_id, scope) do
+    case extract_definition_after_term(full_text, term_text) do
+      "" ->
+        []
+
+      definition ->
+        definition = clean_definition(definition)
+
+        [
+          %{
+            law_name: law_name,
+            term: normalise_term(term_text),
+            term_welsh: nil,
+            definition: definition,
+            section_id: section_id,
+            scope: scope,
+            references_other_law: references_other_law?(definition),
+            citation: citation?(normalise_term(term_text))
+          }
+        ]
+    end
+  end
+
+  @def_after_term_suffix ~S'[\x{201d}"]*[\s,]*(?:(?:in relation to|used in relation to|for the purposes of)[^,]+,?\s*)?(?:means|has the (?:same )?meaning[^,]*)\s*,?\s*(.*)'
+
+  defp extract_definition_after_term(full_text, term_text) do
+    pattern = Regex.escape(term_text) <> @def_after_term_suffix
+
+    case Regex.compile(pattern, "isu") do
+      {:ok, re} ->
+        case Regex.run(re, full_text) do
+          [_, def_text] -> String.trim(def_text)
+          _ -> ""
+        end
+
+      _ ->
+        ""
+    end
   end
 
   # Fallback: scan all <Text> elements for inline "term" means... patterns

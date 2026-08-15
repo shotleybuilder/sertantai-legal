@@ -206,8 +206,13 @@ defmodule Mix.Tasks.Definitions.Backfill do
     end
   end
 
+  @log_path "data/definitions_backfill.log"
+
   defp process_laws(laws) do
     total = length(laws)
+    log_path = Path.join(File.cwd!(), @log_path)
+    log = File.open!(log_path, [:write, :utf8])
+    log_line(log, "Backfill started: #{total} laws")
 
     stats =
       laws
@@ -225,26 +230,32 @@ defmodule Mix.Tasks.Definitions.Backfill do
                 DefinitionParser.parse(xml, %{law_name: name, type_code: type_code})
 
               if definitions == [] do
-                IO.write("  [#{idx}/#{total}] #{name} — no definitions\r")
+                msg = "[#{idx}/#{total}] #{name} — no definitions"
+                IO.write("  #{msg}\r")
+                log_line(log, msg)
                 {:ok, 0}
               else
                 case DefinitionPersister.persist(definitions, name) do
                   {:ok, %{upserted: count}} ->
-                    IO.write(
-                      "  [#{idx}/#{total}] #{name} — #{count} definitions (#{length(definitions)} parsed)\r"
-                    )
+                    msg =
+                      "[#{idx}/#{total}] #{name} — #{count} definitions (#{length(definitions)} parsed)"
 
+                    IO.write("  #{msg}\r")
+                    log_line(log, msg)
                     {:ok, count}
 
                   {:error, reason} ->
-                    Mix.shell().info("  [#{idx}/#{total}] #{name} — persist error: #{reason}")
-
+                    msg = "[#{idx}/#{total}] #{name} — persist error: #{reason}"
+                    Mix.shell().info("  #{msg}")
+                    log_line(log, msg)
                     :error
                 end
               end
 
             {:error, code, msg} ->
-              Mix.shell().info("  [#{idx}/#{total}] #{name} — fetch error: #{code} #{msg}")
+              line = "[#{idx}/#{total}] #{name} — fetch error: #{code} #{msg}"
+              Mix.shell().info("  #{line}")
+              log_line(log, line)
               :error
           end
 
@@ -266,14 +277,23 @@ defmodule Mix.Tasks.Definitions.Backfill do
         end
       end)
 
-    Mix.shell().info("""
-
+    summary = """
     ── Backfill Complete ──────────────────────────
     Laws processed:      #{total}
     With definitions:    #{stats.success}
     No definitions:      #{stats.no_defs}
     Errors:              #{stats.errors}
     Total defs upserted: #{stats.total_defs}
-    """)
+    """
+
+    Mix.shell().info(summary)
+    log_line(log, summary)
+    File.close(log)
+    Mix.shell().info("  Log: #{@log_path}")
+  end
+
+  defp log_line(log, msg) do
+    timestamp = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    IO.write(log, "#{timestamp} #{msg}\n")
   end
 end
