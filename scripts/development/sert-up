@@ -1,18 +1,17 @@
 #!/bin/bash
-# Bootstrap auth + hub dev containers from GHCR release images.
+# Start/stop always-on dev containers: auth, hub, electric.
 #
+# These auto-restart on boot (restart: unless-stopped).
 # First-time: pulls images, creates volumes, starts everything.
-# Subsequent: just ensures containers are running.
-# After reboot: containers auto-restart (restart: unless-stopped).
 #
 # Usage:
-#   sert-services-up              # Start (or verify running)
-#   sert-services-up --pull       # Pull latest GHCR images first
-#   sert-services-up --status     # Show container status only
-#   sert-services-up --stop       # Stop all service containers
+#   sert-up              # Start (or verify running)
+#   sert-up --pull       # Pull latest GHCR images first
+#   sert-up --status     # Show container status only
+#   sert-up --stop       # Stop all service containers
 #
 # Symlink:
-#   sudo ln -sf $(pwd)/scripts/development/sert-services-up /usr/local/bin/sert-services-up
+#   sudo ln -sf $(pwd)/scripts/development/sert-up /usr/local/bin/sert-up
 
 set -e
 
@@ -40,10 +39,10 @@ if [ "$STATUS_ONLY" = true ]; then
 fi
 
 if [ "$STOP_ALL" = true ]; then
-    echo "Stopping auth + hub service containers..."
+    echo "Stopping service containers..."
     docker compose -f "$COMPOSE_FILE" stop
     echo ""
-    echo "Containers stopped. They will NOT auto-restart until you run: sert-services-up"
+    echo "Containers stopped. They will NOT auto-restart until you run: sert-up"
     exit 0
 fi
 
@@ -60,9 +59,7 @@ if [ ! -f "$PROJECT_ROOT/.env" ]; then
     exit 1
 fi
 
-# ── Ensure original volumes exist ────────────────────────────────────────
-# The compose uses external volumes from the auth/hub repos.
-# Create them if they don't exist yet (first-time setup).
+# ── Ensure external volumes exist ────────────────────────────────────────
 for vol in sertantai-auth_postgres_data sertantai-hub_postgres_data; do
     if ! docker volume inspect "$vol" >/dev/null 2>&1; then
         echo "Creating volume: $vol"
@@ -95,29 +92,30 @@ fi
 
 # ── Start containers ─────────────────────────────────────────────────────
 echo ""
-echo "Starting auth + hub services..."
+echo "Starting services..."
 cd "$PROJECT_ROOT"
 docker compose -f "$COMPOSE_FILE" up -d
 
 # ── Wait for health ─────────────────────────────────────────────────────
 echo ""
-echo -n "Waiting for auth (port 4000)..."
-for i in $(seq 1 30); do
-    if curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/health 2>/dev/null | grep -q "200"; then
-        echo " ready"; break
-    fi
-    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs auth)"
-    sleep 1; echo -n "."
-done
 
-echo -n "Waiting for hub backend (port 4006)..."
-for i in $(seq 1 45); do
-    if curl -s -o /dev/null -w "%{http_code}" http://localhost:4006/health 2>/dev/null | grep -q "200"; then
-        echo " ready"; break
-    fi
-    [ "$i" -eq 45 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs hub-backend)"
-    sleep 1; echo -n "."
-done
+wait_for() {
+    local label="$1" url="$2" timeout="$3" hint="$4"
+    echo -n "Waiting for $label..."
+    for i in $(seq 1 "$timeout"); do
+        if curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null | grep -qE "200|204"; then
+            echo " ready"; return 0
+        fi
+        [ "$i" -eq "$timeout" ] && echo " timeout (check: $hint)"
+        sleep 1; echo -n "."
+    done
+}
+
+wait_for "auth (port 4000)" "http://localhost:4000/health" 30 \
+    "docker compose -f docker-compose.services.yml logs auth"
+
+wait_for "hub backend (port 4006)" "http://localhost:4006/health" 45 \
+    "docker compose -f docker-compose.services.yml logs hub-backend"
 
 echo -n "Waiting for hub frontend (port 5173)..."
 for i in $(seq 1 30); do
@@ -128,19 +126,13 @@ for i in $(seq 1 30); do
     sleep 1; echo -n "."
 done
 
-echo -n "Waiting for Electric (port 3002)..."
-for i in $(seq 1 30); do
-    if curl -s -o /dev/null -w "%{http_code}" http://localhost:3002/v1/health 2>/dev/null | grep -qE "200|204"; then
-        echo " ready"; break
-    fi
-    [ "$i" -eq 30 ] && echo " timeout (check: docker compose -f docker-compose.services.yml logs legal-electric)"
-    sleep 1; echo -n "."
-done
+wait_for "electric (port 3002)" "http://localhost:3002/v1/health" 30 \
+    "docker compose -f docker-compose.services.yml logs legal-electric"
 
 # ── Summary ──────────────────────────────────────────────────────────────
 echo ""
 echo "=========================================="
-echo " Auth + Hub + Electric services running"
+echo " Services running"
 echo "=========================================="
 echo ""
 echo "  Auth:          http://localhost:4000"
@@ -149,10 +141,10 @@ echo "  Hub frontend:  http://localhost:5173"
 echo "  Electric:      http://localhost:3002"
 echo ""
 echo "These containers auto-restart on boot."
-echo "To develop legal, just run: sert-legal-start"
+echo "To develop legal: sert-dev"
 echo ""
 echo "Management:"
-echo "  sert-services-up --status    # check status"
-echo "  sert-services-up --stop      # stop (won't auto-restart)"
-echo "  sert-services-up --pull      # pull latest images + restart"
+echo "  sert-up --status    # check status"
+echo "  sert-up --stop      # stop (won't auto-restart)"
+echo "  sert-up --pull      # pull latest images + restart"
 echo ""

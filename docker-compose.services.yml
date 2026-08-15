@@ -4,7 +4,7 @@
 # Mirrors the production pattern from sertantai-stack — GHCR release
 # images configured via environment variables.
 #
-# First-time setup:  ./scripts/development/sert-services-up
+# First-time setup:  ./scripts/development/sert-up
 # After that:        containers auto-restart on boot (restart: unless-stopped)
 #
 # Manual:

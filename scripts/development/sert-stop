@@ -1,0 +1,62 @@
+#!/bin/bash
+# Stop sertantai-legal backend + frontend.
+#
+# Usage:
+#   sert-stop             # Stop legal servers only (Docker stays running)
+#   sert-stop --docker    # Also stop legal postgres container
+#
+# Symlink:
+#   sudo ln -sf $(pwd)/scripts/development/sert-stop /usr/local/bin/sert-stop
+
+set -e
+
+MANAGE_DOCKER=false
+for arg in "$@"; do
+    case $arg in
+        --docker) MANAGE_DOCKER=true ;;
+    esac
+done
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+echo "Stopping sertantai-legal..."
+
+# ── Kill backend (port 4003) ────────────────────────────────────────────
+if lsof -ti:4003 >/dev/null 2>&1; then
+    echo "  Stopping backend (port 4003)..."
+    lsof -ti:4003 | xargs kill -9 2>/dev/null || true
+    sleep 0.5
+else
+    echo "  Backend not running"
+fi
+
+# ── Kill frontend (port 5175) ───────────────────────────────────────────
+if lsof -ti:5175 >/dev/null 2>&1; then
+    echo "  Stopping frontend (port 5175)..."
+    lsof -ti:5175 | xargs kill -9 2>/dev/null || true
+    sleep 0.5
+else
+    echo "  Frontend not running"
+fi
+
+# ── Clean up BEAM processes ─────────────────────────────────────────────
+if pgrep -f "beam.smp.*sertantai_legal" > /dev/null; then
+    echo "  Cleaning up BEAM VM..."
+    pkill -9 -f "beam.smp.*sertantai_legal" || true
+fi
+
+# ── Stop legal postgres if requested ────────────────────────────────────
+if [ "$MANAGE_DOCKER" = true ]; then
+    echo "  Stopping legal postgres..."
+    cd "$PROJECT_ROOT"
+    docker compose -f docker-compose.dev.yml stop
+fi
+
+echo ""
+echo "Stopped."
+if [ "$MANAGE_DOCKER" != true ]; then
+    echo "  Postgres still running. Use --docker to stop it too."
+fi
+echo "  To restart: sert-dev"
+echo ""

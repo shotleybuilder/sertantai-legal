@@ -37,7 +37,7 @@ services:
       - "max_wal_senders=10"
 
   # ElectricSQL runs as an always-on service in docker-compose.services.yml (port 3002)
-  # Shared by legal + compliance frontends. Managed by: sert-services-up
+  # Shared by legal + compliance frontends. Managed by: sert-up
 
   # Phoenix backend
   backend:

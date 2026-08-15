@@ -1,0 +1,139 @@
+#!/bin/bash
+# Start sertantai-legal backend + frontend in terminal tabs.
+#
+# Prerequisite: shared services running (sert-up).
+# Auto-starts legal postgres if not running.
+#
+# Usage:
+#   sert-dev              # Start backend + frontend
+#   sert-dev --zenoh      # Enable Zenoh P2P mesh
+#
+# Symlink:
+#   sudo ln -sf $(pwd)/scripts/development/sert-dev /usr/local/bin/sert-dev
+
+set -e
+
+ENABLE_ZENOH=false
+for arg in "$@"; do
+    case $arg in
+        --zenoh) ENABLE_ZENOH=true ;;
+    esac
+done
+
+# ── Terminal emulator detection ──────────────────────────────────────────
+if command -v gnome-terminal &>/dev/null; then
+    TERMINAL_CMD="gnome-terminal"
+elif command -v ptyxis &>/dev/null; then
+    TERMINAL_CMD="ptyxis"
+else
+    echo "Error: No supported terminal emulator found (gnome-terminal or ptyxis)"
+    exit 1
+fi
+
+open_tab() {
+    local title="$1" dir="$2" cmd="$3"
+    if [ "$TERMINAL_CMD" = "gnome-terminal" ]; then
+        gnome-terminal --tab --title="$title" --working-directory="$dir" -- bash -c "$cmd" &
+    else
+        local tmpscript
+        tmpscript=$(mktemp /tmp/ptyxis-tab-XXXXXX.sh)
+        cat > "$tmpscript" << TABEOF
+#!/bin/bash -l
+cd "$dir"
+$cmd
+rm -f "$tmpscript"
+TABEOF
+        chmod +x "$tmpscript"
+        ptyxis --tab -T "$title" -x "$tmpscript" &
+    fi
+}
+
+# ── Resolve paths ────────────────────────────────────────────────────────
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+
+if [ ! -f "$PROJECT_ROOT/backend/mix.exs" ]; then
+    echo "Error: backend/mix.exs not found in $PROJECT_ROOT"
+    exit 1
+fi
+
+# ── Check for already-running servers ────────────────────────────────────
+if lsof -ti:4003 >/dev/null 2>&1; then
+    echo "Backend already running on port 4003. Run sert-stop first."
+    exit 1
+fi
+if lsof -ti:5175 >/dev/null 2>&1; then
+    echo "Frontend already running on port 5175. Run sert-stop first."
+    exit 1
+fi
+
+# ── Check shared services ───────────────────────────────────────────────
+echo "Checking shared services..."
+SERVICES_OK=true
+
+check_service() {
+    local label="$1" url="$2"
+    if curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null | grep -qE "200|204"; then
+        echo "  $label: running"
+    else
+        echo "  $label: NOT running"
+        SERVICES_OK=false
+    fi
+}
+
+check_service "Auth     (4000)" "http://localhost:4000/health"
+check_service "Hub      (4006)" "http://localhost:4006/health"
+check_service "Electric (3002)" "http://localhost:3002/v1/health"
+
+if [ "$SERVICES_OK" = false ]; then
+    echo ""
+    echo "  Run 'sert-up' to start shared services first."
+    echo ""
+fi
+
+# ── Start legal postgres if needed ───────────────────────────────────────
+if ! docker ps --format '{{.Names}}' | grep -q "sertantai-legal-postgres"; then
+    echo ""
+    echo "Starting legal postgres..."
+    cd "$PROJECT_ROOT"
+    docker compose -f docker-compose.dev.yml up -d postgres
+    echo -n "  Waiting for postgres..."
+    for i in $(seq 1 15); do
+        if docker compose -f docker-compose.dev.yml exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+            echo " ready"; break
+        fi
+        [ "$i" -eq 15 ] && echo " timeout"
+        sleep 1; echo -n "."
+    done
+else
+    echo "  Postgres  (5436): running"
+fi
+
+# ── Open terminal tabs ──────────────────────────────────────────────────
+echo ""
+echo "Opening terminal tabs..."
+
+ZENOH_ENV=""
+ZENOH_ECHO=""
+if [ "$ENABLE_ZENOH" = true ]; then
+    ZENOH_ENV="ZENOH_ENABLED=true ZENOH_TENANT=dev "
+    ZENOH_ECHO='echo "Zenoh P2P: enabled"; '
+fi
+
+BACKEND_CMD="${ZENOH_ECHO}echo 'Starting Phoenix backend on port 4003...'; unset DATABASE_URL; ${ZENOH_ENV}mix phx.server; echo ''; echo 'Stopped. Press Enter to close...'; read"
+open_tab "legal-backend" "$PROJECT_ROOT/backend" "$BACKEND_CMD"
+sleep 0.3
+
+FRONTEND_CMD="echo 'Starting SvelteKit frontend on port 5175...'; npm run dev; echo ''; echo 'Stopped. Press Enter to close...'; read"
+open_tab "legal-frontend" "$PROJECT_ROOT/frontend" "$FRONTEND_CMD"
+
+echo ""
+echo "  Backend:   http://localhost:4003"
+echo "  Frontend:  http://localhost:5175"
+echo "  Electric:  http://localhost:3002"
+if [ "$ENABLE_ZENOH" = true ]; then
+    echo "  Zenoh:     enabled (tenant=dev)"
+fi
+echo ""
+echo "To stop: sert-stop"
+echo ""
