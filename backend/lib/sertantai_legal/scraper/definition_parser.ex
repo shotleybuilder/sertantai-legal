@@ -94,11 +94,15 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     # Strategy 3: <Term> elements in running text outside Definition lists
     # (e.g. NRSWA 1991 s.49 defines "street authority" in a regular provision)
     # Always runs — complements S1/S2 with section-level definitions
-    existing_terms = MapSet.new(results, & &1.term)
+    existing_keys = MapSet.new(results, &{&1.term, &1.section_id})
     section_defs = parse_section_term_definitions(parsed, law_name, is_welsh)
 
-    # Only add terms not already found by S1/S2
-    new_defs = Enum.reject(section_defs, fn d -> MapSet.member?(existing_terms, d.term) end)
+    # Only add terms not already found by S1/S2 at the same section
+    new_defs =
+      Enum.reject(section_defs, fn d ->
+        MapSet.member?(existing_keys, {d.term, d.section_id})
+      end)
+
     results ++ new_defs
   end
 
@@ -245,7 +249,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     end
   end
 
-  @def_after_term_suffix ~S'[\x{201d}"]*[\s,]*(?:(?:in relation to|used in relation to|for the purposes of)[^,]+,?\s*)?(?:means|has the (?:same )?meaning[^,]*)\s*,?\s*(.*)'
+  @def_after_term_suffix ~S'[\x{201d}"]*[\s,]*(?:(?:in relation to|used in relation to|for the purposes of)[^,]+,?\s*)?(?:means|has the (?:same )?meaning(?:\s+(?:given|assigned|specified|set out))?(?:\s+(?:by|in|to|under))?)\s*,?\s*(.*)'
 
   defp extract_definition_after_term(full_text, term_text) do
     pattern = Regex.escape(term_text) <> @def_after_term_suffix

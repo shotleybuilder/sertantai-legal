@@ -309,7 +309,21 @@ defmodule SertantaiLegal.Scraper.RootResolver do
         resolve_with_citation(pronoun_citation, def_row, title_index, def_index)
 
       internal_ref?(definition) ->
-        {:internal, %{id: def_row.id}}
+        # Try self-referential linking: same term at a different section in the same law
+        case Map.get(def_index, {def_row.law_name, def_row.term}) do
+          nil ->
+            {:internal, %{id: def_row.id}}
+
+          root_ids ->
+            # Exclude self (the delegated def pointing to the root)
+            other_ids = Enum.reject(root_ids, &(&1 == def_row.id))
+
+            if other_ids == [] do
+              {:internal, %{id: def_row.id}}
+            else
+              {:resolved, %{id: def_row.id, citation: nil, root_ids: other_ids}}
+            end
+        end
 
       true ->
         case extract_citation(definition, def_row.law_name, citation_index) do
@@ -378,7 +392,9 @@ defmodule SertantaiLegal.Scraper.RootResolver do
 
   # Match abbreviation-style references like "the Waste Directive", "the 2004 Act"
   # by looking up the abbreviation in the citation_index for this law.
-  @abbreviation_re ~r/(?:the\s+)(\w[\w\s]*(?:Directive|Convention|Treaty|Code))\b/u
+  # Match "the <Capitalised Words> Directive/Convention/Treaty/Code"
+  # Uses [A-Z]\w* to anchor on capitalised words, preventing greedy match on lowercase like "same meaning as in"
+  @abbreviation_re ~r/\bthe\s+([A-Z]\w*(?:\s+[A-Z]\w*)*\s+(?:Directive|Convention|Treaty|Code))\b/u
   defp extract_abbreviation_citation(definition, law_name, citation_index) do
     case Regex.run(@abbreviation_re, definition) do
       [_full, abbrev] ->

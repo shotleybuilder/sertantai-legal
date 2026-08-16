@@ -78,13 +78,13 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       %{defs: defs}
     end
 
-    test "extracts 55 definitions from 2 Definition lists (including paired terms)", %{defs: defs} do
-      assert length(defs) == 55
+    test "extracts 55+ definitions from Definition lists plus body section terms", %{defs: defs} do
+      assert length(defs) >= 55
     end
 
-    test "definitions come from two different sections", %{defs: defs} do
+    test "definitions come from multiple sections", %{defs: defs} do
       section_ids = defs |> Enum.map(& &1.section_id) |> Enum.uniq() |> Enum.sort()
-      assert length(section_ids) == 2
+      assert length(section_ids) >= 2
       assert "regulation-2-1" in section_ids
     end
 
@@ -785,6 +785,73 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── Same term in Definition list AND body section ─────────────
+  # A Definition list may have a delegated def ("has the meaning given in
+  # regulation 6") while regulation 6 has the actual definition via <Term>.
+  # Both should be extracted — different section_ids.
+
+  describe "parse/2 extracts both delegated and root definitions for same term" do
+    test "extracts root definition from body section when delegated def exists in Definition list" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Term id="term-local-authority">local authority</Term>\u201d has the meaning given in regulation 6;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+          <P1 id="regulation-6">
+            <Pnumber>6</Pnumber>
+            <P1para>
+              <P2 id="regulation-6-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations, \u201c<Term id="term-local-authority-2">local authority</Term>\u201d means\u2014</Text>
+                  <P3 id="regulation-6-1-a">
+                    <Pnumber>a</Pnumber>
+                    <P3para><Text>a district council,</Text></P3para>
+                  </P3>
+                  <P3 id="regulation-6-1-b">
+                    <Pnumber>b</Pnumber>
+                    <P3para><Text>a county council.</Text></P3para>
+                  </P3>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2016_1154", type_code: "uksi"})
+
+      la_defs = Enum.filter(defs, &(&1.term == "local authority"))
+
+      assert length(la_defs) == 2,
+             "Expected 2 'local authority' definitions, got #{length(la_defs)}"
+
+      sections = Enum.map(la_defs, & &1.section_id) |> Enum.sort()
+      assert "regulation-2-1" in sections
+      assert "regulation-6-1" in sections
+
+      root = Enum.find(la_defs, &(&1.section_id == "regulation-6-1"))
+      assert String.contains?(root.definition, "district council")
+    end
+  end
+
   # ── Child elements inside <Term> ──────────────────────────────
   # Some <Term> elements contain child elements like <Acronym>:
   #   <Term><Acronym>CEN</Acronym>/TS 15359:2006</Term>
@@ -949,6 +1016,40 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       coll = Enum.find(defs, &(&1.term == "collection"))
       assert coll != nil, "Expected 'collection' to be extracted"
       assert String.contains?(coll.definition, "gathering of waste")
+    end
+  end
+
+  # ── Law titles containing commas ──────────────────────────────
+  # Some law titles contain commas (e.g. "Small Business, Enterprise and
+  # Employment Act 2015"). The definition prefix stripper must not split
+  # on internal commas in the law title.
+
+  describe "parse/2 with comma in referenced law title" do
+    test "preserves full law title with commas in cross-reference definition" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-80">
+            <Pnumber>80</Pnumber>
+            <P1para>
+              <P2 id="regulation-80-6">
+                <Pnumber>6</Pnumber>
+                <P2para>
+                  <Text>In this regulation, \u201c<Term id="term-regulatory-provisions">regulatory provisions</Term>\u201d has the meaning given in section 32(4) of the Small Business, Enterprise and Employment Act 2015.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2016_1154", type_code: "uksi"})
+
+      rp = Enum.find(defs, &(&1.term == "regulatory provisions"))
+      assert rp != nil, "Expected 'regulatory provisions' to be extracted"
+      assert String.contains?(rp.definition, "Small Business, Enterprise and Employment Act 2015")
+      assert rp.references_other_law == true
     end
   end
 
