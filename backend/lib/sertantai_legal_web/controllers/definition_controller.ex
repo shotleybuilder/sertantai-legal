@@ -16,6 +16,36 @@ defmodule SertantaiLegalWeb.DefinitionController do
     * `GET /api/definitions/search?q=work` — partial match for autocomplete
   """
 
+  @by_term_and_law """
+  SELECT ld.term, ld.term_welsh, ld.definition, ld.scope,
+         ld.law_name, ld.section_id, ld.references_other_law,
+         lr.title_en, lr.year
+  FROM legislative_definitions ld
+  JOIN legal_register lr ON lr.name = ld.law_name
+  WHERE ld.term = $1 AND ld.law_name = $2
+  ORDER BY lr.year DESC, ld.term
+  """
+
+  @by_term """
+  SELECT ld.term, ld.term_welsh, ld.definition, ld.scope,
+         ld.law_name, ld.section_id, ld.references_other_law,
+         lr.title_en, lr.year
+  FROM legislative_definitions ld
+  JOIN legal_register lr ON lr.name = ld.law_name
+  WHERE ld.term = $1
+  ORDER BY lr.year DESC, ld.term
+  """
+
+  @by_law """
+  SELECT ld.term, ld.term_welsh, ld.definition, ld.scope,
+         ld.law_name, ld.section_id, ld.references_other_law,
+         lr.title_en, lr.year
+  FROM legislative_definitions ld
+  JOIN legal_register lr ON lr.name = ld.law_name
+  WHERE ld.law_name = $1
+  ORDER BY lr.year DESC, ld.term
+  """
+
   @doc """
   Query definitions by term, law, or both.
 
@@ -26,15 +56,24 @@ defmodule SertantaiLegalWeb.DefinitionController do
     * At least one of `term` or `law` is required
   """
   def index(conn, %{"term" => term, "law" => law_name}) do
-    query_definitions(conn, "AND ld.term = $1 AND ld.law_name = $2", [term, law_name])
+    case Repo.query(@by_term_and_law, [term, law_name]) do
+      {:ok, %{rows: rows}} -> json(conn, %{data: rows_to_definitions(rows), count: length(rows)})
+      {:error, err} -> query_error(conn, err)
+    end
   end
 
   def index(conn, %{"term" => term}) do
-    query_definitions(conn, "AND ld.term = $1", [term])
+    case Repo.query(@by_term, [term]) do
+      {:ok, %{rows: rows}} -> json(conn, %{data: rows_to_definitions(rows), count: length(rows)})
+      {:error, err} -> query_error(conn, err)
+    end
   end
 
   def index(conn, %{"law" => law_name}) do
-    query_definitions(conn, "AND ld.law_name = $1", [law_name])
+    case Repo.query(@by_law, [law_name]) do
+      {:ok, %{rows: rows}} -> json(conn, %{data: rows_to_definitions(rows), count: length(rows)})
+      {:error, err} -> query_error(conn, err)
+    end
   end
 
   def index(conn, _params) do
@@ -66,17 +105,11 @@ defmodule SertantaiLegalWeb.DefinitionController do
            [q <> "%", limit]
          ) do
       {:ok, %{rows: rows}} ->
-        results =
-          Enum.map(rows, fn [term, count] ->
-            %{term: term, law_count: count}
-          end)
-
+        results = Enum.map(rows, fn [term, count] -> %{term: term, law_count: count} end)
         json(conn, %{data: results, count: length(results)})
 
       {:error, err} ->
-        conn
-        |> put_status(500)
-        |> json(%{error: "Query failed: #{inspect(err)}"})
+        query_error(conn, err)
     end
   end
 
@@ -92,53 +125,34 @@ defmodule SertantaiLegalWeb.DefinitionController do
     |> json(%{error: "Missing required 'q' query parameter"})
   end
 
-  # Shared query logic — JOINs legal_register for law title and year
-  defp query_definitions(conn, where_clause, params) do
-    case Repo.query(
-           """
-           SELECT ld.term, ld.term_welsh, ld.definition, ld.scope,
-                  ld.law_name, ld.section_id, ld.references_other_law,
-                  lr.title_en, lr.year
-           FROM legislative_definitions ld
-           JOIN legal_register lr ON lr.name = ld.law_name
-           WHERE 1=1 #{where_clause}
-           ORDER BY lr.year DESC, ld.term
-           """,
-           params
-         ) do
-      {:ok, %{rows: rows}} ->
-        definitions =
-          Enum.map(rows, fn [
-                              term,
-                              term_welsh,
-                              definition,
-                              scope,
-                              law_name,
-                              section_id,
-                              references_other_law,
-                              title_en,
-                              year
-                            ] ->
-            %{
-              term: term,
-              term_welsh: term_welsh,
-              definition: definition,
-              scope: scope,
-              law_name: law_name,
-              section_id: section_id,
-              references_other_law: references_other_law,
-              law_title: title_en,
-              year: year
-            }
-          end)
+  defp rows_to_definitions(rows) do
+    Enum.map(rows, fn [
+                        term,
+                        term_welsh,
+                        definition,
+                        scope,
+                        law_name,
+                        section_id,
+                        references_other_law,
+                        title_en,
+                        year
+                      ] ->
+      %{
+        term: term,
+        term_welsh: term_welsh,
+        definition: definition,
+        scope: scope,
+        law_name: law_name,
+        section_id: section_id,
+        references_other_law: references_other_law,
+        law_title: title_en,
+        year: year
+      }
+    end)
+  end
 
-        json(conn, %{data: definitions, count: length(definitions)})
-
-      {:error, err} ->
-        conn
-        |> put_status(500)
-        |> json(%{error: "Query failed: #{inspect(err)}"})
-    end
+  defp query_error(conn, err) do
+    conn |> put_status(500) |> json(%{error: "Query failed: #{inspect(err)}"})
   end
 
   defp parse_integer(nil, default), do: default
