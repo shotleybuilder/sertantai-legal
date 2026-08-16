@@ -154,6 +154,46 @@ defmodule SertantaiLegal.Scraper.RootResolver do
     end
   end
 
+  @doc """
+  Extract a `legal_register` law_name from an EU directive/regulation citation.
+
+  Handles:
+  - `Directive 2008/98/EC` → `UK_eudr_2008_98`
+  - `Directive (EU) 2018/851` → `UK_eudr_2018_851`
+  - `Council Directive 92/43/EEC` → `UK_eudr_1992_43` (2-digit year → 19xx)
+  - `Regulation (EC) No 178/2002` → `UK_eur_2002_178`
+
+  Returns nil for non-EU citations.
+  """
+  @spec extract_eu_law_name(String.t() | nil) :: String.t() | nil
+  def extract_eu_law_name(nil), do: nil
+
+  def extract_eu_law_name(citation) do
+    cond do
+      # Directive YYYY/NN or Directive YYYY/NN/EC
+      match = Regex.run(~r/Directive.*?(\d{4})\/(\d+)/i, citation) ->
+        [_, year, number] = match
+        "UK_eudr_#{year}_#{number}"
+
+      # Council Directive NN/NNN/EEC (2-digit year)
+      match = Regex.run(~r/Directive.*?(\d{2})\/(\d+)\/E/i, citation) ->
+        [_, short_year, number] = match
+
+        year =
+          if String.to_integer(short_year) > 50, do: "19#{short_year}", else: "20#{short_year}"
+
+        "UK_eudr_#{year}_#{number}"
+
+      # Regulation (EC) No NNN/YYYY or Regulation (EU) No NNN/YYYY
+      match = Regex.run(~r/Regulation.*?No\.?\s*(\d+)\/(\d{4})/i, citation) ->
+        [_, number, year] = match
+        "UK_eur_#{year}_#{number}"
+
+      true ->
+        nil
+    end
+  end
+
   # -- Query --
 
   defp fetch_cross_refs(opts) do
@@ -400,11 +440,12 @@ defmodule SertantaiLegal.Scraper.RootResolver do
         nil -> nil
       end
 
-    # Lookup priority: {title, year} → title_with_year → title_without_year
+    # Lookup priority: {title, year} → title_with_year → title_without_year → EU law name
     root_law_name =
       (year && Map.get(title_index, {title_without_year, year})) ||
         Map.get(title_index, title_with_year) ||
-        Map.get(title_index, title_without_year)
+        Map.get(title_index, title_without_year) ||
+        extract_eu_law_name(citation)
 
     case root_law_name do
       nil ->

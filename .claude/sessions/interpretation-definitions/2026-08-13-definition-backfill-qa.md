@@ -77,7 +77,7 @@ opened: 2026-08-13
   - ✅ Fix: `@inline_def_pattern`, `@single_quote_term_pattern`, splitter, and `extract_single_term` all handle curly single quotes
   - ✅ Fix: Strategy 2 P1 fallback scan for directives with no P2 wrapper
   - ✅ Parsed EU Waste Directive 2008/98/EC: 0→26 definitions
-  - ⬜ Resolver: EU law title matching (`Directive 2008/98/EC` format) — links not yet resolved
+  - ✅ Resolver: `extract_eu_law_name/1` converts EU citations to law_name format (e.g. `UK_eudr_2008_98`), wired into `resolve_to_root` as fallback. 9/10 WEEE orphans now linked to Waste Directive (1 term normalisation mismatch: reuse vs re-use)
 - ⬜ Investigate 1,086 empty-definition parser records across 89 laws (non-citation, real parser bugs)
 - ⬜ Fix 7 UTF-8 encoding errors in persister (truncated multi-byte sequences)
 - ⬜ Run CSV scope backfill (`--scope csv` for scope improvement on legacy data)

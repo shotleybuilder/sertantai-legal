@@ -118,4 +118,38 @@ defmodule SertantaiLegal.Scraper.RootResolverTest do
              ) == "Building Safety Act 2022 section 115"
     end
   end
+
+  # ── EU directive name extraction ─────────────────────────────
+  # EU directive citations like "Directive 2008/98/EC" need to be
+  # converted to law_name format "UK_eudr_2008_98" for lookup.
+
+  describe "extract_eu_law_name/1" do
+    test "extracts law_name from 'Directive YYYY/NN/EC' format" do
+      citation = "Directive 2008/98/EC of the European Parliament and of the Council on waste"
+      assert RootResolver.extract_eu_law_name(citation) == "UK_eudr_2008_98"
+    end
+
+    test "extracts law_name from 'Directive (EU) YYYY/NNN' format" do
+      citation = "Directive (EU) 2018/851"
+      assert RootResolver.extract_eu_law_name(citation) == "UK_eudr_2018_851"
+    end
+
+    test "extracts law_name from 'Council Directive NN/NNN/EEC' format" do
+      citation = "Council Directive 92/43/EEC on the conservation of natural habitats"
+      assert RootResolver.extract_eu_law_name(citation) == "UK_eudr_1992_43"
+    end
+
+    test "extracts law_name from 'Regulation (EC) No NNN/YYYY' format" do
+      citation = "Regulation (EC) No 178/2002 of the European Parliament"
+      assert RootResolver.extract_eu_law_name(citation) == "UK_eur_2002_178"
+    end
+
+    test "returns nil for non-EU citations" do
+      assert RootResolver.extract_eu_law_name("Housing Act 2004 section 261") == nil
+    end
+
+    test "returns nil for nil input" do
+      assert RootResolver.extract_eu_law_name(nil) == nil
+    end
+  end
 end
