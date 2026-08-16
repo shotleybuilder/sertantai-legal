@@ -1,10 +1,10 @@
 ---
 session: Definition Backfill & QA
-status: suspended
+status: active
 opened: 2026-08-13
 ---
 
-# Session: Definition Backfill & QA (SUSPENDED)
+# Session: Definition Backfill & QA (ACTIVE)
 
 ## Problem
 
@@ -47,6 +47,26 @@ opened: 2026-08-13
 - ✅ Backfill citation flag (3,691 records) + parser now sets it automatically
 - ✅ Fix parser: delegated definitions — preamble text as definition for "meanings given by..." lists
 - ✅ Re-parsed 100 laws to restore empty-def records for investigation
+- ✅ **Self-referential linking: UK_uksi_2005_1541 (Fire Safety Order)** — 10 orphan delegated defs
+  - ✅ `responsible person` — P1-level Term scan (fix 2)
+  - ✅ `general fire precautions` — P1-level Term scan (fix 2)
+  - ✅ `enforcing authority` — scope fix: "For the purposes of this Order" → `:law` (fix 1)
+  - ✅ `alterations notice` — parenthetical "referred to as" pattern (fix 3)
+  - ✅ `enforcement notice` — parenthetical pattern (fix 3)
+  - ✅ `prohibition notice` — parenthetical pattern (fix 3)
+  - ✅ `licensing authority` — already worked (Strategy 3 P3 pattern)
+  - ✅ `higher-risk building` — "that Act" pronoun resolver (inherits "Building Safety Act 2022" from sibling)
+  - ✅ `residential unit` — same pronoun resolver fix
+  - ✅ `local housing authority` — widened unique index, re-parsed Housing Act 2004 (143→180 defs), junction table links to both England (s.261-2) and Wales (s.261-4)
+- ✅ **Replace root_definition_id with definition_links junction table** — Gemini review recommends FK integrity for customer-facing legal data
+  - ✅ Create `definition_links(child_definition_id, root_definition_id)` with composite PK + CASCADE
+  - ✅ Migrate existing 936 root_definition_id links into junction table
+  - ✅ Drop root_definition_id column from legislative_definitions
+  - ✅ Deleted the uuid[] migration (20260816121000) — never ran, superseded by junction table
+  - ✅ Update Ash resource (many_to_many via DefinitionLink, registered in domain)
+  - ✅ Update RootResolver to write to junction table (def_index stores lists, apply_updates writes to definition_links)
+  - ✅ Controller/API — no references to old column, clean
+  - ⬜ Update ElectricSQL shape to include definition_links
 - ⬜ Investigate 1,086 empty-definition parser records across 89 laws (non-citation, real parser bugs)
 - ⬜ Fix 7 UTF-8 encoding errors in persister (truncated multi-byte sequences)
 - ⬜ Run CSV scope backfill (`--scope csv` for scope improvement on legacy data)

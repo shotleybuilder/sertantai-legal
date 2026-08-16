@@ -49,9 +49,9 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   ]
 
   # Scope patterns
-  @law_scope_pattern ~r/[Ii]n\s+these?\s+[Rr]egulations?|[Ii]n\s+this\s+[Oo]rder|[Ff]or\s+these\s+purposes/u
+  @law_scope_pattern ~r/[Ii]n\s+these?\s+[Rr]egulations?|[Ii]n\s+this\s+[Oo]rder|[Ff]or\s+the\s+purposes?\s+of\s+this\s+[Oo]rder|[Ff]or\s+these\s+purposes/u
   @part_scope_pattern ~r/[Ii]n\s+this\s+[Pp]art/u
-  @provision_scope_pattern ~r/[Ff]or\s+the\s+purposes?\s+of\s+this\s+(?:[Rr]egulation|[Oo]rder|[Aa]rticle|[Ss]ection)|[Ii]n\s+(?:this|that)\s+(?:[Rr]egulation|[Ss]ection|[Aa]rticle)|[Ff]or\s+the\s+purposes?\s+of\s+paragraph/u
+  @provision_scope_pattern ~r/[Ff]or\s+the\s+purposes?\s+of\s+this\s+(?:[Rr]egulation|[Aa]rticle|[Ss]ection)|[Ii]n\s+(?:this|that)\s+(?:[Rr]egulation|[Ss]ection|[Aa]rticle)|[Ff]or\s+the\s+purposes?\s+of\s+paragraph/u
 
   @doc """
   Parse body XML into a list of definition maps.
@@ -135,22 +135,42 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     end)
   end
 
-  # Strategy 3: Find <Term> elements in P2 text outside Definition lists.
+  # Strategy 3: Find <Term> elements in P1/P2 text outside Definition lists.
   # These are section-level definitions like NRSWA 1991 s.49:
   #   <Text>In this Part "<Term>the street authority</Term>" means...</Text>
+  # Also handles P1-level definitions (e.g. Fire Safety Order article 3)
+  # and parenthetical naming ("referred to as <Term>").
   defp parse_section_term_definitions(parsed, law_name, _is_welsh) do
-    (xpath(parsed, ~x"//P2[@id]"l) || [])
-    |> Enum.flat_map(&extract_section_terms(&1, law_name))
+    p2_defs =
+      (xpath(parsed, ~x"//P2[@id]"l) || [])
+      |> Enum.flat_map(&extract_section_terms(&1, law_name))
+
+    # Also scan P1 elements that have Term directly in P1para (no P2 wrapper)
+    p1_defs =
+      (xpath(parsed, ~x"//P1[@id]"l) || [])
+      |> Enum.flat_map(&extract_p1_section_terms(&1, law_name))
+
+    p2_terms = MapSet.new(p2_defs, & &1.term)
+    new_p1_defs = Enum.reject(p1_defs, fn d -> MapSet.member?(p2_terms, d.term) end)
+
+    p2_defs ++ new_p1_defs
   end
 
-  defp extract_section_terms(p2, law_name) do
-    section_id = xpath(p2, ~x"./@id"s)
-    term_elements = xpath(p2, ~x".//Term"l) || []
+  # Extract from P1 elements where <Term> is directly in P1para/Text (no P2 child)
+  defp extract_p1_section_terms(p1, law_name) do
+    # Skip P1s that have P2 children — those are handled by the P2 scan
+    has_p2 = (xpath(p1, ~x"./P1para/P2"l) || []) != []
+    if has_p2, do: [], else: extract_section_terms(p1, law_name)
+  end
+
+  defp extract_section_terms(element, law_name) do
+    section_id = xpath(element, ~x"./@id"s)
+    term_elements = xpath(element, ~x".//Term"l) || []
     # Use xmerl_text for correct document-order text (extract_plain_text reorders Term text)
-    full_text = xmerl_text(p2) |> String.replace(~r/\s+/, " ") |> String.trim()
+    full_text = xmerl_text(element) |> String.replace(~r/\s+/, " ") |> String.trim()
 
     with [_ | _] <- term_elements,
-         true <- Regex.match?(~r/\bmeans\b|\bhas the (?:same )?meaning/iu, full_text) do
+         true <- section_term_pattern?(full_text) do
       scope = detect_scope(full_text)
 
       term_elements
@@ -162,8 +182,25 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     end
   end
 
+  # Check if text contains a definition-introducing pattern:
+  # - "means" / "has the meaning" (standard definitions)
+  # - "referred to as" / "known as" (parenthetical naming)
+  defp section_term_pattern?(text) do
+    Regex.match?(
+      ~r/\bmeans\b|\bhas the (?:same )?meaning|\breferred to as\b|\bknown as\b/iu,
+      text
+    )
+  end
+
   defp build_section_def(term_text, full_text, law_name, section_id, scope) do
-    case extract_definition_after_term(full_text, term_text) do
+    # Try standard "means" extraction first
+    definition =
+      case extract_definition_after_term(full_text, term_text) do
+        "" -> extract_parenthetical_definition(full_text, term_text)
+        def_text -> def_text
+      end
+
+    case definition do
       "" ->
         []
 
@@ -182,6 +219,22 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
             citation: citation?(normalise_term(term_text))
           }
         ]
+    end
+  end
+
+  # Extract definition for parenthetical naming patterns:
+  #   "...a notice (referred to as "an alterations notice") if..."
+  # The definition is the full sentence surrounding the parenthetical.
+  defp extract_parenthetical_definition(full_text, _term_text) do
+    if Regex.match?(~r/referred to as|known as/iu, full_text) do
+      # Strip the parenthetical "(... referred to as "term")" from the sentence
+      # to produce the definition text
+      full_text
+      |> String.replace(~r/\s*\([^)]*(?:referred to|known)\s+as\s+[^)]*\)\s*/iu, " ")
+      |> String.replace(~r/\s+/, " ")
+      |> String.trim()
+    else
+      ""
     end
   end
 

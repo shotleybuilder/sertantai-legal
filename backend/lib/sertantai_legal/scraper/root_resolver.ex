@@ -4,11 +4,11 @@ defmodule SertantaiLegal.Scraper.RootResolver do
 
   A cross-ref definition like "has the meaning given in section 126(1) of the
   Scotland Act 1998" gets linked to the Scotland Act 1998's own definition of
-  the same term via `root_definition_id`.
+  the same term via the `definition_links` junction table.
 
   Two-pass approach:
   1. Extract `referenced_law_citation` from definition text
-  2. Resolve to a `root_definition_id` by matching to legal_register + legislative_definitions
+  2. Resolve to root definition(s) by matching to legal_register + legislative_definitions
 
   Designed to be re-run as more parent laws get their definitions parsed.
 
@@ -40,6 +40,9 @@ defmodule SertantaiLegal.Scraper.RootResolver do
   # Short name: "the 1991 Act", "the 2003 Regulations"
   @short_name_re ~r/(?:the\s+)?(\d{4})\s+(Act|Regulations?|Order|Rules?)/u
 
+  # Pronoun reference: "of that Act", "of those Regulations", "of that Order"
+  @pronoun_ref_re ~r/(?:of\s+)?(?:that|those)\s+(Act|Regulations?|Order|Rules?|Measure)/iu
+
   # Section reference: "section 126(1)", "regulation 3", "article 2(1)"
   @section_re ~r/(section|regulation|article|paragraph|rule|part)\s+([\d]+(?:\([\d]+\))?(?:\([a-z]\))?)/iu
 
@@ -65,11 +68,13 @@ defmodule SertantaiLegal.Scraper.RootResolver do
     title_index = build_title_index()
     citation_index = build_citation_index()
     def_index = build_definition_index()
+    sibling_index = build_sibling_index()
 
     Logger.info(
       "[RootResolver] Title index: #{map_size(title_index)} laws, " <>
         "Citation index: #{map_size(citation_index)} laws, " <>
-        "Definition index: #{map_size(def_index)} entries"
+        "Definition index: #{map_size(def_index)} entries, " <>
+        "Sibling index: #{map_size(sibling_index)} sections"
     )
 
     defs = fetch_cross_refs(opts)
@@ -77,7 +82,7 @@ defmodule SertantaiLegal.Scraper.RootResolver do
 
     grouped =
       defs
-      |> Enum.map(&resolve_one(&1, title_index, citation_index, def_index))
+      |> Enum.map(&resolve_one(&1, title_index, citation_index, def_index, sibling_index))
       |> Enum.group_by(fn {status, _} -> status end)
 
     resolved = Map.get(grouped, :resolved, [])
@@ -110,6 +115,45 @@ defmodule SertantaiLegal.Scraper.RootResolver do
     {:ok, Map.put(counts, :missing_parents, missing_parents)}
   end
 
+  @doc """
+  Resolve a pronoun reference ("that Act/Regulations/Order") using sibling
+  definitions in the same section.
+
+  Given a definition like "given by section 65 of that Act", finds the law name
+  from a sibling's `referenced_law_citation` in the same `{law_name, section_id}`,
+  strips the sibling's section reference, and appends the current definition's
+  section reference.
+
+  Returns a citation string like "Building Safety Act 2022 section 65", or nil.
+  """
+  @spec resolve_pronoun_ref(String.t(), String.t(), String.t() | nil, map()) :: String.t() | nil
+  def resolve_pronoun_ref(_definition, _law_name, nil, _sibling_index), do: nil
+
+  def resolve_pronoun_ref(definition, law_name, section_id, sibling_index) do
+    with true <- Regex.match?(@pronoun_ref_re, definition),
+         sibling_citation when is_binary(sibling_citation) <-
+           Map.get(sibling_index, {law_name, section_id}) do
+      # Extract the law title from the sibling citation (strip section ref)
+      law_title =
+        sibling_citation
+        |> String.replace(
+          ~r/\s+(section|regulation|article|paragraph|rule|part)\s+.+$/i,
+          ""
+        )
+
+      # Extract section ref from our definition
+      our_section = extract_section(definition)
+
+      if our_section do
+        "#{law_title} #{our_section}"
+      else
+        law_title
+      end
+    else
+      _ -> nil
+    end
+  end
+
   # -- Query --
 
   defp fetch_cross_refs(opts) do
@@ -121,13 +165,25 @@ defmodule SertantaiLegal.Scraper.RootResolver do
           law_name: d.law_name,
           term: d.term,
           definition: d.definition,
-          root_definition_id: d.root_definition_id,
-          referenced_law_citation: d.referenced_law_citation
+          referenced_law_citation: d.referenced_law_citation,
+          section_id: d.section_id
         }
       )
 
     q = if term = opts[:term], do: where(q, [d], d.term == ^term), else: q
-    q = unless opts[:force], do: where(q, [d], is_nil(d.root_definition_id)), else: q
+
+    # Skip definitions that already have links (unless --force)
+    q =
+      unless opts[:force] do
+        from(d in q,
+          left_join: dl in "definition_links",
+          on: dl.child_definition_id == d.id,
+          where: is_nil(dl.child_definition_id)
+        )
+      else
+        q
+      end
+
     q = if limit = opts[:limit], do: limit(q, ^limit), else: q
 
     Repo.all(q)
@@ -171,23 +227,47 @@ defmodule SertantaiLegal.Scraper.RootResolver do
     end)
   end
 
-  # Index of {law_name, term} → id for all definitions (for root lookup without N+1 queries)
+  # Index of {law_name, term} → [id, ...] for all definitions.
+  # A term can have multiple definitions in different sections of the same law.
   defp build_definition_index do
     from(d in "legislative_definitions",
       select: {d.law_name, d.term, d.id}
     )
     |> Repo.all()
     |> Enum.reduce(%{}, fn {law_name, term, id}, acc ->
-      Map.put(acc, {law_name, term}, id)
+      Map.update(acc, {law_name, term}, [id], &[id | &1])
+    end)
+  end
+
+  # Index of {law_name, section_id} → first referenced_law_citation found among siblings.
+  # Used to resolve "that Act/Regulations/Order" pronoun references.
+  defp build_sibling_index do
+    from(d in "legislative_definitions",
+      where:
+        not is_nil(d.referenced_law_citation) and d.referenced_law_citation != "" and
+          not is_nil(d.section_id),
+      select: {d.law_name, d.section_id, d.referenced_law_citation}
+    )
+    |> Repo.all()
+    |> Enum.reduce(%{}, fn {law_name, section_id, citation}, acc ->
+      # First citation wins per section (they typically reference the same law)
+      Map.put_new(acc, {law_name, section_id}, citation)
     end)
   end
 
   # -- Resolution --
 
-  defp resolve_one(def_row, title_index, citation_index, def_index) do
+  defp resolve_one(def_row, title_index, citation_index, def_index, sibling_index) do
     definition = def_row.definition || ""
 
+    # Try pronoun resolution first ("that Act" → sibling's named law)
+    pronoun_citation =
+      resolve_pronoun_ref(definition, def_row.law_name, def_row.section_id, sibling_index)
+
     cond do
+      pronoun_citation != nil ->
+        resolve_with_citation(pronoun_citation, def_row, title_index, def_index)
+
       internal_ref?(definition) ->
         {:internal, %{id: def_row.id}}
 
@@ -197,25 +277,27 @@ defmodule SertantaiLegal.Scraper.RootResolver do
             {:unresolved, %{id: def_row.id, term: def_row.term, law_name: def_row.law_name}}
 
           citation ->
-            case resolve_to_root(citation, def_row.term, title_index, def_index) do
-              {:ok, root_id, _root_law_name} ->
-                {:resolved, %{id: def_row.id, citation: citation, root_definition_id: root_id}}
-
-              {:law_found, root_law_name} ->
-                # Parent law exists but doesn't have this term's definition
-                {:citation_only,
-                 %{
-                   id: def_row.id,
-                   citation: citation,
-                   root_definition_id: nil,
-                   target_law: root_law_name
-                 }}
-
-              :not_found ->
-                {:citation_only,
-                 %{id: def_row.id, citation: citation, root_definition_id: nil, target_law: nil}}
-            end
+            resolve_with_citation(citation, def_row, title_index, def_index)
         end
+    end
+  end
+
+  defp resolve_with_citation(citation, def_row, title_index, def_index) do
+    case resolve_to_root(citation, def_row.term, title_index, def_index) do
+      {:ok, root_ids, _root_law_name} ->
+        {:resolved, %{id: def_row.id, citation: citation, root_ids: root_ids}}
+
+      {:law_found, root_law_name} ->
+        {:citation_only,
+         %{
+           id: def_row.id,
+           citation: citation,
+           root_ids: [],
+           target_law: root_law_name
+         }}
+
+      :not_found ->
+        {:citation_only, %{id: def_row.id, citation: citation, root_ids: [], target_law: nil}}
     end
   end
 
@@ -311,7 +393,7 @@ defmodule SertantaiLegal.Scraper.RootResolver do
       root_law_name ->
         case Map.get(def_index, {root_law_name, term}) do
           nil -> {:law_found, root_law_name}
-          root_id -> {:ok, root_id, root_law_name}
+          root_ids -> {:ok, root_ids, root_law_name}
         end
     end
   end
@@ -327,25 +409,32 @@ defmodule SertantaiLegal.Scraper.RootResolver do
   # -- Persistence --
 
   defp apply_updates(results) do
+    now = NaiveDateTime.utc_now()
+
     results
     |> Enum.chunk_every(500)
     |> Enum.each(fn batch ->
       Repo.transaction(fn ->
         Enum.each(batch, fn {_status, row} ->
-          sets =
-            [{:updated_at, NaiveDateTime.utc_now()}]
-            |> maybe_add(:referenced_law_citation, row[:citation])
-            |> maybe_add(:root_definition_id, row[:root_definition_id])
+          # Update referenced_law_citation on the definition row
+          if row[:citation] do
+            from(d in "legislative_definitions", where: d.id == ^row.id)
+            |> Repo.update_all(set: [referenced_law_citation: row.citation, updated_at: now])
+          end
 
-          from(d in "legislative_definitions", where: d.id == ^row.id)
-          |> Repo.update_all(set: sets)
+          # Insert links into junction table
+          Enum.each(row[:root_ids] || [], fn root_id ->
+            Repo.insert_all(
+              "definition_links",
+              [%{child_definition_id: row.id, root_definition_id: root_id, inserted_at: now}],
+              on_conflict: :nothing,
+              conflict_target: [:child_definition_id, :root_definition_id]
+            )
+          end)
         end)
       end)
     end)
   end
-
-  defp maybe_add(sets, _key, nil), do: sets
-  defp maybe_add(sets, key, value), do: [{key, value} | sets]
 
   # -- Missing parents file --
 

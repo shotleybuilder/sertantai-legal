@@ -84,7 +84,9 @@ defmodule Mix.Tasks.Definitions.ImportCsv do
     end
 
     if dry_run? do
-      Mix.shell().info("\n[DRY RUN] No records written. #{length(deduped)} records would be created.")
+      Mix.shell().info(
+        "\n[DRY RUN] No records written. #{length(deduped)} records would be created."
+      )
     else
       inserted = batch_upsert(deduped)
       Mix.shell().info("\nUpserted #{inserted} records into legislative_definitions.")
@@ -170,10 +172,16 @@ defmodule Mix.Tasks.Definitions.ImportCsv do
         end
 
       references_other_law = citation == "checked"
-      acc_stats = if references_other_law, do: %{acc_stats | citations: acc_stats.citations + 1}, else: acc_stats
+
+      acc_stats =
+        if references_other_law,
+          do: %{acc_stats | citations: acc_stats.citations + 1},
+          else: acc_stats
 
       term_welsh_val = if term_welsh != "", do: term_welsh, else: nil
-      acc_stats = if term_welsh_val, do: %{acc_stats | welsh: acc_stats.welsh + 1}, else: acc_stats
+
+      acc_stats =
+        if term_welsh_val, do: %{acc_stats | welsh: acc_stats.welsh + 1}, else: acc_stats
 
       # Extract law_name + section_id from links
       law_entries = extract_laws_from_links(links)
@@ -187,16 +195,28 @@ defmodule Mix.Tasks.Definitions.ImportCsv do
           {acc_records, acc_stats}
         else
           build_records(
-            fallback_entries, term, term_welsh_val, definition,
-            scope, references_other_law, legal_names,
-            acc_records, acc_stats
+            fallback_entries,
+            term,
+            term_welsh_val,
+            definition,
+            scope,
+            references_other_law,
+            legal_names,
+            acc_records,
+            acc_stats
           )
         end
       else
         build_records(
-          law_entries, term, term_welsh_val, definition,
-          scope, references_other_law, legal_names,
-          acc_records, acc_stats
+          law_entries,
+          term,
+          term_welsh_val,
+          definition,
+          scope,
+          references_other_law,
+          legal_names,
+          acc_records,
+          acc_stats
         )
       end
     end
@@ -306,9 +326,15 @@ defmodule Mix.Tasks.Definitions.ImportCsv do
   end
 
   defp build_records(
-         law_entries, term, term_welsh, definition,
-         scope, references_other_law, legal_names,
-         acc_records, acc_stats
+         law_entries,
+         term,
+         term_welsh,
+         definition,
+         scope,
+         references_other_law,
+         legal_names,
+         acc_records,
+         acc_stats
        ) do
     Enum.reduce(law_entries, {acc_records, acc_stats}, fn {law_name, section_id}, {recs, stats} ->
       if MapSet.member?(legal_names, law_name) do
@@ -376,7 +402,7 @@ defmodule Mix.Tasks.Definitions.ImportCsv do
         on_conflict:
           {:replace,
            [:term_welsh, :definition, :section_id, :scope, :references_other_law, :updated_at]},
-        conflict_target: [:law_name, :term]
+        conflict_target: [:law_name, :term, :section_id]
       )
 
     count

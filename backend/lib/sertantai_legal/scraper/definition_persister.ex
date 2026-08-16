@@ -2,7 +2,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
   @moduledoc """
   Persists legislative definition rows parsed from body XML.
 
-  Strategy: upsert per definition (ON CONFLICT on law_name + term).
+  Strategy: upsert per definition (ON CONFLICT on law_name + term + section_id).
   Unlike DELETE+INSERT, this preserves CSV-imported definitions for laws
   not currently being re-parsed, while updating definitions for laws
   that are being scraped.
@@ -21,7 +21,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
 
   @doc """
   Upsert definitions for a law. Existing definitions for the same
-  (law_name, term) pair are updated; new ones are inserted.
+  (law_name, term, section_id) triple are updated; new ones are inserted.
 
   ## Parameters
 
@@ -35,10 +35,10 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
   def persist(definitions, law_name) when is_list(definitions) and is_binary(law_name) do
     now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
-    # Deduplicate on (law_name, term) — last occurrence wins
+    # Deduplicate on (law_name, term, section_id) — last occurrence wins
     definitions =
       definitions
-      |> Enum.reduce(%{}, fn d, acc -> Map.put(acc, {d.law_name, d.term}, d) end)
+      |> Enum.reduce(%{}, fn d, acc -> Map.put(acc, {d.law_name, d.term, d.section_id}, d) end)
       |> Map.values()
 
     insert_maps =
@@ -79,7 +79,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
                  :source,
                  :updated_at
                ]},
-            conflict_target: [:law_name, :term]
+            conflict_target: [:law_name, :term, :section_id]
           )
 
         acc + count

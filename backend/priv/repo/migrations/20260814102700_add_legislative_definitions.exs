@@ -33,7 +33,10 @@ defmodule SertantaiLegal.Repo.Migrations.AddLegislativeDefinitions do
 
     # Single-column indexes for common query patterns
     create index(:legislative_definitions, [:term], name: "legislative_definitions_term_index")
-    create index(:legislative_definitions, [:law_name], name: "legislative_definitions_law_name_index")
+
+    create index(:legislative_definitions, [:law_name],
+             name: "legislative_definitions_law_name_index"
+           )
   end
 
   def down do

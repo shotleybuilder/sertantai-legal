@@ -26,15 +26,70 @@ defmodule SertantaiLegalWeb.DefinitionControllerTest do
 
     # Insert test definitions
     defs = [
-      %{term: "workplace", definition: "any premises or part of premises which are not domestic premises", scope: "law", section_id: "regulation-2", references_other_law: false},
-      %{term: "traffic route", definition: "a route for pedestrian traffic, vehicles or both", scope: "law", section_id: "regulation-2", references_other_law: false},
-      %{term: "mine", definition: "a mine within the meaning of the Mines and Quarries Act 1954", scope: "law", section_id: "regulation-2", references_other_law: true},
-      %{term: "new workplace", definition: "a workplace used for the first time after 31st December 1992", scope: "law", section_id: "regulation-2", references_other_law: false},
-      %{term: "public road", definition: "a highway maintainable at public expense", scope: "law", section_id: "regulation-2", references_other_law: true},
-      %{term: "quarry", definition: "a quarry within the meaning of the Quarries Regulations 1999", scope: "law", section_id: "regulation-2", references_other_law: true},
-      %{term: "disabled person", definition: "has the meaning given by section 1 of the Disability Discrimination Act 1995", scope: "law", section_id: "regulation-2", references_other_law: true},
-      %{term: "worker", definition: "any person employed under a contract of employment", scope: nil, section_id: "regulation-2", references_other_law: false},
-      %{term: "working day", definition: "any day other than a Saturday, Sunday, or bank holiday", scope: "law", section_id: "regulation-2", references_other_law: false}
+      %{
+        term: "workplace",
+        definition: "any premises or part of premises which are not domestic premises",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: false
+      },
+      %{
+        term: "traffic route",
+        definition: "a route for pedestrian traffic, vehicles or both",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: false
+      },
+      %{
+        term: "mine",
+        definition: "a mine within the meaning of the Mines and Quarries Act 1954",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: true
+      },
+      %{
+        term: "new workplace",
+        definition: "a workplace used for the first time after 31st December 1992",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: false
+      },
+      %{
+        term: "public road",
+        definition: "a highway maintainable at public expense",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: true
+      },
+      %{
+        term: "quarry",
+        definition: "a quarry within the meaning of the Quarries Regulations 1999",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: true
+      },
+      %{
+        term: "disabled person",
+        definition:
+          "has the meaning given by section 1 of the Disability Discrimination Act 1995",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: true
+      },
+      %{
+        term: "worker",
+        definition: "any person employed under a contract of employment",
+        scope: nil,
+        section_id: "regulation-2",
+        references_other_law: false
+      },
+      %{
+        term: "working day",
+        definition: "any day other than a Saturday, Sunday, or bank holiday",
+        scope: "law",
+        section_id: "regulation-2",
+        references_other_law: false
+      }
     ]
 
     def_rows =

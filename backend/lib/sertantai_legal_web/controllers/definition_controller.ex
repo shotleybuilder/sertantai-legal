@@ -108,8 +108,17 @@ defmodule SertantaiLegalWeb.DefinitionController do
          ) do
       {:ok, %{rows: rows}} ->
         definitions =
-          Enum.map(rows, fn [term, term_welsh, definition, scope, law_name, section_id,
-                             references_other_law, title_en, year] ->
+          Enum.map(rows, fn [
+                              term,
+                              term_welsh,
+                              definition,
+                              scope,
+                              law_name,
+                              section_id,
+                              references_other_law,
+                              title_en,
+                              year
+                            ] ->
             %{
               term: term,
               term_welsh: term_welsh,
@@ -133,11 +142,13 @@ defmodule SertantaiLegalWeb.DefinitionController do
   end
 
   defp parse_integer(nil, default), do: default
+
   defp parse_integer(val, default) when is_binary(val) do
     case Integer.parse(val) do
       {n, _} -> n
       :error -> default
     end
   end
+
   defp parse_integer(val, _default) when is_integer(val), do: val
 end

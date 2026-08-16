@@ -26,7 +26,7 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
   end
 
   identities do
-    identity(:unique_law_term, [:law_name, :term])
+    identity(:unique_law_term_section, [:law_name, :term, :section_id])
   end
 
   attributes do
@@ -83,11 +83,6 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
       description("Data provenance: csv_import (legacy legl), parser (sertantai extraction)")
     end
 
-    attribute :root_definition_id, :uuid do
-      allow_nil?(true)
-      description("Self-FK to the originating definition this one cross-references")
-    end
-
     attribute :referenced_law_citation, :string do
       allow_nil?(true)
 
@@ -122,15 +117,14 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :references_other_law,
         :citation,
         :source,
-        :root_definition_id,
         :referenced_law_citation
       ])
     end
 
     create :upsert do
-      description("Create or update a definition (idempotent on law_name + term)")
+      description("Create or update a definition (idempotent on law_name + term + section_id)")
       upsert?(true)
-      upsert_identity(:unique_law_term)
+      upsert_identity(:unique_law_term_section)
 
       upsert_fields([
         :term_welsh,
@@ -140,7 +134,6 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :references_other_law,
         :citation,
         :source,
-        :root_definition_id,
         :referenced_law_citation,
         :updated_at
       ])
@@ -155,7 +148,6 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
         :references_other_law,
         :citation,
         :source,
-        :root_definition_id,
         :referenced_law_citation
       ])
     end
@@ -181,16 +173,20 @@ defmodule SertantaiLegal.Legal.LegislativeDefinition do
   end
 
   relationships do
-    belongs_to :root_definition, __MODULE__ do
-      attribute_type(:uuid)
-      source_attribute(:root_definition_id)
-      allow_nil?(true)
-      define_attribute?(false)
+    many_to_many :root_definitions, __MODULE__ do
+      through(SertantaiLegal.Legal.DefinitionLink)
+      source_attribute(:id)
+      source_attribute_on_join_resource(:child_definition_id)
+      destination_attribute(:id)
+      destination_attribute_on_join_resource(:root_definition_id)
     end
 
-    has_many :derivations, __MODULE__ do
+    many_to_many :derivations, __MODULE__ do
+      through(SertantaiLegal.Legal.DefinitionLink)
       source_attribute(:id)
-      destination_attribute(:root_definition_id)
+      source_attribute_on_join_resource(:root_definition_id)
+      destination_attribute(:id)
+      destination_attribute_on_join_resource(:child_definition_id)
     end
   end
 

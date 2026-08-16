@@ -563,6 +563,228 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── Section-level definitions: enumerated list (Term + means + P3 items) ───
+  # Articles 3, 4, 25 of Fire Safety Order define terms as:
+  #   "responsible person" means— (a)...; (b)...
+  # The <Term> element sits in a P2, definition spans sibling P3 elements.
+
+  describe "parse/2 with section-level Term + enumerated list definitions" do
+    test "extracts definition from Term + means— with P3 sub-items" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-3">
+            <Pnumber>3</Pnumber>
+            <P1para>
+              <Text>In this Order \u201c<Term id="term-responsible-person">responsible person</Term>\u201d means\u2014</Text>
+              <P3 id="article-3-a">
+                <Pnumber>a</Pnumber>
+                <P3para>
+                  <Text>in relation to a workplace, the employer, if the workplace is to any extent under his control;</Text>
+                </P3para>
+              </P3>
+              <P3 id="article-3-b">
+                <Pnumber>b</Pnumber>
+                <P3para>
+                  <Text>in relation to any premises not falling within paragraph (a)\u2014</Text>
+                  <P4 id="article-3-b-i">
+                    <Pnumber>i</Pnumber>
+                    <P4para><Text>the person who has control of the premises in connection with the carrying on of a trade, business or other undertaking; or</Text></P4para>
+                  </P4>
+                  <P4 id="article-3-b-ii">
+                    <Pnumber>ii</Pnumber>
+                    <P4para><Text>the owner, where the person in control of the premises does not have control in connection with a trade.</Text></P4para>
+                  </P4>
+                </P3para>
+              </P3>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2005_1541", type_code: "uksi"})
+
+      rp = Enum.find(defs, &(&1.term == "responsible person"))
+      assert rp != nil, "Expected 'responsible person' to be extracted"
+      assert rp.section_id == "article-3"
+      assert rp.scope == :law
+      assert String.contains?(rp.definition, "employer")
+      assert rp.references_other_law == false
+    end
+
+    test "extracts definition from P2 with Term + means— and nested P3/P4" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-25">
+            <Pnumber>25</Pnumber>
+            <P1para>
+              <P2 id="article-25-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>For the purposes of this Order, \u201c<Term id="term-enforcing-authority">enforcing authority</Term>\u201d means\u2014</Text>
+                  <P3 id="article-25-1-a">
+                    <Pnumber>a</Pnumber>
+                    <P3para><Text>the fire and rescue authority for the area in which the premises are situated;</Text></P3para>
+                  </P3>
+                  <P3 id="article-25-1-b">
+                    <Pnumber>b</Pnumber>
+                    <P3para><Text>the Health and Safety Executive in relation to certain premises.</Text></P3para>
+                  </P3>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2005_1541", type_code: "uksi"})
+
+      ea = Enum.find(defs, &(&1.term == "enforcing authority"))
+      assert ea != nil, "Expected 'enforcing authority' to be extracted"
+      assert ea.section_id == "article-25-1"
+      assert ea.scope == :law
+      assert String.contains?(ea.definition, "fire and rescue authority")
+    end
+  end
+
+  # ── Section-level definitions: parenthetical naming ──────────
+  # Articles 29, 30, 31 of Fire Safety Order define terms as:
+  #   ...a notice (in this Order referred to as "an alterations notice")
+  # The <Term> appears inside parenthetical text, not in "means" pattern.
+
+  describe "parse/2 with parenthetical Term definitions (referred to as)" do
+    test "extracts term from 'referred to as <Term>' pattern" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-29">
+            <Pnumber>29</Pnumber>
+            <P1para>
+              <P2 id="article-29-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>The enforcing authority may serve on the responsible person a notice (in this Order referred to as \u201c<Term id="term-an-alterations-notice">an alterations notice</Term>\u201d) if the authority is of the opinion that the premises constitute a serious risk to relevant persons.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2005_1541", type_code: "uksi"})
+
+      an = Enum.find(defs, &(&1.term == "alterations notice"))
+      assert an != nil, "Expected 'alterations notice' to be extracted"
+      assert an.section_id == "article-29-1"
+      assert String.contains?(an.definition, "enforcing authority may serve")
+    end
+
+    test "extracts term from 'referred to as <Term>' at end of sentence" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-30">
+            <Pnumber>30</Pnumber>
+            <P1para>
+              <P2 id="article-30-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>If the enforcing authority is of the opinion that the responsible person has failed to comply with any provision of this Order, the authority may serve on that person a notice (in this Order referred to as \u201c<Term id="term-an-enforcement-notice">an enforcement notice</Term>\u201d).</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2005_1541", type_code: "uksi"})
+
+      en = Enum.find(defs, &(&1.term == "enforcement notice"))
+      assert en != nil, "Expected 'enforcement notice' to be extracted"
+      assert String.contains?(en.definition, "failed to comply")
+    end
+
+    test "extracts term from 'referred to as <Term>' — prohibition notice" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-31">
+            <Pnumber>31</Pnumber>
+            <P1para>
+              <P2 id="article-31-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>If the enforcing authority is of the opinion that use of premises involves or will involve a risk to relevant persons so serious that use of the premises ought to be prohibited or restricted, the authority may serve on the responsible person a notice (in this Order referred to as \u201c<Term id="term-a-prohibition-notice">a prohibition notice</Term>\u201d).</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2005_1541", type_code: "uksi"})
+
+      pn = Enum.find(defs, &(&1.term == "prohibition notice"))
+      assert pn != nil, "Expected 'prohibition notice' to be extracted"
+      assert String.contains?(pn.definition, "risk to relevant persons")
+    end
+  end
+
+  # ── Section-level definitions: inline in sub-paragraph ───────
+  # Article 42(3) of Fire Safety Order defines "licensing authority" in a P3:
+  #   <P3><Text>"<Term>licensing authority</Term>" means...</Text></P3>
+  # This is like a Definition list item but embedded in a P3 under a P2.
+
+  describe "parse/2 with inline Term definition in sub-paragraph" do
+    test "extracts definition from Term in P3 under P2" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-42">
+            <Pnumber>42</Pnumber>
+            <P1para>
+              <P2 id="article-42-3">
+                <Pnumber>3</Pnumber>
+                <P2para>
+                  <Text>In this article and article 43(1)(a)\u2014</Text>
+                  <P3 id="article-42-3-a">
+                    <Pnumber>a</Pnumber>
+                    <P3para>
+                      <Text>\u201c<Term id="term-licensing-authority">licensing authority</Term>\u201d means the authority responsible for issuing the licence; and</Text>
+                    </P3para>
+                  </P3>
+                  <P3 id="article-42-3-b">
+                    <Pnumber>b</Pnumber>
+                    <P3para>
+                      <Text>\u201c<Term id="term-relevant-licence">relevant licence</Term>\u201d means a licence under an enactment.</Text>
+                    </P3para>
+                  </P3>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2005_1541", type_code: "uksi"})
+
+      la = Enum.find(defs, &(&1.term == "licensing authority"))
+      assert la != nil, "Expected 'licensing authority' to be extracted"
+      assert la.section_id == "article-42-3"
+      assert String.contains?(la.definition, "authority responsible for issuing")
+
+      rl = Enum.find(defs, &(&1.term == "relevant licence"))
+      assert rl != nil, "Expected 'relevant licence' to be extracted"
+    end
+  end
+
   # ── Child elements inside <Term> ──────────────────────────────
   # Some <Term> elements contain child elements like <Acronym>:
   #   <Term><Acronym>CEN</Acronym>/TS 15359:2006</Term>

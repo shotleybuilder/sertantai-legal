@@ -681,7 +681,10 @@ defmodule SertantaiLegal.Legal.LegalRegister do
 
     attribute :definitions_parsed_at, :utc_datetime_usec do
       allow_nil?(true)
-      description("When definitions were last extracted from body XML. Set even if no definitions found (prevents re-parsing).")
+
+      description(
+        "When definitions were last extracted from body XML. Set even if no definitions found (prevents re-parsing)."
+      )
     end
 
     # Source URL (replaces UK-specific leg_gov_uk_url)

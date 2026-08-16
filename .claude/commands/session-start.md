@@ -54,6 +54,13 @@ For PENDING sessions (scoped but not starting now), use `status: pending` in the
 
 ## Resume a PENDING or SUSPENDED session
 
+0. **Find the session** by querying the SQLite index (sessions may live in subdirectories that glob misses):
+   ```bash
+   sqlite3 .claude/sessions/sessions.db \
+     "SELECT id, title, status, opened FROM sessions WHERE status IN ('suspended','pending') ORDER BY opened DESC;"
+   ```
+   The `id` column is the relative path to the session file (under `.claude/sessions/`). If the user names a specific topic, add `AND title LIKE '%keyword%'` to narrow results.
+
 1. **Read the existing session file** thoroughly — understand what was done, what's outstanding, what's deferred.
 2. **Change the status** in both the frontmatter (`status: active`) and the heading (`(ACTIVE)`).
 3. **Review the work items** — confirm which are still relevant. Remove or update stale items.
