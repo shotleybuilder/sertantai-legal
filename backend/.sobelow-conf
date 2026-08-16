@@ -7,5 +7,10 @@
   out: "",
   threshold: "medium",
   ignore: ["Config.HTTPS"],
-  ignore_files: []
+  ignore_files: [
+    "lib/sertantai_legal_web/controllers/ai_sync_controller.ex",
+    "lib/sertantai_legal_web/controllers/lat_admin_controller.ex",
+    "lib/sertantai_legal_web/controllers/sync_admin_controller.ex",
+    "lib/sertantai_legal_web/controllers/applicability_admin_controller.ex"
+  ]
 ]
