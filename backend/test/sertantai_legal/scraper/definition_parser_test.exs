@@ -826,6 +826,132 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── Amendment markup wrapping Term/definition text ────────────
+  # Some definitions have <Addition>/<Substitution> elements wrapping the
+  # term and definition text (amendment tracked markup). The parser must
+  # see through these wrappers to extract the term and definition.
+
+  describe "parse/2 with <Addition> wrapped Term elements" do
+    test "extracts term from <Term> containing <Addition> child" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text> <Addition>\u201c</Addition><Term><Addition>the Waste Directive</Addition></Term><Addition>\u201d means Directive </Addition><Citation URI="http://example.com" id="c1" Class="EuropeanUnionDirective" Year="2008" Number="98"><Addition>2008/98/EC</Addition></Citation><Addition> of the European Parliament and of the Council on waste</Addition>;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_uksi_2013_3113", type_code: "uksi"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "waste directive"
+      assert String.contains?(d.definition, "2008/98/EC")
+    end
+  end
+
+  # ── Single-quoted definitions in OrderedList (EU directives) ──
+  # EU directives on legislation.gov.uk use OrderedList with straight
+  # single quotes: 'waste' means ...
+  # No <Term> elements, no Class="Definition", no curly quotes.
+
+  describe "parse/2 with single-quoted definitions in OrderedList (EU directive)" do
+    test "extracts definitions from single-quoted terms in OrderedList" do
+      # Real EU directive structure: OrderedList inside P1para, no P2 wrapper.
+      # Multiple P1 articles — only article-3 has definitions.
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="article-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="article-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>This Directive applies to waste management operations.</Text>
+                </P2para>
+              </P2>
+              <P2 id="article-2-2">
+                <Pnumber>2</Pnumber>
+                <P2para>
+                  <Text>The following shall be excluded from the scope of this Directive.</Text>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+          <P1 id="article-3">
+            <Pnumber>3</Pnumber>
+            <P1para>
+              <Text>For the purposes of this Directive, the following definitions shall apply:</Text>
+            </P1para>
+            <P1para>
+              <OrderedList Type="arabic" Decoration="period">
+                <ListItem NumberOverride="1.">
+                  <Para>
+                    <Text>\u2018waste\u2019 means any substance or object which the holder discards or intends or is required to discard;</Text>
+                  </Para>
+                </ListItem>
+                <ListItem NumberOverride="2.">
+                  <Para>
+                    <Text>\u2018hazardous waste\u2019 means waste which displays one or more of the hazardous properties listed in Annex III;</Text>
+                  </Para>
+                </ListItem>
+                <ListItem NumberOverride="10.">
+                  <Para>
+                    <Text>\u2018collection\u2019 means the gathering of waste, including the preliminary sorting and preliminary storage of waste for the purposes of transport to a waste treatment facility;</Text>
+                  </Para>
+                </ListItem>
+              </OrderedList>
+            </P1para>
+          </P1>
+          <P1 id="article-4">
+            <Pnumber>4</Pnumber>
+            <P1para>
+              <Text>The following waste hierarchy shall apply as a priority order in waste prevention and management legislation and policy.</Text>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_eudr_2008_98", type_code: "eudr"})
+
+      assert length(defs) == 3
+
+      waste = Enum.find(defs, &(&1.term == "waste"))
+      assert waste != nil, "Expected 'waste' to be extracted"
+      assert String.contains?(waste.definition, "substance or object")
+      assert waste.references_other_law == false
+
+      hw = Enum.find(defs, &(&1.term == "hazardous waste"))
+      assert hw != nil, "Expected 'hazardous waste' to be extracted"
+      assert String.contains?(hw.definition, "hazardous properties")
+
+      coll = Enum.find(defs, &(&1.term == "collection"))
+      assert coll != nil, "Expected 'collection' to be extracted"
+      assert String.contains?(coll.definition, "gathering of waste")
+    end
+  end
+
   # ── Delegated definitions ─────────────────────────────────────
   # Some definition lists delegate meaning to another law:
   #   "the following words have the meanings given by Article 2 of Regulation 996/2010—"

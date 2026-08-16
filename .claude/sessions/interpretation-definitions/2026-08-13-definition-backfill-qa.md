@@ -67,6 +67,17 @@ opened: 2026-08-13
   - ✅ Update RootResolver to write to junction table (def_index stores lists, apply_updates writes to definition_links)
   - ✅ Controller/API — no references to old column, clean
   - ⬜ Update ElectricSQL shape to include definition_links
+- ✅ **UK_uksi_2013_3113 (WEEE Regs): Amendment markup + EU directive references**
+  - ✅ Parser: `xmerl_text` tree walk on `<Text>` elements instead of `xpath(.//Text/text())` — fixes `<Addition>`-wrapped definitions
+  - ✅ Parser: widen citation pattern to catch `<name> directive` abbreviations (waste directive, habitats directive, etc.)
+  - ✅ Resolver: `internal_ref?` now excludes definitions mentioning "Directive" (they're cross-law, not internal)
+  - ✅ Resolver: abbreviation citation lookup — "the Waste Directive" → citation_index → full directive title
+  - ✅ Re-parsed WEEE: 98→106 defs, 10/11 orphans now have `referenced_law_citation` (1 is genuinely internal)
+- ✅ **Parser: curly single quotes (`\u2018`/`\u2019`) for EU directive definitions**
+  - ✅ Fix: `@inline_def_pattern`, `@single_quote_term_pattern`, splitter, and `extract_single_term` all handle curly single quotes
+  - ✅ Fix: Strategy 2 P1 fallback scan for directives with no P2 wrapper
+  - ✅ Parsed EU Waste Directive 2008/98/EC: 0→26 definitions
+  - ⬜ Resolver: EU law title matching (`Directive 2008/98/EC` format) — links not yet resolved
 - ⬜ Investigate 1,086 empty-definition parser records across 89 laws (non-citation, real parser bugs)
 - ⬜ Fix 7 UTF-8 encoding errors in persister (truncated multi-byte sequences)
 - ⬜ Run CSV scope backfill (`--scope csv` for scope improvement on legacy data)

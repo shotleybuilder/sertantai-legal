@@ -33,10 +33,17 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
                        )
 
   # Inline definition detection: text containing "term" means/includes/has the meaning
-  @inline_def_pattern Regex.compile!("\u201c[^\u201d]+\u201d\\s+(?:means|includes|has the)")
+  # Matches curly double quotes (\u201c...\u201d), curly single quotes (\u2018...\u2019),
+  # and straight single quotes ('...')
+  @inline_def_pattern Regex.compile!(
+                        "(?:\u201c[^\u201d]+\u201d|\u2018[^\u2019]+\u2019|'[^']+')\\s+(?:means|includes|has the)"
+                      )
 
-  # Citation pattern — term is a law title abbreviation (e.g. "1961 act", "principal regulations")
-  @citation_pattern ~r/\A\d{4}\s+(act|order|regulations?|rules?|directive|code|scheme|measure|charter|convention|treaty|statute)s?\z|\A(principal|amending|original)\s+(act|order|regulations?|rules?|directive)\z/iu
+  # Single-quoted term extraction (EU directives use curly single quotes \u2018...\u2019 or straight ')
+  @single_quote_term_pattern Regex.compile!("\\A\\s*(?:\u2018([^\u2019]+)\u2019|'([^']+)')")
+
+  # Citation pattern — term is a law title abbreviation (e.g. "1961 act", "principal regulations", "waste directive")
+  @citation_pattern ~r/\A\d{4}\s+(act|order|regulations?|rules?|directive|code|scheme|measure|charter|convention|treaty|statute)s?\z|\A(principal|amending|original)\s+(act|order|regulations?|rules?|directive)\z|\A\w[\w\s]*\s+directive\z/iu
 
   # Cross-reference patterns — definition text references another law
   @cross_ref_patterns [
@@ -256,20 +263,30 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   end
 
   # Fallback: scan all <Text> elements for inline "term" means... patterns
+  # Scans P2 elements first, then P1 elements without P2 children (EU directives)
   defp parse_inline_definitions(parsed, law_name, is_welsh) do
-    # Find P2 elements that contain definition-like text
-    p2_elements =
-      case xpath(parsed, ~x"//P2[@id]"l) do
+    p2_results = scan_elements_for_inline_defs(parsed, ~x"//P2[@id]"l, law_name, is_welsh)
+
+    if p2_results != [] do
+      p2_results
+    else
+      # EU directives have definitions in P1para with no P2 wrapper
+      scan_elements_for_inline_defs(parsed, ~x"//P1[@id]"l, law_name, is_welsh)
+    end
+  end
+
+  defp scan_elements_for_inline_defs(parsed, xpath_expr, law_name, is_welsh) do
+    elements =
+      case xpath(parsed, xpath_expr) do
         nil -> []
         list -> list
       end
 
-    p2_elements
-    |> Enum.flat_map(fn p2 ->
-      section_id = xpath(p2, ~x"./@id"s)
-      full_text = extract_plain_text(p2)
+    elements
+    |> Enum.flat_map(fn el ->
+      section_id = xpath(el, ~x"./@id"s)
+      full_text = extract_plain_text(el)
 
-      # Check if this P2 contains definition patterns
       if Regex.match?(@inline_def_pattern, full_text) do
         scope = detect_scope(full_text)
         extract_inline_defs(full_text, law_name, section_id, scope, is_welsh)
@@ -281,19 +298,25 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
   # Extract multiple definitions from a block of inline text
   # Text may look like: In these Regulations "term1" means def1; "term2" means def2;
+  # Also handles single-quoted EU directive style: 'term1' means def1; 'term2' means def2;
   defp extract_inline_defs(text, law_name, section_id, scope, is_welsh) do
-    # Split text on definition boundaries: each \u201cterm\u201d starts a new definition
-    # Use Regex.split to break text at each opening curly quote, keeping the delimiter
+    # Split text on definition boundaries: each quoted term starts a new definition
+    # Supports both curly quotes (\u201c) and straight single quotes (')
     chunks =
       Regex.split(
-        Regex.compile!("(?=\u201c)"),
+        Regex.compile!("(?=\u201c|\u2018|(?<=\\s)'(?=[a-z])|\\A'(?=[a-z]))", "u"),
         text,
         trim: true
       )
       |> Enum.filter(fn chunk ->
         # Only keep chunks that start with a quoted term followed by means/includes/has
-        String.starts_with?(chunk, "\u201c") and
-          Regex.match?(@inline_def_pattern, chunk)
+        starts =
+          String.starts_with?(chunk, "\u201c") or
+            String.starts_with?(chunk, "\u2018") or
+            String.starts_with?(chunk, "'")
+
+        matches = Regex.match?(@inline_def_pattern, chunk)
+        starts and matches
       end)
 
     chunks
@@ -395,15 +418,16 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         :no_term_element
 
       terms ->
-        # Get all direct text content from Text elements (not Term children)
-        # The XML is: <Text>"<Term>term</Term>" means definition...</Text>
-        # We want everything after the last closing quote: " means definition..."
-        text_nodes = xpath(item, ~x".//Text/text()"sl) || []
+        # Get full text of all <Text> elements via xmerl_text tree walk.
+        # This handles <Addition>, <Substitution>, <Citation> child elements
+        # that xpath(.//Text/text()) misses (it only returns direct text nodes).
+        text_elements = xpath(item, ~x".//Text"l) || []
 
-        # Text nodes from <Text> contain the parts outside <Term>:
-        # typically ['"', '" means the Mines and Quarries Act 1954 ;']
-        # Join and extract the definition part after the last closing quote
-        raw = Enum.join(text_nodes, "") |> String.replace(~r/\s+/, " ") |> String.trim()
+        raw =
+          text_elements
+          |> Enum.map_join("", &xmerl_text/1)
+          |> String.replace(~r/\s+/, " ")
+          |> String.trim()
 
         # Find definition after the last closing curly quote
         last_quote_pattern = Regex.compile!("\u201d[^\"\u201c\u201d]*$", "su")
@@ -541,7 +565,21 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         [{term, nil, strip_definition_prefix(rest)}]
 
       _ ->
-        []
+        # Try curly or straight single quotes (EU directives)
+        case Regex.run(@single_quote_term_pattern, text) do
+          [matched | captures] ->
+            term = Enum.find(captures, &(&1 != ""))
+
+            if term do
+              rest = String.slice(text, String.length(matched)..-1//1) |> String.trim()
+              [{term, nil, strip_definition_prefix(rest)}]
+            else
+              []
+            end
+
+          _ ->
+            []
+        end
     end
   end
 

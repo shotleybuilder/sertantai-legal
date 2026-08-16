@@ -307,7 +307,8 @@ defmodule SertantaiLegal.Scraper.RootResolver do
       definition
     ) and
       not Regex.match?(@law_type_year_re, definition) and
-      not Regex.match?(@short_name_re, definition)
+      not Regex.match?(@short_name_re, definition) and
+      not Regex.match?(~r/\bDirective\b/, definition)
   end
 
   # -- Citation extraction --
@@ -329,8 +330,27 @@ defmodule SertantaiLegal.Scraper.RootResolver do
             if section, do: "#{raw} #{section}", else: raw
 
           nil ->
-            nil
+            # Try abbreviation lookup: "the Waste Directive" → citation_index
+            extract_abbreviation_citation(definition, law_name, citation_index)
         end
+    end
+  end
+
+  # Match abbreviation-style references like "the Waste Directive", "the 2004 Act"
+  # by looking up the abbreviation in the citation_index for this law.
+  @abbreviation_re ~r/(?:the\s+)(\w[\w\s]*(?:Directive|Convention|Treaty|Code))\b/u
+  defp extract_abbreviation_citation(definition, law_name, citation_index) do
+    case Regex.run(@abbreviation_re, definition) do
+      [_full, abbrev] ->
+        key = {law_name, String.downcase(abbrev)}
+
+        case Map.get(citation_index, key) do
+          nil -> nil
+          full_title -> full_title
+        end
+
+      nil ->
+        nil
     end
   end
 
