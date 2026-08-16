@@ -82,7 +82,7 @@ opened: 2026-08-13
   - ✅ `regulatory provisions` — `@def_after_term_suffix` regex: `[^,]*` after "meaning" consumed law title with internal comma. Fixed to only consume qualifier words (given/assigned/specified + by/in/to/under)
   - ✅ `undertaking` — `@abbreviation_re` was too greedy, matched "same meaning as in the Waste Framework Directive" instead of just "Waste Framework Directive". Fixed to anchor on capitalised words (`[A-Z]\w*`). Now resolves to citation_only (parent law exists but term not defined there)
   - ✅ `local authority` self-ref linked: reg-2-1 → reg-6-1. Root cause: Strategy 3 dedup used `term` only. Fixed to `{term, section_id}`. Resolver now links internal refs to same-law root defs.
-  - ⬜ `emission`/`emission plan`/`transitional national plan` at reg-67-4: three definitions packed into one ListItem/row. Parser collapsed them into a single "emission" definition. Needs multi-def ListItem splitting.
+  - ⬜ `emission`/`emission plan`/`transitional national plan` at reg-67-4: Strategy 3 skip fix applied (skip P2s with Definition lists). But `find_section_id` assigns wrong section_id to Definition lists outside reg-2 — reg-67-4 definitions get section_id `regulation-2-1`. Root cause: fingerprint-based ancestor matching. Deferred to parser refactor session (2026-08-16-definition-parser-refactor).
   - 7 internal refs (`class`, `disposal`, `exempt groundwater activity`, etc.) — root defs not extracted from target regulation/schedule sections. Deeper parser gap for another session.
 - ⬜ Investigate 1,086 empty-definition parser records across 89 laws (non-citation, real parser bugs)
 - ⬜ Fix 7 UTF-8 encoding errors in persister (truncated multi-byte sequences)

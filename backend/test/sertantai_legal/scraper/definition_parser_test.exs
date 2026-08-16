@@ -852,6 +852,49 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── Strategy 3 must not override Strategy 1 references_other_law ──
+  # When Strategy 1 extracts "emission" from a Definition list with ref=false,
+  # Strategy 3 must not add a duplicate with ref=true from the P2 full text.
+
+  describe "parse/2 Strategy 3 does not override Strategy 1 for same {term, section_id}" do
+    test "emission in Definition list keeps references_other_law=false even when sibling defs are cross-refs" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-67">
+            <Pnumber>67</Pnumber>
+            <P1para>
+              <P2 id="regulation-67-4">
+                <Pnumber>4</Pnumber>
+                <P2para>
+                  <Text>In this regulation\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem><Para><Text>\u201c<Term id="term-emission">emission</Term>\u201d means the direct or indirect release of any substance from individual or diffuse sources;</Text></Para></ListItem>
+                    <ListItem><Para><Text>\u201c<Term id="term-emission-plan">emission plan</Term>\u201d has the meaning given in the LCP Regulations 2007;</Text></Para></ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_uksi_2016_1154", type_code: "uksi"})
+
+      emission = Enum.find(defs, &(&1.term == "emission"))
+      assert emission != nil
+
+      assert emission.references_other_law == false,
+             "emission should not be flagged as cross-ref"
+
+      plan = Enum.find(defs, &(&1.term == "emission plan"))
+      assert plan != nil
+      assert plan.references_other_law == true
+    end
+  end
+
   # ── Child elements inside <Term> ──────────────────────────────
   # Some <Term> elements contain child elements like <Acronym>:
   #   <Term><Acronym>CEN</Acronym>/TS 15359:2006</Term>

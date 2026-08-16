@@ -175,6 +175,19 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   end
 
   defp extract_section_terms(element, law_name) do
+    # Skip elements containing Definition lists — Strategy 1 handles those.
+    # Processing them here would use the full element text (all ListItems concatenated),
+    # giving wrong references_other_law flags for individual definitions.
+    has_def_list = (xpath(element, ~x".//UnorderedList[@Class='Definition']"l) || []) != []
+
+    if has_def_list do
+      []
+    else
+      do_extract_section_terms(element, law_name)
+    end
+  end
+
+  defp do_extract_section_terms(element, law_name) do
     section_id = xpath(element, ~x"./@id"s)
     term_elements = xpath(element, ~x".//Term"l) || []
     # Use xmerl_text for correct document-order text (extract_plain_text reorders Term text)
