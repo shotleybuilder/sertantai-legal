@@ -8,7 +8,7 @@ outcome: success
 summary: >
   Decomposed 766-line definition parser monolith into 6 focused modules using TDD.
   Fixed section_id bug (fingerprint-based parent lookup → P2/P1 top-down walk),
-  introduced %Definition{} struct, consolidated text extraction, and achieved Gemini
+  introduced Definition struct, consolidated text extraction, and achieved Gemini
   Grade A acceptance. 58 parser tests (11 new), 1,462 full suite, 0 failures.
 
 decisions:
@@ -20,9 +20,9 @@ decisions:
     why: Fingerprint search (first 40 chars of first ListItem, Enum.find over all P2s) was O(n), non-deterministic (first match wins), and caused wrong section_ids for Definition lists in later sections
     result: Deleted 5 functions (find_section_id, find_ancestor_id, detect_scope_from_context, detect_delegated_preamble, first_item_fingerprint), -63 lines
 
-  - what: %Definition{} struct with new/1 constructor
+  - what: "Definition struct with new/1 constructor"
     why: Same 10-field map constructed in 4 places with identical normalisation. Adding :source required editing all 4 — struct centralises construction and prevents field-addition bugs
-    result: Single Definition.new/1 with @enforce_keys, 4 call sites simplified to keyword-list construction
+    result: "Single Definition.new/1 with @enforce_keys, 4 call sites simplified to keyword-list construction"
 
   - what: Consolidate on text_content/1 (renamed xmerl_text)
     why: Two text extraction approaches (xpath-based extract_plain_text with known Term reordering bugs vs xmerl_text tree walk that was always correct). Dual approaches were a foot-gun for future maintainers
@@ -40,7 +40,7 @@ metrics:
   parser_lines: { before: 766, after_inversion: 703, after_struct: 642, after_text: 573, final_orchestrator: 67 }
   module_count: { total: 6, largest: 177, smallest: 67 }
   tests: { parser: 58, new: 11, full_suite: 1462, failures: 0 }
-  functions_deleted: { fingerprint: 5, text_extraction: 3, dedup: 4_map_sites }
+  functions_deleted: { fingerprint: 5, text_extraction: 3, dedup_map_sites: 4 }
   gemini_reviews: { count: 2, inversion_endorsed: true, final_grade: "A" }
 
 lessons:
