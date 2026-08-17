@@ -74,7 +74,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
     %__MODULE__{
       law_name: attrs[:law_name] || attrs.law_name,
       term: term,
-      term_welsh: if(attrs[:term_welsh], do: String.downcase(attrs[:term_welsh])),
+      term_welsh: if(attrs[:term_welsh], do: normalise_term(attrs[:term_welsh])),
       definition: definition,
       section_id: attrs[:section_id],
       scope: attrs[:scope],

@@ -22,24 +22,15 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
 
   @spec extract(tuple(), String.t(), boolean()) :: [Definition.t()]
   def extract(parsed, law_name, _is_welsh) do
-    p2_defs =
-      XmlUtils.xpath_list(parsed, ~x"//P2[@id]"l)
-      |> Enum.flat_map(&extract_section_terms(&1, law_name))
+    {p2s, p1s} = XmlUtils.section_elements(parsed)
 
-    p1_defs =
-      XmlUtils.xpath_list(parsed, ~x"//P1[@id]"l)
-      |> Enum.flat_map(&extract_p1_section_terms(&1, law_name))
+    p2_defs = Enum.flat_map(p2s, &extract_section_terms(&1, law_name))
+    p1_defs = Enum.flat_map(p1s, &extract_section_terms(&1, law_name))
 
     p2_terms = MapSet.new(p2_defs, & &1.term)
     new_p1_defs = Enum.reject(p1_defs, fn d -> MapSet.member?(p2_terms, d.term) end)
 
     p2_defs ++ new_p1_defs
-  end
-
-  @spec extract_p1_section_terms(tuple(), String.t()) :: [Definition.t()]
-  defp extract_p1_section_terms(p1, law_name) do
-    has_p2 = XmlUtils.xpath_list(p1, ~x"./P1para/P2"l) != []
-    if has_p2, do: [], else: extract_section_terms(p1, law_name)
   end
 
   @spec extract_section_terms(tuple(), String.t()) :: [Definition.t()]
@@ -84,7 +75,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
     )
   end
 
-  @spec build_section_def(String.t(), String.t(), String.t(), String.t(), atom()) ::
+  @spec build_section_def(String.t(), String.t(), String.t(), String.t(), Definition.scope()) ::
           [Definition.t()]
   defp build_section_def(term_text, full_text, law_name, section_id, scope) do
     definition =

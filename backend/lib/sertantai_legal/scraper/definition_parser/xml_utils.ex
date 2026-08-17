@@ -16,6 +16,24 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.XmlUtils do
   def xpath_list(node, expr), do: xpath(node, expr) || []
 
   @doc """
+  Return all P2 elements and P1 elements without P2 children from the parsed XML.
+
+  P1 elements that contain P2 children are excluded to avoid double-processing —
+  their content is already covered by the P2 scan. This is the standard iteration
+  pattern used by all three strategies.
+  """
+  @spec section_elements(tuple()) :: {p2 :: [tuple()], p1 :: [tuple()]}
+  def section_elements(parsed) do
+    p2s = xpath_list(parsed, ~x"//P2[@id]"l)
+
+    p1s =
+      xpath_list(parsed, ~x"//P1[@id]"l)
+      |> Enum.reject(fn p1 -> xpath_list(p1, ~x"./P1para/P2"l) != [] end)
+
+    {p2s, p1s}
+  end
+
+  @doc """
   Walk xmerl tree in true document order, concatenating all text nodes.
 
   Unlike `xpath(.//text())`, this preserves the position of child element text

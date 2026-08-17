@@ -24,14 +24,10 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
 
   @spec extract(tuple(), String.t(), boolean()) :: [Definition.t()]
   def extract(parsed, law_name, is_welsh) do
-    p2_defs =
-      XmlUtils.xpath_list(parsed, ~x"//P2[@id]"l)
-      |> Enum.flat_map(&extract_from_element(&1, law_name, is_welsh, :p2))
+    {p2s, p1s} = XmlUtils.section_elements(parsed)
 
-    p1_defs =
-      XmlUtils.xpath_list(parsed, ~x"//P1[@id]"l)
-      |> Enum.reject(fn p1 -> XmlUtils.xpath_list(p1, ~x"./P1para/P2"l) != [] end)
-      |> Enum.flat_map(&extract_from_element(&1, law_name, is_welsh, :p1))
+    p2_defs = Enum.flat_map(p2s, &extract_from_element(&1, law_name, is_welsh, :p2))
+    p1_defs = Enum.flat_map(p1s, &extract_from_element(&1, law_name, is_welsh, :p1))
 
     p2_defs ++ p1_defs
   end
@@ -78,7 +74,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
     end
   end
 
-  @spec extract_definitions(tuple(), String.t(), String.t() | nil, atom(), boolean()) ::
+  @spec extract_definitions(tuple(), String.t(), String.t() | nil, Definition.scope(), boolean()) ::
           [Definition.t()]
   defp extract_definitions(item, law_name, section_id, scope, is_welsh) do
     case extract_via_term_element(item) do

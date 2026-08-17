@@ -22,21 +22,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.InlineTextStrategy do
 
   @spec extract(tuple(), String.t(), boolean()) :: [Definition.t()]
   def extract(parsed, law_name, is_welsh) do
-    p2_defs = scan_elements(parsed, ~x"//P2[@id]"l, law_name, is_welsh)
+    {p2s, p1s} = XmlUtils.section_elements(parsed)
 
-    # P1 elements without P2 children (EU directives with P1-level definitions)
-    p1_defs =
-      XmlUtils.xpath_list(parsed, ~x"//P1[@id]"l)
-      |> Enum.reject(fn p1 -> XmlUtils.xpath_list(p1, ~x"./P1para/P2"l) != [] end)
-      |> Enum.flat_map(&scan_element(&1, law_name, is_welsh))
+    p2_defs = Enum.flat_map(p2s, &scan_element(&1, law_name, is_welsh))
+    p1_defs = Enum.flat_map(p1s, &scan_element(&1, law_name, is_welsh))
 
     p2_defs ++ p1_defs
-  end
-
-  @spec scan_elements(tuple(), SweetXml.xpath_sigil(), String.t(), boolean()) :: [Definition.t()]
-  defp scan_elements(parsed, xpath_expr, law_name, is_welsh) do
-    XmlUtils.xpath_list(parsed, xpath_expr)
-    |> Enum.flat_map(&scan_element(&1, law_name, is_welsh))
   end
 
   @spec scan_element(tuple(), String.t(), boolean()) :: [Definition.t()]
@@ -62,7 +53,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.InlineTextStrategy do
     end
   end
 
-  @spec extract_inline_defs(String.t(), String.t(), String.t(), atom(), boolean()) ::
+  @spec extract_inline_defs(String.t(), String.t(), String.t(), Definition.scope(), boolean()) ::
           [Definition.t()]
   defp extract_inline_defs(text, law_name, section_id, scope, is_welsh) do
     chunks =

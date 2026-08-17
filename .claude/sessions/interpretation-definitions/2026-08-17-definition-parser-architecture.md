@@ -1,12 +1,108 @@
 ---
 session: Definition Parser Architecture
-status: active
+status: closed
 opened: 2026-08-17
+closed: 2026-08-17
+outcome: success
+
+summary: >
+  Decomposed 766-line definition parser monolith into 6 focused modules using TDD.
+  Fixed section_id bug (fingerprint-based parent lookup → P2/P1 top-down walk),
+  introduced %Definition{} struct, consolidated text extraction, and achieved Gemini
+  Grade A acceptance. 58 parser tests (11 new), 1,462 full suite, 0 failures.
+
+decisions:
+  - what: TDD red/green/refactor cycle for the inversion
+    why: Section_id bug was highest-value fix; writing failing tests first proved the bug existed and confirmed the fix worked
+    result: 3 tests failed against fingerprint implementation, all green after inversion
+
+  - what: Walk P2/P1 elements top-down instead of fingerprint search
+    why: Fingerprint search (first 40 chars of first ListItem, Enum.find over all P2s) was O(n), non-deterministic (first match wins), and caused wrong section_ids for Definition lists in later sections
+    result: Deleted 5 functions (find_section_id, find_ancestor_id, detect_scope_from_context, detect_delegated_preamble, first_item_fingerprint), -63 lines
+
+  - what: %Definition{} struct with new/1 constructor
+    why: Same 10-field map constructed in 4 places with identical normalisation. Adding :source required editing all 4 — struct centralises construction and prevents field-addition bugs
+    result: Single Definition.new/1 with @enforce_keys, 4 call sites simplified to keyword-list construction
+
+  - what: Consolidate on text_content/1 (renamed xmerl_text)
+    why: Two text extraction approaches (xpath-based extract_plain_text with known Term reordering bugs vs xmerl_text tree walk that was always correct). Dual approaches were a foot-gun for future maintainers
+    result: Deleted extract_plain_text, extract_text_with_abbreviations, interleave_text_parts. Surfaced a new bug — S2 needed to skip <Term> elements (S3 territory) now that text_content produced cleaner text
+
+  - what: Keep _is_welsh param in S3 extract/3 despite being unused
+    why: Uniform extract/3 interface across all strategies matters more than removing one unused param. Breaking interface consistency for a cosmetic change is net negative
+    result: Declined Gemini suggestion, kept _is_welsh prefixed with underscore
+
+  - what: XmlUtils.section_elements/1 shared helper
+    why: All 3 strategies repeated the same P2/P1 iteration with P2-child rejection on P1. Gemini flagged the duplication
+    result: Single helper returning {p2s, p1s} tuple, used by all 3 strategy extract/3 functions
+
+metrics:
+  parser_lines: { before: 766, after_inversion: 703, after_struct: 642, after_text: 573, final_orchestrator: 67 }
+  module_count: { total: 6, largest: 177, smallest: 67 }
+  tests: { parser: 58, new: 11, full_suite: 1462, failures: 0 }
+  functions_deleted: { fingerprint: 5, text_extraction: 3, dedup: 4_map_sites }
+  gemini_reviews: { count: 2, inversion_endorsed: true, final_grade: "A" }
+
+lessons:
+  - title: text_content consolidation surfaces hidden strategy overlaps
+    detail: >
+      Replacing extract_plain_text (xpath-based) with text_content (tree walk)
+      changed the text output for S2's inline scan. The cleaner document-order text
+      from text_content matched the inline_def_pattern on elements containing <Term>
+      elements — which should be S3's territory. Fix: S2 now skips elements with
+      <Term> (same skip guard pattern as Definition lists). Consolidating to one
+      text extraction approach is correct, but test immediately — the behavioural
+      change in text output can cause strategy boundary violations.
+    tag: data
+
+  - title: TDD red phase proves the bug before you fix it
+    detail: >
+      Writing the section_id test first (waste defined in both reg-2-1 and reg-67-4)
+      produced exactly the expected failure: "Expected 2 'waste' definitions, got 1:
+      ['regulation-2-1']". The second waste definition got wrong section_id, dedup
+      merged them, and one was silently lost. Seeing the failure message confirmed
+      the root cause before writing any fix code.
+    tag: tooling
+
+  - title: Uniform strategy interface enables clean orchestration
+    detail: >
+      All 3 strategies export extract/3 with identical signature (parsed, law_name, is_welsh).
+      The orchestrator is 67 lines — just parse XML, call all three, deduplicate.
+      When Gemini suggested removing _is_welsh from S3 (unused), we declined because
+      breaking interface uniformity costs more than an unused parameter.
+    tag: tooling
+
+  - title: S2 unconditional P1 scan needs P2-child rejection
+    detail: >
+      Removing the if p2_results != [] guard from S2 (to match the "run unconditionally"
+      principle) caused double-counting. P1 elements containing P2 children were scanned
+      by both the P2 pass and the P1 pass, producing duplicates with different section_ids
+      (P2's @id vs P1's @id). Fix: same P2-child rejection used by S1 and S3 — now
+      centralised in XmlUtils.section_elements/1.
+    tag: data
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/definition_parser.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser/definition.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser/xml_utils.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser/definition_list_strategy.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser/inline_text_strategy.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser/section_term_strategy.ex
+  - backend/lib/sertantai_legal/scraper/definition_persister.ex
+  - backend/test/sertantai_legal/scraper/definition_parser_test.exs
+  - backend/data/code-reviews/2026-08-17-definition-parser-inversion.md
+  - backend/data/code-reviews/2026-08-17-definition-parser-final-acceptance.md
+
 depends_on:
   - interpretation-definitions/2026-08-16-definition-parser-refactor
+
+enables:
+  - Re-parse all laws to fix stale section_ids from fingerprint era
+  - Definition links junction table ElectricSQL shape (from backfill session)
+  - Investigate 1,086 empty-definition parser records across 89 laws
 ---
 
-# Session: Definition Parser Architecture (ACTIVE)
+# Session: Definition Parser Architecture (CLOSED)
 
 ## Problem
 
@@ -29,7 +125,15 @@ The section_id bug: Definition lists outside regulation-2 (e.g. regulation-67-4 
 - ✅ Add `:debug` logging for regex compile failures in `extract_definition_after_term`
 - ✅ `@spec` on all public and private functions across all 6 modules
 - ✅ Final test pass — 1,462 tests, 0 failures
-- ⬜ Gemini review of completed refactor (optional, can do separately)
+- ✅ Gemini final acceptance review — Grade A, production-ready
+
+### Gemini suggestions (non-blocking)
+
+- ✅ `term_welsh` now uses `normalise_term/1` (strips quotes, articles) instead of just `downcase`
+- ✅ Tightened `context` spec on `parse/2` to `%{:law_name => String.t(), optional(:type_code) => String.t()}`
+- ✅ Strategy specs use `Definition.scope()` instead of `atom()` (3 call sites)
+- ❌ Remove `_is_welsh` from S3 — kept for uniform `extract/3` interface across all strategies
+- ✅ Extracted `XmlUtils.section_elements/1` — returns `{p2s, p1s}` with P2-child rejection, used by all 3 strategies
 
 ## Dependencies
 

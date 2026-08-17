@@ -37,7 +37,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
   List of `%Definition{}` structs.
   """
-  @spec parse(String.t(), map()) :: [Definition.t()]
+  @spec parse(String.t(), %{:law_name => String.t(), optional(:type_code) => String.t()}) ::
+          [Definition.t()]
   def parse(xml, %{law_name: law_name} = context) when is_binary(xml) do
     type_code = Map.get(context, :type_code, "uksi")
     is_welsh = type_code == "wsi"
