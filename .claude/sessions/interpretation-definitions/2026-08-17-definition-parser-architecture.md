@@ -24,11 +24,12 @@ The section_id bug: Definition lists outside regulation-2 (e.g. regulation-67-4 
 - ✅ Extract `Definition` struct with `new/1` constructor, replace 4 map construction sites (parser 703→642 lines)
 - ✅ Consolidate text extraction on `text_content/1` + `xpath_list/2` helper (642→573 lines, deleted 3 functions)
 - ✅ S2 now skips elements with `<Term>` elements (S3 territory) — caught by text_content behavioural change
-- ⬜ Module decomposition: orchestrator + strategy modules + XmlUtils + Definition struct
-- ⬜ Add `@spec` to all public and private functions
-- ⬜ Remove S2 internal P2→P1 conditional, scan both unconditionally
-- ⬜ Add `:debug` logging for runtime regex compile failures in `extract_definition_after_term`
-- ⬜ Final test pass + Gemini review of completed refactor
+- ✅ Module decomposition: 6 modules, largest 177 lines, orchestrator 67 lines, @spec on all public functions
+- ✅ Remove S2 internal P2→P1 conditional — scan both unconditionally with P2-child rejection on P1
+- ✅ Add `:debug` logging for regex compile failures in `extract_definition_after_term`
+- ✅ `@spec` on all public and private functions across all 6 modules
+- ✅ Final test pass — 1,462 tests, 0 failures
+- ⬜ Gemini review of completed refactor (optional, can do separately)
 
 ## Dependencies
 
