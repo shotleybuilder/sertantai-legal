@@ -73,10 +73,23 @@ CREATE TABLE dependencies (
     target TEXT NOT NULL
 );
 
+CREATE TABLE bugs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL REFERENCES sessions(id),
+    pattern TEXT NOT NULL,
+    category TEXT,
+    module TEXT,
+    affected INTEGER,
+    fix TEXT,
+    status TEXT DEFAULT 'open'
+);
+
 CREATE INDEX idx_sessions_status ON sessions(status);
 CREATE INDEX idx_sessions_opened ON sessions(opened);
 CREATE INDEX idx_lessons_tag ON lessons(tag);
 CREATE INDEX idx_dependencies_direction ON dependencies(direction);
+CREATE INDEX idx_bugs_status ON bugs(status);
+CREATE INDEX idx_bugs_module ON bugs(module);
 """
 
 
@@ -163,6 +176,23 @@ def index_session(conn: sqlite3.Connection, filepath: Path, sessions_dir: Path):
                 (sid, a),
             )
 
+    # Bugs
+    for b in fm.get("bugs") or []:
+        if isinstance(b, dict):
+            conn.execute(
+                "INSERT INTO bugs (session_id, pattern, category, module, affected, fix, status) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    sid,
+                    b.get("pattern", ""),
+                    b.get("category"),
+                    b.get("module"),
+                    b.get("affected"),
+                    b.get("fix"),
+                    b.get("status", "open"),
+                ),
+            )
+
     # Dependencies
     for target in fm.get("depends_on") or []:
         if isinstance(target, str):
@@ -185,7 +215,7 @@ def build_index(sessions_dir: Path, db_path: Path):
     conn = sqlite3.connect(str(db_path))
 
     # Drop and recreate (idempotent rebuild)
-    for table in ["dependencies", "artifacts", "metrics", "lessons", "decisions", "sessions"]:
+    for table in ["bugs", "dependencies", "artifacts", "metrics", "lessons", "decisions", "sessions"]:
         conn.execute(f"DROP TABLE IF EXISTS {table}")
     conn.executescript(SCHEMA)
 
@@ -201,7 +231,7 @@ def build_index(sessions_dir: Path, db_path: Path):
 
     # Summary
     counts = {}
-    for table in ["sessions", "decisions", "lessons", "metrics", "artifacts", "dependencies"]:
+    for table in ["sessions", "decisions", "lessons", "metrics", "artifacts", "dependencies", "bugs"]:
         row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
         counts[table] = row[0]
 

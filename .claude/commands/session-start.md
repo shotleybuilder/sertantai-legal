@@ -52,6 +52,26 @@ For PENDING sessions (scoped but not starting now), use `status: pending` in the
    - Gemini review feedback (when requested)
    - Comparison tables (when data exists)
 
+6. **Bugs block** — when investigating data quality or code issues, log discovered bugs in the frontmatter as you find them. Don't batch at session close — add each bug as it's discovered so findings survive session compaction. Bugs are indexed into SQLite on session close/rebuild.
+
+```yaml
+bugs:
+  - pattern: "Short description of the bug pattern"
+    category: <diagnostic category or free text>
+    module: <which module needs fixing>
+    affected: <count of affected records, if known>
+    fix: "Suggested fix approach"
+    status: <open | fixed>
+```
+
+For "fix bugs" sessions, query open bugs at the start:
+```bash
+sqlite3 .claude/sessions/sessions.db \
+  "SELECT pattern, module, affected FROM bugs WHERE status = 'open' ORDER BY affected DESC;"
+```
+
+When fixing a bug from a previous session, add a `bugs` entry with `status: fixed` in the current session's frontmatter — the indexer picks up the latest status on rebuild.
+
 ## Resume a PENDING or SUSPENDED session
 
 0. **Find the session** by querying the SQLite index (sessions may live in subdirectories that glob misses):

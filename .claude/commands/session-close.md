@@ -33,6 +33,14 @@ lessons:
     detail: <context and explanation>
     tag: <infrastructure | sync | schema | zenoh | baserow | data | tooling>
 
+bugs:
+  - pattern: <short description of the bug pattern>
+    category: <diagnostic category or free text>
+    module: <which module needs fixing>
+    affected: <count of affected records>
+    fix: <suggested fix approach>
+    status: <open | fixed>
+
 artifacts:
   - <path to file created or modified>
 
@@ -48,6 +56,7 @@ enables:
    - **decisions**: Extract from architecture decisions, Gemini reviews, or explicit choices documented in the session
    - **metrics**: Extract any accuracy numbers, counts, benchmarks, timings
    - **lessons**: Focus on what was surprising, what failed, what the user corrected, what worked unexpectedly well. These should be useful to a future AI or human encountering the same situation
+   - **bugs**: Preserve any `bugs` entries already in the frontmatter (added during the session as they were discovered). Do NOT remove or rewrite them — they may have been added mid-session and should survive into the closed frontmatter unchanged. Only add new bugs if the session close reveals additional findings not yet captured.
    - **artifacts**: List scripts, configs, data files created during the session
    - **depends_on / enables**: Trace the session graph from context
 
