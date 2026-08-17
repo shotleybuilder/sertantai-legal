@@ -1,10 +1,10 @@
 ---
 session: Definition Backfill & QA
-status: active
+status: suspended
 opened: 2026-08-13
 ---
 
-# Session: Definition Backfill & QA (ACTIVE)
+# Session: Definition Backfill & QA (SUSPENDED)
 
 ## Problem
 
@@ -91,28 +91,21 @@ opened: 2026-08-13
 
 ## Resume Notes
 
-**Status (2026-08-15)**: All making laws backfilled (66K+ definitions). Parser fixes committed but not pushed. 1,086 empty-definition records remain across 89 laws — these are **parser bugs to investigate**, not deletable noise.
+**Status (2026-08-17)**: Major session covering 3 laws (RRFSO, WEEE, EP Regs). All committed and pushed. 69 tests passing.
 
-**Uncommitted changes**: Parser fixes + citation column. Run `git status` to see, then commit and push.
+**What was done this session (2026-08-17)**:
+- Junction table (`definition_links`) replacing single FK `root_definition_id` — Gemini-reviewed decision for customer-facing data integrity
+- Parser: 3 new Strategy 3 patterns (P1 scan, parenthetical "referred to as", scope fix), `<Addition>`-wrapped text fix, curly single quotes for EU directives, P1 fallback in Strategy 2, citation pattern for `<name> directive`, comma-in-law-title fix, Strategy 3 skip for P2s with Definition lists, dedup fix `{term, section_id}`
+- Resolver: pronoun "that Act" resolution, abbreviation citation lookup, `internal_ref?` excludes Directives, `extract_eu_law_name/1` for EU law matching, self-referential linking within same law
+- Parsed EU Waste Directive 2008/98/EC (26 defs), WEEE→Waste Directive links working, Housing Act 2004 both England+Wales defs linked
 
-**Next step: investigate empty-definition parser bugs**
+**Blocked on**: `find_section_id` fingerprint bug — Definition lists outside reg-2 get wrong section_id. Deferred to parser refactor session (2026-08-16-definition-parser-refactor.md).
 
-1. legislation.gov.uk was down (504) when we suspended. Wait for it to come back.
-2. Query the empty-def records: `SELECT term, law_name FROM legislative_definitions WHERE (definition IS NULL OR trim(definition) = '') AND source = 'parser' AND citation = false ORDER BY law_name;`
-3. Pick a law (e.g. `UK_uksi_1975_2116` — has "best practicable means" with empty def), fetch its body XML, and examine what the Definition list looks like.
-4. The pattern is: parser extracts the term from the ListItem but fails to extract the definition text. TDD: write a test with the failing XML, fix the parser, re-parse affected laws.
-5. After fixing, delete any remaining genuinely empty records.
-
-**After empty-def fix**:
-- Run CSV scope backfill: `mix definitions.backfill --scope csv`
-- NAS snapshot: `./scripts/nas/nas-backup.sh --db-only`
-
-**DB stats (2026-08-15)**:
-- Total definitions: ~65K (after 1,160 empty deletions + re-parse)
-- Parser-extracted: ~55K, CSV legacy: ~11K
-- Citation flagged: 3,691
-- Empty definitions: 1,086 (bug — to fix)
-- Null scope: ~41%
+**Next steps**:
+1. Parser refactor session (pending) — fix `find_section_id`, add `:source` provenance, single dedup function
+2. After refactor: re-parse all laws to fix stale `references_other_law` flags and section_id misattributions
+3. Then: investigate 1,541 empty-definition records, CSV scope backfill, NAS snapshot
+4. GitHub issues raised: #145 (term normalisation re-use/reuse), #146 (broken cross-ref chain detection feature)
 
 ## Dependencies
 

@@ -80,30 +80,25 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
     parsed = SweetXml.parse(xml, quiet: true)
 
-    # Strategy 1: structured Class="Definition" lists (preferred)
-    results = parse_definition_lists(parsed, law_name, is_welsh)
+    # Run all three strategies unconditionally
+    s1 = parse_definition_lists(parsed, law_name, is_welsh)
+    s2 = parse_inline_definitions(parsed, law_name, is_welsh)
+    s3 = parse_section_term_definitions(parsed, law_name, is_welsh)
 
-    # Strategy 2: fallback text scan for inline definitions (only if S1 found nothing)
-    results =
-      if results == [] do
-        parse_inline_definitions(parsed, law_name, is_welsh)
-      else
-        results
-      end
+    # Single dedup with explicit priority: S1 > S2 > S3
+    # For each {term, section_id} key, the highest-priority strategy wins.
+    deduplicate(s1 ++ s2 ++ s3)
+  end
 
-    # Strategy 3: <Term> elements in running text outside Definition lists
-    # (e.g. NRSWA 1991 s.49 defines "street authority" in a regular provision)
-    # Always runs — complements S1/S2 with section-level definitions
-    existing_keys = MapSet.new(results, &{&1.term, &1.section_id})
-    section_defs = parse_section_term_definitions(parsed, law_name, is_welsh)
+  @source_priority %{definition_list: 0, inline_text: 1, section_term: 2}
 
-    # Only add terms not already found by S1/S2 at the same section
-    new_defs =
-      Enum.reject(section_defs, fn d ->
-        MapSet.member?(existing_keys, {d.term, d.section_id})
-      end)
-
-    results ++ new_defs
+  defp deduplicate(definitions) do
+    definitions
+    |> Enum.group_by(&{&1.term, &1.section_id})
+    |> Enum.flat_map(fn {_key, defs} ->
+      # Keep the single definition with highest priority (lowest number)
+      [Enum.min_by(defs, &Map.fetch!(@source_priority, &1.source))]
+    end)
   end
 
   # Parse structured <UnorderedList Class="Definition"> elements
@@ -240,7 +235,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
             section_id: section_id,
             scope: scope,
             references_other_law: references_other_law?(definition),
-            citation: citation?(normalise_term(term_text))
+            citation: citation?(normalise_term(term_text)),
+            source: :section_term
           }
         ]
     end
@@ -301,14 +297,21 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
     elements
     |> Enum.flat_map(fn el ->
-      section_id = xpath(el, ~x"./@id"s)
-      full_text = extract_plain_text(el)
+      # Skip elements containing Definition lists — Strategy 1 handles those
+      has_def_list = (xpath(el, ~x".//UnorderedList[@Class='Definition']"l) || []) != []
 
-      if Regex.match?(@inline_def_pattern, full_text) do
-        scope = detect_scope(full_text)
-        extract_inline_defs(full_text, law_name, section_id, scope, is_welsh)
-      else
+      if has_def_list do
         []
+      else
+        section_id = xpath(el, ~x"./@id"s)
+        full_text = extract_plain_text(el)
+
+        if Regex.match?(@inline_def_pattern, full_text) do
+          scope = detect_scope(full_text)
+          extract_inline_defs(full_text, law_name, section_id, scope, is_welsh)
+        else
+          []
+        end
       end
     end)
   end
@@ -350,7 +353,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
           section_id: section_id,
           scope: scope,
           references_other_law: references_other_law?(definition),
-          citation: citation?(normalise_term(term))
+          citation: citation?(normalise_term(term)),
+          source: :inline_text
         }
       end)
     end)
@@ -372,7 +376,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
             section_id: section_id,
             scope: scope,
             references_other_law: references_other_law?(definition),
-            citation: citation?(normalise_term(term))
+            citation: citation?(normalise_term(term)),
+            source: :definition_list
           }
         end)
 
@@ -399,7 +404,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
               section_id: section_id,
               scope: scope,
               references_other_law: references_other_law?(definition),
-              citation: citation?(normalise_term(term))
+              citation: citation?(normalise_term(term)),
+              source: :definition_list
             }
           end)
         end

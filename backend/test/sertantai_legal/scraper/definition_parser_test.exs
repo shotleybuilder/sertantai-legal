@@ -65,6 +65,10 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     test "all definitions have non-empty definition text", %{defs: defs} do
       assert Enum.all?(defs, fn d -> d.definition != nil and d.definition != "" end)
     end
+
+    test "all definitions have source :definition_list", %{defs: defs} do
+      assert Enum.all?(defs, &(&1.source == :definition_list))
+    end
   end
 
   # ── RIDDOR 2013 ────────────────────────────────────────────────
@@ -135,6 +139,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     test "all definitions have correct law_name", %{defs: defs} do
       assert Enum.all?(defs, &(&1.law_name == "UK_uksi_2013_1471"))
     end
+
+    test "definitions have correct source provenance", %{defs: defs} do
+      sources = defs |> Enum.map(& &1.source) |> Enum.uniq() |> Enum.sort()
+      assert :definition_list in sources
+      assert Enum.all?(defs, &(&1.source in [:definition_list, :section_term]))
+    end
   end
 
   # ── Edge cases ─────────────────────────────────────────────────
@@ -172,6 +182,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert hd(defs).term == "coarse fish"
       assert hd(defs).scope == :law
       assert hd(defs).section_id == "regulation-2-1"
+      assert hd(defs).source == :inline_text
     end
 
     test "extracts multiple inline definitions from one P2" do
@@ -203,6 +214,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       terms = Enum.map(defs, & &1.term) |> Enum.sort()
       assert terms == ["vehicle", "wagon"]
       assert Enum.all?(defs, &(&1.scope == :provision))
+      assert Enum.all?(defs, &(&1.source == :inline_text))
     end
   end
 
@@ -560,6 +572,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       sm = Enum.find(defs, &(&1.term == "street managers"))
       assert sm != nil, "Expected 'street managers' to be extracted"
       assert String.contains?(sm.definition, "liable to the public")
+
+      assert Enum.all?(defs, &(&1.source == :section_term))
     end
   end
 
@@ -611,6 +625,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert rp.scope == :law
       assert String.contains?(rp.definition, "employer")
       assert rp.references_other_law == false
+      assert rp.source == :section_term
     end
 
     test "extracts definition from P2 with Term + means— and nested P3/P4" do
@@ -681,6 +696,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert an != nil, "Expected 'alterations notice' to be extracted"
       assert an.section_id == "article-29-1"
       assert String.contains?(an.definition, "enforcing authority may serve")
+      assert an.source == :section_term
     end
 
     test "extracts term from 'referred to as <Term>' at end of sentence" do
@@ -779,9 +795,11 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert la != nil, "Expected 'licensing authority' to be extracted"
       assert la.section_id == "article-42-3"
       assert String.contains?(la.definition, "authority responsible for issuing")
+      assert la.source == :section_term
 
       rl = Enum.find(defs, &(&1.term == "relevant licence"))
       assert rl != nil, "Expected 'relevant licence' to be extracted"
+      assert rl.source == :section_term
     end
   end
 
@@ -847,8 +865,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert "regulation-2-1" in sections
       assert "regulation-6-1" in sections
 
+      delegated = Enum.find(la_defs, &(&1.section_id == "regulation-2-1"))
+      assert delegated.source == :definition_list
+
       root = Enum.find(la_defs, &(&1.section_id == "regulation-6-1"))
       assert String.contains?(root.definition, "district council")
+      assert root.source == :section_term
     end
   end
 
@@ -892,6 +914,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       plan = Enum.find(defs, &(&1.term == "emission plan"))
       assert plan != nil
       assert plan.references_other_law == true
+
+      assert Enum.all?(defs, &(&1.source == :definition_list))
     end
   end
 
@@ -1059,6 +1083,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       coll = Enum.find(defs, &(&1.term == "collection"))
       assert coll != nil, "Expected 'collection' to be extracted"
       assert String.contains?(coll.definition, "gathering of waste")
+
+      assert Enum.all?(defs, &(&1.source == :inline_text))
     end
   end
 
@@ -1093,6 +1119,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert rp != nil, "Expected 'regulatory provisions' to be extracted"
       assert String.contains?(rp.definition, "Small Business, Enterprise and Employment Act 2015")
       assert rp.references_other_law == true
+      assert rp.source == :section_term
     end
   end
 
@@ -1140,6 +1167,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
         assert d.definition != ""
         assert String.contains?(d.definition, "Regulation 996/2010")
         assert d.references_other_law == true
+        assert d.source == :definition_list
       end
     end
 

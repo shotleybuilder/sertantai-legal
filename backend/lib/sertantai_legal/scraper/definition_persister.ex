@@ -35,12 +35,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
   def persist(definitions, law_name) when is_list(definitions) and is_binary(law_name) do
     now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
-    # Deduplicate on (law_name, term, section_id) — last occurrence wins
-    definitions =
-      definitions
-      |> Enum.reduce(%{}, fn d, acc -> Map.put(acc, {d.law_name, d.term, d.section_id}, d) end)
-      |> Map.values()
-
+    # Parser guarantees uniqueness on {term, section_id} via deduplicate/1
     insert_maps =
       Enum.map(definitions, fn d ->
         %{
