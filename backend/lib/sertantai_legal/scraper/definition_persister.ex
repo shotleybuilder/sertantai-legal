@@ -47,7 +47,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
           section_id: d.section_id,
           scope: scope_to_string(d.scope),
           references_other_law: d.references_other_law,
-          citation: d[:citation] || false,
+          citation: d.citation,
           source: "parser",
           inserted_at: now,
           updated_at: now

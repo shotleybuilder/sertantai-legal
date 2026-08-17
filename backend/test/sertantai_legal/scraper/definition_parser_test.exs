@@ -1205,4 +1205,239 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       end
     end
   end
+
+  # ── TDD: section_id bug — fingerprint matches wrong P2 ────────
+  # When the same term appears in Definition lists in two different sections,
+  # the fingerprint-based find_section_id returns the FIRST P2 match for both,
+  # giving the second list the wrong section_id. The inverted approach (walking
+  # P2 elements top-down) assigns the correct section_id from the parent element.
+
+  describe "parse/2 assigns correct section_id to Definition lists in different sections" do
+    setup do
+      # Two P2 sections each with their own Definition list.
+      # "waste" appears in both — reg-2-1 (law-wide) and reg-67-4 (regulation-specific).
+      # The fingerprint for reg-67-4's list is "waste", which also appears in reg-2-1's text.
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem><Para><Text>\u201c<Term id="term-waste">waste</Term>\u201d means any substance or object which the holder discards;</Text></Para></ListItem>
+                    <ListItem><Para><Text>\u201c<Term id="term-operator">operator</Term>\u201d means any natural or legal person who operates an installation;</Text></Para></ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+          <P1 id="regulation-67">
+            <Pnumber>67</Pnumber>
+            <P1para>
+              <P2 id="regulation-67-4">
+                <Pnumber>4</Pnumber>
+                <P2para>
+                  <Text>In this regulation\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem><Para><Text>\u201c<Term id="term-waste-2">waste</Term>\u201d means waste as classified under Commission Decision 2000/532/EC;</Text></Para></ListItem>
+                    <ListItem><Para><Text>\u201c<Term id="term-emission">emission</Term>\u201d means the direct or indirect release of substances;</Text></Para></ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs =
+        DefinitionParser.parse(xml, %{law_name: "UK_uksi_2016_1154", type_code: "uksi"})
+
+      %{defs: defs}
+    end
+
+    test "regulation-2-1 definitions have correct section_id", %{defs: defs} do
+      reg2_defs = Enum.filter(defs, &(&1.section_id == "regulation-2-1"))
+      reg2_terms = Enum.map(reg2_defs, & &1.term) |> Enum.sort()
+      assert "operator" in reg2_terms
+      # "waste" at reg-2-1 should exist (law-wide definition)
+      assert "waste" in reg2_terms
+    end
+
+    test "regulation-67-4 definitions have correct section_id", %{defs: defs} do
+      reg67_defs = Enum.filter(defs, &(&1.section_id == "regulation-67-4"))
+      reg67_terms = Enum.map(reg67_defs, & &1.term) |> Enum.sort()
+      assert "emission" in reg67_terms
+      # "waste" at reg-67-4 should exist (regulation-specific definition)
+      assert "waste" in reg67_terms,
+             "Expected 'waste' at regulation-67-4 but found it at: #{inspect(Enum.filter(defs, &(&1.term == "waste")) |> Enum.map(& &1.section_id))}"
+    end
+
+    test "both 'waste' definitions are preserved with different section_ids", %{defs: defs} do
+      waste_defs = Enum.filter(defs, &(&1.term == "waste"))
+
+      assert length(waste_defs) == 2,
+             "Expected 2 'waste' definitions, got #{length(waste_defs)}: #{inspect(Enum.map(waste_defs, & &1.section_id))}"
+
+      waste_sections = Enum.map(waste_defs, & &1.section_id) |> Enum.sort()
+      assert waste_sections == ["regulation-2-1", "regulation-67-4"]
+    end
+
+    test "regulation-67-4 definitions have provision scope", %{defs: defs} do
+      reg67_defs = Enum.filter(defs, &(&1.section_id == "regulation-67-4"))
+
+      assert Enum.all?(reg67_defs, &(&1.scope == :provision)),
+             "reg-67-4 preamble 'In this regulation' should give :provision scope"
+    end
+
+    test "total definition count is 4 (2 per section)", %{defs: defs} do
+      assert length(defs) == 4
+    end
+  end
+
+  # ── TDD: Definition list nested inside P3 under P2 ────────────
+  # Some instruments nest Definition lists inside P3 elements under a P2.
+  # The section_id should be the P2's id (the nearest ancestor with an @id).
+
+  describe "parse/2 with Definition list nested in P3 under P2" do
+    test "assigns P2 section_id to Definition list inside P3" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-5">
+            <Pnumber>5</Pnumber>
+            <P1para>
+              <P2 id="regulation-5-2">
+                <Pnumber>2</Pnumber>
+                <P2para>
+                  <Text>For the purposes of paragraph (1)\u2014</Text>
+                  <P3 id="regulation-5-2-a">
+                    <Pnumber>a</Pnumber>
+                    <P3para>
+                      <Text>the following definitions apply\u2014</Text>
+                      <UnorderedList Decoration="none" Class="Definition">
+                        <ListItem><Para><Text>\u201c<Term id="term-relevant-building">relevant building</Term>\u201d means a building to which this regulation applies;</Text></Para></ListItem>
+                        <ListItem><Para><Text>\u201c<Term id="term-responsible-person-2">responsible person</Term>\u201d means the person having control of the building;</Text></Para></ListItem>
+                      </UnorderedList>
+                    </P3para>
+                  </P3>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2022_1100", type_code: "uksi"})
+
+      assert length(defs) == 2
+      assert Enum.all?(defs, &(&1.section_id == "regulation-5-2"))
+      assert Enum.all?(defs, &(&1.source == :definition_list))
+    end
+  end
+
+  # ── TDD: Structural invariants ─────────────────────────────────
+  # Every parsed definition must satisfy basic structural properties
+  # regardless of the input XML. These catch bugs like empty-term
+  # extraction from spurious S2 matches.
+
+  describe "structural invariants" do
+    test "all definitions from Workplace Regs satisfy invariants" do
+      xml = read_fixture("body_uksi_1992_3004.xml")
+      assert_definition_invariants(xml, "UK_uksi_1992_3004", "uksi")
+    end
+
+    test "all definitions from RIDDOR satisfy invariants" do
+      xml = read_fixture("body_uksi_2013_1471.xml")
+      assert_definition_invariants(xml, "UK_uksi_2013_1471", "uksi")
+    end
+
+    defp assert_definition_invariants(xml, law_name, type_code) do
+      defs = DefinitionParser.parse(xml, %{law_name: law_name, type_code: type_code})
+
+      for d <- defs do
+        # Term must be non-nil, non-empty, non-whitespace
+        assert d.term != nil, "term must not be nil"
+        assert d.term != "", "term must not be empty"
+        assert String.trim(d.term) != "", "term must not be whitespace"
+
+        # law_name must match input
+        assert d.law_name == law_name,
+               "law_name '#{d.law_name}' must match input '#{law_name}'"
+
+        # source must be one of the three strategy atoms
+        assert d.source in [:definition_list, :inline_text, :section_term],
+               "source #{inspect(d.source)} must be :definition_list, :inline_text, or :section_term"
+
+        # section_id must be nil or a non-empty string
+        assert is_nil(d.section_id) or (is_binary(d.section_id) and d.section_id != ""),
+               "section_id must be nil or non-empty string, got #{inspect(d.section_id)}"
+
+        # references_other_law must be boolean
+        assert is_boolean(d.references_other_law),
+               "references_other_law must be boolean, got #{inspect(d.references_other_law)}"
+
+        # scope must be nil or one of the three atoms
+        assert d.scope in [nil, :law, :part, :provision],
+               "scope #{inspect(d.scope)} must be nil, :law, :part, or :provision"
+
+        # term must be lowercase (normalise_term guarantees this)
+        assert d.term == String.downcase(d.term),
+               "term '#{d.term}' must be lowercase"
+      end
+    end
+  end
+
+  # ── TDD: Malformed XML edge cases ──────────────────────────────
+  # Parser should return [] gracefully for malformed or empty input,
+  # not crash.
+
+  describe "parse/2 with malformed or minimal XML" do
+    test "returns [] for XML with no Body element" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Metadata>
+          <PrimaryMetadata/>
+        </Metadata>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+      assert defs == []
+    end
+
+    test "returns [] for empty Body element" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body/>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+      assert defs == []
+    end
+
+    test "returns [] for minimal valid XML with no definitions" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="section-1">
+            <Pnumber>1</Pnumber>
+            <P1para>
+              <Text>This Act may be cited as the Short Titles Act 2024.</Text>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+      assert defs == []
+    end
+  end
 end

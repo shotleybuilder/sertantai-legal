@@ -19,6 +19,29 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
   import SweetXml
 
+  alias SertantaiLegal.Scraper.DefinitionParser.Definition
+
+  # ── XML helpers ──────────────────────────────────────────────
+
+  # SweetXml returns nil for empty list results; normalise to []
+  defp xpath_list(node, expr), do: xpath(node, expr) || []
+
+  # Walk xmerl tree in true document order, concatenating all text nodes.
+  # Unlike xpath(.//text()), this preserves the position of child element text
+  # relative to surrounding text (e.g. <Term><Acronym>CEN</Acronym>/TS</Term>
+  # correctly yields "CEN/TS" not "/TSCEN").
+  defp text_content(node) when is_tuple(node) do
+    case elem(node, 0) do
+      :xmlText -> to_string(elem(node, 4))
+      :xmlElement -> elem(node, 8) |> Enum.map_join("", &text_content/1)
+      _ -> ""
+    end
+  end
+
+  defp text_content(_), do: ""
+
+  # ── Regex patterns ──────────────────────────────────────────
+
   # Term extraction from plain text (curly/smart quotes, for legacy XML without <Term> elements)
   @term_pattern Regex.compile!("\\A\\s*\u201c([^\u201d]+)\u201d")
 
@@ -42,19 +65,6 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   # Single-quoted term extraction (EU directives use curly single quotes \u2018...\u2019 or straight ')
   @single_quote_term_pattern Regex.compile!("\\A\\s*(?:\u2018([^\u2019]+)\u2019|'([^']+)')")
 
-  # Citation pattern — term is a law title abbreviation (e.g. "1961 act", "principal regulations", "waste directive")
-  @citation_pattern ~r/\A\d{4}\s+(act|order|regulations?|rules?|directive|code|scheme|measure|charter|convention|treaty|statute)s?\z|\A(principal|amending|original)\s+(act|order|regulations?|rules?|directive)\z|\A\w[\w\s]*\s+directive\z/iu
-
-  # Cross-reference patterns — definition text references another law
-  @cross_ref_patterns [
-    ~r/has?\s+the\s+(same\s+)?meanings?\s+(?:as\s+)?(?:in|given|assigned|they\s+bear)/iu,
-    ~r/(?:is\s+to\s+be|shall\s+be)\s+construed\s+(?:as\s+provided|in\s+accordance)/iu,
-    ~r/as\s+defined\s+(?:by|in)\s+.*(?:Act|Regulation|Order)/iu,
-    ~r/given\s+by\s+(?:section|regulation|article|paragraph|rule)/iu,
-    ~r/the\s+meanings?\s+(?:given|assigned|associated|they\s+are\s+given)/iu,
-    ~r/(?:Act|Regulations?|Order)\s+\d{4}\s*$/iu
-  ]
-
   # Scope patterns
   @law_scope_pattern ~r/[Ii]n\s+these?\s+[Rr]egulations?|[Ii]n\s+this\s+[Oo]rder|[Ff]or\s+the\s+purposes?\s+of\s+this\s+[Oo]rder|[Ff]or\s+these\s+purposes/u
   @part_scope_pattern ~r/[Ii]n\s+this\s+[Pp]art/u
@@ -70,10 +80,9 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
   ## Returns
 
-  List of maps with keys: `:law_name`, `:term`, `:term_welsh`, `:definition`,
-  `:section_id`, `:scope`, `:references_other_law`
+  List of `%Definition{}` structs.
   """
-  @spec parse(String.t(), map()) :: [map()]
+  @spec parse(String.t(), map()) :: [Definition.t()]
   def parse(xml, %{law_name: law_name} = context) when is_binary(xml) do
     type_code = Map.get(context, :type_code, "uksi")
     is_welsh = type_code == "wsi"
@@ -101,44 +110,64 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     end)
   end
 
-  # Parse structured <UnorderedList Class="Definition"> elements
+  # Parse structured <UnorderedList Class="Definition"> elements.
+  # Walks P2/P1 elements top-down and checks each for child Definition lists.
+  # The parent element's @id is the section_id — deterministic and correct,
+  # unlike the old fingerprint-based search which could match the wrong P2.
   defp parse_definition_lists(parsed, law_name, is_welsh) do
-    definition_lists =
-      case xpath(parsed, ~x"//UnorderedList[@Class='Definition']"l) do
-        nil -> []
-        list -> list
-      end
+    p2_defs =
+      xpath_list(parsed, ~x"//P2[@id]"l)
+      |> Enum.flat_map(&extract_definition_lists_from(&1, law_name, is_welsh, :p2))
 
-    definition_lists
-    |> Enum.flat_map(fn def_list ->
-      section_id = find_section_id(def_list, parsed)
-      scope = detect_scope_from_context(def_list, parsed)
-      delegated_def = detect_delegated_preamble(def_list, parsed)
+    # P1 elements without P2 children (EU directives with definitions at P1 level)
+    p1_defs =
+      xpath_list(parsed, ~x"//P1[@id]"l)
+      |> Enum.reject(fn p1 -> xpath_list(p1, ~x"./P1para/P2"l) != [] end)
+      |> Enum.flat_map(&extract_definition_lists_from(&1, law_name, is_welsh, :p1))
 
-      items =
-        case xpath(def_list, ~x"./ListItem"l) do
-          nil -> []
-          list -> list
+    p2_defs ++ p1_defs
+  end
+
+  defp extract_definition_lists_from(element, law_name, is_welsh, level) do
+    def_lists = xpath_list(element, ~x".//UnorderedList[@Class='Definition']"l)
+
+    if def_lists == [] do
+      []
+    else
+      section_id = xpath(element, ~x"./@id"s)
+
+      preamble =
+        case level do
+          :p2 -> xpath(element, ~x"./P2para/Text/text()"s) || ""
+          :p1 -> xpath(element, ~x"./P1para/Text/text()"s) || ""
         end
 
-      items
-      |> Enum.flat_map(fn item ->
-        defs = extract_definitions(item, law_name, section_id, scope, is_welsh)
+      scope = detect_scope(preamble)
+      delegated_def = detect_delegated(preamble)
 
-        # For delegated definitions with empty definition text, use the preamble
-        if delegated_def do
-          Enum.map(defs, fn d ->
-            if d.definition == nil or d.definition == "" do
-              %{d | definition: delegated_def, references_other_law: true}
-            else
-              d
-            end
-          end)
-        else
-          defs
-        end
+      def_lists
+      |> Enum.flat_map(fn def_list ->
+        items = xpath_list(def_list, ~x"./ListItem"l)
+
+        items
+        |> Enum.flat_map(fn item ->
+          defs = extract_definitions(item, law_name, section_id, scope, is_welsh)
+
+          # For delegated definitions with empty definition text, use the preamble
+          if delegated_def do
+            Enum.map(defs, fn d ->
+              if d.definition == nil or d.definition == "" do
+                %{d | definition: delegated_def, references_other_law: true}
+              else
+                d
+              end
+            end)
+          else
+            defs
+          end
+        end)
       end)
-    end)
+    end
   end
 
   # Strategy 3: Find <Term> elements in P1/P2 text outside Definition lists.
@@ -148,12 +177,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   # and parenthetical naming ("referred to as <Term>").
   defp parse_section_term_definitions(parsed, law_name, _is_welsh) do
     p2_defs =
-      (xpath(parsed, ~x"//P2[@id]"l) || [])
+      xpath_list(parsed, ~x"//P2[@id]"l)
       |> Enum.flat_map(&extract_section_terms(&1, law_name))
 
     # Also scan P1 elements that have Term directly in P1para (no P2 wrapper)
     p1_defs =
-      (xpath(parsed, ~x"//P1[@id]"l) || [])
+      xpath_list(parsed, ~x"//P1[@id]"l)
       |> Enum.flat_map(&extract_p1_section_terms(&1, law_name))
 
     p2_terms = MapSet.new(p2_defs, & &1.term)
@@ -165,7 +194,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   # Extract from P1 elements where <Term> is directly in P1para/Text (no P2 child)
   defp extract_p1_section_terms(p1, law_name) do
     # Skip P1s that have P2 children — those are handled by the P2 scan
-    has_p2 = (xpath(p1, ~x"./P1para/P2"l) || []) != []
+    has_p2 = xpath_list(p1, ~x"./P1para/P2"l) != []
     if has_p2, do: [], else: extract_section_terms(p1, law_name)
   end
 
@@ -173,7 +202,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     # Skip elements containing Definition lists — Strategy 1 handles those.
     # Processing them here would use the full element text (all ListItems concatenated),
     # giving wrong references_other_law flags for individual definitions.
-    has_def_list = (xpath(element, ~x".//UnorderedList[@Class='Definition']"l) || []) != []
+    has_def_list = xpath_list(element, ~x".//UnorderedList[@Class='Definition']"l) != []
 
     if has_def_list do
       []
@@ -184,16 +213,15 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
   defp do_extract_section_terms(element, law_name) do
     section_id = xpath(element, ~x"./@id"s)
-    term_elements = xpath(element, ~x".//Term"l) || []
-    # Use xmerl_text for correct document-order text (extract_plain_text reorders Term text)
-    full_text = xmerl_text(element) |> String.replace(~r/\s+/, " ") |> String.trim()
+    term_elements = xpath_list(element, ~x".//Term"l)
+    full_text = text_content(element) |> String.replace(~r/\s+/, " ") |> String.trim()
 
     with [_ | _] <- term_elements,
          true <- section_term_pattern?(full_text) do
       scope = detect_scope(full_text)
 
       term_elements
-      |> Enum.map(fn el -> xmerl_text(el) |> String.replace(~r/\s+/, " ") |> String.trim() end)
+      |> Enum.map(fn el -> text_content(el) |> String.replace(~r/\s+/, " ") |> String.trim() end)
       |> Enum.reject(&(&1 == ""))
       |> Enum.flat_map(&build_section_def(&1, full_text, law_name, section_id, scope))
     else
@@ -224,20 +252,15 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         []
 
       definition ->
-        definition = clean_definition(definition)
-
         [
-          %{
+          Definition.new(
             law_name: law_name,
-            term: normalise_term(term_text),
-            term_welsh: nil,
+            term: term_text,
             definition: definition,
             section_id: section_id,
             scope: scope,
-            references_other_law: references_other_law?(definition),
-            citation: citation?(normalise_term(term_text)),
             source: :section_term
-          }
+          )
         ]
     end
   end
@@ -289,22 +312,19 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   end
 
   defp scan_elements_for_inline_defs(parsed, xpath_expr, law_name, is_welsh) do
-    elements =
-      case xpath(parsed, xpath_expr) do
-        nil -> []
-        list -> list
-      end
-
-    elements
+    xpath_list(parsed, xpath_expr)
     |> Enum.flat_map(fn el ->
-      # Skip elements containing Definition lists — Strategy 1 handles those
-      has_def_list = (xpath(el, ~x".//UnorderedList[@Class='Definition']"l) || []) != []
+      # Skip elements handled by other strategies:
+      # - Definition lists → Strategy 1
+      # - <Term> elements → Strategy 3
+      has_def_list = xpath_list(el, ~x".//UnorderedList[@Class='Definition']"l) != []
+      has_term = xpath_list(el, ~x".//Term"l) != []
 
-      if has_def_list do
+      if has_def_list or has_term do
         []
       else
         section_id = xpath(el, ~x"./@id"s)
-        full_text = extract_plain_text(el)
+        full_text = text_content(el) |> String.replace(~r/\s+/, " ") |> String.trim()
 
         if Regex.match?(@inline_def_pattern, full_text) do
           scope = detect_scope(full_text)
@@ -343,19 +363,15 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     |> Enum.flat_map(fn chunk ->
       extract_terms_from_text(chunk, is_welsh)
       |> Enum.map(fn {term, term_welsh, definition} ->
-        definition = clean_definition(definition)
-
-        %{
+        Definition.new(
           law_name: law_name,
-          term: normalise_term(term),
-          term_welsh: if(term_welsh, do: String.downcase(term_welsh)),
+          term: term,
+          term_welsh: term_welsh,
           definition: definition,
           section_id: section_id,
           scope: scope,
-          references_other_law: references_other_law?(definition),
-          citation: citation?(normalise_term(term)),
           source: :inline_text
-        }
+        )
       end)
     end)
   end
@@ -365,48 +381,40 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     # Try <Term> element first, then <Abbreviation>, then regex on plain text
     case extract_via_term_element(item) do
       {:ok, terms, definition_text} ->
-        definition = clean_definition(definition_text)
-
         Enum.map(List.wrap(terms), fn term ->
-          %{
+          Definition.new(
             law_name: law_name,
-            term: normalise_term(term),
-            term_welsh: nil,
-            definition: definition,
+            term: term,
+            definition: definition_text,
             section_id: section_id,
             scope: scope,
-            references_other_law: references_other_law?(definition),
-            citation: citation?(normalise_term(term)),
             source: :definition_list
-          }
+          )
         end)
 
       :no_term_element ->
-        # Try <Abbreviation> element (law title abbreviations), then plain text
+        # No <Term> elements — extract full text via tree walk (handles
+        # <Abbreviation>, <Addition>, and other child elements correctly)
         raw_text =
-          case extract_text_with_abbreviations(item) do
-            {:ok, text} -> text
-            :no_abbreviation -> extract_plain_text(item)
-          end
+          xpath_list(item, ~x".//Text"l)
+          |> Enum.map_join("", &text_content/1)
+          |> String.replace(~r/\s+/, " ")
+          |> String.trim()
 
         if raw_text == "" do
           []
         else
           extract_terms_from_text(raw_text, is_welsh)
           |> Enum.map(fn {term, term_welsh, definition} ->
-            definition = clean_definition(definition)
-
-            %{
+            Definition.new(
               law_name: law_name,
-              term: normalise_term(term),
-              term_welsh: if(term_welsh, do: String.downcase(term_welsh)),
+              term: term,
+              term_welsh: term_welsh,
               definition: definition,
               section_id: section_id,
               scope: scope,
-              references_other_law: references_other_law?(definition),
-              citation: citation?(normalise_term(term)),
               source: :definition_list
-            }
+            )
           end)
         end
     end
@@ -423,16 +431,12 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
   defp extract_via_term_element(item) do
     # Get each <Term> element, then extract full text (including child elements
     # like <Acronym>) by walking the xmerl tree in document order.
-    term_elements =
-      case xpath(item, ~x".//Term"l) do
-        nil -> []
-        list -> list
-      end
+    term_elements = xpath_list(item, ~x".//Term"l)
 
     term_texts =
       term_elements
       |> Enum.map(fn term_el ->
-        xmerl_text(term_el) |> String.replace(~r/\s+/, " ") |> String.trim()
+        text_content(term_el) |> String.replace(~r/\s+/, " ") |> String.trim()
       end)
       |> Enum.reject(&(&1 == ""))
 
@@ -444,11 +448,11 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
         # Get full text of all <Text> elements via xmerl_text tree walk.
         # This handles <Addition>, <Substitution>, <Citation> child elements
         # that xpath(.//Text/text()) misses (it only returns direct text nodes).
-        text_elements = xpath(item, ~x".//Text"l) || []
+        text_elements = xpath_list(item, ~x".//Text"l)
 
         raw =
           text_elements
-          |> Enum.map_join("", &xmerl_text/1)
+          |> Enum.map_join("", &text_content/1)
           |> String.replace(~r/\s+/, " ")
           |> String.trim()
 
@@ -467,84 +471,6 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
 
         {:ok, terms, definition}
     end
-  end
-
-  # Strategy 2: Reconstruct text when <Abbreviation> elements are present
-  #
-  # xpath(.//Text/text()) returns only direct text children of <Text>, skipping
-  # child element content. For:
-  #   <Text>\u201cthe <Abbreviation>2004 Act</Abbreviation>\u201d means ...</Text>
-  # it returns ["\u201cthe ", "\u201d means ..."] — missing "2004 Act".
-  #
-  # This function inserts Abbreviation text in the correct position.
-  defp extract_text_with_abbreviations(item) do
-    abbrev_texts =
-      case xpath(item, ~x".//Abbreviation/text()"sl) do
-        nil -> []
-        list -> list
-      end
-
-    if abbrev_texts == [] do
-      :no_abbreviation
-    else
-      text_parts = xpath(item, ~x".//Text/text()"sl) || []
-
-      # Interleave: each Abbreviation sits between consecutive text parts
-      # Text parts: [before_abbrev_1, after_abbrev_1_before_abbrev_2, ...]
-      # Abbreviations: [abbrev_1, abbrev_2, ...]
-      full_text = interleave_text_parts(text_parts, abbrev_texts)
-
-      text =
-        full_text
-        |> String.replace(~r/\s+/, " ")
-        |> String.trim()
-
-      if text == "", do: :no_abbreviation, else: {:ok, text}
-    end
-  end
-
-  # Interleave text node parts with abbreviation texts in document order
-  # Text parts come from direct children of <Text>, abbreviations from child elements
-  defp interleave_text_parts([], abbrevs), do: Enum.join(abbrevs, "")
-  defp interleave_text_parts(texts, []), do: Enum.join(texts, "")
-
-  defp interleave_text_parts([first_text | rest_texts], abbrevs) do
-    # Each abbreviation sits after one text part
-    {pairs, remaining_texts} =
-      Enum.reduce(abbrevs, {[first_text], rest_texts}, fn abbrev, {acc, texts} ->
-        case texts do
-          [next | rest] -> {acc ++ [abbrev, next], rest}
-          [] -> {acc ++ [abbrev], []}
-        end
-      end)
-
-    Enum.join(pairs ++ remaining_texts, "")
-  end
-
-  # Walk xmerl tree in true document order, concatenating all text nodes.
-  # Unlike xpath(.//text()), this preserves the position of child element text
-  # relative to surrounding text (e.g. <Term><Acronym>CEN</Acronym>/TS</Term>
-  # correctly yields "CEN/TS" not "/TSCEN").
-  defp xmerl_text(node) when is_tuple(node) do
-    case elem(node, 0) do
-      :xmlText -> to_string(elem(node, 4))
-      :xmlElement -> elem(node, 8) |> Enum.map_join("", &xmerl_text/1)
-      _ -> ""
-    end
-  end
-
-  defp xmerl_text(_), do: ""
-
-  # Extract plain text from an XML node in document order
-  defp extract_plain_text(node) do
-    # For ListItems with <Term> elements, xpath text() ordering can be wrong
-    # (term text at end instead of start). For those, extract_via_term_element
-    # handles it. For all other uses (inline definitions, scope detection),
-    # xpath gives correct ordering.
-    (xpath(node, ~x".//text()"sl) || [])
-    |> Enum.join("")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim()
   end
 
   # Strategy 2: Extract terms from curly-quoted text using regex (legacy XML)
@@ -616,142 +542,20 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     |> String.trim()
   end
 
-  # Normalise term: strip quotes, amendment markers, lowercase, strip leading articles
-  @quotes_pattern Regex.compile!("[\"'`\u201c\u201d\u2018\u2019]", "u")
-  defp normalise_term(term) do
-    term
-    |> String.replace(@quotes_pattern, "")
-    |> String.replace(~r/\.\s*\.\s*\.\s*|\x{2026}/u, "")
-    |> String.downcase()
-    |> String.replace(~r/\A(?:the|a|an)\s+/u, "")
-    |> String.trim()
-  end
-
-  # Clean definition text: strip trailing punctuation, footnote/amendment markers
-  defp clean_definition(nil), do: nil
-
-  defp clean_definition(definition) do
-    definition
-    |> String.replace(~r/[;,.]$/, "")
-    |> String.replace(~r/\s+[MF]\d+\s*$/, "")
-    |> String.trim()
-  end
-
-  # Check if a definition references another law
-  defp references_other_law?(nil), do: false
-
-  defp references_other_law?(definition) do
-    Enum.any?(@cross_ref_patterns, &Regex.match?(&1, definition))
-  end
-
-  # Check if a term is a law citation (e.g. "1961 act", "principal regulations")
-  defp citation?(term), do: Regex.match?(@citation_pattern, term)
-
-  # Find the section_id from the nearest P2 or P1 ancestor
-  defp find_section_id(def_list, parsed) do
-    fingerprint = first_item_fingerprint(def_list)
-
-    if fingerprint == "" do
-      nil
-    else
-      find_ancestor_id(parsed, fingerprint, ~x"//P2[@id]"l) ||
-        find_ancestor_id(parsed, fingerprint, ~x"//P1[@id]"l)
-    end
-  end
-
-  defp find_ancestor_id(parsed, fingerprint, xpath_expr) do
-    elements =
-      case xpath(parsed, xpath_expr) do
-        nil -> []
-        list -> list
-      end
-
-    case Enum.find(elements, fn el ->
-           el_text = xpath(el, ~x".//text()"s) || ""
-           String.contains?(el_text, fingerprint)
-         end) do
-      nil -> nil
-      el -> xpath(el, ~x"./@id"s)
-    end
-  end
-
-  # Detect scope from the preamble text preceding the definition list
-  defp detect_scope_from_context(def_list, parsed) do
-    fingerprint = first_item_fingerprint(def_list)
-
-    if fingerprint == "" do
-      nil
-    else
-      p2_elements =
-        case xpath(parsed, ~x"//P2[@id]"l) do
-          nil -> []
-          list -> list
-        end
-
-      case Enum.find(p2_elements, fn p2 ->
-             p2_text = xpath(p2, ~x".//text()"s) || ""
-             String.contains?(p2_text, fingerprint)
-           end) do
-        nil ->
-          nil
-
-        p2 ->
-          preamble = xpath(p2, ~x"./P2para/Text/text()"s) || ""
-          detect_scope(preamble)
-      end
-    end
-  end
-
-  # Get a text fingerprint from the first ListItem for ancestor matching
-  defp first_item_fingerprint(def_list) do
-    # Try <Term> element first, then fall back to raw text
-    case xpath(def_list, ~x"./ListItem[1]//Term/text()"s) do
-      nil -> xpath(def_list, ~x"./ListItem[1]//text()"s) || ""
-      "" -> xpath(def_list, ~x"./ListItem[1]//text()"s) || ""
-      term -> term
-    end
-    |> String.trim()
-    |> String.slice(0, 40)
-  end
-
-  # Detect if a definition list is delegated ("have the meanings given by...")
+  # Detect if a preamble text delegates meaning to another law.
   # Returns the preamble text as a definition string, or nil.
   @delegated_pattern Regex.compile!(
                        "(?:have|has)\\s+the\\s+(?:same\\s+)?meanings?\\s+(?:given|assigned|as)\\s+(?:by|in|to)\\s+",
                        "iu"
                      )
-  defp detect_delegated_preamble(def_list, parsed) do
-    fingerprint = first_item_fingerprint(def_list)
-
-    if fingerprint == "" do
-      nil
+  defp detect_delegated(preamble) do
+    if Regex.match?(@delegated_pattern, preamble) do
+      preamble
+      |> String.replace(~r/\A.*?(?=(?:have|has)\s+the\s+)/iu, "")
+      |> String.replace(Regex.compile!("[\\-\u2014]\s*$"), "")
+      |> String.trim()
     else
-      p2_elements =
-        case xpath(parsed, ~x"//P2[@id]"l) do
-          nil -> []
-          list -> list
-        end
-
-      case Enum.find(p2_elements, fn p2 ->
-             p2_text = xpath(p2, ~x".//text()"s) || ""
-             String.contains?(p2_text, fingerprint)
-           end) do
-        nil ->
-          nil
-
-        p2 ->
-          preamble = xpath(p2, ~x"./P2para/Text/text()"s) || ""
-
-          if Regex.match?(@delegated_pattern, preamble) do
-            # Extract the meaningful part: "have the meanings given by Article 2 of Regulation 996/2010"
-            preamble
-            |> String.replace(~r/\A.*?(?=(?:have|has)\s+the\s+)/iu, "")
-            |> String.replace(Regex.compile!("[\\-\u2014]\s*$"), "")
-            |> String.trim()
-          else
-            nil
-          end
-      end
+      nil
     end
   end
 

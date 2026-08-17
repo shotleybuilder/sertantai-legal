@@ -1,12 +1,12 @@
 ---
 session: Definition Parser Architecture
-status: pending
+status: active
 opened: 2026-08-17
 depends_on:
   - interpretation-definitions/2026-08-16-definition-parser-refactor
 ---
 
-# Session: Definition Parser Architecture (PENDING)
+# Session: Definition Parser Architecture (ACTIVE)
 
 ## Problem
 
@@ -16,14 +16,14 @@ The section_id bug: Definition lists outside regulation-2 (e.g. regulation-67-4 
 
 ## Todo
 
-- ⬜ TDD: Write failing tests for section_id bug (multiple Definition lists at different sections)
-- ⬜ TDD: Write failing test for Definition list in P3/P4 nested under P2
-- ⬜ TDD: Write structural invariant test (non-nil term, law_name matches, source atom, section_id type)
-- ⬜ TDD: Write malformed XML edge case tests (truncated XML, missing Body, encoding errors)
-- ⬜ Invert S1: walk P2/P1 top-down, eliminate fingerprint functions — make failing tests green
-- ⬜ Extract `Definition` struct with `new/1` constructor, replace 4 map construction sites
-- ⬜ Consolidate text extraction: replace `extract_plain_text` and `extract_text_with_abbreviations` with `text_content/1` (renamed `xmerl_text`)
-- ⬜ Extract `xpath_list/2` and `xpath_string/2` helpers, replace ~10 nil-guard sites
+- ✅ TDD Red: 3 failing tests for section_id bug (waste in reg-2-1 + reg-67-4, dedup loses second def)
+- ✅ TDD Green-from-start: Definition list in P3 under P2 (passes, confirms inversion safety)
+- ✅ TDD Green-from-start: Structural invariant tests on both fixtures (Workplace Regs + RIDDOR)
+- ✅ TDD Green-from-start: Malformed XML edge cases (no Body, empty Body, no definitions)
+- ✅ Invert S1: walk P2/P1 top-down, eliminate 5 fingerprint functions (766→703 lines), 3 failing tests now green
+- ✅ Extract `Definition` struct with `new/1` constructor, replace 4 map construction sites (parser 703→642 lines)
+- ✅ Consolidate text extraction on `text_content/1` + `xpath_list/2` helper (642→573 lines, deleted 3 functions)
+- ✅ S2 now skips elements with `<Term>` elements (S3 territory) — caught by text_content behavioural change
 - ⬜ Module decomposition: orchestrator + strategy modules + XmlUtils + Definition struct
 - ⬜ Add `@spec` to all public and private functions
 - ⬜ Remove S2 internal P2→P1 conditional, scan both unconditionally
