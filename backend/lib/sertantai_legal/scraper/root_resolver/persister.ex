@@ -17,7 +17,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Persister do
 
   @spec apply_updates([{Resolution.status(), Resolution.t()}]) :: :ok
   def apply_updates(results) do
-    now = NaiveDateTime.utc_now()
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
     results
     |> Enum.chunk_every(500)

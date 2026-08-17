@@ -133,6 +133,15 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
              ) ==
                "environmental permitting england and wales regulations"
     end
+
+    test "strips leading 'the'" do
+      assert CitationExtractor.normalise_title("the New Roads and Street Works Act") ==
+               "new roads and street works act"
+    end
+
+    test "strips leading 'the' case-insensitively" do
+      assert CitationExtractor.normalise_title("The Planning Act") == "planning act"
+    end
   end
 
   # ── extract_citation/3 ──────────────────────────────────────

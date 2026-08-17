@@ -1,10 +1,71 @@
 ---
 session: Definition Backfill & QA
-status: suspended
+status: closed
 opened: 2026-08-13
+closed: 2026-08-17
+outcome: partial
+
+summary: >
+  Bulk definition backfill completed (34K CSV + 34K parser = 68K total). Built mix
+  definitions.backfill task, fixed 15+ parser edge cases across 3 deep-dive laws
+  (RRFSO, WEEE, EP Regs), replaced root_definition_id FK with definition_links
+  junction table. Outstanding data QA items carried to new session (2026-08-17).
+
+decisions:
+  - what: Junction table replacing single FK root_definition_id
+    why: Gemini review flagged FK integrity concerns for customer-facing data — a term can have multiple root definitions (e.g. England vs Wales provisions)
+    result: definition_links table with composite PK, CASCADE, 936 links migrated
+
+  - what: Keep revoked law definitions
+    why: Useful for term evolution over time; compliance frontend filters on live status
+    result: Marked as abandoned rather than deleted
+
+metrics:
+  definitions: { csv_imported: 34483, parser_extracted: 33518, total: 68001 }
+  backfill: { safety_families: 12416, environmental: 18000, errors: 0 }
+  parser_fixes: { edge_cases: 15, laws_deep_dived: 3 }
+  junction_table: { links_migrated: 936 }
+
+lessons:
+  - title: Fingerprint-based section_id lookup is fundamentally broken for multi-section definitions
+    detail: >
+      Definition lists outside the main Interpretation section (e.g. reg-67-4 in
+      Environmental Permitting Regs) got wrong section_ids because find_section_id
+      used Enum.find with text containment — first match wins, not closest ancestor.
+      Deferred to parser refactor which fixed it via top-down P2/P1 walk.
+    tag: data
+
+  - title: EU directive definitions use curly single quotes, not double
+    detail: >
+      EU directives use Unicode curly single quotes (U+2018/U+2019) for term
+      definitions, not the curly double quotes (U+201C/U+201D) used by UK domestic
+      legislation. Parser needed separate patterns for both quote types.
+    tag: data
+
+  - title: Pronoun references need sibling context for resolution
+    detail: >
+      "that Act" in a definition can only be resolved by looking at sibling
+      definitions in the same section that name the Act explicitly. Built a
+      sibling_index keyed on (law_name, section_id) to enable this.
+    tag: data
+
+artifacts:
+  - backend/lib/mix/tasks/definitions.backfill.ex
+  - backend/lib/sertantai_legal/legal/definition_link.ex
+  - backend/lib/sertantai_legal/scraper/root_resolver.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser.ex
+  - backend/lib/sertantai_legal/scraper/definition_persister.ex
+
+depends_on:
+  - interpretation-definitions/2026-08-13-definition-schema-storage
+  - interpretation-definitions/2026-08-13-definition-parser
+  - interpretation-definitions/2026-08-13-definition-api
+
+enables:
+  - interpretation-definitions/2026-08-17-definition-data-qa
 ---
 
-# Session: Definition Backfill & QA (SUSPENDED)
+# Session: Definition Backfill & QA (CLOSED)
 
 ## Problem
 
@@ -66,7 +127,7 @@ opened: 2026-08-13
   - ✅ Update Ash resource (many_to_many via DefinitionLink, registered in domain)
   - ✅ Update RootResolver to write to junction table (def_index stores lists, apply_updates writes to definition_links)
   - ✅ Controller/API — no references to old column, clean
-  - ⬜ Update ElectricSQL shape to include definition_links
+  - ⏸️ Update ElectricSQL shape to include definition_links (carried to 2026-08-17-definition-data-qa)
 - ✅ **UK_uksi_2013_3113 (WEEE Regs): Amendment markup + EU directive references**
   - ✅ Parser: `xmerl_text` tree walk on `<Text>` elements instead of `xpath(.//Text/text())` — fixes `<Addition>`-wrapped definitions
   - ✅ Parser: widen citation pattern to catch `<name> directive` abbreviations (waste directive, habitats directive, etc.)
@@ -82,12 +143,12 @@ opened: 2026-08-13
   - ✅ `regulatory provisions` — `@def_after_term_suffix` regex: `[^,]*` after "meaning" consumed law title with internal comma. Fixed to only consume qualifier words (given/assigned/specified + by/in/to/under)
   - ✅ `undertaking` — `@abbreviation_re` was too greedy, matched "same meaning as in the Waste Framework Directive" instead of just "Waste Framework Directive". Fixed to anchor on capitalised words (`[A-Z]\w*`). Now resolves to citation_only (parent law exists but term not defined there)
   - ✅ `local authority` self-ref linked: reg-2-1 → reg-6-1. Root cause: Strategy 3 dedup used `term` only. Fixed to `{term, section_id}`. Resolver now links internal refs to same-law root defs.
-  - ⬜ `emission`/`emission plan`/`transitional national plan` at reg-67-4: Strategy 3 skip fix applied (skip P2s with Definition lists). But `find_section_id` assigns wrong section_id to Definition lists outside reg-2 — reg-67-4 definitions get section_id `regulation-2-1`. Root cause: fingerprint-based ancestor matching. Deferred to parser refactor session (2026-08-16-definition-parser-refactor).
+  - ✅ `emission`/`emission plan`/`transitional national plan` at reg-67-4: section_id fingerprint bug fixed by parser architecture refactor (2026-08-17). Re-parse needed to apply fix (carried to 2026-08-17-definition-data-qa).
   - 7 internal refs (`class`, `disposal`, `exempt groundwater activity`, etc.) — root defs not extracted from target regulation/schedule sections. Deeper parser gap for another session.
-- ⬜ Investigate 1,086 empty-definition parser records across 89 laws (non-citation, real parser bugs)
-- ⬜ Fix 7 UTF-8 encoding errors in persister (truncated multi-byte sequences)
-- ⬜ Run CSV scope backfill (`--scope csv` for scope improvement on legacy data)
-- ⬜ Update NAS snapshot after backfill
+- ⏸️ Investigate 1,541 empty-definition parser records across 133 laws (carried to 2026-08-17-definition-data-qa)
+- ⏸️ Fix 3 UTF-8 encoding errors in persister (carried to 2026-08-17-definition-data-qa)
+- ⏸️ Run CSV scope backfill (carried to 2026-08-17-definition-data-qa)
+- ⏸️ Update NAS snapshot (carried to 2026-08-17-definition-data-qa)
 
 ## Resume Notes
 

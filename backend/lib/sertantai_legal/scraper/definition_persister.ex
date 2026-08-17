@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
       {:ok, result} = DefinitionPersister.persist(definitions, "UK_uksi_1992_3004")
   """
 
+  alias SertantaiLegal.Legal.LegislativeDefinition
   alias SertantaiLegal.Repo
 
   require Logger
@@ -39,7 +40,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
     insert_maps =
       Enum.map(definitions, fn d ->
         %{
-          id: Ecto.UUID.dump!(Ecto.UUID.generate()),
+          id: Ecto.UUID.generate(),
           law_name: d.law_name,
           term: d.term,
           term_welsh: d.term_welsh,
@@ -60,7 +61,7 @@ defmodule SertantaiLegal.Scraper.DefinitionPersister do
       |> Enum.reduce(0, fn batch, acc ->
         {count, _} =
           Repo.insert_all(
-            "legislative_definitions",
+            LegislativeDefinition,
             batch,
             on_conflict:
               {:replace,

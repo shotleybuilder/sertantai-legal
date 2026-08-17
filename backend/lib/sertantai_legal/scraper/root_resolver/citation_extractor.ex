@@ -92,6 +92,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
     |> String.replace(~r/\s+/, " ")
     |> String.replace(~r/[^\w\s]/, "")
     |> String.trim()
+    |> String.replace(~r/^the\s+/, "")
   end
 
   @spec extract_eu_law_name(String.t() | nil) :: String.t() | nil
