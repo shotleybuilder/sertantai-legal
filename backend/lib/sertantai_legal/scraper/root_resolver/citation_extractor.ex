@@ -94,6 +94,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   @spec normalise_title(String.t()) :: String.t()
   def normalise_title(title) do
     title
+    |> String.replace(~r/\s*\(c\.\s*\d+\)/i, "")
+    |> String.replace(~r/(?<=\s)\(NI\)/i, "(Northern Ireland)")
     |> String.downcase()
     |> String.replace(~r/\s+/, " ")
     |> String.replace(~r/[^\w\s]/, "")

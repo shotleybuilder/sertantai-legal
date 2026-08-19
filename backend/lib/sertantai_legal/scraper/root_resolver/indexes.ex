@@ -49,7 +49,13 @@ defmodule SertantaiLegal.Scraper.RootResolver.Indexes do
     )
     |> Repo.all()
     |> Enum.reduce(%{}, fn {law_name, term, definition}, acc ->
-      Map.put(acc, {law_name, String.downcase(term)}, String.trim(definition))
+      clean =
+        definition
+        |> String.trim()
+        |> String.replace(~r/\A\)\s*/, "")
+        |> String.replace(~r/\Ameans\s+/i, "")
+
+      Map.put(acc, {law_name, String.downcase(term)}, clean)
     end)
   end
 

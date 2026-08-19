@@ -164,6 +164,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     citation =
       if d.referenced_law_citation && d.referenced_law_citation != "" do
         d.referenced_law_citation
+        |> String.replace(~r/\Ameans\s+/i, "")
       else
         CitationExtractor.extract_citation(definition, d.law_name, citation_index)
       end
