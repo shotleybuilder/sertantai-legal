@@ -198,6 +198,81 @@ defmodule SertantaiLegal.Scraper.RootResolver.MatcherTest do
     end
   end
 
+  @enacted_by_index %{
+    "UK_ssi_2009_140" => "Electricity Act 1989",
+    "UK_uksi_2017_1012" => "Town and Country Planning Act 1990"
+  }
+
+  # ── resolve_bare_act_ref/3 ─────────────────────────────────
+  # Resolves bare "the Act" in SIs via enacted_by parent.
+
+  describe "resolve_bare_act_ref/3" do
+    test "resolves 'of the Act' when enacted_by parent exists" do
+      assert Matcher.resolve_bare_act_ref(
+               "given by section 32(4) of the Act",
+               "UK_ssi_2009_140",
+               @enacted_by_index
+             ) == "Electricity Act 1989 section 32(4)"
+    end
+
+    test "resolves 'under the Act' without section" do
+      assert Matcher.resolve_bare_act_ref(
+               "as provided under the Act",
+               "UK_ssi_2009_140",
+               @enacted_by_index
+             ) == "Electricity Act 1989"
+    end
+
+    test "returns nil when no enacted_by parent" do
+      assert Matcher.resolve_bare_act_ref(
+               "given by section 5 of the Act",
+               "UK_uksi_2020_unknown",
+               @enacted_by_index
+             ) == nil
+    end
+
+    test "returns nil when definition has no bare Act pattern" do
+      assert Matcher.resolve_bare_act_ref(
+               "given by regulation 4",
+               "UK_ssi_2009_140",
+               @enacted_by_index
+             ) == nil
+    end
+  end
+
+  # ── resolve_one with enacted_by ────────────────────────────
+
+  describe "resolve_one/6 with enacted_by_index" do
+    test "bare 'the Act' resolves via enacted_by parent" do
+      title_index =
+        Map.merge(@title_index, %{
+          {"electricity act", 1989} => "UK_ukpga_1989_29",
+          "electricity act" => "UK_ukpga_1989_29"
+        })
+
+      def_row = %{
+        id: "bare-act-1",
+        law_name: "UK_ssi_2009_140",
+        term: "renewables obligation",
+        definition: "is to be construed in accordance with section 32(4) of the Act",
+        section_id: "regulation-2-1"
+      }
+
+      assert {:citation_only, %Resolution{citation: citation}} =
+               Matcher.resolve_one(
+                 def_row,
+                 title_index,
+                 @citation_index,
+                 @def_index,
+                 @sibling_index,
+                 @enacted_by_index
+               )
+
+      assert citation =~ "Electricity Act 1989"
+      assert citation =~ "section 32(4)"
+    end
+  end
+
   # ── resolve_to_root/4 ───────────────────────────────────────
   # Given a citation string, find the root law and its definitions.
 

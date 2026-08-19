@@ -59,12 +59,14 @@ defmodule SertantaiLegal.Scraper.RootResolver do
     citation_index = Indexes.build_citation_index()
     def_index = Indexes.build_definition_index()
     sibling_index = Indexes.build_sibling_index()
+    enacted_by_index = Indexes.build_enacted_by_index()
 
     Logger.info(
       "[RootResolver] Title index: #{map_size(title_index)} laws, " <>
         "Citation index: #{map_size(citation_index)} laws, " <>
         "Definition index: #{map_size(def_index)} entries, " <>
-        "Sibling index: #{map_size(sibling_index)} sections"
+        "Sibling index: #{map_size(sibling_index)} sections, " <>
+        "Enacted-by index: #{map_size(enacted_by_index)} SIs"
     )
 
     defs = Indexes.fetch_cross_refs(opts)
@@ -72,7 +74,16 @@ defmodule SertantaiLegal.Scraper.RootResolver do
 
     grouped =
       defs
-      |> Enum.map(&Matcher.resolve_one(&1, title_index, citation_index, def_index, sibling_index))
+      |> Enum.map(
+        &Matcher.resolve_one(
+          &1,
+          title_index,
+          citation_index,
+          def_index,
+          sibling_index,
+          enacted_by_index
+        )
+      )
       |> Enum.group_by(fn {status, _} -> status end)
 
     resolved = Map.get(grouped, :resolved, [])

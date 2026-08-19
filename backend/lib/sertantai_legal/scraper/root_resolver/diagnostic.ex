@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.RootResolver.{CitationExtractor, Indexes}
+  alias SertantaiLegal.Scraper.RootResolver.{CitationExtractor, Indexes, Matcher}
 
   import Ecto.Query
 
@@ -81,6 +81,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   def run(opts \\ []) do
     title_index = Indexes.build_title_index()
     citation_index = Indexes.build_citation_index()
+    enacted_by_index = Indexes.build_enacted_by_index()
     parse_status = build_parse_status_index()
     parent_terms = build_parent_terms_index()
 
@@ -88,7 +89,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
     findings =
       Enum.map(defs, fn d ->
-        classify(d, title_index, citation_index, parse_status, parent_terms)
+        classify(d, title_index, citation_index, enacted_by_index, parse_status, parent_terms)
       end)
 
     {:ok, findings}
@@ -157,8 +158,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
   # -- Classification --
 
-  @spec classify(map(), map(), map(), map(), map()) :: Finding.t()
-  defp classify(d, title_index, citation_index, parse_status, parent_terms) do
+  @spec classify(map(), map(), map(), map(), map(), map()) :: Finding.t()
+  defp classify(d, title_index, citation_index, enacted_by_index, parse_status, parent_terms) do
     definition = d.definition || ""
 
     citation =
@@ -166,7 +167,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
         d.referenced_law_citation
         |> String.replace(~r/\Ameans\s+/i, "")
       else
-        CitationExtractor.extract_citation(definition, d.law_name, citation_index)
+        CitationExtractor.extract_citation(definition, d.law_name, citation_index) ||
+          Matcher.resolve_bare_act_ref(definition, d.law_name, enacted_by_index)
       end
 
     base = %{definition_id: d.id, law_name: d.law_name, term: d.term}

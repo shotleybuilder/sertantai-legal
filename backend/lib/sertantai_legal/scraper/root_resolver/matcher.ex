@@ -7,9 +7,10 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
 
   Resolution priority:
   1. Pronoun reference ("that Act") → resolve via sibling index
-  2. Internal reference ("given by regulation 3") → link within same law
-  3. Named citation → extract and resolve to root law + definitions
-  4. Unresolved → no citation could be extracted
+  2. Bare parent reference ("the Act" in SIs) → resolve via enacted_by index
+  3. Internal reference ("given by regulation 3") → link within same law
+  4. Named citation → extract and resolve to root law + definitions
+  5. Unresolved → no citation could be extracted
 
   All functions are pure — no DB access, no side effects.
   """
@@ -19,6 +20,9 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
   # Pronoun reference: "of that Act", "of those Regulations"
   @pronoun_ref_re ~r/(?:of\s+)?(?:that|those)\s+(Act|Regulations?|Order|Rules?|Measure)/iu
 
+  # Bare parent reference: "of the Act", "under the Act" (without a preceding law title)
+  @bare_act_re ~r/\b(?:of|under|in)\s+the\s+(Act|Order)\b/iu
+
   @type def_row :: %{
           id: binary(),
           law_name: String.t(),
@@ -27,17 +31,32 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
           section_id: String.t() | nil
         }
 
-  @spec resolve_one(def_row(), map(), map(), map(), map()) ::
+  @spec resolve_one(def_row(), map(), map(), map(), map(), map()) ::
           {Resolution.status(), Resolution.t()}
-  def resolve_one(def_row, title_index, citation_index, def_index, sibling_index) do
+  def resolve_one(
+        def_row,
+        title_index,
+        citation_index,
+        def_index,
+        sibling_index,
+        enacted_by_index \\ %{}
+      ) do
     definition = def_row.definition || ""
 
     pronoun_citation =
       resolve_pronoun_ref(definition, def_row.law_name, def_row.section_id, sibling_index)
 
+    bare_act_citation =
+      if pronoun_citation == nil,
+        do: resolve_bare_act_ref(definition, def_row.law_name, enacted_by_index),
+        else: nil
+
     cond do
       pronoun_citation != nil ->
         resolve_with_citation(pronoun_citation, def_row, title_index, def_index)
+
+      bare_act_citation != nil ->
+        resolve_with_citation(bare_act_citation, def_row, title_index, def_index)
 
       CitationExtractor.internal_ref?(definition) ->
         resolve_internal(def_row, def_index)
@@ -75,6 +94,18 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
       else
         law_title
       end
+    else
+      _ -> nil
+    end
+  end
+
+  @spec resolve_bare_act_ref(String.t(), String.t(), map()) :: String.t() | nil
+  def resolve_bare_act_ref(definition, law_name, enacted_by_index) do
+    with true <- Regex.match?(@bare_act_re, definition),
+         parent_citation when is_binary(parent_citation) <-
+           Map.get(enacted_by_index, law_name) do
+      section = CitationExtractor.extract_section(definition)
+      if section, do: "#{parent_citation} #{section}", else: parent_citation
     else
       _ -> nil
     end

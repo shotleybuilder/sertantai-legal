@@ -2,11 +2,12 @@ defmodule SertantaiLegal.Scraper.RootResolver.Indexes do
   @moduledoc """
   Builds in-memory lookup indexes from the database for cross-reference resolution.
 
-  Four indexes are built:
+  Five indexes are built:
   - **Title index**: normalised law title → law_name (for resolving "the Scotland Act 1998")
   - **Citation index**: {law_name, short_name} → full title (for resolving "the 2016 Regulations")
   - **Definition index**: {law_name, term} → [definition_ids] (for finding root definitions)
   - **Sibling index**: {law_name, section_id} → citation (for resolving pronoun refs like "that Act")
+  - **Enacted-by index**: si_law_name → "Parent Title Year" (for resolving bare "the Act" in SIs)
 
   Also handles fetching cross-reference definitions to be resolved.
   """
@@ -99,6 +100,30 @@ defmodule SertantaiLegal.Scraper.RootResolver.Indexes do
     |> Enum.reduce(%{}, fn {law_name, section_id, citation}, acc ->
       Map.put_new(acc, {law_name, section_id}, citation)
     end)
+  end
+
+  @spec build_enacted_by_index() :: map()
+  def build_enacted_by_index do
+    query = """
+    SELECT DISTINCT ON (si.name) si.name, parent.title_en, parent.year
+    FROM legal_register si
+    CROSS JOIN LATERAL unnest(si.enacted_by) AS parent_name
+    JOIN legal_register parent ON parent.name = parent_name
+    WHERE si.enacted_by IS NOT NULL AND si.enacted_by != '{}'
+      AND parent.title_en IS NOT NULL
+    ORDER BY si.name
+    """
+
+    case Repo.query(query) do
+      {:ok, %{rows: rows}} ->
+        Enum.reduce(rows, %{}, fn [si_name, parent_title, parent_year], acc ->
+          citation = "#{String.trim(parent_title)} #{parent_year}"
+          Map.put_new(acc, si_name, citation)
+        end)
+
+      {:error, _} ->
+        %{}
+    end
   end
 
   @spec fetch_cross_refs(keyword()) :: [map()]
