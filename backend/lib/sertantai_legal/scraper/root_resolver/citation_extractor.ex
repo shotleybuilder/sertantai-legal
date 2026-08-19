@@ -12,8 +12,10 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   All functions are pure — no DB access, no side effects.
   """
 
-  # Anchors on "Act|Regulations|Order YYYY" and captures up to 80 chars before it.
-  @law_type_year_re ~r/([A-Z][^\n]{0,80}?(?:Act|Regulations?|Order|Rules?|Directive|Measure))\s+(\d{4})/u
+  # Anchors on "Act|Regulations|Order YYYY" and captures up to 120 chars before it.
+  # 120 handles compound titles like "Health and Safety (Enforcing Authority for
+  # Railways and Other Guided Transport Systems) Regulations" (88 chars).
+  @law_type_year_re ~r/([A-Z][^\n]{0,120}?(?:Act|Regulations?|Order|Rules?|Directive|Measure))\s+(\d{4})/u
 
   # Short name: "the 1991 Act", "the 2003 Regulations"
   @short_name_re ~r/(?:the\s+)?(\d{4})\s+(Act|Regulations?|Order|Rules?)/u
@@ -66,7 +68,13 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
           |> String.trim_trailing(",")
           |> String.trim_trailing(";")
 
-        {:ok, "#{title} #{year}", year}
+        # Reject if title starts with "Article" — this is an EU article reference
+        # mismatched by the law_type_year regex, not a law title
+        if String.match?(title, ~r/^Article\s/i) do
+          :no_match
+        else
+          {:ok, "#{title} #{year}", year}
+        end
 
       nil ->
         :no_match
@@ -122,6 +130,14 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
 
       match = Regex.run(~r/Regulation.*?No\.?\s*(\d+)\/(\d{4})/i, citation) ->
         [_, number, year] = match
+        "UK_eur_#{year}_#{number}"
+
+      match = Regex.run(~r/Regulation.*?(\d+)\/((?:19|20)\d{2})/i, citation) ->
+        [_, number, year] = match
+        "UK_eur_#{year}_#{number}"
+
+      match = Regex.run(~r/Regulation.*?((?:19|20)\d{2})\/(\d+)/i, citation) ->
+        [_, year, number] = match
         "UK_eur_#{year}_#{number}"
 
       true ->
