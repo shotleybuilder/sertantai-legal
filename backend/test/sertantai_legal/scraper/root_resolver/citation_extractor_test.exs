@@ -224,4 +224,71 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
       assert CitationExtractor.extract_eu_law_name(nil) == nil
     end
   end
+
+  # ── extract_initials_citation/1 ──────────────────────────────
+  # Resolves statute abbreviations like "TCPA 1990" via curated static map.
+
+  describe "extract_initials_citation/1" do
+    test "resolves TCPA 1990" do
+      definition = "has the meaning given by section 336(1) of the TCPA 1990"
+
+      assert CitationExtractor.extract_initials_citation(definition) ==
+               "Town and Country Planning Act 1990 section 336(1)"
+    end
+
+    test "resolves EA 1989 without 'the' prefix" do
+      definition = "as defined in EA 1989"
+      assert CitationExtractor.extract_initials_citation(definition) == "Electricity Act 1989"
+    end
+
+    test "resolves CRA 2015" do
+      definition = "within the meaning of section 2 of CRA 2015"
+
+      assert CitationExtractor.extract_initials_citation(definition) ==
+               "Consumer Rights Act 2015 section 2"
+    end
+
+    test "resolves MCAA 2009" do
+      definition = "has the meaning given by MCAA 2009"
+
+      assert CitationExtractor.extract_initials_citation(definition) ==
+               "Marine and Coastal Access Act 2009"
+    end
+
+    test "returns nil for unknown abbreviation" do
+      definition = "as defined in XYZ 2020"
+      assert CitationExtractor.extract_initials_citation(definition) == nil
+    end
+
+    test "returns nil for text without abbreviation pattern" do
+      definition = "means a building used for residential purposes"
+      assert CitationExtractor.extract_initials_citation(definition) == nil
+    end
+
+    test "does not match single uppercase letter + year" do
+      # "A 2020" should not match (minimum 2 uppercase letters)
+      definition = "see paragraph A 2020"
+      assert CitationExtractor.extract_initials_citation(definition) == nil
+    end
+  end
+
+  # ── extract_citation/3 chain with initials ───────────────────
+
+  describe "extract_citation/3 with statute abbreviations" do
+    test "initials citation is extracted when named law and short name fail" do
+      definition = "has the meaning given in section 57 of the TCPA 1990"
+
+      assert CitationExtractor.extract_citation(definition, "UK_uksi_2020_1234", %{}) ==
+               "Town and Country Planning Act 1990 section 57"
+    end
+
+    test "named law takes priority over initials" do
+      # Contains both a full title and initials — full title wins
+      definition =
+        "has the meaning given in the Town and Country Planning Act 1990 (see TCPA 1990)"
+
+      result = CitationExtractor.extract_citation(definition, "UK_uksi_2020_1234", %{})
+      assert result =~ "Town and Country Planning Act 1990"
+    end
+  end
 end

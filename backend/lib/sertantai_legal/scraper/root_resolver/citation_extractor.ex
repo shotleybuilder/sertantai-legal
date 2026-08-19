@@ -6,6 +6,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   - Named laws: "the Scotland Act 1998"
   - Short names: "the 2016 Regulations"
   - Abbreviations: "the Waste Directive" (resolved via citation index)
+  - Statute initials: "TCPA 1990", "EA 1989" (curated static map)
   - EU directives/regulations: "Directive 2008/98/EC"
   - Section references: "section 126(1)", "regulation 3"
 
@@ -25,6 +26,24 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
 
   # Abbreviation: "the Waste Directive", "the Basel Convention"
   @abbreviation_re ~r/\bthe\s+([A-Z]\w*(?:\s+[A-Z]\w*)*\s+(?:Directive|Convention|Treaty|Code))\b/u
+
+  # Statute abbreviation: "TCPA 1990", "EA 1989" — uppercase initials + year
+  @initials_re ~r/\b(?:the\s+)?([A-Z]{2,6})\s+(\d{4})\b/u
+
+  # Curated map of known UK statute abbreviations → full law titles.
+  # Only ~10 canonical statutes are referenced by initials in the corpus.
+  # Add new entries here as they are discovered.
+  @statute_abbreviations %{
+    "tcpa" => "Town and Country Planning Act",
+    "mcaa" => "Marine and Coastal Access Act",
+    "ea" => "Electricity Act",
+    "cra" => "Consumer Rights Act",
+    "cta" => "Corporation Tax Act",
+    "ita" => "Income Tax Act",
+    "tcga" => "Taxation of Chargeable Gains Act",
+    "ggetsr" => "Greenhouse Gas Emissions Trading Scheme Regulations",
+    "tswr" => "Territorial Sea (Welsh Region) Regulations"
+  }
 
   # Internal reference: "given by section 3" without external law name
   # Also matches "has the meaning given in regulation 4", "construed in accordance with schedule 2"
@@ -51,7 +70,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
             if section, do: "#{raw} #{section}", else: raw
 
           nil ->
-            extract_abbreviation_citation(definition, law_name, citation_index)
+            extract_abbreviation_citation(definition, law_name, citation_index) ||
+              extract_initials_citation(definition)
         end
     end
   end
@@ -141,6 +161,25 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
         "UK_eur_#{year}_#{number}"
 
       true ->
+        nil
+    end
+  end
+
+  @spec extract_initials_citation(String.t()) :: String.t() | nil
+  def extract_initials_citation(definition) do
+    case Regex.run(@initials_re, definition) do
+      [_full, initials, year] ->
+        case Map.get(@statute_abbreviations, String.downcase(initials)) do
+          nil ->
+            nil
+
+          full_title ->
+            citation = "#{full_title} #{year}"
+            section = extract_section(definition)
+            if section, do: "#{citation} #{section}", else: citation
+        end
+
+      nil ->
         nil
     end
   end
