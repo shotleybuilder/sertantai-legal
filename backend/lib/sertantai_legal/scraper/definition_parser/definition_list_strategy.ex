@@ -92,7 +92,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
 
       :no_term_element ->
         raw_text =
-          XmlUtils.xpath_list(item, ~x".//Text"l)
+          direct_text_elements(item)
           |> Enum.map_join("", &XmlUtils.text_content/1)
           |> String.replace(~r/\s+/, " ")
           |> String.trim()
@@ -119,7 +119,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
   @spec extract_via_term_element(tuple()) ::
           {:ok, [String.t()], String.t()} | :no_term_element
   defp extract_via_term_element(item) do
-    term_elements = XmlUtils.xpath_list(item, ~x".//Term"l)
+    term_elements =
+      direct_elements(item, ~x".//Term"l, ~x".//UnorderedList[@Class='Definition']//Term"l)
 
     term_texts =
       term_elements
@@ -133,7 +134,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
         :no_term_element
 
       terms ->
-        text_elements = XmlUtils.xpath_list(item, ~x".//Text"l)
+        text_elements = direct_text_elements(item)
 
         raw =
           text_elements
@@ -156,6 +157,31 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
           end
 
         {:ok, terms, definition}
+    end
+  end
+
+  # Exclude text/term elements that belong to nested Definition lists.
+  # Those lists are processed independently by extract_from_element's
+  # .//UnorderedList[@Class='Definition'] search — including their text
+  # in the parent ListItem causes definition bleed (GH #148).
+  @spec direct_text_elements(tuple()) :: [tuple()]
+  defp direct_text_elements(item) do
+    direct_elements(
+      item,
+      ~x".//Text"l,
+      ~x".//UnorderedList[@Class='Definition']//Text"l
+    )
+  end
+
+  @spec direct_elements(tuple(), SweetXml.xpath_sigil(), SweetXml.xpath_sigil()) :: [tuple()]
+  defp direct_elements(item, all_xpath, nested_xpath) do
+    all = XmlUtils.xpath_list(item, all_xpath)
+    nested = XmlUtils.xpath_list(item, nested_xpath)
+
+    if nested == [] do
+      all
+    else
+      all -- nested
     end
   end
 

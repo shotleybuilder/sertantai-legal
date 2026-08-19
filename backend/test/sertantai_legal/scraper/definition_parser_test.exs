@@ -1341,6 +1341,123 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── Definition list item bleed (GH #148) ───────────────────────
+  # When a ListItem contains a nested UnorderedList[@Class='Definition'],
+  # the parent's .//Text picks up the nested items' text. The fix excludes
+  # nested Definition list text from the parent, since those lists are
+  # processed independently.
+
+  describe "parse/2 with nested Definition lists (no bleed)" do
+    test "parent ListItem definition does not include nested Definition list text" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="section-329">
+            <Pnumber>329</Pnumber>
+            <P1para>
+              <P2 id="section-329-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In this Act\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cact of 1965\u201d means the Compulsory Purchase Act 1965;</Text>
+                      </Para>
+                      <UnorderedList Decoration="none" Class="Definition">
+                        <ListItem>
+                          <Para>
+                            <Text>\u201cadjoining\u201d includes abutting on;</Text>
+                          </Para>
+                        </ListItem>
+                        <ListItem>
+                          <Para>
+                            <Text>\u201ccarriageway\u201d means a way for vehicles;</Text>
+                          </Para>
+                        </ListItem>
+                      </UnorderedList>
+                    </ListItem>
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cwild oat\u201d means plants of Avena fatua;</Text>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_test_bleed", type_code: "ukpga"})
+
+      assert length(defs) == 4
+
+      act = Enum.find(defs, &(&1.term == "act of 1965"))
+      assert act != nil
+      assert act.definition == "the Compulsory Purchase Act 1965"
+      refute String.contains?(act.definition, "adjoining")
+      refute String.contains?(act.definition, "carriageway")
+
+      adjoining = Enum.find(defs, &(&1.term == "adjoining"))
+      assert adjoining != nil
+      assert adjoining.definition == "abutting on"
+
+      carriageway = Enum.find(defs, &(&1.term == "carriageway"))
+      assert carriageway != nil
+      assert carriageway.definition == "a way for vehicles"
+
+      wild_oat = Enum.find(defs, &(&1.term == "wild oat"))
+      assert wild_oat != nil
+      assert wild_oat.definition == "plants of Avena fatua"
+    end
+
+    test "legitimate OrderedList sub-items are preserved in definition text" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201cworkplace\u201d means any premises and includes\u2014</Text>
+                        <OrderedList Type="alpha" Decoration="parens">
+                          <ListItem>
+                            <Para><Text>any place within the premises; and</Text></Para>
+                          </ListItem>
+                          <ListItem>
+                            <Para><Text>any room, lobby, or corridor.</Text></Para>
+                          </ListItem>
+                        </OrderedList>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_test_subitems", type_code: "uksi"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "workplace"
+      assert String.contains?(d.definition, "any place within the premises")
+      assert String.contains?(d.definition, "any room, lobby, or corridor")
+    end
+  end
+
   # ── TDD: Structural invariants ─────────────────────────────────
   # Every parsed definition must satisfy basic structural properties
   # regardless of the input XML. These catch bugs like empty-term
