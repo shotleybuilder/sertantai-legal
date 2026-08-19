@@ -25,7 +25,11 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   @abbreviation_re ~r/\bthe\s+([A-Z]\w*(?:\s+[A-Z]\w*)*\s+(?:Directive|Convention|Treaty|Code))\b/u
 
   # Internal reference: "given by section 3" without external law name
-  @internal_ref_re ~r/(?:given|specified|set out|provided|defined|construed)\s+(?:by|in)\s+(?:accordance\s+with\s+)?(?:section|regulation|article|paragraph|rule|schedule|part|subsection)\s+\d/iu
+  # Also matches "has the meaning given in regulation 4", "construed in accordance with schedule 2"
+  @internal_ref_re ~r/(?:given|specified|set out|provided|defined|construed|assigned)\s+(?:by|in|to\s+it\s+by)\s+(?:accordance\s+with\s+)?(?:section|regulation|article|paragraph|rule|schedule|part|subsection)\s+\d/iu
+
+  # Extended internal ref: "has the meaning given in regulation 4", ") has the meaning given in section 5"
+  @internal_ref_has_meaning_re ~r/(?:has|have)\s+the\s+(?:same\s+)?meanings?\s+(?:given|assigned|provided)\s+(?:by|in|to\s+it\s+by)\s+(?:section|regulation|article|paragraph|rule|schedule|part|subsection)\s+\d/iu
 
   @spec extract_citation(String.t(), String.t(), map()) :: String.t() | nil
   def extract_citation(definition, law_name, citation_index) do
@@ -79,10 +83,12 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
 
   @spec internal_ref?(String.t()) :: boolean()
   def internal_ref?(definition) do
-    Regex.match?(@internal_ref_re, definition) and
-      not Regex.match?(@law_type_year_re, definition) and
-      not Regex.match?(@short_name_re, definition) and
-      not Regex.match?(~r/\bDirective\b/, definition)
+    clean = String.replace(definition, ~r/\A\)\s*/, "")
+
+    (Regex.match?(@internal_ref_re, clean) or Regex.match?(@internal_ref_has_meaning_re, clean)) and
+      not Regex.match?(@law_type_year_re, clean) and
+      not Regex.match?(@short_name_re, clean) and
+      not Regex.match?(~r/\bDirective\b/, clean)
   end
 
   @spec normalise_title(String.t()) :: String.t()

@@ -101,6 +101,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
 
   def clean_definition(definition) do
     definition
+    |> String.replace(~r/\A\)\s*/, "")
     |> String.replace(~r/[;,.]$/, "")
     |> String.replace(~r/\s+[MF]\d+\s*$/, "")
     |> String.trim()

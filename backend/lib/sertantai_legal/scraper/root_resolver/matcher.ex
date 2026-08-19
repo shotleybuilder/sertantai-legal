@@ -64,7 +64,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
       law_title =
         sibling_citation
         |> String.replace(
-          ~r/\s+(section|regulation|article|paragraph|rule|part)\s+.+$/i,
+          ~r/\s+(section|regulation|article|paragraph|rule|part)\s+\d.*$/i,
           ""
         )
 
@@ -85,7 +85,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
   def resolve_to_root(citation, term, title_index, def_index) do
     title_with_year =
       citation
-      |> String.replace(~r/\s+(section|regulation|article|paragraph|rule|part)\s+.+$/i, "")
+      |> String.replace(~r/\s+(section|regulation|article|paragraph|rule|part)\s+\d.*$/i, "")
       |> CitationExtractor.normalise_title()
 
     title_without_year = String.replace(title_with_year, ~r/\s+\d{4}\s*$/, "")

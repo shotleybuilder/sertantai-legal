@@ -293,7 +293,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   defp resolve_law_name(citation, title_index) do
     title_with_year =
       citation
-      |> String.replace(~r/\s+(section|regulation|article|paragraph|rule|part)\s+.+$/i, "")
+      |> String.replace(~r/\s+(section|regulation|article|paragraph|rule|part)\s+\d.*$/i, "")
       |> CitationExtractor.normalise_title()
 
     title_without_year = String.replace(title_with_year, ~r/\s+\d{4}\s*$/, "")
