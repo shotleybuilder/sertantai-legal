@@ -27,10 +27,18 @@ defmodule SertantaiLegal.Scraper.RootResolver.Indexes do
     |> Enum.reduce(%{}, fn {name, title, year}, acc ->
       key = CitationExtractor.normalise_title(title)
 
+      # Also register an alias without "etc" for titles like
+      # "Health and Safety at Work etc. Act" — citations often omit it
+      alt_key =
+        if String.contains?(key, " etc ") do
+          String.replace(key, " etc ", " ")
+        end
+
       acc
       |> (fn a ->
             if year do
-              Map.put(a, {key, year}, name)
+              a = Map.put(a, {key, year}, name)
+              if alt_key, do: Map.put(a, {alt_key, year}, name), else: a
             else
               a
             end
@@ -38,6 +46,15 @@ defmodule SertantaiLegal.Scraper.RootResolver.Indexes do
       |> Map.update(key, name, fn existing ->
         if String.length(name) <= String.length(existing), do: name, else: existing
       end)
+      |> (fn a ->
+            if alt_key do
+              Map.update(a, alt_key, name, fn existing ->
+                if String.length(name) <= String.length(existing), do: name, else: existing
+              end)
+            else
+              a
+            end
+          end).()
     end)
   end
 
