@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
     @type category ::
             :no_citation
+            | :internal_ref
             | :parent_not_in_lrt
             | :parent_revoked
             | :parent_unparsed
@@ -65,6 +66,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
   @type summary :: %{
           total: non_neg_integer(),
+          citation_resolved: non_neg_integer(),
+          genuinely_unresolved: non_neg_integer(),
           by_category: %{Finding.category() => non_neg_integer()},
           by_family: %{String.t() => %{Finding.category() => non_neg_integer()}},
           top_parents: [{String.t(), non_neg_integer()}]
@@ -106,7 +109,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   end
 
   # Categories that represent structural ceiling, not actionable bugs
-  @ceiling_categories [:parent_revoked, :parent_not_in_lrt]
+  @ceiling_categories [:parent_revoked, :parent_not_in_lrt, :internal_ref]
 
   @doc "Aggregate findings into a summary map."
   @spec summarise([Finding.t()]) :: summary()
@@ -135,8 +138,14 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
       |> Enum.sort_by(&elem(&1, 1), :desc)
       |> Enum.take(30)
 
+    # Split: findings with a citation (pointer-resolved) vs without (genuinely unresolved)
+    citation_resolved = Enum.count(findings, &(&1.citation != nil))
+    genuinely_unresolved = Enum.count(findings, &(&1.citation == nil))
+
     %{
       total: length(findings),
+      citation_resolved: citation_resolved,
+      genuinely_unresolved: genuinely_unresolved,
       by_category: by_category,
       by_family: by_family,
       top_parents: top_parents
@@ -156,7 +165,11 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     IO.puts("\n══ Resolution Diagnostic ══")
 
     IO.puts(
-      "Total unlinked: #{summary.total} (#{actionable_total} actionable, #{ceiling_total} ceiling)\n"
+      "Total unlinked: #{summary.total} (#{actionable_total} actionable, #{ceiling_total} ceiling)"
+    )
+
+    IO.puts(
+      "Citation-resolved: #{summary.citation_resolved}  |  Genuinely unresolved: #{summary.genuinely_unresolved}\n"
     )
 
     IO.puts("Actionable:")
@@ -216,6 +229,12 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     base = %{definition_id: d.id, law_name: d.law_name, term: d.term}
 
     cond do
+      citation == nil and CitationExtractor.internal_ref?(definition) ->
+        struct!(
+          Finding,
+          Map.merge(base, %{category: :internal_ref, detail: "internal reference within same law"})
+        )
+
       citation == nil ->
         struct!(Finding, Map.merge(base, %{category: :no_citation}))
 
