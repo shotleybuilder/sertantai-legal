@@ -226,6 +226,7 @@ def build_index(sessions_dir: Path, db_path: Path):
     conn = sqlite3.connect(str(db_path))
 
     # Drop and recreate (idempotent rebuild)
+    conn.execute("DROP VIEW IF EXISTS open_bugs")
     for table in ["bugs", "dependencies", "artifacts", "metrics", "lessons", "decisions", "sessions"]:
         conn.execute(f"DROP TABLE IF EXISTS {table}")
     conn.executescript(SCHEMA)
