@@ -47,6 +47,10 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
   # Citation pattern — term is a law title abbreviation
   @citation_pattern ~r/\A\d{4}\s+(act|order|regulations?|rules?|directive|code|scheme|measure|charter|convention|treaty|statute)s?\z|\A(principal|amending|original)\s+(act|order|regulations?|rules?|directive)\z|\A\w[\w\s]*\s+directive\z/iu
 
+  # Definition-text citation pattern — definition IS a law name
+  # e.g. "the Food Safety Act 1990", "means the Planning Act 2008"
+  @definition_is_law_re ~r/\A(?:means\s+)?(?:the\s+)?[A-Z][^\n]{0,120}?(?:Act|Regulations?|Order|Rules?|Directive|Measure)\s+\d{4}\s*\z/u
+
   # Quote stripping for term normalisation
   @quotes_pattern Regex.compile!("[\"'`\u201c\u201d\u2018\u2019]", "u")
 
@@ -79,7 +83,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
       section_id: attrs[:section_id],
       scope: attrs[:scope],
       references_other_law: references_other_law?(definition),
-      citation: citation?(term),
+      citation: citation?(term) or definition_is_law_name?(definition),
       source: attrs[:source] || attrs.source
     }
   end
@@ -120,4 +124,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
   @spec citation?(String.t() | nil) :: boolean()
   def citation?(nil), do: false
   def citation?(term), do: Regex.match?(@citation_pattern, term)
+
+  @spec definition_is_law_name?(String.t() | nil) :: boolean()
+  defp definition_is_law_name?(nil), do: false
+  defp definition_is_law_name?(definition), do: Regex.match?(@definition_is_law_re, definition)
 end

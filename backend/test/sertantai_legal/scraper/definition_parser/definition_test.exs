@@ -105,4 +105,60 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionTest do
       refute Definition.citation?("building")
     end
   end
+
+  # ── citation detection via definition text ────────────────────
+  # "the Act" means the Food Safety Act 1990 — term is "act",
+  # definition IS a law name. Should be flagged as citation.
+
+  describe "new/1 citation detection from definition text" do
+    test "flags citation when definition IS a law name" do
+      d =
+        Definition.new(
+          law_name: "UK_uksi_2013_2996",
+          term: "act",
+          definition: "the Food Safety Act 1990",
+          source: :definition_list
+        )
+
+      assert d.citation == true
+    end
+
+    test "flags citation for Welsh law name definition" do
+      d =
+        Definition.new(
+          law_name: "UK_wsi_2014_2303",
+          term: "y ddeddf",
+          definition: "means the Food Safety Act 1990",
+          source: :definition_list
+        )
+
+      assert d.citation == true
+    end
+
+    test "does not flag citation for cross-reference definition" do
+      d =
+        Definition.new(
+          law_name: "UK_uksi_2013_2196",
+          term: "food authority",
+          definition:
+            "given by section 5 of the Act except that it does not include the Inner Temple",
+          source: :definition_list
+        )
+
+      refute d.citation
+    end
+
+    test "does not flag citation for substantive definition" do
+      d =
+        Definition.new(
+          law_name: "UK_uksi_2014_3001",
+          term: "meat",
+          definition:
+            "the skeletal muscles of mammalian and bird species recognised as fit for human consumption",
+          source: :definition_list
+        )
+
+      refute d.citation
+    end
+  end
 end

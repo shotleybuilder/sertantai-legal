@@ -1,10 +1,10 @@
 ---
 session: Substantive Section Definition Parsing
-status: pending
+status: active
 opened: 2026-08-20
 ---
 
-# Session: Substantive Section Definition Parsing (PENDING)
+# Session: Substantive Section Definition Parsing (ACTIVE)
 
 ## Problem
 
@@ -22,4 +22,4 @@ UK Acts define many terms in substantive sections, not interpretation sections. 
 ## Dependencies
 
 - ✅ Definition Fixes Final Batch (2026-08-20) — S3 includes verb fix
-- ⬜ EU Regulation Annex Parsing (2026-08-20, #152) — related parser enhancement
+- ✅ EU Regulation Annex Parsing (2026-08-20, #152) — closed, parse_annex/2 built
