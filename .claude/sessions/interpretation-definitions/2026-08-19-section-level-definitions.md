@@ -1,10 +1,18 @@
 ---
 session: Section-Level Definition Extraction
-status: pending
+status: closed
 opened: 2026-08-19
+closed: 2026-08-20
+outcome: deferred
+
+summary: >
+  Superseded by #153 session. The 93.9% ceiling estimate was wrong — the real blocker
+  was citation misclassification (law-name definitions with citation=false), not section-level
+  parsing. OH&S now at 98.4% without section-level extraction. Remaining term_not_found
+  is a future enhancement, not a blocker.
 ---
 
-# Session: Section-Level Definition Extraction (PENDING)
+# Session: Section-Level Definition Extraction (CLOSED)
 
 ## Problem
 
@@ -14,12 +22,10 @@ This is the structural ceiling for definition resolution — without it, OH&S ma
 
 ## Todo
 
-- ⬜ Quantify: how many section-level definitions exist corpus-wide (not just OH&S)?
-- ⬜ Categorise: are these "X is established under section Y" definitions extractable from XML?
-- ⬜ Evaluate approaches: (a) new parser strategy for section-level defs, (b) child-driven extraction (use child's citation to find parent section, extract from there), (c) accept as resolution ceiling
-- ⬜ Plan chosen approach with Gemini review
-- ⬜ Implement and test
-- ⬜ Reparse and verify
+- ⏸️ Quantify (deferred — superseded by #153 which found 1,235 corpus-wide)
+- ⏸️ Categorise (deferred — #153 revealed citation misclassification was the real blocker)
+- ⏸️ Evaluate approaches (deferred — all families now >90% without section-level parsing)
+- ❌ Plan, implement, verify (abandoned — not needed for 90% target)
 
 ## Dependencies
 

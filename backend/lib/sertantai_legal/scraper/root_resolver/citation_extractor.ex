@@ -57,10 +57,10 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   # Internal reference: "given by section 3" without external law name
   # Also matches "has the meaning given in regulation 4", "construed in accordance with schedule 2"
   # Plural forms (paragraphs, subsections) and parenthesized numbers ((2)) are supported
-  @internal_ref_re ~r/(?:given|specified|set out|provided|defined|construed|assigned)\s+(?:by|in|to\s+it\s+by)\s+(?:accordance\s+with\s+)?(?:sections?|regulations?|articles?|paragraphs?|rules?|schedules?|parts?|subsections?)\s+\(?\d/iu
+  @internal_ref_re ~r/(?:given|specified|set out|provided|defined|construed|assigned)\s+(?:by|in|(?:to\s+)?it\s+(?:by|in))\s+(?:accordance\s+with\s+)?(?:sections?|regulations?|articles?|paragraphs?|rules?|schedules?|parts?|subsections?)\s+\(?\d/iu
 
   # Extended internal ref: "has the meaning given in regulation 4", ") has the meaning given in section 5"
-  @internal_ref_has_meaning_re ~r/(?:has|have)\s+the\s+(?:same\s+)?meanings?\s+(?:given|assigned|provided)\s+(?:by|in|to\s+it\s+by)\s+(?:sections?|regulations?|articles?|paragraphs?|rules?|schedules?|parts?|subsections?)\s+\(?\d/iu
+  @internal_ref_has_meaning_re ~r/(?:has|have)\s+the\s+(?:same\s+)?meanings?\s+(?:given|assigned|provided)\s+(?:by|in|(?:to\s+)?it\s+(?:by|in))\s+(?:sections?|regulations?|articles?|paragraphs?|rules?|schedules?|parts?|subsections?)\s+\(?\d/iu
 
   @spec extract_citation(String.t(), String.t(), map()) :: String.t() | nil
   def extract_citation(definition, law_name, citation_index) do
