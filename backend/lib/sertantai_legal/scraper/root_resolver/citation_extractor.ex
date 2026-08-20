@@ -21,6 +21,9 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   # Short name: "the 1991 Act", "the 2003 Regulations"
   @short_name_re ~r/(?:the\s+)?(\d{4})\s+(Act|Regulations?|Order|Rules?)/u
 
+  # Year-prefix named SI: "the 2014 Acetylene Regulations", "the 1996 Safety Case Regulations"
+  @year_prefix_re ~r/(?:the\s+)?(\d{4})\s+([A-Z][A-Za-z\s&]+?)\s+(Regulations?|Order|Rules?|Act)/u
+
   # Section reference: "section 126(1)", "regulation 3", "article 2(1)"
   @section_re ~r/(section|regulation|article|paragraph|rule|part)\s+([\d]+(?:\([\d]+\))?(?:\([a-z]\))?)/iu
 
@@ -60,18 +63,24 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
         if section, do: "#{title} #{section}", else: title
 
       :no_match ->
-        case Regex.run(@short_name_re, definition) do
-          [_full, year, type] ->
-            short_key = {law_name, String.downcase("#{year} #{type}")}
-            full_title = Map.get(citation_index, short_key)
+        case extract_year_prefix_citation(definition) do
+          {:ok, citation} ->
+            citation
 
-            raw = full_title || "the #{year} #{type}"
-            section = extract_section(definition)
-            if section, do: "#{raw} #{section}", else: raw
+          :no_match ->
+            case Regex.run(@short_name_re, definition) do
+              [_full, year, type] ->
+                short_key = {law_name, String.downcase("#{year} #{type}")}
+                full_title = Map.get(citation_index, short_key)
 
-          nil ->
-            extract_abbreviation_citation(definition, law_name, citation_index) ||
-              extract_initials_citation(definition)
+                raw = full_title || "the #{year} #{type}"
+                section = extract_section(definition)
+                if section, do: "#{raw} #{section}", else: raw
+
+              nil ->
+                extract_abbreviation_citation(definition, law_name, citation_index) ||
+                  extract_initials_citation(definition)
+            end
         end
     end
   end
@@ -162,6 +171,20 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
 
       true ->
         nil
+    end
+  end
+
+  @spec extract_year_prefix_citation(String.t()) :: {:ok, String.t()} | :no_match
+  def extract_year_prefix_citation(definition) do
+    case Regex.run(@year_prefix_re, definition) do
+      [_full, year, name, type] ->
+        title = "#{String.trim(name)} #{type} #{year}"
+        section = extract_section(definition)
+        citation = if section, do: "#{title} #{section}", else: title
+        {:ok, citation}
+
+      nil ->
+        :no_match
     end
   end
 

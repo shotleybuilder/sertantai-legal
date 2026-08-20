@@ -291,4 +291,40 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
       assert result =~ "Town and Country Planning Act 1990"
     end
   end
+
+  # ── extract_year_prefix_citation/1 ─────────────────────────
+  # Year-prefix SI abbreviations: "the 2014 Acetylene Regulations"
+
+  describe "extract_year_prefix_citation/1" do
+    test "extracts year-prefix Regulations" do
+      definition = "has the meaning given in the 2014 Acetylene Regulations"
+      assert {:ok, citation} = CitationExtractor.extract_year_prefix_citation(definition)
+      assert citation == "Acetylene Regulations 2014"
+    end
+
+    test "extracts year-prefix with section reference" do
+      definition =
+        "has the meaning given in regulation 2(1) of the 1996 Safety Case Regulations"
+
+      assert {:ok, citation} = CitationExtractor.extract_year_prefix_citation(definition)
+      assert citation =~ "Safety Case Regulations 1996"
+      assert citation =~ "regulation 2(1)"
+    end
+
+    test "extracts year-prefix Order" do
+      definition = "has the meaning given in the 1995 Offshore Installations Order"
+      assert {:ok, citation} = CitationExtractor.extract_year_prefix_citation(definition)
+      assert citation == "Offshore Installations Order 1995"
+    end
+
+    test "returns :no_match for standard title-year format" do
+      definition = "has the meaning given in the Scotland Act 1998"
+      assert :no_match = CitationExtractor.extract_year_prefix_citation(definition)
+    end
+
+    test "returns :no_match for text without year-prefix pattern" do
+      definition = "means a building used for residential purposes"
+      assert :no_match = CitationExtractor.extract_year_prefix_citation(definition)
+    end
+  end
 end

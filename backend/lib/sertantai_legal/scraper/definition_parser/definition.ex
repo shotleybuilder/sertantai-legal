@@ -93,6 +93,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
     |> String.replace(~r/\.\s*\.\s*\.\s*|\x{2026}/u, "")
     |> String.downcase()
     |> String.replace(~r/\A(?:the|a|an)\s+/u, "")
+    |> String.replace("-", " ")
+    |> String.replace(~r/\s+/, " ")
     |> String.trim()
   end
 
@@ -102,6 +104,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.Definition do
   def clean_definition(definition) do
     definition
     |> String.replace(~r/\A\)\s*/, "")
+    |> String.replace(~r/\s*;\s*(?=\d{4})/, " ")
     |> String.replace(~r/[;,.]$/, "")
     |> String.replace(~r/\s+[MF]\d+\s*$/, "")
     |> String.trim()
