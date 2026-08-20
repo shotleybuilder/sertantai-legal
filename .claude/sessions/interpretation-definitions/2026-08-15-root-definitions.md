@@ -1,10 +1,48 @@
 ---
 session: Root Definitions
-status: suspended
+status: closed
 opened: 2026-08-15
+closed: 2026-08-20
+outcome: success
+
+summary: >
+  Implemented root definition linking — self-referential FK on legislative_definitions, RootResolver
+  with 5 in-memory indexes, and parser Strategy 3 for section-level Term elements. 700 definitions
+  linked to roots, 4,193 citations extracted. Superseded by the definition QA skill system.
+
+decisions:
+  - what: Self-referential FK over separate definition_roots table
+    why: Root definitions already exist as rows in parent laws — pointing avoids duplication and curation burden
+    result: "700 linked, 344 distinct root targets"
+  - what: Child-to-parent targeted fetching over bulk backfill
+    why: 311 of 665 parent laws already parsed but terms aren't in Interpretation sections — bulk re-parse wastes time
+    result: "Approach adopted in later definition-parse skill"
+
+metrics:
+  resolution:
+    total_definitions: 66496
+    root_linked: 700
+    citation_extracted: 4193
+    distinct_roots: 344
+    self_contained: 56241
+    internal_refs: 1799
+    unresolved: 521
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/root_resolver.ex
+  - backend/lib/sertantai_legal/scraper/definition_parser.ex
+  - backend/priv/repo/migrations/20260815185849_add_root_definition_fields.exs
+
+depends_on:
+  - 2026-08-13-definition-schema-storage
+  - 2026-08-13-definition-parser
+
+enables:
+  - Resolution Diagnostic session (2026-08-17)
+  - Definition QA skill system
 ---
 
-# Session: Root Definitions (SUSPENDED)
+# Session: Root Definitions (CLOSED)
 
 ## Problem
 
@@ -17,8 +55,8 @@ The applicability sidebar shows definitions as a flat list — click "owner" and
 - ✅ Populate: `RootResolver.resolve_all()` — 700 linked, 4,193 citations extracted (awaiting parent parse)
 - ✅ Coverage report: see results below
 - ✅ Parser Strategy 3: extract `<Term>` definitions from section-level provisions (not just Interpretation sections)
-- ⬜ Targeted backfill: fetch specific sections/parts from legislation.gov.uk using `referenced_law_citation`
-- ⬜ API: update definitions endpoint to expose root linkage for sidebar collapse
+- ⏸️ Targeted backfill (deferred — superseded by definition-parse skill workflow)
+- ⏸️ API: update definitions endpoint (deferred — compliance-side concern, not legal service scope)
 
 ## Dependencies
 

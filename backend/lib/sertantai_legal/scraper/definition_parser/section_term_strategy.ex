@@ -37,7 +37,15 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
   defp extract_section_terms(element, law_name) do
     has_def_list = XmlUtils.xpath_list(element, ~x".//UnorderedList[@Class='Definition']"l) != []
 
-    if has_def_list do
+    # Also skip elements with Term-bearing non-Definition lists — S1 handles those
+    has_term_list =
+      element
+      |> XmlUtils.xpath_list(~x".//UnorderedList[not(@Class='Definition')]"l)
+      |> Enum.any?(fn ul ->
+        XmlUtils.xpath_list(ul, ~x"./ListItem//Term"l) != []
+      end)
+
+    if has_def_list or has_term_list do
       []
     else
       do_extract_section_terms(element, law_name)

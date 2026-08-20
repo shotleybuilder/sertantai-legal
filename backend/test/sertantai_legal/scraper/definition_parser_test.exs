@@ -1557,4 +1557,56 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert defs == []
     end
   end
+
+  # ── HSWA 1974 section 53 ─────────────────────────────────────
+  # Blob parser bug: UnorderedList Decoration="none" with <Term> elements
+  # inside <ListItem> — S1 skips (no Class="Definition"), S3 grabs full P2 text.
+  # Each definition should be short (~50-200 chars), not 3000-6000 char blobs.
+
+  describe "parse/2 with HSWA 1974 section 53 (Term-bearing non-Definition list)" do
+    setup do
+      xml = read_fixture("section_ukpga_1974_37_s53.xml")
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_ukpga_1974_37", type_code: "ukpga"})
+      %{defs: defs}
+    end
+
+    test "extracts individual definitions, not blobs", %{defs: defs} do
+      # Each definition should be under 600 chars (not 3000-6000 char blobs)
+      # Some definitions with enumerated sub-items are legitimately ~500-600 chars
+      blobs = Enum.filter(defs, fn d -> String.length(d.definition || "") > 600 end)
+
+      assert blobs == [],
+             "Found #{length(blobs)} blob definitions (>600 chars): #{Enum.map(blobs, & &1.term) |> Enum.join(", ")}"
+    end
+
+    test "extracts all definitions from fixture", %{defs: defs} do
+      # Minimal fixture has 28 Term elements (stripped from full 38 for push protection)
+      assert length(defs) >= 28,
+             "Expected >= 28 definitions, got #{length(defs)}"
+    end
+
+    test "employee definition is concise", %{defs: defs} do
+      employee = Enum.find(defs, &(&1.term == "employee"))
+      assert employee != nil, "employee definition not found"
+
+      assert String.length(employee.definition) < 300,
+             "employee definition is a blob: #{String.length(employee.definition)} chars"
+
+      assert employee.definition =~ "works under a contract of employment"
+    end
+
+    test "substance definition is concise", %{defs: defs} do
+      sub = Enum.find(defs, &(&1.term == "substance"))
+      assert sub != nil, "substance not found"
+      assert String.length(sub.definition) < 300
+    end
+
+    test "definitions are from definition_list source, not section_term", %{defs: defs} do
+      # S1 should handle these (higher priority than S3)
+      sources = defs |> Enum.map(& &1.source) |> Enum.uniq()
+
+      assert :definition_list in sources,
+             "Expected definition_list source, got: #{inspect(sources)}"
+    end
+  end
 end

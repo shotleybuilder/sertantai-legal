@@ -1,10 +1,43 @@
 ---
 session: Definition Data QA
-status: suspended
+status: closed
 opened: 2026-08-17
+closed: 2026-08-20
+outcome: partial
+
+summary: >
+  Re-parsed 658 laws in 7 batches (+11,380 defs), fixed persister UUID/DateTime type mismatches,
+  resolver links jumped 942→1,695 (+80%). Remaining data quality items (empty defs, UTF-8, scope
+  backfill) deferred — superseded by the definition QA skill system and per-family investigation sessions.
+
+decisions:
+  - what: Re-parse in batches of 100 rather than full corpus
+    why: Rate limiting (2s/request) makes full corpus take hours; batches allow incremental progress and error isolation
+    result: "7 batches, 6 fetch errors, 4 no-defs, +11,380 defs"
+
+metrics:
+  reparse:
+    laws_reparsed: 658
+    definitions_added: 11380
+    empty_defs_reduced: { before: 1541, after: 565 }
+  resolver:
+    links_before: 942
+    links_after: 1695
+    citations_extracted: 6663
+    missing_parents: 745
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/definition_persister.ex
+
+depends_on:
+  - 2026-08-17-definition-parser-architecture
+
+enables:
+  - Resolution Diagnostic session (2026-08-17)
+  - Definition QA skill system
 ---
 
-# Session: Definition Data QA (SUSPENDED)
+# Session: Definition Data QA (CLOSED)
 
 ## Problem
 
@@ -17,12 +50,12 @@ The definition parser and resolver have been refactored (parser: 766→6 modules
 - ✅ Re-parse 658 targeted laws in 7 batches of 100 (5 test + 653 bulk, 6 fetch errors, 4 no-defs, +11,380 defs, empties 1,541→565)
 - ✅ Re-run resolver after re-parse — links 942→1,695 (+80%), citations extracted: 6,663, 745 missing parents identified
 - ✅ Fix NaiveDateTime → DateTime in resolver persister (Ash UtcDatetimeUsec type mismatch)
-- ⬜ Investigate 1,541 empty-definition records across 133 laws — categorise: parser bug vs genuinely empty in source XML
-- ⬜ Fix 3 UTF-8 encoding errors in persister (truncated multi-byte sequences)
-- ⬜ Run CSV scope backfill (`mix definitions.backfill --scope csv`) — 28,754 null-scope defs (42%)
-- ⬜ Update ElectricSQL shape to include definition_links junction table
+- ⏸️ Investigate empty-definition records (deferred — superseded by per-family QA sessions)
+- ⏸️ Fix UTF-8 encoding errors (deferred — low priority, 3 records)
+- ⏸️ CSV scope backfill (deferred — superseded by definition-parse skill)
+- ⏸️ ElectricSQL shape update (deferred — compliance-side concern)
 - ✅ Update NAS snapshot (previous archived, 79,381 defs backed up)
-- ⬜ Evaluate: migrate mix tasks to Phoenix LiveDashboard / admin routes
+- ⏸️ Evaluate LiveDashboard migration (deferred — nice-to-have, not blocking)
 
 ## Dependencies
 

@@ -34,9 +34,21 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
 
   @spec extract_from_element(tuple(), String.t(), boolean(), :p1 | :p2) :: [Definition.t()]
   defp extract_from_element(element, law_name, is_welsh, level) do
+    # Match Class="Definition" lists (standard) and non-Definition lists that
+    # contain <Term> elements inside <ListItem> (e.g., HSWA 1974 section 53
+    # uses <UnorderedList Decoration="none"> with Term-bearing ListItems).
     def_lists = XmlUtils.xpath_list(element, ~x".//UnorderedList[@Class='Definition']"l)
 
-    if def_lists == [] do
+    term_bearing_lists =
+      element
+      |> XmlUtils.xpath_list(~x".//UnorderedList[not(@Class='Definition')]"l)
+      |> Enum.filter(fn ul ->
+        XmlUtils.xpath_list(ul, ~x"./ListItem//Term"l) != []
+      end)
+
+    all_lists = def_lists ++ term_bearing_lists
+
+    if all_lists == [] do
       []
     else
       section_id = xpath(element, ~x"./@id"s)
@@ -50,7 +62,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
       scope = XmlUtils.detect_scope(preamble)
       delegated_def = detect_delegated(preamble)
 
-      def_lists
+      all_lists
       |> Enum.flat_map(fn def_list ->
         items = XmlUtils.xpath_list(def_list, ~x"./ListItem"l)
 

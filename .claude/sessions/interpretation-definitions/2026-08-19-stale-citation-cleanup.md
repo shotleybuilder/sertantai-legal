@@ -184,6 +184,12 @@ bugs:
     affected: 0
     fix: "Fixed in batch 1 (81619cc) — @internal_ref_has_meaning_re covers parenthesized numbers"
     status: fixed
+  - pattern: "Interpretation Act 1978 not in LRT — most cross-referenced UK law missing entirely"
+    category: parent_not_in_lrt
+    module: LegalRegister
+    affected: 0
+    fix: "Parsed via lrt-parse-law + definition-parse. 8 definitions extracted."
+    status: fixed
   - pattern: "extract_named_law strips preamble too aggressively — 'Safety (Enforcing Authority...)' loses 'Health and'"
     category: parent_not_in_lrt
     module: CitationExtractor
