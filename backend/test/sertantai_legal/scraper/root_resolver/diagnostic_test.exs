@@ -460,6 +460,13 @@ defmodule SertantaiLegal.Scraper.RootResolver.DiagnosticTest do
       assert summary.total == 5
     end
 
+    test "splits citation-resolved vs genuinely unresolved", %{findings: findings} do
+      summary = Diagnostic.summarise(findings)
+      # d1, d2 (term_not_found) and d4 (parent_revoked) have target_law set via citation
+      # d3 (no_citation) and d5 (parent_not_in_lrt with nil target) have no citation
+      assert summary.citation_resolved + summary.genuinely_unresolved == summary.total
+    end
+
     test "groups by category", %{findings: findings} do
       summary = Diagnostic.summarise(findings)
 
@@ -488,6 +495,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.DiagnosticTest do
     test "separates actionable from ceiling categories" do
       summary = %{
         total: 10,
+        citation_resolved: 7,
+        genuinely_unresolved: 3,
         by_category: %{
           term_not_found: 4,
           no_citation: 3,
@@ -501,6 +510,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.DiagnosticTest do
       output = ExUnit.CaptureIO.capture_io(fn -> Diagnostic.print_summary(summary) end)
 
       assert output =~ "10 (7 actionable, 3 ceiling)"
+      assert output =~ "Citation-resolved: 7"
+      assert output =~ "Genuinely unresolved: 3"
       assert output =~ "Actionable:"
       assert output =~ "term_not_found"
       assert output =~ "no_citation"
@@ -512,6 +523,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.DiagnosticTest do
     test "omits ceiling section when no ceiling findings" do
       summary = %{
         total: 5,
+        citation_resolved: 3,
+        genuinely_unresolved: 2,
         by_category: %{term_not_found: 3, no_citation: 2},
         by_family: %{},
         top_parents: []
