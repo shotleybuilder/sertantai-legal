@@ -33,6 +33,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     @type category ::
             :no_citation
             | :parent_not_in_lrt
+            | :parent_revoked
             | :parent_unparsed
             | :term_not_found
             | :term_normalisation
@@ -83,17 +84,29 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     citation_index = Indexes.build_citation_index()
     enacted_by_index = Indexes.build_enacted_by_index()
     parse_status = build_parse_status_index()
+    live_status = build_live_status_index()
     parent_terms = build_parent_terms_index()
 
     defs = fetch_unlinked(opts)
 
     findings =
       Enum.map(defs, fn d ->
-        classify(d, title_index, citation_index, enacted_by_index, parse_status, parent_terms)
+        classify(
+          d,
+          title_index,
+          citation_index,
+          enacted_by_index,
+          parse_status,
+          live_status,
+          parent_terms
+        )
       end)
 
     {:ok, findings}
   end
+
+  # Categories that represent structural ceiling, not actionable bugs
+  @ceiling_categories [:parent_revoked, :parent_not_in_lrt]
 
   @doc "Aggregate findings into a summary map."
   @spec summarise([Finding.t()]) :: summary()
@@ -117,7 +130,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
     top_parents =
       findings
-      |> Enum.filter(&(&1.target_law != nil))
+      |> Enum.filter(&(&1.target_law != nil and &1.category not in @ceiling_categories))
       |> Enum.frequencies_by(& &1.target_law)
       |> Enum.sort_by(&elem(&1, 1), :desc)
       |> Enum.take(30)
@@ -133,17 +146,38 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   @doc "Print a human-readable summary to stdout."
   @spec print_summary(summary()) :: :ok
   def print_summary(summary) do
+    {actionable, ceiling} =
+      summary.by_category
+      |> Enum.split_with(fn {cat, _} -> cat not in @ceiling_categories end)
+
+    actionable_total = actionable |> Enum.map(&elem(&1, 1)) |> Enum.sum()
+    ceiling_total = ceiling |> Enum.map(&elem(&1, 1)) |> Enum.sum()
+
     IO.puts("\n══ Resolution Diagnostic ══")
-    IO.puts("Total unlinked: #{summary.total}\n")
 
-    IO.puts("By category:")
+    IO.puts(
+      "Total unlinked: #{summary.total} (#{actionable_total} actionable, #{ceiling_total} ceiling)\n"
+    )
 
-    summary.by_category
+    IO.puts("Actionable:")
+
+    actionable
     |> Enum.sort_by(&elem(&1, 1), :desc)
     |> Enum.each(fn {cat, count} ->
       pct = Float.round(100.0 * count / max(summary.total, 1), 1)
       IO.puts("  #{pad(cat, 25)} #{pad_num(count, 6)}  (#{pct}%)")
     end)
+
+    if ceiling != [] do
+      IO.puts("\nCeiling (not actionable):")
+
+      ceiling
+      |> Enum.sort_by(&elem(&1, 1), :desc)
+      |> Enum.each(fn {cat, count} ->
+        pct = Float.round(100.0 * count / max(summary.total, 1), 1)
+        IO.puts("  #{pad(cat, 25)} #{pad_num(count, 6)}  (#{pct}%)")
+      end)
+    end
 
     IO.puts("\nTop 20 unresolved parent laws:")
 
@@ -158,8 +192,16 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
   # -- Classification --
 
-  @spec classify(map(), map(), map(), map(), map(), map()) :: Finding.t()
-  defp classify(d, title_index, citation_index, enacted_by_index, parse_status, parent_terms) do
+  @spec classify(map(), map(), map(), map(), map(), map(), map()) :: Finding.t()
+  defp classify(
+         d,
+         title_index,
+         citation_index,
+         enacted_by_index,
+         parse_status,
+         live_status,
+         parent_terms
+       ) do
     definition = d.definition || ""
 
     citation =
@@ -179,70 +221,122 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
 
       true ->
         target_law = resolve_law_name(citation, title_index)
-        classify_with_target(base, citation, target_law, d.term, parse_status, parent_terms)
+
+        classify_with_target(
+          base,
+          citation,
+          target_law,
+          d.term,
+          parse_status,
+          live_status,
+          parent_terms
+        )
     end
   end
 
-  @spec classify_with_target(map(), String.t(), String.t() | nil, String.t(), map(), map()) ::
-          Finding.t()
-  defp classify_with_target(base, citation, nil, _term, _parse_status, _parent_terms) do
+  @revoked_status "❌ Revoked / Repealed / Abolished"
+
+  @spec classify_with_target(
+          map(),
+          String.t(),
+          String.t() | nil,
+          String.t(),
+          map(),
+          map(),
+          map()
+        ) :: Finding.t()
+  defp classify_with_target(
+         base,
+         citation,
+         nil,
+         _term,
+         _parse_status,
+         _live_status,
+         _parent_terms
+       ) do
     struct!(Finding, Map.merge(base, %{category: :parent_not_in_lrt, citation: citation}))
   end
 
-  defp classify_with_target(base, citation, target_law, term, parse_status, parent_terms) do
+  defp classify_with_target(
+         base,
+         citation,
+         target_law,
+         term,
+         parse_status,
+         live_status,
+         parent_terms
+       ) do
     parsed? = Map.get(parse_status, target_law, false)
+    live = Map.get(live_status, target_law)
+    revoked? = live == @revoked_status
 
-    unless parsed? do
-      struct!(
-        Finding,
-        Map.merge(base, %{
-          category: :parent_unparsed,
-          citation: citation,
-          target_law: target_law
-        })
-      )
-    else
-      terms_in_parent = Map.get(parent_terms, target_law, MapSet.new())
+    cond do
+      # Parent is fully revoked — definitions are gone, not actionable
+      revoked? ->
+        struct!(
+          Finding,
+          Map.merge(base, %{
+            category: :parent_revoked,
+            citation: citation,
+            target_law: target_law,
+            detail: "parent law is revoked — definitions no longer available"
+          })
+        )
 
-      cond do
-        MapSet.member?(terms_in_parent, term) ->
-          # Term exists — this shouldn't happen if resolver ran correctly.
-          # Could be citation_ambiguous (resolved to wrong law) or
-          # section-level mismatch.
-          struct!(
-            Finding,
-            Map.merge(base, %{
-              category: :citation_ambiguous,
-              citation: citation,
-              target_law: target_law,
-              detail:
-                "term exists in parent but resolver didn't link — possible multi-law ambiguity"
-            })
-          )
+      # Parent exists but definitions not yet parsed
+      not parsed? ->
+        struct!(
+          Finding,
+          Map.merge(base, %{
+            category: :parent_unparsed,
+            citation: citation,
+            target_law: target_law
+          })
+        )
 
-        (nearest = find_nearest_term(term, terms_in_parent)) != nil ->
-          struct!(
-            Finding,
-            Map.merge(base, %{
-              category: :term_normalisation,
-              citation: citation,
-              target_law: target_law,
-              nearest_term: nearest,
-              detail: "child: \"#{term}\" → parent has: \"#{nearest}\""
-            })
-          )
+      # Parent parsed — check for term match
+      true ->
+        terms_in_parent = Map.get(parent_terms, target_law, MapSet.new())
 
-        true ->
-          struct!(
-            Finding,
-            Map.merge(base, %{
-              category: :term_not_found,
-              citation: citation,
-              target_law: target_law,
-              detail: "parent has #{MapSet.size(terms_in_parent)} definitions, none match"
-            })
-          )
-      end
+        cond do
+          MapSet.member?(terms_in_parent, term) ->
+            # Term exists — this shouldn't happen if resolver ran correctly.
+            # Could be citation_ambiguous (resolved to wrong law) or
+            # section-level mismatch.
+            struct!(
+              Finding,
+              Map.merge(base, %{
+                category: :citation_ambiguous,
+                citation: citation,
+                target_law: target_law,
+                detail:
+                  "term exists in parent but resolver didn't link — possible multi-law ambiguity"
+              })
+            )
+
+          (nearest = find_nearest_term(term, terms_in_parent)) != nil ->
+            struct!(
+              Finding,
+              Map.merge(base, %{
+                category: :term_normalisation,
+                citation: citation,
+                target_law: target_law,
+                nearest_term: nearest,
+                detail: "child: \"#{term}\" → parent has: \"#{nearest}\""
+              })
+            )
+
+          true ->
+            struct!(
+              Finding,
+              Map.merge(base, %{
+                category: :term_not_found,
+                citation: citation,
+                target_law: target_law,
+                detail: "parent has #{MapSet.size(terms_in_parent)} definitions, none match"
+              })
+            )
+        end
     end
   end
 
@@ -325,6 +419,16 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     |> Map.new(&{&1, true})
   end
 
+  @spec build_live_status_index() :: map()
+  defp build_live_status_index do
+    from(lr in "legal_register",
+      where: not is_nil(lr.live),
+      select: {lr.name, lr.live}
+    )
+    |> Repo.all()
+    |> Map.new()
+  end
+
   @spec build_parent_terms_index() :: map()
   defp build_parent_terms_index do
     from(d in "legislative_definitions",
@@ -402,5 +506,42 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   defp pad_num(val, width) do
     str = to_string(val)
     String.pad_leading(str, width)
+  end
+
+  # -- Test helpers --
+
+  if Mix.env() == :test do
+    @doc false
+    def test_classify(
+          d,
+          title_index,
+          citation_index,
+          enacted_by_index,
+          parse_status,
+          live_status,
+          parent_terms
+        ) do
+      classify(
+        d,
+        title_index,
+        citation_index,
+        enacted_by_index,
+        parse_status,
+        live_status,
+        parent_terms
+      )
+    end
+
+    @doc false
+    def test_resolve_law_name(citation, title_index), do: resolve_law_name(citation, title_index)
+
+    @doc false
+    def test_find_nearest_term(term, terms), do: find_nearest_term(term, terms)
+
+    @doc false
+    def revoked_status, do: @revoked_status
+
+    @doc false
+    def ceiling_categories, do: @ceiling_categories
   end
 end

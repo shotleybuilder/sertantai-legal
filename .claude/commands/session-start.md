@@ -67,7 +67,7 @@ bugs:
 For "fix bugs" sessions, query open bugs at the start:
 ```bash
 sqlite3 .claude/sessions/sessions.db \
-  "SELECT pattern, module, affected FROM bugs WHERE status = 'open' ORDER BY affected DESC;"
+  "SELECT pattern, module, affected FROM open_bugs ORDER BY affected DESC;"
 ```
 
 When fixing a bug from a previous session, add a `bugs` entry with `status: fixed` in the current session's frontmatter — the indexer picks up the latest status on rebuild.

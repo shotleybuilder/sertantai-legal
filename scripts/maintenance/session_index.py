@@ -90,6 +90,17 @@ CREATE INDEX idx_lessons_tag ON lessons(tag);
 CREATE INDEX idx_dependencies_direction ON dependencies(direction);
 CREATE INDEX idx_bugs_status ON bugs(status);
 CREATE INDEX idx_bugs_module ON bugs(module);
+
+-- View: effective bug status. A bug is "open" only if no session has marked it "fixed".
+-- Matches on exact pattern text — the pattern is the bug's identity.
+CREATE VIEW open_bugs AS
+SELECT b.*
+FROM bugs b
+WHERE b.status = 'open'
+  AND NOT EXISTS (
+    SELECT 1 FROM bugs b2
+    WHERE b2.pattern = b.pattern AND b2.status = 'fixed'
+  );
 """
 
 

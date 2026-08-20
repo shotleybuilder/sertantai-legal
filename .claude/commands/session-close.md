@@ -56,7 +56,14 @@ enables:
    - **decisions**: Extract from architecture decisions, Gemini reviews, or explicit choices documented in the session
    - **metrics**: Extract any accuracy numbers, counts, benchmarks, timings
    - **lessons**: Focus on what was surprising, what failed, what the user corrected, what worked unexpectedly well. These should be useful to a future AI or human encountering the same situation
-   - **bugs**: Preserve any `bugs` entries already in the frontmatter (added during the session as they were discovered). Do NOT remove or rewrite them — they may have been added mid-session and should survive into the closed frontmatter unchanged. Only add new bugs if the session close reveals additional findings not yet captured.
+   - **bugs**: Two mandatory checks:
+     1. **Preserve existing**: Keep any `bugs` entries already in the frontmatter (added during the session). Do NOT remove or rewrite them.
+     2. **Cross-reference open bugs**: Query the SQLite index for ALL open bugs and check whether any were fixed by the work done in this session. For each open bug whose pattern matches work completed in this session, add a `status: fixed` entry. This is the step that prevents stale bugs accumulating in the backlog.
+     ```bash
+     sqlite3 .claude/sessions/sessions.db \
+       "SELECT pattern, module, affected FROM open_bugs ORDER BY affected DESC;"
+     ```
+     Read each open bug pattern. If the session's completed work addresses it (e.g. the session cleared stale data that the bug describes, or fixed the code the bug identifies), add it to the frontmatter as `status: fixed`. If unsure whether the session's work addresses a bug, err on the side of asking the user rather than silently skipping it.
    - **artifacts**: List scripts, configs, data files created during the session
    - **depends_on / enables**: Trace the session graph from context
 
@@ -71,6 +78,37 @@ enables:
    /usr/bin/python3 scripts/maintenance/session_index.py --root /var/home/jason/Desktop/sertantai-legal
    ```
    This is idempotent — it drops and recreates all tables from the markdown source. The `--archive` flag can be added to also move sessions closed >30 days ago to `archive/`.
+
+## Definition session extras
+
+When closing a definition investigation or fix session (opened via `/session-definition-bugfind-start` or `/session-definition-bugfix-start`):
+
+1. **Verify all bugs are logged**: Check that every finding or fix is captured in the `bugs:` frontmatter block. Investigation sessions should have `status: open`, fix sessions should have `status: fixed`.
+
+2. **Record diagnostic baseline**: If the diagnostic was run during the session, capture the key metrics in the `metrics:` block:
+   ```yaml
+   metrics:
+     diagnostic:
+       family: "OH&S"
+       cross_refs: 381
+       linked: 138
+       unlinked: 243
+       actionable: 211
+       ceiling: 32
+       term_not_found: 119
+       no_citation: 81
+       parent_unparsed: 7
+       parent_revoked: 23
+   ```
+   This enables delta comparison in subsequent sessions.
+
+3. **Link to companion sessions**: Investigation sessions `enable` fix sessions. Fix sessions `depend_on` investigation sessions. Capture these in `depends_on:` / `enables:`.
+
+4. **After rebuilding the index** (step 8), verify bugs were indexed:
+   ```bash
+   sqlite3 .claude/sessions/sessions.db \
+     "SELECT pattern, status FROM bugs WHERE session_id LIKE '%{this_session_slug}%';"
+   ```
 
 ## Guidelines
 
