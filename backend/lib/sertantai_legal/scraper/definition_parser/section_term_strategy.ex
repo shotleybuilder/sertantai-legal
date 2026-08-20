@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
 
   alias SertantaiLegal.Scraper.DefinitionParser.{Definition, XmlUtils}
 
-  @def_after_term_suffix ~S'[\x{201d}"]*[\s,]*(?:(?:in relation to|used in relation to|for the purposes of)[^,]+,?\s*)?(?:means|has the (?:same )?meaning(?:\s+(?:given|assigned|specified|set out))?(?:\s+(?:by|in|to|under))?)\s*,?\s*(.*)'
+  @def_after_term_suffix ~S'[\x{201d}"]*[\s,]*(?:(?:in relation to|used in relation to|for the purposes of)[^,]+,?\s*)?(?:means|includes|has the (?:same )?meaning(?:\s+(?:given|assigned|specified|set out))?(?:\s+(?:by|in|to|under))?)\s*,?\s*(.*)'
 
   @spec extract(tuple(), String.t(), boolean()) :: [Definition.t()]
   def extract(parsed, law_name, _is_welsh) do
@@ -78,7 +78,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
   @spec section_term_pattern?(String.t()) :: boolean()
   defp section_term_pattern?(text) do
     Regex.match?(
-      ~r/\bmeans\b|\bhas the (?:same )?meaning|\breferred to as\b|\bknown as\b/iu,
+      ~r/\bmeans\b|\bincludes\b|\bhas the (?:same )?meaning|\breferred to as\b|\bknown as\b/iu,
       text
     )
   end

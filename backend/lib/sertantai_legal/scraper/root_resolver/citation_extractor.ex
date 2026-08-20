@@ -16,7 +16,8 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
   # Anchors on "Act|Regulations|Order YYYY" and captures up to 120 chars before it.
   # 120 handles compound titles like "Health and Safety (Enforcing Authority for
   # Railways and Other Guided Transport Systems) Regulations" (88 chars).
-  @law_type_year_re ~r/([A-Z][^\n]{0,120}?(?:Act|Regulations?|Order|Rules?|Directive|Measure))\s+(\d{4})/u
+  # Negative lookahead (?!\/) prevents matching "Regulation 2017/625" as "Regulation 2017"
+  @law_type_year_re ~r/([A-Z][^\n]{0,120}?(?:Act|Regulations?|Order|Rules?|Directive|Measure))\s+(\d{4})(?!\/)/u
 
   # Short name: "the 1991 Act", "the 2003 Regulations"
   @short_name_re ~r/(?:the\s+)?(\d{4})\s+(Act|Regulations?|Order|Rules?)/u
@@ -44,23 +45,30 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
     "cta" => "Corporation Tax Act",
     "ita" => "Income Tax Act",
     "tcga" => "Taxation of Chargeable Gains Act",
+    "frs" => "Fire and Rescue Services Act",
     "ggetsr" => "Greenhouse Gas Emissions Trading Scheme Regulations",
     "tswr" => "Territorial Sea (Welsh Region) Regulations"
   }
 
+  # EU Regulation short-form: "Regulation 853/2004", "Regulation (EC) No 178/2002"
+  # Captures the full regulation reference for downstream extract_eu_law_name resolution
+  @eu_reg_short_re ~r/Regulation\s+(?:\((?:EC|EU|EEC)\)\s+)?(?:No\.?\s*)?\d+\/\d+/iu
+
   # Internal reference: "given by section 3" without external law name
   # Also matches "has the meaning given in regulation 4", "construed in accordance with schedule 2"
-  @internal_ref_re ~r/(?:given|specified|set out|provided|defined|construed|assigned)\s+(?:by|in|to\s+it\s+by)\s+(?:accordance\s+with\s+)?(?:section|regulation|article|paragraph|rule|schedule|part|subsection)\s+\d/iu
+  # Plural forms (paragraphs, subsections) and parenthesized numbers ((2)) are supported
+  @internal_ref_re ~r/(?:given|specified|set out|provided|defined|construed|assigned)\s+(?:by|in|to\s+it\s+by)\s+(?:accordance\s+with\s+)?(?:sections?|regulations?|articles?|paragraphs?|rules?|schedules?|parts?|subsections?)\s+\(?\d/iu
 
   # Extended internal ref: "has the meaning given in regulation 4", ") has the meaning given in section 5"
-  @internal_ref_has_meaning_re ~r/(?:has|have)\s+the\s+(?:same\s+)?meanings?\s+(?:given|assigned|provided)\s+(?:by|in|to\s+it\s+by)\s+(?:section|regulation|article|paragraph|rule|schedule|part|subsection)\s+\d/iu
+  @internal_ref_has_meaning_re ~r/(?:has|have)\s+the\s+(?:same\s+)?meanings?\s+(?:given|assigned|provided)\s+(?:by|in|to\s+it\s+by)\s+(?:sections?|regulations?|articles?|paragraphs?|rules?|schedules?|parts?|subsections?)\s+\(?\d/iu
 
   @spec extract_citation(String.t(), String.t(), map()) :: String.t() | nil
   def extract_citation(definition, law_name, citation_index) do
     case extract_named_law(definition) do
       {:ok, title, _year} ->
+        expanded = expand_abbreviation_in_title(title) || title
         section = extract_section(definition)
-        if section, do: "#{title} #{section}", else: title
+        if section, do: "#{expanded} #{section}", else: expanded
 
       :no_match ->
         case extract_year_prefix_citation(definition) do
@@ -68,18 +76,24 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
             citation
 
           :no_match ->
-            case Regex.run(@short_name_re, definition) do
-              [_full, year, type] ->
-                short_key = {law_name, String.downcase("#{year} #{type}")}
-                full_title = Map.get(citation_index, short_key)
+            case extract_eu_regulation_citation(definition) do
+              {:ok, citation} ->
+                citation
 
-                raw = full_title || "the #{year} #{type}"
-                section = extract_section(definition)
-                if section, do: "#{raw} #{section}", else: raw
+              :no_match ->
+                case Regex.run(@short_name_re, definition) do
+                  [_full, year, type] ->
+                    short_key = {law_name, String.downcase("#{year} #{type}")}
+                    full_title = Map.get(citation_index, short_key)
 
-              nil ->
-                extract_abbreviation_citation(definition, law_name, citation_index) ||
-                  extract_initials_citation(definition)
+                    raw = full_title || "the #{year} #{type}"
+                    section = extract_section(definition)
+                    if section, do: "#{raw} #{section}", else: raw
+
+                  nil ->
+                    extract_abbreviation_citation(definition, law_name, citation_index) ||
+                      extract_initials_citation(definition)
+                end
             end
         end
     end
@@ -116,6 +130,15 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
       [_full, type, num] -> "#{String.downcase(type)} #{num}"
       nil -> nil
     end
+  end
+
+  # International convention/treaty keywords — SOLAS, UNCLOS, Chicago Convention, etc.
+  @convention_re ~r/\b(?:SOLAS|UNCLOS|MLC|ICAO|MARPOL|the\s+(?:Chicago|Geneva|Vienna|Hague|Warsaw|Montreal|Berne|Paris)\s+Convention|Convention\s+(?:on|for|concerning)\b)/u
+
+  @spec international_convention?(String.t()) :: boolean()
+  def international_convention?(definition) do
+    Regex.match?(@convention_re, definition) and
+      not Regex.match?(@law_type_year_re, definition)
   end
 
   @spec internal_ref?(String.t()) :: boolean()
@@ -188,6 +211,14 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
     end
   end
 
+  @spec extract_eu_regulation_citation(String.t()) :: {:ok, String.t()} | :no_match
+  def extract_eu_regulation_citation(definition) do
+    case Regex.run(@eu_reg_short_re, definition) do
+      [regulation] -> {:ok, regulation}
+      nil -> :no_match
+    end
+  end
+
   @spec extract_initials_citation(String.t()) :: String.t() | nil
   def extract_initials_citation(definition) do
     case Regex.run(@initials_re, definition) do
@@ -217,5 +248,28 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
       nil ->
         nil
     end
+  end
+
+  # Expand known abbreviation initials in extracted law titles.
+  # "FRS Act 2004" → "Fire and Rescue Services Act 2004"
+  # The full_name already contains the law type (Act/Regulations), so we replace
+  # "ABBREV Type" with "Full Name" to avoid "Full Name Type" duplication.
+  @spec expand_abbreviation_in_title(String.t()) :: String.t() | nil
+  defp expand_abbreviation_in_title(title) do
+    Enum.find_value(@statute_abbreviations, fn {abbrev, full_name} ->
+      upper = String.upcase(abbrev)
+
+      if String.starts_with?(title, upper <> " ") do
+        # Replace "FRS Act" with "Fire and Rescue Services Act" (not just "FRS")
+        abbrev_with_type =
+          ~r/^#{Regex.escape(upper)}\s+(?:Act|Regulations?|Order|Rules?)/
+
+        if Regex.match?(abbrev_with_type, title) do
+          String.replace(title, abbrev_with_type, full_name)
+        else
+          String.replace(title, upper, full_name, global: false)
+        end
+      end
+    end)
   end
 end

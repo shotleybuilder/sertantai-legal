@@ -44,7 +44,13 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
     definition = def_row.definition || ""
 
     pronoun_citation =
-      resolve_pronoun_ref(definition, def_row.law_name, def_row.section_id, sibling_index)
+      resolve_pronoun_ref(
+        definition,
+        def_row.law_name,
+        def_row.section_id,
+        sibling_index,
+        enacted_by_index
+      )
 
     bare_act_citation =
       if pronoun_citation == nil,
@@ -73,10 +79,20 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
     end
   end
 
-  @spec resolve_pronoun_ref(String.t(), String.t(), String.t() | nil, map()) :: String.t() | nil
-  def resolve_pronoun_ref(_definition, _law_name, nil, _sibling_index), do: nil
+  @spec resolve_pronoun_ref(String.t(), String.t(), String.t() | nil, map(), map()) ::
+          String.t() | nil
+  def resolve_pronoun_ref(
+        definition,
+        law_name,
+        section_id,
+        sibling_index,
+        enacted_by_index \\ %{}
+      )
 
-  def resolve_pronoun_ref(definition, law_name, section_id, sibling_index) do
+  def resolve_pronoun_ref(_definition, _law_name, nil, _sibling_index, _enacted_by_index),
+    do: nil
+
+  def resolve_pronoun_ref(definition, law_name, section_id, sibling_index, enacted_by_index) do
     with true <- Regex.match?(@pronoun_ref_re, definition),
          sibling_citation when is_binary(sibling_citation) <-
            Map.get(sibling_index, {law_name, section_id}) do
@@ -95,7 +111,19 @@ defmodule SertantaiLegal.Scraper.RootResolver.Matcher do
         law_title
       end
     else
-      _ -> nil
+      _ ->
+        # Fall back to enacted_by parent when sibling_index has no entry
+        # "that Act" / "those Regulations" → enacted_by parent (common in SIs)
+        if Regex.match?(@pronoun_ref_re, definition) do
+          case Map.get(enacted_by_index, law_name) do
+            nil ->
+              nil
+
+            parent_citation ->
+              section = CitationExtractor.extract_section(definition)
+              if section, do: "#{parent_citation} #{section}", else: parent_citation
+          end
+        end
     end
   end
 

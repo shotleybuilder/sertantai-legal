@@ -324,7 +324,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.MatcherTest do
   # ── resolve_pronoun_ref/4 (moved from root_resolver_test) ───
   # Existing tests re-homed to the new module.
 
-  describe "resolve_pronoun_ref/4" do
+  describe "resolve_pronoun_ref/5" do
     test "resolves 'that Act' from sibling citation in same section" do
       assert Matcher.resolve_pronoun_ref(
                "given by section 65 of that Act",
@@ -334,13 +334,46 @@ defmodule SertantaiLegal.Scraper.RootResolver.MatcherTest do
              ) == "Building Safety Act 2022 section 65"
     end
 
-    test "returns nil when no sibling citation exists" do
+    test "returns nil when no sibling citation exists and no enacted_by" do
       assert Matcher.resolve_pronoun_ref(
                "given by section 65 of that Act",
                "UK_uksi_2005_1541",
                "article-22A-6",
+               %{},
                %{}
              ) == nil
+    end
+
+    test "falls back to enacted_by when sibling_index miss" do
+      assert Matcher.resolve_pronoun_ref(
+               "given by section 32(4) of that Act",
+               "UK_ssi_2009_140",
+               "regulation-2-1",
+               %{},
+               @enacted_by_index
+             ) == "Electricity Act 1989 section 32(4)"
+    end
+
+    test "falls back to enacted_by for 'those Regulations' pronoun" do
+      enacted_by = %{"UK_uksi_2020_100" => "Environmental Permitting Regulations 2016"}
+
+      assert Matcher.resolve_pronoun_ref(
+               "as defined in regulation 3 of those Regulations",
+               "UK_uksi_2020_100",
+               "regulation-5-1",
+               %{},
+               enacted_by
+             ) == "Environmental Permitting Regulations 2016 regulation 3"
+    end
+
+    test "sibling_index takes priority over enacted_by fallback" do
+      assert Matcher.resolve_pronoun_ref(
+               "given by section 65 of that Act",
+               "UK_uksi_2005_1541",
+               "article-22A-6",
+               @sibling_index,
+               @enacted_by_index
+             ) == "Building Safety Act 2022 section 65"
     end
 
     test "returns nil when section_id is nil" do

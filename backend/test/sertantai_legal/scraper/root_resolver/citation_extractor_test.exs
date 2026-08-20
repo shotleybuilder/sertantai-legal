@@ -110,8 +110,52 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
       refute CitationExtractor.internal_ref?("given in Directive 2008/98/EC")
     end
 
+    test "true for plural 'paragraphs (2) to (4)'" do
+      assert CitationExtractor.internal_ref?("has the meaning given in paragraphs (2) to (4)")
+    end
+
+    test "true for plural 'subsections (3) and (4)'" do
+      assert CitationExtractor.internal_ref?("has the meaning given in subsections (3) and (4)")
+    end
+
+    test "true for plural 'regulations 3 and 4'" do
+      assert CitationExtractor.internal_ref?("specified in regulations 3 and 4")
+    end
+
     test "false for plain definition without reference pattern" do
       refute CitationExtractor.internal_ref?("means a building used for habitation")
+    end
+  end
+
+  # ── international_convention?/1 ──────────────────────────────
+
+  describe "international_convention?/1" do
+    test "true for SOLAS reference" do
+      assert CitationExtractor.international_convention?(
+               "as defined in regulation 8.1 of Chapter VII in the Annex to SOLAS"
+             )
+    end
+
+    test "true for Chicago Convention" do
+      assert CitationExtractor.international_convention?(
+               "have the meanings given in Chapter 1 of Annex 6 to the Chicago Convention"
+             )
+    end
+
+    test "true for Convention on/for pattern" do
+      assert CitationExtractor.international_convention?(
+               "given by Article 2 of the Convention on the Law Applicable to Trusts"
+             )
+    end
+
+    test "false when Convention is in a UK Act title" do
+      refute CitationExtractor.international_convention?(
+               "given by section 1 of the Safety Convention Act 2005"
+             )
+    end
+
+    test "false for plain definition" do
+      refute CitationExtractor.international_convention?("means a building used for habitation")
     end
   end
 
@@ -225,6 +269,71 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
     end
   end
 
+  # ── extract_eu_regulation_citation/1 ─────────────────────────
+  # EU Regulation short-form: "Regulation 853/2004", "Regulation (EC) No 178/2002"
+
+  describe "extract_eu_regulation_citation/1" do
+    test "extracts bare Regulation NNN/YYYY" do
+      definition = "as defined in Regulation 853/2004"
+      assert {:ok, citation} = CitationExtractor.extract_eu_regulation_citation(definition)
+      assert citation =~ "Regulation 853/2004"
+    end
+
+    test "extracts Regulation (EU) YYYY/NNN" do
+      definition = "within the meaning of Article 3(49) of Regulation (EU) 2017/625"
+      assert {:ok, citation} = CitationExtractor.extract_eu_regulation_citation(definition)
+      assert citation =~ "Regulation (EU) 2017/625"
+    end
+
+    test "extracts Regulation (EC) No NNN/YYYY" do
+      definition = "as defined in Regulation (EC) No 178/2002"
+      assert {:ok, citation} = CitationExtractor.extract_eu_regulation_citation(definition)
+      assert citation =~ "Regulation (EC) No 178/2002"
+    end
+
+    test "extracts from Annex context" do
+      definition = "as set out in Annex I to Regulation 853/2004"
+      assert {:ok, citation} = CitationExtractor.extract_eu_regulation_citation(definition)
+      assert citation =~ "Regulation 853/2004"
+    end
+
+    test "returns :no_match for UK law" do
+      definition = "as defined in the Housing Act 2004"
+      assert :no_match = CitationExtractor.extract_eu_regulation_citation(definition)
+    end
+
+    test "returns :no_match for plain definition" do
+      definition = "means a building used for habitation"
+      assert :no_match = CitationExtractor.extract_eu_regulation_citation(definition)
+    end
+  end
+
+  # ── extract_citation/3 with EU regulation ───────────────────
+
+  describe "extract_citation/3 with EU regulation short-form" do
+    test "extracts EU regulation when no named UK law present" do
+      definition = "has the meaning given in Regulation 853/2004"
+      result = CitationExtractor.extract_citation(definition, "UK_uksi_2006_14", %{})
+      assert result =~ "Regulation 853/2004"
+    end
+
+    test "named UK law takes priority over EU regulation" do
+      definition =
+        "has the meaning given in the Food Safety Act 1990 (see also Regulation 853/2004)"
+
+      result = CitationExtractor.extract_citation(definition, "UK_uksi_2006_14", %{})
+      assert result =~ "Food Safety Act 1990"
+    end
+
+    test "does not falsely match Regulation YYYY/NNN as named law" do
+      # "Regulation 2017/625" should NOT be matched as "Regulation 2017"
+      definition = "within the meaning of Regulation 2017/625"
+      result = CitationExtractor.extract_citation(definition, "UK_uksi_2006_14", %{})
+      assert result =~ "Regulation 2017/625"
+      refute result =~ "Regulation 2017 "
+    end
+  end
+
   # ── extract_initials_citation/1 ──────────────────────────────
   # Resolves statute abbreviations like "TCPA 1990" via curated static map.
 
@@ -260,6 +369,13 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
       assert CitationExtractor.extract_initials_citation(definition) == nil
     end
 
+    test "resolves FRS 2004 to Fire and Rescue Services Act" do
+      definition = "within the meaning of FRS 2004"
+
+      assert CitationExtractor.extract_initials_citation(definition) ==
+               "Fire and Rescue Services Act 2004"
+    end
+
     test "returns nil for text without abbreviation pattern" do
       definition = "means a building used for residential purposes"
       assert CitationExtractor.extract_initials_citation(definition) == nil
@@ -289,6 +405,15 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
 
       result = CitationExtractor.extract_citation(definition, "UK_uksi_2020_1234", %{})
       assert result =~ "Town and Country Planning Act 1990"
+    end
+
+    test "abbreviation in named law title is expanded — FRS Act 2004" do
+      # "FRS Act 2004" is caught by extract_named_law, but must be expanded
+      # so that downstream title_index lookup finds "Fire and Rescue Services Act 2004"
+      definition = "within the meaning of section 21 of the FRS Act 2004"
+
+      result = CitationExtractor.extract_citation(definition, "UK_uksi_2017_469", %{})
+      assert result == "Fire and Rescue Services Act 2004 section 21"
     end
   end
 

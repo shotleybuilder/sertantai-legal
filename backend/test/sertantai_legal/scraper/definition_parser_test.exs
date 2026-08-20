@@ -1609,4 +1609,38 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
              "Expected definition_list source, got: #{inspect(sources)}"
     end
   end
+
+  # ── "includes" as definition verb (S3 enhancement) ────────────
+  # Terms defined with "includes" instead of "means" should be extracted
+
+  describe "parse/2 with 'includes' definition verb" do
+    setup do
+      xml = read_fixture("section_includes_verb.xml")
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_ukpga_1964_29", type_code: "ukpga"})
+      %{defs: defs}
+    end
+
+    test "extracts term defined with 'includes'", %{defs: defs} do
+      installation = Enum.find(defs, &(&1.term == "installation"))
+      assert installation != nil, "installation not found — 'includes' verb not supported"
+      assert installation.definition =~ "floating structure"
+    end
+
+    test "still extracts standard 'means' term", %{defs: defs} do
+      designated = Enum.find(defs, &(&1.term == "designated area"))
+      assert designated != nil
+      assert designated.definition =~ "designated by Order"
+    end
+
+    test "extracts all 3 definitions", %{defs: defs} do
+      terms = Enum.map(defs, & &1.term) |> Enum.sort()
+      assert "designated area" in terms
+      assert "installation" in terms
+      assert "relevant authority" in terms
+    end
+
+    test "all are section_term source", %{defs: defs} do
+      assert Enum.all?(defs, &(&1.source == :section_term))
+    end
+  end
 end

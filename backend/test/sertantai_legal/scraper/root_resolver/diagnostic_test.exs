@@ -114,6 +114,49 @@ defmodule SertantaiLegal.Scraper.RootResolver.DiagnosticTest do
     end
   end
 
+  # ── classify: international_convention ──────────────────────
+
+  describe "classify — international_convention" do
+    test "returns :international_convention for SOLAS reference" do
+      d = %{
+        id: "def-conv-1",
+        law_name: "UK_uksi_2014_1616",
+        term: "ibc code",
+        definition:
+          "the International Bulk Chemical Code as defined in regulation 8.1 of Chapter VII in the Annex to SOLAS",
+        referenced_law_citation: nil
+      }
+
+      assert %Finding{category: :international_convention} = classify(d)
+    end
+
+    test "returns :international_convention for Chicago Convention reference" do
+      d = %{
+        id: "def-conv-2",
+        law_name: "UK_uksi_2016_765",
+        term: "commercial air transport operation",
+        definition: "have the meanings given in Chapter 1 of Annex 6 to the Chicago Convention",
+        referenced_law_citation: nil
+      }
+
+      assert %Finding{category: :international_convention} = classify(d)
+    end
+
+    test "does not classify 'Convention Act' as international convention" do
+      d = %{
+        id: "def-conv-3",
+        law_name: "UK_uksi_2020_100",
+        term: "widget",
+        definition: "has the meaning given by section 1 of the Safety Convention Act 2005",
+        referenced_law_citation: nil
+      }
+
+      # This has "Convention" but also "Act YYYY" — should be parent_not_in_lrt
+      finding = classify(d)
+      refute finding.category == :international_convention
+    end
+  end
+
   # ── classify: parent_not_in_lrt ────────────────────────────
 
   describe "classify — parent_not_in_lrt" do

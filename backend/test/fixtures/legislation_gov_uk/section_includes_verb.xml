@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+  <Body>
+    <Part id="part-1">
+      <P2 id="section-11A">
+        <P2para>
+          <Text>In this section <Term>installation</Term> includes any floating structure or device maintained on a station by whatever means.</Text>
+        </P2para>
+      </P2>
+      <P2 id="section-5-1">
+        <P2para>
+          <Text>In this section <Term>designated area</Term> means an area designated by Order under section 1(7).</Text>
+        </P2para>
+      </P2>
+      <P2 id="section-7-2">
+        <P2para>
+          <Text>For the purposes of this Part, <Term>relevant authority</Term> includes any body corporate or unincorporated association.</Text>
+        </P2para>
+      </P2>
+    </Part>
+  </Body>
+</Legislation>

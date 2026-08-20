@@ -33,6 +33,7 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     @type category ::
             :no_citation
             | :internal_ref
+            | :international_convention
             | :parent_not_in_lrt
             | :parent_revoked
             | :parent_unparsed
@@ -109,7 +110,12 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
   end
 
   # Categories that represent structural ceiling, not actionable bugs
-  @ceiling_categories [:parent_revoked, :parent_not_in_lrt, :internal_ref]
+  @ceiling_categories [
+    :parent_revoked,
+    :parent_not_in_lrt,
+    :internal_ref,
+    :international_convention
+  ]
 
   @doc "Aggregate findings into a summary map."
   @spec summarise([Finding.t()]) :: summary()
@@ -229,6 +235,15 @@ defmodule SertantaiLegal.Scraper.RootResolver.Diagnostic do
     base = %{definition_id: d.id, law_name: d.law_name, term: d.term}
 
     cond do
+      citation == nil and CitationExtractor.international_convention?(definition) ->
+        struct!(
+          Finding,
+          Map.merge(base, %{
+            category: :international_convention,
+            detail: "references international convention/treaty, not UK legislation"
+          })
+        )
+
       citation == nil and CitationExtractor.internal_ref?(definition) ->
         struct!(
           Finding,
