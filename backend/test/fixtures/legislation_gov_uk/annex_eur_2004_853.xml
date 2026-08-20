@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+  <EURetained>
+    <Schedules>
+      <Schedule>
+        <ScheduleBody>
+          <Division id="annex-I-division-1">
+            <Division id="annex-I-division-1-division-1.1">
+              <P>
+                <Text>1.1. &#x2018; Meat &#x2019; means edible parts of the animals referred to in points 1.2 to 1.8, including blood.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-1-division-1.2">
+              <P>
+                <Text>1.2. &#x2018;Domestic ungulates&#x2019; means domestic bovine (including Bubalus and Bison species), porcine, ovine and caprine animals, and domestic solipeds.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-1-division-1.3">
+              <P>
+                <Text>1.3. &#x2018; Poultry &#x2019; means farmed birds, including birds that are not considered as domestic but which are farmed as domestic animals, with the exception of ratites.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-1-division-1.4">
+              <P>
+                <Text>1.4. &#x2018; Lagomorphs &#x2019; means rabbits, hares and rodents.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-1-division-1.5">
+              <P>
+                <Text>1.5. &#x2018;Wild game&#x2019; means: wild ungulates and lagomorphs, as well as other land mammals that are hunted for human consumption.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-1-division-1.6">
+              <P>
+                <Text>1.6. &#x2018; Farmed game &#x2019; means farmed ratites and farmed land mammals other than those referred to in point 1.2.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-1-division-1.10">
+              <P>
+                <Text>1.10. &#x2018; Fresh meat &#x2019; means meat that has not undergone any preserving process other than chilling, freezing or quick-freezing, including meat that is vacuum-wrapped or wrapped in a controlled atmosphere.</Text>
+              </P>
+            </Division>
+          </Division>
+          <Division id="annex-I-division-7">
+            <Division id="annex-I-division-7-division-7.1">
+              <P>
+                <Text>7.1. &#x2018; Meat products &#x2019; means processed products resulting from the processing of meat or from the further processing of such processed products, so that the cut surface shows that the product no longer has the characteristics of fresh meat.</Text>
+              </P>
+            </Division>
+            <Division id="annex-I-division-7-division-7.2">
+              <P>
+                <Text>7.2. &#x2018;Mechanically separated meat&#x2019; or &#x2018;MSM&#x2019; means the product obtained by removing meat from flesh-bearing bones after boning or from poultry carcases, using mechanical means resulting in the loss or modification of the muscle fibre structure.</Text>
+              </P>
+            </Division>
+          </Division>
+        </ScheduleBody>
+      </Schedule>
+    </Schedules>
+  </EURetained>
+</Legislation>

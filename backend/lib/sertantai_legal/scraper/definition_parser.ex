@@ -22,7 +22,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     Definition,
     DefinitionListStrategy,
     InlineTextStrategy,
-    SectionTermStrategy
+    SectionTermStrategy,
+    XmlUtils
   }
 
   @doc """
@@ -53,6 +54,62 @@ defmodule SertantaiLegal.Scraper.DefinitionParser do
     # Single dedup with explicit priority: S1 > S2 > S3
     # For each {term, section_id} key, the highest-priority strategy wins.
     deduplicate(s1 ++ s2 ++ s3)
+  end
+
+  # Curly single quotes used in EU regulation annexes: 'Term' means ...
+  @eu_annex_def_re ~r/[\x{2018}'](.+?)[\x{2019}']\s*(?:or\s*[\x{2018}'].+?[\x{2019}']\s*)?means\s*:?\s*(.*)/su
+
+  @doc """
+  Parse EU regulation annex XML into definition structs.
+
+  EU regulations define terms in annexes using `'Term' means ...` patterns
+  inside `<Division>` elements (no `<Term>` tags, no Definition lists).
+
+  ## Parameters
+
+    - `xml` — raw XML string from e.g. `/eur/2004/853/annex/I/data.xml`
+    - `context` — map with `:law_name` and optionally `:type_code`
+  """
+  @spec parse_annex(String.t(), %{:law_name => String.t(), optional(:type_code) => String.t()}) ::
+          [Definition.t()]
+  def parse_annex(xml, %{law_name: law_name}) when is_binary(xml) do
+    import SweetXml
+
+    parsed = SweetXml.parse(xml, quiet: true)
+
+    # Find leaf Division elements (those with no child Divisions)
+    all_divs = xpath(parsed, ~x"//Division"l)
+
+    all_divs
+    |> Enum.reject(fn div ->
+      xpath(div, ~x"./Division"l) != []
+    end)
+    |> Enum.flat_map(fn div ->
+      section_id = xpath(div, ~x"./@id"s)
+
+      text =
+        XmlUtils.text_content(div)
+        |> String.replace(~r/\s+/, " ")
+        |> String.trim()
+
+      case Regex.run(@eu_annex_def_re, text) do
+        [_full, term_raw, def_text] ->
+          term = term_raw |> String.trim() |> String.replace(~r/\s+/, " ")
+
+          [
+            Definition.new(
+              law_name: law_name,
+              term: term,
+              definition: String.trim(def_text),
+              section_id: section_id,
+              source: :annex
+            )
+          ]
+
+        nil ->
+          []
+      end
+    end)
   end
 
   @source_priority %{definition_list: 0, inline_text: 1, section_term: 2}

@@ -37,6 +37,15 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
                CitationExtractor.extract_named_law(definition)
     end
 
+    test "extracts law title with parenthetical before year" do
+      definition =
+        "construed in accordance with the definition of 'prepacked' in the Food Labelling Regulations (Northern Ireland) 1996"
+
+      assert {:ok, title, "1996"} = CitationExtractor.extract_named_law(definition)
+      assert title =~ "Food Labelling Regulations"
+      assert title =~ "1996"
+    end
+
     test "returns :no_match for definition without law reference" do
       assert :no_match = CitationExtractor.extract_named_law("means a device used for measuring")
     end
@@ -295,6 +304,12 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractorTest do
       definition = "as set out in Annex I to Regulation 853/2004"
       assert {:ok, citation} = CitationExtractor.extract_eu_regulation_citation(definition)
       assert citation =~ "Regulation 853/2004"
+    end
+
+    test "extracts EU Directive YYYY/NN/EC" do
+      definition = "has the same meaning as in Directive 2009/54/EC"
+      assert {:ok, citation} = CitationExtractor.extract_eu_regulation_citation(definition)
+      assert citation =~ "Directive 2009/54"
     end
 
     test "returns :no_match for UK law" do

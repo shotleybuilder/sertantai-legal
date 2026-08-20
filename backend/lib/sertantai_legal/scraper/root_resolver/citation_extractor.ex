@@ -50,9 +50,9 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
     "tswr" => "Territorial Sea (Welsh Region) Regulations"
   }
 
-  # EU Regulation short-form: "Regulation 853/2004", "Regulation (EC) No 178/2002"
-  # Captures the full regulation reference for downstream extract_eu_law_name resolution
-  @eu_reg_short_re ~r/Regulation\s+(?:\((?:EC|EU|EEC)\)\s+)?(?:No\.?\s*)?\d+\/\d+/iu
+  # EU law short-form: "Regulation 853/2004", "Directive 2009/54/EC", "Regulation (EC) No 178/2002"
+  # Captures the full reference for downstream extract_eu_law_name resolution
+  @eu_reg_short_re ~r/(?:Regulation|Directive)\s+(?:\((?:EC|EU|EEC)\)\s+)?(?:No\.?\s*)?\d+\/\d+/iu
 
   # Internal reference: "given by section 3" without external law name
   # Also matches "has the meaning given in regulation 4", "construed in accordance with schedule 2"
@@ -99,9 +99,14 @@ defmodule SertantaiLegal.Scraper.RootResolver.CitationExtractor do
     end
   end
 
+  # Extended law+year regex: allows parenthetical content between type and year
+  # e.g. "Food Labelling Regulations (Northern Ireland) 1996"
+  @law_type_year_paren_re ~r/([A-Z][^\n]{0,120}?(?:Act|Regulations?|Order|Rules?|Directive|Measure))\s+\([^)]+\)\s+(\d{4})(?!\/)/u
+
   @spec extract_named_law(String.t()) :: {:ok, String.t(), String.t()} | :no_match
   def extract_named_law(definition) do
-    case Regex.run(@law_type_year_re, definition) do
+    case Regex.run(@law_type_year_re, definition) ||
+           Regex.run(@law_type_year_paren_re, definition) do
       [_full, raw_title, year] ->
         title =
           raw_title

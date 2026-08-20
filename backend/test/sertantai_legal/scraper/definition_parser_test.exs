@@ -1610,6 +1610,54 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
     end
   end
 
+  # ── EU Regulation Annex definitions ────────────────────────────
+  # Terms defined in EU regulation annexes using 'Term' means ... pattern
+
+  describe "parse_annex/2 with Reg 853/2004 Annex I" do
+    setup do
+      xml = read_fixture("annex_eur_2004_853.xml")
+      defs = DefinitionParser.parse_annex(xml, %{law_name: "UK_eur_2004_853", type_code: "eur"})
+      %{defs: defs}
+    end
+
+    test "extracts meat definition", %{defs: defs} do
+      meat = Enum.find(defs, &(&1.term == "meat"))
+      assert meat != nil, "meat not found"
+      assert meat.definition =~ "edible parts"
+    end
+
+    test "extracts domestic ungulates", %{defs: defs} do
+      du = Enum.find(defs, &(&1.term == "domestic ungulates"))
+      assert du != nil, "domestic ungulates not found"
+      assert du.definition =~ "bovine"
+    end
+
+    test "extracts poultry with spaces inside quotes", %{defs: defs} do
+      p = Enum.find(defs, &(&1.term == "poultry"))
+      assert p != nil, "poultry not found"
+      assert p.definition =~ "farmed birds"
+    end
+
+    test "extracts mechanically separated meat", %{defs: defs} do
+      msm = Enum.find(defs, &(&1.term == "mechanically separated meat"))
+      assert msm != nil, "mechanically separated meat not found"
+      assert msm.definition =~ "flesh-bearing bones"
+    end
+
+    test "extracts all 9 definitions from fixture", %{defs: defs} do
+      assert length(defs) == 9
+    end
+
+    test "all definitions have annex source", %{defs: defs} do
+      assert Enum.all?(defs, &(&1.source == :annex))
+    end
+
+    test "section_ids reference annex divisions", %{defs: defs} do
+      meat = Enum.find(defs, &(&1.term == "meat"))
+      assert meat.section_id =~ "annex-I"
+    end
+  end
+
   # ── "includes" as definition verb (S3 enhancement) ────────────
   # Terms defined with "includes" instead of "means" should be extracted
 
