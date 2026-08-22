@@ -30,6 +30,14 @@
 		is_linked: boolean;
 	}
 
+	interface RootDefinition {
+		term: string;
+		definition: string;
+		law_name: string;
+		law_title: string;
+		section_id: string | null;
+	}
+
 	// ── State ──────────────────────────────────────────────────────
 
 	let families: string[] = [];
@@ -42,6 +50,11 @@
 	let selectedFamily: string = '';
 	let selectedLaw: string = '';
 	let lawSearch: string = '';
+
+	// Detail panel state
+	let selectedDef: DefinitionRow | null = null;
+	let rootDefs: RootDefinition[] = [];
+	let rootLoading = false;
 
 	// Read initial state from URL
 	$: if (browser) {
@@ -152,8 +165,50 @@
 		}
 	}
 
+	async function selectDefinition(def: DefinitionRow) {
+		if (selectedDef?.id === def.id) {
+			selectedDef = null;
+			rootDefs = [];
+			return;
+		}
+		selectedDef = def;
+		rootDefs = [];
+
+		if (def.is_linked) {
+			rootLoading = true;
+			try {
+				const pg = await getPglite();
+				const res = await pg.query<RootDefinition>(
+					`SELECT
+						d.term,
+						d.definition,
+						d.law_name,
+						COALESCE(l.title_en, d.law_name) AS law_title,
+						d.section_id
+					 FROM definition_links dl
+					 JOIN definitions d ON d.id = dl.root_definition_id
+					 LEFT JOIN laws l ON l.name = d.law_name
+					 WHERE dl.child_definition_id = $1`,
+					[def.id]
+				);
+				rootDefs = res.rows;
+			} catch (e) {
+				console.error('[Definitions Browse] Root lookup error:', e);
+			} finally {
+				rootLoading = false;
+			}
+		}
+	}
+
+	function lawSourceUrl(lawName: string): string {
+		const path = lawName.replace(/^UK_/, '').replace(/_/g, '/');
+		return `https://www.legislation.gov.uk/${path}`;
+	}
+
 	function selectLaw(lawName: string) {
 		selectedLaw = lawName;
+		selectedDef = null;
+		rootDefs = [];
 		updateUrl();
 		loadDefinitions(lawName);
 	}
@@ -340,7 +395,12 @@
 							</thead>
 							<tbody class="divide-y divide-gray-200">
 								{#each definitions as def (def.id)}
-									<tr class="hover:bg-gray-50">
+									<tr
+										class="cursor-pointer hover:bg-gray-50 {selectedDef?.id === def.id
+											? 'bg-blue-50'
+											: ''}"
+										on:click={() => selectDefinition(def)}
+									>
 										<td class="whitespace-nowrap px-3 py-1.5 text-sm font-medium text-gray-900">
 											{def.term}
 										</td>
@@ -370,5 +430,101 @@
 				{/if}
 			</div>
 		</div>
+
+		<!-- Detail panel -->
+		{#if selectedDef}
+			<div class="flex-shrink-0 rounded-lg border border-blue-200 bg-white p-4">
+				<div class="flex items-start justify-between">
+					<h3 class="text-sm font-semibold text-gray-900">
+						{selectedDef.term}
+					</h3>
+					<button
+						class="text-xs text-gray-400 hover:text-gray-600"
+						on:click={() => {
+							selectedDef = null;
+							rootDefs = [];
+						}}
+					>
+						Close
+					</button>
+				</div>
+
+				<!-- Full definition text -->
+				<p class="mt-2 text-sm text-gray-700">{selectedDef.definition}</p>
+
+				<!-- Metadata -->
+				<div class="mt-3 flex flex-wrap gap-3 text-xs text-gray-500">
+					{#if selectedDef.section_id}
+						<span>Section: {selectedDef.section_id}</span>
+					{/if}
+					{#if selectedDef.scope}
+						<span>Scope: {selectedDef.scope}</span>
+					{/if}
+					<span
+						>Type: <span class="font-medium {defTypeClass(selectedDef)}"
+							>{defType(selectedDef)}</span
+						></span
+					>
+					{#if selectedDef.references_other_law && !selectedDef.citation}
+						<span
+							>Status: <span class="font-medium {linkStatusClass(selectedDef)}"
+								>{linkStatus(selectedDef)}</span
+							></span
+						>
+					{/if}
+					<a
+						href={lawSourceUrl(selectedLaw)}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-blue-600 hover:text-blue-800"
+					>
+						legislation.gov.uk
+					</a>
+				</div>
+
+				<!-- Citation info for cross-refs -->
+				{#if selectedDef.references_other_law && !selectedDef.citation && selectedDef.referenced_law_citation}
+					<div class="mt-3 rounded border border-gray-200 bg-gray-50 px-3 py-2">
+						<div class="text-xs font-medium text-gray-500">Extracted Citation</div>
+						<div class="text-sm text-gray-700">{selectedDef.referenced_law_citation}</div>
+					</div>
+				{/if}
+
+				<!-- Root definitions (linked cross-refs) -->
+				{#if rootLoading}
+					<div class="mt-3 text-xs text-gray-400">Loading root definitions...</div>
+				{:else if rootDefs.length > 0}
+					<div class="mt-3 space-y-2">
+						<div class="text-xs font-medium text-gray-500">
+							Root Definition{rootDefs.length > 1 ? 's' : ''}
+						</div>
+						{#each rootDefs as root}
+							<div class="rounded border border-green-200 bg-green-50 px-3 py-2">
+								<div class="flex items-center gap-2">
+									<span class="text-sm font-medium text-green-800">{root.term}</span>
+									<span class="text-xs text-green-600">
+										{root.law_title}
+										{#if root.section_id}({root.section_id}){/if}
+									</span>
+								</div>
+								<p class="mt-1 text-sm text-green-700">{root.definition}</p>
+								<a
+									href={lawSourceUrl(root.law_name)}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="mt-1 inline-block text-xs text-blue-600 hover:text-blue-800"
+								>
+									View on legislation.gov.uk
+								</a>
+							</div>
+						{/each}
+					</div>
+				{:else if selectedDef.is_linked}
+					<div class="mt-3 text-xs text-amber-600">
+						Linked but root definition not found in local sync
+					</div>
+				{/if}
+			</div>
+		{/if}
 	{/if}
 </div>

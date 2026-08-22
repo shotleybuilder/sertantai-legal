@@ -18,7 +18,7 @@ The UI must connect definition records (legislative_definitions + definition_lin
 - ✅ Phase 2: ElectricSQL shape — 83K definitions + 2.8K links synced to PGLite, 106 deps updated
 - ✅ Phase 3: Family dashboard — sortable stats table, summary cards, safety/environment filter, color-coded effective %
 - ✅ Phase 4: Law definitions browser — split-pane with searchable law list + definitions table, PGLite-powered
-- ⬜ Phase 5: Definition detail — cross-ref chain visualization (child → citation → parent → root)
+- ✅ Phase 5: Definition detail — inline panel with full text, citation, root definitions, legislation.gov.uk links
 - ⬜ Phase 6: Action triggers — reparse, resolve, diagnose buttons with status feedback
 - ⬜ Phase 7: Diagnostic explorer — standalone drilldown by category with filtering
 
