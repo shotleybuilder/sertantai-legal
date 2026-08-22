@@ -30,6 +30,28 @@
 	let loading = true;
 	let error = '';
 
+	// Action trigger state
+	let resolving = false;
+	let resolveMsg = '';
+
+	async function triggerResolve() {
+		resolving = true;
+		resolveMsg = '';
+		try {
+			const res = await authFetch(`${API_URL}/api/definitions/admin/resolve`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ force: false })
+			});
+			if (!res.ok) throw new Error(`Resolve API returned ${res.status}`);
+			resolveMsg = 'Resolver started — refresh page in a few seconds to see updated stats.';
+		} catch (e) {
+			resolveMsg = e instanceof Error ? e.message : 'Resolve failed';
+		} finally {
+			resolving = false;
+		}
+	}
+
 	// Sort state
 	let sortCol: keyof FamilyStats = 'family';
 	let sortDir: 'asc' | 'desc' = 'asc';
@@ -122,6 +144,13 @@
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold text-gray-900">Definitions Dashboard</h1>
 		<div class="flex items-center gap-2">
+			<button
+				on:click={triggerResolve}
+				disabled={resolving}
+				class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+			>
+				{resolving ? 'Resolving...' : 'Resolve'}
+			</button>
 			<select
 				bind:value={familyFilter}
 				class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -132,6 +161,10 @@
 			</select>
 		</div>
 	</div>
+
+	{#if resolveMsg}
+		<div class="rounded-md bg-blue-50 px-4 py-2 text-sm text-blue-700">{resolveMsg}</div>
+	{/if}
 
 	{#if loading}
 		<div class="py-12 text-center text-gray-500">Loading definition stats...</div>

@@ -5,6 +5,9 @@
 	import { goto } from '$app/navigation';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite } from '$lib/pglite/client';
+	import { authFetch } from '$lib/api/client';
+
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
 	// ── Types ──────────────────────────────────────────────────────
 
@@ -55,6 +58,29 @@
 	let selectedDef: DefinitionRow | null = null;
 	let rootDefs: RootDefinition[] = [];
 	let rootLoading = false;
+
+	// Reparse state
+	let reparsing = false;
+	let reparseMsg = '';
+
+	async function triggerReparse() {
+		if (!selectedLaw) return;
+		reparsing = true;
+		reparseMsg = '';
+		try {
+			const res = await authFetch(`${API_URL}/api/definitions/admin/parse`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ law_name: selectedLaw })
+			});
+			if (!res.ok) throw new Error(`Parse API returned ${res.status}`);
+			reparseMsg = 'Parse started — definitions will update after sync.';
+		} catch (e) {
+			reparseMsg = e instanceof Error ? e.message : 'Parse failed';
+		} finally {
+			reparsing = false;
+		}
+	}
 
 	// Read initial state from URL
 	$: if (browser) {
@@ -354,12 +380,26 @@
 					</div>
 				{:else}
 					<!-- Law header -->
-					<div class="border-b border-gray-200 px-4 py-2">
-						<div class="text-sm font-semibold text-gray-900">{selectedLawTitle()}</div>
-						<div class="text-xs text-gray-500">
-							{selectedLaw} — {definitions.length} definitions
+					<div class="flex items-center justify-between border-b border-gray-200 px-4 py-2">
+						<div>
+							<div class="text-sm font-semibold text-gray-900">{selectedLawTitle()}</div>
+							<div class="text-xs text-gray-500">
+								{selectedLaw} — {definitions.length} definitions
+							</div>
 						</div>
+						<button
+							on:click={triggerReparse}
+							disabled={reparsing}
+							class="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+						>
+							{reparsing ? 'Parsing...' : 'Reparse'}
+						</button>
 					</div>
+					{#if reparseMsg}
+						<div class="border-b border-gray-200 bg-blue-50 px-4 py-1.5 text-xs text-blue-700">
+							{reparseMsg}
+						</div>
+					{/if}
 
 					<!-- Definitions table -->
 					<div class="flex-1 overflow-auto">
