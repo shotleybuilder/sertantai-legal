@@ -178,14 +178,7 @@ export function getFieldLabel(field: string): string {
  * Field type for rendering hints
  */
 export type FieldType =
-	| 'text'
-	| 'date'
-	| 'number'
-	| 'boolean'
-	| 'array'
-	| 'json'
-	| 'url'
-	| 'multiline';
+	'text' | 'date' | 'number' | 'boolean' | 'array' | 'json' | 'url' | 'multiline';
 
 /**
  * Field configuration for a single field

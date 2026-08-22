@@ -1055,9 +1055,7 @@ export interface ParseCompleteEvent {
 }
 
 export type ParseProgressEvent =
-	| ParseStageStartEvent
-	| ParseStageCompleteEvent
-	| ParseCompleteEvent;
+	ParseStageStartEvent | ParseStageCompleteEvent | ParseCompleteEvent;
 
 export interface ParseProgressCallbacks {
 	onStageStart?: (stage: ParseStage, stageNum: number, total: number) => void;
@@ -1095,8 +1093,7 @@ export function parseOneStream(
 	eventSource.onmessage = (event) => {
 		try {
 			const data = JSON.parse(event.data) as
-				| ParseProgressEvent
-				| { event: 'connected'; name: string };
+				ParseProgressEvent | { event: 'connected'; name: string };
 
 			switch (data.event) {
 				case 'connected':
@@ -1172,8 +1169,7 @@ export function parseRecordStream(
 	eventSource.onmessage = (event) => {
 		try {
 			const data = JSON.parse(event.data) as
-				| ParseProgressEvent
-				| { event: 'connected'; name: string };
+				ParseProgressEvent | { event: 'connected'; name: string };
 
 			switch (data.event) {
 				case 'connected':

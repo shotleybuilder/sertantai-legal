@@ -579,18 +579,16 @@
 
 	const defaultViews: ViewDef[] = [
 		// Family views — filter via GridLite FilterCondition, not SQL WHERE
-		...familyViewDefs.map(
-			(def, i): ViewDef => ({
-				name: def.name,
-				description: `${def.family} — grouped by type`,
-				config: makeViewConfig({
-					visibleCols: VIEW_COLUMNS,
-					filters: [{ id: `family-${i}`, field: 'family', operator: 'equals', value: def.family }]
-				}),
-				isDefault: i === 0,
-				family: def.family
-			})
-		),
+		...familyViewDefs.map((def, i): ViewDef => ({
+			name: def.name,
+			description: `${def.family} — grouped by type`,
+			config: makeViewConfig({
+				visibleCols: VIEW_COLUMNS,
+				filters: [{ id: `family-${i}`, field: 'family', operator: 'equals', value: def.family }]
+			}),
+			isDefault: i === 0,
+			family: def.family
+		})),
 		// Recent views
 		{
 			name: 'Recently Added',

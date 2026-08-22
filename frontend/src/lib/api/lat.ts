@@ -348,11 +348,7 @@ export async function createLatSessionFromView(
 // ── LAT Parse SSE Stream ───────────────────────────────────────────
 
 export type LatParseStage =
-	| 'fetch_body'
-	| 'parse_lat'
-	| 'persist_lat'
-	| 'parse_annotations'
-	| 'persist_annotations';
+	'fetch_body' | 'parse_lat' | 'persist_lat' | 'parse_annotations' | 'persist_annotations';
 
 export interface LatParseProgressCallbacks {
 	onStageStart?: (stage: LatParseStage, stageNum: number, total: number) => void;

@@ -952,22 +952,20 @@
 				]
 			})
 		},
-		...familyViewDefs.map(
-			(def, i): ViewDef => ({
-				name: def.name,
-				description: `${def.family} — LAT parse candidates`,
-				config: makeViewConfig({
-					visibleCols: familyCols,
-					filters: [
-						...QUEUE_CORE_FILTERS,
-						QUEUE_LAT_FILTER,
-						{ id: `q-fam-${i}`, field: 'family', operator: 'equals', value: def.family }
-					],
-					sorting: [{ column: 'name', direction: 'asc' }],
-					grouping: [{ column: 'year' }]
-				})
+		...familyViewDefs.map((def, i): ViewDef => ({
+			name: def.name,
+			description: `${def.family} — LAT parse candidates`,
+			config: makeViewConfig({
+				visibleCols: familyCols,
+				filters: [
+					...QUEUE_CORE_FILTERS,
+					QUEUE_LAT_FILTER,
+					{ id: `q-fam-${i}`, field: 'family', operator: 'equals', value: def.family }
+				],
+				sorting: [{ column: 'name', direction: 'asc' }],
+				grouping: [{ column: 'year' }]
 			})
-		),
+		})),
 		{
 			name: 'Live',
 			description: 'Live status reconciliation — OH&S Occupational / Personal Safety',
