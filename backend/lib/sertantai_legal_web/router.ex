@@ -171,6 +171,12 @@ defmodule SertantaiLegalWeb.Router do
     get("/analytics/live-status", AnalyticsController, :live_status)
     get("/analytics/live-status/misclassified", AnalyticsController, :misclassified_names)
 
+    # Definition resolution management
+    get("/definitions/admin/stats", DefinitionsAdminController, :stats)
+    get("/definitions/admin/diagnostic", DefinitionsAdminController, :diagnostic)
+    post("/definitions/admin/parse", DefinitionsAdminController, :parse)
+    post("/definitions/admin/resolve", DefinitionsAdminController, :resolve)
+
     # Data sync pipeline visibility + actions
     get("/sync/status", SyncAdminController, :status)
     post("/sync/snapshot-export", SyncAdminController, :snapshot_export)

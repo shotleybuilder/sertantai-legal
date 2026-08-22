@@ -147,6 +147,42 @@ CREATE INDEX IF NOT EXISTS idx_oa_status ON org_applicabilities (status);
 CREATE INDEX IF NOT EXISTS idx_oa_law_name ON org_applicabilities (law_name);
 `;
 
+export const CREATE_DEFINITIONS_SQL = `
+CREATE TABLE IF NOT EXISTS definitions (
+  id UUID PRIMARY KEY,
+  law_name TEXT NOT NULL,
+  term TEXT NOT NULL,
+  term_welsh TEXT,
+  definition TEXT NOT NULL,
+  section_id TEXT,
+  scope TEXT,
+  references_other_law BOOLEAN NOT NULL DEFAULT false,
+  citation BOOLEAN NOT NULL DEFAULT false,
+  referenced_law_citation TEXT,
+  source TEXT NOT NULL DEFAULT 'csv_import',
+  inserted_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+`;
+
+export const CREATE_DEFINITION_LINKS_SQL = `
+CREATE TABLE IF NOT EXISTS definition_links (
+  child_definition_id UUID NOT NULL,
+  root_definition_id UUID NOT NULL,
+  inserted_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (child_definition_id, root_definition_id)
+);
+`;
+
+export const CREATE_DEFINITIONS_INDEXES_SQL = `
+CREATE INDEX IF NOT EXISTS idx_defs_law_name ON definitions (law_name);
+CREATE INDEX IF NOT EXISTS idx_defs_term ON definitions (term);
+CREATE INDEX IF NOT EXISTS idx_defs_refs_other ON definitions (references_other_law);
+CREATE INDEX IF NOT EXISTS idx_defs_citation ON definitions (citation);
+CREATE INDEX IF NOT EXISTS idx_defs_law_term ON definitions (law_name, term);
+CREATE INDEX IF NOT EXISTS idx_dl_root ON definition_links (root_definition_id);
+`;
+
 export const CREATE_LAWS_INDEXES_SQL = `
 CREATE INDEX IF NOT EXISTS idx_laws_country ON laws (country);
 CREATE INDEX IF NOT EXISTS idx_laws_name ON laws (name);
@@ -162,7 +198,7 @@ CREATE INDEX IF NOT EXISTS idx_laws_making_classification ON laws (making_classi
  * Drops and recreates if schema version has changed (e.g. column type fixes).
  * Otherwise safe to call multiple times — uses IF NOT EXISTS.
  */
-const SCHEMA_VERSION = 17; // Add org_applicabilities for screening UI
+const SCHEMA_VERSION = 18; // Add definitions + definition_links for definitions admin UI
 
 export async function initSchema(pg: {
 	exec: (sql: string) => Promise<unknown>;
@@ -183,6 +219,8 @@ export async function initSchema(pg: {
 		await pg.exec('DROP TABLE IF EXISTS uk_lrt CASCADE');
 		await pg.exec('DROP TABLE IF EXISTS laws CASCADE');
 		await pg.exec('DROP TABLE IF EXISTS org_applicabilities CASCADE');
+		await pg.exec('DROP TABLE IF EXISTS definition_links CASCADE');
+		await pg.exec('DROP TABLE IF EXISTS definitions CASCADE');
 		// Drop all gridlite tables so both kit and views packages recreate cleanly
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_column_state CASCADE');
 		await pg.exec('DROP TABLE IF EXISTS _gridlite_views CASCADE');
@@ -190,6 +228,9 @@ export async function initSchema(pg: {
 		await pg.exec(CREATE_LAWS_SQL);
 		await pg.exec(CREATE_LAWS_INDEXES_SQL);
 		await pg.exec(CREATE_ORG_APPLICABILITIES_SQL);
+		await pg.exec(CREATE_DEFINITIONS_SQL);
+		await pg.exec(CREATE_DEFINITION_LINKS_SQL);
+		await pg.exec(CREATE_DEFINITIONS_INDEXES_SQL);
 		await pg.exec(
 			`INSERT INTO _pglite_meta (key, value) VALUES ('laws_schema_version', '${SCHEMA_VERSION}') ON CONFLICT (key) DO UPDATE SET value = '${SCHEMA_VERSION}'`
 		);
@@ -197,6 +238,9 @@ export async function initSchema(pg: {
 		await pg.exec(CREATE_LAWS_SQL);
 		await pg.exec(CREATE_LAWS_INDEXES_SQL);
 		await pg.exec(CREATE_ORG_APPLICABILITIES_SQL);
+		await pg.exec(CREATE_DEFINITIONS_SQL);
+		await pg.exec(CREATE_DEFINITION_LINKS_SQL);
+		await pg.exec(CREATE_DEFINITIONS_INDEXES_SQL);
 	}
 
 	// Fix incompatible _gridlite_column_state from svelte-gridlite-views (lacks grid_id).

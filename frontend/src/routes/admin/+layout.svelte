@@ -26,6 +26,14 @@
 				{ href: '/admin/scrape/cascade', label: 'Cascade' }
 			]
 		},
+		{
+			label: 'Definitions',
+			dropdown: [
+				{ href: '/admin/definitions', label: 'Dashboard' },
+				{ href: '/admin/definitions/browse', label: 'Browse' },
+				{ href: '/admin/definitions/diagnostic', label: 'Diagnostic' }
+			]
+		},
 		{ href: '/admin/graph', label: 'Graph', exact: true },
 		{ href: '/admin/zenoh', label: 'Zenoh', exact: false },
 		{ href: '/admin/sync', label: 'Sync', exact: true }

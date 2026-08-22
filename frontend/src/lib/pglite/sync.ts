@@ -274,6 +274,68 @@ export async function startSync(): Promise<void> {
 		unsubscribeFns.push(result.unsubscribe);
 		console.log('[PGLite Sync] Shape subscription active (all countries)');
 
+		// Legislative definitions shape — 83K rows, all columns
+		try {
+			const defsResult = await pg.electric.syncShapeToTable({
+				shape: {
+					url: `${ELECTRIC_URL}/v1/shape`,
+					fetchClient: electricFetchClient,
+					params: {
+						table: 'legislative_definitions'
+					}
+				},
+				table: 'definitions',
+				primaryKey: ['id'],
+				shapeKey: 'definitions',
+				initialInsertMethod: 'json',
+				onInitialSync: async () => {
+					const countRes = await pg.query<{ count: number }>(
+						'SELECT COUNT(*)::int AS count FROM definitions'
+					);
+					console.log(`[PGLite Sync] Definitions synced: ${countRes.rows[0]?.count ?? 0} records`);
+				},
+				onError: async (error: Error) => {
+					console.error('[PGLite Sync] Definitions sync error:', error);
+				}
+			});
+			unsubscribeFns.push(defsResult.unsubscribe);
+			console.log('[PGLite Sync] Definitions shape active');
+		} catch (error) {
+			console.warn('[PGLite Sync] Definitions shape failed:', error);
+		}
+
+		// Definition links shape — cross-ref → root junction table
+		try {
+			const linksResult = await pg.electric.syncShapeToTable({
+				shape: {
+					url: `${ELECTRIC_URL}/v1/shape`,
+					fetchClient: electricFetchClient,
+					params: {
+						table: 'definition_links'
+					}
+				},
+				table: 'definition_links',
+				primaryKey: ['child_definition_id', 'root_definition_id'],
+				shapeKey: 'definition-links',
+				initialInsertMethod: 'json',
+				onInitialSync: async () => {
+					const countRes = await pg.query<{ count: number }>(
+						'SELECT COUNT(*)::int AS count FROM definition_links'
+					);
+					console.log(
+						`[PGLite Sync] Definition links synced: ${countRes.rows[0]?.count ?? 0} records`
+					);
+				},
+				onError: async (error: Error) => {
+					console.error('[PGLite Sync] Definition links sync error:', error);
+				}
+			});
+			unsubscribeFns.push(linksResult.unsubscribe);
+			console.log('[PGLite Sync] Definition links shape active');
+		} catch (error) {
+			console.warn('[PGLite Sync] Definition links shape failed:', error);
+		}
+
 		// Org-scoped applicabilities shape (auth-gated)
 		const orgId = getOrgIdFromToken();
 		if (orgId) {
