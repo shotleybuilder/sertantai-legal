@@ -1,10 +1,97 @@
 ---
 session: Definitions Admin UI
-status: active
+status: closed
 opened: 2026-08-21
+closed: 2026-08-22
+outcome: success
+
+summary: >
+  Delivered the complete definitions admin UI across 7 phases in a single session.
+  Backend API (4 endpoints, 13 tests), ElectricSQL sync (83K definitions + 2.8K links),
+  and 4 SvelteKit pages — family dashboard, law browser with detail panel, action
+  triggers, and diagnostic explorer. All type-checked, built, and pushed.
+
+decisions:
+  - what: 7-phase incremental delivery with per-phase sessions
+    why: >
+      Each phase is independently deployable and testable. Per-phase sessions
+      enable clean commit boundaries and focused session close documentation.
+      Dependencies flow naturally — backend API first, then data sync, then UI.
+    result: 7 phases completed, 4 commits, all pushed to main
+  - what: Diagnostic results via on-demand API, not ElectricSQL sync
+    why: >
+      Diagnostic findings are ephemeral — recomputed from current DB state each run.
+      Persisting to a table and syncing via Electric would add staleness management
+      complexity. The diagnostic endpoint runs Diagnostic.run/1 fresh each time.
+    result: No persistence table needed, always-fresh results, history deferred
+  - what: PGLite queries for browse page, backend API for dashboard + diagnostic
+    why: >
+      Browse page needs per-law definition lists — these work well as local PGLite
+      queries on synced data (zero latency, offline-capable). Dashboard needs family
+      aggregates with CTEs (better server-side). Diagnostic is compute-heavy (builds
+      indexes, scans all cross-refs) so must run on the backend.
+    result: Optimal data source per page — local for browsing, server for aggregation
+
+metrics:
+  phases:
+    total: 7
+    completed: 7
+    commits: 4
+  backend:
+    endpoints: 4
+    tests: 13
+    test_failures: 0
+  frontend:
+    pages: 4
+    routes: ["/admin/definitions", "/admin/definitions/browse", "/admin/definitions/diagnostic"]
+    type_errors: 0
+  data:
+    definitions_synced: 83369
+    definition_links_synced: 2814
+    dependencies_updated: 106
+
+lessons:
+  - title: "Phased UI delivery with per-phase sessions enables rapid iteration"
+    detail: >
+      7 phases completed in a single conversation session. Each phase had its own
+      session doc with focused todo, clean close with frontmatter, and independent
+      commit. The meta-plan session tracked overall progress. This pattern works
+      well for multi-page UI builds where each page is independently useful.
+    tag: tooling
+  - title: "ElectricSQL shapes for 83K rows work fine in PGLite with IndexedDB"
+    detail: >
+      Legislative definitions (83K rows, 50MB) sync without issues. Average
+      definition is 161 chars. PGLite handles GROUP BY joins across definitions +
+      laws tables locally in the browser. No column exclusions needed.
+    tag: sync
+  - title: "Fire-and-forget Tasks for admin operations simplify the API but complicate testing"
+    detail: >
+      Parse and resolve endpoints use Task.start for async execution. This means
+      the HTTP response is instant but there is no way to track completion from
+      the frontend. Ecto SQL Sandbox in tests produces noisy disconnection errors
+      because the Task outlives the test process. Acceptable for admin tooling.
+    tag: infrastructure
+
+artifacts:
+  - backend/lib/sertantai_legal_web/controllers/definitions_admin_controller.ex
+  - backend/test/sertantai_legal_web/controllers/definitions_admin_controller_test.exs
+  - frontend/src/lib/pglite/schema.sql.ts
+  - frontend/src/lib/pglite/sync.ts
+  - frontend/src/routes/admin/+layout.svelte
+  - frontend/src/routes/admin/definitions/+page.svelte
+  - frontend/src/routes/admin/definitions/browse/+page.svelte
+  - frontend/src/routes/admin/definitions/diagnostic/+page.svelte
+
+depends_on:
+  - 2026-08-20-issue-153-substantive-section-defs
+  - 2026-08-20-food-gas-citation-fixes
+
+enables:
+  - "Visual definition resolution workflow — replaces CLI-driven parse/resolve/diagnose"
+  - "Browser-based definition quality monitoring without terminal access"
 ---
 
-# Session: Definitions Admin UI (ACTIVE)
+# Session: Definitions Admin UI (CLOSED)
 
 ## Problem
 

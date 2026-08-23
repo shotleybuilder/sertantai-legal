@@ -1,8 +1,11 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { adminAuth, isAdmin, type AuthUser } from '$lib/stores/auth';
 	import { selectedCountry, COUNTRIES } from '$lib/stores/country';
+
+	let { children }: { children: Snippet } = $props();
 
 	const HUB_URL = import.meta.env.VITE_HUB_URL || 'http://localhost:5173';
 
@@ -39,7 +42,7 @@
 		{ href: '/admin/sync', label: 'Sync', exact: true }
 	];
 
-	let openDropdown: string | null = null;
+	let openDropdown: string | null = $state(null);
 
 	function toggleDropdown(label: string) {
 		openDropdown = openDropdown === label ? null : label;
@@ -56,12 +59,10 @@
 	}
 
 	// Reactive pathname for proper updates on navigation
-	$: pathname = $page.url.pathname;
+	let pathname = $derived($page.url.pathname);
 
-	let loading = true;
-	let user: AuthUser | null = null;
-
-	adminAuth.subscribe((v) => (user = v));
+	let loading = $state(true);
+	let user: AuthUser | null = $derived($adminAuth);
 
 	onMount(() => {
 		// adminAuth.check() is called at module scope in the root +layout.svelte
@@ -114,7 +115,7 @@
 				>
 					Browse Laws
 				</a>
-				<button on:click={signOut} class="text-sm text-gray-400 hover:text-gray-600">
+				<button onclick={signOut} class="text-sm text-gray-400 hover:text-gray-600">
 					Sign out
 				</button>
 			</div>
@@ -136,10 +137,10 @@
 						<div class="hidden sm:ml-8 sm:flex sm:space-x-4">
 							{#each navItems as item}
 								{#if item.dropdown}
-									<!-- svelte-ignore a11y-click-events-have-key-events -->
+									<!-- svelte-ignore a11y_click_events_have_key_events -->
 									<div class="relative inline-flex items-center">
 										<button
-											on:click={() => toggleDropdown(item.label)}
+											onclick={() => toggleDropdown(item.label)}
 											class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium
 												{isDropdownActive(pathname, item.dropdown)
 												? 'bg-blue-100 text-blue-700'
@@ -161,15 +162,15 @@
 											</svg>
 										</button>
 										{#if openDropdown === item.label}
-											<!-- svelte-ignore a11y-no-static-element-interactions -->
-											<div class="fixed inset-0 z-10" on:click={closeDropdown}></div>
+											<!-- svelte-ignore a11y_no_static_element_interactions -->
+											<div class="fixed inset-0 z-10" onclick={closeDropdown}></div>
 											<div
 												class="absolute left-0 z-20 mt-1 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
 											>
 												{#each item.dropdown as sub}
 													<a
 														href={sub.href}
-														on:click={closeDropdown}
+														onclick={closeDropdown}
 														class="block px-4 py-2 text-sm {isActive(pathname, sub.href, false)
 															? 'bg-blue-50 text-blue-700'
 															: 'text-gray-700 hover:bg-gray-100'}"
@@ -207,7 +208,7 @@
 						</select>
 						<span class="text-sm text-gray-600">{user.name || user.email}</span>
 						<span class="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">{user.role}</span>
-						<button on:click={signOut} class="text-sm text-gray-400 hover:text-gray-600">
+						<button onclick={signOut} class="text-sm text-gray-400 hover:text-gray-600">
 							Sign out
 						</button>
 					</div>
@@ -248,7 +249,7 @@
 
 		<!-- Main Content -->
 		<main class="mx-auto px-4 py-8 sm:px-6 lg:px-8">
-			<slot />
+			{@render children()}
 		</main>
 	</div>
 {/if}

@@ -41,7 +41,7 @@
 		if (!confirm(`Delete session "${sessionId}"?`)) return;
 		deletingId = sessionId;
 		try {
-			await $deleteMutation.mutateAsync(sessionId);
+			await deleteMutation.mutateAsync(sessionId);
 		} catch (e) {
 			console.error('Delete failed:', e);
 		} finally {
@@ -49,9 +49,9 @@
 		}
 	}
 
-	function handleCreated(event: CustomEvent<{ session_id: string }>) {
+	function handleCreated(detail: { session_id: string }) {
 		showDialog = false;
-		goto(`/admin/lat/sessions/${event.detail.session_id}`);
+		goto(`/admin/lat/sessions/${detail.session_id}`);
 	}
 </script>
 
@@ -72,7 +72,7 @@
 				Queue
 			</a>
 			<button
-				on:click={() => (showDialog = true)}
+				onclick={() => (showDialog = true)}
 				class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
 			>
 				New LAT Session
@@ -81,19 +81,19 @@
 	</div>
 
 	<!-- Sessions Table -->
-	{#if $sessionsQuery.isPending}
+	{#if sessionsQuery.isPending}
 		<div class="text-center py-12 text-gray-500">Loading sessions...</div>
-	{:else if $sessionsQuery.isError}
+	{:else if sessionsQuery.isError}
 		<div class="rounded-md bg-red-50 p-4">
 			<p class="text-sm text-red-700">
-				{$sessionsQuery.error?.message || 'Failed to load sessions'}
+				{sessionsQuery.error?.message || 'Failed to load sessions'}
 			</p>
 		</div>
-	{:else if ($sessionsQuery.data?.sessions?.length ?? 0) === 0}
+	{:else if (sessionsQuery.data?.sessions?.length ?? 0) === 0}
 		<div class="text-center py-12">
 			<p class="text-gray-500 mb-4">No LAT parse sessions yet.</p>
 			<button
-				on:click={() => (showDialog = true)}
+				onclick={() => (showDialog = true)}
 				class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
 			>
 				Create First Session
@@ -122,7 +122,7 @@
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-gray-200">
-					{#each $sessionsQuery.data?.sessions ?? [] as session}
+					{#each sessionsQuery.data?.sessions ?? [] as session}
 						<tr class="hover:bg-gray-50">
 							<td class="px-4 py-3">
 								<a
@@ -160,7 +160,7 @@
 										View
 									</a>
 									<button
-										on:click={() => handleDelete(session.session_id)}
+										onclick={() => handleDelete(session.session_id)}
 										disabled={deletingId === session.session_id}
 										class="px-3 py-1 text-xs font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 disabled:opacity-50"
 									>
@@ -178,6 +178,6 @@
 
 <LatParseDialog
 	bind:open={showDialog}
-	on:close={() => (showDialog = false)}
-	on:created={handleCreated}
+	onclose={() => (showDialog = false)}
+	oncreated={handleCreated}
 />

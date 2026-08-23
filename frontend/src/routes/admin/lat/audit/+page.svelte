@@ -5,57 +5,59 @@
 	import type { AuditLawResult, AuditWarning } from '$lib/api/audit';
 	import { reparseLat } from '$lib/api/lat';
 
-	let familyFilter = '';
-	let statusFilter: 'all' | 'clean' | 'warning' | 'error' = 'all';
-	let selectedLaw: string | null = null;
-	let sortColumn: keyof AuditLawResult = 'blob_count';
-	let sortDirection: 'asc' | 'desc' = 'desc';
+	let familyFilter = $state('');
+	let statusFilter: 'all' | 'clean' | 'warning' | 'error' = $state('all');
+	let selectedLaw: string | null = $state(null);
+	let sortColumn: keyof AuditLawResult = $state('blob_count');
+	let sortDirection: 'asc' | 'desc' = $state('desc');
 
 	// Reparse state
 	const queryClient = useQueryClient();
-	$: reparseMutation = useReparseMutation();
-	let reparseMessage = '';
-	let reparseError = '';
+	let reparseMutation = useReparseMutation();
+	let reparseMessage = $state('');
+	let reparseError = $state('');
 
 	// Bulk reparse state
-	let bulkReparsing = false;
-	let bulkProgress = 0;
-	let bulkTotal = 0;
-	let bulkCurrentLaw = '';
-	let bulkResults: { law: string; status: 'ok' | 'error'; message: string }[] = [];
+	let bulkReparsing = $state(false);
+	let bulkProgress = $state(0);
+	let bulkTotal = $state(0);
+	let bulkCurrentLaw = $state('');
+	let bulkResults: { law: string; status: 'ok' | 'error'; message: string }[] = $state([]);
 
-	$: summaryQuery = useAuditSummaryQuery();
-	$: data = $summaryQuery?.data;
-	$: corpus = data?.corpus;
-	$: counts = data?.counts;
+	let summaryQuery = useAuditSummaryQuery();
+	let data = $derived(summaryQuery?.data);
+	let corpus = $derived(data?.corpus);
+	let counts = $derived(data?.counts);
 
 	// Derive unique families from loaded data for picker
-	$: allFamilies = [
-		...new Set((data?.laws ?? []).map((l) => l.family).filter(Boolean))
-	].sort() as string[];
+	let allFamilies = $derived(
+		[...new Set((data?.laws ?? []).map((l) => l.family).filter(Boolean))].sort() as string[]
+	);
 
-	$: filteredLaws = (data?.laws ?? [])
-		.filter((l) => {
-			if (statusFilter !== 'all' && l.status !== statusFilter) return false;
-			if (familyFilter && l.family !== familyFilter) return false;
-			return true;
-		})
-		.sort((a, b) => {
-			const av = a[sortColumn] ?? 0;
-			const bv = b[sortColumn] ?? 0;
-			if (av < bv) return sortDirection === 'asc' ? -1 : 1;
-			if (av > bv) return sortDirection === 'asc' ? 1 : -1;
-			return 0;
-		});
+	let filteredLaws = $derived(
+		(data?.laws ?? [])
+			.filter((l) => {
+				if (statusFilter !== 'all' && l.status !== statusFilter) return false;
+				if (familyFilter && l.family !== familyFilter) return false;
+				return true;
+			})
+			.sort((a, b) => {
+				const av = a[sortColumn] ?? 0;
+				const bv = b[sortColumn] ?? 0;
+				if (av < bv) return sortDirection === 'asc' ? -1 : 1;
+				if (av > bv) return sortDirection === 'asc' ? 1 : -1;
+				return 0;
+			})
+	);
 
-	$: lawDetailQuery = useAuditLawQuery(selectedLaw);
-	$: lawDetail = $lawDetailQuery?.data ?? null;
+	let lawDetailQuery = $derived(useAuditLawQuery(selectedLaw));
+	let lawDetail = $derived(lawDetailQuery?.data ?? null);
 
 	// Single-law reparse
 	function handleReparse(lawName: string) {
 		reparseMessage = '';
 		reparseError = '';
-		$reparseMutation.mutate(lawName, {
+		reparseMutation.mutate(lawName, {
 			onSuccess: (result) => {
 				reparseMessage = `Re-parsed ${lawName}: ${result.lat.inserted} rows, ${result.annotations.inserted} annotations (${result.duration_ms}ms)`;
 				// Refresh audit data
@@ -160,11 +162,11 @@
 		</div>
 	</div>
 
-	{#if $summaryQuery.isLoading}
+	{#if summaryQuery.isLoading}
 		<div class="text-center py-12 text-gray-500">Loading audit data...</div>
-	{:else if $summaryQuery.error}
+	{:else if summaryQuery.error}
 		<div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-			Error: {$summaryQuery.error.message}
+			Error: {summaryQuery.error.message}
 		</div>
 	{:else if corpus && counts}
 		<!-- Corpus Summary Cards -->
@@ -194,7 +196,7 @@
 			<button
 				class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors
 					{statusFilter === 'all' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
-				on:click={() => (statusFilter = 'all')}
+				onclick={() => (statusFilter = 'all')}
 			>
 				All {counts.total}
 			</button>
@@ -203,7 +205,7 @@
 					{statusFilter === 'clean'
 					? 'bg-green-600 text-white'
 					: 'bg-green-100 text-green-700 hover:bg-green-200'}"
-				on:click={() => (statusFilter = 'clean')}
+				onclick={() => (statusFilter = 'clean')}
 			>
 				Clean {counts.clean}
 			</button>
@@ -212,14 +214,14 @@
 					{statusFilter === 'warning'
 					? 'bg-yellow-500 text-white'
 					: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'}"
-				on:click={() => (statusFilter = 'warning')}
+				onclick={() => (statusFilter = 'warning')}
 			>
 				Warnings {counts.warning}
 			</button>
 			<button
 				class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors
 					{statusFilter === 'error' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}"
-				on:click={() => (statusFilter = 'error')}
+				onclick={() => (statusFilter = 'error')}
 			>
 				Errors {counts.error}
 			</button>
@@ -253,7 +255,7 @@
 				<button
 					class="ml-auto px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
 					disabled={bulkReparsing}
-					on:click={handleBulkReparse}
+					onclick={handleBulkReparse}
 				>
 					{#if bulkReparsing}
 						Re-parsing {bulkProgress}/{bulkTotal}...
@@ -280,10 +282,10 @@
 						</a>
 						<button
 							class="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
-							disabled={$reparseMutation.isPending}
-							on:click={() => handleReparse(selectedLaw ?? '')}
+							disabled={reparseMutation.isPending}
+							onclick={() => handleReparse(selectedLaw ?? '')}
 						>
-							{#if $reparseMutation.isPending}
+							{#if reparseMutation.isPending}
 								Re-parsing...
 							{:else}
 								Re-parse LAT
@@ -291,18 +293,18 @@
 						</button>
 						<button
 							class="text-sm text-gray-400 hover:text-gray-600"
-							on:click={() => (selectedLaw = null)}
+							onclick={() => (selectedLaw = null)}
 						>
 							Close
 						</button>
 					</div>
 				</div>
 
-				{#if $lawDetailQuery?.isLoading}
+				{#if lawDetailQuery?.isLoading}
 					<div class="text-sm text-gray-500">Running diagnostics...</div>
-				{:else if $lawDetailQuery?.error}
+				{:else if lawDetailQuery?.error}
 					<div class="text-sm text-red-600">
-						Error: {$lawDetailQuery.error.message}
+						Error: {lawDetailQuery.error.message}
 					</div>
 				{:else if lawDetail}
 					<div class="grid grid-cols-3 md:grid-cols-6 gap-3 text-sm">
@@ -381,38 +383,38 @@
 							<th class="text-left px-3 py-2 font-medium text-gray-600">Status</th>
 							<th
 								class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-								on:click={() => toggleSort('law_name')}
+								onclick={() => toggleSort('law_name')}
 							>
 								Law{sortIcon('law_name')}
 							</th>
 							<th class="text-left px-3 py-2 font-medium text-gray-600">Family</th>
 							<th
 								class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-								on:click={() => toggleSort('total_rows')}
+								onclick={() => toggleSort('total_rows')}
 							>
 								Rows{sortIcon('total_rows')}
 							</th>
 							<th
 								class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-								on:click={() => toggleSort('structural_text_pct')}
+								onclick={() => toggleSort('structural_text_pct')}
 							>
 								Struct %{sortIcon('structural_text_pct')}
 							</th>
 							<th
 								class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-								on:click={() => toggleSort('blob_count')}
+								onclick={() => toggleSort('blob_count')}
 							>
 								Blobs{sortIcon('blob_count')}
 							</th>
 							<th
 								class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-								on:click={() => toggleSort('empty_section_count')}
+								onclick={() => toggleSort('empty_section_count')}
 							>
 								Empty{sortIcon('empty_section_count')}
 							</th>
 							<th
 								class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-								on:click={() => toggleSort('max_row_bytes')}
+								onclick={() => toggleSort('max_row_bytes')}
 							>
 								Max Row{sortIcon('max_row_bytes')}
 							</th>
@@ -423,7 +425,7 @@
 							<tr
 								class="hover:bg-gray-50 cursor-pointer transition-colors"
 								class:bg-blue-50={selectedLaw === law.law_name}
-								on:click={() => (selectedLaw = selectedLaw === law.law_name ? null : law.law_name)}
+								onclick={() => (selectedLaw = selectedLaw === law.law_name ? null : law.law_name)}
 							>
 								<td class="px-3 py-2">
 									<span
@@ -497,7 +499,7 @@
 					{#if !bulkReparsing}
 						<button
 							class="text-xs text-gray-400 hover:text-gray-600"
-							on:click={() => (bulkResults = [])}
+							onclick={() => (bulkResults = [])}
 						>
 							Dismiss
 						</button>

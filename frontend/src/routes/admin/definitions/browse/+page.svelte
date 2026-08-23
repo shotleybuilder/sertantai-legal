@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { startSync, syncStatus } from '$lib/pglite/sync';
 	import { getPglite } from '$lib/pglite/client';
@@ -43,25 +43,25 @@
 
 	// ── State ──────────────────────────────────────────────────────
 
-	let families: string[] = [];
-	let laws: LawRow[] = [];
-	let definitions: DefinitionRow[] = [];
-	let loading = true;
-	let defsLoading = false;
+	let families: string[] = $state([]);
+	let laws: LawRow[] = $state([]);
+	let definitions: DefinitionRow[] = $state([]);
+	let loading = $state(true);
+	let defsLoading = $state(false);
 
 	// URL-driven state
-	let selectedFamily: string = '';
-	let selectedLaw: string = '';
-	let lawSearch: string = '';
+	let selectedFamily: string = $state('');
+	let selectedLaw: string = $state('');
+	let lawSearch: string = $state('');
 
 	// Detail panel state
-	let selectedDef: DefinitionRow | null = null;
-	let rootDefs: RootDefinition[] = [];
-	let rootLoading = false;
+	let selectedDef: DefinitionRow | null = $state(null);
+	let rootDefs: RootDefinition[] = $state([]);
+	let rootLoading = $state(false);
 
 	// Reparse state
-	let reparsing = false;
-	let reparseMsg = '';
+	let reparsing = $state(false);
+	let reparseMsg = $state('');
 
 	async function triggerReparse() {
 		if (!selectedLaw) return;
@@ -83,23 +83,27 @@
 	}
 
 	// Read initial state from URL
-	$: if (browser) {
-		const urlFamily = $page.url.searchParams.get('family');
-		const urlLaw = $page.url.searchParams.get('law');
-		if (urlFamily && !selectedFamily) selectedFamily = urlFamily;
-		if (urlLaw && !selectedLaw) selectedLaw = urlLaw;
-	}
+	$effect(() => {
+		if (browser) {
+			const urlFamily = page.url.searchParams.get('family');
+			const urlLaw = page.url.searchParams.get('law');
+			if (urlFamily && !selectedFamily) selectedFamily = urlFamily;
+			if (urlLaw && !selectedLaw) selectedLaw = urlLaw;
+		}
+	});
 
 	// ── Filtered laws ──────────────────────────────────────────────
 
-	$: filteredLaws = laws.filter((l) => {
-		if (selectedFamily && l.family !== selectedFamily) return false;
-		if (lawSearch) {
-			const q = lawSearch.toLowerCase();
-			return l.title_en?.toLowerCase().includes(q) || l.name.toLowerCase().includes(q);
-		}
-		return true;
-	});
+	let filteredLaws = $derived(
+		laws.filter((l) => {
+			if (selectedFamily && l.family !== selectedFamily) return false;
+			if (lawSearch) {
+				const q = lawSearch.toLowerCase();
+				return l.title_en?.toLowerCase().includes(q) || l.name.toLowerCase().includes(q);
+			}
+			return true;
+		})
+	);
 
 	// ── Data loading ───────────────────────────────────────────────
 
@@ -110,9 +114,11 @@
 	});
 
 	// Re-run after sync completes
-	$: if (!$syncStatus.syncing && $syncStatus.recordCount > 0 && loading) {
-		loadData();
-	}
+	$effect(() => {
+		if (!$syncStatus.syncing && $syncStatus.recordCount > 0 && loading) {
+			loadData();
+		}
+	});
 
 	async function loadData() {
 		try {
@@ -304,7 +310,7 @@
 		<div class="flex items-center gap-2">
 			<select
 				value={selectedFamily}
-				on:change={(e) => selectFamily(e.currentTarget.value)}
+				onchange={(e) => selectFamily(e.currentTarget.value)}
 				class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
 			>
 				<option value="">All Families</option>
@@ -337,7 +343,7 @@
 						<button
 							class="w-full border-b border-gray-100 px-3 py-2 text-left hover:bg-gray-50
 								{selectedLaw === law.name ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''}"
-							on:click={() => selectLaw(law.name)}
+							onclick={() => selectLaw(law.name)}
 						>
 							<div class="text-sm font-medium text-gray-900 leading-tight">
 								{truncate(law.title_en, 60)}
@@ -388,7 +394,7 @@
 							</div>
 						</div>
 						<button
-							on:click={triggerReparse}
+							onclick={triggerReparse}
 							disabled={reparsing}
 							class="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
 						>
@@ -439,7 +445,7 @@
 										class="cursor-pointer hover:bg-gray-50 {selectedDef?.id === def.id
 											? 'bg-blue-50'
 											: ''}"
-										on:click={() => selectDefinition(def)}
+										onclick={() => selectDefinition(def)}
 									>
 										<td class="whitespace-nowrap px-3 py-1.5 text-sm font-medium text-gray-900">
 											{def.term}
@@ -480,7 +486,7 @@
 					</h3>
 					<button
 						class="text-xs text-gray-400 hover:text-gray-600"
-						on:click={() => {
+						onclick={() => {
 							selectedDef = null;
 							rootDefs = [];
 						}}

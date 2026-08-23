@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import {
 		getAffectedLaws,
 		batchReparse,
@@ -11,52 +10,58 @@
 		confirmRecord,
 		type AffectedLaw,
 		type AffectedLawsResult,
+		type EnactingParentLaw,
 		type BatchReparseResult,
 		type UpdateEnactingLinksResult,
 		type ParseMetadataResult,
 		type ParseStage
 	} from '$lib/api/scraper';
 
-	export let sessionId: string;
-	export let open: boolean = false;
+	let {
+		sessionId,
+		open = false,
+		onclose,
+		oncomplete,
+		onreviewLaws
+	}: {
+		sessionId: string;
+		open?: boolean;
+		onclose?: () => void;
+		oncomplete?: (data: { reparsed: number; errors: number; enactingUpdated: number }) => void;
+		onreviewLaws?: (data: { laws: AffectedLaw[]; stages?: ParseStage[] }) => void;
+	} = $props();
 
 	const MIN_REPARSE_STAGES: ParseStage[] = ['amended_by'];
 
-	const dispatch = createEventDispatcher<{
-		close: void;
-		complete: { reparsed: number; errors: number; enactingUpdated: number };
-		reviewLaws: { laws: AffectedLaw[]; stages?: ParseStage[] };
-	}>();
-
 	// State
-	let fullReparse = false;
-	let loading = true;
-	let error: string | null = null;
-	let affectedLaws: AffectedLawsResult | null = null;
-	let reparseInProgress = false;
-	let reparseResults: BatchReparseResult | null = null;
+	let fullReparse = $state(false);
+	let loading = $state(true);
+	let error: string | null = $state(null);
+	let affectedLaws: AffectedLawsResult | null = $state(null);
+	let reparseInProgress = $state(false);
+	let reparseResults: BatchReparseResult | null = $state(null);
 
 	// Enacting links state
-	let enactingUpdateInProgress = false;
-	let enactingResults: UpdateEnactingLinksResult | null = null;
+	let enactingUpdateInProgress = $state(false);
+	let enactingResults: UpdateEnactingLinksResult | null = $state(null);
 
 	// Not-in-DB metadata state
-	let metadataResults: Map<string, ParseMetadataResult['record']> = new Map();
-	let metadataFetching: Set<string> = new Set();
-	let metadataErrors: Map<string, string> = new Map();
+	let metadataResults: Map<string, ParseMetadataResult['record']> = $state(new Map());
+	let metadataFetching: Set<string> = $state(new Set());
+	let metadataErrors: Map<string, string> = $state(new Map());
 
 	// Selection state for individual processing
-	let selectedInDb: Set<string> = new Set();
-	let selectedNotInDb: Set<string> = new Set();
-	let selectedEnactingParents: Set<string> = new Set();
+	let selectedInDb: Set<string> = $state(new Set());
+	let selectedNotInDb: Set<string> = $state(new Set());
+	let selectedEnactingParents: Set<string> = $state(new Set());
 
 	// Layer filtering state
-	let selectedLayer: number | null = null;
+	let selectedLayer: number | null = $state(null);
 
 	// Auto re-parse state
-	let autoReparseActive = false;
-	let autoReparseCancelled = false;
-	let autoReparseStreamCancel: (() => void) | null = null;
+	let autoReparseActive = $state(false);
+	let autoReparseCancelled = $state(false);
+	let autoReparseStreamCancel: (() => void) | null = $state(null);
 	let autoReparseProgress: {
 		current: number;
 		total: number;
@@ -64,12 +69,14 @@
 		successes: number;
 		errors: number;
 		errorDetails: Array<{ name: string; message: string }>;
-	} | null = null;
+	} | null = $state(null);
 
 	// Load affected laws when modal opens
-	$: if (open && sessionId) {
-		loadAffectedLaws();
-	}
+	$effect(() => {
+		if (open && sessionId) {
+			loadAffectedLaws();
+		}
+	});
 
 	async function loadAffectedLaws(preserveResults = false) {
 		loading = true;
@@ -109,7 +116,7 @@
 		if (selectedLaws.length === 0) return;
 
 		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
-		dispatch('reviewLaws', { laws: selectedLaws, stages });
+		onreviewLaws?.({ laws: selectedLaws, stages });
 	}
 
 	function handleReviewAll() {
@@ -117,7 +124,7 @@
 
 		const stages = fullReparse ? undefined : MIN_REPARSE_STAGES;
 		// Use filteredInDb to respect layer filter
-		dispatch('reviewLaws', { laws: filteredInDb, stages });
+		onreviewLaws?.({ laws: filteredInDb, stages });
 	}
 
 	// Auto-save mode: batch re-parse without review (kept for future use)
@@ -338,7 +345,7 @@
 				};
 			});
 		if (selectedLaws.length === 0) return;
-		dispatch('reviewLaws', { laws: selectedLaws });
+		onreviewLaws?.({ laws: selectedLaws });
 	}
 
 	async function handleClearAndClose() {
@@ -348,7 +355,7 @@
 			console.error('Failed to clear affected laws:', e);
 		}
 
-		dispatch('complete', {
+		oncomplete?.({
 			reparsed: reparseResults?.success || 0,
 			errors: reparseResults?.errors || 0,
 			enactingUpdated: enactingResults?.success || 0
@@ -356,7 +363,7 @@
 	}
 
 	function handleClose() {
-		dispatch('close');
+		onclose?.();
 	}
 
 	function toggleInDbSelection(name: string) {
@@ -447,33 +454,52 @@
 	}
 
 	// Filter laws by selected layer
-	$: filteredInDb =
-		affectedLaws && selectedLayer !== null
-			? affectedLaws.in_db.filter((law) => law.layer === selectedLayer)
-			: affectedLaws?.in_db || [];
+	let filteredInDb: AffectedLaw[] = $derived(
+		(() => {
+			const laws = affectedLaws as AffectedLawsResult | null;
+			if (laws && selectedLayer !== null) {
+				return laws.in_db.filter((law: AffectedLaw) => law.layer === selectedLayer);
+			}
+			return laws?.in_db || [];
+		})()
+	);
 
-	$: filteredNotInDb =
-		affectedLaws && selectedLayer !== null
-			? affectedLaws.not_in_db.filter((law) => law.layer === selectedLayer)
-			: affectedLaws?.not_in_db || [];
+	let filteredNotInDb: AffectedLaw[] = $derived(
+		(() => {
+			const laws = affectedLaws as AffectedLawsResult | null;
+			if (laws && selectedLayer !== null) {
+				return laws.not_in_db.filter((law: AffectedLaw) => law.layer === selectedLayer);
+			}
+			return laws?.not_in_db || [];
+		})()
+	);
 
-	$: filteredEnactingParents =
-		affectedLaws && selectedLayer !== null
-			? affectedLaws.enacting_parents_in_db.filter((law) => law.layer === selectedLayer)
-			: affectedLaws?.enacting_parents_in_db || [];
+	let filteredEnactingParents: EnactingParentLaw[] = $derived(
+		(() => {
+			const laws = affectedLaws as AffectedLawsResult | null;
+			if (laws && selectedLayer !== null) {
+				return laws.enacting_parents_in_db.filter(
+					(law: EnactingParentLaw) => law.layer === selectedLayer
+				);
+			}
+			return laws?.enacting_parents_in_db || [];
+		})()
+	);
 
 	// Count selected items from the filtered lists
-	$: selectedInDbCount = [...selectedInDb].filter((name) =>
-		filteredInDb.some((law) => law.name === name)
-	).length;
+	let selectedInDbCount = $derived(
+		[...selectedInDb].filter((name) => filteredInDb.some((law) => law.name === name)).length
+	);
 
-	$: selectedNotInDbCount = [...selectedNotInDb].filter((name) =>
-		filteredNotInDb.some((law) => law.name === name)
-	).length;
+	let selectedNotInDbCount = $derived(
+		[...selectedNotInDb].filter((name) => filteredNotInDb.some((law) => law.name === name)).length
+	);
 
-	$: selectedEnactingParentsCount = [...selectedEnactingParents].filter((name) =>
-		filteredEnactingParents.some((law) => law.name === name)
-	).length;
+	let selectedEnactingParentsCount = $derived(
+		[...selectedEnactingParents].filter((name) =>
+			filteredEnactingParents.some((law) => law.name === name)
+		).length
+	);
 </script>
 
 {#if open}
@@ -498,7 +524,7 @@
 					</p>
 				</div>
 				<button
-					on:click={handleClose}
+					onclick={handleClose}
 					class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
 					aria-label="Close"
 				>
@@ -539,7 +565,7 @@
 								<span class="text-gray-500 font-medium">Layers:</span>
 								{#each affectedLaws.layers as l}
 									<button
-										on:click={() => toggleLayerFilter(l.layer)}
+										onclick={() => toggleLayerFilter(l.layer)}
 										class="px-2 py-0.5 rounded text-xs font-medium cursor-pointer transition-all hover:ring-2 hover:ring-blue-400 {selectedLayer ===
 										l.layer
 											? 'bg-blue-600 text-white ring-2 ring-blue-400'
@@ -557,7 +583,7 @@
 								{/if}
 								{#if selectedLayer !== null}
 									<button
-										on:click={() => (selectedLayer = null)}
+										onclick={() => (selectedLayer = null)}
 										class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
 									>
 										Show All
@@ -660,14 +686,14 @@
 								</h4>
 								{#if autoReparseActive}
 									<button
-										on:click={handleCancelAutoReparse}
+										onclick={handleCancelAutoReparse}
 										class="text-sm text-red-600 hover:text-red-800 font-medium"
 									>
 										Cancel
 									</button>
 								{:else}
 									<button
-										on:click={() => (autoReparseProgress = null)}
+										onclick={() => (autoReparseProgress = null)}
 										class="text-sm text-gray-500 hover:text-gray-700"
 									>
 										Dismiss
@@ -718,7 +744,7 @@
 											type="button"
 											role="switch"
 											aria-checked={fullReparse}
-											on:click={() => (fullReparse = !fullReparse)}
+											onclick={() => (fullReparse = !fullReparse)}
 											class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors {fullReparse
 												? 'bg-blue-600'
 												: 'bg-gray-300'}"
@@ -731,11 +757,11 @@
 										</button>
 									</label>
 									<span class="text-gray-300">|</span>
-									<button on:click={selectAllInDb} class="text-blue-600 hover:underline">
+									<button onclick={selectAllInDb} class="text-blue-600 hover:underline">
 										Select All
 									</button>
 									<span class="text-gray-300">|</span>
-									<button on:click={selectNoneInDb} class="text-blue-600 hover:underline">
+									<button onclick={selectNoneInDb} class="text-blue-600 hover:underline">
 										Select None
 									</button>
 								</div>
@@ -748,7 +774,7 @@
 										<input
 											type="checkbox"
 											checked={selectedInDb.has(law.name)}
-											on:change={() => toggleInDbSelection(law.name)}
+											onchange={() => toggleInDbSelection(law.name)}
 											class="h-4 w-4 text-blue-600 rounded"
 										/>
 										<div class="flex-1 min-w-0">
@@ -773,7 +799,7 @@
 								</h3>
 								<div class="flex gap-2 text-sm">
 									<button
-										on:click={() => {
+										onclick={() => {
 											if (affectedLaws)
 												selectedNotInDb = new Set(affectedLaws.not_in_db.map((l) => l.name));
 										}}
@@ -783,7 +809,7 @@
 									</button>
 									<span class="text-gray-300">|</span>
 									<button
-										on:click={() => {
+										onclick={() => {
 											selectedNotInDb = new Set();
 										}}
 										class="text-yellow-600 hover:underline"
@@ -808,7 +834,7 @@
 										<input
 											type="checkbox"
 											checked={selectedNotInDb.has(law.name)}
-											on:change={() => toggleNotInDbSelection(law.name)}
+											onchange={() => toggleNotInDbSelection(law.name)}
 											class="h-4 w-4 text-yellow-600 rounded"
 										/>
 										<div class="flex-1 min-w-0">
@@ -848,14 +874,14 @@
 								</h3>
 								<div class="flex gap-2 text-sm">
 									<button
-										on:click={selectAllEnactingParents}
+										onclick={selectAllEnactingParents}
 										class="text-purple-600 hover:underline"
 									>
 										Select All
 									</button>
 									<span class="text-gray-300">|</span>
 									<button
-										on:click={selectNoneEnactingParents}
+										onclick={selectNoneEnactingParents}
 										class="text-purple-600 hover:underline"
 									>
 										Select None
@@ -876,7 +902,7 @@
 										<input
 											type="checkbox"
 											checked={selectedEnactingParents.has(law.name)}
-											on:change={() => toggleEnactingParentSelection(law.name)}
+											onchange={() => toggleEnactingParentSelection(law.name)}
 											class="h-4 w-4 text-purple-600 rounded"
 										/>
 										<div class="flex-1 min-w-0">
@@ -922,7 +948,7 @@
 					<!-- Review buttons (amending/rescinding) - opens ParseReviewModal for each -->
 					{#if affectedLaws && affectedLaws.in_db_count > 0 && !reparseResults}
 						<button
-							on:click={handleReviewSelected}
+							onclick={handleReviewSelected}
 							disabled={reparseInProgress ||
 								enactingUpdateInProgress ||
 								autoReparseActive ||
@@ -932,14 +958,14 @@
 							Review Selected ({selectedInDbCount})
 						</button>
 						<button
-							on:click={handleReviewAll}
+							onclick={handleReviewAll}
 							disabled={reparseInProgress || enactingUpdateInProgress || autoReparseActive}
 							class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Review All ({filteredInDb.length})
 						</button>
 						<button
-							on:click={handleAutoReparse}
+							onclick={handleAutoReparse}
 							disabled={reparseInProgress ||
 								enactingUpdateInProgress ||
 								autoReparseActive ||
@@ -957,7 +983,7 @@
 					<!-- Not-in-DB buttons: Get Metadata + Parse & Review -->
 					{#if affectedLaws && affectedLaws.not_in_db_count > 0}
 						<button
-							on:click={handleFetchMetadataSelected}
+							onclick={handleFetchMetadataSelected}
 							disabled={metadataFetching.size > 0 || selectedNotInDbCount === 0}
 							class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
@@ -968,7 +994,7 @@
 							{/if}
 						</button>
 						<button
-							on:click={handleReviewNotInDbSelected}
+							onclick={handleReviewNotInDbSelected}
 							disabled={metadataFetching.size > 0 || selectedNotInDbCount === 0}
 							class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
@@ -979,7 +1005,7 @@
 					<!-- Enacting links update buttons -->
 					{#if affectedLaws && affectedLaws.enacting_parents_in_db_count > 0 && !enactingResults}
 						<button
-							on:click={handleUpdateEnactingSelected}
+							onclick={handleUpdateEnactingSelected}
 							disabled={reparseInProgress ||
 								enactingUpdateInProgress ||
 								selectedEnactingParentsCount === 0}
@@ -992,7 +1018,7 @@
 							{/if}
 						</button>
 						<button
-							on:click={handleUpdateEnactingAll}
+							onclick={handleUpdateEnactingAll}
 							disabled={reparseInProgress || enactingUpdateInProgress}
 							class="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
@@ -1013,14 +1039,14 @@
 							affectedLaws.total_affected === 0 && affectedLaws.total_enacting_parents === 0}
 						{#if allDone || nothingToDo}
 							<button
-								on:click={handleClearAndClose}
+								onclick={handleClearAndClose}
 								class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
 							>
 								Done
 							</button>
 						{:else}
 							<button
-								on:click={handleClose}
+								onclick={handleClose}
 								class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
 							>
 								Close
@@ -1028,7 +1054,7 @@
 						{/if}
 					{:else}
 						<button
-							on:click={handleClose}
+							onclick={handleClose}
 							class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
 						>
 							Close

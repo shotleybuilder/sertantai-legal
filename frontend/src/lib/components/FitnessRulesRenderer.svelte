@@ -19,11 +19,10 @@
 		sector: string | null;
 	}
 
-	/** The fitness rules array */
-	export let rules: FitnessRule[] = [];
+	let { rules = [] }: { rules?: FitnessRule[] } = $props();
 
 	type GroupMode = 'article' | 'person';
-	let groupMode: GroupMode = 'article';
+	let groupMode: GroupMode = $state('article');
 
 	/** Facet keys to display (excluding article, polarity, and the grouping key) */
 	const FACET_KEYS: (keyof FitnessRule)[] = [
@@ -75,7 +74,7 @@
 		return new Map([...groups.entries()].sort((a, b) => a[0].localeCompare(b[0])));
 	}
 
-	$: grouped = groupMode === 'article' ? groupByArticle(rules) : groupByPerson(rules);
+	let grouped = $derived(groupMode === 'article' ? groupByArticle(rules) : groupByPerson(rules));
 
 	/** Get facets to show for a rule, excluding the current group key */
 	function getVisibleFacets(rule: FitnessRule): { label: string; value: string }[] {
@@ -101,7 +100,7 @@
 			class="px-2 py-0.5 text-xs rounded {groupMode === 'article'
 				? 'bg-indigo-100 text-indigo-700 font-medium'
 				: 'text-gray-600 hover:bg-gray-100'}"
-			on:click={() => (groupMode = 'article')}
+			onclick={() => (groupMode = 'article')}
 		>
 			Article
 		</button>
@@ -109,7 +108,7 @@
 			class="px-2 py-0.5 text-xs rounded {groupMode === 'person'
 				? 'bg-indigo-100 text-indigo-700 font-medium'
 				: 'text-gray-600 hover:bg-gray-100'}"
-			on:click={() => (groupMode = 'person')}
+			onclick={() => (groupMode = 'person')}
 		>
 			Person
 		</button>

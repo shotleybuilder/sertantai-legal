@@ -18,14 +18,14 @@
 		last_export: { at: string | null; delta_file: string | null };
 	}
 
-	let data: SyncStatus | null = null;
-	let loading = true;
-	let error = '';
+	let data: SyncStatus | null = $state(null);
+	let loading = $state(true);
+	let error = $state('');
 
 	// Action state
-	let snapshotRunning = false;
-	let snapshotResult: { ok: boolean; output?: string; error?: string } | null = null;
-	let deltaRunning = false;
+	let snapshotRunning = $state(false);
+	let snapshotResult: { ok: boolean; output?: string; error?: string } | null = $state(null);
+	let deltaRunning = $state(false);
 	let deltaResult: {
 		ok: boolean;
 		no_changes?: boolean;
@@ -34,7 +34,7 @@
 		delta_file?: string;
 		tables?: { name: string; rows: number }[];
 		error?: string;
-	} | null = null;
+	} | null = $state(null);
 
 	onMount(() => {
 		fetchStatus();
@@ -139,7 +139,9 @@
 		return 'text-red-600';
 	}
 
-	$: tablesWithPending = data?.tables.filter((t) => t.pending_rows > 0).length ?? 0;
+	let tablesWithPending = $derived(
+		(data as SyncStatus | null)?.tables.filter((t: TableStatus) => t.pending_rows > 0).length ?? 0
+	);
 </script>
 
 <svelte:head>
@@ -150,7 +152,7 @@
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold text-gray-900">Data Sync Pipeline</h1>
 		<button
-			on:click={fetchStatus}
+			onclick={fetchStatus}
 			disabled={loading}
 			class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
 		>
@@ -305,7 +307,7 @@
 							</div>
 						</div>
 						<button
-							on:click={runSnapshotExport}
+							onclick={runSnapshotExport}
 							disabled={snapshotRunning}
 							class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
 						>
@@ -331,7 +333,7 @@
 							<div class="mt-0.5 text-xs text-gray-500">Generate delta SQL for prod promotion</div>
 						</div>
 						<button
-							on:click={runDeltaExport}
+							onclick={runDeltaExport}
 							disabled={deltaRunning}
 							class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
 						>

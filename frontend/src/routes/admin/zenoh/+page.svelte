@@ -9,7 +9,7 @@
 		| 'evidence'
 		| 'triage'
 		| 'secondary_sources'
-		| 'queryables' = 'triage';
+		| 'queryables' = $state('triage');
 
 	const subsQuery = useSubscriptionsQuery();
 	const queryablesQuery = useQueryablesQuery();
@@ -72,45 +72,48 @@
 		{ id: 'queryables' as const, label: 'Queryables & Publishers' }
 	];
 
-	$: statsSince =
-		startedAt($subsQuery.data?.taxa_subscriber?.stats) ||
-		startedAt($queryablesQuery.data?.data_server?.stats);
+	let statsSince = $derived(
+		startedAt(subsQuery.data?.taxa_subscriber?.stats) ||
+			startedAt(queryablesQuery.data?.data_server?.stats)
+	);
 
 	// Map tab id to subscriber data
-	$: subscriberMap = $subsQuery.data
-		? {
-				taxa: {
-					label: 'TaxaSubscriber',
-					sublabel: 'Law-level enrichment',
-					data: $subsQuery.data.taxa_subscriber
-				},
-				triage: {
-					label: 'TriageSubscriber',
-					sublabel: 'Making/not-making classification',
-					data: $subsQuery.data.triage_subscriber
-				},
-				provisions: {
-					label: 'ProvisionSubscriber',
-					sublabel: 'Per-provision DRRP & actors',
-					data: $subsQuery.data.provision_subscriber
-				},
-				controls: {
-					label: 'ControlsSubscriber',
-					sublabel: 'AI-generated controls & predicates',
-					data: $subsQuery.data.controls_subscriber
-				},
-				evidence: {
-					label: 'EvidenceSubscriber',
-					sublabel: 'Evidence patterns & artefact templates',
-					data: $subsQuery.data.evidence_subscriber
-				},
-				secondary_sources: {
-					label: 'SecondaryTaxaSubscriber',
-					sublabel: 'ACoP / JSP / HSG provision enrichment',
-					data: $subsQuery.data.secondary_taxa_subscriber
+	let subscriberMap = $derived(
+		subsQuery.data
+			? {
+					taxa: {
+						label: 'TaxaSubscriber',
+						sublabel: 'Law-level enrichment',
+						data: subsQuery.data.taxa_subscriber
+					},
+					triage: {
+						label: 'TriageSubscriber',
+						sublabel: 'Making/not-making classification',
+						data: subsQuery.data.triage_subscriber
+					},
+					provisions: {
+						label: 'ProvisionSubscriber',
+						sublabel: 'Per-provision DRRP & actors',
+						data: subsQuery.data.provision_subscriber
+					},
+					controls: {
+						label: 'ControlsSubscriber',
+						sublabel: 'AI-generated controls & predicates',
+						data: subsQuery.data.controls_subscriber
+					},
+					evidence: {
+						label: 'EvidenceSubscriber',
+						sublabel: 'Evidence patterns & artefact templates',
+						data: subsQuery.data.evidence_subscriber
+					},
+					secondary_sources: {
+						label: 'SecondaryTaxaSubscriber',
+						sublabel: 'ACoP / JSP / HSG provision enrichment',
+						data: subsQuery.data.secondary_taxa_subscriber
+					}
 				}
-			}
-		: null;
+			: null
+	);
 </script>
 
 <div>
@@ -128,7 +131,7 @@
 	<div class="flex gap-1 border-b border-gray-200 mb-6">
 		{#each tabs as tab}
 			<button
-				on:click={() => (activeTab = tab.id)}
+				onclick={() => (activeTab = tab.id)}
 				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
 					{activeTab === tab.id
 					? 'border-blue-500 text-blue-600'
@@ -152,14 +155,14 @@
 
 	<!-- Subscriber Tabs (Taxa, Provisions, Controls) -->
 	{#if activeTab === 'taxa' || activeTab === 'provisions' || activeTab === 'controls' || activeTab === 'evidence' || activeTab === 'triage' || activeTab === 'secondary_sources'}
-		{#if $subsQuery.isLoading}
+		{#if subsQuery.isLoading}
 			<div class="flex justify-center py-12">
 				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 			</div>
-		{:else if $subsQuery.isError}
+		{:else if subsQuery.isError}
 			<div class="rounded-md bg-red-50 p-4">
 				<p class="text-sm text-red-700">
-					{$subsQuery.error?.message || 'Failed to load subscription data'}
+					{subsQuery.error?.message || 'Failed to load subscription data'}
 				</p>
 			</div>
 		{:else if subscriberMap}
@@ -287,18 +290,18 @@
 
 		<!-- Queryables & Publishers Tab -->
 	{:else if activeTab === 'queryables'}
-		{#if $queryablesQuery.isLoading}
+		{#if queryablesQuery.isLoading}
 			<div class="flex justify-center py-12">
 				<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 			</div>
-		{:else if $queryablesQuery.isError}
+		{:else if queryablesQuery.isError}
 			<div class="rounded-md bg-red-50 p-4">
 				<p class="text-sm text-red-700">
-					{$queryablesQuery.error?.message || 'Failed to load queryable data'}
+					{queryablesQuery.error?.message || 'Failed to load queryable data'}
 				</p>
 			</div>
-		{:else if $queryablesQuery.data}
-			{@const data = $queryablesQuery.data}
+		{:else if queryablesQuery.data}
+			{@const data = queryablesQuery.data}
 
 			<!-- DataServer Section -->
 			<div class="bg-white shadow rounded-lg p-6 mb-6">

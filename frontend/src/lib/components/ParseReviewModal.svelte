@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import {
 		useParseOneMutation,
 		useConfirmRecordMutation,
@@ -22,61 +22,71 @@
 	type DisplayMode = 'create' | 'update';
 
 	// Props for parse workflow
-	export let sessionId: string = '';
-	export let records: ScrapeRecord[] = [];
-	export let initialIndex: number = 0;
-	export let open: boolean = false;
-	// Optional: limit which stages to run (e.g., ['amended_by'] for cascade re-parse)
-	export let stages: ParseStage[] | undefined = undefined;
-	// Optional: record ID for sessionless reparse (existing DB record)
-	// When set and sessionId is empty, uses parseRecordStream instead of parseOneStream
-	export let recordId: string | undefined = undefined;
-	// Auto-confirm mode: automatically confirm each record after parse completes
-	// Used by "Auto Parse All" to iterate through records without manual intervention
-	export let autoConfirm: boolean = false;
-
-	const dispatch = createEventDispatcher<{
-		close: void;
-		complete: { confirmed: number; skipped: number; errors: number };
-	}>();
+	let {
+		sessionId = '',
+		records = [],
+		initialIndex = 0,
+		open = false,
+		// Optional: limit which stages to run (e.g., ['amended_by'] for cascade re-parse)
+		stages = undefined,
+		// Optional: record ID for sessionless reparse (existing DB record)
+		// When set and sessionId is empty, uses parseRecordStream instead of parseOneStream
+		recordId = undefined,
+		// Auto-confirm mode: automatically confirm each record after parse completes
+		// Used by "Auto Parse All" to iterate through records without manual intervention
+		autoConfirm = false,
+		// Callback props (replacing createEventDispatcher)
+		onclose,
+		oncomplete
+	}: {
+		sessionId?: string;
+		records?: ScrapeRecord[];
+		initialIndex?: number;
+		open?: boolean;
+		stages?: ParseStage[] | undefined;
+		recordId?: string | undefined;
+		autoConfirm?: boolean;
+		onclose?: () => void;
+		oncomplete?: (data: { confirmed: number; skipped: number; errors: number }) => void;
+	} = $props();
 
 	const parseMutation = useParseOneMutation();
 	const confirmMutation = useConfirmRecordMutation();
 	const familyOptionsQuery = useFamilyOptionsQuery();
 
 	// State
-	let currentIndex = initialIndex;
-	let parseResult: ParseOneResult | null = null;
-	let selectedFamily: string = '';
-	let selectedSubFamily: string = '';
-	let confirmedCount = 0;
-	let skippedCount = 0;
-	let errorCount = 0;
+	let currentIndex = $state(initialIndex);
+	let parseResult: ParseOneResult | null = $state(null);
+	let selectedFamily: string = $state('');
+	let selectedSubFamily: string = $state('');
+	let confirmedCount = $state(0);
+	let skippedCount = $state(0);
+	let errorCount = $state(0);
 	// Flag to prevent reparsing after workflow is complete
-	let workflowComplete = false;
+	let workflowComplete = $state(false);
 
 	// Streaming progress state
-	let isParsing = false;
-	let parseError: string | null = null;
+	let isParsing = $state(false);
+	let parseError: string | null = $state(null);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	let currentStage: ParseStage | null = null;
-	let cleanupStream: (() => void) | null = null;
+	let currentStage: ParseStage | null = $state(null);
+	let cleanupStream: (() => void) | null = $state(null);
 
 	// Per-stage reparse state
-	let reparsingStage: ParseStage | null = null;
+	let reparsingStage: ParseStage | null = $state(null);
 
 	// Use plain object for better Svelte reactivity (Maps don't trigger updates reliably)
 	type StageStatus = {
 		status: 'pending' | 'running' | 'ok' | 'error' | 'skipped';
 		summary: string | null;
 	};
-	let stageProgress: Record<ParseStage, StageStatus> = {
+	let stageProgress: Record<ParseStage, StageStatus> = $state({
 		metadata: { status: 'pending', summary: null },
 		extent: { status: 'pending', summary: null },
 		enacted_by: { status: 'pending', summary: null },
 		amending: { status: 'pending', summary: null },
 		amended_by: { status: 'pending', summary: null }
-	};
+	});
 
 	// All stages in order
 	const ALL_STAGES: ParseStage[] = ['metadata', 'extent', 'enacted_by', 'amending', 'amended_by'];
@@ -90,20 +100,27 @@
 		amended_by: 'Amended By'
 	};
 
-	$: currentRecord = records[currentIndex];
-	$: isFirst = currentIndex === 0;
-	$: isLast = currentIndex === records.length - 1;
+	let currentRecord = $derived(records[currentIndex]);
+	let isFirst = $derived(currentIndex === 0);
+	let isLast = $derived(currentIndex === records.length - 1);
 
 	// Derive effective display mode:
 	// Create (no duplicate) or Update (has duplicate) based on parse result
-	$: effectiveMode = (parseResult?.duplicate?.exists ? 'update' : 'create') as DisplayMode;
+	let effectiveMode: DisplayMode = $derived(
+		(parseResult as ParseOneResult | null)?.duplicate?.exists ? 'update' : 'create'
+	);
 
 	// For display: merge DB record with parsed changes in Update mode
-	$: displayRecord = parseResult?.record
-		? parseResult.duplicate?.exists && parseResult.duplicate?.record
-			? { ...parseResult.duplicate.record, ...parseResult.record }
-			: parseResult.record
-		: null;
+	let displayRecord: Record<string, unknown> | null = $derived(
+		(() => {
+			const pr = parseResult as ParseOneResult | null;
+			if (!pr?.record) return null;
+			if (pr.duplicate?.exists && pr.duplicate?.record) {
+				return { ...pr.duplicate.record, ...pr.record };
+			}
+			return pr.record;
+		})()
+	);
 
 	// In Update mode, collapse sections by default - diff is primary content
 	// In Create mode, respect the config's defaultExpanded setting
@@ -115,48 +132,54 @@
 	}
 
 	// Auto-confirm timer reference (for cleanup)
-	let autoConfirmTimer: ReturnType<typeof setTimeout> | null = null;
+	let autoConfirmTimer: ReturnType<typeof setTimeout> | null = $state(null);
 	// Track whether auto-confirm has been triggered for current record (prevent double-fire)
-	let autoConfirmTriggered = false;
+	let autoConfirmTriggered = $state(false);
 
 	// Track the last parsed record name to prevent re-parsing
-	let lastParsedName: string | null = null;
+	let lastParsedName: string | null = $state(null);
 	// Track names that failed to parse to prevent infinite retry loops
-	let failedNames: Set<string> = new Set();
+	let failedNames: Set<string> = $state(new Set());
 
 	// Parse current record when index changes (only if not already parsed or failed)
 	// IMPORTANT: workflowComplete guard prevents reparse after final confirm
-	$: if (
-		open &&
-		!workflowComplete &&
-		currentRecord &&
-		currentRecord.name !== lastParsedName &&
-		!failedNames.has(currentRecord.name) &&
-		!isParsing
-	) {
-		parseCurrentRecord();
-	}
+	$effect(() => {
+		if (
+			open &&
+			!workflowComplete &&
+			currentRecord &&
+			currentRecord.name !== lastParsedName &&
+			!failedNames.has(currentRecord.name) &&
+			!isParsing
+		) {
+			parseCurrentRecord();
+		}
+	});
 
 	// Auto-confirm: when parse completes and autoConfirm is enabled, confirm automatically
-	$: if (
-		autoConfirm &&
-		parseResult &&
-		!isParsing &&
-		!$confirmMutation.isPending &&
-		!autoConfirmTriggered &&
-		currentRecord
-	) {
-		autoConfirmTriggered = true;
-		autoConfirmTimer = setTimeout(() => {
-			autoConfirmTimer = null;
-			handleConfirm();
-		}, 300);
-	}
+	$effect(() => {
+		if (
+			autoConfirm &&
+			parseResult &&
+			!isParsing &&
+			!confirmMutation.isPending &&
+			!autoConfirmTriggered &&
+			currentRecord
+		) {
+			autoConfirmTriggered = true;
+			autoConfirmTimer = setTimeout(() => {
+				autoConfirmTimer = null;
+				handleConfirm();
+			}, 300);
+		}
+	});
 
 	// Stop auto-confirm on parse error
-	$: if (autoConfirm && parseError && !isParsing) {
-		autoConfirm = false;
-	}
+	$effect(() => {
+		if (autoConfirm && parseError && !isParsing) {
+			autoConfirm = false;
+		}
+	});
 
 	// Cleanup stream on component destroy
 	onDestroy(() => {
@@ -266,7 +289,7 @@
 				});
 			} else {
 				// Session-based: confirm via session endpoint
-				await $confirmMutation.mutateAsync({
+				await confirmMutation.mutateAsync({
 					sessionId,
 					name: currentRecord.name,
 					record: parseResult.record,
@@ -332,14 +355,14 @@
 		autoConfirm = false;
 		// Don't reset lastParsedName here - it triggers a reparse before the modal closes
 		// The state will be reset when the modal reopens with new records (via recordsId check)
-		dispatch('close');
+		onclose?.();
 	}
 
 	function handleComplete() {
 		// Set flag BEFORE dispatching to prevent reactive reparse trigger
 		workflowComplete = true;
 		lastParsedName = null;
-		dispatch('complete', {
+		oncomplete?.({
 			confirmed: confirmedCount,
 			skipped: skippedCount,
 			errors: errorCount
@@ -348,32 +371,36 @@
 
 	// Reset state when modal opens with new records
 	// Use a separate variable to track the records array identity
-	let lastRecordsId: string = '';
-	$: recordsId = records.map((r) => r.name).join(',');
-	$: if (open && records.length > 0 && recordsId !== lastRecordsId) {
-		lastRecordsId = recordsId;
-		currentIndex = initialIndex; // Reset to initial index for new records
-		confirmedCount = 0;
-		skippedCount = 0;
-		errorCount = 0;
-		failedNames = new Set();
-		lastParsedName = null;
-		parseResult = null;
-		workflowComplete = false; // Reset workflow flag for new records
-		autoConfirmTriggered = false;
-	}
+	let lastRecordsId: string = $state('');
+	let recordsId = $derived(records.map((r) => r.name).join(','));
+	$effect(() => {
+		if (open && records.length > 0 && recordsId !== lastRecordsId) {
+			lastRecordsId = recordsId;
+			currentIndex = initialIndex; // Reset to initial index for new records
+			confirmedCount = 0;
+			skippedCount = 0;
+			errorCount = 0;
+			failedNames = new Set();
+			lastParsedName = null;
+			parseResult = null;
+			workflowComplete = false; // Reset workflow flag for new records
+			autoConfirmTriggered = false;
+		}
+	});
 
 	// Track when modal was last open to detect reopening
-	let wasOpen = false;
-	$: if (open && !wasOpen) {
-		// Modal just opened - reset lastParsedName to allow re-parsing same record
-		// This handles the case where user cancels and reopens with the same records
-		lastParsedName = null;
-		parseResult = null;
-		parseError = null;
-		workflowComplete = false;
-	}
-	$: wasOpen = open;
+	let wasOpen = $state(false);
+	$effect(() => {
+		if (open && !wasOpen) {
+			// Modal just opened - reset lastParsedName to allow re-parsing same record
+			// This handles the case where user cancels and reopens with the same records
+			lastParsedName = null;
+			parseResult = null;
+			parseError = null;
+			workflowComplete = false;
+		}
+		wasOpen = open;
+	});
 
 	function getStageIcon(status: string): string {
 		switch (status) {
@@ -433,7 +460,7 @@
 	}
 
 	// Retry only the failed stages
-	let isRetrying = false;
+	let isRetrying = $state(false);
 	async function retryFailedStages() {
 		if (!currentRecord || !parseResult) return;
 
@@ -610,10 +637,12 @@
 </script>
 
 {#if open}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-		on:click|self={handleCancel}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) handleCancel();
+		}}
 	>
 		<div
 			class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
@@ -641,7 +670,7 @@
 						</span>
 					{/if}
 				</div>
-				<button on:click={handleCancel} class="text-gray-400 hover:text-gray-600">
+				<button onclick={handleCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
@@ -706,13 +735,13 @@
 							{/each}
 						</div>
 					</div>
-				{:else if (parseError || $parseMutation.isError) && !parseResult}
+				{:else if (parseError || parseMutation.isError) && !parseResult}
 					<div class="rounded-md bg-red-50 p-4">
 						<p class="text-sm text-red-700">
-							{mapParseError(parseError || $parseMutation.error?.message || '')}
+							{mapParseError(parseError || parseMutation.error?.message || '')}
 						</p>
 						<button
-							on:click={() => {
+							onclick={() => {
 								parseError = null;
 								failedNames.delete(currentRecord?.name || '');
 								parseCurrentRecord();
@@ -724,17 +753,17 @@
 					</div>
 				{:else if parseResult}
 					<!-- Show error banner if there was an error but parse succeeded -->
-					{#if parseError || $parseMutation.isError}
+					{#if parseError || parseMutation.isError}
 						<div class="rounded-md bg-yellow-50 border border-yellow-200 p-4 mb-4">
 							<div class="flex items-start">
 								<div class="flex-1">
 									<p class="text-sm text-yellow-800 font-medium">Parse completed with warnings</p>
 									<p class="text-sm text-yellow-700 mt-1">
-										{mapParseError(parseError || $parseMutation.error?.message || '')}
+										{mapParseError(parseError || parseMutation.error?.message || '')}
 									</p>
 								</div>
 								<button
-									on:click={() => {
+									onclick={() => {
 										parseError = null;
 									}}
 									class="ml-3 text-yellow-600 hover:text-yellow-800"
@@ -882,7 +911,7 @@
 											<div class="flex justify-between items-start">
 												<h4 class="text-sm font-medium text-amber-800">Partial Parse Results</h4>
 												<button
-													on:click={retryFailedStages}
+													onclick={retryFailedStages}
 													disabled={isRetrying}
 													class="ml-3 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
 												>
@@ -950,7 +979,7 @@
 							expanded={shouldExpand(stage1Config.defaultExpanded)}
 							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'metadata'}
-							on:reparse={() => handleSectionReparse('metadata')}
+							onreparse={() => handleSectionReparse('metadata')}
 						>
 							{#each stage1Config.subsections as subsection}
 								<CollapsibleSection
@@ -969,9 +998,9 @@
 													{field.label} <span class="text-xs text-gray-400">({field.key})</span>
 												</span>
 												<div class="col-span-2">
-													{#if $familyOptionsQuery.isPending}
+													{#if familyOptionsQuery.isPending}
 														<span class="text-sm text-gray-400">Loading families...</span>
-													{:else if $familyOptionsQuery.isError}
+													{:else if familyOptionsQuery.isError}
 														<span class="text-sm text-red-500">Error loading families</span>
 													{:else}
 														<select
@@ -980,17 +1009,17 @@
 														>
 															<option value="">(Uncategorized)</option>
 															<optgroup label="Health & Safety">
-																{#each $familyOptionsQuery.data?.grouped?.health_safety || [] as fam}
+																{#each familyOptionsQuery.data?.grouped?.health_safety || [] as fam}
 																	<option value={fam}>{fam}</option>
 																{/each}
 															</optgroup>
 															<optgroup label="Environment">
-																{#each $familyOptionsQuery.data?.grouped?.environment || [] as fam}
+																{#each familyOptionsQuery.data?.grouped?.environment || [] as fam}
 																	<option value={fam}>{fam}</option>
 																{/each}
 															</optgroup>
 															<optgroup label="HR">
-																{#each $familyOptionsQuery.data?.grouped?.hr || [] as fam}
+																{#each familyOptionsQuery.data?.grouped?.hr || [] as fam}
 																	<option value={fam}>{fam}</option>
 																{/each}
 															</optgroup>
@@ -1007,9 +1036,9 @@
 													{field.label} <span class="text-xs text-gray-400">({field.key})</span>
 												</span>
 												<div class="col-span-2">
-													{#if $familyOptionsQuery.isPending}
+													{#if familyOptionsQuery.isPending}
 														<span class="text-sm text-gray-400">Loading families...</span>
-													{:else if $familyOptionsQuery.isError}
+													{:else if familyOptionsQuery.isError}
 														<span class="text-sm text-red-500">Error loading families</span>
 													{:else}
 														<select
@@ -1018,17 +1047,17 @@
 														>
 															<option value="">(None)</option>
 															<optgroup label="Health & Safety">
-																{#each $familyOptionsQuery.data?.grouped?.health_safety || [] as fam}
+																{#each familyOptionsQuery.data?.grouped?.health_safety || [] as fam}
 																	<option value={fam}>{fam}</option>
 																{/each}
 															</optgroup>
 															<optgroup label="Environment">
-																{#each $familyOptionsQuery.data?.grouped?.environment || [] as fam}
+																{#each familyOptionsQuery.data?.grouped?.environment || [] as fam}
 																	<option value={fam}>{fam}</option>
 																{/each}
 															</optgroup>
 															<optgroup label="HR">
-																{#each $familyOptionsQuery.data?.grouped?.hr || [] as fam}
+																{#each familyOptionsQuery.data?.grouped?.hr || [] as fam}
 																	<option value={fam}>{fam}</option>
 																{/each}
 															</optgroup>
@@ -1053,7 +1082,7 @@
 							expanded={shouldExpand(stage2Config.defaultExpanded)}
 							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'extent'}
-							on:reparse={() => handleSectionReparse('extent')}
+							onreparse={() => handleSectionReparse('extent')}
 						>
 							{#each stage2Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
@@ -1072,7 +1101,7 @@
 							expanded={shouldExpand(stage3Config.defaultExpanded)}
 							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'enacted_by'}
-							on:reparse={() => handleSectionReparse('enacted_by')}
+							onreparse={() => handleSectionReparse('enacted_by')}
 						>
 							{#each stage3Config.fields as field}
 								{@const fieldValue = getFieldValue(displayRecord, field)}
@@ -1097,7 +1126,7 @@
 							badgeColor={displayRecord?.is_rescinding ? 'red' : 'blue'}
 							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'amending'}
-							on:reparse={() => handleSectionReparse('amending')}
+							onreparse={() => handleSectionReparse('amending')}
 						>
 							{#each stage4Config.subsections as subsection}
 								<CollapsibleSection
@@ -1124,7 +1153,7 @@
 							expanded={shouldExpand(stage5Config.defaultExpanded)}
 							showReparse={!!parseResult}
 							isReparsing={reparsingStage === 'amended_by'}
-							on:reparse={() => handleSectionReparse('amended_by')}
+							onreparse={() => handleSectionReparse('amended_by')}
 						>
 							{#each stage5Config.subsections as subsection}
 								<CollapsibleSection
@@ -1214,7 +1243,7 @@
 							Auto-parsing...
 						</span>
 						<button
-							on:click={() => {
+							onclick={() => {
 								autoConfirm = false;
 								if (autoConfirmTimer) {
 									clearTimeout(autoConfirmTimer);
@@ -1226,7 +1255,7 @@
 							Stop
 						</button>
 						<button
-							on:click={handleCancel}
+							onclick={handleCancel}
 							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 						>
 							Cancel
@@ -1235,20 +1264,20 @@
 						<!-- Manual mode: navigation + confirm/skip -->
 						<div class="flex space-x-2 mr-4">
 							<button
-								on:click={movePrev}
+								onclick={movePrev}
 								disabled={isFirst ||
-									$parseMutation.isPending ||
-									$confirmMutation.isPending ||
+									parseMutation.isPending ||
+									confirmMutation.isPending ||
 									isRetrying}
 								class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								Prev
 							</button>
 							<button
-								on:click={moveNext}
+								onclick={moveNext}
 								disabled={isLast ||
-									$parseMutation.isPending ||
-									$confirmMutation.isPending ||
+									parseMutation.isPending ||
+									confirmMutation.isPending ||
 									isRetrying}
 								class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
@@ -1256,23 +1285,23 @@
 							</button>
 						</div>
 						<button
-							on:click={handleCancel}
+							onclick={handleCancel}
 							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 						>
 							Cancel
 						</button>
 						<button
-							on:click={handleSkip}
-							disabled={$parseMutation.isPending || $confirmMutation.isPending || isRetrying}
+							onclick={handleSkip}
+							disabled={parseMutation.isPending || confirmMutation.isPending || isRetrying}
 							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Skip
 						</button>
 						<button
-							on:click={handleConfirm}
+							onclick={handleConfirm}
 							disabled={!parseResult ||
-								$parseMutation.isPending ||
-								$confirmMutation.isPending ||
+								parseMutation.isPending ||
+								confirmMutation.isPending ||
 								isRetrying}
 							class="px-4 py-2 text-sm text-white rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center {parseResult?.has_errors
 								? 'bg-amber-600 hover:bg-amber-700'
@@ -1281,7 +1310,7 @@
 								? 'Save data from successful stages only'
 								: 'Save all parsed data'}
 						>
-							{#if $confirmMutation.isPending}
+							{#if confirmMutation.isPending}
 								<svg
 									class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
 									fill="none"

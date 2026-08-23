@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import {
 		useLatStatsQuery,
@@ -13,39 +13,43 @@
 
 	// ── State ────────────────────────────────────────────────────────
 
-	let searchText = '';
-	let searchDebounced = '';
-	let typeFilter = '';
+	let searchText = $state('');
+	let searchDebounced = $state('');
+	let typeFilter = $state('');
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-	let selectedLaw: LawSummary | null = null;
-	let activeTab: 'structure' | 'annotations' = 'structure';
-	let expandedRows = new Set<string>();
+	let selectedLaw: LawSummary | null = $state(null);
+	let activeTab: 'structure' | 'annotations' = $state('structure');
+	let expandedRows = $state(new Set<string>());
 
 	// Pagination
 	let latLimit = 500;
-	let latOffset = 0;
+	let latOffset = $state(0);
 
 	// Reparse feedback
-	let reparseMessage = '';
-	let reparseError = '';
+	let reparseMessage = $state('');
+	let reparseError = $state('');
 
 	// ── Queries ──────────────────────────────────────────────────────
 
-	$: statsQuery = useLatStatsQuery();
-	$: lawsQuery = useLatLawsQuery(searchDebounced || undefined, typeFilter || undefined);
-	$: rowsQuery = selectedLaw ? useLatRowsQuery(selectedLaw.law_name, latLimit, latOffset) : null;
-	$: annotationsQuery = selectedLaw ? useAnnotationsQuery(selectedLaw.law_name) : null;
-	$: reparseMutation = useReparseMutation();
+	let statsQuery = useLatStatsQuery();
+	let lawsQuery = $derived(useLatLawsQuery(searchDebounced || undefined, typeFilter || undefined));
+	let rowsQuery = $derived(
+		selectedLaw ? useLatRowsQuery((selectedLaw as LawSummary).law_name, latLimit, latOffset) : null
+	);
+	let annotationsQuery = $derived(
+		selectedLaw ? useAnnotationsQuery((selectedLaw as LawSummary).law_name) : null
+	);
+	let reparseMutation = useReparseMutation();
 
 	// ── Derived ──────────────────────────────────────────────────────
 
-	$: stats = $statsQuery?.data;
-	$: laws = $lawsQuery?.data?.laws ?? [];
-	$: latRows = $rowsQuery?.data?.rows ?? [];
-	$: totalLatCount = $rowsQuery?.data?.total_count ?? 0;
-	$: hasMoreLat = $rowsQuery?.data?.has_more ?? false;
-	$: annotations = $annotationsQuery?.data?.annotations ?? [];
+	let stats = $derived(statsQuery?.data);
+	let laws = $derived(lawsQuery?.data?.laws ?? []);
+	let latRows = $derived(rowsQuery?.data?.rows ?? []);
+	let totalLatCount = $derived(rowsQuery?.data?.total_count ?? 0);
+	let hasMoreLat = $derived(rowsQuery?.data?.has_more ?? false);
+	let annotations = $derived(annotationsQuery?.data?.annotations ?? []);
 
 	// ── Search debounce ─────────────────────────────────────────────
 
@@ -83,7 +87,7 @@
 
 	// Auto-select law from ?law= URL param on mount
 	onMount(() => {
-		const lawParam = $page.url.searchParams.get('law');
+		const lawParam = page.url.searchParams.get('law');
 		if (lawParam && !selectedLaw) {
 			// Create a minimal LawSummary to select — full data loads from query
 			selectLaw({
@@ -120,7 +124,7 @@
 	const COLLAPSIBLE_TYPES = new Set(['part', 'chapter', 'heading', 'schedule']);
 
 	// Tracks positions of collapsed structural rows
-	let collapsedSections = new Set<number>();
+	let collapsedSections = $state(new Set<number>());
 
 	function toggleCollapse(position: number) {
 		if (collapsedSections.has(position)) {
@@ -141,39 +145,54 @@
 		collapsedSections = new Set();
 	}
 
+	// Structure search
+	let structureSearch = $state('');
+
+	let filteredLatRows = $derived(
+		structureSearch
+			? latRows.filter(
+					(r) =>
+						(r.text && r.text.toLowerCase().includes(structureSearch.toLowerCase())) ||
+						(r.section_id && r.section_id.toLowerCase().includes(structureSearch.toLowerCase()))
+				)
+			: latRows
+	);
+
 	// Determine which rows are visible based on collapsed parents.
 	// A row is hidden if any preceding structural row at lower depth is collapsed.
-	$: visibleRows = (() => {
-		const rows = filteredLatRows;
-		if (collapsedSections.size === 0) return rows;
+	let visibleRows = $derived(
+		(() => {
+			const rows = filteredLatRows;
+			if (collapsedSections.size === 0) return rows;
 
-		const visible: typeof rows = [];
-		// Stack of collapsed boundaries: [position, depth]
-		// A collapsed row at depth D hides all subsequent rows with depth > D
-		// until we encounter a row with depth <= D.
-		const collapseStack: number[] = []; // stack of depths that are currently hiding children
+			const visible: typeof rows = [];
+			// Stack of collapsed boundaries: [position, depth]
+			// A collapsed row at depth D hides all subsequent rows with depth > D
+			// until we encounter a row with depth <= D.
+			const collapseStack: number[] = []; // stack of depths that are currently hiding children
 
-		for (const row of rows) {
-			// Pop any collapse boundaries that this row escapes (same or lower depth)
-			while (collapseStack.length > 0 && row.depth <= collapseStack[collapseStack.length - 1]) {
-				collapseStack.pop();
+			for (const row of rows) {
+				// Pop any collapse boundaries that this row escapes (same or lower depth)
+				while (collapseStack.length > 0 && row.depth <= collapseStack[collapseStack.length - 1]) {
+					collapseStack.pop();
+				}
+
+				if (collapseStack.length > 0) {
+					// Hidden by an ancestor collapse
+					continue;
+				}
+
+				visible.push(row);
+
+				// If this row is collapsed, push its depth to hide children
+				if (collapsedSections.has(row.position)) {
+					collapseStack.push(row.depth);
+				}
 			}
 
-			if (collapseStack.length > 0) {
-				// Hidden by an ancestor collapse
-				continue;
-			}
-
-			visible.push(row);
-
-			// If this row is collapsed, push its depth to hide children
-			if (collapsedSections.has(row.position)) {
-				collapseStack.push(row.depth);
-			}
-		}
-
-		return visible;
-	})();
+			return visible;
+		})()
+	);
 
 	// ── Re-parse ────────────────────────────────────────────────────
 
@@ -182,7 +201,7 @@
 		reparseMessage = '';
 		reparseError = '';
 
-		$reparseMutation.mutate(selectedLaw.law_name, {
+		reparseMutation.mutate(selectedLaw.law_name, {
 			onSuccess: (data) => {
 				reparseMessage = `Re-parsed: ${data.lat.inserted} LAT rows, ${data.annotations.inserted} annotations (${data.duration_ms}ms)`;
 				// Reset pagination to see fresh data
@@ -195,17 +214,6 @@
 	}
 
 	// ── Formatting helpers ──────────────────────────────────────────
-
-	// Structure search
-	let structureSearch = '';
-
-	$: filteredLatRows = structureSearch
-		? latRows.filter(
-				(r) =>
-					(r.text && r.text.toLowerCase().includes(structureSearch.toLowerCase())) ||
-					(r.section_id && r.section_id.toLowerCase().includes(structureSearch.toLowerCase()))
-			)
-		: latRows;
 
 	const sectionTypeColors: Record<string, string> = {
 		title: 'bg-purple-100 text-purple-700',
@@ -285,7 +293,7 @@
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold text-gray-900">Legal Articles Table</h1>
 		{#if selectedLaw}
-			<button on:click={deselectLaw} class="text-sm text-gray-500 hover:text-gray-700">
+			<button onclick={deselectLaw} class="text-sm text-gray-500 hover:text-gray-700">
 				&larr; Back to law list
 			</button>
 		{/if}
@@ -323,7 +331,7 @@
 			<input
 				type="text"
 				bind:value={searchText}
-				on:input={onSearchInput}
+				oninput={onSearchInput}
 				placeholder="Search laws by title or name..."
 				class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
 			/>
@@ -343,7 +351,7 @@
 		</div>
 
 		<!-- Laws Table -->
-		{#if $lawsQuery?.isLoading}
+		{#if lawsQuery?.isLoading}
 			<div class="text-center py-8 text-gray-500">Loading laws...</div>
 		{:else if laws.length === 0}
 			<div class="text-center py-8 text-gray-500">
@@ -394,7 +402,7 @@
 							{#each laws as law (law.law_name)}
 								<tr
 									class="hover:bg-blue-50 cursor-pointer transition-colors"
-									on:click={() => selectLaw(law)}
+									onclick={() => selectLaw(law)}
 								>
 									<td class="px-4 py-2 text-sm font-mono text-gray-700 whitespace-nowrap">
 										{law.law_name}
@@ -442,14 +450,14 @@
 						{selectedLaw.lat_count} rows &middot; {selectedLaw.annotation_count} annotations
 					</span>
 					<button
-						on:click={handleReparse}
-						disabled={$reparseMutation?.isPending}
+						onclick={handleReparse}
+						disabled={reparseMutation?.isPending}
 						class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors
-							{$reparseMutation?.isPending
+							{reparseMutation?.isPending
 							? 'bg-gray-100 text-gray-400 cursor-not-allowed'
 							: 'bg-blue-600 text-white hover:bg-blue-700'}"
 					>
-						{#if $reparseMutation?.isPending}
+						{#if reparseMutation?.isPending}
 							<span class="inline-flex items-center gap-1">
 								<svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
 									<circle
@@ -491,7 +499,7 @@
 		<!-- Tabs -->
 		<div class="flex gap-1 border-b border-gray-200">
 			<button
-				on:click={() => (activeTab = 'structure')}
+				onclick={() => (activeTab = 'structure')}
 				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
 					{activeTab === 'structure'
 					? 'border-blue-500 text-blue-600'
@@ -500,7 +508,7 @@
 				Structure ({totalLatCount})
 			</button>
 			<button
-				on:click={() => (activeTab = 'annotations')}
+				onclick={() => (activeTab = 'annotations')}
 				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
 					{activeTab === 'annotations'
 					? 'border-blue-500 text-blue-600'
@@ -513,7 +521,7 @@
 		<!-- Tab Content -->
 		{#if activeTab === 'structure'}
 			<!-- Structure Tab -->
-			{#if $rowsQuery?.isLoading}
+			{#if rowsQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading structure...</div>
 			{:else if latRows.length === 0}
 				<div class="text-center py-8 text-gray-500">No LAT rows found for this law.</div>
@@ -532,20 +540,20 @@
 						</span>
 						<button
 							class="text-xs text-gray-400 hover:text-gray-600"
-							on:click={() => (structureSearch = '')}
+							onclick={() => (structureSearch = '')}
 						>
 							Clear
 						</button>
 					{/if}
 					<div class="ml-auto flex gap-2">
 						<button
-							on:click={collapseAll}
+							onclick={collapseAll}
 							class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
 						>
 							Collapse all
 						</button>
 						<button
-							on:click={expandAll}
+							onclick={expandAll}
 							class="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors"
 						>
 							Expand all
@@ -587,7 +595,7 @@
 										: isHeading
 											? 'bg-slate-50 hover:bg-slate-100'
 											: 'hover:bg-blue-50'}"
-									on:click={() => toggleRow(row.section_id)}
+									onclick={() => toggleRow(row.section_id)}
 								>
 									<!-- Position -->
 									<td
@@ -603,7 +611,10 @@
 													class="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-700 rounded transition-transform {isCollapsed
 														? ''
 														: 'rotate-90'}"
-													on:click|stopPropagation={() => toggleCollapse(row.position)}
+													onclick={(e) => {
+														e.stopPropagation();
+														toggleCollapse(row.position);
+													}}
 													title={isCollapsed ? 'Expand section' : 'Collapse section'}
 												>
 													<svg
@@ -725,7 +736,7 @@
 					{#if hasMoreLat}
 						<div class="px-4 py-3 border-t border-gray-200 bg-gray-50 text-center">
 							<button
-								on:click={loadMore}
+								onclick={loadMore}
 								class="px-4 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800"
 							>
 								Load more rows ({latRows.length} of {totalLatCount} shown)
@@ -742,7 +753,7 @@
 			{/if}
 		{:else}
 			<!-- Annotations Tab -->
-			{#if $annotationsQuery?.isLoading}
+			{#if annotationsQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading annotations...</div>
 			{:else if annotations.length === 0}
 				<div class="text-center py-8 text-gray-500">No annotations for this law.</div>

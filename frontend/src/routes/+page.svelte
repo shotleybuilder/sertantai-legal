@@ -2,9 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
-	// eslint-disable-next-line svelte/valid-compile
-	export let params: Record<string, string> = {};
+	// SvelteKit passes props; consume with $props() to avoid warnings
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	let { ...restProps } = $props();
 
 	onMount(() => {
 		goto('/admin', { replaceState: true });

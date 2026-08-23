@@ -1,4 +1,4 @@
-<script context="module" lang="ts">
+<script module lang="ts">
 	import type { FieldConfig, FieldType } from './field-config';
 
 	/**
@@ -41,9 +41,15 @@
 </script>
 
 <script lang="ts">
-	export let config: FieldConfig;
-	export let value: unknown;
-	export let showFieldKey: boolean = true;
+	let {
+		config,
+		value,
+		showFieldKey = true
+	}: {
+		config: FieldConfig;
+		value: unknown;
+		showFieldKey?: boolean;
+	} = $props();
 
 	/**
 	 * Format value based on field type
@@ -106,8 +112,8 @@
 		}
 	}
 
-	$: formattedValue = formatValue(value, config.type);
-	$: isEmpty = !hasData(value);
+	let formattedValue = $derived(formatValue(value, config.type));
+	let isEmpty = $derived(!hasData(value));
 </script>
 
 <div class="grid grid-cols-3 px-4 py-2">

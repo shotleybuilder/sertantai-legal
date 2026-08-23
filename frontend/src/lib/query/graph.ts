@@ -30,44 +30,44 @@ export const graphKeys = {
 };
 
 export function useGraphStatsQuery() {
-	return createQuery<GraphStats>({
+	return createQuery<GraphStats>(() => ({
 		queryKey: graphKeys.stats(),
 		queryFn: getGraphStats
-	});
+	}));
 }
 
 export function useMismatchCountsQuery() {
-	return createQuery<MismatchCounts>({
+	return createQuery<MismatchCounts>(() => ({
 		queryKey: graphKeys.counts(),
 		queryFn: getMismatchCounts
-	});
+	}));
 }
 
 export function useEnactedByQuery() {
-	return createQuery<MismatchResponse<EnactedByItem>>({
+	return createQuery<MismatchResponse<EnactedByItem>>(() => ({
 		queryKey: graphKeys.enactedBy(),
 		queryFn: getEnactedByMismatches
-	});
+	}));
 }
 
 export function useAmendsQuery() {
-	return createQuery<MismatchResponse<AmendsMismatch>>({
+	return createQuery<MismatchResponse<AmendsMismatch>>(() => ({
 		queryKey: graphKeys.amends(),
 		queryFn: getAmendsMismatches
-	});
+	}));
 }
 
 export function useRescindsQuery() {
-	return createQuery<MismatchResponse<RescindsMismatch>>({
+	return createQuery<MismatchResponse<RescindsMismatch>>(() => ({
 		queryKey: graphKeys.rescinds(),
 		queryFn: getRescindsMismatches
-	});
+	}));
 }
 
 export function useFamilyInferenceQuery(lawName: string | null) {
-	return createQuery<FamilyInference>({
+	return createQuery<FamilyInference>(() => ({
 		queryKey: graphKeys.inference(lawName ?? ''),
 		queryFn: () => getFamilyInference(lawName!),
 		enabled: !!lawName
-	});
+	}));
 }

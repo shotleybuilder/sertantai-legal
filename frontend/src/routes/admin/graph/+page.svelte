@@ -73,24 +73,25 @@
 		'💜 HR: Working Time'
 	];
 
-	let activeTab: 'enacted_by' | 'amends' | 'rescinds' = 'enacted_by';
-	let familyFilter = '';
-	let hideTitleConfirmed = true;
-	let activeQaFilter: 'si_code_mismatch' | 'outlier' | 'si_enacts_si' | 'no_enacted_fams' | '' = '';
+	let activeTab: 'enacted_by' | 'amends' | 'rescinds' = $state('enacted_by');
+	let familyFilter = $state('');
+	let hideTitleConfirmed = $state(true);
+	let activeQaFilter: 'si_code_mismatch' | 'outlier' | 'si_enacts_si' | 'no_enacted_fams' | '' =
+		$state('');
 
 	// Detail panel state
-	let selectedRow: EnactedByItem | null = null;
-	let editFamily = '';
-	let editFamilyII = '';
-	let editParentFamily = '';
-	let editParentFamilyII = '';
-	let editMessage = '';
-	let editError = '';
-	let saving = false;
-	let reparsing = false;
-	let rescraping = false;
-	let rebuilding = false;
-	let rebuildMessage = '';
+	let selectedRow: EnactedByItem | null = $state(null);
+	let editFamily = $state('');
+	let editFamilyII = $state('');
+	let editParentFamily = $state('');
+	let editParentFamilyII = $state('');
+	let editMessage = $state('');
+	let editError = $state('');
+	let saving = $state(false);
+	let reparsing = $state(false);
+	let rescraping = $state(false);
+	let rebuilding = $state(false);
+	let rebuildMessage = $state('');
 
 	async function handleRebuildEdges() {
 		rebuilding = true;
@@ -106,7 +107,7 @@
 		}
 	}
 
-	let reparsingParent = false;
+	let reparsingParent = $state(false);
 
 	async function handleReparseParent() {
 		if (!selectedRow) return;
@@ -123,7 +124,7 @@
 		}
 	}
 
-	let rescrapingParent = false;
+	let rescrapingParent = $state(false);
 
 	async function handleRescrapeParent() {
 		if (!selectedRow) return;
@@ -202,8 +203,8 @@
 	}
 
 	// Sort state
-	let sortCol = '';
-	let sortDir: 'asc' | 'desc' = 'asc';
+	let sortCol = $state('');
+	let sortDir: 'asc' | 'desc' = $state('asc');
 
 	function toggleSort(col: string) {
 		if (sortCol === col) {
@@ -229,75 +230,87 @@
 		});
 	}
 
-	$: statsQuery = useGraphStatsQuery();
-	$: countsQuery = useMismatchCountsQuery();
-	$: enactedByQuery = useEnactedByQuery();
-	$: amendsQuery = useAmendsQuery();
-	$: rescindsQuery = useRescindsQuery();
+	let statsQuery = useGraphStatsQuery();
+	let countsQuery = useMismatchCountsQuery();
+	let enactedByQuery = useEnactedByQuery();
+	let amendsQuery = useAmendsQuery();
+	let rescindsQuery = useRescindsQuery();
 
-	$: stats = $statsQuery?.data;
-	$: counts = $countsQuery?.data;
-	$: enactedByItems = $enactedByQuery?.data?.items ?? [];
-	$: amendsItems = $amendsQuery?.data?.items ?? [];
-	$: rescindsItems = $rescindsQuery?.data?.items ?? [];
-
-	// Reactive sort key — changes when sort state changes, triggering re-sort
-	$: _sortKey = `${sortCol}:${sortDir}`;
+	let stats = $derived(statsQuery?.data);
+	let counts = $derived(countsQuery?.data);
+	let enactedByItems = $derived(enactedByQuery?.data?.items ?? []);
+	let amendsItems = $derived(amendsQuery?.data?.items ?? []);
+	let rescindsItems = $derived(rescindsQuery?.data?.items ?? []);
 
 	// QA filter counts
-	$: titleConfirmedCount = enactedByItems.filter((m) => m.title_confirmed).length;
-	$: siMismatchCount = enactedByItems.filter((m) => m.si_code_mismatch).length;
-	$: outlierCount = enactedByItems.filter((m) => m.outlier).length;
-	$: siEnactsSiCount = enactedByItems.filter((m) => m.si_enacts_si).length;
-	$: noEnactedFamsCount = enactedByItems.filter(
-		(m) => !m.parent_enacted_families || Object.keys(m.parent_enacted_families).length === 0
-	).length;
+	let titleConfirmedCount = $derived(enactedByItems.filter((m) => m.title_confirmed).length);
+	let siMismatchCount = $derived(enactedByItems.filter((m) => m.si_code_mismatch).length);
+	let outlierCount = $derived(enactedByItems.filter((m) => m.outlier).length);
+	let siEnactsSiCount = $derived(enactedByItems.filter((m) => m.si_enacts_si).length);
+	let noEnactedFamsCount = $derived(
+		enactedByItems.filter(
+			(m) => !m.parent_enacted_families || Object.keys(m.parent_enacted_families).length === 0
+		).length
+	);
 
 	// Filter + sort
-	$: filteredEnacted = (() => {
-		void _sortKey;
-		return sortRows(
-			enactedByItems.filter((m) => {
-				if (familyFilter && m.assigned_family !== familyFilter) return false;
-				if (hideTitleConfirmed && m.title_confirmed) return false;
-				// "show only" QA filters
-				if (activeQaFilter === 'si_code_mismatch' && !m.si_code_mismatch) return false;
-				if (activeQaFilter === 'outlier' && !m.outlier) return false;
-				if (activeQaFilter === 'si_enacts_si' && !m.si_enacts_si) return false;
-				if (
-					activeQaFilter === 'no_enacted_fams' &&
-					m.parent_enacted_families &&
-					Object.keys(m.parent_enacted_families).length > 0
-				)
-					return false;
-				return true;
-			})
-		);
-	})();
+	let filteredEnacted = $derived(
+		(() => {
+			void sortCol;
+			void sortDir;
+			return sortRows(
+				enactedByItems.filter((m) => {
+					if (familyFilter && m.assigned_family !== familyFilter) return false;
+					if (hideTitleConfirmed && m.title_confirmed) return false;
+					// "show only" QA filters
+					if (activeQaFilter === 'si_code_mismatch' && !m.si_code_mismatch) return false;
+					if (activeQaFilter === 'outlier' && !m.outlier) return false;
+					if (activeQaFilter === 'si_enacts_si' && !m.si_enacts_si) return false;
+					if (
+						activeQaFilter === 'no_enacted_fams' &&
+						m.parent_enacted_families &&
+						Object.keys(m.parent_enacted_families).length > 0
+					)
+						return false;
+					return true;
+				})
+			);
+		})()
+	);
 
-	$: filteredAmends = (() => {
-		void _sortKey;
-		return sortRows(
-			familyFilter ? amendsItems.filter((m) => m.assigned_family === familyFilter) : amendsItems
-		);
-	})();
+	let filteredAmends = $derived(
+		(() => {
+			void sortCol;
+			void sortDir;
+			return sortRows(
+				familyFilter ? amendsItems.filter((m) => m.assigned_family === familyFilter) : amendsItems
+			);
+		})()
+	);
 
-	$: filteredRescinds = (() => {
-		void _sortKey;
-		return sortRows(
-			familyFilter ? rescindsItems.filter((m) => m.assigned_family === familyFilter) : rescindsItems
-		);
-	})();
+	let filteredRescinds = $derived(
+		(() => {
+			void sortCol;
+			void sortDir;
+			return sortRows(
+				familyFilter
+					? rescindsItems.filter((m) => m.assigned_family === familyFilter)
+					: rescindsItems
+			);
+		})()
+	);
 
-	$: allFamilies = [
-		...new Set(
-			[
-				...enactedByItems.map((m) => m.assigned_family),
-				...amendsItems.map((m) => m.assigned_family),
-				...rescindsItems.map((m) => m.assigned_family)
-			].filter(Boolean)
-		)
-	].sort() as string[];
+	let allFamilies = $derived(
+		[
+			...new Set(
+				[
+					...enactedByItems.map((m) => m.assigned_family),
+					...amendsItems.map((m) => m.assigned_family),
+					...rescindsItems.map((m) => m.assigned_family)
+				].filter(Boolean)
+			)
+		].sort() as string[]
+	);
 </script>
 
 <svelte:head>
@@ -312,7 +325,7 @@
 		</p>
 	</div>
 
-	{#if $statsQuery.isLoading}
+	{#if statsQuery.isLoading}
 		<div class="text-center py-12 text-gray-500">Loading graph data...</div>
 	{:else if stats}
 		<!-- Stats Cards -->
@@ -358,7 +371,7 @@
 					: 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
 					disabled:opacity-50"
 				disabled={rebuilding}
-				on:click={handleRebuildEdges}
+				onclick={handleRebuildEdges}
 			>
 				{rebuilding ? 'Rebuilding...' : 'Rebuild edges'}
 			</button>
@@ -375,7 +388,7 @@
 		<!-- Tabs -->
 		<div class="flex gap-1 border-b border-gray-200">
 			<button
-				on:click={() => (activeTab = 'enacted_by')}
+				onclick={() => (activeTab = 'enacted_by')}
 				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
 					{activeTab === 'enacted_by'
 					? 'border-blue-500 text-blue-600'
@@ -384,7 +397,7 @@
 				Enacted By {counts ? `(${counts.enacted_by})` : ''}
 			</button>
 			<button
-				on:click={() => (activeTab = 'amends')}
+				onclick={() => (activeTab = 'amends')}
 				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
 					{activeTab === 'amends'
 					? 'border-blue-500 text-blue-600'
@@ -393,7 +406,7 @@
 				Amends {counts ? `(${counts.amends})` : ''}
 			</button>
 			<button
-				on:click={() => (activeTab = 'rescinds')}
+				onclick={() => (activeTab = 'rescinds')}
 				class="px-4 py-2 text-sm font-medium border-b-2 transition-colors
 					{activeTab === 'rescinds'
 					? 'border-blue-500 text-blue-600'
@@ -426,7 +439,7 @@
 		<!-- Tab Content -->
 		{#if activeTab === 'enacted_by'}
 			<!-- Enacted By Tab -->
-			{#if $enactedByQuery?.isLoading}
+			{#if enactedByQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading...</div>
 			{:else}
 				<!-- QA Filter Rules -->
@@ -434,7 +447,7 @@
 					<button
 						class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors
 							{hideTitleConfirmed ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}"
-						on:click={() => (hideTitleConfirmed = !hideTitleConfirmed)}
+						onclick={() => (hideTitleConfirmed = !hideTitleConfirmed)}
 					>
 						{hideTitleConfirmed ? 'Hiding' : 'Show'} title-confirmed ({titleConfirmedCount})
 					</button>
@@ -443,7 +456,7 @@
 							{activeQaFilter === 'si_code_mismatch'
 							? 'bg-amber-600 text-white'
 							: 'bg-amber-100 text-amber-700 hover:bg-amber-200'}"
-						on:click={() =>
+						onclick={() =>
 							(activeQaFilter = activeQaFilter === 'si_code_mismatch' ? '' : 'si_code_mismatch')}
 					>
 						SI mismatch ({siMismatchCount})
@@ -453,7 +466,7 @@
 							{activeQaFilter === 'outlier'
 							? 'bg-red-600 text-white'
 							: 'bg-red-100 text-red-700 hover:bg-red-200'}"
-						on:click={() => (activeQaFilter = activeQaFilter === 'outlier' ? '' : 'outlier')}
+						onclick={() => (activeQaFilter = activeQaFilter === 'outlier' ? '' : 'outlier')}
 					>
 						Outlier &lt;5% ({outlierCount})
 					</button>
@@ -462,7 +475,7 @@
 							{activeQaFilter === 'si_enacts_si'
 							? 'bg-purple-600 text-white'
 							: 'bg-purple-100 text-purple-700 hover:bg-purple-200'}"
-						on:click={() =>
+						onclick={() =>
 							(activeQaFilter = activeQaFilter === 'si_enacts_si' ? '' : 'si_enacts_si')}
 					>
 						SI enacts SI ({siEnactsSiCount})
@@ -472,7 +485,7 @@
 							{activeQaFilter === 'no_enacted_fams'
 							? 'bg-blue-600 text-white'
 							: 'bg-blue-100 text-blue-700 hover:bg-blue-200'}"
-						on:click={() =>
+						onclick={() =>
 							(activeQaFilter = activeQaFilter === 'no_enacted_fams' ? '' : 'no_enacted_fams')}
 					>
 						No enacted fams ({noEnactedFamsCount})
@@ -492,27 +505,27 @@
 								<tr>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-										on:click={() => toggleSort('title')}>Law{sortIcon('title')}</th
+										onclick={() => toggleSort('title')}>Law{sortIcon('title')}</th
 									>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-										on:click={() => toggleSort('si_code')}>SI Code{sortIcon('si_code')}</th
+										onclick={() => toggleSort('si_code')}>SI Code{sortIcon('si_code')}</th
 									>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-										on:click={() => toggleSort('assigned_family')}
+										onclick={() => toggleSort('assigned_family')}
 										>Assigned Family{sortIcon('assigned_family')}</th
 									>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-										on:click={() => toggleSort('parent_title')}
+										onclick={() => toggleSort('parent_title')}
 										>Parent Act{sortIcon('parent_title')}</th
 									>
 									<th class="text-left px-3 py-2 font-medium text-gray-600">Enacted SI Codes</th>
 									<th class="text-left px-3 py-2 font-medium text-gray-600">Enacted Families</th>
 									<th
 										class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-										on:click={() => toggleSort('parent_family')}
+										onclick={() => toggleSort('parent_family')}
 										>Parent Family{sortIcon('parent_family')}</th
 									>
 								</tr>
@@ -523,7 +536,7 @@
 										class="hover:bg-gray-50 cursor-pointer transition-colors"
 										class:bg-blue-50={selectedRow?.law_name === m.law_name &&
 											selectedRow?.parent_law === m.parent_law}
-										on:click={() => selectEnactedRow(m)}
+										onclick={() => selectEnactedRow(m)}
 									>
 										<td class="px-3 py-2">
 											<div class="font-medium text-gray-900 text-xs">{m.title || m.law_name}</div>
@@ -611,7 +624,7 @@
 								</h3>
 								<button
 									class="text-gray-400 hover:text-gray-600 text-lg flex-shrink-0"
-									on:click={() => (selectedRow = null)}>x</button
+									onclick={() => (selectedRow = null)}>x</button
 								>
 							</div>
 							<div class="font-mono text-xs text-gray-400">{selectedRow.law_name}</div>
@@ -619,13 +632,12 @@
 								<button
 									class="px-2 py-1 text-xs font-medium text-white bg-orange-600 rounded hover:bg-orange-700 disabled:opacity-50"
 									disabled={rescraping}
-									on:click={handleRescrape}
-									>{rescraping ? 'Re-scraping...' : 'Re-scrape LRT'}</button
+									onclick={handleRescrape}>{rescraping ? 'Re-scraping...' : 'Re-scrape LRT'}</button
 								>
 								<button
 									class="px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
 									disabled={reparsing}
-									on:click={handleReparse}>{reparsing ? 'Re-parsing...' : 'Re-parse LAT'}</button
+									onclick={handleReparse}>{reparsing ? 'Re-parsing...' : 'Re-parse LAT'}</button
 								>
 								<a
 									href="/admin/lat?law={encodeURIComponent(selectedRow.law_name)}"
@@ -676,7 +688,7 @@
 								<button
 									class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 w-full"
 									disabled={saving}
-									on:click={() =>
+									onclick={() =>
 										saveFamily(selectedRow?.law_id ?? '', editFamily, editFamilyII, 'Enacted law')}
 									>{saving ? 'Saving...' : 'Save Enacted Law'}</button
 								>
@@ -728,13 +740,13 @@
 									<button
 										class="px-2 py-1 text-xs font-medium text-white bg-orange-600 rounded hover:bg-orange-700 disabled:opacity-50"
 										disabled={rescrapingParent}
-										on:click={handleRescrapeParent}
+										onclick={handleRescrapeParent}
 										>{rescrapingParent ? 'Re-scraping...' : 'Re-scrape LRT'}</button
 									>
 									<button
 										class="px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 disabled:opacity-50"
 										disabled={reparsingParent}
-										on:click={handleReparseParent}
+										onclick={handleReparseParent}
 										>{reparsingParent ? 'Re-parsing...' : 'Re-parse LAT'}</button
 									>
 									<a
@@ -784,7 +796,7 @@
 								<button
 									class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 w-full"
 									disabled={saving}
-									on:click={() =>
+									onclick={() =>
 										saveFamily(
 											selectedRow?.parent_id ?? '',
 											editParentFamily,
@@ -813,7 +825,7 @@
 			{/if}
 		{:else if activeTab === 'amends'}
 			<!-- Amends Tab -->
-			{#if $amendsQuery?.isLoading}
+			{#if amendsQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading...</div>
 			{:else}
 				<div class="bg-white rounded-lg border overflow-hidden">
@@ -822,26 +834,26 @@
 							<tr>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('law_name')}>Law{sortIcon('law_name')}</th
+									onclick={() => toggleSort('law_name')}>Law{sortIcon('law_name')}</th
 								>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('assigned_family')}
+									onclick={() => toggleSort('assigned_family')}
 									>Assigned Family{sortIcon('assigned_family')}</th
 								>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('suggested_family')}
+									onclick={() => toggleSort('suggested_family')}
 									>Top Target Family{sortIcon('suggested_family')}</th
 								>
 								<th
 									class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('consensus_pct')}
+									onclick={() => toggleSort('consensus_pct')}
 									>Consensus{sortIcon('consensus_pct')}</th
 								>
 								<th
 									class="text-right px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('total_amends')}>Total{sortIcon('total_amends')}</th
+									onclick={() => toggleSort('total_amends')}>Total{sortIcon('total_amends')}</th
 								>
 								<th class="text-left px-3 py-2 font-medium text-gray-600">Target Families</th>
 							</tr>
@@ -892,7 +904,7 @@
 			{/if}
 		{:else}
 			<!-- Rescinds Tab -->
-			{#if $rescindsQuery?.isLoading}
+			{#if rescindsQuery?.isLoading}
 				<div class="text-center py-8 text-gray-500">Loading...</div>
 			{:else}
 				<div class="bg-white rounded-lg border overflow-hidden">
@@ -901,21 +913,21 @@
 							<tr>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('title')}>Law{sortIcon('title')}</th
+									onclick={() => toggleSort('title')}>Law{sortIcon('title')}</th
 								>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('assigned_family')}
+									onclick={() => toggleSort('assigned_family')}
 									>Assigned Family{sortIcon('assigned_family')}</th
 								>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('rescinded_title')}
+									onclick={() => toggleSort('rescinded_title')}
 									>Rescinded Law{sortIcon('rescinded_title')}</th
 								>
 								<th
 									class="text-left px-3 py-2 font-medium text-gray-600 cursor-pointer hover:text-gray-900"
-									on:click={() => toggleSort('rescinded_family')}
+									onclick={() => toggleSort('rescinded_family')}
 									>Rescinded Family{sortIcon('rescinded_family')}</th
 								>
 							</tr>

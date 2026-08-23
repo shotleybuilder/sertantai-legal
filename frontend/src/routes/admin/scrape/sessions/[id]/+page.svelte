@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import {
 		useSessionQuery,
 		useSessionDbStatusQuery,
@@ -12,12 +12,12 @@
 	import ParseReviewModal from '$lib/components/ParseReviewModal.svelte';
 	import CascadeUpdateModal from '$lib/components/CascadeUpdateModal.svelte';
 
-	$: sessionId = $page.params.id ?? '';
-	$: sessionQuery = useSessionQuery(sessionId);
-	$: dbStatusQuery = useSessionDbStatusQuery(sessionId);
+	let sessionId = $derived(page.params.id ?? '');
+	let sessionQuery = $derived(useSessionQuery(sessionId));
+	let dbStatusQuery = $derived(useSessionDbStatusQuery(sessionId));
 
-	let activeGroup: 1 | 2 | 3 = 1;
-	$: groupQuery = useGroupQuery(sessionId, activeGroup);
+	let activeGroup: 1 | 2 | 3 = $state(1);
+	let groupQuery = $derived(useGroupQuery(sessionId, activeGroup));
 
 	type GroupNumber = 1 | 2 | 3;
 	const groups: GroupNumber[] = [1, 2, 3];
@@ -26,37 +26,39 @@
 	const clearCascadeMutation = useClearSessionCascadeMutation();
 
 	// Compute selected count from current group data
-	$: records = $groupQuery.data?.records ?? [];
-	$: selectedCount = records.filter((r) => r.selected).length;
-	$: allSelected = records.length > 0 && selectedCount === records.length;
-	$: someSelected = selectedCount > 0 && selectedCount < records.length;
-	$: pendingRecords = records.filter((r) => !r.status || r.status === 'pending');
-	$: selectedPendingCount = records.filter(
-		(r) => r.selected && (!r.status || r.status === 'pending')
-	).length;
+	let records = $derived(groupQuery.data?.records ?? []);
+	let selectedCount = $derived(records.filter((r) => r.selected).length);
+	let allSelected = $derived(records.length > 0 && selectedCount === records.length);
+	let someSelected = $derived(selectedCount > 0 && selectedCount < records.length);
+	let pendingRecords = $derived(records.filter((r) => !r.status || r.status === 'pending'));
+	let selectedPendingCount = $derived(
+		records.filter((r) => r.selected && (!r.status || r.status === 'pending')).length
+	);
 
 	// Set of names that exist in database (for "In DB" column indicator)
-	$: existingNamesSet = new Set($dbStatusQuery.data?.existing_names ?? []);
+	let existingNamesSet = $derived(new Set(dbStatusQuery.data?.existing_names ?? []));
 
 	// Parse Review Modal State
-	let showParseModal = false;
-	let parseModalRecords: ScrapeRecord[] = [];
-	let parseModalStartIndex = 0;
-	let parseModalStages: import('$lib/api/scraper').ParseStage[] | undefined = undefined;
-	let parseCompleteMessage = '';
+	let showParseModal = $state(false);
+	let parseModalRecords: ScrapeRecord[] = $state([]);
+	let parseModalStartIndex = $state(0);
+	let parseModalStages: import('$lib/api/scraper').ParseStage[] | undefined = $state(undefined);
+	let parseCompleteMessage = $state('');
 
 	// Auto-confirm mode for ParseReviewModal (used by "Auto Parse All")
-	let autoConfirmMode = false;
+	let autoConfirmMode = $state(false);
 
 	// Cascade Update Modal State
-	let showCascadeModal = false;
-	let cascadePendingCount = 0;
-	let cascadeProcessedCount = 0;
+	let showCascadeModal = $state(false);
+	let cascadePendingCount = $state(0);
+	let cascadeProcessedCount = $state(0);
 
 	// Fetch cascade status on mount and when session changes
-	$: if (sessionId) {
-		fetchCascadeStatus();
-	}
+	$effect(() => {
+		if (sessionId) {
+			fetchCascadeStatus();
+		}
+	});
 
 	async function fetchCascadeStatus() {
 		try {
@@ -169,19 +171,17 @@
 		autoConfirmMode = false;
 	}
 
-	async function handleParseComplete(
-		event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
-	) {
+	async function handleParseComplete(data: { confirmed: number; skipped: number; errors: number }) {
 		showParseModal = false;
 		autoConfirmMode = false;
-		const { confirmed, skipped, errors } = event.detail;
+		const { confirmed, skipped, errors } = data;
 		parseCompleteMessage = `Parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
 		// Refresh the session data to update counts
-		$sessionQuery.refetch();
+		sessionQuery.refetch();
 		// Refresh group records to show updated parsed_data in table rows
-		$groupQuery.refetch();
+		groupQuery.refetch();
 		// Also refresh db status to update the "In DB" indicator
-		$dbStatusQuery.refetch();
+		dbStatusQuery.refetch();
 
 		// Check if there are affected laws to show cascade modal
 		if (confirmed > 0) {
@@ -203,23 +203,28 @@
 		showCascadeModal = false;
 	}
 
-	function handleCascadeComplete(event: CustomEvent<{ reparsed: number; errors: number }>) {
+	function handleCascadeComplete(data: {
+		reparsed: number;
+		errors: number;
+		enactingUpdated: number;
+	}) {
 		showCascadeModal = false;
-		const { reparsed, errors } = event.detail;
+		const { reparsed, errors } = data;
 		if (reparsed > 0 || errors > 0) {
 			parseCompleteMessage = `Cascade update: ${reparsed} re-parsed, ${errors} errors`;
 		}
-		$sessionQuery.refetch();
+		sessionQuery.refetch();
 		// Refresh cascade status to update pending/processed counts
 		fetchCascadeStatus();
 	}
 
-	function handleCascadeReviewLaws(
-		event: CustomEvent<{ laws: AffectedLaw[]; stages?: import('$lib/api/scraper').ParseStage[] }>
-	) {
+	function handleCascadeReviewLaws(data: {
+		laws: AffectedLaw[];
+		stages?: import('$lib/api/scraper').ParseStage[];
+	}) {
 		// Close cascade modal and open parse review modal with the selected laws
 		showCascadeModal = false;
-		const { laws, stages } = event.detail;
+		const { laws, stages } = data;
 		// Convert AffectedLaw[] to ScrapeRecord[] format (ParseReviewModal uses name field)
 		parseModalRecords = laws.map((law) => ({
 			name: law.name,
@@ -250,7 +255,7 @@
 		}
 
 		try {
-			const result = await $clearCascadeMutation.mutateAsync(sessionId);
+			const result = await clearCascadeMutation.mutateAsync(sessionId);
 			parseCompleteMessage = `Cleared ${result.deleted_count} cascade entries. You can now rebuild by re-confirming laws.`;
 			// Refresh cascade status
 			await fetchCascadeStatus();
@@ -272,7 +277,7 @@
 
 	async function handleSelectAll() {
 		const names = records.map((r) => r.name);
-		await $selectionMutation.mutateAsync({
+		await selectionMutation.mutateAsync({
 			sessionId,
 			group: activeGroup,
 			names,
@@ -282,7 +287,7 @@
 
 	async function handleDeselectAll() {
 		const names = records.map((r) => r.name);
-		await $selectionMutation.mutateAsync({
+		await selectionMutation.mutateAsync({
 			sessionId,
 			group: activeGroup,
 			names,
@@ -291,7 +296,7 @@
 	}
 
 	async function handleToggleRecord(record: ScrapeRecord) {
-		await $selectionMutation.mutateAsync({
+		await selectionMutation.mutateAsync({
 			sessionId,
 			group: activeGroup,
 			names: [record.name],
@@ -307,7 +312,7 @@
 			.map((r) => r.name);
 
 		if (allNames.length > 0) {
-			await $selectionMutation.mutateAsync({
+			await selectionMutation.mutateAsync({
 				sessionId,
 				group: activeGroup,
 				names: allNames,
@@ -315,7 +320,7 @@
 			});
 		}
 		if (pendingNames.length > 0) {
-			await $selectionMutation.mutateAsync({
+			await selectionMutation.mutateAsync({
 				sessionId,
 				group: activeGroup,
 				names: pendingNames,
@@ -332,7 +337,7 @@
 		}
 	}
 
-	let skipLoading = false;
+	let skipLoading = $state(false);
 
 	async function handleSkipSelected() {
 		const toSkip = records
@@ -346,8 +351,8 @@
 			const result = await skipRecords(sessionId, { names: toSkip });
 			parseCompleteMessage = `${result.skipped} record(s) skipped`;
 			// Refresh group data to reflect status change
-			$groupQuery.refetch();
-			$sessionQuery.refetch();
+			groupQuery.refetch();
+			sessionQuery.refetch();
 		} catch (e) {
 			parseCompleteMessage = `Skip failed: ${e instanceof Error ? e.message : 'Unknown error'}`;
 		} finally {
@@ -364,16 +369,16 @@
 		</a>
 	</div>
 
-	{#if $sessionQuery.isLoading}
+	{#if sessionQuery.isLoading}
 		<div class="flex justify-center py-12">
 			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 		</div>
-	{:else if $sessionQuery.isError}
+	{:else if sessionQuery.isError}
 		<div class="rounded-md bg-red-50 p-4">
-			<p class="text-sm text-red-700">{$sessionQuery.error?.message || 'Session not found'}</p>
+			<p class="text-sm text-red-700">{sessionQuery.error?.message || 'Session not found'}</p>
 		</div>
-	{:else if $sessionQuery.data}
-		{@const session = $sessionQuery.data}
+	{:else if sessionQuery.data}
+		{@const session = sessionQuery.data}
 
 		<!-- Header -->
 		<div class="bg-white shadow rounded-lg p-6 mb-6">
@@ -411,13 +416,13 @@
 				</div>
 				<div class="bg-purple-50 rounded-lg p-4">
 					<p class="text-sm text-purple-600">In DB</p>
-					{#if $dbStatusQuery.isLoading}
+					{#if dbStatusQuery.isLoading}
 						<p class="text-2xl font-semibold text-purple-700">...</p>
-					{:else if $dbStatusQuery.data}
+					{:else if dbStatusQuery.data}
 						<p class="text-2xl font-semibold text-purple-700">
-							{$dbStatusQuery.data.existing_in_db}
+							{dbStatusQuery.data.existing_in_db}
 							<span class="text-sm font-normal text-purple-500">
-								/ {$dbStatusQuery.data.total_records}
+								/ {dbStatusQuery.data.total_records}
 							</span>
 						</p>
 					{:else}
@@ -434,7 +439,7 @@
 			{#if cascadePendingCount > 0 || cascadeProcessedCount > 0}
 				<div class="mt-4 flex items-center space-x-3">
 					<button
-						on:click={handleShowCascadeModal}
+						onclick={handleShowCascadeModal}
 						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white {cascadePendingCount >
 						0
 							? 'bg-indigo-600 hover:bg-indigo-700'
@@ -456,8 +461,8 @@
 						{/if}
 					</button>
 					<button
-						on:click={handleClearCascade}
-						disabled={$clearCascadeMutation.isPending}
+						onclick={handleClearCascade}
+						disabled={clearCascadeMutation.isPending}
 						class="inline-flex items-center px-3 py-2 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
 						title="Clear all cascade data for this session to rebuild from scratch"
 					>
@@ -469,7 +474,7 @@
 								d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 							/>
 						</svg>
-						{#if $clearCascadeMutation.isPending}
+						{#if clearCascadeMutation.isPending}
 							Clearing...
 						{:else}
 							Clear Cascade
@@ -499,7 +504,7 @@
 					{#each groups as group}
 						{@const count = getGroupCount(session, group)}
 						<button
-							on:click={() => (activeGroup = group)}
+							onclick={() => (activeGroup = group)}
 							class="flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm
                      {activeGroup === group
 								? 'border-blue-500 text-blue-600'
@@ -523,8 +528,8 @@
 			<div class="p-4 border-b border-gray-200 flex justify-between items-center">
 				<div class="flex items-center space-x-2">
 					<!-- Data Source Badge -->
-					{#if $groupQuery.data?.data_source}
-						{@const isDb = $groupQuery.data.data_source === 'db'}
+					{#if groupQuery.data?.data_source}
+						{@const isDb = groupQuery.data.data_source === 'db'}
 						<span
 							class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {isDb
 								? 'bg-green-100 text-green-800'
@@ -555,23 +560,23 @@
 						</span>
 					{/if}
 					<button
-						on:click={handleSelectAll}
-						disabled={$selectionMutation.isPending || records.length === 0}
+						onclick={handleSelectAll}
+						disabled={selectionMutation.isPending || records.length === 0}
 						class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
 					>
 						Select All
 					</button>
 					<button
-						on:click={handleDeselectAll}
-						disabled={$selectionMutation.isPending || selectedCount === 0}
+						onclick={handleDeselectAll}
+						disabled={selectionMutation.isPending || selectedCount === 0}
 						class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
 					>
 						Deselect All
 					</button>
 					{#if pendingRecords.length > 0 && pendingRecords.length < records.length}
 						<button
-							on:click={handleSelectPending}
-							disabled={$selectionMutation.isPending}
+							onclick={handleSelectPending}
+							disabled={selectionMutation.isPending}
 							class="inline-flex items-center px-3 py-1.5 border border-amber-400 text-xs font-medium rounded-md text-amber-700 bg-amber-50 hover:bg-amber-100 disabled:bg-gray-100 disabled:cursor-not-allowed"
 						>
 							Select Pending ({pendingRecords.length})
@@ -586,7 +591,7 @@
 				<div class="flex items-center space-x-2">
 					{#if selectedPendingCount > 0}
 						<button
-							on:click={handleSkipSelected}
+							onclick={handleSkipSelected}
 							disabled={skipLoading}
 							class="inline-flex items-center px-4 py-2 border border-gray-400 text-sm font-medium rounded-md text-gray-600 bg-white hover:bg-gray-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
 						>
@@ -594,7 +599,7 @@
 						</button>
 					{/if}
 					<button
-						on:click={handleInteractiveParse}
+						onclick={handleInteractiveParse}
 						disabled={records.length === 0}
 						class="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
 					>
@@ -605,7 +610,7 @@
 						{/if}
 					</button>
 					<button
-						on:click={handleParse}
+						onclick={handleParse}
 						disabled={records.length === 0}
 						class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
 					>
@@ -623,7 +628,7 @@
 				<div class="mx-4 mt-4 rounded-md bg-green-50 p-4 flex justify-between items-center">
 					<p class="text-sm text-green-700">{parseCompleteMessage}</p>
 					<button
-						on:click={() => (parseCompleteMessage = '')}
+						onclick={() => (parseCompleteMessage = '')}
 						class="text-green-600 hover:text-green-800"
 					>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -640,15 +645,15 @@
 
 			<!-- Records Table -->
 			<div class="p-4">
-				{#if $groupQuery.isLoading}
+				{#if groupQuery.isLoading}
 					<div class="flex justify-center py-8">
 						<div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
 					</div>
-				{:else if $groupQuery.isError}
+				{:else if groupQuery.isError}
 					<div class="text-center py-8 text-gray-500">
 						<p>No records found for this group</p>
 					</div>
-				{:else if $groupQuery.data && $groupQuery.data.records.length > 0}
+				{:else if groupQuery.data && groupQuery.data.records.length > 0}
 					<div class="overflow-x-auto">
 						<table class="min-w-full divide-y divide-gray-200">
 							<thead class="bg-gray-50">
@@ -658,8 +663,8 @@
 											type="checkbox"
 											checked={allSelected}
 											indeterminate={someSelected}
-											on:change={handleToggleAll}
-											disabled={$selectionMutation.isPending}
+											onchange={handleToggleAll}
+											disabled={selectionMutation.isPending}
 											class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
 										/>
 									</th>
@@ -717,7 +722,7 @@
 								</tr>
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
-								{#each $groupQuery.data.records as record}
+								{#each groupQuery.data.records as record}
 									{@const inDb = existingNamesSet.has(record.name)}
 									<tr
 										class="hover:bg-gray-50 {record.selected ? 'bg-blue-50' : ''} {inDb
@@ -728,8 +733,8 @@
 											<input
 												type="checkbox"
 												checked={record.selected ?? false}
-												on:change={() => handleToggleRecord(record)}
-												disabled={$selectionMutation.isPending}
+												onchange={() => handleToggleRecord(record)}
+												disabled={selectionMutation.isPending}
 												class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:cursor-not-allowed"
 											/>
 										</td>
@@ -752,7 +757,7 @@
 											{/if}
 										</td>
 										<td class="px-2 py-3 text-sm text-gray-500 whitespace-nowrap">
-											{formatUpdatedAt($dbStatusQuery.data?.updated_at_map?.[record.name])}
+											{formatUpdatedAt(dbStatusQuery.data?.updated_at_map?.[record.name])}
 										</td>
 										{#if activeGroup === 3}
 											<td class="px-4 py-3 text-sm text-gray-500">
@@ -804,7 +809,10 @@
 												</span>
 											{:else}
 												<button
-													on:click|stopPropagation={() => handleRowClick(record, 0)}
+													onclick={(e) => {
+														e.stopPropagation();
+														handleRowClick(record, 0);
+													}}
 													class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
 													title="Parse and review this record"
 												>
@@ -854,15 +862,15 @@
 	stages={parseModalStages}
 	autoConfirm={autoConfirmMode}
 	open={showParseModal}
-	on:close={handleParseModalClose}
-	on:complete={handleParseComplete}
+	onclose={handleParseModalClose}
+	oncomplete={handleParseComplete}
 />
 
 <!-- Cascade Update Modal -->
 <CascadeUpdateModal
 	{sessionId}
 	open={showCascadeModal}
-	on:close={handleCascadeModalClose}
-	on:complete={handleCascadeComplete}
-	on:reviewLaws={handleCascadeReviewLaws}
+	onclose={handleCascadeModalClose}
+	oncomplete={handleCascadeComplete}
+	onreviewLaws={handleCascadeReviewLaws}
 />

@@ -2,14 +2,20 @@
 	import { create } from 'jsondiffpatch';
 	import { getFieldLabel } from './parse-review/field-config';
 
-	export let existing: Record<string, unknown>;
-	export let incoming: Record<string, unknown>;
-	export let expanded: boolean = false;
+	let {
+		existing,
+		incoming,
+		expanded = $bindable(false)
+	}: {
+		existing: Record<string, unknown>;
+		incoming: Record<string, unknown>;
+		expanded?: boolean;
+	} = $props();
 
 	// Track which section groups are expanded (all expanded by default)
-	let expandedGroups: Record<string, boolean> = {};
+	let expandedGroups: Record<string, boolean> = $state({});
 	// Track which long field values are expanded
-	let expandedFields: Record<string, boolean> = {};
+	let expandedFields: Record<string, boolean> = $state({});
 
 	// Threshold for collapsing long arrays/strings
 	const ARRAY_COLLAPSE_THRESHOLD = 5;
@@ -29,7 +35,7 @@
 	// Field groupings matching LRT-SCHEMA.md structure (v1.1)
 	// Order follows parse stages: STAGE 1-7
 	const fieldGroups: Record<string, string[]> = {
-		// STAGE 1 💠 metadata - Credentials
+		// STAGE 1 metadata - Credentials
 		Credentials: [
 			'id',
 			'name',
@@ -46,9 +52,9 @@
 			'domain',
 			'number_int'
 		],
-		// STAGE 1 💠 metadata - Description
+		// STAGE 1 metadata - Description
 		Description: ['family', 'family_ii', 'si_code', 'tags', 'md_description', 'md_subjects'],
-		// STAGE 1 💠 metadata - Dates
+		// STAGE 1 metadata - Dates
 		Dates: [
 			'md_date',
 			'md_made_date',
@@ -59,7 +65,7 @@
 			'md_restrict_start_date',
 			'md_restrict_extent'
 		],
-		// STAGE 1 💠 metadata - Document Statistics
+		// STAGE 1 metadata - Document Statistics
 		'Document Statistics': [
 			'md_total_paras',
 			'md_body_paras',
@@ -67,15 +73,15 @@
 			'md_attachment_paras',
 			'md_images'
 		],
-		// STAGE 2 📍 geographic extent
+		// STAGE 2 geographic extent
 		'Geographic Extent': ['geo_extent', 'geo_region', 'geo_detail'],
-		// STAGE 3 🚀 enacted_by
+		// STAGE 3 enacted_by
 		'Enacted By': ['enacted_by', 'enacted_by_meta', 'is_enacting', 'enacting'],
-		// STAGE 4 🔄 amending - Function flags
+		// STAGE 4 amending - Function flags
 		Function: ['function', 'is_making', 'is_commencing'],
-		// STAGE 4 🔄 amending - Self-Affects
+		// STAGE 4 amending - Self-Affects
 		'Self-Affects': ['stats_self_affects_count', 'stats_self_affects_count_per_law_detailed'],
-		// STAGE 4 🔄 amending - Amending (this law affects others)
+		// STAGE 4 amending - Amending (this law affects others)
 		Amending: [
 			'is_amending',
 			'amending_stats_affects_count',
@@ -84,14 +90,14 @@
 			'amending',
 			'amending_change_log'
 		],
-		// STAGE 4 🔄 amending - Rescinding (this law rescinds others)
+		// STAGE 4 amending - Rescinding (this law rescinds others)
 		Rescinding: [
 			'is_rescinding',
 			'rescinding_stats_rescinding_laws_count',
 			'rescinding_stats_per_law',
 			'rescinding'
 		],
-		// STAGE 5 🔄 amended_by - Amended By (this law is affected by others)
+		// STAGE 5 amended_by - Amended By (this law is affected by others)
 		// Order matches LRT-SCHEMA.md: laws_count, count, details, amended_by, linked, dates
 		'Amended By': [
 			'amended_by_stats_affected_by_laws_count',
@@ -102,27 +108,27 @@
 			'latest_change_date',
 			'amended_by_change_log'
 		],
-		// STAGE 5 🔄 amended_by - Rescinded By (this law is rescinded by others)
+		// STAGE 5 amended_by - Rescinded By (this law is rescinded by others)
 		'Rescinded By': [
 			'rescinded_by_stats_rescinded_by_laws_count',
 			'rescinded_by_stats_per_law',
 			'rescinded_by',
 			'latest_rescind_date'
 		],
-		// STAGE 5 🔄 amended_by - Status (resolved after amended_by)
+		// STAGE 5 amended_by - Status (resolved after amended_by)
 		Status: ['live', 'live_description', 'live_from_changes'],
-		// STAGE 6 🦋 taxa - Purpose
+		// STAGE 6 taxa - Purpose
 		Purpose: ['purpose'],
-		// STAGE 7 🦋 taxa - Roles
+		// STAGE 7 taxa - Roles
 		Roles: ['role', 'role_details', 'role_gvt', 'role_gvt_details'],
-		// STAGE 7 🦋 taxa - Duty Type
+		// STAGE 7 taxa - Duty Type
 		'Duty Type': ['duty_type', 'duty_type_article', 'article_duty_type'],
-		// STAGE 7 🦋 taxa - Holders (DRRP)
+		// STAGE 7 taxa - Holders (DRRP)
 		Duties: ['duty_holder', 'duties'],
 		Rights: ['rights_holder', 'rights'],
 		Responsibilities: ['responsibility_holder', 'responsibilities'],
 		Powers: ['power_holder', 'powers'],
-		// STAGE 7 🦋 taxa - POPIMAR
+		// STAGE 7 taxa - POPIMAR
 		POPIMAR: [
 			'popimar',
 			'popimar_details',
@@ -170,16 +176,18 @@
 	]);
 
 	// Compute diff between existing and incoming records, excluding taxa fields
-	$: delta = (() => {
-		const raw = jsondiffpatch.diff(existing, incoming);
-		if (!raw) return raw;
-		const filtered = { ...raw } as Record<string, unknown>;
-		for (const key of Object.keys(filtered)) {
-			if (TAXA_FIELDS.has(key)) delete filtered[key];
-		}
-		return Object.keys(filtered).length > 0 ? filtered : undefined;
-	})();
-	$: hasChanges = delta !== undefined && Object.keys(delta).length > 0;
+	let delta = $derived(
+		(() => {
+			const raw = jsondiffpatch.diff(existing, incoming);
+			if (!raw) return raw;
+			const filtered = { ...raw } as Record<string, unknown>;
+			for (const key of Object.keys(filtered)) {
+				if (TAXA_FIELDS.has(key)) delete filtered[key];
+			}
+			return Object.keys(filtered).length > 0 ? filtered : undefined;
+		})()
+	);
+	let hasChanges = $derived(delta !== undefined && Object.keys(delta).length > 0);
 
 	// Categorize changes
 	type ChangeType = 'deleted' | 'modified' | 'added';
@@ -227,24 +235,26 @@
 		return false;
 	}
 
-	$: changes = delta
-		? Object.entries(delta)
-				.filter(([k]) => !k.startsWith('_'))
-				.map(([field, deltaValue]) => ({
-					field,
-					type: getChangeType(deltaValue),
-					oldValue: getOldValue(field, deltaValue),
-					newValue: getNewValue(field, deltaValue)
-				}))
-				// Filter out changes where both values are empty, or added/deleted with empty value
-				.filter((change) => {
-					if (change.type === 'added' && isEmpty(change.newValue)) return false;
-					if (change.type === 'deleted' && isEmpty(change.oldValue)) return false;
-					if (change.type === 'modified' && isEmpty(change.oldValue) && isEmpty(change.newValue))
-						return false;
-					return true;
-				})
-		: [];
+	let changes = $derived(
+		delta
+			? Object.entries(delta)
+					.filter(([k]) => !k.startsWith('_'))
+					.map(([field, deltaValue]) => ({
+						field,
+						type: getChangeType(deltaValue),
+						oldValue: getOldValue(field, deltaValue),
+						newValue: getNewValue(field, deltaValue)
+					}))
+					// Filter out changes where both values are empty, or added/deleted with empty value
+					.filter((change) => {
+						if (change.type === 'added' && isEmpty(change.newValue)) return false;
+						if (change.type === 'deleted' && isEmpty(change.oldValue)) return false;
+						if (change.type === 'modified' && isEmpty(change.oldValue) && isEmpty(change.newValue))
+							return false;
+						return true;
+					})
+			: []
+	);
 
 	// Group changes by category
 	function getFieldGroup(field: string): string {
@@ -268,26 +278,26 @@
 
 	// Group order matching LRT-SCHEMA.md structure (v1.1)
 	const groupOrder = [
-		// STAGE 1 💠 metadata
+		// STAGE 1 metadata
 		'Credentials',
 		'Description',
 		'Dates',
 		'Document Statistics',
-		// STAGE 2 📍 geographic extent
+		// STAGE 2 geographic extent
 		'Geographic Extent',
-		// STAGE 3 🚀 enacted_by
+		// STAGE 3 enacted_by
 		'Enacted By',
-		// STAGE 4 🔄 amending
+		// STAGE 4 amending
 		'Function',
 		'Self-Affects',
 		'Amending',
 		'Rescinding',
-		// STAGE 5 🔄 amended_by
+		// STAGE 5 amended_by
 		'Amended By',
 		'Rescinded By',
 		// Status (resolved from amended_by stage)
 		'Status',
-		// STAGE 7 🦋 taxa
+		// STAGE 7 taxa
 		'Purpose',
 		'Roles',
 		'Duty Type',
@@ -302,30 +312,34 @@
 		'Other'
 	];
 
-	$: groupedChanges = changes.reduce(
-		(acc, change) => {
-			const group = getFieldGroup(change.field);
-			if (!acc[group]) acc[group] = [];
-			acc[group].push(change);
-			return acc;
-		},
-		{} as Record<string, Change[]>
+	let groupedChanges = $derived(
+		changes.reduce(
+			(acc, change) => {
+				const group = getFieldGroup(change.field);
+				if (!acc[group]) acc[group] = [];
+				acc[group].push(change);
+				return acc;
+			},
+			{} as Record<string, Change[]>
+		)
 	);
 
 	// Sort changes within each group by field order (matching LRT-SCHEMA.md)
-	$: sortedGroups = groupOrder
-		.filter((g) => groupedChanges[g]?.length > 0)
-		.map((group) => ({
-			name: group,
-			changes: groupedChanges[group].sort(
-				(a, b) => getFieldOrder(group, a.field) - getFieldOrder(group, b.field)
-			)
-		}));
+	let sortedGroups = $derived(
+		groupOrder
+			.filter((g) => groupedChanges[g]?.length > 0)
+			.map((group) => ({
+				name: group,
+				changes: groupedChanges[group].sort(
+					(a, b) => getFieldOrder(group, a.field) - getFieldOrder(group, b.field)
+				)
+			}))
+	);
 
 	// Summary counts
-	$: deletedCount = changes.filter((c) => c.type === 'deleted').length;
-	$: modifiedCount = changes.filter((c) => c.type === 'modified').length;
-	$: addedCount = changes.filter((c) => c.type === 'added').length;
+	let deletedCount = $derived(changes.filter((c) => c.type === 'deleted').length);
+	let modifiedCount = $derived(changes.filter((c) => c.type === 'modified').length);
+	let addedCount = $derived(changes.filter((c) => c.type === 'added').length);
 
 	function formatValue(value: unknown): string {
 		if (value === undefined || value === null) return 'null';
@@ -381,7 +395,7 @@
 	<div class="border border-amber-200 rounded-lg overflow-hidden bg-amber-50">
 		<button
 			type="button"
-			on:click={() => (expanded = !expanded)}
+			onclick={() => (expanded = !expanded)}
 			class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-amber-100 transition-colors"
 		>
 			<div class="flex items-center space-x-3">
@@ -427,7 +441,7 @@
 						<!-- Collapsible Group Header -->
 						<button
 							type="button"
-							on:click={() => toggleGroup(group.name)}
+							onclick={() => toggleGroup(group.name)}
 							class="w-full px-4 py-2 bg-gray-50 flex items-center justify-between text-left hover:bg-gray-100 transition-colors"
 						>
 							<div class="flex items-center gap-2">
@@ -495,7 +509,7 @@
 													{#if oldIsLong || newIsLong}
 														<button
 															type="button"
-															on:click={() => toggleField(fieldKey)}
+															onclick={() => toggleField(fieldKey)}
 															class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
 														>
 															{isFieldExpanded ? 'Collapse' : 'Expand'}

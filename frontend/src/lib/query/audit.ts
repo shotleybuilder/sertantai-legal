@@ -17,16 +17,16 @@ export const auditKeys = {
 };
 
 export function useAuditSummaryQuery(family?: string) {
-	return createQuery<AuditResponse>({
+	return createQuery<AuditResponse>(() => ({
 		queryKey: auditKeys.summary(family),
 		queryFn: () => getAuditSummary(family)
-	});
+	}));
 }
 
 export function useAuditLawQuery(lawName: string | null) {
-	return createQuery<AuditLawDetail>({
+	return createQuery<AuditLawDetail>(() => ({
 		queryKey: auditKeys.law(lawName ?? ''),
 		queryFn: () => getAuditLaw(lawName!),
 		enabled: !!lawName
-	});
+	}));
 }

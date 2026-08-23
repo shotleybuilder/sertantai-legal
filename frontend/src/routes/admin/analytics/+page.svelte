@@ -34,34 +34,34 @@
 		total: number;
 	}
 
-	let totalRecords = 0;
-	let nullFamily = 0;
-	let nullTitleEn = 0;
-	let familyCounts: FamilyCount[] = [];
-	let makingCounts: LabelCount[] = [];
-	let liveCounts: LabelCount[] = [];
+	let totalRecords = $state(0);
+	let nullFamily = $state(0);
+	let nullTitleEn = $state(0);
+	let familyCounts: FamilyCount[] = $state([]);
+	let makingCounts: LabelCount[] = $state([]);
+	let liveCounts: LabelCount[] = $state([]);
 
-	let populationStats: PopulationRow[] = [];
+	let populationStats: PopulationRow[] = $state([]);
 
-	let withLat = 0;
-	let withoutLat = 0;
-	let latBuckets: LabelCount[] = [];
-	let makingNoLat = 0;
+	let withLat = $state(0);
+	let withoutLat = $state(0);
+	let latBuckets: LabelCount[] = $state([]);
+	let makingNoLat = $state(0);
 
-	let pgliteLoading = true;
-	let pgliteError = '';
+	let pgliteLoading = $state(true);
+	let pgliteError = $state('');
 
 	// ── API Stats (Sections 4-5) ───────────────────────────────────
 
-	let changeStats: ChangeTrackingStats | null = null;
-	let sessionStats: SessionAnalytics | null = null;
-	let liveStatusData: LiveStatusAssurance | null = null;
-	let apiLoading = true;
-	let apiError = '';
+	let changeStats: ChangeTrackingStats | null = $state(null);
+	let sessionStats: SessionAnalytics | null = $state(null);
+	let liveStatusData: LiveStatusAssurance | null = $state(null);
+	let apiLoading = $state(true);
+	let apiError = $state('');
 
 	// ── Reparse Misclassified ───────────────────────────────────
-	let reparseLoading = false;
-	let reparseError = '';
+	let reparseLoading = $state(false);
+	let reparseError = $state('');
 
 	async function reparseMisclassified() {
 		reparseLoading = true;
@@ -86,14 +86,14 @@
 
 	// ── Collapsible sections ────────────────────────────────────────
 
-	let openSections: Record<string, boolean> = {
+	let openSections: Record<string, boolean> = $state({
 		completeness: true,
 		population: true,
 		lat: true,
 		liveStatus: true,
 		changes: true,
 		sessions: true
-	};
+	});
 
 	function toggleSection(key: string) {
 		openSections[key] = !openSections[key];
@@ -109,9 +109,11 @@
 	});
 
 	// Re-run PGLite queries after initial sync completes
-	$: if (!$syncStatus.syncing && $syncStatus.recordCount > 0 && pgliteLoading) {
-		loadPgliteStats();
-	}
+	$effect(() => {
+		if (!$syncStatus.syncing && $syncStatus.recordCount > 0 && pgliteLoading) {
+			loadPgliteStats();
+		}
+	});
 
 	async function loadPgliteStats() {
 		try {
@@ -312,7 +314,7 @@
 	<!-- ═══════ Section 1: Data Completeness ═══════ -->
 	<section>
 		<button
-			on:click={() => toggleSection('completeness')}
+			onclick={() => toggleSection('completeness')}
 			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
 		>
 			<svg
@@ -418,7 +420,7 @@
 	<!-- ═══════ Section 2: P2P Taxa/Fitness Population ═══════ -->
 	<section>
 		<button
-			on:click={() => toggleSection('population')}
+			onclick={() => toggleSection('population')}
 			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
 		>
 			<svg
@@ -507,7 +509,7 @@
 	<!-- ═══════ Section 3: LAT Coverage ═══════ -->
 	<section>
 		<button
-			on:click={() => toggleSection('lat')}
+			onclick={() => toggleSection('lat')}
 			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
 		>
 			<svg
@@ -563,7 +565,7 @@
 	<!-- ═══════ Section 4: Live Status Assurance ═══════ -->
 	<section>
 		<button
-			on:click={() => toggleSection('liveStatus')}
+			onclick={() => toggleSection('liveStatus')}
 			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
 		>
 			<svg
@@ -639,7 +641,7 @@
 						</div>
 						{#if liveStatusData.misclassified > 0}
 							<button
-								on:click={reparseMisclassified}
+								onclick={reparseMisclassified}
 								disabled={reparseLoading}
 								class="mt-2 w-full px-3 py-1.5 text-xs font-medium rounded
 									bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
@@ -862,7 +864,7 @@
 	<!-- ═══════ Section 5: Change Tracking ═══════ -->
 	<section>
 		<button
-			on:click={() => toggleSection('changes')}
+			onclick={() => toggleSection('changes')}
 			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
 		>
 			<svg
@@ -983,7 +985,7 @@
 	<!-- ═══════ Section 6: Session Analytics ═══════ -->
 	<section>
 		<button
-			on:click={() => toggleSection('sessions')}
+			onclick={() => toggleSection('sessions')}
 			class="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3 hover:text-gray-600"
 		>
 			<svg

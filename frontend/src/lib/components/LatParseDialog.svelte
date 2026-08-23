@@ -1,24 +1,26 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { previewLatSession, type LatSessionFilters } from '$lib/api/lat';
 	import { useFamilyOptionsQuery } from '$lib/query/scraper';
 	import { useCreateLatSessionMutation } from '$lib/query/lat';
 
-	export let open = false;
-
-	const dispatch = createEventDispatcher<{
-		close: void;
-		created: { session_id: string };
-	}>();
+	let {
+		open = $bindable(false),
+		onclose,
+		oncreated
+	}: {
+		open?: boolean;
+		onclose?: () => void;
+		oncreated?: (detail: { session_id: string }) => void;
+	} = $props();
 
 	const familyOptionsQuery = useFamilyOptionsQuery();
 	const createMutation = useCreateLatSessionMutation();
 
 	// Filter state
-	let selectedFamily = '';
-	let selectedTypeCode = '';
-	let selectedFunction = '';
-	let selectedQueueReason: '' | 'missing' | 'stale' = '';
+	let selectedFamily = $state('');
+	let selectedTypeCode = $state('');
+	let selectedFunction = $state('');
+	let selectedQueueReason: '' | 'missing' | 'stale' = $state('');
 
 	const liveOptions = [
 		{ value: '✔ In force', label: 'In force' },
@@ -26,20 +28,20 @@
 		{ value: '❌ Revoked / Repealed / Abolished', label: 'Revoked' }
 	];
 	// Default: all checked (no live filter sent — backend excludes revoked by default)
-	let selectedLive: string[] = [
+	let selectedLive: string[] = $state([
 		'✔ In force',
 		'⭕ Part Revocation / Repeal',
 		'❌ Revoked / Repealed / Abolished'
-	];
+	]);
 
 	// Preview state
-	let previewCount: number | null = null;
-	let previewLoading = false;
-	let previewError = '';
+	let previewCount: number | null = $state(null);
+	let previewLoading = $state(false);
+	let previewError = $state('');
 
 	// Creating state
-	let creating = false;
-	let createError = '';
+	let creating = $state(false);
+	let createError = $state('');
 
 	const typeCodeOptions = [
 		{ value: 'uksi', label: 'UK SI' },
@@ -62,15 +64,17 @@
 	];
 
 	// Build session ID preview
-	$: sessionIdPreview = (() => {
-		if (!selectedFamily) return '';
-		const parts = ['lat-parse', slugify(selectedFamily)];
-		if (selectedTypeCode) parts.push(selectedTypeCode);
-		if (selectedFunction) parts.push(selectedFunction.toLowerCase());
-		const today = new Date().toISOString().split('T')[0];
-		parts.push(today);
-		return parts.join('-');
-	})();
+	let sessionIdPreview = $derived(
+		(() => {
+			if (!selectedFamily) return '';
+			const parts = ['lat-parse', slugify(selectedFamily)];
+			if (selectedTypeCode) parts.push(selectedTypeCode);
+			if (selectedFunction) parts.push(selectedFunction.toLowerCase());
+			const today = new Date().toISOString().split('T')[0];
+			parts.push(today);
+			return parts.join('-');
+		})()
+	);
 
 	function slugify(name: string): string {
 		return name
@@ -92,15 +96,17 @@
 	}
 
 	// Preview count — debounced
-	$: _filterKey = [
+	let _filterKey = $derived([
 		selectedFamily,
 		selectedTypeCode,
 		selectedFunction,
 		selectedQueueReason,
 		selectedLive
-	];
+	]);
 	let previewTimeout: ReturnType<typeof setTimeout>;
-	$: if (_filterKey) {
+	$effect(() => {
+		// Access _filterKey to track dependencies
+		void _filterKey;
 		if (selectedFamily) {
 			clearTimeout(previewTimeout);
 			previewTimeout = setTimeout(fetchPreview, 300);
@@ -108,7 +114,7 @@
 			previewCount = null;
 			previewError = '';
 		}
-	}
+	});
 
 	async function fetchPreview() {
 		if (!selectedFamily) return;
@@ -130,8 +136,8 @@
 		creating = true;
 		createError = '';
 		try {
-			const session = await $createMutation.mutateAsync(buildFilters());
-			dispatch('created', { session_id: session.session_id });
+			const session = await createMutation.mutateAsync(buildFilters());
+			oncreated?.({ session_id: session.session_id });
 		} catch (e) {
 			createError = e instanceof Error ? e.message : 'Failed to create session';
 		} finally {
@@ -152,16 +158,16 @@
 		previewCount = null;
 		previewError = '';
 		createError = '';
-		dispatch('close');
+		onclose?.();
 	}
 </script>
 
 {#if open}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="fixed inset-0 z-50 overflow-y-auto">
 		<div class="flex items-center justify-center min-h-screen px-4">
-			<div class="fixed inset-0 bg-black bg-opacity-50" on:click={handleClose}></div>
+			<div class="fixed inset-0 bg-black bg-opacity-50" onclick={handleClose}></div>
 
 			<div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
 				<h2 class="text-lg font-semibold text-gray-900 mb-4">Parse LAT Family</h2>
@@ -179,35 +185,35 @@
 						<select
 							id="lat-family"
 							bind:value={selectedFamily}
-							disabled={$familyOptionsQuery.isLoading}
+							disabled={familyOptionsQuery.isLoading}
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
 						>
 							<option value=""
-								>{$familyOptionsQuery.isLoading
+								>{familyOptionsQuery.isLoading
 									? 'Loading families...'
 									: '-- Select Family --'}</option
 							>
-							{#if $familyOptionsQuery.data?.grouped}
+							{#if familyOptionsQuery.data?.grouped}
 								<optgroup label="Health & Safety">
-									{#each $familyOptionsQuery.data.grouped.health_safety || [] as opt}
+									{#each familyOptionsQuery.data.grouped.health_safety || [] as opt}
 										<option value={opt}>{opt}</option>
 									{/each}
 								</optgroup>
 								<optgroup label="Environment">
-									{#each $familyOptionsQuery.data.grouped.environment || [] as opt}
+									{#each familyOptionsQuery.data.grouped.environment || [] as opt}
 										<option value={opt}>{opt}</option>
 									{/each}
 								</optgroup>
 								<optgroup label="HR">
-									{#each $familyOptionsQuery.data.grouped.hr || [] as opt}
+									{#each familyOptionsQuery.data.grouped.hr || [] as opt}
 										<option value={opt}>{opt}</option>
 									{/each}
 								</optgroup>
 							{/if}
 						</select>
-						{#if $familyOptionsQuery.isError}
+						{#if familyOptionsQuery.isError}
 							<p class="mt-1 text-xs text-red-600">
-								Failed to load families: {$familyOptionsQuery.error?.message}
+								Failed to load families: {familyOptionsQuery.error?.message}
 							</p>
 						{/if}
 					</div>
@@ -255,7 +261,7 @@
 										type="checkbox"
 										value={opt.value}
 										checked={selectedLive.includes(opt.value)}
-										on:change={(e) => {
+										onchange={(e) => {
 											if (e.currentTarget.checked) {
 												selectedLive = [...selectedLive, opt.value];
 											} else {
@@ -280,7 +286,7 @@
 									class="px-3 py-1 text-sm rounded-full border {selectedFunction === fn
 										? 'bg-blue-100 border-blue-500 text-blue-700'
 										: 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}"
-									on:click={() => (selectedFunction = selectedFunction === fn ? '' : fn)}
+									onclick={() => (selectedFunction = selectedFunction === fn ? '' : fn)}
 								>
 									{fn}
 								</button>
@@ -323,7 +329,7 @@
 					<button
 						type="button"
 						class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-						on:click={handleClose}
+						onclick={handleClose}
 					>
 						Cancel
 					</button>
@@ -331,7 +337,7 @@
 						type="button"
 						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={!selectedFamily || previewCount === 0 || previewCount === null || creating}
-						on:click={handleCreate}
+						onclick={handleCreate}
 					>
 						{#if creating}
 							Creating...

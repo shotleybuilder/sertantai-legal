@@ -11,9 +11,8 @@
 		SortConfig,
 		GroupConfig
 	} from '@shotleybuilder/svelte-gridlite-kit';
-	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
-	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
-	import type { Collection } from '@tanstack/db';
+	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
+	import type { QueryAdapter } from '@shotleybuilder/svelte-gridlite-kit/adapter';
 	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
 	import {
 		initViewStore,
@@ -29,7 +28,6 @@
 	} from '@shotleybuilder/svelte-gridlite-views';
 
 	import { goto } from '$app/navigation';
-	import { useQueryClient } from '@tanstack/svelte-query';
 	import { createLatSessionFromView } from '$lib/api/lat';
 	import { authFetch } from '$lib/api/client';
 
@@ -44,29 +42,25 @@
 	} from '$lib/views/seed-defaults';
 	import type { GroupDef } from '$lib/views/seed-defaults';
 
-	const queryClient = useQueryClient();
-
 	// ── PGLite + GridLite state ─────────────────────────────────────
 
-	let db: PGLiteWithExtensions | null = null;
-	let ready = false;
-	let gridRef: GridLite;
-	let adapter: ReturnType<typeof createTanStackDBAdapter> | null = null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let collectionRef: Collection<any, any, any, any, any> | null = null;
-	let error: string | null = null;
+	let db: PGLiteWithExtensions | null = $state(null);
+	let ready = $state(false);
+	let gridRef: GridLite = $state(undefined as any);
+	let adapter: QueryAdapter | null = $state(null);
+	let error: string | null = $state(null);
 
 	// View store
-	let viewStore: ViewStoreBundle | null = null;
+	let viewStore: ViewStoreBundle | null = $state(null);
 
 	// Saved views state
-	let showSaveModal = false;
-	let capturedConfig: ViewConfig | null = null;
+	let showSaveModal = $state(false);
+	let capturedConfig: ViewConfig | null = $state(null);
 
 	// Track current query for GridLite
-	let currentQuery: string = '';
-	let currentFamily: string | null = null;
-	let currentViewName: string | null = null;
+	let currentQuery: string = $state('');
+	let currentFamily: string | null = $state(null);
+	let currentViewName: string | null = $state(null);
 
 	// Session filter state
 	interface SessionSummary {
@@ -80,10 +74,10 @@
 		group1_count: number;
 		group2_count: number;
 	}
-	let recentSessions: SessionSummary[] = [];
-	let orgApplicabilityOptions: { org_id: string; label: string; count: number }[] = [];
-	let selectedSessionId: string | null = null;
-	let sessionFilterLoading = false;
+	let recentSessions: SessionSummary[] = $state([]);
+	let orgApplicabilityOptions: { org_id: string; label: string; count: number }[] = $state([]);
+	let selectedSessionId: string | null = $state(null);
+	let sessionFilterLoading = $state(false);
 
 	// ── Query + Filter constants ────────────────────────────────────
 
@@ -192,19 +186,19 @@
 
 	// ── State ────────────────────────────────────────────────────────
 
-	let reparsingLaw: string | null = null;
-	let reparseMessage = '';
-	let reparseError = '';
+	let reparsingLaw: string | null = $state(null);
+	let reparseMessage = $state('');
+	let reparseError = $state('');
 
 	// LRT refresh modal state
-	let lrtModalOpen = false;
-	let lrtModalRecord: Record<string, unknown> | null = null;
-	let lrtModalRecordId: string | undefined = undefined;
+	let lrtModalOpen = $state(false);
+	let lrtModalRecord: Record<string, unknown> | null = $state(null);
+	let lrtModalRecordId: string | undefined = $state(undefined);
 
 	// LAT Parse Dialog state
 	// Selection state for Parse button
-	let selectedLawNames: Set<string> = new Set();
-	let parseLoading = false;
+	let selectedLawNames: Set<string> = $state(new Set());
+	let parseLoading = $state(false);
 
 	function toggleSelection(name: string) {
 		if (selectedLawNames.has(name)) {
@@ -263,50 +257,44 @@
 		'is_making'
 	]);
 
-	/** Rebuild collection + adapter with a new SQL query. Preserves view state. */
-	async function rebuildCollection(query: string) {
+	/** Rebuild adapter with a new SQL query. Preserves view state. */
+	async function rebuildAdapter(query: string) {
 		if (!db) return;
 		ready = false;
-
-		const collection = createPGLiteCollection({
-			db,
-			query,
-			id: `lat-queue-uk-lrt-${Date.now()}`,
-			onUpdate: async ({ transaction }) => {
-				for (const m of transaction.mutations) {
-					const safeChanges: Record<string, unknown> = {};
-					for (const [field, value] of Object.entries(m.changes as Record<string, unknown>)) {
-						if (EDITABLE_FIELDS.has(field)) {
-							safeChanges[field] = value;
-						}
-					}
-					if (Object.keys(safeChanges).length === 0) continue;
-
-					const response = await authFetch(`${API_URL}/api/laws/${m.key}`, {
-						method: 'PATCH',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify(safeChanges)
-					});
-					if (!response.ok) {
-						const err = await response.json();
-						throw new Error(err.error || 'Failed to update');
-					}
-
-					const fields = Object.keys(safeChanges);
-					const values = Object.values(safeChanges);
-					const setClauses = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
-					await db!.query(`UPDATE laws SET ${setClauses} WHERE id = $${fields.length + 1}`, [
-						...values,
-						m.key
-					]);
-				}
-			}
-		});
-		collectionRef = collection;
-		adapter = createTanStackDBAdapter({ collection, columns: queueColumnMetadata });
+		adapter = createPGLiteAdapter({ db: db!, query });
 		await adapter.init();
 		currentQuery = query;
 		ready = true;
+	}
+
+	/** Update a record via direct API call + PGLite update. */
+	async function updateRecord(id: string, field: string, value: string | boolean | null) {
+		const safeChanges: Record<string, unknown> = {};
+		safeChanges[field] = value === '' ? null : value;
+		if (field === 'making_review') {
+			safeChanges['making_review_at'] = new Date().toISOString();
+		}
+
+		// Persist to backend
+		const response = await authFetch(`${API_URL}/api/laws/${id}`, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(safeChanges)
+		});
+		if (!response.ok) {
+			const err = await response.json();
+			alert(`Update failed: ${err.error || 'Failed to update'}`);
+			return;
+		}
+
+		// Update PGLite for instant feedback
+		const fields = Object.keys(safeChanges);
+		const values = Object.values(safeChanges);
+		const setClauses = fields.map((f, i) => `"${f}" = $${i + 1}`).join(', ');
+		await db!.query(`UPDATE laws SET ${setClauses} WHERE id = $${fields.length + 1}`, [
+			...values,
+			id
+		]);
 	}
 
 	async function fetchRecentSessions() {
@@ -401,7 +389,7 @@
 					const inList = escaped.map((n: string) => `'${n}'`).join(',');
 					query = `${BASE_QUERY} WHERE name IN (${inList})`;
 				}
-				await rebuildCollection(query);
+				await rebuildAdapter(query);
 				activeVisibleColumns = sessionViewCols;
 
 				await new Promise((r) => setTimeout(r, 100));
@@ -426,7 +414,7 @@
 				}
 
 				// Rebuild with session-scoped query (no queue filters — show ALL session laws)
-				await rebuildCollection(query);
+				await rebuildAdapter(query);
 				activeVisibleColumns = sessionViewCols;
 
 				// Apply session-specific layout: grouped by classification, no queue filters
@@ -460,7 +448,7 @@
 				}
 			} else {
 				// Clearing session — restore base query and reapply active view
-				await rebuildCollection(BASE_QUERY);
+				await rebuildAdapter(BASE_QUERY);
 
 				if (viewStore) {
 					await new Promise((r) => setTimeout(r, 100));
@@ -489,28 +477,8 @@
 	}
 
 	// Inline editing state
-	let editingCell: { id: string; field: string } | null = null;
-	let editValue: string = '';
-
-	/**
-	 * Update a record via TanStack DB optimistic mutation.
-	 * The collection.update() call applies the change instantly (optimistic),
-	 * then the onUpdate handler persists to backend + PGLite asynchronously.
-	 */
-	function updateRecord(id: string, field: string, value: string | boolean | null) {
-		if (!collectionRef) return;
-		const tx = collectionRef.update(id, (draft: Record<string, unknown>) => {
-			draft[field] = value === '' ? null : value;
-			// Auto-stamp making_review_at when making_review changes
-			if (field === 'making_review') {
-				draft['making_review_at'] = new Date().toISOString();
-			}
-		});
-		// Surface persistence errors to the user
-		tx.isPersisted.promise.catch((e: unknown) => {
-			alert(`Update failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
-		});
-	}
+	let editingCell: { id: string; field: string } | null = $state(null);
+	let editValue: string = $state('');
 
 	function startEdit(id: string, field: string, currentValue: string | null) {
 		editingCell = { id, field };
@@ -988,7 +956,7 @@
 
 	// ── Sidebar state ───────────────────────────────────────────────
 
-	let sidebarVisible = false;
+	let sidebarVisible = $state(false);
 
 	// ── View lifecycle ──────────────────────────────────────────────
 
@@ -1072,7 +1040,7 @@
 	}
 
 	// Track visible columns for GridLite config on {#key} remount
-	let activeVisibleColumns: string[] = allCols;
+	let activeVisibleColumns: string[] = $state(allCols);
 
 	function switchToView(viewName: string, savedConfig?: ViewConfig) {
 		currentViewName = viewName;
@@ -1088,8 +1056,8 @@
 		}
 	}
 
-	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
-		const view = e.detail.view;
+	function handleViewSelected(e: CustomEvent<{ view: SavedView }> | { view: SavedView }) {
+		const view = 'detail' in e ? e.detail.view : e.view;
 		switchToView(view.name, view.config);
 		applyViewToGrid(view);
 		sidebarVisible = false;
@@ -1097,7 +1065,7 @@
 
 	// ── Grid state management ───────────────────────────────────────
 
-	let latestGridState: GridState | null = null;
+	let latestGridState: GridState | null = $state(null);
 
 	function handleStateChange(state: GridState) {
 		latestGridState = state;
@@ -1137,34 +1105,40 @@
 		}
 	}
 
-	function handleViewSaved(event: CustomEvent<{ id: string; name: string }>) {
-		console.log('[LAT Queue] View saved:', event.detail.name);
+	function handleViewSaved(detail: { id: string; name: string }) {
+		console.log('[LAT Queue] View saved:', detail.name);
 	}
 
 	// ── Reactive state ──────────────────────────────────────────────
 
-	$: if ($syncStatus.error) {
-		error = $syncStatus.error;
-	}
-	$: isLoading = !$syncStatus.connected && !ready;
+	// Monitor sync errors
+	$effect(() => {
+		if ($syncStatus.error) {
+			error = $syncStatus.error;
+		}
+	});
 
-	// Adapter is created once in onMount via createPGLiteCollection + createTanStackDBAdapter.
+	let isLoading = $derived(!$syncStatus.connected && !ready);
+
+	// Adapter is created once in onMount via createPGLiteAdapter.
 	// Filtering is handled by GridLite's filter descriptors, not by changing the SQL query.
 
-	let hasActiveView = false;
-	let activeViewUnsub: (() => void) | null = null;
-	$: if (viewStore) {
-		activeViewUnsub?.();
-		activeViewUnsub = viewStore.activeViewId.subscribe((v) => {
-			hasActiveView = !!v;
-		});
-	}
+	let hasActiveView = $state(false);
+	let activeViewUnsub: (() => void) | null = $state(null);
+	$effect(() => {
+		if (viewStore) {
+			activeViewUnsub?.();
+			activeViewUnsub = viewStore.activeViewId.subscribe((v: string | null) => {
+				hasActiveView = !!v;
+			});
+		}
+	});
 
 	// Stats from current filtered query
-	let statTotal = 0;
-	let statParseable = 0;
-	let statMissing = 0;
-	let statStale = 0;
+	let statTotal = $state(0);
+	let statParseable = $state(0);
+	let statMissing = $state(0);
+	let statStale = $state(0);
 
 	async function refreshStats() {
 		if (!db || !latestGridState) return;
@@ -1201,9 +1175,11 @@
 		}
 	}
 
-	$: if (ready && db && latestGridState) {
-		refreshStats();
-	}
+	$effect(() => {
+		if (ready && db && latestGridState) {
+			refreshStats();
+		}
+	});
 
 	onMount(async () => {
 		if (browser) {
@@ -1211,7 +1187,10 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lat-queue');
-			await rebuildCollection(BASE_QUERY);
+			adapter = createPGLiteAdapter({ db: db!, query: BASE_QUERY });
+			await adapter.init();
+			currentQuery = BASE_QUERY;
+			ready = true;
 			// Wait for GridLite to render, then seed views
 			await new Promise((r) => setTimeout(r, 100));
 			await seedDefaultViews();
@@ -1234,11 +1213,11 @@
 <div class="flex h-full relative">
 	<!-- Mobile sidebar overlay -->
 	{#if sidebarVisible}
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
-			on:click={() => (sidebarVisible = false)}
+			onclick={() => (sidebarVisible = false)}
 		/>
 	{/if}
 
@@ -1253,7 +1232,7 @@
 				{viewStore}
 				storageKey="lat-queue-sidebar"
 				isDocked={true}
-				on:viewSelected={handleViewSelected}
+				{...{ onviewSelected: handleViewSelected }}
 			/>
 		</div>
 	{/if}
@@ -1265,7 +1244,7 @@
 			<div class="flex items-center gap-3">
 				<button
 					class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
-					on:click={() => (sidebarVisible = !sidebarVisible)}
+					onclick={() => (sidebarVisible = !sidebarVisible)}
 					title="Toggle views sidebar"
 				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1299,7 +1278,7 @@
 				</a>
 				{#if recentSessions.length > 0}
 					<select
-						on:change={handleSessionFilter}
+						onchange={handleSessionFilter}
 						value={selectedSessionId ?? ''}
 						disabled={sessionFilterLoading}
 						class="px-3 py-2 text-sm font-medium border rounded-md {selectedSessionId
@@ -1322,20 +1301,20 @@
 					</select>
 				{/if}
 				<button
-					on:click={selectAll}
+					onclick={selectAll}
 					class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
 				>
 					Select All
 				</button>
 				<button
-					on:click={deselectAll}
+					onclick={deselectAll}
 					disabled={selectedLawNames.size === 0}
 					class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
 				>
 					Deselect
 				</button>
 				<button
-					on:click={handleParse}
+					onclick={handleParse}
 					disabled={selectedLawNames.size === 0 || parseLoading}
 					class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 				>
@@ -1406,14 +1385,239 @@
 				<p class="text-red-600">{error}</p>
 				<button
 					class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-					on:click={() => window.location.reload()}>Retry</button
+					onclick={() => window.location.reload()}>Retry</button
 				>
 			</div>
 		{:else if ready && adapter}
+			{#snippet toolbarStart()}
+				{#if hasActiveView}
+					<div class="inline-flex rounded-md shadow-sm">
+						<button
+							type="button"
+							onclick={handleUpdateView}
+							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+								/>
+							</svg>
+							Save View
+						</button>
+						<button
+							type="button"
+							onclick={handleSaveView}
+							class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 4v16m8-8H4"
+								/>
+							</svg>
+						</button>
+					</div>
+				{:else}
+					<button
+						type="button"
+						onclick={handleSaveView}
+						class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+					>
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+							/>
+						</svg>
+						Save View
+					</button>
+				{/if}
+			{/snippet}
+
+			{#snippet cellSnippet({
+				value,
+				row,
+				column
+			}: {
+				value: unknown;
+				row: Record<string, unknown>;
+				column: string;
+			})}
+				{#if column === 'name'}
+					{@const rowName = str(row.name)}
+					<div class="flex items-center gap-1.5">
+						<input
+							type="checkbox"
+							checked={selectedLawNames.has(rowName)}
+							onchange={() => toggleSelection(rowName)}
+							class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+						/>
+						<span class="font-mono text-gray-700 truncate">{value}</span>
+					</div>
+				{:else if column === 'title_en'}
+					<span class="text-gray-900 whitespace-normal leading-snug">{value || ''}</span>
+				{:else if column === 'family'}
+					{@const rowId = str(row.id)}
+					{#if editingCell?.id === rowId && editingCell?.field === 'family'}
+						<select
+							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							bind:value={editValue}
+							onchange={handleSelectSave}
+							onblur={() => saveEdit()}
+							onkeydown={handleEditKeydown}
+						>
+							<option value="">-- None --</option>
+							<optgroup label="Health & Safety">
+								{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option>{/each}
+							</optgroup>
+							<optgroup label="Environment">
+								{#each familyOptions.environment as opt}<option value={opt}>{opt}</option>{/each}
+							</optgroup>
+							<optgroup label="HR">
+								{#each familyOptions.hr as opt}<option value={opt}>{opt}</option>{/each}
+							</optgroup>
+						</select>
+					{:else}
+						<button
+							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+							ondblclick={() => startEdit(str(row.id), 'family', str(value) || null)}
+							title="Double-click to edit"
+						>
+							<span class="text-gray-700 whitespace-normal leading-snug">{value || '-'}</span>
+						</button>
+					{/if}
+				{:else if column === 'family_ii'}
+					{@const rowId2 = str(row.id)}
+					{#if editingCell?.id === rowId2 && editingCell?.field === 'family_ii'}
+						<select
+							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							bind:value={editValue}
+							onchange={handleSelectSave}
+							onblur={() => saveEdit()}
+							onkeydown={handleEditKeydown}
+						>
+							<option value="">-- None --</option>
+							<optgroup label="Health & Safety">
+								{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option>{/each}
+							</optgroup>
+							<optgroup label="Environment">
+								{#each familyOptions.environment as opt}<option value={opt}>{opt}</option>{/each}
+							</optgroup>
+							<optgroup label="HR">
+								{#each familyOptions.hr as opt}<option value={opt}>{opt}</option>{/each}
+							</optgroup>
+						</select>
+					{:else}
+						<button
+							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+							ondblclick={() => startEdit(str(row.id), 'family_ii', str(value) || null)}
+							title="Double-click to edit"
+						>
+							{value || '-'}
+						</button>
+					{/if}
+				{:else if column === 'is_making'}
+					<button
+						class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+						onclick={() => updateRecord(str(row.id), 'is_making', !bool(row.is_making))}
+						title="Click to toggle"
+					>
+						{#if row.is_making}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
+						{:else}
+							<span class="text-gray-400">-</span>
+						{/if}
+					</button>
+				{:else if column === 'making_review'}
+					{@const rowId3 = str(row.id)}
+					{#if editingCell?.id === rowId3 && editingCell?.field === 'making_review'}
+						<select
+							class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							bind:value={editValue}
+							onchange={handleSelectSave}
+							onblur={() => saveEdit()}
+							onkeydown={handleEditKeydown}
+						>
+							<option value="">-- None --</option>
+							{#each makingClassificationOptions as opt}
+								<option value={opt.value}>{opt.label}</option>
+							{/each}
+						</select>
+					{:else}
+						<button
+							class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+							ondblclick={() => startEdit(str(row.id), 'making_review', str(value) || null)}
+							title="Double-click to edit"
+						>
+							{#if value === 'making'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span
+								>
+							{:else if value === 'not_making'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">Not Making</span
+								>
+							{:else if value === 'uncertain'}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700"
+									>Uncertain</span
+								>
+							{:else}
+								<span class="text-gray-400">-</span>
+							{/if}
+						</button>
+					{/if}
+				{:else if column === 'making_classification'}
+					{#if value === 'making'}
+						<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
+					{:else if value === 'not_making'}
+						<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">Not Making</span>
+					{:else if value === 'uncertain'}
+						<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700">Uncertain</span>
+					{:else}
+						<span class="text-gray-400">-</span>
+					{/if}
+				{:else if column === 'live'}
+					{@const status = str(value)}
+					<span
+						class="inline-flex px-2 py-0.5 text-xs font-medium rounded {status === '✔ In force'
+							? 'bg-green-100 text-green-800'
+							: status === '⭕ Part Revocation / Repeal'
+								? 'bg-amber-100 text-amber-800'
+								: 'bg-gray-100 text-gray-800'}"
+					>
+						{status || '-'}
+					</span>
+				{:else if column === 'function'}
+					{@const fns = parseFunctionKeys(row.function)}
+					{#if fns && fns.length > 0}
+						<div class="flex flex-wrap gap-1">
+							{#each fns as fn}
+								<span
+									class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
+										? 'bg-green-100 text-green-700'
+										: 'bg-blue-100 text-blue-700'}">{fn}</span
+								>
+							{/each}
+						</div>
+					{:else}
+						<span class="text-gray-400">-</span>
+					{/if}
+				{:else}
+					{value ?? '-'}
+				{/if}
+			{/snippet}
+
 			<GridLite
 				bind:this={gridRef}
 				{adapter}
 				onStateChange={handleStateChange}
+				toolbar-start={toolbarStart}
+				cell={cellSnippet}
 				config={{
 					id: 'lat-queue',
 					columns,
@@ -1431,230 +1635,7 @@
 					grouping: true,
 					globalSearch: true
 				}}
-			>
-				<!-- Save View Buttons -->
-				<svelte:fragment slot="toolbar-start">
-					{#if hasActiveView}
-						<div class="inline-flex rounded-md shadow-sm">
-							<button
-								type="button"
-								on:click={handleUpdateView}
-								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-							>
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-									/>
-								</svg>
-								Save View
-							</button>
-							<button
-								type="button"
-								on:click={handleSaveView}
-								class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-							>
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M12 4v16m8-8H4"
-									/>
-								</svg>
-							</button>
-						</div>
-					{:else}
-						<button
-							type="button"
-							on:click={handleSaveView}
-							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-						>
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-								/>
-							</svg>
-							Save View
-						</button>
-					{/if}
-				</svelte:fragment>
-
-				<!-- Custom cell rendering -->
-				<svelte:fragment slot="cell" let:value let:row let:column>
-					{#if column === 'name'}
-						{@const rowName = str(row.name)}
-						<div class="flex items-center gap-1.5">
-							<input
-								type="checkbox"
-								checked={selectedLawNames.has(rowName)}
-								on:change={() => toggleSelection(rowName)}
-								class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-							/>
-							<span class="font-mono text-gray-700 truncate">{value}</span>
-						</div>
-					{:else if column === 'title_en'}
-						<span class="text-gray-900 whitespace-normal leading-snug">{value || ''}</span>
-					{:else if column === 'family'}
-						{@const rowId = str(row.id)}
-						{#if editingCell?.id === rowId && editingCell?.field === 'family'}
-							<select
-								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								bind:value={editValue}
-								on:change={handleSelectSave}
-								on:blur={() => saveEdit()}
-								on:keydown={handleEditKeydown}
-							>
-								<option value="">-- None --</option>
-								<optgroup label="Health & Safety">
-									{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option
-										>{/each}
-								</optgroup>
-								<optgroup label="Environment">
-									{#each familyOptions.environment as opt}<option value={opt}>{opt}</option>{/each}
-								</optgroup>
-								<optgroup label="HR">
-									{#each familyOptions.hr as opt}<option value={opt}>{opt}</option>{/each}
-								</optgroup>
-							</select>
-						{:else}
-							<button
-								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-								on:dblclick={() => startEdit(str(row.id), 'family', str(value) || null)}
-								title="Double-click to edit"
-							>
-								<span class="text-gray-700 whitespace-normal leading-snug">{value || '-'}</span>
-							</button>
-						{/if}
-					{:else if column === 'family_ii'}
-						{@const rowId2 = str(row.id)}
-						{#if editingCell?.id === rowId2 && editingCell?.field === 'family_ii'}
-							<select
-								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								bind:value={editValue}
-								on:change={handleSelectSave}
-								on:blur={() => saveEdit()}
-								on:keydown={handleEditKeydown}
-							>
-								<option value="">-- None --</option>
-								<optgroup label="Health & Safety">
-									{#each familyOptions.health_safety as opt}<option value={opt}>{opt}</option
-										>{/each}
-								</optgroup>
-								<optgroup label="Environment">
-									{#each familyOptions.environment as opt}<option value={opt}>{opt}</option>{/each}
-								</optgroup>
-								<optgroup label="HR">
-									{#each familyOptions.hr as opt}<option value={opt}>{opt}</option>{/each}
-								</optgroup>
-							</select>
-						{:else}
-							<button
-								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-								on:dblclick={() => startEdit(str(row.id), 'family_ii', str(value) || null)}
-								title="Double-click to edit"
-							>
-								{value || '-'}
-							</button>
-						{/if}
-					{:else if column === 'is_making'}
-						<button
-							class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-							on:click={() => updateRecord(str(row.id), 'is_making', !bool(row.is_making))}
-							title="Click to toggle"
-						>
-							{#if row.is_making}
-								<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
-							{:else}
-								<span class="text-gray-400">-</span>
-							{/if}
-						</button>
-					{:else if column === 'making_review'}
-						{@const rowId3 = str(row.id)}
-						{#if editingCell?.id === rowId3 && editingCell?.field === 'making_review'}
-							<select
-								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-								bind:value={editValue}
-								on:change={handleSelectSave}
-								on:blur={() => saveEdit()}
-								on:keydown={handleEditKeydown}
-							>
-								<option value="">-- None --</option>
-								{#each makingClassificationOptions as opt}
-									<option value={opt.value}>{opt.label}</option>
-								{/each}
-							</select>
-						{:else}
-							<button
-								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-								on:dblclick={() => startEdit(str(row.id), 'making_review', str(value) || null)}
-								title="Double-click to edit"
-							>
-								{#if value === 'making'}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700"
-										>Making</span
-									>
-								{:else if value === 'not_making'}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700"
-										>Not Making</span
-									>
-								{:else if value === 'uncertain'}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700"
-										>Uncertain</span
-									>
-								{:else}
-									<span class="text-gray-400">-</span>
-								{/if}
-							</button>
-						{/if}
-					{:else if column === 'making_classification'}
-						{#if value === 'making'}
-							<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Making</span>
-						{:else if value === 'not_making'}
-							<span class="px-1.5 py-0.5 text-xs rounded bg-red-100 text-red-700">Not Making</span>
-						{:else if value === 'uncertain'}
-							<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700"
-								>Uncertain</span
-							>
-						{:else}
-							<span class="text-gray-400">-</span>
-						{/if}
-					{:else if column === 'live'}
-						{@const status = str(value)}
-						<span
-							class="inline-flex px-2 py-0.5 text-xs font-medium rounded {status === '✔ In force'
-								? 'bg-green-100 text-green-800'
-								: status === '⭕ Part Revocation / Repeal'
-									? 'bg-amber-100 text-amber-800'
-									: 'bg-gray-100 text-gray-800'}"
-						>
-							{status || '-'}
-						</span>
-					{:else if column === 'function'}
-						{@const fns = parseFunctionKeys(row.function)}
-						{#if fns && fns.length > 0}
-							<div class="flex flex-wrap gap-1">
-								{#each fns as fn}
-									<span
-										class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
-											? 'bg-green-100 text-green-700'
-											: 'bg-blue-100 text-blue-700'}">{fn}</span
-									>
-								{/each}
-							</div>
-						{:else}
-							<span class="text-gray-400">-</span>
-						{/if}
-					{:else}
-						{value ?? '-'}
-					{/if}
-				</svelte:fragment>
-			</GridLite>
+			/>
 		{/if}
 	</div>
 </div>
@@ -1665,7 +1646,7 @@
 		bind:open={showSaveModal}
 		{viewStore}
 		config={capturedConfig}
-		on:save={handleViewSaved}
+		{...{ onsave: handleViewSaved }}
 	/>
 {/if}
 
@@ -1683,6 +1664,6 @@
 		]}
 		recordId={lrtModalRecordId}
 		open={lrtModalOpen}
-		on:close={closeLrtRefresh}
+		onclose={closeLrtRefresh}
 	/>
 {/if}

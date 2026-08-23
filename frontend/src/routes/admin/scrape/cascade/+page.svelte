@@ -21,10 +21,10 @@
 	import { useQueryClient } from '@tanstack/svelte-query';
 
 	// Session filter state - defaults to 'all' to show all sessions
-	let selectedSessionId: string | undefined = undefined;
+	let selectedSessionId: string | undefined = $state(undefined);
 
 	// Reactive query based on selected session
-	$: cascadeQuery = useCascadeIndexQuery(selectedSessionId);
+	let cascadeQuery = $derived(useCascadeIndexQuery(selectedSessionId));
 	const sessionsQuery = useCascadeSessionsQuery();
 
 	// Mutations
@@ -36,14 +36,14 @@
 	const queryClient = useQueryClient();
 
 	// Selection state for batch operations
-	let selectedReparseInDb: Set<string> = new Set();
-	let selectedReparseMissing: Set<string> = new Set();
-	let selectedEnactingInDb: Set<string> = new Set();
-	let selectedEnactingMissing: Set<string> = new Set();
+	let selectedReparseInDb: Set<string> = $state(new Set());
+	let selectedReparseMissing: Set<string> = $state(new Set());
+	let selectedEnactingInDb: Set<string> = $state(new Set());
+	let selectedEnactingMissing: Set<string> = $state(new Set());
 
 	// Operation results state
-	let operationResults: CascadeOperationResultItem[] | null = null;
-	let operationMessage: string | null = null;
+	let operationResults: CascadeOperationResultItem[] | null = $state(null);
+	let operationMessage: string | null = $state(null);
 
 	// Metadata state for new laws (two-step workflow)
 	// Maps cascade entry ID -> parsed metadata
@@ -55,14 +55,14 @@
 		si_code: string[];
 		metadataResult: ParseMetadataResult;
 	};
-	let parsedMetadata: Map<string, ParsedMetadata> = new Map();
-	let parsingIds: Set<string> = new Set(); // Currently fetching metadata
-	let parseErrors: Map<string, string> = new Map(); // Errors during parse
+	let parsedMetadata: Map<string, ParsedMetadata> = $state(new Map());
+	let parsingIds: Set<string> = $state(new Set()); // Currently fetching metadata
+	let parseErrors: Map<string, string> = $state(new Map()); // Errors during parse
 
 	// Parse Review Modal state (reused from session workflow)
-	let showParseModal = false;
-	let parseModalRecords: ScrapeRecord[] = [];
-	let parseModalSessionId = '';
+	let showParseModal = $state(false);
+	let parseModalRecords: ScrapeRecord[] = $state([]);
+	let parseModalSessionId = $state('');
 	// Helper to format source laws with titles for hover tooltip
 	function formatSourceLawsTooltip(entry: CascadeEntry): string {
 		if (entry.source_laws_details && entry.source_laws_details.length > 0) {
@@ -125,7 +125,7 @@
 	function handleReparseInDb() {
 		if (selectedReparseInDb.size === 0) return;
 
-		const data = $cascadeQuery.data;
+		const data = cascadeQuery.data;
 		if (!data) return;
 
 		// Get selected entries
@@ -155,17 +155,19 @@
 		parseModalRecords = [];
 	}
 
-	async function handleParseComplete(
-		event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
-	) {
+	async function handleParseComplete(detail: {
+		confirmed: number;
+		skipped: number;
+		errors: number;
+	}) {
 		showParseModal = false;
 		parseModalRecords = [];
 
-		const { confirmed, skipped, errors } = event.detail;
+		const { confirmed, skipped, errors } = detail;
 		operationMessage = `Re-parse complete: ${confirmed} confirmed, ${skipped} skipped, ${errors} errors`;
 
 		// Refresh cascade data
-		$cascadeQuery.refetch();
+		cascadeQuery.refetch();
 	}
 
 	// Convert law name like "UK_uksi_2025_622" to format needed for parseOne
@@ -185,7 +187,7 @@
 		operationMessage = null;
 		parseErrors = new Map();
 
-		const data = $cascadeQuery.data;
+		const data = cascadeQuery.data;
 		if (!data) return;
 
 		// Get entries for selected IDs
@@ -232,11 +234,11 @@
 
 	// Step 2: Add laws with metadata to database
 	// This runs the FULL enrichment parse before persisting
-	let addingIds: Set<string> = new Set(); // Track which entries are being added
+	let addingIds: Set<string> = $state(new Set()); // Track which entries are being added
 
 	async function handleAddWithMetadata() {
 		// Get entries that have metadata fetched
-		const data = $cascadeQuery.data;
+		const data = cascadeQuery.data;
 		if (!data) return;
 
 		const entriesToAdd = data.reparse_missing.filter(
@@ -259,14 +261,14 @@
 				const parseResult = await parseOne(entry.session_id, parseName);
 
 				// Step 2b: Use confirmRecord to persist
-				await $confirmMutation.mutateAsync({
+				await confirmMutation.mutateAsync({
 					sessionId: entry.session_id,
 					name: parseName,
 					record: parseResult.record
 				});
 
 				// Mark cascade entry as processed by deleting it
-				await $deleteEntryMutation.mutateAsync(entry.id);
+				await deleteEntryMutation.mutateAsync(entry.id);
 
 				results.push({
 					id: entry.id,
@@ -296,7 +298,7 @@
 		selectedReparseMissing = new Set();
 
 		// Refresh cascade data
-		$cascadeQuery.refetch();
+		cascadeQuery.refetch();
 	}
 
 	// Legacy: Add laws without metadata preview (kept for batch operations)
@@ -306,22 +308,26 @@
 		operationResults = null;
 		operationMessage = null;
 
-		const result = await $addLawsMutation.mutateAsync(Array.from(selectedReparseMissing));
+		const result = await addLawsMutation.mutateAsync(Array.from(selectedReparseMissing));
 		operationResults = result.results;
 		operationMessage = `Added ${result.success} of ${result.total} laws to database`;
 		selectedReparseMissing = new Set();
 	}
 
 	// Check if any selected entries have metadata
-	$: selectedWithMetadata = [...selectedReparseMissing].filter((id) => parsedMetadata.has(id));
-	$: selectedWithoutMetadata = [...selectedReparseMissing].filter((id) => !parsedMetadata.has(id));
+	let selectedWithMetadata = $derived(
+		[...selectedReparseMissing].filter((id) => parsedMetadata.has(id))
+	);
+	let selectedWithoutMetadata = $derived(
+		[...selectedReparseMissing].filter((id) => !parsedMetadata.has(id))
+	);
 
 	async function handleUpdateEnacting() {
 		if (selectedEnactingInDb.size === 0) return;
 		operationResults = null;
 		operationMessage = null;
 
-		const result = await $updateEnactingMutation.mutateAsync(Array.from(selectedEnactingInDb));
+		const result = await updateEnactingMutation.mutateAsync(Array.from(selectedEnactingInDb));
 		operationResults = result.results;
 		operationMessage = `Updated enacting links for ${result.success} of ${result.total} laws. Review changes, then Remove entries when done.`;
 		selectedEnactingInDb = new Set();
@@ -363,7 +369,7 @@
 		operationResults = null;
 		operationMessage = null;
 
-		const result = await $addLawsMutation.mutateAsync(Array.from(selectedEnactingMissing));
+		const result = await addLawsMutation.mutateAsync(Array.from(selectedEnactingMissing));
 		operationResults = result.results;
 		operationMessage = `Added ${result.success} of ${result.total} parent laws to database`;
 		selectedEnactingMissing = new Set();
@@ -371,7 +377,7 @@
 
 	async function handleDeleteEntry(id: string) {
 		if (confirm('Remove this cascade entry?')) {
-			await $deleteEntryMutation.mutateAsync(id);
+			await deleteEntryMutation.mutateAsync(id);
 		}
 	}
 
@@ -382,7 +388,7 @@
 
 		// Delete each selected entry
 		for (const id of selectedEnactingInDb) {
-			await $deleteEntryMutation.mutateAsync(id);
+			await deleteEntryMutation.mutateAsync(id);
 		}
 
 		operationMessage = `Removed ${count} cascade ${count === 1 ? 'entry' : 'entries'}`;
@@ -391,7 +397,7 @@
 
 	async function handleClearProcessed() {
 		if (confirm('Clear all processed cascade entries?')) {
-			const result = await $clearProcessedMutation.mutateAsync(selectedSessionId);
+			const result = await clearProcessedMutation.mutateAsync(selectedSessionId);
 			operationMessage = `Cleared ${result.deleted_count} processed entries`;
 		}
 	}
@@ -431,8 +437,8 @@
 					class="block w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
 				>
 					<option value={undefined}>All Sessions</option>
-					{#if $sessionsQuery.data}
-						{#each $sessionsQuery.data.sessions as session}
+					{#if sessionsQuery.data}
+						{#each sessionsQuery.data.sessions as session}
 							<option value={session.session_id}>
 								{formatSession(session)} ({session.pending_count} pending)
 							</option>
@@ -455,7 +461,7 @@
 						<p class="font-medium text-gray-900">{operationMessage}</p>
 					{/if}
 				</div>
-				<button on:click={dismissResults} class="text-gray-400 hover:text-gray-600">
+				<button onclick={dismissResults} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
@@ -492,18 +498,18 @@
 		</div>
 	{/if}
 
-	{#if $cascadeQuery.isLoading}
+	{#if cascadeQuery.isLoading}
 		<div class="flex justify-center py-12">
 			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 		</div>
-	{:else if $cascadeQuery.isError}
+	{:else if cascadeQuery.isError}
 		<div class="rounded-md bg-red-50 p-4">
 			<p class="text-sm text-red-700">
-				{$cascadeQuery.error?.message || 'Failed to load cascade data'}
+				{cascadeQuery.error?.message || 'Failed to load cascade data'}
 			</p>
 		</div>
-	{:else if $cascadeQuery.data}
-		{@const data = $cascadeQuery.data}
+	{:else if cascadeQuery.data}
+		{@const data = cascadeQuery.data}
 
 		<!-- Summary Stats -->
 		<div class="grid grid-cols-5 gap-4 mb-6">
@@ -561,7 +567,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							<button
-								on:click={() =>
+								onclick={() =>
 									(selectedReparseInDb =
 										selectedReparseInDb.size === data.reparse_in_db.length
 											? clearSelection()
@@ -573,7 +579,7 @@
 									: 'Select All'}
 							</button>
 							<button
-								on:click={handleReparseInDb}
+								onclick={handleReparseInDb}
 								disabled={selectedReparseInDb.size === 0}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
@@ -613,7 +619,7 @@
 											<input
 												type="checkbox"
 												checked={selectedReparseInDb.has(entry.id)}
-												on:change={() =>
+												onchange={() =>
 													(selectedReparseInDb = toggleSelection(selectedReparseInDb, entry.id))}
 												class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 											/>
@@ -634,7 +640,7 @@
 										<td class="px-4 py-2 text-xs text-gray-500">{entry.source_laws.join(', ')}</td>
 										<td class="px-4 py-2 text-right">
 											<button
-												on:click={() => handleDeleteEntry(entry.id)}
+												onclick={() => handleDeleteEntry(entry.id)}
 												class="text-red-600 hover:text-red-800 text-sm"
 											>
 												Remove
@@ -660,7 +666,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							<button
-								on:click={() =>
+								onclick={() =>
 									(selectedReparseMissing =
 										selectedReparseMissing.size === data.reparse_missing.length
 											? clearSelection()
@@ -674,7 +680,7 @@
 							<!-- Step 1: Get Metadata (for entries without metadata) -->
 							{#if selectedWithoutMetadata.length > 0}
 								<button
-									on:click={handleGetMetadata}
+									onclick={handleGetMetadata}
 									disabled={parsingIds.size > 0}
 									class="inline-flex items-center px-3 py-1.5 border border-orange-600 text-sm font-medium rounded-md text-orange-600 bg-white hover:bg-orange-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
 								>
@@ -706,7 +712,7 @@
 							{/if}
 							<!-- Step 2: Add to Database (only for entries with metadata) -->
 							<button
-								on:click={handleAddWithMetadata}
+								onclick={handleAddWithMetadata}
 								disabled={selectedWithMetadata.length === 0 || addingIds.size > 0}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
@@ -786,7 +792,7 @@
 											<input
 												type="checkbox"
 												checked={selectedReparseMissing.has(entry.id)}
-												on:change={() =>
+												onchange={() =>
 													(selectedReparseMissing = toggleSelection(
 														selectedReparseMissing,
 														entry.id
@@ -905,7 +911,7 @@
 										</td>
 										<td class="px-2 py-2 text-right">
 											<button
-												on:click={() => handleDeleteEntry(entry.id)}
+												onclick={() => handleDeleteEntry(entry.id)}
 												class="text-red-600 hover:text-red-800 text-sm"
 											>
 												Remove
@@ -931,7 +937,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							<button
-								on:click={() =>
+								onclick={() =>
 									(selectedEnactingInDb =
 										selectedEnactingInDb.size === data.enacting_in_db.length
 											? clearSelection()
@@ -943,17 +949,17 @@
 									: 'Select All'}
 							</button>
 							<button
-								on:click={handleUpdateEnacting}
-								disabled={selectedEnactingInDb.size === 0 || $updateEnactingMutation.isPending}
+								onclick={handleUpdateEnacting}
+								disabled={selectedEnactingInDb.size === 0 || updateEnactingMutation.isPending}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
-								{#if $updateEnactingMutation.isPending}
+								{#if updateEnactingMutation.isPending}
 									<span class="animate-spin mr-1">...</span>
 								{/if}
 								Update Enacting ({selectedEnactingInDb.size})
 							</button>
 							<button
-								on:click={handleBulkRemoveEnactingInDb}
+								onclick={handleBulkRemoveEnactingInDb}
 								disabled={selectedEnactingInDb.size === 0}
 								class="inline-flex items-center px-3 py-1.5 border border-red-600 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
 							>
@@ -990,7 +996,7 @@
 											<input
 												type="checkbox"
 												checked={selectedEnactingInDb.has(entry.id)}
-												on:change={() =>
+												onchange={() =>
 													(selectedEnactingInDb = toggleSelection(selectedEnactingInDb, entry.id))}
 												class="rounded border-gray-300 text-green-600 focus:ring-green-500"
 											/>
@@ -1015,7 +1021,7 @@
 										>
 										<td class="px-4 py-2 text-right">
 											<button
-												on:click={() => handleDeleteEntry(entry.id)}
+												onclick={() => handleDeleteEntry(entry.id)}
 												class="text-red-600 hover:text-red-800 text-sm"
 											>
 												Remove
@@ -1041,7 +1047,7 @@
 						</div>
 						<div class="flex items-center gap-2">
 							<button
-								on:click={() =>
+								onclick={() =>
 									(selectedEnactingMissing =
 										selectedEnactingMissing.size === data.enacting_missing.length
 											? clearSelection()
@@ -1053,11 +1059,11 @@
 									: 'Select All'}
 							</button>
 							<button
-								on:click={handleAddEnactingMissing}
-								disabled={selectedEnactingMissing.size === 0 || $addLawsMutation.isPending}
+								onclick={handleAddEnactingMissing}
+								disabled={selectedEnactingMissing.size === 0 || addLawsMutation.isPending}
 								class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
 							>
-								{#if $addLawsMutation.isPending}
+								{#if addLawsMutation.isPending}
 									<span class="animate-spin mr-1">...</span>
 								{/if}
 								Add to Database ({selectedEnactingMissing.size})
@@ -1087,7 +1093,7 @@
 											<input
 												type="checkbox"
 												checked={selectedEnactingMissing.has(entry.id)}
-												on:change={() =>
+												onchange={() =>
 													(selectedEnactingMissing = toggleSelection(
 														selectedEnactingMissing,
 														entry.id
@@ -1099,7 +1105,7 @@
 										<td class="px-4 py-2 text-xs text-gray-500">{entry.source_laws.join(', ')}</td>
 										<td class="px-4 py-2 text-right">
 											<button
-												on:click={() => handleDeleteEntry(entry.id)}
+												onclick={() => handleDeleteEntry(entry.id)}
 												class="text-red-600 hover:text-red-800 text-sm"
 											>
 												Remove
@@ -1116,8 +1122,8 @@
 			<!-- Footer Actions -->
 			<div class="flex justify-end">
 				<button
-					on:click={handleClearProcessed}
-					disabled={$clearProcessedMutation.isPending}
+					onclick={handleClearProcessed}
+					disabled={clearProcessedMutation.isPending}
 					class="text-sm text-gray-600 hover:text-gray-800"
 				>
 					Clear Processed Entries
@@ -1135,6 +1141,6 @@
 	initialIndex={0}
 	open={showParseModal}
 	stages={['amended_by']}
-	on:close={handleParseModalClose}
-	on:complete={handleParseComplete}
+	onclose={handleParseModalClose}
+	oncomplete={handleParseComplete}
 />

@@ -1,33 +1,35 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { previewReparseSession, type ReparseFilters } from '$lib/api/scraper';
 	import { useFamilyOptionsQuery } from '$lib/query/scraper';
 	import { useCreateReparseMutation } from '$lib/query/scraper';
 
-	export let open = false;
-
-	const dispatch = createEventDispatcher<{
-		close: void;
-		created: { session_id: string };
-	}>();
+	let {
+		open = $bindable(false),
+		onclose,
+		oncreated
+	}: {
+		open?: boolean;
+		onclose?: () => void;
+		oncreated?: (detail: { session_id: string }) => void;
+	} = $props();
 
 	const familyOptionsQuery = useFamilyOptionsQuery();
 	const createMutation = useCreateReparseMutation();
 
 	// Filter state
-	let selectedFamily = '';
-	let selectedFamilyIi = '';
-	let selectedTypeCode = '';
-	let selectedFunction = '';
+	let selectedFamily = $state('');
+	let selectedFamilyIi = $state('');
+	let selectedTypeCode = $state('');
+	let selectedFunction = $state('');
 
 	// Preview state
-	let previewCount: number | null = null;
-	let previewLoading = false;
-	let previewError = '';
+	let previewCount: number | null = $state(null);
+	let previewLoading = $state(false);
+	let previewError = $state('');
 
 	// Creating state
-	let creating = false;
-	let createError = '';
+	let creating = $state(false);
+	let createError = $state('');
 
 	const typeCodeOptions = [
 		{ value: 'uksi', label: 'UK SI' },
@@ -44,34 +46,41 @@
 	const functionOptions = ['Amending', 'Revoking', 'Commencing', 'Enacting'];
 
 	// Derive sub-family options from selected family
-	$: familyGrouped = $familyOptionsQuery.data?.grouped;
-	$: allFamilies = familyGrouped
-		? [
-				...(familyGrouped.health_safety || []),
-				...(familyGrouped.environment || []),
-				...(familyGrouped.hr || [])
-			]
-		: [];
+	let familyGrouped = $derived(familyOptionsQuery.data?.grouped);
+	let allFamilies = $derived(
+		familyGrouped
+			? [
+					...(familyGrouped.health_safety || []),
+					...(familyGrouped.environment || []),
+					...(familyGrouped.hr || [])
+				]
+			: []
+	);
 
 	// Sub-families: families that start with the selected family + ":"
-	$: subFamilyOptions = (() => {
-		if (!selectedFamily) return [];
-		// Strip emoji prefix for matching (e.g. "💙 FIRE" -> find "💙 FIRE: ...")
-		return allFamilies.filter(
-			(f) => f !== selectedFamily && f.startsWith(selectedFamily.replace(/^.\s/, '').split(':')[0])
-		);
-	})();
+	let subFamilyOptions = $derived(
+		(() => {
+			if (!selectedFamily) return [];
+			// Strip emoji prefix for matching (e.g. "FIRE" -> find "FIRE: ...")
+			return allFamilies.filter(
+				(f) =>
+					f !== selectedFamily && f.startsWith(selectedFamily.replace(/^.\s/, '').split(':')[0])
+			);
+		})()
+	);
 
 	// Build session ID preview
-	$: sessionIdPreview = (() => {
-		if (!selectedFamily) return '';
-		const parts = ['reparse', slugify(selectedFamily)];
-		if (selectedTypeCode) parts.push(selectedTypeCode);
-		if (selectedFunction) parts.push(selectedFunction.toLowerCase());
-		const today = new Date().toISOString().split('T')[0];
-		parts.push(today);
-		return parts.join('-');
-	})();
+	let sessionIdPreview = $derived(
+		(() => {
+			if (!selectedFamily) return '';
+			const parts = ['reparse', slugify(selectedFamily)];
+			if (selectedTypeCode) parts.push(selectedTypeCode);
+			if (selectedFunction) parts.push(selectedFunction.toLowerCase());
+			const today = new Date().toISOString().split('T')[0];
+			parts.push(today);
+			return parts.join('-');
+		})()
+	);
 
 	function slugify(name: string): string {
 		return name
@@ -91,10 +100,11 @@
 	}
 
 	// Preview count — debounced, re-triggers when any filter changes
-	// Reactive key ensures Svelte tracks all filter dependencies
-	$: _filterKey = [selectedFamily, selectedFamilyIi, selectedTypeCode, selectedFunction];
+	let _filterKey = $derived([selectedFamily, selectedFamilyIi, selectedTypeCode, selectedFunction]);
 	let previewTimeout: ReturnType<typeof setTimeout>;
-	$: if (_filterKey) {
+	$effect(() => {
+		// Access _filterKey to track dependencies
+		void _filterKey;
 		if (selectedFamily) {
 			clearTimeout(previewTimeout);
 			previewTimeout = setTimeout(fetchPreview, 300);
@@ -102,7 +112,7 @@
 			previewCount = null;
 			previewError = '';
 		}
-	}
+	});
 
 	async function fetchPreview() {
 		if (!selectedFamily) return;
@@ -124,8 +134,8 @@
 		creating = true;
 		createError = '';
 		try {
-			const session = await $createMutation.mutateAsync(buildFilters());
-			dispatch('created', { session_id: session.session_id });
+			const session = await createMutation.mutateAsync(buildFilters());
+			oncreated?.({ session_id: session.session_id });
 		} catch (e) {
 			createError = e instanceof Error ? e.message : 'Failed to create session';
 		} finally {
@@ -141,22 +151,24 @@
 		previewCount = null;
 		previewError = '';
 		createError = '';
-		dispatch('close');
+		onclose?.();
 	}
 
 	// Reset dependent filters when family changes
-	$: if (selectedFamily) {
-		selectedFamilyIi = '';
-	}
+	$effect(() => {
+		if (selectedFamily) {
+			selectedFamilyIi = '';
+		}
+	});
 </script>
 
 {#if open}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="fixed inset-0 z-50 overflow-y-auto">
 		<div class="flex items-center justify-center min-h-screen px-4">
 			<!-- Backdrop -->
-			<div class="fixed inset-0 bg-black bg-opacity-50" on:click={handleClose}></div>
+			<div class="fixed inset-0 bg-black bg-opacity-50" onclick={handleClose}></div>
 
 			<!-- Dialog -->
 			<div class="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
@@ -236,7 +248,7 @@
 
 					<!-- Function (optional) -->
 					<div>
-						<!-- svelte-ignore a11y-label-has-associated-control -->
+						<!-- svelte-ignore a11y_label_has_associated_control -->
 						<label class="block text-sm font-medium text-gray-700 mb-1">Function</label>
 						<div class="flex flex-wrap gap-2">
 							{#each functionOptions as fn}
@@ -245,7 +257,7 @@
 									class="px-3 py-1 text-sm rounded-full border {selectedFunction === fn
 										? 'bg-blue-100 border-blue-500 text-blue-700'
 										: 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}"
-									on:click={() => (selectedFunction = selectedFunction === fn ? '' : fn)}
+									onclick={() => (selectedFunction = selectedFunction === fn ? '' : fn)}
 								>
 									{fn}
 								</button>
@@ -290,7 +302,7 @@
 					<button
 						type="button"
 						class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-						on:click={handleClose}
+						onclick={handleClose}
 					>
 						Cancel
 					</button>
@@ -298,7 +310,7 @@
 						type="button"
 						class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={!selectedFamily || previewCount === 0 || previewCount === null || creating}
-						on:click={handleCreate}
+						onclick={handleCreate}
 					>
 						{#if creating}
 							Creating...

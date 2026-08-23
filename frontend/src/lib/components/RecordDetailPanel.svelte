@@ -7,37 +7,41 @@
 
   Heavy JSONB fields (duties, rights, powers, etc.) not synced to PGLite are detected.
   When a section containing heavy fields is expanded and data is missing,
-  a "Load details" button is shown. Clicking it dispatches a "loadHeavy" event
+  a "Load details" button is shown. Clicking it calls the onloadheavy callback
   so the parent can fetch via REST.
 -->
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import CollapsibleSection from './CollapsibleSection.svelte';
 	import FieldRow, { getFieldValue, hasData as fieldHasData } from './parse-review/FieldRow.svelte';
 	import { SECTION_CONFIG, type SectionConfig } from './parse-review/field-config';
 
-	/** The record data to display */
-	export let record: Record<string, unknown> | null = null;
-
-	/** Which sections to show (defaults to all SECTION_CONFIG) */
-	export let sections: SectionConfig[] = SECTION_CONFIG;
-
-	/** Hide fields with no data */
-	export let hideEmpty: boolean = true;
-
-	/** Show DB column names alongside labels */
-	export let showFieldKeys: boolean = false;
-
-	/** Override default section expansion (null = use config defaults) */
-	export let defaultExpanded: boolean | null = null;
-
-	/** Whether heavy JSONB data has been loaded */
-	export let heavyLoaded: boolean = false;
-
-	/** Whether heavy JSONB data is currently loading */
-	export let heavyLoading: boolean = false;
-
-	const dispatch = createEventDispatcher<{ loadHeavy: void }>();
+	let {
+		record = null,
+		sections = SECTION_CONFIG,
+		hideEmpty = true,
+		showFieldKeys = false,
+		defaultExpanded = null,
+		heavyLoaded = false,
+		heavyLoading = false,
+		onloadheavy
+	}: {
+		/** The record data to display */
+		record?: Record<string, unknown> | null;
+		/** Which sections to show (defaults to all SECTION_CONFIG) */
+		sections?: SectionConfig[];
+		/** Hide fields with no data */
+		hideEmpty?: boolean;
+		/** Show DB column names alongside labels */
+		showFieldKeys?: boolean;
+		/** Override default section expansion (null = use config defaults) */
+		defaultExpanded?: boolean | null;
+		/** Whether heavy JSONB data has been loaded */
+		heavyLoaded?: boolean;
+		/** Whether heavy JSONB data is currently loading */
+		heavyLoading?: boolean;
+		/** Callback when heavy data load is requested */
+		onloadheavy?: () => void;
+	} = $props();
 
 	/**
 	 * Heavy JSONB fields excluded from PGLite sync.
@@ -135,7 +139,7 @@
 							</div>
 						{:else}
 							<button
-								on:click={() => dispatch('loadHeavy')}
+								onclick={() => onloadheavy?.()}
 								class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
 							>
 								Load detailed data
@@ -180,7 +184,7 @@
 										</div>
 									{:else}
 										<button
-											on:click={() => dispatch('loadHeavy')}
+											onclick={() => onloadheavy?.()}
 											class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
 										>
 											Load detailed data
@@ -224,7 +228,7 @@
 							</div>
 						{:else}
 							<button
-								on:click={() => dispatch('loadHeavy')}
+								onclick={() => onloadheavy?.()}
 								class="text-sm text-blue-600 hover:text-blue-800 hover:underline"
 							>
 								Load detailed data

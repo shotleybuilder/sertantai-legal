@@ -1,19 +1,30 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { createEventDispatcher } from 'svelte';
 
-	export let title: string;
-	export let subtitle: string = '';
-	export let expanded: boolean = true;
-	export let level: 'section' | 'subsection' = 'section';
-	// Optional badge to show in header (e.g., stage indicator)
-	export let badge: string = '';
-	export let badgeColor: 'blue' | 'green' | 'amber' | 'red' | 'gray' = 'gray';
-	// Re-parse functionality (only for top-level sections with a stage)
-	export let showReparse: boolean = false;
-	export let isReparsing: boolean = false;
-
-	const dispatch = createEventDispatcher<{ reparse: void }>();
+	let {
+		title,
+		subtitle = '',
+		expanded = $bindable(true),
+		level = 'section',
+		badge = '',
+		badgeColor = 'gray',
+		showReparse = false,
+		isReparsing = false,
+		onreparse,
+		children
+	}: {
+		title: string;
+		subtitle?: string;
+		expanded?: boolean;
+		level?: 'section' | 'subsection';
+		badge?: string;
+		badgeColor?: 'blue' | 'green' | 'amber' | 'red' | 'gray';
+		showReparse?: boolean;
+		isReparsing?: boolean;
+		onreparse?: () => void;
+		children?: Snippet;
+	} = $props();
 
 	function toggle() {
 		expanded = !expanded;
@@ -21,7 +32,7 @@
 
 	function handleReparse(e: MouseEvent) {
 		e.stopPropagation(); // Don't toggle section when clicking reparse
-		dispatch('reparse');
+		onreparse?.();
 	}
 
 	const badgeColors = {
@@ -42,7 +53,7 @@
 		<!-- Section Header -->
 		<button
 			type="button"
-			on:click={toggle}
+			onclick={toggle}
 			class="w-full bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center hover:bg-gray-100 transition-colors cursor-pointer"
 		>
 			<div class="flex items-center space-x-2">
@@ -78,7 +89,7 @@
 				{#if showReparse && !isReparsing}
 					<button
 						type="button"
-						on:click={handleReparse}
+						onclick={handleReparse}
 						class="px-2 py-1 text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
 						title="Re-parse this stage"
 					>
@@ -111,7 +122,7 @@
 		<!-- Section Content -->
 		{#if expanded}
 			<div transition:slide={{ duration: 200 }} class="divide-y divide-gray-100">
-				<slot />
+				{@render children?.()}
 			</div>
 		{/if}
 	</div>
@@ -120,7 +131,7 @@
 	<div class="border-t border-gray-200 first:border-t-0">
 		<button
 			type="button"
-			on:click={toggle}
+			onclick={toggle}
 			class="w-full px-4 py-2 bg-gray-50/50 flex justify-between items-center hover:bg-gray-100/50 transition-colors cursor-pointer"
 		>
 			<div class="flex items-center space-x-2">
@@ -144,7 +155,7 @@
 
 		{#if expanded}
 			<div transition:slide={{ duration: 150 }} class="divide-y divide-gray-100">
-				<slot />
+				{@render children?.()}
 			</div>
 		{/if}
 	</div>

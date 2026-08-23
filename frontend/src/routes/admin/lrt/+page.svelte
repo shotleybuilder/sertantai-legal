@@ -11,9 +11,8 @@
 		SortConfig,
 		GroupConfig
 	} from '@shotleybuilder/svelte-gridlite-kit';
-	import { createTanStackDBAdapter } from '@shotleybuilder/gridlite-adapter-tanstack-db';
-	import { createPGLiteCollection } from '$lib/pglite/collection-bridge';
-	import { UK_LRT_COLUMN_METADATA } from '$lib/pglite/uk-lrt-columns';
+	import { createPGLiteAdapter } from '@shotleybuilder/gridlite-adapter-pglite';
+	import type { QueryAdapter } from '@shotleybuilder/svelte-gridlite-kit/adapter';
 	import {
 		initViewStore,
 		SaveViewModal,
@@ -106,22 +105,22 @@
 	}
 
 	// PGLite + GridLite state
-	let db: PGLiteWithExtensions | null = null;
-	let ready = false;
-	let gridRef: GridLite;
-	let adapter: ReturnType<typeof createTanStackDBAdapter> | null = null;
-	let error: string | null = null;
+	let db: PGLiteWithExtensions | null = $state(null);
+	let ready = $state(false);
+	let gridRef: GridLite = $state(undefined as any);
+	let adapter: QueryAdapter | null = $state(null);
+	let error: string | null = $state(null);
 
 	// View store
-	let viewStore: ViewStoreBundle | null = null;
+	let viewStore: ViewStoreBundle | null = $state(null);
 
 	// Saved views state
-	let showSaveModal = false;
-	let capturedConfig: ViewConfig | null = null;
+	let showSaveModal = $state(false);
+	let capturedConfig: ViewConfig | null = $state(null);
 
 	// Track current query for GridLite
-	let currentQuery: string = '';
-	let currentFamily: string | null = null;
+	let currentQuery: string = $state('');
+	let currentFamily: string | null = $state(null);
 
 	// Family options grouped by category
 	const familyOptions = {
@@ -250,8 +249,6 @@
 		'created_at'
 	];
 	const LRT_COLUMNS = LRT_COLUMNS_LIST.join(', ');
-	const lrtColumnMetadata = UK_LRT_COLUMN_METADATA.filter((c) => LRT_COLUMNS_LIST.includes(c.name));
-
 	// Column definitions for GridLite
 	const columns: ColumnConfig[] = [
 		{ name: 'name', label: 'Name', width: 140, dataType: 'text' },
@@ -502,7 +499,9 @@
 
 	// Query constants
 	const currentYear = new Date().getFullYear();
-	$: BASE_QUERY = `SELECT ${LRT_COLUMNS} FROM laws WHERE country = '${$selectedCountry}'`;
+	let BASE_QUERY = $derived(
+		`SELECT ${LRT_COLUMNS} FROM laws WHERE country = '${$selectedCountry}'`
+	);
 
 	// Column sets for view configs
 	const VIEW_COLUMNS = [
@@ -731,16 +730,16 @@
 
 	// ── Sidebar state ───────────────────────────────────────────────
 
-	let sidebarVisible = false;
+	let sidebarVisible = $state(false);
 
 	// ── Editing state ───────────────────────────────────────────────
 
-	let editingCell: { id: string; field: string } | null = null;
-	let editValue: string | string[] = '';
+	let editingCell: { id: string; field: string } | null = $state(null);
+	let editValue: string | string[] = $state('');
 
 	// Record Card modal state
-	let cardModalOpen = false;
-	let cardModalRecord: UkLrtRecord | null = null;
+	let cardModalOpen = $state(false);
+	let cardModalRecord: UkLrtRecord | null = $state(null);
 
 	function openRecordCard(record: UkLrtRecord) {
 		cardModalRecord = record;
@@ -753,8 +752,8 @@
 	}
 
 	// ParseReviewModal state
-	let viewModalOpen = false;
-	let viewModalRecord: UkLrtRecord | null = null;
+	let viewModalOpen = $state(false);
+	let viewModalRecord: UkLrtRecord | null = $state(null);
 
 	function openParseReviewModal(record: UkLrtRecord) {
 		viewModalRecord = record;
@@ -767,29 +766,29 @@
 	}
 
 	// Reparse dialog state
-	let showReparseDialog = false;
+	let showReparseDialog = $state(false);
 
-	function handleReparseCreated(event: CustomEvent<{ session_id: string }>) {
+	function handleReparseCreated(detail: { session_id: string }) {
 		showReparseDialog = false;
-		goto(`/admin/scrape/sessions/${event.detail.session_id}`);
+		goto(`/admin/scrape/sessions/${detail.session_id}`);
 	}
 
 	// Reparse View dialog state
-	let showReparseViewDialog = false;
-	let reparseViewLoading = false;
-	let reparseViewError: string | null = null;
+	let showReparseViewDialog = $state(false);
+	let reparseViewLoading = $state(false);
+	let reparseViewError: string | null = $state(null);
 
 	// LAT deletion dialog state
-	let deleteConfirmRecord: UkLrtRecord | null = null;
-	let deleteLoading = false;
-	let deleteError: string | null = null;
+	let deleteConfirmRecord: UkLrtRecord | null = $state(null);
+	let deleteLoading = $state(false);
+	let deleteError: string | null = $state(null);
 
 	// Track grid data for reparse view count
-	let latestGridState: GridState | null = null;
+	let latestGridState: GridState | null = $state(null);
 
 	// Active view name + visible columns — set imperatively by switchToView()
-	let activeViewName: string | null = null;
-	let activeVisibleColumns: string[] = VIEW_COLUMNS;
+	let activeViewName: string | null = $state(null);
+	let activeVisibleColumns: string[] = $state(VIEW_COLUMNS);
 
 	// Build the effective SQL query including GridLite filters (for reparse operations)
 	function getEffectiveQuery(): { sql: string; params: unknown[] } {
@@ -1050,8 +1049,8 @@
 	}
 
 	// Handle ViewSidebar view selection
-	function handleViewSelected(e: CustomEvent<{ view: SavedView }>) {
-		const view = e.detail.view;
+	function handleViewSelected(e: CustomEvent<{ view: SavedView }> | { view: SavedView }) {
+		const view = 'detail' in e ? e.detail.view : e.view;
 		switchToView(view.name, view.config);
 		applyViewToGrid(view);
 		sidebarVisible = false; // auto-close on mobile
@@ -1098,22 +1097,24 @@
 		}
 	}
 
-	function handleViewSaved(event: CustomEvent<{ id: string; name: string }>) {
-		console.log('[LRT Admin] View saved:', event.detail.name);
+	function handleViewSaved(detail: { id: string; name: string }) {
+		console.log('[LRT Admin] View saved:', detail.name);
 	}
 
 	// Monitor sync errors
-	$: if ($syncStatus.error) {
-		error = $syncStatus.error;
-	}
+	$effect(() => {
+		if ($syncStatus.error) {
+			error = $syncStatus.error;
+		}
+	});
 
-	$: isLoading = !$syncStatus.connected && !ready;
+	let isLoading = $derived(!$syncStatus.connected && !ready);
 
-	// Adapter is created once in onMount via createPGLiteCollection + createTanStackDBAdapter.
+	// Adapter is created once in onMount via createPGLiteAdapter.
 	// Filtering is handled by GridLite's filter descriptors, not by changing the SQL query.
 
 	// Track total records for stats (get from PGLite count)
-	let totalRecordCount = 0;
+	let totalRecordCount = $state(0);
 
 	async function refreshTotalCount() {
 		if (!db) return;
@@ -1133,12 +1134,7 @@
 			db = await getPglite();
 			await runViewMigrations(db as any);
 			viewStore = initViewStore(db as any, 'lrt-admin');
-			const collection = createPGLiteCollection({
-				db,
-				query: BASE_QUERY,
-				id: 'lrt-admin-uk-lrt'
-			});
-			adapter = createTanStackDBAdapter({ collection, columns: lrtColumnMetadata });
+			adapter = createPGLiteAdapter({ db, query: BASE_QUERY });
 			await adapter.init();
 			ready = true;
 			await refreshTotalCount();
@@ -1150,21 +1146,18 @@
 		}
 	});
 
-	// Re-initialise collection when country changes
-	let prevCountry = $selectedCountry;
-	$: if ($selectedCountry !== prevCountry && db && ready) {
-		prevCountry = $selectedCountry;
-		(async () => {
-			const collection = createPGLiteCollection({
-				db: db!,
-				query: BASE_QUERY,
-				id: `lrt-admin-${$selectedCountry}`
-			});
-			adapter = createTanStackDBAdapter({ collection, columns: lrtColumnMetadata });
-			await adapter.init();
-			await refreshTotalCount();
-		})();
-	}
+	// Re-initialise adapter when country changes
+	let prevCountry = $state($selectedCountry);
+	$effect(() => {
+		if ($selectedCountry !== prevCountry && db && ready) {
+			prevCountry = $selectedCountry;
+			(async () => {
+				adapter = createPGLiteAdapter({ db: db!, query: BASE_QUERY });
+				await adapter.init();
+				await refreshTotalCount();
+			})();
+		}
+	});
 
 	onDestroy(() => {
 		activeViewUnsub?.();
@@ -1172,37 +1165,41 @@
 	});
 
 	// Live subscription to active view id
-	let hasActiveView = false;
-	let activeViewUnsub: (() => void) | null = null;
-	$: if (viewStore) {
-		activeViewUnsub?.();
-		activeViewUnsub = viewStore.activeViewId.subscribe((v) => {
-			hasActiveView = !!v;
-		});
-	}
+	let hasActiveView = $state(false);
+	let activeViewUnsub: (() => void) | null = $state(null);
+	$effect(() => {
+		if (viewStore) {
+			activeViewUnsub?.();
+			activeViewUnsub = viewStore.activeViewId.subscribe((v: string | null) => {
+				hasActiveView = !!v;
+			});
+		}
+	});
 
 	// Reparse view record count — use effective filtered query to count
-	let reparseViewCount = 0;
-	$: if (showReparseViewDialog && db && currentQuery) {
-		const eff = getEffectiveQuery();
-		db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params)
-			.then((r) => {
-				reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
-			})
-			.catch(() => {
-				reparseViewCount = 0;
-			});
-	}
+	let reparseViewCount = $state(0);
+	$effect(() => {
+		if (showReparseViewDialog && db && currentQuery) {
+			const eff = getEffectiveQuery();
+			db.query<{ count: string }>(`SELECT COUNT(*) as count FROM (${eff.sql}) sub`, eff.params)
+				.then((r: { rows: Array<{ count: string }> }) => {
+					reparseViewCount = parseInt(r.rows[0]?.count ?? '0', 10);
+				})
+				.catch(() => {
+					reparseViewCount = 0;
+				});
+		}
+	});
 </script>
 
 <div class="flex h-full relative">
 	<!-- Mobile sidebar overlay -->
 	{#if sidebarVisible}
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="fixed inset-0 bg-black/30 z-30 lg:hidden"
-			on:click={() => (sidebarVisible = false)}
+			onclick={() => (sidebarVisible = false)}
 		/>
 	{/if}
 
@@ -1217,7 +1214,7 @@
 				{viewStore}
 				storageKey="lrt-admin-sidebar"
 				isDocked={true}
-				on:viewSelected={handleViewSelected}
+				{...{ onviewSelected: handleViewSelected }}
 			/>
 		</div>
 	{/if}
@@ -1228,7 +1225,7 @@
 		<div class="flex items-center gap-3">
 			<button
 				class="lg:hidden p-1.5 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100"
-				on:click={() => (sidebarVisible = !sidebarVisible)}
+				onclick={() => (sidebarVisible = !sidebarVisible)}
 				title="Toggle views sidebar"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1249,7 +1246,7 @@
 			</div>
 			<button
 				class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-				on:click={() => (showReparseDialog = true)}
+				onclick={() => (showReparseDialog = true)}
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
@@ -1263,7 +1260,7 @@
 			</button>
 			<button
 				class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
-				on:click={() => (showReparseViewDialog = true)}
+				onclick={() => (showReparseViewDialog = true)}
 				disabled={!currentQuery}
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1291,7 +1288,7 @@
 				<p class="text-red-600">{error}</p>
 				<button
 					class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-					on:click={() => window.location.reload()}>Retry</button
+					onclick={() => window.location.reload()}>Retry</button
 				>
 			</div>
 		{:else if ready && db}
@@ -1312,7 +1309,7 @@
 							<span class="text-lg font-medium text-red-600">Offline</span>
 							<button
 								class="ml-2 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded hover:bg-red-200"
-								on:click={() => window.location.reload()}
+								onclick={() => window.location.reload()}
 							>
 								Retry
 							</button>
@@ -1345,10 +1342,303 @@
 
 			<!-- GridLite Table -->
 			{#if adapter}
+				{#snippet toolbarStart()}
+					{#if hasActiveView}
+						<div class="inline-flex rounded-md shadow-sm">
+							<button
+								type="button"
+								onclick={handleUpdateView}
+								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							>
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+									/>
+								</svg>
+								Save View
+							</button>
+							<button
+								type="button"
+								onclick={handleSaveView}
+								class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							>
+								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 4v16m8-8H4"
+									/>
+								</svg>
+							</button>
+						</div>
+					{:else}
+						<button
+							type="button"
+							onclick={handleSaveView}
+							class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+								/>
+							</svg>
+							Save View
+						</button>
+					{/if}
+				{/snippet}
+
+				{#snippet cellSnippet({
+					value,
+					row,
+					column
+				}: {
+					value: unknown;
+					row: Record<string, unknown>;
+					column: string;
+				})}
+					{@const r = asLrt(row)}
+					{#if column === 'family'}
+						{#if editingCell?.id === r.id && editingCell?.field === 'family'}
+							<select
+								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+								bind:value={editValue}
+								onblur={saveEdit}
+								onkeydown={handleEditKeydown}
+							>
+								<option value="">-- None --</option>
+								<optgroup label="Health & Safety">
+									{#each familyOptions.health_safety as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="Environment">
+									{#each familyOptions.environment as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="HR">
+									{#each familyOptions.hr as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+							</select>
+						{:else}
+							{@const display = getFamilyDisplay(r.family)}
+							<button
+								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+								ondblclick={() => startEdit(r.id, 'family', r.family)}
+								title="Double-click to edit"
+							>
+								{#if display.prefix}
+									<span
+										class="inline-block px-1 text-xs font-medium rounded mr-1 {display.prefix ===
+										'HS'
+											? 'bg-blue-100 text-blue-700'
+											: display.prefix === 'E'
+												? 'bg-green-100 text-green-700'
+												: 'bg-purple-100 text-purple-700'}"
+									>
+										{display.prefix}
+									</span>
+								{/if}
+								{display.name}
+							</button>
+						{/if}
+					{:else if column === 'family_ii'}
+						{#if editingCell?.id === r.id && editingCell?.field === 'family_ii'}
+							<select
+								class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+								bind:value={editValue}
+								onblur={saveEdit}
+								onkeydown={handleEditKeydown}
+							>
+								<option value="">-- None --</option>
+								<optgroup label="Health & Safety">
+									{#each familyOptions.health_safety as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="Environment">
+									{#each familyOptions.environment as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+								<optgroup label="HR">
+									{#each familyOptions.hr as opt}
+										<option value={opt}>{opt}</option>
+									{/each}
+								</optgroup>
+							</select>
+						{:else}
+							<button
+								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
+								ondblclick={() => startEdit(r.id, 'family_ii', r.family_ii)}
+								title="Double-click to edit"
+							>
+								{r.family_ii || '-'}
+							</button>
+						{/if}
+					{:else if column === 'function'}
+						{#if editingCell?.id === r.id && editingCell?.field === 'function'}
+							<div class="flex flex-wrap gap-1 p-1 border border-blue-400 rounded bg-white">
+								{#each functionOptions as fn}
+									<button
+										type="button"
+										class="px-2 py-0.5 text-xs rounded {Array.isArray(editValue) &&
+										editValue.includes(fn)
+											? 'bg-blue-600 text-white'
+											: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+										onclick={() => toggleFunction(fn)}
+									>
+										{fn}
+									</button>
+								{/each}
+								<button
+									type="button"
+									class="px-2 py-0.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 ml-auto"
+									onclick={saveEdit}>Save</button
+								>
+								<button
+									type="button"
+									class="px-2 py-0.5 text-xs bg-gray-400 text-white rounded hover:bg-gray-500"
+									onclick={cancelEdit}>Cancel</button
+								>
+							</div>
+						{:else}
+							<button
+								class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+								ondblclick={() => startEdit(r.id, 'function', r.function)}
+								title="Double-click to edit"
+							>
+								{#if parseFunctionKeys(r.function)?.length}
+									<span class="flex flex-wrap gap-1">
+										{#each parseFunctionKeys(r.function) ?? [] as fn}
+											<span
+												class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
+													? 'bg-green-100 text-green-700'
+													: fn === 'Amending'
+														? 'bg-yellow-100 text-yellow-700'
+														: fn === 'Revoking'
+															? 'bg-red-100 text-red-700'
+															: 'bg-gray-100 text-gray-700'}"
+											>
+												{fn}
+											</span>
+										{/each}
+									</span>
+								{:else}
+									<span class="text-gray-400">-</span>
+								{/if}
+							</button>
+						{/if}
+					{:else if column === 'title_en'}
+						<div class="whitespace-normal break-words">{value || '-'}</div>
+					{:else if column === 'is_making'}
+						<button
+							class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
+							onclick={() => updateRecord(r.id, 'is_making', !r.is_making)}
+							title="Click to toggle"
+						>
+							{#if r.is_making}
+								<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
+							{:else}
+								<span class="text-gray-400">-</span>
+							{/if}
+						</button>
+					{:else if column === 'has_fitness'}
+						{#if r.has_fitness === 'true'}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Yes</span>
+						{:else}
+							<span class="text-gray-400">-</span>
+						{/if}
+					{:else if column === 'live'}
+						<span
+							class="inline-flex px-2 py-0.5 text-xs font-medium rounded {value === 'Live'
+								? 'bg-green-100 text-green-800'
+								: value === 'Revoked'
+									? 'bg-red-100 text-red-800'
+									: 'bg-gray-100 text-gray-800'}"
+						>
+							{value || '-'}
+						</span>
+					{:else if column === 'type_code'}
+						<span class="uppercase">{value || '-'}</span>
+					{:else if column === 'name'}
+						<div class="flex items-center gap-1">
+							<button
+								class="p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded shrink-0"
+								title="View record details"
+								onclick={() => openRecordCard(r)}
+							>
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+									/>
+								</svg>
+							</button>
+							<button
+								class="p-0.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded shrink-0"
+								title="Parse & Review"
+								onclick={() => openParseReviewModal(r)}
+							>
+								<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									/>
+								</svg>
+							</button>
+							{#if activeViewName === 'LAT Cleanup' && (r.lat_count ?? 0) > 0}
+								<button
+									class="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded shrink-0"
+									title="Delete LAT data for this law"
+									onclick={() => {
+										deleteConfirmRecord = r;
+									}}
+								>
+									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+										/>
+									</svg>
+								</button>
+							{/if}
+							<span class="font-mono text-gray-700 truncate">{value}</span>
+						</div>
+					{:else if column === 'lat_count'}
+						{#if Number(value) > 0}
+							<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700 font-medium">
+								{Number(value).toLocaleString()}
+							</span>
+						{:else}
+							<span class="text-gray-400">0</span>
+						{/if}
+					{:else}
+						{value ?? '-'}
+					{/if}
+				{/snippet}
+
 				<GridLite
 					bind:this={gridRef}
 					{adapter}
 					onStateChange={handleStateChange}
+					toolbar-start={toolbarStart}
+					cell={cellSnippet}
 					config={{
 						id: 'lrt-admin',
 						columns,
@@ -1367,292 +1657,7 @@
 						grouping: true,
 						globalSearch: true
 					}}
-				>
-					<!-- Save View Buttons -->
-					<svelte:fragment slot="toolbar-start">
-						{#if hasActiveView}
-							<div class="inline-flex rounded-md shadow-sm">
-								<button
-									type="button"
-									on:click={handleUpdateView}
-									class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-								>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-										/>
-									</svg>
-									Save View
-								</button>
-								<button
-									type="button"
-									on:click={handleSaveView}
-									class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-indigo-600 border-l border-indigo-500 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-								>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 4v16m8-8H4"
-										/>
-									</svg>
-								</button>
-							</div>
-						{:else}
-							<button
-								type="button"
-								on:click={handleSaveView}
-								class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-							>
-								<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-									/>
-								</svg>
-								Save View
-							</button>
-						{/if}
-					</svelte:fragment>
-
-					<!-- Custom cell rendering -->
-					<svelte:fragment slot="cell" let:value let:row let:column>
-						{@const r = asLrt(row)}
-						{#if column === 'family'}
-							{#if editingCell?.id === r.id && editingCell?.field === 'family'}
-								<select
-									class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-									bind:value={editValue}
-									on:blur={saveEdit}
-									on:keydown={handleEditKeydown}
-								>
-									<option value="">-- None --</option>
-									<optgroup label="Health & Safety">
-										{#each familyOptions.health_safety as opt}
-											<option value={opt}>{opt}</option>
-										{/each}
-									</optgroup>
-									<optgroup label="Environment">
-										{#each familyOptions.environment as opt}
-											<option value={opt}>{opt}</option>
-										{/each}
-									</optgroup>
-									<optgroup label="HR">
-										{#each familyOptions.hr as opt}
-											<option value={opt}>{opt}</option>
-										{/each}
-									</optgroup>
-								</select>
-							{:else}
-								{@const display = getFamilyDisplay(r.family)}
-								<button
-									class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-									on:dblclick={() => startEdit(r.id, 'family', r.family)}
-									title="Double-click to edit"
-								>
-									{#if display.prefix}
-										<span
-											class="inline-block px-1 text-xs font-medium rounded mr-1 {display.prefix ===
-											'HS'
-												? 'bg-blue-100 text-blue-700'
-												: display.prefix === 'E'
-													? 'bg-green-100 text-green-700'
-													: 'bg-purple-100 text-purple-700'}"
-										>
-											{display.prefix}
-										</span>
-									{/if}
-									{display.name}
-								</button>
-							{/if}
-						{:else if column === 'family_ii'}
-							{#if editingCell?.id === r.id && editingCell?.field === 'family_ii'}
-								<select
-									class="w-full text-sm border border-blue-400 rounded px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-									bind:value={editValue}
-									on:blur={saveEdit}
-									on:keydown={handleEditKeydown}
-								>
-									<option value="">-- None --</option>
-									<optgroup label="Health & Safety">
-										{#each familyOptions.health_safety as opt}
-											<option value={opt}>{opt}</option>
-										{/each}
-									</optgroup>
-									<optgroup label="Environment">
-										{#each familyOptions.environment as opt}
-											<option value={opt}>{opt}</option>
-										{/each}
-									</optgroup>
-									<optgroup label="HR">
-										{#each familyOptions.hr as opt}
-											<option value={opt}>{opt}</option>
-										{/each}
-									</optgroup>
-								</select>
-							{:else}
-								<button
-									class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer truncate"
-									on:dblclick={() => startEdit(r.id, 'family_ii', r.family_ii)}
-									title="Double-click to edit"
-								>
-									{r.family_ii || '-'}
-								</button>
-							{/if}
-						{:else if column === 'function'}
-							{#if editingCell?.id === r.id && editingCell?.field === 'function'}
-								<div class="flex flex-wrap gap-1 p-1 border border-blue-400 rounded bg-white">
-									{#each functionOptions as fn}
-										<button
-											type="button"
-											class="px-2 py-0.5 text-xs rounded {Array.isArray(editValue) &&
-											editValue.includes(fn)
-												? 'bg-blue-600 text-white'
-												: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
-											on:click={() => toggleFunction(fn)}
-										>
-											{fn}
-										</button>
-									{/each}
-									<button
-										type="button"
-										class="px-2 py-0.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 ml-auto"
-										on:click={saveEdit}>Save</button
-									>
-									<button
-										type="button"
-										class="px-2 py-0.5 text-xs bg-gray-400 text-white rounded hover:bg-gray-500"
-										on:click={cancelEdit}>Cancel</button
-									>
-								</div>
-							{:else}
-								<button
-									class="w-full text-left hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-									on:dblclick={() => startEdit(r.id, 'function', r.function)}
-									title="Double-click to edit"
-								>
-									{#if parseFunctionKeys(r.function)?.length}
-										<span class="flex flex-wrap gap-1">
-											{#each parseFunctionKeys(r.function) ?? [] as fn}
-												<span
-													class="px-1.5 py-0.5 text-xs rounded {fn === 'Making'
-														? 'bg-green-100 text-green-700'
-														: fn === 'Amending'
-															? 'bg-yellow-100 text-yellow-700'
-															: fn === 'Revoking'
-																? 'bg-red-100 text-red-700'
-																: 'bg-gray-100 text-gray-700'}"
-												>
-													{fn}
-												</span>
-											{/each}
-										</span>
-									{:else}
-										<span class="text-gray-400">-</span>
-									{/if}
-								</button>
-							{/if}
-						{:else if column === 'title_en'}
-							<div class="whitespace-normal break-words">{value || '-'}</div>
-						{:else if column === 'is_making'}
-							<button
-								class="w-full text-center hover:bg-gray-100 px-1 py-0.5 rounded cursor-pointer"
-								on:click={() => updateRecord(r.id, 'is_making', !r.is_making)}
-								title="Click to toggle"
-							>
-								{#if r.is_making}
-									<span class="px-1.5 py-0.5 text-xs rounded bg-green-100 text-green-700">Yes</span>
-								{:else}
-									<span class="text-gray-400">-</span>
-								{/if}
-							</button>
-						{:else if column === 'has_fitness'}
-							{#if r.has_fitness === 'true'}
-								<span class="px-1.5 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Yes</span>
-							{:else}
-								<span class="text-gray-400">-</span>
-							{/if}
-						{:else if column === 'live'}
-							<span
-								class="inline-flex px-2 py-0.5 text-xs font-medium rounded {value === 'Live'
-									? 'bg-green-100 text-green-800'
-									: value === 'Revoked'
-										? 'bg-red-100 text-red-800'
-										: 'bg-gray-100 text-gray-800'}"
-							>
-								{value || '-'}
-							</span>
-						{:else if column === 'type_code'}
-							<span class="uppercase">{value || '-'}</span>
-						{:else if column === 'name'}
-							<div class="flex items-center gap-1">
-								<button
-									class="p-0.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded shrink-0"
-									title="View record details"
-									on:click={() => openRecordCard(r)}
-								>
-									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-										/>
-									</svg>
-								</button>
-								<button
-									class="p-0.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded shrink-0"
-									title="Parse & Review"
-									on:click={() => openParseReviewModal(r)}
-								>
-									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-										/>
-									</svg>
-								</button>
-								{#if activeViewName === 'LAT Cleanup' && (r.lat_count ?? 0) > 0}
-									<button
-										class="p-0.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded shrink-0"
-										title="Delete LAT data for this law"
-										on:click={() => {
-											deleteConfirmRecord = r;
-										}}
-									>
-										<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-											/>
-										</svg>
-									</button>
-								{/if}
-								<span class="font-mono text-gray-700 truncate">{value}</span>
-							</div>
-						{:else if column === 'lat_count'}
-							{#if Number(value) > 0}
-								<span class="px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700 font-medium">
-									{Number(value).toLocaleString()}
-								</span>
-							{:else}
-								<span class="text-gray-400">0</span>
-							{/if}
-						{:else}
-							{value ?? '-'}
-						{/if}
-					</svelte:fragment>
-				</GridLite>
+				/>
 			{/if}
 
 			<!-- Instructions -->
@@ -1680,7 +1685,7 @@
 		bind:open={showSaveModal}
 		{viewStore}
 		config={capturedConfig}
-		on:save={handleViewSaved}
+		{...{ onsave: handleViewSaved }}
 	/>
 {/if}
 
@@ -1689,7 +1694,7 @@
 	bind:open={cardModalOpen}
 	record={cardModalRecord}
 	recordId={cardModalRecord?.id ?? null}
-	on:close={closeRecordCard}
+	onclose={closeRecordCard}
 />
 
 <!-- Parse Review Modal -->
@@ -1706,25 +1711,27 @@
 		]}
 		recordId={viewModalRecord.id}
 		open={viewModalOpen}
-		on:close={closeViewModal}
-		on:complete={closeViewModal}
+		onclose={closeViewModal}
+		oncomplete={closeViewModal}
 	/>
 {/if}
 
 <!-- Reparse Family Dialog -->
 <ReparseDialog
 	open={showReparseDialog}
-	on:close={() => (showReparseDialog = false)}
-	on:created={handleReparseCreated}
+	onclose={() => (showReparseDialog = false)}
+	oncreated={handleReparseCreated}
 />
 
 <!-- Reparse View Confirmation Dialog -->
 {#if showReparseViewDialog}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-		on:click|self={() => (showReparseViewDialog = false)}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) showReparseViewDialog = false;
+		}}
 	>
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
 			<div class="px-6 py-4 border-b border-gray-200">
@@ -1749,14 +1756,14 @@
 			</div>
 			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
 				<button
-					on:click={() => (showReparseViewDialog = false)}
+					onclick={() => (showReparseViewDialog = false)}
 					class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
 					disabled={reparseViewLoading}
 				>
 					Cancel
 				</button>
 				<button
-					on:click={handleReparseViewConfirm}
+					onclick={handleReparseViewConfirm}
 					disabled={reparseViewLoading || reparseViewCount === 0}
 					class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-md hover:bg-amber-700 disabled:opacity-50"
 				>
@@ -1774,13 +1781,15 @@
 <!-- Delete LAT Confirmation Dialog -->
 {#if deleteConfirmRecord}
 	{@const r = deleteConfirmRecord}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-		on:click|self={() => {
-			deleteConfirmRecord = null;
-			deleteError = null;
+		onclick={(e) => {
+			if (e.target === e.currentTarget) {
+				deleteConfirmRecord = null;
+				deleteError = null;
+			}
 		}}
 	>
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
@@ -1814,7 +1823,7 @@
 			</div>
 			<div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
 				<button
-					on:click={() => {
+					onclick={() => {
 						deleteConfirmRecord = null;
 						deleteError = null;
 					}}
@@ -1824,7 +1833,7 @@
 					Cancel
 				</button>
 				<button
-					on:click={handleDeleteLat}
+					onclick={handleDeleteLat}
 					disabled={deleteLoading}
 					class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
 				>

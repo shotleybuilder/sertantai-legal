@@ -42,7 +42,7 @@
 
 	async function handleDelete(sessionId: string) {
 		if (confirm('Are you sure you want to delete this session?')) {
-			await $deleteMutation.mutateAsync(sessionId);
+			await deleteMutation.mutateAsync(sessionId);
 		}
 	}
 </script>
@@ -58,15 +58,15 @@
 		</a>
 	</div>
 
-	{#if $query.isLoading}
+	{#if query.isLoading}
 		<div class="flex justify-center py-12">
 			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
 		</div>
-	{:else if $query.isError}
+	{:else if query.isError}
 		<div class="rounded-md bg-red-50 p-4">
-			<p class="text-sm text-red-700">{$query.error?.message || 'Failed to load sessions'}</p>
+			<p class="text-sm text-red-700">{query.error?.message || 'Failed to load sessions'}</p>
 		</div>
-	{:else if $query.data && $query.data.length === 0}
+	{:else if query.data && query.data.length === 0}
 		<div class="text-center py-12 bg-white rounded-lg shadow">
 			<svg
 				class="mx-auto h-12 w-12 text-gray-400"
@@ -92,7 +92,7 @@
 				</a>
 			</div>
 		</div>
-	{:else if $query.data}
+	{:else if query.data}
 		<div class="bg-white shadow overflow-hidden rounded-lg">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50">
@@ -130,7 +130,7 @@
 					</tr>
 				</thead>
 				<tbody class="bg-white divide-y divide-gray-200">
-					{#each $query.data as session}
+					{#each query.data as session}
 						<tr class="hover:bg-gray-50">
 							<td class="px-6 py-4 whitespace-nowrap">
 								<a
@@ -190,9 +190,9 @@
 									View
 								</a>
 								<button
-									on:click={() => handleDelete(session.session_id)}
+									onclick={() => handleDelete(session.session_id)}
 									class="text-red-600 hover:text-red-800"
-									disabled={$deleteMutation.isPending}
+									disabled={deleteMutation.isPending}
 								>
 									Delete
 								</button>

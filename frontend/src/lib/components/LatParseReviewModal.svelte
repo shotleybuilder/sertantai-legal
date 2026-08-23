@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import {
 		latParseStream,
 		confirmLatRecord,
@@ -10,40 +10,47 @@
 	import { latKeys } from '$lib/query/lat';
 	import { useQueryClient } from '@tanstack/svelte-query';
 
-	export let sessionId: string;
-	export let records: LatSessionRecord[] = [];
-	export let initialIndex: number = 0;
-	export let open: boolean = false;
-	export let autoConfirm: boolean = false;
-
-	const dispatch = createEventDispatcher<{
-		close: void;
-		complete: { confirmed: number; skipped: number; errors: number };
-	}>();
+	let {
+		sessionId,
+		records = [],
+		initialIndex = 0,
+		open = $bindable(false),
+		autoConfirm = false,
+		onclose,
+		oncomplete
+	}: {
+		sessionId: string;
+		records?: LatSessionRecord[];
+		initialIndex?: number;
+		open?: boolean; // $bindable
+		autoConfirm?: boolean;
+		onclose?: () => void;
+		oncomplete?: (data: { confirmed: number; skipped: number; errors: number }) => void;
+	} = $props();
 
 	const queryClient = useQueryClient();
 
 	// State
-	let currentIndex = initialIndex;
-	let parseResult: LatParseResult | null = null;
-	let confirmedCount = 0;
-	let skippedCount = 0;
-	let errorCount = 0;
-	let workflowComplete = false;
+	let currentIndex = $state(initialIndex);
+	let parseResult: LatParseResult | null = $state(null);
+	let confirmedCount = $state(0);
+	let skippedCount = $state(0);
+	let errorCount = $state(0);
+	let workflowComplete = $state(false);
 
 	// Streaming progress
-	let isParsing = false;
-	let parseError: string | null = null;
-	let cleanupStream: (() => void) | null = null;
-	let isConfirming = false;
+	let isParsing = $state(false);
+	let parseError: string | null = $state(null);
+	let cleanupStream: (() => void) | null = $state(null);
+	let isConfirming = $state(false);
 
 	// Auto-confirm
-	let autoConfirmTimer: ReturnType<typeof setTimeout> | null = null;
-	let autoConfirmTriggered = false;
+	let autoConfirmTimer: ReturnType<typeof setTimeout> | null = $state(null);
+	let autoConfirmTriggered = $state(false);
 
 	// Track parsed records to prevent re-parsing
-	let lastParsedName: string | null = null;
-	let failedNames: Set<string> = new Set();
+	let lastParsedName: string | null = $state(null);
+	let failedNames: Set<string> = $state(new Set());
 
 	// Stage progress
 	type StageStatus = {
@@ -67,7 +74,7 @@
 		persist_annotations: 'Persist Annotations'
 	};
 
-	let stageProgress: Record<LatParseStage, StageStatus> = initStageProgress();
+	let stageProgress: Record<LatParseStage, StageStatus> = $state(initStageProgress());
 
 	function initStageProgress(): Record<LatParseStage, StageStatus> {
 		return {
@@ -79,58 +86,66 @@
 		};
 	}
 
-	$: currentRecord = records[currentIndex];
-	$: isFirst = currentIndex === 0;
-	$: isLast = currentIndex === records.length - 1;
+	let currentRecord = $derived(records[currentIndex]);
+	let isFirst = $derived(currentIndex === 0);
+	let isLast = $derived(currentIndex === records.length - 1);
 
-	// Reset state on open transition (false→true) to allow re-parsing the same law
-	let prevOpen = false;
-	$: if (open && !prevOpen) {
-		lastParsedName = null;
-		failedNames = new Set();
-		workflowComplete = false;
-		parseResult = null;
-		parseError = null;
-		stageProgress = initStageProgress();
-		confirmedCount = 0;
-		skippedCount = 0;
-		errorCount = 0;
-		currentIndex = initialIndex;
-	}
-	$: prevOpen = open;
+	// Reset state on open transition (false->true) to allow re-parsing the same law
+	let prevOpen = $state(false);
+	$effect(() => {
+		if (open && !prevOpen) {
+			lastParsedName = null;
+			failedNames = new Set();
+			workflowComplete = false;
+			parseResult = null;
+			parseError = null;
+			stageProgress = initStageProgress();
+			confirmedCount = 0;
+			skippedCount = 0;
+			errorCount = 0;
+			currentIndex = initialIndex;
+		}
+		prevOpen = open;
+	});
 
 	// Parse current record when index changes
-	$: if (
-		open &&
-		!workflowComplete &&
-		currentRecord &&
-		currentRecord.law_name !== lastParsedName &&
-		!failedNames.has(currentRecord.law_name) &&
-		!isParsing
-	) {
-		parseCurrentRecord();
-	}
+	$effect(() => {
+		if (
+			open &&
+			!workflowComplete &&
+			currentRecord &&
+			currentRecord.law_name !== lastParsedName &&
+			!failedNames.has(currentRecord.law_name) &&
+			!isParsing
+		) {
+			parseCurrentRecord();
+		}
+	});
 
 	// Auto-confirm
-	$: if (
-		autoConfirm &&
-		parseResult &&
-		!isParsing &&
-		!isConfirming &&
-		!autoConfirmTriggered &&
-		currentRecord
-	) {
-		autoConfirmTriggered = true;
-		autoConfirmTimer = setTimeout(() => {
-			autoConfirmTimer = null;
-			handleConfirm();
-		}, 300);
-	}
+	$effect(() => {
+		if (
+			autoConfirm &&
+			parseResult &&
+			!isParsing &&
+			!isConfirming &&
+			!autoConfirmTriggered &&
+			currentRecord
+		) {
+			autoConfirmTriggered = true;
+			autoConfirmTimer = setTimeout(() => {
+				autoConfirmTimer = null;
+				handleConfirm();
+			}, 300);
+		}
+	});
 
 	// Stop auto-confirm on error
-	$: if (autoConfirm && parseError && !isParsing) {
-		autoConfirm = false;
-	}
+	$effect(() => {
+		if (autoConfirm && parseError && !isParsing) {
+			autoConfirm = false;
+		}
+	});
 
 	onDestroy(() => {
 		if (cleanupStream) {
@@ -239,13 +254,13 @@
 		}
 		isParsing = false;
 		autoConfirm = false;
-		dispatch('close');
+		onclose?.();
 	}
 
 	function handleComplete() {
 		workflowComplete = true;
 		lastParsedName = null;
-		dispatch('complete', {
+		oncomplete?.({
 			confirmed: confirmedCount,
 			skipped: skippedCount,
 			errors: errorCount
@@ -253,37 +268,33 @@
 	}
 
 	// Reset when records change
-	let lastRecordsId: string = '';
-	$: recordsId = records.map((r) => r.law_name).join(',');
-	$: if (open && records.length > 0 && recordsId !== lastRecordsId) {
-		lastRecordsId = recordsId;
-		currentIndex = initialIndex;
-		confirmedCount = 0;
-		skippedCount = 0;
-		errorCount = 0;
-		failedNames = new Set();
-		lastParsedName = null;
-		parseResult = null;
-		workflowComplete = false;
-		autoConfirmTriggered = false;
-	}
+	let lastRecordsId: string = $state('');
+	let recordsId = $derived(records.map((r) => r.law_name).join(','));
+	$effect(() => {
+		if (open && records.length > 0 && recordsId !== lastRecordsId) {
+			lastRecordsId = recordsId;
+			currentIndex = initialIndex;
+			confirmedCount = 0;
+			skippedCount = 0;
+			errorCount = 0;
+			failedNames = new Set();
+			lastParsedName = null;
+			parseResult = null;
+			workflowComplete = false;
+			autoConfirmTriggered = false;
+		}
+	});
 
-	// Reset on reopen
-	let wasOpen = false;
-	$: if (open && !wasOpen) {
-		lastParsedName = null;
-		parseResult = null;
-		parseError = null;
-		workflowComplete = false;
-	}
-	$: wasOpen = open;
+	// Reset on reopen (handled above in the prevOpen effect)
 </script>
 
 {#if open}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-		on:click|self={handleCancel}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) handleCancel();
+		}}
 	>
 		<div
 			class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
@@ -298,7 +309,7 @@
 						</span>
 					{/if}
 				</div>
-				<button on:click={handleCancel} class="text-gray-400 hover:text-gray-600">
+				<button onclick={handleCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
@@ -377,7 +388,7 @@
 					<div class="rounded-md bg-red-50 p-4 mb-4">
 						<p class="text-sm text-red-700">{parseError}</p>
 						<button
-							on:click={() => {
+							onclick={() => {
 								parseError = null;
 								failedNames.delete(currentRecord?.law_name || '');
 								lastParsedName = null;
@@ -468,7 +479,7 @@
 							Auto-parsing...
 						</span>
 						<button
-							on:click={() => {
+							onclick={() => {
 								autoConfirm = false;
 								if (autoConfirmTimer) {
 									clearTimeout(autoConfirmTimer);
@@ -480,7 +491,7 @@
 							Stop
 						</button>
 						<button
-							on:click={handleCancel}
+							onclick={handleCancel}
 							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 						>
 							Cancel
@@ -488,14 +499,14 @@
 					{:else}
 						<div class="flex space-x-2 mr-4">
 							<button
-								on:click={movePrev}
+								onclick={movePrev}
 								disabled={isFirst || isParsing || isConfirming}
 								class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								Prev
 							</button>
 							<button
-								on:click={() => moveNext()}
+								onclick={() => moveNext()}
 								disabled={isLast || isParsing || isConfirming}
 								class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
@@ -503,20 +514,20 @@
 							</button>
 						</div>
 						<button
-							on:click={handleCancel}
+							onclick={handleCancel}
 							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 						>
 							Cancel
 						</button>
 						<button
-							on:click={handleSkip}
+							onclick={handleSkip}
 							disabled={isParsing || isConfirming}
 							class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Skip
 						</button>
 						<button
-							on:click={handleConfirm}
+							onclick={handleConfirm}
 							disabled={!parseResult || isParsing || isConfirming}
 							class="px-4 py-2 text-sm text-white rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed {parseResult?.has_errors
 								? 'bg-amber-600 hover:bg-amber-700'

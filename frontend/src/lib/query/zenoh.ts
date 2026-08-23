@@ -17,17 +17,17 @@ export const zenohKeys = {
 };
 
 export function useSubscriptionsQuery() {
-	return createQuery<SubscriptionsResponse>({
+	return createQuery<SubscriptionsResponse>(() => ({
 		queryKey: zenohKeys.subscriptions(),
 		queryFn: getSubscriptions,
 		refetchInterval: 10_000
-	});
+	}));
 }
 
 export function useQueryablesQuery() {
-	return createQuery<QueryablesResponse>({
+	return createQuery<QueryablesResponse>(() => ({
 		queryKey: zenohKeys.queryables(),
 		queryFn: getQueryables,
 		refetchInterval: 10_000
-	});
+	}));
 }

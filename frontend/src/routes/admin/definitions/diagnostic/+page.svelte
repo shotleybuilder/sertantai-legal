@@ -48,30 +48,38 @@
 		international_convention: 'International Convention'
 	};
 
-	let summary: Summary | null = null;
-	let findings: Finding[] = [];
-	let loading = false;
-	let error = '';
-	let familyFilter = '';
-	let selectedCategory = '';
+	let summary: Summary | null = $state(null);
+	let findings: Finding[] = $state([]);
+	let loading = $state(false);
+	let error = $state('');
+	let familyFilter = $state('');
+	let selectedCategory = $state('');
 
 	// Sort categories: actionable first (by count desc), then ceiling (by count desc)
-	$: sortedCategories = summary
-		? Object.entries(summary.by_category)
+	let sortedCategories = $derived(
+		(() => {
+			const s = summary as Summary | null;
+			if (!s) return [] as { cat: string; count: number; isCeiling: boolean }[];
+			return Object.entries(s.by_category)
 				.sort((a, b) => {
 					const aIsCeiling = CEILING_CATEGORIES.has(a[0]);
 					const bIsCeiling = CEILING_CATEGORIES.has(b[0]);
 					if (aIsCeiling !== bIsCeiling) return aIsCeiling ? 1 : -1;
-					return b[1] - a[1];
+					return (b[1] as number) - (a[1] as number);
 				})
-				.map(([cat, count]) => ({ cat, count, isCeiling: CEILING_CATEGORIES.has(cat) }))
-		: [];
+				.map(([cat, count]) => ({
+					cat,
+					count: count as number,
+					isCeiling: CEILING_CATEGORIES.has(cat)
+				}));
+		})()
+	);
 
-	$: filteredFindings = selectedCategory
-		? findings.filter((f) => f.category === selectedCategory)
-		: findings;
+	let filteredFindings = $derived(
+		selectedCategory ? findings.filter((f) => f.category === selectedCategory) : findings
+	);
 
-	$: maxCategoryCount = sortedCategories.length > 0 ? sortedCategories[0].count : 1;
+	let maxCategoryCount = $derived(sortedCategories.length > 0 ? sortedCategories[0].count : 1);
 
 	async function runDiagnostic() {
 		loading = true;
@@ -118,7 +126,7 @@
 				class="w-56 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
 			/>
 			<button
-				on:click={runDiagnostic}
+				onclick={runDiagnostic}
 				disabled={loading}
 				class="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
 			>
@@ -173,7 +181,7 @@
 						class="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-gray-100
 							{selectedCategory === cat ? 'bg-blue-50 ring-1 ring-blue-300' : ''}
 							{isCeiling ? 'text-gray-400' : 'text-gray-700'}"
-						on:click={() => (selectedCategory = selectedCategory === cat ? '' : cat)}
+						onclick={() => (selectedCategory = selectedCategory === cat ? '' : cat)}
 					>
 						<div class="w-28 flex-shrink-0 truncate text-xs">
 							{CATEGORY_LABELS[cat] || cat}

@@ -25,14 +25,14 @@
 		citation_defs: number;
 	}
 
-	let families: FamilyStats[] = [];
-	let totals: Totals | null = null;
-	let loading = true;
-	let error = '';
+	let families: FamilyStats[] = $state([]);
+	let totals: Totals | null = $state(null);
+	let loading = $state(true);
+	let error = $state('');
 
 	// Action trigger state
-	let resolving = false;
-	let resolveMsg = '';
+	let resolving = $state(false);
+	let resolveMsg = $state('');
 
 	async function triggerResolve() {
 		resolving = true;
@@ -53,11 +53,11 @@
 	}
 
 	// Sort state
-	let sortCol: keyof FamilyStats = 'family';
-	let sortDir: 'asc' | 'desc' = 'asc';
+	let sortCol: keyof FamilyStats = $state('family');
+	let sortDir: 'asc' | 'desc' = $state('asc');
 
 	// Filter
-	let familyFilter: 'all' | 'safety' | 'environment' = 'all';
+	let familyFilter: 'all' | 'safety' | 'environment' = $state('all');
 
 	// Column definitions for the stats table
 	const columns: { key: keyof FamilyStats; label: string; align: string }[] = [
@@ -70,36 +70,41 @@
 		{ key: 'unlinked', label: 'Unlinked', align: 'right' }
 	];
 
-	$: filteredFamilies = families.filter((f) => {
-		if (familyFilter === 'safety') return f.family.startsWith('\u{1F499}');
-		if (familyFilter === 'environment') return f.family.startsWith('\u{1F49A}');
-		return true;
-	});
+	let filteredFamilies = $derived(
+		families.filter((f) => {
+			if (familyFilter === 'safety') return f.family.startsWith('\u{1F499}');
+			if (familyFilter === 'environment') return f.family.startsWith('\u{1F49A}');
+			return true;
+		})
+	);
 
-	$: sortedFamilies = [...filteredFamilies].sort((a, b) => {
-		const av = a[sortCol];
-		const bv = b[sortCol];
-		if (typeof av === 'string' && typeof bv === 'string') {
-			return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-		}
-		if (typeof av === 'number' && typeof bv === 'number') {
-			return sortDir === 'asc' ? av - bv : bv - av;
-		}
-		return 0;
-	});
+	let sortedFamilies = $derived(
+		[...filteredFamilies].sort((a, b) => {
+			const av = a[sortCol];
+			const bv = b[sortCol];
+			if (typeof av === 'string' && typeof bv === 'string') {
+				return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+			}
+			if (typeof av === 'number' && typeof bv === 'number') {
+				return sortDir === 'asc' ? av - bv : bv - av;
+			}
+			return 0;
+		})
+	);
 
 	// Computed totals for filtered view
-	$: filteredTotals = {
+	let filteredTotals = $derived({
 		total_defs: filteredFamilies.reduce((s, f) => s + f.total_defs, 0),
 		cross_refs: filteredFamilies.reduce((s, f) => s + f.cross_refs, 0),
 		linked: filteredFamilies.reduce((s, f) => s + f.linked, 0),
 		effective: filteredFamilies.reduce((s, f) => s + f.effective, 0)
-	};
+	});
 
-	$: overallEffectivePct =
+	let overallEffectivePct = $derived(
 		filteredTotals.cross_refs > 0
 			? Math.round((1000 * filteredTotals.effective) / filteredTotals.cross_refs) / 10
-			: 100;
+			: 100
+	);
 
 	function toggleSort(col: keyof FamilyStats) {
 		if (sortCol === col) {
@@ -145,7 +150,7 @@
 		<h1 class="text-2xl font-bold text-gray-900">Definitions Dashboard</h1>
 		<div class="flex items-center gap-2">
 			<button
-				on:click={triggerResolve}
+				onclick={triggerResolve}
 				disabled={resolving}
 				class="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
 			>
@@ -214,7 +219,7 @@
 							<th
 								class="cursor-pointer select-none px-4 py-2 text-xs font-medium uppercase tracking-wider text-gray-500 hover:text-gray-700
 									{col.align === 'right' ? 'text-right' : 'text-left'}"
-								on:click={() => toggleSort(col.key)}
+								onclick={() => toggleSort(col.key)}
 							>
 								{col.label}{sortArrow(col.key)}
 							</th>
@@ -225,7 +230,7 @@
 					{#each sortedFamilies as fam (fam.family)}
 						<tr
 							class="cursor-pointer hover:bg-gray-50"
-							on:click={() =>
+							onclick={() =>
 								goto(`/admin/definitions/browse?family=${encodeURIComponent(fam.family)}`)}
 						>
 							<td class="whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-900">

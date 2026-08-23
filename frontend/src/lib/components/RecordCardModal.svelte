@@ -7,43 +7,53 @@
   the user clicks "Load details" in a heavy section.
 -->
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { authFetch } from '$lib/api/client';
 	import RecordDetailPanel from './RecordDetailPanel.svelte';
 	import ParseReviewModal from './ParseReviewModal.svelte';
 
 	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003';
 
-	/** Whether the modal is open */
-	export let open: boolean = false;
-
-	/** Record data from PGLite (synced fields, instant) */
-	export let record: Record<string, unknown> | null = null;
-
-	/** Record ID for REST fetch of heavy fields */
-	export let recordId: string | null = null;
-
-	const dispatch = createEventDispatcher<{ close: void }>();
+	let {
+		open = $bindable(false),
+		record = null,
+		recordId = null,
+		onclose
+	}: {
+		/** Whether the modal is open */
+		open?: boolean;
+		/** Record data from PGLite (synced fields, instant) */
+		record?: Record<string, unknown> | null;
+		/** Record ID for REST fetch of heavy fields */
+		recordId?: string | null;
+		/** Callback when modal is closed */
+		onclose?: () => void;
+	} = $props();
 
 	// Merged display record: PGLite data + heavy fields when loaded
-	let heavyData: Record<string, unknown> | null = null;
-	let heavyLoading = false;
-	let heavyError: string | null = null;
+	let heavyData: Record<string, unknown> | null = $state(null);
+	let heavyLoading = $state(false);
+	let heavyError: string | null = $state(null);
 
-	$: displayRecord = heavyData ? { ...record, ...heavyData } : record;
-	$: heavyLoaded = heavyData !== null;
+	let displayRecord: Record<string, unknown> | null = $derived(
+		heavyData && record
+			? { ...(record as Record<string, unknown>), ...(heavyData as Record<string, unknown>) }
+			: (record ?? null)
+	);
+	let heavyLoaded = $derived(heavyData !== null);
 
 	// Parse & Review sub-modal state
-	let parseModalOpen = false;
+	let parseModalOpen = $state(false);
 
 	// Reset state when modal opens with a new record
-	let lastRecordId: string | null = null;
-	$: if (open && recordId !== lastRecordId) {
-		lastRecordId = recordId;
-		heavyData = null;
-		heavyLoading = false;
-		heavyError = null;
-	}
+	let lastRecordId: string | null = $state(null);
+	$effect(() => {
+		if (open && recordId !== lastRecordId) {
+			lastRecordId = recordId;
+			heavyData = null;
+			heavyLoading = false;
+			heavyError = null;
+		}
+	});
 
 	async function loadHeavyFields() {
 		if (!recordId || heavyLoading || heavyLoaded) return;
@@ -66,7 +76,7 @@
 
 	function handleClose() {
 		open = false;
-		dispatch('close');
+		onclose?.();
 	}
 
 	function openParseReview() {
@@ -84,13 +94,15 @@
 	}
 </script>
 
-<svelte:window on:keydown={open && !parseModalOpen ? handleKeydown : undefined} />
+<svelte:window onkeydown={open && !parseModalOpen ? handleKeydown : undefined} />
 
 {#if open && record}
-	<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 	<div
 		class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-		on:click|self={handleClose}
+		onclick={(e) => {
+			if (e.target === e.currentTarget) handleClose();
+		}}
 	>
 		<div
 			class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
@@ -116,7 +128,7 @@
 							{/if}
 						</div>
 					</div>
-					<button on:click={handleClose} class="ml-4 text-gray-400 hover:text-gray-600">
+					<button onclick={handleClose} class="ml-4 text-gray-400 hover:text-gray-600">
 						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -168,7 +180,7 @@
 					>
 						Failed to load detailed data: {heavyError}
 						<button
-							on:click={loadHeavyFields}
+							onclick={loadHeavyFields}
 							class="ml-2 text-red-800 underline hover:no-underline"
 						>
 							Retry
@@ -180,7 +192,7 @@
 					record={displayRecord}
 					{heavyLoaded}
 					{heavyLoading}
-					on:loadHeavy={loadHeavyFields}
+					onloadheavy={loadHeavyFields}
 				/>
 			</div>
 
@@ -197,13 +209,13 @@
 				</div>
 				<div class="flex items-center gap-3">
 					<button
-						on:click={handleClose}
+						onclick={handleClose}
 						class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
 					>
 						Close
 					</button>
 					<button
-						on:click={openParseReview}
+						onclick={openParseReview}
 						class="px-4 py-2 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700 flex items-center gap-2"
 					>
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,6 +248,6 @@
 		]}
 		recordId={recordId ?? undefined}
 		open={parseModalOpen}
-		on:close={closeParseReview}
+		onclose={closeParseReview}
 	/>
 {/if}

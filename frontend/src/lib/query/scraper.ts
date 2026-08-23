@@ -45,43 +45,43 @@ export const scraperKeys = {
  * Query: Get all sessions
  */
 export function useSessionsQuery() {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: scraperKeys.sessions(),
 		queryFn: getSessions
-	});
+	}));
 }
 
 /**
  * Query: Get single session
  */
 export function useSessionQuery(sessionId: string) {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: scraperKeys.session(sessionId),
 		queryFn: () => getSession(sessionId),
 		enabled: !!sessionId
-	});
+	}));
 }
 
 /**
  * Query: Get session DB status (how many records already exist in uk_lrt)
  */
 export function useSessionDbStatusQuery(sessionId: string) {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: scraperKeys.sessionDbStatus(sessionId),
 		queryFn: () => getSessionDbStatus(sessionId),
 		enabled: !!sessionId
-	});
+	}));
 }
 
 /**
  * Query: Get group records
  */
 export function useGroupQuery(sessionId: string, group: 1 | 2 | 3) {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: scraperKeys.group(sessionId, group),
 		queryFn: () => getGroupRecords(sessionId, group),
 		enabled: !!sessionId
-	});
+	}));
 }
 
 /**
@@ -90,12 +90,12 @@ export function useGroupQuery(sessionId: string, group: 1 | 2 | 3) {
 export function useCreateScrapeMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: createScrapeSession,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}
-	});
+	}));
 }
 
 /**
@@ -104,14 +104,14 @@ export function useCreateScrapeMutation() {
 export function usePersistGroupMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({ sessionId, group }: { sessionId: string; group: 1 | 2 | 3 }) =>
 			persistGroup(sessionId, group),
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.session(data.session.session_id) });
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}
-	});
+	}));
 }
 
 /**
@@ -120,7 +120,7 @@ export function usePersistGroupMutation() {
 export function useParseGroupMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({
 			sessionId,
 			group,
@@ -133,7 +133,7 @@ export function useParseGroupMutation() {
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.session(data.session_id) });
 		}
-	});
+	}));
 }
 
 /**
@@ -142,7 +142,7 @@ export function useParseGroupMutation() {
 export function useUpdateSelectionMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({
 			sessionId,
 			group,
@@ -160,7 +160,7 @@ export function useUpdateSelectionMutation() {
 				queryKey: scraperKeys.group(data.session_id, parseInt(data.group) as 1 | 2 | 3)
 			});
 		}
-	});
+	}));
 }
 
 /**
@@ -169,12 +169,12 @@ export function useUpdateSelectionMutation() {
 export function useDeleteSessionMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: deleteSession,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}
-	});
+	}));
 }
 
 // ============================================================================
@@ -184,12 +184,12 @@ export function useDeleteSessionMutation() {
 export function useCreateReparseMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: createReparseSession,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}
-	});
+	}));
 }
 
 // ============================================================================
@@ -200,10 +200,10 @@ export function useCreateReparseMutation() {
  * Mutation: Parse single record for review
  */
 export function useParseOneMutation() {
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({ sessionId, name }: { sessionId: string; name: string }) =>
 			parseOne(sessionId, name)
-	});
+	}));
 }
 
 /**
@@ -212,7 +212,7 @@ export function useParseOneMutation() {
 export function useConfirmRecordMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({
 			sessionId,
 			name,
@@ -231,29 +231,29 @@ export function useConfirmRecordMutation() {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.session(variables.sessionId) });
 			queryClient.invalidateQueries({ queryKey: scraperKeys.sessions() });
 		}
-	});
+	}));
 }
 
 /**
  * Query: Check if record exists
  */
 export function useExistsQuery(name: string) {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: ['uk-lrt', 'exists', name] as const,
 		queryFn: () => checkExists(name),
 		enabled: !!name
-	});
+	}));
 }
 
 /**
  * Query: Get family options for dropdowns
  */
 export function useFamilyOptionsQuery() {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: ['family-options'] as const,
 		queryFn: getFamilyOptions,
 		staleTime: Infinity // Family options rarely change
-	});
+	}));
 }
 
 // ============================================================================
@@ -264,20 +264,20 @@ export function useFamilyOptionsQuery() {
  * Query: Get cascade index (all pending entries, optionally filtered by session)
  */
 export function useCascadeIndexQuery(sessionId?: string) {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: scraperKeys.cascadeIndex(sessionId),
 		queryFn: () => getCascadeIndex(sessionId)
-	});
+	}));
 }
 
 /**
  * Query: Get sessions with pending cascade entries
  */
 export function useCascadeSessionsQuery() {
-	return createQuery({
+	return createQuery(() => ({
 		queryKey: scraperKeys.cascadeSessions(),
 		queryFn: getCascadeSessions
-	});
+	}));
 }
 
 /**
@@ -286,12 +286,12 @@ export function useCascadeSessionsQuery() {
 export function useCascadeReparseMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (ids: string[]) => cascadeReparse(ids),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
 		}
-	});
+	}));
 }
 
 /**
@@ -300,9 +300,9 @@ export function useCascadeReparseMutation() {
  * so users can review the changes before removing entries
  */
 export function useCascadeUpdateEnactingMutation() {
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (ids: string[]) => cascadeUpdateEnacting(ids)
-	});
+	}));
 }
 
 /**
@@ -311,12 +311,12 @@ export function useCascadeUpdateEnactingMutation() {
 export function useCascadeAddLawsMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (ids: string[]) => cascadeAddLaws(ids),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
 		}
-	});
+	}));
 }
 
 /**
@@ -325,12 +325,12 @@ export function useCascadeAddLawsMutation() {
 export function useDeleteCascadeEntryMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (id: string) => deleteCascadeEntry(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
 		}
-	});
+	}));
 }
 
 /**
@@ -339,18 +339,18 @@ export function useDeleteCascadeEntryMutation() {
 export function useClearProcessedCascadeMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (sessionId?: string) => clearProcessedCascade(sessionId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: scraperKeys.cascade() });
 		}
-	});
+	}));
 }
 
 export function useClearSessionCascadeMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (sessionId: string) => clearSessionCascade(sessionId),
 		onSuccess: (data, sessionId) => {
 			// Invalidate cascade queries for this session
@@ -359,5 +359,5 @@ export function useClearSessionCascadeMutation() {
 			// Also invalidate session query to refresh cascade stats
 			queryClient.invalidateQueries({ queryKey: scraperKeys.session(sessionId) });
 		}
-	});
+	}));
 }

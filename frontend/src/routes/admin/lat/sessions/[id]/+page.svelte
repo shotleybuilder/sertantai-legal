@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import {
 		useLatSessionQuery,
@@ -10,25 +10,29 @@
 	import type { LatSessionRecord } from '$lib/api/lat';
 	import LatParseReviewModal from '$lib/components/LatParseReviewModal.svelte';
 
-	$: sessionId = $page.params.id ?? '';
+	let sessionId = $derived(page.params.id ?? '');
 
-	$: sessionQuery = useLatSessionQuery(sessionId);
-	$: recordsQuery = useLatSessionRecordsQuery(sessionId);
+	let sessionQuery = $derived(useLatSessionQuery(sessionId));
+	let recordsQuery = $derived(useLatSessionRecordsQuery(sessionId));
 	const selectionMutation = useUpdateLatSelectionMutation();
 	const deleteMutation = useDeleteLatSessionMutation();
 
 	// Modal state
-	let showModal = false;
-	let modalAutoConfirm = false;
-	let modalRecords: LatSessionRecord[] = [];
-	let modalInitialIndex = 0;
+	let showModal = $state(false);
+	let modalAutoConfirm = $state(false);
+	let modalRecords: LatSessionRecord[] = $state([]);
+	let modalInitialIndex = $state(0);
 
 	// Selection helpers
-	$: records = $recordsQuery.data?.records ?? [];
-	$: selectedRecords = records.filter((r) => r.selected);
-	$: pendingRecords = records.filter((r) => r.status === 'pending' || r.status === 'ready');
-	$: parsedRecords = records.filter((r) => r.status === 'parsed' || r.status === 'confirmed');
-	$: failedRecords = records.filter((r) => r.status === 'skipped');
+	let records = $derived(recordsQuery.data?.records ?? []);
+	let selectedRecords = $derived(records.filter((r) => r.selected));
+	let pendingRecords = $derived(
+		records.filter((r) => r.status === 'pending' || r.status === 'ready')
+	);
+	let parsedRecords = $derived(
+		records.filter((r) => r.status === 'parsed' || r.status === 'confirmed')
+	);
+	let failedRecords = $derived(records.filter((r) => r.status === 'skipped'));
 
 	function statusColor(status: string): string {
 		switch (status) {
@@ -49,7 +53,7 @@
 	}
 
 	async function toggleSelect(record: LatSessionRecord) {
-		await $selectionMutation.mutateAsync({
+		await selectionMutation.mutateAsync({
 			sessionId,
 			names: [record.law_name],
 			selected: !record.selected
@@ -58,12 +62,12 @@
 
 	async function selectAll() {
 		const names = records.map((r) => r.law_name);
-		await $selectionMutation.mutateAsync({ sessionId, names, selected: true });
+		await selectionMutation.mutateAsync({ sessionId, names, selected: true });
 	}
 
 	async function deselectAll() {
 		const names = records.map((r) => r.law_name);
-		await $selectionMutation.mutateAsync({ sessionId, names, selected: false });
+		await selectionMutation.mutateAsync({ sessionId, names, selected: false });
 	}
 
 	function openReviewSelected() {
@@ -89,16 +93,14 @@
 		showModal = true;
 	}
 
-	function handleModalComplete(
-		_event: CustomEvent<{ confirmed: number; skipped: number; errors: number }>
-	) {
+	function handleModalComplete(_data: { confirmed: number; skipped: number; errors: number }) {
 		showModal = false;
 		// Records query will auto-refresh via invalidation in the mutation
 	}
 
 	async function handleDelete() {
 		if (!confirm(`Delete session "${sessionId}"?`)) return;
-		await $deleteMutation.mutateAsync(sessionId);
+		await deleteMutation.mutateAsync(sessionId);
 		goto('/admin/lat/sessions');
 	}
 </script>
@@ -112,21 +114,21 @@
 				<span class="text-gray-300">/</span>
 				<h1 class="text-xl font-bold text-gray-900 font-mono">{sessionId}</h1>
 			</div>
-			{#if $sessionQuery.data}
+			{#if sessionQuery.data}
 				<div class="flex items-center space-x-3 mt-1">
 					<span
 						class="px-2 py-0.5 text-xs font-medium rounded-full {statusColor(
-							$sessionQuery.data.status
+							sessionQuery.data.status
 						)}"
 					>
-						{$sessionQuery.data.status}
+						{sessionQuery.data.status}
 					</span>
 				</div>
 			{/if}
 		</div>
 		<div class="flex items-center space-x-3">
 			<button
-				on:click={handleDelete}
+				onclick={handleDelete}
 				class="px-3 py-1.5 text-sm text-red-700 border border-red-300 rounded-md hover:bg-red-50"
 			>
 				Delete
@@ -135,8 +137,8 @@
 	</div>
 
 	<!-- Stats Grid -->
-	{#if $sessionQuery.data}
-		{@const s = $sessionQuery.data}
+	{#if sessionQuery.data}
+		{@const s = sessionQuery.data}
 		<div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
 			<div class="bg-white rounded-lg shadow px-4 py-3">
 				<p class="text-xs text-gray-500 uppercase">Records</p>
@@ -169,13 +171,13 @@
 	<div class="flex items-center justify-between mb-4 bg-white rounded-lg shadow px-4 py-3">
 		<div class="flex items-center space-x-3">
 			<button
-				on:click={selectAll}
+				onclick={selectAll}
 				class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
 			>
 				Select All
 			</button>
 			<button
-				on:click={deselectAll}
+				onclick={deselectAll}
 				class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
 			>
 				Deselect All
@@ -186,14 +188,14 @@
 		</div>
 		<div class="flex items-center space-x-3">
 			<button
-				on:click={openReviewSelected}
+				onclick={openReviewSelected}
 				disabled={selectedRecords.length === 0}
 				class="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
 			>
 				Review Selected ({selectedRecords.length})
 			</button>
 			<button
-				on:click={openAutoParseAll}
+				onclick={openAutoParseAll}
 				disabled={selectedRecords.length === 0}
 				class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 			>
@@ -203,11 +205,11 @@
 	</div>
 
 	<!-- Records Table -->
-	{#if $recordsQuery.isPending}
+	{#if recordsQuery.isPending}
 		<div class="text-center py-12 text-gray-500">Loading records...</div>
-	{:else if $recordsQuery.isError}
+	{:else if recordsQuery.isError}
 		<div class="rounded-md bg-red-50 p-4">
-			<p class="text-sm text-red-700">{$recordsQuery.error?.message || 'Failed to load records'}</p>
+			<p class="text-sm text-red-700">{recordsQuery.error?.message || 'Failed to load records'}</p>
 		</div>
 	{:else if records.length === 0}
 		<div class="text-center py-12 text-gray-500">No records in this session.</div>
@@ -231,13 +233,13 @@
 				</thead>
 				<tbody class="divide-y divide-gray-200">
 					{#each records as record}
-						<tr class="hover:bg-gray-50 cursor-pointer" on:click={() => openSingleRecord(record)}>
+						<tr class="hover:bg-gray-50 cursor-pointer" onclick={() => openSingleRecord(record)}>
 							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<td class="px-3 py-2" on:click|stopPropagation>
+							<td class="px-3 py-2" onclick={(e) => e.stopPropagation()}>
 								<input
 									type="checkbox"
 									checked={record.selected}
-									on:change={() => toggleSelect(record)}
+									onchange={() => toggleSelect(record)}
 									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 								/>
 							</td>
@@ -301,6 +303,6 @@
 	initialIndex={modalInitialIndex}
 	bind:open={showModal}
 	autoConfirm={modalAutoConfirm}
-	on:close={() => (showModal = false)}
-	on:complete={handleModalComplete}
+	onclose={() => (showModal = false)}
+	oncomplete={handleModalComplete}
 />

@@ -1,13 +1,12 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import '../app.css';
 	import { QueryClientProvider } from '@tanstack/svelte-query';
 	import { queryClient } from '$lib/query/client';
 	import { browser } from '$app/environment';
 	import { adminAuth } from '$lib/stores/auth';
 
-	// SvelteKit passes params as a prop; accept to suppress "unknown prop" warning
-	// eslint-disable-next-line svelte/valid-compile
-	export let params: Record<string, string> = {};
+	let { children }: { children: Snippet } = $props();
 
 	// Restore auth from localStorage at module scope — runs during script
 	// initialization BEFORE any child onMount callbacks fire.
@@ -19,5 +18,5 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-	<slot />
+	{@render children()}
 </QueryClientProvider>

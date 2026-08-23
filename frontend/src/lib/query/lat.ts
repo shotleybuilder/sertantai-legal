@@ -47,52 +47,52 @@ export const latKeys = {
  * Query: Get LAT aggregate statistics
  */
 export function useLatStatsQuery() {
-	return createQuery<LatStats>({
+	return createQuery<LatStats>(() => ({
 		queryKey: latKeys.stats(),
 		queryFn: getLatStats
-	});
+	}));
 }
 
 /**
  * Query: Get laws with LAT data
  */
 export function useLatLawsQuery(search?: string, typeCode?: string) {
-	return createQuery<{ laws: LawSummary[]; count: number }>({
+	return createQuery<{ laws: LawSummary[]; count: number }>(() => ({
 		queryKey: latKeys.laws(search, typeCode),
 		queryFn: () => getLatLaws(search, typeCode)
-	});
+	}));
 }
 
 /**
  * Query: Get LAT rows for a specific law
  */
 export function useLatRowsQuery(lawName: string, limit?: number, offset?: number) {
-	return createQuery<LatRowsResponse>({
+	return createQuery<LatRowsResponse>(() => ({
 		queryKey: latKeys.rows(lawName, limit, offset),
 		queryFn: () => getLatRows(lawName, limit, offset),
 		enabled: !!lawName
-	});
+	}));
 }
 
 /**
  * Query: Get annotations for a specific law
  */
 export function useAnnotationsQuery(lawName: string) {
-	return createQuery<AnnotationsResponse>({
+	return createQuery<AnnotationsResponse>(() => ({
 		queryKey: latKeys.annotations(lawName),
 		queryFn: () => getAnnotations(lawName),
 		enabled: !!lawName
-	});
+	}));
 }
 
 /**
  * Query: Get LAT parse queue (LRT records needing LAT parsing)
  */
 export function useLatQueueQuery(limit?: number, offset?: number, reason?: 'missing' | 'stale') {
-	return createQuery<QueueResponse>({
+	return createQuery<QueueResponse>(() => ({
 		queryKey: latKeys.queue(limit, offset, reason),
 		queryFn: () => getLatQueue(limit, offset, reason)
-	});
+	}));
 }
 
 /**
@@ -101,7 +101,7 @@ export function useLatQueueQuery(limit?: number, offset?: number, reason?: 'miss
 export function useReparseMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation<ReparseResult, Error, string>({
+	return createMutation<ReparseResult, Error, string>(() => ({
 		mutationFn: (lawName: string) => reparseLat(lawName),
 		onSuccess: (_data, lawName) => {
 			// Invalidate all queries that may have changed
@@ -111,7 +111,7 @@ export function useReparseMutation() {
 			queryClient.invalidateQueries({ queryKey: ['lat', 'rows', lawName] });
 			queryClient.invalidateQueries({ queryKey: latKeys.annotations(lawName) });
 		}
-	});
+	}));
 }
 
 // ── LAT Session Hooks ──────────────────────────────────────────────
@@ -120,32 +120,32 @@ export function useReparseMutation() {
  * Query: List recent LAT parse sessions
  */
 export function useLatSessionsQuery() {
-	return createQuery<{ sessions: LatSession[] }>({
+	return createQuery<{ sessions: LatSession[] }>(() => ({
 		queryKey: latKeys.sessions(),
 		queryFn: getLatSessions
-	});
+	}));
 }
 
 /**
  * Query: Get a single LAT session
  */
 export function useLatSessionQuery(sessionId: string) {
-	return createQuery<LatSession>({
+	return createQuery<LatSession>(() => ({
 		queryKey: latKeys.session(sessionId),
 		queryFn: () => getLatSession(sessionId),
 		enabled: !!sessionId
-	});
+	}));
 }
 
 /**
  * Query: Get records for a LAT session
  */
 export function useLatSessionRecordsQuery(sessionId: string) {
-	return createQuery<{ records: LatSessionRecord[]; count: number }>({
+	return createQuery<{ records: LatSessionRecord[]; count: number }>(() => ({
 		queryKey: latKeys.sessionRecords(sessionId),
 		queryFn: () => getLatSessionRecords(sessionId),
 		enabled: !!sessionId
-	});
+	}));
 }
 
 /**
@@ -154,12 +154,12 @@ export function useLatSessionRecordsQuery(sessionId: string) {
 export function useCreateLatSessionMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (filters: LatSessionFilters) => createLatSession(filters),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: latKeys.sessions() });
 		}
-	});
+	}));
 }
 
 /**
@@ -168,12 +168,12 @@ export function useCreateLatSessionMutation() {
 export function useDeleteLatSessionMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: (sessionId: string) => deleteLatSession(sessionId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: latKeys.sessions() });
 		}
-	});
+	}));
 }
 
 /**
@@ -182,7 +182,7 @@ export function useDeleteLatSessionMutation() {
 export function useUpdateLatSelectionMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({
 			sessionId,
 			names,
@@ -197,7 +197,7 @@ export function useUpdateLatSelectionMutation() {
 				queryKey: latKeys.sessionRecords(variables.sessionId)
 			});
 		}
-	});
+	}));
 }
 
 /**
@@ -206,7 +206,7 @@ export function useUpdateLatSelectionMutation() {
 export function useConfirmLatRecordMutation() {
 	const queryClient = useQueryClient();
 
-	return createMutation({
+	return createMutation(() => ({
 		mutationFn: ({ sessionId, lawName }: { sessionId: string; lawName: string }) =>
 			confirmLatRecord(sessionId, lawName),
 		onSuccess: (_data, variables) => {
@@ -216,5 +216,5 @@ export function useConfirmLatRecordMutation() {
 			queryClient.invalidateQueries({ queryKey: latKeys.session(variables.sessionId) });
 			queryClient.invalidateQueries({ queryKey: latKeys.sessions() });
 		}
-	});
+	}));
 }
