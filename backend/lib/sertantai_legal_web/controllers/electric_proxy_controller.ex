@@ -8,6 +8,8 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
   """
   use SertantaiLegalWeb, :controller
 
+  require Logger
+
   # Non-electric headers worth forwarding verbatim
   @extra_forward_headers ~w(content-type cache-control etag)
 
@@ -50,8 +52,8 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
           chunked_conn
         else
           # First data chunk — send status + headers, start chunked response
-          resp.headers
-          |> merge_headers(conn)
+          conn
+          |> merge_headers(resp.headers)
           |> send_chunked(resp.status)
         end
 
@@ -65,36 +67,52 @@ defmodule SertantaiLegalWeb.ElectricProxyController do
       end
     end
 
-    case Req.get(url,
-           headers: headers,
-           decode_body: false,
-           redirect: false,
-           receive_timeout: 60_000,
-           into: stream_fn
-         ) do
-      {:ok, _resp} ->
-        case Process.get(conn_ref) do
-          nil ->
-            # No data received — send empty response
-            conn |> send_resp(204, "")
+    result =
+      Req.get(url,
+        headers: headers,
+        decode_body: false,
+        redirect: false,
+        receive_timeout: 60_000,
+        into: stream_fn
+      )
 
-          chunked_conn ->
-            chunked_conn
-        end
+    send_proxy_response(conn, conn_ref, result)
+  rescue
+    Bandit.TransportError ->
+      # Client disconnected during long-poll wait — expected for shape sync
+      %{conn | state: :sent}
+  end
 
-      {:error, exception} ->
-        # Only send error if we haven't started chunking yet
-        if Process.get(conn_ref) do
-          Process.get(conn_ref)
-        else
+  defp send_proxy_response(conn, conn_ref, {:ok, resp}) do
+    case Process.get(conn_ref) do
+      nil ->
+        # No data chunks streamed (empty long-poll response) —
+        # forward Electric's actual status + headers
+        try do
           conn
-          |> put_status(502)
-          |> json(%{error: "Electric proxy error", detail: Exception.message(exception)})
+          |> merge_headers(resp.headers)
+          |> send_resp(resp.status, "")
+        rescue
+          Bandit.TransportError -> %{conn | state: :sent}
         end
+
+      chunked_conn ->
+        chunked_conn
     end
   end
 
-  defp merge_headers(resp_headers, conn) do
+  defp send_proxy_response(conn, conn_ref, {:error, exception}) do
+    if Process.get(conn_ref) do
+      # Already started streaming — can't change the response
+      Process.get(conn_ref)
+    else
+      conn
+      |> put_status(502)
+      |> json(%{error: "Electric proxy error", detail: Exception.message(exception)})
+    end
+  end
+
+  defp merge_headers(conn, resp_headers) do
     Enum.reduce(resp_headers, conn, fn {name, values}, acc ->
       if forward_header?(name) do
         put_resp_header(acc, name, List.first(values))
