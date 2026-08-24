@@ -56,10 +56,13 @@ defmodule SertantaiLegalWeb.Endpoint do
     expose_headers: [
       "electric-cursor",
       "electric-handle",
+      "electric-has-data",
       "electric-offset",
       "electric-schema",
+      "electric-server",
       "electric-up-to-date",
-      "electric-internal-known-error"
+      "electric-internal-known-error",
+      "retry-after"
     ],
     max_age: 600
   )

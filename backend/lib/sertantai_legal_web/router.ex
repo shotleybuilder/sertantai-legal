@@ -45,6 +45,9 @@ defmodule SertantaiLegalWeb.Router do
     pipe_through(:api)
     get("/hello", HelloController, :index)
 
+    # ElectricSQL reverse proxy — forwards to Electric service (injects secret in prod)
+    get("/electric/*path", ElectricProxyController, :proxy)
+
     # Legal register read endpoints (multi-jurisdiction, public reference data)
     get("/laws", UkLrtController, :index)
     get("/laws/filters", UkLrtController, :filters)
