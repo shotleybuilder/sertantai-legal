@@ -33,23 +33,97 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.XmlUtils do
     {p2s, p1s}
   end
 
+  # Block-level elements that should be separated by newlines
+  @block_elements ~w(ListItem P2 P3 P4 P5)a
+
   @doc """
   Walk xmerl tree in true document order, concatenating all text nodes.
 
   Unlike `xpath(.//text())`, this preserves the position of child element text
   relative to surrounding text (e.g. `<Term><Acronym>CEN</Acronym>/TS</Term>`
   correctly yields `"CEN/TS"` not `"/TSCEN"`).
+
+  Block-level elements (`ListItem`, `P2`–`P5`) are separated by newlines so
+  that list-structured definitions preserve their visual structure.
   """
   @spec text_content(tuple() | any()) :: String.t()
   def text_content(node) when is_tuple(node) do
     case elem(node, 0) do
-      :xmlText -> to_string(elem(node, 4))
-      :xmlElement -> elem(node, 8) |> Enum.map_join("", &text_content/1)
-      _ -> ""
+      :xmlText ->
+        to_string(elem(node, 4))
+
+      :xmlElement ->
+        children = elem(node, 8)
+
+        children
+        |> Enum.map_join("", fn child ->
+          text = text_content(child)
+
+          if is_tuple(child) and elem(child, 0) == :xmlElement and
+               elem(child, 1) in @block_elements do
+            "\n" <> text
+          else
+            text
+          end
+        end)
+
+      _ ->
+        ""
     end
   end
 
   def text_content(_), do: ""
+
+  @doc """
+  Like `text_content/1` but skips `<UnorderedList Class="Definition">` subtrees.
+
+  Used by the definition_list_strategy when extracting text from a ListItem that
+  may contain nested Definition lists. Those nested lists are processed independently
+  — including their text here would cause definition bleed (GH #148).
+  """
+  @spec text_content_for_definition(tuple() | any()) :: String.t()
+  def text_content_for_definition(node) when is_tuple(node) do
+    case elem(node, 0) do
+      :xmlText ->
+        to_string(elem(node, 4))
+
+      :xmlElement ->
+        name = elem(node, 1)
+
+        if name == :UnorderedList and definition_class?(node) do
+          ""
+        else
+          children = elem(node, 8)
+
+          children
+          |> Enum.map_join("", fn child ->
+            text = text_content_for_definition(child)
+
+            if is_tuple(child) and elem(child, 0) == :xmlElement and
+                 elem(child, 1) in @block_elements do
+              "\n" <> text
+            else
+              text
+            end
+          end)
+        end
+
+      _ ->
+        ""
+    end
+  end
+
+  def text_content_for_definition(_), do: ""
+
+  defp definition_class?(node) do
+    attrs = elem(node, 7)
+
+    Enum.any?(attrs, fn attr ->
+      elem(attr, 0) == :xmlAttribute and
+        elem(attr, 1) == :Class and
+        to_string(elem(attr, 8)) == "Definition"
+    end)
+  end
 
   # ── Scope detection ─────────────────────────────────────────
 

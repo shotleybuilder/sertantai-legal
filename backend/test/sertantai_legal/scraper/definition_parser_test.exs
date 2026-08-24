@@ -1456,6 +1456,124 @@ defmodule SertantaiLegal.Scraper.DefinitionParserTest do
       assert String.contains?(d.definition, "any place within the premises")
       assert String.contains?(d.definition, "any room, lobby, or corridor")
     end
+
+    test "OrderedList sub-items are separated by newlines in definition text" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="regulation-2">
+            <Pnumber>2</Pnumber>
+            <P1para>
+              <P2 id="regulation-2-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In these Regulations\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Term id="term-importer">importer</Term>\u201d means a person who\u2014</Text>
+                        <OrderedList Type="alpha" Decoration="parens">
+                          <ListItem NumberOverride="a">
+                            <Para><Text>is established in the United Kingdom; or</Text></Para>
+                          </ListItem>
+                          <ListItem NumberOverride="b">
+                            <Para><Text>is established in Northern Ireland.</Text></Para>
+                          </ListItem>
+                        </OrderedList>
+                      </Para>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_test_newlines", type_code: "uksi"})
+
+      assert length(defs) == 1
+      d = hd(defs)
+      assert d.term == "importer"
+
+      # List items must be on separate lines
+      assert String.contains?(d.definition, "\n"),
+             "Expected newlines between list items, got: #{inspect(d.definition)}"
+
+      lines =
+        d.definition
+        |> String.split("\n")
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
+
+      assert Enum.any?(lines, &String.contains?(&1, "established in the United Kingdom")),
+             "Missing first list item"
+
+      assert Enum.any?(lines, &String.contains?(&1, "established in Northern Ireland")),
+             "Missing second list item"
+    end
+
+    test "nested Definition list text excluded but OrderedList newlines preserved" do
+      xml = """
+      <Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation">
+        <Body>
+          <P1 id="section-1">
+            <Pnumber>1</Pnumber>
+            <P1para>
+              <P2 id="section-1-1">
+                <Pnumber>1</Pnumber>
+                <P2para>
+                  <Text>In this Act\u2014</Text>
+                  <UnorderedList Decoration="none" Class="Definition">
+                    <ListItem>
+                      <Para>
+                        <Text>\u201c<Term id="term-authority">authority</Term>\u201d means\u2014</Text>
+                        <OrderedList Type="alpha" Decoration="parens">
+                          <ListItem NumberOverride="a">
+                            <Para><Text>a county council; or</Text></Para>
+                          </ListItem>
+                          <ListItem NumberOverride="b">
+                            <Para><Text>a district council.</Text></Para>
+                          </ListItem>
+                        </OrderedList>
+                      </Para>
+                      <UnorderedList Decoration="none" Class="Definition">
+                        <ListItem>
+                          <Para>
+                            <Text>\u201c<Term id="term-officer">officer</Term>\u201d means an inspector;</Text>
+                          </Para>
+                        </ListItem>
+                      </UnorderedList>
+                    </ListItem>
+                  </UnorderedList>
+                </P2para>
+              </P2>
+            </P1para>
+          </P1>
+        </Body>
+      </Legislation>
+      """
+
+      defs = DefinitionParser.parse(xml, %{law_name: "UK_test_combined", type_code: "ukpga"})
+
+      authority = Enum.find(defs, &(&1.term == "authority"))
+      assert authority != nil
+
+      # OrderedList items have newlines
+      assert String.contains?(authority.definition, "\n")
+      assert String.contains?(authority.definition, "county council")
+      assert String.contains?(authority.definition, "district council")
+
+      # Nested Definition list text is excluded
+      refute String.contains?(authority.definition, "officer")
+      refute String.contains?(authority.definition, "inspector")
+
+      # Nested definition extracted separately
+      officer = Enum.find(defs, &(&1.term == "officer"))
+      assert officer != nil
+      assert officer.definition =~ "inspector"
+    end
   end
 
   # ── TDD: Structural invariants ─────────────────────────────────

@@ -58,7 +58,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
     term_elements = XmlUtils.xpath_list(element, ~x".//Term"l)
 
     full_text =
-      XmlUtils.text_content(element) |> String.replace(~r/\s+/, " ") |> String.trim()
+      XmlUtils.text_content(element) |> String.replace(~r/[^\S\n]+/, " ") |> String.trim()
 
     with [_ | _] <- term_elements,
          true <- section_term_pattern?(full_text) do
@@ -115,7 +115,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.SectionTermStrategy do
     if Regex.match?(~r/referred to as|known as/iu, full_text) do
       full_text
       |> String.replace(~r/\s*\([^)]*(?:referred to|known)\s+as\s+[^)]*\)\s*/iu, " ")
-      |> String.replace(~r/\s+/, " ")
+      |> String.replace(~r/[^\S\n]+/, " ")
       |> String.trim()
     else
       ""

@@ -42,7 +42,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.InlineTextStrategy do
       []
     else
       section_id = xpath(el, ~x"./@id"s)
-      full_text = XmlUtils.text_content(el) |> String.replace(~r/\s+/, " ") |> String.trim()
+      full_text = XmlUtils.text_content(el) |> String.replace(~r/[^\S\n]+/, " ") |> String.trim()
 
       if Regex.match?(@inline_def_pattern, full_text) do
         scope = XmlUtils.detect_scope(full_text)

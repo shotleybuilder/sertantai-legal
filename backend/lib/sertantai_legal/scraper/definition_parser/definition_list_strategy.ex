@@ -104,9 +104,8 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
 
       :no_term_element ->
         raw_text =
-          direct_text_elements(item)
-          |> Enum.map_join("", &XmlUtils.text_content/1)
-          |> String.replace(~r/\s+/, " ")
+          XmlUtils.text_content_for_definition(item)
+          |> String.replace(~r/[^\S\n]+/, " ")
           |> String.trim()
 
         if raw_text == "" do
@@ -137,7 +136,7 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
     term_texts =
       term_elements
       |> Enum.map(fn term_el ->
-        XmlUtils.text_content(term_el) |> String.replace(~r/\s+/, " ") |> String.trim()
+        XmlUtils.text_content(term_el) |> String.replace(~r/[^\S\n]+/, " ") |> String.trim()
       end)
       |> Enum.reject(&(&1 == ""))
 
@@ -146,12 +145,9 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
         :no_term_element
 
       terms ->
-        text_elements = direct_text_elements(item)
-
         raw =
-          text_elements
-          |> Enum.map_join("", &XmlUtils.text_content/1)
-          |> String.replace(~r/\s+/, " ")
+          XmlUtils.text_content_for_definition(item)
+          |> String.replace(~r/[^\S\n]+/, " ")
           |> String.trim()
 
         last_quote_pattern = Regex.compile!("\u201d[^\"\u201c\u201d]*$", "su")
@@ -170,19 +166,6 @@ defmodule SertantaiLegal.Scraper.DefinitionParser.DefinitionListStrategy do
 
         {:ok, terms, definition}
     end
-  end
-
-  # Exclude text/term elements that belong to nested Definition lists.
-  # Those lists are processed independently by extract_from_element's
-  # .//UnorderedList[@Class='Definition'] search — including their text
-  # in the parent ListItem causes definition bleed (GH #148).
-  @spec direct_text_elements(tuple()) :: [tuple()]
-  defp direct_text_elements(item) do
-    direct_elements(
-      item,
-      ~x".//Text"l,
-      ~x".//UnorderedList[@Class='Definition']//Text"l
-    )
   end
 
   @spec direct_elements(tuple(), SweetXml.xpath_sigil(), SweetXml.xpath_sigil()) :: [tuple()]
