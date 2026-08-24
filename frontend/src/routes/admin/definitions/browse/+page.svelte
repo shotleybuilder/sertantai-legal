@@ -113,9 +113,9 @@
 		loadData();
 	});
 
-	// Re-run after sync completes
+	// Re-run when sync delivers data (laws or definitions may arrive at different times)
 	$effect(() => {
-		if (!$syncStatus.syncing && $syncStatus.recordCount > 0 && loading) {
+		if (!$syncStatus.syncing && $syncStatus.recordCount > 0) {
 			loadData();
 		}
 	});
@@ -450,7 +450,10 @@
 										<td class="whitespace-nowrap px-3 py-1.5 text-sm font-medium text-gray-900">
 											{def.term}
 										</td>
-										<td class="max-w-md px-3 py-1.5 text-sm text-gray-600" title={def.definition}>
+										<td
+											class="max-w-md whitespace-pre-line px-3 py-1.5 text-sm text-gray-600"
+											title={def.definition}
+										>
 											{truncate(def.definition, 80)}
 										</td>
 										<td class="whitespace-nowrap px-3 py-1.5 text-xs text-gray-500">
@@ -496,7 +499,7 @@
 				</div>
 
 				<!-- Full definition text -->
-				<p class="mt-2 text-sm text-gray-700">{selectedDef.definition}</p>
+				<p class="mt-2 whitespace-pre-line text-sm text-gray-700">{selectedDef.definition}</p>
 
 				<!-- Metadata -->
 				<div class="mt-3 flex flex-wrap gap-3 text-xs text-gray-500">
@@ -553,7 +556,7 @@
 										{#if root.section_id}({root.section_id}){/if}
 									</span>
 								</div>
-								<p class="mt-1 text-sm text-green-700">{root.definition}</p>
+								<p class="mt-1 whitespace-pre-line text-sm text-green-700">{root.definition}</p>
 								<a
 									href={lawSourceUrl(root.law_name)}
 									target="_blank"

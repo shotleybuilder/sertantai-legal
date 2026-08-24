@@ -165,7 +165,7 @@
 											<!-- svelte-ignore a11y_no_static_element_interactions -->
 											<div class="fixed inset-0 z-10" onclick={closeDropdown}></div>
 											<div
-												class="absolute left-0 z-20 mt-1 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+												class="absolute left-0 top-full z-20 mt-1 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
 											>
 												{#each item.dropdown as sub}
 													<a
