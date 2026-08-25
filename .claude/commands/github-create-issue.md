@@ -1,11 +1,12 @@
 Create a GitHub Issue using `gh` CLI.
 
 ---
-**LABEL LIST LAST UPDATED**: 2026-02-04
+**LABEL LIST LAST UPDATED**: 2026-08-25
 **Repository**: shotleybuilder/sertantai-legal
 
 **CURRENT LABELS**:
 - `bug` - Something isn't working
+- `definitions` - Legislative definition parsing, linking, and data quality
 - `documentation` - Improvements or additions to documentation
 - `duplicate` - This issue or pull request already exists
 - `enhancement` - New feature or request
@@ -13,6 +14,7 @@ Create a GitHub Issue using `gh` CLI.
 - `help wanted` - Extra attention is needed
 - `invalid` - This doesn't seem right
 - `question` - Further information is requested
+- `security` - Security-related issues
 - `wontfix` - This will not be worked on
 
 ---
