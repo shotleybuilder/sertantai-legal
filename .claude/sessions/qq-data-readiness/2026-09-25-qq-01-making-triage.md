@@ -1,38 +1,14 @@
 ---
-session: "QQ-01: Making Funnel — QQ Triage, Precedence & Traceability"
+session: "QQ-01: QQ Making Triage"
 status: pending
 opened: 2026-09-25
 parent: qq-data-readiness/2026-09-25-qq-00-meta.md
 issue: 161
 related: [25, 120]
-
-bugs:
-  - pattern: "is_making changes are never recorded in record_change_log (0 entries corpus-wide); Triage/TaxaSubscriber writes bypass the change log"
-    category: making-traceability
-    module: zenoh/triage_subscriber.ex, zenoh/taxa_subscriber.ex
-    affected: 19817
-    fix: "Log every is_making / making_* / duty_type write with source (detector, triage, taxa, review, scraper) and reason"
-    status: open
-  - pattern: "In-force laws with Duty/Responsibility in duty_type but is_making = false"
-    category: making-precedence
-    module: is_making writers (staged_parser, taxa_subscriber, triage_subscriber)
-    affected: 33
-    fix: "Single resolver; duty_type Duty/Responsibility ⇒ is_making true unless making_review says otherwise; 21 of 33 last touched by the 12 Aug reparse"
-    status: open
-  - pattern: "LAT session records left at 'confirmed' after fractalaw-confirmed not-Making LAT was deleted (pre-dates the 'cleaned' status)"
-    category: lat-session-status
-    module: scrape_session_records (lat-reparse-shallow-2026-07-13)
-    affected: 17
-    fix: "Backfill status to 'cleaned' where lat_inserted > 0 and the law now has no LAT"
-    status: open
-  - pattern: "duty_type has no provenance: cannot tell fractalaw enrichment from legacy regex/Airtable values"
-    category: making-traceability
-    module: legal_register.duty_type
-    fix: "Record duty_type source and timestamp alongside the value"
-    status: open
+depends_on: [qq-data-readiness/2026-09-25-qq-01a-making-transparency]
 ---
 
-# Session: QQ-01 Making Funnel — QQ Triage, Precedence & Traceability (PENDING)
+# Session: QQ-01 QQ Making Triage (PENDING)
 
 ## Problem
 
@@ -46,11 +22,7 @@ The funnel is designed to minimise false positives, because parsing a whole law 
 
 QQ's register is a reference, not ground truth. It can easily contain laws without duties, such as amending instruments. For most of the 163, **the funnel has already given a verdict, and it's correct**: those laws are register cleanup findings for QQ. They are not changes to our DB.
 
-The real problem is **traceability**. The funnel records a lot, but the final `is_making` write can't be traced:
-- `record_change_log` has **0** entries for `is_making` across the whole corpus. Only the scraper and legacy import write to it; Triage and TaxaSubscriber don't.
-- `duty_type` has no provenance, so a fractalaw result can't be told apart from a legacy regex or Airtable value.
-- 17 LAT session records still say `confirmed` although fractalaw confirmed the laws not Making and their LAT was deleted in #120. This happened before the `cleaned` status existed.
-- 33 in-force laws have Duty/Responsibility in `duty_type` but `is_making = false`. 21 of them were last touched by the 12 Aug reparse.
+The traceability problems found alongside this (untraced `is_making` writes, no `duty_type` provenance, stale session statuses, and 33 Duty/Responsibility laws with `is_making = false`) are fixed in [QQ-01a](./2026-09-25-qq-01a-making-transparency.md). This session is only the QQ triage.
 
 ## Funnel state of the 163 (from recorded data, 2026-09-25)
 
@@ -74,36 +46,22 @@ In total: **81 are QQ register cleanup on the funnel's own verdict** (C1 + X1 + 
 
 ## Todo
 
-- ⬜ **Traceability first** (TDD, pure module plus thin writers). Every write to `is_making`, `making_*` or `duty_type` appends a `record_change_log` entry with a `source` (`detector` | `triage` | `taxa` | `review` | `scraper`) and a reason.
-- ⬜ **One precedence resolver** for `is_making`, applied by every writer:
-  - `making_review` (human) comes first;
-  - then fractalaw enrichment (`duty_type` has Duty/Responsibility means Making; Rights/Powers only means Empowering, not Making);
-  - then triage;
-  - then the detector.
-
-  This matches #120's "taxa wins by design", but in one place.
-- ⬜ Record `duty_type` provenance (source and timestamp), so fractalaw results can be told apart from legacy values.
-- ⬜ Backfill `is_making` through the resolver corpus-wide:
-  - Report every flip with its source.
-  - Expect the 33 Duty/Responsibility laws to become true, including the 4 F1 QQ laws.
-  - Check the 12 Aug reparse path (`staged_parser.ex` taxa/LAT substage) for the overwrite.
-- ⬜ Backfill `scrape_session_records.status = 'cleaned'` for the 17 X1 records. Decide whether stale trees on confirmed not-Making laws should be cleared (13 laws).
-- ⬜ Q1 (13): create a LAT session (`lat-session-build`); the laws are already candidates by the DB rule. Then send them to fractalaw with the brief's batch.
+- ⬜ Wait for QQ-01a (transparency and resolver backfill) so `is_making` is correct before triaging. The 4 F1 laws flip there.
+- ⬜ Wait for fractalaw T1 (37 F3 laws: tree but no duty types) and T2 (8 F2 Rights/Powers-only spot-check) from `.claude/plans/qq-fractalaw-brief.md`. Re-derive states from the `making_funnel` view (QQ-01a).
+- ⬜ Q1 (13): create a LAT session (`lat-session-build`); the laws are already candidates by the DB rule. Then send them to fractalaw (brief T4, item 4).
 - ⬜ P1 (8): Jason decides, per Act, between parsing it and QQ cleanup.
 - ⬜ X2 (6): check whether legislation.gov.uk has body XML for them. If not, they're an explained gap.
-- ⬜ Fractalaw hand-off: `.claude/plans/qq-fractalaw-brief.md` (F3 question, L1 and QQ-02 enrichment batch, F2 spot-check)
-- ⬜ QQ cleanup list: `backend/data/reports/qq/register-cleanup-not-making.csv` (the 81, plus whatever P1 and X2 add), with the funnel evidence for each law
-- ⬜ Benchmark `legal-01-making` after the resolver backfill. Record it in the meta Results table and post on #161.
+- ⬜ QQ cleanup list: `backend/data/reports/qq/register-cleanup-not-making.csv` (the 81, plus whatever T1, T2, P1 and X2 add), with the funnel evidence for each law
+- ⬜ Benchmark `legal-01-making`. Record it in the meta Results table and post on #161.
 
 ## Dependencies
 
 - ✅ Worklist `worklists/01-not-making.csv` with `funnel_state` and `next_action`
 - ✅ Baseline run `2026-09-25T1107-legal-baseline`
-- ⬜ Fractalaw session for F3 and L1 (see the brief). The traceability and resolver work doesn't depend on it.
+- ⬜ QQ-01a Making Pipeline Transparency (resolver backfill, `making_funnel` view)
+- ⬜ Fractalaw T1/T2 answers (the fractalaw session is running)
 
 ## Exit criteria
 
-- Every `is_making` change is traceable to a source and reason in `record_change_log`.
-- 0 in-force laws with Duty/Responsibility and `is_making = false`, unless a `making_review` overrides it.
 - Every one of the 163 has a funnel state and next action. `not_making` in the benchmark contains only laws that are QQ cleanup or still waiting in the funnel.
-- `legal-01-making`: `both` rises by the F1 laws that match. Evaluable agreement may dip slightly as laws enter the corpus without trees. Report register recall alongside it.
+- `legal-01-making`: `both` rises by the newly Making laws that match. Evaluable agreement may dip slightly as laws enter the corpus without trees. Report register recall alongside it.
