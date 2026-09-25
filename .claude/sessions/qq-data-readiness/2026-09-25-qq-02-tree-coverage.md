@@ -59,3 +59,9 @@ Measured with `mix screener.benchmark … --label legal-02-coverage`, compared w
 - `no_tree` for QQ register laws ≤ 5. Each remaining law has a reason (no fitness mentions, or awaiting fractalaw).
 - Evaluable agreement ≥ 80%.
 - No rise in `screener_only` that isn't explained (new trees can over-match; hand those to QQ-04).
+
+## T4 result (2026-09-25)
+
+- Trees for QQ register laws: `no_tree` 74 → 28 (benchmark `legal-t4`). 30 laws moved from no_tree to both, and `UK_ukpga_1990_9` now has a tree.
+- The in-force Making corpus has 613 trees (was 546).
+- Still outstanding: the provision-level publish for the new laws (the SLM is still running), and the 35 laws awaiting LAT.

@@ -92,3 +92,30 @@ Measured with `mix screener.benchmark … --label legal-03-fractalaw-fixes` and 
 - `time_window_caveat`: 11 → 0; lint L2 50 → 0; L3 4 → 0
 - `soft_disapplication`: 34 → ≤ 15
 - `both` does not fall; every law that leaves `both` is explained
+
+## T4 result (2026-09-25)
+
+Fractalaw published 628 laws with 0 failures; legal received 628 and updated 628.
+- **Fresh DRRP:** 62 laws. Only `UK_ukpga_1947_48` flipped Making (false → true); nothing was downgraded.
+- **Fitness-only:** 566 laws, with `is_making` untouched.
+
+Legal-side lint (in-force Making trees, 546 → 613):
+
+| Defect | Before | After |
+|---|---|---|
+| Expired TimeWindow | 50 | 0 |
+| Contains Not | 315 | 27 |
+| Not on own jurisdiction | 4 | 0 |
+| `construction` used / inside Not | 251 / 52 | 12 / 0 |
+| Government-actor codes | 230 | 0 |
+| Devolved law without its own jurisdiction gate | 26 | 0 |
+| Territory-only (L8) | 48 | 99 |
+
+**Needs a review pass:** trees whose remaining codes were hallucinated or government-only are now gate-only, which is why territory-only rose.
+
+**Benchmark `legal-t4`:**
+- screener_only 138 → 87; caveats 32 → 4.
+- Evaluable agreement 68.0% → 63.8%. 47 laws left `both` for `generic_code_gate` and `material_condition_miss`: the old trees matched through wrong branches.
+- **L6 (generic codes) is now the largest tree-side cause, at 55 laws. Its owner (compliance or fractalaw) must be decided.**
+
+Fractalaw follow-up raised: fractalatai #55. Law-level DRRP only rolls up the regex tier.
