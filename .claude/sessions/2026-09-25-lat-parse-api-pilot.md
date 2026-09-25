@@ -1,12 +1,12 @@
 ---
 session: "LAT Parse via API: Pilot (22 QQ Laws)"
-status: pending
+status: active
 opened: 2026-09-25
 related: [161]
 enables: [2026-09-25-ai-parsing-workflow, qq-data-readiness/2026-09-25-qq-02-tree-coverage]
 ---
 
-# Session: LAT Parse via API Pilot (PENDING)
+# Session: LAT Parse via API Pilot (ACTIVE)
 
 ## Problem
 
@@ -18,8 +18,8 @@ What it learns decides what the workflow API needs before an agent can run it.
 
 ## Todo
 
-- ⬜ Pre-parse gate: check the 22 against the amending-SI policy ("inserts duties into a principal Act" means not Making). Candidates: `UK_ssi_2007_80`, `UK_uksi_2018_98`, `UK_wsi_2001_3545` and `UK_wsi_2009_2861`. Record verdicts with `mix making.review`, and drop any that aren't Making.
-- ⬜ Machine access for the LAT session endpoints: an `X-API-Key` scope following the `:api_ai` / `AiApiKeyPlug` precedent (`AI_SERVICE_API_KEY`), and no browser cookie. Read vs write.
+- ✅ Pre-parse gate: check the 22 against the amending-SI policy ("inserts duties into a principal Act" means not Making). Candidates: `UK_ssi_2007_80`, `UK_uksi_2018_98`, `UK_wsi_2001_3545` and `UK_wsi_2009_2861`. Record verdicts with `mix making.review`, and drop any that aren't Making.
+- ✅ Machine access for the LAT session endpoints: an `X-API-Key` scope following the `:api_ai` / `AiApiKeyPlug` precedent (`AI_SERVICE_API_KEY`), and no browser cookie. Read vs write.
 - ⬜ Drive the session through the API:
   1. `POST /api/lat/sessions/preview`
   2. `POST /api/lat/sessions/from-view` (by names)
@@ -49,3 +49,29 @@ What it learns decides what the workflow API needs before an agent can run it.
 ## The 22 laws (QQ-02 bucket a)
 
 UK_anaw_2016_3, UK_asp_2003_2, UK_ssi_2007_80, UK_ukpga_2003_21, UK_ukpga_2006_49, UK_ukpga_2020_7, UK_uksi_1989_1796, UK_uksi_1997_2962, UK_uksi_2002_1587, UK_uksi_2006_2183, UK_uksi_2006_2184, UK_uksi_2007_3075, UK_uksi_2007_3077, UK_uksi_2010_330, UK_uksi_2010_332, UK_uksi_2015_962, UK_uksi_2016_1026, UK_uksi_2018_800, UK_uksi_2018_98, UK_wsi_2001_3545, UK_wsi_2009_2861, UK_wsi_2010_1821
+
+## Progress (2026-09-25)
+
+**Gate (Jason): the 4 amending SIs are not Making.**
+- `UK_ssi_2007_80`, `UK_uksi_2018_98`, `UK_wsi_2001_3545` and `UK_wsi_2009_2861` are each "X Regulations are amended as follows" instruments.
+- Recorded with `mix making.review --verdict not_making --note …`, the task's first real use. The source is `review` and the note is in the change log.
+- The pilot parses the remaining **18**.
+
+**Machine access** (commit `6a4b02c`):
+- `AiApiKeyPlug` takes an `env:` option.
+- New `/api/workflow/lat/*` routes (preview, from-view, create, show, records, select, confirm, parse-stream) sit behind a separate write key, `WORKFLOW_API_KEY`, stored in the gitignored root `.env`. The AI service's read-only `AI_SERVICE_API_KEY` is not reused.
+- Legal's server was restarted with the key: 401 without it, 200 with it, and all Zenoh subscribers came back up.
+
+**API run:**
+1. `POST /api/workflow/lat/sessions/from-view` (18 names, label `qq-lat-api-pilot`) created `lat-parse-qq-lat-api-pilot-2026-09-25-1602` in 1s.
+2. `PATCH …/records/select` updated 18.
+3. `GET …/parse-stream?name=…` runs one law at a time.
+
+**Bug found by the pilot (fixed, commit `5b267e5`): LAT persist has been broken since 12 Aug.**
+- `20260812203258_add_sub_provision` added `legal_articles.sub_provision` but not the `lat` compatibility view that `LatPersister` inserts through.
+- Every persist failed with 42703. The UI was affected too, but no LAT session had run since, so nobody noticed.
+- Fix: migration `20260925160400` appends the column to the view.
+- Added the first `LatPersister` test. It reproduced the error before the fix, and it also verifies the #162 extent refresh after persist.
+- The first law, `UK_uksi_2002_1587`, then parsed cleanly: 142 rows, and SSE events ran connected → stage_start/complete ×5 → parse_done → parse_complete.
+
+**API gap (confirmed):** parsing is per law over SSE. A client has to hold one connection per law and scrape the stage summaries from event text. An agent needs a batch or job trigger plus a structured status endpoint.
