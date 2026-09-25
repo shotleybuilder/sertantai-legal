@@ -25,9 +25,9 @@ These fixes don't move evaluable agreement, because screener-only laws aren't in
 
 ## Todo (loose; rewrite on resume)
 
-- ⬜ Fix `geo_extent` (#162, raised by fractalaw): the fallback to the unrevised-document placeholder, and stale values where a revised law-level extent exists. Fractalaw counts 425 mislabelled in-force Making laws (nisr 157, ssi 175, wsi 92, anaw 1) plus 136 null.
+- ➡️ Moved to its own session, [#162](./2026-09-25-issue-162.md). Fix `geo_extent` (#162, raised by fractalaw): the fallback to the unrevised-document placeholder, and stale values where a revised law-level extent exists. Fractalaw counts 425 mislabelled in-force Making laws (nisr 157, ssi 175, wsi 92, anaw 1) plus 136 null.
 - ⬜ The jurisdiction gate uses fractalaw's new **application** field, not extent (decided 2026-09-25). Agree the ZENOH-SPEC change with fractalaw.
-- ⬜ **#163: add legal columns for fractalaw's application fields**, and accept them in TaxaSubscriber. This blocks fractalaw from publishing them. Use the `db-schema-changes` skill; the columns are additive on `legal_register`, following the `definitions_parsed_at` precedent.
+- ➡️ Moved to its own session, [#163](./2026-09-25-issue-163.md). **#163: add legal columns for fractalaw's application fields**, and accept them in TaxaSubscriber. This blocks fractalaw from publishing them. Use the `db-schema-changes` skill; the columns are additive on `legal_register`, following the `definitions_parsed_at` precedent.
 - ⬜ Jurisdiction gate (lint L7): spec for fractalaw to AND the law's extent (from the corrected `geo_extent`/`geo_region`) at the tree root, with place types in their own branch. Fix `geo_extent` first. Check whether fractalaw reads it from the LRT queryable or works out extent itself.
   - Alternative: compliance treats `geo_extent` as a categorical exclusion. Agree the owner with compliance.
 - ⬜ Territory-only trees (16) and territory branches (38): decide per law whether they are genuinely universal (e.g. offshore first-aid applies to every offshore employer) or have lost a condition during extraction. Send lost-condition cases to fractalaw.
@@ -36,6 +36,7 @@ These fixes don't move evaluable agreement, because screener-only laws aren't in
 
 ## Dependencies
 
+- ⬜ #162 and #163 sessions
 - ⬜ QQ-03 lint (L7, L8) and the fractalaw re-enrichment slot
 - ✅ Worklist `worklists/03-screener-only.csv` (`ni_law` flag, cause buckets)
 
