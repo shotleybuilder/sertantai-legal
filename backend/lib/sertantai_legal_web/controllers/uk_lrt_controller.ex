@@ -12,6 +12,7 @@ defmodule SertantaiLegalWeb.UkLrtController do
   use SertantaiLegalWeb, :controller
 
   alias SertantaiLegal.Legal.LegalRegister
+  alias SertantaiLegal.Legal.Making
 
   require Ash.Query
 
@@ -113,11 +114,11 @@ defmodule SertantaiLegalWeb.UkLrtController do
       |> Map.filter(fn {k, _v} -> MapSet.member?(accepted_keys, k) end)
       |> wrap_values_jsonb()
 
+    {making_evidence, attrs} = split_making(attrs)
+
     case LegalRegister.by_id(id) do
       {:ok, record} ->
-        case record
-             |> Ash.Changeset.for_update(:update, attrs)
-             |> Ash.update() do
+        case update_with_making(record, attrs, making_evidence) do
           {:ok, updated} ->
             json(conn, record_to_json(updated))
 
@@ -481,6 +482,56 @@ defmodule SertantaiLegalWeb.UkLrtController do
   end
 
   # Wrap bare lists as %{"values" => [...]} for JSONB map fields
+  # Making fields go through Legal.Making so is_making is resolved and logged
+  # (QQ-01a). A person setting is_making directly is recorded as a human review.
+  @making_fields %{
+    "making_review" => :making_review,
+    "making_review_at" => :making_review_at,
+    "making_classification" => :making_classification,
+    "making_classification_source" => :making_classification_source,
+    "making_confidence" => :making_confidence,
+    "making_detection_tier" => :making_detection_tier,
+    "making_detection_signals" => :making_detection_signals
+  }
+
+  defp split_making(attrs) do
+    {making, rest} = Map.split(attrs, ["is_making" | Map.keys(@making_fields)])
+
+    evidence =
+      making
+      |> Map.delete("is_making")
+      |> Map.new(fn {k, v} -> {Map.fetch!(@making_fields, k), v} end)
+      |> review_from_is_making(Map.get(making, "is_making"))
+      |> tag_detector()
+
+    {evidence, rest}
+  end
+
+  defp review_from_is_making(evidence, nil), do: evidence
+
+  defp review_from_is_making(evidence, is_making) when is_boolean(is_making),
+    do: Map.put_new(evidence, :making_review, if(is_making, do: "making", else: "not_making"))
+
+  defp review_from_is_making(evidence, _), do: evidence
+
+  defp tag_detector(%{making_classification: c} = evidence) when is_binary(c),
+    do: Map.put_new(evidence, :making_classification_source, "detector")
+
+  defp tag_detector(evidence), do: evidence
+
+  defp update_with_making(record, attrs, making_evidence) do
+    with {:ok, updated} <- maybe_update(record, attrs) do
+      if map_size(making_evidence) == 0,
+        do: {:ok, updated},
+        else: Making.record(updated, making_evidence, "admin_ui")
+    end
+  end
+
+  defp maybe_update(record, attrs) when map_size(attrs) == 0, do: {:ok, record}
+
+  defp maybe_update(record, attrs),
+    do: record |> Ash.Changeset.for_update(:update, attrs) |> Ash.update()
+
   defp wrap_values_jsonb(attrs) do
     Enum.reduce(@values_jsonb_fields, attrs, fn field, acc ->
       case Map.get(acc, field) do

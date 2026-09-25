@@ -296,8 +296,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
     end
   end
 
-  describe "classify_enrichment/2 — is_making derivation" do
-    # classify_enrichment sets is_making from duty_type values.
+  describe "classify_enrichment/2 — enrichment verdict" do
+    # classify_enrichment records fractalaw's DRRP verdict. It never sets
+    # is_making: MakingResolver decides that from all the evidence (QQ-01a).
     # Function column is NOT touched — it stores structural role only.
 
     test "duty_type with 'Duty' → is_making true" do
@@ -306,8 +307,38 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
+      refute Map.has_key?(result, :is_making)
       refute Map.has_key?(result, :function)
+    end
+
+    test "fitness-only payload (no DRRP columns) → no verdict, is_making untouched" do
+      taxa = %{
+        fitness_entities: ["employer"],
+        compiled_applicability: %{"op" => "Match"},
+        significance_rating: "high"
+      }
+
+      record = %{
+        duties: %{entries: [%{"holder" => "Employer"}]},
+        rights: nil,
+        responsibilities: nil,
+        powers: nil
+      }
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      refute Map.has_key?(result, :making_enrichment_verdict)
+      refute Map.has_key?(result, :is_making)
+    end
+
+    test "DRRP columns present but all empty → no_obligations" do
+      taxa = %{duties: %{entries: []}, rights: %{entries: []}}
+      record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.making_enrichment_verdict == "no_obligations"
     end
 
     test "duty_type with 'Responsibility' → is_making true" do
@@ -316,7 +347,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
     end
 
     test "duty_type with 'Obligation' → is_making true (new DRRP vocabulary)" do
@@ -325,7 +356,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.is_making == true,
+      assert result.making_enrichment_verdict == "making",
              "Obligation should be treated as making — this is the new DRRP vocabulary equivalent of Duty"
     end
 
@@ -335,7 +366,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.is_making == false
+      assert result.making_enrichment_verdict == "empowering"
     end
 
     test "duty_type with only 'Liberty' → is_making false" do
@@ -344,7 +375,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.is_making == false
+      assert result.making_enrichment_verdict == "empowering"
     end
 
     test "duty_type with only 'Right' → is_making false" do
@@ -353,15 +384,16 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.is_making == false
+      assert result.making_enrichment_verdict == "empowering"
     end
 
-    test "empty taxa → no is_making set" do
+    test "empty taxa → no verdict" do
       taxa = %{}
       record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
+      refute Map.has_key?(result, :making_enrichment_verdict)
       refute Map.has_key?(result, :is_making)
       refute Map.has_key?(result, :function)
     end
@@ -394,7 +426,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert %{values: values} = result.duty_type
       assert "Duty" in values
       refute "Obligation" in values
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
     end
 
     test "derives Right from rights entries" do
@@ -435,7 +467,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert "Power" in values
       refute "Obligation" in values
       refute "Liberty" in values
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
     end
 
     test "falls back to raw duty_type when no structured entries anywhere" do
@@ -453,7 +485,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       # Raw Obligation kept as fallback, still classified as Making
       assert %{values: ["Obligation"]} = result.duty_type
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
     end
 
     test "falls back to record's entries when taxa has none (amendment SI scenario)" do
@@ -478,10 +510,10 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       assert %{values: values} = result.duty_type
       assert "Duty" in values
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
     end
 
-    test "Confined Spaces scenario: Obligation vocab + duties entries → is_making true" do
+    test "Confined Spaces scenario: Obligation vocab + duties entries → verdict making" do
       taxa = %{
         duty_type: %{values: ["Liberty", "Obligation"]},
         duty_holder: %{values: ["Org: Employer", "Ind: Self-employed Worker"]},
@@ -501,7 +533,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert %{values: values} = result.duty_type
       assert "Duty" in values
       assert "Responsibility" in values
-      assert result.is_making == true
+      assert result.making_enrichment_verdict == "making"
       refute Map.has_key?(result, :function)
     end
   end

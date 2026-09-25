@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.ChangeLogger
+  alias SertantaiLegal.Legal.Making
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.FunctionCalculator
@@ -200,7 +201,7 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   # Create new record with immediate Function
   defp create_record_with_immediate_function(record) do
-    attrs = build_attrs(record)
+    {making_evidence, attrs} = record |> build_attrs() |> split_making()
 
     # Calculate immediate Function (Making, Commencing)
     immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
@@ -212,48 +213,33 @@ defmodule SertantaiLegal.Scraper.Persister do
         attrs
       end
 
-    case LegalRegister
-         |> Ash.Changeset.for_create(:create, attrs_with_function)
-         |> Ash.create() do
-      {:ok, law} -> {:ok, law}
-      {:error, reason} -> {:error, reason}
+    with {:ok, law} <-
+           LegalRegister
+           |> Ash.Changeset.for_create(:create, attrs_with_function)
+           |> Ash.create() do
+      record_making(law, making_evidence)
     end
   end
 
   # Update existing record with immediate Function
   defp update_record_with_immediate_function(existing, record) do
     attrs = build_attrs(record)
-    update_attrs = filter_update_attrs(attrs, existing)
+    {making_evidence, update_attrs} = attrs |> filter_update_attrs(existing) |> split_making()
 
     # Merge immediate Function (structural labels only) with existing function
     immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
     existing_function = existing.function || %{}
     merged_function = Map.merge(existing_function, immediate_function)
 
-    # is_making must be updated even if existing is false (filter_update_attrs
-    # skips non-nil values). Taxa derives is_making from duty_type and it must
-    # propagate to the DB.
-    new_is_making = get_field(record, :is_making) == true
-
     update_attrs_with_function =
-      update_attrs
-      |> then(fn attrs ->
-        if map_size(merged_function) > 0 do
-          Map.put(attrs, :function, merged_function)
-        else
-          attrs
-        end
-      end)
-      |> then(fn attrs ->
-        if new_is_making and existing.is_making != true do
-          Map.put(attrs, :is_making, true)
-        else
-          attrs
-        end
-      end)
+      if map_size(merged_function) > 0 do
+        Map.put(update_attrs, :function, merged_function)
+      else
+        update_attrs
+      end
 
     if map_size(update_attrs_with_function) == 0 do
-      {:ok, existing}
+      record_making(existing, making_evidence)
     else
       # Build change log entry before applying updates
       update_attrs_with_log =
@@ -267,11 +253,11 @@ defmodule SertantaiLegal.Scraper.Persister do
             update_attrs_with_function
         end
 
-      case existing
-           |> Ash.Changeset.for_update(:update, update_attrs_with_log)
-           |> Ash.update() do
-        {:ok, law} -> {:ok, law}
-        {:error, reason} -> {:error, reason}
+      with {:ok, law} <-
+             existing
+             |> Ash.Changeset.for_update(:update, update_attrs_with_log)
+             |> Ash.update() do
+        record_making(law, making_evidence)
       end
     end
   end
@@ -343,28 +329,61 @@ defmodule SertantaiLegal.Scraper.Persister do
 
   # Create a new LegalRegister record (without Function - used by persist_record/1)
   defp create_record(record) do
-    attrs = build_attrs(record)
+    {making_evidence, attrs} = record |> build_attrs() |> split_making()
 
-    case LegalRegister |> Ash.Changeset.for_create(:create, attrs) |> Ash.create() do
-      {:ok, _} -> {:ok, :created}
-      {:error, reason} -> {:error, reason}
+    with {:ok, law} <- LegalRegister |> Ash.Changeset.for_create(:create, attrs) |> Ash.create(),
+         {:ok, _law} <- record_making(law, making_evidence) do
+      {:ok, :created}
     end
   end
 
   # Update an existing LegalRegister record (without Function - used by persist_record/1)
   defp update_record(existing, record) do
     attrs = build_attrs(record)
-    update_attrs = filter_update_attrs(attrs, existing)
+    {making_evidence, update_attrs} = attrs |> filter_update_attrs(existing) |> split_making()
 
-    if map_size(update_attrs) == 0 do
-      {:ok, :updated}
-    else
-      case existing |> Ash.Changeset.for_update(:update, update_attrs) |> Ash.update() do
-        {:ok, _} -> {:ok, :updated}
-        {:error, reason} -> {:error, reason}
+    result =
+      if map_size(update_attrs) == 0 do
+        record_making(existing, making_evidence)
+      else
+        with {:ok, law} <-
+               existing |> Ash.Changeset.for_update(:update, update_attrs) |> Ash.update() do
+          record_making(law, making_evidence)
+        end
       end
-    end
+
+    with {:ok, _law} <- result, do: {:ok, :updated}
   end
+
+  # Making evidence (QQ-01a): the parser's detector estimate is split out of the
+  # attrs and recorded through Legal.Making, which resolves and logs is_making.
+  # is_making itself is never persisted directly; the parser's regex duty_type
+  # (persisted with the other attrs) reaches the resolver as legacy evidence.
+  @making_evidence_fields [
+    :is_making,
+    :making_classification,
+    :making_classification_source,
+    :making_confidence,
+    :making_detection_tier,
+    :making_detection_signals
+  ]
+
+  defp split_making(attrs) do
+    {making, rest} = Map.split(attrs, @making_evidence_fields)
+
+    evidence =
+      case Map.delete(making, :is_making) do
+        %{making_classification: c} = e when is_binary(c) ->
+          Map.put(e, :making_classification_source, "detector")
+
+        e ->
+          e
+      end
+
+    {evidence, rest}
+  end
+
+  defp record_making(law, evidence), do: Making.record(law, evidence, "persister")
 
   # Build attributes map from scraped record using ParsedLaw for consistent JSONB conversion
   defp build_attrs(record) do

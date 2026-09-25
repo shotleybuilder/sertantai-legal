@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Zenoh.TriageSubscriber do
   require Ash.Query
 
   alias SertantaiLegal.Legal.LegalRegister
+  alias SertantaiLegal.Legal.Making
   alias SertantaiLegal.Zenoh.ActivityLog
 
   @poll_interval :timer.seconds(2)
@@ -152,18 +153,17 @@ defmodule SertantaiLegal.Zenoh.TriageSubscriber do
     end
   end
 
+  # Triage is an estimate: it records its classification as evidence and
+  # Legal.Making resolves is_making, so it can't overturn enrichment (QQ-01a).
   defp apply_triage(record, triage) do
-    classification = triage["classification"]
-    is_making = classification == "making"
-
     params = %{
-      making_classification: classification,
+      making_classification: triage["classification"],
+      making_classification_source: "triage",
       making_confidence: triage["confidence"],
       making_detection_tier: triage["tier"],
-      making_detection_signals: triage["counts"],
-      is_making: is_making
+      making_detection_signals: triage["counts"]
     }
 
-    Ash.update(record, params, action: :update)
+    Making.record(record, params, "triage_subscriber")
   end
 end

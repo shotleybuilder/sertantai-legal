@@ -112,7 +112,9 @@ defmodule Mix.Tasks.Legal.BackfillMakingProvenance do
         params = [
           fields.making_confidence,
           fields.making_detection_tier,
-          Jason.encode!(fields.making_detection_signals),
+          # Pass the map: Postgrex encodes jsonb params itself (a pre-encoded
+          # string was stored as a double-encoded JSON string, QQ-01a).
+          fields.making_detection_signals,
           law["name"]
         ]
 

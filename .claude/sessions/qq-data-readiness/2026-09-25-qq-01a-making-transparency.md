@@ -82,17 +82,21 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - ✅ Gemini review of the design, saved to `backend/data/code-reviews/2026-09-25-qq-01a-making-transparency-design.md`
 - ✅ Red: tests for `Legal.Taxa.MakingResolver` (pure), in `test/sertantai_legal/legal/taxa/making_resolver_test.exs`. All 21 failed as expected: the module didn't exist.
 - ✅ Green: `lib/sertantai_legal/legal/taxa/making_resolver.ex`. 21/21 pass; credo clean. `Decision` includes `dissent`, the lower tiers that disagree.
-- ⬜ `making_classification_source` (`detector` | `triage`): the detector must never overwrite a triage classification. Backfill the source from the shape of `making_detection_signals`.
-- ⬜ One write path (`Legal.Making.apply/3` or similar):
+- ✅ `making_classification_source`: the column exists and the detector-never-overwrites-triage guard is in `Making.plan/4`
+- ⬜ Backfill `making_classification_source` from the shape of `making_detection_signals`, and decode the 1,994 double-encoded strings
+- ✅ One write path, `Legal.Making.record/3` (row lock, `plan/4` pure). 13 unit tests plus 2 DB tests:
   - It records a writer's evidence (triage fields, enrichment verdict, review) and runs the resolver.
   - It writes `is_making` and appends a `ChangeLogger` entry with the `source` (`detector` | `triage` | `taxa` | `review` | `scraper` | `backfill`) and the reason.
-- ⬜ TriageSubscriber: write the triage fields only, through the write path. Remove the direct `is_making`.
-- ⬜ TaxaSubscriber:
-  - Record an enrichment verdict only when the payload carries DRRP results. Fitness, tree and significance-only payloads leave the verdict alone.
-  - Housekeeping (empty payload) records an explicit "enriched: no obligations" verdict, with a source.
-- ⬜ Persister and staged parser: route `is_making` through the write path. Check the 12 Aug reparse path.
-- ⬜ `making_review`: honoured by the resolver as the top precedence. Setting it goes through the write path, so it's logged.
-- ⬜ Provenance: add enrichment-verdict source and timestamp columns (migration; `db-schema-changes` skill for the `uk_lrt` view and triggers)
+- ✅ TriageSubscriber: writes triage evidence only (`making_classification_source: "triage"`) through `Making.record`.
+- ✅ TaxaSubscriber:
+  - Records `making_enrichment_verdict` only when the payload carries non-null DRRP data. Fitness, tree and significance-only payloads leave it alone.
+  - Open for fractalaw: null DRRP columns are dropped during normalisation, so "DRRP ran and found nothing" can't be told apart from a fitness-only publish. The rule is conservative: no verdict, so no downgrade.
+  - Housekeeping (empty payload) records `no_obligations` with `changed_by: taxa_subscriber:empty_payload`.
+- ✅ Persister (all four create/update paths): the detector estimate is split out and recorded through `Making.record`, tagged `detector`. `is_making` is never persisted directly; the regex `duty_type` reaches the resolver as legacy evidence. The staged parser only feeds the persister.
+- ✅ Admin `PATCH /laws/:id` (a fifth writer, found during this session): Making fields go through `Making.record`, and a direct `is_making` edit is recorded as a human `making_review`.
+- ✅ `legal.backfill_making_provenance`: removed the `Jason.encode!` that double-encoded `making_detection_signals` (the cause of the 1,994 string rows)
+- ✅ `making_review`: the top tier in the resolver. Setting it through the admin UI or `Making.record` is logged and time-stamped. A `mix making.review` task is still to do.
+- ✅ Provenance columns, migration `20260925121805_add_making_provenance`. Added to the parent `legal_register` only, as for `definitions_parsed_at`; the `uk_lrt` view is unchanged because all Making writers use `LegalRegister`.
 - ⬜ `making_funnel` view: one row per law with funnel state, evidence, the latest LAT session record and a next action. It formalises the QQ-01 worklist query.
 - ⬜ Backfill `scrape_session_records.status = 'cleaned'` for the 17 stale `confirmed` records
 - ⬜ Backfill `is_making` corpus-wide through the resolver (`--dry-run` first). Log every flip; report counts by source and reason.

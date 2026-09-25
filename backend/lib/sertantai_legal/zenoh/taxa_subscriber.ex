@@ -15,7 +15,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   # import Ecto.Query, only: [from: 2]  # Removed with pruner (#110)
 
   alias SertantaiLegal.Legal.LegalRegister
+  alias SertantaiLegal.Legal.Making
   alias SertantaiLegal.Legal.Taxa.ActorDefinitions
+  alias SertantaiLegal.Legal.Taxa.MakingResolver
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Static map from Arrow column name (string) → Ash attribute (atom).
@@ -193,33 +195,47 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     end
   end
 
+  # Taxa fields are stored as received; the enrichment verdict then goes
+  # through Legal.Making, which resolves and logs is_making (QQ-01a).
   defp upsert_taxa(record, taxa) do
-    taxa = convert_duty_type(taxa, record)
-    taxa = derive_is_making(taxa)
+    taxa = classify_enrichment(record, taxa)
+    {verdict_attrs, taxa_attrs} = Map.split(taxa, [:making_enrichment_verdict])
 
     Logger.info(
       "[Zenoh.TaxaSubscriber] Upserting #{record.name}: " <>
-        "taxa_keys=#{inspect(Map.keys(taxa))}, " <>
-        "is_making=#{inspect(taxa[:is_making])}"
+        "taxa_keys=#{inspect(Map.keys(taxa_attrs))}, " <>
+        "enrichment_verdict=#{inspect(verdict_attrs[:making_enrichment_verdict])}"
     )
 
-    case Ash.update(record, taxa, action: :update) do
-      {:ok, _} = result ->
-        result
-
+    with {:ok, updated} <- Ash.update(record, taxa_attrs, action: :update),
+         {:ok, updated} <- record_verdict(updated, verdict_attrs) do
+      {:ok, updated}
+    else
       {:error, reason} = err ->
         Logger.error(
-          "[Zenoh.TaxaSubscriber] Ash.update failed for #{record.name}: #{inspect(reason)}"
+          "[Zenoh.TaxaSubscriber] update failed for #{record.name}: #{inspect(reason)}"
         )
 
         err
     end
   end
 
-  # Handle empty Arrow payload — enrichment ran but no taxa data was sent.
-  # Empty payload means no substantive obligations → is_making = false.
+  defp record_verdict(record, verdict_attrs) when map_size(verdict_attrs) == 0,
+    do: {:ok, record}
+
+  defp record_verdict(record, verdict_attrs) do
+    attrs = Map.put(verdict_attrs, :making_enriched_at, DateTime.utc_now())
+    Making.record(record, attrs, "taxa_subscriber")
+  end
+
+  # Empty Arrow payload: enrichment ran and published nothing for this law.
+  # Recorded as an explicit no_obligations verdict; the resolver decides.
   defp apply_housekeeping(record) do
-    Ash.update(record, %{is_making: false}, action: :update)
+    Making.record(
+      record,
+      %{making_enrichment_verdict: "no_obligations", making_enriched_at: DateTime.utc_now()},
+      "taxa_subscriber:empty_payload"
+    )
   end
 
   @doc false
@@ -286,38 +302,36 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   defp maybe_add_drrp(list, _label, _), do: list
 
-  @doc """
-  Classify enrichment result from taxa fields. Public for testing.
+  # Payload keys that carry DRRP results (present only when non-null).
+  @drrp_keys [:duty_type, :duties, :rights, :responsibilities, :powers]
 
-  Returns the taxa map with `:is_making` set based on duty_type values.
-  Does not touch the `function` column — function stores structural role only.
+  @doc """
+  Classify an enrichment payload. Public for testing.
+
+  Converts duty_type to DRRP vocabulary and, when the payload itself carries
+  DRRP data, adds `:making_enrichment_verdict` ("making", "empowering" or
+  "no_obligations"). Payloads without DRRP data (fitness, tree or significance
+  only) get no verdict, so they can never change is_making. Never sets
+  `:is_making` or `:function` — `Legal.Making` resolves is_making.
   """
   @spec classify_enrichment(map(), map()) :: map()
   def classify_enrichment(record, taxa) do
-    taxa
-    |> convert_duty_type(record)
-    |> derive_is_making()
+    carries_drrp? = Enum.any?(@drrp_keys, &Map.has_key?(taxa, &1))
+    taxa = convert_duty_type(taxa, record)
+
+    if carries_drrp? do
+      Map.put(
+        taxa,
+        :making_enrichment_verdict,
+        MakingResolver.enrichment_verdict(drrp_types(taxa))
+      )
+    else
+      taxa
+    end
   end
 
-  # DRRP types that indicate the law creates substantive obligations.
-  # Supports both old vocabulary (Duty, Responsibility) and new (Obligation).
-  @making_duty_types ["Duty", "Responsibility", "Obligation"]
-
-  # Derive is_making from duty_type values.
-  # Function column is not touched — it stores structural role only (Amending,
-  # Revoking, Commencing, Enacting). Obligation-content classification (Making,
-  # Empowering, Housekeeping) is derivable from is_making + duty_type.
-  defp derive_is_making(%{duty_type: %{values: values}} = taxa) when is_list(values) do
-    is_making = Enum.any?(values, &(&1 in @making_duty_types))
-    Map.put(taxa, :is_making, is_making)
-  end
-
-  defp derive_is_making(taxa) when map_size(taxa) > 0 do
-    # Taxa fields present but no duty_type → not making
-    Map.put(taxa, :is_making, false)
-  end
-
-  defp derive_is_making(taxa), do: taxa
+  defp drrp_types(%{duty_type: %{values: values}}) when is_list(values), do: values
+  defp drrp_types(_taxa), do: []
 
   # --- Change detection hook ---
 
