@@ -15,13 +15,13 @@ bugs:
     category: lat-persist-performance
     module: DB trigger trg_propagate_lat_stats on legal_articles (and its partitions)
     affected: 1
-    fix: "Statement-level trigger with transition tables: recount once per affected law per statement. Check the legal_articles_uk and parent-table firing paths (the lat view inserts via the partition; Ash updates via the parent)"
-    status: open
+    fix: "Migration 20260925161749: statement-level INSERT/UPDATE/DELETE triggers with transition tables on legal_articles + each partition. 6,000-row persist went from 18.2s to 0.56s; the Communications Act now persists 10,900 rows in 28s"
+    status: fixed
   - pattern: "LatStagedParser runs the annotation stages after persist_lat fails, leaving annotations without LAT"
     category: lat-persist
     module: scraper/lat_staged_parser.ex
     affected: 2015
-    fix: "Skip parse/persist_annotations when persist_lat fails; delete the 2,015 orphan annotations for UK_ukpga_2003_21 (or they're replaced on a successful re-parse)"
+    fix: "Skip parse/persist_annotations when persist_lat fails. The 2,015 orphans for UK_ukpga_2003_21 were deleted and recreated by the successful re-parse; the code path is still open"
     status: open
   - pattern: "LAT session record is marked 'parsed' even when persist_lat failed"
     category: lat-session-status
@@ -129,3 +129,15 @@ UK_anaw_2016_3, UK_asp_2003_2, UK_ssi_2007_80, UK_ukpga_2003_21, UK_ukpga_2006_4
 - deciding whether to fix the trigger now or later.
 
 Everything else was mechanical.
+
+## Trigger fix (2026-09-25; Jason brought it into this session)
+
+- **Migration `20260925161749_lat_stats_statement_triggers`** replaces the per-row `trg_propagate_lat_stats` with statement-level `trg_lat_stats_ins`, `_upd` and `_del`, using transition tables.
+  - They're attached to the parent `legal_articles`, which Ash and direct SQL use, and to `legal_articles_uk` / `_au`, because `lat` view inserts target the partition directly.
+  - Statement triggers aren't inherited, so each write path fires once. **A new country partition needs the three triggers too.**
+- **TDD:**
+  - The correctness test covers all three events, the view path and the parent path, and passed on both the old and new triggers.
+  - The timing test (6,000 rows) failed on the old trigger at 18,192ms and passes on the new one at 558ms.
+  - Full suite: 1,747 passed.
+- **Communications Act re-parsed via the API:** 10,900 rows and 2,015 annotations in 28s (it previously failed at 171s). QA: 0 failures. Confirmed and added to the handoff, so there are now **18 laws**.
+- **Expected side effect:** fractalaw provision publishes should now run far faster than ~30/s. Verify on the next publish.
