@@ -49,7 +49,11 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "significance_medium_count" => :significance_medium_count,
     "significance_low_count" => :significance_low_count,
     "significance_total_obligations" => :significance_total_obligations,
-    "significance_parts" => :significance_parts
+    "significance_parts" => :significance_parts,
+    # Application (ZENOH-SPEC v2.4, #163)
+    "application_regions" => :application_regions,
+    "application_source" => :application_source,
+    "application_evidence" => :application_evidence
   }
 
   @poll_interval :timer.seconds(2)
@@ -272,6 +276,10 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_scalar(row, "significance_total_obligations")
     # significance_parts — Utf8 (JSON string) → {:array, :map}
     |> put_json_field(row, "significance_parts")
+    # Application (ZENOH-SPEC v2.4, #163) — where the law operates; stored as received
+    |> put_list_field(row, "application_regions")
+    |> put_scalar(row, "application_source")
+    |> put_scalar(row, "application_evidence")
   end
 
   # Derive proper DRRP duty_type from structured entry columns.

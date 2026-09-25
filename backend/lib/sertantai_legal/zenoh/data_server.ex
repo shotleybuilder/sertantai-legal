@@ -308,6 +308,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       type_class: r.type_class,
       domain: r.domain,
       geo_extent: r.geo_extent,
+      geo_extent_source: r.geo_extent_source,
       geo_region: r.geo_region,
       live: r.live,
       function: r.function,
@@ -484,6 +485,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         type_class: Enum.map(records, & &1.type_class),
         domain: Enum.map(records, & &1.domain),
         geo_extent: Enum.map(records, & &1.geo_extent),
+        # ZENOH-SPEC v2.4: nil = legacy/unverified extent (#162)
+        geo_extent_source: Enum.map(records, & &1.geo_extent_source),
         geo_region: Enum.map(records, & &1.geo_region),
         live: Enum.map(records, & &1.live),
         is_making: Enum.map(records, & &1.is_making),

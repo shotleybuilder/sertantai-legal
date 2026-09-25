@@ -4,6 +4,43 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
   alias SertantaiLegal.Zenoh.TaxaSubscriber
 
   describe "normalize_taxa/1" do
+    test "carries application fields unchanged (ZENOH-SPEC v2.4, #163)" do
+      row = %{
+        "application_regions" => ["england"],
+        "application_source" => "text_clause",
+        "application_evidence" =>
+          ~s|reg.1(3): "These Regulations apply in relation to England only"|
+      }
+
+      result = TaxaSubscriber.normalize_taxa(row)
+
+      assert result.application_regions == ["england"]
+      assert result.application_source == "text_clause"
+      assert result.application_evidence =~ "England only"
+    end
+
+    test "null application fields are left out (unknown, not cleared)" do
+      result =
+        TaxaSubscriber.normalize_taxa(%{
+          "application_regions" => nil,
+          "application_source" => nil,
+          "application_evidence" => nil
+        })
+
+      refute Map.has_key?(result, :application_regions)
+      refute Map.has_key?(result, :application_source)
+    end
+
+    test "application fields give no Making verdict" do
+      taxa = TaxaSubscriber.normalize_taxa(%{"application_regions" => ["wales"]})
+      record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
+
+      refute Map.has_key?(
+               TaxaSubscriber.classify_enrichment(record, taxa),
+               :making_enrichment_verdict
+             )
+    end
+
     test "converts holder map fields to %{values: list} format" do
       row = %{
         "duty_holder" => ["Employer", "Occupier"],

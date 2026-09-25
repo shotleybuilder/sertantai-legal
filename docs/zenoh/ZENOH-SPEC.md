@@ -1,7 +1,7 @@
 # Zenoh Publication Spec: sertantai-legal ↔ fractalaw
 
-**Version**: 3.0
-**Date**: 2026-07-13
+**Version**: 3.1 (taxa/trees v2.4: application fields; LRT `geo_extent_source`)
+**Date**: 2026-09-25
 **Commit**: pending
 **Source**: `backend/lib/sertantai_legal/zenoh/data_server.ex`
 
@@ -84,6 +84,7 @@ Returned by `/lrt` (as array) and `/lrt/{law_name}` (as single object).
   "type_class": "string | null",
   "domain": ["string"],
   "geo_extent": "string | null",
+  "geo_extent_source": "string | null",
   "geo_region": ["string"],
   "live": "string | null",
   "function": {},
@@ -127,7 +128,8 @@ Returned by `/lrt` (as array) and `/lrt/{law_name}` (as single object).
 | `type_code` | `string` | e.g., "ukpga", "uksi", "wsi" |
 | `type_class` | `string \| null` | Broader type classification |
 | `domain` | `string[]` | Domain tags (e.g., `["Health & Safety", "Employment"]`) |
-| `geo_extent` | `string \| null` | Geographic extent (e.g., "E+W+S+NI") |
+| `geo_extent` | `string \| null` | Territorial **extent** (legal systems the law forms part of): UK, GB, E+W, S, NI… Not application; see `application_regions` |
+| `geo_extent_source` | `string \| null` | Which source decided `geo_extent`: `law_level`, `lat_provisions`, `contents_items`, `text_clause` or `type_code`. `null` = legacy/unverified, so use only as an upper bound (v2.4, #162) |
 | `geo_region` | `string[]` | Region tags |
 | `live` | `string \| null` | Live status description |
 | `function` | `object` | Function flags as `{"Making": true, "Amending": false, ...}` |
@@ -616,8 +618,28 @@ One row per law. Published from DuckDB `legislation` table.
 | `significance_low_count` | `Int32` | Count of LOW-significance Obligation provisions |
 | `significance_total_obligations` | `Int32` | Total Obligation provisions rated |
 | `significance_parts` | `Utf8` (JSON) | Part-level breakdown for large Acts (see below). `null` for laws with <50 rated provisions or no Part structure. |
+| `application_regions` | `List<Utf8>` | **v2.4.** Nations where the law **applies**: a subset of `england`, `wales`, `scotland`, `northern_ireland`, using the same codes as the `territorial` dimension. `null` = unknown, so consumers fall back to `geo_extent` as an upper bound |
+| `application_source` | `Utf8` | **v2.4.** Rule that decided `application_regions`: `text_clause`, `title`, `type_code` or `extent_fallback` |
+| `application_evidence` | `Utf8` | **v2.4.** The deciding provision and a snippet, e.g. `reg.1(3): "These Regulations apply in relation to Wales"`; for `title`/`type_code`/`extent_fallback`, the value used |
 
 > **Significance fields** are `null` for laws with no rated Obligation provisions.
+
+#### Application (v2.4, #163)
+
+**Application is not extent.**
+- `geo_extent` (legal's field) is **extent**: the legal system(s) a law forms part of.
+- `application_regions` (fractalaw's field) is where the law **operates**. For example, an E+W SI can apply to England only, and a WSI extends to E+W but applies in Wales.
+- Screening gates on application.
+
+**Rules:**
+- **Law-level union.** `application_regions` is the union of where any provision applies. Partial application (e.g. "Regulations 7 to 9 apply to England only") is not narrowed at law level; it stays inside `compiled_applicability` as scoped branches.
+- **Derivation priority:**
+  1. `text_clause`: application clauses ("apply in relation to England only", "do not apply to Scotland").
+  2. `title`: a title parenthetical such as `(England)`, `(Wales)`, `(Scotland)`, `(Northern Ireland)`, `(England and Wales)`.
+  3. `type_code`: wsi/anaw/asc/mwa → `wales`; ssi/asp → `scotland`; nisr/nia/apni → `northern_ireland`.
+  4. `extent_fallback`: legal's `geo_extent`, mapped to nations. When the LRT `geo_extent_source` is `null`, the extent is legacy/unverified; say so in `application_evidence`.
+- **Extent clauses are not application.** "These Regulations extend to England and Wales" is evidence of extent; it is used only through `extent_fallback`.
+- **Legal stores these fields unchanged.** `null` columns are omitted and never clear a stored value. Application fields never affect `is_making`.
 
 #### Part-level significance breakdown
 
@@ -717,7 +739,12 @@ For the full LRT dump (~19K records), consider querying once on startup and then
 
 ---
 
-## Compiled Applicability Trees (v2.3)
+## Compiled Applicability Trees (v2.3, application gate v2.4)
+
+> **v2.4 changes** (with the application fields above):
+> - **L7:** the root `And` gains a single `{"op":"Match","dimension":"territorial","codes":<application_regions>}` gate. Extent and application statements no longer produce `territorial` Or branches next to place types; place types (`premises`, `workplace`, `ship` …) stay in their own branches.
+> - **L3:** a tree never `Not`s the law's own application area.
+> - **Consistency:** the root gate always equals `application_regions`, so a consumer can gate on either.
 
 The `compiled_applicability` field on the taxa enrichment record contains a JSON-encoded boolean expression tree. This is the compiled output of fractalaw's fitness extraction pipeline — it encodes who/what/where/when a law applies to (and doesn't apply to) in a structure sertantai can evaluate against a customer profile.
 

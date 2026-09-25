@@ -334,6 +334,29 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       )
     end
 
+    # Application (#163, ZENOH-SPEC v2.4) — where the law operates, published by
+    # fractalaw. Distinct from geo_extent (extent). Stored as received.
+    attribute :application_regions, {:array, :string} do
+      allow_nil?(true)
+
+      description(
+        "Nations where the law applies (england, wales, scotland, northern_ireland). nil = unknown: fall back to geo_extent as an upper bound"
+      )
+    end
+
+    attribute :application_source, :string do
+      allow_nil?(true)
+
+      description(
+        "Rule that decided application_regions: text_clause, title, type_code or extent_fallback"
+      )
+    end
+
+    attribute :application_evidence, :string do
+      allow_nil?(true)
+      description("Deciding provision and snippet, or the title / type code / extent used")
+    end
+
     # Significance (from fractalaw — law-level aggregate of provision significance)
     attribute :significance_rating, :string do
       allow_nil?(true)
@@ -848,6 +871,9 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :fitness_applies_count,
         :fitness_disapplies_count,
         :compiled_applicability,
+        :application_regions,
+        :application_source,
+        :application_evidence,
         :popimar_details,
         :tags,
         :stats_self_affects_count,
@@ -964,6 +990,9 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :fitness_applies_count,
         :fitness_disapplies_count,
         :compiled_applicability,
+        :application_regions,
+        :application_source,
+        :application_evidence,
         :popimar_details,
         :tags,
         :stats_self_affects_count,
