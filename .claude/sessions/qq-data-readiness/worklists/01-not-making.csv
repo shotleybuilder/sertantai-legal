@@ -1,164 +1,164 @@
-bucket,law_name,title,family,type_code,making_classification,making_confidence,making_review,signals_making,lat_count,has_fitness,has_tree,register_source,verdict
-eu_directive_or_decision,UK_eudn_2000_532,Commission Decision of 3 May 2000 replacing Decision 94/3/EC establishing a list of wastes pursuant to Article 1(a) of Council Directive 75/442/EEC on waste and Council Decision 94/904/EC establishing a list of hazardous waste pursuant to Article 1(4) of Council Directive 91/689/EEC on hazardous waste (notified under document number C(2000) 1147) (Text with EEA relevance) (2000/532/EC),💚 WASTE,eudn,not_making,0.17,,,0,f,f,enhesa_import,
-eu_directive_or_decision,UK_eudn_2019_1202,Commission Implementing Decision (EU) 2019/1202 of 12 July 2019 on the harmonised standards for equipment and protective systems intended for use in potentially explosive atmospheres drafted in support of Directive 2014/34/EU of the European Parliament and of the Council,,eudn,not_making,0.12,,,0,f,f,enhesa_import,
-eu_directive_or_decision,UK_eudr_2000_78,Council Directive 2000/78/EC of 27 November 2000 establishing a general framework for equal treatment in employment and occupation,💜 HR: Employment,eudr,not_making,0.17,,,0,f,f,enhesa_import,
-eu_directive_or_decision,UK_eudr_2001_42,Directive 2001/42/EC of the European Parliament and of the Council of 27 June 2001 on the assessment of the effects of certain plans and programmes on the environment,💚 ENVIRONMENTAL PROTECTION,eudr,not_making,0.17,,,0,f,f,enhesa_import,
-eu_directive_or_decision,UK_eudr_2002_15,Directive 2002/15/EC of the European Parliament and of the Council of 11 March 2002 on the organisation of the working time of persons performing mobile road transport activities,💙 TRANSPORT: Road Safety,eudr,not_making,0.17,,,0,f,f,enhesa_import,
-eu_directive_or_decision,UK_eudr_2003_88,Directive 2003/88/EC of the European Parliament and of the Council of 4 November 2003 concerning certain aspects of the organisation of working time,💜 HR: Employment,eudr,not_making,0.17,,,0,f,f,enhesa_import,
-principal_candidate,UK_asp_2008_5,Public Health etc. (Scotland) Act,💙 HEALTH: Public,asp,,,,,0,f,f,bms_import,
-principal_candidate,UK_asp_2011_6,Wildlife and Natural Environment (Scotland) Act,💚 WILDLIFE & COUNTRYSIDE,asp,uncertain,0.52,,,450,f,f,bms_import,
-principal_candidate,UK_eur_2008_307,"Commission Regulation (EC) No 307/2008 of 2 April 2008 establishing, pursuant to Regulation (EC) No 842/2006 of the European Parliament and of the Council, minimum requirements for training programmes and the conditions for mutual recognition of training attestations for personnel as regards air-conditioning systems in certain motor vehicles containing certain fluorinated greenhouse gases (Text with EEA relevance)",💚 CLIMATE CHANGE,eur,not_making,0.17,,,19,f,f,enhesa_import,
-principal_candidate,UK_eur_2016_1387,Commission Delegated Regulation (EU) 2016/1387 of 9 June 2016 amending Annexes I and III to Council Regulation (EC) No 2173/2005 following a Voluntary Partnership Agreement with Indonesia for a FLEGT licensing scheme for imports of timber into the European Union,💚 TREES: Forestry & Timber,eur,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_ssi_2000_149,Children (Protection at Work) (Scotland) Regulations,💙 OH&S: Occupational / Personal Safety,ssi,not_making,0.12,,,0,f,f,bms_import,
-principal_candidate,UK_ssi_2004_332,Town and Country Planning (Electronic Communications) (Scotland) Order,💚 TOWN & COUNTRY PLANNING,ssi,,,,,49,t,t,enhesa_import,
-principal_candidate,UK_ssi_2004_512,Control of Volatile Organic Compounds (Petrol Vapour Recovery) (Scotland) Regulations,💚 AIR QUALITY,ssi,not_making,0.12,,,12,t,t,enhesa_import,
-principal_candidate,UK_ssi_2005_172,Building (Forms) (Scotland) Regulations,💙 PUBLIC: Building Safety,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_ssi_2005_22,Waste (Scotland) Regulations,💚 WASTE,ssi,making,0.61,,t,90,t,t,enhesa_import,
-principal_candidate,UK_ssi_2005_63,Water (Prevention of Pollution) (Code of Practice) (Scotland) Order,💚 POLLUTION,ssi,,,,,12,t,t,enhesa_import,
-principal_candidate,UK_ssi_2005_658,Contaminated Land (Scotland) Regulations,💚 POLLUTION,ssi,uncertain,0.44,,,73,f,f,bms_import,
-principal_candidate,UK_ssi_2005_66,Possession of Pesticides (Scotland) Order,💚 AGRICULTURE: Pesticides,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_ssi_2006_140,Children (Protection at Work) (Scotland) Regulations,💙 OH&S: Occupational / Personal Safety,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_ssi_2006_155,Sewerage Nuisance (Code of Practice) (Scotland) Order,💚 WATER & WASTEWATER,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_ssi_2007_179,Radioactive Contaminated Land (Scotland) Regulations,💚 NUCLEAR & RADIOLOGICAL,ssi,not_making,0.17,,,0,f,f,bms_import,
-principal_candidate,UK_ssi_2008_221,Register of Sites of Special Scientific Interest (Scotland) Regulations,💚 WILDLIFE & COUNTRYSIDE,ssi,not_making,0.17,,,34,f,f,bms_import,
-principal_candidate,UK_ssi_2009_378,Planning (Control of Major–Accident Hazards) (Scotland) Regulations,💚 PLANNING & INFRASTRUCTURE,ssi,not_making,0.17,,,0,f,f,bms_import,
-principal_candidate,UK_ssi_2010_434,Town and Country Planning (Tree Preservation Order and Trees in Conservation Areas) (Scotland) Regulations,💚 TOWN & COUNTRY PLANNING,ssi,,,,,98,f,f,enhesa_import,
-principal_candidate,UK_ssi_2010_435,Waste Information (Scotland) Regulations,💚 WASTE,ssi,making,0.51,,t,53,t,t,enhesa_import,
-principal_candidate,UK_ssi_2011_226,Waste (Scotland) Regulations,💚 WASTE,ssi,,,,,81,f,f,enhesa_import,
-principal_candidate,UK_ssi_2011_368,Water Environment (Relevant Enactments and Designation of Responsible Authorities and Functions) (Scotland) Order 2011,💚 WATER & WASTEWATER,ssi,uncertain,0.63,,,9,t,t,enhesa_import,
-principal_candidate,UK_ssi_2011_418,Control of Volatile Organic Compounds (Petrol Vapour Recovery) (Scotland) Regulations,💚 AIR QUALITY,ssi,not_making,0.12,,,18,t,t,enhesa_import,
-principal_candidate,UK_ssi_2012_148,Waste (Scotland) Regulations,💚 WASTE,ssi,,,,,33,t,t,enhesa_import,
-principal_candidate,UK_ssi_2012_214,Green Deal (Acknowledgment) (Scotland) Regulations,💚 CLIMATE CHANGE,ssi,not_making,0.17,,,0,t,t,enhesa_import,
-principal_candidate,UK_ssi_2014_367,Scottish Landfill Tax (Prescribed Landfill Site Activities) Order,💚 WASTE,ssi,,,,,23,t,t,enhesa_import,
-principal_candidate,UK_ssi_2021_50,Personal Protective Equipment (Temporary Arrangements) (Coronavirus) (Scotland) Regulations,💙 HEALTH: Coronavirus,ssi,not_making,0.08,,,39,t,t,enhesa_import,
-principal_candidate,UK_ukpga_1883_3,Explosive Substances Act,💙 FIRE: Dangerous and Explosive Substances,ukpga,not_making,0.09,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1933_13,Foreign Judgments (Reciprocal Enforcement) Act,,ukpga,,,,,107,f,f,enhesa_import,
-principal_candidate,UK_ukpga_1947_41,Fire Services Act,,ukpga,,,,,102,f,f,enhesa_import,
-principal_candidate,UK_ukpga_1947_48,Agriculture Act,💚 AGRICULTURE,ukpga,uncertain,0.43,,,187,f,f,enhesa_import,
-principal_candidate,UK_ukpga_1947_53,Town and Country Planning (Scotland) Act,💚 TOWN & COUNTRY PLANNING,ukpga,uncertain,0.62,,,33,f,f,enhesa_import,
-principal_candidate,UK_ukpga_1949_55,Prevention of Damage by Pests Act,💚 AGRICULTURE: Pesticides,ukpga,uncertain,0.34,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1959_66,Obscene Publications Act,💙 PUBLIC,ukpga,not_making,0.06,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1964_74,Obscene Publications Act,💙 PUBLIC,ukpga,not_making,0.12,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1986_14,Animals (Scientific Procedures) Act,💚 ANIMALS & ANIMAL HEALTH,ukpga,uncertain,0.34,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1989_6,Official Secrets Act,,ukpga,,,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1990_18,Computer Misuse Act,💙 PUBLIC: Data,ukpga,making,0.85,,t,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1991_40,Road Traffic Act,💙 TRANSPORT: Road Safety,ukpga,uncertain,0.44,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_1998_33,Landmines Act,💙 FIRE: Dangerous and Explosive Substances,ukpga,uncertain,0.34,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2006_46,Companies Act,,ukpga,uncertain,0.52,,,0,f,f,enhesa_import,
-principal_candidate,UK_ukpga_2008_20,Health and Safety (Offences) Act,💙 OH&S: Occupational / Personal Safety,ukpga,not_making,0.12,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2010_11,Cluster Munitions (Prohibitions) Act,💙 FIRE: Dangerous and Explosive Substances,ukpga,uncertain,0.64,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2010_23,Bribery Act,,ukpga,,,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2015_6,Counter-Terrorism and Security Act,💙 PUBLIC,ukpga,uncertain,0.43,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2016_25,Investigatory Powers Act,,ukpga,,,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2017_3,Policing and Crime Act,,ukpga,,,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2018_16,European Union (Withdrawal) Act,,ukpga,,,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2019_17,Offensive Weapons Act,,ukpga,making,0.70,,t,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2019_3,Counter-Terrorism and Border Security Act,,ukpga,,,,,0,f,f,bms_import,
-principal_candidate,UK_ukpga_2023_55,Levelling-up and Regeneration Act,,ukpga,making,0.52,,t,3351,t,t,enhesa_import,
-principal_candidate,UK_uksi_1969_1263,Clean Air (Emission of Dark Smoke) (Exemption) Regulations,💚 AIR QUALITY,uksi,not_making,0.12,,,6,t,t,enhesa_import,
-principal_candidate,UK_uksi_1969_47,Firearms (Dangerous Air Weapons) Rules,💙 PUBLIC,uksi,not_making,0.12,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_1979_791,Forestry (Felling of Trees) Regulations,💚 TREES: Forestry & Timber,uksi,,,,,0,f,f,enhesa_import,
-principal_candidate,UK_uksi_1990_1380,Health and Safety (Training for Employment) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,uncertain,0.69,,,8,t,t,bms_import,
-principal_candidate,UK_uksi_1998_2913,Town and Country Planning (Minerals) (Scotland) Regulations,💚 TOWN & COUNTRY PLANNING,uksi,not_making,0.17,,,0,t,t,enhesa_import,
-principal_candidate,UK_uksi_1998_3084,Water (Prevention of Pollution) (Code of Practice) Order,💚 WATER & WASTEWATER,uksi,not_making,0.17,,,6,f,f,bms_import,
-principal_candidate,UK_uksi_1998_3111,Road Vehicles (Authorised Weight) Regulations,💙 TRANSPORT: Road Safety,uksi,not_making,0.12,,,18,t,t,enhesa_import,
-principal_candidate,UK_uksi_2003_2426,Privacy and Electronic Communications (EC Directive) Regulations,💙 PUBLIC: Data,uksi,uncertain,0.34,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2004_701,Water Industry (Prescribed Conditions) (Undertakers Wholly or Mainly in Wales) Regulations,💚 WATER & WASTEWATER,uksi,not_making,0.12,,,26,t,t,enhesa_import,
-principal_candidate,UK_uksi_2005_1904,Passenger and Goods Vehicles (Recording Equipment) Regulations,💙 TRANSPORT: Road Safety,uksi,uncertain,0.34,making,t,43,t,t,enhesa_import,
-principal_candidate,UK_uksi_2006_2950,Merchant Shipping (Prevention of Pollution by Sewage and Garbage) Order,💚 TRANSPORT: Harbours & Shipping,uksi,making,0.10,,t,21,t,t,enhesa_import,
-principal_candidate,UK_uksi_2006_3368,Smoke-free (Premises and Enforcement) Regulations,💙 HEALTH: Public,uksi,making,0.48,,t,35,t,t,enhesa_import,
-principal_candidate,UK_uksi_2007_1819,Community Drivers’ Hours and Recording Equipment Regulations,,uksi,not_making,0.17,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2007_3100,Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Carcinogens and Mutagens) Regulations,💙 TRANSPORT: Maritime Safety,uksi,uncertain,0.34,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2007_765,Smoke-free (Exemptions and Vehicles) Regulations,💙 HEALTH: Public,uksi,not_making,0.61,,,98,t,t,enhesa_import,
-principal_candidate,UK_uksi_2008_198,Passenger and Goods Vehicles (Recording Equipment) (Downloading and Retention of Data) Regulations,💙 TRANSPORT: Road Safety,uksi,uncertain,0.34,making,t,11,t,t,enhesa_import,
-principal_candidate,UK_uksi_2009_1210,Merchant Shipping (Implementation of Ship-Source Pollution Directive) Regulations,💚 TRANSPORT: Harbours & Shipping,uksi,not_making,0.05,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2009_716,Chemicals (Hazard Information and Packaging for Supply) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.17,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2014_2366,Smoke Control Areas (Authorised Fuels) (England) (No. 2) Regulations,💚 AIR QUALITY,uksi,not_making,0.07,,,13,t,t,enhesa_import,
-principal_candidate,UK_uksi_2014_2868,Drug Driving (Specified Limits) (England and Wales) Regulations,💙 TRANSPORT: Road Safety,uksi,not_making,0.12,making,t,6,t,t,enhesa_import,
-principal_candidate,UK_uksi_2015_307,Smoke Control Areas (Exempted Fireplaces) (England) Order,💚 AIR QUALITY,uksi,not_making,0.12,,,9,t,t,enhesa_import,
-principal_candidate,UK_uksi_2016_1245,"Companies, Partnerships and Groups (Accounts and Non-Financial Reporting) Regulations",💚 CLIMATE CHANGE,uksi,not_making,0.17,making,t,23,t,t,enhesa_import,
-principal_candidate,UK_uksi_2016_334,Unauthorised Deposit of Waste (Fixed Penalties) Regulations,💚 WASTE,uksi,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_uksi_2017_1206,Radio Equipment Regulations,💙 PUBLIC: Consumer / Product Safety,uksi,uncertain,0.46,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2018_1155,Companies (Directors’ Report) and Limited Liability Partnerships (Energy and Carbon Report) Regulations,💚 CLIMATE CHANGE,uksi,uncertain,0.41,,,149,f,f,bms_import,
-principal_candidate,UK_uksi_2018_24,Community Drivers’ Hours Offences (Enforcement) Regulations,💙 TRANSPORT: Road Safety,uksi,uncertain,0.34,making,t,52,t,t,enhesa_import,
-principal_candidate,UK_uksi_2019_1420,Firearms Regulations,💙 PUBLIC,uksi,not_making,0.12,,,0,f,f,bms_import,
-principal_candidate,UK_uksi_2024_1079,Access to the Countryside (Coastal Margin) (Marsland Mouth to Newquay) (No. 1) Order,💚 WILDLIFE & COUNTRYSIDE,uksi,not_making,0.12,,,0,t,t,enhesa_import,
-principal_candidate,UK_uksi_2024_666,Separation of Waste (England) Regulations,💚 WASTE,uksi,,,,,26,t,t,enhesa_import,
-principal_candidate,UK_uksi_2025_140,Separation of Waste (England) Regulations,💚 WASTE,uksi,not_making,0.12,,,30,t,t,enhesa_import,
-principal_candidate,UK_uksro_1947_805,Compressed Acetylene Order,,uksro,,,,,0,f,f,enhesa_import,
-principal_candidate,UK_wsi_2011_971,Waste (Miscellaneous Provisions) (Wales) Regulations,💚 WASTE,wsi,,,,,12,t,t,enhesa_import,
-principal_candidate,UK_wsi_2020_1489,Personal Protective Equipment (Temporary Arrangements) (Coronavirus) (Wales) Regulations,💙 HEALTH: Coronavirus,wsi,not_making,0.12,,,42,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2004_112,Special Waste Amendment (Scotland) Regulations,💚 WASTE,ssi,,,,,24,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2004_204,Special Waste Amendment (Scotland) Amendment Regulations,💚 WASTE,ssi,not_making,0.02,,,0,f,f,bms_import,
-procedural_by_title,UK_ssi_2005_52,Waste and Emissions Trading Act 2003 (Commencement) (Scotland) Order,💚 WASTE,ssi,,,,,7,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2006_181,Water Environment (Consequential and Savings Provisions) (Scotland) Order,💚 WATER & WASTEWATER,ssi,,,,,8,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2009_202,Radioactive Contaminated Land (Scotland) Amendment Regulations,💚 NUCLEAR & RADIOLOGICAL,ssi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_ssi_2009_9,Public Health etc. (Scotland) Act 2008 (Commencement No. 1) Order,,ssi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_ssi_2011_207,Radioactive Substances Act 1993 Amendment (Scotland) Regulations,💚 NUCLEAR & RADIOLOGICAL,ssi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_ssi_2015_188,Waste (Meaning of Hazardous Waste and European Waste Catalogue) (Miscellaneous Amendments) (Scotland) Regulations,💚 WASTE,ssi,,,,,20,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2015_214,Environmental Liability (Scotland) Amendment Regulations,💚 ENVIRONMENTAL PROTECTION,ssi,not_making,0.17,,,17,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2016_292,Smoke Control Areas (Exempted Fireplaces) (Scotland) Revocation Order,💚 AIR QUALITY,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2016_293,Smoke Control Areas (Authorised Fuels) (Scotland) Revocation Regulations,💚 AIR QUALITY,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2024_139,Water Supply (Water Fittings) (Scotland) Byelaws Extension Order,💚 WATER & WASTEWATER,ssi,not_making,0.12,,,0,t,t,enhesa_import,
-procedural_by_title,UK_ssi_2026_49,Town and Country Planning (Fees for Applications) (Scotland) Amendment Regulations,💚 TOWN & COUNTRY PLANNING,ssi,not_making,0.17,not_making,,26,t,t,enhesa_import,
-procedural_by_title,UK_uksi_1971_818,Driver's Hours (Passenger and Goods Vehicles) (Modifications) Order,💙 TRANSPORT: Road Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1986_2128,Passenger and Goods Vehicles (Recording Equipment) (Approval of fitters and workshops) (Fees) Regulations,💙 TRANSPORT: Road Safety,uksi,not_making,0.12,,,8,f,f,enhesa_import,
-procedural_by_title,UK_uksi_1993_1490,Firearms (Dangerous Air Weapons) (Amendment) Rules,💙 PUBLIC,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1993_1541,Firearms (Dangerous Air Weapons) (Scotland) Amendment Rules,💙 PUBLIC,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1993_566,Controlled Waste (Amendment) Regulations,💚 WASTE,uksi,not_making,0.01,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1993_745,Health and Safety (Miscellaneous Modifications) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1995_2923,Health and Safety Information for Employees (Modifications and Repeals) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1996_3016,Road Vehicles Lighting (Amendment) Regulations,💙 TRANSPORT: Road Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_1999_1506,Water Supply (Water Fittings) (Amendment) Regulations,💚 WATER & WASTEWATER,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2002_2174,Health and Safety (Miscellaneous Amendments) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.34,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2003_1684,Working Time (Amendment) Regulations,💜 HR: Working Time,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2003_1690,Road Vehicles (Construction and Use) (Amendment) (No. 2) Regulations,💙 TRANSPORT: Road Safety,uksi,not_making,0.17,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2004_2304,Fire and Rescue Services Act 2004 (Commencement) (England and Scotland) Order,💙 FIRE,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2004_2516,Working Time Regulations 1998 (Amendment) Regulations,💜 HR: Working Time,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2004_2736,Town and Country Planning (Fees for Applications and Deemed Applications) (Amendment) (Wales) Regulations,💚 TOWN & COUNTRY PLANNING,uksi,not_making,0.12,not_making,,20,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2004_2882,Employers' Liability (Compulsory Insurance) (Amendment) Regulations,💜 HR: Insurance / Compensation / Wages / Benefits,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2004_3386,Control of Substances Hazardous to Health (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2004_827,Railways and Transport Safety Act 2003 (Commencement No. 2) Order,💙 TRANSPORT: Rail Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2006_2988,Radioactive Contaminated Land (Modification of Enactments) (Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,uksi,uncertain,0.34,,,83,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2007_2079,Working Time (Amendment) Regulations,💜 HR: Working Time,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2007_237,Road Safety Act 2006 (Commencement No. 1) Order,,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2007_2472,Road Safety Act 2006 (Commencement No. 2) Order,,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2007_3159,Air Navigation (Dangerous Goods) (Amendment) (No. 2) Regulations,,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2008_1765,Employers’ Liability (Compulsory Insurance) (Amendment) Regulations,💜 HR: Insurance / Compensation / Wages / Benefits,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2008_2165,Merchant Shipping and Fishing Vessels (Provision and Use of Work Equipment) (Amendment) Regulations,💙 TRANSPORT: Maritime Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2008_2166,Merchant Shipping and Fishing Vessels (Lifting Operations and Lifting Equipment) (Amendment) Regulations,💙 TRANSPORT: Maritime Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2009_2438,"Conservation (Natural Habitats, &amp;c.) (Amendment) (No. 2) Regulations",💚 WILDLIFE & COUNTRYSIDE,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2009_507,Hazardous Waste (England and Wales) (Amendment) Regulations,💚 WASTE,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2009_606,Health and Safety Information for Employees (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2009_693,Health and Safety (Miscellaneous Amendments and Revocations) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2010_1759,Firearms (Amendment) Regulations,,uksi,not_making,0.02,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2010_2145,Radioactive Contaminated Land Regulations (Northern Ireland) (Amendment) Regulations,💚 NUCLEAR & RADIOLOGICAL,uksi,not_making,0.01,,,0,f,f,enhesa_import,
-procedural_by_title,UK_uksi_2012_1139,Batteries and Accumulators (Placing on the Market) (Amendment) Regulations,💚 WASTE,uksi,not_making,0.07,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2012_1537,Health and Safety (Miscellaneous Revocations) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2013_1945,Firearms (Amendment) Rules,,uksi,,,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2013_448,"Health and Safety (Miscellaneous Repeals, Revocations and Amendments) Regulations",💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.17,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2014_1239,Firearms (Amendment) Rules,💙 PUBLIC,uksi,not_making,0.17,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2014_3277,"Misuse of Drugs (Amendment No. 3) (England, Wales and Scotland) Regulations",💙 HEALTH: Drug & Medicine Safety,uksi,,,,,12,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2014_486,Health and Safety (Miscellaneous Repeals and Revocations) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2014_495,CRC Energy Efficiency Scheme (Allocation of Allowances for Payment) (Amendment) Regulations,💚 CLIMATE CHANGE,uksi,not_making,0.05,,,0,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2014_549,"Enterprise and Regulatory Reform Act 2013 (Competition) (Consequential, Transitional and Saving Provisions) (No. 2) Order",,uksi,,,,,25,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2015_1360,Hazardous Waste (Miscellaneous Amendments) Regulations,💚 WASTE,uksi,,,,,49,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2015_1393,Control of Major Accident Hazards (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,uksi,not_making,0.05,,,5,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2015_142,Road Vehicles (Construction and Use) (Amendment) Regulations,💙 TRANSPORT: Road Safety,uksi,uncertain,0.34,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2015_1653,"Motor Vehicles (Variation of Speed Limits for Naval, Military and Air Force Vehicles) (England and Wales) Regulations",,uksi,not_making,0.17,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2016_336,Hazardous Waste (England and Wales) (Amendment) Regulations,💚 WASTE,uksi,,,,,25,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2016_660,Energy Efficiency (Private Rented Property) (England and Wales) (Amendment) Regulations,💚 CLIMATE CHANGE,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2017_1177,Environmental Damage (Prevention and Remediation) (England) (Amendment) Regulations,💚 ENVIRONMENTAL PROTECTION,uksi,making,0.17,,t,25,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2017_81,Noise from Audible Intruder Alarms (Wales) (Revocation) and Control of Noise (Codes of Practice for Construction and Open Sites) (Wales) Order,💙 HEALTH: Public,uksi,not_making,0.12,,,11,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2018_1214,Waste Electrical and Electronic Equipment (Amendment) (No. 2) Regulations,💚 WASTE,uksi,uncertain,0.36,,,65,f,f,bms_import,
-procedural_by_title,UK_uksi_2018_1227,Environmental Protection (Miscellaneous Amendments) (England and Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,uksi,not_making,0.17,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2018_841,CRC Energy Efficiency Scheme (Revocation and Savings) Order,💚 CLIMATE CHANGE,uksi,not_making,0.12,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2019_1169,Firearms (Fees) Regulations,💙 PUBLIC,uksi,uncertain,0.68,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2019_24,Ionising Radiation (Environmental and Public Protection) (Miscellaneous Amendments) (EU Exit) Regulations,💚 NUCLEAR & RADIOLOGICAL,uksi,not_making,0.03,,,0,f,f,bms_import,
-procedural_by_title,UK_uksi_2021_1315,Environmental Authorisations (Scotland) Regulations 2018 (Consequential Modifications) Order,,uksi,,,,,12,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2021_746,Town and Country Planning (Development Management Procedure and Section 62A Applications) (England) (Amendment) Order,💚 TOWN & COUNTRY PLANNING,uksi,making,0.26,,t,89,t,t,enhesa_import,
-procedural_by_title,UK_uksi_2024_49,Biodiversity Gain (Town and Country Planning) (Consequential Amendments) Regulations,💚 WILDLIFE & COUNTRYSIDE,uksi,,,,,19,t,t,enhesa_import,
-procedural_by_title,UK_wsi_2010_1820,Environmental Civil Sanctions (Miscellaneous Amendments) (Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,wsi,not_making,0.17,,,0,f,f,bms_import,
-procedural_by_title,UK_wsi_2018_721,Hazardous Waste (Miscellaneous Amendments) (Wales) Regulations,💚 WASTE,wsi,,,,,13,t,t,enhesa_import,
-procedural_by_title,UK_wsi_2018_725,Radioactive Contaminated Land (Modification of Enactments) (Wales) (Amendment) Regulations,💚 NUCLEAR & RADIOLOGICAL,wsi,not_making,0.02,,,0,f,f,bms_import,
-procedural_by_title,UK_wsi_2026_71,Waste Separation Requirements (Wales) (Amendment) Regulations,💚 ENVIRONMENTAL PROTECTION,wsi,not_making,0.12,not_making,,16,t,t,enhesa_import,
+funnel_state,next_action,law_name,title,family,making_classification,making_review,lat_candidate,lat_count,has_fitness,has_tree,duty_types,last_lat_session,last_session_status,verdict
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2004_204,Special Waste Amendment (Scotland) Amendment Regulations,💚 WASTE,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2007_179,Radioactive Contaminated Land (Scotland) Regulations,💚 NUCLEAR & RADIOLOGICAL,not_making,"",f,0,f,f,"[""Duty"", ""Responsibility"", ""Power""]",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2009_378,Planning (Control of Major–Accident Hazards) (Scotland) Regulations,💚 PLANNING & INFRASTRUCTURE,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_1993_566,Controlled Waste (Amendment) Regulations,💚 WASTE,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2007_1819,Community Drivers’ Hours and Recording Equipment Regulations,,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2009_1210,Merchant Shipping (Implementation of Ship-Source Pollution Directive) Regulations,💚 TRANSPORT: Harbours & Shipping,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2010_1759,Firearms (Amendment) Regulations,,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2012_1139,Batteries and Accumulators (Placing on the Market) (Amendment) Regulations,💚 WASTE,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2015_1653,"Motor Vehicles (Variation of Speed Limits for Naval, Military and Air Force Vehicles) (England and Wales) Regulations",,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2019_24,Ionising Radiation (Environmental and Public Protection) (Miscellaneous Amendments) (EU Exit) Regulations,💚 NUCLEAR & RADIOLOGICAL,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+C1_fractalaw_confirmed_not_making_cleaned,qq_cleanup:fractalaw_confirmed_not_making,UK_wsi_2018_725,Radioactive Contaminated Land (Modification of Enactments) (Wales) (Amendment) Regulations,💚 NUCLEAR & RADIOLOGICAL,not_making,"",f,0,f,f,"",lat-parse-bms-triage-2026-07-28,cleaned,""
+F1_fractalaw_found_duties,legal_fix:is_making_true,UK_ukpga_2023_55,Levelling-up and Regeneration Act,,making,"",t,3351,t,t,"[""Responsibility"", ""Power"", ""Duty"", ""Right""]",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F1_fractalaw_found_duties,legal_fix:is_making_true,UK_uksi_1990_1380,Health and Safety (Training for Employment) Regulations,💙 OH&S: Occupational / Personal Safety,uncertain,"",t,8,t,t,"[""Duty""]",lat-reparse-shallow-2026-07-13,confirmed,""
+F1_fractalaw_found_duties,legal_fix:is_making_true,UK_uksi_2017_1177,Environmental Damage (Prevention and Remediation) (England) (Amendment) Regulations,💚 ENVIRONMENTAL PROTECTION,making,"",t,25,t,t,"[""Duty"", ""Responsibility""]",lat-parse-qq-missing-2026-07-09,confirmed,""
+F1_fractalaw_found_duties,legal_fix:is_making_true,UK_uksi_2021_746,Town and Country Planning (Development Management Procedure and Section 62A Applications) (England) (Amendment) Order,💚 TOWN & COUNTRY PLANNING,making,"",t,89,t,t,"[""Duty"", ""Responsibility""]",lat-parse-qq-missing-2026-07-09,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2005_22,Waste (Scotland) Regulations,💚 WASTE,making,"",t,90,t,t,"[""Right""]",lat-parse-qq-missing-2026-07-09,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2010_435,Waste Information (Scotland) Regulations,💚 WASTE,making,"",t,53,t,t,"[""Right""]",lat-parse-qq-missing-2026-07-09,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2005_1904,Passenger and Goods Vehicles (Recording Equipment) Regulations,💙 TRANSPORT: Road Safety,uncertain,making,t,43,t,t,"[""Right""]",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2006_2950,Merchant Shipping (Prevention of Pollution by Sewage and Garbage) Order,💚 TRANSPORT: Harbours & Shipping,making,"",t,21,t,t,"[""Right""]",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2006_3368,Smoke-free (Premises and Enforcement) Regulations,💙 HEALTH: Public,making,"",t,35,t,t,"[""Right""]",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2007_765,Smoke-free (Exemptions and Vehicles) Regulations,💙 HEALTH: Public,not_making,"",f,98,t,t,"[""Right""]",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2014_549,"Enterprise and Regulatory Reform Act 2013 (Competition) (Consequential, Transitional and Saving Provisions) (No. 2) Order",,"","",t,25,t,t,"[""Right""]",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F2_fractalaw_rights_powers_only,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2024_666,Separation of Waste (England) Regulations,💚 WASTE,"","",t,26,t,t,"[""Right""]",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2004_112,Special Waste Amendment (Scotland) Regulations,💚 WASTE,"","",t,24,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2004_332,Town and Country Planning (Electronic Communications) (Scotland) Order,💚 TOWN & COUNTRY PLANNING,"","",t,49,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2004_512,Control of Volatile Organic Compounds (Petrol Vapour Recovery) (Scotland) Regulations,💚 AIR QUALITY,not_making,"",f,12,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2005_52,Waste and Emissions Trading Act 2003 (Commencement) (Scotland) Order,💚 WASTE,"","",t,7,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2005_63,Water (Prevention of Pollution) (Code of Practice) (Scotland) Order,💚 POLLUTION,"","",t,12,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2006_181,Water Environment (Consequential and Savings Provisions) (Scotland) Order,💚 WATER & WASTEWATER,"","",t,8,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2011_368,Water Environment (Relevant Enactments and Designation of Responsible Authorities and Functions) (Scotland) Order 2011,💚 WATER & WASTEWATER,uncertain,"",t,9,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2011_418,Control of Volatile Organic Compounds (Petrol Vapour Recovery) (Scotland) Regulations,💚 AIR QUALITY,not_making,"",f,18,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2012_148,Waste (Scotland) Regulations,💚 WASTE,"","",t,33,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2014_367,Scottish Landfill Tax (Prescribed Landfill Site Activities) Order,💚 WASTE,"","",t,23,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2015_188,Waste (Meaning of Hazardous Waste and European Waste Catalogue) (Miscellaneous Amendments) (Scotland) Regulations,💚 WASTE,"","",t,20,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2015_214,Environmental Liability (Scotland) Amendment Regulations,💚 ENVIRONMENTAL PROTECTION,not_making,"",f,17,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2021_50,Personal Protective Equipment (Temporary Arrangements) (Coronavirus) (Scotland) Regulations,💙 HEALTH: Coronavirus,not_making,"",f,39,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_ssi_2026_49,Town and Country Planning (Fees for Applications) (Scotland) Amendment Regulations,💚 TOWN & COUNTRY PLANNING,not_making,not_making,f,26,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_1969_1263,Clean Air (Emission of Dark Smoke) (Exemption) Regulations,💚 AIR QUALITY,not_making,"",f,6,t,t,"",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_1998_3111,Road Vehicles (Authorised Weight) Regulations,💙 TRANSPORT: Road Safety,not_making,"",f,18,t,t,"",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2004_2736,Town and Country Planning (Fees for Applications and Deemed Applications) (Amendment) (Wales) Regulations,💚 TOWN & COUNTRY PLANNING,not_making,not_making,f,20,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2004_701,Water Industry (Prescribed Conditions) (Undertakers Wholly or Mainly in Wales) Regulations,💚 WATER & WASTEWATER,not_making,"",f,26,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2006_2988,Radioactive Contaminated Land (Modification of Enactments) (Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,uncertain,"",t,83,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2008_198,Passenger and Goods Vehicles (Recording Equipment) (Downloading and Retention of Data) Regulations,💙 TRANSPORT: Road Safety,uncertain,making,t,11,t,t,"",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2014_2366,Smoke Control Areas (Authorised Fuels) (England) (No. 2) Regulations,💚 AIR QUALITY,not_making,"",f,13,t,t,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2014_2868,Drug Driving (Specified Limits) (England and Wales) Regulations,💙 TRANSPORT: Road Safety,not_making,making,t,6,t,t,"",lat-parse-qq-gaps-2026-07-23,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2014_3277,"Misuse of Drugs (Amendment No. 3) (England, Wales and Scotland) Regulations",💙 HEALTH: Drug & Medicine Safety,"","",t,12,t,t,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2015_1360,Hazardous Waste (Miscellaneous Amendments) Regulations,💚 WASTE,"","",t,49,t,t,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2015_1393,Control of Major Accident Hazards (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,5,t,t,"",lat-parse-qq-gaps-2026-07-23,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2015_307,Smoke Control Areas (Exempted Fireplaces) (England) Order,💚 AIR QUALITY,not_making,"",f,9,t,t,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2016_1245,"Companies, Partnerships and Groups (Accounts and Non-Financial Reporting) Regulations",💚 CLIMATE CHANGE,not_making,making,t,23,t,t,"",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2016_336,Hazardous Waste (England and Wales) (Amendment) Regulations,💚 WASTE,"","",t,25,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2017_81,Noise from Audible Intruder Alarms (Wales) (Revocation) and Control of Noise (Codes of Practice for Construction and Open Sites) (Wales) Order,💙 HEALTH: Public,not_making,"",f,11,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2018_24,Community Drivers’ Hours Offences (Enforcement) Regulations,💙 TRANSPORT: Road Safety,uncertain,making,t,52,t,t,"",lat-parse-qq-missing-fractalaw-2026-06-24-0826,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2021_1315,Environmental Authorisations (Scotland) Regulations 2018 (Consequential Modifications) Order,,"","",t,12,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2024_49,Biodiversity Gain (Town and Country Planning) (Consequential Amendments) Regulations,💚 WILDLIFE & COUNTRYSIDE,"","",t,19,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_uksi_2025_140,Separation of Waste (England) Regulations,💚 WASTE,not_making,"",f,30,t,t,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_wsi_2011_971,Waste (Miscellaneous Provisions) (Wales) Regulations,💚 WASTE,"","",t,12,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_wsi_2018_721,Hazardous Waste (Miscellaneous Amendments) (Wales) Regulations,💚 WASTE,"","",t,13,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_wsi_2020_1489,Personal Protective Equipment (Temporary Arrangements) (Coronavirus) (Wales) Regulations,💙 HEALTH: Coronavirus,not_making,"",f,42,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+F3_fractalaw_no_drrp_output,fractalaw:why_no_drrp,UK_wsi_2026_71,Waste Separation Requirements (Wales) (Amendment) Regulations,💚 ENVIRONMENTAL PROTECTION,not_making,not_making,f,16,t,t,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_asp_2011_6,Wildlife and Natural Environment (Scotland) Act,💚 WILDLIFE & COUNTRYSIDE,uncertain,"",t,450,f,f,"[""Right""]",lat-parse-bms-triage-2026-07-28,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_eur_2008_307,"Commission Regulation (EC) No 307/2008 of 2 April 2008 establishing, pursuant to Regulation (EC) No 842/2006 of the European Parliament and of the Council, minimum requirements for training programmes and the conditions for mutual recognition of training attestations for personnel as regards air-conditioning systems in certain motor vehicles containing certain fluorinated greenhouse gases (Text with EEA relevance)",💚 CLIMATE CHANGE,not_making,"",f,19,f,f,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ssi_2005_658,Contaminated Land (Scotland) Regulations,💚 POLLUTION,uncertain,"",t,73,f,f,"",lat-parse-bms-triage-2026-07-28,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ssi_2008_221,Register of Sites of Special Scientific Interest (Scotland) Regulations,💚 WILDLIFE & COUNTRYSIDE,not_making,"",f,34,f,f,"",lat-parse-bms-triage-2026-07-28,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ssi_2010_434,Town and Country Planning (Tree Preservation Order and Trees in Conservation Areas) (Scotland) Regulations,💚 TOWN & COUNTRY PLANNING,"","",t,98,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ssi_2011_226,Waste (Scotland) Regulations,💚 WASTE,"","",t,81,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ukpga_1933_13,Foreign Judgments (Reciprocal Enforcement) Act,,"","",t,107,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ukpga_1947_41,Fire Services Act,,"","",t,102,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ukpga_1947_48,Agriculture Act,💚 AGRICULTURE,uncertain,"",t,187,f,f,"",lat-parse-qq-no-lat-backfill-2026-06-25-2003,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_ukpga_1947_53,Town and Country Planning (Scotland) Act,💚 TOWN & COUNTRY PLANNING,uncertain,"",t,33,f,f,"",lat-reparse-shallow-2026-07-13,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_uksi_1986_2128,Passenger and Goods Vehicles (Recording Equipment) (Approval of fitters and workshops) (Fees) Regulations,💙 TRANSPORT: Road Safety,not_making,"",f,8,f,f,"[""Right""]",lat-parse-qq-missing-2026-07-09,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_uksi_1998_3084,Water (Prevention of Pollution) (Code of Practice) Order,💚 WATER & WASTEWATER,not_making,"",f,6,f,f,"",lat-parse-bms-triage-2026-07-28,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_uksi_2018_1155,Companies (Directors’ Report) and Limited Liability Partnerships (Energy and Carbon Report) Regulations,💚 CLIMATE CHANGE,uncertain,"",t,149,f,f,"",lat-parse-bms-triage-2026-07-28,confirmed,""
+L1_lat_never_enriched,fractalaw:enrich,UK_uksi_2018_1214,Waste Electrical and Electronic Equipment (Amendment) (No. 2) Regulations,💚 WASTE,uncertain,"",t,65,f,f,"[""Right"", ""Responsibility""]",lat-parse-bms-triage-2026-07-28,confirmed,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_asp_2008_5,Public Health etc. (Scotland) Act,💙 HEALTH: Public,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_1989_6,Official Secrets Act,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_2006_46,Companies Act,,uncertain,"",t,0,f,f,"",lat-parse-qq-gaps-2026-07-23,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_2010_23,Bribery Act,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_2016_25,Investigatory Powers Act,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_2017_3,Policing and Crime Act,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_2018_16,European Union (Withdrawal) Act,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+P1_deferred_in_lat_session,jason:parse_or_cleanup,UK_ukpga_2019_3,Counter-Terrorism and Border Security Act,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,pending,""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_1949_55,Prevention of Damage by Pests Act,💚 AGRICULTURE: Pesticides,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_1986_14,Animals (Scientific Procedures) Act,💚 ANIMALS & ANIMAL HEALTH,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_1990_18,Computer Misuse Act,💙 PUBLIC: Data,making,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_1991_40,Road Traffic Act,💙 TRANSPORT: Road Safety,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_1998_33,Landmines Act,💙 FIRE: Dangerous and Explosive Substances,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_2010_11,Cluster Munitions (Prohibitions) Act,💙 FIRE: Dangerous and Explosive Substances,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_2015_6,Counter-Terrorism and Security Act,💙 PUBLIC,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_ukpga_2019_17,Offensive Weapons Act,,making,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_uksi_2003_2426,Privacy and Electronic Communications (EC Directive) Regulations,💙 PUBLIC: Data,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_uksi_2007_3100,Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Carcinogens and Mutagens) Regulations,💙 TRANSPORT: Maritime Safety,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_uksi_2015_142,Road Vehicles (Construction and Use) (Amendment) Regulations,💙 TRANSPORT: Road Safety,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_uksi_2017_1206,Radio Equipment Regulations,💙 PUBLIC: Consumer / Product Safety,uncertain,"",t,0,f,f,"","","",""
+Q1_lat_candidate_never_queued,legal:lat_session,UK_uksi_2019_1169,Firearms (Fees) Regulations,💙 PUBLIC,uncertain,"",t,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_ssi_2000_149,Children (Protection at Work) (Scotland) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_ukpga_1883_3,Explosive Substances Act,💙 FIRE: Dangerous and Explosive Substances,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_ukpga_1959_66,Obscene Publications Act,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_ukpga_1964_74,Obscene Publications Act,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_ukpga_2008_20,Health and Safety (Offences) Act,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1969_47,Firearms (Dangerous Air Weapons) Rules,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1971_818,Driver's Hours (Passenger and Goods Vehicles) (Modifications) Order,💙 TRANSPORT: Road Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1993_1490,Firearms (Dangerous Air Weapons) (Amendment) Rules,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1993_1541,Firearms (Dangerous Air Weapons) (Scotland) Amendment Rules,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1993_745,Health and Safety (Miscellaneous Modifications) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1995_2923,Health and Safety Information for Employees (Modifications and Repeals) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_1996_3016,Road Vehicles Lighting (Amendment) Regulations,💙 TRANSPORT: Road Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2002_2174,Health and Safety (Miscellaneous Amendments) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2003_1690,Road Vehicles (Construction and Use) (Amendment) (No. 2) Regulations,💙 TRANSPORT: Road Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2004_2304,Fire and Rescue Services Act 2004 (Commencement) (England and Scotland) Order,💙 FIRE,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2004_2882,Employers' Liability (Compulsory Insurance) (Amendment) Regulations,💜 HR: Insurance / Compensation / Wages / Benefits,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2004_3386,Control of Substances Hazardous to Health (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2004_827,Railways and Transport Safety Act 2003 (Commencement No. 2) Order,💙 TRANSPORT: Rail Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2008_1765,Employers’ Liability (Compulsory Insurance) (Amendment) Regulations,💜 HR: Insurance / Compensation / Wages / Benefits,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2008_2165,Merchant Shipping and Fishing Vessels (Provision and Use of Work Equipment) (Amendment) Regulations,💙 TRANSPORT: Maritime Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2008_2166,Merchant Shipping and Fishing Vessels (Lifting Operations and Lifting Equipment) (Amendment) Regulations,💙 TRANSPORT: Maritime Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2009_606,Health and Safety Information for Employees (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2009_693,Health and Safety (Miscellaneous Amendments and Revocations) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2012_1537,Health and Safety (Miscellaneous Revocations) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2013_448,"Health and Safety (Miscellaneous Repeals, Revocations and Amendments) Regulations",💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2014_1239,Firearms (Amendment) Rules,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2014_486,Health and Safety (Miscellaneous Repeals and Revocations) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2016_660,Energy Efficiency (Private Rented Property) (England and Wales) (Amendment) Regulations,💚 CLIMATE CHANGE,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2018_1227,Environmental Protection (Miscellaneous Amendments) (England and Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2018_841,CRC Energy Efficiency Scheme (Revocation and Savings) Order,💚 CLIMATE CHANGE,not_making,"",f,0,f,f,"[""Power""]","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_uksi_2019_1420,Firearms Regulations,💙 PUBLIC,not_making,"",f,0,f,f,"","","",""
+Q2_not_lat_candidate_never_parsed,qq_cleanup:funnel_not_candidate (override only with evidence),UK_wsi_2010_1820,Environmental Civil Sanctions (Miscellaneous Amendments) (Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,not_making,"",f,0,f,f,"[""Power""]","","",""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_ssi_2009_202,Radioactive Contaminated Land (Scotland) Amendment Regulations,💚 NUCLEAR & RADIOLOGICAL,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_ssi_2009_9,Public Health etc. (Scotland) Act 2008 (Commencement No. 1) Order,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_ssi_2011_207,Radioactive Substances Act 1993 Amendment (Scotland) Regulations,💚 NUCLEAR & RADIOLOGICAL,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_1999_1506,Water Supply (Water Fittings) (Amendment) Regulations,💚 WATER & WASTEWATER,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2003_1684,Working Time (Amendment) Regulations,💜 HR: Working Time,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2004_2516,Working Time Regulations 1998 (Amendment) Regulations,💜 HR: Working Time,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2007_2079,Working Time (Amendment) Regulations,💜 HR: Working Time,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2007_237,Road Safety Act 2006 (Commencement No. 1) Order,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2007_2472,Road Safety Act 2006 (Commencement No. 2) Order,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2007_3159,Air Navigation (Dangerous Goods) (Amendment) (No. 2) Regulations,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2009_2438,"Conservation (Natural Habitats, &amp;c.) (Amendment) (No. 2) Regulations",💚 WILDLIFE & COUNTRYSIDE,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2009_507,Hazardous Waste (England and Wales) (Amendment) Regulations,💚 WASTE,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+S1_skipped_in_lat_session,qq_cleanup:skipped_amending_or_commencement,UK_uksi_2013_1945,Firearms (Amendment) Rules,,"","",t,0,f,f,"",lat-parse-bms-triage-2026-07-28,skipped,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_eudn_2000_532,Commission Decision of 3 May 2000 replacing Decision 94/3/EC establishing a list of wastes pursuant to Article 1(a) of Council Directive 75/442/EEC on waste and Council Decision 94/904/EC establishing a list of hazardous waste pursuant to Article 1(4) of Council Directive 91/689/EEC on hazardous waste (notified under document number C(2000) 1147) (Text with EEA relevance) (2000/532/EC),💚 WASTE,not_making,"",f,0,f,f,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_eudn_2019_1202,Commission Implementing Decision (EU) 2019/1202 of 12 July 2019 on the harmonised standards for equipment and protective systems intended for use in potentially explosive atmospheres drafted in support of Directive 2014/34/EU of the European Parliament and of the Council,,not_making,"",f,0,f,f,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_eur_2016_1387,Commission Delegated Regulation (EU) 2016/1387 of 9 June 2016 amending Annexes I and III to Council Regulation (EC) No 2173/2005 following a Voluntary Partnership Agreement with Indonesia for a FLEGT licensing scheme for imports of timber into the European Union,💚 TREES: Forestry & Timber,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2005_172,Building (Forms) (Scotland) Regulations,💙 PUBLIC: Building Safety,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2005_66,Possession of Pesticides (Scotland) Order,💚 AGRICULTURE: Pesticides,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2006_140,Children (Protection at Work) (Scotland) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2006_155,Sewerage Nuisance (Code of Practice) (Scotland) Order,💚 WATER & WASTEWATER,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2012_214,Green Deal (Acknowledgment) (Scotland) Regulations,💚 CLIMATE CHANGE,not_making,"",f,0,t,t,"[""Right""]",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2016_292,Smoke Control Areas (Exempted Fireplaces) (Scotland) Revocation Order,💚 AIR QUALITY,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2016_293,Smoke Control Areas (Authorised Fuels) (Scotland) Revocation Regulations,💚 AIR QUALITY,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_ssi_2024_139,Water Supply (Water Fittings) (Scotland) Byelaws Extension Order,💚 WATER & WASTEWATER,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_1998_2913,Town and Country Planning (Minerals) (Scotland) Regulations,💚 TOWN & COUNTRY PLANNING,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2009_716,Chemicals (Hazard Information and Packaging for Supply) Regulations,💙 OH&S: Occupational / Personal Safety,not_making,"",f,0,f,f,"[""Duty""]",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2010_2145,Radioactive Contaminated Land Regulations (Northern Ireland) (Amendment) Regulations,💚 NUCLEAR & RADIOLOGICAL,not_making,"",f,0,f,f,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2014_495,CRC Energy Efficiency Scheme (Allocation of Allowances for Payment) (Amendment) Regulations,💚 CLIMATE CHANGE,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2016_334,Unauthorised Deposit of Waste (Fixed Penalties) Regulations,💚 WASTE,not_making,"",f,0,t,t,"",lat-reparse-shallow-2026-07-13,confirmed,""
+X1_lat_deleted_status_not_updated,qq_cleanup:fractalaw_confirmed_not_making,UK_uksi_2024_1079,Access to the Countryside (Coastal Margin) (Marsland Mouth to Newquay) (No. 1) Order,💚 WILDLIFE & COUNTRYSIDE,not_making,"",f,0,t,t,"[""Right""]",lat-reparse-shallow-2026-07-13,confirmed,""
+X2_parsed_no_lat_produced,legal:why_no_lat,UK_eudr_2000_78,Council Directive 2000/78/EC of 27 November 2000 establishing a general framework for equal treatment in employment and occupation,💜 HR: Employment,not_making,"",f,0,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+X2_parsed_no_lat_produced,legal:why_no_lat,UK_eudr_2001_42,Directive 2001/42/EC of the European Parliament and of the Council of 27 June 2001 on the assessment of the effects of certain plans and programmes on the environment,💚 ENVIRONMENTAL PROTECTION,not_making,"",f,0,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+X2_parsed_no_lat_produced,legal:why_no_lat,UK_eudr_2002_15,Directive 2002/15/EC of the European Parliament and of the Council of 11 March 2002 on the organisation of the working time of persons performing mobile road transport activities,💙 TRANSPORT: Road Safety,not_making,"",f,0,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+X2_parsed_no_lat_produced,legal:why_no_lat,UK_eudr_2003_88,Directive 2003/88/EC of the European Parliament and of the Council of 4 November 2003 concerning certain aspects of the organisation of working time,💜 HR: Employment,not_making,"",f,0,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""
+X2_parsed_no_lat_produced,legal:why_no_lat,UK_uksi_1979_791,Forestry (Felling of Trees) Regulations,💚 TREES: Forestry & Timber,"","",t,0,f,f,"",lat-parse-qq-gaps-2026-07-23,confirmed,""
+X2_parsed_no_lat_produced,legal:why_no_lat,UK_uksro_1947_805,Compressed Acetylene Order,,"","",t,0,f,f,"",lat-parse-qq-missing-2026-07-09,confirmed,""

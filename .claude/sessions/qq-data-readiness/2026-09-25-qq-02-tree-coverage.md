@@ -20,7 +20,7 @@ Trees are built by fractalaw, not legal. A law needs:
 ## Todo
 
 - ⬜ **(a) 22 laws need LAT first**: build a LAT session (`lat-session-build` skill, `mix lat.create_session`) and parse. Run the `lat-qa` checks. Nine of the 22 are Merchant Shipping and Fishing Vessels H&S instruments.
-- ⬜ **(b) 51 laws have LAT but no fitness enrichment**: send the list to Jason for one `fractalaw sync publish --laws …` batch. Monitor TaxaSubscriber on `/admin/zenoh` (Received = Updated, Failed = 0).
+- ⬜ **(b) 51 laws have LAT but no fitness enrichment**: included in the fractalaw brief (`.claude/plans/qq-fractalaw-brief.md`, T4) as one combined publish. Monitor TaxaSubscriber on `/admin/zenoh` (Received = Updated, Failed = 0).
 - ⬜ **(c) 1 law has fitness but no tree**: `UK_ukpga_1990_9`, Planning (Listed Buildings and Conservation Areas) Act. It has 24,430 applies mentions. Find out why no tree was compiled (size limit? compile failure?) and report it to fractalaw.
 - ⬜ Add the QQ-01 hand-off (confirmed Making, no tree) to (a) or (b) according to LAT status.
 - ⬜ Before the batch: check whether fractalaw's triage agrees these are Making. If triage says not Making, fractalaw won't queue them, so they need `making_review` set (QQ-01) or a forced publish.
