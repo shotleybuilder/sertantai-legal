@@ -8,6 +8,17 @@ related: [25, 120]
 enables: [qq-data-readiness/2026-09-25-qq-01-making-triage]
 
 bugs:
+  - pattern: "MakingDetector and TriageSubscriber both write making_classification; a reparse re-runs the detector and erases the triage verdict"
+    category: making-traceability
+    module: scraper/staged_parser.ex (run_making_detection), zenoh/triage_subscriber.ex
+    fix: "Add making_classification_source; the detector never overwrites a triage classification"
+    status: open
+  - pattern: "making_detection_signals stored as a double-encoded JSON string"
+    category: data-format
+    module: mix legal.backfill_making_provenance (probable)
+    affected: 1994
+    fix: "Decode the string to a JSON object; fix the writer"
+    status: open
   - pattern: "is_making changes are never recorded in record_change_log (0 entries corpus-wide); Zenoh subscriber writes bypass ChangeLogger"
     category: making-traceability
     module: zenoh/triage_subscriber.ex, zenoh/taxa_subscriber.ex
@@ -69,8 +80,9 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 
 - ✅ Design note: precedence rules, the write path, change-log entry shape, provenance fields and the `making_funnel` view. Put it in this session under "Design".
 - ✅ Gemini review of the design, saved to `backend/data/code-reviews/2026-09-25-qq-01a-making-transparency-design.md`
-- ⬜ Red: tests for `Legal.Taxa.MakingResolver` (pure). Inputs are review, enrichment verdict, triage and detector; output is `{is_making, source, reason}`.
-- ⬜ Green: implement the resolver, with `@spec`/`@moduledoc`
+- ✅ Red: tests for `Legal.Taxa.MakingResolver` (pure), in `test/sertantai_legal/legal/taxa/making_resolver_test.exs`. All 21 failed as expected: the module didn't exist.
+- ✅ Green: `lib/sertantai_legal/legal/taxa/making_resolver.ex`. 21/21 pass; credo clean. `Decision` includes `dissent`, the lower tiers that disagree.
+- ⬜ `making_classification_source` (`detector` | `triage`): the detector must never overwrite a triage classification. Backfill the source from the shape of `making_detection_signals`.
 - ⬜ One write path (`Legal.Making.apply/3` or similar):
   - It records a writer's evidence (triage fields, enrichment verdict, review) and runs the resolver.
   - It writes `is_making` and appends a `ChangeLogger` entry with the `source` (`detector` | `triage` | `taxa` | `review` | `scraper` | `backfill`) and the reason.
@@ -98,6 +110,7 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
   - The 7 `making` laws were set false by some other writer. Nothing recorded which.
 - **`derive_is_making`**: any payload with taxa fields but no `duty_type` gives `is_making = false`. `convert_duty_type` does fall back to the record's existing entries, but only when it finds entries.
 - **Persister**: logs through `ChangeLogger` and only upgrades `is_making` to true. So every false write in the corpus came from a subscriber that doesn't log.
+- **Detector and triage share `making_classification`.** Each overwrites the other. Only 246 laws still carry triage signals: an object of counts. 5,575 carry detector signals as an object, and 1,994 carry detector signals as a double-encoded JSON string, which is a separate bug. Triage evidence has been lost wherever the detector re-ran on reparse.
 - **#120 said "taxa wins by design"**, but no code enforces it. Each subscriber overwrites independently.
 
 ### Corpus state (UK, 2026-09-25)
