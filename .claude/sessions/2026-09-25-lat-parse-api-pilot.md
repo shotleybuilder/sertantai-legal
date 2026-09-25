@@ -1,9 +1,92 @@
 ---
 session: "LAT Parse via API: Pilot (22 QQ Laws)"
-status: active
+status: closed
 opened: 2026-09-25
+closed: 2026-09-25
+outcome: success
 related: [161]
-enables: [2026-09-25-ai-parsing-workflow, qq-data-readiness/2026-09-25-qq-02-tree-coverage]
+
+summary: >
+  Ran a LAT parse session end to end through a new key-guarded /api/workflow API: 4 amending
+  SIs gated out by human review, 18 laws parsed, QA'd and confirmed, handed to fractalaw, and
+  the publish verified (30/30 law-level, 17,468/17,468 provisions, 0 Making flips). The pilot
+  surfaced 7 bugs, 6 fixed here (incl. LAT persist broken since 12 Aug, an O(n^2) stats trigger
+  and per-provision ingest), took compile warnings to zero, and lifted QQ evaluable agreement
+  63.8% → 68.6%.
+
+decisions:
+  - what: A separate WORKFLOW_API_KEY for /api/workflow, reusing AiApiKeyPlug via an env option
+    why: The AI service's AI_SERVICE_API_KEY is read-only sync. A workflow key drives writes, so the two must not be interchangeable.
+    result: 401 without the key, 200 with it; the key is kept in the gitignored root .env
+  - what: The amending-SI gate is a human verdict (making_review), not an inference
+    why: making_review is the top resolver tier; an agent may propose, a human confirms
+    result: 4 laws not Making via mix making.review with evidence notes; 18 parsed
+  - what: Fix blocking bugs in this session despite the find/fix separation rule
+    why: The lat view gap blocked every parse. Jason then explicitly brought the trigger, annotation/status, notification and provision-batching fixes into this session.
+    result: 6 of 7 surfaced bugs fixed, each test-first
+  - what: Statement-level lat stats triggers on the parent and each partition
+    why: The lat view inserts target the partition directly, and Ash updates target the parent. Statement triggers aren't inherited, so each path fires exactly once.
+    result: 6,000-row persist went from 18.2s to 0.56s; the Communications Act (10,900 rows) now persists in 28s
+  - what: Batch provision writes rather than tuning the trigger's update path
+    why: The cost was one statement per provision. Batching removes N statements, and with it N trigger firings.
+    result: 3,000 provision updates went from ~94s to 136ms
+  - what: Keep compilation warning-free and enforce it in the pre-commit hook
+    why: Jason. Warnings were hiding real bugs (the confirm action was always "updated", and provision errors were silently skipped).
+    result: lib 18 → 0 and tests 11 → 0; the hook runs mix compile --warnings-as-errors
+
+metrics:
+  pilot: { candidates: 22, gated_not_making: 4, parsed: 18, qa_failures: 0, confirmed: 18 }
+  parse_times_s: { typical: "2-7", asp_2003_2: 18, communications_act_before: "171 (failed)", communications_act_after: 28 }
+  fractalaw_publish: { law_level_received: 30, law_level_updated: 30, provisions: 17468, provision_laws: 18, errors: 0, making_flips: 0, provisions_with_drrp: 10508 }
+  ingest_rate: { provisions_per_s_before_batching: 32, batched_3000_updates_ms: 136 }
+  lat_persist_6000_rows_ms: { before: 18192, after: 558 }
+  compile_warnings: { lib: "18 → 0", tests: "11 → 0" }
+  tests: { full_suite: 1755 }
+  benchmark_qq: { run: 2026-09-25T1821-legal-lat-pilot, evaluable_agreement: "63.8% → 68.6%", both: "250 → 266", no_tree: "28 → 6", not_making: "154 → 158" }
+  attribution: { pilot_to_both: 11, t4_correction_to_both: 5, amending_to_not_making: 4, pilot_tree_misses: 7 }
+
+lessons:
+  - title: Adding a column to legal_articles must also update the lat compatibility view
+    detail: >
+      20260812203258 added legal_articles.sub_provision but not the lat view that LatPersister
+      inserts through, so every LAT persist failed with 42703 for six weeks, from the UI too.
+      Nobody noticed because no LAT session ran and there was no LatPersister test. It's the
+      same trap as uk_lrt: check the compat views whenever the base table changes.
+    tag: schema
+  - title: A per-row trigger that aggregates over its own table is O(n^2) for bulk writes
+    detail: >
+      propagate_lat_stats recounted a law's provisions and rewrote legal_register for every row.
+      It was invisible on small laws and fatal on 10,900 rows. Statement-level triggers with
+      transition tables fixed inserts, but not per-row callers: the subscriber had to batch too.
+    tag: schema
+  - title: A trigger fix only helps callers that write in bulk
+    detail: >
+      The statement trigger made the bulk LAT persist ~33x faster, but provision ingest stayed at
+      ~32/s because ProvisionSubscriber issued one UPDATE per provision. Fractalaw's rough
+      throughput proxy spotted this. Measure each write path separately.
+    tag: zenoh
+  - title: Compile warnings in typed Elixir are worth reading as bug reports
+    detail: >
+      Two of 18 "noise" warnings were real bugs: an if on an always-truthy map (the confirm action
+      always said "updated"), and an unreachable error clause that hid DB errors as not-found.
+      Test warnings exposed "excludes X" tests that never checked exclusion.
+    tag: tooling
+  - title: Ash.update inside Repo.transaction drops notifications unless they are returned
+    detail: >
+      Use return_notifications?: true inside the transaction and Ash.Notifier.notify after
+      commit. Test with Application.put_env(:ash, :missed_notifications, :raise).
+    tag: tooling
+  - title: Raw-SQL persisters don't validate Ash enum values; read the rows back in tests
+    detail: >
+      LatPersister accepted section_type "regulation" (not a SectionType) because it writes raw
+      SQL. The error only surfaced when a later test read the row through Ash.
+    tag: data
+  - title: The first real run of an "API-ready" workflow is mostly bug-finding
+    detail: >
+      About 40 minutes from gate to handoff; the API calls took seconds per law and the rest was
+      bugs. Only the amending-SI verdict and the fractalaw launch needed a human. Pilot one small
+      batch before designing agent automation.
+    tag: tooling
 
 bugs:
   - pattern: "lat view missing sub_provision since 20260812203258; every LatPersister insert failed with 42703"
@@ -46,9 +129,38 @@ bugs:
     affected: 2
     fix: "Fractalaw: never Not a conditional code the law applies to (extend the L3 guard beyond territory)"
     status: open
+
+artifacts:
+  - backend/lib/sertantai_legal_web/router.ex
+  - backend/lib/sertantai_legal_web/plugs/ai_api_key_plug.ex
+  - backend/lib/sertantai_legal/scraper/lat_staged_parser.ex
+  - backend/lib/sertantai_legal_web/controllers/lat_admin_controller.ex
+  - backend/lib/sertantai_legal/zenoh/provision_subscriber.ex
+  - backend/lib/sertantai_legal/legal/making.ex
+  - backend/lib/mix/tasks/making.review.ex
+  - backend/priv/repo/migrations/20260925160400_add_sub_provision_to_lat_view.exs
+  - backend/priv/repo/migrations/20260925161749_lat_stats_statement_triggers.exs
+  - backend/test/sertantai_legal/scraper/lat_persister_test.exs
+  - backend/test/sertantai_legal/scraper/lat_staged_parser_test.exs
+  - backend/test/sertantai_legal/zenoh/provision_subscriber_batch_test.exs
+  - backend/test/sertantai_legal_web/controllers/workflow_routes_test.exs
+  - .githooks/pre-commit
+  - .claude/sessions/qq-data-readiness/worklists/08-lat-pilot-handoff.txt
+  - "DB: lat_pilot_taxa_snapshot_20260925"
+  - "LAT session: lat-parse-qq-lat-api-pilot-2026-09-25-1602"
+
+depends_on:
+  - qq-data-readiness/2026-09-25-qq-01a-making-transparency.md
+  - qq-data-readiness/2026-09-25-issue-162.md
+  - qq-data-readiness/2026-09-25-issue-163.md
+
+enables:
+  - "2026-09-25-ai-parsing-workflow: batch parse + status endpoint, QA/receipt/Making-review endpoints, stop conditions (see the write-up)"
+  - "QQ-02: no_tree 28 → 6"
+  - "Fast fractalaw provision publishes (batched ingest)"
 ---
 
-# Session: LAT Parse via API Pilot (ACTIVE)
+# Session: LAT Parse via API Pilot (CLOSED)
 
 ## Problem
 
@@ -86,7 +198,7 @@ What it learns decides what the workflow API needs before an agent can run it.
 
 - ✅ The Making write path (QQ-01a) and the extent refresh on LAT persist (#162), so the pilot's writes are traceable
 - ✅ Legal Phoenix server running, with subscribers live (T4)
-- ⬜ QQ-01 triage for the 13 Q1 LAT candidates. They're **out of scope** for this pilot and join a later run.
+- ⏸️ QQ-01 triage for the 13 Q1 LAT candidates (deferred: out of scope for this pilot; they join a later run after QQ-01)
 
 ## The 22 laws (QQ-02 bucket a)
 
