@@ -1,0 +1,75 @@
+bucket,law_name,title,family,geo_extent,type_code,making_classification,lat_count,has_fitness,register_source
+a_needs_lat,UK_anaw_2016_3,Environment (Wales) Act,💚 ENVIRONMENTAL PROTECTION,E+W,anaw,making,0,f,bms_import
+a_needs_lat,UK_asp_2003_2,Land Reform (Scotland) Act,💚 TOWN & COUNTRY PLANNING,,asp,making,0,f,bms_import
+a_needs_lat,UK_ssi_2007_80,"Conservation (Natural Habitats, &c.) Amendment (Scotland) Regulations",💚 WILDLIFE & COUNTRYSIDE,S,ssi,making,0,f,bms_import
+a_needs_lat,UK_ukpga_2003_21,Communications Act,,UK,ukpga,uncertain,0,f,enhesa_import
+a_needs_lat,UK_ukpga_2006_49,Road Safety Act,💙 TRANSPORT: Road Safety,UK,ukpga,making,0,f,bms_import
+a_needs_lat,UK_ukpga_2020_7,Coronavirus Act,💙 HEALTH: Coronavirus,UK,ukpga,making,0,f,bms_import
+a_needs_lat,UK_uksi_1989_1796,Road Vehicles Lighting Regulations,💙 TRANSPORT: Road Safety,GB,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_1997_2962,Merchant Shipping and Fishing Vessels (Health and Safety at Work) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2002_1587,Merchant Shipping (Diving Safety) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2006_2183,Merchant Shipping and Fishing Vessels (Provision and Use of Work Equipment) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2006_2184,Merchant Shipping and Fishing Vessels (Lifting Operations and Lifting Equipment) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2007_3075,Merchant Shipping and Fishing Vessels (Control of Noise at Work) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2007_3077,Merchant Shipping and Fishing Vessels (Control of Vibration at Work) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2010_330,Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Chemical Agents) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2010_332,Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Work at Height) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2015_962,Energy Efficiency (Private Rented Property) (England and Wales) Regulations,💚 CLIMATE CHANGE,E+W,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2016_1026,Merchant Shipping and Fishing Vessels (Health and Safety at Work) (Electromagnetic Fields) Regulations,💙 TRANSPORT: Maritime Safety,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2018_800,Offshore Environmental Civil Sanctions Regulations,💚 ENVIRONMENTAL PROTECTION,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_uksi_2018_98,Fluorinated Greenhouse Gases (Amendment) Regulations,💚 CLIMATE CHANGE,UK,uksi,making,0,f,bms_import
+a_needs_lat,UK_wsi_2001_3545,Special Waste (Amendment) (Wales) Regulations,💚 WASTE,UK,wsi,making,0,f,bms_import
+a_needs_lat,UK_wsi_2009_2861,Hazardous Waste (Wales) (Amendment) Regulations,💚 WASTE,UK,wsi,making,0,f,bms_import
+a_needs_lat,UK_wsi_2010_1821,Environmental Civil Sanctions (Wales) Order,💚 ENVIRONMENTAL PROTECTION,UK,wsi,making,0,f,bms_import
+b_needs_enrichment,UK_asp_2003_8,Building (Scotland) Act,💙 PUBLIC: Building Safety,S,asp,making,765,f,bms_import
+b_needs_enrichment,UK_asp_2004_6,Nature Conservation (Scotland) Act,💚 WILDLIFE & COUNTRYSIDE,S,asp,making,788,f,bms_import
+b_needs_enrichment,UK_eudr_2009_104,Directive 2009/104/EC of the European Parliament and of the Council of 16 September 2009 concerning the minimum safety and health requirements for the use of work equipment by workers at work (second individual Directive within the meaning of Article 16(1) of Directive 89/391/EEC) (codified version) (Text with EEA relevance),💙 OH&S: Occupational / Personal Safety,UK,eudr,uncertain,45,f,enhesa_import
+b_needs_enrichment,UK_eudr_2009_161,Commission Directive 2009/161/EU of 17 December 2009 establishing a third list of indicative occupational exposure limit values in implementation of Council Directive 98/24/EC and amending Commission Directive 2000/39/EC (Text with EEA relevance),💙 OH&S: Occupational / Personal Safety,UK,eudr,making,8,f,enhesa_import
+b_needs_enrichment,UK_eur_2017_548,Commission Implementing Regulation (EU) 2017/548 of 23 March 2017 laying down a standard form for the written statement on the removal or breakage of a tachograph seal (Text with EEA relevance),,UK,eur,making,3,f,enhesa_import
+b_needs_enrichment,UK_nisi_2006_1254,Fire and Rescue Services (Northern Ireland) Order,💙 FIRE,NI,nisi,making,598,f,bms_import
+b_needs_enrichment,UK_ssi_2004_406,Building (Scotland) Regulations,💙 PUBLIC: Building Safety,S,ssi,making,74,f,enhesa_import
+b_needs_enrichment,UK_ssi_2009_266,Environmental Liability (Scotland) Regulations,💚 ENVIRONMENTAL PROTECTION,S,ssi,making,269,f,bms_import
+b_needs_enrichment,UK_ukpga_1960_30,Occupiers’ Liability (Scotland) Act,💙 OH&S: Occupational / Personal Safety,S,ukpga,making,20,f,bms_import
+b_needs_enrichment,UK_ukpga_1982_16,Civil Aviation Act,💙 TRANSPORT: Air Safety,UK,ukpga,making,1385,f,bms_import
+b_needs_enrichment,UK_ukpga_1990_16,Food Safety Act,💙 FOOD,UK,ukpga,making,650,f,bms_import
+b_needs_enrichment,UK_ukpga_1990_8,Town and Country Planning Act,💚 TOWN & COUNTRY PLANNING,E+W,ukpga,making,7055,f,enhesa_import
+b_needs_enrichment,UK_ukpga_2000_23,Regulation of Investigatory Powers Act,,UK,ukpga,making,1412,f,bms_import
+b_needs_enrichment,UK_ukpga_2003_20,Railways and Transport Safety Act,💙 TRANSPORT: Rail Safety,UK,ukpga,making,1207,f,bms_import
+b_needs_enrichment,UK_ukpga_2004_21,Fire and Rescue Services Act,💙 FIRE,GB,ukpga,making,1163,f,bms_import
+b_needs_enrichment,UK_ukpga_2006_36,Wireless Telegraphy Act,,UK,ukpga,uncertain,1900,f,bms_import
+b_needs_enrichment,UK_ukpga_2006_38,Violent Crime Reduction Act,,UK,ukpga,making,473,f,bms_import
+b_needs_enrichment,UK_ukpga_2015_30,Modern Slavery Act,💜 HR: Employment,UK,ukpga,making,975,f,bms_import
+b_needs_enrichment,UK_ukpga_2018_12,Data Protection Act,💙 PUBLIC: Data,UK,ukpga,making,3337,f,bms_import
+b_needs_enrichment,UK_ukpga_2022_30,Building Safety Act,💙 PUBLIC: Building Safety,UK,ukpga,making,2043,f,enhesa_import
+b_needs_enrichment,UK_uksi_1998_1941,Firearms Rules,💙 PUBLIC,UK,uksi,making,77,f,bms_import
+b_needs_enrichment,UK_uksi_1999_3106,Good Laboratory Practice Regulations,💙 OH&S: Occupational / Personal Safety,UK,uksi,making,160,f,bms_import
+b_needs_enrichment,UK_uksi_2001_1701,Noise Emission in the Environment by Equipment for use Outdoors Regulations,💚 NOISE,UK,uksi,making,226,f,bms_import
+b_needs_enrichment,UK_uksi_2003_2457,Management of Health and Safety at Work and Fire Precautions (Workplace) (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,UK,uksi,making,16,f,bms_import
+b_needs_enrichment,UK_uksi_2004_1309,Adventure Activities Licensing Regulations,💙 OH&S: Occupational / Personal Safety,UK,uksi,making,123,f,bms_import
+b_needs_enrichment,UK_uksi_2005_1378,Wireless Telegraphy (Licence Charges) Regulations,,,uksi,making,76,f,bms_import
+b_needs_enrichment,UK_uksi_2008_2164,Batteries and Accumulators (Placing on the Market) Regulations,💚 WASTE,UK,uksi,making,223,f,bms_import
+b_needs_enrichment,UK_uksi_2009_3155,Accreditation Regulations,,UK,uksi,uncertain,13,f,bms_import
+b_needs_enrichment,UK_uksi_2010_1627,Marine Strategy Regulations,💚 MARINE & RIVERINE,UK,uksi,making,235,f,bms_import
+b_needs_enrichment,UK_uksi_2010_93,Agency Workers Regulations,💜 HR: Employment,UK,uksi,making,305,f,bms_import
+b_needs_enrichment,UK_uksi_2011_1885,Carriage of Dangerous Goods and Use of Transportable Pressure Equipment (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,UK,uksi,making,66,f,bms_import
+b_needs_enrichment,UK_uksi_2011_2157,Supply of Machinery (Safety) (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,UK,uksi,making,25,f,bms_import
+b_needs_enrichment,UK_uksi_2012_3032,Restriction of the Use of Certain Hazardous Substances in Electrical and Electronic Equipment Regulations,💙 PUBLIC: Consumer / Product Safety,UK,uksi,making,404,f,bms_import
+b_needs_enrichment,UK_uksi_2015_1640,Packaging (Essential Requirements) Regulations,💚 WASTE,UK,uksi,making,136,f,bms_import
+b_needs_enrichment,UK_uksi_2015_21,"Classification, Labelling and Packaging of Chemicals (Amendments to Secondary Legislation) Regulations",💙 OH&S: Occupational / Personal Safety,UK,uksi,making,168,f,bms_import
+b_needs_enrichment,UK_uksi_2015_668,Nitrate Pollution Prevention Regulations,💚 POLLUTION,UK,uksi,making,509,f,bms_import
+b_needs_enrichment,UK_uksi_2016_315,Explosives Regulations 2014 (Amendment) Regulations,💙 FIRE: Dangerous and Explosive Substances,UK,uksi,making,62,f,bms_import
+b_needs_enrichment,UK_uksi_2016_765,Air Navigation Order,💙 TRANSPORT: Air Safety,UK,uksi,making,2483,f,bms_import
+b_needs_enrichment,UK_uksi_2017_1013,Conservation of Offshore Marine Habitats and Species Regulations,💚 WILDLIFE & COUNTRYSIDE,UK,uksi,making,1270,f,bms_import
+b_needs_enrichment,UK_uksi_2018_1203,Trailer Registration Regulations,,UK,uksi,making,259,f,bms_import
+b_needs_enrichment,UK_uksi_2018_139,Gas Safety (Installation and Use) (Amendment) Regulations,💙 OH&S: Gas & Electrical Safety,UK,uksi,making,21,f,bms_import
+b_needs_enrichment,UK_uksi_2018_482,Ionising Radiation (Basic Safety Standards) (Miscellaneous Provisions) Regulations,💚 NUCLEAR & RADIOLOGICAL,,uksi,making,81,f,bms_import
+b_needs_enrichment,UK_uksi_2018_506,Network and Information Systems Regulations,💙 PUBLIC: Data,UK,uksi,making,536,f,bms_import
+b_needs_enrichment,UK_uksi_2018_623,Air Navigation (Amendment) Order,💙 TRANSPORT: Air Safety,UK,uksi,making,37,f,bms_import
+b_needs_enrichment,UK_uksi_2019_1115,Air Navigation (Cosmic Radiation: Protection of Air Crew and Space Crew and Consequential Amendments) Order,💙 TRANSPORT: Air Safety,UK,uksi,making,278,f,bms_import
+b_needs_enrichment,UK_wsi_2005_1806,Hazardous Waste (Wales) Regulations,💚 WASTE,E+W,wsi,making,652,f,bms_import
+b_needs_enrichment,UK_wsi_2008_1081,Heather and Grass etc. Burning (Wales) Regulations,💚 WILDLIFE & COUNTRYSIDE,UK,wsi,uncertain,57,f,bms_import
+b_needs_enrichment,UK_wsi_2009_995,Environmental Damage (Prevention and Remediation) (Wales) Regulations,💚 ENVIRONMENTAL PROTECTION,UK,wsi,making,254,f,bms_import
+b_needs_enrichment,UK_wsi_2012_1085,Fire Safety (Employees' Capabilities) (Wales) Regulations,💙 FIRE,UK,wsi,not_making,6,f,enhesa_import
+b_needs_enrichment,UK_wsi_2017_567,Town and Country Planning (Environmental Impact Assessment) (Wales) Regulations,💚 TOWN & COUNTRY PLANNING,E+W,wsi,making,715,f,enhesa_import
+b_needs_enrichment,UK_wsi_2024_1268,Building (Registered Building Control Approvers etc.) (Wales) Regulations,💙 PUBLIC: Building Safety,E+W,wsi,making,325,f,enhesa_import
+c_fitness_no_tree,UK_ukpga_1990_9,Planning (Listed Buildings and Conservation Areas) Act,💚 TOWN & COUNTRY PLANNING,E+W,ukpga,making,1068,t,enhesa_import
