@@ -64,6 +64,7 @@ An amending instrument that inserts duties into a principal Act or SI is **not M
   - 33 of 37 F3 laws are correctly not Making, so they're QQ cleanup.
   - `UK_ssi_2012_148` and `UK_uksi_1998_3111` have Obligation rows in PG, so T4's republish should make them Making.
   - T2: `UK_ssi_2010_435` has a genuine duty (it becomes Making on republish). `UK_ssi_2005_22` is an amending SI, so it's not Making under the policy.
+  - Under the amending-SI policy, fractalaw will exclude amendment instructions from its DRRP aggregation. So `UK_ssi_2012_148` (inserts EPA s34 duties) and `UK_ssi_2005_22` (inserts WML duties) become **not Making**. `UK_uksi_1998_3111` and `UK_ssi_2010_435` keep their own duties and stay Making.
   - Correction to the brief: `UK_uksi_2025_140` and `UK_uksi_2018_24` have no duties.
 - ⬜ Q1 (13): create a LAT session (`lat-session-build`); the laws are already candidates by the DB rule. Then send them to fractalaw (brief T4, item 4).
 - ⬜ P1 (8): Jason decides, per Act, between parsing it and QQ cleanup.
