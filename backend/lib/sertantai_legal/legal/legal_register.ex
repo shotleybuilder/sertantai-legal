@@ -503,6 +503,40 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("JSONB map of all signals that fired during detection")
     end
 
+    # Making provenance (QQ-01a) — written only via SertantaiLegal.Legal.Making
+    attribute :making_classification_source, :string do
+      allow_nil?(true)
+      description("Who wrote making_classification: detector or triage")
+    end
+
+    attribute :making_enrichment_verdict, :string do
+      allow_nil?(true)
+      description("Fractalaw DRRP verdict: making, empowering or no_obligations")
+    end
+
+    attribute :making_enriched_at, :utc_datetime_usec do
+      allow_nil?(true)
+      description("When the enrichment verdict was last recorded")
+    end
+
+    attribute :is_making_source, :string do
+      allow_nil?(true)
+
+      description(
+        "MakingResolver tier that decided is_making: review, enrichment, legacy_drrp, triage, detector or default"
+      )
+    end
+
+    attribute :is_making_reason, :string do
+      allow_nil?(true)
+      description("Human-readable reason for the current is_making value")
+    end
+
+    attribute :is_making_decided_at, :utc_datetime_usec do
+      allow_nil?(true)
+      description("When is_making was last resolved")
+    end
+
     # Amendment Stats
     attribute(:stats_self_affects_count, :integer,
       source: :"🔺🔻_stats_self_affects_count",
@@ -768,6 +802,12 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :making_review_at,
         :making_detection_tier,
         :making_detection_signals,
+        :making_classification_source,
+        :making_enrichment_verdict,
+        :making_enriched_at,
+        :is_making_source,
+        :is_making_reason,
+        :is_making_decided_at,
         :function,
         :purpose,
         :popimar,
@@ -876,6 +916,12 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :making_review_at,
         :making_detection_tier,
         :making_detection_signals,
+        :making_classification_source,
+        :making_enrichment_verdict,
+        :making_enriched_at,
+        :is_making_source,
+        :is_making_reason,
+        :is_making_decided_at,
         :function,
         :purpose,
         :popimar,
