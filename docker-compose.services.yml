@@ -152,6 +152,7 @@ services:
       - AUTH_PUBLIC_URL=http://localhost:4000
       - FRONTEND_URL=http://localhost:5173
       - LEGAL_SERVICE_URL=http://host.docker.internal:4003
+      - COMPLIANCE_SERVICE_URL=http://host.docker.internal:4004
     ports:
       - "4006:4006"
     extra_hosts:
@@ -174,7 +175,8 @@ services:
       - VITE_API_URL=http://localhost:4006
       - VITE_LEGAL_URL=http://localhost:5175
       - VITE_ENFORCEMENT_URL=http://localhost:5174
-      - VITE_CONTROLS_URL=http://localhost:5176
+      - VITE_COMPLIANCE_URL=http://localhost:5176
+      - VITE_CONTROLS_URL=http://localhost:5177
     ports:
       - "5173:3000"
     healthcheck:
