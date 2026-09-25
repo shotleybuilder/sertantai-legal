@@ -36,6 +36,7 @@ Today this runs through the admin UI and skills, driven by hand. The goal:
 - ⬜ Run record: one persisted record per monthly run (laws screened in or out and why, cascade decisions, parse outcomes, errors), in the spirit of `making_funnel`
 - ⬜ Fractalaw handoff step: produce the law list and the preconditions (legal server up, snapshot taken), then wait for Jason to launch it; resume when the publish log arrives
 - ⬜ Gemini review of the design (CLAUDE.md acceptance gate)
+- ⬜ Pilot the LAT slice first: `2026-09-25-lat-parse-api-pilot` (22 QQ laws). Fold its findings into the workflow API design.
 - ⬜ Dry run: take the next monthly batch through the API semi-manually (Claude + Jason). Record the decisions, the time taken, and where a human was really needed.
 - ⬜ Agent handoff criteria and spec: which steps the agent may do alone, which need approval, and the stop conditions (for example, cascade growth beyond the budget)
 
