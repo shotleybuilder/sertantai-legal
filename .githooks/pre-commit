@@ -146,31 +146,23 @@ check_compilation() {
     # Change to backend directory
     cd backend
 
-    # Capture output and check exit code
-    COMPILE_OUTPUT=$(MIX_ENV=dev mix compile 2>&1)
+    # Warnings are errors: compilation is kept clean (dependencies excluded).
+    COMPILE_OUTPUT=$(MIX_ENV=dev mix compile --warnings-as-errors 2>&1)
     COMPILE_STATUS=$?
 
     # Return to root
     cd ..
 
     if [ $COMPILE_STATUS -ne 0 ]; then
-        print_error "Backend compilation failed"
-        echo "$COMPILE_OUTPUT"
-        print_info "Fix compilation errors before committing"
+        print_error "Backend compilation failed (warnings are treated as errors)"
+        echo "$COMPILE_OUTPUT" | grep -E -A12 "warning:|error:" | head -80
+        print_info "Fix compilation errors and warnings before committing"
         print_info "Or use 'git commit --no-verify' to skip this check (not recommended)"
         return 1
-    else
-        # Check for warnings (compilation succeeds but with warnings)
-        if echo "$COMPILE_OUTPUT" | grep -q "warning:"; then
-            print_warning "Backend compilation succeeded but has warnings"
-            echo "$COMPILE_OUTPUT" | grep "warning:"
-            print_info "Consider fixing warnings before committing"
-            # Don't fail on warnings, just notify
-        else
-            print_success "Backend compilation successful (no warnings)"
-        fi
-        return 0
     fi
+
+    print_success "Backend compilation successful (no warnings)"
+    return 0
 }
 
 # Check 4: Credo (Static Analysis)

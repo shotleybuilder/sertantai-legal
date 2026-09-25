@@ -151,7 +151,7 @@ defmodule SertantaiLegal.Scraper.Au.FederalClient do
 
       # Extract rescinded_by from Titles statusHistory
       rescinded_by =
-        (title.status_history || [])
+        title.status_history
         |> Enum.flat_map(fn sh -> sh["reasons"] || [] end)
         |> Enum.filter(&(&1["affect"] == "Repeal"))
         |> Enum.map(fn r ->
@@ -174,7 +174,7 @@ defmodule SertantaiLegal.Scraper.Au.FederalClient do
 
       # Repeal date
       latest_rescind_date =
-        (title.status_history || [])
+        title.status_history
         |> Enum.filter(&(&1["status"] == "Repealed"))
         |> Enum.map(& &1["start"])
         |> List.first()

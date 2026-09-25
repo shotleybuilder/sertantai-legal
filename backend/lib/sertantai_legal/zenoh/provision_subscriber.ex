@@ -223,10 +223,13 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     end
   end
 
+  # Only a missing row is "not found"; other errors (e.g. DB) are returned as
+  # errors so they aren't silently skipped as "not yet parsed".
   defp find_article(section_id) do
-    case Ash.get(LegalArticle, section_id) do
+    case Ash.get(LegalArticle, section_id, not_found_error?: false) do
+      {:ok, nil} -> {:error, {:not_found, section_id}}
       {:ok, article} -> {:ok, article}
-      {:error, _} -> {:error, {:not_found, section_id}}
+      {:error, reason} -> {:error, reason}
     end
   end
 

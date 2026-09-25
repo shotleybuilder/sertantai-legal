@@ -14,7 +14,6 @@ defmodule Mix.Tasks.Lat.Qa do
   """
 
   use Mix.Task
-  require Logger
 
   alias SertantaiLegal.Repo
 

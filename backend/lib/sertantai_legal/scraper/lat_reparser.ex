@@ -13,8 +13,6 @@ defmodule SertantaiLegal.Scraper.LatReparser do
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Repo
 
-  require Logger
-
   @spec reparse(String.t()) :: {:ok, map()} | {:error, String.t()}
   def reparse(law_name) when is_binary(law_name) do
     start = System.monotonic_time(:millisecond)

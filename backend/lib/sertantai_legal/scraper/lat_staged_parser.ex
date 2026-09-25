@@ -24,8 +24,6 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Repo
 
-  require Logger
-
   @stages [:fetch_body, :parse_lat, :persist_lat, :parse_annotations, :persist_annotations]
   @total_stages length(@stages)
 

@@ -17,7 +17,6 @@ defmodule Mix.Tasks.Legal.BackfillMakingProvenance do
   """
 
   use Mix.Task
-  require Logger
 
   alias SertantaiLegal.Legal.Taxa.MakingDetector
 

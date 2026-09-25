@@ -31,7 +31,6 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
   """
 
   use Mix.Task
-  require Logger
 
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LegislationGovUk.Client

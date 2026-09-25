@@ -27,7 +27,6 @@ defmodule Mix.Tasks.BackfillExplanatoryNotes do
   alias SertantaiLegal.Repo
 
   require Ash.Query
-  require Logger
 
   @impl Mix.Task
   def run(args) do

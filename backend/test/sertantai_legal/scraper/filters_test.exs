@@ -27,6 +27,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
 
       assert length(included) == 1
       assert hd(included)[:Title_EN] =~ "Air Quality"
+      assert [%{Title_EN: "The Parking Places Order 2024"}] = excluded
     end
 
     test "excludes trunk road orders" do
@@ -51,6 +52,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
 
       assert length(included) == 1
       assert hd(included)[:Title_EN] =~ "Waste Management"
+      assert [%{Title_EN: "The Drought Order 2024"}] = excluded
     end
 
     test "includes all records when none match exclusions" do
@@ -82,6 +84,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
       assert length(matched) >= 1
       matched_titles = Enum.map(matched, & &1[:Title_EN])
       assert Enum.any?(matched_titles, &String.contains?(&1, "Smoke Control"))
+      assert Enum.any?(excluded, &(&1[:Title_EN] == "The Patent Law Act 2024"))
     end
 
     test "matches health and safety terms" do
@@ -98,6 +101,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
       # RIDDOR should match H&S terms
       matched_titles = Enum.map(matched, & &1[:Title_EN])
       assert Enum.any?(matched_titles, &String.contains?(&1, "RIDDOR"))
+      assert Enum.any?(excluded, &(&1[:Title_EN] == "The Stamp Duty Act 2024"))
     end
 
     test "matches noise terms" do
@@ -113,6 +117,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
 
       matched_titles = Enum.map(matched, & &1[:Title_EN])
       assert Enum.any?(matched_titles, &String.contains?(&1, "Noise"))
+      assert Enum.any?(excluded, &(&1[:Title_EN] == "The Copyright Law Act 2024"))
     end
 
     test "excludes records with no term matches" do
@@ -157,6 +162,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
 
       assert length(matched) == 1
       assert hd(matched)[:si_code] == ["ENVIRONMENT"]
+      assert [%{si_code: ["UNKNOWN"]}] = excluded
     end
 
     test "matches health and safety SI codes" do
@@ -169,6 +175,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
 
       assert length(matched) == 1
       assert hd(matched)[:si_code] == ["HEALTH AND SAFETY"]
+      assert [%{si_code: ["UNKNOWN"]}] = excluded
     end
 
     test "handles records with multiple SI codes" do
@@ -180,6 +187,7 @@ defmodule SertantaiLegal.Scraper.FiltersTest do
       {:ok, {matched, excluded}} = Filters.si_code_filter(records)
 
       assert length(matched) == 1
+      assert [%{si_code: ["RANDOM", "OTHER"]}] = excluded
     end
 
     test "excludes records with no matching SI codes" do

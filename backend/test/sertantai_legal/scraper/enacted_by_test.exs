@@ -184,15 +184,4 @@ defmodule SertantaiLegal.Scraper.EnactedByTest do
       assert Enum.count(result, fn x -> x == "ukpga/1974/37" end) == 1
     end
   end
-
-  describe "build_description" do
-    test "builds description with URLs" do
-      # Access private function via module
-      laws = ["ukpga/1974/37", "uksi/2020/1234"]
-
-      # We can test this by checking get_enacting_laws output
-      # For now, just verify the module compiles and basic structure works
-      assert true
-    end
-  end
 end

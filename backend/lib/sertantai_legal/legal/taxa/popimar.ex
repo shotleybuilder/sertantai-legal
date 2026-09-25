@@ -40,7 +40,7 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
 
   @type popimar :: list(String.t())
   @type text :: String.t()
-  @type record :: map()
+  @type taxa_record :: map()
 
   # POPIMAR categories in display order
   @popimar_categories [
@@ -135,7 +135,7 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
 
   Returns the map with `:popimar` added.
   """
-  @spec process_record(record(), keyword()) :: record()
+  @spec process_record(taxa_record(), keyword()) :: taxa_record()
   def process_record(record, opts \\ [])
 
   def process_record(%{text: text, duty_type: duty_types} = record, opts)
@@ -163,7 +163,7 @@ defmodule SertantaiLegal.Legal.Taxa.Popimar do
   @doc """
   Processes a list of law records.
   """
-  @spec process_records(list(record())) :: list(record())
+  @spec process_records(list(taxa_record())) :: list(taxa_record())
   def process_records(records) when is_list(records) do
     Enum.map(records, &process_record/1)
   end

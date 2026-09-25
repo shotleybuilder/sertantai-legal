@@ -421,8 +421,6 @@ defmodule SertantaiLegal.Legal.Taxa.DutyTypeLib do
 
   # Creates windows around modal positions with asymmetric padding
   # More space before (for actor) than after (for verb phrase)
-  defp create_modal_windows(positions, _text) when positions == [], do: []
-
   defp create_modal_windows(positions, text) do
     text_length = String.length(text)
 

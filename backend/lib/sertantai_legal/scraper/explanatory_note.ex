@@ -16,8 +16,6 @@ defmodule SertantaiLegal.Scraper.ExplanatoryNote do
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
 
-  require Logger
-
   # Truncate notes longer than 10K chars. Full Act explanatory notes can be
   # 100K-1.6M chars (essentially books) — too large for quick reference.
   @max_chars 10_000

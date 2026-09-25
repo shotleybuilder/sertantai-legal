@@ -72,8 +72,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Suppress unused warning — @live_part_revoked is used by test helpers
   _ = @live_part_revoked
 
-  require Logger
-
   # Telemetry event names
   @telemetry_parse_complete [:staged_parser, :parse, :complete]
   @telemetry_stage_complete [:staged_parser, :stage, :complete]
@@ -662,21 +660,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     not is_nil(value) and value != "" and value != []
   end
 
-  defp has_key?(%ParsedLaw{} = _law, _key) do
-    # String keys don't exist in ParsedLaw struct (all keys are atoms)
-    false
-  end
-
   defp has_key?(record, key) when is_atom(key) do
     value = record[key] || record[Atom.to_string(key)]
     not is_nil(value) and value != "" and value != []
-  end
-
-  defp has_key?(record, key) when is_binary(key) do
-    value = record[key] || record[String.to_existing_atom(key)]
-    not is_nil(value) and value != "" and value != []
-  rescue
-    ArgumentError -> record[key] != nil
   end
 
   # Check if the existing record's value for a key matches the new value.
@@ -689,8 +675,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     existing = record[key] || record[Atom.to_string(key)]
     existing == new_value
   end
-
-  defp values_match?(_record, _key, _new_value), do: false
 
   # ============================================================================
   # Stage 2: Extent

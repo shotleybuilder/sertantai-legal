@@ -783,6 +783,10 @@ defmodule SertantaiLegalWeb.ScrapeController do
             |> then(fn r -> if family, do: Map.put(r, :Family, family), else: r end)
             |> Map.merge(atomize_keys(overrides))
 
+          # Whether the law existed must be known before persisting (after,
+          # it always exists and the action was always "updated").
+          existed? = check_duplicate(name).exists
+
           # Persist directly - record already has full metadata from parse_one
           case LawParser.persist_direct(record_to_persist) do
             {:ok, persisted} ->
@@ -826,7 +830,7 @@ defmodule SertantaiLegalWeb.ScrapeController do
                 message: "Record persisted successfully",
                 name: name,
                 id: persisted.id,
-                action: if(check_duplicate(name), do: "updated", else: "created"),
+                action: if(existed?, do: "updated", else: "created"),
                 has_affected_laws: has_affected,
                 affected_count: length(amending) + length(rescinding),
                 has_enacting_parents: has_enacting_parents,

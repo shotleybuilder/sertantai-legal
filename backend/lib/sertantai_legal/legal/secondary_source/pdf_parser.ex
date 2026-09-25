@@ -267,8 +267,6 @@ defmodule SertantaiLegal.Legal.SecondarySource.PdfParser do
     Regex.match?(~r/^Page\s+\d+\s+of\s+\d+/i, text)
   end
 
-  defp skip_header?(_text, _profile), do: false
-
   # Bold continuation — common across all profiles
   defp bold_continuation?(text) do
     first_char = String.first(text)

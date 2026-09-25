@@ -177,48 +177,6 @@ defmodule SertantaiLegal.Legal.Taxa.ClauseQualityIntegrationTest do
 
   # Helper functions
 
-  defp assert_clause_quality(match, expected_list) do
-    clause = match.clause
-
-    # Find matching expectation
-    expectation =
-      Enum.find(expected_list, fn exp ->
-        exp["holder"] == match.holder and clause_matches_expectation?(clause, exp)
-      end)
-
-    # Basic quality checks regardless of expectation match
-    assert_no_mid_word_truncation(clause)
-
-    if expectation do
-      if expectation["clause_must_contain"] do
-        must_contain = List.wrap(expectation["clause_must_contain"])
-
-        for term <- must_contain do
-          assert String.contains?(clause, term),
-                 "Clause should contain '#{term}': #{clause}"
-        end
-      end
-
-      if expectation["clause_must_not_contain"] do
-        must_not_contain = List.wrap(expectation["clause_must_not_contain"])
-
-        for term <- must_not_contain do
-          refute String.ends_with?(clause, term),
-                 "Clause should not end with '#{term}': #{clause}"
-        end
-      end
-    end
-  end
-
-  defp clause_matches_expectation?(clause, expectation) do
-    if expectation["clause_must_contain"] do
-      must_contain = List.wrap(expectation["clause_must_contain"])
-      Enum.any?(must_contain, &String.contains?(clause, &1))
-    else
-      true
-    end
-  end
-
   defp assert_no_mid_word_truncation(clause) do
     # Remove trailing ellipsis for checking
     clause_trimmed =
@@ -227,7 +185,7 @@ defmodule SertantaiLegal.Legal.Taxa.ClauseQualityIntegrationTest do
       |> String.trim()
 
     # Get the last few characters
-    last_chars = String.slice(clause_trimmed, -5, 5) || clause_trimmed
+    last_chars = String.slice(clause_trimmed, -5, 5)
 
     # Check for common mid-word patterns (2-3 letter fragments that aren't words)
     # These are partial words that indicate truncation

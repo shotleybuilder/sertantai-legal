@@ -32,7 +32,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
 
   @type duty_types :: list(String.t())
   @type text :: String.t()
-  @type record :: map()
+  @type taxa_record :: map()
 
   @duty_type_values ["Duty", "Right", "Responsibility", "Power"]
 
@@ -65,7 +65,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
   - `:responsibilities` - Consolidated JSONB (Phase 4)
   - `:powers` - Consolidated JSONB (Phase 4)
   """
-  @spec process_record(record(), keyword()) :: record()
+  @spec process_record(taxa_record(), keyword()) :: taxa_record()
   def process_record(record, opts \\ [])
 
   def process_record(%{text: text} = record, opts) when is_binary(text) and text != "" do
@@ -81,7 +81,7 @@ defmodule SertantaiLegal.Legal.Taxa.DutyType do
   @doc """
   Processes a list of law records.
   """
-  @spec process_records(list(record())) :: list(record())
+  @spec process_records(list(taxa_record())) :: list(taxa_record())
   def process_records(records) when is_list(records) do
     Enum.map(records, &process_record/1)
   end
