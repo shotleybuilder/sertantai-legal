@@ -21,14 +21,14 @@ bugs:
     category: lat-persist
     module: scraper/lat_staged_parser.ex
     affected: 2015
-    fix: "Skip parse/persist_annotations when persist_lat fails. The 2,015 orphans for UK_ukpga_2003_21 were deleted and recreated by the successful re-parse; the code path is still open"
-    status: open
+    fix: "LatStagedParser.run_stages/5 skips both annotation stages (:skipped) when persist_lat fails and sets result.error. The orphans for UK_ukpga_2003_21 were deleted and recreated by the successful re-parse"
+    status: fixed
   - pattern: "LAT session record is marked 'parsed' even when persist_lat failed"
     category: lat-session-status
     module: lat_admin_controller.ex (lat_send_parse_complete) / LatStagedParser result
     affected: 1
-    fix: "Set record status from the stage results (error if any stage failed)"
-    status: open
+    fix: "LatStagedParser.record_outcome/1: any stage error means failed, with the error; the controller uses it. The fetch_body failure path now also carries an error"
+    status: fixed
 ---
 
 # Session: LAT Parse via API Pilot (ACTIVE)
@@ -141,3 +141,9 @@ Everything else was mechanical.
   - Full suite: 1,747 passed.
 - **Communications Act re-parsed via the API:** 10,900 rows and 2,015 annotations in 28s (it previously failed at 171s). QA: 0 failures. Confirmed and added to the handoff, so there are now **18 laws**.
 - **Expected side effect:** fractalaw provision publishes should now run far faster than ~30/s. Verify on the next publish.
+
+## Remaining bugs fixed (2026-09-25; Jason brought them into this session)
+
+- **Orphan annotations:** `LatStagedParser.run_stages/5` (now public) skips `parse_annotations` and `persist_annotations` when `persist_lat` fails, reports them as `:skipped`, and returns `error: "LAT persist: …"`.
+- **Wrong record status:** `LatStagedParser.record_outcome/1` returns `{:parsed, r}` only when every stage succeeded, otherwise `{:failed, error}`. The controller no longer records partial success as `parsed`. The fetch_body failure path had the same gap: it now carries `error: "fetch_body: …"`.
+- **Tests:** `lat_staged_parser_test.exs` has 6 tests. Persist failure is forced with a law_id that has no legal_register row, using the `body_uksi_1991_899` fixture.

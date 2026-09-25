@@ -75,7 +75,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     case fetch_body_xml(slash_path) do
       {:ok, body_xml} ->
         notify(on_progress, {:stage_complete, :fetch_body, :ok, "XML fetched"})
-        do_parse_stages(law_name, type_code, law_id, body_xml, on_progress, start)
+        do_run_stages(law_name, type_code, law_id, body_xml, on_progress, start)
 
       {:error, reason} ->
         notify(on_progress, {:stage_complete, :fetch_body, :error, reason})
@@ -88,12 +88,36 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
            lat: %{inserted: 0, deleted: 0, error: reason},
            annotations: %{inserted: 0},
            duration_ms: duration_ms,
-           has_errors: true
+           has_errors: true,
+           error: "fetch_body: #{reason}"
          }}
     end
   end
 
-  defp do_parse_stages(law_name, type_code, law_id, body_xml, on_progress, start) do
+  @doc """
+  Run stages 2–5 (parse LAT, persist LAT, parse and persist annotations) on
+  an already-fetched body. Public so the stage logic can be tested with a
+  fixture body. Options: `on_progress`, as for `parse/2`.
+
+  When the LAT persist fails, the annotation stages are **skipped** (reported
+  as `:skipped`), because annotations without their LAT rows are orphans.
+  Any stage error sets `has_errors: true` and `error: "<stage>: <reason>"`.
+  """
+  @spec run_stages(String.t(), String.t(), String.t(), String.t(), keyword()) :: {:ok, map()}
+  def run_stages(law_name, type_code, law_id, body_xml, opts \\ []) do
+    start = System.monotonic_time(:millisecond)
+    do_run_stages(law_name, type_code, law_id, body_xml, Keyword.get(opts, :on_progress), start)
+  end
+
+  @doc """
+  How a parse result should be recorded on its LAT session record:
+  `{:parsed, result}` only when no stage failed; otherwise `{:failed, error}`.
+  """
+  @spec record_outcome(map()) :: {:parsed, map()} | {:failed, String.t()}
+  def record_outcome(%{has_errors: false} = result), do: {:parsed, result}
+  def record_outcome(result), do: {:failed, result[:error] || "parse failed"}
+
+  defp do_run_stages(law_name, type_code, law_id, body_xml, on_progress, start) do
     # Stage 2: Parse LAT rows
     notify(on_progress, {:stage_start, :parse_lat, 2, @total_stages})
     lat_rows = LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
@@ -118,32 +142,11 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
           {%{inserted: 0, deleted: 0, error: reason}, true}
       end
 
-    # Stage 4: Parse annotations
-    notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
-    ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
-    annotations = CommentaryParser.parse(body_xml, %{law_name: law_name}, ref_to_sections)
-
-    notify(
-      on_progress,
-      {:stage_complete, :parse_annotations, :ok, "#{length(annotations)} annotations"}
-    )
-
-    # Stage 5: Persist annotations
-    notify(on_progress, {:stage_start, :persist_annotations, 5, @total_stages})
-
     {annotation_result, ann_error} =
-      case CommentaryPersister.persist(annotations, law_name, law_id) do
-        {:ok, result} ->
-          notify(
-            on_progress,
-            {:stage_complete, :persist_annotations, :ok, "#{result.inserted} inserted"}
-          )
-
-          {result, false}
-
-        {:error, reason} ->
-          notify(on_progress, {:stage_complete, :persist_annotations, :error, reason})
-          {%{inserted: 0, error: reason}, true}
+      if lat_error do
+        skip_annotations(on_progress)
+      else
+        run_annotation_stages(law_name, law_id, body_xml, lat_rows, on_progress)
       end
 
     duration_ms = System.monotonic_time(:millisecond) - start
@@ -157,7 +160,54 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
        annotations: annotation_result,
        duration_ms: duration_ms,
        has_errors: has_errors
-     }}
+     }
+     |> put_error(lat_result, annotation_result)}
+  end
+
+  defp put_error(result, %{error: reason}, _ann),
+    do: Map.put(result, :error, "LAT persist: #{reason}")
+
+  defp put_error(result, _lat, %{error: reason}),
+    do: Map.put(result, :error, "annotations persist: #{reason}")
+
+  defp put_error(result, _lat, _ann), do: result
+
+  defp skip_annotations(on_progress) do
+    reason = "skipped: LAT persist failed"
+    notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
+    notify(on_progress, {:stage_complete, :parse_annotations, :skipped, reason})
+    notify(on_progress, {:stage_start, :persist_annotations, 5, @total_stages})
+    notify(on_progress, {:stage_complete, :persist_annotations, :skipped, reason})
+    {%{inserted: 0, skipped: true}, false}
+  end
+
+  defp run_annotation_stages(law_name, law_id, body_xml, lat_rows, on_progress) do
+    # Stage 4: Parse annotations
+    notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
+    ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
+    annotations = CommentaryParser.parse(body_xml, %{law_name: law_name}, ref_to_sections)
+
+    notify(
+      on_progress,
+      {:stage_complete, :parse_annotations, :ok, "#{length(annotations)} annotations"}
+    )
+
+    # Stage 5: Persist annotations
+    notify(on_progress, {:stage_start, :persist_annotations, 5, @total_stages})
+
+    case CommentaryPersister.persist(annotations, law_name, law_id) do
+      {:ok, result} ->
+        notify(
+          on_progress,
+          {:stage_complete, :persist_annotations, :ok, "#{result.inserted} inserted"}
+        )
+
+        {result, false}
+
+      {:error, reason} ->
+        notify(on_progress, {:stage_complete, :persist_annotations, :error, reason})
+        {%{inserted: 0, error: reason}, true}
+    end
   end
 
   defp notify(nil, _event), do: :ok

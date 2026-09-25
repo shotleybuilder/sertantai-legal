@@ -815,16 +815,13 @@ defmodule SertantaiLegalWeb.LatAdminController do
 
   defp lat_send_parse_complete(conn, result, session_id, law_name) do
     # Update session record with results
-    case result do
-      %{has_errors: false} = r ->
+    # Any stage error marks the record failed; "parsed" means every stage succeeded.
+    case LatStagedParser.record_outcome(result) do
+      {:parsed, r} ->
         Storage.update_lat_result(session_id, law_name, r)
 
-      %{has_errors: true, error: error} ->
+      {:failed, error} ->
         Storage.mark_lat_failed(session_id, law_name, error, result[:duration_ms] || 0)
-
-      %{has_errors: true} = r ->
-        # Partial success — some stages may have succeeded
-        Storage.update_lat_result(session_id, law_name, r)
     end
 
     final_event =
