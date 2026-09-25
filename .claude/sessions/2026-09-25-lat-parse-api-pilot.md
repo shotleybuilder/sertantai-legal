@@ -147,3 +147,19 @@ Everything else was mechanical.
 - **Orphan annotations:** `LatStagedParser.run_stages/5` (now public) skips `parse_annotations` and `persist_annotations` when `persist_lat` fails, reports them as `:skipped`, and returns `error: "LAT persist: …"`.
 - **Wrong record status:** `LatStagedParser.record_outcome/1` returns `{:parsed, r}` only when every stage succeeded, otherwise `{:failed, error}`. The controller no longer records partial success as `parsed`. The fetch_body failure path had the same gap: it now carries `error: "fetch_body: …"`.
 - **Tests:** `lat_staged_parser_test.exs` has 6 tests. Persist failure is forced with a law_id that has no legal_register row, using the `body_uksi_1991_899` fixture.
+
+## Compile warnings cleared (2026-09-25, `ecbd13e`; Jason brought it into this session)
+
+- **lib: 18 → 0.**
+  - Unused `require Logger` (8 files).
+  - `@type record` shadowed the built-in, so it's renamed `taxa_record`.
+  - Unreachable clauses in `staged_parser`, `duty_type_lib` and `pdf_parser`.
+  - Redundant `|| []` in `federal_client`.
+- **Two of them were real bugs:**
+  - `scrape_controller` confirm always answered `action: "updated"`, because it checked existence after persisting.
+  - `provision_subscriber` treated every `Ash.get` error as not-found and skipped it silently.
+- **Tests: 0 warnings.**
+  - The filters "excludes X" tests never checked `excluded`; they now assert it.
+  - Removed an `assert true` placeholder and dead helpers.
+- **`.githooks/pre-commit` now runs `mix compile --warnings-as-errors`.** It used to only notify; its README already claimed this.
+- **Legal's server restarted,** so the `provision_subscriber` GenServer change is live. The workflow key is loaded and all 7 subscribers are up.
