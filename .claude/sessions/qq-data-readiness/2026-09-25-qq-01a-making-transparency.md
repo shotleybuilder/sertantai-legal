@@ -104,7 +104,10 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - ✅ `making_review`: the top tier in the resolver. Setting it through the admin UI or `Making.record` is logged and time-stamped. A `mix making.review` task is still to do.
 - ✅ Provenance columns, migration `20260925121805_add_making_provenance`. Added to the parent `legal_register` only, as for `definitions_parsed_at`; the `uk_lrt` view is unchanged because all Making writers use `LegalRegister`.
 - ✅ `making_funnel` view (migration `20260925122809`): stage, evidence, the latest LAT session record, a `conflict` flag and `next_action`. Treats `confirmed` + LAT deleted as `cleaned`, which covers the 17 stale records without editing session history.
-- ⏸️ Backfill `scrape_session_records.status = 'cleaned'` for the 17 stale records. Not needed: the view derives `cleaned`. Only do it if the LAT UI should show the badge.
+- ✅ Stale LAT session records: 111 corpus-wide. The 17 figure was only the QQ subset.
+  - Relabelled `cleaned` only where the law is now not Making: 51 records across 29 laws.
+  - Left alone: 60 records for **39 laws that are Making but whose LAT was deleted**. Most are Making on a human review (23), the rest on legacy duties (14) or the detector (2). Many are amending SIs, so the reviews are probably stale under the new policy.
+  - The view flags them as `next_action = 'review_lat_deleted'` (migration `20260925131308`), and they're handed to QQ-01.
 - ✅ `mix making.resolve` (dry run by default; `--apply` snapshots first; `--country`, `--names`)
 - ✅ UK dry run: **76 flips, all to Making, no downgrades**. Report: `backend/data/reports/making/resolve-20260925T1227.csv`
 - ✅ Jason signed off on 72 of the 77 flips. The other 5 are held for QQ-01, because their human review conflicts with fractalaw's T1/T2 text review (`--exclude`).
@@ -117,7 +120,7 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 ## Dependencies
 
 - ✅ Findings from the QQ-00 planning session (bugs above)
-- ⬜ Coordinate with the fractalaw session running from `.claude/plans/qq-fractalaw-brief.md`. T1 may change how "tree but no duty types" payloads are published, which affects the TaxaSubscriber rules.
+- ✅ Coordinated with fractalaw: added a TaxaSubscriber contract section to the brief (null vs empty DRRP, enrichment precedence, fresh PG DRRP, the amending-SI policy, server up before T4), and messaged the `fractalaw-a9` session
 
 ## Findings (2026-09-25)
 

@@ -148,3 +148,21 @@ The baseline is `runs/2026-09-25T1107-legal-baseline`: evaluable agreement 68.2%
 2. The list of T3 fixes with tests and before/after defect counts.
 3. The T4 publish log (laws published, failures).
 4. Anything that contradicts this brief. In particular, if fractalaw's triage or DRRP disagrees with legal's funnel state for a law, say so. Don't quietly work around it.
+
+## Legal's TaxaSubscriber contract (added 2026-09-25, QQ-01a)
+
+Legal now decides `is_making` with a precedence resolver (`Legal.Taxa.MakingResolver`), and every write is logged. What this means for what fractalaw publishes:
+
+1. **An enrichment verdict is recorded only when a payload carries non-null DRRP columns** (`duty_type`, `duties`, `rights`, `responsibilities`, `powers`).
+   - Null columns are dropped during decoding. A payload with only fitness, tree or significance data gives **no verdict** and leaves `is_making` unchanged.
+2. **To say "enriched, no obligations", send DRRP columns as empty lists, not nulls, or send an empty payload (zero rows).**
+   - Either one records `no_obligations`, which means not Making.
+   - That's the right signal for the 33 T1 "a" laws.
+3. **The verdict mapping:**
+   - Duty, Responsibility or Obligation entries → `making`.
+   - Rights or Powers only → `empowering` (not Making).
+4. **Enrichment outranks triage and all legacy data. Only a human `making_review` outranks it.** Publish DRRP built from fresh PG `provision_actors`, never the stale DuckDB aggregates (T2). Otherwise stale data becomes the authoritative verdict.
+5. **Triage publishes are recorded as estimates only.** They can't change `is_making` when enrichment or legacy Duty/Responsibility evidence exists.
+6. **Policy (Jason):** an amending instrument that inserts duties into a principal Act or SI is **not Making**. For the T1 "e" laws, don't publish Making verdicts: the duties belong to the principal instrument.
+7. **Before T4:** tell Jason, so that legal can snapshot `compiled_applicability` and start its Phoenix server with this code. `TaxaSubscriber` isn't running when the server is down, so publishes won't land.
+8. **What legal already did from T1/T2.** Historical `duty_type` is no longer treated as enrichment evidence; it only counts as legacy evidence. The UK backfill has been applied: 72 laws became Making, none were downgraded.

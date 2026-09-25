@@ -58,6 +58,7 @@ An amending instrument that inserts duties into a principal Act or SI is **not M
   - `UK_uksi_2014_2868`: specifies limits for the RTA s5A offence
   - `UK_uksi_2018_24`: amends offence machinery
   - `UK_uksi_2005_1904`: amending instrument
+- ⬜ Review the laws with `making_funnel.next_action = 'review_lat_deleted'`: 39 laws that are Making but had their LAT deleted by a not-Making clean-up. 23 are Making on a human review, mostly 2026 amending SIs, which the policy says aren't Making. Record each verdict with `mix making.review`.
 - ⬜ Also check `UK_uksi_2018_1214`, the WEEE (Amendment) (No. 2) Regs: an amending SI made Making by legacy Duty/Responsibility in the QQ-01a backfill. Under the policy it may be not Making.
 - ⬜ Fractalaw T1/T2 results (`~/fractalaw/data/qq-readiness/t1-no-duty-findings.csv`, `t2-rights-only-verdicts.csv`):
   - 33 of 37 F3 laws are correctly not Making, so they're QQ cleanup.
