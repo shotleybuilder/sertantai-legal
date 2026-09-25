@@ -73,6 +73,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           geo_region: [String.t()],
           geo_detail: String.t() | nil,
           md_restrict_extent: String.t() | nil,
+          geo_extent_source: String.t() | nil,
+          document_status: String.t() | nil,
 
           # === METADATA (Dates) ===
           md_date: Date.t() | nil,
@@ -211,6 +213,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     geo_region: [],
     geo_detail: nil,
     md_restrict_extent: nil,
+    geo_extent_source: nil,
+    document_status: nil,
 
     # Metadata (Dates)
     md_date: nil,
@@ -444,6 +448,8 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       geo_region: get_list(normalized, :geo_region),
       geo_detail: get_string(normalized, :geo_detail),
       md_restrict_extent: get_string(normalized, :md_restrict_extent),
+      geo_extent_source: get_string(normalized, :geo_extent_source),
+      document_status: get_string(normalized, :document_status),
 
       # Metadata (Dates)
       md_date: get_date(normalized, :md_date),

@@ -47,6 +47,8 @@ defmodule SertantaiLegal.Scraper.LawParser do
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.FunctionCalculator
+  alias SertantaiLegal.Legal.Making
+  alias SertantaiLegal.Scraper.ExtentResolver
 
   require Ash.Query
 
@@ -414,8 +416,10 @@ defmodule SertantaiLegal.Scraper.LawParser do
 
   defp find_by_name(_), do: nil
 
+  # Making evidence goes through Legal.Making (QQ-01a); extent follows
+  # ExtentResolver's source ranking (#162).
   defp create_record(record) do
-    attrs = build_attrs(record)
+    {making_evidence, attrs} = record |> build_attrs() |> Making.split_evidence()
 
     # Calculate immediate Function flags (Making, Commencing)
     immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
@@ -432,7 +436,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
          |> Ash.create() do
       {:ok, created} ->
         IO.puts("  Created: #{created.name}")
-        {:ok, created}
+        Making.record(created, making_evidence, "law_parser")
 
       {:error, changeset} ->
         error_details = inspect(changeset.errors)
@@ -442,7 +446,12 @@ defmodule SertantaiLegal.Scraper.LawParser do
   end
 
   defp update_record(existing, record) do
-    attrs = build_attrs(record)
+    {making_evidence, attrs} = record |> build_attrs() |> Making.split_evidence()
+
+    attrs =
+      attrs
+      |> Map.drop([:geo_extent, :geo_region, :geo_extent_source])
+      |> Map.merge(ExtentResolver.extent_attrs(attrs, existing.geo_extent_source))
 
     # Calculate immediate Function flags (Commencing) and merge with existing
     immediate_function = FunctionCalculator.calculate_immediate_function_of_law(record)
@@ -473,7 +482,7 @@ defmodule SertantaiLegal.Scraper.LawParser do
          |> Ash.update() do
       {:ok, updated} ->
         IO.puts("  Updated: #{updated.name}")
-        {:ok, updated}
+        Making.record(updated, making_evidence, "law_parser")
 
       {:error, changeset} ->
         IO.puts("  Update error: #{inspect(changeset.errors)}")

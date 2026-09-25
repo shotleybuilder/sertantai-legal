@@ -283,4 +283,34 @@ defmodule SertantaiLegal.Legal.MakingTest do
                ["Right"]
     end
   end
+
+  describe "split_evidence/1" do
+    test "separates Making evidence from other attrs, drops is_making, tags detector" do
+      {evidence, rest} =
+        Making.split_evidence(%{
+          title_en: "X",
+          is_making: true,
+          making_classification: "making",
+          making_confidence: 0.9
+        })
+
+      assert rest == %{title_en: "X"}
+
+      assert evidence == %{
+               making_classification: "making",
+               making_classification_source: "detector",
+               making_confidence: 0.9
+             }
+    end
+
+    test "keeps an explicit classification source" do
+      {evidence, _} =
+        Making.split_evidence(%{
+          making_classification: "making",
+          making_classification_source: "triage"
+        })
+
+      assert evidence.making_classification_source == "triage"
+    end
+  end
 end

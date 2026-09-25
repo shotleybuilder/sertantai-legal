@@ -154,6 +154,20 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Section-by-section extent breakdown")
     end
 
+    # Extent provenance (#162) — geo_extent is EXTENT, not application (#163)
+    attribute :geo_extent_source, :string do
+      allow_nil?(true)
+
+      description(
+        "ExtentResolver source that decided geo_extent: law_level, lat_provisions, contents_items, text_clause or type_code; nil = legacy/unknown"
+      )
+    end
+
+    attribute :document_status, :string do
+      allow_nil?(true)
+      description("legislation.gov.uk ukm:DocumentStatus: revised or final (unrevised)")
+    end
+
     attribute :md_restrict_extent, :string do
       allow_nil?(true)
       description("Restriction extent from legislation portal")
@@ -764,6 +778,8 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :geo_extent,
         :geo_region,
         :geo_detail,
+        :geo_extent_source,
+        :document_status,
         :md_restrict_extent,
         :md_restrict_start_date,
         :si_code,
@@ -878,6 +894,8 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :geo_extent,
         :geo_region,
         :geo_detail,
+        :geo_extent_source,
+        :document_status,
         :md_restrict_extent,
         :md_restrict_start_date,
         :si_code,

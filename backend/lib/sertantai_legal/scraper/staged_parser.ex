@@ -42,6 +42,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.CommentaryPersister
   alias SertantaiLegal.Scraper.DefinitionParser
   alias SertantaiLegal.Scraper.DefinitionPersister
+  alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LatPersister
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
@@ -410,6 +411,14 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         new_law
       end
 
+    # After metadata or extent completes, re-resolve geo_extent (#162)
+    new_law =
+      if stage in [:metadata, :extent] and stage_result.status == :ok do
+        resolve_extent(new_law, stage_result.data)
+      else
+        new_law
+      end
+
     # After metadata stage completes, run lightweight Making detection pre-filter
     # and assign family from SI codes (mirrors Categorizer.categorize_records/1)
     new_law =
@@ -722,68 +731,36 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     end
   end
 
+  # Extent sources from the contents XML. Choosing geo_extent is left to
+  # ExtentResolver (#162): on unrevised documents every ContentsItem carries a
+  # placeholder "E+W+S+N.I.", so item extents are only trusted when revised.
   defp parse_extent_xml(xml) do
     try do
-      # Try multiple locations for extent:
-      # 1. Legislation element's RestrictExtent attribute
-      # 2. First ContentsItem's RestrictExtent attribute (most common for new legislation)
-      # 3. Contents element's RestrictExtent attribute (fallback)
-
-      extent = xpath_text(xml, ~x"//Legislation/@RestrictExtent"s)
-
-      # Get extent from first ContentsItem if Legislation doesn't have it
-      first_item_extent =
-        case SweetXml.xpath(xml, ~x"//ContentsItem[1]/@RestrictExtent"s) do
-          nil -> nil
-          "" -> nil
-          val -> to_string(val)
-        end
-
-      # Get extent from Contents element as fallback
-      contents_extent =
-        case SweetXml.xpath(xml, ~x"//Contents/@RestrictExtent"s) do
-          nil -> nil
-          "" -> nil
-          val -> to_string(val)
-        end
-
-      # Parse section-level extents
+      law_level = xpath_text(xml, ~x"//Legislation/@RestrictExtent"s)
       section_extents = parse_section_extents(xml)
 
-      # Use first available extent: Legislation > first ContentsItem > Contents
-      raw_extent =
-        cond do
-          extent != "" and extent != nil -> extent
-          first_item_extent != "" and first_item_extent != nil -> first_item_extent
-          contents_extent != "" and contents_extent != nil -> contents_extent
-          true -> nil
-        end
+      item_extents =
+        xml
+        |> SweetXml.xpath(~x"//ContentsItem/@RestrictExtent"sl)
+        |> Enum.map(&to_string/1)
+        |> Enum.reject(&(&1 == ""))
 
-      normalized_extent = normalize_extent(raw_extent)
-      regions = extent_to_regions(raw_extent)
-
-      # Build base result with section-level data (always useful)
       base = %{
-        section_extents: section_extents
+        section_extents: section_extents,
+        contents_item_extents: item_extents,
+        extent: "#{length(item_extents)} item extents"
       }
 
-      # Only include top-level extent fields if we found data
-      # This prevents overwriting values from metadata.ex (initial scrape)
-      if normalized_extent do
-        # Use Extent module to generate geo_detail with emoji flags and section breakdown
+      base =
+        if law_level in [nil, ""], do: base, else: Map.put(base, :md_restrict_extent, law_level)
+
+      if section_extents == [] do
+        base
+      else
         {_region, _pan_region, geo_detail} =
           SertantaiLegal.Scraper.Extent.transform_extent(section_extents)
 
-        Map.merge(base, %{
-          geo_extent: regions_to_pan_region(regions),
-          geo_region: regions,
-          geo_detail: geo_detail,
-          extent: regions_to_pan_region(regions),
-          extent_regions: regions
-        })
-      else
-        # No extent found in contents XML - preserve whatever came from metadata
-        base
+        Map.put(base, :geo_detail, geo_detail)
       end
     rescue
       e ->
@@ -792,30 +769,27 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     end
   end
 
-  # Convert regions list to pan-region code (UK, GB, E+W, etc.)
-  defp regions_to_pan_region([]), do: nil
+  # Resolve geo_extent from the sources available at scrape time: law-level
+  # extent and document status (metadata), ContentsItem extents (extent stage)
+  # and the type code. LAT-based sources are applied by `mix extent.resolve`.
+  defp resolve_extent(%ParsedLaw{} = law, stage_data) do
+    resolution =
+      ExtentResolver.resolve(%{
+        restrict_extent: law.md_restrict_extent,
+        document_status: law.document_status,
+        lat_extent_codes: [],
+        contents_item_extents: (stage_data || %{})[:contents_item_extents] || [],
+        extent_clauses: [],
+        type_code: law.type_code
+      })
 
-  defp regions_to_pan_region(regions) do
-    sorted = Enum.sort(regions)
-
-    cond do
-      sorted == ["England", "Northern Ireland", "Scotland", "Wales"] -> "UK"
-      sorted == ["England", "Scotland", "Wales"] -> "GB"
-      sorted == ["England", "Wales"] -> "E+W"
-      sorted == ["England", "Scotland"] -> "E+S"
-      sorted == ["England"] -> "E"
-      sorted == ["Wales"] -> "W"
-      sorted == ["Scotland"] -> "S"
-      sorted == ["Northern Ireland"] -> "NI"
-      true -> regions |> Enum.map(&region_to_code/1) |> Enum.join("+")
-    end
+    %{
+      law
+      | geo_extent: resolution.geo_extent,
+        geo_region: resolution.geo_region,
+        geo_extent_source: resolution.source
+    }
   end
-
-  defp region_to_code("England"), do: "E"
-  defp region_to_code("Wales"), do: "W"
-  defp region_to_code("Scotland"), do: "S"
-  defp region_to_code("Northern Ireland"), do: "NI"
-  defp region_to_code(_), do: ""
 
   defp parse_section_extents(xml) do
     # Try to get section-level extent data
@@ -849,30 +823,6 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     |> String.replace(".", "")
     # Remove spaces
     |> String.replace(" ", "")
-  end
-
-  defp extent_to_regions(nil), do: []
-  defp extent_to_regions(""), do: []
-
-  defp extent_to_regions(extent) do
-    extent = normalize_extent(extent)
-
-    regions =
-      []
-      |> maybe_add_region(extent, "E", "England")
-      |> maybe_add_region(extent, "W", "Wales")
-      |> maybe_add_region(extent, "S", "Scotland")
-      |> maybe_add_region(extent, "NI", "Northern Ireland")
-
-    regions
-  end
-
-  defp maybe_add_region(acc, extent, code, name) do
-    if String.contains?(extent, code) do
-      acc ++ [name]
-    else
-      acc
-    end
   end
 
   # ============================================================================

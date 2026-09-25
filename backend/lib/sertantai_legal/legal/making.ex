@@ -115,6 +115,38 @@ defmodule SertantaiLegal.Legal.Making do
     end
   end
 
+  @evidence_fields [
+    :is_making,
+    :making_classification,
+    :making_classification_source,
+    :making_confidence,
+    :making_detection_tier,
+    :making_detection_signals
+  ]
+
+  @doc """
+  Pure: split scraper attrs into `{making_evidence, other_attrs}`.
+
+  Persist the other attrs as usual, then pass the evidence to `record/4`.
+  `is_making` is dropped (the resolver decides it) and an unsourced
+  classification is tagged as a detector estimate.
+  """
+  @spec split_evidence(map()) :: {map(), map()}
+  def split_evidence(attrs) do
+    {making, rest} = Map.split(attrs, @evidence_fields)
+
+    evidence =
+      case Map.delete(making, :is_making) do
+        %{making_classification: c} = e when is_binary(c) ->
+          Map.put_new(e, :making_classification_source, "detector")
+
+        e ->
+          e
+      end
+
+    {evidence, rest}
+  end
+
   @doc """
   Pure: build resolver evidence from a record (or record-like map).
 

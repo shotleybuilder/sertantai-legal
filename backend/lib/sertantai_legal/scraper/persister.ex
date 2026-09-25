@@ -29,6 +29,7 @@ defmodule SertantaiLegal.Scraper.Persister do
   alias SertantaiLegal.Scraper.Storage
   alias SertantaiLegal.Scraper.ChangeLogger
   alias SertantaiLegal.Legal.Making
+  alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.ParsedLaw
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.FunctionCalculator
@@ -355,33 +356,10 @@ defmodule SertantaiLegal.Scraper.Persister do
     with {:ok, _law} <- result, do: {:ok, :updated}
   end
 
-  # Making evidence (QQ-01a): the parser's detector estimate is split out of the
-  # attrs and recorded through Legal.Making, which resolves and logs is_making.
-  # is_making itself is never persisted directly; the parser's regex duty_type
-  # (persisted with the other attrs) reaches the resolver as legacy evidence.
-  @making_evidence_fields [
-    :is_making,
-    :making_classification,
-    :making_classification_source,
-    :making_confidence,
-    :making_detection_tier,
-    :making_detection_signals
-  ]
-
-  defp split_making(attrs) do
-    {making, rest} = Map.split(attrs, @making_evidence_fields)
-
-    evidence =
-      case Map.delete(making, :is_making) do
-        %{making_classification: c} = e when is_binary(c) ->
-          Map.put(e, :making_classification_source, "detector")
-
-        e ->
-          e
-      end
-
-    {evidence, rest}
-  end
+  # Making evidence (QQ-01a) is split out and recorded through Legal.Making,
+  # which resolves and logs is_making; the regex duty_type persisted with the
+  # other attrs reaches the resolver as legacy evidence.
+  defp split_making(attrs), do: Making.split_evidence(attrs)
 
   defp record_making(law, evidence), do: Making.record(law, evidence, "persister")
 
@@ -414,6 +392,8 @@ defmodule SertantaiLegal.Scraper.Persister do
   # Protected (only set if nil): name, title_en, type_code, year, number, family,
   # si_code, geo_extent, geo_region, md_description, md_subjects, enactment dates
   @always_update_fields [
+    # legislation.gov.uk revision status (revised / final) — extent trust (#162)
+    :document_status,
     # Live status — changes when law is amended/revoked
     :live,
     :live_from_changes,
@@ -457,7 +437,16 @@ defmodule SertantaiLegal.Scraper.Persister do
     :amended_by_change_log
   ]
 
+  # Extent fields are written as a group by ExtentResolver's source ranking,
+  # not "only if nil" (#162).
   defp filter_update_attrs(attrs, existing) do
+    attrs
+    |> filter_protected(existing)
+    |> Map.drop([:geo_extent, :geo_region, :geo_extent_source])
+    |> Map.merge(ExtentResolver.extent_attrs(attrs, existing.geo_extent_source))
+  end
+
+  defp filter_protected(attrs, existing) do
     attrs
     |> Enum.filter(fn {key, _value} ->
       key in @always_update_fields ||
