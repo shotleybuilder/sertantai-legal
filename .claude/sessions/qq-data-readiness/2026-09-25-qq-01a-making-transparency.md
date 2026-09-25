@@ -67,8 +67,8 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 
 ## Todo
 
-- ⬜ Design note: precedence rules, the write path, change-log entry shape, provenance fields and the `making_funnel` view. Put it in this session under "Design".
-- ⬜ Gemini review of the design (CLAUDE.md acceptance gate), saved to `backend/data/code-reviews/`
+- ✅ Design note: precedence rules, the write path, change-log entry shape, provenance fields and the `making_funnel` view. Put it in this session under "Design".
+- ✅ Gemini review of the design, saved to `backend/data/code-reviews/2026-09-25-qq-01a-making-transparency-design.md`
 - ⬜ Red: tests for `Legal.Taxa.MakingResolver` (pure). Inputs are review, enrichment verdict, triage and detector; output is `{is_making, source, reason}`.
 - ⬜ Green: implement the resolver, with `@spec`/`@moduledoc`
 - ⬜ One write path (`Legal.Making.apply/3` or similar):
@@ -99,3 +99,81 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - **`derive_is_making`**: any payload with taxa fields but no `duty_type` gives `is_making = false`. `convert_duty_type` does fall back to the record's existing entries, but only when it finds entries.
 - **Persister**: logs through `ChangeLogger` and only upgrades `is_making` to true. So every false write in the corpus came from a subscriber that doesn't log.
 - **#120 said "taxa wins by design"**, but no code enforces it. Each subscriber overwrites independently.
+
+### Corpus state (UK, 2026-09-25)
+
+| Evidence present | is_making true | false | null |
+|---|---|---|---|
+| Fractalaw fitness (enriched) + `duty_type` | 578 | 28 | — |
+| Fractalaw fitness, no `duty_type` | — | 48 | — |
+| `duty_type` without fitness (Airtable or legal regex TaxaParser) | 2,851 | 190 | 5 |
+| No `duty_type`, no fitness | 96 | 15,545 | 476 |
+
+Triage and `is_making` disagree in both directions: 45 laws classed `making` are false, and 29 classed `not_making` are true. `making_review` holds 749 `making` and 123 `not_making` verdicts.
+
+## Design (draft for Gemini review)
+
+### Evidence tiers
+
+A higher tier always wins. A tier with no verdict defers to the next. Within a tier, the latest evidence wins.
+
+| # | Tier | Source | Verdict mapping |
+|---|---|---|---|
+| 1 | `review` | `making_review` (human) | `making` → true, `not_making` → false |
+| 2 | `enrichment` | Fractalaw DRRP, recorded by TaxaSubscriber. Only a payload that carries DRRP columns counts | Duty/Responsibility/Obligation entries → true (`making`). Rights/Powers only → false (`empowering`). Explicit empty payload → false (`no_obligations`) |
+| 3 | `legacy_drrp` | `duty_type` or entries with no enrichment provenance (Airtable import, legal TaxaParser) | Duty/Responsibility → true. Anything else → no verdict. Never downgrades on its own |
+| 4 | `triage` | Fractalaw triage `making_classification` | `making` → true, `not_making` → false, `uncertain` → no verdict |
+| 5 | `detector` | MakingDetector classification | Same mapping as triage |
+| 6 | `default` | — | Keep the existing value. A never-set law defaults to false |
+
+### Components
+
+- **`Legal.Taxa.MakingResolver`** (pure). `resolve(evidence) :: %{is_making: boolean, source: tier, reason: String.t()}`. The input is a struct with `@enforce_keys` for each tier's verdict and timestamp.
+- **`Legal.Making`** (thin write path). `record(record, tier, evidence_attrs, changed_by)`:
+  1. Merges the evidence attributes.
+  2. Resolves `is_making` from the merged state.
+  3. Builds a `ChangeLogger` entry with `source: "making"`, `changed_by: <writer>`, the field diffs and a `reason`.
+  4. Does a single `Ash.update`.
+- **Every writer calls it:** TriageSubscriber, TaxaSubscriber (upsert and housekeeping), the persister's true-upgrade, a new `mix making.review LAW --verdict making|not_making --note`, and the backfill.
+- **TaxaSubscriber rule.** Enrichment evidence is recorded only when the payload includes any of `duties`/`rights`/`responsibilities`/`powers`/`duty_type`. Fitness, tree and significance-only payloads never touch the verdict. The empty-payload housekeeping path records `no_obligations`.
+- **New columns** (migration, `uk_lrt` view and triggers per the `db-schema-changes` skill):
+  - `making_enrichment_verdict` (`making` | `empowering` | `no_obligations`) and `making_enriched_at`;
+  - `is_making_source` (tier), `is_making_reason` and `is_making_decided_at`.
+
+  `is_making` stays a plain boolean, so compliance is unaffected.
+- **`making_funnel` view**, one row per law: stage (`detected` | `triaged` | `lat_parsed` | `enriched` | `cleaned` | `skipped` | `deferred` | `reviewed`), `is_making` with source and reason, triage and review, enrichment verdict, `lat_count`, fitness, tree, the latest LAT session id and status, and a next action. It formalises the QQ-01 worklist query.
+
+### Backfill
+
+`mix making.resolve [--names …] [--dry-run]`:
+- Builds each law's evidence from existing columns. Enrichment is inferred where `has_fitness` is true and DRRP is present, with the reason tagged `inferred`.
+- Resolves, and writes through `Legal.Making` with `changed_by: "backfill"`.
+- Reports flips by (old → new, tier, reason).
+
+Separately, set `scrape_session_records.status = 'cleaned'` for the 17 stale `confirmed` records.
+
+### Open questions
+
+1. **Triage `uncertain` with no other evidence.** Should `is_making` be false, as today (excluded from screening), or keep its previous value? Draft: no verdict, so keep the existing value.
+2. **Enrichment vs legacy.** When fractalaw says `empowering` or `no_obligations` but legacy `duty_type` says Duty, should enrichment override it? Draft: yes, by tier. Measure the flip count in the dry-run before deciding.
+3. **Evidence as columns plus change log, or an append-only `making_evidence` table?** Draft: columns plus change log for v0.1.
+4. **The 96 laws that are true with no `duty_type` and no enrichment** (probably Airtable Making). Draft: keep them true under `default`, and list them for review.
+
+## Gemini review (2026-09-25)
+
+Saved to `backend/data/code-reviews/2026-09-25-qq-01a-making-transparency-design.md` (gemini-2.5-pro).
+
+Accepted:
+- **Open questions 1–4 as drafted.** Plus: the dry-run must list every true → false downgrade for Jason's sign-off before the real run.
+- **Row lock in the write path.** Resolve and update inside a transaction with `SELECT … FOR UPDATE`, because the Triage and Taxa subscribers can race on the same law.
+- **Conflict flag.** When a newer lower-tier verdict disagrees with an older higher-tier one (e.g. a re-triage after enrichment), `making_funnel` shows `conflict = true`. It is not an override.
+- **Rollback by snapshot.** Before the backfill, copy the Making columns to `making_backfill_snapshot_20260925` (name, is_making, making_*, duty_type).
+
+Rejected:
+- **Amending instruments inheriting Making from the duties they insert.** In our model, Making means the instrument itself creates duties, so amending instruments are correctly not Making.
+- **Cutting the `making_funnel` view.** Transparency is the goal of this session, and the view is cheap SQL.
+- **"Defer the benchmark".** Gemini read it as a performance benchmark; it's the screener benchmark.
+
+Already covered:
+- **Idempotency.** `ChangeLogger` only writes an entry when something changed, so a re-delivered message adds nothing.
+- **Change-log growth.** The log is a column on the law row, and the backfill adds one entry per law that changes.
