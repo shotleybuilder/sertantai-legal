@@ -12,7 +12,7 @@ defmodule SertantaiLegal.Scraper.LatPersisterTest do
       %{
         section_id: "#{law_name}:reg.#{n}",
         law_name: law_name,
-        section_type: "regulation",
+        section_type: "article",
         part: nil,
         chapter: nil,
         heading_group: nil,

@@ -12,8 +12,8 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   use GenServer
   require Logger
 
-  alias SertantaiLegal.Legal.LegalArticle
   alias SertantaiLegal.Legal.Taxa.ActorDefinitions
+  alias SertantaiLegal.Repo
   alias SertantaiLegal.Zenoh.ActivityLog
 
   # Arrow column name → Ash attribute atom.
@@ -148,31 +148,22 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   defp decode_and_upsert(law_name, ipc_bytes) do
     case decode_arrow_ipc(ipc_bytes) do
       {:ok, rows} ->
-        now = DateTime.utc_now()
-        results = Enum.map(rows, &upsert_provision(&1, now))
-        ok_count = Enum.count(results, &match?(:ok, &1))
-        not_found = Enum.count(results, &match?({:error, {:not_found, _}}, &1))
-
-        real_errors =
-          Enum.count(results, fn
-            {:error, {:not_found, _}} -> false
-            {:error, _} -> true
-            _ -> false
-          end)
+        %{updated: updated, not_found: not_found, invalid: invalid} =
+          upsert_rows(law_name, rows)
 
         skipped = if not_found > 0, do: " (#{not_found} skipped — not in LAT)", else: ""
 
-        if real_errors > 0 do
+        if invalid > 0 do
           Logger.warning(
-            "[Zenoh.ProvisionSubscriber] #{law_name}: #{ok_count} ok, #{real_errors} failed#{skipped}"
+            "[Zenoh.ProvisionSubscriber] #{law_name}: #{updated} ok, #{invalid} without section_id#{skipped}"
           )
         else
           Logger.info(
-            "[Zenoh.ProvisionSubscriber] Updated #{ok_count} provisions for #{law_name}#{skipped}"
+            "[Zenoh.ProvisionSubscriber] Updated #{updated} provisions for #{law_name}#{skipped}"
           )
         end
 
-        {:ok, ok_count}
+        {:ok, updated}
 
       {:error, :empty_payload} ->
         Logger.debug("[Zenoh.ProvisionSubscriber] Empty payload for #{law_name}")
@@ -195,43 +186,91 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     e -> {:error, {:decode_failed, Exception.message(e)}}
   end
 
-  defp upsert_provision(row, now) do
-    section_id = row["section_id"]
+  # Column → SQL type of the provision taxa fields written by upsert_rows/2.
+  @column_types [
+    drrp_types: :text_array,
+    purposes: :text_array,
+    popimar: :text_array,
+    actors: :jsonb_array,
+    duty_family: :text,
+    duty_sub_type: :text,
+    clause_refined: :text,
+    extraction_method: :text,
+    holder_inferred_from: :text,
+    significance_scope_duty_bearer: :text,
+    significance_scope_protected_class: :text,
+    significance_gravity: :text,
+    significance_strength: :text,
+    significance_hierarchy: :text,
+    significance_overall: :text,
+    ancestor_distance: :integer,
+    taxa_confidence: :float,
+    significance_confidence: :float
+  ]
 
-    if is_nil(section_id) or section_id == "" do
-      {:error, :missing_section_id}
-    else
-      taxa = normalize_taxa(row) |> Map.put(:taxa_enriched_at, now)
+  @batch_size 1_000
 
-      case find_article(section_id) do
-        {:ok, article} ->
-          case article
-               |> Ash.Changeset.for_update(:update_taxa, taxa)
-               |> Ash.update() do
-            {:ok, _} -> :ok
-            {:error, reason} -> {:error, {:update_failed, section_id, reason}}
-          end
+  @doc """
+  Write a law's provision taxa rows in batches of #{@batch_size}: one UPDATE
+  statement per batch instead of a lookup and an update per provision.
 
-        {:error, {:not_found, _}} ->
-          # Provision exists in fractalaw but not yet parsed in sertantai — skip silently.
-          # Common for jurisdiction-specific IDs (s.23[E+W]) and structural sections (title, pt).
-          {:error, {:not_found, section_id}}
+  Rows go through `normalize_taxa/1` (DRRP mapping, actor roles). Only keys
+  present in a row are written; absent fields are left unchanged, as with the
+  per-row `:update_taxa` action this replaces. Provisions not in the LAT are
+  counted as `not_found` and skipped; rows without a section_id as `invalid`.
+  """
+  @spec upsert_rows(String.t(), [map()]) :: %{
+          updated: non_neg_integer(),
+          not_found: non_neg_integer(),
+          invalid: non_neg_integer()
+        }
+  def upsert_rows(_law_name, rows) do
+    now = NaiveDateTime.utc_now()
 
-        {:error, reason} ->
-          {:error, reason}
-      end
-    end
+    {valid, invalid} = Enum.split_with(rows, &(&1["section_id"] not in [nil, ""]))
+
+    payloads =
+      valid
+      |> Enum.map(fn row ->
+        row
+        |> normalize_taxa()
+        |> Map.new(fn {k, v} -> {Atom.to_string(k), v} end)
+        |> Map.put("section_id", row["section_id"])
+      end)
+      |> Enum.uniq_by(& &1["section_id"])
+
+    updated =
+      payloads
+      |> Enum.chunk_every(@batch_size)
+      |> Enum.reduce(0, fn batch, acc ->
+        %{num_rows: n} = Repo.query!(update_sql(), [batch, now], timeout: :timer.minutes(2))
+        acc + n
+      end)
+
+    %{updated: updated, not_found: length(payloads) - updated, invalid: length(invalid)}
   end
 
-  # Only a missing row is "not found"; other errors (e.g. DB) are returned as
-  # errors so they aren't silently skipped as "not yet parsed".
-  defp find_article(section_id) do
-    case Ash.get(LegalArticle, section_id, not_found_error?: false) do
-      {:ok, nil} -> {:error, {:not_found, section_id}}
-      {:ok, article} -> {:ok, article}
-      {:error, reason} -> {:error, reason}
-    end
+  defp update_sql do
+    sets =
+      Enum.map_join(@column_types, ",\n    ", fn {col, type} ->
+        "#{col} = CASE WHEN p ? '#{col}' THEN #{cast(col, type)} ELSE a.#{col} END"
+      end)
+
+    """
+    UPDATE legal_articles AS a
+    SET #{sets},
+        taxa_enriched_at = $2,
+        updated_at = $2
+    FROM jsonb_array_elements($1::jsonb) AS p
+    WHERE a.section_id = p->>'section_id'
+    """
   end
+
+  defp cast(col, :text), do: "p->>'#{col}'"
+  defp cast(col, :integer), do: "(p->>'#{col}')::integer"
+  defp cast(col, :float), do: "(p->>'#{col}')::float8"
+  defp cast(col, :text_array), do: "ARRAY(SELECT jsonb_array_elements_text(p->'#{col}'))"
+  defp cast(col, :jsonb_array), do: "ARRAY(SELECT jsonb_array_elements(p->'#{col}'))"
 
   @doc false
   def normalize_taxa(row) do

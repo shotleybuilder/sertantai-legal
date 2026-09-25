@@ -38,8 +38,8 @@ bugs:
     category: lat-persist-performance
     module: zenoh/provision_subscriber.ex, trg_lat_stats_upd
     affected: 17468
-    fix: "Batch each law's provisions into one UPDATE ... FROM (VALUES ...) (or chunks), and make the update trigger skip the COUNT (updates don't change lat_count)"
-    status: open
+    fix: "ProvisionSubscriber.upsert_rows/2: one UPDATE ... FROM jsonb_array_elements per 1,000 rows, writing only the keys present (as the :update_taxa action did). 3,000 provision updates took 136ms (per-row was ~94s at ~32/s). The trigger then fires once per batch, so its COUNT is no longer a concern"
+    status: fixed
   - pattern: "Fresh trees Not the law's own subject: Not(conditional:at_work) on Merchant Shipping & Fishing Vessels (Noise / Vibration at Work) Regs, so orgs with at_work are categorically excluded"
     category: tree-not
     module: fractalaw tree compiler (L3-type defect)
@@ -232,3 +232,15 @@ Everything else was mechanical.
 **Bugs the pilot surfaced (7):**
 - **Fixed (5):** the `lat` view missing `sub_provision` (LAT persist broken since 12 Aug), the O(n²) stats trigger, orphan annotations, wrong record status, and dropped Ash notifications.
 - **Open (2):** provision batching (legal) and `Not(at_work)` (fractalaw).
+
+## Provision batching (2026-09-25; Jason brought it into this session)
+
+- **`ProvisionSubscriber.upsert_rows/2`** normalises rows with the existing `normalize_taxa/1` (DRRP mapping, actor roles), then writes each law in chunks of 1,000 with a single `UPDATE legal_articles … FROM jsonb_array_elements($1)`.
+  - Each column is set only when its key is present (`CASE WHEN p ? 'col'`), so absent fields stay unchanged, as with the per-row `:update_taxa` action.
+  - Casts cover `text[]`, `jsonb[]` (actors), int and float8.
+  - `not_found` = sent − updated, and rows with no section_id count as `invalid`.
+  - The per-row `Ash.get` + `Ash.update` (`upsert_provision`, `find_article`) is removed.
+- **Tests** (`provision_subscriber_batch_test.exs`):
+  - Field writes, actor role enrichment, absent fields unchanged, not-found counting, and `lat_count` unchanged.
+  - 3,000 updates in 136ms.
+- **Found along the way:** the test fixtures used `section_type: "regulation"`, which isn't a valid SectionType. LatPersister writes raw SQL, so it wasn't caught until Ash read the rows back. Fixed to `"article"`.
