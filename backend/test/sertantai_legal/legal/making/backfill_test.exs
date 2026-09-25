@@ -78,37 +78,21 @@ defmodule SertantaiLegal.Legal.Making.BackfillTest do
   end
 
   describe "infer_evidence/1 enrichment verdict" do
-    test "fractalaw fitness with DRRP → verdict inferred from duty types" do
+    # Historical duty_type is not trusted as enrichment evidence: fractalaw's
+    # published aggregates were stale (pre-hub regex pass, fractalaw QQ T2).
+    # It counts only as legacy_drrp; real verdicts come from fresh publishes.
+    test "fractalaw fitness with DRRP → no inferred verdict" do
       evidence =
         Backfill.infer_evidence(row(%{has_fitness: true, duty_type: %{"values" => ["Right"]}}))
 
-      assert evidence.making_enrichment_verdict == "empowering"
+      refute Map.has_key?(evidence, :making_enrichment_verdict)
     end
 
-    test "fitness without DRRP → no verdict (ambiguous, fractalaw T1)" do
+    test "fitness without DRRP → no verdict" do
       refute Map.has_key?(
                Backfill.infer_evidence(row(%{has_fitness: true})),
                :making_enrichment_verdict
              )
-    end
-
-    test "DRRP without fitness stays legacy evidence → no verdict" do
-      evidence = Backfill.infer_evidence(row(%{duty_type: %{"values" => ["Duty"]}}))
-
-      refute Map.has_key?(evidence, :making_enrichment_verdict)
-    end
-
-    test "an existing verdict is kept" do
-      evidence =
-        Backfill.infer_evidence(
-          row(%{
-            has_fitness: true,
-            duty_type: %{"values" => ["Duty"]},
-            making_enrichment_verdict: "empowering"
-          })
-        )
-
-      refute Map.has_key?(evidence, :making_enrichment_verdict)
     end
   end
 end

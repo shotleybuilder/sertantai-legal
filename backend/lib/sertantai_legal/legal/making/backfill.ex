@@ -8,9 +8,12 @@ defmodule SertantaiLegal.Legal.Making.Backfill do
   - `making_classification_source` from the shape of `making_detection_signals`:
     detector output has `detected_at` (or is a double-encoded detector string,
     which is decoded); triage output is a map of counts.
-  - `making_enrichment_verdict` where fractalaw fitness exists and DRRP
-    duty types are present. Fitness without DRRP is ambiguous (fractalaw T1)
-    and gets no verdict, so it can't downgrade a law.
+
+  No enrichment verdict is inferred. Historical `duty_type` counts only as
+  `legacy_drrp` evidence (it can upgrade a law, never downgrade one): fractalaw's
+  published DRRP aggregates were stale (pre-hub regex pass), and fitness does
+  not imply DRRP ran (triage gates it). Enrichment verdicts come only from
+  fresh taxa publishes through `TaxaSubscriber`.
 
   `infer_evidence/1` is pure. `load_rows/1` reads the columns the resolver
   needs; `plan_rows/2` runs `Making.plan/4` over them. `Mix.Tasks.Making.Resolve`
@@ -18,20 +21,17 @@ defmodule SertantaiLegal.Legal.Making.Backfill do
   """
 
   alias SertantaiLegal.Legal.Making
-  alias SertantaiLegal.Legal.Taxa.MakingResolver
   alias SertantaiLegal.Repo
 
   @columns ~w(id name country title_en live is_making is_making_source is_making_reason
               making_review making_enrichment_verdict making_classification
               making_classification_source making_confidence making_detection_tier
-              making_detection_signals duty_type has_fitness)a
+              making_detection_signals duty_type)a
 
   @doc "Pure: the evidence attrs to record for one row (only what's missing)."
   @spec infer_evidence(map()) :: map()
   def infer_evidence(row) do
-    %{}
-    |> infer_classification_source(row)
-    |> infer_enrichment_verdict(row)
+    infer_classification_source(%{}, row)
   end
 
   @doc """
@@ -115,24 +115,4 @@ defmodule SertantaiLegal.Legal.Making.Backfill do
 
   defp decode(%{} = map), do: {:ok, map}
   defp decode(_), do: :unknown
-
-  defp infer_enrichment_verdict(acc, %{making_enrichment_verdict: verdict})
-       when is_binary(verdict),
-       do: acc
-
-  defp infer_enrichment_verdict(acc, %{has_fitness: true, duty_type: duty_type}) do
-    case duty_type_values(duty_type) do
-      [_ | _] = values ->
-        Map.put(acc, :making_enrichment_verdict, MakingResolver.enrichment_verdict(values))
-
-      _ ->
-        acc
-    end
-  end
-
-  defp infer_enrichment_verdict(acc, _row), do: acc
-
-  defp duty_type_values(%{"values" => values}) when is_list(values), do: values
-  defp duty_type_values(%{values: values}) when is_list(values), do: values
-  defp duty_type_values(_), do: nil
 end
