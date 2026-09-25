@@ -1,3 +1,32 @@
+# Extent is not application (#162, #163)
+
+- **`geo_extent` / `geo_region` record EXTENT:** the legal system(s) a law forms part of. English and Welsh SIs both extend to `E+W`.
+- **They do not record APPLICATION**, i.e. where a law operates. For example, the Smoke-free (Premises and Enforcement) Regs extend to E+W but apply to England only.
+- **Application is published by fractalaw** as `application_regions` / `application_source` / `application_evidence` (#163). Screening gates on application. When application is null, it falls back to `geo_extent`, treated as an upper bound only.
+
+## How extent is resolved
+
+`SertantaiLegal.Scraper.ExtentResolver` takes the first source with a verdict, in this order:
+
+| Rank | `geo_extent_source` | Evidence |
+|---|---|---|
+| 1 | `law_level` | `Legislation/@RestrictExtent`, unless the document is unrevised (`document_status = final`) |
+| 2 | `lat_provisions` | union of LAT `extent_code` |
+| 3 | `contents_items` | union of `ContentsItem/@RestrictExtent`, **revised documents only** |
+| 4 | `text_clause` | whole-instrument clauses: "These Regulations extend to …" |
+| 5 | `type_code` | floor: ssi/asp/ssa → S; nisr/nia/apni/nisi/nisro → NI; wsi/anaw/asc/mwa → E+W |
+
+**Rules:**
+- **It never defaults to `UK`.** On unrevised documents every ContentsItem carries the placeholder `E+W+S+N.I.`; that placeholder is what mislabelled devolved laws as `UK`.
+- **`geo_extent_source = null` means legacy or unverified.** A value set before #162 and not confirmed by any source is kept, not cleared. Treat it as an upper bound only.
+- **When a new value may replace a stored one:**
+  - a better- or equal-ranked source replaces the stored value;
+  - an unknown result never overwrites.
+- **When extent is re-resolved:**
+  - at scrape time (from the metadata and extent stages);
+  - after each LAT persist;
+  - by `mix extent.resolve`, which is dry run by default; `--apply` snapshots first.
+
 # geo_extent
 
 **Geo_Pan_Region** in the legl donor app.

@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
       # result = %{inserted: 835, deleted: 234}
   """
 
+  alias SertantaiLegal.Scraper.ExtentBackfill
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Zenoh.ChangeNotifier
@@ -47,38 +48,53 @@ defmodule SertantaiLegal.Scraper.LatPersister do
     row_count = length(insert_maps)
     timeout = @base_timeout_ms + div(row_count * @timeout_per_1000_rows, 1000)
 
-    Repo.transaction(
-      fn ->
-        # DELETE existing rows for this law
-        {deleted, _} =
-          Repo.query!(
-            "DELETE FROM lat WHERE law_name = $1",
-            [law_name]
+    result =
+      Repo.transaction(
+        fn ->
+          # DELETE existing rows for this law
+          {deleted, _} =
+            Repo.query!(
+              "DELETE FROM lat WHERE law_name = $1",
+              [law_name]
+            )
+            |> then(fn %{num_rows: n} -> {n, nil} end)
+
+          # INSERT in batches
+          inserted =
+            insert_maps
+            |> Enum.chunk_every(@batch_size)
+            |> Enum.reduce(0, fn batch, acc ->
+              {count, _} = Repo.insert_all("lat", batch)
+              acc + count
+            end)
+
+          Logger.info(
+            "[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted} (#{row_count} rows, timeout #{timeout}ms)"
           )
-          |> then(fn %{num_rows: n} -> {n, nil} end)
 
-        # INSERT in batches
-        inserted =
-          insert_maps
-          |> Enum.chunk_every(@batch_size)
-          |> Enum.reduce(0, fn batch, acc ->
-            {count, _} = Repo.insert_all("lat", batch)
-            acc + count
-          end)
+          ChangeNotifier.notify("lat", "persist", %{law_name: law_name, count: inserted})
 
-        Logger.info(
-          "[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted} (#{row_count} rows, timeout #{timeout}ms)"
-        )
+          %{inserted: inserted, deleted: deleted}
+        end,
+        timeout: timeout
+      )
 
-        ChangeNotifier.notify("lat", "persist", %{law_name: law_name, count: inserted})
-
-        %{inserted: inserted, deleted: deleted}
-      end,
-      timeout: timeout
-    )
+    with {:ok, _} <- result, do: refresh_extent(law_name)
+    result
   rescue
     e ->
       Logger.error("[LatPersister] Failed for #{law_name}: #{Exception.message(e)}")
       {:error, Exception.message(e)}
+  end
+
+  # New LAT brings provision extents: re-resolve geo_extent for this law (#162).
+  # Extent is secondary to the LAT write, so failures are logged, not raised.
+  defp refresh_extent(law_name) do
+    ExtentBackfill.refresh(law_name)
+  rescue
+    e ->
+      Logger.warning(
+        "[LatPersister] Extent refresh failed for #{law_name}: #{Exception.message(e)}"
+      )
   end
 end

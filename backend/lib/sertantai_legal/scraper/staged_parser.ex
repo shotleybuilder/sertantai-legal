@@ -398,36 +398,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
     new_law =
       case stage_result.status do
-        :ok -> ParsedLaw.merge(result.law, stage_result.data || %{})
-        _ -> result.law
-      end
+        :ok ->
+          result.law
+          |> ParsedLaw.merge(stage_result.data || %{})
+          |> after_stage(stage, stage_result.data)
 
-    # After amended_by stage completes, resolve final live status
-    # (changes-primary, metadata-override strategy — Issue #60 Bug 4)
-    new_law =
-      if stage == :amended_by and stage_result.status == :ok do
-        resolve_live_status(new_law)
-      else
-        new_law
-      end
-
-    # After metadata or extent completes, re-resolve geo_extent (#162)
-    new_law =
-      if stage in [:metadata, :extent] and stage_result.status == :ok do
-        resolve_extent(new_law, stage_result.data)
-      else
-        new_law
-      end
-
-    # After metadata stage completes, run lightweight Making detection pre-filter
-    # and assign family from SI codes (mirrors Categorizer.categorize_records/1)
-    new_law =
-      if stage == :metadata and stage_result.status == :ok do
-        new_law
-        |> run_making_detection()
-        |> assign_family_from_si_codes()
-      else
-        new_law
+        _ ->
+          result.law
       end
 
     %{
@@ -439,6 +416,24 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         law: new_law
     }
   end
+
+  # Post-stage hooks, run only when the stage succeeded.
+  # amended_by: resolve final live status (changes-primary, metadata-override, #60 Bug 4)
+  defp after_stage(law, :amended_by, _data), do: resolve_live_status(law)
+
+  # metadata: re-resolve extent (#162), Making pre-filter, family from SI codes
+  # (mirrors Categorizer.categorize_records/1)
+  defp after_stage(law, :metadata, data) do
+    law
+    |> resolve_extent(data)
+    |> run_making_detection()
+    |> assign_family_from_si_codes()
+  end
+
+  # extent: re-resolve extent with the ContentsItem extents (#162)
+  defp after_stage(law, :extent, data), do: resolve_extent(law, data)
+
+  defp after_stage(law, _stage, _data), do: law
 
   # ============================================================================
   # Making Detection Pre-filter (Issue #25)

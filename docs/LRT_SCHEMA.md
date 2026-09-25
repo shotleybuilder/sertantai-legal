@@ -70,7 +70,9 @@ This document provides a comprehensive comparison between the original PostgreSQ
 #### Geographic (3/5)
 | Column | Type | Purpose | Status |
 |--------|------|---------|--------|
-| `geo_extent` | text | Geographic extent (E+W+S+NI) | ✅ Included |
+| `geo_extent` | text | Territorial **extent** (UK, GB, E+W, S, NI…), not application. Resolved by `ExtentResolver`; see `EXTENT_VALUES.md` | ✅ Included |
+| `geo_extent_source` | text | Which source decided `geo_extent` (`law_level`, `lat_provisions`, `contents_items`, `text_clause`, `type_code`); null means legacy or unverified | |
+| `document_status` | text | legislation.gov.uk `ukm:DocumentStatus`: `revised` or `final` (unrevised) | |
 | `geo_region` | text | Specific regions | ✅ Included |
 | `geo_country` | jsonb | Country-level scope | ✅ Included |
 

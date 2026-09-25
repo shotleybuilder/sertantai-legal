@@ -21,7 +21,8 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
 
   With no verdict the extent is unknown (nil). It never defaults to `UK`:
   unrevised documents carry a placeholder `E+W+S+N.I.` on every ContentsItem,
-  which is why devolved laws were mislabelled `UK`.
+  which is why devolved laws were mislabelled `UK`. An unknown resolution never
+  clears a stored value; `geo_extent_source = nil` marks it legacy/unverified.
 
   `overwrite?/2` decides whether a new resolution may replace a stored one.
   """
@@ -46,6 +47,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
     "nia" => ["Northern Ireland"],
     "apni" => ["Northern Ireland"],
     "nisi" => ["Northern Ireland"],
+    "nisro" => ["Northern Ireland"],
     "wsi" => ["England", "Wales"],
     "anaw" => ["England", "Wales"],
     "asc" => ["England", "Wales"],
@@ -87,18 +89,18 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   @doc """
   May a new resolution (`new_source`, nil = unknown) replace the stored one?
 
-  A legacy value (no stored source) is always replaced, even by unknown: it
-  may be the unrevised placeholder. Unknown never replaces a sourced value.
-  Otherwise an equal or better-ranked source replaces.
+  Unknown never replaces anything: a stored value with no source is legacy
+  and unverified (it may be the unrevised placeholder, or correct), and is
+  kept rather than cleared (Jason, 2026-09-25). A sourced resolution replaces
+  a legacy value, or a sourced one of equal or worse rank.
   """
   @spec overwrite?(String.t() | nil, String.t() | nil) :: boolean()
-  def overwrite?(stored_source, new_source) do
-    stored_rank = Map.get(@rank, stored_source)
+  def overwrite?(_stored_source, nil), do: false
 
-    cond do
-      is_nil(stored_rank) -> true
-      is_nil(new_source) -> false
-      true -> Map.fetch!(@rank, new_source) <= stored_rank
+  def overwrite?(stored_source, new_source) do
+    case Map.get(@rank, stored_source) do
+      nil -> true
+      stored_rank -> Map.fetch!(@rank, new_source) <= stored_rank
     end
   end
 

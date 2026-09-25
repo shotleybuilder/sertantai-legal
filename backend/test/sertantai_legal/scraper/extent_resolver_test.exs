@@ -189,12 +189,12 @@ defmodule SertantaiLegal.Scraper.ExtentResolverTest do
   end
 
   describe "overwrite?/2" do
-    test "any resolution, including unknown, replaces a legacy (unsourced) value" do
+    test "a sourced resolution replaces a legacy (unsourced) value" do
       assert ExtentResolver.overwrite?(nil, "type_code")
-      assert ExtentResolver.overwrite?(nil, nil)
     end
 
-    test "unknown never replaces a sourced value" do
+    test "unknown never replaces anything: unverified legacy values are kept" do
+      refute ExtentResolver.overwrite?(nil, nil)
       refute ExtentResolver.overwrite?("lat_provisions", nil)
     end
 
