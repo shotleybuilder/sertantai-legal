@@ -24,7 +24,7 @@ Trees are built by fractalaw, not legal. A law needs:
 - ⬜ **(c) 1 law has fitness but no tree**: `UK_ukpga_1990_9`, Planning (Listed Buildings and Conservation Areas) Act. It has 24,430 applies mentions. Find out why no tree was compiled (size limit? compile failure?) and report it to fractalaw.
 - ⬜ Add the QQ-01 hand-off (confirmed Making, no tree) to (a) or (b) according to LAT status.
 - ⬜ Before the batch: check whether fractalaw's triage agrees these are Making. If triage says not Making, fractalaw won't queue them, so they need `making_review` set (QQ-01) or a forced publish.
-- ⬜ If QQ-03's normaliser has landed, check that new trees are normalised on ingest. Otherwise backfill-normalise them after they arrive.
+- ⬜ Time the (b) batch to run after QQ-03's fractalaw fixes, so it runs once. Lint the new trees (`mix fitness.lint_trees`).
 - ⬜ Benchmark `legal-02-coverage` after each batch.
 - ⬜ Record laws where fractalaw legitimately returns NULL (no fitness mentions) as an explained gap.
 - ⬜ Wider corpus (loose, shape it after the QQ batch): 2,703 in-force Making laws have no tree. 2,444 of them have no LAT and 258 have LAT without fitness.
@@ -36,7 +36,7 @@ Trees are built by fractalaw, not legal. A law needs:
 - ✅ Worklist `worklists/02-no-tree.csv` (74 rows, bucketed a/b/c)
 - ⬜ QQ-01 hand-off list (adds to the queue, doesn't block starting (a) and (b))
 - ⬜ Jason: fractalaw enrichment slot (QQ batch in week 1, wider-corpus batch in week 2)
-- ⬜ Preferably QQ-03 decision first, so new trees get normalised on arrival
+- ⬜ QQ-03 fractalaw fixes (so the batch is not re-run)
 
 ## Worklist summary (2026-09-25)
 

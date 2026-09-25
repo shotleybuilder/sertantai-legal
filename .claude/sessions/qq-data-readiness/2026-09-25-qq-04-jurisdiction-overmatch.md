@@ -26,7 +26,7 @@ These fixes don't move evaluable agreement, because screener-only laws aren't in
 ## Todo (loose; rewrite on resume)
 
 - ⬜ Fix `geo_extent` for devolved types from legislation.gov.uk extent metadata. Lint type_code against extent afterwards.
-- ⬜ Normaliser rule R7: jurisdiction gate. AND the law's extent (from the corrected `geo_extent`/`geo_region`) at the tree root, and move place types into their own branch.
+- ⬜ Jurisdiction gate (lint L7): spec for fractalaw to AND the law's extent (from the corrected `geo_extent`/`geo_region`) at the tree root, with place types in their own branch. Fix `geo_extent` first. Check whether fractalaw reads it from the LRT queryable or works out extent itself.
   - Alternative: compliance treats `geo_extent` as a categorical exclusion. Agree the owner with compliance.
 - ⬜ Territory-only trees (16) and territory branches (38): decide per law whether they are genuinely universal (e.g. offshore first-aid applies to every offshore employer) or have lost a condition during extraction. Send lost-condition cases to fractalaw.
 - ⬜ Settle the question from #161: are place types (`premises`, `ship`, `installation`) under `territorial` intentional, or should they move to a `locational` dimension? This is shared with QQ-05.
@@ -34,7 +34,7 @@ These fixes don't move evaluable agreement, because screener-only laws aren't in
 
 ## Dependencies
 
-- ⬜ QQ-03 normaliser framework (R7 plugs into it)
+- ⬜ QQ-03 lint (L7, L8) and the fractalaw re-enrichment slot
 - ✅ Worklist `worklists/03-screener-only.csv` (`ni_law` flag, cause buckets)
 
 ## Exit criteria

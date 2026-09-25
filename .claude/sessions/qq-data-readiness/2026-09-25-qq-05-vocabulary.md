@@ -24,7 +24,7 @@ On QQ's benchmark this is a small lever: only 14 condition misses (material 10, 
 
 ## Todo (loose; rewrite on resume)
 
-- ⬜ Build a synonym and dimension map, applied by the QQ-03 normaliser as rule R8. It's reversible because the raw tree is kept.
+- ⬜ Build a synonym and dimension map, published with the vocabulary table. Fractalaw emits canonical codes from it (source fix), and the lint reports non-canonical codes.
 - ⬜ Publish a `fitness_vocabulary` table (code, dimension, label, definition, synonyms[], law_count) for compliance to read over the shared DB and delta sync.
 - ⬜ #132: persist ActorDictionary to a DB table. Map actor-library roles (consignor, consignee, …) to tree personal codes.
 - ⬜ Settle the `territorial` vs `locational` question with QQ-04.
@@ -33,7 +33,7 @@ On QQ's benchmark this is a small lever: only 14 condition misses (material 10, 
 
 ## Dependencies
 
-- ⬜ QQ-03 normaliser framework
+- ⬜ QQ-03 lint and the fractalaw re-enrichment slot
 - ⬜ Compliance v0.1-04a (suspended) consumes the table. Agree the schema with compliance before building.
 
 ## Exit criteria

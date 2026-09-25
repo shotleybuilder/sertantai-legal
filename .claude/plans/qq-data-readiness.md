@@ -59,17 +59,15 @@ normalise it, and it can't ask fractalaw to re-enrich a law. Re-enrichment is a 
 calls Making. So:
 
 - **Tree coverage** needs LAT (legal), then a fractalaw run (Jason).
-- **Extraction quality** (Not, construction, TimeWindow, territory branches) can be fixed
-  in two places:
-  - **at source in fractalaw**, which is outside this repo, needs a full re-enrichment, and
-    is hard to fit into three weeks;
-  - **in a legal-side deterministic tree normaliser**, a pure module run on ingest and as a
-    backfill. It keeps the raw tree, so every rule is reversible and can be benchmarked
-    within hours.
-
-**Recommendation: the normaliser.** Every rule it applies is also logged as a source-fix
-request for fractalaw, so the rules can be retired as fractalaw improves. *Needs Jason's
-decision; see the meta session.*
+- **Extraction quality** (Not, construction, TimeWindow, territory branches) will be
+  **fixed at source in fractalaw** (Jason's decision, 2026-09-25). A legal-side normaliser
+  was considered and rejected.
+- Legal's part:
+  - (a) write a precise source-fix spec per defect, with example laws and expected trees;
+  - (b) build a read-only tree lint (`mix fitness.lint_trees`) that counts each defect
+    corpus-wide, to prove each fractalaw fix before and after re-enrichment;
+  - (c) fix legal-owned inputs such as `geo_extent` that fractalaw and compliance rely on.
+- Legal stores trees unchanged, as it does today.
 
 ## Sessions
 
@@ -77,15 +75,16 @@ decision; see the meta session.*
 |---|---|---|---|---|
 | 01 | Making triage & is_making precedence | detailed | 29 Sep – 1 Oct | not_making 163 → only laws with a register-cleanup verdict (~75–85) |
 | 02 | Tree coverage for QQ laws | detailed | 29 Sep – 9 Oct | no_tree 74 (+ laws newly Making from 01) → ≤ 5 |
-| 03 | Tree normaliser & gate fixes | detailed | 1 – 8 Oct | gate misses 34 → ≤ 8; caveats 45 → ≤ 15 |
+| 03 | Tree extraction fixes (fractalaw) & tree lint | detailed | 29 Sep – 10 Oct | gate misses 34 → ≤ 8; caveats 45 → ≤ 15 |
 | 04 | Jurisdiction & territory over-match | medium | 6 – 10 Oct | screener-only NI 40 → 0; territory-only/branch 54 → ≤ 20 |
 | 05 | Controlled vocabulary & actor roles | loose | 8 – 16 Oct | condition misses 14 → ≤ 5; vocab table for compliance (#132) |
 | 06 | Register hygiene: revoked audit, #114, #83 | loose | 12 – 16 Oct | 104 revoked laws given a verdict; asc scrape |
 | P1 | Prod: backup + partition migration (#133) | track | from 29 Sep | prod has `legal_register`; Electric shapes load |
 | P2 | Prod: dev→prod data sync (#27) | track | after P1 | July enrichment + these fixes in prod; repeatable push |
 
-Sessions 01, 02 (LAT half) and P1 prep can run in parallel in week 1. Session 03's normaliser
-should land before the wider-corpus tree run, so new trees are normalised on ingest.
+Sessions 01, 02 (LAT half), 03 (specs and lint) and P1 prep can run in parallel in week 1.
+The fractalaw fixes from 03 should land **before** the QQ enrichment batch in 02, so the
+batch runs once, with fixed extraction. Otherwise the batch has to be re-run.
 
 ## Ordering: where the data disagrees with the brief
 
@@ -144,7 +143,7 @@ evaluable agreement to about 84%.
 | baseline | 262 | 68.2% | 47.9% | 172 |
 | 01 Making | ~292 | ~63% | ~62% | ~180 |
 | 02 Coverage (QQ) | ~390 | ~83% | ~83% | ~200 |
-| 03 Normaliser | ~415 | ~88% | ~88% | ~180 |
+| 03 fractalaw fixes | ~415 | ~88% | ~88% | ~180 |
 | 04 Jurisdiction | ~415 | ~88% | ~88% | ~120 |
 | 05/06 | ~425+ | ~90%+ | ~92%+ | ~110 |
 
@@ -193,12 +192,16 @@ Per-law lists are in `.claude/sessions/qq-data-readiness/worklists/`. Each was g
 
 ## Risks
 
-- **Fractalaw throughput.** Sessions 02 and 03 (and any source fixes) need fractalaw runs that
-  only Jason can trigger. Book the runs in advance: one batch for the QQ laws (week 1), one
-  for the wider corpus (week 2).
+- **Fractalaw is on the critical path.** Sessions 02, 03 and part of 04 need fractalaw code
+  changes plus re-enrichment runs that only Jason can do:
+  - Proposed runs: all 546 trees, the QQ no-tree batch, and the wider corpus.
+  - Aim for the fixes by about 6 Oct and one combined re-enrichment in the week of 6 Oct.
+  - If the fixes slip past about 10 Oct, fall back to compliance-side handling (it already
+    soft-handles Not and TimeWindow) and accept the caveat noise for v0.1.
 - **Evaluable agreement will dip after session 01.** Expected and explained above. Warn
   compliance so it doesn't retune against the dip.
-- **Normaliser rules can over-correct.** Each rule is a separate flag, benchmarked on its own,
-  and the raw tree is kept.
+- **Re-enrichment can regress trees that are fine today.** Snapshot `compiled_applicability`
+  (a NAS backup or a copy table) before each re-enrichment, and diff tree lint and benchmark
+  results afterwards.
 - **Shared dev DB.** Legal's changes reach compliance straight away. Each change is announced
   on #161 with its benchmark run.
