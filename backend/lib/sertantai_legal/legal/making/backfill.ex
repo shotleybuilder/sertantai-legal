@@ -36,14 +36,15 @@ defmodule SertantaiLegal.Legal.Making.Backfill do
 
   @doc """
   Load the Making columns. Options: `:names` (list of law names),
-  `:country` ("uk" | "au"). No options loads every law.
+  `:exclude` (law names to skip), `:country` ("uk" | "au"). No options loads
+  every law.
   """
   @spec load_rows(keyword()) :: [map()]
   def load_rows(opts \\ []) do
     select = Enum.map_join(@columns, ", ", &Atom.to_string/1)
 
     {conditions, params} =
-      [names: "name = ANY($?)", country: "country = $?"]
+      [names: "name = ANY($?)", exclude: "NOT (name = ANY($?))", country: "country = $?"]
       |> Enum.reduce({[], []}, fn {key, clause}, {conds, params} ->
         case opts[key] do
           nil ->
@@ -66,6 +67,25 @@ defmodule SertantaiLegal.Legal.Making.Backfill do
       |> Map.new()
       |> Map.update!(:id, &Ecto.UUID.cast!/1)
     end)
+  end
+
+  @doc """
+  Decode `making_detection_signals` stored as a double-encoded JSON string
+  (written by `legal.backfill_making_provenance` before its fix). Ash cannot
+  load such records at all, so this runs in SQL before the resolver backfill.
+  Returns the number of rows repaired.
+  """
+  @spec repair_signal_encoding!() :: non_neg_integer()
+  def repair_signal_encoding! do
+    %{num_rows: n} =
+      Repo.query!("""
+      UPDATE legal_register
+      SET making_detection_signals = (making_detection_signals #>> '{}')::jsonb
+      WHERE jsonb_typeof(making_detection_signals) = 'string'
+        AND jsonb_typeof((making_detection_signals #>> '{}')::jsonb) = 'object'
+      """)
+
+    n
   end
 
   @doc """

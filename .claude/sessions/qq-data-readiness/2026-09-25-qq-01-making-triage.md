@@ -44,10 +44,26 @@ Source: `worklists/01-not-making.csv` (`funnel_state`, `next_action`). The state
 
 In total: **81 are QQ register cleanup on the funnel's own verdict** (C1 + X1 + F2 + S1 + Q2), 4 are a legal fix, 51 are waiting on fractalaw, 13 need LAT, 8 need your decision and 6 need investigating.
 
+## Policy (Jason, 2026-09-25)
+
+An amending instrument that inserts duties into a principal Act or SI is **not Making**. The duties belong to the principal instrument. QQ register entries for such instruments are register cleanup.
+
 ## Todo
 
 - ⬜ Wait for QQ-01a (transparency and resolver backfill) so `is_making` is correct before triaging. The 4 F1 laws flip there.
 - ⬜ Wait for fractalaw T1 (37 F3 laws: tree but no duty types) and T2 (8 F2 Rights/Powers-only spot-check) from `.claude/plans/qq-fractalaw-brief.md`. Re-derive states from the `making_funnel` view (QQ-01a).
+- ⬜ Re-review the 5 laws held out of the QQ-01a backfill. Their earlier `making_review = 'making'` conflicts with fractalaw's T1/T2 text review. Under the policy above, expect `not_making`; record it with `mix making.review`:
+  - `UK_uksi_2008_198`: inserts TA 1968 ss97C–G
+  - `UK_uksi_2016_1245`: inserts CA 2006 s414CA–CB
+  - `UK_uksi_2014_2868`: specifies limits for the RTA s5A offence
+  - `UK_uksi_2018_24`: amends offence machinery
+  - `UK_uksi_2005_1904`: amending instrument
+- ⬜ Also check `UK_uksi_2018_1214`, the WEEE (Amendment) (No. 2) Regs: an amending SI made Making by legacy Duty/Responsibility in the QQ-01a backfill. Under the policy it may be not Making.
+- ⬜ Fractalaw T1/T2 results (`~/fractalaw/data/qq-readiness/t1-no-duty-findings.csv`, `t2-rights-only-verdicts.csv`):
+  - 33 of 37 F3 laws are correctly not Making, so they're QQ cleanup.
+  - `UK_ssi_2012_148` and `UK_uksi_1998_3111` have Obligation rows in PG, so T4's republish should make them Making.
+  - T2: `UK_ssi_2010_435` has a genuine duty (it becomes Making on republish). `UK_ssi_2005_22` is an amending SI, so it's not Making under the policy.
+  - Correction to the brief: `UK_uksi_2025_140` and `UK_uksi_2018_24` have no duties.
 - ⬜ Q1 (13): create a LAT session (`lat-session-build`); the laws are already candidates by the DB rule. Then send them to fractalaw (brief T4, item 4).
 - ⬜ P1 (8): Jason decides, per Act, between parsing it and QQ cleanup.
 - ⬜ X2 (6): check whether legislation.gov.uk has body XML for them. If not, they're an explained gap.

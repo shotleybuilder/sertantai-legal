@@ -8,10 +8,12 @@ defmodule Mix.Tasks.Making.Resolve do
       mix making.resolve                          # dry run, all laws
       mix making.resolve --names UK_a,UK_b        # dry run, named laws
       mix making.resolve --country uk             # dry run, UK partition only
+      mix making.resolve --exclude UK_a,UK_b      # skip laws held for review
       mix making.resolve --apply                  # snapshot, then write
 
   With `--apply`, the Making columns are first copied to
-  `making_backfill_snapshot_<YYYYMMDD>` (created once per day), then each
+  `making_backfill_snapshot_<YYYYMMDD>` (created once per day), double-encoded
+  `making_detection_signals` strings are decoded, then each
   changed law is written through `Making.record/3` with `changed_by: "backfill"`,
   so every change is in `record_change_log`.
 
@@ -30,13 +32,16 @@ defmodule Mix.Tasks.Making.Resolve do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [apply: :boolean, names: :string, country: :string])
+      OptionParser.parse(args,
+        strict: [apply: :boolean, names: :string, exclude: :string, country: :string]
+      )
 
     Mix.Task.run("app.start")
 
     names = opts[:names] && String.split(opts[:names], ",", trim: true)
+    exclude = opts[:exclude] && String.split(opts[:exclude], ",", trim: true)
     now = DateTime.utc_now()
-    rows = Backfill.load_rows(names: names, country: opts[:country])
+    rows = Backfill.load_rows(names: names, exclude: exclude, country: opts[:country])
     plans = Backfill.plan_rows(rows, now)
     flips = Enum.filter(plans, &flip?/1)
 
@@ -118,7 +123,9 @@ defmodule Mix.Tasks.Making.Resolve do
     FROM legal_register
     """)
 
-    Mix.shell().info("\nSnapshot: #{snapshot}. Applying #{length(plans)} changes…")
+    repaired = Backfill.repair_signal_encoding!()
+    Mix.shell().info("\nSnapshot: #{snapshot}. Decoded #{repaired} double-encoded signals.")
+    Mix.shell().info("Applying #{length(plans)} changes…")
 
     {ok, errors} =
       plans

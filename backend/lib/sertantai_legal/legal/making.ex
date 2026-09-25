@@ -41,16 +41,16 @@ defmodule SertantaiLegal.Legal.Making do
   @doc """
   Record Making evidence for a law and re-resolve `is_making`, under a row lock.
   """
-  @spec record(LegalRegister.t(), map(), String.t()) ::
+  @spec record(LegalRegister.t(), map(), String.t(), keyword()) ::
           {:ok, LegalRegister.t()} | {:error, term()}
-  def record(%LegalRegister{id: id}, evidence_attrs, changed_by) do
+  def record(%LegalRegister{id: id}, evidence_attrs, changed_by, opts \\ []) do
     Repo.transaction(fn ->
       Repo.query!("SELECT 1 FROM legal_register WHERE id = $1 FOR UPDATE", [
         Ecto.UUID.dump!(id)
       ])
 
       with {:ok, current} <- Ash.get(LegalRegister, id),
-           attrs = plan(current, evidence_attrs, changed_by, DateTime.utc_now()),
+           attrs = plan(current, evidence_attrs, changed_by, DateTime.utc_now(), opts),
            {:ok, updated} <- Ash.update(current, attrs, action: :update) do
         updated
       else
@@ -65,9 +65,12 @@ defmodule SertantaiLegal.Legal.Making do
   Returns the accepted evidence fields plus `is_making`, `is_making_source`,
   `is_making_reason`, and — only when something changed — `is_making_decided_at`
   and an appended `record_change_log`.
+
+  Options: `:note` — free text stored on the change-log entry (e.g. why a
+  human review was made).
   """
-  @spec plan(map(), map(), String.t(), DateTime.t()) :: map()
-  def plan(current, evidence_attrs, changed_by, now) do
+  @spec plan(map(), map(), String.t(), DateTime.t(), keyword()) :: map()
+  def plan(current, evidence_attrs, changed_by, now, opts \\ []) do
     current = to_map(current)
 
     incoming =
@@ -94,10 +97,12 @@ defmodule SertantaiLegal.Legal.Making do
     case ChangeLogger.build_change_entry(current, attrs, changed_by, source: "making") do
       {:ok, entry} ->
         entry =
-          Map.merge(entry, %{
+          entry
+          |> Map.merge(%{
             "reason" => decision.reason,
             "dissent" => Enum.map(decision.dissent, &Atom.to_string/1)
           })
+          |> maybe_put("note", opts[:note])
 
         Map.put(
           attrs,
@@ -133,8 +138,11 @@ defmodule SertantaiLegal.Legal.Making do
   end
 
   # is_making stored before the resolver existed carries no is_making_source.
-  defp legacy_is_making(%{is_making_source: nil, is_making: value}) when is_boolean(value),
-    do: value
+  # Once resolved from it, the value keeps its legacy standing on every re-run,
+  # otherwise a later detector guess could overturn it.
+  defp legacy_is_making(%{is_making_source: source, is_making: value})
+       when source in [nil, "legacy_is_making"] and is_boolean(value),
+       do: value
 
   defp legacy_is_making(_record), do: nil
 
@@ -160,6 +168,9 @@ defmodule SertantaiLegal.Legal.Making do
        do: Map.put(incoming, :making_review_at, now)
 
   defp stamp_review(incoming, _now), do: incoming
+
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
 
   defp to_map(%_{} = struct), do: Map.from_struct(struct)
   defp to_map(map) when is_map(map), do: map

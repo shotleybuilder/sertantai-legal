@@ -157,6 +157,20 @@ defmodule SertantaiLegal.Legal.MakingTest do
       assert entry["changes"]["is_making"] == %{"old" => false, "new" => true}
     end
 
+    test "a note is stored on the change-log entry" do
+      attrs =
+        Making.plan(
+          current(),
+          %{making_review: "not_making"},
+          "making_review",
+          @now,
+          note: "amending SI: duties sit in the principal Act"
+        )
+
+      assert [entry] = attrs.record_change_log
+      assert entry["note"] == "amending SI: duties sit in the principal Act"
+    end
+
     test "keeps earlier log entries" do
       earlier = %{"source" => "scraper", "changes" => %{}}
 
@@ -194,9 +208,48 @@ defmodule SertantaiLegal.Legal.MakingTest do
     end
   end
 
+  describe "plan/4 idempotency" do
+    test "re-planning a legacy-resolved law changes nothing, even with a detector estimate" do
+      first =
+        Making.plan(
+          current(%{
+            is_making: false,
+            making_classification: "making",
+            making_classification_source: "detector"
+          }),
+          %{},
+          "backfill",
+          @now
+        )
+
+      assert first.is_making_source == "legacy_is_making"
+
+      resolved =
+        current(%{
+          is_making: false,
+          making_classification: "making",
+          making_classification_source: "detector"
+        })
+        |> Map.merge(Map.drop(first, [:record_change_log]))
+
+      second = Making.plan(resolved, %{}, "backfill", @now)
+
+      assert second.is_making == false
+      assert second.is_making_source == "legacy_is_making"
+      refute Map.has_key?(second, :record_change_log)
+    end
+  end
+
   describe "evidence/1" do
     test "is_making with no recorded source is legacy evidence" do
       assert Making.evidence(current(%{is_making: false})).legacy_is_making == false
+    end
+
+    test "a value already resolved as legacy stays legacy evidence on re-runs" do
+      evidence =
+        Making.evidence(current(%{is_making: false, is_making_source: "legacy_is_making"}))
+
+      assert evidence.legacy_is_making == false
     end
 
     test "is_making decided by the resolver is not legacy evidence" do

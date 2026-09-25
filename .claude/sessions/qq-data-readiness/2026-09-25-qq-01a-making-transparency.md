@@ -8,6 +8,12 @@ related: [25, 120]
 enables: [qq-data-readiness/2026-09-25-qq-01-making-triage]
 
 bugs:
+  - pattern: "Records with double-encoded making_detection_signals cannot be loaded by Ash at all (map type)"
+    category: data-format
+    module: legal_register.making_detection_signals
+    affected: 2029
+    fix: "Backfill.repair_signal_encoding!/0 decoded all 2,029 in SQL (2026-09-25)"
+    status: fixed
   - pattern: "MakingDetector and TriageSubscriber both write making_classification; a reparse re-runs the detector and erases the triage verdict"
     category: making-traceability
     module: scraper/staged_parser.ex (run_making_detection), zenoh/triage_subscriber.ex
@@ -101,10 +107,12 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - ⏸️ Backfill `scrape_session_records.status = 'cleaned'` for the 17 stale records. Not needed: the view derives `cleaned`. Only do it if the LAT UI should show the badge.
 - ✅ `mix making.resolve` (dry run by default; `--apply` snapshots first; `--country`, `--names`)
 - ✅ UK dry run: **76 flips, all to Making, no downgrades**. Report: `backend/data/reports/making/resolve-20260925T1227.csv`
-- ⬜ **Jason sign-off**, then `mix making.resolve --country uk --apply`. Afterwards verify: 0 Duty/Responsibility laws with `is_making = false`, and triage conflicts are visible in `making_funnel`
-- ⬜ AU: 685 laws have `making_review = 'making'` (from `au.apply_nsw_annotations`) but null `is_making`. Jason to decide whether to apply `--country au`
-- ⬜ `mix making.review LAW --verdict making|not_making --note …` (human review through the write path)
-- ⬜ Benchmark `legal-01a-transparency`. Record it in the meta Results table and post on #161.
+- ✅ Jason signed off on 72 of the 77 flips. The other 5 are held for QQ-01, because their human review conflicts with fractalaw's T1/T2 text review (`--exclude`).
+- ✅ UK applied. Net change against `making_backfill_snapshot_20260925`: **72 laws became Making, with no downgrades**. 0 in-force Duty/Responsibility laws remain with `is_making = false` (was 33). 20 triage conflicts are now visible in `making_funnel`. A second dry run changes nothing, so the backfill is idempotent.
+- ⏸️ AU: 685 laws have `making_review = 'making'` but null `is_making`. Jason: leave for an AU session.
+- ✅ `mix making.review LAW… --verdict making|not_making --note …`. The note is stored on the change-log entry (`Making.record/4` `:note` option).
+- ✅ Benchmark `2026-09-25T1306-legal-01a-transparency`. Effect of this session: `both` +4, and 4 QQ laws moved from not_making to no_tree (they join the QQ-02 queue). The drop in screener_only from 172 to 138 is compliance's own jurisdiction exclusion (commit `495976c`, 12:35), not ours.
+- ⬜ Post the numbers on #161 (Jason to confirm)
 
 ## Dependencies
 
@@ -208,3 +216,12 @@ Already covered:
 - **UK dry run, final** (19,817 laws). Flips: legacy_drrp 23, review 22 + 8, enrichment 12, detector 10 (null only), triage 1. Decisions by source: legacy_is_making 15,798, legacy_drrp 2,872, enrichment 570, review 187, detector 182, default 171, triage 37.
 - **Legal's server was not running** during this session. The subscriber changes take effect on the next `mix phx.server`, which must happen before fractalaw's T4 publish.
 - **6 laws in the `cleaned` stage still have `is_making = true`.** Check them after the apply.
+
+## Incident: the legacy tier wasn't sticky (2026-09-25)
+
+- **What happened.** The first `--apply` failed on 2,029 laws: Ash can't load `making_detection_signals` stored as a double-encoded string. I added `Backfill.repair_signal_encoding!/0` (SQL decode, after the snapshot) and re-ran the apply.
+- **The bug.** On the re-run, laws resolved in the first run carried `is_making_source = "legacy_is_making"`. The legacy tier only counted values with no source, so those curated values lost their standing. Detector guesses flipped **26 laws** from false to true, and about 15,600 laws were relabelled `default` or `detector`.
+- **Fix.** `legacy_is_making` now also counts values whose source is `legacy_is_making`. Tests were added for this and for idempotency.
+- **Repair.** In SQL, restored `is_making` from the snapshot for the 15,640 affected laws and cleared their source. The 26 reversals each got a `backfill_repair` change-log entry. Re-applied, and verified that a second dry run has 0 changes.
+- **Net result.** Exactly the 72 approved flips, no downgrades.
+- **Lesson.** Test that a backfill is idempotent (re-planning already-resolved state) **before** the first `--apply`, not after.
