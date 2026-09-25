@@ -13,11 +13,16 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
   | `:enrichment`  | fractalaw DRRP enrichment verdict               | making → true, empowering / no_obligations → false |
   | `:legacy_drrp` | `duty_type` with no enrichment provenance       | Duty/Responsibility/Obligation → true, else none |
   | `:triage`      | fractalaw triage classification                 | making → true, not_making → false, uncertain → none |
+  | `:legacy_is_making` | `is_making` stored before the resolver (no `is_making_source`) — curated legacy value | its value |
   | `:detector`    | MakingDetector classification                   | as triage                                     |
   | `:default`     | —                                               | keep the current value; never set → false     |
 
   Legacy DRRP never downgrades on its own: Rights/Powers-only legacy data
   gives no verdict. Unknown verdict strings are ignored, not guessed.
+
+  `:legacy_is_making` sits above the detector so a first-stage guess can't
+  overturn a curated pre-resolver value (e.g. provenance stamped on legacy
+  laws by `legal.backfill_making_provenance` without changing `is_making`).
 
   The `Decision` also lists `dissent`: lower tiers whose verdict disagrees
   with the outcome, so conflicts stay visible instead of silently overwritten.
@@ -25,7 +30,15 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
 
   defmodule Evidence do
     @moduledoc "Evidence for one law, one field per funnel tier."
-    @enforce_keys [:review, :enrichment, :legacy_duty_types, :triage, :detector, :current]
+    @enforce_keys [
+      :review,
+      :enrichment,
+      :legacy_duty_types,
+      :triage,
+      :legacy_is_making,
+      :detector,
+      :current
+    ]
     defstruct @enforce_keys
 
     @type t :: %__MODULE__{
@@ -33,6 +46,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
             enrichment: String.t() | nil,
             legacy_duty_types: [String.t()] | nil,
             triage: String.t() | nil,
+            legacy_is_making: boolean() | nil,
             detector: String.t() | nil,
             current: boolean() | nil
           }
@@ -43,7 +57,14 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
     @enforce_keys [:is_making, :source, :reason, :dissent]
     defstruct @enforce_keys
 
-    @type tier :: :review | :enrichment | :legacy_drrp | :triage | :detector | :default
+    @type tier ::
+            :review
+            | :enrichment
+            | :legacy_drrp
+            | :triage
+            | :legacy_is_making
+            | :detector
+            | :default
     @type t :: %__MODULE__{
             is_making: boolean(),
             source: tier(),
@@ -53,7 +74,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
   end
 
   @making_duty_types ["Duty", "Responsibility", "Obligation"]
-  @tiers [:review, :enrichment, :legacy_drrp, :triage, :detector]
+  @tiers [:review, :enrichment, :legacy_drrp, :triage, :legacy_is_making, :detector]
 
   @doc """
   Resolve `is_making` from the evidence. See the moduledoc for precedence.
@@ -110,6 +131,9 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
       {true, "legacy_drrp: duty types " <> Enum.join(types, ", ")}
     end
   end
+
+  defp verdict(:legacy_is_making, %{legacy_is_making: value}) when is_boolean(value),
+    do: {value, "legacy_is_making: #{value} (set before the resolver, no recorded source)"}
 
   defp verdict(tier, evidence) when tier in [:triage, :detector] do
     case Map.fetch!(evidence, tier) do

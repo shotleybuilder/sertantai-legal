@@ -78,7 +78,7 @@ defmodule SertantaiLegal.Legal.MakingTest do
       attrs = Making.plan(current(%{is_making: false}), %{is_making: true}, "admin_ui", @now)
 
       assert attrs.is_making == false
-      assert attrs.is_making_source == "default"
+      assert attrs.is_making_source == "legacy_is_making"
     end
 
     test "a human review wins and gets a review timestamp" do
@@ -153,7 +153,7 @@ defmodule SertantaiLegal.Legal.MakingTest do
       assert entry["source"] == "making"
       assert entry["changed_by"] == "triage_subscriber"
       assert entry["reason"] =~ "enrichment: making"
-      assert entry["dissent"] == ["triage"]
+      assert entry["dissent"] == ["triage", "legacy_is_making"]
       assert entry["changes"]["is_making"] == %{"old" => false, "new" => true}
     end
 
@@ -195,6 +195,16 @@ defmodule SertantaiLegal.Legal.MakingTest do
   end
 
   describe "evidence/1" do
+    test "is_making with no recorded source is legacy evidence" do
+      assert Making.evidence(current(%{is_making: false})).legacy_is_making == false
+    end
+
+    test "is_making decided by the resolver is not legacy evidence" do
+      evidence = Making.evidence(current(%{is_making: true, is_making_source: "detector"}))
+
+      assert evidence.legacy_is_making == nil
+    end
+
     test "maps a triage-sourced classification to the triage tier" do
       evidence =
         Making.evidence(

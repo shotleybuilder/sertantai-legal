@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolverTest do
           enrichment: nil,
           legacy_duty_types: nil,
           triage: nil,
+          legacy_is_making: nil,
           detector: nil,
           current: nil
         },
@@ -87,6 +88,27 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolverTest do
     test "detector decides when nothing higher has a verdict" do
       assert %Decision{is_making: true, source: :detector} =
                MakingResolver.resolve(evidence(detector: "making"))
+    end
+  end
+
+  describe "resolve/1 legacy is_making" do
+    test "a pre-resolver is_making outranks a detector guess" do
+      decision = MakingResolver.resolve(evidence(legacy_is_making: false, detector: "making"))
+
+      assert %Decision{is_making: false, source: :legacy_is_making, dissent: [:detector]} =
+               decision
+    end
+
+    test "triage outranks a pre-resolver is_making" do
+      assert %Decision{is_making: true, source: :triage} =
+               MakingResolver.resolve(evidence(legacy_is_making: false, triage: "making"))
+    end
+
+    test "legacy duty types outrank a pre-resolver is_making" do
+      assert %Decision{is_making: true, source: :legacy_drrp} =
+               MakingResolver.resolve(
+                 evidence(legacy_is_making: false, legacy_duty_types: ["Duty"])
+               )
     end
   end
 

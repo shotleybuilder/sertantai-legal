@@ -126,10 +126,17 @@ defmodule SertantaiLegal.Legal.Making do
       enrichment: record[:making_enrichment_verdict],
       legacy_duty_types: duty_type_values(record[:duty_type]),
       triage: triage,
+      legacy_is_making: legacy_is_making(record),
       detector: detector,
       current: record[:is_making]
     }
   end
+
+  # is_making stored before the resolver existed carries no is_making_source.
+  defp legacy_is_making(%{is_making_source: nil, is_making: value}) when is_boolean(value),
+    do: value
+
+  defp legacy_is_making(_record), do: nil
 
   defp estimate(%{making_classification_source: "triage", making_classification: c}),
     do: {c, nil}

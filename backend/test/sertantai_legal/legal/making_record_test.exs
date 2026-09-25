@@ -41,7 +41,7 @@ defmodule SertantaiLegal.Legal.MakingRecordTest do
 
       assert [entry] = Enum.filter(updated.record_change_log, &(&1["source"] == "making"))
       assert entry["changed_by"] == "triage_subscriber"
-      assert entry["dissent"] == ["triage"]
+      assert entry["dissent"] == ["triage", "legacy_is_making"]
     end
 
     test "records an enrichment verdict that overrides triage" do
