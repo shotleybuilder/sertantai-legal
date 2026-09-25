@@ -44,19 +44,32 @@ defmodule SertantaiLegal.Legal.Making do
   @spec record(LegalRegister.t(), map(), String.t(), keyword()) ::
           {:ok, LegalRegister.t()} | {:error, term()}
   def record(%LegalRegister{id: id}, evidence_attrs, changed_by, opts \\ []) do
-    Repo.transaction(fn ->
-      Repo.query!("SELECT 1 FROM legal_register WHERE id = $1 FOR UPDATE", [
-        Ecto.UUID.dump!(id)
-      ])
+    # Ash notifications raised inside the transaction are returned, not
+    # dropped, and sent once it has committed.
+    result =
+      Repo.transaction(fn ->
+        Repo.query!("SELECT 1 FROM legal_register WHERE id = $1 FOR UPDATE", [
+          Ecto.UUID.dump!(id)
+        ])
 
-      with {:ok, current} <- Ash.get(LegalRegister, id),
-           attrs = plan(current, evidence_attrs, changed_by, DateTime.utc_now(), opts),
-           {:ok, updated} <- Ash.update(current, attrs, action: :update) do
-        updated
-      else
-        {:error, reason} -> Repo.rollback(reason)
-      end
-    end)
+        with {:ok, current} <- Ash.get(LegalRegister, id),
+             attrs = plan(current, evidence_attrs, changed_by, DateTime.utc_now(), opts),
+             {:ok, updated, notifications} <-
+               Ash.update(current, attrs, action: :update, return_notifications?: true) do
+          {updated, notifications}
+        else
+          {:error, reason} -> Repo.rollback(reason)
+        end
+      end)
+
+    case result do
+      {:ok, {updated, notifications}} ->
+        Ash.Notifier.notify(notifications)
+        {:ok, updated}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   @doc """

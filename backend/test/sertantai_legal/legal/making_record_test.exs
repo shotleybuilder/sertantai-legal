@@ -60,4 +60,26 @@ defmodule SertantaiLegal.Legal.MakingRecordTest do
       assert updated.making_enrichment_verdict == "empowering"
     end
   end
+
+  describe "record/3 notifications" do
+    setup do
+      previous = Application.get_env(:ash, :missed_notifications)
+      Application.put_env(:ash, :missed_notifications, :raise)
+
+      on_exit(fn ->
+        if previous,
+          do: Application.put_env(:ash, :missed_notifications, previous),
+          else: Application.delete_env(:ash, :missed_notifications)
+      end)
+    end
+
+    test "sends Ash notifications after the transaction instead of dropping them" do
+      law = create_law(%{is_making: false})
+
+      assert {:ok, updated} =
+               Making.record(law, %{making_enrichment_verdict: "making"}, "taxa_subscriber")
+
+      assert updated.is_making
+    end
+  end
 end
