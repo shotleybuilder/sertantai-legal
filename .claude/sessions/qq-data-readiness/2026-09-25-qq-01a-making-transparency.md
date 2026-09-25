@@ -83,7 +83,7 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - ✅ Red: tests for `Legal.Taxa.MakingResolver` (pure), in `test/sertantai_legal/legal/taxa/making_resolver_test.exs`. All 21 failed as expected: the module didn't exist.
 - ✅ Green: `lib/sertantai_legal/legal/taxa/making_resolver.ex`. 21/21 pass; credo clean. `Decision` includes `dissent`, the lower tiers that disagree.
 - ✅ `making_classification_source`: the column exists and the detector-never-overwrites-triage guard is in `Making.plan/4`
-- ⬜ Backfill `making_classification_source` from the shape of `making_detection_signals`, and decode the 1,994 double-encoded strings
+- ✅ Backfill inference, `Legal.Making.Backfill.infer_evidence/1` (10 tests): classification source from signal shape, decoding double-encoded strings, and an enrichment verdict where fitness and DRRP both exist
 - ✅ One write path, `Legal.Making.record/3` (row lock, `plan/4` pure). 13 unit tests plus 2 DB tests:
   - It records a writer's evidence (triage fields, enrichment verdict, review) and runs the resolver.
   - It writes `is_making` and appends a `ChangeLogger` entry with the `source` (`detector` | `triage` | `taxa` | `review` | `scraper` | `backfill`) and the reason.
@@ -97,9 +97,13 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - ✅ `legal.backfill_making_provenance`: removed the `Jason.encode!` that double-encoded `making_detection_signals` (the cause of the 1,994 string rows)
 - ✅ `making_review`: the top tier in the resolver. Setting it through the admin UI or `Making.record` is logged and time-stamped. A `mix making.review` task is still to do.
 - ✅ Provenance columns, migration `20260925121805_add_making_provenance`. Added to the parent `legal_register` only, as for `definitions_parsed_at`; the `uk_lrt` view is unchanged because all Making writers use `LegalRegister`.
-- ⬜ `making_funnel` view: one row per law with funnel state, evidence, the latest LAT session record and a next action. It formalises the QQ-01 worklist query.
-- ⬜ Backfill `scrape_session_records.status = 'cleaned'` for the 17 stale `confirmed` records
-- ⬜ Backfill `is_making` corpus-wide through the resolver (`--dry-run` first). Log every flip; report counts by source and reason.
+- ✅ `making_funnel` view (migration `20260925122809`): stage, evidence, the latest LAT session record, a `conflict` flag and `next_action`. Treats `confirmed` + LAT deleted as `cleaned`, which covers the 17 stale records without editing session history.
+- ⏸️ Backfill `scrape_session_records.status = 'cleaned'` for the 17 stale records. Not needed: the view derives `cleaned`. Only do it if the LAT UI should show the badge.
+- ✅ `mix making.resolve` (dry run by default; `--apply` snapshots first; `--country`, `--names`)
+- ✅ UK dry run: **76 flips, all to Making, no downgrades**. Report: `backend/data/reports/making/resolve-20260925T1227.csv`
+- ⬜ **Jason sign-off**, then `mix making.resolve --country uk --apply`. Afterwards verify: 0 Duty/Responsibility laws with `is_making = false`, and triage conflicts are visible in `making_funnel`
+- ⬜ AU: 685 laws have `making_review = 'making'` (from `au.apply_nsw_annotations`) but null `is_making`. Jason to decide whether to apply `--country au`
+- ⬜ `mix making.review LAW --verdict making|not_making --note …` (human review through the write path)
 - ⬜ Benchmark `legal-01a-transparency`. Record it in the meta Results table and post on #161.
 
 ## Dependencies
@@ -194,3 +198,13 @@ Rejected:
 Already covered:
 - **Idempotency.** `ChangeLogger` only writes an entry when something changed, so a re-delivered message adds nothing.
 - **Change-log growth.** The log is a column on the law row, and the backfill adds one entry per law that changes.
+
+## Implementation notes (2026-09-25)
+
+- **Tier added after the Gemini review: `legacy_is_making`.** It ranks between triage and detector.
+  - The first dry run over the whole corpus (UK + AU) flipped 39 UK laws on detector guesses alone. Examples: Abolition of Feudal Tenure (Scotland) Act, Debt Arrangement and Attachment (Scotland) Act, Computer Misuse Act.
+  - Those laws had a curated pre-resolver `is_making = false`, and `legal.backfill_making_provenance` had stamped detector signals on them without changing `is_making`.
+  - An `is_making` with no `is_making_source` now counts as legacy evidence. The detector only decides for laws that were never set. Detector flips fell from 39 to 10, all of them null → true.
+- **UK dry run, final** (19,817 laws). Flips: legacy_drrp 23, review 22 + 8, enrichment 12, detector 10 (null only), triage 1. Decisions by source: legacy_is_making 15,798, legacy_drrp 2,872, enrichment 570, review 187, detector 182, default 171, triage 37.
+- **Legal's server was not running** during this session. The subscriber changes take effect on the next `mix phx.server`, which must happen before fractalaw's T4 publish.
+- **6 laws in the `cleaned` stage still have `is_making = true`.** Check them after the apply.
