@@ -29,6 +29,23 @@ bugs:
     affected: 1
     fix: "LatStagedParser.record_outcome/1: any stage error means failed, with the error; the controller uses it. The fetch_body failure path now also carries an error"
     status: fixed
+  - pattern: "Making.record dropped Ash notifications (Ash.update inside the row-locked transaction); logged 'Missed 1 notifications in action LegalRegister.update' per Making verdict"
+    category: making-traceability
+    module: legal/making.ex
+    fix: "return_notifications?: true inside the transaction; Ash.Notifier.notify after commit (7873331). Test runs with missed_notifications: :raise"
+    status: fixed
+  - pattern: "ProvisionSubscriber updates one provision per statement (Ash.get + Ash.update), so the lat stats trigger recounts the law and rewrites legal_register once per provision; ~32 provisions/s"
+    category: lat-persist-performance
+    module: zenoh/provision_subscriber.ex, trg_lat_stats_upd
+    affected: 17468
+    fix: "Batch each law's provisions into one UPDATE ... FROM (VALUES ...) (or chunks), and make the update trigger skip the COUNT (updates don't change lat_count)"
+    status: open
+  - pattern: "Fresh trees Not the law's own subject: Not(conditional:at_work) on Merchant Shipping & Fishing Vessels (Noise / Vibration at Work) Regs, so orgs with at_work are categorically excluded"
+    category: tree-not
+    module: fractalaw tree compiler (L3-type defect)
+    affected: 2
+    fix: "Fractalaw: never Not a conditional code the law applies to (extend the L3 guard beyond territory)"
+    status: open
 ---
 
 # Session: LAT Parse via API Pilot (ACTIVE)
@@ -58,12 +75,12 @@ What it learns decides what the workflow API needs before an agent can run it.
 - ✅ Fractalaw handoff prepared (17 laws; waiting for Jason to launch):
   - Produce the law list and the preconditions (legal server up, snapshot of taxa and provision columns).
   - Jason launches fractalaw: parse → embed → classify (RunPod SLM) → reconcile → publish (law-level, then provisions).
-- ⬜ Receipt check, as for T4:
+- ✅ Receipt check, as for T4:
   - TaxaSubscriber received = updated, and ProvisionSubscriber counts match fractalaw's log.
   - Making changes against the snapshot.
   - Tree lint; application present.
-- ⬜ Benchmark `legal-lat-pilot`; record in the QQ meta Results table
-- ⬜ Write-up for the AI parsing workflow session: the step list with each step classed as mechanical, judgement or external launch; API gaps; timings; stop conditions an agent would need
+- ✅ Benchmark `2026-09-25T1821-legal-lat-pilot`, recorded in the QQ meta Results table
+- ✅ Write-up for the AI parsing workflow session (below): the step list with each step classed as mechanical, judgement or external launch; API gaps; timings; stop conditions an agent would need
 
 ## Dependencies
 
@@ -163,3 +180,55 @@ Everything else was mechanical.
   - Removed an `assert true` placeholder and dead helpers.
 - **`.githooks/pre-commit` now runs `mix compile --warnings-as-errors`.** It used to only notify; its README already claimed this.
 - **Legal's server restarted,** so the `provision_subscriber` GenServer change is live. The workflow key is loaded and all 7 subscribers are up.
+
+## Fractalaw publish and results (2026-09-25)
+
+**Receipt:**
+- **Law level:** TaxaSubscriber received 30 and updated 30, with 0 errors. That's 18 pilot laws (all verdict `making`) plus fractalaw's 12-law T4 correction (fitness-only). The T4 correction exists because a UK Act saying "extends to Northern Ireland" had been read as an NI-only application.
+- **Provisions:** ProvisionSubscriber received 18 of 18 laws and 17,468 of 17,468 provisions, 0 errors, with 10,508 now carrying DRRP. **It took 540s, about 32/s, unchanged from T4.** The statement-trigger fix sped up bulk inserts, but this path writes one provision per statement (bug logged above).
+- **Making, against `lat_pilot_taxa_snapshot_20260925`:** 0 flips. All 18 are now `enrichment`-sourced (they were legacy), and all have trees and application.
+- **Known gap (fractalaw):** law-level `significance_rating` is NULL for the 18.
+- **The 12 corrected T4 laws are now UK-wide.** Two other non-NI instruments are NI-only (the EU ETS regs `UK_uksi_2012_3038` and `2020_1369`). That's correct post-Brexit, and matches QQ's register "No".
+
+**Benchmark `legal-lat-pilot`:**
+- `both` 250 → 266; evaluable agreement 63.8% → **68.6%**; no_tree 28 → **6**; not_making 154 → 158 (the 4 amending SIs).
+
+**Attribution** (per-law triage transitions, nothing unexplained):
+- **Pilot:** 11 moved from no_tree to both. 7 now miss for tree reasons: 3 generic gate, 1 government actor, 1 material, and **2 disapplied by `Not(at_work)`** (fractalaw defect, logged).
+- **T4 correction:** 5 moved into both; 3 are new screener-only.
+- **Amending SIs:** 4 moved from no_tree to not_making.
+
+## Write-up for the AI parsing workflow
+
+**Steps, classified:**
+
+| Step | Kind | Notes |
+|---|---|---|
+| Pick laws (QQ-02 bucket a) | mechanical | from a worklist/view |
+| Amending-SI gate | **judgement** | Evidence gathering is mechanical (titles, "X Regulations are amended as follows" and insertion/substitution counts); the verdict is human (`mix making.review`). An agent can propose, a human confirms. |
+| Create, select and parse the LAT session | mechanical | via `/api/workflow/lat/*`; seconds per law |
+| LAT QA (`mix lat.qa`) | mechanical | warnings are routine; failures are a stop condition |
+| Confirm records | mechanical | after QA passes |
+| Snapshot + handoff list | mechanical | |
+| Launch fractalaw (SLM on RunPod) | **external launch** | Jason, and fractalaw asks him directly |
+| Receipt check (subscriber counts vs publish log, Making flips, trees, application) | mechanical | |
+| Benchmark and attribution | mechanical | a human reads the result |
+
+**API gaps before an agent can run it:**
+1. **Parsing is one SSE connection per law.** It needs a batch trigger plus a structured status endpoint (per-law stage results), rather than scraping event text.
+2. **No API for QA, snapshot or receipt checks.** They're mix tasks and SQL today and need endpoints or a workflow runner.
+3. **The Making review is CLI-only** (`mix making.review`). It needs an endpoint that records a human verdict with a note.
+4. **Subscriber throughput.** Provision ingest is ~32/s, so a 17k-provision publish takes ~9 minutes. The run has to wait for the ingest to drain before verifying.
+
+**Stop conditions an agent needs:**
+- any stage error, or a LAT QA failure;
+- a persist timeout;
+- a Making flip from true to false on enrichment;
+- subscriber received ≠ updated;
+- ingest going idle before the expected count is reached.
+
+**Human time needed:** the amending-SI verdict (minutes) and the fractalaw launch. The rest was debugging bugs this pilot surfaced, all now fixed except provision batching.
+
+**Bugs the pilot surfaced (7):**
+- **Fixed (5):** the `lat` view missing `sub_provision` (LAT persist broken since 12 Aug), the O(n²) stats trigger, orphan annotations, wrong record status, and dropped Ash notifications.
+- **Open (2):** provision batching (legal) and `Not(at_work)` (fractalaw).
