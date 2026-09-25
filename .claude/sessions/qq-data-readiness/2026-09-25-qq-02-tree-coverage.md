@@ -65,3 +65,8 @@ Measured with `mix screener.benchmark … --label legal-02-coverage`, compared w
 - Trees for QQ register laws: `no_tree` 74 → 28 (benchmark `legal-t4`). 30 laws moved from no_tree to both, and `UK_ukpga_1990_9` now has a tree.
 - The in-force Making corpus has 613 trees (was 546).
 - Still outstanding: the provision-level publish for the new laws (the SLM is still running), and the 35 laws awaiting LAT.
+- **Provision-level publish (after the position SLM), 2026-09-25:**
+  - ProvisionSubscriber received 63 of 63 laws and 32,638 of 32,638 provisions, exactly matching fractalaw's log, with 0 errors and 0 warnings.
+  - Against `t4_provision_snapshot_20260925`: 11,570 provisions changed, and provisions with DRRP classifications went from 8,406 to 19,805 across the 63 laws.
+  - Throughput is about 30 provisions/s (one law at a time), so large Acts take minutes.
+  - Not sent: `UK_ukpga_1933_13` and `UK_ukpga_1947_41`, which have no DRRP actors.
