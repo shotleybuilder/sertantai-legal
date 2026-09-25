@@ -50,9 +50,7 @@ defmodule Mix.Tasks.Making.Review do
       with {:ok, [law]} <- LegalRegister |> Ash.Query.filter(name == ^name) |> Ash.read(),
            {:ok, updated} <-
              Making.record(law, %{making_review: verdict}, "making_review", note: note) do
-        Mix.shell().info(
-          "#{name}: is_making=#{updated.is_making} (#{updated.is_making_source}: #{updated.is_making_reason})"
-        )
+        Mix.shell().info("#{name}: is_making=#{updated.is_making} (#{updated.is_making_reason})")
       else
         {:ok, []} -> Mix.shell().error("#{name}: not found")
         error -> Mix.shell().error("#{name}: #{inspect(error)}")

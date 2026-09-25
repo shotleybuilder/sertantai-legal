@@ -16,6 +16,17 @@ defmodule SertantaiLegalWeb.Router do
   end
 
   # Pipeline for Server-Sent Events - no content type restrictions
+  # Workflow API pipeline (AI parsing workflow, LAT pilot) — separate write key
+  pipeline :api_workflow do
+    plug(:accepts, ["json"])
+    plug(SertantaiLegalWeb.AiApiKeyPlug, env: "WORKFLOW_API_KEY")
+  end
+
+  # Workflow SSE (parse streams) — key-guarded, no :accepts (text/event-stream)
+  pipeline :workflow_sse do
+    plug(SertantaiLegalWeb.AiApiKeyPlug, env: "WORKFLOW_API_KEY")
+  end
+
   # EventSource sends Accept: text/event-stream which Phoenix's :accepts plug doesn't handle
   pipeline :sse do
     # No accepts plug - we set content-type manually in the controller
@@ -70,6 +81,26 @@ defmodule SertantaiLegalWeb.Router do
     get("/drrp/clause/queue", AiDrrpController, :queue)
     get("/sync/lat", AiSyncController, :lat)
     get("/sync/annotations", AiSyncController, :annotations)
+  end
+
+  # Workflow API: the same LAT session actions as the admin UI, for
+  # machine clients (Claude, later an agent) using X-API-Key: WORKFLOW_API_KEY.
+  scope "/api/workflow", SertantaiLegalWeb do
+    pipe_through(:workflow_sse)
+    get("/lat/sessions/:id/parse-stream", LatAdminController, :lat_parse_stream)
+  end
+
+  scope "/api/workflow", SertantaiLegalWeb do
+    pipe_through(:api_workflow)
+    post("/lat/sessions/preview", LatAdminController, :lat_session_preview)
+    post("/lat/sessions/from-view", LatAdminController, :create_lat_session_from_view)
+    post("/lat/sessions", LatAdminController, :create_lat_session)
+    get("/lat/sessions", LatAdminController, :lat_sessions)
+    get("/lat/sessions/:id", LatAdminController, :lat_session_show)
+    get("/lat/sessions/:id/records", LatAdminController, :lat_session_records)
+    patch("/lat/sessions/:id/records/select", LatAdminController, :lat_select)
+    post("/lat/sessions/:id/confirm", LatAdminController, :lat_confirm)
+    get("/lat/laws/:law_name", LatAdminController, :show)
   end
 
   # Authenticated SSE streaming (JWT auth)

@@ -54,4 +54,25 @@ defmodule SertantaiLegalWeb.AiApiKeyPlugTest do
       assert conn.status == 401
     end
   end
+
+  describe "env option" do
+    setup do
+      System.put_env("WORKFLOW_API_KEY", "workflow-key-67890")
+      on_exit(fn -> System.delete_env("WORKFLOW_API_KEY") end)
+      :ok
+    end
+
+    test "checks the named env var instead of AI_SERVICE_API_KEY", %{conn: conn} do
+      opts = AiApiKeyPlug.init(env: "WORKFLOW_API_KEY")
+
+      ok = conn |> put_req_header("x-api-key", "workflow-key-67890") |> AiApiKeyPlug.call(opts)
+      refute ok.halted
+
+      ai_key =
+        build_conn() |> put_req_header("x-api-key", @test_key) |> AiApiKeyPlug.call(opts)
+
+      assert ai_key.halted
+      assert ai_key.status == 401
+    end
+  end
 end
