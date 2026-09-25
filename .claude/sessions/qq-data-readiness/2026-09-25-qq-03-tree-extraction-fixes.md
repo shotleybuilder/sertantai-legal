@@ -48,7 +48,7 @@ Fix extraction **at source in fractalaw**. Legal keeps storing trees unchanged; 
 
   Baseline counts from 2026-09-25 go in the table below.
 - ⬜ Source-fix specs for fractalaw, one per defect L1–L8, in `docs/fitness/FRACTALAW-TREE-FIXES.md`. Each has the defect, why it's wrong, 2–3 example laws with the current tree fragment, and the expected tree. Point for L4: `construction` as a section-heading sense ("Interpretation and construction") should never become a material code.
-- ⬜ L6 (generic codes): agree with compliance first whether they become implied org facts (compliance evaluator) or stop gating (fractalaw). The metric effect is the same; the owner differs.
+- ✅ L6 decided (Jason, 2026-09-25): generic codes are **fitness-parser bugs** in fractalaw, not implied org facts. The fix is in fractalaw's fitness extraction, and this is the main screener lever. Worklist: `worklists/07-generic-code-gates.csv`.
 - ⬜ Hand the specs to Jason for fractalaw. Agree the order: fixes by about 6 Oct, then one combined re-enrichment of all 546 trees plus QQ-02's batch.
 - ⬜ Before re-enrichment: snapshot `compiled_applicability` (copy table `compiled_applicability_snapshot_20261006`, or a NAS backup).
 - ⬜ After re-enrichment: lint again; benchmark `legal-03-fractalaw-fixes`; diff trees for laws that moved from `both` to anything else.
@@ -119,3 +119,16 @@ Legal-side lint (in-force Making trees, 546 → 613):
 - **L6 (generic codes) is now the largest tree-side cause, at 55 laws. Its owner (compliance or fractalaw) must be decided.**
 
 Fractalaw follow-up raised: fractalatai #55. Law-level DRRP only rolls up the regex tier.
+
+## L6: generic codes are fitness-parser bugs (Jason, 2026-09-25)
+
+**The generic-code gates are extraction bugs in fractalaw's fitness parser.** They aren't org facts for compliance to imply. After T4 this is the main lever on the screener.
+
+**Evidence (in-force Making trees, positive material codes after T4):**
+- Legal-drafting vocabulary extracted as applicability:
+  - `regulations` 52, `person` 63, `offence` 46, `application` 38;
+  - `notice` 14, `order` 10, `purposes` 11, `enforcement` 9, `consent` 10, `contract` 10;
+  - `recipient` 14, and `well` 14 (probably "as well as").
+- Over-broad nouns: `land` 87, `body_corporate` 76, `building` 74, `licence` 71, `substances` 73.
+
+**Worklist `worklists/07-generic-code-gates.csv`:** the 94 QQ register laws that miss on a tree condition after T4 (55 `generic_code_gate` + 39 `material_condition_miss`), each with its positive material codes and the suspect ones flagged. 67 of the 94 carry suspect codes. The most common are `land` 19, `building` 17, `body_corporate` 13, `application` 11, `person` 11, `licence` 10 and `offence` 9.

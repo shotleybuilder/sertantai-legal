@@ -1,0 +1,95 @@
+law_name,title,family,material_codes,suspect_codes
+UK_asc_2023_3,Historic Environment (Wales) Act,💚 HISTORIC ENVIRONMENT,application body_corporate building carried_out land listed_building monument offence person planning succession,application body_corporate building land offence person planning
+UK_asp_2003_1,Local Government in Scotland Act,,dwelling evidence land offence,land offence
+UK_asp_2003_8,Building (Scotland) Act,💙 PUBLIC: Building Safety,building dangerous_building offence pursuant_to,building offence
+UK_asp_2004_6,Nature Conservation (Scotland) Act,💚 WILDLIFE & COUNTRYSIDE,body_corporate land nature_conservation regulatory_authority snh,body_corporate land
+UK_asp_2021_4,UK Withdrawal from the European Union (Continuity) (Scotland) Act,,publication purpose scottish statutory_instrument,
+UK_eudr_1989_391,Council Directive of 12 June 1989 on the introduction of measures to encourage i,💙 OH&S: Occupational / Personal Safety,area private public,area
+UK_eudr_1989_656,Council Directive of 30 November 1989 on the minimum health and safety requireme,💙 OH&S: Occupational / Personal Safety,personal_protective_equipment,
+UK_eudr_1990_269,Council Directive of 29 May 1990 on the minimum health and safety requirements f,💙 OH&S: Occupational / Personal Safety,manual_handling,
+UK_eudr_1990_270,Council Directive of 29 May 1990 on the minimum safety and health requirements f,💙 OH&S: Occupational / Personal Safety,display_screen_equipment,
+UK_eudr_1992_57,Council Directive 92/57/EEC of 24 June 1992 on the implementation of minimum saf,💙 OH&S: Occupational / Personal Safety,construction_sites,
+UK_eudr_1992_58,Council Directive 92/58/EEC of 24 June 1992 on the minimum requirements for the ,,area manufacture_of_products_at_work,area
+UK_eudr_1994_33,Council Directive 94/33/EC of 22 June 1994 on the protection of young people at ,💜 HR: Employment,employment_contract work,
+UK_eudr_1994_63,European Parliament and Council Directive 94/63/EC of 20 December 1994 on the co,,loading/unloading transport vehicle,transport
+UK_eudr_2006_126,Directive 2006/126/EC of the European Parliament and of the Council of 20 Decemb,💙 TRANSPORT: Road Safety,licence,licence
+UK_eudr_2011_92,Directive 2011/92/EU of the European Parliament and of the Council of 13 Decembe,💚 ENVIRONMENTAL PROTECTION,construction private public,
+UK_eudr_2012_27,Directive 2012/27/EU of the European Parliament and of the Council of 25 October,💚 ENERGY,2011 building energy_performance transport,building transport
+UK_eur_2007_1516,"Commission Regulation (EC) No 1516/2007 of 19 December 2007 establishing, pursua",💚 CLIMATE CHANGE,heat_pump,
+UK_eur_2008_304,"Commission Regulation (EC) No 304/2008 of 2 April 2008 establishing, pursuant to",💚 CLIMATE CHANGE,fire_protection_systems state,
+UK_eur_2012_1079,Commission Implementing Regulation (EU) No 1079/2012 of 16 November 2012 laying ,,aeronautics air_traffic aircraft_operator systems,
+UK_eur_2015_2067,Commission Implementing Regulation (EU) 2015/2067 of 17 November 2015 establishi,💚 CLIMATE CHANGE,carrying_out_activities natural_person,
+UK_mwa_2010_8,Waste (Wales) Measure,💚 WASTE,her_majesty_in_council offence,offence
+UK_ssi_2000_169,Sulphur Content of Liquid Fuels (Scotland) Regulations,💚 AIR QUALITY,fuel,
+UK_ssi_2002_167,Water and Sewerage Charges (Exemption) (Scotland) Regulations,💚 WATER & WASTEWATER,scottish_water,
+UK_ssi_2004_406,Building (Scotland) Regulations,💙 PUBLIC: Building Safety,building,building
+UK_ssi_2004_428,Building (Procedure) (Scotland) Regulations,💙 PUBLIC: Building Safety,building verifier,building
+UK_ssi_2004_508,Building (Fees) (Scotland) Regulations,💙 PUBLIC: Building Safety,building,building
+UK_ssi_2004_520,Environmental Information (Scotland) Regulations,💚 ENVIRONMENTAL PROTECTION,body_corporate scottish_public_services,body_corporate
+UK_ssi_2008_309,Energy Performance of Buildings (Scotland) Regulations,💚 BUILDINGS,penalty,
+UK_ssi_2009_266,Environmental Liability (Scotland) Regulations,💚 ENVIRONMENTAL PROTECTION,environmental powers_of_entry regulations,regulations
+UK_ssi_2011_24,Storage of Carbon Dioxide (Licensing etc.) (Scotland) Regulations,💚 CLIMATE CHANGE,action aware costs licence_holder offence regulation storage_permit updating_legislation where,offence
+UK_ssi_2013_286,Marine Licensing (Pre-application Consultation) (Scotland) Regulations,💚 MARINE & RIVERINE,licence,licence
+UK_ssi_2015_376,Designation of Nitrate Vulnerable Zones (Scotland) Regulations,💚 POLLUTION,farm land slurry storage_of_explosives,land
+UK_ssi_2015_383,Environmental Regulation (Enforcement Measures) (Scotland) Order,💚 ENVIRONMENTAL PROTECTION,appeal,
+UK_ssi_2016_146,Assessment of Energy Performance of Non-domestic Buildings (Scotland) Regulation,💚 BUILDINGS,building display_energy_certificate floor_area more_than_1000_square_metres regulations,building regulations
+UK_ssi_2016_93,Scottish Landfill Tax (Qualifying Material) Order,💚 WASTE,land,land
+UK_ssi_2017_101,Electricity Works (Environmental Impact Assessment) (Scotland) Regulations,💚 ENVIRONMENTAL PROTECTION,2000 body_corporate consent developer recipient,body_corporate consent recipient
+UK_ssi_2017_115,Marine Works (Environmental Impact Assessment) (Scotland) Regulations,💚 MARINE & RIVERINE,application recipient,application recipient
+UK_ssi_2017_282,Water Intended for Human Consumption (Private Supplies) (Scotland) Regulations,💚 WATER & WASTEWATER,water_industry,
+UK_ukpga_1954_68,Pests Act,💚 AGRICULTURE: Pesticides,land person rabbit,land person
+UK_ukpga_1990_9,Planning (Listed Buildings and Conservation Areas) Act,💚 TOWN & COUNTRY PLANNING,application building development grantee land listed_building outside_london planning planning_permission recovery,application building development land planning planning_permission
+UK_ukpga_1991_22,New Roads and Street Works Act,💙 TRANSPORT: Road Safety,concession construction crossing disability enactment highway land local_land_charge offence responsibility road street transport works,land offence transport
+UK_ukpga_1999_24,Pollution Prevention and Control Act,💚 POLLUTION,land licence pollution,land licence
+UK_ukpga_2003_37,Water Act,💚 WATER & WASTEWATER,abstraction application director_general_of_water_services exception_order licence person report scilly sewerage_system steps water_industry wia works wra,application licence person
+UK_ukpga_2005_14,Railways Act,💙 TRANSPORT: Rail Safety,agreement london purposes services transport,purposes transport
+UK_ukpga_2006_28,Health Act,💙 HEALTH: Public,body_corporate public_health transferred,body_corporate
+UK_ukpga_2015_30,Modern Slavery Act,💜 HR: Employment,application defendant offence offender person protection risk_assessment,application offence person
+UK_ukpga_2018_12,Data Protection Act,💙 PUBLIC: Data,body_corporate commissioner controller credit_reference data_protection data_subject designation international_organisation offence person personal_data processing processor recipient third_country,body_corporate offence person recipient
+UK_ukpga_2022_30,Building Safety Act,💙 PUBLIC: Building Safety,arbitration body_corporate building construction land ombudsman,body_corporate building land
+UK_uksi_1958_498,Dark Smoke (Permitted Periods) Regulations,💚 AIR QUALITY,emission emissions interpretation,interpretation
+UK_uksi_1971_161,Clean Air (Measurement of Grit and Dust from Furnaces) Regulations,💚 AIR QUALITY,building interpretation,building interpretation
+UK_uksi_1977_500,Safety Representatives and Safety Committees Regulations,💙 OH&S: Occupational / Personal Safety,interpretation,interpretation
+UK_uksi_1996_293,Fossil Fuel Levy (Scotland) Regulations,💚 ENERGY,person,person
+UK_uksi_1998_2451,Gas Safety (Installation and Use) Regulations,💙 OH&S: Gas & Electrical Safety,gas_fittings gas_work pipe,
+UK_uksi_1999_1006,Anti-Pollution Works Regulations,💚 WATER & WASTEWATER,hearing land regulations schedule,land regulations
+UK_uksi_1999_1148,Water Supply (Water Fittings) Regulations,💚 WATER & WASTEWATER,water_industry,
+UK_uksi_1999_1774,Wireless Telegraphy (Licence Charges) Regulations,,licence,licence
+UK_uksi_1999_916,Water Protection Zone (River Dee Catchment) (Procedural and Other Provisions) Re,💚 WATER & WASTEWATER,application protection_zone zone,application
+UK_uksi_2003_1082,Ammonium Nitrate Materials (High Nitrogen Content) Safety Regulations,💙 FIRE: Dangerous and Explosive Substances,ammonium_nitrate material,
+UK_uksi_2004_1309,Adventure Activities Licensing Regulations,💙 OH&S: Occupational / Personal Safety,licence,licence
+UK_uksi_2005_1378,Wireless Telegraphy (Licence Charges) Regulations,,licence,licence
+UK_uksi_2005_1803,General Product Safety Regulations,💙 PUBLIC: Consumer / Product Safety,area bill_of_suspension body_corporate consumer_protection_act_1987 court court_or_the_sheriff day high_court magistrates'_court market member miscarriage_of_justice notice notification offence officer order person procurator-fiscal product recall_notice regulation regulations report safe_product safety_requirements second_hand_products supply,area body_corporate notice offence order person regulations
+UK_uksi_2006_937,Waste Management (England and Wales) Regulations,💚 WASTE,regulations,regulations
+UK_uksi_2007_79,Sulphur Content of Liquid Fuels (England and Wales) Regulations,💚 AIR QUALITY,body_corporate,body_corporate
+UK_uksi_2008_2852,REACH Enforcement Regulations,💙 PUBLIC: Consumer / Product Safety,body_corporate enforcement nuclear person,body_corporate enforcement person
+UK_uksi_2008_410,Large and Medium-sized Companies and Groups (Accounts and Reports) Regulations,,company small,
+UK_uksi_2009_3344,Eels (England and Wales) Regulations,💚 FISHERIES & FISHING,acts_and_defaults body_corporate dam diversion_structure eel_catch_return eel_pass eel_screen eels entrance_to_the_conduit_or_channel fish_pass functions_of_management land licence members obstruction person,body_corporate land licence person
+UK_uksi_2011_2157,Supply of Machinery (Safety) (Amendment) Regulations,💙 OH&S: Occupational / Personal Safety,machinery,
+UK_uksi_2012_2782,Feed-in Tariffs Order,💚 ENERGY,application generator licence organisation renewable,application licence
+UK_uksi_2012_2788,Greenhouse Gas Emissions Trading Scheme (Amendment) (Charging Schemes) Regulatio,💚 CLIMATE CHANGE,greenhouse_gas,
+UK_uksi_2012_3118,Energy Performance of Buildings (England and Wales) Regulations,💚 BUILDINGS,air_conditioning_systems area building dwelling energy_performance person,area building person
+UK_uksi_2012_605,Town and Country Planning (Tree Preservation)(England) Regulations,💚 TOWN & COUNTRY PLANNING,inquiry land licence,land licence
+UK_uksi_2014_1643,Energy Savings Opportunity Scheme Regulations,💚 ENERGY,building energy_management energy_performance,building
+UK_uksi_2015_1640,Packaging (Essential Requirements) Regulations,💚 WASTE,packaging,
+UK_uksi_2015_168,Ozone-Depleting Substances Regulations,💚 ENVIRONMENTAL PROTECTION,body_corporate,body_corporate
+UK_uksi_2015_310,Fluorinated Greenhouse Gases Regulations,💚 CLIMATE CHANGE,body_corporate revenue_and_customs,body_corporate
+UK_uksi_2015_595,Town and Country Planning (Development Management Procedure) (England) Order,💚 TOWN & COUNTRY PLANNING,application area building development land planning planning_permission recipient,application area building development land planning planning_permission recipient
+UK_uksi_2015_596,Town and Country Planning (General Permitted Development) (England) Order,💚 TOWN & COUNTRY PLANNING,development land planning_permission recipient,development land planning_permission recipient
+UK_uksi_2016_359,Water Resources (Control of Pollution) (Oil Storage) (Wales) Regulations,💚 WATER & WASTEWATER,container delivery storage_of_explosives,
+UK_uksi_2016_618,Private Water Supplies (England) Regulations,💚 WATER & WASTEWATER,magistrates'_court water_industry,
+UK_uksi_2017_530,Town and Country Planning (Enforcement Notices and Appeals) (Wales) Regulations,💚 TOWN & COUNTRY PLANNING,recipient,recipient
+UK_uksi_2017_572,Infrastructure Planning (Environmental Impact Assessment) Regulations,💚 PLANNING & INFRASTRUCTURE,application development_consent environmental_impact_assessment,application
+UK_uksi_2018_506,Network and Information Systems Regulations,💙 PUBLIC: Data,digital_services network,
+UK_uksi_2020_971,"Environmental Protection (Plastic Straws, Cotton Buds and Stirrers) (England) Re",💚 ENVIRONMENTAL PROTECTION,enforcement,enforcement
+UK_uksi_2021_746,Town and Country Planning (Development Management Procedure and Section 62A Appl,💚 TOWN & COUNTRY PLANNING,planning_permission,planning_permission
+UK_uksi_2022_547,Fire Safety (England) Regulations,💙 FIRE,building,building
+UK_uksi_2023_753,Building Safety (Responsible Actors Scheme and Prohibitions) Regulations,💙 PUBLIC: Building Safety,applicable building dwelling land person,building land person
+UK_uksi_2023_982,Environmental Protection (Plastic Plates etc. and Polystyrene Containers etc.) (,💚 ENVIRONMENTAL PROTECTION,enforcement,enforcement
+UK_uksi_2024_46,Biodiversity Gain Site Register (Financial Penalties and Fees) Regulations,💚 WILDLIFE & COUNTRYSIDE,biodiversity,
+UK_uksi_2024_48,Biodiversity Gain Requirements (Irreplaceable Habitat) Regulations,💚 WILDLIFE & COUNTRYSIDE,planning_permission,planning_permission
+UK_wsi_2012_1903,Natural Resources Body for Wales (Establishment) Order,💚 ENVIRONMENTAL PROTECTION,application exercise_of_a_function land,application land
+UK_wsi_2016_359,Water Resources (Control of Pollution) (Oil Storage) (Wales) Regulations,💚 WATER & WASTEWATER,container delivery_pump flexible_pipe leakage_detection_device oil pipe regulation_6(4) regulations sanctions tank,regulations
+UK_wsi_2017_544,Town and Country Planning (Referred Applications and Appeals Procedure) (Wales) ,💚 TOWN & COUNTRY PLANNING,application building enforcement land recipient,application building enforcement land recipient
+UK_wsi_2017_567,Town and Country Planning (Environmental Impact Assessment) (Wales) Regulations,💚 TOWN & COUNTRY PLANNING,appellant development land planning_permission,development land planning_permission
+UK_wsi_2024_1268,Building (Registered Building Control Approvers etc.) (Wales) Regulations,💙 PUBLIC: Building Safety,2010_regulations building building_work,building
