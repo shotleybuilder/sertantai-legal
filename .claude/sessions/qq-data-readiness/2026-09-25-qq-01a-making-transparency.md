@@ -1,11 +1,94 @@
 ---
 session: "QQ-01a: Making Pipeline Transparency"
-status: active
+status: closed
 opened: 2026-09-25
+closed: 2026-09-25
+outcome: success
 parent: qq-data-readiness/2026-09-25-qq-00-meta.md
 issue: 161
-related: [25, 120]
-enables: [qq-data-readiness/2026-09-25-qq-01-making-triage]
+
+summary: >
+  is_making is now decided by one pure precedence resolver (review > enrichment >
+  legacy DRRP > triage > legacy is_making > detector) behind a single row-locked
+  write path that logs every change with writer, reason and dissent; a making_funnel
+  view shows each law's stage, evidence and next action. UK backfill applied:
+  72 laws became Making, none downgraded, 0 duty-bearing laws left not Making (was 33).
+
+decisions:
+  - what: One pure MakingResolver plus a single write path (Legal.Making.record/4) for every is_making writer
+    why: Four writers overwrote each other with no audit trail; record_change_log had 0 is_making entries corpus-wide
+    result: Triage, taxa, persister and admin PATCH all route through it; every change is logged with source, reason and dissent
+  - what: Provenance columns on legal_register only; the uk_lrt view was not rebuilt
+    why: All Making writers use LegalRegister, and definitions_parsed_at set the precedent; avoids a risky DROP VIEW
+    result: Migration 20260925121805, six additive columns; compliance's Electric column list is unaffected
+  - what: Row lock (SELECT ... FOR UPDATE) in the write path; rollback by snapshot table rather than a rollback task
+    why: Gemini review. Triage and Taxa subscribers can race; a snapshot is simpler than reversing change-log entries
+    result: making_backfill_snapshot_20260925 (20,704 rows)
+  - what: Added a legacy_is_making tier between triage and detector (after the Gemini review)
+    why: The first dry run let detector guesses overturn curated pre-resolver values (e.g. Computer Misuse Act)
+    result: UK detector flips fell from 39 to 10, all null → true
+  - what: Do not infer enrichment verdicts from historical duty_type
+    why: Fractalaw QQ T1/T2 showed fitness doesn't imply DRRP ran, and published aggregates were stale pre-hub regex output
+    result: Historical duty_type is legacy_drrp (upgrade-only); enrichment verdicts come only from fresh publishes
+  - what: Apply 72 of 77 flips; hold 5 whose human review conflicts with fractalaw's text review
+    why: Jason. The conflict turned on the amending-SI question
+    result: 5 held for QQ-01
+  - what: "Policy: an amending SI that inserts duties into a principal Act is not Making"
+    why: Jason. The duties belong to the principal instrument
+    result: Recorded in QQ-01 and in the fractalaw brief; fractalaw will exclude amendment instructions from DRRP aggregation
+  - what: Relabel stale LAT session records as 'cleaned' only where the law is now not Making
+    why: 39 Making laws also had deleted LAT; relabelling them would hide a real contradiction
+    result: 51 relabelled; 39 laws flagged review_lat_deleted
+  - what: AU backfill deferred
+    why: Jason. Out of QQ scope
+    result: 685 AU laws left for an AU session
+
+metrics:
+  resolver_tests: { making_resolver: 24, making_plan: 18, making_record_db: 2, backfill: 8, taxa_subscriber: 31 }
+  full_suite: { passed: 1703, skipped: 2 }
+  uk_backfill: { laws: 19812, flips_to_making: 72, downgrades: 0, held: 5, signals_decoded: 2029, duty_laws_not_making_before: 33, duty_laws_not_making_after: 0 }
+  uk_is_making_source: { legacy_is_making: 15809, legacy_drrp: 3428, detector: 182, review: 182, default: 171, triage: 40, unresolved_held: 5 }
+  making_funnel_uk: { lat_parse: 2729, lat_parse_or_review: 1000, enrich: 271, check_enrichment_output: 48, review_lat_deleted: 29, review_conflict: 20 }
+  lat_session_records: { stale_confirmed: 111, relabelled_cleaned: 51, left_for_making_laws: 60 }
+  benchmark_qq: { run: 2026-09-25T1306-legal-01a-transparency, both: "262 → 266", evaluable_agreement: "68.2% → 68.0%", register_recall: "47.9% → 48.6%", not_making: "163 → 155", screener_only: "172 → 138 (compliance 495976c)" }
+
+lessons:
+  - title: Test that a backfill is idempotent before the first --apply
+    detail: >
+      The legacy_is_making tier only counted values with no is_making_source. After the first apply set
+      source = legacy_is_making, a re-run treated those values as having no legacy evidence, and detector
+      guesses flipped 26 laws while about 15,600 were relabelled. Repaired from the snapshot with logged
+      reversals. A plan → apply → re-plan test on the pure plan/4 would have caught it before any data changed.
+    tag: data
+  - title: A pre-encoded JSON string passed to a jsonb param is stored as a JSON string, and Ash then can't load the record
+    detail: >
+      legal.backfill_making_provenance passed Jason.encode!(map) to Repo.query for a jsonb column. Postgrex
+      encoded it again, so 2,029 rows held a JSON string where the Ash :map type expected an object, and
+      Ash.get raised on those records. Pass maps directly; repair in SQL with (col #>> '{}')::jsonb.
+    tag: data
+  - title: A lower tier that "no-ops" on unknown data can still overturn curated values
+    detail: >
+      Ranking the detector above "keep the existing value" looked harmless, but legacy is_making values were
+      curated (Airtable) while detector signals had been stamped onto them later without changing is_making.
+      Pre-resolver values need their own tier.
+    tag: data
+  - title: Cross-check a backfill's flip list against independent evidence before applying
+    detail: >
+      Fractalaw's T1/T2 text review showed 5 human making_reviews were wrong for amending SIs, and showed
+      that historical fractalaw duty_type was stale. Both changed the design and the apply scope. Comparing the
+      dry-run CSV with the peer session's CSVs took minutes.
+    tag: data
+  - title: A concurrent change in the benchmark's other repo confounds before/after numbers
+    detail: >
+      Compliance shipped a jurisdiction exclusion (495976c) between the legal baseline and the legal-01a run,
+      so screener_only dropped 34 for reasons unrelated to legal. Attribute by tracing the changed laws through
+      triage.csv rather than reading the headline delta.
+    tag: tooling
+  - title: A "stale status" backfill can hide real contradictions
+    detail: >
+      Relabelling every confirmed-but-LAT-deleted session record as 'cleaned' would have hidden 39 laws that
+      are Making yet had their LAT deleted. Check the current verdict before assuming a status is merely stale.
+    tag: data
 
 bugs:
   - pattern: "Records with double-encoded making_detection_signals cannot be loaded by Ash at all (map type)"
@@ -59,9 +142,107 @@ bugs:
     module: legal_register.duty_type
     fix: "Record the source and timestamp of the enrichment verdict"
     status: open
+  - pattern: "is_making changes are never recorded in record_change_log (0 entries corpus-wide); Zenoh subscriber writes bypass ChangeLogger"
+    category: making-traceability
+    module: zenoh/triage_subscriber.ex, zenoh/taxa_subscriber.ex
+    affected: 19817
+    fix: "Every writer goes through Legal.Making.record/4, which logs a 'making' change-log entry"
+    status: fixed
+  - pattern: "TriageSubscriber overwrites is_making from the triage estimate, even when enrichment has already found duties"
+    category: making-precedence
+    module: zenoh/triage_subscriber.ex (apply_triage)
+    affected: 26
+    fix: "Triage records evidence only; MakingResolver ranks triage below enrichment and legacy DRRP"
+    status: fixed
+  - pattern: "In-force laws with Duty/Responsibility entries but is_making = false"
+    category: making-precedence
+    module: is_making writers (triage_subscriber, taxa_subscriber, staged_parser/persister)
+    affected: 33
+    fix: "UK resolver backfill: 0 remain"
+    status: fixed
+  - pattern: "TaxaSubscriber sets is_making = false for any payload without duty_type (derive_is_making) and for empty payloads (apply_housekeeping), whatever evidence the record already holds"
+    category: making-precedence
+    module: zenoh/taxa_subscriber.ex
+    fix: "Verdict only from non-null DRRP; empty payload records no_obligations evidence; the resolver decides"
+    status: fixed
+  - pattern: "LAT session records left at 'confirmed' after fractalaw-confirmed not-Making LAT was deleted (pre-dates the 'cleaned' status)"
+    category: lat-session-status
+    module: scrape_session_records (lat-reparse-shallow-2026-07-13)
+    affected: 51
+    fix: "51 records for not-Making laws relabelled 'cleaned'; the Making-law records are a separate bug"
+    status: fixed
+  - pattern: "duty_type has no provenance: cannot tell fractalaw enrichment from legacy regex/Airtable values"
+    category: making-traceability
+    module: legal_register.duty_type
+    fix: "making_enrichment_verdict + making_enriched_at record fresh enrichment; historical duty_type is legacy_drrp by definition"
+    status: fixed
+  - pattern: "MakingDetector and TriageSubscriber both write making_classification; a reparse re-runs the detector and erases the triage verdict"
+    category: making-traceability
+    module: scraper/staged_parser.ex (run_making_detection), zenoh/triage_subscriber.ex
+    fix: "making_classification_source column plus guard in Making.plan/4; backfilled from signal shape"
+    status: fixed
+  - pattern: "making_detection_signals stored as a double-encoded JSON string"
+    category: data-format
+    module: mix legal.backfill_making_provenance (probable)
+    affected: 2029
+    fix: "Writer fixed (no Jason.encode! for jsonb params); 2,029 rows decoded"
+    status: fixed
+  - pattern: "is_making has four writers and the human making_review verdict never wins"
+    category: making-precedence
+    module: zenoh/taxa_subscriber.ex, zenoh/triage_subscriber.ex, scraper/staged_parser.ex, legal/taxa/making_detector.ex
+    affected: 14
+    fix: "MakingResolver: review is the top tier; single write path"
+    status: fixed
+  - pattern: "Making laws whose LAT was deleted by a not-Making clean-up (Making verdict and deletion disagree)"
+    category: making-funnel
+    module: making_review (stale human reviews of amending SIs)
+    affected: 39
+    fix: "Re-review in QQ-01 (making_funnel.next_action = review_lat_deleted); re-parse LAT for any that stay Making"
+    status: open
+  - pattern: "AU laws with making_review = 'making' but is_making null (au.apply_nsw_annotations never set is_making)"
+    category: making-precedence
+    module: mix au.apply_nsw_annotations
+    affected: 685
+    fix: "mix making.resolve --country au, in an AU session"
+    status: open
+
+artifacts:
+  - backend/lib/sertantai_legal/legal/taxa/making_resolver.ex
+  - backend/lib/sertantai_legal/legal/making.ex
+  - backend/lib/sertantai_legal/legal/making/backfill.ex
+  - backend/lib/mix/tasks/making.resolve.ex
+  - backend/lib/mix/tasks/making.review.ex
+  - backend/lib/sertantai_legal/zenoh/taxa_subscriber.ex
+  - backend/lib/sertantai_legal/zenoh/triage_subscriber.ex
+  - backend/lib/sertantai_legal/scraper/persister.ex
+  - backend/lib/sertantai_legal_web/controllers/uk_lrt_controller.ex
+  - backend/lib/mix/tasks/legal.backfill_making_provenance.ex
+  - backend/lib/sertantai_legal/legal/legal_register.ex
+  - backend/priv/repo/migrations/20260925121805_add_making_provenance.exs
+  - backend/priv/repo/migrations/20260925122809_add_making_funnel_view.exs
+  - backend/priv/repo/migrations/20260925123321_refine_making_funnel_next_action.exs
+  - backend/priv/repo/migrations/20260925131308_flag_making_laws_with_deleted_lat.exs
+  - backend/test/sertantai_legal/legal/taxa/making_resolver_test.exs
+  - backend/test/sertantai_legal/legal/making_test.exs
+  - backend/test/sertantai_legal/legal/making_record_test.exs
+  - backend/test/sertantai_legal/legal/making/backfill_test.exs
+  - backend/data/code-reviews/2026-09-25-qq-01a-making-transparency-design.md
+  - backend/data/reports/making/resolve-20260925T1237.csv
+  - .claude/plans/qq-fractalaw-brief.md
+  - "DB: making_backfill_snapshot_20260925"
+
+depends_on:
+  - 2026-09-25-qq-00-meta.md
+  - 2026-07-13-issue-120.md
+  - qq-requirements/2026-07-28-bms-lat-parse.md
+
+enables:
+  - "QQ-01 QQ Making triage (5 held laws, 39 review_lat_deleted, cleanup list)"
+  - "Fractalaw T4 publish under the TaxaSubscriber contract"
+  - Traceable is_making for compliance's screener corpus
 ---
 
-# Session: QQ-01a Making Pipeline Transparency (ACTIVE)
+# Session: QQ-01a Making Pipeline Transparency (CLOSED)
 
 ## Problem
 
@@ -112,10 +293,10 @@ Goal: every Making decision can be traced to its source and evidence. One resolv
 - ✅ UK dry run: **76 flips, all to Making, no downgrades**. Report: `backend/data/reports/making/resolve-20260925T1227.csv`
 - ✅ Jason signed off on 72 of the 77 flips. The other 5 are held for QQ-01, because their human review conflicts with fractalaw's T1/T2 text review (`--exclude`).
 - ✅ UK applied. Net change against `making_backfill_snapshot_20260925`: **72 laws became Making, with no downgrades**. 0 in-force Duty/Responsibility laws remain with `is_making = false` (was 33). 20 triage conflicts are now visible in `making_funnel`. A second dry run changes nothing, so the backfill is idempotent.
-- ⏸️ AU: 685 laws have `making_review = 'making'` but null `is_making`. Jason: leave for an AU session.
+- ⏸️ AU: 685 laws have `making_review = 'making'` but null `is_making` (deferred: Jason, leave for an AU session)
 - ✅ `mix making.review LAW… --verdict making|not_making --note …`. The note is stored on the change-log entry (`Making.record/4` `:note` option).
 - ✅ Benchmark `2026-09-25T1306-legal-01a-transparency`. Effect of this session: `both` +4, and 4 QQ laws moved from not_making to no_tree (they join the QQ-02 queue). The drop in screener_only from 172 to 138 is compliance's own jurisdiction exclusion (commit `495976c`, 12:35), not ours.
-- ⬜ Post the numbers on #161 (Jason to confirm)
+- ✅ Posted on #161: https://github.com/shotleybuilder/sertantai-legal/issues/161#issuecomment-5832999577
 
 ## Dependencies
 
