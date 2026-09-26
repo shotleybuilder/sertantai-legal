@@ -66,7 +66,7 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ✅ Decision (Jason, 2026-09-26): `sort_key` is included in the hash. Final row line: `section_id \t sort_key \t normalise(text) \n` (sort_key as-is, NULL → ""). The LatParser sort_key fix will therefore self-heal through the manifest. New vectors were sent to fractalaw: synthetic (sort_key `00001~`) `79bc96ea…f07b`, empty law `e3b0c442…b855`.
 - ✅ Contract amendments agreed by fractalaw (row set = all served rows; explicit White_Space set; event metadata). Synthetic vector `f6ae5038…f8a5` and empty-law vector sent; a checked-in fixture law vector is to follow from the LatHash tests.
 
-- ⬜ Fractalaw live cross-check: query `lat-manifest/*` and compare with its own implementation over the rows it pulls
+- ✅ Fractalaw live cross-check (2026-09-26): 0 mismatches. All 3 vectors match its independent Python implementation. `lat-manifest/*` over Zenoh (Arrow) returned 980 laws; fractalaw pulled `lat/{law}` for all 980 and recomputed, with 980/980 matching on hash and row_count (~14 s pass). A no-LAT law gives row_count 0 + the empty hash; `?format=json` works. Note: `lat/{law}` for a no-LAT law replies with a zero-length payload, not an empty Arrow stream, which fractalaw treats as 0 rows.
 - ⏸️ Migration `down` not exercised (rollback denied in this session); it restores the 20260925161749 trigger functions verbatim
 
 ## Dependencies
