@@ -1,6 +1,6 @@
 ---
 session: "QQ-01: QQ Making Triage"
-status: active
+status: suspended
 opened: 2026-09-25
 parent: qq-data-readiness/2026-09-25-qq-00-meta.md
 issue: 161
@@ -8,7 +8,7 @@ related: [25, 120]
 depends_on: [qq-data-readiness/2026-09-25-qq-01a-making-transparency]
 ---
 
-# Session: QQ-01 QQ Making Triage (ACTIVE)
+# Session: QQ-01 QQ Making Triage (SUSPENDED)
 
 ## Problem
 
@@ -47,6 +47,16 @@ In total: **81 are QQ register cleanup on the funnel's own verdict** (C1 + X1 + 
 ## Policy (Jason, 2026-09-25)
 
 An amending instrument that inserts duties into a principal Act or SI is **not Making**. The duties belong to the principal instrument. QQ register entries for such instruments are register cleanup.
+
+## Suspended (2026-09-26)
+
+Waiting on fractalaw, which parked the 62-law run on Jason's instruction until fractalatai #55 (DRRP roll-up from reconciled provisions) and #57 (stop processing inserted text) land.
+
+To resume:
+1. Launch the parked run (Jason).
+2. Receipt check, then compare fractalaw's verdicts with the approved batch (`worklists/09`); only disagreements go to Jason.
+3. Cleanup list and benchmark.
+4. P1: decide the smaller out-of-scope Acts. The large Acts wait for #166; the PDF-only laws for #165.
 
 ## Todo
 
