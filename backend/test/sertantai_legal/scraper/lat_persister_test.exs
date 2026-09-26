@@ -196,6 +196,23 @@ defmodule SertantaiLegal.Scraper.LatPersisterTest do
       assert [["#{name}:reg.3", nil, "dropped", nil]] == renames(name)
     end
 
+    test "legacy_id alone is carried when matched but does not trip the gate", %{
+      name: name,
+      law: law
+    } do
+      Repo.query!(
+        "UPDATE legal_articles SET drrp_types = NULL, duty_family = NULL, taxa_enriched_at = NULL, legacy_id = 'L-' || section_id WHERE law_name = $1",
+        [name]
+      )
+
+      Repo.query!("UPDATE legal_articles SET text = 'Dup.' WHERE law_name = $1", [name])
+
+      new_rows =
+        for n <- 1..2, do: row(name, n + 10, %{text: "Dup.", section_id: "#{name}:x.#{n}"})
+
+      assert {:ok, %{ambiguous: 3}} = LatPersister.persist(new_rows, name, law.id)
+    end
+
     test "the gate refuses to lose enrichment on unchanged text, keeping the old LAT", %{
       name: name,
       law: law

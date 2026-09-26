@@ -38,7 +38,7 @@ defmodule SertantaiLegal.Scraper.LatPersister.Carry do
   @doc """
   Existing rows for the law: `%{section_id, text, position, enriched, values}`
   where `values` holds the carried columns (atom keys) and `enriched` is true
-  when any of them is set.
+  when any of them other than `legacy_id` is set.
   """
   @spec load_existing(String.t(), [String.t()]) :: [map()]
   def load_existing(law_name, columns) do
@@ -60,10 +60,18 @@ defmodule SertantaiLegal.Scraper.LatPersister.Carry do
         section_id: id,
         text: text,
         position: pos,
-        enriched: Enum.any?(vals, &(not is_nil(&1))),
+        enriched: enriched?(values),
         values: values
       }
     end
+  end
+
+  # Carried but not "enrichment" for the gate: legacy_id is an import-era
+  # identity (CSV annotation mapping), not derived work.
+  @not_enrichment [:legacy_id]
+
+  defp enriched?(values) do
+    Enum.any?(values, fn {k, v} -> k not in @not_enrichment and not is_nil(v) end)
   end
 
   @doc "Point control mappings and annotation section lists at renamed ids."
