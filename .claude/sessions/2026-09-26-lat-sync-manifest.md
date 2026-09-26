@@ -9,7 +9,7 @@ bugs:
     module: Mix.Tasks.Lat.FixSectionIds
     affected: "laws touched by the #120 fix"
     fix: "Emit a lat event (with lat_hash) per law after applying corrections; the manifest self-heals past misses"
-    status: open
+    status: fixed
   - pattern: "making_funnel asks for a LAT parse on revoked laws: 803 revoked laws have next_action lat_parse / lat_parse_or_review"
     category: funnel
     module: making_funnel view (next_action)
@@ -55,16 +55,19 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 
 ## Todo
 
-- ⬜ `LatHash`: one definition of the hash. Rows = exactly what the LAT queryable serves (all rows; NULL text → ""), ordered by section_id bytewise (`COLLATE "C"`). Each row contributes `section_id \t sort_key \t normalise(text) \n`, and the hash is the lowercase hex SHA-256 of the concatenation. `normalise` = NFC, then collapse runs of the explicit Unicode White_Space set to one space, then trim. SQL implementation for bulk use, pure Elixir implementation for tests.
-- ⬜ Shared test vectors with fractalaw: UK_ssi_2016_88, one Act, and a synthetic row containing NBSP/U+202F (Postgres `\s` misses U+00A0/1680/2007/202F, and 699 rows contain them)
-- ⬜ `DataServer` queryable `fractalaw/@{tenant}/data/legislation/lat-manifest/{law}` and `/lat-manifest/*`, returning `{law_name, row_count, lat_hash, updated_at}` (JSON; Arrow for `*`). Measured cost: 127 ms for the whole corpus, so compute on demand with no stored column.
-- ⬜ `lat` event metadata: add `lat_hash` and `row_count` on persist and on `lat_deleted` (row_count 0)
-- ⬜ Emit `lat` events from `lat.fix_section_ids` (the bug above)
-- ⬜ Test: the queryable's row set equals the hashed row set (guards against a future filter drifting between them)
+- ✅ `LatHash` (pure reference implementation) and the SQL function `lat_hash_for()`, held equal by tests over persisted rows with NBSP, U+202F, U+1680, U+2007, decomposed accents, empty-text rows and bytewise ordering. Line = `section_id \t sort_key \t normalise(text) \n`.
+- ✅ Shared vectors in `backend/test/fixtures/lat_hash/vectors.json` (synthetic, empty, fixture_law = LatParser on `test/fixtures/body_xml/with_schedules.xml`: 9 rows, 5 empty-text). Expected hashes computed by an independent Python implementation; legal pins them in `lat_hash_test.exs`.
+- ✅ `DataServer` queryable `lat-manifest/{law}` and `lat-manifest/*` via `Zenoh.LatManifest` (Arrow default, `?format=json`), declared live after a server restart. **Change of plan: the hash is stored, not computed on demand.** The earlier "127 ms" was a measurement artefact (Postgres skipped the hash inside `count(*)`); the real full-corpus cost is 8.4 s. Now `legal_register.lat_hash` is maintained by the statement-level LAT stats triggers (migration `20260926160743`). INSERT/DELETE refresh affected laws; UPDATE refreshes only laws whose (law_id, section_id, sort_key, text) changed (EXCEPT both ways), so enrichment updates cost nothing. The manifest read takes 57 ms. The dev backfill hashed 980 laws in 9.6 s, and lat_count = served rows for all 980.
+- ✅ `lat` events carry `row_count` + `lat_hash` via `LatEvents`, sent after commit. `LatPersister` previously notified inside the transaction, so the event could beat the commit. Covers persist (guarded so a failed event cannot turn a committed write into an error) and admin `lat_deleted` (0 + empty hash).
+- ✅ `lat.fix_section_ids` sends one `persist` event per affected law after commit (`reason: section_ids_fixed`). The trigger keeps `lat_hash` right for any raw-SQL path regardless.
+- ✅ The queryable and the hash share one row definition (`LatHash.Query.served_query/1`, used by `DataServer.fetch_lat_by_law`); tests assert the stored hash equals the hash of the served rows.
 - ✅ Classify the 76 hub-only laws. 66 are revoked, and legal holds no LAT for them (they include 9 of the #58 flips). 5 are regnal-year duplicates of modern names (e.g. `UK_ukpga_1875_Vict/38-39/17` → `UK_ukpga_1875_17`). 5 are in force with no LAT in legal, which is legal's gap: `UK_ssi_2005_157`, `UK_uksi_1998_892`, `UK_uksi_2015_10`, `UK_wsi_2014_3303`, `UK_ukpga_1994_27`.
 - ✅ LAT-parsed the 5 in-force hub-only laws (session `lat-parse-hub-only-in-force-2026-09-26-1504`): UK_ssi_2005_157 has 258 rows, UK_uksi_2015_10 141, UK_wsi_2014_3303 133, UK_ukpga_1994_27 20 and UK_uksi_1998_892 9, with 0 errors. QA: 0 fail, 4 warn (sort breaks = the two parser bugs above). 4 were already `enriched` from stale hub LAT, so they need re-enrichment on the fresh LAT.
 - ✅ Decision (Jason, 2026-09-26): `sort_key` is included in the hash. Final row line: `section_id \t sort_key \t normalise(text) \n` (sort_key as-is, NULL → ""). The LatParser sort_key fix will therefore self-heal through the manifest. New vectors were sent to fractalaw: synthetic (sort_key `00001~`) `79bc96ea…f07b`, empty law `e3b0c442…b855`.
 - ✅ Contract amendments agreed by fractalaw (row set = all served rows; explicit White_Space set; event metadata). Synthetic vector `f6ae5038…f8a5` and empty-law vector sent; a checked-in fixture law vector is to follow from the LatHash tests.
+
+- ⬜ Fractalaw live cross-check: query `lat-manifest/*` and compare with its own implementation over the rows it pulls
+- ⏸️ Migration `down` not exercised (rollback denied in this session); it restores the 20260925161749 trigger functions verbatim
 
 ## Dependencies
 
