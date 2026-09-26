@@ -12,6 +12,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     fractalaw/@{tenant}/data/legislation/lat/{name}       -- LAT sections for a law
     fractalaw/@{tenant}/data/legislation/lat-manifest/{name} -- LAT row_count + lat_hash (#62)
     fractalaw/@{tenant}/data/legislation/lat-manifest/*   -- manifest for every law with LAT
+    fractalaw/@{tenant}/data/legislation/lat-renames/{name} -- section_id rename map (?since=)
+    fractalaw/@{tenant}/data/legislation/lat-renames/*    -- rename map for every law
     fractalaw/@{tenant}/data/legislation/amendments/{name} -- annotations for a law
     fractalaw/@{tenant}/data/legislation/definitions/{name} -- definitions for a law
     fractalaw/@{tenant}/data/secondary/sources            -- all secondary sources
@@ -36,7 +38,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   }
 
   alias SertantaiLegal.Scraper.LatHash.Query, as: LatHashQuery
-  alias SertantaiLegal.Zenoh.{ActivityLog, LatManifest}
+  alias SertantaiLegal.Zenoh.{ActivityLog, LatManifest, LatRenames}
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -132,6 +134,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
           ^prefix <> "/lat-manifest/" <> suffix ->
             LatManifest.fetch(LatManifest.target(suffix), format)
+
+          ^prefix <> "/lat-renames/" <> suffix ->
+            LatRenames.fetch(LatRenames.target(suffix), format, LatRenames.parse_since(params))
 
           ^prefix <> "/amendments/" <> law_name ->
             fetch_amendments_by_law(law_name, format)
@@ -659,6 +664,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       "#{prefix}/lrt/*",
       "#{prefix}/lat/*",
       "#{prefix}/lat-manifest/*",
+      "#{prefix}/lat-renames/*",
       "#{prefix}/amendments/*",
       "#{prefix}/definitions/*",
       "#{secondary_prefix}/sources",

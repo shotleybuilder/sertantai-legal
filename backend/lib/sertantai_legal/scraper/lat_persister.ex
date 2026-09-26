@@ -1,10 +1,19 @@
 defmodule SertantaiLegal.Scraper.LatPersister do
   @moduledoc """
-  Persists LAT rows to the database using DELETE + INSERT per law in a transaction.
+  Persists LAT rows per law in a transaction, **keeping provision enrichment**
+  across re-parses (Gemini review 2026-09-26).
 
-  Strategy: for a given law_name, delete all existing LAT rows then insert the
-  new rows. This is simple, idempotent, and avoids UPSERT complexity against
-  potentially mismatched CSV-era citations.
+  The law's rows are replaced (DELETE + INSERT, which avoids UPSERT complexity
+  against mismatched CSV-era citations), but first the existing rows are
+  matched to the new parse (`LatMerge.plan/2`) and every non-parser column
+  (fractalaw taxa, significance, embeddings, legacy_id…) is carried onto its
+  match: same id + same text, or a rename by unique/ordered text. Renames move
+  `control_mappings` / annotation references and are logged, with ambiguous
+  and dropped ids, in `lat_section_id_renames` for fractalaw.
+
+  Gate: if enriched rows would lose enrichment although their text still
+  exists in the new parse, the write is refused and the old LAT kept, unless
+  `force: true`. Enrichment on genuinely changed text is not carried (stale).
 
   ## Usage
 
@@ -13,16 +22,15 @@ defmodule SertantaiLegal.Scraper.LatPersister do
       # result = %{inserted: 835, deleted: 234}
   """
 
-  alias SertantaiLegal.Scraper.ExtentBackfill
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LatParser
-  alias SertantaiLegal.Scraper.LatEvents
+  alias SertantaiLegal.Scraper.{ExtentBackfill, LatEvents, LatMerge, LatParser}
+  alias SertantaiLegal.Scraper.LatPersister.Carry
 
   require Logger
 
-  # Batch size for insert_all. Larger batches = fewer round-trips.
-  # 2000 rows per batch handles most laws in 1-3 batches.
-  @batch_size 2000
+  # insert_all batches are bounded by PostgreSQL's 65,535 bind parameters:
+  # rows per batch = this budget / columns per row (~54 with carried columns).
+  @param_budget 60_000
 
   # Transaction timeout scales with row count.
   # Base 30s covers DELETE + small inserts; each 1000 rows adds 10s.
@@ -38,20 +46,25 @@ defmodule SertantaiLegal.Scraper.LatPersister do
     - `law_name` — e.g. `"UK_ukpga_1974_37"`
     - `law_id` — UUID of the uk_lrt record (required FK)
 
-  Returns `{:ok, %{inserted: N, deleted: N}}` on success, `{:error, reason}` on failure.
+  Options: `force: true` — persist even if the enrichment gate fails.
+
+  Returns `{:ok, %{inserted, deleted, carried, renamed, changed, ambiguous,
+  dropped, orphaned_mappings}}` on success, `{:error, reason}` on failure
+  (including a failed gate, which leaves the existing LAT untouched).
 
   An empty `rows` list is refused (`{:error, "no LAT rows ..."}`) and the
   law's existing LAT is kept: an empty parse means the body XML had no
   content (e.g. a scanned-PDF-only law), not that the law has no provisions.
   """
-  @spec persist([map()], String.t(), String.t()) ::
-          {:ok, %{inserted: non_neg_integer(), deleted: non_neg_integer()}}
-          | {:error, String.t()}
-  def persist([], law_name, _law_id) when is_binary(law_name) do
+  @spec persist([map()], String.t(), String.t(), keyword()) ::
+          {:ok, map()} | {:error, String.t()}
+  def persist(rows, law_name, law_id, opts \\ [])
+
+  def persist([], law_name, _law_id, _opts) when is_binary(law_name) do
     {:error, "no LAT rows to persist for #{law_name}; existing LAT kept"}
   end
 
-  def persist(rows, law_name, law_id) when is_list(rows) and is_binary(law_name) do
+  def persist(rows, law_name, law_id, opts) when is_list(rows) and is_binary(law_name) do
     insert_maps = LatParser.to_insert_maps(rows, law_id)
     row_count = length(insert_maps)
     timeout = @base_timeout_ms + div(row_count * @timeout_per_1000_rows, 1000)
@@ -59,6 +72,12 @@ defmodule SertantaiLegal.Scraper.LatPersister do
     result =
       Repo.transaction(
         fn ->
+          columns = Carry.carried_columns(Map.keys(hd(insert_maps)))
+          existing = Carry.load_existing(law_name, columns)
+          plan = LatMerge.plan(existing, insert_maps)
+          gate!(plan, law_name, Keyword.get(opts, :force, false))
+          insert_maps = carry_values(insert_maps, existing, plan, columns)
+
           # DELETE existing rows for this law
           {deleted, _} =
             Repo.query!(
@@ -70,24 +89,38 @@ defmodule SertantaiLegal.Scraper.LatPersister do
           # INSERT in batches
           inserted =
             insert_maps
-            |> Enum.chunk_every(@batch_size)
+            |> Enum.chunk_every(max(1, div(@param_budget, map_size(hd(insert_maps)))))
             |> Enum.reduce(0, fn batch, acc ->
               {count, _} = Repo.insert_all("lat", batch)
               acc + count
             end)
 
+          Carry.apply_renames(plan.renames)
+          if existing != [], do: Carry.log_changes(law_name, plan, Ecto.UUID.generate())
+
+          stats = %{
+            inserted: inserted,
+            deleted: deleted,
+            carried: map_size(plan.carry),
+            renamed: Enum.count(plan.renames, &(&1.old != &1.new)),
+            changed: length(plan.changed),
+            ambiguous: length(plan.ambiguous),
+            dropped: length(plan.removed),
+            orphaned_mappings: Carry.orphaned_mappings(plan.ambiguous ++ plan.removed)
+          }
+
           Logger.info(
-            "[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted} (#{row_count} rows, timeout #{timeout}ms)"
+            "[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted}, carried #{stats.carried}, renamed #{stats.renamed}, changed #{stats.changed}, ambiguous #{stats.ambiguous}, dropped #{stats.dropped} (timeout #{timeout}ms)"
           )
 
-          %{inserted: inserted, deleted: deleted}
+          stats
         end,
         timeout: timeout
       )
 
-    with {:ok, %{inserted: inserted}} <- result do
+    with {:ok, stats} <- result do
       refresh_extent(law_name)
-      notify_committed(law_name, inserted)
+      notify_committed(law_name, stats)
     end
 
     result
@@ -99,11 +132,33 @@ defmodule SertantaiLegal.Scraper.LatPersister do
 
   # After commit, so the event's lat_hash matches what the queryable serves
   # (fractalatai #62). Secondary to the write: failures are logged, not raised.
-  defp notify_committed(law_name, inserted) do
-    LatEvents.notify(law_name, "persist", %{count: inserted})
+  defp notify_committed(law_name, stats) do
+    LatEvents.notify(law_name, "persist", %{count: stats.inserted, renamed: stats.renamed})
   rescue
     e ->
       Logger.warning("[LatPersister] lat event failed for #{law_name}: #{Exception.message(e)}")
+  end
+
+  defp gate!(%LatMerge{lost_unchanged: []}, _law, _force), do: :ok
+  defp gate!(_plan, _law, true), do: :ok
+
+  defp gate!(%LatMerge{lost_unchanged: lost}, law_name, false) do
+    Repo.rollback(
+      "gate: #{length(lost)} enriched rows of #{law_name} would lose enrichment although their text is unchanged " <>
+        "(e.g. #{lost |> Enum.take(3) |> Enum.join(", ")}); existing LAT kept — review, or re-run with force: true"
+    )
+  end
+
+  # Every insert map gets every carried column (nil unless matched) so the
+  # insert batches share one header.
+  defp carry_values(insert_maps, existing, %LatMerge{carry: carry}, columns) do
+    blank = Map.new(columns, &{String.to_existing_atom(&1), nil})
+    by_id = Map.new(existing, &{&1.section_id, &1.values})
+
+    Enum.map(insert_maps, fn m ->
+      carried = carry |> Map.get(m.section_id) |> then(&Map.get(by_id, &1, %{}))
+      blank |> Map.merge(carried) |> Map.merge(m)
+    end)
   end
 
   # New LAT brings provision extents: re-resolve geo_extent for this law (#162).
