@@ -54,8 +54,8 @@ An amending instrument that inserts duties into a principal Act or SI is **not M
 - ✅ Fractalaw T1/T2 answered (see the results item below)
 - ✅ Re-derived the current state of the 163 from `making_funnel`: 9 now Making, 154 not (see Progress below)
 - ✅ Assembled the human-verdict batch (57 laws) with text evidence and proposals: `worklists/09-making-review-batch.csv`. Jason approved the proposals, **but chose the pipeline route instead of recording them** (see Decisions).
-- ⬜ Pipeline route: LAT session via `/api/workflow` for 45 laws with no LAT (`worklists/10-qq01-needs-lat.txt`), then QA and confirm
-- ⬜ Fractalaw handoff: fresh DRRP for 62 in-force laws (`worklists/11-qq01-fractalaw-handoff.txt`; the 57 batch plus 13 Q1, minus 8 revoked). Jason launches.
+- ✅ Pipeline route: LAT session `lat-parse-qq01-making-pipeline-2026-09-26-0802` via `/api/workflow`. 45 of 45 parsed in 122s total with 0 errors; QA 0 failures (44 routine warnings); 45 confirmed.
+- ✅ Fractalaw handoff sent: fresh DRRP for 62 in-force laws (`worklists/11-qq01-fractalaw-handoff.txt`). Snapshots `qq01_taxa_snapshot_20260926` (62) and `qq01_provision_snapshot_20260926` (6,855). **Waiting for Jason to launch.**
 - ⬜ Receipt check. Then compare fractalaw's verdicts with the approved batch; only disagreements go to Jason as human reviews (`mix making.review`).
 - ⬜ Re-review the 5 laws held out of the QQ-01a backfill. Their earlier `making_review = 'making'` conflicts with fractalaw's T1/T2 text review. Under the policy above, expect `not_making`; record it with `mix making.review`:
   - `UK_uksi_2008_198`: inserts TA 1968 ss97C–G
@@ -73,7 +73,9 @@ An amending instrument that inserts duties into a principal Act or SI is **not M
   - Correction to the brief: `UK_uksi_2025_140` and `UK_uksi_2018_24` have no duties.
 - ⬜ Q1 (13): create a LAT session (`lat-session-build`); the laws are already candidates by the DB rule. Then send them to fractalaw (brief T4, item 4).
 - ⬜ P1 (8): Jason decides, per Act, between parsing it and QQ cleanup.
-- ⬜ X2 (6): check whether legislation.gov.uk has body XML for them. If not, they're an explained gap.
+- ✅ X2 (6) is an explained gap: none has machine-readable body XML on legislation.gov.uk.
+  - The 4 EU directives (`UK_eudr_2000_78`, `2001_42`, `2002_15`, `2003_88`) are ~2.5KB metadata stubs. Directives bind member states and their duties sit in the transposing UK SIs, so they're **QQ register cleanup**.
+  - `UK_uksi_1979_791` (Forestry (Felling of Trees) Regs) and `UK_uksro_1947_805` (Compressed Acetylene Order) have no XML body (PDF-era). They can't enter LAT or fractalaw, so a manual Making call is needed if QQ relies on them.
 - ⬜ QQ cleanup list: `backend/data/reports/qq/register-cleanup-not-making.csv` (the 81, plus whatever T1, T2, P1 and X2 add), with the funnel evidence for each law
 - ⬜ Benchmark `legal-01-making` and record it in the meta Results table (no GitHub post: session docs are the record)
 
