@@ -32,13 +32,13 @@ bugs:
     category: lat_parser
     module: SertantaiLegal.Legal.Lat.Transforms.build_sort_key/2
     affected: "5,040 paragraph sort breaks in 545 laws (stored)"
-    fix: "Code fixed: the paragraph (P3) segment is letters-only (normalize_provision_to_sort_key(p, roman: false)); inserted (za)/(aa) keep their legislative order. Re-parsing a 20-law sample in memory cut paragraph breaks ~175 → 5. Stored data is not yet rewritten (awaiting Jason's decision)"
+    fix: "Code fixed: the paragraph (P3) segment is letters-only (normalize_provision_to_sort_key(p, roman: false)); inserted (za)/(aa) keep their legislative order. Re-parsing a 20-law sample in memory cut paragraph breaks ~175 → 5. Stored data rewritten in place (Jason: in-place now, rest later) with `mix lat.rewrite_sort_keys --apply`: 20,848 rows in 579 laws, snapshot `sort_key_rewrite_snapshot_20260926`. Stored paragraph breaks 5,040 → 1,930; the remainder is the older-format laws (see below)"
     status: fixed
   - pattern: "Signed rows get sort_key 000.000…, so every law's signed row sorts first while positioned last (755 laws)"
     category: lat_parser
     module: SertantaiLegal.Legal.Lat.Transforms.build_sort_key/2
     affected: 755
-    fix: "Code fixed: the signed row gets part segment 999, so it sorts after the body and before the schedules. Stored data is not yet rewritten"
+    fix: "Code fixed: the signed row gets part segment 999, so it sorts after the body and before the schedules. Stored data rewritten in place (same run): stored breaks 755 → 290; the remainder is the older-format laws"
     status: fixed
   - pattern: "LatParser loses the parent paragraph after a nested sub-paragraph: e.g. UK_wsi_2025_1321 reg.39(2)(d)(vi) is followed by reg.39(e), which should be reg.39(2)(e) (also reg.27(i), reg.44(d), reg.46(b))"
     category: lat_parser
@@ -86,6 +86,9 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 
 - ✅ Fractalaw live cross-check (2026-09-26): 0 mismatches. All 3 vectors match its independent Python implementation. `lat-manifest/*` over Zenoh (Arrow) returned 980 laws; fractalaw pulled `lat/{law}` for all 980 and recomputed, with 980/980 matching on hash and row_count (~14 s pass). A no-LAT law gives row_count 0 + the empty hash; `?format=json` works. Note: `lat/{law}` for a no-LAT law replies with a zero-length payload, not an empty Arrow stream, which fractalaw treats as 0 rows.
 - ⏸️ Migration `down` not exercised (rollback denied in this session); it restores the 20260925161749 trigger functions verbatim
+
+- ✅ In-place sort_key rewrite (`SortKeyRewrite` pure + `SortKeyRewrite.Store`, `mix lat.rewrite_sort_keys`): 20,848 rows in 579 laws, with enrichment and section_ids kept. The triggers refreshed lat_hash for all 579, and 0 of 980 stored hashes differ from `lat_hash_for()`. Fractalaw was told.
+- ⏸️ Re-parse the 386 older-format laws: after fractalaw's #62 diff-apply (see the open bug above)
 
 ## Dependencies
 
