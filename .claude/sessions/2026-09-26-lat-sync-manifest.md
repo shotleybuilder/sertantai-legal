@@ -40,18 +40,18 @@ bugs:
     affected: 755
     fix: "Code fixed: the signed row gets part segment 999, so it sorts after the body and before the schedules. Stored data rewritten in place (same run): stored breaks 755 → 290; the remainder is the older-format laws"
     status: fixed
-  - pattern: "LatParser loses the parent paragraph after a nested sub-paragraph: e.g. UK_wsi_2025_1321 reg.39(2)(d)(vi) is followed by reg.39(e), which should be reg.39(2)(e) (also reg.27(i), reg.44(d), reg.46(b))"
+  - pattern: "Apparent parent drop after nested sub-paragraphs (UK_wsi_2025_1321 reg.39(e), 27(i), 44(d), 46(b))"
     category: lat_parser
-    module: SertantaiLegal.Scraper.LatParser (context after P4)
-    affected: "unknown; seen in 1 of a 20-law sample"
-    fix: "Not fixed here (scope): it changes section_ids, which fractalaw keys tier data on, so it should land with or after fractalaw's #62 diff-apply (text-match carry-over)"
-    status: open
-  - pattern: "EU retained laws (eur/eudr) have article rows out of sort order after re-parse (e.g. UK_eur_2008_1272 34 breaks, UK_eudr_2013_35 9)"
+    module: none (source markup)
+    affected: 0
+    fix: "Not a bug: legislation.gov.uk's own XML closes the P2 before these items and gives them the official ids regulation-39-e etc.; legal's ids mirror the official ones. No fix and no id churn"
+    status: fixed
+  - pattern: "EU retained laws: every 'Article N' shared one sort_key provision segment (the letters 'AR'); labelled parts (PART7A, CHAPTER III) likewise"
     category: lat_parser
-    module: SertantaiLegal.Legal.Lat.Transforms / LatParser EU mode
-    affected: "EU laws; not measured corpus-wide"
-    fix: "Investigate the EU article/title numbering in sort_key (not the paragraph bug)"
-    status: open
+    module: SertantaiLegal.Legal.Lat.Transforms.normalize_provision_to_sort_key/2
+    affected: "65 EU laws (9,235 rows); 6 laws with labelled parts (258 rows)"
+    fix: "Code fixed: strip known number labels (ARTICLE, PART, CHAPTER…) and parentheses before building segments. Stored data rewritten in place (snapshots sort_key_rewrite_eu_snapshot_20260926 and sort_key_rewrite_part_snapshot_20260926). EU article breaks ~1,050 → 74"
+    status: fixed
   - pattern: "386 of 980 laws carry sort_keys from older parser generations (80,111 rows with 22 segments and no position; 56,444 with the crude 3-segment format), which the current code never produced"
     category: lat_data
     module: legal_articles.sort_key (historical)
@@ -90,9 +90,17 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ✅ In-place sort_key rewrite (`SortKeyRewrite` pure + `SortKeyRewrite.Store`, `mix lat.rewrite_sort_keys`): 20,848 rows in 579 laws, with enrichment and section_ids kept. The triggers refreshed lat_hash for all 579, and 0 of 980 stored hashes differ from `lat_hash_for()`. Fractalaw was told.
 - ⏸️ Re-parse the 386 older-format laws: after fractalaw's #62 diff-apply (see the open bug above)
 
-- ⬜ (Gemini review) `LatPersister`: merge on re-parse instead of DELETE+INSERT. Keep provision enrichment on rows with the same section_id and text, carry it across renames by unique text match, and blank only rows whose text changed. This also closes today's exposure: any re-parse of an enriched law wipes its enrichment (209,084 enriched rows in 637 laws).
-- ⬜ (Gemini review) Re-parse emits an explicit old→new section_id map (reuse the #120 text-join), flags ambiguous duplicates, migrates `control_mappings` / `amendment_annotations` in the same transaction, and sends the map to fractalaw.
-- ⬜ (Gemini review) Per-law gate: no enrichment lost on unchanged-text rows (report changed rows separately), FK counts preserved. Batch snapshots, then pilot (1 unenriched, 1 enriched with id changes, 5–10 laws), then batches of ~30.
+- ✅ (Gemini review) `LatPersister`: merge on re-parse instead of DELETE+INSERT. Keep provision enrichment on rows with the same section_id and text, carry it across renames by unique text match, and blank only rows whose text changed. This also closes today's exposure: any re-parse of an enriched law wipes its enrichment (209,084 enriched rows in 637 laws).
+- ✅ (Gemini review) Re-parse emits an explicit old→new section_id map (reuse the #120 text-join), flags ambiguous duplicates, migrates `control_mappings` / `amendment_annotations` in the same transaction, and sends the map to fractalaw.
+- ✅ (Gemini review) Per-law gate: no enrichment lost on unchanged-text rows (report changed rows separately), FK counts preserved. Batch snapshots, then pilot (1 unenriched, 1 enriched with id changes, 5–10 laws), then batches of ~30.
+
+- ✅ Merge built (`LatMerge` pure, `LatPersister.Carry` DB): carries every non-parser column, runs the gate, migrates FKs, and logs to `lat_section_id_renames`, served as the `lat-renames/{law}` / `*` queryable (?since=). Match types: unique_text, ordered_text, extent_tag.
+- ✅ The matcher was tuned on real drift using a dry run (`mix lat.reparse --dry-run`) over the 101 enriched older-format laws. Carried enriched rows: 64% → 87.6% (30,257 / 34,550). The remainder is repealed dots, changed text, heading rows the new parser omits, and 126 ambiguous; 10 laws fail the gate.
+- ✅ struct_hash (Jason, via fractalaw): the manifest and events carry it; trigger-maintained; vectors; fractalaw cross-checked 980/980.
+- ✅ NAS backup (`nas-backup.sh --archive`) before the rollout.
+- ✅ Pilot 1 (unenriched `UK_uksi_2006_1521`) passed.
+- ⬜ Re-parse the 284 unenriched older-format laws (batches of 30, snapshots `lat_reparse_unenriched_bNN`); running
+- ⬜ Enriched older-format laws (101): awaiting Jason's decision (see the dry-run report `data/reports/lat-reparse/preview-enriched-older-4.csv`)
 
 ## Dependencies
 
