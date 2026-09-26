@@ -90,9 +90,29 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ✅ In-place sort_key rewrite (`SortKeyRewrite` pure + `SortKeyRewrite.Store`, `mix lat.rewrite_sort_keys`): 20,848 rows in 579 laws, with enrichment and section_ids kept. The triggers refreshed lat_hash for all 579, and 0 of 980 stored hashes differ from `lat_hash_for()`. Fractalaw was told.
 - ⏸️ Re-parse the 386 older-format laws: after fractalaw's #62 diff-apply (see the open bug above)
 
+- ⬜ (Gemini review) `LatPersister`: merge on re-parse instead of DELETE+INSERT. Keep provision enrichment on rows with the same section_id and text, carry it across renames by unique text match, and blank only rows whose text changed. This also closes today's exposure: any re-parse of an enriched law wipes its enrichment (209,084 enriched rows in 637 laws).
+- ⬜ (Gemini review) Re-parse emits an explicit old→new section_id map (reuse the #120 text-join), flags ambiguous duplicates, migrates `control_mappings` / `amendment_annotations` in the same transaction, and sends the map to fractalaw.
+- ⬜ (Gemini review) Per-law gate: no enrichment lost on unchanged-text rows (report changed rows separately), FK counts preserved. Batch snapshots, then pilot (1 unenriched, 1 enriched with id changes, 5–10 laws), then batches of ~30.
+
 ## Dependencies
 
 - ✅ Contract proposed by fractalaw-a4 (2026-09-26); legal's changes sent: hash over all served rows, explicit whitespace set, event metadata
 - ✅ Fractalaw agreed the amended contract (2026-09-26)
 - ✅ LAT queryable already returns the complete row set (no paging)
 - ⬜ Fractalaw's #62 diff-apply (fractalaw will notify legal). It blocks the 386-law re-parse and the parent-drop section_id fix. Its text-match carry-over preserves tier data across id changes, and it treats sort_key-only changes (the 579 rewritten laws) as in-place updates. No fractalaw re-pulls until then.
+
+## Gemini review (2026-09-26)
+
+Brief: `backend/data/code-reviews/2026-09-26-lat-sync-enrichment-brief.md`. Review (gemini-2.5-pro): `backend/data/code-reviews/2026-09-26-lat-sync-enrichment-review.md`.
+
+Adopted:
+- Legal owns preservation: merge in `LatPersister`, not recovery by fractalaw republish.
+- An explicit id map from legal.
+- FK migration in the same transaction.
+- Per-law gates, batch snapshots and a pilot.
+- The race between an enrichment publish and a re-parse, which the merge also fixes.
+
+Adjusted:
+- The gate is "no enrichment lost on rows whose text is unchanged", not equal enriched-row counts: enrichment on genuinely changed text is stale and should be re-derived.
+- No separate staging environment or multi-week phases: dev is the only environment of record. Use a NAS backup and batch snapshot tables, and do the pilot on dev.
+- `position` stays out of the hash by design, because it is derived from sort order.
