@@ -28,6 +28,18 @@ bugs:
     affected: 3
     fix: "Re-check live status against legislation.gov.uk; rename the regnal-year record"
     status: open
+  - pattern: "LatParser sort_key encodes the lettered items (c)/(d) as Roman numerals 100/500 in the roman slot, so reg.6(4)(c),(d) sort after (g) (e.g. UK_uksi_2015_10, UK_wsi_2014_3303). The LAT queryable orders by sort_key, so fractalaw receives these rows out of order"
+    category: lat_parser
+    module: SertantaiLegal.Scraper.LatParser (sort_key encoding of paragraph numbers)
+    affected: "likely most of the 5,040 paragraph sort breaks in 545 laws (corpus-wide mix lat.qa sort_order)"
+    fix: "Disambiguate letter vs Roman by the element level (P3/P4) or the sibling sequence, not the character; re-parse affected laws"
+    status: open
+  - pattern: "Signed rows get sort_key 000.000…, so every law's signed row sorts first while positioned last (755 laws; the mix lat.qa 'sort breaks' warning)"
+    category: lat_parser
+    module: SertantaiLegal.Scraper.LatParser (signed row sort_key)
+    affected: 755
+    fix: "Give the SignedSection a sort_key after the body and before the schedules (or at the end)"
+    status: open
 ---
 
 # Session: LAT Sync Manifest, legal side of fractalatai #62 (PENDING)
@@ -50,7 +62,7 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ⬜ Emit `lat` events from `lat.fix_section_ids` (the bug above)
 - ⬜ Test: the queryable's row set equals the hashed row set (guards against a future filter drifting between them)
 - ✅ Classify the 76 hub-only laws. 66 are revoked, and legal holds no LAT for them (they include 9 of the #58 flips). 5 are regnal-year duplicates of modern names (e.g. `UK_ukpga_1875_Vict/38-39/17` → `UK_ukpga_1875_17`). 5 are in force with no LAT in legal, which is legal's gap: `UK_ssi_2005_157`, `UK_uksi_1998_892`, `UK_uksi_2015_10`, `UK_wsi_2014_3303`, `UK_ukpga_1994_27`.
-- ⬜ LAT-parse the 5 in-force hub-only laws (via the workflow API)
+- ✅ LAT-parsed the 5 in-force hub-only laws (session `lat-parse-hub-only-in-force-2026-09-26-1504`): UK_ssi_2005_157 has 258 rows, UK_uksi_2015_10 141, UK_wsi_2014_3303 133, UK_ukpga_1994_27 20 and UK_uksi_1998_892 9, with 0 errors. QA: 0 fail, 4 warn (sort breaks = the two parser bugs above). 4 were already `enriched` from stale hub LAT, so they need re-enrichment on the fresh LAT.
 - ✅ Contract amendments agreed by fractalaw (row set = all served rows; explicit White_Space set; event metadata). Synthetic vector `f6ae5038…f8a5` and empty-law vector sent; a checked-in fixture law vector is to follow from the LatHash tests.
 
 ## Dependencies
