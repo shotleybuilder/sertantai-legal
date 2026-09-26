@@ -71,7 +71,8 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   @doc """
   Snapshot, then re-parse `laws` in order. Options: `snapshot` (table name,
   required), `parse_fn` (`law_name -> {:ok, result}`; default
-  `LatStagedParser.parse/1`), `on_law` (callback per law report).
+  `LatStagedParser.parse/2`), `force` (bypass the enrichment gate — for
+  laws whose loss has been accepted), `on_law` (callback per law report).
   """
   @spec run([String.t()], keyword()) :: %{
           status: :ok | {:stopped, String.t()},
@@ -79,7 +80,8 @@ defmodule SertantaiLegal.Scraper.LatReparse do
         }
   def run(laws, opts) do
     table = Keyword.fetch!(opts, :snapshot)
-    parse_fn = Keyword.get(opts, :parse_fn, &LatStagedParser.parse/1)
+    force = Keyword.get(opts, :force, false)
+    parse_fn = Keyword.get(opts, :parse_fn, &LatStagedParser.parse(&1, force: force))
     on_law = Keyword.get(opts, :on_law, fn _ -> :ok end)
 
     snapshot!(laws, table)

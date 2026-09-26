@@ -6,6 +6,7 @@ defmodule Mix.Tasks.Lat.Reparse do
       mix lat.reparse --laws UK_uksi_2010_2221,UK_ssi_2000_95 --tag pilot1
       mix lat.reparse --older-format --limit 30 --offset 0 --tag batch01
       mix lat.reparse --older-format --list          # just list the candidates
+      mix lat.reparse --laws A,B --force --tag x     # bypass the enrichment gate (accepted loss)
       mix lat.reparse --older-format --enriched --dry-run --tag preview
                                                       # plan only, persist nothing
 
@@ -34,7 +35,8 @@ defmodule Mix.Tasks.Lat.Reparse do
           tag: :string,
           list: :boolean,
           dry_run: :boolean,
-          enriched: :boolean
+          enriched: :boolean,
+          force: :boolean
         ]
       )
 
@@ -60,7 +62,7 @@ defmodule Mix.Tasks.Lat.Reparse do
 
       true ->
         tag = opts[:tag] || Mix.raise("--tag is required (snapshot and report name)")
-        reparse(laws, tag)
+        reparse(laws, tag, opts)
     end
   end
 
@@ -102,12 +104,13 @@ defmodule Mix.Tasks.Lat.Reparse do
     write_csv(tag, @preview_columns, reports)
   end
 
-  defp reparse(laws, tag) do
+  defp reparse(laws, tag, opts) do
     Mix.shell().info("Re-parsing #{length(laws)} laws (snapshot lat_reparse_#{tag})")
 
     report =
       LatReparse.run(laws,
         snapshot: "lat_reparse_" <> tag,
+        force: Keyword.get(opts, :force, false),
         on_law: fn r ->
           Mix.shell().info(
             "  #{String.pad_trailing(r.law_name, 24)} rows #{r.rows_before}→#{r.rows_after} " <>

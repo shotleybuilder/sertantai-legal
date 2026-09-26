@@ -44,6 +44,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   ## Options
   - `on_progress` — `(progress_event -> :ok | :abort)` callback for SSE streaming
   - `pdf_backlog_dir` — where to queue PDFs of no-body laws (see `PdfBacklog`)
+  - `force` — persist even if `LatPersister`'s enrichment gate fails
 
   A law whose body XML yields no LAT rows (a scanned-PDF-only law) is not
   persisted — its existing LAT is kept — and its PDF alternatives are
@@ -149,16 +150,20 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
       lat_rows ->
         notify(on_progress, {:stage_complete, :parse_lat, :ok, "#{length(lat_rows)} rows"})
-        persist_stages(law_name, law_id, body_xml, lat_rows, on_progress, start)
+        persist_stages(law_name, law_id, body_xml, lat_rows, opts, start)
     end
   end
 
-  defp persist_stages(law_name, law_id, body_xml, lat_rows, on_progress, start) do
+  defp persist_stages(law_name, law_id, body_xml, lat_rows, opts, start) do
+    on_progress = Keyword.get(opts, :on_progress)
+
     # Stage 3: Persist LAT
     notify(on_progress, {:stage_start, :persist_lat, 3, @total_stages})
 
     {lat_result, lat_error} =
-      case LatPersister.persist(lat_rows, law_name, law_id) do
+      case LatPersister.persist(lat_rows, law_name, law_id,
+             force: Keyword.get(opts, :force, false)
+           ) do
         {:ok, result} ->
           notify(
             on_progress,
