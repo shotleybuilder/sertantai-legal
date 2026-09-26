@@ -55,7 +55,10 @@ An amending instrument that inserts duties into a principal Act or SI is **not M
 - ✅ Re-derived the current state of the 163 from `making_funnel`: 9 now Making, 154 not (see Progress below)
 - ✅ Assembled the human-verdict batch (57 laws) with text evidence and proposals: `worklists/09-making-review-batch.csv`. Jason approved the proposals, **but chose the pipeline route instead of recording them** (see Decisions).
 - ✅ Pipeline route: LAT session `lat-parse-qq01-making-pipeline-2026-09-26-0802` via `/api/workflow`. 45 of 45 parsed in 122s total with 0 errors; QA 0 failures (44 routine warnings); 45 confirmed.
-- ✅ Fractalaw handoff sent: fresh DRRP for 62 in-force laws (`worklists/11-qq01-fractalaw-handoff.txt`). Snapshots `qq01_taxa_snapshot_20260926` (62) and `qq01_provision_snapshot_20260926` (6,855). **Waiting for Jason to launch.**
+- ⏸️ Fractalaw handoff sent (parked, see below): fresh DRRP for 62 in-force laws (`worklists/11-qq01-fractalaw-handoff.txt`). Snapshots `qq01_taxa_snapshot_20260926` (62) and `qq01_provision_snapshot_20260926` (6,855). **Parked by fractalaw on Jason's instruction (2026-09-26)** until two fractalaw fixes land:
+  - fractalatai #55: law-level DRRP is rolled up from the regex tier only. A roll-up from reconciled `provision_actors` is being built.
+  - fractalatai #57: a bug, not a policy question. Fractalaw processes text that an amending law inserts into another instrument. Once fixed, insertion-only laws come back `no_obligations`, e.g. `UK_ssi_2005_22` and `UK_ssi_2012_148`.
+  - Fractalaw has noted the Fees-regulations policy (Making; DRRP decides) and the per-law verdict format for the publish log.
 - ⬜ Receipt check. Then compare fractalaw's verdicts with the approved batch; only disagreements go to Jason as human reviews (`mix making.review`).
 - ⬜ Re-review the 5 laws held out of the QQ-01a backfill. Their earlier `making_review = 'making'` conflicts with fractalaw's T1/T2 text review. Under the policy above, expect `not_making`; record it with `mix making.review`:
   - `UK_uksi_2008_198`: inserts TA 1968 ss97C–G
