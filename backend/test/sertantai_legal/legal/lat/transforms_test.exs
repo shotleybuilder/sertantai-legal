@@ -421,6 +421,51 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
       assert key_s3a < key_s125a
     end
 
+    test "lettered paragraphs (a)..(z) sort in order, including Roman-looking letters c, d, i, l, m, v, x" do
+      keys =
+        for l <- ?a..?z,
+            do: T.build_sort_key("paragraph", provision: "6", sub: "4", paragraph: <<l>>)
+
+      assert keys == Enum.sort(keys)
+      assert Enum.uniq(keys) == keys
+    end
+
+    test "inserted paragraphs sort where legislation puts them: (za) before (a), (aa) between (a) and (b)" do
+      k = &T.build_sort_key("paragraph", provision: "6", paragraph: &1)
+      assert k.("za") < k.("a")
+      assert k.("a") < k.("aa")
+      assert k.("aa") < k.("b")
+    end
+
+    test "Roman sub-paragraphs (i)..(xx) sort in numeric order" do
+      romans = ~w(i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx)
+
+      keys =
+        for r <- romans,
+            do:
+              T.build_sort_key("sub_paragraph",
+                provision: "6",
+                paragraph: "a",
+                sub_paragraph: r
+              )
+
+      assert keys == Enum.sort(keys)
+    end
+
+    test "Roman part numbers still convert (Part IV after Part III)" do
+      assert T.build_sort_key("part", part: "III") < T.build_sort_key("part", part: "IV")
+      assert T.build_sort_key("part", part: "IV") < T.build_sort_key("part", part: "V")
+    end
+
+    test "the signed row sorts after all body content and before schedules" do
+      signed = T.build_sort_key("signed", position: 40)
+      last_body = T.build_sort_key("paragraph", part: "12", provision: "250", paragraph: "z")
+      schedule = T.build_sort_key("schedule", schedule: "1", position: 41)
+
+      assert last_body < signed
+      assert signed < schedule
+    end
+
     test "sub_sections within same provision sort correctly" do
       key_s1_1 = T.build_sort_key("sub_section", provision: "1", sub: "1")
       key_s1_2 = T.build_sort_key("sub_section", provision: "1", sub: "2")

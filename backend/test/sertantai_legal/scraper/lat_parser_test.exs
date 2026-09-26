@@ -119,6 +119,33 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
   # ── Simple SI ──────────────────────────────────────────────────
 
+  describe "parse/2 sort_key order" do
+    test "rows sort by sort_key in document order: (a)..(i), signed, then schedules" do
+      items =
+        for l <- ~w(a b c d e f g h i),
+            do: "<P3><Pnumber>#{l}</Pnumber><P3para><Text>item #{l}</Text></P3para></P3>"
+
+      xml = """
+      <Legislation><Secondary><Body>
+      <P1group><P1><Pnumber>6</Pnumber><P1para>
+        <P2><Pnumber>4</Pnumber><P2para><Text>Conditions—</Text>#{Enum.join(items)}</P2para></P2>
+      </P1para></P1></P1group>
+      <SignedSection><Signatory><Para><Text>Signed.</Text></Para></Signatory></SignedSection>
+      </Body>
+      <Schedules><Schedule><Number>SCHEDULE 1</Number><ScheduleBody>
+        <P1group><P1><Pnumber>1</Pnumber><P1para><Text>Particular.</Text></P1para></P1></P1group>
+      </ScheduleBody></Schedule></Schedules>
+      </Secondary></Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2099_1", type_code: "uksi"})
+      by_position = Enum.sort_by(rows, & &1.position)
+      by_sort_key = Enum.sort_by(rows, & &1.sort_key)
+
+      assert Enum.map(by_sort_key, & &1.section_id) == Enum.map(by_position, & &1.section_id)
+    end
+  end
+
   describe "parse/2 with simple SI" do
     setup do
       xml = read_fixture("simple_si.xml")

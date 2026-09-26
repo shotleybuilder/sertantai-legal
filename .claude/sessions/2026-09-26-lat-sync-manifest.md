@@ -13,9 +13,9 @@ bugs:
   - pattern: "making_funnel asks for a LAT parse on revoked laws: 803 revoked laws have next_action lat_parse / lat_parse_or_review"
     category: funnel
     module: making_funnel view (next_action)
-    affected: 803
-    fix: "Exclude revoked (live ~ Revoked|Repealed|Abolished) from lat_parse* next actions; revoked laws are ceiling items, not work"
-    status: open
+    affected: 811
+    fix: "Migration 20260926163414: revoked laws (live Revoked|Repealed|Abolished) get no next_action; new revoked column. On dev: lat_parse 2,706 → 2,430, lat_parse_or_review 983 → 456, review_lat_deleted 8 → 0"
+    status: fixed
   - pattern: "Fractalaw enriched revoked laws from stale hub LAT that legal no longer holds; 9 of the 11 #58 false→true flips are revoked (e.g. PPC 2000, Water Quality 2000, Solvent Emissions 2004, Renewables Obligation 2009)"
     category: sync
     module: fractalaw hub / #62 manifest
@@ -28,17 +28,35 @@ bugs:
     affected: 3
     fix: "Re-check live status against legislation.gov.uk; rename the regnal-year record"
     status: open
-  - pattern: "LatParser sort_key encodes the lettered items (c)/(d) as Roman numerals 100/500 in the roman slot, so reg.6(4)(c),(d) sort after (g) (e.g. UK_uksi_2015_10, UK_wsi_2014_3303). The LAT queryable orders by sort_key, so fractalaw receives these rows out of order"
+  - pattern: "LatParser sort_key encodes the lettered items (c)/(d) as Roman numerals 100/500 (also i, l, m, v, x), so e.g. reg.6(4)(c),(d) sort after (g). The LAT queryable orders by sort_key, so fractalaw receives these rows out of order"
     category: lat_parser
-    module: SertantaiLegal.Scraper.LatParser (sort_key encoding of paragraph numbers)
-    affected: "likely most of the 5,040 paragraph sort breaks in 545 laws (corpus-wide mix lat.qa sort_order)"
-    fix: "Disambiguate letter vs Roman by the element level (P3/P4) or the sibling sequence, not the character; re-parse affected laws"
-    status: open
-  - pattern: "Signed rows get sort_key 000.000…, so every law's signed row sorts first while positioned last (755 laws; the mix lat.qa 'sort breaks' warning)"
+    module: SertantaiLegal.Legal.Lat.Transforms.build_sort_key/2
+    affected: "5,040 paragraph sort breaks in 545 laws (stored)"
+    fix: "Code fixed: the paragraph (P3) segment is letters-only (normalize_provision_to_sort_key(p, roman: false)); inserted (za)/(aa) keep their legislative order. Re-parsing a 20-law sample in memory cut paragraph breaks ~175 → 5. Stored data is not yet rewritten (awaiting Jason's decision)"
+    status: fixed
+  - pattern: "Signed rows get sort_key 000.000…, so every law's signed row sorts first while positioned last (755 laws)"
     category: lat_parser
-    module: SertantaiLegal.Scraper.LatParser (signed row sort_key)
+    module: SertantaiLegal.Legal.Lat.Transforms.build_sort_key/2
     affected: 755
-    fix: "Give the SignedSection a sort_key after the body and before the schedules (or at the end)"
+    fix: "Code fixed: the signed row gets part segment 999, so it sorts after the body and before the schedules. Stored data is not yet rewritten"
+    status: fixed
+  - pattern: "LatParser loses the parent paragraph after a nested sub-paragraph: e.g. UK_wsi_2025_1321 reg.39(2)(d)(vi) is followed by reg.39(e), which should be reg.39(2)(e) (also reg.27(i), reg.44(d), reg.46(b))"
+    category: lat_parser
+    module: SertantaiLegal.Scraper.LatParser (context after P4)
+    affected: "unknown; seen in 1 of a 20-law sample"
+    fix: "Not fixed here (scope): it changes section_ids, which fractalaw keys tier data on, so it should land with or after fractalaw's #62 diff-apply (text-match carry-over)"
+    status: open
+  - pattern: "EU retained laws (eur/eudr) have article rows out of sort order after re-parse (e.g. UK_eur_2008_1272 34 breaks, UK_eudr_2013_35 9)"
+    category: lat_parser
+    module: SertantaiLegal.Legal.Lat.Transforms / LatParser EU mode
+    affected: "EU laws; not measured corpus-wide"
+    fix: "Investigate the EU article/title numbering in sort_key (not the paragraph bug)"
+    status: open
+  - pattern: "386 of 980 laws carry sort_keys from older parser generations (80,111 rows with 22 segments and no position; 56,444 with the crude 3-segment format), which the current code never produced"
+    category: lat_data
+    module: legal_articles.sort_key (historical)
+    affected: 386
+    fix: "Re-parse those laws. But DELETE+INSERT wipes fractalaw provision enrichment (101 of them are enriched) and may shift section_ids, so do it after fractalaw's #62 diff-apply or with a provision republish"
     status: open
 ---
 

@@ -299,19 +299,26 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
       "019.040.001"
       iex> normalize_provision_to_sort_key("")
       "000.000.000"
-  """
-  @spec normalize_provision_to_sort_key(String.t() | nil) :: String.t()
-  def normalize_provision_to_sort_key(nil), do: "000.000.000"
-  def normalize_provision_to_sort_key(""), do: "000.000.000"
+      iex> normalize_provision_to_sort_key("c", roman: false)
+      "000.030.000"
 
-  def normalize_provision_to_sort_key(s) do
+  Options: `roman: false` treats the segment as letters only — for lettered
+  levels, where (c), (d), (i), (l), (m), (v), (x) are letters.
+  """
+  @spec normalize_provision_to_sort_key(String.t() | nil, keyword()) :: String.t()
+  def normalize_provision_to_sort_key(s, opts \\ [])
+  def normalize_provision_to_sort_key(nil, _opts), do: "000.000.000"
+  def normalize_provision_to_sort_key("", _opts), do: "000.000.000"
+
+  def normalize_provision_to_sort_key(s, opts) do
     s = s |> String.trim() |> String.upcase()
 
     if s == "" do
       "000.000.000"
     else
-      # Convert Roman numerals to integers before parsing
-      s = maybe_convert_roman(s)
+      # Convert Roman numerals to integers before parsing, unless the caller
+      # knows the level is lettered (`roman: false`, e.g. P3 paragraphs)
+      s = if Keyword.get(opts, :roman, true), do: maybe_convert_roman(s), else: s
 
       {base_num, suffix} = extract_leading_digits(s)
       segments = [base_num | parse_letter_suffixes(suffix, [])]
@@ -415,7 +422,7 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   Schedule segment uses "S" prefix (e.g., "S01") to sort after body content.
   """
   @spec build_sort_key(String.t(), keyword()) :: String.t()
-  def build_sort_key(_section_type, opts \\ []) do
+  def build_sort_key(section_type, opts \\ []) do
     schedule = Keyword.get(opts, :schedule)
     part = Keyword.get(opts, :part)
     chapter = Keyword.get(opts, :chapter)
@@ -432,6 +439,10 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
     # Schedule prefix: "S01" sorts after "000" (body content)
     sch_segment = if schedule, do: "S#{String.pad_leading(schedule, 2, "0")}", else: "000"
 
+    # The signed section has no hierarchy of its own: place it after all body
+    # content (part 999) and before the schedules, as in the document.
+    part = if section_type == "signed" and is_nil(schedule), do: "999", else: part
+
     # Position as final tiebreaker — ensures rows at the same hierarchy
     # position but different types (article vs note) get distinct sort keys
     pos_segment =
@@ -445,7 +456,8 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
         n.(heading_group),
         n.(provision),
         n.(sub),
-        n.(paragraph),
+        # P3 paragraphs are lettered: (c), (d), (i)… are letters, not Roman numerals
+        normalize_provision_to_sort_key(paragraph, roman: false),
         n.(sub_paragraph),
         pos_segment
       ]
