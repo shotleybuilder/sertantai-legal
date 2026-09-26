@@ -80,6 +80,7 @@ defmodule SertantaiLegal.Scraper.LatHashQueryTest do
              law_name: "UK_ssi_2099_none",
              row_count: 0,
              lat_hash: LatHash.empty_hash(),
+             struct_hash: LatHash.empty_hash(),
              updated_at: nil
            }
   end
@@ -137,12 +138,43 @@ defmodule SertantaiLegal.Scraper.LatHashQueryTest do
       assert elem(stored(name), 0) == served_hash(name)
     end
 
+    test "struct_hash is stored, equals the pure hash of served rows, and follows position-only changes",
+         %{name: name} do
+      stored_struct = fn ->
+        %{rows: [[h]]} =
+          Repo.query!("SELECT struct_hash FROM legal_register WHERE name = $1", [name])
+
+        h
+      end
+
+      served = fn ->
+        name |> Query.served_query() |> Repo.all() |> Enum.map(&Map.from_struct/1)
+      end
+
+      before = stored_struct.()
+      assert before == LatHash.struct_hash(served.())
+      assert before == Query.computed_struct_hash(name)
+
+      Repo.query!("UPDATE legal_articles SET position = position + 100 WHERE section_id = $1", [
+        "#{name}:reg.1"
+      ])
+
+      refute stored_struct.() == before
+      assert stored_struct.() == LatHash.struct_hash(served.())
+    end
+
     test "an enrichment-only update leaves it unchanged", %{name: name} do
       before = stored(name)
+
+      %{rows: [[struct_before]]} =
+        Repo.query!("SELECT struct_hash FROM legal_register WHERE name = $1", [name])
 
       Repo.query!("UPDATE legal_articles SET duty_family = 'x' WHERE law_name = $1", [name])
 
       assert stored(name) == before
+
+      assert %{rows: [[^struct_before]]} =
+               Repo.query!("SELECT struct_hash FROM legal_register WHERE name = $1", [name])
     end
 
     test "deleting all rows leaves the empty hash", %{name: name} do
@@ -155,6 +187,7 @@ defmodule SertantaiLegal.Scraper.LatHashQueryTest do
 
   test "event_metadata/1 carries row_count and lat_hash", %{name: name} do
     %{lat_hash: hash} = Query.for_law(name)
-    assert Query.event_metadata(name) == %{row_count: 4, lat_hash: hash}
+    %{struct_hash: struct} = Query.for_law(name)
+    assert Query.event_metadata(name) == %{row_count: 4, lat_hash: hash, struct_hash: struct}
   end
 end

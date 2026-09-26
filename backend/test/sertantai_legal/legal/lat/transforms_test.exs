@@ -452,6 +452,36 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
       assert keys == Enum.sort(keys)
     end
 
+    test "EU-style provision numbers ('Article 12A') sort by their number" do
+      k = &T.build_sort_key("article", part: "I", provision: &1)
+      assert k.("Article 2") < k.("Article 10")
+      assert k.("Article 10") < k.("Article 10A")
+      assert k.("Article 1") == T.build_sort_key("article", part: "I", provision: "1")
+
+      assert T.build_sort_key("sub_article", part: "I", provision: "Article 1", sub: "6") <
+               k.("Article 2")
+    end
+
+    test "labelled part / chapter values sort by their number: 'CHAPTER III', 'PART7A'" do
+      assert T.normalize_provision_to_sort_key("CHAPTER III") ==
+               T.normalize_provision_to_sort_key("III")
+
+      assert T.normalize_provision_to_sort_key("PART7A") ==
+               T.normalize_provision_to_sort_key("7A")
+
+      assert T.build_sort_key("chapter", chapter: "CHAPTER III") <
+               T.build_sort_key("chapter", chapter: "CHAPTER V")
+    end
+
+    test "an unlabelled letter prefix is kept: A1 is not 1" do
+      refute T.normalize_provision_to_sort_key("A1") == T.normalize_provision_to_sort_key("1")
+    end
+
+    test "a parenthesised paragraph '(c)' sorts as c" do
+      assert T.build_sort_key("paragraph", provision: "14", sub: "2", paragraph: "(c)") ==
+               T.build_sort_key("paragraph", provision: "14", sub: "2", paragraph: "c")
+    end
+
     test "Roman part numbers still convert (Part IV after Part III)" do
       assert T.build_sort_key("part", part: "III") < T.build_sort_key("part", part: "IV")
       assert T.build_sort_key("part", part: "IV") < T.build_sort_key("part", part: "V")

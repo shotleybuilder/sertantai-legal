@@ -5,7 +5,7 @@ defmodule SertantaiLegal.Zenoh.LatManifest do
       fractalaw/@{tenant}/data/legislation/lat-manifest/{law_name}
       fractalaw/@{tenant}/data/legislation/lat-manifest/*
 
-  Each entry is `{law_name, row_count, lat_hash, updated_at}` (see
+  Each entry is `{law_name, row_count, lat_hash, struct_hash, updated_at}` (see
   `SertantaiLegal.Scraper.LatHash`). Fractalaw compares `lat_hash` with the
   version it holds and re-pulls only laws that differ. A single law without LAT
   answers `row_count: 0` with the empty hash; `*` lists only laws with LAT, so a
@@ -36,6 +36,7 @@ defmodule SertantaiLegal.Zenoh.LatManifest do
       law_name: Enum.map(entries, & &1.law_name),
       row_count: Enum.map(entries, & &1.row_count),
       lat_hash: Enum.map(entries, & &1.lat_hash),
+      struct_hash: Enum.map(entries, & &1.struct_hash),
       updated_at: Enum.map(entries, & &1.updated_at)
     }
     |> Explorer.DataFrame.new()

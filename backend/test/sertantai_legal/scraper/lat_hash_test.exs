@@ -6,10 +6,7 @@ defmodule SertantaiLegal.Scraper.LatHashTest do
   @vectors "test/fixtures/lat_hash/vectors.json" |> File.read!() |> Jason.decode!()
 
   defp rows(vector) do
-    Enum.map(
-      vector["rows"],
-      &%{section_id: &1["section_id"], sort_key: &1["sort_key"], text: &1["text"]}
-    )
+    Enum.map(vector["rows"], fn r -> Map.new(r, fn {k, v} -> {String.to_atom(k), v} end) end)
   end
 
   describe "shared vectors (fractalatai #62; pinned in fractalaw-core too)" do
@@ -17,6 +14,7 @@ defmodule SertantaiLegal.Scraper.LatHashTest do
       test "#{name}" do
         v = Map.fetch!(@vectors, unquote(name))
         assert LatHash.hash(rows(v)) == v["lat_hash"]
+        assert LatHash.struct_hash(rows(v)) == v["struct_hash"]
         assert length(v["rows"]) == v["row_count"]
       end
     end
@@ -84,6 +82,35 @@ defmodule SertantaiLegal.Scraper.LatHashTest do
 
       assert LatHash.empty_hash() ==
                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    end
+  end
+
+  describe "struct_hash/1" do
+    test "integers are plain decimal, nil is empty, strings are not normalised" do
+      row = %{
+        section_id: "X:reg.1",
+        section_type: "article",
+        depth: 1,
+        position: 12,
+        text: "ignored"
+      }
+
+      line =
+        ["X:reg.1", "article", "", "1", "12"] ++ List.duplicate("", 14)
+
+      expected =
+        :crypto.hash(:sha256, Enum.join(line, "\t") <> "\n") |> Base.encode16(case: :lower)
+
+      assert LatHash.struct_hash([row]) == expected
+    end
+
+    test "text and sort_key do not affect it; position does" do
+      row = %{section_id: "X:reg.1", position: 1, text: "a", sort_key: "1"}
+
+      assert LatHash.struct_hash([row]) ==
+               LatHash.struct_hash([%{row | text: "b", sort_key: "2"}])
+
+      refute LatHash.struct_hash([row]) == LatHash.struct_hash([%{row | position: 2}])
     end
   end
 end

@@ -759,6 +759,15 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       )
     end
 
+    attribute :struct_hash, :string do
+      allow_nil?(true)
+      writable?(false)
+
+      description(
+        "Structural hash of this law's LAT (section_type, hierarchy, position, numbering, extent, counts) for fractalaw's LAT manifest (fractalatai #62) — trigger-maintained via lat_struct_hash_for()"
+      )
+    end
+
     attribute :definitions_parsed_at, :utc_datetime_usec do
       allow_nil?(true)
 

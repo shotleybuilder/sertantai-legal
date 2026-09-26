@@ -25,10 +25,11 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           law_name: String.t(),
           row_count: non_neg_integer(),
           lat_hash: String.t(),
+          struct_hash: String.t(),
           updated_at: DateTime.t() | nil
         }
 
-  @select "SELECT name, lat_count, lat_hash, latest_lat_updated_at FROM legal_register"
+  @select "SELECT name, lat_count, lat_hash, struct_hash, latest_lat_updated_at FROM legal_register"
 
   @doc "The rows the LAT queryable serves for `law_name`, in serving order."
   @spec served_query(String.t()) :: Ecto.Query.t()
@@ -44,7 +45,13 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
         entry(row)
 
       %{rows: []} ->
-        %{law_name: law_name, row_count: 0, lat_hash: LatHash.empty_hash(), updated_at: nil}
+        %{
+          law_name: law_name,
+          row_count: 0,
+          lat_hash: LatHash.empty_hash(),
+          struct_hash: LatHash.empty_hash(),
+          updated_at: nil
+        }
     end
   end
 
@@ -62,14 +69,31 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
     hash
   end
 
-  @doc "`row_count` and `lat_hash` for a `lat` sync event about `law_name`."
-  @spec event_metadata(String.t()) :: %{row_count: non_neg_integer(), lat_hash: String.t()}
-  def event_metadata(law_name) do
-    law_name |> for_law() |> Map.take([:row_count, :lat_hash])
+  @doc "Recompute a law's structural hash via `lat_struct_hash_for()` (verification)."
+  @spec computed_struct_hash(String.t()) :: String.t()
+  def computed_struct_hash(law_name) do
+    %{rows: [[hash]]} = Repo.query!("SELECT lat_struct_hash_for($1)", [law_name])
+    hash
   end
 
-  defp entry([law_name, count, hash, updated_at]) do
-    %{law_name: law_name, row_count: count, lat_hash: hash, updated_at: to_utc(updated_at)}
+  @doc "`row_count`, `lat_hash` and `struct_hash` for a `lat` sync event about `law_name`."
+  @spec event_metadata(String.t()) :: %{
+          row_count: non_neg_integer(),
+          lat_hash: String.t(),
+          struct_hash: String.t()
+        }
+  def event_metadata(law_name) do
+    law_name |> for_law() |> Map.take([:row_count, :lat_hash, :struct_hash])
+  end
+
+  defp entry([law_name, count, hash, struct_hash, updated_at]) do
+    %{
+      law_name: law_name,
+      row_count: count,
+      lat_hash: hash,
+      struct_hash: struct_hash,
+      updated_at: to_utc(updated_at)
+    }
   end
 
   defp to_utc(%NaiveDateTime{} = t), do: DateTime.from_naive!(t, "Etc/UTC")

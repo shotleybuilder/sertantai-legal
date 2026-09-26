@@ -29,13 +29,21 @@ defmodule SertantaiLegal.Legal.Lat.SortKeyRewrite.Store do
 
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, law_name, section_type, paragraph, schedule, sort_key FROM legal_articles #{where}",
+        "SELECT section_id, law_name, section_type, part, chapter, provision, paragraph, schedule, sort_key FROM legal_articles #{where}",
         params,
         timeout: 300_000
       )
 
-    for [sid, law, type, para, sch, key] <- rows,
-        {:ok, new} <- [SortKeyRewrite.rewrite(key || "", type, para, sch)],
+    for [sid, law, type, part, ch, prov, para, sch, key] <- rows,
+        row = %{
+          section_type: type,
+          part: part,
+          chapter: ch,
+          provision: prov,
+          paragraph: para,
+          schedule: sch
+        },
+        {:ok, new} <- [SortKeyRewrite.rewrite(key || "", row)],
         new != key,
         do: %{section_id: sid, law_name: law, old: key, new: new}
   end

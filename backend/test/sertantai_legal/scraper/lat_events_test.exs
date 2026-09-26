@@ -66,7 +66,14 @@ defmodule SertantaiLegal.Scraper.LatEventsTest do
     LatEvents.notify(name, "lat_deleted", %{lat_deleted: 3})
 
     assert_receive {:"$gen_cast", {:notify, "lat", "lat_deleted", meta}}
-    assert meta == %{law_name: name, lat_deleted: 3, row_count: 0, lat_hash: LatHash.empty_hash()}
+
+    assert meta == %{
+             law_name: name,
+             lat_deleted: 3,
+             row_count: 0,
+             lat_hash: LatHash.empty_hash(),
+             struct_hash: LatHash.empty_hash()
+           }
   end
 
   test "notify_laws/3 sends one event per law named in the section_ids", %{name: name} do

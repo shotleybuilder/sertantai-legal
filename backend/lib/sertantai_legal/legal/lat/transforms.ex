@@ -311,7 +311,7 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   def normalize_provision_to_sort_key("", _opts), do: "000.000.000"
 
   def normalize_provision_to_sort_key(s, opts) do
-    s = s |> String.trim() |> String.upcase()
+    s = s |> String.trim() |> String.upcase() |> strip_label()
 
     if s == "" do
       "000.000.000"
@@ -328,6 +328,17 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
       |> Enum.map(&String.pad_leading(Integer.to_string(&1), 3, "0"))
       |> Enum.join(".")
     end
+  end
+
+  # Some numbers carry a label ("ARTICLE 12A", "CHAPTER III", "PART7A") and
+  # some paragraph values are parenthesised ("(C)"): sort on the bare number /
+  # letter. Only known labels are stripped, so inserted numbers like "A1" keep
+  # their letter.
+  @number_label ~r/^(ARTICLE|PART|CHAPTER|SECTION|REGULATION|RULE|SCHEDULE|ANNEX|TITLE)\s*(?=\d|[IVXLCDM]+\b)/
+  defp strip_label(s) do
+    s
+    |> String.replace(@number_label, "")
+    |> String.replace(~r/^\((.*)\)$/, "\\1")
   end
 
   # Roman numeral detection and conversion.
