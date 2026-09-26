@@ -1,0 +1,58 @@
+group,proposed,current,change,name,title,reason,in_qq_register,is_making_source,making_review,triage,duty_types,amended_as_follows,insert_subst,own_shall_must,chars,verdict,needs_eye
+A amending,not_making,making,yes,UK_ssi_2007_179,Radioactive Contaminated Land (Scotland) Regulations,review_conflict,yes,legacy_drrp,,not_making,"[""Duty"", ""Responsibility"", ""Power""]",0,26,14,13795,,QQ; applies EPA Part IIA with modifications (amending or own regime?)
+A amending,not_making,making,yes,UK_wsi_2026_18,Beavers (Wales) Order,review_lat_deleted,,review,making,,,1,3,0,1181,,adds beavers to a schedule (amending)
+B own duties,making,making,,UK_nisr_2009_132,Health and Safety (Fees) Regulations (Northern Ireland),review_lat_deleted,,legacy_drrp,,,"[""Duty"", ""Responsibility""]",0,3,37,15920,,"Fees regs (NI): ""shall pay a fee"" (procedural?)"
+B own duties,making,making,,UK_uksi_1987_605,Health and Safety (Fees) Regulations,review_lat_deleted,,legacy_drrp,,,"[""Duty"", ""Responsibility""]",0,0,44,11895,,"Fees regs: ""shall pay a fee"" (the #161 brief classed Fees SIs as procedural)"
+B own duties,making,making,,UK_uksi_2003_2563,Pipelines Safety (Amendment) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Responsibility""]",0,0,8,2288,,title says (Amendment)
+B own duties,making,not_making,yes,UK_uksi_2008_198,Passenger and Goods Vehicles (Recording Equipment) (Downloading and Retention of Data) Reg,held_5,yes,,making,,,0,6,10,12765,,"fractalaw text review: inserts TA 1968 ss97C-G, so amending (policy: not Making); heuristic said B"
+C no duties,not_making,making,yes,UK_uksi_1987_2116,Benzene in Toys (Safety) Regulations,review_lat_deleted,,review,making,,"[""Duty""]",0,0,2,781,,"tiny instrument, may be a pure prohibition (""no person shall supply"")"
+C no duties,not_making,making,yes,UK_uksi_2010_471,Fire Safety (Employees’ Capabilities) (England) Regulations,review_conflict,yes,legacy_drrp,,not_making,"[""Duty""]",0,0,2,665,,"QQ; ""employer shall take into account"" is the whole duty"
+C no duties,not_making,making,yes,UK_wsi_2012_1085,Fire Safety (Employees' Capabilities) (Wales) Regulations,review_conflict,yes,enrichment,,not_making,"[""Duty""]",0,0,1,573,,QQ; Welsh twin of Fire Safety (Employees' Capabilities)
+D judgement,,making,,UK_uksi_2012_1886,Fire and Rescue Authorities (National Framework) (England) Order,review_lat_deleted,,review,making,,,0,0,3,927,,borderline: 3 own shall/must
+D judgement,,making,,UK_uksi_2017_3,Compulsory Purchase of Land (Vesting Declarations) (England) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Responsibility""]",0,0,3,3685,,borderline: 3 own shall/must
+A amending,not_making,not_making,,UK_ssi_2005_22,Waste (Scotland) Regulations,fractalaw_amending,yes,legacy_is_making,,,"[""Right""]",7,6,17,14724,,
+A amending,not_making,not_making,,UK_ssi_2012_148,Waste (Scotland) Regulations,fractalaw_amending,yes,legacy_is_making,,,,4,44,14,19622,,
+A amending,not_making,not_making,,UK_uksi_2005_1904,Passenger and Goods Vehicles (Recording Equipment) Regulations,held_5,yes,,making,,"[""Right""]",5,26,10,20030,,
+A amending,not_making,making,yes,UK_uksi_2008_2337,Chemicals (Hazard Information and Packaging for Supply) (Amendment) Regulations,review_lat_deleted,,legacy_drrp,,,"[""Responsibility""]",0,12,5,4773,,
+A amending,not_making,making,yes,UK_uksi_2011_1506,Greenhouse Gas Emissions Trading Scheme (Nitrous Oxide) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Right""]",1,7,1,7023,,
+A amending,not_making,making,yes,UK_uksi_2014_1975,Sulphur Content of Liquid Fuels (England and Wales) (Amendment) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Responsibility""]",1,8,13,10915,,
+A amending,not_making,making,yes,UK_uksi_2014_656,Waste (England and Wales) (Amendment) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Responsibility""]",2,12,3,6510,,
+A amending,not_making,making,yes,UK_uksi_2015_22,Water Industry (Specified Infrastructure Projects) (English Undertakers) (Amendment) Regul,review_conflict,,legacy_drrp,,not_making,"[""Responsibility""]",1,7,3,4704,,
+A amending,not_making,making,yes,UK_uksi_2015_502,Passenger and Goods Vehicles (Recording Equipment) (Downloading of Data) Regulations,review_lat_deleted,,review,making,,,1,1,0,549,,
+A amending,not_making,not_making,,UK_uksi_2016_1245,"Companies, Partnerships and Groups (Accounts and Non-Financial Reporting) Regulations",held_5,yes,,making,,,0,9,7,10026,,
+A amending,not_making,making,yes,UK_uksi_2018_1214,Waste Electrical and Electronic Equipment (Amendment) (No. 2) Regulations,weee_amending,yes,legacy_drrp,,uncertain,"[""Right"", ""Responsibility""]",0,48,17,27477,,
+A amending,not_making,not_making,,UK_uksi_2018_24,Community Drivers’ Hours Offences (Enforcement) Regulations,held_5,yes,,making,,,9,27,1,11337,,
+A amending,not_making,making,yes,UK_uksi_2026_109,Cosmetic Products Regulation (EC) No 1223/2009 (Restriction of Chemical Substances) (Amend,review_lat_deleted,,review,making,,,1,2,1,1808,,
+A amending,not_making,making,yes,UK_uksi_2026_195,REACH (Amendment) Regulations,review_lat_deleted,,review,making,,,1,1,10,8794,,
+A amending,not_making,making,yes,UK_uksi_2026_381,Human Medicines (Amendment) Regulations,review_lat_deleted,,review,making,,,4,35,0,10621,,
+A amending,not_making,making,yes,UK_uksi_2026_392,Greenhouse Gas Emissions Trading Scheme (Amendment) (Extension to Maritime Activities) Ord,review_lat_deleted,,review,making,,,1,1,0,1151,,
+A amending,not_making,making,yes,UK_uksi_2026_475,Exotic Animal Disease (Amendment) (England) Order,review_lat_deleted,,review,making,,"[""Power""]",2,83,39,44694,,
+A amending,not_making,making,yes,UK_wsi_2026_56,Food Supplements (Magnesium L-threonate monohydrate) (Wales) Regulations,review_lat_deleted,,review,making,,,1,1,0,983,,
+A amending,not_making,making,yes,UK_wsi_2026_60,Building etc. (Amendment) (Wales) Regulations,review_lat_deleted,,review,making,,,4,28,5,10194,,
+B own duties,making,making,,UK_eur_2006_842,Regulation (EC) No 842/2006 of the European Parliament and of the Council of 17 May 2006 o,review_lat_deleted,yes,detector,,,,0,0,77,63764,,
+B own duties,making,making,,UK_eur_2008_1102,Regulation (EC) No 1102/2008 of the European Parliament and of the Council of 22 October 2,review_lat_deleted,yes,detector,,,,0,0,40,36208,,
+B own duties,making,making,,UK_nisr_2003_33,Control of Asbestos at Work Regulations (Northern Ireland),review_lat_deleted,,legacy_drrp,,,"[""Duty"", ""Right"", ""Responsibility"", ""Power""]",0,0,110,38679,,
+B own duties,making,making,,UK_uksi_1995_1804,Units of Measurement Regulations,review_lat_deleted,,review,making,,,0,0,11,5433,,
+B own duties,making,making,,UK_uksi_2005_2750,Medicines (Traditional Herbal Medicinal Products for Human Use) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Responsibility"", ""Power""]",0,0,54,19160,,
+B own duties,making,making,,UK_uksi_2006_1270,Measuring Instruments (Non-Prescribed Instruments) Regulations,review_lat_deleted,,review,making,,,0,0,26,22580,,
+B own duties,making,making,,UK_uksi_2009_716,Chemicals (Hazard Information and Packaging for Supply) Regulations,review_conflict,yes,legacy_drrp,,not_making,"[""Duty""]",0,1,74,37375,,
+B own duties,making,making,,UK_uksi_2023_2,"Health Protection (Coronavirus, International Travel from China) (England) Regulations",review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Right""]",0,0,9,13689,,
+B own duties,making,making,,UK_uksi_2026_268,Online Safety (CSEA Content Reporting by Regulated User-to-User Service Providers) Regulat,review_lat_deleted,,review,making,,,0,0,22,9781,,
+C no duties,not_making,making,yes,UK_nisr_2012_286,Corporate Manslaughter and Corporate Homicide (2007 Act) (Commencement) Order (Northern Ir,review_conflict,,legacy_drrp,,not_making,"[""Duty""]",0,0,1,494,,
+C no duties,not_making,making,yes,UK_ssi_2010_393,Fire Safety (Scotland) Amendment Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty""]",0,1,1,673,,
+C no duties,not_making,making,yes,UK_ssi_2012_174,Wildlife and Countryside Act 1981 (Keeping and Release and Notification Requirements) (Sco,review_conflict,,legacy_drrp,,not_making,"[""Duty""]",0,0,1,1432,,
+C no duties,not_making,making,yes,UK_ssi_2026_123,Food Supplements (Magnesium L-threonate monohydrate) (Scotland) Regulations,review_lat_deleted,,review,making,,,0,1,0,903,,
+C no duties,not_making,making,yes,UK_ssi_2026_57,Water Environment (Shellfish Water Protected Areas: Designation) (Scotland) Order,review_lat_deleted,,review,making,,,0,1,0,1063,,
+C no duties,not_making,making,yes,UK_ukpga_2003_40,Ragwort Control Act,review_conflict,,legacy_drrp,,not_making,"[""Responsibility""]",0,0,2,1273,,
+C no duties,not_making,making,yes,UK_uksi_1975_1584,Employers' Health and Safety Policy Statements (Exception) Regulations,review_lat_deleted,,review,making,,,0,0,2,1131,,
+C no duties,not_making,making,yes,UK_uksi_2002_1092,Radioactive Material (Road Transport) (Definition of Radioactive Material) Order,review_lat_deleted,,review,making,,,0,0,1,620,,
+C no duties,not_making,making,yes,UK_uksi_2009_2813,Offshore Gas Storage and Unloading (Licensing) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Right""]",0,0,1,1347,,
+C no duties,not_making,making,yes,UK_uksi_2010_2231,Water Use (Temporary Bans) Order,review_lat_deleted,,review,making,,,0,0,0,9178,,
+C no duties,not_making,making,yes,UK_uksi_2013_3221,Infrastructure Planning (Business or Commercial Projects) Regulations,review_lat_deleted,,review,making,,,0,0,0,1619,,
+C no duties,not_making,not_making,,UK_uksi_2014_2868,Drug Driving (Specified Limits) (England and Wales) Regulations,held_5,yes,,making,,,0,0,0,1017,,
+C no duties,not_making,making,yes,UK_uksi_2022_62,Carbon Accounting (Provision for 2020) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty"", ""Right""]",0,1,2,3479,,
+C no duties,not_making,making,yes,UK_uksi_2026_188,Requirement to Assist with Certain Plan Making (Prescribed Public Bodies) (England) Regula,review_lat_deleted,,review,making,,,0,0,0,5143,,
+C no duties,not_making,making,yes,UK_uksi_2026_223,Electricity Network Connections (Designated Strategic Plans) Regulations,review_lat_deleted,,review,making,,,0,0,0,539,,
+C no duties,not_making,making,yes,UK_uksi_2026_440,Avian Influenza and Influenza of Avian Origin in Mammals (England) (Amendment) Order,review_lat_deleted,,review,making,,,0,2,0,2621,,
+C no duties,not_making,making,yes,UK_wsi_2014_3156,Water Industry (Undertakers Wholly or Mainly in Wales) (Information about Non-owner Occupi,review_conflict,,legacy_drrp,,not_making,"[""Duty""]",0,0,2,2114,,
+C no duties,not_making,making,yes,UK_wsi_2018_1302,Climate Change (International Aviation and International Shipping) (Wales) Regulations,review_conflict,,legacy_drrp,,not_making,"[""Duty""]",0,0,2,1419,,
