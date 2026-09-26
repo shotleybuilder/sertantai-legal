@@ -39,10 +39,18 @@ defmodule SertantaiLegal.Scraper.LatPersister do
     - `law_id` — UUID of the uk_lrt record (required FK)
 
   Returns `{:ok, %{inserted: N, deleted: N}}` on success, `{:error, reason}` on failure.
+
+  An empty `rows` list is refused (`{:error, "no LAT rows ..."}`) and the
+  law's existing LAT is kept: an empty parse means the body XML had no
+  content (e.g. a scanned-PDF-only law), not that the law has no provisions.
   """
   @spec persist([map()], String.t(), String.t()) ::
           {:ok, %{inserted: non_neg_integer(), deleted: non_neg_integer()}}
           | {:error, String.t()}
+  def persist([], law_name, _law_id) when is_binary(law_name) do
+    {:error, "no LAT rows to persist for #{law_name}; existing LAT kept"}
+  end
+
   def persist(rows, law_name, law_id) when is_list(rows) and is_binary(law_name) do
     insert_maps = LatParser.to_insert_maps(rows, law_id)
     row_count = length(insert_maps)

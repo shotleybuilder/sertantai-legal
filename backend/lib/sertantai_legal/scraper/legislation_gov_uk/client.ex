@@ -180,6 +180,34 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   end
 
   @doc """
+  Fetch a PDF from legislation.gov.uk as raw bytes.
+
+  Accepts a path or a full legislation.gov.uk URL (as listed in
+  `ukm:Alternative/@URI`, which uses `http://`); the request always goes to
+  the HTTPS endpoint.
+  """
+  @spec fetch_pdf(String.t()) :: {:ok, binary()} | {:error, integer(), String.t()}
+  def fetch_pdf(url_or_path) do
+    rate_limit_delay()
+    path = URI.parse(url_or_path).path
+    opts = Keyword.merge(req_options(), decode_body: false, receive_timeout: 60_000)
+
+    case Req.get(@endpoint <> path, opts) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        {:ok, body}
+
+      {:ok, %Req.Response{status: 404}} ->
+        {:error, 404, "Not found: #{path}"}
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, status, "Unexpected status #{status} for #{path}"}
+
+      {:error, exception} ->
+        {:error, 0, "Request failed: #{inspect(exception)}"}
+    end
+  end
+
+  @doc """
   Get the base endpoint URL.
   """
   @spec endpoint() :: String.t()

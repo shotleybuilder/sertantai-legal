@@ -3,12 +3,15 @@ defmodule SertantaiLegal.Scraper.LatReparser do
   Standalone LAT + Commentary re-parse for a single law.
 
   Fetches body XML from legislation.gov.uk, runs LatParser + CommentaryParser,
-  and persists the results (DELETE+INSERT).
+  and persists the results (DELETE+INSERT). A body with no LAT rows (a
+  scanned-PDF-only law) is an error: its PDFs go to `PdfBacklog` and its
+  existing LAT is kept.
 
   Reusable by both StagedParser (taxa sub-stage) and LatAdminController.
   """
 
   alias SertantaiLegal.Scraper.{LatParser, LatPersister, CommentaryParser, CommentaryPersister}
+  alias SertantaiLegal.Scraper.PdfBacklog
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Repo
@@ -20,7 +23,7 @@ defmodule SertantaiLegal.Scraper.LatReparser do
     with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
          {:ok, law_id} <- lookup_law_id(law_name),
          {:ok, body_xml} <- fetch_body_xml(slash_path),
-         lat_rows <- LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code}),
+         {:ok, lat_rows} <- parse_lat(law_name, type_code, body_xml),
          {:ok, lat_result} <- LatPersister.persist(lat_rows, law_name, law_id) do
       # Commentary stage
       ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
@@ -40,6 +43,18 @@ defmodule SertantaiLegal.Scraper.LatReparser do
          annotations: annotation_result,
          duration_ms: duration_ms
        }}
+    end
+  end
+
+  # An empty parse is a no-body (PDF-only) law: queue its PDFs, keep its LAT.
+  defp parse_lat(law_name, type_code, body_xml) do
+    case LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code}) do
+      [] ->
+        {reason, _files} = PdfBacklog.queue_from_body(law_name, body_xml)
+        {:error, reason}
+
+      rows ->
+        {:ok, rows}
     end
   end
 

@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
   alias SertantaiLegal.Scraper.{LatParser, LatPersister, CommentaryParser, CommentaryPersister}
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
+  alias SertantaiLegal.Scraper.PdfBacklog
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Repo
 
@@ -42,6 +43,12 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
   ## Options
   - `on_progress` — `(progress_event -> :ok | :abort)` callback for SSE streaming
+  - `pdf_backlog_dir` — where to queue PDFs of no-body laws (see `PdfBacklog`)
+
+  A law whose body XML yields no LAT rows (a scanned-PDF-only law) is not
+  persisted — its existing LAT is kept — and its PDF alternatives are
+  downloaded to the PDF backlog. The result then has `has_errors: true` and
+  `pdf_backlog: [file]`.
 
   ## Returns
   `{:ok, result}` where result contains:
@@ -58,7 +65,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
     with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
          {:ok, law_id} <- lookup_law_id(law_name) do
-      do_parse(law_name, type_code, slash_path, law_id, on_progress, start)
+      do_parse(law_name, type_code, slash_path, law_id, opts, start)
     else
       {:error, reason} ->
         notify(on_progress, {:parse_complete, true})
@@ -66,14 +73,16 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
-  defp do_parse(law_name, type_code, slash_path, law_id, on_progress, start) do
+  defp do_parse(law_name, type_code, slash_path, law_id, opts, start) do
+    on_progress = Keyword.get(opts, :on_progress)
+
     # Stage 1: Fetch body XML
     notify(on_progress, {:stage_start, :fetch_body, 1, @total_stages})
 
     case fetch_body_xml(slash_path) do
       {:ok, body_xml} ->
         notify(on_progress, {:stage_complete, :fetch_body, :ok, "XML fetched"})
-        do_run_stages(law_name, type_code, law_id, body_xml, on_progress, start)
+        do_run_stages(law_name, type_code, law_id, body_xml, opts, start)
 
       {:error, reason} ->
         notify(on_progress, {:stage_complete, :fetch_body, :error, reason})
@@ -104,7 +113,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   @spec run_stages(String.t(), String.t(), String.t(), String.t(), keyword()) :: {:ok, map()}
   def run_stages(law_name, type_code, law_id, body_xml, opts \\ []) do
     start = System.monotonic_time(:millisecond)
-    do_run_stages(law_name, type_code, law_id, body_xml, Keyword.get(opts, :on_progress), start)
+    do_run_stages(law_name, type_code, law_id, body_xml, opts, start)
   end
 
   @doc """
@@ -115,12 +124,23 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   def record_outcome(%{has_errors: false} = result), do: {:parsed, result}
   def record_outcome(result), do: {:failed, result[:error] || "parse failed"}
 
-  defp do_run_stages(law_name, type_code, law_id, body_xml, on_progress, start) do
+  defp do_run_stages(law_name, type_code, law_id, body_xml, opts, start) do
+    on_progress = Keyword.get(opts, :on_progress)
+
     # Stage 2: Parse LAT rows
     notify(on_progress, {:stage_start, :parse_lat, 2, @total_stages})
-    lat_rows = LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
-    notify(on_progress, {:stage_complete, :parse_lat, :ok, "#{length(lat_rows)} rows"})
 
+    case LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code}) do
+      [] ->
+        no_body(law_name, body_xml, opts, start)
+
+      lat_rows ->
+        notify(on_progress, {:stage_complete, :parse_lat, :ok, "#{length(lat_rows)} rows"})
+        persist_stages(law_name, law_id, body_xml, lat_rows, on_progress, start)
+    end
+  end
+
+  defp persist_stages(law_name, law_id, body_xml, lat_rows, on_progress, start) do
     # Stage 3: Persist LAT
     notify(on_progress, {:stage_start, :persist_lat, 3, @total_stages})
 
@@ -160,6 +180,36 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
        has_errors: has_errors
      }
      |> put_error(lat_result, annotation_result)}
+  end
+
+  # No LAT rows means no XML body (typically a scanned-PDF-only law). Never
+  # persist an empty parse — it would wipe the law's existing LAT. Queue any
+  # PDF alternatives to the backlog for the manual OCR batch (#165).
+  defp no_body(law_name, body_xml, opts, start) do
+    on_progress = Keyword.get(opts, :on_progress)
+
+    {reason, files} =
+      PdfBacklog.queue_from_body(law_name, body_xml, dir: Keyword.get(opts, :pdf_backlog_dir))
+
+    notify(on_progress, {:stage_complete, :parse_lat, :error, reason})
+
+    for {stage, n} <- [persist_lat: 3, parse_annotations: 4, persist_annotations: 5] do
+      notify(on_progress, {:stage_start, stage, n, @total_stages})
+      notify(on_progress, {:stage_complete, stage, :skipped, "skipped: no LAT rows"})
+    end
+
+    notify(on_progress, {:parse_complete, true})
+
+    {:ok,
+     %{
+       law_name: law_name,
+       lat: %{inserted: 0, deleted: 0, error: reason},
+       annotations: %{inserted: 0, skipped: true},
+       duration_ms: System.monotonic_time(:millisecond) - start,
+       has_errors: true,
+       error: "parse_lat: #{reason}",
+       pdf_backlog: files
+     }}
   end
 
   defp put_error(result, %{error: reason}, _ann),

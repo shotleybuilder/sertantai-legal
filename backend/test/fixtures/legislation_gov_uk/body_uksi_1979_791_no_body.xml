@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Trimmed from https://www.legislation.gov.uk/uksi/1979/791/body/data.xml (2026-09-26).
+     A PDF-only law: metadata and PDF alternatives, no Primary/Secondary body. -->
+<Legislation xmlns="http://www.legislation.gov.uk/namespaces/legislation" DocumentURI="http://www.legislation.gov.uk/uksi/1979/791/made" IdURI="http://www.legislation.gov.uk/id/uksi/1979/791" NumberOfProvisions="0">
+  <ukm:Metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata">
+    <dc:identifier>http://www.legislation.gov.uk/uksi/1979/791/made</dc:identifier>
+    <dc:title>The Forestry (Felling of Trees) Regulations 1979</dc:title>
+    <ukm:SecondaryMetadata>
+      <ukm:DocumentClassification>
+        <ukm:DocumentCategory Value="secondary"/>
+        <ukm:DocumentMainType Value="UnitedKingdomStatutoryInstrument"/>
+        <ukm:DocumentStatus Value="final"/>
+      </ukm:DocumentClassification>
+      <ukm:Year Value="1979"/>
+      <ukm:Number Value="791"/>
+    </ukm:SecondaryMetadata>
+    <ukm:Alternatives>
+      <ukm:Alternative URI="http://www.legislation.gov.uk/uksi/1979/791/pdfs/uksi_19790791_en.pdf" Date="2017-03-14" Size="3621900"/>
+    </ukm:Alternatives>
+  </ukm:Metadata>
+</Legislation>

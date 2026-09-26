@@ -68,6 +68,30 @@ defmodule SertantaiLegal.Scraper.LatPersisterTest do
     assert refreshed.geo_extent_source == "lat_provisions"
   end
 
+  test "refuses an empty row list, so an empty parse never wipes a law's LAT" do
+    name = "UK_ssi_2099_#{System.unique_integer([:positive])}"
+
+    law =
+      LegalRegister
+      |> Ash.Changeset.for_create(:create, %{
+        country: "uk",
+        name: name,
+        title_en: "Test Regulations",
+        type_code: "ssi",
+        year: 2099,
+        number: "1"
+      })
+      |> Ash.create!()
+
+    {:ok, _} = LatPersister.persist([row(name, 1)], name, law.id)
+
+    assert {:error, reason} = LatPersister.persist([], name, law.id)
+    assert reason =~ "no LAT rows"
+
+    %{rows: [[n]]} = Repo.query!("SELECT count(*) FROM lat WHERE law_name = $1", [name])
+    assert n == 1
+  end
+
   describe "lat stats triggers (statement-level)" do
     defp create_law do
       name = "UK_ssi_2099_#{System.unique_integer([:positive])}"

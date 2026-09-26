@@ -7,7 +7,8 @@ Legislation scraping, parsing, definition extraction, and cross-reference resolu
 ```
 scraper/
 ├── legislation_gov_uk/           # HTTP client + XML parser for legislation.gov.uk
-│   ├── client.ex                 # API client (body, metadata, search)
+│   ├── client.ex                 # API client (body, metadata, search, PDF)
+│   ├── body_xml.ex               # Pure: PDF alternatives from body XML
 │   ├── parser.ex                 # XML → structured data
 │   └── helpers.ex                # URL building, pagination
 │
@@ -33,6 +34,7 @@ scraper/
 ├── lat_session_manager.ex        # LAT session lifecycle
 ├── lat_staged_parser.ex          # Staged LAT parsing (batch)
 ├── lat_reparser.ex               # Re-parse existing LAT
+├── pdf_backlog.ex                # Queue PDF-only (no XML body) laws' PDFs → data/pdf-backlog/
 │
 ├── enacted_by/                   # "Made under" parent Act extraction
 │   ├── matcher.ex                # Orchestrator
