@@ -72,10 +72,10 @@ An amending instrument that inserts duties into a principal Act or SI is **not M
   - Under the amending-SI policy, fractalaw will exclude amendment instructions from its DRRP aggregation. So `UK_ssi_2012_148` (inserts EPA s34 duties) and `UK_ssi_2005_22` (inserts WML duties) become **not Making**. `UK_uksi_1998_3111` and `UK_ssi_2010_435` keep their own duties and stay Making.
   - Correction to the brief: `UK_uksi_2025_140` and `UK_uksi_2018_24` have no duties.
 - ⬜ Q1 (13): create a LAT session (`lat-session-build`); the laws are already candidates by the DB rule. Then send them to fractalaw (brief T4, item 4).
-- ⬜ P1 (8): Jason decides, per Act, between parsing it and QQ cleanup.
+- ⬜ P1 (8): Jason decides, per Act, between parsing it and QQ cleanup. The large Acts (Companies Act 2006, whose QQ relevance is Part 15 environmental reporting; Public Health etc. (Scotland) Act; …) wait for **#166**, scoped LAT parsing of the relevant Parts only.
 - ✅ X2 (6) is an explained gap: none has machine-readable body XML on legislation.gov.uk.
   - The 4 EU directives (`UK_eudr_2000_78`, `2001_42`, `2002_15`, `2003_88`) are ~2.5KB metadata stubs. Directives bind member states and their duties sit in the transposing UK SIs, so they're **QQ register cleanup**.
-  - `UK_uksi_1979_791` (Forestry (Felling of Trees) Regs) and `UK_uksro_1947_805` (Compressed Acetylene Order) have no XML body (PDF-era). They can't enter LAT or fractalaw, so a manual Making call is needed if QQ relies on them.
+  - `UK_uksi_1979_791` (Forestry (Felling of Trees) Regs) and `UK_uksro_1947_805` (Compressed Acetylene Order) have no XML body (PDF-era). They can't enter LAT or fractalaw until PDF → LAT parsing exists: **#165**.
 - ⬜ QQ cleanup list: `backend/data/reports/qq/register-cleanup-not-making.csv` (the 81, plus whatever T1, T2, P1 and X2 add), with the funnel evidence for each law
 - ⬜ Benchmark `legal-01-making` and record it in the meta Results table (no GitHub post: session docs are the record)
 

@@ -1,7 +1,7 @@
 Create a GitHub Issue using `gh` CLI.
 
 ---
-**LABEL LIST LAST UPDATED**: 2026-08-25
+**LABEL LIST LAST UPDATED**: 2026-09-26
 **Repository**: shotleybuilder/sertantai-legal
 
 **CURRENT LABELS**:
