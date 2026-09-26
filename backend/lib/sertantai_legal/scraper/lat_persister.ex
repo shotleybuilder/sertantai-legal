@@ -16,7 +16,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
   alias SertantaiLegal.Scraper.ExtentBackfill
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.LatParser
-  alias SertantaiLegal.Zenoh.ChangeNotifier
+  alias SertantaiLegal.Scraper.LatEvents
 
   require Logger
 
@@ -80,19 +80,30 @@ defmodule SertantaiLegal.Scraper.LatPersister do
             "[LatPersister] #{law_name}: deleted #{deleted}, inserted #{inserted} (#{row_count} rows, timeout #{timeout}ms)"
           )
 
-          ChangeNotifier.notify("lat", "persist", %{law_name: law_name, count: inserted})
-
           %{inserted: inserted, deleted: deleted}
         end,
         timeout: timeout
       )
 
-    with {:ok, _} <- result, do: refresh_extent(law_name)
+    with {:ok, %{inserted: inserted}} <- result do
+      refresh_extent(law_name)
+      notify_committed(law_name, inserted)
+    end
+
     result
   rescue
     e ->
       Logger.error("[LatPersister] Failed for #{law_name}: #{Exception.message(e)}")
       {:error, Exception.message(e)}
+  end
+
+  # After commit, so the event's lat_hash matches what the queryable serves
+  # (fractalatai #62). Secondary to the write: failures are logged, not raised.
+  defp notify_committed(law_name, inserted) do
+    LatEvents.notify(law_name, "persist", %{count: inserted})
+  rescue
+    e ->
+      Logger.warning("[LatPersister] lat event failed for #{law_name}: #{Exception.message(e)}")
   end
 
   # New LAT brings provision extents: re-resolve geo_extent for this law (#162).

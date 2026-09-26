@@ -20,7 +20,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
   alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
   alias SertantaiLegal.Scraper.LatParser.Diagnostics
-  alias SertantaiLegal.Zenoh.ChangeNotifier
+  alias SertantaiLegal.Scraper.LatEvents
 
   require Ash.Query
   require Logger
@@ -475,8 +475,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
         )
 
         if lat_deleted > 0 or ann_deleted > 0 do
-          ChangeNotifier.notify("lat", "lat_deleted", %{
-            law_name: law_name,
+          LatEvents.notify(law_name, "lat_deleted", %{
             lat_deleted: lat_deleted,
             annotations_deleted: ann_deleted
           })

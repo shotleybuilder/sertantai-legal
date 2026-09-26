@@ -32,6 +32,7 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
 
   use Mix.Task
 
+  alias SertantaiLegal.Scraper.LatEvents
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.IdField
@@ -318,6 +319,20 @@ defmodule Mix.Tasks.Lat.FixSectionIds do
 
       IO.puts("  Applied #{length(rewrites)} rewrites, #{length(deletes)} deletes")
     end)
+    |> case do
+      {:ok, _} = ok ->
+        # Tell fractalaw each changed law's new lat_hash (fractalatai #62).
+        LatEvents.notify_laws(
+          Enum.map(rewrites ++ deletes, & &1.old_section_id),
+          "persist",
+          %{reason: "section_ids_fixed"}
+        )
+
+        ok
+
+      error ->
+        error
+    end
   end
 
   # ── Data loading ──────────────────────────────────────────────────

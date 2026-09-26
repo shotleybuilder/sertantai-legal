@@ -1,0 +1,72 @@
+{
+ "_contract": "fractalatai #62 lat_hash: rows = all rows the LAT queryable serves; ordered by section_id (bytewise); line = section_id TAB sort_key TAB normalise(text) LF (sort_key as-is, nil -> ''); normalise = NFC, collapse runs of Unicode White_Space [U+0009-000D, 0020, 0085, 00A0, 1680, 2000-200A, 2028, 2029, 202F, 205F, 3000] to one U+0020, trim; lat_hash = lowercase hex SHA-256 of the UTF-8 concatenation. Expected hashes computed by an independent Python implementation.",
+ "synthetic": {
+  "row_count": 1,
+  "rows": [
+   {
+    "section_id": "TEST:reg.1",
+    "sort_key": "00001~",
+    "text": "  A person  must   not\tdeploy.​ "
+   }
+  ],
+  "lat_hash": "79bc96eafd545bbab104423e759bb2787d4b8aae4c34a2545eb41249a67cf07b"
+ },
+ "empty": {
+  "row_count": 0,
+  "rows": [],
+  "lat_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+ },
+ "fixture_law": {
+  "law_name": "UK_uksi_2099_1",
+  "source": "LatParser on test/fixtures/body_xml/with_schedules.xml",
+  "row_count": 9,
+  "rows": [
+   {
+    "text": null,
+    "section_id": "UK_uksi_2099_1:pt.1",
+    "sort_key": "000.001.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.0001~"
+   },
+   {
+    "text": "Citation and commencement.",
+    "section_id": "UK_uksi_2099_1:reg.1",
+    "sort_key": "000.001.000.000.000.000.000.000.000.000.001.000.000.000.000.000.000.000.000.000.000.000.0002~"
+   },
+   {
+    "text": null,
+    "section_id": "UK_uksi_2099_1:sch.1",
+    "sort_key": "S01.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.0003~"
+   },
+   {
+    "text": "The date of commencement of the project.",
+    "section_id": "UK_uksi_2099_1:sch.1.reg.1",
+    "sort_key": "S01.000.000.000.000.000.000.000.000.000.001.000.000.000.000.000.000.000.000.000.000.000.0004~"
+   },
+   {
+    "text": null,
+    "section_id": "UK_uksi_2099_1:sch.1.reg.2",
+    "sort_key": "S01.000.000.000.000.000.000.000.000.000.002.000.000.000.000.000.000.000.000.000.000.000.0005~"
+   },
+   {
+    "text": "The address of the construction site.",
+    "section_id": "UK_uksi_2099_1:sch.1.reg.2(1)",
+    "sort_key": "S01.000.000.000.000.000.000.000.000.000.002.000.000.001.000.000.000.000.000.000.000.000.0006~"
+   },
+   {
+    "text": null,
+    "section_id": "UK_uksi_2099_1:sch.1.table.7",
+    "sort_key": "S01.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.0007~"
+   },
+   {
+    "text": null,
+    "section_id": "UK_uksi_2099_1:sch.2",
+    "sort_key": "S02.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.000.0008~"
+   },
+   {
+    "text": "Sanitary conveniences.",
+    "section_id": "UK_uksi_2099_1:sch.2.reg.1",
+    "sort_key": "S02.000.000.000.000.000.000.000.000.000.001.000.000.000.000.000.000.000.000.000.000.000.0009~"
+   }
+  ],
+  "lat_hash": "aa3c16e4fd4f6c1874ed4b8ae078db1ef310d8acdbb6e188a17bb07c79310523"
+ }
+}

@@ -10,6 +10,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     fractalaw/@{tenant}/data/legislation/lrt              -- all LRT records
     fractalaw/@{tenant}/data/legislation/lrt/{name}       -- single LRT by name
     fractalaw/@{tenant}/data/legislation/lat/{name}       -- LAT sections for a law
+    fractalaw/@{tenant}/data/legislation/lat-manifest/{name} -- LAT row_count + lat_hash (#62)
+    fractalaw/@{tenant}/data/legislation/lat-manifest/*   -- manifest for every law with LAT
     fractalaw/@{tenant}/data/legislation/amendments/{name} -- annotations for a law
     fractalaw/@{tenant}/data/legislation/definitions/{name} -- definitions for a law
     fractalaw/@{tenant}/data/secondary/sources            -- all secondary sources
@@ -27,14 +29,14 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
   alias SertantaiLegal.Legal.{
     LegalRegister,
-    Lat,
     AmendmentAnnotation,
     LegislativeDefinition,
     SecondarySource,
     SecondarySourceProvision
   }
 
-  alias SertantaiLegal.Zenoh.ActivityLog
+  alias SertantaiLegal.Scraper.LatHash.Query, as: LatHashQuery
+  alias SertantaiLegal.Zenoh.{ActivityLog, LatManifest}
 
   @poll_interval :timer.seconds(2)
   @max_poll_attempts 30
@@ -127,6 +129,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
           ^prefix <> "/lat/" <> law_name ->
             fetch_lat_by_law(law_name, format)
+
+          ^prefix <> "/lat-manifest/" <> suffix ->
+            LatManifest.fetch(LatManifest.target(suffix), format)
 
           ^prefix <> "/amendments/" <> law_name ->
             fetch_amendments_by_law(law_name, format)
@@ -225,10 +230,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
 
   defp fetch_lat_by_law(law_name, :json) do
     records =
-      from(l in Lat,
-        where: l.law_name == ^law_name,
-        order_by: [asc: l.sort_key]
-      )
+      law_name
+      |> LatHashQuery.served_query()
       |> Repo.all()
       |> Enum.map(&serialize_lat/1)
 
@@ -236,12 +239,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   end
 
   defp fetch_lat_by_law(law_name, :arrow) do
-    records =
-      from(l in Lat,
-        where: l.law_name == ^law_name,
-        order_by: [asc: l.sort_key]
-      )
-      |> Repo.all()
+    records = law_name |> LatHashQuery.served_query() |> Repo.all()
 
     lat_to_arrow(records)
   end
@@ -660,6 +658,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       "#{prefix}/lrt",
       "#{prefix}/lrt/*",
       "#{prefix}/lat/*",
+      "#{prefix}/lat-manifest/*",
       "#{prefix}/amendments/*",
       "#{prefix}/definitions/*",
       "#{secondary_prefix}/sources",

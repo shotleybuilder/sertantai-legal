@@ -1,6 +1,6 @@
 ---
 session: "LAT Sync Manifest (fractalatai #62, legal side)"
-status: pending
+status: active
 opened: 2026-09-26
 related: ["fractalatai#62", "fractalatai#61", 120]
 bugs:
@@ -42,7 +42,7 @@ bugs:
     status: open
 ---
 
-# Session: LAT Sync Manifest, legal side of fractalatai #62 (PENDING)
+# Session: LAT Sync Manifest, legal side of fractalatai #62 (ACTIVE)
 
 ## Problem
 
