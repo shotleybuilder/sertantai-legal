@@ -117,4 +117,26 @@ defmodule SertantaiLegal.Scraper.LatReparseTest do
     assert ra.error =~ "gate"
     assert ra.enriched_after == 2
   end
+
+  test "preview/2 reports what a re-parse would do to enriched rows, persisting nothing" do
+    {name, _} = law()
+    rows_fn = fn n -> {:ok, [row(n, 1, "One."), row(n, 2, "Two changed.")], law_id(n)} end
+
+    assert %{
+             law_name: ^name,
+             rows_before: 2,
+             rows_after: 2,
+             enriched: 2,
+             enriched_carried: 1,
+             enriched_changed: 1,
+             enriched_dropped: 0,
+             enriched_ambiguous: 0,
+             lost_unchanged: 0
+           } = LatReparse.preview(name, rows_fn)
+
+    %{rows: [[text]]} =
+      Repo.query!("SELECT text FROM legal_articles WHERE section_id = $1", ["#{name}:reg.2"])
+
+    assert text == "Two."
+  end
 end

@@ -43,7 +43,9 @@ defmodule SertantaiLegal.Scraper.LatPersister.Carry do
   @spec load_existing(String.t(), [String.t()]) :: [map()]
   def load_existing(law_name, columns) do
     select = Enum.map_join(columns, ", ", &~s("#{&1}"))
-    keys = Enum.map(columns, &String.to_existing_atom/1)
+    # Column names come from the catalogue (a small fixed set), and in a lazily
+    # loaded release their atoms may not exist yet: to_atom, not to_existing_atom.
+    keys = Enum.map(columns, &String.to_atom/1)
 
     %{rows: rows} =
       Repo.query!(

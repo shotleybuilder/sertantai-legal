@@ -152,7 +152,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
   # Every insert map gets every carried column (nil unless matched) so the
   # insert batches share one header.
   defp carry_values(insert_maps, existing, %LatMerge{carry: carry}, columns) do
-    blank = Map.new(columns, &{String.to_existing_atom(&1), nil})
+    blank = Map.new(columns, &{String.to_atom(&1), nil})
     by_id = Map.new(existing, &{&1.section_id, &1.values})
 
     Enum.map(insert_maps, fn m ->

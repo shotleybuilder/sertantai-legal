@@ -3,12 +3,20 @@ defmodule SertantaiLegal.Scraper.LatMerge do
   Pure matching of a law's existing LAT rows to a fresh parse, so a re-parse
   keeps provision enrichment instead of wiping it (Gemini review 2026-09-26).
 
-  Old rows are matched to new rows (texts compared after
-  `LatHash.normalise/1`), each new row claimed at most once:
+  Old rows are matched to new rows, each new row claimed at most once. Texts
+  are compared by `match_key/1`: `LatHash.normalise/1`, then leading
+  enumerators that older parser generations left in the text — amendment
+  markers (`[F345`), `(11)`, bare provision numbers (`27 `) — are dropped.
 
-  1. `same` — same section_id and same text: carry
+  1. `same` — same section_id and: same match key; or the new text is empty
+     (a heading whose text moved out of the row); or one text contains the
+     other (≥ 15 chars) — older parsers put children's text or the heading
+     into the row: carry
   2. `unique_text` — old id gone, its text equals exactly one unclaimed new
      row whose id is new, and no other vanished old row has that text: rename
+  2b. `extent_tag` — old id gone, and exactly one new id equals it apart
+     from its `[extent]` tag (tagging changed between parser generations),
+     under the same text rules as 1: rename
   3. `ordered_text` — equal-sized groups of vanished old / new-id rows with
      the same text: paired in document order (rename)
   4. otherwise: `changed` (same id, text differs), `ambiguous` (text shared
@@ -50,7 +58,7 @@ defmodule SertantaiLegal.Scraper.LatMerge do
     # 1. Same id
     {same, rest} =
       Enum.split_with(old_rows, fn o ->
-        MapSet.member?(new_ids, o.section_id) and new_text[o.section_id] == norm(o.text)
+        MapSet.member?(new_ids, o.section_id) and same_row?(norm(o.text), new_text[o.section_id])
       end)
 
     changed =
@@ -58,10 +66,17 @@ defmodule SertantaiLegal.Scraper.LatMerge do
 
     carry = Map.new(same, &{&1.section_id, &1.section_id})
 
-    # 2–3. Renames: vanished old ids vs brand-new ids, grouped by non-empty text
+    # 2. Renames where only the [extent] tag changed (1:1 by id stem)
     vanished = Enum.reject(rest, &MapSet.member?(new_ids, &1.section_id))
     fresh = Enum.reject(new_rows, &MapSet.member?(old_ids, &1.section_id))
 
+    tag_renames = extent_tag_renames(vanished, fresh)
+    tagged_old = MapSet.new(tag_renames, & &1.old)
+    tagged_new = MapSet.new(tag_renames, & &1.new)
+    vanished = Enum.reject(vanished, &MapSet.member?(tagged_old, &1.section_id))
+    fresh = Enum.reject(fresh, &MapSet.member?(tagged_new, &1.section_id))
+
+    # 3–4. Renames: remaining vanished vs brand-new ids, grouped by non-empty text
     old_groups = group_by_text(vanished)
     new_groups = group_by_text(fresh)
 
@@ -85,6 +100,7 @@ defmodule SertantaiLegal.Scraper.LatMerge do
         end
       end)
 
+    renames = tag_renames ++ renames
     carry = Enum.reduce(renames, carry, &Map.put(&2, &1.new, &1.old))
     carried_old = MapSet.new(Map.values(carry))
 
@@ -117,11 +133,46 @@ defmodule SertantaiLegal.Scraper.LatMerge do
     }
   end
 
+  defp extent_tag_renames(vanished, fresh) do
+    olds = Enum.group_by(vanished, &id_stem(&1.section_id))
+    news = Enum.group_by(fresh, &id_stem(&1.section_id))
+
+    for {stem, [o]} <- olds,
+        [n] <- [Map.get(news, stem, [])],
+        same_row?(norm(o.text), norm(n.text)),
+        do: %{old: o.section_id, new: n.section_id, match: "extent_tag"}
+  end
+
+  defp id_stem(id), do: String.replace(id, ~r/\[[^\]]*\]$/, "")
+
   defp group_by_text(rows) do
     rows
     |> Enum.group_by(&norm(&1.text))
     |> Map.delete("")
   end
 
-  defp norm(text), do: LatHash.normalise(text)
+  # Leading markers older parser generations kept in the text.
+  @leading_marker ~r/^(\[F\d+\s*|\([0-9A-Za-z]{1,6}\)\s*|\d+[A-Z]*\s+)+/
+
+  @doc "Comparison key: normalised text without leading enumerators / amendment markers."
+  @spec match_key(String.t() | nil) :: String.t()
+  def match_key(text) do
+    text
+    |> LatHash.normalise()
+    |> String.replace(~r/\s+([—–,;:.])/u, "\\1")
+    |> String.replace(@leading_marker, "")
+  end
+
+  @min_contained 15
+
+  # Same id: equal keys, text moved out (new empty), or containment either way.
+  defp same_row?(old_key, new_key) do
+    old_key == new_key or new_key == "" or contained?(old_key, new_key) or
+      contained?(new_key, old_key)
+  end
+
+  defp contained?(outer, inner),
+    do: String.length(inner) >= @min_contained and String.contains?(outer, inner)
+
+  defp norm(text), do: match_key(text)
 end

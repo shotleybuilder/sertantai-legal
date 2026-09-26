@@ -102,6 +102,19 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   end
 
   @doc """
+  Fetch and parse a law's body into LAT rows without persisting anything
+  (for previews such as `LatReparse.preview/2`).
+  """
+  @spec fetch_rows(String.t()) :: {:ok, [map()], String.t()} | {:error, String.t()}
+  def fetch_rows(law_name) do
+    with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
+         {:ok, law_id} <- lookup_law_id(law_name),
+         {:ok, xml} <- fetch_body_xml(slash_path) do
+      {:ok, LatParser.parse(xml, %{law_name: law_name, type_code: type_code}), law_id}
+    end
+  end
+
+  @doc """
   Run stages 2–5 (parse LAT, persist LAT, parse and persist annotations) on
   an already-fetched body. Public so the stage logic can be tested with a
   fixture body. Options: `on_progress`, as for `parse/2`.

@@ -17,7 +17,8 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LatStagedParser
+  alias SertantaiLegal.Scraper.{LatMerge, LatParser, LatStagedParser}
+  alias SertantaiLegal.Scraper.LatPersister.Carry
 
   require Logger
 
@@ -54,6 +55,19 @@ defmodule SertantaiLegal.Scraper.LatReparse do
     Enum.map(rows, &hd/1)
   end
 
+  @doc "Laws with any provision carrying fractalaw enrichment."
+  @spec enriched_laws() :: [String.t()]
+  def enriched_laws do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT DISTINCT law_name FROM legal_articles WHERE taxa_enriched_at IS NOT NULL OR drrp_types IS NOT NULL",
+        [],
+        timeout: 120_000
+      )
+
+    Enum.map(rows, &hd/1)
+  end
+
   @doc """
   Snapshot, then re-parse `laws` in order. Options: `snapshot` (table name,
   required), `parse_fn` (`law_name -> {:ok, result}`; default
@@ -78,6 +92,45 @@ defmodule SertantaiLegal.Scraper.LatReparse do
       if report.error, do: {:halt, %{acc | status: {:stopped, law}}}, else: {:cont, acc}
     end)
   end
+
+  @doc """
+  Dry run for one law: fetch and parse (`rows_fn`, default
+  `LatStagedParser.fetch_rows/1`), plan the merge against the stored rows,
+  and count what would happen to enriched rows. Nothing is persisted.
+  """
+  @spec preview(String.t(), (String.t() -> {:ok, [map()], String.t()} | {:error, term()})) ::
+          map()
+  def preview(law, rows_fn \\ &LatStagedParser.fetch_rows/1) do
+    case rows_fn.(law) do
+      {:ok, rows, law_id} ->
+        maps = LatParser.to_insert_maps(rows, law_id)
+        existing = Carry.load_existing(law, Carry.carried_columns(Map.keys(hd(maps))))
+        plan = LatMerge.plan(existing, maps)
+        enriched = existing |> Enum.filter(&enriched?/1) |> MapSet.new(& &1.section_id)
+        carried_old = plan.carry |> Map.values() |> MapSet.new()
+        count = &Enum.count(&1, fn id -> MapSet.member?(enriched, id) end)
+
+        %{
+          law_name: law,
+          rows_before: length(existing),
+          rows_after: length(maps),
+          enriched: MapSet.size(enriched),
+          enriched_carried: count.(MapSet.to_list(carried_old)),
+          enriched_changed: count.(plan.changed),
+          enriched_dropped: count.(plan.removed),
+          enriched_ambiguous: count.(plan.ambiguous),
+          lost_unchanged: length(plan.lost_unchanged),
+          renamed: Enum.count(plan.renames, &(&1.old != &1.new)),
+          error: nil
+        }
+
+      {:error, reason} ->
+        %{law_name: law, error: to_string(reason)}
+    end
+  end
+
+  # The same "enriched" notion as counts/1: fractalaw taxa present.
+  defp enriched?(%{values: v}), do: not is_nil(v[:taxa_enriched_at]) or not is_nil(v[:drrp_types])
 
   defp reparse_one(law, parse_fn) do
     {rows_before, enriched_before} = counts(law)
