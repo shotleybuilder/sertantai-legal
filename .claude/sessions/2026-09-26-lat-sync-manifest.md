@@ -95,3 +95,4 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ✅ Contract proposed by fractalaw-a4 (2026-09-26); legal's changes sent: hash over all served rows, explicit whitespace set, event metadata
 - ✅ Fractalaw agreed the amended contract (2026-09-26)
 - ✅ LAT queryable already returns the complete row set (no paging)
+- ⬜ Fractalaw's #62 diff-apply (fractalaw will notify legal). It blocks the 386-law re-parse and the parent-drop section_id fix. Its text-match carry-over preserves tier data across id changes, and it treats sort_key-only changes (the 579 rewritten laws) as in-place updates. No fractalaw re-pulls until then.
