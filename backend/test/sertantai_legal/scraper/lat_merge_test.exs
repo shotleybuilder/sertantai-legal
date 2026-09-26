@@ -110,18 +110,18 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
       assert plan.changed == []
     end
 
-    test "same id whose text moved out (new text empty) keeps its enrichment" do
+    test "same id whose new text is empty is changed (enrichment would describe text no longer there)" do
       plan =
         LatMerge.plan(
           [old("L:s.27", "27 Power of chief inspector to remedy harm.", 1)],
           [new("L:s.27", "", 1)]
         )
 
-      assert plan.carry == %{"L:s.27" => "L:s.27"}
-      assert plan.changed == []
+      assert plan.carry == %{}
+      assert plan.changed == ["L:s.27"]
     end
 
-    test "same id where the old text aggregated children or a heading (contains the new) carries" do
+    test "same id where the old text aggregated children or a heading (old contains new) is changed" do
       plan =
         LatMerge.plan(
           [
@@ -144,8 +144,20 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
           ]
         )
 
-      assert map_size(plan.carry) == 3
-      assert plan.changed == []
+      # Carrying the parent's old enrichment would attribute its children's
+      # duties / actors to the stripped-down row (aligned with fractalaw).
+      assert plan.carry == %{}
+      assert length(plan.changed) == 3
+    end
+
+    test "same id where the new text contains the old one carries" do
+      plan =
+        LatMerge.plan(
+          [old("L:s.293(2)", "(2) In subsection (1) —", 1)],
+          [new("L:s.293(2)", "In subsection (1)— (a) after “x” insert “y”;", 1)]
+        )
+
+      assert plan.carry == %{"L:s.293(2)" => "L:s.293(2)"}
     end
 
     test "repealed dots are a real change, not containment" do
@@ -189,10 +201,8 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
           ]
         )
 
-      assert plan.carry == %{
-               "L:s.71[E+W+S+NI]" => "L:s.71",
-               "L:s.78N(4)" => "L:s.78N(4)[S]"
-             }
+      # s.71's new text is empty, so it is not carried (same rules as a same-id row).
+      assert plan.carry == %{"L:s.78N(4)" => "L:s.78N(4)[S]"}
 
       assert Enum.all?(plan.renames, &(&1.match == "extent_tag"))
     end

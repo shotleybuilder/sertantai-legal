@@ -8,10 +8,11 @@ defmodule SertantaiLegal.Scraper.LatMerge do
   enumerators that older parser generations left in the text — amendment
   markers (`[F345`), `(11)`, bare provision numbers (`27 `) — are dropped.
 
-  1. `same` — same section_id and: same match key; or the new text is empty
-     (a heading whose text moved out of the row); or one text contains the
-     other (≥ 15 chars) — older parsers put children's text or the heading
-     into the row: carry
+  1. `same` — same section_id and: same match key, or the new text contains
+     the old (≥ 15 chars; older parsers dropped trailing text). Old text
+     containing the new (a parent that aggregated its children, a heading
+     now empty) is `changed`: its enrichment described text no longer in
+     the row
   2. `unique_text` — old id gone, its text equals exactly one unclaimed new
      row whose id is new, and no other vanished old row has that text: rename
   2b. `extent_tag` — old id gone, and exactly one new id equals it apart
@@ -165,10 +166,15 @@ defmodule SertantaiLegal.Scraper.LatMerge do
 
   @min_contained 15
 
-  # Same id: equal keys, text moved out (new empty), or containment either way.
-  defp same_row?(old_key, new_key) do
-    old_key == new_key or new_key == "" or contained?(old_key, new_key) or
-      contained?(new_key, old_key)
+  # Same id: equal keys, or the new text contains the old one (older parsers
+  # dropped trailing text). Not when the old contains the new (a parent that
+  # used to aggregate its children, or a heading now empty): the old
+  # enrichment would attribute the children's duties/actors to the
+  # stripped-down row — aligned with fractalaw's diff-apply.
+  @doc "Whether a same-id (or extent-tag) old row may carry onto the new row, given their match keys."
+  @spec same_row?(String.t(), String.t()) :: boolean()
+  def same_row?(old_key, new_key) do
+    old_key == new_key or (old_key != "" and contained?(new_key, old_key))
   end
 
   defp contained?(outer, inner),
