@@ -35,6 +35,10 @@ scraper/
 ├── lat_staged_parser.ex          # Staged LAT parsing (batch)
 ├── lat_reparser.ex               # Re-parse existing LAT
 ├── pdf_backlog.ex                # Queue PDF-only (no XML body) laws' PDFs → data/pdf-backlog/
+├── pdf_backlog/
+│   ├── transcript.ex             # Pure: transcript markup → provision tree + QA
+│   ├── clml.ex                   # Pure: tree → legislation.gov.uk-style XML for LatParser
+│   └── batch.ex                  # Orchestrator: per-law state, run via LatStagedParser
 │
 ├── enacted_by/                   # "Made under" parent Act extraction
 │   ├── matcher.ex                # Orchestrator
