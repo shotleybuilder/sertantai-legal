@@ -58,6 +58,12 @@ bugs:
     affected: 386
     fix: "Re-parse those laws. But DELETE+INSERT wipes fractalaw provision enrichment (101 of them are enriched) and may shift section_ids, so do it after fractalaw's #62 diff-apply or with a provision republish"
     status: open
+  - pattern: "Merge gate counted legacy_id (import-era identity) as enrichment and refused UK_nisr_2014_224 over one shifted positional heading row"
+    category: lat_merge
+    module: SertantaiLegal.Scraper.LatPersister.Carry
+    affected: 1
+    fix: "The gate ignores legacy_id (still carried when rows match)"
+    status: fixed
 ---
 
 # Session: LAT Sync Manifest, legal side of fractalatai #62 (ACTIVE)
@@ -99,7 +105,7 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ✅ struct_hash (Jason, via fractalaw): the manifest and events carry it; trigger-maintained; vectors; fractalaw cross-checked 980/980.
 - ✅ NAS backup (`nas-backup.sh --archive`) before the rollout.
 - ✅ Pilot 1 (unenriched `UK_uksi_2006_1521`) passed.
-- ⬜ Re-parse the 284 unenriched older-format laws (batches of 30, snapshots `lat_reparse_unenriched_bNN`); running
+- ✅ Re-parsed the 284 unenriched older-format laws (batches of 30, snapshots `lat_reparse_unenriched_b00` and `lat_reparse_unenriched_r01`–`r09`, reports `data/reports/lat-reparse/`), with 0 errors. Rows 85,759 → 91,847; 443 renamed, 68 ambiguous, 10,195 dropped (older-generation rows the current parser splits differently), 0 orphaned control mappings. Corpus sort breaks are now 1,623 (from ~8,000 at session start). Only the 101 enriched laws remain in the older format. Hashes are consistent for all 980 laws. The first run stopped at `UK_nisr_2014_224` on a legacy_id-only gate hit; the fix is below.
 - ⬜ Enriched older-format laws (101): awaiting Jason's decision (see the dry-run report `data/reports/lat-reparse/preview-enriched-older-4.csv`)
 
 ## Dependencies
