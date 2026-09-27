@@ -14,6 +14,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   require Ash.Query
   # import Ecto.Query, only: [from: 2]  # Removed with pruner (#110)
 
+  alias SertantaiLegal.Legal.LatEvent
+  alias SertantaiLegal.Legal.LatEvent.Provenance
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Legal.Making
   alias SertantaiLegal.Legal.Taxa.ActorDefinitions
@@ -154,11 +156,16 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   # --- Internal ---
 
+  @doc false
+  # Test seam: decode one law's Arrow payload and apply it, as a sample would.
+  def handle_payload(law_name, ipc_bytes), do: decode_and_upsert(law_name, ipc_bytes)
+
   defp decode_and_upsert(law_name, ipc_bytes) do
     case decode_arrow_ipc(ipc_bytes) do
-      {:ok, taxa} ->
+      {:ok, {taxa, provenance}} ->
         with {:ok, record} <- find_record(law_name),
-             {:ok, _updated} <- upsert_taxa(record, taxa) do
+             {:ok, updated} <- upsert_taxa(record, taxa) do
+          record_enriched_events(updated, provenance)
           Logger.info("[Zenoh.TaxaSubscriber] Updated taxa for #{law_name}")
           :ok
         end
@@ -166,7 +173,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
       {:error, :empty_payload} ->
         # No taxa data at all — Housekeeping (procedural/administrative law)
         with {:ok, record} <- find_record(law_name),
-             {:ok, _updated} <- apply_housekeeping(record) do
+             {:ok, updated} <- apply_housekeeping(record) do
+          record_enriched_events(updated, nil)
           Logger.info("[Zenoh.TaxaSubscriber] Housekeeping for #{law_name} (empty payload)")
           :ok
         end
@@ -181,7 +189,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     rows = Explorer.DataFrame.to_rows(df, atom_keys: false)
 
     case rows do
-      [row | _] -> {:ok, normalize_taxa(row)}
+      [row | _] -> {:ok, {normalize_taxa(row), Map.get(row, "provenance")}}
       [] -> {:error, :empty_payload}
     end
   rescue
@@ -230,6 +238,33 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   defp record_verdict(record, verdict_attrs) do
     attrs = Map.put(verdict_attrs, :making_enriched_at, DateTime.utc_now())
     Making.record(record, attrs, "taxa_subscriber")
+  end
+
+  # One `enriched` lat_event per provenance family (one blank entry when
+  # fractalaw sends none yet). Secondary to the taxa write: failures are logged.
+  defp record_enriched_events(record, provenance) do
+    for entry <- Provenance.entries(provenance) do
+      LatEvent
+      |> Ash.Changeset.for_create(
+        :record,
+        Map.merge(entry, %{
+          law_id: record.id,
+          country: record.country,
+          law_name: record.name,
+          event: "enriched",
+          source: "taxa_subscriber",
+          verdict: record.making_enrichment_verdict
+        })
+      )
+      |> Ash.create!()
+    end
+
+    :ok
+  rescue
+    e ->
+      Logger.warning(
+        "[Zenoh.TaxaSubscriber] enriched lat_event failed for #{record.name}: #{Exception.message(e)}"
+      )
   end
 
   # Empty Arrow payload: enrichment ran and published nothing for this law.
