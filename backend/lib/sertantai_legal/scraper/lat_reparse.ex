@@ -10,7 +10,8 @@ defmodule SertantaiLegal.Scraper.LatReparse do
      through `LatPersister`'s merge and enrichment gate
   3. record per law: rows and enriched rows before/after, carried, renamed,
      changed, ambiguous, dropped, orphaned mappings
-  4. stop at the first law that errors (a failed gate keeps its old LAT)
+  4. stop at the first law that errors (a failed gate keeps its old LAT);
+     a law with no XML body (queued to the PDF backlog) is recorded, not a stop
 
   `older_format_laws/0` lists laws whose stored sort_keys predate the current
   key format — the ones a re-parse fixes.
@@ -91,7 +92,9 @@ defmodule SertantaiLegal.Scraper.LatReparse do
       on_law.(report)
       acc = %{acc | laws: acc.laws ++ [report]}
 
-      if report.error, do: {:halt, %{acc | status: {:stopped, law}}}, else: {:cont, acc}
+      if report.error && not pdf_only?(report.error),
+        do: {:halt, %{acc | status: {:stopped, law}}},
+        else: {:cont, acc}
     end)
   end
 
@@ -133,6 +136,10 @@ defmodule SertantaiLegal.Scraper.LatReparse do
 
   # The same "enriched" notion as counts/1: fractalaw taxa present.
   defp enriched?(%{values: v}), do: not is_nil(v[:taxa_enriched_at]) or not is_nil(v[:drrp_types])
+
+  # A law with no XML body is queued to the PDF backlog by the parser: an
+  # expected outcome, not a failure — record it and carry on.
+  defp pdf_only?(error), do: String.contains?(error, "no XML body")
 
   defp reparse_one(law, parse_fn) do
     {rows_before, enriched_before} = counts(law)

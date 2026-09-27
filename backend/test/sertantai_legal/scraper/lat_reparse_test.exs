@@ -118,6 +118,34 @@ defmodule SertantaiLegal.Scraper.LatReparseTest do
     assert ra.enriched_after == 2
   end
 
+  test "a law with no XML body (queued to the PDF backlog) is recorded and the run continues" do
+    {a, _} = law()
+    {b, _} = law()
+
+    parse_fn = fn
+      ^a ->
+        {:ok,
+         %{
+           has_errors: true,
+           lat: %{},
+           error: "parse_lat: no XML body; 1 PDF(s) queued to backlog"
+         }}
+
+      _ ->
+        {:ok, %{has_errors: false, lat: %{carried: 2}}}
+    end
+
+    report =
+      LatReparse.run([a, b],
+        snapshot: "lat_reparse_test_#{System.unique_integer([:positive])}",
+        parse_fn: parse_fn
+      )
+
+    assert %{status: :ok, laws: [ra, rb]} = report
+    assert ra.error =~ "no XML body"
+    assert rb.error == nil
+  end
+
   test "preview/2 reports what a re-parse would do to enriched rows, persisting nothing" do
     {name, _} = law()
     rows_fn = fn n -> {:ok, [row(n, 1, "One."), row(n, 2, "Two changed.")], law_id(n)} end
