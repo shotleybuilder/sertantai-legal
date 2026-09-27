@@ -19,9 +19,12 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 
 ## Todo
 
-- ⬜ `legal_register.lat_history` (JSONB, append-only event array): `parsed` / `enriched` / `discarded` events with `at`, `source`, `lat_hash`, `row_count`, plus `reason` (discarded) or `verdict` (enriched). Written by every parse, by the enrichment verdict path (TaxaSubscriber) and by every LAT delete path (admin delete, cleanup), which must give a reason. See "LAT retention" below.
-- ⬜ Backfill `lat_history` from the LAT session log (`scrape_session_records`: parsed / cleaned), `record_change_log` LAT-deletion entries (172 laws) and existing `making_enrichment_verdict`/`making_enriched_at`
-- ⬜ Making funnel: derive `lat_evidence` (`enriched_then_discarded` | `parsed_then_discarded` | `lat_held` | `none`) from `lat_history`
+- ⬜ `lat_events` table (Ash resource `LatEvent`; `LegalRegister` has_many): one row per `parsed` / `enriched` / `discarded` event. Schema and write paths are in "LAT retention" below.
+- ⬜ Triggers on `legal_articles`: INSERT → `parsed`, DELETE → `discarded`, with reason/source/actor from `SET LOCAL sertantai.lat.*`. `reason = reparse` (the merge re-parse) is a replacement, not a discard. A delete without a reason logs `unknown`, so ad-hoc SQL deletes still leave a trace.
+- ⬜ `enriched` events from the TaxaSubscriber carry the `lat_hash`/`struct_hash` fractalaw enriched against, plus the run id / model version when fractalaw's payload carries them (ask fractalaw to add them)
+- ⬜ NAS archive of discarded LAT: before a discard, write the law's rows (compressed, per law, e.g. `…/lat-archive/<law>/<lat_hash>.jsonl.gz`) and record the path in the `discarded` event (`archive_ref`), so evidence survives and a later decision can restore instead of re-parsing
+- ⬜ Backfill `lat_events` from the LAT session log (`scrape_session_records`), `record_change_log` LAT-deletion entries (172 laws) and the existing `making_enrichment_verdict`/`making_enriched_at`, with `source = backfill_*` (lower fidelity)
+- ⬜ Making funnel: derive `lat_evidence` (`enriched_then_discarded` | `parsed_then_discarded` | `lat_held` | `enriched_stale` (the enrichment hash ≠ the current `lat_hash`) | `none`) from the latest `lat_events` per law
 - ⬜ Agree the LAT parse strategy with Jason (draft below, revised for LAT retention)
 - ⬜ Resolve `live` status for the 2,052 UK laws with none, before deciding whether to parse them
 - ⬜ LAT-parse per the agreed strategy (gated `mix lat.reparse` / workflow API; the PDF-only backlog and #166 scopes are handled as they arise)
@@ -74,7 +77,7 @@ LAT is kept **only for Making laws**, to keep the table lean. A not-Making verdi
 - The parse → decide → delete trail lives only in the LAT session log (funnel stage `cleaned`: 33 laws) and as free text in `record_change_log` (172 laws). Admin or bulk deletions outside a session leave no trace.
 
 Decision (Jason, 2026-09-27):
-- Capture it in a dedicated JSONB `lat_history`, an append-only event list, not a blob and not `record_change_log` (free-form, mixed).
+- ~~JSONB `lat_history` on `legal_register`~~, changed after Gemini review 2026-09-27 (`backend/data/code-reviews/2026-09-27-lat-history-{brief,review}.md`): a **separate `lat_events` table**, with events written by DB triggers (so every path is covered) and a **NAS archive** of discarded LAT (Jason agreed).
 - Include **enrichment run against LAT since deleted**: it is the strongest not-Making evidence and means "don't re-enrich".
 
 QQ's 87 in-force laws without LAT, all not Making:
@@ -82,6 +85,37 @@ QQ's 87 in-force laws without LAT, all not Making:
 - 4: reviewed not Making (evidenced)
 - 4: detector with a LAT session, LAT since gone (partial)
 - **45: legacy flag only; 8: detector only (no LAT evidence)**
+
+### `lat_events` design (agreed 2026-09-27)
+
+```
+lat_events
+  id            bigserial PK
+  law_id        uuid        ─┐ FK → legal_register (id, country); partitioned parent
+  country       text        ─┘
+  law_name      text        (denormalised, for queries / fractalaw)
+  event         text        parsed | enriched | discarded   (check constraint)
+  at            timestamptz default now()
+  source        text        lat_session:<id> | workflow_api | admin | cleanup | reparse | trigger | backfill_*
+  actor         text        user:<id> | system:<name>
+  app_version   text        git sha at parse time (parsed)
+  lat_hash      text        content hash at the event
+  struct_hash   text
+  row_count     int
+  reason        text        discarded: not_making | revoked | superseded | out_of_scope | admin_action | unknown
+  verdict       text        enriched: making | no_obligations | empowering
+  enrichment_run_id / enrichment_version  text  (enriched, when fractalaw sends them)
+  archive_ref   text        discarded: NAS path of the archived LAT
+  indexes: (law_id, at DESC), (law_name, at DESC), (event), (enrichment_run_id)
+```
+
+Write paths:
+- **parsed:** the INSERT trigger on `legal_articles` (statement-level; one event per law per statement), reading `sertantai.lat.source` / `actor`.
+- **discarded:** the DELETE trigger. `reason = reparse` is skipped (a merge re-parse replaces rows; the INSERT trigger logs `parsed`). A missing reason logs `unknown`.
+- **enriched:** the TaxaSubscriber (application), with the hashes enriched against.
+- **archive:** the delete paths call the archiver *before* deleting (the trigger cannot write to the NAS) and pass `archive_ref` via `SET LOCAL`.
+
+Gemini points not adopted: a BIGINT law id (ours are UUIDs on a country-partitioned table); replacing the one big enrichment batch with per-law event-driven runs (the batch is deliberate because of pod spin-up cost; small changes already flow through fractalaw's manifest watch).
 
 ## Draft LAT parse strategy (to agree)
 
