@@ -1,6 +1,7 @@
 ---
 session: "LAT Sync Manifest (fractalatai #62, legal side)"
-status: active
+status: closed
+closed: 2026-09-27
 opened: 2026-09-26
 related: ["fractalatai#62", "fractalatai#61", 120]
 bugs:
@@ -66,7 +67,7 @@ bugs:
     status: fixed
 ---
 
-# Session: LAT Sync Manifest, legal side of fractalatai #62 (ACTIVE)
+# Session: LAT Sync Manifest, legal side of fractalatai #62 (CLOSED)
 
 ## Problem
 
@@ -146,3 +147,12 @@ Adjusted:
 - The gate is "no enrichment lost on rows whose text is unchanged", not equal enriched-row counts: enrichment on genuinely changed text is stale and should be re-derived.
 - No separate staging environment or multi-week phases: dev is the only environment of record. Use a NAS backup and batch snapshot tables, and do the pilot on dev.
 - `position` stays out of the hash by design, because it is derived from sort order.
+
+## Close (2026-09-27)
+
+Done: the manifest (lat_hash + struct_hash, trigger-maintained), rename log + `lat-renames`, enrichment-keeping merge with gate, the gated re-parse of all 386 older-format laws, and sort order fixed (0 breaks; ordering-only rule recorded in `scraper/CLAUDE.md`). Fractalaw's diff-apply is built against all of it; the hub stays frozen until Jason unparks it.
+
+Carried to `2026-09-27-enrichment-readiness.md`:
+- 2 control mappings on repealed EPA 1990 s.40(4), s.74(3) (control 4080cd6c…): review
+- Migration `down` for 20260926160743 / 20260926192907 not exercised (rollback was denied)
+- Id-quality issues (not sort order): `#n` duplicate-disambiguated section ids; EU `art.Article N` id format
