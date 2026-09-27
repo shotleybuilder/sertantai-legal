@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Api do
     # Legislative Definitions - terms from Interpretation sections (per-law, per-term)
     resource(SertantaiLegal.Legal.LegislativeDefinition)
     resource(SertantaiLegal.Legal.DefinitionLink)
+    resource(SertantaiLegal.Legal.LatEvent)
 
     # AI-generated controls and provision mappings (from fractalaw)
     resource(SertantaiLegal.Legal.Control)

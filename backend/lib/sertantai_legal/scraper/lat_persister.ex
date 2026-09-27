@@ -78,6 +78,16 @@ defmodule SertantaiLegal.Scraper.LatPersister do
           gate!(plan, law_name, Keyword.get(opts, :force, false))
           insert_maps = carry_values(insert_maps, existing, plan, columns)
 
+          # lat_events context (read by the legal_articles triggers): a merge
+          # re-parse replaces rows, it does not discard the law's LAT.
+          set_event_context(
+            op_id: Ecto.UUID.generate(),
+            reason: "reparse",
+            source: Keyword.get(opts, :source, "lat_persister"),
+            actor: Keyword.get(opts, :actor),
+            app_version: app_version()
+          )
+
           # DELETE existing rows for this law
           {deleted, _} =
             Repo.query!(
@@ -94,6 +104,9 @@ defmodule SertantaiLegal.Scraper.LatPersister do
               {count, _} = Repo.insert_all("lat", batch)
               acc + count
             end)
+
+          # Don't leak "reparse" into a caller's later deletes in the same transaction.
+          clear_event_context()
 
           Carry.apply_renames(plan.renames)
           if existing != [], do: Carry.log_changes(law_name, plan, Ecto.UUID.generate())
@@ -137,6 +150,36 @@ defmodule SertantaiLegal.Scraper.LatPersister do
   rescue
     e ->
       Logger.warning("[LatPersister] lat event failed for #{law_name}: #{Exception.message(e)}")
+  end
+
+  @doc """
+  Set `lat_events` trigger context for the current transaction
+  (`SET LOCAL sertantai.lat.<key>`). Keys: `op_id`, `reason`, `source`,
+  `actor`, `archive_ref`, `app_version`; nil values are skipped.
+  """
+  @spec set_event_context(keyword()) :: :ok
+  def set_event_context(context) do
+    for {key, value} when not is_nil(value) <- context do
+      Repo.query!("SELECT set_config($1, $2, true)", ["sertantai.lat.#{key}", to_string(value)])
+    end
+
+    :ok
+  end
+
+  @event_context_keys ~w(op_id reason source actor archive_ref app_version)
+
+  @doc "Clear the `lat_events` trigger context for the rest of the transaction."
+  @spec clear_event_context() :: :ok
+  def clear_event_context do
+    for key <- @event_context_keys do
+      Repo.query!("SELECT set_config($1, '', true)", ["sertantai.lat.#{key}"])
+    end
+
+    :ok
+  end
+
+  defp app_version do
+    Application.spec(:sertantai_legal, :vsn) |> to_string()
   end
 
   defp gate!(%LatMerge{lost_unchanged: []}, _law, _force), do: :ok

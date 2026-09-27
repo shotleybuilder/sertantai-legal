@@ -1,11 +1,11 @@
 ---
 session: "Corpus Enrichment Readiness"
-status: pending
+status: active
 opened: 2026-09-27
 related: ["fractalatai#56", "fractalatai#58", "fractalatai#59", "fractalatai#60", 166, 165]
 ---
 
-# Session: Corpus Enrichment Readiness (PENDING)
+# Session: Corpus Enrichment Readiness (ACTIVE)
 
 ## Problem
 
@@ -19,8 +19,8 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 
 ## Todo
 
-- ⬜ `lat_events` table (Ash resource `LatEvent`; `LegalRegister` has_many): one row per `parsed` / `enriched` / `discarded` event. Schema and write paths are in "LAT retention" below.
-- ⬜ Triggers on `legal_articles`: INSERT → `parsed`, DELETE → `discarded`, with reason/source/actor from `SET LOCAL sertantai.lat.*`. `reason = reparse` (the merge re-parse) is a replacement, not a discard. A delete without a reason logs `unknown`, so ad-hoc SQL deletes still leave a trace.
+- ✅ `lat_events` table (Ash `LatEvent`, migration `20260927093413`): composite FK `(law_id, country)` → `legal_register`; indexes on law_name/law_id + at, event, run id; unique `(law_id, country, event, op_key)` so there is one event per law per operation.
+- ✅ Triggers (parent + both partitions): `trg_lat_a_events_del` fires *before* the stats trigger (pre-delete hash/count) and `trg_lat_z_events_ins` *after* it (final hash). `discarded` only when the law has no LAT left and reason ≠ `reparse`; a missing reason gives `unknown`. `LatPersister` sets `op_id` (unique per call), `reason=reparse`, `source`, `actor` and `app_version`, and **clears the context after its writes**, so a caller's later delete in the same transaction is not taken for a re-parse. Keying on `op_id` (not txid) also keeps events separate inside one transaction. Dev migrated; tests cover parse, batched parse, re-parse, discard with reason/archive_ref, unknown delete, and partial delete / enrichment update (no event).
 - ⬜ `enriched` events from the TaxaSubscriber carry the `lat_hash`/`struct_hash` fractalaw enriched against, plus the run id / model version when fractalaw's payload carries them (ask fractalaw to add them)
 - ⬜ Enrichment provenance: store which fractalaw version, run and models produced each enrichment (spec in "Enrichment provenance" below). **Decision (Jason, 2026-09-27): legal builds its side in full against the agreed spec** (`lat_events` family events; TaxaSubscriber reads the `provenance` list column, and tolerates its absence until fractalaw ships), then raises the payload formally. Fractalaw implements after the raise (its capture work is its own issue).
 - ⬜ NAS archive of discarded LAT: before a discard, write the law's rows (compressed, per law, e.g. `…/lat-archive/<law>/<lat_hash>.jsonl.gz`) and record the path in the `discarded` event (`archive_ref`), so evidence survives and a later decision can restore instead of re-parsing
