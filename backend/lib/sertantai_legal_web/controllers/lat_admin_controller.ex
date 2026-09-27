@@ -20,7 +20,7 @@ defmodule SertantaiLegalWeb.LatAdminController do
   alias SertantaiLegal.Scraper.{LatReparser, LatSessionManager, LatStagedParser, Storage}
   alias SertantaiLegal.Scraper.{ScrapeSession, ScrapeSessionRecord}
   alias SertantaiLegal.Scraper.LatParser.Diagnostics
-  alias SertantaiLegal.Scraper.LatEvents
+  alias SertantaiLegal.Scraper.{LatArchive, LatEvents}
 
   require Ash.Query
   require Logger
@@ -454,22 +454,20 @@ defmodule SertantaiLegalWeb.LatAdminController do
   @doc """
   DELETE /api/lat/laws/:law_name/data
 
-  Deletes all LAT rows and amendment annotations for a single law.
-  The propagate_lat_stats trigger auto-sets uk_lrt.lat_count = 0.
-  Taxa/fitness fields on uk_lrt are unaffected.
+  Deletes all LAT rows and amendment annotations for a single law, via
+  `LatArchive.discard/3`: the rows are archived to the NAS first and a
+  `discarded` lat_event records the reason. Params: `reason` (default
+  `admin_action`; e.g. `not_making`, `revoked`), `archive=false` to skip
+  the archive. The stats trigger sets lat_count = 0; taxa/fitness on the
+  register are unaffected.
   """
-  def delete_lat(conn, %{"law_name" => law_name}) do
-    Repo.transaction(fn ->
-      %{num_rows: ann_deleted} =
-        Repo.query!("DELETE FROM amendment_annotations WHERE law_name = $1", [law_name])
-
-      %{num_rows: lat_deleted} =
-        Repo.query!("DELETE FROM lat WHERE law_name = $1", [law_name])
-
-      {lat_deleted, ann_deleted}
-    end)
+  def delete_lat(conn, %{"law_name" => law_name} = params) do
+    LatArchive.discard(law_name, Map.get(params, "reason", "admin_action"),
+      archive: Map.get(params, "archive") != "false",
+      source: "admin"
+    )
     |> case do
-      {:ok, {lat_deleted, ann_deleted}} ->
+      {:ok, %{deleted: lat_deleted, annotations_deleted: ann_deleted}} ->
         Logger.info(
           "[LatAdmin] Deleted LAT for #{law_name}: #{lat_deleted} rows, #{ann_deleted} annotations"
         )

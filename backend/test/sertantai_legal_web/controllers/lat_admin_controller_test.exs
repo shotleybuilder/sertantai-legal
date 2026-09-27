@@ -346,6 +346,20 @@ defmodule SertantaiLegalWeb.LatAdminControllerTest do
       assert ann_after == 0
     end
 
+    test "records a discarded event with the given reason and a NAS archive ref", %{conn: conn} do
+      conn |> delete("/api/lat/laws/UK_ukpga_2024_1/data?reason=not_making")
+
+      %{rows: [[reason, ref, n]]} =
+        Repo.query!(
+          "SELECT reason, archive_ref, row_count FROM lat_events WHERE law_name = $1 AND event = 'discarded'",
+          ["UK_ukpga_2024_1"]
+        )
+
+      assert reason == "not_making"
+      assert n == 3
+      assert File.exists?(ref)
+    end
+
     test "uk_lrt record still exists with lat_count updated by trigger", %{conn: conn} do
       conn |> delete("/api/lat/laws/UK_ukpga_2024_1/data")
 

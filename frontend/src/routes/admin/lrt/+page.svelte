@@ -780,6 +780,21 @@
 
 	// LAT deletion dialog state
 	let deleteConfirmRecord: UkLrtRecord | null = $state(null);
+	// Why the LAT is being discarded — recorded in lat_events (enrichment readiness)
+	let deleteReason = $state('admin_action');
+	const deleteReasons = [
+		{ value: 'not_making', label: 'Not Making' },
+		{ value: 'revoked', label: 'Revoked / repealed' },
+		{ value: 'superseded', label: 'Superseded' },
+		{ value: 'out_of_scope', label: 'Out of scope' },
+		{ value: 'admin_action', label: 'Other (admin action)' }
+	];
+
+	function defaultDeleteReason(r: UkLrtRecord): string {
+		if (r.live && /Revoked|Repealed|Abolished/.test(r.live)) return 'revoked';
+		if (r.is_making === false) return 'not_making';
+		return 'admin_action';
+	}
 	let deleteLoading = $state(false);
 	let deleteError: string | null = $state(null);
 
@@ -829,7 +844,7 @@
 
 		try {
 			const response = await authFetch(
-				`${API_URL}/api/lat/laws/${encodeURIComponent(deleteConfirmRecord.name)}/data`,
+				`${API_URL}/api/lat/laws/${encodeURIComponent(deleteConfirmRecord.name)}/data?reason=${encodeURIComponent(deleteReason)}`,
 				{ method: 'DELETE' }
 			);
 
@@ -1606,6 +1621,7 @@
 									title="Delete LAT data for this law"
 									onclick={() => {
 										deleteConfirmRecord = r;
+										deleteReason = defaultDeleteReason(r);
 									}}
 								>
 									<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1808,8 +1824,22 @@
 					<p><span class="font-medium">Making:</span> {r.is_making ? 'Yes' : 'No'}</p>
 					<p class="mt-3">
 						<span class="text-2xl font-bold text-red-600">{r.lat_count?.toLocaleString()}</span>
-						<span class="text-gray-500 ml-1">LAT rows will be permanently deleted</span>
+						<span class="text-gray-500 ml-1"
+							>LAT rows will be deleted (archived to the NAS first)</span
+						>
 					</p>
+					<label class="mt-3 block">
+						<span class="font-medium">Reason:</span>
+						<select
+							bind:value={deleteReason}
+							class="ml-2 text-sm border border-gray-300 rounded px-2 py-1"
+							disabled={deleteLoading}
+						>
+							{#each deleteReasons as reason (reason.value)}
+								<option value={reason.value}>{reason.label}</option>
+							{/each}
+						</select>
+					</label>
 					<p class="mt-2 text-xs text-gray-500">
 						Amendment annotations for this law will also be deleted. Taxa and fitness data will NOT
 						be affected.

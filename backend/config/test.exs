@@ -35,6 +35,12 @@ config :sertantai_legal, Oban, testing: :manual
 
 # Disable Zenoh and Hub notifier in tests
 config :sertantai_legal, :zenoh, enabled: false
+
+# Never write the LAT archive to the NAS from tests
+config :sertantai_legal,
+       :lat_archive_dir,
+       Path.join(System.tmp_dir!(), "sertantai-lat-archive-test")
+
 config :sertantai_legal, :hub, enabled: false
 
 # Auth + Electric config for tests
