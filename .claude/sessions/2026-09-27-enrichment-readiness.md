@@ -22,6 +22,7 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 - ⬜ `lat_events` table (Ash resource `LatEvent`; `LegalRegister` has_many): one row per `parsed` / `enriched` / `discarded` event. Schema and write paths are in "LAT retention" below.
 - ⬜ Triggers on `legal_articles`: INSERT → `parsed`, DELETE → `discarded`, with reason/source/actor from `SET LOCAL sertantai.lat.*`. `reason = reparse` (the merge re-parse) is a replacement, not a discard. A delete without a reason logs `unknown`, so ad-hoc SQL deletes still leave a trace.
 - ⬜ `enriched` events from the TaxaSubscriber carry the `lat_hash`/`struct_hash` fractalaw enriched against, plus the run id / model version when fractalaw's payload carries them (ask fractalaw to add them)
+- ⬜ Enrichment provenance: store which fractalaw version, run and models produced each enrichment (spec in "Enrichment provenance" below). Build legal's side with `lat_events`, then **raise against fractalaw** (Jason: plan now, raise once built).
 - ⬜ NAS archive of discarded LAT: before a discard, write the law's rows (compressed, per law, e.g. `…/lat-archive/<law>/<lat_hash>.jsonl.gz`) and record the path in the `discarded` event (`archive_ref`), so evidence survives and a later decision can restore instead of re-parsing
 - ⬜ Backfill `lat_events` from the LAT session log (`scrape_session_records`), `record_change_log` LAT-deletion entries (172 laws) and the existing `making_enrichment_verdict`/`making_enriched_at`, with `source = backfill_*` (lower fidelity)
 - ⬜ Making funnel: derive `lat_evidence` (`enriched_then_discarded` | `parsed_then_discarded` | `lat_held` | `enriched_stale` (the enrichment hash ≠ the current `lat_hash`) | `none`) from the latest `lat_events` per law
@@ -116,6 +117,24 @@ Write paths:
 - **archive:** the delete paths call the archiver *before* deleting (the trigger cannot write to the NAS) and pass `archive_ref` via `SET LOCAL`.
 
 Gemini points not adopted: a BIGINT law id (ours are UUIDs on a country-partitioned table); replacing the one big enrichment batch with per-law event-driven runs (the batch is deliberate because of pod spin-up cost; small changes already flow through fractalaw's manifest watch).
+
+### Enrichment provenance (planned 2026-09-27; raise against fractalaw after `lat_events` is built)
+
+Why: fractalaw has several enrichment tiers and models. Provisions already carry `extraction_method` (regex, classifier, llm, agentic, reconciled, inferred, inherited, pending_llm), but law level records only a verdict and a time. Without knowing which versions and models produced an enrichment, we can't tell what a model upgrade makes stale, target re-enrichment at weak tiers, or explain a verdict.
+
+What legal wants in the law-level taxa payload (TaxaSubscriber), stored on the `enriched` event:
+- `enrichment_run_id` (uuid) and `run_started_at`: one per fractalaw batch, so all laws from one run correlate
+- `fractalaw_version`: git sha / release of the pipeline
+- `enriched_against`: `lat_hash` + `struct_hash` of the LAT fractalaw read (ties the enrichment to a LAT version; drives `enriched_stale`)
+- `stages`: per stage actually run, e.g. `triage`, `drrp`, `actors`, `fitness_extract`, `fitness_compile`, `application`, `significance`: `{method: regex|classifier|llm|agentic|reconciled, model, model_version, prompt_version?, ran_at}`
+- `provision_method_counts`: e.g. `{"llm": 412, "regex": 90, "pending_llm": 3}`, a quick signal of how much of the law was enriched by the stronger tiers
+
+Storage: `lat_events.enrichment_run_id`, `enrichment_version` (= fractalaw_version) as columns (queried: "everything from run X", "enriched before version Y"). The rest (`stages`, `provision_method_counts`) goes in `lat_events.provenance jsonb`: payload detail, read per law, not filtered on.
+
+Uses:
+- The worklist reason `model_upgrade_stale` (a law enriched by an older model for a stage that has since improved).
+- Target laws with a high `pending_llm` / `regex`-only share.
+- The per-law verdict explanation in the admin UI.
 
 ## Draft LAT parse strategy (to agree)
 
