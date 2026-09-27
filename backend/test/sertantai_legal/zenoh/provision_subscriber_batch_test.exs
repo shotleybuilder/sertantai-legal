@@ -1,8 +1,6 @@
 defmodule SertantaiLegal.Zenoh.ProvisionSubscriberBatchTest do
   use SertantaiLegal.DataCase
 
-  require Ash.Query
-
   alias SertantaiLegal.Legal.LegalArticle
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Repo

@@ -31,6 +31,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   import SweetXml
 
+  alias SertantaiLegal.Legal.Lat.SortKeyRewrite
   alias SertantaiLegal.Legal.Lat.Transforms
 
   @act_type_codes ~w(ukpga anaw asp nia apni aep)
@@ -85,6 +86,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> mark_repealed_provisions(mode)
     |> detect_and_qualify_parallels()
     |> disambiguate_section_ids()
+    # Keys must ascend with document order even where the numbering or the
+    # source markup defeats the hierarchical encoding.
+    |> SortKeyRewrite.monotonic()
   end
 
   # ── XML Parsing ──────────────────────────────────────────────────

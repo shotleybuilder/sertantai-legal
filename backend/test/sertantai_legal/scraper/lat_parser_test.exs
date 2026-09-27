@@ -146,6 +146,28 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  describe "parse/2 sort_key is monotonic with document order" do
+    test "an item after its paragraph has closed (legislation.gov.uk markup) still sorts in place" do
+      xml = """
+      <Legislation><Secondary><Body>
+      <P1group><P1><Pnumber>39</Pnumber><P1para>
+        <P2><Pnumber>2</Pnumber><P2para><Text>Lead—</Text>
+          <P3><Pnumber>d</Pnumber><P3para><Text>item d</Text></P3para></P3>
+        </P2para></P2>
+        <P3><Pnumber>e</Pnumber><P3para><Text>item e</Text></P3para></P3>
+      </P1para></P1></P1group>
+      <P1group><P1><Pnumber>40</Pnumber><P1para><Text>Next.</Text></P1para></P1></P1group>
+      </Body></Secondary></Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2099_1", type_code: "uksi"})
+      assert Enum.any?(rows, &String.ends_with?(&1.section_id, ":reg.39(e)"))
+
+      keys = rows |> Enum.sort_by(& &1.position) |> Enum.map(& &1.sort_key)
+      assert keys == Enum.sort(keys)
+    end
+  end
+
   describe "parse/2 with simple SI" do
     setup do
       xml = read_fixture("simple_si.xml")
@@ -680,7 +702,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       assert String.contains?(part.text, "General Provisions")
       assert String.contains?(part.text, "This Part applies to England and Wales only.")
-      refute String.contains?(part.text || "", "Section text")
+      refute String.contains?(part.text, "Section text")
     end
 
     test "Part with no child provisions keeps full text" do

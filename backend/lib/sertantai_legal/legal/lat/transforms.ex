@@ -311,7 +311,7 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   def normalize_provision_to_sort_key("", _opts), do: "000.000.000"
 
   def normalize_provision_to_sort_key(s, opts) do
-    s = s |> String.trim() |> String.upcase() |> strip_label()
+    s = s |> String.trim() |> String.upcase() |> strip_label() |> leading_number()
 
     if s == "" do
       "000.000.000"
@@ -339,6 +339,20 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
     s
     |> String.replace(@number_label, "")
     |> String.replace(~r/^\((.*)\)$/, "\\1")
+  end
+
+  # Unnumbered Parts store their title ("Nuclear site licences"; "I.—Law
+  # relating to Gunpowder"): use a leading number / Roman numeral if there is
+  # one, else a neutral value so provision numbers decide the order.
+  defp leading_number(s) do
+    if String.contains?(s, " ") do
+      case Regex.run(~r/^(\d+[A-Z]*|[IVXLCDM]+)(?=[.\s—–])/u, s) do
+        [_, n] -> n
+        _ -> ""
+      end
+    else
+      s
+    end
   end
 
   # Roman numeral detection and conversion.
@@ -413,7 +427,19 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
     parse_letter_suffixes(rest, [value | acc])
   end
 
+  defp parse_letter_suffixes(<<d, _::binary>> = s, acc) when d >= ?0 and d <= ?9 do
+    # Digits after a letter (105Z27, z10): the number is the next segment,
+    # so 105Z < 105Z1 < 105Z2 < 105Z10.
+    {digits, rest} = split_digits(s, "")
+    parse_letter_suffixes(rest, [String.to_integer(digits) | acc])
+  end
+
   defp parse_letter_suffixes(_, acc), do: Enum.reverse(acc)
+
+  defp split_digits(<<d, rest::binary>>, acc) when d >= ?0 and d <= ?9,
+    do: split_digits(rest, acc <> <<d>>)
+
+  defp split_digits(rest, acc), do: {acc, rest}
 
   defp pad_segments(segments, target) when length(segments) >= target, do: segments
 
@@ -457,7 +483,7 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
     # Position as final tiebreaker — ensures rows at the same hierarchy
     # position but different types (article vs note) get distinct sort keys
     pos_segment =
-      if position, do: String.pad_leading(Integer.to_string(position), 4, "0"), else: "0000"
+      if position, do: String.pad_leading(Integer.to_string(position), 6, "0"), else: "000000"
 
     segments =
       [

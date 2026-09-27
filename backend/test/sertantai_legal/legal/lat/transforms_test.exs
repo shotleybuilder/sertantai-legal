@@ -462,6 +462,11 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
                k.("Article 2")
     end
 
+    test "position is padded to 6 digits so laws past 9,999 rows keep order" do
+      assert T.build_sort_key("article", provision: "1", position: 9999) <
+               T.build_sort_key("article", provision: "1", position: 10_000)
+    end
+
     test "labelled part / chapter values sort by their number: 'CHAPTER III', 'PART7A'" do
       assert T.normalize_provision_to_sort_key("CHAPTER III") ==
                T.normalize_provision_to_sort_key("III")
@@ -471,6 +476,27 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
 
       assert T.build_sort_key("chapter", chapter: "CHAPTER III") <
                T.build_sort_key("chapter", chapter: "CHAPTER V")
+    end
+
+    test "letter-then-digit numbers sort numerically: 105Z < 105Z1 < 105Z2 < 105Z10 < 105Z29 < 106" do
+      n = &T.normalize_provision_to_sort_key/1
+      seq = ~w(105Z 105Z1 105Z2 105Z10 105Z29 106)
+      assert Enum.map(seq, n) == Enum.sort(Enum.map(seq, n))
+      assert Enum.uniq(Enum.map(seq, n)) == Enum.map(seq, n)
+    end
+
+    test "lettered paragraphs with digits: (z9) < (z10)" do
+      k = &T.build_sort_key("paragraph", provision: "153", sub: "1", paragraph: &1)
+      assert k.("z9") < k.("z10")
+      assert k.("z") < k.("z1")
+    end
+
+    test "title-valued parts: a leading number is used, a bare title is neutral" do
+      n = &T.normalize_provision_to_sort_key/1
+      assert n.("I.—Law relating to Gunpowder") == n.("I")
+      assert n.("IV.—Supplemental Provisions") == n.("IV")
+      assert n.("Nuclear site licences") == "000.000.000"
+      assert n.("Parts IV—VIII") == "000.000.000"
     end
 
     test "an unlabelled letter prefix is kept: A1 is not 1" do

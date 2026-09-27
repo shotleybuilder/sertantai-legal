@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Legal.Lat.SortKeyRewriteStoreTest do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LatHash, LatPersister}
 
-  @old_c "000.000.000.000.000.000.000.000.000.000.006.000.000.004.000.000.100.000.000.000.000.000.0003~"
+  @old_c "000.000.000.000.000.000.000.000.000.000.006.000.000.004.000.000.100.000.000.000.000.000.000003~"
 
   setup do
     name = "UK_uksi_2099_#{System.unique_integer([:positive])}"
@@ -49,7 +49,7 @@ defmodule SertantaiLegal.Legal.Lat.SortKeyRewriteStoreTest do
         position: 2,
         text: "b.",
         sort_key:
-          "000.000.000.000.000.000.000.000.000.000.006.000.000.004.000.000.000.020.000.000.000.000.0002~"
+          "000.000.000.000.000.000.000.000.000.000.006.000.000.004.000.000.000.020.000.000.000.000.000002~"
       }),
       Map.merge(base, %{
         section_id: "#{name}:reg.6(4)(c)",
@@ -105,5 +105,26 @@ defmodule SertantaiLegal.Legal.Lat.SortKeyRewriteStoreTest do
     %{rows: [[hash]]} = Repo.query!("SELECT lat_hash FROM legal_register WHERE name = $1", [name])
     served = name |> SertantaiLegal.Scraper.LatHash.Query.served_query() |> Repo.all()
     assert hash == LatHash.hash(served)
+  end
+
+  test "plan re-pads positions and repairs document-order breaks per law", %{name: name} do
+    Store.apply!(
+      Store.plan([name]),
+      "sort_key_rewrite_test_#{System.unique_integer([:positive])}"
+    )
+
+    # (b)'s numbering now sorts after (c): a break the hierarchy cannot resolve.
+    Repo.query!("UPDATE legal_articles SET paragraph = 'z' WHERE section_id = $1", [
+      "#{name}:reg.6(4)(b)"
+    ])
+
+    changes = Store.plan([name])
+    # The outlier (b) is repaired; (c) keeps its own key.
+    assert "#{name}:reg.6(4)(b)" in Enum.map(changes, & &1.section_id)
+    Store.apply!(changes, "sort_key_rewrite_test_#{System.unique_integer([:positive])}")
+
+    assert stored(name, "reg.6(4)(b)") < stored(name, "reg.6(4)(c)")
+    assert String.ends_with?(stored(name, "reg.6(4)(c)"), ".000003~")
+    assert Store.plan([name]) == []
   end
 end

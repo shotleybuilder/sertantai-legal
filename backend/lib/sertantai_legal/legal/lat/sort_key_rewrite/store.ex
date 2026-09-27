@@ -1,7 +1,8 @@
 defmodule SertantaiLegal.Legal.Lat.SortKeyRewrite.Store do
   @moduledoc """
   DB side of `SortKeyRewrite`: find stored `legal_articles` rows whose
-  `sort_key` the 2026-09-26 fix changes, snapshot them, and rewrite them in
+  `sort_key` the 2026-09-26/27 fixes change (segment rewrite, then the
+  per-law document-order repair), snapshot them, and rewrite them in
   place (one UPDATE per law, so the LAT stats trigger refreshes each law's
   `lat_hash` once and fractalaw's manifest picks the change up).
 
@@ -29,23 +30,37 @@ defmodule SertantaiLegal.Legal.Lat.SortKeyRewrite.Store do
 
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, law_name, section_type, part, chapter, provision, paragraph, schedule, sort_key FROM legal_articles #{where}",
+        "SELECT section_id, law_name, section_type, part, chapter, provision, paragraph, schedule, sort_key, position FROM legal_articles #{where}",
         params,
         timeout: 300_000
       )
 
-    for [sid, law, type, part, ch, prov, para, sch, key] <- rows,
-        row = %{
-          section_type: type,
-          part: part,
-          chapter: ch,
-          provision: prov,
-          paragraph: para,
-          schedule: sch
-        },
-        {:ok, new} <- [SortKeyRewrite.rewrite(key || "", row)],
-        new != key,
-        do: %{section_id: sid, law_name: law, old: key, new: new}
+    rows
+    |> Enum.map(fn [sid, law, type, part, ch, prov, para, sch, key, pos] ->
+      row = %{
+        section_type: type,
+        part: part,
+        chapter: ch,
+        provision: prov,
+        paragraph: para,
+        schedule: sch,
+        position: pos
+      }
+
+      new =
+        case SortKeyRewrite.rewrite(key || "", row) do
+          {:ok, new} -> new
+          :skip -> key
+        end
+
+      %{section_id: sid, law_name: law, position: pos, old: key, sort_key: new}
+    end)
+    |> Enum.group_by(& &1.law_name)
+    |> Enum.flat_map(fn {_law, law_rows} -> SortKeyRewrite.monotonic(law_rows) end)
+    |> Enum.filter(&(&1.sort_key != &1.old))
+    |> Enum.map(
+      &%{section_id: &1.section_id, law_name: &1.law_name, old: &1.old, new: &1.sort_key}
+    )
   end
 
   @doc """
