@@ -110,6 +110,20 @@ The agreed fix is a per-law `lat_hash` manifest that fractalaw polls, re-pulling
 - ✅ Fractalaw review: the merge had carried enrichment onto same-id rows whose old text contained the new (parents that aggregated children, headings now empty), attributing the children's duties to the stripped-down row. The rule is now new ⊇ old only (aligned with fractalaw). The 15 laws re-parsed before the fix were corrected (enrichment cleared on 237 rows in 11 laws).
 - ✅ End state: 0 laws in the older sort_key format; corpus sort breaks 668 (from ~8,000); lat_hash and struct_hash consistent for all laws. Control mappings: 3 re-pointed to extent-tagged ids (EPA 1990 s.78F, EA 1995 s.113(3), s.80(5)); 2 left orphaned because their provisions are now repealed (EPA 1990 s.40(4), s.74(3); control 4080cd6c…), which needs a review decision.
 
+- ✅ Remaining 668 sort breaks fixed (Jason, via fractalaw, 2026-09-27). Causes (per break: `data/reports/lat-reparse/sort-breaks-2026-09-27.csv`):
+  - 208 insert-order / numbering conflicts
+  - 133 title-valued or irregular Part/Chapter/heading numbering
+  - 96 `#n` duplicate ids
+  - 70 letter-then-digit numbers (`105Z27`, `z10`)
+  - 63 source markup (item after its paragraph closed)
+  - 58 numbering the key cannot express (`(1ZA)`, `(A8)`, `(vic)`)
+  - 20 tables
+  - 20 parallel-extent rows
+
+  Encoder fixes: 6-digit position (UK_ukpga_2003_21 has 10,900 rows), letter-then-digit numbers, title-valued Parts. Everything else is handled by the document-order repair (`SortKeyRewrite.monotonic/1`): it keeps each law's longest increasing run of keys and gives the other rows their predecessor's structural prefix with their own position. It is applied in `LatParser.parse/2` and in the in-place rewrite, and re-keyed 3,230 rows.
+  - Applied to all 352,300 rows (snapshot `sort_key_rewrite_snapshot_20260927`). Corpus breaks 668 → 0; hashes consistent; the tool is idempotent (a re-run plans 0 rows).
+  - Caveat: repaired rows' key segments are borrowed from the preceding row, so they order correctly, but the segments are not the row's own numbering. Read structure from the part/provision columns, never by decoding sort_key.
+
 ## Dependencies
 
 - ✅ Contract proposed by fractalaw-a4 (2026-09-26); legal's changes sent: hash over all served rows, explicit whitespace set, event metadata
