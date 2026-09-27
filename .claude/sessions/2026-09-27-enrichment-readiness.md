@@ -22,7 +22,7 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 - ⬜ `lat_events` table (Ash resource `LatEvent`; `LegalRegister` has_many): one row per `parsed` / `enriched` / `discarded` event. Schema and write paths are in "LAT retention" below.
 - ⬜ Triggers on `legal_articles`: INSERT → `parsed`, DELETE → `discarded`, with reason/source/actor from `SET LOCAL sertantai.lat.*`. `reason = reparse` (the merge re-parse) is a replacement, not a discard. A delete without a reason logs `unknown`, so ad-hoc SQL deletes still leave a trace.
 - ⬜ `enriched` events from the TaxaSubscriber carry the `lat_hash`/`struct_hash` fractalaw enriched against, plus the run id / model version when fractalaw's payload carries them (ask fractalaw to add them)
-- ⬜ Enrichment provenance: store which fractalaw version, run and models produced each enrichment (spec in "Enrichment provenance" below). Build legal's side with `lat_events`, then **raise against fractalaw** (Jason: plan now, raise once built).
+- ⬜ Enrichment provenance: store which fractalaw version, run and models produced each enrichment (spec in "Enrichment provenance" below). **Decision (Jason, 2026-09-27): legal builds its side in full against the agreed spec** (`lat_events` family events; TaxaSubscriber reads the `provenance` list column, and tolerates its absence until fractalaw ships), then raises the payload formally. Fractalaw implements after the raise (its capture work is its own issue).
 - ⬜ NAS archive of discarded LAT: before a discard, write the law's rows (compressed, per law, e.g. `…/lat-archive/<law>/<lat_hash>.jsonl.gz`) and record the path in the `discarded` event (`archive_ref`), so evidence survives and a later decision can restore instead of re-parsing
 - ⬜ Backfill `lat_events` from the LAT session log (`scrape_session_records`), `record_change_log` LAT-deletion entries (172 laws) and the existing `making_enrichment_verdict`/`making_enriched_at`, with `source = backfill_*` (lower fidelity)
 - ⬜ Making funnel: derive `lat_evidence` (`enriched_then_discarded` | `parsed_then_discarded` | `lat_held` | `enriched_stale` (the enrichment hash ≠ the current `lat_hash`) | `none`) from the latest `lat_events` per law
@@ -40,6 +40,7 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 - ✅ LAT quality: merge/gate, sort order 0 breaks, manifest + renames (LAT sync session, closed 2026-09-27)
 - ⬜ Fractalaw unparked (Jason) and its diff-apply's first hub sync
 - ⬜ Fractalaw #56 / #58 / #59 / #60
+- ⬜ Fractalaw provenance capture + `provenance` payload column (after legal raises it; not blocking legal's build)
 
 ## Data for the strategy (2026-09-27)
 
