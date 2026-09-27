@@ -126,13 +126,18 @@ What legal wants in the law-level taxa payload (TaxaSubscriber), stored on the `
 - `enrichment_run_id` (uuid) and `run_started_at`: one per fractalaw batch, so all laws from one run correlate
 - `fractalaw_version`: git sha / release of the pipeline
 - `enriched_against`: `lat_hash` + `struct_hash` of the LAT fractalaw read (ties the enrichment to a LAT version; drives `enriched_stale`)
-- `stages`: per stage actually run, e.g. `triage`, `drrp`, `actors`, `fitness_extract`, `fitness_compile`, `application`, `significance`: `{method: regex|classifier|llm|agentic|reconciled, model, model_version, prompt_version?, ran_at}`
-- `provision_method_counts`: e.g. `{"llm": 412, "regex": 90, "pending_llm": 3}`, a quick signal of how much of the law was enriched by the stronger tiers
+- `models`: grouped by the **three enrichment model families**, each with its own models and versions. For every stage actually run: `{method: regex|classifier|llm|agentic|reconciled, model, model_version, prompt_version?, ran_at}`
+  - `taxa`: triage, DRRP (duties/rights/responsibilities/powers), actors/holders, duty family/sub-type, purposes, POPIMAR
+  - `fitness`: extract, reconcile, compile (applicability trees), application (where the law operates)
+  - `significance`: provision scoring (scope, gravity, strength, hierarchy) and the law-level roll-up
+- `provision_method_counts` **per family**, e.g. `{"taxa": {"llm": 412, "regex": 90, "pending_llm": 3}, "fitness": {…}, "significance": {…}}`
 
-Storage: `lat_events.enrichment_run_id`, `enrichment_version` (= fractalaw_version) as columns (queried: "everything from run X", "enriched before version Y"). The rest (`stages`, `provision_method_counts`) goes in `lat_events.provenance jsonb`: payload detail, read per law, not filtered on.
+Note: legal's provision-level `extraction_method` today describes **taxa only** (2026-09-27: regex 170,905 · classifier 8,528 · llm 1,720 · inferred 1,642 · pending_llm 1,519 · agentic 892 · reconciled 22 · null 14,720). Legal holds no method or model information for fitness or significance, so provenance for those two families is entirely new. Also ask fractalaw whether a per-provision method for fitness/significance exists and should be published.
+
+Storage: `lat_events.enrichment_run_id`, `enrichment_version` (= fractalaw_version) as columns (queried: "everything from run X", "enriched before version Y"). The rest (`models` by family, `provision_method_counts`) goes in `lat_events.provenance jsonb`: payload detail, read per law, not filtered on. Fractalaw may publish taxa, fitness and significance at different times, even from different runs (e.g. the #55 / #57 / #58 publishes), so one `enriched` event per family per publish, with a `family` field, is better than one event per law.
 
 Uses:
-- The worklist reason `model_upgrade_stale` (a law enriched by an older model for a stage that has since improved).
+- The worklist reason `model_upgrade_stale`, **per family** (e.g. taxa is current but significance came from an older model).
 - Target laws with a high `pending_llm` / `regex`-only share.
 - The per-law verdict explanation in the admin UI.
 
