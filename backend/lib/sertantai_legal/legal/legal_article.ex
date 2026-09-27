@@ -52,7 +52,10 @@ defmodule SertantaiLegal.Legal.LegalArticle do
 
     attribute :sort_key, :string do
       allow_nil?(false)
-      description("Normalised sort encoding. ORDER BY sort_key recovers document order.")
+
+      description(
+        "Ordering key only: ORDER BY sort_key (within a law) gives document order. Never decode part/provision/paragraph numbers from its segments. Rows the document-order repair re-keyed carry the preceding row's structural prefix; read the part/chapter/provision/paragraph columns instead."
+      )
     end
 
     attribute :position, :integer do

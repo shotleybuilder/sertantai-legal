@@ -453,10 +453,16 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   Encodes the complete structural hierarchy as a composite key so that
   `ORDER BY sort_key` recovers correct document order within a law.
 
-  Format: `{schedule}.{part}.{chapter}.{heading}.{provision}.{sub}.{paragraph}.{sub_paragraph}~{extent}`
+  Format: `{schedule}.{part}.{chapter}.{heading}.{provision}.{sub}.{paragraph}.{sub_paragraph}.{position}~{extent}`
 
-  Each segment is a 3-digit zero-padded provision number (via `normalize_provision_to_sort_key/1`).
-  Schedule segment uses "S" prefix (e.g., "S01") to sort after body content.
+  Each structural segment is `NNN.NNN.NNN` (via `normalize_provision_to_sort_key/2`);
+  schedule uses an "S" prefix (e.g. "S01") to sort after body content; position
+  is 6 digits.
+
+  **Ordering only.** `LatParser` finishes with `SortKeyRewrite.monotonic/1`,
+  which gives rows the encoding cannot place their predecessor's prefix, so a
+  stored key's segments are not always the row's own numbering. Never decode
+  structure from a sort_key; read the part/provision/... columns.
   """
   @spec build_sort_key(String.t(), keyword()) :: String.t()
   def build_sort_key(section_type, opts \\ []) do

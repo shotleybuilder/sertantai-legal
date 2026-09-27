@@ -145,3 +145,14 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
 - **section_id prefix**: `art.` is ONLY for EU retained law; all domestic UK instruments use `reg.`
 - **type_code+year+number** is the unique key for UK law identity — never match by year+number alone
 - **Governed = Duties + Rights**, **Government = Responsibilities + Powers** — never cross-assign (DRRP)
+- **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
+
+## LAT sort_key
+
+`Transforms.build_sort_key/2` encodes the hierarchy as 23 dot-separated segments (schedule, part, chapter, heading, provision, sub, paragraph, sub_paragraph — 3 × 3-digit each — then a 6-digit position) plus `~extent`. Legislation's numbering defeats any fixed encoding in places: contradictory insert orders (68A before 68ZA in one law, 16ZZA before 16ZA in another), items legislation.gov.uk places after their paragraph closes (official id `regulation-39-e`), `#n` duplicate ids, `(1ZA)`, `(A8)`, `(vic)`.
+
+So every parse ends with **`SortKeyRewrite.monotonic/1`** (document-order repair): per law, keep the longest increasing run of keys and give every other row its predecessor's structural prefix with its own position. Keys then always ascend with `position` (legislation.gov.uk document order). **The repaired rows' segments are borrowed, not their own numbering** — 3,230 rows at the 2026-09-27 rewrite. This is the reason for the ordering-only rule above.
+
+- Parse and in-place rewrite (`mix lat.rewrite_sort_keys`) apply the same repair; the rewrite skips laws already in order, so re-runs are no-ops.
+- `sort_key` is part of `lat_hash` (fractalatai #62), so a key change reaches fractalaw as a metadata-only update. Fractalaw also orders by sort_key only (confirmed 2026-09-27).
+- History and per-break causes: `.claude/sessions/2026-09-26-lat-sync-manifest.md`, `backend/data/reports/lat-reparse/sort-breaks-2026-09-27.csv`.
