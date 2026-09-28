@@ -91,6 +91,7 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Law **application** built into LAT (Jason: LRT must not pull full text); see "Application clause"
 - ✅ Batch 0 applied (Jason: "run all four"); see "Batch 0 applied"
 - ⬜ Batch 1a (Tier 1: OH&S + FIRE); needs Jason's go and the Tier 1 family list
+- ⬜ Fractalaw (requested 2026-09-28): republish REACH, Reg 561/2006, Dir 98/24, CSR 1997 with provenance; full enrichment of FEPA 1985 (LAT parsed today, 490 rows), Forestry Act 1967, Special Waste 1996, DPA 2018. Snapshots `live_fix_taxa_snapshot_20260928` / `live_fix_provision_snapshot_20260928`; verify on publish
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
