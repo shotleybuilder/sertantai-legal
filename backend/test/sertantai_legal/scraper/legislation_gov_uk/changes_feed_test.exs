@@ -99,6 +99,30 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
     assert ChangesFeed.lookup(index, "UK_c", "", "revoked") == nil
   end
 
+  test "affected_extents/1: whole-instrument extent first; a lone provision extent is not the law's" do
+    e = fn provisions, extent ->
+      %Effect{
+        type: "amended",
+        affecting: "UK_x",
+        affected_provisions: provisions,
+        affected_extent: extent
+      }
+    end
+
+    assert ChangesFeed.affected_extents([e.("Regulations", "E+W+S"), e.("reg. 2", "E")]) == [
+             "E+W+S"
+           ]
+
+    assert ChangesFeed.affected_extents([e.("reg. 2", "E+N.I."), e.("reg. 3", nil)]) == []
+
+    assert ChangesFeed.affected_extents([
+             e.("reg. 2", "E+W"),
+             e.("reg. 3", "E+W"),
+             e.("reg. 4", "S")
+           ]) ==
+             ["E+W", "S"]
+  end
+
   test "law_name/1 builds the register name from an affecting URI" do
     assert ChangesFeed.law_name("http://www.legislation.gov.uk/id/uksi/2005/894") ==
              "UK_uksi_2005_894"

@@ -92,7 +92,9 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Batch 0 applied (Jason: "run all four"); see "Batch 0 applied"
 - ⬜ Batch 1a (Tier 1: OH&S + FIRE); needs Jason's go and the Tier 1 family list
 - ✅ Fractalaw live-fix publish (8 laws) verified; see "Live-fix enrichment"
-- ⬜ Tier 1 fetch (1a–1e, running) → dry runs → Jason's go
+- ✅ Tier 1 fetch (1a–1e): 3,360 fetched; 5 pre-1948 SR&Os (`uksro`) have no changes feed
+- ✅ Tier 1 dry runs; see "Tier 1 dry runs"
+- ⬜ Tier 1 apply on Jason's go (apply_effects → application --parse → recompute, per batch); then tell fractalaw to restore 3 PPC orders from archive61
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -315,3 +317,18 @@ Verified against `live_fix_*_snapshot_20260928`:
 - the only unenriched rows are `section` rows (structural; e.g. 220 in DPA 2018).
 
 Leftover: the Making funnel still shows `enrich` for FEPA, Forestry, Special Waste and DPA 2018. `has_fitness` is generated from `fitness_mention_count`, and these laws have `compiled_applicability` but no fitness mentions. This is the readiness session's carried item ("has_fitness should derive from compiled_applicability"). The fix touches a GENERATED column under the `uk_lrt` view (INSTEAD OF triggers), so it gets its own change.
+
+## Tier 1 dry runs (2026-09-28)
+
+| Batch | Cached | Rows matched | Extent changes | live changes | needs_application |
+|---|---|---|---|---|---|
+| 1a OH&S + FIRE | 475 | 884/965 | 37 | 10 | 16 |
+| 1b Waste + Water | 880 | 766/840 | 98 | 7 | 24 |
+| 1c Env protection, pollution, air, noise | 895 | 677/718 | 104 | 14 | 79 |
+| 1d Climate + nuclear | 424 | 310/331 | 22 | 1 | 4 |
+| 1e Public + transport safety | 690 | 999/1,091 | 19 | 5 | 5 |
+
+- **live changes (37):** mostly Revoked → Part revoked (EU law and NI Acts such as the Factories Act (NI) 1965 and the HSW (NI) Order 1978), plus 7 PPC (Designation) (England and Wales) Orders that become revoked in E and in force in W (title marker, territorial application E).
+- **Part → Revoked (9):** all genuine and superseded. They are NI regulations revoked with savings by later NI regulations (Control of Asbestos (NI) 2007, H&S Fees (NI) 2010, water/WFD/EIA (NI), Nitrates (NI) 2014), the Prevention of Oil Pollution Act 1986 (repealed by the Merchant Shipping Act 1995), and PPC Designation 2019. Their legacy rows were unreadable to the old rule.
+- **Fix found:** `affected_effects` took a single provision's extent as the law's (PUWER 1992: 1 of 12 effects). Now: whole-instrument AffectedExtent first, else provision extents only when ≥ 3 effects carry them, which removes 24 changes. PUWER's remaining "E+N.I." is on its own whole-instrument revocation effect (a legislation.gov.uk editorial quirk) and has no live impact (it stays Revoked).
+- **archive61:** 3 of fractalaw's hub-archived laws (PPC Designation 2015/1352, 2016/150, 2016/398) become "Revoked in E; in force in W". Fractalaw must restore them after apply.

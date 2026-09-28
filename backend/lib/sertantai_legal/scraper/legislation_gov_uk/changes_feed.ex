@@ -208,10 +208,31 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   defp whole_target?(t), do: norm(t) == "" or norm(t) in @whole_words
   defp revocation_type?(t), do: Regex.match?(~r/repeal|revoke|^rev$|^rep$/, norm(t))
 
-  @doc "The distinct `AffectedExtent` values across a law's effects (for `ExtentResolver`)."
+  @min_provision_extents 3
+
+  @doc """
+  `AffectedExtent` evidence for the law's own extent (`ExtentResolver`
+  `affected_effects`): the extent on its whole-instrument effects when there
+  are any; otherwise the distinct provision-level extents, but only when at
+  least #{@min_provision_extents} effects carry one — a single provision's
+  extent is not the law's (PUWER 1992: 1 of 12 effects, "E+N.I.").
+  """
   @spec affected_extents([Effect.t()]) :: [String.t()]
-  def affected_extents(effects),
-    do: effects |> Enum.map(& &1.affected_extent) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+  def affected_extents(effects) do
+    whole =
+      for e <- effects,
+          whole_target?(e.affected_provisions),
+          e.affected_extent,
+          do: e.affected_extent
+
+    provisions = for e <- effects, e.affected_extent, do: e.affected_extent
+
+    cond do
+      whole != [] -> Enum.uniq(whole)
+      length(provisions) >= @min_provision_extents -> Enum.uniq(provisions)
+      true -> []
+    end
+  end
 
   defp norm(nil), do: ""
   defp norm(s), do: s |> String.downcase() |> String.replace(~r/\s+/, " ") |> String.trim()
