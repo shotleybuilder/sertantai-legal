@@ -91,7 +91,8 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Law **application** built into LAT (Jason: LRT must not pull full text); see "Application clause"
 - ✅ Batch 0 applied (Jason: "run all four"); see "Batch 0 applied"
 - ⬜ Batch 1a (Tier 1: OH&S + FIRE); needs Jason's go and the Tier 1 family list
-- ⬜ Fractalaw (requested 2026-09-28): republish REACH, Reg 561/2006, Dir 98/24, CSR 1997 with provenance; full enrichment of FEPA 1985 (LAT parsed today, 490 rows), Forestry Act 1967, Special Waste 1996, DPA 2018. Snapshots `live_fix_taxa_snapshot_20260928` / `live_fix_provision_snapshot_20260928`; verify on publish
+- ✅ Fractalaw live-fix publish (8 laws) verified; see "Live-fix enrichment"
+- ⬜ Tier 1 fetch (1a–1e, running) → dry runs → Jason's go
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -300,3 +301,17 @@ Re-run of batch 0: 3 changes, **0 conflicts**:
 - DPA 2018 and Confined Spaces Regs 1997 (Making): In force → Part revoked.
 
 Snapshot `live_status_snapshot_20260928_1402_b0`. Snapshot names now carry the time, so same-day re-runs don't collide.
+
+## Live-fix enrichment (2026-09-28)
+
+Fractalaw ran the full pipe on the 8 Making laws that the live fix brought out of Revoked, and published with provenance. Log: `~/fractalaw/data/qq-readiness/livefix/LIVEFIX-publish-log.md`.
+
+Verified against `live_fix_*_snapshot_20260928`:
+- all 8 `is_making` true→true (3,623 total unchanged), verdict making;
+- the Making source is now enrichment, including for Forestry 1967, FEPA 1985 and Special Waste 1996, which previously rested on legacy sources;
+- significance: HIGH for REACH, DPA 2018 and Dir 98/24; MEDIUM for the rest;
+- 5,902 provision rows enriched today, and 0 previously enriched rows lost;
+- 24 enriched events (taxa, fitness and significance × 8), **all against the current lat_hash**. The four July-enriched laws now have a hashed trail;
+- the only unenriched rows are `section` rows (structural; e.g. 220 in DPA 2018).
+
+Leftover: the Making funnel still shows `enrich` for FEPA, Forestry, Special Waste and DPA 2018. `has_fitness` is generated from `fitness_mention_count`, and these laws have `compiled_applicability` but no fitness mentions. This is the readiness session's carried item ("has_fitness should derive from compiled_applicability"). The fix touches a GENERATED column under the `uk_lrt` view (INSTEAD OF triggers), so it gets its own change.
