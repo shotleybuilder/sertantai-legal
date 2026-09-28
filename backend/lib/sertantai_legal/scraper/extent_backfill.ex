@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ApplicationClause
+  alias SertantaiLegal.Scraper.EnactedBy.EnablingExtent
   alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LiveStatus
 
@@ -53,6 +54,7 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         document_status: row.document_status,
         lat_extent_codes: row.lat_extent_codes,
         lat_coded_provisions: Map.get(row, :lat_coded_provisions),
+        enabling_extents: Map.get(row, :enabling_extents),
         contents_item_extents: [],
         extent_clauses:
           row.clause_texts |> Enum.map(&ExtentResolver.extent_clause/1) |> Enum.reject(&is_nil/1),
@@ -124,7 +126,8 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
                l.md_restrict_extent, l.document_status,
                COALESCE(lat.codes, '{}'), COALESCE(lat.clauses, '{}'),
                COALESCE(lat.n, 0) > 0, COALESCE(lat.app, '[]'::jsonb), l.lat_hash, l.application_clause,
-               COALESCE(lat.substantive, 0), COALESCE(lat.dotted, 0), COALESCE(lat.coded, 0)
+               COALESCE(lat.substantive, 0), COALESCE(lat.dotted, 0), COALESCE(lat.coded, 0),
+               l.enabling_provisions
         FROM legal_register l
         LEFT JOIN LATERAL (
           SELECT count(*) AS n,
@@ -162,7 +165,8 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
                         stored_app,
                         substantive,
                         dotted,
-                        coded
+                        coded,
+                        enabling
                       ] ->
       %{
         id: Ecto.UUID.cast!(id),
@@ -181,7 +185,8 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         application_clause: stored_app,
         substantive: substantive,
         dotted: dotted,
-        lat_coded_provisions: coded
+        lat_coded_provisions: coded,
+        enabling_extents: EnablingExtent.extents(enabling)
       }
     end)
   end

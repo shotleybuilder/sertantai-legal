@@ -314,6 +314,44 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  # ── Extent inheritance ─────────────────────────────────────────
+
+  describe "parse/2 extent inheritance" do
+    test "a provision without its own RestrictExtent inherits its nearest ancestor's (WRA 1991 Part III s.82)" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S">
+      <Primary><Body>
+        <Part id="part-III" RestrictExtent="E+W"><Number>Part III</Number>
+          <P1group>
+            <P1 id="section-82"><Pnumber>82</Pnumber>
+              <P2 id="section-82-1"><Pnumber>1</Pnumber><P2para><Text>Classification of waters.</Text></P2para></P2>
+            </P1>
+          </P1group>
+        </Part>
+        <P1group>
+          <P1 id="section-221" RestrictExtent="E+W+S"><Pnumber>221</Pnumber>
+            <P1para><Text>Interpretation.</Text></P1para>
+          </P1>
+        </P1group>
+        <P1group>
+          <P1 id="section-222"><Pnumber>222</Pnumber><P1para><Text>Crown application.</Text></P1para></P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1991_57", type_code: "ukpga"})
+
+      by_provision =
+        rows |> Enum.filter(& &1.provision) |> Enum.group_by(& &1.provision, & &1.extent_code)
+
+      assert by_provision["82"] |> Enum.uniq() == ["E+W"]
+      assert by_provision["221"] |> Enum.uniq() == ["E+W+S"]
+      # outside Part III: the document's extent
+      assert by_provision["222"] |> Enum.uniq() == ["E+W+S"]
+    end
+  end
+
   # ── Skip Elements ──────────────────────────────────────────────
 
   describe "parse/2 skips amendment blocks" do

@@ -138,6 +138,14 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Live status derived from /changes/affected endpoint")
     end
 
+    attribute :enabling_provisions, :map do
+      allow_nil?(true)
+
+      description(
+        "The SI's enabling provisions from its enacting text (EnactedBy.EnablingProvisions): %{\"provisions\" => [%{law, sections, schedules}]}. Their extents in the parent Act's LAT bound the SI's extent (ExtentResolver source enabling_provisions)"
+      )
+    end
+
     attribute :application_clause, :map do
       allow_nil?(true)
 
@@ -834,6 +842,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :live_from_changes,
         :live_evidence,
         :application_clause,
+        :enabling_provisions,
         :geo_extent,
         :geo_region,
         :geo_detail,
@@ -955,6 +964,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :live_from_changes,
         :live_evidence,
         :application_clause,
+        :enabling_provisions,
         :geo_extent,
         :geo_region,
         :geo_detail,

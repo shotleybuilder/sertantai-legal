@@ -35,6 +35,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   import SweetXml
 
+  require Logger
+
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.IdField
@@ -418,6 +420,15 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Post-stage hooks, run only when the stage succeeded.
   # amended_by: resolve final live status (changes-primary, metadata-override, #60 Bug 4)
+  # The SI's enabling provisions bound its extent (ExtentResolver
+  # enabling_provisions) when it has no better source.
+  defp after_stage(law, :enacted_by, _data) do
+    case enabling_extents(law) do
+      nil -> law
+      extents -> resolve_extent_with(law, %{enabling_extents: extents})
+    end
+  end
+
   defp after_stage(law, :amended_by, data) do
     law
     |> resolve_extent_from_effects((data || %{})[:affected_extents] || [])
@@ -859,29 +870,48 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # law whose extent had no better source (legacy, or only the type floor).
   defp resolve_extent_from_effects(%ParsedLaw{} = law, []), do: law
 
-  defp resolve_extent_from_effects(%ParsedLaw{} = law, affected_extents) do
-    if law.geo_extent_source in [nil, "type_code"] do
-      resolution =
-        ExtentResolver.resolve(%{
-          restrict_extent: law.md_restrict_extent,
-          document_status: law.document_status,
-          lat_extent_codes: [],
-          contents_item_extents: [],
-          extent_clauses: [],
-          type_code: law.type_code,
-          affected_extents: affected_extents
-        })
+  defp resolve_extent_from_effects(%ParsedLaw{} = law, affected_extents),
+    do: resolve_extent_with(law, %{affected_extents: affected_extents})
 
-      if resolution.source do
-        %{
-          law
-          | geo_extent: resolution.geo_extent,
-            geo_region: resolution.geo_region,
-            geo_extent_source: resolution.source
-        }
-      else
+  # Extent is secondary to the parse: a lookup failure is logged, not raised
+  # (as LatPersister's extent refresh).
+  defp enabling_extents(%ParsedLaw{enabling_provisions: nil}), do: nil
+
+  defp enabling_extents(%ParsedLaw{enabling_provisions: provisions, name: name}) do
+    EnactedBy.EnablingExtent.extents(provisions)
+  rescue
+    e ->
+      Logger.warning("[StagedParser] Enabling extent failed for #{name}: #{Exception.message(e)}")
+      nil
+  end
+
+  # Re-resolve extent with an extra source; written only when the new source
+  # may replace the current one (ExtentResolver.overwrite?/2).
+  defp resolve_extent_with(%ParsedLaw{} = law, extra) do
+    resolution =
+      ExtentResolver.resolve(
+        Map.merge(
+          %{
+            restrict_extent: law.md_restrict_extent,
+            document_status: law.document_status,
+            lat_extent_codes: [],
+            contents_item_extents: [],
+            extent_clauses: [],
+            type_code: law.type_code,
+            enabling_extents:
+              law.enabling_provisions && EnactedBy.EnablingExtent.extents(law.enabling_provisions)
+          },
+          extra
+        )
+      )
+
+    if resolution.source && ExtentResolver.overwrite?(law.geo_extent_source, resolution.source) do
+      %{
         law
-      end
+        | geo_extent: resolution.geo_extent,
+          geo_region: resolution.geo_region,
+          geo_extent_source: resolution.source
+      }
     else
       law
     end
@@ -955,10 +985,16 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         count = length(enacted_by)
         IO.puts("    ✓ Enacted by: #{count} parent law(s)")
 
+        provisions = EnactedBy.EnablingProvisions.parse(text, urls)
+
         %{
           status: :ok,
           data: %{
             enacted_by: enacted_by,
+            enabling_provisions:
+              if(provisions != [],
+                do: %{"provisions" => Enum.map(provisions, &stringify_provision/1)}
+              ),
             enacting_text: String.slice(data.enacting_text, 0, 500),
             introductory_text: String.slice(data.introductory_text, 0, 500)
           },
@@ -970,6 +1006,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         %{status: :error, data: nil, error: reason}
     end
   end
+
+  defp stringify_provision(p),
+    do: %{"law" => p.law, "sections" => p.sections, "schedules" => p.schedules}
 
   # Convert law ID like "ukpga/1974/37" to map format
   # Normalizes name to UK_type_year_number format for DB consistency

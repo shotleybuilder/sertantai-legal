@@ -114,6 +114,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           # === FUNCTION (Relationships - all as name lists) ===
           enacted_by: [String.t()],
           enacted_by_meta: [map()],
+          enabling_provisions: map() | nil,
           enacting: [String.t()],
           amended_by: [String.t()],
           amending: [String.t()],
@@ -255,6 +256,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     # Function (Relationships)
     enacted_by: [],
     enacted_by_meta: [],
+    enabling_provisions: nil,
     enacting: [],
     amended_by: [],
     amending: [],
@@ -491,6 +493,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       # Function (Relationships) - extract names from maps or pass through strings
       enacted_by: get_name_list(normalized, :enacted_by),
       enacted_by_meta: get_enacted_by_meta(normalized),
+      enabling_provisions: get_map(normalized, :enabling_provisions),
       enacting: get_name_list(normalized, :enacting),
       amended_by: get_name_list(normalized, :amended_by),
       amending: get_name_list(normalized, :amending),

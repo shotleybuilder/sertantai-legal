@@ -692,7 +692,9 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   @spec detect_parallel_provisions([{String.t() | nil, String.t() | nil}]) :: MapSet.t()
   def detect_parallel_provisions(provision_extent_pairs) do
     provision_extent_pairs
-    |> Enum.filter(fn {prov, ext} -> prov != nil and prov != "" and ext != nil and ext != "" end)
+    |> Enum.filter(fn {prov, ext} ->
+      prov not in [nil, "", {nil, nil}] and ext not in [nil, ""]
+    end)
     |> Enum.group_by(fn {prov, _ext} -> prov end)
     |> Enum.filter(fn {_prov, pairs} ->
       pairs |> Enum.map(fn {_, ext} -> ext end) |> Enum.uniq() |> length() > 1

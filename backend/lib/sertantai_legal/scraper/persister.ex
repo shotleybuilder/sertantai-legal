@@ -407,6 +407,7 @@ defmodule SertantaiLegal.Scraper.Persister do
     :enacting,
     :enacted_by,
     :enacted_by_meta,
+    :enabling_provisions,
     # Boolean flags derived from relationships
     :is_amending,
     :is_rescinding,

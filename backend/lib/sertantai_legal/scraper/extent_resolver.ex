@@ -17,8 +17,13 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   | 2    | `lat_provisions` | union of LAT `extent_code` (≥ 3 coded provisions, when counted) |
   | 3    | `contents_items` | union of `ContentsItem/@RestrictExtent`, revised documents only |
   | 4    | `text_clause`    | whole-instrument extent clauses ("These Regulations extend to…")|
-  | 5    | `affected_effects` | union of `AffectedExtent` on the law's changes-feed effects   |
-  | 6    | `type_code`      | floor from the type code (ssi → S, nisr → NI, wsi → E+W …)      |
+  | 5    | `enabling_provisions` | extent of the SI's enabling sections in the parent Act's LAT |
+  | 6    | `affected_effects` | union of `AffectedExtent` on the law's changes-feed effects   |
+  | 7    | `type_code`      | floor from the type code (ssi → S, nisr → NI, wsi → E+W …)      |
+
+  `enabling_provisions`: an SI reaches only as far as the provisions that
+  empower it (`EnactedBy.EnablingProvisions` / `EnablingExtent`); precise where
+  the parent Act's overall extent is not (WRA 1991 is GB; its Part III is E+W).
 
   `affected_effects` is legislation.gov.uk's editorial extent of each provision
   a later law changed (`LegislationGovUk.ChangesFeed`); it resolves legacy
@@ -41,8 +46,9 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
     "lat_provisions" => 2,
     "contents_items" => 3,
     "text_clause" => 4,
-    "affected_effects" => 5,
-    "type_code" => 6
+    "enabling_provisions" => 5,
+    "affected_effects" => 6,
+    "type_code" => 7
   }
 
   @type_floor %{
@@ -68,6 +74,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
           required(:extent_clauses) => [[String.t()]],
           required(:type_code) => String.t() | nil,
           optional(:affected_extents) => [String.t() | nil],
+          optional(:enabling_extents) => [String.t()] | nil,
           optional(:lat_coded_provisions) => non_neg_integer()
         }
 
@@ -85,6 +92,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
       {"lat_provisions", lat_provisions(input)},
       {"contents_items", contents_items(input)},
       {"text_clause", input.extent_clauses |> List.flatten() |> ordered()},
+      {"enabling_provisions", union(Map.get(input, :enabling_extents) || [])},
       {"affected_effects", union(Map.get(input, :affected_extents, []))},
       {"type_code", Map.get(@type_floor, input.type_code, [])}
     ]

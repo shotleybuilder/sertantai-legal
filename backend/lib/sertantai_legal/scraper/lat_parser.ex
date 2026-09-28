@@ -136,6 +136,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp walk_element(node, ctx) do
     name = element_name(node)
     extent = element_extent(node) || ctx.default_extent
+    # Children inherit this element's effective extent (a Part's RestrictExtent
+    # covers its sections), not the document root's.
+    ctx = %{ctx | default_extent: extent}
 
     cond do
       name in @skip_elements ->
@@ -718,7 +721,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
     provision_extent_pairs =
       rows
       |> Enum.filter(fn r -> r.section_type in ~w(section sub_section article sub_article) end)
-      |> Enum.map(fn r -> {r.provision, r.extent_code} end)
+      # Parallel versions share schedule and provision number; a body reg. 1
+      # and a schedule para. 1 are different provisions.
+      |> Enum.map(fn r -> {parallel_key(r), r.extent_code} end)
 
     parallel_set = Transforms.detect_parallel_provisions(provision_extent_pairs)
 
@@ -726,7 +731,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       rows
     else
       Enum.map(rows, fn row ->
-        if row.provision && MapSet.member?(parallel_set, row.provision) && row.extent_code do
+        if row.provision && MapSet.member?(parallel_set, parallel_key(row)) && row.extent_code do
           qualifier = "[#{row.extent_code}]"
           new_id = "#{row.section_id}#{qualifier}"
           new_sort_key = String.replace(row.sort_key, ~r/~.*$/, "~#{row.extent_code}")
@@ -737,6 +742,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
       end)
     end
   end
+
+  defp parallel_key(%{provision: nil}), do: nil
+  defp parallel_key(row), do: {row.schedule, row.provision}
 
   # ── Section ID Disambiguation ────────────────────────────────────
 
