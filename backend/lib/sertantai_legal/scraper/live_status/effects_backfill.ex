@@ -45,27 +45,70 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
   @spec cache_dir(keyword()) :: String.t()
   def cache_dir(opts \\ []), do: Keyword.get(opts, :dir, @cache_dir)
 
+  @batch_size 1000
+
   @doc """
-  UK laws needing the feed — with revocation rows, or an unsourced / type-floor
-  extent — Revoked laws first, then other laws with revocation rows, then
-  extent-only laws. Malformed names (no type code) are left out.
+  UK laws needing the feed, in batch order: `{group, name}`.
+
+  Groups, in priority order: `revoked`, `part_revoked` and `in_force_rows`
+  (laws with revocation rows, by current `live`), then `unsourced` and
+  `type_floor` (extent-only). Within a group, Making laws first, then laws
+  with no extent source, then by name. Malformed names (no type code) are
+  left out.
   """
-  @spec target_laws() :: [String.t()]
+  @spec target_laws() :: [{String.t(), String.t()}]
   def target_laws do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT name FROM legal_register
-        WHERE country = 'uk' AND name !~ '^UK__'
-          AND ("🔻_rescinded_by_stats_per_law" IS NOT NULL
-               OR geo_extent_source IS NULL OR geo_extent_source = 'type_code')
-        ORDER BY (live LIKE '❌%') DESC, ("🔻_rescinded_by_stats_per_law" IS NOT NULL) DESC, name
+        SELECT grp, name FROM (
+          SELECT name, is_making, geo_extent_source,
+            CASE WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '❌%' THEN 1
+                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '⭕%' THEN 2
+                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL THEN 3
+                 WHEN geo_extent_source IS NULL THEN 4
+                 ELSE 5 END AS rank,
+            CASE WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '❌%' THEN 'revoked'
+                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '⭕%' THEN 'part_revoked'
+                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL THEN 'in_force_rows'
+                 WHEN geo_extent_source IS NULL THEN 'unsourced'
+                 ELSE 'type_floor' END AS grp
+          FROM legal_register
+          WHERE country = 'uk' AND name !~ '^UK__'
+            AND ("🔻_rescinded_by_stats_per_law" IS NOT NULL
+                 OR geo_extent_source IS NULL OR geo_extent_source = 'type_code')
+        ) t
+        ORDER BY rank, coalesce(is_making, false) DESC, (geo_extent_source IS NULL) DESC, name
         """,
         [],
         timeout: :infinity
       )
 
-    List.flatten(rows)
+    Enum.map(rows, fn [grp, name] -> {grp, name} end)
+  end
+
+  @doc "Batch `n` (1-based) of `target_laws/0`, `size` laws each."
+  @spec batch([{String.t(), String.t()}], pos_integer(), pos_integer()) :: [String.t()]
+  def batch(targets, n, size \\ @batch_size),
+    do: targets |> Enum.slice((n - 1) * size, size) |> Enum.map(&elem(&1, 1))
+
+  @doc "Per batch: number, laws, groups covered, laws already cached."
+  @spec batches([{String.t(), String.t()}], keyword()) :: [map()]
+  def batches(targets, opts \\ []) do
+    size = Keyword.get(opts, :size, @batch_size)
+    dir = cache_dir(opts)
+
+    targets
+    |> Enum.chunk_every(size)
+    |> Enum.with_index(1)
+    |> Enum.map(fn {chunk, n} ->
+      %{
+        batch: n,
+        laws: length(chunk),
+        groups: chunk |> Enum.map(&elem(&1, 0)) |> Enum.uniq(),
+        cached: Enum.count(chunk, fn {_, name} -> File.exists?(path(dir, name)) end)
+      }
+    end)
   end
 
   @doc """

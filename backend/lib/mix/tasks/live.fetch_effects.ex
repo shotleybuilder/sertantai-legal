@@ -5,9 +5,14 @@ defmodule Mix.Tasks.Live.FetchEffects do
   (`Scraper.LiveStatus.EffectsBackfill`). Resumable: cached laws are skipped.
   Read-only on the database.
 
-      mix live.fetch_effects                  # every target law
+      mix live.fetch_effects --batches        # list the batch plan (no fetching)
+      mix live.fetch_effects --batch 1        # fetch batch 1 (1,000 laws, ~40 min)
       mix live.fetch_effects --names UK_a,UK_b
-      mix live.fetch_effects --limit 100
+
+  Batches follow `EffectsBackfill.target_laws/0` priority order (Revoked,
+  part-revoked, other laws with revocation rows, then extent-only; Making
+  laws first within each group). Cached laws are skipped, so a batch can be
+  re-run to resume it.
   """
 
   use Mix.Task
@@ -18,16 +23,28 @@ defmodule Mix.Tasks.Live.FetchEffects do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [names: :string, limit: :integer])
+    {opts, _, _} =
+      OptionParser.parse(args, strict: [names: :string, batch: :integer, batches: :boolean])
+
     Mix.Task.run("app.start")
 
-    names =
-      case opts[:names] do
-        nil -> EffectsBackfill.target_laws()
-        s -> String.split(s, ",", trim: true)
-      end
+    cond do
+      opts[:batches] -> list_batches()
+      opts[:batch] -> fetch(EffectsBackfill.batch(EffectsBackfill.target_laws(), opts[:batch]))
+      opts[:names] -> fetch(String.split(opts[:names], ",", trim: true))
+      true -> Mix.shell().error("Give --batches, --batch N or --names")
+    end
+  end
 
-    names = if opts[:limit], do: Enum.take(names, opts[:limit]), else: names
+  defp list_batches do
+    for b <- EffectsBackfill.batches(EffectsBackfill.target_laws()) do
+      Mix.shell().info(
+        "  batch #{b.batch}: #{b.laws} laws (#{Enum.join(b.groups, ", ")}), cached #{b.cached}"
+      )
+    end
+  end
+
+  defp fetch(names) do
     Mix.shell().info("Laws: #{length(names)}")
 
     counts =

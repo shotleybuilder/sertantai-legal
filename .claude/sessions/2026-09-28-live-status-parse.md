@@ -54,8 +54,12 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Jason: the pipeline must decide itself, so fix the extent/application data first (not a human review list)
 - ✅ Changes feed (`ChangesFeed`): per-effect AffectedExtent / AffectingEffectsExtent / AffectingTerritorialApplication; LiveStatus uses them; parser enriches revocation rows
 - ✅ ExtentResolver source `affected_effects` (legacy "UK" extents re-resolved)
-- ⬜ `mix live.fetch_effects` (running, ~13K laws at 2 s) → `mix live.apply_effects` dry run → Jason approves `--apply`
-- ⬜ `mix live.recompute` dry run on effect data → Jason approves `--apply`
+- ✅ Batched fetch plan (Jason: a 10-hour fetch is too long); see "Effects fetch batching plan"
+- ⬜ Batch 1 (Revoked, Making first) → apply_effects + recompute dry runs → Jason approves `--apply`
+- ⬜ Batches 2–5 (rest of Revoked) → dry runs → apply
+- ⬜ Batches 6–7 (part-revoked, in-force with rows) → dry runs → apply
+- ⬜ Batches 8–14 (unsourced extents, Making first) → apply_effects dry run (extent diff; feeds screening) → apply
+- ⬜ Batches 15–17 (type-floor extents) → apply_effects dry run → apply
 - ⬜ Remaining conflicts (Revoked laws with only partial rows, e.g. Feed Additives 2024/1101)
 - ⬜ Re-check the 287 Revoked + Making laws after the recompute; any flip to in force re-enters the Making funnel
 - ⬜ Report back to fractalaw (Coal Industry Act 1994, the 4 "not evidenced" laws)
@@ -135,3 +139,25 @@ End-to-end parse with the feed (no DB writes):
 Application proper (where a law operates, as distinct from its extent) is computed by fractalaw (#163, `application_regions`) for enriched laws only. For live status, the effect's territorial application is the application of the revocation. The revoked law's own application is bounded by its devolved type, title marker and AffectedExtent.
 
 `geo_extent` feeds compliance screening, so the extent backfill is a gated dry run (`mix live.apply_effects`) before any write.
+
+## Effects fetch batching plan (2026-09-28)
+
+The full fetch is 16,521 laws at the client's 2 s delay, about 10.5 h. Jason: too long, so it is batched.
+- `mix live.fetch_effects --batches` lists the plan.
+- `mix live.fetch_effects --batch N` fetches one batch: 1,000 laws, about 40 min.
+- Cached laws are skipped, so re-running a batch resumes it. The cache is `backend/data/cache/changes-feed/`, and 848 laws were cached by the first, stopped run.
+
+Order (`EffectsBackfill.target_laws/0`): groups by priority. Within a group, Making laws come first, then laws with no extent source, then by name.
+
+| Batches | Group | Laws | Making | Why this order |
+|---|---|---|---|---|
+| 1–5 | revoked: Revoked with revocation rows | 4,520 | 287 | false Revoked hides duties; includes the 289 extent-gap laws |
+| 5–7 | part_revoked + in_force_rows | 1,882 | 684 | territorial detail, `revoked_unapplied` evidence |
+| 7–14 | unsourced: extent-only, no source | 6,697 | 950 | legacy "UK" extents; feeds screening |
+| 14–17 | type_floor: extent from type only | 3,422 | 548 | lowest-value extent upgrade |
+
+After each batch (or group of batches):
+1. `mix live.apply_effects` (dry run: extent diff), then `--apply` on Jason's go. It acts only on cached laws.
+2. `mix live.recompute` (dry run), then `--apply` on Jason's go. Laws whose rows have no effect data yet keep the no-feed rules, so running it part-way is safe.
+
+Batch 1 alone is enough to judge the approach on the laws that matter most: Revoked + Making, and the extent-gap laws.

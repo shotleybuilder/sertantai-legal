@@ -55,6 +55,25 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
     end
   end
 
+  describe "batch/3 and batches/2" do
+    test "slice the priority-ordered targets; batches report groups and cached laws" do
+      dir = Path.join(System.tmp_dir!(), "batches-#{System.unique_integer([:positive])}")
+      File.mkdir_p!(dir)
+      on_exit(fn -> File.rm_rf!(dir) end)
+      File.write!(Path.join(dir, "UK_b.json"), "[]")
+
+      targets = [{"revoked", "UK_a"}, {"revoked", "UK_b"}, {"unsourced", "UK_c"}]
+
+      assert EffectsBackfill.batch(targets, 1, 2) == ["UK_a", "UK_b"]
+      assert EffectsBackfill.batch(targets, 2, 2) == ["UK_c"]
+
+      assert [
+               %{batch: 1, laws: 2, groups: ["revoked"], cached: 1},
+               %{batch: 2, laws: 1, groups: ["unsourced"], cached: 0}
+             ] = EffectsBackfill.batches(targets, size: 2, dir: dir)
+    end
+  end
+
   describe "plan/1 and apply!/2" do
     setup do
       dir = Path.join(System.tmp_dir!(), "effects-#{System.unique_integer([:positive])}")
