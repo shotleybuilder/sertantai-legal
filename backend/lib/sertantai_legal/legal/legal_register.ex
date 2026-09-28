@@ -138,6 +138,14 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Live status derived from /changes/affected endpoint")
     end
 
+    attribute :application_clause, :map do
+      allow_nil?(true)
+
+      description(
+        "Legal-owned application from the law's own whole-instrument application clauses (Scraper.ApplicationClause), read from LAT at each persist: regions (E/W/S/NI), clauses [{section_id, text}], lat_hash. Survives a lean-LAT discard. Distinct from fractalaw's application_regions (stored as received)"
+      )
+    end
+
     attribute :live_evidence, :map do
       allow_nil?(true)
 
@@ -825,6 +833,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :live_description,
         :live_from_changes,
         :live_evidence,
+        :application_clause,
         :geo_extent,
         :geo_region,
         :geo_detail,
@@ -945,6 +954,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :live_description,
         :live_from_changes,
         :live_evidence,
+        :application_clause,
         :geo_extent,
         :geo_region,
         :geo_detail,

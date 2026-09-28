@@ -27,10 +27,14 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
     devolved revoker's type (SSI → S, WSI → W, NISR → NI), else the revoker's recorded extent,
     else (UK-level revoker not in the DB) the whole law. When the revokers
     together leave part of the law's jurisdiction uncovered, the law is
-    `territorial` (live: Part Revocation). The law's jurisdiction is a
-    devolved type's (a WSI's E+W legal extent applies to Wales only), else a
-    title marker ("(Wales)", "(England)", …), else the `AffectedExtent` of
-    its whole-instrument effects, else its recorded extent.
+    `territorial` (live: Part Revocation). Where the law applies is its
+    devolved type's jurisdiction, else a title marker ("(Wales)", …), else its
+    **application** (`ctx.law_application`: its own application clause via
+    `ApplicationClause`, or fractalaw's), else the `AffectedExtent` of its
+    whole-instrument effects, else its recorded extent. A territorial result
+    resting only on extent is flagged `application_unknown`: extent is not
+    application, so it is not a determination until the law's application
+    clause is read (LAT parse).
 
   The revoker's date is its made date (`revoker_made_date`), not the
   commencement of the revoking provision. The decision never infers a whole
@@ -70,6 +74,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
           required(:law_type) => String.t() | nil,
           required(:law_extent) => String.t() | nil,
           optional(:law_title) => String.t() | nil,
+          optional(:law_application) => [String.t()] | nil,
           optional(:trust_revoker_extent) => boolean(),
           required(:revokers) => %{String.t() => revoker()}
         }
@@ -233,7 +238,16 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   defp decide_whole(whole, ctx) do
     revokers = Map.get(ctx, :revokers) || %{}
     affected = whole |> Enum.flat_map(&(regions(&1[:affected_extent]) || [])) |> nil_if_empty()
-    law_regions = law_regions(ctx[:law_type], ctx[:law_title], affected, ctx[:law_extent])
+
+    {law_regions, law_basis} =
+      law_regions(
+        ctx[:law_type],
+        ctx[:law_title],
+        ctx[:law_application],
+        affected,
+        ctx[:law_extent]
+      )
+
     trust? = Map.get(ctx, :trust_revoker_extent, false)
 
     entries =
@@ -275,7 +289,14 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
         true -> :revoked_unapplied
       end
 
-    revoked_regions = if law_regions, do: sort_regions(law_regions -- remaining), else: nil
+    revoked_regions =
+      if law_regions,
+        do: sort_regions(Enum.filter(covered, &(&1 in @all_regions)) -- remaining),
+        else: nil
+
+    # A territorial remainder resting only on extent (not application) is not
+    # a determination: the law's application clause is needed (LAT parse).
+    application_unknown = kind == :territorial and law_basis in ["affected_extent", "extent"]
 
     evidence = %{
       "kind" => Atom.to_string(kind),
@@ -285,6 +306,9 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
       "revoked_regions" => revoked_regions,
       "remaining_regions" => remaining,
       "extent_gap" => extent_gap,
+      "law_regions" => law_regions,
+      "law_regions_basis" => law_basis,
+      "application_unknown" => application_unknown,
       "revokers" =>
         Enum.map(entries, fn {r, regs, basis} ->
           %{
@@ -343,10 +367,12 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
     end
   end
 
-  # A devolved type bounds the law (a WSI's E+W legal extent applies to Wales
-  # only); else the last jurisdiction in the title ("… (Wales) Order",
-  # "(England and Scotland)"); else the AffectedExtent legislation.gov.uk
-  # records on its whole-instrument effects; else its recorded extent.
+  # Where the law applies: a devolved type (a WSI's E+W legal extent applies to
+  # Wales only); else the last jurisdiction in the title ("… (Wales) Order",
+  # "(England and Scotland)"); else its application (own application clause,
+  # or fractalaw's text/title application); else the AffectedExtent
+  # legislation.gov.uk records on its whole-instrument effects; else its
+  # recorded extent. The last two are extent, not application.
   # legislation.gov.uk's "SAME AS AFFECTED" effect extent (spelt with "+"
   # between the letters): the change reaches wherever the law does.
   defp same_as_affected?(nil), do: false
@@ -354,10 +380,15 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   defp same_as_affected?(e),
     do: e |> String.upcase() |> String.replace(~r/[\s.+]/, "") == "SAMEASAFFECTED"
 
-  defp law_regions(type, title, affected, extent) do
-    Map.get(@devolved, type) || title_regions(title) ||
-      sort_regions(affected || []) |> nil_if_empty() ||
-      regions(extent)
+  defp law_regions(type, title, application, affected, extent) do
+    cond do
+      r = Map.get(@devolved, type) -> {r, "devolved_type"}
+      r = title_regions(title) -> {r, "title"}
+      r = application && nil_if_empty(sort_regions(application)) -> {r, "application"}
+      r = affected && nil_if_empty(sort_regions(affected)) -> {r, "affected_extent"}
+      r = regions(extent) -> {r, "extent"}
+      true -> {nil, nil}
+    end
   end
 
   @nation "england|wales|scotland|northern ireland|great britain"

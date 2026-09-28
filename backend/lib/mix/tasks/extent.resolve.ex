@@ -61,6 +61,17 @@ defmodule Mix.Tasks.Extent.Resolve do
       )
     end)
 
+    app = Enum.filter(plans, & &1.application)
+
+    Mix.shell().info(
+      "\nApplication (laws holding LAT: #{length(app)}; with a whole-instrument clause: #{Enum.count(app, & &1.application["regions"])}; to write: #{Enum.count(plans, & &1.application_change?)})"
+    )
+
+    app
+    |> Enum.frequencies_by(&Enum.join(&1.application["regions"] || ["none"], "+"))
+    |> Enum.sort_by(fn {_k, n} -> -n end)
+    |> Enum.each(fn {regions, n} -> Mix.shell().info("  #{regions}: #{n}") end)
+
     after_state = Enum.map(plans, &final_state/1)
 
     Mix.shell().info("\nResolved by source (after):")
@@ -122,6 +133,10 @@ defmodule Mix.Tasks.Extent.Resolve do
     """)
 
     written = ExtentBackfill.apply!(plans)
-    Mix.shell().info("\nSnapshot: #{snapshot}. Written: #{written}")
+    applications = ExtentBackfill.apply_application!(plans)
+
+    Mix.shell().info(
+      "\nSnapshot: #{snapshot}. Written: #{written} extents, #{applications} applications (application_clause was new: rollback = set it null)"
+    )
   end
 end

@@ -537,6 +537,10 @@ defmodule SertantaiLegal.Scraper.StagedParser do
             law_type: Map.get(law, :type_code),
             law_extent: Map.get(law, :geo_extent),
             law_title: Map.get(law, :title_en),
+            law_application:
+              if(Enum.any?(rows, &LiveStatus.whole?/1),
+                do: stored_application(Map.get(law, :name))
+              ),
             revokers:
               rows
               |> Enum.filter(&LiveStatus.whole?/1)
@@ -548,12 +552,39 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           LiveStatus.from_live(changes_live)
       end
 
+    # A territorial result resting only on extent is not a determination: keep
+    # the context-free changes status until the law's application is known.
+    decision =
+      if decision.evidence["application_unknown"],
+        do: %{
+          decision
+          | live: changes_live,
+            description: LiveStatus.from_live(changes_live).description
+        },
+        else: decision
+
     ParsedLaw.merge(law, %{
       live: decision.live,
       live_description: decision.description,
       live_evidence: decision.evidence,
       live_from_changes: changes_live
     })
+  end
+
+  # The law's stored application (its application clause, read from LAT), if any
+  defp stored_application(nil), do: nil
+
+  defp stored_application(name) do
+    case Repo.query!(
+           "SELECT application_clause, application_regions, application_source FROM legal_register WHERE country = 'uk' AND name = $1",
+           [name]
+         ) do
+      %{rows: [[clause, regions, source]]} ->
+        LiveStatus.Recompute.law_application(clause, regions, source)
+
+      _ ->
+        nil
+    end
   end
 
   # metadata.ex set_live_status: "Revoked (from title)" / "Repealed" (doc status)

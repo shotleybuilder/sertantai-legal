@@ -44,7 +44,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       keep_evidence: false
     ]
 
-    @type action :: :change | :conflict | :describe | :same
+    @type action :: :change | :conflict | :needs_application | :describe | :same
     @type t :: %__MODULE__{}
   end
 
@@ -57,67 +57,102 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   def plan(opts \\ []) do
     trust? = Keyword.get(opts, :trust_revoker_extent, false)
     overrides = Keyword.get(opts, :overrides, %{})
+    names = Keyword.get(opts, :names)
+
+    {filter, params} = if names, do: {"AND name = ANY($1)", [names]}, else: {"", []}
 
     %{rows: rows} =
       Repo.query!(
         """
         SELECT name, title_en, type_code, geo_extent, live, live_description, document_status,
-               "🔻_rescinded_by_stats_per_law", live_evidence, coalesce(is_making, false)
-        FROM legal_register WHERE country = 'uk' ORDER BY name
+               "🔻_rescinded_by_stats_per_law", coalesce(is_making, false),
+               application_clause, application_regions, application_source
+        FROM legal_register WHERE country = 'uk' #{filter} ORDER BY name
         """,
-        [],
+        params,
         timeout: :infinity
       )
 
-    revokers = all_revokers()
+    laws =
+      Enum.map(rows, fn [n, t, ty, e, l, d, ds, st, m, ac, ar, as] ->
+        %{
+          name: n,
+          title: t,
+          type: ty,
+          extent: e,
+          live: l,
+          desc: d,
+          doc_status: ds,
+          stats: st,
+          is_making: m,
+          application: application(ac, ar, as)
+        }
+      end)
 
-    rows
+    revokers = if names, do: revokers_of(laws), else: all_revokers()
+
+    laws
     |> Enum.map(&override(&1, overrides))
     |> Enum.map(&outcome(&1, revokers, trust?))
   end
 
+  @doc """
+  Re-decide one law's live status and write it (guarded as `plan/1`). Called
+  after its LAT persist refreshes extent and application (`ExtentBackfill`).
+  """
+  @spec refresh(String.t()) :: %{atom() => non_neg_integer()}
+  def refresh(law_name), do: [names: [law_name]] |> plan() |> write()
+
   @doc "Write every non-`:same` outcome, after snapshotting to `snapshot_table`."
   @spec apply!([Change.t()], String.t()) :: %{atom() => non_neg_integer()}
   def apply!(changes, snapshot_table) do
+    {:ok, counts} =
+      Repo.transaction(
+        fn ->
+          Repo.query!(
+            "CREATE TABLE #{snapshot_table} AS SELECT id, country, name, live, live_description, live_from_changes, live_evidence, now() AS snapshot_at FROM legal_register WHERE country = 'uk'",
+            [],
+            timeout: :infinity
+          )
+
+          write(changes)
+        end,
+        timeout: :infinity
+      )
+
+    counts
+  end
+
+  # Write every non-`:same` outcome (no snapshot).
+  defp write(changes) do
     todo = Enum.reject(changes, &(&1.action == :same))
 
-    Repo.transaction(
-      fn ->
-        Repo.query!(
-          "CREATE TABLE #{snapshot_table} AS SELECT id, country, name, live, live_description, live_from_changes, live_evidence, now() AS snapshot_at FROM legal_register WHERE country = 'uk'",
-          [],
-          timeout: :infinity
-        )
+    for c <- todo do
+      log_entry = change_entry(c)
 
-        for c <- todo do
-          log_entry = change_entry(c)
+      Repo.query!(
+        """
+        UPDATE legal_register
+        SET live = $2, live_description = $3,
+            live_evidence = CASE WHEN $6 THEN live_evidence ELSE $4 END,
+            live_from_changes = coalesce($5, live_from_changes),
+            record_change_log = CASE WHEN $7::jsonb IS NULL THEN record_change_log
+                                     ELSE coalesce(record_change_log, '{}') || $7::jsonb END
+        WHERE country = 'uk' AND name = $1
+        """,
+        [
+          c.name,
+          c.new_live,
+          c.description,
+          c.evidence,
+          c.live_from_changes,
+          c.keep_evidence,
+          log_entry
+        ]
+      )
+    end
 
-          Repo.query!(
-            """
-            UPDATE legal_register
-            SET live = $2, live_description = $3,
-                live_evidence = CASE WHEN $6 THEN live_evidence ELSE $4 END,
-                live_from_changes = coalesce($5, live_from_changes),
-                record_change_log = CASE WHEN $7::jsonb IS NULL THEN record_change_log
-                                         ELSE coalesce(record_change_log, '{}') || $7::jsonb END
-            WHERE country = 'uk' AND name = $1
-            """,
-            [
-              c.name,
-              c.new_live,
-              c.description,
-              c.evidence,
-              c.live_from_changes,
-              c.keep_evidence,
-              log_entry
-            ]
-          )
-        end
-      end,
-      timeout: :infinity
-    )
-
-    todo |> Enum.frequencies_by(& &1.action)
+    Enum.frequencies_by(todo, & &1.action)
   end
 
   # A record_change_log entry for a `live` change only (descriptions are derived).
@@ -153,41 +188,50 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   end
 
   # Replace stored stats / extent with planned values (nil = keep stored)
-  defp override(
-         [name, title, type, extent, live, desc, doc_status, stats, ev, making] = row,
-         overrides
-       ) do
-    case Map.get(overrides, name) do
-      nil ->
-        row
+  defp override(law, overrides) do
+    case Map.get(overrides, law.name) do
+      nil -> law
+      o -> %{law | extent: o[:geo_extent] || law.extent, stats: o[:stats] || law.stats}
+    end
+  end
 
-      o ->
-        [
-          name,
-          title,
-          type,
-          o[:geo_extent] || extent,
-          live,
-          desc,
-          doc_status,
-          o[:stats] || stats,
-          ev,
-          making
-        ]
+  defp application(clause, fractalaw, source), do: law_application(clause, fractalaw, source)
+
+  @doc """
+  A law's application regions (E/W/S/NI) for `LiveStatus`: its own
+  `application_clause` (legal), else fractalaw's `application_regions` when
+  they rest on text or title (not an extent fallback); else nil.
+  """
+  @spec law_application(map() | nil, [String.t()] | nil, String.t() | nil) ::
+          [String.t()] | nil
+  def law_application(%{"regions" => [_ | _] = regions}, _fractalaw, _source), do: regions
+
+  def law_application(_clause, [_ | _] = fractalaw, source)
+      when source in ["text_clause", "title"],
+      do: fractalaw |> Enum.join("+") |> String.replace("_", " ") |> nations()
+
+  def law_application(_clause, _fractalaw, _source), do: nil
+
+  defp nations(joined) do
+    up = String.upcase(joined)
+
+    [{"ENGLAND", "E"}, {"WALES", "W"}, {"SCOTLAND", "S"}, {"NORTHERN IRELAND", "NI"}]
+    |> Enum.filter(fn {n, _} -> String.contains?(up, n) end)
+    |> Enum.map(&elem(&1, 1))
+    |> case do
+      [] -> nil
+      r -> r
     end
   end
 
   # --- per law ---
 
-  defp outcome(
-         [name, title, type, extent, live, desc, doc_status, stats, _ev, making],
-         revokers,
-         trust?
-       ) do
-    rows = LiveStatus.rows_from_stats(stats)
-    metadata = metadata_source(title, doc_status)
+  defp outcome(law, revokers, trust?) do
+    rows = LiveStatus.rows_from_stats(law.stats)
+    metadata = metadata_source(law.title, law.doc_status)
+    live = law.live
 
-    base = %{name: name, title: title, live: live, is_making: making}
+    base = %{name: law.name, title: law.title, live: live, is_making: law.is_making}
 
     cond do
       metadata != nil ->
@@ -197,9 +241,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       rows != [] ->
         decision =
           LiveStatus.decide(rows, %{
-            law_type: type,
-            law_extent: extent,
-            law_title: title,
+            law_type: law.type,
+            law_extent: law.extent,
+            law_title: law.title,
+            law_application: law.application,
             revokers: revokers,
             trust_revoker_extent: trust?
           })
@@ -207,7 +252,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
         finish(base, live, decision, legacy_live(rows), decision.live)
 
       true ->
-        describe_only(base, live, desc)
+        describe_only(base, live, law.desc)
     end
   end
 
@@ -216,6 +261,12 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       cond do
         live == decision.live ->
           {:describe, live, decision.description, decision.evidence}
+
+        decision.evidence["application_unknown"] == true ->
+          kept = LiveStatus.from_live(live)
+
+          {:needs_application, live, kept.description,
+           Map.merge(decision.evidence, %{"live_kept" => true, "decided_live" => decision.live})}
 
         live == old_rule ->
           {:change, decision.live, decision.description, decision.evidence}
@@ -258,6 +309,13 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   end
 
   # --- helpers ---
+
+  defp revokers_of(laws) do
+    laws
+    |> Enum.flat_map(&LiveStatus.rows_from_stats(&1.stats))
+    |> Enum.map(& &1.by)
+    |> LiveStatus.Revokers.load()
+  end
 
   defp all_revokers do
     %{rows: rows} =

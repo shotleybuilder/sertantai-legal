@@ -11,10 +11,18 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
   `plan/1` is pure. `load_rows/1` reads the sources; `apply!/2` writes the
   planned changes in batches, each law getting an `extent` change-log entry.
   `Mix.Tasks.Extent.Resolve` snapshots first and reports.
+
+  **Application** rides along (live status parse session, 2026-09-28): the
+  same LAT read collects whole-instrument application clauses
+  (`ApplicationClause`) into the law's `application_clause`. It is written
+  only when the law holds LAT, so a lean-LAT discard never clears it.
+  `refresh/1` then re-decides the law's live status (`LiveStatus.Recompute`).
   """
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.ExtentResolver
+  alias SertantaiLegal.Scraper.LiveStatus
 
   @doc """
   Pure: the resolution for one row and whether it should be written.
@@ -22,7 +30,13 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
   The row carries `lat_extent_codes` and `clause_texts` alongside the stored
   extent fields.
   """
-  @spec plan(map()) :: %{row: map(), resolution: ExtentResolver.result(), change?: boolean()}
+  @spec plan(map()) :: %{
+          row: map(),
+          resolution: ExtentResolver.result(),
+          change?: boolean(),
+          application: map() | nil,
+          application_change?: boolean()
+        }
   def plan(row) do
     resolution =
       ExtentResolver.resolve(%{
@@ -40,8 +54,46 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         {row.geo_extent, row.geo_region || [], row.geo_extent_source} !=
           {resolution.geo_extent, resolution.geo_region, resolution.source}
 
-    %{row: row, resolution: resolution, change?: change?}
+    application = application(row, resolution)
+
+    %{
+      row: row,
+      resolution: resolution,
+      change?: change?,
+      application: application,
+      application_change?:
+        application != nil and
+          Map.drop(application, ["lat_hash"]) !=
+            Map.drop(Map.get(row, :application_clause) || %{}, ["lat_hash"])
+    }
   end
+
+  # Only with LAT held: a law without LAT keeps its stored application.
+  defp application(%{has_lat: true} = row, resolution) do
+    clauses =
+      for %{"text" => text, "section_id" => sid} <- Map.get(row, :application_texts, []),
+          clause = ApplicationClause.parse(text),
+          do: {sid, text, clause}
+
+    extent =
+      (resolution.geo_extent || row.geo_extent) |> LiveStatus.regions()
+
+    %{
+      "regions" => ApplicationClause.resolve(Enum.map(clauses, &elem(&1, 2)), extent),
+      "clauses" =>
+        Enum.map(clauses, fn {sid, text, {kind, regions}} ->
+          %{
+            "section_id" => sid,
+            "kind" => Atom.to_string(kind),
+            "regions" => regions,
+            "text" => String.slice(text, 0, 400)
+          }
+        end),
+      "lat_hash" => Map.get(row, :lat_hash)
+    }
+  end
+
+  defp application(_row, _resolution), do: nil
 
   @doc "Load extent sources for UK laws (optionally only `names`)."
   @spec load_rows([String.t()] | nil) :: [map()]
@@ -54,11 +106,16 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         """
         SELECT l.id, l.name, l.type_code, l.geo_extent, l.geo_region, l.geo_extent_source,
                l.md_restrict_extent, l.document_status,
-               COALESCE(lat.codes, '{}'), COALESCE(lat.clauses, '{}')
+               COALESCE(lat.codes, '{}'), COALESCE(lat.clauses, '{}'),
+               COALESCE(lat.n, 0) > 0, COALESCE(lat.app, '[]'::jsonb), l.lat_hash, l.application_clause
         FROM legal_register l
         LEFT JOIN LATERAL (
-          SELECT array_agg(DISTINCT a.extent_code) FILTER (WHERE COALESCE(a.extent_code, '') <> '') AS codes,
-                 array_agg(a.text) FILTER (WHERE a.text ~* '(this|these)\\s+\\w+\\s+extends?\\s+to') AS clauses
+          SELECT count(*) AS n,
+                 array_agg(DISTINCT a.extent_code) FILTER (WHERE COALESCE(a.extent_code, '') <> '') AS codes,
+                 array_agg(a.text) FILTER (WHERE a.text ~* '(this|these)\\s+\\w+\\s+extends?\\s+to') AS clauses,
+                 jsonb_agg(jsonb_build_object('section_id', a.section_id, 'text', a.text) ORDER BY a.sort_key)
+                   FILTER (WHERE a.text ~* '\\mappl(y|ies)\\s+(only\\s+)?(in\\s+relation\\s+to|as\\s+respects|to|in)\\M'
+                             AND a.text ~* '(these|this|they)\\s') AS app
           FROM legal_articles a WHERE a.law_name = l.name
         ) lat ON true
         WHERE l.country = 'uk' #{filter}
@@ -68,7 +125,22 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         timeout: :timer.minutes(10)
       )
 
-    Enum.map(rows, fn [id, name, type, geo, region, source, restrict, status, codes, clauses] ->
+    Enum.map(rows, fn [
+                        id,
+                        name,
+                        type,
+                        geo,
+                        region,
+                        source,
+                        restrict,
+                        status,
+                        codes,
+                        clauses,
+                        has_lat,
+                        app,
+                        lat_hash,
+                        stored_app
+                      ] ->
       %{
         id: Ecto.UUID.cast!(id),
         name: name,
@@ -79,7 +151,11 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         md_restrict_extent: restrict,
         document_status: status,
         lat_extent_codes: codes,
-        clause_texts: clauses
+        clause_texts: clauses,
+        has_lat: has_lat,
+        application_texts: app,
+        lat_hash: lat_hash,
+        application_clause: stored_app
       }
     end)
   end
@@ -91,7 +167,26 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
   """
   @spec refresh(String.t()) :: non_neg_integer()
   def refresh(law_name) do
-    [law_name] |> load_rows() |> Enum.map(&plan/1) |> apply!()
+    plans = [law_name] |> load_rows() |> Enum.map(&plan/1)
+    n = apply!(plans)
+    apply_application!(plans)
+    LiveStatus.Recompute.refresh(law_name)
+    n
+  end
+
+  @doc "Write planned application changes. Returns the number written."
+  @spec apply_application!([map()]) :: non_neg_integer()
+  def apply_application!(plans) do
+    plans
+    |> Enum.filter(& &1.application_change?)
+    |> Enum.reduce(0, fn %{row: r, application: app}, n ->
+      Repo.query!(
+        "UPDATE legal_register SET application_clause = $2 WHERE id = $1 AND country = 'uk'",
+        [Ecto.UUID.dump!(r.id), app]
+      )
+
+      n + 1
+    end)
   end
 
   @doc "Write planned changes in batches of 1,000. Returns the number written."

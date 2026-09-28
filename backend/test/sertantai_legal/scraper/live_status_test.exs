@@ -347,6 +347,43 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
     end
   end
 
+  describe "decide/2 with the law's application" do
+    test "application bounds the law: an England-only law revoked in England is revoked (Smoke-free (Signs) Regs 2007)" do
+      d =
+        LiveStatus.decide(
+          [row("UK_uksi_2012_1536", "revoked") |> Map.put(:territorial_application, "E")],
+          "uksi" |> ctx("UK") |> Map.put(:law_application, ["E"])
+        )
+
+      assert d.kind == :revoked
+      assert d.evidence["law_regions_basis"] == "application"
+    end
+
+    test "a territorial remainder resting on extent alone is flagged application_unknown" do
+      d =
+        LiveStatus.decide(
+          [row("UK_uksi_2012_1536", "revoked") |> Map.put(:territorial_application, "E")],
+          ctx("uksi", "UK")
+        )
+
+      assert d.kind == :territorial
+      assert d.evidence["application_unknown"] == true
+      assert d.evidence["law_regions_basis"] == "extent"
+      assert d.description == "Revoked in E; in force in W+S+NI"
+    end
+
+    test "a devolved-type or title bound is a determination" do
+      d =
+        LiveStatus.decide(
+          [row("UK_ssi_2020_1", "revoked")],
+          "uksi" |> ctx("UK") |> Map.put(:law_title, "X (England and Scotland) Order 2019")
+        )
+
+      assert d.kind == :territorial
+      assert d.evidence["application_unknown"] == false
+    end
+  end
+
   describe "rows_from_stats/1" do
     test "flattens the stored per-law stats JSONB into rows" do
       stats = %{

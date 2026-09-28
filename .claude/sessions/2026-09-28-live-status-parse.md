@@ -82,8 +82,8 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Batches meta-batched by readiness tier (Jason): `Legal.ReadinessTiers`
 - ✅ Batch 0 fetched (426/427; 1 regnal-year name 404)
 - ✅ Batch 0 dry runs: bugs found and fixed; see "Batch 0 results"
-- ⬜ Law **application** (not extent) for territorial decisions: 3–5 of batch 0's 14 changes are wrong without it
-- ⬜ Batch 0 `--apply` (apply_effects, then recompute), after the application fix, on Jason's go
+- ✅ Law **application** built into LAT (Jason: LRT must not pull full text); see "Application clause"
+- ⬜ Batch 0 on Jason's go, in order: `mix extent.resolve --apply` (application for 941 LAT laws) → `mix live.apply_effects --batch 0 --apply` → `mix live.application --batch 0 --parse` (11 laws) → `mix live.recompute --batch 0 --apply`
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -224,3 +224,26 @@ Conflicts (live kept): Food and Environment Protection Act 1985 (Revoked), Data 
 **Next, Jason's point:** extent is not application. A territorial decision needs the law's application: where it applies, not the legal system it forms part of.
 
 Proposed: only for laws where the decision would be territorial, read an application clause from the law's own text. That is the citation/application provision, e.g. "These Regulations apply in relation to England", fetched from legislation.gov.uk. Fractalaw's `application_regions` would be used where present. The law's regions then become devolved type > title > **application clause** > AffectedExtent > geo_extent.
+
+## Application clause (2026-09-28)
+
+Jason: the LRT parser must not pull full text, since that mixes LRT and LAT. The application clause folds into LAT parsing.
+
+Design, as built:
+1. **`Scraper.ApplicationClause`** (pure) reads whole-instrument clauses only:
+   - "These Regulations / This Order / This Act … apply(ies) [only] (in relation) to|in X";
+   - the application half of "extend to X and|but apply …";
+   - "They apply in X" when the text names the instrument;
+   - exclusions ("do not apply to X").
+   
+   The target must be a nation list, optionally followed by "and …" extras. Rejected: partial subjects ("This regulation", "Part 2 of …"), qualified clauses ("Subject to …", "except", "outside", "as they apply"), and scope phrases ("the compulsory purchase of land in England").
+2. **Folded into `ExtentBackfill`**, which already runs at every LAT persist and reads extent clauses. The same lateral query collects application clauses: no extra fetch and no extra pass. The result is stored as `application_clause` (legal-owned JSONB: regions, clauses with section_id, kind and text, lat_hash). It is written only when the law holds LAT, so a lean-LAT discard never clears it. Fractalaw's `application_regions` stays as received.
+3. `ExtentBackfill.refresh/1` then calls `LiveStatus.Recompute.refresh/1`, so a LAT parse re-decides the law's live status automatically.
+4. **`LiveStatus`**: the law's regions come from devolved type, then title, then **application** (its own clause, else fractalaw's when sourced from text or title), then AffectedExtent, then geo_extent. A territorial result resting on the last two is `application_unknown`: the parser keeps the changes status, and recompute holds it as `needs_application`. "Revoked in …" comes from the revokers' regions.
+5. **`mix live.application --batch N`** lists them. `--parse` LAT-parses them through `LatReparse`; LAT that wasn't held before and isn't Making is then discarded with an archive (reason `application_clause`).
+
+Checks:
+- Parser samples (12 of 12 correct after tightening) include "These Regulations apply in relation to England only" → E, "…extend to England and Wales and apply in relation to England only" → E, and "shall not apply to Northern Ireland" → E+W+S.
+- `mix extent.resolve` dry run: 941 laws hold LAT, 72 of them have a whole-instrument clause (E 34, W 31, E+W+S 5, NI 1, S 1), and there are 0 pending extent changes.
+- Batch 0 needs_application (preview with effects): 11 laws. These are the territorial candidates, including Smoke-free (Signs), Environmental Damage and T&CP (Trees).
+- End-to-end test: an England-only law revoked in England stays Revoked on basis `application`, and its application survives the discard.

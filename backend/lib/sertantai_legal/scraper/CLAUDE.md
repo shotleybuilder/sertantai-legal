@@ -57,6 +57,7 @@ scraper/
 │   └── recompute.ex              # Guarded corpus recompute (mix live.recompute)
 ├── categorizer.ex                # Law categorisation
 ├── extent.ex                     # Geographic extent parsing
+├── application_clause.ex         # Pure: whole-instrument application clauses ("apply in relation to England")
 └── ...
 ```
 
@@ -157,6 +158,11 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
   - Never infer a whole revocation from partial rows.
   - **Where a revocation reaches comes from legislation.gov.uk's changes feed** (`LegislationGovUk.ChangesFeed`): `AffectingTerritorialApplication`, else `AffectingEffectsExtent`. The law's jurisdiction is its devolved type, else a title marker, else the `AffectedExtent` on its effects, else `geo_extent`.
   - Without feed data, only hard evidence makes a revocation territorial: an affect extent marker, or a devolved revoker. A UK-level revoker's recorded extent is not trusted (`extent_gap` evidence).
+- **Application is not extent, and LRT never reads full text.**
+  - A law's application comes from its own whole-instrument application clause.
+  - `ApplicationClause` reads it from **LAT**, in the same `ExtentBackfill` pass that reads extent clauses at every LAT persist. It is stored on the law as `application_clause`, which survives a lean-LAT discard.
+  - After the refresh, the law's live status is re-decided.
+  - A territorial result resting only on extent is `application_unknown`: it is not applied (`needs_application`) until the law is LAT-parsed (`mix live.application --batch N --parse`, which discards not-Making LAT with an archive).
 - **Extent from effects**: `ExtentResolver` source `affected_effects` is the union of `AffectedExtent` across a law's effects. It ranks below `text_clause` and above `type_code`, and resolves legacy laws that had no source (a stored "UK" is often a GB or E+W regime).
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 

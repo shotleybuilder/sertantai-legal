@@ -87,14 +87,35 @@ defmodule SertantaiLegal.Scraper.LiveStatus.RecomputeTest do
         rescinded_by_stats_per_law: stats("UK_uksi_2011_1524", "revoked", "Regulations")
       })
 
-    %{coal: coal, scot: scot, legacy: legacy, no_rows: no_rows, good: good}
+    # Same repeal, but the law's own application clause (read from LAT) is known
+    scot_applied =
+      law("ukpga", %{
+        geo_extent: "E+W+S",
+        live: @revoked,
+        rescinded_by_stats_per_law: stats("UK_ssi_2025_165", "repealed"),
+        application_clause: %{"regions" => ["E", "W", "S"], "clauses" => []}
+      })
+
+    %{
+      coal: coal,
+      scot: scot,
+      scot_applied: scot_applied,
+      legacy: legacy,
+      no_rows: no_rows,
+      good: good
+    }
   end
 
   test "plan: the guard changes only laws the old rule explains", ctx do
     plan = Recompute.plan()
 
     assert %{action: :change, new_live: @in_force} = outcome(plan, ctx.coal)
-    assert %{action: :change, new_live: @part, kind: :territorial} = outcome(plan, ctx.scot)
+    # territorial on extent alone is not a determination: held for the application clause
+    assert %{action: :needs_application, new_live: @revoked, kind: :territorial} =
+             outcome(plan, ctx.scot)
+
+    assert %{action: :change, new_live: @part, kind: :territorial} =
+             outcome(plan, ctx.scot_applied)
 
     # new rule says Part, but the old rule never produced this Revoked: kept
     assert %{action: :conflict, new_live: @revoked, description: "Revoked"} =
@@ -112,7 +133,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus.RecomputeTest do
     Recompute.plan() |> Recompute.apply!("live_status_snapshot_test")
 
     assert [@in_force, "In force", "in_force", 1] = db(ctx.coal)
-    assert [@part, "Revoked in S; in force in E+W", "territorial", 1] = db(ctx.scot)
+    assert [@revoked, "Revoked", "territorial", 0] = db(ctx.scot)
+    assert [@part, "Revoked in S; in force in E+W", "territorial", 1] = db(ctx.scot_applied)
     assert [@revoked, "Revoked", "part_revoked", 0] = db(ctx.legacy)
     assert [@revoked, "Revoked (source not recorded)", nil, 0] = db(ctx.no_rows)
     assert [@revoked, "Revoked by UK_uksi_2011_1524", "revoked", 0] = db(ctx.good)
