@@ -533,20 +533,21 @@ defmodule SertantaiLegal.Scraper.StagedParser do
           metadata_decision(Map.get(law, :live_description))
 
         rows != [] ->
-          LiveStatus.decide(rows, %{
-            law_type: Map.get(law, :type_code),
-            law_extent: Map.get(law, :geo_extent),
-            law_title: Map.get(law, :title_en),
-            law_application:
-              if(Enum.any?(rows, &LiveStatus.whole?/1),
-                do: stored_application(Map.get(law, :name))
-              ),
-            revokers:
-              rows
-              |> Enum.filter(&LiveStatus.whole?/1)
-              |> Enum.map(& &1.by)
-              |> LiveStatus.Revokers.load()
-          })
+          whole = Enum.filter(rows, &LiveStatus.whole?/1)
+
+          ctx =
+            Map.merge(
+              %{
+                law_type: Map.get(law, :type_code),
+                law_extent: Map.get(law, :geo_extent),
+                law_title: Map.get(law, :title_en),
+                law_extent_source: Map.get(law, :geo_extent_source),
+                revokers: whole |> Enum.map(& &1.by) |> LiveStatus.Revokers.load()
+              },
+              if(whole != [], do: stored_context(law), else: %{})
+            )
+
+          LiveStatus.decide(rows, ctx)
 
         true ->
           LiveStatus.from_live(changes_live)
@@ -571,20 +572,38 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     })
   end
 
-  # The law's stored application (its application clause, read from LAT), if any
-  defp stored_application(nil), do: nil
+  # The law's stored application context (application clause read from LAT,
+  # repealed text) and its enabling Acts' sourced extents.
+  defp stored_context(law) do
+    name = Map.get(law, :name)
 
-  defp stored_application(name) do
-    case Repo.query!(
-           "SELECT application_clause, application_regions, application_source FROM legal_register WHERE country = 'uk' AND name = $1",
-           [name]
-         ) do
-      %{rows: [[clause, regions, source]]} ->
-        LiveStatus.Recompute.law_application(clause, regions, source)
+    app =
+      case name &&
+             Repo.query!(
+               "SELECT application_clause, application_regions, application_source FROM legal_register WHERE country = 'uk' AND name = $1",
+               [name]
+             ) do
+        %{rows: [[clause, regions, source]]} ->
+          %{
+            law_application: LiveStatus.Recompute.law_application(clause, regions, source),
+            law_clause_read: clause != nil,
+            law_text_repealed: (clause || %{})["text_repealed"] == true
+          }
 
-      _ ->
-        nil
-    end
+        _ ->
+          %{}
+      end
+
+    parents = Map.get(law, :enacted_by) || []
+
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT name, geo_extent, geo_extent_source FROM legal_register WHERE country = 'uk' AND name = ANY($1)",
+        [parents]
+      )
+
+    extents = Map.new(rows, fn [n, e, s] -> {n, {e, s}} end)
+    Map.put(app, :parent_regions, LiveStatus.Recompute.parent_regions(parents, extents))
   end
 
   # metadata.ex set_live_status: "Revoked (from title)" / "Repealed" (doc status)

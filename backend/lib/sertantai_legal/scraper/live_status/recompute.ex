@@ -66,7 +66,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
         """
         SELECT name, title_en, type_code, geo_extent, live, live_description, document_status,
                "🔻_rescinded_by_stats_per_law", coalesce(is_making, false),
-               application_clause, application_regions, application_source
+               application_clause, application_regions, application_source,
+               geo_extent_source, coalesce(enacted_by, '{}')
         FROM legal_register WHERE country = 'uk' #{filter} ORDER BY name
         """,
         params,
@@ -74,7 +75,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       )
 
     laws =
-      Enum.map(rows, fn [n, t, ty, e, l, d, ds, st, m, ac, ar, as] ->
+      Enum.map(rows, fn [n, t, ty, e, l, d, ds, st, m, ac, ar, as, es, eb] ->
         %{
           name: n,
           title: t,
@@ -85,15 +86,20 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
           doc_status: ds,
           stats: st,
           is_making: m,
-          application: application(ac, ar, as)
+          application: application(ac, ar, as),
+          clause_read: ac != nil,
+          text_repealed: (ac || %{})["text_repealed"] == true,
+          extent_source: es,
+          enacted_by: eb
         }
       end)
 
     revokers = if names, do: revokers_of(laws), else: all_revokers()
+    parents = parent_extents(laws, names)
 
     laws
     |> Enum.map(&override(&1, overrides))
-    |> Enum.map(&outcome(&1, revokers, trust?))
+    |> Enum.map(&outcome(&1, revokers, parents, trust?))
   end
 
   @doc """
@@ -226,7 +232,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
 
   # --- per law ---
 
-  defp outcome(law, revokers, trust?) do
+  defp outcome(law, revokers, parents, trust?) do
     rows = LiveStatus.rows_from_stats(law.stats)
     metadata = metadata_source(law.title, law.doc_status)
     live = law.live
@@ -245,6 +251,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
             law_extent: law.extent,
             law_title: law.title,
             law_application: law.application,
+            law_clause_read: law.clause_read,
+            law_text_repealed: law.text_repealed,
+            law_extent_source: law.extent_source,
+            parent_regions: parent_regions(law.enacted_by, parents),
             revokers: revokers,
             trust_revoker_extent: trust?
           })
@@ -309,6 +319,42 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   end
 
   # --- helpers ---
+
+  @doc """
+  Regions (E/W/S/NI) of a law's enabling Acts with a sourced extent, from
+  `%{name => {geo_extent, geo_extent_source}}`; nil when none.
+  """
+  @spec parent_regions([String.t()], map()) :: [String.t()] | nil
+  def parent_regions(enacted_by, extents) do
+    enacted_by
+    |> Enum.flat_map(fn p ->
+      case Map.get(extents, p) do
+        {extent, source} when source not in [nil, ""] -> LiveStatus.regions(extent) || []
+        _ -> []
+      end
+    end)
+    |> Enum.uniq()
+    |> case do
+      [] -> nil
+      r -> r
+    end
+  end
+
+  defp parent_extents(laws, names) do
+    {filter, params} =
+      if names,
+        do: {"AND name = ANY($1)", [laws |> Enum.flat_map(& &1.enacted_by) |> Enum.uniq()]},
+        else: {"", []}
+
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT name, geo_extent, geo_extent_source FROM legal_register WHERE country = 'uk' #{filter}",
+        params,
+        timeout: :infinity
+      )
+
+    Map.new(rows, fn [n, e, s] -> {n, {e, s}} end)
+  end
 
   defp revokers_of(laws) do
     laws

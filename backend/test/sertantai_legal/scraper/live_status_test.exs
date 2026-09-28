@@ -372,6 +372,55 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       assert d.description == "Revoked in E; in force in W+S+NI"
     end
 
+    test "text wholly repealed: revoked in full (Environmental Damage Regs 2009)" do
+      d =
+        LiveStatus.decide(
+          [row("UK_uksi_2015_810", "revoked") |> Map.put(:territorial_application, "E")],
+          "uksi" |> ctx("UK") |> Map.merge(%{law_clause_read: true, law_text_repealed: true})
+        )
+
+      assert d.kind == :revoked
+      assert d.evidence["text_repealed"] == true
+      assert d.evidence["remaining_regions"] == []
+    end
+
+    test "text read with no application clause: the law applies throughout its sourced extent (Reservoirs Act 1975)" do
+      rows = [row("UK_asp_2011_9", "repealed", "Act")]
+      base = ctx("ukpga", "GB")
+
+      held = LiveStatus.decide(rows, Map.put(base, :law_extent_source, "law_level"))
+      assert held.evidence["application_unknown"] == true
+
+      d =
+        LiveStatus.decide(
+          rows,
+          Map.merge(base, %{law_clause_read: true, law_extent_source: "law_level"})
+        )
+
+      assert d.kind == :territorial
+      assert d.evidence["application_unknown"] == false
+      assert d.description == "Revoked in S; in force in E+W"
+
+      # a legacy extent with no source is not enough
+      legacy = LiveStatus.decide(rows, Map.merge(base, %{law_clause_read: true}))
+      assert legacy.evidence["application_unknown"] == true
+    end
+
+    test "an SI is bounded by its enabling Act's extent (T&CP (Trees) Regs 1999 under the T&CP Act 1990)" do
+      d =
+        LiveStatus.decide(
+          [row("UK_uksi_2012_605", "revoked") |> Map.put(:territorial_application, "E")],
+          "uksi"
+          |> ctx("UK")
+          |> Map.merge(%{law_clause_read: true, parent_regions: ["E", "W"]})
+        )
+
+      assert d.kind == :territorial
+      assert d.evidence["law_regions_basis"] == "extent+parent"
+      assert d.evidence["application_unknown"] == false
+      assert d.description == "Revoked in E; in force in W"
+    end
+
     test "a devolved-type or title bound is a determination" do
       d =
         LiveStatus.decide(

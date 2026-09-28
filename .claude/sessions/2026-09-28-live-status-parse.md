@@ -39,6 +39,12 @@ bugs:
     affected: "whole rows matched 98/176 → 105/107"
     fix: "Whole-instrument fallback: same revoker's whole-instrument revocation effect"
     status: fixed
+  - pattern: "Revoked law's current LAT text is '. . .' placeholders, so its application clause is gone; the law looked unresolvable"
+    category: live_status_application
+    module: scraper/extent_backfill.ex + live_status.ex
+    affected: "4 of batch 0's 11"
+    fix: "text_repealed (≥95% of substantive provisions dotted) = revoked in full; text read with no clause = applies throughout its sourced extent; SI regions bounded by the enabling Act's extent"
+    status: fixed
   - pattern: "Legacy-imported revocation rows hold the whole effect text in target with affect null, so no rule could read them"
     category: live_status_legacy_rows
     module: scraper/live_status.ex rows_from_stats/1
@@ -83,7 +89,8 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Batch 0 fetched (426/427; 1 regnal-year name 404)
 - ✅ Batch 0 dry runs: bugs found and fixed; see "Batch 0 results"
 - ✅ Law **application** built into LAT (Jason: LRT must not pull full text); see "Application clause"
-- ⬜ Batch 0 on Jason's go, in order: `mix extent.resolve --apply` (application for 941 LAT laws) → `mix live.apply_effects --batch 0 --apply` → `mix live.application --batch 0 --parse` (11 laws) → `mix live.recompute --batch 0 --apply`
+- ✅ Batch 0 applied (Jason: "run all four"); see "Batch 0 applied"
+- ⬜ Batch 1a (Tier 1: OH&S + FIRE); needs Jason's go and the Tier 1 family list
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -247,3 +254,35 @@ Checks:
 - `mix extent.resolve` dry run: 941 laws hold LAT, 72 of them have a whole-instrument clause (E 34, W 31, E+W+S 5, NI 1, S 1), and there are 0 pending extent changes.
 - Batch 0 needs_application (preview with effects): 11 laws. These are the territorial candidates, including Smoke-free (Signs), Environmental Damage and T&CP (Trees).
 - End-to-end test: an England-only law revoked in England stays Revoked on basis `application`, and its application survives the discard.
+
+## Batch 0 applied (2026-09-28)
+
+1. `mix extent.resolve --apply`: `application_clause` written for 943 laws holding LAT (72 with a clause), with 0 extent changes. Snapshot `extent_backfill_snapshot_20260928`.
+2. `mix live.apply_effects --batch 0 --apply`: effect data on 291 laws' revocation rows (2,546 of 2,774 rows matched) and 25 extent updates. Snapshot `effects_backfill_snapshot_20260928_b0`.
+3. `mix live.application --batch 0 --parse`: the 11 needs_application laws were LAT-parsed. 9 not-Making laws were discarded with archive (reason `application_clause`); Forestry Act and Special Waste are Making and keep their LAT.
+   - A gap surfaced: a revoked law's current text is ". . ." placeholders, so its clause is gone. Three rules were added:
+     - text ≥ 95% repealed ⇒ revoked in full;
+     - text read with no clause ⇒ applies throughout its sourced extent;
+     - an SI is bounded by its enabling Act's extent (`enacted_by`).
+   - The 9 were re-read (`--names`), and the persist hook re-decided them.
+4. `mix live.recompute --batch 0 --apply`: 5 changes, 3 conflicts kept, 283 descriptions. Snapshot `live_status_snapshot_20260928_b0`.
+
+Results (9 live changes, each in record_change_log; is_making unchanged at 3,623):
+
+| Law | Was | Now | Basis |
+|---|---|---|---|
+| REACH 1907/2006 (Making) | Revoked | Part revoked | feed: only annex repeals |
+| Drivers' Hours Reg 561/2006 (Making) | Revoked | Part revoked | feed |
+| Chemical Agents Directive 98/24 (Making) | Revoked | Part revoked | feed |
+| Forestry Act 1967 (Making) | Revoked | Revoked in S; in force in E+W | affected_extent |
+| Special Waste Regs 1996 (Making) | Revoked | Revoked in E+W; in force in S | territorial application E, W |
+| Reservoirs Act 1975 | Revoked | Revoked in S; in force in E+W | affected_extent |
+| Conservation (Natural Habitats) Regs 1994 | Revoked | Revoked in E+W; in force in S | affected_extent + parent |
+| T&CP (Trees) Regs 1999 | Revoked | Revoked in E; in force in W | extent + parent (T&CP Act 1990) |
+| Marine Works EIA Regs 2007 | Revoked | Revoked in S; in force in E+W+NI | extent + parent |
+
+Confirmed Revoked (determinations): Smoke-free (Signs) 2007 (application E), Environmental Damage 2009, Groundwater 1998, Heavy Fuel Oil (Amendment) 2014, H&S (Misc Amendments) 2017 (text repealed in full).
+
+Conflicts kept, for review: Food and Environment Protection Act 1985 (Revoked), Data Protection Act 2018 and Confined Spaces Regs 1997 (In force).
+
+The 5 Making laws leaving Revoked re-enter the Making funnel.

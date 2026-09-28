@@ -14,7 +14,9 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
 
   **Application** rides along (live status parse session, 2026-09-28): the
   same LAT read collects whole-instrument application clauses
-  (`ApplicationClause`) into the law's `application_clause`. It is written
+  (`ApplicationClause`) into the law's `application_clause`, with
+  `text_repealed` when legislation.gov.uk has replaced (almost) all its
+  provision text with ". . ." placeholders (repealed in full). It is written
   only when the law holds LAT, so a lean-LAT discard never clears it.
   `refresh/1` then re-decides the law's live status (`LiveStatus.Recompute`).
   """
@@ -23,6 +25,13 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
   alias SertantaiLegal.Scraper.ApplicationClause
   alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LiveStatus
+
+  # Provisions carrying text of their own (not structure, notes or signatures)
+  @substantive "coalesce(a.text, '') <> '' AND a.section_type NOT IN ('title', 'part', 'chapter', 'heading', 'heading_group', 'schedule', 'signed', 'note', 'commencement', 'annex', 'table', 'figure')"
+
+  # legislation.gov.uk replaces the text of wholly repealed provisions with
+  # ". . ." placeholders: text this repealed means the law is revoked in full.
+  @repealed_share 0.95
 
   @doc """
   Pure: the resolution for one row and whether it should be written.
@@ -89,11 +98,17 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
             "text" => String.slice(text, 0, 400)
           }
         end),
-      "lat_hash" => Map.get(row, :lat_hash)
+      "lat_hash" => Map.get(row, :lat_hash),
+      "text_repealed" => text_repealed?(row)
     }
   end
 
   defp application(_row, _resolution), do: nil
+
+  defp text_repealed?(%{substantive: n, dotted: d}) when is_integer(n) and n > 0,
+    do: d / n >= @repealed_share
+
+  defp text_repealed?(_row), do: false
 
   @doc "Load extent sources for UK laws (optionally only `names`)."
   @spec load_rows([String.t()] | nil) :: [map()]
@@ -107,10 +122,13 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         SELECT l.id, l.name, l.type_code, l.geo_extent, l.geo_region, l.geo_extent_source,
                l.md_restrict_extent, l.document_status,
                COALESCE(lat.codes, '{}'), COALESCE(lat.clauses, '{}'),
-               COALESCE(lat.n, 0) > 0, COALESCE(lat.app, '[]'::jsonb), l.lat_hash, l.application_clause
+               COALESCE(lat.n, 0) > 0, COALESCE(lat.app, '[]'::jsonb), l.lat_hash, l.application_clause,
+               COALESCE(lat.substantive, 0), COALESCE(lat.dotted, 0)
         FROM legal_register l
         LEFT JOIN LATERAL (
           SELECT count(*) AS n,
+                 count(*) FILTER (WHERE #{@substantive}) AS substantive,
+                 count(*) FILTER (WHERE #{@substantive} AND a.text ~ '^[[:space:].…]+$') AS dotted,
                  array_agg(DISTINCT a.extent_code) FILTER (WHERE COALESCE(a.extent_code, '') <> '') AS codes,
                  array_agg(a.text) FILTER (WHERE a.text ~* '(this|these)\\s+\\w+\\s+extends?\\s+to') AS clauses,
                  jsonb_agg(jsonb_build_object('section_id', a.section_id, 'text', a.text) ORDER BY a.sort_key)
@@ -139,7 +157,9 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
                         has_lat,
                         app,
                         lat_hash,
-                        stored_app
+                        stored_app,
+                        substantive,
+                        dotted
                       ] ->
       %{
         id: Ecto.UUID.cast!(id),
@@ -155,7 +175,9 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         has_lat: has_lat,
         application_texts: app,
         lat_hash: lat_hash,
-        application_clause: stored_app
+        application_clause: stored_app,
+        substantive: substantive,
+        dotted: dotted
       }
     end)
   end

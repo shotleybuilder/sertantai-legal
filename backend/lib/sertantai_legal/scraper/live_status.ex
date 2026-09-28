@@ -75,6 +75,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
           required(:law_extent) => String.t() | nil,
           optional(:law_title) => String.t() | nil,
           optional(:law_application) => [String.t()] | nil,
+          optional(:law_clause_read) => boolean(),
+          optional(:law_text_repealed) => boolean(),
+          optional(:law_extent_source) => String.t() | nil,
+          optional(:parent_regions) => [String.t()] | nil,
           optional(:trust_revoker_extent) => boolean(),
           required(:revokers) => %{String.t() => revoker()}
         }
@@ -240,13 +244,9 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
     affected = whole |> Enum.flat_map(&(regions(&1[:affected_extent]) || [])) |> nil_if_empty()
 
     {law_regions, law_basis} =
-      law_regions(
-        ctx[:law_type],
-        ctx[:law_title],
-        ctx[:law_application],
-        affected,
-        ctx[:law_extent]
-      )
+      ctx[:law_type]
+      |> law_regions(ctx[:law_title], ctx[:law_application], affected, ctx[:law_extent])
+      |> bound_by_parents(ctx[:parent_regions])
 
     trust? = Map.get(ctx, :trust_revoker_extent, false)
 
@@ -282,12 +282,17 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
     savings? = Enum.any?(whole, &String.contains?(normalise(&1.affect), "saving"))
     by = whole |> Enum.map(& &1.by) |> Enum.uniq()
 
+    # legislation.gov.uk has removed (almost) all the text: revoked in full
+    text_repealed? = Map.get(ctx, :law_text_repealed, false) == true
+
     kind =
       cond do
-        remaining != [] -> :territorial
-        applied? -> :revoked
+        remaining != [] and not text_repealed? -> :territorial
+        applied? or text_repealed? -> :revoked
         true -> :revoked_unapplied
       end
+
+    remaining = if kind == :territorial, do: remaining, else: []
 
     revoked_regions =
       if law_regions,
@@ -296,7 +301,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
 
     # A territorial remainder resting only on extent (not application) is not
     # a determination: the law's application clause is needed (LAT parse).
-    application_unknown = kind == :territorial and law_basis in ["affected_extent", "extent"]
+    application_unknown = kind == :territorial and not determined?(law_basis, ctx)
 
     evidence = %{
       "kind" => Atom.to_string(kind),
@@ -309,6 +314,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
       "law_regions" => law_regions,
       "law_regions_basis" => law_basis,
       "application_unknown" => application_unknown,
+      "text_repealed" => text_repealed?,
       "revokers" =>
         Enum.map(entries, fn {r, regs, basis} ->
           %{
@@ -365,6 +371,30 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
       _ ->
         nil
     end
+  end
+
+  # An SI cannot reach beyond its enabling Act(s): cap extent-based regions by
+  # the parents' (sourced) extent.
+  defp bound_by_parents({regions, basis}, [_ | _] = parents)
+       when basis in ["affected_extent", "extent"] and is_list(regions) do
+    case sort_regions(Enum.filter(regions, &(&1 in parents))) do
+      [] -> {regions, basis}
+      bounded -> {bounded, basis <> "+parent"}
+    end
+  end
+
+  defp bound_by_parents(law_regions, _parents), do: law_regions
+
+  # Where the law applies is determined by its type, title or application; on
+  # extent only once its text has been read with no application clause (it
+  # then applies throughout its extent) and that extent has a source —
+  # legislation.gov.uk's effects, a law-level / LAT source, or the enabling Act.
+  defp determined?(basis, _ctx) when basis in ["devolved_type", "title", "application"], do: true
+
+  defp determined?(basis, ctx) do
+    ctx[:law_clause_read] == true and
+      (String.starts_with?(basis || "", "affected_extent") or
+         String.ends_with?(basis || "", "+parent") or ctx[:law_extent_source] not in [nil, ""])
   end
 
   # Where the law applies: a devolved type (a WSI's E+W legal extent applies to

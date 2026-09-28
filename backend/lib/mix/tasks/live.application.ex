@@ -6,6 +6,7 @@ defmodule Mix.Tasks.Live.Application do
 
       mix live.application --batch 0            # list them (read-only)
       mix live.application --batch 0 --parse    # LAT-parse them, then discard not-Making LAT
+      mix live.application --names A,B --parse  # re-read named laws (e.g. after a rule change)
 
   With `--parse`, each law goes through the normal LAT pipeline
   (`LatReparse`, snapshot `lat_reparse_live_app_<batch>`): the LAT persist
@@ -31,9 +32,21 @@ defmodule Mix.Tasks.Live.Application do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [batch: :string, parse: :boolean])
+    {opts, _, _} =
+      OptionParser.parse(args, strict: [batch: :string, names: :string, parse: :boolean])
+
     Mix.Task.run("app.start")
 
+    if opts[:names] do
+      names = String.split(opts[:names], ",", trim: true)
+      Mix.shell().info("Re-reading #{length(names)} named laws")
+      if opts[:parse], do: parse(names, "names"), else: :ok
+    else
+      run_batch(opts)
+    end
+  end
+
+  defp run_batch(opts) do
     label = opts[:batch] || Mix.raise("Give --batch N")
 
     names =
