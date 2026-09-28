@@ -59,7 +59,8 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ⬜ Batch 0 (Tier 0, QQ register, 427) → apply_effects + recompute dry runs → Jason approves `--apply`
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
-- ⬜ Batches 2.01–2.13 (Tier 2) → dry runs → apply
+- ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
+- ⬜ Batches 2n.01–2n.06 (Tier 2, no Family; last) → dry runs → apply
 - ⬜ Remaining conflicts (Revoked laws with only partial rows, e.g. Feed Additives 2024/1101)
 - ⬜ Re-check the 287 Revoked + Making laws after the recompute; any flip to in force re-enters the Making funnel
 - ⬜ Report back to fractalaw (Coal Industry Act 1994, the 4 "not evidenced" laws)
@@ -147,7 +148,7 @@ The full fetch is 16,521 laws at the client's 2 s delay, about 10.5 h. Jason: to
 Tier definitions live in `SertantaiLegal.Legal.ReadinessTiers` (`tier_sql/0`), reusable by the tier sessions:
 - **Tier 0**: laws QQ marks `yes` in compliance's `org_applicabilities` (651).
 - **Tier 1**: the key families (the Tier 1 session's draft list, pending Jason's confirmation), excluding Tier 0.
-- **Tier 2**: the rest.
+- **Tier 2**: the rest. Laws with a Family (`2`) come before the 6,615 laws with none (`2n`, last; Jason).
 
 Commands:
 - `mix live.fetch_effects --batches` lists the plan.
@@ -166,7 +167,8 @@ Within a batch, the order is:
 | 1c | Environmental Protection, Pollution, Air Quality, Noise | 895 | 35 min |
 | 1d | Climate Change, Nuclear & Radiological | 424 | 17 min |
 | 1e | Building Safety, Consumer / Product Safety, Transport (Rail/Road/Air/Maritime) Safety | 690 | 27 min |
-| 2.01–2.13 | Tier 2 (Revoked first, extent-only last) | 12,725 | 13 × ≤ 40 min |
+| 2.01–2.08 | Tier 2 with a Family (Revoked first, extent-only last) | 7,312 | 8 × ≤ 40 min |
+| 2n.01–2n.06 | Tier 2 without a Family (last) | 5,413 | 6 × ≤ 40 min |
 
 After each batch:
 1. `mix live.apply_effects` (dry run: extent diff), then `--apply` on Jason's go. It acts only on cached laws.

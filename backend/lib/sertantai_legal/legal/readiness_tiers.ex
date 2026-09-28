@@ -9,10 +9,12 @@ defmodule SertantaiLegal.Legal.ReadinessTiers do
     protection, …), excluding Tier 0, sub-batched by family cluster
     (`tier1_clusters/0`). The family list is the Tier 1 session's draft,
     pending Jason's confirmation.
-  - **Tier 2** — everything else.
+  - **Tier 2** — everything else, laws with a Family (`"2"`) before laws
+    without one (`"2n"`).
 
   `tier_sql/0` is a SQL `CASE` over `legal_register r` giving the batch label
-  (`"0"`, `"1a"`…`"1e"`, `"2"`), for use in other queries.
+  (`"0"`, `"1a"`…`"1e"`, `"2"`, `"2n"`), for use in other queries; the labels
+  sort in tier order.
   """
 
   @qq_org "QQ"
@@ -34,7 +36,7 @@ defmodule SertantaiLegal.Legal.ReadinessTiers do
 
   @doc """
   SQL expression (over `legal_register r`) giving a law's tier batch label:
-  `"0"`, a Tier 1 cluster label, or `"2"`.
+  `"0"`, a Tier 1 cluster label, `"2"` (has a Family) or `"2n"` (no Family).
   """
   @spec tier_sql() :: String.t()
   def tier_sql do
@@ -50,6 +52,7 @@ defmodule SertantaiLegal.Legal.ReadinessTiers do
         WHERE o.name = '#{@qq_org}' AND a.status = 'yes' AND a.law_name = r.name
       ) THEN '0'
       #{clusters}
+      WHEN coalesce(btrim(r.family), '') = '' THEN '2n'
       ELSE '2'
     END
     """

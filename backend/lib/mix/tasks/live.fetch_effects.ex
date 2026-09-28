@@ -8,7 +8,8 @@ defmodule Mix.Tasks.Live.FetchEffects do
       mix live.fetch_effects --batches        # list the batch plan (no fetching)
       mix live.fetch_effects --batch 0        # Tier 0: QQ's register
       mix live.fetch_effects --batch 1a       # Tier 1 cluster (OH&S + FIRE)
-      mix live.fetch_effects --batch 2.01     # Tier 2, first 1,000
+      mix live.fetch_effects --batch 2.01     # Tier 2 with a Family, first 1,000
+      mix live.fetch_effects --batch 2n.01    # Tier 2 without a Family (last)
       mix live.fetch_effects --names UK_a,UK_b
 
   Meta-batched by readiness tier (`Legal.ReadinessTiers`); ≤ 1,000 laws

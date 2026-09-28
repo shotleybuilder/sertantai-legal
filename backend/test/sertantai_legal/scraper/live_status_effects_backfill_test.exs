@@ -69,7 +69,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
         {"1a", "unsourced", "UK_d"},
         {"2", "revoked", "UK_e"},
         {"2", "revoked", "UK_f"},
-        {"2", "type_floor", "UK_g"}
+        {"2", "type_floor", "UK_g"},
+        {"2n", "revoked", "UK_h"}
       ]
 
       plan = EffectsBackfill.batches(targets, size: 2, dir: dir)
@@ -79,7 +80,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
                {"1a.1", ["UK_b", "UK_c"]},
                {"1a.2", ["UK_d"]},
                {"2.01", ["UK_e", "UK_f"]},
-               {"2.02", ["UK_g"]}
+               {"2.02", ["UK_g"]},
+               {"2n.01", ["UK_h"]}
              ]
 
       assert %{groups: ["revoked", "unsourced"], cached: 1} = Enum.at(plan, 1)

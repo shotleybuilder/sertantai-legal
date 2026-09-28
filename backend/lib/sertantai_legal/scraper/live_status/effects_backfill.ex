@@ -54,7 +54,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
 
   Meta-batched by readiness tier (`Legal.ReadinessTiers`): Tier 0 (QQ's
   register), then the Tier 1 family clusters (`1a`…`1e`), then Tier 2. Within
-  a tier, by group — `revoked`, `part_revoked`, `in_force_rows` (laws with
+  a tier (Tier 2: laws with a Family before those without), by group — `revoked`, `part_revoked`, `in_force_rows` (laws with
   revocation rows, by current `live`), then `unsourced` and `type_floor`
   (extent-only) — then Making laws first, laws with no extent source first,
   then name. Malformed names (no type code) are left out.
@@ -94,7 +94,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
   @doc """
   The batch plan: one batch per tier / Tier 1 cluster (`"0"`, `"1a"`…),
   split into `.1`, `.2`… when over `size`; Tier 2 in numbered batches
-  (`"2.01"`…). Each batch: label, names, groups covered, laws already cached.
+  (`"2.01"`…, laws with a Family) then `"2n.01"`… (no Family). Each batch: label, names, groups covered, laws already cached.
   """
   @spec batches([{String.t(), String.t(), String.t()}], keyword()) :: [map()]
   def batches(targets, opts \\ []) do
@@ -133,7 +133,9 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
     end
   end
 
-  defp label("2", i, _n), do: "2." <> String.pad_leading("#{i}", 2, "0")
+  defp label(tier, i, _n) when tier in ["2", "2n"],
+    do: "#{tier}." <> String.pad_leading("#{i}", 2, "0")
+
   defp label(tier, _i, 1), do: tier
   defp label(tier, i, _n), do: "#{tier}.#{i}"
 
