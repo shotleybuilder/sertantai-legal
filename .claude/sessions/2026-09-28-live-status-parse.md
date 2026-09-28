@@ -55,11 +55,11 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Changes feed (`ChangesFeed`): per-effect AffectedExtent / AffectingEffectsExtent / AffectingTerritorialApplication; LiveStatus uses them; parser enriches revocation rows
 - ✅ ExtentResolver source `affected_effects` (legacy "UK" extents re-resolved)
 - ✅ Batched fetch plan (Jason: a 10-hour fetch is too long); see "Effects fetch batching plan"
-- ⬜ Batch 1 (Revoked, Making first) → apply_effects + recompute dry runs → Jason approves `--apply`
-- ⬜ Batches 2–5 (rest of Revoked) → dry runs → apply
-- ⬜ Batches 6–7 (part-revoked, in-force with rows) → dry runs → apply
-- ⬜ Batches 8–14 (unsourced extents, Making first) → apply_effects dry run (extent diff; feeds screening) → apply
-- ⬜ Batches 15–17 (type-floor extents) → apply_effects dry run → apply
+- ✅ Batches meta-batched by readiness tier (Jason): `Legal.ReadinessTiers`
+- ⬜ Batch 0 (Tier 0, QQ register, 427) → apply_effects + recompute dry runs → Jason approves `--apply`
+- ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
+- ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
+- ⬜ Batches 2.01–2.13 (Tier 2) → dry runs → apply
 - ⬜ Remaining conflicts (Revoked laws with only partial rows, e.g. Feed Additives 2024/1101)
 - ⬜ Re-check the 287 Revoked + Making laws after the recompute; any flip to in force re-enters the Making funnel
 - ⬜ Report back to fractalaw (Coal Industry Act 1994, the 4 "not evidenced" laws)
@@ -142,22 +142,32 @@ Application proper (where a law operates, as distinct from its extent) is comput
 
 ## Effects fetch batching plan (2026-09-28)
 
-The full fetch is 16,521 laws at the client's 2 s delay, about 10.5 h. Jason: too long, so it is batched.
+The full fetch is 16,521 laws at the client's 2 s delay, about 10.5 h. Jason: too long. Batches are **meta-batched by the readiness tiers** (parent: the enrichment readiness session), and Tier 1 is sub-batched by family cluster.
+
+Tier definitions live in `SertantaiLegal.Legal.ReadinessTiers` (`tier_sql/0`), reusable by the tier sessions:
+- **Tier 0**: laws QQ marks `yes` in compliance's `org_applicabilities` (651).
+- **Tier 1**: the key families (the Tier 1 session's draft list, pending Jason's confirmation), excluding Tier 0.
+- **Tier 2**: the rest.
+
+Commands:
 - `mix live.fetch_effects --batches` lists the plan.
-- `mix live.fetch_effects --batch N` fetches one batch: 1,000 laws, about 40 min.
-- Cached laws are skipped, so re-running a batch resumes it. The cache is `backend/data/cache/changes-feed/`, and 848 laws were cached by the first, stopped run.
+- `--batch <label>` fetches one batch.
+- Batches are ≤ 1,000 laws (~40 min). Cached laws are skipped, so re-running a batch resumes it. The cache is `backend/data/cache/changes-feed/`, with 848 laws already cached.
 
-Order (`EffectsBackfill.target_laws/0`): groups by priority. Within a group, Making laws come first, then laws with no extent source, then by name.
+Within a batch, the order is:
+1. Revoked, then part-revoked, then in force with revocation rows, then unsourced extent, then type-floor extent.
+2. Within each of those, Making laws first, then laws with no extent source.
 
-| Batches | Group | Laws | Making | Why this order |
-|---|---|---|---|---|
-| 1–5 | revoked: Revoked with revocation rows | 4,520 | 287 | false Revoked hides duties; includes the 289 extent-gap laws |
-| 5–7 | part_revoked + in_force_rows | 1,882 | 684 | territorial detail, `revoked_unapplied` evidence |
-| 7–14 | unsourced: extent-only, no source | 6,697 | 950 | legacy "UK" extents; feeds screening |
-| 14–17 | type_floor: extent from type only | 3,422 | 548 | lowest-value extent upgrade |
+| Batch | Tier / cluster | Laws | ≈ time |
+|---|---|---|---|
+| 0 | Tier 0: QQ register | 427 | 17 min |
+| 1a | OH&S (all) + FIRE (all) | 480 | 19 min |
+| 1b | Waste + Water & Wastewater | 880 | 35 min |
+| 1c | Environmental Protection, Pollution, Air Quality, Noise | 895 | 35 min |
+| 1d | Climate Change, Nuclear & Radiological | 424 | 17 min |
+| 1e | Building Safety, Consumer / Product Safety, Transport (Rail/Road/Air/Maritime) Safety | 690 | 27 min |
+| 2.01–2.13 | Tier 2 (Revoked first, extent-only last) | 12,725 | 13 × ≤ 40 min |
 
-After each batch (or group of batches):
+After each batch:
 1. `mix live.apply_effects` (dry run: extent diff), then `--apply` on Jason's go. It acts only on cached laws.
-2. `mix live.recompute` (dry run), then `--apply` on Jason's go. Laws whose rows have no effect data yet keep the no-feed rules, so running it part-way is safe.
-
-Batch 1 alone is enough to judge the approach on the laws that matter most: Revoked + Making, and the extent-gap laws.
+2. `mix live.recompute` (dry run), then `--apply` on Jason's go. Laws with no effect data yet keep the no-feed rules, so it is safe to run part-way.

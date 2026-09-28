@@ -55,22 +55,36 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
     end
   end
 
-  describe "batch/3 and batches/2" do
-    test "slice the priority-ordered targets; batches report groups and cached laws" do
+  describe "batches/2 and batch/3" do
+    test "one batch per tier / cluster, split when over size; Tier 2 numbered" do
       dir = Path.join(System.tmp_dir!(), "batches-#{System.unique_integer([:positive])}")
       File.mkdir_p!(dir)
       on_exit(fn -> File.rm_rf!(dir) end)
       File.write!(Path.join(dir, "UK_b.json"), "[]")
 
-      targets = [{"revoked", "UK_a"}, {"revoked", "UK_b"}, {"unsourced", "UK_c"}]
+      targets = [
+        {"0", "revoked", "UK_a"},
+        {"1a", "revoked", "UK_b"},
+        {"1a", "unsourced", "UK_c"},
+        {"1a", "unsourced", "UK_d"},
+        {"2", "revoked", "UK_e"},
+        {"2", "revoked", "UK_f"},
+        {"2", "type_floor", "UK_g"}
+      ]
 
-      assert EffectsBackfill.batch(targets, 1, 2) == ["UK_a", "UK_b"]
-      assert EffectsBackfill.batch(targets, 2, 2) == ["UK_c"]
+      plan = EffectsBackfill.batches(targets, size: 2, dir: dir)
 
-      assert [
-               %{batch: 1, laws: 2, groups: ["revoked"], cached: 1},
-               %{batch: 2, laws: 1, groups: ["unsourced"], cached: 0}
-             ] = EffectsBackfill.batches(targets, size: 2, dir: dir)
+      assert Enum.map(plan, &{&1.batch, &1.names}) == [
+               {"0", ["UK_a"]},
+               {"1a.1", ["UK_b", "UK_c"]},
+               {"1a.2", ["UK_d"]},
+               {"2.01", ["UK_e", "UK_f"]},
+               {"2.02", ["UK_g"]}
+             ]
+
+      assert %{groups: ["revoked", "unsourced"], cached: 1} = Enum.at(plan, 1)
+      assert EffectsBackfill.batch(targets, "2.02", size: 2, dir: dir) == ["UK_g"]
+      assert EffectsBackfill.batch(targets, "9", size: 2, dir: dir) == nil
     end
   end
 

@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
   `enrich_stats/2` is pure. `apply!/2` snapshots the columns it writes.
   """
 
+  alias SertantaiLegal.Legal.ReadinessTiers
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
@@ -48,68 +49,93 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
   @batch_size 1000
 
   @doc """
-  UK laws needing the feed, in batch order: `{group, name}`.
+  UK laws needing the feed — with revocation rows, or an unsourced / type-floor
+  extent — as `{tier, group, name}` in batch order.
 
-  Groups, in priority order: `revoked`, `part_revoked` and `in_force_rows`
-  (laws with revocation rows, by current `live`), then `unsourced` and
-  `type_floor` (extent-only). Within a group, Making laws first, then laws
-  with no extent source, then by name. Malformed names (no type code) are
-  left out.
+  Meta-batched by readiness tier (`Legal.ReadinessTiers`): Tier 0 (QQ's
+  register), then the Tier 1 family clusters (`1a`…`1e`), then Tier 2. Within
+  a tier, by group — `revoked`, `part_revoked`, `in_force_rows` (laws with
+  revocation rows, by current `live`), then `unsourced` and `type_floor`
+  (extent-only) — then Making laws first, laws with no extent source first,
+  then name. Malformed names (no type code) are left out.
   """
-  @spec target_laws() :: [{String.t(), String.t()}]
+  @spec target_laws() :: [{String.t(), String.t(), String.t()}]
   def target_laws do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT grp, name FROM (
-          SELECT name, is_making, geo_extent_source,
-            CASE WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '❌%' THEN 1
-                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '⭕%' THEN 2
-                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL THEN 3
-                 WHEN geo_extent_source IS NULL THEN 4
+        SELECT tier, grp, name FROM (
+          SELECT r.name, r.is_making, r.geo_extent_source,
+            #{ReadinessTiers.tier_sql()} AS tier,
+            CASE WHEN r."🔻_rescinded_by_stats_per_law" IS NOT NULL AND r.live LIKE '❌%' THEN 1
+                 WHEN r."🔻_rescinded_by_stats_per_law" IS NOT NULL AND r.live LIKE '⭕%' THEN 2
+                 WHEN r."🔻_rescinded_by_stats_per_law" IS NOT NULL THEN 3
+                 WHEN r.geo_extent_source IS NULL THEN 4
                  ELSE 5 END AS rank,
-            CASE WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '❌%' THEN 'revoked'
-                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL AND live LIKE '⭕%' THEN 'part_revoked'
-                 WHEN "🔻_rescinded_by_stats_per_law" IS NOT NULL THEN 'in_force_rows'
-                 WHEN geo_extent_source IS NULL THEN 'unsourced'
+            CASE WHEN r."🔻_rescinded_by_stats_per_law" IS NOT NULL AND r.live LIKE '❌%' THEN 'revoked'
+                 WHEN r."🔻_rescinded_by_stats_per_law" IS NOT NULL AND r.live LIKE '⭕%' THEN 'part_revoked'
+                 WHEN r."🔻_rescinded_by_stats_per_law" IS NOT NULL THEN 'in_force_rows'
+                 WHEN r.geo_extent_source IS NULL THEN 'unsourced'
                  ELSE 'type_floor' END AS grp
-          FROM legal_register
-          WHERE country = 'uk' AND name !~ '^UK__'
-            AND ("🔻_rescinded_by_stats_per_law" IS NOT NULL
-                 OR geo_extent_source IS NULL OR geo_extent_source = 'type_code')
+          FROM legal_register r
+          WHERE r.country = 'uk' AND r.name !~ '^UK__'
+            AND (r."🔻_rescinded_by_stats_per_law" IS NOT NULL
+                 OR r.geo_extent_source IS NULL OR r.geo_extent_source = 'type_code')
         ) t
-        ORDER BY rank, coalesce(is_making, false) DESC, (geo_extent_source IS NULL) DESC, name
+        ORDER BY tier, rank, coalesce(is_making, false) DESC, (geo_extent_source IS NULL) DESC, name
         """,
         [],
         timeout: :infinity
       )
 
-    Enum.map(rows, fn [grp, name] -> {grp, name} end)
+    Enum.map(rows, fn [tier, grp, name] -> {tier, grp, name} end)
   end
 
-  @doc "Batch `n` (1-based) of `target_laws/0`, `size` laws each."
-  @spec batch([{String.t(), String.t()}], pos_integer(), pos_integer()) :: [String.t()]
-  def batch(targets, n, size \\ @batch_size),
-    do: targets |> Enum.slice((n - 1) * size, size) |> Enum.map(&elem(&1, 1))
-
-  @doc "Per batch: number, laws, groups covered, laws already cached."
-  @spec batches([{String.t(), String.t()}], keyword()) :: [map()]
+  @doc """
+  The batch plan: one batch per tier / Tier 1 cluster (`"0"`, `"1a"`…),
+  split into `.1`, `.2`… when over `size`; Tier 2 in numbered batches
+  (`"2.01"`…). Each batch: label, names, groups covered, laws already cached.
+  """
+  @spec batches([{String.t(), String.t(), String.t()}], keyword()) :: [map()]
   def batches(targets, opts \\ []) do
     size = Keyword.get(opts, :size, @batch_size)
     dir = cache_dir(opts)
 
     targets
-    |> Enum.chunk_every(size)
-    |> Enum.with_index(1)
-    |> Enum.map(fn {chunk, n} ->
+    |> Enum.chunk_by(&elem(&1, 0))
+    |> Enum.flat_map(fn [{tier, _, _} | _] = laws ->
+      chunks = Enum.chunk_every(laws, size)
+
+      chunks
+      |> Enum.with_index(1)
+      |> Enum.map(fn {chunk, i} -> {label(tier, i, length(chunks)), chunk} end)
+    end)
+    |> Enum.map(fn {label, chunk} ->
+      names = Enum.map(chunk, &elem(&1, 2))
+
       %{
-        batch: n,
-        laws: length(chunk),
-        groups: chunk |> Enum.map(&elem(&1, 0)) |> Enum.uniq(),
-        cached: Enum.count(chunk, fn {_, name} -> File.exists?(path(dir, name)) end)
+        batch: label,
+        names: names,
+        laws: length(names),
+        groups: chunk |> Enum.map(&elem(&1, 1)) |> Enum.uniq(),
+        cached: Enum.count(names, &File.exists?(path(dir, &1)))
       }
     end)
   end
+
+  @doc "The names in batch `label` of the plan (nil when there is no such batch)."
+  @spec batch([{String.t(), String.t(), String.t()}], String.t(), keyword()) ::
+          [String.t()] | nil
+  def batch(targets, label, opts \\ []) do
+    case Enum.find(batches(targets, opts), &(&1.batch == label)) do
+      nil -> nil
+      b -> b.names
+    end
+  end
+
+  defp label("2", i, _n), do: "2." <> String.pad_leading("#{i}", 2, "0")
+  defp label(tier, _i, 1), do: tier
+  defp label(tier, i, _n), do: "#{tier}.#{i}"
 
   @doc """
   Fetch and cache the feed for each law not yet cached. Returns counts of
