@@ -421,6 +421,17 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       assert d.description == "Revoked in E; in force in W"
     end
 
+    test "a parent bound that does not narrow is no evidence (legacy UK extent under a UK Act)" do
+      d =
+        LiveStatus.decide(
+          [row("UK_ssi_2005_1", "revoked")],
+          "uksi" |> ctx("UK") |> Map.merge(%{law_clause_read: true, parent_regions: ~w(E W S NI)})
+        )
+
+      assert d.evidence["law_regions_basis"] == "extent"
+      assert d.evidence["application_unknown"] == true
+    end
+
     test "a devolved-type or title bound is a determination" do
       d =
         LiveStatus.decide(

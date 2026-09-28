@@ -51,9 +51,9 @@ defmodule SertantaiLegal.Scraper.LatPersisterTest do
       })
       |> Ash.create!()
 
-    rows = [row(name, 1), row(name, 2, %{sub: "1"})]
+    rows = [row(name, 1), row(name, 2, %{sub: "1"}), row(name, 3)]
 
-    assert {:ok, %{inserted: 2, deleted: 0}} = LatPersister.persist(rows, name, law.id)
+    assert {:ok, %{inserted: 3, deleted: 0}} = LatPersister.persist(rows, name, law.id)
 
     %{rows: [[subs]]} =
       Repo.query!(
@@ -61,7 +61,7 @@ defmodule SertantaiLegal.Scraper.LatPersisterTest do
         [name]
       )
 
-    assert subs == [nil, "1"]
+    assert subs == [nil, "1", nil]
 
     [refreshed] = LegalRegister |> Ash.Query.filter(name == ^name) |> Ash.read!()
     assert refreshed.geo_extent == "S"

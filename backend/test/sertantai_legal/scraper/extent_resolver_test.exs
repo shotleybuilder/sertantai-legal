@@ -122,6 +122,14 @@ defmodule SertantaiLegal.Scraper.ExtentResolverTest do
   end
 
   describe "resolve/1 source priority" do
+    test "lat_provisions needs at least 3 coded provisions when counted (HASS 2005: 1 of 92)" do
+      assert %{source: nil} =
+               ExtentResolver.resolve(input(lat_extent_codes: ["NI"], lat_coded_provisions: 1))
+
+      assert %{geo_extent: "NI", source: "lat_provisions"} =
+               ExtentResolver.resolve(input(lat_extent_codes: ["NI"], lat_coded_provisions: 3))
+    end
+
     test "affected_effects: legislation.gov.uk's AffectedExtent resolves a law with no other source" do
       assert %{geo_extent: "GB", source: "affected_effects"} =
                ExtentResolver.resolve(input(affected_extents: ["E+W+S", "E+W", nil]))

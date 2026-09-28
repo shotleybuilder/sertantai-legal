@@ -126,11 +126,14 @@ defmodule Mix.Tasks.Live.Recompute do
 
     rows =
       plan
-      |> Enum.filter(&(&1.action in [:change, :conflict] or gap?(&1)))
+      |> Enum.filter(&(&1.action in [:change, :conflict, :needs_application] or gap?(&1)))
       |> Enum.map(fn c ->
         [
           c.name,
-          if(c.action in [:change, :conflict], do: c.action, else: :review_extent_gap),
+          if(c.action in [:change, :conflict, :needs_application],
+            do: c.action,
+            else: :review_extent_gap
+          ),
           c.live,
           c.old_rule_live,
           c.new_live,

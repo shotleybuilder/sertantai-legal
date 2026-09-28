@@ -94,7 +94,9 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Fractalaw live-fix publish (8 laws) verified; see "Live-fix enrichment"
 - ✅ Tier 1 fetch (1a–1e): 3,360 fetched; 5 pre-1948 SR&Os (`uksro`) have no changes feed
 - ✅ Tier 1 dry runs; see "Tier 1 dry runs"
-- ⬜ Tier 1 apply on Jason's go (apply_effects → application --parse → recompute, per batch); then tell fractalaw to restore 3 PPC orders from archive61
+- ✅ Tier 1 applied; see "Tier 1 applied"
+- ⬜ Decide: parent-Act bound as evidence (too coarse: the WRA 1991 extent is GB), and an LRT metadata/extent re-scrape for the needs_application laws with unsourced extent
+- ⬜ Tell fractalaw which archive61 laws to restore (3 PPC orders solid; 3 Surface Waters regs doubtful)
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -332,3 +334,20 @@ Leftover: the Making funnel still shows `enrich` for FEPA, Forestry, Special Was
 - **Part → Revoked (9):** all genuine and superseded. They are NI regulations revoked with savings by later NI regulations (Control of Asbestos (NI) 2007, H&S Fees (NI) 2010, water/WFD/EIA (NI), Nitrates (NI) 2014), the Prevention of Oil Pollution Act 1986 (repealed by the Merchant Shipping Act 1995), and PPC Designation 2019. Their legacy rows were unreadable to the old rule.
 - **Fix found:** `affected_effects` took a single provision's extent as the law's (PUWER 1992: 1 of 12 effects). Now: whole-instrument AffectedExtent first, else provision extents only when ≥ 3 effects carry them, which removes 24 changes. PUWER's remaining "E+N.I." is on its own whole-instrument revocation effect (a legislation.gov.uk editorial quirk) and has no live impact (it stays Revoked).
 - **archive61:** 3 of fractalaw's hub-archived laws (PPC Designation 2015/1352, 2016/150, 2016/398) become "Revoked in E; in force in W". Fractalaw must restore them after apply.
+
+## Tier 1 applied (2026-09-28)
+
+For each batch 1a–1e: `apply_effects --apply` (1,630 laws' revocation rows enriched, 280 extents), then `application --parse` (128 laws LAT-parsed, 119 not-Making discarded with archive), then `recompute --apply` (37 changes as previewed).
+
+Bugs found in the results and fixed:
+- **Parent bound counted as evidence when it didn't narrow.** A UK Act over a legacy UK extent made the result "determined". Now `+parent` applies only when the bound narrows.
+- **`lat_provisions` took a single coded provision as the law's extent.** HASS 2005: 1 of 92 → "NI". Now ≥ 3 coded provisions are required (`lat_coded_provisions`). HASS 2005's extent was restored to UK, with a change-log entry.
+- **Undetermined results kept the current value, and `finish` checked "current == decided" first**, so hook-written Part revoked results stuck. Now `needs_application` holds at the context-free old-rule status and is checked first. It's logged, and the CSV lists it.
+
+After the corrected recompute, 28 laws are held (`needs_application`). 20 of them went back from the hook's spurious "in force in NI/S" to Revoked: CDM 1994, CHIP 1994/1997/2008, Construction (HSW) 1996, Ionising Radiation (Medical Exposure) 2000, the Nitrate Sensitive Areas (Amendment) regs, and others. All are GB regimes revoked in full.
+
+**Open question: the parent bound.** Its extent is the Act's union of provision extents. The Water Resources Act 1991 is recorded as GB although its main powers are E+W, so the Surface Waters Regs 1994/1996/1997 read "in force in S", probably spuriously. Proposal:
+- the parent bound can narrow a law's regions, but it is not a determination;
+- for held laws with an unsourced (legacy) extent, run the LRT metadata/extent stages to source the extent (law-level RestrictExtent), then recompute. This is LRT's own data, not full text.
+
+archive61: 6 are now not fully Revoked. The PPC Designation orders 2015/1352, 2016/150 and 2016/398 (title "(England and Wales)", revoked in E) are solid. The Surface Waters regs 1994/1057, 1996/3001 and 1997/2560 are doubtful (parent-bound only).

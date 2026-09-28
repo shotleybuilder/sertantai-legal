@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   | Rank | Source           | Evidence                                                        |
   |------|------------------|-----------------------------------------------------------------|
   | 1    | `law_level`      | `Legislation/@RestrictExtent`, unless the document is unrevised |
-  | 2    | `lat_provisions` | union of LAT `extent_code`                                      |
+  | 2    | `lat_provisions` | union of LAT `extent_code` (≥ 3 coded provisions, when counted) |
   | 3    | `contents_items` | union of `ContentsItem/@RestrictExtent`, revised documents only |
   | 4    | `text_clause`    | whole-instrument extent clauses ("These Regulations extend to…")|
   | 5    | `affected_effects` | union of `AffectedExtent` on the law's changes-feed effects   |
@@ -67,7 +67,8 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
           required(:contents_item_extents) => [String.t() | nil],
           required(:extent_clauses) => [[String.t()]],
           required(:type_code) => String.t() | nil,
-          optional(:affected_extents) => [String.t() | nil]
+          optional(:affected_extents) => [String.t() | nil],
+          optional(:lat_coded_provisions) => non_neg_integer()
         }
 
   @type result :: %{
@@ -81,7 +82,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   def resolve(input) do
     [
       {"law_level", law_level(input)},
-      {"lat_provisions", union(input.lat_extent_codes)},
+      {"lat_provisions", lat_provisions(input)},
       {"contents_items", contents_items(input)},
       {"text_clause", input.extent_clauses |> List.flatten() |> ordered()},
       {"affected_effects", union(Map.get(input, :affected_extents, []))},
@@ -195,6 +196,14 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   end
 
   # ── Helpers ──
+
+  # A few coded provisions are not the law's extent (HASS 2005: 1 NI-coded
+  # provision of 92 gave "NI"): with a count, require at least 3.
+  @min_lat_coded 3
+  defp lat_provisions(%{lat_coded_provisions: n}) when is_integer(n) and n < @min_lat_coded,
+    do: []
+
+  defp lat_provisions(input), do: union(input.lat_extent_codes)
 
   defp law_level(%{document_status: "final"}), do: []
   defp law_level(%{restrict_extent: extent}), do: parse_regions(extent)

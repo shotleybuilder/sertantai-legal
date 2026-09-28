@@ -179,6 +179,20 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
     Map.put(entry, "reason", reason)
   end
 
+  defp change_entry(%Change{action: :needs_application, live: live, new_live: new} = c)
+       when live != new do
+    {:ok, entry} =
+      ChangeLogger.build_change_entry(%{live: live}, %{live: new}, "live_recompute",
+        source: "live_status"
+      )
+
+    Map.put(
+      entry,
+      "reason",
+      "territorial result undetermined (#{c.kind}); held at the context-free status until the law's application is read"
+    )
+  end
+
   defp change_entry(_), do: nil
 
   @doc """
@@ -277,14 +291,19 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   defp finish(base, live, decision, old_rule, from_changes) do
     {action, new_live, description, evidence} =
       cond do
+        # Undetermined territorial result: the conservative context-free
+        # status (the old rule), as the parser keeps the changes status.
+        decision.evidence["application_unknown"] == true ->
+          held = LiveStatus.from_live(old_rule)
+
+          {:needs_application, old_rule, held.description,
+           Map.merge(decision.evidence, %{
+             "held_live" => old_rule,
+             "decided_live" => decision.live
+           })}
+
         live == decision.live ->
           {:describe, live, decision.description, decision.evidence}
-
-        decision.evidence["application_unknown"] == true ->
-          kept = LiveStatus.from_live(live)
-
-          {:needs_application, live, kept.description,
-           Map.merge(decision.evidence, %{"live_kept" => true, "decided_live" => decision.live})}
 
         live == old_rule ->
           {:change, decision.live, decision.description, decision.evidence}

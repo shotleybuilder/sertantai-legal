@@ -52,6 +52,7 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         restrict_extent: row.md_restrict_extent,
         document_status: row.document_status,
         lat_extent_codes: row.lat_extent_codes,
+        lat_coded_provisions: Map.get(row, :lat_coded_provisions),
         contents_item_extents: [],
         extent_clauses:
           row.clause_texts |> Enum.map(&ExtentResolver.extent_clause/1) |> Enum.reject(&is_nil/1),
@@ -123,10 +124,11 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
                l.md_restrict_extent, l.document_status,
                COALESCE(lat.codes, '{}'), COALESCE(lat.clauses, '{}'),
                COALESCE(lat.n, 0) > 0, COALESCE(lat.app, '[]'::jsonb), l.lat_hash, l.application_clause,
-               COALESCE(lat.substantive, 0), COALESCE(lat.dotted, 0)
+               COALESCE(lat.substantive, 0), COALESCE(lat.dotted, 0), COALESCE(lat.coded, 0)
         FROM legal_register l
         LEFT JOIN LATERAL (
           SELECT count(*) AS n,
+                 count(*) FILTER (WHERE COALESCE(a.extent_code, '') <> '') AS coded,
                  count(*) FILTER (WHERE #{@substantive}) AS substantive,
                  count(*) FILTER (WHERE #{@substantive} AND a.text ~ '^[[:space:].…]+$') AS dotted,
                  array_agg(DISTINCT a.extent_code) FILTER (WHERE COALESCE(a.extent_code, '') <> '') AS codes,
@@ -159,7 +161,8 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
                         lat_hash,
                         stored_app,
                         substantive,
-                        dotted
+                        dotted,
+                        coded
                       ] ->
       %{
         id: Ecto.UUID.cast!(id),
@@ -177,7 +180,8 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         lat_hash: lat_hash,
         application_clause: stored_app,
         substantive: substantive,
-        dotted: dotted
+        dotted: dotted,
+        lat_coded_provisions: coded
       }
     end)
   end

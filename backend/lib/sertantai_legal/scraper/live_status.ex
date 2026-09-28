@@ -374,11 +374,13 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   end
 
   # An SI cannot reach beyond its enabling Act(s): cap extent-based regions by
-  # the parents' (sourced) extent.
+  # the parents' (sourced) extent. Only a bound that narrows counts as
+  # evidence ("+parent"); a UK parent over a UK extent adds nothing.
   defp bound_by_parents({regions, basis}, [_ | _] = parents)
        when basis in ["affected_extent", "extent"] and is_list(regions) do
     case sort_regions(Enum.filter(regions, &(&1 in parents))) do
       [] -> {regions, basis}
+      ^regions -> {regions, basis}
       bounded -> {bounded, basis <> "+parent"}
     end
   end
