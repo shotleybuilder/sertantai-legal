@@ -267,6 +267,66 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
     end
   end
 
+  describe "decide/2 with changes-feed effect data" do
+    defp feed_row(by, affect, target, affected, effect, application) do
+      row(by, affect, target)
+      |> Map.merge(%{
+        affected_extent: affected,
+        effect_extent: effect,
+        territorial_application: application
+      })
+    end
+
+    test "Special Waste Regs 1996: E and W revocations of an E+W+S law leave Scotland" do
+      d =
+        LiveStatus.decide(
+          [
+            feed_row("UK_uksi_2005_894", "revoked", "Regulations", "E+W+S", "E+W", "E"),
+            feed_row("UK_wsi_2005_1806", "revoked", "Regulations", "E+W+S", "E+W", "W")
+          ],
+          ctx("uksi", "UK")
+        )
+
+      assert d.kind == :territorial
+      assert d.description == "Revoked in E+W; in force in S"
+
+      assert Enum.map(d.evidence["revokers"], & &1["basis"]) ==
+               ["territorial_application", "territorial_application"]
+    end
+
+    test "Control of Asbestos at Work Regs 1987: a UK-wide revocation revokes a law recorded as UK" do
+      d =
+        LiveStatus.decide(
+          [feed_row("UK_uksi_2002_2675", "revoked", "Regulations", nil, "E+W+S+N.I.", nil)],
+          ctx("uksi", "UK", %{"UK_uksi_2002_2675" => %{extent: "GB", date: nil}})
+        )
+
+      assert d.kind == :revoked
+      assert d.evidence["extent_gap"] == []
+      assert [%{"basis" => "effect_extent"}] = d.evidence["revokers"]
+    end
+
+    test "the law's AffectedExtent bounds it when its recorded extent is too wide" do
+      d =
+        LiveStatus.decide(
+          [feed_row("UK_uksi_2015_307", "revoked", "Order", "E+W", "E+W", nil)],
+          ctx("uksi", "UK")
+        )
+
+      assert d.kind == :revoked
+    end
+
+    test "a Welsh law revoked in Wales is revoked (devolved type beats its E+W extent)" do
+      d =
+        LiveStatus.decide(
+          [feed_row("UK_wsi_2018_433", "revoked", "Regulations", "E+W", "E+W", "W")],
+          ctx("wsi", "E+W")
+        )
+
+      assert d.kind == :revoked
+    end
+  end
+
   describe "rows_from_stats/1" do
     test "flattens the stored per-law stats JSONB into rows" do
       stats = %{
@@ -279,7 +339,13 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       }
 
       assert LiveStatus.rows_from_stats(stats) == [
-               row("UK_uksi_2011_1524", "revoked", "Regulations", "Not yet")
+               "UK_uksi_2011_1524"
+               |> row("revoked", "Regulations", "Not yet")
+               |> Map.merge(%{
+                 affected_extent: nil,
+                 effect_extent: nil,
+                 territorial_application: nil
+               })
              ]
 
       assert LiveStatus.rows_from_stats(nil) == []

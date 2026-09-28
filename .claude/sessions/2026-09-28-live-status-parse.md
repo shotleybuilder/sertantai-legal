@@ -51,8 +51,12 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Evidence: `live_evidence` JSONB (kind incl. `revoked_unapplied`, with_savings, revokers with affect, target, revoker_made_date, basis, regions, extent_gap)
 - ✅ `live_description` derived from the same decision as `live` (staged parser `resolve_live_status`)
 - ✅ `mix live.recompute` (dry run default, guarded, snapshot + record_change_log on apply); dry run done
-- ⬜ Jason: decide UK-level revoker extent policy (default: not trusted) and approve `--apply`
-- ⬜ Review list: 289 Revoked laws with an `extent_gap`, and 145 conflicts
+- ✅ Jason: the pipeline must decide itself, so fix the extent/application data first (not a human review list)
+- ✅ Changes feed (`ChangesFeed`): per-effect AffectedExtent / AffectingEffectsExtent / AffectingTerritorialApplication; LiveStatus uses them; parser enriches revocation rows
+- ✅ ExtentResolver source `affected_effects` (legacy "UK" extents re-resolved)
+- ⬜ `mix live.fetch_effects` (running, ~13K laws at 2 s) → `mix live.apply_effects` dry run → Jason approves `--apply`
+- ⬜ `mix live.recompute` dry run on effect data → Jason approves `--apply`
+- ⬜ Remaining conflicts (Revoked laws with only partial rows, e.g. Feed Additives 2024/1101)
 - ⬜ Re-check the 287 Revoked + Making laws after the recompute; any flip to in force re-enters the Making funnel
 - ⬜ Report back to fractalaw (Coal Industry Act 1994, the 4 "not evidenced" laws)
 
@@ -104,3 +108,30 @@ With `--trust-revoker-extent`: 345 changes and 19 Making laws. Examples of the d
 - the Coal Industry Act 1994 becomes Part revoked.
 
 The report is in `backend/data/reports/live-status/recompute-*.csv`.
+
+## Extent and application fix (2026-09-28, Jason's direction)
+
+Jason: flagging 289 laws for human review is not a solution. The pipeline must make the determination, so if the data is bad, fix the data. The problem is extent vs application.
+
+Findings:
+- 234 of the 289 have `geo_extent = UK` with **no source** (legacy import). Their revokers mostly have `law_level` extents.
+- legislation.gov.uk's changes feed (`/changes/affected/{law}/data.feed`) carries three things per effect, all editorial data, that the HTML table legal scraped drops:
+  - `AffectedExtent` (extent of the affected provision / law);
+  - `AffectingEffectsExtent` (extent of the change);
+  - `AffectingTerritorialApplication` (where the change applies).
+
+End-to-end parse with the feed (no DB writes):
+
+| Law | Extent (source) | live |
+|---|---|---|
+| Special Waste Regs 1996 | GB (law_level) | Revoked in E+W; in force in S (territorial application E, W) |
+| Control of Asbestos at Work Regs 1987 | GB (affected_effects; was UK) | Revoked (effect extent E+W+S+N.I.) |
+| CoP (Amendment) Act 1989 | GB | Revoked in S; in force in E+W |
+| Coal Industry Act 1994 | UK | Part revoked |
+| Smoke Control (Exempted Fireplaces) (No. 2) Order 1983 | E+W (affected_effects; was UK) | Revoked in E; in force in W |
+| Energy Information Regs 1996 | UK | Revoked (not yet applied to the text) |
+| Forestry Act 1967 | GB | Revoked in S; in force in E+W |
+
+Application proper (where a law operates, as distinct from its extent) is computed by fractalaw (#163, `application_regions`) for enriched laws only. For live status, the effect's territorial application is the application of the revocation. The revoked law's own application is bounded by its devolved type, title marker and AffectedExtent.
+
+`geo_extent` feeds compliance screening, so the extent backfill is a gated dry run (`mix live.apply_effects`) before any write.

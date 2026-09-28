@@ -17,14 +17,17 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   - **Applied or not** — a whole revocation counts whether or not
     legislation.gov.uk has applied it to the text; `revoked_unapplied`
     records that it has not.
-  - **Territorial** — a revocation reaches only the revoker's jurisdiction:
-    an extent marker in the affect ("revoked (S.)"), else a devolved revoker's
-    type (SSI → S, WSI → W, NISR → NI), else the revoker's recorded extent,
+  - **Territorial** — a revocation reaches where legislation.gov.uk's changes
+    feed says it applies (`AffectingTerritorialApplication`, else
+    `AffectingEffectsExtent`; see `LegislationGovUk.ChangesFeed`). Without
+    feed data: an extent marker in the affect ("revoked (S.)"), else a
+    devolved revoker's type (SSI → S, WSI → W, NISR → NI), else the revoker's recorded extent,
     else (UK-level revoker not in the DB) the whole law. When the revokers
     together leave part of the law's jurisdiction uncovered, the law is
-    `territorial` (live: Part Revocation). The law's jurisdiction is a title
-    marker ("(Wales)", "(England)", …), else a devolved type's (a WSI's E+W
-    legal extent applies to Wales only), else its recorded extent.
+    `territorial` (live: Part Revocation). The law's jurisdiction is a
+    devolved type's (a WSI's E+W legal extent applies to Wales only), else a
+    title marker ("(Wales)", "(England)", …), else the `AffectedExtent` of
+    its whole-instrument effects, else its recorded extent.
 
   The revoker's date is its made date (`revoker_made_date`), not the
   commencement of the revoking provision. The decision never infers a whole
@@ -49,7 +52,15 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   @live_part_revoked "⭕ Part Revocation / Repeal"
   @live_revoked "❌ Revoked / Repealed / Abolished"
 
-  @type row :: %{by: String.t(), affect: String.t(), target: String.t(), applied: String.t()}
+  @type row :: %{
+          required(:by) => String.t(),
+          required(:affect) => String.t(),
+          required(:target) => String.t(),
+          required(:applied) => String.t(),
+          optional(:affected_extent) => String.t() | nil,
+          optional(:effect_extent) => String.t() | nil,
+          optional(:territorial_application) => String.t() | nil
+        }
   @type revoker :: %{extent: String.t() | nil, date: Date.t() | nil}
   @type context :: %{
           required(:law_type) => String.t() | nil,
@@ -141,7 +152,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
       by: a.name,
       affect: a[:affect] || "",
       target: a[:target] || "",
-      applied: a[:applied?] || ""
+      applied: a[:applied?] || "",
+      affected_extent: a[:affected_extent],
+      effect_extent: a[:effect_extent],
+      territorial_application: a[:territorial_application]
     }
   end
 
@@ -159,7 +173,16 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   def rows_from_stats(stats) when is_map(stats) do
     for {name, entry} <- Enum.sort(stats), d <- Map.get(entry, "details") || [] do
       {target, affect} = split_legacy(d["target"] || "", d["affect"])
-      %{by: name, affect: affect, target: target, applied: d["applied"] || ""}
+
+      %{
+        by: name,
+        affect: affect,
+        target: target,
+        applied: d["applied"] || "",
+        affected_extent: d["affected_extent"],
+        effect_extent: d["effect_extent"],
+        territorial_application: d["territorial_application"]
+      }
     end
   end
 
@@ -199,7 +222,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
 
   defp decide_whole(whole, ctx) do
     revokers = Map.get(ctx, :revokers) || %{}
-    law_regions = law_regions(ctx[:law_type], ctx[:law_extent], ctx[:law_title])
+    affected = whole |> Enum.flat_map(&(regions(&1[:affected_extent]) || [])) |> nil_if_empty()
+    law_regions = law_regions(ctx[:law_type], ctx[:law_title], affected, ctx[:law_extent])
     trust? = Map.get(ctx, :trust_revoker_extent, false)
 
     entries =
@@ -278,8 +302,13 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
     type = r.by |> String.split("_") |> Enum.at(1)
     recorded = revokers |> Map.get(r.by, %{}) |> Map.get(:extent) |> regions()
 
+    application = regions(r[:territorial_application])
+    effect = regions(r[:effect_extent])
+
     cond do
       marker -> {marker, "affect_marker"}
+      application -> {application, "territorial_application"}
+      effect -> {effect, "effect_extent"}
       Map.has_key?(@devolved, type) -> {@devolved[type], "devolved_revoker"}
       recorded && trust? -> {recorded, "revoker_extent"}
       recorded -> {@all_regions, "uk_level_revoker"}
@@ -305,9 +334,12 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
 
   # A devolved type bounds the law (a WSI's E+W legal extent applies to Wales
   # only); else the last jurisdiction in the title ("… (Wales) Order",
-  # "(England and Scotland)"); else its recorded extent.
-  defp law_regions(type, extent, title) do
-    Map.get(@devolved, type) || title_regions(title) || regions(extent)
+  # "(England and Scotland)"); else the AffectedExtent legislation.gov.uk
+  # records on its whole-instrument effects; else its recorded extent.
+  defp law_regions(type, title, affected, extent) do
+    Map.get(@devolved, type) || title_regions(title) ||
+      sort_regions(affected || []) |> nil_if_empty() ||
+      regions(extent)
   end
 
   @nation "england|wales|scotland|northern ireland|great britain"

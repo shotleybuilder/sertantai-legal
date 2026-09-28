@@ -418,7 +418,11 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   # Post-stage hooks, run only when the stage succeeded.
   # amended_by: resolve final live status (changes-primary, metadata-override, #60 Bug 4)
-  defp after_stage(law, :amended_by, _data), do: resolve_live_status(law)
+  defp after_stage(law, :amended_by, data) do
+    law
+    |> resolve_extent_from_effects((data || %{})[:affected_extents] || [])
+    |> resolve_live_status()
+  end
 
   # metadata: re-resolve extent (#162), Making pre-filter, family from SI codes
   # (mirrors Categorizer.categorize_records/1)
@@ -801,6 +805,38 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     }
   end
 
+  # After the amended_by stage: legislation.gov.uk's AffectedExtent resolves a
+  # law whose extent had no better source (legacy, or only the type floor).
+  defp resolve_extent_from_effects(%ParsedLaw{} = law, []), do: law
+
+  defp resolve_extent_from_effects(%ParsedLaw{} = law, affected_extents) do
+    if law.geo_extent_source in [nil, "type_code"] do
+      resolution =
+        ExtentResolver.resolve(%{
+          restrict_extent: law.md_restrict_extent,
+          document_status: law.document_status,
+          lat_extent_codes: [],
+          contents_item_extents: [],
+          extent_clauses: [],
+          type_code: law.type_code,
+          affected_extents: affected_extents
+        })
+
+      if resolution.source do
+        %{
+          law
+          | geo_extent: resolution.geo_extent,
+            geo_region: resolution.geo_region,
+            geo_extent_source: resolution.source
+        }
+      else
+        law
+      end
+    else
+      law
+    end
+  end
+
   defp parse_section_extents(xml) do
     # Try to get section-level extent data
     try do
@@ -1002,6 +1038,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
           # Live status derived from change history
           live_from_changes: affected.live,
+
+          # legislation.gov.uk AffectedExtent across the law's effects (ExtentResolver)
+          affected_extents: Map.get(affected, :affected_extents, []),
 
           # Flattened stats - Amended_by (🔻 this law is affected by others) - excludes self
           amended_by_stats_affected_by_count: affected.stats.amendments_count,
@@ -1264,7 +1303,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # Build a detail map for JSONB output
-  defp build_detail_map(%{target: target, affect: affect, applied?: applied}) do
+  defp build_detail_map(%{target: target, affect: affect, applied?: applied} = row) do
     target = if target == "", do: nil, else: target
     affect = if affect == "", do: nil, else: affect
     applied = if applied == "", do: nil, else: applied
@@ -1273,6 +1312,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       nil
     else
       %{"target" => target, "affect" => affect, "applied" => applied}
+      |> Map.merge(effect_extents(row))
     end
   end
 
@@ -1281,6 +1321,19 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   defp build_detail_map(_), do: nil
+
+  # Changes-feed extents on a revocation row (ChangesFeed.enrich), when matched
+  defp effect_extents(row) do
+    for {key, json} <- [
+          affected_extent: "affected_extent",
+          effect_extent: "effect_extent",
+          territorial_application: "territorial_application"
+        ],
+        value = Map.get(row, key),
+        not is_nil(value),
+        into: %{},
+        do: {json, value}
+  end
 
   # Build "target affect [applied?]" string for detailed output
   # e.g., "reg. 2(1) words inserted [Not yet]"

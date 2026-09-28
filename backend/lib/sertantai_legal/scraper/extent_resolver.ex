@@ -17,7 +17,12 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   | 2    | `lat_provisions` | union of LAT `extent_code`                                      |
   | 3    | `contents_items` | union of `ContentsItem/@RestrictExtent`, revised documents only |
   | 4    | `text_clause`    | whole-instrument extent clauses ("These Regulations extend to…")|
-  | 5    | `type_code`      | floor from the type code (ssi → S, nisr → NI, wsi → E+W …)      |
+  | 5    | `affected_effects` | union of `AffectedExtent` on the law's changes-feed effects   |
+  | 6    | `type_code`      | floor from the type code (ssi → S, nisr → NI, wsi → E+W …)      |
+
+  `affected_effects` is legislation.gov.uk's editorial extent of each provision
+  a later law changed (`LegislationGovUk.ChangesFeed`); it resolves legacy
+  laws with no other source (the live status parse session, 2026-09-28).
 
   With no verdict the extent is unknown (nil). It never defaults to `UK`:
   unrevised documents carry a placeholder `E+W+S+N.I.` on every ContentsItem,
@@ -36,7 +41,8 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
     "lat_provisions" => 2,
     "contents_items" => 3,
     "text_clause" => 4,
-    "type_code" => 5
+    "affected_effects" => 5,
+    "type_code" => 6
   }
 
   @type_floor %{
@@ -55,12 +61,13 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   }
 
   @type input :: %{
-          restrict_extent: String.t() | nil,
-          document_status: String.t() | nil,
-          lat_extent_codes: [String.t() | nil],
-          contents_item_extents: [String.t() | nil],
-          extent_clauses: [[String.t()]],
-          type_code: String.t() | nil
+          required(:restrict_extent) => String.t() | nil,
+          required(:document_status) => String.t() | nil,
+          required(:lat_extent_codes) => [String.t() | nil],
+          required(:contents_item_extents) => [String.t() | nil],
+          required(:extent_clauses) => [[String.t()]],
+          required(:type_code) => String.t() | nil,
+          optional(:affected_extents) => [String.t() | nil]
         }
 
   @type result :: %{
@@ -77,6 +84,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
       {"lat_provisions", union(input.lat_extent_codes)},
       {"contents_items", contents_items(input)},
       {"text_clause", input.extent_clauses |> List.flatten() |> ordered()},
+      {"affected_effects", union(Map.get(input, :affected_extents, []))},
       {"type_code", Map.get(@type_floor, input.type_code, [])}
     ]
     |> Enum.find(fn {_source, regions} -> regions != [] end)

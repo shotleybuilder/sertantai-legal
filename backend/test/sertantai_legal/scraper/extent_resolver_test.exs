@@ -122,6 +122,24 @@ defmodule SertantaiLegal.Scraper.ExtentResolverTest do
   end
 
   describe "resolve/1 source priority" do
+    test "affected_effects: legislation.gov.uk's AffectedExtent resolves a law with no other source" do
+      assert %{geo_extent: "GB", source: "affected_effects"} =
+               ExtentResolver.resolve(input(affected_extents: ["E+W+S", "E+W", nil]))
+    end
+
+    test "affected_effects ranks below an explicit extent clause and above the type floor" do
+      assert %{source: "text_clause"} =
+               ExtentResolver.resolve(
+                 input(extent_clauses: [["England", "Wales"]], affected_extents: ["E+W+S"])
+               )
+
+      assert %{geo_extent: "S", source: "affected_effects"} =
+               ExtentResolver.resolve(input(type_code: "ssi", affected_extents: ["S"]))
+
+      assert ExtentResolver.overwrite?("type_code", "affected_effects")
+      refute ExtentResolver.overwrite?("text_clause", "affected_effects")
+    end
+
     test "law-level extent wins" do
       assert %{geo_extent: "E+W", geo_region: ["England", "Wales"], source: "law_level"} =
                ExtentResolver.resolve(

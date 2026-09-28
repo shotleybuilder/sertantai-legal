@@ -23,8 +23,11 @@ defmodule SertantaiLegal.Scraper.Amending do
   - Results are separated into amendments vs revocations/repeals
   """
 
+  require Logger
+
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
   alias SertantaiLegal.Scraper.LiveStatus
 
   @results_count 1000
@@ -108,13 +111,19 @@ defmodule SertantaiLegal.Scraper.Amending do
 
     case fetch_and_parse_amendments_with_self_filter(path, self_name, :affected) do
       {:ok, result} ->
+        # Where each revocation applies, from the structured changes feed
+        effects = fetch_effects(type_code, year, number)
+        revocations = ChangesFeed.enrich(result.revocations, effects)
+
         # Determine live status based on revocations (excluding self)
-        live = determine_live_status(result.revocations, type_code)
+        live = determine_live_status(revocations, type_code)
 
         {:ok,
          Map.merge(result, %{
+           revocations: revocations,
            amended_by: result.amending,
            rescinded_by: result.rescinding,
+           affected_extents: ChangesFeed.affected_extents(effects),
            live: live
          })}
 
@@ -438,6 +447,18 @@ defmodule SertantaiLegal.Scraper.Amending do
       # Self-amendment count (the actual count of self-referencing entries)
       self_amendments_count: length(self_all)
     }
+  end
+
+  # The feed only adds extents: a failure is logged and the stage carries on.
+  defp fetch_effects(type_code, year, number) do
+    case ChangesFeed.fetch(type_code, year, number) do
+      {:ok, effects} ->
+        effects
+
+      {:error, msg} ->
+        Logger.warning("[Amending] #{msg}")
+        []
+    end
   end
 
   # ============================================================================

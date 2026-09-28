@@ -9,6 +9,7 @@ scraper/
 ├── legislation_gov_uk/           # HTTP client + XML parser for legislation.gov.uk
 │   ├── client.ex                 # API client (body, metadata, search, PDF)
 │   ├── body_xml.ex               # Pure: PDF alternatives from body XML
+│   ├── changes_feed.ex           # Changes-affected Atom feed: effects with extents/application
 │   ├── parser.ex                 # XML → structured data
 │   └── helpers.ex                # URL building, pagination
 │
@@ -52,6 +53,7 @@ scraper/
 ├── live_status.ex                # Pure: live status decision from revocation rows
 ├── live_status/
 │   ├── revokers.ex               # DB: revoking laws' extent + made date
+│   ├── effects_backfill.ex       # Changes-feed cache → revocation rows + extents (mix live.fetch_effects / apply_effects)
 │   └── recompute.ex              # Guarded corpus recompute (mix live.recompute)
 ├── categorizer.ex                # Law categorisation
 ├── extent.ex                     # Geographic extent parsing
@@ -149,7 +151,13 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
 - **section_id prefix**: `art.` is ONLY for EU retained law; all domestic UK instruments use `reg.`
 - **type_code+year+number** is the unique key for UK law identity — never match by year+number alone
 - **Governed = Duties + Rights**, **Government = Responsibilities + Powers** — never cross-assign (DRRP)
-- **`live` is decided only by `LiveStatus`** — `live`, `live_description` and `live_evidence` are always written together, from the changes-affected revocation rows, with the title / doc-status override. A whole revocation counts whether or not it has been applied to the text (`revoked_unapplied`). Never infer a whole revocation from partial rows. A revocation is territorial only on hard evidence: an extent marker in the affect, or a devolved revoker (SSI/WSI/NISR). A UK-level revoker's recorded extent is **not trusted by default**, because GB/E+W regimes are often recorded as "UK"; the gap is kept as `extent_gap` evidence for review.
+- **`live` is decided only by `LiveStatus`**: `live`, `live_description` and `live_evidence` are always written together.
+  - They come from the changes-affected revocation rows, with the title / doc-status override.
+  - A whole revocation counts whether or not it has been applied to the text (`revoked_unapplied`).
+  - Never infer a whole revocation from partial rows.
+  - **Where a revocation reaches comes from legislation.gov.uk's changes feed** (`LegislationGovUk.ChangesFeed`): `AffectingTerritorialApplication`, else `AffectingEffectsExtent`. The law's jurisdiction is its devolved type, else a title marker, else the `AffectedExtent` on its effects, else `geo_extent`.
+  - Without feed data, only hard evidence makes a revocation territorial: an affect extent marker, or a devolved revoker. A UK-level revoker's recorded extent is not trusted (`extent_gap` evidence).
+- **Extent from effects**: `ExtentResolver` source `affected_effects` is the union of `AffectedExtent` across a law's effects. It ranks below `text_clause` and above `type_code`, and resolves legacy laws that had no source (a stored "UK" is often a GB or E+W regime).
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key
