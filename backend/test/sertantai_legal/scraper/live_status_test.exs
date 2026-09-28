@@ -406,7 +406,7 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       assert legacy.evidence["application_unknown"] == true
     end
 
-    test "an SI is bounded by its enabling Act's extent (T&CP (Trees) Regs 1999 under the T&CP Act 1990)" do
+    test "an SI is bounded by its enabling Act's extent, but only a sourced extent determines (T&CP (Trees) Regs 1999)" do
       d =
         LiveStatus.decide(
           [row("UK_uksi_2012_605", "revoked") |> Map.put(:territorial_application, "E")],
@@ -417,8 +417,19 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
 
       assert d.kind == :territorial
       assert d.evidence["law_regions_basis"] == "extent+parent"
-      assert d.evidence["application_unknown"] == false
+      # the parent narrows (UK → E+W) but is not a determination on its own
+      assert d.evidence["application_unknown"] == true
       assert d.description == "Revoked in E; in force in W"
+
+      sourced =
+        LiveStatus.decide(
+          [row("UK_uksi_2012_605", "revoked") |> Map.put(:territorial_application, "E")],
+          "uksi"
+          |> ctx("E+W")
+          |> Map.merge(%{law_clause_read: true, law_extent_source: "law_level"})
+        )
+
+      assert sourced.evidence["application_unknown"] == false
     end
 
     test "a parent bound that does not narrow is no evidence (legacy UK extent under a UK Act)" do

@@ -374,8 +374,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   end
 
   # An SI cannot reach beyond its enabling Act(s): cap extent-based regions by
-  # the parents' (sourced) extent. Only a bound that narrows counts as
-  # evidence ("+parent"); a UK parent over a UK extent adds nothing.
+  # the parents' (sourced) extent. A bound that narrows is recorded ("+parent")
+  # but is not itself a determination (`determined?/2`).
   defp bound_by_parents({regions, basis}, [_ | _] = parents)
        when basis in ["affected_extent", "extent"] and is_list(regions) do
     case sort_regions(Enum.filter(regions, &(&1 in parents))) do
@@ -390,13 +390,15 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   # Where the law applies is determined by its type, title or application; on
   # extent only once its text has been read with no application clause (it
   # then applies throughout its extent) and that extent has a source —
-  # legislation.gov.uk's effects, a law-level / LAT source, or the enabling Act.
+  # legislation.gov.uk's effects or a law-level / LAT source. The enabling
+  # Act's extent narrows but never determines: it is the union of all its
+  # provisions (the Water Resources Act 1991 is GB; its powers are E+W).
   defp determined?(basis, _ctx) when basis in ["devolved_type", "title", "application"], do: true
 
   defp determined?(basis, ctx) do
     ctx[:law_clause_read] == true and
       (String.starts_with?(basis || "", "affected_extent") or
-         String.ends_with?(basis || "", "+parent") or ctx[:law_extent_source] not in [nil, ""])
+         ctx[:law_extent_source] not in [nil, ""])
   end
 
   # Where the law applies: a devolved type (a WSI's E+W legal extent applies to

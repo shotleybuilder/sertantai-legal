@@ -95,8 +95,9 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Tier 1 fetch (1a–1e): 3,360 fetched; 5 pre-1948 SR&Os (`uksro`) have no changes feed
 - ✅ Tier 1 dry runs; see "Tier 1 dry runs"
 - ✅ Tier 1 applied; see "Tier 1 applied"
-- ⬜ Decide: parent-Act bound as evidence (too coarse: the WRA 1991 extent is GB), and an LRT metadata/extent re-scrape for the needs_application laws with unsourced extent
-- ⬜ Tell fractalaw which archive61 laws to restore (3 PPC orders solid; 3 Surface Waters regs doubtful)
+- ✅ Parent-Act bound narrows but never determines (Jason); applied: T&CP (Trees) 1999 and 4 Surface Waters regs held at Revoked
+- ✅ Fractalaw restored 3 PPC orders; Surface Waters held (legal now Revoked, so no restore)
+- ⬜ Proper extent for unrevised laws: enabling-section extent from the SI's preamble + parent Act LAT provision extents (proposal)
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -351,3 +352,14 @@ After the corrected recompute, 28 laws are held (`needs_application`). 20 of the
 - for held laws with an unsourced (legacy) extent, run the LRT metadata/extent stages to source the extent (law-level RestrictExtent), then recompute. This is LRT's own data, not full text.
 
 archive61: 6 are now not fully Revoked. The PPC Designation orders 2015/1352, 2016/150 and 2016/398 (title "(England and Wales)", revoked in E) are solid. The Surface Waters regs 1994/1057, 1996/3001 and 1997/2560 are doubtful (parent-bound only).
+
+## Proper extent vs legacy values (2026-09-28)
+
+Jason: the key is getting the proper extent rather than using legacy values.
+
+- **Parent-Act bound:** it narrows a law's regions but never determines alone, because it's the union of all the Act's provision extents. Applied: T&CP (Trees) Regs 1999 (batch 0) and the 4 Surface Waters (…) (Classification) Regs (1b) are held at Revoked (`needs_application`). 1,965 tests pass.
+- **Unsourced extents are the unrevised laws.** A trial of the LRT metadata + extent stages on 15 unsourced Tier 1 laws (including the Surface Waters regs, Special Waste (Amendment) 1997 and T&CP (Trees) 1999) found every one `document_status = final`. legislation.gov.uk's law-level extent for an unrevised document is only the "E+W+S+N.I." placeholder, which ExtentResolver rightly ignores. A metadata re-scrape therefore gives nothing for them, and the re-scrape module was dropped. Unsourced by tier: 0: 110, 1: 1,441, 2: 6,887.
+- **Where a proper extent can come from for unrevised laws:**
+  1. an extent clause in the text (LAT, `text_clause`, already read);
+  2. editorial `AffectedExtent` on effects (≥ 3 or whole-instrument; done);
+  3. **proposed: the enabling sections.** The SI's preamble ("in exercise of the powers conferred by sections 82 and 219(2) of the Water Resources Act 1991") names them. Their extents come from the parent Act's LAT `extent_code` (parents are Making and hold LAT with per-provision extents). This is read in the same LAT pass as the application clause and is precise, unlike the whole-Act bound. `enacted_by_meta` holds only the Act, not sections.
