@@ -138,6 +138,14 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Live status derived from /changes/affected endpoint")
     end
 
+    attribute :live_evidence, :map do
+      allow_nil?(true)
+
+      description(
+        "Evidence for `live` (Scraper.LiveStatus): kind (in_force | part_revoked | territorial | revoked | revoked_unapplied), source, applied, with_savings, revoked/remaining regions, revokers with affect, target, revoker_made_date and basis"
+      )
+    end
+
     # Geographic Scope
     attribute :geo_extent, :string do
       allow_nil?(true)
@@ -816,6 +824,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :live,
         :live_description,
         :live_from_changes,
+        :live_evidence,
         :geo_extent,
         :geo_region,
         :geo_detail,
@@ -935,6 +944,7 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :live,
         :live_description,
         :live_from_changes,
+        :live_evidence,
         :geo_extent,
         :geo_region,
         :geo_detail,

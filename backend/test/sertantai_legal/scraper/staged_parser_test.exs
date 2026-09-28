@@ -199,6 +199,51 @@ defmodule SertantaiLegal.Scraper.StagedParserTest do
     end
   end
 
+  describe "live status resolution with stored revocation rows" do
+    test "a commencement of repeals is not a whole repeal; description and evidence agree with live" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_ukpga_1994_21",
+        type_code: "ukpga",
+        geo_extent: "E+W+S",
+        live: StagedParser.live_in_force(),
+        live_from_changes: StagedParser.live_revoked(),
+        rescinded_by_stats_per_law: %{
+          "UK_uksi_1995_273" => %{
+            "details" => [
+              %{
+                "affect" => "Appointed day(s) for spec. repeals in Sch.11, Pt.III (1.3.1995)",
+                "target" => "Act",
+                "applied" => "Yes"
+              }
+            ]
+          },
+          "UK_asp_2000_5" => %{
+            "details" => [
+              %{"affect" => "repealed", "target" => "s. 10(7)(b)", "applied" => "Yes"}
+            ]
+          }
+        }
+      }
+
+      result = StagedParser.test_resolve_live_status(law)
+      assert result.live == StagedParser.live_part_revoked()
+      assert result.live_description == "Part revoked"
+      assert result.live_evidence["kind"] == "part_revoked"
+    end
+
+    test "a title marker gives a revoked decision with source title" do
+      law = %SertantaiLegal.Scraper.ParsedLaw{
+        name: "UK_uksi_2015_201",
+        live: StagedParser.live_revoked(),
+        live_description: "Revoked (from title)"
+      }
+
+      result = StagedParser.test_resolve_live_status(law)
+      assert result.live_description == "Revoked (from title)"
+      assert result.live_evidence == %{"kind" => "revoked", "source" => "title"}
+    end
+  end
+
   describe "on_progress callback" do
     test "notify_progress calls callback with event" do
       # Test that the notify_progress helper works correctly

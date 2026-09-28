@@ -45,6 +45,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LatPersister
+  alias SertantaiLegal.Scraper.LiveStatus
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
   alias SertantaiLegal.Scraper.EnactedBy
@@ -513,20 +514,50 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # - law.live holds the metadata-derived status from stage 1 (metadata.ex:set_live_status)
   # - law.live_from_changes was set during stage 5 (amended_by)
 
+  # The decision itself is LiveStatus (pure): whole vs partial vs territorial
+  # revocation from the stored rows, with the law's extent and the revokers'
+  # recorded extents and made dates. live, live_description and live_evidence
+  # are always set together, so they cannot contradict each other.
   defp resolve_live_status(law) do
     metadata_live = Map.get(law, :live) || @live_in_force
     changes_live = Map.get(law, :live_from_changes) || @live_in_force
+    rows = LiveStatus.rows_from_stats(Map.get(law, :rescinded_by_stats_per_law))
 
-    # If metadata says revoked (title marker or doc_status) → revoked (definitive)
-    # Otherwise → use changes (primary source)
-    final_live =
-      if metadata_live == @live_revoked do
-        @live_revoked
-      else
-        changes_live
+    decision =
+      cond do
+        metadata_live == @live_revoked ->
+          metadata_decision(Map.get(law, :live_description))
+
+        rows != [] ->
+          LiveStatus.decide(rows, %{
+            law_type: Map.get(law, :type_code),
+            law_extent: Map.get(law, :geo_extent),
+            law_title: Map.get(law, :title_en),
+            revokers:
+              rows
+              |> Enum.filter(&LiveStatus.whole?/1)
+              |> Enum.map(& &1.by)
+              |> LiveStatus.Revokers.load()
+          })
+
+        true ->
+          LiveStatus.from_live(changes_live)
       end
 
-    ParsedLaw.merge(law, %{live: final_live, live_from_changes: changes_live})
+    ParsedLaw.merge(law, %{
+      live: decision.live,
+      live_description: decision.description,
+      live_evidence: decision.evidence,
+      live_from_changes: changes_live
+    })
+  end
+
+  # metadata.ex set_live_status: "Revoked (from title)" / "Repealed" (doc status)
+  defp metadata_decision(description) do
+    case String.split(description || "Revoked", " (from title)") do
+      [word, _] -> LiveStatus.from_metadata(:title, word)
+      [word] -> LiveStatus.from_metadata(:doc_status, if(word == "", do: "Revoked", else: word))
+    end
   end
 
   # Progress notification helper - only calls callback if provided

@@ -67,6 +67,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
           live: String.t() | nil,
           live_description: String.t() | nil,
           live_from_changes: String.t() | nil,
+          live_evidence: map() | nil,
 
           # === GEOGRAPHIC EXTENT ===
           geo_extent: String.t() | nil,
@@ -207,6 +208,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
     live: nil,
     live_description: nil,
     live_from_changes: nil,
+    live_evidence: nil,
 
     # Geographic Extent
     geo_extent: nil,
@@ -442,6 +444,7 @@ defmodule SertantaiLegal.Scraper.ParsedLaw do
       live: get_string(normalized, :live),
       live_description: get_string(normalized, :live_description),
       live_from_changes: get_string(normalized, :live_from_changes),
+      live_evidence: get_map(normalized, :live_evidence),
 
       # Geographic Extent
       geo_extent: get_string(normalized, :geo_extent),

@@ -49,6 +49,10 @@ scraper/
 ├── commentary_persister.ex       # Commentary persistence
 ├── taxa_parser.ex                # Duty/holder/POPIMAR classification
 ├── amending.ex                   # Amendment relationship tracking
+├── live_status.ex                # Pure: live status decision from revocation rows
+├── live_status/
+│   ├── revokers.ex               # DB: revoking laws' extent + made date
+│   └── recompute.ex              # Guarded corpus recompute (mix live.recompute)
 ├── categorizer.ex                # Law categorisation
 ├── extent.ex                     # Geographic extent parsing
 └── ...
@@ -145,6 +149,7 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
 - **section_id prefix**: `art.` is ONLY for EU retained law; all domestic UK instruments use `reg.`
 - **type_code+year+number** is the unique key for UK law identity — never match by year+number alone
 - **Governed = Duties + Rights**, **Government = Responsibilities + Powers** — never cross-assign (DRRP)
+- **`live` is decided only by `LiveStatus`** — `live`, `live_description` and `live_evidence` are always written together, from the changes-affected revocation rows, with the title / doc-status override. A whole revocation counts whether or not it has been applied to the text (`revoked_unapplied`). Never infer a whole revocation from partial rows. A revocation is territorial only on hard evidence: an extent marker in the affect, or a devolved revoker (SSI/WSI/NISR). A UK-level revoker's recorded extent is **not trusted by default**, because GB/E+W regimes are often recorded as "UK"; the gap is kept as `extent_gap` evidence for review.
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key

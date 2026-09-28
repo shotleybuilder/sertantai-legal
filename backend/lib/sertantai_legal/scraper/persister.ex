@@ -398,6 +398,7 @@ defmodule SertantaiLegal.Scraper.Persister do
     :live,
     :live_from_changes,
     :live_description,
+    :live_evidence,
     # Relationship arrays — grow as new laws reference this one
     :amended_by,
     :rescinded_by,

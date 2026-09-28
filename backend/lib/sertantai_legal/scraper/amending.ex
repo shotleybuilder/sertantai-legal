@@ -25,6 +25,7 @@ defmodule SertantaiLegal.Scraper.Amending do
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.LiveStatus
 
   @results_count 1000
 
@@ -108,7 +109,7 @@ defmodule SertantaiLegal.Scraper.Amending do
     case fetch_and_parse_amendments_with_self_filter(path, self_name, :affected) do
       {:ok, result} ->
         # Determine live status based on revocations (excluding self)
-        live = determine_live_status(result.revocations)
+        live = determine_live_status(result.revocations, type_code)
 
         {:ok,
          Map.merge(result, %{
@@ -396,12 +397,7 @@ defmodule SertantaiLegal.Scraper.Amending do
   # ============================================================================
 
   defp separate_revocations(amendments) do
-    Enum.split_with(amendments, fn %{affect: affect} ->
-      affect_lower = String.downcase(String.trim(affect || ""))
-
-      String.contains?(affect_lower, "repeal") or String.contains?(affect_lower, "revoke") or
-        affect_lower in ["rev", "rep"]
-    end)
+    Enum.split_with(amendments, fn %{affect: affect} -> LiveStatus.revocation?(affect) end)
   end
 
   defp build_links(amendments) do
@@ -448,77 +444,12 @@ defmodule SertantaiLegal.Scraper.Amending do
   # Live Status
   # ============================================================================
 
-  @live_in_force "✔ In force"
-  @live_part_revoked "⭕ Part Revocation / Repeal"
-  @live_revoked "❌ Revoked / Repealed / Abolished"
-
-  defp determine_live_status([]), do: @live_in_force
-
-  defp determine_live_status(revocations) do
-    # Check if there are any full revocations/repeals.
-    # A revocation is "full" (whole instrument) when:
-    #   1. affect says "in full", OR
-    #   2. affect contains "repeal"/"revoke" (not "in part", "words", "entry")
-    #      AND target is a whole-instrument type (Regulations, Act, Order, etc.)
-    #      rather than a specific section (reg. 3, s. 1, Sch. 2)
-    has_full_revocation =
-      Enum.any?(revocations, fn %{affect: affect, target: target} ->
-        affect_lower = String.downcase(String.trim(affect || ""))
-        target_lower = String.downcase(String.trim(target || ""))
-
-        cond do
-          # Explicit "in full" is always full revocation
-          String.contains?(affect_lower, "in full") ->
-            true
-
-          # "in part" or "except for" is always partial
-          String.contains?(affect_lower, "in part") or
-              String.contains?(affect_lower, "except") ->
-            false
-
-          # "words repealed/revoked", "word repealed", "entry repealed" — always partial
-          String.contains?(affect_lower, "words ") or
-            String.contains?(affect_lower, "word ") or
-            String.contains?(affect_lower, "entry ") or
-            String.contains?(affect_lower, "entries ") or
-              String.contains?(affect_lower, "comma ") ->
-            false
-
-          # "power to repeal/revoke conferred" — grants power, not an actual revocation
-          String.contains?(affect_lower, "power to") ->
-            false
-
-          # Abbreviated "Rev"/"Rep" — legislation.gov.uk uses these when entire instrument
-          # is revoked/repealed. Empty target confirms whole-instrument scope.
-          affect_lower in ["rev", "rep"] ->
-            target_lower == "" or is_whole_instrument_target?(target_lower)
-
-          # Bare "repeal"/"revoke" — only full if target is whole instrument
-          String.contains?(affect_lower, "repeal") or
-              String.contains?(affect_lower, "revoke") ->
-            is_whole_instrument_target?(target_lower)
-
-          true ->
-            false
-        end
-      end)
-
-    if has_full_revocation do
-      @live_revoked
-    else
-      @live_part_revoked
-    end
-  end
-
-  # Whole-instrument targets: the target refers to the entire law, not a specific section.
-  # Values from legislation.gov.uk /changes/affected endpoint column 2.
-  @whole_instrument_targets ~w(regulations act order rules scheme measure charter byelaws instrument)
-  defp is_whole_instrument_target?(target_lower) do
-    # Empty target with a revocation affect implies whole instrument
-    # Exact match against known instrument types
-    # "whole instrument" is used in some entries
-    target_lower == "" or
-      target_lower in @whole_instrument_targets or
-      String.contains?(target_lower, "whole instrument")
+  # Context-free decision (no law extent, no revoker extents): the staged
+  # parser re-decides with context in resolve_live_status. See LiveStatus.
+  defp determine_live_status(revocations, type_code) do
+    revocations
+    |> Enum.map(&LiveStatus.row_from_amendment/1)
+    |> LiveStatus.decide(%{law_type: type_code, law_extent: nil, revokers: %{}})
+    |> Map.fetch!(:live)
   end
 end
