@@ -11,7 +11,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   - **Revocation** — the affect repeals or revokes; a commencement of repeals
     ("Appointed day(s) for spec. repeals …") is not a revocation.
   - **Whole** — a revocation of the whole instrument ("in full", or a bare
-    repeal/revoke of a whole-instrument target). Not whole: partial markers
+    repeal/revoke of a whole-instrument target). When the law's changes feed
+    was read and has no whole-instrument revocation behind the row
+    (`feed: "unmatched"`), the row is not whole: the feed is authoritative
+    (REACH carried a blank-target "repeal" row that is only annex repeals). Not whole: partial markers
     ("in part", "in pt", "words", …), overseas-territory revocations
     ("(Pitcairn)", …) and prospective revocations ("(prosp.)").
   - **Applied or not** — a whole revocation counts whether or not
@@ -57,6 +60,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
           required(:affect) => String.t(),
           required(:target) => String.t(),
           required(:applied) => String.t(),
+          optional(:feed) => String.t() | nil,
           optional(:affected_extent) => String.t() | nil,
           optional(:effect_extent) => String.t() | nil,
           optional(:territorial_application) => String.t() | nil
@@ -70,8 +74,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
           required(:revokers) => %{String.t() => revoker()}
         }
 
-  @whole_targets ~w(regulations act order rules scheme measure charter byelaws instrument)
-  @partial ~r/in part|\bin pt\b|except|words? |entry |entries |comma |power to/
+  @whole_targets ~w(regulations regulation act order rules scheme measure charter byelaws instrument directive decision)
+  @partial ~r/in part|\bin pt\b|partial|except|words? |entry |entries |comma |power to/
   @overseas ~r/\((pitcairn|sovereign base areas|british indian ocean territory|isle of man|guernsey|jersey|channel islands|gibraltar|falkland islands|st\.? helena|bermuda|montserrat|anguilla|cayman islands|(british )?virgin islands|turks and caicos islands)/
   @extent_marker ~r/\(((?:e|w|s|n\.?\s?i)(?:\.?\s?(?:\+|,)?\s?(?:e|w|s|n\.?\s?i))*)\.?\)/
   @all_regions ~w(E W S NI)
@@ -99,12 +103,13 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   end
 
   @doc "Is this row an in-force revocation of the whole instrument (in some jurisdiction)?"
-  @spec whole?(%{affect: String.t() | nil, target: String.t() | nil}) :: boolean()
-  def whole?(%{affect: affect, target: target}) do
+  @spec whole?(map()) :: boolean()
+  def whole?(%{affect: affect, target: target} = row) do
     a = normalise(affect)
     t = normalise(target)
 
-    revocation?(a) and not Regex.match?(@partial, a) and not Regex.match?(@overseas, a) and
+    Map.get(row, :feed) != "unmatched" and revocation?(a) and not Regex.match?(@partial, a) and
+      not Regex.match?(@overseas, a) and
       not String.contains?(a, "prosp") and
       (String.contains?(a, "in full") or t == "" or t in @whole_targets or
          String.contains?(t, "whole instrument"))
@@ -153,6 +158,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
       affect: a[:affect] || "",
       target: a[:target] || "",
       applied: a[:applied?] || "",
+      feed: a[:feed],
       affected_extent: a[:affected_extent],
       effect_extent: a[:effect_extent],
       territorial_application: a[:territorial_application]
@@ -179,6 +185,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
         affect: affect,
         target: target,
         applied: d["applied"] || "",
+        feed: d["feed"],
         affected_extent: d["affected_extent"],
         effect_extent: d["effect_extent"],
         territorial_application: d["territorial_application"]
@@ -202,6 +209,9 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   def regions(extent) do
     case extent |> String.upcase() |> String.replace(~r/[\s.]/, "") do
       "" ->
+        nil
+
+      "S+A+M+E+A+S+A+F+F+E+C+T+E+D" ->
         nil
 
       "UK" ->
@@ -307,6 +317,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
 
     cond do
       marker -> {marker, "affect_marker"}
+      same_as_affected?(r[:effect_extent]) -> {@all_regions, "same_as_affected"}
       application -> {application, "territorial_application"}
       effect -> {effect, "effect_extent"}
       Map.has_key?(@devolved, type) -> {@devolved[type], "devolved_revoker"}
@@ -336,6 +347,13 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   # only); else the last jurisdiction in the title ("… (Wales) Order",
   # "(England and Scotland)"); else the AffectedExtent legislation.gov.uk
   # records on its whole-instrument effects; else its recorded extent.
+  # legislation.gov.uk's "SAME AS AFFECTED" effect extent (spelt with "+"
+  # between the letters): the change reaches wherever the law does.
+  defp same_as_affected?(nil), do: false
+
+  defp same_as_affected?(e),
+    do: e |> String.upcase() |> String.replace(~r/[\s.+]/, "") == "SAMEASAFFECTED"
+
   defp law_regions(type, title, affected, extent) do
     Map.get(@devolved, type) || title_regions(title) ||
       sort_regions(affected || []) |> nil_if_empty() ||

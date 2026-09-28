@@ -46,6 +46,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
       assert whole["territorial_application"] == "E"
       assert whole["affected_extent"] == "E+W+S"
       refute Map.has_key?(section, "effect_extent")
+      assert {whole["feed"], section["feed"]} == {"matched", "unmatched"}
 
       assert [%{"effect_extent" => "S"}] = new["UK_legacy"]["details"]
     end

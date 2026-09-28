@@ -40,6 +40,7 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       assert LiveStatus.whole?(row("x", "rev", ""))
       assert LiveStatus.whole?(row("x", "revoked (with savings)", "Order"))
       assert LiveStatus.whole?(row("x", "repealed in full", "s. 3"))
+      assert LiveStatus.whole?(row("x", "repeal", "Directive"))
     end
 
     test "section targets and partial markers are not whole" do
@@ -47,6 +48,7 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       refute LiveStatus.whole?(row("x", "revoked in part"))
       refute LiveStatus.whole?(row("x", "revoked in pt"))
       refute LiveStatus.whole?(row("x", "revoked in pt."))
+      refute LiveStatus.whole?(row("x", "partial repeal", ""))
       refute LiveStatus.whole?(row("x", "words repealed", "Act"))
       refute LiveStatus.whole?(row("x", "power to revoke conferred"))
     end
@@ -316,6 +318,24 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       assert d.kind == :revoked
     end
 
+    test "REACH: a whole-looking row with no whole-instrument revocation in the feed is not whole" do
+      reach_row = "UK_eur_2008_1272" |> row("repeal", "") |> Map.put(:feed, "unmatched")
+      refute LiveStatus.whole?(reach_row)
+      assert LiveStatus.decide([reach_row], ctx("eur", nil)).live == @part
+    end
+
+    test "SAME AS AFFECTED effect extent reaches the whole law" do
+      d =
+        LiveStatus.decide(
+          [feed_row("UK_ukpga_2023_28", "revoked", "", nil, "S+A+M+E+A+S+A+F+F+E+C+T+E+D", nil)],
+          ctx("eudn", "UK")
+        )
+
+      assert d.kind == :revoked
+      assert [%{"basis" => "same_as_affected"}] = d.evidence["revokers"]
+      assert LiveStatus.regions("S+A+M+E+A+S+A+F+F+E+C+T+E+D") == nil
+    end
+
     test "a Welsh law revoked in Wales is revoked (devolved type beats its E+W extent)" do
       d =
         LiveStatus.decide(
@@ -342,6 +362,7 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
                "UK_uksi_2011_1524"
                |> row("revoked", "Regulations", "Not yet")
                |> Map.merge(%{
+                 feed: nil,
                  affected_extent: nil,
                  effect_extent: nil,
                  territorial_application: nil

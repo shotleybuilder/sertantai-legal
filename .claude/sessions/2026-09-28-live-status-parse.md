@@ -15,6 +15,30 @@ bugs:
     affected: "~10 rows"
     fix: "LiveStatus.whole?/1"
     status: fixed
+  - pattern: "REACH (UK_eur_2006_1907, Making, QQ register) Revoked by a blank-target 'repeal' row that legislation.gov.uk records only as annex repeals"
+    category: live_status_false_revoked
+    module: scraper/live_status.ex whole?/1
+    affected: "3 in batch 0 (REACH, Reg 561/2006, Directive 98/24)"
+    fix: "Changes feed is authoritative: a whole-looking row with no whole-instrument revocation effect is not whole (feed: unmatched)"
+    status: fixed
+  - pattern: "'partial repeal' (EU wording) counted as a whole revocation"
+    category: live_status_false_revoked
+    module: scraper/live_status.ex whole?/1
+    affected: unknown
+    fix: "'partial' is a partial marker"
+    status: fixed
+  - pattern: "legislation.gov.uk effect extent 'S+A+M+E+A+S+A+F+F+E+C+T+E+D' (SAME AS AFFECTED) parsed as regions S and E"
+    category: live_status_extent_parse
+    module: scraper/live_status.ex regions/1
+    affected: "281 cached laws carry it"
+    fix: "Recognised: the change reaches wherever the law does"
+    status: fixed
+  - pattern: "Changes-table rows and feed effects name the whole instrument differently ('' / 'Regulation', 'Act' / 'Regulations', 'revoked' / 'repealed')"
+    category: live_status_feed_match
+    module: legislation_gov_uk/changes_feed.ex lookup/4
+    affected: "whole rows matched 98/176 → 105/107"
+    fix: "Whole-instrument fallback: same revoker's whole-instrument revocation effect"
+    status: fixed
   - pattern: "Legacy-imported revocation rows hold the whole effect text in target with affect null, so no rule could read them"
     category: live_status_legacy_rows
     module: scraper/live_status.ex rows_from_stats/1
@@ -56,7 +80,10 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ ExtentResolver source `affected_effects` (legacy "UK" extents re-resolved)
 - ✅ Batched fetch plan (Jason: a 10-hour fetch is too long); see "Effects fetch batching plan"
 - ✅ Batches meta-batched by readiness tier (Jason): `Legal.ReadinessTiers`
-- ⬜ Batch 0 (Tier 0, QQ register, 427) → apply_effects + recompute dry runs → Jason approves `--apply`
+- ✅ Batch 0 fetched (426/427; 1 regnal-year name 404)
+- ✅ Batch 0 dry runs: bugs found and fixed; see "Batch 0 results"
+- ⬜ Law **application** (not extent) for territorial decisions: 3–5 of batch 0's 14 changes are wrong without it
+- ⬜ Batch 0 `--apply` (apply_effects, then recompute), after the application fix, on Jason's go
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -173,3 +200,27 @@ Within a batch, the order is:
 After each batch:
 1. `mix live.apply_effects` (dry run: extent diff), then `--apply` on Jason's go. It acts only on cached laws.
 2. `mix live.recompute` (dry run), then `--apply` on Jason's go. Laws with no effect data yet keep the no-feed rules, so it is safe to run part-way.
+
+## Batch 0 results (2026-09-28)
+
+Fetch: 426 of 427. `UK_ukpga_1961_Eliz2/9-10/62` returned 404 because regnal-year names need a different path. Malformed names (`UK__…`, `…_` with no number) are now excluded from the targets; `UK_eur_2006_` had fetched a whole year's feed.
+
+`mix live.apply_effects --batch 0` (dry run):
+- revocation rows matched: 2,545 of 2,774, and 105 of 107 whole-instrument rows;
+- 238 laws' rows gain effect data;
+- 25 extent changes, 8 of which change the value (UK → GB 5, UK → E+W 2, ∅ → UK 1).
+
+`mix live.recompute --batch 0 --with-effects` (a preview that applies the planned effect data in memory): 14 changes, 3 conflicts, 5 Making laws leaving Revoked.
+
+| Verdict | Laws |
+|---|---|
+| Right: falsely Revoked today | REACH 1907/2006, Drivers' Hours 561/2006, Chemical Agents Directive 98/24 → Part revoked |
+| Right: territorial | Special Waste Regs 1996 (in force S), Conservation (Natural Habitats) Regs 1994 (in force S), Forestry Act 1967 and Reservoirs Act 1975 (in force E+W), Groundwater Regs 1998 (in force S), Marine Works EIA Regs 2007 (revoked S) |
+| Wrong: the law's **application** is unknown, and its recorded extent "UK" is too wide | Smoke-free (Signs) Regs 2007 and Environmental Damage Regs 2009 (England only; revoked in E ⇒ revoked), T&CP (Trees) Regs 1999 ("in force in W+S+NI" is wrong for S and NI) |
+| Unclear (feed says so; the NI remainder may be a UK extent on a GB regime) | Heavy Fuel Oil (Amendment) Regs 2014, H&S (Misc Amendments) Regs 2017 |
+
+Conflicts (live kept): Food and Environment Protection Act 1985 (Revoked), Data Protection Act 2018 and Confined Spaces Regs 1997 (In force).
+
+**Next, Jason's point:** extent is not application. A territorial decision needs the law's application: where it applies, not the legal system it forms part of.
+
+Proposed: only for laws where the decision would be territorial, read an application clause from the law's own text. That is the citation/application provision, e.g. "These Regulations apply in relation to England", fetched from legislation.gov.uk. Fractalaw's `application_regions` would be used where present. The law's regions then become devolved type > title > **application clause** > AffectedExtent > geo_extent.

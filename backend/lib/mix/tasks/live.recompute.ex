@@ -6,6 +6,8 @@ defmodule Mix.Tasks.Live.Recompute do
   Dry run by default: prints the transitions and writes a CSV of every law
   whose `live` would change or that conflicts with the new rule.
 
+      mix live.recompute --batch 0  # dry run, laws of one fetch batch only
+      mix live.recompute --batch 0 --with-effects   # preview with the batch's cached effects applied (in memory)
       mix live.recompute            # dry run
       mix live.recompute --apply    # snapshot to live_status_snapshot_<YYYYMMDD>, then write
       mix live.recompute --trust-revoker-extent   # also trust UK-level revokers' recorded extent
@@ -22,21 +24,65 @@ defmodule Mix.Tasks.Live.Recompute do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [apply: :boolean, trust_revoker_extent: :boolean])
+      OptionParser.parse(args,
+        strict: [
+          apply: :boolean,
+          trust_revoker_extent: :boolean,
+          batch: :string,
+          with_effects: :boolean
+        ]
+      )
 
     Mix.Task.run("app.start")
 
-    plan = Recompute.plan(trust_revoker_extent: opts[:trust_revoker_extent] || false)
+    if opts[:with_effects] && opts[:apply],
+      do: Mix.raise("--with-effects is a preview: run mix live.apply_effects --apply first")
+
+    plan =
+      Recompute.plan(
+        trust_revoker_extent: opts[:trust_revoker_extent] || false,
+        overrides: if(opts[:with_effects], do: effect_overrides(), else: %{})
+      )
+      |> only_batch(opts[:batch])
+
     report(plan)
     path = write_csv(plan)
     Mix.shell().info("\nReport: #{path}")
 
     if opts[:apply] do
-      table = "live_status_snapshot_" <> Calendar.strftime(Date.utc_today(), "%Y%m%d")
+      suffix = if opts[:batch], do: "_b" <> String.replace(opts[:batch], ".", "_"), else: ""
+      table = "live_status_snapshot_" <> Calendar.strftime(Date.utc_today(), "%Y%m%d") <> suffix
       counts = Recompute.apply!(plan, table)
       Mix.shell().info("\nApplied (snapshot #{table}): #{inspect(counts)}")
     else
       Mix.shell().info("\nDry run: nothing written.")
+    end
+  end
+
+  defp effect_overrides do
+    alias SertantaiLegal.Scraper.LiveStatus.EffectsBackfill
+
+    Map.new(EffectsBackfill.plan(), fn c ->
+      {c.name,
+       %{
+         stats: c.stats,
+         geo_extent: if(EffectsBackfill.extent_change?(c), do: c.new_extent)
+       }}
+    end)
+  end
+
+  defp only_batch(plan, nil), do: plan
+
+  defp only_batch(plan, label) do
+    alias SertantaiLegal.Scraper.LiveStatus.EffectsBackfill
+
+    case EffectsBackfill.batch(EffectsBackfill.target_laws(), label) do
+      nil ->
+        Mix.raise("No batch #{label}; see mix live.fetch_effects --batches")
+
+      names ->
+        set = MapSet.new(names)
+        Enum.filter(plan, &MapSet.member?(set, &1.name))
     end
   end
 

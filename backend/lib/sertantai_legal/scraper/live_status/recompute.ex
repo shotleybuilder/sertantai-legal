@@ -48,10 +48,15 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
     @type t :: %__MODULE__{}
   end
 
-  @doc "Every UK law's outcome; `:same` rows need no write."
+  @doc """
+  Every UK law's outcome; `:same` rows need no write. `overrides:
+  %{name => %{stats: map | nil, geo_extent: String.t() | nil}}` previews
+  planned data (e.g. `EffectsBackfill.plan/1`) without writing it.
+  """
   @spec plan(keyword()) :: [Change.t()]
   def plan(opts \\ []) do
     trust? = Keyword.get(opts, :trust_revoker_extent, false)
+    overrides = Keyword.get(opts, :overrides, %{})
 
     %{rows: rows} =
       Repo.query!(
@@ -65,7 +70,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       )
 
     revokers = all_revokers()
-    Enum.map(rows, &outcome(&1, revokers, trust?))
+
+    rows
+    |> Enum.map(&override(&1, overrides))
+    |> Enum.map(&outcome(&1, revokers, trust?))
   end
 
   @doc "Write every non-`:same` outcome, after snapshotting to `snapshot_table`."
@@ -141,6 +149,31 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       revocations == [] -> @live_in_force
       Enum.any?(revocations, &legacy_whole?/1) -> @live_revoked
       true -> @live_part_revoked
+    end
+  end
+
+  # Replace stored stats / extent with planned values (nil = keep stored)
+  defp override(
+         [name, title, type, extent, live, desc, doc_status, stats, ev, making] = row,
+         overrides
+       ) do
+    case Map.get(overrides, name) do
+      nil ->
+        row
+
+      o ->
+        [
+          name,
+          title,
+          type,
+          o[:geo_extent] || extent,
+          live,
+          desc,
+          doc_status,
+          o[:stats] || stats,
+          ev,
+          making
+        ]
     end
   end
 

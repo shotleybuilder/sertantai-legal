@@ -142,29 +142,71 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
 
   @doc """
   Add each effect's extents to the changes-table revocation rows it matches
-  (same revoking law, target = `AffectedProvisions`, affect = `Type`, after
-  normalising case and whitespace). Unmatched rows are returned unchanged.
+  (`lookup/4`), marking each row `feed: "matched" | "unmatched"`. With no
+  effects (feed unavailable) rows are returned unchanged.
   """
   @spec enrich([map()], [Effect.t()]) :: [map()]
+  def enrich(rows, []), do: rows
+
   def enrich(rows, effects) do
-    index =
-      effects
-      |> Enum.group_by(&{&1.affecting, norm(&1.affected_provisions), norm(&1.type)})
+    index = index(effects)
 
     Enum.map(rows, fn row ->
-      case Map.get(index, {row.name, norm(row[:target]), norm(row[:affect])}) do
-        [e | _] ->
+      case lookup(index, row.name, row[:target], row[:affect]) do
+        %Effect{} = e ->
           Map.merge(row, %{
+            feed: "matched",
             affected_extent: e.affected_extent,
             effect_extent: e.effect_extent,
             territorial_application: e.territorial_application
           })
 
         nil ->
-          row
+          Map.put(row, :feed, "unmatched")
       end
     end)
   end
+
+  @whole_words ~w(act acts regulations regulation order rules scheme measure charter byelaws instrument directive decision)
+
+  @doc "An index of effects for `lookup/4`."
+  @spec index([Effect.t()]) :: %{exact: map(), whole: map()}
+  def index(effects) do
+    %{
+      exact: Enum.group_by(effects, &{&1.affecting, norm(&1.affected_provisions), norm(&1.type)}),
+      whole:
+        effects
+        |> Enum.filter(&(whole_target?(&1.affected_provisions) and revocation_type?(&1.type)))
+        |> Enum.group_by(& &1.affecting)
+    }
+  end
+
+  @doc """
+  The effect for a changes-table row: same revoking law, target =
+  `AffectedProvisions` and affect = `Type` (case and whitespace normalised);
+  else, for a whole-instrument revocation row (blank target or an instrument
+  word — the two sources name it differently: "" / "Regulation", "Act" /
+  "Regulations", "revoked" / "repealed"), the same revoker's
+  whole-instrument revocation effect.
+  """
+  @spec lookup(map(), String.t(), String.t() | nil, String.t() | nil) :: Effect.t() | nil
+  def lookup(index, by, target, affect) do
+    case Map.get(index.exact, {by, norm(target), norm(affect)}) do
+      [e | _] ->
+        e
+
+      nil ->
+        if whole_target?(target) and revocation_type?(affect) do
+          case Map.get(index.whole, by) do
+            [e | _] -> e
+            nil -> nil
+          end
+        end
+    end
+  end
+
+  defp whole_target?(t), do: norm(t) == "" or norm(t) in @whole_words
+  defp revocation_type?(t), do: Regex.match?(~r/repeal|revoke|^rev$|^rep$/, norm(t))
 
   @doc "The distinct `AffectedExtent` values across a law's effects (for `ExtentResolver`)."
   @spec affected_extents([Effect.t()]) :: [String.t()]

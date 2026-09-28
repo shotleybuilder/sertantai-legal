@@ -78,7 +78,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
                  WHEN r.geo_extent_source IS NULL THEN 'unsourced'
                  ELSE 'type_floor' END AS grp
           FROM legal_register r
-          WHERE r.country = 'uk' AND r.name !~ '^UK__'
+          WHERE r.country = 'uk' AND r.name !~ '^UK__' AND r.name !~ '_$'
             AND (r."🔻_rescinded_by_stats_per_law" IS NOT NULL
                  OR r.geo_extent_source IS NULL OR r.geo_extent_source = 'type_code')
         ) t
@@ -180,7 +180,8 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
         json
         |> Jason.decode!()
         |> Enum.map(fn e ->
-          struct!(Effect, Map.new(e, fn {k, v} -> {String.to_existing_atom(k), v} end))
+          fields = %Effect{type: nil, affecting: nil} |> Map.from_struct() |> Map.keys()
+          struct!(Effect, Map.new(fields, &{&1, e[Atom.to_string(&1)]}))
         end)
 
       _ ->
@@ -198,7 +199,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
   def enrich_stats(nil, _effects), do: {nil, 0, 0}
 
   def enrich_stats(stats, effects) do
-    index = Enum.group_by(effects, &{&1.affecting, norm(&1.affected_provisions), norm(&1.type)})
+    index = ChangesFeed.index(effects)
 
     {new, {matched, total}} =
       Enum.map_reduce(stats, {0, 0}, fn {law, entry}, {m, t} ->
@@ -206,15 +207,16 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
           Enum.map_reduce(Map.get(entry, "details") || [], m, fn d, acc ->
             [row] = LiveStatus.rows_from_stats(%{law => %{"details" => [d]}})
 
-            case Map.get(index, {law, norm(row.target), norm(row.affect)}) do
-              [e | _] ->
+            case ChangesFeed.lookup(index, law, row.target, row.affect) do
+              %Effect{} = e ->
                 {d
+                 |> Map.put("feed", "matched")
                  |> put_present("affected_extent", e.affected_extent)
                  |> put_present("effect_extent", e.effect_extent)
                  |> put_present("territorial_application", e.territorial_application), acc + 1}
 
               nil ->
-                {d, acc}
+                {Map.put(d, "feed", "unmatched"), acc}
             end
           end)
 
@@ -348,7 +350,4 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
 
   defp put_present(map, _key, nil), do: map
   defp put_present(map, key, value), do: Map.put(map, key, value)
-
-  defp norm(nil), do: ""
-  defp norm(s), do: s |> String.downcase() |> String.replace(~r/\s+/, " ") |> String.trim()
 end

@@ -62,8 +62,41 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
 
     assert uksi.territorial_application == "E"
     refute Map.has_key?(unmatched, :effect_extent)
+    assert {wsi.feed, unmatched.feed} == {"matched", "unmatched"}
+    assert ChangesFeed.enrich(rows, []) == rows
 
     assert "E+W+S" in ChangesFeed.affected_extents(effects)
+  end
+
+  test "lookup/4 falls back to the revoker's whole-instrument effect when the sources name it differently" do
+    effects = [
+      %Effect{
+        type: "revoked",
+        affecting: "UK_a",
+        affected_provisions: "Regulation",
+        effect_extent: "E+W+S+N.I."
+      },
+      %Effect{
+        type: "repealed",
+        affecting: "UK_b",
+        affected_provisions: "Regulations",
+        effect_extent: "E+W"
+      },
+      %Effect{
+        type: "revoked",
+        affecting: "UK_c",
+        affected_provisions: "reg. 2",
+        effect_extent: "S"
+      }
+    ]
+
+    index = ChangesFeed.index(effects)
+
+    assert %Effect{affecting: "UK_a"} = ChangesFeed.lookup(index, "UK_a", "", "revoked")
+    assert %Effect{affecting: "UK_b"} = ChangesFeed.lookup(index, "UK_b", "Act", "revoked")
+    # a section row never falls back to a whole-instrument effect
+    assert ChangesFeed.lookup(index, "UK_a", "reg. 3", "revoked") == nil
+    assert ChangesFeed.lookup(index, "UK_c", "", "revoked") == nil
   end
 
   test "law_name/1 builds the register name from an affecting URI" do

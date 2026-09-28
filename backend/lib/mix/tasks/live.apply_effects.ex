@@ -5,8 +5,9 @@ defmodule Mix.Tasks.Live.ApplyEffects do
   rows, and `geo_extent` re-resolved (source `affected_effects`) where it had
   no source or only the type floor.
 
-      mix live.apply_effects            # dry run: summary + CSV of extent changes
-      mix live.apply_effects --apply    # snapshot to effects_backfill_snapshot_<YYYYMMDD>, then write
+      mix live.apply_effects --batch 0            # dry run for one fetch batch
+      mix live.apply_effects --batch 0 --apply    # snapshot to effects_backfill_snapshot_<YYYYMMDD>[_<batch>], then write
+      mix live.apply_effects                      # every cached law
 
   Then run `mix live.recompute`.
   """
@@ -19,10 +20,10 @@ defmodule Mix.Tasks.Live.ApplyEffects do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [apply: :boolean])
+    {opts, _, _} = OptionParser.parse(args, strict: [apply: :boolean, batch: :string])
     Mix.Task.run("app.start")
 
-    plan = EffectsBackfill.plan()
+    plan = EffectsBackfill.plan() |> only_batch(opts[:batch])
     extent = Enum.filter(plan, &EffectsBackfill.extent_change?/1)
 
     Mix.shell().info("Cached laws: #{length(plan)}")
@@ -45,7 +46,7 @@ defmodule Mix.Tasks.Live.ApplyEffects do
     Mix.shell().info("\nExtent report: #{path}")
 
     if opts[:apply] do
-      table = "effects_backfill_snapshot_" <> Calendar.strftime(Date.utc_today(), "%Y%m%d")
+      table = snapshot_name("effects_backfill_snapshot", opts[:batch])
 
       counts =
         EffectsBackfill.apply!(
@@ -57,6 +58,24 @@ defmodule Mix.Tasks.Live.ApplyEffects do
     else
       Mix.shell().info("\nDry run: nothing written.")
     end
+  end
+
+  defp only_batch(plan, nil), do: plan
+
+  defp only_batch(plan, label) do
+    case EffectsBackfill.batch(EffectsBackfill.target_laws(), label) do
+      nil ->
+        Mix.raise("No batch #{label}; see mix live.fetch_effects --batches")
+
+      names ->
+        set = MapSet.new(names)
+        Enum.filter(plan, &MapSet.member?(set, &1.name))
+    end
+  end
+
+  defp snapshot_name(prefix, batch) do
+    suffix = if batch, do: "_b" <> String.replace(batch, ".", "_"), else: ""
+    prefix <> "_" <> Calendar.strftime(Date.utc_today(), "%Y%m%d") <> suffix
   end
 
   defp sum(plan, key), do: plan |> Enum.map(&(Map.get(&1, key) || 0)) |> Enum.sum()

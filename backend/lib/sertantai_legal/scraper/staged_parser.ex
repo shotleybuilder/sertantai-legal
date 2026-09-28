@@ -1325,6 +1325,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   # Changes-feed extents on a revocation row (ChangesFeed.enrich), when matched
   defp effect_extents(row) do
     for {key, json} <- [
+          feed: "feed",
           affected_extent: "affected_extent",
           effect_extent: "effect_extent",
           territorial_application: "territorial_application"
