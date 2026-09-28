@@ -51,7 +51,10 @@ defmodule Mix.Tasks.Live.Recompute do
 
     if opts[:apply] do
       suffix = if opts[:batch], do: "_b" <> String.replace(opts[:batch], ".", "_"), else: ""
-      table = "live_status_snapshot_" <> Calendar.strftime(Date.utc_today(), "%Y%m%d") <> suffix
+
+      table =
+        "live_status_snapshot_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M") <> suffix
+
       counts = Recompute.apply!(plan, table)
       Mix.shell().info("\nApplied (snapshot #{table}): #{inspect(counts)}")
     else

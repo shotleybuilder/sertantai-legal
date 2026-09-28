@@ -75,7 +75,7 @@ defmodule Mix.Tasks.Live.ApplyEffects do
 
   defp snapshot_name(prefix, batch) do
     suffix = if batch, do: "_b" <> String.replace(batch, ".", "_"), else: ""
-    prefix <> "_" <> Calendar.strftime(Date.utc_today(), "%Y%m%d") <> suffix
+    prefix <> "_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M") <> suffix
   end
 
   defp sum(plan, key), do: plan |> Enum.map(&(Map.get(&1, key) || 0)) |> Enum.sum()

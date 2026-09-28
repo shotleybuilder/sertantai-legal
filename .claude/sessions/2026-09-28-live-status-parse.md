@@ -283,6 +283,18 @@ Results (9 live changes, each in record_change_log; is_making unchanged at 3,623
 
 Confirmed Revoked (determinations): Smoke-free (Signs) 2007 (application E), Environmental Damage 2009, Groundwater 1998, Heavy Fuel Oil (Amendment) 2014, H&S (Misc Amendments) 2017 (text repealed in full).
 
-Conflicts kept, for review: Food and Environment Protection Act 1985 (Revoked), Data Protection Act 2018 and Confined Spaces Regs 1997 (In force).
+Conflicts kept, for review: Food and Environment Protection Act 1985 (Revoked), Data Protection Act 2018 and Confined Spaces Regs 1997 (In force). **Resolved:** see "Guard: rules agree".
 
 The 5 Making laws leaving Revoked re-enter the Making funnel.
+
+## Guard: rules agree (2026-09-28)
+
+Jason: FEPA 1985, DPA 2018 and CSR 1997 aren't revoked; did the data say otherwise? **No.** For all three, the old rule and the new rule read **Part revoked** from the stored rows. The current values (FEPA Revoked; DPA and CSR In force) came from elsewhere, probably the legacy import, so the guard kept them as "conflicts".
+
+The guard now also changes `live` when **both rules agree** on a value that differs from the current one. The change-log reason notes that the legacy value was replaced, and the evidence carries `replaced_legacy_live`. A conflict is now only where the rules disagree with each other *and* with the current value.
+
+Re-run of batch 0: 3 changes, **0 conflicts**:
+- FEPA 1985 (Making): Revoked → Part revoked;
+- DPA 2018 and Confined Spaces Regs 1997 (Making): In force → Part revoked.
+
+Snapshot `live_status_snapshot_20260928_1402_b0`. Snapshot names now carry the time, so same-day re-runs don't collide.

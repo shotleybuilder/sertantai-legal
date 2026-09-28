@@ -3,13 +3,15 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
   Corpus recompute of `live`, `live_description` and `live_evidence` from the
   stored revocation rows (`🔻_rescinded_by_stats_per_law`), with no re-scrape.
 
-  **Guard** — `live` changes only where the old rule (`legacy_live/1`, the
+  **Guard** — `live` changes where the old rule (`legacy_live/1`, the
   pre-2026-09-28 `Amending.determine_live_status`, plus the metadata
   title / doc-status override) reproduces the law's current `live` and the new
-  rule (`LiveStatus.decide/2`) differs. That isolates exactly this fix: a law
-  whose status came from elsewhere (legacy import, EU law, manual edit) keeps
-  its `live`; when the new rule disagrees with it the row is a `conflict` for
-  review, and its description follows the kept `live`.
+  rule (`LiveStatus.decide/2`) differs, or where **both rules agree** on a value
+  different from the current one: the current value then came from elsewhere
+  (legacy import) and the data contradicts it (Jason, 2026-09-28: FEPA 1985 was
+  Revoked though every rule reads Part revoked). Only when the two rules
+  disagree with each other and with the current value is it a `conflict`,
+  kept for review, with its description following the kept `live`.
 
   Laws without stored rows keep `live` and `live_evidence`; only a description
   that contradicts `live` (legacy "Current legislation" on a Revoked law) is
@@ -168,7 +170,13 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
         source: "live_status"
       )
 
-    Map.put(entry, "reason", "live status parse fix 2026-09-28: #{c.kind}")
+    reason =
+      if c.evidence["replaced_legacy_live"],
+        do:
+          "live status parse fix 2026-09-28: #{c.kind}; old and new rules agree, legacy value replaced",
+        else: "live status parse fix 2026-09-28: #{c.kind}"
+
+    Map.put(entry, "reason", reason)
   end
 
   defp change_entry(_), do: nil
@@ -280,6 +288,12 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
 
         live == old_rule ->
           {:change, decision.live, decision.description, decision.evidence}
+
+        # Both rules give the same answer from the same rows: the current
+        # value came from elsewhere (legacy import) and is replaced.
+        old_rule == decision.live ->
+          {:change, decision.live, decision.description,
+           Map.put(decision.evidence, "replaced_legacy_live", live)}
 
         true ->
           kept = LiveStatus.from_live(live)
