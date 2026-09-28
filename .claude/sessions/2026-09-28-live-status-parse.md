@@ -206,6 +206,7 @@ Within a batch, the order is:
 | 2n.01–2n.06 | Tier 2 without a Family (last) | 5,413 | 6 × ≤ 40 min |
 
 After each batch:
+0. Cross-check fractalaw's hub archive (`~/fractalaw/data/lat-sync/archive61.txt`: 61 laws archived as revoked, `not_in_legal`). Any law that comes out not fully Revoked is reported to fractalaw so it can `--restore-laws`. At 2026-09-28 after batch 0, all 61 are still Revoked.
 1. `mix live.apply_effects` (dry run: extent diff), then `--apply` on Jason's go. It acts only on cached laws.
 2. `mix live.recompute` (dry run), then `--apply` on Jason's go. Laws with no effect data yet keep the no-feed rules, so it is safe to run part-way.
 
