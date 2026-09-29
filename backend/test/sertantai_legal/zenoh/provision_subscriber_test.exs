@@ -198,6 +198,59 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
     end
   end
 
+  describe "map_drrp_types/1 per actor (drrp on each actor, fractalatai #67)" do
+    test "an authority's Obligation and the Public's inferred Liberty give Responsibility + Right (Communications Act 2003 s.108(6))" do
+      taxa = %{
+        drrp_types: ["Obligation", "Liberty"],
+        actors: [
+          %{
+            "label" => "Gvt: Agency: OFCOM",
+            "role" => "government",
+            "position" => "active",
+            "drrp" => "Obligation"
+          },
+          %{
+            "label" => "Public",
+            "role" => "governed",
+            "position" => "active",
+            "drrp" => "Liberty",
+            "reason" => "inferred"
+          }
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Responsibility", "Right"]
+    end
+
+    test "actors typed none, or not active, type nothing" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [
+          %{
+            "label" => "Org: Employer",
+            "role" => "governed",
+            "position" => "active",
+            "drrp" => "Obligation"
+          },
+          %{
+            "label" => "Gvt: Minister",
+            "role" => "government",
+            "position" => "active",
+            "drrp" => "none"
+          },
+          %{
+            "label" => "Gvt: HSE",
+            "role" => "government",
+            "position" => "counterparty",
+            "drrp" => "Obligation"
+          }
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Duty"]
+    end
+  end
+
   describe "map_drrp_types/1 by the holder (position: active)" do
     test "an Obligation on the government with the public as counterparty is a Responsibility (EPA 1990 s.20(7))" do
       taxa = %{

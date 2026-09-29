@@ -318,7 +318,8 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   #
   # Fractalaw classifies provisions as Obligation or Liberty; the DRRP type
   # follows the role of the actor who holds it — the actor with
-  # `position: "active"` (the counterparty is who it is owed to):
+  # `position: "active"` and, since fractalatai #67, its own `drrp`
+  # (the counterparty is who it is owed to; `drrp: "none"` types nothing):
   #
   #   Obligation + governed holder   → Duty
   #   Obligation + government holder → Responsibility
@@ -334,10 +335,11 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   def map_drrp_types(%{drrp_types: drrp_types, actors: actors} = taxa)
       when is_list(drrp_types) and is_list(actors) do
     if Enum.any?(drrp_types, &(&1 in ["Obligation", "Liberty"])) do
-      case holder_roles(actors) do
-        [] -> taxa
-        roles -> Map.put(taxa, :drrp_types, Enum.flat_map(drrp_types, &drrp_for(&1, roles)))
-      end
+      mapped = Enum.flat_map(drrp_types, &expand(&1, actors))
+
+      if Enum.any?(mapped, &(&1 in ["Obligation", "Liberty"])),
+        do: taxa,
+        else: Map.put(taxa, :drrp_types, Enum.uniq(mapped))
     else
       taxa
     end
@@ -360,6 +362,34 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
       end
     end
   end
+
+  # A provision-level Obligation/Liberty expands by the roles of its holders:
+  # the active actors whose own `drrp` is that type (fractalatai #67); else,
+  # for older payloads without per-actor `drrp`, all active actors; else the
+  # presence rule. No holder found: left unmapped (the caller keeps the row).
+  defp expand(type, actors) when type in ["Obligation", "Liberty"] do
+    roles =
+      if Enum.any?(actors, &actor_drrp(&1)) do
+        per_actor = active_roles(actors, &(actor_drrp(&1) == type))
+        if per_actor == [], do: holder_roles(actors), else: per_actor
+      else
+        holder_roles(actors)
+      end
+
+    if roles == [], do: [type], else: drrp_for(type, roles)
+  end
+
+  defp expand(other, _actors), do: [other]
+
+  defp active_roles(actors, pred) do
+    Enum.filter(["governed", "government"], fn role ->
+      Enum.any?(actors, &(position(&1) == "active" and role(&1) == role and pred.(&1)))
+    end)
+  end
+
+  defp actor_drrp(%{"drrp" => d}), do: d
+  defp actor_drrp(%{drrp: d}), do: d
+  defp actor_drrp(_), do: nil
 
   @drrp %{
     {"Obligation", "governed"} => "Duty",
