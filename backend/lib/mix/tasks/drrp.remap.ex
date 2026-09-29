@@ -5,9 +5,9 @@ defmodule Mix.Tasks.Drrp.Remap do
   from "any governed actor present → Duty/Right" to the holder's role
   (2026-09-29; EPA 1990 s.20(7), legal #141 / fractalatai #67).
 
-  Stored Duty/Responsibility are an Obligation, Right/Power a Liberty; each
-  row is re-mapped from its stored actors. Rows whose actors carry no
-  position are left as they are.
+  Stored Duty/Responsibility are an Obligation, Right/Power a Liberty (rows
+  stored as raw Obligation/Liberty are included); each row is re-mapped
+  from its stored actors (per-actor `drrp` when present).
 
       mix drrp.remap            # dry run: transitions and counts
       mix drrp.remap --apply    # snapshot (id, drrp_types) to drrp_remap_snapshot_<stamp>, then write
@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Drrp.Remap do
       Repo.query!(
         """
         SELECT section_id, law_name, drrp_types, actors FROM legal_articles
-        WHERE drrp_types && ARRAY['Duty','Responsibility','Right','Power']
+        WHERE drrp_types && ARRAY['Duty','Responsibility','Right','Power','Obligation','Liberty']
           AND actors IS NOT NULL
         """,
         [],

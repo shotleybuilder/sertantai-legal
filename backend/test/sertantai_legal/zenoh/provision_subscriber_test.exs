@@ -222,6 +222,22 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Responsibility", "Right"]
     end
 
+    test "no active actor at all: the presence rule, not an unmapped Obligation" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [
+          %{
+            "label" => "Org: Employer",
+            "role" => "governed",
+            "position" => "counterparty",
+            "drrp" => "none"
+          }
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Duty"]
+    end
+
     test "actors typed none, or not active, type nothing" do
       taxa = %{
         drrp_types: ["Obligation"],

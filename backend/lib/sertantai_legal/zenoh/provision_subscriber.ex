@@ -347,19 +347,21 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
   def map_drrp_types(taxa), do: taxa
 
-  # Roles of the holders (position "active"); without positions, the legacy
-  # presence rule (governed if any governed actor, else government).
+  # Roles of the holders (position "active"); with no active actor, the
+  # legacy presence rule (governed if any governed actor, else government).
   defp holder_roles(actors) do
-    if Enum.any?(actors, &position(&1)) do
-      Enum.filter(["governed", "government"], fn role ->
-        Enum.any?(actors, &(position(&1) == "active" and role(&1) == role))
-      end)
-    else
-      cond do
-        has_role?(actors, "governed") -> ["governed"]
-        has_role?(actors, "government") -> ["government"]
-        true -> []
-      end
+    case active_roles(actors, fn _ -> true end) do
+      [] -> presence_roles(actors)
+      roles -> roles
+    end
+  end
+
+  # No active actor (no positions, or none marked active): the presence rule.
+  defp presence_roles(actors) do
+    cond do
+      has_role?(actors, "governed") -> ["governed"]
+      has_role?(actors, "government") -> ["government"]
+      true -> []
     end
   end
 
