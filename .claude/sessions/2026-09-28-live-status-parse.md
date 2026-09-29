@@ -99,7 +99,8 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Fractalaw restored 3 PPC orders; Surface Waters held (legal now Revoked, so no restore)
 - ✅ Enabling-provision extent built; batch 0 applied (see "Enabling provisions")
 - ⬜ Tier 1: `live.enabling` dry run → re-parse its parent Acts → apply → recompute
-- ⬜ Parents without LAT (e.g. ECA 1972, Merchant Shipping 1995, Climate Change 2008): LAT, or section extents from legislation.gov.uk section pages
+- ⬜ Tier 1 parents: 78 with LAT (re-parse), 25 Making without LAT (parse and keep, e.g. MSA 1995), 89 non-Making without LAT (**scoped LAT of the cited sections, #166**; Jason: data in LAT, not caches)
+- ⬜ Legal rename log `created_at` is naive (no timezone); make it RFC 3339 (fractalaw's first sync consumed no renames because of it; fractalaw has fixed its parser)
 - ⬜ Corpus LAT re-parse for the extent-inheritance fix (all ~1,000 LAT laws); decide with Jason
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
@@ -390,3 +391,13 @@ Batch 0 results:
 3. **First apply** treated the enabling union as the extent. It widened SSIs (S → GB/UK/E+W), which was wrong because the provisions are a ceiling. All 54 were restored from `enabling_b0_snapshot_20260929` and re-applied with the ceiling fix.
 4. Final: 23 extents sourced, all legacy UK SIs narrowed: UK → GB 14, UK → E+W 6, UK → S 2 (pre-devolution "(Scotland)" SIs under Scottish Acts), ∅ → E+W 1.
 5. live: **T&CP (Trees) Regs 1999: Revoked → Revoked in E; in force in W** (T&CP Act 1990 ss.199, 212, 316, 323 and 333 are all E+W). Batch 0 recompute: 0 held, no further changes.
+
+## Tier 1 enabling dry run (2026-09-29)
+
+2,390 SIs have no proper extent source (1a 301, 1b 653, 1c 615, 1d 331, 1e 490). Enabling provisions parsed for 1,323 of them, citing 194 parents:
+- **78 hold LAT:** re-parse with the extent-inheritance fix; preview first;
+- **25 are Making without LAT:** LAT parse and keep. They include MSA 1995 (50 SIs), Finance Act 1996 (32), Water Environment and Water Services (Scotland) Act 2003 (20), Water Services etc. (Scotland) Act 2005, Water Industry (Scotland) Act 2002, Reservoirs (Scotland) Act 2011 and Landfill Disposals Tax (Wales) Act 2017;
+- **89 are not Making without LAT:** scoped LAT of the cited sections under #166 (not a cache);
+- 3 are not in the register.
+
+The Climate Change Act 2008 (UK_ukpga_2008_27) already holds LAT (891 rows, Making).
