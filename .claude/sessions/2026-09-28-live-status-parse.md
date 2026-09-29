@@ -97,7 +97,10 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Tier 1 applied; see "Tier 1 applied"
 - ✅ Parent-Act bound narrows but never determines (Jason); applied: T&CP (Trees) 1999 and 4 Surface Waters regs held at Revoked
 - ✅ Fractalaw restored 3 PPC orders; Surface Waters held (legal now Revoked, so no restore)
-- ⬜ Proper extent for unrevised laws: enabling-section extent from the SI's preamble + parent Act LAT provision extents (proposal)
+- ✅ Enabling-provision extent built; batch 0 applied (see "Enabling provisions")
+- ⬜ Tier 1: `live.enabling` dry run → re-parse its parent Acts → apply → recompute
+- ⬜ Parents without LAT (e.g. ECA 1972, Merchant Shipping 1995, Climate Change 2008): LAT, or section extents from legislation.gov.uk section pages
+- ⬜ Corpus LAT re-parse for the extent-inheritance fix (all ~1,000 LAT laws); decide with Jason
 - ⬜ Tier 1 family list confirmed with Jason (draft in the Tier 1 session)
 - ⬜ Batches 1a–1e (Tier 1 clusters) → dry runs → apply
 - ⬜ Batches 2.01–2.08 (Tier 2, with a Family) → dry runs → apply
@@ -363,3 +366,27 @@ Jason: the key is getting the proper extent rather than using legacy values.
   1. an extent clause in the text (LAT, `text_clause`, already read);
   2. editorial `AffectedExtent` on effects (≥ 3 or whole-instrument; done);
   3. **proposed: the enabling sections.** The SI's preamble ("in exercise of the powers conferred by sections 82 and 219(2) of the Water Resources Act 1991") names them. Their extents come from the parent Act's LAT `extent_code` (parents are Making and hold LAT with per-provision extents). This is read in the same LAT pass as the application clause and is precise, unlike the whole-Act bound. `enacted_by_meta` holds only the Act, not sections.
+
+## Enabling provisions (2026-09-28/29)
+
+Jason: build the enabling-section extent.
+
+Found along the way:
+- The **LAT parser didn't inherit extent**. A provision without its own RestrictExtent took the document root's extent, not its nearest ancestor's: WRA 1991 Part III is E+W, but s.82 got E+W+S. Fixed. Parallel-provision detection is now keyed on schedule + provision, since a body reg. 1 is not a schedule para. 1. Existing LAT stays wrong until re-parsed.
+- The SI preamble is not in LAT. The LRT enacted_by stage already fetches it (the introduction, not the body), so enabling provisions are parsed there.
+
+Built:
+- `EnactedBy.EnablingProvisions` (pure): parses the powers clause for sections and schedules per parent, resolving markers via the url map and matching by year.
+- `enabling_provisions` JSONB, written by the enacted_by stage.
+- `EnactedBy.EnablingExtent` (parent LAT extent_code, all-or-nothing).
+- `ExtentResolver` source `enabling_provisions` (rank 5). It is a **ceiling**: intersected with a devolved type's floor; an empty intersection gives no verdict.
+- `mix live.enabling --batch N [--apply]`.
+
+Batch 0 results:
+1. 162 SIs had no proper extent source; enabling provisions were parsed for 107, citing 67 parents (39+ with LAT).
+2. **Parents re-parsed** (42 laws, `lat_reparse_enabling_parents_b0`):
+   - 1,462 section_id renames, from corrected parallel qualifiers, with enrichment carried; they are logged for fractalaw's rename queryable.
+   - 50,195 of 50,220 enriched rows carried; **25 need re-enrichment** (changed/dropped text: FSA 1990 17, CDPA 1988 4, Radioactive Substances Act 1993 3, anaw 2017/2 1).
+3. **First apply** treated the enabling union as the extent. It widened SSIs (S → GB/UK/E+W), which was wrong because the provisions are a ceiling. All 54 were restored from `enabling_b0_snapshot_20260929` and re-applied with the ceiling fix.
+4. Final: 23 extents sourced, all legacy UK SIs narrowed: UK → GB 14, UK → E+W 6, UK → S 2 (pre-devolution "(Scotland)" SIs under Scottish Acts), ∅ → E+W 1.
+5. live: **T&CP (Trees) Regs 1999: Revoked → Revoked in E; in force in W** (T&CP Act 1990 ss.199, 212, 316, 323 and 333 are all E+W). Batch 0 recompute: 0 held, no further changes.

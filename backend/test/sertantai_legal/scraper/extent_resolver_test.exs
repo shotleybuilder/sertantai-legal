@@ -122,6 +122,17 @@ defmodule SertantaiLegal.Scraper.ExtentResolverTest do
   end
 
   describe "resolve/1 source priority" do
+    test "enabling provisions are a ceiling: a devolved type stays within it; contradiction gives no verdict" do
+      assert %{geo_extent: "E+W", source: "enabling_provisions"} =
+               ExtentResolver.resolve(input(enabling_extents: ["E+W"]))
+
+      assert %{geo_extent: "S", source: "enabling_provisions"} =
+               ExtentResolver.resolve(input(type_code: "ssi", enabling_extents: ["E+W+S"]))
+
+      assert %{source: "type_code", geo_extent: "S"} =
+               ExtentResolver.resolve(input(type_code: "ssi", enabling_extents: ["E+W"]))
+    end
+
     test "lat_provisions needs at least 3 coded provisions when counted (HASS 2005: 1 of 92)" do
       assert %{source: nil} =
                ExtentResolver.resolve(input(lat_extent_codes: ["NI"], lat_coded_provisions: 1))

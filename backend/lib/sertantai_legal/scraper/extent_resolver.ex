@@ -92,7 +92,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
       {"lat_provisions", lat_provisions(input)},
       {"contents_items", contents_items(input)},
       {"text_clause", input.extent_clauses |> List.flatten() |> ordered()},
-      {"enabling_provisions", union(Map.get(input, :enabling_extents) || [])},
+      {"enabling_provisions", enabling(input)},
       {"affected_effects", union(Map.get(input, :affected_extents, []))},
       {"type_code", Map.get(@type_floor, input.type_code, [])}
     ]
@@ -212,6 +212,18 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
     do: []
 
   defp lat_provisions(input), do: union(input.lat_extent_codes)
+
+  # The enabling provisions are a ceiling, not the extent: a devolved type's
+  # floor (ssi → S) stays within it. An empty intersection is contradictory
+  # evidence and gives no verdict.
+  defp enabling(input) do
+    ceiling = union(Map.get(input, :enabling_extents) || [])
+
+    case Map.get(@type_floor, input.type_code) do
+      nil -> ceiling
+      floor -> if ceiling == [], do: [], else: ordered(Enum.filter(floor, &(&1 in ceiling)))
+    end
+  end
 
   defp law_level(%{document_status: "final"}), do: []
   defp law_level(%{restrict_extent: extent}), do: parse_regions(extent)
