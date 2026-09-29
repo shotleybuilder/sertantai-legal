@@ -81,7 +81,9 @@ defmodule SertantaiLegal.Scraper.LatHashQueryTest do
              row_count: 0,
              lat_hash: LatHash.empty_hash(),
              struct_hash: LatHash.empty_hash(),
-             updated_at: nil
+             updated_at: nil,
+             coverage: "full",
+             scope: nil
            }
   end
 

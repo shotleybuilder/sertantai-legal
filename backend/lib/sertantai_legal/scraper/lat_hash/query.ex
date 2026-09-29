@@ -26,10 +26,12 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           row_count: non_neg_integer(),
           lat_hash: String.t(),
           struct_hash: String.t(),
-          updated_at: DateTime.t() | nil
+          updated_at: DateTime.t() | nil,
+          coverage: String.t(),
+          scope: String.t() | nil
         }
 
-  @select "SELECT name, lat_count, lat_hash, struct_hash, latest_lat_updated_at FROM legal_register"
+  @select "SELECT name, lat_count, lat_hash, struct_hash, latest_lat_updated_at, lat_scope FROM legal_register"
 
   @doc "The rows the LAT queryable serves for `law_name`, in serving order."
   @spec served_query(String.t()) :: Ecto.Query.t()
@@ -50,7 +52,9 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           row_count: 0,
           lat_hash: LatHash.empty_hash(),
           struct_hash: LatHash.empty_hash(),
-          updated_at: nil
+          updated_at: nil,
+          coverage: "full",
+          scope: nil
         }
     end
   end
@@ -86,13 +90,17 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
     law_name |> for_law() |> Map.take([:row_count, :lat_hash, :struct_hash])
   end
 
-  defp entry([law_name, count, hash, struct_hash, updated_at]) do
+  # coverage/scope (#166): a scoped law's LAT is intentionally partial —
+  # `scope` is JSON {fragments, purposes} (e.g. purposes ["enabling_extent"]).
+  defp entry([law_name, count, hash, struct_hash, updated_at, scope]) do
     %{
       law_name: law_name,
       row_count: count,
       lat_hash: hash,
       struct_hash: struct_hash,
-      updated_at: to_utc(updated_at)
+      updated_at: to_utc(updated_at),
+      coverage: if(scope, do: "partial", else: "full"),
+      scope: scope && Jason.encode!(Map.take(scope, ["fragments", "purposes"]))
     }
   end
 

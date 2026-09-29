@@ -67,7 +67,9 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
              "row_count" => 0,
              "lat_hash" => LatHash.empty_hash(),
              "struct_hash" => LatHash.empty_hash(),
-             "updated_at" => nil
+             "updated_at" => nil,
+             "coverage" => "full",
+             "scope" => nil
            }
   end
 
@@ -76,7 +78,7 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
     df = Explorer.DataFrame.load_ipc_stream!(ipc)
 
     assert Explorer.DataFrame.names(df) |> Enum.sort() ==
-             ~w(lat_hash law_name row_count struct_hash updated_at)
+             ~w(coverage lat_hash law_name row_count scope struct_hash updated_at)
 
     rows = Explorer.DataFrame.to_rows(df)
     assert %{"row_count" => 1, "lat_hash" => hash} = Enum.find(rows, &(&1["law_name"] == name))

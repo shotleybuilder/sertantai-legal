@@ -138,6 +138,14 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Live status derived from /changes/affected endpoint")
     end
 
+    attribute :lat_scope, :map do
+      allow_nil?(true)
+
+      description(
+        "Scoped LAT (#166, Scraper.LatScope): %{fragments: [\"section/82\", \"part/15/chapter/5\"], purposes: [relevance | enabling_extent], history: [...]}; nil = the whole body. Only widens; narrowing is explicit"
+      )
+    end
+
     attribute :enabling_provisions, :map do
       allow_nil?(true)
 

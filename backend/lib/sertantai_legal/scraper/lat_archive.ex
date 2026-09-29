@@ -19,6 +19,7 @@ defmodule SertantaiLegal.Scraper.LatArchive do
   """
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LatScope
   alias SertantaiLegal.Scraper.LatPersister
 
   @default_dir "/mnt/nas/sertantai-data/data/lat-archive"
@@ -64,7 +65,8 @@ defmodule SertantaiLegal.Scraper.LatArchive do
 
   @doc """
   Archive (unless `archive: false`) and delete a law's LAT and its
-  amendment annotations, recording a `discarded` event. Options: `dir`, `archive`, `source` (default "admin"),
+  amendment annotations, recording a `discarded` event. Scoped LAT kept as
+  enabling-extent evidence (#166) is refused unless `force: true`. Options: `dir`, `archive`, `source` (default "admin"),
   `actor`.
   """
   @spec discard(String.t(), String.t(), keyword()) ::
@@ -76,6 +78,16 @@ defmodule SertantaiLegal.Scraper.LatArchive do
            }}
           | {:error, String.t()}
   def discard(law_name, reason, opts \\ []) do
+    if "enabling_extent" in ((LatScope.get(law_name) || %{})["purposes"] || []) and
+         not Keyword.get(opts, :force, false) do
+      {:error,
+       "#{law_name} holds scoped LAT kept as enabling-extent evidence (#166); pass force: true to discard"}
+    else
+      do_discard(law_name, reason, opts)
+    end
+  end
+
+  defp do_discard(law_name, reason, opts) do
     archived =
       if Keyword.get(opts, :archive, true), do: archive(law_name, opts), else: {:ok, nil}
 

@@ -19,7 +19,14 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   - `{:parse_complete, has_errors}`
   """
 
-  alias SertantaiLegal.Scraper.{LatParser, LatPersister, CommentaryParser, CommentaryPersister}
+  alias SertantaiLegal.Scraper.{
+    LatParser,
+    LatPersister,
+    LatScope,
+    CommentaryParser,
+    CommentaryPersister
+  }
+
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.PdfBacklog
   alias SertantaiLegal.Scraper.IdField
@@ -80,10 +87,10 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     # Stage 1: Fetch body XML
     notify(on_progress, {:stage_start, :fetch_body, 1, @total_stages})
 
-    case fetch_body_xml(slash_path) do
-      {:ok, body_xml} ->
-        notify(on_progress, {:stage_complete, :fetch_body, :ok, "XML fetched"})
-        do_run_stages(law_name, type_code, law_id, body_xml, opts, start)
+    case fetch_xmls(slash_path, LatScope.get(law_name)) do
+      {:ok, xmls} ->
+        notify(on_progress, {:stage_complete, :fetch_body, :ok, "XML fetched (#{length(xmls)})"})
+        do_run_stages(law_name, type_code, law_id, xmls, opts, start)
 
       {:error, reason} ->
         notify(on_progress, {:stage_complete, :fetch_body, :error, reason})
@@ -110,8 +117,8 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   def fetch_rows(law_name) do
     with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
          {:ok, law_id} <- lookup_law_id(law_name),
-         {:ok, xml} <- fetch_body_xml(slash_path) do
-      {:ok, LatParser.parse(xml, %{law_name: law_name, type_code: type_code}), law_id}
+         {:ok, xmls} <- fetch_xmls(slash_path, LatScope.get(law_name)) do
+      {:ok, parse_rows(xmls, law_name, type_code), law_id}
     end
   end
 
@@ -138,23 +145,38 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   def record_outcome(%{has_errors: false} = result), do: {:parsed, result}
   def record_outcome(result), do: {:failed, result[:error] || "parse failed"}
 
-  defp do_run_stages(law_name, type_code, law_id, body_xml, opts, start) do
+  # `xmls`: the body, or one document per scoped fragment (#166, LatScope).
+  defp do_run_stages(law_name, type_code, law_id, body_xml, opts, start)
+       when is_binary(body_xml),
+       do: do_run_stages(law_name, type_code, law_id, [body_xml], opts, start)
+
+  defp do_run_stages(law_name, type_code, law_id, xmls, opts, start) do
     on_progress = Keyword.get(opts, :on_progress)
 
     # Stage 2: Parse LAT rows
     notify(on_progress, {:stage_start, :parse_lat, 2, @total_stages})
 
-    case LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code}) do
+    case parse_rows(xmls, law_name, type_code) do
       [] ->
-        no_body(law_name, body_xml, opts, start)
+        no_body(law_name, hd(xmls), opts, start)
 
       lat_rows ->
         notify(on_progress, {:stage_complete, :parse_lat, :ok, "#{length(lat_rows)} rows"})
-        persist_stages(law_name, law_id, body_xml, lat_rows, opts, start)
+        persist_stages(law_name, law_id, xmls, lat_rows, opts, start)
     end
   end
 
-  defp persist_stages(law_name, law_id, body_xml, lat_rows, opts, start) do
+  defp parse_rows(xmls, law_name, type_code) do
+    xmls
+    |> Enum.map(&LatParser.parse(&1, %{law_name: law_name, type_code: type_code}))
+    |> Enum.reject(&(&1 == []))
+    |> case do
+      [] -> []
+      lists -> LatScope.merge(lists)
+    end
+  end
+
+  defp persist_stages(law_name, law_id, xmls, lat_rows, opts, start) do
     on_progress = Keyword.get(opts, :on_progress)
 
     # Stage 3: Persist LAT
@@ -182,7 +204,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       if lat_error do
         skip_annotations(on_progress)
       else
-        run_annotation_stages(law_name, law_id, body_xml, lat_rows, on_progress)
+        run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress)
       end
 
     duration_ms = System.monotonic_time(:millisecond) - start
@@ -247,11 +269,21 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     {%{inserted: 0, skipped: true}, false}
   end
 
-  defp run_annotation_stages(law_name, law_id, body_xml, lat_rows, on_progress) do
-    # Stage 4: Parse annotations
+  defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress) do
+    # Stage 4: Parse annotations (per document when scoped)
     notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
     ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
-    annotations = CommentaryParser.parse(body_xml, %{law_name: law_name}, ref_to_sections)
+
+    annotations =
+      case xmls do
+        [xml] ->
+          CommentaryParser.parse(xml, %{law_name: law_name}, ref_to_sections)
+
+        fragments ->
+          fragments
+          |> Enum.flat_map(&CommentaryParser.parse(&1, %{law_name: law_name}, ref_to_sections))
+          |> CommentaryParser.renumber(law_name)
+      end
 
     notify(
       on_progress,
@@ -301,9 +333,19 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
-  defp fetch_body_xml(slash_path) do
-    path = "/#{slash_path}/body/data.xml"
+  # The body, or each scoped fragment (all must fetch)
+  defp fetch_xmls(slash_path, scope) do
+    slash_path
+    |> LatScope.paths(scope)
+    |> Enum.reduce_while({:ok, []}, fn path, {:ok, acc} ->
+      case fetch_xml(path) do
+        {:ok, xml} -> {:cont, {:ok, acc ++ [xml]}}
+        {:error, _} = err -> {:halt, err}
+      end
+    end)
+  end
 
+  defp fetch_xml(path) do
     case Client.fetch_xml(path) do
       {:ok, xml} -> {:ok, xml}
       {:ok, :html, _html} -> {:error, "Received HTML instead of XML for #{path}"}

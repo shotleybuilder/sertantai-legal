@@ -109,4 +109,30 @@ defmodule SertantaiLegal.Scraper.LatArchiveTest do
     assert {:ok, %{deleted: 2, archive_ref: nil}} =
              LatArchive.discard(name, "revoked", dir: "/proc/nope", archive: false)
   end
+
+  test "scoped LAT kept as enabling-extent evidence is not discarded without force (#166)" do
+    name = "UK_ukpga_2099_#{System.unique_integer([:positive])}"
+
+    SertantaiLegal.Legal.LegalRegister
+    |> Ash.Changeset.for_create(:create, %{
+      country: "uk",
+      name: name,
+      title_en: "T",
+      type_code: "ukpga",
+      year: 2099,
+      number: "1"
+    })
+    |> Ash.create!()
+
+    SertantaiLegal.Scraper.LatScope.set!(name,
+      fragments: ["section/2"],
+      purpose: "enabling_extent",
+      reason: "test",
+      create: true
+    )
+
+    assert {:error, msg} = LatArchive.discard(name, "not_making", archive: false)
+    assert msg =~ "enabling-extent"
+    assert {:ok, _} = LatArchive.discard(name, "not_making", archive: false, force: true)
+  end
 end

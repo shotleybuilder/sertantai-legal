@@ -132,6 +132,33 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     end
   end
 
+  @doc """
+  Merge annotations parsed from several documents of one law (scoped LAT
+  fragments, #166): the same commentary (code type, code, text) once, with
+  its affected sections combined, and sequential ids renumbered across the
+  law ({law_name}:{code_type}:{seq}).
+  """
+  @spec renumber([map()], String.t()) :: [map()]
+  def renumber(annotations, law_name) do
+    annotations
+    |> Enum.group_by(&{&1.code_type, &1.code, &1.text})
+    |> Enum.map(fn {_key, [first | _] = same} ->
+      %{
+        first
+        | affected_sections: same |> Enum.flat_map(&(&1.affected_sections || [])) |> Enum.uniq()
+      }
+    end)
+    |> Enum.sort_by(
+      &{&1.code_type, &1.id |> String.split(":") |> List.last() |> String.to_integer()}
+    )
+    |> Enum.group_by(& &1.code_type)
+    |> Enum.flat_map(fn {code_type, items} ->
+      items
+      |> Enum.with_index(1)
+      |> Enum.map(fn {item, seq} -> %{item | id: "#{law_name}:#{code_type}:#{seq}"} end)
+    end)
+  end
+
   # ── Sequential ID Assignment ─────────────────────────────────────
 
   # Assign sequential IDs per code_type: {law_name}:{code_type}:{seq}

@@ -7,6 +7,47 @@ defmodule SertantaiLegal.Scraper.LatStagedParserTest do
   @body File.read!("test/fixtures/legislation_gov_uk/body_uksi_1991_899.xml")
   @no_body File.read!("test/fixtures/legislation_gov_uk/body_uksi_1979_791_no_body.xml")
 
+  describe "run_stages/5 with scoped fragments (#166)" do
+    alias SertantaiLegal.Legal.LegalRegister
+
+    test "fragments merge into one law's LAT: shared rows once, positions renumbered, extent inherited" do
+      law =
+        LegalRegister
+        |> Ash.Changeset.for_create(:create, %{
+          country: "uk",
+          name: "UK_ukpga_1991_57",
+          title_en: "Water Resources Act",
+          type_code: "ukpga",
+          year: 1991,
+          number: "57"
+        })
+        |> Ash.create!()
+
+      fragments =
+        for s <- ["82", "219"],
+            do: File.read!("test/fixtures/legislation_gov_uk/fragments/ukpga_1991_57_s#{s}.xml")
+
+      {:ok, result} =
+        LatStagedParser.run_stages("UK_ukpga_1991_57", "ukpga", law.id, fragments)
+
+      refute result.has_errors, inspect(result)
+
+      %{rows: rows} =
+        Repo.query!(
+          "SELECT section_id, position, extent_code FROM legal_articles WHERE law_name = 'UK_ukpga_1991_57' ORDER BY sort_key"
+        )
+
+      ids = Enum.map(rows, &hd/1)
+      assert "UK_ukpga_1991_57:s.82" in ids
+      assert "UK_ukpga_1991_57:s.219" in ids
+      assert ids == Enum.uniq(ids)
+      assert Enum.map(rows, &Enum.at(&1, 1)) == Enum.to_list(1..length(rows))
+
+      [[_, _, extent]] = Enum.filter(rows, &(hd(&1) == "UK_ukpga_1991_57:s.82"))
+      assert extent == "E+W"
+    end
+  end
+
   describe "run_stages/5 when the LAT persist fails" do
     setup do
       # A law_id with no legal_register row makes LatPersister fail (FK).
