@@ -171,3 +171,19 @@ Why: fractalaw has several enrichment families and models, but law level in lega
 Jason confirmed the model: an Obligation on the governed is a Duty, on the government a Responsibility; a Liberty on the governed is a Right, on the government a Power. Legal holds the expansion (`ProvisionSubscriber.map_drrp_types/1`, #134). It had treated "any governed actor present" as the holder, and now maps by the actors with `position: "active"` (5d67753). `mix drrp.remap --apply` corrected 7,678 rows in 417 laws: Duty → Responsibility 3,502, Right → Power 2,550, Duty → Duty + Responsibility 739, Right → Right + Power 355, and others. A re-run finds 0.
 
 Next: fractalaw is expanding fractalatai #67 to publish the data legal needs for a more accurate OL → DRRP expansion (Jason is driving it); legal's mapping will then be tweaked. Whether to model the public's correlative Right is still open (Jason).
+
+## fractalatai #67 publish: implied Rights (2026-09-29)
+
+Fractalaw now puts a per-actor `drrp` (Obligation | Liberty | none) on each provision actor, and infers a Liberty for the Public / Ind: Person where a government actor's active Obligation grants access (inspection, copies, supply). Legal maps per actor (8fba7bc). When no actor is active it falls back to the presence rule (a5c3fa2). Published: 49 laws, 49,717 provisions.
+
+Verified against `implied_rights_*_snapshot_20260929`:
+- is_making is unchanged (0 of 49);
+- UK_ukpga_2003_21 s.108(6) = {Right, Responsibility};
+- **57 implied Rights in 23 laws** (fractalaw expected 60);
+- no over-assignment where active actors carry a per-actor type.
+
+`mix drrp.remap` covers raw OL rows too: 3,917 rows in 50 laws remapped (snapshot `drrp_remap_snapshot_20260929_1521`).
+
+Data gaps raised with fractalaw:
+1. 11,981 provisions carry Obligation/Liberty with **no actors** (2,863 in the 49 laws, 9,118 in 390 others), so no holder can be typed and they stay raw;
+2. 46 provisions whose drrp_types union includes a type no active actor holds. Legal falls back, adding Responsibility or Duty.
