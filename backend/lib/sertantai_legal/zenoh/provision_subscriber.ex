@@ -316,43 +316,69 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
   # Map fractalaw's Hohfeldian vocabulary to the DRRP vocabulary (#134).
   #
-  # Fractalaw classifies provisions as Obligation or Liberty. We translate
-  # to the DRRP model based on which actor roles are present:
+  # Fractalaw classifies provisions as Obligation or Liberty; the DRRP type
+  # follows the role of the actor who holds it — the actor with
+  # `position: "active"` (the counterparty is who it is owed to):
   #
-  #   Obligation + governed  → Duty
-  #   Obligation + government → Responsibility
-  #   Liberty    + governed  → Right
-  #   Liberty    + government → Power
+  #   Obligation + governed holder   → Duty
+  #   Obligation + government holder → Responsibility
+  #   Liberty    + governed holder   → Right
+  #   Liberty    + government holder → Power
   #
-  # When both governed and government actors are present, the governed
-  # mapping takes priority (Duty/Right) since those are the primary
-  # compliance-relevant classifications.
+  # Holders in both roles give both types (never cross-assigned). Only when
+  # no actor carries a position (older payloads) does the presence of roles
+  # decide, the governed mapping taking priority (EPA 1990 s.20(7) — an
+  # enforcing authority's duty to the public — was a Duty under that rule;
+  # it is a Responsibility).
   @doc false
   def map_drrp_types(%{drrp_types: drrp_types, actors: actors} = taxa)
       when is_list(drrp_types) and is_list(actors) do
-    has_governed = has_role?(actors, "governed")
-    has_government = has_role?(actors, "government")
-
-    needs_mapping =
-      Enum.any?(drrp_types, &(&1 in ["Obligation", "Liberty"]))
-
-    if needs_mapping and (has_governed or has_government) do
-      mapped =
-        Enum.map(drrp_types, fn
-          "Obligation" when has_governed -> "Duty"
-          "Obligation" when has_government -> "Responsibility"
-          "Liberty" when has_governed -> "Right"
-          "Liberty" when has_government -> "Power"
-          other -> other
-        end)
-
-      Map.put(taxa, :drrp_types, mapped)
+    if Enum.any?(drrp_types, &(&1 in ["Obligation", "Liberty"])) do
+      case holder_roles(actors) do
+        [] -> taxa
+        roles -> Map.put(taxa, :drrp_types, Enum.flat_map(drrp_types, &drrp_for(&1, roles)))
+      end
     else
       taxa
     end
   end
 
   def map_drrp_types(taxa), do: taxa
+
+  # Roles of the holders (position "active"); without positions, the legacy
+  # presence rule (governed if any governed actor, else government).
+  defp holder_roles(actors) do
+    if Enum.any?(actors, &position(&1)) do
+      Enum.filter(["governed", "government"], fn role ->
+        Enum.any?(actors, &(position(&1) == "active" and role(&1) == role))
+      end)
+    else
+      cond do
+        has_role?(actors, "governed") -> ["governed"]
+        has_role?(actors, "government") -> ["government"]
+        true -> []
+      end
+    end
+  end
+
+  @drrp %{
+    {"Obligation", "governed"} => "Duty",
+    {"Obligation", "government"} => "Responsibility",
+    {"Liberty", "governed"} => "Right",
+    {"Liberty", "government"} => "Power"
+  }
+  defp drrp_for(type, roles) when type in ["Obligation", "Liberty"],
+    do: Enum.map(roles, &Map.fetch!(@drrp, {type, &1}))
+
+  defp drrp_for(other, _roles), do: [other]
+
+  defp position(%{"position" => p}), do: p
+  defp position(%{position: p}), do: p
+  defp position(_), do: nil
+
+  defp role(%{"role" => r}), do: r
+  defp role(%{role: r}), do: r
+  defp role(_), do: nil
 
   defp has_role?(actors, role) do
     Enum.any?(actors, fn

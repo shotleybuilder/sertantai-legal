@@ -198,6 +198,61 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
     end
   end
 
+  describe "map_drrp_types/1 by the holder (position: active)" do
+    test "an Obligation on the government with the public as counterparty is a Responsibility (EPA 1990 s.20(7))" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [
+          %{
+            "label" => "Gvt: Authority: Enforcement",
+            "role" => "government",
+            "position" => "active"
+          },
+          %{"label" => "Public", "role" => "governed", "position" => "counterparty"}
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Responsibility"]
+    end
+
+    test "a Liberty held by the government is a Power, whoever the counterparty" do
+      taxa = %{
+        drrp_types: ["Liberty"],
+        actors: [
+          %{"label" => "Gvt: Minister", "role" => "government", "position" => "active"},
+          %{"label" => "SC: Applicant", "role" => "governed", "position" => "counterparty"}
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Power"]
+    end
+
+    test "an Obligation on the governed with a government counterparty stays a Duty" do
+      taxa = %{
+        drrp_types: ["Obligation"],
+        actors: [
+          %{"label" => "SC: Applicant", "role" => "governed", "position" => "active"},
+          %{"label" => "Gvt: Minister", "role" => "government", "position" => "counterparty"}
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Duty"]
+    end
+
+    test "holders in both roles give both types (never cross-assigned)" do
+      taxa = %{
+        drrp_types: ["Obligation", "Liberty"],
+        actors: [
+          %{"label" => "Org: Employer", "role" => "governed", "position" => "active"},
+          %{"label" => "Gvt: Authority", "role" => "government", "position" => "active"}
+        ]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types ==
+               ["Duty", "Responsibility", "Right", "Power"]
+    end
+  end
+
   describe "map_drrp_types/1 (#134)" do
     # Obligation mappings
     test "maps Obligation → Duty when provision has governed actor" do
