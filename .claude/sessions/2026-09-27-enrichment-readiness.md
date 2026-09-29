@@ -3,6 +3,13 @@ session: "Corpus Enrichment Readiness"
 status: active
 opened: 2026-09-27
 related: ["fractalatai#56", "fractalatai#58", "fractalatai#59", "fractalatai#60", 166, 165]
+bugs:
+  - pattern: "Provision OL→DRRP mapping took any governed actor present as the holder: an Obligation/Liberty held by the government (governed counterparty) became Duty/Right (EPA 1990 s.20(7); legal #141 → fractalatai #67)"
+    category: drrp_mapping
+    module: zenoh/provision_subscriber.ex map_drrp_types/1
+    affected: "7,678 provision rows in 417 laws"
+    fix: "Map by the role of the actor(s) with position active; both roles → both types; remapped by mix drrp.remap (snapshot drrp_remap_snapshot_20260929_1416). Fractalaw #67 will add data for a finer expansion"
+    status: fixed
 ---
 
 # Session: Corpus Enrichment Readiness (ACTIVE)
@@ -158,3 +165,9 @@ Why: fractalaw has several enrichment families and models, but law level in lega
 3. **Tier 1 — key families:** OH&S (all), FIRE (all), ENVIRONMENTAL PROTECTION, WASTE, WATER & WASTEWATER, POLLUTION, AIR QUALITY, CLIMATE CHANGE, NOISE, NUCLEAR & RADIOLOGICAL, PUBLIC: Building Safety / Consumer Safety, transport *safety* families. Making laws without LAT: parse and keep. Not-Making / uncertain laws without evidence: parse → decide → discard.
 4. **Tier 2 — the remaining families**, largest Making gap first, as capacity allows before the enrichment batch.
 5. Large Acts: whole-body parse unless Jason sets a #166 scope. PDF-only laws go to the backlog.
+
+## Provision DRRP by holder (2026-09-29)
+
+Jason confirmed the model: an Obligation on the governed is a Duty, on the government a Responsibility; a Liberty on the governed is a Right, on the government a Power. Legal holds the expansion (`ProvisionSubscriber.map_drrp_types/1`, #134). It had treated "any governed actor present" as the holder, and now maps by the actors with `position: "active"` (5d67753). `mix drrp.remap --apply` corrected 7,678 rows in 417 laws: Duty → Responsibility 3,502, Right → Power 2,550, Duty → Duty + Responsibility 739, Right → Right + Power 355, and others. A re-run finds 0.
+
+Next: fractalaw is expanding fractalatai #67 to publish the data legal needs for a more accurate OL → DRRP expansion (Jason is driving it); legal's mapping will then be tweaked. Whether to model the public's correlative Right is still open (Jason).
