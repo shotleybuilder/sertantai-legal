@@ -443,6 +443,25 @@ defmodule SertantaiLegal.Scraper.LiveStatusTest do
       assert d.evidence["application_unknown"] == true
     end
 
+    test "an enabling-provision extent (a ceiling) never determines a remainder" do
+      base =
+        "uksi"
+        |> ctx("UK")
+        |> Map.merge(%{law_clause_read: true, law_extent_source: "enabling_provisions"})
+
+      # Adventure Activities 1996: the revoker's UK extent / GB application says nothing about NI
+      held =
+        LiveStatus.decide(
+          [
+            row("UK_uksi_2004_1359", "revoked")
+            |> Map.merge(%{effect_extent: "E+W+S+N.I.", territorial_application: "E+W+S"})
+          ],
+          base
+        )
+
+      assert held.evidence["application_unknown"] == true
+    end
+
     test "a devolved-type or title bound is a determination" do
       d =
         LiveStatus.decide(

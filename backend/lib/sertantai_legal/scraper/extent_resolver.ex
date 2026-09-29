@@ -75,6 +75,7 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
           required(:type_code) => String.t() | nil,
           optional(:affected_extents) => [String.t() | nil],
           optional(:enabling_extents) => [String.t()] | nil,
+          optional(:narrower_extents) => [String.t()] | nil,
           optional(:lat_coded_provisions) => non_neg_integer()
         }
 
@@ -151,6 +152,14 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   def parse_regions(extent) when is_binary(extent) do
     upper = String.upcase(extent)
 
+    cond do
+      String.trim(upper) == "UK" -> @order
+      String.trim(upper) == "GB" -> ["England", "Wales", "Scotland"]
+      true -> parse_region_tokens(upper)
+    end
+  end
+
+  defp parse_region_tokens(upper) do
     if String.match?(upper, ~r/ENGLAND|WALES|SCOTLAND|IRELAND/) do
       named_regions(upper)
     else
@@ -216,13 +225,15 @@ defmodule SertantaiLegal.Scraper.ExtentResolver do
   # The enabling provisions are a ceiling, not the extent: a devolved type's
   # floor (ssi → S) stays within it. An empty intersection is contradictory
   # evidence and gives no verdict.
+  # It also never widens narrower evidence already held (`narrower_extents`,
+  # e.g. an AffectedExtent-sourced GB against a UK ceiling).
   defp enabling(input) do
     ceiling = union(Map.get(input, :enabling_extents) || [])
+    narrower = union(Map.get(input, :narrower_extents) || [])
 
-    case Map.get(@type_floor, input.type_code) do
-      nil -> ceiling
-      floor -> if ceiling == [], do: [], else: ordered(Enum.filter(floor, &(&1 in ceiling)))
-    end
+    [Map.get(@type_floor, input.type_code), if(narrower != [], do: narrower)]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.reduce(ceiling, fn bound, acc -> ordered(Enum.filter(acc, &(&1 in bound))) end)
   end
 
   defp law_level(%{document_status: "final"}), do: []

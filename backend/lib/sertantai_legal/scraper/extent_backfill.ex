@@ -55,6 +55,12 @@ defmodule SertantaiLegal.Scraper.ExtentBackfill do
         lat_extent_codes: row.lat_extent_codes,
         lat_coded_provisions: Map.get(row, :lat_coded_provisions),
         enabling_extents: Map.get(row, :enabling_extents),
+        # a stored weaker-ranked extent is still narrower evidence the
+        # enabling ceiling must not widen
+        narrower_extents:
+          if(row.geo_extent_source in ["affected_effects", "enabling_provisions"],
+            do: [row.geo_extent]
+          ),
         contents_item_extents: [],
         extent_clauses:
           row.clause_texts |> Enum.map(&ExtentResolver.extent_clause/1) |> Enum.reject(&is_nil/1),

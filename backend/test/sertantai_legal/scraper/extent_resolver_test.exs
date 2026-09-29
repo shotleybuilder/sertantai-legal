@@ -131,6 +131,10 @@ defmodule SertantaiLegal.Scraper.ExtentResolverTest do
 
       assert %{source: "type_code", geo_extent: "S"} =
                ExtentResolver.resolve(input(type_code: "ssi", enabling_extents: ["E+W"]))
+
+      # never widens narrower evidence already held
+      assert %{geo_extent: "GB", source: "enabling_provisions"} =
+               ExtentResolver.resolve(input(enabling_extents: ["UK"], narrower_extents: ["GB"]))
     end
 
     test "lat_provisions needs at least 3 coded provisions when counted (HASS 2005: 1 of 92)" do

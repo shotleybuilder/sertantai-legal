@@ -301,6 +301,10 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
 
     # A territorial remainder resting only on extent (not application) is not
     # a determination: the law's application clause is needed (LAT parse).
+    # An enabling-provision extent (a ceiling) or the type floor never
+    # determines a remainder: a revocation's recorded application describes
+    # the revoking instrument (HSWA SIs: UK extent, GB application), not where
+    # the old law applied.
     application_unknown = kind == :territorial and not determined?(law_basis, ctx)
 
     evidence = %{
@@ -392,13 +396,14 @@ defmodule SertantaiLegal.Scraper.LiveStatus do
   # then applies throughout its extent) and that extent has a source —
   # legislation.gov.uk's effects or a law-level / LAT source. The enabling
   # Act's extent narrows but never determines: it is the union of all its
-  # provisions (the Water Resources Act 1991 is GB; its powers are E+W).
+  # provisions (the Water Resources Act 1991 is GB; its powers are E+W). An
+  # enabling-provision extent (a ceiling) or the type floor never determines.
   defp determined?(basis, _ctx) when basis in ["devolved_type", "title", "application"], do: true
 
   defp determined?(basis, ctx) do
     ctx[:law_clause_read] == true and
       (String.starts_with?(basis || "", "affected_extent") or
-         ctx[:law_extent_source] not in [nil, ""])
+         ctx[:law_extent_source] not in [nil, "", "enabling_provisions", "type_code"])
   end
 
   # Where the law applies: a devolved type (a WSI's E+W legal extent applies to
