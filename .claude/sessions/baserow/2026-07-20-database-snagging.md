@@ -1,6 +1,7 @@
 ---
 session: Database Snagging List
-status: suspended
+status: closed
+closed: 2026-09-29
 opened: 2026-07-20
 ---
 # Database Snagging List
@@ -19,3 +20,7 @@ opened: 2026-07-20
 - Example: UK_anaw_2017_2 section 2 — "Welsh Ministers must publish a national strategy" — actor is Gvt: Minister, type is Obligation. This is a government responsibility, not a customer duty.
 - The sync engine's `governed_only` filter uses `governed_actors` or actor position to exclude government actors. But provisions where the obligation-bearer IS the government may still pass through if the provision has mixed actors (both governed and government).
 - Check: `ProfileQuery.query_lat_aggregated` with `governed_only: true` — does it filter provisions where ALL actors are government?
+
+## Closed
+
+Closed 2026-09-29 (clean-up): superseded in legal. Baserow work moved to sertantai-compliance.

@@ -1,6 +1,7 @@
 ---
 session: Workspace Resource State + Configuration Tables
-status: pending
+status: closed
+closed: 2026-09-29
 opened: 2026-07-03
 ---
 # Issue #112: Workspace Resource State + Configuration Tables
@@ -21,3 +22,7 @@ opened: 2026-07-03
 - Depends on Phase 1 (complete): mix templates.apply, default column handling
 - Gemini review: `docs/reviews/2026-07-03-gemini-baserow-template-architecture.md`
 - Enables Phase 3 (UI-driven config)
+
+## Closed
+
+Closed 2026-09-29 (clean-up): superseded in legal. Templates (phase 2) moved to sertantai-compliance; issue #112 closed.

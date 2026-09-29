@@ -1,6 +1,7 @@
 ---
 session: Oban-Driven Template Application with UI Config
-status: pending
+status: closed
+closed: 2026-09-29
 opened: 2026-07-03
 ---
 # Issue #113: Oban-Driven Template Application with UI Config
@@ -20,3 +21,7 @@ opened: 2026-07-03
 - Depends on Phase 2 (#112): workspace_resource_state + workspace_configuration
 - Depends on Phase 1 (complete): mix templates.apply, default column handling
 - Gemini review: `docs/reviews/2026-07-03-gemini-baserow-template-architecture.md`
+
+## Closed
+
+Closed 2026-09-29 (clean-up): superseded in legal. Templates (phase 3) moved to sertantai-compliance; issue #113 closed.

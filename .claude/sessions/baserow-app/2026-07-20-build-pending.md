@@ -1,6 +1,7 @@
 ---
 session: Legal Register Page — Unified Build Script
-status: pending
+status: closed
+closed: 2026-09-29
 opened: 2026-07-20
 ---
 # Legal Register Page — Unified Build Script
@@ -32,3 +33,7 @@ Integrate the Legal Register page build into a single repeatable script that cre
 - Single quotes required in App Builder formulas for complex paths
 - Lookup of single_select = .*.value.value (double unwrap)
 - Lookup of rollup = .*.value (single unwrap)
+
+## Closed
+
+Closed 2026-09-29 (clean-up): superseded in legal. The Baserow app work moved to sertantai-compliance.

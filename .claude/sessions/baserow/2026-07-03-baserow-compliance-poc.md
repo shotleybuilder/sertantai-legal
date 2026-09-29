@@ -1,6 +1,7 @@
 ---
 session: Baserow Compliance PoC — Solution Design
-status: suspended
+status: closed
+closed: 2026-09-29
 opened: 2026-07-03
 ---
 # Title: Baserow Compliance PoC — Solution Design
@@ -114,3 +115,7 @@ L7 governs the compliance framework itself. Six functions: policy, risk appetite
 - Cross-table rollups deferred (Baserow auto-names reverse link fields — Phase 2 #112)
 - Schema updates to existing tables need reconciliation (Phase 2 #112)
 - Baserow and() only takes 2 args (fixed with nested and())
+
+## Closed
+
+Closed 2026-09-29 (clean-up): superseded in legal. The Baserow sync engine and templates moved to sertantai-compliance (CLAUDE.md; sync engine removed from legal in 1835da1).
