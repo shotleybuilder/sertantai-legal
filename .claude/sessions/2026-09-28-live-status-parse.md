@@ -99,7 +99,8 @@ Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
 - ✅ Fractalaw restored 3 PPC orders; Surface Waters held (legal now Revoked, so no restore)
 - ✅ Enabling-provision extent built; batch 0 applied (see "Enabling provisions")
 - ✅ Tier 1 enabling applied; see "Tier 1 enabling applied"
-- ⬜ Application from the SI preamble ("… as respects England, and the Secretary of State for Wales, as respects Wales"): positive evidence of the law's own application, for held laws such as T&CP (Trees) 1999
+- ✅ Application from the SI preamble (makers "as respects England …"); see "Preamble application"
+- ⬜ 24 laws still held (no positive application evidence): e.g. CDM (Amendment) 2000, Adventure Activities 1996, CHIP regs, Nitrate Sensitive Areas (Amendment) regs
 - ⬜ Tier 1 parents: 78 with LAT (re-parse), 25 Making without LAT (parse and keep, e.g. MSA 1995), 89 non-Making without LAT (**scoped LAT of the cited sections, #166**; Jason: data in LAT, not caches)
 - ⬜ Legal rename log `created_at` is naive (no timezone); make it RFC 3339 (fractalaw's first sync consumed no renames because of it; fractalaw has fixed its parser)
 - ⬜ Corpus LAT re-parse for the extent-inheritance fix (all ~1,000 LAT laws); decide with Jason
@@ -418,3 +419,15 @@ Run: re-parse 47 parents holding LAT, then parse 24 Making parents without LAT, 
 - **live changes vs snapshot (13):** falsely Revoked Acts corrected by their own new LAT (Enterprise Act 2002, Local Government Act 2000, Localism Act 2011, Transport Act 2000, Transport and Works Act 1992, CJPOA 1994, ERRA 2013, Deregulation and Contracting Out Act 1994, Regulatory Reform (Scotland) Act 2014 → Part revoked; Local Government etc. (Scotland) Act 1994 In force → Part revoked). Merchant Shipping (Oil Pollution) Act 1971 → Revoked (repealed by MSA 1995). T&CP (Scotland) Act 1972 → Revoked (title marker). T&CP (Trees) 1999 → held Revoked.
 - **Held (needs_application):** 0: 1, 1a: 7, 1b: 9, 1c: 7, 1d: 3, 1e: 2.
 - **archive61:** only the 3 PPC orders are not Revoked; they were already restored by fractalaw.
+
+## Preamble application (2026-09-29)
+
+`EnactedBy.PreambleApplication` (pure) reads the maker clause only (before "in exercise of" / "powers conferred"). A nation must directly follow "as respects" or "in relation to", so an ECA designation "in relation to the regulation and control of …" doesn't count, and makers acting jointly aren't read as application. The result is stored as `enabling_provisions["application"]` by the enacted_by stage.
+
+`law_application` precedence: LAT application clause, then the preamble, then fractalaw's text/title application. `mix live.application --parse` reads held SIs' preambles first, and LAT-parses only laws whose LAT hasn't been read.
+
+Of the 29 held in batch 0 and Tier 1, **6 were resolved by the preamble**:
+- **T&CP (Trees) 1999** (makers as respects E and W; revoked in E) → Revoked in E; in force in W;
+- Sludge (Use in Agriculture) (Amendment) 1990, Radioactive Substances (Hospitals) Exemption Orders 1990 and 1995, Waste Management (Misc) 1997 (makers as respects E, W and S; revoked in S) → Revoked in S; in force in E+W.
+
+24 remain held with no positive evidence of their application: preambles naming just "The Secretary of State", ECA-designated Ministers, or makers acting jointly.

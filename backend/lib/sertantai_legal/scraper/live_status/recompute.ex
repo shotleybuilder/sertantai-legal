@@ -69,7 +69,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
         SELECT name, title_en, type_code, geo_extent, live, live_description, document_status,
                "🔻_rescinded_by_stats_per_law", coalesce(is_making, false),
                application_clause, application_regions, application_source,
-               geo_extent_source, coalesce(enacted_by, '{}')
+               geo_extent_source, coalesce(enacted_by, '{}'), enabling_provisions
         FROM legal_register WHERE country = 'uk' #{filter} ORDER BY name
         """,
         params,
@@ -77,7 +77,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
       )
 
     laws =
-      Enum.map(rows, fn [n, t, ty, e, l, d, ds, st, m, ac, ar, as, es, eb] ->
+      Enum.map(rows, fn [n, t, ty, e, l, d, ds, st, m, ac, ar, as, es, eb, ep] ->
         %{
           name: n,
           title: t,
@@ -88,7 +88,7 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
           doc_status: ds,
           stats: st,
           is_making: m,
-          application: application(ac, ar, as),
+          application: law_application(ac, ar, as, ep),
           clause_read: ac != nil,
           text_repealed: (ac || %{})["text_repealed"] == true,
           extent_source: es,
@@ -223,22 +223,30 @@ defmodule SertantaiLegal.Scraper.LiveStatus.Recompute do
     end
   end
 
-  defp application(clause, fractalaw, source), do: law_application(clause, fractalaw, source)
-
   @doc """
   A law's application regions (E/W/S/NI) for `LiveStatus`: its own
-  `application_clause` (legal), else fractalaw's `application_regions` when
-  they rest on text or title (not an extent fallback); else nil.
+  `application_clause` (legal, from LAT); else the makers' application in its
+  preamble (`enabling_provisions["application"]`, EnactedBy.PreambleApplication);
+  else fractalaw's `application_regions` when they rest on text or title (not
+  an extent fallback); else nil.
   """
-  @spec law_application(map() | nil, [String.t()] | nil, String.t() | nil) ::
+  @spec law_application(map() | nil, [String.t()] | nil, String.t() | nil, map() | nil) ::
           [String.t()] | nil
-  def law_application(%{"regions" => [_ | _] = regions}, _fractalaw, _source), do: regions
+  def law_application(clause, fractalaw, source, enacting \\ nil)
 
-  def law_application(_clause, [_ | _] = fractalaw, source)
+  def law_application(%{"regions" => [_ | _] = regions}, _fractalaw, _source, _enacting),
+    do: regions
+
+  def law_application(_clause, _fractalaw, _source, %{
+        "application" => %{"regions" => [_ | _] = r}
+      }),
+      do: r
+
+  def law_application(_clause, [_ | _] = fractalaw, source, _enacting)
       when source in ["text_clause", "title"],
       do: fractalaw |> Enum.join("+") |> String.replace("_", " ") |> nations()
 
-  def law_application(_clause, _fractalaw, _source), do: nil
+  def law_application(_clause, _fractalaw, _source, _enacting), do: nil
 
   defp nations(joined) do
     up = String.upcase(joined)

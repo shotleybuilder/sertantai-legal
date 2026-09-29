@@ -591,12 +591,18 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     app =
       case name &&
              Repo.query!(
-               "SELECT application_clause, application_regions, application_source FROM legal_register WHERE country = 'uk' AND name = $1",
+               "SELECT application_clause, application_regions, application_source, enabling_provisions FROM legal_register WHERE country = 'uk' AND name = $1",
                [name]
              ) do
-        %{rows: [[clause, regions, source]]} ->
+        %{rows: [[clause, regions, source, enacting]]} ->
           %{
-            law_application: LiveStatus.Recompute.law_application(clause, regions, source),
+            law_application:
+              LiveStatus.Recompute.law_application(
+                clause,
+                regions,
+                source,
+                Map.get(law, :enabling_provisions) || enacting
+              ),
             law_clause_read: clause != nil,
             law_text_repealed: (clause || %{})["text_repealed"] == true
           }
@@ -986,15 +992,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         IO.puts("    ✓ Enacted by: #{count} parent law(s)")
 
         provisions = EnactedBy.EnablingProvisions.parse(text, urls)
+        preamble = EnactedBy.PreambleApplication.parse(text)
 
         %{
           status: :ok,
           data: %{
             enacted_by: enacted_by,
-            enabling_provisions:
-              if(provisions != [],
-                do: %{"provisions" => Enum.map(provisions, &stringify_provision/1)}
-              ),
+            enabling_provisions: enacting_record(provisions, preamble),
             enacting_text: String.slice(data.enacting_text, 0, 500),
             introductory_text: String.slice(data.introductory_text, 0, 500)
           },
@@ -1005,6 +1009,18 @@ defmodule SertantaiLegal.Scraper.StagedParser do
         IO.puts("    ✗ Enacted by failed: #{reason}")
         %{status: :error, data: nil, error: reason}
     end
+  end
+
+  # Enacting-text facts: enabling provisions and the makers' application
+  defp enacting_record([], nil), do: nil
+
+  defp enacting_record(provisions, preamble) do
+    %{"provisions" => Enum.map(provisions, &stringify_provision/1)}
+    |> then(fn r ->
+      if preamble,
+        do: Map.put(r, "application", %{"regions" => preamble, "source" => "preamble"}),
+        else: r
+    end)
   end
 
   defp stringify_provision(p),

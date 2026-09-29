@@ -8,7 +8,9 @@ defmodule Mix.Tasks.Live.Application do
       mix live.application --batch 0 --parse    # LAT-parse them, then discard not-Making LAT
       mix live.application --names A,B --parse  # re-read named laws (e.g. after a rule change)
 
-  With `--parse`, each law goes through the normal LAT pipeline
+  With `--parse`, each SI's preamble is read first (the makers "as respects
+  England …", `EnactedBy.PreambleApplication`); laws it does not settle go
+  through the normal LAT pipeline
   (`LatReparse`, snapshot `lat_reparse_live_app_<batch>`): the LAT persist
   refreshes extent and `application_clause` and re-decides live status
   (`ExtentBackfill.refresh/1`). LAT parsed only for this — the law held none
@@ -23,6 +25,7 @@ defmodule Mix.Tasks.Live.Application do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.EnactedBy
   alias SertantaiLegal.Scraper.LatArchive
   alias SertantaiLegal.Scraper.LatReparse
   alias SertantaiLegal.Scraper.LiveStatus.EffectsBackfill
@@ -82,6 +85,62 @@ defmodule Mix.Tasks.Live.Application do
   end
 
   defp parse(names, label) do
+    # The preamble first (a cheap introduction fetch): the makers' "as
+    # respects England …" settles some laws without a LAT parse.
+    preamble(names)
+
+    held =
+      [names: names]
+      |> Recompute.plan()
+      |> Enum.filter(&(&1.action == :needs_application))
+      |> Enum.map(& &1.name)
+
+    # A law whose LAT was already read (application_clause set) has nothing
+    # more to give; only unread laws are parsed.
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT name FROM legal_register WHERE country = 'uk' AND name = ANY($1) AND application_clause IS NULL",
+        [held]
+      )
+
+    names = List.flatten(rows)
+
+    Mix.shell().info(
+      "Still held: #{length(held)}; LAT not yet read: #{length(names)} (the rest need other evidence)"
+    )
+
+    if names != [], do: lat_parse(names, label)
+  end
+
+  @acts ~w(ukpga asp anaw asc nia apni mwa)
+
+  defp preamble(names) do
+    for name <- names,
+        ["UK", type, year | number] = String.split(name, "_"),
+        type not in @acts,
+        {:ok, %{text: text}} <-
+          [
+            EnactedBy.fetch_enacting_data(
+              EnactedBy.introduction_path(type, year, Enum.join(number, "_"))
+            )
+          ],
+        regions = EnactedBy.PreambleApplication.parse(text),
+        regions != nil do
+      Repo.query!(
+        """
+        UPDATE legal_register
+        SET enabling_provisions = coalesce(enabling_provisions, '{}'::jsonb) || jsonb_build_object('application', $2::jsonb)
+        WHERE country = 'uk' AND name = $1
+        """,
+        [name, %{"regions" => regions, "source" => "preamble"}]
+      )
+
+      Recompute.refresh(name)
+      Mix.shell().info("  preamble #{name}: applies in #{Enum.join(regions, "+")}")
+    end
+  end
+
+  defp lat_parse(names, label) do
     before = lat_state(names)
     tag = "live_app_" <> String.replace(label, ".", "_")
 

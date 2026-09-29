@@ -128,6 +128,20 @@ defmodule SertantaiLegal.Scraper.LiveStatus.RecomputeTest do
              outcome(plan, ctx.good)
   end
 
+  test "law_application: LAT clause, then the preamble's makers, then fractalaw's text/title" do
+    preamble = %{"application" => %{"regions" => ["E", "W"], "source" => "preamble"}}
+
+    assert Recompute.law_application(%{"regions" => ["E"]}, nil, nil, preamble) == ["E"]
+
+    assert Recompute.law_application(%{"regions" => nil}, ["wales"], "title", preamble) == [
+             "E",
+             "W"
+           ]
+
+    assert Recompute.law_application(nil, ["wales"], "title", nil) == ["W"]
+    assert Recompute.law_application(nil, ["wales"], "extent_fallback", nil) == nil
+  end
+
   test "a true conflict: the rules disagree with each other and with the current value" do
     # old rule: Revoked (blank-target repeal); new rule: Part (feed shows no whole revocation)
     name =
