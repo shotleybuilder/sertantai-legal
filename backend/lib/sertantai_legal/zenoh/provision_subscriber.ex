@@ -326,11 +326,11 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   #   Liberty    + governed holder   → Right
   #   Liberty    + government holder → Power
   #
-  # Holders in both roles give both types (never cross-assigned). Only when
-  # no actor carries a position (older payloads) does the presence of roles
-  # decide, the governed mapping taking priority (EPA 1990 s.20(7) — an
-  # enforcing authority's duty to the public — was a Duty under that rule;
-  # it is a Responsibility).
+  # Holders in both roles give both types (never cross-assigned). With no
+  # active actor the holder is unknown: the raw Obligation/Liberty is kept,
+  # as for a provision with no actors — nothing is guessed from which roles
+  # are present. See fractalaw docs/architecture/DRRP-CLASSIFICATION.md
+  # (fractalatai #68), layer 4.
   @doc false
   def map_drrp_types(%{drrp_types: drrp_types, actors: actors} = taxa)
       when is_list(drrp_types) and is_list(actors) do
@@ -347,36 +347,13 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
   def map_drrp_types(taxa), do: taxa
 
-  # Roles of the holders (position "active"); with no active actor, the
-  # legacy presence rule (governed if any governed actor, else government).
-  defp holder_roles(actors) do
-    case active_roles(actors, fn _ -> true end) do
-      [] -> presence_roles(actors)
-      roles -> roles
-    end
-  end
-
-  # No active actor (no positions, or none marked active): the presence rule.
-  defp presence_roles(actors) do
-    cond do
-      has_role?(actors, "governed") -> ["governed"]
-      has_role?(actors, "government") -> ["government"]
-      true -> []
-    end
-  end
-
   # A provision-level Obligation/Liberty expands by the roles of its holders:
-  # the active actors whose own `drrp` is that type (fractalatai #67); else,
-  # for older payloads without per-actor `drrp`, all active actors; else the
-  # presence rule. No holder found: left unmapped (the caller keeps the row).
+  # the active actors whose own `drrp` is that type (fractalatai #67); else
+  # (no per-actor `drrp`, or none matching) all active actors. No active
+  # actor: holder unknown, left unmapped (the caller keeps the raw row).
   defp expand(type, actors) when type in ["Obligation", "Liberty"] do
-    roles =
-      if Enum.any?(actors, &actor_drrp(&1)) do
-        per_actor = active_roles(actors, &(actor_drrp(&1) == type))
-        if per_actor == [], do: holder_roles(actors), else: per_actor
-      else
-        holder_roles(actors)
-      end
+    per_actor = active_roles(actors, &(actor_drrp(&1) == type))
+    roles = if per_actor == [], do: active_roles(actors, fn _ -> true end), else: per_actor
 
     if roles == [], do: [type], else: drrp_for(type, roles)
   end
@@ -411,14 +388,6 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   defp role(%{"role" => r}), do: r
   defp role(%{role: r}), do: r
   defp role(_), do: nil
-
-  defp has_role?(actors, role) do
-    Enum.any?(actors, fn
-      %{"role" => ^role} -> true
-      %{role: ^role} -> true
-      _ -> false
-    end)
-  end
 
   # Stamp each actor map with "role" => "governed" | "government".
   # Handles both string-keyed maps (from JSON decode) and atom-keyed maps.

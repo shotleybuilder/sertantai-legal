@@ -67,7 +67,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberBatchTest do
         %{
           "section_id" => "#{name}:reg.1",
           "drrp_types" => ["Obligation"],
-          "actors" => Jason.encode!([%{"label" => "Org: Employer"}]),
+          "actors" => Jason.encode!([%{"label" => "Org: Employer", "position" => "active"}]),
           "duty_family" => "Risk assessment",
           "purposes" => ["Process"],
           "taxa_confidence" => 0.9,
@@ -87,7 +87,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberBatchTest do
       assert a1.taxa_confidence == 0.9
       assert a1.ancestor_distance == 0
       assert a1.significance_overall == "HIGH"
-      assert [%{"label" => "Org: Employer", "role" => "governed"}] = a1.actors
+
+      assert [%{"label" => "Org: Employer", "role" => "governed", "position" => "active"}] =
+               a1.actors
+
       assert a1.taxa_enriched_at
 
       a2 = article("#{name}:reg.2")

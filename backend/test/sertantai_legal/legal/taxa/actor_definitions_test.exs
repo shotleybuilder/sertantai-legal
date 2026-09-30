@@ -25,6 +25,11 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitionsTest do
       assert ActorDefinitions.actor_role("Crown") == "government"
     end
 
+    test "Spc: Notifying Authority is government; other Spc: labels are governed" do
+      assert ActorDefinitions.actor_role("Spc: Notifying Authority") == "government"
+      assert ActorDefinitions.actor_role("Spc: Responsible Person") == "governed"
+    end
+
     test "HM Forces labels are government" do
       assert ActorDefinitions.actor_role("HM Forces") == "government"
       assert ActorDefinitions.actor_role("HM Forces: Navy") == "government"

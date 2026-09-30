@@ -457,7 +457,7 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
   # Government actor labels derived from @government_patterns_raw.
   # All government labels either start with these prefixes or are exact matches.
   @government_prefixes ["Gvt:", "EU:", "HM Forces"]
-  @government_exact MapSet.new(["Crown"])
+  @government_exact MapSet.new(["Crown", "Spc: Notifying Authority"])
 
   @doc """
   Classifies an actor label as `"government"` or `"governed"`.
@@ -467,7 +467,9 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
   `@government_patterns_raw`, everything else is governed.
 
   ## Government actors
-  Labels starting with `Gvt:`, `EU:`, `HM Forces`, or exactly `Crown`.
+  Labels starting with `Gvt:`, `EU:`, `HM Forces`, or exactly `Crown` or
+  `Spc: Notifying Authority` (fractalaw's actor dictionary `type: government`;
+  DRRP-CLASSIFICATION layer 3, fractalatai #68).
 
   ## Governed actors
   Everything else: `Ind:*`, `Org:*`, `SC:*`, `Spc:*`, `Svc:*`, `Public*`,

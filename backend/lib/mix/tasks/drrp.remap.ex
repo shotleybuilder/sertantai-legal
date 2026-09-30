@@ -5,16 +5,23 @@ defmodule Mix.Tasks.Drrp.Remap do
   from "any governed actor present → Duty/Right" to the holder's role
   (2026-09-29; EPA 1990 s.20(7), legal #141 / fractalatai #67).
 
+  Follows fractalaw docs/architecture/DRRP-CLASSIFICATION.md (fractalatai
+  #68): a row with no active actor has an unknown holder and returns to raw
+  Obligation/Liberty; each actor's `role` is re-stamped from its label
+  (`ActorDefinitions.actor_role/1`) before mapping, and written back when it
+  changed.
+
   Stored Duty/Responsibility are an Obligation, Right/Power a Liberty (rows
   stored as raw Obligation/Liberty are included); each row is re-mapped
   from its stored actors (per-actor `drrp` when present).
 
       mix drrp.remap            # dry run: transitions and counts
-      mix drrp.remap --apply    # snapshot (id, drrp_types) to drrp_remap_snapshot_<stamp>, then write
+      mix drrp.remap --apply    # snapshot (id, drrp_types, actors) to drrp_remap_snapshot_<stamp>, then write
   """
 
   use Mix.Task
 
+  alias SertantaiLegal.Legal.Taxa.ActorDefinitions
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Zenoh.ProvisionSubscriber
 
@@ -45,9 +52,13 @@ defmodule Mix.Tasks.Drrp.Remap do
 
     changes =
       for [sid, law, drrp, actors] <- rows,
-          new = remap(drrp, Enum.map(actors, &decode/1)),
-          new != drrp,
-          do: {sid, law, drrp, new}
+          actors = Enum.map(actors, &decode/1),
+          restamped = Enum.map(actors, &restamp/1),
+          new = remap(drrp, restamped),
+          new != drrp or restamped != actors,
+          do: {sid, law, drrp, new, if(restamped != actors, do: restamped)}
+
+    Mix.shell().info("Actor roles re-stamped: #{Enum.count(changes, &elem(&1, 4))} rows")
 
     Mix.shell().info(
       "Rows checked: #{length(rows)}; to change: #{length(changes)} in #{changes |> Enum.map(&elem(&1, 1)) |> Enum.uniq() |> length()} laws"
@@ -55,7 +66,8 @@ defmodule Mix.Tasks.Drrp.Remap do
 
     for {{from, to}, n} <-
           changes
-          |> Enum.frequencies_by(fn {_, _, f, t} -> {Enum.join(f, ","), Enum.join(t, ",")} end)
+          |> Enum.reject(fn {_, _, f, t, _} -> f == t end)
+          |> Enum.frequencies_by(fn {_, _, f, t, _} -> {Enum.join(f, ","), Enum.join(t, ",")} end)
           |> Enum.sort_by(&(-elem(&1, 1))),
         do: Mix.shell().info("  #{from} → #{to}: #{n}")
 
@@ -68,8 +80,13 @@ defmodule Mix.Tasks.Drrp.Remap do
     %{drrp_types: new} =
       ProvisionSubscriber.map_drrp_types(%{drrp_types: hohfeld, actors: actors})
 
-    if Enum.any?(new, &(&1 in ["Obligation", "Liberty"])), do: drrp, else: Enum.uniq(new)
+    Enum.uniq(new)
   end
+
+  defp restamp(%{"label" => label} = actor) when is_binary(label),
+    do: Map.put(actor, "role", ActorDefinitions.actor_role(label))
+
+  defp restamp(actor), do: actor
 
   defp decode(a) when is_binary(a), do: Jason.decode!(a)
   defp decode(a), do: a
@@ -80,17 +97,21 @@ defmodule Mix.Tasks.Drrp.Remap do
     Repo.transaction(
       fn ->
         Repo.query!(
-          "CREATE TABLE #{table} AS SELECT section_id, law_name, drrp_types FROM legal_articles WHERE section_id = ANY($1)",
+          "CREATE TABLE #{table} AS SELECT section_id, law_name, drrp_types, actors FROM legal_articles WHERE section_id = ANY($1)",
           [Enum.map(changes, &elem(&1, 0))],
           timeout: :infinity
         )
 
-        for {sid, _law, _from, to} <- changes,
+        for {sid, _law, _from, to, actors} <- changes do
+          Repo.query!("UPDATE legal_articles SET drrp_types = $2 WHERE section_id = $1", [sid, to])
+
+          if actors,
             do:
-              Repo.query!("UPDATE legal_articles SET drrp_types = $2 WHERE section_id = $1", [
+              Repo.query!("UPDATE legal_articles SET actors = $2 WHERE section_id = $1", [
                 sid,
-                to
+                actors
               ])
+        end
       end,
       timeout: :infinity
     )

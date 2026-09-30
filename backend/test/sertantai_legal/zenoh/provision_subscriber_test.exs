@@ -222,7 +222,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Responsibility", "Right"]
     end
 
-    test "no active actor at all: the presence rule, not an unmapped Obligation" do
+    test "no active actor: holder unknown, the raw Obligation is kept (DRRP-CLASSIFICATION layer 4)" do
       taxa = %{
         drrp_types: ["Obligation"],
         actors: [
@@ -235,7 +235,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
         ]
       }
 
-      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Duty"]
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Obligation"]
     end
 
     test "actors typed none, or not active, type nothing" do
@@ -324,10 +324,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
 
   describe "map_drrp_types/1 (#134)" do
     # Obligation mappings
-    test "maps Obligation → Duty when provision has governed actor" do
+    test "maps Obligation → Duty held by an active governed actor" do
       taxa = %{
         drrp_types: ["Obligation"],
-        actors: [%{"label" => "Org: Employer", "role" => "governed"}]
+        actors: [%{"label" => "Org: Employer", "role" => "governed", "position" => "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
@@ -335,10 +335,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert result.drrp_types == ["Duty"]
     end
 
-    test "maps Obligation → Responsibility when provision has only government actors" do
+    test "maps Obligation → Responsibility held by an active government actor" do
       taxa = %{
         drrp_types: ["Obligation"],
-        actors: [%{"label" => "Gvt: Minister", "role" => "government"}]
+        actors: [%{"label" => "Gvt: Minister", "role" => "government", "position" => "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
@@ -347,10 +347,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
     end
 
     # Liberty mappings
-    test "maps Liberty → Right when provision has governed actor" do
+    test "maps Liberty → Right held by an active governed actor" do
       taxa = %{
         drrp_types: ["Liberty"],
-        actors: [%{"label" => "Ind: Person", "role" => "governed"}]
+        actors: [%{"label" => "Ind: Person", "role" => "governed", "position" => "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
@@ -358,10 +358,10 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert result.drrp_types == ["Right"]
     end
 
-    test "maps Liberty → Power when provision has only government actors" do
+    test "maps Liberty → Power held by an active government actor" do
       taxa = %{
         drrp_types: ["Liberty"],
-        actors: [%{"label" => "Gvt: Minister", "role" => "government"}]
+        actors: [%{"label" => "Gvt: Minister", "role" => "government", "position" => "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
@@ -369,8 +369,8 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert result.drrp_types == ["Power"]
     end
 
-    # Mixed actor priority: governed wins
-    test "governed takes priority over government (Obligation → Duty)" do
+    # No positions (older payloads): the holder is unknown, whichever roles are present
+    test "no positions, governed and government present: Obligation stays raw" do
       taxa = %{
         drrp_types: ["Obligation"],
         actors: [
@@ -381,28 +381,25 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
 
-      assert result.drrp_types == ["Duty"]
+      assert result.drrp_types == ["Obligation"]
     end
 
-    test "governed takes priority over government (Liberty → Right)" do
+    test "no positions, governed present: Liberty stays raw" do
       taxa = %{
         drrp_types: ["Liberty"],
-        actors: [
-          %{"label" => "Gvt: Agency: Health and Safety Executive", "role" => "government"},
-          %{"label" => "Ind: Person", "role" => "governed"}
-        ]
+        actors: [%{"label" => "Ind: Person", "role" => "governed"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
 
-      assert result.drrp_types == ["Right"]
+      assert result.drrp_types == ["Liberty"]
     end
 
     # Mixed drrp_types
     test "maps both Obligation and Liberty in same provision" do
       taxa = %{
         drrp_types: ["Obligation", "Liberty"],
-        actors: [%{"label" => "Ind: Person", "role" => "governed"}]
+        actors: [%{"label" => "Ind: Person", "role" => "governed", "position" => "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
@@ -413,7 +410,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
     test "maps both with government-only actors" do
       taxa = %{
         drrp_types: ["Obligation", "Liberty"],
-        actors: [%{"label" => "Gvt: Minister", "role" => "government"}]
+        actors: [%{"label" => "Gvt: Minister", "role" => "government", "position" => "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)
@@ -452,7 +449,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
     test "works with atom-keyed actor maps" do
       taxa = %{
         drrp_types: ["Obligation"],
-        actors: [%{label: "Org: Employer", role: "governed"}]
+        actors: [%{label: "Org: Employer", role: "governed", position: "active"}]
       }
 
       result = ProvisionSubscriber.map_drrp_types(taxa)

@@ -354,7 +354,8 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
   Converts duty_type to DRRP vocabulary and, when the payload itself carries
   DRRP data, adds `:making_enrichment_verdict` ("making", "empowering" or
   "no_obligations"). Payloads without DRRP data (fitness, tree or significance
-  only) get no verdict, so they can never change is_making. Never sets
+  only), or with only raw Obligation/Liberty (holder unknown), get no verdict,
+  so they can never change is_making. Never sets
   `:is_making` or `:function` — `Legal.Making` resolves is_making.
   """
   @spec classify_enrichment(map(), map()) :: map()
@@ -362,15 +363,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     carries_drrp? = Enum.any?(@drrp_keys, &Map.has_key?(taxa, &1))
     taxa = convert_duty_type(taxa, record)
 
-    if carries_drrp? do
-      Map.put(
-        taxa,
-        :making_enrichment_verdict,
-        MakingResolver.enrichment_verdict(drrp_types(taxa))
-      )
-    else
-      taxa
-    end
+    verdict = if carries_drrp?, do: MakingResolver.enrichment_verdict(drrp_types(taxa))
+
+    if verdict, do: Map.put(taxa, :making_enrichment_verdict, verdict), else: taxa
   end
 
   defp drrp_types(%{duty_type: %{values: values}}) when is_list(values), do: values

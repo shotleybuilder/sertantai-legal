@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
   |----------------|-------------------------------------------------|-----------------------------------------------|
   | `:review`      | `making_review` (human)                         | making → true, not_making → false             |
   | `:enrichment`  | fractalaw DRRP enrichment verdict               | making → true, empowering / no_obligations → false |
-  | `:legacy_drrp` | `duty_type` with no enrichment provenance       | Duty/Responsibility/Obligation → true, else none |
+  | `:legacy_drrp` | `duty_type` with no enrichment provenance       | Duty/Responsibility → true, else none |
   | `:triage`      | fractalaw triage classification                 | making → true, not_making → false, uncertain → none |
   | `:legacy_is_making` | `is_making` stored before the resolver (no `is_making_source`) — curated legacy value | its value |
   | `:detector`    | MakingDetector classification                   | as triage                                     |
@@ -19,6 +19,11 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
 
   Legacy DRRP never downgrades on its own: Rights/Powers-only legacy data
   gives no verdict. Unknown verdict strings are ignored, not guessed.
+
+  A raw `Obligation`/`Liberty` (pre-DRRP data, or fractalaw's "holder
+  unknown") is not DRRP and is never Making evidence on its own: Making needs
+  a Duty or Responsibility (fractalaw docs/architecture/DRRP-CLASSIFICATION.md,
+  layer 5; fractalatai #68).
 
   `:legacy_is_making` sits above the detector so a first-stage guess can't
   overturn a curated pre-resolver value (e.g. provenance stamped on legacy
@@ -73,7 +78,8 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
           }
   end
 
-  @making_duty_types ["Duty", "Responsibility", "Obligation"]
+  @making_duty_types ["Duty", "Responsibility"]
+  @empowering_duty_types ["Right", "Power"]
   @tiers [:review, :enrichment, :legacy_drrp, :triage, :legacy_is_making, :detector]
 
   @doc """
@@ -100,15 +106,19 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolver do
   @doc """
   Enrichment verdict from the DRRP types fractalaw found for a law.
 
-  Duty/Responsibility/Obligation → "making"; any other DRRP (Rights, Powers)
-  → "empowering"; none → "no_obligations".
+  Duty/Responsibility → "making"; Rights/Powers → "empowering"; none →
+  "no_obligations". A raw Obligation without a Duty/Responsibility, or only
+  raw Liberty, → `nil`, no verdict: the holder is unknown, and the Obligation
+  may yet be a Duty.
   """
-  @spec enrichment_verdict([String.t()]) :: String.t()
+  @spec enrichment_verdict([String.t()]) :: String.t() | nil
   def enrichment_verdict(duty_types) when is_list(duty_types) do
     cond do
       Enum.any?(duty_types, &(&1 in @making_duty_types)) -> "making"
-      duty_types != [] -> "empowering"
-      true -> "no_obligations"
+      "Obligation" in duty_types -> nil
+      Enum.any?(duty_types, &(&1 in @empowering_duty_types)) -> "empowering"
+      duty_types == [] -> "no_obligations"
+      true -> nil
     end
   end
 

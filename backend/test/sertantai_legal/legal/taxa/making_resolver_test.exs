@@ -67,9 +67,11 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolverTest do
       assert %Decision{is_making: true, source: :legacy_drrp, dissent: [:triage]} = decision
     end
 
-    test "legacy Obligation counts as Making" do
-      assert %Decision{is_making: true, source: :legacy_drrp} =
-               MakingResolver.resolve(evidence(legacy_duty_types: ["Obligation"]))
+    test "legacy raw Obligation is holder unknown: no verdict, defers to triage (#68)" do
+      assert %Decision{is_making: false, source: :triage} =
+               MakingResolver.resolve(
+                 evidence(legacy_duty_types: ["Obligation"], triage: "not_making")
+               )
     end
 
     test "legacy Rights/Powers only gives no verdict and defers to triage" do
@@ -185,6 +187,12 @@ defmodule SertantaiLegal.Legal.Taxa.MakingResolverTest do
 
     test "no DRRP gives no_obligations" do
       assert MakingResolver.enrichment_verdict([]) == "no_obligations"
+    end
+
+    test "raw Obligation/Liberty only (holder unknown) → no verdict (#68)" do
+      assert MakingResolver.enrichment_verdict(["Obligation", "Liberty"]) == nil
+      assert MakingResolver.enrichment_verdict(["Obligation", "Right"]) == nil
+      assert MakingResolver.enrichment_verdict(["Liberty", "Right"]) == "empowering"
     end
   end
 end

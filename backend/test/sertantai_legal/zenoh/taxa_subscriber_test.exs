@@ -387,14 +387,13 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.making_enrichment_verdict == "making"
     end
 
-    test "duty_type with 'Obligation' → is_making true (new DRRP vocabulary)" do
+    test "duty_type with only raw 'Obligation'/'Liberty' → holder unknown, no verdict (#68)" do
       taxa = %{duty_type: %{values: ["Obligation", "Liberty"]}}
       record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.making_enrichment_verdict == "making",
-             "Obligation should be treated as making — this is the new DRRP vocabulary equivalent of Duty"
+      refute Map.has_key?(result, :making_enrichment_verdict)
     end
 
     test "duty_type with only 'Power' → is_making false" do
@@ -406,13 +405,13 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.making_enrichment_verdict == "empowering"
     end
 
-    test "duty_type with only 'Liberty' → is_making false" do
+    test "duty_type with only raw 'Liberty' → holder unknown, no verdict (#68)" do
       taxa = %{duty_type: %{values: ["Liberty"]}}
       record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      assert result.making_enrichment_verdict == "empowering"
+      refute Map.has_key?(result, :making_enrichment_verdict)
     end
 
     test "duty_type with only 'Right' → is_making false" do
@@ -520,9 +519,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      # Raw Obligation kept as fallback, still classified as Making
+      # Raw Obligation kept as fallback: holder unknown, no verdict (#68)
       assert %{values: ["Obligation"]} = result.duty_type
-      assert result.making_enrichment_verdict == "making"
+      refute Map.has_key?(result, :making_enrichment_verdict)
     end
 
     test "falls back to record's entries when taxa has none (amendment SI scenario)" do
