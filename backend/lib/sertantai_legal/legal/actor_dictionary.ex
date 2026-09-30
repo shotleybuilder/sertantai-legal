@@ -108,12 +108,14 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
   def init(_opts) do
     :ets.new(@table, [:named_table, :public, :set])
     source = load_dictionary()
-    subscribed? = subscribe_to_updates()
+    subscriber = subscribe_to_updates()
 
-    unless source == :zenoh and subscribed?,
+    unless source == :zenoh and subscriber,
       do: Process.send_after(self(), {:connect, 1}, @retry_ms)
 
-    {:ok, %{loaded?: source == :zenoh, subscribed?: subscribed?}}
+    # The subscriber handle must stay referenced: if it is garbage-collected
+    # the subscription is undeclared and samples stop arriving.
+    {:ok, %{loaded?: source == :zenoh, subscriber: subscriber}}
   end
 
   @impl true
@@ -141,7 +143,8 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
   # twice), until both have or the retries run out.
   def handle_info({:connect, attempt}, state) do
     loaded? = state.loaded? or retry_load()
-    subscribed? = state.subscribed? or do_subscribe()
+    subscriber = state.subscriber || do_subscribe()
+    subscribed? = subscriber != nil
 
     cond do
       loaded? and subscribed? ->
@@ -157,7 +160,7 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
         )
     end
 
-    {:noreply, %{state | loaded?: loaded?, subscribed?: subscribed?}}
+    {:noreply, %{state | loaded?: loaded?, subscriber: subscriber}}
   end
 
   def handle_info(msg, state) do
@@ -184,7 +187,7 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
 
   defp subscribe_to_updates do
     if Application.get_env(:sertantai_legal, :test_mode, false),
-      do: true,
+      do: :test_mode,
       else: do_subscribe()
   end
 
@@ -195,27 +198,27 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
         key_expr = "fractalaw/@#{tenant}/dictionary/actors"
 
         case Zenohex.Session.declare_subscriber(session_id, key_expr, self()) do
-          {:ok, _subscriber_id} ->
+          {:ok, subscriber_id} ->
             Logger.info("[ActorDictionary] Subscribed to #{key_expr}")
-            true
+            subscriber_id
 
           {:error, reason} ->
             Logger.warning("[ActorDictionary] Failed to subscribe: #{inspect(reason)}")
-            false
+            nil
         end
 
       {:error, _reason} ->
         Logger.debug("[ActorDictionary] Zenoh not ready, subscription deferred")
-        false
+        nil
     end
   rescue
     e ->
       Logger.warning("[ActorDictionary] Subscribe failed: #{Exception.message(e)}")
-      false
+      nil
   catch
     :exit, _reason ->
       Logger.debug("[ActorDictionary] Zenoh not running, subscription deferred")
-      false
+      nil
   end
 
   # ── Loading ─────────────────────────────────────────────────
