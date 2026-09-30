@@ -27,6 +27,8 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitionsTest do
 
     test "Spc: Notifying Authority is government; other Spc: labels are governed" do
       assert ActorDefinitions.actor_role("Spc: Notifying Authority") == "government"
+      # exercises an enforcing authority's powers (Jason, 2026-09-30)
+      assert ActorDefinitions.actor_role("Spc: Authorised Person") == "government"
       assert ActorDefinitions.actor_role("Spc: Responsible Person") == "governed"
     end
 
