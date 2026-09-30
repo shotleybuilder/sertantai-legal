@@ -387,13 +387,13 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.making_enrichment_verdict == "making"
     end
 
-    test "duty_type with only raw 'Obligation'/'Liberty' → holder unknown, no verdict (#68)" do
+    test "duty_type with only raw 'Obligation'/'Liberty' → holder unknown, verdict cleared (#68)" do
       taxa = %{duty_type: %{values: ["Obligation", "Liberty"]}}
       record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      refute Map.has_key?(result, :making_enrichment_verdict)
+      assert Map.fetch!(result, :making_enrichment_verdict) == nil
     end
 
     test "duty_type with only 'Power' → is_making false" do
@@ -405,13 +405,13 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.making_enrichment_verdict == "empowering"
     end
 
-    test "duty_type with only raw 'Liberty' → holder unknown, no verdict (#68)" do
+    test "duty_type with only raw 'Liberty' → holder unknown, verdict cleared (#68)" do
       taxa = %{duty_type: %{values: ["Liberty"]}}
       record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      refute Map.has_key?(result, :making_enrichment_verdict)
+      assert Map.fetch!(result, :making_enrichment_verdict) == nil
     end
 
     test "duty_type with only 'Right' → is_making false" do
@@ -519,9 +519,9 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.classify_enrichment(record, taxa)
 
-      # Raw Obligation kept as fallback: holder unknown, no verdict (#68)
+      # Raw Obligation kept as fallback: holder unknown, verdict cleared (#68)
       assert %{values: ["Obligation"]} = result.duty_type
-      refute Map.has_key?(result, :making_enrichment_verdict)
+      assert Map.fetch!(result, :making_enrichment_verdict) == nil
     end
 
     test "falls back to record's entries when taxa has none (amendment SI scenario)" do

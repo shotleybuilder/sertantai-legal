@@ -44,6 +44,28 @@ defmodule SertantaiLegal.Legal.MakingTest do
       assert attrs.is_making_decided_at == @now
     end
 
+    test "a holder-unknown republish clears a stale enrichment verdict; a lower tier decides (#68)" do
+      attrs =
+        Making.plan(
+          current(%{
+            is_making: true,
+            is_making_source: "enrichment",
+            making_enrichment_verdict: "making",
+            making_classification: "not_making",
+            making_classification_source: "triage",
+            # already overwritten by the payload's raw law-level duty_type
+            duty_type: %{values: ["Obligation"]}
+          }),
+          %{making_enrichment_verdict: nil},
+          "taxa_subscriber",
+          @now
+        )
+
+      assert attrs.making_enrichment_verdict == nil
+      assert attrs.is_making == false
+      assert attrs.is_making_source == "triage"
+    end
+
     test "a triage estimate cannot overturn enrichment evidence (the 26-law bug)" do
       attrs =
         Making.plan(
