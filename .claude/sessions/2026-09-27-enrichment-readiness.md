@@ -3,13 +3,13 @@ session: "Corpus Enrichment Readiness"
 status: active
 opened: 2026-09-27
 related: ["fractalatai#56", "fractalatai#58", "fractalatai#59", "fractalatai#60", 166, 165]
-bugs:
-  - pattern: "Provision OL→DRRP mapping took any governed actor present as the holder: an Obligation/Liberty held by the government (governed counterparty) became Duty/Right (EPA 1990 s.20(7); legal #141 → fractalatai #67)"
-    category: drrp_mapping
-    module: zenoh/provision_subscriber.ex map_drrp_types/1
-    affected: "7,678 provision rows in 417 laws"
-    fix: "Map by the role of the actor(s) with position active; both roles → both types; remapped by mix drrp.remap (snapshot drrp_remap_snapshot_20260929_1416). Fractalaw #67 will add data for a finer expansion"
-    status: fixed
+enables:
+  - "drrp/2026-09-29-drrp-holder-mapping"
+  - "drrp/2026-09-30-drrp-spec-68"
+  - "drrp/2026-09-30-benchmark-lat-sync"
+  - "drrp/2026-09-30-actor-dictionary"
+  - "drrp/2026-09-30-issue-72-correlatives"
+  - "drrp/2026-09-30-drrp-temporal"
 ---
 
 # Session: Corpus Enrichment Readiness (ACTIVE)
@@ -41,6 +41,7 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 - ⬜ Legal fix: `has_fitness` should derive from `compiled_applicability`, not the stale `fitness_entities` (the funnel `enrich` count is unreliable until then)
 - ⬜ Carried from the LAT sync session: 2 control mappings on repealed EPA 1990 s.40(4), s.74(3) (control 4080cd6c…); migration `down` for 20260926160743 / 20260926192907 not exercised; id quality (`#n` duplicate ids, EU `art.Article N`)
 - ⬜ Jason decisions carried: the 9 revoked laws #58 flipped to Making
+- ⬜ Holder-unknown share: re-check after fractalaw's RunPod pending_slm batch and re-backfill (38% of typed provisions on 2026-09-30; four synced benchmark laws: 1,202 raw OL rows)
 
 ## Dependencies
 
@@ -48,6 +49,16 @@ Fractalaw's current list covers only the 101 re-parsed enriched laws, the 2 PDF 
 - ⬜ Fractalaw unparked (Jason) and its diff-apply's first hub sync
 - ⬜ Fractalaw #56 / #58 / #59 / #60
 - ⬜ Fractalaw provenance capture + `provenance` payload column (after legal raises it; not blocking legal's build)
+
+## Split-out sessions (2026-09-30)
+
+DRRP work that grew inside this session now has its own sessions under `drrp/`:
+- `drrp/2026-09-29-drrp-holder-mapping.md`: provision DRRP by holder, #67 implied Rights (closed)
+- `drrp/2026-09-30-drrp-spec-68.md`: #68 spec, legal alignment, republishes, held laws (closed)
+- `drrp/2026-09-30-benchmark-lat-sync.md`: benchmark LAT gap and resync (closed)
+- `drrp/2026-09-30-actor-dictionary.md`: dictionary sync, Authorised Person reclass (closed)
+- `drrp/2026-09-30-issue-72-correlatives.md`: #72 correlatives, legal side (pending)
+- `drrp/2026-09-30-drrp-temporal.md`: #73 as made / as amended (pending)
 
 ## Data for the strategy (2026-09-27)
 
@@ -165,136 +176,3 @@ Why: fractalaw has several enrichment families and models, but law level in lega
 3. **Tier 1 — key families:** OH&S (all), FIRE (all), ENVIRONMENTAL PROTECTION, WASTE, WATER & WASTEWATER, POLLUTION, AIR QUALITY, CLIMATE CHANGE, NOISE, NUCLEAR & RADIOLOGICAL, PUBLIC: Building Safety / Consumer Safety, transport *safety* families. Making laws without LAT: parse and keep. Not-Making / uncertain laws without evidence: parse → decide → discard.
 4. **Tier 2 — the remaining families**, largest Making gap first, as capacity allows before the enrichment batch.
 5. Large Acts: whole-body parse unless Jason sets a #166 scope. PDF-only laws go to the backlog.
-
-## Provision DRRP by holder (2026-09-29)
-
-Jason confirmed the model: an Obligation on the governed is a Duty, on the government a Responsibility; a Liberty on the governed is a Right, on the government a Power. Legal holds the expansion (`ProvisionSubscriber.map_drrp_types/1`, #134). It had treated "any governed actor present" as the holder, and now maps by the actors with `position: "active"` (5d67753). `mix drrp.remap --apply` corrected 7,678 rows in 417 laws: Duty → Responsibility 3,502, Right → Power 2,550, Duty → Duty + Responsibility 739, Right → Right + Power 355, and others. A re-run finds 0.
-
-Next: fractalaw is expanding fractalatai #67 to publish the data legal needs for a more accurate OL → DRRP expansion (Jason is driving it); legal's mapping will then be tweaked. Whether to model the public's correlative Right is still open (Jason).
-
-## fractalatai #67 publish: implied Rights (2026-09-29)
-
-Fractalaw now puts a per-actor `drrp` (Obligation | Liberty | none) on each provision actor, and infers a Liberty for the Public / Ind: Person where a government actor's active Obligation grants access (inspection, copies, supply). Legal maps per actor (8fba7bc). When no actor is active it falls back to the presence rule (a5c3fa2). Published: 49 laws, 49,717 provisions.
-
-Verified against `implied_rights_*_snapshot_20260929`:
-- is_making is unchanged (0 of 49);
-- UK_ukpga_2003_21 s.108(6) = {Right, Responsibility};
-- **57 implied Rights in 23 laws** (fractalaw expected 60);
-- no over-assignment where active actors carry a per-actor type.
-
-`mix drrp.remap` covers raw OL rows too: 3,917 rows in 50 laws remapped (snapshot `drrp_remap_snapshot_20260929_1521`).
-
-Data gaps raised with fractalaw:
-1. 11,981 provisions carry Obligation/Liberty with **no actors** (2,863 in the 49 laws, 9,118 in 390 others), so no holder can be typed and they stay raw;
-2. 46 provisions whose drrp_types union includes a type no active actor holds. Legal falls back, adding Responsibility or Duty.
-
-## DRRP spec agreed: legal aligned (2026-09-30)
-
-fractalaw's `docs/architecture/DRRP-CLASSIFICATION.md` (fractalatai #68, fractalaw 5df3f8e) is agreed. It took legal's three amendments: holder class from the actor dictionary, the verdict as one input to `Legal.Making`, and no active actor = holder unknown (Jason). It also drops `Rule`.
-
-Legal now follows it (af431c5 + this commit):
-- no active actor → raw Obligation/Liberty (the presence rule is gone);
-- `Spc: Notifying Authority` is government;
-- Making needs Duty/Responsibility, and raw OL gives no enrichment or legacy verdict;
-- legacy `Rule` → Obligation (holder unknown).
-
-`mix drrp.remap --apply`: 16,659 rows in 500 laws, plus 89 laws' `duty_type` Rule → Obligation. Snapshots: `drrp_remap_snapshot_20260930_0900` (+ `_lrt`).
-- About 15,000 rows reverted to raw because no actor is active. 1,471 of them are older payloads with null `actors` (flat lists only).
-- 106 rows re-stamped actor roles (Notifying Authority).
-- A re-run finds 0. `is_making` is unchanged (3,623).
-
-Docs: FUNCTION_VALUES rewritten. Obligation content is derived, not stored in `function`; `is_making` comes from the resolver tiers; there is no LAT pruning (#110); Housekeeping ↔ no_obligations. HOLDER_VALUES and PURPOSE_VALUES link to the spec.
-
-Hub Postgres (fractalaw-pg.service, :5433) was down after the power outage and has been restarted. Its quadlet has no `[Install]`, so it won't start on boot.
-
-Open: #69 (provision_function), #70 (Immunity, needs Jason). fractalaw conformance is still to do: active-only roll-up, and `none` for non-active actors.
-
-## #68 republish verified (2026-09-30)
-
-fractalaw republished 685 laws (the 20 benchmark laws excluded) with the active-only roll-up and the holder-unknown shape. Snapshots were taken first: `drrp68_lrt_snapshot_20260930_1141`, `drrp68_provisions_snapshot_20260930_1141`.
-- All 29 changed verdicts match fractalaw's list (`fractalaw/data/audit/drrp68_changed_verdicts_20260930.tsv`). is_making went from 3,623 to 3,604.
-- 13 holder-unknown laws: verdict cleared, raw Obligation kept.
-  - 4 are held Making by human review.
-  - 8 now rest on the detector. UK_uksi_2004_701 and UK_uksi_2013_755 dropped to not Making.
-  - 1 (UK_uksi_2009_3155) is on the default tier.
-- 250,541 provisions updated; 0 non-active actors carry a drrp; the old null-actor DRRP rows are cleared.
-- Payload gaps raised with fractalaw:
-  1. 5,659 republished rows keep pre-#67 actors because the payload's actors was NULL (43 raw rows show an "active" stale actor). Asked fractalaw to send `[]`. Not remapped.
-  2. 75,139 rows in these laws weren't republished; 557 of them keep old types.
-- For Jason to review: the holder-unknown laws resting on the detector or default tier, and the questionable not-Making verdicts (Hedgerows Regs 1997, NI Explosives HIPS Regs 2009, Waste Management Regs 2006).
-
-## #68 provision republish (never-NULL payload), re-check (2026-09-30)
-
-fractalaw (55d7613) now sends every row of an enriched law with drrp_types/actors never NULL. An unclassified row = null method + [] types + [] actors; legal stores it with taxa_enriched_at NULL (e327ec1). All 705 laws were published, including the 20 benchmark laws.
-- 343,394 rows updated.
-- 0 raw-OL rows with an active actor; 0 non-active drrp.
-- 86,096 unclassified rows, none stamped as enriched. The 557 stale typed rows are cleared.
-- is_making = 3,604; the benchmark laws are 20/20 Making.
-- Leftovers raised with fractalaw:
-  - 9,714 unsent rows in 14 benchmark laws (7,522 in UK_ukpga_1991_56), with 3 real stale types;
-  - 100 actors without a `drrp` key, which legal maps by the active-roles fallback.
-
-## Benchmark LAT gap (2026-09-30)
-
-The 9,714 rows fractalaw didn't send were a gap in fractalaw's LAT, not a scope question. The #62 sync reports on the 20 benchmark laws but never applies to them, so they keep their old LAT. Jason approved syncing four:
-- UK_ukpga_1991_56 (+7,522 rows);
-- UK_ukpga_1981_69;
-- UK_uksi_2014_1643;
-- UK_ukpga_1990_10.
-
-All 11,622 legal rows are republished: 11,045 unclassified awaiting the re-parse, 467 typed. The 40 Wildlife Act rows are held on fractalaw's side for manual matching.
-
-The other 16 benchmark laws stay frozen, each resync needing Jason's approval because it clears gold labels. Until then, 3 stale typed rows and 17 actors without a drrp key remain on legal-only rows in those laws.
-
-07b111c (out rows always sent as unclassified) is clean across all 705 laws. is_making = 3,604. Law-level verdicts for the four synced laws will follow their re-parse.
-
-## Four synced benchmark laws re-parsed (2026-09-30)
-
-- Gold-label protection, approved by Jason: snapshot `benchmark_gold_snapshot_20260930` (3,901 labels in 15 laws).
-  - UK_ukpga_1990_10: 158 labels carried onto 72 provisions (adjudicated) and 83 queued for Jason's review.
-  - UK_uksi_2014_1643: 76 labels archived; 239 legacy-id labels never matched.
-- Legal verified:
-  - all 11,622 rows updated;
-  - all four laws Making by enrichment; is_making = 3,604;
-  - 0 non-active drrp.
-- Holder unknown: 1,202 raw OL rows (891 with no actors, 311 with no active actor, mostly pending_slm). Waiting on the RunPod SLM batch and a re-publish. Corpus-wide, 38% of typed provisions are holder unknown (#60 and stem inheritance are the levers).
-- Next: the same process for the other 16 benchmark laws.
-
-## All 20 benchmark laws synced (2026-09-30)
-
-The other 16 synced: 19 rows text-changed, 46 inserted, 2,070 archived (per-extent copies legal doesn't hold).
-- Gold labels: 191 adjudicated actor rows carried forward; 86 queued in `benchmark_gold_review_20260930` for Jason; 201 archived; 887 legacy-id labels never matched.
-- fractalaw restored the classifier tier on unchanged rows, so those publish as before.
-- Re-score (not comparable with earlier runs): position 54.4% regex / 61.3% classifier; DRRP 88.4% / 87.7%; 1,309 gold actors.
-- Legal verified:
-  - all 27,428 rows updated; the stale rows reclassified;
-  - 0 actors without a drrp key; 0 raw-with-active; 0 non-active drrp; 82 adjudicated provisions;
-  - 20/20 Making by enrichment; is_making = 3,604.
-- All 705 laws are on the #68 payload. Next: the holder-unknown share after the RunPod pending_slm batch.
-
-## Authorised Person reclass, decoder and dictionary fixes (2026-09-30)
-
-- **`Spc: Authorised Person` → government** (Jason). Legal 902e193 + fractalaw e5fac38. fractalaw republished 52 laws; legal's remap re-stamped 21 + 23 rows (the remap now covers untyped rows, 937f76c). No verdict changed.
-- **Decoder bug (74ddba1):** `enforce_drrp_holder_constraint` deleted a holder key whose filtered list was empty. So fractalaw's [] read as "absent" and stale duty/rights/responsibility/power holder lists survived every republish. Fixed, then fractalaw republished law-level data for all 705 laws.
-  - My mid-publish server restart lost 44 laws; they were resent.
-  - After: 0 holder-unknown laws with D/R holders (was 12); 7 class violations, all in Jason's held set.
-- **ActorDictionary:**
-  - it read only `canonical:` (fractalaw sends `label:`/`type:`);
-  - it never retried Zenoh at boot;
-  - it discarded the subscriber handle, and a GC'd Zenohex handle undeclares the subscription.
-  All fixed (0e40670, ba47514, 2979c12). It now reloads live from fractalaw's publishes. A guard test checks that ActorDefinitions agrees with the dictionary `type` for every label.
-- Lesson: legal's Phoenix hosts the Zenoh listener (7447) that fractalaw connects to. Don't restart it during a fractalaw publish.
-- Open for Jason: the 7 held laws. Six are revoked with no LAT (recommend leaving them); UK_uksi_2018_369 is in force with 12 rows (recommend re-rolling it).
-
-## Held laws resolved; DRRP over time proposal (2026-09-30)
-
-- UK_uksi_2018_369: re-parsed by fractalaw → no_obligations (amending instrument); is_making false. is_making = 3,603.
-- Six revoked laws had no LAT. Legal parsed it (`mix lat.reparse --tag held6`, 1,922 rows, QA 0 fails). fractalaw classified 5 (all Making).
-- UK_uksi_2012_3030's current text is dots (revoked). It keeps its legacy Making verdict and is **whitelisted** as the one known holder-class exception.
-- Dotted text in legal: 7,660 rows in 474 laws, but only 98 rows in 6 laws are fully revoked laws. The rest are repealed provisions in living laws, which are correctly excluded, not recovered.
-- `/body/made/data.xml` gives full as-enacted text in the same CLML (tested on 2012_3030).
-- Jason: review fractalaw's DRRP-TEMPORAL-PROPOSAL (as_made vs as_amended views) before building anything. Legal's review was sent:
-  - separate `making_enrichment_verdict` (as_made → is_making) from a new `current_verdict` (as_amended, with a distinct `revoked` value);
-  - legal to add a per-row `status` (in_force/repealed/prospective);
-  - as_made at law level only for now;
-  - made text only for amended laws (800/1,069), in a separate table.
