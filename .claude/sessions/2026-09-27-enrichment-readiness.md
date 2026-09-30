@@ -208,3 +208,17 @@ Docs: FUNCTION_VALUES rewritten. Obligation content is derived, not stored in `f
 Hub Postgres (fractalaw-pg.service, :5433) was down after the power outage and has been restarted. Its quadlet has no `[Install]`, so it won't start on boot.
 
 Open: #69 (provision_function), #70 (Immunity, needs Jason). fractalaw conformance is still to do: active-only roll-up, and `none` for non-active actors.
+
+## #68 republish verified (2026-09-30)
+
+fractalaw republished 685 laws (the 20 benchmark laws excluded) with the active-only roll-up and the holder-unknown shape. Snapshots were taken first: `drrp68_lrt_snapshot_20260930_1141`, `drrp68_provisions_snapshot_20260930_1141`.
+- All 29 changed verdicts match fractalaw's list (`fractalaw/data/audit/drrp68_changed_verdicts_20260930.tsv`). is_making went from 3,623 to 3,604.
+- 13 holder-unknown laws: verdict cleared, raw Obligation kept.
+  - 4 are held Making by human review.
+  - 8 now rest on the detector. UK_uksi_2004_701 and UK_uksi_2013_755 dropped to not Making.
+  - 1 (UK_uksi_2009_3155) is on the default tier.
+- 250,541 provisions updated; 0 non-active actors carry a drrp; the old null-actor DRRP rows are cleared.
+- Payload gaps raised with fractalaw:
+  1. 5,659 republished rows keep pre-#67 actors because the payload's actors was NULL (43 raw rows show an "active" stale actor). Asked fractalaw to send `[]`. Not remapped.
+  2. 75,139 rows in these laws weren't republished; 557 of them keep old types.
+- For Jason to review: the holder-unknown laws resting on the detector or default tier, and the questionable not-Making verdicts (Hedgerows Regs 1997, NI Explosives HIPS Regs 2009, Waste Management Regs 2006).
