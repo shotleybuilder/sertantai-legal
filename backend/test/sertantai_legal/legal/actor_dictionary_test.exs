@@ -9,7 +9,13 @@ defmodule SertantaiLegal.Legal.ActorDictionaryTest do
   describe "canonical_labels/0" do
     test "returns a non-empty list" do
       labels = ActorDictionary.canonical_labels()
-      assert length(labels) > 50
+      assert length(labels) > 100
+    end
+
+    test "snapshot carries fractalaw's newer labels" do
+      labels = ActorDictionary.canonical_labels()
+      assert "Gvt: Devolved Admin: Scottish Ministers" in labels
+      assert "Ind: Person in Control" in labels
     end
 
     test "includes known actors" do
@@ -85,6 +91,50 @@ defmodule SertantaiLegal.Legal.ActorDictionaryTest do
     test "false for governed labels" do
       refute ActorDictionary.government?("Org: Employer")
       refute ActorDictionary.government?("Ind: Employee")
+    end
+
+    test "government by the dictionary type, not the prefix (Crown, HM Forces, Notifying Authority)" do
+      assert ActorDictionary.government?("Crown")
+      assert ActorDictionary.government?("HM Forces")
+      assert ActorDictionary.government?("Spc: Notifying Authority")
+      refute ActorDictionary.government?("Spc: Inspector")
+      assert "Crown" in ActorDictionary.government_labels()
+      refute "Crown" in ActorDictionary.governed_labels()
+    end
+  end
+
+  describe "agreement with ActorDefinitions" do
+    test "legal's role rule matches the dictionary type for every label" do
+      mismatches =
+        for label <- ActorDictionary.canonical_labels(),
+            ActorDictionary.government?(label) !=
+              SertantaiLegal.Legal.Taxa.ActorDefinitions.government_label?(label),
+            do: label
+
+      assert mismatches == [],
+             "fractalaw's dictionary and ActorDefinitions disagree on: #{inspect(mismatches)}"
+    end
+  end
+
+  describe "normalize_entries/1" do
+    test "reads fractalaw's format (label, type) and the older one (canonical)" do
+      entries = [
+        %{
+          "label" => "Crown",
+          "type" => "government",
+          "category" => "other",
+          "triggers" => ["crown"]
+        },
+        %{"label" => "Ind: Claimant", "type" => "governed", "category" => "Ind"},
+        %{"canonical" => "Gvt: Minister", "category" => "Gvt", "triggers" => ["minister"]},
+        %{"category" => "Org"}
+      ]
+
+      assert ActorDictionary.normalize_entries(entries) == [
+               {"Crown", "other", ["crown"], true},
+               {"Ind: Claimant", "Ind", [], false},
+               {"Gvt: Minister", "Gvt", ["minister"], true}
+             ]
     end
   end
 

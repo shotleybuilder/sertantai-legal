@@ -500,9 +500,9 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
   @doc """
   Returns true if the label is a government actor.
 
-  Checks against the hardcoded taxonomy (prefix and exact match).
-  Unlike `ActorDictionary.government?/1`, this does not depend on
-  runtime ETS state and correctly classifies `Crown` and `HM Forces`.
+  Checks against the hardcoded taxonomy (prefix and exact match), so it
+  does not depend on runtime ETS state. Must agree with fractalaw's actor
+  dictionary `type` (`ActorDictionary.government?/1`).
   """
   @spec government_label?(String.t()) :: boolean()
   def government_label?(label) when is_binary(label) do
