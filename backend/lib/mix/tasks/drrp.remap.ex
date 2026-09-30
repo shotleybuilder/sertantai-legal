@@ -9,7 +9,8 @@ defmodule Mix.Tasks.Drrp.Remap do
   #68): a row with no active actor has an unknown holder and returns to raw
   Obligation/Liberty; each actor's `role` is re-stamped from its label
   (`ActorDefinitions.actor_role/1`) before mapping, and written back when it
-  changed.
+  changed. Legacy `Rule` (dropped by #68) becomes Obligation, holder unknown,
+  in provisions and in the law-level `duty_type` of `legal_register`.
 
   Stored Duty/Responsibility are an Obligation, Right/Power a Liberty (rows
   stored as raw Obligation/Liberty are included); each row is re-mapped
@@ -31,7 +32,8 @@ defmodule Mix.Tasks.Drrp.Remap do
     "Duty" => "Obligation",
     "Responsibility" => "Obligation",
     "Right" => "Liberty",
-    "Power" => "Liberty"
+    "Power" => "Liberty",
+    "Rule" => "Obligation"
   }
 
   @impl Mix.Task
@@ -42,9 +44,8 @@ defmodule Mix.Tasks.Drrp.Remap do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT section_id, law_name, drrp_types, actors FROM legal_articles
-        WHERE drrp_types && ARRAY['Duty','Responsibility','Right','Power','Obligation','Liberty']
-          AND actors IS NOT NULL
+        SELECT section_id, law_name, drrp_types, COALESCE(actors, '{}') FROM legal_articles
+        WHERE drrp_types && ARRAY['Duty','Responsibility','Right','Power','Obligation','Liberty','Rule']
         """,
         [],
         timeout: :infinity
@@ -71,7 +72,22 @@ defmodule Mix.Tasks.Drrp.Remap do
           |> Enum.sort_by(&(-elem(&1, 1))),
         do: Mix.shell().info("  #{from} → #{to}: #{n}")
 
-    if opts[:apply], do: apply!(changes), else: Mix.shell().info("\nDry run: nothing written.")
+    %{rows: laws} =
+      Repo.query!(
+        "SELECT name, duty_type FROM legal_register WHERE duty_type->'values' ? 'Rule'",
+        [],
+        timeout: :infinity
+      )
+
+    law_changes =
+      for [name, %{"values" => values} = dt] <- laws,
+          do: {name, Map.put(dt, "values", ProvisionSubscriber.legacy_rule_to_obligation(values))}
+
+    Mix.shell().info("Laws with legacy Rule in duty_type: #{length(law_changes)}")
+
+    if opts[:apply],
+      do: apply!(changes, law_changes),
+      else: Mix.shell().info("\nDry run: nothing written.")
   end
 
   defp remap(drrp, actors) do
@@ -91,7 +107,7 @@ defmodule Mix.Tasks.Drrp.Remap do
   defp decode(a) when is_binary(a), do: Jason.decode!(a)
   defp decode(a), do: a
 
-  defp apply!(changes) do
+  defp apply!(changes, law_changes) do
     table = "drrp_remap_snapshot_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M")
 
     Repo.transaction(
@@ -101,6 +117,16 @@ defmodule Mix.Tasks.Drrp.Remap do
           [Enum.map(changes, &elem(&1, 0))],
           timeout: :infinity
         )
+
+        Repo.query!(
+          "CREATE TABLE #{table}_lrt AS SELECT name, duty_type FROM legal_register WHERE name = ANY($1)",
+          [Enum.map(law_changes, &elem(&1, 0))],
+          timeout: :infinity
+        )
+
+        for {name, dt} <- law_changes,
+            do:
+              Repo.query!("UPDATE legal_register SET duty_type = $2 WHERE name = $1", [name, dt])
 
         for {sid, _law, _from, to, actors} <- changes do
           Repo.query!("UPDATE legal_articles SET drrp_types = $2 WHERE section_id = $1", [sid, to])
@@ -116,6 +142,8 @@ defmodule Mix.Tasks.Drrp.Remap do
       timeout: :infinity
     )
 
-    Mix.shell().info("\nApplied: #{length(changes)} rows (snapshot #{table})")
+    Mix.shell().info(
+      "\nApplied: #{length(changes)} rows, #{length(law_changes)} laws (snapshots #{table}, #{table}_lrt)"
+    )
   end
 end

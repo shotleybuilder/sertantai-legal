@@ -418,6 +418,18 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberTest do
       assert result.drrp_types == ["Responsibility", "Power"]
     end
 
+    test "legacy Rule is an Obligation with holder unknown (#68)" do
+      assert ProvisionSubscriber.map_drrp_types(%{drrp_types: ["Rule"], actors: []}).drrp_types ==
+               ["Obligation"]
+
+      taxa = %{
+        drrp_types: ["Rule", "Obligation"],
+        actors: [%{"label" => "Org: Employer", "role" => "governed", "position" => "active"}]
+      }
+
+      assert ProvisionSubscriber.map_drrp_types(taxa).drrp_types == ["Duty"]
+    end
+
     # Edge cases
     test "passes through when no drrp_types" do
       taxa = %{actors: [%{"label" => "Ind: Person", "role" => "governed"}]}

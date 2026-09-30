@@ -334,6 +334,9 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   @doc false
   def map_drrp_types(%{drrp_types: drrp_types, actors: actors} = taxa)
       when is_list(drrp_types) and is_list(actors) do
+    drrp_types = legacy_rule_to_obligation(drrp_types)
+    taxa = Map.put(taxa, :drrp_types, drrp_types)
+
     if Enum.any?(drrp_types, &(&1 in ["Obligation", "Liberty"])) do
       mapped = Enum.flat_map(drrp_types, &expand(&1, actors))
 
@@ -346,6 +349,17 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   end
 
   def map_drrp_types(taxa), do: taxa
+
+  @doc """
+  Legacy `Rule` (dropped by fractalaw, DRRP-CLASSIFICATION / fractalatai #68)
+  is an Obligation whose holder is unknown.
+  """
+  @spec legacy_rule_to_obligation([String.t()]) :: [String.t()]
+  def legacy_rule_to_obligation(types) when is_list(types) do
+    if "Rule" in types,
+      do: types |> Enum.map(&if(&1 == "Rule", do: "Obligation", else: &1)) |> Enum.uniq(),
+      else: types
+  end
 
   # A provision-level Obligation/Liberty expands by the roles of its holders:
   # the active actors whose own `drrp` is that type (fractalatai #67); else
