@@ -187,3 +187,24 @@ Verified against `implied_rights_*_snapshot_20260929`:
 Data gaps raised with fractalaw:
 1. 11,981 provisions carry Obligation/Liberty with **no actors** (2,863 in the 49 laws, 9,118 in 390 others), so no holder can be typed and they stay raw;
 2. 46 provisions whose drrp_types union includes a type no active actor holds. Legal falls back, adding Responsibility or Duty.
+
+## DRRP spec agreed: legal aligned (2026-09-30)
+
+fractalaw's `docs/architecture/DRRP-CLASSIFICATION.md` (fractalatai #68, fractalaw 5df3f8e) is agreed. It took legal's three amendments: holder class from the actor dictionary, the verdict as one input to `Legal.Making`, and no active actor = holder unknown (Jason). It also drops `Rule`.
+
+Legal now follows it (af431c5 + this commit):
+- no active actor → raw Obligation/Liberty (the presence rule is gone);
+- `Spc: Notifying Authority` is government;
+- Making needs Duty/Responsibility, and raw OL gives no enrichment or legacy verdict;
+- legacy `Rule` → Obligation (holder unknown).
+
+`mix drrp.remap --apply`: 16,659 rows in 500 laws, plus 89 laws' `duty_type` Rule → Obligation. Snapshots: `drrp_remap_snapshot_20260930_0900` (+ `_lrt`).
+- About 15,000 rows reverted to raw because no actor is active. 1,471 of them are older payloads with null `actors` (flat lists only).
+- 106 rows re-stamped actor roles (Notifying Authority).
+- A re-run finds 0. `is_making` is unchanged (3,623).
+
+Docs: FUNCTION_VALUES rewritten. Obligation content is derived, not stored in `function`; `is_making` comes from the resolver tiers; there is no LAT pruning (#110); Housekeeping ↔ no_obligations. HOLDER_VALUES and PURPOSE_VALUES link to the spec.
+
+Hub Postgres (fractalaw-pg.service, :5433) was down after the power outage and has been restarted. Its quadlet has no `[Install]`, so it won't start on boot.
+
+Open: #69 (provision_function), #70 (Immunity, needs Jason). fractalaw conformance is still to do: active-only roll-up, and `none` for non-active actors.

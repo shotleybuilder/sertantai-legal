@@ -16,7 +16,9 @@ Source of truth: Airtable actor taxonomy, replicated in `backend/lib/sertantai_l
 **Format**: `{"Ind: Person": true, "Org: Employer": true}`
 
 **Governed** actors (individuals, businesses, specialists, supply chain) appear in `duty_holder` and `rights_holder`.
-**Government** actors appear in `responsibility_holder` and `power_holder`.
+**Government** actors appear in `responsibility_holder` and `power_holder`. Never cross-assigned.
+
+The holder fields list **who holds** each type: only actors with `position: "active"` count; counterparties, beneficiaries and mentioned actors do not. The holder class is the actor dictionary's `type`, not a label prefix: government = `Gvt:*`, `EU:*`, `Crown`, `HM Forces` (and `HM Forces: *`), `Spc: Notifying Authority` (`ActorDefinitions.government_label?/1`). See fractalaw's [DRRP Classification Schema](https://github.com/fractalatai/fractalatai/blob/master/docs/architecture/DRRP-CLASSIFICATION.md), layers 3–5 (fractalatai #68).
 
 ## Prefix Taxonomy
 

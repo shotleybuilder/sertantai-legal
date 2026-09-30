@@ -71,6 +71,8 @@ Generates `purpose` from regex analysis of law text. Runs on every law during ta
 
 Generates `duty_type` from regex analysis of law text. Only contains the 4 obligation types: Duty, Right, Responsibility, Power.
 
+Provision-level `drrp_types` can also hold raw `Obligation` / `Liberty` when the holder is unknown (no actors, or no active actor). This is not DRRP and never counts as Making. See fractalaw's [DRRP Classification Schema](https://github.com/fractalatai/fractalatai/blob/master/docs/architecture/DRRP-CLASSIFICATION.md) (fractalatai #68).
+
 ## Population Summary
 
 | Category | Count |

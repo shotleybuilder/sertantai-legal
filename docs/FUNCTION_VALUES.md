@@ -6,15 +6,19 @@ Initial data: seeded from Airtable `Function` multi-select column (one-time impo
 
 ## Valid Values
 
-### Enrichment Functions (set by taxa pipeline — definitive)
+### Obligation content (derived, not stored in `function`)
 
-These are mutually exclusive. Their presence means enrichment has run on this law.
+Making / Empowering / Housekeeping describe a law's **obligation content**. They are **not** stored in `function` (`FunctionCalculator` writes structural roles only; `mix legal.fix_stale_function` strips old tags). They derive from `is_making` and the law-level DRRP in `duty_type`.
 
-| Value | Description | Set When | Screening Relevance |
-|-------|-------------|----------|---------------------|
-| **Making** | Creates duties/responsibilities | duty_type contains Duty or Responsibility | Primary — laws that create obligations for compliance |
-| **Empowering** | Grants powers/rights but no duties | duty_type present but no Duty/Responsibility | May affect rights holders; no compliance obligations |
-| **Housekeeping** | Procedural/administrative — zero DRRP output | Taxa parser found nothing extractable | No ESH relevance — commencement, fees, corrections |
+How provisions and laws get their DRRP (the five layers: per-actor Hohfeldian type → position → holder class → DRRP → law verdict) is defined in fractalaw's **[DRRP Classification Schema](https://github.com/fractalatai/fractalatai/blob/master/docs/architecture/DRRP-CLASSIFICATION.md)** (fractalatai #68, agreed 2026-09-29). Legal follows it; change it there first.
+
+| Label | fractalaw verdict (`making_enrichment_verdict`) | Condition (active holders only) |
+|-------|------------------------------------------------|---------------------------------|
+| **Making** | `making` | at least one Duty or Responsibility |
+| **Empowering** | `empowering` | Rights and/or Powers only |
+| **Housekeeping** | `no_obligations` | parsed and reconciled, no DRRP |
+
+Raw `Obligation` / `Liberty` is **holder unknown** (no actors, or no active actor): not DRRP, and never Making evidence on its own. Legacy law-level `Obligation` and legacy `Rule` are treated the same way (`Rule` was dropped by #68; `mix drrp.remap` rewrote stored `Rule` to `Obligation`).
 
 ### Relationship Functions (set by relationship analysis)
 
@@ -35,69 +39,43 @@ The "Maker" suffix means the target law of the relationship has `Making` in its 
 | **Revoking Maker** | Repeals/revokes other laws that ARE makers | Removes duty-creating laws |
 | **Enacting Maker** | Primary legislation enabling SIs that ARE makers | Enables duty-creating laws |
 
-## Pipeline: How Function is Determined
+## Pipeline: How `is_making` is Determined
 
-The making classification has a three-stage lifecycle, each refining certainty:
+`is_making` is resolved by `Legal.Making` (`Taxa.MakingResolver`, pure) from all the evidence gathered. A higher tier always wins; a tier without a verdict defers to the next one down. Each decision records `is_making_source` and `is_making_reason`.
 
-```
-Stage 1: LRT Scraper (metadata only, lightweight)
-  → making_classification = "making" / "not_making" / "uncertain"
-  → MakingDetector: title patterns, structure, metadata signals
-  → This is a GUESS — no full text parsing
-  → Immutable after scrape (never overwritten)
+| Tier | Evidence | Verdicts |
+|------|----------|----------|
+| `review` | `making_review` (human, LAT session scoping) | making / not_making |
+| `enrichment` | `making_enrichment_verdict` from fractalaw (layer 5 of the [spec](https://github.com/fractalatai/fractalatai/blob/master/docs/architecture/DRRP-CLASSIFICATION.md)) | making → true; empowering / no_obligations → false; holder-unknown-only → none |
+| `legacy_drrp` | `duty_type` with no enrichment provenance | Duty / Responsibility → true, else none |
+| `triage` | fractalaw triage (regex making-detection at sync) | making / not_making; uncertain → none |
+| `legacy_is_making` | `is_making` stored before the resolver | its value |
+| `detector` | `making_classification` (MakingDetector, LRT scrape) | as triage |
+| `default` | — | keep current; never set → false |
 
-Stage 2: Human-AI Review (LAT session scoping)
-  → making_review = "making" / "not_making" / "uncertain" / NULL
-  → AI sense-checks auto-classification, human confirms
-  → making_review_at records when the review happened
-  → Overrides making_classification for queue filtering and Function derivation
+fractalaw's verdict is **one input**, not the final word: e.g. UK_uksi_2008_198 and UK_uksi_2014_2868 stay Making by human review despite `no_obligations`.
 
-Stage 3: Taxa Enrichment (fractalaw DRRP pipeline via Zenoh)
-  → Extracts duty_type from legislation body (Duty, Responsibility, Right, Power)
-  → Sets enrichment function label in function JSONB:
-     - Making:      duty_type has Duty or Responsibility → is_making=true
-     - Empowering:  duty_type has Power/Right but no Duty → is_making=false
-     - Housekeeping: no DRRP signal at all → procedural/administrative
-  → Enrichment labels are mutually exclusive and definitive
-  → Empowering and Housekeeping prune LAT rows (not needed for duty tracking)
-
-FunctionCalculator (Elixir, for batch recalculation)
-  → Builds the function JSONB map:
-     1. If Empowering or Housekeeping already set → enrichment ran, skip Making
-     2. is_making = true → Making (definitive, from taxa)
-     3. making_review = "making" → Making (provisional, pre-enrichment)
-     4. making_classification = "making" → Making (provisional, pre-enrichment)
-  → Relationship labels (Amending Maker, etc.) depend on target law's is_making
-```
+LAT is **not** pruned for Empowering / Housekeeping laws (the pruner was removed, #110). A not-Making law's LAT may be discarded by an explicit discard, which is logged in `lat_events`.
 
 ### Key distinction
 
 | Field | Stage | Certainty | Purpose |
 |-------|-------|-----------|---------|
 | `making_classification` | LRT scrape | Auto-guess | Immutable auto-detection from title/metadata signals |
-| `making_review` | LAT session scoping | Human-confirmed | Human-AI review, overrides auto for queue filtering |
-| `is_making` | Taxa enrichment | Definitive | Gold standard — law creates duties/responsibilities |
-| `function` | Taxa enrichment | Definitive | Enrichment labels (Making/Empowering/Housekeeping) + relationship labels |
+| `making_review` | LAT session scoping | Human-confirmed | Top tier of the resolver |
+| `making_enrichment_verdict` | Taxa enrichment | Evidenced | fractalaw's law-level DRRP verdict |
+| `is_making` | `Legal.Making` | Resolved | The decision, with `is_making_source` / `is_making_reason` |
+| `function` | FunctionCalculator | Structural | Commencing / Enacting / Amending / Revoking (+ Maker composites) |
 
 ### Effective classification
 
-The **effective classification** is `COALESCE(making_review, making_classification)` — the review takes precedence when present, otherwise the auto-detection is used. This drives:
-- LAT Queue filtering (which laws appear as parse candidates)
-- FunctionCalculator `Making` label (provisional, before enrichment runs)
-
-### Post-enrichment actions
-
-| Enrichment Result | LAT Rows | uk_lrt DRRP Fields | Function Label |
-|-------------------|----------|-------------------|----------------|
-| Making | Retained | Populated (duties, holders, fitness) | `{"Making": true}` |
-| Empowering | **Pruned** | Populated (powers/rights, holders) | `{"Empowering": true}` |
-| Housekeeping | **Pruned** | Empty (nothing to retain) | `{"Housekeeping": true}` |
+The **effective classification** is `COALESCE(making_review, making_classification)` — the review takes precedence when present, otherwise the auto-detection is used. This drives LAT Queue filtering (which laws appear as parse candidates).
 
 ## Usage
 
 - A law can have multiple functions (e.g., both "Making" and "Amending Maker")
-- Enrichment labels (Making, Empowering, Housekeeping) are mutually exclusive
-- For applicability screening, filter on `function` containing "Making"
+- Obligation-content labels (Making, Empowering, Housekeeping) are mutually exclusive and derived, not stored in `function`
+- For applicability screening, filter on `is_making`
 - For the LAT parse queue, filter on effective classification (not `is_making`)
 
 ## DB Columns
@@ -115,8 +93,8 @@ The **effective classification** is `COALESCE(making_review, making_classificati
 - **Column**: `is_making`
 - **Type**: `boolean`
 - **Purpose**: Confirmed — law creates substantive duties/responsibilities
-- **Set by**: LAT parser (Rust service) — derived from `duty_type` containing "Duty" or "Responsibility"
-- **Used by**: FunctionCalculator to set `"Making": true` in `function` map, and to determine "Maker" suffix on relationship labels
+- **Set by**: `Legal.Making` (resolver; see the pipeline above) — Making = at least one Duty or Responsibility held by an active actor, per the [DRRP spec](https://github.com/fractalatai/fractalatai/blob/master/docs/architecture/DRRP-CLASSIFICATION.md)
+- **Used by**: FunctionCalculator to determine the "Maker" suffix on relationship labels; applicability screening
 
 ### `making_classification` (string)
 
@@ -154,9 +132,10 @@ The **effective classification** is `COALESCE(making_review, making_classificati
 |-------|------|--------|-------|---------|
 | `making_classification` | string | MakingDetector (LRT scraper) | 1: Auto | Immutable auto-guess — builds initial LAT queue |
 | `making_confidence` | float | MakingDetector (LRT scraper) | 1: Auto | Confidence score (0.0–1.0) |
-| `making_review` | string | Human via LAT Queue UI | 2: Review | Human-AI review — overrides auto for queue/Function |
+| `making_review` | string | Human via LAT Queue UI | 2: Review | Human-AI review — top resolver tier |
 | `making_review_at` | datetime | Auto-stamped on review | 2: Review | Audit timestamp |
-| `is_making` | boolean | LAT parser (Rust) | 3: Definitive | Confirmed — has Duty or Responsibility |
+| `making_enrichment_verdict` | string | TaxaSubscriber (fractalaw) | 3: Enrichment | making / empowering / no_obligations |
+| `is_making` | boolean | `Legal.Making` resolver | Resolved | Has Duty or Responsibility (resolved across tiers) |
 | `is_commencing` | boolean | FunctionCalculator | Derived | Brings other laws into force |
 | `is_amending` | boolean | Derived from relationships | Derived | Primary purpose is amending |
 | `is_rescinding` | boolean | Derived from relationships | Derived | Primary purpose is revoking |
