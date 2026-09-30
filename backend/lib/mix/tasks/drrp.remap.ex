@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Drrp.Remap do
   #68): a row with no active actor has an unknown holder and returns to raw
   Obligation/Liberty; each actor's `role` is re-stamped from its label
   (`ActorDefinitions.actor_role/1`) before mapping, and written back when it
-  changed. Legacy `Rule` (dropped by #68) becomes Obligation, holder unknown,
+  changed (on every row with actors, typed or not). Legacy `Rule` (dropped by #68) becomes Obligation, holder unknown,
   in provisions and in the law-level `duty_type` of `legal_register`.
 
   Stored Duty/Responsibility are an Obligation, Right/Power a Liberty (rows
@@ -46,6 +46,7 @@ defmodule Mix.Tasks.Drrp.Remap do
         """
         SELECT section_id, law_name, drrp_types, COALESCE(actors, '{}') FROM legal_articles
         WHERE drrp_types && ARRAY['Duty','Responsibility','Right','Power','Obligation','Liberty','Rule']
+           OR cardinality(actors) > 0
         """,
         [],
         timeout: :infinity
