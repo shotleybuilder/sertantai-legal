@@ -271,3 +271,17 @@ The other 16 synced: 19 rows text-changed, 46 inserted, 2,070 archived (per-exte
   - 0 actors without a drrp key; 0 raw-with-active; 0 non-active drrp; 82 adjudicated provisions;
   - 20/20 Making by enrichment; is_making = 3,604.
 - All 705 laws are on the #68 payload. Next: the holder-unknown share after the RunPod pending_slm batch.
+
+## Authorised Person reclass, decoder and dictionary fixes (2026-09-30)
+
+- **`Spc: Authorised Person` → government** (Jason). Legal 902e193 + fractalaw e5fac38. fractalaw republished 52 laws; legal's remap re-stamped 21 + 23 rows (the remap now covers untyped rows, 937f76c). No verdict changed.
+- **Decoder bug (74ddba1):** `enforce_drrp_holder_constraint` deleted a holder key whose filtered list was empty. So fractalaw's [] read as "absent" and stale duty/rights/responsibility/power holder lists survived every republish. Fixed, then fractalaw republished law-level data for all 705 laws.
+  - My mid-publish server restart lost 44 laws; they were resent.
+  - After: 0 holder-unknown laws with D/R holders (was 12); 7 class violations, all in Jason's held set.
+- **ActorDictionary:**
+  - it read only `canonical:` (fractalaw sends `label:`/`type:`);
+  - it never retried Zenoh at boot;
+  - it discarded the subscriber handle, and a GC'd Zenohex handle undeclares the subscription.
+  All fixed (0e40670, ba47514, 2979c12). It now reloads live from fractalaw's publishes. A guard test checks that ActorDefinitions agrees with the dictionary `type` for every label.
+- Lesson: legal's Phoenix hosts the Zenoh listener (7447) that fractalaw connects to. Don't restart it during a fractalaw publish.
+- Open for Jason: the 7 held laws. Six are revoked with no LAT (recommend leaving them); UK_uksi_2018_369 is in force with 12 rows (recommend re-rolling it).
