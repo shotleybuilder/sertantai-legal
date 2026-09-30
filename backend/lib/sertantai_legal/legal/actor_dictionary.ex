@@ -160,7 +160,13 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
     {:noreply, %{state | loaded?: loaded?, subscribed?: subscribed?}}
   end
 
-  def handle_info(_msg, state), do: {:noreply, state}
+  def handle_info(msg, state) do
+    Logger.info(
+      "[ActorDictionary] Unexpected message: #{inspect(msg, limit: 5, printable_limit: 200)}"
+    )
+
+    {:noreply, state}
+  end
 
   defp retry_load do
     case load_from_zenoh() do
