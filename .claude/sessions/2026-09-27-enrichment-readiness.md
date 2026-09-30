@@ -285,3 +285,16 @@ The other 16 synced: 19 rows text-changed, 46 inserted, 2,070 archived (per-exte
   All fixed (0e40670, ba47514, 2979c12). It now reloads live from fractalaw's publishes. A guard test checks that ActorDefinitions agrees with the dictionary `type` for every label.
 - Lesson: legal's Phoenix hosts the Zenoh listener (7447) that fractalaw connects to. Don't restart it during a fractalaw publish.
 - Open for Jason: the 7 held laws. Six are revoked with no LAT (recommend leaving them); UK_uksi_2018_369 is in force with 12 rows (recommend re-rolling it).
+
+## Held laws resolved; DRRP over time proposal (2026-09-30)
+
+- UK_uksi_2018_369: re-parsed by fractalaw → no_obligations (amending instrument); is_making false. is_making = 3,603.
+- Six revoked laws had no LAT. Legal parsed it (`mix lat.reparse --tag held6`, 1,922 rows, QA 0 fails). fractalaw classified 5 (all Making).
+- UK_uksi_2012_3030's current text is dots (revoked). It keeps its legacy Making verdict and is **whitelisted** as the one known holder-class exception.
+- Dotted text in legal: 7,660 rows in 474 laws, but only 98 rows in 6 laws are fully revoked laws. The rest are repealed provisions in living laws, which are correctly excluded, not recovered.
+- `/body/made/data.xml` gives full as-enacted text in the same CLML (tested on 2012_3030).
+- Jason: review fractalaw's DRRP-TEMPORAL-PROPOSAL (as_made vs as_amended views) before building anything. Legal's review was sent:
+  - separate `making_enrichment_verdict` (as_made → is_making) from a new `current_verdict` (as_amended, with a distinct `revoked` value);
+  - legal to add a per-row `status` (in_force/repealed/prospective);
+  - as_made at law level only for now;
+  - made text only for amended laws (800/1,069), in a separate table.
