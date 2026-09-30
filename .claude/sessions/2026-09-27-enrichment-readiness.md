@@ -259,3 +259,15 @@ The other 16 benchmark laws stay frozen, each resync needing Jason's approval be
   - 0 non-active drrp.
 - Holder unknown: 1,202 raw OL rows (891 with no actors, 311 with no active actor, mostly pending_slm). Waiting on the RunPod SLM batch and a re-publish. Corpus-wide, 38% of typed provisions are holder unknown (#60 and stem inheritance are the levers).
 - Next: the same process for the other 16 benchmark laws.
+
+## All 20 benchmark laws synced (2026-09-30)
+
+The other 16 synced: 19 rows text-changed, 46 inserted, 2,070 archived (per-extent copies legal doesn't hold).
+- Gold labels: 191 adjudicated actor rows carried forward; 86 queued in `benchmark_gold_review_20260930` for Jason; 201 archived; 887 legacy-id labels never matched.
+- fractalaw restored the classifier tier on unchanged rows, so those publish as before.
+- Re-score (not comparable with earlier runs): position 54.4% regex / 61.3% classifier; DRRP 88.4% / 87.7%; 1,309 gold actors.
+- Legal verified:
+  - all 27,428 rows updated; the stale rows reclassified;
+  - 0 actors without a drrp key; 0 raw-with-active; 0 non-active drrp; 82 adjudicated provisions;
+  - 20/20 Making by enrichment; is_making = 3,604.
+- All 705 laws are on the #68 payload. Next: the holder-unknown share after the RunPod pending_slm batch.
