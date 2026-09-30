@@ -506,6 +506,23 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.making_enrichment_verdict == "making"
     end
 
+    test "holder-unknown Obligation beside known Rights: kept, no verdict (#68)" do
+      taxa = %{
+        duty_type: %{values: ["Obligation", "Liberty"]},
+        duties: %{entries: []},
+        rights: %{entries: [%{"holder" => "Ind: Person"}]},
+        responsibilities: %{entries: []},
+        powers: %{entries: []}
+      }
+
+      record = %{duties: nil, rights: nil, responsibilities: nil, powers: nil}
+
+      result = TaxaSubscriber.classify_enrichment(record, taxa)
+
+      assert result.duty_type == %{values: ["Right", "Obligation"]}
+      assert Map.fetch!(result, :making_enrichment_verdict) == nil
+    end
+
     test "falls back to raw duty_type when no structured entries anywhere" do
       taxa = %{
         duty_type: %{values: ["Obligation"]},

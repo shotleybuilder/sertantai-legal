@@ -333,11 +333,24 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
       |> maybe_add_drrp("Power", taxa[:powers] || record.powers)
 
     if derived != [] do
-      Map.put(taxa, :duty_type, %{values: Enum.reverse(derived)})
+      Map.put(taxa, :duty_type, %{
+        values: Enum.reverse(derived) ++ unowned_obligation(taxa, derived)
+      })
     else
       taxa
     end
   end
+
+  # A raw Obligation with no Duty/Responsibility entries has an unknown holder
+  # (DRRP-CLASSIFICATION layer 5, #68): keep it beside any Rights/Powers so the
+  # law gets no verdict rather than "empowering".
+  defp unowned_obligation(%{duty_type: %{values: raw}}, derived) when is_list(raw) do
+    if "Obligation" in raw and not Enum.any?(derived, &(&1 in ["Duty", "Responsibility"])),
+      do: ["Obligation"],
+      else: []
+  end
+
+  defp unowned_obligation(_taxa, _derived), do: []
 
   defp maybe_add_drrp(list, label, %{entries: entries})
        when is_list(entries) and entries != [],
