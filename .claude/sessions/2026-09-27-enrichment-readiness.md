@@ -222,3 +222,14 @@ fractalaw republished 685 laws (the 20 benchmark laws excluded) with the active-
   1. 5,659 republished rows keep pre-#67 actors because the payload's actors was NULL (43 raw rows show an "active" stale actor). Asked fractalaw to send `[]`. Not remapped.
   2. 75,139 rows in these laws weren't republished; 557 of them keep old types.
 - For Jason to review: the holder-unknown laws resting on the detector or default tier, and the questionable not-Making verdicts (Hedgerows Regs 1997, NI Explosives HIPS Regs 2009, Waste Management Regs 2006).
+
+## #68 provision republish (never-NULL payload), re-check (2026-09-30)
+
+fractalaw (55d7613) now sends every row of an enriched law with drrp_types/actors never NULL. An unclassified row = null method + [] types + [] actors; legal stores it with taxa_enriched_at NULL (e327ec1). All 705 laws were published, including the 20 benchmark laws.
+- 343,394 rows updated.
+- 0 raw-OL rows with an active actor; 0 non-active drrp.
+- 86,096 unclassified rows, none stamped as enriched. The 557 stale typed rows are cleared.
+- is_making = 3,604; the benchmark laws are 20/20 Making.
+- Leftovers raised with fractalaw:
+  - 9,714 unsent rows in 14 benchmark laws (7,522 in UK_ukpga_1991_56), with 3 real stale types;
+  - 100 actors without a `drrp` key, which legal maps by the active-roles fallback.
