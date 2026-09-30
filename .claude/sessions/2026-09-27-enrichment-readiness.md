@@ -247,3 +247,15 @@ All 11,622 legal rows are republished: 11,045 unclassified awaiting the re-parse
 The other 16 benchmark laws stay frozen, each resync needing Jason's approval because it clears gold labels. Until then, 3 stale typed rows and 17 actors without a drrp key remain on legal-only rows in those laws.
 
 07b111c (out rows always sent as unclassified) is clean across all 705 laws. is_making = 3,604. Law-level verdicts for the four synced laws will follow their re-parse.
+
+## Four synced benchmark laws re-parsed (2026-09-30)
+
+- Gold-label protection, approved by Jason: snapshot `benchmark_gold_snapshot_20260930` (3,901 labels in 15 laws).
+  - UK_ukpga_1990_10: 158 labels carried onto 72 provisions (adjudicated) and 83 queued for Jason's review.
+  - UK_uksi_2014_1643: 76 labels archived; 239 legacy-id labels never matched.
+- Legal verified:
+  - all 11,622 rows updated;
+  - all four laws Making by enrichment; is_making = 3,604;
+  - 0 non-active drrp.
+- Holder unknown: 1,202 raw OL rows (891 with no actors, 311 with no active actor, mostly pending_slm). Waiting on the RunPod SLM batch and a re-publish. Corpus-wide, 38% of typed provisions are holder unknown (#60 and stem inheritance are the levers).
+- Next: the same process for the other 16 benchmark laws.
