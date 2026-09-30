@@ -113,7 +113,7 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
     unless source == :zenoh and subscribed?,
       do: Process.send_after(self(), {:connect, 1}, @retry_ms)
 
-    {:ok, %{}}
+    {:ok, %{loaded?: source == :zenoh, subscribed?: subscribed?}}
   end
 
   @impl true
@@ -137,20 +137,11 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
   end
 
   # Zenoh wasn't ready at boot (the session starts alongside this server):
-  # retry loading from Zenoh and subscribing until both succeed.
+  # retry whichever of load / subscribe hasn't succeeded yet (never subscribe
+  # twice), until both have or the retries run out.
   def handle_info({:connect, attempt}, state) do
-    loaded? =
-      case load_from_zenoh() do
-        {:ok, entries} ->
-          populate_ets(entries)
-          Logger.info("[ActorDictionary] Loaded #{length(entries)} actors from Zenoh")
-          true
-
-        {:error, _} ->
-          false
-      end
-
-    subscribed? = do_subscribe()
+    loaded? = state.loaded? or retry_load()
+    subscribed? = state.subscribed? or do_subscribe()
 
     cond do
       loaded? and subscribed? ->
@@ -160,13 +151,28 @@ defmodule SertantaiLegal.Legal.ActorDictionary do
         Process.send_after(self(), {:connect, attempt + 1}, @retry_ms)
 
       true ->
-        Logger.warning("[ActorDictionary] Zenoh still unavailable, staying on the snapshot")
+        Logger.info(
+          "[ActorDictionary] Zenoh query unanswered, on the snapshot " <>
+            "(subscribed: #{subscribed?}; a fractalaw publish will update it)"
+        )
     end
 
-    {:noreply, state}
+    {:noreply, %{state | loaded?: loaded?, subscribed?: subscribed?}}
   end
 
   def handle_info(_msg, state), do: {:noreply, state}
+
+  defp retry_load do
+    case load_from_zenoh() do
+      {:ok, entries} ->
+        populate_ets(entries)
+        Logger.info("[ActorDictionary] Loaded #{length(entries)} actors from Zenoh")
+        true
+
+      {:error, _} ->
+        false
+    end
+  end
 
   # ── Subscription ────────────────────────────────────────────
 
