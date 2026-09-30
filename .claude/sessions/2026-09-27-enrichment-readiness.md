@@ -233,3 +233,17 @@ fractalaw (55d7613) now sends every row of an enriched law with drrp_types/actor
 - Leftovers raised with fractalaw:
   - 9,714 unsent rows in 14 benchmark laws (7,522 in UK_ukpga_1991_56), with 3 real stale types;
   - 100 actors without a `drrp` key, which legal maps by the active-roles fallback.
+
+## Benchmark LAT gap (2026-09-30)
+
+The 9,714 rows fractalaw didn't send were a gap in fractalaw's LAT, not a scope question. The #62 sync reports on the 20 benchmark laws but never applies to them, so they keep their old LAT. Jason approved syncing four:
+- UK_ukpga_1991_56 (+7,522 rows);
+- UK_ukpga_1981_69;
+- UK_uksi_2014_1643;
+- UK_ukpga_1990_10.
+
+All 11,622 legal rows are republished: 11,045 unclassified awaiting the re-parse, 467 typed. The 40 Wildlife Act rows are held on fractalaw's side for manual matching.
+
+The other 16 benchmark laws stay frozen, each resync needing Jason's approval because it clears gold labels. Until then, 3 stale typed rows and 17 actors without a drrp key remain on legal-only rows in those laws.
+
+07b111c (out rows always sent as unclassified) is clean across all 705 laws. is_making = 3,604. Law-level verdicts for the four synced laws will follow their re-parse.
