@@ -260,7 +260,7 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       assert result.power_holder == %{values: ["Crown", "HM Forces: Navy"]}
     end
 
-    test "removes holder key entirely when all values filtered out" do
+    test "keeps an explicit empty list when all values are filtered out (clears stale lists, #68)" do
       taxa = %{
         duty_holder: %{values: ["Gvt: Minister"]},
         power_holder: %{values: ["Ind: Person"]}
@@ -268,8 +268,19 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
 
       result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
 
-      refute Map.has_key?(result, :duty_holder)
-      refute Map.has_key?(result, :power_holder)
+      assert result.duty_holder == %{values: []}
+      assert result.power_holder == %{values: []}
+    end
+
+    test "an empty holder list on the wire survives normalize_taxa (overwrites a stale list)" do
+      result =
+        TaxaSubscriber.normalize_taxa(%{
+          "rights_holder" => [],
+          "power_holder" => ["Spc: Authorised Person"]
+        })
+
+      assert result.rights_holder == %{values: []}
+      assert result.power_holder == %{values: ["Spc: Authorised Person"]}
     end
 
     test "passes through fields not present" do

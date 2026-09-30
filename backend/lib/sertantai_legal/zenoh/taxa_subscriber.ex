@@ -484,14 +484,11 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
 
   defp filter_holder(taxa, key, filter_fn) do
     case Map.get(taxa, key) do
+      # An empty result is kept as an explicit empty list: dropping the key
+      # would read as "not in this payload" and leave a stale list in place
+      # (DRRP-CLASSIFICATION payload contract, #68).
       %{values: values} when is_list(values) ->
-        filtered = Enum.filter(values, filter_fn)
-
-        if filtered == [] do
-          Map.delete(taxa, key)
-        else
-          Map.put(taxa, key, %{values: filtered})
-        end
+        Map.put(taxa, key, %{values: Enum.filter(values, filter_fn)})
 
       _ ->
         taxa
