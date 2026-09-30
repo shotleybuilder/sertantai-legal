@@ -235,6 +235,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
         row
         |> normalize_taxa()
         |> Map.new(fn {k, v} -> {Atom.to_string(k), v} end)
+        |> mark_unclassified(row)
         |> Map.put("section_id", row["section_id"])
       end)
       |> Enum.uniq_by(& &1["section_id"])
@@ -259,12 +260,34 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
     """
     UPDATE legal_articles AS a
     SET #{sets},
-        taxa_enriched_at = $2,
+        taxa_enriched_at = CASE WHEN p ? 'unclassified' THEN NULL ELSE $2::timestamp END,
         updated_at = $2
     FROM jsonb_array_elements($1::jsonb) AS p
     WHERE a.section_id = p->>'section_id'
     """
   end
+
+  # fractalaw sends every row of an enriched law (DRRP-CLASSIFICATION payload
+  # contract, #68). A row it has not classified yet (e.g. text awaiting the
+  # re-parse backlog) comes with extraction_method null, drrp_types [] and
+  # actors []: store the empty lists, null the method (normalize_taxa drops
+  # nils, which would keep a stale one) and leave taxa_enriched_at NULL, so
+  # "not classified yet" is not read as "classified, no type".
+  @doc false
+  def mark_unclassified(payload, row) do
+    if unclassified?(row),
+      do: Map.merge(payload, %{"extraction_method" => nil, "unclassified" => true}),
+      else: payload
+  end
+
+  defp unclassified?(row) do
+    Map.has_key?(row, "extraction_method") and is_nil(row["extraction_method"]) and
+      row["drrp_types"] == [] and empty_actors?(row[@actors_key])
+  end
+
+  defp empty_actors?([]), do: true
+  defp empty_actors?(json) when is_binary(json), do: Jason.decode(json) == {:ok, []}
+  defp empty_actors?(_), do: false
 
   defp cast(col, :text), do: "p->>'#{col}'"
   defp cast(col, :integer), do: "(p->>'#{col}')::integer"

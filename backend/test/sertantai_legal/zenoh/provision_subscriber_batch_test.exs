@@ -105,6 +105,51 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriberBatchTest do
       assert count == 3
     end
 
+    test "an unclassified row (method null, [] types, [] actors) clears stale data and is not marked enriched (#68)" do
+      name = law_with_lat(3)
+
+      Repo.query!(
+        """
+        UPDATE legal_articles
+        SET drrp_types = '{Duty}', extraction_method = 'regex', taxa_enriched_at = now(),
+            actors = ARRAY['{"label": "Org: Employer", "position": "active"}'::jsonb]
+        WHERE law_name = $1
+        """,
+        [name]
+      )
+
+      rows = [
+        # unclassified: awaiting re-parse
+        %{
+          "section_id" => "#{name}:reg.1",
+          "drrp_types" => [],
+          "actors" => "[]",
+          "extraction_method" => nil
+        },
+        # classified, holder unknown: [] actors but a method and a raw type
+        %{
+          "section_id" => "#{name}:reg.2",
+          "drrp_types" => ["Obligation"],
+          "actors" => "[]",
+          "extraction_method" => "slm"
+        }
+      ]
+
+      assert %{updated: 2} = ProvisionSubscriber.upsert_rows(name, rows)
+
+      a1 = article("#{name}:reg.1")
+      assert a1.drrp_types == []
+      assert a1.actors == []
+      assert is_nil(a1.extraction_method)
+      assert is_nil(a1.taxa_enriched_at)
+
+      a2 = article("#{name}:reg.2")
+      assert a2.drrp_types == ["Obligation"]
+      assert a2.actors == []
+      assert a2.extraction_method == "slm"
+      assert a2.taxa_enriched_at
+    end
+
     test "a large law updates in one pass, not one statement per provision" do
       name = law_with_lat(3_000)
 
