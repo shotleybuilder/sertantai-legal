@@ -224,14 +224,16 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     lrt_to_arrow(records)
   end
 
-  defp fetch_lrt_by_name(law_name, :json) do
+  @doc false
+  # Public for testing: the LRT queryable payload for one law.
+  def fetch_lrt_by_name(law_name, :json) do
     case Repo.one(from(u in LegalRegister, where: u.name == ^law_name)) do
       nil -> {:error, :not_found}
       record -> {:ok, Jason.encode!(serialize_lrt(record))}
     end
   end
 
-  defp fetch_lrt_by_name(law_name, :arrow) do
+  def fetch_lrt_by_name(law_name, :arrow) do
     case Repo.one(from(u in LegalRegister, where: u.name == ^law_name)) do
       nil -> {:error, :not_found}
       record -> lrt_to_arrow([record])
@@ -343,7 +345,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       rescinded_by: r.rescinded_by,
       enacting: r.enacting,
       enacted_by: r.enacted_by,
-      leg_gov_uk_url: r.leg_gov_uk_url,
+      # LegalRegister holds source_url; the spec key stays leg_gov_uk_url
+      leg_gov_uk_url: r.source_url,
       explanatory_note: r.explanatory_note,
       updated_at: r.updated_at
     }
