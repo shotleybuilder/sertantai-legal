@@ -44,3 +44,4 @@ Spec: fractalaw `DRRP-CLASSIFICATION.md` "Layer 1b: Correlatives" (a26ec52; lega
   - Request: provenance for each holder entry.
   - The provision reference already exists: `actors[].correlatives` per section_id on LAT rows.
   - The act verb is not carried. Passed to fractalaw as an optional `{type, to, act}`, which needs Jason and a spec change. Law-level entry lists are possible later if the LAT join is too slow.
+- **Agreed in the spec** (fractalaw 2a84e66), with legal's two edge cases. The optional `act` on correlatives awaits Jason in fractalaw's #72 session (c57daa2). It is additive (absent = unknown), so it needs no legal change.
