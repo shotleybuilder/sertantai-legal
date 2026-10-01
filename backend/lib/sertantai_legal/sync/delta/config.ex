@@ -4,16 +4,29 @@ defmodule SertantaiLegal.Sync.Delta.Config do
   # Columns that exist only in dev (not in prod) — exclude from delta export.
   # Update this list as prod catches up with migrations.
   #
-  # NOTE: Delta export uses Ash resources which still point at the uk_lrt/lat views.
-  # The views proxy to legal_register/legal_articles transparently.
-  # The "country" and "jurisdiction" columns are set by the view triggers,
-  # so they don't appear in the Ash resource and don't need excluding.
+  # NOTE: the uk_lrt export reads LegalRegister (the legal_register table) but
+  # writes `INSERT INTO uk_lrt` on prod, so every exported column must exist
+  # in the uk_lrt view (guarded by test/sertantai_legal/sync/delta/config_test.exs).
+  # Unmark a family once legal's prod migration (#133) adds it and compliance
+  # asks for it (agreed with sertantai-compliance 2026-10-01; compliance's
+  # Legal.* resources are read-only and tolerate extra columns).
   @dev_only_columns %{
     # fractalaw #73 R1a current view + #72 correlatives (2026-10-01): not in
     # compliance's prod schema yet.
-    "uk_lrt" => ~w(current_verdict current_duty_type current_duty_holder current_rights_holder
+    # is_making provenance and fractalaw making verdict
+    # fractalaw v2.4 application (#163) — compliance's v0.1 jurisdiction gate
+    # needs application_regions in prod if #163 ships: tell compliance
+    # before leaving it dev-only past #133
+    # LAT / live status
+    "uk_lrt" =>
+      ~w(current_verdict current_duty_type current_duty_holder current_rights_holder
                    current_responsibility_holder current_power_holder claim_holder
-                   liability_holder protected_holder),
+                   liability_holder protected_holder) ++
+        ~w(is_making_reason is_making_source is_making_decided_at making_classification_source
+           making_enriched_at making_enrichment_verdict) ++
+        ~w(application_regions application_source application_evidence application_clause) ++
+        ~w(lat_scope lat_hash struct_hash live_evidence document_status) ++
+        ~w(definitions_parsed_at enabling_provisions geo_extent_source),
     "lat" => [],
     "amendment_annotations" => [],
     "legislative_definitions" => [],
@@ -32,6 +45,9 @@ defmodule SertantaiLegal.Sync.Delta.Config do
   #   - source_url is a regular column written via the view as leg_gov_uk_url
   @generated_columns %{
     "uk_lrt" => [
+      # set by the uk_lrt view triggers (not columns of the view)
+      "country",
+      "jurisdiction",
       "number_int",
       "has_fitness",
       "md_date_year",

@@ -29,3 +29,13 @@ fractalaw will publish a current (as amended) view beside the as-made DRRP field
 
 - Should compliance screening move from `is_making` (as made) to `current_verdict`? Not decided; nothing reads it yet.
 - **Existing prod-sync risk:** recent legal columns (`lat_scope`, `live_evidence`, `making_*`) aren't in compliance prod's schema and aren't listed as dev-only in `Sync.Delta.Config`. The next `mix data.export_delta` may fail on them or carry them into an apply that rejects them. Worth checking before the next prod sync.
+
+## Compliance's answers (sertantai-compliance, 2026-10-01)
+
+- **Delta sync:** compliance never migrates legal's tables. Legal's prod migration (#133) brings prod up to dev, and compliance tolerates extra columns because it uses explicit column lists.
+  - Done: the 19 legal_register columns missing from the uk_lrt view are now dev-only in `Sync.Delta.Config`.
+  - Also found and fixed: `country`/`jurisdiction` were exported though the view triggers set them. They're now never written.
+  - New guard: `test/sertantai_legal/sync/delta/config_test.exs` checks that every exported column exists in the dev uk_lrt view.
+  - Unmark a family once #133 lands and compliance asks for it.
+  - **Time-sensitive:** if #163 ships before compliance's 20 Oct freeze, `application_regions` must reach prod with the deploy. Tell compliance before leaving it dev-only past #133.
+- **current_verdict:** it doesn't block legal. Compliance raised compliance#37 (v0.2): screen on current_verdict and the current_* holders, add "my rights / what protects me" from the correlatives, and benchmark before and after. Compliance will ask legal to unmark those columns before that release.
