@@ -4,6 +4,7 @@ status: pending
 opened: 2026-09-30
 related: ["fractalatai#73", "fractalatai#68"]
 depends_on: ["drrp/2026-09-30-drrp-spec-68"]
+enables: ["drrp/2026-10-01-issue-167"]
 ---
 
 # Session: DRRP over time, legal side (PENDING)
@@ -39,12 +40,11 @@ fractalaw added section L (6c2ef8f): per-row `status`, `effective_from`, `change
 
 ## Todo
 
-- ⬜ (Jason) Decide the proposal after both reviews
+- ✅ (Jason) D1–D4 approved as recommended (2026-10-01); legal's build raised as #167 → `drrp/2026-10-01-issue-167.md`
 - ⬜ (legal) Per-row `status` on legal_articles (in_force / repealed / prospective / in_force_partial; backfill repealed; prospective on re-parse)
 - ⬜ (legal) Structured note parser: effective_dates, changed_by, effect, change_id (pure module, TDD)
 - ⬜ (legal) `source_hash` + `md_dct_valid_date` on parsed lat_events → cause per operation
 - ⬜ (legal) Manifest: `amended`, `as_of`, `effects_unapplied`; a change log (cause, change_id) beside the rename log
-- ⬜ (Jason) D1–D4 in section L
 - ⬜ (fractalaw) Dotted-text rule: dotted provisions not substantive; all-dots law → no verdict (pending Jason)
 - ⬜ (legal) Verdict split fields, after the spec
 - ⬜ (legal) Made text for amended laws, after the cost sample
