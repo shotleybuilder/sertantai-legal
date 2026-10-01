@@ -22,7 +22,8 @@ fractalaw will publish a current (as amended) view beside the as-made DRRP field
 - ✅ Tests: `taxa_current_view_test.exs` (5), `provision_correlatives_test.exs` (7, from the layer-1b worked examples: HSWA s.2(1), s.3(1), Water Act s.82(2)(c), EPA s.20(7)); full suite 2107 passed
 - ✅ Delta sync: the 9 columns are dev-only in `Sync.Delta.Config` (compliance prod lacks them)
 - ✅ Docs: `docs/zenoh/ZENOH-SPEC.md` law + provision records
-- ⬜ Restart (check no publish, heads-up), confirm to fractalaw
+- ✅ Restart (no publish in flight; heads-up sent), confirmed to fractalaw 2026-10-01
+- ⬜ Verify arrival after fractalaw's first R1a/#72 publish
 
 ## For Jason
 
