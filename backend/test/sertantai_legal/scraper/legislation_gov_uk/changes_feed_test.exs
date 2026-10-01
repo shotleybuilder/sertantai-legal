@@ -130,4 +130,35 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
     assert ChangesFeed.law_name("http://www.legislation.gov.uk/id/asp/2018/8") == "UK_asp_2018_8"
     assert ChangesFeed.law_name(nil) == nil
   end
+
+  describe "parse/1 in-force data (#168)" do
+    setup do
+      xml = File.read!("test/fixtures/changes_feed/anaw_2016_3_inforce.feed")
+      {effects, _page} = ChangesFeed.parse(xml)
+      %{effects: Map.new(effects, &{&1.affected_provisions, &1})}
+    end
+
+    test "a commenced effect: its in-force date and qualification", %{effects: effects} do
+      e = effects["s. 84(4)(a)"]
+      assert e.applied == true
+      assert e.in_force_date == ~D[2024-11-16]
+      assert e.prospective == false
+      assert e.in_force_qualification == "wholly in force"
+    end
+
+    test "a prospective, unapplied effect: no date, prospective, with savings", %{
+      effects: effects
+    } do
+      e = effects["s. 83(2)(a)"]
+      assert e.applied == false
+      assert e.in_force_date == nil
+      assert e.prospective == true
+      assert e.savings == ["section-144"]
+    end
+
+    test "structured affected refs come only from AffectedProvisions", %{effects: effects} do
+      assert effects["s. 84(4)(a)"].affected_refs == ["section-84-4-a"]
+      assert effects["s. 83(2)(a)"].affected_refs == ["section-83-2-a"]
+    end
+  end
 end

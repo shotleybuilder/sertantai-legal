@@ -180,12 +180,28 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfill do
         json
         |> Jason.decode!()
         |> Enum.map(fn e ->
-          fields = %Effect{type: nil, affecting: nil} |> Map.from_struct() |> Map.keys()
-          struct!(Effect, Map.new(fields, &{&1, e[Atom.to_string(&1)]}))
+          # Keys absent from older cache files keep the struct defaults (#168);
+          # JSON has no dates, so in_force_date is decoded again.
+          fields =
+            for {key, _default} <- Map.from_struct(%Effect{type: nil, affecting: nil}),
+                Map.has_key?(e, Atom.to_string(key)),
+                into: %{},
+                do: {key, e[Atom.to_string(key)]}
+
+          struct!(Effect, Map.update(fields, :in_force_date, nil, &cached_date/1))
         end)
 
       _ ->
         nil
+    end
+  end
+
+  defp cached_date(nil), do: nil
+
+  defp cached_date(iso) when is_binary(iso) do
+    case Date.from_iso8601(iso) do
+      {:ok, d} -> d
+      _ -> nil
     end
   end
 

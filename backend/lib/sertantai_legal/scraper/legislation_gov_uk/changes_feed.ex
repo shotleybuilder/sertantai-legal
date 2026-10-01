@@ -9,6 +9,11 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   - `AffectingEffectsExtent` — the extent of the change itself;
   - `AffectingTerritorialApplication` — where the change applies.
 
+  Also, per effect (#168): `InForce` — the in-force `Date` (earliest when
+  staged) or `Prospective` (not yet in force), with its Qualification;
+  `Savings` provision refs; and the structured `AffectedProvisions` refs
+  (`section-83-2-a`), which map to section_ids more reliably than the text.
+
   These are legislation.gov.uk editorial data: `LiveStatus` decides where a
   revocation reaches from them. `parse/1` is pure; `fetch/3` pages through the
   feed via `Client.fetch_xml/1`.
@@ -33,7 +38,13 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       :effect_extent,
       :territorial_application,
       :applied,
-      :requires_applied
+      :requires_applied,
+      # #168: in-force data, savings and structured affected refs
+      :in_force_date,
+      :in_force_qualification,
+      prospective: false,
+      savings: [],
+      affected_refs: []
     ]
 
     @type t :: %__MODULE__{
@@ -44,7 +55,12 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
             effect_extent: String.t() | nil,
             territorial_application: String.t() | nil,
             applied: boolean() | nil,
-            requires_applied: boolean() | nil
+            requires_applied: boolean() | nil,
+            in_force_date: Date.t() | nil,
+            in_force_qualification: String.t() | nil,
+            prospective: boolean(),
+            savings: [String.t()],
+            affected_refs: [String.t()]
           }
   end
 
@@ -106,7 +122,16 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
         effect_extent: ~x"./@AffectingEffectsExtent"s,
         territorial_application: ~x"./@AffectingTerritorialApplication"s,
         applied: ~x"./@Applied"s,
-        requires_applied: ~x"./@RequiresApplied"s
+        requires_applied: ~x"./@RequiresApplied"s,
+        # child elements by local name (the ukm namespace is on the parent query)
+        in_force: [
+          ~x"./*[local-name()='InForceDates']/*[local-name()='InForce']"l,
+          date: ~x"./@Date"s,
+          prospective: ~x"./@Prospective"s,
+          qualification: ~x"./@Qualification"s
+        ],
+        savings: ~x"./*[local-name()='Savings']/*[local-name()='Section']/@Ref"ls,
+        affected_refs: ~x"./*[local-name()='AffectedProvisions']//*[@Ref]/@Ref"ls
       )
       |> Enum.map(fn e ->
         %Effect{
@@ -117,7 +142,15 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           effect_extent: blank(e.effect_extent),
           territorial_application: blank(e.territorial_application),
           applied: bool(e.applied),
-          requires_applied: bool(e.requires_applied)
+          requires_applied: bool(e.requires_applied),
+          in_force_date: earliest_date(e.in_force),
+          in_force_qualification:
+            e.in_force |> Enum.map(& &1.qualification) |> Enum.find(&(&1 != "")),
+          prospective:
+            Enum.any?(e.in_force, &(&1.prospective == "true")) and
+              earliest_date(e.in_force) == nil,
+          savings: e.savings,
+          affected_refs: e.affected_refs
         }
       end)
 
@@ -246,6 +279,18 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       [_, type, year, number] -> IdField.build_uk_id(type, year, number)
       _ -> nil
     end
+  end
+
+  # An effect can commence in stages (several InForce dates): the first.
+  defp earliest_date(in_force) do
+    in_force
+    |> Enum.flat_map(fn f ->
+      case Date.from_iso8601(f.date) do
+        {:ok, d} -> [d]
+        _ -> []
+      end
+    end)
+    |> Enum.min(Date, fn -> nil end)
   end
 
   defp blank(""), do: nil

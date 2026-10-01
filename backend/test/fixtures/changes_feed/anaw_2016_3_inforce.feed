@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:leg="http://www.legislation.gov.uk/namespaces/legislation" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata" xmlns:openSearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:parameters="http://a9.com/-/spec/opensearch/extensions/parameters/1.0/">
+			
+			<id>http://www.legislation.gov.uk/changes/affected/anaw/2016/3/data.feed?results-count=100&amp;sort=modified</id>
+			<link rel="self" type="application/atom+xml" href="http://www.legislation.gov.uk/changes/affected/anaw/2016/3/data.feed?results-count=100&amp;sort=modified"/>
+			
+			<link rel="alternate" type="text/csv" href="http://www.legislation.gov.uk/changes/affected/anaw/2016/3/data.csv?results-count=100&amp;sort=modified"/>
+			<updated>2026-10-01T16:33:09.302389+01:00</updated>
+			<title>Changes to Legislation</title>
+			<openSearch:itemsPerPage>100</openSearch:itemsPerPage>
+			<openSearch:startIndex>1</openSearch:startIndex>
+			<openSearch:Query role="request" ukm:affected-type="anaw" ukm:affected-year="2016" ukm:affected-number="3"> </openSearch:Query>
+		<leg:page>1</leg:page><leg:morePages>0</leg:morePages><leg:totalPages>3</leg:totalPages><openSearch:totalResults>202</openSearch:totalResults><link rel="first" type="application/atom+xml" href="http://www.legislation.gov.uk/changes/affected/anaw/2016/3/data.feed?results-count=100&amp;sort=modified"/><link rel="next" type="application/atom+xml" href="http://www.legislation.gov.uk/changes/affected/anaw/2016/3/data.feed?results-count=100&amp;sort=modified&amp;page=2"/><entry>
+							<id>http://www.legislation.gov.uk/changes/affected/anaw/2016/3/affecting/asc/2024/6/test-effect-2/modified/2026-01-29T10:53:25Z</id>
+							<content type="text/xml">
+								<ukm:Effect AffectedClass="WelshNationalAssemblyAct" AffectedYear="2016" RequiresApplied="true" AffectingTerritorialApplication="W" AffectingYear="2024" URI="http://www.legislation.gov.uk/id/effect/test-effect-2" AffectingProvisions="Sch. para. 20(2)" AffectingNumber="6" EffectId="test-effect-2" Applied="true" AffectingClass="WelshParliamentAct" AffectingURI="http://www.legislation.gov.uk/id/asc/2024/6" AffectingEffectsExtent="E+W" RequiresWelshApplied="true" WelshApplied="true" AffectedURI="http://www.legislation.gov.uk/id/anaw/2016/3" Row="262" WelshAppliedModified="2024-12-13T12:03:18.797608Z" AffectedProvisions="s. 84(4)(a)" AppliedModified="2024-11-18T12:12:25.711177Z" Modified="2026-01-29T10:53:25Z" Type="omitted" AffectedNumber="3"><ukm:AffectedTitle>Environment (Wales) Act 2016</ukm:AffectedTitle><ukm:AffectedTitle xml:lang="cy">Deddf yr Amgylchedd (Cymru) 2016</ukm:AffectedTitle><ukm:AffectedProvisions><ukm:Section Ref="section-84-4-a" URI="http://www.legislation.gov.uk/id/anaw/2016/3/section/84/4/a">s. 84(4)(a)</ukm:Section></ukm:AffectedProvisions><ukm:AffectingTitle>Local Government Finance (Wales) Act 2024</ukm:AffectingTitle><ukm:AffectingTitle xml:lang="cy">Deddf Cyllid Llywodraeth Leol (Cymru) 2024</ukm:AffectingTitle><ukm:AffectingProvisions><ukm:Section Ref="schedule" URI="http://www.legislation.gov.uk/id/asc/2024/6/schedule">Sch. </ukm:Section><ukm:Section Ref="schedule-paragraph-20-2" URI="http://www.legislation.gov.uk/id/asc/2024/6/schedule/paragraph/20/2">para. 20(2)</ukm:Section></ukm:AffectingProvisions><ukm:CommencementAuthority><ukm:Section Ref="section-23-2-g" URI="http://www.legislation.gov.uk/id/asc/2024/6/section/23/2/g">s. 23(2)(g)</ukm:Section></ukm:CommencementAuthority><ukm:InForceDates><ukm:InForce Applied="true" WelshApplied="true" Date="2024-11-16" Qualification="wholly in force"/></ukm:InForceDates></ukm:Effect>
+							</content>
+							<title>Local Government Finance (Wales) Act 2024 effect on Environment (Wales) Act 2016</title>
+							<updated>2026-01-29T10:53:25Z</updated>
+							<author><name>editorial.legislation.gov.uk</name></author>
+						</entry>
+<entry>
+							<id>http://www.legislation.gov.uk/changes/affected/anaw/2016/3/affecting/ukpga/2021/30/test-effect-1/modified/2026-05-07T12:51:13Z</id>
+							<content type="text/xml">
+								<ukm:Effect URI="http://www.legislation.gov.uk/id/effect/test-effect-1" AffectedClass="WelshNationalAssemblyAct" EffectId="test-effect-1" WelshApplied="false" Row="131" AffectedURI="http://www.legislation.gov.uk/id/anaw/2016/3" AffectingURI="http://www.legislation.gov.uk/id/ukpga/2021/30" AffectedYear="2016" RequiresWelshApplied="true" AffectingNumber="30" AffectedNumber="3" Modified="2026-05-07T12:51:13Z" AffectingEffectsExtent="S+A+M+E+A+S+A+F+F+E+C+T+E+D" AffectingYear="2021" AffectingProvisions="s. 95(2)(a)" AffectedProvisions="s. 83(2)(a)" Applied="false" RequiresApplied="true" AffectingClass="UnitedKingdomPublicGeneralAct" Type="substituted"><ukm:AffectedTitle>Environment (Wales) Act 2016</ukm:AffectedTitle><ukm:AffectedTitle xml:lang="cy">Deddf yr Amgylchedd (Cymru) 2016</ukm:AffectedTitle><ukm:AffectedProvisions><ukm:Section Ref="section-83-2-a" URI="http://www.legislation.gov.uk/id/anaw/2016/3/section/83/2/a">s. 83(2)(a)</ukm:Section></ukm:AffectedProvisions><ukm:AffectingTitle>Environment Act 2021</ukm:AffectingTitle><ukm:AffectingProvisions><ukm:Section Ref="section-95-2-a" URI="http://www.legislation.gov.uk/id/ukpga/2021/30/section/95/2/a">s. 95(2)(a)</ukm:Section></ukm:AffectingProvisions><ukm:Savings><ukm:Section Ref="section-144" URI="http://www.legislation.gov.uk/id/ukpga/2021/30/section/144">s. 144</ukm:Section></ukm:Savings><ukm:CommencementAuthority><ukm:Section Ref="section-147-4" URI="http://www.legislation.gov.uk/id/ukpga/2021/30/section/147/4">s. 147(4)</ukm:Section></ukm:CommencementAuthority><ukm:InForceDates><ukm:InForce Applied="false" WelshApplied="false" Prospective="true" Qualification=""/></ukm:InForceDates></ukm:Effect>
+							</content>
+							<title>Environment Act 2021 effect on Environment (Wales) Act 2016</title>
+							<updated>2026-05-07T12:51:13Z</updated>
+							<author><name>editorial.legislation.gov.uk</name></author>
+						</entry>
+		</feed>

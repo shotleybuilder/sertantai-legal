@@ -25,6 +25,38 @@ defmodule SertantaiLegal.Scraper.LiveStatus.EffectsBackfillTest do
     ]
   end
 
+  describe "load/2 (#168 cache compatibility)" do
+    test "an older cache entry keeps the struct defaults; a cached in_force_date is a Date again" do
+      dir = Path.join(System.tmp_dir!(), "load-#{System.unique_integer([:positive])}")
+      File.mkdir_p!(dir)
+
+      File.write!(
+        Path.join(dir, "UK_old.json"),
+        Jason.encode!([%{"type" => "repealed", "affecting" => "UK_uksi_2020_1"}])
+      )
+
+      File.write!(
+        Path.join(dir, "UK_new.json"),
+        Jason.encode!([
+          %{
+            "type" => "omitted",
+            "affecting" => "UK_uksi_2021_2",
+            "in_force_date" => "2024-11-16",
+            "prospective" => false,
+            "affected_refs" => ["section-1"],
+            "savings" => []
+          }
+        ])
+      )
+
+      assert [%{prospective: false, savings: [], affected_refs: [], in_force_date: nil}] =
+               EffectsBackfill.load("UK_old", dir: dir)
+
+      assert [%{in_force_date: ~D[2024-11-16], affected_refs: ["section-1"]}] =
+               EffectsBackfill.load("UK_new", dir: dir)
+    end
+  end
+
   describe "enrich_stats/2" do
     test "adds effect extents to matching details; legacy rows are split before matching" do
       stats = %{
