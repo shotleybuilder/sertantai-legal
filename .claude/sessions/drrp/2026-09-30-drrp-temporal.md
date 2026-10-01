@@ -40,6 +40,13 @@ Sent to fractalaw (proposal f369d72):
 - Q2: the changes feed **does** carry in-force data per effect (`ukm:InForce` Date | Prospective, Qualification, commencing instrument), `ukm:Savings`, and structured affected refs (`ukm:Section Ref`). Legal's ChangesFeed parses none of it. Sample anaw/2016/3: all 7 unapplied effects are Prospective (not in force, not stale text). Proposed legal work (pending Jason): parse InForce/Savings/refs, re-fetch ~357 laws' feeds, add in_force_date / prospective / saved and ref-based section_id to effects_unapplied. That makes L10 rule 3 decidable.
 - L10 agreed (flag, don't flip). Legal can show pending amendments in its own UI from its own data.
 
+## Legal's review of R1a, the verdict split (2026-10-01)
+
+fractalaw R1a (6591492): the as-made fields keep their meaning (is_making path untouched); new current-view fields `current_verdict` (making | empowering | no_obligations | revoked | holder_unknown), `current_duty_type`, `current_{duty,rights,responsibility,power}_holder`; #72 correlatives in the same release. Jason's priority: verdict split, then #72, ideally in one legal release. Legal's answers:
+- flat column names (one legal_register migration: 9 columns + uk_lrt view/triggers); class filter on current_* holders, not on correlatives; [] clears; current_verdict stored as sent.
+- revoked: fractalaw reads `live` from the LRT payload it already gets (includes revoked_unapplied, excludes "(prosp.)"); optional additive `live_kind` offered.
+- the resolver ignores current_verdict; is_making stays as made. Whether compliance screening should use current_verdict is Jason's/compliance's call (flagged).
+
 ## Data
 
 - Dotted rows: 7,660 in 474 laws. Only 98 rows in 6 laws are fully revoked laws; 6,405 are in part-repealed laws and 1,156 in in-force laws (repealed provisions: exclude, don't recover).
@@ -53,6 +60,6 @@ Sent to fractalaw (proposal f369d72):
 - ⬜ (legal) `source_hash` + `md_dct_valid_date` on parsed lat_events → cause per operation
 - ⬜ (legal) Manifest: `amended`, `as_of`, `effects_unapplied`; a change log (cause, change_id) beside the rename log
 - ⬜ (fractalaw) Dotted-text rule: dotted provisions not substantive; all-dots law → no verdict (pending Jason)
-- ⬜ (legal) Verdict split fields, after the spec
+- ⬜ (legal) Verdict split fields: names agreed (R1a); one migration together with #72's correlative lists — pending Jason's go
 - ⬜ (legal) Made text for amended laws, after the cost sample
 - ⬜ (Jason) Approve: lat-changes `id` in the payload; changes-feed InForce/Savings/structured refs → effects_unapplied

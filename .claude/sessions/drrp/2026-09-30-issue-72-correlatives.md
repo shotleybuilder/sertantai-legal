@@ -17,7 +17,7 @@ Spec: fractalaw `DRRP-CLASSIFICATION.md` "Layer 1b: Correlatives" (a26ec52; lega
 ## Todo
 
 - ⬜ (fractalaw) s.2/s.3 counterparty-vs-beneficiary consistency check, then code and tests
-- ⬜ (legal) Migration: `claim_holder`, `liability_holder`, `protected_holder` on legal_register (same `{values: [...]}` format as duty_holder; both holder classes allowed, no never-cross-assign filter)
+- ⬜ (legal) Migration — **same release as #73's verdict split (R1a)**, one legal_register migration: `claim_holder`, `liability_holder`, `protected_holder` on legal_register (same `{values: [...]}` format as duty_holder; both holder classes allowed, no never-cross-assign filter)
 - ⬜ (legal) ProvisionSubscriber: pass `actors[].correlatives` through (always present, [] when none)
 - ⬜ (legal) TaxaSubscriber: the three lists; [] clears (never NULL when the DRRP section is present)
 - ⬜ (legal) Consistency check: correlatives only on non-active actors, plus #67-inferred active actors
