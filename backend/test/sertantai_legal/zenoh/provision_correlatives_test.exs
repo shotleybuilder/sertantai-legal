@@ -127,6 +127,36 @@ defmodule SertantaiLegal.Zenoh.ProvisionCorrelativesTest do
       assert [%{"label" => "Public"}] = ProvisionSubscriber.correlative_violations(actors)
     end
 
+    test "act (fractalatai#75) is valid on a claim_right from the fixed list, or absent" do
+      actors = [
+        actor("Org: Operator", "active", "Obligation", []),
+        actor("Gvt: Authority", "counterparty", "none", [
+          %{"type" => "claim_right", "to" => "Org: Operator", "act" => "notify"}
+        ]),
+        actor("Ind: Employee", "counterparty", "none", [
+          %{"type" => "claim_right", "to" => "Org: Operator"}
+        ])
+      ]
+
+      assert ProvisionSubscriber.correlative_violations(actors) == []
+    end
+
+    test "act off a claim_right, or outside the fixed list, is a violation" do
+      actors = [
+        actor("Gvt: Authority", "active", "Liberty", []),
+        actor("Org: Owner", "counterparty", "none", [
+          %{"type" => "liability", "to" => "Gvt: Authority", "act" => "serve"}
+        ]),
+        actor("Org: Operator", "active", "Obligation", []),
+        actor("Gvt: Regulator", "counterparty", "none", [
+          %{"type" => "claim_right", "to" => "Org: Operator", "act" => "telephone"}
+        ])
+      ]
+
+      assert actors |> ProvisionSubscriber.correlative_violations() |> Enum.map(& &1["label"]) ==
+               ["Org: Owner", "Gvt: Regulator"]
+    end
+
     test "correlative types must match the position" do
       actors = [
         actor("Org: Employer", "active", "Obligation", []),

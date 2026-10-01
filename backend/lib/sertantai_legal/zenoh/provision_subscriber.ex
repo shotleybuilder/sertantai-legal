@@ -280,17 +280,30 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
   don't fit their position: a counterparty holds claim_right / liability /
   no_right, a beneficiary protected, a mentioned actor none, and an active
   actor none — except a #67-inferred one (`reason: "inferred"`), which holds
-  only claim_right. Actors without the field (older payloads) pass.
+  only claim_right. An item's optional `act` (fractalatai#75) must sit on a
+  claim_right and be one of notify | supply | consult | pay | give_access |
+  serve | charge | answer_request | other. Actors without the field (older
+  payloads) pass.
   """
   @spec correlative_violations([map()]) :: [map()]
   def correlative_violations(actors) when is_list(actors) do
     Enum.reject(actors, fn actor ->
-      types = actor |> Map.get("correlatives") |> List.wrap() |> Enum.map(& &1["type"])
-      Enum.all?(types, &(&1 in allowed_correlatives(actor)))
+      items = actor |> Map.get("correlatives") |> List.wrap()
+
+      Enum.all?(items, &(&1["type"] in allowed_correlatives(actor))) and
+        Enum.all?(items, &valid_act?/1)
     end)
   end
 
   def correlative_violations(_), do: []
+
+  @acts ~w(notify supply consult pay give_access serve charge answer_request other)
+
+  # `act` (fractalatai#75): only on a claim_right, from the fixed list; absent = unknown.
+  defp valid_act?(%{"act" => act} = item) when not is_nil(act),
+    do: item["type"] == "claim_right" and act in @acts
+
+  defp valid_act?(_item), do: true
 
   defp allowed_correlatives(%{"position" => "active", "reason" => "inferred"}),
     do: ["claim_right"]
