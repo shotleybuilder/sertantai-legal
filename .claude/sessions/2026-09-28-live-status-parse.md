@@ -1,6 +1,6 @@
 ---
 session: Live Status Parse
-status: active
+status: suspended
 opened: 2026-09-28
 bugs:
   - pattern: "'Appointed day(s) for spec. repeals' (a commencement of repeals) counted as a whole-Act repeal because the affect contains 'repeal' and the target is 'Act'"
@@ -65,13 +65,23 @@ bugs:
     status: fixed
 ---
 
-# Session: Live Status Parse (ACTIVE)
+# Session: Live Status Parse (SUSPENDED)
 
 ## Problem
 
 Legal's `live` status comes from the legislation.gov.uk changes table (`Amending.determine_live_status/1`). The rule behind it is right: a whole-instrument revoked/repealed effect counts as revoked, whether it has been applied or not, because the "Applied" column is ignored. Legal already catches unapplied revocations such as the Energy Information regs by SI 2011/1524 and the GPSR 1994 by SI 2005/1803. But the classifier has false positives, and `live_description` goes stale. False "revoked" matters because the Making funnel skips revoked laws: 287 laws are Revoked **and** Making, so they would never be queued for LAT.
 
 Raised by fractalaw's delete-candidate review (2026-09-28), at Jason's request.
+
+## Suspended (2026-10-01)
+
+Batch 0 and Tier 1 are fetched, dry-run and applied (live status, extents, application, enabling-provision extent, preamble application). Left, gated on Jason:
+- **Blockers (Jason):** the Tier 1 family list; whether to run the corpus LAT re-parse for the extent-inheritance fix; go-ahead for the Tier 2 batches (2.01–2.08, then 2n.01–2n.06).
+- Open items as listed in Todo (24 held laws without positive application evidence, Tier 1 parents, remaining conflicts, the 287 Revoked + Making re-check, report to fractalaw).
+- Check before resuming: the rename log `created_at` RFC 3339 item may be affected by today's lat-renames `since` fix (#168).
+- #170 (monthly LAT freshness) will reuse the changes-feed fetch built here.
+
+**Resume when** Jason confirms the Tier 1 family list / Tier 2 go.
 
 ## Todo
 
