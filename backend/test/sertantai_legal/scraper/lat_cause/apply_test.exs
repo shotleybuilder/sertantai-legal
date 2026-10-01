@@ -39,7 +39,7 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
   # One parse operation: snapshot → persist → (notes) → record.
   defp parse!(name, law_id, text, xml, opts \\ []) do
     before = Apply.snapshot(name)
-    {:ok, %{op_id: op_id}} = LatPersister.persist([row(name, text)], name, law_id)
+    {:ok, %{op_id: op_id} = persisted} = LatPersister.persist([row(name, text)], name, law_id)
 
     for note <- Keyword.get(opts, :notes, []) do
       Repo.query!(
@@ -58,7 +58,7 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
     end
 
     LatStatus.Apply.refresh(name)
-    cause = Apply.record(name, op_id, before, {[xml], @paths}, opts[:explicit])
+    cause = Apply.record(name, persisted, before, {[xml], @paths}, opts[:explicit])
 
     %{rows: [[stored, hash, valid, paths]]} =
       Repo.query!(
@@ -69,6 +69,14 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
     assert stored == cause
     assert is_binary(hash)
     assert paths == @paths
+
+    %{rows: changes} =
+      Repo.query!(
+        "SELECT section_id, change, cause, cardinality(change_ids) FROM lat_changes WHERE op_key = $1 ORDER BY id",
+        [op_id]
+      )
+
+    send(self(), {:changes, cause, changes})
     {cause, valid}
   end
 
@@ -108,6 +116,14 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
                "The occupier must keep a full written record.",
                xml("2025-07-01")
              )
+
+    # the change log (L8.5): initial and parser parses log nothing (no row changed)
+    assert_received {:changes, "initial", []}
+    assert_received {:changes, "parser", []}
+
+    reg1 = "#{name}:reg.1"
+    assert_received {:changes, "legislative", [[^reg1, "text_changed", "legislative", 1]]}
+    assert_received {:changes, "unattributed", [[^reg1, "text_changed", "unattributed", 0]]}
 
     # a caller-flagged correction
     assert {"correction", _} =

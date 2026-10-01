@@ -116,6 +116,8 @@ defmodule SertantaiLegal.Scraper.LatPersister do
           stats = %{
             # the parsed lat_event's op_key: LatCause.Apply records the cause on it (#167)
             op_id: op_id,
+            # per-row changes of this parse, for the change log (#167 L8.5)
+            plan: plan_summary(plan, existing, insert_maps),
             inserted: inserted,
             deleted: deleted,
             carried: map_size(plan.carry),
@@ -146,6 +148,17 @@ defmodule SertantaiLegal.Scraper.LatPersister do
       Logger.error("[LatPersister] Failed for #{law_name}: #{Exception.message(e)}")
       {:error, Exception.message(e)}
   end
+
+  # Rows inserted are new ids that are neither held before nor rename targets.
+  defp plan_summary(plan, existing, insert_maps) do
+    known = MapSet.union(MapSet.new(existing, &row_id/1), MapSet.new(plan.renames, & &1.new))
+    inserted = for m <- insert_maps, not MapSet.member?(known, m.section_id), do: m.section_id
+
+    %{changed: plan.changed, removed: plan.removed, renames: plan.renames, inserted: inserted}
+  end
+
+  defp row_id(%{section_id: sid}), do: sid
+  defp row_id(%{"section_id" => sid}), do: sid
 
   # After commit, so the event's lat_hash matches what the queryable serves
   # (fractalatai #62). Secondary to the write: failures are logged, not raised.

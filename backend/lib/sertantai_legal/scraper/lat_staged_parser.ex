@@ -222,7 +222,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
         do:
           LatCause.Apply.record_after_parse(
             law_name,
-            lat_result.op_id,
+            lat_result,
             before,
             {xmls, Keyword.get(opts, :source_paths, [])},
             Keyword.get(opts, :cause)

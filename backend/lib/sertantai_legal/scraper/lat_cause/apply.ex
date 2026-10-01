@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LatCause, LatEvents}
+  alias SertantaiLegal.Scraper.{AmendmentNote, LatCause, LatChangeLog, LatEvents, LatStatus}
 
   require Logger
 
@@ -56,13 +56,14 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
 
   @doc """
   Decide and record the cause of the parse whose `parsed` event has op_key
-  `op_id`. `xmls`: the fetched documents; `paths`: their data.xml paths
+  `op_id` (from LatPersister's result, whose `plan` also drives the per-row
+  change log, L8.5). `xmls`: the fetched documents; `paths`: their data.xml paths
   (`[]` when not fetched, e.g. a PDF transcript); `explicit`: a caller's
   `"correction"` / `"scope"`, else nil. Returns the cause.
   """
-  @spec record(String.t(), String.t(), snapshot(), {[String.t()], [String.t()]}, String.t() | nil) ::
+  @spec record(String.t(), map(), snapshot(), {[String.t()], [String.t()]}, String.t() | nil) ::
           String.t()
-  def record(law_name, op_id, before, {xmls, paths}, explicit) do
+  def record(law_name, %{op_id: op_id} = persisted, before, {xmls, paths}, explicit) do
     source_hash = LatCause.source_hash(xmls)
     after_statuses = statuses(law_name)
 
@@ -85,6 +86,8 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
 
     cause = LatCause.decide(facts)
 
+    write_change_log!(law_name, op_id, persisted[:plan], before, after_statuses, cause)
+
     Repo.query!(
       """
       UPDATE lat_events
@@ -100,14 +103,14 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
   @doc "`record/5`, logged and never failing the parse."
   @spec record_after_parse(
           String.t(),
-          String.t(),
+          map(),
           snapshot(),
           {[String.t()], [String.t()]},
           String.t() | nil
         ) ::
           String.t() | nil
-  def record_after_parse(law_name, op_id, before, sources, explicit) do
-    cause = record(law_name, op_id, before, sources, explicit)
+  def record_after_parse(law_name, persisted, before, sources, explicit) do
+    cause = record(law_name, persisted, before, sources, explicit)
     Logger.info("[LatCause] #{law_name}: #{cause}")
 
     # The persist event fired at commit, before the cause was known: a second
@@ -125,6 +128,92 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
     e ->
       Logger.warning("[LatCause] failed for #{law_name}: #{Exception.message(e)}")
       nil
+  end
+
+  # Per-row change log (#167 L8.5): notes new in this parse are the evidence;
+  # whole-provision renumbering pairs also go into the rename log.
+  defp write_change_log!(_law_name, _op_id, nil, _before, _after, _cause), do: :ok
+
+  defp write_change_log!(law_name, op_id, plan, before, after_statuses, cause) do
+    %{rows: note_rows} =
+      Repo.query!(
+        "SELECT affected_sections, text, code_type, change_id FROM amendment_annotations WHERE law_name = $1 AND change_id IS NOT NULL",
+        [law_name]
+      )
+
+    new_notes =
+      for [sections, text, type, cid] <- note_rows,
+          not MapSet.member?(before.change_ids, cid),
+          do: %{
+            target: LatStatus.note_target(%{affected_sections: sections}),
+            text: text,
+            parsed: AmendmentNote.parse(text, type, law_name)
+          }
+
+    status_changes =
+      for {sid, status} <- after_statuses,
+          Map.has_key?(before.statuses, sid),
+          before.statuses[sid] != status,
+          do: {sid, before.statuses[sid], status}
+
+    entries =
+      LatChangeLog.entries(plan, %{
+        cause: cause,
+        new_notes: new_notes,
+        status_changes: status_changes
+      })
+
+    insert_entries!(law_name, op_id, entries)
+    insert_renumbered!(law_name, op_id, Enum.filter(entries, &renumbered?(&1, plan)))
+  end
+
+  defp insert_entries!(_law_name, _op_id, []), do: :ok
+
+  defp insert_entries!(law_name, op_id, entries) do
+    Repo.query!(
+      """
+      INSERT INTO lat_changes (law_name, op_key, section_id, old_section_id, change, cause, change_ids)
+      SELECT $1, $2, u.sid, u.old, u.change, u.cause, ARRAY(SELECT jsonb_array_elements_text(u.ids::jsonb))
+      FROM unnest($3::text[], $4::text[], $5::text[], $6::text[], $7::text[]) AS u(sid, old, change, cause, ids)
+      """,
+      [
+        law_name,
+        op_id,
+        Enum.map(entries, & &1.section_id),
+        Enum.map(entries, & &1.old_section_id),
+        Enum.map(entries, & &1.change),
+        Enum.map(entries, & &1.cause),
+        Enum.map(entries, &Jason.encode!(&1.change_ids))
+      ]
+    )
+
+    :ok
+  end
+
+  # A rename the merge didn't make: paired from a renumbering note.
+  defp renumbered?(%{change: "renamed", section_id: sid}, plan),
+    do: not Enum.any?(plan.renames, &(&1.new == sid))
+
+  defp renumbered?(_entry, _plan), do: false
+
+  defp insert_renumbered!(_law_name, _op_id, []), do: :ok
+
+  defp insert_renumbered!(law_name, op_id, entries) do
+    Repo.query!(
+      """
+      INSERT INTO lat_section_id_renames (law_name, old_section_id, new_section_id, status, match, reparse_id)
+      SELECT $1, u.old, u.new, 'renamed', 'renumbered', $4
+      FROM unnest($2::text[], $3::text[]) AS u(old, new)
+      """,
+      [
+        law_name,
+        Enum.map(entries, & &1.old_section_id),
+        Enum.map(entries, & &1.section_id),
+        Ecto.UUID.dump!(op_id)
+      ]
+    )
+
+    :ok
   end
 
   defp statuses(law_name) do
