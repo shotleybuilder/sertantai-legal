@@ -25,7 +25,8 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     LatPersister,
     LatScope,
     CommentaryParser,
-    CommentaryPersister
+    CommentaryPersister,
+    LatCause
   }
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
@@ -88,9 +89,13 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     # Stage 1: Fetch body XML
     notify(on_progress, {:stage_start, :fetch_body, 1, @total_stages})
 
-    case fetch_xmls(slash_path, LatScope.get(law_name)) do
+    scope = LatScope.get(law_name)
+
+    case fetch_xmls(slash_path, scope) do
       {:ok, xmls} ->
         notify(on_progress, {:stage_complete, :fetch_body, :ok, "XML fetched (#{length(xmls)})"})
+        # the fetched paths: a change between parses is a scope change (#167)
+        opts = Keyword.put(opts, :source_paths, LatScope.paths(slash_path, scope))
         do_run_stages(law_name, type_code, law_id, xmls, opts, start)
 
       {:error, reason} ->
@@ -183,6 +188,9 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     # Stage 3: Persist LAT
     notify(on_progress, {:stage_start, :persist_lat, 3, @total_stages})
 
+    # what the law held, for this parse's cause (#167, LatCause)
+    before = LatCause.Apply.snapshot(law_name)
+
     {lat_result, lat_error} =
       case LatPersister.persist(lat_rows, law_name, law_id,
              force: Keyword.get(opts, :force, false)
@@ -208,6 +216,18 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
         run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress)
       end
 
+    # After the notes (and their status/change_id refresh): why the LAT changed.
+    cause =
+      unless lat_error,
+        do:
+          LatCause.Apply.record_after_parse(
+            law_name,
+            lat_result.op_id,
+            before,
+            {xmls, Keyword.get(opts, :source_paths, [])},
+            Keyword.get(opts, :cause)
+          )
+
     duration_ms = System.monotonic_time(:millisecond) - start
     has_errors = lat_error or ann_error
     notify(on_progress, {:parse_complete, has_errors})
@@ -217,6 +237,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
        law_name: law_name,
        lat: lat_result,
        annotations: annotation_result,
+       cause: cause,
        duration_ms: duration_ms,
        has_errors: has_errors
      }

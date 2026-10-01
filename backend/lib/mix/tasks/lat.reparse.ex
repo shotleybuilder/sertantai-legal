@@ -7,6 +7,7 @@ defmodule Mix.Tasks.Lat.Reparse do
       mix lat.reparse --older-format --limit 30 --offset 0 --tag batch01
       mix lat.reparse --older-format --list          # just list the candidates
       mix lat.reparse --laws A,B --force --tag x     # bypass the enrichment gate (accepted loss)
+      mix lat.reparse --laws A,B --cause correction --tag fix1  # record the parses' cause (#167): correction | scope
       mix lat.reparse --older-format --enriched --dry-run --tag preview
                                                       # plan only, persist nothing
 
@@ -36,9 +37,13 @@ defmodule Mix.Tasks.Lat.Reparse do
           list: :boolean,
           dry_run: :boolean,
           enriched: :boolean,
-          force: :boolean
+          force: :boolean,
+          cause: :string
         ]
       )
+
+    if opts[:cause] not in [nil, "correction", "scope"],
+      do: Mix.raise("--cause must be correction or scope (others are inferred)")
 
     Mix.Task.run("app.start")
 
@@ -111,6 +116,7 @@ defmodule Mix.Tasks.Lat.Reparse do
       LatReparse.run(laws,
         snapshot: "lat_reparse_" <> tag,
         force: Keyword.get(opts, :force, false),
+        cause: opts[:cause],
         on_law: fn r ->
           Mix.shell().info(
             "  #{String.pad_trailing(r.law_name, 24)} rows #{r.rows_before}→#{r.rows_after} " <>

@@ -80,8 +80,10 @@ defmodule SertantaiLegal.Scraper.LatPersister do
 
           # lat_events context (read by the legal_articles triggers): a merge
           # re-parse replaces rows, it does not discard the law's LAT.
+          op_id = Ecto.UUID.generate()
+
           set_event_context(
-            op_id: Ecto.UUID.generate(),
+            op_id: op_id,
             reason: "reparse",
             source: Keyword.get(opts, :source, "lat_persister"),
             actor: Keyword.get(opts, :actor),
@@ -112,6 +114,8 @@ defmodule SertantaiLegal.Scraper.LatPersister do
           if existing != [], do: Carry.log_changes(law_name, plan, Ecto.UUID.generate())
 
           stats = %{
+            # the parsed lat_event's op_key: LatCause.Apply records the cause on it (#167)
+            op_id: op_id,
             inserted: inserted,
             deleted: deleted,
             carried: map_size(plan.carry),

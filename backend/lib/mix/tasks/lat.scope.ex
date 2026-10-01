@@ -126,7 +126,7 @@ defmodule Mix.Tasks.Lat.Scope do
   end
 
   defp parse(law) do
-    case LatStagedParser.parse(law) do
+    case LatStagedParser.parse(law, cause: "scope") do
       {:ok, %{has_errors: false, lat: lat}} ->
         Mix.shell().info("  parsed #{law}: #{lat.inserted} rows")
 

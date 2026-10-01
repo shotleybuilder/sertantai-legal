@@ -29,8 +29,12 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           updated_at: DateTime.t() | nil,
           coverage: String.t(),
           scope: String.t() | nil,
-          status_hash: String.t() | nil
+          status_hash: String.t() | nil,
+          cause: String.t() | nil,
+          source_hash: String.t() | nil
         }
+
+  @no_cause %{cause: nil, source_hash: nil}
 
   @select "SELECT name, lat_count, lat_hash, struct_hash, latest_lat_updated_at, lat_scope FROM legal_register"
 
@@ -57,7 +61,10 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   def for_law(law_name) do
     case Repo.query!(@select <> " WHERE name = $1 AND lat_count > 0", [law_name]) do
       %{rows: [row]} ->
-        row |> entry() |> Map.put(:status_hash, status_hashes([law_name])[law_name])
+        row
+        |> entry()
+        |> Map.put(:status_hash, status_hashes([law_name])[law_name])
+        |> Map.merge(Map.get(last_causes([law_name]), law_name, @no_cause))
 
       %{rows: []} ->
         %{
@@ -68,7 +75,9 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           updated_at: nil,
           coverage: "full",
           scope: nil,
-          status_hash: LatHash.empty_hash()
+          status_hash: LatHash.empty_hash(),
+          cause: nil,
+          source_hash: nil
         }
     end
   end
@@ -78,11 +87,35 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   def all do
     %{rows: rows} = Repo.query!(@select <> " WHERE lat_count > 0 ORDER BY name", [])
     hashes = status_hashes(:all)
+    causes = last_causes(:all)
 
-    Enum.map(
-      rows,
-      &(&1 |> entry() |> then(fn e -> Map.put(e, :status_hash, hashes[e.law_name]) end))
-    )
+    Enum.map(rows, fn row ->
+      e = entry(row)
+
+      e
+      |> Map.put(:status_hash, hashes[e.law_name])
+      |> Map.merge(Map.get(causes, e.law_name, @no_cause))
+    end)
+  end
+
+  # The latest parse with a recorded cause per law (#167, L8.3).
+  @last_cause_sql """
+  SELECT DISTINCT ON (law_name) law_name, cause, source_hash
+  FROM lat_events WHERE event = 'parsed' AND cause IS NOT NULL
+  """
+
+  @doc "`%{cause, source_hash}` of each law's latest caused parse (#167), for the named laws or `:all`."
+  @spec last_causes([String.t()] | :all) :: %{
+          String.t() => %{cause: String.t(), source_hash: String.t() | nil}
+        }
+  def last_causes(:all), do: causes_query(" ORDER BY law_name, at DESC", [])
+
+  def last_causes(laws) when is_list(laws),
+    do: causes_query(" AND law_name = ANY($1) ORDER BY law_name, at DESC", [laws])
+
+  defp causes_query(tail, params) do
+    %{rows: rows} = Repo.query!(@last_cause_sql <> tail, params)
+    Map.new(rows, fn [law, cause, hash] -> {law, %{cause: cause, source_hash: hash}} end)
   end
 
   @doc "`status_hash` per law (#167), for the named laws or `:all`."

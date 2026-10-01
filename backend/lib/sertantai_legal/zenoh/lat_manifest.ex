@@ -8,7 +8,8 @@ defmodule SertantaiLegal.Zenoh.LatManifest do
   Each entry is `{law_name, row_count, lat_hash, struct_hash, updated_at,
   coverage, scope, status_hash}` — `coverage` "full" | "partial" and `scope`
   (JSON fragments/purposes) for scoped LAT (#166, additive); `status_hash`
-  over per-row legal status, null until status is live (#167, additive) — (see
+  over per-row legal status, null until status is live (#167, additive);
+  `cause` / `source_hash` of the law's latest parse (#167 L8.3, additive) — (see
   `SertantaiLegal.Scraper.LatHash`). Fractalaw compares `lat_hash` with the
   version it holds and re-pulls only laws that differ. A single law without LAT
   answers `row_count: 0` with the empty hash; `*` lists only laws with LAT, so a
@@ -43,7 +44,9 @@ defmodule SertantaiLegal.Zenoh.LatManifest do
       updated_at: Enum.map(entries, & &1.updated_at),
       coverage: Enum.map(entries, & &1.coverage),
       scope: Enum.map(entries, & &1.scope),
-      status_hash: Enum.map(entries, & &1.status_hash)
+      status_hash: Enum.map(entries, & &1.status_hash),
+      cause: Enum.map(entries, & &1.cause),
+      source_hash: Enum.map(entries, & &1.source_hash)
     }
     |> Explorer.DataFrame.new()
     |> Explorer.DataFrame.dump_ipc_stream()

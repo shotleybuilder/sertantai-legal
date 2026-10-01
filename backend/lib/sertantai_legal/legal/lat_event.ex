@@ -101,6 +101,32 @@ defmodule SertantaiLegal.Legal.LatEvent do
 
     attribute(:archive_ref, :string, public?: true)
 
+    # ── Change cause (#167, L8.3; LatCause) ──────────────────────
+
+    attribute :cause, :string do
+      public?(true)
+      constraints(match: ~r/^(initial|legislative|parser|scope|correction|unattributed)$/)
+
+      description(
+        "parsed: why the LAT changed — initial | legislative | parser | scope | correction | unattributed"
+      )
+    end
+
+    attribute(:source_hash, :string,
+      public?: true,
+      description: "parsed: SHA-256 of the fetched CLML"
+    )
+
+    attribute(:source_valid_date, :date,
+      public?: true,
+      description: "parsed: legislation.gov.uk <dct:valid> of the text parsed"
+    )
+
+    attribute(:source_paths, {:array, :string},
+      public?: true,
+      description: "parsed: the data.xml paths fetched (a change = scope change)"
+    )
+
     attribute :op_key, :string do
       public?(true)
 
@@ -134,7 +160,11 @@ defmodule SertantaiLegal.Legal.LatEvent do
         :enrichment_run_id,
         :enrichment_version,
         :provenance,
-        :archive_ref
+        :archive_ref,
+        :cause,
+        :source_hash,
+        :source_valid_date,
+        :source_paths
       ])
     end
   end

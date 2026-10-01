@@ -70,7 +70,9 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
              "updated_at" => nil,
              "coverage" => "full",
              "scope" => nil,
-             "status_hash" => LatHash.empty_hash()
+             "status_hash" => LatHash.empty_hash(),
+             "cause" => nil,
+             "source_hash" => nil
            }
   end
 
@@ -79,7 +81,7 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
     df = Explorer.DataFrame.load_ipc_stream!(ipc)
 
     assert Explorer.DataFrame.names(df) |> Enum.sort() ==
-             ~w(coverage lat_hash law_name row_count scope status_hash struct_hash updated_at)
+             ~w(cause coverage lat_hash law_name row_count scope source_hash status_hash struct_hash updated_at)
 
     rows = Explorer.DataFrame.to_rows(df)
     assert %{"row_count" => 1, "lat_hash" => hash} = Enum.find(rows, &(&1["law_name"] == name))
@@ -106,6 +108,18 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
     ])
 
     assert Query.for_law(name).status_hash == nil
+  end
+
+  test "cause and source_hash of the law's latest parse (#167 L8.3)", %{name: name} do
+    assert %{cause: nil, source_hash: nil} = Query.for_law(name)
+
+    SertantaiLegal.Repo.query!(
+      "UPDATE lat_events SET cause = 'initial', source_hash = 'abc' WHERE law_name = $1 AND event = 'parsed'",
+      [name]
+    )
+
+    assert %{cause: "initial", source_hash: "abc"} = Query.for_law(name)
+    assert %{cause: "initial"} = Enum.find(Query.all(), &(&1.law_name == name))
   end
 
   test "all laws as JSON", %{name: name} do

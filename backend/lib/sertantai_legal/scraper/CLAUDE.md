@@ -38,6 +38,8 @@ scraper/
 ├── lat_status.ex                 # Pure: per-row legal status from text + notes (#167)
 ├── lat_status/apply.ex           # DB: refresh a law's note-derived fields: status, note fields, row effective_from/changed_by (after notes persist; mix lat.status)
 ├── amendment_note.ex             # Pure: commentary note → effect, effective_dates/from, changed_by (law name), change_id (#167 L8.2)
+├── lat_cause.ex                  # Pure: why a parse changed the LAT → initial | legislative | parser | scope | correction | unattributed (#167 L8.3)
+├── lat_cause/apply.ex            # DB: snapshot before persist, record the cause on the parsed lat_event after the notes
 ├── pdf_backlog.ex                # Queue PDF-only (no XML body) laws' PDFs → data/pdf-backlog/
 ├── pdf_backlog/
 │   ├── transcript.ex             # Pure: transcript markup → provision tree + QA
@@ -174,6 +176,8 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
   - Not in `lat_hash`/`struct_hash` (shared contract); the manifest's `status_hash` carries it.
 - **Note-derived change fields** (#167 L8.2, `AmendmentNote`): each note gets `effect`, `effective_dates`, `effective_from` (latest date before "by"), `changed_by` (first instrument after "by", as a law name) and `change_id` (hash of law + normalised text, never the F-number). Each LAT row gets `effective_from`/`changed_by` from the latest dated amendment/commencement note on it or an ancestor (modification notes don't count).
   - `CommentaryPersister.persist` runs `LatStatus.Apply.refresh_after_parse/1` after every commit (all parse paths), so status and change fields follow the notes.
+- **Parse cause** (#167 L8.3, `LatCause`): every `parsed` lat_event gets `cause`, `source_hash` (SHA-256 of the fetched CLML), `source_valid_date` (`<dct:valid>`) and `source_paths`. Order: no prior LAT → `initial`; caller `cause:` (correction | scope; `mix lat.reparse --cause`, `mix lat.scope`) → that; different paths → `scope`; same source hash → `parser` (exact); a new note change_id or a status change → `legislative`; unchanged lat_hash → `parser`; else `unattributed` (fractalaw never versions it). Never "unknown".
+  - Decided after the notes stage (evidence needs their change_ids), so a second `lat` event (action `cause`) carries it; the manifest has the latest `cause` / `source_hash`.
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key
