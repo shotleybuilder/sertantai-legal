@@ -86,7 +86,10 @@ defmodule SertantaiLegal.Scraper.LatHashQueryTest do
              scope: nil,
              status_hash: LatHash.empty_hash(),
              cause: nil,
-             source_hash: nil
+             source_hash: nil,
+             amended: false,
+             as_of: nil,
+             effects_unapplied: "[]"
            }
   end
 

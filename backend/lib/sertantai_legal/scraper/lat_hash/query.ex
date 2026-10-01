@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
 
   alias SertantaiLegal.Legal.Lat
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LatHash
+  alias SertantaiLegal.Scraper.{LatEffects, LatHash}
 
   @type manifest_entry :: %{
           law_name: String.t(),
@@ -31,12 +31,27 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           scope: String.t() | nil,
           status_hash: String.t() | nil,
           cause: String.t() | nil,
-          source_hash: String.t() | nil
+          source_hash: String.t() | nil,
+          amended: boolean(),
+          as_of: Date.t() | nil,
+          effects_unapplied: String.t()
         }
 
   @no_cause %{cause: nil, source_hash: nil}
 
-  @select "SELECT name, lat_count, lat_hash, struct_hash, latest_lat_updated_at, lat_scope FROM legal_register"
+  # amended (#167 L8.4): the text differs from the made version, i.e. the law
+  # has an amendment-type note (F-notes exist only where the text was
+  # changed). as_of: the latest parse's <dct:valid>, else the metadata's.
+  @select """
+  SELECT r.name, r.lat_count, r.lat_hash, r.struct_hash, r.latest_lat_updated_at, r.lat_scope,
+         EXISTS (SELECT 1 FROM amendment_annotations a
+                 WHERE a.law_name = r.name AND a.code_type = 'amendment'),
+         COALESCE((SELECT e.source_valid_date FROM lat_events e
+                   WHERE e.law_name = r.name AND e.event = 'parsed' AND e.source_valid_date IS NOT NULL
+                   ORDER BY e.at DESC LIMIT 1),
+                  r.md_dct_valid_date)
+  FROM legal_register r
+  """
 
   # status_hash (#167), mirroring LatHash.status_hash/1 over the `lat` view:
   # NULL while any row's status is NULL. COLLATE "C" = bytewise order.
@@ -59,12 +74,13 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   @doc "Manifest entry for one law; a law without LAT has row_count 0 and the empty hash."
   @spec for_law(String.t()) :: manifest_entry()
   def for_law(law_name) do
-    case Repo.query!(@select <> " WHERE name = $1 AND lat_count > 0", [law_name]) do
+    case Repo.query!(@select <> " WHERE r.name = $1 AND r.lat_count > 0", [law_name]) do
       %{rows: [row]} ->
         row
         |> entry()
         |> Map.put(:status_hash, status_hashes([law_name])[law_name])
         |> Map.merge(Map.get(last_causes([law_name]), law_name, @no_cause))
+        |> Map.put(:effects_unapplied, Map.get(effects_unapplied([law_name]), law_name, "[]"))
 
       %{rows: []} ->
         %{
@@ -77,7 +93,10 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           scope: nil,
           status_hash: LatHash.empty_hash(),
           cause: nil,
-          source_hash: nil
+          source_hash: nil,
+          amended: false,
+          as_of: nil,
+          effects_unapplied: "[]"
         }
     end
   end
@@ -85,9 +104,10 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   @doc "Manifest entries for every law with LAT rows, by law_name. Absent laws hold no LAT."
   @spec all() :: [manifest_entry()]
   def all do
-    %{rows: rows} = Repo.query!(@select <> " WHERE lat_count > 0 ORDER BY name", [])
+    %{rows: rows} = Repo.query!(@select <> " WHERE r.lat_count > 0 ORDER BY r.name", [])
     hashes = status_hashes(:all)
     causes = last_causes(:all)
+    effects = effects_unapplied(:all)
 
     Enum.map(rows, fn row ->
       e = entry(row)
@@ -95,7 +115,45 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
       e
       |> Map.put(:status_hash, hashes[e.law_name])
       |> Map.merge(Map.get(causes, e.law_name, @no_cause))
+      |> Map.put(:effects_unapplied, Map.get(effects, e.law_name, "[]"))
     end)
+  end
+
+  @doc """
+  legislation.gov.uk effects not yet applied to each law's text (#167 L8.4),
+  as a JSON list per law (`LatEffects.unapplied/3`), for the named laws or
+  `:all`. Laws without any are absent (the manifest shows "[]").
+  """
+  @spec effects_unapplied([String.t()] | :all) :: %{String.t() => String.t()}
+  def effects_unapplied(laws) do
+    {filter, params} =
+      if laws == :all, do: {"", []}, else: {" AND name = ANY($1)", [laws]}
+
+    %{rows: stats} =
+      Repo.query!(
+        ~s|SELECT name, "🔻_affected_by_stats_per_law" FROM legal_register | <>
+          ~s|WHERE lat_count > 0 AND "🔻_affected_by_stats_per_law"::text LIKE '%Not yet%'| <>
+          filter,
+        params,
+        timeout: :infinity
+      )
+
+    names = Enum.map(stats, &hd/1)
+
+    %{rows: id_rows} =
+      Repo.query!(
+        "SELECT law_name, section_id FROM legal_articles WHERE law_name = ANY($1)",
+        [names],
+        timeout: :infinity
+      )
+
+    ids = Enum.group_by(id_rows, &hd/1, &List.last/1)
+
+    for [name, stat] <- stats,
+        effects = LatEffects.unapplied(stat, name, MapSet.new(Map.get(ids, name, []))),
+        effects != [],
+        into: %{},
+        do: {name, Jason.encode!(effects)}
   end
 
   # The latest parse with a recorded cause per law (#167, L8.3).
@@ -158,8 +216,10 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
 
   # coverage/scope (#166): a scoped law's LAT is intentionally partial —
   # `scope` is JSON {fragments, purposes} (e.g. purposes ["enabling_extent"]).
-  defp entry([law_name, count, hash, struct_hash, updated_at, scope]) do
+  defp entry([law_name, count, hash, struct_hash, updated_at, scope, amended, as_of]) do
     %{
+      amended: amended,
+      as_of: as_of,
       law_name: law_name,
       row_count: count,
       lat_hash: hash,

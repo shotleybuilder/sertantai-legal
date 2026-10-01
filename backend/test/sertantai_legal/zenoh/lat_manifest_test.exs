@@ -72,7 +72,10 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
              "scope" => nil,
              "status_hash" => LatHash.empty_hash(),
              "cause" => nil,
-             "source_hash" => nil
+             "source_hash" => nil,
+             "amended" => false,
+             "as_of" => nil,
+             "effects_unapplied" => "[]"
            }
   end
 
@@ -81,7 +84,7 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
     df = Explorer.DataFrame.load_ipc_stream!(ipc)
 
     assert Explorer.DataFrame.names(df) |> Enum.sort() ==
-             ~w(cause coverage lat_hash law_name row_count scope source_hash status_hash struct_hash updated_at)
+             ~w(amended as_of cause coverage effects_unapplied lat_hash law_name row_count scope source_hash status_hash struct_hash updated_at)
 
     rows = Explorer.DataFrame.to_rows(df)
     assert %{"row_count" => 1, "lat_hash" => hash} = Enum.find(rows, &(&1["law_name"] == name))
@@ -120,6 +123,58 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
 
     assert %{cause: "initial", source_hash: "abc"} = Query.for_law(name)
     assert %{cause: "initial"} = Enum.find(Query.all(), &(&1.law_name == name))
+  end
+
+  test "amended, as_of and effects_unapplied (#167 L8.4)", %{name: name} do
+    assert %{amended: false, as_of: nil, effects_unapplied: "[]"} = Query.for_law(name)
+
+    law_id =
+      SertantaiLegal.Repo.query!("SELECT id FROM legal_register WHERE name = $1", [name]).rows
+      |> hd()
+      |> hd()
+
+    SertantaiLegal.Repo.query!(
+      """
+      INSERT INTO amendment_annotations (id, country, law_name, law_id, code, code_type, source, text, affected_sections, created_at, updated_at)
+      VALUES ($1, 'uk', $2, $3, 'F1', 'amendment', 'test', 'Reg. 1 substituted (1.4.2021) by S.I. 2021/5', $4, now(), now())
+      """,
+      ["#{name}_F1", name, law_id, ["#{name}:reg.1"]]
+    )
+
+    stats = %{
+      "UK_ssi_2099_9" => %{
+        "details" => [
+          %{"affect" => "inserted", "target" => "reg. 1(5)", "applied" => "Not yet"},
+          %{"affect" => "words substituted", "target" => "reg. 1", "applied" => "Yes"}
+        ]
+      }
+    }
+
+    SertantaiLegal.Repo.query!(
+      ~s|UPDATE legal_register SET md_dct_valid_date = '2023-05-01', "🔻_affected_by_stats_per_law" = $2 WHERE name = $1|,
+      [name, stats]
+    )
+
+    assert %{amended: true, as_of: ~D[2023-05-01], effects_unapplied: json} = Query.for_law(name)
+
+    assert Jason.decode!(json) == [
+             %{
+               "by" => "UK_ssi_2099_9",
+               "affect" => "inserted",
+               "target" => "reg. 1(5)",
+               "section_id" => "#{name}:reg.1",
+               "exact" => false
+             }
+           ]
+
+    assert Enum.find(Query.all(), &(&1.law_name == name)).effects_unapplied == json
+
+    SertantaiLegal.Repo.query!(
+      "UPDATE lat_events SET source_valid_date = '2025-02-01' WHERE law_name = $1 AND event = 'parsed'",
+      [name]
+    )
+
+    assert %{as_of: ~D[2025-02-01]} = Query.for_law(name)
   end
 
   test "all laws as JSON", %{name: name} do
