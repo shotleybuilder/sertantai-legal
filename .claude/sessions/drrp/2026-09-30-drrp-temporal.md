@@ -33,6 +33,13 @@ fractalaw added section L (6c2ef8f): per-row `status`, `effective_from`, `change
 - **Ordering:** no replay needed (legislation.gov.uk consolidates), but versions follow observation order; `effective_from` is an attribute only.
 - **Dependents:** reuse legal's definition graph (legislative_definitions + definition_link); cap at same-law uses plus explicit cross-refs.
 
+## Legal's review of L9 (versioning) and L10 (unapplied effects) (2026-10-01)
+
+Sent to fractalaw (proposal f369d72):
+- L9 agreed. One entry per row per op by construction. Fix: `removed` entries have NULL section_id, so key on coalesce(section_id, old_section_id) or on legal's entry `id` (offered, pending Jason). Status changes outside a parse (`mix lat.status`) arrive only via status_hash: never version them.
+- Q2: the changes feed **does** carry in-force data per effect (`ukm:InForce` Date | Prospective, Qualification, commencing instrument), `ukm:Savings`, and structured affected refs (`ukm:Section Ref`). Legal's ChangesFeed parses none of it. Sample anaw/2016/3: all 7 unapplied effects are Prospective (not in force, not stale text). Proposed legal work (pending Jason): parse InForce/Savings/refs, re-fetch ~357 laws' feeds, add in_force_date / prospective / saved and ref-based section_id to effects_unapplied. That makes L10 rule 3 decidable.
+- L10 agreed (flag, don't flip). Legal can show pending amendments in its own UI from its own data.
+
 ## Data
 
 - Dotted rows: 7,660 in 474 laws. Only 98 rows in 6 laws are fully revoked laws; 6,405 are in part-repealed laws and 1,156 in in-force laws (repealed provisions: exclude, don't recover).
@@ -48,3 +55,4 @@ fractalaw added section L (6c2ef8f): per-row `status`, `effective_from`, `change
 - ⬜ (fractalaw) Dotted-text rule: dotted provisions not substantive; all-dots law → no verdict (pending Jason)
 - ⬜ (legal) Verdict split fields, after the spec
 - ⬜ (legal) Made text for amended laws, after the cost sample
+- ⬜ (Jason) Approve: lat-changes `id` in the payload; changes-feed InForce/Savings/structured refs → effects_unapplied
