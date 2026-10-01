@@ -105,7 +105,14 @@ defmodule SertantaiLegal.Zenoh.DataServerLatTest do
 
     {:ok, ipc} = DataServer.fetch_amendments_by_law(name, :arrow)
 
-    assert [%{"effective_dates" => [~D[2021-04-01]], "change_id" => <<_::binary-size(32)>>}] =
-             ipc |> Explorer.DataFrame.load_ipc_stream!() |> Explorer.DataFrame.to_rows()
+    assert [
+             %{
+               "effective_dates" => [~D[2021-04-01]],
+               "change_id" => <<_::binary-size(32)>>,
+               "affected_sections" => [section]
+             }
+           ] = ipc |> Explorer.DataFrame.load_ipc_stream!() |> Explorer.DataFrame.to_rows()
+
+    assert section == "#{name}:reg.1"
   end
 end

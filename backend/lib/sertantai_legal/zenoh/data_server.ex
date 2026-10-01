@@ -534,6 +534,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         code_type: Enum.map(records, &to_string(&1.code_type)),
         text: Enum.map(records, & &1.text),
         source: Enum.map(records, & &1.source),
+        affected_sections: Enum.map(records, &(&1.affected_sections || [])),
         effect: Enum.map(records, & &1.effect),
         effective_dates: Enum.map(records, &(&1.effective_dates || [])),
         effective_from: Enum.map(records, & &1.effective_from),
