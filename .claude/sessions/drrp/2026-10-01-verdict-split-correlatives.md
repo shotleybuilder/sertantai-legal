@@ -31,6 +31,7 @@ fractalaw will publish a current (as amended) view beside the as-made DRRP field
 - ✅ Tests: `taxa_current_view_test.exs` (5), `provision_correlatives_test.exs` (7, from the layer-1b worked examples: HSWA s.2(1), s.3(1), Water Act s.82(2)(c), EPA s.20(7)); full suite 2107 passed
 - ✅ Delta sync: the 9 columns are dev-only in `Sync.Delta.Config` (compliance prod lacks them)
 - ✅ Docs: `docs/zenoh/ZENOH-SPEC.md` law + provision records
+- ✅ Added while suspended (2026-10-01, Jason accepted it on fractalatai#75): `correlative_violations/1` also logs an `act` off a claim_right or outside notify | supply | consult | pay | give_access | serve | charge | answer_request | other. Absent `act` = unknown. Built outside an active session; recorded here because it extends this session's check (fba5dd5c, commented on fractalatai#75). Goes live at the next Phoenix restart.
 - ✅ Restart (no publish in flight; heads-up sent), confirmed to fractalaw 2026-10-01
 - ✅ Found while waiting: the JSON `lrt/*` queryable raised KeyError `:leg_gov_uk_url` (LegalRegister holds `source_url`; latent since the switch from UkLrt, first hit by fractalaw today). Fixed ce5ff234 with tests; restarted again (no publish in flight, heads-up sent)
 - ℹ️ fractalaw 33f307a: R1a built. The publish is waiting on Jason's review of the dry run.
