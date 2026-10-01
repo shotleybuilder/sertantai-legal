@@ -18,6 +18,13 @@ Jason confirmed on 2026-10-01: fractalaw publishes a purpose profile per law (ea
 - **Fallback (legal's default; Jason may revisit):** unprofiled laws keep their current values. Retire the PurposeClassifier run in TaxaParser, so new scrapes get no purpose until fractalaw profiles them.
 - Compliance gets a per-law old→new change list from fractalaw's final dry run. There's no 1:1 mapping because Process+Rule splits per provision.
 
+## Fractalaw's payload (d0ac96c, built)
+
+- `purpose_profile` is an Arrow `List<Struct{purpose: utf8, count: int64, share: float64}>`, sorted by count, shares to 3 dp, beside the DRRP fields.
+- `[]` = no row has a purpose. NULL = law still on the old vocabulary (not re-parsed), so legal keeps its current `purpose`.
+- `Unclassified` arrives as an entry (honest shares). Legal excludes it when deriving `values`.
+- The per-law change list for compliance is on fractalaw's single-run checklist.
+
 ## Todo
 
 - ⬜ Migration: `purpose_profile` jsonb on legal_register (dev-only for delta sync until #133)
