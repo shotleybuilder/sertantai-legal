@@ -23,7 +23,8 @@ fractalaw will publish a current (as amended) view beside the as-made DRRP field
 - ✅ Delta sync: the 9 columns are dev-only in `Sync.Delta.Config` (compliance prod lacks them)
 - ✅ Docs: `docs/zenoh/ZENOH-SPEC.md` law + provision records
 - ✅ Restart (no publish in flight; heads-up sent), confirmed to fractalaw 2026-10-01
-- ⬜ Verify arrival after fractalaw's first R1a/#72 publish
+- ✅ Found while waiting: the JSON `lrt/*` queryable raised KeyError `:leg_gov_uk_url` (LegalRegister holds `source_url`; latent since the switch from UkLrt, first hit by fractalaw today). Fixed ce5ff234 with tests; restarted again (no publish in flight, heads-up sent)
+- ⬜ Verify arrival after fractalaw's first R1a/#72 publish (as of 19:01 nothing published: 0 rows with current_verdict / correlative holders, 0 provisions with actors[].correlatives)
 
 ## For Jason
 
