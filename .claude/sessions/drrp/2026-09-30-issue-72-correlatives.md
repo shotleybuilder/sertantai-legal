@@ -30,3 +30,13 @@ Spec: fractalaw `DRRP-CLASSIFICATION.md` "Layer 1b: Correlatives" (a26ec52; lega
 - A beneficiary of an active Obligation gets `protected` (HSWA s.47: no civil claim, so "protection" is the accurate word).
 - #67 implied Rights stay: the inferred Liberty counts in DRRP; the claim_right does not.
 - #70 Immunity (fractalaw feature): legal's position posted; needs a spec change and a migration before any code.
+
+## Counterparty vs beneficiary rule (fractalaw c8517d5, PROPOSED), legal's review 2026-10-01
+
+- **The rule:** counterparty = recipient of the duty's act → claim_right. beneficiary = protected interest without receiving the act → protected. When an actor is both, recipient wins.
+- **Legal's position:** agree.
+  - HSWA s.2(1) employees become protected; nothing to migrate, since no correlatives have been published.
+  - Suggested to fractalaw: (a) add negative acts done to / withheld from a party (HSWA s.9 charges); (b) say explicitly that "ensure X is provided with" is a recipient act.
+- **Consistency check:** unchanged; it maps position → types. Optionally tighten to check each pair against its `to` holder's type (not done).
+- **Sequencing, Jason's choice:** publish correlatives before or after the position re-run on affected laws.
+- **Compliance:** sent an FYI, since compliance#37 builds on claim_holder and protected_holder.
