@@ -24,4 +24,5 @@ Jason confirmed on 2026-10-01: fractalaw publishes a purpose profile per law (ea
 - ⬜ TaxaSubscriber: map `purpose_profile`; derive `purpose` (tests: threshold, Unclassified excluded, [] clears, absent keeps)
 - ⬜ Retire the law-level PurposeClassifier step in TaxaParser/StagedParser (check the admin UI's parse review)
 - ⬜ Docs (ZENOH-SPEC), restart with heads-up (no publish expected before the single run)
-- ⬜ Verify after the single publish; hand compliance the change list
+- ⬜ Before the single publish: send compliance fractalaw's per-law purpose change list from the final dry run (compliance#38, v0.2: Baserow rows with retired labels). Compliance asked for it to be linked on #38; check with Jason first (no-GH-posts preference)
+- ⬜ Verify after the single publish
