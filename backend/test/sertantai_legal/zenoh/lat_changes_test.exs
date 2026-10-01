@@ -68,6 +68,7 @@ defmodule SertantaiLegal.Zenoh.LatChangesTest do
 
     assert [
              %{
+               "id" => id,
                "op_key" => ^op_id,
                "change" => "text_changed",
                "cause" => "legislative",
@@ -76,13 +77,18 @@ defmodule SertantaiLegal.Zenoh.LatChangesTest do
                "source_hash" => "h1"
              }
            ] = Jason.decode!(json)
+
+    # the entry's stable id: fractalaw keys provision_versions on it (#167 L9/D5)
+    assert is_integer(id)
   end
 
   test "Arrow, and since filters by created_at", %{name: name} do
     assert {:ok, ipc} = LatChanges.fetch({:law, name}, :arrow, nil)
 
-    assert [%{"change_ids" => ["abc"], "cause" => "legislative"}] =
+    assert [%{"id" => id, "change_ids" => ["abc"], "cause" => "legislative"}] =
              ipc |> Explorer.DataFrame.load_ipc_stream!() |> Explorer.DataFrame.to_rows()
+
+    assert is_integer(id)
 
     {:ok, later, 0} = DateTime.from_iso8601("2026-10-01T11:00:00Z")
     assert {:ok, "[]"} = LatChanges.fetch({:law, name}, :json, later)
