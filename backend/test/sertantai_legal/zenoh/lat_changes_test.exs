@@ -99,4 +99,12 @@ defmodule SertantaiLegal.Zenoh.LatChangesTest do
     assert LatChanges.target("UK_x") == {:law, "UK_x"}
     assert %DateTime{} = LatChanges.parse_since("since=2026-10-01T00:00:00Z")
   end
+
+  test "parse_since/1 accepts Zenoh ';' as well as '&' between parameters" do
+    expected = ~U[2026-10-01 00:00:00Z]
+    assert LatChanges.parse_since("since=2026-10-01T00:00:00Z;format=json") == expected
+    assert LatChanges.parse_since("format=json;since=2026-10-01T00:00:00Z") == expected
+    assert LatChanges.parse_since("since=2026-10-01T00:00:00Z&format=json") == expected
+    assert LatChanges.parse_since("format=json") == nil
+  end
 end

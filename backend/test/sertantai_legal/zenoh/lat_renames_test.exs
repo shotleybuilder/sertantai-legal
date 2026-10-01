@@ -57,4 +57,12 @@ defmodule SertantaiLegal.Zenoh.LatRenamesTest do
     assert LatRenames.parse_since(nil) == nil
     assert LatRenames.parse_since("since=garbage") == nil
   end
+
+  test "parse_since/1 accepts Zenoh ';' as well as '&' between parameters" do
+    expected = ~U[2026-10-01 00:00:00Z]
+    assert LatRenames.parse_since("since=2026-10-01T00:00:00Z;format=json") == expected
+    assert LatRenames.parse_since("format=json;since=2026-10-01T00:00:00Z") == expected
+    assert LatRenames.parse_since("since=2026-10-01T00:00:00Z&format=json") == expected
+    assert LatRenames.parse_since("format=json") == nil
+  end
 end

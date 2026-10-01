@@ -24,7 +24,8 @@ defmodule SertantaiLegal.Zenoh.LatChanges do
   @doc "The `since` timestamp from Zenoh query parameters, if present and valid."
   @spec parse_since(String.t() | nil) :: DateTime.t() | nil
   def parse_since(params) when is_binary(params) do
-    with %{"since" => ts} <- URI.decode_query(params),
+    # Zenoh selectors join parameters with ';', URLs with '&': accept both.
+    with %{"since" => ts} <- params |> String.replace(";", "&") |> URI.decode_query(),
          {:ok, dt, _} <- DateTime.from_iso8601(ts) do
       dt
     else
