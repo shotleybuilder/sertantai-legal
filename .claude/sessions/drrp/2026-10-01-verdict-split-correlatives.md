@@ -1,14 +1,23 @@
 ---
 session: "Verdict split (current view) + correlative holder lists — legal build"
-status: active
+status: suspended
 opened: 2026-10-01
 related: ["fractalatai#73", "fractalatai#72"]
 depends_on: ["drrp/2026-09-30-drrp-temporal", "drrp/2026-09-30-issue-72-correlatives"]
 ---
 
-# Session: Verdict split + correlatives, legal build (ACTIVE)
+# Session: Verdict split + correlatives, legal build (SUSPENDED)
 
 Jason, 2026-10-01: "start the verdict split and #72 build" — one bundle (a conceptual "release": one migration, one restart, one heads-up). Spec: fractalaw DRRP-TEMPORAL-PROPOSAL R1a (6591492) and DRRP-CLASSIFICATION layer 1b (a26ec52). Legal's review of R1a: see `drrp/2026-09-30-drrp-temporal`.
+
+## Suspended (2026-10-01)
+
+Legal's side is built, tested and live (7e41962b, bcf0993b, ce5ff234). Jason deferred the R1a-only publish: fractalaw will send current_* and #72's correlatives (law-level claim/liability/protected_holder plus provision actors[].correlatives) in **one combined publish**, once fractalaw has built and dry-run #72. Nothing reads current_verdict yet.
+
+To resume (trigger: fractalaw sends the law list):
+1. Check no other publish is in flight. Legal needs no restart: the schema and code are already live.
+2. After the publish, check each law: current_verdict and the current_* holders against the dry run (6 revoked expected), claim/liability/protected_holder populated, `actors[].correlatives` present on provisions, and any correlative-consistency warnings in the log.
+3. Close this session and `drrp/2026-09-30-issue-72-correlatives`, then rebuild the index.
 
 ## Problem
 
