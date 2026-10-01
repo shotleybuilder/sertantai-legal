@@ -163,7 +163,11 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
                "affect" => "inserted",
                "target" => "reg. 1(5)",
                "section_id" => "#{name}:reg.1",
-               "exact" => false
+               "exact" => false,
+               # #168 in-force data: null until the law's feed is re-fetched
+               "in_force_date" => nil,
+               "prospective" => nil,
+               "saved" => nil
              }
            ]
 
