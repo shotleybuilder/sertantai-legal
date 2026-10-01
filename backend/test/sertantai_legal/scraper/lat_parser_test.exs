@@ -352,6 +352,48 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  describe "parse/2 status (#167)" do
+    test "Status=Prospective is inherited by descendants; dotted text is repealed; the rest in_force" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S+N.I.">
+      <Primary><Body>
+        <P1group RestrictExtent="E+W+S+N.I." Match="false" Status="Prospective">
+          <P1 id="section-10"><Pnumber>10</Pnumber>
+            <P2 id="section-10-1"><Pnumber>1</Pnumber><P2para><Text>A person must register.</Text></P2para></P2>
+          </P1>
+        </P1group>
+        <P1group>
+          <P1 id="section-11"><Pnumber>11</Pnumber><P1para><Text>. . . . . . . . . . . . . . . . . . . .</Text></P1para></P1>
+        </P1group>
+        <P1group>
+          <P1 id="section-12"><Pnumber>12</Pnumber><P1para><Text>The employer must keep records.</Text></P1para></P1>
+        </P1group>
+      </Body></Primary>
+      </Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2021_30", type_code: "ukpga"})
+      by_id = Map.new(rows, &{&1.section_id, &1.status})
+
+      assert by_id["UK_ukpga_2021_30:s.10"] == "prospective"
+      assert by_id["UK_ukpga_2021_30:s.10(1)"] == "prospective"
+      assert by_id["UK_ukpga_2021_30:s.11"] == "repealed"
+      assert by_id["UK_ukpga_2021_30:s.12"] == "in_force"
+      assert Enum.all?(rows, &(&1.status in SertantaiLegal.Scraper.LatStatus.statuses()))
+    end
+
+    test "to_insert_maps carries status" do
+      [row | _] =
+        LatParser.parse(
+          ~s(<Legislation><Primary><Body><P1group><P1 id="section-1"><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1></P1group></Body></Primary></Legislation>),
+          %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"}
+        )
+
+      [map] = LatParser.to_insert_maps([row], Ecto.UUID.generate())
+      assert map.status == "in_force"
+    end
+  end
+
   # ── Skip Elements ──────────────────────────────────────────────
 
   describe "parse/2 skips amendment blocks" do

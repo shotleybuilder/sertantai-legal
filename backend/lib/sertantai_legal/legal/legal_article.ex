@@ -142,6 +142,16 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       description("Territorial extent. NULL if matches parent default.")
     end
 
+    attribute :status, :string do
+      allow_nil?(true)
+
+      constraints(match: ~r/\A(in_force|in_force_partial|repealed|repealed_saved|prospective)\z/)
+
+      description(
+        "Legal status (#167): in_force | in_force_partial | repealed | repealed_saved | prospective. NULL = not yet computed. Set by LatParser + LatStatus.Apply."
+      )
+    end
+
     # ── Amendment Annotation Counts ──────────────────────────────────
 
     attribute :amendment_count, :integer do
@@ -377,6 +387,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :text,
         :language,
         :extent_code,
+        :status,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -410,6 +421,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :text,
         :language,
         :extent_code,
+        :status,
         :amendment_count,
         :modification_count,
         :commencement_count,

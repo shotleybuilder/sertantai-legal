@@ -113,4 +113,25 @@ defmodule SertantaiLegal.Scraper.LatHashTest do
       refute LatHash.struct_hash([row]) == LatHash.struct_hash([%{row | position: 2}])
     end
   end
+
+  describe "status_hash/1 (#167)" do
+    test "SHA-256 over section_id TAB status LF, bytewise by section_id" do
+      rows = [
+        %{section_id: "L:s.2", status: "repealed"},
+        %{section_id: "L:s.10", status: "in_force"}
+      ]
+
+      expected =
+        :crypto.hash(:sha256, "L:s.10\tin_force\nL:s.2\trepealed\n")
+        |> Base.encode16(case: :lower)
+
+      assert LatHash.status_hash(rows) == expected
+      assert LatHash.status_hash(Enum.reverse(rows)) == expected
+    end
+
+    test "nil while any row's status is not yet computed; empty hash with no rows" do
+      assert LatHash.status_hash([%{section_id: "L:s.1", status: nil}]) == nil
+      assert LatHash.status_hash([]) == LatHash.empty_hash()
+    end
+  end
 end

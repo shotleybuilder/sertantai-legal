@@ -77,6 +77,25 @@ defmodule SertantaiLegal.Scraper.LatHash do
   defp value(v) when is_binary(v), do: v
   defp value(v), do: to_string(v)
 
+  @doc """
+  `status_hash` (#167): per-row legal status, which `lat_hash`/`struct_hash`
+  leave out. Same rows and order; line = `section_id <TAB> status <LF>`.
+  `nil` while any row's status is not yet computed (status not live for the
+  law); the empty hash for a law with no rows.
+  """
+  @spec status_hash([%{section_id: String.t(), status: String.t() | nil}]) :: String.t() | nil
+  def status_hash(rows) do
+    if Enum.any?(rows, &is_nil(&1.status)) do
+      nil
+    else
+      rows
+      |> Enum.sort_by(& &1.section_id)
+      |> Enum.map(&[&1.section_id, ?\t, &1.status, ?\n])
+      |> then(&:crypto.hash(:sha256, &1))
+      |> Base.encode16(case: :lower)
+    end
+  end
+
   @doc "`lat_hash` of a law with no LAT rows: SHA-256 of the empty string."
   @spec empty_hash() :: String.t()
   def empty_hash, do: hash([])

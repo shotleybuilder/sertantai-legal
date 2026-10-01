@@ -10,7 +10,8 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   2. `parse_lat`           - Parse XML into LAT rows (LatParser)
   3. `persist_lat`         - DELETE+INSERT LAT rows (LatPersister)
   4. `parse_annotations`   - Parse Commentaries block (CommentaryParser)
-  5. `persist_annotations` - DELETE+INSERT annotations (CommentaryPersister)
+  5. `persist_annotations` - DELETE+INSERT annotations (CommentaryPersister),
+     then refresh per-row status from them (`LatStatus.Apply`, #167)
 
   ## Progress Events
   Same protocol as `StagedParser`:
@@ -24,7 +25,8 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     LatPersister,
     LatScope,
     CommentaryParser,
-    CommentaryPersister
+    CommentaryPersister,
+    LatStatus
   }
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
@@ -295,6 +297,10 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
     case CommentaryPersister.persist(annotations, law_name, law_id) do
       {:ok, result} ->
+        # Status needs the notes (partial commencement, savings), so it is
+        # refreshed once they are stored (#167). Never fails the parse.
+        LatStatus.Apply.refresh_after_parse(law_name)
+
         notify(
           on_progress,
           {:stage_complete, :persist_annotations, :ok, "#{result.inserted} inserted"}

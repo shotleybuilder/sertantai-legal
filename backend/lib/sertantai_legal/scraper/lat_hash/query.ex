@@ -28,10 +28,23 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           struct_hash: String.t(),
           updated_at: DateTime.t() | nil,
           coverage: String.t(),
-          scope: String.t() | nil
+          scope: String.t() | nil,
+          status_hash: String.t() | nil
         }
 
   @select "SELECT name, lat_count, lat_hash, struct_hash, latest_lat_updated_at, lat_scope FROM legal_register"
+
+  # status_hash (#167), mirroring LatHash.status_hash/1 over the `lat` view:
+  # NULL while any row's status is NULL. COLLATE "C" = bytewise order.
+  @status_hash_sql """
+  SELECT law_name,
+         CASE WHEN bool_and(status IS NOT NULL) THEN
+           encode(sha256(convert_to(
+             string_agg(section_id || E'\\t' || status || E'\\n', '' ORDER BY section_id COLLATE "C"),
+             'UTF8')), 'hex')
+         END
+  FROM lat
+  """
 
   @doc "The rows the LAT queryable serves for `law_name`, in serving order."
   @spec served_query(String.t()) :: Ecto.Query.t()
@@ -44,7 +57,7 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   def for_law(law_name) do
     case Repo.query!(@select <> " WHERE name = $1 AND lat_count > 0", [law_name]) do
       %{rows: [row]} ->
-        entry(row)
+        row |> entry() |> Map.put(:status_hash, status_hashes([law_name])[law_name])
 
       %{rows: []} ->
         %{
@@ -54,7 +67,8 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
           struct_hash: LatHash.empty_hash(),
           updated_at: nil,
           coverage: "full",
-          scope: nil
+          scope: nil,
+          status_hash: LatHash.empty_hash()
         }
     end
   end
@@ -63,7 +77,26 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   @spec all() :: [manifest_entry()]
   def all do
     %{rows: rows} = Repo.query!(@select <> " WHERE lat_count > 0 ORDER BY name", [])
-    Enum.map(rows, &entry/1)
+    hashes = status_hashes(:all)
+
+    Enum.map(
+      rows,
+      &(&1 |> entry() |> then(fn e -> Map.put(e, :status_hash, hashes[e.law_name]) end))
+    )
+  end
+
+  @doc "`status_hash` per law (#167), for the named laws or `:all`."
+  @spec status_hashes([String.t()] | :all) :: %{String.t() => String.t() | nil}
+  def status_hashes(:all) do
+    %{rows: rows} = Repo.query!(@status_hash_sql <> " GROUP BY law_name", [], timeout: :infinity)
+    Map.new(rows, fn [law, hash] -> {law, hash} end)
+  end
+
+  def status_hashes(laws) when is_list(laws) do
+    %{rows: rows} =
+      Repo.query!(@status_hash_sql <> " WHERE law_name = ANY($1) GROUP BY law_name", [laws])
+
+    Map.new(rows, fn [law, hash] -> {law, hash} end)
   end
 
   @doc "Recompute a law's hash from its rows via `lat_hash_for()` (verification; bypasses the stored value)."

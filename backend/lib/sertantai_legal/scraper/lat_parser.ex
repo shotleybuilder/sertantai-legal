@@ -33,6 +33,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   alias SertantaiLegal.Legal.Lat.SortKeyRewrite
   alias SertantaiLegal.Legal.Lat.Transforms
+  alias SertantaiLegal.Scraper.LatStatus
 
   @act_type_codes ~w(ukpga anaw asp nia apni aep)
   @container_elements ~w(Legislation Primary Secondary Body Schedules ScheduleBody
@@ -74,6 +75,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       sub_paragraph: nil,
       p2_is_wrapper: false,
       default_extent: extract_root_extent(xml),
+      prospective: false,
       mode: mode,
       ref_type_lookup: build_ref_type_lookup(doc)
     }
@@ -84,6 +86,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> assign_positions()
     |> build_row_fields(law_name, mode, context.type_code)
     |> mark_repealed_provisions(mode)
+    |> assign_status()
     |> detect_and_qualify_parallels()
     |> disambiguate_section_ids()
     # Keys must ascend with document order even where the numbering or the
@@ -137,8 +140,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
     name = element_name(node)
     extent = element_extent(node) || ctx.default_extent
     # Children inherit this element's effective extent (a Part's RestrictExtent
-    # covers its sections), not the document root's.
-    ctx = %{ctx | default_extent: extent}
+    # covers its sections), not the document root's. Status="Prospective" (on
+    # P1group / Pblock wrappers) is inherited the same way (#167).
+    ctx = %{ctx | default_extent: extent, prospective: ctx.prospective or prospective?(node)}
 
     cond do
       name in @skip_elements ->
@@ -276,6 +280,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       paragraph: ctx.paragraph,
       sub_paragraph: ctx.sub_paragraph,
       extent_code: extent,
+      prospective: ctx.prospective,
       text: text,
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
@@ -301,6 +306,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       paragraph: ctx.paragraph,
       sub_paragraph: ctx.sub_paragraph,
       extent_code: extent,
+      prospective: ctx.prospective,
       text: text,
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
@@ -325,6 +331,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       paragraph: nil,
       sub_paragraph: nil,
       extent_code: extent,
+      prospective: ctx.prospective,
       text: heading_text,
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
@@ -339,6 +346,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp element_name(node) do
     xpath(node, ~x"name(.)"s)
   end
+
+  defp prospective?(node), do: xpath(node, ~x"./@Status"so) |> to_string() == "Prospective"
 
   defp element_extent(node) do
     case xpath(node, ~x"./@RestrictExtent"so) do
@@ -697,6 +706,22 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end)
   end
 
+  # Status from the parse alone (#167): the inherited Prospective flag, else
+  # repealed text (dots / the markers above), else in force. Partial
+  # commencement and savings come from the notes (LatStatus.Apply).
+  defp assign_status(rows) do
+    Enum.map(rows, fn row ->
+      status =
+        cond do
+          Map.get(row, :prospective) -> "prospective"
+          LatStatus.repealed_text?(row.text) -> "repealed"
+          true -> "in_force"
+        end
+
+      row |> Map.delete(:prospective) |> Map.put(:status, status)
+    end)
+  end
+
   defp has_children?(rows, idx) do
     current_depth = Enum.at(rows, idx).depth
     next_row = Enum.at(rows, idx + 1)
@@ -817,6 +842,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         paragraph: row.paragraph,
         sub_paragraph: row.sub_paragraph,
         extent_code: row.extent_code,
+        status: Map.get(row, :status),
         sort_key: row.sort_key,
         position: row.position,
         depth: row.depth,

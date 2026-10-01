@@ -35,6 +35,8 @@ scraper/
 ├── lat_session_manager.ex        # LAT session lifecycle
 ├── lat_staged_parser.ex          # Staged LAT parsing (batch)
 ├── lat_reparser.ex               # Re-parse existing LAT
+├── lat_status.ex                 # Pure: per-row legal status from text + notes (#167)
+├── lat_status/apply.ex           # DB: refresh a law's statuses (after notes persist; mix lat.status)
 ├── pdf_backlog.ex                # Queue PDF-only (no XML body) laws' PDFs → data/pdf-backlog/
 ├── pdf_backlog/
 │   ├── transcript.ex             # Pure: transcript markup → provision tree + QA
@@ -164,6 +166,11 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
   - After the refresh, the law's live status is re-decided.
   - A territorial result resting only on extent is `application_unknown`: it is not applied (`needs_application`) until the law is LAT-parsed (`mix live.application --batch N --parse`, which discards not-Making LAT with an archive).
 - **Extent from effects**: `ExtentResolver` source `affected_effects` is the union of `AffectedExtent` across a law's effects. It ranks below `text_clause` and above `type_code`, and resolves legacy laws that had no source (a stored "UK" is often a GB or E+W regime).
+- **LAT row `status`** (#167, fractalaw DRRP-TEMPORAL-PROPOSAL L8.1): `in_force | in_force_partial | repealed | repealed_saved | prospective`, NULL = not computed.
+  - The parser sets `prospective` (CLML `Status="Prospective"`, inherited like extent) and `repealed` (dotted text / `[Repealed]` markers); `LatStatus.Apply` adds `in_force_partial` and `repealed_saved` from the notes once they're persisted.
+  - Partial = a commencement/amendment note says "for specified/certain purposes" with no "wholly/fully in force", "not already in force" or "otherwise". Modification notes are ignored (application, not commencement).
+  - `repealed_saved` only with a repeal note mentioning savings (lowercase: instrument titles like "Saving Provisions" don't count). Never inferred (D2).
+  - Not in `lat_hash`/`struct_hash` (shared contract); the manifest's `status_hash` carries it.
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key

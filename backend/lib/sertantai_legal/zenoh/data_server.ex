@@ -233,7 +233,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     end
   end
 
-  defp fetch_lat_by_law(law_name, :json) do
+  @doc false
+  # Public for testing: the LAT queryable payload for one law.
+  def fetch_lat_by_law(law_name, :json) do
     records =
       law_name
       |> LatHashQuery.served_query()
@@ -243,7 +245,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     {:ok, Jason.encode!(records)}
   end
 
-  defp fetch_lat_by_law(law_name, :arrow) do
+  def fetch_lat_by_law(law_name, :arrow) do
     records = law_name |> LatHashQuery.served_query() |> Repo.all()
 
     lat_to_arrow(records)
@@ -352,6 +354,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       sort_key: r.sort_key,
       position: r.position,
       extent_code: r.extent_code,
+      status: r.status,
       amendment_count: r.amendment_count,
       modification_count: r.modification_count,
       commencement_count: r.commencement_count,
@@ -445,6 +448,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         depth: Enum.map(records, & &1.depth),
         hierarchy_path: Enum.map(records, & &1.hierarchy_path),
         extent_code: Enum.map(records, & &1.extent_code),
+        status: Enum.map(records, & &1.status),
         language: Enum.map(records, & &1.language),
         part: Enum.map(records, & &1.part),
         chapter: Enum.map(records, & &1.chapter),

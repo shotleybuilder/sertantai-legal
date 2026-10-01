@@ -69,7 +69,8 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
              "struct_hash" => LatHash.empty_hash(),
              "updated_at" => nil,
              "coverage" => "full",
-             "scope" => nil
+             "scope" => nil,
+             "status_hash" => LatHash.empty_hash()
            }
   end
 
@@ -78,11 +79,33 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
     df = Explorer.DataFrame.load_ipc_stream!(ipc)
 
     assert Explorer.DataFrame.names(df) |> Enum.sort() ==
-             ~w(coverage lat_hash law_name row_count scope struct_hash updated_at)
+             ~w(coverage lat_hash law_name row_count scope status_hash struct_hash updated_at)
 
     rows = Explorer.DataFrame.to_rows(df)
     assert %{"row_count" => 1, "lat_hash" => hash} = Enum.find(rows, &(&1["law_name"] == name))
     assert hash == Query.for_law(name).lat_hash
+  end
+
+  test "status_hash: the SQL aggregate equals LatHash.status_hash/1 (#167)", %{name: name} do
+    rows =
+      SertantaiLegal.Repo.query!("SELECT section_id, status FROM lat WHERE law_name = $1", [name]).rows
+      |> Enum.map(fn [sid, status] -> %{section_id: sid, status: status} end)
+
+    SertantaiLegal.Repo.query!(
+      "UPDATE legal_articles SET status = 'in_force' WHERE law_name = $1",
+      [name]
+    )
+
+    rows = Enum.map(rows, &%{&1 | status: "in_force"})
+
+    assert Query.for_law(name).status_hash == LatHash.status_hash(rows)
+    assert Enum.find(Query.all(), &(&1.law_name == name)).status_hash == LatHash.status_hash(rows)
+
+    SertantaiLegal.Repo.query!("UPDATE legal_articles SET status = NULL WHERE law_name = $1", [
+      name
+    ])
+
+    assert Query.for_law(name).status_hash == nil
   end
 
   test "all laws as JSON", %{name: name} do
