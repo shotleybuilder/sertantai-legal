@@ -24,6 +24,11 @@ fractalaw will publish a current (as amended) view beside the as-made DRRP field
 - ✅ Docs: `docs/zenoh/ZENOH-SPEC.md` law + provision records
 - ✅ Restart (no publish in flight; heads-up sent), confirmed to fractalaw 2026-10-01
 - ✅ Found while waiting: the JSON `lrt/*` queryable raised KeyError `:leg_gov_uk_url` (LegalRegister holds `source_url`; latent since the switch from UkLrt, first hit by fractalaw today). Fixed ce5ff234 with tests; restarted again (no publish in flight, heads-up sent)
+- ℹ️ fractalaw 33f307a: R1a built. The publish is waiting on Jason's review of the dry run.
+  - Dry run over 745 hub laws: current_verdict = revoked for 6 laws that are making as made (UK_ukpga_1994_21, UK_uksi_1999_1676, 2003_751, 2005_1726, 2010_768, 2013_1119). All 6 are wholly revoked in legal's `live` and is_making = true in legal, so this is consistent.
+  - Otherwise the current view equals as made.
+  - #72 correlatives come in a later fractalaw step (priority 2), unsent (null = keep) until then.
+  - The 3 lrt/* not_found replies were fractalaw's wildcard probe, not a legal bug.
 - ⬜ Verify arrival after fractalaw's first R1a/#72 publish (as of 19:01 nothing published: 0 rows with current_verdict / correlative holders, 0 provisions with actors[].correlatives)
 
 ## For Jason
