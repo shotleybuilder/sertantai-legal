@@ -605,6 +605,11 @@ One row per law. Published from DuckDB `legislation` table.
 | `rights` | `List<Struct>` | Structured rights records |
 | `responsibilities` | `List<Struct>` | Structured responsibility records |
 | `powers` | `List<Struct>` | Structured power records |
+| `current_verdict` | `Utf8` | **#73 R1a.** As-amended verdict: `making`, `empowering`, `no_obligations`, `revoked`, `holder_unknown`. Stored as sent; an unknown value is dropped. Never feeds `is_making` (the fields above stay **as made**) |
+| `current_duty_type` | `List<Utf8>` | **#73 R1a.** DRRP types over live provisions only |
+| `current_duty_holder`, `current_rights_holder` | `List<Utf8>` | **#73 R1a.** Live-provision holders; governed labels only (never cross-assign) |
+| `current_responsibility_holder`, `current_power_holder` | `List<Utf8>` | **#73 R1a.** Live-provision holders; government labels only |
+| `claim_holder`, `liability_holder`, `protected_holder` | `List<Utf8>` | **#72.** Who holds each correlative (layer 1b). Both holder classes allowed; never counted in the verdict |
 | `fitness_entities` | `List<Utf8>` | Reconciled applicability entities (canonical names from regex+SLM+fine-tuned extraction) |
 | `fitness_scope_dimensions` | `List<Utf8>` | Scope dimensions: `personal`, `material`, `territorial`, `temporal`, `conditional` |
 | `fitness_mention_count` | `Int32` | Total fitness mentions extracted from this law's provisions |
@@ -623,6 +628,8 @@ One row per law. Published from DuckDB `legislation` table.
 | `application_evidence` | `Utf8` | **v2.4.** The deciding provision and a snippet, e.g. `reg.1(3): "These Regulations apply in relation to Wales"`; for `title`/`type_code`/`extent_fallback`, the value used |
 
 > **Significance fields** are `null` for laws with no rated Obligation provisions.
+
+> **Current view and correlatives** follow the DRRP contract: `[]` clears, null/absent means "not in this payload". Stored on `legal_register` only (not in the `uk_lrt` view) and dev-only for delta sync until compliance's prod schema has them.
 
 #### Application (v2.4, #163)
 
@@ -687,7 +694,7 @@ N rows per law (one per enriched provision). Published from Postgres `legislatio
 | `extraction_method` | `Utf8` | How taxa was determined: `regex`, `reconciled`, `slm`, `llm`, `inferred` |
 | `holder_inferred_from` | `Utf8` | Source of inferred holder (if extraction_method = `inferred`) |
 | `ancestor_distance` | `Int32` | Structural distance from ancestor with direct actors |
-| `actors` | `Utf8` (JSON) | JSONB array of actor objects: `[{label, position, label_source, reason, relates_to}]` |
+| `actors` | `Utf8` (JSON) | JSONB array of actor objects: `[{label, position, drrp, label_source, reason, relates_to, correlatives}]`. `correlatives` (#72, layer 1b) = `[{type, to}]` with type `claim_right`, `liability`, `no_right` or `protected`; stored as received. Legal logs (doesn't drop) correlatives inconsistent with the position: counterparty → claim_right/liability/no_right, beneficiary → protected, mentioned → none, active → none unless `reason: inferred` (#67), which holds claim_right only |
 | `significance_scope_duty_bearer` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — breadth of duty bearer |
 | `significance_scope_protected_class` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — breadth of protected class |
 | `significance_gravity` | `Utf8` | `HIGH`, `MEDIUM`, or `LOW` — what's at stake (health/property/admin) |

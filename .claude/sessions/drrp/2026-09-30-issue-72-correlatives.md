@@ -4,6 +4,7 @@ status: pending
 opened: 2026-09-30
 related: ["fractalatai#72", "fractalatai#70"]
 depends_on: ["drrp/2026-09-30-drrp-spec-68"]
+enables: ["drrp/2026-10-01-verdict-split-correlatives"]
 ---
 
 # Session: Correlatives, legal side (PENDING)

@@ -9,7 +9,11 @@ defmodule SertantaiLegal.Sync.Delta.Config do
   # The "country" and "jurisdiction" columns are set by the view triggers,
   # so they don't appear in the Ash resource and don't need excluding.
   @dev_only_columns %{
-    "uk_lrt" => [],
+    # fractalaw #73 R1a current view + #72 correlatives (2026-10-01): not in
+    # compliance's prod schema yet.
+    "uk_lrt" => ~w(current_verdict current_duty_type current_duty_holder current_rights_holder
+                   current_responsibility_holder current_power_holder claim_holder
+                   liability_holder protected_holder),
     "lat" => [],
     "amendment_annotations" => [],
     "legislative_definitions" => [],

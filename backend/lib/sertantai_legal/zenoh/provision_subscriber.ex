@@ -224,7 +224,7 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
           not_found: non_neg_integer(),
           invalid: non_neg_integer()
         }
-  def upsert_rows(_law_name, rows) do
+  def upsert_rows(law_name, rows) do
     now = NaiveDateTime.utc_now()
 
     {valid, invalid} = Enum.split_with(rows, &(&1["section_id"] not in [nil, ""]))
@@ -240,6 +240,8 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
       end)
       |> Enum.uniq_by(& &1["section_id"])
 
+    log_correlative_violations(law_name, payloads)
+
     updated =
       payloads
       |> Enum.chunk_every(@batch_size)
@@ -250,6 +252,51 @@ defmodule SertantaiLegal.Zenoh.ProvisionSubscriber do
 
     %{updated: updated, not_found: length(payloads) - updated, invalid: length(invalid)}
   end
+
+  # Correlatives are stored as received; an inconsistent one is logged, not
+  # dropped (fractalaw owns the derivation).
+  defp log_correlative_violations(law_name, payloads) do
+    bad =
+      for p <- payloads,
+          actor <- correlative_violations(p["actors"] || []),
+          do: "#{p["section_id"]} #{actor["label"]} (#{actor["position"]})"
+
+    if bad != [] do
+      Logger.warning(
+        "[Zenoh.ProvisionSubscriber] #{law_name}: #{length(bad)} actor(s) with correlatives " <>
+          "inconsistent with position: #{bad |> Enum.take(5) |> Enum.join("; ")}"
+      )
+    end
+  end
+
+  @correlatives_by_position %{
+    "counterparty" => ~w(claim_right liability no_right),
+    "beneficiary" => ~w(protected),
+    "mentioned" => []
+  }
+
+  @doc """
+  Actors whose `correlatives` (DRRP-CLASSIFICATION layer 1b, fractalatai #72)
+  don't fit their position: a counterparty holds claim_right / liability /
+  no_right, a beneficiary protected, a mentioned actor none, and an active
+  actor none — except a #67-inferred one (`reason: "inferred"`), which holds
+  only claim_right. Actors without the field (older payloads) pass.
+  """
+  @spec correlative_violations([map()]) :: [map()]
+  def correlative_violations(actors) when is_list(actors) do
+    Enum.reject(actors, fn actor ->
+      types = actor |> Map.get("correlatives") |> List.wrap() |> Enum.map(& &1["type"])
+      Enum.all?(types, &(&1 in allowed_correlatives(actor)))
+    end)
+  end
+
+  def correlative_violations(_), do: []
+
+  defp allowed_correlatives(%{"position" => "active", "reason" => "inferred"}),
+    do: ["claim_right"]
+
+  defp allowed_correlatives(%{"position" => p}), do: Map.get(@correlatives_by_position, p, [])
+  defp allowed_correlatives(_), do: []
 
   defp update_sql do
     sets =

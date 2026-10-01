@@ -30,6 +30,16 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     "responsibility_holder" => :responsibility_holder,
     "power_holder" => :power_holder,
     "duty_type" => :duty_type,
+    # Current (as amended) view + #72 correlatives (fractalaw #73 R1a)
+    "current_verdict" => :current_verdict,
+    "current_duty_type" => :current_duty_type,
+    "current_duty_holder" => :current_duty_holder,
+    "current_rights_holder" => :current_rights_holder,
+    "current_responsibility_holder" => :current_responsibility_holder,
+    "current_power_holder" => :current_power_holder,
+    "claim_holder" => :claim_holder,
+    "liability_holder" => :liability_holder,
+    "protected_holder" => :protected_holder,
     "role" => :role,
     "role_gvt" => :role_gvt,
     "duties" => :duties,
@@ -286,7 +296,18 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> put_holder_map(row, "rights_holder")
     |> put_holder_map(row, "responsibility_holder")
     |> put_holder_map(row, "power_holder")
+    |> put_holder_map(row, "current_duty_holder")
+    |> put_holder_map(row, "current_rights_holder")
+    |> put_holder_map(row, "current_responsibility_holder")
+    |> put_holder_map(row, "current_power_holder")
     |> enforce_drrp_holder_constraint()
+    # Current view (#73 R1a): stored as sent; never feeds is_making
+    |> put_current_verdict(row)
+    |> put_holder_map(row, "current_duty_type")
+    # Correlatives (#72): both holder classes, so no class filter
+    |> put_holder_map(row, "claim_holder")
+    |> put_holder_map(row, "liability_holder")
+    |> put_holder_map(row, "protected_holder")
     |> put_holder_map(row, "duty_type")
     |> put_list_field(row, "role")
     |> put_holder_map(row, "role_gvt")
@@ -480,7 +501,25 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriber do
     |> filter_holder(:rights_holder, &(not ActorDefinitions.government_label?(&1)))
     |> filter_holder(:responsibility_holder, &ActorDefinitions.government_label?/1)
     |> filter_holder(:power_holder, &ActorDefinitions.government_label?/1)
+    |> filter_holder(:current_duty_holder, &(not ActorDefinitions.government_label?(&1)))
+    |> filter_holder(:current_rights_holder, &(not ActorDefinitions.government_label?(&1)))
+    |> filter_holder(:current_responsibility_holder, &ActorDefinitions.government_label?/1)
+    |> filter_holder(:current_power_holder, &ActorDefinitions.government_label?/1)
   end
+
+  @current_verdicts ~w(making empowering no_obligations revoked holder_unknown)
+
+  # An unknown value is dropped (and logged) rather than failing the update
+  # on the DB check constraint.
+  defp put_current_verdict(acc, %{"current_verdict" => v}) when v in @current_verdicts,
+    do: Map.put(acc, :current_verdict, v)
+
+  defp put_current_verdict(acc, %{"current_verdict" => v}) when is_binary(v) do
+    Logger.warning("[Zenoh.TaxaSubscriber] unknown current_verdict #{inspect(v)} dropped")
+    acc
+  end
+
+  defp put_current_verdict(acc, _row), do: acc
 
   defp filter_holder(taxa, key, filter_fn) do
     case Map.get(taxa, key) do

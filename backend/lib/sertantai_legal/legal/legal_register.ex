@@ -216,6 +216,74 @@ defmodule SertantaiLegal.Legal.LegalRegister do
       description("Entities granted powers by this law (JSONB)")
     end
 
+    # ── Current (as amended) view + correlatives (fractalaw #73 R1a, #72) ──
+    # The fields above stay as made (is_making reads making_enrichment_verdict
+    # only); these are fractalaw's current view over live provisions.
+
+    attribute :current_verdict, :string do
+      allow_nil?(true)
+      constraints(match: ~r/\A(making|empowering|no_obligations|revoked|holder_unknown)\z/)
+
+      description(
+        "Current (as amended) verdict from fractalaw (#73 R1a): making | empowering | no_obligations | revoked | holder_unknown. Stored as sent; never feeds is_making"
+      )
+    end
+
+    attribute :current_duty_type, :map do
+      allow_nil?(true)
+
+      description(
+        "Current DRRP types over live provisions (JSONB {values}); raw Obligation kept when the holder is unknown"
+      )
+    end
+
+    attribute :current_duty_holder, :map do
+      allow_nil?(true)
+      description("Current duty holders (governed) over live provisions (JSONB {values})")
+    end
+
+    attribute :current_rights_holder, :map do
+      allow_nil?(true)
+      description("Current rights holders (governed) over live provisions (JSONB {values})")
+    end
+
+    attribute :current_responsibility_holder, :map do
+      allow_nil?(true)
+
+      description(
+        "Current responsibility holders (government) over live provisions (JSONB {values})"
+      )
+    end
+
+    attribute :current_power_holder, :map do
+      allow_nil?(true)
+      description("Current power holders (government) over live provisions (JSONB {values})")
+    end
+
+    attribute :claim_holder, :map do
+      allow_nil?(true)
+
+      description(
+        "Actors holding a claim_right correlative (#72), current view, both holder classes (JSONB {values})"
+      )
+    end
+
+    attribute :liability_holder, :map do
+      allow_nil?(true)
+
+      description(
+        "Actors holding a liability correlative (#72), current view, both holder classes (JSONB {values})"
+      )
+    end
+
+    attribute :protected_holder, :map do
+      allow_nil?(true)
+
+      description(
+        "Actors protected by an Obligation they benefit from (#72), current view (JSONB {values})"
+      )
+    end
+
     attribute :rights_holder, :map do
       allow_nil?(true)
       description("Entities granted rights by this law (JSONB)")
@@ -905,6 +973,15 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :popimar,
         :duty_holder,
         :power_holder,
+        :current_verdict,
+        :current_duty_type,
+        :current_duty_holder,
+        :current_rights_holder,
+        :current_responsibility_holder,
+        :current_power_holder,
+        :claim_holder,
+        :liability_holder,
+        :protected_holder,
         :rights_holder,
         :responsibility_holder,
         :role,
@@ -1027,6 +1104,15 @@ defmodule SertantaiLegal.Legal.LegalRegister do
         :popimar,
         :duty_holder,
         :power_holder,
+        :current_verdict,
+        :current_duty_type,
+        :current_duty_holder,
+        :current_rights_holder,
+        :current_responsibility_holder,
+        :current_power_holder,
+        :claim_holder,
+        :liability_holder,
+        :protected_holder,
         :rights_holder,
         :responsibility_holder,
         :role,
