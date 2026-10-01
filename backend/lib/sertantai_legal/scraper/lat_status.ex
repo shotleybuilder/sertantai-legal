@@ -107,9 +107,13 @@ defmodule SertantaiLegal.Scraper.LatStatus do
     end
   end
 
-  # The section_id itself, then without an extent tag, then each enclosing
-  # "(…)" level: "L:s.6(1)(a)[S]" → [.., "L:s.6(1)(a)", "L:s.6(1)", "L:s.6"].
-  defp ancestors(section_id) do
+  @doc """
+  The section_id itself, then without an extent tag, then each enclosing
+  "(…)" level: `"L:s.6(1)(a)[S]"` → `[.., "L:s.6(1)(a)", "L:s.6(1)", "L:s.6"]`.
+  A note whose target is any of these applies to the row.
+  """
+  @spec ancestors(String.t()) :: [String.t()]
+  def ancestors(section_id) do
     untagged = String.replace(section_id, ~r/\[[^\]]*\]\z/, "")
     Enum.uniq([section_id | strip_levels(untagged)])
   end

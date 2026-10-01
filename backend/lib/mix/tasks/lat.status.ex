@@ -1,7 +1,8 @@
 defmodule Mix.Tasks.Lat.Status do
   @moduledoc """
-  Backfill / recompute per-row LAT status (#167, L8.1) from text and amendment
-  notes (`SertantaiLegal.Scraper.LatStatus`).
+  Backfill / recompute the note-derived LAT fields (#167) via
+  `LatStatus.Apply`: per-row status (L8.1), each note's parsed fields and
+  per-row effective_from / changed_by (L8.2).
 
       mix lat.status                         # dry run, every law with LAT
       mix lat.status --law UK_uksi_2012_3030 # dry run, named laws (comma-separated)
@@ -48,6 +49,11 @@ defmodule Mix.Tasks.Lat.Status do
         "to change: #{Enum.sum(Enum.map(changed, & &1.changed))} in #{length(changed)} laws"
     )
 
+    Mix.shell().info(
+      "Change fields (#167 L8.2): notes to update #{Enum.sum(Enum.map(results, & &1.notes_changed))}; " <>
+        "rows effective_from/changed_by to update #{Enum.sum(Enum.map(results, & &1.change_rows))}"
+    )
+
     for {{from, to}, n} <-
           results
           |> Enum.flat_map(&Map.to_list(&1.transitions))
@@ -62,7 +68,7 @@ defmodule Mix.Tasks.Lat.Status do
     table = "lat_status_snapshot_" <> Calendar.strftime(DateTime.utc_now(), "%Y%m%d_%H%M")
 
     Repo.query!(
-      "CREATE TABLE #{table} AS SELECT section_id, law_name, status FROM legal_articles WHERE law_name = ANY($1)",
+      "CREATE TABLE #{table} AS SELECT section_id, law_name, status, effective_from, changed_by FROM legal_articles WHERE law_name = ANY($1)",
       [laws],
       timeout: :infinity
     )

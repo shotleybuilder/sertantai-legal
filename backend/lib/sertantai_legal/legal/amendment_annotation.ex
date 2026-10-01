@@ -69,6 +69,42 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
       description("Array of section_id values from LAT that this annotation applies to")
     end
 
+    # ── Structured note (#167, L8.2; AmendmentNote.parse/3) ─────────
+
+    attribute :effect, :string do
+      allow_nil?(true)
+
+      description(
+        "substituted | inserted | repealed | renumbered | amended | commenced | modified | other"
+      )
+    end
+
+    attribute :effective_dates, {:array, :date} do
+      allow_nil?(true)
+
+      description(
+        "Every date the note gives before 'by' (compound / partial commencement keeps all)"
+      )
+    end
+
+    attribute :effective_from, :date do
+      allow_nil?(true)
+      description("The latest of effective_dates: when the change fully took effect")
+    end
+
+    attribute :changed_by, :string do
+      allow_nil?(true)
+      description("Law name of the amending instrument (first citation after 'by')")
+    end
+
+    attribute :change_id, :string do
+      allow_nil?(true)
+
+      description(
+        "Stable id: SHA-256(law_name LF normalised text), first 32 hex. Not the F-number."
+      )
+    end
+
     create_timestamp :created_at do
       description("Record creation timestamp")
     end
@@ -104,7 +140,12 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
         :code_type,
         :source,
         :text,
-        :affected_sections
+        :affected_sections,
+        :effect,
+        :effective_dates,
+        :effective_from,
+        :changed_by,
+        :change_id
       ])
     end
 

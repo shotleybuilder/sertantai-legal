@@ -152,6 +152,19 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
+    attribute :effective_from, :date do
+      allow_nil?(true)
+
+      description(
+        "When the row's current text/status took effect: the latest dated amendment/commencement note on it or an ancestor (#167)"
+      )
+    end
+
+    attribute :changed_by, :string do
+      allow_nil?(true)
+      description("Law name of the instrument behind effective_from's note (#167)")
+    end
+
     # ── Amendment Annotation Counts ──────────────────────────────────
 
     attribute :amendment_count, :integer do
@@ -388,6 +401,8 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :language,
         :extent_code,
         :status,
+        :effective_from,
+        :changed_by,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -422,6 +437,8 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :language,
         :extent_code,
         :status,
+        :effective_from,
+        :changed_by,
         :amendment_count,
         :modification_count,
         :commencement_count,

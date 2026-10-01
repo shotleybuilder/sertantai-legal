@@ -36,7 +36,8 @@ scraper/
 ├── lat_staged_parser.ex          # Staged LAT parsing (batch)
 ├── lat_reparser.ex               # Re-parse existing LAT
 ├── lat_status.ex                 # Pure: per-row legal status from text + notes (#167)
-├── lat_status/apply.ex           # DB: refresh a law's statuses (after notes persist; mix lat.status)
+├── lat_status/apply.ex           # DB: refresh a law's note-derived fields: status, note fields, row effective_from/changed_by (after notes persist; mix lat.status)
+├── amendment_note.ex             # Pure: commentary note → effect, effective_dates/from, changed_by (law name), change_id (#167 L8.2)
 ├── pdf_backlog.ex                # Queue PDF-only (no XML body) laws' PDFs → data/pdf-backlog/
 ├── pdf_backlog/
 │   ├── transcript.ex             # Pure: transcript markup → provision tree + QA
@@ -171,6 +172,8 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
   - Partial = a commencement/amendment note says "for specified/certain purposes" with no "wholly/fully in force", "not already in force" or "otherwise". Modification notes are ignored (application, not commencement).
   - `repealed_saved` only with a repeal note mentioning savings (lowercase: instrument titles like "Saving Provisions" don't count). Never inferred (D2).
   - Not in `lat_hash`/`struct_hash` (shared contract); the manifest's `status_hash` carries it.
+- **Note-derived change fields** (#167 L8.2, `AmendmentNote`): each note gets `effect`, `effective_dates`, `effective_from` (latest date before "by"), `changed_by` (first instrument after "by", as a law name) and `change_id` (hash of law + normalised text, never the F-number). Each LAT row gets `effective_from`/`changed_by` from the latest dated amendment/commencement note on it or an ancestor (modification notes don't count).
+  - `CommentaryPersister.persist` runs `LatStatus.Apply.refresh_after_parse/1` after every commit (all parse paths), so status and change fields follow the notes.
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key

@@ -14,6 +14,8 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Zenoh.ChangeNotifier
 
+  alias SertantaiLegal.Scraper.LatStatus
+
   require Logger
 
   @batch_size 500
@@ -59,6 +61,13 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
       ChangeNotifier.notify("amendments", "persist", %{law_name: law_name, count: inserted})
 
       %{inserted: inserted, deleted: deleted}
+    end)
+    |> tap(fn
+      # Notes drive per-row status and change fields, and their own parsed
+      # fields (#167): refresh once they are committed, on every persist path.
+      # Never fails the persist.
+      {:ok, _} -> LatStatus.Apply.refresh_after_parse(law_name)
+      _ -> :ok
     end)
   rescue
     e ->

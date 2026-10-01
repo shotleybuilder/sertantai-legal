@@ -139,4 +139,49 @@ defmodule SertantaiLegal.Scraper.LatStatus.ApplyTest do
 
     assert status(name, 1) == "repealed"
   end
+
+  test "refresh/1 writes each note's parsed fields and each row's effective_from / changed_by (#167 L8.2)" do
+    {name, id} = law_with_lat(["A duty.", "Another duty.", "Third."])
+
+    note!(
+      name,
+      id,
+      "reg.1",
+      "Reg. 1 substituted (1.4.2006) by , ; Water Act 2003 (c. 37) s. 22",
+      "amendment"
+    )
+
+    note!(
+      name,
+      id,
+      "reg.1",
+      "Words in reg. 1 inserted (1.4.2014) by S.I. 2014/1 reg. 2",
+      "amendment"
+    )
+
+    note!(name, id, "reg.2", "Reg. 2 modified (1.1.2020) by S.I. 2019/9", "modification")
+
+    assert %{notes_changed: 3, change_rows: 1} = Apply.refresh(name)
+
+    %{rows: notes} =
+      Repo.query!(
+        "SELECT effect, effective_dates, effective_from, changed_by, length(change_id) FROM amendment_annotations WHERE law_name = $1 ORDER BY effective_from",
+        [name]
+      )
+
+    assert [
+             ["substituted", [~D[2006-04-01]], ~D[2006-04-01], "UK_ukpga_2003_37", 32],
+             ["inserted", [~D[2014-04-01]], ~D[2014-04-01], "UK_uksi_2014_1", 32],
+             ["modified", [~D[2020-01-01]], ~D[2020-01-01], "UK_uksi_2019_9", 32]
+           ] = notes
+
+    row = Ash.get!(LegalArticle, "#{name}:reg.1")
+    assert {row.effective_from, row.changed_by} == {~D[2014-04-01], "UK_uksi_2014_1"}
+
+    # a modification note is not a change to the text
+    row2 = Ash.get!(LegalArticle, "#{name}:reg.2")
+    assert {row2.effective_from, row2.changed_by} == {nil, nil}
+
+    assert %{notes_changed: 0, change_rows: 0, changed: 0} = Apply.refresh(name)
+  end
 end

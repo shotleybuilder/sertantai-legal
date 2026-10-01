@@ -251,7 +251,9 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     lat_to_arrow(records)
   end
 
-  defp fetch_amendments_by_law(law_name, :json) do
+  @doc false
+  # Public for testing: the amendments queryable payload for one law.
+  def fetch_amendments_by_law(law_name, :json) do
     records =
       from(a in AmendmentAnnotation,
         where: a.law_name == ^law_name,
@@ -263,7 +265,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
     {:ok, Jason.encode!(records)}
   end
 
-  defp fetch_amendments_by_law(law_name, :arrow) do
+  def fetch_amendments_by_law(law_name, :arrow) do
     records =
       from(a in AmendmentAnnotation,
         where: a.law_name == ^law_name,
@@ -355,6 +357,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       position: r.position,
       extent_code: r.extent_code,
       status: r.status,
+      effective_from: r.effective_from,
+      changed_by: r.changed_by,
       amendment_count: r.amendment_count,
       modification_count: r.modification_count,
       commencement_count: r.commencement_count,
@@ -372,6 +376,11 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       text: r.text,
       source: r.source,
       affected_sections: r.affected_sections,
+      effect: r.effect,
+      effective_dates: r.effective_dates,
+      effective_from: r.effective_from,
+      changed_by: r.changed_by,
+      change_id: r.change_id,
       updated_at: r.updated_at
     }
   end
@@ -449,6 +458,8 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         hierarchy_path: Enum.map(records, & &1.hierarchy_path),
         extent_code: Enum.map(records, & &1.extent_code),
         status: Enum.map(records, & &1.status),
+        effective_from: Enum.map(records, & &1.effective_from),
+        changed_by: Enum.map(records, & &1.changed_by),
         language: Enum.map(records, & &1.language),
         part: Enum.map(records, & &1.part),
         chapter: Enum.map(records, & &1.chapter),
@@ -520,9 +531,14 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         law_id: Enum.map(records, & &1.law_id),
         law_name: Enum.map(records, & &1.law_name),
         code: Enum.map(records, & &1.code),
-        code_type: Enum.map(records, & &1.code_type),
+        code_type: Enum.map(records, &to_string(&1.code_type)),
         text: Enum.map(records, & &1.text),
         source: Enum.map(records, & &1.source),
+        effect: Enum.map(records, & &1.effect),
+        effective_dates: Enum.map(records, &(&1.effective_dates || [])),
+        effective_from: Enum.map(records, & &1.effective_from),
+        changed_by: Enum.map(records, & &1.changed_by),
+        change_id: Enum.map(records, & &1.change_id),
         updated_at: Enum.map(records, & &1.updated_at)
       })
 
