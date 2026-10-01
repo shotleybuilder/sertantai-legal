@@ -40,3 +40,7 @@ Spec: fractalaw `DRRP-CLASSIFICATION.md` "Layer 1b: Correlatives" (a26ec52; lega
 - **Consistency check:** unchanged; it maps position → types. Optionally tighten to check each pair against its `to` holder's type (not done).
 - **Sequencing, Jason's choice:** publish correlatives before or after the position re-run on affected laws.
 - **Compliance:** sent an FYI, since compliance#37 builds on claim_holder and protected_holder.
+- **Compliance's reply:** it agrees with the rule and recorded it on compliance#37.
+  - Request: provenance for each holder entry.
+  - The provision reference already exists: `actors[].correlatives` per section_id on LAT rows.
+  - The act verb is not carried. Passed to fractalaw as an optional `{type, to, act}`, which needs Jason and a spec change. Law-level entry lists are possible later if the LAT join is too slow.
