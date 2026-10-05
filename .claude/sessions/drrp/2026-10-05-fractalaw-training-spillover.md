@@ -40,10 +40,11 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 - ⬜ Run `mix actors.rename_labels` at fractalaw's pre-publish message
 - ✅ Company officer: Ind: Company Officer label + mask before the government pass (fractalaw 0e7846d parity)
 - ✅ Economic operator: SC: Economic Operator ahead of Operator; lookbehind on Operator's bare pattern, "economic" dropped from its alternation (fractalaw 2d9c99d parity)
-- ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Public → Ind: Public, Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
+- ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Public → Ind: Public; split "prosecutor" out of Gvt: Judiciary into Gvt: Prosecutor and "Lord Advocate" into Gvt: Minister: Lord Advocate per fractalaw's patterns; Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
 - ⬜ Add patterns, under tests, for fractalaw's ~57 section-E labels legal lacks (fractalaw `docs/dictionaries/ACTOR-RECONCILIATION-2026-10-05.md`)
 - ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels; ea2a0fd, 188 labels — 9b4b74b1)
 - ✅ "Ind: Public": correlative rule retired, "Public" → "Ind: Public" canonical (Jason; fractalaw 12ce423). Rename task deletes the 1,137 inferred beneficiaries first, then renames; dry run residuals 0
+- ⬜ 10 economic-operator laws outside the run: Jason deciding; if excluded, fractalaw sends explicit (section_id, label) corrections to apply
 - ⬜ Verify single-run arrival per law (79 Authorised Person laws re-derived; 144 company-officer laws re-parsed, list in pre-publish message)
 
 ## Dependencies
