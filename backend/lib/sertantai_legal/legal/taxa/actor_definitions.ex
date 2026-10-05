@@ -31,7 +31,8 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
                              "Gvt: Officer": [
                                "[Aa]uthorised [Oo]fficer",
                                "[Oo]fficer of a local authority",
-                               "[Oo]fficer"
+                               # Not a company's officer — that is Ind: Company Officer
+                               "(?<![Ss]imilar )(?<![Ss]enior )[Oo]fficer(?!s? of (?:the|a|an|any|that|such|another) (?:body corporate|company|limited liability partnership|partnership|Scottish partnership))"
                              ],
                              "Gvt: Appropriate Person": "[Aa]ppropriate [Pp]ersons?",
                              "Gvt: Judiciary": [
@@ -170,6 +171,12 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
   # because Regex structs contain NIF references that can't be stored in module attributes.
 
   @governed_patterns_raw [
+    # Before Org: Company, which would otherwise consume "company"
+    # (fractalaw 0e7846d, 2026-10-05)
+    "Ind: Company Officer": [
+      "(?:[Ss]imilar |[Ss]enior )?[Oo]fficers? of (?:the|a|an|any|that|such|another) (?:body corporate|company|limited liability partnership|partnership|Scottish partnership)",
+      "[Ss]imilar [Oo]fficers?"
+    ],
     # Business
     "Org: Investor": "[Ii]nvestors?",
     "Org: Owner": [

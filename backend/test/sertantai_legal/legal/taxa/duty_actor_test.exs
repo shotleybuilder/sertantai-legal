@@ -169,4 +169,41 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActorTest do
       assert "Ind: Employee" in result.actors
     end
   end
+
+  # Corporate-offence clauses name the company's officers, not government
+  # officers (fractalaw 0e7846d parity, 2026-10-05)
+  describe "company officers" do
+    test "director, manager, secretary or other similar officer of the body corporate" do
+      text =
+        "where an offence is committed by a body corporate with the consent of any director, " <>
+          "manager, secretary or other similar officer of the body corporate, he shall be guilty"
+
+      result = DutyActor.get_actors_in_text(text)
+
+      assert "Ind: Company Officer" in result.actors
+      refute "Gvt: Officer" in result.actors_gvt
+    end
+
+    test "officer of a company / limited liability partnership is a company officer" do
+      for body <- ["company", "limited liability partnership", "Scottish partnership"] do
+        result = DutyActor.get_actors_in_text("any officer of the #{body} shall be liable")
+
+        assert "Ind: Company Officer" in result.actors, body
+        refute "Gvt: Officer" in result.actors_gvt, body
+      end
+    end
+
+    test "government officers still match" do
+      for text <- [
+            "an authorised officer may enter the premises",
+            "an officer of a local authority may serve a notice",
+            "the officer may require the production of records"
+          ] do
+        result = DutyActor.get_actors_in_text(text)
+
+        assert "Gvt: Officer" in result.actors_gvt, text
+        refute "Ind: Company Officer" in result.actors, text
+      end
+    end
+  end
 end
