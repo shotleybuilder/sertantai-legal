@@ -18,6 +18,12 @@ bugs:
     affected: "fractalaw: 338 Operator rows on 468 provisions in 26 laws (120 active); legal's stored rows came from fractalaw"
     fix: "SC: Economic Operator ([Ee]conomic[\\s-]operators?) before Operator; (?<![Ee]conomic[\\s-]) lookbehind on the bare pattern. Stored rows: 16 laws in fractalaw's single run, 10 proposed to Jason"
     status: fixed
+  - pattern: "Bare Gvt: Agency: [Aa]gency labels 'temporary work agency' and 'agency workers' as a government agency"
+    category: actor regex
+    module: SertantaiLegal.Legal.Taxa.ActorDefinitions
+    affected: "unknown in legal; fractalaw's mirror bug (blacklist hid it from the governed pass) found in family group 2"
+    fix: "Org: Temporary Work Agency ([Tt]emporary work agenc(?:y|ies)); (?<![Tt]emporary work ) lookbehind and (?! workers?) lookahead on the bare Gvt: Agency: pattern"
+    status: fixed
   - pattern: "priv/data/actor-dictionary.yaml snapshot still had Spc: Authorised Person as government after the class change, failing the ActorDictionary/ActorDefinitions agreement test"
     category: dictionary snapshot drift
     module: priv/data/actor-dictionary.yaml
@@ -40,6 +46,7 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 - ⬜ Run `mix actors.rename_labels` at fractalaw's pre-publish message
 - ✅ Company officer: Ind: Company Officer label + mask before the government pass (fractalaw 0e7846d parity)
 - ✅ Economic operator: SC: Economic Operator ahead of Operator; lookbehind on Operator's bare pattern, "economic" dropped from its alternation (fractalaw 2d9c99d parity)
+- ✅ Temporary work agency: Org: Temporary Work Agency; bare Gvt: Agency: excludes "temporary work agency" and "agency worker(s)" by lookaround (fractalaw c5876c1 parity)
 - ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Public → Ind: Public; split "prosecutor" out of Gvt: Judiciary into Gvt: Prosecutor and "Lord Advocate" into Gvt: Minister: Lord Advocate per fractalaw's patterns; Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
 - ⬜ Add patterns, under tests, for fractalaw's ~57 section-E labels legal lacks (fractalaw `docs/dictionaries/ACTOR-RECONCILIATION-2026-10-05.md`)
 - ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels; ea2a0fd, 188 labels — 9b4b74b1)

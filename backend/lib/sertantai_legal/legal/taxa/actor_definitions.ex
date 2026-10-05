@@ -135,7 +135,8 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
                                "SEPA"
                              ],
                              "Gvt: Agency: OFCOM": ["Office of Communications?", "OFCOM"],
-                             "Gvt: Agency:": "[Aa]gency",
+                             # Not a temporary work agency (Org:) or agency workers
+                             "Gvt: Agency:": "(?<![Tt]emporary work )[Aa]gency(?! workers?)",
                              # Devolved Administrations
                              "Gvt: Devolved Admin: National Assembly for Wales": [
                                "National Assembly for Wales",
@@ -189,6 +190,8 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
     "Org: Lessee": "[Ll]essee",
     "Org: Occupier": ["[Oo]ccupiers?", "[Pp]erson who is in occupation"],
     "Org: Employer": "[Ee]mployers?",
+    # fractalaw c5876c1, 2026-10-05
+    "Org: Temporary Work Agency": "[Tt]emporary work agenc(?:y|ies)",
     # Before Operator (fractalaw 2d9c99d, 2026-10-05)
     "SC: Economic Operator": "[Ee]conomic[\\s-]operators?",
     Operator: [

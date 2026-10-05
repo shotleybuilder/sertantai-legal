@@ -236,4 +236,32 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActorTest do
       end
     end
   end
+
+  # A temporary work agency is a governed business, not a government agency
+  # (fractalaw c5876c1 parity, 2026-10-05)
+  describe "temporary work agencies" do
+    test "temporary work agency is Org: Temporary Work Agency, not Gvt: Agency:" do
+      for text <- [
+            "the temporary work agency shall provide information",
+            "where temporary work agencies supply workers"
+          ] do
+        result = DutyActor.get_actors_in_text(text)
+
+        assert "Org: Temporary Work Agency" in result.actors, text
+        refute "Gvt: Agency:" in result.actors_gvt, text
+      end
+    end
+
+    test "agency workers are not a government agency" do
+      result = DutyActor.get_actors_in_text("the hirer shall give agency workers access")
+
+      refute "Gvt: Agency:" in result.actors_gvt
+    end
+
+    test "a bare agency is still government" do
+      result = DutyActor.get_actors_in_text("the agency may serve a notice")
+
+      assert "Gvt: Agency:" in result.actors_gvt
+    end
+  end
 end
