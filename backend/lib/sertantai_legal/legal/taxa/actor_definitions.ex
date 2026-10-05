@@ -189,9 +189,12 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
     "Org: Lessee": "[Ll]essee",
     "Org: Occupier": ["[Oo]ccupiers?", "[Pp]erson who is in occupation"],
     "Org: Employer": "[Ee]mployers?",
+    # Before Operator (fractalaw 2d9c99d, 2026-10-05)
+    "SC: Economic Operator": "[Ee]conomic[\\s-]operators?",
     Operator: [
-      "[Oo]perators?",
-      "(?:berth|mine|well|economic|meter)[[:blank:]-]operator",
+      # Not an economic operator — that is SC: Economic Operator
+      "(?<![Ee]conomic[\\s-])[Oo]perators?",
+      "(?:berth|mine|well|meter)[[:blank:]-]operator",
       "operator of a production installation"
     ],
     "Org: Company": [

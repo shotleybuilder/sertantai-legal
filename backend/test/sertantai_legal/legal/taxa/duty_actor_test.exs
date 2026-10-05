@@ -206,4 +206,34 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActorTest do
       end
     end
   end
+
+  # Product safety's umbrella for manufacturer/importer/distributor/authorised
+  # representative (fractalaw 2d9c99d parity, 2026-10-05)
+  describe "economic operators" do
+    test "economic operator is SC: Economic Operator, not Operator" do
+      for text <- [
+            "every economic operator shall ensure that the product is safe",
+            "all economic operators must keep records",
+            "the economic-operator shall cooperate"
+          ] do
+        result = DutyActor.get_actors_in_text(text)
+
+        assert "SC: Economic Operator" in result.actors, text
+        refute "Operator" in result.actors, text
+      end
+    end
+
+    test "other operators still match Operator" do
+      for text <- [
+            "the operator shall notify the regulator",
+            "the mine operator shall keep a plan",
+            "the operator of a production installation shall"
+          ] do
+        result = DutyActor.get_actors_in_text(text)
+
+        assert "Operator" in result.actors, text
+        refute "SC: Economic Operator" in result.actors, text
+      end
+    end
+  end
 end
