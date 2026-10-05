@@ -44,7 +44,7 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 - ⬜ Add patterns, under tests, for fractalaw's ~57 section-E labels legal lacks (fractalaw `docs/dictionaries/ACTOR-RECONCILIATION-2026-10-05.md`)
 - ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels; ea2a0fd, 188 labels — 9b4b74b1)
 - ✅ "Ind: Public": correlative rule retired, "Public" → "Ind: Public" canonical (Jason; fractalaw 12ce423). Rename task deletes the 1,137 inferred beneficiaries first, then renames; dry run residuals 0
-- ⬜ 10 economic-operator laws outside the run: Jason deciding; if excluded, fractalaw sends explicit (section_id, label) corrections to apply
+- ✅ 10 economic-operator laws added to the single run's re-parse (Jason); all 26 arrive corrected, no legal-side fix
 - ⬜ Verify single-run arrival per law (79 Authorised Person laws re-derived; 144 company-officer laws re-parsed, list in pre-publish message)
 
 ## Dependencies
