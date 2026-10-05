@@ -264,4 +264,51 @@ defmodule SertantaiLegal.Legal.Taxa.DutyActorTest do
       assert "Gvt: Agency:" in result.actors_gvt
     end
   end
+
+  # Overlaps found against fractalaw's group 1/4 labels (fractalaw 9b91854,
+  # 2026-10-05)
+  describe "verifiers, gas transporters, health care professionals" do
+    test "a verifier is Spc: Verifier, not Spc: Inspector" do
+      result = DutyActor.get_actors_in_text("the accredited verifier shall assess the report")
+
+      assert "Spc: Verifier" in result.actors
+      refute "Spc: Inspector" in result.actors
+    end
+
+    test "a gas transporter is Svc: Gas Transporter, not a carrier" do
+      result = DutyActor.get_actors_in_text("the gas transporter shall maintain the pipeline")
+
+      assert "Svc: Gas Transporter" in result.actors
+      refute "SC: T&L: Carrier" in result.actors
+    end
+
+    test "other transporters are still carriers" do
+      result = DutyActor.get_actors_in_text("the transporter shall carry the document")
+
+      assert "SC: T&L: Carrier" in result.actors
+    end
+
+    test "plain doctor, physician and nurse are health care professionals" do
+      for text <- ["the doctor shall examine", "a physician may certify", "a nurse shall record"] do
+        result = DutyActor.get_actors_in_text(text)
+
+        assert "Spc: Health Care Professional" in result.actors, text
+        refute "Spc: OH Advisor" in result.actors, text
+      end
+    end
+
+    test "occupational health forms stay Spc: OH Advisor" do
+      for text <- [
+            "an employment medical adviser may require",
+            "the appointed doctor shall certify",
+            "the relevant doctor shall certify",
+            "an occupational health nurse shall record"
+          ] do
+        result = DutyActor.get_actors_in_text(text)
+
+        assert "Spc: OH Advisor" in result.actors, text
+        refute "Spc: Health Care Professional" in result.actors, text
+      end
+    end
+  end
 end

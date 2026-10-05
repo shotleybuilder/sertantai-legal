@@ -262,12 +262,20 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
     Public: ["[Pp]ublic", "[Ee]veryone", "[Cc]itizens?"],
     "Public: Parents": "[Pp]arents?",
     # Specialist
+    # Occupational forms only; plain doctor/physician/nurse are
+    # Spc: Health Care Professional (fractalaw 9b91854, 2026-10-05)
     "Spc: OH Advisor": [
-      "[Nn]urse",
-      "[Pp]hysician",
-      "(?:[Rr]elevant)?[ ]?[Dd]octor",
+      "[Oo]ccupational health (?:nurse|advis[oe]r|physician)s?",
+      "(?:[Aa]ppointed|[Rr]elevant) doctor",
       "[Mm]edical examiner",
       "[Ee]mployment medical advis[oe]r"
+    ],
+    "Spc: Health Care Professional": [
+      "[Hh]ealth ?care professionals?",
+      "[Rr]egistered (?:medical practitioner|nurse)s?",
+      "[Dd]octors?",
+      "[Pp]hysicians?",
+      "[Nn]urses?"
     ],
     "Spc: Employees' Representative": [
       "[Ee]mployees' representative",
@@ -281,9 +289,10 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
     "Spc: Inspector": [
       "[Uu]ser inspectorate",
       "[Ii]nspectors?",
-      "[Vv]erifier",
       "[Ww]ell examiner"
     ],
+    # An accredited (e.g. emissions) verifier isn't an inspector (fractalaw 9b91854)
+    "Spc: Verifier": "[Vv]erifiers?",
     "Spc: Body":
       "(?:[Aa]ppropriate|[Aa]pproved|[Ss]ampling|(?:UK )?[Nn]otified|[Cc]onformity assessment) (?:] )?[Bb]ody",
     "Spc: Advisor": "[Aa]dvis[oe]r",
@@ -318,8 +327,11 @@ defmodule SertantaiLegal.Legal.Taxa.ActorDefinitions do
     "SC: T&L: Consignor": "[Cc]onsignor",
     "SC: T&L: Handler": ["[Hh]andler", "person who.*?(?:loads|unloads)"],
     "SC: T&L: Consignee": "[Cc]onsignee",
+    # Before SC: T&L: Carrier (fractalaw 9b91854)
+    "Svc: Gas Transporter": "[Gg]as transporters?",
     "SC: T&L: Carrier": [
-      "[Tt]ransporter",
+      # Not a gas transporter — that is Svc: Gas Transporter
+      "(?<![Gg]as )[Tt]ransporter",
       "person who.*?(?:carries|transports)",
       "[Cc]arriers?"
     ],
