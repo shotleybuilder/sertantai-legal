@@ -12,7 +12,12 @@ defmodule Mix.Tasks.Actors.RenameLabels do
      (`Ind: Public`, reason `inferred`, position `beneficiary`, drrp `none`)
      from `legal_articles.actors` — first, so they don't merge into real
      `Public` entries (Jason 2026-10-05; fractalaw 12ce423)
-  2. Rename labels per the map (including `Public` → `Ind: Public`) in:
+  2. Remove `Public` / `Ind: Public` holders from `legal_register`
+     responsibilities/powers entries: a governed actor never holds a
+     Responsibility or Power (never cross-assign). Stale placements in 23
+     laws fractalaw doesn't hold, so no republish fixes them (Jason
+     2026-10-05)
+  3. Rename labels per the map (including `Public` → `Ind: Public`) in:
      - `legal_register` holder fields (`{"values": [...]}`): labels renamed,
     de-duplicated and sorted
      - `legal_register` DRRP entries (`{"entries": [{"holder": ...}]}`):
@@ -79,6 +84,7 @@ defmodule Mix.Tasks.Actors.RenameLabels do
       Repo.transaction(
         fn ->
           delete_retired_inferred()
+          remove_public_from_government_entries()
           apply_renames(map)
           IO.puts("\nAfter (inside transaction):")
           after_counts = report_residuals(map)
@@ -119,6 +125,28 @@ defmodule Mix.Tasks.Actors.RenameLabels do
       """,
       []
     )
+  end
+
+  @public_labels ["Public", "Ind: Public"]
+
+  defp remove_public_from_government_entries do
+    for col <- ~w(responsibilities powers) do
+      run_update(
+        "legal_register.#{col} (Public holders removed)",
+        """
+        UPDATE legal_register
+        SET #{col} = jsonb_set(#{col}, '{entries}', (
+              SELECT coalesce(jsonb_agg(x ORDER BY o), '[]'::jsonb)
+              FROM jsonb_array_elements(#{col} -> 'entries') WITH ORDINALITY t(x, o)
+              WHERE NOT (x ->> 'holder' = ANY($1)))),
+            updated_at = now()
+        WHERE jsonb_typeof(#{col} -> 'entries') = 'array'
+          AND EXISTS (SELECT 1 FROM jsonb_array_elements(#{col} -> 'entries') x
+                      WHERE x ->> 'holder' = ANY($1))
+        """,
+        [@public_labels]
+      )
+    end
   end
 
   # Columns are matched structurally (label membership in the map): their
@@ -244,7 +272,7 @@ defmodule Mix.Tasks.Actors.RenameLabels do
       "EXISTS (SELECT 1 FROM unnest(government_actors) x WHERE $1::jsonb ? x)"
     ]
 
-    %{rows: [[register, articles, gvt_ap, retired]]} =
+    %{rows: [[register, articles, gvt_ap, retired, public_gvt]]} =
       Repo.query!(
         """
         SELECT
@@ -252,9 +280,14 @@ defmodule Mix.Tasks.Actors.RenameLabels do
           (SELECT count(*) FROM legal_articles WHERE #{Enum.join(articles_preds, " OR ")}),
           (SELECT count(*) FROM legal_articles, unnest(actors) x
             WHERE x ->> 'label' = $2 AND x ->> 'role' = 'government'),
-          (SELECT count(*) FROM legal_articles, unnest(actors) x WHERE #{@retired_inferred})
+          (SELECT count(*) FROM legal_articles, unnest(actors) x WHERE #{@retired_inferred}),
+          (SELECT count(*) FROM legal_register
+            WHERE EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(responsibilities -> 'entries') = 'array' THEN responsibilities -> 'entries' END) x
+                          WHERE x ->> 'holder' = ANY($3))
+               OR EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(powers -> 'entries') = 'array' THEN powers -> 'entries' END) x
+                          WHERE x ->> 'holder' = ANY($3)))
         """,
-        [map, @flip_to_governed],
+        [map, @flip_to_governed, @public_labels],
         timeout: :infinity
       )
 
@@ -262,7 +295,8 @@ defmodule Mix.Tasks.Actors.RenameLabels do
       legal_register_rows: register,
       legal_articles_rows: articles,
       authorised_person_government_actors: gvt_ap,
-      retired_inferred_actors: retired
+      retired_inferred_actors: retired,
+      public_in_government_entries: public_gvt
     }
 
     IO.puts("  #{inspect(counts)}")

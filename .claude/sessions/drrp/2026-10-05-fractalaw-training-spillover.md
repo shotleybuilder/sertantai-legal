@@ -33,7 +33,7 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 - ✅ `mix actors.rename_labels` built and dry-run tested (6f9600e4); residuals 146/2,546 → 0/0
 - ⬜ Run `mix actors.rename_labels` at fractalaw's pre-publish message
 - ✅ Company officer: Ind: Company Officer label + mask before the government pass (fractalaw 0e7846d parity)
-- ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
+- ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Public → Ind: Public, Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
 - ⬜ Add patterns, under tests, for fractalaw's ~57 section-E labels legal lacks (fractalaw `docs/dictionaries/ACTOR-RECONCILIATION-2026-10-05.md`)
 - ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels; ea2a0fd, 188 labels — 9b4b74b1)
 - ✅ "Ind: Public": correlative rule retired, "Public" → "Ind: Public" canonical (Jason; fractalaw 12ce423). Rename task deletes the 1,137 inferred beneficiaries first, then renames; dry run residuals 0
@@ -67,4 +67,4 @@ Repair scope (Jason): the 54 out-of-backlog company-officer laws are added to th
 
 The correlative rule that inferred the public as beneficiary of every enforcement duty is retired. "Ind: Public" is now the canonical label for members of the public (third parties with no defined role); bare "Public" is renamed to it. `mix actors.rename_labels` deletes the rule's entries first (so they can't merge into the 13 rows that also hold a real "Public"), then renames. Residuals are now matched structurally, because a substring "Public" also hits "Ind: Public" and "Public: …". Dry run: 1,893 legal_register / 7,447 legal_articles rows before → 0 after.
 
-Seen while checking: "Public" is a holder in responsibilities/powers entries of 23 laws (a governed actor on the government side). Raised with fractalaw; not touched here.
+Seen while checking: "Public" is a holder in responsibilities/powers entries of 23 laws (a governed actor on the government side). All 23 are not_held by fractalaw, so no republish fixes them. Jason confirmed (2026-10-05): the rename task removes Public / Ind: Public holders from responsibilities/powers entries before the rename (never cross-assign, spec layer 4). Dry run: 23 → 0. fractalaw's remaining 73 inferred Ind: Public rows are #67 implied access rights (active Liberty), which step 1's filter leaves alone.
