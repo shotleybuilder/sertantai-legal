@@ -276,11 +276,23 @@ defmodule SertantaiLegal.Zenoh.TaxaSubscriberTest do
       result =
         TaxaSubscriber.normalize_taxa(%{
           "rights_holder" => [],
-          "power_holder" => ["Spc: Authorised Person"]
+          "power_holder" => ["Spc: Notifying Authority"]
         })
 
       assert result.rights_holder == %{values: []}
-      assert result.power_holder == %{values: ["Spc: Authorised Person"]}
+      assert result.power_holder == %{values: ["Spc: Notifying Authority"]}
+    end
+
+    test "Spc: Authorised Person is a governed holder (Jason, 2026-10-05)" do
+      taxa = %{
+        duty_holder: %{values: ["Spc: Authorised Person"]},
+        power_holder: %{values: ["Spc: Authorised Person"]}
+      }
+
+      result = TaxaSubscriber.enforce_drrp_holder_constraint(taxa)
+
+      assert result.duty_holder == %{values: ["Spc: Authorised Person"]}
+      assert result.power_holder == %{values: []}
     end
 
     test "passes through fields not present" do
