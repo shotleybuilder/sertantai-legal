@@ -36,7 +36,7 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 - ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
 - ⬜ Add patterns, under tests, for fractalaw's ~57 section-E labels legal lacks (fractalaw `docs/dictionaries/ACTOR-RECONCILIATION-2026-10-05.md`)
 - ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels; ea2a0fd, 188 labels — 9b4b74b1)
-- ⬜ "Ind: Public" (not a dictionary label): 1,137 legal_articles.actors rows in 97 laws, all inferred beneficiaries from fractalaw's correlative rule. Jason deciding whether the rule stays; laws outside the run may need a rename/delete at pre-publish
+- ✅ "Ind: Public": correlative rule retired, "Public" → "Ind: Public" canonical (Jason; fractalaw 12ce423). Rename task deletes the 1,137 inferred beneficiaries first, then renames; dry run residuals 0
 - ⬜ Verify single-run arrival per law (79 Authorised Person laws re-derived; 144 company-officer laws re-parsed, list in pre-publish message)
 
 ## Dependencies
@@ -62,3 +62,9 @@ Legal can use lookarounds (fractalaw's Rust regex can't, so it masks text before
 The Authorised Person commit (bb4bb624) was tested on the taxa and Zenoh suites only; the full suite caught the snapshot drift. Run the full suite on any class change.
 
 Repair scope (Jason): the 54 out-of-backlog company-officer laws are added to the single run's re-parse, because the wrong Gvt: Officer sits in regex and LLM rows. All 144 arrive repaired, so legal does no local repair.
+
+## Ind: Public (Jason, 2026-10-05)
+
+The correlative rule that inferred the public as beneficiary of every enforcement duty is retired. "Ind: Public" is now the canonical label for members of the public (third parties with no defined role); bare "Public" is renamed to it. `mix actors.rename_labels` deletes the rule's entries first (so they can't merge into the 13 rows that also hold a real "Public"), then renames. Residuals are now matched structurally, because a substring "Public" also hits "Ind: Public" and "Public: …". Dry run: 1,893 legal_register / 7,447 legal_articles rows before → 0 after.
+
+Seen while checking: "Public" is a holder in responsibilities/powers entries of 23 laws (a governed actor on the government side). Raised with fractalaw; not touched here.
