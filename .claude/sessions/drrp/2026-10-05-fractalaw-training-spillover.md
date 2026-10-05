@@ -21,7 +21,7 @@ bugs:
   - pattern: "Bare Gvt: Agency: [Aa]gency labels 'temporary work agency' and 'agency workers' as a government agency"
     category: actor regex
     module: SertantaiLegal.Legal.Taxa.ActorDefinitions
-    affected: "unknown in legal; fractalaw's mirror bug (blacklist hid it from the governed pass) found in family group 2"
+    affected: "0 stored rows (302 provisions in 9 laws name a TWA or agency workers; none carry Gvt: Agency:). Regex-path bug only; fractalaw's mirror bug hid the TWA from the governed pass"
     fix: "Org: Temporary Work Agency ([Tt]emporary work agenc(?:y|ies)); (?<![Tt]emporary work ) lookbehind and (?! workers?) lookahead on the bare Gvt: Agency: pattern"
     status: fixed
   - pattern: "priv/data/actor-dictionary.yaml snapshot still had Spc: Authorised Person as government after the class change, failing the ActorDictionary/ActorDefinitions agreement test"
