@@ -35,8 +35,9 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 - ✅ Company officer: Ind: Company Officer label + mask before the government pass (fractalaw 0e7846d parity)
 - ⬜ Rename labels in `actor_definitions.ex` to fractalaw's names (Maritime: master → Maritime: Master, SC: Domestic Client → SC: C: Domestic Client, Public: Parents → Ind: Parent, Ind: Authorised Person → Spc: Authorised Person, Ind: Licence Holder → Ind: Licensee, …)
 - ⬜ Add patterns, under tests, for fractalaw's ~57 section-E labels legal lacks (fractalaw `docs/dictionaries/ACTOR-RECONCILIATION-2026-10-05.md`)
-- ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels)
-- ⬜ Verify single-run arrival per law (79 Authorised Person laws re-derived; officer repair scope pending Jason)
+- ✅ Refresh `priv/data/actor-dictionary.yaml` snapshot from fractalaw's canonical YAML (0e7846d, 178 labels; ea2a0fd, 188 labels — 9b4b74b1)
+- ⬜ "Ind: Public" (not a dictionary label): 1,137 legal_articles.actors rows in 97 laws, all inferred beneficiaries from fractalaw's correlative rule. Jason deciding whether the rule stays; laws outside the run may need a rename/delete at pre-publish
+- ⬜ Verify single-run arrival per law (79 Authorised Person laws re-derived; 144 company-officer laws re-parsed, list in pre-publish message)
 
 ## Dependencies
 
@@ -59,3 +60,5 @@ Storage touched by the map (legal_register holder fields, DRRP entries, role; le
 Legal can use lookarounds (fractalaw's Rust regex can't, so it masks text before the government pass). The exclusion sits on the bare `Gvt: Officer` pattern itself, which covers every government path: DutyActor's government pass, ActorLib's combined library, and DutyTypeLib's responsibility/power holder patterns. "Authorised officer", "officer of a local authority" and a bare "officer" still match. Ind: Company Officer is placed before Org: Company, which would otherwise consume "company" first. Tests in `duty_actor_test.exs` ("company officers").
 
 The Authorised Person commit (bb4bb624) was tested on the taxa and Zenoh suites only; the full suite caught the snapshot drift. Run the full suite on any class change.
+
+Repair scope (Jason): the 54 out-of-backlog company-officer laws are added to the single run's re-parse, because the wrong Gvt: Officer sits in regex and LLM rows. All 144 arrive repaired, so legal does no local repair.
