@@ -59,7 +59,7 @@ fractalaw is producing drrp-v1.1 SLM training labels (Gemini, per provision, ~6,
 ## Dependencies
 
 - ✅ Actor dictionary sync (drrp/2026-09-30-actor-dictionary)
-- ⬜ fractalaw single-run publish (hub rename migration awaits Jason's approval)
+- ⬜ fractalaw single-run publish: after the SLM retrain and evaluation (export labels → RunPod fine-tune → evaluate), not imminent. Scope: every reparse_needed law in fractalaw's lat_sync_state (549 on 2026-10-05) plus Jason's additions (30 Authorised Person backfill; 54 company officer, 10 economic operator, 7 verifier/gas transporter re-parse; 24 new Making Acts and others on fractalaw's backlog checklist). The pre-publish message carries the exact per-law list
 
 ## Decisions (Jason, 2026-10-05)
 
@@ -89,3 +89,7 @@ Seen while checking: "Public" is a holder in responsibilities/powers entries of 
 ## Label checks against legal's library
 
 Legal's patterns write the first letter in brackets (`[Vv]erifier`), so a plain-word grep misses them. Check by collapsing `[Xx]` → `x` first (sed -E 's/\[([A-Za-z])([A-Za-z])\]/\L\1/g'). The group 1 answer ("no legal labels") was wrong for Verifier and Gas Transporter for this reason, and was corrected with fractalaw.
+
+## Training labels complete (2026-10-05)
+
+fractalaw finished the drrp-v1.1 SLM training labels: 6,959 provisions, 0 open dictionary gaps; snapshot at e33793c (228 labels). Every label fractalaw added along the way was checked against legal's library; overlaps found were fixed on both sides (company officer, economic operator, temporary work agency, verifier, gas transporter, health care professional).
