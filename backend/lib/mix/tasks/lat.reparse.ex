@@ -8,6 +8,7 @@ defmodule Mix.Tasks.Lat.Reparse do
       mix lat.reparse --older-format --list          # just list the candidates
       mix lat.reparse --laws A,B --force --tag x     # bypass the enrichment gate (accepted loss)
       mix lat.reparse --laws A,B --cause correction --tag fix1  # record the parses' cause (#167): correction | scope
+      mix lat.reparse --laws A,B --store prefer --tag x # parse from the local CLML store (#175)
       mix lat.reparse --older-format --enriched --dry-run --tag preview
                                                       # plan only, persist nothing
 
@@ -38,7 +39,8 @@ defmodule Mix.Tasks.Lat.Reparse do
           dry_run: :boolean,
           enriched: :boolean,
           force: :boolean,
-          cause: :string
+          cause: :string,
+          store: :string
         ]
       )
 
@@ -117,6 +119,7 @@ defmodule Mix.Tasks.Lat.Reparse do
         snapshot: "lat_reparse_" <> tag,
         force: Keyword.get(opts, :force, false),
         cause: opts[:cause],
+        store: store_mode(opts[:store]),
         on_law: fn r ->
           Mix.shell().info(
             "  #{String.pad_trailing(r.law_name, 24)} rows #{r.rows_before}→#{r.rows_after} " <>
@@ -150,4 +153,9 @@ defmodule Mix.Tasks.Lat.Reparse do
     Mix.shell().info("report #{path}")
     path
   end
+
+  # #175: nil = live (default); prefer/only/refresh use the local CLML store
+  defp store_mode(nil), do: nil
+  defp store_mode(mode) when mode in ~w(prefer only refresh), do: String.to_atom(mode)
+  defp store_mode(other), do: Mix.raise("--store must be prefer, only or refresh, got #{other}")
 end

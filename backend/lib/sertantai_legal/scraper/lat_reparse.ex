@@ -84,9 +84,14 @@ defmodule SertantaiLegal.Scraper.LatReparse do
     table = Keyword.fetch!(opts, :snapshot)
     force = Keyword.get(opts, :force, false)
     cause = Keyword.get(opts, :cause)
+    store = Keyword.get(opts, :store)
 
     parse_fn =
-      Keyword.get(opts, :parse_fn, &LatStagedParser.parse(&1, force: force, cause: cause))
+      Keyword.get(
+        opts,
+        :parse_fn,
+        &LatStagedParser.parse(&1, force: force, cause: cause, store: store)
+      )
 
     on_law = Keyword.get(opts, :on_law, fn _ -> :ok end)
 
