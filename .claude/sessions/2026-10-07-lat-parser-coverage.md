@@ -51,7 +51,7 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
   - definitions on the section row, the subsection left as just "In these Regulations—": WSI 2005/1806 reg.5(1), SSI 2000/95 reg.2(1), Water Act 2003 s.3(12) and s.58(13), SI 2004/1490 reg.2(1), SI 2000/1043 reg.2(1)
   - trailing BlockText continuing an earlier subsection's open list (often not the last one): CAA 1982 s.35, s.43, s.44 (→ s.44(6)), s.46, s.84; SI 2010/93 reg.7 (fragments for (5) and (6)) and reg.18; SI 2012/2782 reg.15; SSI 2017/101 reg.15; SI 1998/2306 reg.2
   - fractalaw's assembler moves definitions back meanwhile; it doesn't guess the trailing cases
-- ⬜ #174 corpus measure: offline diff with the new parser (vs stored LAT), compared with the pre-#174 baseline
+- ✅ #174 corpus measure (offline, `offline-diff-174-2026-10-07.csv`): 205 section rows in 101 laws lose stray content to their subsections ("other word change" +818, "was empty, now text" 215 → 20); list-bug reorders unchanged (1,801 in 723 laws). Word conservation per provision: 204/205 exact; the exception (WSI 2005/1806 reg.5) keeps every stored word and gains 63 the old parser dropped
 - ➡️ XML store: moved to its own session, `2026-10-07-issue-175.md` (#175), brought forward by Jason
 - ✅ fractalaw told per batch (6 laws, its 60 test laws, batch 3); it reads changed section_ids from lat-changes (cause correction/unattributed)
 - ✅ Coverage: the whole-corpus run compares every held row (incl. Part/Chapter/heading/table); schedules stay unfetched (#169, deferred)
