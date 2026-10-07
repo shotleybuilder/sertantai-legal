@@ -7,7 +7,8 @@ Legislation scraping, parsing, definition extraction, and cross-reference resolu
 ```
 scraper/
 ├── legislation_gov_uk/           # HTTP client + XML parser for legislation.gov.uk
-│   ├── client.ex                 # API client (body, metadata, search, PDF)
+│   ├── client.ex                 # API client (body, metadata, search, PDF); read-through CLML store
+│   ├── clml_store.ex             # Local CLML store (#175): gzip + meta, freshness by dct:valid
 │   ├── body_xml.ex               # Pure: PDF alternatives from body XML
 │   ├── changes_feed.ex           # Changes-affected Atom feed: effects with extents/application
 │   ├── parser.ex                 # XML → structured data
@@ -190,6 +191,7 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
   - Relevance rule (Jason, 2026-10-07; `LatScope.Relevance`): a large Act (≥ 3,000 rows) with **no family** keeps the Part of every section an in-family register SI is made under, plus named fragments (`@named` in `mix lat.scope`); Acts with a family stay whole. Customer-register Acts (e.g. QQ's) with no EHS link are reviewed case by case and narrowed to what concerns the customer, not discarded.
   - **Excluded** (`LatScope.exclude!/2`, `mix lat.scope --exclude --law X --reason R`): a no-EHS-link law loses its LAT (archived, `discarded` lat_event, reason `not_relevant`) and its scope is flagged `excluded`; `LatStagedParser` refuses it, so no path re-parses it. Reverse by clearing `lat_scope` and re-parsing.
   - 2026-10-07: 14 Acts scoped (58,507 → 10,966 rows): the six ≥ 3,000 rows (Companies 2006, Communications 2003, GLA 1999, Investigatory Powers 2016, Enterprise 2002, Levelling-up 2023), four 1,000–3,000 by the rule (Civic Government (Scotland) 1982, Policing and Crime 2017, Finance Act 1996, UK_ukpga_2021_26), three QQ-register Acts by named Parts (Wireless Telegraphy 2006, RIPA 2000, Offensive Weapons 2019), Finance Act 2016 to its environmental-tax sections (ss.142–148) and Part 6 (apprenticeship levy); Companies Act 1989 excluded. Run the dry run (`mix lat.scope --relevance --min-rows 1000`) after LRT scrapes to catch new candidates.
+- **Local CLML store** (#175, `LegislationGovUk.ClmlStore`): `Client.fetch_xml/2` stores every legislation document it fetches (body, fragments, introduction, contents) under `data/cache/clml/` (gzip + meta; 404s as markers; NAS-backed with `backend/data`). Modes: `:write` (default: live + store), `:prefer` (fresh stored copy, else live), `:only` (offline), `:refresh`. Fresh = stored `dct:valid` ≥ the law's `md_dct_valid_date`, else fetched within 30 days. Bulk tools default to `:prefer` (`lat.text_diff`, `lat.repair_text`, `clml.fetch`; `LatStagedParser` with `store:`); the admin re-parse and LRT scrape stay live. `mix lat.text_diff --all --store only` is the offline whole-corpus parse diff.
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key

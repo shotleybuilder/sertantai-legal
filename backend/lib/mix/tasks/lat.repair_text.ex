@@ -36,6 +36,9 @@ defmodule Mix.Tasks.Lat.RepairText do
   row that lost its closing words: the law's body is fetched once
   (scope-aware) and every row held in both is compared.
   `lat_hash` follows by trigger.
+
+  `--store prefer|only|refresh` (default `prefer`): the local CLML store
+  (#175) — reuse fresh stored documents, never fetch, or always fetch.
   """
 
   use Mix.Task
@@ -62,7 +65,8 @@ defmodule Mix.Tasks.Lat.RepairText do
           limit: :integer,
           apply: :boolean,
           candidates: :string,
-          whole: :boolean
+          whole: :boolean,
+          store: :string
         ]
       )
 
@@ -79,6 +83,8 @@ defmodule Mix.Tasks.Lat.RepairText do
     unless File.exists?(out), do: File.write!(out, CSV.dump_to_iodata([@header]))
     done = read_done(done_path)
 
+    opts = Keyword.put(opts, :store_mode, store_mode(opts[:store]))
+
     if opts[:whole],
       do: run_whole(opts, out, done_path, done),
       else: run_provisions(opts, out, done_path, done)
@@ -94,7 +100,7 @@ defmodule Mix.Tasks.Lat.RepairText do
 
     total =
       Enum.reduce(laws, 0, fn law, acc ->
-        case LatStagedParser.fetch_rows(law) do
+        case LatStagedParser.fetch_rows(law, store: opts[:store_mode]) do
           {:ok, rows, _law_id} ->
             fresh = Map.new(rows, &{&1.section_id, &1.text})
             repairs = LatRepair.repairs(stored_rows(law), fresh)
@@ -137,7 +143,7 @@ defmodule Mix.Tasks.Lat.RepairText do
       todo
       |> Enum.chunk_by(&elem(&1, 0))
       |> Enum.reduce(%{rows: 0, provisions: 0, failed: 0}, fn group, acc ->
-        law_totals = repair_law(group, opts[:apply] || false, out, done_path)
+        law_totals = repair_law(group, opts, out, done_path)
         Map.merge(acc, law_totals, fn _k, a, b -> a + b end)
       end)
 
@@ -151,13 +157,15 @@ defmodule Mix.Tasks.Lat.RepairText do
     )
   end
 
-  defp repair_law([{law, _} | _] = group, apply?, out, done_path) do
+  defp repair_law([{law, _} | _] = group, opts, out, done_path) do
+    apply? = opts[:apply] || false
+    store_opts = LatStagedParser.store_opts(law, store: opts[:store_mode])
     stored = stored_rows(law)
     op_key = op_key()
 
     totals =
       Enum.reduce(group, %{rows: 0, provisions: 0, failed: 0}, fn {^law, provision}, acc ->
-        case fresh_rows(law, provision) do
+        case fresh_rows(law, provision, store_opts) do
           {:ok, fresh} ->
             held =
               Map.filter(stored, fn {sid, _} -> LatRepair.in_provision?(sid, law, provision) end)
@@ -180,13 +188,13 @@ defmodule Mix.Tasks.Lat.RepairText do
     totals
   end
 
-  defp fresh_rows(law, provision) do
+  defp fresh_rows(law, provision, store_opts) do
     type_code = law |> String.split("_") |> Enum.at(1)
 
     law
     |> LatRepair.fragment_paths(provision)
     |> Enum.reduce_while({:error, "no fragment found"}, fn path, err ->
-      case Client.fetch_xml(path <> "/data.xml") do
+      case Client.fetch_xml(path <> "/data.xml", store_opts) do
         {:ok, xml} ->
           rows = LatParser.parse(xml, %{law_name: law, type_code: type_code})
 
@@ -264,6 +272,10 @@ defmodule Mix.Tasks.Lat.RepairText do
         cols
     end
   end
+
+  defp store_mode(nil), do: :prefer
+  defp store_mode(mode) when mode in ~w(prefer only refresh), do: String.to_atom(mode)
+  defp store_mode(other), do: Mix.raise("--store must be prefer, only or refresh, got #{other}")
 
   # Repair op keys are prefixed, so event healing only ever matches this tool's ops
   defp op_key, do: "lat_repair_text:" <> Ecto.UUID.generate()

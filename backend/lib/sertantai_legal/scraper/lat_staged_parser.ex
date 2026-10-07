@@ -54,6 +54,9 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   - `on_progress` — `(progress_event -> :ok | :abort)` callback for SSE streaming
   - `pdf_backlog_dir` — where to queue PDFs of no-body laws (see `PdfBacklog`)
   - `force` — persist even if `LatPersister`'s enrichment gate fails
+  - `store` — local CLML store mode (#175, `Client.fetch_xml/2`): `:prefer`
+    reuses a fresh stored copy, `:only` never fetches, `:refresh` always
+    fetches; default `:write` fetches live and stores the result
 
   A law whose body XML yields no LAT rows (a scanned-PDF-only law) is not
   persisted — its existing LAT is kept — and its PDF alternatives are
@@ -91,7 +94,10 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
     scope = LatScope.get(law_name)
 
-    case if(LatScope.excluded?(scope), do: :excluded, else: fetch_xmls(slash_path, scope)) do
+    case if(LatScope.excluded?(scope),
+           do: :excluded,
+           else: fetch_xmls(slash_path, scope, store_opts(law_name, opts))
+         ) do
       :excluded ->
         # #166: the law is excluded from LAT (no EHS link); nothing is fetched
         # or written, so no parse path brings its body back
@@ -136,11 +142,12 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   Fetch and parse a law's body into LAT rows without persisting anything
   (for previews such as `LatReparse.preview/2`).
   """
-  @spec fetch_rows(String.t()) :: {:ok, [map()], String.t()} | {:error, String.t()}
-  def fetch_rows(law_name) do
+  @spec fetch_rows(String.t(), keyword()) :: {:ok, [map()], String.t()} | {:error, String.t()}
+  def fetch_rows(law_name, opts \\ []) do
     with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
          {:ok, law_id} <- lookup_law_id(law_name),
-         {:ok, xmls} <- fetch_xmls(slash_path, LatScope.get(law_name)) do
+         {:ok, xmls} <-
+           fetch_xmls(slash_path, LatScope.get(law_name), store_opts(law_name, opts)) do
       {:ok, parse_rows(xmls, law_name, type_code), law_id}
     end
   end
@@ -372,20 +379,39 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
+  # Client store options for a law (#175): the mode, and the law's latest
+  # known dct:valid for the freshness check
+  @doc false
+  def store_opts(law_name, opts) do
+    case Keyword.get(opts, :store) do
+      mode when mode in [:prefer, :only, :refresh] ->
+        %{rows: rows} =
+          Repo.query!(
+            "SELECT md_dct_valid_date FROM legal_register WHERE country = 'uk' AND name = $1",
+            [law_name]
+          )
+
+        [store: mode, law_valid: rows |> List.flatten() |> List.first()]
+
+      _ ->
+        []
+    end
+  end
+
   # The body, or each scoped fragment (all must fetch)
-  defp fetch_xmls(slash_path, scope) do
+  defp fetch_xmls(slash_path, scope, store_opts) do
     slash_path
     |> LatScope.paths(scope)
     |> Enum.reduce_while({:ok, []}, fn path, {:ok, acc} ->
-      case fetch_xml(path) do
+      case fetch_xml(path, store_opts) do
         {:ok, xml} -> {:cont, {:ok, acc ++ [xml]}}
         {:error, _} = err -> {:halt, err}
       end
     end)
   end
 
-  defp fetch_xml(path) do
-    case Client.fetch_xml(path) do
+  defp fetch_xml(path, store_opts) do
+    case Client.fetch_xml(path, store_opts) do
       {:ok, xml} -> {:ok, xml}
       {:ok, :html, _html} -> {:error, "Received HTML instead of XML for #{path}"}
       {:error, _code, reason} -> {:error, "Failed to fetch body XML: #{reason}"}

@@ -175,7 +175,7 @@ if [ "$DO_DATA" = true ]; then
     echo "  SKIP ${DATA_DIR} (not found)"
   fi
 
-  # Sync backend/data/ (QQ working data, SQLite DBs, imports, reports)
+  # Sync backend/data/ (QQ working data, SQLite DBs, imports, reports, cache/clml — the local CLML store, #175)
   backend_data="${PROJECT_DIR}/backend/data"
   backend_dest="${NAS_DATA_DIR}/backend-data"
 

@@ -13,6 +13,9 @@ defmodule Mix.Tasks.Lat.TextDiff do
   `<out>.done`, so an interrupted run loses nothing and a re-run skips the
   laws already done. `kind` is `reordered` (same words: the list-text fix)
   or `other` (e.g. an amendment since the last parse).
+
+  `--store prefer|only|refresh` (default `prefer`): the local CLML store
+  (#175). `--store only` is the offline whole-corpus diff: no requests.
   """
 
   use Mix.Task
@@ -27,7 +30,11 @@ defmodule Mix.Tasks.Lat.TextDiff do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [laws: :string, all: :boolean, out: :string])
+    {opts, _, _} =
+      OptionParser.parse(args,
+        strict: [laws: :string, all: :boolean, out: :string, store: :string]
+      )
+
     Mix.Task.run("app.start")
 
     out =
@@ -53,8 +60,15 @@ defmodule Mix.Tasks.Lat.TextDiff do
 
     Mix.shell().info("#{length(laws)} laws to diff (#{MapSet.size(done)} already done) → #{out}")
 
+    mode =
+      case opts[:store] do
+        nil -> :prefer
+        m when m in ~w(prefer only refresh) -> String.to_atom(m)
+        m -> Mix.raise("--store must be prefer, only or refresh, got #{m}")
+      end
+
     for law <- laws do
-      case diff_law(law) do
+      case diff_law(law, mode) do
         {:ok, changes} ->
           rows =
             Enum.map(changes, fn {id, change, old, new} ->
@@ -72,8 +86,8 @@ defmodule Mix.Tasks.Lat.TextDiff do
     end
   end
 
-  defp diff_law(law) do
-    with {:ok, rows, _law_id} <- LatStagedParser.fetch_rows(law) do
+  defp diff_law(law, mode) do
+    with {:ok, rows, _law_id} <- LatStagedParser.fetch_rows(law, store: mode) do
       new = Map.new(rows, &{&1.section_id, &1.text})
       {:ok, LatTextDiff.diff(stored(law), new)}
     end
