@@ -2,7 +2,8 @@
 session: "LAT Parser Coverage"
 status: active
 opened: 2026-10-07
-related: [169, 166, "fractalaw drrp-v1.1 SLM training labels"]
+related: [169, 166, 173, 174, 175, "fractalaw drrp-v1.1 SLM training labels"]
+depends_on: ["2026-10-07-issue-175"]
 
 bugs:
   - pattern: "Leaf text built as all Para then all Text, then uniq: chapeau moved to the end, nested list items duplicated, list items joined with no space"
@@ -34,12 +35,12 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ✅ Dry run on the 6 precision laws: 378 provisions, 154 rows planned, 0 fetch failures; all 154 match the full-parse diff with identical new text, none extra. Not repaired: 2 legislative amendments (correct) and 5 search misses → empty leaf rows added as candidates (363 rows, 54 laws)
 - ✅ Applied to the 6 laws (Jason): 154 rows = dry run; verified hash changed, row counts unchanged, 154 correction lat_changes, enrichment cleared only on changed rows, one parsed/correction event per law, manifest cause correction, reg.2(1) text correct. First apply crashed on the event insert (uuid param) after WIA; fixed, events self-heal on resume
 - ✅ Batch 1–2: fractalaw's 51 gold-set laws, then its 9 other test laws — whole check (`--whole`): 203 rows in 55 laws (182 correction, 21 unattributed), events on all 55, enrichment cleared on changed rows only; fractalaw told
-- ⬜ Batches 3+: the remaining candidate laws by provision fragment (`--laws-file`), worst-affected first
-- ⬜ Parser refinement: lists and BlockText that are siblings after a P2 inside P1para land on the parent section row; attach them to the preceding (open) P2 instead. fractalaw's QA (2026-10-07) on its 60 test laws:
+- ⬜ Batches 3–11: the remaining 859 candidate laws by provision fragment (`--laws-file`), worst-affected first. Batch 3 running (2026-10-07); **batches 4–11 wait for #175 (local CLML store) and the #174 fix**, so rows change once and run from the store
+- ⬜ #174 parser refinement: lists and BlockText that are siblings after a P2 inside P1para land on the parent section row; attach them to the preceding (open) P2 instead. fractalaw's QA (2026-10-07) on its 60 test laws:
   - definitions on the section row, the subsection left as just "In these Regulations—": WSI 2005/1806 reg.5(1), SSI 2000/95 reg.2(1), Water Act 2003 s.3(12) and s.58(13), SI 2004/1490 reg.2(1), SI 2000/1043 reg.2(1)
   - trailing BlockText continuing an earlier subsection's open list (often not the last one): CAA 1982 s.35, s.43, s.44 (→ s.44(6)), s.46, s.84; SI 2010/93 reg.7 (fragments for (5) and (6)) and reg.18; SI 2012/2782 reg.15; SSI 2017/101 reg.15; SI 1998/2306 reg.2
-  - fractalaw's assembler moves definitions back meanwhile; it doesn't guess the trailing cases. Do this before batches 4–11, or their rows change twice
-- ⬜ XML store (Jason's aside, 2026-10-07): keep fetched CLML (gzip, under data/cache/clml, NAS-backed) so diffs/repairs/re-parses don't re-hit legislation.gov.uk; freshness by dct:valid. Also enables an offline whole-corpus diff, the only way to catch structural rows whose direct lists were dropped (WIA s.27A, s.87C: empty parent rows are normal, so the search can't flag them)
+  - fractalaw's assembler moves definitions back meanwhile; it doesn't guess the trailing cases. Do this before batches 4–11, or their rows change twice; corpus-wide check from the #175 store
+- ➡️ XML store: moved to its own session, `2026-10-07-issue-175.md` (#175), brought forward by Jason
 - ⬜ Send fractalaw the changed section_ids (lat_changes, cause correction), flagging its 61 test laws; gold set waits on them
 - ⬜ Report what the repair doesn't cover: schedule rows (203, deferred with #169), Part/Chapter/heading/table rows (56)
 - ⬜ Capture P1group/Title (title column, so row text is unchanged) and P1group @ConfersPower
@@ -53,6 +54,7 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 ## Dependencies
 
 - ✅ #166 scoped LAT closed (2026-10-07: 14 Acts scoped, 1 excluded)
+- ⬜ #175 local CLML store (pending session `2026-10-07-issue-175.md`): gates batches 4–11 and the #174 corpus check
 
 ## Audit (2026-10-07)
 
