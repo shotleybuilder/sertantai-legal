@@ -229,7 +229,8 @@ defmodule Mix.Tasks.Lat.RepairText do
       for {sid, _old, new, cause} <- repairs do
         Repo.query!(
           "UPDATE legal_articles SET text = $3, #{reset}, updated_at = now() WHERE law_name = $1 AND section_id = $2",
-          [law, sid, new]
+          # text is NOT NULL: an emptied row (#174: content moved to its subsection) is ""
+          [law, sid, new || ""]
         )
 
         Repo.query!(
