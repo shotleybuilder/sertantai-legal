@@ -110,4 +110,31 @@ defmodule SertantaiLegal.Scraper.LatScopeTest do
       assert [_, %{"removed" => ["section/2"], "added" => ["part/3"]}] = scope["history"]
     end
   end
+
+  describe "excluded scope" do
+    @entry %{
+      "at" => "2026-10-07T00:00:00Z",
+      "purpose" => "relevance",
+      "reason" => "no EHS link",
+      "set_by" => "t"
+    }
+
+    test "excluded/2 records the exclusion on the scope: no fragments, flagged, history kept" do
+      scope = LatScope.excluded(nil, @entry)
+
+      assert scope["fragments"] == []
+      assert scope["excluded"] == true
+      assert [%{"excluded" => true, "narrowed_from" => "whole"}] = scope["history"]
+      assert LatScope.excluded?(scope)
+    end
+
+    test "an excluded law fetches nothing (never the whole body)" do
+      assert LatScope.paths("ukpga/1989/40", LatScope.excluded(nil, @entry)) == []
+    end
+
+    test "excluded? is false for whole and fragment scopes" do
+      refute LatScope.excluded?(nil)
+      refute LatScope.excluded?(%{"fragments" => ["part/1"]})
+    end
+  end
 end

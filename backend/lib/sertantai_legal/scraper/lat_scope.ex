@@ -21,7 +21,7 @@ defmodule SertantaiLegal.Scraper.LatScope do
   (`narrowed/3`, `narrow!/3`). Which fragments a large Act keeps:
   `LatScope.Relevance`.
 
-  Pure except `set!/2`, `narrow!/3` and `get/1`.
+  Pure except `set!/2`, `narrow!/3`, `exclude!/2` and `get/1`.
   """
 
   alias SertantaiLegal.Repo
@@ -30,6 +30,9 @@ defmodule SertantaiLegal.Scraper.LatScope do
   @spec paths(String.t(), map() | nil) :: [String.t()]
   def paths(slash_path, %{"fragments" => [_ | _] = fragments}),
     do: Enum.map(fragments, &"/#{slash_path}/#{&1}/data.xml")
+
+  # An excluded law holds no LAT: fetch nothing, never the whole body
+  def paths(_slash_path, %{"excluded" => true}), do: []
 
   def paths(slash_path, _scope), do: ["/#{slash_path}/body/data.xml"]
 
@@ -174,6 +177,47 @@ defmodule SertantaiLegal.Scraper.LatScope do
         |> Enum.reject(&is_nil/1),
       "history" => ((scope || %{})["history"] || []) ++ [Map.merge(entry, change)]
     }
+  end
+
+  @doc """
+  Exclude a law from LAT (#166: no EHS link, Jason 2026-10-07): a scope
+  with no fragments, flagged `excluded`, so no parse path fetches it again.
+  `entry` is appended to `history` like `narrowed/3`.
+  """
+  @spec excluded(map() | nil, map()) :: map()
+  def excluded(scope, entry) do
+    scope
+    |> narrowed([], Map.put(entry, "excluded", true))
+    |> Map.put("excluded", true)
+  end
+
+  @doc "Whether a scope excludes the law from LAT."
+  @spec excluded?(map() | nil) :: boolean()
+  def excluded?(%{"excluded" => true}), do: true
+  def excluded?(_scope), do: false
+
+  @doc """
+  Mark a law excluded (`opts`: `:reason`, `:set_by`). The caller archives and
+  discards its LAT (`LatArchive.discard/3`, which records the `discarded`
+  lat_event). Returns the new scope.
+  """
+  @spec exclude!(String.t(), keyword()) :: map()
+  def exclude!(law_name, opts) do
+    entry = %{
+      "at" => DateTime.utc_now() |> DateTime.to_iso8601(),
+      "purpose" => "relevance",
+      "reason" => Keyword.get(opts, :reason),
+      "set_by" => Keyword.get(opts, :set_by)
+    }
+
+    new_scope = excluded(get(law_name), entry)
+
+    Repo.query!(
+      "UPDATE legal_register SET lat_scope = $2 WHERE country = 'uk' AND name = $1",
+      [law_name, new_scope]
+    )
+
+    new_scope
   end
 
   @doc """

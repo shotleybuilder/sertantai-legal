@@ -91,7 +91,24 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
     scope = LatScope.get(law_name)
 
-    case fetch_xmls(slash_path, scope) do
+    case if(LatScope.excluded?(scope), do: :excluded, else: fetch_xmls(slash_path, scope)) do
+      :excluded ->
+        # #166: the law is excluded from LAT (no EHS link); nothing is fetched
+        # or written, so no parse path brings its body back
+        reason = "excluded from LAT (lat_scope, #166)"
+        notify(on_progress, {:stage_complete, :fetch_body, :error, reason})
+        notify(on_progress, {:parse_complete, true})
+
+        {:ok,
+         %{
+           law_name: law_name,
+           lat: %{inserted: 0, deleted: 0, error: reason},
+           annotations: %{inserted: 0},
+           duration_ms: System.monotonic_time(:millisecond) - start,
+           has_errors: true,
+           error: reason
+         }}
+
       {:ok, xmls} ->
         notify(on_progress, {:stage_complete, :fetch_body, :ok, "XML fetched (#{length(xmls)})"})
         # the fetched paths: a change between parses is a scope change (#167)

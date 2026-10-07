@@ -16,6 +16,10 @@ defmodule Mix.Tasks.Lat.Scope do
       mix lat.scope --relevance [--min-rows 3000] [--law UK_ukpga_2006_46]   # dry run
       mix lat.scope --relevance --law UK_ukpga_2016_25 --add part/1 --apply
 
+      # Exclude a law with no EHS link from LAT (reviewed case by case):
+      # archive + discard its LAT, mark the scope excluded so no parse brings it back
+      mix lat.scope --exclude --law UK_ukpga_1989_40 --reason "no EHS/HR provisions"
+
   `--relevance --apply` works on one `--law` at a time (each Act's scope is
   approved before its rows go): the whole LAT is archived to the NAS, the
   scope narrowed (`LatScope.narrow!/3`), and the law re-parsed with cause
@@ -45,13 +49,19 @@ defmodule Mix.Tasks.Lat.Scope do
   @enabling_cache Path.join(["data", "cache", "enabling"])
 
   # Fragments named per Act, on top of the Parts its in-family SIs cite.
-  # Proposals until applied — each is confirmed with Jason first.
+  # Each is confirmed with Jason before it is applied (2026-10-07).
   @named %{
     # directors' report: SECR and non-financial reporting (QQ)
     "UK_ukpga_2006_46" => ["part/15/chapter/5"],
     # QQ register (LEGAL & GOVERNANCE): the interception offence and
     # interception for business purposes; the rest is state powers
-    "UK_ukpga_2016_25" => ["part/1", "part/2/chapter/2"]
+    "UK_ukpga_2016_25" => ["part/1", "part/2/chapter/2"],
+    # QQ register (13 sites): spectrum licensing, apparatus, approval
+    "UK_ukpga_2006_36" => ["part/2", "part/3", "part/4"],
+    # QQ register (1 site): communications, encryption-key notices
+    "UK_ukpga_2000_23" => ["part/I", "part/III"],
+    # QQ register (FIREARMS, 10 sites): corrosives, possession, firearms
+    "UK_ukpga_2019_17" => ["part/1", "part/4", "part/6"]
   }
 
   @impl Mix.Task
@@ -69,6 +79,7 @@ defmodule Mix.Tasks.Lat.Scope do
           batch: :string,
           apply: :boolean,
           relevance: :boolean,
+          exclude: :boolean,
           min_rows: :integer
         ]
       )
@@ -77,6 +88,7 @@ defmodule Mix.Tasks.Lat.Scope do
 
     cond do
       opts[:relevance] -> relevance(opts)
+      opts[:exclude] -> exclude(opts)
       opts[:enabling] -> enabling(opts)
       true -> one(opts)
     end
@@ -247,6 +259,23 @@ defmodule Mix.Tasks.Lat.Scope do
     else
       {:error, reason} ->
         Mix.shell().error("  #{name}: archive failed, nothing changed: #{reason}")
+    end
+  end
+
+  defp exclude(opts) do
+    law = opts[:law] || Mix.raise("Give --law")
+    reason = opts[:reason] || Mix.raise("Give --reason")
+    previous = LatScope.get(law)
+
+    LatScope.exclude!(law, reason: reason, set_by: "mix lat.scope --exclude")
+
+    case LatArchive.discard(law, "not_relevant") do
+      {:ok, ref} ->
+        Mix.shell().info("#{law}: excluded from LAT; archived → #{inspect(ref)}")
+
+      {:error, e} ->
+        restore_scope(law, previous)
+        Mix.shell().error("#{law}: discard failed, scope restored: #{e}")
     end
   end
 
