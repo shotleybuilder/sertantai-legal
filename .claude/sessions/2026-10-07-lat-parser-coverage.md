@@ -1,6 +1,6 @@
 ---
 session: "LAT Parser Coverage"
-status: active
+status: suspended
 opened: 2026-10-07
 related: [169, 166, 173, 174, 175, "fractalaw drrp-v1.1 SLM training labels"]
 depends_on: ["2026-10-07-issue-175"]
@@ -20,7 +20,13 @@ bugs:
     status: open
 ---
 
-# Session: LAT Parser Coverage (ACTIVE)
+# Session: LAT Parser Coverage (SUSPENDED)
+
+## Suspended (2026-10-07)
+
+Paused for #175 (local CLML store), brought forward by Jason. Repair batch 3 (100 laws, 4,173 provisions) is finishing in the background; batches 4–11 and the #174 fix run from the store afterwards.
+
+**Resume when** #175's store is built and bootstrapped.
 
 ## Problem
 
