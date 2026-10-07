@@ -33,3 +33,9 @@ Jason confirmed on 2026-10-01: fractalaw publishes a purpose profile per law (ea
 - ⬜ Docs (ZENOH-SPEC), restart with heads-up (no publish expected before the single run)
 - ⬜ Before the single publish: send compliance fractalaw's per-law purpose change list from the final dry run (compliance#38, v0.2: Baserow rows with retired labels). Compliance asked for it to be linked on #38; check with Jason first (no-GH-posts preference)
 - ⬜ Verify after the single publish
+
+## Vocabulary update (fractalaw, 2026-10-07)
+
+New coarse purpose class **"Subordinate legislation"** (Jason, 2026-10-07): the coarse layer now has 12 classes. Definition per Interpretation Act 1978 s.21(1) — powers/duties to make regulations, orders, rules, schemes, byelaws; their content and making procedure (consultation, drafts, laying, affirmative/negative resolution, "exercisable by statutory instrument"); EU delegated and implementing acts; general instruments binding a place or class (development orders, tree preservation orders). Excludes notices/orders addressed to a named person, commencement by order ("Citation and commencement"), and the duties regulations later create. A minister's power to make regulations stays a Liberty. Spec: fractalaw `docs/architecture/PURPOSE-CLASSIFICATION.md`.
+
+Legal: no fixed list to update — `purpose` values are stored as fractalaw sends them (legal's own 15-value `PurposeClassifier` is being retired by this session). Check when building: nothing in legal or compliance keys on the 11-class set.
