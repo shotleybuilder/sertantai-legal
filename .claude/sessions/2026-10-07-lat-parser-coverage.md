@@ -106,3 +106,7 @@ Precision check (`mix lat.text_diff`, no persist, 6 laws: uksi/1992/3004, ukpga/
 ## Batches for fractalaw (2026-10-07)
 
 fractalaw sent its 60 test laws (51 gold-set + 9; Companies Act 1989 dropped). Its two known gold cases exposed search limits: Directive 2000/54 Art.8(1)(d) has a colon-ended lead-in (the scan now also matches ":" — +246 rows, 74 laws); CAA 1982 s.44(6) lost its closing words, which sit in a `<BlockText>` after `</P2>` — invisible to text search. Jason chose a whole check for the 60 (`mix lat.repair_text --whole`: one body fetch per law, every row compared). Per-row cause: same words reordered → `correction`; other word changes → `unattributed` (amendments, or content the old parser dropped). The 6 precision laws were repaired by provision before `--whole` existed (154 rows, all `correction`).
+
+## Whole-corpus repair dry run (2026-10-07)
+
+`mix lat.repair_text --whole --store only` over all 1,068 LAT laws (no network; plan `repair-plan-2026-10-07.csv`, the earlier provision-mode plan kept as `…-pre174.csv`): **3,619 rows in 824 laws** — 1,801 `correction` (list bug, 723 laws), 1,818 `unattributed` (314 laws: #174 moves — 205 section rows emptied, ~800 subsections gaining their content, 20 empty rows filled — plus ~775 amendments since the last parse). fractalaw's 60 test laws: 69 rows in 18 laws. Inserted/removed rows (1,703/903, legislative) are not touched: the repair only rewrites rows held in both. Awaiting Jason's go to apply.
