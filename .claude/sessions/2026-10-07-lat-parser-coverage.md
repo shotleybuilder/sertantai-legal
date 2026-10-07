@@ -61,7 +61,7 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 ## Dependencies
 
 - ✅ #166 scoped LAT closed (2026-10-07: 14 Acts scoped, 1 excluded)
-- ⬜ #175 local CLML store (pending session `2026-10-07-issue-175.md`): gates batches 4–11 and the #174 corpus check
+- ✅ #175 local CLML store (closed 2026-10-07): all 1,068 LAT laws stored; offline diff available
 
 ## Audit (2026-10-07)
 
