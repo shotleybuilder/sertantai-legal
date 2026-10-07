@@ -57,7 +57,7 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ➡️ XML store: moved to its own session, `2026-10-07-issue-175.md` (#175), brought forward by Jason
 - ✅ fractalaw told per batch (6 laws, its 60 test laws, batch 3); it reads changed section_ids from lat-changes (cause correction/unattributed)
 - ✅ Coverage: the whole-corpus run compares every held row (incl. Part/Chapter/heading/table); schedules stay unfetched (#169, deferred)
-- ⬜ Capture P1group/Title (title column, so row text is unchanged)
+- ⬜ Capture P1group/Title (title column, so row text is unchanged). Stopgap for fractalaw's purpose-taxonomy work (2026-10-07): headings CSV extracted from the CLML store — `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 rows, 1,060 laws; section titles, cross-headings, Part/Chapter with context; section_id joins LAT 99.1%), script `backend/data/reports/extract_headings.py`
 - ❌ P1group @ConfersPower — dropped (fractalaw, verified 2026-10-07 on HSWA 1974 from the store): set on s.2, s.7, s.8 (duties) and absent on s.21 (improvement notices, a real power); not a reliable power signal
 - ✅ Lists/BlockText directly under structural P1para/P2para: the walker reads them (precision check found whole definition lists missing, e.g. WIA 1991 s.117(1), s.141(1)); continuation text marked ' … '
 - ⏸️ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules (deferred — Jason 2026-10-07: not for compliance v0.1; schedules can be massive data tables. Later: a double-knock pipeline, see below)
