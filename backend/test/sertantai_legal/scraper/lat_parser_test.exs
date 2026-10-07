@@ -1021,6 +1021,69 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  # #174: legislation.gov.uk sometimes places a definition list or closing
+  # words as a SIBLING after a subsection (inside the section's P1para), not
+  # inside it. Content after a child whose lead-in is open (ends in a dash or
+  # colon) belongs to that child; after a closed child it stays the parent's
+  # continuation (HSWA s.4(1), above).
+  describe "sibling content after an open subsection (#174)" do
+    defp rows_of(fixture, law, type) do
+      fixture |> read_fixture() |> LatParser.parse(%{law_name: law, type_code: type})
+    end
+
+    defp txt(rows, id), do: Enum.find(rows, &(&1.section_id == id)).text
+
+    test "WSI 2005/1806 reg.5: the definitions list belongs to reg.5(1), not reg.5" do
+      rows = rows_of("wsi_2005_1806_reg5.xml", "UK_wsi_2005_1806", "wsi")
+
+      assert String.starts_with?(
+               txt(rows, "UK_wsi_2005_1806:reg.5(1)"),
+               "In these Regulations— “the 1990 Act” (“Deddf 1990”) means the Environmental Protection Act 1990"
+             )
+
+      refute (txt(rows, "UK_wsi_2005_1806:reg.5") || "") =~ "the 1990 Act"
+    end
+
+    test "CAA 1982 s.44: the closing words after (6) belong to s.44(6), not s.44" do
+      rows = rows_of("ukpga_1982_16_s44.xml", "UK_ukpga_1982_16", "ukpga")
+      s44_6 = txt(rows, "UK_ukpga_1982_16:s.44(6)")
+
+      assert String.starts_with?(
+               s44_6,
+               "Where any land is damaged in the exercise of any power of entry conferred by any such order, then— … shall pay such compensation"
+             )
+
+      refute (txt(rows, "UK_ukpga_1982_16:s.44") || "") =~ "shall pay such compensation"
+      # (a)–(c) stay their own rows
+      assert txt(rows, "UK_ukpga_1982_16:s.44(6)(a)") =~ "if the relevant authority"
+    end
+
+    test "SI 2010/93 reg.7: each closing text goes to the subsection it follows, (5) and (6)" do
+      rows = rows_of("uksi_2010_93_reg7.xml", "UK_uksi_2010_93", "uksi")
+
+      assert txt(rows, "UK_uksi_2010_93:reg.7(5)") =~ "where— … any continuous weeks"
+      assert txt(rows, "UK_uksi_2010_93:reg.7(6)") =~ " … for the period that is covered"
+      refute (txt(rows, "UK_uksi_2010_93:reg.7") || "") =~ "any continuous weeks"
+      refute txt(rows, "UK_uksi_2010_93:reg.7(5)") =~ "for the period that is covered"
+    end
+
+    test "content after a closed subsection stays on the parent" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S"><Primary><Body>
+        <P1group><P1 id="section-9"><Pnumber>9</Pnumber><P1para>
+          <P2 id="section-9-1"><Pnumber>1</Pnumber><P2para><Text>A person must keep records.</Text></P2para></P2>
+          <Text>This section applies in England only.</Text>
+        </P1para></P1></P1group>
+      </Body></Primary></Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_9", type_code: "ukpga"})
+
+      assert txt(rows, "UK_ukpga_2024_9:s.9(1)") == "A person must keep records."
+      assert txt(rows, "UK_ukpga_2024_9:s.9") =~ "This section applies in England only."
+    end
+  end
+
   describe "inline element text extraction" do
     test "Term element text appears in correct position within quotes" do
       xml = """

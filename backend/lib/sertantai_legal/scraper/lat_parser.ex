@@ -46,6 +46,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
   @skip_elements ~w(BlockAmendment AppendText BlockExtract
                     Versions Version Commentaries Commentary Contents)
 
+  # Elements emitted as rows of their own: structural text stops at them.
+  @row_elements ~w(Part EUTitle Chapter EUChapter Pblock P1 P2 P3 P4 Schedule
+                   SignedSection Tabular Figure)
+
+  # Provision rows that can take sibling content that follows them (#174)
+  @provision_rows ~w(P1 P2 P3 P4)
+
   @doc """
   Parse body XML into a list of LAT row maps.
 
@@ -74,6 +81,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       paragraph: nil,
       sub_paragraph: nil,
       p2_is_wrapper: false,
+      trailing: [],
       default_extent: extract_root_extent(xml),
       prospective: false,
       mode: mode,
@@ -130,10 +138,40 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # ── Recursive Walker ─────────────────────────────────────────────
 
+  # #174: content that follows an open child provision as a sibling (a
+  # definition list, a BlockText of closing words) is that child's — it's
+  # passed down as ctx.trailing and appended to the child's row text.
   defp walk_children(node, ctx) do
+    ctx = %{ctx | trailing: []}
+    children = xpath(node, ~x"./*"l)
+
+    children
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {child, i} ->
+      trailing = trailing_content(child, Enum.drop(children, i + 1))
+      walk_element(child, %{ctx | trailing: trailing})
+    end)
+  end
+
+  # The sibling content an open child provision takes: the content elements
+  # after it, up to the next row element; [] unless the child's lead-in is open.
+  defp trailing_content(child, rest) do
+    if element_name(child) in @provision_rows do
+      content = Enum.take_while(rest, &(element_name(&1) not in @row_elements))
+      if content != [] and open_lead_in?(child), do: content, else: []
+    else
+      []
+    end
+  end
+
+  # A provision's lead-in (its own text before any child provision) ends in a
+  # dash or colon: what follows continues it.
+  defp open_lead_in?(node) do
     node
-    |> xpath(~x"./*"l)
-    |> Enum.flat_map(&walk_element(&1, ctx))
+    |> text_blocks(:structural)
+    |> Enum.take_while(&(&1 != :gap))
+    |> Enum.join(" ")
+    |> String.match?(~r/[—–:-]\s*$/u)
   end
 
   defp walk_element(node, ctx) do
@@ -265,7 +303,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
-    text = extract_element_text(node)
+    text = node |> extract_element_text() |> with_trailing(ctx.trailing, node)
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
@@ -291,7 +329,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
-    text = extract_structural_text(node)
+    text = node |> extract_structural_text() |> with_trailing(ctx.trailing, node)
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
@@ -464,10 +502,6 @@ defmodule SertantaiLegal.Scraper.LatParser do
     node |> text_blocks(:leaf) |> join_blocks()
   end
 
-  # Elements emitted as rows of their own: structural text stops at them.
-  @row_elements ~w(Part EUTitle Chapter EUChapter Pblock P1 P2 P3 P4 Schedule
-                   SignedSection Tabular Figure)
-
   # Never text: numbers, titles (read by extract_title), reference markers.
   @no_text_elements ~w(Pnumber Number Title TitleBlock Reference CommentaryRef
                        FootnoteRef Footnotes Commentaries)
@@ -477,19 +511,58 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # :structural skips other laws' text (amendment blocks); :leaf keeps it,
   # as leaf rows always have.
   defp text_blocks(node, mode) do
-    node
-    |> xpath(~x"./*"l)
-    |> Enum.flat_map(fn child ->
-      name = element_name(child)
+    {blocks, _} =
+      node
+      |> xpath(~x"./*"l)
+      |> Enum.flat_map_reduce(false, fn child, after_open_child? ->
+        name = element_name(child)
 
-      cond do
-        name == "Text" -> [extract_inline_text(child)]
-        name in @no_text_elements -> []
-        mode == :structural and name in @row_elements -> [:gap]
-        mode == :structural and name in @skip_elements -> []
-        true -> text_blocks(child, mode)
-      end
-    end)
+        cond do
+          name in @no_text_elements ->
+            {[], after_open_child?}
+
+          mode == :structural and name in @row_elements ->
+            # content after an open child provision is the child's (#174)
+            {[:gap], name in @provision_rows and open_lead_in?(child)}
+
+          mode == :structural and name in @skip_elements ->
+            {[], after_open_child?}
+
+          mode == :structural and after_open_child? ->
+            {[], true}
+
+          name == "Text" ->
+            {[extract_inline_text(child)], after_open_child?}
+
+          true ->
+            {text_blocks(child, mode), after_open_child?}
+        end
+      end)
+
+    blocks
+  end
+
+  # Append the sibling content an open provision took (#174): after " … "
+  # when the provision has its own child provisions in between.
+  defp with_trailing(text, [], _node), do: text
+
+  defp with_trailing(text, trailing, node) do
+    trailing_text =
+      trailing
+      |> Enum.flat_map(fn el ->
+        if element_name(el) == "Text", do: [extract_inline_text(el)], else: text_blocks(el, :leaf)
+      end)
+      |> join_blocks()
+
+    separator = if child_provisions?(node), do: " … ", else: " "
+
+    [text, trailing_text]
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.join(separator)
+    |> case do
+      "" -> nil
+      t -> t
+    end
   end
 
   # Join blocks with spaces; a gap between text becomes " … " (the child
@@ -533,15 +606,16 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # Used for any node that has children emitted as separate rows (Part, Chapter,
   # Schedule, P1, P2, P3). Extracts only direct Para/Text + Title content.
   # Falls back to full text extraction if no child provisions exist.
-  defp extract_structural_text(node) do
-    has_child_provisions =
-      xpath(node, ~x".//P1[1]"o) != nil ||
-        xpath(node, ~x".//P2[1]"o) != nil ||
-        xpath(node, ~x".//P3[1]"o) != nil ||
-        xpath(node, ~x".//P4[1]"o) != nil ||
-        xpath(node, ~x".//Pblock[1]"o) != nil
+  defp child_provisions?(node) do
+    xpath(node, ~x".//P1[1]"o) != nil ||
+      xpath(node, ~x".//P2[1]"o) != nil ||
+      xpath(node, ~x".//P3[1]"o) != nil ||
+      xpath(node, ~x".//P4[1]"o) != nil ||
+      xpath(node, ~x".//Pblock[1]"o) != nil
+  end
 
-    if has_child_provisions do
+  defp extract_structural_text(node) do
+    if child_provisions?(node) do
       # Title/Number text for the structural header (if any)
       title = extract_title(node)
 
