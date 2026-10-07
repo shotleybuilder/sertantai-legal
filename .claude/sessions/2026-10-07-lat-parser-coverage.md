@@ -1,6 +1,6 @@
 ---
 session: "LAT Parser Coverage"
-status: pending
+status: active
 opened: 2026-10-07
 related: [169, 166, "fractalaw drrp-v1.1 SLM training labels"]
 
@@ -19,7 +19,7 @@ bugs:
     status: open
 ---
 
-# Session: LAT Parser Coverage (PENDING)
+# Session: LAT Parser Coverage (ACTIVE)
 
 ## Problem
 
@@ -30,16 +30,24 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ⬜ Fix leaf text order/duplication/spacing (TDD on UK_uksi_1992_3004 reg.2(1), ukpga/1974/37 s.4(1)); count exact affected section_ids and send them to fractalaw
 - ⬜ Capture P1group/Title (title column, so row text is unchanged) and P1group @ConfersPower
 - ⬜ Continuation text after children; lists/BlockText directly under structural P1para/P2para
-- ⬜ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules
+- ⏸️ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules (deferred — Jason 2026-10-07: not for compliance v0.1; schedules can be massive data tables. Later: a double-knock pipeline, see below)
 - ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (43,794 of 101,343 annotations have empty affected_sections)
 - ⬜ `Repeal @RetainText @Extent` (territorial repeals read as live everywhere)
 - ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
-- ⬜ One re-parse wave with #166 scoping, before fractalaw's single run; fractalaw contract for new columns
+- ⬜ One re-parse wave (#166 scoping is done), before fractalaw's single run; fractalaw contract for new columns; send fractalaw the affected section_ids (gold set waits on them)
 
 ## Dependencies
 
-- ⬜ #166 scoped LAT closed (same re-parse wave)
+- ✅ #166 scoped LAT closed (2026-10-07: 14 Acts scoped, 1 excluded)
 
 ## Audit (2026-10-07)
 
 Parser fetches `/{law}/body/data.xml` (`lat_scope.ex:32`), which has no prelims, schedules or explanatory notes. Text-changing fixes (leaf order, titles in text, list text, continuation, schedule titles) should go in one re-pull of every law; column-only fixes (title column, ConfersPower, attribute CommentaryRef, territorial repeals) need no text change; schedules and prelims only add rows. Full gap table: the audit report in the 2026-10-05/07 conversation, summarised above.
+
+## Schedules deferred (Jason, 2026-10-07)
+
+Schedules can be massive data tables, though some carry DRRP (#169 sample: 25% duty-modal rows). Not for compliance v0.1. The later design is a **double-knock pipeline**: (1) parse the body, (2) fractalaw enriches it, (3) use the enriched law to decide which schedules to parse (e.g. schedules referenced by duty-bearing provisions), rather than fetching every schedule. #169 stays open for that version. Schedule TitleBlock titles go with it: legal holds few schedule rows (enabling-extent scopes only).
+
+## Related fix (2026-10-07)
+
+LRT titles: 1,453 register laws had no `title_en` (legacy 2024-04 / 2025-02 imports never metadata-fetched; e.g. UK_ukpga_2021_26 = Finance Act 2021). `mix lrt.backfill_titles` fetches them from legislation.gov.uk metadata. 4 type-less stubs (`UK__1996_3016`, `UK__2003_1690`, `UK__2005_2059`, `UK__2019_17`; created 2026-07-28, unreferenced, duplicating real records) await Jason's OK to delete.
