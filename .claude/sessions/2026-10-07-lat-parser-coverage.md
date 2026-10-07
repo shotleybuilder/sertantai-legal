@@ -1,15 +1,69 @@
 ---
 session: "LAT Parser Coverage"
-status: active
+status: closed
 opened: 2026-10-07
+closed: 2026-10-07
+outcome: success
 related: [169, 166, 173, 174, 175, "fractalaw drrp-v1.1 SLM training labels"]
-depends_on: ["2026-10-07-issue-175"]
+
+summary: >
+  Fixed the LAT list-text corruption (chapeau moved to the end, nested items duplicated, items
+  run together) and #174 (content after an open subsection landing on the section row), then
+  repaired the stored LAT without re-parsing whole laws: by provision fragment, a whole check of
+  fractalaw's 60 test laws, and two offline rounds from the #175 store — 5,800+ rows in ~830
+  laws, each labelled correction or unattributed. A final offline dry run over all 1,068 laws
+  finds nothing left to repair.
+
+decisions:
+  - what: "No all-law re-parse: find the corruption by searching stored text, repair only rows whose words change"
+    why: "Jason; the bug left signatures (moved chapeau, duplicated clause, glued words) and a re-parse would mix in legislative changes"
+    result: "Search precision 98.6% (140/142) on a 6-law check; inserted/removed rows (amendments) never touched"
+  - what: "Fractalaw's 60 test laws repaired by a whole-law check, not the search"
+    why: "The search can't see dropped content (CAA s.44(6) closing words, WIA s.27A definitions)"
+    result: "203 rows in 55 laws; fractalaw resumed gold work"
+  - what: "Bring the local CLML store (#175) forward; batches 4–11 replaced by offline runs"
+    why: "Jason: too many legislation.gov.uk calls (rate limit, 500/502/504s); each parser fix meant another corpus pass"
+    result: "Whole-corpus diff and repair in minutes, no network"
+  - what: "Schedules (#169) deferred past compliance v0.1"
+    why: "Jason: schedules can be massive data tables; later a double-knock pipeline (parse body → enrich → choose schedules)"
+    result: "Schedule rows stay unfetched"
+  - what: "Corrections and #174 moves applied in rounds, moves labelled by word conservation within a provision"
+    why: "Jason chose (b): fractalaw receives accurately labelled changes; unattributed then means only new wording"
+    result: "Round 1: 1,801 correction; round 2: 803 correction (moves) + 1,015 unattributed"
+  - what: "Drop P1group @ConfersPower"
+    why: "fractalaw, verified on HSWA 1974: set on duties (s.2, s.7, s.8), absent on a real power (s.21)"
+    result: "Not captured"
+
+metrics:
+  search_candidates: { rows: 3297, laws: 797, precision_6_laws: 0.986 }
+  repaired_rows: { six_laws: 154, fractalaw_60: 203, batch3: 1852, round1: 1801, round2: 1818 }
+  round2: { correction: 803, unattributed: 1015, laws: 314 }
+  offline_174_measure: { section_rows_emptied: 205, laws: 101, provisions_word_conserved: "204/205 (exception gains 63 dropped words)" }
+  final_dry_run: { laws: 1068, rows_left: 0 }
+  titles_backfill: { written: 1452, not_on_legislation_gov_uk: 1 }
+
+lessons:
+  - title: "The list bug went unnoticed because no test used real CLML with lists"
+    detail: "Synthetic fixtures had flat Text; the bug needed Para-wrapped list items. Fixtures are now verbatim legislation.gov.uk P1groups (effect ids renamed: key-<hex> trips GitHub push protection as a Mailgun key)."
+    tag: tooling
+  - title: "Stored-text signatures find most corruption, but not dropped content"
+    detail: "Moved chapeau / duplicated clause / glued words found 3,297 rows at 98.6% precision, but empty or truncated rows (WIA s.27A, CAA s.44(6)) have no signature. Empty leaf rows are a signature; empty parent rows are normal (31,644). Only a full parse (now offline) finds the rest."
+    tag: data
+  - title: "legislation.gov.uk puts some content as a sibling after a subsection"
+    detail: "Definition lists and closing BlockText sit inside P1para after a P2. Attach to the preceding child whose first text block ends in a dash/colon; judging 'open' on the whole text missed PUWER reg.2(1), caught by checking all 17 QA cases offline."
+    tag: data
+  - title: "Write as you go; run tools from the right directory"
+    detail: "A title backfill that wrote at the end, and a repair that wrote events after rows, were both fragile: per-item writes and self-healing events made every interrupted run resumable. A background `cd … && mix` once ran from the wrong directory and silently did nothing — check the log before trusting a 'completed' notice."
+    tag: tooling
+  - title: "Repair writes must mirror the persister"
+    detail: "Round 2 crashed on an emptied section row: legal_articles.text is NOT NULL and LatPersister writes \"\". Per-law transactions rolled the law back cleanly."
+    tag: data
 
 bugs:
   - pattern: "Lists/BlockText that are siblings after an open P2 inside P1para landed on the section row; the subsection kept only its lead-in (#174)"
     category: LAT coverage
     module: SertantaiLegal.Scraper.LatParser (walk_children, text_blocks)
-    affected: "fractalaw QA: 17 cases in its 60 test laws; corpus: measured by the offline diff"
+    affected: "fractalaw QA: 17 cases in its 60 test laws; corpus: 205 section rows in 101 laws"
     fix: "Attach to the preceding child whose first text block ends in a dash/colon (ctx.trailing); parent skips it"
     status: fixed
   - pattern: "Leaf text built as all Para then all Text, then uniq: chapeau moved to the end, nested list items duplicated, list items joined with no space"
@@ -22,11 +76,37 @@ bugs:
     category: LAT coverage
     module: SertantaiLegal.Scraper.LatParser (:40, extract_title :424)
     affected: "31,644 empty section/article rows in 1,033 of 1,069 laws"
-    fix: "Read P1group/Title onto the provision row (new title column preferred: no text change)"
+    fix: "Read P1group/Title onto the provision row (new title column preferred: no text change) — moved to 2026-10-07-lat-parser-coverage-ii"
     status: open
+  - pattern: "LatChangeLog dropped vanished ambiguous rows; LatRepair/repair_text event insert passed a text law id as uuid; empty row written as NULL"
+    category: tooling
+    module: "mix lat.repair_text"
+    affected: "1 crash each (six-law apply, round 2); no data lost"
+    fix: "Events by law name, self-healing per repair op_key; emptied rows written as \"\""
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_parser.ex
+  - backend/lib/sertantai_legal/scraper/lat_text_diff.ex
+  - backend/lib/sertantai_legal/scraper/lat_repair.ex
+  - backend/lib/mix/tasks/lat.text_diff.ex
+  - backend/lib/mix/tasks/lat.repair_text.ex
+  - backend/lib/mix/tasks/lrt.backfill_titles.ex
+  - backend/test/fixtures/body_xml/ (uksi_1992_3004_reg2, ukpga_1974_37_s4, wsi_2005_1806_reg5, ukpga_1982_16_s44, uksi_2010_93_reg7)
+  - backend/data/reports/lat-parser-coverage/ (candidates, scan_lists.py, offline diffs, repair plans/applied CSVs)
+  - backend/data/reports/clml-headings-2026-10-07.csv
+  - backend/data/reports/extract_headings.py
+
+depends_on:
+  - 2026-09-27-issue-166
+  - 2026-10-07-issue-175
+
+enables:
+  - 2026-10-07-lat-parser-coverage-ii
+  - "fractalaw: corrected LAT for gold labelling and its single run (pulled after round 2)"
 ---
 
-# Session: LAT Parser Coverage (ACTIVE)
+# Session: LAT Parser Coverage (CLOSED)
 
 ## Resumed (2026-10-07)
 
@@ -57,14 +137,14 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ➡️ XML store: moved to its own session, `2026-10-07-issue-175.md` (#175), brought forward by Jason
 - ✅ fractalaw told per batch (6 laws, its 60 test laws, batch 3); it reads changed section_ids from lat-changes (cause correction/unattributed)
 - ✅ Coverage: the whole-corpus run compares every held row (incl. Part/Chapter/heading/table); schedules stay unfetched (#169, deferred)
-- ⬜ Capture P1group/Title (title column, so row text is unchanged). Stopgap for fractalaw's purpose-taxonomy work (2026-10-07): headings CSV extracted from the CLML store — `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 rows, 1,060 laws; section titles, cross-headings, Part/Chapter with context; section_id joins LAT 99.1%), script `backend/data/reports/extract_headings.py`
+- ⏸️ (moved to `2026-10-07-lat-parser-coverage-ii`) Capture P1group/Title (title column, so row text is unchanged). Stopgap for fractalaw's purpose-taxonomy work (2026-10-07): headings CSV extracted from the CLML store — `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 rows, 1,060 laws; section titles, cross-headings, Part/Chapter with context; section_id joins LAT 99.1%), script `backend/data/reports/extract_headings.py`
 - ❌ P1group @ConfersPower — dropped (fractalaw, verified 2026-10-07 on HSWA 1974 from the store): set on s.2, s.7, s.8 (duties) and absent on s.21 (improvement notices, a real power); not a reliable power signal
 - ✅ Lists/BlockText directly under structural P1para/P2para: the walker reads them (precision check found whole definition lists missing, e.g. WIA 1991 s.117(1), s.141(1)); continuation text marked ' … '
 - ⏸️ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules (deferred — Jason 2026-10-07: not for compliance v0.1; schedules can be massive data tables. Later: a double-knock pipeline, see below)
-- ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (43,794 of 101,343 annotations have empty affected_sections)
-- ⬜ `Repeal @RetainText @Extent` (territorial repeals read as live everywhere)
-- ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
-- ⬜ One re-parse wave (#166 scoping is done), before fractalaw's single run; fractalaw contract for new columns; send fractalaw the affected section_ids (gold set waits on them)
+- ⏸️ (moved to `2026-10-07-lat-parser-coverage-ii`) Attribute-style CommentaryRef on Addition/Substitution/Repeal (43,794 of 101,343 annotations have empty affected_sections)
+- ⏸️ (moved to `2026-10-07-lat-parser-coverage-ii`) `Repeal @RetainText @Extent` (territorial repeals read as live everywhere)
+- ⏸️ (moved to `2026-10-07-lat-parser-coverage-ii`) Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
+- ⏸️ (moved to `2026-10-07-lat-parser-coverage-ii`) One re-parse wave (#166 scoping is done), before fractalaw's single run; fractalaw contract for new columns; send fractalaw the affected section_ids (gold set waits on them)
 
 ## Dependencies
 
