@@ -39,6 +39,9 @@ defmodule Mix.Tasks.Lat.RepairText do
 
   `--store prefer|only|refresh` (default `prefer`): the local CLML store
   (#175) — reuse fresh stored documents, never fetch, or always fetch.
+
+  `--only-cause correction|unattributed` applies one class of repair (rounds);
+  `--tag NAME` gives the run its own output CSV and `.done` list.
   """
 
   use Mix.Task
@@ -66,7 +69,9 @@ defmodule Mix.Tasks.Lat.RepairText do
           apply: :boolean,
           candidates: :string,
           whole: :boolean,
-          store: :string
+          store: :string,
+          only_cause: :string,
+          tag: :string
         ]
       )
 
@@ -75,7 +80,7 @@ defmodule Mix.Tasks.Lat.RepairText do
     out =
       Path.join(
         @dir,
-        "repair-#{if opts[:apply], do: "applied", else: "plan"}-#{Date.utc_today()}.csv"
+        "repair-#{if opts[:apply], do: "applied", else: "plan"}#{if opts[:tag], do: "-" <> opts[:tag]}-#{Date.utc_today()}.csv"
       )
 
     done_path = out <> ".done"
@@ -103,7 +108,12 @@ defmodule Mix.Tasks.Lat.RepairText do
         case LatStagedParser.fetch_rows(law, store: opts[:store_mode]) do
           {:ok, rows, _law_id} ->
             fresh = Map.new(rows, &{&1.section_id, &1.text})
-            repairs = LatRepair.repairs(stored_rows(law), fresh)
+
+            repairs =
+              stored_rows(law)
+              |> LatRepair.repairs(fresh)
+              |> LatRepair.only_cause(opts[:only_cause])
+
             if opts[:apply] && repairs != [], do: apply!(law, op_key(), repairs)
             if opts[:apply], do: record_events!(law)
             write_rows!(out, law, "*whole*", repairs)
@@ -170,7 +180,7 @@ defmodule Mix.Tasks.Lat.RepairText do
             held =
               Map.filter(stored, fn {sid, _} -> LatRepair.in_provision?(sid, law, provision) end)
 
-            repairs = LatRepair.repairs(held, fresh)
+            repairs = held |> LatRepair.repairs(fresh) |> LatRepair.only_cause(opts[:only_cause])
             if apply? and repairs != [], do: apply!(law, op_key, repairs)
 
             write_rows!(out, law, provision, repairs)

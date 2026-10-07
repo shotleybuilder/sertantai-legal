@@ -104,4 +104,17 @@ defmodule SertantaiLegal.Scraper.LatRepairTest do
       assert LatRepair.cause("", "“consumers” includes future consumers;") == "unattributed"
     end
   end
+
+  describe "only_cause/2" do
+    test "keeps the repairs whose cause matches; nil keeps all" do
+      repairs = [
+        {"a", "x; In this Part—", "In this Part— x;"},
+        {"b", "within 3 months", "within 6 months"}
+      ]
+
+      assert LatRepair.only_cause(repairs, "correction") == [hd(repairs)]
+      assert LatRepair.only_cause(repairs, "unattributed") == tl(repairs)
+      assert LatRepair.only_cause(repairs, nil) == repairs
+    end
+  end
 end

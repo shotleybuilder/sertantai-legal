@@ -15,6 +15,7 @@ defmodule SertantaiLegal.Scraper.LatRepair do
   - `in_provision?/3` — is a row the provision or one of its descendants
   - `repairs/2` — `{section_id, old, new}` for held rows whose words change
     (the " … " marker and spacing alone don't count)
+  - `only_cause/2` — keep one class of repair (applied in rounds)
   - `cause/2` — a repaired row's lat_changes cause: `correction` when the
     words are the same (reordered/re-spaced: the list-text fix), else
     `unattributed` (an amendment since the last parse, or content the old
@@ -97,6 +98,14 @@ defmodule SertantaiLegal.Scraper.LatRepair do
   @spec cause(String.t() | nil, String.t() | nil) :: String.t()
   def cause(old, new),
     do: if(LatTextDiff.kind(old, new) == "reordered", do: "correction", else: "unattributed")
+
+  @doc "Repairs whose `cause/2` is `cause` (nil keeps all) — to apply one class at a time."
+  @spec only_cause([{String.t(), String.t() | nil, String.t() | nil}], String.t() | nil) ::
+          [{String.t(), String.t() | nil, String.t() | nil}]
+  def only_cause(repairs, nil), do: repairs
+
+  def only_cause(repairs, cause),
+    do: Enum.filter(repairs, fn {_, o, n} -> cause(o, n) == cause end)
 
   defp words(nil), do: ""
   defp words(text), do: text |> String.replace("…", " ") |> String.split() |> Enum.join(" ")
