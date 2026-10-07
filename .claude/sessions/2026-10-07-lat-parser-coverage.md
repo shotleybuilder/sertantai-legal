@@ -28,9 +28,9 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 ## Todo
 
 - ✅ Fix leaf text order/duplication/spacing: TDD on real CLML fixtures (uksi/1992/3004 reg.2, ukpga/1974/37 s.4) + exact-string synthetic cases; structural continuation text marked ' … ' (ee84c25f). Not yet re-parsed: lands in the re-parse wave
-- ⬜ Exact affected section_ids for fractalaw (dry-run text diff vs stored LAT, written per law); fractalaw's gold set waits on them
+- ⬜ Repair affected rows by provision fragment (option a, Jason): fetch only flagged provisions, write only real word changes; then send fractalaw the changed section_ids (gold set waits on them)
 - ⬜ Capture P1group/Title (title column, so row text is unchanged) and P1group @ConfersPower
-- ⬜ Lists/BlockText directly under structural P1para/P2para (continuation text after children: done with the walker)
+- ✅ Lists/BlockText directly under structural P1para/P2para: the walker reads them (precision check found whole definition lists missing, e.g. WIA 1991 s.117(1), s.141(1)); continuation text marked ' … '
 - ⏸️ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules (deferred — Jason 2026-10-07: not for compliance v0.1; schedules can be massive data tables. Later: a double-knock pipeline, see below)
 - ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (43,794 of 101,343 annotations have empty affected_sections)
 - ⬜ `Repeal @RetainText @Extent` (territorial repeals read as live everywhere)
@@ -58,3 +58,16 @@ LRT titles: 1,453 register laws had no `title_en` (legacy 2024-04 / 2025-02 impo
 `LatParser.extract_element_text/1` built leaf text as every `.//Para` then every `.//Text`, then `uniq`: Paras contain Texts, so the chapeau landed after the list, nested list items appeared twice, and items in one Para ran together. Structural rows read direct texts grouped by element type, gluing a chapeau to its continuation. Replaced by one walker (`text_blocks/2` + `join_blocks/1`) used by both paths. Structural rows skip amendment blocks (as before); leaf rows keep them (as before). "after31st December" in reg.2(1) is in legislation.gov.uk's own XML, not ours. One existing test (PDF transcript, reg.2(2)) asserted the old glued continuation and now expects " … ".
 
 The bug went unnoticed because no test used real CLML with lists; the new fixtures are verbatim legislation.gov.uk P1groups.
+
+## Affected rows: search, not re-parse (2026-10-07)
+
+Jason: no all-law re-parse. The bug leaves signatures in stored text (`backend/data/reports/lat-parser-coverage/scan_lists.py`, candidates CSV alongside), DB-only:
+- moved chapeau (a leaf ending in a dash-closed clause after ";"/"."): 3,154 rows; duplicated clause: 402; glued "andany": 141; no space after ";": 305 (weak)
+- **3,297 corrupted rows (0.9% of 371,449) in 797 of 1,068 laws**, ~3,042 top-level provisions; mostly interpretation provisions (reg.2: 418)
+- continuation (structural row with text after its dash): 8,123 rows in 657 laws — mostly benign (only the new " … " marker), but see below
+
+Precision check (`mix lat.text_diff`, no persist, 6 laws: uksi/1992/3004, ukpga/2023/52, uksi/2011/988, uksi/2020/1111, ukpga/1991/56, ukpga/2010/15):
+- 140 of 142 flagged rows change under the new parser (98.6%); the 2 misses are weak "no space" hits in the source text
+- missed by the search: 22 rows — 2 reordered, and 20 structural rows whose **definition lists were dropped entirely** (lists directly under P2para; WIA s.117(1), s.141(1)). They carry the "continuation" signature, so the repair must include continuation-flagged provisions and write only rows whose words change
+- 1,530 rows change only by the " … " marker/spacing: skip in the repair
+- 169 rows inserted/removed: legislative changes since the last parse, not this bug — the reason to repair by fragment, not by whole law
