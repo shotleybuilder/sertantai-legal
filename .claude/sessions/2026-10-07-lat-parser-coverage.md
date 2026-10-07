@@ -1,6 +1,6 @@
 ---
 session: "LAT Parser Coverage"
-status: suspended
+status: active
 opened: 2026-10-07
 related: [169, 166, 173, 174, 175, "fractalaw drrp-v1.1 SLM training labels"]
 depends_on: ["2026-10-07-issue-175"]
@@ -20,13 +20,11 @@ bugs:
     status: open
 ---
 
-# Session: LAT Parser Coverage (SUSPENDED)
+# Session: LAT Parser Coverage (ACTIVE)
 
-## Suspended (2026-10-07)
+## Resumed (2026-10-07)
 
-Paused for #175 (local CLML store), brought forward by Jason. Repair batch 3 (100 laws, 4,173 provisions) is finishing in the background; batches 4–11 and the #174 fix run from the store afterwards.
-
-**Resume when** #175's store is built and bootstrapped.
+#175's store is built (all 1,068 LAT laws, offline diff). Now: the #174 fix, then the remaining list-text repair as one offline whole-corpus run from the store.
 
 ## Problem
 
@@ -35,21 +33,21 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 ## Todo
 
 - ✅ Fix leaf text order/duplication/spacing: TDD on real CLML fixtures (uksi/1992/3004 reg.2, ukpga/1974/37 s.4) + exact-string synthetic cases; structural continuation text marked ' … ' (ee84c25f). Not yet re-parsed: lands in the re-parse wave
-- ⬜ Repair plan (option a + continuation, Jason 2026-10-07): 8,509 provisions in 891 laws, fetched by fragment, only rows whose words change are written
+- ✅ Repair plan (option a + continuation, Jason 2026-10-07): by fragment for batches 1–3; superseded for the rest by the offline whole-corpus run (#175)
 - ✅ `LatRepair` (pure, TDD; f205b24e): candidates → provisions; fragment paths (s.N → section/N; reg.N → regulation/N, falling back to article/N then rule/N on 404; EU art → article/N); rows inside a provision; word-change test (marker/spacing-only changes skipped)
 - ✅ `mix lat.repair_text` (f205b24e; resets enrichment/embeddings, keeps note-derived effective_from/changed_by): dry run by default (CSV of planned changes); `--apply` writes per provision in a transaction (text, carried enrichment cleared as a re-parse would, `lat_changes` text_changed / cause correction), resumable `.done`; one `parsed` lat_event with cause correction per law
 - ✅ Dry run on the 6 precision laws: 378 provisions, 154 rows planned, 0 fetch failures; all 154 match the full-parse diff with identical new text, none extra. Not repaired: 2 legislative amendments (correct) and 5 search misses → empty leaf rows added as candidates (363 rows, 54 laws)
 - ✅ Applied to the 6 laws (Jason): 154 rows = dry run; verified hash changed, row counts unchanged, 154 correction lat_changes, enrichment cleared only on changed rows, one parsed/correction event per law, manifest cause correction, reg.2(1) text correct. First apply crashed on the event insert (uuid param) after WIA; fixed, events self-heal on resume
 - ✅ Batch 1–2: fractalaw's 51 gold-set laws, then its 9 other test laws — whole check (`--whole`): 203 rows in 55 laws (182 correction, 21 unattributed), events on all 55, enrichment cleared on changed rows only; fractalaw told
 - ✅ Batch 3 (100 worst-affected laws, by provision): 4,111 provisions, 1,852 rows in 99 laws (1,537 correction, 315 unattributed), events on all 99; 62 provisions failed on legislation.gov.uk 500s (not marked done; redo from the store); fractalaw told
-- ⬜ Batches 4–11 (~759 laws) + batch 3's 62 failed provisions: **wait for #175 (local CLML store) and the #174 fix**, so rows change once and run from the store
-- ⬜ #174 parser refinement: lists and BlockText that are siblings after a P2 inside P1para land on the parent section row; attach them to the preceding (open) P2 instead. fractalaw's QA (2026-10-07) on its 60 test laws:
+- ⬜ Remaining repair as ONE offline run after #174: `mix lat.repair_text --whole --store only` over all LAT laws (writes only word changes); offline diff baseline before #174: 1,802 reordered rows (724 laws), 215 empty→text (87 laws), 776 other word changes (124 laws). Dry run first, numbers to Jason, then apply
+- ⬜ #174 parser refinement (active): lists and BlockText that are siblings after a P2 inside P1para land on the parent section row; attach them to the preceding (open) P2 instead. fractalaw's QA (2026-10-07) on its 60 test laws:
   - definitions on the section row, the subsection left as just "In these Regulations—": WSI 2005/1806 reg.5(1), SSI 2000/95 reg.2(1), Water Act 2003 s.3(12) and s.58(13), SI 2004/1490 reg.2(1), SI 2000/1043 reg.2(1)
   - trailing BlockText continuing an earlier subsection's open list (often not the last one): CAA 1982 s.35, s.43, s.44 (→ s.44(6)), s.46, s.84; SI 2010/93 reg.7 (fragments for (5) and (6)) and reg.18; SI 2012/2782 reg.15; SSI 2017/101 reg.15; SI 1998/2306 reg.2
   - fractalaw's assembler moves definitions back meanwhile; it doesn't guess the trailing cases. Do this before batches 4–11, or their rows change twice; corpus-wide check from the #175 store
 - ➡️ XML store: moved to its own session, `2026-10-07-issue-175.md` (#175), brought forward by Jason
-- ⬜ Send fractalaw the changed section_ids (lat_changes, cause correction), flagging its 61 test laws; gold set waits on them
-- ⬜ Report what the repair doesn't cover: schedule rows (203, deferred with #169), Part/Chapter/heading/table rows (56)
+- ✅ fractalaw told per batch (6 laws, its 60 test laws, batch 3); it reads changed section_ids from lat-changes (cause correction/unattributed)
+- ✅ Coverage: the whole-corpus run compares every held row (incl. Part/Chapter/heading/table); schedules stay unfetched (#169, deferred)
 - ⬜ Capture P1group/Title (title column, so row text is unchanged) and P1group @ConfersPower
 - ✅ Lists/BlockText directly under structural P1para/P2para: the walker reads them (precision check found whole definition lists missing, e.g. WIA 1991 s.117(1), s.141(1)); continuation text marked ' … '
 - ⏸️ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules (deferred — Jason 2026-10-07: not for compliance v0.1; schedules can be massive data tables. Later: a double-knock pipeline, see below)
