@@ -58,3 +58,6 @@ config :sertantai_legal,
 config :sertantai_legal, :github_admin, allowed_users: ["test-admin"]
 
 config :sertantai_legal, :frontend_url, "http://localhost:5175"
+
+# #175: no local CLML store in tests (tests that need one pass `root:`)
+config :sertantai_legal, :clml_store_dir, nil

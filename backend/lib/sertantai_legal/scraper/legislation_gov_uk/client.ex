@@ -19,6 +19,8 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   Use `Req.Test.stub/2` to set up expected responses.
   """
 
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
+
   @endpoint "https://www.legislation.gov.uk"
   @default_delay_ms 2000
 
@@ -59,19 +61,77 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
   end
 
   @doc """
-  Fetch XML content from legislation.gov.uk (for metadata).
+  Fetch XML content from legislation.gov.uk, through the local CLML store
+  (#175, `ClmlStore`) for legislation documents.
 
   ## Parameters
   - path: URL path (e.g., "/uksi/2024/123/data.xml")
+  - opts:
+    - `:store` — `:write` (default: fetch live, store the result),
+      `:prefer` (use a fresh stored copy, else fetch and store),
+      `:only` (never fetch: a stored copy, fresh or not, or an error),
+      `:refresh` (fetch live even when a fresh copy is stored)
+    - `:law_valid` — the law's latest known `dct:valid` (`md_dct_valid_date`)
+      for the freshness check; nil falls back to the store's age limit
+    - `:root` — store directory (tests)
 
   ## Returns
   - `{:ok, body}` - XML content as string
-  - `{:ok, :html, body}` - HTML content when XML expected
+  - `{:ok, :html, body}` - HTML content when XML expected (never stored)
   - `{:error, code, message}` - Error with HTTP status code and message
   """
-  @spec fetch_xml(String.t()) ::
+  @spec fetch_xml(String.t(), keyword()) ::
           {:ok, String.t()} | {:ok, :html, String.t()} | {:error, integer(), String.t()}
-  def fetch_xml(path) do
+  def fetch_xml(path, opts \\ []) do
+    mode = Keyword.get(opts, :store, :write)
+    store_opts = Keyword.take(opts, [:root])
+
+    if ClmlStore.cacheable?(path),
+      do: fetch_xml_stored(path, mode, Keyword.get(opts, :law_valid), store_opts),
+      else: fetch_xml_live(path)
+  end
+
+  defp fetch_xml_stored(path, mode, law_valid, store_opts) do
+    stored = if mode in [:prefer, :only], do: ClmlStore.get(path, store_opts), else: :none
+
+    case {mode, stored} do
+      {:only, {:ok, body, _meta}} ->
+        {:ok, body}
+
+      {:only, {:missing, _meta}} ->
+        {:error, 404, "Not found (local store): #{path}"}
+
+      {:only, :none} ->
+        {:error, 0, "not in local store: #{path}"}
+
+      {:prefer, {:ok, body, meta}} ->
+        if ClmlStore.fresh?(meta, law_valid),
+          do: {:ok, body},
+          else: fetch_and_store(path, store_opts)
+
+      {:prefer, {:missing, meta}} ->
+        if ClmlStore.fresh?(meta, law_valid),
+          do: {:error, 404, "Not found (local store): #{path}"},
+          else: fetch_and_store(path, store_opts)
+
+      _ ->
+        fetch_and_store(path, store_opts)
+    end
+  end
+
+  defp fetch_and_store(path, store_opts) do
+    result = fetch_xml_live(path)
+
+    case result do
+      {:ok, body} when is_binary(body) -> ClmlStore.put(path, body, store_opts)
+      {:error, 404, _} -> ClmlStore.put_missing(path, store_opts)
+      _ -> :ok
+    end
+
+    result
+  end
+
+  defp fetch_xml_live(path) do
     rate_limit_delay()
     url = @endpoint <> path
 
@@ -86,7 +146,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
       {:ok, %Req.Response{status: 307}} ->
         # Try with /made/ path for older legislation
         if not String.contains?(path, "made") do
-          fetch_xml(String.replace(path, "data.xml", "made/data.xml"))
+          fetch_xml_live(String.replace(path, "data.xml", "made/data.xml"))
         else
           {:error, 307, "Temporary redirect for #{path}"}
         end
@@ -94,7 +154,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.Client do
       {:ok, %Req.Response{status: 404}} ->
         # Try without /made/ if present
         if String.contains?(path, "/made/") do
-          fetch_xml(String.replace(path, "/made", ""))
+          fetch_xml_live(String.replace(path, "/made", ""))
         else
           {:error, 404, "Not found: #{path}"}
         end
