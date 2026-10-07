@@ -47,6 +47,8 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Scraper.ExtentResolver
   alias SertantaiLegal.Scraper.LatParser
   alias SertantaiLegal.Scraper.LatPersister
+  alias SertantaiLegal.Scraper.LatScope
+  alias SertantaiLegal.Scraper.LatStagedParser
   alias SertantaiLegal.Scraper.LiveStatus
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.Amending
@@ -1240,23 +1242,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     if is_making do
       law_name = IdField.normalize_to_db_name(record.name)
 
+      # A scoped law (#166) keeps only its fragments: never persist the
+      # whole body over it — re-parse through the scope-aware parser.
       case lookup_law_id(law_name) do
         {:ok, law_id} ->
-          rows = LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
-
-          case LatPersister.persist(rows, law_name, law_id) do
-            {:ok, %{inserted: inserted}} ->
-              IO.puts("    ✓ LAT: #{inserted} rows persisted")
-
-              # Commentary sub-stage: parse Commentaries block and persist annotations
-              maybe_run_commentary_substage(body_xml, rows, law_name, law_id)
-
-              inserted
-
-            {:error, reason} ->
-              IO.puts("    ✗ LAT persist failed: #{reason}")
-              0
-          end
+          if LatScope.get(law_name),
+            do: run_scoped_lat(law_name),
+            else: persist_body_lat(body_xml, law_name, law_id, type_code)
 
         {:error, reason} ->
           IO.puts("    ✗ LAT skipped: #{reason}")
@@ -1269,6 +1261,40 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   defp maybe_run_lat_substage(_taxa_data, _body_xml, _type_code, _year, _number, _record), do: 0
+
+  defp persist_body_lat(body_xml, law_name, law_id, type_code) do
+    rows = LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
+
+    case LatPersister.persist(rows, law_name, law_id) do
+      {:ok, %{inserted: inserted}} ->
+        IO.puts("    ✓ LAT: #{inserted} rows persisted")
+
+        # Commentary sub-stage: parse Commentaries block and persist annotations
+        maybe_run_commentary_substage(body_xml, rows, law_name, law_id)
+
+        inserted
+
+      {:error, reason} ->
+        IO.puts("    ✗ LAT persist failed: #{reason}")
+        0
+    end
+  end
+
+  defp run_scoped_lat(law_name) do
+    case LatStagedParser.parse(law_name) do
+      {:ok, %{has_errors: false, lat: %{inserted: inserted}}} ->
+        IO.puts("    ✓ LAT (scoped): #{inserted} rows persisted")
+        inserted
+
+      {:ok, result} ->
+        IO.puts("    ✗ LAT (scoped) failed: #{result[:error]}")
+        0
+
+      {:error, reason} ->
+        IO.puts("    ✗ LAT (scoped) failed: #{reason}")
+        0
+    end
+  end
 
   # Commentary sub-stage: parse <Commentaries> block from body XML and persist annotations
   defp maybe_run_commentary_substage(body_xml, lat_rows, law_name, law_id) do

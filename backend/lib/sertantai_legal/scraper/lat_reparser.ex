@@ -1,92 +1,24 @@
 defmodule SertantaiLegal.Scraper.LatReparser do
   @moduledoc """
-  Standalone LAT + Commentary re-parse for a single law.
+  Standalone LAT + Commentary re-parse for a single law (the admin
+  re-parse, `LatAdminController.reparse/2`).
 
-  Fetches body XML from legislation.gov.uk, runs LatParser + CommentaryParser,
-  and persists the results (DELETE+INSERT). A body with no LAT rows (a
-  scanned-PDF-only law) is an error: its PDFs go to `PdfBacklog` and its
-  existing LAT is kept.
-
-  Reusable by both StagedParser (taxa sub-stage) and LatAdminController.
+  A thin wrapper over `LatStagedParser.parse/2`, so it fetches what the
+  law's `lat_scope` says (#166: a scoped law is never re-widened to its
+  whole body) and records the parse cause, notes and status like every other
+  parse path. A no-body (PDF-only) law comes back as an error with its LAT
+  kept.
   """
 
-  alias SertantaiLegal.Scraper.{LatParser, LatPersister, CommentaryParser, CommentaryPersister}
-  alias SertantaiLegal.Scraper.PdfBacklog
-  alias SertantaiLegal.Scraper.LegislationGovUk.Client
-  alias SertantaiLegal.Scraper.IdField
-  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LatStagedParser
 
-  @spec reparse(String.t()) :: {:ok, map()} | {:error, String.t()}
-  def reparse(law_name) when is_binary(law_name) do
-    start = System.monotonic_time(:millisecond)
-
-    with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
-         {:ok, law_id} <- lookup_law_id(law_name),
-         {:ok, body_xml} <- fetch_body_xml(slash_path),
-         {:ok, lat_rows} <- parse_lat(law_name, type_code, body_xml),
-         {:ok, lat_result} <- LatPersister.persist(lat_rows, law_name, law_id) do
-      # Commentary stage
-      ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
-      annotations = CommentaryParser.parse(body_xml, %{law_name: law_name}, ref_to_sections)
-
-      annotation_result =
-        case CommentaryPersister.persist(annotations, law_name, law_id) do
-          {:ok, result} -> result
-          {:error, _} -> %{inserted: 0}
-        end
-
-      duration_ms = System.monotonic_time(:millisecond) - start
-
-      {:ok,
-       %{
-         lat: lat_result,
-         annotations: annotation_result,
-         duration_ms: duration_ms
-       }}
-    end
-  end
-
-  # An empty parse is a no-body (PDF-only) law: queue its PDFs, keep its LAT.
-  defp parse_lat(law_name, type_code, body_xml) do
-    case LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code}) do
-      [] ->
-        {reason, _files} = PdfBacklog.queue_from_body(law_name, body_xml)
-        {:error, reason}
-
-      rows ->
-        {:ok, rows}
-    end
-  end
-
-  # Parse law_name to extract type_code and slash path for API calls.
-  # UK_ukpga_1974_37 → {"ukpga", "ukpga/1974/37"}
-  defp parse_law_name(law_name) do
-    slash_path = IdField.normalize_to_slash_format(law_name)
-
-    case String.split(slash_path, "/") do
-      [type_code, _year, _number] ->
-        {:ok, {type_code, slash_path}}
-
-      _ ->
-        {:error, "Invalid law_name format: #{law_name}"}
-    end
-  end
-
-  defp lookup_law_id(law_name) do
-    case Repo.query("SELECT id::text FROM uk_lrt WHERE name = $1 LIMIT 1", [law_name]) do
-      {:ok, %{rows: [[id]]}} -> {:ok, id}
-      {:ok, %{rows: []}} -> {:error, "Law not found in uk_lrt: #{law_name}"}
-      {:error, err} -> {:error, "DB error: #{inspect(err)}"}
-    end
-  end
-
-  defp fetch_body_xml(slash_path) do
-    path = "/#{slash_path}/body/data.xml"
-
-    case Client.fetch_xml(path) do
-      {:ok, xml} -> {:ok, xml}
-      {:ok, :html, _html} -> {:error, "Received HTML instead of XML for #{path}"}
-      {:error, _code, reason} -> {:error, "Failed to fetch body XML: #{reason}"}
+  @spec reparse(String.t(), (String.t() -> {:ok, map()} | {:error, String.t()})) ::
+          {:ok, map()} | {:error, String.t()}
+  def reparse(law_name, parse \\ &LatStagedParser.parse/1) when is_binary(law_name) do
+    case parse.(law_name) do
+      {:ok, %{has_errors: true} = result} -> {:error, result[:error] || "parse failed"}
+      {:ok, result} -> {:ok, result}
+      {:error, reason} -> {:error, reason}
     end
   end
 end

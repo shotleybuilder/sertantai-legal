@@ -19,14 +19,12 @@ defmodule Mix.Tasks.Live.Enabling do
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.EnactedBy
-  alias SertantaiLegal.Scraper.EnactedBy.EnablingProvisions
+  alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
   alias SertantaiLegal.Scraper.ExtentBackfill
   alias SertantaiLegal.Scraper.LiveStatus.EffectsBackfill
 
   @shortdoc "Enabling-provision extents for a batch's unsourced SIs"
 
-  @cache Path.join(["data", "cache", "enabling"])
   @acts ~w(ukpga asp anaw asc nia apni mwa ukla ukcm eur eudr eudn)
 
   @impl Mix.Task
@@ -42,8 +40,7 @@ defmodule Mix.Tasks.Live.Enabling do
     sis = weak_extent_sis(names)
     Mix.shell().info("Batch #{label}: #{length(sis)} SIs with no proper extent source")
 
-    File.mkdir_p!(@cache)
-    provisions = Map.new(sis, &{&1, cached_or_fetch(&1)})
+    provisions = Map.new(sis, &{&1, EnablingCache.get(&1)})
     with_provisions = Enum.filter(provisions, fn {_, p} -> p != [] end)
     Mix.shell().info("  with enabling provisions parsed: #{length(with_provisions)}")
 
@@ -86,34 +83,6 @@ defmodule Mix.Tasks.Live.Enabling do
       )
 
     List.flatten(rows)
-  end
-
-  defp cached_or_fetch(name) do
-    path = Path.join(@cache, name <> ".json")
-
-    case File.read(path) do
-      {:ok, json} ->
-        Jason.decode!(json)
-
-      _ ->
-        ps = fetch(name)
-        File.write!(path, Jason.encode!(ps))
-        ps
-    end
-  end
-
-  defp fetch(name) do
-    with ["UK", type, year | number] when number != [] <- String.split(name, "_"),
-         {:ok, %{text: text, urls: urls}} <-
-           EnactedBy.fetch_enacting_data(
-             EnactedBy.introduction_path(type, year, Enum.join(number, "_"))
-           ) do
-      text
-      |> EnablingProvisions.parse(urls)
-      |> Enum.map(&%{"law" => &1.law, "sections" => &1.sections, "schedules" => &1.schedules})
-    else
-      _ -> []
-    end
   end
 
   defp report_parents(parents) do

@@ -17,9 +17,11 @@ defmodule SertantaiLegal.Scraper.LatScope do
   RestrictExtent), and `LatParser` gives it the same section ids as a full
   parse; only document positions differ. `merge/1` joins fragments: shared
   structural rows once, document order by structural sort key, positions
-  renumbered. Scopes only widen (`widen/2`); narrowing is explicit.
+  renumbered. Scopes only widen (`widen/2`); narrowing is explicit
+  (`narrowed/3`, `narrow!/3`). Which fragments a large Act keeps:
+  `LatScope.Relevance`.
 
-  Pure except `set!/2` and `get/1`.
+  Pure except `set!/2`, `narrow!/3` and `get/1`.
   """
 
   alias SertantaiLegal.Repo
@@ -140,6 +142,63 @@ defmodule SertantaiLegal.Scraper.LatScope do
       other ->
         {other, scope}
     end
+  end
+
+  @doc """
+  Narrow a scope: replace its fragments (an explicit narrow — `widen/2`
+  never does). A whole law (nil scope) gets `fragments`; `entry` (`at`,
+  `purpose`, `reason`, `set_by`) is appended to `history` with what was
+  added, removed, or that the law was whole.
+  """
+  @spec narrowed(map() | nil, [String.t()], map()) :: map()
+  def narrowed(scope, fragments, entry) do
+    fragments = Enum.uniq(fragments)
+
+    change =
+      case scope do
+        nil ->
+          %{"narrowed_from" => "whole", "narrowed_to" => fragments}
+
+        %{"fragments" => current} ->
+          %{
+            "narrowed_to" => fragments,
+            "added" => fragments -- current,
+            "removed" => current -- fragments
+          }
+      end
+
+    %{
+      "fragments" => fragments,
+      "purposes" =>
+        Enum.uniq(((scope || %{})["purposes"] || []) ++ [entry["purpose"]])
+        |> Enum.reject(&is_nil/1),
+      "history" => ((scope || %{})["history"] || []) ++ [Map.merge(entry, change)]
+    }
+  end
+
+  @doc """
+  Narrow a law's stored scope to `fragments` (`opts`: `:purpose`, `:reason`,
+  `:set_by`). Unlike `set!/2` this may narrow a whole law holding LAT; the
+  caller archives the LAT first and re-parses after (`mix lat.scope
+  --relevance`). Returns the new scope.
+  """
+  @spec narrow!(String.t(), [String.t()], keyword()) :: map()
+  def narrow!(law_name, [_ | _] = fragments, opts) do
+    entry = %{
+      "at" => DateTime.utc_now() |> DateTime.to_iso8601(),
+      "purpose" => Keyword.get(opts, :purpose, "relevance"),
+      "reason" => Keyword.get(opts, :reason),
+      "set_by" => Keyword.get(opts, :set_by)
+    }
+
+    new_scope = narrowed(get(law_name), fragments, entry)
+
+    Repo.query!(
+      "UPDATE legal_register SET lat_scope = $2 WHERE country = 'uk' AND name = $1",
+      [law_name, new_scope]
+    )
+
+    new_scope
   end
 
   # The sort key without its position segment (the last dot segment before "~")

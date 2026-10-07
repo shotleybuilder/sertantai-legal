@@ -79,4 +79,35 @@ defmodule SertantaiLegal.Scraper.LatScopeTest do
                ["article/17"]
     end
   end
+
+  describe "narrowed/3" do
+    @entry %{
+      "at" => "2026-10-07T00:00:00Z",
+      "purpose" => "relevance",
+      "reason" => "r",
+      "set_by" => "t"
+    }
+
+    test "a whole law (nil scope) gets the fragments; history records it was whole" do
+      scope = LatScope.narrowed(nil, ["part/15"], @entry)
+
+      assert scope["fragments"] == ["part/15"]
+      assert scope["purposes"] == ["relevance"]
+      assert [%{"narrowed_from" => "whole", "narrowed_to" => ["part/15"]}] = scope["history"]
+    end
+
+    test "a scoped law's fragments are replaced; removed ones are recorded; history kept" do
+      old = %{
+        "fragments" => ["section/1", "section/2"],
+        "purposes" => ["enabling_extent"],
+        "history" => [%{"added" => ["section/1", "section/2"]}]
+      }
+
+      scope = LatScope.narrowed(old, ["section/1", "part/3"], @entry)
+
+      assert scope["fragments"] == ["section/1", "part/3"]
+      assert scope["purposes"] == ["enabling_extent", "relevance"]
+      assert [_, %{"removed" => ["section/2"], "added" => ["part/3"]}] = scope["history"]
+    end
+  end
 end
