@@ -28,7 +28,13 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 ## Todo
 
 - ✅ Fix leaf text order/duplication/spacing: TDD on real CLML fixtures (uksi/1992/3004 reg.2, ukpga/1974/37 s.4) + exact-string synthetic cases; structural continuation text marked ' … ' (ee84c25f). Not yet re-parsed: lands in the re-parse wave
-- ⬜ Repair affected rows by provision fragment (option a, Jason): fetch only flagged provisions, write only real word changes; then send fractalaw the changed section_ids (gold set waits on them)
+- ⬜ Repair plan (option a + continuation, Jason 2026-10-07): 8,509 provisions in 891 laws, fetched by fragment, only rows whose words change are written
+- ⬜ `LatRepair` (pure, TDD): candidates → provisions; fragment paths (s.N → section/N; reg.N → regulation/N, falling back to article/N then rule/N on 404; EU art → article/N); rows inside a provision; word-change test (marker/spacing-only changes skipped)
+- ⬜ `mix lat.repair_text`: dry run by default (CSV of planned changes); `--apply` writes per provision in a transaction (text, carried enrichment cleared as a re-parse would, `lat_changes` text_changed / cause correction), resumable `.done`; one `parsed` lat_event with cause correction per law
+- ⬜ Dry run on the 6 precision laws; compare with the `lat.text_diff` results
+- ⬜ Jason approval → apply the 6 laws, verify (lat_hash, lat_changes, manifest cause, enrichment cleared only on changed rows) → apply the rest
+- ⬜ Send fractalaw the changed section_ids (lat_changes, cause correction), flagging its 61 test laws; gold set waits on them
+- ⬜ Report what the repair doesn't cover: schedule rows (203, deferred with #169), Part/Chapter/heading/table rows (56)
 - ⬜ Capture P1group/Title (title column, so row text is unchanged) and P1group @ConfersPower
 - ✅ Lists/BlockText directly under structural P1para/P2para: the walker reads them (precision check found whole definition lists missing, e.g. WIA 1991 s.117(1), s.141(1)); continuation text marked ' … '
 - ⏸️ Schedules (#169): fetch `/schedules/data.xml`, schedule TitleBlock/Title + Reference, framework-only amending schedules (deferred — Jason 2026-10-07: not for compliance v0.1; schedules can be massive data tables. Later: a double-knock pipeline, see below)
