@@ -1067,6 +1067,29 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       refute txt(rows, "UK_uksi_2010_93:reg.7(5)") =~ "for the period that is covered"
     end
 
+    test "the lead-in is the first text: a subsection whose own list follows its open lead-in still takes the sibling (PUWER 1998 reg.2(1))" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S"><Secondary><Body>
+        <P1group><P1 id="regulation-2"><Pnumber>2</Pnumber><P1para>
+          <P2 id="regulation-2-1"><Pnumber>1</Pnumber><P2para>
+            <Text>In these Regulations, unless the context otherwise requires—</Text>
+            <UnorderedList><ListItem><Para><Text>“use” means any activity;</Text></Para></ListItem>
+            <ListItem><Para><Text>“work equipment” means any machinery.</Text></Para></ListItem></UnorderedList>
+          </P2para></P2>
+          <Text>and related expressions shall be construed accordingly.</Text>
+          <P2 id="regulation-2-2"><Pnumber>2</Pnumber><P2para><Text>Any reference to an employer includes a self-employed person.</Text></P2para></P2>
+        </P1para></P1></P1group>
+      </Body></Secondary></Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_1998_2306", type_code: "uksi"})
+
+      assert txt(rows, "UK_uksi_1998_2306:reg.2(1)") ==
+               "In these Regulations, unless the context otherwise requires— “use” means any activity; “work equipment” means any machinery. and related expressions shall be construed accordingly."
+
+      assert txt(rows, "UK_uksi_1998_2306:reg.2") in [nil, ""]
+    end
+
     test "content after a closed subsection stays on the parent" do
       xml = """
       <Legislation RestrictExtent="E+W+S"><Primary><Body>

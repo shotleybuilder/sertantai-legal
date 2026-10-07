@@ -164,14 +164,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  # A provision's lead-in (its own text before any child provision) ends in a
-  # dash or colon: what follows continues it.
+  # A provision's lead-in — its first text block — ends in a dash or colon:
+  # what follows continues it (its own list may sit in between, as in
+  # PUWER 1998 reg.2(1) "…otherwise requires— [definitions]").
   defp open_lead_in?(node) do
-    node
-    |> text_blocks(:structural)
-    |> Enum.take_while(&(&1 != :gap))
-    |> Enum.join(" ")
-    |> String.match?(~r/[—–:-]\s*$/u)
+    case node |> text_blocks(:structural) |> Enum.find(&(is_binary(&1) and &1 != "")) do
+      nil -> false
+      lead -> String.match?(lead, ~r/[—–:-]\s*$/u)
+    end
   end
 
   defp walk_element(node, ctx) do
