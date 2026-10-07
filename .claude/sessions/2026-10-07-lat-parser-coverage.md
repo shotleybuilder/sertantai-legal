@@ -6,6 +6,12 @@ related: [169, 166, 173, 174, 175, "fractalaw drrp-v1.1 SLM training labels"]
 depends_on: ["2026-10-07-issue-175"]
 
 bugs:
+  - pattern: "Lists/BlockText that are siblings after an open P2 inside P1para landed on the section row; the subsection kept only its lead-in (#174)"
+    category: LAT coverage
+    module: SertantaiLegal.Scraper.LatParser (walk_children, text_blocks)
+    affected: "fractalaw QA: 17 cases in its 60 test laws; corpus: measured by the offline diff"
+    fix: "Attach to the preceding child whose first text block ends in a dash/colon (ctx.trailing); parent skips it"
+    status: fixed
   - pattern: "Leaf text built as all Para then all Text, then uniq: chapeau moved to the end, nested list items duplicated, list items joined with no space"
     category: LAT text corruption
     module: SertantaiLegal.Scraper.LatParser (extract_element_text, ~:463-490)
@@ -41,10 +47,11 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ✅ Batch 1–2: fractalaw's 51 gold-set laws, then its 9 other test laws — whole check (`--whole`): 203 rows in 55 laws (182 correction, 21 unattributed), events on all 55, enrichment cleared on changed rows only; fractalaw told
 - ✅ Batch 3 (100 worst-affected laws, by provision): 4,111 provisions, 1,852 rows in 99 laws (1,537 correction, 315 unattributed), events on all 99; 62 provisions failed on legislation.gov.uk 500s (not marked done; redo from the store); fractalaw told
 - ⬜ Remaining repair as ONE offline run after #174: `mix lat.repair_text --whole --store only` over all LAT laws (writes only word changes); offline diff baseline before #174: 1,802 reordered rows (724 laws), 215 empty→text (87 laws), 776 other word changes (124 laws). Dry run first, numbers to Jason, then apply
-- ⬜ #174 parser refinement (active): lists and BlockText that are siblings after a P2 inside P1para land on the parent section row; attach them to the preceding (open) P2 instead. fractalaw's QA (2026-10-07) on its 60 test laws:
+- ✅ #174 parser fix (eb368fbe, + lead-in fix): content after a child whose lead-in (first text block) is open belongs to that child, else stays the parent's continuation; TDD on real store fixtures (WSI 2005/1806 reg.5, CAA 1982 s.44, SI 2010/93 reg.7) + PUWER-shape and closed cases; all 17 of fractalaw's QA cases verified offline. Was: lists and BlockText that are siblings after a P2 inside P1para land on the parent section row; attach them to the preceding (open) P2 instead. fractalaw's QA (2026-10-07) on its 60 test laws:
   - definitions on the section row, the subsection left as just "In these Regulations—": WSI 2005/1806 reg.5(1), SSI 2000/95 reg.2(1), Water Act 2003 s.3(12) and s.58(13), SI 2004/1490 reg.2(1), SI 2000/1043 reg.2(1)
   - trailing BlockText continuing an earlier subsection's open list (often not the last one): CAA 1982 s.35, s.43, s.44 (→ s.44(6)), s.46, s.84; SI 2010/93 reg.7 (fragments for (5) and (6)) and reg.18; SI 2012/2782 reg.15; SSI 2017/101 reg.15; SI 1998/2306 reg.2
-  - fractalaw's assembler moves definitions back meanwhile; it doesn't guess the trailing cases. Do this before batches 4–11, or their rows change twice; corpus-wide check from the #175 store
+  - fractalaw's assembler moves definitions back meanwhile; it doesn't guess the trailing cases
+- ⬜ #174 corpus measure: offline diff with the new parser (vs stored LAT), compared with the pre-#174 baseline
 - ➡️ XML store: moved to its own session, `2026-10-07-issue-175.md` (#175), brought forward by Jason
 - ✅ fractalaw told per batch (6 laws, its 60 test laws, batch 3); it reads changed section_ids from lat-changes (cause correction/unattributed)
 - ✅ Coverage: the whole-corpus run compares every held row (incl. Part/Chapter/heading/table); schedules stay unfetched (#169, deferred)
