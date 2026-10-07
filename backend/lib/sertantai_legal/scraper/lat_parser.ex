@@ -455,24 +455,61 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  # Extract text from Para/Text elements, preserving inline element order.
-  # Text nodes within a single element are joined without extra spaces (they're
-  # fragments split by inline markup like <Term>, <Addition>, etc.).
-  # Separate Para/Text elements are joined with a space.
+  # Leaf text: every Text in document order, each once, separated by a space
+  # (inline fragments within one Text are joined without extra spaces —
+  # they're split by markup like <Term>, <Addition>). Lists, nested lists and
+  # text after a list keep their order (2026-10-07: the old Para-then-Text
+  # build moved chapeaux to the end and repeated nested list items).
   defp extract_element_text(node) do
-    para_elements = xpath(node, ~x".//Para"l) || []
-    text_elements = xpath(node, ~x".//Text"l) || []
+    node |> text_blocks(:leaf) |> join_blocks()
+  end
 
-    all_elements = para_elements ++ text_elements
+  # Elements emitted as rows of their own: structural text stops at them.
+  @row_elements ~w(Part EUTitle Chapter EUChapter Pblock P1 P2 P3 P4 Schedule
+                   SignedSection Tabular Figure)
 
-    texts =
-      all_elements
-      |> Enum.map(&extract_inline_text/1)
-      |> Enum.reject(&(&1 == ""))
-      |> Enum.uniq()
-      |> Enum.join(" ")
+  # Never text: numbers, titles (read by extract_title), reference markers.
+  @no_text_elements ~w(Pnumber Number Title TitleBlock Reference CommentaryRef
+                       FootnoteRef Footnotes Commentaries)
 
-    texts
+  # A node's text blocks in document order: each Text's inline text, and in
+  # :structural mode a :gap where a child provision (its own row) sits.
+  # :structural skips other laws' text (amendment blocks); :leaf keeps it,
+  # as leaf rows always have.
+  defp text_blocks(node, mode) do
+    node
+    |> xpath(~x"./*"l)
+    |> Enum.flat_map(fn child ->
+      name = element_name(child)
+
+      cond do
+        name == "Text" -> [extract_inline_text(child)]
+        name in @no_text_elements -> []
+        mode == :structural and name in @row_elements -> [:gap]
+        mode == :structural and name in @skip_elements -> []
+        true -> text_blocks(child, mode)
+      end
+    end)
+  end
+
+  # Join blocks with spaces; a gap between text becomes " … " (the child
+  # provisions sit there); leading/trailing gaps are dropped.
+  defp join_blocks(blocks) do
+    blocks
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.chunk_by(&(&1 == :gap))
+    |> Enum.map(fn
+      [:gap | _] -> :gap
+      texts -> Enum.join(texts, " ")
+    end)
+    |> Enum.drop_while(&(&1 == :gap))
+    |> Enum.reverse()
+    |> Enum.drop_while(&(&1 == :gap))
+    |> Enum.reverse()
+    |> Enum.map_join(" ", fn
+      :gap -> "…"
+      text -> text
+    end)
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
     |> case do
@@ -508,23 +545,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
       # Title/Number text for the structural header (if any)
       title = extract_title(node)
 
-      # Direct Para/Text children, plus Text inside P1para/P2para/P3para wrappers
-      # (but NOT text inside nested P1/P2/P3/P4 child provisions).
-      # Each element's inline text nodes joined without extra spaces.
-      direct_elements =
-        (xpath(node, ~x"./Para"l) || []) ++
-          (xpath(node, ~x"./Text"l) || []) ++
-          (xpath(node, ~x"./P1para/Text"l) || []) ++
-          (xpath(node, ~x"./P2para/Text"l) || []) ++
-          (xpath(node, ~x"./P3para/Text"l) || []) ++
-          (xpath(node, ~x"./P4para/Text"l) || [])
-
-      direct_texts =
-        direct_elements
-        |> Enum.map(&extract_inline_text/1)
-        |> Enum.reject(&(&1 == ""))
-        |> Enum.uniq()
-        |> Enum.join(" ")
+      # The node's own text in document order, stopping at child provisions
+      # (their own rows): a chapeau, then " … " and any continuation text
+      # after them.
+      direct_texts = node |> text_blocks(:structural) |> join_blocks() |> Kernel.||("")
 
       [title, direct_texts]
       |> Enum.reject(&is_nil/1)

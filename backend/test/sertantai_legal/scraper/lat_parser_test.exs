@@ -906,6 +906,121 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
   # ── Inline Element Text Order ────────────────────────────────
 
+  # Lists: text in document order, each Text once, separated by spaces.
+  # Regression for a bug that went unnoticed in the corpus (2026-10-07): text
+  # was built as every Para then every Text, so a chapeau moved to the end,
+  # nested list items were repeated, and items ran together ("andany").
+  describe "list text order, duplication and spacing" do
+    defp text_of(rows, id), do: Enum.find(rows, &(&1.section_id == id)).text
+
+    defp si(body) do
+      xml = """
+      <Legislation RestrictExtent="E+W+S"><Secondary><Body>
+        <P1group><P1 id="regulation-2"><Pnumber>2</Pnumber><P1para>
+          <P2 id="regulation-2-1"><Pnumber>1</Pnumber><P2para>#{body}</P2para></P2>
+        </P1para></P1></P1group>
+      </Body></Secondary></Legislation>
+      """
+
+      xml
+      |> LatParser.parse(%{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+      |> text_of("UK_uksi_2024_1:reg.2(1)")
+    end
+
+    test "chapeau, then list items in order, each once, space-separated" do
+      text =
+        si("""
+        <Text>Every employer shall—</Text>
+        <UnorderedList><ListItem><Para><Text>keep records;</Text></Para></ListItem>
+        <ListItem><Para><Text>review them.</Text></Para></ListItem></UnorderedList>
+        """)
+
+      assert text == "Every employer shall— keep records; review them."
+    end
+
+    test "a nested list appears once, inside its item, in order" do
+      text =
+        si("""
+        <Text>In these Regulations—</Text>
+        <UnorderedList Class="Definition">
+          <ListItem><Para><Text>“mine” means a mine;</Text></Para></ListItem>
+          <ListItem><Para><Text>“workplace” means premises, and includes—</Text>
+            <OrderedList><ListItem><Para><Text>any place; and</Text></Para></ListItem>
+            <ListItem><Para><Text>any room.</Text></Para></ListItem></OrderedList>
+          </Para></ListItem>
+        </UnorderedList>
+        """)
+
+      assert text ==
+               "In these Regulations— “mine” means a mine; “workplace” means premises, and includes— any place; and any room."
+    end
+
+    test "text after a list (continuation) follows the list" do
+      text =
+        si("""
+        <Text>Where a person—</Text>
+        <OrderedList><ListItem><Para><Text>is employed,</Text></Para></ListItem></OrderedList>
+        <Text>that person shall comply.</Text>
+        """)
+
+      assert text == "Where a person— is employed, that person shall comply."
+    end
+
+    test "real CLML: Workplace Regulations 1992 reg.2(1)" do
+      rows =
+        "uksi_1992_3004_reg2.xml"
+        |> read_fixture()
+        |> LatParser.parse(%{law_name: "UK_uksi_1992_3004", type_code: "uksi"})
+
+      text = text_of(rows, "UK_uksi_1992_3004:reg.2(1)")
+
+      assert String.starts_with?(
+               text,
+               "In these Regulations, unless the context otherwise requires—"
+             )
+
+      for phrase <- [
+            "any place within the premises to which such person has access while at work; and",
+            "any room, lobby, corridor, staircase, road or other place used as a means of access",
+            "“workplace” means, subject to paragraph (2)"
+          ] do
+        assert count(text, phrase) == 1, "#{phrase} should appear exactly once"
+      end
+
+      assert text =~ "while at work; and any room"
+      refute text =~ "andany"
+      # definitions in document order
+      positions =
+        Enum.map(
+          ["“mine”", "“new workplace”", "“traffic route”", "“workplace” means"],
+          &position(text, &1)
+        )
+
+      assert positions == Enum.sort(positions)
+    end
+
+    test "real CLML: HSWA 1974 s.4(1) — chapeau, then the continuation after the list, marked" do
+      rows =
+        "ukpga_1974_37_s4.xml"
+        |> read_fixture()
+        |> LatParser.parse(%{law_name: "UK_ukpga_1974_37", type_code: "ukpga"})
+
+      # (a) and (b) are their own rows; the parent keeps its chapeau and the
+      # words after them, with " … " where the child provisions sit
+      assert text_of(rows, "UK_ukpga_1974_37:s.4(1)") ==
+               "This section has effect for imposing on persons duties in relation to those who— … and applies to premises so made available and other non-domestic premises used in connection with them."
+
+      assert text_of(rows, "UK_ukpga_1974_37:s.4(1)(a)") == "are not their employees; but"
+    end
+
+    defp count(text, phrase), do: length(String.split(text, phrase)) - 1
+
+    defp position(text, phrase) do
+      {pos, _} = :binary.match(text, phrase)
+      pos
+    end
+  end
+
   describe "inline element text extraction" do
     test "Term element text appears in correct position within quotes" do
       xml = """

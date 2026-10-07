@@ -73,7 +73,9 @@ defmodule SertantaiLegal.Scraper.PdfBacklog.TranscriptTest do
       assert r["reg.2(1)"].text ==
                ~s[In these Regulations— "the Act" means the Test Act; "licence" means a licence under the Act.]
 
-      assert r["reg.2(2)"].text == "Proceedings may be postponed— whichever event first happens."
+      # " … " marks where the lettered items (their own rows) sit
+      assert r["reg.2(2)"].text ==
+               "Proceedings may be postponed— … whichever event first happens."
     end
 
     test "quoted (inserted) text stays in its provision, not new provisions", %{rows: r} do
