@@ -12,6 +12,9 @@ defmodule Mix.Tasks.Lat.RepairText do
       mix lat.repair_text --laws A,B --apply               # write
       mix lat.repair_text --laws-file batch01.txt --apply  # a batch (one law per line)
       mix lat.repair_text --limit 50                       # first N provisions
+      mix lat.repair_text --laws-file gold.txt --whole --apply
+                                    # whole check: fetch each law's body once and
+                                    # compare every row, not only flagged provisions
 
   Candidates: `data/reports/lat-parser-coverage/list-bug-candidates-2026-10-07.csv`
   (`--candidates PATH`), from `scan_lists.py`.
@@ -24,8 +27,14 @@ defmodule Mix.Tasks.Lat.RepairText do
   its carried columns (fractalaw enrichment, embeddings — not `legacy_id` or the
   note-derived `effective_from`/`changed_by`) reset
   to their defaults, as a re-parse does for a changed row; a `lat_changes`
-  row records `text_changed` with cause `correction`. Each repaired law gets
-  one `parsed` lat_event with cause `correction`, so the manifest reports it.
+  row records `text_changed` with cause `correction` when the words are the
+  same (reordered: the bug), else `unattributed` (an amendment since the last
+  parse, or content the old parser dropped). Each repaired law gets one
+  `parsed` lat_event with cause `correction`, so the manifest reports it.
+
+  `--whole` (named laws only) catches what the text search can't, e.g. a
+  row that lost its closing words: the law's body is fetched once
+  (scope-aware) and every row held in both is compared.
   `lat_hash` follows by trigger.
   """
 
@@ -33,7 +42,7 @@ defmodule Mix.Tasks.Lat.RepairText do
 
   alias NimbleCSV.RFC4180, as: CSV
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LatParser, LatRepair}
+  alias SertantaiLegal.Scraper.{LatParser, LatRepair, LatStagedParser}
   alias SertantaiLegal.Scraper.LatPersister.Carry
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
 
@@ -41,7 +50,7 @@ defmodule Mix.Tasks.Lat.RepairText do
 
   @dir Path.join(["data", "reports", "lat-parser-coverage"])
   @candidates Path.join(@dir, "list-bug-candidates-2026-10-07.csv")
-  @header ~w(law_name provision section_id old_text new_text)
+  @header ~w(law_name provision section_id cause old_text new_text)
 
   @impl Mix.Task
   def run(args) do
@@ -52,7 +61,8 @@ defmodule Mix.Tasks.Lat.RepairText do
           laws_file: :string,
           limit: :integer,
           apply: :boolean,
-          candidates: :string
+          candidates: :string,
+          whole: :boolean
         ]
       )
 
@@ -69,6 +79,48 @@ defmodule Mix.Tasks.Lat.RepairText do
     unless File.exists?(out), do: File.write!(out, CSV.dump_to_iodata([@header]))
     done = read_done(done_path)
 
+    if opts[:whole],
+      do: run_whole(opts, out, done_path, done),
+      else: run_provisions(opts, out, done_path, done)
+  end
+
+  defp run_whole(opts, out, done_path, done) do
+    laws =
+      (named_laws(opts) || Mix.raise("--whole needs --laws or --laws-file"))
+      |> Enum.sort()
+      |> Enum.reject(&MapSet.member?(done, "#{&1}|*whole*"))
+
+    Mix.shell().info("#{length(laws)} laws to check whole → #{out}")
+
+    total =
+      Enum.reduce(laws, 0, fn law, acc ->
+        case LatStagedParser.fetch_rows(law) do
+          {:ok, rows, _law_id} ->
+            fresh = Map.new(rows, &{&1.section_id, &1.text})
+            repairs = LatRepair.repairs(stored_rows(law), fresh)
+            if opts[:apply] && repairs != [], do: apply!(law, op_key(), repairs)
+            if opts[:apply], do: record_events!(law)
+            write_rows!(out, law, "*whole*", repairs)
+            File.write!(done_path, "#{law}|*whole*\n", [:append])
+
+            corrections =
+              Enum.count(repairs, fn {_, o, n} -> LatRepair.cause(o, n) == "correction" end)
+
+            Mix.shell().info("  #{law}: #{length(repairs)} rows (#{corrections} correction)")
+            acc + length(repairs)
+
+          {:error, reason} ->
+            Mix.shell().error("  #{law}: #{reason} (not marked done)")
+            acc
+        end
+      end)
+
+    Mix.shell().info(
+      "\n#{total} rows #{if opts[:apply], do: "repaired", else: "to repair (dry run)"}"
+    )
+  end
+
+  defp run_provisions(opts, out, done_path, done) do
     {provisions, skipped} = opts |> candidate_rows() |> LatRepair.provisions()
 
     todo =
@@ -101,7 +153,7 @@ defmodule Mix.Tasks.Lat.RepairText do
 
   defp repair_law([{law, _} | _] = group, apply?, out, done_path) do
     stored = stored_rows(law)
-    op_key = Ecto.UUID.generate()
+    op_key = op_key()
 
     totals =
       Enum.reduce(group, %{rows: 0, provisions: 0, failed: 0}, fn {^law, provision}, acc ->
@@ -113,8 +165,7 @@ defmodule Mix.Tasks.Lat.RepairText do
             repairs = LatRepair.repairs(held, fresh)
             if apply? and repairs != [], do: apply!(law, op_key, repairs)
 
-            rows = for {sid, old, new} <- repairs, do: [law, provision, sid, old || "", new || ""]
-            File.write!(out, CSV.dump_to_iodata(rows), [:append])
+            write_rows!(out, law, provision, repairs)
             File.write!(done_path, "#{law}|#{provision}\n", [:append])
             %{acc | rows: acc.rows + length(repairs), provisions: acc.provisions + 1}
 
@@ -157,7 +208,7 @@ defmodule Mix.Tasks.Lat.RepairText do
     reset = Enum.map_join(carried_columns(), ", ", &"#{&1} = DEFAULT")
 
     Repo.transaction(fn ->
-      for {sid, _old, new} <- repairs do
+      for {sid, old, new} <- repairs do
         Repo.query!(
           "UPDATE legal_articles SET text = $3, #{reset}, updated_at = now() WHERE law_name = $1 AND section_id = $2",
           [law, sid, new]
@@ -166,9 +217,9 @@ defmodule Mix.Tasks.Lat.RepairText do
         Repo.query!(
           """
           INSERT INTO lat_changes (law_name, op_key, section_id, old_section_id, change, cause, change_ids)
-          VALUES ($1, $2, $3, NULL, 'text_changed', 'correction', ARRAY[]::text[])
+          VALUES ($1, $2, $3, NULL, 'text_changed', $4, ARRAY[]::text[])
           """,
-          [law, op_key, sid]
+          [law, op_key, sid, LatRepair.cause(old, new)]
         )
       end
     end)
@@ -184,7 +235,8 @@ defmodule Mix.Tasks.Lat.RepairText do
       SELECT r.id, 'uk', r.name, 'parsed', 'mix lat.repair_text', 'list-text repair', r.lat_hash, r.struct_hash, r.lat_count,
              'list-text repair by provision fragment', c.op_key, 'correction'
       FROM legal_register r
-      JOIN (SELECT DISTINCT op_key FROM lat_changes WHERE law_name = $1 AND cause = 'correction') c ON true
+      JOIN (SELECT DISTINCT op_key FROM lat_changes
+            WHERE law_name = $1 AND op_key LIKE 'lat_repair_text:%') c ON true
       WHERE r.country = 'uk' AND r.name = $1
         AND NOT EXISTS (SELECT 1 FROM lat_events e WHERE e.law_name = $1 AND e.op_key = c.op_key AND e.event = 'parsed')
       """,
@@ -213,6 +265,25 @@ defmodule Mix.Tasks.Lat.RepairText do
     end
   end
 
+  # Repair op keys are prefixed, so event healing only ever matches this tool's ops
+  defp op_key, do: "lat_repair_text:" <> Ecto.UUID.generate()
+
+  defp write_rows!(out, law, provision, repairs) do
+    rows =
+      for {sid, old, new} <- repairs,
+          do: [law, provision, sid, LatRepair.cause(old, new), old || "", new || ""]
+
+    File.write!(out, CSV.dump_to_iodata(rows), [:append])
+  end
+
+  defp named_laws(opts) do
+    cond do
+      opts[:laws] -> String.split(opts[:laws], ",", trim: true)
+      opts[:laws_file] -> opts[:laws_file] |> File.read!() |> String.split(~r/\s+/, trim: true)
+      true -> nil
+    end
+  end
+
   defp stored_rows(law) do
     %{rows: rows} =
       Repo.query!("SELECT section_id, text FROM legal_articles WHERE law_name = $1", [law])
@@ -221,17 +292,7 @@ defmodule Mix.Tasks.Lat.RepairText do
   end
 
   defp candidate_rows(opts) do
-    laws =
-      cond do
-        opts[:laws] ->
-          MapSet.new(String.split(opts[:laws], ",", trim: true))
-
-        opts[:laws_file] ->
-          opts[:laws_file] |> File.read!() |> String.split(~r/\s+/, trim: true) |> MapSet.new()
-
-        true ->
-          nil
-      end
+    laws = if names = named_laws(opts), do: MapSet.new(names)
 
     (opts[:candidates] || @candidates)
     |> File.stream!()

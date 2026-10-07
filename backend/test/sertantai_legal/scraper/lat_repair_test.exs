@@ -89,4 +89,19 @@ defmodule SertantaiLegal.Scraper.LatRepairTest do
              ]
     end
   end
+
+  describe "cause/2" do
+    test "same words reordered or re-spaced: correction (the list-text fix)" do
+      assert LatRepair.cause(
+               "“mine” means a mine; In this Part—",
+               "In this Part— “mine” means a mine;"
+             ) ==
+               "correction"
+    end
+
+    test "other word changes (e.g. an amendment since the last parse): unattributed" do
+      assert LatRepair.cause("within 3 months", "within 6 months") == "unattributed"
+      assert LatRepair.cause("", "“consumers” includes future consumers;") == "unattributed"
+    end
+  end
 end

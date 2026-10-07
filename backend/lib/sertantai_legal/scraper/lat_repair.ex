@@ -15,11 +15,15 @@ defmodule SertantaiLegal.Scraper.LatRepair do
   - `in_provision?/3` — is a row the provision or one of its descendants
   - `repairs/2` — `{section_id, old, new}` for held rows whose words change
     (the " … " marker and spacing alone don't count)
+  - `cause/2` — a repaired row's lat_changes cause: `correction` when the
+    words are the same (reordered/re-spaced: the list-text fix), else
+    `unattributed` (an amendment since the last parse, or content the old
+    parser dropped — the text alone can't tell)
 
   Pure.
   """
 
-  alias SertantaiLegal.Scraper.IdField
+  alias SertantaiLegal.Scraper.{IdField, LatTextDiff}
 
   @provision ~r/^(s|reg)\.([0-9]+[A-Z]*)(?=$|[(\[#])/
   @eu_article ~r/^art\.Article ([0-9]+[a-z]*)(?=$|[(\[#])/
@@ -88,6 +92,11 @@ defmodule SertantaiLegal.Scraper.LatRepair do
         words(old) != words(new),
         do: {sid, old, new}
   end
+
+  @doc "The lat_changes cause for a repaired row (see moduledoc)."
+  @spec cause(String.t() | nil, String.t() | nil) :: String.t()
+  def cause(old, new),
+    do: if(LatTextDiff.kind(old, new) == "reordered", do: "correction", else: "unattributed")
 
   defp words(nil), do: ""
   defp words(text), do: text |> String.replace("…", " ") |> String.split() |> Enum.join(" ")
