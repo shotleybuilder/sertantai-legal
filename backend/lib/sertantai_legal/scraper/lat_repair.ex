@@ -15,6 +15,8 @@ defmodule SertantaiLegal.Scraper.LatRepair do
   - `in_provision?/3` — is a row the provision or one of its descendants
   - `repairs/2` — `{section_id, old, new}` for held rows whose words change
     (the " … " marker and spacing alone don't count)
+  - `causes/1` — each repair's cause, provision-aware: words moved between
+    rows of one provision (#174) are a `correction`
   - `only_cause/2` — keep one class of repair (applied in rounds)
   - `cause/2` — a repaired row's lat_changes cause: `correction` when the
     words are the same (reordered/re-spaced: the list-text fix), else
@@ -99,13 +101,65 @@ defmodule SertantaiLegal.Scraper.LatRepair do
   def cause(old, new),
     do: if(LatTextDiff.kind(old, new) == "reordered", do: "correction", else: "unattributed")
 
-  @doc "Repairs whose `cause/2` is `cause` (nil keeps all) — to apply one class at a time."
+  @doc "Repairs whose cause (`causes/1`) is `cause` (nil keeps all) — to apply one class at a time."
   @spec only_cause([{String.t(), String.t() | nil, String.t() | nil}], String.t() | nil) ::
           [{String.t(), String.t() | nil, String.t() | nil}]
   def only_cause(repairs, nil), do: repairs
 
-  def only_cause(repairs, cause),
-    do: Enum.filter(repairs, fn {_, o, n} -> cause(o, n) == cause end)
+  def only_cause(repairs, cause) do
+    for {sid, old, new, ^cause} <- causes(repairs), do: {sid, old, new}
+  end
+
+  @doc """
+  `{section_id, old, new, cause}` for each repair. Within a provision, words
+  that moved between rows (a section row's stray content going to its
+  subsection, #174) are a `correction`: a row whose gained words were lost by
+  rows of the same provision, and whose lost words were gained by them.
+  Anything else follows `cause/2` (a reorder is a correction; other new
+  wording — an amendment, restored content — is `unattributed`).
+  """
+  @spec causes([{String.t(), String.t() | nil, String.t() | nil}]) ::
+          [{String.t(), String.t() | nil, String.t() | nil, String.t()}]
+  def causes(repairs) do
+    pools =
+      repairs
+      |> Enum.group_by(&group_key(elem(&1, 0)), fn {_, o, n} -> {bag(o), bag(n)} end)
+      |> Map.new(fn {key, bags} ->
+        lost = Enum.reduce(bags, %{}, fn {o, n}, acc -> add(acc, minus(o, n)) end)
+        gained = Enum.reduce(bags, %{}, fn {o, n}, acc -> add(acc, minus(n, o)) end)
+        {key, {lost, gained}}
+      end)
+
+    for {sid, old, new} <- repairs do
+      {lost_pool, gained_pool} = Map.fetch!(pools, group_key(sid))
+      {o, n} = {bag(old), bag(new)}
+      gained = minus(n, o)
+      lost = minus(o, n)
+
+      moved? =
+        (gained != %{} or lost != %{}) and minus(gained, lost_pool) == %{} and
+          minus(lost, gained_pool) == %{}
+
+      {sid, old, new, if(moved?, do: "correction", else: cause(old, new))}
+    end
+  end
+
+  defp group_key(sid) do
+    with [_, _] <- String.split(sid, ":", parts: 2),
+         {:ok, p} <- provision(sid) do
+      p
+    else
+      _ -> sid
+    end
+  end
+
+  defp bag(text), do: text |> words() |> String.split() |> Enum.frequencies()
+
+  defp minus(a, b) do
+    for {w, c} <- a, d = c - Map.get(b, w, 0), d > 0, into: %{}, do: {w, d}
+  end
+
+  defp add(a, b), do: Map.merge(a, b, fn _w, x, y -> x + y end)
 
   defp words(nil), do: ""
   defp words(text), do: text |> String.replace("…", " ") |> String.split() |> Enum.join(" ")

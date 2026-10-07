@@ -117,4 +117,49 @@ defmodule SertantaiLegal.Scraper.LatRepairTest do
       assert LatRepair.only_cause(repairs, nil) == repairs
     end
   end
+
+  describe "causes/1" do
+    @law "UK_wsi_2005_1806"
+
+    test "a move within a provision (section row emptied, subsection gains its words) is a correction" do
+      repairs = [
+        {"#{@law}:reg.5", "“the Act” means the 1990 Act;", ""},
+        {"#{@law}:reg.5(1)", "In these Regulations—",
+         "In these Regulations— “the Act” means the 1990 Act;"}
+      ]
+
+      assert Enum.map(LatRepair.causes(repairs), &elem(&1, 3)) == ["correction", "correction"]
+    end
+
+    test "an amendment beside a move in the same provision stays unattributed" do
+      repairs = [
+        {"#{@law}:reg.5", "“the Act” means the 1990 Act;", ""},
+        {"#{@law}:reg.5(1)", "In these Regulations—",
+         "In these Regulations— “the Act” means the 1990 Act;"},
+        {"#{@law}:reg.5(3)", "within 3 months", "within 6 months"}
+      ]
+
+      assert Enum.map(LatRepair.causes(repairs), &elem(&1, 3)) ==
+               ["correction", "correction", "unattributed"]
+    end
+
+    test "content restored with nothing lost elsewhere stays unattributed; a reorder is a correction" do
+      repairs = [
+        {"#{@law}:reg.7", "", "“consumers” includes future consumers;"},
+        {"#{@law}:reg.8(1)", "x; In this Part—", "In this Part— x;"}
+      ]
+
+      assert Enum.map(LatRepair.causes(repairs), &elem(&1, 3)) == ["unattributed", "correction"]
+    end
+
+    test "moves are matched within a provision, not across provisions" do
+      repairs = [
+        {"#{@law}:reg.5", "“the Act” means the 1990 Act;", ""},
+        {"#{@law}:reg.6(1)", "In this regulation—",
+         "In this regulation— “the Act” means the 1990 Act;"}
+      ]
+
+      assert Enum.map(LatRepair.causes(repairs), &elem(&1, 3)) == ["unattributed", "unattributed"]
+    end
+  end
 end

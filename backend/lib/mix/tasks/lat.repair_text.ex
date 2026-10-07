@@ -112,7 +112,7 @@ defmodule Mix.Tasks.Lat.RepairText do
             repairs =
               stored_rows(law)
               |> LatRepair.repairs(fresh)
-              |> LatRepair.only_cause(opts[:only_cause])
+              |> labelled(opts[:only_cause])
 
             if opts[:apply] && repairs != [], do: apply!(law, op_key(), repairs)
             if opts[:apply], do: record_events!(law)
@@ -120,7 +120,7 @@ defmodule Mix.Tasks.Lat.RepairText do
             File.write!(done_path, "#{law}|*whole*\n", [:append])
 
             corrections =
-              Enum.count(repairs, fn {_, o, n} -> LatRepair.cause(o, n) == "correction" end)
+              Enum.count(repairs, fn {_, _, _, cause} -> cause == "correction" end)
 
             Mix.shell().info("  #{law}: #{length(repairs)} rows (#{corrections} correction)")
             acc + length(repairs)
@@ -180,7 +180,7 @@ defmodule Mix.Tasks.Lat.RepairText do
             held =
               Map.filter(stored, fn {sid, _} -> LatRepair.in_provision?(sid, law, provision) end)
 
-            repairs = held |> LatRepair.repairs(fresh) |> LatRepair.only_cause(opts[:only_cause])
+            repairs = held |> LatRepair.repairs(fresh) |> labelled(opts[:only_cause])
             if apply? and repairs != [], do: apply!(law, op_key, repairs)
 
             write_rows!(out, law, provision, repairs)
@@ -226,7 +226,7 @@ defmodule Mix.Tasks.Lat.RepairText do
     reset = Enum.map_join(carried_columns(), ", ", &"#{&1} = DEFAULT")
 
     Repo.transaction(fn ->
-      for {sid, old, new} <- repairs do
+      for {sid, _old, new, cause} <- repairs do
         Repo.query!(
           "UPDATE legal_articles SET text = $3, #{reset}, updated_at = now() WHERE law_name = $1 AND section_id = $2",
           [law, sid, new]
@@ -237,7 +237,7 @@ defmodule Mix.Tasks.Lat.RepairText do
           INSERT INTO lat_changes (law_name, op_key, section_id, old_section_id, change, cause, change_ids)
           VALUES ($1, $2, $3, NULL, 'text_changed', $4, ARRAY[]::text[])
           """,
-          [law, op_key, sid, LatRepair.cause(old, new)]
+          [law, op_key, sid, cause]
         )
       end
     end)
@@ -287,13 +287,19 @@ defmodule Mix.Tasks.Lat.RepairText do
   defp store_mode(mode) when mode in ~w(prefer only refresh), do: String.to_atom(mode)
   defp store_mode(other), do: Mix.raise("--store must be prefer, only or refresh, got #{other}")
 
+  # Causes are decided on the law's (or provision's) full set of repairs —
+  # moves pair up across rows (LatRepair.causes/1) — then filtered by --only-cause
+  defp labelled(repairs, only) do
+    for {_, _, _, cause} = r <- LatRepair.causes(repairs), only in [nil, cause], do: r
+  end
+
   # Repair op keys are prefixed, so event healing only ever matches this tool's ops
   defp op_key, do: "lat_repair_text:" <> Ecto.UUID.generate()
 
   defp write_rows!(out, law, provision, repairs) do
     rows =
-      for {sid, old, new} <- repairs,
-          do: [law, provision, sid, LatRepair.cause(old, new), old || "", new || ""]
+      for {sid, old, new, cause} <- repairs,
+          do: [law, provision, sid, cause, old || "", new || ""]
 
     File.write!(out, CSV.dump_to_iodata(rows), [:append])
   end
