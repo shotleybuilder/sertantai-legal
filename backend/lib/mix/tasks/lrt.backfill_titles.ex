@@ -9,8 +9,10 @@ defmodule Mix.Tasks.Lrt.BackfillTitles do
       mix lrt.backfill_titles --limit 20      # first N only
 
   The title comes from legislation.gov.uk metadata (`Metadata.fetch/1`, the
-  same source as the LRT scrape). Only `title_en` is written, so nothing
-  else on the record changes; `updated_at` is bumped for the delta sync.
+  same source as the LRT scrape). Each title is written as soon as it is
+  fetched, so an interrupted run loses nothing and a re-run resumes with
+  the laws still untitled. Only `title_en` is written, so nothing else on
+  the record changes; `updated_at` is bumped for the delta sync.
   Laws whose name has no type code (`UK__1996_3016`) can't be fetched and
   are listed separately.
   """
@@ -43,27 +45,31 @@ defmodule Mix.Tasks.Lrt.BackfillTitles do
     Mix.shell().info("#{length(fetchable)} laws to fetch; #{length(malformed)} with no type code")
     for [name | _] <- malformed, do: Mix.shell().info("  no type code: #{name}")
 
-    results = Enum.map(fetchable, &fetch_title/1)
-    found = for {name, {:ok, title}} <- results, do: {name, title}
-    failed = for {name, {:error, reason}} <- results, do: {name, reason}
+    counts =
+      Enum.reduce(fetchable, %{found: 0, failed: 0}, fn row, acc ->
+        case fetch_title(row) do
+          {name, {:ok, title}} ->
+            # written as it goes: a failure later in the run loses nothing,
+            # and a re-run picks up only the laws still without a title
+            if opts[:apply], do: write_title!(name, title)
+            Mix.shell().info("  #{name}: #{title}")
+            %{acc | found: acc.found + 1}
 
-    for {name, title} <- found, do: Mix.shell().info("  #{name}: #{title}")
-    for {name, reason} <- failed, do: Mix.shell().error("  #{name}: #{reason}")
+          {name, {:error, reason}} ->
+            Mix.shell().error("  #{name}: #{reason}")
+            %{acc | failed: acc.failed + 1}
+        end
+      end)
 
-    if opts[:apply] do
-      for {name, title} <- found do
-        Repo.query!(
-          "UPDATE legal_register SET title_en = $2, updated_at = now() WHERE country = 'uk' AND name = $1",
-          [name, title]
-        )
-      end
+    verb = if opts[:apply], do: "written", else: "found (dry run, nothing written)"
+    Mix.shell().info("\n#{counts.found} titles #{verb}; #{counts.failed} failed")
+  end
 
-      Mix.shell().info("\nApplied: #{length(found)} titles written; #{length(failed)} failed")
-    else
-      Mix.shell().info(
-        "\nDry run: #{length(found)} titles found, #{length(failed)} failed; nothing written"
-      )
-    end
+  defp write_title!(name, title) do
+    Repo.query!(
+      "UPDATE legal_register SET title_en = $2, updated_at = now() WHERE country = 'uk' AND name = $1",
+      [name, title]
+    )
   end
 
   defp fetch_title([name, type, year, number]) do
