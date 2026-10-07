@@ -23,7 +23,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{ExtentBackfill, LatEvents, LatMerge, LatParser}
+  alias SertantaiLegal.Scraper.{ExtentBackfill, LatChangeLog, LatEvents, LatMerge, LatParser}
   alias SertantaiLegal.Scraper.LatPersister.Carry
 
   require Logger
@@ -149,12 +149,8 @@ defmodule SertantaiLegal.Scraper.LatPersister do
       {:error, Exception.message(e)}
   end
 
-  # Rows inserted are new ids that are neither held before nor rename targets.
   defp plan_summary(plan, existing, insert_maps) do
-    known = MapSet.union(MapSet.new(existing, &row_id/1), MapSet.new(plan.renames, & &1.new))
-    inserted = for m <- insert_maps, not MapSet.member?(known, m.section_id), do: m.section_id
-
-    %{changed: plan.changed, removed: plan.removed, renames: plan.renames, inserted: inserted}
+    LatChangeLog.plan(plan, Enum.map(existing, &row_id/1), Enum.map(insert_maps, & &1.section_id))
   end
 
   defp row_id(%{section_id: sid}), do: sid

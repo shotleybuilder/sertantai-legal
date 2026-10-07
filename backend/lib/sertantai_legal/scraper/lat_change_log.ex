@@ -47,6 +47,27 @@ defmodule SertantaiLegal.Scraper.LatChangeLog do
   end
 
   @doc """
+  The change plan of a parse from `LatMerge`'s result (`changed`, `removed`,
+  `ambiguous`, `renames`), the ids held before and the new parse's ids.
+  Inserted ids are new ids that were neither held nor rename targets. An
+  ambiguous old id (its text shared by unequal groups, e.g. repealed ". . ."
+  placeholders) that is gone from the new parse is removed too.
+  """
+  @spec plan(map(), [String.t()], [String.t()]) :: map()
+  def plan(merge, existing_ids, new_ids) do
+    new_set = MapSet.new(new_ids)
+    known = MapSet.union(MapSet.new(existing_ids), MapSet.new(merge.renames, & &1.new))
+    gone_ambiguous = Enum.reject(merge.ambiguous, &MapSet.member?(new_set, &1))
+
+    %{
+      changed: merge.changed,
+      removed: merge.removed ++ gone_ambiguous,
+      renames: merge.renames,
+      inserted: Enum.reject(new_ids, &MapSet.member?(known, &1))
+    }
+  end
+
+  @doc """
   The parse's entries. `plan`: `%{changed, inserted, removed, renames}` (ids;
   renames `%{old, new, match}`). `ctx`: `%{cause, new_notes, status_changes}`
   — the operation's cause, notes new in this parse (`%{target, text, parsed}`,

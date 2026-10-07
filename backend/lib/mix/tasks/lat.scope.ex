@@ -19,8 +19,11 @@ defmodule Mix.Tasks.Lat.Scope do
   `--relevance --apply` works on one `--law` at a time (each Act's scope is
   approved before its rows go): the whole LAT is archived to the NAS, the
   scope narrowed (`LatScope.narrow!/3`), and the law re-parsed with cause
-  `scope`, so fractalaw sees the removed rows in `lat-changes`. If the parse
-  fails, the previous scope is restored.
+  `scope`, so fractalaw sees the removed rows in `lat-changes`. Dropping
+  enriched rows outside the scope is the point of a narrow, so the re-parse
+  is forced past `LatPersister`'s enrichment gate; the archive keeps them,
+  enrichment included, and their count is reported. If the parse fails, the
+  previous scope is restored.
 
   `--create` scopes a law that holds no LAT (an unscoped law with LAT is
   whole and is never narrowed here). Parsing goes through `LatStagedParser`,
@@ -185,13 +188,16 @@ defmodule Mix.Tasks.Lat.Scope do
     cited = citations |> Enum.flat_map(fn {_, _, sections} -> sections end) |> Enum.uniq()
     named = Map.get(@named, name, []) ++ extra
     fragments = Relevance.fragments(RelevanceData.section_parts(name), cited, named)
-    rows = RelevanceData.rows(name)
+
+    {kept, dropped} =
+      name |> RelevanceData.rows() |> Enum.split_with(&Relevance.kept?(&1, fragments))
 
     Map.merge(law, %{
       citations: citations,
       named: named,
       fragments: fragments,
-      kept: Enum.count(rows, &Relevance.kept?(&1, fragments))
+      kept: length(kept),
+      enriched_dropped: Enum.count(dropped, & &1.enriched)
     })
   end
 
@@ -211,7 +217,8 @@ defmodule Mix.Tasks.Lat.Scope do
 
       fragments ->
         Mix.shell().info(
-          "  → scope #{Enum.join(fragments, ", ")}: ~#{plan.kept} of #{plan.rows} rows kept"
+          "  → scope #{Enum.join(fragments, ", ")}: ~#{plan.kept} of #{plan.rows} rows kept; " <>
+            "#{plan.enriched_dropped} enriched rows outside it (archived on --apply)"
         )
     end
   end
@@ -229,7 +236,7 @@ defmodule Mix.Tasks.Lat.Scope do
         set_by: "mix lat.scope --relevance"
       )
 
-      case LatStagedParser.parse(name, cause: "scope") do
+      case LatStagedParser.parse(name, cause: "scope", force: true) do
         {:ok, %{has_errors: false, lat: lat}} ->
           Mix.shell().info("  parsed #{name}: #{lat.inserted} rows (was #{plan.rows})")
 

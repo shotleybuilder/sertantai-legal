@@ -9,8 +9,8 @@ defmodule SertantaiLegal.Scraper.LatScope.RelevanceData do
   - `citations/1` — sections of the law cited by in-family SIs made under it
     (stored `enabling_provisions`, else `EnablingCache`, which fetches the
     SI's introduction)
-  - `rows/1` — the law's LAT rows' Part/Chapter/provision/schedule, for
-    dry-run estimates
+  - `rows/1` — the law's LAT rows' Part/Chapter/provision/schedule and
+    whether fractalaw enriched them, for dry-run estimates
   """
 
   alias SertantaiLegal.Repo
@@ -84,15 +84,20 @@ defmodule SertantaiLegal.Scraper.LatScope.RelevanceData do
     end)
   end
 
-  @doc "The law's LAT rows as `%{part, chapter, provision, schedule}` maps."
+  @doc "The law's LAT rows as `%{part, chapter, provision, schedule, enriched}` maps."
   @spec rows(String.t()) :: [map()]
   def rows(law_name) do
     %{rows: rows} =
       Repo.query!(
-        "SELECT part, chapter, provision, schedule FROM legal_articles WHERE law_name = $1",
+        """
+        SELECT part, chapter, provision, schedule, taxa_enriched_at IS NOT NULL
+        FROM legal_articles WHERE law_name = $1
+        """,
         [law_name]
       )
 
-    Enum.map(rows, fn [p, c, pr, s] -> %{part: p, chapter: c, provision: pr, schedule: s} end)
+    Enum.map(rows, fn [p, c, pr, s, e] ->
+      %{part: p, chapter: c, provision: pr, schedule: s, enriched: e}
+    end)
   end
 end

@@ -122,4 +122,28 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
       assert {old, new} == {id("s.23"), id("s.24")}
     end
   end
+
+  describe "plan/3" do
+    # Repealed placeholders (". . .") share their text, so LatMerge calls a
+    # vanished one ambiguous; an id gone from the parse is still removed
+    # (#166: narrowing the Companies Act left 224 unlogged).
+    test "ambiguous ids missing from the new parse are removed; ones still present are not" do
+      merge = %{
+        changed: [id("s.2")],
+        removed: [id("s.3")],
+        ambiguous: [id("s.4"), id("s.5")],
+        renames: [%{old: id("s.6"), new: id("s.7"), match: :unique_text}]
+      }
+
+      existing = [id("s.1"), id("s.2"), id("s.3"), id("s.4"), id("s.5"), id("s.6")]
+      new_ids = [id("s.1"), id("s.2"), id("s.5"), id("s.7"), id("s.8")]
+
+      plan = LatChangeLog.plan(merge, existing, new_ids)
+
+      assert plan.changed == [id("s.2")]
+      assert plan.removed == [id("s.3"), id("s.4")]
+      assert plan.inserted == [id("s.8")]
+      assert plan.renames == merge.renames
+    end
+  end
 end
