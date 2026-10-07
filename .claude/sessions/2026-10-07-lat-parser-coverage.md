@@ -32,7 +32,9 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ✅ `LatRepair` (pure, TDD; f205b24e): candidates → provisions; fragment paths (s.N → section/N; reg.N → regulation/N, falling back to article/N then rule/N on 404; EU art → article/N); rows inside a provision; word-change test (marker/spacing-only changes skipped)
 - ✅ `mix lat.repair_text` (f205b24e; resets enrichment/embeddings, keeps note-derived effective_from/changed_by): dry run by default (CSV of planned changes); `--apply` writes per provision in a transaction (text, carried enrichment cleared as a re-parse would, `lat_changes` text_changed / cause correction), resumable `.done`; one `parsed` lat_event with cause correction per law
 - ✅ Dry run on the 6 precision laws: 378 provisions, 154 rows planned, 0 fetch failures; all 154 match the full-parse diff with identical new text, none extra. Not repaired: 2 legislative amendments (correct) and 5 search misses → empty leaf rows added as candidates (363 rows, 54 laws)
-- ⬜ Jason approval → apply the 6 laws, verify (lat_hash, lat_changes, manifest cause, enrichment cleared only on changed rows) → apply the rest
+- ✅ Applied to the 6 laws (Jason): 154 rows = dry run; verified hash changed, row counts unchanged, 154 correction lat_changes, enrichment cleared only on changed rows, one parsed/correction event per law, manifest cause correction, reg.2(1) text correct. First apply crashed on the event insert (uuid param) after WIA; fixed, events self-heal on resume
+- ⬜ Apply the rest in batches (`--laws-file`), fractalaw's gold/test laws first so it can resume work
+- ⬜ XML store (Jason's aside, 2026-10-07): keep fetched CLML (gzip, under data/cache/clml, NAS-backed) so diffs/repairs/re-parses don't re-hit legislation.gov.uk; freshness by dct:valid. Also enables an offline whole-corpus diff, the only way to catch structural rows whose direct lists were dropped (WIA s.27A, s.87C: empty parent rows are normal, so the search can't flag them)
 - ⬜ Send fractalaw the changed section_ids (lat_changes, cause correction), flagging its 61 test laws; gold set waits on them
 - ⬜ Report what the repair doesn't cover: schedule rows (203, deferred with #169), Part/Chapter/heading/table rows (56)
 - ⬜ Capture P1group/Title (title column, so row text is unchanged) and P1group @ConfersPower
@@ -57,7 +59,7 @@ Schedules can be massive data tables, though some carry DRRP (#169 sample: 25% d
 
 ## Related fix (2026-10-07)
 
-LRT titles: 1,453 register laws had no `title_en` (legacy 2024-04 / 2025-02 imports never metadata-fetched; e.g. UK_ukpga_2021_26 = Finance Act 2021). `mix lrt.backfill_titles` fetches them from legislation.gov.uk metadata. 4 type-less stubs (`UK__1996_3016`, `UK__2003_1690`, `UK__2005_2059`, `UK__2019_17`; created 2026-07-28, unreferenced, duplicating real records) deleted from dev (Jason, 2026-10-07). The delta sync ships changed rows by updated_at, so if prod holds them they need removing there separately.
+LRT titles: 1,453 register laws had no `title_en` (1,452 now filled; UK_uksi_2020_1297 is not on legislation.gov.uk though 15 register laws cite it as amending — data question for Jason) (legacy 2024-04 / 2025-02 imports never metadata-fetched; e.g. UK_ukpga_2021_26 = Finance Act 2021). `mix lrt.backfill_titles` fetches them from legislation.gov.uk metadata. 4 type-less stubs (`UK__1996_3016`, `UK__2003_1690`, `UK__2005_2059`, `UK__2019_17`; created 2026-07-28, unreferenced, duplicating real records) deleted from dev (Jason, 2026-10-07). The delta sync ships changed rows by updated_at, so if prod holds them they need removing there separately.
 
 ## List-text fix (2026-10-07)
 

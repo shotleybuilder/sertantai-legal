@@ -10,6 +10,7 @@ defmodule Mix.Tasks.Lat.RepairText do
       mix lat.repair_text                                  # dry run, all candidates
       mix lat.repair_text --laws UK_uksi_1992_3004,UK_ukpga_1974_37
       mix lat.repair_text --laws A,B --apply               # write
+      mix lat.repair_text --laws-file batch01.txt --apply  # a batch (one law per line)
       mix lat.repair_text --limit 50                       # first N provisions
 
   Candidates: `data/reports/lat-parser-coverage/list-bug-candidates-2026-10-07.csv`
@@ -46,7 +47,13 @@ defmodule Mix.Tasks.Lat.RepairText do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [laws: :string, limit: :integer, apply: :boolean, candidates: :string]
+        strict: [
+          laws: :string,
+          laws_file: :string,
+          limit: :integer,
+          apply: :boolean,
+          candidates: :string
+        ]
       )
 
     Mix.Task.run("app.start")
@@ -82,6 +89,10 @@ defmodule Mix.Tasks.Lat.RepairText do
         Map.merge(acc, law_totals, fn _k, a, b -> a + b end)
       end)
 
+    # laws whose provisions were all done in an earlier run still get their event
+    if opts[:apply],
+      do: provisions |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> Enum.each(&record_events!/1)
+
     Mix.shell().info(
       "\n#{totals.provisions} provisions processed, #{totals.rows} rows " <>
         "#{if opts[:apply], do: "repaired", else: "to repair (dry run)"}, #{totals.failed} fetches failed"
@@ -89,9 +100,6 @@ defmodule Mix.Tasks.Lat.RepairText do
   end
 
   defp repair_law([{law, _} | _] = group, apply?, out, done_path) do
-    %{rows: [[law_id]]} =
-      Repo.query!("SELECT id::text FROM legal_register WHERE country = 'uk' AND name = $1", [law])
-
     stored = stored_rows(law)
     op_key = Ecto.UUID.generate()
 
@@ -116,7 +124,7 @@ defmodule Mix.Tasks.Lat.RepairText do
         end
       end)
 
-    if apply? and totals.rows > 0, do: record_event!(law_id, op_key)
+    if apply?, do: record_events!(law)
     Mix.shell().info("  #{law}: #{totals.rows} rows in #{totals.provisions} provisions")
     totals
   end
@@ -166,15 +174,21 @@ defmodule Mix.Tasks.Lat.RepairText do
     end)
   end
 
-  defp record_event!(law_id, op_key) do
+  # One parsed/correction lat_event per repair op_key of the law that has none
+  # yet — so a run interrupted between its row writes and its event heals on
+  # the next run.
+  defp record_events!(law) do
     Repo.query!(
       """
       INSERT INTO lat_events (law_id, country, law_name, event, source, actor, lat_hash, struct_hash, row_count, reason, op_key, cause)
-      SELECT id, 'uk', name, 'parsed', 'mix lat.repair_text', 'list-text repair', lat_hash, struct_hash, lat_count,
-             'list-text repair by provision fragment', $2, 'correction'
-      FROM legal_register WHERE country = 'uk' AND id = $1::uuid
+      SELECT r.id, 'uk', r.name, 'parsed', 'mix lat.repair_text', 'list-text repair', r.lat_hash, r.struct_hash, r.lat_count,
+             'list-text repair by provision fragment', c.op_key, 'correction'
+      FROM legal_register r
+      JOIN (SELECT DISTINCT op_key FROM lat_changes WHERE law_name = $1 AND cause = 'correction') c ON true
+      WHERE r.country = 'uk' AND r.name = $1
+        AND NOT EXISTS (SELECT 1 FROM lat_events e WHERE e.law_name = $1 AND e.op_key = c.op_key AND e.event = 'parsed')
       """,
-      [law_id, op_key]
+      [law]
     )
   end
 
@@ -207,7 +221,17 @@ defmodule Mix.Tasks.Lat.RepairText do
   end
 
   defp candidate_rows(opts) do
-    laws = if opts[:laws], do: MapSet.new(String.split(opts[:laws], ",", trim: true))
+    laws =
+      cond do
+        opts[:laws] ->
+          MapSet.new(String.split(opts[:laws], ",", trim: true))
+
+        opts[:laws_file] ->
+          opts[:laws_file] |> File.read!() |> String.split(~r/\s+/, trim: true) |> MapSet.new()
+
+        true ->
+          nil
+      end
 
     (opts[:candidates] || @candidates)
     |> File.stream!()
