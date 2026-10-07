@@ -31,7 +31,7 @@ Fractalaw's labelling quality is limited by what legal's LAT parser captures. A 
 - ⬜ Repair plan (option a + continuation, Jason 2026-10-07): 8,509 provisions in 891 laws, fetched by fragment, only rows whose words change are written
 - ✅ `LatRepair` (pure, TDD; f205b24e): candidates → provisions; fragment paths (s.N → section/N; reg.N → regulation/N, falling back to article/N then rule/N on 404; EU art → article/N); rows inside a provision; word-change test (marker/spacing-only changes skipped)
 - ✅ `mix lat.repair_text` (f205b24e; resets enrichment/embeddings, keeps note-derived effective_from/changed_by): dry run by default (CSV of planned changes); `--apply` writes per provision in a transaction (text, carried enrichment cleared as a re-parse would, `lat_changes` text_changed / cause correction), resumable `.done`; one `parsed` lat_event with cause correction per law
-- ⬜ Dry run on the 6 precision laws; compare with the `lat.text_diff` results
+- ✅ Dry run on the 6 precision laws: 378 provisions, 154 rows planned, 0 fetch failures; all 154 match the full-parse diff with identical new text, none extra. Not repaired: 2 legislative amendments (correct) and 5 search misses → empty leaf rows added as candidates (363 rows, 54 laws)
 - ⬜ Jason approval → apply the 6 laws, verify (lat_hash, lat_changes, manifest cause, enrichment cleared only on changed rows) → apply the rest
 - ⬜ Send fractalaw the changed section_ids (lat_changes, cause correction), flagging its 61 test laws; gold set waits on them
 - ⬜ Report what the repair doesn't cover: schedule rows (203, deferred with #169), Part/Chapter/heading/table rows (56)
@@ -77,3 +77,7 @@ Precision check (`mix lat.text_diff`, no persist, 6 laws: uksi/1992/3004, ukpga/
 - missed by the search: 22 rows — 2 reordered, and 20 structural rows whose **definition lists were dropped entirely** (lists directly under P2para; WIA s.117(1), s.141(1)). They carry the "continuation" signature, so the repair must include continuation-flagged provisions and write only rows whose words change
 - 1,530 rows change only by the " … " marker/spacing: skip in the repair
 - 169 rows inserted/removed: legislative changes since the last parse, not this bug — the reason to repair by fragment, not by whole law
+
+## Repair dry run (2026-10-07)
+
+`mix lat.repair_text` on the 6 precision laws: 154 rows planned, every one also in the full-parse diff (`lat.text_diff`) with the same new text, and nothing else. Of the diff's 161 word changes, the 7 not repaired: WIA s.96(1) and EqA s.123(1)(a) ("3 months" → "6 months") are amendments, rightly left; WIA s.27A, s.87C, s.97 are stored **empty** though their source holds definition lists — empty leaf rows are a further signature (a row with no children and no text has lost its content): 363 at section/paragraph level in 54 laws, appended to the candidates (`signatures = empty_leaf`); WIA s.150A(11) and SI 2011/988 reg.21 remain search misses (residual; a future whole-law re-parse catches them).
