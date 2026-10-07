@@ -1,6 +1,6 @@
 ---
 session: "fractalaw training-data spillover"
-status: active
+status: suspended
 opened: 2026-10-05
 related: ["fractalaw drrp-v1.1 SLM training labels", "fractalaw 050e829", "fractalaw 0e7846d"]
 depends_on: ["drrp/2026-09-30-actor-dictionary"]
@@ -32,7 +32,13 @@ bugs:
     status: fixed
 ---
 
-# Session: fractalaw training-data spillover (ACTIVE)
+# Session: fractalaw training-data spillover (SUSPENDED)
+
+## Suspended (2026-10-07)
+
+Everything fractalaw's training-label run needed from legal is done. Left: run `mix actors.rename_labels` at the single-run pre-publish message, verify arrival per law, and the library alignment (label renames, Young Person, prosecutor split, section-E patterns). Suspended so the parser coverage and #166 work can run.
+
+**Resume when** fractalaw sends the pre-publish message (after its SLM retrain and evaluation), or to do the library alignment.
 
 ## Problem
 

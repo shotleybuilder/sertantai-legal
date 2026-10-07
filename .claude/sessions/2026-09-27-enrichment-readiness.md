@@ -1,6 +1,6 @@
 ---
 session: "Corpus Enrichment Readiness"
-status: active
+status: suspended
 opened: 2026-09-27
 related: ["fractalatai#56", "fractalatai#58", "fractalatai#59", "fractalatai#60", 166, 165]
 enables:
@@ -12,7 +12,13 @@ enables:
   - "drrp/2026-09-30-drrp-temporal"
 ---
 
-# Session: Corpus Enrichment Readiness (ACTIVE)
+# Session: Corpus Enrichment Readiness (SUSPENDED)
+
+## Suspended (2026-10-07)
+
+Umbrella session; its open items wait on fractalaw (single run, #56/#58/#59/#60, provenance payload) or on the tier sessions. Suspended so only the sessions being worked are active: LAT parser coverage (new) and #166 scoped LAT.
+
+**Resume when** fractalaw's single run is scheduled, to build the one enrichment worklist.
 
 ## Problem
 
