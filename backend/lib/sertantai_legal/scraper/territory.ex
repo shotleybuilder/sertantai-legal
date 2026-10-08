@@ -12,6 +12,8 @@ defmodule SertantaiLegal.Scraper.Territory do
   @order ~w(E W S NI)
 
   # "(S.)", "(E.W.)", "(E. and W.)", "(N.I.)", "(in relation to W.)"
+  # "(1.4.2015 for S. for the repeal of …)", "(… in relation to E.W.)"
+  @inline_territory ~r/\((?:[^()]*?\s)?(?:for|in relation to) ((?:(?:E|W|S|N\.I)\.(?:,?\s*(?:and\s+)?)?)+)(?=[\s,)])/
   @note_territory ~r/\((?:in relation to )?((?:(?:E|W|S|N\.I)\.(?:,?\s*(?:and\s+)?)?)+)\)/
 
   @doc "The territory of a note's change, from the first territory parenthesis before \" by \"."
@@ -21,17 +23,29 @@ defmodule SertantaiLegal.Scraper.Territory do
   def from_note(text) do
     head = text |> String.split(" by ", parts: 2) |> hd()
 
-    case Regex.run(@note_territory, head) do
-      [_, letters] ->
-        ~r/N\.I|[EWS]/
-        |> Regex.scan(letters)
-        |> List.flatten()
-        |> Enum.map(&String.replace(&1, "N.I", "NI"))
-        |> union()
-
-      nil ->
-        nil
+    cond do
+      # "(1.10.2023 except in relation to W., 6.4.2024 for W.)": every
+      # territory, on different dates
+      String.contains?(head, "except in relation to") -> nil
+      true -> head |> territory_letters() |> letters_to_code()
     end
+  end
+
+  defp territory_letters(head) do
+    case Regex.run(@note_territory, head) || Regex.run(@inline_territory, head) do
+      [_, letters] -> letters
+      nil -> nil
+    end
+  end
+
+  defp letters_to_code(nil), do: nil
+
+  defp letters_to_code(letters) do
+    ~r/N\.I|[EWS]/
+    |> Regex.scan(letters)
+    |> List.flatten()
+    |> Enum.map(&String.replace(&1, "N.I", "NI"))
+    |> union()
   end
 
   @doc "True when `repealed` includes every territory of `row_extent` (nil = UK)."

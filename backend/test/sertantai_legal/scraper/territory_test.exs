@@ -18,6 +18,20 @@ defmodule SertantaiLegal.Scraper.TerritoryTest do
       assert Territory.from_note("S. 3 repealed (E.W.S.) (1.1.2000) by x") == "E+W+S"
     end
 
+    test "a territory given as \"for S.\" or \"in relation to W.\" inside the date parenthesis" do
+      assert Territory.from_note(
+               "Ss. 1-28 repealed (1.4.2015 for S. for the repeal of ss. 1-19, 22-28) by Pollution Prevention and Control Act 1999 (c. 24)"
+             ) == "S"
+
+      assert Territory.from_note("Reg. 3 revoked (1.4.2010 in relation to E.W.) by x") == "E+W"
+    end
+
+    test "\"except in relation to W.\" is no single territory" do
+      assert Territory.from_note(
+               "Words in s. 10(1) substituted (1.10.2023 except in relation to W., 6.4.2024 for W.) by Building Safety Act 2022 (c. 30)"
+             ) == nil
+    end
+
     test "nil when the note names no territory, or only in the amending instrument's title" do
       assert Territory.from_note(
                "Art. 22 revoked (15.4.2018) by The Regulations 2018 (subject to savings)"

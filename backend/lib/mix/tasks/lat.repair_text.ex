@@ -41,6 +41,8 @@ defmodule Mix.Tasks.Lat.RepairText do
   (#175) — reuse fresh stored documents, never fetch, or always fetch.
 
   `--only-cause correction|unattributed` applies one class of repair (rounds);
+  `--cause correction` records every repair as a parser correction (a fix
+  whose new text adds words, which the word test would call unattributed);
   `--tag NAME` gives the run its own output CSV and `.done` list.
   """
 
@@ -71,6 +73,7 @@ defmodule Mix.Tasks.Lat.RepairText do
           whole: :boolean,
           store: :string,
           only_cause: :string,
+          cause: :string,
           tag: :string
         ]
       )
@@ -112,7 +115,7 @@ defmodule Mix.Tasks.Lat.RepairText do
             repairs =
               stored_rows(law)
               |> LatRepair.repairs(fresh)
-              |> labelled(opts[:only_cause])
+              |> labelled(opts[:only_cause], opts[:cause])
 
             if opts[:apply] && repairs != [], do: apply!(law, op_key(), repairs)
             if opts[:apply], do: record_events!(law)
@@ -180,7 +183,9 @@ defmodule Mix.Tasks.Lat.RepairText do
             held =
               Map.filter(stored, fn {sid, _} -> LatRepair.in_provision?(sid, law, provision) end)
 
-            repairs = held |> LatRepair.repairs(fresh) |> labelled(opts[:only_cause])
+            repairs =
+              held |> LatRepair.repairs(fresh) |> labelled(opts[:only_cause], opts[:cause])
+
             if apply? and repairs != [], do: apply!(law, op_key, repairs)
 
             write_rows!(out, law, provision, repairs)
@@ -294,8 +299,14 @@ defmodule Mix.Tasks.Lat.RepairText do
 
   # Causes are decided on the law's (or provision's) full set of repairs —
   # moves pair up across rows (LatRepair.causes/1) — then filtered by --only-cause
-  defp labelled(repairs, only) do
-    for {_, _, _, cause} = r <- LatRepair.causes(repairs), only in [nil, cause], do: r
+  # --cause correction labels every repair a parser correction (a parser-fix
+  # round whose new text adds words, e.g. "[S: …]" or "[Repealed]").
+  defp labelled(repairs, only, override) do
+    unless override in [nil, "correction"], do: Mix.raise("--cause must be correction")
+
+    for {sid, old, new, cause} <- LatRepair.causes(repairs),
+        only in [nil, cause],
+        do: {sid, old, new, override || cause}
   end
 
   # Repair op keys are prefixed, so event healing only ever matches this tool's ops
