@@ -132,6 +132,20 @@ defmodule SertantaiLegal.Scraper.LatStatusTest do
              }
     end
 
+    test "a retained repeal covering the row's whole extent is repealed_saved; part of it stays in force" do
+      rows = [
+        Map.merge(row("reg.5", "Saved rule."), %{repealed_extent: "E+W+S", extent_code: "E+W+S"}),
+        Map.merge(row("reg.6", "Scottish rule."), %{repealed_extent: "S", extent_code: "E+W+S"}),
+        Map.merge(row("reg.7", "No extent."), %{repealed_extent: "S", extent_code: nil})
+      ]
+
+      assert LatStatus.resolve(rows, []) == %{
+               "#{@law}:reg.5" => "repealed_saved",
+               "#{@law}:reg.6" => "in_force",
+               "#{@law}:reg.7" => "in_force"
+             }
+    end
+
     test "other full-commencement wordings found in the corpus" do
       for tail <- [
             "1.7.1999 for remaining purposes",

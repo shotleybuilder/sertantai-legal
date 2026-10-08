@@ -1,0 +1,55 @@
+defmodule SertantaiLegal.Scraper.TerritoryTest do
+  use ExUnit.Case, async: true
+
+  alias SertantaiLegal.Scraper.Territory
+
+  describe "from_note/1" do
+    test "reads the territory a note's change applies to" do
+      assert Territory.from_note(
+               "Regulations revoked (S.) (1.11.2025) by The Environmental Authorisations (Scotland) Amendment Regulations 2025"
+             ) == "S"
+
+      assert Territory.from_note("Regulations revoked (E.W.) (6.4.2012) by S.I. 2012/811") ==
+               "E+W"
+
+      assert Territory.from_note("Words substituted (E. and W.) (1.4.2010) by x") == "E+W"
+      assert Territory.from_note("Reg. 5 revoked (N.I.) (1.1.2000) by S.R. 1999/1") == "NI"
+      assert Territory.from_note("Art. 2 revoked (in relation to W.) (1.1.2000) by x") == "W"
+      assert Territory.from_note("S. 3 repealed (E.W.S.) (1.1.2000) by x") == "E+W+S"
+    end
+
+    test "nil when the note names no territory, or only in the amending instrument's title" do
+      assert Territory.from_note(
+               "Art. 22 revoked (15.4.2018) by The Regulations 2018 (subject to savings)"
+             ) == nil
+
+      assert Territory.from_note(
+               "Reg. 5 revoked (1.1.2000) by The Fire (Scotland) Order (S.S.I. 2005/344) (S.)"
+             ) == nil
+
+      assert Territory.from_note(nil) == nil
+    end
+  end
+
+  describe "set operations on extent codes" do
+    test "covers?/2: the repealed territories include every territory of the row" do
+      assert Territory.covers?("E+W+S", "E+W")
+      assert Territory.covers?("E+W", "E+W")
+      refute Territory.covers?("S", "E+W+S")
+      # no row extent: the UK
+      refute Territory.covers?("S", nil)
+      assert Territory.covers?("E+W+S+NI", nil)
+    end
+
+    test "subtract/2 gives the live territories in canonical order" do
+      assert Territory.subtract("E+W+S", "S") == "E+W"
+      assert Territory.subtract(nil, "E+W") == "S+NI"
+      assert Territory.subtract("E+W", "E+W") == nil
+    end
+
+    test "union/1 of extent codes" do
+      assert Territory.union(["S", "W", "E"]) == "E+W+S"
+      assert Territory.union([]) == nil
+    end
+  end
+end

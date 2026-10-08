@@ -173,6 +173,14 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
+    attribute :repealed_extent, :string do
+      allow_nil?(true)
+
+      description(
+        "Territories (extent code, e.g. \"S\") where the row's text is repealed but retained (Repeal RetainText); covering the whole extent = repealed_saved. Not in lat_hash or struct_hash."
+      )
+    end
+
     # ── Amendment Annotation Counts ──────────────────────────────────
 
     attribute :amendment_count, :integer do
@@ -412,6 +420,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :effective_from,
         :changed_by,
         :title,
+        :repealed_extent,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -449,6 +458,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :effective_from,
         :changed_by,
         :title,
+        :repealed_extent,
         :amendment_count,
         :modification_count,
         :commencement_count,

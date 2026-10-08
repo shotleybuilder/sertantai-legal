@@ -31,6 +31,8 @@ defmodule SertantaiLegal.Scraper.LatStatus do
   @dots ~r/\A[\s.]+\z/
   @markers ["[Repealed]", "[Revoked]"]
 
+  alias SertantaiLegal.Scraper.Territory
+
   @partial ~r/for (specified|certain) purposes/i
   # "... for specified purposes and otherwise 1.4.1996" / "... and 1.4.2007
   # otherwise": the remainder commenced too.
@@ -99,6 +101,12 @@ defmodule SertantaiLegal.Scraper.LatStatus do
         if Enum.any?(texts, &(Regex.match?(@repeal, &1) and Regex.match?(@savings, &1))),
           do: "repealed_saved",
           else: "repealed"
+
+      # text retained but repealed in every territory the row extends to
+      # (savings / specified purposes); repealed in some → still in force
+      Map.get(row, :repealed_extent) &&
+          Territory.covers?(row.repealed_extent, Map.get(row, :extent_code)) ->
+        "repealed_saved"
 
       Enum.any?(commencement, &Regex.match?(@partial, &1)) and
           not Enum.any?(commencement, &Regex.match?(@full, &1)) ->

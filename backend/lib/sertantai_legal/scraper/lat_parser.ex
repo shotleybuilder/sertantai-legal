@@ -33,7 +33,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   alias SertantaiLegal.Legal.Lat.SortKeyRewrite
   alias SertantaiLegal.Legal.Lat.Transforms
-  alias SertantaiLegal.Scraper.LatStatus
+  alias SertantaiLegal.Scraper.{LatStatus, Territory}
 
   @act_type_codes ~w(ukpga anaw asp nia apni aep)
   @container_elements ~w(Legislation Primary Secondary Body Schedules ScheduleBody
@@ -49,6 +49,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # Elements emitted as rows of their own: structural text stops at them.
   @row_elements ~w(Part EUTitle Chapter EUChapter Pblock P1 P2 P3 P4 Schedule
                    SignedSection Tabular Figure)
+
+  # Placeholder for a territorial pair's "elsewhere" label, resolved per row
+  # once its extent is known (with_territories/2): private-use code points.
+  @rest_open "\u{E000}"
+  @rest_close "\u{E001}"
 
   # Provision rows that can take sibling content that follows them (#174)
   @provision_rows ~w(P1 P2 P3 P4)
@@ -87,7 +92,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       default_extent: extract_root_extent(xml),
       prospective: false,
       mode: mode,
-      ref_type_lookup: build_ref_type_lookup(doc)
+      ref_type_lookup: build_ref_type_lookup(doc),
+      ref_territory: build_ref_territory_lookup(doc)
     }
 
     raw_rows = walk_children(doc, initial_ctx)
@@ -136,6 +142,17 @@ defmodule SertantaiLegal.Scraper.LatParser do
           {id, type}
         end)
     end
+  end
+
+  # Commentary id → the territory its change applies to ("revoked (S.)"),
+  # for retained repeals without their own Extent.
+  defp build_ref_territory_lookup(doc) do
+    doc
+    |> xpath(~x"//Commentaries/Commentary"l)
+    |> Map.new(fn c ->
+      text = c |> xpath(~x"./descendant::text()"ls) |> Enum.map_join("", &to_string/1)
+      {c |> xpath(~x"./@id"s) |> to_string(), Territory.from_note(text)}
+    end)
   end
 
   # ── Recursive Walker ─────────────────────────────────────────────
@@ -324,7 +341,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
-    text = node |> extract_element_text() |> with_trailing(ctx.trailing, node)
+    text =
+      node
+      |> extract_element_text()
+      |> with_trailing(ctx.trailing, node)
+      |> with_territories(extent)
+
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
@@ -346,12 +368,18 @@ defmodule SertantaiLegal.Scraper.LatParser do
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
-      commentary_refs: commentary_refs
+      commentary_refs: commentary_refs,
+      repealed_extent: repealed_extent(node, ctx, extent)
     }
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
-    text = node |> extract_structural_text() |> with_trailing(ctx.trailing, node)
+    text =
+      node
+      |> extract_structural_text()
+      |> with_trailing(ctx.trailing, node)
+      |> with_territories(extent)
+
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
     %{
@@ -373,7 +401,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
-      commentary_refs: commentary_refs
+      commentary_refs: commentary_refs,
+      repealed_extent: repealed_extent(node, ctx, extent)
     }
   end
 
@@ -399,8 +428,72 @@ defmodule SertantaiLegal.Scraper.LatParser do
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
-      commentary_refs: commentary_refs
+      commentary_refs: commentary_refs,
+      repealed_extent: repealed_extent(node, ctx, extent)
     }
+  end
+
+  # ── Retained repeals ─────────────────────────────────────────────
+
+  # Repeal RetainText="true": text repealed but kept — for the territories
+  # outside its Extent (or its note's "(S.)"), or for specified purposes /
+  # savings when it names none. A row whose text (sub-provisions included)
+  # is all retained-repealed gets the territories it's repealed in; with no
+  # territory, its whole extent (→ repealed_saved). Numbers and titles don't
+  # count.
+  # Not provision text: numbers, titles, reference markers (as @no_text_elements,
+  # which is defined after this point).
+  @not_retained_text ~w(Pnumber Number Title TitleBlock Reference CommentaryRef
+                        FootnoteRef Footnotes Commentaries)
+
+  defp repealed_extent(node, ctx, row_extent) do
+    segments = retained_segments(node, nil, ctx.ref_territory)
+
+    cond do
+      segments == [] -> nil
+      Enum.any?(segments, &is_nil/1) -> nil
+      Enum.any?(segments, &(&1 == :none)) -> row_extent || "E+W+S+NI"
+      true -> Territory.union(segments)
+    end
+  end
+
+  # One entry per non-blank text node: nil (not retained), the territory
+  # code, or :none (retained, no territory).
+  defp retained_segments(element, repeal, lookup) do
+    element
+    |> elem(8)
+    |> Enum.flat_map(fn child ->
+      case elem(child, 0) do
+        :xmlText ->
+          if child |> elem(4) |> to_string() |> String.trim() == "", do: [], else: [repeal]
+
+        :xmlElement ->
+          name = child |> elem(1) |> to_string()
+
+          cond do
+            name in @not_retained_text ->
+              []
+
+            name == "Repeal" and xpath(child, ~x"./@RetainText"s) == "true" ->
+              retained_segments(child, retained_territory(child, lookup), lookup)
+
+            true ->
+              retained_segments(child, repeal, lookup)
+          end
+
+        _ ->
+          []
+      end
+    end)
+  end
+
+  defp retained_territory(repeal, lookup) do
+    own = repeal |> xpath(~x"./@Extent"s) |> to_string() |> Transforms.normalize_xml_extent()
+
+    case own || Map.get(lookup, xpath(repeal, ~x"./@CommentaryRef"s)) do
+      nil -> :none
+      code -> code
+    end
   end
 
   # ── Element Extraction Helpers ───────────────────────────────────
@@ -670,11 +763,85 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # extra spaces so that "<Term>X</Term>" produces "X" not " X ".
   defp extract_inline_text(element) do
     element
-    |> xpath(~x"descendant-or-self::text()"ls)
-    |> Enum.map(&to_string/1)
-    |> Enum.join("")
+    |> render_inline()
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
+  end
+
+  # Inline text in document order. A territorial substitution — <Repeal
+  # RetainText SubstitutionRef="X" Extent="S">old</Repeal> … <Substitution
+  # ChangeId="X">new</Substitution> — renders both versions:
+  # "[S: new] [<rest>: old]", <rest> filled in per row (with_territories/2).
+  # A pair with no territory (a timing substitution) keeps both, apart.
+  defp render_inline(element) do
+    content = elem(element, 8)
+    partners = for el <- content, elem(el, 0) == :xmlElement, into: %{}, do: {change_id(el), el}
+
+    {parts, _consumed} =
+      Enum.map_reduce(content, MapSet.new(), fn child, consumed ->
+        case elem(child, 0) do
+          :xmlText ->
+            {child |> elem(4) |> to_string(), consumed}
+
+          :xmlElement ->
+            render_child(child, partners, consumed)
+
+          _ ->
+            {"", consumed}
+        end
+      end)
+
+    Enum.join(parts)
+  end
+
+  defp render_child(child, partners, consumed) do
+    ref = substitution_ref(child)
+    partner = ref && Map.get(partners, ref)
+
+    cond do
+      MapSet.member?(consumed, change_id(child)) ->
+        {"", consumed}
+
+      partner ->
+        old = render_inline(child)
+        new = render_inline(partner)
+        consumed = MapSet.put(consumed, ref)
+
+        case pair_territory(child, partner) do
+          nil ->
+            {"#{old} #{new}", consumed}
+
+          t ->
+            {"[#{t}: #{String.trim(new)}] [#{@rest_open}#{t}#{@rest_close}: #{String.trim(old)}]",
+             consumed}
+        end
+
+      true ->
+        {render_inline(child), consumed}
+    end
+  end
+
+  defp change_id(element), do: blank_to_nil(xpath(element, ~x"./@ChangeId"s))
+
+  defp substitution_ref(element) do
+    if elem(element, 1) == :Repeal and xpath(element, ~x"./@RetainText"s) == "true",
+      do: blank_to_nil(xpath(element, ~x"./@SubstitutionRef"s))
+  end
+
+  defp pair_territory(repeal, partner) do
+    [repeal, partner]
+    |> Enum.map(&(&1 |> xpath(~x"./@Extent"s) |> Transforms.normalize_xml_extent()))
+    |> Enum.find(& &1)
+  end
+
+  # "[S: new] [E+W: old]": the old wording's territories are the row's
+  # extent outside the substitution's ("elsewhere" when none are left).
+  defp with_territories(nil, _extent), do: nil
+
+  defp with_territories(text, extent) do
+    Regex.replace(~r/#{@rest_open}([^#{@rest_close}]+)#{@rest_close}/u, text, fn _, t ->
+      Territory.subtract(extent, t) || "elsewhere"
+    end)
   end
 
   # Extract text without descending into child provision elements.
@@ -897,12 +1064,19 @@ defmodule SertantaiLegal.Scraper.LatParser do
         cond do
           Map.get(row, :prospective) -> "prospective"
           LatStatus.repealed_text?(row.text) -> "repealed"
+          retained_everywhere?(row) -> "repealed_saved"
           true -> "in_force"
         end
 
       row |> Map.delete(:prospective) |> Map.put(:status, status)
     end)
   end
+
+  # Repealed (text retained) in every territory the row extends to.
+  defp retained_everywhere?(%{repealed_extent: nil}), do: false
+
+  defp retained_everywhere?(%{repealed_extent: repealed, extent_code: extent}),
+    do: Territory.covers?(repealed, extent)
 
   defp has_children?(rows, idx) do
     current_depth = Enum.at(rows, idx).depth
@@ -1019,6 +1193,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         chapter: row.chapter,
         heading_group: row.heading_group,
         title: Map.get(row, :title),
+        repealed_extent: Map.get(row, :repealed_extent),
         schedule: row.schedule,
         provision: row.provision,
         sub_provision: row.sub,

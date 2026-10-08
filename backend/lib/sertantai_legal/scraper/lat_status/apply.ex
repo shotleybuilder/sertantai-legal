@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
   def refresh(law_name, opts \\ []) when is_binary(law_name) do
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, text, status, effective_from, changed_by FROM legal_articles WHERE law_name = $1",
+        "SELECT section_id, text, status, effective_from, changed_by, repealed_extent, extent_code FROM legal_articles WHERE law_name = $1",
         [law_name],
         timeout: :infinity
       )
@@ -66,12 +66,19 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     note_changes =
       for n <- notes, n.stored != note_values(n.parsed), do: {n.id, n.parsed}
 
-    current = Map.new(rows, fn [sid, _text, status | change] -> {sid, {status, change}} end)
+    current =
+      Map.new(rows, fn [sid, _text, status, from, by | _] -> {sid, {status, [from, by]}} end)
 
     statuses =
       LatStatus.resolve(
-        Enum.map(rows, fn [sid, text, status | _] ->
-          %{section_id: sid, text: text, status: status}
+        Enum.map(rows, fn [sid, text, status, _from, _by, repealed, extent] ->
+          %{
+            section_id: sid,
+            text: text,
+            status: status,
+            repealed_extent: repealed,
+            extent_code: extent
+          }
         end),
         notes
       )

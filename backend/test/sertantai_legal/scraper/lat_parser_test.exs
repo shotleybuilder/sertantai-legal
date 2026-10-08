@@ -2101,4 +2101,132 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert List.last(refs["c-title"]) == "UK_uksi_2024_1:reg.2"
     end
   end
+
+  # Repeal RetainText: text repealed but kept — for other territories, or
+  # for specified purposes / savings (LAT parser coverage II, item 5).
+  describe "parse/2 retained repeals" do
+    defp retained_law(body, commentaries) do
+      LatParser.parse(
+        """
+        <Legislation RestrictExtent="E+W+S"><Secondary><Body>#{body}</Body></Secondary>
+        <Commentaries>#{commentaries}</Commentaries></Legislation>
+        """,
+        %{law_name: "UK_uksi_2024_1", type_code: "uksi"}
+      )
+    end
+
+    defp by_id(rows, id), do: Enum.find(rows, &(&1.section_id == "UK_uksi_2024_1:" <> id))
+
+    @revoked_s ~s|<Commentary id="k-s" Type="F"><Para><Text>Regulations revoked (S.) (1.11.2025) by The Scotland Regulations 2025 (S.S.I. 2025/165)</Text></Para></Commentary>|
+
+    test "a provision repealed in one territory (from the note) keeps its text and status" do
+      rows =
+        retained_law(
+          """
+          <P1group><Title>Testing</Title><P1><Pnumber><Repeal CommentaryRef="k-s" RetainText="true">3</Repeal></Pnumber><P1para>
+            <P2><Pnumber><Repeal CommentaryRef="k-s" RetainText="true">1</Repeal></Pnumber><P2para><Text><Repeal CommentaryRef="k-s" RetainText="true">The sludge shall be tested.</Repeal></Text></P2para></P2>
+            <P2><Pnumber>2</Pnumber><P2para><Text><Repeal CommentaryRef="k-s" RetainText="true">Samples</Repeal> <Repeal CommentaryRef="k-s" RetainText="true">shall be kept.</Repeal></Text></P2para></P2>
+          </P1para></P1></P1group>
+          """,
+          @revoked_s
+        )
+
+      for id <- ["reg.3", "reg.3(1)", "reg.3(2)"] do
+        row = by_id(rows, id)
+        assert row.repealed_extent == "S", id
+        assert row.status == "in_force", id
+      end
+
+      assert by_id(rows, "reg.3(1)").text == "The sludge shall be tested."
+    end
+
+    test "the Repeal's own Extent wins over the note" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal CommentaryRef="k-s" RetainText="true" Extent="E+W">Old rule.</Repeal></Text></P1para></P1></P1group>|,
+          @revoked_s
+        )
+
+      assert by_id(rows, "reg.4").repealed_extent == "E+W"
+    end
+
+    test "a retained repeal with no territory (savings / purposes) is repealed_saved everywhere" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>5</Pnumber><P1para><Text><Repeal CommentaryRef="k-sv" RetainText="true">Saved rule.</Repeal></Text></P1para></P1></P1group>|,
+          ~s|<Commentary id="k-sv" Type="F"><Para><Text>Reg. 5 revoked (15.4.2018) by The Regulations 2018 (S.I. 2018/374) (subject to savings)</Text></Para></Commentary>|
+        )
+
+      row = by_id(rows, "reg.5")
+      assert row.status == "repealed_saved"
+      assert row.repealed_extent == "E+W+S"
+    end
+
+    test "a Repeal wrapping whole Text elements counts too" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>6</Pnumber><P1para><Repeal CommentaryRef="k-s" RetainText="true"><Text>First.</Text><Text>Second.</Text></Repeal></P1para></P1></P1group>|,
+          @revoked_s
+        )
+
+      assert by_id(rows, "reg.6").repealed_extent == "S"
+    end
+
+    test "some words repealed is not the provision repealed" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>7</Pnumber><P1para><Text>A duty to <Repeal CommentaryRef="k-s" RetainText="true">consult</Repeal> act.</Text></P1para></P1></P1group>|,
+          @revoked_s
+        )
+
+      assert by_id(rows, "reg.7").repealed_extent == nil
+      assert by_id(rows, "reg.7").status == "in_force"
+    end
+
+    test "to_insert_maps/2 carries repealed_extent" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal RetainText="true" Extent="E+W">Old.</Repeal></Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      [map] = LatParser.to_insert_maps(rows, "00000000-0000-0000-0000-000000000001")
+      assert map.repealed_extent == "E+W"
+    end
+
+    test "territorial wording: both versions, bracketed by territory" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>8</Pnumber><P1para><Text>being used for <Repeal CommentaryRef="k-f" Extent="S" RetainText="true" SubstitutionRef="k-f-2">fire brigade</Repeal> <Substitution ChangeId="k-f-2" CommentaryRef="k-f" Extent="S">fire and rescue authority</Substitution> purposes</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      row = by_id(rows, "reg.8")
+
+      assert row.text ==
+               "being used for [S: fire and rescue authority] [E+W: fire brigade] purposes"
+
+      assert row.repealed_extent == nil
+    end
+
+    test "a substitution pair with no territory keeps both versions apart, unbracketed" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>9</Pnumber><P1para><Text>within <Repeal RetainText="true" SubstitutionRef="k-g-2">25(a)</Repeal><Addition ChangeId="k-g-2">25</Addition> days</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.9").text == "within 25(a) 25 days"
+    end
+
+    test "retained words without a replacement stay as they are" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>10</Pnumber><P1para><Text>A duty to <Repeal RetainText="true" Extent="S">consult</Repeal> act.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.10").text == "A duty to consult act."
+    end
+  end
 end
