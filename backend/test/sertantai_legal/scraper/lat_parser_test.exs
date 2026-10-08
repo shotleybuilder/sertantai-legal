@@ -987,7 +987,8 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         assert count(text, phrase) == 1, "#{phrase} should appear exactly once"
       end
 
-      assert text =~ "while at work; and any room"
+      # LH-03: numbered list items keep their numbers
+      assert text =~ "while at work; and (b) any room"
       refute text =~ "andany"
       # definitions in document order
       positions =
@@ -2281,7 +2282,9 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
           ""
         )
 
-      assert by_id(rows, "reg.16(2)").text == "[E+W: Where—] … that fact is evidence."
+      # LH-03: the row's own text is all repealed for S → plain, excluded_extent S
+      assert by_id(rows, "reg.16(2)").text == "Where— … that fact is evidence."
+      assert by_id(rows, "reg.16(2)").excluded_extent == "S"
     end
 
     test "words inserted for one territory are bracketed with it" do
@@ -2499,7 +2502,20 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
-  test "an alternative version that repeats its counterpart adds no duplicate rows (uksi 2010/2214 reg.7)" do
+  test "a version that repeats the body (same extent and text) adds no rows" do
+    rows =
+      LatParser.parse(
+        ~s|<Legislation><Secondary><Body>
+          <P1group AltVersionRefs="v1" RestrictExtent="E"><P1 id="regulation-8"><Pnumber>8</Pnumber><P1para><Text>Identical.</Text></P1para></P1></P1group>
+        </Body></Secondary>
+        <Versions><Version id="v1"><P1group RestrictExtent="E"><P1 id="regulation-8"><Pnumber>8</Pnumber><P1para><Text>Identical.</Text></P1para></P1></P1group></Version></Versions></Legislation>|,
+        %{law_name: "UK_uksi_2010_2214", type_code: "uksi"}
+      )
+
+    assert Enum.count(rows, &(&1.text == "Identical.")) == 1
+  end
+
+  test "a Welsh version holding a P1 marked E is still the Welsh version (uksi 2010/2214 reg.7)" do
     rows =
       LatParser.parse(
         ~s|<Legislation><Secondary><Body>
@@ -2509,8 +2525,10 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         %{law_name: "UK_uksi_2010_2214", type_code: "uksi"}
       )
 
-    texts = rows |> Enum.filter(&(&1.text == "Same words.")) |> Enum.map(& &1.section_id)
-    assert length(texts) == 1
+    # LH-02: the version's own extent (W) governs its P1 marked E, so its rows
+    # are the Welsh version — same words, tagged [W]; not a duplicate
+    same = rows |> Enum.filter(&(&1.text == "Same words.")) |> Enum.map(& &1.section_id)
+    assert same == ["UK_uksi_2010_2214:reg.7(1)[E]", "UK_uksi_2010_2214:reg.7(1)[W]"]
     assert Enum.count(rows, &(&1.text == "Wales differs.")) == 1
   end
 
@@ -2551,5 +2569,186 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       s46 = Enum.find(rows, &(&1.section_id == "UK_ukpga_2008_32:s.46"))
       assert s46.amendment_count == 1
     end
+  end
+
+  describe "parse/2 identity (LH-02)" do
+    test "Acts of Senedd Cymru (asc) and Welsh Measures (mwa) are Acts: s. ids" do
+      for type <- ~w(asc mwa) do
+        rows =
+          LatParser.parse(
+            ~s|<Legislation><Primary><Body><P1group><P1 id="section-119"><Pnumber>119</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>A duty.</Text></P2para></P2><P2><Pnumber>2</Pnumber><P2para><Text>Another.</Text></P2para></P2></P1para></P1></P1group></Body></Primary></Legislation>|,
+            %{law_name: "UK_#{type}_2023_3", type_code: type}
+          )
+
+        assert Enum.any?(rows, &(&1.section_id == "UK_#{type}_2023_3:s.119(1)")), type
+
+        assert Enum.find(rows, &(&1.section_id == "UK_#{type}_2023_3:s.119(1)")).section_type ==
+                 "sub_section"
+      end
+    end
+
+    test "a child with a narrower extent doesn't qualify its provision (uksi 2017/1047 reg.3)" do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation RestrictExtent="E+W"><Secondary><Body><P1group><P1 id="regulation-3" RestrictExtent="E+W"><Pnumber>3</Pnumber><P1para>
+            <P2><Pnumber>2</Pnumber><P2para><Text>Applies to both.</Text></P2para></P2>
+            <P2 RestrictExtent="E"><Pnumber>3</Pnumber><P2para><Text>England only.</Text></P2para></P2>
+          </P1para></P1></P1group></Body></Secondary></Legislation>|,
+          %{law_name: "UK_uksi_2017_1047", type_code: "uksi"}
+        )
+
+      ids = Enum.map(rows, & &1.section_id)
+      assert "UK_uksi_2017_1047:reg.3(2)" in ids
+      assert "UK_uksi_2017_1047:reg.3(3)" in ids
+      refute Enum.any?(ids, &String.contains?(&1, "["))
+    end
+
+    test "a sub-provision with territorial versions qualifies only that sub-provision" do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation RestrictExtent="E+W+S"><Primary><Body><P1group><P1 id="section-10"><Pnumber>10</Pnumber><P1para>
+            <P2 id="section-10-1"><Pnumber>1</Pnumber><P2para><Text>Common.</Text></P2para></P2>
+            <P2 id="section-10-2" RestrictExtent="E+W"><Pnumber>2</Pnumber><P2para><Text>E+W wording.</Text></P2para></P2>
+            <P2 id="section-10-2" RestrictExtent="S"><Pnumber>2</Pnumber><P2para><Text>S wording.</Text></P2para></P2>
+          </P1para></P1></P1group></Body></Primary></Legislation>|,
+          %{law_name: "UK_ukpga_2000_1", type_code: "ukpga"}
+        )
+
+      ids = Enum.map(rows, & &1.section_id)
+      assert "UK_ukpga_2000_1:s.10" in ids
+      assert "UK_ukpga_2000_1:s.10(1)" in ids
+      assert "UK_ukpga_2000_1:s.10(2)[E+W]" in ids
+      assert "UK_ukpga_2000_1:s.10(2)[S]" in ids
+    end
+
+    test "a version's own extent governs rows an inner extent contradicts (uksi 2010/2214 reg.36)" do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation><Secondary><Body>
+            <P1group AltVersionRefs="v6" RestrictExtent="E"><P1 id="regulation-36"><Pnumber>36</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>England text.</Text></P2para></P2></P1para></P1></P1group>
+          </Body></Secondary>
+          <Versions><Version id="v6" Description="W"><P1group RestrictExtent="W"><P1 id="regulation-36" RestrictExtent="E"><Pnumber>36</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>Wales text.</Text></P2para></P2></P1para></P1></P1group></Version></Versions></Legislation>|,
+          %{law_name: "UK_uksi_2010_2214", type_code: "uksi"}
+        )
+
+      wales = Enum.find(rows, &(&1.text == "Wales text."))
+      assert wales.extent_code == "W"
+      assert wales.section_id == "UK_uksi_2010_2214:reg.36(1)[W]"
+
+      assert Enum.find(rows, &(&1.text == "England text.")).section_id ==
+               "UK_uksi_2010_2214:reg.36(1)[E]"
+    end
+  end
+
+  describe "parse/2 rendering (LH-03)" do
+    defp lh3(body, extent \\ "E+W+S") do
+      LatParser.parse(
+        ~s|<Legislation RestrictExtent="#{extent}"><Primary><Body>#{body}</Body></Primary></Legislation>|,
+        %{law_name: "UK_ukpga_2000_9", type_code: "ukpga"}
+      )
+    end
+
+    defp lh3_row(rows, id), do: Enum.find(rows, &(&1.section_id == "UK_ukpga_2000_9:" <> id))
+
+    test "prefixed XHTML tables (xhtml:tr / xhtml:td) keep their cells (ukpga 1991/22 s.106)" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>106</Pnumber><P1para><Text>Defined—</Text></P1para><Tabular><xhtml:table xmlns:xhtml="http://www.w3.org/1999/xhtml"><xhtml:tbody><xhtml:tr><xhtml:td>apparatus</xhtml:td><xhtml:td>sections 89(3) and 105(1)</xhtml:td></xhtml:tr><xhtml:tr><xhtml:td>bridge</xhtml:td><xhtml:td>section 88(1)(a)</xhtml:td></xhtml:tr></xhtml:tbody></xhtml:table></Tabular></P1></P1group>|
+        )
+
+      table = Enum.find(rows, &(&1.section_type == "table"))
+      assert table.text == "apparatus | sections 89(3) and 105(1); bridge | section 88(1)(a)"
+      assert table.status == "in_force"
+    end
+
+    test "list items keep their numbers (NumberOverride), in text and table cells" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>6</Pnumber><P1para><Text>A test may be required where—</Text><OrderedList Type="alpha" Decoration="parens"><ListItem NumberOverride="a"><Para><Text>a constable suspects,</Text></Para></ListItem><ListItem NumberOverride="b"><Para><Text>an accident occurs.</Text></Para></ListItem></OrderedList></P1para></P1></P1group>|
+        )
+
+      assert lh3_row(rows, "s.6").text ==
+               "A test may be required where— (a) a constable suspects, (b) an accident occurs."
+    end
+
+    test "an ordered list without overrides is numbered from its Type and Decoration" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>7</Pnumber><P1para><Text>Either—</Text><OrderedList Type="roman" Decoration="parens"><ListItem><Para><Text>this,</Text></Para></ListItem><ListItem><Para><Text>that.</Text></Para></ListItem></OrderedList></P1para></P1></P1group>|
+        )
+
+      assert lh3_row(rows, "s.7").text == "Either— (i) this, (ii) that."
+    end
+
+    test "«…» keeps Schedule / Part numbers and references (ukpga 2024/13 s.327(2))" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>327</Pnumber><P1para><Text>After Schedule 4 insert—</Text><BlockAmendment><Schedule><Number>Schedule 4A</Number><TitleBlock><Title>Functions</Title></TitleBlock><Reference>Section 25</Reference><ScheduleBody><Part><Number>Part 1</Number><Title>Introduction</Title><P1><Pnumber>1</Pnumber><P1para><Text>The functions.</Text></P1para></P1></Part></ScheduleBody></Schedule></BlockAmendment></P1para></P1></P1group>|
+        )
+
+      assert lh3_row(rows, "s.327").text ==
+               "After Schedule 4 insert— «Schedule 4A Functions Section 25 Part 1 Introduction 1. The functions.»"
+    end
+
+    test "a table inside «…» keeps its cells" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>173</Pnumber><P1para><Text>Insert—</Text><BlockAmendment><P1><Pnumber>2</Pnumber><P1para><Text>Persons are—</Text><Tabular><table xmlns="http://www.w3.org/1999/xhtml"><tr><td>Newspaper</td><td>Editor</td></tr></table></Tabular></P1para></P1></BlockAmendment></P1para></P1></P1group>|
+        )
+
+      assert lh3_row(rows, "s.173").text == "Insert— «2. Persons are— Newspaper | Editor»"
+    end
+
+    test "AppendText after a quoted block closes the quote (ukpga 2019/17 s.55(3))" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>55</Pnumber><P1para><Text>For paragraph (b) substitute—</Text><BlockAmendment><P3><Pnumber>b</Pnumber><P3para><Text>it increases the rate of fire; and”</Text></P3para></P3></BlockAmendment><AppendText>.</AppendText></P1para></P1></P1group>|
+        )
+
+      assert lh3_row(rows, "s.55").text ==
+               "For paragraph (b) substitute— «(b) it increases the rate of fire; and”.»"
+    end
+
+    test "excluded_extent from the row's own text when its children differ (ukpga 1989/14 s.3(5))" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>3</Pnumber><P1para><P2><Pnumber>5</Pnumber><P2para><Text><Repeal RetainText="true" Extent="S">In relation to an applicant, if—</Repeal></Text><P3><Pnumber>a</Pnumber><P3para><Text>a condition is met.</Text></P3para></P3></P2para></P2></P1para></P1></P1group>|
+        )
+
+      s35 = lh3_row(rows, "s.3(5)")
+      assert s35.text == "In relation to an applicant, if—"
+      assert s35.excluded_extent == "S"
+    end
+
+    test "no bracket when the territory covers the row's whole extent" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>66</Pnumber><P1para><Text>Paid by <Repeal RetainText="true" SubstitutionRef="n1" Extent="E+W">the council</Repeal> <Addition ChangeId="n1" Extent="E+W">the authority</Addition> now.</Text></P1para></P1></P1group>|,
+          "E+W"
+        )
+
+      assert lh3_row(rows, "s.66").text == "Paid by the authority now."
+    end
+
+    test "no bracket for words repealed in a territory the row doesn't extend to" do
+      rows =
+        lh3(
+          ~s|<P1group><P1><Pnumber>5</Pnumber><P1para><Text>A duty to <Repeal RetainText="true" Extent="S">consult</Repeal> act.</Text></P1para></P1></P1group>|,
+          "E+W"
+        )
+
+      assert lh3_row(rows, "s.5").text == "A duty to consult act."
+    end
+  end
+
+  test "a signature joins its parts without doubled punctuation" do
+    rows =
+      LatParser.parse(
+        ~s|<Legislation><Secondary><Body><P1group><P1><Pnumber>1</Pnumber><P1para><Text>Citation.</Text></P1para></P1></P1group><SignedSection><Signatory><Signee><PersonName>Alan Howarth</PersonName><JobTitle>Parliamentary Under Secretary of State,</JobTitle><Department>Department of Employment</Department></Signee></Signatory></SignedSection></Body></Secondary></Legislation>|,
+        %{law_name: "UK_uksi_1990_1", type_code: "uksi"}
+      )
+
+    assert Enum.find(rows, &(&1.section_type == "signed")).text ==
+             "Alan Howarth, Parliamentary Under Secretary of State, Department of Employment"
   end
 end

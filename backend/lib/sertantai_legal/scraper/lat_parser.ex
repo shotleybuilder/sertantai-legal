@@ -35,7 +35,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
   alias SertantaiLegal.Legal.Lat.Transforms
   alias SertantaiLegal.Scraper.{LatStatus, Territory}
 
-  @act_type_codes ~w(ukpga anaw asp nia apni aep)
+  # Acts (sections); everything else is an instrument (regulations/articles).
+  # asc (Acts of Senedd Cymru), mwa (Welsh Measures) and the local / church /
+  # pre-Union Acts number sections too (LH-02).
+  @act_type_codes ~w(ukpga anaw asp asc mwa nia apni aep ukla ukcm aosp aip apgb gbla)
   @container_elements ~w(Legislation Primary Secondary Body Schedules ScheduleBody
                          P1para P2para P3para P4para P1group P2group P3group
                          ScheduleBody FragmentBody
@@ -52,8 +55,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # Placeholder for a territorial pair's "elsewhere" label, resolved per row
   # once its extent is known (with_territories/2): private-use code points.
-  @rest_open "\u{E000}"
-  @rest_close "\u{E001}"
+  # territorial pair: <open>territory<new>new words<old>old words<close>
+  @pair_open "\u{E000}"
+  @pair_new "\u{E001}"
+  @pair_old "\u{E005}"
+  @pair_close "\u{E006}"
   # retained words: <open>extent|commentary-ref<mid>words<close>
   @words_open "\u{E002}"
   @words_mid "\u{E003}"
@@ -99,7 +105,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       ref_type_lookup: build_ref_type_lookup(doc),
       ref_territory: build_ref_territory_lookup(doc),
       versions: build_versions_lookup(doc),
-      from_version: false
+      from_version: false,
+      version_extent: nil
     }
 
     raw_rows = walk_children(doc, initial_ctx)
@@ -227,9 +234,29 @@ defmodule SertantaiLegal.Scraper.LatParser do
       versions ->
         ctx = %{ctx | versions: Map.drop(ctx.versions, Enum.map(versions, &elem(&1, 0)))}
         ctx = %{ctx | from_version: true}
-        rows ++ Enum.flat_map(versions, fn {_id, version} -> walk_children(version, ctx) end)
+
+        rows ++
+          Enum.flat_map(versions, fn {_id, version} ->
+            walk_children(version, %{ctx | version_extent: version_extent(version)})
+          end)
     end
   end
+
+  # A version's extent: its root element's (e.g. the P1group of the Welsh
+  # version). Inner extents that contradict it don't label its rows: uksi
+  # 2010/2214's Welsh reg.36 holds a P1 marked E (LH-02).
+  defp version_extent(version) do
+    case xpath(version, ~x"./*[1]"o) do
+      nil -> nil
+      root -> element_extent(root)
+    end
+  end
+
+  defp version_governed(extent, nil), do: extent
+  defp version_governed(nil, version), do: version
+
+  defp version_governed(extent, version),
+    do: if(Territory.covers?(version, extent), do: extent, else: version)
 
   defp alt_versions(_node, versions) when map_size(versions) == 0, do: []
 
@@ -247,7 +274,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp walk_own(node, ctx) do
     name = element_name(node)
-    extent = element_extent(node) || ctx.default_extent
+    extent = version_governed(element_extent(node) || ctx.default_extent, ctx.version_extent)
     # Children inherit this element's effective extent (a Part's RestrictExtent
     # covers its sections), not the document root's. Status="Prospective" (on
     # P1group / Pblock wrappers) is inherited the same way (#167).
@@ -506,7 +533,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
                         FootnoteRef Footnotes Commentaries)
 
   defp excluded_extent(node, ctx, row_extent) do
-    segments = retained_segments(node, :plain, ctx.ref_territory)
+    # the row's own text decides (its children are rows of their own); the
+    # whole subtree only when the row has no text of its own
+    segments =
+      case retained_segments(node, :plain, ctx.ref_territory, true) do
+        [] -> retained_segments(node, :plain, ctx.ref_territory, false)
+        own -> own
+      end
 
     cond do
       segments == [] -> nil
@@ -535,7 +568,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # One entry per non-blank text node: :plain, {:keep, territory | :none}
   # (inside a retained repeal) or {:ins, territory} (inside an insertion
   # for a territory); the innermost wrapper wins.
-  defp retained_segments(element, state, lookup) do
+  defp retained_segments(element, state, lookup, own_only) do
     element
     |> elem(8)
     |> Enum.flat_map(fn child ->
@@ -544,7 +577,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
           if child |> elem(4) |> to_string() |> String.trim() == "", do: [], else: [state]
 
         :xmlElement ->
-          retained_child(child, state, lookup)
+          retained_child(child, state, lookup, own_only)
 
         _ ->
           []
@@ -552,25 +585,29 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end)
   end
 
-  defp retained_child(child, state, lookup) do
+  defp retained_child(child, state, lookup, own_only) do
     name = child |> elem(1) |> to_string()
 
     cond do
       name in @not_retained_text ->
         []
 
+      own_only and name in @row_elements ->
+        []
+
       name == "Repeal" and xpath(child, ~x"./@RetainText"s) == "true" ->
-        retained_segments(child, {:keep, retained_territory(child, lookup)}, lookup)
+        retained_segments(child, {:keep, retained_territory(child, lookup)}, lookup, own_only)
 
       name in ~w(Addition Substitution) and xpath(child, ~x"./@Extent"s) != "" ->
         retained_segments(
           child,
           {:ins, Territory.normalize(xpath(child, ~x"./@Extent"s))},
-          lookup
+          lookup,
+          own_only
         )
 
       true ->
-        retained_segments(child, state, lookup)
+        retained_segments(child, state, lookup, own_only)
     end
   end
 
@@ -810,24 +847,110 @@ defmodule SertantaiLegal.Scraper.LatParser do
       "Pnumber" -> [quoted_number(extract_inline_text(child), parent)]
       "Title" -> [extract_inline_text(child)]
       "Text" -> [extract_inline_text(child)]
+      # "Schedule 4A", "Part 1", "Section 25"
+      name when name in ~w(Number Reference) -> [extract_inline_text(child)]
+      name when name in ~w(OrderedList UnorderedList) -> list_blocks(child, :leaf)
+      "Tabular" -> child |> elements_named("table") |> Enum.map(&table_text/1)
       name when name in ~w(CommentaryRef FootnoteRef Commentaries Footnotes) -> []
       _ -> quoted_parts(child)
     end
   end
 
   # An (XHTML) table's cells: " | " between cells, "; " between rows.
+  # Elements may be prefixed (xhtml:tr): matched by local name. A cell's
+  # block content (paragraphs, lists) reads as text blocks.
   defp table_text(table) do
     table
-    |> xpath(~x"./descendant::tr"l)
+    |> elements_named("tr")
     |> Enum.map(fn tr ->
       tr
-      |> xpath(~x"./*"l)
-      |> Enum.filter(&(elem(&1, 1) in [:td, :th]))
-      |> Enum.map_join(" | ", &extract_inline_text/1)
+      |> elem(8)
+      |> Enum.filter(&(elem(&1, 0) == :xmlElement and local_name(elem(&1, 1)) in ~w(td th)))
+      |> Enum.map_join(" | ", &cell_text/1)
     end)
     |> Enum.reject(&(String.replace(&1, ~r/[\s|]/u, "") == ""))
     |> Enum.join("; ")
   end
+
+  defp cell_text(cell) do
+    case cell |> text_blocks(:leaf) |> join_blocks() do
+      blank when blank in [nil, ""] -> extract_inline_text(cell)
+      text -> text
+    end
+  end
+
+  # Descendant elements with a local name, in document order.
+  defp elements_named(element, local) do
+    element
+    |> elem(8)
+    |> Enum.flat_map(fn
+      child when elem(child, 0) == :xmlElement ->
+        if local_name(elem(child, 1)) == local,
+          do: [child],
+          else: elements_named(child, local)
+
+      _ ->
+        []
+    end)
+  end
+
+  # "xhtml:td" (element atom) or "{http://www.w3.org/1999/xhtml}td" (XPath
+  # name()) → "td"
+  defp local_name(name),
+    do: name |> to_string() |> String.replace(~r/\A(\{[^}]*\}|[^:{]*:)/, "")
+
+  # A list's items as text blocks, each led by its number: NumberOverride,
+  # else counted from an OrderedList's Type and Decoration ("(a)", "(i)").
+  defp list_blocks(list, mode) do
+    list
+    |> elem(8)
+    |> Enum.filter(&(elem(&1, 0) == :xmlElement and local_name(elem(&1, 1)) == "ListItem"))
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn {item, i} ->
+      case {item_label(item, list, i), text_blocks(item, mode)} do
+        {nil, blocks} -> blocks
+        {label, [first | rest]} when is_binary(first) -> [label <> " " <> first | rest]
+        {label, blocks} -> [label | blocks]
+      end
+    end)
+  end
+
+  defp item_label(item, list, i) do
+    decoration = xpath(list, ~x"./@Decoration"s)
+
+    case xpath(item, ~x"./@NumberOverride"s) do
+      "" ->
+        # number only what the source numbers: an OrderedList with a Type
+        type = xpath(list, ~x"./@Type"s)
+
+        if elem(list, 1) == :OrderedList and type != "",
+          do: decorate(list_number(i, type), decoration)
+
+      override ->
+        decorate(override, decoration)
+    end
+  end
+
+  defp decorate(n, "none"), do: n
+  defp decorate(n, "period"), do: n <> "."
+  defp decorate(n, "parenRight"), do: n <> ")"
+  defp decorate(n, "brackets"), do: "[" <> n <> "]"
+  defp decorate(n, _parens), do: "(" <> n <> ")"
+
+  defp list_number(i, "alpha"), do: alpha(i)
+  defp list_number(i, "alphaUpper"), do: String.upcase(alpha(i))
+  defp list_number(i, "roman"), do: roman(i)
+  defp list_number(i, "romanUpper"), do: String.upcase(roman(i))
+  defp list_number(i, _arabic), do: Integer.to_string(i)
+
+  defp alpha(i) when i <= 26, do: <<?a + i - 1>>
+  defp alpha(i), do: alpha(div(i - 1, 26)) <> alpha(rem(i - 1, 26) + 1)
+
+  @romans [{10, "x"}, {9, "ix"}, {5, "v"}, {4, "iv"}, {1, "i"}]
+  defp roman(0), do: ""
+
+  defp roman(i),
+    do: @romans |> Enum.find(fn {v, _} -> v <= i end) |> then(fn {v, r} -> r <> roman(i - v) end)
 
   # A signature: name, job title, address lines, date (its text, else @Date).
   defp signee_text(signee) do
@@ -847,7 +970,21 @@ defmodule SertantaiLegal.Scraper.LatParser do
         d -> blank_to_nil(extract_inline_text(d)) || blank_to_nil(xpath(d, ~x"./@Date"s))
       end
 
-    (parts ++ [date]) |> Enum.reject(&(&1 in [nil, ""])) |> Enum.join(", ")
+    (parts ++ [date])
+    |> Enum.map(&(&1 && &1 |> String.trim() |> String.trim_trailing(",") |> String.trim()))
+    |> Enum.reject(&(&1 in [nil, ""]))
+    |> join_signee()
+  end
+
+  # ", " between parts — except after "… of the" (a job title running into
+  # its department: "A senior officer of the Department of …")
+  defp join_signee([]), do: ""
+
+  defp join_signee([first | rest]) do
+    Enum.reduce(rest, first, fn part, acc ->
+      sep = if Regex.match?(~r/\b(of|the|for|and)\z/i, acc), do: " ", else: ", "
+      acc <> sep <> part
+    end)
   end
 
   defp quoted_number("", _parent), do: ""
@@ -876,10 +1013,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
           mode == :structural and name in @quoted_elements and after_open_child? ->
             {[], true}
 
+          # text appended to the amended provision (the quote's closing ".")
+          name == "AppendText" ->
+            {[{:append, extract_inline_text(child)}], after_open_child?}
+
           name in @quoted_elements ->
             {[quoted_text(child)], after_open_child?}
 
-          name == "table" ->
+          local_name(name) == "table" ->
             {[table_text(child)], after_open_child?}
 
           name == "Signee" ->
@@ -897,6 +1038,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
           name == "Text" ->
             {[extract_inline_text(child)], after_open_child?}
+
+          # after the open-child skip above: a list following an open child is its (#174)
+          name in ~w(OrderedList UnorderedList) ->
+            {list_blocks(child, mode), after_open_child?}
 
           true ->
             {text_blocks(child, mode), after_open_child?}
@@ -916,6 +1061,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       |> Enum.flat_map(fn el ->
         cond do
           element_name(el) == "Text" -> [extract_inline_text(el)]
+          element_name(el) == "AppendText" -> [{:append, extract_inline_text(el)}]
           element_name(el) in @quoted_elements -> [quoted_text(el)]
           true -> text_blocks(el, :leaf)
         end
@@ -937,6 +1083,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # provisions sit there); leading/trailing gaps are dropped.
   defp join_blocks(blocks) do
     blocks
+    |> attach_appends()
     |> Enum.reject(&(&1 == ""))
     |> Enum.chunk_by(&(&1 == :gap))
     |> Enum.map(fn
@@ -957,6 +1104,27 @@ defmodule SertantaiLegal.Scraper.LatParser do
       "" -> nil
       t -> t
     end
+  end
+
+  # AppendText joins the block before it, inside its closing "»".
+  defp attach_appends(blocks) do
+    blocks
+    |> Enum.reduce([], fn
+      {:append, text}, [prev | rest] when is_binary(prev) ->
+        joined =
+          if String.ends_with?(prev, "»"),
+            do: String.replace_suffix(prev, "»", text <> "»"),
+            else: prev <> text
+
+        [joined | rest]
+
+      {:append, text}, acc ->
+        [text | acc]
+
+      block, acc ->
+        [block | acc]
+    end)
+    |> Enum.reverse()
   end
 
   # Extract text from a single element, joining inline text nodes without
@@ -1052,7 +1220,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         "#{String.trim(old)} #{String.trim(new)}"
 
       t ->
-        "[#{t}: #{String.trim(new)}] [#{@rest_open}#{t}#{@rest_close}: #{String.trim(old)}]"
+        "#{@pair_open}#{t}#{@pair_new}#{String.trim(new)}#{@pair_old}#{String.trim(old)}#{@pair_close}"
     end
   end
 
@@ -1070,14 +1238,17 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   # "[S: new] [E+W: old]": the old wording's territories are the row's
-  # extent outside the substitution's ("elsewhere" when none are left).
+  # extent outside the substitution's. When the substitution covers the
+  # row's extent only the new words apply; when it misses it, only the old.
   defp with_territories(nil, _extent, _lookup, _repealed), do: nil
 
   defp with_territories(text, extent, lookup, repealed) do
     text =
-      Regex.replace(~r/#{@rest_open}([^#{@rest_close}]+)#{@rest_close}/u, text, fn _, t ->
-        Territory.subtract(extent, t) || "elsewhere"
-      end)
+      Regex.replace(
+        ~r/#{@pair_open}([^#{@pair_new}]+)#{@pair_new}([^#{@pair_old}]*)#{@pair_old}([^#{@pair_close}]*)#{@pair_close}/u,
+        text,
+        fn _, t, new, old -> pair_label(t, new, old, extent) end
+      )
 
     ~r/#{@words_open}(keep|ins)\|([^|]*)\|([^#{@words_mid}]*)#{@words_mid}([^#{@words_close}]*)#{@words_close}/u
     |> Regex.replace(text, fn
@@ -1088,6 +1259,16 @@ defmodule SertantaiLegal.Scraper.LatParser do
         inserted_label(words, extent, Territory.normalize(own), repealed)
     end)
     |> merge_brackets()
+  end
+
+  defp pair_label(territory, new, old, extent) do
+    rest = Territory.subtract(extent, territory)
+
+    cond do
+      rest == nil -> new
+      rest == Territory.subtract(extent, "") -> old
+      true -> "[#{territory}: #{new}] [#{rest}: #{old}]"
+    end
   end
 
   # whole-row insertions (excluded_extent set) stay plain
@@ -1110,6 +1291,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
     text
     |> String.replace(~r/#{@words_open}[^#{@words_mid}]*#{@words_mid}/u, "")
     |> String.replace(@words_close, "")
+    |> String.replace(~r/#{@pair_open}[^#{@pair_new}]*#{@pair_new}/u, "")
+    |> String.replace(@pair_old, " ")
+    |> String.replace(@pair_close, "")
   end
 
   defp territory(own, ref, lookup),
@@ -1120,10 +1304,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp words_label(words, _extent, _territory, repealed) when repealed != nil, do: words
 
   defp words_label(words, extent, territory, nil) do
-    case Territory.subtract(extent, territory) do
-      nil -> words
-      live -> "[#{live}: #{String.trim(words)}]"
-    end
+    live = Territory.subtract(extent, territory)
+
+    # repealed everywhere the row applies, or only where it doesn't
+    if live == nil or live == Territory.subtract(extent, ""),
+      do: words,
+      else: "[#{live}: #{String.trim(words)}]"
   end
 
   # Extract text without descending into child provision elements.
@@ -1424,25 +1610,28 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # ── Parallel Provision Detection & Qualification ─────────────────
 
+  # Parallel (territorial) versions: the same provision position (e.g. s.10,
+  # or s.10(2) when only a sub-provision has versions) occurring with
+  # different extents. That position and its descendants are qualified
+  # "[E+W]". A child with a narrower extent than its parent is not a version
+  # (LH-02: it used to qualify the whole provision).
   defp detect_and_qualify_parallels(rows) do
-    provision_extent_pairs =
+    collisions =
       rows
-      |> Enum.filter(fn r -> r.section_type in ~w(section sub_section article sub_article) end)
-      # Parallel versions share schedule and provision number; a body reg. 1
-      # and a schedule para. 1 are different provisions.
-      |> Enum.map(fn r -> {parallel_key(r), r.extent_code} end)
+      |> Enum.filter(& &1.provision)
+      |> Enum.group_by(&{&1.section_type, position_key(&1)}, & &1.extent_code)
+      |> Enum.filter(fn {_, extents} ->
+        extents |> Enum.reject(&is_nil/1) |> Enum.uniq() |> length() > 1
+      end)
+      |> MapSet.new(fn {{_type, key}, _} -> key end)
 
-    parallel_set = Transforms.detect_parallel_provisions(provision_extent_pairs)
-
-    if MapSet.size(parallel_set) == 0 do
+    if MapSet.size(collisions) == 0 do
       rows
     else
       Enum.map(rows, fn row ->
-        if row.provision && MapSet.member?(parallel_set, parallel_key(row)) && row.extent_code do
-          qualifier = "[#{row.extent_code}]"
-          new_id = "#{row.section_id}#{qualifier}"
+        if row.provision && row.extent_code && parallel?(row, collisions) do
           new_sort_key = String.replace(row.sort_key, ~r/~.*$/, "~#{row.extent_code}")
-          %{row | section_id: new_id, sort_key: new_sort_key}
+          %{row | section_id: "#{row.section_id}[#{row.extent_code}]", sort_key: new_sort_key}
         else
           row
         end
@@ -1450,8 +1639,19 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  defp parallel_key(%{provision: nil}), do: nil
-  defp parallel_key(row), do: {row.schedule, row.provision}
+  # schedule, provision, sub, paragraph, sub_paragraph — trailing nils dropped
+  # (a body reg. 1 and a schedule para. 1 are different provisions)
+  defp position_key(row) do
+    [row.schedule, row.provision, row.sub, row.paragraph, row.sub_paragraph]
+    |> Enum.reverse()
+    |> Enum.drop_while(&is_nil/1)
+    |> Enum.reverse()
+  end
+
+  defp parallel?(row, collisions) do
+    key = position_key(row)
+    Enum.any?(2..length(key)//1, &MapSet.member?(collisions, Enum.take(key, &1)))
+  end
 
   # ── Section ID Disambiguation ────────────────────────────────────
 
