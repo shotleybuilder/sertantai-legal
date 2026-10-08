@@ -241,4 +241,19 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
     assert plan.ambiguous == []
     assert plan.lost_unchanged == []
   end
+
+  test "rows whose text is only a repeal marker never trip the gate" do
+    plan =
+      LatMerge.plan(
+        [old("L:reg.48(1)(j)", ". . . . . . .", 5), old("L:table.12", "[Repealed]", 6)],
+        [
+          new("L:reg.29", ". . . . . . .", 2),
+          new("L:reg.30", ". . . . . . .", 3),
+          new("L:s.19A", "[Repealed]", 4),
+          new("L:s.193", "[Repealed]", 7)
+        ]
+      )
+
+    assert plan.lost_unchanged == []
+  end
 end

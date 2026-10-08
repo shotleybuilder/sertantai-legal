@@ -2498,4 +2498,19 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       refute Enum.any?(rows, &(&1.section_type == "figure"))
     end
   end
+
+  test "an alternative version that repeats its counterpart adds no duplicate rows (uksi 2010/2214 reg.7)" do
+    rows =
+      LatParser.parse(
+        ~s|<Legislation><Secondary><Body>
+          <P1group AltVersionRefs="v1" RestrictExtent="E"><P1 id="regulation-7"><Pnumber>7</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>Same words.</Text></P2para></P2><P2><Pnumber>2</Pnumber><P2para><Text>England only.</Text></P2para></P2></P1para></P1></P1group>
+        </Body></Secondary>
+        <Versions><Version id="v1" Description="W"><P1group RestrictExtent="W"><P1 id="regulation-7" RestrictExtent="E"><Pnumber>7</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>Same words.</Text></P2para></P2><P2><Pnumber>2</Pnumber><P2para><Text>Wales differs.</Text></P2para></P2></P1para></P1></P1group></Version></Versions></Legislation>|,
+        %{law_name: "UK_uksi_2010_2214", type_code: "uksi"}
+      )
+
+    texts = rows |> Enum.filter(&(&1.text == "Same words.")) |> Enum.map(& &1.section_id)
+    assert length(texts) == 1
+    assert Enum.count(rows, &(&1.text == "Wales differs.")) == 1
+  end
 end

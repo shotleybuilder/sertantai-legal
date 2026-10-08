@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.LatMerge do
   (structural) rows match by id only.
   """
 
-  alias SertantaiLegal.Scraper.LatHash
+  alias SertantaiLegal.Scraper.{LatHash, LatStatus}
 
   defstruct carry: %{}, renames: [], changed: [], ambiguous: [], removed: [], lost_unchanged: []
 
@@ -118,9 +118,13 @@ defmodule SertantaiLegal.Scraper.LatMerge do
     surviving_texts =
       new_rows |> Enum.map(&norm(&1.text)) |> Enum.reject(&(&1 == "")) |> MapSet.new()
 
+    # a repeal marker ("[Repealed]", dots) is no evidence of a matching
+    # failure: it matches every repealed row, and carries no enrichment worth
+    # keeping
     lost_unchanged =
       for o <- unmatched,
           o.enriched,
+          not LatStatus.repealed_text?(o.text),
           t = norm(o.text),
           t != "" and MapSet.member?(surviving_texts, t),
           do: o.section_id

@@ -98,12 +98,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
       mode: mode,
       ref_type_lookup: build_ref_type_lookup(doc),
       ref_territory: build_ref_territory_lookup(doc),
-      versions: build_versions_lookup(doc)
+      versions: build_versions_lookup(doc),
+      from_version: false
     }
 
     raw_rows = walk_children(doc, initial_ctx)
 
     raw_rows
+    |> drop_repeated_versions()
     |> assign_positions()
     |> build_row_fields(law_name, mode, context.type_code)
     |> mark_repealed_provisions(mode)
@@ -223,6 +225,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
       versions ->
         ctx = %{ctx | versions: Map.drop(ctx.versions, Enum.map(versions, &elem(&1, 0)))}
+        ctx = %{ctx | from_version: true}
         rows ++ Enum.flat_map(versions, fn {_id, version} -> walk_children(version, ctx) end)
     end
   end
@@ -419,7 +422,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      excluded_extent: repealed
+      excluded_extent: repealed,
+      from_version: ctx.from_version
     }
   end
 
@@ -454,7 +458,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      excluded_extent: repealed
+      excluded_extent: repealed,
+      from_version: ctx.from_version
     }
   end
 
@@ -481,7 +486,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      excluded_extent: excluded_extent(node, ctx, extent)
+      excluded_extent: excluded_extent(node, ctx, extent),
+      from_version: ctx.from_version
     }
   end
 
@@ -1221,6 +1227,22 @@ defmodule SertantaiLegal.Scraper.LatParser do
     rows
     |> Enum.with_index(1)
     |> Enum.map(fn {row, position} -> Map.put(row, :position, position) end)
+  end
+
+  # An alternative version can repeat its counterpart (uksi 2010/2214: the
+  # Welsh version of reg.7 holds a P1 marked E): rows with the same place and
+  # text as an earlier row add nothing.
+  defp drop_repeated_versions(rows) do
+    key = fn r ->
+      {r.element, r.schedule, r.part, r.chapter, r.heading_group, r.provision, r.sub, r.paragraph,
+       r.sub_paragraph, r.extent_code, r.text}
+    end
+
+    body = rows |> Enum.reject(& &1.from_version) |> MapSet.new(key)
+
+    rows
+    |> Enum.reject(&(&1.from_version and MapSet.member?(body, key.(&1))))
+    |> Enum.map(&Map.delete(&1, :from_version))
   end
 
   # ── Field Building (citations, sort_keys, hierarchy, depth) ─────
