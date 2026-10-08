@@ -117,6 +117,10 @@ defmodule SertantaiLegal.Scraper.LatReparse do
           map()
   def preview(law, rows_fn \\ &LatStagedParser.fetch_rows/1) do
     case rows_fn.(law) do
+      # as LatPersister refuses it: the stored LAT would be kept
+      {:ok, [], _law_id} ->
+        %{law_name: law, error: "no LAT rows in the parse (document without a body?)"}
+
       {:ok, rows, law_id} ->
         maps = LatParser.to_insert_maps(rows, law_id)
         existing = Carry.load_existing(law, Carry.carried_columns(Map.keys(hd(maps))))

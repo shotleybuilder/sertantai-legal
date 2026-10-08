@@ -167,4 +167,11 @@ defmodule SertantaiLegal.Scraper.LatReparseTest do
 
     assert text == "Two."
   end
+
+  test "preview/2 reports an empty parse (a body-less stored document) as an error, not a crash" do
+    {name, _} = law()
+    rows_fn = fn n -> {:ok, [], law_id(n)} end
+
+    assert %{law_name: ^name, error: "no LAT rows" <> _} = LatReparse.preview(name, rows_fn)
+  end
 end
