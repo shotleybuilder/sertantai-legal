@@ -710,6 +710,46 @@ defmodule SertantaiLegal.Scraper.LatParser do
   @no_text_elements ~w(Pnumber Number Title TitleBlock Reference CommentaryRef
                        FootnoteRef Footnotes Commentaries)
 
+  # Text another law gets (BlockAmendment, AppendText) or quoted material
+  # (BlockExtract): one block, «…», with its provision numbers and titles —
+  # the amending text is used to update records legislation.gov.uk applies
+  # late (Jason, 2026-10-08). Its provisions are never rows of this law.
+  @quoted_elements ~w(BlockAmendment AppendText BlockExtract)
+
+  defp quoted_text(element) do
+    case element |> quoted_parts() |> Enum.reject(&(&1 == "")) |> Enum.join(" ") do
+      "" -> ""
+      text -> "«" <> (text |> String.replace(~r/\s+/u, " ") |> String.trim()) <> "»"
+    end
+  end
+
+  defp quoted_parts(element) do
+    parent = elem(element, 1)
+
+    element
+    |> elem(8)
+    |> Enum.flat_map(fn child ->
+      case elem(child, 0) do
+        :xmlElement -> quoted_child(child, parent)
+        _ -> []
+      end
+    end)
+  end
+
+  defp quoted_child(child, parent) do
+    case to_string(elem(child, 1)) do
+      "Pnumber" -> [quoted_number(extract_inline_text(child), parent)]
+      "Title" -> [extract_inline_text(child)]
+      "Text" -> [extract_inline_text(child)]
+      name when name in ~w(CommentaryRef FootnoteRef Commentaries Footnotes) -> []
+      _ -> quoted_parts(child)
+    end
+  end
+
+  defp quoted_number("", _parent), do: ""
+  defp quoted_number(n, :P1), do: n <> "."
+  defp quoted_number(n, _parent), do: "(" <> n <> ")"
+
   # A node's text blocks in document order: each Text's inline text, and in
   # :structural mode a :gap where a child provision (its own row) sits.
   # :structural skips other laws' text (amendment blocks); :leaf keeps it,
@@ -724,6 +764,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
         cond do
           name in @no_text_elements ->
             {[], after_open_child?}
+
+          mode == :structural and name in @quoted_elements and after_open_child? ->
+            {[], true}
+
+          name in @quoted_elements ->
+            {[quoted_text(child)], after_open_child?}
 
           mode == :structural and name in @row_elements ->
             # content after an open child provision is the child's (#174)
@@ -754,7 +800,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
     trailing_text =
       trailing
       |> Enum.flat_map(fn el ->
-        if element_name(el) == "Text", do: [extract_inline_text(el)], else: text_blocks(el, :leaf)
+        cond do
+          element_name(el) == "Text" -> [extract_inline_text(el)]
+          element_name(el) in @quoted_elements -> [quoted_text(el)]
+          true -> text_blocks(el, :leaf)
+        end
       end)
       |> join_blocks()
 

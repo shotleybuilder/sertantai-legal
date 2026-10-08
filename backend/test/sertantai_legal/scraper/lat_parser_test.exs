@@ -2356,4 +2356,56 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
                "the Commons Registration Act 1965 (in this section referred to as “the 1965 Act”) (but is not coastal margin) or land"
     end
   end
+
+  # Amending provisions: the text they insert into another law, quoted
+  # «…» with its numbers (Jason, 2026-10-08: legislation.gov.uk applies
+  # amendments late, so the amending text is used to update records).
+  describe "parse/2 amending text" do
+    defp amending(body) do
+      LatParser.parse(
+        "<Legislation><Secondary><Body>#{body}</Body></Secondary></Legislation>",
+        %{law_name: "UK_uksi_2024_1", type_code: "uksi"}
+      )
+    end
+
+    defp amended_text(rows, id),
+      do: Enum.find(rows, &(&1.section_id == "UK_uksi_2024_1:" <> id)).text
+
+    test "a BlockAmendment is quoted on its row, numbers kept (uksi 2005/1904 reg.2(4))" do
+      rows =
+        amending(~s|<P1group><P1><Pnumber>2</Pnumber><P1para>
+          <P2><Pnumber>4</Pnumber><P2para><Text>After subsection (4) insert—</Text><BlockAmendment TargetClass="primary"><P2><Pnumber>4A</Pnumber><P2para><Text>A person shall not be liable if he proves that—</Text><P3><Pnumber>a</Pnumber><P3para><Text>the card was damaged;</Text></P3para></P3><P3><Pnumber>b</Pnumber><P3para><Text>it was reported.</Text></P3para></P3></P2para></P2></BlockAmendment></P2para></P2>
+          <P2><Pnumber>5</Pnumber><P2para><Text>Subsection (7) is amended.</Text></P2para></P2>
+        </P1para></P1></P1group>|)
+
+      assert amended_text(rows, "reg.2(4)") ==
+               "After subsection (4) insert— «(4A) A person shall not be liable if he proves that— (a) the card was damaged; (b) it was reported.»"
+
+      # the inserted provisions are not rows of this law
+      refute Enum.any?(rows, &String.contains?(&1.section_id, "4A"))
+      assert amended_text(rows, "reg.2(5)") == "Subsection (7) is amended."
+    end
+
+    test "a BlockAmendment after an open child provision goes with that child" do
+      rows =
+        amending(
+          ~s|<P1group><P1><Pnumber>3</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>In regulation 5—</Text>
+          <P3><Pnumber>a</Pnumber><P3para><Text>omit paragraph (2);</Text></P3para></P3>
+          <P3><Pnumber>b</Pnumber><P3para><Text>after paragraph (k) insert—</Text></P3para></P3>
+          <BlockAmendment><P3><Pnumber>l</Pnumber><P3para><Text>a new duty.</Text></P3para></P3></BlockAmendment>
+        </P2para></P2></P1para></P1></P1group>|
+        )
+
+      assert amended_text(rows, "reg.3(1)(b)") == "after paragraph (k) insert— «(l) a new duty.»"
+    end
+
+    test "a quoted section keeps its number and title" do
+      rows =
+        amending(
+          ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text>After section 9 insert—</Text><BlockAmendment><P1group><Title>Fees</Title><P1><Pnumber>9A</Pnumber><P1para><Text>A fee is payable.</Text></P1para></P1></P1group></BlockAmendment></P1para></P1></P1group>|
+        )
+
+      assert amended_text(rows, "reg.4") == "After section 9 insert— «Fees 9A. A fee is payable.»"
+    end
+  end
 end
