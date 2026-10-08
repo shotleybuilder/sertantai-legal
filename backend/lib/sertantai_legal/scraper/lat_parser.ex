@@ -658,7 +658,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp extract_title(node) do
-    node |> xpath(~x"./Title"l) |> titles_text() |> blank_to_nil()
+    # a Schedule's heading is in its TitleBlock (#165)
+    case xpath(node, ~x"./Title"l) do
+      [] -> node |> xpath(~x"./TitleBlock/Title"l) |> titles_text() |> blank_to_nil()
+      titles -> titles |> titles_text() |> blank_to_nil()
+    end
   end
 
   # A heading's text in document order (xmerl's //text() puts direct text

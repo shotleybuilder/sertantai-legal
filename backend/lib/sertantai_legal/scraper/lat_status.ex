@@ -108,12 +108,51 @@ defmodule SertantaiLegal.Scraper.LatStatus do
           Territory.covers?(row.excluded_extent, Map.get(row, :extent_code)) ->
         "repealed_saved"
 
-      Enum.any?(commencement, &Regex.match?(@partial, &1)) and
+      Enum.any?(commencement, &partial_note?(&1, row.section_id)) and
           not Enum.any?(commencement, &Regex.match?(@full, &1)) ->
         "in_force_partial"
 
       true ->
         "in_force"
+    end
+  end
+
+  # A note puts its row partly in force only when "for specified purposes"
+  # is about the note's own change: before " by " (not in the citation), not
+  # in an "except …" clause, and — when the note opens with a section /
+  # regulation / article number or range — about the row's provision
+  # (legislation.gov.uk copies notes onto other provisions: NPA 2017 s.44
+  # carries "S. 2 in force for specified purposes").
+  defp partial_note?(text, section_id) do
+    # each ";"-separated commencement step, up to its " by "
+    partial = text |> String.split(";") |> Enum.any?(&partial_step?/1)
+    partial and subject_covers?(text, section_id)
+  end
+
+  defp partial_step?(segment) do
+    head = segment |> String.split(" by ", parts: 2) |> hd()
+
+    # a repeal's "(except for … for specified purposes …)" lists what is
+    # kept; an insertion's "(date except for certain purposes)" is partial
+    head =
+      if Regex.match?(@repeal, head),
+        do: head |> String.split(~r/\bexcept\b/, parts: 2) |> hd(),
+        else: head
+
+    Regex.match?(@partial, head)
+  end
+
+  @subject ~r/\A(?:Ss?|Regs?|Arts?|Rules?)\.\s*(\d+)[A-Z]*(?:\(\w+\))*(?:\s*[-–]\s*(\d+)[A-Z]*)?/
+
+  defp subject_covers?(text, section_id) do
+    with [_ | bounds] <- Regex.run(@subject, text),
+         [_, own] <- Regex.run(~r/:(?:s|reg|art|rule)\.(\d+)/, section_id) do
+      [from | rest] = Enum.map(bounds, &String.to_integer/1)
+      to = List.first(rest, from)
+      String.to_integer(own) in from..to//1
+    else
+      # no numbered subject (Pt., Ch., words in …) or a row with no number
+      _ -> true
     end
   end
 

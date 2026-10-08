@@ -146,6 +146,90 @@ defmodule SertantaiLegal.Scraper.LatStatusTest do
              }
     end
 
+    test "a partial note about another provision doesn't make the row partial (NPA 2017)" do
+      rows = [row("s.44(2)(b)", "A duty."), row("s.2", "Notification.")]
+
+      notes = [
+        note(["s.44(2)(b)"], "S. 2 in force for specified purposes at Royal Assent, see s. 46"),
+        note(["s.2"], "S. 2 in force for specified purposes at Royal Assent, see s. 46")
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{
+               "#{@law}:s.44(2)(b)" => "in_force",
+               "#{@law}:s.2" => "in_force_partial"
+             }
+    end
+
+    test "a range in the note's subject covers its provisions" do
+      rows = [row("s.44", "A."), row("s.48", "B.")]
+
+      notes = [
+        note(["s.44"], "Ss. 43-45 in force for specified purposes at 1.1.2020 by S.I. 2019/1"),
+        note(["s.48"], "Ss. 43-45 in force for specified purposes at 1.1.2020 by S.I. 2019/1")
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{
+               "#{@law}:s.44" => "in_force_partial",
+               "#{@law}:s.48" => "in_force"
+             }
+    end
+
+    test "\"for specified purposes\" in an except clause or after \"by\" isn't partial commencement" do
+      rows = [row("s.50", "A."), row("s.82(1)", "B.")]
+
+      notes = [
+        note(
+          ["s.50"],
+          "Act repealed (except for ss. 49(1) for specified purposes and s. 51) (E.W.) (1.10.2010) by x",
+          "amendment"
+        ),
+        note(
+          ["s.82(1)"],
+          "“41(8)” inserted (temp.) by Planning (Consequential Provisions) Act 1990 (c. 11), s. 6 (in force for specified purposes)",
+          "amendment"
+        )
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{
+               "#{@law}:s.50" => "in_force",
+               "#{@law}:s.82(1)" => "in_force"
+             }
+    end
+
+    test "\"except for certain purposes\" on an insertion and \"partly in force\" are partial (TCPA 1990 s.322A, EPA 1990 s.162)" do
+      rows = [row("s.322A(2)", "A."), row("s.162(3)", "B.")]
+
+      notes = [
+        note(
+          ["s.322A(2)"],
+          "S. 322A inserted (2.1.1992 except for certain purposes which exception is prosp.) by Planning and Compensation Act 1991 (c. 34)",
+          "amendment"
+        ),
+        note(
+          ["s.162(3)"],
+          "S. 162 partly in force; s. 162 partly in force at: 1.1.1991 by S.I. 1990/2635, art. 3; 14.1.1991 for specified purposes by S.I. 1990/2635, art. 4"
+        )
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{
+               "#{@law}:s.322A(2)" => "in_force_partial",
+               "#{@law}:s.162(3)" => "in_force_partial"
+             }
+    end
+
+    test "a commencement history that names no purposes is not partial (\"partly in force\" alone)" do
+      rows = [row("s.32(1)", "A.")]
+
+      notes = [
+        note(
+          ["s.32(1)"],
+          "S. 32 partly in force; s. 32(10)(11) in force at Royal Assent; s. 32(1)-(9) in force 13.1.2004 see s. 40(6)"
+        )
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{"#{@law}:s.32(1)" => "in_force"}
+    end
+
     test "other full-commencement wordings found in the corpus" do
       for tail <- [
             "1.7.1999 for remaining purposes",

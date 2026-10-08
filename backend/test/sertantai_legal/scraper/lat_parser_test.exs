@@ -1935,6 +1935,14 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
                ["Preliminary", "General duties", "Enforcement provisions"]
     end
 
+    test "a Schedule row's text is its TitleBlock title, like a Part's (#165)" do
+      xml = read_fixture("with_schedules.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+
+      assert rows |> Enum.filter(&(&1.section_type == "schedule")) |> Enum.map(& &1.text) ==
+               ["Particulars to be notified", "Minimum welfare facilities"]
+    end
+
     test "a Schedule row takes its TitleBlock title" do
       xml = read_fixture("with_schedules.xml")
       rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
