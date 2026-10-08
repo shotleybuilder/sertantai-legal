@@ -54,6 +54,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # once its extent is known (with_territories/2): private-use code points.
   @rest_open "\u{E000}"
   @rest_close "\u{E001}"
+  # retained words: <open>extent|commentary-ref<mid>words<close>
+  @words_open "\u{E002}"
+  @words_mid "\u{E003}"
+  @words_close "\u{E004}"
 
   # Provision rows that can take sibling content that follows them (#174)
   @provision_rows ~w(P1 P2 P3 P4)
@@ -341,11 +345,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
+    repealed = repealed_extent(node, ctx, extent)
+
     text =
       node
       |> extract_element_text()
       |> with_trailing(ctx.trailing, node)
-      |> with_territories(extent)
+      |> with_territories(extent, ctx.ref_territory, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -369,16 +375,18 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      repealed_extent: repealed_extent(node, ctx, extent)
+      repealed_extent: repealed
     }
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
+    repealed = repealed_extent(node, ctx, extent)
+
     text =
       node
       |> extract_structural_text()
       |> with_trailing(ctx.trailing, node)
-      |> with_territories(extent)
+      |> with_territories(extent, ctx.ref_territory, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -402,7 +410,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      repealed_extent: repealed_extent(node, ctx, extent)
+      repealed_extent: repealed
     }
   end
 
@@ -808,8 +816,24 @@ defmodule SertantaiLegal.Scraper.LatParser do
         {render_pair(old, render_inline(partner), child, partner), j}
 
       _ ->
-        {render_inline(child), skip_to}
+        if retained_words?(child),
+          do: {retained_placeholder(child), skip_to},
+          else: {render_inline(child), skip_to}
     end
+  end
+
+  # Words repealed (text kept) with no replacement: "[E+W: words]" where they
+  # still apply — resolved per row (with_territories/4), since the territory
+  # may come from the note and a wholly-repealed row stays plain.
+  defp retained_words?(el) do
+    elem(el, 1) == :Repeal and xpath(el, ~x"./@RetainText"s) == "true" and
+      substitution_ref(el) == nil
+  end
+
+  defp retained_placeholder(el) do
+    own = xpath(el, ~x"./@Extent"s)
+    ref = xpath(el, ~x"./@CommentaryRef"s)
+    "#{@words_open}#{own}|#{ref}#{@words_mid}#{render_inline(el)}#{@words_close}"
   end
 
   defp render_node(node) do
@@ -845,12 +869,35 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # "[S: new] [E+W: old]": the old wording's territories are the row's
   # extent outside the substitution's ("elsewhere" when none are left).
-  defp with_territories(nil, _extent), do: nil
+  defp with_territories(nil, _extent, _lookup, _repealed), do: nil
 
-  defp with_territories(text, extent) do
-    Regex.replace(~r/#{@rest_open}([^#{@rest_close}]+)#{@rest_close}/u, text, fn _, t ->
-      Territory.subtract(extent, t) || "elsewhere"
-    end)
+  defp with_territories(text, extent, lookup, repealed) do
+    text =
+      Regex.replace(~r/#{@rest_open}([^#{@rest_close}]+)#{@rest_close}/u, text, fn _, t ->
+        Territory.subtract(extent, t) || "elsewhere"
+      end)
+
+    Regex.replace(
+      ~r/#{@words_open}([^|]*)\|([^#{@words_mid}]*)#{@words_mid}([^#{@words_close}]*)#{@words_close}/u,
+      text,
+      fn _, own, ref, words ->
+        words_label(words, extent, territory(own, ref, lookup), repealed)
+      end
+    )
+  end
+
+  defp territory(own, ref, lookup),
+    do: Transforms.normalize_xml_extent(own) || Map.get(lookup, ref)
+
+  # A wholly repealed row (repealed_extent) or words with no territory stay plain.
+  defp words_label(words, _extent, nil, _repealed), do: words
+  defp words_label(words, _extent, _territory, repealed) when repealed != nil, do: words
+
+  defp words_label(words, extent, territory, nil) do
+    case Territory.subtract(extent, territory) do
+      nil -> words
+      live -> "[#{live}: #{String.trim(words)}]"
+    end
   end
 
   # Extract text without descending into child provision elements.

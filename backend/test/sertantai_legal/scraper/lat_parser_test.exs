@@ -2219,14 +2219,34 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.9").text == "within 25(a) 25 days"
     end
 
-    test "retained words without a replacement stay as they are" do
+    test "words repealed in one territory are bracketed with where they still apply" do
       rows =
         retained_law(
           ~s|<P1group><P1><Pnumber>10</Pnumber><P1para><Text>A duty to <Repeal RetainText="true" Extent="S">consult</Repeal> act.</Text></P1para></P1></P1group>|,
           ""
         )
 
-      assert by_id(rows, "reg.10").text == "A duty to consult act."
+      assert by_id(rows, "reg.10").text == "A duty to [E+W: consult] act."
+    end
+
+    test "the territory can come from the repeal's note" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>13</Pnumber><P1para><Text>A duty to <Repeal CommentaryRef="k-s" RetainText="true">consult and</Repeal> act.</Text></P1para></P1></P1group>|,
+          @revoked_s
+        )
+
+      assert by_id(rows, "reg.13").text == "A duty to [E+W: consult and] act."
+    end
+
+    test "retained words with no territory (purposes / savings) stay plain" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>14</Pnumber><P1para><Text>A duty to <Repeal RetainText="true">consult</Repeal> act.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.14").text == "A duty to consult act."
     end
 
     test "old wording split across Repeals with one SubstitutionRef renders once (TCPA 1990 s.247(1)(a))" do
