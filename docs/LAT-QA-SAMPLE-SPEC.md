@@ -39,41 +39,57 @@ Judge a row against these rules, not against what you'd have done.
 - Each provision (P1–P4) is its own row. A parent row shows its own words, with " … " where its child provisions sit.
 - After a child whose lead-in ends in a dash or colon, the following content belongs to that child (#174).
 - P5 text is inside the P4 row.
+- List items keep their numbers: `ListItem@NumberOverride`, else an OrderedList's Type and Decoration ("(a) …", "(i) …"). Lists with neither are unnumbered. This applies in text, table cells and «…».
 - A repealed provision shows dots, "[Repealed]" or "[Revoked]".
 
 **Amending provisions**
 - Text inserted into another law (`BlockAmendment`, `AppendText`, `BlockExtract`) is quoted «…» on the amending row.
-- The quote keeps the inserted provisions' numbers ("9A." for a section, "(4A)" for lower levels) and their titles.
+- The quote keeps the inserted provisions' numbers ("9A." for a section, "(4A)" for lower levels), their titles, Schedule/Part numbers and references ("Schedule 4A", "Part 1", "Section 25"), lists and tables.
+- An `AppendText` after the block joins the quote inside its closing ("…and”.»").
 - The inserted provisions are never rows of this law.
 
 **Territorial and retained text** (`Repeal RetainText="true"`, `@Extent`)
 - Words kept for some territories after a repeal are bracketed with where they still apply: "[E+W: words]".
 - Words inserted for one territory narrower than the row's extent: "[E+W: words]".
 - A territorial substitution shows both versions: "[S: new] [E+W: old]". A substitution with no territory keeps both versions, apart and unbracketed.
+- Whether the "whole row" is territorial is decided on the row's **own** text: its sub-provisions are rows of their own. The subtree counts only when the row has no text of its own.
+- No bracket when the territory covers the row's whole extent (a substitution then shows only the new words) or lies outside it (only the old words or the plain words).
 - When the whole row is repealed for some territories, the text stays plain and `excluded_extent` names those territories. Status stays `in_force` unless the exclusion covers the row's whole extent, in which case it's `repealed_saved`.
 - When the whole row is inserted for a narrower territory, the text stays plain and `excluded_extent` = the rest of the extent.
 - Territory comes from the `Extent` attribute, else from the note: "revoked (S.)", "(1.4.2015 for S. …)".
-- Extent codes are `E`, `W`, `S`, `NI` joined with `+`.
+- Extent codes are `E`, `W`, `S`, `NI` joined with `+`. Dotted source forms ("E.W.") are normalised.
 
 **Tables and signatures**
 - A table row's text is its cells: " | " between cells, "; " between table rows. The table's Title is the row's `title`.
-- A signature row: any lead text, then the signee's name, job title, address lines and date.
+- Prefixed XHTML (`xhtml:td`) is the same. A cell's paragraphs and lists read as text.
+- The table is not repeated in its provision's text.
+- A signature row: any lead text, then the signee's name, job title, address lines and date, joined by ", " with no doubled punctuation.
 
 **Alternative versions**
 - A provision with a territorial alternative (`AltVersionRefs` → `Versions/Version`) appears once per version.
 - Their ids carry the extent ("reg.33[E+W+NI]", "reg.33[S]").
+- Only real versions are qualified: the same provision position occurring with different extents. A child with a narrower extent than its parent doesn't qualify the provision.
+- A version's own extent governs its rows when an inner extent contradicts it.
+
+**Identity**
+- Acts number sections (`s.`): ukpga, asp, asc, anaw, mwa, nia, apni, aep, ukla, ukcm, aosp, aip, apgb, gbla.
+- Every other type is an instrument (`reg.`, or `art.` for EU retained law).
 
 **Status**
 - `in_force` by default.
 - `repealed`: the text is dots or a repeal marker.
 - `repealed_saved`: repealed with savings, or the text is retained for no territory.
-- `in_force_partial`: a commencement or amendment note on the row or an ancestor says "for specified/certain purposes" for this provision (not in a repeal's "except …" clause, not after " by "), with no "wholly in force", "not already in force", "remaining purposes" or "otherwise".
+- `in_force_partial`: a commencement or amendment note on the row or an ancestor says "for specified/certain purposes" for this provision, with no "wholly in force", "not already in force", "remaining purposes" or "otherwise". The phrase must be within one ";" step before its " by ", and not in a repeal's "except …" clause. If the note opens with s./reg./art. numbers, they must cover the row.
 - `prospective`: CLML `Status="Prospective"`.
 
 **Notes**
 - A note's text is its `<Commentary>` in document order.
-- It is placed on every row whose element (including attributes on Addition, Substitution or Repeal, and a P1group's Title) cites it. `target` is the deepest of those rows.
+- It is placed on the rows that cite it **at their own level**: a CommentaryRef or a `CommentaryRef` attribute in the row's own element, not only inside a sub-provision (a P1group's Title counts for its section).
+- It applies to each of those rows and their sub-provisions (status, `effective_from`, `changed_by`).
+- `affected_sections` lists exactly those rows. The packet's `target` field is the last of them, for reference only.
 - The note's `effect`, `effective_from` (latest date before " by ") and `changed_by` (first instrument after " by ") come from its text.
+- "W.S.I." is a Welsh SI. A plain "S.I." that names a Welsh SI in the register resolves to `UK_wsi_…`.
+- Marginal citations (Commentary Type="M", e.g. "1906 c. 14.") are editorial notes with no `changed_by`.
 - A row's `effective_from` / `changed_by` come from the latest dated amendment or commencement note on it or an ancestor.
 
 **Out of scope** (known, not defects)
