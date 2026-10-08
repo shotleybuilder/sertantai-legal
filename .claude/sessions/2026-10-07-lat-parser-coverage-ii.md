@@ -99,8 +99,10 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 - ✅ Annotation note text order (folded in by Jason 2026-10-08): parser fix (tests), `mix lat.reorder_notes` applied — 80,012 notes / 758 laws, 943 row effective_from/changed_by, 76,976 change_id mappings (`notes-reorder-2026-10-08.csv.change-ids.csv`), 4,058 unmatched left for re-parse; stale statuses fixed first (`mix lat.status --apply`, 34 rows)
 - ✅ Note placement (attribute-style CommentaryRef + P1group Title refs): parser fix (tests), LatStatus full-commencement wordings, applied — 36,493 notes placed + 1,328 gaining sections, unplaced amendment notes 38,427 → 1,970, 38,972 rows' effective_from/changed_by; statuses 162 (`lat.status`) + 451 → partial, 27 → in_force, 2 saved → repealed
 - ✅ Retained repeals (`Repeal RetainText`): `repealed_extent` on 7,015 rows / 103 laws, 1,963 rows → repealed_saved, 536 rows text repaired (133 bracketed territorial wording, 402 empty → [Repealed]/[Revoked], 1 spacing), all `correction`
-- ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
-- ⬜ One re-parse wave, offline from the store (`mix lat.reparse --store only`), before fractalaw's single run; agree the new columns with fractalaw first
+- ✅ Remaining parse bugs closed in place (Jason 2026-10-08, §6): territorial words/insertions bracketed, `excluded_extent`, amending text «…», tables, signatures, P2group/P3group titles, alternative versions, #165 schedules, partial-status misfires; P5 already in P4 text; footnotes #176 and figures #177 left out (future enhancements); prelims/RestrictStart/EndDate not provision text
+- ✅ One re-parse wave, offline from the store: 1,056 laws, 97% of enriched rows carried, verified (LAT = parser output); 1 control mapping left for Jason (EU 2008/1272 Art. 37A)
+- ⬜ Randomised eyeball QA of LAT records by a Claude agent against the CLML store (spec `docs/LAT-QA-SAMPLE-SPEC.md`, sampler `mix lat.qa_sample`); its findings gate the hand-off
+- ⬜ fractalaw contract (frame columns `title`, `excluded_extent`; manifest `title_hash`, `notes_hash`; vectors) — built after QA, one message; don't flag fractalaw until Jason says
 
 ## Dependencies
 
@@ -228,3 +230,10 @@ Totals (`lat-reparse/wave.csv` + `wave_gate.csv`, 1,056 laws): rows 371,290 → 
 Control mappings orphaned by the wave: 4. Three re-pointed to the body version of a provision that gained a territorial alternative with changed text (UK_uksi_2008_1597:reg.7(5)/(6) → `[E+W+S]`, UK_ukpga_1968_73:s.135(1) → `[E+W+S]`). One left for Jason: UK_eur_2008_1272:art.Article 37A(3)(2) — Article 37A is repealed in the current XML (similar wording now in Art. 37(6)(c)); control 4288493d-…. Two older orphans predate the wave: UK_ukpga_1990_43:s.40(4), s.74(3) (control 40a9d67d-…, mapped 2026-07-13; neither id existed before the wave).
 
 Post-wave verification: `mix lat.status` 0 to change; offline diff of all laws (`post-wave-diff-2026-10-08.csv`) — 0 real differences: 28,637 rows were stored "" vs parsed nil (a diff-tool artefact, fixed: `LatTextDiff.diff/2` treats nil and "" alike — the earlier "whitespace-only 27,824" was mostly this), 58 removed = UK_uksi_1979_791 (left out on purpose: PDF-sourced LAT, body-less stored XML). The LAT now equals the parser's output for every law.
+
+## 7. Randomised eyeball QA (Jason, 2026-10-08)
+
+Jason: a Claude agent runs a randomised QA sample of LAT records against the XML store — an eyeball QA, with a spec; the fractalaw contract folds into it as the values it will receive (not the transport/hashes).
+
+- Spec: `docs/LAT-QA-SAMPLE-SPEC.md` — the rendering rules the LAT applies (so the agent judges against them), checks T1 text … T8 identity, verdicts pass/minor/defect/unsure, outputs `findings.csv` + `summary.md`, read-only.
+- Sampler: `mix lat.qa_sample --n N --seed S` — strata (plain 28%, title, territorial brackets, amending text, excluded_extent, repealed_saved, in_force_partial, repealed, table, signed, structural, qualified ids, placed notes), md5(seed||id) order so a seed is reproducible; packets carry the stored row, its notes with their `<Commentary>`, the row's XML fragment (own id, the enclosing provision for tables, the SignedSection for signatures) and store paths. Read-only, offline.
