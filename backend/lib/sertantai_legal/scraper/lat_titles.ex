@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.LatTitles do
   @moduledoc """
   Column-only rollout of parser-derived LAT columns (LAT parser coverage II:
-  `title`, `repealed_extent`): which stored rows need the value set, changed
+  `title`, `excluded_extent`): which stored rows need the value set, changed
   or cleared to match a fresh parse. Rows are matched on `section_id`; a row only one side has is left
   for a re-parse (no inserts, no deletes, row text never touched).
 
@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LatTitles do
 
   @doc """
   Updates that bring the stored rows' `field` (default `:title`; also
-  `:repealed_extent`) in line with the parse, in stored order.
+  `:excluded_extent`) in line with the parse, in stored order.
   """
   @spec plan([map()], [map()], atom()) :: [{String.t(), String.t() | nil}]
   def plan(stored, parsed, field \\ :title) do

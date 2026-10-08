@@ -2133,7 +2133,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       for id <- ["reg.3", "reg.3(1)", "reg.3(2)"] do
         row = by_id(rows, id)
-        assert row.repealed_extent == "S", id
+        assert row.excluded_extent == "S", id
         assert row.status == "in_force", id
       end
 
@@ -2147,7 +2147,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
           @revoked_s
         )
 
-      assert by_id(rows, "reg.4").repealed_extent == "E+W"
+      assert by_id(rows, "reg.4").excluded_extent == "E+W"
     end
 
     test "a retained repeal with no territory (savings / purposes) is repealed_saved everywhere" do
@@ -2159,7 +2159,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       row = by_id(rows, "reg.5")
       assert row.status == "repealed_saved"
-      assert row.repealed_extent == "E+W+S"
+      assert row.excluded_extent == "E+W+S"
     end
 
     test "a Repeal wrapping whole Text elements counts too" do
@@ -2169,7 +2169,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
           @revoked_s
         )
 
-      assert by_id(rows, "reg.6").repealed_extent == "S"
+      assert by_id(rows, "reg.6").excluded_extent == "S"
     end
 
     test "some words repealed is not the provision repealed" do
@@ -2179,11 +2179,11 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
           @revoked_s
         )
 
-      assert by_id(rows, "reg.7").repealed_extent == nil
+      assert by_id(rows, "reg.7").excluded_extent == nil
       assert by_id(rows, "reg.7").status == "in_force"
     end
 
-    test "to_insert_maps/2 carries repealed_extent" do
+    test "to_insert_maps/2 carries excluded_extent" do
       rows =
         retained_law(
           ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal RetainText="true" Extent="E+W">Old.</Repeal></Text></P1para></P1></P1group>|,
@@ -2191,7 +2191,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         )
 
       [map] = LatParser.to_insert_maps(rows, "00000000-0000-0000-0000-000000000001")
-      assert map.repealed_extent == "E+W"
+      assert map.excluded_extent == "E+W"
     end
 
     test "territorial wording: both versions, bracketed by territory" do
@@ -2206,7 +2206,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert row.text ==
                "being used for [S: fire and rescue authority] [E+W: fire brigade] purposes"
 
-      assert row.repealed_extent == nil
+      assert row.excluded_extent == nil
     end
 
     test "a substitution pair with no territory keeps both versions apart, unbracketed" do
@@ -2288,6 +2288,40 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       assert by_id(rows, "reg.19").text ==
                "as in [S: the 1993 Act, and] [E+W: the Permitting Regulations] apply."
+    end
+
+    test "a row inserted wholly for a narrower territory: plain text, excluded_extent the rest" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>20</Pnumber><P1para><Text><Addition ChangeId="i4" Extent="E+W">The Executive shall report.</Addition></Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      row = by_id(rows, "reg.20")
+      assert row.text == "The Executive shall report."
+      assert row.excluded_extent == "S"
+      assert row.status == "in_force"
+    end
+
+    test "dotted extents (\"E.W.\") read as extent codes" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>21</Pnumber><P1para><Text>A duty to <Addition ChangeId="i5" Extent="E.W.">promptly</Addition> act.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.21").text == "A duty to [E+W: promptly] act."
+    end
+
+    test "markup nested in bracketed words keeps its spacing (TA 1968 s.20)" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>22</Pnumber><P1para><Text>Then <Addition ChangeId="i6" Extent="E+W">the <Repeal RetainText="true" SubstitutionRef="i7">Board</Repeal><Addition ChangeId="i7">Strategic Rail Authority</Addition> shall pay</Addition> now.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.22").text ==
+               "Then [E+W: the Board Strategic Rail Authority shall pay] now."
     end
 
     test "retained words with no territory (purposes / savings) stay plain" do

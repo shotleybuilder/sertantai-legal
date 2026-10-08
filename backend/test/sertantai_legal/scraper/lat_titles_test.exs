@@ -26,10 +26,10 @@ defmodule SertantaiLegal.Scraper.LatTitlesTest do
       assert LatTitles.plan([r("L:reg.1", nil)], [r("L:reg.9", "New provision")]) == []
     end
 
-    test "plans any column (repealed_extent)" do
-      stored = [%{section_id: "L:reg.3", repealed_extent: nil}]
-      parsed = [%{section_id: "L:reg.3", repealed_extent: "S"}]
-      assert LatTitles.plan(stored, parsed, :repealed_extent) == [{"L:reg.3", "S"}]
+    test "plans any column (excluded_extent)" do
+      stored = [%{section_id: "L:reg.3", excluded_extent: nil}]
+      parsed = [%{section_id: "L:reg.3", excluded_extent: "S"}]
+      assert LatTitles.plan(stored, parsed, :excluded_extent) == [{"L:reg.3", "S"}]
     end
   end
 end

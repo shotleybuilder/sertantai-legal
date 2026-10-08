@@ -48,6 +48,21 @@ defmodule SertantaiLegal.Scraper.Territory do
     |> union()
   end
 
+  @doc """
+  An extent attribute as a code: "E+W", "E.W.", "E.W.S.", "N.I." → "E+W",
+  "E+W", "E+W+S", "NI"; nil for blank.
+  """
+  @spec normalize(String.t() | nil) :: String.t() | nil
+  def normalize(nil), do: nil
+
+  def normalize(code),
+    do:
+      code
+      |> String.replace("N.I", "NI")
+      |> then(&Regex.scan(~r/NI|[EWS]/, &1))
+      |> List.flatten()
+      |> union()
+
   @doc "True when `repealed` includes every territory of `row_extent` (nil = UK)."
   @spec covers?(String.t(), String.t() | nil) :: boolean()
   def covers?(repealed, row_extent),

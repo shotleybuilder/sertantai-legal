@@ -45,6 +45,17 @@ defmodule SertantaiLegal.Scraper.TerritoryTest do
     end
   end
 
+  describe "normalize/1" do
+    test "extent attributes in either notation" do
+      assert Territory.normalize("E.W.") == "E+W"
+      assert Territory.normalize("E.W.S.") == "E+W+S"
+      assert Territory.normalize("N.I.") == "NI"
+      assert Territory.normalize("S+E+W") == "E+W+S"
+      assert Territory.normalize("") == nil
+      assert Territory.normalize(nil) == nil
+    end
+  end
+
   describe "set operations on extent codes" do
     test "covers?/2: the repealed territories include every territory of the row" do
       assert Territory.covers?("E+W+S", "E+W")

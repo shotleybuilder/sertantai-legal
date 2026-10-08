@@ -345,7 +345,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
-    repealed = repealed_extent(node, ctx, extent)
+    repealed = excluded_extent(node, ctx, extent)
 
     text =
       node
@@ -375,12 +375,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      repealed_extent: repealed
+      excluded_extent: repealed
     }
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
-    repealed = repealed_extent(node, ctx, extent)
+    repealed = excluded_extent(node, ctx, extent)
 
     text =
       node
@@ -410,7 +410,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      repealed_extent: repealed
+      excluded_extent: repealed
     }
   end
 
@@ -437,7 +437,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      repealed_extent: repealed_extent(node, ctx, extent)
+      excluded_extent: excluded_extent(node, ctx, extent)
     }
   end
 
@@ -454,40 +454,46 @@ defmodule SertantaiLegal.Scraper.LatParser do
   @not_retained_text ~w(Pnumber Number Title TitleBlock Reference CommentaryRef
                         FootnoteRef Footnotes Commentaries)
 
-  defp repealed_extent(node, ctx, row_extent) do
-    segments = retained_segments(node, nil, ctx.ref_territory)
+  defp excluded_extent(node, ctx, row_extent) do
+    segments = retained_segments(node, :plain, ctx.ref_territory)
 
     cond do
       segments == [] -> nil
-      Enum.any?(segments, &is_nil/1) -> nil
-      Enum.any?(segments, &(&1 == :none)) -> row_extent || "E+W+S+NI"
-      true -> Territory.union(segments)
+      Enum.all?(segments, &match?({:keep, _}, &1)) -> repealed_excluded(segments, row_extent)
+      Enum.all?(segments, &match?({:ins, _}, &1)) -> inserted_excluded(segments, row_extent)
+      true -> nil
     end
   end
 
-  # One entry per non-blank text node: nil (not retained), the territory
-  # code, or :none (retained, no territory).
-  defp retained_segments(element, repeal, lookup) do
+  # Wholly repealed (text kept): the repeals' territories; any without one →
+  # the whole extent (repealed_saved).
+  defp repealed_excluded(segments, row_extent) do
+    if Enum.any?(segments, &(&1 == {:keep, :none})),
+      do: row_extent || "E+W+S+NI",
+      else: segments |> Enum.map(&elem(&1, 1)) |> Territory.union()
+  end
+
+  # Wholly inserted for narrower territories: the rest of the row's extent
+  # (nil when the insertions cover it, or miss it entirely).
+  defp inserted_excluded(segments, row_extent) do
+    applies = segments |> Enum.map(&elem(&1, 1)) |> Territory.union()
+    rest = Territory.subtract(row_extent, applies)
+    if rest == Territory.subtract(row_extent, ""), do: nil, else: rest
+  end
+
+  # One entry per non-blank text node: :plain, {:keep, territory | :none}
+  # (inside a retained repeal) or {:ins, territory} (inside an insertion
+  # for a territory); the innermost wrapper wins.
+  defp retained_segments(element, state, lookup) do
     element
     |> elem(8)
     |> Enum.flat_map(fn child ->
       case elem(child, 0) do
         :xmlText ->
-          if child |> elem(4) |> to_string() |> String.trim() == "", do: [], else: [repeal]
+          if child |> elem(4) |> to_string() |> String.trim() == "", do: [], else: [state]
 
         :xmlElement ->
-          name = child |> elem(1) |> to_string()
-
-          cond do
-            name in @not_retained_text ->
-              []
-
-            name == "Repeal" and xpath(child, ~x"./@RetainText"s) == "true" ->
-              retained_segments(child, retained_territory(child, lookup), lookup)
-
-            true ->
-              retained_segments(child, repeal, lookup)
-          end
+          retained_child(child, state, lookup)
 
         _ ->
           []
@@ -495,8 +501,30 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end)
   end
 
+  defp retained_child(child, state, lookup) do
+    name = child |> elem(1) |> to_string()
+
+    cond do
+      name in @not_retained_text ->
+        []
+
+      name == "Repeal" and xpath(child, ~x"./@RetainText"s) == "true" ->
+        retained_segments(child, {:keep, retained_territory(child, lookup)}, lookup)
+
+      name in ~w(Addition Substitution) and xpath(child, ~x"./@Extent"s) != "" ->
+        retained_segments(
+          child,
+          {:ins, Territory.normalize(xpath(child, ~x"./@Extent"s))},
+          lookup
+        )
+
+      true ->
+        retained_segments(child, state, lookup)
+    end
+  end
+
   defp retained_territory(repeal, lookup) do
-    own = repeal |> xpath(~x"./@Extent"s) |> to_string() |> Transforms.normalize_xml_extent()
+    own = repeal |> xpath(~x"./@Extent"s) |> Territory.normalize()
 
     case own || Map.get(lookup, xpath(repeal, ~x"./@CommentaryRef"s)) do
       nil -> :none
@@ -841,8 +869,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp placeholder(el, mode) do
     own = xpath(el, ~x"./@Extent"s)
     ref = xpath(el, ~x"./@CommentaryRef"s)
-    # nested repeals' words are plain inside the outer placeholder
-    words = el |> xpath(~x"./descendant::text()"ls) |> Enum.map_join("", &to_string/1)
+    # nested bracketed words are plain inside the outer placeholder
+    words = el |> render_inline() |> plain_text()
     "#{@words_open}#{mode}|#{own}|#{ref}#{@words_mid}#{words}#{@words_close}"
   end
 
@@ -873,7 +901,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp pair_territory(repeal, partner) do
     [repeal, partner]
-    |> Enum.map(&(&1 |> xpath(~x"./@Extent"s) |> Transforms.normalize_xml_extent()))
+    |> Enum.map(&(&1 |> xpath(~x"./@Extent"s) |> Territory.normalize()))
     |> Enum.find(& &1)
   end
 
@@ -893,13 +921,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
         words_label(words, extent, territory(own, ref, lookup), repealed)
 
       _, "ins", own, _ref, words ->
-        inserted_label(words, extent, Transforms.normalize_xml_extent(own))
+        inserted_label(words, extent, Territory.normalize(own), repealed)
     end)
     |> merge_brackets()
   end
 
-  defp inserted_label(words, extent, territory) do
-    if Territory.covers?(territory, extent),
+  # whole-row insertions (excluded_extent set) stay plain
+  defp inserted_label(words, extent, territory, excluded) do
+    if excluded != nil or Territory.covers?(territory, extent),
       do: words,
       else: "[#{territory}: #{String.trim(words)}]"
   end
@@ -920,9 +949,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp territory(own, ref, lookup),
-    do: Transforms.normalize_xml_extent(own) || Map.get(lookup, ref)
+    do: Territory.normalize(own) || Map.get(lookup, ref)
 
-  # A wholly repealed row (repealed_extent) or words with no territory stay plain.
+  # A wholly repealed row (excluded_extent) or words with no territory stay plain.
   defp words_label(words, _extent, nil, _repealed), do: words
   defp words_label(words, _extent, _territory, repealed) when repealed != nil, do: words
 
@@ -1162,9 +1191,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   # Repealed (text retained) in every territory the row extends to.
-  defp retained_everywhere?(%{repealed_extent: nil}), do: false
+  defp retained_everywhere?(%{excluded_extent: nil}), do: false
 
-  defp retained_everywhere?(%{repealed_extent: repealed, extent_code: extent}),
+  defp retained_everywhere?(%{excluded_extent: repealed, extent_code: extent}),
     do: Territory.covers?(repealed, extent)
 
   defp has_children?(rows, idx) do
@@ -1282,7 +1311,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         chapter: row.chapter,
         heading_group: row.heading_group,
         title: Map.get(row, :title),
-        repealed_extent: Map.get(row, :repealed_extent),
+        excluded_extent: Map.get(row, :excluded_extent),
         schedule: row.schedule,
         provision: row.provision,
         sub_provision: row.sub,

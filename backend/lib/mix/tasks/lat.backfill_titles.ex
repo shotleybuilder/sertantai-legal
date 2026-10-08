@@ -9,9 +9,9 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
       mix lat.backfill_titles --all --store only            # dry run
       mix lat.backfill_titles --all --store only --apply
       mix lat.backfill_titles --laws UK_uksi_1992_3004 --apply
-      mix lat.backfill_titles --column repealed_extent --all --store only
+      mix lat.backfill_titles --column excluded_extent --all --store only
 
-  `--column title|repealed_extent` (default `title`): any parser-derived
+  `--column title|excluded_extent` (default `title`): any parser-derived
   column that isn't row text, set the same way.
 
   Every planned update is written to `--out` (CSV, default
@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
   @header ~w(law_name section_id value)
 
   # columns this task may write (the SQL takes the name from here only)
-  @columns %{"title" => :title, "repealed_extent" => :repealed_extent}
+  @columns %{"title" => :title, "excluded_extent" => :excluded_extent}
 
   @impl Mix.Task
   def run(args) do

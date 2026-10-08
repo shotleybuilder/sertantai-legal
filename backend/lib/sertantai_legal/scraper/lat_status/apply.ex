@@ -35,7 +35,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
   def refresh(law_name, opts \\ []) when is_binary(law_name) do
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, text, status, effective_from, changed_by, repealed_extent, extent_code FROM legal_articles WHERE law_name = $1",
+        "SELECT section_id, text, status, effective_from, changed_by, excluded_extent, extent_code FROM legal_articles WHERE law_name = $1",
         [law_name],
         timeout: :infinity
       )
@@ -76,7 +76,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
             section_id: sid,
             text: text,
             status: status,
-            repealed_extent: repealed,
+            excluded_extent: repealed,
             extent_code: extent
           }
         end),

@@ -173,7 +173,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
-    attribute :repealed_extent, :string do
+    attribute :excluded_extent, :string do
       allow_nil?(true)
 
       description(
@@ -420,7 +420,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :effective_from,
         :changed_by,
         :title,
-        :repealed_extent,
+        :excluded_extent,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -458,7 +458,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :effective_from,
         :changed_by,
         :title,
-        :repealed_extent,
+        :excluded_extent,
         :amendment_count,
         :modification_count,
         :commencement_count,

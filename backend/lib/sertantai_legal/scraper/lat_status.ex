@@ -104,8 +104,8 @@ defmodule SertantaiLegal.Scraper.LatStatus do
 
       # text retained but repealed in every territory the row extends to
       # (savings / specified purposes); repealed in some → still in force
-      Map.get(row, :repealed_extent) &&
-          Territory.covers?(row.repealed_extent, Map.get(row, :extent_code)) ->
+      Map.get(row, :excluded_extent) &&
+          Territory.covers?(row.excluded_extent, Map.get(row, :extent_code)) ->
         "repealed_saved"
 
       Enum.any?(commencement, &Regex.match?(@partial, &1)) and
