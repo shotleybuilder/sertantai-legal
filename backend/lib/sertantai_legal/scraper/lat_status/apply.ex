@@ -43,7 +43,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     %{rows: note_rows} =
       Repo.query!(
         """
-        SELECT id, affected_sections, text, code_type,
+        SELECT id, affected_sections, text, code_type, code,
                effect, effective_dates, effective_from, changed_by, change_id
         FROM amendment_annotations WHERE law_name = $1
         """,
@@ -52,14 +52,14 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
       )
 
     notes =
-      Enum.map(note_rows, fn [id, sections, text, type | stored] ->
+      Enum.map(note_rows, fn [id, sections, text, type, code | stored] ->
         %{
           id: id,
           affected_sections: sections,
           text: text || "",
           code_type: type,
           stored: stored,
-          parsed: AmendmentNote.parse(text, type, law_name)
+          parsed: text |> AmendmentNote.parse(type, law_name) |> marginal(code)
         }
       end)
 
@@ -94,10 +94,12 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
       |> Enum.flat_map(fn n -> Enum.map(LatStatus.note_targets(n), &{&1, n.parsed}) end)
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
+    holders = holders(law_name)
+
     change_changes =
       for [sid | _] <- rows,
           {from, by} =
-            sid
+            (holders[sid] || sid)
             |> LatStatus.ancestors()
             |> Enum.flat_map(&Map.get(by_target, &1, []))
             |> AmendmentNote.row_effective(),
@@ -136,6 +138,33 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
       Logger.warning("[LatStatus] refresh failed for #{law_name}: #{Exception.message(e)}")
       :ok
   end
+
+  # Table and figure rows sit inside a provision but their ids (table.3041)
+  # don't nest under it: each takes the nearest preceding other row in
+  # document order as the provision whose notes date it (LH-06).
+  defp holders(law_name) do
+    %{rows: rows} =
+      Repo.query!(
+        "SELECT section_id FROM legal_articles WHERE law_name = $1 ORDER BY sort_key",
+        [law_name]
+      )
+
+    {pairs, _} =
+      Enum.map_reduce(List.flatten(rows), nil, fn sid, holder ->
+        if Regex.match?(~r/:(table|figure)\./, sid),
+          do: {{sid, holder}, holder},
+          else: {nil, sid}
+      end)
+
+    for {sid, holder} <- pairs, holder != nil, into: %{}, do: {sid, holder}
+  end
+
+  # A marginal citation (code "M…": "Amended by S.I. 2011/1515 …") only
+  # refers to laws; it changes nothing, so no instrument and no dates (LH-06).
+  defp marginal(parsed, "M" <> _),
+    do: %{parsed | changed_by: nil, effective_dates: [], effective_from: nil}
+
+  defp marginal(parsed, _code), do: parsed
 
   # A Welsh SI cited as plain "S.I." parses as uksi: when only its wsi twin
   # is in the register, use the twin (AmendmentNote.resolve_law/2).

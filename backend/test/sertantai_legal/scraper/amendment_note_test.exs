@@ -169,6 +169,47 @@ defmodule SertantaiLegal.Scraper.AmendmentNoteTest do
     end
   end
 
+  describe "title citations (LH-06)" do
+    test "an SI cited by title and number; a (Wales) title is a Welsh SI" do
+      # "for Wales" isn't "(Wales)" (UK SIs say "National Assembly for Wales"):
+      # the register lookup in LatStatus.Apply turns it into the wsi
+      assert parse(
+               "Words in s. 12(2) substituted (1.4.2013) by The Natural Resources Body for Wales (Functions) Order 2013 (No. 755), art. 1"
+             ).changed_by ==
+               "UK_uksi_2013_755"
+
+      assert parse(
+               "Reg. 2 substituted (1.4.2013) by The Water (Wales) Order 2013 (No. 756), art. 1"
+             ).changed_by ==
+               "UK_wsi_2013_756"
+
+      assert parse(
+               "Reg. 3 amended (1.4.2014) by The Food Hygiene Regulations 2014 (No. 120), reg. 2"
+             ).changed_by ==
+               "UK_uksi_2014_120"
+    end
+
+    test "a plain \"S.I.\" behind a (Wales) title is a Welsh SI" do
+      assert parse(
+               "Reg. 14 amended (1.4.2017) by The Water Supply (Wales) Regulations 2017 (S.I. 2017/544), reg. 3"
+             ).changed_by ==
+               "UK_wsi_2017_544"
+
+      # England and Wales is not Wales
+      assert parse(
+               "Reg. 14 amended (1.4.2017) by The Water (England and Wales) Regulations 2017 (S.I. 2017/545), reg. 3"
+             ).changed_by ==
+               "UK_uksi_2017_545"
+    end
+
+    test "a Church Measure" do
+      assert parse(
+               "Words in s. 60(3) substituted (1.9.2018) by Ecclesiastical Jurisdiction and Care of Churches Measure 2018 (No. 3), s. 94; S.I. 2018/720"
+             ).changed_by ==
+               "UK_ukcm_2018_3"
+    end
+  end
+
   describe "marginal citations (LH-01)" do
     test "an editorial note that only cites a law names no changing instrument" do
       assert parse("1906 c. 14.", "extent_editorial").changed_by == nil

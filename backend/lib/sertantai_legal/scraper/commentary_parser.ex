@@ -95,14 +95,15 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     |> xpath(~x"//Commentaries/Commentary"l)
     |> Enum.flat_map(fn node ->
       id = node |> xpath(~x"./@id"s) |> to_string()
-      code_type = Map.get(@type_map, node |> xpath(~x"./@Type"s) |> to_string())
+      type_char = node |> xpath(~x"./@Type"s) |> to_string()
+      code_type = Map.get(@type_map, type_char)
 
       if is_nil(code_type) or id == "" do
         []
       else
         [
-          {to_string(code_type), derive_code(id, code_type), legacy_commentary_text(node) || "",
-           extract_commentary_text(node) || ""}
+          {to_string(code_type), derive_code(id, code_type, type_char),
+           legacy_commentary_text(node) || "", extract_commentary_text(node) || ""}
         ]
       end
     end)
@@ -124,6 +125,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
 
       %{
         ref_id: id,
+        type_char: type_char,
         code_type: code_type,
         text: text || "",
         affected_sections: if(affected == [], do: nil, else: affected)
@@ -214,7 +216,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
         %{
           id: "#{law_name}:#{code_type}:#{seq}",
           law_name: law_name,
-          code: derive_code(item.ref_id, code_type),
+          code: derive_code(item.ref_id, code_type, item.type_char),
           code_type: code_type,
           source: "lat_parser",
           text: item.text,
@@ -227,8 +229,10 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   # Derive a human-readable code from the ref_id
   # If ref_id looks like "F3", "C1" etc. use it directly
   # Otherwise generate from code_type + position (handled by seq in the ID)
-  defp derive_code(ref_id, code_type) do
-    type_prefix = code_type_to_prefix(code_type)
+  # A marginal citation (Type M) keeps an "M" code, so the note still says
+  # it is a citation, not an editorial change (LH-06).
+  defp derive_code(ref_id, code_type, type_char) do
+    type_prefix = if type_char == "M", do: "M", else: code_type_to_prefix(code_type)
 
     if Regex.match?(~r/^[FCIMEX]\d+$/, ref_id) do
       ref_id

@@ -153,6 +153,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
 
       [ann] = CommentaryParser.parse(xml, %{law_name: "UK_test_2024_1"})
       assert ann.code_type == :extent_editorial
+      # keeps its M code, so it never names a changing law (LH-06)
+      assert String.starts_with?(ann.code, "M")
     end
 
     test "skips unknown Type values" do

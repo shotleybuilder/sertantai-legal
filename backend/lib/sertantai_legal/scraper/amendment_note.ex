@@ -51,6 +51,11 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
 
   # {regex, kind}; the earliest match after "by" wins (to_law/2).
   @citations [
+    # Church Measure "Measure 2018 (No. 3)"; an SI cited by title
+    # "… Order 2013 (No. 755)" (LH-06)
+    {~r/Measure (\d{4}) \(No\. ?(\d+)\)/, :ukcm},
+    {~r/(?:Order|Regulations|Rules|Scheme|Byelaws|Directions?)(?: \([^)]*\))? (\d{4}) \(No\. ?(\d+)\)/,
+     :si_title},
     {~r/W\.S\.I\. (\d{4})\/(\d+)/, :wsi},
     {~r/S\.S\.I\. (\d{4})\/(\d+)/, :ssi},
     {~r/S\.R\. (\d{4})\/(\d+)/, :nisr},
@@ -110,7 +115,9 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
     end
   end
 
-  defp to_law(kind, [year, number]) when kind in [:wsi, :ssi, :nisr, :ukpga],
+  defp to_law(:si_title, [year, number]), do: law(:uksi, year, number)
+
+  defp to_law(kind, [year, number]) when kind in [:wsi, :ssi, :nisr, :ukpga, :ukcm],
     do: law(kind, year, number)
 
   defp to_law(:si, [year, number, "W"]), do: law(:wsi, year, number)
@@ -176,15 +183,28 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
     |> Enum.flat_map(fn {re, kind} ->
       case Regex.run(re, after_by, return: :index) do
         [{pos, _} | _] ->
-          [{pos, to_law(kind, Regex.run(re, after_by, capture: :all_but_first))}]
+          [{pos, kind, to_law(kind, Regex.run(re, after_by, capture: :all_but_first))}]
 
         nil ->
           []
       end
     end)
-    |> Enum.min_by(&elem(&1, 0), fn -> {nil, nil} end)
-    |> elem(1)
+    |> Enum.min_by(&elem(&1, 0), fn -> nil end)
+    |> case do
+      nil -> nil
+      {pos, kind, law} -> welsh_title(law, kind, after_by, pos)
+    end
   end
+
+  # A UK-numbered SI whose title (in the same citation) says "(Wales)" is a
+  # Welsh SI: "The Water Supply (Wales) Regulations 2017 (S.I. 2017/544)".
+  # "(England and Wales)" is not.
+  defp welsh_title("UK_uksi_" <> rest = law, kind, text, pos) when kind in [:si, :si_title] do
+    title = text |> binary_part(0, pos) |> String.split(~r/[;,]/) |> List.last()
+    if String.contains?(title, "(Wales)"), do: "UK_wsi_" <> rest, else: law
+  end
+
+  defp welsh_title(law, _kind, _text, _pos), do: law
 
   defp change_id(law_name, text) do
     :crypto.hash(:sha256, [law_name, ?\n, text])

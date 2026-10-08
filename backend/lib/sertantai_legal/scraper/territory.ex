@@ -21,13 +21,32 @@ defmodule SertantaiLegal.Scraper.Territory do
   def from_note(nil), do: nil
 
   def from_note(text) do
-    head = text |> String.split(" by ", parts: 2) |> hd()
+    [head | _] = all = clauses(text)
 
-    cond do
-      # "(1.10.2023 except in relation to W., 6.4.2024 for W.)": every
-      # territory, on different dates
-      String.contains?(head, "except in relation to") -> nil
-      true -> head |> territory_letters() |> letters_to_code()
+    # "(1.10.2023 except in relation to W., 6.4.2024 for W.)": every
+    # territory, on different dates
+    if String.contains?(head, "except in relation to"),
+      do: nil,
+      else: all |> Enum.map(&(&1 |> territory_letters() |> letters_to_code())) |> union_present()
+  end
+
+  # The text before each " by ": the first whole, later ones from their last
+  # "; " / " and " (so a citation's trailing "(S.)" never counts).
+  defp clauses(text) do
+    case String.split(text, " by ") do
+      [_only] ->
+        [text]
+
+      parts ->
+        [first | rest] = Enum.drop(parts, -1)
+        [first | Enum.map(rest, &(&1 |> String.split(~r/; | and /) |> List.last()))]
+    end
+  end
+
+  defp union_present(codes) do
+    case Enum.reject(codes, &is_nil/1) do
+      [] -> nil
+      present -> union(present)
     end
   end
 

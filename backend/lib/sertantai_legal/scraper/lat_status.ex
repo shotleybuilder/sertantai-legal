@@ -114,7 +114,7 @@ defmodule SertantaiLegal.Scraper.LatStatus do
         "repealed_saved"
 
       Enum.any?(commencement, &partial_note?(&1, row.section_id)) and
-          not Enum.any?(commencement, &Regex.match?(@full, &1)) ->
+          not Enum.any?(commencement, &full_note?/1) ->
         "in_force_partial"
 
       true ->
@@ -128,6 +128,19 @@ defmodule SertantaiLegal.Scraper.LatStatus do
   # regulation / article number or range — about the row's provision
   # (legislation.gov.uk copies notes onto other provisions: NPA 2017 s.44
   # carries "S. 2 in force for specified purposes").
+  # Full commencement: an explicit wording (@full), or a dated commencement
+  # step with no qualifier — "S. 43 in force at 1.5.2008 by S.I. …" after an
+  # earlier "in force for certain purposes at Royal Assent" (LH-06).
+  defp full_note?(text) do
+    Regex.match?(@full, text) or
+      text
+      |> String.split(";")
+      |> Enum.any?(fn segment ->
+        Regex.match?(~r/\bin force (?:at|on) \d{1,2}\.\d{1,2}\.\d{4}/, segment) and
+          not Regex.match?(~r/purposes|so far as|except|partly/i, segment)
+      end)
+  end
+
   defp partial_note?(text, section_id) do
     # each ";"-separated commencement step, up to its " by "
     partial = text |> String.split(";") |> Enum.any?(&partial_step?/1)

@@ -216,4 +216,54 @@ defmodule SertantaiLegal.Scraper.LatStatus.ApplyTest do
     assert by == "UK_wsi_#{year}_35"
     assert Ash.get!(LegalArticle, "#{name}:reg.1").changed_by == "UK_wsi_#{year}_35"
   end
+
+  test "a marginal citation (M code) names no changing law, even with \"by\" (LH-06)" do
+    {name, id} = law_with_lat(["A duty."])
+
+    Repo.query!(
+      """
+      INSERT INTO amendment_annotations (id, country, law_name, law_id, code, code_type, source, text, affected_sections, created_at, updated_at)
+      VALUES ($1, 'uk', $2, $3, 'M:c1', 'extent_editorial', 'test', 'Amended by S.I. 2011/1515 and S.I. 2012/718.', $4, now(), now())
+      """,
+      ["#{name}:extent_editorial:1", name, Ecto.UUID.dump!(id), ["#{name}:reg.1"]]
+    )
+
+    Apply.refresh(name)
+
+    %{rows: [[by]]} =
+      Repo.query!("SELECT changed_by FROM amendment_annotations WHERE law_name = $1", [name])
+
+    assert by == nil
+    assert Ash.get!(LegalArticle, "#{name}:reg.1").changed_by == nil
+  end
+
+  test "a table row takes the dates of the provision holding it (LH-06: 2024/13 table.3041)" do
+    name = "UK_ssi_2099_#{System.unique_integer([:positive])}"
+
+    law =
+      LegalRegister
+      |> Ash.Changeset.for_create(:create, %{
+        country: "uk",
+        name: name,
+        title_en: "Test Regulations",
+        type_code: "ssi",
+        year: 2099,
+        number: "1"
+      })
+      |> Ash.create!()
+
+    rows = [
+      lat_row(name, 1, "A duty."),
+      %{lat_row(name, 2, "a | b") | section_id: "#{name}:table.9", section_type: "table"},
+      lat_row(name, 3, "Other.")
+    ]
+
+    {:ok, _} = LatPersister.persist(rows, name, law.id)
+    note!(name, law.id, "reg.1", "Reg. 1 in force at 6.4.2025 by S.I. 2025/272", "commencement")
+    Apply.refresh(name)
+
+    table = Ash.get!(LegalArticle, "#{name}:table.9")
+    assert {table.effective_from, table.changed_by} == {~D[2025-04-06], "UK_uksi_2025_272"}
+    assert Ash.get!(LegalArticle, "#{name}:reg.3").effective_from == nil
+  end
 end

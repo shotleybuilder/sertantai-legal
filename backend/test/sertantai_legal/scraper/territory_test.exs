@@ -32,6 +32,12 @@ defmodule SertantaiLegal.Scraper.TerritoryTest do
              ) == nil
     end
 
+    test "every clause's territory (LH-06: uksi 1996/972 reg.10A)" do
+      assert Territory.from_note(
+               "Regulations revoked (E.) (1.10.2005) by S.I. 2005/894, regs. 1, 2 and Regulations revoked (W.) (16.7.2005) by S.I. 2005/1806, reg. 1"
+             ) == "E+W"
+    end
+
     test "nil when the note names no territory, or only in the amending instrument's title" do
       assert Territory.from_note(
                "Art. 22 revoked (15.4.2018) by The Regulations 2018 (subject to savings)"

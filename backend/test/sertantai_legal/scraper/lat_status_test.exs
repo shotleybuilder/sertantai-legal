@@ -391,4 +391,23 @@ defmodule SertantaiLegal.Scraper.LatStatusTest do
                "L:reg.33"
              ]
   end
+
+  test "a later unqualified dated commencement completes an earlier partial one (LH-06: 2006/28 s.43)" do
+    rows = [row("s.43(1)", "A."), row("s.44", "B.")]
+
+    notes = [
+      note(["s.43"], "S. 43 in force for certain purposes at Royal Assent, see s. 83"),
+      note(["s.43"], "S. 43 in force at 1.5.2008 by S.I. 2008/1147, art. 2"),
+      note(["s.44"], "S. 44 in force for certain purposes at Royal Assent, see s. 83"),
+      note(
+        ["s.44"],
+        "S. 44 in force at 1.5.2008 for specified purposes by S.I. 2008/1147, art. 2"
+      )
+    ]
+
+    assert LatStatus.resolve(rows, notes) == %{
+             "#{@law}:s.43(1)" => "in_force",
+             "#{@law}:s.44" => "in_force_partial"
+           }
+  end
 end

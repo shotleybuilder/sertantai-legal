@@ -2751,4 +2751,115 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     assert Enum.find(rows, &(&1.section_type == "signed")).text ==
              "Alan Howarth, Parliamentary Under Secretary of State, Department of Employment"
   end
+
+  describe "parse/2 own-level note refs (LH-06)" do
+    defp refs_for(body, commentaries) do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation><Primary><Body>#{body}</Body></Primary><Commentaries>#{commentaries}</Commentaries></Legislation>|,
+          %{law_name: "UK_ukpga_2004_20", type_code: "ukpga"}
+        )
+
+      SertantaiLegal.Scraper.CommentaryParser.build_ref_to_sections(rows)
+    end
+
+    test "a subsection substituted whole cites the note itself and in its children: all are placed (2004/20 s.84(4))" do
+      refs =
+        refs_for(
+          ~s|<P1group><P1><Pnumber>84</Pnumber><P1para><P2><Pnumber><Substitution CommentaryRef="c-sub">4</Substitution></Pnumber><P2para><Text><Substitution CommentaryRef="c-sub">The Secretary of State may—</Substitution></Text><P3><Pnumber><Substitution CommentaryRef="c-sub">a</Substitution></Pnumber><P3para><Text><Substitution CommentaryRef="c-sub">make rules;</Substitution></Text></P3para></P3></P2para></P2></P1para></P1></P1group>|,
+          ~s|<Commentary id="c-sub" Type="F"><Para><Text>S. 84(4) substituted (31.3.2014) by x</Text></Para></Commentary>|
+        )
+
+      assert refs["c-sub"] == ["UK_ukpga_2004_20:s.84(4)", "UK_ukpga_2004_20:s.84(4)(a)"]
+    end
+
+    test "a section inserted whole: the section row carries its insertion note (1990/8 s.225A)" do
+      refs =
+        refs_for(
+          ~s|<P1group><Title><Addition CommentaryRef="c-ins">Notices</Addition></Title><P1><Pnumber><Addition CommentaryRef="c-ins">225A</Addition></Pnumber><P1para><P2><Pnumber><Addition CommentaryRef="c-ins">1</Addition></Pnumber><P2para><Text><Addition CommentaryRef="c-ins">A duty.</Addition></Text></P2para></P2></P1para></P1></P1group>|,
+          ~s|<Commentary id="c-ins" Type="F"><Para><Text>Ss. 225A-225E inserted (6.4.2012) by x</Text></Para></Commentary>|
+        )
+
+      assert "UK_ukpga_2004_20:s.225A" in refs["c-ins"]
+    end
+
+    test "a note cited only inside a child is not placed on the parent" do
+      refs =
+        refs_for(
+          ~s|<P1group><P1><Pnumber>5</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>Words <Addition CommentaryRef="c-w">added</Addition>.</Text></P2para></P2><P2><Pnumber>2</Pnumber><P2para><Text>Plain.</Text></P2para></P2></P1para></P1></P1group>|,
+          ~s|<Commentary id="c-w" Type="F"><Para><Text>Word in s. 5(1) inserted (1.1.2020) by x</Text></Para></Commentary>|
+        )
+
+      assert refs["c-w"] == ["UK_ukpga_2004_20:s.5(1)"]
+    end
+
+    test "refs inside a quoted block belong to the amending row" do
+      refs =
+        refs_for(
+          ~s|<P1group><P1><Pnumber>9</Pnumber><P1para><Text>Insert—</Text><BlockAmendment><P1><Pnumber>9A</Pnumber><P1para><Text>New <CommentaryRef Ref="c-q"/>text.</Text></P1para></P1></BlockAmendment></P1para></P1></P1group>|,
+          ~s|<Commentary id="c-q" Type="F"><Para><Text>S. 9 in force (1.1.2020) by x</Text></Para></Commentary>|
+        )
+
+      assert refs["c-q"] == ["UK_ukpga_2004_20:s.9"]
+    end
+  end
+
+  test "dotted RestrictExtent normalises on rows; an insertion covering it stays plain (LH-06: uksi 2017/1012 reg.16A)" do
+    rows =
+      LatParser.parse(
+        ~s|<Legislation RestrictExtent="E.W.S."><Secondary><Body><P1group RestrictExtent="E.W."><P1><Pnumber>16A</Pnumber><P1para><Text><Addition Extent="E.W.">the natural range, and</Addition></Text></P1para></P1></P1group></Body></Secondary></Legislation>|,
+        %{law_name: "UK_uksi_2017_1012", type_code: "uksi"}
+      )
+
+    row = Enum.find(rows, &(&1.section_id == "UK_uksi_2017_1012:reg.16A"))
+    assert row.extent_code == "E+W"
+    assert row.text == "the natural range, and"
+  end
+
+  describe "parse/2 edge spacing around territorial text (LH-06)" do
+    defp spacing(body, extent) do
+      [row | _] =
+        ~s|<Legislation RestrictExtent="#{extent}"><Primary><Body><P1group><P1><Pnumber>60</Pnumber><P1para><Text>#{body}</Text></P1para></P1></P1group></Body></Primary></Legislation>|
+        |> LatParser.parse(%{law_name: "UK_ukpga_1990_9", type_code: "ukpga"})
+        |> Enum.filter(&(&1.section_id == "UK_ukpga_1990_9:s.60"))
+
+      row.text
+    end
+
+    test "a pair resolved to its new words keeps the spaces around it (1990/9 s.60(3))" do
+      assert spacing(
+               ~s|the Council under <Repeal RetainText="true" SubstitutionRef="n1" Extent="E+W">section 2 of the 1991 Measure</Repeal><Addition ChangeId="n1" Extent="E+W">section 38 of the 2018 Measure</Addition> or is otherwise|,
+               "E+W"
+             ) == "the Council under section 38 of the 2018 Measure or is otherwise"
+    end
+
+    test "bracketed words keep the spaces around them (2004/20 s.10(2)(b))" do
+      assert spacing(
+               ~s|within the meaning of <Addition Extent="E+W">the Environmental Permitting Regulations </Addition>and others|,
+               "E+W+S"
+             ) ==
+               "within the meaning of [E+W: the Environmental Permitting Regulations] and others"
+    end
+
+    test "an insertion for a territory outside the row's extent stays plain (2010/2214 reg.2(6) Welsh version)" do
+      assert spacing(~s|panels <Addition Extent="E">with metal layers</Addition> only|, "W") ==
+               "panels with metal layers only"
+    end
+  end
+
+  test "a Part heading held in its Number (LH-06: ukpga 1875/17, wsi 2012/1903)" do
+    rows =
+      LatParser.parse(
+        ~s|<Legislation><Primary><Body>
+          <Part><Number>Part III.—Administration of Law</Number><P1group><P1><Pnumber>20</Pnumber><P1para><Text>A duty.</Text></P1para></P1></P1group></Part>
+          <Part><Number>PART 4 —</Number><Title>Enforcement</Title><P1group><P1><Pnumber>30</Pnumber><P1para><Text>Another.</Text></P1para></P1></P1group></Part>
+        </Body></Primary></Legislation>|,
+        %{law_name: "UK_ukpga_1875_17", type_code: "ukpga"}
+      )
+
+    p3 = Enum.find(rows, &(&1.section_id == "UK_ukpga_1875_17:pt.III"))
+    assert p3.title == "Administration of Law"
+    assert p3.text == "Administration of Law"
+    assert Enum.find(rows, &(&1.section_id == "UK_ukpga_1875_17:pt.4")).title == "Enforcement"
+  end
 end

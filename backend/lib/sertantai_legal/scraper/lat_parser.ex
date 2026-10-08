@@ -115,7 +115,6 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> drop_repeated_versions()
     |> assign_positions()
     |> build_row_fields(law_name, mode, context.type_code)
-    |> own_level_refs()
     |> mark_repealed_provisions(mode)
     |> assign_status()
     |> detect_and_qualify_parallels()
@@ -138,7 +137,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> case do
       nil -> nil
       "" -> nil
-      val -> Transforms.normalize_xml_extent(to_string(val))
+      val -> Territory.normalize(to_string(val))
     end
   end
 
@@ -300,27 +299,51 @@ defmodule SertantaiLegal.Scraper.LatParser do
       name == "Part" ->
         part_num = extract_number(node, "Part")
         new_ctx = %{ctx | part: part_num, chapter: nil, heading_group: nil}
-        row = "Part" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
+
+        row =
+          "Part"
+          |> emit_structural_row(new_ctx, node, extent)
+          |> titled(node)
+          |> number_titled(node, "Part")
+
         [row | walk_children(node, new_ctx)]
 
       name == "EUTitle" ->
         # EU Title (e.g. "TITLE I: GENERAL ISSUES") — maps to Part in the hierarchy
         part_num = extract_number(node, "Title")
         new_ctx = %{ctx | part: part_num, chapter: nil, heading_group: nil}
-        row = "Part" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
+
+        row =
+          "Part"
+          |> emit_structural_row(new_ctx, node, extent)
+          |> titled(node)
+          |> number_titled(node, "Title")
+
         [row | walk_children(node, new_ctx)]
 
       name == "Chapter" ->
         chapter_num = extract_number(node, "Chapter")
         new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
-        row = "Chapter" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
+
+        row =
+          "Chapter"
+          |> emit_structural_row(new_ctx, node, extent)
+          |> titled(node)
+          |> number_titled(node, "Chapter")
+
         [row | walk_children(node, new_ctx)]
 
       name == "EUChapter" ->
         # EU Chapter — same semantics as UK Chapter
         chapter_num = extract_number(node, "Chapter")
         new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
-        row = "Chapter" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
+
+        row =
+          "Chapter"
+          |> emit_structural_row(new_ctx, node, extent)
+          |> titled(node)
+          |> number_titled(node, "Chapter")
+
         [row | walk_children(node, new_ctx)]
 
       name == "Pblock" ->
@@ -632,7 +655,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     case xpath(node, ~x"./@RestrictExtent"so) do
       nil -> nil
       "" -> nil
-      val -> Transforms.normalize_xml_extent(to_string(val))
+      val -> Territory.normalize(to_string(val))
     end
   end
 
@@ -680,26 +703,40 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  defp extract_number(node, prefix) do
+  defp extract_number(node, prefix), do: node |> number_parts(prefix) |> elem(0)
+
+  # A Number's number and any heading joined to it by a dash: "Part III.—
+  # Administration of Law" → {"III", "Administration of Law"}; "PART 3 —" →
+  # {"3", nil} (LH-06).
+  defp number_parts(node, prefix) do
     raw =
-      case xpath(node, ~x"./Number/descendant::text()"ls) do
-        nil -> []
-        texts -> texts
-      end
-      |> Enum.map(&to_string/1)
-      |> Enum.join("")
+      node
+      |> xpath(~x"./Number/descendant::text()"ls)
+      |> Enum.map_join("", &to_string/1)
+      |> String.trim()
+      # Strip the prefix word: "Part I" → "I", "SCHEDULE 1" → "1"
+      |> String.replace(~r/^(?:#{prefix}|#{String.upcase(prefix)})\s+/i, "")
+      |> String.replace(~r/^\s*<[^>]+>\s*/, "")
       |> String.trim()
 
-    # Strip the prefix word: "Part I" → "I", "SCHEDULE 1" → "1"
-    raw
-    |> String.replace(~r/^(?:#{prefix}|#{String.upcase(prefix)})\s+/i, "")
-    |> String.replace(~r/^\s*<[^>]+>\s*/, "")
-    |> String.trim()
-    |> case do
-      "" -> nil
-      v -> v
+    case String.split(raw, ~r/\.?\s*[—–]\s*/u, parts: 2) do
+      [number, heading] -> {blank_to_nil(String.trim(number)), blank_to_nil(String.trim(heading))}
+      [number] -> {blank_to_nil(number), nil}
     end
   end
+
+  # A structural row with no Title takes the heading its Number carries.
+  defp number_titled(%{title: nil} = row, node, prefix) do
+    case number_parts(node, prefix) do
+      {_, nil} ->
+        row
+
+      {_, heading} ->
+        %{row | title: heading, text: if(row.text in [nil, ""], do: heading, else: row.text)}
+    end
+  end
+
+  defp number_titled(row, _node, _prefix), do: row
 
   defp extract_title(node) do
     # a Schedule's heading is in its TitleBlock (#165)
@@ -1272,10 +1309,21 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   # whole-row insertions (excluded_extent set) stay plain
+  # (an insertion for a territory the row doesn't extend to also reads plain:
+  # an England insertion inside a Welsh version)
   defp inserted_label(words, extent, territory, excluded) do
-    if excluded != nil or Territory.covers?(territory, extent),
+    outside = Territory.subtract(extent, territory) == Territory.subtract(extent, "")
+
+    if excluded != nil or outside or Territory.covers?(territory, extent),
       do: words,
-      else: "[#{territory}: #{String.trim(words)}]"
+      else: bracket(territory, words)
+  end
+
+  # "[E+W: words]", the words' edge whitespace kept outside the brackets
+  defp bracket(label, words) do
+    lead = if String.match?(words, ~r/\A\s/u), do: " ", else: ""
+    trail = if String.match?(words, ~r/\s\z/u), do: " ", else: ""
+    lead <> "[#{label}: #{String.trim(words)}]" <> trail
   end
 
   # "[S: the 1993 Act][S: , and]" → "[S: the 1993 Act, and]": adjacent
@@ -1309,7 +1357,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     # repealed everywhere the row applies, or only where it doesn't
     if live == nil or live == Territory.subtract(extent, ""),
       do: words,
-      else: "[#{live}: #{String.trim(words)}]"
+      else: bracket(live, words)
   end
 
   # Extract text without descending into child provision elements.
@@ -1374,9 +1422,56 @@ defmodule SertantaiLegal.Scraper.LatParser do
       e: Map.get(counts, "E") |> nil_if_zero()
     }
 
-    # Placement (affected_sections) also takes the notes cited by attribute
-    # on Addition/Substitution/Repeal; the counts stay element-only.
-    {typed_counts, Enum.uniq(refs ++ placement_refs(node, "."))}
+    # Placement (affected_sections): the notes the row cites at its own level
+    # (CommentaryRef elements and CommentaryRef attributes on
+    # Addition/Substitution/Repeal), its child provisions' refs excluded —
+    # they are rows of their own (LH-06). Counts stay subtree, element-only.
+    {typed_counts, own_refs(node)}
+  end
+
+  # Refs in the element's own content: not inside a child row element,
+  # except a P2 that only wraps its P1 (no row of its own) and anything
+  # inside a quoted block (another law's provisions, never rows here).
+  defp own_refs(node) do
+    wrapper = elem(node, 1) == :P1 and p2_is_wrapper?(node, extract_pnumber(node))
+    node |> refs_within(wrapper, false) |> Enum.uniq()
+  end
+
+  defp refs_within(element, wrapper, quoted) do
+    attribute = blank_to_nil(xpath(element, ~x"./@CommentaryRef"s))
+
+    from_children =
+      element
+      |> elem(8)
+      |> Enum.flat_map(fn child ->
+        if elem(child, 0) == :xmlElement, do: child_refs(child, wrapper, quoted), else: []
+      end)
+
+    List.wrap(attribute) ++ from_children
+  end
+
+  defp child_refs(child, wrapper, quoted) do
+    name = to_string(elem(child, 1))
+
+    cond do
+      name == "CommentaryRef" ->
+        List.wrap(blank_to_nil(xpath(child, ~x"./@Ref"s)))
+
+      name in @quoted_elements ->
+        refs_within(child, wrapper, true)
+
+      quoted ->
+        refs_within(child, wrapper, true)
+
+      name == "P2" and wrapper ->
+        refs_within(child, false, false)
+
+      name in @row_elements ->
+        []
+
+      true ->
+        refs_within(child, wrapper, quoted)
+    end
   end
 
   # CommentaryRef elements' Ref and CommentaryRef attributes under `path`.
@@ -1504,34 +1599,6 @@ defmodule SertantaiLegal.Scraper.LatParser do
       |> Map.put(:sort_key, sort_key)
       |> Map.put(:hierarchy_path, hierarchy_path)
       |> Map.put(:depth, depth)
-    end)
-  end
-
-  # A row's commentary refs are collected over its subtree; for placement a
-  # note belongs to the rows that cite it at their own level (LH-01), so each
-  # row keeps only the refs none of its descendant rows hold. Counts are
-  # unaffected (struct_hash).
-  defp own_level_refs(rows) do
-    indexed = rows |> Enum.with_index() |> Map.new(fn {row, i} -> {i, row} end)
-    last = map_size(indexed) - 1
-
-    Enum.map(0..last//1, fn i ->
-      row = indexed[i]
-
-      held_below =
-        (i + 1)..last//1
-        |> Enum.reduce_while(MapSet.new(), fn j, acc ->
-          child = indexed[j]
-
-          if child.depth > row.depth,
-            do: {:cont, MapSet.union(acc, MapSet.new(child.commentary_refs || []))},
-            else: {:halt, acc}
-        end)
-
-      %{
-        row
-        | commentary_refs: Enum.reject(row.commentary_refs || [], &MapSet.member?(held_below, &1))
-      }
     end)
   end
 
