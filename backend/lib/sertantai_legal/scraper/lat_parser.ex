@@ -774,50 +774,59 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # "[S: new] [<rest>: old]", <rest> filled in per row (with_territories/2).
   # A pair with no territory (a timing substitution) keeps both, apart.
   defp render_inline(element) do
-    content = elem(element, 8)
-    partners = for el <- content, elem(el, 0) == :xmlElement, into: %{}, do: {change_id(el), el}
+    siblings = elem(element, 8)
+    content = Enum.with_index(siblings)
 
-    {parts, _consumed} =
-      Enum.map_reduce(content, MapSet.new(), fn child, consumed ->
-        case elem(child, 0) do
-          :xmlText ->
-            {child |> elem(4) |> to_string(), consumed}
+    partners =
+      for {el, i} <- content,
+          elem(el, 0) == :xmlElement,
+          id = change_id(el),
+          into: %{},
+          do: {id, {el, i}}
 
-          :xmlElement ->
-            render_child(child, partners, consumed)
-
-          _ ->
-            {"", consumed}
+    {parts, _skip_to} =
+      Enum.map_reduce(content, -1, fn {child, i}, skip_to ->
+        cond do
+          i <= skip_to -> {"", skip_to}
+          elem(child, 0) == :xmlElement -> render_child(child, i, siblings, partners, skip_to)
+          true -> {render_node(child), skip_to}
         end
       end)
 
     Enum.join(parts)
   end
 
-  defp render_child(child, partners, consumed) do
+  # A pair renders where its first retained Repeal sits and takes everything
+  # up to its partner as the old wording: it can be split across Repeals
+  # sharing the SubstitutionRef and wrap or sit inside other markup (a Term).
+  defp render_child(child, i, siblings, partners, skip_to) do
     ref = substitution_ref(child)
-    partner = ref && Map.get(partners, ref)
 
-    cond do
-      MapSet.member?(consumed, change_id(child)) ->
-        {"", consumed}
+    case ref && Map.get(partners, ref) do
+      {partner, j} when j > i ->
+        old = siblings |> Enum.slice(i..(j - 1)//1) |> Enum.map_join(&render_node/1)
+        {render_pair(old, render_inline(partner), child, partner), j}
 
-      partner ->
-        old = render_inline(child)
-        new = render_inline(partner)
-        consumed = MapSet.put(consumed, ref)
+      _ ->
+        {render_inline(child), skip_to}
+    end
+  end
 
-        case pair_territory(child, partner) do
-          nil ->
-            {"#{old} #{new}", consumed}
+  defp render_node(node) do
+    case elem(node, 0) do
+      :xmlText -> node |> elem(4) |> to_string()
+      :xmlElement -> render_inline(node)
+      _ -> ""
+    end
+  end
 
-          t ->
-            {"[#{t}: #{String.trim(new)}] [#{@rest_open}#{t}#{@rest_close}: #{String.trim(old)}]",
-             consumed}
-        end
+  defp render_pair(old, new, repeal, partner) do
+    case pair_territory(repeal, partner) do
+      nil ->
+        "#{String.trim(old)} #{String.trim(new)}"
 
-      true ->
-        {render_inline(child), consumed}
+      t ->
+        "[#{t}: #{String.trim(new)}] [#{@rest_open}#{t}#{@rest_close}: #{String.trim(old)}]"
     end
   end
 

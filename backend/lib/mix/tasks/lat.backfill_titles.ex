@@ -9,6 +9,10 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
       mix lat.backfill_titles --all --store only            # dry run
       mix lat.backfill_titles --all --store only --apply
       mix lat.backfill_titles --laws UK_uksi_1992_3004 --apply
+      mix lat.backfill_titles --column repealed_extent --all --store only
+
+  `--column title|repealed_extent` (default `title`): any parser-derived
+  column that isn't row text, set the same way.
 
   Every planned update is written to `--out` (CSV, default
   `data/reports/lat-parser-coverage-ii/titles-backfill-<date>.csv`). With
@@ -25,18 +29,32 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
 
   @shortdoc "Set LAT row titles from a fresh parse (title only, no re-parse)"
 
-  @header ~w(law_name section_id title)
+  @header ~w(law_name section_id value)
+
+  # columns this task may write (the SQL takes the name from here only)
+  @columns %{"title" => :title, "repealed_extent" => :repealed_extent}
 
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [laws: :string, all: :boolean, out: :string, store: :string, apply: :boolean]
+        strict: [
+          laws: :string,
+          all: :boolean,
+          out: :string,
+          store: :string,
+          apply: :boolean,
+          column: :string
+        ]
       )
+
+    column =
+      Map.get(@columns, opts[:column] || "title") ||
+        Mix.raise("--column must be one of #{@columns |> Map.keys() |> Enum.join(", ")}")
 
     Mix.Task.run("app.start")
     apply? = Keyword.get(opts, :apply, false)
-    out = opts[:out] || default_out(apply?)
+    out = opts[:out] || default_out(column, apply?)
     done_path = out <> ".done"
     File.mkdir_p!(Path.dirname(out))
     unless File.exists?(out), do: File.write!(out, CSV.dump_to_iodata([@header]))
@@ -50,19 +68,19 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
 
     totals =
       Enum.reduce(laws, %{laws: 0, set: 0, cleared: 0, errors: 0}, fn law, acc ->
-        tally(acc, backfill_law(law, mode, apply?, out, done_path))
+        tally(acc, backfill_law(law, column, mode, apply?, out, done_path))
       end)
 
     Mix.shell().info(
-      "#{totals.laws} laws: #{totals.set} titles set, #{totals.cleared} cleared, #{totals.errors} errors"
+      "#{totals.laws} laws: #{totals.set} #{column} set, #{totals.cleared} cleared, #{totals.errors} errors"
     )
   end
 
   # Plan one law, write it (with --apply) and log it as done.
-  defp backfill_law(law, mode, apply?, out, done_path) do
-    case plan_law(law, mode) do
+  defp backfill_law(law, column, mode, apply?, out, done_path) do
+    case plan_law(law, column, mode) do
       {:ok, updates} ->
-        if apply? and updates != [], do: write!(law, updates)
+        if apply? and updates != [], do: write!(law, column, updates)
         rows = Enum.map(updates, fn {id, title} -> [law, id, title || ""] end)
         File.write!(out, CSV.dump_to_iodata(rows), [:append])
         File.write!(done_path, law <> "\n", [:append])
@@ -81,14 +99,14 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
 
   defp tally(acc, :error), do: %{acc | errors: acc.errors + 1}
 
-  defp default_out(apply?) do
+  defp default_out(column, apply?) do
     suffix = if apply?, do: "", else: "-dry"
 
     Path.join([
       "data",
       "reports",
       "lat-parser-coverage-ii",
-      "titles-backfill-#{Date.utc_today()}#{suffix}.csv"
+      "#{if column == :title, do: "titles", else: column}-backfill-#{Date.utc_today()}#{suffix}.csv"
     ])
   end
 
@@ -110,26 +128,26 @@ defmodule Mix.Tasks.Lat.BackfillTitles do
   defp store_mode(m) when m in ~w(prefer only refresh), do: String.to_atom(m)
   defp store_mode(m), do: Mix.raise("--store must be prefer, only or refresh, got #{m}")
 
-  defp plan_law(law, mode) do
+  defp plan_law(law, column, mode) do
     with {:ok, rows, _law_id} <- LatStagedParser.fetch_rows(law, store: mode) do
       %{rows: stored} =
-        Repo.query!("SELECT section_id, title FROM legal_articles WHERE law_name = $1", [law])
+        Repo.query!("SELECT section_id, #{column} FROM legal_articles WHERE law_name = $1", [law])
 
-      stored = Enum.map(stored, fn [id, title] -> %{section_id: id, title: title} end)
-      {:ok, LatTitles.plan(stored, rows)}
+      stored = Enum.map(stored, fn [id, value] -> %{:section_id => id, column => value} end)
+      {:ok, LatTitles.plan(stored, rows, column)}
     end
   end
 
-  defp write!(law, updates) do
-    {ids, titles} = Enum.unzip(updates)
+  defp write!(law, column, updates) do
+    {ids, values} = Enum.unzip(updates)
 
     Repo.query!(
       """
-      UPDATE legal_articles a SET title = u.title
-      FROM unnest($2::text[], $3::text[]) AS u(section_id, title)
+      UPDATE legal_articles a SET #{column} = u.value
+      FROM unnest($2::text[], $3::text[]) AS u(section_id, value)
       WHERE a.law_name = $1 AND a.section_id = u.section_id
       """,
-      [law, ids, titles]
+      [law, ids, values]
     )
   end
 

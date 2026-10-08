@@ -25,5 +25,11 @@ defmodule SertantaiLegal.Scraper.LatTitlesTest do
     test "never touches rows only one side has (no re-parse: ids must match)" do
       assert LatTitles.plan([r("L:reg.1", nil)], [r("L:reg.9", "New provision")]) == []
     end
+
+    test "plans any column (repealed_extent)" do
+      stored = [%{section_id: "L:reg.3", repealed_extent: nil}]
+      parsed = [%{section_id: "L:reg.3", repealed_extent: "S"}]
+      assert LatTitles.plan(stored, parsed, :repealed_extent) == [{"L:reg.3", "S"}]
+    end
   end
 end

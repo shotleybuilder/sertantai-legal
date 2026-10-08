@@ -2228,5 +2228,27 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       assert by_id(rows, "reg.10").text == "A duty to consult act."
     end
+
+    test "old wording split across Repeals with one SubstitutionRef renders once (TCPA 1990 s.247(1)(a))" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>11</Pnumber><P1para><Text>granted under <Repeal ChangeId="r1" RetainText="true" SubstitutionRef="a1">Part III  </Repeal><Repeal ChangeId="r1" RetainText="true" SubstitutionRef="a1"><Addition ChangeId="d29">or section 293A</Addition></Repeal> <Addition ChangeId="a1">Parts 3 or 13</Addition>, or</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.11").text ==
+               "granted under Part III or section 293A Parts 3 or 13, or"
+    end
+
+    test "old wording spanning a Term (CROW 2000 s.1(3)(a)) loses nothing" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>12</Pnumber><P1para><Text>the Commons Registration Act 1965 <Repeal ChangeId="r2" RetainText="true" SubstitutionRef="a2">(in this section referred to as “</Repeal><Term><Repeal ChangeId="r2" RetainText="true" SubstitutionRef="a2">the 1965 Act</Repeal></Term><Repeal ChangeId="r2" RetainText="true" SubstitutionRef="a2">”) </Repeal><Addition ChangeId="a2">(but is not coastal margin)</Addition> or land</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.12").text ==
+               "the Commons Registration Act 1965 (in this section referred to as “the 1965 Act”) (but is not coastal margin) or land"
+    end
   end
 end
