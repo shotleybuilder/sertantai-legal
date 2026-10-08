@@ -36,6 +36,24 @@ bugs:
     affected: "34 rows in 14 laws (mix lat.status dry run 2026-10-08)"
     fix: "LatStatus.Apply.refresh(law) in the repair transaction (done); mix lat.status --apply for the 34"
     status: fixed
+  - pattern: "Notes cited only by a CommentaryRef attribute (Addition/Substitution/Repeal) or from a P1group Title had no affected_sections"
+    category: annotation placement
+    module: SertantaiLegal.Scraper.LatParser (collect_commentary_refs: .//CommentaryRef/@Ref only; P1group Title outside the P1)
+    affected: "39,041 unplaced notes: 35,353 attribute-only in body, 912 element refs outside a row (P1group Title), 2,282 scoped laws, 494 unreferenced"
+    fix: "Placement refs = element refs ∪ @CommentaryRef; P1group Title refs onto its P1 rows; counts unchanged; mix lat.place_notes"
+    status: fixed
+  - pattern: "LatStatus @full missed 'in so far as it is / they are not already in force', 'in operation', 'remaining purposes', typos → rows wrongly in_force_partial"
+    category: LAT status
+    module: SertantaiLegal.Scraper.LatStatus (@full)
+    affected: "162 rows in 6 laws now (mix lat.status dry run), more once notes are placed"
+    fix: "Widened @full (tests from corpus wordings)"
+    status: fixed
+  - pattern: "LatStatus marks a row in_force_partial on any non-modification note on it/its ancestors matching 'for specified purposes', even when the note is about another provision (source-duplicated notes, 'except for … for specified purposes' clauses)"
+    category: LAT status
+    module: SertantaiLegal.Scraper.LatStatus (status/2)
+    affected: "~10-15 of 451 rows newly partial after placement (e.g. UK_ukpga_2017_20 s.43/s.44 carry the source's copied 'S. 2 in force for specified purposes' note; UK_ukpga_1993_12 s.50)"
+    fix: "Require the partial phrase to govern the note's subject (leading provision) or the row; low priority"
+    status: open
 ---
 
 # Session: LAT Parser Coverage II (ACTIVE)
@@ -49,7 +67,7 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 - ⬜ Capture P1group/Title into a new `title` column — parser + tests ✅, migration ✅ (dev-only for prod delta), offline measure ✅, fractalaw contract (Zenoh column + manifest `title_hash`) ⬜, title-only backfill applied ✅ (45,964 titles, 1,060 laws, 0 errors; Jason 2026-10-08). (row text unchanged; migration + fractalaw contract). Stopgap in use: `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 headings, 1,060 laws; script `backend/data/reports/extract_headings.py`)
 - ✅ Heading text order: parser fix (tests), 64 rows / 51 laws repaired (34 correction, 30 unattributed; verify dry run 0), UK_uksi_1979_628 Part renames via store re-parse (4 renamed, 54/54 enriched kept), 9 title corrections
 - ✅ Annotation note text order (folded in by Jason 2026-10-08): parser fix (tests), `mix lat.reorder_notes` applied — 80,012 notes / 758 laws, 943 row effective_from/changed_by, 76,976 change_id mappings (`notes-reorder-2026-10-08.csv.change-ids.csv`), 4,058 unmatched left for re-parse; stale statuses fixed first (`mix lat.status --apply`, 34 rows)
-- ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (`@CommentaryRef`): 43,794 of 101,343 annotations have empty `affected_sections`
+- ⬜ Note placement (attribute-style CommentaryRef + P1group Title refs): parser fix ✅ (tests), `mix lat.place_notes` ✅, LatStatus full-commencement wordings ✅, corpus dry run ⬜, apply ⬜
 - ⬜ `Repeal @RetainText @Extent`: territorial repeals read as live everywhere (status / column only, no text change)
 - ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
 - ⬜ One re-parse wave, offline from the store (`mix lat.reparse --store only`), before fractalaw's single run; agree the new columns with fractalaw first
@@ -106,3 +124,15 @@ change_id is a hash of the text, and LatCause reads new change_ids as an amendme
 Corpus dry run (`notes-reorder-2026-10-08-dry.csv`, rolled back): 758 laws, 80,012 notes reordered, 4,058 unmatched (drift → next re-parse), 79,996 notes re-derived, 943 rows' effective_from/changed_by change, 1 lat_changes re-key. 27 laws skipped: no stored XML, no LAT, 32 orphan notes. The 29 status changes it showed were stale statuses, not the reorder: rows repaired to dots by `lat.repair_text` kept `in_force` (bug above, fixed); `mix lat.status` dry run: 34 rows / 14 laws in_force → repealed — apply that first so the reorder's numbers are its own.
 
 Applied 2026-10-08 (Jason): `mix lat.status --apply` (34 in_force → repealed, snapshot `lat_status_snapshot_20261008_0916`), then `mix lat.reorder_notes --all --store only --apply` — matches the dry run exactly (statuses_changed 0 after the status fix). Verified: every lat_changes change_id resolves; `mix lat.status` 0 to change; re-run is a no-op (NoteReorder.plan skips already-ordered notes).
+
+## 4. Note placement
+
+Why notes were unplaced (`unplaced_scan`, 39,041 notes with no `affected_sections`): 35,353 cited only by a `CommentaryRef` attribute on Addition/Substitution/Repeal in the body (the parser collected `<CommentaryRef>` elements only); 912 by an element outside any row (a P1group Title — "Word in s. 3ZB heading omitted" sat on the cross-heading); 2,282 in scoped laws (not scanned); 494 referenced nowhere (orphans).
+
+Fix: a row's placement refs = element refs ∪ attribute refs (deduped); a P1group Title's refs go on its P1 row(s). Per-row `*_count` columns stay element-only, so LAT rows (text, ids, counts, struct_hash) don't change — only notes' `affected_sections` and the note-derived row fields. Already-placed notes can gain sections ("S. 4(6)(7) repealed" now covers s.4(6) and (7), not just s.4(8)) — reported as `notes_moved`.
+
+Rollout: `mix lat.place_notes` — store parse (`LatStagedParser.fetch_notes/2`), match on `{code_type, code, text}` (`NotePlacement.plan/2`, never clears sections), `LatStatus.Apply.refresh`; per law, dry run rolls back.
+
+Found on the way: newly placed RTA 1988 s.184 notes ("28.3.2009 for certain purposes, 31.10.2009 in so far as it is not already in force") made rows in_force_partial — `LatStatus` @full missed that wording and four more found in the corpus; widened (tests). Alone, 162 rows / 6 laws in_force_partial → in_force (`mix lat.status` dry run).
+
+Corpus dry run (`notes-place-2026-10-08-dry.csv`, rolled back): 758 laws, 36,493 notes placed + 1,328 gaining sections, 3,924 unmatched (drift), 2,548 still unplaced (from 39,041), 38,972 rows' effective_from/changed_by change. Status transitions: 451 in_force → in_force_partial (49 laws), 189 in_force_partial → in_force (13 laws; the @full wordings), 2 repealed_saved → repealed. Of the 451, 397 rest on a note naming the row's own provision; most of the other 54 are Part/Chapter/cross-heading insertions "for specified purposes" covering the row (right); ~10-15 misfire (bug above).

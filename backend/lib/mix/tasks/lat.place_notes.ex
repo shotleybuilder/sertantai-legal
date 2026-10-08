@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Lat.PlaceNotes do
 
   @shortdoc "Set amendment notes' affected_sections from a store parse"
 
-  @header ~w(law_name notes_placed notes_moved unmatched still_unplaced statuses_changed change_rows)
+  @header ~w(law_name notes_placed notes_moved unmatched still_unplaced statuses_changed change_rows transitions)
 
   @impl Mix.Task
   def run(args) do
@@ -104,7 +104,11 @@ defmodule Mix.Tasks.Lat.PlaceNotes do
             unmatched: plan.unmatched,
             still_unplaced: unplaced(law),
             statuses_changed: refreshed.changed,
-            change_rows: refreshed.change_rows
+            change_rows: refreshed.change_rows,
+            transitions:
+              Enum.map_join(refreshed.transitions, ";", fn {{from, to}, n} ->
+                "#{from}>#{to}:#{n}"
+              end)
           }
 
           if apply?, do: stats, else: Repo.rollback({:dry_run, stats})
