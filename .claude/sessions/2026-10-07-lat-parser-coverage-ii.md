@@ -41,7 +41,8 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 ## Todo
 
 - ⬜ Capture P1group/Title into a new `title` column — parser + tests ✅, migration ✅ (dev-only for prod delta), offline measure ✅, fractalaw contract (Zenoh column + manifest `title_hash`) ⬜, title-only backfill applied ✅ (45,964 titles, 1,060 laws, 0 errors; Jason 2026-10-08). (row text unchanged; migration + fractalaw contract). Stopgap in use: `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 headings, 1,060 laws; script `backend/data/reports/extract_headings.py`)
-- ⬜ Heading text order: parser fix ✅ (tests), offline diff ✅, repair plan 64 rows / 51 laws ✅, apply ⬜, UK_uksi_1979_628 Part id renames ⬜
+- ✅ Heading text order: parser fix (tests), 64 rows / 51 laws repaired (34 correction, 30 unattributed; verify dry run 0), UK_uksi_1979_628 Part renames via store re-parse (4 renamed, 54/54 enriched kept), 9 title corrections
+- ⬜ Annotation note text order (CommentaryParser `//text()` scramble; folded in by Jason 2026-10-08): fix, AmendmentNote against ordered text, change_id impact, re-derive
 - ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (`@CommentaryRef`): 43,794 of 101,343 annotations have empty `affected_sections`
 - ⬜ `Repeal @RetainText @Extent`: territorial repeals read as live everywhere (status / column only, no text change)
 - ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
@@ -85,3 +86,5 @@ Offline diff (`heading-order-diff-2026-10-08.csv`, all 1,068 laws): the fix chan
 Pre-existing drift the diff also shows (not this fix, identical with the old parser): 38,152 rows differing only in whitespace or the " … " gap marker (repairs wrote only rows whose words changed), and 2,606 inserted/removed ids in 44 laws (EU `#position` suffixes, signed blocks, amendments in newer stored XML, e.g. UK_uksi_2010_2214 1,117).
 
 Final dry runs (2026-10-08, after the territorial-pair refinement `SubstitutionRef` → `ChangeId`): heading repair 64 rows / 51 laws (34 correction, 30 unattributed); 1979/628 single-law store re-parse preview: 4 Part renames, 66/66 enriched carried, 0 changed/dropped; title re-check 9 corrections to the applied title column (split Titles, territorial pairs). All awaiting Jason.
+
+Applied 2026-10-08 (Jason): `repair-applied-heading-order-2026-10-08.csv`, `lat-reparse/heading_order_1979_628.csv`, `titles-recheck-2026-10-08.csv`.
