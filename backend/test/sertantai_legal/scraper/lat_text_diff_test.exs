@@ -36,4 +36,8 @@ defmodule SertantaiLegal.Scraper.LatTextDiffTest do
       assert LatTextDiff.kind("31st December 1992", "1st January 1993") == "other"
     end
   end
+
+  test "diff/2: a stored empty text and a nil parse are the same (persist writes nil as \"\")" do
+    assert LatTextDiff.diff(%{"L:s.1" => ""}, %{"L:s.1" => nil}) == []
+  end
 end

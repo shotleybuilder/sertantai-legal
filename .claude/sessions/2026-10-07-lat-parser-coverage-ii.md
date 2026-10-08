@@ -215,4 +215,16 @@ First dry run (`lat-reparse/wave_preview.csv`, 1,056 laws; UK_uksi_1979_791 left
 - a table's cells were repeated in the provision's own (leaf) text → only on the table row
 Remaining gate rows (13 in 8 laws) are real: renumbered by amendment (EU 2008/1272 Art. 37(4)(b) → 37(5)(c)), `#position` shifts of duplicate source ids (1875/17 s.23(3)), wording that moved (1968/73 s.10(1) E+W+NI changed, the S version keeps it) — re-enriched (`--force` for those 8 laws).
 
-Final dry run (`lat-reparse/wave_final_preview.csv`, 1,056 laws, store only): enriched 301,552 rows — carried 292,596 (97.0%), changed 8,568 (text really changed), dropped 376 (ids gone: amendments in newer XML, renumbering), ambiguous 12; gate 8 laws / 13 rows (above); errors 0. Enriched rows to re-enrich: 8,956 (3.0%). Awaiting Jason: NAS backup → wave (1,048 laws) → the 8 gate laws with `--force`.
+Final dry run (`lat-reparse/wave_final_preview.csv`, 1,056 laws, store only): enriched 301,552 rows — carried 292,596 (97.0%), changed 8,568 (text really changed), dropped 376 (ids gone: amendments in newer XML, renumbering), ambiguous 12; gate 8 laws / 13 rows (above); errors 0. Enriched rows to re-enrich: 8,956 (3.0%). Applied 2026-10-08 (Jason) — see below.
+
+### Re-parse wave applied (2026-10-08)
+
+1. NAS backup (`nas-backup.sh --archive`): exit 0, previous snapshot archived to `snapshots/archive/2026-10-07T21:55:25+01:00/`.
+2. `mix lat.reparse --store only --tag wave` on 1,048 laws (snapshot table `lat_reparse_wave`), 0 errors.
+3. `mix lat.reparse --store only --force --tag wave_gate` on the 8 gate laws (`lat_reparse_wave_gate`).
+
+Totals (`lat-reparse/wave.csv` + `wave_gate.csv`, 1,056 laws): rows 371,290 → 379,340; enriched 301,552 → 292,596 (carried as the dry run said); renamed 7,255, changed 10,747, ambiguous 15, dropped 400. Stored text has no placeholder leaks. Law-level cause (LatCause, from evidence): legislative 199, parser 66, unattributed 791 — the stored XML's hash differs from each law's last recorded parse hash for most laws, so rows without their own amendment evidence are `unattributed` rather than `parser`.
+
+Control mappings orphaned by the wave: 4. Three re-pointed to the body version of a provision that gained a territorial alternative with changed text (UK_uksi_2008_1597:reg.7(5)/(6) → `[E+W+S]`, UK_ukpga_1968_73:s.135(1) → `[E+W+S]`). One left for Jason: UK_eur_2008_1272:art.Article 37A(3)(2) — Article 37A is repealed in the current XML (similar wording now in Art. 37(6)(c)); control 4288493d-…. Two older orphans predate the wave: UK_ukpga_1990_43:s.40(4), s.74(3) (control 40a9d67d-…, mapped 2026-07-13; neither id existed before the wave).
+
+Post-wave verification: `mix lat.status` 0 to change; offline diff of all laws (`post-wave-diff-2026-10-08.csv`) — 0 real differences: 28,637 rows were stored "" vs parsed nil (a diff-tool artefact, fixed: `LatTextDiff.diff/2` treats nil and "" alike — the earlier "whitespace-only 27,824" was mostly this), 58 removed = UK_uksi_1979_791 (left out on purpose: PDF-sourced LAT, body-less stored XML). The LAT now equals the parser's output for every law.

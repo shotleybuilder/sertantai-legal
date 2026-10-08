@@ -25,6 +25,8 @@ defmodule SertantaiLegal.Scraper.LatTextDiff do
     |> Enum.flat_map(fn id ->
       case {Map.fetch(old, id), Map.fetch(new, id)} do
         {{:ok, same}, {:ok, same}} -> []
+        # text is NOT NULL: the persister writes a nil parse as ""
+        {{:ok, o}, {:ok, n}} when o in [nil, ""] and n in [nil, ""] -> []
         {{:ok, o}, {:ok, n}} -> [{id, "text_changed", o, n}]
         {{:ok, o}, :error} -> [{id, "removed", o, nil}]
         {:error, {:ok, n}} -> [{id, "inserted", nil, n}]
