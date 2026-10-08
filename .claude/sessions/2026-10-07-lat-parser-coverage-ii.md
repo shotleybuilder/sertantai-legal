@@ -1,140 +1,217 @@
 ---
-session: "LAT Parser Coverage II"
-status: active
-opened: 2026-10-07
-related: [169, 175]
-depends_on: ["2026-10-07-lat-parser-coverage", "2026-10-07-issue-175"]
-
+session: LAT Parser Coverage II
+status: closed
+opened: '2026-10-07'
+closed: '2026-10-08'
+outcome: success
+summary: 'Closed the LAT parser coverage gaps in place (titles, heading and note text order, note placement, retained/territorial repeals, amending text, tables, signatures, group titles, alternative versions, #165) and re-parsed the corpus offline from the CLML store in one wave (1,056 laws, 97% of enriched rows carried; LAT = parser output). A randomised agent QA (spec + sampler) then found note-metadata, identity and rendering defects; those move to the LAT Hand-off meta session (lat-handoff/).'
+decisions:
+- what: title column, not heading text in row text
+  why: row text unchanged → no re-enrichment; fractalaw reads columns by name
+  result: 45,964 titles; later filled by the wave
+- what: Rewrite scrambled note text in place and re-key change_ids (lat.reorder_notes)
+  why: change_id hashes the text and LatCause reads new ids as amendments
+  result: 80,012 notes; 76,976 change_id mappings kept for fractalaw
+- what: 'Territorial text: excluded_extent column + brackets "[E+W: words]"; no-territory retained repeals = repealed_saved'
+  why: Jason 2026-10-08
+  result: 7,015 rows excluded_extent before the wave; brackets in text
+- what: Amending text quoted «…» on the amending row
+  why: 'Jason: legislation.gov.uk applies amendments late; the amending text updates records'
+  result: 4,107 dangling insert— rows completed
+- what: One offline re-parse wave from the store instead of further targeted repairs
+  why: 'Jason: fix all in place, one hand-off; store-only, LatMerge carries enrichment, LatCause labels from evidence'
+  result: 1,056 laws, 0 errors, 292,596 of 301,552 enriched rows carried
+- what: Gate hand-off on a randomised agent QA against the store
+  why: 'Jason: eyeball QA before costly enrichment'
+  result: QA run 1 not ready → lat-handoff meta (LH-01..05)
+metrics:
+  wave_1:
+    laws: 1056
+    rows_before: 371290
+    rows_after: 379340
+    enriched_before: 301552
+    enriched_carried: 292596
+    changed: 10747
+    dropped: 400
+    ambiguous: 15
+    gate_laws_forced: 8
+    errors: 0
+  qa_run_1:
+    packets: 100
+    distinct_rows: 90
+    laws: 71
+    non_pass_findings: 57
+    t7_note_defects: 29
+    verdict: not ready
+lessons:
+- title: xmerl's //text() is not document order
+  detail: ./Title//text() returns direct text before descendants (and spans every Title child); headings and every amendment note with a Citation were scrambled. Use descendant::text() or an element walk.
+  tag: data
+- title: Offline store diffs make corpus-wide parser changes cheap and safe
+  detail: mix lat.text_diff --all --store only and reparse --dry-run over the CLML store measured every change in minutes with no requests; four dry-run rounds took ambiguous enriched rows 3,426 → 12 and gate laws 57 → 8 before anything was written.
+  tag: tooling
+- title: Dry runs that roll back give exact numbers
+  detail: Per-law transactions that do everything and Repo.rollback in dry-run mode (reorder_notes, place_notes) matched the applied results exactly.
+  tag: tooling
+- title: A diff tool can invent drift
+  detail: 27–28k "whitespace-only" differences were a stored "" against a parsed nil; check the comparator before planning around a big number.
+  tag: tooling
+- title: Agent QA against the source catches what tests do not
+  detail: The randomised 4-agent QA found note-targeting (up to ~59k rows), asc ids and spurious qualifiers that unit tests and diffs passed. Give agents the rendering rules (spec) so they judge against intent.
+  tag: data
+- title: Unparenthesised OR in an interpolated SQL condition
+  detail: qa_sample's placed_notes condition escaped the exclusion clauses and redrew rows; wrap interpolated conditions in parentheses.
+  tag: tooling
+- title: 'Quote YAML frontmatter values with ": "'
+  detail: An unquoted module value broke the frontmatter and dropped the session from the index.
+  tag: tooling
 bugs:
-  - pattern: "P1group/Title (regulation/section heading) never captured; P1group is a pass-through container"
-    category: "LAT coverage"
-    module: "SertantaiLegal.Scraper.LatParser (P1group in @container_elements; extract_title)"
-    affected: "31,644 empty section/article rows in 1,033 of 1,069 laws"
-    fix: "title column (item 1)"
-    status: fixed
-  - pattern: "xmerl ./Title//text() returns text nodes out of document order (direct text first, then descendants'); extract_title scrambles headings with inline markup"
-    category: "LAT text"
-    module: "SertantaiLegal.Scraper.LatParser (extract_title; //text() elsewhere)"
-    affected: "623 Title elements in 218 stored docs (Pnumber/Number clean); only those used in row text matter (Part/Chapter/Pblock/P1 own Title)"
-    fix: "Ordered inline walk of every ./Title (joined by a space), retained territorial Repeal kept apart from its replacement; Pnumber/Number via descendant::text()"
-    status: fixed
-  - pattern: "Repealed provision whose CommentaryRef sits in a dots-only P1group Title (Pnumber clean, <Text/>) reads in_force with empty text, not [Repealed]"
-    category: "LAT status"
-    module: "SertantaiLegal.Scraper.LatParser (mark_repealed_provisions reads the P1's own refs only)"
-    affected: "subset of 877 empty section/article rows left untitled (e.g. UK_ukpga_1962_58:s.24)"
-    fix: "Fixed via note placement (P1group Title refs on the P1 → [Repealed])"
-    status: fixed
-  - pattern: "CommentaryParser reads .//Para//text() and .//Text//text() (xmerl: direct text first, then descendants') — amendment note text scrambled corpus-wide, e.g. 'substituted (17.9.2002) by , Reg. 10(1) (2) The Health and Safety ... regs. 1 7(a)'"
-    category: "annotation text"
-    module: "SertantaiLegal.Scraper.CommentaryParser (extract_commentary_text); taxa_parser.ex has the same xpaths"
-    affected: "80,012 of 90,210 amendment_annotations reordered (4,058 drift left for re-parse)"
-    fix: "Each Text block in document order; mix lat.reorder_notes re-keyed in place (LatStatus.Apply refresh, lat_changes change_ids mapped)"
-    status: fixed
-  - pattern: "mix lat.repair_text rewrote text without re-deriving status: rows repaired to dots (repealed) still read in_force"
-    category: "LAT status"
-    module: "Mix.Tasks.Lat.RepairText (apply!/3)"
-    affected: "34 rows in 14 laws (mix lat.status dry run 2026-10-08)"
-    fix: "LatStatus.Apply.refresh(law) in the repair transaction (done); mix lat.status --apply for the 34"
-    status: fixed
-  - pattern: "Notes cited only by a CommentaryRef attribute (Addition/Substitution/Repeal) or from a P1group Title had no affected_sections"
-    category: "annotation placement"
-    module: "SertantaiLegal.Scraper.LatParser (collect_commentary_refs: .//CommentaryRef/@Ref only; P1group Title outside the P1)"
-    affected: "39,041 unplaced notes: 35,353 attribute-only in body, 912 element refs outside a row (P1group Title), 2,282 scoped laws, 494 unreferenced"
-    fix: "Placement refs = element refs ∪ @CommentaryRef; P1group Title refs onto its P1 rows; counts unchanged; mix lat.place_notes"
-    status: fixed
-  - pattern: "LatStatus @full missed 'in so far as it is / they are not already in force', 'in operation', 'remaining purposes', typos → rows wrongly in_force_partial"
-    category: "LAT status"
-    module: "SertantaiLegal.Scraper.LatStatus (@full)"
-    affected: "162 rows in 6 laws now (mix lat.status dry run), more once notes are placed"
-    fix: "Widened @full (tests from corpus wordings)"
-    status: fixed
-  - pattern: "LatStatus marks a row in_force_partial on any non-modification note on it/its ancestors matching 'for specified purposes', even when the note is about another provision (source-duplicated notes, 'except for … for specified purposes' clauses)"
-    category: "LAT status"
-    module: "SertantaiLegal.Scraper.LatStatus (status/2)"
-    affected: "~10-15 of 451 rows newly partial after placement (e.g. UK_ukpga_2017_20 s.43/s.44 carry the source's copied 'S. 2 in force for specified purposes' note; UK_ukpga_1993_12 s.50)"
-    fix: "partial_note?: phrase within a commencement step before ' by ', not in a repeal's except-clause, note subject (s./reg./art. numbers) covers the row"
-    status: fixed
-  - pattern: "#165 schedule rows empty text (TitleBlock title not read)"
-    category: "LAT text"
-    module: "SertantaiLegal.Scraper.LatParser (extract_title)"
-    affected: "16 of 17 schedule rows"
-    fix: "extract_title falls back to TitleBlock/Title"
-    status: fixed
-  - pattern: "Amending provisions end 'insert—/substitute—': BlockAmendment text skipped on structural rows, unquoted on leaf rows"
-    category: "LAT text"
-    module: "SertantaiLegal.Scraper.LatParser (text_blocks: @quoted_elements)"
-    affected: "4,107 rows / 289 laws (qq-00)"
-    fix: "One «…» block with numbers and titles (Jason: amending text used to update records)"
-    status: fixed
-  - pattern: "Table cells (XHTML) not captured; signatures (Signee) empty; P2group/P3group titles; Versions alternatives skipped"
-    category: "LAT coverage"
-    module: "SertantaiLegal.Scraper.LatParser"
-    affected: "208 tables, 722 signatures (half empty), 90 group titles, 577 alternative provision versions"
-    fix: "table_text, signee_text, grouped/2, alt_versions (walked beside their counterpart)"
-    status: fixed
-  - pattern: "Old-generation sort keys (22 segments)"
-    category: "LAT"
-    module: "legal_articles.sort_key"
-    affected: "0 rows left (2026-10-08)"
-    fix: "SortKeyRewrite (2026-09-27)"
-    status: fixed
-  - pattern: "Repealed provision whose CommentaryRef sits in a dots-only P1group Title reads in_force with empty text"
-    category: "LAT status"
-    module: "SertantaiLegal.Scraper.LatParser"
-    affected: "e.g. UK_ukpga_1962_58:s.24 — now [Repealed]/repealed"
-    fix: "P1group Title refs placed on the P1 (item 4) → repealed marker"
-    status: fixed
-  - pattern: "Note dates/status reach only the note's last affected row (LatStatus.note_target = List.last(affected_sections)): sibling ranges, section-level insertion notes, whole-instrument revocations (target = signature row), alternative versions"
-    category: "note metadata"
-    module: "SertantaiLegal.Scraper.LatStatus (note_target/1), LatStatus.Apply"
-    affected: "QA: T7 29 defects / ~50 rows with notes; up to 59,486 of 104,503 lower-level rows with a dated note have nil effective_from"
-    fix: "Place notes on the rows that cite them at their own level; a note applies to each citing row and its descendants"
-    status: open
-  - pattern: "Welsh SIs in changed_by as uksi: 'S.I. 2018/35' citing id/wsi/…, 'W.S.I. 2026/112'"
-    category: "note metadata"
-    module: "SertantaiLegal.Scraper.AmendmentNote (changed_by)"
-    affected: "4+ QA rows"
-    fix: "W.S.I. prefix; prefer the Citation URI type"
-    status: open
-  - pattern: "Acts of Senedd Cymru (asc), mwa, ukla parsed as SIs (reg. ids, [Revoked])"
-    category: "LAT identity"
-    module: "SertantaiLegal.Scraper.LatParser (@act_type_codes)"
-    affected: "every asc/mwa/ukla law"
-    fix: "add to @act_type_codes; re-parse those laws"
-    status: open
-  - pattern: "Extent qualifier on a provision with no alternative version: a child's narrower RestrictExtent trips parallel detection"
-    category: "LAT identity"
-    module: "SertantaiLegal.Scraper.LatParser (detect_and_qualify_parallels, parallel_key)"
-    affected: "QA 2+ rows; whole sections (uksi 2017/1047 reg.3, ukpga 1967/10 s.30, ukpga 1992/51 s.12)"
-    fix: "qualify only when the same provision row (same hierarchy keys) occurs with different extents"
-    status: open
-  - pattern: "Welsh Version's rows labelled England (inner P1 RestrictExtent=E inside a Description=W version)"
-    category: "LAT identity"
-    module: "SertantaiLegal.Scraper.LatParser (alt_versions)"
-    affected: "uksi 2010/2214 reg.36 and similar"
-    fix: "a version's own extent governs its rows when an inner extent contradicts it"
-    status: open
-  - pattern: "Whole-row territorial text bracketed instead of excluded_extent when the row has child provisions"
-    category: "LAT territory"
-    module: "SertantaiLegal.Scraper.LatParser (excluded_extent over the subtree)"
-    affected: "QA 3 rows (1989/14 s.3(5), 1992/51 s.12(1ZA)(a))"
-    fix: "decide on the row's own text; subtree only when it has none"
-    status: open
-  - pattern: "Complex tables lose cells; a definitions table reads [Repealed]; tables inside «…» lost"
-    category: "LAT text"
-    module: "SertantaiLegal.Scraper.LatParser (table_text, mark_repealed_provisions, quoted_text)"
-    affected: "QA 3 rows (ukpga 2003/20 table.1032, 1991/22 table.1059, 2017/3 s.173(2))"
-    fix: "investigate cell markup; quoted_text renders tables"
-    status: open
-  - pattern: "«…» quotes drop Number (Schedule/Part), list letters, trailing AppendText"
-    category: "LAT text"
-    module: "SertantaiLegal.Scraper.LatParser (quoted_child)"
-    affected: "QA 3 rows"
-    fix: "render Number, ListItem numbering, AppendText after the block"
-    status: open
+- pattern: P1group/Title (regulation/section heading) never captured; P1group is a pass-through container
+  category: LAT coverage
+  module: SertantaiLegal.Scraper.LatParser (P1group in @container_elements; extract_title)
+  affected: 31,644 empty section/article rows in 1,033 of 1,069 laws
+  fix: title column (item 1)
+  status: fixed
+- pattern: xmerl ./Title//text() returns text nodes out of document order (direct text first, then descendants'); extract_title scrambles headings with inline markup
+  category: LAT text
+  module: SertantaiLegal.Scraper.LatParser (extract_title; //text() elsewhere)
+  affected: 623 Title elements in 218 stored docs (Pnumber/Number clean); only those used in row text matter (Part/Chapter/Pblock/P1 own Title)
+  fix: Ordered inline walk of every ./Title (joined by a space), retained territorial Repeal kept apart from its replacement; Pnumber/Number via descendant::text()
+  status: fixed
+- pattern: Repealed provision whose CommentaryRef sits in a dots-only P1group Title (Pnumber clean, <Text/>) reads in_force with empty text, not [Repealed]
+  category: LAT status
+  module: SertantaiLegal.Scraper.LatParser (mark_repealed_provisions reads the P1's own refs only)
+  affected: subset of 877 empty section/article rows left untitled (e.g. UK_ukpga_1962_58:s.24)
+  fix: Fixed via note placement (P1group Title refs on the P1 → [Repealed])
+  status: fixed
+- pattern: 'CommentaryParser reads .//Para//text() and .//Text//text() (xmerl: direct text first, then descendants'') — amendment note text scrambled corpus-wide, e.g. ''substituted (17.9.2002) by , Reg. 10(1) (2) The Health and Safety ... regs. 1 7(a)'''
+  category: annotation text
+  module: SertantaiLegal.Scraper.CommentaryParser (extract_commentary_text); taxa_parser.ex has the same xpaths
+  affected: 80,012 of 90,210 amendment_annotations reordered (4,058 drift left for re-parse)
+  fix: Each Text block in document order; mix lat.reorder_notes re-keyed in place (LatStatus.Apply refresh, lat_changes change_ids mapped)
+  status: fixed
+- pattern: 'mix lat.repair_text rewrote text without re-deriving status: rows repaired to dots (repealed) still read in_force'
+  category: LAT status
+  module: Mix.Tasks.Lat.RepairText (apply!/3)
+  affected: 34 rows in 14 laws (mix lat.status dry run 2026-10-08)
+  fix: LatStatus.Apply.refresh(law) in the repair transaction (done); mix lat.status --apply for the 34
+  status: fixed
+- pattern: Notes cited only by a CommentaryRef attribute (Addition/Substitution/Repeal) or from a P1group Title had no affected_sections
+  category: annotation placement
+  module: 'SertantaiLegal.Scraper.LatParser (collect_commentary_refs: .//CommentaryRef/@Ref only; P1group Title outside the P1)'
+  affected: '39,041 unplaced notes: 35,353 attribute-only in body, 912 element refs outside a row (P1group Title), 2,282 scoped laws, 494 unreferenced'
+  fix: Placement refs = element refs ∪ @CommentaryRef; P1group Title refs onto its P1 rows; counts unchanged; mix lat.place_notes
+  status: fixed
+- pattern: LatStatus @full missed 'in so far as it is / they are not already in force', 'in operation', 'remaining purposes', typos → rows wrongly in_force_partial
+  category: LAT status
+  module: SertantaiLegal.Scraper.LatStatus (@full)
+  affected: 162 rows in 6 laws now (mix lat.status dry run), more once notes are placed
+  fix: Widened @full (tests from corpus wordings)
+  status: fixed
+- pattern: LatStatus marks a row in_force_partial on any non-modification note on it/its ancestors matching 'for specified purposes', even when the note is about another provision (source-duplicated notes, 'except for … for specified purposes' clauses)
+  category: LAT status
+  module: SertantaiLegal.Scraper.LatStatus (status/2)
+  affected: ~10-15 of 451 rows newly partial after placement (e.g. UK_ukpga_2017_20 s.43/s.44 carry the source's copied 'S. 2 in force for specified purposes' note; UK_ukpga_1993_12 s.50)
+  fix: 'partial_note?: phrase within a commencement step before '' by '', not in a repeal''s except-clause, note subject (s./reg./art. numbers) covers the row'
+  status: fixed
+- pattern: '#165 schedule rows empty text (TitleBlock title not read)'
+  category: LAT text
+  module: SertantaiLegal.Scraper.LatParser (extract_title)
+  affected: 16 of 17 schedule rows
+  fix: extract_title falls back to TitleBlock/Title
+  status: fixed
+- pattern: 'Amending provisions end ''insert—/substitute—'': BlockAmendment text skipped on structural rows, unquoted on leaf rows'
+  category: LAT text
+  module: 'SertantaiLegal.Scraper.LatParser (text_blocks: @quoted_elements)'
+  affected: 4,107 rows / 289 laws (qq-00)
+  fix: 'One «…» block with numbers and titles (Jason: amending text used to update records)'
+  status: fixed
+- pattern: Table cells (XHTML) not captured; signatures (Signee) empty; P2group/P3group titles; Versions alternatives skipped
+  category: LAT coverage
+  module: SertantaiLegal.Scraper.LatParser
+  affected: 208 tables, 722 signatures (half empty), 90 group titles, 577 alternative provision versions
+  fix: table_text, signee_text, grouped/2, alt_versions (walked beside their counterpart)
+  status: fixed
+- pattern: Old-generation sort keys (22 segments)
+  category: LAT
+  module: legal_articles.sort_key
+  affected: 0 rows left (2026-10-08)
+  fix: SortKeyRewrite (2026-09-27)
+  status: fixed
+- pattern: Repealed provision whose CommentaryRef sits in a dots-only P1group Title reads in_force with empty text
+  category: LAT status
+  module: SertantaiLegal.Scraper.LatParser
+  affected: e.g. UK_ukpga_1962_58:s.24 — now [Repealed]/repealed
+  fix: P1group Title refs placed on the P1 (item 4) → repealed marker
+  status: fixed
+- pattern: 'Note dates/status reach only the note''s last affected row (LatStatus.note_target = List.last(affected_sections)): sibling ranges, section-level insertion notes, whole-instrument revocations (target = signature row), alternative versions'
+  category: note metadata
+  module: SertantaiLegal.Scraper.LatStatus (note_target/1), LatStatus.Apply
+  affected: 'QA: T7 29 defects / ~50 rows with notes; up to 59,486 of 104,503 lower-level rows with a dated note have nil effective_from'
+  fix: Place notes on the rows that cite them at their own level; a note applies to each citing row and its descendants
+  status: open
+- pattern: 'Welsh SIs in changed_by as uksi: ''S.I. 2018/35'' citing id/wsi/…, ''W.S.I. 2026/112'''
+  category: note metadata
+  module: SertantaiLegal.Scraper.AmendmentNote (changed_by)
+  affected: 4+ QA rows
+  fix: W.S.I. prefix; prefer the Citation URI type
+  status: open
+- pattern: Acts of Senedd Cymru (asc), mwa, ukla parsed as SIs (reg. ids, [Revoked])
+  category: LAT identity
+  module: SertantaiLegal.Scraper.LatParser (@act_type_codes)
+  affected: every asc/mwa/ukla law
+  fix: add to @act_type_codes; re-parse those laws
+  status: open
+- pattern: 'Extent qualifier on a provision with no alternative version: a child''s narrower RestrictExtent trips parallel detection'
+  category: LAT identity
+  module: SertantaiLegal.Scraper.LatParser (detect_and_qualify_parallels, parallel_key)
+  affected: QA 2+ rows; whole sections (uksi 2017/1047 reg.3, ukpga 1967/10 s.30, ukpga 1992/51 s.12)
+  fix: qualify only when the same provision row (same hierarchy keys) occurs with different extents
+  status: open
+- pattern: Welsh Version's rows labelled England (inner P1 RestrictExtent=E inside a Description=W version)
+  category: LAT identity
+  module: SertantaiLegal.Scraper.LatParser (alt_versions)
+  affected: uksi 2010/2214 reg.36 and similar
+  fix: a version's own extent governs its rows when an inner extent contradicts it
+  status: open
+- pattern: Whole-row territorial text bracketed instead of excluded_extent when the row has child provisions
+  category: LAT territory
+  module: SertantaiLegal.Scraper.LatParser (excluded_extent over the subtree)
+  affected: QA 3 rows (1989/14 s.3(5), 1992/51 s.12(1ZA)(a))
+  fix: decide on the row's own text; subtree only when it has none
+  status: open
+- pattern: Complex tables lose cells; a definitions table reads [Repealed]; tables inside «…» lost
+  category: LAT text
+  module: SertantaiLegal.Scraper.LatParser (table_text, mark_repealed_provisions, quoted_text)
+  affected: QA 3 rows (ukpga 2003/20 table.1032, 1991/22 table.1059, 2017/3 s.173(2))
+  fix: investigate cell markup; quoted_text renders tables
+  status: open
+- pattern: «…» quotes drop Number (Schedule/Part), list letters, trailing AppendText
+  category: LAT text
+  module: SertantaiLegal.Scraper.LatParser (quoted_child)
+  affected: QA 3 rows
+  fix: render Number, ListItem numbering, AppendText after the block
+  status: open
+artifacts:
+- docs/LAT-QA-SAMPLE-SPEC.md
+- backend/lib/mix/tasks/lat.qa_sample.ex
+- backend/lib/mix/tasks/lat.backfill_titles.ex
+- backend/lib/mix/tasks/lat.reorder_notes.ex
+- backend/lib/mix/tasks/lat.place_notes.ex
+- backend/lib/sertantai_legal/scraper/territory.ex
+- backend/lib/sertantai_legal/scraper/note_reorder.ex
+- backend/lib/sertantai_legal/scraper/note_placement.ex
+- backend/lib/sertantai_legal/scraper/lat_titles.ex
+- backend/data/reports/lat-parser-coverage-ii/
+- backend/data/reports/lat-reparse/wave.csv
+depends_on:
+- 2026-10-07-lat-parser-coverage
+- 2026-10-07-issue-175
+enables:
+- lat-handoff/2026-10-08-lh-00-meta
 ---
 
-# Session: LAT Parser Coverage II (ACTIVE)
+# Session: LAT Parser Coverage II (CLOSED)
 
 ## Problem
 
@@ -142,21 +219,21 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 
 ## Todo
 
-- ⬜ Capture P1group/Title into a new `title` column — parser + tests ✅, migration ✅ (dev-only for prod delta), offline measure ✅, fractalaw contract (Zenoh column + manifest `title_hash`) ⬜, title-only backfill applied ✅ (45,964 titles, 1,060 laws, 0 errors; Jason 2026-10-08). (row text unchanged; migration + fractalaw contract). Stopgap in use: `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 headings, 1,060 laws; script `backend/data/reports/extract_headings.py`)
+- ⏸️ (contract part moved to LH-05) Capture P1group/Title into a new `title` column — parser + tests ✅, migration ✅ (dev-only for prod delta), offline measure ✅, fractalaw contract (Zenoh column + manifest `title_hash`) ⬜, title-only backfill applied ✅ (45,964 titles, 1,060 laws, 0 errors; Jason 2026-10-08). (row text unchanged; migration + fractalaw contract). Stopgap in use: `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 headings, 1,060 laws; script `backend/data/reports/extract_headings.py`)
 - ✅ Heading text order: parser fix (tests), 64 rows / 51 laws repaired (34 correction, 30 unattributed; verify dry run 0), UK_uksi_1979_628 Part renames via store re-parse (4 renamed, 54/54 enriched kept), 9 title corrections
 - ✅ Annotation note text order (folded in by Jason 2026-10-08): parser fix (tests), `mix lat.reorder_notes` applied — 80,012 notes / 758 laws, 943 row effective_from/changed_by, 76,976 change_id mappings (`notes-reorder-2026-10-08.csv.change-ids.csv`), 4,058 unmatched left for re-parse; stale statuses fixed first (`mix lat.status --apply`, 34 rows)
 - ✅ Note placement (attribute-style CommentaryRef + P1group Title refs): parser fix (tests), LatStatus full-commencement wordings, applied — 36,493 notes placed + 1,328 gaining sections, unplaced amendment notes 38,427 → 1,970, 38,972 rows' effective_from/changed_by; statuses 162 (`lat.status`) + 451 → partial, 27 → in_force, 2 saved → repealed
 - ✅ Retained repeals (`Repeal RetainText`): `repealed_extent` on 7,015 rows / 103 laws, 1,963 rows → repealed_saved, 536 rows text repaired (133 bracketed territorial wording, 402 empty → [Repealed]/[Revoked], 1 spacing), all `correction`
 - ✅ Remaining parse bugs closed in place (Jason 2026-10-08, §6): territorial words/insertions bracketed, `excluded_extent`, amending text «…», tables, signatures, P2group/P3group titles, alternative versions, #165 schedules, partial-status misfires; P5 already in P4 text; footnotes #176 and figures #177 left out (future enhancements); prelims/RestrictStart/EndDate not provision text
 - ✅ One re-parse wave, offline from the store: 1,056 laws, 97% of enriched rows carried, verified (LAT = parser output); 1 control mapping left for Jason (EU 2008/1272 Art. 37A)
-- ⬜ Randomised eyeball QA of LAT records by a Claude agent against the CLML store (spec `docs/LAT-QA-SAMPLE-SPEC.md`, sampler `mix lat.qa_sample`); its findings gate the hand-off
-- ⬜ fractalaw contract (frame columns `title`, `excluded_extent`; manifest `title_hash`, `notes_hash`; vectors) — built after QA, one message; don't flag fractalaw until Jason says
+- ✅ (run 1 done; follow-up → lat-handoff meta) Randomised eyeball QA of LAT records by a Claude agent against the CLML store (spec `docs/LAT-QA-SAMPLE-SPEC.md`, sampler `mix lat.qa_sample`); its findings gate the hand-off
+- ⏸️ (moved to lat-handoff LH-05) fractalaw contract (frame columns `title`, `excluded_extent`; manifest `title_hash`, `notes_hash`; vectors) — built after QA, one message; don't flag fractalaw until Jason says
 
 ## Dependencies
 
 - ✅ LAT parser coverage (list-text bug, #174, corpus repair) closed 2026-10-07
 - ✅ #175 local CLML store (all 1,068 LAT laws)
-- ⬜ fractalaw contract for the `title` column (and any annotation/status changes) before the re-parse wave
+- ⏸️ (moved to LH-05) fractalaw contract for the `title` column (and any annotation/status changes) before the re-parse wave
 
 ## 1. Provision titles (`title` column)
 
@@ -289,3 +366,7 @@ Jason: a Claude agent runs a randomised QA sample of LAT records against the XML
 ### QA run qa-2026-10-08 — not ready (2026-10-08)
 
 100 packets (90 distinct rows — sampler bug: an unparenthesised OR let placed_notes redraw plain rows; fixed, re-draw gives 100 distinct), 71 laws, four agents × 25. Consolidated: `backend/data/reports/lat-parser-coverage-ii/qa/qa-2026-10-08/summary.md`, `findings.csv` (57 non-pass lines). Text, artefacts and titles clean; all four slices "not ready" on: note → row targeting (systemic), Welsh SI changed_by, asc ids, spurious extent qualifiers, Welsh version labelled E, whole-row territorial text bracketed, complex tables, «…» numbers/tables (bugs above). Minor: "[elsewhere: …]" labels, whole-extent brackets, signature commas, marginal citations (Commentary Type="M") stored as modified notes. Process: two agents were refused writing their summary; one wrote it through the shell anyway.
+
+## Closed 2026-10-08
+
+QA run 1 said not ready; the fixes are planned as small sessions under `lat-handoff/` (meta `2026-10-08-lh-00-meta.md`): LH-01 note metadata, LH-02 identity, LH-03 rendering, LH-04 wave 2 + QA run 2, LH-05 fractalaw contract & hand-off. Open items: one control mapping (EU 2008/1272 Art. 37A, Jason) and two older EPA orphans (§ wave). Nothing pushed; fractalaw not flagged.
