@@ -78,7 +78,7 @@ Jason: fractalaw builds nothing until this round of fixes settles → send ONE f
 
 Root cause: xmerl evaluates `./Title//text()` as direct text first, then descendants' text, and across *every* Title child — so headings with inline markup were scrambled ("ADULTS IN THE FRONT OR OF A VEHICLE RE AR") and a heading split over two Title elements ("International Oil Pollution" + "Compensation Fund") only survived by accident. `/descendant::text()` is ordered.
 
-Fix (`LatParser.heading_text/1`, `titles_text/1`): an ordered inline walk of each Title, inline markup joined without spaces ("CO<Sub>2</Sub>" → CO2), whitespace collapsed, several Titles joined by a space; a `Repeal RetainText` followed by its replacement keeps a space (territorial alternative — item 3 renders it properly; body text has the same glue). Pnumber/Number/first-P1 number use `descendant::text()`.
+Fix (`LatParser.heading_text/1`, `titles_text/1`): an ordered inline walk of each Title, inline markup joined without spaces ("CO<Sub>2</Sub>" → CO2), whitespace collapsed, several Titles joined by a space; a `Repeal RetainText` whose `SubstitutionRef` names the next element's `ChangeId` keeps a space (territorial alternative — item 3 renders it properly; body text has the same glue). Pnumber/Number/first-P1 number use `descendant::text()`.
 
 Offline diff (`heading-order-diff-2026-10-08.csv`, all 1,068 laws): the fix changes 64 heading rows in 51 laws (34 correction = same words reordered, 30 unattributed = joined/restored words, e.g. "CO emissions 2" → "CO2 emissions", "PM , PM" → "PM10, PM2·5") and 4 Part ids in UK_uksi_1979_628 ("pt.P IIart" → "pt.II"). Plan: `data/reports/lat-parser-coverage/repair-plan-heading-order-2026-10-08.csv`.
 

@@ -2006,8 +2006,8 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     test "a retained territorial repeal and its replacement stay apart" do
       rows =
         parse_act("""
-        <Pblock><Title><Repeal RetainText="true" Substitution="true" Extent="E+W">Powers of Entry</Repeal><Addition Extent="E+W">Enforcement</Addition></Title>
-          <P1group><Title><CommentaryRef Ref="c-1"/><Repeal RetainText="true" Substitution="true">Designation of Notified Bodies</Repeal><Addition>Approval</Addition></Title>
+        <Pblock><Title><Repeal ChangeId="k-1" RetainText="true" SubstitutionRef="k-2" Extent="E+W">Powers of Entry</Repeal><Addition ChangeId="k-2" Extent="E+W">Enforcement</Addition></Title>
+          <P1group><Title><CommentaryRef Ref="c-1"/><Repeal ChangeId="k-3" RetainText="true" SubstitutionRef="k-4">Designation of Notified Bodies</Repeal><Addition ChangeId="k-4">Approval</Addition></Title>
             <P1><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1>
           </P1group>
         </Pblock>
@@ -2032,6 +2032,18 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       part = Enum.find(rows, &(&1.section_type == "part"))
       assert part.text == "International Oil Pollution Compensation Fund"
       assert part.title == "International Oil Pollution Compensation Fund"
+    end
+
+    test "consecutive retained repeals that are not substitutions join without a space" do
+      rows =
+        parse_act("""
+        <P1group><Title><Repeal RetainText="true"><Substitution> Advisory committees</Substitution></Repeal><Repeal RetainText="true">.</Repeal></Title>
+          <P1><Pnumber>37</Pnumber><P1para><Text>Duty.</Text></P1para></P1>
+        </P1group>
+        """)
+
+      assert Enum.find(rows, &(&1.section_id == "UK_ukpga_2024_1:s.37")).title ==
+               "Advisory committees."
     end
   end
 end

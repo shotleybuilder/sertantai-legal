@@ -498,7 +498,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
             {to_string(elem(child, 4)), nil}
 
           :xmlElement ->
-            sep = if prev && retained_repeal?(prev), do: " ", else: ""
+            sep = if prev && territorial_pair?(prev, child), do: " ", else: ""
             {sep <> inline_text(child), child}
 
           _ ->
@@ -509,8 +509,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
     Enum.join(parts)
   end
 
-  defp retained_repeal?(element) do
-    elem(element, 1) == :Repeal and xpath(element, ~x"./@RetainText"s) == "true"
+  # <Repeal RetainText="true" SubstitutionRef="X">old</Repeal><Addition ChangeId="X">new</Addition>:
+  # the old words kept for another territory, then their replacement.
+  defp territorial_pair?(prev, next) do
+    elem(prev, 1) == :Repeal and xpath(prev, ~x"./@RetainText"s) == "true" and
+      xpath(prev, ~x"./@SubstitutionRef"s) not in ["", nil] and
+      xpath(prev, ~x"./@SubstitutionRef"s) == xpath(next, ~x"./@ChangeId"s)
   end
 
   defp blank_to_nil(""), do: nil
