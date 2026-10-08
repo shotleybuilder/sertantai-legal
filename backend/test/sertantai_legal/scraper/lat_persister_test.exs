@@ -183,6 +183,34 @@ defmodule SertantaiLegal.Scraper.LatPersisterTest do
       assert mapped == "#{name}:reg.2(4)"
     end
 
+    test "renamed ids follow into the law's notes, in place (one set-based update)", %{
+      name: name,
+      law: law
+    } do
+      Repo.query!(
+        """
+        INSERT INTO amendment_annotations (id, country, law_name, law_id, code, code_type, source, text, affected_sections, created_at, updated_at)
+        VALUES ($1, 'uk', $2, $3, 'F1', 'amendment', 'test', 'Reg. 3 amended', $4, now(), now())
+        """,
+        ["#{name}:amendment:1", name, Ecto.UUID.dump!(law.id), ["#{name}:reg.1", "#{name}:reg.3"]]
+      )
+
+      new_rows = [
+        row(name, 1, %{text: "Text 1."}),
+        row(name, 2, %{text: "Text 2."}),
+        row(name, 3, %{text: "Text 3.", section_id: "#{name}:reg.2(4)"})
+      ]
+
+      assert {:ok, %{renamed: 1}} = LatPersister.persist(new_rows, name, law.id)
+
+      %{rows: [[sections]]} =
+        Repo.query!("SELECT affected_sections FROM amendment_annotations WHERE law_name = $1", [
+          name
+        ])
+
+      assert sections == ["#{name}:reg.1", "#{name}:reg.2(4)"]
+    end
+
     test "changed text blanks that row only; a vanished row is logged as dropped", %{
       name: name,
       law: law

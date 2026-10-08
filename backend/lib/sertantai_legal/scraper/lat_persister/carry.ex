@@ -91,12 +91,26 @@ defmodule SertantaiLegal.Scraper.LatPersister.Carry do
       [olds, news]
     )
 
-    Enum.each(renames, fn r ->
-      Repo.query!(
-        "UPDATE amendment_annotations SET affected_sections = array_replace(affected_sections, $1, $2) WHERE $1 = ANY(affected_sections)",
-        [r.old, r.new]
+    # One set-based update over the law's own notes (a note's sections are
+    # its own law's rows): per-rename updates scanned every note, thousands
+    # of times when a whole Act's ids change (reg. → s., LH-02).
+    law_name = renames |> hd() |> Map.fetch!(:old) |> String.split(":", parts: 2) |> hd()
+
+    Repo.query!(
+      """
+      UPDATE amendment_annotations a
+      SET affected_sections = ARRAY(
+        SELECT coalesce(m.new, s.sid)
+        FROM unnest(a.affected_sections) WITH ORDINALITY AS s(sid, ord)
+        LEFT JOIN unnest($1::text[], $2::text[]) AS m(old, new) ON m.old = s.sid
+        ORDER BY s.ord
       )
-    end)
+      WHERE a.law_name = $3 AND a.affected_sections && $1::text[]
+      """,
+      [olds, news, law_name]
+    )
+
+    :ok
   end
 
   @doc "Log this re-parse's renamed, ambiguous and dropped ids under one reparse_id."
