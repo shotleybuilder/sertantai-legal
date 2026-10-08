@@ -2448,6 +2448,10 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
                "Type of livestock manure | Amount of nitrogen; Cattle slurry | 40 %; Pig slurry | 50 %"
 
       assert table.title == "Available percentage"
+
+      # the table is its own row, not part of the provision's text
+      assert Enum.find(rows, &(&1.section_id == "UK_wsi_2021_77:reg.9")).text ==
+               "The percentages are—"
     end
   end
 

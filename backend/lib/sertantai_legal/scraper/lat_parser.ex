@@ -862,6 +862,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
           name in @no_text_elements ->
             {[], after_open_child?}
 
+          # tables and figures are rows of their own, in either mode
+          name in ~w(Tabular Figure) and mode == :leaf ->
+            {[], after_open_child?}
+
           mode == :structural and name in @quoted_elements and after_open_child? ->
             {[], true}
 
