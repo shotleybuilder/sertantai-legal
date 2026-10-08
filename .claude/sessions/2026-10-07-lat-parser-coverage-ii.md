@@ -84,6 +84,54 @@ bugs:
     affected: "e.g. UK_ukpga_1962_58:s.24 — now [Repealed]/repealed"
     fix: "P1group Title refs placed on the P1 (item 4) → repealed marker"
     status: fixed
+  - pattern: "Note dates/status reach only the note's last affected row (LatStatus.note_target = List.last(affected_sections)): sibling ranges, section-level insertion notes, whole-instrument revocations (target = signature row), alternative versions"
+    category: note metadata
+    module: SertantaiLegal.Scraper.LatStatus (note_target/1), LatStatus.Apply
+    affected: "QA: T7 29 defects / ~50 rows with notes; up to 59,486 of 104,503 lower-level rows with a dated note have nil effective_from"
+    fix: "Place notes on the rows that cite them at their own level; a note applies to each citing row and its descendants"
+    status: open
+  - pattern: "Welsh SIs in changed_by as uksi: 'S.I. 2018/35' citing id/wsi/…, 'W.S.I. 2026/112'"
+    category: note metadata
+    module: SertantaiLegal.Scraper.AmendmentNote (changed_by)
+    affected: "4+ QA rows"
+    fix: "W.S.I. prefix; prefer the Citation URI type"
+    status: open
+  - pattern: "Acts of Senedd Cymru (asc), mwa, ukla parsed as SIs (reg. ids, [Revoked])"
+    category: LAT identity
+    module: SertantaiLegal.Scraper.LatParser (@act_type_codes)
+    affected: "every asc/mwa/ukla law"
+    fix: "add to @act_type_codes; re-parse those laws"
+    status: open
+  - pattern: "Extent qualifier on a provision with no alternative version: a child's narrower RestrictExtent trips parallel detection"
+    category: LAT identity
+    module: SertantaiLegal.Scraper.LatParser (detect_and_qualify_parallels, parallel_key)
+    affected: "QA 2+ rows; whole sections (uksi 2017/1047 reg.3, ukpga 1967/10 s.30, ukpga 1992/51 s.12)"
+    fix: "qualify only when the same provision row (same hierarchy keys) occurs with different extents"
+    status: open
+  - pattern: "Welsh Version's rows labelled England (inner P1 RestrictExtent=E inside a Description=W version)"
+    category: LAT identity
+    module: SertantaiLegal.Scraper.LatParser (alt_versions)
+    affected: "uksi 2010/2214 reg.36 and similar"
+    fix: "a version's own extent governs its rows when an inner extent contradicts it"
+    status: open
+  - pattern: "Whole-row territorial text bracketed instead of excluded_extent when the row has child provisions"
+    category: LAT territory
+    module: SertantaiLegal.Scraper.LatParser (excluded_extent over the subtree)
+    affected: "QA 3 rows (1989/14 s.3(5), 1992/51 s.12(1ZA)(a))"
+    fix: "decide on the row's own text; subtree only when it has none"
+    status: open
+  - pattern: "Complex tables lose cells; a definitions table reads [Repealed]; tables inside «…» lost"
+    category: LAT text
+    module: SertantaiLegal.Scraper.LatParser (table_text, mark_repealed_provisions, quoted_text)
+    affected: "QA 3 rows (ukpga 2003/20 table.1032, 1991/22 table.1059, 2017/3 s.173(2))"
+    fix: "investigate cell markup; quoted_text renders tables"
+    status: open
+  - pattern: "«…» quotes drop Number (Schedule/Part), list letters, trailing AppendText"
+    category: LAT text
+    module: SertantaiLegal.Scraper.LatParser (quoted_child)
+    affected: "QA 3 rows"
+    fix: "render Number, ListItem numbering, AppendText after the block"
+    status: open
 ---
 
 # Session: LAT Parser Coverage II (ACTIVE)
@@ -237,3 +285,7 @@ Jason: a Claude agent runs a randomised QA sample of LAT records against the XML
 
 - Spec: `docs/LAT-QA-SAMPLE-SPEC.md` — the rendering rules the LAT applies (so the agent judges against them), checks T1 text … T8 identity, verdicts pass/minor/defect/unsure, outputs `findings.csv` + `summary.md`, read-only.
 - Sampler: `mix lat.qa_sample --n N --seed S` — strata (plain 28%, title, territorial brackets, amending text, excluded_extent, repealed_saved, in_force_partial, repealed, table, signed, structural, qualified ids, placed notes), md5(seed||id) order so a seed is reproducible; packets carry the stored row, its notes with their `<Commentary>`, the row's XML fragment (own id, the enclosing provision for tables, the SignedSection for signatures) and store paths. Read-only, offline.
+
+### QA run qa-2026-10-08 — not ready (2026-10-08)
+
+100 packets (90 distinct rows — sampler bug: an unparenthesised OR let placed_notes redraw plain rows; fixed, re-draw gives 100 distinct), 71 laws, four agents × 25. Consolidated: `backend/data/reports/lat-parser-coverage-ii/qa/qa-2026-10-08/summary.md`, `findings.csv` (57 non-pass lines). Text, artefacts and titles clean; all four slices "not ready" on: note → row targeting (systemic), Welsh SI changed_by, asc ids, spurious extent qualifiers, Welsh version labelled E, whole-row territorial text bracketed, complex tables, «…» numbers/tables (bugs above). Minor: "[elsewhere: …]" labels, whole-extent brackets, signature commas, marginal citations (Commentary Type="M") stored as modified notes. Process: two agents were refused writing their summary; one wrote it through the shell anyway.

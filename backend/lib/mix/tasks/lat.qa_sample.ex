@@ -105,7 +105,7 @@ defmodule Mix.Tasks.Lat.QaSample do
         Repo.query!(
           """
           SELECT section_id FROM lat
-          WHERE #{condition} AND NOT (law_name = ANY($2)) AND NOT (section_id = ANY($3))
+          WHERE (#{condition}) AND NOT (law_name = ANY($2)) AND NOT (section_id = ANY($3))
           ORDER BY md5($1 || section_id) LIMIT $4
           """,
           [seed, @excluded_laws, taken, k],
