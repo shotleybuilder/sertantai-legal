@@ -256,4 +256,23 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
 
     assert plan.lost_unchanged == []
   end
+
+  test "an id that only changes reg. → s. (an Act no longer parsed as an SI, LH-02) carries" do
+    plan =
+      LatMerge.plan(
+        [
+          old("L:reg.119(1)", "The Authority must act.", 5),
+          old("L:reg.119(2)", "Old wording.", 6)
+        ],
+        [
+          new("L:s.119(1)", "The Authority must act.", 5),
+          new("L:s.119(2)", "Old wording, (a) new item.", 6)
+        ]
+      )
+
+    assert plan.carry["L:s.119(1)"] == "L:reg.119(1)"
+    # renamed even though its text changed: reported as a rename, then the text change
+    assert Enum.any?(plan.renames, &(&1.old == "L:reg.119(1)" and &1.new == "L:s.119(1)"))
+    assert plan.lost_unchanged == []
+  end
 end
