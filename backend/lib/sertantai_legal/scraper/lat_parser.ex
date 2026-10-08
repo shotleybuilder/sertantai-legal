@@ -1471,6 +1471,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
       name in @row_elements ->
         []
 
+      # a group's Title notes go to the provision it wraps (group_refs),
+      # never to the heading or Part above it (QA run 3)
+      name in ~w(P1group P2group P3group) ->
+        []
+
       true ->
         refs_within(child, wrapper, quoted)
     end

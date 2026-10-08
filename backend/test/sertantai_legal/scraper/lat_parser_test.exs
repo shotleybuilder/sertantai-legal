@@ -2802,6 +2802,16 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       assert refs["c-q"] == ["UK_ukpga_2004_20:s.9"]
     end
+
+    test "a section's P1group Title note is not placed on the cross-heading or Part above (QA 3: 1956/52 s.15, 1968/73 pt.VI)" do
+      refs =
+        refs_for(
+          ~s|<Part><Number>Part VI</Number><Title>Misc</Title><Pblock><Title>Smoke control areas</Title><P1group><Title>Exclusion<CommentaryRef Ref="c-ex"/></Title><P1><Pnumber>15</Pnumber><P1para><Text>A duty.</Text></P1para></P1></P1group></Pblock></Part>|,
+          ~s|<Commentary id="c-ex" Type="C"><Para><Text>S. 15 excluded by x</Text></Para></Commentary>|
+        )
+
+      assert refs["c-ex"] == ["UK_ukpga_2004_20:s.15"]
+    end
   end
 
   test "dotted RestrictExtent normalises on rows; an insertion covering it stays plain (LH-06: uksi 2017/1012 reg.16A)" do
