@@ -30,6 +30,12 @@ bugs:
     affected: "most of 101,343 amendment_annotations (any note with a Citation/inline element mid-sentence)"
     fix: "descendant::text() in document order; check AmendmentNote (effect/changed_by/effective_from) against the reordered text before re-deriving"
     status: open
+  - pattern: "mix lat.repair_text rewrote text without re-deriving status: rows repaired to dots (repealed) still read in_force"
+    category: LAT status
+    module: Mix.Tasks.Lat.RepairText (apply!/3)
+    affected: "34 rows in 14 laws (mix lat.status dry run 2026-10-08)"
+    fix: "LatStatus.Apply.refresh(law) in the repair transaction (done); mix lat.status --apply for the 34"
+    status: fixed
 ---
 
 # Session: LAT Parser Coverage II (ACTIVE)
@@ -96,3 +102,5 @@ Applied 2026-10-08 (Jason): `repair-applied-heading-order-2026-10-08.csv`, `lat-
 Offline measurement (`notes-order-laws.csv` / `notes-order-fields.csv`, 785 laws with notes, 27 not in the store): 86,120 of 90,178 stored notes match their commentary's old text (pair on code_type + code + old text — ids renumber in scoped laws); 80,012 change text. Derived fields: effect 0 changes, effective_from 11 (dates written "( 1.4.1991)" now before "by"), changed_by 929 (645 modification, 237 amendment, 41 commencement, 17 editorial — mostly the amending instrument instead of the cited/commencing one, wsi for "(W. n)" SIs; "does not form part of domestic law under EUWA" notes lose ukpga_2018_16, which isn't an amender).
 
 change_id is a hash of the text, and LatCause reads new change_ids as an amendment → the rollout re-keys in place: `mix lat.reorder_notes` (`NoteReorder.plan/2`, `CommentaryParser.text_pairs/1` — temporary, remove after) rewrites matched notes, `LatStatus.Apply.refresh/1` re-derives fields / statuses / row effective_from+changed_by, and `lat_changes.change_ids` are mapped (one row holds any: UK_ukpga_2016_24). Per law, one transaction; dry run rolls back. Old → new change_id mapping kept for fractalaw. Contract: propose a manifest `notes_hash` so fractalaw can see note changes (nothing signals them today).
+
+Corpus dry run (`notes-reorder-2026-10-08-dry.csv`, rolled back): 758 laws, 80,012 notes reordered, 4,058 unmatched (drift → next re-parse), 79,996 notes re-derived, 943 rows' effective_from/changed_by change, 1 lat_changes re-key. 27 laws skipped: no stored XML, no LAT, 32 orphan notes. The 29 status changes it showed were stale statuses, not the reorder: rows repaired to dots by `lat.repair_text` kept `in_force` (bug above, fixed); `mix lat.status` dry run: 34 rows / 14 laws in_force → repealed — apply that first so the reorder's numbers are its own.

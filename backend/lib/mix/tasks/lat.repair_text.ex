@@ -48,7 +48,7 @@ defmodule Mix.Tasks.Lat.RepairText do
 
   alias NimbleCSV.RFC4180, as: CSV
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LatParser, LatRepair, LatStagedParser}
+  alias SertantaiLegal.Scraper.{LatParser, LatRepair, LatStagedParser, LatStatus}
   alias SertantaiLegal.Scraper.LatPersister.Carry
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
 
@@ -241,6 +241,10 @@ defmodule Mix.Tasks.Lat.RepairText do
           [law, op_key, sid, cause]
         )
       end
+
+      # status follows the text (dots → repealed); a repair that didn't
+      # refresh it left 51 repealed rows reading in_force (2026-10-08)
+      LatStatus.Apply.refresh(law)
     end)
   end
 
