@@ -1861,4 +1861,98 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       end
     end
   end
+
+  # ── Provision titles (LAT parser coverage II) ──────────────────
+
+  describe "parse/2 title column" do
+    defp parse_body(body, type_code \\ "uksi") do
+      LatParser.parse(
+        "<Legislation><Secondary><Body>#{body}</Body></Secondary></Legislation>",
+        %{law_name: "UK_#{type_code}_2024_1", type_code: type_code}
+      )
+    end
+
+    defp row(rows, section_id), do: Enum.find(rows, &(&1.section_id == section_id))
+
+    test "a P1group's Title goes on its P1 row; the row text is unchanged" do
+      xml = read_fixture("uksi_1992_3004_reg2.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_1992_3004", type_code: "uksi"})
+
+      reg2 = row(rows, "UK_uksi_1992_3004:reg.2")
+      assert reg2.title == "Interpretation"
+      refute String.contains?(reg2.text || "", "Interpretation")
+      # sub-provisions do not repeat the heading
+      assert row(rows, "UK_uksi_1992_3004:reg.2(1)").title == nil
+    end
+
+    test "every P1 in a multi-provision P1group takes the group title" do
+      rows =
+        parse_body("""
+        <P1group><Title>Fees</Title>
+          <P1><Pnumber>3</Pnumber><P1para><Text>A fee.</Text></P1para></P1>
+          <P1><Pnumber>4</Pnumber><P1para><Text>Another fee.</Text></P1para></P1>
+        </P1group>
+        """)
+
+      assert row(rows, "UK_uksi_2024_1:reg.3").title == "Fees"
+      assert row(rows, "UK_uksi_2024_1:reg.4").title == "Fees"
+    end
+
+    test "a P1 outside a P1group has no title" do
+      rows = parse_body(~s(<P1><Pnumber>1</Pnumber><P1para><Text>Bare.</Text></P1para></P1>))
+      assert row(rows, "UK_uksi_2024_1:reg.1").title == nil
+    end
+
+    test "inline markup in the title joins without stray spaces" do
+      rows =
+        parse_body("""
+        <P1group><Title>Duties of <Substitution ChangeId="x" CommentaryRef="c-1">employers</Substitution><CommentaryRef Ref="c-2"/> and Re<Emphasis>gulators</Emphasis></Title>
+          <P1><Pnumber>5</Pnumber><P1para><Text>Duty.</Text></P1para></P1>
+        </P1group>
+        """)
+
+      assert row(rows, "UK_uksi_2024_1:reg.5").title == "Duties of employers and Regulators"
+    end
+
+    test "a dots-only (repealed) title is nil" do
+      rows =
+        parse_body("""
+        <P1group><Title>. . . . . . .</Title>
+          <P1><Pnumber>6</Pnumber><P1para><Text>. . .</Text></P1para></P1>
+        </P1group>
+        """)
+
+      assert row(rows, "UK_uksi_2024_1:reg.6").title == nil
+    end
+
+    test "Part and Pblock rows carry their own Title" do
+      xml = read_fixture("simple_act.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"})
+
+      assert row(rows, "UK_ukpga_2024_1:pt.I").title == "General Provisions"
+
+      assert rows |> Enum.filter(&(&1.section_type == "heading")) |> Enum.map(& &1.title) ==
+               ["Preliminary", "General duties", "Enforcement provisions"]
+    end
+
+    test "a Schedule row takes its TitleBlock title" do
+      xml = read_fixture("with_schedules.xml")
+      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
+
+      titles =
+        rows |> Enum.filter(&(&1.section_type == "schedule")) |> Enum.map(& &1.title)
+
+      assert titles == ["Particulars to be notified", "Minimum welfare facilities"]
+    end
+
+    test "to_insert_maps/2 carries the title" do
+      rows =
+        parse_body("""
+        <P1group><Title>Fees</Title><P1><Pnumber>3</Pnumber><P1para><Text>A fee.</Text></P1para></P1></P1group>
+        """)
+
+      [map] = LatParser.to_insert_maps(rows, "00000000-0000-0000-0000-000000000001")
+      assert map.title == "Fees"
+    end
+  end
 end

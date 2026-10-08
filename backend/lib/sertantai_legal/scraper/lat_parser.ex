@@ -75,6 +75,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       part: nil,
       chapter: nil,
       heading_group: nil,
+      group_title: nil,
       schedule: nil,
       provision: nil,
       sub: nil,
@@ -187,33 +188,37 @@ defmodule SertantaiLegal.Scraper.LatParser do
         # Amendment/extract text embeds P1/P2/P3 from OTHER laws — skip entirely
         []
 
+      name == "P1group" ->
+        # The group's Title is the heading of the P1(s) it wraps
+        walk_children(node, %{ctx | group_title: heading_title(node)})
+
       name in @container_elements ->
         walk_children(node, ctx)
 
       name == "Part" ->
         part_num = extract_number(node, "Part")
         new_ctx = %{ctx | part: part_num, chapter: nil, heading_group: nil}
-        row = emit_structural_row("Part", new_ctx, node, extent)
+        row = "Part" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "EUTitle" ->
         # EU Title (e.g. "TITLE I: GENERAL ISSUES") — maps to Part in the hierarchy
         part_num = extract_number(node, "Title")
         new_ctx = %{ctx | part: part_num, chapter: nil, heading_group: nil}
-        row = emit_structural_row("Part", new_ctx, node, extent)
+        row = "Part" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "Chapter" ->
         chapter_num = extract_number(node, "Chapter")
         new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
-        row = emit_structural_row("Chapter", new_ctx, node, extent)
+        row = "Chapter" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "EUChapter" ->
         # EU Chapter — same semantics as UK Chapter
         chapter_num = extract_number(node, "Chapter")
         new_ctx = %{ctx | chapter: chapter_num, heading_group: nil}
-        row = emit_structural_row("Chapter", new_ctx, node, extent)
+        row = "Chapter" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "Pblock" ->
@@ -221,7 +226,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         # Pblock heading_group gets the provision number of its first P1 child
         first_p1_num = extract_first_p1_number(node)
         new_ctx = %{ctx | heading_group: first_p1_num}
-        row = emit_heading_row(new_ctx, node, extent, heading_text)
+        row = new_ctx |> emit_heading_row(node, extent, heading_text) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "P1" ->
@@ -234,10 +239,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
             sub: nil,
             paragraph: nil,
             sub_paragraph: nil,
-            p2_is_wrapper: wrapper
+            p2_is_wrapper: wrapper,
+            # consumed here: provisions nested in this P1 are not the group's
+            group_title: nil
         }
 
-        row = emit_structural_row("P1", new_ctx, node, extent)
+        row = %{emit_structural_row("P1", new_ctx, node, extent) | title: ctx.group_title}
         [row | walk_children(node, new_ctx)]
 
       name == "P2" ->
@@ -281,7 +288,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
             sub_paragraph: nil
         }
 
-        row = emit_structural_row("Schedule", new_ctx, node, extent)
+        row = "Schedule" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "SignedSection" ->
@@ -320,6 +327,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       extent_code: extent,
       prospective: ctx.prospective,
       text: text,
+      title: nil,
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
@@ -346,6 +354,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       extent_code: extent,
       prospective: ctx.prospective,
       text: text,
+      title: nil,
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
@@ -371,6 +380,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       extent_code: extent,
       prospective: ctx.prospective,
       text: heading_text,
+      title: nil,
       amendment_count: Map.get(commentary_counts, :f),
       modification_count: Map.get(commentary_counts, :c),
       commencement_count: Map.get(commentary_counts, :i),
@@ -474,6 +484,27 @@ defmodule SertantaiLegal.Scraper.LatParser do
           v -> v
         end
     end
+  end
+
+  defp titled(row, node), do: %{row | title: heading_title(node)}
+
+  # The `title` column: a heading as written (Title, or a Schedule's
+  # TitleBlock/Title), inline markup joined without spaces. Dots-only titles
+  # (repealed headings) are nil. Row text keeps its own heading handling.
+  @dots_title ~r/\A[\s.…]*\z/u
+
+  defp heading_title(node) do
+    # descendant::text() keeps document order; xmerl's //text() does not
+    title =
+      case xpath(node, ~x"./Title/descendant::text()"ls) do
+        [] -> xpath(node, ~x"./TitleBlock/Title/descendant::text()"ls)
+        texts -> texts
+      end
+      |> Enum.map_join("", &to_string/1)
+      |> String.replace(~r/\s+/u, " ")
+      |> String.trim()
+
+    if Regex.match?(@dots_title, title), do: nil, else: title
   end
 
   defp extract_first_p1_number(node) do
@@ -934,6 +965,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         part: row.part,
         chapter: row.chapter,
         heading_group: row.heading_group,
+        title: Map.get(row, :title),
         schedule: row.schedule,
         provision: row.provision,
         sub_provision: row.sub,

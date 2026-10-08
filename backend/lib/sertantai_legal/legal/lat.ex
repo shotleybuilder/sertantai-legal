@@ -152,6 +152,14 @@ defmodule SertantaiLegal.Legal.Lat do
       description("Law name of the instrument behind effective_from's note (#167)")
     end
 
+    attribute :title, :string do
+      allow_nil?(true)
+
+      description(
+        "Heading as written: a P1group's Title on its section/regulation row(s); Part, Chapter, Schedule and cross-heading rows their own. Not in text, lat_hash or struct_hash."
+      )
+    end
+
     # ── Amendment Annotation Counts ──────────────────────────────────
 
     attribute :amendment_count, :integer do
@@ -265,6 +273,7 @@ defmodule SertantaiLegal.Legal.Lat do
         :status,
         :effective_from,
         :changed_by,
+        :title,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -300,6 +309,7 @@ defmodule SertantaiLegal.Legal.Lat do
         :status,
         :effective_from,
         :changed_by,
+        :title,
         :amendment_count,
         :modification_count,
         :commencement_count,
