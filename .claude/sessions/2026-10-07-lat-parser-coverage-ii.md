@@ -27,9 +27,9 @@ bugs:
   - pattern: "CommentaryParser reads .//Para//text() and .//Text//text() (xmerl: direct text first, then descendants') — amendment note text scrambled corpus-wide, e.g. 'substituted (17.9.2002) by , Reg. 10(1) (2) The Health and Safety ... regs. 1 7(a)'"
     category: annotation text
     module: SertantaiLegal.Scraper.CommentaryParser (extract_commentary_text); taxa_parser.ex has the same xpaths
-    affected: "most of 101,343 amendment_annotations (any note with a Citation/inline element mid-sentence)"
-    fix: "descendant::text() in document order; check AmendmentNote (effect/changed_by/effective_from) against the reordered text before re-deriving"
-    status: open
+    affected: "80,012 of 90,210 amendment_annotations reordered (4,058 drift left for re-parse)"
+    fix: "Each Text block in document order; mix lat.reorder_notes re-keyed in place (LatStatus.Apply refresh, lat_changes change_ids mapped)"
+    status: fixed
   - pattern: "mix lat.repair_text rewrote text without re-deriving status: rows repaired to dots (repealed) still read in_force"
     category: LAT status
     module: Mix.Tasks.Lat.RepairText (apply!/3)
@@ -48,7 +48,7 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 
 - ⬜ Capture P1group/Title into a new `title` column — parser + tests ✅, migration ✅ (dev-only for prod delta), offline measure ✅, fractalaw contract (Zenoh column + manifest `title_hash`) ⬜, title-only backfill applied ✅ (45,964 titles, 1,060 laws, 0 errors; Jason 2026-10-08). (row text unchanged; migration + fractalaw contract). Stopgap in use: `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 headings, 1,060 laws; script `backend/data/reports/extract_headings.py`)
 - ✅ Heading text order: parser fix (tests), 64 rows / 51 laws repaired (34 correction, 30 unattributed; verify dry run 0), UK_uksi_1979_628 Part renames via store re-parse (4 renamed, 54/54 enriched kept), 9 title corrections
-- ⬜ Annotation note text order (folded in by Jason 2026-10-08): parser fix ✅ (tests), offline measure ✅, `mix lat.reorder_notes` ✅, corpus dry run ⬜, apply ⬜
+- ✅ Annotation note text order (folded in by Jason 2026-10-08): parser fix (tests), `mix lat.reorder_notes` applied — 80,012 notes / 758 laws, 943 row effective_from/changed_by, 76,976 change_id mappings (`notes-reorder-2026-10-08.csv.change-ids.csv`), 4,058 unmatched left for re-parse; stale statuses fixed first (`mix lat.status --apply`, 34 rows)
 - ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (`@CommentaryRef`): 43,794 of 101,343 annotations have empty `affected_sections`
 - ⬜ `Repeal @RetainText @Extent`: territorial repeals read as live everywhere (status / column only, no text change)
 - ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
@@ -104,3 +104,5 @@ Offline measurement (`notes-order-laws.csv` / `notes-order-fields.csv`, 785 laws
 change_id is a hash of the text, and LatCause reads new change_ids as an amendment → the rollout re-keys in place: `mix lat.reorder_notes` (`NoteReorder.plan/2`, `CommentaryParser.text_pairs/1` — temporary, remove after) rewrites matched notes, `LatStatus.Apply.refresh/1` re-derives fields / statuses / row effective_from+changed_by, and `lat_changes.change_ids` are mapped (one row holds any: UK_ukpga_2016_24). Per law, one transaction; dry run rolls back. Old → new change_id mapping kept for fractalaw. Contract: propose a manifest `notes_hash` so fractalaw can see note changes (nothing signals them today).
 
 Corpus dry run (`notes-reorder-2026-10-08-dry.csv`, rolled back): 758 laws, 80,012 notes reordered, 4,058 unmatched (drift → next re-parse), 79,996 notes re-derived, 943 rows' effective_from/changed_by change, 1 lat_changes re-key. 27 laws skipped: no stored XML, no LAT, 32 orphan notes. The 29 status changes it showed were stale statuses, not the reorder: rows repaired to dots by `lat.repair_text` kept `in_force` (bug above, fixed); `mix lat.status` dry run: 34 rows / 14 laws in_force → repealed — apply that first so the reorder's numbers are its own.
+
+Applied 2026-10-08 (Jason): `mix lat.status --apply` (34 in_force → repealed, snapshot `lat_status_snapshot_20261008_0916`), then `mix lat.reorder_notes --all --store only --apply` — matches the dry run exactly (statuses_changed 0 after the status fix). Verified: every lat_changes change_id resolves; `mix lat.status` 0 to change; re-run is a no-op (NoteReorder.plan skips already-ordered notes).

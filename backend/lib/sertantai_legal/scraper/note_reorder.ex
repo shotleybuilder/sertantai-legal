@@ -29,15 +29,28 @@ defmodule SertantaiLegal.Scraper.NoteReorder do
     ordered =
       Enum.group_by(pairs, fn {t, c, old, _} -> {t, c, old} end, fn {_, _, _, new} -> new end)
 
+    # already ordered (a re-run): the stored text is a commentary's new text
+    done = MapSet.new(pairs, fn {t, c, _, new} -> {t, c, new} end)
+
     Enum.reduce(stored, %{updates: [], unmatched: 0}, fn n, acc ->
       case ordered |> Map.get({n.code_type, n.code, n.text}, []) |> Enum.uniq() do
-        [same] when same == n.text -> acc
-        [new] -> %{acc | updates: [{n.id, new} | acc.updates]}
-        _ -> %{acc | unmatched: acc.unmatched + 1}
+        [same] when same == n.text ->
+          acc
+
+        [new] ->
+          %{acc | updates: [{n.id, new} | acc.updates]}
+
+        [] ->
+          if MapSet.member?(done, {n.code_type, n.code, n.text}), do: acc, else: unmatched(acc)
+
+        _ ->
+          unmatched(acc)
       end
     end)
     |> Map.update!(:updates, &Enum.reverse/1)
   end
+
+  defp unmatched(acc), do: %{acc | unmatched: acc.unmatched + 1}
 
   @doc "Replace each old change id with its new one; ids without a mapping stay."
   @spec rekey([String.t()], %{String.t() => String.t()}) :: [String.t()]

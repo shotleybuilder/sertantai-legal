@@ -20,6 +20,12 @@ defmodule SertantaiLegal.Scraper.NoteReorderTest do
              ]) == %{updates: [], unmatched: 0}
     end
 
+    test "a note already in ordered text (a re-run) is left alone, not unmatched" do
+      assert NoteReorder.plan([note("L:amendment:1", "F1", "repealed by Act 1999, s. 3")], [
+               pair("F1", "repealed by , s. 3 Act 1999", "repealed by Act 1999, s. 3")
+             ]) == %{updates: [], unmatched: 0}
+    end
+
     test "a note whose text no longer matches the source (drift) is unmatched" do
       assert NoteReorder.plan([note("L:amendment:1", "F1", "old wording")], [
                pair("F1", "new wording", "new wording")
