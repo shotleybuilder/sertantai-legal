@@ -431,8 +431,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp extract_pnumber(node) do
-    # Use //text() to reach through nested Addition/Repeal/Substitution wrappers
-    case xpath(node, ~x"./Pnumber//text()"ls) do
+    # descendant::text() reaches through nested Addition/Repeal/Substitution
+    # wrappers in document order (xmerl's //text() puts direct text first)
+    case xpath(node, ~x"./Pnumber/descendant::text()"ls) do
       nil ->
         nil
 
@@ -450,7 +451,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp extract_number(node, prefix) do
     raw =
-      case xpath(node, ~x"./Number//text()"ls) do
+      case xpath(node, ~x"./Number/descendant::text()"ls) do
         nil -> []
         texts -> texts
       end
@@ -470,21 +471,50 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp extract_title(node) do
-    case xpath(node, ~x"./Title//text()"ls) do
-      nil ->
-        nil
-
-      texts ->
-        texts
-        |> Enum.map(&to_string/1)
-        |> Enum.join(" ")
-        |> String.trim()
-        |> case do
-          "" -> nil
-          v -> v
-        end
-    end
+    node |> xpath(~x"./Title"l) |> titles_text() |> blank_to_nil()
   end
+
+  # A heading's text in document order (xmerl's //text() puts direct text
+  # before descendants' text), inline markup joined without spaces
+  # ("Re<Emphasis>gulators</Emphasis>", "CO<Sub>2</Sub>"), whitespace collapsed.
+  # A retained territorial Repeal stays apart from the replacement that
+  # follows it ("Powers of Entry Enforcement"; LAT parser coverage II item 3
+  # renders those properly).
+  # Some headings are split across Title elements ("International Oil
+  # Pollution" + "Compensation Fund"): joined with a space.
+  defp titles_text(titles), do: titles |> Enum.map_join(" ", &heading_text/1) |> String.trim()
+
+  defp heading_text(element) do
+    element |> inline_text() |> String.replace(~r/\s+/u, " ") |> String.trim()
+  end
+
+  defp inline_text(element) do
+    {parts, _} =
+      element
+      |> elem(8)
+      |> Enum.map_reduce(nil, fn child, prev ->
+        case elem(child, 0) do
+          :xmlText ->
+            {to_string(elem(child, 4)), nil}
+
+          :xmlElement ->
+            sep = if prev && retained_repeal?(prev), do: " ", else: ""
+            {sep <> inline_text(child), child}
+
+          _ ->
+            {"", prev}
+        end
+      end)
+
+    Enum.join(parts)
+  end
+
+  defp retained_repeal?(element) do
+    elem(element, 1) == :Repeal and xpath(element, ~x"./@RetainText"s) == "true"
+  end
+
+  defp blank_to_nil(""), do: nil
+  defp blank_to_nil(text), do: text
 
   defp titled(row, node), do: %{row | title: heading_title(node)}
 
@@ -494,21 +524,17 @@ defmodule SertantaiLegal.Scraper.LatParser do
   @dots_title ~r/\A[\s.…]*\z/u
 
   defp heading_title(node) do
-    # descendant::text() keeps document order; xmerl's //text() does not
     title =
-      case xpath(node, ~x"./Title/descendant::text()"ls) do
-        [] -> xpath(node, ~x"./TitleBlock/Title/descendant::text()"ls)
-        texts -> texts
+      case xpath(node, ~x"./Title"l) do
+        [] -> node |> xpath(~x"./TitleBlock/Title"l) |> titles_text()
+        titles -> titles_text(titles)
       end
-      |> Enum.map_join("", &to_string/1)
-      |> String.replace(~r/\s+/u, " ")
-      |> String.trim()
 
     if Regex.match?(@dots_title, title), do: nil, else: title
   end
 
   defp extract_first_p1_number(node) do
-    case xpath(node, ~x".//P1[1]/Pnumber//text()"ls) do
+    case xpath(node, ~x".//P1[1]/Pnumber/descendant::text()"ls) do
       nil ->
         nil
 

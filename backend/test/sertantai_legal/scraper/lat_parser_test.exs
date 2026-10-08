@@ -1955,4 +1955,83 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert map.title == "Fees"
     end
   end
+
+  # xmerl's //text() returns direct text before descendants' text: headings
+  # with inline markup came out scrambled (LAT parser coverage II).
+  describe "parse/2 heading text keeps document order" do
+    @scrambled ~s(Duties of <Substitution ChangeId="x" CommentaryRef="c-1">employers</Substitution><CommentaryRef Ref="c-2"/> and Re<Emphasis>gulators</Emphasis>)
+
+    defp parse_act(body) do
+      LatParser.parse(
+        "<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>",
+        %{law_name: "UK_ukpga_2024_1", type_code: "ukpga"}
+      )
+    end
+
+    test "a cross-heading (Pblock) row's text" do
+      rows =
+        parse_act("""
+        <Pblock><Title>#{@scrambled}</Title>
+          <P1group><P1><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1></P1group>
+        </Pblock>
+        """)
+
+      heading = Enum.find(rows, &(&1.section_type == "heading"))
+      assert heading.text == "Duties of employers and Regulators"
+    end
+
+    test "a Part row's text" do
+      rows =
+        parse_act("""
+        <Part><Number>PART 1</Number><Title>#{@scrambled}</Title>
+          <P1group><P1><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1></P1group>
+        </Part>
+        """)
+
+      part = Enum.find(rows, &(&1.section_type == "part"))
+      assert part.text == "Duties of employers and Regulators"
+    end
+
+    test "a provision number split by an amendment wrapper" do
+      rows =
+        parse_act("""
+        <P1group><Title>T</Title>
+          <P1><Pnumber><Addition ChangeId="x">3</Addition>A</Pnumber><P1para><Text>Inserted.</Text></P1para></P1>
+        </P1group>
+        """)
+
+      assert Enum.any?(rows, &(&1.section_id == "UK_ukpga_2024_1:s.3A"))
+    end
+
+    test "a retained territorial repeal and its replacement stay apart" do
+      rows =
+        parse_act("""
+        <Pblock><Title><Repeal RetainText="true" Substitution="true" Extent="E+W">Powers of Entry</Repeal><Addition Extent="E+W">Enforcement</Addition></Title>
+          <P1group><Title><CommentaryRef Ref="c-1"/><Repeal RetainText="true" Substitution="true">Designation of Notified Bodies</Repeal><Addition>Approval</Addition></Title>
+            <P1><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1>
+          </P1group>
+        </Pblock>
+        """)
+
+      heading = Enum.find(rows, &(&1.section_type == "heading"))
+      assert heading.text == "Powers of Entry Enforcement"
+      assert heading.title == "Powers of Entry Enforcement"
+
+      assert Enum.find(rows, &(&1.section_id == "UK_ukpga_2024_1:s.1")).title ==
+               "Designation of Notified Bodies Approval"
+    end
+
+    test "a heading split across several Title elements keeps them all" do
+      rows =
+        parse_act("""
+        <Part><Number>Chapter IV</Number><Title> International Oil Pollution</Title><Title>Compensation Fund</Title>
+          <P1group><P1><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1></P1group>
+        </Part>
+        """)
+
+      part = Enum.find(rows, &(&1.section_type == "part"))
+      assert part.text == "International Oil Pollution Compensation Fund"
+      assert part.title == "International Oil Pollution Compensation Fund"
+    end
+  end
 end
