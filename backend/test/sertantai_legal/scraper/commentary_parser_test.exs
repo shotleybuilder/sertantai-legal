@@ -220,6 +220,66 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
       assert ann.text == "First paragraph. Second paragraph."
     end
 
+    # xmerl's //text() returned direct text before descendants' (the
+    # Citations), scrambling notes (LAT parser coverage II).
+    test "keeps document order through Citation and CitationSubRef elements" do
+      xml = """
+      <Legislation>
+      <Commentaries>
+        <Commentary id="key-37f1" Type="F"><Para><Text>Reg. 4(4)  substituted (14.4.1999) by <Citation URI="u" Year="1999" Number="860">The Police (Health and Safety) Regulations 1999 (S.I. 1999/860)</Citation>, <CitationSubRef SectionRef="regulation-1">regs. 1</CitationSubRef>, <CitationSubRef SectionRef="regulation-5-1">5(1)</CitationSubRef></Text></Para></Commentary>
+      </Commentaries>
+      </Legislation>
+      """
+
+      [ann] = CommentaryParser.parse(xml, %{law_name: "UK_uksi_1998_2306"})
+
+      assert ann.text ==
+               "Reg. 4(4) substituted (14.4.1999) by The Police (Health and Safety) Regulations 1999 (S.I. 1999/860), regs. 1, 5(1)"
+    end
+
+    test "a note opening with a CitationSubRef keeps it first" do
+      xml = """
+      <Legislation>
+      <Commentaries>
+        <Commentary id="key-3a88" Type="F"><Para><Text><CitationSubRef SectionRef="regulation-10-1">Reg. 10(1)</CitationSubRef><CitationSubRef SectionRef="regulation-10-2">(2)</CitationSubRef> substituted (17.9.2002) by <Citation Year="2002" Number="2174">The Health and Safety (Miscellaneous Amendments) Regulations 2002 (S.I. 2002/2174)</Citation>, <CitationSubRef>regs. 1</CitationSubRef>, <CitationSubRef>7(a)</CitationSubRef></Text></Para></Commentary>
+      </Commentaries>
+      </Legislation>
+      """
+
+      [ann] = CommentaryParser.parse(xml, %{law_name: "UK_uksi_1998_2306"})
+
+      assert ann.text ==
+               "Reg. 10(1)(2) substituted (17.9.2002) by The Health and Safety (Miscellaneous Amendments) Regulations 2002 (S.I. 2002/2174), regs. 1, 7(a)"
+    end
+
+    test "a Text directly under the Commentary (no Para) is read once" do
+      xml = """
+      <Legislation>
+      <Commentaries>
+        <Commentary id="F1" Type="F"><Text>S. 2 repealed (1.1.2000) by <Citation>Act 1999 (c. 1)</Citation>, s. 3</Text></Commentary>
+      </Commentaries>
+      </Legislation>
+      """
+
+      [ann] = CommentaryParser.parse(xml, %{law_name: "UK_test_2024_1"})
+      assert ann.text == "S. 2 repealed (1.1.2000) by Act 1999 (c. 1), s. 3"
+    end
+
+    test "text_pairs/1 gives each commentary's old (scrambled) and ordered text" do
+      xml = """
+      <Legislation>
+      <Commentaries>
+        <Commentary id="F1" Type="F"><Para><Text>S. 2 repealed (1.1.2000) by <Citation>Act 1999 (c. 1)</Citation>, s. 3</Text></Para></Commentary>
+      </Commentaries>
+      </Legislation>
+      """
+
+      assert CommentaryParser.text_pairs(xml) == [
+               {"amendment", "F1", "S. 2 repealed (1.1.2000) by , s. 3 Act 1999 (c. 1)",
+                "S. 2 repealed (1.1.2000) by Act 1999 (c. 1), s. 3"}
+             ]
+    end
+
     test "handles empty Commentary gracefully" do
       xml = """
       <Legislation>

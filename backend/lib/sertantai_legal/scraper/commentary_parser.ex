@@ -81,6 +81,32 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     |> Map.new(fn {ref, sections} -> {ref, Enum.reverse(sections) |> Enum.uniq()} end)
   end
 
+  @doc """
+  Each commentary's `{code_type, code, old_text, text}` in document order:
+  the pre-2026-10-08 (scrambled) text beside the ordered one, so
+  `mix lat.reorder_notes` can find stored notes by their old text. Remove
+  with that task once the corpus is re-keyed.
+  """
+  @spec text_pairs(String.t()) :: [{String.t(), String.t(), String.t(), String.t()}]
+  def text_pairs(xml) when is_binary(xml) do
+    xml
+    |> SweetXml.parse(quiet: true)
+    |> xpath(~x"//Commentaries/Commentary"l)
+    |> Enum.flat_map(fn node ->
+      id = node |> xpath(~x"./@id"s) |> to_string()
+      code_type = Map.get(@type_map, node |> xpath(~x"./@Type"s) |> to_string())
+
+      if is_nil(code_type) or id == "" do
+        []
+      else
+        [
+          {to_string(code_type), derive_code(id, code_type), legacy_commentary_text(node) || "",
+           extract_commentary_text(node) || ""}
+        ]
+      end
+    end)
+  end
+
   # ── Extract a single Commentary element ──────────────────────────
 
   defp extract_commentary(node, ref_to_sections) do
@@ -104,23 +130,30 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     end
   end
 
-  # Extract text from all Para/Text children of a Commentary, joining them
+  # A Commentary's text: each Text block in document order, inline markup
+  # (Citation, CitationSubRef) joined as written, blocks joined by a space.
+  # descendant:: axes keep document order; xmerl's //text() returns direct
+  # text before descendants' and scrambled every note with a citation
+  # (LAT parser coverage II).
   defp extract_commentary_text(node) do
-    texts =
-      case xpath(node, ~x".//Para//text()"ls) do
-        nil -> []
-        list -> Enum.map(list, &to_string/1)
-      end
+    case xpath(node, ~x"./descendant::Text"l) do
+      [] -> [node]
+      blocks -> blocks
+    end
+    |> Enum.map(&inline_text/1)
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.join(" ")
+    |> case do
+      "" -> nil
+      t -> t
+    end
+  end
 
-    # Also get direct Text children (some Commentaries use Text without Para)
-    more_texts =
-      case xpath(node, ~x".//Text//text()"ls) do
-        nil -> []
-        list -> Enum.map(list, &to_string/1)
-      end
-
-    (texts ++ more_texts)
-    |> Enum.map(&String.trim/1)
+  # The old extraction (xmerl //text(): direct text first, then descendants').
+  # Kept only to match stored notes during the re-key; remove afterwards.
+  defp legacy_commentary_text(node) do
+    (xpath(node, ~x".//Para//text()"ls) ++ xpath(node, ~x".//Text//text()"ls))
+    |> Enum.map(&(&1 |> to_string() |> String.trim()))
     |> Enum.reject(&(&1 == ""))
     |> Enum.uniq()
     |> Enum.join(" ")
@@ -130,6 +163,14 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
       "" -> nil
       t -> t
     end
+  end
+
+  defp inline_text(element) do
+    element
+    |> xpath(~x"./descendant::text()"ls)
+    |> Enum.map_join("", &to_string/1)
+    |> String.replace(~r/\s+/u, " ")
+    |> String.trim()
   end
 
   @doc """

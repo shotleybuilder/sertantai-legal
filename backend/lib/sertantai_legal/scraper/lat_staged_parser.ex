@@ -144,11 +144,24 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   """
   @spec fetch_rows(String.t(), keyword()) :: {:ok, [map()], String.t()} | {:error, String.t()}
   def fetch_rows(law_name, opts \\ []) do
-    with {:ok, {type_code, slash_path}} <- parse_law_name(law_name),
+    with {:ok, xmls, law_id} <- fetch_docs(law_name, opts),
+         {:ok, {type_code, _}} <- parse_law_name(law_name) do
+      {:ok, parse_rows(xmls, law_name, type_code), law_id}
+    end
+  end
+
+  @doc """
+  Fetch a law's documents without parsing: the body, or one document per
+  scoped fragment (#166). Options as for `fetch_rows/2` (`store:`).
+  """
+  @spec fetch_docs(String.t(), keyword()) ::
+          {:ok, [String.t()], String.t()} | {:error, String.t()}
+  def fetch_docs(law_name, opts \\ []) do
+    with {:ok, {_type_code, slash_path}} <- parse_law_name(law_name),
          {:ok, law_id} <- lookup_law_id(law_name),
          {:ok, xmls} <-
            fetch_xmls(slash_path, LatScope.get(law_name), store_opts(law_name, opts)) do
-      {:ok, parse_rows(xmls, law_name, type_code), law_id}
+      {:ok, xmls, law_id}
     end
   end
 

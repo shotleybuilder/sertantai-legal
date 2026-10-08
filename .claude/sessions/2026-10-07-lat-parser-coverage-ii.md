@@ -42,7 +42,7 @@ The rest of the parser audit (2026-10-07) after the list-text bug and #174 were 
 
 - ⬜ Capture P1group/Title into a new `title` column — parser + tests ✅, migration ✅ (dev-only for prod delta), offline measure ✅, fractalaw contract (Zenoh column + manifest `title_hash`) ⬜, title-only backfill applied ✅ (45,964 titles, 1,060 laws, 0 errors; Jason 2026-10-08). (row text unchanged; migration + fractalaw contract). Stopgap in use: `backend/data/reports/clml-headings-2026-10-07.csv` (46,894 headings, 1,060 laws; script `backend/data/reports/extract_headings.py`)
 - ✅ Heading text order: parser fix (tests), 64 rows / 51 laws repaired (34 correction, 30 unattributed; verify dry run 0), UK_uksi_1979_628 Part renames via store re-parse (4 renamed, 54/54 enriched kept), 9 title corrections
-- ⬜ Annotation note text order (CommentaryParser `//text()` scramble; folded in by Jason 2026-10-08): fix, AmendmentNote against ordered text, change_id impact, re-derive
+- ⬜ Annotation note text order (folded in by Jason 2026-10-08): parser fix ✅ (tests), offline measure ✅, `mix lat.reorder_notes` ✅, corpus dry run ⬜, apply ⬜
 - ⬜ Attribute-style CommentaryRef on Addition/Substitution/Repeal (`@CommentaryRef`): 43,794 of 101,343 annotations have empty `affected_sections`
 - ⬜ `Repeal @RetainText @Extent`: territorial repeals read as live everywhere (status / column only, no text change)
 - ⬜ Lower priority: tables (cells, Tabular title), P5+, P2group/P3group titles, signatures, figures, footnotes, prelims, RestrictStart/EndDate, Versions
@@ -88,3 +88,11 @@ Pre-existing drift the diff also shows (not this fix, identical with the old par
 Final dry runs (2026-10-08, after the territorial-pair refinement `SubstitutionRef` → `ChangeId`): heading repair 64 rows / 51 laws (34 correction, 30 unattributed); 1979/628 single-law store re-parse preview: 4 Part renames, 66/66 enriched carried, 0 changed/dropped; title re-check 9 corrections to the applied title column (split Titles, territorial pairs). All awaiting Jason.
 
 Applied 2026-10-08 (Jason): `repair-applied-heading-order-2026-10-08.csv`, `lat-reparse/heading_order_1979_628.csv`, `titles-recheck-2026-10-08.csv`.
+
+## 3. Annotation note text order (folded in 2026-10-08)
+
+`CommentaryParser` read `.//Para//text()` ++ `.//Text//text()` (uniq'd): every note with a Citation came out scrambled ("substituted (17.9.2002) by , Reg. 10(1) (2) The Health and Safety …"). Now each Text block is read in document order (`descendant::text()`), blocks joined by a space. `AmendmentNote` was written against the scrambled form but parses the ordered text as well or better.
+
+Offline measurement (`notes-order-laws.csv` / `notes-order-fields.csv`, 785 laws with notes, 27 not in the store): 86,120 of 90,178 stored notes match their commentary's old text (pair on code_type + code + old text — ids renumber in scoped laws); 80,012 change text. Derived fields: effect 0 changes, effective_from 11 (dates written "( 1.4.1991)" now before "by"), changed_by 929 (645 modification, 237 amendment, 41 commencement, 17 editorial — mostly the amending instrument instead of the cited/commencing one, wsi for "(W. n)" SIs; "does not form part of domestic law under EUWA" notes lose ukpga_2018_16, which isn't an amender).
+
+change_id is a hash of the text, and LatCause reads new change_ids as an amendment → the rollout re-keys in place: `mix lat.reorder_notes` (`NoteReorder.plan/2`, `CommentaryParser.text_pairs/1` — temporary, remove after) rewrites matched notes, `LatStatus.Apply.refresh/1` re-derives fields / statuses / row effective_from+changed_by, and `lat_changes.change_ids` are mapped (one row holds any: UK_ukpga_2016_24). Per law, one transaction; dry run rolls back. Old → new change_id mapping kept for fractalaw. Contract: propose a manifest `notes_hash` so fractalaw can see note changes (nothing signals them today).
