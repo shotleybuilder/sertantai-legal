@@ -1,8 +1,24 @@
 ---
-session: "LH-01: Note Metadata"
+session: 'LH-01: Note Metadata'
 status: closed
 opened: 2026-10-08
 parent: lat-handoff/2026-10-08-lh-00-meta.md
+closed: '2026-10-08'
+outcome: success
+summary: 'Notes now apply to every row that cites them at its own level (and descendants); Welsh SIs resolved; marginal citations editorial. Measured offline: 73,154 rows gain/correct dates.'
+bugs:
+- pattern: 'Note dates/status reach only the note''s last affected row (LatStatus.note_target = List.last(affected_sections)): sibling ranges, section-level insertion notes, whole-instrument revocations (target = signature row), alternative versions'
+  category: note metadata
+  module: SertantaiLegal.Scraper.LatStatus (note_target/1), LatStatus.Apply
+  affected: 'QA: T7 29 defects / ~50 rows with notes; up to 59,486 of 104,503 lower-level rows with a dated note have nil effective_from'
+  fix: Place notes on the rows that cite them at their own level; a note applies to each citing row and its descendants
+  status: fixed
+- pattern: 'Welsh SIs in changed_by as uksi: ''S.I. 2018/35'' citing id/wsi/…, ''W.S.I. 2026/112'''
+  category: note metadata
+  module: SertantaiLegal.Scraper.AmendmentNote (changed_by)
+  affected: 4+ QA rows
+  fix: W.S.I. prefix; prefer the Citation URI type
+  status: fixed
 ---
 
 # Session: LH-01 Note Metadata (CLOSED)

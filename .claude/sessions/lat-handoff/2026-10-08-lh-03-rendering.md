@@ -1,8 +1,30 @@
 ---
-session: "LH-03: LAT Rendering"
+session: 'LH-03: LAT Rendering'
 status: closed
 opened: 2026-10-08
 parent: lat-handoff/2026-10-08-lh-00-meta.md
+closed: '2026-10-08'
+outcome: success
+summary: Prefixed XHTML tables, numbered lists, «…» numbers/lists/tables/AppendText, excluded_extent from own text, plain text where a territory covers/misses the row, signature commas.
+bugs:
+- pattern: Whole-row territorial text bracketed instead of excluded_extent when the row has child provisions
+  category: LAT territory
+  module: SertantaiLegal.Scraper.LatParser (excluded_extent over the subtree)
+  affected: QA 3 rows (1989/14 s.3(5), 1992/51 s.12(1ZA)(a))
+  fix: decide on the row's own text; subtree only when it has none
+  status: fixed
+- pattern: Complex tables lose cells; a definitions table reads [Repealed]; tables inside «…» lost
+  category: LAT text
+  module: SertantaiLegal.Scraper.LatParser (table_text, mark_repealed_provisions, quoted_text)
+  affected: QA 3 rows (ukpga 2003/20 table.1032, 1991/22 table.1059, 2017/3 s.173(2))
+  fix: investigate cell markup; quoted_text renders tables
+  status: fixed
+- pattern: «…» quotes drop Number (Schedule/Part), list letters, trailing AppendText
+  category: LAT text
+  module: SertantaiLegal.Scraper.LatParser (quoted_child)
+  affected: QA 3 rows
+  fix: render Number, ListItem numbering, AppendText after the block
+  status: fixed
 ---
 
 # Session: LH-03 LAT Rendering (CLOSED)
