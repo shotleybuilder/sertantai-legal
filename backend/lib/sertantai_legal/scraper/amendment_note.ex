@@ -51,6 +51,7 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
 
   # {regex, kind}; the earliest match after "by" wins (to_law/2).
   @citations [
+    {~r/W\.S\.I\. (\d{4})\/(\d+)/, :wsi},
     {~r/S\.S\.I\. (\d{4})\/(\d+)/, :ssi},
     {~r/S\.R\. (\d{4})\/(\d+)/, :nisr},
     {~r/S\.I\. (\d{4})\/(\d+)(?: \((W|N\.I)\.)?/, :si},
@@ -80,8 +81,7 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
       effect: effect(before, code_type),
       effective_dates: dates,
       effective_from: List.last(dates),
-      # citation-only notes ("F7 F7 S.I. 1965/1536") have no "by": scan it all
-      changed_by: changed_by(after_by || text),
+      changed_by: note_changed_by(after_by, text, code_type),
       change_id: change_id(law_name, text)
     }
   end
@@ -110,7 +110,7 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
     end
   end
 
-  defp to_law(kind, [year, number]) when kind in [:ssi, :nisr, :ukpga],
+  defp to_law(kind, [year, number]) when kind in [:wsi, :ssi, :nisr, :ukpga],
     do: law(kind, year, number)
 
   defp to_law(:si, [year, number, "W"]), do: law(:wsi, year, number)
@@ -120,6 +120,20 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
   defp to_law(:act, [year, type, number]), do: law(type, year, number)
 
   defp law(type, year, number), do: "UK_#{type}_#{year}_#{number}"
+
+  @doc """
+  A note's law name checked against the register: a Welsh SI cited as plain
+  "S.I. 2018/35" (its Citation URI says wsi, the text doesn't) reads as
+  `UK_uksi_…`; when that isn't a known law but its `UK_wsi_…` twin is, the
+  twin. `known`: law names in the register.
+  """
+  @spec resolve_law(String.t() | nil, MapSet.t()) :: String.t() | nil
+  def resolve_law("UK_uksi_" <> rest = name, known) do
+    welsh = "UK_wsi_" <> rest
+    if not MapSet.member?(known, name) and MapSet.member?(known, welsh), do: welsh, else: name
+  end
+
+  def resolve_law(name, _known), do: name
 
   defp normalise(text), do: text |> String.replace(~r/\s+/u, " ") |> String.trim()
 
@@ -149,6 +163,13 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
       _ -> "other"
     end
   end
+
+  # Citation-only amendment notes ("F7 F7 S.I. 1965/1536") have no "by":
+  # scan it all. An editorial note without "by" (a marginal citation,
+  # "1906 c. 14.") only refers to a law; it names no changing instrument.
+  defp note_changed_by(nil, _text, "extent_editorial"), do: nil
+  defp note_changed_by(nil, text, _code_type), do: changed_by(text)
+  defp note_changed_by(after_by, _text, _code_type), do: changed_by(after_by)
 
   defp changed_by(after_by) do
     @citations

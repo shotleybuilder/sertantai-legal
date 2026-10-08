@@ -63,6 +63,8 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
         }
       end)
 
+    notes = resolve_welsh(notes)
+
     note_changes =
       for n <- notes, n.stored != note_values(n.parsed), do: {n.id, n.parsed}
 
@@ -133,6 +135,32 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     e ->
       Logger.warning("[LatStatus] refresh failed for #{law_name}: #{Exception.message(e)}")
       :ok
+  end
+
+  # A Welsh SI cited as plain "S.I." parses as uksi: when only its wsi twin
+  # is in the register, use the twin (AmendmentNote.resolve_law/2).
+  defp resolve_welsh(notes) do
+    uksi =
+      for n <- notes,
+          match?("UK_uksi_" <> _, n.parsed.changed_by),
+          uniq: true,
+          do: n.parsed.changed_by
+
+    if uksi == [] do
+      notes
+    else
+      candidates = uksi ++ Enum.map(uksi, &String.replace_prefix(&1, "UK_uksi_", "UK_wsi_"))
+
+      %{rows: rows} =
+        Repo.query!("SELECT name FROM legal_register WHERE name = ANY($1)", [candidates])
+
+      known = MapSet.new(List.flatten(rows))
+
+      Enum.map(notes, fn n ->
+        by = AmendmentNote.resolve_law(n.parsed.changed_by, known)
+        put_in(n, [:parsed, Access.key(:changed_by)], by)
+      end)
+    end
   end
 
   defp note_values(%AmendmentNote{} = n),

@@ -137,13 +137,22 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
       assert :modification in types
       assert :extent_editorial in types
 
-      # C and M both map to modification — should have 2 modifications
+      # C is a modification; M (marginal citation) is editorial, not a modification (LH-01)
       mod_count = Enum.count(annotations, &(&1.code_type == :modification))
-      assert mod_count == 2
+      assert mod_count == 1
 
-      # E and X both map to extent_editorial — should have 2
+      # E, X and M map to extent_editorial
       ext_count = Enum.count(annotations, &(&1.code_type == :extent_editorial))
-      assert ext_count == 2
+      assert ext_count == 3
+    end
+
+    test "a marginal citation (Type M) is editorial, not a modification (LH-01)" do
+      xml = """
+      <Legislation><Commentaries><Commentary id="M1" Type="M"><Para><Text>1906 c. 14.</Text></Para></Commentary></Commentaries></Legislation>
+      """
+
+      [ann] = CommentaryParser.parse(xml, %{law_name: "UK_test_2024_1"})
+      assert ann.code_type == :extent_editorial
     end
 
     test "skips unknown Type values" do

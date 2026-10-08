@@ -184,4 +184,36 @@ defmodule SertantaiLegal.Scraper.LatStatus.ApplyTest do
 
     assert %{notes_changed: 0, change_rows: 0, changed: 0} = Apply.refresh(name)
   end
+
+  test "refresh/1 reads a plain \"S.I.\" as the Welsh SI when only that is in the register (LH-01)" do
+    {name, id} = law_with_lat(["A duty."])
+    year = 2000 + rem(System.unique_integer([:positive]), 90)
+
+    LegalRegister
+    |> Ash.Changeset.for_create(:create, %{
+      country: "uk",
+      name: "UK_wsi_#{year}_35",
+      title_en: "Welsh Regulations",
+      type_code: "wsi",
+      year: year,
+      number: "35"
+    })
+    |> Ash.create!()
+
+    note!(
+      name,
+      id,
+      "reg.1",
+      "Reg. 1 amended (1.4.#{year}) by S.I. #{year}/35, reg. 2",
+      "amendment"
+    )
+
+    Apply.refresh(name)
+
+    %{rows: [[by]]} =
+      Repo.query!("SELECT changed_by FROM amendment_annotations WHERE law_name = $1", [name])
+
+    assert by == "UK_wsi_#{year}_35"
+    assert Ash.get!(LegalArticle, "#{name}:reg.1").changed_by == "UK_wsi_#{year}_35"
+  end
 end

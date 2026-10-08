@@ -150,6 +150,37 @@ defmodule SertantaiLegal.Scraper.AmendmentNoteTest do
     end
   end
 
+  describe "Welsh SIs (LH-01)" do
+    test "\"W.S.I.\" is a Welsh SI" do
+      assert parse(
+               "Pt. 1 amended (1.4.2026) by The Building Regulations (Wales) 2026 (W.S.I. 2026/112), reg. 3"
+             ).changed_by ==
+               "UK_wsi_2026_112"
+    end
+
+    test "resolve_law/2: a uksi name not in the register but whose wsi twin is" do
+      known = MapSet.new(["UK_wsi_2018_35", "UK_uksi_2009_1921", "UK_wsi_2009_1921"])
+      assert AmendmentNote.resolve_law("UK_uksi_2018_35", known) == "UK_wsi_2018_35"
+      # both exist: keep the uksi the text names
+      assert AmendmentNote.resolve_law("UK_uksi_2009_1921", known) == "UK_uksi_2009_1921"
+      # neither: unchanged
+      assert AmendmentNote.resolve_law("UK_uksi_1999_1", known) == "UK_uksi_1999_1"
+      assert AmendmentNote.resolve_law(nil, known) == nil
+    end
+  end
+
+  describe "marginal citations (LH-01)" do
+    test "an editorial note that only cites a law names no changing instrument" do
+      assert parse("1906 c. 14.", "extent_editorial").changed_by == nil
+      assert parse("S.I. 1989/840.", "extent_editorial").changed_by == nil
+    end
+
+    test "an editorial note with \"by\" keeps its instrument" do
+      assert parse("Extent extended (S.) by S.I. 2001/1, art. 2", "extent_editorial").changed_by ==
+               "UK_uksi_2001_1"
+    end
+  end
+
   describe "change_id" do
     test "stable for the same law and normalised text; differs by law or text" do
       a = parse("S. 52(6)  substituted (1.4.2006) by Water Act 2003 (c. 37)").change_id

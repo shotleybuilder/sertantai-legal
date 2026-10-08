@@ -24,7 +24,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   @type_map %{
     "F" => :amendment,
     "C" => :modification,
-    "M" => :modification,
+    # marginal citation ("1906 c. 14."): a reference, not a modification
+    "M" => :extent_editorial,
     "I" => :commencement,
     "E" => :extent_editorial,
     "X" => :extent_editorial
