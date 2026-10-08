@@ -205,3 +205,14 @@ Built (tests, 2026-10-08): retained words "[E+W: words]" and territorial inserti
 Final offline diff (`final-diff-2026-10-08.csv`, all 1,068 laws; 1,057 with a change): whitespace-only 27,824 rows (1,030 laws), gap-marker-only 8,890 (700), amending text «» 5,529 (390), table/signature/schedule 781 (691), territorial brackets 674 (99), other text 115 (68), ids inserted 15,731 / removed 7,731 in ~83 laws — 11,428 inserted rows have a removed row's text (renames: extent-qualified ids from alternative versions, #position shifts). No placeholder leaks.
 
 Rollout proposal: one offline re-parse wave from the store (`mix lat.reparse --store only`, no `--cause`): LatMerge carries enrichment for rows whose normalised text is unchanged (whitespace-only) and renames, notes are re-read and re-placed, and LatCause labels each law from evidence (same source hash → parser; newer XML → legislative/unattributed per row). Dry run: `lat-reparse/wave_preview.csv`.
+
+### Re-parse wave (dry runs, 2026-10-08)
+
+First dry run (`lat-reparse/wave_preview.csv`, 1,056 laws; UK_uksi_1979_791 left out — its stored XML is a body-less "made" document, its LAT came from the PDF pipeline; preview now reports an empty parse instead of crashing): enriched 301,552 rows, carried 288,726, changed 8,568, dropped 832, ambiguous 3,426, gate failures 57 laws. Causes and fixes:
+- alternative versions made reg.33 → reg.33[E+W+NI] + reg.33[S] with shared text: the extent-tag rename took a single candidate only → now the first matching new row in document order (the body version) — ambiguous 3,426 → 12
+- a Version repeating its counterpart (uksi 2010/2214: the Welsh version of reg.7 holds a P1 marked E) duplicated rows → version rows that repeat a body row (same place, extent, text) are dropped
+- repeal-marker rows ("[Repealed]", dots) matched dozens of rows and tripped the gate → not evidence of a matching failure
+- a table's cells were repeated in the provision's own (leaf) text → only on the table row
+Remaining gate rows (13 in 8 laws) are real: renumbered by amendment (EU 2008/1272 Art. 37(4)(b) → 37(5)(c)), `#position` shifts of duplicate source ids (1875/17 s.23(3)), wording that moved (1968/73 s.10(1) E+W+NI changed, the S version keeps it) — re-enriched (`--force` for those 8 laws).
+
+Final dry run (`lat-reparse/wave_final_preview.csv`, 1,056 laws, store only): enriched 301,552 rows — carried 292,596 (97.0%), changed 8,568 (text really changed), dropped 376 (ids gone: amendments in newer XML, renumbering), ambiguous 12; gate 8 laws / 13 rows (above); errors 0. Enriched rows to re-enrich: 8,956 (3.0%). Awaiting Jason: NAS backup → wave (1,048 laws) → the 8 gate laws with `--force`.
