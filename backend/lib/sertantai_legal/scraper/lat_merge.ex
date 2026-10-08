@@ -15,9 +15,10 @@ defmodule SertantaiLegal.Scraper.LatMerge do
      the row
   2. `unique_text` — old id gone, its text equals exactly one unclaimed new
      row whose id is new, and no other vanished old row has that text: rename
-  2b. `extent_tag` — old id gone, and exactly one new id equals it apart
-     from its `[extent]` tag (tagging changed between parser generations),
-     under the same text rules as 1: rename
+  2b. `extent_tag` — old id gone, and a new id equals it apart from its
+     `[extent]` tag (tagging changed between parser generations, or the
+     provision gained a territorial alternative): rename onto the first such
+     row in document order (the body version) whose text passes the rules of 1
   3. `ordered_text` — equal-sized groups of vanished old / new-id rows with
      the same text: paired in document order (rename)
   4. otherwise: `changed` (same id, text differs), `ambiguous` (text shared
@@ -138,9 +139,16 @@ defmodule SertantaiLegal.Scraper.LatMerge do
     olds = Enum.group_by(vanished, &id_stem(&1.section_id))
     news = Enum.group_by(fresh, &id_stem(&1.section_id))
 
+    # One old row per stem; among the new rows with that stem (a provision
+    # that gained a territorial alternative has several), the first in
+    # document order whose text matches — the body version comes first.
     for {stem, [o]} <- olds,
-        [n] <- [Map.get(news, stem, [])],
-        same_row?(norm(o.text), norm(n.text)),
+        n =
+          news
+          |> Map.get(stem, [])
+          |> Enum.sort_by(& &1.position)
+          |> Enum.find(&same_row?(norm(o.text), norm(&1.text))),
+        n != nil,
         do: %{old: o.section_id, new: n.section_id, match: "extent_tag"}
   end
 

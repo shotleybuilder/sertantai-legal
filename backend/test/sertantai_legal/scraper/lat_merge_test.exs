@@ -217,4 +217,28 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
       assert plan.carry == %{}
     end
   end
+
+  test "a provision gaining a territorial alternative carries onto the first matching version (body first)" do
+    plan =
+      LatMerge.plan(
+        [
+          old("L:reg.33", "Bodies may be approved.", 10),
+          old("L:reg.33(1)", "The same words.", 11)
+        ],
+        [
+          new("L:reg.33[E+W+NI]", "Bodies may be approved.", 10),
+          new("L:reg.33(1)[E+W+NI]", "The same words.", 11),
+          new("L:reg.33[S]", "Bodies may be approved.", 12),
+          new("L:reg.33(1)[S]", "The same words.", 13)
+        ]
+      )
+
+    assert plan.carry == %{
+             "L:reg.33[E+W+NI]" => "L:reg.33",
+             "L:reg.33(1)[E+W+NI]" => "L:reg.33(1)"
+           }
+
+    assert plan.ambiguous == []
+    assert plan.lost_unchanged == []
+  end
 end
