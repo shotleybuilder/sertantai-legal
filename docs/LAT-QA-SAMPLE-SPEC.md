@@ -68,6 +68,7 @@ Judge a row against these rules, not against what you'd have done.
 **Alternative versions**
 - A provision with a territorial alternative (`AltVersionRefs` → `Versions/Version`) appears once per version.
 - Their ids carry the extent ("reg.33[E+W+NI]", "reg.33[S]").
+- A Part or Chapter heading written in its Number ("Part III.—Administration of Law") gives id `pt.III` and title/text "Administration of Law".
 - Only real versions are qualified: the same provision position occurring with different extents. A child with a narrower extent than its parent doesn't qualify the provision.
 - A version's own extent governs its rows when an inner extent contradicts it.
 
@@ -81,6 +82,7 @@ Judge a row against these rules, not against what you'd have done.
 - `repealed_saved`: repealed with savings, or the text is retained for no territory.
 - `in_force_partial`: a commencement or amendment note on the row or an ancestor says "for specified/certain purposes" for this provision, with no "wholly in force", "not already in force", "remaining purposes" or "otherwise". The phrase must be within one ";" step before its " by ", and not in a repeal's "except …" clause. If the note opens with s./reg./art. numbers, they must cover the row.
 - `prospective`: CLML `Status="Prospective"`.
+- A later dated commencement with no qualifier ("S. 43 in force at 1.5.2008 by S.I. …") completes an earlier partial one. The row is then `in_force`.
 
 **Notes**
 - A note's text is its `<Commentary>` in document order.
@@ -90,6 +92,10 @@ Judge a row against these rules, not against what you'd have done.
 - The note's `effect`, `effective_from` (latest date before " by ") and `changed_by` (first instrument after " by ") come from its text.
 - "W.S.I." is a Welsh SI. A plain "S.I." that names a Welsh SI in the register resolves to `UK_wsi_…`.
 - Marginal citations (Commentary Type="M", e.g. "1906 c. 14.") are editorial notes with no `changed_by`.
+- Marginal citations keep an "M" code, never set a row's dates, and have no `changed_by` even with "by".
+- SIs cited by title ("… Order 2013 (No. 755)") count; a "(Wales)" title is a Welsh SI.
+- Church Measures ("Measure 2018 (No. 3)") are `ukcm`.
+- Table and figure rows take their dates from the provision that holds them.
 - A row's `effective_from` / `changed_by` come from the latest dated amendment or commencement note on it or an ancestor.
 
 **Out of scope** (known, not defects)
