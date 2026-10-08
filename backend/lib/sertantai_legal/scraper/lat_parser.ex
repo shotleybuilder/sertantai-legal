@@ -696,6 +696,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
         |> Enum.map(&to_string/1)
         |> Enum.join("")
         |> String.trim()
+        # "6." (EU paragraph numbering) is number 6: no "(6.)" in ids
+        |> String.trim_trailing(".")
         |> case do
           "" -> nil
           v -> v

@@ -2862,4 +2862,16 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     assert p3.text == "Administration of Law"
     assert Enum.find(rows, &(&1.section_id == "UK_ukpga_1875_17:pt.4")).title == "Enforcement"
   end
+
+  test "a sub-provision number written \"6.\" gives (6), not (6.) (EU 2008/1272 Art. 37(6)(c))" do
+    rows =
+      LatParser.parse(
+        ~s|<Legislation><EURetained><EUBody><P1group><P1><Pnumber>Article 37</Pnumber><P1para><P2><Pnumber>6.</Pnumber><P2para><Text>Proposals—</Text><P3><Pnumber>c</Pnumber><P3para><Text>a manufacturer must submit a proposal.</Text></P3para></P3></P2para></P2></P1para></P1></P1group></EUBody></EURetained></Legislation>|,
+        %{law_name: "UK_eur_2008_1272", type_code: "eur"}
+      )
+
+    ids = Enum.map(rows, & &1.section_id)
+    assert "UK_eur_2008_1272:art.Article 37(6)(c)" in ids
+    refute Enum.any?(ids, &String.contains?(&1, "6.)"))
+  end
 end
