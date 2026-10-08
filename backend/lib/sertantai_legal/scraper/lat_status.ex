@@ -18,9 +18,9 @@ defmodule SertantaiLegal.Scraper.LatStatus do
   |                    | notes are about application, not commencement: ignored)        |
   | `in_force`         | everything else                                                 |
 
-  A note's target is the last (deepest) entry of its `affected_sections`; the
-  others are ancestors for context. A target covers itself, its
-  sub-provisions (`s.6(1)(a)`) and its extent versions (`s.6[S]`).
+  A note's targets are its `affected_sections`: the rows that cite it at their
+  own level (LH-01). A target covers itself, its sub-provisions (`s.6(1)(a)`,
+  `s.6(1)[S]` under `s.6[S]`) and, untagged, its extent versions (`s.6[S]`).
 
   Status is not part of `lat_hash`/`struct_hash` (a shared contract with
   fractalaw); the manifest's `status_hash` carries it.
@@ -61,10 +61,10 @@ defmodule SertantaiLegal.Scraper.LatStatus do
 
   def repealed_text?(_), do: false
 
-  @doc "The section_id a note applies to: the last of its `affected_sections`."
-  @spec note_target(map()) :: String.t() | nil
-  def note_target(%{affected_sections: [_ | _] = sections}), do: List.last(sections)
-  def note_target(_), do: nil
+  @doc "The section_ids a note applies to: every row it is placed on."
+  @spec note_targets(map()) :: [String.t()]
+  def note_targets(%{affected_sections: [_ | _] = sections}), do: Enum.uniq(sections)
+  def note_targets(_), do: []
 
   @doc "True when a note targeting `target` applies to `section_id`."
   @spec covers?(String.t(), String.t()) :: boolean()
@@ -80,7 +80,12 @@ defmodule SertantaiLegal.Scraper.LatStatus do
   """
   @spec resolve([map()], [map()]) :: %{String.t() => status()}
   def resolve(rows, notes) do
-    by_target = Enum.group_by(notes, &note_target/1, &{Map.get(&1, :code_type), &1.text})
+    by_target =
+      notes
+      |> Enum.flat_map(fn n ->
+        Enum.map(note_targets(n), &{&1, {Map.get(n, :code_type), n.text}})
+      end)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     Map.new(rows, fn row ->
       notes = Enum.flat_map(ancestors(row.section_id), &Map.get(by_target, &1, []))
@@ -163,8 +168,15 @@ defmodule SertantaiLegal.Scraper.LatStatus do
   """
   @spec ancestors(String.t()) :: [String.t()]
   def ancestors(section_id) do
-    untagged = String.replace(section_id, ~r/\[[^\]]*\]\z/, "")
-    Enum.uniq([section_id | strip_levels(untagged)])
+    case Regex.run(~r/\A(.+?)(\[[^\]]*\])\z/, section_id) do
+      # an extent version: its own tagged levels, then the untagged ones
+      [_, untagged, tag] ->
+        levels = strip_levels(untagged)
+        Enum.uniq([section_id | Enum.map(levels, &(&1 <> tag))] ++ levels)
+
+      nil ->
+        Enum.uniq([section_id | strip_levels(section_id)])
+    end
   end
 
   defp strip_levels(id) do

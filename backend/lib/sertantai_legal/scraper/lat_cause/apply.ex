@@ -145,7 +145,7 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
       for [sections, text, type, cid] <- note_rows,
           not MapSet.member?(before.change_ids, cid),
           do: %{
-            target: LatStatus.note_target(%{affected_sections: sections}),
+            targets: LatStatus.note_targets(%{affected_sections: sections}),
             text: text,
             parsed: AmendmentNote.parse(text, type, law_name)
           }

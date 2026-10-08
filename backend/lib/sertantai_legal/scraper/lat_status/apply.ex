@@ -86,7 +86,11 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     status_changes =
       for {sid, status} <- statuses, elem(current[sid], 0) != status, do: {sid, status}
 
-    by_target = Enum.group_by(notes, &LatStatus.note_target/1, & &1.parsed)
+    # every row a note is placed on (LH-01), not only the last
+    by_target =
+      notes
+      |> Enum.flat_map(fn n -> Enum.map(LatStatus.note_targets(n), &{&1, n.parsed}) end)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     change_changes =
       for [sid | _] <- rows,

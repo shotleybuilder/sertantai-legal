@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLog do
   - `initial` operation → no entries (version 1 is not a change)
   - `parser` / `scope` / `correction` operation → that cause for every row
   - source changed (`legislative` / `unattributed` operation) → `legislative`
-    with the row's own evidence — a note new in this parse whose target is the
+    with the row's own evidence — a note new in this parse with a target that is the
     row or an ancestor, or a status change — else `unattributed` (never
     versioned by fractalaw)
   """
@@ -70,7 +70,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLog do
   @doc """
   The parse's entries. `plan`: `%{changed, inserted, removed, renames}` (ids;
   renames `%{old, new, match}`). `ctx`: `%{cause, new_notes, status_changes}`
-  — the operation's cause, notes new in this parse (`%{target, text, parsed}`,
+  — the operation's cause, notes new in this parse (`%{targets, text, parsed}`,
   `parsed` an `AmendmentNote`), and `[{section_id, before, after}]`.
   """
   @spec entries(map(), map()) :: [entry()]
@@ -88,7 +88,11 @@ defmodule SertantaiLegal.Scraper.LatChangeLog do
     paired_old = MapSet.new(pairs, &elem(&1, 0))
     paired_new = MapSet.new(pairs, &elem(&1, 1))
     status_ids = MapSet.new(status_changes, &elem(&1, 0))
-    by_target = Enum.group_by(notes, & &1.target, & &1.parsed.change_id)
+
+    by_target =
+      notes
+      |> Enum.flat_map(fn n -> Enum.map(n.targets, &{&1, n.parsed.change_id}) end)
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     evidence = fn sid ->
       sid |> LatStatus.ancestors() |> Enum.flat_map(&Map.get(by_target, &1, [])) |> Enum.uniq()
@@ -151,7 +155,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLog do
   defp law_of(plan, notes) do
     (plan.changed ++
        plan.inserted ++
-       plan.removed ++ Enum.map(plan.renames, & &1.old) ++ Enum.map(notes, & &1.target))
+       plan.removed ++ Enum.map(plan.renames, & &1.old) ++ Enum.flat_map(notes, & &1.targets))
     |> List.first("")
     |> String.split(":", parts: 2)
     |> hd()

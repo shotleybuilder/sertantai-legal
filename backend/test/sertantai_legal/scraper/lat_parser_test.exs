@@ -2513,4 +2513,43 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     assert length(texts) == 1
     assert Enum.count(rows, &(&1.text == "Wales differs.")) == 1
   end
+
+  # LH-01: a note is placed on the rows that cite it at their own level, not
+  # on ancestors that only contain a citing descendant.
+  describe "parse/2 note placement at the citing level" do
+    setup do
+      rows =
+        LatParser.parse(
+          """
+          <Legislation><Primary><Body><P1group><Title>T</Title><P1><Pnumber><CommentaryRef Ref="c-sec"/>46</Pnumber><P1para>
+            <P2><Pnumber>3H</Pnumber><P2para><Text><Addition ChangeId="a" CommentaryRef="c-range">First.</Addition></Text></P2para></P2>
+            <P2><Pnumber>3I</Pnumber><P2para><Text><Addition ChangeId="b" CommentaryRef="c-range">Second.</Addition></Text></P2para></P2>
+            <P2><Pnumber>4</Pnumber><P2para><Text>Plain.</Text></P2para></P2>
+          </P1para></P1></P1group></Body></Primary>
+          <Commentaries>
+            <Commentary id="c-sec" Type="F"><Para><Text>S. 46 inserted (1.1.2020) by x</Text></Para></Commentary>
+            <Commentary id="c-range" Type="F"><Para><Text>S. 46(3H)(3I) inserted (18.2.2014) by y</Text></Para></Commentary>
+          </Commentaries></Legislation>
+          """,
+          %{law_name: "UK_ukpga_2008_32", type_code: "ukpga"}
+        )
+
+      %{refs: SertantaiLegal.Scraper.CommentaryParser.build_ref_to_sections(rows), rows: rows}
+    end
+
+    test "a note cited by sibling provisions is placed on each of them, not their parent", %{
+      refs: refs
+    } do
+      assert refs["c-range"] == ["UK_ukpga_2008_32:s.46(3H)", "UK_ukpga_2008_32:s.46(3I)"]
+    end
+
+    test "a note cited on the section's own number is placed on the section only", %{refs: refs} do
+      assert refs["c-sec"] == ["UK_ukpga_2008_32:s.46"]
+    end
+
+    test "per-row counts still cover the subtree (struct_hash unchanged)", %{rows: rows} do
+      s46 = Enum.find(rows, &(&1.section_id == "UK_ukpga_2008_32:s.46"))
+      assert s46.amendment_count == 1
+    end
+  end
 end

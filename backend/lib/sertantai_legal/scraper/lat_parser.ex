@@ -108,6 +108,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> drop_repeated_versions()
     |> assign_positions()
     |> build_row_fields(law_name, mode, context.type_code)
+    |> own_level_refs()
     |> mark_repealed_provisions(mode)
     |> assign_status()
     |> detect_and_qualify_parallels()
@@ -1317,6 +1318,34 @@ defmodule SertantaiLegal.Scraper.LatParser do
       |> Map.put(:sort_key, sort_key)
       |> Map.put(:hierarchy_path, hierarchy_path)
       |> Map.put(:depth, depth)
+    end)
+  end
+
+  # A row's commentary refs are collected over its subtree; for placement a
+  # note belongs to the rows that cite it at their own level (LH-01), so each
+  # row keeps only the refs none of its descendant rows hold. Counts are
+  # unaffected (struct_hash).
+  defp own_level_refs(rows) do
+    indexed = rows |> Enum.with_index() |> Map.new(fn {row, i} -> {i, row} end)
+    last = map_size(indexed) - 1
+
+    Enum.map(0..last//1, fn i ->
+      row = indexed[i]
+
+      held_below =
+        (i + 1)..last//1
+        |> Enum.reduce_while(MapSet.new(), fn j, acc ->
+          child = indexed[j]
+
+          if child.depth > row.depth,
+            do: {:cont, MapSet.union(acc, MapSet.new(child.commentary_refs || []))},
+            else: {:halt, acc}
+        end)
+
+      %{
+        row
+        | commentary_refs: Enum.reject(row.commentary_refs || [], &MapSet.member?(held_below, &1))
+      }
     end)
   end
 

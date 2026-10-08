@@ -42,14 +42,6 @@ defmodule SertantaiLegal.Scraper.LatStatusTest do
     end
   end
 
-  describe "note_target/1" do
-    test "the last (deepest) affected section is the target; ancestors are context" do
-      assert LatStatus.note_target(note(["pt.II", "h.63", "s.76A"], "x")) == "#{@law}:s.76A"
-      assert LatStatus.note_target(%{affected_sections: []}) == nil
-      assert LatStatus.note_target(%{affected_sections: nil}) == nil
-    end
-  end
-
   describe "resolve/2" do
     test "live text is in_force; dotted text is repealed" do
       rows = [row("s.1", "The employer must keep records."), row("s.2", ". . . . . ")]
@@ -352,5 +344,51 @@ defmodule SertantaiLegal.Scraper.LatStatusTest do
       assert LatStatus.statuses() ==
                ~w(in_force in_force_partial repealed repealed_saved prospective)
     end
+  end
+
+  describe "notes covering several rows (LH-01)" do
+    test "a partial note placed on several rows applies to each of them and their descendants" do
+      rows = [
+        row("s.78(4)", "A."),
+        row("s.78(5)", "B."),
+        row("s.78(5)(a)", "C."),
+        row("s.79", "D.")
+      ]
+
+      notes = [
+        note(
+          ["s.78(4)", "s.78(5)"],
+          "S. 78(4)(5) in force at 6.4.2023 for specified purposes by S.I. 2023/362"
+        )
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{
+               "#{@law}:s.78(4)" => "in_force_partial",
+               "#{@law}:s.78(5)" => "in_force_partial",
+               "#{@law}:s.78(5)(a)" => "in_force_partial",
+               "#{@law}:s.79" => "in_force"
+             }
+    end
+
+    test "note_targets/1 is every row the note is placed on" do
+      assert LatStatus.note_targets(%{affected_sections: ["L:s.1", "L:s.2"]}) == [
+               "L:s.1",
+               "L:s.2"
+             ]
+
+      assert LatStatus.note_targets(%{affected_sections: nil}) == []
+    end
+  end
+
+  test "ancestors/1 keeps the extent tag at every level (a note on reg.33[S] covers reg.33(1)[S])" do
+    assert LatStatus.ancestors("L:reg.33(1)(a)[S]") ==
+             [
+               "L:reg.33(1)(a)[S]",
+               "L:reg.33(1)[S]",
+               "L:reg.33[S]",
+               "L:reg.33(1)(a)",
+               "L:reg.33(1)",
+               "L:reg.33"
+             ]
   end
 end

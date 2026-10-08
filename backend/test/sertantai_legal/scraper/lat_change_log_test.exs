@@ -8,7 +8,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
   defp id(x), do: "#{@law}:#{x}"
 
   defp note(target, text),
-    do: %{target: id(target), text: text, parsed: AmendmentNote.parse(text, "amendment", @law)}
+    do: %{targets: [id(target)], text: text, parsed: AmendmentNote.parse(text, "amendment", @law)}
 
   defp plan(overrides \\ []) do
     Map.merge(%{changed: [], inserted: [], removed: [], renames: []}, Map.new(overrides))
