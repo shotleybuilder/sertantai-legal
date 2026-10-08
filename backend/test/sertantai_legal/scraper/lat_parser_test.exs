@@ -2046,4 +2046,59 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
                "Advisory committees."
     end
   end
+
+  # Notes referenced only by a CommentaryRef attribute (Addition/Substitution/
+  # Repeal) or from a P1group's Title had no affected_sections (LAT parser
+  # coverage II): 35,353 + 912 notes unplaced.
+  describe "parse/2 commentary refs for note placement" do
+    defp refs_of(rows, section_id),
+      do: rows |> Enum.find(&(&1.section_id == section_id)) |> Map.fetch!(:commentary_refs)
+
+    setup do
+      rows =
+        LatParser.parse(
+          """
+          <Legislation><Secondary><Body>
+            <P1group><Title>Duties<CommentaryRef Ref="c-title"/></Title>
+              <P1><Pnumber><CommentaryRef Ref="c-num"/>2</Pnumber><P1para>
+                <P2><Pnumber>1</Pnumber><P2para><Text>An employer shall <Substitution ChangeId="x" CommentaryRef="c-attr">ensure</Substitution> safety.</Text></P2para></P2>
+                <P2><Pnumber>2</Pnumber><P2para><Text><Repeal ChangeId="y" CommentaryRef="c-rep">. . .</Repeal></Text></P2para></P2>
+              </P1para></P1>
+            </P1group>
+          </Body></Secondary>
+          <Commentaries>
+            <Commentary id="c-title" Type="F"><Para><Text>Title substituted</Text></Para></Commentary>
+            <Commentary id="c-num" Type="F"><Para><Text>Reg. 2 amended</Text></Para></Commentary>
+            <Commentary id="c-attr" Type="F"><Para><Text>Word substituted</Text></Para></Commentary>
+            <Commentary id="c-rep" Type="F"><Para><Text>Reg. 2(2) revoked</Text></Para></Commentary>
+          </Commentaries></Legislation>
+          """,
+          %{law_name: "UK_uksi_2024_1", type_code: "uksi"}
+        )
+
+      %{rows: rows}
+    end
+
+    test "an attribute-only ref places the note on its provision", %{rows: rows} do
+      assert "c-attr" in refs_of(rows, "UK_uksi_2024_1:reg.2(1)")
+      assert "c-rep" in refs_of(rows, "UK_uksi_2024_1:reg.2(2)")
+    end
+
+    test "a P1group Title's ref goes on the P1 row", %{rows: rows} do
+      assert "c-title" in refs_of(rows, "UK_uksi_2024_1:reg.2")
+    end
+
+    test "attribute and title refs don't change the per-row counts", %{rows: rows} do
+      reg2 = Enum.find(rows, &(&1.section_id == "UK_uksi_2024_1:reg.2"))
+      # only the <CommentaryRef> element in the Pnumber, as before
+      assert reg2.amendment_count == 1
+      assert Enum.find(rows, &(&1.section_id == "UK_uksi_2024_1:reg.2(1)")).amendment_count == nil
+    end
+
+    test "the notes get affected_sections", %{rows: rows} do
+      refs = SertantaiLegal.Scraper.CommentaryParser.build_ref_to_sections(rows)
+      assert List.last(refs["c-attr"]) == "UK_uksi_2024_1:reg.2(1)"
+      assert List.last(refs["c-title"]) == "UK_uksi_2024_1:reg.2"
+    end
+  end
 end

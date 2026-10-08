@@ -34,7 +34,9 @@ defmodule SertantaiLegal.Scraper.LatStatus do
   @partial ~r/for (specified|certain) purposes/i
   # "... for specified purposes and otherwise 1.4.1996" / "... and 1.4.2007
   # otherwise": the remainder commenced too.
-  @full ~r/wholly in force|fully in force|so far as not already in force|for all other purposes|\botherwise\b/i
+  # "so far as it is / they are not already in force", "… in operation", typos
+  # ("alrady"), "for (all) remaining purposes" (RTA 1988 s.184 et al.).
+  @full ~r/wholly in force|fully in force|so far as (?:it is |they are )?not (?:al\w*dy )?in (?:forc|operation)|for all other purposes|remaining purposes|\botherwise\b/i
   @repeal ~r/\b(repealed|revoked|omitted)\b/i
   # Case-sensitive: "Saving Provisions" / "Energy Savings" in instrument titles
   # are capitalised; a savings note on the repeal reads "... and savings in ...".

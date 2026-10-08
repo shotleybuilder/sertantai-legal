@@ -209,6 +209,37 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
+  @doc """
+  A law's annotations from its documents and parsed LAT rows (stage 4):
+  placed on the rows that cite them; per document and renumbered when scoped.
+  """
+  @spec parse_annotations([String.t()], String.t(), [map()]) :: [map()]
+  def parse_annotations(xmls, law_name, lat_rows) do
+    ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
+
+    case xmls do
+      [xml] ->
+        CommentaryParser.parse(xml, %{law_name: law_name}, ref_to_sections)
+
+      fragments ->
+        fragments
+        |> Enum.flat_map(&CommentaryParser.parse(&1, %{law_name: law_name}, ref_to_sections))
+        |> CommentaryParser.renumber(law_name)
+    end
+  end
+
+  @doc """
+  Fetch and parse a law's annotations without persisting (e.g.
+  `mix lat.place_notes`). Options as for `fetch_rows/2` (`store:`).
+  """
+  @spec fetch_notes(String.t(), keyword()) :: {:ok, [map()]} | {:error, String.t()}
+  def fetch_notes(law_name, opts \\ []) do
+    with {:ok, xmls, _law_id} <- fetch_docs(law_name, opts),
+         {:ok, {type_code, _}} <- parse_law_name(law_name) do
+      {:ok, parse_annotations(xmls, law_name, parse_rows(xmls, law_name, type_code))}
+    end
+  end
+
   defp parse_rows(xmls, law_name, type_code) do
     xmls
     |> Enum.map(&LatParser.parse(&1, %{law_name: law_name, type_code: type_code}))
@@ -331,18 +362,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress) do
     # Stage 4: Parse annotations (per document when scoped)
     notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
-    ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
-
-    annotations =
-      case xmls do
-        [xml] ->
-          CommentaryParser.parse(xml, %{law_name: law_name}, ref_to_sections)
-
-        fragments ->
-          fragments
-          |> Enum.flat_map(&CommentaryParser.parse(&1, %{law_name: law_name}, ref_to_sections))
-          |> CommentaryParser.renumber(law_name)
-      end
+    annotations = parse_annotations(xmls, law_name, lat_rows)
 
     notify(
       on_progress,

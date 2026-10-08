@@ -76,6 +76,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       chapter: nil,
       heading_group: nil,
       group_title: nil,
+      group_refs: [],
       schedule: nil,
       provision: nil,
       sub: nil,
@@ -190,7 +191,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
       name == "P1group" ->
         # The group's Title is the heading of the P1(s) it wraps
-        walk_children(node, %{ctx | group_title: heading_title(node)})
+        # and the notes its Title cites are about them
+        walk_children(node, %{
+          ctx
+          | group_title: heading_title(node),
+            group_refs: placement_refs(node, "./Title")
+        })
 
       name in @container_elements ->
         walk_children(node, ctx)
@@ -241,10 +247,18 @@ defmodule SertantaiLegal.Scraper.LatParser do
             sub_paragraph: nil,
             p2_is_wrapper: wrapper,
             # consumed here: provisions nested in this P1 are not the group's
-            group_title: nil
+            group_title: nil,
+            group_refs: []
         }
 
-        row = %{emit_structural_row("P1", new_ctx, node, extent) | title: ctx.group_title}
+        row = emit_structural_row("P1", new_ctx, node, extent)
+
+        row = %{
+          row
+          | title: ctx.group_title,
+            commentary_refs: Enum.uniq(ctx.group_refs ++ row.commentary_refs)
+        }
+
         [row | walk_children(node, new_ctx)]
 
       name == "P2" ->
@@ -725,7 +739,16 @@ defmodule SertantaiLegal.Scraper.LatParser do
       e: Map.get(counts, "E") |> nil_if_zero()
     }
 
-    {typed_counts, refs}
+    # Placement (affected_sections) also takes the notes cited by attribute
+    # on Addition/Substitution/Repeal; the counts stay element-only.
+    {typed_counts, Enum.uniq(refs ++ placement_refs(node, "."))}
+  end
+
+  # CommentaryRef elements' Ref and CommentaryRef attributes under `path`.
+  defp placement_refs(node, path) do
+    elements = xpath(node, ~x"#{path}/descendant::CommentaryRef/@Ref"ls)
+    attributes = xpath(node, ~x"#{path}/descendant-or-self::*/@CommentaryRef"ls)
+    (elements ++ attributes) |> Enum.map(&to_string/1) |> Enum.uniq()
   end
 
   # Classify a ref ID: first try the lookup (handles hash-style IDs),

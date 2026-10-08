@@ -110,6 +110,49 @@ defmodule SertantaiLegal.Scraper.LatStatusTest do
       assert LatStatus.resolve(rows, notes) == %{"#{@law}:s.57(1D)" => "in_force"}
     end
 
+    test "'in so far as it is / they are not already in force' is full commencement (RTA 1988 s.184)" do
+      rows = [row("s.184(1)", "A duty."), row("s.184(2)", "Another.")]
+
+      notes = [
+        note(
+          ["s.184(1)"],
+          "Words in s. 184(1) substituted (28.3.2009 for certain purposes, 31.10.2009 in so far as it is not already in force) by Armed Forces Act 2006 (c. 52)",
+          "amendment"
+        ),
+        note(
+          ["s.184(2)"],
+          "Words in s. 184(2) substituted (28.3.2009 for certain purposes, 31.10.2009 in so far as they are not already in force) by Armed Forces Act 2006 (c. 52)",
+          "amendment"
+        )
+      ]
+
+      assert LatStatus.resolve(rows, notes) == %{
+               "#{@law}:s.184(1)" => "in_force",
+               "#{@law}:s.184(2)" => "in_force"
+             }
+    end
+
+    test "other full-commencement wordings found in the corpus" do
+      for tail <- [
+            "1.7.1999 for remaining purposes",
+            "3.7.2000 for all remaining purposes",
+            "1.4.2010 in so far as not already in operation",
+            "1.4.2010 in so far as not alrady in force",
+            "1.4.2010 in so far as not in force"
+          ] do
+        notes = [
+          note(
+            ["s.5"],
+            "S. 5 in force at 1.1.1999 for specified purposes, #{tail}",
+            "commencement"
+          )
+        ]
+
+        assert LatStatus.resolve([row("s.5", "A duty.")], notes) == %{"#{@law}:s.5" => "in_force"},
+               tail
+      end
+    end
+
     test "'... and otherwise <date>' is full commencement (spot check, WIA 1991 s.101A)" do
       rows = [row("s.101A(4)(b)", "A duty."), row("s.33BA", "Another.")]
 
