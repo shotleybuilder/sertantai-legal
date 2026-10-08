@@ -10,8 +10,8 @@ bugs:
     category: LAT coverage
     module: SertantaiLegal.Scraper.LatParser (P1group in @container_elements; extract_title)
     affected: "31,644 empty section/article rows in 1,033 of 1,069 laws"
-    fix: "Read P1group/Title onto the provision row in a new title column (row text unchanged)"
-    status: open
+    fix: "title column (item 1)"
+    status: fixed
   - pattern: "xmerl ./Title//text() returns text nodes out of document order (direct text first, then descendants'); extract_title scrambles headings with inline markup"
     category: LAT text
     module: SertantaiLegal.Scraper.LatParser (extract_title; //text() elsewhere)
@@ -22,8 +22,8 @@ bugs:
     category: LAT status
     module: SertantaiLegal.Scraper.LatParser (mark_repealed_provisions reads the P1's own refs only)
     affected: "subset of 877 empty section/article rows left untitled (e.g. UK_ukpga_1962_58:s.24)"
-    fix: "Treat a dots-only group Title (or its CommentaryRef) as a repeal marker for the P1; status/text fix with the territorial-repeal item"
-    status: open
+    fix: "Fixed via note placement (P1group Title refs on the P1 → [Repealed])"
+    status: fixed
   - pattern: "CommentaryParser reads .//Para//text() and .//Text//text() (xmerl: direct text first, then descendants') — amendment note text scrambled corpus-wide, e.g. 'substituted (17.9.2002) by , Reg. 10(1) (2) The Health and Safety ... regs. 1 7(a)'"
     category: annotation text
     module: SertantaiLegal.Scraper.CommentaryParser (extract_commentary_text); taxa_parser.ex has the same xpaths
@@ -52,8 +52,38 @@ bugs:
     category: LAT status
     module: SertantaiLegal.Scraper.LatStatus (status/2)
     affected: "~10-15 of 451 rows newly partial after placement (e.g. UK_ukpga_2017_20 s.43/s.44 carry the source's copied 'S. 2 in force for specified purposes' note; UK_ukpga_1993_12 s.50)"
-    fix: "Require the partial phrase to govern the note's subject (leading provision) or the row; low priority"
-    status: open
+    fix: "partial_note?: phrase within a commencement step before ' by ', not in a repeal's except-clause, note subject (s./reg./art. numbers) covers the row"
+    status: fixed
+  - pattern: "#165 schedule rows empty text (TitleBlock title not read)"
+    category: LAT text
+    module: SertantaiLegal.Scraper.LatParser (extract_title)
+    affected: "16 of 17 schedule rows"
+    fix: "extract_title falls back to TitleBlock/Title"
+    status: fixed
+  - pattern: "Amending provisions end 'insert—/substitute—': BlockAmendment text skipped on structural rows, unquoted on leaf rows"
+    category: LAT text
+    module: SertantaiLegal.Scraper.LatParser (text_blocks: @quoted_elements)
+    affected: "4,107 rows / 289 laws (qq-00)"
+    fix: "One «…» block with numbers and titles (Jason: amending text used to update records)"
+    status: fixed
+  - pattern: "Table cells (XHTML) not captured; signatures (Signee) empty; P2group/P3group titles; Versions alternatives skipped"
+    category: LAT coverage
+    module: SertantaiLegal.Scraper.LatParser
+    affected: "208 tables, 722 signatures (half empty), 90 group titles, 577 alternative provision versions"
+    fix: "table_text, signee_text, grouped/2, alt_versions (walked beside their counterpart)"
+    status: fixed
+  - pattern: "Old-generation sort keys (22 segments)"
+    category: LAT
+    module: legal_articles.sort_key
+    affected: "0 rows left (2026-10-08)"
+    fix: "SortKeyRewrite (2026-09-27)"
+    status: fixed
+  - pattern: "Repealed provision whose CommentaryRef sits in a dots-only P1group Title reads in_force with empty text"
+    category: LAT status
+    module: SertantaiLegal.Scraper.LatParser
+    affected: "e.g. UK_ukpga_1962_58:s.24 — now [Repealed]/repealed"
+    fix: "P1group Title refs placed on the P1 (item 4) → repealed marker"
+    status: fixed
 ---
 
 # Session: LAT Parser Coverage II (ACTIVE)
@@ -157,3 +187,21 @@ Dry runs (2026-10-08, store):
 - Text repair (`repair-plan-retained-2026-10-08.csv`, 98 laws, all `correction`): 536 rows — 402 empty rows → "[Repealed]"/"[Revoked]" (they now carry the repeal note's ref: a side effect of note placement, item 4), 133 bracketed territorial wording, 1 glued word ("1965the").
 
 Applied 2026-10-08 (Jason), in order: `mix lat.backfill_titles --column repealed_extent --all --store only --apply` (7,015 rows / 103 laws); `mix lat.status --apply` (in_force → repealed_saved 1,948, in_force_partial → repealed_saved 15; 33 laws); `mix lat.repair_text --laws-file retained-laws.txt --whole --store only --tag retained --cause correction --apply` (536 rows, all correction). Verified: repair re-dry-run 0, `mix lat.status` 0. Pairs whose SubstitutionRef resolves to no element (12 in the survey, e.g. 1986/1078 reg.107(2)(a)) stay as written (both versions in sequence). Not done: 178 rows with words repealed for one territory and no replacement keep the words as plain text (undecided).
+
+## 6. Close every remaining parse bug in place (Jason, 2026-10-08)
+
+Jason: "I want clean data handed off to fractalaw given the time, effort and cost of enrichment. We cannot continue to iterate while data quality improves — data quality needs all fixed in place." Every open LAT parse bug is fixed in this session, then one hand-off.
+
+Inventory (2026-10-08): old-generation sort keys — 0 rows left (fixed earlier); P1group-Title repeal notes — fixed (rows now [Repealed]/repealed); empty section/article rows — not a bug (text in sub-provisions; title column). Open: #165 schedule rows empty (16 of 17); amending provisions ending "insert—/substitute—" (4,107 rows / 289 laws; BlockAmendment 5,939 blocks, 5.6M chars, skipped); tables (208 Tabular / 85 docs, cell text missing — 80 of 212 rows empty); signatures (722; half empty); P2group/P3group titles (90 / 10 docs); Versions blocks (86); partial-status misfires (~10–15 rows); footnotes (4,567 / 502 docs) and figures (102); drift (whitespace-only 28,710 rows, gap-marker-only 9,112, ids 1,703 inserted / 903 removed in ~43 laws, 3,924 unmatched notes).
+
+Decisions (Jason, 2026-10-08):
+- Retained words with no replacement: bracket "[E+W: words]" (done, + territorial insertions "[E+W: words]", adjacent brackets merge).
+- Amending provisions: append the inserted text, quoted «…» — "because leg.gov.uk doesn't apply amendments in good time — we have an issue to use the amending text to update our records. Were it not for this reason it would be [a marker only]."
+- Rows inserted wholly for a narrower territory (494): plain text; rename `repealed_extent` → `excluded_extent` (territories where the row's text does not apply), covering whole-row repeals and whole-row insertions.
+- Footnotes and figures: leave out; future enhancements #176 (footnotes), #177 (figures).
+
+Built (tests, 2026-10-08): retained words "[E+W: words]" and territorial insertions "[E+W: words]" (narrower than the row), adjacent same-territory brackets merge, nested repeals plain inside; `Territory.normalize/1` (dotted "E.W."); `excluded_extent` (renamed from `repealed_extent`, migration 20261008130300) also for rows inserted wholly for a narrower territory (plain text); amending text «…» (BlockAmendment/AppendText/BlockExtract, numbers + titles, also as trailing content); tables (cells " | " / "; ", Tabular title → title column; not repeated in the provision's text); signatures (Signee: name, job title, address, date); P2group/P3group titles + refs; alternative versions (Versions/Version via AltVersionRefs, beside their counterpart, qualified by extent); schedule row text from TitleBlock (#165); partial status only from the note's own commencement step (58 rows partial → in_force: NPA 2017 copies, GWA boilerplate, citation tails, repeal except-clauses). Issues #176 (footnotes), #177 (figures).
+
+Final offline diff (`final-diff-2026-10-08.csv`, all 1,068 laws; 1,057 with a change): whitespace-only 27,824 rows (1,030 laws), gap-marker-only 8,890 (700), amending text «» 5,529 (390), table/signature/schedule 781 (691), territorial brackets 674 (99), other text 115 (68), ids inserted 15,731 / removed 7,731 in ~83 laws — 11,428 inserted rows have a removed row's text (renames: extent-qualified ids from alternative versions, #position shifts). No placeholder leaks.
+
+Rollout proposal: one offline re-parse wave from the store (`mix lat.reparse --store only`, no `--cause`): LatMerge carries enrichment for rows whose normalised text is unchanged (whitespace-only) and renames, notes are re-read and re-placed, and LatCause labels each law from evidence (same source hash → parser; newer XML → legislative/unattributed per row). Dry run: `lat-reparse/wave_preview.csv`.
