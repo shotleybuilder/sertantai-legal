@@ -193,7 +193,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp open_lead_in?(node) do
     case node |> text_blocks(:structural) |> Enum.find(&(is_binary(&1) and &1 != "")) do
       nil -> false
-      lead -> String.match?(lead, ~r/[—–:-]\s*$/u)
+      lead -> lead |> plain_text() |> String.match?(~r/[—–:-]\s*$/u)
     end
   end
 
@@ -816,9 +816,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
         {render_pair(old, render_inline(partner), child, partner), j}
 
       _ ->
-        if retained_words?(child),
-          do: {retained_placeholder(child), skip_to},
-          else: {render_inline(child), skip_to}
+        cond do
+          retained_words?(child) -> {placeholder(child, "keep"), skip_to}
+          territorial_insertion?(child) -> {placeholder(child, "ins"), skip_to}
+          true -> {render_inline(child), skip_to}
+        end
     end
   end
 
@@ -830,10 +832,18 @@ defmodule SertantaiLegal.Scraper.LatParser do
       substitution_ref(el) == nil
   end
 
-  defp retained_placeholder(el) do
+  # Words inserted (Addition/Substitution) for a territory: "[E+W: words]"
+  # when narrower than the row's extent.
+  defp territorial_insertion?(el) do
+    elem(el, 1) in [:Addition, :Substitution] and xpath(el, ~x"./@Extent"s) != ""
+  end
+
+  defp placeholder(el, mode) do
     own = xpath(el, ~x"./@Extent"s)
     ref = xpath(el, ~x"./@CommentaryRef"s)
-    "#{@words_open}#{own}|#{ref}#{@words_mid}#{render_inline(el)}#{@words_close}"
+    # nested repeals' words are plain inside the outer placeholder
+    words = el |> xpath(~x"./descendant::text()"ls) |> Enum.map_join("", &to_string/1)
+    "#{@words_open}#{mode}|#{own}|#{ref}#{@words_mid}#{words}#{@words_close}"
   end
 
   defp render_node(node) do
@@ -877,13 +887,36 @@ defmodule SertantaiLegal.Scraper.LatParser do
         Territory.subtract(extent, t) || "elsewhere"
       end)
 
-    Regex.replace(
-      ~r/#{@words_open}([^|]*)\|([^#{@words_mid}]*)#{@words_mid}([^#{@words_close}]*)#{@words_close}/u,
-      text,
-      fn _, own, ref, words ->
+    ~r/#{@words_open}(keep|ins)\|([^|]*)\|([^#{@words_mid}]*)#{@words_mid}([^#{@words_close}]*)#{@words_close}/u
+    |> Regex.replace(text, fn
+      _, "keep", own, ref, words ->
         words_label(words, extent, territory(own, ref, lookup), repealed)
-      end
-    )
+
+      _, "ins", own, _ref, words ->
+        inserted_label(words, extent, Transforms.normalize_xml_extent(own))
+    end)
+    |> merge_brackets()
+  end
+
+  defp inserted_label(words, extent, territory) do
+    if Territory.covers?(territory, extent),
+      do: words,
+      else: "[#{territory}: #{String.trim(words)}]"
+  end
+
+  # "[S: the 1993 Act][S: , and]" → "[S: the 1993 Act, and]": adjacent
+  # brackets for the same territories (fragmented markup) merge.
+  defp merge_brackets(text) do
+    merged = Regex.replace(~r/\[([A-Z+]+): ([^\[\]]*)\](\s*)\[\1: /u, text, "[\\1: \\2\\3")
+    if merged == text, do: text, else: merge_brackets(merged)
+  end
+
+  # Text with retained-words placeholders reduced to their words (for checks
+  # made before a row's territories are known, e.g. open_lead_in?/1).
+  defp plain_text(text) do
+    text
+    |> String.replace(~r/#{@words_open}[^#{@words_mid}]*#{@words_mid}/u, "")
+    |> String.replace(@words_close, "")
   end
 
   defp territory(own, ref, lookup),

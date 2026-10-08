@@ -2239,6 +2239,57 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.13").text == "A duty to [E+W: consult and] act."
     end
 
+    test "nested retained repeals (Firearms Act 1968 s.51A) render once, plain inside" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>15</Pnumber><P1para><Text>Before <Repeal RetainText="true" Extent="S"><Repeal RetainText="true" Extent="S">in relation to Scotland</Repeal> only</Repeal> after.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.15").text == "Before [E+W: in relation to Scotland only] after."
+    end
+
+    test "a retained-repeal lead-in still opens its list (EPA 1990 s.25(2))" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>16</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>First.</Text></P2para></P2><P2><Pnumber>2</Pnumber><P2para><Text><Repeal RetainText="true" Extent="S">Where—</Repeal></Text><P3><Pnumber>a</Pnumber><P3para><Text>a thing happens,</Text></P3para></P3></P2para></P2><BlockText><Para><Text>that fact is evidence.</Text></Para></BlockText></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.16(2)").text == "[E+W: Where—] … that fact is evidence."
+    end
+
+    test "words inserted for one territory are bracketed with it" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>17</Pnumber><P1para><Text>A duty to <Addition ChangeId="i1" Extent="E+W">promptly</Addition> act.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.17").text == "A duty to [E+W: promptly] act."
+    end
+
+    test "an insertion covering the row's whole extent stays plain" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>18</Pnumber><P1para><Text>A duty to <Addition ChangeId="i2" Extent="E+W+S">promptly</Addition> act.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.18").text == "A duty to promptly act."
+    end
+
+    test "adjacent brackets for the same territories merge (EPA 1990 s.156(2))" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>19</Pnumber><P1para><Text>as in <Repeal RetainText="true" Extent="E+W">the 1993 Act</Repeal><Repeal RetainText="true" Extent="E+W">, and</Repeal> <Addition ChangeId="i3" Extent="E+W">the Permitting Regulations</Addition> apply.</Text></P1para></P1></P1group>|,
+          ""
+        )
+
+      assert by_id(rows, "reg.19").text ==
+               "as in [S: the 1993 Act, and] [E+W: the Permitting Regulations] apply."
+    end
+
     test "retained words with no territory (purposes / savings) stay plain" do
       rows =
         retained_law(
