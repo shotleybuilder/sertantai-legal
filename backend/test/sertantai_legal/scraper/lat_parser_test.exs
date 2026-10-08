@@ -1945,6 +1945,23 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert titles == ["Particulars to be notified", "Minimum welfare facilities"]
     end
 
+    test "a P2group's / P3group's Title goes on the P2 / P3 row it wraps" do
+      rows =
+        parse_body("""
+        <P1group><Title>Duties</Title><P1><Pnumber>7</Pnumber><P1para>
+          <P2group><Title>General duty</Title><P2><Pnumber>1</Pnumber><P2para><Text>An employer shall act.</Text></P2para></P2></P2group>
+          <P2><Pnumber>2</Pnumber><P2para><Text>No title.</Text>
+            <P3group><Title>Exception</Title><P3><Pnumber>a</Pnumber><P3para><Text>unless exempt.</Text></P3para></P3></P3group>
+          </P2para></P2>
+        </P1para></P1></P1group>
+        """)
+
+      assert row(rows, "UK_uksi_2024_1:reg.7").title == "Duties"
+      assert row(rows, "UK_uksi_2024_1:reg.7(1)").title == "General duty"
+      assert row(rows, "UK_uksi_2024_1:reg.7(2)").title == nil
+      assert row(rows, "UK_uksi_2024_1:reg.7(2)(a)").title == "Exception"
+    end
+
     test "to_insert_maps/2 carries the title" do
       rows =
         parse_body("""
@@ -2406,6 +2423,67 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         )
 
       assert amended_text(rows, "reg.4") == "After section 9 insert— «Fees 9A. A fee is payable.»"
+    end
+  end
+
+  describe "parse/2 tables" do
+    test "a table row holds its cells; its Title goes on the title column (wsi 2021/77 reg.9(2))" do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation><Secondary><Body><P1group><P1><Pnumber>9</Pnumber><P1para><Text>The percentages are—</Text><Tabular Orientation="portrait"><Title>Available percentage</Title><table xmlns="http://www.w3.org/1999/xhtml" cols="2"><thead><tr><th>Type of livestock manure</th><th>Amount of nitrogen</th></tr></thead><tbody><tr><td>Cattle slurry</td><td>40 %</td></tr><tr><td>Pig <Emphasis>slurry</Emphasis></td><td>50 %</td></tr></tbody></table></Tabular></P1para></P1></P1group></Body></Secondary></Legislation>|,
+          %{law_name: "UK_wsi_2021_77", type_code: "wsi"}
+        )
+
+      table = Enum.find(rows, &(&1.section_type == "table"))
+
+      assert table.text ==
+               "Type of livestock manure | Amount of nitrogen; Cattle slurry | 40 %; Pig slurry | 50 %"
+
+      assert table.title == "Available percentage"
+    end
+  end
+
+  describe "parse/2 signatures" do
+    test "a signature row holds the signee (uksi 2019/156)" do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation><Secondary><Body><P1group><P1><Pnumber>1</Pnumber><P1para><Text>Citation.</Text></P1para></P1></P1group><SignedSection><Signatory><Para><Text>Signed by authority of the Secretary of State</Text></Para><Signee><PersonName>Richard Harrington</PersonName><JobTitle> Parliamentary Under Secretary of State</JobTitle><Address><AddressLine> Department of Business, Energy and Industrial Strategy</AddressLine></Address><DateSigned Date="2019-01-31"><DateText/></DateSigned></Signee></Signatory></SignedSection></Body></Secondary></Legislation>|,
+          %{law_name: "UK_uksi_2019_156", type_code: "uksi"}
+        )
+
+      signed = Enum.find(rows, &(&1.section_type == "signed"))
+
+      assert signed.text ==
+               "Signed by authority of the Secretary of State Richard Harrington, Parliamentary Under Secretary of State, Department of Business, Energy and Industrial Strategy, 2019-01-31"
+    end
+  end
+
+  describe "parse/2 alternative versions" do
+    test "a provision's territorial alternative (Versions, AltVersionRefs) is parsed beside it (uksi 1996/1527 reg.33)" do
+      rows =
+        LatParser.parse(
+          ~s|<Legislation RestrictExtent="E+W+S+N.I."><Secondary><Body>
+            <P1group AltVersionRefs="v1" RestrictExtent="E+W+N.I."><Title>Bodies eligible</Title><P1 id="regulation-33"><Pnumber>33</Pnumber><P1para><Text>England version.</Text></P1para></P1></P1group>
+            <P1group><P1 id="regulation-34"><Pnumber>34</Pnumber><P1para><Text>Next.</Text></P1para></P1></P1group>
+          </Body></Secondary>
+          <Versions><Version id="v1" Description="S"><P1group RestrictExtent="S"><Title>Bodies eligible</Title><P1 id="regulation-33"><Pnumber>33</Pnumber><P1para><Text>Scotland version.</Text></P1para></P1></P1group></Version>
+          <Version id="v2"><Figure><Image ResourceRef="r1"/></Figure></Version></Versions></Legislation>|,
+          %{law_name: "UK_uksi_1996_1527", type_code: "uksi"}
+        )
+
+      ids = Enum.map(rows, & &1.section_id)
+      assert "UK_uksi_1996_1527:reg.33[E+W+NI]" in ids
+      assert "UK_uksi_1996_1527:reg.33[S]" in ids
+
+      scot = Enum.find(rows, &(&1.section_id == "UK_uksi_1996_1527:reg.33[S]"))
+      assert scot.text == "Scotland version."
+      assert scot.extent_code == "S"
+
+      # beside its counterpart, before reg.34
+      assert Enum.find_index(ids, &(&1 == "UK_uksi_1996_1527:reg.33[S]")) <
+               Enum.find_index(ids, &(&1 == "UK_uksi_1996_1527:reg.34"))
+
+      refute Enum.any?(rows, &(&1.section_type == "figure"))
     end
   end
 end

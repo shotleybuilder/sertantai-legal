@@ -97,7 +97,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       prospective: false,
       mode: mode,
       ref_type_lookup: build_ref_type_lookup(doc),
-      ref_territory: build_ref_territory_lookup(doc)
+      ref_territory: build_ref_territory_lookup(doc),
+      versions: build_versions_lookup(doc)
     }
 
     raw_rows = walk_children(doc, initial_ctx)
@@ -146,6 +147,18 @@ defmodule SertantaiLegal.Scraper.LatParser do
           {id, type}
         end)
     end
+  end
+
+  # Version id → Version element, for provision versions only (figures and
+  # images stay out, #177).
+  @version_content ~w(P1group P1 P2group P2 P3 P4 Pblock Part Chapter Schedule)
+
+  defp build_versions_lookup(doc) do
+    for version <- xpath(doc, ~x"//Versions/Version"l),
+        first = xpath(version, ~x"./*[1]"o),
+        first != nil and element_name(first) in @version_content,
+        into: %{},
+        do: {to_string(xpath(version, ~x"./@id"s)), version}
   end
 
   # Commentary id → the territory its change applies to ("revoked (S.)"),
@@ -197,7 +210,38 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
+  # An element with AltVersionRefs is followed by its territorial
+  # alternatives (Versions/Version, e.g. the Scottish text of a regulation),
+  # walked in the same context; parallel detection then qualifies both ids
+  # with their extents. Each version is used once.
   defp walk_element(node, ctx) do
+    rows = walk_own(node, ctx)
+
+    case alt_versions(node, ctx.versions) do
+      [] ->
+        rows
+
+      versions ->
+        ctx = %{ctx | versions: Map.drop(ctx.versions, Enum.map(versions, &elem(&1, 0)))}
+        rows ++ Enum.flat_map(versions, fn {_id, version} -> walk_children(version, ctx) end)
+    end
+  end
+
+  defp alt_versions(_node, versions) when map_size(versions) == 0, do: []
+
+  defp alt_versions(node, versions) do
+    node
+    |> xpath(~x"./@AltVersionRefs"s)
+    |> String.split(~r/\s+/, trim: true)
+    |> Enum.flat_map(fn id ->
+      case Map.fetch(versions, id) do
+        {:ok, version} -> [{id, version}]
+        :error -> []
+      end
+    end)
+  end
+
+  defp walk_own(node, ctx) do
     name = element_name(node)
     extent = element_extent(node) || ctx.default_extent
     # Children inherit this element's effective extent (a Part's RestrictExtent
@@ -210,8 +254,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
         # Amendment/extract text embeds P1/P2/P3 from OTHER laws — skip entirely
         []
 
-      name == "P1group" ->
-        # The group's Title is the heading of the P1(s) it wraps
+      name in ~w(P1group P2group P3group) ->
+        # The group's Title is the heading of the P1 / P2 / P3 it wraps
         # and the notes its Title cites are about them
         walk_children(node, %{
           ctx
@@ -292,15 +336,15 @@ defmodule SertantaiLegal.Scraper.LatParser do
           walk_children(node, new_ctx)
         else
           new_ctx = %{ctx | sub: sub, paragraph: nil, sub_paragraph: nil}
-          row = emit_structural_row("P2", new_ctx, node, extent)
-          [row | walk_children(node, new_ctx)]
+          row = "P2" |> emit_structural_row(ungrouped(new_ctx), node, extent) |> grouped(ctx)
+          [row | walk_children(node, ungrouped(new_ctx))]
         end
 
       name == "P3" ->
         paragraph = extract_pnumber(node)
         new_ctx = %{ctx | paragraph: paragraph, sub_paragraph: nil}
-        row = emit_structural_row("P3", new_ctx, node, extent)
-        [row | walk_children(node, new_ctx)]
+        row = "P3" |> emit_structural_row(ungrouped(new_ctx), node, extent) |> grouped(ctx)
+        [row | walk_children(node, ungrouped(new_ctx))]
 
       name == "P4" ->
         sub_paragraph = extract_pnumber(node)
@@ -331,7 +375,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         [row | walk_children(node, ctx)]
 
       name == "Tabular" ->
-        [emit_row("Tabular", ctx, node, extent)]
+        ["Tabular" |> emit_row(ctx, node, extent) |> titled(node)]
 
       name == "Figure" ->
         [emit_row("Figure", ctx, node, extent)]
@@ -665,6 +709,20 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   defp titled(row, node), do: %{row | title: heading_title(node)}
 
+  # A P2group/P3group's Title and note refs on the P2/P3 row it wraps
+  # (consumed there, like a P1group's on its P1).
+  defp grouped(row, %{group_title: nil, group_refs: []}), do: row
+
+  defp grouped(row, ctx) do
+    %{
+      row
+      | title: row.title || ctx.group_title,
+        commentary_refs: Enum.uniq(ctx.group_refs ++ row.commentary_refs)
+    }
+  end
+
+  defp ungrouped(ctx), do: %{ctx | group_title: nil, group_refs: []}
+
   # The `title` column: a heading as written (Title, or a Schedule's
   # TitleBlock/Title), inline markup joined without spaces. Dots-only titles
   # (repealed headings) are nil. Row text keeps its own heading handling.
@@ -746,6 +804,41 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
+  # An (XHTML) table's cells: " | " between cells, "; " between rows.
+  defp table_text(table) do
+    table
+    |> xpath(~x"./descendant::tr"l)
+    |> Enum.map(fn tr ->
+      tr
+      |> xpath(~x"./*"l)
+      |> Enum.filter(&(elem(&1, 1) in [:td, :th]))
+      |> Enum.map_join(" | ", &extract_inline_text/1)
+    end)
+    |> Enum.reject(&(String.replace(&1, ~r/[\s|]/u, "") == ""))
+    |> Enum.join("; ")
+  end
+
+  # A signature: name, job title, address lines, date (its text, else @Date).
+  defp signee_text(signee) do
+    parts =
+      for path <- [
+            ~x"./PersonName"l,
+            ~x"./JobTitle"l,
+            ~x"./Department"l,
+            ~x"./Address/AddressLine"l
+          ],
+          el <- xpath(signee, path),
+          do: extract_inline_text(el)
+
+    date =
+      case xpath(signee, ~x"./DateSigned"o) do
+        nil -> nil
+        d -> blank_to_nil(extract_inline_text(d)) || blank_to_nil(xpath(d, ~x"./@Date"s))
+      end
+
+    (parts ++ [date]) |> Enum.reject(&(&1 in [nil, ""])) |> Enum.join(", ")
+  end
+
   defp quoted_number("", _parent), do: ""
   defp quoted_number(n, :P1), do: n <> "."
   defp quoted_number(n, _parent), do: "(" <> n <> ")"
@@ -770,6 +863,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
           name in @quoted_elements ->
             {[quoted_text(child)], after_open_child?}
+
+          name == "table" ->
+            {[table_text(child)], after_open_child?}
+
+          name == "Signee" ->
+            {[signee_text(child)], after_open_child?}
 
           mode == :structural and name in @row_elements ->
             # content after an open child provision is the child's (#174)
