@@ -167,6 +167,14 @@ defmodule SertantaiLegal.Scraper.AmendmentNoteTest do
       assert AmendmentNote.resolve_law("UK_uksi_1999_1", known) == "UK_uksi_1999_1"
       assert AmendmentNote.resolve_law(nil, known) == nil
     end
+
+    test "same_law?/2: equal names, or a Welsh SI and its uksi name" do
+      assert AmendmentNote.same_law?("UK_wsi_2018_35", "UK_uksi_2018_35")
+      assert AmendmentNote.same_law?("UK_uksi_2018_35", "UK_wsi_2018_35")
+      assert AmendmentNote.same_law?("UK_ukpga_1974_37", "UK_ukpga_1974_37")
+      refute AmendmentNote.same_law?("UK_wsi_2018_35", "UK_uksi_2018_36")
+      refute AmendmentNote.same_law?("UK_ssi_2018_35", "UK_uksi_2018_35")
+    end
   end
 
   describe "title citations (LH-06)" do

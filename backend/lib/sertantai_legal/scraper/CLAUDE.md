@@ -31,7 +31,18 @@ scraper/
 │   ├── indexes.ex                # DB: build in-memory lookup indexes
 │   └── persister.ex              # DB: batch write links + citations
 │
-├── lat_parser.ex                 # Legal Article Text parser
+├── lat_parser.ex                 # LAT parser orchestrator: parse/2 = Walker → Rows (LR-04)
+├── lat_parser/                   # Pure; deps: Xml ← Inline ← Ids ← Text ← {Refs, Effects} ← Walker; Rows on row maps
+│   ├── walker.ex                 # Walk + Walker.Ctx struct: one raw row per row element, hierarchy, extent, versions
+│   ├── text.ex                   # Text blocks (leaf / structural), lists, tables, signatures, «…» quotes, #174 trailing
+│   ├── inline.ex                 # Inline markup → segments; change markup → %LatTerritory.Change{}
+│   ├── ids.ex                    # Pnumbers, Numbers, titles, P2 wrapper
+│   ├── refs.ex                   # Note refs: type lookup, own-level placement, counts, group Title refs
+│   ├── effects.ex                # Effects layer in the walk: index, row segments, whole-provision changes, excluded_extent, effect_ids
+│   ├── rows.ex                   # Post-walk: versions, positions, ids/sort keys, markers, status, parallels, disambiguation, to_insert_maps
+│   ├── xml.ex                    # Shared element helpers + element-name sets
+│   └── diagnostics.ex            # Unencountered-structure diagnostics (mix lat.audit)
+├── in_force_qualifier.ex         # Pure: an effect's InForce qualification → territory + provision scope (gallery test)
 ├── lat_persister.ex              # LAT persistence
 ├── lat_session_manager.ex        # LAT session lifecycle
 ├── lat_staged_parser.ex          # Staged LAT parsing (batch); the only scope-aware parse path
@@ -191,7 +202,7 @@ DB-dependent modules (Indexes, Persister) are tested via integration tests or th
   - Relevance rule (Jason, 2026-10-07; `LatScope.Relevance`): a large Act (≥ 3,000 rows) with **no family** keeps the Part of every section an in-family register SI is made under, plus named fragments (`@named` in `mix lat.scope`); Acts with a family stay whole. Customer-register Acts (e.g. QQ's) with no EHS link are reviewed case by case and narrowed to what concerns the customer, not discarded.
   - **Excluded** (`LatScope.exclude!/2`, `mix lat.scope --exclude --law X --reason R`): a no-EHS-link law loses its LAT (archived, `discarded` lat_event, reason `not_relevant`) and its scope is flagged `excluded`; `LatStagedParser` refuses it, so no path re-parses it. Reverse by clearing `lat_scope` and re-parsing.
   - 2026-10-07: 14 Acts scoped (58,507 → 10,966 rows): the six ≥ 3,000 rows (Companies 2006, Communications 2003, GLA 1999, Investigatory Powers 2016, Enterprise 2002, Levelling-up 2023), four 1,000–3,000 by the rule (Civic Government (Scotland) 1982, Policing and Crime 2017, Finance Act 1996, UK_ukpga_2021_26), three QQ-register Acts by named Parts (Wireless Telegraphy 2006, RIPA 2000, Offensive Weapons 2019), Finance Act 2016 to its environmental-tax sections (ss.142–148) and Part 6 (apprenticeship levy); Companies Act 1989 excluded. Run the dry run (`mix lat.scope --relevance --min-rows 1000`) after LRT scrapes to catch new candidates.
-- **Local CLML store** (#175, `LegislationGovUk.ClmlStore`): `Client.fetch_xml/2` stores every legislation document it fetches (body, fragments, introduction, contents) under `data/cache/clml/` (gzip + meta; 404s as markers; NAS-backed with `backend/data`). Modes: `:write` (default: live + store), `:prefer` (fresh stored copy, else live), `:only` (offline), `:refresh`. Fresh = stored `dct:valid` ≥ the law's `md_dct_valid_date`, else fetched within 30 days. Bulk tools default to `:prefer` (`lat.text_diff`, `lat.repair_text`, `clml.fetch`; `LatStagedParser` with `store:`); the admin re-parse and LRT scrape stay live. `mix lat.text_diff --all --store only` is the offline whole-corpus parse diff.
+- **Local CLML store** (#175, `LegislationGovUk.ClmlStore`): `Client.fetch_xml/2` stores every legislation document it fetches (body, fragments, introduction, contents) under `data/cache/clml/` (gzip + meta; 404s as markers; NAS-backed with `backend/data`). Modes: `:write` (default: live + store), `:prefer` (fresh stored copy, else live), `:only` (offline), `:refresh`. Fresh = stored `dct:valid` ≥ the law's `md_dct_valid_date`, else fetched within 30 days. Bulk tools default to `:prefer` (`lat.text_diff`, `lat.repair_text`, `clml.fetch`; `LatStagedParser` with `store:`); the admin re-parse and LRT scrape stay live. `mix lat.text_diff --all --store only` is the offline whole-corpus parse diff. `mix lat.parse_snapshot --all --dir D` (then `--compare`) is the zero-diff gate for behaviour-preserving refactors: every row, note and change-fact field, ~15 min (LR-04).
 - **`sort_key` is an ordering key only** — `ORDER BY sort_key` within a law gives document order, and that is all it guarantees. **Never decode part / provision / paragraph numbers from its segments**; read the `part`, `chapter`, `provision`, `paragraph` (etc.) columns. See "LAT sort_key" below.
 
 ## LAT sort_key

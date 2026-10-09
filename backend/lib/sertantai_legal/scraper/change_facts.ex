@@ -167,12 +167,22 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     |> Enum.any?(&group_partial?(&1, extent, today))
   end
 
-  # Purposes: an entry in force for purposes only ("for W. for specified
-  # purposes": for W), not completed by a commenced entry for its territory
-  # (or for everything). Territories: an entry still to come (undated or
-  # after `today`) for a territory of the extent no commenced entry covers —
-  # a territory the effect doesn't mention is a gap in the feed, not "not
-  # in force" (1995/21 s.136A).
+  # One group of effects judged together. Their InForce entries split into
+  # commenced (dated on or before `today`) and pending (undated or later);
+  # each commenced entry reads as {territory | nil, :complete | :purposes |
+  # :other} (`entry/2`):
+  #
+  # - complete: a commenced entry with no territory that completes
+  #   commencement ("wholly in force", an unqualified date) — never partial;
+  # - live: the union of the territories commenced entries complete;
+  # - open purposes: an entry in force for purposes only ("for W. for
+  #   specified purposes": for W), its territory (or, with none, the
+  #   extent) not covered by live;
+  # - to come: a pending entry for a territory within the extent that live
+  #   doesn't cover. A territory the effect doesn't mention at all is a gap
+  #   in the feed, not "not in force" (1995/21 s.136A).
+  #
+  # Partial = not complete, and open purposes or something to come.
   defp group_partial?(effects, extent, today) do
     {commenced, pending} =
       effects
@@ -284,106 +294,104 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   def resolve(rows, notes, effects, law_name, opts \\ []) do
     today = Keyword.get(opts, :today, Date.utc_today())
     holders = Keyword.get(opts, :holders, %{})
+    known = Keyword.get(opts, :known_laws, MapSet.new())
     lookup = fn ids -> ids |> List.wrap() |> Enum.map(&effects[&1]) |> Enum.reject(&is_nil/1) end
 
-    known = Keyword.get(opts, :known_laws, MapSet.new())
+    notes = Enum.map(notes, &with_fact(&1, lookup, law_name, known))
 
-    notes =
-      Enum.map(notes, fn n ->
-        parsed =
-          (Map.get(n, :parsed) || AmendmentNote.parse(n.text, n.code_type, law_name))
-          |> marginal(Map.get(n, :code))
-          |> then(&%{&1 | changed_by: AmendmentNote.resolve_law(&1.changed_by, known)})
-
-        joined = lookup.(Map.get(n, :effect_ids))
-        fact = parsed |> note(n.code_type, joined) |> not_self(law_name)
-        Map.merge(n, %{fact: fact, joined: joined})
-      end)
-
-    note_targets =
-      notes
-      |> Enum.flat_map(fn n -> Enum.map(LatStatus.note_targets(n), &{&1, n}) end)
-      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-
-    row_effects = Map.new(rows, &{&1.section_id, lookup.(Map.get(&1, :effect_ids))})
-
-    # the notes no effect joined: the LatStatus fallback
-    fallback =
-      LatStatus.resolve(rows, Enum.filter(notes, &(&1.joined == [])))
+    by_level = %{
+      notes:
+        notes
+        |> Enum.flat_map(fn n -> Enum.map(LatStatus.note_targets(n), &{&1, n}) end)
+        |> Enum.group_by(&elem(&1, 0), &elem(&1, 1)),
+      effects: Map.new(rows, &{&1.section_id, lookup.(Map.get(&1, :effect_ids))}),
+      # the notes no effect joined: the LatStatus fallback
+      fallback: LatStatus.resolve(rows, Enum.filter(notes, &(&1.joined == [])))
+    }
 
     out =
       Map.new(rows, fn row ->
-        [own | above] = LatStatus.ancestors(holders[row.section_id] || row.section_id)
-
-        # an ancestor passes down its whole-provision changes only: a
-        # words-level change in its own text doesn't date its sub-provisions
-        # (1995/21 s.192A(6)); a note no effect joined passes down as before
-        row_notes =
-          Map.get(note_targets, own, []) ++
-            for(
-              level <- above,
-              n <- Map.get(note_targets, level, []),
-              n.joined == [] or not Enum.all?(n.joined, &EffectIndex.words_level?/1),
-              do: n
-            )
-
-        on_row =
-          (Map.get(row_effects, own, []) ++
-             for(
-               level <- above,
-               e <- Map.get(row_effects, level, []),
-               not EffectIndex.words_level?(e),
-               do: e
-             ))
-          |> Enum.uniq()
-
-        carried = row_notes |> Enum.flat_map(& &1.joined) |> MapSet.new(& &1.effect_id)
-
-        # a note naming no change and no instrument ("OJ L 182, 21.6.2014,
-        # p.52.") isn't a change
-        facts =
-          for(n <- row_notes, not citation_only?(n.fact), do: n.fact) ++
-            for(
-              e <- on_row,
-              not MapSet.member?(carried, e.effect_id),
-              do: e |> effect_fact() |> not_self(law_name)
-            )
-
-        {from, by} = AmendmentNote.row_effective(facts)
-
-        source =
-          Enum.find_value(
-            facts,
-            &(&1.effective_from == from and &1.changed_by == by and &1.source)
-          )
-
-        {status, status_source} = status(row, on_row, fallback[row.section_id], today)
-
-        {row.section_id,
-         %{
-           status: status,
-           status_source: status_source,
-           effective_from: from,
-           changed_by: by,
-           change_source: if(from || by, do: source)
-         }}
+        {row.section_id, row_facts(row, by_level, holders, law_name, today)}
       end)
 
     {Enum.map(notes, & &1.fact), out}
+  end
+
+  # a note with its joined effects and its fact (`note/3`)
+  defp with_fact(n, lookup, law_name, known) do
+    parsed =
+      (Map.get(n, :parsed) || AmendmentNote.parse(n.text, n.code_type, law_name))
+      |> marginal(Map.get(n, :code))
+      |> then(&%{&1 | changed_by: AmendmentNote.resolve_law(&1.changed_by, known)})
+
+    joined = lookup.(Map.get(n, :effect_ids))
+    fact = parsed |> note(n.code_type, joined) |> not_self(law_name)
+    Map.merge(n, %{fact: fact, joined: joined})
+  end
+
+  # a row's effective_from / changed_by (the latest dated change on it or an
+  # ancestor) and status
+  defp row_facts(row, by_level, holders, law_name, today) do
+    [own | above] = LatStatus.ancestors(holders[row.section_id] || row.section_id)
+
+    # an ancestor passes down its whole-provision changes only: a
+    # words-level change in its own text doesn't date its sub-provisions
+    # (1995/21 s.192A(6)); a note no effect joined passes down as before
+    row_notes =
+      Map.get(by_level.notes, own, []) ++
+        for(
+          level <- above,
+          n <- Map.get(by_level.notes, level, []),
+          n.joined == [] or not Enum.all?(n.joined, &EffectIndex.words_level?/1),
+          do: n
+        )
+
+    on_row =
+      (Map.get(by_level.effects, own, []) ++
+         for(
+           level <- above,
+           e <- Map.get(by_level.effects, level, []),
+           not EffectIndex.words_level?(e),
+           do: e
+         ))
+      |> Enum.uniq()
+
+    carried = row_notes |> Enum.flat_map(& &1.joined) |> MapSet.new(& &1.effect_id)
+
+    # a note naming no change and no instrument ("OJ L 182, 21.6.2014,
+    # p.52.") isn't a change
+    facts =
+      for(n <- row_notes, not citation_only?(n.fact), do: n.fact) ++
+        for(
+          e <- on_row,
+          not MapSet.member?(carried, e.effect_id),
+          do: e |> effect_fact() |> not_self(law_name)
+        )
+
+    {from, by} = AmendmentNote.row_effective(facts)
+
+    source =
+      Enum.find_value(facts, &(&1.effective_from == from and &1.changed_by == by and &1.source))
+
+    {status, status_source} = status(row, on_row, by_level.fallback[row.section_id], today)
+
+    %{
+      status: status,
+      status_source: status_source,
+      effective_from: from,
+      changed_by: by,
+      change_source: if(from || by, do: source)
+    }
   end
 
   defp citation_only?(%{source: :note, effect: "other", changed_by: nil}), do: true
   defp citation_only?(_fact), do: false
 
   # a law commencing itself ("see reg. 1") dates the change but isn't
-  # changed by another law
-  # (a Welsh SI and its uksi name are one instrument: one number series)
+  # changed by another law (a Welsh SI held as uksi is itself)
   defp not_self(%{changed_by: by} = fact, law) do
-    if by != nil and twin(by) == twin(law), do: %{fact | changed_by: nil}, else: fact
+    if by != nil and AmendmentNote.same_law?(by, law), do: %{fact | changed_by: nil}, else: fact
   end
-
-  defp twin("UK_wsi_" <> rest), do: "UK_uksi_" <> rest
-  defp twin(name), do: name
 
   # A marginal citation (code "M…") only refers to laws: it changes nothing,
   # so no instrument and no dates (LH-06)

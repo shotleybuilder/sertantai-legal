@@ -142,6 +142,16 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
 
   def resolve_law(name, _known), do: name
 
+  @doc """
+  The same instrument: equal names, or a Welsh SI and its `UK_uksi_…` name
+  (one number series; a Welsh SI cited as plain "S.I." reads as uksi).
+  """
+  @spec same_law?(String.t(), String.t()) :: boolean()
+  def same_law?(a, b), do: twin(a) == twin(b)
+
+  defp twin("UK_wsi_" <> rest), do: "UK_uksi_" <> rest
+  defp twin(name), do: name
+
   defp normalise(text), do: text |> String.replace(~r/\s+/u, " ") |> String.trim()
 
   # Text before the first " by " (or ", see" in commencement notes) and after it.

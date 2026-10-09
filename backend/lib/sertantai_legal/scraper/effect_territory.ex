@@ -31,6 +31,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   Pure.
   """
 
+  alias SertantaiLegal.Scraper.InForceQualifier, as: Qualifier
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
   alias SertantaiLegal.Scraper.Territory
 
@@ -111,11 +112,6 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
 
   defp application([]), do: nil
 
-  # "for E.", "for E.W.", "for S. so far as …"; not "for specified purposes"
-  @for_territory ~r/\bfor ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)/
-
-  @except_territory ~r/except in relation to ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)/
-
   # "for E." → E; "except in relation to W." → everywhere but W; a
   # qualifier scoped to provisions ("for S. for the repeal of ss. 1-19",
   # "for E. except in relation to ss. 13-15, 76") counts on the row's
@@ -123,19 +119,17 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   defp in_force(effects, provision) do
     effects
     |> Enum.flat_map(& &1.in_force_qualifications)
-    |> Enum.reject(&String.contains?(&1, "purpose"))
+    |> Enum.reject(&Qualifier.purposes?/1)
     |> Enum.flat_map(fn q ->
-      except = Regex.run(@except_territory, q, capture: :all_but_first)
-
-      case {except, territory_scope(q)} do
-        {[territory], _} ->
+      case {Qualifier.except(q), Qualifier.scope(q)} do
+        {territory, _} when territory != nil ->
           [Territory.subtract(nil, code(territory))]
 
         {nil, {territory, :all}} ->
           [code(territory)]
 
         {nil, {territory, scope}} ->
-          if in_scope?(scope, provision), do: [code(territory)], else: []
+          if Qualifier.in_scope?(scope, provision), do: [code(territory)], else: []
 
         {nil, nil} ->
           []
@@ -155,7 +149,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   """
   @spec qualifier_territory(String.t()) :: String.t() | nil
   def qualifier_territory(qualification) do
-    if String.contains?(qualification, "purpose"), do: nil, else: all_scope(qualification)
+    if Qualifier.purposes?(qualification), do: nil, else: all_scope(qualification)
   end
 
   @doc """
@@ -164,19 +158,10 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   in force"): W. Nil otherwise.
   """
   @spec except_territory(String.t()) :: String.t() | nil
-  def except_territory(qualification) do
-    case Regex.run(
-           ~r/^except in relation to ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)\s*((in force )?(in )?so far as not already in force)?$/,
-           String.trim(qualification),
-           capture: :all_but_first
-         ) do
-      [territory | _] -> code(territory)
-      nil -> nil
-    end
-  end
+  def except_territory(qualification), do: qualification |> Qualifier.only_except() |> code()
 
   defp all_scope(q) do
-    case {Regex.run(@except_territory, q), territory_scope(q)} do
+    case {Qualifier.except(q), Qualifier.scope(q)} do
       {nil, {territory, :all}} -> code(territory)
       _ -> nil
     end
@@ -198,10 +183,10 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
 
     qualifiers != [] and
       Enum.all?(qualifiers, fn q ->
-        Regex.run(@except_territory, q) == nil and
-          match?({_, {_, _}}, territory_scope(q)) and
-          scope_kind?(elem(territory_scope(q), 1), provision) and
-          not in_scope?(elem(territory_scope(q), 1), provision)
+        Qualifier.except(q) == nil and
+          match?({_, {_, _}}, Qualifier.scope(q)) and
+          Qualifier.scope_kind?(elem(Qualifier.scope(q), 1), provision) and
+          not Qualifier.in_scope?(elem(Qualifier.scope(q), 1), provision)
       end)
   end
 
@@ -213,7 +198,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     qualifiers = Enum.flat_map(effects, & &1.in_force_qualifications)
     extent = code(keyed.effect_extent)
 
-    Enum.any?(qualifiers, &String.contains?(&1, "purpose")) or
+    Enum.any?(qualifiers, &Qualifier.purposes?/1) or
       Enum.any?(effects, &((&1.savings || []) != [])) or
       (extent != nil and row_extent != nil and Territory.covers?(extent, row_extent))
   end
@@ -222,91 +207,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   defp territorial?(effects) do
     effects
     |> Enum.flat_map(& &1.in_force_qualifications)
-    |> Enum.any?(&(Regex.match?(@for_territory, &1) or Regex.match?(@except_territory, &1)))
-  end
-
-  # "for E." alone, give or take a date note before it and "in so far as not
-  # already in force" (or a timing) after it; anything more limits it to
-  # part of the territory or the change ("for E. in relation to the pilot
-  # areas": 2000/37; "for W. for the insertion of s. 53B") — unusable
-  @before_territory ~r/^(\(being the da(te|y) on which .*came into force\)|at [\d.]+ [ap]\.m\.)?$/
-  @after_territory ~r/^((in force )?(in )?so far as not already in force|to the extent, if any, that it is not already in force|immediately after the coming into force of .*)?$/
-
-  @only_provisions ~r/^for the (?:repeal|revocation|omission|insertion|substitution) of (.+)$/
-  @except_provisions ~r/^except in relation to (.+)$/
-
-  # {territory, :all | {:only | :except, provisions}}; nil when unusable
-  defp territory_scope(q) do
-    with [{at, len}, {t_at, t_len}] <- Regex.run(@for_territory, q, return: :index),
-         before = q |> binary_part(0, at) |> String.trim(),
-         true <- before =~ @before_territory,
-         rest = q |> binary_part(at + len, byte_size(q) - at - len) |> String.trim(),
-         scope when scope != nil <- scope(rest) do
-      {binary_part(q, t_at, t_len), scope}
-    else
-      _ -> nil
-    end
-  end
-
-  defp scope(rest) do
-    cond do
-      rest =~ @after_territory -> :all
-      m = Regex.run(@only_provisions, rest, capture: :all_but_first) -> provisions(:only, m)
-      m = Regex.run(@except_provisions, rest, capture: :all_but_first) -> provisions(:except, m)
-      true -> nil
-    end
-  end
-
-  # "ss. 1-19, 22-28" / "s. 26(5)" / "regs. 3 and 4" → {mode, {kind, items}};
-  # nil when any item can't be read
-  @list ~r/^(ss?|regs?)\.\s+(.+?)\.?$/
-  @item ~r/^(\d+[A-Z]*)(?:-(\d+[A-Z]*))?((?:\([0-9A-Za-z]+\))*)$/
-
-  defp provisions(mode, [list]) do
-    with [kind, items] <- Regex.run(@list, String.trim(list), capture: :all_but_first),
-         items = String.split(items, ~r/,\s*|\s+and\s+/),
-         parsed = Enum.map(items, &Regex.run(@item, String.trim(&1), capture: :all_but_first)),
-         false <- Enum.any?(parsed, &is_nil/1) do
-      {mode, {if(String.starts_with?(kind, "s"), do: "section", else: "regulation"), parsed}}
-    else
-      _ -> nil
-    end
-  end
-
-  # the row's provision is of the scope's kind, so the list can be read for it
-  defp scope_kind?(_scope, nil), do: false
-
-  defp scope_kind?({_mode, {kind, _items}}, provision),
-    do: String.starts_with?(provision, kind <> "-")
-
-  # the row's provision ("section-14A-1") listed (or, for :except, not)
-  defp in_scope?(_scope, nil), do: false
-
-  defp in_scope?({mode, {kind, items}}, provision) do
-    case Regex.run(~r/^(section|regulation)-(\d+[A-Z]*)((?:-[0-9A-Za-z]+)*)$/, provision,
-           capture: :all_but_first
-         ) do
-      [^kind, number, path] ->
-        listed = Enum.any?(items, &listed?(&1, number, path))
-        if mode == :only, do: listed, else: not listed
-
-      _ ->
-        false
-    end
-  end
-
-  defp listed?([from, to | _], number, _path) when to != "",
-    do: number_key(from) <= number_key(number) and number_key(number) <= number_key(to)
-
-  defp listed?([single | rest], number, path) do
-    subs = rest |> List.last() |> to_string() |> then(&Regex.scan(~r/\(([0-9A-Za-z]+)\)/, &1))
-    prefix = Enum.map_join(subs, fn [_, sub] -> "-" <> sub end)
-    single == number and String.starts_with?(path, prefix)
-  end
-
-  defp number_key(number) do
-    [digits, suffix] = Regex.run(~r/^(\d+)([A-Z]*)$/, number, capture: :all_but_first)
-    {String.to_integer(digits), suffix}
+    |> Enum.any?(&Qualifier.territorial?/1)
   end
 
   # narrower than the row's own extent when known (1986/62 s.21: an asp

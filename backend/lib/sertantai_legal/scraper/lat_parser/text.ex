@@ -1,0 +1,423 @@
+defmodule SertantaiLegal.Scraper.LatParser.Text do
+  @moduledoc """
+  A provision's text as segments (`LatSegments`) for the LAT parser (LR-04):
+
+  - text blocks in document order (`text_blocks/2`): :leaf (all the text)
+    or :structural (stopping at child rows, a :gap where they sit)
+  - lists (numbered from Type / Decoration / NumberOverride), XHTML tables,
+    signatures, «…» quoted blocks (amending text, extracts) with AppendText
+  - a row's leaf or structural text, and the sibling content an open
+    provision takes (#174)
+
+  Inline markup and change markup come from `Inline`. Pure.
+  """
+
+  import SweetXml
+
+  alias SertantaiLegal.Scraper.LatParser.{Ids, Inline, Xml}
+  alias SertantaiLegal.Scraper.LatSegments
+
+  @doc """
+  A provision's lead-in — its first text block — ends in a dash or colon:
+  what follows continues it (its own list may sit in between, as in
+  PUWER 1998 reg.2(1) "…otherwise requires— [definitions]").
+  """
+  @spec open_lead_in?(tuple()) :: boolean()
+  def open_lead_in?(node) do
+    case node
+         |> text_blocks(:structural)
+         |> Enum.find(&(is_list(&1) and not LatSegments.blank?(&1))) do
+      nil -> false
+      lead -> lead |> LatSegments.plain() |> String.match?(~r/[—–:-]\s*$/u)
+    end
+  end
+
+  @doc """
+  Leaf text: every Text in document order, each once, separated by a space
+  (inline fragments within one Text are joined without extra spaces —
+  they're split by markup like <Term>, <Addition>). Lists, nested lists and
+  text after a list keep their order (2026-10-07: the old Para-then-Text
+  build moved chapeaux to the end and repeated nested list items).
+  """
+  @spec leaf(tuple()) :: LatSegments.t()
+  def leaf(node) do
+    node |> text_blocks(:leaf) |> join_blocks()
+  end
+
+  defp quoted_text(element) do
+    case element |> quoted_parts() |> LatSegments.join(" ") do
+      [] -> []
+      segments -> LatSegments.mark("«") ++ LatSegments.trim(segments) ++ LatSegments.mark("»")
+    end
+  end
+
+  defp quoted_parts(element) do
+    parent = elem(element, 1)
+
+    element
+    |> elem(8)
+    |> Enum.flat_map(fn child ->
+      case elem(child, 0) do
+        :xmlElement -> quoted_child(child, parent)
+        _ -> []
+      end
+    end)
+  end
+
+  defp quoted_child(child, parent) do
+    case to_string(elem(child, 1)) do
+      "Pnumber" ->
+        # numbers and titles show but never count as the row's own words
+        [
+          child
+          |> Inline.plain()
+          |> quoted_number(parent)
+          |> LatSegments.text()
+          |> LatSegments.aside()
+        ]
+
+      "Title" ->
+        [child |> Inline.text() |> LatSegments.aside()]
+
+      "Text" ->
+        [Inline.text(child)]
+
+      # "Schedule 4A", "Part 1", "Section 25"
+      name when name in ~w(Number Reference) ->
+        [child |> Inline.text() |> LatSegments.aside()]
+
+      name when name in ~w(OrderedList UnorderedList) ->
+        child |> list_blocks(:leaf) |> Enum.filter(&is_list/1)
+
+      "Tabular" ->
+        child |> elements_named("table") |> Enum.map(&table_text/1)
+
+      name when name in ~w(CommentaryRef FootnoteRef Commentaries Footnotes) ->
+        []
+
+      _ ->
+        quoted_parts(child)
+    end
+  end
+
+  # An (XHTML) table's cells: " | " between cells, "; " between rows.
+  # Elements may be prefixed (xhtml:tr): matched by local name. A cell's
+  # block content (paragraphs, lists) reads as text blocks.
+  defp table_text(table) do
+    table
+    |> elements_named("tr")
+    |> Enum.map(fn tr ->
+      tr
+      |> elem(8)
+      |> Enum.filter(&(elem(&1, 0) == :xmlElement and Xml.local_name(elem(&1, 1)) in ~w(td th)))
+      |> Enum.map(&cell_text/1)
+      # empty cells keep their place
+      |> Enum.intersperse(LatSegments.mark(" | "))
+      |> Enum.concat()
+    end)
+    |> Enum.reject(&(&1 |> LatSegments.plain() |> String.replace(~r/[\s|]/u, "") == ""))
+    |> LatSegments.join("; ")
+  end
+
+  defp cell_text(cell) do
+    segments = cell |> text_blocks(:leaf) |> join_blocks()
+    if LatSegments.blank?(segments), do: Inline.text(cell), else: segments
+  end
+
+  # Descendant elements with a local name, in document order.
+  defp elements_named(element, local) do
+    element
+    |> elem(8)
+    |> Enum.flat_map(fn
+      child when elem(child, 0) == :xmlElement ->
+        if Xml.local_name(elem(child, 1)) == local,
+          do: [child],
+          else: elements_named(child, local)
+
+      _ ->
+        []
+    end)
+  end
+
+  # A list's items as text blocks, each led by its number: NumberOverride,
+  # else counted from an OrderedList's Type and Decoration ("(a)", "(i)").
+  defp list_blocks(list, mode) do
+    list
+    |> elem(8)
+    |> Enum.filter(&(elem(&1, 0) == :xmlElement and Xml.local_name(elem(&1, 1)) == "ListItem"))
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn {item, i} ->
+      case {item_label(item, list, i), text_blocks(item, mode)} do
+        {nil, blocks} ->
+          blocks
+
+        {label, [first | rest]} when is_list(first) ->
+          [LatSegments.mark(label <> " ") ++ first | rest]
+
+        {label, blocks} ->
+          [LatSegments.mark(label) | blocks]
+      end
+    end)
+  end
+
+  defp item_label(item, list, i) do
+    decoration = xpath(list, ~x"./@Decoration"s)
+
+    case xpath(item, ~x"./@NumberOverride"s) do
+      "" ->
+        # number only what the source numbers: an OrderedList with a Type
+        type = xpath(list, ~x"./@Type"s)
+
+        if elem(list, 1) == :OrderedList and type != "",
+          do: decorate(list_number(i, type), decoration)
+
+      override ->
+        decorate(override, decoration)
+    end
+  end
+
+  defp decorate(n, "none"), do: n
+  defp decorate(n, "period"), do: n <> "."
+  defp decorate(n, "parenRight"), do: n <> ")"
+  defp decorate(n, "brackets"), do: "[" <> n <> "]"
+  defp decorate(n, _parens), do: "(" <> n <> ")"
+
+  defp list_number(i, "alpha"), do: alpha(i)
+  defp list_number(i, "alphaUpper"), do: String.upcase(alpha(i))
+  defp list_number(i, "roman"), do: roman(i)
+  defp list_number(i, "romanUpper"), do: String.upcase(roman(i))
+  defp list_number(i, _arabic), do: Integer.to_string(i)
+
+  defp alpha(i) when i <= 26, do: <<?a + i - 1>>
+  defp alpha(i), do: alpha(div(i - 1, 26)) <> alpha(rem(i - 1, 26) + 1)
+
+  @romans [{10, "x"}, {9, "ix"}, {5, "v"}, {4, "iv"}, {1, "i"}]
+  defp roman(0), do: ""
+
+  defp roman(i),
+    do: @romans |> Enum.find(fn {v, _} -> v <= i end) |> then(fn {v, r} -> r <> roman(i - v) end)
+
+  # A signature: name, job title, address lines, date (its text, else @Date),
+  # as segments, so a change around them (a retained repeal) keeps its
+  # territory.
+  defp signee_text(signee) do
+    parts =
+      for path <- [
+            ~x"./PersonName"l,
+            ~x"./JobTitle"l,
+            ~x"./Department"l,
+            ~x"./Address/AddressLine"l
+          ],
+          el <- xpath(signee, path),
+          do: Inline.text(el)
+
+    date =
+      case xpath(signee, ~x"./DateSigned"o) do
+        nil ->
+          []
+
+        d ->
+          case Inline.text(d) do
+            # from the attribute: added by the parser, not the row's own words
+            [] -> d |> xpath(~x"./@Date"s) |> LatSegments.mark()
+            segments -> segments
+          end
+      end
+
+    (parts ++ [date])
+    |> Enum.map(fn part ->
+      part
+      |> LatSegments.trim()
+      |> LatSegments.update_last_text(&String.trim_trailing(&1, ","))
+      |> LatSegments.trim()
+    end)
+    |> Enum.reject(&LatSegments.blank?/1)
+    |> join_signee()
+  end
+
+  # ", " between parts — except after "… of the" (a job title running into
+  # its department: "A senior officer of the Department of …")
+  defp join_signee([]), do: []
+
+  defp join_signee([first | rest]) do
+    Enum.reduce(rest, first, fn part, acc ->
+      sep =
+        if Regex.match?(~r/\b(of|the|for|and)\z/i, LatSegments.plain(acc)), do: " ", else: ", "
+
+      acc ++ LatSegments.mark(sep) ++ part
+    end)
+  end
+
+  defp quoted_number("", _parent), do: ""
+  defp quoted_number(n, :P1), do: n <> "."
+  defp quoted_number(n, _parent), do: "(" <> n <> ")"
+
+  @doc """
+  A node's text blocks in document order: each Text's inline text, and in
+  :structural mode a :gap where a child provision (its own row) sits.
+  :structural skips other laws' text (amendment blocks); :leaf keeps it,
+  as leaf rows always have.
+  """
+  @spec text_blocks(tuple(), :leaf | :structural) :: [
+          LatSegments.t() | :gap | {:append, LatSegments.t()}
+        ]
+  def text_blocks(node, mode) do
+    {blocks, _} =
+      node
+      |> xpath(~x"./*"l)
+      |> Enum.flat_map_reduce(false, fn child, after_open_child? ->
+        name = Xml.element_name(child)
+
+        cond do
+          name in Xml.no_text_elements() ->
+            {[], after_open_child?}
+
+          # tables and figures are rows of their own, in either mode
+          name in ~w(Tabular Figure) and mode == :leaf ->
+            {[], after_open_child?}
+
+          mode == :structural and name in Xml.quoted_elements() and after_open_child? ->
+            {[], true}
+
+          # text appended to the amended provision (the quote's closing ".")
+          name == "AppendText" ->
+            {[{:append, Inline.text(child)}], after_open_child?}
+
+          name in Xml.quoted_elements() ->
+            {[quoted_text(child)], after_open_child?}
+
+          Xml.local_name(name) == "table" ->
+            {[table_text(child)], after_open_child?}
+
+          name == "Signee" ->
+            {[signee_text(child)], after_open_child?}
+
+          mode == :structural and name in Xml.row_elements() ->
+            # content after an open child provision is the child's (#174)
+            {[:gap], name in Xml.provision_rows() and open_lead_in?(child)}
+
+          mode == :structural and name in Xml.skip_elements() ->
+            {[], after_open_child?}
+
+          mode == :structural and after_open_child? ->
+            {[], true}
+
+          name == "Text" ->
+            {[Inline.text(child)], after_open_child?}
+
+          # after the open-child skip above: a list following an open child is its (#174)
+          name in ~w(OrderedList UnorderedList) ->
+            {list_blocks(child, mode), after_open_child?}
+
+          # a change wrapping whole blocks (<Repeal RetainText><Text>…</Text></Repeal>):
+          # each of its blocks is the changed words
+          Inline.block_change(child) != nil ->
+            change = Inline.block_change(child)
+
+            {child |> text_blocks(mode) |> Enum.map(&Inline.changed_block(&1, change)),
+             after_open_child?}
+
+          true ->
+            {text_blocks(child, mode), after_open_child?}
+        end
+      end)
+
+    blocks
+  end
+
+  @doc """
+  Append the sibling content an open provision took (#174): after " … "
+  when the provision has its own child provisions in between.
+  """
+  @spec with_trailing(LatSegments.t(), [tuple()], tuple()) :: LatSegments.t()
+  def with_trailing(segments, [], _node), do: segments
+
+  def with_trailing(segments, trailing, node) do
+    trailing_segments =
+      trailing
+      |> Enum.flat_map(fn el ->
+        cond do
+          Xml.element_name(el) == "Text" -> [Inline.text(el)]
+          Xml.element_name(el) == "AppendText" -> [{:append, Inline.text(el)}]
+          Xml.element_name(el) in Xml.quoted_elements() -> [quoted_text(el)]
+          true -> text_blocks(el, :leaf)
+        end
+      end)
+      |> join_blocks()
+
+    separator = if child_provisions?(node), do: " … ", else: " "
+    LatSegments.join([segments, trailing_segments], separator)
+  end
+
+  @doc """
+  Join blocks with spaces; a gap between text becomes " … " (the child
+  provisions sit there); leading/trailing gaps are dropped.
+  """
+  @spec join_blocks([LatSegments.t() | :gap | {:append, LatSegments.t()}]) :: LatSegments.t()
+  def join_blocks(blocks) do
+    blocks
+    |> attach_appends()
+    |> Enum.reject(&(is_list(&1) and LatSegments.blank?(&1)))
+    |> Enum.chunk_by(&(&1 == :gap))
+    |> Enum.map(fn
+      [:gap | _] -> :gap
+      parts -> LatSegments.join(parts, " ")
+    end)
+    |> Enum.drop_while(&(&1 == :gap))
+    |> Enum.reverse()
+    |> Enum.drop_while(&(&1 == :gap))
+    |> Enum.reverse()
+    |> Enum.map(fn
+      :gap -> LatSegments.mark("…")
+      segments -> segments
+    end)
+    |> LatSegments.join(" ")
+    |> LatSegments.trim()
+  end
+
+  # AppendText joins the block before it, inside its closing "»".
+  defp attach_appends(blocks) do
+    blocks
+    |> Enum.reduce([], fn
+      {:append, appended}, [prev | rest] when is_list(prev) ->
+        [LatSegments.append_in_quote(prev, appended) | rest]
+
+      {:append, appended}, acc ->
+        [appended | acc]
+
+      block, acc ->
+        [block | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  defp child_provisions?(node) do
+    xpath(node, ~x".//P1[1]"o) != nil ||
+      xpath(node, ~x".//P2[1]"o) != nil ||
+      xpath(node, ~x".//P3[1]"o) != nil ||
+      xpath(node, ~x".//P4[1]"o) != nil ||
+      xpath(node, ~x".//Pblock[1]"o) != nil
+  end
+
+  @doc """
+  A row's text without descending into child provision elements (Part,
+  Chapter, Schedule, P1, P2, P3 holding rows of their own): its Title and
+  its own text. Falls back to the leaf text when it has no child provisions.
+  """
+  @spec structural(tuple()) :: LatSegments.t()
+  def structural(node) do
+    if child_provisions?(node) do
+      # Title/Number text for the structural header (if any)
+      title = Ids.title(node)
+
+      # The node's own text in document order, stopping at child provisions
+      # (their own rows): a chapeau, then " … " and any continuation text
+      # after them.
+      direct = node |> text_blocks(:structural) |> join_blocks()
+      LatSegments.join([LatSegments.text(title), direct], " ")
+    else
+      # No child provisions — keep full text (leaf node)
+      leaf(node)
+    end
+  end
+end
