@@ -31,6 +31,17 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
     assert uksi.territorial_application == "E"
   end
 
+  test "each effect keeps its id, the affecting provisions and when it was modified (LR-03)", %{
+    xml: xml
+  } do
+    {effects, _} = ChangesFeed.parse(xml)
+    wsi = Enum.find(effects, &(&1.affecting == "UK_wsi_2005_1806"))
+
+    assert wsi.effect_id == "effect-fixture"
+    assert wsi.affecting_provisions == "reg. 72(1)"
+    assert wsi.modified == "2026-03-24T16:07:27Z"
+  end
+
   test "missing attributes are nil, not empty strings", %{xml: xml} do
     {effects, _} = ChangesFeed.parse(xml)
     amendment = Enum.find(effects, &(&1.type == "words substituted"))

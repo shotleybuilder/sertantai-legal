@@ -4,9 +4,12 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   diffs and repairs don't re-fetch documents that haven't changed.
 
   Handles:
-  - `cacheable?/1` — legislation documents only (`/<type>/<year>/<number>/…/data.xml`:
-    body, fragments, introduction, contents); never changes feeds, `/new/`
-    lists or search, which change by design
+  - `cacheable?/1` — legislation documents (`/<type>/<year>/<number>/…/data.xml`:
+    body, fragments, introduction, contents) and changes-affected feed pages
+    (`/changes/affected/<type>/<year>/<number>/data.feed?…&page=N`, stored as
+    `…/data.feed.page-N`: the effects layer is measured offline, LR-03); never
+    other changes lists, `/new/` lists or search. A feed has no `dct:valid`,
+    so its freshness is its fetch age
   - `put/3`, `put_missing/2`, `get/2` — gzipped document (or a 404 marker)
     plus `<path>.meta.json` (`fetched_at`, `dct_valid`, `status`), written to
     a temp file and renamed, so an interrupted write never leaves a partial copy
@@ -22,12 +25,13 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
   @default_root Path.join(["data", "cache", "clml"])
   @ttl_days 30
   @document ~r"^/(?!changes/|new/)[a-z]+/\d{4}/[^/?]+(?:/[^?]*)?/data\.xml$"
+  @feed ~r"^/changes/affected/[a-z]+/\d{4}/[^/?]+/data\.feed(?:\?.*)?$"
 
   @type meta :: %{fetched_at: DateTime.t(), dct_valid: Date.t() | nil, status: String.t()}
 
   @doc "Whether a request path is a legislation document the store keeps."
   @spec cacheable?(String.t()) :: boolean()
-  def cacheable?(path), do: Regex.match?(@document, path)
+  def cacheable?(path), do: Regex.match?(@document, path) or Regex.match?(@feed, path)
 
   @doc "Store a fetched document."
   @spec put(String.t(), String.t(), keyword()) :: :ok
@@ -108,7 +112,20 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStore do
     end
   end
 
-  defp file(root, path), do: Path.join(root, String.trim_leading(path, "/") <> ".gz")
+  defp file(root, path),
+    do: Path.join(root, path |> stored_name() |> String.trim_leading("/")) <> ".gz"
+
+  # a feed page without its query: "…/data.feed?results-count=5000&page=2" → "…/data.feed.page-2"
+  defp stored_name(path) do
+    case String.split(path, "?", parts: 2) do
+      [feed, query] ->
+        page = query |> URI.decode_query() |> Map.get("page", "1")
+        feed <> ".page-" <> page
+
+      [doc] ->
+        doc
+    end
+  end
 
   defp write_meta!(root, path, fields) do
     meta = Map.put(fields, "fetched_at", DateTime.utc_now() |> DateTime.to_iso8601())

@@ -24,13 +24,20 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
 
-  @results_per_page 500
+  # one request per law for all but the largest (legislation.gov.uk accepts it:
+  # 1990/43's 1,940 effects in one page)
+  @results_per_page 5000
   @max_pages 20
 
   defmodule Effect do
     @moduledoc "One `ukm:Effect` from the changes feed."
     @enforce_keys [:type, :affecting]
     defstruct [
+      # LR-03: the effect's id (= a modern note's Commentary id and a change
+      # element's ChangeId prefix), the affecting provisions, last modified
+      :effect_id,
+      :affecting_provisions,
+      :modified,
       :type,
       :affecting,
       :affected_provisions,
@@ -48,6 +55,9 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
     ]
 
     @type t :: %__MODULE__{
+            effect_id: String.t() | nil,
+            affecting_provisions: String.t() | nil,
+            modified: String.t() | nil,
             type: String.t(),
             affecting: String.t() | nil,
             affected_provisions: String.t() | nil,
@@ -64,23 +74,28 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           }
   end
 
-  @doc "Every effect on a law, across all feed pages."
-  @spec fetch(String.t(), integer() | String.t(), String.t()) ::
+  @doc """
+  Every effect on a law, across all feed pages. `opts[:store]` as
+  `Client.fetch_xml/2` (pages are kept in the local store, LR-03): `:write`
+  (default), `:prefer`, `:only` (offline), `:refresh`.
+  """
+  @spec fetch(String.t(), integer() | String.t(), String.t(), keyword()) ::
           {:ok, [Effect.t()]} | {:error, String.t()}
-  def fetch(type_code, year, number), do: fetch_page(type_code, year, number, 1, [])
+  def fetch(type_code, year, number, opts \\ []),
+    do: fetch_page(type_code, year, number, 1, [], opts)
 
-  defp fetch_page(_t, _y, _n, page, _acc) when page > @max_pages,
+  defp fetch_page(_t, _y, _n, page, _acc, _opts) when page > @max_pages,
     do: {:error, "changes feed exceeded #{@max_pages} pages"}
 
-  defp fetch_page(type_code, year, number, page, acc) do
+  defp fetch_page(type_code, year, number, page, acc, opts) do
     path =
       "/changes/affected/#{type_code}/#{year}/#{number}/data.feed?results-count=#{@results_per_page}&page=#{page}"
 
-    case Client.fetch_xml(path) do
+    case Client.fetch_xml(path, Keyword.take(opts, [:store, :root])) do
       {:ok, xml} when is_binary(xml) ->
         case safe_parse(xml) do
           {:ok, {effects, %{more_pages?: true}}} ->
-            fetch_page(type_code, year, number, page + 1, acc ++ effects)
+            fetch_page(type_code, year, number, page + 1, acc ++ effects, opts)
 
           {:ok, {effects, _}} ->
             {:ok, acc ++ effects}
@@ -115,6 +130,9 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       |> xpath(
         ~x"//ukm:Effect"l
         |> add_namespace("ukm", "http://www.legislation.gov.uk/namespaces/metadata"),
+        effect_id: ~x"./@EffectId"s,
+        affecting_provisions: ~x"./@AffectingProvisions"s,
+        modified: ~x"./@Modified"s,
         type: ~x"./@Type"s,
         affecting_uri: ~x"./@AffectingURI"s,
         affected_provisions: ~x"./@AffectedProvisions"s,
@@ -135,6 +153,9 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       )
       |> Enum.map(fn e ->
         %Effect{
+          effect_id: blank(e.effect_id),
+          affecting_provisions: blank(e.affecting_provisions),
+          modified: blank(e.modified),
           type: e.type,
           affecting: law_name(blank(e.affecting_uri)),
           affected_provisions: blank(e.affected_provisions),

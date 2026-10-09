@@ -27,9 +27,19 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStoreTest do
       end
     end
 
-    test "not changes feeds, new-legislation lists, search or non-XML" do
+    test "changes-affected feed pages (LR-03: effects are measured offline)" do
+      assert ClmlStore.cacheable?(
+               "/changes/affected/ukpga/1965/56/data.feed?results-count=5000&page=1"
+             )
+
+      assert ClmlStore.cacheable?(
+               "/changes/affected/uksi/2024/1/data.feed?results-count=5000&page=2"
+             )
+    end
+
+    test "not other changes lists, new-legislation lists, search or non-XML" do
       for path <- [
-            "/changes/affected/ukpga/1965/56/data.feed",
+            "/changes/affecting/ukpga/1965/56/data.feed",
             "/new/all/2024-01-15",
             "/search?title=x",
             "/uksi/1992/3004/data.rdf",
@@ -56,6 +66,14 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ClmlStoreTest do
       :ok = ClmlStore.put_missing(path, root: root)
 
       assert {:missing, %{dct_valid: nil}} = ClmlStore.get(path, root: root)
+    end
+
+    test "a feed page is stored under a clean name, page by page", %{root: root} do
+      path = "/changes/affected/ukpga/1990/43/data.feed?results-count=5000&page=2"
+      :ok = ClmlStore.put(path, "<feed/>", root: root)
+
+      assert {:ok, "<feed/>", %{dct_valid: nil}} = ClmlStore.get(path, root: root)
+      assert File.exists?(Path.join(root, "changes/affected/ukpga/1990/43/data.feed.page-2.gz"))
     end
 
     test "nothing stored", %{root: root} do

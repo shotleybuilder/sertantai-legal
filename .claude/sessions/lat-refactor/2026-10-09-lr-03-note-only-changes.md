@@ -1,15 +1,22 @@
 ---
 session: 'LR-03: Effects Layer'
-status: pending
+status: active
 opened: 2026-10-09
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
-# Session: LR-03 Effects Layer (PENDING)
+# Session: LR-03 Effects Layer (ACTIVE)
 
 ## Problem
 
 Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes the text markup doesn't carry — a whole section repealed with no `Repeal` element (1974/40 s.101, 1993/12 s.18), a change element with no `Extent`, an except-clause (1984/22 Pt. II "except in relation to ss. 13-15") — must come from the **effects layer** (changes feed), not note prose. Notes are hints of where to look. LR-02's note-text territory fallback (`NoteTerritory`, ~27,500 elements) is interim and is replaced here where an effect exists.
+
+## Precedence is by cause, not by source (Jason, 2026-10-09)
+
+"markup and effects diff most likely when the effects haven't been pushed into markup … should markup really have precedence?" No single precedence. Classify each disagreement by cause, measured in the probe:
+- effect **not yet applied** (`Applied=false`): the markup is stale; the effect is current law → record the effect's territory on the row with provenance (the text itself lags: #171);
+- effect **applied** but disagreeing with the markup → editorial data issue: flag, don't guess;
+- other causes the probe finds (whole-provision effect vs word-level markup, effects outside scoped LAT, legacy notes with no effect, …).
 
 ## Todo
 
@@ -48,3 +55,9 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 - **Provenance**: every territory claim records its source (markup vs effect) — distinguishable downstream.
 - **Precedence**: a documented rule for markup vs effect disagreement (default: markup), else flag for review.
 - Pure, unit-testable effect interpretation (one effect record × segments → claim).
+
+## Work (2026-10-09)
+
+- **Offline probe of the existing cache**: of 1,068 LAT laws, 381 fully cached (in-force + refs), 274 basic, **413 none**; 168,418 effects — **10,434 (6%) not yet applied** to the text; 82,499 explicit effect extent, 28,105 "same as affected" (legislation.gov.uk's `S+A+M+E+A+S+A+F+F+E+C+T+E+D` sentinel — `LiveStatus` already handles it), 9,628 territorial application; 138,357 with structured affected refs; **no effect ids kept** (`data/reports/lat-refactor/lr03-probe-offline.txt`).
+- **Pagination**: `results-count=5000` returns 1990/43's 1,940 effects in one page → one request per law (2006/46: 2 pages).
+- **Raw feeds stored** (test-first): `ClmlStore` keeps changes-affected feed pages as `changes/affected/<t>/<y>/<n>/data.feed.page-N.gz` (freshness = fetch age); `ChangesFeed` keeps `effect_id`, `affecting_provisions`, `modified`, passes the store mode; `mix lat.fetch_effects` (resumable, per-law log). Smoke: 2 laws, 6,095 effects, offline re-read OK.
