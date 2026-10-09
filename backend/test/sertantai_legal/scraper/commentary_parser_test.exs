@@ -445,4 +445,38 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
       assert ann.code == "F:key-abc123"
     end
   end
+
+  # ── renumber/2 (scoped fragments) ──────────────────────────────
+
+  describe "renumber/2" do
+    defp note(fragment, seq, code, sections),
+      do: %{
+        id: "UK_test_2024_1:amendment:#{seq}",
+        code_type: :amendment,
+        code: code,
+        text: "Note #{code}",
+        affected_sections: sections,
+        fragment: fragment
+      }
+
+    test "the same note from two fragments once, its sections combined" do
+      [n] =
+        CommentaryParser.renumber(
+          [note(1, 1, "F:a", ["s.1"]), note(2, 1, "F:a", ["s.2"])],
+          "UK_test_2024_1"
+        )
+
+      assert n.affected_sections == ["s.1", "s.2"]
+      assert n.id == "UK_test_2024_1:amendment:1"
+    end
+
+    test "notes numbered alike in different fragments keep fragment order (deterministic)" do
+      # every fragment numbers its notes from 1: ties are broken by document
+      # order, never by map order (which follows the VM's atom table — LR-04)
+      notes = for i <- 1..40, do: note(i, 1, "F:k#{i}", ["s.#{i}"])
+      out = CommentaryParser.renumber(notes, "UK_test_2024_1")
+      assert Enum.map(out, & &1.code) == Enum.map(notes, & &1.code)
+      assert Enum.map(out, & &1.id) == for(i <- 1..40, do: "UK_test_2024_1:amendment:#{i}")
+    end
+  end
 end

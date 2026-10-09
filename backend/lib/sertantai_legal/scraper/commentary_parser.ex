@@ -184,12 +184,19 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   """
   @spec renumber([map()], String.t()) :: [map()]
   def renumber(annotations, law_name) do
+    key = &{&1.code_type, &1.code, &1.text}
+    same = Enum.group_by(annotations, key)
+
+    # first occurrences in document order (fragment order): the stable sort
+    # below breaks ties between fragments' equal numbers by it, never by map
+    # order (which follows the VM's atom table: ids changed run to run, LR-04)
     annotations
-    |> Enum.group_by(&{&1.code_type, &1.code, &1.text})
-    |> Enum.map(fn {_key, [first | _] = same} ->
+    |> Enum.uniq_by(key)
+    |> Enum.map(fn first ->
       %{
         first
-        | affected_sections: same |> Enum.flat_map(&(&1.affected_sections || [])) |> Enum.uniq()
+        | affected_sections:
+            same[key.(first)] |> Enum.flat_map(&(&1.affected_sections || [])) |> Enum.uniq()
       }
     end)
     |> Enum.sort_by(
