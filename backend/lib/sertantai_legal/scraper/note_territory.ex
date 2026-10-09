@@ -19,6 +19,10 @@ defmodule SertantaiLegal.Scraper.NoteTerritory do
 
   Only the text before each " by " counts (citations and titles after it
   never do). Pure.
+
+  **Interim.** Notes are hints, not facts (`docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`
+  §3): the effects layer is the source of a change's territory and is to
+  replace this reading where an effect exists (lat-refactor LR-03).
   """
 
   alias SertantaiLegal.Scraper.Territory

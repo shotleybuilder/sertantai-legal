@@ -447,10 +447,14 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   defp piece({:mark, _s}, _state, _lookup), do: []
   defp piece({:aside, _inner}, _state, _lookup), do: []
 
-  # words only: whitespace or punctuation alone ("." after a substitution:
-  # 2018/482 reg.4(2)(b)) is not the row's own words
-  defp piece({:text, s}, state, _lookup),
+  # Whitespace never counts; punctuation alone outside any change ("." after
+  # a substitution: 2018/482 reg.4(2)(b)) isn't the row's own words, but
+  # inside a change it is (". . . ." is a repeal marker: 1967/10 s.1(2A)).
+  defp piece({:text, s}, {nil, _live} = state, _lookup),
     do: if(String.match?(s, ~r/[\p{L}\p{N}]/u), do: [state], else: [])
+
+  defp piece({:text, s}, state, _lookup),
+    do: if(String.trim(s) == "", do: [], else: [state])
 
   defp piece({:words, change, inner}, {kind, live} = state, lookup) do
     case compose(change, live, lookup) do
