@@ -202,13 +202,18 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     |> Enum.sort_by(
       &{&1.code_type, &1.id |> String.split(":") |> List.last() |> String.to_integer()}
     )
-    |> Enum.group_by(& &1.code_type)
+    |> by_code_type()
     |> Enum.flat_map(fn {code_type, items} ->
       items
       |> Enum.with_index(1)
       |> Enum.map(fn {item, seq} -> %{item | id: "#{law_name}:#{code_type}:#{seq}"} end)
     end)
   end
+
+  # Groups by code_type, in code_type name order: a map's atom keys come out
+  # in atom-table order, which varies with module load order (LR-04)
+  defp by_code_type(items),
+    do: items |> Enum.group_by(& &1.code_type) |> Enum.sort_by(fn {t, _} -> to_string(t) end)
 
   @doc """
   Each annotation's `effect_ids` (LR-07): the effects joined by the change
@@ -236,7 +241,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   # Assign sequential IDs per code_type: {law_name}:{code_type}:{seq}
   defp assign_sequential_ids(commentaries, law_name) do
     commentaries
-    |> Enum.group_by(& &1.code_type)
+    |> by_code_type()
     |> Enum.flat_map(fn {code_type, items} ->
       items
       |> Enum.with_index(1)

@@ -478,5 +478,16 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
       assert Enum.map(out, & &1.code) == Enum.map(notes, & &1.code)
       assert Enum.map(out, & &1.id) == for(i <- 1..40, do: "UK_test_2024_1:amendment:#{i}")
     end
+
+    test "code types come out in name order (never atom-table order)" do
+      notes = [
+        %{note(1, 1, "F:m", ["s.1"]) | code_type: :modification},
+        %{note(1, 1, "F:c", ["s.1"]) | code_type: :commencement},
+        note(1, 1, "F:a", ["s.1"])
+      ]
+
+      assert notes |> CommentaryParser.renumber("UK_test_2024_1") |> Enum.map(& &1.code_type) ==
+               [:amendment, :commencement, :modification]
+    end
   end
 end
