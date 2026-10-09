@@ -23,6 +23,9 @@ defmodule Mix.Tasks.Lat.TextDiff do
   comments) lists the classes a change is meant to cause; any other class is
   reported as unexpected, with its count (LAT Parser Refactor, LR-01).
 
+  Each parsed law also runs the territory sanity checks (`LatTerritoryCheck`,
+  LR-03) into `<out>.checks.csv` (law_name, section_id, check, detail).
+
   `--store prefer|only|refresh` (default `prefer`): the local CLML store
   (#175). `--store only` is the offline whole-corpus diff: no requests.
   """
@@ -31,7 +34,7 @@ defmodule Mix.Tasks.Lat.TextDiff do
 
   alias NimbleCSV.RFC4180, as: CSV
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LatDiffClass, LatStagedParser, LatTextDiff}
+  alias SertantaiLegal.Scraper.{LatDiffClass, LatStagedParser, LatTerritoryCheck, LatTextDiff}
 
   @shortdoc "Classified row diff of a fresh parse against stored LAT (no persist)"
 
@@ -54,6 +57,10 @@ defmodule Mix.Tasks.Lat.TextDiff do
     done_path = out <> ".done"
     File.mkdir_p!(Path.dirname(out))
     unless File.exists?(out), do: File.write!(out, CSV.dump_to_iodata([@header]))
+    checks_out = out <> ".checks.csv"
+
+    unless File.exists?(checks_out),
+      do: File.write!(checks_out, CSV.dump_to_iodata([~w(law_name section_id check detail)]))
 
     done =
       if File.exists?(done_path),
@@ -79,7 +86,15 @@ defmodule Mix.Tasks.Lat.TextDiff do
 
     for law <- laws do
       case diff_law(law, mode) do
-        {:ok, changes} ->
+        {:ok, changes, findings} ->
+          File.write!(
+            checks_out,
+            CSV.dump_to_iodata(
+              Enum.map(findings, &[law, &1.section_id, to_string(&1.check), &1.detail])
+            ),
+            [:append]
+          )
+
           rows =
             Enum.map(changes, fn {id, change, classes, old, new} ->
               [
@@ -105,6 +120,7 @@ defmodule Mix.Tasks.Lat.TextDiff do
     end
 
     summarise(out, opts[:expect])
+    summarise_checks(checks_out)
   end
 
   # Class → rows, laws, an example, over the whole CSV (resumed runs included).
@@ -147,6 +163,13 @@ defmodule Mix.Tasks.Lat.TextDiff do
     end
   end
 
+  defp summarise_checks(path) do
+    [_header | rows] = path |> File.read!() |> CSV.parse_string(skip_headers: false)
+    counts = rows |> Enum.frequencies_by(&Enum.at(&1, 2)) |> Enum.sort_by(&(-elem(&1, 1)))
+    Mix.shell().info("territory checks (#{path}): #{length(rows)} findings")
+    Enum.each(counts, fn {check, n} -> Mix.shell().info("  #{n}\t#{check}") end)
+  end
+
   defp expected_patterns(path) do
     path
     |> File.read!()
@@ -158,7 +181,7 @@ defmodule Mix.Tasks.Lat.TextDiff do
   defp diff_law(law, mode) do
     with {:ok, rows, _law_id} <- LatStagedParser.fetch_rows(law, store: mode) do
       new = Map.new(rows, &{&1.section_id, Map.take(&1, @fields)})
-      {:ok, changes(stored(law), new)}
+      {:ok, changes(stored(law), new), LatTerritoryCheck.check(rows)}
     end
   end
 

@@ -384,5 +384,14 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert [%{source: :effect_extent, effect_id: "key-s101", territory: "S"}] =
                LatTerritory.provenance(segs)
     end
+
+    test "a markup Extent disjoint from the effect's application: the application is used, the markup kept on the claim" do
+      index = EffectIndex.new([fx(effect_id: "key-c", territorial_application: "S")])
+      change = %Change{kind: :ins, attribute: "E+W", change_id: "key-c-1"}
+      segs = LatTerritory.resolve([{:words, change, [t("x")]}], index)
+
+      assert [%{source: :effect_application, territory: "S", conflict_markup: "E+W"}] =
+               LatTerritory.provenance(segs)
+    end
   end
 end

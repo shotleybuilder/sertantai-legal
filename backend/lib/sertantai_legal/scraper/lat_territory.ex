@@ -33,7 +33,16 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     `effect_id` instead. `resolve/2` fills `territory` and `source`.
     """
     @enforce_keys [:kind]
-    defstruct [:kind, :attribute, :ref, :change_id, :effect_id, :territory, :source]
+    defstruct [
+      :kind,
+      :attribute,
+      :ref,
+      :change_id,
+      :effect_id,
+      :territory,
+      :source,
+      :conflict_markup
+    ]
 
     @type t :: %__MODULE__{
             kind: :keep | :ins | :pair,
@@ -42,7 +51,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
             change_id: String.t() | nil,
             effect_id: String.t() | nil,
             territory: String.t() | nil,
-            source: atom() | nil
+            source: atom() | nil,
+            conflict_markup: String.t() | nil
           }
   end
 
@@ -89,7 +99,20 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
         EffectIndex.for_change(effects, change.change_id)
 
     {territory, source} = EffectTerritory.claim(effect, change.kind, change.attribute)
-    %{change | territory: territory, source: source, effect_id: effect && effect.effect_id}
+
+    # markup disjoint from the effect's application: the application is used,
+    # the markup kept on the claim for the conflict report
+    conflict =
+      if EffectTerritory.conflict?(effect, change.attribute),
+        do: Territory.normalize(change.attribute)
+
+    %{
+      change
+      | territory: territory,
+        source: source,
+        effect_id: effect && effect.effect_id,
+        conflict_markup: conflict
+    }
   end
 
   @doc """
@@ -119,10 +142,16 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   defp claim_entry(%Change{source: nil}), do: []
 
-  defp claim_entry(%Change{} = c),
-    do: [
-      %{source: c.source, territory: c.territory, change_id: c.change_id, effect_id: c.effect_id}
-    ]
+  defp claim_entry(%Change{} = c) do
+    claim = %{
+      source: c.source,
+      territory: c.territory,
+      change_id: c.change_id,
+      effect_id: c.effect_id
+    }
+
+    [if(c.conflict_markup, do: Map.put(claim, :conflict_markup, c.conflict_markup), else: claim)]
+  end
 
   # ── Pairing ──────────────────────────────────────────────────────
 
