@@ -25,7 +25,7 @@ bugs:
 - ✅ Row status from effects: partial / prospective / commencement by territory; repealed_saved from savings
 - ✅ From LR-03 checks: a retained repeal whose effect extent equals the row's extent makes no territory claim (1989/14 s.3(5)(aa)/(ba)/(c)(ia): "Act repealed (S.)" on S-only rows) — wholly in force → repealed status here
 - ✅ fractalaw contract impact (fields, hashes) → LH-05 (listed below; fractalaw not told yet)
-- ⬜ Classified diff; review
+- ✅ Classified diff; review (text diff runs 1-4, change diff runs 1-2; Gemini accepted)
 
 ## Dependencies
 
@@ -133,3 +133,7 @@ Ash migration `20261009175920_lr07_effect_ids` (dev + test migrated; `lat` view 
 | notes `effect` / `effective_from` / `changed_by` | no | from effects (65,648 notes) |
 | notes `change_id` | evidence for LatCause / lat_changes | unchanged (hash of law + text) |
 | `effect_ids`, `change_provenance`, `fact_provenance` | no | new, legal-only for now |
+
+## Gemini acceptance (2026-10-09)
+
+`backend/data/code-reviews/2026-10-09-lr07-acceptance-gemini.md` (2.5 Pro): **accept** for dry run → apply. Taken: the dates fallback was blocked when *any* joined effect was prospective — now only when all are (test). Already covered: "data loss" (`emptied` classes) and effect-over-note corrections are diff classes. Not a risk as read: unmentioned territories don't keep a row partial (feed gap, not "not in force"). To LR-04: split `ChangeFacts.resolve/5`, comment `group_partial?/3`, move `twin/1` beside `AmendmentNote.resolve_law/2`.

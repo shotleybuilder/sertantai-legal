@@ -99,7 +99,7 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
         dates != [] ->
           {dates, :effect}
 
-        parsed.effective_dates != [] and not Enum.any?(effects, &prospective?/1) ->
+        parsed.effective_dates != [] and not Enum.all?(effects, &prospective?/1) ->
           {parsed.effective_dates, :note}
 
         true ->

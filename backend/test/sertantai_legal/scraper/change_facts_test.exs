@@ -121,6 +121,28 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
                )
     end
 
+    test "one undated applied effect beside a prospective one: the note's dates stand (Gemini LR-07 acceptance)" do
+      applied =
+        fx(
+          type: "added",
+          in_force: [%{date: nil, prospective: true, qualification: nil, applied: true}]
+        )
+
+      later =
+        fx(
+          type: "repealed",
+          prospective: true,
+          applied: false,
+          in_force: [%{date: nil, prospective: true, qualification: nil, applied: false}]
+        )
+
+      assert %{effective_from: ~D[1997-03-19], dates_source: :note} =
+               ChangeFacts.note(parsed("S. 9 inserted (19.3.1997) by 1997 c. 28"), "amendment", [
+                 applied,
+                 later
+               ])
+    end
+
     test "prospective: no dates" do
       e =
         fx(
