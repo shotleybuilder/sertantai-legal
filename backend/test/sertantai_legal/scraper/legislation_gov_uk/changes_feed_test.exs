@@ -206,5 +206,28 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
              "for specified purposes",
              "for E.W. in so far as not already in force"
            ]
+
+    # LR-07: every InForce entry, in order ("Other" reads OtherQualification)
+    assert effect.in_force == [
+             %{date: nil, prospective: true, qualification: nil, applied: false},
+             %{
+               date: ~D[2021-03-15],
+               prospective: false,
+               qualification: "for specified purposes",
+               applied: true
+             },
+             %{
+               date: ~D[2022-12-26],
+               prospective: false,
+               qualification: "for E.W. in so far as not already in force",
+               applied: nil
+             },
+             %{
+               date: ~D[2030-01-01],
+               prospective: false,
+               qualification: "for N.I.",
+               applied: false
+             }
+           ]
   end
 end

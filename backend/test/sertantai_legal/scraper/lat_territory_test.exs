@@ -199,9 +199,19 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
   end
 
   describe "excluded/3: whole-row territory" do
-    test "all retained: the repeals' territories; no territory in the markup → no claim" do
+    test "all retained: the repeals' territories; a joined effect naming none → the whole extent (LR-07: savings / purposes); no effect → no claim" do
       assert LatTerritory.excluded([keep("S", [t("All.")])], "E+W+S") == "S"
       assert LatTerritory.excluded([keep(nil, [t("All.")])], "E+W+S") == nil
+
+      joined = {:words, %Change{kind: :keep, effect_id: "key-e"}, [t("All.")]}
+      assert LatTerritory.excluded([joined], "E+W+S") == "E+W+S"
+    end
+
+    test "a retained repeal not in force here, or with an unreadable territory, removes nothing (LR-07)" do
+      for source <- [:effect_not_in_force, :effect_unreadable] do
+        change = %Change{kind: :keep, source: source}
+        assert LatTerritory.excluded([{:words, change, [t("All.")]}], "E+W+S") == nil
+      end
     end
 
     test "all inserted for a narrower territory: the rest of the extent; none when covering" do
@@ -453,6 +463,29 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
                LatTerritory.provenance(
                  LatTerritory.resolve([{:words, change, [t("x")]}], unjoined)
                )
+    end
+
+    test "note_effects/1: each change's commentary ref with the effect it joined, claim or none (LR-07)" do
+      index =
+        EffectIndex.new([
+          fx(effect_id: "key-a", territorial_application: "W"),
+          fx(effect_id: "key-b")
+        ])
+
+      segs =
+        LatTerritory.resolve(
+          [
+            {:words, %Change{kind: :ins, ref: "key-a", change_id: "key-a-1"}, [t("x")]},
+            # no territory claim, still joined
+            {:words, %Change{kind: :ins, ref: "c123", change_id: "key-b-1"},
+             [{:words, %Change{kind: :keep, ref: "c124", change_id: "d29p1"}, [t("y")]}]},
+            # the same ref twice: once
+            {:words, %Change{kind: :ins, ref: "key-a", change_id: "key-a-2"}, [t("z")]}
+          ],
+          index
+        )
+
+      assert LatTerritory.note_effects(segs) == [{"key-a", "key-a"}, {"c123", "key-b"}]
     end
 
     test "an effect with no AffectedExtent is measured against the law's own extent (an SSI amended by an SSI)" do

@@ -50,6 +50,8 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       :in_force_date,
       :in_force_qualification,
       in_force_qualifications: [],
+      # LR-07: every InForce entry, in order
+      in_force: [],
       prospective: false,
       savings: [],
       affected_refs: [],
@@ -72,6 +74,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
             in_force_date: Date.t() | nil,
             in_force_qualification: String.t() | nil,
             in_force_qualifications: [String.t()],
+            in_force: [SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.in_force()],
             prospective: boolean(),
             savings: [String.t()],
             affected_refs: [String.t()],
@@ -124,6 +127,14 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
   catch
     :exit, reason -> {:error, inspect(reason)}
   end
+
+  @typedoc "One `InForce` entry: `qualification` reads OtherQualification for \"Other\"."
+  @type in_force :: %{
+          date: Date.t() | nil,
+          prospective: boolean(),
+          qualification: String.t() | nil,
+          applied: boolean() | nil
+        }
 
   @doc "Parse one feed page: its effects and whether more pages follow."
   @spec parse(String.t()) :: {[Effect.t()], %{page: integer(), more_pages?: boolean()}}
@@ -189,6 +200,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
               q != "",
               do: q
             ),
+          in_force: Enum.map(e.in_force, &in_force_entry/1),
           prospective:
             Enum.any?(e.in_force, &(&1.prospective == "true")) and
               earliest_date(e.in_force) == nil,
@@ -324,6 +336,23 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       [_, type, year, number] -> IdField.build_uk_id(type, year, number)
       _ -> nil
     end
+  end
+
+  defp in_force_entry(f) do
+    q = if f.qualification == "Other", do: f.other_qualification, else: f.qualification
+
+    date =
+      case Date.from_iso8601(f.date) do
+        {:ok, d} -> d
+        _ -> nil
+      end
+
+    %{
+      date: date,
+      prospective: f.prospective == "true",
+      qualification: blank(q),
+      applied: bool(f.applied)
+    }
   end
 
   # An effect can commence in stages (several InForce dates): the first.

@@ -357,10 +357,18 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert %{text: "The sludge shall be tested.", excluded_extent: "S"} = row(rows, "s.3")
     end
 
-    @tag pending: "LR-07"
-    test "retained for no territory: the whole extent, repealed_saved" do
-      rows = parse(whole_retained("", "n-rep"), rep_none())
+    test "retained, its effect naming no territory (savings): the whole extent, repealed_saved (LR-07)" do
+      rows =
+        parse(whole_retained("", "key-rep"), [], "E+W+S", [
+          fx(effect_id: "key-rep", type: "repealed", savings: ["section-9"])
+        ])
+
       assert %{excluded_extent: "E+W+S", status: "repealed_saved"} = row(rows, "s.3")
+    end
+
+    test "retained, no effect joined: no claim, nothing removed — a missed join is not \"everywhere\" (LR-07: 1967/10 s.28, \"Act repealed (S.)\" under a legacy id)" do
+      rows = parse(whole_retained("", "n-rep"), rep_none())
+      assert %{excluded_extent: nil, status: "in_force"} = row(rows, "s.3")
     end
 
     test "inserted for a narrower territory (attribute): 1990/43 s.88B" do

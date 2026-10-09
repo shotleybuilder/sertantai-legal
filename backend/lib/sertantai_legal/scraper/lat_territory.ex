@@ -145,6 +145,29 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     |> Enum.uniq()
   end
 
+  @doc """
+  Each change's commentary ref with the effect its change id joined, in order,
+  unique (LR-07: a note's effects come from the change markup citing it).
+  Changes with no ref or no effect are left out.
+  """
+  @spec note_effects(LatSegments.t()) :: [{String.t(), String.t()}]
+  def note_effects(segments) do
+    segments
+    |> Enum.flat_map(&changes/1)
+    |> Enum.flat_map(fn
+      %Change{ref: ref, effect_id: id} when is_binary(ref) and is_binary(id) -> [{ref, id}]
+      _ -> []
+    end)
+    |> Enum.uniq()
+  end
+
+  defp changes({:words, change, inner}), do: [change | Enum.flat_map(inner, &changes/1)]
+  defp changes({:aside, inner}), do: Enum.flat_map(inner, &changes/1)
+  defp changes({:pair, change, new, old}), do: [change | Enum.flat_map(new ++ old, &changes/1)]
+  defp changes({:pair_old, _ref, change, inner}), do: [change | Enum.flat_map(inner, &changes/1)]
+  defp changes({:pair_new, _id, change, inner}), do: [change | Enum.flat_map(inner, &changes/1)]
+  defp changes(_seg), do: []
+
   defp claims({:words, change, inner}), do: claim_entry(change) ++ Enum.flat_map(inner, &claims/1)
   defp claims({:aside, inner}), do: Enum.flat_map(inner, &claims/1)
 
@@ -490,8 +513,9 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   Each piece of visible words has a live territory, its changes composed
   from the outside in, from the row's extent: a retained repeal removes its
-  territory (naming none: no claim — savings and purposes are status,
-  LR-07); an insertion narrows to where it applies (leaving the words live
+  territory (naming none while its effect is joined, it removes the whole
+  extent: repealed, kept for savings or purposes, LR-07; with no effect
+  joined, nothing); an insertion narrows to where it applies (leaving the words live
   nowhere when it lies outside the live territory: 1990/43 s.6(6A)(c)); an
   insertion naming no territory, one outside the row (an England insertion
   in a Welsh version), or a substitution's new words with no old words in
@@ -549,11 +573,21 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     do: piece({:words, %{change | kind: :ins}, inner}, state, whole)
 
   # The live territory inside a change; :same when it changes nothing.
+  # a removal not in force here, or with a territory that can't be read:
+  # it removes nothing (LR-07)
+  defp compose(%Change{kind: :keep, source: source}, _live, _whole)
+       when source in [:effect_not_in_force, :effect_unreadable],
+       do: :same
+
   defp compose(%Change{kind: :keep} = change, live, _whole) do
-    case territory(change) do
-      # the markup names no territory: no claim (effects: LR-03)
-      nil -> :same
-      t -> if live == nil, do: nil, else: Territory.subtract(live, t)
+    case {territory(change), change.effect_id} do
+      # no effect joined: no claim — a missed join (a legacy id) is not
+      # "everywhere" (1967/10 s.28: "Act repealed (S.)")
+      {nil, nil} -> :same
+      # its effect names no territory: repealed everywhere, its text kept
+      # for savings or purposes (LR-07)
+      {nil, _effect} -> nil
+      {t, _effect} -> if live == nil, do: nil, else: Territory.subtract(live, t)
     end
   end
 

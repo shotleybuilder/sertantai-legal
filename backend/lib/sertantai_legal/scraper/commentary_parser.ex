@@ -203,6 +203,27 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     end)
   end
 
+  @doc """
+  Each annotation's `effect_ids` (LR-07): the effects joined by the change
+  markup citing it (rows' `note_effects`), and its own id when that is an
+  effect in the feed (`known`: the law's effect ids) — commencement and
+  modification notes sit on the provision, not on change markup. Empty
+  when neither: the note stays a note.
+  """
+  @spec with_effects([map()], [map()], MapSet.t(String.t())) :: [map()]
+  def with_effects(annotations, lat_rows, known) do
+    by_ref =
+      lat_rows
+      |> Enum.flat_map(&(Map.get(&1, :note_effects) || []))
+      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+
+    Enum.map(annotations, fn a ->
+      ref = a.code |> String.split(":", parts: 2) |> List.last()
+      own = if MapSet.member?(known, ref), do: [ref], else: []
+      Map.put(a, :effect_ids, Enum.uniq(Map.get(by_ref, ref, []) ++ own))
+    end)
+  end
+
   # ── Sequential ID Assignment ─────────────────────────────────────
 
   # Assign sequential IDs per code_type: {law_name}:{code_type}:{seq}

@@ -9,21 +9,34 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   3. for a change that removes text (`:keep`, `:pair`): the effect's
      in-force qualifications ("for S.") — gone where in force, kept
      elsewhere; purpose-limited qualifications don't count;
-  4. the effect's extent, only when narrower than the row's own extent
+  4. for a removal not in force for this provision (prospective, or every
+     in-force qualifier scoped to other provisions): none —
+     `{nil, :effect_not_in_force}`; it removes nothing (LR-07);
+  5. the effect's extent, only when narrower than the row's own extent
      (else the affected provision's) — a legal limit: a Scottish Act
      repeals only for S;
      never when wider or equal; "same as affected" is no territory;
-  5. no claim.
+  6. for a removal whose qualifiers name a territory that can't be read
+     here: none — `{nil, :effect_unreadable}`; it removes nothing;
+  7. no claim — for a removal, nothing names a territory: repealed
+     everywhere, its text kept for savings or purposes (LR-07).
 
   Returns `{territory | nil, source | nil}` with source `:effect_application`,
-  `:markup`, `:effect_in_force` or `:effect_extent`. Notes are never read.
+  `:markup`, `:effect_in_force`, `:effect_not_in_force`, `:effect_extent` or
+  `:effect_unreadable`. Notes are never read.
   Pure.
   """
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
   alias SertantaiLegal.Scraper.Territory
 
-  @type source :: :effect_application | :markup | :effect_in_force | :effect_extent
+  @type source ::
+          :effect_application
+          | :markup
+          | :effect_in_force
+          | :effect_not_in_force
+          | :effect_extent
+          | :effect_unreadable
 
   @doc """
   The territory of a change of `kind` with markup `attribute`, from its
@@ -51,11 +64,15 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
       {:effect_application, fn -> application end},
       {:markup, fn -> markup end},
       {:effect_in_force, fn -> kind in [:keep, :pair] and in_force(effects, provision) end},
-      {:effect_extent, fn -> effects != [] and narrower_extent(hd(effects), row_extent) end}
+      {:effect_not_in_force,
+       fn -> kind in [:keep, :pair] and not_in_force?(effects, provision) and :none end},
+      {:effect_extent, fn -> effects != [] and narrower_extent(hd(effects), row_extent) end},
+      {:effect_unreadable, fn -> kind in [:keep, :pair] and territorial?(effects) and :none end}
     ]
     |> Enum.find_value({nil, nil}, fn {source, value} ->
       case value.() do
         code when is_binary(code) -> {code, source}
+        :none -> {nil, source}
         _ -> nil
       end
     end)
@@ -124,6 +141,48 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     end
   end
 
+  @doc """
+  The territory of an in-force qualification naming only a territory
+  ("for E.", "for E.W. in so far as not already in force"); nil when it is
+  scoped to provisions, limited to purposes or areas, or unreadable.
+  """
+  @spec qualifier_territory(String.t()) :: String.t() | nil
+  def qualifier_territory(qualification) do
+    if String.contains?(qualification, "purpose"), do: nil, else: all_scope(qualification)
+  end
+
+  defp all_scope(q) do
+    case {Regex.run(@except_territory, q), territory_scope(q)} do
+      {nil, {territory, :all}} -> code(territory)
+      _ -> nil
+    end
+  end
+
+  # Not in force for this provision: the keyed effect is prospective, or
+  # every qualifier is readable, names a territory and is scoped to other
+  # provisions (1984/22 s.13: "for E. except in relation to ss. 13-15")
+  defp not_in_force?([%Effect{prospective: true} | _], _provision), do: true
+  defp not_in_force?([], _provision), do: false
+
+  defp not_in_force?(effects, provision) do
+    qualifiers = Enum.flat_map(effects, & &1.in_force_qualifications)
+
+    qualifiers != [] and
+      Enum.all?(qualifiers, fn q ->
+        Regex.run(@except_territory, q) == nil and
+          match?({_, {_, _}}, territory_scope(q)) and
+          scope_kind?(elem(territory_scope(q), 1), provision) and
+          not in_scope?(elem(territory_scope(q), 1), provision)
+      end)
+  end
+
+  # some qualifier names a territory
+  defp territorial?(effects) do
+    effects
+    |> Enum.flat_map(& &1.in_force_qualifications)
+    |> Enum.any?(&(Regex.match?(@for_territory, &1) or Regex.match?(@except_territory, &1)))
+  end
+
   # "for E." alone, give or take a date note before it and "in so far as not
   # already in force" (or a timing) after it; anything more limits it to
   # part of the territory or the change ("for E. in relation to the pilot
@@ -171,6 +230,12 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
       _ -> nil
     end
   end
+
+  # the row's provision is of the scope's kind, so the list can be read for it
+  defp scope_kind?(_scope, nil), do: false
+
+  defp scope_kind?({_mode, {kind, _items}}, provision),
+    do: String.starts_with?(provision, kind <> "-")
 
   # the row's provision ("section-14A-1") listed (or, for :except, not)
   defp in_scope?(_scope, nil), do: false

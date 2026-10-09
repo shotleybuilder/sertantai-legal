@@ -390,6 +390,34 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
 
   # ── Code derivation ────────────────────────────────────────────
 
+  describe "with_effects/3 (LR-07)" do
+    test "from the change markup citing the note, plus its own id when the feed has it" do
+      annotations = [
+        %{code: "F:key-aa", text: "a"},
+        %{code: "F:c123", text: "b"},
+        %{code: "I:key-cc", text: "c"},
+        %{code: "F:key-dd", text: "d"}
+      ]
+
+      rows = [
+        %{section_id: "x", note_effects: [{"key-aa", "key-aa"}, {"c123", "key-b1"}]},
+        %{section_id: "y", note_effects: [{"c123", "key-b2"}]},
+        %{section_id: "z"}
+      ]
+
+      known = MapSet.new(["key-aa", "key-cc", "key-b1", "key-b2"])
+
+      assert CommentaryParser.with_effects(annotations, rows, known)
+             |> Enum.map(&{&1.text, &1.effect_ids}) == [
+               {"a", ["key-aa"]},
+               {"b", ["key-b1", "key-b2"]},
+               {"c", ["key-cc"]},
+               # re-keyed: neither joins
+               {"d", []}
+             ]
+    end
+  end
+
   describe "code derivation" do
     test "uses ref_id directly for simple codes like F1, C42" do
       xml = """

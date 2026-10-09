@@ -306,7 +306,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(e, :keep, nil) == {"E+W", :effect_in_force}
 
       purposes = effect(in_force_qualifications: ["for S. for specified purposes"])
-      assert EffectTerritory.claim(purposes, :keep, nil) == {nil, nil}
+      assert EffectTerritory.claim(purposes, :keep, nil) == {nil, :effect_unreadable}
     end
 
     test "a qualifier naming more than a territory is unusable (2000/37 \"for E. in relation to the pilot areas\"); \"in so far as not already in force\" is fine" do
@@ -318,7 +318,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
           ]
         )
 
-      assert EffectTerritory.claim(pilot, :keep, nil) == {nil, nil}
+      assert EffectTerritory.claim(pilot, :keep, nil) == {nil, :effect_unreadable}
 
       ok =
         effect(
@@ -331,7 +331,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(ok, :keep, nil) == {"E+W", :effect_in_force}
 
       insertion = effect(in_force_qualifications: ["for W. for the insertion of s. 53B"])
-      assert EffectTerritory.claim(insertion, :keep, nil) == {nil, nil}
+      assert EffectTerritory.claim(insertion, :keep, nil) == {nil, :effect_unreadable}
     end
 
     test "an except-clause makes a qualifier unusable (1984/22 \"for E. except in relation to ss. 13-15\")" do
@@ -343,7 +343,9 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
           ]
         )
 
-      assert EffectTerritory.claim(e, :keep, nil) == {nil, nil}
+      # a territory named but not readable here (the provision unknown):
+      # no removal (LR-07)
+      assert EffectTerritory.claim(e, :keep, nil) == {nil, :effect_unreadable}
     end
 
     test "4. the effect's extent only when narrower than the affected extent (1974/40 s.101)" do
@@ -363,6 +365,18 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
 
       ew = effect(effect_extent: "E+W", affected_extent: nil)
       assert EffectTerritory.claim(ew, :keep, nil, "E+W") == {nil, nil}
+    end
+
+    test "a removal not yet in force: prospective (LR-07)" do
+      e = effect(prospective: true)
+      assert EffectTerritory.claim(e, :keep, nil) == {nil, :effect_not_in_force}
+      # an insertion's territory isn't about removal
+      assert EffectTerritory.claim(e, :ins, nil) == {nil, nil}
+    end
+
+    test "a removal in force for purposes only names no territory: no claim (LR-07: repealed everywhere, saved)" do
+      e = effect(in_force_qualifications: ["for specified purposes"])
+      assert EffectTerritory.claim(e, :keep, nil) == {nil, nil}
     end
 
     test "5. nothing names one: no claim" do
@@ -390,11 +404,14 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(e, :keep, nil, nil, "section-1-2") == {"S", :effect_in_force}
       assert EffectTerritory.claim(e, :keep, nil, nil, "section-19") == {"S", :effect_in_force}
       assert EffectTerritory.claim(e, :keep, nil, nil, "section-14A-1") == {"S", :effect_in_force}
-      assert EffectTerritory.claim(e, :keep, nil, nil, "section-20-1") == {nil, nil}
+      # not in force for s.20 at all (LR-07)
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-20-1") ==
+               {nil, :effect_not_in_force}
+
       assert EffectTerritory.claim(e, :keep, nil, nil, "section-28") == {"S", :effect_in_force}
-      # the provision unknown, or not a section: unusable
-      assert EffectTerritory.claim(e, :keep, nil) == {nil, nil}
-      assert EffectTerritory.claim(e, :keep, nil, nil, "schedule-1") == {nil, nil}
+      # the provision unknown, or not a section: unreadable
+      assert EffectTerritory.claim(e, :keep, nil) == {nil, :effect_unreadable}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "schedule-1") == {nil, :effect_unreadable}
     end
 
     test "an except-clause naming provisions counts everywhere else (1984/22 \"for E. except in relation to ss. 13-15, 76\")" do
@@ -407,8 +424,12 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
         )
 
       assert EffectTerritory.claim(e, :keep, nil, nil, "section-20") == {"E+W", :effect_in_force}
-      assert EffectTerritory.claim(e, :keep, nil, nil, "section-13") == {nil, nil}
-      assert EffectTerritory.claim(e, :keep, nil, nil, "section-76-2") == {nil, nil}
+
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-13") ==
+               {nil, :effect_not_in_force}
+
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-76-2") ==
+               {nil, :effect_not_in_force}
     end
 
     test "a single provision and a subsection (\"for W. for the repeal of s. 53B\", \"for the repeal of s. 26(5)\")" do
@@ -417,14 +438,16 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(ins, :keep, nil, nil, "section-53B-1") ==
                {"W", :effect_in_force}
 
-      assert EffectTerritory.claim(ins, :keep, nil, nil, "section-53") == {nil, nil}
+      assert EffectTerritory.claim(ins, :keep, nil, nil, "section-53") ==
+               {nil, :effect_not_in_force}
 
       sub = effect(in_force_qualifications: ["for S. for the repeal of s. 26(5)"])
 
       assert EffectTerritory.claim(sub, :keep, nil, nil, "section-26-5-a") ==
                {"S", :effect_in_force}
 
-      assert EffectTerritory.claim(sub, :keep, nil, nil, "section-26-4") == {nil, nil}
+      assert EffectTerritory.claim(sub, :keep, nil, nil, "section-26-4") ==
+               {nil, :effect_not_in_force}
     end
 
     test "markup disjoint from the application: the markup wins, reported as a conflict (uksi 2000/1043 reg.11(3))" do

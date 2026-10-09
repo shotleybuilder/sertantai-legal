@@ -2192,12 +2192,20 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.4").excluded_extent == "E+W"
     end
 
-    @tag pending: "LR-07"
-    test "a retained repeal with no territory (savings / purposes) is repealed_saved everywhere" do
+    test "a retained repeal whose effect names no territory (purposes) is repealed_saved everywhere (LR-07)" do
       rows =
         retained_law(
-          ~s|<P1group><P1><Pnumber>5</Pnumber><P1para><Text><Repeal CommentaryRef="k-sv" RetainText="true">Saved rule.</Repeal></Text></P1para></P1></P1group>|,
-          ~s|<Commentary id="k-sv" Type="F"><Para><Text>Reg. 5 revoked (15.4.2018) by The Regulations 2018 (S.I. 2018/374) (subject to savings)</Text></Para></Commentary>|
+          ~s|<P1group><P1><Pnumber>5</Pnumber><P1para><Text><Repeal ChangeId="key-sv-1" RetainText="true">Saved rule.</Repeal></Text></P1para></P1></P1group>|,
+          "",
+          [
+            struct!(SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect,
+              effect_id: "key-sv",
+              type: "revoked",
+              affecting: "UK_uksi_2018_374",
+              applied: true,
+              in_force_qualifications: ["for specified purposes"]
+            )
+          ]
         )
 
       row = by_id(rows, "reg.5")

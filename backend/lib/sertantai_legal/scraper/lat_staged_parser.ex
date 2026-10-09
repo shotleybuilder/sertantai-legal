@@ -154,6 +154,30 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   end
 
   @doc """
+  A law's parsed rows, its notes (each with `effect_ids`,
+  `CommentaryParser.with_effects/3`) and its effects, without persisting
+  anything (LR-07: `mix lat.change_diff`). Options as for `fetch_rows/2`.
+  """
+  @spec fetch_changes(String.t(), keyword()) ::
+          {:ok, %{rows: [map()], notes: [map()], effects: [ChangesFeed.Effect.t()]}}
+          | {:error, String.t()}
+  def fetch_changes(law_name, opts \\ []) do
+    with {:ok, xmls, _law_id} <- fetch_docs(law_name, opts),
+         {:ok, {type_code, _}} <- parse_law_name(law_name) do
+      effects = law_effects(law_name, opts) || []
+      rows = parse_rows(xmls, law_name, type_code, effects)
+      known = MapSet.new(for e <- effects, e.effect_id != nil, do: e.effect_id)
+
+      notes =
+        xmls
+        |> parse_annotations(law_name, rows)
+        |> CommentaryParser.with_effects(rows, known)
+
+      {:ok, %{rows: rows, notes: notes, effects: effects}}
+    end
+  end
+
+  @doc """
   Fetch a law's documents without parsing: the body, or one document per
   scoped fragment (#166). Options as for `fetch_rows/2` (`store:`).
   """

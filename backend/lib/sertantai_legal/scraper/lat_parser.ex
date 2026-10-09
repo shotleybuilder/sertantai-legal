@@ -469,6 +469,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
       excluded_extent: repealed,
       territory_provenance:
         Enum.uniq(LatTerritory.provenance(segments) ++ LatTerritory.provenance(whole)),
+      # LR-07: {commentary ref, effect id} per joined change in the row's text
+      note_effects: LatTerritory.note_effects(segments),
+      effect_ids: row_effect_ids(segments, whole, ctx, node),
       from_version: ctx.from_version
     }
   end
@@ -509,6 +512,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
       excluded_extent: repealed,
       territory_provenance:
         Enum.uniq(LatTerritory.provenance(segments) ++ LatTerritory.provenance(whole)),
+      # LR-07: {commentary ref, effect id} per joined change in the row's text
+      note_effects: LatTerritory.note_effects(segments),
+      effect_ids: row_effect_ids(segments, whole, ctx, node),
       from_version: ctx.from_version
     }
   end
@@ -544,6 +550,18 @@ defmodule SertantaiLegal.Scraper.LatParser do
         |> LatTerritory.provenance(),
       from_version: ctx.from_version
     }
+  end
+
+  # LR-07: the effects on a row — its text's change joins, its whole-provision
+  # changes and the effects naming its provision (commencement, modification).
+  defp row_effect_ids(segments, whole, ctx, node) do
+    joined = Enum.map(LatTerritory.note_effects(segments), &elem(&1, 1))
+    claimed = for %{effect_id: id} <- LatTerritory.provenance(whole), id != nil, do: id
+
+    named =
+      for %{effect_id: id} <- EffectIndex.on(ctx.effects, extract_xml_id(node)), id != nil, do: id
+
+    Enum.uniq(joined ++ claimed ++ named)
   end
 
   # ── Whole-row territory ──────────────────────────────────────────
