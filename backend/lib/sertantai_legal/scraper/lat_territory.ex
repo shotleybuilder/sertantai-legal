@@ -42,7 +42,9 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       :territory,
       :source,
       :conflict_markup,
-      substitution: false
+      substitution: false,
+      # LR-07: a whole-provision change from the effects layer (rule 3), not markup
+      synthetic: false
     ]
 
     @type t :: %__MODULE__{
@@ -54,7 +56,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
             territory: String.t() | nil,
             source: atom() | nil,
             conflict_markup: String.t() | nil,
-            substitution: boolean()
+            substitution: boolean(),
+            synthetic: boolean()
           }
   end
 
@@ -585,8 +588,9 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       # "everywhere" (1967/10 s.28: "Act repealed (S.)")
       {nil, nil} -> :same
       # its effect names no territory: repealed everywhere, its text kept
-      # for savings or purposes (LR-07)
-      {nil, _effect} -> nil
+      # for savings or purposes (LR-07); a whole-provision repeal from the
+      # effects (rule 3, no text retained) is status, not territory
+      {nil, _effect} -> if change.synthetic, do: :same, else: nil
       {t, _effect} -> if live == nil, do: nil, else: Territory.subtract(live, t)
     end
   end

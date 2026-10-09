@@ -205,6 +205,13 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
 
       joined = {:words, %Change{kind: :keep, effect_id: "key-e"}, [t("All.")]}
       assert LatTerritory.excluded([joined], "E+W+S") == "E+W+S"
+
+      # a whole-provision repeal from the effects (rule 3: dots, no text
+      # retained) is status `repealed`, not a territory (LR-07 run 2)
+      synthetic =
+        {:words, %Change{kind: :keep, effect_id: "key-e", synthetic: true}, [t(". . .")]}
+
+      assert LatTerritory.excluded([synthetic], "E+W+S") == nil
     end
 
     test "a retained repeal not in force here, or with an unreadable territory, removes nothing (LR-07)" do

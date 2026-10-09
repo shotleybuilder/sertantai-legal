@@ -672,7 +672,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
           changes =
             for e <- effects, not MapSet.member?(held, e.effect_id) do
               kind = if e.type in ~w(inserted added), do: :ins, else: :keep
-              %LatTerritory.Change{kind: kind, effect_id: e.effect_id}
+              %LatTerritory.Change{kind: kind, effect_id: e.effect_id, synthetic: true}
             end
 
           %{ctx | provision_changes: ctx.provision_changes ++ changes}
