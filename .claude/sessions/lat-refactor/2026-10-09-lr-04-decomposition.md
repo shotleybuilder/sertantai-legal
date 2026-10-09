@@ -14,6 +14,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 ## Todo
 
 - ⬜ Build out when started (see meta)
+- ⬜ From LR-03 acceptance (Gemini): extract the in-force qualifier parser out of `EffectTerritory` (`territory_scope` / `scope` / `provisions` / `in_scope?`) into its own module with a gallery of real qualifier strings; provision lists cover only s./ss./reg./regs. today (not Schs., Pts.)
 
 ## Dependencies
 

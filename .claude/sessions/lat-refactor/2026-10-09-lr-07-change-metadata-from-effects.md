@@ -16,6 +16,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 - ⬜ Map each LAT fact to its effects source (and to the amending law where no effect exists)
 - ⬜ effect / effective_from / changed_by from effects; note-only changes kept as notes, flagged (or checked against the law)
 - ⬜ Row status from effects: partial / prospective / commencement by territory; repealed_saved from savings
+- ⬜ From LR-03 checks: a retained repeal whose effect extent equals the row's extent makes no territory claim (1989/14 s.3(5)(aa)/(ba)/(c)(ia): "Act repealed (S.)" on S-only rows) — wholly in force → repealed status here
 - ⬜ fractalaw contract impact (fields, hashes) → LH-05
 - ⬜ Classified diff; review
 
