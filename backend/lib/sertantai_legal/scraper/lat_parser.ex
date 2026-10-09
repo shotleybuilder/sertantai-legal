@@ -440,7 +440,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       node
       |> extract_element_text()
       |> with_trailing(ctx.trailing, node)
-      |> row_segments(ctx)
+      |> row_segments(ctx, extent || ctx.law_extent)
 
     text = LatTerritory.render(segments, extent || ctx.law_extent, repealed)
 
@@ -480,7 +480,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       node
       |> extract_structural_text()
       |> with_trailing(ctx.trailing, node)
-      |> row_segments(ctx)
+      |> row_segments(ctx, extent || ctx.law_extent)
 
     text = LatTerritory.render(segments, extent || ctx.law_extent, repealed)
 
@@ -557,7 +557,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
     segments =
       if(LatSegments.blank?(own), do: node |> text_blocks(:leaf) |> join_blocks(), else: own)
-      |> row_segments(ctx)
+      |> row_segments(ctx, row_extent)
 
     {LatTerritory.excluded(segments, row_extent), segments}
   end
@@ -593,10 +593,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # A row's segments with territory resolved from the effects layer
   # (LatTerritory.resolve/2), inside any whole-provision changes it inherits.
-  defp row_segments(segments, ctx) do
+  defp row_segments(segments, ctx, extent) do
     ctx.provision_changes
     |> Enum.reduce(segments, fn change, inner -> [{:words, change, inner}] end)
-    |> LatTerritory.resolve(ctx.effects)
+    |> LatTerritory.resolve(ctx.effects, extent)
   end
 
   # Rule 3 (LR-03): an applied effect repealing or inserting this whole

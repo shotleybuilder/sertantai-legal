@@ -84,6 +84,17 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   @spec for_change(t(), String.t() | nil) :: Effect.t() | nil
   def for_change(index, change_id), do: get(index, effect_id(change_id))
 
+  @doc """
+  The effect behind a change: by its `ChangeId`, else by a `key-` commentary
+  ref — the effect id itself, a structured join (an `M_F_` ChangeId carries
+  one: 1993/11 s.20); a note's text is never read.
+  """
+  @spec for(t(), String.t() | nil, String.t() | nil) :: Effect.t() | nil
+  def for(index, change_id, ref) do
+    for_change(index, change_id) ||
+      if(is_binary(ref) and String.starts_with?(ref, "key-"), do: get(index, ref))
+  end
+
   @doc "Effects naming this provision (by structured ref)."
   @spec on(t(), String.t() | nil) :: [Effect.t()]
   def on(_index, nil), do: []

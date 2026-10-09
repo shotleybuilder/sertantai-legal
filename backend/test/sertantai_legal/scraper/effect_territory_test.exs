@@ -27,6 +27,14 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.effect_id(nil) == nil
     end
 
+    test "a change with an unjoinable id joins by its key- commentary ref (an M_F_ ChangeId: 1993/11 s.20)" do
+      e = effect(effect_id: "key-99")
+      index = EffectIndex.new([e])
+      assert EffectIndex.for(index, "M_F_1e9a", "key-99") == e
+      assert EffectIndex.for(index, "key-99-123", nil) == e
+      assert EffectIndex.for(index, "d29p1", "c123") == nil
+    end
+
     test "effects by id and by ref" do
       e = effect(effect_id: "key-a", affected_refs: ["section-101"])
       index = EffectIndex.new([e])
@@ -131,6 +139,14 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
 
       same = effect(effect_extent: "S+A+M+E+A+S+A+F+F+E+C+T+E+D", affected_extent: "S")
       assert EffectTerritory.claim(same, :ins, nil) == {nil, nil}
+    end
+
+    test "4. the extent is measured against the row's own extent when given (1986/62 s.21: an asp repeal on an E+S row; 2000/37 s.1(4)(a))" do
+      asp = effect(effect_extent: "S", affected_extent: "S")
+      assert EffectTerritory.claim(asp, :keep, nil, "E+S") == {"S", :effect_extent}
+
+      ew = effect(effect_extent: "E+W", affected_extent: nil)
+      assert EffectTerritory.claim(ew, :keep, nil, "E+W") == {nil, nil}
     end
 
     test "5. nothing names one: no claim" do

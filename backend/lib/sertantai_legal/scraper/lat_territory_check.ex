@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheck do
     `LatTerritory.resolve/2` records the markup on the claim)
 
   Pure: rows as parsed (`section_id`, `extent_code`, `excluded_extent`,
-  `territory_provenance`).
+  `territory_provenance`, `text`).
   """
 
   alias SertantaiLegal.Scraper.Territory
@@ -53,11 +53,18 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheck do
       else: [finding(:excluded_outside_extent, row, "#{excluded} outside #{extent || "UK"}")]
   end
 
+  # only rows with words (dots-only rows have none to be live), and only
+  # within the child's own extent
   defp child_live(row, excluded) do
-    with parent when parent != nil <- parent_id(row.section_id),
+    with true <- String.match?(row[:text] || "", ~r/[\p{L}\p{N}]/u),
+         parent when parent != nil <- parent_id(row.section_id),
          parent_excluded when parent_excluded != nil <- Map.get(excluded, parent),
-         live when live != nil <-
-           Territory.subtract(parent_excluded, row.excluded_extent || "") do
+         in_child when in_child != nil <-
+           Territory.subtract(
+             parent_excluded,
+             Territory.subtract(parent_excluded, row.extent_code) || ""
+           ),
+         live when live != nil <- Territory.subtract(in_child, row.excluded_extent || "") do
       [finding(:child_live_where_parent_excluded, row, live)]
     else
       _ -> []

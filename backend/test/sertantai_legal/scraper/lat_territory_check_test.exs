@@ -11,7 +11,8 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheckTest do
           section_id: "UK_x:" <> id,
           extent_code: "E+W+S",
           excluded_extent: nil,
-          territory_provenance: []
+          territory_provenance: [],
+          text: "Some words."
         },
         Map.new(fields)
       )
@@ -59,5 +60,15 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheckTest do
     assert LatTerritoryCheck.parent_id("UK_x:s.3(1)") == "UK_x:s.3"
     assert LatTerritoryCheck.parent_id("UK_x:s.3") == nil
     assert LatTerritoryCheck.parent_id("UK_x:reg.4(1)[E+W]") == "UK_x:reg.4[E+W]"
+  end
+
+  test "rows with no words, or a child extent outside the parent's exclusion, are not findings" do
+    rows = [
+      row("s.6", excluded_extent: "S", text: "Words."),
+      row("s.6(1)", text: ". . . . . ."),
+      row("s.6(2)", extent_code: "E+W", text: "Words.")
+    ]
+
+    assert LatTerritoryCheck.check(rows) == []
   end
 end

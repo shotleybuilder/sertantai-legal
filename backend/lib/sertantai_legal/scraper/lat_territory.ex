@@ -76,31 +76,38 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   application → markup Extent → in force (removals) → narrower extent → no
   claim), with its source; the composition rules then run unchanged.
   """
-  @spec resolve(LatSegments.t(), EffectIndex.t()) :: LatSegments.t()
-  def resolve(segments, effects), do: Enum.map(segments, &resolve_segment(&1, effects))
+  @spec resolve(LatSegments.t(), EffectIndex.t(), String.t() | nil) :: LatSegments.t()
+  def resolve(segments, effects, row_extent \\ nil),
+    do: Enum.map(segments, &resolve_segment(&1, {effects, row_extent}))
 
   defp resolve_segment({:words, change, inner}, effects),
-    do: {:words, resolve_change(change, effects), resolve(inner, effects)}
+    do: {:words, resolve_change(change, effects), resolve_list(inner, effects)}
 
-  defp resolve_segment({:aside, inner}, effects), do: {:aside, resolve(inner, effects)}
+  defp resolve_segment({:aside, inner}, effects), do: {:aside, resolve_list(inner, effects)}
 
   defp resolve_segment({:pair, change, new, old}, effects),
-    do: {:pair, resolve_change(change, effects), resolve(new, effects), resolve(old, effects)}
+    do:
+      {:pair, resolve_change(change, effects), resolve_list(new, effects),
+       resolve_list(old, effects)}
 
   defp resolve_segment({:pair_old, ref, change, inner}, effects),
-    do: {:pair_old, ref, resolve_change(change, effects), resolve(inner, effects)}
+    do: {:pair_old, ref, resolve_change(change, effects), resolve_list(inner, effects)}
 
   defp resolve_segment({:pair_new, id, change, inner}, effects),
-    do: {:pair_new, id, resolve_change(change, effects), resolve(inner, effects)}
+    do: {:pair_new, id, resolve_change(change, effects), resolve_list(inner, effects)}
 
   defp resolve_segment(seg, _effects), do: seg
 
-  defp resolve_change(%Change{} = change, effects) do
-    effect =
-      EffectIndex.get(effects, change.effect_id) ||
-        EffectIndex.for_change(effects, change.change_id)
+  defp resolve_list(segments, effects), do: Enum.map(segments, &resolve_segment(&1, effects))
 
-    {territory, source} = EffectTerritory.claim(effect, change.kind, change.attribute)
+  defp resolve_change(%Change{} = change, effects) do
+    {index, row_extent} = effects
+
+    effect =
+      EffectIndex.get(index, change.effect_id) ||
+        EffectIndex.for(index, change.change_id, change.ref)
+
+    {territory, source} = EffectTerritory.claim(effect, change.kind, change.attribute, row_extent)
 
     # markup disjoint from the effect's application: the application is used,
     # the markup kept on the claim for the conflict report

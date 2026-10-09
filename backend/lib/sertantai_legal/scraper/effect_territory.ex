@@ -9,8 +9,9 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   3. for a change that removes text (`:keep`, `:pair`): the effect's
      in-force qualifications ("for S.") — gone where in force, kept
      elsewhere; purpose-limited qualifications don't count;
-  4. the effect's extent, only when narrower than the affected
-     provision's extent (a legal limit: a Scottish Act repeals only for S);
+  4. the effect's extent, only when narrower than the row's own extent
+     (else the affected provision's) — a legal limit: a Scottish Act
+     repeals only for S;
      never when wider or equal; "same as affected" is no territory;
   5. no claim.
 
@@ -25,14 +26,14 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   @type source :: :effect_application | :markup | :effect_in_force | :effect_extent
 
   @doc "The territory of a change of `kind` with markup `attribute`, from its effect."
-  @spec claim(Effect.t() | nil, :keep | :ins | :pair, String.t() | nil) ::
+  @spec claim(Effect.t() | nil, :keep | :ins | :pair, String.t() | nil, String.t() | nil) ::
           {String.t() | nil, source() | nil}
-  def claim(effect, kind, attribute) do
+  def claim(effect, kind, attribute, row_extent \\ nil) do
     [
       {:effect_application, fn -> effect && code(effect.territorial_application) end},
       {:markup, fn -> Territory.normalize(attribute) end},
       {:effect_in_force, fn -> (kind in [:keep, :pair] and effect) && in_force(effect) end},
-      {:effect_extent, fn -> effect && narrower_extent(effect) end}
+      {:effect_extent, fn -> effect && narrower_extent(effect, row_extent) end}
     ]
     |> Enum.find_value({nil, nil}, fn {source, value} ->
       case value.() do
@@ -82,9 +83,12 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     end
   end
 
-  defp narrower_extent(%Effect{effect_extent: extent, affected_extent: affected}) do
+  # narrower than the row's own extent when known (1986/62 s.21: an asp
+  # repeal on an E+S row), else than the affected extent (the law's own
+  # when the feed gives none)
+  defp narrower_extent(%Effect{effect_extent: extent, affected_extent: affected}, row_extent) do
     with e when e != nil <- code(extent),
-         false <- Territory.covers?(e, code(affected)) do
+         false <- Territory.covers?(e, row_extent || code(affected)) do
       e
     else
       _ -> nil
