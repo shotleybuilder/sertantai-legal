@@ -2166,14 +2166,15 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.3(1)").text == "The sludge shall be tested."
     end
 
-    test "the Repeal's own Extent wins over the note" do
+    # Q1 (Jason, 2026-10-09; LAT Parser Refactor): attribute and note both count
+    test "the Repeal's own Extent and its note's territory together" do
       rows =
         retained_law(
           ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal CommentaryRef="k-s" RetainText="true" Extent="E+W">Old rule.</Repeal></Text></P1para></P1></P1group>|,
           @revoked_s
         )
 
-      assert by_id(rows, "reg.4").excluded_extent == "E+W"
+      assert by_id(rows, "reg.4").excluded_extent == "E+W+S"
     end
 
     test "a retained repeal with no territory (savings / purposes) is repealed_saved everywhere" do

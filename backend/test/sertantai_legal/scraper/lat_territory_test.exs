@@ -1,0 +1,258 @@
+defmodule SertantaiLegal.Scraper.LatTerritoryTest do
+  use ExUnit.Case, async: true
+
+  alias SertantaiLegal.Scraper.LatTerritory
+  alias SertantaiLegal.Scraper.LatTerritory.Change
+
+  # note → {territory of each clause, effect}
+  @lookup %{
+    "n-s" => {["S"], "repealed"},
+    "n-w" => {["W"], "inserted"},
+    "n-none" => {[], "repealed"},
+    "n-rep-ew" => {["E+W"], "repealed"},
+    "n-sub-s" => {["S"], "substituted"},
+    "n-ins-ew" => {["E+W"], "inserted"},
+    "n-s-and-w" => {["S", "W"], "other"}
+  }
+
+  defp keep(attr, ref \\ nil, inner),
+    do: {:words, %Change{kind: :keep, attribute: attr, ref: ref}, inner}
+
+  defp ins(attr, ref \\ nil, inner),
+    do: {:words, %Change{kind: :ins, attribute: attr, ref: ref}, inner}
+
+  defp t(s), do: {:text, s}
+
+  defp render(segs, extent \\ "E+W+S", excluded \\ nil),
+    do: LatTerritory.render(segs, extent, @lookup, excluded)
+
+  describe "territory/2: attribute ∪ note" do
+    test "attribute, note, both, neither" do
+      assert LatTerritory.territory(%Change{kind: :keep, attribute: "S"}, @lookup) == "S"
+      assert LatTerritory.territory(%Change{kind: :ins, ref: "n-w"}, @lookup) == "W"
+
+      assert LatTerritory.territory(%Change{kind: :ins, attribute: "S", ref: "n-w"}, @lookup) ==
+               "W+S"
+
+      assert LatTerritory.territory(%Change{kind: :keep, ref: "n-none"}, @lookup) == nil
+      assert LatTerritory.territory(%Change{kind: :keep}, @lookup) == nil
+    end
+
+    test "with an attribute, a note adds only clauses disjoint from it (a separate change); an overlapping clause is the amending law's extent" do
+      # 2004/21 s.21A: Addition Extent="W", note "inserted (E.W.)"
+      assert LatTerritory.territory(%Change{kind: :ins, attribute: "W", ref: "n-ins-ew"}, @lookup) ==
+               "W"
+
+      # 1996/1527: Extent="S", note "disapplied in relation to Scotland …; … Wales"
+      assert LatTerritory.territory(
+               %Change{kind: :keep, attribute: "S", ref: "n-s-and-w"},
+               @lookup
+             ) == "W+S"
+    end
+
+    test "a note counts only for a change of its kind (1974/37 s.5: an Addition citing \"S. 5 repealed (… for E.W.)\")" do
+      assert LatTerritory.territory(%Change{kind: :ins, ref: "n-rep-ew"}, @lookup) == nil
+      assert LatTerritory.territory(%Change{kind: :keep, ref: "n-w"}, @lookup) == nil
+      assert LatTerritory.territory(%Change{kind: :keep, ref: "n-s"}, @lookup) == "S"
+      # a substitution pair takes its note whatever the verb
+      assert LatTerritory.territory(%Change{kind: :pair, ref: "n-sub-s"}, @lookup) == "S"
+    end
+  end
+
+  describe "render/4: words" do
+    test "retained words: bracketed with where they still apply; plain when no territory" do
+      assert render([t("A duty "), keep("S", [t("to report")]), t(" applies.")]) ==
+               "A duty [E+W: to report] applies."
+
+      assert render([t("A "), keep(nil, "n-none", [t("duty")])]) == "A duty"
+    end
+
+    test "inserted words: bracketed when narrower; plain when covering, outside or no territory" do
+      segs = [t("The "), ins(nil, "n-w", [t("regulator ")]), t("may act.")]
+      assert render(segs, "E+W") == "The [W: regulator] may act."
+      assert render(segs, "W") == "The regulator may act."
+      assert render(segs, "S") == "The regulator may act."
+
+      assert render([t("The "), ins(nil, nil, [t("regulator ")]), t("acts.")]) ==
+               "The regulator acts."
+    end
+
+    test "a whole-row change (excluded set) reads plain" do
+      assert render([keep("S", [t("All of it.")])], "E+W+S", "S") == "All of it."
+    end
+
+    test "nested: a narrower insertion keeps its bracket; one within the live territory needs none" do
+      assert render([
+               t("The "),
+               ins("E+W", [t("regulator "), ins("E", [t("or the Agency ")]), t("or the ")]),
+               t("council")
+             ]) ==
+               "The [E+W: regulator [E: or the Agency] or the] council"
+
+      assert render([
+               t("A "),
+               keep("S", [t("duty "), ins("E+W", [t("to report ")]), t("promptly")]),
+               t(" applies.")
+             ]) ==
+               "A [E+W: duty to report promptly] applies."
+    end
+
+    test "a non-breaking space is text, not whitespace to collapse (EU 2016/425 \"point\u00A0(a)\")" do
+      assert render([t("point\u00A0(a)  and")]) == "point\u00A0(a) and"
+    end
+
+    test "adjacent brackets for the same territories merge; whitespace collapses" do
+      assert render([
+               t("police "),
+               keep("S", [t("or ")]),
+               keep("S", [t("fire")]),
+               t("  purposes")
+             ]) ==
+               "police [E+W: or fire] purposes"
+    end
+  end
+
+  describe "render/4: pairs" do
+    defp pair(attr, ref \\ nil),
+      do:
+        {:pair, %Change{kind: :keep, attribute: attr, ref: ref}, [t("the service")],
+         [t("the brigade")]}
+
+    test "both versions, new first; extremes; no territory keeps both apart in document order" do
+      assert render([t("by "), pair("S"), t(" now")]) ==
+               "by [S: the service] [E+W: the brigade] now"
+
+      assert render([t("by "), pair(nil, "n-s")]) == "by [S: the service] [E+W: the brigade]"
+      assert render([t("by "), pair("E+W+S")]) == "by the service"
+      assert render([t("by "), pair("NI")]) == "by the brigade"
+      assert render([t("by "), pair(nil)]) == "by the brigade the service"
+    end
+
+    test "a pair inside retained words renders within their live territory (1968/73 s.102(4))" do
+      segs = [
+        t("police "),
+        keep("S", [t("or ")]),
+        keep("S", [
+          {:pair, %Change{kind: :keep, attribute: "E+W"}, [t("fire and rescue authority")],
+           [t("fire brigade")]}
+        ]),
+        t(" purposes")
+      ]
+
+      assert render(segs) == "police [E+W: or fire and rescue authority] purposes"
+    end
+  end
+
+  describe "pair_up/1: halves that are not siblings" do
+    test "the old half takes the first later new half with its id; the new half leaves its place" do
+      old = %Change{kind: :keep, attribute: "W", ref: "n-w"}
+      new = %Change{kind: :ins, attribute: "W"}
+
+      segs = [
+        t("within 22 "),
+        {:words, %Change{kind: :ins}, [{:pair_old, "X", old, [t("or 24")]}]},
+        t(" "),
+        {:words, %Change{kind: :ins}, [{:pair_new, "X", new, [t(", 24 or 24ZA")]}]},
+        t(" of Sch 13")
+      ]
+
+      paired = LatTerritory.pair_up(segs)
+
+      assert render(paired, "E+W") == "within 22 [W: , 24 or 24ZA] [E: or 24] of Sch 13"
+    end
+
+    test "an old version split over several pieces, the new one nested in the last (1962/58 s.1(5))" do
+      old = %Change{kind: :keep, attribute: "E+W"}
+      new = %Change{kind: :ins, attribute: "E+W"}
+
+      segs = [
+        t("given to "),
+        {:pair_old, "X", old, [t("every owner, lessee ")]},
+        {:pair_old, "X", old, [t("of the land")]},
+        {:pair_old, "X", old, [{:pair_new, "X", new, [t("every person within (6)")]}]},
+        t(" and that")
+      ]
+
+      assert render(LatTerritory.pair_up(segs)) ==
+               "given to [E+W: every person within (6)] [S: every owner, lessee of the land] and that"
+    end
+
+    test "an unmatched half reads as ordinary words" do
+      segs = [
+        {:pair_old, "Z", %Change{kind: :keep, attribute: "W"}, [t("old")]},
+        t(" "),
+        {:pair_new, "Y", %Change{kind: :ins, attribute: "W"}, [t("new")]}
+      ]
+
+      assert render(LatTerritory.pair_up(segs), "E+W") == "[E: old] [W: new]"
+    end
+  end
+
+  describe "excluded/3: whole-row territory" do
+    test "all retained: the repeals' territories; no territory → the whole extent" do
+      assert LatTerritory.excluded([keep("S", [t("All.")])], "E+W+S", @lookup) == "S"
+
+      assert LatTerritory.excluded([keep(nil, "n-none", [t("All.")])], "E+W+S", @lookup) ==
+               "E+W+S"
+    end
+
+    test "all inserted for a narrower territory: the rest of the extent; none when covering" do
+      assert LatTerritory.excluded([ins(nil, "n-w", [t("New.")])], "E+W", @lookup) == "E"
+      assert LatTerritory.excluded([ins("E+W", [t("New.")])], "E+W", @lookup) == nil
+    end
+
+    test "the outermost change decides (Q3: an insertion inside retained words)" do
+      segs = [
+        keep(nil, "n-s", [t("Nothing applies to "), ins("E+W", [t("Schedule 23")]), t("; but—")])
+      ]
+
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "S"
+    end
+
+    test "insertions without a territory are transparent; marks and blanks don't count" do
+      segs = [{:mark, "(a) "}, ins(nil, nil, [keep("S", [t("Kept.")])]), t("  ")]
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "S"
+    end
+
+    test "nested changes compose: repeals for E+W and S around the same words → both (2004/20 s.75)" do
+      assert LatTerritory.excluded(
+               [keep("E+W", [keep("S", [t("Schedule 15 has effect.")])])],
+               "E+W+S",
+               @lookup
+             ) ==
+               "E+W+S"
+    end
+
+    test "nested changes compose: inserted for E, then repealed for E → live nowhere (1990/8 s.61A(1))" do
+      assert LatTerritory.excluded(
+               [ins("E", [keep("E", [t("A local planning authority may—")])])],
+               "E+W",
+               @lookup
+             ) ==
+               "E+W"
+    end
+
+    test "asides (a quoted provision's number or title) render but don't count (1974/37 s.78)" do
+      segs = [
+        keep("S", [t("Insert—")]),
+        {:mark, "«"},
+        {:aside, [t("(f)")]},
+        keep("S", [t("use of place of work.")]),
+        {:mark, "»"}
+      ]
+
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "S"
+      assert render([{:aside, [t("(f) ")]}, t("words")]) == "(f) words"
+    end
+
+    test "own plain words, a pair, or a mix: nil" do
+      assert LatTerritory.excluded([t("Plain "), keep("S", [t("kept")])], "E+W+S", @lookup) == nil
+      assert LatTerritory.excluded([pair("S")], "E+W+S", @lookup) == nil
+
+      assert LatTerritory.excluded([keep("S", [t("a")]), ins("E", [t("b")])], "E+W+S", @lookup) ==
+               nil
+
+      assert LatTerritory.excluded([], "E+W+S", @lookup) == nil
+    end
+  end
+end

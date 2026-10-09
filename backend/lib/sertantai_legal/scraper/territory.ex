@@ -20,14 +20,23 @@ defmodule SertantaiLegal.Scraper.Territory do
   @spec from_note(String.t() | nil) :: String.t() | nil
   def from_note(nil), do: nil
 
-  def from_note(text) do
+  def from_note(text), do: text |> note_territories() |> union_present()
+
+  @doc """
+  The territory of each of a note's changes (one per " by " clause), those
+  naming one; [] when the first is "except in relation to …" ("(1.10.2023
+  except in relation to W., 6.4.2024 for W.)": every territory, on
+  different dates).
+  """
+  @spec note_territories(String.t() | nil) :: [String.t()]
+  def note_territories(nil), do: []
+
+  def note_territories(text) do
     [head | _] = all = clauses(text)
 
-    # "(1.10.2023 except in relation to W., 6.4.2024 for W.)": every
-    # territory, on different dates
     if String.contains?(head, "except in relation to"),
-      do: nil,
-      else: all |> Enum.map(&(&1 |> territory_letters() |> letters_to_code())) |> union_present()
+      do: [],
+      else: all |> Enum.map(&clause_territory/1) |> Enum.reject(&is_nil/1)
   end
 
   # The text before each " by ": the first whole, later ones from their last
@@ -43,6 +52,31 @@ defmodule SertantaiLegal.Scraper.Territory do
     end
   end
 
+  # A clause's territory: "(S.)" / "(… for E.W.)" letters, else a named
+  # territory after a change verb ("disapplied in relation to Wales").
+  defp clause_territory(clause),
+    do: clause |> territory_letters() |> letters_to_code() || named_territory(clause)
+
+  @names %{"England" => "E", "Wales" => "W", "Scotland" => "S", "Northern Ireland" => "NI"}
+  @name ~S"(?:England|Wales|Scotland|Northern Ireland)"
+  # only straight after the change: "Functions in relation to Wales" or a
+  # title's "(… in relation to Wales) Order" are not territories
+  @named_territory ~r/\b(?:disapplied|repealed|revoked|omitted|substituted|inserted|amended) in relation to (#{@name}(?:(?:, | and )#{@name})*)/
+
+  defp named_territory(clause) do
+    case Regex.run(@named_territory, clause) do
+      [_, names] ->
+        ~r/England|Wales|Scotland|Northern Ireland/
+        |> Regex.scan(names)
+        |> List.flatten()
+        |> Enum.map(&Map.fetch!(@names, &1))
+        |> union()
+
+      nil ->
+        nil
+    end
+  end
+
   defp union_present(codes) do
     case Enum.reject(codes, &is_nil/1) do
       [] -> nil
@@ -51,9 +85,29 @@ defmodule SertantaiLegal.Scraper.Territory do
   end
 
   defp territory_letters(head) do
-    case Regex.run(@note_territory, head) || Regex.run(@inline_territory, head) do
+    case Regex.run(@note_territory, head) do
       [_, letters] -> letters
-      nil -> nil
+      nil -> inline_letters(head)
+    end
+  end
+
+  @inline_each ~r/(?:\bfor|in relation to) ((?:(?:E|W|S|N\.I)\.(?:,?\s*(?:and\s+)?)?)+)(?=[\s,);]|$)/
+
+  # Every "for X." in the first parenthesis naming one: a change in force on
+  # different dates per territory, "(1.10.2017 for E., 1.4.2019 for W.)".
+  defp inline_letters(head) do
+    case Regex.run(@inline_territory, head, return: :index) do
+      nil ->
+        nil
+
+      [{start, _} | _] ->
+        [group | _] =
+          head |> binary_part(start, byte_size(head) - start) |> String.split(")", parts: 2)
+
+        @inline_each
+        |> Regex.scan(group, capture: :all_but_first)
+        |> List.flatten()
+        |> Enum.join(" ")
     end
   end
 
@@ -91,6 +145,10 @@ defmodule SertantaiLegal.Scraper.Territory do
   @spec subtract(String.t() | nil, String.t()) :: String.t() | nil
   def subtract(row_extent, repealed),
     do: row_extent |> set() |> MapSet.difference(set(repealed)) |> format()
+
+  @doc "True when the two codes share no territory."
+  @spec disjoint?(String.t(), String.t()) :: boolean()
+  def disjoint?(a, b), do: MapSet.disjoint?(set(a), set(b))
 
   @doc "Union of extent codes in canonical order; nil for none."
   @spec union([String.t()]) :: String.t() | nil

@@ -55,6 +55,11 @@ defmodule SertantaiLegal.Scraper.LatDiffClassTest do
                ["title: changed", "excluded_extent: nil → S"]
     end
 
+    test "whitespace only: text: whitespace" do
+      assert LatDiffClass.classify(row(text: "or]  a passenger"), row(text: "or] a passenger")) ==
+               ["text: whitespace"]
+    end
+
     test "nil and empty text are the same" do
       assert LatDiffClass.classify(row(text: nil), row(text: "")) == []
     end

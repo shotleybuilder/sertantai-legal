@@ -91,6 +91,13 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
     }
   end
 
+  @doc "A note's effect alone (substituted | inserted | repealed | … | other), as in `parse/3`."
+  @spec effect_of(String.t() | nil) :: String.t()
+  def effect_of(text) do
+    {before, _after_by} = text |> Kernel.||("") |> normalise() |> split_at_by()
+    effect(before, nil)
+  end
+
   @doc """
   A provision's `{effective_from, changed_by}` from the notes that apply to it:
   the latest dated amendment/commencement note; else the first undated one's

@@ -62,6 +62,60 @@ defmodule SertantaiLegal.Scraper.TerritoryTest do
     end
   end
 
+  describe "note_territories/1: one territory per clause (LR-02)" do
+    test "clauses separately; none after an except" do
+      assert Territory.note_territories(
+               "S. 22(3) repealed (E.W.) (12.1.2010) by Marine and Coastal Access Act 2009 (c. 23); and s. 22(3) repealed (S.) (24.2.2011) by Marine (Scotland) Act 2010 (asp 5)"
+             ) == ["E+W", "S"]
+
+      assert Territory.note_territories("S. 4 repealed (1.10.2023 except in relation to W.) by X") ==
+               []
+    end
+
+    test "disjoint?/2" do
+      assert Territory.disjoint?("W", "S")
+      refute Territory.disjoint?("E+W", "W")
+    end
+  end
+
+  describe "from_note/1 territories on several dates (LR-02)" do
+    test "every \"for X.\" in the note's brackets counts" do
+      assert Territory.from_note(
+               "S. 104(5A) inserted (1.10.2017 for E., 1.4.2019 for W.) by Water Act 2014 (c. 21)"
+             ) ==
+               "E+W"
+
+      assert Territory.from_note(
+               "Pt. 2A inserted (21.7.2008 for specified purposes, otherwise 6.4.2010 for E. and 26.7.2010 for W.) by Health and Social Care Act 2008 (c. 14)"
+             ) == "E+W"
+
+      assert Territory.from_note(
+               "Ss. 202A-202G inserted (6.4.2012 for E.) by Planning Act 2008 (c. 29)"
+             ) == "E"
+    end
+  end
+
+  describe "from_note/1 spelled-out territories (LR-02, Q1)" do
+    test "a change verb followed by \"in relation to\" a named territory" do
+      assert Territory.from_note(
+               "Regulations disapplied in relation to Scotland (with effect from 1.4.2015) by virtue of Scotland Act 2012 (c. 11); S.I. 2015/638 Regulations disapplied in relation to Wales (with effect from 1.4.2018) by virtue of Wales Act 2014 (c. 29)"
+             ) == "W+S"
+
+      assert Territory.from_note("S. 4 repealed in relation to England and Wales (1.4.2010) by X") ==
+               "E+W"
+    end
+
+    test "a title or a function \"in relation to Wales\" is not a territory" do
+      assert Territory.from_note(
+               "S. 5 amended (1.7.1999) by The National Assembly for Wales (Transfer of Functions in relation to Wales) Order 1999 (S.I. 1999/672)"
+             ) == nil
+
+      assert Territory.from_note(
+               "Functions in relation to Wales transferred (1.7.1999) by S.I. 1999/672"
+             ) == nil
+    end
+  end
+
   describe "set operations on extent codes" do
     test "covers?/2: the repealed territories include every territory of the row" do
       assert Territory.covers?("E+W+S", "E+W")

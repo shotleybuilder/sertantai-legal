@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.LatDiffClass do
     `inserted` / `removed`
   - `unexpected/2` — the classes (with counts) no expected pattern matches
 
-  Text classes: `brackets added` / `brackets removed` / `brackets changed`
+  Text classes: `whitespace` (only spacing differs), `brackets added` / `brackets removed` / `brackets changed`
   (the same words, territorial brackets differ), `reordered` (same words,
   see `LatTextDiff.kind/2`), else `words`.
 
@@ -60,6 +60,7 @@ defmodule SertantaiLegal.Scraper.LatDiffClass do
 
   defp text_class(old, new) do
     cond do
+      squeeze(old) == squeeze(new) -> "text: whitespace"
       unbracketed(old) == unbracketed(new) -> "text: " <> bracket_change(old, new)
       LatTextDiff.kind(old, new) == "reordered" -> "text: reordered"
       true -> "text: words"
@@ -82,6 +83,8 @@ defmodule SertantaiLegal.Scraper.LatDiffClass do
     |> String.replace(~r/\s+/u, " ")
     |> String.trim()
   end
+
+  defp squeeze(text), do: text |> String.replace(~r/\s+/u, " ") |> String.trim()
 
   defp blank(nil), do: ""
   defp blank(text), do: text
