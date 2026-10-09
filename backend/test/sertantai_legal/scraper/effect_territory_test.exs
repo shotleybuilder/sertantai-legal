@@ -181,14 +181,20 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
           {"d29p1759", ["part-1", "section-18", "section-18-4A"], :ins},
           {"d29p1759", ["part-1", "section-18", "section-18-4B"], :ins},
           # no fitting effect: no join
-          {"key-none", ["part-2", "section-41", "section-41-2"], :ins}
+          {"key-none", ["part-2", "section-41", "section-41-2"], :ins},
+          # one legacy id on a repeal and an insertion: each kind joins on
+          # its own (Gemini LR-03 acceptance)
+          {"d29pboth", ["part-2", "section-41"], :ins},
+          {"d29pboth", ["part-2", "section-41"], :keep}
         ])
 
-      assert EffectIndex.orphan(index, "d29p8993") == s41
-      assert EffectIndex.orphan(index, "key-orphan-1694675285518") == regs
-      assert EffectIndex.orphan(index, "d29p1759") == s18_4a
-      assert EffectIndex.orphan(index, "key-none-1") == nil
-      assert EffectIndex.orphan(index, nil) == nil
+      assert EffectIndex.orphan(index, "d29p8993", :keep) == s41
+      assert EffectIndex.orphan(index, "key-orphan-1694675285518", :ins) == regs
+      assert EffectIndex.orphan(index, "d29p1759", :ins) == s18_4a
+      assert EffectIndex.orphan(index, "key-none-1", :ins) == nil
+      assert EffectIndex.orphan(index, "d29pboth", :keep) == s41
+      assert EffectIndex.orphan(index, "d29pboth", :ins) == nil
+      assert EffectIndex.orphan(index, nil, :ins) == nil
     end
 
     test "on_provision/3: the effect type's leading verb decides its kind, not a word in its text (1990/8 Pt. 1 \"applied (with modifications) by 1993 c. 28 (as inserted)\")" do

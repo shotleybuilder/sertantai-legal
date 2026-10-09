@@ -24,7 +24,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
           by_id: %{String.t() => Effect.t()},
           by_ref: %{String.t() => [Effect.t()]},
           law_extent: String.t() | nil,
-          orphans: %{String.t() => String.t()}
+          orphans: %{{String.t(), :ins | :keep} => String.t()}
         }
 
   @whole ~w(repealed revoked omitted inserted added)
@@ -217,7 +217,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   @doc """
   Join each change id that joins no effect (an orphan `key-` id, or a legacy
   `d29p…` id) to one effect for the whole law: an id is one change, so its
-  every occurrence takes the same effect. `occurrences` are `{change_id,
+  every occurrence of a kind takes the same effect. `occurrences` are `{change_id,
   path, kind}` in document order, the path being the ids of the elements
   holding the occurrence, outermost first. The join is `on_provision/3` at
   the lowest element holding every occurrence — only its whole-provision
@@ -233,13 +233,13 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
       occurrences
       |> Enum.map(fn {change_id, path, kind} -> {orphan_key(change_id), path, kind} end)
       |> Enum.reject(fn {key, _path, _kind} -> get(index, key) != nil end)
-      |> Enum.group_by(&elem(&1, 0))
-      |> Enum.flat_map(fn {key, [{_, _, kind} | _] = found} ->
+      |> Enum.group_by(fn {key, _path, kind} -> {key, kind} end)
+      |> Enum.flat_map(fn {{_key, kind} = id, found} ->
         paths = found |> Enum.map(&elem(&1, 1)) |> Enum.uniq()
 
         case orphan_effect(index, paths, kind) do
           nil -> []
-          effect -> [{key, effect.effect_id}]
+          effect -> [{id, effect.effect_id}]
         end
       end)
       |> Map.new()
@@ -247,10 +247,19 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
     %{index | orphans: orphans}
   end
 
-  @doc "The effect `with_orphans/2` joined a change id to; nil if none."
-  @spec orphan(t(), String.t() | nil) :: Effect.t() | nil
-  def orphan(_index, nil), do: nil
-  def orphan(index, change_id), do: get(index, Map.get(index.orphans, orphan_key(change_id)))
+  @doc """
+  The effect `with_orphans/2` joined a change id of this kind to; nil if
+  none. Each kind joins on its own (one legacy id can mark a repeal and an
+  insertion); a pair is either.
+  """
+  @spec orphan(t(), String.t() | nil, :ins | :keep | :pair) :: Effect.t() | nil
+  def orphan(_index, nil, _kind), do: nil
+
+  def orphan(index, change_id, :pair),
+    do: orphan(index, change_id, :keep) || orphan(index, change_id, :ins)
+
+  def orphan(index, change_id, kind),
+    do: get(index, Map.get(index.orphans, {orphan_key(change_id), kind}))
 
   defp orphan_key(change_id), do: effect_id(change_id) || change_id
 

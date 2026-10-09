@@ -109,7 +109,7 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     effect =
       EffectIndex.get(index, change.effect_id) ||
         EffectIndex.for(index, change.change_id, change.ref) ||
-        EffectIndex.orphan(index, change.change_id)
+        EffectIndex.orphan(index, change.change_id, change.kind)
 
     effects = if effect, do: EffectIndex.parallel(index, effect), else: []
 
