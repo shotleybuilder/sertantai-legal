@@ -20,4 +20,5 @@ QA3 pattern 2 (#174 trailing content when the open child has sub-provisions), 5 
 
 ## Dependencies
 
+- ⬜ From LR-07 (open bug): retained repeal read as everywhere when the feed is silent on territory but lists savings while the note names one — 2010/404 reg.14 'omitted (E.)' ×6, 2020/7 s.8 'expires in part' ×2; add a LatTerritoryCheck comparing the note's territory hint with an `:effect_everywhere` claim (report, never source)
 - ⬜ See meta session table

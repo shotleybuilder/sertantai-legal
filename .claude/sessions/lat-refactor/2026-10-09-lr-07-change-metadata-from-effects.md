@@ -1,8 +1,86 @@
 ---
 session: 'LR-07: Change Metadata from Effects'
-status: active
+status: closed
 opened: 2026-10-09
+closed: 2026-10-09
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Note and row change facts (effect, effective_from, changed_by, status) now come from the
+  legislation.gov.uk effects behind each note and row (ChangeFacts), with note text only where no
+  effect joins and per-field provenance persisted (Ash migration: effect_ids, change_provenance,
+  fact_provenance). Four text diffs and two change diffs over the corpus (store only, no DB writes)
+  converged to 2,233 territory rows vs LR-03 (2,113 already repealed_saved) and 109,245 changed
+  fields (106,074 LR-07); Gemini accepted for dry run → apply in the LR-06 wave.
+
+decisions:
+  - what: effective_from is the latest dated InForce (fully in force); every date kept in effective_dates
+    why: today's contract (LAT-QA-SAMPLE-SPEC); Gemini proposed earliest; partial status covers the gap
+    result: no contract change for the field's meaning (Jason 2026-10-09)
+  - what: territorial commencement is in_force_partial, no new status value
+    why: avoids a fractalaw status-vocabulary change; status_hash moves only where status changes
+    result: partial needs an InForce entry still to come for an uncovered territory (feed gaps aren't "not in force")
+  - what: feed Savings (ukm:Savings, "(with …)") make a repealed row repealed_saved
+    why: structured effect data ranks above notes; D2 ("only a note mentioning savings") superseded
+    result: 2,126 repealed → repealed_saved (1,874 'with' only, 90 note says savings, 75 neither)
+  - what: rows inherit only an ancestor's whole-provision changes, not its words-level ones
+    why: a words change in a parent's own text doesn't change its sub-provisions (1995/21 s.192A(6) took s.192A(b)'s 2015 change)
+    result: contract change for effective_from / changed_by → LH-05 (e.g. 1995/21 s.157(1)(a) loses 2008)
+  - what: join note → effect through the change markup (LR-03 joins, incl. orphans), then the note's own key
+    why: ~5% of keyed notes carry an id the feed re-keyed (2003/21 s.402(2A) key-7e48… vs feed key-8616…)
+    result: keyed notes joined amendment 96% / commencement 88% / modification 96%; 65,648 notes from effects
+  - what: per-field provenance as jsonb maps on the rows and notes; effect_ids as text[], not a join table
+    why: Gemini review; effects aren't DB rows, so no FK to enforce
+    result: change_provenance {status, change}, fact_provenance {facts, dates}
+
+metrics:
+  probe: { keyed_amendment_notes: 39645, keyed_commencement: 14514, keyed_modification: 11684, date_agree_amendment: 34975, date_differ_amendment: 2055, changed_by_differ_amendment: 1414, effects_multi_inforce: 7548, effects_total: 188228 }
+  text_diff: { run1_delta_vs_lr03: 7521, run2: 7878, run3: 2348, run4: 2233, run4_already_repealed_saved: 2113, run4_in_force: 19, checks: "9 conflicts, 2 child-live, 1 other (unchanged)" }
+  change_diff_run2: { changed_fields: 109245, lr07: 106074, parse_drift: 3171, notes_from_effects: 65648, notes_from_text: 25026, row_status_effect: 196698, row_status_markup: 182226, row_status_note: 525, commencement_dates_filled: 22035, changed_by_filled: 19285, repealed_to_saved: 2126, partial_gained: 1296, partial_lost: 841 }
+  tests: { passing: 2500, skipped: 2, lr02_pending_turned_green: 2 }
+
+lessons:
+  - title: '"No territory claim" is three different things — not in force, unreadable, and silent'
+    detail: >
+      A retained repeal with no claim was first read as "repealed everywhere" and moved 7,521 rows; the
+      causes were a missed join (1967/10 s.28, legacy M_F_ id), LR-03's synthetic rule-3 repeals over
+      dots, and effects simply silent on territory (1988/52 s.4(6) "repealed (E.W.)"). Whole extent needs
+      positive evidence (purposes, savings, extent covering the row); everything else removes nothing.
+    tag: data
+  - title: An applied effect with an undated InForce is not prospective
+    detail: >
+      24,921 of 188,228 effects are Prospective="true" with Applied="true" (older effects). Treating
+      them as prospective would have made applied repeals "not in force"; prospective now requires unapplied.
+    tag: data
+  - title: Words-level effects carry coarse structured refs
+    detail: >
+      "words substituted" in s.192A(b) has AffectedProvisions ref section-192A, so by-ref joins
+      attached it to the whole section and every sub-provision inherited it. Words-level effects join
+      rows only through their change markup.
+    tag: data
+  - title: A law's own commencement provision is not its changed_by
+    detail: >
+      Effects for "in force at …, see reg. 1" have AffectingURI = the law itself; 47,381 rows got
+      changed_by = their own law. The date stands, changed_by nil (Welsh SIs held as uksi: compare the wsi twin).
+    tag: data
+  - title: Compare each corpus diff against a baseline from the same parse
+    detail: >
+      Row facts differ from the DB both because of LR-07 and because note placement drifted since the DB
+      was written (1995/21 h.221). Resolving the same fresh parse from notes alone gave a baseline that
+      split every line into lr07 vs parse.
+    tag: tooling
+  - title: The LRT scrape's whole-body LAT path parsed without effects
+    detail: >
+      StagedParser.persist_body_lat called LatParser.parse with no effects, so LR-03's territory from
+      effects never ran on that path. Found while wiring LR-07's joins; both parse paths now load effects.
+    tag: data
+  - title: Backgrounded commands launched in the same batch as another call ran outside backend/
+    detail: >
+      Two runs failed with "no mix.exs" when started in parallel with a commit; one background command
+      with an explicit cd and both jobs inside it worked.
+    tag: tooling
+
 bugs:
   - pattern: "Retained repeal read as everywhere when the feed is silent on territory but lists savings, while the note names a territory (2010/404 reg.14 'omitted (E.)'; 2020/7 s.8 'expires in part')"
     category: territory
@@ -10,9 +88,52 @@ bugs:
     affected: 8
     fix: "LatTerritoryCheck: compare a note's territory hint with an :effect_everywhere claim and report disagreement (notes as hints, never as the source) — LR-05"
     status: open
+  - pattern: "Retained repeal whose effect extent equals the row's extent makes no claim (1989/14 s.3(5)(aa))"
+    category: territory
+    module: EffectTerritory
+    affected: 6
+    fix: ":effect_everywhere when the effect extent covers the row's extent → excluded = whole extent, repealed_saved"
+    status: fixed
+  - pattern: "LRT scrape whole-body LAT path (StagedParser.persist_body_lat) parsed without effects: no territory from effects, no note joins"
+    category: pipeline
+    module: StagedParser
+    affected: 0
+    fix: "load the law's effects (LatStagedParser.law_effects) and pass them to LatParser and the commentary sub-stage"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/change_facts.ex
+  - backend/lib/mix/tasks/lat.change_diff.ex
+  - backend/lib/sertantai_legal/scraper/effect_territory.ex
+  - backend/lib/sertantai_legal/scraper/effect_index.ex
+  - backend/lib/sertantai_legal/scraper/lat_territory.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser.ex
+  - backend/lib/sertantai_legal/scraper/commentary_parser.ex
+  - backend/lib/sertantai_legal/scraper/commentary_persister.ex
+  - backend/lib/sertantai_legal/scraper/lat_staged_parser.ex
+  - backend/lib/sertantai_legal/scraper/staged_parser.ex
+  - backend/lib/sertantai_legal/scraper/lat_status/apply.ex
+  - backend/lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex
+  - backend/lib/mix/tasks/lat.status.ex
+  - backend/lib/sertantai_legal/legal/legal_article.ex
+  - backend/lib/sertantai_legal/legal/amendment_annotation.ex
+  - backend/priv/repo/migrations/20261009175920_lr07_effect_ids.exs
+  - backend/test/sertantai_legal/scraper/change_facts_test.exs
+  - backend/data/code-reviews/2026-10-09-lr07-plan-gemini.md
+  - backend/data/code-reviews/2026-10-09-lr07-acceptance-gemini.md
+  - backend/data/reports/lat-refactor/lr07-diff-run1..4.csv (+ .classes, .checks)
+  - backend/data/reports/lat-refactor/lr07-change-diff-run1..2.csv (+ .classes, .sources.jsonl)
+
+depends_on:
+  - 2026-10-09-lr-03-note-only-changes
+
+enables:
+  - LR-04 decomposition (incl. split ChangeFacts.resolve/5, comment group_partial?/3, move twin/1)
+  - LR-05 note-hint territory check for :effect_everywhere (8 rows)
+  - LR-06 wave — re-parse writes effect_ids, refresh lands LR-07 facts; LH-05 contract changes listed
 ---
 
-# Session: LR-07 Change Metadata from Effects (ACTIVE)
+# Session: LR-07 Change Metadata from Effects (CLOSED)
 
 ## Problem
 
