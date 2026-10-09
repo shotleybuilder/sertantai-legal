@@ -43,41 +43,55 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
           }
   end
 
-  # note → {territory of each clause, effect} (`Territory.note_territories/1`,
-  # `AmendmentNote.effect_of/1`)
-  @type lookup :: %{String.t() => {[String.t()], String.t()}}
+  # note id → what the note says (`NoteTerritory`, `AmendmentNote.effect_of/1`)
+  @type note :: %{applies: [String.t()], in_force: String.t() | nil, effect: String.t()}
+  @type lookup :: %{String.t() => note()}
 
   @doc """
-  A change's territory; nil when nothing names one.
+  A change's territory; nil when nothing names one. Notes are read as
+  legislation.gov.uk documents them (`docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`):
 
-  - Its `Extent` attribute, plus any clause of its note that names a
-    territory disjoint from it (a separate change: "repealed (E.W.) …; and
-    … repealed (S.)" with Extent="S"). A clause overlapping the attribute is
-    the amending law's extent, not where the words apply ("inserted (E.W.)"
-    on an Addition Extent="W": 2004/21 s.21A) — the attribute is precise.
-  - With no attribute, every clause of its note.
+  - its `Extent` attribute — where the change applies — plus any bare
+    "(X.)" clause of its note disjoint from it (a separate change: "repealed
+    (E.W.) …; and … repealed (S.)" with Extent="S"; an overlapping clause is
+    the same fact);
+  - else the note's bare "(X.)" clauses (`NoteTerritory.applies/1`: the
+    Extent attribute in words);
+  - else, for a change that removes text (a retained repeal, a
+    substitution's old words), where it is in force (`NoteTerritory.in_force/1`,
+    "repealed (1.4.2015 for S.)"): the text is gone there and kept
+    elsewhere. An insertion in force for some territories still extends to
+    the others — commencement, which is status, not territory.
 
   A note counts only for a change of its kind: an insertion takes an
-  inserting/substituting note, a retained repeal any other (legislation.gov.uk
-  wraps text in an Addition citing a repeal note: 1974/37 s.5), a
-  substitution pair any note.
+  inserting/substituting note, a retained repeal any but an inserting one
+  (legacy markup wraps text in an Addition citing a repeal note: 1875/17
+  s.115), a substitution pair any note.
   """
   @spec territory(Change.t(), lookup()) :: String.t() | nil
   def territory(%Change{kind: kind, attribute: attribute, ref: ref}, lookup) do
-    notes = note_territories(kind, ref, lookup)
+    note = note_for(kind, ref, lookup)
+    applies = if note, do: note.applies, else: []
 
     case Territory.normalize(attribute) do
-      nil -> if notes == [], do: nil, else: Territory.union(notes)
-      attr -> Territory.union([attr | Enum.filter(notes, &Territory.disjoint?(&1, attr))])
+      nil ->
+        cond do
+          applies != [] -> Territory.union(applies)
+          note && kind in [:keep, :pair] -> note.in_force
+          true -> nil
+        end
+
+      attr ->
+        Territory.union([attr | Enum.filter(applies, &Territory.disjoint?(&1, attr))])
     end
   end
 
   @inserting ~w(inserted substituted amended)
 
-  defp note_territories(kind, ref, lookup) do
+  defp note_for(kind, ref, lookup) do
     case ref && Map.get(lookup, ref) do
-      {clauses, effect} -> if note_fits?(kind, effect), do: clauses, else: []
-      _ -> []
+      %{effect: effect} = note -> if note_fits?(kind, effect), do: note
+      _ -> nil
     end
   end
 
@@ -92,29 +106,34 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   @doc """
   Substitution halves that are not siblings (each wrapped in other markup):
   the pair renders where the first old piece sits, its old version every
-  old piece with that id, its new version every new piece; the other
-  pieces leave their places (an old version split over several Repeals,
-  the new one nested in the last: 1962/58 s.1(5)). Unmatched halves read
-  as ordinary changed words.
+  old piece with that id, its new version every new piece; the other pieces
+  leave their places, with the whitespace that separated them (an old
+  version split over several Repeals, the new one nested in the last:
+  1962/58 s.1(5)). Unmatched halves read as ordinary changed words; a
+  SubstitutionRef naming its own enclosing change is no pair (1996/18
+  s.75A(1A)(c)).
   """
   @spec pair_up(LatSegments.t()) :: LatSegments.t()
   def pair_up(segments) do
     news = collect_news(segments, %{})
     olds = collect_olds(segments, %{})
-
-    matched =
-      news |> Map.keys() |> MapSet.new() |> MapSet.intersection(MapSet.new(Map.keys(olds)))
+    matched = MapSet.intersection(MapSet.new(Map.keys(news)), MapSet.new(Map.keys(olds)))
 
     {paired, _done} =
       pair_segments(segments, %{news: news, olds: olds, matched: matched}, MapSet.new())
 
-    paired
+    drop_moved(paired)
   end
 
+  # id → every new piece {change, inner}, in document order
   defp collect_news(segments, acc) do
     Enum.reduce(segments, acc, fn
       {:pair_new, id, change, inner}, acc ->
-        Map.update(collect_news(inner, acc), id, [{change, inner}], &(&1 ++ [{change, inner}]))
+        acc = collect_news(inner, acc)
+
+        if holds_old?(inner, id),
+          do: acc,
+          else: Map.update(acc, id, [{change, inner}], &(&1 ++ [{change, inner}]))
 
       seg, acc ->
         Enum.reduce(children(seg), acc, &collect_news/2)
@@ -132,11 +151,18 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     end)
   end
 
+  defp holds_old?(segments, id) do
+    Enum.any?(segments, fn
+      {:pair_old, ^id, _change, _inner} -> true
+      seg -> seg |> children() |> Enum.any?(&holds_old?(&1, id))
+    end)
+  end
+
   defp children({:words, _c, inner}), do: [inner]
-  defp children({:pair_old, _ref, _c, inner}), do: [inner]
-  defp children({:pair_new, _id, _c, inner}), do: [inner]
   defp children({:aside, inner}), do: [inner]
   defp children({:pair, _c, new, old}), do: [new, old]
+  defp children({:pair_old, _ref, _c, inner}), do: [inner]
+  defp children({:pair_new, _id, _c, inner}), do: [inner]
   defp children(_seg), do: []
 
   defp pair_segments(segments, pairs, done) do
@@ -151,7 +177,7 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
       # a later piece: already in the pair
       MapSet.member?(done, ref) ->
-        {[], done}
+        {[:moved], done}
 
       true ->
         done = MapSet.put(done, ref)
@@ -176,13 +202,13 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
           ref: change.ref
         }
 
-        {[{:pair, pair_change, new, old}], done}
+        {[{:pair, pair_change, drop_moved(new), drop_moved(old)}], done}
     end
   end
 
   defp pair_segment({:pair_new, id, change, inner}, pairs, done) do
-    if MapSet.member?(pairs.matched, id) do
-      {[], done}
+    if MapSet.member?(pairs.matched, id) and not holds_old?(inner, id) do
+      {[:moved], done}
     else
       {new, done} = pair_segments(inner, pairs, done)
       {[{:words, %{change | kind: :ins}, new}], done}
@@ -190,8 +216,12 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   end
 
   defp pair_segment({:words, change, inner}, pairs, done) do
-    {inner, done} = pair_segments(inner, pairs, done)
-    {[{:words, change, inner}], done}
+    {paired, done} = pair_segments(inner, pairs, done)
+
+    # everything in it moved into a pair: it moved too
+    if paired != [] and Enum.all?(paired, &(&1 == :moved)),
+      do: {[:moved], done},
+      else: {[{:words, change, paired}], done}
   end
 
   defp pair_segment({:aside, inner}, pairs, done) do
@@ -206,6 +236,34 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   end
 
   defp pair_segment(seg, _pairs, done), do: {[seg], done}
+
+  # A piece that moved into its pair leaves `:moved`; the whitespace that
+  # separated it goes too ("293[W: B] [E: A], or", not "… , or").
+  defp drop_moved(segments) do
+    {kept, _} =
+      segments
+      |> Enum.reverse()
+      |> Enum.reduce({[], false}, fn
+        :moved, {acc, _after_moved} ->
+          {acc, true}
+
+        {:text, s} = seg, {acc, true} ->
+          if String.trim(s) == "", do: {acc, false}, else: {[seg | acc], false}
+
+        seg, {acc, _after_moved} ->
+          {[drop_moved_inside(seg) | acc], false}
+      end)
+
+    kept
+  end
+
+  defp drop_moved_inside({:words, change, inner}), do: {:words, change, drop_moved(inner)}
+  defp drop_moved_inside({:aside, inner}), do: {:aside, drop_moved(inner)}
+
+  defp drop_moved_inside({:pair, change, new, old}),
+    do: {:pair, change, drop_moved(new), drop_moved(old)}
+
+  defp drop_moved_inside(seg), do: seg
 
   # ── Rendering ────────────────────────────────────────────────────
 
@@ -266,7 +324,7 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
         render_segments(inner, within(extent, t), lookup, excluded)
 
       true ->
-        bracket(t, render_segments(inner, within(extent, t), lookup, nil))
+        bracket(within(extent, t), render_segments(inner, within(extent, t), lookup, nil))
     end
   end
 
@@ -282,9 +340,14 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
         rest = Territory.subtract(extent, t)
 
         cond do
-          rest == nil -> new_text.(extent)
-          rest == whole(extent) -> old_text.(extent)
-          true -> "[#{t}: #{new_text.(within(extent, t))}] [#{rest}: #{old_text.(rest)}]"
+          rest == nil ->
+            new_text.(extent)
+
+          rest == whole(extent) ->
+            old_text.(extent)
+
+          true ->
+            "[#{within(extent, t)}: #{new_text.(within(extent, t))}] [#{rest}: #{old_text.(rest)}]"
         end
     end
   end
@@ -341,9 +404,23 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     their common live territory; all under insertions → outside the
     territory any of them is live in
   - otherwise nil (plain words beside changed ones: brackets carry it)
+
+  `:subtree` — a row with no words of its own, judged on its
+  sub-provisions: the extent outside wherever any of them is live.
   """
-  @spec excluded(LatSegments.t(), String.t() | nil, lookup()) :: String.t() | nil
-  def excluded(segments, extent, lookup) do
+  @spec excluded(LatSegments.t(), String.t() | nil, lookup(), :own | :subtree) :: String.t() | nil
+  def excluded(segments, extent, lookup, judged_on \\ :own)
+
+  def excluded(segments, extent, lookup, :subtree) do
+    whole = whole(extent)
+
+    case pieces(segments, {nil, whole}, lookup) do
+      [] -> nil
+      pieces -> outside(whole, pieces |> Enum.map(&elem(&1, 1)) |> union_live())
+    end
+  end
+
+  def excluded(segments, extent, lookup, :own) do
     whole = whole(extent)
 
     case pieces(segments, {nil, whole}, lookup) do
@@ -370,8 +447,10 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   defp piece({:mark, _s}, _state, _lookup), do: []
   defp piece({:aside, _inner}, _state, _lookup), do: []
 
+  # words only: whitespace or punctuation alone ("." after a substitution:
+  # 2018/482 reg.4(2)(b)) is not the row's own words
   defp piece({:text, s}, state, _lookup),
-    do: if(String.trim(s) == "", do: [], else: [state])
+    do: if(String.match?(s, ~r/[\p{L}\p{N}]/u), do: [state], else: [])
 
   defp piece({:words, change, inner}, {kind, live} = state, lookup) do
     case compose(change, live, lookup) do

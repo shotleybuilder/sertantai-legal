@@ -340,8 +340,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert %{text: "A new duty.", excluded_extent: "W"} = row(rows, "s.88B")
     end
 
-    @tag pending: "LR-02"
-    test "inserted for a narrower territory (note only): 1990/8 s.202D, the section and its subsections" do
+    test "inserted \"(6.4.2012 for E.)\" is commencement, not territory: no exclusion (1990/8 s.202D; note typology §2.3)" do
       body =
         ~s|<P1group><Title>T</Title><P1><Pnumber><Addition CommentaryRef="n-202">202D</Addition></Pnumber><P1para><P2><Pnumber><Addition CommentaryRef="n-202">1</Addition></Pnumber><P2para><Text><Addition CommentaryRef="n-202">This section applies if regulations so provide.</Addition></Text></P2para></P2></P1para></P1></P1group>|
 
@@ -352,7 +351,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
           "E+W"
         )
 
-      assert row(rows, "s.202D(1)").excluded_extent == "W"
+      assert row(rows, "s.202D(1)").excluded_extent == nil
       assert row(rows, "s.202D(1)").text == "This section applies if regulations so provide."
     end
 

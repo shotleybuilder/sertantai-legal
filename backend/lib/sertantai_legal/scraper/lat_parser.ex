@@ -33,7 +33,15 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   alias SertantaiLegal.Legal.Lat.SortKeyRewrite
   alias SertantaiLegal.Legal.Lat.Transforms
-  alias SertantaiLegal.Scraper.{AmendmentNote, LatSegments, LatStatus, LatTerritory, Territory}
+
+  alias SertantaiLegal.Scraper.{
+    AmendmentNote,
+    LatSegments,
+    LatStatus,
+    LatTerritory,
+    NoteTerritory,
+    Territory
+  }
 
   # Acts (sections); everything else is an instrument (regulations/articles).
   # asc (Acts of Senedd Cymru), mwa (Welsh Measures) and the local / church /
@@ -158,18 +166,21 @@ defmodule SertantaiLegal.Scraper.LatParser do
         do: {to_string(xpath(version, ~x"./@id"s)), version}
   end
 
-  # Commentary id → the territory its change applies to ("revoked (S.)"),
-  # for retained repeals without their own Extent.
+  # Commentary id → what the note says about territory (NoteTerritory: where
+  # its change applies, where it is in force) and its effect, for
+  # LatTerritory (docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md).
   defp build_ref_territory_lookup(doc) do
     doc
     |> xpath(~x"//Commentaries/Commentary"l)
     |> Map.new(fn c ->
       text = c |> xpath(~x"./descendant::text()"ls) |> Enum.map_join("", &to_string/1)
 
-      # {territory, effect}: LatTerritory takes a note's territory only for
-      # a change of its kind
       {c |> xpath(~x"./@id"s) |> to_string(),
-       {Territory.note_territories(text), AmendmentNote.effect_of(text)}}
+       %{
+         applies: NoteTerritory.applies(text),
+         in_force: NoteTerritory.in_force(text),
+         effect: AmendmentNote.effect_of(text)
+       }}
     end)
   end
 
@@ -545,10 +556,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp excluded_extent(node, ctx, row_extent) do
     own = node |> text_blocks(:structural) |> join_blocks()
 
-    segments =
-      if LatSegments.blank?(own), do: node |> text_blocks(:leaf) |> join_blocks(), else: own
-
-    LatTerritory.excluded(segments, row_extent, ctx.ref_territory)
+    if LatSegments.blank?(own) do
+      node
+      |> text_blocks(:leaf)
+      |> join_blocks()
+      |> LatTerritory.excluded(row_extent, ctx.ref_territory, :subtree)
+    else
+      LatTerritory.excluded(own, row_extent, ctx.ref_territory, :own)
+    end
   end
 
   # ── Element Extraction Helpers ───────────────────────────────────

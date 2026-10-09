@@ -4,15 +4,20 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
   alias SertantaiLegal.Scraper.LatTerritory
   alias SertantaiLegal.Scraper.LatTerritory.Change
 
-  # note → {territory of each clause, effect}
+  # note id → what the note says (NoteTerritory): where its change applies
+  # (bare "(X.)"), where it is in force (dated "for X."), its effect
   @lookup %{
-    "n-s" => {["S"], "repealed"},
-    "n-w" => {["W"], "inserted"},
-    "n-none" => {[], "repealed"},
-    "n-rep-ew" => {["E+W"], "repealed"},
-    "n-sub-s" => {["S"], "substituted"},
-    "n-ins-ew" => {["E+W"], "inserted"},
-    "n-s-and-w" => {["S", "W"], "other"}
+    "n-s" => %{applies: ["S"], in_force: nil, effect: "repealed"},
+    "n-w" => %{applies: ["W"], in_force: nil, effect: "inserted"},
+    "n-none" => %{applies: [], in_force: nil, effect: "repealed"},
+    "n-rep-ew" => %{applies: ["E+W"], in_force: nil, effect: "repealed"},
+    "n-sub-s" => %{applies: ["S"], in_force: nil, effect: "substituted"},
+    "n-ins-ew" => %{applies: ["E+W"], in_force: nil, effect: "inserted"},
+    "n-s-and-w" => %{applies: ["S", "W"], in_force: nil, effect: "other"},
+    # dated: "inserted (6.4.2012 for E.)" / "repealed (1.4.2015 for S.)"
+    "n-ins-for-e" => %{applies: [], in_force: "E", effect: "inserted"},
+    "n-rep-for-s" => %{applies: [], in_force: "S", effect: "repealed"},
+    "n-sub-for-e" => %{applies: [], in_force: "E", effect: "substituted"}
   }
 
   defp keep(attr, ref \\ nil, inner),
@@ -48,6 +53,20 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
                %Change{kind: :keep, attribute: "S", ref: "n-s-and-w"},
                @lookup
              ) == "W+S"
+    end
+
+    test "a dated \"for X.\" (in force) is territory only for a change that removes text (typology §3)" do
+      # an insertion in force in E still extends to W: commencement → status
+      assert LatTerritory.territory(%Change{kind: :ins, ref: "n-ins-for-e"}, @lookup) == nil
+      # a retained repeal in force for S removes the text in S
+      assert LatTerritory.territory(%Change{kind: :keep, ref: "n-rep-for-s"}, @lookup) == "S"
+      # a substitution in force in E: the old words go there
+      assert LatTerritory.territory(%Change{kind: :pair, ref: "n-sub-for-e"}, @lookup) == "E"
+      # where it applies wins over where it is in force
+      assert LatTerritory.territory(
+               %Change{kind: :keep, attribute: "E+W", ref: "n-rep-for-s"},
+               @lookup
+             ) == "E+W"
     end
 
     test "a note counts only for a change of its kind (1974/37 s.5: an Addition citing \"S. 5 repealed (… for E.W.)\")" do
@@ -109,6 +128,11 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
 
     test "a non-breaking space is text, not whitespace to collapse (EU 2016/425 \"point\u00A0(a)\")" do
       assert render([t("point\u00A0(a)  and")]) == "point\u00A0(a) and"
+    end
+
+    test "a bracket names only territories within the row (1968/73 s.10(1)[E+W+NI])" do
+      assert render([t("or"), ins("E+W+S", [t(" passenger transport")])], "E+W+NI") ==
+               "or [E+W: passenger transport]"
     end
 
     test "adjacent brackets for the same territories merge; whitespace collapses" do
@@ -187,6 +211,31 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
                "given to [E+W: every person within (6)] [S: every owner, lessee of the land] and that"
     end
 
+    test "the space before a new half that moved into the pair goes with it (1990/8 s.61W(6)(a) \"293B , or\")" do
+      old = %Change{kind: :keep, attribute: "W"}
+      new = %Change{kind: :ins, attribute: "W"}
+
+      segs = [
+        t("293"),
+        {:words, %Change{kind: :ins}, [{:pair_old, "X", old, [t("A")]}]},
+        t(" "),
+        {:words, %Change{kind: :ins}, [{:pair_new, "X", new, [t("B")]}]},
+        t(", or")
+      ]
+
+      assert render(LatTerritory.pair_up(segs), "E+W") == "293[W: B] [E: A], or"
+    end
+
+    test "a SubstitutionRef naming its own enclosing change is no pair: plain retained words (1996/18 s.75A(1A)(c))" do
+      old = %Change{kind: :keep, attribute: "E+W"}
+
+      segs = [
+        {:pair_new, "X", %Change{kind: :ins}, [{:pair_old, "X", old, [t("being notified—")]}]}
+      ]
+
+      assert render(LatTerritory.pair_up(segs)) == "[S: being notified—]"
+    end
+
     test "an unmatched half reads as ordinary words" do
       segs = [
         {:pair_old, "Z", %Change{kind: :keep, attribute: "W"}, [t("old")]},
@@ -253,6 +302,23 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
 
       assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "S"
       assert render([{:aside, [t("(f) ")]}, t("words")]) == "(f) words"
+    end
+
+    test "a row judged on its subtree is live wherever any of it is (1996/1527 reg.33, 1970/40 pt.II)" do
+      segs = [keep("S", [t("Most of it.")]), keep("S", [ins("E", [t("A narrow part.")])])]
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup, :subtree) == "S"
+
+      assert LatTerritory.excluded(
+               [t("Plain."), keep("S", [t("Kept.")])],
+               "E+W+S",
+               @lookup,
+               :subtree
+             ) == nil
+    end
+
+    test "punctuation alone is not the row's own words (2018/482 reg.4(2)(b))" do
+      assert LatTerritory.excluded([ins("NI", [t("New words")]), t(".")], "E+W+S+NI", @lookup) ==
+               "E+W+S"
     end
 
     test "own plain words, a pair, or a mix: nil" do
