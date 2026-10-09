@@ -41,7 +41,7 @@ bugs:
 - ✅ Gemini LR-03 item: `InForceQualifier` out of `EffectTerritory`, gallery of 30 real qualifier strings (4 unread kinds → LR-05)
 - ✅ Gemini LR-07 items: `ChangeFacts.resolve/5` split (`with_fact/4`, `row_facts/5`), `group_partial?/3` commented, `twin/1` → `AmendmentNote.same_law?/2`
 - ✅ Gate found 2 nondeterminism bugs in note order (CommentaryParser) — fixed at source, separate commits
-- ✅ Full suite (2,579 / 2 skipped), credo (4 pre-existing complexity items), final full-corpus compare: 0 differences in 1,068 laws; dialyzer: PLT stale, rebuilding
+- ✅ Full suite (2,579 / 2 skipped), credo (4 pre-existing complexity items), final full-corpus compare: 0 differences in 1,068 laws; dialyzer clean for every changed module (PLT rebuilt: the April one was in an old format; `parse/2` context and `Walker.Ctx.t()` specs tightened; 78 pre-existing errors elsewhere)
 - ✅ Gemini acceptance (accept); scraper CLAUDE.md module map + gate tool documented
 
 ## Dependencies

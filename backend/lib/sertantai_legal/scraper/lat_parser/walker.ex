@@ -53,13 +53,35 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
               law_extent: nil,
               provision_changes: []
 
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            part: String.t() | nil,
+            chapter: String.t() | nil,
+            heading_group: String.t() | nil,
+            group_title: String.t() | nil,
+            group_refs: [String.t()],
+            schedule: String.t() | nil,
+            provision: String.t() | nil,
+            sub: String.t() | nil,
+            paragraph: String.t() | nil,
+            sub_paragraph: String.t() | nil,
+            p2_is_wrapper: boolean(),
+            trailing: [tuple()],
+            default_extent: String.t() | nil,
+            prospective: boolean(),
+            ref_type_lookup: %{String.t() => String.t()},
+            versions: %{String.t() => tuple()},
+            from_version: boolean(),
+            version_extent: String.t() | nil,
+            effects: SertantaiLegal.Scraper.EffectIndex.t(),
+            law_extent: String.t() | nil,
+            provision_changes: [SertantaiLegal.Scraper.LatTerritory.Change.t()]
+          }
 
     @doc """
     The context at the document root: its RestrictExtent, the note type
     lookup, alternative versions and the law's effects (`context.effects`).
     """
-    @spec new(tuple(), map()) :: t()
+    @spec new(tuple(), SertantaiLegal.Scraper.LatParser.context()) :: t()
     def new(doc, context) do
       law_extent = Effects.law_extent(doc, context)
 

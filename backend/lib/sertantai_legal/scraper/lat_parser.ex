@@ -45,7 +45,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   List of maps with keys matching LAT table columns.
   """
-  @spec parse(String.t(), map()) :: [map()]
+  @type context :: %{
+          required(:law_name) => String.t(),
+          required(:type_code) => String.t(),
+          optional(:effects) => list() | map() | nil,
+          optional(atom()) => term()
+        }
+
+  @spec parse(String.t(), context()) :: [map()]
   def parse(xml, context) when is_binary(xml) do
     mode = Rows.mode(context.type_code)
     doc = SweetXml.parse(xml, quiet: true)
