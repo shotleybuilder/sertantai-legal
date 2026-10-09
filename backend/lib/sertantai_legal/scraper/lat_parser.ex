@@ -567,8 +567,40 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp effect_index(nil, _doc, _law_extent), do: EffectIndex.empty()
   defp effect_index(%{by_id: _, by_ref: _} = index, _doc, _law_extent), do: index
 
-  defp effect_index(effects, doc, law_extent) when is_list(effects),
-    do: EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1), law_extent)
+  defp effect_index(effects, doc, law_extent) when is_list(effects) do
+    index =
+      EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1), law_extent)
+
+    EffectIndex.with_orphans(index, change_occurrences(doc, index))
+  end
+
+  # every change element whose ids join no effect: {ChangeId, the ids of the
+  # elements holding it (outermost first), kind}, in document order
+  # (EffectIndex.with_orphans/2). A walk carrying the path: xpath's ancestor
+  # axis is lost on nodes selected from a list.
+  defp change_occurrences(node, index, path \\ [])
+
+  defp change_occurrences(node, index, path) when elem(node, 0) == :xmlElement do
+    path =
+      case blank_to_nil(xpath(node, ~x"./@id"s)) do
+        nil -> path
+        id -> path ++ [id]
+      end
+
+    own =
+      with name when name in ~w(Addition Substitution Repeal) <- local_name(elem(node, 1)),
+           change_id when change_id != nil <- change_id(node),
+           nil <-
+             EffectIndex.for(index, change_id, blank_to_nil(xpath(node, ~x"./@CommentaryRef"s))) do
+        [{change_id, path, if(name == "Repeal", do: :keep, else: :ins)}]
+      else
+        _ -> []
+      end
+
+    own ++ Enum.flat_map(elem(node, 8), &change_occurrences(&1, index, path))
+  end
+
+  defp change_occurrences(_node, _index, _path), do: []
 
   # The law's own extent for territory (not stored on rows): the document's
   # RestrictExtent, else its type's — a devolved instrument extends only

@@ -104,14 +104,12 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   defp resolve_change(%Change{} = change, effects) do
     {index, row_extent, provision} = effects
 
-    # a markup change whose ids join no effect: its provision's one fitting
-    # effect (EffectIndex.on_provision/3)
+    # a change id that joins no effect: the law's one join for it
+    # (EffectIndex.with_orphans/2)
     effect =
       EffectIndex.get(index, change.effect_id) ||
         EffectIndex.for(index, change.change_id, change.ref) ||
-        if(change.effect_id == nil and (change.change_id || change.ref) != nil,
-          do: EffectIndex.on_provision(index, provision, change.kind)
-        )
+        EffectIndex.orphan(index, change.change_id)
 
     effects = if effect, do: EffectIndex.parallel(index, effect), else: []
 

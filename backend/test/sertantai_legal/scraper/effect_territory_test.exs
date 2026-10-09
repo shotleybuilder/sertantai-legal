@@ -118,6 +118,64 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.on_provision(two, "s-1", :ins) == nil
     end
 
+    test "on_provision/3: with none on the row's provision, the nearest ancestor's whole-provision effect (2010/2214 regs. 18A-18E inserted (E.); 1981/69 s.41 repealed (S.), legacy ids)" do
+      ins = effect(effect_id: "k1", type: "inserted", affected_refs: ["regulation-18A"])
+      rep = effect(effect_id: "k2", type: "repealed", affected_refs: ["section-41"])
+      words = effect(effect_id: "k3", type: "words repealed", affected_refs: ["section-7"])
+      index = EffectIndex.new([ins, rep, words])
+
+      assert EffectIndex.on_provision(index, "regulation-18A-1-a", :ins) == ins
+      assert EffectIndex.on_provision(index, "section-41-2", :keep) == rep
+      # word-level effects on an ancestor don't cover its sub-provisions
+      assert EffectIndex.on_provision(index, "section-7-1", :keep) == nil
+      assert EffectIndex.on_provision(index, "section-41-2", :ins) == nil
+    end
+
+    test "with_orphans/2: an id joining nothing joins one effect for the law, at the lowest provision holding all its occurrences" do
+      s41 = effect(effect_id: "k-s41", type: "repealed", affected_refs: ["section-41"])
+      s41_1 = effect(effect_id: "k-1986", type: "repealed", affected_refs: ["section-41-1"])
+
+      regs =
+        effect(
+          effect_id: "k-regs",
+          type: "inserted",
+          affected_ranges: [{"regulation-18A", "regulation-18B"}]
+        )
+
+      words =
+        effect(
+          effect_id: "k-words",
+          type: "words inserted",
+          affected_refs: ["regulation-18A-1-a"]
+        )
+
+      order =
+        ~w(section-41 section-41-1 section-41-2 regulation-18A regulation-18A-1 regulation-18A-1-a regulation-18B)
+
+      index = EffectIndex.new([s41, s41_1, regs, words], order)
+
+      index =
+        EffectIndex.with_orphans(index, [
+          # legacy id over s.41(1) and s.41(5)'s defined terms: s.41's
+          # repeal, not s.41(1)'s
+          {"d29p8993", ["part-2", "section-41", "section-41-1"], :keep},
+          {"d29p8993", ["part-2", "section-41", "section-41-5", "term-x"], :keep},
+          # an orphan key over regs. 18A-18B and Part 3's heading; the inner
+          # words insertion ignored
+          {"key-orphan", ["part-3"], :ins},
+          {"key-orphan", ["part-3", "regulation-18A"], :ins},
+          {"key-orphan", ["part-3", "regulation-18A", "regulation-18A-1-a"], :ins},
+          {"key-orphan", ["part-3", "regulation-18B"], :ins},
+          # no fitting effect: no join
+          {"key-none", ["part-2", "section-41", "section-41-2"], :ins}
+        ])
+
+      assert EffectIndex.orphan(index, "d29p8993") == s41
+      assert EffectIndex.orphan(index, "key-orphan-1694675285518") == regs
+      assert EffectIndex.orphan(index, "key-none-1") == nil
+      assert EffectIndex.orphan(index, nil) == nil
+    end
+
     test "parallel/2: applied effects of the same type naming the same provision" do
       a =
         effect(

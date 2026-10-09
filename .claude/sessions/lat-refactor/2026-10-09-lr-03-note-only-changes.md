@@ -22,8 +22,8 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 
 - ✅ Plan agreed: `docs/LAT-EFFECTS-LAYER-PLAN.md` (Gemini critical review + Jason's decisions)
 - ✅ Probe: changes-feed cache — keep each effect's id; coverage by law and by year; join rates effect ↔ note (`Commentary/@id` = effect id for `key-` notes) and effect ↔ markup `ChangeId`; legacy (`c…`) notes with no effect
-- ⬜ Whole-provision changes not marked in the text, from effects (AffectedProvisions refs + territorial application) → `excluded_extent` (3 pending fixtures)
-- ⬜ Change territory from effects for elements without `Extent`; note text only where no effect exists, flagged as such (or the amending law)
+- ✅ Whole-provision changes not marked in the text, from effects (AffectedProvisions refs + territorial application) → `excluded_extent` (rule 3; pending fixtures green or asserted gaps)
+- ✅ Change territory from effects for elements without `Extent` (notes not used at all — Jason's principle; `NoteTerritory` parked)
 - ✅ Territory from effects (test-first): `EffectIndex` (by id, by ref, ranges expanded in document order), `EffectTerritory.claim/3` (application → markup → in force [removals] → narrower extent → none), `LatTerritory.resolve/2` + `provenance/1`, rule 3 (whole-provision effects as outermost changes, only with no change markup); `ChangesFeed` keeps in-force qualifications and ranges
 - ✅ Pending fixtures turned green from real effect records (scrubbed ids); 3 cases now assert recorded gaps (1996/1527 Wales — unjoinable; 1993/12 s.18 — markup present, rule 3 off; 1984/22 s.20 — qualifications "Other")
 - ✅ `LatStagedParser` loads the law's stored effects into the parse (same store mode as its CLML; off in tests via `config :lat_effects`)
@@ -74,3 +74,14 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 
 - **Corpus diff run 1** (`lr03-diff.csv`): 14,025 rows; agent review of ~205 sampled rows + 46 check findings found code defects, fixed test-first: ranges took a duplicated id's last occurrence (versions; ~7,751 wrong hits / 5 laws); `OtherQualification` never read (~1,700 territorial qualifications) and unapplied in-force entries counted; except-clauses; nil AffectedExtent read as UK (devolved instruments) → law extent; effect extent now measured against the row's extent; an insertion inside a retained repeal didn't narrow (text vs column contradiction); substitution new words excluded the rest; `M_F_` ids join by key- CommentaryRef; checks skipped wordless rows / child extent.
 - **Decisions after review** (Jason): parallel effects union their applications, markup wins when disjoint (reported); rule 3 applies when the provision's markup can't join any effect.
+- **Corpus diff run 2**: 14,752 rows changed; checks 23 (18 markup_effect_conflict, 5 child_live). Spot-check of 17 review-flagged rows: 12 right, 4 code defects, 1 wrong expectation:
+  - 1990/43 s.146(6)(b) excluded E+W+NI: a range ("s. 34(2A)-(2D)") took its start's first occurrence and its end's only one (a later S version), spanning ~3,800 ids → ranges take the **smallest span**.
+  - uksi 1996/972 reg.8(2)(b)(i) E, not E+W: whole-instrument revocations ("Regulations", no refs) for E and for W weren't parallels → parallels match by affected provisions when an effect has no refs.
+  - 2000/37 s.1(4)(a) E: "for E. in relation to the pilot areas" read as E → an in-force qualifier counts only when it names **just a territory** (allowing a date note before it and "in so far as not already in force" / a timing after; 5,781 + 1,375 corpus qualifiers pass; pilot areas, "for the insertion of s. 53B" etc. don't).
+  - 2013/32 s.89(8)(h) NI: the Addition's ChangeId (key-d697…) is an orphan — the feed's effect is key-4e88… ("words substituted", editor comment "treat as whole extent") → a change whose ids join nothing joins its **provision's one fitting effect** (`EffectIndex.on_provision/3`), so the substitution brackets but doesn't narrow.
+  - 1996/37 s.8(8) E+W is right: the repeal is E+W (affected extent E+W+NI); NI keeps the provision, though legislation.gov.uk shows dots.
+- **Corpus diff run 3** (after those fixes): 786 rows moved vs run 2; checks 23 → 120. Two causes, fixed test-first:
+  - the territory-only qualifier rule dropped 1990/43 Part I's "for S. for the repeal of ss. 1-19, 22-28" (285 rows lost a correct S) → **qualifiers scoped to provisions** count on the provisions they list ("for the repeal/insertion/… of ss. …") or don't list ("except in relation to ss. 13-15, 76": 1984/22 — the recorded gap is now green); ss.20-21 correctly lose S;
+  - orphan-joined substitutions in versioned provisions (2010/2214 reg.36[E]/[W]) unioned the other version's application → **parallels union only when the keyed effect names an application** itself; the conflict detail now says the markup was used.
+  - The fallback join's new claims checked: 2010/2214 reg.10(2) `[E: …]` from an England-only substitution — right.
+

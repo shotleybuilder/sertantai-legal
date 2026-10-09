@@ -417,7 +417,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert LatTerritory.render(resolved, "E+W+S+NI") == "[E+W+S: the Office of Rail and Road]"
     end
 
-    test "a change whose ChangeId joins no effect joins its provision's one matching effect (2013/32 s.89(8)(h): an orphan key, the feed's \"words substituted\")" do
+    test "a change whose ChangeId joins no effect takes the law's orphan join: its provision's one matching effect (2013/32 s.89(8)(h): an orphan key, the feed's \"words substituted\")" do
       index =
         EffectIndex.new([
           fx(
@@ -430,6 +430,12 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
         ])
 
       change = %Change{kind: :ins, attribute: "E+W+S", change_id: "key-orphan-1458649220372"}
+      unjoined = index
+
+      index =
+        EffectIndex.with_orphans(index, [
+          {"key-orphan-1458649220372", ["section-89", "section-89-8", "section-89-8-h"], :ins}
+        ])
 
       resolved =
         LatTerritory.resolve(
@@ -442,9 +448,11 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert LatTerritory.excluded(resolved, "E+W+S+NI") == nil
       assert [%{effect_id: "key-feed", source: :markup}] = LatTerritory.provenance(resolved)
 
-      # no provision given, or two unrelated candidates: no join
+      # no orphan join recorded: none
       assert [%{effect_id: nil}] =
-               LatTerritory.provenance(LatTerritory.resolve([{:words, change, [t("x")]}], index))
+               LatTerritory.provenance(
+                 LatTerritory.resolve([{:words, change, [t("x")]}], unjoined)
+               )
     end
 
     test "an effect with no AffectedExtent is measured against the law's own extent (an SSI amended by an SSI)" do

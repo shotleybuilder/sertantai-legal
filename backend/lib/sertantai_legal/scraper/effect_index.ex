@@ -8,7 +8,8 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   - `effect_id/1` — a markup `ChangeId` ("key-<hex>-<ts>") → its effect id
     ("key-<hex>"); legacy ids (`d29p…`) have none
   - `get/2`, `for_change/2`, `on/2` — lookups
-  - `on_provision/3` — the fallback join for a change whose ids join none
+  - `with_orphans/2`, `orphan/2` — one join per law for a change id that
+    joins no effect, via `on_provision/3`
   - `parallel/2` — an effect and its parallels (the same change by
     another instrument for another territory)
   - `whole_provision/2` — applied effects that repeal or insert a whole
@@ -22,14 +23,15 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   @type t :: %{
           by_id: %{String.t() => Effect.t()},
           by_ref: %{String.t() => [Effect.t()]},
-          law_extent: String.t() | nil
+          law_extent: String.t() | nil,
+          orphans: %{String.t() => String.t()}
         }
 
   @whole ~w(repealed revoked omitted inserted added)
 
   @doc "An empty index (a law with no effects, or none loaded)."
   @spec empty() :: t()
-  def empty, do: %{by_id: %{}, by_ref: %{}, law_extent: nil}
+  def empty, do: %{by_id: %{}, by_ref: %{}, law_extent: nil, orphans: %{}}
 
   @doc """
   Index effects by id and by affected ref. A range ("ss. 1-30") covers every
@@ -48,6 +50,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
     %{
       law_extent: law_extent,
+      orphans: %{},
       by_id: for(%Effect{effect_id: id} = e <- effects, id != nil, into: %{}, do: {id, e}),
       by_ref:
         effects
@@ -130,19 +133,52 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
   @doc """
   The effect behind a change whose ids join none (an orphan `ChangeId`:
-  2013/32 s.89(8)(h)): the one applied effect on the row's provision whose
-  type fits the change's kind — insertions and substitutions for `:ins`,
-  repeals for `:keep`, substitutions for `:pair`. Parallels count as one;
-  any other ambiguity is no join.
+  2013/32 s.89(8)(h); a legacy `d29p…` id: 1981/69 s.41): the one applied
+  effect on the row's provision whose type fits the change's kind —
+  insertions and substitutions for `:ins`, repeals for `:keep`,
+  substitutions for `:pair` — else the nearest ancestor's whole-provision
+  effect of that kind (2010/2214 "Regs. 18A-18E inserted"). Parallels
+  count as one; any other ambiguity is no join. The join is structural
+  (`AffectedProvisions`), never a note's text.
   """
   @spec on_provision(t(), String.t() | nil, :ins | :keep | :pair) :: Effect.t() | nil
-  def on_provision(index, ref, kind) do
-    candidates =
-      index
-      |> on(ref)
-      |> Enum.filter(&(&1.applied == true and fits?(kind, &1.type || "")))
-      |> Enum.uniq_by(& &1.effect_id)
+  def on_provision(_index, nil, _kind), do: nil
 
+  def on_provision(index, ref, kind) do
+    own = index |> on(ref) |> Enum.filter(&fits?(kind, &1.type || ""))
+
+    candidates =
+      case applied(own) do
+        [] -> ref |> ancestors() |> Enum.find_value([], &whole_of_kind(index, &1, kind))
+        found -> found
+      end
+
+    one(candidates)
+  end
+
+  defp applied(effects),
+    do: effects |> Enum.filter(&(&1.applied == true)) |> Enum.uniq_by(& &1.effect_id)
+
+  defp whole_of_kind(index, ref, kind) do
+    case index |> whole_provision(ref) |> Enum.filter(&fits?(kind, &1.type)) |> applied() do
+      [] -> nil
+      found -> found
+    end
+  end
+
+  # "section-41-2-a" → ["section-41-2", "section-41"]
+  defp ancestors(ref) do
+    case String.split(ref, "-") do
+      [_kind, _number | path] when path != [] ->
+        parent = ref |> String.split("-") |> Enum.drop(-1) |> Enum.join("-")
+        [parent | ancestors(parent)]
+
+      _ ->
+        []
+    end
+  end
+
+  defp one(candidates) do
     case candidates do
       [e | rest] ->
         if Enum.all?(
@@ -159,6 +195,68 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   defp fits?(:ins, type), do: String.match?(type, ~r/insert|added|substitut/)
   defp fits?(:keep, type), do: String.match?(type, ~r/repeal|revok|omit/)
   defp fits?(:pair, type), do: String.contains?(type, "substitut")
+
+  @doc """
+  Join each change id that joins no effect (an orphan `key-` id, or a legacy
+  `d29p…` id) to one effect for the whole law: an id is one change, so its
+  every occurrence takes the same effect. `occurrences` are `{change_id,
+  path, kind}` in document order, the path being the ids of the elements
+  holding the occurrence, outermost first. The join is `on_provision/3` at
+  the lowest element holding every occurrence (1981/69 s.41: a legacy
+  repeal over s.41(1)-(6) is s.41's, not s.41(1)'s own); else each element
+  just below it holding some must give the same effect (2010/2214 "Regs.
+  18A-18E inserted", also marked on Part 3's heading).
+  """
+  @spec with_orphans(t(), [{String.t(), [String.t()], :ins | :keep | :pair}]) :: t()
+  def with_orphans(index, occurrences) do
+    orphans =
+      occurrences
+      |> Enum.map(fn {change_id, path, kind} -> {orphan_key(change_id), path, kind} end)
+      |> Enum.reject(fn {key, _path, _kind} -> get(index, key) != nil end)
+      |> Enum.group_by(&elem(&1, 0))
+      |> Enum.flat_map(fn {key, [{_, _, kind} | _] = found} ->
+        paths = found |> Enum.map(&elem(&1, 1)) |> Enum.uniq()
+
+        case orphan_effect(index, paths, kind) do
+          nil -> []
+          effect -> [{key, effect.effect_id}]
+        end
+      end)
+      |> Map.new()
+
+    %{index | orphans: orphans}
+  end
+
+  @doc "The effect `with_orphans/2` joined a change id to; nil if none."
+  @spec orphan(t(), String.t() | nil) :: Effect.t() | nil
+  def orphan(_index, nil), do: nil
+  def orphan(index, change_id), do: get(index, Map.get(index.orphans, orphan_key(change_id)))
+
+  defp orphan_key(change_id), do: effect_id(change_id) || change_id
+
+  defp orphan_effect(index, paths, kind) do
+    common =
+      Enum.reduce(paths, fn path, acc ->
+        acc
+        |> Enum.zip(path)
+        |> Enum.take_while(fn {a, b} -> a == b end)
+        |> Enum.map(&elem(&1, 0))
+      end)
+
+    on_provision(index, List.last(common), kind) ||
+      paths
+      |> Enum.map(&Enum.at(&1, length(common)))
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+      |> Enum.map(&on_provision(index, &1, kind))
+      |> agreed()
+  end
+
+  defp agreed([%Effect{} = e | rest]) do
+    if Enum.all?(rest, &(&1 != nil and &1.effect_id == e.effect_id)), do: e
+  end
+
+  defp agreed(_), do: nil
 
   @doc "Effects naming this provision (by structured ref)."
   @spec on(t(), String.t() | nil) :: [Effect.t()]
