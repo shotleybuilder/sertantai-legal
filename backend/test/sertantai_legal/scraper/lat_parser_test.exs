@@ -2131,31 +2131,44 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
   # Repeal RetainText: text repealed but kept — for other territories, or
   # for specified purposes / savings (LAT parser coverage II, item 5).
   describe "parse/2 retained repeals" do
-    defp retained_law(body, commentaries) do
+    defp retained_law(body, commentaries, effects \\ []) do
       LatParser.parse(
         """
         <Legislation RestrictExtent="E+W+S"><Secondary><Body>#{body}</Body></Secondary>
         <Commentaries>#{commentaries}</Commentaries></Legislation>
         """,
-        %{law_name: "UK_uksi_2024_1", type_code: "uksi"}
+        %{law_name: "UK_uksi_2024_1", type_code: "uksi", effects: effects}
       )
     end
+
+    # "Regulations revoked (S.)" by an S.S.I.: the effect's extent is S (LR-03)
+    defp revoked_s_effect,
+      do: [
+        struct!(SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect,
+          effect_id: "key-s",
+          type: "revoked",
+          affecting: "UK_ssi_2025_165",
+          applied: true,
+          effect_extent: "S",
+          affected_extent: "E+W+S"
+        )
+      ]
 
     defp by_id(rows, id), do: Enum.find(rows, &(&1.section_id == "UK_uksi_2024_1:" <> id))
 
     @revoked_s ~s|<Commentary id="k-s" Type="F"><Para><Text>Regulations revoked (S.) (1.11.2025) by The Scotland Regulations 2025 (S.S.I. 2025/165)</Text></Para></Commentary>|
 
-    @tag pending: "LR-03"
-    test "a provision repealed in one territory (from the note) keeps its text and status" do
+    test "a provision repealed in one territory (from its effect) keeps its text and status" do
       rows =
         retained_law(
           """
-          <P1group><Title>Testing</Title><P1><Pnumber><Repeal CommentaryRef="k-s" RetainText="true">3</Repeal></Pnumber><P1para>
-            <P2><Pnumber><Repeal CommentaryRef="k-s" RetainText="true">1</Repeal></Pnumber><P2para><Text><Repeal CommentaryRef="k-s" RetainText="true">The sludge shall be tested.</Repeal></Text></P2para></P2>
-            <P2><Pnumber>2</Pnumber><P2para><Text><Repeal CommentaryRef="k-s" RetainText="true">Samples</Repeal> <Repeal CommentaryRef="k-s" RetainText="true">shall be kept.</Repeal></Text></P2para></P2>
+          <P1group><Title>Testing</Title><P1><Pnumber><Repeal ChangeId="key-s-1" RetainText="true">3</Repeal></Pnumber><P1para>
+            <P2><Pnumber><Repeal ChangeId="key-s-1" RetainText="true">1</Repeal></Pnumber><P2para><Text><Repeal ChangeId="key-s-1" RetainText="true">The sludge shall be tested.</Repeal></Text></P2para></P2>
+            <P2><Pnumber>2</Pnumber><P2para><Text><Repeal ChangeId="key-s-1" RetainText="true">Samples</Repeal> <Repeal ChangeId="key-s-1" RetainText="true">shall be kept.</Repeal></Text></P2para></P2>
           </P1para></P1></P1group>
           """,
-          @revoked_s
+          "",
+          revoked_s_effect()
         )
 
       for id <- ["reg.3", "reg.3(1)", "reg.3(2)"] do
@@ -2167,16 +2180,16 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.3(1)").text == "The sludge shall be tested."
     end
 
-    # Q1 (Jason, 2026-10-09; LAT Parser Refactor): attribute and note both count
-    @tag pending: "LR-03"
-    test "the Repeal's own Extent and its note's territory together" do
+    # LR-03 order: territorial application → markup Extent → … → narrower effect extent
+    test "the Repeal's own Extent comes before its effect's extent" do
       rows =
         retained_law(
-          ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal CommentaryRef="k-s" RetainText="true" Extent="E+W">Old rule.</Repeal></Text></P1para></P1></P1group>|,
-          @revoked_s
+          ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal ChangeId="key-s-1" RetainText="true" Extent="E+W">Old rule.</Repeal></Text></P1para></P1></P1group>|,
+          "",
+          revoked_s_effect()
         )
 
-      assert by_id(rows, "reg.4").excluded_extent == "E+W+S"
+      assert by_id(rows, "reg.4").excluded_extent == "E+W"
     end
 
     @tag pending: "LR-07"
@@ -2192,12 +2205,12 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert row.excluded_extent == "E+W+S"
     end
 
-    @tag pending: "LR-03"
     test "a Repeal wrapping whole Text elements counts too" do
       rows =
         retained_law(
-          ~s|<P1group><P1><Pnumber>6</Pnumber><P1para><Repeal CommentaryRef="k-s" RetainText="true"><Text>First.</Text><Text>Second.</Text></Repeal></P1para></P1></P1group>|,
-          @revoked_s
+          ~s|<P1group><P1><Pnumber>6</Pnumber><P1para><Repeal ChangeId="key-s-1" RetainText="true"><Text>First.</Text><Text>Second.</Text></Repeal></P1para></P1></P1group>|,
+          "",
+          revoked_s_effect()
         )
 
       assert by_id(rows, "reg.6").excluded_extent == "S"
@@ -2260,12 +2273,12 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.10").text == "A duty to [E+W: consult] act."
     end
 
-    @tag pending: "LR-03"
-    test "the territory can come from the repeal's note" do
+    test "the territory can come from the repeal's effect (never its note)" do
       rows =
         retained_law(
-          ~s|<P1group><P1><Pnumber>13</Pnumber><P1para><Text>A duty to <Repeal CommentaryRef="k-s" RetainText="true">consult and</Repeal> act.</Text></P1para></P1></P1group>|,
-          @revoked_s
+          ~s|<P1group><P1><Pnumber>13</Pnumber><P1para><Text>A duty to <Repeal ChangeId="key-s-1" CommentaryRef="k-s" RetainText="true">consult and</Repeal> act.</Text></P1para></P1></P1group>|,
+          @revoked_s,
+          revoked_s_effect()
         )
 
       assert by_id(rows, "reg.13").text == "A duty to [E+W: consult and] act."

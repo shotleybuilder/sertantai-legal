@@ -155,6 +155,8 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
       assert e.in_force_date == ~D[2024-11-16]
       assert e.prospective == false
       assert e.in_force_qualification == "wholly in force"
+      # every qualification, in order (LR-03: a removal in force per territory)
+      assert e.in_force_qualifications == ["wholly in force"]
     end
 
     test "a prospective, unapplied effect: no date, prospective, with savings", %{
@@ -171,5 +173,17 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
       assert effects["s. 84(4)(a)"].affected_refs == ["section-84-4-a"]
       assert effects["s. 83(2)(a)"].affected_refs == ["section-83-2-a"]
     end
+  end
+
+  test "a provision range is kept as {start, end} (LR-03: \"Ss. 1-30 repealed\")" do
+    xml = """
+    <feed xmlns="http://www.w3.org/2005/Atom" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"><entry><content>
+    <ukm:Effect EffectId="effect-fixture" Type="repealed" Applied="true" AffectedProvisions="ss. 1-30" AffectingURI="http://www.legislation.gov.uk/id/ukpga/1990/43">
+    <ukm:AffectedProvisions><ukm:SectionRange Start="section-1" End="section-30"><ukm:Section Ref="section-1">ss. 1</ukm:Section>-<ukm:Section Ref="section-30">30</ukm:Section></ukm:SectionRange></ukm:AffectedProvisions>
+    </ukm:Effect></content></entry></feed>
+    """
+
+    {[effect], _} = ChangesFeed.parse(xml)
+    assert effect.affected_ranges == [{"section-1", "section-30"}]
   end
 end

@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   alias SertantaiLegal.Legal.Lat.Transforms
 
   alias SertantaiLegal.Scraper.{
+    EffectIndex,
     LatSegments,
     LatStatus,
     LatTerritory,
@@ -99,7 +100,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
       ref_type_lookup: build_ref_type_lookup(doc),
       versions: build_versions_lookup(doc),
       from_version: false,
-      version_extent: nil
+      version_extent: nil,
+      # LR-03: the law's effects (EffectIndex; empty = markup only) and the
+      # whole-provision changes (rule 3) inherited by descendant rows
+      effects: effect_index(Map.get(context, :effects), doc),
+      provision_changes: []
     }
 
     raw_rows = walk_children(doc, initial_ctx)
@@ -262,6 +267,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     # covers its sections), not the document root's. Status="Prospective" (on
     # P1group / Pblock wrappers) is inherited the same way (#167).
     ctx = %{ctx | default_extent: extent, prospective: ctx.prospective or prospective?(node)}
+    ctx = with_whole_provision_effects(ctx, node)
 
     cond do
       name in @skip_elements ->
@@ -427,13 +433,15 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
-    repealed = excluded_extent(node, extent)
+    {repealed, whole} = excluded_extent(node, extent, ctx)
 
-    text =
+    segments =
       node
       |> extract_element_text()
       |> with_trailing(ctx.trailing, node)
-      |> LatTerritory.render(extent, repealed)
+      |> row_segments(ctx)
+
+    text = LatTerritory.render(segments, extent, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -458,18 +466,22 @@ defmodule SertantaiLegal.Scraper.LatParser do
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
       excluded_extent: repealed,
+      territory_provenance:
+        Enum.uniq(LatTerritory.provenance(segments) ++ LatTerritory.provenance(whole)),
       from_version: ctx.from_version
     }
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
-    repealed = excluded_extent(node, extent)
+    {repealed, whole} = excluded_extent(node, extent, ctx)
 
-    text =
+    segments =
       node
       |> extract_structural_text()
       |> with_trailing(ctx.trailing, node)
-      |> LatTerritory.render(extent, repealed)
+      |> row_segments(ctx)
+
+    text = LatTerritory.render(segments, extent, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -494,6 +506,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
       excluded_extent: repealed,
+      territory_provenance:
+        Enum.uniq(LatTerritory.provenance(segments) ++ LatTerritory.provenance(whole)),
       from_version: ctx.from_version
     }
   end
@@ -521,7 +535,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      excluded_extent: excluded_extent(node, extent),
+      excluded_extent: node |> excluded_extent(extent, ctx) |> elem(0),
+      territory_provenance:
+        node |> excluded_extent(extent, ctx) |> elem(1) |> LatTerritory.provenance(),
       from_version: ctx.from_version
     }
   end
@@ -532,14 +548,60 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # text is built from: the row's own text decides (its children are rows of
   # their own); the whole subtree only when the row has no text of its own.
   # Numbers and titles never count (not text).
-  defp excluded_extent(node, row_extent) do
+  defp excluded_extent(node, row_extent, ctx) do
     own = node |> text_blocks(:structural) |> join_blocks()
 
     segments =
-      if LatSegments.blank?(own), do: node |> text_blocks(:leaf) |> join_blocks(), else: own
+      if(LatSegments.blank?(own), do: node |> text_blocks(:leaf) |> join_blocks(), else: own)
+      |> row_segments(ctx)
 
-    LatTerritory.excluded(segments, row_extent)
+    {LatTerritory.excluded(segments, row_extent), segments}
   end
+
+  # The law's effects (`context.effects`: a list of ChangesFeed effects, or an
+  # EffectIndex), indexed against this document's ids in order (ranges).
+  defp effect_index(nil, _doc), do: EffectIndex.empty()
+  defp effect_index(%{by_id: _, by_ref: _} = index, _doc), do: index
+
+  defp effect_index(effects, doc) when is_list(effects),
+    do: EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1))
+
+  # A row's segments with territory resolved from the effects layer
+  # (LatTerritory.resolve/2), inside any whole-provision changes it inherits.
+  defp row_segments(segments, ctx) do
+    ctx.provision_changes
+    |> Enum.reduce(segments, fn change, inner -> [{:words, change, inner}] end)
+    |> LatTerritory.resolve(ctx.effects)
+  end
+
+  # Rule 3 (LR-03): an applied effect repealing or inserting this whole
+  # provision, when the provision carries no change markup at all (modern or
+  # legacy), is an outermost change on it and its descendants
+  # (1974/40 s.101 "repealed (S.)": no Repeal element).
+  defp with_whole_provision_effects(ctx, node) do
+    case EffectIndex.whole_provision(ctx.effects, extract_xml_id(node)) do
+      [] ->
+        ctx
+
+      effects ->
+        if change_markup?(node) do
+          ctx
+        else
+          held = MapSet.new(ctx.provision_changes, & &1.effect_id)
+
+          changes =
+            for e <- effects, not MapSet.member?(held, e.effect_id) do
+              kind = if e.type in ~w(inserted added), do: :ins, else: :keep
+              %LatTerritory.Change{kind: kind, effect_id: e.effect_id}
+            end
+
+          %{ctx | provision_changes: ctx.provision_changes ++ changes}
+        end
+    end
+  end
+
+  defp change_markup?(node),
+    do: xpath(node, ~x"(.//Addition | .//Substitution | .//Repeal)[1]"o) != nil
 
   # ── Element Extraction Helpers ───────────────────────────────────
 
@@ -1214,7 +1276,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
     %LatTerritory.Change{
       kind: kind,
       attribute: blank_to_nil(xpath(el, ~x"./@Extent"s)),
-      ref: blank_to_nil(xpath(el, ~x"./@CommentaryRef"s))
+      ref: blank_to_nil(xpath(el, ~x"./@CommentaryRef"s)),
+      change_id: change_id(el)
     }
   end
 
@@ -1226,7 +1289,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
     %LatTerritory.Change{
       kind: :pair,
       attribute: attribute,
-      ref: blank_to_nil(xpath(repeal, ~x"./@CommentaryRef"s))
+      ref: blank_to_nil(xpath(repeal, ~x"./@CommentaryRef"s)),
+      change_id: change_id(repeal)
     }
   end
 

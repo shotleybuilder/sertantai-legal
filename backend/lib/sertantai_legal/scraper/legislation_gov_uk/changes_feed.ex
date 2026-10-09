@@ -49,9 +49,12 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       # #168: in-force data, savings and structured affected refs
       :in_force_date,
       :in_force_qualification,
+      in_force_qualifications: [],
       prospective: false,
       savings: [],
-      affected_refs: []
+      affected_refs: [],
+      # LR-03: "ss. 1-30" as {start, end} refs (expanded against the document)
+      affected_ranges: []
     ]
 
     @type t :: %__MODULE__{
@@ -68,9 +71,11 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
             requires_applied: boolean() | nil,
             in_force_date: Date.t() | nil,
             in_force_qualification: String.t() | nil,
+            in_force_qualifications: [String.t()],
             prospective: boolean(),
             savings: [String.t()],
-            affected_refs: [String.t()]
+            affected_refs: [String.t()],
+            affected_ranges: [{String.t(), String.t()}]
           }
   end
 
@@ -149,7 +154,12 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           qualification: ~x"./@Qualification"s
         ],
         savings: ~x"./*[local-name()='Savings']/*[local-name()='Section']/@Ref"ls,
-        affected_refs: ~x"./*[local-name()='AffectedProvisions']//*[@Ref]/@Ref"ls
+        affected_refs: ~x"./*[local-name()='AffectedProvisions']//*[@Ref]/@Ref"ls,
+        affected_ranges: [
+          ~x"./*[local-name()='AffectedProvisions']//*[local-name()='SectionRange']"l,
+          start: ~x"./@Start"s,
+          end: ~x"./@End"s
+        ]
       )
       |> Enum.map(fn e ->
         %Effect{
@@ -167,11 +177,15 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           in_force_date: earliest_date(e.in_force),
           in_force_qualification:
             e.in_force |> Enum.map(& &1.qualification) |> Enum.find(&(&1 != "")),
+          in_force_qualifications:
+            e.in_force |> Enum.map(& &1.qualification) |> Enum.reject(&(&1 == "")),
           prospective:
             Enum.any?(e.in_force, &(&1.prospective == "true")) and
               earliest_date(e.in_force) == nil,
           savings: e.savings,
-          affected_refs: e.affected_refs
+          affected_refs: e.affected_refs,
+          affected_ranges:
+            for(r <- e.affected_ranges, r.start != "", r.end != "", do: {r.start, r.end})
         }
       end)
 

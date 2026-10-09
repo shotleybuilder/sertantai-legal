@@ -24,7 +24,13 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 - ✅ Probe: changes-feed cache — keep each effect's id; coverage by law and by year; join rates effect ↔ note (`Commentary/@id` = effect id for `key-` notes) and effect ↔ markup `ChangeId`; legacy (`c…`) notes with no effect
 - ⬜ Whole-provision changes not marked in the text, from effects (AffectedProvisions refs + territorial application) → `excluded_extent` (3 pending fixtures)
 - ⬜ Change territory from effects for elements without `Extent`; note text only where no effect exists, flagged as such (or the amending law)
+- ✅ Territory from effects (test-first): `EffectIndex` (by id, by ref, ranges expanded in document order), `EffectTerritory.claim/3` (application → markup → in force [removals] → narrower extent → none), `LatTerritory.resolve/2` + `provenance/1`, rule 3 (whole-provision effects as outermost changes, only with no change markup); `ChangesFeed` keeps in-force qualifications and ranges
+- ✅ Pending fixtures turned green from real effect records (scrubbed ids); 3 cases now assert recorded gaps (1996/1527 Wales — unjoinable; 1993/12 s.18 — markup present, rule 3 off; 1984/22 s.20 — qualifications "Other")
+- ⬜ `LatStagedParser` loads the law's stored effects into the parse
+- ⬜ `territory_provenance` column (migration, view, persister, delta dev-only)
+- ⬜ Sanity checks + conflict report before any write
 - ⬜ Classified diff; review
+- ⬜ **Guide (Jason, 2026-10-09): "how we derive application / scope / territory / extent"** — a plain-language explanation that lands with a customer (what the terms mean, where -legal gets each fact, what a bracket and `excluded_extent` mean), plus an extended appendix listing every form of source data (markup attributes, effect fields, in-force qualifications, ranges, sentinels, gaps) with a real example and exactly how it is expressed in -legal
 
 ## Dependencies
 

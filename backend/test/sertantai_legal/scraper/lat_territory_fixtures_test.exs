@@ -18,12 +18,12 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
 
   @law "UK_ukpga_2024_1"
 
-  defp parse(body, notes, extent \\ "E+W+S") do
+  defp parse(body, notes, extent \\ "E+W+S", effects \\ []) do
     """
     <Legislation RestrictExtent="#{extent}"><Primary><Body>#{body}</Body></Primary>
     <Commentaries>#{Enum.join(List.wrap(notes))}</Commentaries></Legislation>
     """
-    |> LatParser.parse(%{law_name: @law, type_code: "ukpga"})
+    |> LatParser.parse(%{law_name: @law, type_code: "ukpga", effects: effects})
     |> Map.new(&{String.replace_prefix(&1.section_id, @law <> ":", ""), &1})
   end
 
@@ -35,6 +35,24 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       ~s|<P1group><Title>T</Title><P1><Pnumber>#{n}</Pnumber><P1para><Text>#{text_xml}</Text></P1para></P1></P1group>|
 
   defp row(rows, id), do: Map.fetch!(rows, id)
+
+  # An effect from legislation.gov.uk's changes feed (LR-03), fields as in the
+  # real records named in each test; ids scrubbed (push protection).
+  defp fx(fields) do
+    struct!(
+      SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect,
+      Keyword.merge(
+        [
+          type: "words inserted",
+          affecting: "UK_x",
+          applied: true,
+          affected_refs: [],
+          affected_ranges: []
+        ],
+        fields
+      )
+    )
+  end
 
   defp rep_s,
     do:
@@ -82,15 +100,23 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").text == "A duty [E+W: to report] applies."
     end
 
-    @tag pending: "LR-03"
-    test "note territory (no attribute)" do
+    test "effect territory, no attribute: a repeal by a Scottish Act extends only to S" do
       rows =
         parse(
           section(
             1,
-            ~s|A duty <Repeal CommentaryRef="n-rep-s" RetainText="true">to report</Repeal> applies.|
+            ~s|A duty <Repeal ChangeId="key-rs-1" RetainText="true">to report</Repeal> applies.|
           ),
-          rep_s()
+          [],
+          "E+W+S",
+          [
+            fx(
+              effect_id: "key-rs",
+              type: "words repealed",
+              effect_extent: "S",
+              affected_extent: "E+W+S"
+            )
+          ]
         )
 
       assert row(rows, "s.1").text == "A duty [E+W: to report] applies."
@@ -127,16 +153,16 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").text == "The [E+W: regulator or the] council may act."
     end
 
-    @tag pending: "LR-03"
-    test "note territory, no attribute (1990/8 s.150(1)(b) \"or 24ZA(c)\")" do
+    test "effect territorial application, no attribute (1990/8 s.150(1)(b) \"or 24ZA(c)\")" do
       rows =
         parse(
           section(
             1,
-            ~s|land within paragraph 24(c) <Addition CommentaryRef="n-ins-w">or 24ZA(c)</Addition> of that Schedule|
+            ~s|land within paragraph 24(c) <Addition ChangeId="key-w-1">or 24ZA(c)</Addition> of that Schedule|
           ),
-          ins_w(),
-          "E+W"
+          [],
+          "E+W",
+          [fx(effect_id: "key-w", territorial_application: "W", effect_extent: "E+W")]
         )
 
       assert row(rows, "s.1").text ==
@@ -207,9 +233,17 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
                "be dealt with by [S: the fire and rescue service] [E+W: the fire brigade] forthwith."
     end
 
-    @tag pending: "LR-03"
-    test "note territory, no attributes" do
-      rows = parse(pair("", "", "n-sub-s"), sub_s())
+    test "effect territory, no attributes" do
+      body =
+        section(
+          1,
+          ~s|be dealt with by <Repeal ChangeId="key-sub-1" RetainText="true" SubstitutionRef="p1">the fire brigade</Repeal><Addition ChangeId="p1">the fire and rescue service</Addition> forthwith.|
+        )
+
+      rows =
+        parse(body, [], "E+W+S", [
+          fx(effect_id: "key-sub", type: "words substituted", territorial_application: "S")
+        ])
 
       assert row(rows, "s.1").text ==
                "be dealt with by [S: the fire and rescue service] [E+W: the fire brigade] forthwith."
@@ -318,9 +352,15 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
                row(rows, "s.3")
     end
 
-    @tag pending: "LR-03"
-    test "retained for some territories (note)" do
-      rows = parse(whole_retained("", "n-rep-s"), rep_s())
+    test "retained for some territories (effect extent)" do
+      body =
+        ~s|<P1group><Title>T</Title><P1><Pnumber><Repeal ChangeId="key-r3-1" RetainText="true">3</Repeal></Pnumber><P1para><Text><Repeal ChangeId="key-r3-1" RetainText="true">The sludge shall be tested.</Repeal></Text></P1para></P1></P1group>|
+
+      rows =
+        parse(body, [], "E+W+S", [
+          fx(effect_id: "key-r3", type: "repealed", effect_extent: "S", affected_extent: "E+W+S")
+        ])
+
       assert %{text: "The sludge shall be tested.", excluded_extent: "S"} = row(rows, "s.3")
     end
 
@@ -355,27 +395,37 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.202D(1)").text == "This section applies if regulations so provide."
     end
 
-    @tag pending: "LR-03"
-    test "a Part inserted for W (note only): 2010/2214 Pt. 2B" do
+    test "a Part inserted for W (effect territorial application): 2010/2214 Pt. 2B" do
       body =
-        ~s|<Part><Number>PART 2B</Number><Title>Wales</Title><P1group><Title>T</Title><P1><Pnumber><Addition CommentaryRef="n-2b">11U</Addition></Pnumber><P1para><Text><Addition CommentaryRef="n-2b">In this regulation, a duty.</Addition></Text></P1para></P1></P1group></Part>|
+        ~s|<Part><Number>PART 2B</Number><Title>Wales</Title><P1group><Title>T</Title><P1><Pnumber><Addition ChangeId="key-2b-1">11U</Addition></Pnumber><P1para><Text><Addition ChangeId="key-2b-1">In this regulation, a duty.</Addition></Text></P1para></P1></P1group></Part>|
 
-      rows = parse(body, note("n-2b", "Pt. 2B inserted (W.) (1.7.2026) by S.I. 2025/1320"), "E+W")
+      rows =
+        parse(body, [], "E+W", [
+          fx(
+            effect_id: "key-2b",
+            type: "inserted",
+            territorial_application: "W",
+            effect_extent: "E+W",
+            affected_refs: ["part-2B"]
+          )
+        ])
+
       assert row(rows, "s.11U").excluded_extent == "E"
     end
 
-    @tag pending: "LR-03"
-    test "retained for E+W with an inner E+W insertion: plain + excluded (Q3; 1974/40 s.30(5))" do
+    test "retained for E+W with an inner E+W insertion: plain + excluded (Q3; 1974/40 s.30(5): repeal in force \"for S.\")" do
       body =
-        ~s|<P1group><Title>T</Title><P1><Pnumber>30</Pnumber><P1para><P2><Pnumber><Repeal CommentaryRef="n-30" RetainText="true">5</Repeal></Pnumber><P2para><Text><Repeal CommentaryRef="n-30" RetainText="true">Nothing applies to waste within the meaning of </Repeal><Repeal CommentaryRef="n-30" RetainText="true"><Addition CommentaryRef="n-ins-ew" Extent="E+W">Schedule 23 to the 2016 Regulations</Addition></Repeal><Repeal CommentaryRef="n-30" RetainText="true">; but regulations may—</Repeal></Text></P2para></P2></P1para></P1></P1group>|
+        ~s|<P1group><Title>T</Title><P1><Pnumber>30</Pnumber><P1para><P2><Pnumber><Repeal ChangeId="key-30-1" RetainText="true">5</Repeal></Pnumber><P2para><Text><Repeal ChangeId="key-30-1" RetainText="true">Nothing applies to waste within the meaning of </Repeal><Repeal ChangeId="key-30-1" RetainText="true"><Addition Extent="E+W">Schedule 23 to the 2016 Regulations</Addition></Repeal><Repeal ChangeId="key-30-1" RetainText="true">; but regulations may—</Repeal></Text></P2para></P2></P1para></P1></P1group>|
 
       rows =
-        parse(body, [
-          note(
-            "n-30",
-            "S. 30 repealed (1.4.2015 for S.) by Environmental Protection Act 1990 (c. 43)"
-          ),
-          ins_ew()
+        parse(body, [], "E+W+S", [
+          fx(
+            effect_id: "key-30",
+            type: "repealed",
+            effect_extent: "S+A+M+E+A+S+A+F+F+E+C+T+E+D",
+            affected_extent: "E+W+S",
+            in_force_qualifications: ["for S."]
+          )
         ])
 
       assert %{
@@ -385,27 +435,33 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
              } = row(rows, "s.30(5)")
     end
 
-    @tag pending: "LR-03"
-    test "attribute and note both name territories: union (Q1; 1996/1527 reg.16(1))" do
-      body = whole_retained(~s| Extent="S"|, "n-disapp")
-
-      notes =
-        note(
-          "n-disapp",
-          "Regulations disapplied in relation to Scotland (with effect from 1.4.2015) by virtue of Scotland Act 2012 (c. 11); S.I. 2015/638 Regulations disapplied in relation to Wales (with effect from 1.4.2018) by virtue of Wales Act 2014 (c. 29); S.I. 2018/214"
-        )
-
-      rows = parse(body, notes, "E+W+S+NI")
-      assert row(rows, "s.3").excluded_extent == "W+S"
-    end
-
-    @tag pending: "LR-03"
-    test "a signature whose parts are retained-repealed for S (1989/1263 signed.72)" do
+    test "known gap: the Wales disapplication can't be joined to the change (1996/1527 reg.16(1)) — markup S only" do
+      # the Repeal's ChangeId is not an effect id; the Wales effect ("disapplied
+      # in relation to Wales") has no territorial application: effects can't
+      # supply W, notes are never read
       body =
-        ~s|<P1group><Title>T</Title><P1><Pnumber>1</Pnumber><P1para><Text>A duty.</Text></P1para></P1></P1group><SignedSection><Signatory><Signee><PersonName><Repeal CommentaryRef="n-rev-s" RetainText="true">Jane Smith</Repeal></PersonName><JobTitle><Repeal CommentaryRef="n-rev-s" RetainText="true">Minister of State</Repeal></JobTitle><DateSigned Date="1989-07-01"/></Signee></Signatory></SignedSection>|
+        ~s|<P1group><Title>T</Title><P1><Pnumber><Repeal ChangeId="M_F_x" RetainText="true" Extent="S">3</Repeal></Pnumber><P1para><Text><Repeal ChangeId="M_F_x" RetainText="true" Extent="S">The sludge shall be tested.</Repeal></Text></P1para></P1></P1group>|
 
       rows =
-        parse(body, note("n-rev-s", "Regulations revoked (S.) (1.11.2025) by S.S.I. 2025/165"))
+        parse(body, [], "E+W+S+NI", [
+          fx(
+            effect_id: "key-w",
+            type: "disapplied in relation to Wales",
+            effect_extent: "E+W+S+N.I."
+          )
+        ])
+
+      assert row(rows, "s.3").excluded_extent == "S"
+    end
+
+    test "a signature whose parts are retained-repealed for S (1989/1263 signed.72)" do
+      body =
+        ~s|<P1group><Title>T</Title><P1><Pnumber>1</Pnumber><P1para><Text>A duty.</Text></P1para></P1></P1group><SignedSection><Signatory><Signee><PersonName><Repeal ChangeId="key-rev-1" RetainText="true">Jane Smith</Repeal></PersonName><JobTitle><Repeal ChangeId="key-rev-1" RetainText="true">Minister of State</Repeal></JobTitle><DateSigned Date="1989-07-01"/></Signee></Signatory></SignedSection>|
+
+      rows =
+        parse(body, [], "E+W+S", [
+          fx(effect_id: "key-rev", type: "revoked", effect_extent: "S", affected_extent: "E+W+S")
+        ])
 
       signed = rows |> Enum.find(fn {id, _} -> String.starts_with?(id, "signed") end) |> elem(1)
       assert signed.excluded_extent == "S"
@@ -424,39 +480,42 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
   # ── Note-only changes (no element carries the change) ──────────────────
 
   describe "note-only whole-provision changes" do
-    @tag pending: "LR-03"
-    test "a section repealed for S by a note in its number only: 1974/40 s.101" do
+    test "rule 3: a whole section repealed for S, no change markup (1974/40 s.101)" do
       body =
-        ~s|<P1group><Title>T</Title><P1><Pnumber><CommentaryRef Ref="n-101"/>101</Pnumber><P1para><Text>The Authority shall have power—</Text><P3><Pnumber>a</Pnumber><P3para><Text>to engage in activities.</Text></P3para></P3></P1para></P1></P1group>|
+        ~s|<P1group><Title>T</Title><P1 id="section-101"><Pnumber>101</Pnumber><P1para><Text>The Authority shall have power—</Text><P3 id="section-101-a"><Pnumber>a</Pnumber><P3para><Text>to engage in activities.</Text></P3para></P3></P1para></P1></P1group>|
 
       rows =
-        parse(
-          body,
-          note(
-            "n-101",
-            "S. 101 repealed (S.) (30.6.2014) by Regulatory Reform (Scotland) Act 2014 (asp 3)"
+        parse(body, [], "E+W+S+NI", [
+          fx(
+            effect_id: "key-101",
+            type: "repealed",
+            effect_extent: "S",
+            affected_extent: "E+W+S+N.I.",
+            affected_refs: ["section-101"]
           )
-        )
+        ])
 
       assert row(rows, "s.101").excluded_extent == "S"
       assert row(rows, "s.101(a)").excluded_extent == "S"
     end
 
-    @tag pending: "LR-03"
-    test "a note-only repeal adds to an element repeal for other territories: 1993/12 s.18" do
+    test "rule 3 doesn't apply where the provision carries markup (agreed): 1993/12 s.18 keeps E+W — the ss. 1-24 S repeal is a recorded gap" do
       body =
-        ~s|<P1group><Title>T</Title><P1><Pnumber><CommentaryRef Ref="n-1-24"/><Repeal CommentaryRef="n-18" RetainText="true" Extent="E+W">18</Repeal></Pnumber><P1para><P2><Pnumber><Repeal CommentaryRef="n-18" RetainText="true" Extent="E+W">2</Repeal></Pnumber><P2para><Text><Repeal CommentaryRef="n-18" RetainText="true" Extent="E+W">Where an authority take precautions, it may charge.</Repeal></Text></P2para></P2></P1para></P1></P1group>|
+        ~s|<P1group><Title>T</Title><P1 id="section-18"><Pnumber><Repeal ChangeId="key-18-1" RetainText="true" Extent="E+W">18</Repeal></Pnumber><P1para><P2 id="section-18-2"><Pnumber><Repeal ChangeId="key-18-1" RetainText="true" Extent="E+W">2</Repeal></Pnumber><P2para><Text><Repeal ChangeId="key-18-1" RetainText="true" Extent="E+W">Where an authority take precautions, it may charge.</Repeal></Text></P2para></P2></P1para></P1></P1group>|
 
-      notes = [
-        note(
-          "n-1-24",
-          "Ss. 1-24 repealed (S.) (1.9.2018) by The Environmental Authorisations (Scotland) Regulations 2018 (S.S.I. 2018/219)"
-        ),
-        note("n-18", "S. 18 repealed (E.W.) (6.4.2010) by S.I. 2010/675")
-      ]
+      rows =
+        parse(body, [], "E+W+S+NI", [
+          fx(
+            effect_id: "key-1-24",
+            type: "repealed",
+            effect_extent: "S",
+            affected_extent: "E+W+S+N.I.",
+            affected_ranges: [{"section-1", "section-24"}]
+          ),
+          fx(effect_id: "key-18", type: "repealed", effect_extent: "E+W")
+        ])
 
-      rows = parse(body, notes, "E+W+S+NI")
-      assert row(rows, "s.18(2)").excluded_extent == "E+W+S"
+      assert row(rows, "s.18(2)").excluded_extent == "E+W"
     end
 
     test "a note about words only (\"Words in s. N repealed (S.)\") never excludes the row" do
@@ -467,17 +526,23 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").excluded_extent == nil
     end
 
-    @tag pending: "LR-03"
-    test "a Part repeal \"except in relation to ss. 13-15\" doesn't touch s.13 (Q2; 1984/22)" do
-      n =
-        "Pt. II repealed (6.4.2010 for E. except in relation to ss. 13-15, 26.7.2010 for W. except in relation to ss. 13-15) by Health and Social Care Act 2008 (c. 14)"
-
+    test "a Part repeal \"except in relation to ss. 13-15\" (Q2; 1984/22): s.13 untouched; s.20 no claim — the effect's qualifications are \"Other\" (gap)" do
       body =
-        ~s|<Part><Number>Part II</Number><Title>T</Title><P1group><Title>T</Title><P1><Pnumber><Repeal CommentaryRef="n-pt2" RetainText="true">13</Repeal></Pnumber><P1para><Text><Repeal CommentaryRef="n-pt2" RetainText="true">Regulations may provide for diseases.</Repeal></Text></P1para></P1></P1group><P1group><Title>T</Title><P1><Pnumber><Repeal CommentaryRef="n-pt2" RetainText="true">20</Repeal></Pnumber><P1para><Text><Repeal CommentaryRef="n-pt2" RetainText="true">A duty to notify.</Repeal></Text></P1para></P1></P1group></Part>|
+        ~s|<Part id="part-II"><Number>Part II</Number><Title>T</Title><P1group><Title>T</Title><P1 id="section-13"><Pnumber><Repeal ChangeId="key-pt2-1" RetainText="true">13</Repeal></Pnumber><P1para><Text><Repeal ChangeId="key-pt2-1" RetainText="true">Regulations may provide for diseases.</Repeal></Text></P1para></P1></P1group><P1group><Title>T</Title><P1 id="section-20"><Pnumber><Repeal ChangeId="key-pt2-1" RetainText="true">20</Repeal></Pnumber><P1para><Text><Repeal ChangeId="key-pt2-1" RetainText="true">A duty to notify.</Repeal></Text></P1para></P1></P1group></Part>|
 
-      rows = parse(body, note("n-pt2", n), "E+W")
+      rows =
+        parse(body, [], "E+W", [
+          fx(
+            effect_id: "key-pt2",
+            type: "repealed",
+            effect_extent: "S+A+M+E+A+S+A+F+F+E+C+T+E+D",
+            in_force_qualifications: ["Other", "Other"],
+            affected_refs: ["part-II"]
+          )
+        ])
+
       assert %{excluded_extent: nil, status: "in_force"} = row(rows, "s.13")
-      assert %{excluded_extent: "E+W", status: "repealed_saved"} = row(rows, "s.20")
+      assert %{excluded_extent: nil} = row(rows, "s.20")
     end
   end
 end

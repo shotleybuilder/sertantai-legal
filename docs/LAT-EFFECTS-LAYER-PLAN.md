@@ -25,7 +25,13 @@ Where the markup is silent, LR-02 makes no claim. LR-03 fills that from effects 
 
 ## Rule (by cause, not by source) — as agreed
 
-1. **Change element joined to its effect** (EffectId from `ChangeId`): territory = effect **territorial application** if present (application first — Jason, kept after Gemini challenged it: the markup `Extent` conflates extent and application; TA is the explicit where-it-applies field) → else markup `Extent` → else **no claim**. The effect's extent (`AffectingEffectsExtent`) is never used: it is the amending provision's extent, an upper bound (probe: 104/200 "differences" were exactly this). Disjoint markup vs TA → conflict report, TA used, both in provenance.
+1. **Change element joined to its effect** (EffectId from `ChangeId`), territory in this order:
+   1. the effect's **territorial application** (TA) — where the change applies (application first: kept after Gemini challenged it);
+   2. the markup `Extent`;
+   3. for a change that **removes** text (retained repeal, a substitution's old words): the effect's structured **in-force qualifications** ("for S."; purpose-limited ones ignored) — a removal in force for S means the text is gone in S and kept elsewhere (1974/40 s.30: no TA, extent "same as affected", "for S." only here) — Jason 2026-10-09;
+   4. the effect's **extent** only when **narrower than the affected provision's extent** — a legal limit on the amendment (a Scottish Act repeals only for S: 1974/40 s.101, extent S, no TA) — never when wider or equal (Gemini's case: a UK Act making a Scotland-only change) — Jason 2026-10-09;
+   5. no claim.
+   Disjoint markup vs TA → conflict report, TA used, both in provenance.
 2. **Element not joinable** (legacy id): markup `Extent`, else no claim.
 3. **Whole provision repealed or inserted by an applied effect, with no change markup at all on the provision's rows** (modern or legacy): `excluded_extent` from the effect's territorial application on the provision and its descendants, mapped by structured refs. More specific markup/effects on a descendant override; contradictions → conflict report. Never for substitutions or word-level effects.
 4. **Unapplied effects: out of scope** — "getting ahead of the published markup" is a later session (with #171).

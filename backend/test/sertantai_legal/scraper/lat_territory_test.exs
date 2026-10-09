@@ -310,4 +310,79 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert LatTerritory.excluded([], "E+W+S") == nil
     end
   end
+
+  describe "resolve/2 and provenance/1: territory from the effects layer (LR-03)" do
+    alias SertantaiLegal.Scraper.EffectIndex
+    alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
+
+    defp fx(fields),
+      do:
+        struct!(
+          Effect,
+          Keyword.merge(
+            [type: "words inserted", affecting: "UK_x", applied: true, affected_refs: []],
+            fields
+          )
+        )
+
+    test "a change joined to its effect takes the effect's territory; the source is recorded" do
+      index = EffectIndex.new([fx(effect_id: "key-a", territorial_application: "W")])
+      change = %Change{kind: :ins, change_id: "key-a-1460361019464"}
+
+      segs =
+        LatTerritory.resolve(
+          [t("The "), {:words, change, [t("regulator ")]}, t("may act.")],
+          index
+        )
+
+      assert LatTerritory.render(segs, "E+W") == "The [W: regulator] may act."
+
+      assert LatTerritory.provenance(segs) == [
+               %{
+                 source: :effect_application,
+                 territory: "W",
+                 change_id: "key-a-1460361019464",
+                 effect_id: "key-a"
+               }
+             ]
+    end
+
+    test "markup Extent when the effect names none; no claim when neither does" do
+      index = EffectIndex.new([fx(effect_id: "key-b")])
+      marked = %Change{kind: :ins, attribute: "E", change_id: "key-b-1"}
+      silent = %Change{kind: :ins, change_id: "key-b-2"}
+
+      assert [{:words, %Change{territory: "E", source: :markup}, _}] =
+               LatTerritory.resolve([{:words, marked, [t("x")]}], index)
+
+      assert [{:words, %Change{territory: nil, source: nil}, _}] =
+               LatTerritory.resolve([{:words, silent, [t("x")]}], index)
+    end
+
+    test "a synthetic whole-provision change carries its effect id (rule 3: 1974/40 s.101)" do
+      index =
+        EffectIndex.new([
+          fx(
+            effect_id: "key-s101",
+            type: "repealed",
+            effect_extent: "S",
+            affected_extent: "E+W+S+N.I."
+          )
+        ])
+
+      segs =
+        LatTerritory.resolve(
+          [
+            {:words, %Change{kind: :keep, effect_id: "key-s101"},
+             [t("The Authority shall have power—")]}
+          ],
+          index
+        )
+
+      assert LatTerritory.excluded(segs, "E+W+S+NI") == "S"
+
+      assert [%{source: :effect_extent, effect_id: "key-s101", territory: "S"}] =
+               LatTerritory.provenance(segs)
+    end
+  end
 end

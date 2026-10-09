@@ -21,22 +21,28 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   Pure. Extent codes are "E+W+S+NI" forms; nil extent = the UK.
   """
-  alias SertantaiLegal.Scraper.{LatSegments, Territory}
+  alias SertantaiLegal.Scraper.{EffectIndex, EffectTerritory, LatSegments, Territory}
 
   defmodule Change do
     @moduledoc """
     A change in the text: `:keep` (words repealed but retained for other
     territories), `:ins` (words inserted or substituted) or `:pair` (a
-    substitution's two versions), with its `Extent` attribute and
-    commentary ref.
+    substitution's two versions), with its markup `Extent` attribute,
+    commentary ref and `ChangeId` (whose prefix is its effect's id). A
+    whole-provision change from the effects layer (rule 3) carries its
+    `effect_id` instead. `resolve/2` fills `territory` and `source`.
     """
     @enforce_keys [:kind]
-    defstruct [:kind, :attribute, :ref]
+    defstruct [:kind, :attribute, :ref, :change_id, :effect_id, :territory, :source]
 
     @type t :: %__MODULE__{
             kind: :keep | :ins | :pair,
             attribute: String.t() | nil,
-            ref: String.t() | nil
+            ref: String.t() | nil,
+            change_id: String.t() | nil,
+            effect_id: String.t() | nil,
+            territory: String.t() | nil,
+            source: atom() | nil
           }
   end
 
@@ -48,7 +54,75 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   effects layer (lat-refactor LR-03).
   """
   @spec territory(Change.t()) :: String.t() | nil
-  def territory(%Change{attribute: attribute}), do: Territory.normalize(attribute)
+  def territory(%Change{source: nil, territory: nil, attribute: attribute}),
+    do: Territory.normalize(attribute)
+
+  def territory(%Change{territory: territory}), do: territory
+
+  @doc """
+  Every change's territory from the effects layer (`EffectTerritory.claim/3`:
+  application → markup Extent → in force (removals) → narrower extent → no
+  claim), with its source; the composition rules then run unchanged.
+  """
+  @spec resolve(LatSegments.t(), EffectIndex.t()) :: LatSegments.t()
+  def resolve(segments, effects), do: Enum.map(segments, &resolve_segment(&1, effects))
+
+  defp resolve_segment({:words, change, inner}, effects),
+    do: {:words, resolve_change(change, effects), resolve(inner, effects)}
+
+  defp resolve_segment({:aside, inner}, effects), do: {:aside, resolve(inner, effects)}
+
+  defp resolve_segment({:pair, change, new, old}, effects),
+    do: {:pair, resolve_change(change, effects), resolve(new, effects), resolve(old, effects)}
+
+  defp resolve_segment({:pair_old, ref, change, inner}, effects),
+    do: {:pair_old, ref, resolve_change(change, effects), resolve(inner, effects)}
+
+  defp resolve_segment({:pair_new, id, change, inner}, effects),
+    do: {:pair_new, id, resolve_change(change, effects), resolve(inner, effects)}
+
+  defp resolve_segment(seg, _effects), do: seg
+
+  defp resolve_change(%Change{} = change, effects) do
+    effect =
+      EffectIndex.get(effects, change.effect_id) ||
+        EffectIndex.for_change(effects, change.change_id)
+
+    {territory, source} = EffectTerritory.claim(effect, change.kind, change.attribute)
+    %{change | territory: territory, source: source, effect_id: effect && effect.effect_id}
+  end
+
+  @doc """
+  Where each territory claim in resolved segments came from: one entry per
+  claim (`source`, `territory`, `change_id`, `effect_id`), in order, unique.
+  """
+  @spec provenance(LatSegments.t()) :: [map()]
+  def provenance(segments) do
+    segments
+    |> Enum.flat_map(&claims/1)
+    |> Enum.uniq()
+  end
+
+  defp claims({:words, change, inner}), do: claim_entry(change) ++ Enum.flat_map(inner, &claims/1)
+  defp claims({:aside, inner}), do: Enum.flat_map(inner, &claims/1)
+
+  defp claims({:pair, change, new, old}),
+    do: claim_entry(change) ++ Enum.flat_map(new ++ old, &claims/1)
+
+  defp claims({:pair_old, _ref, change, inner}),
+    do: claim_entry(change) ++ Enum.flat_map(inner, &claims/1)
+
+  defp claims({:pair_new, _id, change, inner}),
+    do: claim_entry(change) ++ Enum.flat_map(inner, &claims/1)
+
+  defp claims(_seg), do: []
+
+  defp claim_entry(%Change{source: nil}), do: []
+
+  defp claim_entry(%Change{} = c),
+    do: [
+      %{source: c.source, territory: c.territory, change_id: c.change_id, effect_id: c.effect_id}
+    ]
 
   # ── Pairing ──────────────────────────────────────────────────────
 
@@ -161,7 +235,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
         pair_change = %Change{
           kind: :pair,
           attribute: change.attribute || new_change.attribute,
-          ref: change.ref
+          ref: change.ref,
+          change_id: change.change_id || new_change.change_id
         }
 
         {[{:pair, pair_change, drop_moved(new), drop_moved(old)}], done}
