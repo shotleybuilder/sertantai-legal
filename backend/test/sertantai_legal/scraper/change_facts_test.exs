@@ -100,6 +100,27 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
                ChangeFacts.note(parsed(text), "amendment", [])
     end
 
+    test "an effect silent on dates (an older effect, undated InForce): the note's dates stand, marked as the note's (1995/21 s.100F)" do
+      e =
+        fx(
+          type: "added",
+          affecting: "UK_ukpga_1997_28",
+          in_force: [%{date: nil, prospective: true, qualification: nil, applied: true}]
+        )
+
+      assert %{
+               effective_from: ~D[1997-03-19],
+               changed_by: "UK_ukpga_1997_28",
+               source: :effect,
+               dates_source: :note
+             } =
+               ChangeFacts.note(
+                 parsed("Ss. 100F-100G inserted (19.3.1997) by 1997 c. 28, ss. 11, 31(4)"),
+                 "amendment",
+                 [e]
+               )
+    end
+
     test "prospective: no dates" do
       e =
         fx(
@@ -169,17 +190,62 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
       assert ChangeFacts.partial?([e], "E+W", @today)
     end
 
-    test "territorial commencement is partial until the extent is covered (Building Safety Act; Jason 2026-10-09)" do
-      e_only = fx(in_force: [at(~D[2022-06-28], "for E.")])
+    test "territorial commencement is partial while another territory's entry is still to come (Building Safety Act; Jason 2026-10-09)" do
+      w_pending = %{date: nil, prospective: true, qualification: "for W.", applied: false}
+      e_only = fx(in_force: [at(~D[2022-06-28], "for E."), w_pending])
       assert ChangeFacts.partial?([e_only], "E+W", @today)
 
       both = fx(in_force: [at(~D[2022-06-28], "for E."), at(~D[2023-09-05], "for W.")])
       refute ChangeFacts.partial?([both], "E+W", @today)
 
+      # W dated after today: still to come
+      w_later = fx(in_force: [at(~D[2022-06-28], "for E."), at(~D[2027-01-01], "for W.")])
+      assert ChangeFacts.partial?([w_later], "E+W", @today)
+
       # "for E. in so far as not already in force" completes E only
-      e_rest = fx(in_force: [at(~D[2022-06-28], "for E. in so far as not already in force")])
+      e_rest =
+        fx(in_force: [at(~D[2022-06-28], "for E. in so far as not already in force"), w_pending])
+
       assert ChangeFacts.partial?([e_rest], "E+W", @today)
       refute ChangeFacts.partial?([e_rest], "E", @today)
+    end
+
+    test "a territory the effect doesn't mention is a gap in the feed, not \"not in force\" (1995/21 s.136A: only \"1.4.2015 for S.\" listed)" do
+      s_only =
+        fx(
+          in_force: [
+            %{date: nil, prospective: true, qualification: nil, applied: true},
+            at(~D[2015-04-01], "for S.")
+          ]
+        )
+
+      refute ChangeFacts.partial?([s_only], "E+W+S+NI", @today)
+    end
+
+    test "\"except in relation to W.\" is the rest of the extent (1984/55 s.30A: E 6.4.2023, W in stages to 1.7.2026)" do
+      e =
+        fx(
+          in_force: [
+            at(~D[2023-04-06], "except in relation to W."),
+            at(~D[2023-09-05], "for W. for specified purposes"),
+            at(~D[2026-07-01], "for W. in so far as not already in force")
+          ]
+        )
+
+      refute ChangeFacts.partial?([e], "E+W", @today)
+      assert ChangeFacts.partial?([e], "E+W", ~D[2025-01-01])
+    end
+
+    test "each amendment is judged alone: one in force everywhere doesn't complete another (1984/55 s.91A(5))" do
+      ins = fx(type: "inserted", in_force: [at(~D[2006-02-01], "for specified purposes")])
+
+      words =
+        fx(
+          type: "words substituted",
+          in_force: [at(~D[2022-06-28], "for E."), at(~D[2023-09-05], "for W.")]
+        )
+
+      assert ChangeFacts.partial?([ins, words], "E+W", @today)
     end
 
     test "modifications and repeals don't commence anything; unreadable qualifiers count neither way" do
@@ -215,7 +281,7 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
           Map.new(fields)
         )
 
-    defp nt(text, sections, fields \\ []),
+    defp nt(text, sections, fields),
       do:
         Map.merge(
           %{
@@ -261,6 +327,38 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
       assert %{effective_from: ~D[2012-10-01]} = out["#{@law}:s.6(1)"]
     end
 
+    test "an ancestor's words-level change doesn't date its sub-provisions; a whole-provision one does (1995/21 s.192A(6))" do
+      ins =
+        fx(
+          effect_id: "e-ins",
+          type: "added",
+          affecting: "UK_ukpga_1997_28",
+          in_force: [at(~D[1997-03-19])]
+        )
+
+      words =
+        fx(
+          effect_id: "e-w",
+          type: "words substituted",
+          affecting: "UK_uksi_2015_664",
+          in_force: [at(~D[2015-03-12])]
+        )
+
+      {_, out} =
+        ChangeFacts.resolve(
+          [row("s.192A", effect_ids: ["e-ins", "e-w"]), row("s.192A(6)")],
+          [],
+          %{"e-ins" => ins, "e-w" => words},
+          @law,
+          today: @today
+        )
+
+      assert %{effective_from: ~D[2015-03-12]} = out["#{@law}:s.192A"]
+
+      assert %{effective_from: ~D[1997-03-19], changed_by: "UK_ukpga_1997_28"} =
+               out["#{@law}:s.192A(6)"]
+    end
+
     test "status: partial from a commencing effect on an ancestor; the effect outranks a note" do
       partly =
         fx(
@@ -288,6 +386,52 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
         )
 
       assert %{status: "in_force", status_source: :effect} = out["#{@law}:s.6"]
+    end
+
+    test "status: an amendment in force for every territory doesn't silence a commencement note no effect joined (1984/55 s.12(3))" do
+      bsa =
+        fx(
+          effect_id: "e-bsa",
+          type: "words substituted",
+          in_force: [at(~D[2022-06-28], "for E."), at(~D[2023-09-05], "for W.")]
+        )
+
+      note =
+        nt("S. 12 in force at 1.12.1984 for specified purposes, see s. 134(1)(a)", ["s.12"],
+          code_type: "commencement"
+        )
+
+      {_, out} =
+        ChangeFacts.resolve(
+          [row("s.12"), row("s.12(3)", effect_ids: ["e-bsa"])],
+          [note],
+          %{"e-bsa" => bsa},
+          @law,
+          today: @today
+        )
+
+      assert %{status: "in_force_partial", status_source: :note} = out["#{@law}:s.12(3)"]
+    end
+
+    test "status: only a commencement effect says the provision is wholly in force" do
+      cif =
+        fx(
+          effect_id: "e-c",
+          type: "coming into force",
+          in_force: [at(~D[1990-01-01], "wholly in force")]
+        )
+
+      note =
+        nt("S. 12 in force at 1.12.1984 for specified purposes", ["s.12"],
+          code_type: "commencement"
+        )
+
+      {_, out} =
+        ChangeFacts.resolve([row("s.12", effect_ids: ["e-c"])], [note], %{"e-c" => cif}, @law,
+          today: @today
+        )
+
+      assert %{status: "in_force", status_source: :effect} = out["#{@law}:s.12"]
     end
 
     test "status: with no commencing effect, a note no effect joined is the fallback, marked :note" do

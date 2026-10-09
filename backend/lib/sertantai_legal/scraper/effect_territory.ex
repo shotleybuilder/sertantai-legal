@@ -151,6 +151,23 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     if String.contains?(qualification, "purpose"), do: nil, else: all_scope(qualification)
   end
 
+  @doc """
+  The territory an in-force qualification excludes when that is all it
+  says ("except in relation to W.", give or take "in so far as not already
+  in force"): W. Nil otherwise.
+  """
+  @spec except_territory(String.t()) :: String.t() | nil
+  def except_territory(qualification) do
+    case Regex.run(
+           ~r/^except in relation to ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)\s*((in force )?(in )?so far as not already in force)?$/,
+           String.trim(qualification),
+           capture: :all_but_first
+         ) do
+      [territory | _] -> code(territory)
+      nil -> nil
+    end
+  end
+
   defp all_scope(q) do
     case {Regex.run(@except_territory, q), territory_scope(q)} do
       {nil, {territory, :all}} -> code(territory)
@@ -161,7 +178,12 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   # Not in force for this provision: the keyed effect is prospective, or
   # every qualifier is readable, names a territory and is scoped to other
   # provisions (1984/22 s.13: "for E. except in relation to ss. 13-15")
-  defp not_in_force?([%Effect{prospective: true} | _], _provision), do: true
+  # (an applied effect is in force: older effects carry an undated InForce
+  # that reads as prospective — 24,921 of them)
+  defp not_in_force?([%Effect{prospective: true, applied: applied} | _], _provision)
+       when applied != true,
+       do: true
+
   defp not_in_force?([], _provision), do: false
 
   defp not_in_force?(effects, provision) do

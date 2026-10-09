@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   force); territorial commencement is partial. Pure: `today` is passed in.
   """
 
-  alias SertantaiLegal.Scraper.{AmendmentNote, EffectTerritory, LatStatus, Territory}
+  alias SertantaiLegal.Scraper.{AmendmentNote, EffectIndex, EffectTerritory, LatStatus, Territory}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type source :: :effect | :note
@@ -30,7 +30,8 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
           effective_from: Date.t() | nil,
           changed_by: String.t() | nil,
           change_id: String.t(),
-          source: source()
+          source: source(),
+          dates_source: source() | nil
         }
 
   # the leading verb of an effect Type ("words substituted", "inserted",
@@ -79,7 +80,10 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   """
   @spec note(AmendmentNote.t(), String.t() | nil, [Effect.t()]) :: fact()
   def note(%AmendmentNote{} = parsed, _code_type, []),
-    do: parsed |> Map.from_struct() |> Map.put(:source, :note)
+    do:
+      parsed
+      |> Map.from_struct()
+      |> Map.merge(%{source: :note, dates_source: if(parsed.effective_dates != [], do: :note)})
 
   def note(%AmendmentNote{} = parsed, code_type, [first | _] = effects) do
     dated =
@@ -88,15 +92,34 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     dates = dated |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> Enum.sort(Date)
     last = Enum.max_by(dated, &elem(&1, 0), Date, fn -> {nil, first} end) |> elem(1)
 
+    # an effect silent on dates (older effects: an undated InForce) doesn't
+    # contradict the note's dates: they stand, as the note's
+    {dates, dates_source} =
+      cond do
+        dates != [] ->
+          {dates, :effect}
+
+        parsed.effective_dates != [] and not Enum.any?(effects, &prospective?/1) ->
+          {parsed.effective_dates, :note}
+
+        true ->
+          {[], nil}
+      end
+
     %{
       effect: kind(first.type, code_type),
       effective_dates: dates,
       effective_from: List.last(dates),
       changed_by: last.affecting || parsed.changed_by,
       change_id: parsed.change_id,
-      source: :effect
+      source: :effect,
+      dates_source: dates_source
     }
   end
+
+  # not in force: prospective and not applied to the text
+  defp prospective?(%Effect{prospective: true, applied: applied}), do: applied != true
+  defp prospective?(_effect), do: false
 
   @doc "The facts of an effect no note carries; `change_id` is its effect id."
   @spec effect_fact(Effect.t()) :: fact()
@@ -132,29 +155,83 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   """
   @spec partial?([Effect.t()], String.t() | nil, Date.t()) :: boolean()
   def partial?(effects, extent, today) do
-    entries =
-      for e <- effects,
-          commencing?(e),
-          f <- e.in_force || [],
-          f.date != nil and Date.compare(f.date, today) != :gt,
-          do: f.qualification
+    # the provision's own commencement and whole-provision changes complete
+    # one another (a later "wholly in force"); each words-level amendment is
+    # judged alone (1984/55 s.91A(5))
+    {whole, words} =
+      effects
+      |> Enum.filter(&commencing?/1)
+      |> Enum.split_with(&(not EffectIndex.words_level?(&1)))
 
-    # "for E. in so far as not already in force" completes E only
-    {territorial, general} = Enum.split_with(entries, &(qualifier_territory(&1) != nil))
-    territories = Enum.map(territorial, &qualifier_territory/1)
-    complete = Enum.any?(general, &(&1 == nil or Regex.match?(@complete, &1)))
-
-    covered =
-      territories != [] and extent != nil and
-        Territory.covers?(Territory.union(territories), extent)
-
-    purposes = Enum.any?(entries, &(&1 != nil and Regex.match?(@purposes, &1)))
-
-    (purposes or territories != []) and not complete and not covered
+    [whole | Enum.map(words, &[&1])]
+    |> Enum.any?(&group_partial?(&1, extent, today))
   end
 
-  defp qualifier_territory(nil), do: nil
-  defp qualifier_territory(q), do: EffectTerritory.qualifier_territory(q)
+  # Purposes: an entry in force for purposes only ("for W. for specified
+  # purposes": for W), not completed by a commenced entry for its territory
+  # (or for everything). Territories: an entry still to come (undated or
+  # after `today`) for a territory of the extent no commenced entry covers —
+  # a territory the effect doesn't mention is a gap in the feed, not "not
+  # in force" (1995/21 s.136A).
+  defp group_partial?(effects, extent, today) do
+    {commenced, pending} =
+      effects
+      |> Enum.flat_map(&(&1.in_force || []))
+      |> Enum.split_with(&(&1.date != nil and Date.compare(&1.date, today) != :gt))
+
+    entries = Enum.map(commenced, &entry(&1.qualification, extent))
+    complete = Enum.any?(entries, &match?({nil, :complete}, &1))
+    live = for({t, :complete} <- entries, t != nil, do: t) |> Territory.union()
+    covered? = fn t -> live != nil and Territory.covers?(live, t || extent) end
+
+    open_purposes =
+      Enum.any?(entries, fn
+        {t, :purposes} -> not covered?.(t)
+        _ -> false
+      end)
+
+    to_come =
+      for f <- pending,
+          {t, _} = entry(f.qualification, extent),
+          t != nil,
+          extent == nil or not Territory.disjoint?(t, extent),
+          not covered?.(t),
+          do: t
+
+    not complete and (open_purposes or to_come != [])
+  end
+
+  # {territory | nil, :complete | :purposes | :other}
+  @purpose_territory ~r/^for ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)\s*for (?:specified|certain) purposes/
+
+  defp entry(nil, _extent), do: {nil, :complete}
+
+  defp entry(q, extent) do
+    cond do
+      t = entry_territory(q, extent) ->
+        {t, :complete}
+
+      m = Regex.run(@purpose_territory, q, capture: :all_but_first) ->
+        {Territory.normalize(hd(m)), :purposes}
+
+      Regex.match?(@complete, q) ->
+        {nil, :complete}
+
+      Regex.match?(@purposes, q) ->
+        {nil, :purposes}
+
+      true ->
+        {nil, :other}
+    end
+  end
+
+  defp entry_territory(q, extent) do
+    case {EffectTerritory.qualifier_territory(q), EffectTerritory.except_territory(q)} do
+      {t, _} when t != nil -> t
+      {nil, x} when x != nil and extent != nil -> Territory.subtract(extent, x)
+      _ -> nil
+    end
+  end
 
   defp commencing?(%Effect{type: type}), do: kind(type, nil) in ~w(commenced inserted substituted)
 
@@ -198,8 +275,9 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     such effect exists, the notes that joined no effect decide (`LatStatus`
     rules), marked `:note`.
 
-  `effects`: effect id → effect. `holders`: table / figure rows → the
-  provision whose changes date them.
+  `effects`: effect id → effect. Options: `holders` (table / figure rows →
+  the provision whose changes date them), `known_laws` (register names: a
+  Welsh SI cited as plain "S.I.", `AmendmentNote.resolve_law/2`), `today`.
   """
   @spec resolve([row_in()], [note_in()], %{String.t() => Effect.t()}, String.t(), keyword()) ::
           {[fact()], %{String.t() => row_out()}}
@@ -208,9 +286,15 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     holders = Keyword.get(opts, :holders, %{})
     lookup = fn ids -> ids |> List.wrap() |> Enum.map(&effects[&1]) |> Enum.reject(&is_nil/1) end
 
+    known = Keyword.get(opts, :known_laws, MapSet.new())
+
     notes =
       Enum.map(notes, fn n ->
-        parsed = Map.get(n, :parsed) || AmendmentNote.parse(n.text, n.code_type, law_name)
+        parsed =
+          (Map.get(n, :parsed) || AmendmentNote.parse(n.text, n.code_type, law_name))
+          |> marginal(Map.get(n, :code))
+          |> then(&%{&1 | changed_by: AmendmentNote.resolve_law(&1.changed_by, known)})
+
         joined = lookup.(Map.get(n, :effect_ids))
         Map.merge(n, %{fact: note(parsed, n.code_type, joined), joined: joined})
       end)
@@ -228,9 +312,30 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
 
     out =
       Map.new(rows, fn row ->
-        levels = LatStatus.ancestors(holders[row.section_id] || row.section_id)
-        row_notes = Enum.flat_map(levels, &Map.get(note_targets, &1, []))
-        on_row = levels |> Enum.flat_map(&Map.get(row_effects, &1, [])) |> Enum.uniq()
+        [own | above] = LatStatus.ancestors(holders[row.section_id] || row.section_id)
+
+        # an ancestor passes down its whole-provision changes only: a
+        # words-level change in its own text doesn't date its sub-provisions
+        # (1995/21 s.192A(6)); a note no effect joined passes down as before
+        row_notes =
+          Map.get(note_targets, own, []) ++
+            for(
+              level <- above,
+              n <- Map.get(note_targets, level, []),
+              n.joined == [] or not Enum.all?(n.joined, &EffectIndex.words_level?/1),
+              do: n
+            )
+
+        on_row =
+          (Map.get(row_effects, own, []) ++
+             for(
+               level <- above,
+               e <- Map.get(row_effects, level, []),
+               not EffectIndex.words_level?(e),
+               do: e
+             ))
+          |> Enum.uniq()
+
         carried = row_notes |> Enum.flat_map(& &1.joined) |> MapSet.new(& &1.effect_id)
 
         facts =
@@ -260,6 +365,13 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     {Enum.map(notes, & &1.fact), out}
   end
 
+  # A marginal citation (code "M…") only refers to laws: it changes nothing,
+  # so no instrument and no dates (LH-06)
+  defp marginal(parsed, "M" <> _),
+    do: %{parsed | changed_by: nil, effective_dates: [], effective_from: nil}
+
+  defp marginal(parsed, _code), do: parsed
+
   defp status(%{status: "repealed"}, effects, fallback, _today) do
     cond do
       Enum.any?(effects, &(kind(&1.type, nil) == "repealed")) ->
@@ -273,22 +385,29 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     end
   end
 
+  # Partial from any commencing effect; wholly in force only from the
+  # provision's own commencement effects (an amendment in force everywhere
+  # says nothing about when the provision commenced); else the notes no
+  # effect joined.
   defp status(%{status: "in_force"} = row, effects, fallback, today) do
+    extent = Map.get(row, :extent_code)
+    commencements = Enum.filter(effects, &(kind(&1.type, nil) == "commenced"))
+
     cond do
-      Enum.any?(effects, &commencing?/1) ->
-        if partial?(effects, Map.get(row, :extent_code), today),
-          do: {"in_force_partial", :effect},
-          else: {"in_force", :effect}
-
-      fallback == "in_force_partial" ->
-        {"in_force_partial", :note}
-
-      true ->
-        {"in_force", :markup}
+      partial?(effects, extent, today) -> {"in_force_partial", :effect}
+      commencements != [] and dated?(commencements, today) -> {"in_force", :effect}
+      fallback == "in_force_partial" -> {"in_force_partial", :note}
+      true -> {"in_force", :markup}
     end
   end
 
   defp status(row, _effects, _fallback, _today), do: {row.status || "in_force", :markup}
+
+  defp dated?(effects, today) do
+    Enum.any?(effects, fn e ->
+      Enum.any?(e.in_force || [], &(&1.date != nil and Date.compare(&1.date, today) != :gt))
+    end)
+  end
 
   @doc """
   Table and figure rows sit inside a provision but their ids (table.3041)

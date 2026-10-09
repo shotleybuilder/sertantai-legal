@@ -558,8 +558,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
     joined = Enum.map(LatTerritory.note_effects(segments), &elem(&1, 1))
     claimed = for %{effect_id: id} <- LatTerritory.provenance(whole), id != nil, do: id
 
+    # words-level effects join through the markup only (their ref is coarse)
     named =
-      for %{effect_id: id} <- EffectIndex.on(ctx.effects, extract_xml_id(node)), id != nil, do: id
+      for %{effect_id: id} = e <- EffectIndex.on(ctx.effects, extract_xml_id(node)),
+          id != nil,
+          not EffectIndex.words_level?(e),
+          do: id
 
     Enum.uniq(joined ++ claimed ++ named)
   end

@@ -10,7 +10,11 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
       mix lat.change_diff --all --store only --out data/reports/lat-refactor/lr07-change-diff.csv
 
   Written as it goes (`<out>.done`, as `lat.text_diff`): one CSV line per
-  changed field (law_name, kind, id, field, old, new, source, class). At the
+  changed field (law_name, kind, id, field, old, new, source, cause, class).
+  `cause` separates LR-07 from parse drift: the same parse resolved from
+  notes alone (no effects — the old rules) is the baseline; `lr07` when
+  the effects change the value, `parse` when the baseline already gives
+  it (note placement, text). At the
   end `<out>.classes.csv` counts by class, and `<out>.sources.csv` counts
   each fact's source (effect / note / markup) over every note and row.
   """
@@ -23,7 +27,7 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
 
   @shortdoc "Classified diff of change metadata from effects against stored LAT (no persist)"
 
-  @header ~w(law_name kind id field old new source class)
+  @header ~w(law_name kind id field old new source cause class)
 
   @impl Mix.Task
   def run(args) do
@@ -96,27 +100,38 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
       by_id = for e <- effects, e.effect_id != nil, into: %{}, do: {e.effect_id, e}
       notes = Enum.map(notes, &%{&1 | code_type: to_string(&1.code_type)})
       holders = rows |> Enum.map(& &1.section_id) |> ChangeFacts.holders()
-      {facts, out} = ChangeFacts.resolve(rows, notes, by_id, law, holders: holders)
+      opts = [holders: holders, known_laws: known_laws()]
+      {facts, out} = ChangeFacts.resolve(rows, notes, by_id, law, opts)
+
+      # the baseline: notes alone, as before LR-07
+      {base_facts, base_out} =
+        ChangeFacts.resolve(
+          Enum.map(rows, &Map.put(&1, :effect_ids, [])),
+          Enum.map(notes, &Map.put(&1, :effect_ids, [])),
+          %{},
+          law,
+          opts
+        )
 
       stored_notes = stored_notes(law)
       stored_rows = stored_rows(law)
 
       note_lines =
-        notes
-        |> Enum.zip(facts)
-        |> Enum.flat_map(fn {n, f} ->
+        [notes, facts, base_facts]
+        |> Enum.zip()
+        |> Enum.flat_map(fn {n, f, b} ->
           case stored_notes[{n.code_type, n.code}] do
             nil ->
               []
 
             old ->
-              for {field, ov, nv} <- [
-                    {"effect", old.effect, f.effect},
-                    {"effective_from", old.effective_from, f.effective_from},
-                    {"changed_by", old.changed_by, f.changed_by}
+              for {field, ov, nv, bv} <- [
+                    {"effect", old.effect, f.effect, b.effect},
+                    {"effective_from", old.effective_from, f.effective_from, b.effective_from},
+                    {"changed_by", old.changed_by, f.changed_by, b.changed_by}
                   ],
                   ov != nv,
-                  do: line(law, "note", n.code, field, ov, nv, f.source)
+                  do: line(law, "note", n.code, field, ov, nv, f.source, cause(nv, bv))
           end
         end)
 
@@ -127,13 +142,16 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
               []
 
             old ->
-              for {field, ov, nv, source} <- [
-                    {"status", old.status, r.status, r.status_source},
-                    {"effective_from", old.effective_from, r.effective_from, r.change_source},
-                    {"changed_by", old.changed_by, r.changed_by, r.change_source}
+              b = base_out[sid]
+
+              for {field, ov, nv, bv, source} <- [
+                    {"status", old.status, r.status, b.status, r.status_source},
+                    {"effective_from", old.effective_from, r.effective_from, b.effective_from,
+                     r.change_source},
+                    {"changed_by", old.changed_by, r.changed_by, b.changed_by, r.change_source}
                   ],
                   ov != nv,
-                  do: line(law, "row", sid, field, ov, nv, source)
+                  do: line(law, "row", sid, field, ov, nv, source, cause(nv, bv))
           end
         end)
 
@@ -147,7 +165,9 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
     end
   end
 
-  defp line(law, kind, id, field, old, new, source),
+  defp cause(new, base), do: if(new == base, do: "parse", else: "lr07")
+
+  defp line(law, kind, id, field, old, new, source, cause),
     do: [
       law,
       kind,
@@ -156,7 +176,8 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
       str(old),
       str(new),
       str(source),
-      class(kind, field, old, new, source)
+      cause,
+      "#{cause}: " <> class(kind, field, old, new, source)
     ]
 
   defp class(_kind, "status", old, new, source),
@@ -204,6 +225,20 @@ defmodule Mix.Tasks.Lat.ChangeDiff do
     Map.new(rows, fn [sid, status, from, by] ->
       {sid, %{status: status, effective_from: from, changed_by: by}}
     end)
+  end
+
+  # register names, once per run (Welsh SIs cited as plain "S.I.")
+  defp known_laws do
+    case :persistent_term.get({__MODULE__, :known}, nil) do
+      nil ->
+        %{rows: rows} = Repo.query!("SELECT name FROM legal_register", [], timeout: :infinity)
+        known = rows |> List.flatten() |> MapSet.new()
+        :persistent_term.put({__MODULE__, :known}, known)
+        known
+
+      known ->
+        known
+    end
   end
 
   defp laws_with_lat do

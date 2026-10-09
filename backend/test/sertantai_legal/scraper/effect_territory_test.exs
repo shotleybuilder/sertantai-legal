@@ -277,6 +277,30 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
     end
   end
 
+  test "EffectIndex.words_level?/1: a change to words, not the provision (LR-07: its structured ref is often only the section)" do
+    for type <- [
+          "words substituted",
+          "Word inserted",
+          "sum substituted",
+          "entry omitted",
+          "s. 28 heading substituted",
+          "cross-heading inserted",
+          "definition inserted"
+        ] do
+      assert EffectIndex.words_level?(effect(type: type)), type
+    end
+
+    for type <- [
+          "inserted",
+          "repealed",
+          "substituted",
+          "coming into force",
+          "applied (with modifications)"
+        ] do
+      refute EffectIndex.words_level?(effect(type: type)), type
+    end
+  end
+
   describe "EffectTerritory.claim/3 — the agreed order" do
     test "1. territorial application first" do
       e = effect(territorial_application: "W", effect_extent: "E+W")
@@ -367,9 +391,13 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(ew, :keep, nil, "E+W") == {nil, nil}
     end
 
-    test "a removal not yet in force: prospective (LR-07)" do
-      e = effect(prospective: true)
+    test "a removal not yet in force: prospective and unapplied (LR-07)" do
+      e = effect(prospective: true, applied: false)
       assert EffectTerritory.claim(e, :keep, nil) == {nil, :effect_not_in_force}
+
+      # 24,921 applied effects carry an undated InForce read as prospective
+      # (older effects): applied, so in force
+      assert EffectTerritory.claim(effect(prospective: true), :keep, nil) == {nil, nil}
       # an insertion's territory isn't about removal
       assert EffectTerritory.claim(e, :ins, nil) == {nil, nil}
     end

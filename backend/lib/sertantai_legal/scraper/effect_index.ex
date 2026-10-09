@@ -198,6 +198,18 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   # a change to an earlier amending provision
   @type_verb ~r/^(?:(?:words?|sums?|entry|entries|heading|sub-heading|definitions?) )?(inserted|added|substituted|repealed|repeal|revoked|omitted)\b(?! in earlier amending)/
 
+  @words ~r/^(?:words?|sums?|entry|entries|figures?|definitions?|letters?|amounts?|expressions?|(?:[a-z]+\.\s*[\w()]+\s+)?(?:cross-|sub-)?headings?|titles?)\b/i
+
+  @doc """
+  True when an effect changes words in a provision, not the provision
+  (LR-07): its structured ref is often only the section ("words
+  substituted", ref `section-192A` for s.192A(b)), so it reaches a row only
+  through the row's own change markup.
+  """
+  @spec words_level?(Effect.t()) :: boolean()
+  def words_level?(%Effect{type: type}) when is_binary(type), do: Regex.match?(@words, type)
+  def words_level?(_effect), do: false
+
   @doc "True when an effect's type is a substitution (its leading verb)."
   @spec substitution?(Effect.t() | nil) :: boolean()
   def substitution?(%Effect{type: type}) when is_binary(type), do: fits?(:pair, type)
