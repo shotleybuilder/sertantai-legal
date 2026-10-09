@@ -236,6 +236,18 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert render(LatTerritory.pair_up(segs)) == "[S: being notified—]"
     end
 
+    test "a SubstitutionRef naming its own enclosing change: no pair, even with sibling pieces of that change (1968/73 s.113(5))" do
+      old = %Change{kind: :keep, attribute: "S"}
+      enclosing = %Change{kind: :ins}
+
+      segs = [
+        {:pair_new, "D", enclosing, [t("means ")]},
+        {:pair_new, "D", enclosing, [{:pair_old, "D", old, [t("any local authority")]}]}
+      ]
+
+      assert render(LatTerritory.pair_up(segs)) == "means [E+W: any local authority]"
+    end
+
     test "an unmatched half reads as ordinary words" do
       segs = [
         {:pair_old, "Z", %Change{kind: :keep, attribute: "W"}, [t("old")]},
@@ -306,13 +318,12 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
 
     test "a row judged on its subtree is live wherever any of it is (1996/1527 reg.33, 1970/40 pt.II)" do
       segs = [keep("S", [t("Most of it.")]), keep("S", [ins("E", [t("A narrow part.")])])]
-      assert LatTerritory.excluded(segs, "E+W+S", @lookup, :subtree) == "S"
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "S"
 
       assert LatTerritory.excluded(
                [t("Plain."), keep("S", [t("Kept.")])],
                "E+W+S",
-               @lookup,
-               :subtree
+               @lookup
              ) == nil
     end
 
@@ -321,12 +332,46 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
                "E+W+S"
     end
 
+    test "a narrower insertion inside a retained repeal doesn't narrow the row; it is bracketed (1967/10 s.29(1)(a))" do
+      segs = [keep("S", [t("section 11"), ins("W", [t(", 26, 26D")]), t(" of this Act")])]
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "S"
+      assert render(segs, "E+W+S", "S") == "section 11[W: , 26, 26D] of this Act"
+    end
+
+    test "an insertion inside a retained repeal but outside its live territory: live nowhere (1990/43 s.6(6A)(c))" do
+      segs = [keep("S", [ins(nil, nil, [ins("S", [t("a solvent emission activity, or")])])])]
+      assert LatTerritory.excluded(segs, "E+W+S", @lookup) == "E+W+S"
+    end
+
+    test "excluded = where none of the row's words is live; narrower inner changes keep their brackets (1993/12 s.47(1))" do
+      segs = [
+        keep("E+W", [
+          t("Defined: "),
+          ins("S", [t("the appropriate Agency")]),
+          t(" and "),
+          keep("NI", [t("the HASS Directive")])
+        ])
+      ]
+
+      assert LatTerritory.excluded(segs, "E+W+S+NI", @lookup) == "E+W"
+
+      assert render(segs, "E+W+S+NI", "E+W") ==
+               "Defined: [S: the appropriate Agency] and [S: the HASS Directive]"
+    end
+
+    test "dots inside a retained repeal are the row (the repeal marker: 1967/10 s.1(2A))" do
+      dots = ". . . . . . . ."
+      assert LatTerritory.excluded([keep("S", [t(dots)])], "E+W+S", @lookup) == "S"
+      assert render([keep("S", [t(dots)])], "E+W+S", "S") == dots
+    end
+
     test "own plain words, a pair, or a mix: nil" do
       assert LatTerritory.excluded([t("Plain "), keep("S", [t("kept")])], "E+W+S", @lookup) == nil
       assert LatTerritory.excluded([pair("S")], "E+W+S", @lookup) == nil
 
+      # nothing is live in S: excluded S (the brackets carry the rest)
       assert LatTerritory.excluded([keep("S", [t("a")]), ins("E", [t("b")])], "E+W+S", @lookup) ==
-               nil
+               "S"
 
       assert LatTerritory.excluded([], "E+W+S", @lookup) == nil
     end

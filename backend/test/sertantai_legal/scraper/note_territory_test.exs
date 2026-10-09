@@ -34,6 +34,14 @@ defmodule SertantaiLegal.Scraper.NoteTerritoryTest do
              ) == ["E+W", "S"]
     end
 
+    test "a \"(X.)\" inside the dates bracket is an in-force qualifier, not where it applies (1990/8 s.70B)" do
+      note =
+        "Ss. 70A, 70B substituted (24.8.2005 (E.) in so far as relates to s. 70A and 6.4.2009 (E.) in so far as relates to s. 70B) for s. 70A by X"
+
+      assert NoteTerritory.applies(note) == []
+      assert NoteTerritory.in_force(note) == "E"
+    end
+
     test "spelled out straight after the change" do
       assert NoteTerritory.applies(
                "Regulations disapplied in relation to Scotland (with effect from 1.4.2015) by virtue of Scotland Act 2012 (c. 11); S.I. 2015/638 Regulations disapplied in relation to Wales (with effect from 1.4.2018) by virtue of Wales Act 2014 (c. 29)"

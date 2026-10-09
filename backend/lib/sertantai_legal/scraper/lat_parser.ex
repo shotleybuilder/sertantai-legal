@@ -556,14 +556,10 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp excluded_extent(node, ctx, row_extent) do
     own = node |> text_blocks(:structural) |> join_blocks()
 
-    if LatSegments.blank?(own) do
-      node
-      |> text_blocks(:leaf)
-      |> join_blocks()
-      |> LatTerritory.excluded(row_extent, ctx.ref_territory, :subtree)
-    else
-      LatTerritory.excluded(own, row_extent, ctx.ref_territory, :own)
-    end
+    segments =
+      if LatSegments.blank?(own), do: node |> text_blocks(:leaf) |> join_blocks(), else: own
+
+    LatTerritory.excluded(segments, row_extent, ctx.ref_territory)
   end
 
   # ── Element Extraction Helpers ───────────────────────────────────

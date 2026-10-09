@@ -50,10 +50,16 @@ defmodule SertantaiLegal.Scraper.NoteTerritory do
     text
     |> clauses()
     |> Enum.flat_map(fn clause ->
-      bare =
-        @bare |> Regex.scan(clause, capture: :all_but_first) |> Enum.map(&letters_code(hd(&1)))
+      # a "(X.)" inside the dates bracket ("(24.8.2005 (E.) …)") qualifies
+      # the commencement: not where the change applies
+      outside_dates = Enum.reduce(date_groups(clause), clause, &String.replace(&2, &1, ""))
 
-      if bare == [], do: List.wrap(named(clause)), else: bare
+      bare =
+        @bare
+        |> Regex.scan(outside_dates, capture: :all_but_first)
+        |> Enum.map(&letters_code(hd(&1)))
+
+      if bare == [], do: List.wrap(named(outside_dates)), else: bare
     end)
   end
 
@@ -89,6 +95,10 @@ defmodule SertantaiLegal.Scraper.NoteTerritory do
         {:except, letters_code(hd(match))}
 
       match = Regex.run(@for_territory, part, capture: :all_but_first) ->
+        {:for, letters_code(hd(match))}
+
+      # "24.8.2005 (E.) in so far as …"
+      match = Regex.run(@bare, part, capture: :all_but_first) ->
         {:for, letters_code(hd(match))}
 
       Regex.match?(@catch_all, part) ->
