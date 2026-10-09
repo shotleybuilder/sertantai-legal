@@ -7,6 +7,11 @@ defmodule Mix.Tasks.Lat.Status do
       mix lat.status                         # dry run, every law with LAT
       mix lat.status --law UK_uksi_2012_3030 # dry run, named laws (comma-separated)
       mix lat.status --apply                 # snapshot (section_id, status) to lat_status_snapshot_<stamp>, then write
+      mix lat.status --store only            # the law's effects from the local store only
+
+  Change facts come from the effects behind each note and row (LR-07,
+  `ChangeFacts`), notes' text only where no effect joins. `--store
+  prefer|only|refresh` (default `prefer`) is how the changes feed is read.
 
   `prospective` needs the CLML `Status` attribute, so a backfill can't set it:
   rows get it on their next parse.
@@ -21,7 +26,9 @@ defmodule Mix.Tasks.Lat.Status do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _, _} = OptionParser.parse(args, strict: [law: :string, apply: :boolean])
+    {opts, _, _} =
+      OptionParser.parse(args, strict: [law: :string, apply: :boolean, store: :string])
+
     Mix.Task.run("app.start")
 
     laws =
@@ -40,7 +47,13 @@ defmodule Mix.Tasks.Lat.Status do
 
     if opts[:apply], do: snapshot!(laws)
 
-    results = Enum.map(laws, &Apply.refresh(&1, dry_run: !opts[:apply]))
+    store =
+      case opts[:store] || "prefer" do
+        m when m in ~w(prefer only refresh) -> String.to_atom(m)
+        m -> Mix.raise("--store must be prefer, only or refresh, got #{m}")
+      end
+
+    results = Enum.map(laws, &Apply.refresh(&1, dry_run: !opts[:apply], store: store))
 
     changed = Enum.filter(results, &(&1.changed > 0))
 
