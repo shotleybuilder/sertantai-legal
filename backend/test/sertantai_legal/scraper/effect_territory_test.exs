@@ -176,6 +176,44 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.orphan(index, nil) == nil
     end
 
+    test "on_provision/3: the effect type's leading verb decides its kind, not a word in its text (1990/8 Pt. 1 \"applied (with modifications) by 1993 c. 28 (as inserted)\")" do
+      applied =
+        effect(
+          effect_id: "k1",
+          type: "applied (with modifications) by 1993 c. 28, s. 70(15) (as inserted)",
+          affected_refs: ["part-I"]
+        )
+
+      earlier =
+        effect(
+          effect_id: "k2",
+          type: "words substituted in earlier amending provision S.I. 2019/419",
+          affected_refs: ["part-I"]
+        )
+
+      assert EffectIndex.on_provision(EffectIndex.new([applied]), "part-I", :ins) == nil
+      assert EffectIndex.on_provision(EffectIndex.new([earlier]), "part-I", :ins) == nil
+
+      for type <- [
+            "words inserted",
+            "sum substituted for words",
+            "added (prosp.)",
+            "entry inserted"
+          ] do
+        e = effect(effect_id: "k", type: type, affected_refs: ["s-1"])
+        assert EffectIndex.on_provision(EffectIndex.new([e]), "s-1", :ins) == e
+      end
+
+      assert EffectIndex.substitution?(effect(type: "words substituted"))
+      refute EffectIndex.substitution?(effect(type: "applied (as substituted)"))
+      refute EffectIndex.substitution?(nil)
+
+      for type <- ["repealed in part (S)", "word omitted", "repeal", "words revoked"] do
+        e = effect(effect_id: "k", type: type, affected_refs: ["s-1"])
+        assert EffectIndex.on_provision(EffectIndex.new([e]), "s-1", :keep) == e
+      end
+    end
+
     test "parallel/2: applied effects of the same type naming the same provision" do
       a =
         effect(

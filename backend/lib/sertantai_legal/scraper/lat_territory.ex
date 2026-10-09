@@ -130,8 +130,7 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
         conflict_markup: conflict,
         substitution:
           change.substitution or
-            (change.kind == :ins and effect != nil and
-               String.contains?(effect.type || "", "substitut"))
+            (change.kind == :ins and EffectIndex.substitution?(effect))
     }
   end
 

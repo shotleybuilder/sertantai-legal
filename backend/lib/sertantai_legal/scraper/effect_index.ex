@@ -192,9 +192,27 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
     end
   end
 
-  defp fits?(:ins, type), do: String.match?(type, ~r/insert|added|substitut/)
-  defp fits?(:keep, type), do: String.match?(type, ~r/repeal|revok|omit/)
-  defp fits?(:pair, type), do: String.contains?(type, "substitut")
+  # the type's leading verb, after an optional noun ("words substituted",
+  # "sum substituted for words", "repealed in part (S)"); never a word later
+  # in its text ("applied (with modifications) … (as inserted)": 1990/8) or
+  # a change to an earlier amending provision
+  @type_verb ~r/^(?:(?:words?|sums?|entry|entries|heading|sub-heading|definitions?) )?(inserted|added|substituted|repealed|repeal|revoked|omitted)\b(?! in earlier amending)/
+
+  @doc "True when an effect's type is a substitution (its leading verb)."
+  @spec substitution?(Effect.t() | nil) :: boolean()
+  def substitution?(%Effect{type: type}) when is_binary(type), do: fits?(:pair, type)
+  def substitution?(_effect), do: false
+
+  defp fits?(kind, type) do
+    case Regex.run(@type_verb, type, capture: :all_but_first) do
+      [verb] -> verb in kind_verbs(kind)
+      nil -> false
+    end
+  end
+
+  defp kind_verbs(:ins), do: ~w(inserted added substituted)
+  defp kind_verbs(:keep), do: ~w(repealed repeal revoked omitted)
+  defp kind_verbs(:pair), do: ~w(substituted)
 
   @doc """
   Join each change id that joins no effect (an orphan `key-` id, or a legacy

@@ -13,6 +13,7 @@ defmodule Mix.Tasks.Lat.TextDiff do
   (law_name, section_id, change, kind, classes, old_text, new_text,
   old_excluded, new_excluded) and the law is added to `<out>.done`, so an
   interrupted run loses nothing and a re-run skips the laws already done.
+  With no `<out>.done` the run is fresh: the CSVs are started anew.
   A row is changed when its text, title, excluded_extent or extent_code
   differ. `kind` is `reordered` (same words: the list-text fix) or `other`;
   `classes` (`LatDiffClass`, "; "-joined) says how, e.g.
@@ -56,10 +57,13 @@ defmodule Mix.Tasks.Lat.TextDiff do
 
     done_path = out <> ".done"
     File.mkdir_p!(Path.dirname(out))
-    unless File.exists?(out), do: File.write!(out, CSV.dump_to_iodata([@header]))
     checks_out = out <> ".checks.csv"
+    # no .done: a fresh run, never appended to an earlier run's rows
+    fresh? = not File.exists?(done_path)
 
-    unless File.exists?(checks_out),
+    if fresh? or not File.exists?(out), do: File.write!(out, CSV.dump_to_iodata([@header]))
+
+    if fresh? or not File.exists?(checks_out),
       do: File.write!(checks_out, CSV.dump_to_iodata([~w(law_name section_id check detail)]))
 
     done =
