@@ -583,15 +583,16 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
        do: :same
 
   defp compose(%Change{kind: :keep} = change, live, _whole) do
-    case {territory(change), change.effect_id} do
-      # no effect joined: no claim — a missed join (a legacy id) is not
-      # "everywhere" (1967/10 s.28: "Act repealed (S.)")
-      {nil, nil} -> :same
-      # its effect names no territory: repealed everywhere, its text kept
-      # for savings or purposes (LR-07); a whole-provision repeal from the
-      # effects (rule 3, no text retained) is status, not territory
-      {nil, _effect} -> if change.synthetic, do: :same, else: nil
-      {t, _effect} -> if live == nil, do: nil, else: Territory.subtract(live, t)
+    case territory(change) do
+      # its effect shows it reaches everywhere (savings, purposes, its
+      # extent): repealed everywhere, its text kept (LR-07); a whole-provision
+      # repeal from the effects (rule 3, no text retained) is status, not
+      # territory
+      nil when change.source == :effect_everywhere and not change.synthetic -> nil
+      # else no claim: a missed join or a silent effect is not "everywhere"
+      # (1967/10 s.28; 1988/52 s.4(6))
+      nil -> :same
+      t -> if live == nil, do: nil, else: Territory.subtract(live, t)
     end
   end
 

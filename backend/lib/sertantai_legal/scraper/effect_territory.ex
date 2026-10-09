@@ -18,12 +18,16 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
      never when wider or equal; "same as affected" is no territory;
   6. for a removal whose qualifiers name a territory that can't be read
      here: none — `{nil, :effect_unreadable}`; it removes nothing;
-  7. no claim — for a removal, nothing names a territory: repealed
-     everywhere, its text kept for savings or purposes (LR-07).
+  7. for a removal whose effect shows it reaches everywhere — in force for
+     purposes only, with savings, or an effect extent covering the row's
+     (1989/14 s.3(5): "Act repealed (S.)" on S rows): `{nil,
+     :effect_everywhere}`, repealed everywhere, its text kept (LR-07);
+  8. no claim — an effect silent on territory is not "everywhere"
+     (1988/52 s.4(6): "repealed (E.W.)", no territory in the feed).
 
   Returns `{territory | nil, source | nil}` with source `:effect_application`,
-  `:markup`, `:effect_in_force`, `:effect_not_in_force`, `:effect_extent` or
-  `:effect_unreadable`. Notes are never read.
+  `:markup`, `:effect_in_force`, `:effect_not_in_force`, `:effect_extent`,
+  `:effect_unreadable` or `:effect_everywhere`. Notes are never read.
   Pure.
   """
 
@@ -37,6 +41,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
           | :effect_not_in_force
           | :effect_extent
           | :effect_unreadable
+          | :effect_everywhere
 
   @doc """
   The territory of a change of `kind` with markup `attribute`, from its
@@ -67,7 +72,9 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
       {:effect_not_in_force,
        fn -> kind in [:keep, :pair] and not_in_force?(effects, provision) and :none end},
       {:effect_extent, fn -> effects != [] and narrower_extent(hd(effects), row_extent) end},
-      {:effect_unreadable, fn -> kind in [:keep, :pair] and territorial?(effects) and :none end}
+      {:effect_unreadable, fn -> kind in [:keep, :pair] and territorial?(effects) and :none end},
+      {:effect_everywhere,
+       fn -> kind in [:keep, :pair] and everywhere?(effects, row_extent) and :none end}
     ]
     |> Enum.find_value({nil, nil}, fn {source, value} ->
       case value.() do
@@ -196,6 +203,19 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
           scope_kind?(elem(territory_scope(q), 1), provision) and
           not in_scope?(elem(territory_scope(q), 1), provision)
       end)
+  end
+
+  # positive evidence a removal reaches the whole row: purposes, savings, or
+  # an effect extent covering the row's
+  defp everywhere?([], _row_extent), do: false
+
+  defp everywhere?([keyed | _] = effects, row_extent) do
+    qualifiers = Enum.flat_map(effects, & &1.in_force_qualifications)
+    extent = code(keyed.effect_extent)
+
+    Enum.any?(qualifiers, &String.contains?(&1, "purpose")) or
+      Enum.any?(effects, &((&1.savings || []) != [])) or
+      (extent != nil and row_extent != nil and Territory.covers?(extent, row_extent))
   end
 
   # some qualifier names a territory

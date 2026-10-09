@@ -387,8 +387,23 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       asp = effect(effect_extent: "S", affected_extent: "S")
       assert EffectTerritory.claim(asp, :keep, nil, "E+S") == {"S", :effect_extent}
 
+      # an extent equal to the row's isn't narrower: no territory; it
+      # reaches the whole row (LR-07, as 1989/14 s.3(5))
       ew = effect(effect_extent: "E+W", affected_extent: nil)
-      assert EffectTerritory.claim(ew, :keep, nil, "E+W") == {nil, nil}
+      assert EffectTerritory.claim(ew, :keep, nil, "E+W") == {nil, :effect_everywhere}
+
+      # 2000/37 s.1(4)(a) as in the feed: territorial qualifiers it can't
+      # read win — nothing removed
+      pilot =
+        effect(
+          effect_extent: "E+W",
+          in_force_qualifications: [
+            "for E. in relation to the pilot areas",
+            "for E. for specified purposes"
+          ]
+        )
+
+      assert EffectTerritory.claim(pilot, :keep, nil, "E+W") == {nil, :effect_unreadable}
     end
 
     test "a removal not yet in force: prospective and unapplied (LR-07)" do
@@ -402,9 +417,21 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(e, :ins, nil) == {nil, nil}
     end
 
-    test "a removal in force for purposes only names no territory: no claim (LR-07: repealed everywhere, saved)" do
-      e = effect(in_force_qualifications: ["for specified purposes"])
-      assert EffectTerritory.claim(e, :keep, nil) == {nil, nil}
+    test "everywhere needs positive evidence: purposes, savings, or an effect extent covering the row (LR-07 text-diff run 3)" do
+      purposes = effect(in_force_qualifications: ["for specified purposes"])
+      assert EffectTerritory.claim(purposes, :keep, nil) == {nil, :effect_everywhere}
+
+      saved = effect(savings: ["section-71-3"])
+      assert EffectTerritory.claim(saved, :keep, nil) == {nil, :effect_everywhere}
+
+      # 1989/14 s.3(5)(aa): "Act repealed (S.)" on an S-only row
+      s_row = effect(effect_extent: "S", affected_extent: "E+W+S")
+      assert EffectTerritory.claim(s_row, :keep, nil, "S") == {nil, :effect_everywhere}
+
+      # silent: no claim (1988/52 s.4(6): "repealed (E.W.)" with no territory in the feed)
+      assert EffectTerritory.claim(effect([]), :keep, nil, "E+W+S") == {nil, nil}
+      # an insertion is never "everywhere"
+      assert EffectTerritory.claim(saved, :ins, nil) == {nil, nil}
     end
 
     test "5. nothing names one: no claim" do

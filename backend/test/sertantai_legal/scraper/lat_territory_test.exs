@@ -199,17 +199,25 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
   end
 
   describe "excluded/3: whole-row territory" do
-    test "all retained: the repeals' territories; a joined effect naming none → the whole extent (LR-07: savings / purposes); no effect → no claim" do
+    test "all retained: the repeals' territories; an effect evidencing everywhere → the whole extent (LR-07: savings / purposes); else no claim" do
       assert LatTerritory.excluded([keep("S", [t("All.")])], "E+W+S") == "S"
       assert LatTerritory.excluded([keep(nil, [t("All.")])], "E+W+S") == nil
 
-      joined = {:words, %Change{kind: :keep, effect_id: "key-e"}, [t("All.")]}
-      assert LatTerritory.excluded([joined], "E+W+S") == "E+W+S"
+      silent = {:words, %Change{kind: :keep, effect_id: "key-e"}, [t("All.")]}
+      assert LatTerritory.excluded([silent], "E+W+S") == nil
+
+      everywhere =
+        {:words, %Change{kind: :keep, effect_id: "key-e", source: :effect_everywhere},
+         [t("All.")]}
+
+      assert LatTerritory.excluded([everywhere], "E+W+S") == "E+W+S"
 
       # a whole-provision repeal from the effects (rule 3: dots, no text
       # retained) is status `repealed`, not a territory (LR-07 run 2)
       synthetic =
-        {:words, %Change{kind: :keep, effect_id: "key-e", synthetic: true}, [t(". . .")]}
+        {:words,
+         %Change{kind: :keep, effect_id: "key-e", synthetic: true, source: :effect_everywhere},
+         [t(". . .")]}
 
       assert LatTerritory.excluded([synthetic], "E+W+S") == nil
     end
