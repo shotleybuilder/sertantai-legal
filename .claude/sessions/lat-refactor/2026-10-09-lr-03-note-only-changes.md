@@ -26,8 +26,8 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 - ⬜ Change territory from effects for elements without `Extent`; note text only where no effect exists, flagged as such (or the amending law)
 - ✅ Territory from effects (test-first): `EffectIndex` (by id, by ref, ranges expanded in document order), `EffectTerritory.claim/3` (application → markup → in force [removals] → narrower extent → none), `LatTerritory.resolve/2` + `provenance/1`, rule 3 (whole-provision effects as outermost changes, only with no change markup); `ChangesFeed` keeps in-force qualifications and ranges
 - ✅ Pending fixtures turned green from real effect records (scrubbed ids); 3 cases now assert recorded gaps (1996/1527 Wales — unjoinable; 1993/12 s.18 — markup present, rule 3 off; 1984/22 s.20 — qualifications "Other")
-- ⬜ `LatStagedParser` loads the law's stored effects into the parse
-- ⬜ `territory_provenance` column (migration, view, persister, delta dev-only)
+- ✅ `LatStagedParser` loads the law's stored effects into the parse (same store mode as its CLML; off in tests via `config :lat_effects`)
+- ✅ `territory_provenance` column — `jsonb[]` (`{:array, :map}`, as `actors`), one Ash-generated migration edited only for the `lat` view; delta dev-only. First attempt used `jsonb` and was reshaped around the mistake — corrected at source after Jason's challenge (rollback, stray files removed, regenerated)
 - ⬜ Sanity checks + conflict report before any write
 - ⬜ Classified diff; review
 - ⬜ **Guide (Jason, 2026-10-09): "how we derive application / scope / territory / extent"** — a plain-language explanation that lands with a customer (what the terms mean, where -legal gets each fact, what a bracket and `excluded_extent` mean), plus an extended appendix listing every form of source data (markup attributes, effect fields, in-force qualifications, ranges, sentinels, gaps) with a real example and exactly how it is expressed in -legal
