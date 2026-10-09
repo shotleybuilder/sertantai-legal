@@ -95,6 +95,26 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
       if(is_binary(ref) and String.starts_with?(ref, "key-"), do: get(index, ref))
   end
 
+  @doc """
+  The effect and its parallels: applied effects of the same type naming the
+  same provision — legislation.gov.uk records one change made separately for
+  E and for W (or S and NI) by two instruments, keying the markup to only one
+  of them (uksi 2000/1043 reg.11(3)). The effect itself first.
+  """
+  @spec parallel(t(), Effect.t()) :: [Effect.t()]
+  def parallel(index, %Effect{} = effect) do
+    others =
+      (effect.affected_refs || [])
+      |> Enum.flat_map(&on(index, &1))
+      |> Enum.filter(
+        &(&1.effect_id != effect.effect_id and &1.applied == true and &1.type == effect.type and
+            &1.affected_provisions == effect.affected_provisions)
+      )
+      |> Enum.uniq_by(& &1.effect_id)
+
+    [effect | others]
+  end
+
   @doc "Effects naming this provision (by structured ref)."
   @spec on(t(), String.t() | nil) :: [Effect.t()]
   def on(_index, nil), do: []

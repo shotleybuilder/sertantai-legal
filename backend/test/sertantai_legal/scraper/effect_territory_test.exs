@@ -73,6 +73,35 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.on(index, "section-29") == []
     end
 
+    test "parallel/2: applied effects of the same type naming the same provision" do
+      a =
+        effect(
+          effect_id: "k1",
+          type: "substituted",
+          affected_provisions: "reg. 11(3)",
+          affected_refs: ["regulation-11-3"]
+        )
+
+      b =
+        effect(
+          effect_id: "k2",
+          type: "substituted",
+          affected_provisions: "reg. 11(3)",
+          affected_refs: ["regulation-11-3"]
+        )
+
+      c =
+        effect(
+          effect_id: "k3",
+          type: "words inserted",
+          affected_provisions: "reg. 11(3)",
+          affected_refs: ["regulation-11-3"]
+        )
+
+      index = EffectIndex.new([a, b, c])
+      assert EffectIndex.parallel(index, a) |> Enum.map(& &1.effect_id) == ["k1", "k2"]
+    end
+
     test "whole-provision effects: applied repeals/insertions of the provision only" do
       repeal = effect(effect_id: "k1", type: "repealed", affected_refs: ["section-101"])
       words = effect(effect_id: "k2", type: "words repealed", affected_refs: ["section-101"])
@@ -154,10 +183,17 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(effect([]), :ins, nil) == {nil, nil}
     end
 
-    test "markup and application disjoint: a conflict (application used)" do
-      e = effect(territorial_application: "S")
-      assert EffectTerritory.conflict?(e, "E+W")
-      refute EffectTerritory.conflict?(e, "E+W+S")
+    test "parallel effects (same type, same provision) union their applications (Jason 2026-10-09)" do
+      e = effect(effect_id: "k1", type: "substituted", territorial_application: "E")
+      w = effect(effect_id: "k2", type: "substituted", territorial_application: "W")
+      assert EffectTerritory.claim([e, w], :ins, nil) == {"E+W", :effect_application}
+    end
+
+    test "markup disjoint from the application: the markup wins, reported as a conflict (uksi 2000/1043 reg.11(3))" do
+      e = effect(territorial_application: "E")
+      assert EffectTerritory.claim(e, :ins, "W") == {"W", :markup}
+      assert EffectTerritory.conflict?(e, "W")
+      refute EffectTerritory.conflict?(e, "E+W")
       refute EffectTerritory.conflict?(effect([]), "E+W")
     end
   end

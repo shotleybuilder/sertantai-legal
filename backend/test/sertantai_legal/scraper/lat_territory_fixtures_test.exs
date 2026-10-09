@@ -499,6 +499,31 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.101(a)").excluded_extent == "S"
     end
 
+    test "rule 3 applies when the provision's markup can't join any effect (legacy ids: 1974/37 s.78, Jason 2026-10-09)" do
+      body =
+        ~s|<P1group><Title>T</Title><P1 id="section-78"><Pnumber>78</Pnumber><P1para><P2 id="section-78-1"><Pnumber><Repeal ChangeId="d29p6309" RetainText="true">1</Repeal></Pnumber><P2para><Text><Repeal ChangeId="d29p6309" RetainText="true">The 1971 Act shall be amended.</Repeal></Text></P2para></P2></P1para></P1></P1group>|
+
+      rows =
+        parse(body, [], "E+W+S", [
+          fx(
+            effect_id: "key-78ew",
+            type: "repealed",
+            effect_extent: "E+W",
+            affected_extent: "E+W+S",
+            affected_refs: ["section-78"]
+          ),
+          fx(
+            effect_id: "key-78s",
+            type: "repealed",
+            effect_extent: "S",
+            affected_extent: "E+W+S",
+            affected_refs: ["section-78"]
+          )
+        ])
+
+      assert row(rows, "s.78(1)").excluded_extent == "E+W+S"
+    end
+
     test "rule 3 doesn't apply where the provision carries markup (agreed): 1993/12 s.18 keeps E+W — the ss. 1-24 S repeal is a recorded gap" do
       body =
         ~s|<P1group><Title>T</Title><P1 id="section-18"><Pnumber><Repeal ChangeId="key-18-1" RetainText="true" Extent="E+W">18</Repeal></Pnumber><P1para><P2 id="section-18-2"><Pnumber><Repeal ChangeId="key-18-1" RetainText="true" Extent="E+W">2</Repeal></Pnumber><P2para><Text><Repeal ChangeId="key-18-1" RetainText="true" Extent="E+W">Where an authority take precautions, it may charge.</Repeal></Text></P2para></P2></P1para></P1></P1group>|

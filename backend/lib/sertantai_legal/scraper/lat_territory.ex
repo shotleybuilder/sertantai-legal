@@ -107,12 +107,15 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       EffectIndex.get(index, change.effect_id) ||
         EffectIndex.for(index, change.change_id, change.ref)
 
-    {territory, source} = EffectTerritory.claim(effect, change.kind, change.attribute, row_extent)
+    effects = if effect, do: EffectIndex.parallel(index, effect), else: []
 
-    # markup disjoint from the effect's application: the application is used,
-    # the markup kept on the claim for the conflict report
+    {territory, source} =
+      EffectTerritory.claim(effects, change.kind, change.attribute, row_extent)
+
+    # markup disjoint from the (unioned) application: the markup is used,
+    # and kept on the claim for the conflict report
     conflict =
-      if EffectTerritory.conflict?(effect, change.attribute),
+      if EffectTerritory.conflict?(effects, change.attribute),
         do: Territory.normalize(change.attribute)
 
     %{

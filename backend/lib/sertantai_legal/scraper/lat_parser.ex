@@ -600,16 +600,17 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   # Rule 3 (LR-03): an applied effect repealing or inserting this whole
-  # provision, when the provision carries no change markup at all (modern or
-  # legacy), is an outermost change on it and its descendants
-  # (1974/40 s.101 "repealed (S.)": no Repeal element).
+  # provision, when none of the provision's change markup joins an effect
+  # (none at all, or legacy ids only — Jason 2026-10-09), is an outermost
+  # change on it and its descendants (1974/40 s.101 "repealed (S.)": no
+  # Repeal element; 1974/37 s.78: d29p ids).
   defp with_whole_provision_effects(ctx, node) do
     case EffectIndex.whole_provision(ctx.effects, extract_xml_id(node)) do
       [] ->
         ctx
 
       effects ->
-        if change_markup?(node) do
+        if joinable_markup?(node, ctx.effects) do
           ctx
         else
           held = MapSet.new(ctx.provision_changes, & &1.effect_id)
@@ -625,8 +626,14 @@ defmodule SertantaiLegal.Scraper.LatParser do
     end
   end
 
-  defp change_markup?(node),
-    do: xpath(node, ~x"(.//Addition | .//Substitution | .//Repeal)[1]"o) != nil
+  defp joinable_markup?(node, effects) do
+    node
+    |> xpath(~x".//Addition | .//Substitution | .//Repeal"l)
+    |> Enum.any?(fn el ->
+      EffectIndex.for(effects, change_id(el), blank_to_nil(xpath(el, ~x"./@CommentaryRef"s))) !=
+        nil
+    end)
+  end
 
   # ── Element Extraction Helpers ───────────────────────────────────
 

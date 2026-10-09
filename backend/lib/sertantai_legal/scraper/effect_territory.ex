@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   A change's territory from its effect and its markup (lat-refactor LR-03;
   plan `docs/LAT-EFFECTS-LAYER-PLAN.md`, decisions by Jason 2026-10-09).
 
-  `claim/3` — in this order:
+  `claim/4` — in this order:
   1. the effect's territorial application — where the change applies;
   2. the markup `Extent`;
   3. for a change that removes text (`:keep`, `:pair`): the effect's
@@ -25,15 +25,32 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
 
   @type source :: :effect_application | :markup | :effect_in_force | :effect_extent
 
-  @doc "The territory of a change of `kind` with markup `attribute`, from its effect."
-  @spec claim(Effect.t() | nil, :keep | :ins | :pair, String.t() | nil, String.t() | nil) ::
+  @doc """
+  The territory of a change of `kind` with markup `attribute`, from its
+  effect and that effect's parallels (`EffectIndex.parallel/2`: their
+  territorial applications are unioned). A markup `Extent` disjoint from
+  the application wins (a parallel change keyed to the wrong effect) and
+  is reported (`conflict?/2`) — Jason 2026-10-09.
+  """
+  @spec claim(
+          Effect.t() | [Effect.t()] | nil,
+          :keep | :ins | :pair,
+          String.t() | nil,
+          String.t() | nil
+        ) ::
           {String.t() | nil, source() | nil}
-  def claim(effect, kind, attribute, row_extent \\ nil) do
+  def claim(effects, kind, attribute, row_extent \\ nil) do
+    effects = effects |> List.wrap() |> Enum.reject(&is_nil/1)
+    application = application(effects)
+    markup = Territory.normalize(attribute)
+
     [
-      {:effect_application, fn -> effect && code(effect.territorial_application) end},
-      {:markup, fn -> Territory.normalize(attribute) end},
-      {:effect_in_force, fn -> (kind in [:keep, :pair] and effect) && in_force(effect) end},
-      {:effect_extent, fn -> effect && narrower_extent(effect, row_extent) end}
+      {:markup,
+       fn -> application && markup && Territory.disjoint?(application, markup) && markup end},
+      {:effect_application, fn -> application end},
+      {:markup, fn -> markup end},
+      {:effect_in_force, fn -> kind in [:keep, :pair] and in_force(effects) end},
+      {:effect_extent, fn -> effects != [] and narrower_extent(hd(effects), row_extent) end}
     ]
     |> Enum.find_value({nil, nil}, fn {source, value} ->
       case value.() do
@@ -43,15 +60,22 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     end)
   end
 
-  @doc "True when the markup Extent and the effect's territorial application share no territory."
-  @spec conflict?(Effect.t() | nil, String.t() | nil) :: boolean()
-  def conflict?(effect, attribute) do
-    with %Effect{} <- effect,
-         ta when ta != nil <- code(effect.territorial_application),
-         attr when attr != nil <- Territory.normalize(attribute) do
-      Territory.disjoint?(ta, attr)
+  @doc "True when the markup Extent and the (unioned) territorial application share no territory."
+  @spec conflict?(Effect.t() | [Effect.t()] | nil, String.t() | nil) :: boolean()
+  def conflict?(effects, attribute) do
+    with application when application != nil <-
+           effects |> List.wrap() |> Enum.reject(&is_nil/1) |> application(),
+         markup when markup != nil <- Territory.normalize(attribute) do
+      Territory.disjoint?(application, markup)
     else
       _ -> false
+    end
+  end
+
+  defp application(effects) do
+    case effects |> Enum.map(&code(&1.territorial_application)) |> Enum.reject(&is_nil/1) do
+      [] -> nil
+      codes -> Territory.union(codes)
     end
   end
 
@@ -63,8 +87,9 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   # "for E." → E; "except in relation to W." → everywhere but W; purposes,
   # or an except-clause naming provisions ("except in relation to ss.
   # 13-15"), make a qualifier unusable
-  defp in_force(%Effect{in_force_qualifications: qualifications}) do
-    qualifications
+  defp in_force(effects) do
+    effects
+    |> Enum.flat_map(& &1.in_force_qualifications)
     |> Enum.reject(&String.contains?(&1, "purpose"))
     |> Enum.flat_map(fn q ->
       except = Regex.run(@except_territory, q, capture: :all_but_first)

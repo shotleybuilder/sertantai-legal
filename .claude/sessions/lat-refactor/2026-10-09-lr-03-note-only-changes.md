@@ -28,9 +28,9 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 - ✅ Pending fixtures turned green from real effect records (scrubbed ids); 3 cases now assert recorded gaps (1996/1527 Wales — unjoinable; 1993/12 s.18 — markup present, rule 3 off; 1984/22 s.20 — qualifications "Other")
 - ✅ `LatStagedParser` loads the law's stored effects into the parse (same store mode as its CLML; off in tests via `config :lat_effects`)
 - ✅ `territory_provenance` column — `jsonb[]` (`{:array, :map}`, as `actors`), one Ash-generated migration edited only for the `lat` view; delta dev-only. First attempt used `jsonb` and was reshaped around the mistake — corrected at source after Jason's challenge (rollback, stray files removed, regenerated)
-- ⬜ Sanity checks + conflict report before any write
+- ✅ Sanity checks + conflict report (`LatTerritoryCheck`; `lat.text_diff` → `.checks.csv`)
 - ⬜ Classified diff; review
-- ⬜ **Guide (Jason, 2026-10-09): "how we derive application / scope / territory / extent"** — a plain-language explanation that lands with a customer (what the terms mean, where -legal gets each fact, what a bracket and `excluded_extent` mean), plus an extended appendix listing every form of source data (markup attributes, effect fields, in-force qualifications, ranges, sentinels, gaps) with a real example and exactly how it is expressed in -legal
+- ⏸️ Guide (application / scope / territory / extent) → moved to **LR-06** (Jason: "defer guide to the right session"): it needs the final rules (LR-07 adds status from effects) and the final corpus for its appendix
 
 ## Dependencies
 
@@ -71,3 +71,6 @@ Rescoped 2026-10-09 (Jason: "we're going the wrong way in the chain"). Changes t
 
 - **Full fetch**: 1,068 laws, 204,622 effects, 0 errors (one retried timeout); 35 MB raw feeds stored. **Probe** (`lr03_probe.py`, `lr03_noelement.py`): modern F notes → effect 95.7%; insertions → effect 200,322/281,160, retained repeals 17,000/20,548 (rest legacy ids); attribute vs effect 15,170 agree / 2,373 differ — not conflicts: effect *extent* is the amending provision's (upper bound), TA is narrower application; 2/200 disjoint. No-element territorial effects: schedules 20,167, scoped-out 17,976, dots 3,806, text present 9,312 applied + 3,160 unapplied.
 - **Decisions** (Jason, after Gemini): application first kept; effect extent never used; rule 3 only whole-provision repeal/insert with no markup at all; structured provenance with ids (row column); sanity checks + conflict report before any write; no golden set (corpus patterns are the test); notes unused today (future untrusted hint); **unapplied effects → a later session** (getting ahead of the markup, with #171).
+
+- **Corpus diff run 1** (`lr03-diff.csv`): 14,025 rows; agent review of ~205 sampled rows + 46 check findings found code defects, fixed test-first: ranges took a duplicated id's last occurrence (versions; ~7,751 wrong hits / 5 laws); `OtherQualification` never read (~1,700 territorial qualifications) and unapplied in-force entries counted; except-clauses; nil AffectedExtent read as UK (devolved instruments) → law extent; effect extent now measured against the row's extent; an insertion inside a retained repeal didn't narrow (text vs column contradiction); substitution new words excluded the rest; `M_F_` ids join by key- CommentaryRef; checks skipped wordless rows / child extent.
+- **Decisions after review** (Jason): parallel effects union their applications, markup wins when disjoint (reported); rule 3 applies when the provision's markup can't join any effect.

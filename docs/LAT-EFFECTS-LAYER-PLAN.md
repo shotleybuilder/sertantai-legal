@@ -25,20 +25,21 @@ Where the markup is silent, LR-02 makes no claim. LR-03 fills that from effects 
 
 ## Rule (by cause, not by source) — as agreed
 
-1. **Change element joined to its effect** (EffectId from `ChangeId`), territory in this order:
-   1. the effect's **territorial application** (TA) — where the change applies (application first: kept after Gemini challenged it);
-   2. the markup `Extent`;
-   3. for a change that **removes** text (retained repeal, a substitution's old words): the effect's structured **in-force qualifications** ("for S."; purpose-limited ones ignored) — a removal in force for S means the text is gone in S and kept elsewhere (1974/40 s.30: no TA, extent "same as affected", "for S." only here) — Jason 2026-10-09;
-   4. the effect's **extent** only when **narrower than the affected provision's extent** — a legal limit on the amendment (a Scottish Act repeals only for S: 1974/40 s.101, extent S, no TA) — never when wider or equal (Gemini's case: a UK Act making a Scotland-only change) — Jason 2026-10-09;
-   5. no claim.
-   Disjoint markup vs TA → conflict report, TA used, both in provenance.
+1. **Change element joined to its effect** — by the effect id in its `ChangeId`, else by a `key-` commentary ref (the effect id itself; `M_F_` ChangeIds carry one) — with its **parallels** (applied effects of the same type naming the same provision: one change made separately for E and W, or S and NI, keyed to one effect). Territory, in order:
+   1. the **markup `Extent`** when it is disjoint from the (unioned) application — a parallel change keyed to the wrong effect — reported as a conflict (Jason 2026-10-09, after the review: every disjoint case sampled was this);
+   2. the effects' **territorial application**, unioned across parallels (application first);
+   3. the markup `Extent`;
+   4. for a change that **removes** text: the effects' **in-force qualifications** (dated, not-unapplied entries; "Other" → `OtherQualification`; "except in relation to X." → all but X; purposes or provision except-clauses unusable);
+   5. the effect's **extent** only when narrower than the **row's own extent** (else the affected provision's, else the law's own extent — a devolved instrument's amendment is not "narrower than the UK");
+   6. no claim.
 2. **Element not joinable** (legacy id): markup `Extent`, else no claim.
-3. **Whole provision repealed or inserted by an applied effect, with no change markup at all on the provision's rows** (modern or legacy): `excluded_extent` from the effect's territorial application on the provision and its descendants, mapped by structured refs. More specific markup/effects on a descendant override; contradictions → conflict report. Never for substitutions or word-level effects.
+3. **Whole provision repealed or inserted by an applied effect** (refs, or ranges expanded by each id's first occurrence), when **none of the provision's change markup joins an effect** (no markup, or legacy ids only — Jason 2026-10-09): applies like an outermost change on the provision and its descendants. Never for substitutions or word-level effects.
 4. **Unapplied effects: out of scope** — "getting ahead of the published markup" is a later session (with #171).
 5. **Provenance**: a structured row column (`territory_provenance`, list): `[{source: "markup", change_id}, {source: "effect_application", effect_id}, …]` — traceable to the effect or change behind every claim; dev column; carried in the fractalaw contract (LH-05).
 6. **Notes**: unused (parked `NoteTerritory`); a future, untrusted hint of where to look, not switched on now.
-7. Pure modules: `Effects` (stored feed → index by effect id and by ref), `EffectTerritory` (one change × effect → claim + provenance); `LatTerritory` takes effects as a second input, composition rules unchanged.
-8. **Before any DB write**: automated sanity checks (a row's territory outside its parent's; a repeal adding territory; disjoint markup/TA) and a conflict report per run.
+7. Composition details settled by the review: excluded = the row's extent minus the union of where its words are live (nested changes narrow); a substitution's new words with no old words in the markup bracket but never narrow the row; an empty row extent falls back to the law's extent.
+8. Pure modules: `Effects` (stored feed → index by effect id and by ref), `EffectTerritory` (one change × effect → claim + provenance); `LatTerritory` takes effects as a second input, composition rules unchanged.
+9. **Before any DB write**: automated sanity checks (a row's territory outside its parent's; a repeal adding territory; disjoint markup/TA) and a conflict report per run.
 
 ## Verification
 
