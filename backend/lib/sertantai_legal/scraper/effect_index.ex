@@ -220,8 +220,10 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   every occurrence takes the same effect. `occurrences` are `{change_id,
   path, kind}` in document order, the path being the ids of the elements
   holding the occurrence, outermost first. The join is `on_provision/3` at
-  the lowest element holding every occurrence (1981/69 s.41: a legacy
-  repeal over s.41(1)-(6) is s.41's, not s.41(1)'s own); else each element
+  the lowest element holding every occurrence — only its whole-provision
+  effects when every occurrence is below it (1981/69 s.41: a legacy
+  repeal over s.41(1)-(6) is s.41's repeal, not s.41(1)'s own; 1974/37:
+  s.18's words substitution isn't s.18(4A)-(4B)'s insertion); else each element
   just below it holding some must give the same effect (2010/2214 "Regs.
   18A-18E inserted", also marked on Part 3's heading).
   """
@@ -261,7 +263,17 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
         |> Enum.map(&elem(&1, 0))
       end)
 
-    on_provision(index, List.last(common), kind) ||
+    lowest = List.last(common)
+
+    # with every occurrence below it, only the lowest element's whole-
+    # provision effects cover them (1974/37: s.18's words substitution
+    # isn't the s.18(4A)-(4B) insertion)
+    at_lowest =
+      if Enum.any?(paths, &(length(&1) == length(common))),
+        do: on_provision(index, lowest, kind),
+        else: lowest && index |> whole_of_kind(lowest, kind) |> List.wrap() |> one()
+
+    at_lowest ||
       paths
       |> Enum.map(&Enum.at(&1, length(common)))
       |> Enum.reject(&is_nil/1)

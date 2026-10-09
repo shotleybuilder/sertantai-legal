@@ -152,7 +152,17 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       order =
         ~w(section-41 section-41-1 section-41-2 regulation-18A regulation-18A-1 regulation-18A-1-a regulation-18B)
 
-      index = EffectIndex.new([s41, s41_1, regs, words], order)
+      s18 = effect(effect_id: "k-s18", type: "words substituted", affected_refs: ["section-18"])
+
+      s18_4a =
+        effect(
+          effect_id: "k-4a",
+          type: "inserted",
+          affected_ranges: [{"section-18-4A", "section-18-4B"}]
+        )
+
+      order = order ++ ~w(section-18 section-18-4 section-18-4A section-18-4B)
+      index = EffectIndex.new([s41, s41_1, regs, words, s18, s18_4a], order)
 
       index =
         EffectIndex.with_orphans(index, [
@@ -166,12 +176,17 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
           {"key-orphan", ["part-3", "regulation-18A"], :ins},
           {"key-orphan", ["part-3", "regulation-18A", "regulation-18A-1-a"], :ins},
           {"key-orphan", ["part-3", "regulation-18B"], :ins},
+          # legacy id over s.18(4A)-(4B) only: their insertion, not s.18's
+          # own words substitution (1974/37)
+          {"d29p1759", ["part-1", "section-18", "section-18-4A"], :ins},
+          {"d29p1759", ["part-1", "section-18", "section-18-4B"], :ins},
           # no fitting effect: no join
           {"key-none", ["part-2", "section-41", "section-41-2"], :ins}
         ])
 
       assert EffectIndex.orphan(index, "d29p8993") == s41
       assert EffectIndex.orphan(index, "key-orphan-1694675285518") == regs
+      assert EffectIndex.orphan(index, "d29p1759") == s18_4a
       assert EffectIndex.orphan(index, "key-none-1") == nil
       assert EffectIndex.orphan(index, nil) == nil
     end
