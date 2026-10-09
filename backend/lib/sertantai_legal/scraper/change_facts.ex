@@ -377,8 +377,13 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
 
   # a law commencing itself ("see reg. 1") dates the change but isn't
   # changed by another law
-  defp not_self(%{changed_by: law} = fact, law), do: %{fact | changed_by: nil}
-  defp not_self(fact, _law), do: fact
+  # (a Welsh SI and its uksi name are one instrument: one number series)
+  defp not_self(%{changed_by: by} = fact, law) do
+    if by != nil and twin(by) == twin(law), do: %{fact | changed_by: nil}, else: fact
+  end
+
+  defp twin("UK_wsi_" <> rest), do: "UK_uksi_" <> rest
+  defp twin(name), do: name
 
   # A marginal citation (code "M…") only refers to laws: it changes nothing,
   # so no instrument and no dates (LH-06)

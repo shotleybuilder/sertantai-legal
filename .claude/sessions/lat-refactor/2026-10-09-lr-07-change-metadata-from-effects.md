@@ -3,6 +3,13 @@ session: 'LR-07: Change Metadata from Effects'
 status: active
 opened: 2026-10-09
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+bugs:
+  - pattern: "Retained repeal read as everywhere when the feed is silent on territory but lists savings, while the note names a territory (2010/404 reg.14 'omitted (E.)'; 2020/7 s.8 'expires in part')"
+    category: territory
+    module: EffectTerritory
+    affected: 8
+    fix: "LatTerritoryCheck: compare a note's territory hint with an :effect_everywhere claim and report disagreement (notes as hints, never as the source) — LR-05"
+    status: open
 ---
 
 # Session: LR-07 Change Metadata from Effects (ACTIVE)
@@ -108,3 +115,6 @@ Decided (Jason, 2026-10-09):
 
 - Text diff run 1: the whole-extent rule on markup alone moved 7,521 rows vs LR-03 run 8 → needs a joined effect. Run 2: still 7,878 — LR-03's rule-3 synthetic whole-provision repeals (dots) carry joined effects → `Change.synthetic`, skipped (status, not territory). Run 3 running.
 - Change diff run 1 (before the synthetic fix): 162,593 changed fields; notes from effects 65,648 / text 25,026. Findings fixed: a law commencing itself ("see reg. 1") made 47,381 rows `changed_by` = itself → nil (the date stands); footnote citations ("OJ L 182, 21.6.2014, p.52.") gave rows dates → a note naming no change and no instrument isn't a change; a whole-provision insertion's own InForce completes commencement (asp 2003/2 s.51A, source effect).
+- Text diff run 3: 2,348 rows vs LR-03 run 8; 27 in_force among them showed a silent effect read as everywhere (1988/52 s.4(6) "repealed (E.W.)", 2010/404 reg.14, 2020/7 s.8) → `:effect_everywhere` needs positive evidence (purposes, savings, effect extent covering the row).
+- Text diff run 4: 2,233 rows vs LR-03 run 8 (excluded_extent only; 3 text); 2,113 already `repealed_saved` in the DB (the notes said so), 98 repealed, 3 prospective, 19 in_force (1989/14 s.3(5) ×6 — the LR-03 item; heads of revoked-with-savings laws; residue: 2010/404 reg.14 ×6, 2020/7 s.8 ×2 → open bug, LR-05). Checks unchanged: 9 conflicts, 2 child-live, 1 other.
+- Change diff run 2: 109,245 changed fields (lr07 106,074, parse 3,171). Notes from effects 65,648 / text 25,026; row status source effect 196,698 / markup 182,226 / note 525. Largest: commencement dates filled from effects (22,035), changed_by filled (19,285), dates later (12,549) / earlier (6,463), repealed → repealed_saved from feed Savings (2,126), partial gained 1,296 / lost 841. Fixed after: a uksi-held Welsh SI commencing itself (wsi twin) is itself.

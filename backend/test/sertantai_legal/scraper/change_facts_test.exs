@@ -418,6 +418,37 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
       assert %{status: "in_force", status_source: :effect} = out["#{@law}:s.51A"]
     end
 
+    test "a Welsh SI held as uksi commencing itself (its wsi twin: one number series) is itself (UK_uksi_2016_359)" do
+      law = "UK_uksi_2016_359"
+
+      own =
+        fx(
+          effect_id: "e-own",
+          type: "coming into force",
+          affecting: "UK_wsi_2016_359",
+          in_force: [at(~D[2016-04-01])]
+        )
+
+      {_, out} =
+        ChangeFacts.resolve(
+          [
+            %{
+              section_id: law <> ":reg.10",
+              status: "in_force",
+              text: "T.",
+              extent_code: "W",
+              effect_ids: ["e-own"]
+            }
+          ],
+          [],
+          %{"e-own" => own},
+          law,
+          today: @today
+        )
+
+      assert %{changed_by: nil, effective_from: ~D[2016-04-01]} = out[law <> ":reg.10"]
+    end
+
     test "status: partial from a commencing effect on an ancestor; the effect outranks a note" do
       partly =
         fx(
