@@ -56,7 +56,12 @@ Judge a row against these rules, not against what you'd have done.
 - No bracket when the territory covers the row's whole extent (a substitution then shows only the new words) or lies outside it (only the old words or the plain words).
 - When the whole row is repealed for some territories, the text stays plain and `excluded_extent` names those territories. Status stays `in_force` unless the exclusion covers the row's whole extent, in which case it's `repealed_saved`.
 - When the whole row is inserted for a narrower territory, the text stays plain and `excluded_extent` = the rest of the extent.
-- Territory comes from the `Extent` attribute, else from the note: "revoked (S.)", "(1.4.2015 for S. …)".
+- Territory comes from the `Extent` attribute, else from the note: "revoked (S.)", "(1.4.2015 for S. …)". When both name territories, both count (their union). This holds for every kind of change: retained repeals, insertions, substitutions and whole rows.
+- A substitution's two halves are a pair even when each is wrapped in an earlier insertion (they need not be siblings).
+- Nested changes: words inside several retained repeals are live outside all of their territories (none left → not shown). A narrower insertion inside a wider one keeps its own bracket ("[E+W: regulator [E: or the Agency] or the]"); one inside the live territory of its outer change needs none.
+- A row whose own text is retained for some territories and also holds an insertion within the live territory reads plain, with `excluded_extent` = the repeal's territories.
+- A note cited in the row's own number that repeals or inserts the whole provision for a territory ("S. 101 repealed (S.)", "Ss. 1-24 repealed (S.)") gives the row and its sub-provisions `excluded_extent`, adding to any element-level territory. A note about words ("Words in s. 1 repealed (S.)") never excludes a row.
+- A repeal "except in relation to ss. 13-15" doesn't apply to those sections: they stay `in_force`.
 - Extent codes are `E`, `W`, `S`, `NI` joined with `+`. Dotted source forms ("E.W.") are normalised.
 
 **Tables and signatures**

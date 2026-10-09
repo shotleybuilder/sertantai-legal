@@ -61,13 +61,13 @@ Once the row's extent is known, one function `LatTerritory.render(segments, row_
 - words: bracket with the territory still live / inserted, plain when it covers or misses the row extent;
 - pairs: "[T: new] [rest: old]", only new / only old at the extremes;
 - whole-row (all own segments are changes): plain text + `excluded_extent` (repeal → its territories; insertion → extent minus its territories; mixed repeal+insertion → defined rule, see Q3);
-- nested changes: inner rendered plain inside an outer bracket (current behaviour), defined in one place.
+- nested changes: words inside several retained repeals are live outside the union of their territories; a narrower insertion inside a wider one keeps its own bracket; one inside the outer change's live territory needs none (LR-01 fixtures).
 
 This removes the placeholder alphabet, `plain_text/1`, `merge_brackets` re-parsing, and the second walk in `retained_segments`.
 
 ### 3. Note-only whole-provision changes
 
-A note cited at a row's own level whose effect is a whole-provision repeal/insertion ("S. 18 repealed (S.)", "Pt. 2B inserted (W.)") and that names a territory gives the row (and its descendants) `excluded_extent`, unless an element-level change already covers it. Effect from `AmendmentNote` (already parses effect). Decided at parse time: the row's own refs (`own_refs`) and the ref → note lookup are both available then.
+A note cited at a row's own level (a `<CommentaryRef>` in its number, no change element) whose effect is a whole-provision repeal/insertion ("S. 101 repealed (S.)", "Ss. 1-24 repealed (S.)") and that names a territory gives the row (and its descendants) `excluded_extent`, unless an element-level change already covers it. Effect from `AmendmentNote` (already parses effect). Decided at parse time: the row's own refs (`own_refs`) and the ref → note lookup are both available then.
 
 ### 4. Parser decomposition (behaviour-preserving, after territory)
 
