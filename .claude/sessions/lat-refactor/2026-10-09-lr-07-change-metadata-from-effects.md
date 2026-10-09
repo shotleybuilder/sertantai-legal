@@ -22,3 +22,9 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 ## Dependencies
 
 - ⬜ LR-03 (effects probe, effect ids)
+
+## Pending tests this session must turn green (from LR-02)
+
+`mix test --only pending` — tagged `pending: "LR-07"`:
+- retained for no territory: the whole extent, repealed_saved
+- a retained repeal with no territory (savings / purposes) is repealed_saved everywhere

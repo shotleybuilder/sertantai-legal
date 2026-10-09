@@ -1,11 +1,72 @@
 ---
 session: 'LR-02: LatTerritory Module'
-status: active
+status: closed
 opened: 2026-10-09
+closed: 2026-10-09
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+outcome: success
+
+summary: >
+  Territory now has one pure module (LatTerritory) and row text is built as data (LatSegments): placeholder
+  characters, regex re-parsing and the second XML walk are gone, with one whole-row rule (excluded = where no
+  words are live, changes composed outside-in). Mid-session the owner grounded notes as hints, not facts
+  (authority chain law → markup → effects → notes), so territory now comes from the change markup only; what the
+  markup lacks comes from effects in LR-03. Gemini accepted.
+
+decisions:
+  - what: Row text as segments (LatSegments) rendered once the row extent is known
+    why: The placeholder round trip caused leaks, nesting and whitespace bugs and spread territory over five code paths
+    result: Placeholders and with_territories/retained_segments deleted; every text producer returns segments
+  - what: One whole-row rule — excluded_extent = territories where none of the row's words is live
+    why: Intersection / outermost / subtree variants each failed review cases (1993/12 s.47(1), 2004/20 s.75, 1990/8 s.61A)
+    result: One definition; rendering treats the row's live territory as its extent
+  - what: Notes are hints, never facts; territory from the change markup only; NoteTerritory parked as a separate feature
+    why: Notes are editorial and editable (official docs); the review found ~20% of note-derived changes wrong; Jason "building on sand"
+    result: 15 cases wait for effects (LR-03), 2 for savings (LR-07); ~4,500 note-derived exclusions removed pending effects
+  - what: Research before rules — official legislation.gov.uk docs + corpus typology of notes
+    why: Jason asked for the meaning of notes, not a guess
+    result: docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md (bare (X.) = Extent 97.8%; dated "for X." = commencement)
+
+metrics:
+  corpus_diff_rows: { run1: 8035, run4: 4841, run6: 3504, run8_markup_only: 4927 }
+  review_wrong_rate: { round1: "~20%", round3: "~6%" }
+  tests: { suite_passed: 2395, pending_lr03: 15, pending_lr07: 2 }
+  notes: { f_notes: 51537, bare_equal_attribute_pct: 97.8, elements_territory_only_in_note: 27481 }
+
+lessons:
+  - title: Ground the meaning of a data source before writing rules on it
+    detail: Note territory looked patternless; official docs and a corpus count showed two forms with different meanings (applies vs in force). Rules written from samples kept moving the edge instead.
+    tag: data
+  - title: Editorial annotations are not facts — follow the authority chain
+    detail: legislation.gov.uk notes are drafted from effects records and editable. Use markup, then effects, then the law; notes are hints and display text only.
+    tag: data
+  - title: Classified corpus diffs plus sampled agent review catch what fixtures can't
+    detail: Fixtures covered the known paths; each diff/review round found new real cases (non-breaking spaces, split substitution pieces, self-enclosing refs, nested repeals). Verify agent claims against the XML — several were wrong.
+    tag: tooling
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_segments.ex
+  - backend/lib/sertantai_legal/scraper/lat_territory.ex
+  - backend/lib/sertantai_legal/scraper/note_territory.ex
+  - backend/lib/sertantai_legal/scraper/territory.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser.ex
+  - backend/lib/sertantai_legal/scraper/lat_diff_class.ex
+  - docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md
+  - docs/LAT-QA-SAMPLE-SPEC.md
+  - backend/data/reports/lat-refactor/lr02-diff.csv
+  - backend/data/reports/lat-refactor/lr02-lost-exclusions-spotcheck.csv
+  - backend/data/code-reviews/2026-10-09-lr02-acceptance-gemini.md
+
+depends_on:
+  - lat-refactor/2026-10-09-lr-01-territory-fixtures
+
+enables:
+  - LR-03 effects layer (15 pending tests)
+  - LR-07 change metadata from effects (2 pending tests)
+  - LR-04 parser decomposition
 ---
 
-# Session: LR-02 LatTerritory Module (ACTIVE)
+# Session: LR-02 LatTerritory Module (CLOSED)
 
 ## Problem
 
@@ -18,8 +79,8 @@ Territory is decided in five places with three rules, and carried through the te
 - ✅ `Territory.from_note`: spelled-out names after a change verb ("disapplied in relation to Wales") (Q1)
 - ✅ Parser: text producers return segments; delete placeholders, `with_territories`, `plain_text`, `merge` round trip, `retained_segments`
 - ✅ Fixtures: 9 LR-02 pending → green; 18 stay green; full suite green
-- ⬜ Classified corpus diff vs DB with an expect file; every class explained; 0 unexpected
-- ⬜ Gemini acceptance review of the result
+- ✅ Classified corpus diff vs DB: 8 runs, every class explained (run 8: 4,927 rows — note-derived exclusions removed, markup-based improvements)
+- ✅ Gemini acceptance review: accepted (`backend/data/code-reviews/2026-10-09-lr02-acceptance-gemini.md`); pending tests linked into LR-03/LR-07; spot-check CSV for Jason
 
 ## Dependencies
 
