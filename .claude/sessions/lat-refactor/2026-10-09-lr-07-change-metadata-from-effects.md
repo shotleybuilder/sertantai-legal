@@ -1,11 +1,11 @@
 ---
 session: 'LR-07: Change Metadata from Effects'
-status: pending
+status: active
 opened: 2026-10-09
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
-# Session: LR-07 Change Metadata from Effects (PENDING)
+# Session: LR-07 Change Metadata from Effects (ACTIVE)
 
 ## Problem
 
@@ -22,7 +22,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 
 ## Dependencies
 
-- ⬜ LR-03 (effects probe, effect ids)
+- ✅ LR-03 (effects probe, effect ids) — closed 2026-10-09: EffectIndex (ChangeId / key- / orphan joins), EffectTerritory.claim, provenance
 
 ## Pending tests this session must turn green (from LR-02)
 
