@@ -2145,6 +2145,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
     @revoked_s ~s|<Commentary id="k-s" Type="F"><Para><Text>Regulations revoked (S.) (1.11.2025) by The Scotland Regulations 2025 (S.S.I. 2025/165)</Text></Para></Commentary>|
 
+    @tag pending: "LR-03"
     test "a provision repealed in one territory (from the note) keeps its text and status" do
       rows =
         retained_law(
@@ -2167,6 +2168,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
 
     # Q1 (Jason, 2026-10-09; LAT Parser Refactor): attribute and note both count
+    @tag pending: "LR-03"
     test "the Repeal's own Extent and its note's territory together" do
       rows =
         retained_law(
@@ -2177,6 +2179,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.4").excluded_extent == "E+W+S"
     end
 
+    @tag pending: "LR-07"
     test "a retained repeal with no territory (savings / purposes) is repealed_saved everywhere" do
       rows =
         retained_law(
@@ -2189,6 +2192,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert row.excluded_extent == "E+W+S"
     end
 
+    @tag pending: "LR-03"
     test "a Repeal wrapping whole Text elements counts too" do
       rows =
         retained_law(
@@ -2256,6 +2260,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.10").text == "A duty to [E+W: consult] act."
     end
 
+    @tag pending: "LR-03"
     test "the territory can come from the repeal's note" do
       rows =
         retained_law(

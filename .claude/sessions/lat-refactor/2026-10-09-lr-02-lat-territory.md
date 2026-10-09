@@ -78,3 +78,12 @@ Jason: notes are hints, not facts ("we're going the wrong way in the chain"). LR
 - Run 6 review (145 rows): slice 4 34/35, slice 2 2 wrong, slice 3 3 wrong, slice 1 3 wrong. Fixed test-first: a narrower insertion inside a retained repeal no longer narrows the row (bracketed: 1967/10 s.29(1)(a)); an insertion outside the live territory leaves the words live nowhere (1990/43 s.6(6A)(c)); a SubstitutionRef naming its own enclosing change is no pair even with sibling pieces (1968/73 s.113(5) "means" dropped); a "(X.)" inside the dates bracket is an in-force qualifier, not where the change applies (1990/8 s.70B, 1991/56 s.90; ~68 notes).
 - **Whole-row rule simplified to one definition**: `excluded_extent` = the territories where none of the row's words is live (extent − union of live territories); rendering treats the row's live territory as its extent (covering changes plain, narrower ones bracketed). Replaces the keep/ins/subtree branches (1993/12 s.47(1)).
 - Moved out: legacy markup tagging old words as a Substitution (1990/18 s.5(2)(b)), notes citing the wrong provision, stale attributes, "extended (X.)" C notes, substituted words with no old wording → **LR-03** (effects); retained repeals "for purposes"/"expires in part" → **LR-07** (status); Part headings with substitution pairs (plain-text title path, 2016/1093 pt.4) → **LR-05**.
+
+## Notes unwired (2026-10-09)
+
+Jason: "Be sure not to fall back to using Notes as the source of data truth"; option 3 — park `NoteTerritory` as its own feature (not deleted, not wired), LR-03 replaces it with effects.
+- `LatTerritory.territory/1` = the Extent attribute only; `render/3`, `excluded/2` (no lookup). A retained repeal with no Extent makes **no claim** (was: live nowhere → repealed_saved; savings → LR-07).
+- Parser: note lookup and `ctx.ref_territory` removed; `AmendmentNote.effect_of/1` removed (only the note rule used it).
+- `NoteTerritory` + tests kept, documented as parked; nothing outside it calls it; `Territory` doesn't mention it.
+- Tests re-tagged: 15 `pending: "LR-03"` (territory from notes), 2 `pending: "LR-07"` (savings → repealed_saved); all 17 red, none green. Suite green.
+- Expected diff: rows whose current DB territory came from notes (old parser read notes for retained repeals) now lose it until LR-03 restores it from effects; nothing reaches the DB before the wave after LR-03.

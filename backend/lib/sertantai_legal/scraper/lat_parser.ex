@@ -35,11 +35,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
   alias SertantaiLegal.Legal.Lat.Transforms
 
   alias SertantaiLegal.Scraper.{
-    AmendmentNote,
     LatSegments,
     LatStatus,
     LatTerritory,
-    NoteTerritory,
     Territory
   }
 
@@ -99,7 +97,6 @@ defmodule SertantaiLegal.Scraper.LatParser do
       prospective: false,
       mode: mode,
       ref_type_lookup: build_ref_type_lookup(doc),
-      ref_territory: build_ref_territory_lookup(doc),
       versions: build_versions_lookup(doc),
       from_version: false,
       version_extent: nil
@@ -164,24 +161,6 @@ defmodule SertantaiLegal.Scraper.LatParser do
         first != nil and element_name(first) in @version_content,
         into: %{},
         do: {to_string(xpath(version, ~x"./@id"s)), version}
-  end
-
-  # Commentary id → what the note says about territory (NoteTerritory: where
-  # its change applies, where it is in force) and its effect, for
-  # LatTerritory (docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md).
-  defp build_ref_territory_lookup(doc) do
-    doc
-    |> xpath(~x"//Commentaries/Commentary"l)
-    |> Map.new(fn c ->
-      text = c |> xpath(~x"./descendant::text()"ls) |> Enum.map_join("", &to_string/1)
-
-      {c |> xpath(~x"./@id"s) |> to_string(),
-       %{
-         applies: NoteTerritory.applies(text),
-         in_force: NoteTerritory.in_force(text),
-         effect: AmendmentNote.effect_of(text)
-       }}
-    end)
   end
 
   # ── Recursive Walker ─────────────────────────────────────────────
@@ -448,13 +427,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
-    repealed = excluded_extent(node, ctx, extent)
+    repealed = excluded_extent(node, extent)
 
     text =
       node
       |> extract_element_text()
       |> with_trailing(ctx.trailing, node)
-      |> LatTerritory.render(extent, ctx.ref_territory, repealed)
+      |> LatTerritory.render(extent, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -484,13 +463,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
-    repealed = excluded_extent(node, ctx, extent)
+    repealed = excluded_extent(node, extent)
 
     text =
       node
       |> extract_structural_text()
       |> with_trailing(ctx.trailing, node)
-      |> LatTerritory.render(extent, ctx.ref_territory, repealed)
+      |> LatTerritory.render(extent, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -542,7 +521,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      excluded_extent: excluded_extent(node, ctx, extent),
+      excluded_extent: excluded_extent(node, extent),
       from_version: ctx.from_version
     }
   end
@@ -553,13 +532,13 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # text is built from: the row's own text decides (its children are rows of
   # their own); the whole subtree only when the row has no text of its own.
   # Numbers and titles never count (not text).
-  defp excluded_extent(node, ctx, row_extent) do
+  defp excluded_extent(node, row_extent) do
     own = node |> text_blocks(:structural) |> join_blocks()
 
     segments =
       if LatSegments.blank?(own), do: node |> text_blocks(:leaf) |> join_blocks(), else: own
 
-    LatTerritory.excluded(segments, row_extent, ctx.ref_territory)
+    LatTerritory.excluded(segments, row_extent)
   end
 
   # ── Element Extraction Helpers ───────────────────────────────────

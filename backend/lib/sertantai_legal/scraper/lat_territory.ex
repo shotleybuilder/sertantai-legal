@@ -3,27 +3,24 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   Where a LAT row's words apply (LAT Parser Refactor, LR-02; design
   `docs/LAT-PARSER-REFACTOR-DESIGN.md`, rules `docs/LAT-QA-SAMPLE-SPEC.md`).
 
-  One rule for every change: its territory is its `Extent` attribute and
-  the territory its commentary note names, together (`territory/2`). The
-  parser builds row text as `LatSegments`; this module turns them into the
-  stored text and `excluded_extent` once the row's extent is known.
+  One rule for every change: its territory is its `Extent` attribute in
+  legislation.gov.uk's markup (`territory/1`). Notes are never a source;
+  territory the markup doesn't carry comes from the effects layer (LR-03).
+  The parser builds row text as `LatSegments`; this module turns them into
+  the stored text and `excluded_extent` once the row's extent is known.
 
   Handles:
-  - `territory/2` — a change's territory (attribute ∪ note)
+  - `territory/1` — a change's territory (its Extent attribute)
   - `pair_up/1` — joins substitution halves that are not siblings
-  - `render/4` — the row text: words bracketed with where they apply
+  - `render/3` — the row text: words bracketed with where they apply
     ("[E+W: words]"), substitutions as "[S: new] [E+W: old]", nested
-    changes within their outer change's territory, plain when a change
-    covers the row, misses it, or the whole row is territorial
-  - `excluded/3` — the row's `excluded_extent` when its own words are all
-    retained-repealed (their territories; none named → the whole extent)
-    or all inserted for a narrower territory (the rest of the extent). The
-    outermost change decides; insertions with no territory are transparent.
+    changes within their outer change's territory; plain when a change
+    covers the row, misses it, or names no territory
+  - `excluded/2` — the row's `excluded_extent`: where none of its words is
+    live
 
-  Pure: the note territories come in as `lookup` (`%{commentary_id =>
-  code | nil}`). Extent codes are "E+W+S+NI" forms; nil extent = the UK.
+  Pure. Extent codes are "E+W+S+NI" forms; nil extent = the UK.
   """
-
   alias SertantaiLegal.Scraper.{LatSegments, Territory}
 
   defmodule Change do
@@ -43,63 +40,15 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
           }
   end
 
-  # note id → what the note says (`NoteTerritory`, `AmendmentNote.effect_of/1`)
-  @type note :: %{applies: [String.t()], in_force: String.t() | nil, effect: String.t()}
-  @type lookup :: %{String.t() => note()}
-
   @doc """
-  A change's territory; nil when nothing names one. Notes are read as
-  legislation.gov.uk documents them (`docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`):
-
-  - its `Extent` attribute — where the change applies — plus any bare
-    "(X.)" clause of its note disjoint from it (a separate change: "repealed
-    (E.W.) …; and … repealed (S.)" with Extent="S"; an overlapping clause is
-    the same fact);
-  - else the note's bare "(X.)" clauses (`NoteTerritory.applies/1`: the
-    Extent attribute in words);
-  - else, for a change that removes text (a retained repeal, a
-    substitution's old words), where it is in force (`NoteTerritory.in_force/1`,
-    "repealed (1.4.2015 for S.)"): the text is gone there and kept
-    elsewhere. An insertion in force for some territories still extends to
-    the others — commencement, which is status, not territory.
-
-  A note counts only for a change of its kind: an insertion takes an
-  inserting/substituting note, a retained repeal any but an inserting one
-  (legacy markup wraps text in an Addition citing a repeal note: 1875/17
-  s.115), a substitution pair any note.
+  A change's territory: its `Extent` attribute — where legislation.gov.uk's
+  markup says the change applies — normalised; nil when the markup names
+  none. Notes are never a source (`docs/LEGISLATION-GOV-UK-NOTE-TYPOLOGY.md`
+  §3: notes are hints); territory the markup doesn't carry comes from the
+  effects layer (lat-refactor LR-03).
   """
-  @spec territory(Change.t(), lookup()) :: String.t() | nil
-  def territory(%Change{kind: kind, attribute: attribute, ref: ref}, lookup) do
-    note = note_for(kind, ref, lookup)
-    applies = if note, do: note.applies, else: []
-
-    case Territory.normalize(attribute) do
-      nil ->
-        cond do
-          applies != [] -> Territory.union(applies)
-          note && kind in [:keep, :pair] -> note.in_force
-          true -> nil
-        end
-
-      attr ->
-        Territory.union([attr | Enum.filter(applies, &Territory.disjoint?(&1, attr))])
-    end
-  end
-
-  @inserting ~w(inserted substituted amended)
-
-  defp note_for(kind, ref, lookup) do
-    case ref && Map.get(lookup, ref) do
-      %{effect: effect} = note -> if note_fits?(kind, effect), do: note
-      _ -> nil
-    end
-  end
-
-  defp note_fits?(:pair, _effect), do: true
-  defp note_fits?(:ins, effect), do: effect in @inserting
-  # a retained Repeal citing a substitution note: the old words (its new
-  # words may be another row: 1998/494 reg.4(3)(e))
-  defp note_fits?(:keep, effect), do: effect != "inserted"
+  @spec territory(Change.t()) :: String.t() | nil
+  def territory(%Change{attribute: attribute}), do: Territory.normalize(attribute)
 
   # ── Pairing ──────────────────────────────────────────────────────
 
@@ -287,10 +236,10 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   is live: a change covering that reads plain (the column carries it), a
   narrower one keeps its bracket; live nowhere → all plain.
   """
-  @spec render(LatSegments.t(), String.t() | nil, lookup(), String.t() | nil) :: String.t() | nil
-  def render(segments, extent, lookup, excluded \\ nil) do
+  @spec render(LatSegments.t(), String.t() | nil, String.t() | nil) :: String.t() | nil
+  def render(segments, extent, excluded \\ nil) do
     segments
-    |> render_row(extent, lookup, excluded)
+    |> render_row(extent, excluded)
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
     |> merge_brackets()
@@ -300,59 +249,59 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     end
   end
 
-  defp render_row(segments, extent, lookup, nil),
-    do: render_segments(segments, extent, lookup, false)
+  defp render_row(segments, extent, nil),
+    do: render_segments(segments, extent, false)
 
-  defp render_row(segments, extent, lookup, excluded) do
+  defp render_row(segments, extent, excluded) do
     case Territory.subtract(whole(extent), excluded) do
-      nil -> render_segments(segments, extent, lookup, true)
-      live -> render_segments(segments, live, lookup, false)
+      nil -> render_segments(segments, extent, true)
+      live -> render_segments(segments, live, false)
     end
   end
 
   # `plain`: no brackets at all (a row live nowhere)
-  defp render_segments(segments, extent, lookup, plain),
-    do: Enum.map_join(segments, &render_segment(&1, extent, lookup, plain))
+  defp render_segments(segments, extent, plain),
+    do: Enum.map_join(segments, &render_segment(&1, extent, plain))
 
-  defp render_segment({kind, s}, _extent, _lookup, _plain) when kind in [:text, :mark], do: s
+  defp render_segment({kind, s}, _extent, _plain) when kind in [:text, :mark], do: s
 
-  defp render_segment({:aside, inner}, extent, lookup, plain),
-    do: render_segments(inner, extent, lookup, plain)
+  defp render_segment({:aside, inner}, extent, plain),
+    do: render_segments(inner, extent, plain)
 
-  defp render_segment({:pair_old, _ref, change, inner}, extent, lookup, plain),
-    do: render_segment({:words, %{change | kind: :keep}, inner}, extent, lookup, plain)
+  defp render_segment({:pair_old, _ref, change, inner}, extent, plain),
+    do: render_segment({:words, %{change | kind: :keep}, inner}, extent, plain)
 
-  defp render_segment({:pair_new, _id, change, inner}, extent, lookup, plain),
-    do: render_segment({:words, %{change | kind: :ins}, inner}, extent, lookup, plain)
+  defp render_segment({:pair_new, _id, change, inner}, extent, plain),
+    do: render_segment({:words, %{change | kind: :ins}, inner}, extent, plain)
 
-  defp render_segment({:words, _change, inner}, extent, lookup, true),
-    do: render_segments(inner, extent, lookup, true)
+  defp render_segment({:words, _change, inner}, extent, true),
+    do: render_segments(inner, extent, true)
 
-  defp render_segment({:words, %Change{kind: :keep} = change, inner}, extent, lookup, false) do
-    live = live_after(change, extent, lookup)
+  defp render_segment({:words, %Change{kind: :keep} = change, inner}, extent, false) do
+    live = live_after(change, extent)
 
     # repealed everywhere the row applies, or only where it doesn't: plain
     if live in [nil, whole(extent)],
-      do: render_segments(inner, extent, lookup, false),
-      else: bracket(live, render_segments(inner, live, lookup, false))
+      do: render_segments(inner, extent, false),
+      else: bracket(live, render_segments(inner, live, false))
   end
 
-  defp render_segment({:words, %Change{kind: :ins} = change, inner}, extent, lookup, false) do
-    t = territory(change, lookup)
+  defp render_segment({:words, %Change{kind: :ins} = change, inner}, extent, false) do
+    t = territory(change)
 
     if t == nil or outside?(extent, t) or Territory.covers?(t, extent),
-      do: render_segments(inner, extent, lookup, false),
-      else: bracket(within(extent, t), render_segments(inner, within(extent, t), lookup, false))
+      do: render_segments(inner, extent, false),
+      else: bracket(within(extent, t), render_segments(inner, within(extent, t), false))
   end
 
-  defp render_segment({:pair, change, new, old}, extent, lookup, true),
-    do: render_segment({:pair, change, new, old}, extent, lookup, false)
+  defp render_segment({:pair, change, new, old}, extent, true),
+    do: render_segment({:pair, change, new, old}, extent, false)
 
-  defp render_segment({:pair, change, new, old}, extent, lookup, false) do
-    new_text = fn ext -> new |> render_segments(ext, lookup, false) |> String.trim() end
-    old_text = fn ext -> old |> render_segments(ext, lookup, false) |> String.trim() end
+  defp render_segment({:pair, change, new, old}, extent, false) do
+    new_text = fn ext -> new |> render_segments(ext, false) |> String.trim() end
+    old_text = fn ext -> old |> render_segments(ext, false) |> String.trim() end
 
-    case territory(change, lookup) do
+    case territory(change) do
       nil ->
         old_text.(extent) <> " " <> new_text.(extent)
 
@@ -374,8 +323,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   # where retained words are live: the extent outside the repeal's territory;
   # the whole extent when it names none
-  defp live_after(change, extent, lookup) do
-    case territory(change, lookup) do
+  defp live_after(change, extent) do
+    case territory(change) do
       nil -> whole(extent)
       t -> Territory.subtract(extent, t)
     end
@@ -429,11 +378,11 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   sub-provisions (the caller passes their segments). Numbers, titles, list
   labels, asides, and punctuation alone outside any change don't count.
   """
-  @spec excluded(LatSegments.t(), String.t() | nil, lookup()) :: String.t() | nil
-  def excluded(segments, extent, lookup) do
+  @spec excluded(LatSegments.t(), String.t() | nil) :: String.t() | nil
+  def excluded(segments, extent) do
     whole = whole(extent)
 
-    case pieces(segments, {nil, whole}, whole, lookup) do
+    case pieces(segments, {nil, whole}, whole) do
       [] -> nil
       pieces -> outside(whole, pieces |> Enum.map(&elem(&1, 1)) |> union_live())
     end
@@ -441,50 +390,51 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   # One {outermost change kind | nil, live territory | nil (= nowhere)} per
   # piece of visible words. `whole` is the row's extent.
-  defp pieces(segments, state, whole, lookup),
-    do: Enum.flat_map(segments, &piece(&1, state, whole, lookup))
+  defp pieces(segments, state, whole),
+    do: Enum.flat_map(segments, &piece(&1, state, whole))
 
-  defp piece({:mark, _s}, _state, _whole, _lookup), do: []
-  defp piece({:aside, _inner}, _state, _whole, _lookup), do: []
+  defp piece({:mark, _s}, _state, _whole), do: []
+  defp piece({:aside, _inner}, _state, _whole), do: []
 
   # Whitespace never counts; punctuation alone outside any change ("." after
   # a substitution: 2018/482 reg.4(2)(b)) isn't the row's own words, but
   # inside a change it is (". . . ." is a repeal marker: 1967/10 s.1(2A)).
-  defp piece({:text, s}, {nil, _live} = state, _whole, _lookup),
+  defp piece({:text, s}, {nil, _live} = state, _whole),
     do: if(String.match?(s, ~r/[\p{L}\p{N}]/u), do: [state], else: [])
 
-  defp piece({:text, s}, state, _whole, _lookup),
+  defp piece({:text, s}, state, _whole),
     do: if(String.trim(s) == "", do: [], else: [state])
 
-  defp piece({:words, change, inner}, {kind, live} = state, whole, lookup) do
-    case compose(change, kind, live, whole, lookup) do
-      :same -> pieces(inner, state, whole, lookup)
-      live -> pieces(inner, {kind || change.kind, live}, whole, lookup)
+  defp piece({:words, change, inner}, {kind, live} = state, whole) do
+    case compose(change, kind, live, whole) do
+      :same -> pieces(inner, state, whole)
+      live -> pieces(inner, {kind || change.kind, live}, whole)
     end
   end
 
   # a pair: both versions shown, bracketed within the live territory
-  defp piece({:pair, _change, new, old}, {kind, live}, _whole, _lookup) do
+  defp piece({:pair, _change, new, old}, {kind, live}, _whole) do
     if LatSegments.blank?(new) and LatSegments.blank?(old), do: [], else: [{kind, live}]
   end
 
-  defp piece({:pair_old, _ref, change, inner}, state, whole, lookup),
-    do: piece({:words, %{change | kind: :keep}, inner}, state, whole, lookup)
+  defp piece({:pair_old, _ref, change, inner}, state, whole),
+    do: piece({:words, %{change | kind: :keep}, inner}, state, whole)
 
-  defp piece({:pair_new, _id, change, inner}, state, whole, lookup),
-    do: piece({:words, %{change | kind: :ins}, inner}, state, whole, lookup)
+  defp piece({:pair_new, _id, change, inner}, state, whole),
+    do: piece({:words, %{change | kind: :ins}, inner}, state, whole)
 
   # The live territory inside a change (`outer`: the outermost change kind
   # around it); :same when it changes nothing.
-  defp compose(%Change{kind: :keep} = change, _outer, live, _whole, lookup) do
-    case territory(change, lookup) do
-      nil -> nil
+  defp compose(%Change{kind: :keep} = change, _outer, live, _whole) do
+    case territory(change) do
+      # the markup names no territory: no claim (effects: LR-03)
+      nil -> :same
       t -> if live == nil, do: nil, else: Territory.subtract(live, t)
     end
   end
 
-  defp compose(%Change{} = change, outer, live, whole, lookup) do
-    t = territory(change, lookup)
+  defp compose(%Change{} = change, outer, live, whole) do
+    t = territory(change)
 
     cond do
       t == nil or Territory.disjoint?(t, whole) -> :same

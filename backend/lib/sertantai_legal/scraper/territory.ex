@@ -4,7 +4,7 @@ defmodule SertantaiLegal.Scraper.Territory do
 
   Pure set operations on codes: `normalize/1` (attribute notations),
   `covers?/2`, `subtract/2`, `disjoint?/2`, `union/1`. A nil extent is the
-  UK. Reading territory from notes is `NoteTerritory`.
+  UK.
   """
 
   @order ~w(E W S NI)

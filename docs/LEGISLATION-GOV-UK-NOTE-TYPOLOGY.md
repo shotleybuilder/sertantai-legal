@@ -93,7 +93,7 @@ Semi-structured: a documented template (provision · effect · date or "prosp." 
 3. **effects** (changes feed) — the structured record of every change: affected provisions, where it applies, extent, in-force dates and qualifications, applied or not;
 4. **notes** — displayed as notes; a hint where to look. When a note shows a change the effects layer doesn't have, either keep it as a note or go to the law it was built from — never derive a fact from its prose.
 
-The rules below describe how note text reads (for hints and for display); facts come from 1–3. Where the LAT still reads a fact from note text, that is interim until the effects sessions replace it (`.claude/sessions/lat-refactor/`).
+The rules below describe how note text reads (for hints and for display); facts come from 1–3. LAT territory now comes from the markup only (LR-02); the effects layer supplies what the markup lacks (LR-03). `NoteTerritory` (the reader for §1.2–2.3) is **parked** as a separate feature, used by nothing — kept to compare notes with the effects layer later (Jason: "it needs to be its own separate feature"). Note-derived change metadata (`AmendmentNote`, `LatStatus`) is replaced from effects in LR-07.
 
 
 1. **Territory of a change** (brackets, `excluded_extent`) = its `Extent` attribute, else the **bare "(X.)"** clause(s) of its **F** note — documented as the same fact (§2.3) and measured as equal 97.8% of the time where both exist (§1.3). This covers ~27,000 elements that carry territory only in the note (§1.4). Code: `NoteTerritory.applies/1`, `LatTerritory.territory/2`.

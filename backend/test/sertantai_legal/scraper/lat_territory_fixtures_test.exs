@@ -82,6 +82,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").text == "A duty [E+W: to report] applies."
     end
 
+    @tag pending: "LR-03"
     test "note territory (no attribute)" do
       rows =
         parse(
@@ -126,7 +127,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").text == "The [E+W: regulator or the] council may act."
     end
 
-    @tag pending: "LR-02"
+    @tag pending: "LR-03"
     test "note territory, no attribute (1990/8 s.150(1)(b) \"or 24ZA(c)\")" do
       rows =
         parse(
@@ -206,7 +207,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
                "be dealt with by [S: the fire and rescue service] [E+W: the fire brigade] forthwith."
     end
 
-    @tag pending: "LR-02"
+    @tag pending: "LR-03"
     test "note territory, no attributes" do
       rows = parse(pair("", "", "n-sub-s"), sub_s())
 
@@ -226,7 +227,6 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").text == "be dealt with by the fire and rescue service forthwith."
     end
 
-    @tag pending: "LR-02"
     test "halves not siblings (each wrapped in an earlier insertion): 1990/8 s.150(1)(b)" do
       body =
         section(
@@ -255,7 +255,6 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
   # ── Nested changes ─────────────────────────────────────────────────────
 
   describe "nested changes" do
-    @tag pending: "LR-02"
     test "a repeal for S around a substitution for E+W: the old words are live nowhere (1968/73 s.102(4))" do
       body =
         section(
@@ -287,7 +286,6 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").text == "A [E+W: duty to report promptly] applies."
     end
 
-    @tag pending: "LR-02"
     test "a narrower insertion inside a wider one keeps its own bracket" do
       body =
         section(
@@ -320,11 +318,13 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
                row(rows, "s.3")
     end
 
+    @tag pending: "LR-03"
     test "retained for some territories (note)" do
       rows = parse(whole_retained("", "n-rep-s"), rep_s())
       assert %{text: "The sludge shall be tested.", excluded_extent: "S"} = row(rows, "s.3")
     end
 
+    @tag pending: "LR-07"
     test "retained for no territory: the whole extent, repealed_saved" do
       rows = parse(whole_retained("", "n-rep"), rep_none())
       assert %{excluded_extent: "E+W+S", status: "repealed_saved"} = row(rows, "s.3")
@@ -355,7 +355,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.202D(1)").text == "This section applies if regulations so provide."
     end
 
-    @tag pending: "LR-02"
+    @tag pending: "LR-03"
     test "a Part inserted for W (note only): 2010/2214 Pt. 2B" do
       body =
         ~s|<Part><Number>PART 2B</Number><Title>Wales</Title><P1group><Title>T</Title><P1><Pnumber><Addition CommentaryRef="n-2b">11U</Addition></Pnumber><P1para><Text><Addition CommentaryRef="n-2b">In this regulation, a duty.</Addition></Text></P1para></P1></P1group></Part>|
@@ -364,7 +364,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.11U").excluded_extent == "E"
     end
 
-    @tag pending: "LR-02"
+    @tag pending: "LR-03"
     test "retained for E+W with an inner E+W insertion: plain + excluded (Q3; 1974/40 s.30(5))" do
       body =
         ~s|<P1group><Title>T</Title><P1><Pnumber>30</Pnumber><P1para><P2><Pnumber><Repeal CommentaryRef="n-30" RetainText="true">5</Repeal></Pnumber><P2para><Text><Repeal CommentaryRef="n-30" RetainText="true">Nothing applies to waste within the meaning of </Repeal><Repeal CommentaryRef="n-30" RetainText="true"><Addition CommentaryRef="n-ins-ew" Extent="E+W">Schedule 23 to the 2016 Regulations</Addition></Repeal><Repeal CommentaryRef="n-30" RetainText="true">; but regulations may—</Repeal></Text></P2para></P2></P1para></P1></P1group>|
@@ -385,7 +385,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
              } = row(rows, "s.30(5)")
     end
 
-    @tag pending: "LR-02"
+    @tag pending: "LR-03"
     test "attribute and note both name territories: union (Q1; 1996/1527 reg.16(1))" do
       body = whole_retained(~s| Extent="S"|, "n-disapp")
 
@@ -399,6 +399,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.3").excluded_extent == "W+S"
     end
 
+    @tag pending: "LR-03"
     test "a signature whose parts are retained-repealed for S (1989/1263 signed.72)" do
       body =
         ~s|<P1group><Title>T</Title><P1><Pnumber>1</Pnumber><P1para><Text>A duty.</Text></P1para></P1></P1group><SignedSection><Signatory><Signee><PersonName><Repeal CommentaryRef="n-rev-s" RetainText="true">Jane Smith</Repeal></PersonName><JobTitle><Repeal CommentaryRef="n-rev-s" RetainText="true">Minister of State</Repeal></JobTitle><DateSigned Date="1989-07-01"/></Signee></Signatory></SignedSection>|
