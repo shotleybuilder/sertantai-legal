@@ -97,7 +97,7 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
       cond do
         except -> [Territory.subtract(nil, code(hd(except)))]
         String.contains?(q, "except") -> []
-        match = Regex.run(@for_territory, q, capture: :all_but_first) -> [code(hd(match))]
+        match = territory_only(q) -> [code(match)]
         true -> []
       end
     end)
@@ -105,6 +105,24 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     |> case do
       [] -> nil
       codes -> Territory.union(codes)
+    end
+  end
+
+  # "for E." alone, give or take a date note before it and "in so far as not
+  # already in force" (or a timing) after it; anything more limits it to
+  # part of the territory or the change ("for E. in relation to the pilot
+  # areas": 2000/37; "for W. for the insertion of s. 53B") — unusable
+  @before_territory ~r/^(\(being the da(te|y) on which .*came into force\)|at [\d.]+ [ap]\.m\.)?$/
+  @after_territory ~r/^((in force )?(in )?so far as not already in force|to the extent, if any, that it is not already in force|immediately after the coming into force of .*)?$/
+
+  defp territory_only(q) do
+    with [{at, len}, {t_at, t_len}] <- Regex.run(@for_territory, q, return: :index),
+         before = q |> binary_part(0, at) |> String.trim(),
+         rest = q |> binary_part(at + len, byte_size(q) - at - len) |> String.trim(),
+         true <- before =~ @before_territory and rest =~ @after_territory do
+      binary_part(q, t_at, t_len)
+    else
+      _ -> nil
     end
   end
 

@@ -73,6 +73,51 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.on(index, "section-29") == []
     end
 
+    test "a range takes the smallest span: an end id repeated in a later version doesn't stretch it (1990/43 s.34(2A)-(2D), s.146(6)(b))" do
+      e = effect(effect_id: "k", affected_ranges: [{"section-34-2A", "section-34-2D"}])
+
+      order = [
+        "section-34-2A",
+        "section-146-6-b",
+        "section-34-2A",
+        "section-34-2B",
+        "section-34-2D"
+      ]
+
+      index = EffectIndex.new([e], order)
+
+      assert EffectIndex.on(index, "section-34-2B") == [e]
+      assert EffectIndex.on(index, "section-146-6-b") == []
+    end
+
+    test "parallel/2: whole-instrument effects (no refs) match by their affected provisions (uksi 1996/972 revoked for E and for W)" do
+      e = effect(effect_id: "k1", type: "revoked", affected_provisions: "Regulations")
+      w = effect(effect_id: "k2", type: "revoked", affected_provisions: "Regulations")
+      other = effect(effect_id: "k3", type: "revoked", affected_provisions: "reg. 2")
+      index = EffectIndex.new([e, w, other])
+
+      assert EffectIndex.parallel(index, e) |> Enum.map(& &1.effect_id) == ["k1", "k2"]
+    end
+
+    test "on_provision/3: the provision's one applied effect of the change's kind" do
+      subst = effect(effect_id: "k1", type: "words substituted", affected_refs: ["s-1"])
+      repeal = effect(effect_id: "k2", type: "words repealed", affected_refs: ["s-1"])
+      index = EffectIndex.new([subst, repeal])
+
+      assert EffectIndex.on_provision(index, "s-1", :ins) == subst
+      assert EffectIndex.on_provision(index, "s-1", :keep) == repeal
+      assert EffectIndex.on_provision(index, "s-2", :ins) == nil
+      assert EffectIndex.on_provision(index, nil, :ins) == nil
+
+      two =
+        EffectIndex.new([
+          subst,
+          effect(effect_id: "k3", type: "words inserted", affected_refs: ["s-1"])
+        ])
+
+      assert EffectIndex.on_provision(two, "s-1", :ins) == nil
+    end
+
     test "parallel/2: applied effects of the same type naming the same provision" do
       a =
         effect(
@@ -145,6 +190,31 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
 
       purposes = effect(in_force_qualifications: ["for S. for specified purposes"])
       assert EffectTerritory.claim(purposes, :keep, nil) == {nil, nil}
+    end
+
+    test "a qualifier naming more than a territory is unusable (2000/37 \"for E. in relation to the pilot areas\"); \"in so far as not already in force\" is fine" do
+      pilot =
+        effect(
+          in_force_qualifications: [
+            "for E. in relation to the pilot areas",
+            "for E. for specified purposes"
+          ]
+        )
+
+      assert EffectTerritory.claim(pilot, :keep, nil) == {nil, nil}
+
+      ok =
+        effect(
+          in_force_qualifications: [
+            "(being the date on which S.I. 2007/739 came into force) for W. in so far as not already in force",
+            "for E."
+          ]
+        )
+
+      assert EffectTerritory.claim(ok, :keep, nil) == {"E+W", :effect_in_force}
+
+      insertion = effect(in_force_qualifications: ["for W. for the insertion of s. 53B"])
+      assert EffectTerritory.claim(insertion, :keep, nil) == {nil, nil}
     end
 
     test "an except-clause makes a qualifier unusable (1984/22 \"for E. except in relation to ss. 13-15\")" do

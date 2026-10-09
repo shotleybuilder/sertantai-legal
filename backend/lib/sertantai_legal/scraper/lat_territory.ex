@@ -76,9 +76,10 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   application → markup Extent → in force (removals) → narrower extent → no
   claim), with its source; the composition rules then run unchanged.
   """
-  @spec resolve(LatSegments.t(), EffectIndex.t(), String.t() | nil) :: LatSegments.t()
-  def resolve(segments, effects, row_extent \\ nil),
-    do: Enum.map(segments, &resolve_segment(&1, {effects, row_extent}))
+  @spec resolve(LatSegments.t(), EffectIndex.t(), String.t() | nil, String.t() | nil) ::
+          LatSegments.t()
+  def resolve(segments, effects, row_extent \\ nil, provision \\ nil),
+    do: Enum.map(segments, &resolve_segment(&1, {effects, row_extent, provision}))
 
   defp resolve_segment({:words, change, inner}, effects),
     do: {:words, resolve_change(change, effects), resolve_list(inner, effects)}
@@ -101,11 +102,16 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   defp resolve_list(segments, effects), do: Enum.map(segments, &resolve_segment(&1, effects))
 
   defp resolve_change(%Change{} = change, effects) do
-    {index, row_extent} = effects
+    {index, row_extent, provision} = effects
 
+    # a markup change whose ids join no effect: its provision's one fitting
+    # effect (EffectIndex.on_provision/3)
     effect =
       EffectIndex.get(index, change.effect_id) ||
-        EffectIndex.for(index, change.change_id, change.ref)
+        EffectIndex.for(index, change.change_id, change.ref) ||
+        if(change.effect_id == nil and (change.change_id || change.ref) != nil,
+          do: EffectIndex.on_provision(index, provision, change.kind)
+        )
 
     effects = if effect, do: EffectIndex.parallel(index, effect), else: []
 

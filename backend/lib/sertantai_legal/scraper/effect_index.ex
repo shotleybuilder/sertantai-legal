@@ -8,6 +8,9 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   - `effect_id/1` — a markup `ChangeId` ("key-<hex>-<ts>") → its effect id
     ("key-<hex>"); legacy ids (`d29p…`) have none
   - `get/2`, `for_change/2`, `on/2` — lookups
+  - `on_provision/3` — the fallback join for a change whose ids join none
+  - `parallel/2` — an effect and its parallels (the same change by
+    another instrument for another territory)
   - `whole_provision/2` — applied effects that repeal or insert a whole
     provision (not words, not substitutions): rule 3
 
@@ -30,17 +33,15 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
   @doc """
   Index effects by id and by affected ref. A range ("ss. 1-30") covers every
-  id between its ends in `order` (the document's ids in document order;
-  each id's first occurrence — versions repeat ids later). `law_extent` (the
+  id between its ends in `order` (the document's ids in document order),
+  taking the smallest span — versions repeat ids later, so an end's first
+  occurrence can lie far from its start (1990/43 s.34(2A)-(2D)). `law_extent` (the
   law's own extent) stands in for an effect's missing `AffectedExtent`, so a
   devolved instrument's amendment isn't read as narrower than the UK.
   """
   @spec new([Effect.t()], [String.t()], String.t() | nil) :: t()
   def new(effects, order \\ [], law_extent \\ nil) do
-    position =
-      order
-      |> Enum.with_index()
-      |> Enum.reduce(%{}, fn {id, i}, acc -> Map.put_new(acc, id, i) end)
+    positions = order |> Enum.with_index() |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     effects =
       Enum.map(effects, fn e -> %{e | affected_extent: e.affected_extent || law_extent} end)
@@ -51,21 +52,26 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
       by_ref:
         effects
         |> Enum.flat_map(fn e ->
-          refs = (e.affected_refs || []) ++ in_ranges(e.affected_ranges || [], order, position)
+          refs = (e.affected_refs || []) ++ in_ranges(e.affected_ranges || [], order, positions)
           refs |> Enum.uniq() |> Enum.map(&{&1, e})
         end)
         |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     }
   end
 
-  defp in_ranges(ranges, order, position) do
+  defp in_ranges(ranges, order, positions) do
     Enum.flat_map(ranges, fn {first, last} ->
-      with from when from != nil <- position[first],
-           to when to != nil <- position[last],
-           true <- from <= to do
-        Enum.slice(order, from..to)
-      else
-        _ -> []
+      ends = Map.get(positions, last, [])
+
+      spans =
+        for from <- Map.get(positions, first, []),
+            to = Enum.find(ends, &(&1 >= from)),
+            to != nil,
+            do: from..to
+
+      case spans do
+        [] -> []
+        spans -> Enum.slice(order, Enum.min_by(spans, &Range.size/1))
       end
     end)
   end
@@ -104,8 +110,8 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   @spec parallel(t(), Effect.t()) :: [Effect.t()]
   def parallel(index, %Effect{} = effect) do
     others =
-      (effect.affected_refs || [])
-      |> Enum.flat_map(&on(index, &1))
+      effect
+      |> same_provision(index)
       |> Enum.filter(
         &(&1.effect_id != effect.effect_id and &1.applied == true and &1.type == effect.type and
             &1.affected_provisions == effect.affected_provisions)
@@ -114,6 +120,45 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
     [effect | others]
   end
+
+  # effects naming the effect's provisions: by structured ref; a
+  # whole-instrument effect has none ("Regulations": uksi 1996/972)
+  defp same_provision(%Effect{affected_refs: refs}, index) when refs not in [nil, []],
+    do: Enum.flat_map(refs, &on(index, &1))
+
+  defp same_provision(_effect, index), do: Map.values(index.by_id)
+
+  @doc """
+  The effect behind a change whose ids join none (an orphan `ChangeId`:
+  2013/32 s.89(8)(h)): the one applied effect on the row's provision whose
+  type fits the change's kind — insertions and substitutions for `:ins`,
+  repeals for `:keep`, substitutions for `:pair`. Parallels count as one;
+  any other ambiguity is no join.
+  """
+  @spec on_provision(t(), String.t() | nil, :ins | :keep | :pair) :: Effect.t() | nil
+  def on_provision(index, ref, kind) do
+    candidates =
+      index
+      |> on(ref)
+      |> Enum.filter(&(&1.applied == true and fits?(kind, &1.type || "")))
+      |> Enum.uniq_by(& &1.effect_id)
+
+    case candidates do
+      [e | rest] ->
+        if Enum.all?(
+             rest,
+             &(&1.type == e.type and &1.affected_provisions == e.affected_provisions)
+           ),
+           do: e
+
+      [] ->
+        nil
+    end
+  end
+
+  defp fits?(:ins, type), do: String.match?(type, ~r/insert|added|substitut/)
+  defp fits?(:keep, type), do: String.match?(type, ~r/repeal|revok|omit/)
+  defp fits?(:pair, type), do: String.contains?(type, "substitut")
 
   @doc "Effects naming this provision (by structured ref)."
   @spec on(t(), String.t() | nil) :: [Effect.t()]

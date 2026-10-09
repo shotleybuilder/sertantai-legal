@@ -66,13 +66,6 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
 
   defp ins_ew, do: note("n-ins-ew", "Words in s. 1 inserted (E.W.) (6.4.2010) by S.I. 2010/675")
 
-  defp ins_w,
-    do:
-      note(
-        "n-ins-w",
-        "Words in s. 1 inserted (W.) (15.12.2025) by Infrastructure (Wales) Act 2024 (asc 3)"
-      )
-
   defp sub_s, do: note("n-sub-s", "Words in s. 1 substituted (S.) (1.4.2013) by S.S.I. 2013/51")
 
   defp sub_w,
