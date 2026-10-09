@@ -544,7 +544,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.1").excluded_extent == nil
     end
 
-    test "a Part repeal \"except in relation to ss. 13-15\" (Q2; 1984/22): s.13 untouched; s.20 no claim — the effect's qualifications are \"Other\" (gap)" do
+    test "a Part repeal \"except in relation to ss. 13-15\" (Q2; 1984/22): s.13 untouched; s.20 repealed for E+W" do
       body =
         ~s|<Part id="part-II"><Number>Part II</Number><Title>T</Title><P1group><Title>T</Title><P1 id="section-13"><Pnumber><Repeal ChangeId="key-pt2-1" RetainText="true">13</Repeal></Pnumber><P1para><Text><Repeal ChangeId="key-pt2-1" RetainText="true">Regulations may provide for diseases.</Repeal></Text></P1para></P1></P1group><P1group><Title>T</Title><P1 id="section-20"><Pnumber><Repeal ChangeId="key-pt2-1" RetainText="true">20</Repeal></Pnumber><P1para><Text><Repeal ChangeId="key-pt2-1" RetainText="true">A duty to notify.</Repeal></Text></P1para></P1></P1group></Part>|
 
@@ -554,13 +554,16 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
             effect_id: "key-pt2",
             type: "repealed",
             effect_extent: "S+A+M+E+A+S+A+F+F+E+C+T+E+D",
-            in_force_qualifications: ["Other", "Other"],
+            in_force_qualifications: [
+              "for E. except in relation to ss. 13-15, 76",
+              "for W. except in relation to ss. 13-15, 76"
+            ],
             affected_refs: ["part-II"]
           )
         ])
 
       assert %{excluded_extent: nil, status: "in_force"} = row(rows, "s.13")
-      assert %{excluded_extent: nil} = row(rows, "s.20")
+      assert %{excluded_extent: "E+W"} = row(rows, "s.20")
     end
   end
 end

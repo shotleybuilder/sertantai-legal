@@ -51,7 +51,12 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheckTest do
       conflict_markup: "E+W"
     }
 
-    assert [%{check: :markup_effect_conflict, detail: "markup E+W, effect S (key-a)"}] =
+    assert [
+             %{
+               check: :markup_effect_conflict,
+               detail: "markup E+W used: disjoint from the effects' application (key-a)"
+             }
+           ] =
              LatTerritoryCheck.check([row("s.5", territory_provenance: [claim])])
   end
 

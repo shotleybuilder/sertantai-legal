@@ -76,7 +76,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheck do
       finding(
         :markup_effect_conflict,
         row,
-        "markup #{markup}, effect #{claim.territory} (#{claim[:effect_id]})"
+        "markup #{markup} used: disjoint from the effects' application (#{claim[:effect_id]})"
       )
     end
   end

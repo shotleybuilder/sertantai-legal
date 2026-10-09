@@ -259,6 +259,57 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim([e, w], :ins, nil) == {"E+W", :effect_application}
     end
 
+    test "parallels union only when the keyed effect names an application itself (2010/2214 reg.36[E]: versions key their own effects)" do
+      e = effect(effect_id: "k1", type: "substituted", territorial_application: nil)
+      w = effect(effect_id: "k2", type: "substituted", territorial_application: "W")
+      assert EffectTerritory.claim([e, w], :ins, nil) == {nil, nil}
+      assert EffectTerritory.claim([e, w], :ins, "E") == {"E", :markup}
+      refute EffectTerritory.conflict?([e, w], "E")
+    end
+
+    test "a qualifier scoped to provisions counts on those provisions only (1990/43 Pt. I \"for S. for the repeal of ss. 1-19, 22-28\")" do
+      e = effect(in_force_qualifications: ["for S. for the repeal of ss. 1-19, 22-28"])
+
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-1-2") == {"S", :effect_in_force}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-19") == {"S", :effect_in_force}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-14A-1") == {"S", :effect_in_force}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-20-1") == {nil, nil}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-28") == {"S", :effect_in_force}
+      # the provision unknown, or not a section: unusable
+      assert EffectTerritory.claim(e, :keep, nil) == {nil, nil}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "schedule-1") == {nil, nil}
+    end
+
+    test "an except-clause naming provisions counts everywhere else (1984/22 \"for E. except in relation to ss. 13-15, 76\")" do
+      e =
+        effect(
+          in_force_qualifications: [
+            "for E. except in relation to ss. 13-15, 76",
+            "for W. except in relation to ss. 13-15, 76"
+          ]
+        )
+
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-20") == {"E+W", :effect_in_force}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-13") == {nil, nil}
+      assert EffectTerritory.claim(e, :keep, nil, nil, "section-76-2") == {nil, nil}
+    end
+
+    test "a single provision and a subsection (\"for W. for the repeal of s. 53B\", \"for the repeal of s. 26(5)\")" do
+      ins = effect(in_force_qualifications: ["for W. for the repeal of s. 53B"])
+
+      assert EffectTerritory.claim(ins, :keep, nil, nil, "section-53B-1") ==
+               {"W", :effect_in_force}
+
+      assert EffectTerritory.claim(ins, :keep, nil, nil, "section-53") == {nil, nil}
+
+      sub = effect(in_force_qualifications: ["for S. for the repeal of s. 26(5)"])
+
+      assert EffectTerritory.claim(sub, :keep, nil, nil, "section-26-5-a") ==
+               {"S", :effect_in_force}
+
+      assert EffectTerritory.claim(sub, :keep, nil, nil, "section-26-4") == {nil, nil}
+    end
+
     test "markup disjoint from the application: the markup wins, reported as a conflict (uksi 2000/1043 reg.11(3))" do
       e = effect(territorial_application: "E")
       assert EffectTerritory.claim(e, :ins, "W") == {"W", :markup}
