@@ -16,23 +16,37 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
-  @type t :: %{by_id: %{String.t() => Effect.t()}, by_ref: %{String.t() => [Effect.t()]}}
+  @type t :: %{
+          by_id: %{String.t() => Effect.t()},
+          by_ref: %{String.t() => [Effect.t()]},
+          law_extent: String.t() | nil
+        }
 
   @whole ~w(repealed revoked omitted inserted added)
 
   @doc "An empty index (a law with no effects, or none loaded)."
   @spec empty() :: t()
-  def empty, do: %{by_id: %{}, by_ref: %{}}
+  def empty, do: %{by_id: %{}, by_ref: %{}, law_extent: nil}
 
   @doc """
   Index effects by id and by affected ref. A range ("ss. 1-30") covers every
-  id between its ends in `order` (the document's ids in document order).
+  id between its ends in `order` (the document's ids in document order;
+  each id's first occurrence — versions repeat ids later). `law_extent` (the
+  law's own extent) stands in for an effect's missing `AffectedExtent`, so a
+  devolved instrument's amendment isn't read as narrower than the UK.
   """
-  @spec new([Effect.t()], [String.t()]) :: t()
-  def new(effects, order \\ []) do
-    position = order |> Enum.with_index() |> Map.new()
+  @spec new([Effect.t()], [String.t()], String.t() | nil) :: t()
+  def new(effects, order \\ [], law_extent \\ nil) do
+    position =
+      order
+      |> Enum.with_index()
+      |> Enum.reduce(%{}, fn {id, i}, acc -> Map.put_new(acc, id, i) end)
+
+    effects =
+      Enum.map(effects, fn e -> %{e | affected_extent: e.affected_extent || law_extent} end)
 
     %{
+      law_extent: law_extent,
       by_id: for(%Effect{effect_id: id} = e <- effects, id != nil, into: %{}, do: {id, e}),
       by_ref:
         effects

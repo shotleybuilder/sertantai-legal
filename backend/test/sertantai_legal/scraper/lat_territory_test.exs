@@ -393,5 +393,40 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert [%{source: :effect_application, territory: "S", conflict_markup: "E+W"}] =
                LatTerritory.provenance(segs)
     end
+
+    test "an insertion inside a retained repeal narrows where its words are live: text and excluded agree (1990/43 s.153(1)(z6)(i))" do
+      segs = [
+        {:words, %Change{kind: :keep, attribute: "E+W"},
+         [{:words, %Change{kind: :ins, attribute: "S"}, [t("biodiversity supported by land,")]}]}
+      ]
+
+      resolved = LatTerritory.resolve(segs, EffectIndex.empty())
+      assert LatTerritory.excluded(resolved, "E+W+S+NI") == "E+W+NI"
+    end
+
+    test "a substitution's new words with no old words in the markup bracket but don't exclude the row (2013/32 s.89(8)(h))" do
+      change = %Change{kind: :ins, attribute: "E+W+S", substitution: true}
+
+      resolved =
+        LatTerritory.resolve(
+          [{:words, change, [t("the Office of Rail and Road")]}],
+          EffectIndex.empty()
+        )
+
+      assert LatTerritory.excluded(resolved, "E+W+S+NI") == nil
+      assert LatTerritory.render(resolved, "E+W+S+NI") == "[E+W+S: the Office of Rail and Road]"
+    end
+
+    test "an effect with no AffectedExtent is measured against the law's own extent (an SSI amended by an SSI)" do
+      index = EffectIndex.new([fx(effect_id: "key-ss", effect_extent: "S")], [], "S")
+
+      segs =
+        LatTerritory.resolve(
+          [{:words, %Change{kind: :ins, change_id: "key-ss-1"}, [t("x")]}],
+          index
+        )
+
+      assert LatTerritory.provenance(segs) == []
+    end
   end
 end

@@ -186,4 +186,25 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
     {[effect], _} = ChangesFeed.parse(xml)
     assert effect.affected_ranges == [{"section-1", "section-30"}]
   end
+
+  test "in-force qualifications: \"Other\" reads OtherQualification; undated or unapplied entries don't count (LR-03)" do
+    xml = """
+    <feed xmlns="http://www.w3.org/2005/Atom" xmlns:ukm="http://www.legislation.gov.uk/namespaces/metadata"><entry><content>
+    <ukm:Effect EffectId="effect-fixture" Type="substituted" Applied="true" AffectedProvisions="s. 402(2)(aa)" AffectingURI="http://www.legislation.gov.uk/id/ukpga/2021/30">
+    <ukm:InForceDates>
+    <ukm:InForce Applied="false" Prospective="true" Qualification=""/>
+    <ukm:InForce Applied="true" Date="2021-03-15" Qualification="for specified purposes"/>
+    <ukm:InForce Date="2022-12-26" Qualification="Other" OtherQualification="for E.W. in so far as not already in force"/>
+    <ukm:InForce Applied="false" Date="2030-01-01" Qualification="for N.I."/>
+    </ukm:InForceDates>
+    </ukm:Effect></content></entry></feed>
+    """
+
+    {[effect], _} = ChangesFeed.parse(xml)
+
+    assert effect.in_force_qualifications == [
+             "for specified purposes",
+             "for E.W. in so far as not already in force"
+           ]
+  end
 end

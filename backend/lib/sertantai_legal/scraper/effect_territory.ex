@@ -57,13 +57,22 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
   # "for E.", "for E.W.", "for S. so far as …"; not "for specified purposes"
   @for_territory ~r/\bfor ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)/
 
+  @except_territory ~r/except in relation to ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)/
+
+  # "for E." → E; "except in relation to W." → everywhere but W; purposes,
+  # or an except-clause naming provisions ("except in relation to ss.
+  # 13-15"), make a qualifier unusable
   defp in_force(%Effect{in_force_qualifications: qualifications}) do
     qualifications
     |> Enum.reject(&String.contains?(&1, "purpose"))
     |> Enum.flat_map(fn q ->
-      case Regex.run(@for_territory, q, capture: :all_but_first) do
-        [letters] -> [code(letters)]
-        nil -> []
+      except = Regex.run(@except_territory, q, capture: :all_but_first)
+
+      cond do
+        except -> [Territory.subtract(nil, code(hd(except)))]
+        String.contains?(q, "except") -> []
+        match = Regex.run(@for_territory, q, capture: :all_but_first) -> [code(hd(match))]
+        true -> []
       end
     end)
     |> Enum.reject(&is_nil/1)

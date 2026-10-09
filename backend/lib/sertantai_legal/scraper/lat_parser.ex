@@ -103,7 +103,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       version_extent: nil,
       # LR-03: the law's effects (EffectIndex; empty = markup only) and the
       # whole-provision changes (rule 3) inherited by descendant rows
-      effects: effect_index(Map.get(context, :effects), doc),
+      effects: effect_index(Map.get(context, :effects), doc, law_extent(xml, context)),
+      law_extent: law_extent(xml, context),
       provision_changes: []
     }
 
@@ -433,7 +434,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   # ── Row Emission ─────────────────────────────────────────────────
 
   defp emit_row(element, ctx, node, extent) do
-    {repealed, whole} = excluded_extent(node, extent, ctx)
+    {repealed, whole} = excluded_extent(node, extent || ctx.law_extent, ctx)
 
     segments =
       node
@@ -441,7 +442,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       |> with_trailing(ctx.trailing, node)
       |> row_segments(ctx)
 
-    text = LatTerritory.render(segments, extent, repealed)
+    text = LatTerritory.render(segments, extent || ctx.law_extent, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -473,7 +474,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   end
 
   defp emit_structural_row(element, ctx, node, extent) do
-    {repealed, whole} = excluded_extent(node, extent, ctx)
+    {repealed, whole} = excluded_extent(node, extent || ctx.law_extent, ctx)
 
     segments =
       node
@@ -481,7 +482,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
       |> with_trailing(ctx.trailing, node)
       |> row_segments(ctx)
 
-    text = LatTerritory.render(segments, extent, repealed)
+    text = LatTerritory.render(segments, extent || ctx.law_extent, repealed)
 
     {commentary_counts, commentary_refs} = collect_commentary_refs(node, ctx.ref_type_lookup)
 
@@ -535,9 +536,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
       commencement_count: Map.get(commentary_counts, :i),
       extent_count: Map.get(commentary_counts, :e),
       commentary_refs: commentary_refs,
-      excluded_extent: node |> excluded_extent(extent, ctx) |> elem(0),
+      excluded_extent: node |> excluded_extent(extent || ctx.law_extent, ctx) |> elem(0),
       territory_provenance:
-        node |> excluded_extent(extent, ctx) |> elem(1) |> LatTerritory.provenance(),
+        node
+        |> excluded_extent(extent || ctx.law_extent, ctx)
+        |> elem(1)
+        |> LatTerritory.provenance(),
       from_version: ctx.from_version
     }
   end
@@ -560,11 +564,32 @@ defmodule SertantaiLegal.Scraper.LatParser do
 
   # The law's effects (`context.effects`: a list of ChangesFeed effects, or an
   # EffectIndex), indexed against this document's ids in order (ranges).
-  defp effect_index(nil, _doc), do: EffectIndex.empty()
-  defp effect_index(%{by_id: _, by_ref: _} = index, _doc), do: index
+  defp effect_index(nil, _doc, _law_extent), do: EffectIndex.empty()
+  defp effect_index(%{by_id: _, by_ref: _} = index, _doc, _law_extent), do: index
 
-  defp effect_index(effects, doc) when is_list(effects),
-    do: EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1))
+  defp effect_index(effects, doc, law_extent) when is_list(effects),
+    do: EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1), law_extent)
+
+  # The law's own extent for territory (not stored on rows): the document's
+  # RestrictExtent, else its type's — a devolved instrument extends only
+  # there (LR-03: an SSI amended by an SSI is not "narrower than the UK").
+  @type_extent %{
+    "ssi" => "S",
+    "asp" => "S",
+    "aosp" => "S",
+    "nisr" => "NI",
+    "nisi" => "NI",
+    "nia" => "NI",
+    "apni" => "NI",
+    "mnia" => "NI",
+    "wsi" => "E+W",
+    "anaw" => "E+W",
+    "asc" => "E+W",
+    "mwa" => "E+W"
+  }
+
+  defp law_extent(xml, context),
+    do: extract_root_extent(xml) || Map.get(@type_extent, Map.get(context, :type_code))
 
   # A row's segments with territory resolved from the effects layer
   # (LatTerritory.resolve/2), inside any whole-provision changes it inherits.
@@ -1277,7 +1302,8 @@ defmodule SertantaiLegal.Scraper.LatParser do
       kind: kind,
       attribute: blank_to_nil(xpath(el, ~x"./@Extent"s)),
       ref: blank_to_nil(xpath(el, ~x"./@CommentaryRef"s)),
-      change_id: change_id(el)
+      change_id: change_id(el),
+      substitution: elem(el, 1) == :Substitution
     }
   end
 

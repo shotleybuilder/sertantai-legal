@@ -151,7 +151,9 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           ~x"./*[local-name()='InForceDates']/*[local-name()='InForce']"l,
           date: ~x"./@Date"s,
           prospective: ~x"./@Prospective"s,
-          qualification: ~x"./@Qualification"s
+          qualification: ~x"./@Qualification"s,
+          other_qualification: ~x"./@OtherQualification"s,
+          applied: ~x"./@Applied"s
         ],
         savings: ~x"./*[local-name()='Savings']/*[local-name()='Section']/@Ref"ls,
         affected_refs: ~x"./*[local-name()='AffectedProvisions']//*[@Ref]/@Ref"ls,
@@ -177,8 +179,16 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           in_force_date: earliest_date(e.in_force),
           in_force_qualification:
             e.in_force |> Enum.map(& &1.qualification) |> Enum.find(&(&1 != "")),
+          # LR-03: territory only from dated, not-unapplied entries; "Other"
+          # carries its text in OtherQualification
           in_force_qualifications:
-            e.in_force |> Enum.map(& &1.qualification) |> Enum.reject(&(&1 == "")),
+            for(
+              f <- e.in_force,
+              f.date != "" and f.applied != "false",
+              q = if(f.qualification == "Other", do: f.other_qualification, else: f.qualification),
+              q != "",
+              do: q
+            ),
           prospective:
             Enum.any?(e.in_force, &(&1.prospective == "true")) and
               earliest_date(e.in_force) == nil,

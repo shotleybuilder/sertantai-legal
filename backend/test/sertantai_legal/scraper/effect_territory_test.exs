@@ -56,6 +56,15 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.on(index, "section-31") == []
     end
 
+    test "a range uses each id's first occurrence: a version repeating ids later doesn't stretch it (1990/43 \"Ss. 1-28\")" do
+      e = effect(effect_id: "k", affected_ranges: [{"section-1", "section-28"}])
+      order = ["section-1", "section-28", "section-29", "section-164", "section-28"]
+      index = EffectIndex.new([e], order)
+
+      assert EffectIndex.on(index, "section-28") == [e]
+      assert EffectIndex.on(index, "section-29") == []
+    end
+
     test "whole-provision effects: applied repeals/insertions of the provision only" do
       repeal = effect(effect_id: "k1", type: "repealed", affected_refs: ["section-101"])
       words = effect(effect_id: "k2", type: "words repealed", affected_refs: ["section-101"])
@@ -99,6 +108,18 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
 
       purposes = effect(in_force_qualifications: ["for S. for specified purposes"])
       assert EffectTerritory.claim(purposes, :keep, nil) == {nil, nil}
+    end
+
+    test "an except-clause makes a qualifier unusable (1984/22 \"for E. except in relation to ss. 13-15\")" do
+      e =
+        effect(
+          in_force_qualifications: [
+            "for E. except in relation to ss. 13-15, 76",
+            "for W. except in relation to ss. 13-15, 76"
+          ]
+        )
+
+      assert EffectTerritory.claim(e, :keep, nil) == {nil, nil}
     end
 
     test "4. the effect's extent only when narrower than the affected extent (1974/40 s.101)" do

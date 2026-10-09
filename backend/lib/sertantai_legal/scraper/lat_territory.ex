@@ -41,7 +41,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       :effect_id,
       :territory,
       :source,
-      :conflict_markup
+      :conflict_markup,
+      substitution: false
     ]
 
     @type t :: %__MODULE__{
@@ -52,7 +53,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
             effect_id: String.t() | nil,
             territory: String.t() | nil,
             source: atom() | nil,
-            conflict_markup: String.t() | nil
+            conflict_markup: String.t() | nil,
+            substitution: boolean()
           }
   end
 
@@ -111,7 +113,11 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       | territory: territory,
         source: source,
         effect_id: effect && effect.effect_id,
-        conflict_markup: conflict
+        conflict_markup: conflict,
+        substitution:
+          change.substitution or
+            (change.kind == :ins and effect != nil and
+               String.contains?(effect.type || "", "substitut"))
     }
   end
 
@@ -471,12 +477,14 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   Each piece of visible words has a live territory, its changes composed
   from the outside in, from the row's extent: a retained repeal removes its
-  territory (naming none: live nowhere — retained for purposes/savings);
-  an insertion narrows to where it applies; an insertion naming no
-  territory, or one outside the row (an England insertion in a Welsh
-  version), changes nothing; one inside a retained repeal changes nothing
-  when within the live territory (it is bracketed: 1967/10 s.29(1)(a)) and
-  leaves the words live nowhere when outside it (1990/43 s.6(6A)(c)).
+  territory (naming none: no claim — savings and purposes are status,
+  LR-07); an insertion narrows to where it applies (leaving the words live
+  nowhere when it lies outside the live territory: 1990/43 s.6(6A)(c)); an
+  insertion naming no territory, one outside the row (an England insertion
+  in a Welsh version), or a substitution's new words with no old words in
+  the markup (2013/32 s.89(8)(h)) change nothing. Because excluded is the
+  union of where words are live, a narrower insertion inside wider words
+  doesn't narrow the row — it is bracketed (1967/10 s.29(1)(a)).
 
   The row's own words decide; a row with none is judged on its
   sub-provisions (the caller passes their segments). Numbers, titles, list
@@ -510,7 +518,7 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     do: if(String.trim(s) == "", do: [], else: [state])
 
   defp piece({:words, change, inner}, {kind, live} = state, whole) do
-    case compose(change, kind, live, whole) do
+    case compose(change, live, whole) do
       :same -> pieces(inner, state, whole)
       live -> pieces(inner, {kind || change.kind, live}, whole)
     end
@@ -527,9 +535,8 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   defp piece({:pair_new, _id, change, inner}, state, whole),
     do: piece({:words, %{change | kind: :ins}, inner}, state, whole)
 
-  # The live territory inside a change (`outer`: the outermost change kind
-  # around it); :same when it changes nothing.
-  defp compose(%Change{kind: :keep} = change, _outer, live, _whole) do
+  # The live territory inside a change; :same when it changes nothing.
+  defp compose(%Change{kind: :keep} = change, live, _whole) do
     case territory(change) do
       # the markup names no territory: no claim (effects: LR-03)
       nil -> :same
@@ -537,14 +544,17 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     end
   end
 
-  defp compose(%Change{} = change, outer, live, whole) do
+  defp compose(%Change{} = change, live, whole) do
     t = territory(change)
 
     cond do
       t == nil or Territory.disjoint?(t, whole) -> :same
       live == nil -> nil
       Territory.disjoint?(t, live) -> nil
-      outer == :keep -> :same
+      # a substitution's new words with no old words in the markup: the old
+      # wording still applies elsewhere — bracketed, never narrowing the row
+      # (2013/32 s.89(8)(h))
+      change.substitution -> :same
       true -> intersect(live, t)
     end
   end
