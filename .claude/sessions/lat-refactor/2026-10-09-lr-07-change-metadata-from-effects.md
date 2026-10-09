@@ -21,10 +21,10 @@ bugs:
 ## Todo
 
 - ✅ Map each LAT fact to its effects source (and to the amending law where no effect exists) — see Fact map
-- ⬜ effect / effective_from / changed_by from effects; note-only changes kept as notes, flagged (or checked against the law)
-- ⬜ Row status from effects: partial / prospective / commencement by territory; repealed_saved from savings
+- ✅ effect / effective_from / changed_by from effects; note-only changes kept as notes, flagged (`fact_provenance`, `change_provenance`)
+- ✅ Row status from effects: partial / prospective / commencement by territory; repealed_saved from savings
 - ✅ From LR-03 checks: a retained repeal whose effect extent equals the row's extent makes no territory claim (1989/14 s.3(5)(aa)/(ba)/(c)(ia): "Act repealed (S.)" on S-only rows) — wholly in force → repealed status here
-- ⬜ fractalaw contract impact (fields, hashes) → LH-05
+- ✅ fractalaw contract impact (fields, hashes) → LH-05 (listed below; fractalaw not told yet)
 - ⬜ Classified diff; review
 
 ## Dependencies
@@ -118,3 +118,18 @@ Decided (Jason, 2026-10-09):
 - Text diff run 3: 2,348 rows vs LR-03 run 8; 27 in_force among them showed a silent effect read as everywhere (1988/52 s.4(6) "repealed (E.W.)", 2010/404 reg.14, 2020/7 s.8) → `:effect_everywhere` needs positive evidence (purposes, savings, effect extent covering the row).
 - Text diff run 4: 2,233 rows vs LR-03 run 8 (excluded_extent only; 3 text); 2,113 already `repealed_saved` in the DB (the notes said so), 98 repealed, 3 prospective, 19 in_force (1989/14 s.3(5) ×6 — the LR-03 item; heads of revoked-with-savings laws; residue: 2010/404 reg.14 ×6, 2020/7 s.8 ×2 → open bug, LR-05). Checks unchanged: 9 conflicts, 2 child-live, 1 other.
 - Change diff run 2: 109,245 changed fields (lr07 106,074, parse 3,171). Notes from effects 65,648 / text 25,026; row status source effect 196,698 / markup 182,226 / note 525. Largest: commencement dates filled from effects (22,035), changed_by filled (19,285), dates later (12,549) / earlier (6,463), repealed → repealed_saved from feed Savings (2,126), partial gained 1,296 / lost 841. Fixed after: a uksi-held Welsh SI commencing itself (wsi twin) is itself.
+
+## Persistence (2026-10-09)
+
+Ash migration `20261009175920_lr07_effect_ids` (dev + test migrated; `lat` view recreated with the columns): `legal_articles.effect_ids`, `change_provenance` (%{status, change}); `amendment_annotations.effect_ids`, `fact_provenance` (%{facts, dates}). Both parse paths write them (`LatStagedParser`; the LRT scrape's `StagedParser.persist_body_lat`, which until now parsed with no effects — LR-03 territory from effects never ran there). `LatStatus.Apply.refresh` resolves through `ChangeFacts.resolve/5` (effects from `opts[:effects]` or the store); `mix lat.status --store`. Stored rows hold no `effect_ids` until re-parsed: the LR-06 wave (re-parse → refresh) is what lands LR-07's facts; `mix lat.status` alone gives the notes-only baseline.
+
+## fractalaw contract impact → LH-05 (not flagged)
+
+| field | hashed? | change |
+|---|---|---|
+| `status` | `status_hash` | values unchanged; moves: partial from effects (incl. territorial — pending entries only), `repealed_saved` from feed Savings (D2 superseded); change-diff run 2: repealed → saved 2,126, partial +1,296 / −841 |
+| `effective_from` / `changed_by` (rows; Zenoh `data_server`) | no | from effects; ancestors pass down whole-provision changes only; a law's own commencement dates the row with `changed_by` nil; ~22k rows gain commencement dates |
+| `excluded_extent` | no | whole extent for retained repeals with `:effect_everywhere` evidence (~2,233 rows vs LR-03, 2,113 already `repealed_saved`) |
+| notes `effect` / `effective_from` / `changed_by` | no | from effects (65,648 notes) |
+| notes `change_id` | evidence for LatCause / lat_changes | unchanged (hash of law + text) |
+| `effect_ids`, `change_provenance`, `fact_provenance` | no | new, legal-only for now |
