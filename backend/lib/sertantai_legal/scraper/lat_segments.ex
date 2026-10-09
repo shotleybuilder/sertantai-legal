@@ -125,6 +125,22 @@ defmodule SertantaiLegal.Scraper.LatSegments do
   defp trim_side(s, :leading), do: String.trim_leading(s)
   defp trim_side(s, :trailing), do: String.trim_trailing(s)
 
+  @doc "Applies `fun` to the last text segment (inside a change or aside at the end)."
+  @spec update_last_text(t(), (String.t() -> String.t())) :: t()
+  def update_last_text(segments, fun) do
+    segments |> Enum.reverse() |> update_first(fun) |> Enum.reverse()
+  end
+
+  defp update_first([{:text, s} | rest], fun), do: [{:text, fun.(s)} | rest]
+
+  defp update_first([{:words, change, inner} | rest], fun),
+    do: [{:words, change, inner |> Enum.reverse() |> update_first(fun) |> Enum.reverse()} | rest]
+
+  defp update_first([{:aside, inner} | rest], fun),
+    do: [{:aside, inner |> Enum.reverse() |> update_first(fun) |> Enum.reverse()} | rest]
+
+  defp update_first(segments, _fun), do: segments
+
   @doc """
   AppendText joins the block before it: inside a closing quote mark ("…and”.»"),
   else at its end.

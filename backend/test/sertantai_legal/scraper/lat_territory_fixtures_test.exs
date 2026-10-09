@@ -400,6 +400,18 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
       assert row(rows, "s.3").excluded_extent == "W+S"
     end
 
+    test "a signature whose parts are retained-repealed for S (1989/1263 signed.72)" do
+      body =
+        ~s|<P1group><Title>T</Title><P1><Pnumber>1</Pnumber><P1para><Text>A duty.</Text></P1para></P1></P1group><SignedSection><Signatory><Signee><PersonName><Repeal CommentaryRef="n-rev-s" RetainText="true">Jane Smith</Repeal></PersonName><JobTitle><Repeal CommentaryRef="n-rev-s" RetainText="true">Minister of State</Repeal></JobTitle><DateSigned Date="1989-07-01"/></Signee></Signatory></SignedSection>|
+
+      rows =
+        parse(body, note("n-rev-s", "Regulations revoked (S.) (1.11.2025) by S.S.I. 2025/165"))
+
+      signed = rows |> Enum.find(fn {id, _} -> String.starts_with?(id, "signed") end) |> elem(1)
+      assert signed.excluded_extent == "S"
+      assert signed.text =~ "Jane Smith, Minister of State"
+    end
+
     test "a prospective row repealed for S keeps prospective" do
       body =
         ~s|<P1group><Title>T</Title><P1 Status="Prospective"><Pnumber><Repeal CommentaryRef="n-rep-s" RetainText="true" Extent="S">3</Repeal></Pnumber><P1para><Text><Repeal CommentaryRef="n-rep-s" RetainText="true" Extent="S">The sludge shall be tested.</Repeal></Text></P1para></P1></P1group>|

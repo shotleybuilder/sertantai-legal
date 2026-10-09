@@ -83,7 +83,9 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
 
   defp note_fits?(:pair, _effect), do: true
   defp note_fits?(:ins, effect), do: effect in @inserting
-  defp note_fits?(:keep, effect), do: effect not in ~w(inserted substituted)
+  # a retained Repeal citing a substitution note: the old words (its new
+  # words may be another row: 1998/494 reg.4(3)(e))
+  defp note_fits?(:keep, effect), do: effect != "inserted"
 
   # ── Pairing ──────────────────────────────────────────────────────
 
@@ -241,24 +243,31 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     do: render_segment({:words, %{change | kind: :ins}, inner}, extent, lookup, excluded)
 
   defp render_segment({:words, %Change{kind: :keep} = change, inner}, extent, lookup, excluded) do
-    plain = fn -> render_segments(inner, extent, lookup, excluded) end
+    live = live_after(change, extent, lookup)
 
-    with nil <- excluded,
-         t when t != nil <- territory(change, lookup),
-         live when live != nil <- Territory.subtract(extent, t),
-         false <- live == whole(extent) do
-      bracket(live, render_segments(inner, live, lookup, nil))
-    else
-      _ -> plain.()
+    cond do
+      # repealed everywhere the row applies, or only where it doesn't
+      live in [nil, whole(extent)] -> render_segments(inner, extent, lookup, excluded)
+      # a whole-row change: plain, its inner changes within the live territory
+      excluded != nil -> render_segments(inner, live, lookup, excluded)
+      true -> bracket(live, render_segments(inner, live, lookup, nil))
     end
   end
 
   defp render_segment({:words, %Change{kind: :ins} = change, inner}, extent, lookup, excluded) do
     t = territory(change, lookup)
 
-    if excluded != nil or t == nil or outside?(extent, t) or Territory.covers?(t, extent),
-      do: render_segments(inner, extent, lookup, excluded),
-      else: bracket(t, render_segments(inner, within(extent, t), lookup, nil))
+    cond do
+      t == nil or outside?(extent, t) or Territory.covers?(t, extent) ->
+        render_segments(inner, extent, lookup, excluded)
+
+      # a whole-row change: plain, its inner changes within its territory
+      excluded != nil ->
+        render_segments(inner, within(extent, t), lookup, excluded)
+
+      true ->
+        bracket(t, render_segments(inner, within(extent, t), lookup, nil))
+    end
   end
 
   defp render_segment({:pair, change, new, old}, extent, lookup, _excluded) do
@@ -277,6 +286,15 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
           rest == whole(extent) -> old_text.(extent)
           true -> "[#{t}: #{new_text.(within(extent, t))}] [#{rest}: #{old_text.(rest)}]"
         end
+    end
+  end
+
+  # where retained words are live: the extent outside the repeal's territory;
+  # the whole extent when it names none
+  defp live_after(change, extent, lookup) do
+    case territory(change, lookup) do
+      nil -> whole(extent)
+      t -> Territory.subtract(extent, t)
     end
   end
 

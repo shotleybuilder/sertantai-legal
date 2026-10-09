@@ -53,6 +53,8 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
     test "a note counts only for a change of its kind (1974/37 s.5: an Addition citing \"S. 5 repealed (… for E.W.)\")" do
       assert LatTerritory.territory(%Change{kind: :ins, ref: "n-rep-ew"}, @lookup) == nil
       assert LatTerritory.territory(%Change{kind: :keep, ref: "n-w"}, @lookup) == nil
+      # the old words of a substitution whose new words are another row (1998/494 reg.4(3)(e))
+      assert LatTerritory.territory(%Change{kind: :keep, ref: "n-sub-s"}, @lookup) == "S"
       assert LatTerritory.territory(%Change{kind: :keep, ref: "n-s"}, @lookup) == "S"
       # a substitution pair takes its note whatever the verb
       assert LatTerritory.territory(%Change{kind: :pair, ref: "n-sub-s"}, @lookup) == "S"
@@ -79,6 +81,14 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
 
     test "a whole-row change (excluded set) reads plain" do
       assert render([keep("S", [t("All of it.")])], "E+W+S", "S") == "All of it."
+    end
+
+    test "a whole-row change reads plain, its inner changes still within its territory (1986/14 s.29(5A))" do
+      inner_pair =
+        {:pair, %Change{kind: :pair, attribute: "NI"}, [t("the 2011 Act")], [t("the 1972 Act")]}
+
+      assert render([ins("E+W", [t("a reference to "), inner_pair])], "E+W+S+NI", "S+NI") ==
+               "a reference to the 1972 Act"
     end
 
     test "nested: a narrower insertion keeps its bracket; one within the live territory needs none" do

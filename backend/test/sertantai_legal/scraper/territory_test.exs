@@ -87,11 +87,39 @@ defmodule SertantaiLegal.Scraper.TerritoryTest do
 
       assert Territory.from_note(
                "Pt. 2A inserted (21.7.2008 for specified purposes, otherwise 6.4.2010 for E. and 26.7.2010 for W.) by Health and Social Care Act 2008 (c. 14)"
+             ) == nil
+
+      # a nested ")" doesn't cut the bracket short (1991/56 s.51CF(8))
+      assert Territory.from_note(
+               "S. 51CF inserted (1.4.2017 for E. for the substitution of s. 51B(6) for specified purposes, 1.10.2017 for E., 1.4.2019 for W.) by Water Act 2014 (c. 21)"
              ) == "E+W"
+
+      # every "(X.)" before the " by " (1996/18 s.50(3)(c)(i))
+      assert Territory.from_note(
+               "Words inserted (E.) (11.7.2001) and (W.) (1.4.2002) by S.I. 2001/2237 and S.I. 2002/808"
+             ) ==
+               "E+W"
 
       assert Territory.from_note(
                "Ss. 202A-202G inserted (6.4.2012 for E.) by Planning Act 2008 (c. 29)"
              ) == "E"
+    end
+
+    test "a dated part naming no territory (\"for specified purposes\", \"otherwise\") means everywhere: no territory (1990/9 s.20A, 1990/18 s.3A)" do
+      assert Territory.from_note(
+               "S. 20A inserted (6.8.2004 for specified purposes, 22.6.2015 for W. so far as not already in force) by Planning and Compulsory Purchase Act 2004 (c. 5)"
+             ) == nil
+
+      assert Territory.from_note(
+               "S. 3A inserted (1.10.2007 for S. and 1.10.2008 otherwise) by Health Act 2006 (c. 28)"
+             ) == nil
+
+      assert Territory.from_note("S. 7 inserted (1.4.2010 for W., 1.4.2011 for E.) by X") == "E+W"
+    end
+
+    test "N.I without its final dot (2007/19 s.6(2)(b))" do
+      assert Territory.from_note("S. 6(2)(b) substituted (E.W.N.I) (1.4.2013) by S.I. 2013/602") ==
+               "E+W+NI"
     end
   end
 

@@ -927,7 +927,9 @@ defmodule SertantaiLegal.Scraper.LatParser do
   defp roman(i),
     do: @romans |> Enum.find(fn {v, _} -> v <= i end) |> then(fn {v, r} -> r <> roman(i - v) end)
 
-  # A signature: name, job title, address lines, date (its text, else @Date).
+  # A signature: name, job title, address lines, date (its text, else @Date),
+  # as segments, so a change around them (a retained repeal) keeps its
+  # territory.
   defp signee_text(signee) do
     parts =
       for path <- [
@@ -937,28 +939,42 @@ defmodule SertantaiLegal.Scraper.LatParser do
             ~x"./Address/AddressLine"l
           ],
           el <- xpath(signee, path),
-          do: inline_plain(el)
+          do: extract_inline_text(el)
 
     date =
       case xpath(signee, ~x"./DateSigned"o) do
-        nil -> nil
-        d -> blank_to_nil(inline_plain(d)) || blank_to_nil(xpath(d, ~x"./@Date"s))
+        nil ->
+          []
+
+        d ->
+          case extract_inline_text(d) do
+            # from the attribute: added by the parser, not the row's own words
+            [] -> d |> xpath(~x"./@Date"s) |> LatSegments.mark()
+            segments -> segments
+          end
       end
 
     (parts ++ [date])
-    |> Enum.map(&(&1 && &1 |> String.trim() |> String.trim_trailing(",") |> String.trim()))
-    |> Enum.reject(&(&1 in [nil, ""]))
+    |> Enum.map(fn part ->
+      part
+      |> LatSegments.trim()
+      |> LatSegments.update_last_text(&String.trim_trailing(&1, ","))
+      |> LatSegments.trim()
+    end)
+    |> Enum.reject(&LatSegments.blank?/1)
     |> join_signee()
   end
 
   # ", " between parts — except after "… of the" (a job title running into
   # its department: "A senior officer of the Department of …")
-  defp join_signee([]), do: ""
+  defp join_signee([]), do: []
 
   defp join_signee([first | rest]) do
     Enum.reduce(rest, first, fn part, acc ->
-      sep = if Regex.match?(~r/\b(of|the|for|and)\z/i, acc), do: " ", else: ", "
-      acc <> sep <> part
+      sep =
+        if Regex.match?(~r/\b(of|the|for|and)\z/i, LatSegments.plain(acc)), do: " ", else: ", "
+
+      acc ++ LatSegments.mark(sep) ++ part
     end)
   end
 
@@ -999,7 +1015,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
             {[table_text(child)], after_open_child?}
 
           name == "Signee" ->
-            {[LatSegments.text(signee_text(child))], after_open_child?}
+            {[signee_text(child)], after_open_child?}
 
           mode == :structural and name in @row_elements ->
             # content after an open child provision is the child's (#174)

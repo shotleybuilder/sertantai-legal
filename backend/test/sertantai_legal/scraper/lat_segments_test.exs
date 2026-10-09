@@ -49,6 +49,14 @@ defmodule SertantaiLegal.Scraper.LatSegmentsTest do
     assert S.trim([{:words, @keep, [{:text, "  "}]}, {:text, "a "}]) == [{:text, "a"}]
   end
 
+  test "update_last_text/2 changes the last visible text, inside a change" do
+    assert S.update_last_text(
+             [{:text, "a"}, {:words, @keep, [{:text, "Minister,"}]}],
+             &String.trim_trailing(&1, ",")
+           ) ==
+             [{:text, "a"}, {:words, @keep, [{:text, "Minister"}]}]
+  end
+
   test "append_in_quote/2: inside a closing » mark, else at the end" do
     assert S.append_in_quote(S.mark("«") ++ S.text("and") ++ S.mark("»"), S.text("”.")) ==
              [{:mark, "«"}, {:text, "and"}, {:text, "”."}, {:mark, "»"}]

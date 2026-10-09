@@ -13,8 +13,8 @@ defmodule SertantaiLegal.Scraper.Territory do
 
   # "(S.)", "(E.W.)", "(E. and W.)", "(N.I.)", "(in relation to W.)"
   # "(1.4.2015 for S. for the repeal of …)", "(… in relation to E.W.)"
-  @inline_territory ~r/\((?:[^()]*?\s)?(?:for|in relation to) ((?:(?:E|W|S|N\.I)\.(?:,?\s*(?:and\s+)?)?)+)(?=[\s,)])/
-  @note_territory ~r/\((?:in relation to )?((?:(?:E|W|S|N\.I)\.(?:,?\s*(?:and\s+)?)?)+)\)/
+  @inline_territory ~r/\((?:[^()]*?\s)?(?:for|in relation to) ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)(?=[\s,)])/
+  @note_territory ~r/\((?:in relation to )?((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)\)/
 
   @doc "The territory of a note's change, from the first territory parenthesis before \" by \"."
   @spec from_note(String.t() | nil) :: String.t() | nil
@@ -84,14 +84,16 @@ defmodule SertantaiLegal.Scraper.Territory do
     end
   end
 
+  # every "(X.)" before the " by " ("inserted (E.) (11.7.2001) and (W.)
+  # (1.4.2002) by …"), else the "for X." in the dates bracket
   defp territory_letters(head) do
-    case Regex.run(@note_territory, head) do
-      [_, letters] -> letters
-      nil -> inline_letters(head)
+    case Regex.scan(@note_territory, head, capture: :all_but_first) do
+      [] -> inline_letters(head)
+      found -> found |> List.flatten() |> Enum.join(" ")
     end
   end
 
-  @inline_each ~r/(?:\bfor|in relation to) ((?:(?:E|W|S|N\.I)\.(?:,?\s*(?:and\s+)?)?)+)(?=[\s,);]|$)/
+  @inline_each ~r/(?:\bfor|in relation to) ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)(?=[\s,);]|$)/
 
   # Every "for X." in the first parenthesis naming one: a change in force on
   # different dates per territory, "(1.10.2017 for E., 1.4.2019 for W.)".
@@ -101,14 +103,40 @@ defmodule SertantaiLegal.Scraper.Territory do
         nil
 
       [{start, _} | _] ->
-        [group | _] =
-          head |> binary_part(start, byte_size(head) - start) |> String.split(")", parts: 2)
+        group = head |> binary_part(start, byte_size(head) - start) |> bracket_group()
 
-        @inline_each
-        |> Regex.scan(group, capture: :all_but_first)
-        |> List.flatten()
-        |> Enum.join(" ")
+        # a dated part naming no territory ("6.8.2004 for specified purposes",
+        # "1.10.2008 otherwise") is everywhere: the note restricts nothing
+        if Enum.any?(dated_parts(group), &(not Regex.match?(@inline_each, &1))),
+          do: nil,
+          else:
+            @inline_each
+            |> Regex.scan(group, capture: :all_but_first)
+            |> List.flatten()
+            |> Enum.join(" ")
     end
+  end
+
+  # "(… s. 51B(6) …)" → the text up to the bracket's own closing ")"
+  defp bracket_group("(" <> rest), do: bracket_group(rest, 0, [])
+
+  defp bracket_group("", _depth, acc), do: acc |> Enum.reverse() |> IO.iodata_to_binary()
+  defp bracket_group(")" <> _rest, 0, acc), do: bracket_group("", 0, acc)
+  defp bracket_group(")" <> rest, depth, acc), do: bracket_group(rest, depth - 1, [")" | acc])
+  defp bracket_group("(" <> rest, depth, acc), do: bracket_group(rest, depth + 1, ["(" | acc])
+
+  defp bracket_group(<<c::utf8, rest::binary>>, depth, acc),
+    do: bracket_group(rest, depth, [<<c::utf8>> | acc])
+
+  @date ~r/\b\d{1,2}\.\d{1,2}\.\d{4}\b/
+
+  # "(1.10.2017 for E., 1.4.2019 for W.)" → each part from one date to the next
+  defp dated_parts(group) do
+    offsets = @date |> Regex.scan(group, return: :index) |> Enum.map(fn [{pos, _}] -> pos end)
+
+    offsets
+    |> Enum.zip(Enum.drop(offsets, 1) ++ [byte_size(group)])
+    |> Enum.map(fn {from, to} -> binary_part(group, from, to - from) end)
   end
 
   defp letters_to_code(nil), do: nil
