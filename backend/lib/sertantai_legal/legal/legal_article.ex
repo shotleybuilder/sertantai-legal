@@ -181,6 +181,14 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
+    attribute :territory_provenance, {:array, :map} do
+      allow_nil?(true)
+
+      description(
+        "Where each territory claim on the row came from (LR-03): [%{source, territory, change_id, effect_id}] — source markup / effect_application / effect_in_force / effect_extent"
+      )
+    end
+
     # ── Amendment Annotation Counts ──────────────────────────────────
 
     attribute :amendment_count, :integer do
@@ -421,6 +429,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :changed_by,
         :title,
         :excluded_extent,
+        :territory_provenance,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -459,6 +468,7 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :changed_by,
         :title,
         :excluded_extent,
+        :territory_provenance,
         :amendment_count,
         :modification_count,
         :commencement_count,

@@ -61,3 +61,6 @@ config :sertantai_legal, :frontend_url, "http://localhost:5175"
 
 # #175: no local CLML store in tests (tests that need one pass `root:`)
 config :sertantai_legal, :clml_store_dir, nil
+# LAT parses don't load a law's effects (changes feed) in tests: no fetches;
+# tests pass effects explicitly (LR-03)
+config :sertantai_legal, :lat_effects, false

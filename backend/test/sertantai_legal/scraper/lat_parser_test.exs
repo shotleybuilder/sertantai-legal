@@ -2227,6 +2227,26 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert by_id(rows, "reg.7").status == "in_force"
     end
 
+    test "to_insert_maps/2 carries territory_provenance as JSON-ready maps (LR-03)" do
+      rows =
+        retained_law(
+          ~s|<P1group><P1><Pnumber>4</Pnumber><P1para><Text><Repeal ChangeId="key-s-1" RetainText="true">Old.</Repeal></Text></P1para></P1></P1group>|,
+          "",
+          revoked_s_effect()
+        )
+
+      [map] = LatParser.to_insert_maps(rows, "00000000-0000-0000-0000-000000000001")
+
+      assert map.territory_provenance == [
+               %{
+                 "source" => "effect_extent",
+                 "territory" => "S",
+                 "change_id" => "key-s-1",
+                 "effect_id" => "key-s"
+               }
+             ]
+    end
+
     test "to_insert_maps/2 carries excluded_extent" do
       rows =
         retained_law(

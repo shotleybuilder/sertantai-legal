@@ -20,6 +20,9 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   - `{:parse_complete, has_errors}`
   """
 
+  require Logger
+  alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
+
   alias SertantaiLegal.Scraper.{
     LatParser,
     LatPersister,
@@ -146,7 +149,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   def fetch_rows(law_name, opts \\ []) do
     with {:ok, xmls, law_id} <- fetch_docs(law_name, opts),
          {:ok, {type_code, _}} <- parse_law_name(law_name) do
-      {:ok, parse_rows(xmls, law_name, type_code), law_id}
+      {:ok, parse_rows(xmls, law_name, type_code, law_effects(law_name, opts)), law_id}
     end
   end
 
@@ -199,7 +202,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     # Stage 2: Parse LAT rows
     notify(on_progress, {:stage_start, :parse_lat, 2, @total_stages})
 
-    case parse_rows(xmls, law_name, type_code) do
+    case parse_rows(xmls, law_name, type_code, law_effects(law_name, opts)) do
       [] ->
         no_body(law_name, hd(xmls), opts, start)
 
@@ -236,13 +239,20 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
   def fetch_notes(law_name, opts \\ []) do
     with {:ok, xmls, _law_id} <- fetch_docs(law_name, opts),
          {:ok, {type_code, _}} <- parse_law_name(law_name) do
-      {:ok, parse_annotations(xmls, law_name, parse_rows(xmls, law_name, type_code))}
+      {:ok,
+       parse_annotations(
+         xmls,
+         law_name,
+         parse_rows(xmls, law_name, type_code, law_effects(law_name, opts))
+       )}
     end
   end
 
-  defp parse_rows(xmls, law_name, type_code) do
+  defp parse_rows(xmls, law_name, type_code, effects) do
     xmls
-    |> Enum.map(&LatParser.parse(&1, %{law_name: law_name, type_code: type_code}))
+    |> Enum.map(
+      &LatParser.parse(&1, %{law_name: law_name, type_code: type_code, effects: effects})
+    )
     |> Enum.reject(&(&1 == []))
     |> case do
       [] -> []
@@ -409,6 +419,34 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       {:ok, %{rows: [[id]]}} -> {:ok, id}
       {:ok, %{rows: []}} -> {:error, "Law not found in uk_lrt: #{law_name}"}
       {:error, err} -> {:error, "DB error: #{inspect(err)}"}
+    end
+  end
+
+  # The law's effects (changes feed, LR-03) for territory the markup lacks:
+  # `opts[:effects]` when given (tests), else the feed through the local
+  # store in the same mode as the law's documents; markup only when
+  # unavailable or switched off (`config :lat_effects`, false in tests).
+  @doc false
+  def law_effects(law_name, opts) do
+    cond do
+      Keyword.has_key?(opts, :effects) ->
+        opts[:effects]
+
+      not Application.get_env(:sertantai_legal, :lat_effects, true) ->
+        []
+
+      true ->
+        [_uk, type, year, number] = String.split(law_name, "_", parts: 4)
+        mode = Keyword.get(opts, :store, :write)
+
+        case ChangesFeed.fetch(type, year, number, store: mode) do
+          {:ok, effects} ->
+            effects
+
+          {:error, reason} ->
+            Logger.warning("[LatStagedParser] #{law_name}: no effects (#{reason}): markup only")
+            []
+        end
     end
   end
 

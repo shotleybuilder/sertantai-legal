@@ -1732,6 +1732,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
         heading_group: row.heading_group,
         title: Map.get(row, :title),
         excluded_extent: Map.get(row, :excluded_extent),
+        territory_provenance: row |> Map.get(:territory_provenance, []) |> json_provenance(),
         schedule: row.schedule,
         provision: row.provision,
         sub_provision: row.sub,
@@ -1756,6 +1757,17 @@ defmodule SertantaiLegal.Scraper.LatParser do
       }
     end)
   end
+
+  # LR-03: provenance claims as string-keyed maps (jsonb[]); nil when none
+  defp json_provenance([]), do: nil
+  defp json_provenance(entries), do: Enum.map(entries, &json_claim/1)
+
+  defp json_claim(claim) do
+    for {k, v} <- claim, v != nil, into: %{}, do: {to_string(k), json_value(v)}
+  end
+
+  defp json_value(v) when is_atom(v), do: Atom.to_string(v)
+  defp json_value(v), do: v
 
   defp country_from_law_name(law_name) when is_binary(law_name) do
     case String.split(law_name, "_", parts: 2) do
