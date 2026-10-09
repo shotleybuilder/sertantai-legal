@@ -105,6 +105,22 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
       )
     end
 
+    attribute :effect_ids, {:array, :string} do
+      allow_nil?(true)
+
+      description(
+        "The legislation.gov.uk effects behind the note (LR-07): those its change markup joins, and its own id when the feed has it. Empty: the note stands alone"
+      )
+    end
+
+    attribute :fact_provenance, :map do
+      allow_nil?(true)
+
+      description(
+        "Where the note's facts came from (LR-07): %{\"facts\" => effect | note, \"dates\" => effect | note | nil}. Notes are hints: text only where no effect joins"
+      )
+    end
+
     create_timestamp :created_at do
       description("Record creation timestamp")
     end
@@ -145,7 +161,9 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
         :effective_dates,
         :effective_from,
         :changed_by,
-        :change_id
+        :change_id,
+        :effect_ids,
+        :fact_provenance
       ])
     end
 

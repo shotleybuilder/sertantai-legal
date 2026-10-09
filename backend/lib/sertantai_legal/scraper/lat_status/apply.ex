@@ -1,20 +1,23 @@
 defmodule SertantaiLegal.Scraper.LatStatus.Apply do
   @moduledoc """
-  Refreshes a law's note-derived LAT fields (#167) in one pass, writing only
-  what changes:
+  Refreshes a law's change facts (#167; LR-07: from effects, notes as
+  hints) in one pass, writing only what changes:
 
-  - each amendment note's parsed fields (`AmendmentNote`, L8.2): effect,
-    effective_dates, effective_from, changed_by, change_id
-  - each row's `status` (`LatStatus`, L8.1)
-  - each row's `effective_from` / `changed_by` (L8.2): the latest dated
-    amendment/commencement note on the row or an ancestor
+  - each note's effect, effective_dates, effective_from, changed_by,
+    change_id and `fact_provenance` — from the effects behind it
+    (`effect_ids`), else its text (`AmendmentNote`)
+  - each row's `status`, `effective_from` / `changed_by` and
+    `change_provenance` (`ChangeFacts.resolve/5`)
+
+  Effects come from `opts[:effects]`, else the law's changes feed through
+  the local store (`opts[:store]`, default `:prefer`).
 
   Called by `CommentaryPersister` after notes are committed (every parse path)
   and by `mix lat.status` (backfill / recompute).
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{AmendmentNote, LatStatus}
+  alias SertantaiLegal.Scraper.{AmendmentNote, ChangeFacts, LatStagedParser, LatStatus, Territory}
 
   require Logger
 
@@ -29,13 +32,18 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
 
   @doc """
   Recompute the law's note fields, statuses and change fields. Options:
-  `dry_run: true` resolves and reports without writing.
+  `dry_run: true` resolves and reports without writing; `effects:` the
+  law's effects (else fetched, `store:` mode, default `:prefer`).
   """
   @spec refresh(String.t(), keyword()) :: result()
   def refresh(law_name, opts \\ []) when is_binary(law_name) do
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, text, status, effective_from, changed_by, excluded_extent, extent_code FROM legal_articles WHERE law_name = $1",
+        """
+        SELECT section_id, text, status, effective_from, changed_by, excluded_extent,
+               extent_code, effect_ids, change_provenance
+        FROM legal_articles WHERE law_name = $1 ORDER BY sort_key
+        """,
         [law_name],
         timeout: :infinity
       )
@@ -43,68 +51,68 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     %{rows: note_rows} =
       Repo.query!(
         """
-        SELECT id, affected_sections, text, code_type, code,
-               effect, effective_dates, effective_from, changed_by, change_id
-        FROM amendment_annotations WHERE law_name = $1
+        SELECT id, affected_sections, text, code_type, code, effect_ids,
+               effect, effective_dates, effective_from, changed_by, change_id, fact_provenance
+        FROM amendment_annotations WHERE law_name = $1 ORDER BY id
         """,
         [law_name],
         timeout: :infinity
       )
 
+    effects =
+      Keyword.get_lazy(opts, :effects, fn ->
+        LatStagedParser.law_effects(law_name, store: Keyword.get(opts, :store, :prefer)) || []
+      end)
+
+    by_id = for e <- effects, e.effect_id != nil, into: %{}, do: {e.effect_id, e}
+
     notes =
-      Enum.map(note_rows, fn [id, sections, text, type, code | stored] ->
+      Enum.map(note_rows, fn [id, sections, text, type, code, effect_ids | stored] ->
         %{
           id: id,
           affected_sections: sections,
           text: text || "",
           code_type: type,
-          stored: stored,
-          parsed: text |> AmendmentNote.parse(type, law_name) |> marginal(code)
+          code: code,
+          effect_ids: effect_ids || [],
+          stored: stored
         }
       end)
 
-    notes = resolve_welsh(notes)
+    row_maps =
+      Enum.map(rows, fn [sid, text, status, _from, _by, excluded, extent, effect_ids, _prov] ->
+        %{
+          section_id: sid,
+          text: text,
+          status: base_status(status, text, excluded, extent),
+          excluded_extent: excluded,
+          extent_code: extent,
+          effect_ids: effect_ids || []
+        }
+      end)
 
-    note_changes =
-      for n <- notes, n.stored != note_values(n.parsed), do: {n.id, n.parsed}
-
-    current =
-      Map.new(rows, fn [sid, _text, status, from, by | _] -> {sid, {status, [from, by]}} end)
-
-    statuses =
-      LatStatus.resolve(
-        Enum.map(rows, fn [sid, text, status, _from, _by, repealed, extent] ->
-          %{
-            section_id: sid,
-            text: text,
-            status: status,
-            excluded_extent: repealed,
-            extent_code: extent
-          }
-        end),
-        notes
+    {facts, out} =
+      ChangeFacts.resolve(row_maps, notes, by_id, law_name,
+        holders: rows |> Enum.map(&hd/1) |> ChangeFacts.holders(),
+        known_laws: known_laws(notes, law_name)
       )
 
+    note_changes =
+      for {n, f} <- Enum.zip(notes, facts), n.stored != note_values(f), do: {n.id, f}
+
+    current =
+      Map.new(rows, fn [sid, _text, status, from, by, _ex, _ext, _ids, prov] ->
+        {sid, {status, [from, by], prov}}
+      end)
+
     status_changes =
-      for {sid, status} <- statuses, elem(current[sid], 0) != status, do: {sid, status}
-
-    # every row a note is placed on (LH-01), not only the last
-    by_target =
-      notes
-      |> Enum.flat_map(fn n -> Enum.map(LatStatus.note_targets(n), &{&1, n.parsed}) end)
-      |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
-
-    holders = holders(law_name)
+      for {sid, r} <- out, elem(current[sid], 0) != r.status, do: {sid, r.status}
 
     change_changes =
-      for [sid | _] <- rows,
-          {from, by} =
-            (holders[sid] || sid)
-            |> LatStatus.ancestors()
-            |> Enum.flat_map(&Map.get(by_target, &1, []))
-            |> AmendmentNote.row_effective(),
-          elem(current[sid], 1) != [from, by],
-          do: {sid, from, by}
+      for {sid, r} <- out,
+          {_status, fields, prov} = current[sid],
+          fields != [r.effective_from, r.changed_by] or prov != provenance(r),
+          do: {sid, r.effective_from, r.changed_by, provenance(r)}
 
     unless opts[:dry_run] do
       write_notes!(note_changes)
@@ -139,61 +147,55 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
       :ok
   end
 
-  # Table and figure rows sit inside a provision but their ids (table.3041)
-  # don't nest under it: each takes the nearest preceding other row in
-  # document order as the provision whose notes date it (LH-06).
-  defp holders(law_name) do
-    %{rows: rows} =
-      Repo.query!(
-        "SELECT section_id FROM legal_articles WHERE law_name = $1 ORDER BY sort_key",
-        [law_name]
-      )
+  # the parser's status from the row itself (LatParser assign_status): the
+  # stored Prospective flag, repealed text, retained everywhere; else in force
+  defp base_status("prospective", _text, _excluded, _extent), do: "prospective"
 
-    {pairs, _} =
-      Enum.map_reduce(List.flatten(rows), nil, fn sid, holder ->
-        if Regex.match?(~r/:(table|figure)\./, sid),
-          do: {{sid, holder}, holder},
-          else: {nil, sid}
-      end)
-
-    for {sid, holder} <- pairs, holder != nil, into: %{}, do: {sid, holder}
+  defp base_status(_stored, text, excluded, extent) do
+    cond do
+      LatStatus.repealed_text?(text) -> "repealed"
+      excluded != nil and Territory.covers?(excluded, extent) -> "repealed_saved"
+      true -> "in_force"
+    end
   end
 
-  # A marginal citation (code "M…": "Amended by S.I. 2011/1515 …") only
-  # refers to laws; it changes nothing, so no instrument and no dates (LH-06).
-  defp marginal(parsed, "M" <> _),
-    do: %{parsed | changed_by: nil, effective_dates: [], effective_from: nil}
-
-  defp marginal(parsed, _code), do: parsed
-
-  # A Welsh SI cited as plain "S.I." parses as uksi: when only its wsi twin
-  # is in the register, use the twin (AmendmentNote.resolve_law/2).
-  defp resolve_welsh(notes) do
+  # A Welsh SI cited as plain "S.I." parses as uksi: the register names its
+  # notes cite that are uksi or their wsi twins (AmendmentNote.resolve_law/2).
+  defp known_laws(notes, law_name) do
     uksi =
       for n <- notes,
-          match?("UK_uksi_" <> _, n.parsed.changed_by),
+          by = AmendmentNote.parse(n.text, n.code_type, law_name).changed_by,
+          match?("UK_uksi_" <> _, by),
           uniq: true,
-          do: n.parsed.changed_by
+          do: by
 
     if uksi == [] do
-      notes
+      MapSet.new()
     else
       candidates = uksi ++ Enum.map(uksi, &String.replace_prefix(&1, "UK_uksi_", "UK_wsi_"))
 
       %{rows: rows} =
         Repo.query!("SELECT name FROM legal_register WHERE name = ANY($1)", [candidates])
 
-      known = MapSet.new(List.flatten(rows))
-
-      Enum.map(notes, fn n ->
-        by = AmendmentNote.resolve_law(n.parsed.changed_by, known)
-        put_in(n, [:parsed, Access.key(:changed_by)], by)
-      end)
+      rows |> List.flatten() |> MapSet.new()
     end
   end
 
-  defp note_values(%AmendmentNote{} = n),
-    do: [n.effect, n.effective_dates, n.effective_from, n.changed_by, n.change_id]
+  defp provenance(r),
+    do: %{
+      "status" => to_string(r.status_source),
+      "change" => r.change_source && to_string(r.change_source)
+    }
+
+  defp note_values(f),
+    do: [
+      f.effect,
+      f.effective_dates,
+      f.effective_from,
+      f.changed_by,
+      f.change_id,
+      %{"facts" => to_string(f.source), "dates" => f.dates_source && to_string(f.dates_source)}
+    ]
 
   defp write_notes!([]), do: :ok
 
@@ -205,9 +207,10 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
         """
         UPDATE amendment_annotations AS a
         SET effect = c.effect, effective_from = c.effective_from, changed_by = c.changed_by,
-            change_id = c.change_id, effective_dates = ARRAY(SELECT jsonb_array_elements_text(c.dates::jsonb)::date)
-        FROM unnest($1::text[], $2::text[], $3::date[], $4::text[], $5::text[], $6::text[])
-             AS c(id, effect, effective_from, changed_by, change_id, dates)
+            change_id = c.change_id, effective_dates = ARRAY(SELECT jsonb_array_elements_text(c.dates::jsonb)::date),
+            fact_provenance = c.prov::jsonb
+        FROM unnest($1::text[], $2::text[], $3::date[], $4::text[], $5::text[], $6::text[], $7::text[])
+             AS c(id, effect, effective_from, changed_by, change_id, dates, prov)
         WHERE a.id = c.id
         """,
         [
@@ -220,7 +223,8 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
           Enum.map(
             batch,
             &Jason.encode!(Enum.map(elem(&1, 1).effective_dates, fn d -> Date.to_iso8601(d) end))
-          )
+          ),
+          Enum.map(batch, &Jason.encode!(&1 |> elem(1) |> note_values() |> List.last()))
         ],
         timeout: :infinity
       )
@@ -250,14 +254,17 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
   defp write_change_fields!(changes) do
     Repo.query!(
       """
-      UPDATE legal_articles AS a SET effective_from = c.effective_from, changed_by = c.changed_by
-      FROM unnest($1::text[], $2::date[], $3::text[]) AS c(section_id, effective_from, changed_by)
+      UPDATE legal_articles AS a
+      SET effective_from = c.effective_from, changed_by = c.changed_by, change_provenance = c.prov::jsonb
+      FROM unnest($1::text[], $2::date[], $3::text[], $4::text[])
+           AS c(section_id, effective_from, changed_by, prov)
       WHERE a.section_id = c.section_id
       """,
       [
         Enum.map(changes, &elem(&1, 0)),
         Enum.map(changes, &elem(&1, 1)),
-        Enum.map(changes, &elem(&1, 2))
+        Enum.map(changes, &elem(&1, 2)),
+        Enum.map(changes, &Jason.encode!(elem(&1, 3)))
       ],
       timeout: :infinity
     )

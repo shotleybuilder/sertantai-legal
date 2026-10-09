@@ -161,7 +161,8 @@ defmodule SertantaiLegal.Scraper.LatStatus.ApplyTest do
 
     note!(name, id, "reg.2", "Reg. 2 modified (1.1.2020) by S.I. 2019/9", "modification")
 
-    assert %{notes_changed: 3, change_rows: 1} = Apply.refresh(name)
+    # every row gains its change_provenance (LR-07) on the first refresh
+    assert %{notes_changed: 3, change_rows: 3} = Apply.refresh(name)
 
     %{rows: notes} =
       Repo.query!(
@@ -183,6 +184,72 @@ defmodule SertantaiLegal.Scraper.LatStatus.ApplyTest do
     assert {row2.effective_from, row2.changed_by} == {nil, nil}
 
     assert %{notes_changed: 0, change_rows: 0, changed: 0} = Apply.refresh(name)
+  end
+
+  test "refresh/2 takes change facts from the effects behind notes and rows, with provenance (LR-07)" do
+    {name, id} = law_with_lat(["A duty.", "Another duty."])
+
+    note!(name, id, "reg.1", "Reg. 1 substituted (1.4.2006) by S.I. 2006/1", "amendment")
+
+    Repo.query!("UPDATE amendment_annotations SET effect_ids = $2 WHERE law_name = $1", [
+      name,
+      ["effect-sub"]
+    ])
+
+    Repo.query!("UPDATE legal_articles SET effect_ids = $2 WHERE section_id = $1", [
+      "#{name}:reg.2",
+      ["effect-cif"]
+    ])
+
+    effect = fn fields ->
+      struct!(
+        SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect,
+        Keyword.merge([applied: true, affected_refs: []], fields)
+      )
+    end
+
+    effects = [
+      effect.(
+        effect_id: "effect-sub",
+        type: "substituted",
+        affecting: "UK_wsi_2006_1",
+        in_force: [%{date: ~D[2006-05-01], prospective: false, qualification: nil, applied: true}]
+      ),
+      effect.(
+        effect_id: "effect-cif",
+        type: "coming into force",
+        affecting: "UK_ssi_2000_7",
+        in_force: [
+          %{
+            date: ~D[2000-01-01],
+            prospective: false,
+            qualification: "for specified purposes",
+            applied: true
+          }
+        ]
+      )
+    ]
+
+    Apply.refresh(name, effects: effects)
+
+    %{rows: [[from, by, prov]]} =
+      Repo.query!(
+        "SELECT effective_from, changed_by, fact_provenance FROM amendment_annotations WHERE law_name = $1",
+        [name]
+      )
+
+    assert {from, by, prov} ==
+             {~D[2006-05-01], "UK_wsi_2006_1", %{"facts" => "effect", "dates" => "effect"}}
+
+    row1 = Ash.get!(LegalArticle, "#{name}:reg.1")
+    assert {row1.effective_from, row1.changed_by} == {~D[2006-05-01], "UK_wsi_2006_1"}
+    assert row1.change_provenance == %{"status" => "markup", "change" => "effect"}
+
+    row2 = Ash.get!(LegalArticle, "#{name}:reg.2")
+    assert row2.status == "in_force_partial"
+    assert row2.change_provenance == %{"status" => "effect", "change" => "effect"}
+
+    assert %{notes_changed: 0, change_rows: 0, changed: 0} = Apply.refresh(name, effects: effects)
   end
 
   test "refresh/1 reads a plain \"S.I.\" as the Welsh SI when only that is in the register (LH-01)" do

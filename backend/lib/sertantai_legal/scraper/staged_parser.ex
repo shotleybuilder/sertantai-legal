@@ -1263,14 +1263,18 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   defp maybe_run_lat_substage(_taxa_data, _body_xml, _type_code, _year, _number, _record), do: 0
 
   defp persist_body_lat(body_xml, law_name, law_id, type_code) do
-    rows = LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code})
+    # the law's effects: territory (LR-03) and change facts (LR-07)
+    effects = LatStagedParser.law_effects(law_name, []) || []
+
+    rows =
+      LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code, effects: effects})
 
     case LatPersister.persist(rows, law_name, law_id) do
       {:ok, %{inserted: inserted}} ->
         IO.puts("    ✓ LAT: #{inserted} rows persisted")
 
         # Commentary sub-stage: parse Commentaries block and persist annotations
-        maybe_run_commentary_substage(body_xml, rows, law_name, law_id)
+        maybe_run_commentary_substage(body_xml, rows, law_name, law_id, effects)
 
         inserted
 
@@ -1297,9 +1301,13 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   end
 
   # Commentary sub-stage: parse <Commentaries> block from body XML and persist annotations
-  defp maybe_run_commentary_substage(body_xml, lat_rows, law_name, law_id) do
+  defp maybe_run_commentary_substage(body_xml, lat_rows, law_name, law_id, effects) do
     ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
-    annotations = CommentaryParser.parse(body_xml, %{law_name: law_name}, ref_to_sections)
+
+    annotations =
+      body_xml
+      |> CommentaryParser.parse(%{law_name: law_name}, ref_to_sections)
+      |> CommentaryParser.with_effects(lat_rows, LatStagedParser.effect_ids(effects))
 
     if annotations == [] do
       IO.puts("    ○ Annotations: none found in body XML")

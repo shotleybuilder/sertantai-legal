@@ -189,6 +189,22 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
+    attribute :effect_ids, {:array, :string} do
+      allow_nil?(true)
+
+      description(
+        "The legislation.gov.uk effects on the row (LR-07): its change markup's joins, its whole-provision changes and the effects naming its provision"
+      )
+    end
+
+    attribute :change_provenance, :map do
+      allow_nil?(true)
+
+      description(
+        "Where the row's change facts came from (LR-07): %{\"status\" => markup | effect | note, \"change\" => effect | note} — change covers effective_from / changed_by"
+      )
+    end
+
     # ── Amendment Annotation Counts ──────────────────────────────────
 
     attribute :amendment_count, :integer do
@@ -430,6 +446,8 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :title,
         :excluded_extent,
         :territory_provenance,
+        :effect_ids,
+        :change_provenance,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -469,6 +487,8 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :title,
         :excluded_extent,
         :territory_provenance,
+        :effect_ids,
+        :change_provenance,
         :amendment_count,
         :modification_count,
         :commencement_count,

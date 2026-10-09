@@ -153,6 +153,10 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
+  @doc "The ids of a law's effects (`CommentaryParser.with_effects/3`)."
+  @spec effect_ids([ChangesFeed.Effect.t()]) :: MapSet.t(String.t())
+  def effect_ids(effects), do: MapSet.new(for e <- effects, e.effect_id != nil, do: e.effect_id)
+
   @doc """
   A law's parsed rows, its notes (each with `effect_ids`,
   `CommentaryParser.with_effects/3`) and its effects, without persisting
@@ -166,12 +170,11 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
          {:ok, {type_code, _}} <- parse_law_name(law_name) do
       effects = law_effects(law_name, opts) || []
       rows = parse_rows(xmls, law_name, type_code, effects)
-      known = MapSet.new(for e <- effects, e.effect_id != nil, do: e.effect_id)
 
       notes =
         xmls
         |> parse_annotations(law_name, rows)
-        |> CommentaryParser.with_effects(rows, known)
+        |> CommentaryParser.with_effects(rows, effect_ids(effects))
 
       {:ok, %{rows: rows, notes: notes, effects: effects}}
     end
@@ -226,13 +229,24 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     # Stage 2: Parse LAT rows
     notify(on_progress, {:stage_start, :parse_lat, 2, @total_stages})
 
-    case parse_rows(xmls, law_name, type_code, law_effects(law_name, opts)) do
+    # fetched once: the rows' territory (LR-03) and the notes' effects (LR-07)
+    effects = law_effects(law_name, opts)
+
+    case parse_rows(xmls, law_name, type_code, effects) do
       [] ->
         no_body(law_name, hd(xmls), opts, start)
 
       lat_rows ->
         notify(on_progress, {:stage_complete, :parse_lat, :ok, "#{length(lat_rows)} rows"})
-        persist_stages(law_name, law_id, xmls, lat_rows, opts, start)
+
+        persist_stages(
+          law_name,
+          law_id,
+          xmls,
+          lat_rows,
+          Keyword.put(opts, :effects, effects),
+          start
+        )
     end
   end
 
@@ -315,7 +329,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       if lat_error do
         skip_annotations(on_progress)
       else
-        run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress)
+        run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress, opts[:effects] || [])
       end
 
     # After the notes (and their status/change_id refresh): why the LAT changed.
@@ -393,10 +407,15 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     {%{inserted: 0, skipped: true}, false}
   end
 
-  defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress) do
-    # Stage 4: Parse annotations (per document when scoped)
+  defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress, effects) do
+    # Stage 4: Parse annotations (per document when scoped), each with the
+    # effects behind it (LR-07)
     notify(on_progress, {:stage_start, :parse_annotations, 4, @total_stages})
-    annotations = parse_annotations(xmls, law_name, lat_rows)
+
+    annotations =
+      xmls
+      |> parse_annotations(law_name, lat_rows)
+      |> CommentaryParser.with_effects(lat_rows, effect_ids(effects))
 
     notify(
       on_progress,

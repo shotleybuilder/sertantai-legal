@@ -1820,6 +1820,12 @@ defmodule SertantaiLegal.Scraper.LatParser do
         title: Map.get(row, :title),
         excluded_extent: Map.get(row, :excluded_extent),
         territory_provenance: row |> Map.get(:territory_provenance, []) |> json_provenance(),
+        # LR-07: the effects on the row (nil: none)
+        effect_ids:
+          case Map.get(row, :effect_ids, []) do
+            [] -> nil
+            ids -> ids
+          end,
         schedule: row.schedule,
         provision: row.provision,
         sub_provision: row.sub,
