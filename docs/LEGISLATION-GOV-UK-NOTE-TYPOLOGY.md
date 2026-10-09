@@ -86,6 +86,16 @@ Semi-structured: a documented template (provision · effect · date or "prosp." 
 
 ## 3. Consequences for the LAT
 
+**Principle (Jason, 2026-10-09).** Notes are notes: editorial prose, drafted from effects records and editable by editors — not law, and not the source of facts. "Using Notes is building on sand — they can hint/suggest what or where we might look, because they are Notes." The chain of authority is:
+
+1. **the law** — the amending provision itself (parsed as its own LAT);
+2. **the revised text and its change markup** (`Repeal`/`Addition`/`Substitution`, `Extent`, `RetainText`, `Status`) — legislation.gov.uk's official revised version;
+3. **effects** (changes feed) — the structured record of every change: affected provisions, where it applies, extent, in-force dates and qualifications, applied or not;
+4. **notes** — displayed as notes; a hint where to look. When a note shows a change the effects layer doesn't have, either keep it as a note or go to the law it was built from — never derive a fact from its prose.
+
+The rules below describe how note text reads (for hints and for display); facts come from 1–3. Where the LAT still reads a fact from note text, that is interim until the effects sessions replace it (`.claude/sessions/lat-refactor/`).
+
+
 1. **Territory of a change** (brackets, `excluded_extent`) = its `Extent` attribute, else the **bare "(X.)"** clause(s) of its **F** note — documented as the same fact (§2.3) and measured as equal 97.8% of the time where both exist (§1.3). This covers ~27,000 elements that carry territory only in the note (§1.4). Code: `NoteTerritory.applies/1`, `LatTerritory.territory/2`.
 2. **Dated "date for X."** is where the change is in force (§2.3; `NoteTerritory.in_force/1`). For a change that **removes** text — a retained repeal (`RetainText`: "repealed for a specific extent … and still applicable to other extents" [XSD]) or a substitution's old words — the text is gone where the change is in force and kept elsewhere, so it is that change's territory when nothing says where it applies. For an **insertion** it is commencement only: the inserted text extends to the other territories, not yet in force there — **status** (`in_force_partial`), not territory. "for specified purposes" qualifies purposes; "otherwise", "in so far as not already in force", "remaining purposes", "wholly" mean everywhere; "except in relation to X." everywhere but X.
 3. **Never** take territory from C, I, E, M, P, X notes (not textual changes; E notes describe versions the parser reads from `RestrictExtent`), from citations or titles after " by ", or from a note whose verb doesn't fit the change (an Addition citing a repeal note is legacy markup).

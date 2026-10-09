@@ -70,3 +70,7 @@ Jason asked for the research, not a guess: `docs/LEGISLATION-GOV-UK-NOTE-TYPOLOG
 - **Fixture changed by the grounding**: 1990/8 s.202D "inserted (6.4.2012 for E.)" → no exclusion (commencement).
 - **Review code bugs fixed** (test-first): whitespace left by a new half that moved into its pair; a SubstitutionRef naming its own enclosing change is no pair; rows judged on their subtree are live wherever any of it is (union); bracket labels clipped to the row; punctuation alone isn't the row's words.
 - Suite 2,398 passed; fixtures 28/31 (3 LR-03).
+
+## Principle change (2026-10-09)
+
+Jason: notes are hints, not facts ("we're going the wrong way in the chain"). LR-02 finishes as is — its note-text territory fallback reads the same fact the effect holds (bare "(X.)" = territorial application, 98% agreement with Extent) and is marked **interim**: LR-03 replaces it with the effects layer where an effect exists. Diff run 6: 3,504 rows (punctuation fix restored repeal-marker rows).
