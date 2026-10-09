@@ -16,7 +16,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 - ✅ Map each LAT fact to its effects source (and to the amending law where no effect exists) — see Fact map
 - ⬜ effect / effective_from / changed_by from effects; note-only changes kept as notes, flagged (or checked against the law)
 - ⬜ Row status from effects: partial / prospective / commencement by territory; repealed_saved from savings
-- ⬜ From LR-03 checks: a retained repeal whose effect extent equals the row's extent makes no territory claim (1989/14 s.3(5)(aa)/(ba)/(c)(ia): "Act repealed (S.)" on S-only rows) — wholly in force → repealed status here
+- ✅ From LR-03 checks: a retained repeal whose effect extent equals the row's extent makes no territory claim (1989/14 s.3(5)(aa)/(ba)/(c)(ia): "Act repealed (S.)" on S-only rows) — wholly in force → repealed status here
 - ⬜ fractalaw contract impact (fields, hashes) → LH-05
 - ⬜ Classified diff; review
 
@@ -83,3 +83,28 @@ For Jason: `effective_from` = earliest dated InForce (first legal effect, Gemini
 
 - `effective_from` = **latest** dated InForce (fully in force) — today's contract kept; every date in `effective_dates`; partial status covers the gap.
 - Territorial commencement → **`in_force_partial`** (no new status value): partly in force until every territory of the row's extent has commenced. Status-hash movement listed for LH-05.
+
+## Built (2026-10-09)
+
+- `ChangesFeed.Effect.in_force` — every InForce entry (date, prospective, qualification, applied).
+- Joins: `LatTerritory.note_effects/1` (commentary ref → joined effect per change), rows' `note_effects` / `effect_ids` (own change joins + whole-provision + effects naming the provision, words-level excluded), `CommentaryParser.with_effects/3` (markup joins + own id), `LatStagedParser.fetch_changes/2`.
+- `ChangeFacts` (pure): `note/3`, `effect_fact/1`, `kind/2`, `partial?/3`, `saved?/1`, `holders/1`, `resolve/5`.
+- `EffectTerritory`: `{nil, :effect_not_in_force}` (prospective & unapplied, or every qualifier scoped elsewhere) and `{nil, :effect_unreadable}` (territory named, unreadable) — both remove nothing; `qualifier_territory/1`, `except_territory/1`.
+- `mix lat.change_diff` — classified field diff vs DB with a notes-only baseline (`cause`: lr07 | parse).
+
+## Rules the sample diffs forced (4 laws: 1995/21, 1984/55, 1977/500, 1991/56)
+
+- **Whole-extent retained repeal needs a joined effect.** Markup alone said "everywhere" on 7,521 rows in text-diff run 1; 1967/10 s.28 ("Act repealed (S.)" under a legacy `M_F_` id, join missed) proved a missed join is not "everywhere". The LR-02 pending tests were rewritten to carry a joined effect; a new test pins "no effect → no claim".
+- **Applied effects aren't prospective**: 24,921 applied effects carry an undated InForce read as prospective.
+- **Words-level effects** ("words substituted", ref often only the section) join a row through its change markup only, and an ancestor passes down only whole-provision changes (1995/21 s.192A(6) was taking s.192A(b)'s 2015 words change).
+- **Partial**: the provision's own commencement / whole-provision effects complete one another; each words-level amendment is judged alone (1984/55 s.91A(5)); a purposes entry ("for W. for specified purposes") is completed by a commenced entry for its territory; territorial partial needs an entry still to come (undated or after today) — a territory the effect doesn't mention is a feed gap (1995/21 s.136A lists only "for S."); "except in relation to W." is the rest of the extent. Only a commencement effect says "wholly in force"; else the notes no effect joined decide (1984/55 s.12(3)).
+- **Effects silent on dates** (older effects) keep the note's dates, `dates_source: note`.
+
+Decided (Jason, 2026-10-09):
+- Row `effective_from` / `changed_by` inherit only an ancestor's **whole-provision** changes, not its words-level ones (contract text was "on it or an ancestor" → LH-05). 1995/21 s.157(1)(a) loses 2008; 1984/55 s.1(1)(f) 2023 → 2004.
+- **Feed Savings counts**: a repeal effect's `ukm:Savings` ("(with …)") makes a repealed row `repealed_saved` — structured effect data, above notes. D2 ("only with a note mentioning savings") is superseded. Change-diff run 1: 2,039 rows (1,874 'with' only, 90 note says savings, 75 neither).
+
+## Full-corpus runs
+
+- Text diff run 1: the whole-extent rule on markup alone moved 7,521 rows vs LR-03 run 8 → needs a joined effect. Run 2: still 7,878 — LR-03's rule-3 synthetic whole-provision repeals (dots) carry joined effects → `Change.synthetic`, skipped (status, not territory). Run 3 running.
+- Change diff run 1 (before the synthetic fix): 162,593 changed fields; notes from effects 65,648 / text 25,026. Findings fixed: a law commencing itself ("see reg. 1") made 47,381 rows `changed_by` = itself → nil (the date stands); footnote citations ("OJ L 182, 21.6.2014, p.52.") gave rows dates → a note naming no change and no instrument isn't a change; a whole-provision insertion's own InForce completes commencement (asp 2003/2 s.51A, source effect).

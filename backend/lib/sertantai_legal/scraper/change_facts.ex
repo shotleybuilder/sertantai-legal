@@ -296,7 +296,8 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
           |> then(&%{&1 | changed_by: AmendmentNote.resolve_law(&1.changed_by, known)})
 
         joined = lookup.(Map.get(n, :effect_ids))
-        Map.merge(n, %{fact: note(parsed, n.code_type, joined), joined: joined})
+        fact = parsed |> note(n.code_type, joined) |> not_self(law_name)
+        Map.merge(n, %{fact: fact, joined: joined})
       end)
 
     note_targets =
@@ -338,9 +339,15 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
 
         carried = row_notes |> Enum.flat_map(& &1.joined) |> MapSet.new(& &1.effect_id)
 
+        # a note naming no change and no instrument ("OJ L 182, 21.6.2014,
+        # p.52.") isn't a change
         facts =
-          Enum.map(row_notes, & &1.fact) ++
-            for(e <- on_row, not MapSet.member?(carried, e.effect_id), do: effect_fact(e))
+          for(n <- row_notes, not citation_only?(n.fact), do: n.fact) ++
+            for(
+              e <- on_row,
+              not MapSet.member?(carried, e.effect_id),
+              do: e |> effect_fact() |> not_self(law_name)
+            )
 
         {from, by} = AmendmentNote.row_effective(facts)
 
@@ -364,6 +371,14 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
 
     {Enum.map(notes, & &1.fact), out}
   end
+
+  defp citation_only?(%{source: :note, effect: "other", changed_by: nil}), do: true
+  defp citation_only?(_fact), do: false
+
+  # a law commencing itself ("see reg. 1") dates the change but isn't
+  # changed by another law
+  defp not_self(%{changed_by: law} = fact, law), do: %{fact | changed_by: nil}
+  defp not_self(fact, _law), do: fact
 
   # A marginal citation (code "M…") only refers to laws: it changes nothing,
   # so no instrument and no dates (LH-06)
@@ -391,7 +406,11 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   # effect joined.
   defp status(%{status: "in_force"} = row, effects, fallback, today) do
     extent = Map.get(row, :extent_code)
-    commencements = Enum.filter(effects, &(kind(&1.type, nil) == "commenced"))
+
+    # the provision's own commencement: coming into force, or a whole-provision
+    # insertion / substitution's InForce
+    commencements =
+      Enum.filter(effects, &(commencing?(&1) and not EffectIndex.words_level?(&1)))
 
     cond do
       partial?(effects, extent, today) -> {"in_force_partial", :effect}

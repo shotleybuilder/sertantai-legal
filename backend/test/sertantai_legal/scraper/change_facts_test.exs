@@ -359,6 +359,65 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
                out["#{@law}:s.192A(6)"]
     end
 
+    test "a law commencing itself (\"see reg. 1\") dates the row but changes nothing: changed_by nil (47,381 rows in change-diff run 1)" do
+      own =
+        fx(
+          effect_id: "e-own",
+          type: "coming into force",
+          affecting: @law,
+          in_force: [at(~D[2001-01-01])]
+        )
+
+      note =
+        nt("S. 6 in force at 1.1.2001, see s. 99", ["s.6"],
+          code_type: "commencement",
+          effect_ids: ["e-own"]
+        )
+
+      {[fact], out} =
+        ChangeFacts.resolve(
+          [row("s.6"), row("s.7", effect_ids: ["e-own"])],
+          [note],
+          %{"e-own" => own},
+          @law,
+          today: @today
+        )
+
+      assert %{changed_by: nil, effective_from: ~D[2001-01-01]} = fact
+      assert %{effective_from: ~D[2001-01-01], changed_by: nil} = out["#{@law}:s.6"]
+      assert %{effective_from: ~D[2001-01-01], changed_by: nil} = out["#{@law}:s.7"]
+    end
+
+    test "a note naming no change and no instrument isn't a change: no row date (asp 2003/3 s.28(2): \"OJ L 182, 21.6.2014, p.52.\")" do
+      oj = nt("OJ L 182, 21.6.2014, p.52.", ["s.28"], [])
+      {_, out} = ChangeFacts.resolve([row("s.28")], [oj], %{}, @law, today: @today)
+      assert %{effective_from: nil, changed_by: nil} = out["#{@law}:s.28"]
+    end
+
+    test "status: a whole-provision insertion completed by its own InForce is in force, from the effect (asp 2003/2 s.51A)" do
+      ins =
+        fx(
+          effect_id: "e-i",
+          type: "inserted",
+          in_force: [
+            at(~D[2015-11-13], "for specified purposes"),
+            at(~D[2016-04-15], "in force in so far as not already in force")
+          ]
+        )
+
+      note =
+        nt("S. 51A inserted (13.11.2015 for specified purposes, 15.4.2016) by asp 6", ["s.51A"],
+          effect_ids: ["e-i"]
+        )
+
+      {_, out} =
+        ChangeFacts.resolve([row("s.51A", effect_ids: ["e-i"])], [note], %{"e-i" => ins}, @law,
+          today: @today
+        )
+
+      assert %{status: "in_force", status_source: :effect} = out["#{@law}:s.51A"]
+    end
+
     test "status: partial from a commencing effect on an ancestor; the effect outranks a note" do
       partly =
         fx(
