@@ -1,8 +1,66 @@
 ---
 session: 'LR-04: Parser Decomposition'
-status: active
+status: closed
 opened: 2026-10-09
+closed: 2026-10-10
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  LatParser (1,871 lines) split into a 68-line orchestrator and eight pure modules (Walker, Text, Inline, Ids,
+  Refs, Effects, Rows, Xml), plus InForceQualifier out of EffectTerritory and the Gemini LR-07 ChangeFacts items.
+  A new full-parse snapshot gate (mix lat.parse_snapshot) shows 0 differences in 1,068 laws; it also exposed two
+  pre-existing note-order nondeterminism bugs in CommentaryParser, fixed at source in separate commits.
+
+decisions:
+  - what: Eight modules instead of the design's four (Inline split from Text; Rows, Effects, Xml added)
+    why: Text alone would be ~530 lines; ids/parallels/disambiguation work on row maps not XML; the LR-03/07 effects glue postdates the design; shared helpers avoid Text/Ids/Refs cycles
+    result: Jason agreed; largest modules Text 423, Walker 415, Rows 364
+  - what: Zero-diff gate is a full parse snapshot (every row, note and change-fact field), not lat.text_diff
+    why: text_diff compares 4 fields against a DB that LR-03/LR-07 have already moved away from
+    result: mix lat.parse_snapshot; tamper test 3/3; final 0 differences in 1,068 laws
+  - what: One full compare over the whole extraction chain, not one per step
+    why: each compare takes 10-15 min of all cores; steps each had red→green unit tests; bisect by step if ever needed
+    result: the only differences traced to pre-existing nondeterminism, not the refactor
+  - what: Gate compares notes (and their facts) in note-id order
+    why: ids are the output ({law}:{code_type}:{seq}); the list order is read by nothing downstream
+    result: scoped re-baseline 0 differences in 100 laws
+  - what: Behaviour changes routed out (Schs./Pts. qualifier lists, 4 unread qualifier kinds, credo complexity rewrites) → LR-05
+    why: LR-04's exit criterion is zero diff
+    result: LR-05 todo carries them
+  - what: Rejected Gemini's Text split (Blocks / ContentRenderers) and moving law_extent out of Effects
+    why: lists/tables/quotes and text_blocks call each other (cycle); the type→extent fallback is the effects layer's rule
+    result: boundaries as planned
+
+metrics:
+  lat_parser_lines: { before: 1871, after: 68 }
+  module_lines: { walker: 415, text: 423, rows: 364, effects: 186, ids: 181, inline: 174, refs: 158, xml: 128, in_force_qualifier: 147 }
+  gate: { laws: 1068, final_differences: 0, baseline_minutes: 15, final_compare_minutes: 10 }
+  compare_run1: { laws_differing: 14, fields: 6595, all_scoped_multi_fragment: true, row_differences: 0 }
+  tests: { suite_passed: 2579, skipped: 2, new_module_tests: 52, qualifier_gallery: 30 }
+  qualifier_strings: { territorial_distinct: 89, unread_kinds: 4, unread_occurrences: 19 }
+  dialyzer: { changed_module_errors: 0, preexisting_elsewhere: 78 }
+
+lessons:
+  - title: Atom-keyed maps iterate in atom-table order, which changes with module load order and concurrency
+    detail: "group_by on code_type atoms and a large tuple-keyed map both gave note orders that varied between VM runs (Map.keys(%{zebra: 1, apple: 2}) → [:zebra, :apple]). Four sequential runs in one VM looked deterministic; only the concurrent snapshot runs and pre-created atoms exposed it. Never let map iteration decide an order that becomes ids or output; sort explicitly."
+    tag: data
+  - title: A zero-diff gate needs a determinism check of the baseline code itself
+    detail: "When compare 1 showed differences, running the pre-refactor code in a git worktree gave a third order for the same law — proving nondeterminism, not the refactor. Run the old code twice (ideally under concurrency) before trusting a baseline."
+    tag: tooling
+  - title: A worktree with a copied _build can silently run new beams — verify the loaded module
+    detail: "The worktree's _build was copied from the main tree (already holding LR-04 beams). Checking LatParser.module_info(:compile)[:source] and the function count (198, no Walker) confirmed it ran the old parser. Symlink deps and data/cache by absolute path (the worktree has a tracked data/ dir)."
+    tag: tooling
+  - title: Full-corpus offline parse is ~10-15 minutes, not hours
+    detail: "Early progress counts misled an estimate of 1-2 h; file mtimes showed the baseline took 15 min. Parsing the XML once instead of three times in parse/2 cut the compare to ~10 min."
+    tag: tooling
+  - title: Gemini 2.5 Pro can hang on a large prompt and Flash truncates from thinking tokens
+    detail: "A 22K-token Pro request ran 20+ min with no reply (killed; pkill matched the shell's own command line and killed it too). Flash with maxOutputTokens 8192 spent 6.3K on thinking and truncated; capping thinkingConfig.thinkingBudget at 2048 gave a complete answer. Default to Flash with a thinking cap."
+    tag: tooling
+  - title: The dialyzer PLT can be in an old format while dialyxir reports it up to date
+    detail: "'PLT is up to date' then ':dialyzer.run error: Old PLT file' — move the PLT aside and rebuild."
+    tag: tooling
+
 bugs:
   - pattern: "Scoped (multi-fragment) law's note order and ids changed run to run: CommentaryParser.renumber/2 broke ties between fragments' equal note numbers by map order, which follows the VM's atom table"
     category: nondeterminism
@@ -16,9 +74,34 @@ bugs:
     affected: list order only (ids are per code_type); 34 scoped laws in one run
     fix: "Group code types in name order (b24d6dd6)"
     status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_parser.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/{walker,text,inline,ids,refs,effects,rows,xml}.ex
+  - backend/lib/sertantai_legal/scraper/in_force_qualifier.ex
+  - backend/lib/sertantai_legal/scraper/effect_territory.ex
+  - backend/lib/sertantai_legal/scraper/change_facts.ex
+  - backend/lib/sertantai_legal/scraper/amendment_note.ex
+  - backend/lib/sertantai_legal/scraper/commentary_parser.ex
+  - backend/lib/mix/tasks/lat.parse_snapshot.ex
+  - backend/test/sertantai_legal/scraper/lat_parser/
+  - backend/test/sertantai_legal/scraper/in_force_qualifier_test.exs
+  - backend/lib/sertantai_legal/scraper/CLAUDE.md
+  - backend/data/code-reviews/2026-10-09-lr04-plan-gemini.md
+  - backend/data/code-reviews/2026-10-09-lr04-acceptance-gemini.md
+  - backend/data/reports/lat-refactor/lr04-snapshot/ (1,068 laws, gitignored)
+
+depends_on:
+  - lat-refactor/2026-10-09-lr-02-lat-territory
+  - lat-refactor/2026-10-09-lr-03-note-only-changes
+  - lat-refactor/2026-10-09-lr-07-change-metadata-from-effects
+
+enables:
+  - LR-05 non-territory fixes land in the new modules (plus qualifier gaps, map-order audit)
+  - LR-06 wave (expect a one-off "note id renumbered (scoped)" class)
+  - mix lat.parse_snapshot as the zero-diff gate for future refactors
 ---
 
-# Session: LR-04 Parser Decomposition (ACTIVE)
+# Session: LR-04 Parser Decomposition (CLOSED)
 
 ## Problem
 
