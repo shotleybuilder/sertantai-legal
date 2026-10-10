@@ -24,7 +24,7 @@ defmodule SertantaiLegal.Scraper.LatSegments do
     joined by `LatTerritory.pair_up/1`
 
   Handles the generic list operations: `text/1`, `mark/1`, `join/2`,
-  `blank?/1`, `plain/1`, `trim/1`, `append_in_quote/2`.
+  `blank?/1`, `plain/1`, `trim/1`, `append_after_quote/2`, `strip_invisible/1`.
   """
 
   alias SertantaiLegal.Scraper.LatTerritory.Change
@@ -141,15 +141,39 @@ defmodule SertantaiLegal.Scraper.LatSegments do
 
   defp update_first(segments, _fun), do: segments
 
+  @doc "Applies `fun` to the first text segment (inside a change or aside at the start)."
+  @spec update_first_text(t(), (String.t() -> String.t())) :: t()
+  def update_first_text([{:text, s} | rest], fun), do: [{:text, fun.(s)} | rest]
+
+  def update_first_text([{:words, change, inner} | rest], fun),
+    do: [{:words, change, update_first_text(inner, fun)} | rest]
+
+  def update_first_text([{:aside, inner} | rest], fun),
+    do: [{:aside, update_first_text(inner, fun)} | rest]
+
+  def update_first_text(segments, _fun), do: segments
+
   @doc """
-  AppendText joins the block before it: inside a closing quote mark ("…and”.»"),
-  else at its end.
+  AppendText follows the block before it — after its closing » when it is a
+  quoted block: the amending sentence's punctuation isn't part of the quote,
+  as legislation.gov.uk prints it ("section.”."; LR-05, Jason 2026-10-10).
   """
-  @spec append_in_quote(t(), t()) :: t()
-  def append_in_quote(segments, appended) do
-    case Enum.reverse(segments) do
-      [{:mark, "»"} | rest] -> Enum.reverse(rest, appended ++ mark("»"))
-      _ -> segments ++ appended
-    end
+  @spec append_after_quote(t(), t()) :: t()
+  def append_after_quote(segments, appended) do
+    # punctuation alone carries no territory: no change wrapper around it
+    # ("…provision.]»." not "…]»[E+W: .]"; 2006/1379 reg.5(2))
+    if String.match?(plain(appended), ~r/[\p{L}\p{N}]/u),
+      do: segments ++ appended,
+      else: segments ++ text(plain(appended))
   end
+
+  @invisible ~r/[\x{200B}\x{200C}\x{200D}\x{2060}\x{FEFF}]/u
+
+  @doc """
+  Zero-width characters (space, (non-)joiner, word joiner, BOM) out of text:
+  invisible typesetting marks, never words (1990/8 s.150(1)(b) "paragraph\\u200D
+  24ZA"). A no-break space is visible spacing and stays.
+  """
+  @spec strip_invisible(String.t()) :: String.t()
+  def strip_invisible(text), do: String.replace(text, @invisible, "")
 end

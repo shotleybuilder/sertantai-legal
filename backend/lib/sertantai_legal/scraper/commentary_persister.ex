@@ -92,6 +92,8 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
         affected_sections: ann.affected_sections,
         # LR-07: the effects behind the note (nil: none joined)
         effect_ids: ann |> Map.get(:effect_ids, []) |> nil_if_empty(),
+        # LR-05: the law its first Citation after "by" names (nil: none)
+        citation_law: Map.get(ann, :citation_law),
         created_at: now,
         updated_at: now
       }

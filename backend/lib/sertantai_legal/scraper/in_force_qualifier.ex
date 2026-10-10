@@ -15,19 +15,37 @@ defmodule SertantaiLegal.Scraper.InForceQualifier do
   into extent codes. Pure.
   """
 
+  # A territory list: "E.", "E.W.", "W. and N.I."; a letter may lose its full
+  # stop at a word's end ("…in relation to W"), never inside one ("Wales")
+  @territories "((?:(?:[EWS](?:\\.|\\b)|N\\.I\\.?)(?:,?\\s*(?:and\\s+)?)?)+)"
+
+  # "in so far as not already in force", "insofar …", "so far …"
+  @not_already "(?:in force )?(?:in ?so ?far|so far) as not already in force"
+
   # "for E.", "for E.W.", "for S. so far as …"; not "for specified purposes"
-  @for_territory ~r/\bfor ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)/
+  @for_territory Regex.compile!("\\bfor " <> @territories)
 
-  @except_territory ~r/except in relation to ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)/
+  # "except in relation to W.", "except for W."
+  @except_territory Regex.compile!("except (?:in relation to|for) " <> @territories)
 
-  @only_except ~r/^except in relation to ((?:(?:[EWS]\.|N\.I\.?)(?:,?\s*(?:and\s+)?)?)+)\s*((in force )?(in )?so far as not already in force)?$/
+  @only_except Regex.compile!(
+                 "^except (?:in relation to|for) " <>
+                   @territories <> "\\s*(" <> @not_already <> ")?$"
+               )
 
   # "for E." alone, give or take a date note before it and "in so far as not
   # already in force" (or a timing) after it; anything more limits it to
   # part of the territory or the change ("for E. in relation to the pilot
   # areas": 2000/37; "for W. for the insertion of s. 53B") — unusable
-  @before_territory ~r/^(\(being the da(te|y) on which .*came into force\)|at [\d.]+ [ap]\.m\.)?$/
-  @after_territory ~r/^((in force )?(in )?so far as not already in force|to the extent, if any, that it is not already in force|immediately after the coming into force of .*)?$/
+  @before_territory Regex.compile!(
+                      "^(\\(being the da(te|y) on which .*came into force\\)|at [\\d.]+ [ap]\\.m\\.|" <>
+                        @not_already <> ")?$"
+                    )
+  @after_territory Regex.compile!(
+                     "^(" <>
+                       @not_already <>
+                       "|to the extent, if any, that it is not already in force|immediately after the coming into force of .*)?$"
+                   )
 
   @only_provisions ~r/^for the (?:repeal|revocation|omission|insertion|substitution) of (.+)$/
   @except_provisions ~r/^except in relation to (.+)$/

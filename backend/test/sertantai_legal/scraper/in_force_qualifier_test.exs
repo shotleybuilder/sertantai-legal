@@ -46,11 +46,14 @@ defmodule SertantaiLegal.Scraper.InForceQualifierTest do
     {"except in relation to local authorities in W.", nil, nil, false},
     {"for S. in so far as not already repealed by Statute Law Repeals Act 2004 (c. 14)", nil, nil,
      false},
-    # unread today (LR-05): "insofar", "except for", a trailing territory, no full stop
-    {"for E. insofar as not already in force", nil, nil, false},
-    {"except for W.", nil, nil, false},
-    {"in so far as not already in force for N.I.", nil, nil, false},
-    {"for specified purposes except in relation to W", nil, nil, true}
+    # read since LR-05: "insofar", "except for", the phrase before the
+    # territory, a territory without its full stop (not "Wales")
+    {"for E. insofar as not already in force", nil, {"E. ", :all}, false},
+    {"except for W.", "W.", nil, false},
+    {"in so far as not already in force for N.I.", nil, {"N.I.", :all}, false},
+    {"for specified purposes except in relation to W", "W", nil, true},
+    {"except in relation to local authorities in Wales", nil, nil, false},
+    {"except for the repeal of Sch. 28 para. 11", nil, nil, false}
   ]
 
   for {q, except, scope, purposes} <- @gallery do
@@ -65,6 +68,7 @@ defmodule SertantaiLegal.Scraper.InForceQualifierTest do
     assert Q.only_except("except in relation to W.") == "W."
     assert Q.only_except("except in relation to W. in so far as not already in force") == "W. "
     assert Q.only_except("otherwise except in relation to W.") == nil
+    assert Q.only_except("except for W.") == "W."
   end
 
   test "territorial?/1" do

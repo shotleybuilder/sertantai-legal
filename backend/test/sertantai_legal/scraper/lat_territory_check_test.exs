@@ -76,4 +76,69 @@ defmodule SertantaiLegal.Scraper.LatTerritoryCheckTest do
 
     assert LatTerritoryCheck.check(rows) == []
   end
+
+  # LR-05 (LR-07 open bug): savings listed, the feed silent on territory, so
+  # the effect reads as everywhere; the note names one territory. Reported,
+  # never used (notes are hints).
+  describe "check/2: note territory hint" do
+    defp everywhere_row(id, fields \\ []),
+      do:
+        Map.merge(
+          %{
+            section_id: "UK_uksi_2010_404:" <> id,
+            extent_code: "E+W",
+            excluded_extent: "E+W",
+            text: "Kept text.",
+            territory_provenance: [%{source: :effect_everywhere, effect_id: "e1"}]
+          },
+          Map.new(fields)
+        )
+
+    test "excluded everywhere on effect evidence, the note naming a narrower territory: reported" do
+      notes = [
+        %{
+          affected_sections: ["UK_uksi_2010_404:reg.14"],
+          text: "Reg. 14 omitted (E.) (1.10.2020) by S.I. 2020/1"
+        }
+      ]
+
+      assert [
+               %{
+                 check: :note_territory_hint,
+                 section_id: "UK_uksi_2010_404:reg.14",
+                 detail: detail
+               }
+             ] =
+               LatTerritoryCheck.check([everywhere_row("reg.14")], notes)
+
+      assert detail =~ "E"
+    end
+
+    test "a note covering the extent, no note territory, or other evidence: nothing" do
+      covers = [
+        %{
+          affected_sections: ["UK_uksi_2010_404:reg.14"],
+          text: "Reg. 14 omitted (E.W.) by S.I. 2020/1"
+        }
+      ]
+
+      none = [
+        %{affected_sections: ["UK_uksi_2010_404:reg.14"], text: "Reg. 14 omitted by S.I. 2020/1"}
+      ]
+
+      assert LatTerritoryCheck.check([everywhere_row("reg.14")], covers) == []
+      assert LatTerritoryCheck.check([everywhere_row("reg.14")], none) == []
+
+      markup = everywhere_row("reg.14", territory_provenance: [%{source: :markup}])
+
+      notes = [
+        %{
+          affected_sections: ["UK_uksi_2010_404:reg.14"],
+          text: "Reg. 14 omitted (E.) by S.I. 2020/1"
+        }
+      ]
+
+      assert LatTerritoryCheck.check([markup], notes) == []
+    end
+  end
 end

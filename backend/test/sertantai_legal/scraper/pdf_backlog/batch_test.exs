@@ -68,6 +68,44 @@ defmodule SertantaiLegal.Scraper.PdfBacklog.BatchTest do
     assert [%{state: :stale}] = Batch.status(dir: dir)
   end
 
+  # LR-05: the law's text for every parse path once its LAT came from the
+  # transcript (legislation.gov.uk serves no body: 1979/791)
+  test "clml/2: the persisted transcript's CLML, only once a parse persisted", %{
+    dir: dir,
+    name: name
+  } do
+    write_transcript(dir, name, "1.—(1) One.\n(2) Two.\n")
+    assert Batch.clml(name, dir: dir) == :none
+
+    Batch.run(name, dir: dir, dry_run: true)
+    assert Batch.clml(name, dir: dir) == :none
+
+    Batch.run(name, dir: dir)
+    assert {:ok, xml} = Batch.clml(name, dir: dir)
+
+    assert length(
+             SertantaiLegal.Scraper.LatParser.parse(xml, %{law_name: name, type_code: "uksi"})
+           ) ==
+             3
+  end
+
+  test "LatStagedParser.with_backlog/3: a body-less document gives way to the transcript", %{
+    dir: dir,
+    name: name
+  } do
+    write_transcript(dir, name, "1.—(1) One.\n(2) Two.\n")
+    Batch.run(name, dir: dir)
+
+    bodyless = ~s(<Legislation NumberOfProvisions="0"><ukm:Metadata/></Legislation>)
+    with_body = "<Legislation><Secondary><Body><P1/></Body></Secondary></Legislation>"
+    alias SertantaiLegal.Scraper.LatStagedParser
+
+    assert {:ok, [xml]} = Batch.clml(name, dir: dir) |> then(fn {:ok, x} -> {:ok, [x]} end)
+    assert LatStagedParser.with_backlog(name, [bodyless], dir: dir) == [xml]
+    assert LatStagedParser.with_backlog(name, [with_body], dir: dir) == [with_body]
+    assert LatStagedParser.with_backlog("UK_uksi_1900_1", [bodyless], dir: dir) == [bodyless]
+  end
+
   test "a law with no transcript cannot run", %{dir: dir, name: name} do
     assert {:error, msg} = Batch.run(name, dir: dir)
     assert msg =~ "no transcript"

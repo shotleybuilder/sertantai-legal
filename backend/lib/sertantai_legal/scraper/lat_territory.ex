@@ -387,6 +387,10 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   """
   @spec render(LatSegments.t(), String.t() | nil, String.t() | nil) :: String.t() | nil
   def render(segments, extent, excluded \\ nil) do
+    # a row that is only a dot run is the repeal marker, whatever change
+    # holds it: no brackets, so it reads as repealed (2011/988 reg.13(1); LR-05)
+    excluded = if dots_only?(segments), do: whole(extent), else: excluded
+
     segments
     |> render_row(extent, excluded)
     |> String.replace(~r/\s+/, " ")
@@ -406,6 +410,11 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
       nil -> render_segments(segments, extent, true)
       live -> render_segments(segments, live, false)
     end
+  end
+
+  defp dots_only?(segments) do
+    plain = LatSegments.plain(segments)
+    String.match?(plain, ~r/\.\s*\./u) and String.match?(plain, ~r/\A[\s.…]+\z/u)
   end
 
   # `plain`: no brackets at all (a row live nowhere)
@@ -549,13 +558,14 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
   defp piece({:aside, _inner}, _state, _whole), do: []
 
   # Whitespace never counts; punctuation alone outside any change ("." after
-  # a substitution: 2018/482 reg.4(2)(b)) isn't the row's own words, but
-  # inside a change it is (". . . ." is a repeal marker: 1967/10 s.1(2A)).
+  # a substitution: 2018/482 reg.4(2)(b)) isn't the row's own words. Inside
+  # a change only a dot run is (". . . ." is a repeal marker: 1967/10
+  # s.1(2A)); a lone ";" is still punctuation (1990/43 s.153(1)(z7)(ii); LR-05).
   defp piece({:text, s}, {nil, _live} = state, _whole),
     do: if(String.match?(s, ~r/[\p{L}\p{N}]/u), do: [state], else: [])
 
   defp piece({:text, s}, state, _whole),
-    do: if(String.trim(s) == "", do: [], else: [state])
+    do: if(String.match?(s, ~r/[\p{L}\p{N}]|\.\s*\.|…/u), do: [state], else: [])
 
   defp piece({:words, change, inner}, {kind, live} = state, whole) do
     case compose(change, live, whole) do

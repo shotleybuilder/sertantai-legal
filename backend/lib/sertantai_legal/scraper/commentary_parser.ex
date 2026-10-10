@@ -128,7 +128,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
         type_char: type_char,
         code_type: code_type,
         text: text || "",
-        affected_sections: if(affected == [], do: nil, else: affected)
+        affected_sections: if(affected == [], do: nil, else: affected),
+        citation_law: citation_law(node, text || "")
       }
     end
   end
@@ -149,6 +150,57 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     |> case do
       "" -> nil
       t -> t
+    end
+  end
+
+  # an instrument reference in running text: "2019/530", "c. 74", "asp 8"
+  @instrument ~r"\d{4}/\d+|\bc\.\s*\d+|\b(?:asp|anaw|asc|nia|mwa)\s+\d+"
+
+  @doc """
+  The law a note's first `<Citation>` after " by " names, from its URI
+  (`…/id/{type}/{year}/{number}` → `UK_{type}_{year}_{number}`): what the
+  note's text names as the changing instrument, but structured — a Welsh SI
+  cited as plain "S.I. 2013/755" is `/id/wsi/2013/755`, an EU Regulation
+  `/id/eur/2019/1243` (LR-05). Nil when there is no such citation.
+  """
+  @spec citation_law(tuple(), String.t()) :: String.t() | nil
+  def citation_law(node, text) do
+    with {by_at, _} <- :binary.match(text, " by "),
+         {at, law} <- first_citation(node, text, by_at),
+         # only when it is the first instrument named after " by ": one the
+         # markup doesn't cite (nisi 2003/419 "by virtue of S.I. 2019/530 …
+         # (as inserted by <Citation>…)") leaves the text to decide
+         false <- Regex.match?(@instrument, binary_part(text, by_at, at - by_at)) do
+      law
+    else
+      _ -> nil
+    end
+  end
+
+  # the first Citation after " by ": {position, its law | nil (no usable URI)}
+  defp first_citation(node, text, by_at) do
+    node
+    |> xpath(~x".//Citation"l)
+    |> Enum.flat_map(fn c ->
+      case citation_at(text, inline_text(c), by_at) do
+        nil -> []
+        at -> [{at, uri_law(xpath(c, ~x"./@URI"s) |> to_string())}]
+      end
+    end)
+    |> Enum.min_by(&elem(&1, 0), fn -> nil end)
+  end
+
+  defp citation_at(_text, "", _by_at), do: nil
+
+  defp citation_at(text, cite, by_at),
+    do: Enum.find_value(:binary.matches(text, cite), fn {pos, _} -> if pos > by_at, do: pos end)
+
+  defp uri_law(uri) do
+    case Regex.run(~r"legislation\.gov\.uk/id/([a-z]+)/(\d{4})/(\d+)(?:/|$)", uri,
+           capture: :all_but_first
+         ) do
+      [type, year, number] -> "UK_#{type}_#{year}_#{number}"
+      nil -> nil
     end
   end
 
@@ -253,7 +305,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
           code_type: code_type,
           source: "lat_parser",
           text: item.text,
-          affected_sections: item.affected_sections
+          affected_sections: item.affected_sections,
+          citation_law: item.citation_law
         }
       end)
     end)

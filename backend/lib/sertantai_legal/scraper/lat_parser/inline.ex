@@ -121,11 +121,40 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
           elem(child, 1) in [:Addition, :Substitution] ->
             {[{:words, change(child, :ins), inner}], skip_to}
 
+          elem(child, 1) == :InlineAmendment ->
+            {tidy_quotes(inner), skip_to}
+
           true ->
             {inner, skip_to}
         end
     end
   end
+
+  # An InlineAmendment's quote marks hold its words, not the source's line
+  # breaks ("“⏎ general ⏎”" → "“general”"; anaw 2016/3 s.5(3)(a); LR-05)
+  # (a quote it opens and the text after it closes: its trailing break too;
+  # 2012/3119 reg.20(b))
+  defp tidy_quotes(segments) do
+    segments = merge_texts(segments)
+    plain = segments |> LatSegments.plain() |> String.trim()
+    open_only = String.match?(plain, ~r/\A[“‘]/u) and not String.match?(plain, ~r/[”’]\z/u)
+
+    segments
+    |> LatSegments.update_first_text(&String.replace(&1, ~r/\A(\s*[“‘"])\s+/u, "\\1"))
+    |> LatSegments.update_last_text(&String.replace(&1, ~r/\s+([”’"]\s*)\z/u, "\\1"))
+    |> then(
+      &if(open_only,
+        do: LatSegments.update_last_text(&1, fn s -> String.trim_trailing(s) end),
+        else: &1
+      )
+    )
+  end
+
+  # adjacent plain texts as one (split by markup that renders nothing, a
+  # CommentaryRef), so a quote's edge is one text
+  defp merge_texts([{:text, a}, {:text, b} | rest]), do: merge_texts([{:text, a <> b} | rest])
+  defp merge_texts([seg | rest]), do: [seg | merge_texts(rest)]
+  defp merge_texts([]), do: []
 
   # Words repealed (text kept) with no replacement.
   defp retained_words?(el) do
@@ -160,10 +189,15 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
 
   defp render_node(node, subrefs) do
     case elem(node, 0) do
-      :xmlText -> node |> elem(4) |> to_string() |> LatSegments.text()
+      :xmlText ->
+        node |> elem(4) |> to_string() |> LatSegments.strip_invisible() |> LatSegments.text()
+
       # an element's content (a pair's old half renders as plain words)
-      :xmlElement -> render_inline(node, subrefs)
-      _ -> []
+      :xmlElement ->
+        render_inline(node, subrefs)
+
+      _ ->
+        []
     end
   end
 

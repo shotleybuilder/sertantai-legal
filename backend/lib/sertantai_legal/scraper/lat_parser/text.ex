@@ -23,10 +23,41 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   PUWER 1998 reg.2(1) "…otherwise requires— [definitions]").
   """
   @spec open_lead_in?(tuple()) :: boolean()
-  def open_lead_in?(node) do
-    case node
-         |> text_blocks(:structural)
-         |> Enum.find(&(is_list(&1) and not LatSegments.blank?(&1))) do
+  def open_lead_in?(node), do: node |> text_blocks(:structural) |> open_block?()
+
+  @doc """
+  The lead-in before a node's first child row (its text up to the first
+  provision) ends in a dash or colon: the children are the node's list
+  ("Any person who— (a) … (b) …").
+  """
+  @spec lead_in_before_children_open?(tuple()) :: boolean()
+  def lead_in_before_children_open?(node) do
+    node |> text_blocks(:structural) |> Enum.take_while(&(&1 != :gap)) |> open_block?()
+  end
+
+  @doc """
+  A provision takes the sibling content after it (#174): its lead-in is
+  open — unless its parent's lead-in is open too and it has sub-provisions
+  of its own, which complete it; the content then finishes the parent's
+  sentence (1993/11 s.23(1): "Any person who— (a) … (c) … to— (i) (ii)
+  shall be guilty …"; LR-05).
+  """
+  @spec takes_trailing?(tuple(), boolean()) :: boolean()
+  def takes_trailing?(child, parent_open?) do
+    Xml.element_name(child) in Xml.provision_rows() and open_lead_in?(child) and
+      not (parent_open? and own_provisions?(child))
+  end
+
+  # child provisions of its own (not those quoted in amending text)
+  defp own_provisions?(node) do
+    xpath(
+      node,
+      ~x".//*[self::P1 or self::P2 or self::P3 or self::P4][not(ancestor::BlockAmendment) and not(ancestor::BlockExtract)][1]"o
+    ) != nil
+  end
+
+  defp open_block?(blocks) do
+    case Enum.find(blocks, &(is_list(&1) and not LatSegments.blank?(&1))) do
       nil -> false
       lead -> lead |> LatSegments.plain() |> String.match?(~r/[—–:-]\s*$/u)
     end
@@ -119,8 +150,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
     |> LatSegments.join("; ")
   end
 
+  # a cell reads as leaf text, its provisions numbered (`numbered/1`)
   defp cell_text(cell) do
-    segments = cell |> text_blocks(:leaf) |> join_blocks()
+    segments = cell |> text_blocks(:cell) |> join_blocks()
     if LatSegments.blank?(segments), do: Inline.text(cell), else: segments
   end
 
@@ -248,6 +280,26 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
     end)
   end
 
+  # A provision's blocks led by its number, as a list item's ("(a) England;";
+  # 2020/1265 table.111; LR-05)
+  defp numbered(provision) do
+    case {quoted_number(Ids.pnumber(provision) || "", elem(provision, 1)),
+          text_blocks(provision, :cell)} do
+      {"", blocks} ->
+        blocks
+
+      {label, [first | rest] = blocks} when is_list(first) ->
+        # the text may already lead with its number ("1. Part A
+        # installations."; 2000/17 sch.6 table.940)
+        if String.starts_with?(String.trim_leading(LatSegments.plain(first)), label),
+          do: blocks,
+          else: [LatSegments.mark(label <> " ") ++ first | rest]
+
+      {label, blocks} ->
+        [LatSegments.mark(label) | blocks]
+    end
+  end
+
   defp quoted_number("", _parent), do: ""
   defp quoted_number(n, :P1), do: n <> "."
   defp quoted_number(n, _parent), do: "(" <> n <> ")"
@@ -255,74 +307,94 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   @doc """
   A node's text blocks in document order: each Text's inline text, and in
   :structural mode a :gap where a child provision (its own row) sits.
+  :cell is :leaf inside a table cell, where provisions keep their numbers.
   :structural skips other laws' text (amendment blocks); :leaf keeps it,
   as leaf rows always have.
   """
-  @spec text_blocks(tuple(), :leaf | :structural) :: [
+  @spec text_blocks(tuple(), :leaf | :structural | :cell) :: [
           LatSegments.t() | :gap | {:append, LatSegments.t()}
         ]
   def text_blocks(node, mode) do
+    # the state: after an open child (its content is the child's), and the
+    # node's own lead-in so far (`lead_in_before_children_open?/1`: the
+    # blocks before its first child row)
     {blocks, _} =
       node
       |> xpath(~x"./*"l)
-      |> Enum.flat_map_reduce(false, fn child, after_open_child? ->
-        name = Xml.element_name(child)
-
-        cond do
-          name in Xml.no_text_elements() ->
-            {[], after_open_child?}
-
-          # tables and figures are rows of their own, in either mode
-          name in ~w(Tabular Figure) and mode == :leaf ->
-            {[], after_open_child?}
-
-          mode == :structural and name in Xml.quoted_elements() and after_open_child? ->
-            {[], true}
-
-          # text appended to the amended provision (the quote's closing ".")
-          name == "AppendText" ->
-            {[{:append, Inline.text(child)}], after_open_child?}
-
-          name in Xml.quoted_elements() ->
-            {[quoted_text(child)], after_open_child?}
-
-          Xml.local_name(name) == "table" ->
-            {[table_text(child)], after_open_child?}
-
-          name == "Signee" ->
-            {[signee_text(child)], after_open_child?}
-
-          mode == :structural and name in Xml.row_elements() ->
-            # content after an open child provision is the child's (#174)
-            {[:gap], name in Xml.provision_rows() and open_lead_in?(child)}
-
-          mode == :structural and name in Xml.skip_elements() ->
-            {[], after_open_child?}
-
-          mode == :structural and after_open_child? ->
-            {[], true}
-
-          name == "Text" ->
-            {[Inline.text(child)], after_open_child?}
-
-          # after the open-child skip above: a list following an open child is its (#174)
-          name in ~w(OrderedList UnorderedList) ->
-            {list_blocks(child, mode), after_open_child?}
-
-          # a change wrapping whole blocks (<Repeal RetainText><Text>…</Text></Repeal>):
-          # each of its blocks is the changed words
-          Inline.block_change(child) != nil ->
-            change = Inline.block_change(child)
-
-            {child |> text_blocks(mode) |> Enum.map(&Inline.changed_block(&1, change)),
-             after_open_child?}
-
-          true ->
-            {text_blocks(child, mode), after_open_child?}
-        end
+      |> Enum.flat_map_reduce({false, []}, fn child, {after_open_child?, lead} ->
+        {out, after?} = block(child, mode, after_open_child?, lead)
+        {out, {after?, freeze(lead, out)}}
       end)
 
     blocks
+  end
+
+  # the lead-in blocks until the first child row, then whether they were open
+  defp freeze(open?, _out) when is_boolean(open?), do: open?
+  defp freeze(blocks, out), do: if(:gap in out, do: open_block?(blocks), else: blocks ++ out)
+
+  defp parent_open?(open?) when is_boolean(open?), do: open?
+  defp parent_open?(blocks), do: open_block?(blocks)
+
+  defp block(child, mode, after_open_child?, lead) do
+    name = Xml.element_name(child)
+
+    cond do
+      name in Xml.no_text_elements() ->
+        {[], after_open_child?}
+
+      # tables and figures are rows of their own, in either mode
+      name in ~w(Tabular Figure) and mode in [:leaf, :cell] ->
+        {[], after_open_child?}
+
+      mode == :structural and name in Xml.quoted_elements() and after_open_child? ->
+        {[], true}
+
+      # text appended to the amended provision (the quote's closing ".")
+      name == "AppendText" ->
+        {[{:append, Inline.text(child)}], after_open_child?}
+
+      name in Xml.quoted_elements() ->
+        {[quoted_text(child)], after_open_child?}
+
+      Xml.local_name(name) == "table" ->
+        {[table_text(child)], after_open_child?}
+
+      name == "Signee" ->
+        {[signee_text(child)], after_open_child?}
+
+      mode == :structural and name in Xml.row_elements() ->
+        # content after an open child provision is the child's (#174)
+        {[:gap], takes_trailing?(child, parent_open?(lead))}
+
+      mode == :structural and name in Xml.skip_elements() ->
+        {[], after_open_child?}
+
+      mode == :structural and after_open_child? ->
+        {[], true}
+
+      # a table cell's provisions are no rows: they keep their numbers
+      mode == :cell and name in ~w(P1 P2 P3 P4) ->
+        {numbered(child), after_open_child?}
+
+      name == "Text" ->
+        {[Inline.text(child)], after_open_child?}
+
+      # after the open-child skip above: a list following an open child is its (#174)
+      name in ~w(OrderedList UnorderedList) ->
+        {list_blocks(child, mode), after_open_child?}
+
+      # a change wrapping whole blocks (<Repeal RetainText><Text>…</Text></Repeal>):
+      # each of its blocks is the changed words
+      Inline.block_change(child) != nil ->
+        change = Inline.block_change(child)
+
+        {child |> text_blocks(mode) |> Enum.map(&Inline.changed_block(&1, change)),
+         after_open_child?}
+
+      true ->
+        {text_blocks(child, mode), after_open_child?}
+    end
   end
 
   @doc """
@@ -375,12 +447,12 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
     |> LatSegments.trim()
   end
 
-  # AppendText joins the block before it, inside its closing "»".
+  # AppendText joins the block before it, after its closing "»".
   defp attach_appends(blocks) do
     blocks
     |> Enum.reduce([], fn
       {:append, appended}, [prev | rest] when is_list(prev) ->
-        [LatSegments.append_in_quote(prev, appended) | rest]
+        [LatSegments.append_after_quote(prev, appended) | rest]
 
       {:append, appended}, acc ->
         [appended | acc]

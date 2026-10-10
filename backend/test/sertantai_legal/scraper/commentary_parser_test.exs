@@ -490,4 +490,61 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
                [:amendment, :commencement, :modification]
     end
   end
+
+  describe "citation_law/2 (LR-05)" do
+    defp commentary(xml), do: SweetXml.parse(xml, quiet: true)
+
+    test "the first Citation after \" by \": its URI's law, not the text's reading" do
+      node =
+        commentary(
+          ~s|<Commentary id="k1" Type="F"><Para><Text>Words in s. 78A(9) omitted (1.4.2013) by virtue of <Citation URI="http://www.legislation.gov.uk/id/wsi/2013/755" Class="WelshStatutoryInstrument">The Natural Resources Body for Wales (Functions) Order 2013 (S.I. 2013/755)</Citation>, <CitationSubRef URI="http://www.legislation.gov.uk/id/wsi/2013/755/article/1/2">art. 1(2)</CitationSubRef></Text></Para></Commentary>|
+        )
+
+      text =
+        "Words in s. 78A(9) omitted (1.4.2013) by virtue of The Natural Resources Body for Wales (Functions) Order 2013 (S.I. 2013/755), art. 1(2)"
+
+      assert CommentaryParser.citation_law(node, text) == "UK_wsi_2013_755"
+    end
+
+    test "EU Regulations and Directives; a Citation before \" by \" and non-legislation URIs don't count" do
+      node =
+        commentary(
+          ~s|<Commentary id="c2" Type="F"><Para><Text>Art. 2 of <Citation URI="http://www.legislation.gov.uk/id/eudr/1989/391">Directive 89/391/EEC</Citation> substituted by <Citation URI="http://www.legislation.gov.uk/id/eur/2019/1243">Regulation (EU) 2019/1243</Citation> (<Citation URI="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ">OJ L 198</Citation>)</Text></Para></Commentary>|
+        )
+
+      text = "Art. 2 of Directive 89/391/EEC substituted by Regulation (EU) 2019/1243 (OJ L 198)"
+      assert CommentaryParser.citation_law(node, text) == "UK_eur_2019_1243"
+    end
+
+    test "an instrument named before the first Citation after \" by \": nil, the text stands (nisi 2003/419)" do
+      node =
+        commentary(
+          ~s|<Commentary id="c4" Type="F"><Para><Text>Words omitted by virtue of S.I. 2019/530, reg. 128(ca) (as inserted by <Citation URI="http://www.legislation.gov.uk/id/uksi/2020/1016">S.I. 2020/1016</Citation>)</Text></Para></Commentary>|
+        )
+
+      text =
+        "Words omitted by virtue of S.I. 2019/530, reg. 128(ca) (as inserted by S.I. 2020/1016)"
+
+      assert CommentaryParser.citation_law(node, text) == nil
+    end
+
+    test "no \" by \", or no Citation after it: nil" do
+      node =
+        commentary(
+          ~s|<Commentary id="c3" Type="C"><Para><Text>See <Citation URI="http://www.legislation.gov.uk/id/ukpga/1990/43">1990 c. 43</Citation></Text></Para></Commentary>|
+        )
+
+      assert CommentaryParser.citation_law(node, "See 1990 c. 43") == nil
+      assert CommentaryParser.citation_law(node, "Applied by s. 5") == nil
+    end
+
+    test "parse/3 carries it on each note" do
+      xml = """
+      <Legislation><Commentaries><Commentary id="key-1" Type="F"><Para><Text>Words substituted by <Citation URI="http://www.legislation.gov.uk/id/eur/2019/1243">Regulation (EU) 2019/1243</Citation></Text></Para></Commentary></Commentaries></Legislation>
+      """
+
+      [ann] = CommentaryParser.parse(xml, %{law_name: "UK_eudr_1989_654"})
+      assert ann.citation_law == "UK_eur_2019_1243"
+    end
+  end
 end

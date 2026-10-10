@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Lat.TextDiff do
   @moduledoc """
   Which LAT rows a parser change alters, without persisting anything: each
-  law is fetched and parsed (`LatStagedParser.fetch_rows/1`, scope-aware)
+  law is fetched and parsed with its notes (`LatStagedParser.fetch_changes/2`, scope-aware)
   and its row text compared with the stored LAT (`LatTextDiff`).
 
       mix lat.text_diff --laws UK_uksi_1992_3004,UK_ukpga_1974_37
@@ -183,9 +183,10 @@ defmodule Mix.Tasks.Lat.TextDiff do
   end
 
   defp diff_law(law, mode) do
-    with {:ok, rows, _law_id} <- LatStagedParser.fetch_rows(law, store: mode) do
+    # notes too: the note territory hint check (LR-05) compares them
+    with {:ok, %{rows: rows, notes: notes}} <- LatStagedParser.fetch_changes(law, store: mode) do
       new = Map.new(rows, &{&1.section_id, Map.take(&1, @fields)})
-      {:ok, changes(stored(law), new), LatTerritoryCheck.check(rows)}
+      {:ok, changes(stored(law), new), LatTerritoryCheck.check(rows, notes)}
     end
   end
 

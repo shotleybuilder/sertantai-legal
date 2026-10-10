@@ -51,7 +51,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     %{rows: note_rows} =
       Repo.query!(
         """
-        SELECT id, affected_sections, text, code_type, code, effect_ids,
+        SELECT id, affected_sections, text, code_type, code, effect_ids, citation_law,
                effect, effective_dates, effective_from, changed_by, change_id, fact_provenance
         FROM amendment_annotations WHERE law_name = $1 ORDER BY id
         """,
@@ -67,7 +67,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
     by_id = for e <- effects, e.effect_id != nil, into: %{}, do: {e.effect_id, e}
 
     notes =
-      Enum.map(note_rows, fn [id, sections, text, type, code, effect_ids | stored] ->
+      Enum.map(note_rows, fn [id, sections, text, type, code, effect_ids, citation_law | stored] ->
         %{
           id: id,
           affected_sections: sections,
@@ -75,6 +75,7 @@ defmodule SertantaiLegal.Scraper.LatStatus.Apply do
           code_type: type,
           code: code,
           effect_ids: effect_ids || [],
+          citation_law: citation_law,
           stored: stored
         }
       end)

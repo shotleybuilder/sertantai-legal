@@ -57,10 +57,29 @@ defmodule SertantaiLegal.Scraper.LatSegmentsTest do
              [{:text, "a"}, {:words, @keep, [{:text, "Minister"}]}]
   end
 
-  test "append_in_quote/2: inside a closing » mark, else at the end" do
-    assert S.append_in_quote(S.mark("«") ++ S.text("and") ++ S.mark("»"), S.text("”.")) ==
-             [{:mark, "«"}, {:text, "and"}, {:text, "”."}, {:mark, "»"}]
+  # LR-05 (Jason 2026-10-10): AppendText isn't part of the quoted block — it
+  # follows the closing quote, as legislation.gov.uk prints it ("section.”.")
+  test "append_after_quote/2: after the closing » mark" do
+    assert S.append_after_quote(S.mark("«") ++ S.text("section.") ++ S.mark("»"), S.text(".")) ==
+             [{:mark, "«"}, {:text, "section."}, {:mark, "»"}, {:text, "."}]
 
-    assert S.append_in_quote(S.text("words"), S.text(".")) == [{:text, "words"}, {:text, "."}]
+    assert S.append_after_quote(S.text("words"), S.text(".")) == [{:text, "words"}, {:text, "."}]
+
+    # punctuation alone carries no territory: its change wrapper goes
+    # ("…provision.]»." not "…provision.]»[E+W: .]"; 2006/1379 reg.5(2))
+    inserted = [{:words, @keep, [{:text, "."}]}]
+
+    assert S.append_after_quote(S.mark("«") ++ S.text("x") ++ S.mark("»"), inserted) ==
+             [{:mark, "«"}, {:text, "x"}, {:mark, "»"}, {:text, "."}]
+
+    words = [{:words, @keep, [{:text, "; and"}]}]
+    assert S.append_after_quote(S.text("x"), words) == [{:text, "x"} | words]
+  end
+
+  test "strip_invisible/1: zero-width characters out of row text (U+200D in 1990/8 s.150(1)(b))" do
+    assert S.strip_invisible("paragraph\u200D 24ZA") == "paragraph 24ZA"
+    assert S.strip_invisible("would\u2060—\u200B\u200C\uFEFF") == "would—"
+    # a no-break space is visible spacing: kept
+    assert S.strip_invisible("about\u00A0—") == "about\u00A0—"
   end
 end

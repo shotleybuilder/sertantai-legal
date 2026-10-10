@@ -113,6 +113,14 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
       )
     end
 
+    attribute :citation_law, :string do
+      allow_nil?(true)
+
+      description(
+        "The law the note's first <Citation> after 'by' names, from its URI (LR-05): structured, so it beats the text's reading (a Welsh SI cited as plain S.I.; EU Regulations). Nil: no such citation"
+      )
+    end
+
     attribute :fact_provenance, :map do
       allow_nil?(true)
 

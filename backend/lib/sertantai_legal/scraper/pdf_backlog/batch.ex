@@ -89,6 +89,26 @@ defmodule SertantaiLegal.Scraper.PdfBacklog.Batch do
     end
   end
 
+  @doc """
+  The CLML of a law whose LAT a transcript parse persisted (`lat.json`
+  written): regenerated from `transcript.md`, so every parse path reads the
+  text the stored LAT came from (`LatStagedParser.with_backlog/3`; LR-05).
+  `:none` when no parse persisted. `body.xml` isn't used: a dry run rewrites
+  it.
+  """
+  @spec clml(String.t(), keyword()) :: {:ok, String.t()} | :none
+  def clml(law_name, opts \\ []) do
+    folder = Path.join(PdfBacklog.dir(opts), law_name)
+
+    with true <- File.exists?(Path.join(folder, "lat.json")),
+         {:ok, text} <- read_transcript(Path.join(folder, "transcript.md")),
+         {:ok, transcript} <- Transcript.parse(text) do
+      {:ok, Clml.to_clml(transcript)}
+    else
+      _ -> :none
+    end
+  end
+
   defp persist(law_name, type_code, law_id, xml, folder, text, qa, rows) do
     {:ok, result} = LatStagedParser.run_stages(law_name, type_code, law_id, xml)
 

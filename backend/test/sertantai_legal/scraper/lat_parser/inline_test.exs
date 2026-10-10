@@ -38,6 +38,41 @@ defmodule SertantaiLegal.Scraper.LatParser.InlineTest do
     assert LatSegments.plain(old) == "old"
   end
 
+  test "text/1: an InlineAmendment's quotes hold its words, not the source's line breaks (anaw 2016/3 s.5(3)(a))" do
+    xml = """
+    <Text>after “Body's” insert <InlineAmendment>“
+                            general purpose
+                          ”</InlineAmendment>;</Text>
+    """
+
+    assert LatSegments.plain(Inline.text(el(xml))) == "after “Body's” insert “general purpose”;"
+  end
+
+  test "text/1: an InlineAmendment opening a quote it doesn't close loses its trailing break too (2012/3119 reg.20(b))" do
+    xml = """
+    <Text>substitute <InlineAmendment>“
+                regulation 27
+              </InlineAmendment>”;</Text>
+    """
+
+    assert LatSegments.plain(Inline.text(el(xml))) == "substitute “regulation 27”;"
+  end
+
+  test "text/1: a note reference before the closing quote doesn't keep the break (2018/1370 reg.5(2)(a))" do
+    xml = """
+    <Text>substitute <InlineAmendment>“
+                regulation 8 <CommentaryRef Ref="c1"/>
+              ”</InlineAmendment>;</Text>
+    """
+
+    assert LatSegments.plain(Inline.text(el(xml))) == "substitute “regulation 8”;"
+  end
+
+  test "text/1: zero-width characters dropped" do
+    assert LatSegments.plain(Inline.text(el("<Text>paragraph\u200D 24ZA</Text>"))) ==
+             "paragraph 24ZA"
+  end
+
   test "plain/1: words as one trimmed string" do
     assert Inline.plain(el("<Pnumber>  12A </Pnumber>")) == "12A"
   end

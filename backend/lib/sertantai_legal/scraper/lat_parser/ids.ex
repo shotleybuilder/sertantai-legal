@@ -9,6 +9,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   import SweetXml
 
   alias SertantaiLegal.Scraper.LatParser.Xml
+  alias SertantaiLegal.Scraper.LatSegments
 
   @doc """
   A P1's P2 children are a structural wrapper: exactly one P2, numbered as
@@ -55,7 +56,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
 
   # A Number's number and any heading joined to it by a dash: "Part III.—
   # Administration of Law" → {"III", "Administration of Law"}; "PART 3 —" →
-  # {"3", nil} (LH-06).
+  # {"3", nil} (LH-06); a spaced hyphen too: "PART 2B - WALES" → {"2B", "WALES"}
+  # (LR-05).
   defp number_parts(node, prefix) do
     raw =
       node
@@ -67,12 +69,29 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
       |> String.replace(~r/^\s*<[^>]+>\s*/, "")
       |> String.trim()
 
-    case String.split(raw, ~r/\.?\s*[—–]\s*/u, parts: 2) do
+    case String.split(raw, ~r/\.?\s*[—–]\s*|\s+-\s+/u, parts: 2) do
       [number, heading] ->
         {Xml.blank_to_nil(String.trim(number)), Xml.blank_to_nil(String.trim(heading))}
 
       [number] ->
-        {Xml.blank_to_nil(number), nil}
+        heading_as_number(node, prefix, Xml.blank_to_nil(number))
+    end
+  end
+
+  # A Number holding a heading and no number ("Nuclear site licences" in
+  # 1965/57): the number is the element id's ("part-2"), the text its
+  # heading (LR-05). A number never contains a space.
+  defp heading_as_number(node, prefix, text) do
+    with true <- is_binary(text) and String.contains?(text, " "),
+         [n] <-
+           Regex.run(
+             ~r/(?:^|-)#{String.downcase(prefix)}-([0-9A-Za-z]+)$/,
+             Xml.xml_id(node) || "",
+             capture: :all_but_first
+           ) do
+      {n, text}
+    else
+      _ -> {text, nil}
     end
   end
 
@@ -121,7 +140,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
       |> Enum.map_reduce(nil, fn child, prev ->
         case elem(child, 0) do
           :xmlText ->
-            {to_string(elem(child, 4)), nil}
+            {child |> elem(4) |> to_string() |> LatSegments.strip_invisible(), nil}
 
           :xmlElement ->
             sep = if prev && territorial_pair?(prev, child), do: " ", else: ""

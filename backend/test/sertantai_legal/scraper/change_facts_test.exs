@@ -314,6 +314,45 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
           Map.new(fields)
         )
 
+    test "no effect: the note's Citation law beats its text (LR-05: a Welsh SI cited as plain S.I.; EU)" do
+      rows = [row("s.1"), row("s.2"), row("s.3")]
+
+      notes = [
+        nt(
+          "Words in s. 1 omitted (1.4.2013) by The Order 2013 (S.I. 2013/755), art. 1(2)",
+          ["s.1"],
+          citation_law: "UK_wsi_2013_755"
+        ),
+        nt("Substituted by Regulation (EU) 2019/1243 of the European Parliament", ["s.2"],
+          citation_law: "UK_eur_2019_1243"
+        ),
+        # a marginal citation changes nothing, Citation or not
+        nt("S. 3 cites S.I. 2013/755", ["s.3"], code: "M:1", citation_law: "UK_wsi_2013_755")
+      ]
+
+      known = MapSet.new(["UK_uksi_2013_755", "UK_wsi_2013_755"])
+
+      {[wsi, eu, m], _out} =
+        ChangeFacts.resolve(rows, notes, %{}, @law, today: @today, known_laws: known)
+
+      assert {wsi.source, wsi.changed_by} == {:note, "UK_wsi_2013_755"}
+      assert eu.changed_by == "UK_eur_2019_1243"
+      assert m.changed_by == nil
+    end
+
+    test "a Citation's uksi never turns the text's Welsh SI into a uksi (anaw 2017/2: \"(Wales) Regulations 2024 (S.I. 2024/1229)\")" do
+      notes = [
+        nt(
+          "S. 1 excluded (29.11.2024) by The Special Procedures (Wales) Regulations 2024 (S.I. 2024/1229), reg. 3",
+          ["s.1"],
+          citation_law: "UK_uksi_2024_1229"
+        )
+      ]
+
+      {[f], _} = ChangeFacts.resolve([row("s.1")], notes, %{}, @law, today: @today)
+      assert f.changed_by == "UK_wsi_2024_1229"
+    end
+
     test "a row's change facts from its notes' effects and the effects no note carries" do
       ins =
         fx(

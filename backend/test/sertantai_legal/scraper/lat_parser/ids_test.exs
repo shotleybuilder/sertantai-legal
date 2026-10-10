@@ -20,6 +20,22 @@ defmodule SertantaiLegal.Scraper.LatParser.IdsTest do
 
     assert Ids.number(el("<Schedule><Number>SCHEDULE 1</Number></Schedule>"), "Schedule") == "1"
     assert Ids.number(el("<Part><Number>PART 3 —</Number></Part>"), "Part") == "3"
+    # a spaced hyphen joins a heading too (2010/2214 "PART 2B - WALES"; LR-05)
+    assert Ids.number(el("<Part><Number>PART 2B - WALES</Number></Part>"), "Part") == "2B"
+    # a heading in the Number element: the number from the id (1965/57; LR-05)
+    named = el(~s(<Part id="part-2"><Number>Nuclear site licences</Number></Part>))
+    assert Ids.number(named, "Part") == "2"
+
+    assert Ids.number_titled(%{title: nil, text: ""}, named, "Part") ==
+             %{title: "Nuclear site licences", text: "Nuclear site licences"}
+
+    assert Ids.number(
+             el(~s(<Chapter id="part-1-chapter-3"><Number>General duties</Number></Chapter>)),
+             "Chapter"
+           ) == "3"
+
+    # an unspaced one is part of the number
+    assert Ids.number(el("<Part><Number>Part 2-3</Number></Part>"), "Part") == "2-3"
   end
 
   test "number_titled/3: an untitled row takes its Number's heading" do
@@ -32,6 +48,13 @@ defmodule SertantaiLegal.Scraper.LatParser.IdsTest do
            }
 
     assert Ids.number_titled(%{title: "T", text: "x"}, node, "Part") == %{title: "T", text: "x"}
+
+    wales = el("<Part><Number>PART 2B - WALES</Number></Part>")
+
+    assert Ids.number_titled(%{title: nil, text: ""}, wales, "Part") == %{
+             title: "WALES",
+             text: "WALES"
+           }
   end
 
   test "title/1 and heading_title/1: Title, else a Schedule's TitleBlock; dots-only is nil" do
@@ -43,6 +66,9 @@ defmodule SertantaiLegal.Scraper.LatParser.IdsTest do
     assert Ids.heading_title(sched) == "Fees"
     assert Ids.heading_title(el("<Part><Title>. . . .</Title></Part>")) == nil
     assert Ids.title(el("<Part/>")) == nil
+    # zero-width characters are not words (LR-05)
+    assert Ids.title(el("<Pblock><Title>Fees\u200D and charges</Title></Pblock>")) ==
+             "Fees and charges"
   end
 
   test "first_p1_number/1" do

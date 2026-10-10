@@ -25,7 +25,8 @@ defmodule SertantaiLegal.Scraper.NoteTerritory do
   §3): LAT territory comes from the change markup and the effects layer
   (lat-refactor LR-03). Kept for later use — e.g. comparing notes with the
   effects layer to find changes it is missing (Jason, 2026-10-09). Nothing
-  outside this module and its tests may call it.
+  outside this module and its tests may call it, except `LatTerritoryCheck`'s
+  report-only `:note_territory_hint` (LR-05), which never writes a value.
   """
 
   alias SertantaiLegal.Scraper.Territory

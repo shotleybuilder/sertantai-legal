@@ -1091,6 +1091,55 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert txt(rows, "UK_uksi_1998_2306:reg.2") in [nil, ""]
     end
 
+    # LR-05 (QA3, #174 limit): the parent's own lead-in is open, so its
+    # children are its list; the last child's "to—" is completed by its own
+    # sub-provisions, and the closing words finish the parent's sentence
+    test "1993/11 s.23(1): closing words after a list item with its own sub-provisions are the open parent's" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S"><Primary><Body>
+        <P1group><P1 id="section-23"><Pnumber>23</Pnumber><P1para>
+          <P2 id="section-23-1"><Pnumber>1</Pnumber><P2para>
+            <Text>Any person who—</Text>
+            <P3 id="section-23-1-a"><Pnumber>a</Pnumber><P3para><Text>acquires any solid fuel; or</Text></P3para></P3>
+            <P3 id="section-23-1-c"><Pnumber>c</Pnumber><P3para><Text>sells by retail any solid fuel for delivery to—</Text>
+              <P4 id="section-23-1-c-i"><Pnumber>i</Pnumber><P4para><Text>a building; or</Text></P4para></P4>
+              <P4 id="section-23-1-c-ii"><Pnumber>ii</Pnumber><P4para><Text>premises in such an area,</Text></P4para></P4>
+            </P3para></P3>
+            <Text>shall be guilty of an offence.</Text>
+          </P2para></P2>
+        </P1para></P1></P1group>
+      </Body></Primary></Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_1993_11", type_code: "ukpga"})
+
+      assert txt(rows, "UK_ukpga_1993_11:s.23(1)") ==
+               "Any person who— … shall be guilty of an offence."
+
+      assert txt(rows, "UK_ukpga_1993_11:s.23(1)(c)") ==
+               "sells by retail any solid fuel for delivery to—"
+    end
+
+    test "an open parent's last item without sub-provisions still takes the sibling list" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S"><Primary><Body>
+        <P1group><P1 id="section-8"><Pnumber>8</Pnumber><P1para>
+          <P2 id="section-8-1"><Pnumber>1</Pnumber><P2para>
+            <Text>A person must—</Text>
+            <P3 id="section-8-1-a"><Pnumber>a</Pnumber><P3para><Text>keep records; and</Text></P3para></P3>
+            <P3 id="section-8-1-b"><Pnumber>b</Pnumber><P3para><Text>report the following—</Text></P3para></P3>
+            <UnorderedList><ListItem><Para><Text>accidents;</Text></Para></ListItem></UnorderedList>
+          </P2para></P2>
+        </P1para></P1></P1group>
+      </Body></Primary></Legislation>
+      """
+
+      rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2024_8", type_code: "ukpga"})
+
+      assert txt(rows, "UK_ukpga_2024_8:s.8(1)(b)") == "report the following— accidents;"
+      assert txt(rows, "UK_ukpga_2024_8:s.8(1)") == "A person must—"
+    end
+
     test "content after a closed subsection stays on the parent" do
       xml = """
       <Legislation RestrictExtent="E+W+S"><Primary><Body>
@@ -2746,14 +2795,14 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       assert lh3_row(rows, "s.173").text == "Insert— «2. Persons are— Newspaper | Editor»"
     end
 
-    test "AppendText after a quoted block closes the quote (ukpga 2019/17 s.55(3))" do
+    test "AppendText after a quoted block follows the closing » (ukpga 2019/17 s.55(3); LR-05)" do
       rows =
         lh3(
           ~s|<P1group><P1><Pnumber>55</Pnumber><P1para><Text>For paragraph (b) substitute—</Text><BlockAmendment><P3><Pnumber>b</Pnumber><P3para><Text>it increases the rate of fire; and”</Text></P3para></P3></BlockAmendment><AppendText>.</AppendText></P1para></P1></P1group>|
         )
 
       assert lh3_row(rows, "s.55").text ==
-               "For paragraph (b) substitute— «(b) it increases the rate of fire; and”.»"
+               "For paragraph (b) substitute— «(b) it increases the rate of fire; and”»."
     end
 
     test "excluded_extent from the row's own text when its children differ (ukpga 1989/14 s.3(5))" do

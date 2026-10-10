@@ -324,6 +324,22 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert render([keep("S", [t(dots)])], "E+W+S", "S") == dots
     end
 
+    test "punctuation alone inside a change isn't the row's words; a dot run is (1990/43 s.153(1)(z7)(ii); LR-05)" do
+      # Repeal(E+W)[Addition(S)[words]] then Repeal(E+W)[";"]: live in S only
+      segs = [
+        keep("E+W", [ins("S", [t("the potential for improving soil")])]),
+        keep("E+W", [t(";")])
+      ]
+
+      assert LatTerritory.excluded(segs, "E+W+S+NI") == "E+W+NI"
+      assert render(segs, "E+W+S+NI", "E+W+NI") == "the potential for improving soil;"
+    end
+
+    test "a row that is only a dot run inside a change is the repeal marker, unbracketed (2011/988 reg.13(1); LR-05)" do
+      dots = ". . . . . . . ."
+      assert render([ins("E+W", [t(dots)])], "E+W+S+NI") == dots
+    end
+
     test "own plain words, a pair, or a mix: nil" do
       assert LatTerritory.excluded([t("Plain "), keep("S", [t("kept")])], "E+W+S") == nil
       assert LatTerritory.excluded([pair("S")], "E+W+S") == nil

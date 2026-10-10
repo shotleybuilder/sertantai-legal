@@ -34,6 +34,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
 
   alias SertantaiLegal.Scraper.LegislationGovUk.Client
   alias SertantaiLegal.Scraper.PdfBacklog
+  alias SertantaiLegal.Scraper.PdfBacklog.Batch
   alias SertantaiLegal.Scraper.IdField
   alias SertantaiLegal.Repo
 
@@ -191,7 +192,28 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
          {:ok, law_id} <- lookup_law_id(law_name),
          {:ok, xmls} <-
            fetch_xmls(slash_path, LatScope.get(law_name), store_opts(law_name, opts)) do
-      {:ok, xmls, law_id}
+      {:ok, with_backlog(law_name, xmls, backlog_dir: Keyword.get(opts, :backlog_dir)), law_id}
+    end
+  end
+
+  @doc """
+  A law legislation.gov.uk serves without a body (a PDF-only law: metadata
+  only, NumberOfProvisions="0") whose LAT came from a PDF backlog transcript
+  reads that transcript's CLML (`PdfBacklog.Batch.clml/2`): a re-parse must
+  reproduce the stored LAT, never an empty one (1979/791, LR-05). Else the
+  documents as fetched. `opts`: `dir` / `backlog_dir`, the backlog directory.
+  """
+  @spec with_backlog(String.t(), [String.t()], keyword()) :: [String.t()]
+  def with_backlog(law_name, xmls, opts \\ []) do
+    dir = Keyword.get(opts, :dir) || Keyword.get(opts, :backlog_dir)
+
+    if Enum.all?(xmls, &(not Regex.match?(~r/<(Body|EUBody|Schedules)[\s>]/, &1))) do
+      case Batch.clml(law_name, if(dir, do: [dir: dir], else: [])) do
+        {:ok, xml} -> [xml]
+        :none -> xmls
+      end
+    else
+      xmls
     end
   end
 

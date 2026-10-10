@@ -1,6 +1,8 @@
 defmodule SertantaiLegal.Scraper.LatParser.TextTest do
   use ExUnit.Case, async: true
 
+  import SweetXml, only: [sigil_x: 2]
+
   alias SertantaiLegal.Scraper.LatSegments
   alias SertantaiLegal.Scraper.LatParser.Text
 
@@ -29,6 +31,34 @@ defmodule SertantaiLegal.Scraper.LatParser.TextTest do
 
     # tables are rows of their own in leaf mode
     assert plain(Text.leaf(node)) == "Table:"
+  end
+
+  test "a table cell's provisions keep their numbers (2020/1265 table.111; LR-05)" do
+    node =
+      el("""
+      <P1><P1para><Tabular><table xmlns="http://www.w3.org/1999/xhtml"><tbody>
+      <tr><td><P><BlockText><Para><Text>Installation in—</Text></Para></BlockText></P>
+      <P3 id="x-a"><Pnumber>a</Pnumber><P3para><Text>England;</Text></P3para></P3>
+      <P3 id="x-b"><Pnumber>b</Pnumber><P3para><Text>the territorial sea</Text></P3para></P3></td>
+      <td>Environment Agency</td></tr></tbody></table></Tabular></P1para></P1>
+      """)
+
+    [table] = SweetXml.xpath(node, ~x"//Tabular"l)
+    rows = Text.leaf(table)
+
+    assert plain(rows) ==
+             "Installation in— (a) England; (b) the territorial sea | Environment Agency"
+  end
+
+  test "a cell provision whose text already starts with its number isn't numbered twice (2000/17 sch.6 table.940)" do
+    node =
+      el("""
+      <Tabular><table xmlns="http://www.w3.org/1999/xhtml"><tbody><tr><td>
+      <P1 id="p-1"><Pnumber>1</Pnumber><P1para><Text>1. Part A installations.</Text></P1para></P1>
+      </td></tr></tbody></table></Tabular>
+      """)
+
+    assert plain(Text.leaf(node)) == "1. Part A installations."
   end
 
   test "leaf/1: amending text is one «…» block with its numbers" do

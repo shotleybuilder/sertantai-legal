@@ -121,21 +121,22 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
   defp walk_children(node, ctx) do
     ctx = %{ctx | trailing: []}
     children = xpath(node, ~x"./*"l)
+    parent_open? = Text.lead_in_before_children_open?(node)
 
     children
     |> Enum.with_index()
     |> Enum.flat_map(fn {child, i} ->
-      trailing = trailing_content(child, Enum.drop(children, i + 1))
+      trailing = trailing_content(child, Enum.drop(children, i + 1), parent_open?)
       walk_element(child, %{ctx | trailing: trailing})
     end)
   end
 
-  # The sibling content an open child provision takes: the content elements
-  # after it, up to the next row element; [] unless the child's lead-in is open.
-  defp trailing_content(child, rest) do
+  # The sibling content a child provision takes (`Text.takes_trailing?/2`):
+  # the content elements after it, up to the next row element.
+  defp trailing_content(child, rest, parent_open?) do
     if Xml.element_name(child) in Xml.provision_rows() do
       content = Enum.take_while(rest, &(Xml.element_name(&1) not in Xml.row_elements()))
-      if content != [] and Text.open_lead_in?(child), do: content, else: []
+      if content != [] and Text.takes_trailing?(child, parent_open?), do: content, else: []
     else
       []
     end

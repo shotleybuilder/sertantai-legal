@@ -260,6 +260,7 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
           optional(:code) => String.t() | nil,
           optional(:affected_sections) => [String.t()] | nil,
           optional(:effect_ids) => [String.t()] | nil,
+          optional(:citation_law) => String.t() | nil,
           optional(:parsed) => AmendmentNote.t()
         }
 
@@ -321,8 +322,8 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   defp with_fact(n, lookup, law_name, known) do
     parsed =
       (Map.get(n, :parsed) || AmendmentNote.parse(n.text, n.code_type, law_name))
+      |> then(&%{&1 | changed_by: changed_by(&1, Map.get(n, :citation_law), known)})
       |> marginal(Map.get(n, :code))
-      |> then(&%{&1 | changed_by: AmendmentNote.resolve_law(&1.changed_by, known)})
 
     joined = lookup.(Map.get(n, :effect_ids))
     fact = parsed |> note(n.code_type, joined) |> not_self(law_name)
@@ -383,6 +384,21 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
       change_source: if(from || by, do: source)
     }
   end
+
+  # the law the note's Citation names (its URI) over the text's reading,
+  # which can only guess a Welsh SI cited as plain "S.I." (LR-05)
+  # — but a uksi URI can only echo "S.I." in the text: it never turns the
+  # text's Welsh SI ("(Wales) Regulations … (S.I. 2024/1229)") into a uksi
+  defp changed_by(parsed, citation_law, known) when is_binary(citation_law) do
+    text = AmendmentNote.resolve_law(parsed.changed_by, known)
+
+    if is_binary(text) and String.replace_prefix(text, "UK_wsi_", "UK_uksi_") == citation_law and
+         text != citation_law,
+       do: text,
+       else: citation_law
+  end
+
+  defp changed_by(parsed, nil, known), do: AmendmentNote.resolve_law(parsed.changed_by, known)
 
   defp citation_only?(%{source: :note, effect: "other", changed_by: nil}), do: true
   defp citation_only?(_fact), do: false
