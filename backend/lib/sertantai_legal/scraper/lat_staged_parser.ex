@@ -101,7 +101,8 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     case if(LatScope.excluded?(scope),
            do: :excluded,
            else: fetch_xmls(slash_path, scope, store_opts(law_name, opts))
-         ) do
+         )
+         |> backlog_fallback(law_name, opts) do
       :excluded ->
         # #166: the law is excluded from LAT (no EHS link); nothing is fetched
         # or written, so no parse path brings its body back
@@ -195,6 +196,13 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       {:ok, with_backlog(law_name, xmls, backlog_dir: Keyword.get(opts, :backlog_dir)), law_id}
     end
   end
+
+  # the parse path reads a PDF-only law's transcript too (LR-06: wave 4 met
+  # 1979/791 here, after LR-05 had covered only fetch_docs/2)
+  defp backlog_fallback({:ok, xmls}, law_name, opts),
+    do: {:ok, with_backlog(law_name, xmls, backlog_dir: Keyword.get(opts, :backlog_dir))}
+
+  defp backlog_fallback(other, _law_name, _opts), do: other
 
   @doc """
   A law legislation.gov.uk serves without a body (a PDF-only law: metadata
