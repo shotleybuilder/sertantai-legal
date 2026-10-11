@@ -198,10 +198,18 @@ defmodule SertantaiLegal.Scraper.EffectTerritory do
     qualifiers = Enum.flat_map(effects, & &1.in_force_qualifications)
     extent = code(keyed.effect_extent)
 
-    Enum.any?(qualifiers, &Qualifier.purposes?/1) or
-      Enum.any?(effects, &((&1.savings || []) != [])) or
-      (extent != nil and row_extent != nil and Territory.covers?(extent, row_extent))
+    # "revoked in part" of the whole instrument is never a full revocation,
+    # whatever its extent, savings or purposes (Jason 2026-10-11; 2012/3038
+    # "Regulations"); naming provisions, it repeals them wholly (1986/62
+    # "s. 1-3": "in part" is about the instrument)
+    not in_part?(keyed) and
+      (Enum.any?(qualifiers, &Qualifier.purposes?/1) or
+         Enum.any?(effects, &((&1.savings || []) != [])) or
+         (extent != nil and row_extent != nil and Territory.covers?(extent, row_extent)))
   end
+
+  defp in_part?(%Effect{type: type, affected_refs: refs}),
+    do: refs in [nil, []] and String.match?(type || "", ~r/\bin part\b/i)
 
   # some qualifier names a territory
   defp territorial?(effects) do

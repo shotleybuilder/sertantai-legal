@@ -434,6 +434,22 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectTerritory.claim(saved, :ins, nil) == {nil, nil}
     end
 
+    # Jason 2026-10-11: "revoked in part will not mean full revocation"
+    # (2012/3038: "revoked in part" by 2021/511, extent E+W+S+N.I., yet the
+    # Regulations apply in NI from 2021)
+    test "an effect \"in part\" of the whole instrument is never evidence of everywhere" do
+      in_part = effect(type: "revoked in part", effect_extent: "E+W+S+N.I.")
+      assert EffectTerritory.claim(in_part, :keep, nil, "E+W+S+NI") == {nil, nil}
+
+      saved_in_part = effect(type: "repealed in part", savings: ["section-1"])
+      assert EffectTerritory.claim(saved_in_part, :keep, nil) == {nil, nil}
+
+      # "in part" is about the instrument: the provisions it names are wholly
+      # repealed (1986/62 "repealed in part", s. 1-3, by asp 2003/15 for S)
+      named = effect(type: "repealed in part", effect_extent: "S", affected_refs: ["section-1"])
+      assert EffectTerritory.claim(named, :keep, nil, "S") == {nil, :effect_everywhere}
+    end
+
     test "5. nothing names one: no claim" do
       assert EffectTerritory.claim(nil, :ins, nil) == {nil, nil}
       assert EffectTerritory.claim(effect([]), :ins, nil) == {nil, nil}
