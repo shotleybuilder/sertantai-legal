@@ -25,7 +25,8 @@ defmodule SertantaiLegal.Scraper.LatMerge do
      by unequal groups) or `removed`
 
   Gate: `lost_unchanged` lists enriched old rows that were not carried
-  although their text still exists in the new parse — losing their
+  (and aren't `changed`: same id, new text) although their text still exists
+  in the new parse — losing their
   enrichment would be a matching failure, not a real change. Empty-text
   (structural) rows match by id only.
   """
@@ -121,9 +122,13 @@ defmodule SertantaiLegal.Scraper.LatMerge do
     # a repeal marker ("[Repealed]", dots) is no evidence of a matching
     # failure: it matches every repealed row, and carries no enrichment worth
     # keeping
+    # … nor is a changed row (same id, new text): it is re-enriched by design,
+    # though its old text may recur at a parallel provision (LR-06: 1990/43
+    # s.78T(2)(b) = s.22(4)(b))
     lost_unchanged =
       for o <- unmatched,
           o.enriched,
+          not MapSet.member?(changed_set, o.section_id),
           not LatStatus.repealed_text?(o.text),
           t = norm(o.text),
           t != "" and MapSet.member?(surviving_texts, t),

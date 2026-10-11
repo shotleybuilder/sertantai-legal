@@ -71,6 +71,23 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
     assert plan.lost_unchanged == ["L:reg.9"]
   end
 
+  # LR-06: a changed row (same id, new text) is re-enriched by design; its old
+  # text recurring at a parallel provision (1990/43 s.78T(2)(b) = s.22(4)(b))
+  # is no matching failure
+  test "a changed row never fails the gate, though its old text survives elsewhere" do
+    plan =
+      LatMerge.plan(
+        [old("L:s.78(2)(b)", "give him an opportunity— … and, if made, consider them.", 1)],
+        [
+          new("L:s.22(4)(b)", "give him an opportunity— … and, if made, consider them.", 1),
+          new("L:s.78(2)(b)", "give him an opportunity—", 2)
+        ]
+      )
+
+    assert plan.changed == ["L:s.78(2)(b)"]
+    assert plan.lost_unchanged == []
+  end
+
   test "an enriched row whose text is gone is removed, not lost-unchanged" do
     plan = LatMerge.plan([old("L:reg.7", "Repealed words.", 7)], [new("L:reg.8", "Other.", 8)])
 
