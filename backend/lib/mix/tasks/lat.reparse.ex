@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Lat.Reparse do
 
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.LatReparse
+  alias SertantaiLegal.Scraper.{LatReparse, LatStagedParser}
 
   @shortdoc "Gated batch LAT re-parse keeping enrichment"
 
@@ -65,7 +65,7 @@ defmodule Mix.Tasks.Lat.Reparse do
         Mix.shell().info("#{length(laws)} laws")
 
       opts[:dry_run] ->
-        preview(laws, opts[:tag] || "preview")
+        preview(laws, opts[:tag] || "preview", store_mode(opts[:store]))
 
       true ->
         tag = opts[:tag] || Mix.raise("--tag is required (snapshot and report name)")
@@ -82,10 +82,14 @@ defmodule Mix.Tasks.Lat.Reparse do
 
   @preview_columns ~w(law_name rows_before rows_after enriched enriched_carried enriched_changed enriched_dropped enriched_ambiguous lost_unchanged renamed error)a
 
-  defp preview(laws, tag) do
+  # the dry run reads the same documents the wave will (`--store`; LR-06:
+  # it used to fetch live whatever --store said)
+  defp preview(laws, tag, store) do
+    rows_fn = &LatStagedParser.fetch_rows(&1, store: store)
+
     reports =
       Enum.map(laws, fn law ->
-        r = LatReparse.preview(law)
+        r = LatReparse.preview(law, rows_fn)
 
         Mix.shell().info(
           "  #{String.pad_trailing(law, 24)} " <>
