@@ -1,12 +1,105 @@
 ---
 session: 'LR-05: Non-territory QA3 Fixes'
-status: active
+status: closed
 opened: 2026-10-09
-resumed: 2026-10-10
+closed: 2026-10-11
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  QA3 non-territory defects and residue routed from LR-03/04/07 fixed test-first in the decomposed parser:
+  - the #174 limit, changed_by from note Citation URIs (new citation_law column), AppendText after »,
+    zero-width characters, quote spaces, table-cell numbering, Number-holds-heading ids, four qualifier kinds,
+    punctuation and dots-only territory rules;
+  - a data-loss risk: a PDF-only law would have re-parsed empty.
+  Corpus compare against the LR-04 snapshot: 103,615 fields in 880 laws, every class explained, 0 unexpected;
+  Gemini accepted.
+
+decisions:
+  - what: AppendText follows the closing » (Jason 2026-10-10)
+    why: it is the amending sentence's punctuation, not part of the quoted block; legislation.gov.uk prints it after the quote ("section.”.")
+    result: 3,363 rows in 347 laws; reverses LH-03's inside-the-quote rule
+  - what: changed_by from the note's first Citation after "by" (its URI) over the text, with two guards
+    why: the URI is structured (EU, Welsh SI cited as S.I., NI Acts); the corpus diff showed it skipping an uncited first instrument, and uksi URIs echoing "S.I." for Welsh SIs
+    result: 256 notes filled, 159 corrected; no wsi→uksi downgrades after the guards
+  - what: re-measure before fixing
+    why: LR-03/LR-07 changed the sources of the QA3 items
+    result: 2 items dropped (1984/22 except-clause, substitution edges), 2 merged into the Citation fix
+  - what: Schs./Pts. qualifier lists dropped
+    why: only one real territorial qualifier names a schedule, in a phrasing the list reader doesn't take
+    result: no code
+  - what: 2010/2214 reg.2(6) left as is
+    why: the effect's application (E+W) outranks markup Extent (E) in the agreed claim order; inner substitutions only bracket
+    result: reopen only if markup should beat application
+  - what: "#174 limit needs the parent's open lead-in, not just child sub-provisions"
+    why: CAA 1982 s.44(6) and SI 2010/93 reg.7(5) have sub-provisions but keep their closing words (existing tests)
+    result: 120 laws, 195 parents gain / 197 children lose, prefix/suffix verified
+
+metrics:
+  corpus_compare: { fields: 103615, laws: 880, unexpected: 0, citation_law_notes: 90674 }
+  text: { appendtext_rows: 3363, quote_space_rows: 2200, zero_width_rows: 137, cell_numbering_rows: 17, rule_174_fields: 416 }
+  changed_by: { notes_filled: 256, notes_changed: 159, rows_filled: 861, rows_changed: 160 }
+  ids_changed_laws: 3
+  status: { partial_2021_30: 29, dots_only_repealed: 4 }
+  tests: { suite_passed: 2606, skipped: 2, qualifier_gallery: 35 }
+
+lessons:
+  - title: Re-measure inherited defects before fixing them
+    detail: "QA3 items predated LR-03/LR-07; from the LR-04 snapshot, 2 of 6 were already fixed and the 883-note wsi case was down to 15. A snapshot of the current parse makes re-measurement offline and minutes long."
+    tag: data
+  - title: A classified diff finds the rule's edge cases the tests didn't
+    detail: "The Citation rule passed its tests, but the corpus diff showed it taking a later Citation when the first instrument wasn't marked up (nisi 2003/419) and uksi URIs downgrading Welsh SIs. The AppendText move showed bracketed bare punctuation; the quote fix showed a CommentaryRef splitting the closing text. Read the 'unexpected' lines one by one."
+    tag: tooling
+  - title: A source document with no body must never re-parse to an empty LAT
+    detail: "1979/791's stored legislation.gov.uk document is metadata only (NumberOfProvisions=0); its LAT came from a PDF transcript. Every diff since LR-02 showed 58 'removed' rows that nobody chased; the wave would have deleted them."
+    tag: data
+  - title: Structured markup isn't uniformly authoritative
+    detail: "Citation URIs are generated partly from the text: a wsi URI is specific knowledge, but a uksi URI can just echo 'S.I.'. Prefer markup where it adds information, not blindly."
+    tag: data
+  - title: Unquoted heredocs execute backticks
+    detail: "A python <<EOF heredoc (unquoted) ran `mix …` and a session path from the text as shell commands while updating memory. Quote heredoc delimiters (<<'EOF') whenever the body contains backticks."
+    tag: tooling
+
+bugs:
+  - pattern: "A PDF-only law's re-parse fetched legislation.gov.uk's body-less document (NumberOfProvisions=0) and parsed 0 rows, though its stored LAT came from a PDF backlog transcript; the LR-06 wave would have emptied it"
+    category: data-loss risk
+    module: LatStagedParser.fetch_docs/2
+    affected: 1 law, 58 rows (UK_uksi_1979_791)
+    fix: "with_backlog/3: body-less documents give way to PdfBacklog.Batch.clml/2 (the persisted transcript's CLML)"
+    status: fixed
+  - pattern: "Composition edges: 1990/43 s.153(1)(z7)(ii); uksi 2011/988 reg.13 (parent exclusion from subtree)"
+    category: territory
+    module: SertantaiLegal.Scraper.LatTerritory
+    affected: 2
+    fix: "a lone ';' inside a change isn't the row's words (only a dot run is); a dots-only row renders plain → repealed"
+    status: fixed
+  - pattern: "Territory edge cases: England insertion inside a Welsh version bracketed; territorial repeal nested in a territorial substitution unbracketed; version rows with #n ids (2010/2214 reg.2(6))"
+    category: territory
+    module: SertantaiLegal.Scraper.LatTerritory
+    affected: 2010/2214 reg.2(6) versions
+    fix: "resolved: nested repeal fixed in LR-03; 2010/2214 is correct under the agreed claim order (effect application E+W before markup Extent E); #n = two (c)s with one extent"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_parser/{text,inline,ids,walker}.ex
+  - backend/lib/sertantai_legal/scraper/{commentary_parser,change_facts,lat_segments,lat_territory,lat_territory_check,in_force_qualifier,lat_staged_parser,note_territory}.ex
+  - backend/lib/sertantai_legal/scraper/pdf_backlog/batch.ex
+  - backend/lib/sertantai_legal/scraper/lat_status/apply.ex
+  - backend/lib/sertantai_legal/legal/amendment_annotation.ex
+  - backend/priv/repo/migrations/20261010122611_lr05_citation_law.exs
+  - backend/lib/mix/tasks/lat.text_diff.ex
+  - backend/data/reports/lat-refactor/lr05-compare-final.csv, lr05-classes.txt, lr05_classify.py, lr05-compare-174.csv
+  - backend/data/code-reviews/2026-10-10-lr05-acceptance-gemini.md
+
+depends_on:
+  - lat-refactor/2026-10-09-lr-04-decomposition
+  - lat-refactor/2026-10-09-lr-07-change-metadata-from-effects
+
+enables:
+  - LR-06 write wave + QA run 4 (expected classes listed in its todo)
 ---
 
-# Session: LR-05 Non-territory QA3 Fixes (ACTIVE)
+# Session: LR-05 Non-territory QA3 Fixes (CLOSED)
 
 ## Problem
 
