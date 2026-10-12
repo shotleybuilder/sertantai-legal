@@ -9,7 +9,7 @@ bugs:
     module: amendment_annotations
     affected: 32 notes / 27 laws
     fix: "delete (dry run → Jason)"
-    status: open
+    status: fixed
 ---
 
 # Session: LR-14 Notes on Laws Without LAT (ACTIVE)
@@ -21,7 +21,7 @@ bugs:
 ## Todo
 
 - ✅ Dry-run list (2026-10-12, after LR-10/LR-13; still 32 notes / 27 laws): `backend/data/reports/lat-refactor/lr14-notes-without-lat.csv` (law, live, is_making, type, created, text; note codes left out, they hold `key-` effect ids) → Jason
-- ⬜ Delete; verify 0 notes on laws without LAT
+- ✅ Deleted (Jason approved D1 2026-10-12): archived first to `/mnt/nas/sertantai-data/data/lat-archive/lr14-notes-without-lat-2026-10-12.jsonl` (32 rows); one transaction, refused unless exactly 32 → deleted 32; verified 0 notes on laws without LAT
 - ✅ Recurrence: already prevented. Every path that deletes a law's LAT goes through `LatArchive.discard/3`, which deletes its notes; a parse with no LAT rows skips the note stages. Pinned by a new test (`lat_archive_test.exs`: discard removes the law's notes) — it passed at once, guarding existing behaviour
 
 ## Findings
