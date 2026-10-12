@@ -41,7 +41,9 @@ Widened 2026-10-12 (architecture track): every fact a row or note gets must come
 - ✅ Jason decided D1, D2, D3a (2026-10-12)
 - ✅ Tests first, then build (2026-10-12): 4 new tests red → green; full suite 2,623 passed — see Build
 - ✅ Classified diff of the offline whole-corpus parse (2026-10-12, `mix lat.parse_snapshot` baseline on the pre-change code → `--compare`) — see Diff
-- ⬜ Re-parse dry run → Jason → NAS backup → apply
+- ✅ Re-parse dry run (2026-10-12, `mix lat.reparse --laws <283> --store only --dry-run --tag lr19_preview`, `lat-reparse/lr19_preview.csv`, law list `lr19_wave_laws.txt`): 0 errors, 0 gate failures; enriched 169,750: carried 169,729, changed 21 (territory brackets in text: eur 2016/2031 5, 1968/73 8, 1990/43 3, 1984/55 2, 1982/16, 2010/15, uksi 2010/2214), dropped 0, ambiguous 0; no renames, row counts unchanged
+- ⬜ Jason approves → NAS backup → apply (`--tag lr19`)
+- ⬜ LH-05: tell fractalaw (21 enriched rows' text changed; labels changed on 15,192 rows) — only on Jason's go
 
 ## Dependencies
 
