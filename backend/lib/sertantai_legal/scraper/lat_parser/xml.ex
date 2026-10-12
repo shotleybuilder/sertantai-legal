@@ -10,10 +10,14 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
 
   alias SertantaiLegal.Scraper.Territory
 
-  @container_elements ~w(Legislation Primary Secondary Body Schedules ScheduleBody
+  @container_elements ~w(Legislation Primary Secondary Body
                          P1para P2para P3para P4para P1group P2group P3group
-                         ScheduleBody FragmentBody
+                         FragmentBody
                          EURetained EUBody)
+
+  # No schedules in LAT (LR-10, Jason 2026-10-12): compliance v0.1 ships
+  # without them. A Schedule still bounds structural text like a row would.
+  @schedule_elements ~w(Schedules Schedule)
 
   # Elements to skip entirely — contain embedded P1/P2/P3 from OTHER laws or
   # alternative territorial versions that duplicate the primary text
@@ -40,6 +44,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
   @doc "Elements walked through without a row of their own."
   @spec container_elements() :: [String.t()]
   def container_elements, do: @container_elements
+
+  @doc "Schedule elements: never walked, so no LAT row comes from a Schedule (LR-10)."
+  @spec schedule_elements() :: [String.t()]
+  def schedule_elements, do: @schedule_elements
 
   @doc "Elements never walked (other laws' text, alternative versions, notes)."
   @spec skip_elements() :: [String.t()]

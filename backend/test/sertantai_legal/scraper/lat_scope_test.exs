@@ -23,6 +23,16 @@ defmodule SertantaiLegal.Scraper.LatScopeTest do
                "/ukpga/1991/57/schedule/3/data.xml"
              ]
     end
+
+    test "a scope with no fragments fetches nothing, never the whole body" do
+      assert LatScope.paths("ukpga/1974/28", %{"fragments" => []}) == []
+    end
+
+    test "a scope with no fragments excludes the law; a whole law (nil) doesn't" do
+      assert LatScope.excluded?(%{"fragments" => []})
+      refute LatScope.excluded?(%{"fragments" => ["section/2"]})
+      refute LatScope.excluded?(nil)
+    end
   end
 
   describe "merge/1" do
@@ -71,12 +81,45 @@ defmodule SertantaiLegal.Scraper.LatScopeTest do
   end
 
   describe "fragments_for/2" do
-    test "enabling provisions → section and schedule fragments" do
+    test "enabling provisions → section fragments; schedules never (LR-10)" do
       assert LatScope.fragments_for(%{"sections" => ["82", "219"], "schedules" => ["3"]}) ==
-               ["section/82", "section/219", "schedule/3"]
+               ["section/82", "section/219"]
+
+      assert LatScope.fragments_for(%{"schedules" => ["6"]}) == []
 
       assert LatScope.fragments_for(%{"law" => "UK_nisi_1978_1039", "sections" => ["17"]}) ==
                ["article/17"]
+    end
+  end
+
+  describe "without_schedules/2" do
+    @drop %{
+      "at" => "2026-10-12T00:00:00Z",
+      "purpose" => "enabling_extent",
+      "reason" => "r",
+      "set_by" => "t"
+    }
+
+    test "drops schedule fragments and records the narrow" do
+      scope = %{"fragments" => ["section/30", "schedule/6"], "purposes" => ["enabling_extent"]}
+
+      assert {:narrowed, new} = LatScope.without_schedules(scope, @drop)
+      assert new["fragments"] == ["section/30"]
+      assert [%{"removed" => ["schedule/6"], "added" => []}] = new["history"]
+      refute LatScope.excluded?(new)
+    end
+
+    test "a scope of schedules only excludes the law" do
+      scope = %{"fragments" => ["schedule/1"], "purposes" => ["enabling_extent"]}
+
+      assert {:excluded, new} = LatScope.without_schedules(scope, @drop)
+      assert new["fragments"] == []
+      assert LatScope.excluded?(new)
+    end
+
+    test "no schedule fragments, or a whole law: unchanged" do
+      assert LatScope.without_schedules(%{"fragments" => ["section/82"]}, @drop) == :unchanged
+      assert LatScope.without_schedules(nil, @drop) == :unchanged
     end
   end
 

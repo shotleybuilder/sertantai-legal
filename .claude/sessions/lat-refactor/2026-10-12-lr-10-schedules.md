@@ -22,10 +22,12 @@ Compliance v0.1 goes to production without Schedules (Jason, 2026-10-12), yet LA
 
 - ✅ Where the rows come from, and whether a re-parse recreates them (below)
 - ✅ D1 decided: no schedules at all (option b)
-- ⬜ Tests first: `Walker` skips `Schedule` elements (body, scoped fragment, PDF-transcript CLML)
-- ⬜ Parser change; parse_snapshot classified diff: only schedule rows gone in the 13 laws, 0 unexpected
-- ⬜ Narrow the 12 enabling scopes to their sections (`LatScope.narrow!/3`, history entry); dry run → Jason → apply
-- ⬜ Remove the 4,646 schedule rows and the 978 notes that touch only schedule rows: re-parse the 13 laws (`--store only`), dry run → Jason → apply → verify (lat.status 0; 0 rows with `schedule` set)
+- ✅ Tests first (red → green): no row from a Schedule (body doc, schedule-only fragment, PDF-transcript CLML); `fragments_for/1` gives no schedule fragments; `LatScope.without_schedules/2` (narrow, or exclude when only schedules were scoped); a scope with no fragments is excluded and fetches nothing
+- ✅ Parser change: `Xml.schedule_elements` (`Schedules`, `Schedule`) never walked; Schedule out of `@version_content` and the moduledoc; full suite 2,607 passing
+- ⬜ Offline corpus diff (`mix lat.text_diff --all --store only`): only schedule rows gone, 0 unexpected
+- ⬜ Scopes: `mix lat.scope --drop-schedules` (dry run run: 14 scopes — 10 narrowed to sections, 1974/28 and 1998/47 left with only schedules → excluded and LAT discarded, 1959/24 and 2020/27 hold no LAT → scope only) → Jason → `--apply` (archives to NAS, narrows, re-parses `--store only`, restores the scope on failure)
+- ⬜ 1979/791 (no scope): `mix lat.reparse --law UK_uksi_1979_791 --store only` dry run → Jason → apply
+- ⬜ Verify: 0 rows with `schedule` set; lat.status 0; the 978 schedule-only notes gone (the persister replaces a law's notes on re-parse)
 - ⬜ Note for LH-05: schedule rows removed (9 enriched)
 
 ## Where the rows come from
@@ -35,6 +37,11 @@ Compliance v0.1 goes to production without Schedules (Jason, 2026-10-12), yet LA
 - **1979/791** (Making, PDF-only): its transcript-built CLML holds the whole document, so its 2 schedules (forms) parse too.
 - A re-parse recreates them: the scopes list the fragments and the parser reads Schedule elements.
 - Size: 4,646 rows (17 schedule header rows + 4,629 under them); 9 enriched; 0 control mappings; 978 notes in 11 laws touch only schedule rows.
+
+## Build (2026-10-12)
+
+- Trap found and closed: with schedules gone from `fragments_for/1`, a parent named only for schedules got an empty fragment list, and `LatScope.paths/2` read an empty scope as the whole body. Now a scope with no fragments is excluded (`excluded?/1`) and fetches nothing; `mix lat.scope --enabling` skips such parents. Only a nil scope is a whole law.
+- PDF-transcript CLML (`PdfBacklog.Clml`) still writes `<Schedules>` (a faithful transcript); the parser ignores them.
 
 ## Decisions
 

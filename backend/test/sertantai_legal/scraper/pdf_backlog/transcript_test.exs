@@ -84,18 +84,13 @@ defmodule SertantaiLegal.Scraper.PdfBacklog.TranscriptTest do
       refute Map.has_key?(r, "reg.4(1)")
     end
 
-    test "schedules: headings become heading rows, numbered items become paragraphs",
+    test "the transcript's schedules give no LAT rows (no schedules in LAT, LR-10)",
          %{rows: r} do
-      assert r["sch.1"].section_type == "schedule"
-      assert r["sch.2.reg.2"].text == "Species and number of trees."
+      assert {:ok, t} = Transcript.parse(@transcript)
+      assert Clml.to_clml(t) =~ "<Schedules>"
 
-      headings =
-        for {_, row} <- r, row.section_type == "heading", row.schedule == "1", do: row.text
-
-      assert Enum.sort(headings) == [
-               "Form 1: Claim for compensation (England and Wales)",
-               "Form 2: Claim for compensation (Scotland)"
-             ]
+      refute Enum.any?(r, fn {_, row} -> row.schedule != nil end)
+      refute Enum.any?(Map.keys(r), &String.starts_with?(&1, "sch."))
     end
 
     test "signed section and extent", %{rows: r} do

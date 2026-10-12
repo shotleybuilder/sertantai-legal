@@ -120,7 +120,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
   # ── Simple SI ──────────────────────────────────────────────────
 
   describe "parse/2 sort_key order" do
-    test "rows sort by sort_key in document order: (a)..(i), signed, then schedules" do
+    test "rows sort by sort_key in document order: (a)..(i), then signed" do
       items =
         for l <- ~w(a b c d e f g h i),
             do: "<P3><Pnumber>#{l}</Pnumber><P3para><Text>item #{l}</Text></P3para></P3>"
@@ -216,47 +216,43 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
   # ── Schedules ──────────────────────────────────────────────────
 
-  describe "parse/2 with schedules" do
+  # No schedules in LAT (LR-10, Jason 2026-10-12): compliance v0.1 ships
+  # without them, so the parser never emits a row from a Schedule.
+  describe "parse/2 never emits schedule rows" do
     setup do
       xml = read_fixture("with_schedules.xml")
       rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_200", type_code: "uksi"})
       %{rows: rows}
     end
 
-    test "emits schedule rows", %{rows: rows} do
-      schedules = Enum.filter(rows, &(&1.section_type == "schedule"))
-      assert length(schedules) == 2
-      assert Enum.at(schedules, 0).section_id == "UK_uksi_2024_200:sch.1"
-      assert Enum.at(schedules, 1).section_id == "UK_uksi_2024_200:sch.2"
+    test "no row comes from a Schedule", %{rows: rows} do
+      assert Enum.all?(rows, &(&1.schedule == nil))
+      refute Enum.any?(rows, &(&1.section_type in ["schedule", "table"]))
+      refute Enum.any?(rows, &String.contains?(&1.section_id, ":sch."))
     end
 
-    test "schedule paragraphs use sch.N.reg.X citation", %{rows: rows} do
-      sch1_articles = Enum.filter(rows, &(&1.schedule == "1" and &1.section_type == "article"))
-      assert length(sch1_articles) == 2
-
-      first = Enum.at(sch1_articles, 0)
-      assert first.section_id == "UK_uksi_2024_200:sch.1.reg.1"
+    test "the body's rows are kept", %{rows: rows} do
+      assert Enum.map(rows, & &1.section_id) == [
+               "UK_uksi_2024_200:pt.1",
+               "UK_uksi_2024_200:reg.1"
+             ]
     end
 
-    test "schedule sub_articles have correct citation", %{rows: rows} do
-      sub = Enum.find(rows, &(&1.schedule == "1" and &1.section_type == "sub_article"))
-      assert sub.section_id == "UK_uksi_2024_200:sch.1.reg.2(1)"
-    end
+    test "a schedule fragment (#166 scope) yields no rows" do
+      xml = """
+      <Legislation RestrictExtent="E+W+S"><Primary>
+      <Schedules><Schedule id="schedule-6" RestrictExtent="E+W+S+N.I.">
+        <Number>SCHEDULE 6</Number><Title>Climate change levy</Title>
+        <ScheduleBody><P1group><Title>The levy</Title>
+          <P1 id="schedule-6-paragraph-1"><Pnumber>1</Pnumber>
+            <P1para><Text>A tax to be known as climate change levy is charged.</Text></P1para>
+          </P1>
+        </P1group></ScheduleBody>
+      </Schedule></Schedules>
+      </Primary></Legislation>
+      """
 
-    test "schedule extent overrides root", %{rows: rows} do
-      sch2 = Enum.find(rows, &(&1.section_id == "UK_uksi_2024_200:sch.2"))
-      assert sch2.extent_code == "E+W"
-    end
-
-    test "emits table rows from Tabular", %{rows: rows} do
-      tables = Enum.filter(rows, &(&1.section_type == "table"))
-      assert length(tables) == 1
-      assert tables |> hd() |> Map.get(:schedule) == "1"
-    end
-
-    test "body article not scoped to schedule", %{rows: rows} do
-      body_reg = Enum.find(rows, &(&1.section_type == "article" and &1.schedule == nil))
-      assert body_reg.section_id == "UK_uksi_2024_200:reg.1"
+      assert LatParser.parse(xml, %{law_name: "UK_ukpga_2000_17", type_code: "ukpga"}) == []
     end
   end
 
@@ -721,39 +717,6 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       assert chapter.text == "Chapter Title"
       refute String.contains?(chapter.text || "", "Chapter section text")
-    end
-
-    test "Schedule rows get title-only text" do
-      xml = """
-      <Legislation RestrictExtent="E+W+S">
-      <Secondary><Body>
-        <P1group>
-          <P1 id="reg-1"><Pnumber>1</Pnumber>
-            <P1para><Text>Body text.</Text></P1para>
-          </P1>
-        </P1group>
-      </Body></Secondary>
-      <Schedules>
-        <Schedule id="schedule-1">
-          <Number>SCHEDULE 1</Number>
-          <Title>Schedule Title</Title>
-          <ScheduleBody>
-            <P1group>
-              <P1 id="sch1-reg-1"><Pnumber>1</Pnumber>
-                <P1para><Text>Schedule provision text.</Text></P1para>
-              </P1>
-            </P1group>
-          </ScheduleBody>
-        </Schedule>
-      </Schedules>
-      </Legislation>
-      """
-
-      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
-      schedule = Enum.find(rows, &(&1.section_type == "schedule"))
-
-      assert schedule.text == "Schedule Title"
-      refute String.contains?(schedule.text || "", "Schedule provision text")
     end
 
     test "Part with direct introductory Para preserves that text" do
@@ -1983,24 +1946,6 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       assert rows |> Enum.filter(&(&1.section_type == "heading")) |> Enum.map(& &1.title) ==
                ["Preliminary", "General duties", "Enforcement provisions"]
-    end
-
-    test "a Schedule row's text is its TitleBlock title, like a Part's (#165)" do
-      xml = read_fixture("with_schedules.xml")
-      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
-
-      assert rows |> Enum.filter(&(&1.section_type == "schedule")) |> Enum.map(& &1.text) ==
-               ["Particulars to be notified", "Minimum welfare facilities"]
-    end
-
-    test "a Schedule row takes its TitleBlock title" do
-      xml = read_fixture("with_schedules.xml")
-      rows = LatParser.parse(xml, %{law_name: "UK_uksi_2024_1", type_code: "uksi"})
-
-      titles =
-        rows |> Enum.filter(&(&1.section_type == "schedule")) |> Enum.map(& &1.title)
-
-      assert titles == ["Particulars to be notified", "Minimum welfare facilities"]
     end
 
     test "a P2group's / P3group's Title goes on the P2 / P3 row it wraps" do

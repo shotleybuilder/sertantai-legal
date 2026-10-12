@@ -16,6 +16,11 @@ defmodule Mix.Tasks.Lat.Scope do
       mix lat.scope --relevance [--min-rows 3000] [--law UK_ukpga_2006_46]   # dry run
       mix lat.scope --relevance --law UK_ukpga_2016_25 --add part/1 --apply
 
+      # No schedules in LAT (LR-10, Jason 2026-10-12): drop schedule fragments
+      # from every scope; a scope of schedules only excludes the law
+      mix lat.scope --drop-schedules            # dry run
+      mix lat.scope --drop-schedules --apply    # archive, narrow, re-parse offline
+
       # Exclude a law with no EHS link from LAT (reviewed case by case):
       # archive + discard its LAT, mark the scope excluded so no parse brings it back
       mix lat.scope --exclude --law UK_ukpga_1989_40 --reason "no EHS/HR provisions"
@@ -28,6 +33,13 @@ defmodule Mix.Tasks.Lat.Scope do
   is forced past `LatPersister`'s enrichment gate; the archive keeps them,
   enrichment included, and their count is reported. If the parse fails, the
   previous scope is restored.
+
+  `--drop-schedules --apply` archives each law's LAT to the NAS first. A
+  narrowed law is re-parsed from the local store (`store: :only`, cause
+  `scope`, forced past the enrichment gate: dropping schedule rows is the
+  point); if the parse fails its previous scope is restored. A law left with
+  no fragments is excluded and its LAT discarded (`no_schedules`). A law
+  holding no LAT only has its scope changed.
 
   `--create` scopes a law that holds no LAT (an unscoped law with LAT is
   whole and is never narrowed here). Parsing goes through `LatStagedParser`,
@@ -80,6 +92,7 @@ defmodule Mix.Tasks.Lat.Scope do
           apply: :boolean,
           relevance: :boolean,
           exclude: :boolean,
+          drop_schedules: :boolean,
           min_rows: :integer
         ]
       )
@@ -87,6 +100,7 @@ defmodule Mix.Tasks.Lat.Scope do
     Mix.Task.run("app.start")
 
     cond do
+      opts[:drop_schedules] -> drop_schedules(opts)
       opts[:relevance] -> relevance(opts)
       opts[:exclude] -> exclude(opts)
       opts[:enabling] -> enabling(opts)
@@ -142,6 +156,8 @@ defmodule Mix.Tasks.Lat.Scope do
       for [name, making, lat, scope] <- rows,
           not making,
           lat == 0 or scope != nil,
+          # parents named only for schedules: nothing to scope (LR-10)
+          Map.fetch!(wanted, name) != [],
           do: {name, Map.fetch!(wanted, name)}
 
     Mix.shell().info(
@@ -259,6 +275,88 @@ defmodule Mix.Tasks.Lat.Scope do
     else
       {:error, reason} ->
         Mix.shell().error("  #{name}: archive failed, nothing changed: #{reason}")
+    end
+  end
+
+  defp drop_schedules(opts) do
+    entry = %{
+      "at" => DateTime.utc_now() |> DateTime.to_iso8601(),
+      "purpose" => "no_schedules",
+      "reason" => "LR-10: no schedules in LAT (Jason 2026-10-12)",
+      "set_by" => "mix lat.scope --drop-schedules"
+    }
+
+    %{rows: rows} =
+      Repo.query!("""
+      SELECT r.name, r.lat_scope,
+             (SELECT count(*) FROM lat l WHERE l.law_name = r.name),
+             (SELECT count(*) FROM lat l WHERE l.law_name = r.name AND l.schedule IS NOT NULL)
+      FROM legal_register r
+      WHERE r.country = 'uk' AND r.lat_scope->'fragments' @> '[]'
+        AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(r.lat_scope->'fragments') f
+                    WHERE f LIKE 'schedule/%')
+      ORDER BY r.name
+      """)
+
+    plans =
+      for [name, scope, lat, sched] <- rows,
+          {kind, new} <- [LatScope.without_schedules(scope, entry)],
+          do: %{name: name, kind: kind, previous: scope, scope: new, lat: lat, sched: sched}
+
+    Mix.shell().info("#{length(plans)} scopes hold schedule fragments\n")
+
+    for p <- plans do
+      after_ =
+        if p.kind == :excluded,
+          do: "excluded (no LAT)",
+          else: Enum.join(p.scope["fragments"], ", ")
+
+      Mix.shell().info("  #{p.name}: #{p.lat} rows, #{p.sched} from schedules → #{after_}")
+    end
+
+    if opts[:apply],
+      do: Enum.each(plans, &apply_drop/1),
+      else: Mix.shell().info("\nDry run: nothing written.")
+  end
+
+  defp apply_drop(%{name: name, lat: 0, scope: scope}) do
+    restore_scope(name, scope)
+    Mix.shell().info("  #{name}: scope updated (no LAT)")
+  end
+
+  defp apply_drop(%{name: name, kind: :excluded, scope: scope, previous: previous}) do
+    restore_scope(name, scope)
+
+    case LatArchive.discard(name, "no_schedules", force: true) do
+      {:ok, r} ->
+        Mix.shell().info("  #{name}: excluded; #{r.deleted} rows discarded → #{r.archive_ref}")
+
+      {:error, e} ->
+        restore_scope(name, previous)
+        Mix.shell().error("  #{name}: discard failed, scope restored: #{e}")
+    end
+  end
+
+  defp apply_drop(%{name: name, kind: :narrowed} = plan) do
+    case LatArchive.archive(name) do
+      {:ok, ref} ->
+        reparse_narrowed(plan, ref)
+
+      {:error, reason} ->
+        Mix.shell().error("  #{name}: archive failed, nothing changed: #{reason}")
+    end
+  end
+
+  defp reparse_narrowed(%{name: name, scope: scope, previous: previous, lat: was}, ref) do
+    restore_scope(name, scope)
+
+    case LatStagedParser.parse(name, cause: "scope", force: true, store: :only) do
+      {:ok, %{has_errors: false, lat: lat}} ->
+        Mix.shell().info("  #{name}: #{lat.inserted} rows (was #{was}); archived → #{ref}")
+
+      other ->
+        restore_scope(name, previous)
+        Mix.shell().error("  #{name}: parse failed, scope restored: #{inspect(other)}")
     end
   end
 

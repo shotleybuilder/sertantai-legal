@@ -1,7 +1,7 @@
 defmodule SertantaiLegal.Scraper.LatParser.Walker do
   @moduledoc """
   The LAT parser's walk over a CLML document (LR-04): one raw row per row
-  element (Part, Chapter, Pblock heading, P1–P4, Schedule, signature,
+  element (Part, Chapter, Pblock heading, P1–P4, signature,
   table, figure), in document order, carrying its place in the hierarchy
   (`Ctx`), its extent (inherited; territorial alternative versions walked
   after their counterpart) and Prospective flag.
@@ -96,7 +96,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
     # Version id → Version element, for provision versions only (figures and
     # images stay out, #177).
-    @version_content ~w(P1group P1 P2group P2 P3 P4 Pblock Part Chapter Schedule)
+    @version_content ~w(P1group P1 P2group P2 P3 P4 Pblock Part Chapter)
 
     defp versions(doc) do
       for version <- xpath(doc, ~x"//Versions/Version"l),
@@ -208,6 +208,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
         # Amendment/extract text embeds P1/P2/P3 from OTHER laws — skip entirely
         []
 
+      name in Xml.schedule_elements() ->
+        # No schedules in LAT (LR-10)
+        []
+
       name in ~w(P1group P2group P3group) ->
         # The group's Title is the heading of the P1 / P2 / P3 it wraps
         # and the notes its Title cites are about them
@@ -303,24 +307,6 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
         sub_paragraph = Ids.pnumber(node)
         new_ctx = %{ctx | sub_paragraph: sub_paragraph}
         row = emit_row("P4", new_ctx, node, extent)
-        [row | walk_children(node, new_ctx)]
-
-      name == "Schedule" ->
-        schedule_num = Ids.number(node, "Schedule")
-
-        new_ctx = %{
-          ctx
-          | schedule: schedule_num,
-            part: nil,
-            chapter: nil,
-            heading_group: nil,
-            provision: nil,
-            sub: nil,
-            paragraph: nil,
-            sub_paragraph: nil
-        }
-
-        row = "Schedule" |> emit_structural_row(new_ctx, node, extent) |> titled(node)
         [row | walk_children(node, new_ctx)]
 
       name == "SignedSection" ->

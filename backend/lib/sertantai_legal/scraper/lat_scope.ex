@@ -33,6 +33,8 @@ defmodule SertantaiLegal.Scraper.LatScope do
 
   # An excluded law holds no LAT: fetch nothing, never the whole body
   def paths(_slash_path, %{"excluded" => true}), do: []
+  # A scope with no fragments fetches nothing; only a nil scope is the whole body
+  def paths(_slash_path, %{"fragments" => []}), do: []
 
   def paths(slash_path, _scope), do: ["/#{slash_path}/body/data.xml"]
 
@@ -73,16 +75,34 @@ defmodule SertantaiLegal.Scraper.LatScope do
 
   @doc """
   Fragments for an enabling provision `%{\"law\", \"sections\", \"schedules\"}`
-  (NI Orders in Council number articles, not sections).
+  (NI Orders in Council number articles, not sections). Named schedules give
+  no fragment: no schedules in LAT (LR-10).
   """
   @spec fragments_for(map()) :: [String.t()]
   def fragments_for(p) do
     unit =
       if String.starts_with?(Map.get(p, "law", ""), "UK_nisi_"), do: "article", else: "section"
 
-    Enum.map(Map.get(p, "sections", []), &"#{unit}/#{&1}") ++
-      Enum.map(Map.get(p, "schedules", []), &"schedule/#{&1}")
+    Enum.map(Map.get(p, "sections", []), &"#{unit}/#{&1}")
   end
+
+  @doc """
+  A scope without its schedule fragments (no schedules in LAT, LR-10):
+  `{:narrowed, scope}`, `{:excluded, scope}` when only schedules were scoped
+  (nothing left to parse), or `:unchanged` (no schedule fragments, or a whole
+  law). `entry` is recorded in `history` as for `narrowed/3`.
+  """
+  @spec without_schedules(map() | nil, map()) ::
+          {:narrowed, map()} | {:excluded, map()} | :unchanged
+  def without_schedules(%{"fragments" => fragments} = scope, entry) do
+    case Enum.reject(fragments, &String.starts_with?(&1, "schedule/")) do
+      ^fragments -> :unchanged
+      [] -> {:excluded, excluded(scope, entry)}
+      rest -> {:narrowed, narrowed(scope, rest, entry)}
+    end
+  end
+
+  def without_schedules(_scope, _entry), do: :unchanged
 
   @doc "A law's stored scope (nil = whole)."
   @spec get(String.t()) :: map() | nil
@@ -194,6 +214,8 @@ defmodule SertantaiLegal.Scraper.LatScope do
   @doc "Whether a scope excludes the law from LAT."
   @spec excluded?(map() | nil) :: boolean()
   def excluded?(%{"excluded" => true}), do: true
+  # nothing to parse: a scope with no fragments (only nil is the whole law)
+  def excluded?(%{"fragments" => []}), do: true
   def excluded?(_scope), do: false
 
   @doc """

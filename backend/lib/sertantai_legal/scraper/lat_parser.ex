@@ -23,10 +23,11 @@ defmodule SertantaiLegal.Scraper.LatParser do
   | P2              | sub_section / sub_article |
   | P3              | paragraph                 |
   | P4              | sub_paragraph             |
-  | Schedule        | schedule                  |
   | SignedSection    | signed                    |
   | Tabular         | table                     |
   | Figure          | note                      |
+
+  `Schedules` and `Schedule` give no rows: no schedules in LAT (LR-10).
   """
 
   alias SertantaiLegal.Legal.Lat.SortKeyRewrite
