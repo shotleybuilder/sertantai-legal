@@ -1,8 +1,43 @@
 ---
 session: 'LR-20: Note-Fact Inventory & Rule'
-status: active
+status: closed
 opened: 2026-10-12
+closed: 2026-10-12
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Read-only inventory and measurement of LAT's reliance on note text: 14 code paths derive facts from notes, and
+  24,750 notes / 21,276 rows hold note-sourced facts — about half are join faults (the effect exists), 1,828 notes
+  can come from amending laws in the store, 12,604 have no data behind them. Jason approved the rule (no fact from
+  note text, ever; empty where nothing supports it), the amending-law route now (LR-08), and empty for amending
+  laws not held in v0.1 (#179 for compliance v0.2).
+
+decisions:
+  - what: The rule — facts come from markup, effects or the amending law; a note is shown as a note and may only point; no fallback to note text for any field; provenance never `note` (D1)
+    why: "Jason's 2026-10-09 decision ('notes aren't law') was never delivered: LR-07 kept a note fallback that was never put to him"
+    result: "rule written for LR-11 / LR-12; delivered in LR-19, LR-08, LR-21"
+  - what: Build the amending-law route now (LR-08), before removing the fallbacks (D2)
+    why: "1,828 notes (class b) have no effect but their amending law is in the store; doing LR-08 first means LR-21 empties only facts with no data"
+    result: "LR-08 scoped: class b + laws' own commencement"
+  - what: Amending laws not in the store (class c2) stay empty for v0.1; a bounded fetch is raised for compliance v0.2 (D3)
+    why: "4,115 notes / 253 laws; legal scopes EHS and HR laws and must not walk the amendment tree widely"
+    result: "#179: one hop, amending provision only, prioritised by use, capped"
+
+metrics:
+  inventory: { note_fact_paths: 14, mislabelled_provenance: 3, no_provenance: 3 }
+  notes_with_note_facts: { total: 24750, a1_effect_on_provision: 7970, a2_effect_other_provision: 2348, b_amending_law_in_store: 1828, c1_no_law_named: 8489, c2_law_not_in_store: 4115 }
+  rows_with_note_change_facts: { total: 21276, effect_names_row: 13019, no_effect: 8257 }
+  laws_without_feed_in_store: 0
+
+lessons:
+  - title: Provenance columns can understate a dependency
+    detail: "Three paths label note-derived values as effect or markup (changed_by when affecting is nil, the effect kind from the note's Type letter, '[Repealed]' from CommentaryRef presence) and three record nothing (change-log cause, renumbering renames, the manifest's amended flag). Counting provenance = note gave 21,276 rows; the real reliance is larger. Inventory the code, not only the labels."
+    tag: data
+  - title: Most note reliance was a join fault, not missing data
+    detail: "For 10,318 of 24,750 note-sourced notes and 13,019 of 21,276 rows, an effect by the law the note names already sits in the changes feed. The fallback hid join failures: when a fallback exists, a missed join looks like success."
+    tag: data
+
 bugs:
   - pattern: "LAT facts derived from legislation.gov.uk note text alone where no markup or effect supports them (AmendmentNote / LatStatus fallback kept by LR-07 against the 2026-10-09 decision)"
     category: lat-change-facts
@@ -10,9 +45,34 @@ bugs:
     affected: "21,276 rows / 302 laws (change facts), 525 rows (status), 24,750 notes (facts)"
     fix: "a fact comes from markup, effects or the law; a note-only change stays a note (text shown, no derived fact)"
     status: open
+  - pattern: "Row change facts pool note facts with effect facts and take the latest date, so a note can override an effect on the same row"
+    category: lat-change-facts
+    module: "scraper/change_facts.ex (row_facts/5, AmendmentNote.row_effective/1)"
+    affected: "rows with both notes and effects (unmeasured)"
+    fix: "row facts from effects (and the amending law) only — LR-21"
+    status: open
+  - pattern: "Provenance mislabelled or missing for note-derived values: changed_by when affecting is nil and the effect kind from the note Type labelled effect; '[Repealed]' from CommentaryRef presence labelled markup; change-log cause, renumbering renames and the manifest amended flag record none"
+    category: lat-provenance
+    module: "change_facts.ex note/3 + kind/2, lat_parser/rows.ex mark_repealed/2, lat_change_log.ex, lat_cause/apply.ex, lat_hash/query.ex"
+    affected: "6 paths"
+    fix: "remove or re-source in LR-21; provenance only markup / effect / law"
+    status: open
+
+artifacts:
+  - .claude/sessions/lat-refactor/2026-10-12-lr-20-no-facts-from-notes.md (inventory, measurement, rule)
+  - .claude/sessions/lat-refactor/2026-10-12-lr-08-amending-law-source.md (scoped)
+  - 'GitHub #179 (bounded fetch of amending laws not held, compliance v0.2)'
+
+depends_on:
+  - 2026-10-09-lr-07-change-metadata-from-effects
+
+enables:
+  - LR-19 effect joins (classes a1, a2; 13,019 rows)
+  - LR-08 the amending law as a source (class b)
+  - LR-21 note fallback removal
 ---
 
-# Session: LR-20 Note-Fact Inventory & Rule (ACTIVE)
+# Session: LR-20 Note-Fact Inventory & Rule (CLOSED)
 
 ## Problem
 
