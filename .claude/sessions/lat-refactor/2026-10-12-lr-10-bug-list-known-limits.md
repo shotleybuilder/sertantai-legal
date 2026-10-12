@@ -32,7 +32,7 @@ Plan step 1 (LR-00 meta, 2026-10-12). The open LAT bugs were logged before wave 
 
 ## Todo
 
-- ✅ #165 schedule rows with empty text: schedules aren't in `/body` (#169 deferred past v0.1); 13 of 1,068 LAT laws hold schedule rows (scoped fragments). Empty rows corpus-wide: all but 67 have child rows; the 67 are Parts/headings with only a Number in the XML (no Title) → **known limit candidate: no schedules (#169)**
+- ✅ #165 schedule rows with empty text — re-examined 2026-10-12 (Jason: compliance v0.1 ships without Schedules; are these parser output, and would a re-parse recreate them?). See **Schedule rows** below; decision D3
 - ✅ "insert—/substitute—" with no body: 3,483 → **22 rows / 14 laws**; residue is inserted forms, formulae, images (2023/588 CAA forms, 2016/257 reg.23(2)(a) formula) → **fixed**; residue = known limit candidate (non-text inserts)
 - ✅ 32 notes in 27 laws that hold no LAT: 26 revoked laws + 2011/971 (part-revoked, not Making) — none should hold LAT → **fix now: delete the 32 notes** (dry run → Jason)
 - ✅ Savings listed + feed silent on territory (8 rows): the territory is only in the note or the amending law's text (LR-08, unapplied effects, not scheduled) → **known limit**; LatTerritoryCheck flags them
@@ -55,6 +55,16 @@ Fix: an id carries the path that makes it unique (Part for per-Part chapters, th
 
 **Observation (not a defect yet):** sort_key sub-segments repeat after an inserted subsection (2016/1105 reg.49(2)…(8)[E+W+S] all `.002`); order holds through the position suffix. Check in the id fix.
 
+## Schedule rows
+
+- The LAT parser fetches `/body/data.xml` for a whole law, which holds no Schedules. For a scoped law (#166) it fetches the fragments in `lat_scope`, and `Walker` parses a `Schedule` element like any other (`walker.ex:308`).
+- **12 parent Acts** have scopes that list schedule fragments, set 2026-09-29 by `mix lat.scope --enabling` (purpose `enabling_extent`): SIs made under a schedule need that schedule's extent. 1972/68, 1974/28, 1984/27, 1997/16, 1998/47, 2000/17, 2001/9, 2007/15, 2009/20, 2015/15, 2020/1, 2020/29. None is Making.
+- **1979/791** (Making, PDF-only): its transcript-built CLML holds the whole document, so its 2 schedules (forms) parse too.
+- **A re-parse recreates them**: the scopes still list the fragments and the parser still reads Schedule elements.
+- Size: 4,646 rows (17 schedule header rows + 4,629 rows under them); 9 enriched; 0 control mappings; 978 notes in 11 laws touch only schedule rows.
+- Quality: the words are the provisions' words, but schedule paragraphs are typed `section` with ids `sch.5.s.1` (should be paragraphs, `sch.5.para.1`), and headed paragraphs carry empty text (their words sit in sub-rows). Not checked by any QA run.
+- Dependency: `EnactedBy.EnablingExtent` reads the extent_code of any row in the named schedule; 71 SIs name a schedule of these Acts (2000/17: 33, 1972/68: 13, 2001/9: 8, …). Each schedule's **header row** carries the extent_code (all 17 coded), so the header alone keeps that evidence.
+
 ## Decisions for Jason
 
 **D1 — Fix-now list** (approve, amend or move items to known limits). Built in LR-13, one targeted wave:
@@ -62,8 +72,13 @@ Fix: an id carries the path that makes it unique (Part for per-Part chapters, th
 2. Delete the 32 notes on 27 laws that hold no LAT
 3. changed_by from bare SI numbers the register holds (22 notes / 3 laws)
 
+**D3 — Schedule rows** (recommended: a):
+- a. The parser emits only the Schedule header row (number, title, extent), never its contents; remove the 4,629 rows under the headers and the 978 schedule-only notes. EnablingExtent keeps its evidence; a re-parse can't recreate the contents. Built in LR-13 (test-first), applied in its wave.
+- b. As (a) and drop the headers too: narrow the 12 scopes to sections only. The 71 SIs lose their enabling-extent evidence on any future re-scrape or extent backfill.
+- c. Keep the rows; exclude schedules from what fractalaw and compliance get.
+
 **D2 — Known-limits list** (the only things allowed to stay wrong or absent at hand-off; LR-11's guide states them, QA run 4 classifies against them, LH-05's message lists them):
-1. No schedules in LAT (#169; 13 scoped laws are the exception)
+1. No schedules in LAT (#169; compliance v0.1 ships without them) — after D3, only schedule header rows exist
 2. Inserted forms, formulae, images aren't text (22 rows / 14 laws end "substitute—")
 3. Territory only in a note or the amending law's text (8 rows; LR-08 unscheduled; flagged by LatTerritoryCheck)
 4. changed_by null where the amender isn't in the register (73 notes) or the law changes itself (101, by design)
