@@ -9,6 +9,8 @@ defmodule SertantaiLegal.Scraper.LatRepairTest do
       assert LatRepair.provision("UK_uksi_1992_3004:reg.2(1)") == {:ok, "reg.2"}
       assert LatRepair.provision("UK_ukpga_1991_56:s.4(6)[E+W]") == {:ok, "s.4"}
       assert LatRepair.provision("UK_ukpga_1991_56:s.12A#2") == {:ok, "s.12A"}
+      # the source's own uniqueness suffix (LR-13) is part of the provision
+      assert LatRepair.provision("UK_ukpga_1990_8:s.70An1(2)") == {:ok, "s.70An1"}
       assert LatRepair.provision("UK_eudr_1991_383:art.Article 3(1)") == {:ok, "art.Article 3"}
     end
 
@@ -17,6 +19,7 @@ defmodule SertantaiLegal.Scraper.LatRepairTest do
             "UK_ukpga_1974_28:sch.1.s.5(2)",
             "UK_asp_2011_9:pt.2",
             "UK_ssi_2006_465:ch.2#41",
+            "UK_anaw_2017_3:pt.2.ch.1",
             "UK_uksi_2014_1638:h.39",
             "UK_nisr_2010_160:table.15"
           ] do

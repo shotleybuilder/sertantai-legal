@@ -112,6 +112,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
           paragraph: row.paragraph
         )
 
+      citation = with_source_suffix(citation, Map.get(row, :xml_id))
+
       row
       |> Map.put(:law_name, law_name)
       |> Map.put(:section_type, section_type)
@@ -122,6 +124,19 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
       |> Map.put(:depth, depth)
     end)
   end
+
+  # legislation.gov.uk makes a recurring number unique with an "n1", "n2"
+  # suffix on the element's id (section-70A-1n1, section-70A-1-an1): the
+  # citation keeps it, whether or not anything collides today (LR-13).
+  # A number already taken from the id (1965/57 "pt.1n1") has it.
+  defp with_source_suffix(citation, xml_id) when is_binary(xml_id) do
+    case Regex.run(~r/(n\d+)+$/, xml_id, capture: :first) do
+      [suffix] -> if String.ends_with?(citation, suffix), do: citation, else: citation <> suffix
+      nil -> citation
+    end
+  end
+
+  defp with_source_suffix(citation, _xml_id), do: citation
 
   # Detect provisions that have been repealed (Acts) or revoked (SIs) and
   # inject a helpful marker. Indicators:
@@ -248,38 +263,23 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
     Enum.any?(2..length(key)//1, &MapSet.member?(collisions, Enum.take(key, &1)))
   end
 
-  @doc "Section ids that still repeat take `#position`."
+  @doc """
+  Section ids that still repeat (a duplicate in the source's own markup, or
+  an element with no id): the first occurrence keeps the id, later ones
+  count `#2`, `#3` in document order (LR-13). Never the row's position,
+  which shifts whenever an earlier row is added or removed.
+  """
   @spec disambiguate([map()]) :: [map()]
   def disambiguate(rows) do
-    # Find duplicate section_ids
-    id_counts =
-      rows
-      |> Enum.map(& &1.section_id)
-      |> Enum.frequencies()
+    {rows, _seen} =
+      Enum.map_reduce(rows, %{}, fn row, seen ->
+        case Map.get(seen, row.section_id, 0) + 1 do
+          1 -> {row, Map.put(seen, row.section_id, 1)}
+          n -> {%{row | section_id: "#{row.section_id}##{n}"}, Map.put(seen, row.section_id, n)}
+        end
+      end)
 
-    duplicated_ids =
-      id_counts
-      |> Enum.filter(fn {_id, count} -> count > 1 end)
-      |> Enum.map(fn {id, _} -> id end)
-      |> MapSet.new()
-
-    if MapSet.size(duplicated_ids) == 0 do
-      rows
-    else
-      # Track occurrence count per duplicated ID
-      {rows, _counters} =
-        Enum.map_reduce(rows, %{}, fn row, counters ->
-          if MapSet.member?(duplicated_ids, row.section_id) do
-            count = Map.get(counters, row.section_id, 0) + 1
-            new_id = "#{row.section_id}##{row.position}"
-            {%{row | section_id: new_id}, Map.put(counters, row.section_id, count)}
-          else
-            {row, counters}
-          end
-        end)
-
-      rows
-    end
+    rows
   end
 
   @doc "Acts number sections (:section); every other type regulations / articles (:article)."
@@ -305,6 +305,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
     Enum.map(rows, fn row ->
       %{
         section_id: row.section_id,
+        # LR-13: legislation.gov.uk's id of the element (matching on re-parse)
+        source_xml_id: Map.get(row, :xml_id),
         law_name: row.law_name,
         law_id: law_id_binary,
         section_type: row.section_type,

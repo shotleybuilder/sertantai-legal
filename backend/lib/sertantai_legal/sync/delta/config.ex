@@ -28,7 +28,7 @@ defmodule SertantaiLegal.Sync.Delta.Config do
         ~w(lat_scope lat_hash struct_hash live_evidence document_status) ++
         ~w(definitions_parsed_at enabling_provisions geo_extent_source),
     # provision headings (LAT parser coverage II, 2026-10-08): not in prod yet
-    "lat" => ~w(title excluded_extent territory_provenance),
+    "lat" => ~w(title excluded_extent territory_provenance source_xml_id),
     "amendment_annotations" => [],
     "legislative_definitions" => [],
     "scrape_sessions" => [],

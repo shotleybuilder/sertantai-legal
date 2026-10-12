@@ -27,9 +27,28 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
     p2_numbers == [provision]
   end
 
-  @doc "A provision's Pnumber (through change markup; an EU \"6.\" is 6), nil when none."
+  @doc """
+  A provision's Pnumber (through change markup; an EU "6." is 6). A Pnumber
+  with no number ("..." on a repealed version, empty) takes the number from
+  the element's id (`section-5` → 5, LR-13); nil when neither has one.
+  """
   @spec pnumber(tuple()) :: String.t() | nil
-  def pnumber(node) do
+  def pnumber(node), do: printed_pnumber(node) || id_number(Xml.xml_id(node))
+
+  # the last segment of a structured id, without the source's nN suffix
+  defp id_number(id) when is_binary(id) do
+    with true <- String.match?(id, ~r/\A(section|regulation|article|rule)-/),
+         n = id |> String.replace(~r/(n\d+)+\z/, "") |> String.split("-") |> List.last(),
+         true <- String.match?(n, ~r/\A[0-9A-Za-z]+\z/) do
+      n
+    else
+      _ -> nil
+    end
+  end
+
+  defp id_number(_id), do: nil
+
+  defp printed_pnumber(node) do
     # descendant::text() reaches through nested Addition/Repeal/Substitution
     # wrappers in document order (xmerl's //text() puts direct text first)
     case xpath(node, ~x"./Pnumber/descendant::text()"ls) do

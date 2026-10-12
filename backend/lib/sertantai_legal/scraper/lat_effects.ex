@@ -93,7 +93,21 @@ defmodule SertantaiLegal.Scraper.LatEffects do
   """
   @spec ref_section_id(String.t(), String.t()) :: String.t() | nil
   def ref_section_id(ref, law_name) do
-    case String.split(ref, "-") do
+    # the source's nN suffix ends the element's id; LAT ids carry it last (LR-13)
+    {ref, suffix} =
+      case Regex.run(~r/\A(.+?)((?:n\d+)+)\z/, ref, capture: :all_but_first) do
+        [base, suffix] -> {base, suffix}
+        nil -> {ref, ""}
+      end
+
+    case ref_id(String.split(ref, "-"), law_name) do
+      nil -> nil
+      id -> id <> suffix
+    end
+  end
+
+  defp ref_id(parts, law_name) do
+    case parts do
       [kind, number | subs] when kind in ["section", "regulation", "article"] ->
         "#{law_name}:#{ref_prefix(kind, law_name)}.#{number}#{Enum.map_join(subs, &"(#{&1})")}"
 
@@ -102,6 +116,9 @@ defmodule SertantaiLegal.Scraper.LatEffects do
 
       ["part", number] ->
         "#{law_name}:pt.#{number}"
+
+      ["part", part, "chapter", number] ->
+        "#{law_name}:pt.#{part}.ch.#{number}"
 
       _ ->
         nil

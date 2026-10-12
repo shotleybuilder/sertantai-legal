@@ -11,6 +11,16 @@ defmodule SertantaiLegal.Scraper.LatParser.IdsTest do
     assert Ids.pnumber(el("<P1><Text>x</Text></P1>")) == nil
   end
 
+  test "pnumber/1: a Pnumber with no number (\"...\", empty) takes the element id's (LR-13)" do
+    # 1875/17: an N.I. version of s.5 numbered "...", and s.65 with an empty Pnumber
+    assert Ids.pnumber(el(~s(<P1 id="section-5"><Pnumber>...</Pnumber></P1>))) == "5"
+    assert Ids.pnumber(el(~s(<P1 id="section-65"><Pnumber/></P1>))) == "65"
+    assert Ids.pnumber(el(~s(<P3 id="regulation-7-1-dn1"><Pnumber> </Pnumber></P3>))) == "d"
+    # a generated id or an empty last segment is no number
+    assert Ids.pnumber(el(~s(<P2 id="c7yjk6in3-00031"><Pnumber>...</Pnumber></P2>))) == nil
+    assert Ids.pnumber(el(~s(<P2 id="article-14-"><Pnumber/></P2>))) == nil
+  end
+
   test "number/2 strips the prefix word and any dashed heading" do
     assert Ids.number(
              el("<Part><Number>Part III.— Administration of Law</Number></Part>"),

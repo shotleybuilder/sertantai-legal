@@ -256,6 +256,107 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
     end
   end
 
+  # ── Section ids (LR-13) ────────────────────────────────────────
+
+  describe "parse/2 section ids from what the source distinguishes (LR-13)" do
+    test "an element keeps legislation.gov.uk's nN suffix: s.70A(1) and s.70A(1)n1" do
+      xml = """
+      <Legislation><Primary><Body>
+      <P1group><Title>Applications</Title>
+        <P1 id="section-70A"><Pnumber>70A</Pnumber><P1para>
+          <P2 id="section-70A-1"><Pnumber>1</Pnumber><P2para><Text>Old words—</Text>
+            <P3 id="section-70A-1-a"><Pnumber>a</Pnumber><P3para><Text>old item;</Text></P3para></P3>
+          </P2para></P2>
+          <P2 id="section-70A-1n1"><Pnumber>1</Pnumber><P2para><Text>New words—</Text>
+            <P3 id="section-70A-1-an1"><Pnumber>a</Pnumber><P3para><Text>new item;</Text></P3para></P3>
+          </P2para></P2>
+        </P1para></P1>
+      </P1group>
+      </Body></Primary></Legislation>
+      """
+
+      ids =
+        xml
+        |> LatParser.parse(%{law_name: "UK_ukpga_1990_8", type_code: "ukpga"})
+        |> Enum.map(&String.replace(&1.section_id, "UK_ukpga_1990_8:", ""))
+
+      assert ids == ["s.70A", "s.70A(1)", "s.70A(1)(a)", "s.70A(1)n1", "s.70A(1)(a)n1"]
+    end
+
+    test "the suffix is kept even where nothing collides" do
+      rows =
+        parse_body("""
+        <P1group><Title>T</Title><P1 id="regulation-5n1"><Pnumber>5</Pnumber>
+          <P1para><Text>Inserted regulation.</Text></P1para></P1></P1group>
+        """)
+
+      assert Enum.map(rows, & &1.section_id) == ["UK_uksi_2024_1:reg.5n1"]
+    end
+
+    test "a twice-recurring number keeps the whole suffix (1991/57 section-166-4-an1n1)" do
+      rows =
+        parse_body("""
+        <P1group><Title>T</Title><P1 id="regulation-6"><Pnumber>6</Pnumber><P1para>
+          <P2 id="regulation-6-4n1n1"><Pnumber>4</Pnumber><P2para><Text>Third version.</Text></P2para></P2>
+        </P1para></P1></P1group>
+        """)
+
+      assert row(rows, "UK_uksi_2024_1:reg.6(4)n1n1").text == "Third version."
+    end
+
+    test "a Chapter in a Part carries the Part: pt.2.ch.1, pt.3.ch.1" do
+      xml = """
+      <Legislation><Primary><Body>
+      <Part id="part-2"><Number>PART 2</Number><Title>Two</Title>
+        <Chapter id="part-2-chapter-1"><Number>CHAPTER 1</Number><Title>A</Title>
+          <P1group><Title>T</Title><P1 id="section-5"><Pnumber>5</Pnumber><P1para><Text>Five.</Text></P1para></P1></P1group>
+        </Chapter>
+      </Part>
+      <Part id="part-3"><Number>PART 3</Number><Title>Three</Title>
+        <Chapter id="part-3-chapter-1"><Number>CHAPTER 1</Number><Title>B</Title>
+          <P1group><Title>T</Title><P1 id="section-9"><Pnumber>9</Pnumber><P1para><Text>Nine.</Text></P1para></P1></P1group>
+        </Chapter>
+      </Part>
+      </Body></Primary></Legislation>
+      """
+
+      ids =
+        xml
+        |> LatParser.parse(%{law_name: "UK_anaw_2017_3", type_code: "anaw"})
+        |> Enum.map(&String.replace(&1.section_id, "UK_anaw_2017_3:", ""))
+
+      assert ids == ["pt.2", "pt.2.ch.1", "s.5", "pt.3", "pt.3.ch.1", "s.9"]
+    end
+
+    test "a duplicate in the source's own markup: first plain, then #2" do
+      rows =
+        parse_body("""
+        <P1group><Title>T</Title><P1 id="regulation-7"><Pnumber>7</Pnumber><P1para>
+          <P2 id="regulation-7-1"><Pnumber>1</Pnumber><P2para><Text>Nothing shall affect—</Text>
+            <P3 id="regulation-7-1-a"><Pnumber>a</Pnumber><P3para><Text>the inspector,</Text></P3para></P3>
+            <Text>and—</Text>
+            <P3 id="regulation-7-1-a"><Pnumber>a</Pnumber><P3para><Text>the Executive.</Text></P3para></P3>
+          </P2para></P2>
+        </P1para></P1></P1group>
+        """)
+
+      assert row(rows, "UK_uksi_2024_1:reg.7(1)(a)").text == "the inspector,"
+      assert row(rows, "UK_uksi_2024_1:reg.7(1)(a)#2").text == "the Executive."
+    end
+
+    test "rows carry their source id for persistence (source_xml_id)" do
+      [row] =
+        parse_body("""
+        <P1group><Title>T</Title><P1 id="regulation-5n1"><Pnumber>5</Pnumber>
+          <P1para><Text>Inserted regulation.</Text></P1para></P1></P1group>
+        """)
+
+      law_id = Ecto.UUID.generate()
+      [map] = LatParser.to_insert_maps([row], law_id)
+      assert map.source_xml_id == "regulation-5n1"
+    end
+  end
+
   # ── Parallel Extents ───────────────────────────────────────────
 
   describe "parse/2 with parallel territorial provisions" do

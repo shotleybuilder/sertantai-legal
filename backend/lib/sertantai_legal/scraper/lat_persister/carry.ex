@@ -36,7 +36,8 @@ defmodule SertantaiLegal.Scraper.LatPersister.Carry do
   end
 
   @doc """
-  Existing rows for the law: `%{section_id, text, position, enriched, values}`
+  Existing rows for the law: `%{section_id, text, position, source_xml_id,
+  enriched, values}`
   where `values` holds the carried columns (atom keys) and `enriched` is true
   when any of them other than `legacy_id` is set.
   """
@@ -49,17 +50,18 @@ defmodule SertantaiLegal.Scraper.LatPersister.Carry do
 
     %{rows: rows} =
       Repo.query!(
-        "SELECT section_id, text, position, #{select} FROM legal_articles WHERE law_name = $1",
+        "SELECT section_id, text, position, source_xml_id, #{select} FROM legal_articles WHERE law_name = $1",
         [law_name]
       )
 
-    for [id, text, pos | vals] <- rows do
+    for [id, text, pos, source | vals] <- rows do
       values = Enum.zip(keys, vals) |> Map.new()
 
       %{
         section_id: id,
         text: text,
         position: pos,
+        source_xml_id: source,
         enriched: enriched?(values),
         values: values
       }

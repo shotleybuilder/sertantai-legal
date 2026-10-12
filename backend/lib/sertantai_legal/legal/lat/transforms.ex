@@ -246,6 +246,10 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
       "part" ->
         "#{schedule_prefix}pt.#{part || position}"
 
+      # Chapters are numbered per Part: a Chapter in a Part carries it (LR-13)
+      "chapter" when is_binary(part) ->
+        "#{schedule_prefix}pt.#{part}.ch.#{chapter || position}"
+
       "chapter" ->
         "#{schedule_prefix}ch.#{chapter || position}"
 

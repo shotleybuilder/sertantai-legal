@@ -28,7 +28,7 @@ bugs:
 
 - ✅ Classify the groups by the rows' legislation.gov.uk ids (2026-10-12, after LR-10: 1,305 rows / 524 groups / 122 laws) — see Classification
 - ✅ Gemini review of the proposed id model (Jason: provisionally accepted, review first) — `backend/data/code-reviews/2026-10-12-lr13-id-model-gemini.md`; see Review
-- ⬜ Jason decides D1a–D1d
+- ✅ Jason agreed D1 (fix) and D1a–D1d (2026-10-12)
 - ⬜ Fixtures per class, red first
 - ⬜ Fix ids in `Ids` / `Rows`; `#position` only for true source duplicates
 - ⬜ Check sort_key sub-segments (2016/1105 reg.49(2)…(8)[E+W+S] all `.002`; order holds through the position suffix)
@@ -67,6 +67,9 @@ Verdict: adopt with changes. Principle: an id should be a function of the elemen
 Renames once, with the review's changes: ~1,200 (classes 1–3) + 681 + 466 ≈ 2,350 rows; then ids change only when their own element does.
 
 ## Decisions for Jason
+
+**Decided 2026-10-12: fix; D1a–D1d all agreed.**
+
 
 - **D1 — Fix or accept** (recommended: fix):
   - Fix: build ids from what the source distinguishes. Class 1: keep the source's suffix (`s.23(3)n1`, as 1965/57's `pt.1n1` already does). Class 2: put the Part in the chapter id (`pt.2.ch.1`). Class 3: fix the numbering case by case (13 laws). Classes 4–5: a suffix that counts only same-numbered rows (`#2`), stable unless another row with the same number is added before it. About 1,300 rows renamed once (LatMerge carries enrichment; fractalaw gets a rename list); afterwards an id changes only when its own provision does.

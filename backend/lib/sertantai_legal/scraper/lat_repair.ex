@@ -28,7 +28,8 @@ defmodule SertantaiLegal.Scraper.LatRepair do
 
   alias SertantaiLegal.Scraper.{IdField, LatTextDiff}
 
-  @provision ~r/^(s|reg)\.([0-9]+[A-Z]*)(?=$|[(\[#])/
+  # a provision number may carry the source's nN suffix (LR-13): s.70An1
+  @provision ~r/^(s|reg)\.([0-9]+[A-Z]*(?:n\d+)?)(?=$|[(\[#])/
   @eu_article ~r/^art\.Article ([0-9]+[a-z]*)(?=$|[(\[#])/
 
   @doc "The top-level provision of a row id, or `{:skip, reason}`."

@@ -87,13 +87,14 @@ defmodule SertantaiLegal.Scraper.LatParser.RowsTest do
              ["UK_ukpga_2024_1:s.10[E+W]", "UK_ukpga_2024_1:s.10[S]"]
   end
 
-  test "disambiguate/1: duplicated ids take #position" do
+  test "disambiguate/1: a repeated id keeps its first occurrence plain; later ones count #2, #3 (LR-13)" do
     rows = [
       %{section_id: "a", position: 1},
-      %{section_id: "a", position: 2},
-      %{section_id: "b", position: 3}
+      %{section_id: "b", position: 2},
+      %{section_id: "a", position: 7},
+      %{section_id: "a", position: 9}
     ]
 
-    assert Enum.map(Rows.disambiguate(rows), & &1.section_id) == ["a#1", "a#2", "b"]
+    assert Enum.map(Rows.disambiguate(rows), & &1.section_id) == ["a", "b", "a#2", "a#3"]
   end
 end

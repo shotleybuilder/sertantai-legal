@@ -15,6 +15,10 @@ defmodule SertantaiLegal.Scraper.LatMerge do
      the row
   2. `unique_text` — old id gone, its text equals exactly one unclaimed new
      row whose id is new, and no other vanished old row has that text: rename
+  2a. `source_id` — old id gone, and exactly one vanished old row and one
+     new-id row share a legislation.gov.uk element id (`source_xml_id`,
+     LR-13) and their text passes the rules of 1: rename. Rows stored before
+     LR-13 have no source id and skip this step
   2b. `extent_tag` — old id gone, and a new id equals it apart from its
      `[extent]` tag (tagging changed between parser generations, or the
      provision gained a territorial alternative): rename onto the first such
@@ -73,6 +77,12 @@ defmodule SertantaiLegal.Scraper.LatMerge do
     vanished = Enum.reject(rest, &MapSet.member?(new_ids, &1.section_id))
     fresh = Enum.reject(new_rows, &MapSet.member?(old_ids, &1.section_id))
 
+    source_renames = source_id_renames(vanished, fresh)
+    sourced_old = MapSet.new(source_renames, & &1.old)
+    sourced_new = MapSet.new(source_renames, & &1.new)
+    vanished = Enum.reject(vanished, &MapSet.member?(sourced_old, &1.section_id))
+    fresh = Enum.reject(fresh, &MapSet.member?(sourced_new, &1.section_id))
+
     tag_renames = extent_tag_renames(vanished, fresh)
     tagged_old = MapSet.new(tag_renames, & &1.old)
     tagged_new = MapSet.new(tag_renames, & &1.new)
@@ -103,7 +113,7 @@ defmodule SertantaiLegal.Scraper.LatMerge do
         end
       end)
 
-    renames = tag_renames ++ renames
+    renames = source_renames ++ tag_renames ++ renames
     carry = Enum.reduce(renames, carry, &Map.put(&2, &1.new, &1.old))
     carried_old = MapSet.new(Map.values(carry))
 
@@ -142,6 +152,29 @@ defmodule SertantaiLegal.Scraper.LatMerge do
       removed: removed,
       lost_unchanged: lost_unchanged
     }
+  end
+
+  # 1:1 by legislation.gov.uk element id; a source id shared by several rows
+  # (territorial versions repeat it) decides nothing
+  defp source_id_renames(vanished, fresh) do
+    olds = unique_by_source(vanished)
+    news = unique_by_source(fresh)
+
+    for {source, o} <- olds,
+        n = Map.get(news, source),
+        n != nil and same_row?(norm(o.text), norm(n.text)),
+        do: %{old: o.section_id, new: n.section_id, match: "source_id"}
+  end
+
+  defp unique_by_source(rows) do
+    rows
+    |> Enum.filter(&is_binary(Map.get(&1, :source_xml_id)))
+    |> Enum.group_by(& &1.source_xml_id)
+    |> Enum.flat_map(fn
+      {source, [row]} -> [{source, row}]
+      _shared -> []
+    end)
+    |> Map.new()
   end
 
   defp extent_tag_renames(vanished, fresh) do

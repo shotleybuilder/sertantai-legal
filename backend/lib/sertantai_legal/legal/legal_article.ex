@@ -189,6 +189,14 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
+    attribute :source_xml_id, :string do
+      allow_nil?(true)
+
+      description(
+        "legislation.gov.uk's id of the row's element (e.g. section-70A-1n1), for matching rows across re-parses (LR-13)"
+      )
+    end
+
     attribute :effect_ids, {:array, :string} do
       allow_nil?(true)
 

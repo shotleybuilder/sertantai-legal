@@ -234,6 +234,10 @@ defmodule SertantaiLegal.Legal.Lat.TransformsTest do
       assert T.build_citation("chapter", chapter: "3") == "ch.3"
     end
 
+    test "a chapter in a Part carries the Part (chapters are numbered per Part, LR-13)" do
+      assert T.build_citation("chapter", part: "2", chapter: "1") == "pt.2.ch.1"
+    end
+
     test "heading" do
       assert T.build_citation("heading", heading_group: "18") == "h.18"
     end

@@ -176,6 +176,20 @@ defmodule SertantaiLegal.Scraper.LatEffectsTest do
                "UK_ukpga_1990_43:sch.1.s.22(3)"
     end
 
+    test "the source's nN suffix and Part-qualified chapters, as LAT ids carry them (LR-13)" do
+      assert LatEffects.ref_section_id("section-70A-2n1", "UK_ukpga_1990_8") ==
+               "UK_ukpga_1990_8:s.70A(2)n1"
+
+      assert LatEffects.ref_section_id("section-70A-1-an1", "UK_ukpga_1990_8") ==
+               "UK_ukpga_1990_8:s.70A(1)(a)n1"
+
+      assert LatEffects.ref_section_id("section-166-4-an1n1", "UK_ukpga_1991_57") ==
+               "UK_ukpga_1991_57:s.166(4)(a)n1n1"
+
+      assert LatEffects.ref_section_id("part-2-chapter-1", "UK_anaw_2017_3") ==
+               "UK_anaw_2017_3:pt.2.ch.1"
+    end
+
     test "unnumbered schedules and anything else → nil (the text parser is the fallback)" do
       assert LatEffects.ref_section_id("schedule-paragraph-20-2", "UK_anaw_2016_3") == nil
       assert LatEffects.ref_section_id("crossheading-general", "UK_anaw_2016_3") == nil

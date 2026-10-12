@@ -292,4 +292,48 @@ defmodule SertantaiLegal.Scraper.LatMergeTest do
     assert Enum.any?(plan.renames, &(&1.old == "L:reg.119(1)" and &1.new == "L:s.119(1)"))
     assert plan.lost_unchanged == []
   end
+
+  describe "source id (LR-13)" do
+    defp src(row, id), do: Map.put(row, :source_xml_id, id)
+
+    test "an id that changed is carried by its legislation.gov.uk id" do
+      # two rows with the same text: text alone pairs them in order; the source id is exact
+      olds = [
+        src(old("L:s.23(3)#1945", "The condition is met.", 1), "section-23-3"),
+        src(old("L:s.23(3)#1950", "The condition is met.", 2), "section-23-3n1")
+      ]
+
+      news = [
+        src(new("L:s.23(3)n1", "The condition is met.", 1), "section-23-3n1"),
+        src(new("L:s.23(3)", "The condition is met.", 2), "section-23-3")
+      ]
+
+      plan = LatMerge.plan(olds, news)
+
+      assert plan.carry == %{"L:s.23(3)" => "L:s.23(3)#1945", "L:s.23(3)n1" => "L:s.23(3)#1950"}
+      assert Enum.all?(plan.renames, &(&1.match == "source_id"))
+    end
+
+    test "a source id shared by several rows (territorial versions) decides nothing" do
+      olds = [
+        src(old("L:s.5#1", "Text A.", 1), "section-5"),
+        src(old("L:s.5#2", "Text B.", 2), "section-5")
+      ]
+
+      news = [
+        src(new("L:s.5[E+W]", "Text A.", 1), "section-5"),
+        src(new("L:s.5[S]", "Text B.", 2), "section-5")
+      ]
+
+      plan = LatMerge.plan(olds, news)
+      refute Enum.any?(plan.renames, &(&1.match == "source_id"))
+    end
+
+    test "same source id but different text: not carried (the enrichment described other words)" do
+      olds = [src(old("L:s.9#4", "Old words entirely.", 1), "section-9")]
+      news = [src(new("L:s.9", "Brand new wording here.", 1), "section-9")]
+
+      assert LatMerge.plan(olds, news).carry == %{}
+    end
+  end
 end
