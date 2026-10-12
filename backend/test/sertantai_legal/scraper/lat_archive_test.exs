@@ -99,6 +99,25 @@ defmodule SertantaiLegal.Scraper.LatArchiveTest do
              {"discarded", "not_making", ref, "user:jason", 2}
   end
 
+  test "discard/3 removes the law's notes with its LAT, so none is left on a law without LAT (LR-14)",
+       %{dir: dir, name: name} do
+    Repo.query!(
+      """
+      INSERT INTO amendment_annotations (id, law_name, law_id, code, code_type, source, text, affected_sections, created_at, updated_at)
+      SELECT gen_random_uuid(), $1, id, 'F:c1', 'amendment', 'lat_parser', 'Regulations revoked.', '{}', now(), now()
+      FROM legal_register WHERE name = $1
+      """,
+      [name]
+    )
+
+    assert {:ok, %{annotations_deleted: 1}} = LatArchive.discard(name, "revoked", dir: dir)
+
+    %{rows: [[n]]} =
+      Repo.query!("SELECT count(*) FROM amendment_annotations WHERE law_name = $1", [name])
+
+    assert n == 0
+  end
+
   test "discard/3 refuses when the archive cannot be written, unless archive: false", %{
     name: name
   } do
