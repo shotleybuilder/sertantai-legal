@@ -35,7 +35,7 @@ bugs:
 - ✅ Id parsers follow: `LatRepair.provision/1` accepts `s.70An1`; `LatEffects.ref_section_id/2` gives `s.70A(2)n1`, `pt.2.ch.1`
 - ✅ Offline re-check of the 122 laws: rows with a `#` suffix 1,305 → 120, all duplicates in the source (94 same source id; 18 EU rows with no id; 8 one number on distinct ids: EU unnumbered paragraphs `article-14-`, 1986/44's two s.16s, an s.87B paragraph misnumbered in the source); suite 2,619 passing (`97e887d2`)
 - ⏸️ sort_key sub-segments (2016/1105 reg.49(2)…(8)[E+W+S] all `.002`): not an id question; order holds through the position suffix (not this session)
-- ⬜ Whole-corpus dry run (`mix lat.reparse --laws <all 1,066> --store only --dry-run --tag lr13_preview`): renames, carry, gate failures
+- ✅ Whole-corpus dry run (`mix lat.reparse --laws <all 1,066> --store only --dry-run --tag lr13_preview`, `lat-reparse/lr13_preview.csv`): 0 errors; 217 laws change (`lr13_wave_laws.txt`); 2,411 renames; enriched 287,703: carried 287,697, changed 0, dropped 6, ambiguous 0; 1 gate failure; rows 374,861 → 374,866 — see Dry run
 - ⬜ Re-parse the affected laws (`--store only`): dry run → Jason → apply → verify; rename list for LH-05
 
 ## Classification (2026-10-12)
@@ -69,6 +69,12 @@ Verdict: adopt with changes. Principle: an id should be a function of the elemen
 
 Renames once, with the review's changes: ~1,200 (classes 1–3) + 681 + 466 ≈ 2,350 rows; then ids change only when their own element does.
 
+## Dry run (2026-10-12)
+
+- **Dropped 6 + gate failure 1 hold no enrichment.** The 6 are empty-text structural rows whose ids change (1989/15 four Chapters, eur 2004/852 Art. 14, 1986/44 s.16); empty rows match by id only, and stored rows have no `source_xml_id` yet. The gate failure is 2007/2079: the old position id `reg.1(1)#2` (position 2) equals the new occurrence id `reg.1(1)#2` on a different row, so its text can't be re-paired. All 7 carry only an empty `drrp_types` (`{}`) or null columns: no taxa, duties or embedding.
+- **+5 rows = a fix.** 2003/21 is scoped; `LatScope.merge/1` joins fragments by section_id, so Part 4A's Chapters 1–5 (`ch.1`…`ch.5`) merged into Part 3's and were dropped. As `pt.4A.ch.1`…`5` they return.
+- From the next re-parse on, `source_xml_id` lets LatMerge carry renamed rows of any kind.
+
 ## Decisions for Jason
 
 **Decided 2026-10-12: fix; D1a–D1d all agreed.**
@@ -81,7 +87,7 @@ Renames once, with the review's changes: ~1,200 (classes 1–3) + 681 + 466 ≈ 
 - **D1b — Chapters** (revised): always Part-qualified (`pt.2.ch.1`) when the Chapter sits in a Part — +466 renames
 - **D1c — True source duplicates**: keep the occurrence suffix (`reg.7(1)(d)#2`), against Gemini's opaque-suffix registry
 - **D1d — `source_xml_id` column** (new): store each row's legislation.gov.uk id (Ash migration); LatMerge matches on it before text
-- **D2 — Approve** the re-parse from its dry run
+- **D2 — Approve** the re-parse of the 217 laws from its dry run: `--store only`, snapshot tag `lr13`; 2007/2079 with `--force` (its gate failure loses no enrichment); NAS backup first
 
 ## Dependencies
 
