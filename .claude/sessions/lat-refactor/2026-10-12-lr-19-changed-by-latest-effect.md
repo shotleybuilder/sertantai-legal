@@ -78,8 +78,25 @@ Exact matches: one candidate of the note's kind 5,268; 2+ candidates 1,479; none
 
 "We're not labelling Notes. We might use Notes to help label provisions." The subject is the **row**: its effective_from, changed_by, status and territory come from the effects on it. A note is at most a pointer to which effect belongs to the row (its placement + the law it cites). The note-level counts above size the problem; the decisions are about rows, re-measured at row level (LR-20: 21,276 rows with note-sourced change facts, 13,019 with an effect naming them). Jason: "What our purpose is, is high quality provision labels." Note enrichment (the note-level fact columns on `amendment_annotations`) is **parked** — it may have value, a separate question; this session neither fills nor drops it.
 
+## Rows (2026-10-12, offline simulation; `lr19_rows` script in scratchpad)
+
+Each row's effective_from / changed_by recomputed with `ChangeFacts.resolve` from effects alone (notes carry only their joined effects, via their placement; no note text, no Citation), then with D1's pointer joins. Against what the row holds now:
+
+| Row now | Rows | Effects only | + D1 pointer join |
+|---|---|---|---|
+| from effects | 219,292 | 219,141 unchanged; 151 a different law (the note's date was deciding: nisi 2003/419 reg.53(2)(a) 2009 by nisr 2009/35 → 2005 by nisr 2005/31) | same |
+| from notes | 21,276 | same 3,788 · law kept, no date 2,734 · other law, no date 1,948 · other dated law 862 · same law, other date 66 · **empty 11,757** | +682 back to today's value from an effect · +1,274 a law with no date · **empty 11,075** |
+| none | 134,298 | unchanged | unchanged |
+
+Reading:
+- D1 joins pointed effects to 9,545 rows, but changes the label on ~2,000: a row's label is its latest dated change, and the pointed effect is usually older or undated.
+- 862 "other dated law": the note shows a later change (asp 2016/2 s.2(7): 2024 by asp 2024/5) that the feed doesn't date; the label falls back to an older effect. LR-08 / known limit.
+- Undated: 10,279 rows end with a changed_by and no date. When several undated effects apply, `AmendmentNote.row_effective/1` picks the first by law name — arbitrary.
+- 11,075 rows end empty: LR-08 (class b), else empty.
+- D2 (orphan join) can't be simulated without the code; it shows in the build's diff (territory and the effect a legacy change carries).
+
 ## Decisions for Jason (rows)
 
 - **D1 — A row takes the effects on its provision** (as now: change markup, whole-provision effects, effects naming it) **and, for words-level effects that join only through markup, the effect a note on the row points at**: by the law the note cites, on the row's provision, of the note's kind, not another row's. Recommended.
 - **D2 — Fix the orphan join** (`EffectIndex.with_orphans/2`): a legacy change id never takes an effect that has its own note or markup; where its note cites a law, only an effect by that law; else none. Rows stop taking other changes' effects (changed_by, territory). Recommended.
-- **D3 — A row's changed_by / effective_from**: from its latest dated effect (the feed's affecting law, e.g. 2020/1567 "as substituted"); a row with no dated effect has none. Recommended.
+- **D3 — A row's changed_by / effective_from**: from its latest dated effect (the feed's affecting law, e.g. 2020/1567 "as substituted"). With no dated effect: (a) one undated effect → its law, no date; several → empty (recommended: one is unambiguous, "first by name" isn't) — or (b) empty — or (c) as now (first by law name).
