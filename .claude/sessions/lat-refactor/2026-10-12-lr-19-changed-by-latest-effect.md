@@ -1,5 +1,5 @@
 ---
-session: 'LR-19: changed_by From the Latest Joined Effect'
+session: 'LR-19: Effect Joins'
 status: pending
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
@@ -12,14 +12,17 @@ bugs:
     status: open
 ---
 
-# Session: LR-19 changed_by From the Latest Joined Effect (PENDING)
+# Session: LR-19 Effect Joins (PENDING)
 
 ## Problem
 
 Found in LR-15 (2026-10-12). 2,849 notes in 206 laws have a `changed_by` different from the law the note itself cites (`citation_law`, from its `<Citation>` markup). 1,133 are the expected Welsh SI twins (uksi URI, wsi law). **1,716 notes in 176 laws** name a different law: when a note joins effects, `ChangeFacts.note/3` takes `changed_by` from the latest-dated joined effect (`last.affecting`); `citation_law` is used only when no effect joins. Examples: 1981/69 "Words substituted by Local Government Act 1985 (c. 51)" → changed_by 2006/16; eur 2008/1272 Art. 49(3) "inserted by S.I. 2019/720" → 2020/1567; 2015/310 reg.6 "substituted (N.I.) by S.I. 2019/583" → 2020/1616.
 
+Widened 2026-10-12 (architecture track): every fact a row or note gets must come from the right effect. Two join faults: the wrong effect chosen (above), and an effect that exists but isn't joined (LR-15: 1995/21 "by 2002/794" — the feed has the effect by 2002/794 on s.15(6)(a); the row has it, the note doesn't). LR-20's inventory sizes the second.
+
 ## Todo
 
+- ⬜ Missed joins (from LR-20's inventory): effects in the feed for the note's provision and the law it points at, not joined; join on effect data (affecting law + affected provision), the note text only pointing where to look
 - ⬜ Classify the 1,716: later change to the same words; amendment of the amending instrument (2020/1567 amended 2019/720 before exit day); wrong join
 - ⬜ Check against the QA spec (T7: changed_by = the first instrument after " by ") and LR-05's intent (citation_law precedence)
 - ⬜ Jason decides

@@ -1,5 +1,5 @@
 ---
-session: 'LR-20: No Facts From Notes'
+session: 'LR-20: Note-Fact Inventory & Rule'
 status: pending
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
@@ -12,7 +12,7 @@ bugs:
     status: open
 ---
 
-# Session: LR-20 No Facts From Notes (PENDING)
+# Session: LR-20 Note-Fact Inventory & Rule (PENDING)
 
 ## Problem
 
@@ -20,12 +20,11 @@ Jason decided on 2026-10-09: notes aren't law; facts come from the law → the r
 
 ## Todo
 
-- ⬜ Inventory every note-derived fact path (ChangeFacts note fallback, AmendmentNote, LatStatus regexes, citation_law, NoteTerritory remnants) and what each feeds (row changed_by / effective_from / status; note effect / dates / changed_by)
-- ⬜ Measure by class: facts that an effect or markup could supply with a better join vs facts no data supports (e.g. pre-feed amendments, 1954/70's 1993 SIs)
-- ⬜ Rule for the gap: the fact is empty (note shown as a note); notes may only point to where to look (a join hint), never supply the value
-- ⬜ Tests first; classified diff (store only) → Jason → apply in a re-parse wave
-- ⬜ LH-05: the contract change (fields that become empty) for fractalaw
-- ⬜ Guide (LR-11) and QA spec (LR-12) state the rule
+- ⬜ Inventory every note-derived fact path (ChangeFacts note fallback, AmendmentNote, LatStatus regexes, `citation_law`, NoteTerritory remnants, anything else reading Commentary text) and the fields each feeds (row changed_by / effective_from / status / territory; note effect / dates / changed_by)
+- ⬜ Measure every note-only fact (read-only, store only) into classes: (a) an effect exists in the feed but isn't joined → LR-19; (b) no effect, the amending law is in the store → LR-08; (c) no effect, the amending law not held / pre-feed → empty
+- ⬜ Feed coverage: which laws / years the changes feed doesn't cover (e.g. 1954/70's 1993 SIs)
+- ⬜ The rule, written down for the guide: a fact comes from markup, effects or the law; a note may only point where to look; no note fallback for any field
+- ⬜ Jason decides D1, D2
 
 ## Decisions for Jason
 

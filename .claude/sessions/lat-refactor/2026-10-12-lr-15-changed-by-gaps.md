@@ -1,6 +1,6 @@
 ---
 session: 'LR-15: changed_by Gaps on Change Notes'
-status: active
+status: suspended
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
@@ -12,7 +12,7 @@ bugs:
     status: open
 ---
 
-# Session: LR-15 changed_by Gaps on Change Notes (ACTIVE)
+# Session: LR-15 changed_by Gaps on Change Notes (SUSPENDED)
 
 ## Problem
 
@@ -23,6 +23,10 @@ bugs:
   - 22 (3 laws) cite a bare SI number the register holds ("by 2002/794", "SI 1992/2823");
   - 73 name laws legal doesn't hold (e.g. General Rate Act 1967, Water Consolidation (Consequential Provisions) Act 1991).
 EU "by Regulation (EC) No …" notes (LH-08): 32 now; the 11 with no changed_by are Official Journal footnotes or editorial notes — correct.
+
+## Suspended (2026-10-12)
+
+Jason: the reliance on notes is systemic; architecture before bug fixes. This session's 28 notes are one class of LR-20's inventory: a note pointing at a law the feed confirms (5) is an effect-join fix (LR-19); the rest have no data behind them (LR-20 rule / LR-08). D2 (known limit for laws legal doesn't hold) stands. **Resume** only if anything is left after LR-21.
 
 ## Todo
 

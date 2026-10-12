@@ -1,6 +1,6 @@
 ---
 session: 'LR-17: Territory Only in a Note'
-status: pending
+status: suspended
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
@@ -12,11 +12,15 @@ bugs:
     status: open
 ---
 
-# Session: LR-17 Territory Only in a Note (PENDING)
+# Session: LR-17 Territory Only in a Note (SUSPENDED)
 
 ## Problem
 
 8 rows (LR-07 residue) read a repeal as reaching everywhere: the changes feed lists savings but no territory, and only the note names one (2010/404 reg.14 "omitted (E.)"; 2020/7 s.8 "expires in part"). Under "notes are hints" the note can't decide it; the amending law's own text could (LR-08, unscheduled). `LatTerritoryCheck` reports them as `:note_territory_hint`.
+
+## Suspended (2026-10-12)
+
+Superseded by the architecture track: territory that only a note gives is a note-only fact (LR-20); the amending law is the source to look at (LR-08). Resume only if anything is left after LR-21.
 
 ## Todo
 

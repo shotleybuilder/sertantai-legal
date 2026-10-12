@@ -27,4 +27,4 @@ Plan step 2 (LR-00 meta). Jason (2026-10-09) asked for a guide to how -legal der
 
 ## Dependencies
 
-- ⬜ Known-limit decisions made in LR-10, LR-13–LR-18
+- ⬜ Architecture track done (LR-20, LR-19, LR-08, LR-21) and LH-07; known-limit decisions from the bug sessions

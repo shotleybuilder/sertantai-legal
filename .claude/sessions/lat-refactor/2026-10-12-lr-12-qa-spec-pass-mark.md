@@ -27,4 +27,4 @@ Plan step 3 (LR-00 meta). `docs/LAT-QA-SAMPLE-SPEC.md` predates the refactor: it
 ## Dependencies
 
 - ⬜ LR-11 guide signed off
-- ⬜ Known-limit decisions made in LR-10, LR-13–LR-18
+- ⬜ Architecture track done (LR-20, LR-19, LR-08, LR-21) and LH-07; known-limit decisions from the bug sessions
