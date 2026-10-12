@@ -21,6 +21,13 @@ Welsh SIs are also numbered in the UK SI series, so legislation.gov.uk serves `/
 - ⬜ Prevent recurrence: IdURI check at scrape / LAT parse time
 - ⬜ Verify: one record per instrument; LAT counts and enrichment preserved
 
+## Decisions for Jason
+
+- **D1 — Plan per pair** from the dry run: move LAT / notes / enrichment uksi → wsi, drop identical uksi copies, repoint edges and mappings
+- **D2 — Retire** the uksi duplicates (marked, not deleted) once compliance confirms customer registers don't need them
+
+Plan step 4 (LR-00 meta, 2026-10-12): done before QA run 4 so the sample is the data fractalaw gets. Also closes the 15 note-fallback changed_by notes still on uksi 2013/755 (LR-05).
+
 ## Dependencies
 
 - ⬜ Wave 3 applied (LH-06), so ids are final before moving rows

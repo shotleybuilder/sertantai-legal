@@ -18,7 +18,12 @@ Wave 4 (LR-06) wrote LR-02–LR-07 into the dev DB, and the DB equals a fresh pa
 - ⬜ If fail: fix test-first → targeted wave (dry run → Jason → apply) → new seeds; repeat
 - ⬜ Jason accepts the verdict → LH-05
 
+## Decisions for Jason
+
+- **D1 — Verdict**: accept the readiness verdict (against LR-12's pass mark)
+- **D2 — Any fix wave** after a failed run: dry run → approve
+
 ## Dependencies
 
 - ✅ LR-06 wave 4 applied and verified (`lat-refactor/2026-10-09-lr-06-wave-4-qa.md`)
-- ⬜ LR-10 known limits approved; LR-12 spec + pass mark agreed; LH-07 done
+- ⬜ LR-13 wave applied; LR-12 spec + pass mark agreed; LH-07 done
