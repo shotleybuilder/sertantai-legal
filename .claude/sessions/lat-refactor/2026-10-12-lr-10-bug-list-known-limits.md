@@ -72,10 +72,13 @@ Fix: an id carries the path that makes it unique (Part for per-Part chapters, th
 2. Delete the 32 notes on 27 laws that hold no LAT
 3. changed_by from bare SI numbers the register holds (22 notes / 3 laws)
 
-**D3 — Schedule rows** (recommended: a):
-- a. The parser emits only the Schedule header row (number, title, extent), never its contents; remove the 4,629 rows under the headers and the 978 schedule-only notes. EnablingExtent keeps its evidence; a re-parse can't recreate the contents. Built in LR-13 (test-first), applied in its wave.
-- b. As (a) and drop the headers too: narrow the 12 scopes to sections only. The 71 SIs lose their enabling-extent evidence on any future re-scrape or extent backfill.
+**D3 — Schedule rows** (recommended: b, revised 2026-10-12 after Jason's question):
+- Of the 71 SIs, 56 aren't Making (e.g. 2015/947 only amends the Climate Change Levy (General) Regulations 2001; an amending SI's extent drives no DRRP). 15 are Making; 12 of them hold no LAT; all 15 already have a stored extent.
+- `enabling_provisions` is rank 5 in `ExtentResolver`: it is used only when the SI's own RestrictExtent, own LAT, contents and extent clause all give nothing. If the parent holds no LAT (or not the named provision), `EnablingExtent` returns nil (all-or-nothing) and the resolver falls to `affected_effects`, then `type_code`; an unknown never clears a stored extent.
+- a. The parser emits only the Schedule header row (number, title, extent), never its contents; remove the 4,629 rows under the headers and the 978 schedule-only notes. Keeps the rank-5 evidence for SIs made under these schedules.
+- b. No schedules at all: the parser skips Schedule elements; narrow the 12 scopes to their sections; remove all 4,646 rows and the 978 notes. Cost: a new or re-scraped SI made only under one of these schedules gets no rank-5 verdict and falls through; the 15 Making SIs keep their stored extents. Matches "the parser doesn't parse Schedules".
 - c. Keep the rows; exclude schedules from what fractalaw and compliance get.
+- Either a or b: built test-first in LR-13 and applied in its wave; a re-parse can't recreate what's removed.
 
 **D2 — Known-limits list** (the only things allowed to stay wrong or absent at hand-off; LR-11's guide states them, QA run 4 classifies against them, LH-05's message lists them):
 1. No schedules in LAT (#169; compliance v0.1 ships without them) — after D3, only schedule header rows exist
