@@ -8,20 +8,20 @@ bugs:
     category: lat-change-facts
     module: "scraper/change_facts.ex (note/3, changed_by = last.affecting)"
     affected: 1716 notes / 176 laws
-    fix: "decide: the note's own Citation (citation_law) wins when present, effects only date it; or keep the latest effect"
-    status: open
+    fix: "D1/D3 (Jason 2026-10-12): rows labelled from effects; the 601 keep the feed's affecting law; the rest were the orphan-join fault (D2)"
+    status: fixed
   - pattern: "Orphan join takes an effect that has its own note and markup, by a law other than the one the change's note cites (legacy d30p ids)"
     category: lat-change-facts
     module: "scraper/effect_index.ex (with_orphans/2, on_provision/3)"
     affected: 1095 notes
-    fix: "exclude effects with their own Commentary / ChangeId; require the cited law where the note cites one"
-    status: open
+    fix: "EffectIndex.with_orphans/3 held: / cited: (D2), applied in the lr19 wave"
+    status: fixed
   - pattern: "Legacy notes (bare CommentaryRef, no change element) never join the effect on their provision by the law they cite"
     category: lat-change-facts
     module: "scraper/commentary_parser.ex (with_effects/3)"
     affected: ~10000 notes
-    fix: "pointer join: effects on the note's provision, by its cited law, of its kind, not held by another note"
-    status: open
+    fix: "CommentaryParser.with_effects/3 pointer join (D1), applied in the lr19 wave"
+    status: fixed
 ---
 
 # Session: LR-19 Effect Joins (ACTIVE)
@@ -42,7 +42,7 @@ Widened 2026-10-12 (architecture track): every fact a row or note gets must come
 - ✅ Tests first, then build (2026-10-12): 4 new tests red → green; full suite 2,623 passed — see Build
 - ✅ Classified diff of the offline whole-corpus parse (2026-10-12, `mix lat.parse_snapshot` baseline on the pre-change code → `--compare`) — see Diff
 - ✅ Re-parse dry run (2026-10-12, `mix lat.reparse --laws <283> --store only --dry-run --tag lr19_preview`, `lat-reparse/lr19_preview.csv`, law list `lr19_wave_laws.txt`): 0 errors, 0 gate failures; enriched 169,750: carried 169,729, changed 21 (territory brackets in text: eur 2016/2031 5, 1968/73 8, 1990/43 3, 1984/55 2, 1982/16, 2010/15, uksi 2010/2214), dropped 0, ambiguous 0; no renames, row counts unchanged
-- ⬜ Jason approves → NAS backup → apply (`--tag lr19`)
+- ✅ Jason approved ("Go", 2026-10-12) → NAS backup (snapshots/latest) → applied (`mix lat.reparse --laws <283> --store only --tag lr19`, `lat-reparse/lr19.csv`): 0 errors; rows 210,362 → 210,362; renamed 0, dropped 0, ambiguous 0, orphaned mappings 0; enriched 169,750 → 169,729 (the 21 rows whose territory brackets changed await fractalaw re-enrichment); `mix lat.status` dry run: 0 to update. LAT 374,866 rows / 1,066 laws; labelled rows from effects 224,417, from notes 14,709 (was 21,276)
 - ⬜ LH-05: tell fractalaw (21 enriched rows' text changed; labels changed on 15,192 rows) — only on Jason's go
 
 ## Dependencies
