@@ -6,7 +6,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
   - pattern: "A note's changed_by comes from the latest-dated effect joined to it, not the law the note itself cites (its Citation): later changes to the same words replace the note's own amender"
     category: lat-change-facts
-    module: scraper/change_facts.ex (note/3: changed_by = last.affecting)
+    module: "scraper/change_facts.ex (note/3, changed_by = last.affecting)"
     affected: 1716 notes / 176 laws
     fix: "decide: the note's own Citation (citation_law) wins when present, effects only date it; or keep the latest effect"
     status: open
