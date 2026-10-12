@@ -14,6 +14,7 @@ Plan step 1b (LR-00 meta). LR-10 found fixable defects in the wave-4 data. The l
 ## Todo
 
 - ⬜ Scope = LR-10 D1 as approved
+- ⬜ No schedules (LR-10 D3 b, Jason 2026-10-12), test-first: `Walker` skips `Schedule` elements (incl. PDF-transcript CLML, 1979/791); narrow the 12 enabling scopes to their sections (`LatScope.narrow!/3`, history entry); remove the 4,646 schedule rows and the 978 schedule-only notes in the wave (dry run → Jason)
 - ⬜ Classify all 525 duplicate groups (Part-scoped chapter, lost list level, missing version qualifier, mixed type, true source duplicate); fixtures per class, red first
 - ⬜ Fix ids in `Ids` / `Rows`; `#position` only for true source duplicates; check sort_key sub-segments (2016/1105 reg.49 repeats `.002`)
 - ⬜ changed_by from bare SI numbers the register holds (22 notes / 3 laws), test-first
