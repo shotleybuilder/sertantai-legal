@@ -1,8 +1,35 @@
 ---
 session: 'LR-14: Notes on Laws Without LAT'
-status: active
+status: closed
 opened: 2026-10-12
+closed: 2026-10-12
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  The 32 notes on 27 laws without LAT (26 revoked laws' own revocation notes, 2011/971's six, two EU repeal
+  notes) were archived to the NAS and deleted in one count-checked transaction; 0 remain. Recurrence was
+  already prevented (every LAT deletion goes through LatArchive.discard/3, which removes notes) and is now
+  pinned by a test.
+
+decisions:
+  - what: Delete the 32 notes (D1)
+    why: "A note on a law without LAT has no row to place on, no fact provenance, and no re-parse refreshes it; the laws' revoked status is held in the register, not in these notes"
+    result: "32 deleted; 0 notes on laws without LAT"
+  - what: Archive the full rows to the NAS only, and leave note codes out of the committed list
+    why: "Note codes hold legislation.gov.uk key-<32hex> effect ids, which trip GitHub push protection"
+    result: "lr14-notes-without-lat-2026-10-12.jsonl on the NAS; committed CSV has no codes"
+
+metrics:
+  notes_deleted: { notes: 32, laws: 27, revoked_laws: 26, part_revoked_laws: 1 }
+  by_type: { amendment: 27, modification: 5 }
+  created: { june_2026: 11, july_2026: 21 }
+
+lessons:
+  - title: Orphaned rows can outlive the code that made them
+    detail: "All 32 notes came from June/July clean-ups that deleted LAT before LatArchive.discard/3 deleted notes too. The current code can't produce them, so the fix was a one-off deletion plus a test pinning the discard behaviour, not a code change."
+    tag: data
+
 bugs:
   - pattern: "Notes on laws that hold no LAT (26 revoked + 2011/971): no fact provenance, never refreshed"
     category: lat-notes
@@ -10,9 +37,26 @@ bugs:
     affected: 32 notes / 27 laws
     fix: "delete (dry run → Jason)"
     status: fixed
+  - pattern: "Notes whose law holds no LAT (left over from LAT discards): no fact provenance, never refreshed"
+    category: lat-notes
+    module: amendment_annotations
+    affected: 32 notes in 27 laws
+    fix: "archived to NAS and deleted (LR-14, 2026-10-12); discard removes notes (pinned by a test)"
+    status: fixed
+
+artifacts:
+  - backend/data/reports/lat-refactor/lr14-notes-without-lat.csv
+  - backend/test/sertantai_legal/scraper/lat_archive_test.exs
+  - /mnt/nas/sertantai-data/data/lat-archive/lr14-notes-without-lat-2026-10-12.jsonl
+
+depends_on:
+  - 2026-10-09-lr-06-wave-4-qa
+
+enables:
+  - LR-12 known limits (one fewer); QA run 4 sample without orphan notes
 ---
 
-# Session: LR-14 Notes on Laws Without LAT (ACTIVE)
+# Session: LR-14 Notes on Laws Without LAT (CLOSED)
 
 ## Problem
 
