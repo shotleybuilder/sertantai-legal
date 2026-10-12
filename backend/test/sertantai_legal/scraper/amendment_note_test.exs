@@ -266,9 +266,23 @@ defmodule SertantaiLegal.Scraper.AmendmentNoteTest do
       assert AmendmentNote.row_effective([a, b]) == AmendmentNote.row_effective([b, a])
     end
 
-    test "no dated notes → the first note's instrument, no date; no notes → nil" do
+    test "no dated change: its law when only one law made the undated changes, else none (LR-19 D3a); no notes → nil" do
       assert AmendmentNote.row_effective([parse("S. 310 repealed by , Water Act 1973 (c. 37)")]) ==
                {nil, "UK_ukpga_1973_37"}
+
+      same = [
+        parse("S. 310 repealed by S.I. 1999/1"),
+        parse("Words in s. 310 inserted by S.I. 1999/1")
+      ]
+
+      assert AmendmentNote.row_effective(same) == {nil, "UK_uksi_1999_1"}
+
+      two = [
+        parse("S. 310 repealed by S.I. 1999/1"),
+        parse("Words in s. 310 inserted by S.I. 1998/7")
+      ]
+
+      assert AmendmentNote.row_effective(two) == {nil, nil}
 
       assert AmendmentNote.row_effective([]) == {nil, nil}
     end

@@ -16,7 +16,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.{EffectIndex, LatSegments, LatTerritory}
+  alias SertantaiLegal.Scraper.{CommentaryParser, EffectIndex, LatSegments, LatTerritory}
   alias SertantaiLegal.Scraper.LatParser.{Text, Xml}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
@@ -71,13 +71,38 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
     index =
       EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1), law_extent)
 
-    EffectIndex.with_orphans(index, change_occurrences(doc, index))
+    changes = change_occurrences(doc, index)
+    cites = CommentaryParser.cited_laws(doc)
+
+    # LR-19 D2: effects another change owns — joined by their own markup, or
+    # with their own note — and the law each orphan's note cites
+    held =
+      MapSet.new(
+        for({_, _, _, _, id} <- changes, id != nil, do: id) ++
+          for(
+            id <- doc |> xpath(~x"//Commentaries/Commentary/@id"ls) |> Enum.map(&to_string/1),
+            EffectIndex.get(index, id) != nil,
+            do: id
+          )
+      )
+
+    orphans = for {change_id, _ref, path, kind, nil} <- changes, do: {change_id, path, kind}
+
+    cited =
+      for {change_id, ref, _, _, nil} <- changes,
+          law = cites[ref],
+          law != nil,
+          into: %{},
+          do: {change_id, law}
+
+    EffectIndex.with_orphans(index, orphans, held: held, cited: cited)
   end
 
-  # every change element whose ids join no effect: {ChangeId, the ids of the
-  # elements holding it (outermost first), kind}, in document order
-  # (EffectIndex.with_orphans/2). A walk carrying the path: xpath's ancestor
-  # axis is lost on nodes selected from a list.
+  # every change element: {ChangeId, its CommentaryRef, the ids of the
+  # elements holding it (outermost first), kind, the id of the effect its ids
+  # join | nil (an orphan)}, in document order (EffectIndex.with_orphans/3).
+  # A walk carrying the path: xpath's ancestor axis is lost on nodes
+  # selected from a list.
   defp change_occurrences(node, index, path \\ [])
 
   defp change_occurrences(node, index, path) when elem(node, 0) == :xmlElement do
@@ -89,14 +114,14 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
 
     own =
       with name when name in ~w(Addition Substitution Repeal) <- Xml.local_name(elem(node, 1)),
-           change_id when change_id != nil <- Xml.change_id(node),
-           nil <-
-             EffectIndex.for(
-               index,
-               change_id,
-               Xml.blank_to_nil(xpath(node, ~x"./@CommentaryRef"s))
-             ) do
-        [{change_id, path, if(name == "Repeal", do: :keep, else: :ins)}]
+           change_id when change_id != nil <- Xml.change_id(node) do
+        ref = Xml.blank_to_nil(xpath(node, ~x"./@CommentaryRef"s))
+        joined = EffectIndex.for(index, change_id, ref)
+
+        [
+          {change_id, ref, path, if(name == "Repeal", do: :keep, else: :ins),
+           joined && joined.effect_id}
+        ]
       else
         _ -> []
       end

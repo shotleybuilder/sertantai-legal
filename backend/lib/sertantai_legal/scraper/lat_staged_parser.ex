@@ -155,10 +155,6 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
-  @doc "The ids of a law's effects (`CommentaryParser.with_effects/3`)."
-  @spec effect_ids([ChangesFeed.Effect.t()]) :: MapSet.t(String.t())
-  def effect_ids(effects), do: MapSet.new(for e <- effects, e.effect_id != nil, do: e.effect_id)
-
   @doc """
   A law's parsed rows, its notes (each with `effect_ids`,
   `CommentaryParser.with_effects/3`) and its effects, without persisting
@@ -176,7 +172,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
       notes =
         xmls
         |> parse_annotations(law_name, rows)
-        |> CommentaryParser.with_effects(rows, effect_ids(effects))
+        |> CommentaryParser.with_effects(rows, effects)
 
       {:ok, %{rows: rows, notes: notes, effects: effects}}
     end
@@ -445,7 +441,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     annotations =
       xmls
       |> parse_annotations(law_name, lat_rows)
-      |> CommentaryParser.with_effects(lat_rows, effect_ids(effects))
+      |> CommentaryParser.with_effects(lat_rows, effects)
 
     notify(
       on_progress,

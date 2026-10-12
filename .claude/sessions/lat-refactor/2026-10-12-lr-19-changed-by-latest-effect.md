@@ -38,9 +38,9 @@ Widened 2026-10-12 (architecture track): every fact a row or note gets must come
 - ✅ The 1,716 classified (2026-10-12; `lr19_wrong`) — see Wrong picks
 - ✅ Checked against LR-05 (citation_law precedence: only where no effect joins) and the rule (LR-20: effects over notes; the note names where to look)
 - ✅ Re-measured at row level (Jason: rows are labelled, not notes) — see Rows
-- ⬜ Jason decides D1–D3 (rows)
-- ⬜ Tests first (EffectIndex orphan join, CommentaryParser pointer join, ChangeFacts changed_by)
-- ⬜ Build; classified diff of the offline whole-corpus parse (`--store only`)
+- ✅ Jason decided D1, D2, D3a (2026-10-12)
+- ✅ Tests first, then build (2026-10-12): 4 new tests red → green; full suite 2,623 passed — see Build
+- ✅ Classified diff of the offline whole-corpus parse (2026-10-12, `mix lat.parse_snapshot` baseline on the pre-change code → `--compare`) — see Diff
 - ⬜ Re-parse dry run → Jason → NAS backup → apply
 
 ## Dependencies
@@ -97,6 +97,40 @@ Reading:
 
 ## Decisions for Jason (rows)
 
+**Decided 2026-10-12:** D1 approved, D2 approved, D3 option (a).
+
+
 - **D1 — A row takes the effects on its provision** (as now: change markup, whole-provision effects, effects naming it) **and, for words-level effects that join only through markup, the effect a note on the row points at**: by the law the note cites, on the row's provision, of the note's kind, not another row's. Recommended.
 - **D2 — Fix the orphan join** (`EffectIndex.with_orphans/2`): a legacy change id never takes an effect that has its own note or markup; where its note cites a law, only an effect by that law; else none. Rows stop taking other changes' effects (changed_by, territory). Recommended.
 - **D3 — A row's changed_by / effective_from**: from its latest dated effect (the feed's affecting law, e.g. 2020/1567 "as substituted"). With no dated effect: (a) one undated effect → its law, no date; several → empty (recommended: one is unambiguous, "first by name" isn't) — or (b) empty — or (c) as now (first by law name).
+
+## Build (2026-10-12)
+
+- **D2** `EffectIndex.with_orphans/3` (`held:`, `cited:`) and `on_provision/4` (a keep predicate): an orphan change id never takes an effect joined by its own markup or with its own note, and with a cited law only that law's effect. `LatParser.Effects.index/3` collects both from the document (`CommentaryParser.cited_laws/1`: Commentary id → its Citation's law).
+- **D1** `CommentaryParser.with_effects/3` takes the law's effects (was their ids): a note neither markup nor its own id joins takes the effects on its rows' provisions (`EffectIndex.on/2`: refs and ranges) by the law it cites (Citation, else the instrument after " by "), of its kind (F amendment verbs, C "other", I commenced), held by no other note. Callers pass effects; `LatStagedParser.effect_ids/1` removed.
+- **D3a** `AmendmentNote.row_effective/1`: with no dated change, the law only when one law made the undated changes; several → none.
+- Tests: `effect_territory_test` (orphan held / cited / Welsh twin), `commentary_parser_test` (pointer join: Citation, text pointer, held, no law, sub-provision only; several → all), `amendment_note_test` (undated one law / two laws).
+
+## Diff (2026-10-12)
+
+`data/reports/lat-refactor/lr19-snapshot.compare.csv`: 55,997 field differences in 283 laws; rows in 244 laws, 15,192 rows touched (the rest are note-level fields: parked).
+
+| Row change | Rows | Reading |
+|---|---|---|
+| same label, now from an effect (was note) | 6,328 | D1: the pointed effect supplies today's value |
+| same label, now from a note (was effect) | 80 | a wrong effect join removed (D2); the note-text fallback stands until LR-21 |
+| other law and/or date | 2,952 | mostly wrong joins removed (below) |
+| no label: several laws, none dated (D3a) | 1,246 | as decided |
+| label emptied | 340 | a leak removed (2017/1013 reg.38(14)(a): a words change in (14)'s own text no longer dates (a)) |
+| gains a label | 144 | D1 |
+| status only | 147 | |
+
+changed_by checked against the feed (does the law have an effect on the row's provision?), 4,374 rows: 1,569 where the old law had none (leaks fixed); 1,190 both have one; 620 old law had one, new empty (mostly D3a); 552 neither; 443 old had one, new hasn't — sampled: Act-wide effects ("power to amend conferred | Act") counted by the checker, and wrong joins removed.
+
+Wrong joins removed (D2), examples:
+- 1991/56: a blanket note "Words in Act substituted by virtue of Water Act 2003" (an `M_F_` change id) collected 20 effects across the Act; every row it marks took the latest (2025 by 2024/13, which has no effect on s.12I(1)). Now only Water Act 2003's.
+- 1968/73 s.116(6)(c)[S]: Roads (Scotland) Act 1984 insertions (legacy ids) took 2003/1615's modification.
+- 1990/43 s.6(6A): a 2000 insertion took ssi 2012/360's substitution and its savings → `repealed_saved`; now `in_force`.
+
+Status: in_force_partial → in_force 36, in_force → in_force_partial 23, repealed_saved → in_force 21, in_force → repealed_saved 1. Territory (69 laws): excluded_extent set 368, cleared 34, changed 38; 190 rows' text brackets (mwa 2010/8 s.9(3): an insertion by Welsh SI 2019/414 now joins that law's effect and is marked W; before, ambiguous → unmarked).
+

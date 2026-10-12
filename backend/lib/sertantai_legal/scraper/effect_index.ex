@@ -8,8 +8,8 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   - `effect_id/1` — a markup `ChangeId` ("key-<hex>-<ts>") → its effect id
     ("key-<hex>"); legacy ids (`d29p…`) have none
   - `get/2`, `for_change/2`, `on/2` — lookups
-  - `with_orphans/2`, `orphan/2` — one join per law for a change id that
-    joins no effect, via `on_provision/3`
+  - `with_orphans/3`, `orphan/2` — one join per law for a change id that
+    joins no effect, via `on_provision/4`
   - `parallel/2` — an effect and its parallels (the same change by
     another instrument for another territory)
   - `whole_provision/2` — applied effects that repeal or insert a whole
@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   Pure.
   """
 
+  alias SertantaiLegal.Scraper.AmendmentNote
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type t :: %{
@@ -141,15 +142,18 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   count as one; any other ambiguity is no join. The join is structural
   (`AffectedProvisions`), never a note's text.
   """
-  @spec on_provision(t(), String.t() | nil, :ins | :keep | :pair) :: Effect.t() | nil
-  def on_provision(_index, nil, _kind), do: nil
+  @spec on_provision(t(), String.t() | nil, :ins | :keep | :pair, (Effect.t() -> boolean())) ::
+          Effect.t() | nil
+  def on_provision(index, ref, kind, keep? \\ fn _ -> true end)
 
-  def on_provision(index, ref, kind) do
-    own = index |> on(ref) |> Enum.filter(&fits?(kind, &1.type || ""))
+  def on_provision(_index, nil, _kind, _keep?), do: nil
+
+  def on_provision(index, ref, kind, keep?) do
+    own = index |> on(ref) |> Enum.filter(&(fits?(kind, &1.type || "") and keep?.(&1)))
 
     candidates =
       case applied(own) do
-        [] -> ref |> ancestors() |> Enum.find_value([], &whole_of_kind(index, &1, kind))
+        [] -> ref |> ancestors() |> Enum.find_value([], &whole_of_kind(index, &1, kind, keep?))
         found -> found
       end
 
@@ -159,8 +163,11 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   defp applied(effects),
     do: effects |> Enum.filter(&(&1.applied == true)) |> Enum.uniq_by(& &1.effect_id)
 
-  defp whole_of_kind(index, ref, kind) do
-    case index |> whole_provision(ref) |> Enum.filter(&fits?(kind, &1.type)) |> applied() do
+  defp whole_of_kind(index, ref, kind, keep?) do
+    case index
+         |> whole_provision(ref)
+         |> Enum.filter(&(fits?(kind, &1.type) and keep?.(&1)))
+         |> applied() do
       [] -> nil
       found -> found
     end
@@ -238,18 +245,35 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   s.18's words substitution isn't s.18(4A)-(4B)'s insertion); else each element
   just below it holding some must give the same effect (2010/2214 "Regs.
   18A-18E inserted", also marked on Part 3's heading).
+
+  LR-19 D2: never an effect another change owns — `held`, the ids of
+  effects with their own note or joined by their own markup (1968/47
+  s.1(1): a legacy 2002 substitution took asp 2003/3's insertion) — and,
+  where the change's note cites a law (`cited`: change id → law), only an
+  effect by that law. Else no join.
   """
-  @spec with_orphans(t(), [{String.t(), [String.t()], :ins | :keep | :pair}]) :: t()
-  def with_orphans(index, occurrences) do
+  @spec with_orphans(t(), [{String.t(), [String.t()], :ins | :keep | :pair}], keyword()) :: t()
+  def with_orphans(index, occurrences, opts \\ []) do
+    held = Keyword.get(opts, :held, MapSet.new())
+    cited = Keyword.get(opts, :cited, %{})
+
     orphans =
       occurrences
-      |> Enum.map(fn {change_id, path, kind} -> {orphan_key(change_id), path, kind} end)
-      |> Enum.reject(fn {key, _path, _kind} -> get(index, key) != nil end)
-      |> Enum.group_by(fn {key, _path, kind} -> {key, kind} end)
+      |> Enum.map(fn {change_id, path, kind} ->
+        {change_id, orphan_key(change_id), path, kind}
+      end)
+      |> Enum.reject(fn {_id, key, _path, _kind} -> get(index, key) != nil end)
+      |> Enum.group_by(fn {_id, key, _path, kind} -> {key, kind} end)
       |> Enum.flat_map(fn {{_key, kind} = id, found} ->
-        paths = found |> Enum.map(&elem(&1, 1)) |> Enum.uniq()
+        paths = found |> Enum.map(&elem(&1, 2)) |> Enum.uniq()
+        law = Enum.find_value(found, &cited[elem(&1, 0)])
 
-        case orphan_effect(index, paths, kind) do
+        keep? = fn e ->
+          not MapSet.member?(held, e.effect_id) and
+            (law == nil or (e.affecting != nil and AmendmentNote.same_law?(e.affecting, law)))
+        end
+
+        case orphan_effect(index, paths, kind, keep?) do
           nil -> []
           effect -> [{id, effect.effect_id}]
         end
@@ -275,7 +299,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
   defp orphan_key(change_id), do: effect_id(change_id) || change_id
 
-  defp orphan_effect(index, paths, kind) do
+  defp orphan_effect(index, paths, kind, keep?) do
     common =
       Enum.reduce(paths, fn path, acc ->
         acc
@@ -291,15 +315,15 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
     # isn't the s.18(4A)-(4B) insertion)
     at_lowest =
       if Enum.any?(paths, &(length(&1) == length(common))),
-        do: on_provision(index, lowest, kind),
-        else: lowest && index |> whole_of_kind(lowest, kind) |> List.wrap() |> one()
+        do: on_provision(index, lowest, kind, keep?),
+        else: lowest && index |> whole_of_kind(lowest, kind, keep?) |> List.wrap() |> one()
 
     at_lowest ||
       paths
       |> Enum.map(&Enum.at(&1, length(common)))
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
-      |> Enum.map(&on_provision(index, &1, kind))
+      |> Enum.map(&on_provision(index, &1, kind, keep?))
       |> agreed()
   end
 

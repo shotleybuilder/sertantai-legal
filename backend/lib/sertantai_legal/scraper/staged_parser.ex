@@ -1307,7 +1307,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
     annotations =
       body_xml
       |> CommentaryParser.parse(%{law_name: law_name}, ref_to_sections)
-      |> CommentaryParser.with_effects(lat_rows, LatStagedParser.effect_ids(effects))
+      |> CommentaryParser.with_effects(lat_rows, effects || [])
 
     if annotations == [] do
       IO.puts("    ○ Annotations: none found in body XML")

@@ -21,6 +21,9 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
 
   import SweetXml
 
+  alias SertantaiLegal.Scraper.{AmendmentNote, ChangeFacts, EffectIndex}
+  alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
+
   @type_map %{
     "F" => :amendment,
     "C" => :modification,
@@ -157,6 +160,19 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   @instrument ~r"\d{4}/\d+|\bc\.\s*\d+|\b(?:asp|anaw|asc|nia|mwa)\s+\d+"
 
   @doc """
+  Each Commentary's cited law (`citation_law/2`), by Commentary id: the
+  law a change's note names, as a pointer to its effect (LR-19 D2).
+  """
+  @spec cited_laws(tuple()) :: %{String.t() => String.t()}
+  def cited_laws(doc) do
+    for node <- xpath(doc, ~x"//Commentaries/Commentary"l),
+        law = citation_law(node, extract_commentary_text(node) || ""),
+        law != nil,
+        into: %{},
+        do: {node |> xpath(~x"./@id"s) |> to_string(), law}
+  end
+
+  @doc """
   The law a note's first `<Citation>` after " by " names, from its URI
   (`…/id/{type}/{year}/{number}` → `UK_{type}_{year}_{number}`): what the
   note's text names as the changing instrument, but structured — a Welsh SI
@@ -270,22 +286,81 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   @doc """
   Each annotation's `effect_ids` (LR-07): the effects joined by the change
   markup citing it (rows' `note_effects`), and its own id when that is an
-  effect in the feed (`known`: the law's effect ids) — commencement and
-  modification notes sit on the provision, not on change markup. Empty
-  when neither: the note stays a note.
+  effect in the feed — commencement and modification notes sit on the
+  provision, not on change markup.
+
+  LR-19 D1: a note neither joins (a legacy note: a bare CommentaryRef, no
+  change element) points to its effects — those on the provisions it sits
+  on (exact refs and ranges), by the law it cites (its Citation, else the
+  instrument its text names after " by "), of its kind, held by no other
+  note. The facts come from those effects; the note only says where to
+  look. Empty when none: the note stays a note.
+
+  `effects`: the law's changes-feed effects.
   """
-  @spec with_effects([map()], [map()], MapSet.t(String.t())) :: [map()]
-  def with_effects(annotations, lat_rows, known) do
+  @spec with_effects([map()], [map()], [Effect.t()]) :: [map()]
+  def with_effects(annotations, lat_rows, effects) do
+    known = MapSet.new(for e <- effects, e.effect_id != nil, do: e.effect_id)
+
     by_ref =
       lat_rows
       |> Enum.flat_map(&(Map.get(&1, :note_effects) || []))
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
-    Enum.map(annotations, fn a ->
-      ref = a.code |> String.split(":", parts: 2) |> List.last()
-      own = if MapSet.member?(known, ref), do: [ref], else: []
-      Map.put(a, :effect_ids, Enum.uniq(Map.get(by_ref, ref, []) ++ own))
+    joined =
+      Enum.map(annotations, fn a ->
+        ref = a.code |> String.split(":", parts: 2) |> List.last()
+        own = if MapSet.member?(known, ref), do: [ref], else: []
+        Map.put(a, :effect_ids, Enum.uniq(Map.get(by_ref, ref, []) ++ own))
+      end)
+
+    held = MapSet.new(for a <- joined, id <- a.effect_ids, do: id)
+    xml_ids = Map.new(lat_rows, &{&1.section_id, row_xml_id(&1)})
+
+    index =
+      EffectIndex.new(effects, lat_rows |> Enum.map(&row_xml_id/1) |> Enum.reject(&is_nil/1))
+
+    Enum.map(joined, fn
+      %{effect_ids: []} = a -> %{a | effect_ids: pointed(a, index, xml_ids, held)}
+      a -> a
     end)
+  end
+
+  defp row_xml_id(row), do: Map.get(row, :xml_id) || Map.get(row, :source_xml_id)
+
+  # the effect kinds (ChangeFacts.kind/2) a note of each type can point to
+  @kinds %{
+    "amendment" => ~w(substituted inserted repealed renumbered amended),
+    "modification" => ~w(other),
+    "commencement" => ~w(commenced)
+  }
+
+  defp pointed(a, index, xml_ids, held) do
+    kinds = Map.get(@kinds, to_string(Map.get(a, :code_type)), [])
+    law = cited_law(a)
+
+    if law == nil or kinds == [] do
+      []
+    else
+      for sid <- Map.get(a, :affected_sections) || [],
+          e <- EffectIndex.on(index, xml_ids[sid]),
+          e.effect_id != nil,
+          not MapSet.member?(held, e.effect_id),
+          e.affecting != nil and AmendmentNote.same_law?(e.affecting, law),
+          ChangeFacts.kind(e.type, nil) in kinds,
+          uniq: true,
+          do: e.effect_id
+    end
+  end
+
+  # the law the note cites: its Citation's, else the instrument after " by "
+  defp cited_law(%{citation_law: law}) when is_binary(law), do: law
+
+  defp cited_law(a) do
+    text = Map.get(a, :text) || ""
+
+    if String.contains?(text, " by "),
+      do: AmendmentNote.parse(text, a.code_type, Map.get(a, :law_name) || "").changed_by
   end
 
   # ── Sequential ID Assignment ─────────────────────────────────────

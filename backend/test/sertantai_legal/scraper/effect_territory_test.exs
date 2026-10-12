@@ -197,6 +197,38 @@ defmodule SertantaiLegal.Scraper.EffectTerritoryTest do
       assert EffectIndex.orphan(index, nil, :ins) == nil
     end
 
+    test "with_orphans/3: never an effect with its own note or markup; only one by the law the change's note cites (LR-19: 1968/47 s.1(1))" do
+      # the 2002 substitution (legacy d30p67, note citing asp 2002/3) has no
+      # effect in the feed; asp 2003/3's insertion has its own note and markup
+      own =
+        effect(
+          effect_id: "key-8ac6",
+          type: "words inserted",
+          affecting: "UK_asp_2003_3",
+          affected_refs: ["section-1-1"]
+        )
+
+      index = EffectIndex.new([own], ~w(section-1 section-1-1))
+      occ = [{"d30p67", ["section-1", "section-1-1"], :ins}]
+
+      assert EffectIndex.orphan(EffectIndex.with_orphans(index, occ), "d30p67", :ins) == own
+
+      held = EffectIndex.with_orphans(index, occ, held: MapSet.new(["key-8ac6"]))
+      assert EffectIndex.orphan(held, "d30p67", :ins) == nil
+
+      cited = EffectIndex.with_orphans(index, occ, cited: %{"d30p67" => "UK_asp_2002_3"})
+      assert EffectIndex.orphan(cited, "d30p67", :ins) == nil
+
+      by_cited = EffectIndex.with_orphans(index, occ, cited: %{"d30p67" => "UK_asp_2003_3"})
+      assert EffectIndex.orphan(by_cited, "d30p67", :ins) == own
+
+      # a Welsh SI cited by its uksi URI is the same law
+      wsi = %{own | affecting: "UK_wsi_2010_5"}
+      windex = EffectIndex.new([wsi], ~w(section-1 section-1-1))
+      wcited = EffectIndex.with_orphans(windex, occ, cited: %{"d30p67" => "UK_uksi_2010_5"})
+      assert EffectIndex.orphan(wcited, "d30p67", :ins) == wsi
+    end
+
     test "on_provision/3: the effect type's leading verb decides its kind, not a word in its text (1990/8 Pt. 1 \"applied (with modifications) by 1993 c. 28 (as inserted)\")" do
       applied =
         effect(

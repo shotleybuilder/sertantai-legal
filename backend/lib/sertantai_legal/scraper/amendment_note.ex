@@ -93,8 +93,10 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
 
   @doc """
   A provision's `{effective_from, changed_by}` from the notes that apply to it:
-  the latest dated amendment/commencement note; else the first undated one's
-  instrument. Modification notes are about application, not the text.
+  the latest dated amendment/commencement note; else, with none dated, the
+  instrument when only one made the undated changes (several: which came
+  last is unknown, so none — LR-19 D3a). Modification notes are about
+  application, not the text.
   """
   @spec row_effective([t()]) :: {Date.t() | nil, String.t() | nil}
   def row_effective(notes) do
@@ -107,7 +109,10 @@ defmodule SertantaiLegal.Scraper.AmendmentNote do
 
     case Enum.filter(relevant, & &1.effective_from) do
       [] ->
-        {nil, Enum.find_value(relevant, & &1.changed_by)}
+        case relevant |> Enum.map(& &1.changed_by) |> Enum.reject(&is_nil/1) |> Enum.uniq() do
+          [law] -> {nil, law}
+          _ -> {nil, nil}
+        end
 
       dated ->
         latest = dated |> Enum.sort_by(& &1.effective_from, Date) |> List.last()

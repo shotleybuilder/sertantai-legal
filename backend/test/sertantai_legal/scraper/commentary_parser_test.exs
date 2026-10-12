@@ -2,6 +2,11 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
   use ExUnit.Case, async: true
 
   alias SertantaiLegal.Scraper.CommentaryParser
+  alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
+
+  defp effect(fields) do
+    struct!(Effect, Keyword.merge([type: "inserted", affecting: "UK_x", applied: true], fields))
+  end
 
   @fixtures_path Path.join([__DIR__, "..", "..", "fixtures", "body_xml"])
 
@@ -390,7 +395,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
 
   # ── Code derivation ────────────────────────────────────────────
 
-  describe "with_effects/3 (LR-07)" do
+  describe "with_effects/3 (LR-07, LR-19)" do
     test "from the change markup citing the note, plus its own id when the feed has it" do
       annotations = [
         %{code: "F:key-aa", text: "a"},
@@ -405,7 +410,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
         %{section_id: "z"}
       ]
 
-      known = MapSet.new(["key-aa", "key-cc", "key-b1", "key-b2"])
+      known = for id <- ~w(key-aa key-cc key-b1 key-b2), do: effect(effect_id: id)
 
       assert CommentaryParser.with_effects(annotations, rows, known)
              |> Enum.map(&{&1.text, &1.effect_ids}) == [
@@ -415,6 +420,103 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
                # re-keyed: neither joins
                {"d", []}
              ]
+    end
+
+    test "a note no markup joins: the effects on its provision by the law it cites, of its kind, held by no other note (1991/56 s.98(5))" do
+      rows = [
+        %{section_id: "L:s.98(5)", xml_id: "section-98-5"},
+        %{section_id: "L:s.98(5)(a)", xml_id: "section-98-5-a"}
+      ]
+
+      ann = fn code, type, text, cited ->
+        %{
+          code: code,
+          code_type: type,
+          text: text,
+          law_name: "UK_ukpga_1991_56",
+          citation_law: cited,
+          affected_sections: ["L:s.98(5)"]
+        }
+      end
+
+      annotations = [
+        ann.(
+          "F1",
+          "amendment",
+          "Words in s. 98(5) repealed (28.5.2004) by Water Act 2003 (c. 37), Sch. 9",
+          "UK_ukpga_2003_37"
+        ),
+        # no Citation: the instrument it names after " by " points
+        ann.(
+          "F2",
+          "amendment",
+          "Words in s. 98(5) substituted (1.4.2005) by S.I. 2005/9, reg. 2",
+          nil
+        ),
+        # its own effect: it holds key-held
+        ann.(
+          "F:key-held",
+          "amendment",
+          "Words in s. 98(5) inserted by Water Act 2003 (c. 37)",
+          nil
+        ),
+        # names no law: no pointer
+        ann.("F3", "amendment", "Words in s. 98(5) repealed", nil),
+        # only a sub-provision's effect: no join
+        ann.("C1", "modification", "S. 98(5) applied by S.I. 2006/1", "UK_uksi_2006_1")
+      ]
+
+      on = fn id, by, type, ref ->
+        effect(effect_id: id, affecting: by, type: type, affected_refs: [ref])
+      end
+
+      effects = [
+        on.("key-rep", "UK_ukpga_2003_37", "words repealed", "section-98-5"),
+        on.("key-held", "UK_ukpga_2003_37", "words inserted", "section-98-5"),
+        # by the cited law, of another kind
+        on.("key-cif", "UK_ukpga_2003_37", "coming into force", "section-98-5"),
+        on.("key-other", "UK_ukpga_2014_21", "words repealed", "section-98-5"),
+        on.("key-si", "UK_uksi_2005_9", "words substituted", "section-98-5"),
+        on.("key-sub", "UK_uksi_2006_1", "applied (with modifications)", "section-98-5-a")
+      ]
+
+      assert CommentaryParser.with_effects(annotations, rows, effects)
+             |> Enum.map(&{&1.code, &1.effect_ids}) == [
+               {"F1", ["key-rep"]},
+               {"F2", ["key-si"]},
+               {"F:key-held", ["key-held"]},
+               {"F3", []},
+               {"C1", []}
+             ]
+    end
+
+    test "several effects of its kind by the cited law on its provision: all join" do
+      rows = [%{section_id: "L:s.21", xml_id: "section-21"}]
+
+      annotations = [
+        %{
+          code: "F1",
+          code_type: "amendment",
+          text:
+            "S. 21(2)(3) repealed (S.) (26.3.2003) by Criminal Justice (Scotland) Act 2003 (asp 7)",
+          law_name: "UK_ukpga_1981_69",
+          citation_law: "UK_asp_2003_7",
+          affected_sections: ["L:s.21"]
+        }
+      ]
+
+      effects =
+        for id <- ~w(key-a key-b),
+            do:
+              effect(
+                effect_id: id,
+                affecting: "UK_asp_2003_7",
+                type: "repealed",
+                affected_refs: ["section-21"]
+              )
+
+      assert [%{effect_ids: ["key-a", "key-b"]}] =
+               CommentaryParser.with_effects(annotations, rows, effects)
     end
   end
 
