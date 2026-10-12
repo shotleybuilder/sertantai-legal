@@ -29,10 +29,13 @@ bugs:
 - ✅ Classify the groups by the rows' legislation.gov.uk ids (2026-10-12, after LR-10: 1,305 rows / 524 groups / 122 laws) — see Classification
 - ✅ Gemini review of the proposed id model (Jason: provisionally accepted, review first) — `backend/data/code-reviews/2026-10-12-lr13-id-model-gemini.md`; see Review
 - ✅ Jason agreed D1 (fix) and D1a–D1d (2026-10-12)
-- ⬜ Fixtures per class, red first
-- ⬜ Fix ids in `Ids` / `Rows`; `#position` only for true source duplicates
-- ⬜ Check sort_key sub-segments (2016/1105 reg.49(2)…(8)[E+W+S] all `.002`; order holds through the position suffix)
-- ⬜ parse_snapshot classified diff: only expected renames, 0 unexpected
+- ✅ Fixtures per class, red first (parser, Rows, Transforms, Ids, LatRepair, LatEffects, LatMerge)
+- ✅ Ids built from the source: a citation keeps its element's `nN` suffix (incl. `n1n1`); a Chapter in a Part is `pt.N.ch.N`; a Pnumber with no number (`...`, empty) takes the id's number (1875/17: an N.I. version of s.5 had become `s.11`, s.65 `s.109`); remaining repeats `#2`, `#3` (first plain), never position
+- ✅ `source_xml_id` column (Ash migration `20261012140108_lr13_source_xml_id`, appended to the `lat` view; dev-only for delta sync); LatMerge step 2a `source_id` (1:1 by source id, text passes the same-row rule); `Carry.load_existing/2` loads it
+- ✅ Id parsers follow: `LatRepair.provision/1` accepts `s.70An1`; `LatEffects.ref_section_id/2` gives `s.70A(2)n1`, `pt.2.ch.1`
+- ✅ Offline re-check of the 122 laws: rows with a `#` suffix 1,305 → 120, all duplicates in the source (94 same source id; 18 EU rows with no id; 8 one number on distinct ids: EU unnumbered paragraphs `article-14-`, 1986/44's two s.16s, an s.87B paragraph misnumbered in the source); suite 2,619 passing (`97e887d2`)
+- ⏸️ sort_key sub-segments (2016/1105 reg.49(2)…(8)[E+W+S] all `.002`): not an id question; order holds through the position suffix (not this session)
+- ⬜ Whole-corpus dry run (`mix lat.reparse --laws <all 1,066> --store only --dry-run --tag lr13_preview`): renames, carry, gate failures
 - ⬜ Re-parse the affected laws (`--store only`): dry run → Jason → apply → verify; rename list for LH-05
 
 ## Classification (2026-10-12)
