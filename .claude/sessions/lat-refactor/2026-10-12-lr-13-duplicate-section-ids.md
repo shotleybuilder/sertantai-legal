@@ -9,7 +9,7 @@ bugs:
     module: scraper/lat_parser/rows.ex, ids.ex
     affected: 1307 rows / 123 laws
     fix: "id carries the distinguishing path (Part, list level, version qualifier); #position only for true source duplicates"
-    status: open
+    status: fixed
 ---
 
 # Session: LR-13 Duplicate Section IDs (#position) (ACTIVE)
@@ -36,7 +36,9 @@ bugs:
 - ✅ Offline re-check of the 122 laws: rows with a `#` suffix 1,305 → 120, all duplicates in the source (94 same source id; 18 EU rows with no id; 8 one number on distinct ids: EU unnumbered paragraphs `article-14-`, 1986/44's two s.16s, an s.87B paragraph misnumbered in the source); suite 2,619 passing (`97e887d2`)
 - ⏸️ sort_key sub-segments (2016/1105 reg.49(2)…(8)[E+W+S] all `.002`): not an id question; order holds through the position suffix (not this session)
 - ✅ Whole-corpus dry run (`mix lat.reparse --laws <all 1,066> --store only --dry-run --tag lr13_preview`, `lat-reparse/lr13_preview.csv`): 0 errors; 217 laws change (`lr13_wave_laws.txt`); 2,411 renames; enriched 287,703: carried 287,697, changed 0, dropped 6, ambiguous 0; 1 gate failure; rows 374,861 → 374,866 — see Dry run
-- ⬜ Re-parse the affected laws (`--store only`): dry run → Jason → apply → verify; rename list for LH-05
+- ✅ Applied (Jason approved D2 2026-10-12): NAS backup first; `mix lat.reparse --laws <216> --store only --tag lr13` (0 errors; 2,411 renamed, 0 changed, 0 ambiguous, 0 orphaned control mappings; enriched 175,376 → 175,370, the 6 empty rows) and 2007/2079 `--force --tag lr13b` (rollback snapshots `lat_reparse_lr13`, `lat_reparse_lr13b`)
+- ✅ Verified: 374,866 rows / 1,066 laws; 0 duplicate section ids; `#n` ids 61 (later copies of source duplicates); `nN` ids 1,062; Part-qualified chapters 1,089, none left unqualified; `source_xml_id` on 220,069 rows (the 217 re-parsed laws; the others gain it on their next re-parse); `lat.status --all` 0 to change. 2 orphaned control mappings predate the wave (repealed EPA 1990 s.40(4), s.74(3); enrichment-readiness session)
+- ✅ Rename list for LH-05: `backend/data/reports/lat-refactor/lr13-renames.csv` (2,411 renamed + 15 dropped empty rows)
 
 ## Classification (2026-10-12)
 

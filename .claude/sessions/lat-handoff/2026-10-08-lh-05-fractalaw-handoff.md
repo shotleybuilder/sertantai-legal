@@ -19,7 +19,7 @@ Fractalaw builds nothing until the contract and data settle (Jason, 2026-10-08),
 
 ## Message content gathered so far (2026-10-12)
 
-- section_id renames: wave 4 (2010/2214 `pt.2B`, 1965/57 `pt.1`…, nisr 2016/366 `ch.8`/`ch.9`) + LR-13's duplicate-id fixes + LH-07's uksi → wsi moves
+- section_id renames: wave 4 (2010/2214 `pt.2B`, 1965/57 `pt.1`…, nisr 2016/366 `ch.8`/`ch.9`) + LR-13 (2,411 renames in 217 laws, `backend/data/reports/lat-refactor/lr13-renames.csv`; new id forms: source `nN` suffix `s.70A(1)n1`, Part-qualified chapters `pt.2.ch.1`, `#2` only for source duplicates; 5 restored Part 4A chapter rows in 2003/21) + LH-07's uksi → wsi moves
 - changed_by corrections; the new `citation_law`; territory / status / change facts with provenance
 - rows to re-enrich: 7,585 (wave 4) + the LR-13 / LR-15 re-parses
 - schedule rows removed: 4,646 rows in 13 laws and their notes (LR-10); 1974/28 and 1998/47 now hold no LAT (manifest removals); 20 enriched rows removed, all 1979/791
