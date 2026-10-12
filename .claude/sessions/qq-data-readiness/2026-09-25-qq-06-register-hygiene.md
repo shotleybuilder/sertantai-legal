@@ -28,7 +28,7 @@ Two related gaps:
 - ⬜ #114: add `asc` to `@type_codes` in `scraper/new_laws.ex`. Backfill the missing Welsh Acts and check them against QQ's Wales sites.
 - ⬜ #83: wire `family_ii` auto-assignment from `FamilyRules`.
 - ⬜ Benchmark `legal-06-hygiene`
-- ⬜ (from LR-10, 2026-10-12) UK_ukpga_1949_97 (National Parks and Access to the Countryside Act 1949) and UK_ukpga_1949_74 (Coast Protection Act 1949) still marked Revoked, no LAT, not in the CLML store; both look live. Regnal-year name `UK_ukpga_1961_Eliz2/9-10/62` still in the register. **Decision for Jason:** fetch the 2 laws' status pages from legislation.gov.uk to confirm; if live, restore and add to the LAT parse queue
+- ⬜ (found 2026-10-12 re-measuring open LAT bugs) UK_ukpga_1949_97 (National Parks and Access to the Countryside Act 1949) and UK_ukpga_1949_74 (Coast Protection Act 1949) still marked Revoked, no LAT, not in the CLML store; both look live. Regnal-year name `UK_ukpga_1961_Eliz2/9-10/62` still in the register. **Decision for Jason:** fetch the 2 laws' status pages from legislation.gov.uk to confirm; if live, restore and add to the LAT parse queue
 
 ## Dependencies
 

@@ -16,7 +16,7 @@ Plan step 2 (LR-00 meta). Jason (2026-10-09) asked for a guide to how -legal der
 - ⬜ Outline: authority order (law → change markup → effects → notes are hints); extent vs application vs territory; status and change facts; where each LAT field comes from
 - ⬜ Rules as built (LR-02/03/07 + Jason's decisions: LR-00 Q1–Q6, "revoked in part" is never everywhere, effective_from = latest InForce, territorial commencement = in_force_partial)
 - ⬜ Appendix: every source form (Extent attributes, Addition/Substitution/Repeal markup, effects-feed types, savings, qualifiers, versions) with a real corpus example and the resulting LAT row
-- ⬜ Known limits section (from LR-10 D2)
+- ⬜ Known limits section (the known limits decided in LR-10, LR-13–LR-18)
 - ⬜ Gemini review (Flash) → revise
 - ⬜ Jason signs off
 
@@ -27,4 +27,4 @@ Plan step 2 (LR-00 meta). Jason (2026-10-09) asked for a guide to how -legal der
 
 ## Dependencies
 
-- ⬜ LR-10 D2 known limits approved
+- ⬜ Known-limit decisions made in LR-10, LR-13–LR-18

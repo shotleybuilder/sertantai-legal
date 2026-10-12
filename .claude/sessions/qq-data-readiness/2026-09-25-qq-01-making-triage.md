@@ -6,6 +6,13 @@ parent: qq-data-readiness/2026-09-25-qq-00-meta.md
 issue: 161
 related: [25, 120]
 depends_on: [qq-data-readiness/2026-09-25-qq-01a-making-transparency]
+bugs:
+  - pattern: "Making laws whose LAT was deleted by a not-Making clean-up (Making verdict and deletion disagree)"
+    category: making-funnel
+    module: making_review (stale human reviews of amending SIs)
+    affected: 1
+    fix: "re-reviewed: 39 → 1 (2026-10-12); the 1 is Companies Act 1989, excluded from LAT by #166"
+    status: fixed
 ---
 
 # Session: QQ-01 QQ Making Triage (SUSPENDED)
@@ -76,7 +83,7 @@ To resume:
   - `UK_uksi_2014_2868`: specifies limits for the RTA s5A offence
   - `UK_uksi_2018_24`: amends offence machinery
   - `UK_uksi_2005_1904`: amending instrument
-- ⬜ Review the laws with `making_funnel.next_action = 'review_lat_deleted'`: 39 laws that are Making but had their LAT deleted by a not-Making clean-up. 23 are Making on a human review, mostly 2026 amending SIs, which the policy says aren't Making. Record each verdict with `mix making.review`.
+- ✅ (measured 2026-10-12: 39 → 1; the 1 is Companies Act 1989, excluded by #166) Review the laws with `making_funnel.next_action = 'review_lat_deleted'`: 39 laws that are Making but had their LAT deleted by a not-Making clean-up. 23 are Making on a human review, mostly 2026 amending SIs, which the policy says aren't Making. Record each verdict with `mix making.review`.
 - ⬜ Also check `UK_uksi_2018_1214`, the WEEE (Amendment) (No. 2) Regs: an amending SI made Making by legacy Duty/Responsibility in the QQ-01a backfill. Under the policy it may be not Making.
 - ⬜ Fractalaw T1/T2 results (`~/fractalaw/data/qq-readiness/t1-no-duty-findings.csv`, `t2-rights-only-verdicts.csv`):
   - 33 of 37 F3 laws are correctly not Making, so they're QQ cleanup.

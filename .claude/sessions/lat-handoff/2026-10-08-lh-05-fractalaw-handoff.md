@@ -19,11 +19,12 @@ Fractalaw builds nothing until the contract and data settle (Jason, 2026-10-08),
 
 ## Message content gathered so far (2026-10-12)
 
-- section_id renames: wave 4 (2010/2214 `pt.2B`, 1965/57 `pt.1`…, nisr 2016/366 `ch.8`/`ch.9`) + LR-13's id fixes + LH-07's uksi → wsi moves
+- section_id renames: wave 4 (2010/2214 `pt.2B`, 1965/57 `pt.1`…, nisr 2016/366 `ch.8`/`ch.9`) + LR-13's duplicate-id fixes + LH-07's uksi → wsi moves
 - changed_by corrections; the new `citation_law`; territory / status / change facts with provenance
-- rows to re-enrich: 7,585 (wave 4) + LR-13's wave
+- rows to re-enrich: 7,585 (wave 4) + the LR-13 / LR-15 re-parses
+- schedule rows removed: 4,646 rows in 13 laws, 978 notes (LR-10; 9 rows enriched)
 - removals: revoked laws whose LAT legal no longer holds but fractalaw still enriched (2026-09-26 #58 flips)
-- known limits (LR-10 D2) and the signed guide (LR-11)
+- known limits (compiled in LR-12 from ided in LR-10, LR-13–LR-18) and the signed guide (LR-11)
 
 ## Decisions for Jason
 

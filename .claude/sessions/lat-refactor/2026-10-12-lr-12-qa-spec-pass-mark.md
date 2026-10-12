@@ -14,7 +14,7 @@ Plan step 3 (LR-00 meta). `docs/LAT-QA-SAMPLE-SPEC.md` predates the refactor: it
 ## Todo
 
 - ⬜ Rewrite the spec's rules from the signed guide; checks T1–T8 against markup and effects, notes only as hints
-- ⬜ Known limits (LR-10 D2) as a classification the agents use (`known_limit`, not `defect`)
+- ⬜ Compile the known-limits list from the decisions in LR-10, LR-13–LR-18 (Jason confirms the whole list here); use it as a classification the agents use (`known_limit`, not `defect`)
 - ⬜ Sampling: population, strata, two seeds, ~100 rows each; `mix lat.qa_sample` updated if needed
 - ⬜ Dry-run the spec on a handful of rows (one agent) to catch ambiguous wording
 - ⬜ Jason agrees scope and pass mark
@@ -27,3 +27,4 @@ Plan step 3 (LR-00 meta). `docs/LAT-QA-SAMPLE-SPEC.md` predates the refactor: it
 ## Dependencies
 
 - ⬜ LR-11 guide signed off
+- ⬜ Known-limit decisions made in LR-10, LR-13–LR-18

@@ -14,7 +14,7 @@ Wave 4 (LR-06) wrote LR-02–LR-07 into the dev DB, and the DB equals a fresh pa
 ## Todo
 
 - ⬜ Two samples, new seeds (`mix lat.qa_sample`), read-only agents per `docs/LAT-QA-SAMPLE-SPEC.md`
-- ⬜ Findings classified against the known-limits list (LR-10); verdict against the agreed pass mark (LR-12)
+- ⬜ Findings classified against the known-limits list (compiled in LR-12); verdict against the agreed pass mark (LR-12)
 - ⬜ If fail: fix test-first → targeted wave (dry run → Jason → apply) → new seeds; repeat
 - ⬜ Jason accepts the verdict → LH-05
 
@@ -26,4 +26,4 @@ Wave 4 (LR-06) wrote LR-02–LR-07 into the dev DB, and the DB equals a fresh pa
 ## Dependencies
 
 - ✅ LR-06 wave 4 applied and verified (`lat-refactor/2026-10-09-lr-06-wave-4-qa.md`)
-- ⬜ LR-13 wave applied; LR-12 spec + pass mark agreed; LH-07 done
+- ⬜ LR-10, LR-13–LR-18 done; LR-12 spec + pass mark agreed; LH-07 done
