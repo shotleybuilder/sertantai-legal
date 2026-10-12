@@ -9,7 +9,7 @@ bugs:
     module: scraper/lat_parser/walker.ex
     affected: 4646 rows / 13 laws
     fix: "superseded by Jason's decision (2026-10-12): no schedules in LAT at all; the parser skips Schedule elements"
-    status: open
+    status: fixed
 ---
 
 # Session: LR-10 Schedules Out of LAT (ACTIVE)
@@ -24,11 +24,11 @@ Compliance v0.1 goes to production without Schedules (Jason, 2026-10-12), yet LA
 - ✅ D1 decided: no schedules at all (option b)
 - ✅ Tests first (red → green): no row from a Schedule (body doc, schedule-only fragment, PDF-transcript CLML); `fragments_for/1` gives no schedule fragments; `LatScope.without_schedules/2` (narrow, or exclude when only schedules were scoped); a scope with no fragments is excluded and fetches nothing
 - ✅ Parser change: `Xml.schedule_elements` (`Schedules`, `Schedule`) never walked; Schedule out of `@version_content` and the moduledoc; full suite 2,607 passing
-- ⬜ Offline corpus diff (`mix lat.text_diff --all --store only`): only schedule rows gone, 0 unexpected
-- ⬜ Scopes: `mix lat.scope --drop-schedules` (dry run run: 14 scopes — 10 narrowed to sections, 1974/28 and 1998/47 left with only schedules → excluded and LAT discarded, 1959/24 and 2020/27 hold no LAT → scope only) → Jason → `--apply` (archives to NAS, narrows, re-parses `--store only`, restores the scope on failure)
-- ⬜ 1979/791 (no scope): `mix lat.reparse --law UK_uksi_1979_791 --store only` dry run → Jason → apply
-- ⬜ Verify: 0 rows with `schedule` set; lat.status 0; the 978 schedule-only notes gone (the persister replaces a law's notes on re-parse)
-- ⬜ Note for LH-05: schedule rows removed (9 enriched)
+- ✅ Offline corpus diff (`mix lat.text_diff --all --store only`, `lr10-text-diff.csv`): 4,646 rows `removed` in exactly the 13 laws, nothing else in 1,068 laws; territory checks unchanged (15 known)
+- ✅ Scopes applied (Jason approved the dry runs 2026-10-12) — `mix lat.scope --drop-schedules` (dry run: 14 scopes — 10 narrowed to sections, 1974/28 and 1998/47 left with only schedules → excluded and LAT discarded, 1959/24 and 2020/27 hold no LAT → scope only) → Jason → `--apply` (archives to NAS, narrows, re-parses `--store only`, restores the scope on failure)
+- ✅ 1979/791 (no scope): `mix lat.reparse --laws UK_uksi_1979_791 --store only` — dry run 58 → 36, enriched 34 carried, 20 dropped (all schedule rows), 0 gate failures → applied (`lat-reparse/lr10_1979_791.csv`)
+- ✅ Verified: 0 schedule rows, 0 notes on schedule rows; LAT 379,507 → 374,861 rows, 1,068 → 1,066 laws (1974/28, 1998/47 excluded, LAT archived and discarded); `lat.status --all`: 0 to change. Old LAT archived per law under `/mnt/nas/sertantai-data/data/lat-archive/<law>/`
+- ✅ Note for LH-05: 4,646 schedule rows removed in 13 laws; 2 laws now hold no LAT (1974/28, 1998/47); enriched rows removed: 20, all 1979/791 (0 in the 12 Acts)
 
 ## Where the rows come from
 

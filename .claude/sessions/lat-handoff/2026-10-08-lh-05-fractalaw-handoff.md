@@ -22,7 +22,7 @@ Fractalaw builds nothing until the contract and data settle (Jason, 2026-10-08),
 - section_id renames: wave 4 (2010/2214 `pt.2B`, 1965/57 `pt.1`…, nisr 2016/366 `ch.8`/`ch.9`) + LR-13's duplicate-id fixes + LH-07's uksi → wsi moves
 - changed_by corrections; the new `citation_law`; territory / status / change facts with provenance
 - rows to re-enrich: 7,585 (wave 4) + the LR-13 / LR-15 re-parses
-- schedule rows removed: 4,646 rows in 13 laws, 978 notes (LR-10; 9 rows enriched)
+- schedule rows removed: 4,646 rows in 13 laws and their notes (LR-10); 1974/28 and 1998/47 now hold no LAT (manifest removals); 20 enriched rows removed, all 1979/791
 - removals: revoked laws whose LAT legal no longer holds but fractalaw still enriched (2026-09-26 #58 flips)
 - known limits (compiled in LR-12 from ided in LR-10, LR-13–LR-18) and the signed guide (LR-11)
 

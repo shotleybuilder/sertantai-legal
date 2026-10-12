@@ -1,0 +1,2 @@
+law_name,rows_before,rows_after,enriched,enriched_carried,enriched_changed,enriched_dropped,enriched_ambiguous,lost_unchanged,renamed,error
+UK_uksi_1979_791,58,36,54,34,0,20,0,0,0,
