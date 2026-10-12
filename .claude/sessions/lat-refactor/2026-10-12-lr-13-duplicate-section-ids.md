@@ -1,8 +1,62 @@
 ---
 session: 'LR-13: Duplicate Section IDs (#position)'
-status: active
+status: closed
 opened: 2026-10-12
+closed: 2026-10-12
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Section ids are now built from what legislation.gov.uk distinguishes: an element keeps the source's nN
+  suffix, Chapters in a Part are pt.N.ch.N, a Pnumber with no number takes the element id's, and only true
+  source duplicates get #2/#3 (never document position); rows store source_xml_id and LatMerge matches on it.
+  The wave re-parsed 217 laws offline: 2,411 renames carried, 0 duplicate ids, `#` ids 1,305 → 61, lat.status 0.
+
+decisions:
+  - what: Fix the ids rather than accept #position as a known limit (D1)
+    why: "1,201 of 1,305 suffixed rows were ours (the source already tells them apart); #position renamed rows whenever an earlier row changed and isn't a citation a reader can use"
+    result: "2,411 rows renamed once; afterwards an id changes only when its own element does"
+  - what: Carry the source nN suffix on every element that has one, not only on collisions (D1a, after Gemini review)
+    why: "Gemini: collision-only suffixes change when a plain sibling appears or goes; the id must be a function of the element alone. legislation.gov.uk applies nN per element (section-70A-1-an1), first occurrence plain"
+    result: "1,062 nN ids, incl. double suffixes (1991/57 section-166-4-an1n1)"
+  - what: Always Part-qualify a Chapter in a Part (D1b, after Gemini review)
+    why: "Chapters are numbered per Part; qualifying only on collision would rename a Chapter when the law later gains a second Chapter 1"
+    result: "1,089 chapters pt.N.ch.N; +466 renames over collision-only"
+  - what: Keep an occurrence suffix (#2) for true source duplicates, against Gemini's opaque assigned-once suffix (D1c)
+    why: "No finer path exists (1974/2013 reg.7(1) has two lists (a)-(d) in the law itself; 'the second (d)' is how it's cited); assigned-once needs a persisted id registry for ~100 rows"
+    result: "61 rows #2/#3; LatMerge's text and source-id carry covers a shift"
+  - what: Store source_xml_id and match on it in LatMerge; never use it as the section_id (D1d)
+    why: "Gemini: source ids are stable keys but not citations; matching by source id carries renames that text can't (equal or empty texts)"
+    result: "220,069 rows hold it after the wave; LatMerge step 2a source_id"
+
+metrics:
+  classification: { rows: 1305, groups: 524, laws: 122, source_nN: 509, chapter_per_part: 618, wrong_number: 74, source_duplicate_same_id: 86, no_source_id: 18 }
+  after_fix_offline: { hash_suffixed_rows_incl_first: 120, same_source_id: 94, no_source_id: 18, distinct_ids_one_number: 8 }
+  dry_run: { laws: 1066, errors: 0, affected_laws: 217, renamed: 2411, enriched: 287703, carried: 287697, dropped: 6, gate_failures: 1, rows_before: 374861, rows_after: 374866 }
+  wave: { laws: 217, renamed: 2411, changed: 0, ambiguous: 0, orphaned_mappings: 0, enriched_before: 175376, enriched_after: 175370 }
+  after_wave: { rows: 374866, laws: 1066, duplicate_ids: 0, hash_ids: 61, nN_ids: 1062, part_chapters: 1089, source_xml_id_rows: 220069, lat_status_to_change: 0 }
+  tests: { suite: 2619, skipped: 2 }
+
+lessons:
+  - title: Classify duplicate ids by the source's own element id, not by our hierarchy fields
+    detail: "A first pass by hierarchy_path/extent put 553 rows in 'same place, different text' and could not say whose fault they were. Dumping each row's xml_id showed at once that 1,201 rows had distinct source ids (nN suffix, Part in the chapter id) and only 104 were true source duplicates. The parser keeps xml_id on raw rows; use it."
+    tag: data
+  - title: legislation.gov.uk's nN is per element, first occurrence plain
+    detail: "section-70A-1n1's child is section-70A-1-an1 (own suffix), while section-70A-3-a under the second (3) has none because the first (3) has no (a). So the suffix belongs at the end of each element's own citation, not to a hierarchy level, and can repeat (an1n1)."
+    tag: data
+  - title: Unique-by-id joins silently drop rows whose ids collide
+    detail: "LatScope.merge/1 joins scoped fragments by section_id; Part 4A's Chapters 1-5 in 2003/21 merged into Part 3's and vanished. Any dedup keyed on an id inherits that id's collisions; fixing the id restored 5 rows nobody had noticed missing."
+    tag: data
+  - title: Changing a suffix scheme can collide old and new ids
+    detail: "Old position ids (reg.1(1)#2 = position 2) and new occurrence ids (reg.1(1)#2 = second copy) share a namespace: 2007/2079's rows matched the wrong 'same id' and failed the gate. Check small laws, where positions are low, when a suffix scheme changes."
+    tag: tooling
+  - title: "'Enriched' in the merge counts any non-null carried column"
+    detail: "The 7 dropped/gate rows carried only an empty drrp_types {} — counted as enriched, holding nothing. Check the actual columns before treating a drop as a loss."
+    tag: data
+  - title: A dots-only Pnumber silently inherits the previous provision's number
+    detail: "1875/17's N.I. version of s.5 (Pnumber '...') became s.11, and s.65 (empty Pnumber) s.109. A Pnumber with no number now takes the number from the element's structured id."
+    tag: data
+
 bugs:
   - pattern: "#position section_ids hide parser identity gaps: per-Part chapters without the Part, nested lists losing a level, territorial versions without a qualifier, mixed types sharing an id; ids shift when earlier rows change"
     category: lat-identity
@@ -10,9 +64,44 @@ bugs:
     affected: 1307 rows / 123 laws
     fix: "id carries the distinguishing path (Part, list level, version qualifier); #position only for true source duplicates"
     status: fixed
+  - pattern: "A Pnumber with no number ('...' on a repealed version, empty) takes the previous provision's number (1875/17 N.I. s.5 → s.11, s.65 → s.109)"
+    category: lat-identity
+    module: scraper/lat_parser/ids.ex (pnumber/1)
+    affected: 74 rows / 13 laws (class 3, incl. other misnumberings)
+    fix: "fall back to the number in the element's structured id"
+    status: fixed
+  - pattern: "LatScope.merge/1 dedup by section_id dropped Part 4A's Chapters 1-5 in scoped 2003/21 (same ids as Part 3's)"
+    category: lat-scope
+    module: scraper/lat_scope.ex (merge/1) via chapter ids
+    affected: 5 rows / 1 law
+    fix: "Part-qualified chapter ids; rows restored by the wave"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/lat_parser/rows.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/ids.ex
+  - backend/lib/sertantai_legal/legal/lat/transforms.ex
+  - backend/lib/sertantai_legal/scraper/lat_merge.ex
+  - backend/lib/sertantai_legal/scraper/lat_persister/carry.ex
+  - backend/lib/sertantai_legal/scraper/lat_effects.ex
+  - backend/lib/sertantai_legal/scraper/lat_repair.ex
+  - backend/lib/sertantai_legal/legal/legal_article.ex
+  - backend/lib/sertantai_legal/sync/delta/config.ex
+  - backend/priv/repo/migrations/20261012140108_lr13_source_xml_id.exs
+  - backend/data/code-reviews/2026-10-12-lr13-id-model-gemini.md
+  - backend/data/reports/lat-reparse/lr13_preview.csv, lr13.csv, lr13b.csv, lr13_wave_laws.txt
+  - backend/data/reports/lat-refactor/lr13-renames.csv
+  - 'DB: lat_reparse_lr13, lat_reparse_lr13b (rollback snapshots); NAS snapshot before the wave'
+
+depends_on:
+  - 2026-10-12-lr-10-schedules
+
+enables:
+  - LH-05 message (2,411 renames, new id forms)
+  - stable ids for fractalaw enrichment; source-id carry on future re-parses
 ---
 
-# Session: LR-13 Duplicate Section IDs (#position) (ACTIVE)
+# Session: LR-13 Duplicate Section IDs (#position) (CLOSED)
 
 ## Problem
 
