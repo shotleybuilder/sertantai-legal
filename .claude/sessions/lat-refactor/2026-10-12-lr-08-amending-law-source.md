@@ -9,7 +9,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 
 ## Problem
 
-The other half of Jason's 2026-10-09 decision: a change the markup and effects don't carry is "checked against the law it was built from". Parked as "later, not scheduled" (2026-10-09), so notes filled the gap (LR-00 meta, "Why the notes decision was not delivered"). The amending law's own text names the provision it changes, the change and its commencement and extent; that is law, where a note is not. Scope is set by LR-20's class (b): note-only facts whose amending law is in the CLML store.
+The other half of Jason's 2026-10-09 decision: a change the markup and effects don't carry is "checked against the law it was built from". Parked as "later, not scheduled" (2026-10-09), so notes filled the gap (LR-00 meta, "Why the notes decision was not delivered"). The amending law's own text names the provision it changes, the change and its commencement and extent; that is law, where a note is not. Scope (LR-20, Jason approved D2 2026-10-12): class b — 1,828 notes in 183 laws with no effect whose amending law is in the CLML store — and a law's own commencement provisions (part of class c1). Amending laws not in the store stay empty for v0.1 (#179, compliance v0.2).
 
 ## Todo
 
@@ -25,4 +25,4 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 
 ## Dependencies
 
-- ⬜ LR-20 inventory and rule
+- ✅ LR-20 inventory and rule (D1, D2 approved)

@@ -23,8 +23,8 @@ Jason decided on 2026-10-09: notes aren't law; facts come from the law → the r
 - ✅ Inventory (2026-10-12, Explore agent; claims #4, #9, #13 checked in code): 14 paths derive a stored fact or served value from note text or note attributes — see Inventory
 - ✅ Measure (2026-10-12, offline, store only; `lr20` script in scratchpad): 24,750 notes and 21,276 rows with note-sourced facts, classed — see Measurement
 - ✅ Feed coverage: every LAT law has a changes feed in the store (0 without); the gaps are effects missing for older changes (e.g. 1954/70's 1993 SIs), measured as classes b / c2
-- ⬜ The rule, written down for the guide: a fact comes from markup, effects or the law; a note may only point where to look; no note fallback for any field
-- ⬜ Jason decides D1, D2
+- ✅ The rule, written down (see The rule) for the guide (LR-11) and QA spec (LR-12)
+- ✅ Jason decided D1, D2, D3 (2026-10-12)
 
 ## Inventory (2026-10-12)
 
@@ -75,6 +75,9 @@ Reading: about half the note-derived facts (10,318 notes a1+a2; 13,019 rows) are
 4. Provenance names the source of every fact: `markup`, `effect` or `law`. `note` never appears.
 
 ## Decisions for Jason
+
+**Decided 2026-10-12:** D1 the rule — approved. D2 the amending-law route now (LR-08) — approved. D3 class c2 — empty for v0.1; a bounded fetch of amending laws legal doesn't hold raised for compliance v0.2 as #179 (one hop, the amending provision only, prioritised by use, capped).
+
 
 - **D1 — The rule** above (a fact no markup, effect or law supports is empty; the note is kept and shown as a note)
 - **D2 — The amending-law route (LR-08) now**, for class b (1,828 notes) and the law's own commencement (part of c1) — recommended, so the removal (LR-21) empties only what has no data — or later
