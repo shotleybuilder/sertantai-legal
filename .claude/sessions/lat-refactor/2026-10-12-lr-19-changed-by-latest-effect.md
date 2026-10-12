@@ -76,7 +76,7 @@ Exact matches: one candidate of the note's kind 5,268; 2+ candidates 1,479; none
 
 ## Reframe (Jason, 2026-10-12)
 
-"We're not labelling Notes. We might use Notes to help label provisions." The subject is the **row**: its effective_from, changed_by, status and territory come from the effects on it. A note is at most a pointer to which effect belongs to the row (its placement + the law it cites). The note-level counts above size the problem; the decisions are about rows, re-measured at row level (LR-20: 21,276 rows with note-sourced change facts, 13,019 with an effect naming them). Note-level fact columns (`amendment_annotations` effect / effective_from / changed_by / fact_provenance) stop being a target — whether they're dropped goes to LR-21 (contract, LH-05).
+"We're not labelling Notes. We might use Notes to help label provisions." The subject is the **row**: its effective_from, changed_by, status and territory come from the effects on it. A note is at most a pointer to which effect belongs to the row (its placement + the law it cites). The note-level counts above size the problem; the decisions are about rows, re-measured at row level (LR-20: 21,276 rows with note-sourced change facts, 13,019 with an effect naming them). Jason: "What our purpose is, is high quality provision labels." Note enrichment (the note-level fact columns on `amendment_annotations`) is **parked** — it may have value, a separate question; this session neither fills nor drops it.
 
 ## Decisions for Jason (rows)
 
