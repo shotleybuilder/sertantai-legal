@@ -37,7 +37,7 @@ Widened 2026-10-12 (architecture track): every fact a row or note gets must come
 - ✅ Missed joins measured (2026-10-12, offline; `lr19_joins` script in scratchpad) — see Missed joins
 - ✅ The 1,716 classified (2026-10-12; `lr19_wrong`) — see Wrong picks
 - ✅ Checked against LR-05 (citation_law precedence: only where no effect joins) and the rule (LR-20: effects over notes; the note names where to look)
-- ⬜ Re-measure at row level (Jason: rows are labelled, not notes)
+- ✅ Re-measured at row level (Jason: rows are labelled, not notes) — see Rows
 - ⬜ Jason decides D1–D3 (rows)
 - ⬜ Tests first (EffectIndex orphan join, CommentaryParser pointer join, ChangeFacts changed_by)
 - ⬜ Build; classified diff of the offline whole-corpus parse (`--store only`)
