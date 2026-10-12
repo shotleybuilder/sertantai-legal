@@ -37,7 +37,8 @@ Widened 2026-10-12 (architecture track): every fact a row or note gets must come
 - ✅ Missed joins measured (2026-10-12, offline; `lr19_joins` script in scratchpad) — see Missed joins
 - ✅ The 1,716 classified (2026-10-12; `lr19_wrong`) — see Wrong picks
 - ✅ Checked against LR-05 (citation_law precedence: only where no effect joins) and the rule (LR-20: effects over notes; the note names where to look)
-- ⬜ Jason decides D1–D3
+- ⬜ Re-measure at row level (Jason: rows are labelled, not notes)
+- ⬜ Jason decides D1–D3 (rows)
 - ⬜ Tests first (EffectIndex orphan join, CommentaryParser pointer join, ChangeFacts changed_by)
 - ⬜ Build; classified diff of the offline whole-corpus parse (`--store only`)
 - ⬜ Re-parse dry run → Jason → NAS backup → apply
@@ -73,8 +74,12 @@ Exact matches: one candidate of the note's kind 5,268; 2+ candidates 1,479; none
 | The cited law's effect and others, latest wins | 12 | the note's change markup carries two effects (2001/1701 reg. 18(a): 2025/407 and 2025/1073) |
 | Other | 11 | multi-provision notes |
 
-## Decisions for Jason
+## Reframe (Jason, 2026-10-12)
 
-- **D1 — changed_by when a note joins effects**: the joined effect's affecting law (the feed); among several, the one by the law the note cites, else the latest. The 601 keep the feed's law (2020/1567, which made the change as substituted); the 12 take the cited law's effect. (recommended) — or the note's Citation always.
-- **D2 — Fix the orphan join** (`EffectIndex.with_orphans/2`, LR-03): never take an effect that has its own note or change markup; where the change's note cites a law, only an effect by that law; else no join. Corrects up to 1,095 notes and the territory those joins gave. (recommended)
-- **D3 — The pointer join** for a note no markup joins: effects on the provision its CommentaryRef sits on (EffectIndex: exact refs, ranges, an ancestor's whole-provision effect), by the law its Citation names (else the "S.I. y/n" / "y c. n" it names), of the note's kind (F amendment, C modification, I commencement), not held by another note. One → join; several by that law → join all (same changed_by; dates from all). Only on descendants → no join. Joins up to ~10,000 notes. (recommended)
+"We're not labelling Notes. We might use Notes to help label provisions." The subject is the **row**: its effective_from, changed_by, status and territory come from the effects on it. A note is at most a pointer to which effect belongs to the row (its placement + the law it cites). The note-level counts above size the problem; the decisions are about rows, re-measured at row level (LR-20: 21,276 rows with note-sourced change facts, 13,019 with an effect naming them). Note-level fact columns (`amendment_annotations` effect / effective_from / changed_by / fact_provenance) stop being a target — whether they're dropped goes to LR-21 (contract, LH-05).
+
+## Decisions for Jason (rows)
+
+- **D1 — A row takes the effects on its provision** (as now: change markup, whole-provision effects, effects naming it) **and, for words-level effects that join only through markup, the effect a note on the row points at**: by the law the note cites, on the row's provision, of the note's kind, not another row's. Recommended.
+- **D2 — Fix the orphan join** (`EffectIndex.with_orphans/2`): a legacy change id never takes an effect that has its own note or markup; where its note cites a law, only an effect by that law; else none. Rows stop taking other changes' effects (changed_by, territory). Recommended.
+- **D3 — A row's changed_by / effective_from**: from its latest dated effect (the feed's affecting law, e.g. 2020/1567 "as substituted"); a row with no dated effect has none. Recommended.
