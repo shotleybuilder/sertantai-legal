@@ -44,12 +44,12 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.FeedTest do
            } = r
   end
 
-  test "one record per effect and row; every join kept, strongest first; the note as pointer" do
+  test "one record per effect and row; a note join that only corroborates a direct one is dropped (D4)" do
     sid = "#{@law}:s.6"
     rows = [%{section_id: sid, effect_joins: [{"key-a", :ref}]}]
     notes = [%{code: "F12", affected_sections: [sid], effect_joins: [{"key-a", :cited, sid}]}]
 
-    assert [%Record{section_id: ^sid, via: ["ref", "note_cited"], pointer: "F12"}] =
+    assert [%Record{section_id: ^sid, via: ["ref"], pointer: nil}] =
              Feed.records(@law, rows, notes, [effect("key-a", "words substituted")])
   end
 
@@ -130,13 +130,19 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.FeedTest do
       }
     ]
 
-    assert [
-             %Record{
-               section_id: "UK_ukpga_1990_43:s.1",
-               via: ["markup", "note_markup"],
-               pointer: "M_F_1"
-             }
-           ] =
+    assert [%Record{section_id: "UK_ukpga_1990_43:s.1", via: ["markup"], pointer: nil}] =
              Feed.records(@law, rows, notes, [effect("key-w", "words substituted")])
+  end
+
+  test "two note joins and no direct one: both kept, the strongest note's pointer" do
+    sid = "#{@law}:s.7"
+
+    notes = [
+      %{code: "C1", affected_sections: [sid], effect_joins: [{"key-c", :own}]},
+      %{code: "F2", affected_sections: [sid], effect_joins: [{"key-c", :cited, sid}]}
+    ]
+
+    assert [%Record{via: ["note_own", "note_cited"], pointer: "C1"}] =
+             Feed.records(@law, [], notes, [effect("key-c", "coming into force")])
   end
 end

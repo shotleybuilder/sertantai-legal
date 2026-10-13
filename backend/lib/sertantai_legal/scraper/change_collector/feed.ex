@@ -1,8 +1,7 @@
 defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   @moduledoc """
   The changes-feed collector (lat-refactor LR-23): a law's effects as change
-  log records, one per effect and row it reached, with every join that
-  reached it.
+  log records, one per effect and row it reached, with how it reached it.
 
   Joins come from the parse (LR-19 logic, unchanged): a row's
   `effect_joins` (`:markup`, `:whole`, `:ref`) and a note's
@@ -10,8 +9,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   `:own`: every provision it sits on, its `affected_sections`; `:cited`:
   only the provision the effect was found on). The note's code is the
   `pointer`. An effect reaching no
-  row is kept with `section_id` nil. A note's text is never read: a note
-  joining no effect makes no record.
+  row is kept with `section_id` nil. A note join only stays where the note
+  alone reaches the row (LR-23 D4): beside a direct join (`:markup`,
+  `:whole`, `:ref`) it only corroborates, and its placement stays in
+  `amendment_annotations`. A note's text is never read: a note joining no
+  effect makes no record.
 
   The facts are the effect's: operation (`ChangeFacts.kind/2`),
   effective_from (`ChangeFacts.effect_fact/1`: the latest dated InForce),
@@ -94,8 +96,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   defp note_targets({id, kind}, note, _carried),
     do: for(sid <- Map.get(note, :affected_sections) || [], do: {id, kind, sid})
 
-  # {key, via, pointer} → one {key, vias (strongest first), first pointer}
-  # per key, in first-seen order
+  # {key, via, pointer} → one {key, vias (strongest first), pointer} per key,
+  # in first-seen order; the pointer is the first note's
   defp group_ordered(joins) do
     {order, acc} =
       Enum.reduce(joins, {[], %{}}, fn {key, via, pointer}, {order, acc} ->
@@ -108,8 +110,13 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
     for key <- Enum.reverse(order) do
       {vias, pointer} = acc[key]
 
-      {key, vias |> Enum.uniq() |> Enum.sort_by(&Enum.find_index(@strength, fn s -> s == &1 end)),
-       pointer}
+      vias = vias |> Enum.uniq() |> Enum.sort_by(&Enum.find_index(@strength, fn s -> s == &1 end))
+      direct = Enum.reject(vias, &String.starts_with?(&1, "note_"))
+
+      # D4: a note join that only corroborates a direct one is dropped (its
+      # placement stays in amendment_annotations); a note reaching the row
+      # alone keeps its join and pointer
+      if direct == [], do: {key, vias, pointer}, else: {key, direct, nil}
     end
   end
 

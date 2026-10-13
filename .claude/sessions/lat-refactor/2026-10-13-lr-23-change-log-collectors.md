@@ -33,7 +33,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 ## Decisions for Jason
 
 - **D3 — Compact targets**: approved 2026-10-13 on condition of Gemini feedback; Gemini ACCEPT WITH CHANGES (`backend/data/code-reviews/2026-10-13-lr-23-d3-compact-targets.md`); built (Jason, 2026-10-13: "Surely there is a way to architect and not create so many rows and retain the same data fidelity"): see Compact targets; D2 waits on it
-- **D4 — Corroborating note joins**: keep a note join in the register only where it is the only way the change reaches the row (see Compact build); D2 waits on it
+- **D4 — Corroborating note joins**: approved 2026-10-13 — a note join stays only where it is the only way the change reaches the row; built in `Feed` (tests updated + 1 new; suite 2,642)
 - **D2 — Fill**: approve `mix lat.collect_changes --all --apply` (writes only `lat_change_log`, empty today; no other table changes)
 - **D1 — Record shape** (see Record shape). Taken back to Gemini 2026-10-13 (Jason): **VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md`)
 
