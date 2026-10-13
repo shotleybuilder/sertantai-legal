@@ -17,7 +17,7 @@ We have been building a change system without naming it. A row's change label (e
 - ✅ Gemini review of the plan → `backend/data/code-reviews/2026-10-13-lr-22-change-register-plan.md`
 - ✅ Jason: decisions D1–D4 (2026-10-13)
 - ✅ Rename `LatChangeLog` → `LatParseLog` (module + test; `lat_changes` table kept; 2,623 tests pass)
-- ⬜ Build plan: sessions for the table + feed collector, the labelling projection, and the switch-over wave; LR-08 and LR-21 re-scoped
+- ✅ Build plan (2026-10-13): LR-23 table + feed/markup collectors (active), LR-24 label projection, LR-25 switch-over wave; LR-08 resumes as the amending/commencing-law collector after LR-23; LR-21 folds into LR-25
 
 ## Dependencies
 
