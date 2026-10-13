@@ -15,7 +15,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 
 - ✅ Size, in rows (after LR-19): which note-labelled rows have their amending law in the store
 - ✅ Stop rules for fetching amending laws into the CLML store (Jason, 2026-10-13: rules first, so we don't run through the legislation.gov.uk corpus)
-- ⬜ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
+- ✅ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
 - ⬜ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
 - ⬜ Design (Gemini, then Jason): which facts this source may supply (changed_by, dates, territory, status) and how provenance marks it (`law`)
 - ⬜ Tests first; offline classified diff; wave via LR-21
@@ -49,6 +49,7 @@ The two store classes total 3,628 rows in 82 laws, from 113 amending laws. Most 
 
 Jason: rules first, then pull the share of the 404 that meets them into the CLML store. The cascade to stop: a fetched law names further laws (its own amenders, its commencing orders, laws it cites), and each could name more.
 
+- **R0 Top of the cascade** (Jason, 2026-10-13: "not all LRT laws equally need enrichment"). Demand comes only from LAT rows of laws that are in force in some way (`uk_lrt.live` ✔ In force or ⭕ Part Revocation / Repeal) and have an EHS&HR family (`uk_lrt.family` set).
 - **R1 Demand only.** A law is fetched only because a LAT row (`legal_articles`) is labelled from a note naming it and no effect covers the row. Nothing else triggers a fetch.
 - **R2 Fetched laws make no demand.** A law fetched as a source is stored as source only: no LAT rows, no `uk_lrt` change, not added to `clml.fetch`'s LAT list. Its notes, feed and citations are never read for further fetches.
 - **R3 Two hops at most.** Hop 1: the amending law. Hop 2: the commencing SI the row's note names (the "; S.I. YYYY/N" after the amending citation), and only when hop 1 doesn't date the change itself. No hop 3.
@@ -73,3 +74,11 @@ Hop 2 (from note pointers, a ceiling): 1,967 rows name a commencing SI after the
 `backend/data/reports/lat-refactor/lr08_hop1.tsv` (gitignored): 191 amending laws at N = 5; R6 drops UK_eudn_2018_853 (5 rows), leaving **190 laws, 6,763 rows**. 21 of them are LAT laws without a CLML file (a normal LAT store fill). Largest: Utilities Act 2000 (1,086 rows), Forestry and Land Management (Scotland) Act 2018 (322), Transport Act 2000 (285), Directive (EU) 2018/851 (208), Employment Rights (Dispute Resolution) Act 1998 (194).
 
 R2 holds without a code change: nothing enumerates the CLML store to choose LAT laws (`clml.fetch`'s default list is the laws in `legal_articles`; `lat.qa_sample` reads the store only for laws it samples), so a stored body creates no LAT rows. Fetch with `mix clml.fetch --laws <list>`: body only for a law with no `LatScope`; resumable, one request per document.
+
+R0 applied (2026-10-13): of the 7,150 rows, 568 (28 laws) have no family and 6 (3 laws) aren't in force; demand 6,576 rows in 170 laws naming 379 amending laws. At N = 5 with R6: **hop 1 = 173 laws, 6,203 rows** (`lr08_hop1_r0.tsv`), all within the approved 190. Fetch started: `mix clml.fetch --laws <173>`.
+
+## Hop 1 fetch (2026-10-13)
+
+- **151 of 173 bodies stored** (CLML store 968 → 1,118 body files).
+- **1 unavailable:** Merchant Shipping (Registration, etc.) Act 1993 (ukpga 1993/22, repealed 1996). legislation.gov.uk serves no body for it.
+- **21 are LAT laws with a `LatScope`** (fragments only), so `clml.fetch` fetched only their LAT fragments. Their amending provisions came instead from the notes' pointers (s. / Sch. after the amending citation): 109 named fragments, 3 already held, 104 fetched (`section/N`, `schedule/N`). 2 returned 404: ukpga 1960/34 Sch. 1 and ukpga 1994/22 Sch. 7, probably pointer misreads. Their bodies were not fetched, so `LatScope` fragment reads and `lat.qa_sample` are unchanged.
