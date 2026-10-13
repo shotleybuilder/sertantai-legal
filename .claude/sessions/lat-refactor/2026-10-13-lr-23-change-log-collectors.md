@@ -32,6 +32,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 
 ## Decisions for Jason
 
+- **D3 — Compact targets** (Jason, 2026-10-13: "Surely there is a way to architect and not create so many rows and retain the same data fidelity"): see Compact targets; D2 waits on it
 - **D2 — Fill**: approve `mix lat.collect_changes --all --apply` (writes only `lat_change_log`, empty today; no other table changes)
 - **D1 — Record shape** (see Record shape). Taken back to Gemini 2026-10-13 (Jason): **VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md`)
 
@@ -127,3 +128,26 @@ Remaining risks and guards:
 The last two (about 1.6% of the unreached) are the real gaps: changes to provisions LAT holds that reached no row. They include "specified amended provision(s)" commencement orders, multi-number refs ("reg. 9(6)(7)", "art. 63(6)(v)(w)") and ranges of inserted subsections ("s. 20(5D)-(5F)"). They become LR-24's gap query.
 
 **Volume.** Range modifications dominate: New Roads and Street Works Act 1991 has 73,482 records, 69,761 of them `ref` joins from Part 3-wide modifications ("s. 48-106 (Pt. 3) saved / applied / excluded") reaching about 690 rows each. Recorded faithfully, as today's parse joins them.
+
+## Compact targets (2026-10-13)
+
+Jason on the per-row volume (New Roads and Street Works Act 1991: 73,482 records, a Part-wide modification written on about 690 rows each): store each change once against what it covers, and expand to rows when read.
+
+**Measured** on 44 laws (the 4 largest plus 40 random, scratchpad `lr23_compact.exs`):
+- **Hierarchy:** drop a record when an ancestor carries the same change by an inheritable join (`ref`, `whole`, `note_own`, `note_cited`).
+- **Ranges:** collapse a run of covered rows in document order into one record.
+
+| | Records | Cut |
+|---|---|---|
+| Today's shape | 229,088 | — |
+| Hierarchy compression | 58,389 | 75% |
+| Plus ranges | 41,879 | 82% |
+
+1991/22: 73,482 → 14,988 → 7,242. 1986/44: 44,177 → 6,244 → 3,768. Projected over the corpus: about 525,000 → about 96,000.
+
+**Proposed shape:**
+- **Target.** `section_id` (the provision the change covers; its top, as the source states it), `section_id_to` (the end of a contiguous range; nil otherwise), and `covers`:
+  - `row`: this row only (markup joins and words-level changes: the row's own text);
+  - `subtree`: the row and its descendants (`hierarchy_path` prefix).
+- **Expansion.** One SQL view, `lat_change_log_rows`, joins records to `legal_articles` by `hierarchy_path` prefix and `position` range. "Row → its changes" stays a single query.
+- **Fidelity gate.** Before any fill, for every law, expanding the compact records must reproduce today's per-row join set exactly: zero rows added, zero lost. A test for each covers kind, plus that corpus check.
