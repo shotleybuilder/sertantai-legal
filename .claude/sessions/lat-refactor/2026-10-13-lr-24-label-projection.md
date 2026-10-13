@@ -23,18 +23,10 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 
 ## Decisions for Jason
 
-- **D1 — What `effective_from` means.** The date the provision's current text took effect: the latest in-force date among text changes on the row and whole-provision text changes on its ancestors, and the provision's own commencement when that is later. Modifications and applications are recorded but never set it. `changed_by` is the law of the change that sets the date; empty when that is the provision's own commencement by its own law.
-- **D2 — Whole-instrument effects.**
-  - A commencement ("Act" / "Regulations" coming into force, a commencement order) dates every row like a provision's own commencement.
-  - A repeal or revocation of the instrument makes every row repealed (or repealed with savings).
-  - A modification or application of the whole instrument is recorded only.
-- **D3 — Status from the register.**
-  - repealed: a repeal change in force (markup keeps priority; savings make it repealed_saved);
-  - in_force_partial: commenced only for specified purposes or territories (InForce qualifications);
-  - prospective: in-force entries all prospective and not applied;
-  - otherwise in_force.
-
-  No note text. The about 3,600 rows dated from note text today lose that date (LR-20's rule).
+- **R — Revision (proposed 2026-10-13, see "Labels as a query"):** labels computed at query time from the register as at a date (default today), no stored labels; D1–D3 become the rules of that function; modifications shown through the register for v0.1; LR-25 reduced (no relabel wave). Gemini review, then Jason.
+- **D1 — What `effective_from` means.** Superseded by R: as at T, the start of the provision's version in force at T (text changes and its own commencement; not modifications).
+- **D2 — Whole-instrument effects.** Superseded by R: a commencement dates every row from its date; a repeal makes every row repealed from its date; a modification is shown like D1's.
+- **D3 — Status.** Superseded by R: at T, only changes in force by T count (prospective = not yet in force at T; partly in force at T; repealed at T, savings → repealed_saved). No note text.
 
 ## Dependencies
 
@@ -61,3 +53,28 @@ Every row with an `effective_from` (233,114). Its date and changed_by were match
 - **A whole-instrument change by the same law on that date: 112/300, about 3,300 rows.** Today's join reached the row another way (a note's placement); in the register it arrives as a whole-instrument change, for example ssi 2025/165, a commencement order "Regulations". Kept if whole-instrument commencements date rows (decision below).
 - **Other laws only: 32/300; same law, another date: 24/300.** Today's spreading of note placement (LR-23's fan-out bug) and pooling.
 - **No change on the row or its ancestors: 9/300.** Tables and inserted regulations.
+
+## Labels as a query (proposed 2026-10-13)
+
+Jason: put ourselves in a user's shoes. Users mostly want to know what applies today, but may want a "time machine": what applied on a given date. Then: "do static labels need to be applied? They go stale over time. The data is there to apply the 'label' at the time of query."
+
+**Who reads the label columns today.** Nothing in sertantai-compliance's code reads `effective_from` or `changed_by`. fractalaw's pull (`zenoh/data_server.ex`) serves `effective_from`, `changed_by`, status and territory per row from `legal_articles`. That's the only column reader.
+
+**Proposal:**
+1. **`LabelProjection.labels(law, as_at \\ today)`**, pure, from the register:
+   - the version in force at T and since when (D1);
+   - whole-instrument changes from their dates (D2);
+   - status from changes in force by T (D3);
+   - each label with its change ids.
+
+   The time machine is the same call with another date. Modifications are listed through the register with their dates (v0.1; no new label column, so fractalaw's contract is unchanged).
+2. **Rows keep only facts about the text:** text, markup extent, markup status (e.g. prospective in the CLML). Everything that depends on changes and dates is computed.
+3. **fractalaw's pull computes as-at-today labels when it serves** (same fields, same shape). Open for LH-05, not raised with fractalaw until Jason says: today's labels change as dates pass while the text doesn't, so how does fractalaw know to re-pull? Today its re-pull follows the content hash.
+
+**Consequences:**
+- **LR-25 shrinks.** No relabel wave over 375,000 rows. It becomes: switch fractalaw's pull to the projection; retire `effective_from`, `changed_by`, `change_provenance` and the change-derived part of `status` once LH-05 confirms; delete the parse-time label paths (LR-21). The collect-after-parse hook and the staleness check stay. No scheduled relabel is needed.
+- **LR-26 (territory)** takes the same shape: where a provision applied, as at T.
+- **Limits:**
+  - the time machine gives status and dates at T, not the text as it read at T (only today's revised text is held; #171);
+  - before about 2002, answers depend on LR-08.
+- **Speed:** a row's changes 6 ms, the largest law 0.7 s from the view. The projection is timed when built.
