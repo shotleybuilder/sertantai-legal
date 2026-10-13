@@ -67,7 +67,7 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
   - **T1:** a text change we know happened but can't date makes the version date `unknown`, never an older date. Sources: undated change markup (15,398 rows), a note pointing to an amendment the register lacks (up to 14,709 rows; the J5 rule generalised from insertions to every text change), unreached gaps on the row.
   - **T2:** Royal Assent / law-start defaults carry `basis = law_default`, not `evidence`; or are `unknown` (the pre-2002 Act whose sections were commenced by order is the risk).
   - **T3:** an explicit `unknown` period from `-infinity` (a Postgres date) instead of a missing row, so every provision has a value for every date.
-- **F — Fill:** `mix lat.timeline --all --apply` writes `lat_label_timeline` only (empty today; nothing reads it until LR-25 and compliance's badge); see "Dry run with J5". **Jason: approve**
+- **F — Fill: approved and applied 2026-10-13** (Jason: "fill approved - don't message compliance, we're not finished building or enriching"); to be rebuilt after the truth decisions. `mix lat.timeline --all --apply` writes `lat_label_timeline` only (empty today; nothing reads it until LR-25 and compliance's badge); see "Dry run with J5". **Jason: approve**
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
   - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
@@ -275,3 +275,7 @@ Jason: "does our when and where data tell the truth and when it cannot have fide
 | T3 | No row = unknown is implicit; a reader can't tell "unknown" from "missing" | 34,287 rows | an explicit `unknown` period from `-infinity` |
 
 The fill runs on (it writes only the new table; nothing reads it). It's rebuilt after these.
+
+## Fill (2026-10-13)
+
+`mix lat.timeline --all --apply --tag lr24_fill`: 1,066 laws, 0 errors; **476,075 periods** (equal to the dry run) for 340,579 provisions in 1,003 laws, `code_version` 31bf7029. The EXCLUDE constraint held for every insert (no overlapping periods). As at today for HSWA: in force 993, repealed 39, repealed_saved 4, prospective 2, read in 1.5 ms. **Compliance not told** (Jason: not until building and enrichment are finished).
