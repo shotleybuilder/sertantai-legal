@@ -215,3 +215,20 @@ Joins after D4: `ref` 272,220, `markup` 104,515, `whole` 17,227, `note_own` 8,44
 Half of what's stored is now effects reaching no row. By the earlier sample, about 96% of them are on provisions LAT doesn't hold: outside a fragment law's scope (58%), on Schedules (37%), whole instrument / annex. They aren't changes to LAT provisions (D5).
 
 **For LR-24 (from D5).** Whole-instrument effects now reach every row ("Act applied (with modifications)", "Act repealed"). Today they reach none. The projection has to decide what a law-wide modification means for a row's label: changed_by and effective_from, or status only.
+
+## Dry run with D5, all LAT laws (2026-10-13)
+
+`backend/data/reports/lat-refactor/lr23_dry3.csv`: 1,066 laws, 0 errors, **0 fidelity gate failures**.
+
+| | |
+|---|---|
+| **Records stored** | **132,965** (down from 543,901 per row and 238,754 compact before D5) |
+| Effects recorded | 97,837 (of 203,639 in the feed; the rest are on Schedules, annexes or out-of-scope sections) |
+| Effects reaching no row, kept as gaps | 14,140 (may fall on a LAT provision, or name none) |
+| Change markup no effect explains | 18,532 |
+| Whole-instrument joins | 311 laws; 2,018,087 row joins, compacted to about one record per effect |
+| Largest | 1991/22 7,694; 1990/8 5,162; 1990/16 4,417 |
+
+Joins: `ref` 272,220, `markup` 104,515, `whole` 17,227, `note_own` 8,323, `note_cited` 986.
+
+The view `lat_change_log_rows` expands whole-instrument effects to every row: about 2.4 million view rows corpus-wide. Reads are per law (indexed `law_name`), so the cost is per law. Timed after the fill.
