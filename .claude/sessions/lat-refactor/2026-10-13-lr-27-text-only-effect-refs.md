@@ -28,12 +28,14 @@ Some changes-feed effects give their affected provision only as text, with no st
 
 - ✅ Measure: unreached effects naming a Part / Chapter / cross-heading / Schedule Part as text only; the LR-24 J5 rows they would date
 - ✅ Tests first: a container ref (cross-heading / Part / Chapter) reaches the provisions inside it (1996/18 ss. 27U–27Y); a words-level change to a heading doesn't
-- ⬜ EffectIndex: expand container refs from the CLML tree; re-collect (fidelity gate; dry run → Jason → apply)
+- ✅ EffectIndex: expand container refs from the CLML tree; re-collect (fidelity gate; dry run → Jason → apply)
 - ⬜ Timeline rebuilt: J5 gaps that now have a date
 
 ## Decisions for Jason
 
-- **D1 — Re-collect the register** with container refs (dry run below): `mix lat.collect_changes --all --apply`; then a timeline dry run → D2 rebuild
+- **D1 — approved and applied 2026-10-13.** Re-collect the register with container refs (dry run below): `mix lat.collect_changes --all --apply`; then a timeline dry run → D2 rebuild
+
+- **D2 — Rebuild the timeline** (dry run below): `mix lat.timeline --all --apply`. **Jason: approve**
 
 ## Dependencies
 
@@ -74,3 +76,26 @@ Each reaches only the container's row.
 | Records stored (compact) | 132,965 | 139,691 |
 
 The per-row growth is mostly Part-wide applications and modifications now reaching the provisions in the Part. Compaction keeps the stored increase to +6,726.
+
+## Re-collect and timeline dry run (2026-10-13)
+
+**Register re-collected** (approved): 1,066 laws, 0 errors, 0 fidelity failures; **139,691 records**.
+
+**Timeline dry run** (`lr27_dry`), against the timeline now in the table:
+
+| | Now | With container refs |
+|---|---|---|
+| Periods | 479,265 | 505,244 |
+| insertion_not_in_register | 12,084 | **8,134** |
+| undated_change | 16,231 | 19,031 |
+| no_start | 22,203 | 22,113 |
+| markup conflicts | 7,890 | 7,705 |
+| territory unknown before today | 26,373 | 26,479 |
+
+Where the 12,084 insertion gaps went:
+- **1,559 now fully dated**;
+- **2,329 now have a timeline, but their text has an undated change** (honestly "date unknown" rather than no row);
+- 62 are markup conflicts;
+- 8,134 remain (the feed holds no insertion reaching them: LR-08, or an insertion the feed doesn't record).
+
+**1996/18 s.27V:** partly in force from 2023-07-31, in force from 2024-10-01 (2023/13), territory set. It was "unknown" before.
