@@ -32,7 +32,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 
 ## Decisions for Jason
 
-- **D1 — Record shape** (see Record shape)
+- **D1 — Record shape** (see Record shape). Taken back to Gemini 2026-10-13 (Jason): **VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md`)
 
 ## Dependencies
 
@@ -80,3 +80,20 @@ Today's labels spread the same way (`ChangeFacts.row_facts` gives every row in a
 **Markup collector.** `LatTerritory.unjoined_changes/1` gives a ChangeId that joined no effect (after the orphan joins), as `{change_id, ref, operation}`; the walker emits it as `unjoined_changes`. `ChangeCollector.Markup` records it with source `markup`, the commentary ref as `pointer`, and no date or law: a change happened, and nothing here says when or by whom. Four-law trial: markup records 1990/43 1,090, 1991/56 1,111, 1974/37 212, 2017/1013 15.
 
 **Range effects reach every provision in the range.** In 1974/37, "s. 1-59 applied by …" and "s. 1-54 (Pt. 1) amended …" each reach 786–820 rows, sub-provisions included (`EffectIndex` expands a range against the document's id order, as today's parse does). This is recorded faithfully. The projection inherits from ancestors anyway, so the duplicates don't change labels. Narrowing the expansion to the named provisions is a later choice, not this session's.
+
+## Gemini on D1 (2026-10-13)
+
+Jason asked Gemini to accept or push back harder. **VERDICT: ACCEPT.** Its reasons:
+- the stored id is a text provision id, not a key;
+- the rewrite per law after every parse keeps the table in step;
+- joins that `affected_ref` can't give (markup, whole, note pointers, orphans) need storing with their kind to be traceable;
+- the fan-out bug was visible only because the joins are stored.
+
+One correction to Gemini: it calls the text ids "stable across renumberings". They aren't: a renumbered provision gets a new `section_id`. The guard is the rewrite after every parse, which is what holds the records in step.
+
+Remaining risks and guards:
+- **Collector not re-run after a parse.**
+  - Guard: LR-25's parse hook runs collect + relabel after every LAT parse.
+  - Until then, a staleness check: laws whose latest `lat_events` `parsed` is newer than their latest `lat_change_log.collected_at`. It goes in `mix lat.collect_changes` and the LR-25 verification.
+- **Partial runs.** Already covered and stronger than Gemini assumed: `ChangeCollector.write/2` writes all of a law's collectors in one transaction, so a law's records are all new or all old.
+- **Drift in the collector logic.** Unit tests per join kind, plus a full dry-run report compared against the previous one before any `--apply`.
