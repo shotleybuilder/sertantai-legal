@@ -642,6 +642,54 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              ]
     end
 
+    test "two future territorial repeals: nothing left after the second (uksi 2007/79)" do
+      law = "UK_uksi_2007_79"
+
+      r1 =
+        change(
+          law,
+          "reg.5",
+          "r1",
+          "repealed",
+          "revoked",
+          "UK_wsi_2026_1",
+          [{~D[2026-12-01], nil}],
+          effect_extent: "W"
+        )
+
+      r2 =
+        change(
+          law,
+          "reg.5",
+          "r2",
+          "repealed",
+          "revoked",
+          "UK_uksi_2027_1",
+          [{~D[2027-04-01], nil}],
+          effect_extent: "E"
+        )
+
+      r3 =
+        change(
+          law,
+          "reg.5",
+          "r3",
+          "repealed",
+          "revoked",
+          "UK_uksi_2028_1",
+          [{~D[2028-04-01], nil}],
+          effect_extent: "E"
+        )
+
+      assert terr(law, [row(law, "reg.5", extent_code: "E+W", claims: [])], [r1, r2, r3],
+               law_start: ~D[2007-02-01]
+             ) == [
+               {~D[2007-02-01], ~D[2026-12-01], "in_force", "E+W"},
+               {~D[2026-12-01], ~D[2027-04-01], "in_force", "E"},
+               {~D[2027-04-01], nil, "repealed", nil}
+             ]
+    end
+
     test "no extent known: territory unknown" do
       law = "UK_ukpga_1974_37"
 

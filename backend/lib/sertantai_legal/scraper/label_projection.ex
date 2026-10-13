@@ -574,6 +574,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
     Enum.reduce_while(repeals, now, fn c, t ->
       cond do
+        t == :nowhere -> {:halt, :nowhere}
         length(Enum.uniq(dates(c))) > 1 -> {:halt, nil}
         covers_row?(c, Map.get(row, :extent_code)) -> {:cont, :nowhere}
         ext = change_extent(c) -> {:cont, Territory.subtract(t, ext) || :nowhere}
