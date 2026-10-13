@@ -11,7 +11,8 @@ defmodule Mix.Tasks.Lat.Timeline do
   Reports, written as they go (resumable, `<tag>.csv.done`):
 
   - `data/reports/lat-refactor/<tag>.csv`: per law — rows, periods, rows
-    with no start (J1), markup conflicts (J2), and the as-at-today diff
+    with no start (J1), markup conflicts (J2), outstanding effects (J4), and
+    the as-at-today diff
     against today's columns (status, effective_from, changed_by)
   - `<tag>.diff.csv`: each differing field (law, section_id, field, today's
     change source, old, new)
@@ -24,7 +25,7 @@ defmodule Mix.Tasks.Lat.Timeline do
 
   @shortdoc "Build lat_label_timeline from the change register (dry run by default)"
 
-  @cols ~w(law rows periods no_start markup_conflicts status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
+  @cols ~w(law rows periods no_start markup_conflicts outstanding status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
 
   @impl Mix.Task
   def run(args) do
@@ -89,6 +90,7 @@ defmodule Mix.Tasks.Lat.Timeline do
         length(periods),
         Enum.count(gaps, &(elem(&1, 1) == :no_start)),
         Enum.count(gaps, &(elem(&1, 1) == :markup_conflict)),
+        Enum.count(gaps, &(elem(&1, 1) == :outstanding_effect)),
         n - changed.(:status_changed),
         changed.(:status_changed),
         n - changed.(:from_changed) - changed.(:from_emptied) - changed.(:from_gained),

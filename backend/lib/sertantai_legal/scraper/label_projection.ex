@@ -33,6 +33,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   - **J2 today.** Where the CLML markup says repealed or prospective and
     the period containing today disagrees, the markup wins for that period
     and the disagreement is a `:markup_conflict` gap.
+  - **J4 outstanding.** A repeal in force but not yet applied to the
+    revised text (`applied: false`) counts from its date; the row is listed
+    as an `:outstanding_effect` (source-side: legislation.gov.uk's backlog).
 
   Notes are never read. Pure: `today` and `law_start` are passed in.
   """
@@ -66,7 +69,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           }
   end
 
-  @type gap :: {String.t(), :no_start | :markup_conflict}
+  @type gap :: {String.t(), :no_start | :markup_conflict | :outstanding_effect}
 
   @text_ops ~w(substituted inserted repealed renumbered amended)
 
@@ -126,6 +129,42 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     Date.add(last, -rem(Date.day_of_week(last), 7))
   end
 
+  @acts ~w(ukpga asp anaw asc mwa nia apni ukla)
+
+  @doc """
+  The law's coming into force from its CLML metadata, where the register
+  has none (J1/J3, Jason 2026-10-13): the earliest `ukm:ComingIntoForce`
+  date; else, for an Act, Royal Assent (`ukm:EnactmentDate`) — the
+  Interpretation Act 1978 s.4 default ("at the beginning of the day on
+  which the Act receives the Royal Assent" unless provision is made
+  otherwise). `type_code`: the law's type (ukpga, uksi, …).
+  """
+  @spec clml_start(String.t(), String.t()) :: Date.t() | nil
+  def clml_start(xml, type_code) do
+    coming =
+      case Regex.run(~r{<ukm:ComingIntoForce>(.*?)</ukm:ComingIntoForce>}s, xml) do
+        [_, inner] ->
+          ~r/Date="(\d{4}-\d{2}-\d{2})"/
+          |> Regex.scan(inner, capture: :all_but_first)
+          |> List.flatten()
+          |> Enum.map(&Date.from_iso8601!/1)
+          |> Enum.min(Date, fn -> nil end)
+
+        nil ->
+          nil
+      end
+
+    enacted =
+      with true <- type_code in @acts,
+           [_, d] <- Regex.run(~r/<ukm:EnactmentDate Date="(\d{4}-\d{2}-\d{2})"/, xml) do
+        Date.from_iso8601!(d)
+      else
+        _ -> nil
+      end
+
+    coming || enacted
+  end
+
   @doc "Each provision's period containing `date` (section_id → period); absent when unknown."
   @spec as_at([Period.t()], Date.t()) :: %{String.t() => Period.t()}
   def as_at(periods, date) do
@@ -180,7 +219,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           |> merge()
 
         {periods, gaps} = markup_today(periods, row, today)
-        {:ok, periods, gaps}
+        {:ok, periods, gaps ++ outstanding(periods, changes, row, today)}
     end
   end
 
@@ -380,6 +419,22 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   defp markup_today(periods, _row, _today), do: {periods, []}
+
+  # J4: repealed today by a repeal legislation.gov.uk hasn't applied to the
+  # revised text yet — the status stands (the law outranks the derived
+  # text); listed as a source-side "outstanding effect"
+  defp outstanding(periods, changes, row, today) do
+    current = Enum.find(periods, &covers?(&1, today))
+
+    unapplied? =
+      current && current.status in ~w(repealed repealed_saved) &&
+        Enum.any?(changes, fn c ->
+          c.evidence in current.change_ids and Map.get(c, :applied) == false and
+            c.operation == "repealed"
+        end)
+
+    if unapplied?, do: [{row.section_id, :outstanding_effect}], else: []
+  end
 
   defp covers?(p, date),
     do:

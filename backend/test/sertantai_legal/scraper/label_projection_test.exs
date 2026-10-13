@@ -375,4 +375,41 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              {~D[1986-09-01], nil, "in_force", ~D[1986-09-01], nil}
            ]
   end
+
+  test "J4: a repeal in force but not applied to the text counts; the row is an outstanding effect" do
+    law = "UK_ukpga_1977_39"
+
+    changes = [
+      change(
+        law,
+        "s.14",
+        "r1",
+        "repealed",
+        "repealed",
+        "UK_ukpga_2004_5",
+        [{~D[2004-03-27], nil}],
+        applied: false
+      )
+    ]
+
+    %{periods: p, gaps: gaps} =
+      LabelProjection.timeline(law, [row(law, "s.14")], changes,
+        today: @today,
+        law_start: ~D[1977-07-29]
+      )
+
+    assert %Period{status: "repealed"} = LabelProjection.as_at(p, @today)["UK_ukpga_1977_39:s.14"]
+    assert gaps == [{"UK_ukpga_1977_39:s.14", :outstanding_effect}]
+  end
+
+  test "clml_start/2: earliest ComingIntoForce; else Royal Assent for an Act; else nil" do
+    si =
+      ~s(<ukm:ComingIntoForce> <ukm:DateTime Date="1997-06-20"/> <ukm:DateTime Date="1995-10-09"/> </ukm:ComingIntoForce>)
+
+    assert LabelProjection.clml_start(si, "nisr") == ~D[1995-10-09]
+    act = ~s(<ukm:EnactmentDate Date="1974-07-31"/>)
+    assert LabelProjection.clml_start(act, "ukpga") == ~D[1974-07-31]
+    assert LabelProjection.clml_start(act, "uksi") == nil
+    assert LabelProjection.clml_start("<x/>", "ukpga") == nil
+  end
 end

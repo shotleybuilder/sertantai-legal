@@ -7,7 +7,9 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   transaction. Thin: the rules are `LabelProjection`'s.
 
   The CLML markup status (J2) is the row's `status` where its provenance is
-  `markup` and it is repealed or prospective.
+  `markup` and it is repealed or prospective. The law's start: the
+  register's `md_coming_into_force_date`, else its CLML metadata
+  (`LabelProjection.clml_start/2`, J3).
   """
 
   alias SertantaiLegal.Repo
@@ -56,13 +58,32 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
       case Repo.query!("SELECT md_coming_into_force_date FROM uk_lrt WHERE name = $1 LIMIT 1", [
              law_name
            ]) do
-        %{rows: [[d]]} -> d
-        _ -> nil
+        %{rows: [[%Date{} = d]]} -> d
+        _ -> clml_start(law_name)
       end
 
     law_name
     |> LabelProjection.timeline(rows, changes, today: today, law_start: law_start)
     |> Map.put(:rows, rows)
+  end
+
+  # J3: the law's coming into force from its stored CLML metadata
+  defp clml_start(law_name) do
+    with [_, type, year, number] <- String.split(law_name, "_", parts: 4),
+         [path | _] <-
+           Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/**/data.xml.gz")
+           |> Enum.sort(),
+         {:ok, gz} <- File.read(path) do
+      gz |> head() |> LabelProjection.clml_start(type)
+    else
+      _ -> nil
+    end
+  end
+
+  # the metadata sits at the top of the document
+  defp head(gz) do
+    xml = :zlib.gunzip(gz)
+    binary_part(xml, 0, min(byte_size(xml), 80_000))
   end
 
   @doc "Replace the law's periods. Returns the number written."
