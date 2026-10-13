@@ -23,7 +23,8 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 
 ## Decisions for Jason
 
-- **R2 — Revision after Gemini (see "Gemini on labels as a query"):** the query is the truth; the existing label columns stay as a dated cache of "as at today" (refreshed daily and after each collect, stamped with the date and code version); the manifest hash includes the labels so fractalaw re-pulls when today's labels change; valid-time semantics; 'today' is the UK date. **Jason: approve R2**
+- **R3 — Revision after compliance (see "Compliance on the label columns"):** labels are a query as at a date (the truth; time machine); no stored label columns. v0.1: the delta sync stops exporting `status`, `effective_from` and `changed_by` (`extent_code` stays); fractalaw's pull computes as-at-today labels when it serves, with a labels hash in the manifest. v0.2: a legal-owned dated labels table for compliance (section_id, as_at, status, in_force_from, changed_by, territory, code version). **Jason: approve R3**
+- **R2 — superseded by R3:** (see "Gemini on labels as a query"):** the query is the truth; the existing label columns stay as a dated cache of "as at today" (refreshed daily and after each collect, stamped with the date and code version); the manifest hash includes the labels so fractalaw re-pulls when today's labels change; valid-time semantics; 'today' is the UK date. **Jason: approve R2**
 - **R — Revision (proposed 2026-10-13, superseded by R2):** labels computed at query time from the register as at a date (default today), no stored labels; D1–D3 become the rules of that function; modifications shown through the register for v0.1; LR-25 reduced (no relabel wave). Gemini review, then Jason.
 - **D1 — What `effective_from` means.** Superseded by R: as at T, the start of the provision's version in force at T (text changes and its own commencement; not modifications).
 - **D2 — Whole-instrument effects.** Superseded by R: a commencement dates every row from its date; a repeal makes every row repealed from its date; a modification is shown like D1's.
@@ -102,3 +103,23 @@ Added by Claude:
 - **Semantics are valid time.** As at T means "as the law is known now, what applied at T", not "what we would have said at T". Bitemporal history is out of scope. Audit of what was served comes from the cache's daily changes: a status that changes because a date passes is logged in `lat_changes` (`LatParseLog`), so "what did we serve on date X" is answerable.
 
 **R2 in one line:** labels are a query as at a date; the existing columns become the dated "today" cache (as-at date + code version), refreshed daily and after each collect; the manifest carries a labels hash; changes to the cache are logged. Effect on LR-25: no relabel wave from the parse; instead the cache refresh job, the labels hash in the manifest, deletion of the parse-time label paths, and the staleness check. fractalaw's and compliance's column contracts are unchanged (values move; LH-05 notes the meaning: "as at" the stamped date).
+
+## Compliance on the label columns (2026-10-13)
+
+Asked the sertantai-compliance session (Jason: "the delta sync to compliance on these columns might be legacy"). Its answer, from compliance's code on main:
+- **`lat.status`, `effective_from`, `changed_by`: not used anywhere.** Not on its Ash resource (`SertantaiCompliance.Legal.LegalArticle`), not in any query, not in the frontend Electric LAT schema. "Stop syncing them."
+- **`extent_code`: used.** An attribute on `LegalArticle`, selected by the provision drill-down SQL (`screening_controller.ex`) and in `lat-schema.ts` `LAT_COLUMNS`. Don't drop or rename it without agreeing a replacement. Territory columns aren't used yet.
+- **v0.1: needs none** (frozen for deploy).
+- **v0.2: wants (b), a small labels table keyed by section_id**, with as_at, status, in_force_from, changed_by and territory, stamped with the as-at date and code version. Its uses:
+  - #37: provisions not yet in force or repealed are marked or hidden, and don't drive a match;
+  - per-site territory (QQ sites in England, Scotland, Wales);
+  - "which provisions changed" under a law_amended event.
+
+  "Legal owns the 'as at T' semantics; compliance shouldn't re-implement them from the raw log." Not the raw register.
+- **Time machine:** no customer ask yet. A plausible QQ audit need ("what applied on the date of the incident or audit"). Design for it, don't build compliance-side support. If it comes up, compliance would call a legal "as at T" query rather than sync the log.
+
+**R3** follows from this:
+- No stored label columns: the query is the truth.
+- The v0.1 sync change: drop `status`, `effective_from` and `changed_by` from the export; `extent_code` stays.
+- fractalaw's pull computes at serve time, with a labels hash in the manifest.
+- The v0.2 dated labels table is legal's output for compliance, and it also gives legal a dated record of what was served.
