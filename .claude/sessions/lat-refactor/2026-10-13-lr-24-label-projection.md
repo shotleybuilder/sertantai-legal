@@ -14,16 +14,25 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 ## Todo
 
 - ✅ Measure first: rows whose `effective_from` today comes from a modification / application rather than a text change
-- ⬜ Jason: what `effective_from` means (since when the current text has had effect; modifications excluded), what each operation contributes to status, and what whole-instrument effects (LR-23 D5) mean for a row (LR-22 Q2)
+- ✅ Jason: what `effective_from` means (since when the current text has had effect; modifications excluded), what each operation contributes to status, and what whole-instrument effects (LR-23 D5) mean for a row (LR-22 Q2)
+- ✅ Jason: labels as a query as at a date; published as a timeline (R3 + timeline, approved 2026-10-13, v0.1)
+- ⬜ Compliance: the timeline in v0.1 (its schema, its drill-down / #37 reads) — agreed with the compliance session
 - ⬜ Golden test cases: rows with known change histories (effective_from, changed_by, status, change ids), scrubbed of `key-` ids
-- ⬜ `LabelProjection` (pure) from change-log records; status contributions to `LatStatus` with no note text
-- ⬜ `mix lat.relabel --laws|--all --dry-run`: offline diff against today's labels, classified (expected: effect labels equal; the 14,709 note-sourced labels empty)
+- ⬜ `LabelProjection` (pure): `timeline/2` (a law's rows + register records → periods) and `as_at/2`; status from changes, no note text
+- ⬜ `lat_label_timeline` (Ash resource + migration) and `mix lat.timeline --laws|--all [--apply]`; rebuilt per law after each collect
+- ⬜ Offline diff: the timeline as at today against today's labels, classified (expected: effect labels mostly equal; note-sourced and note-dated labels empty)
 - ⬜ Gap queries: rows with a note pointer and no change; changes with no date; changes resolving to no row
 - ⬜ Gemini acceptance
 
 ## Decisions for Jason
 
-- **R3 — Revision after compliance (see "Compliance on the label columns"):** labels are a query as at a date (the truth; time machine); no stored label columns. v0.1: the delta sync stops exporting `status`, `effective_from` and `changed_by` (`extent_code` stays); fractalaw's pull computes as-at-today labels when it serves, with a labels hash in the manifest. v0.2: a legal-owned dated labels table for compliance (section_id, as_at, status, in_force_from, changed_by, territory, code version). **Jason: approve R3**
+- **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
+  - **Truth:** labels are a query as at a date.
+  - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
+  - **Reading:** "as at T" in any database is a lookup, `valid_from <= T < valid_to` (T = the UK date for today). There's no daily job anywhere, and nothing depends on the dev machine being on. Known future dates are already in the timeline; only new legal data waits for a sync.
+  - **Sync:** the delta sync stops exporting `status`, `effective_from` and `changed_by`, keeps `extent_code`, and carries the timeline in **v0.1**.
+  - **Rules:** D1–D3 are the timeline's rules, each judged per period.
+- **R3 — (proposed; approved with the timeline above)** (see "Compliance on the label columns"):** labels are a query as at a date (the truth; time machine); no stored label columns. v0.1: the delta sync stops exporting `status`, `effective_from` and `changed_by` (`extent_code` stays); fractalaw's pull computes as-at-today labels when it serves, with a labels hash in the manifest. v0.2: a legal-owned dated labels table for compliance (section_id, as_at, status, in_force_from, changed_by, territory, code version). **Jason: approve R3**
 - **R2 — superseded by R3:** (see "Gemini on labels as a query"):** the query is the truth; the existing label columns stay as a dated cache of "as at today" (refreshed daily and after each collect, stamped with the date and code version); the manifest hash includes the labels so fractalaw re-pulls when today's labels change; valid-time semantics; 'today' is the UK date. **Jason: approve R2**
 - **R — Revision (proposed 2026-10-13, superseded by R2):** labels computed at query time from the register as at a date (default today), no stored labels; D1–D3 become the rules of that function; modifications shown through the register for v0.1; LR-25 reduced (no relabel wave). Gemini review, then Jason.
 - **D1 — What `effective_from` means.** Superseded by R: as at T, the start of the provision's version in force at T (text changes and its own commencement; not modifications).

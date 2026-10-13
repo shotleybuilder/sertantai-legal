@@ -13,11 +13,10 @@ When LR-24's (when) and LR-26's (where) projections are accepted, the labels in 
 
 ## Todo
 
-- ⬜ (LR-24 R3, if approved) delta sync stops exporting `lat.status`, `effective_from`, `changed_by` (compliance agreed 2026-10-13; `extent_code` stays until a replacement is agreed)
-- ⬜ (LR-24 R3) fractalaw's pull serves as-at-today labels from the projection; labels hash in the LAT manifest (LH-05 contract note)
-- ⬜ (LR-24 R3) v0.2 handoff: a legal-owned dated labels table for compliance (section_id, as_at, status, in_force_from, changed_by, territory, code version) — open as its own session
+- ⬜ Delta sync: stop exporting `lat.status`, `effective_from`, `changed_by` (compliance agreed 2026-10-13; `extent_code` stays until a replacement is agreed); export `lat_label_timeline` (v0.1, LR-24 R3 approved)
+- ⬜ fractalaw's pull serves labels from the timeline as at today; labels hash (of the timeline) in the LAT manifest (LH-05 contract note)
 - ⬜ NAS backup
-- ⬜ Relabel wave: dry run → Jason → apply → verify (0 labels with provenance `note`)
+- ⬜ Timeline fill: dry run → Jason → apply → verify (no label from note text)
 - ⬜ Parse hook: collect + relabel after each LAT parse; `ChangeFacts.row_facts` retired
 - ⬜ Staleness check: 0 laws whose latest `parsed` event is newer than their `lat_change_log.collected_at` (LR-23 Gemini D1)
 - ⬜ Delete the dead note-fact paths (LR-21 re-scoped)
