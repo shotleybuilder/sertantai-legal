@@ -333,4 +333,25 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              {~D[1996-04-01], nil, "repealed", ~D[1996-04-01], "UK_ukpga_1995_25"}
            ]
   end
+
+  test "a whole-instrument words-level change doesn't start a version on every row" do
+    law = "UK_nisr_2007_247"
+
+    changes = [
+      change(
+        law,
+        "reg.23(2)(a)",
+        "b1",
+        "substituted",
+        "words substituted",
+        "UK_nisr_2016_1",
+        [{~D[2016-12-19], nil}],
+        via: ["instrument"]
+      )
+    ]
+
+    assert periods(law, [row(law, "reg.23(2)(a)")], changes, law_start: ~D[2007-05-21]) == [
+             {~D[2007-05-21], nil, "in_force", ~D[2007-05-21], nil}
+           ]
+  end
 end

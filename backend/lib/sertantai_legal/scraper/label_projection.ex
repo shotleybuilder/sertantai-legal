@@ -137,13 +137,20 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp relevant(row, by_row) do
     [own | above] = LatStatus.ancestors(row.section_id)
 
-    Enum.map(Map.get(by_row, own, []), &Map.put(&1, :own, true)) ++
+    # a whole-instrument words-level change (a blanket "words substituted")
+    # applies where the words occur, not to every row: it counts like an
+    # ancestor's
+    Map.get(by_row, own, [])
+    |> Enum.reject(&("instrument" in (&1.via || []) and words_level?(&1)))
+    |> Enum.map(&Map.put(&1, :own, true))
+    |> Kernel.++(
       for(
         a <- above,
         c <- Map.get(by_row, a, []),
         not words_level?(c),
         do: Map.put(c, :own, false)
       )
+    )
   end
 
   defp row_timeline(law, row, changes, law_start, today) do

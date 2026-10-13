@@ -42,7 +42,11 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
     {~r/\b(repealed|revoked|omitted|ceased to have effect)\b/, "repealed"},
     {~r/\brenumbered\b/, "renumbered"},
     {~r/\bcoming into force\b/, "commenced"},
-    {~r/\bamended\b/, "amended"}
+    {~r/\bamended\b/, "amended"},
+    # a modification's own verb ("applied in part … (as inserted)"): the
+    # earliest verb wins, so it isn't read as the text change it cites (LR-24)
+    {~r/\b(applied|modified|excluded|extended|restricted|disapplied|construed|continued|transferred|functions|powers?)\b/,
+     "other"}
   ]
 
   # an InForce qualification that completes commencement

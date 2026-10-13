@@ -48,6 +48,18 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
 
       assert ChangeFacts.kind("words substituted", nil) == "substituted"
     end
+
+    test "a modification's own verb wins over a trailing '(as inserted)' (LR-24)" do
+      assert ChangeFacts.kind("applied in part by S.I. 2023/1 reg. 4 (as inserted)", nil) ==
+               "other"
+
+      assert ChangeFacts.kind("modified by S.I. 2003/281", nil) == "other"
+      assert ChangeFacts.kind("excluded (as substituted)", nil) == "other"
+      assert ChangeFacts.kind("functions transferred (as amended)", nil) == "other"
+      assert ChangeFacts.kind("power to amend conferred", nil) == "other"
+      assert ChangeFacts.kind("extended (with modifications)", nil) == "other"
+      assert ChangeFacts.kind("words inserted (with savings)", nil) == "inserted"
+    end
   end
 
   describe "note/3" do
