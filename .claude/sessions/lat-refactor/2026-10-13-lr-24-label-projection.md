@@ -3,6 +3,18 @@ session: 'LR-24: Label Projection'
 status: active
 opened: 2026-10-13
 bugs:
+  - pattern: "Modification effect types read as text changes by a later verb: 'applied in part … (as inserted)' → inserted, 'modified by S.I. 2003/281' → amended, 'construed as one with …' → substituted"
+    category: change-kind
+    module: ChangeFacts.kind/2
+    affected: "~1,100 register records; whole-instrument ones re-dated every row (2010/15: 2021-03-31 on whole Parts)"
+    fix: "modification verbs (applied, modified, excluded, extended, restricted, disapplied, construed, continued, transferred, functions, power) added to kind/2 as 'other' — the earliest verb wins"
+    status: fixed
+  - pattern: "A territorial repeal (for S only, or part of the extent) read as repealing the whole row"
+    category: label-status
+    module: LabelProjection (D3)
+    affected: "~6,500 rows in the first dry run (in_force → repealed / repealed_saved); 31 of a 40-row sample were territorial"
+    fix: "a repeal counts for status and versions only where its extent covers the row's; it narrows territory instead (LR-26)"
+    status: fixed
   - pattern: "legislation.gov.uk feed spells AffectingEffectsExtent 'same as affected' as S+A+M+E+A+S+A+F+F+E+C+T+E+D; stored as an extent code it reads as Scotland (+ junk)"
     category: feed-extent
     module: ChangesFeed (parse) / anything reading effect_extent
@@ -44,6 +56,10 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
   - with none of those, it starts at the earliest change we hold;
   - before that start there's no row ("unknown"), never a guessed "in force".
 - **J2 — approved 2026-10-13.** Today's period vs the CLML markup: When the timeline as at today disagrees with the revised text's markup (e.g. the text shows the provision repealed but no repeal change is dated), the markup wins for the current period and the disagreement is listed as a gap. The revised text is legislation.gov.uk's current state; a dated change can't be invented to explain it.
+- **J3 — Start for laws with no coming-into-force date** (44,327 rows in 357 laws have no timeline: `uk_lrt.md_coming_into_force_date` is empty for 502 of 1,066 LAT laws and the rows have no dated change). Recommend:
+  - **Acts:** start at Royal Assent (`ukm:EnactmentDate` in our CLML; 335 Acts). That's the Interpretation Act 1978 s.4 default, "at the beginning of the day on which the Act receives the Royal Assent" unless provision is made otherwise. Sections commenced later by order are prospective until their commencement (post-2002 from effects; pre-2002 from LR-08).
+  - **SIs:** start at `ukm:ComingIntoForce` where the CLML has it (13).
+  - **The rest** (about 125 SIs with neither): no timeline (J1), listed.
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
   - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
@@ -183,3 +199,12 @@ From the compliance session:
 2. **1990/43: 837 rows went in force → prospective.** Undated change markup (the markup collector) and applied effects with no date counted as commencements that never started. A commencing change now counts only when it has a dated entry, or is genuinely prospective (not applied).
 
 Suite: 2,660 pass.
+
+**Second and third dry runs (all laws).** Repeal and classification faults found and fixed (bugs above):
+- **Territorial repeals** read as whole repeals: in force → repealed fell from about 9,800 rows to about 3,300.
+- **Modification types read as text changes** by a trailing "(as inserted)": about 1,100 register records; whole-instrument ones re-dated whole Parts.
+- **Whole-instrument words-level changes** (a blanket "words substituted") started a version on every row; they now count like an ancestor's.
+
+The register was re-collected after each classifier fix (fidelity 0).
+
+**No start (J3):** 44,327 rows in 357 laws. Laws lacking `md_coming_into_force_date`: 502, of which 335 are Acts with `ukm:EnactmentDate` in the CLML, 13 SIs with `ukm:ComingIntoForce`, and about 125 SIs / NI instruments with neither.
