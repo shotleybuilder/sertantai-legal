@@ -74,7 +74,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   (the CLML's own status: "repealed" | "prospective" | nil). `changes`: the
   register's rows for the law (`section_id`, `evidence`, `operation`,
   `effect_type`, `affecting_law`, `in_force`, `effective_from`, `savings`,
-  `via`). Options: `today` (the UK date), `law_start` (the law's coming into
+  `via`, and optionally `prospective` / `applied`). Options: `today` (the UK date), `law_start` (the law's coming into
   force, `uk_lrt.md_coming_into_force_date`).
   """
   @spec timeline(String.t(), [map()], [map()], keyword()) :: %{
@@ -100,6 +100,25 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       end)
 
     %{periods: periods |> Enum.reverse() |> List.flatten(), gaps: Enum.reverse(gaps)}
+  end
+
+  @doc """
+  The UK date now: "today" for the timeline. In-force dates are UK dates;
+  at 00:30 BST, UTC is still the previous day. BST runs from 01:00 UTC on
+  the last Sunday of March to 01:00 UTC on the last Sunday of October.
+  """
+  @spec uk_today(DateTime.t()) :: Date.t()
+  def uk_today(now \\ DateTime.utc_now()) do
+    y = now.year
+    starts = DateTime.new!(last_sunday(y, 3), ~T[01:00:00], "Etc/UTC")
+    ends = DateTime.new!(last_sunday(y, 10), ~T[01:00:00], "Etc/UTC")
+    bst? = DateTime.compare(now, starts) != :lt and DateTime.compare(now, ends) == :lt
+    now |> DateTime.add(if(bst?, do: 3600, else: 0)) |> DateTime.to_date()
+  end
+
+  defp last_sunday(year, month) do
+    last = Date.new!(year, month, Date.days_in_month(Date.new!(year, month, 1)))
+    Date.add(last, -rem(Date.day_of_week(last), 7))
   end
 
   @doc "Each provision's period containing `date` (section_id → period); absent when unknown."
@@ -250,12 +269,21 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
   # the provision's own commencement: a commencement, or its own
   # whole-provision insertion / substitution
-  defp commencing?(%{operation: "commenced"}), do: true
+  # — and only when it says something about when: a dated entry, or a
+  # genuinely prospective change (not yet applied to the text). Change markup
+  # no effect explains (undated) and an applied change with no date say
+  # nothing (1990/43 s.78B(2))
+  defp commencing?(c), do: commencing_kind?(c) and informative?(c)
 
-  defp commencing?(%{own: true, operation: op} = c) when op in ~w(inserted substituted),
+  defp commencing_kind?(%{operation: "commenced"}), do: true
+
+  defp commencing_kind?(%{own: true, operation: op} = c) when op in ~w(inserted substituted),
     do: not words_level?(c)
 
-  defp commencing?(_change), do: false
+  defp commencing_kind?(_change), do: false
+
+  defp informative?(c),
+    do: dates(c) != [] or (Map.get(c, :prospective) == true and Map.get(c, :applied) != true)
 
   # consecutive periods with the same labels become one
   defp merge(periods) do

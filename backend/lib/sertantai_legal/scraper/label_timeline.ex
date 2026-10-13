@@ -1,0 +1,88 @@
+defmodule SertantaiLegal.Scraper.LabelTimeline do
+  @moduledoc """
+  Builds a law's labels timeline (lat-refactor LR-24) into
+  `lat_label_timeline`: reads its rows (`legal_articles`), its changes
+  (`lat_change_log_rows`) and its coming into force (`uk_lrt`), runs
+  `LabelProjection.timeline/4`, and replaces the law's periods in one
+  transaction. Thin: the rules are `LabelProjection`'s.
+
+  The CLML markup status (J2) is the row's `status` where its provenance is
+  `markup` and it is repealed or prospective.
+  """
+
+  alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.LabelProjection
+
+  @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows`: today's labels, for the diff)."
+  @spec build(String.t(), Date.t()) :: map()
+  def build(law_name, today) do
+    %{rows: rows} =
+      Repo.query!(
+        """
+        SELECT section_id, extent_code, status, change_provenance->>'status',
+               effective_from, changed_by, change_provenance->>'change'
+        FROM legal_articles WHERE law_name = $1 ORDER BY position
+        """,
+        [law_name]
+      )
+
+    rows =
+      for [sid, extent, status, prov, from, by, change_src] <- rows do
+        %{
+          section_id: sid,
+          extent_code: extent,
+          markup_status: if(prov == "markup" and status in ~w(repealed prospective), do: status),
+          today: %{status: status, effective_from: from, changed_by: by, source: change_src}
+        }
+      end
+
+    %{rows: changes, columns: cols} =
+      Repo.query!(
+        """
+        SELECT section_id, evidence, operation, effect_type, affecting_law, in_force,
+               effective_from, savings, via, prospective, applied
+        FROM lat_change_log_rows WHERE law_name = $1 AND section_id IS NOT NULL
+        """,
+        [law_name]
+      )
+
+    changes =
+      Enum.map(changes, fn r ->
+        cols |> Enum.map(&String.to_atom/1) |> Enum.zip(r) |> Map.new()
+      end)
+
+    law_start =
+      case Repo.query!("SELECT md_coming_into_force_date FROM uk_lrt WHERE name = $1 LIMIT 1", [
+             law_name
+           ]) do
+        %{rows: [[d]]} -> d
+        _ -> nil
+      end
+
+    law_name
+    |> LabelProjection.timeline(rows, changes, today: today, law_start: law_start)
+    |> Map.put(:rows, rows)
+  end
+
+  @doc "Replace the law's periods. Returns the number written."
+  @spec write(String.t(), [LabelProjection.Period.t()], String.t()) :: {:ok, non_neg_integer()}
+  def write(law_name, periods, code_version) do
+    now = DateTime.utc_now()
+
+    Repo.transaction(fn ->
+      Repo.query!("DELETE FROM lat_label_timeline WHERE law_name = $1", [law_name])
+
+      periods
+      |> Enum.map(fn p ->
+        p
+        |> Map.from_struct()
+        |> Map.merge(%{id: Ecto.UUID.bingenerate(), code_version: code_version, built_at: now})
+      end)
+      |> Enum.chunk_every(2000)
+      |> Enum.reduce(0, fn chunk, n ->
+        {k, _} = Repo.insert_all("lat_label_timeline", chunk)
+        n + k
+      end)
+    end)
+  end
+end

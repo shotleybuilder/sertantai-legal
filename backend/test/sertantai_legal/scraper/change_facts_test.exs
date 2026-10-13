@@ -29,6 +29,25 @@ defmodule SertantaiLegal.Scraper.ChangeFactsTest do
       assert ChangeFacts.kind("coming into force", nil) == "commenced"
       assert ChangeFacts.kind("expires", "amendment") == "other"
     end
+
+    test "a change to an earlier amending or affecting provision changes another law's provision, not this text (LR-24)" do
+      assert ChangeFacts.kind(
+               "amendment to earlier affecting provision SI 1995/3128 reg. 10(2) (as substituted)",
+               nil
+             ) == "other"
+
+      assert ChangeFacts.kind(
+               "omitted in earlier amending provision 2023 c. 55, Sch. 8 para. 39(3)(a)",
+               nil
+             ) == "other"
+
+      assert ChangeFacts.kind(
+               "Art. 5(1)-(3) renumbered as Art. 5(2)-(2B) in earlier amending provision S.I. 2019/720",
+               nil
+             ) == "other"
+
+      assert ChangeFacts.kind("words substituted", nil) == "substituted"
+    end
   end
 
   describe "note/3" do

@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Repo do
     otp_app: :sertantai_legal
 
   def installed_extensions do
-    ["uuid-ossp", "citext", "ash-functions"]
+    ["uuid-ossp", "citext", "ash-functions", "btree_gist"]
   end
 
   def min_pg_version do

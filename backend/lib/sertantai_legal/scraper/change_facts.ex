@@ -58,9 +58,18 @@ defmodule SertantaiLegal.Scraper.ChangeFacts do
   def kind(_type, "commencement"), do: "commenced"
   def kind(_type, "modification"), do: "modified"
 
-  def kind(type, _code_type) do
-    type = String.downcase(type || "")
+  # a change to an earlier amending or affecting provision ("amendment to
+  # earlier affecting provision SI 1995/3128 reg. 10(2) (as substituted)")
+  # changes another law's provision, not this text (LR-24)
+  def kind(type, _code_type) when is_binary(type) and type != "" do
+    if Regex.match?(~r/\bearlier (affecting|amending) provision/i, type),
+      do: "other",
+      else: verb_kind(String.downcase(type))
+  end
 
+  def kind(_type, _code_type), do: verb_kind("")
+
+  defp verb_kind(type) do
     @verbs
     |> Enum.flat_map(fn {re, name} ->
       case Regex.run(re, type, return: :index) do

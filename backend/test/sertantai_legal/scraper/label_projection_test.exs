@@ -256,4 +256,34 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              {~D[2018-01-01], nil, "in_force", ~D[2018-01-01], nil}
            ]
   end
+
+  test "uk_today/1: the UK date — BST from the last Sunday of March to the last of October" do
+    # 00:30 BST on 14 Oct is 23:30 UTC on 13 Oct
+    assert LabelProjection.uk_today(~U[2026-10-13 23:30:00Z]) == ~D[2026-10-14]
+    # GMT in winter: UTC is the UK time
+    assert LabelProjection.uk_today(~U[2026-12-01 23:30:00Z]) == ~D[2026-12-01]
+    # the change days (2026: 29 March, 25 October), at 01:00 UTC
+    assert LabelProjection.uk_today(~U[2026-03-29 23:30:00Z]) == ~D[2026-03-30]
+    assert LabelProjection.uk_today(~U[2026-03-29 00:30:00Z]) == ~D[2026-03-29]
+    assert LabelProjection.uk_today(~U[2026-10-25 00:30:00Z]) == ~D[2026-10-25]
+    assert LabelProjection.uk_today(~U[2026-10-25 23:30:00Z]) == ~D[2026-10-25]
+  end
+
+  test "undated change markup and an applied undated change say nothing about commencement (1990/43 s.78B(2))" do
+    law = "UK_ukpga_1990_43"
+
+    changes = [
+      change(law, "s.78B(2)", "d29p1", "inserted", nil, nil, [],
+        via: ["markup"],
+        prospective: nil
+      ),
+      change(law, "s.78B(2)", "e1", "inserted", "added", "UK_ukpga_1995_25", [{nil, nil}],
+        applied: true
+      )
+    ]
+
+    assert periods(law, [row(law, "s.78B(2)")], changes, law_start: ~D[1991-01-01]) == [
+             {~D[1991-01-01], nil, "in_force", ~D[1991-01-01], nil}
+           ]
+  end
 end
