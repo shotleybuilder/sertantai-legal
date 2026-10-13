@@ -1,11 +1,13 @@
 ---
 session: 'LR-08: The Amending Law as a Source'
-status: active
+status: suspended
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
-# Session: LR-08 The Amending Law as a Source (ACTIVE)
+# Session: LR-08 The Amending Law as a Source (SUSPENDED)
+
+> **Suspended 2026-10-13** (Jason): we were building a change system without designing it as one. Resumes as the amending-law and commencing-law collectors of the change register (LR-22, `lat_change_log`). Hop 1 fetch and the probe stand as evidence.
 
 ## Problem
 
@@ -17,8 +19,8 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Stop rules for fetching amending laws into the CLML store (Jason, 2026-10-13: rules first, so we don't run through the legislation.gov.uk corpus)
 - ✅ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
 - ✅ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
-- ⬜ Design (Gemini, then Jason): which facts this source may supply (changed_by, dates, territory, status) and how provenance marks it (`law`)
-- ⬜ Tests first; offline classified diff; wave via LR-21
+- ⏸️ (suspended → LR-22) Design (Gemini, then Jason): which facts this source may supply (changed_by, dates, territory, status) and how provenance marks it (`law`)
+- ⏸️ (suspended → LR-22) Tests first; offline classified diff; wave via LR-21
 - Not in scope: applying unapplied amendments to the text (#171), backlog
 
 ## Decisions for Jason
