@@ -14,6 +14,8 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 ## Todo
 
 - ✅ Size, in rows (after LR-19): which note-labelled rows have their amending law in the store
+- ⬜ Stop rules for fetching amending laws into the CLML store (Jason, 2026-10-13: rules first, so we don't run through the legislation.gov.uk corpus)
+- ⬜ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
 - ⬜ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
 - ⬜ Design (Gemini, then Jason): which facts this source may supply (changed_by, dates, territory, status) and how provenance marks it (`law`)
 - ⬜ Tests first; offline classified diff; wave via LR-21
@@ -22,6 +24,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 ## Decisions for Jason
 
 - **D1 — Scope** (see Size): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
+- **D3 — Stop rules** (see Stop rules): R1–R6 and the threshold N
 - **D2 — Dates**: the amending law names the change and itself; the date is usually set by a commencement order (a second law). effective_from only when the amending law fixes the date itself or its commencement order is in the store; otherwise empty
 
 ## Dependencies
@@ -41,3 +44,26 @@ Rows labelled from notes (`change_provenance.change = note`) after LR-19: 14,709
 | No law named (date only; own commencement?) | 1,206 | 64 | — | — |
 
 The two store classes total 3,628 rows in 82 laws, from 113 amending laws. Most are pre-2002 changes, where the feed records few effects (legislation.gov.uk's effects run from 2002). Example: Town and Country Planning Act 1990: 512 rows labelled from notes as changed by the Planning and Compensation Act 1991; the feed holds only that Act's prospective repeals on 1990/8. The rows' dates (1991-09-25, 1992-01-02, 1992-07-17 …) come from commencement orders, not from the 1991 Act.
+
+## Stop rules (draft, 2026-10-13)
+
+Jason: rules first, then pull the share of the 404 that meets them into the CLML store. The cascade to stop: a fetched law names further laws (its own amenders, its commencing orders, laws it cites), and each could name more.
+
+- **R1 Demand only.** A law is fetched only because a LAT row (`legal_articles`) is labelled from a note naming it and no effect covers the row. Nothing else triggers a fetch.
+- **R2 Fetched laws make no demand.** A law fetched as a source is stored as source only: no LAT rows, no `uk_lrt` change, not added to `clml.fetch`'s LAT list. Its notes, feed and citations are never read for further fetches.
+- **R3 Two hops at most.** Hop 1: the amending law. Hop 2: the commencing SI the row's note names (the "; S.I. YYYY/N" after the amending citation), and only when hop 1 doesn't date the change itself. No hop 3.
+- **R4 Threshold.** An amending law qualifies when it labels at least N LAT rows.
+- **R5 Caps.** A fixed list per hop, written before anything is fetched; the run fetches that list and stops. Hop 2's list is drawn up after hop 1 has been read.
+- **R6 Text types only.** Types with CLML text (ukpga, uksi, asp, ssi, wsi, nia, nisr, nisi, eur, eudr); not ukcm, eudn.
+
+Measured on the 7,150 rows / 404 amending laws held only in `uk_lrt`:
+
+| N (rows per amending law) | Amending laws | Share of 404 | Rows covered | Share of 7,150 |
+|---|---|---|---|---|
+| 1 | 404 | 100% | 7,150 | 100% |
+| 5 | 191 | 47% | 6,768 | 95% |
+| 10 | 127 | 31% | 6,349 | 89% |
+| 20 | 78 | 19% | 5,712 | 80% |
+| 50 | 28 | 7% | 4,118 | 58% |
+
+Hop 2 (from note pointers, a ceiling): 1,967 rows name a commencing SI after the amending citation; 97 distinct SIs, 65 in `uk_lrt`, none in the CLML store. 1,384 rows' notes carry a date but no SI (dated by the amending law itself, or by an order the note doesn't name). Notes name the amending provision (s. / reg. / Sch. …) for 4,158 of the 4,700 rows with a placed note: the pointer to the provision to read.
