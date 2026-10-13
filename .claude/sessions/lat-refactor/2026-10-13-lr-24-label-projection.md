@@ -5,7 +5,7 @@ opened: 2026-10-13
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
-# Session: LR-24 Label Projection (PENDING)
+# Session: LR-24 Label Projection — When (PENDING)
 
 ## Problem
 
@@ -13,6 +13,8 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 
 ## Todo
 
+- ⬜ Measure first: rows whose `effective_from` today comes from a modification / application rather than a text change
+- ⬜ Jason: what `effective_from` means (since when the current text has had effect; modifications excluded) and what each operation contributes to status (LR-22 "the two questions", Q2)
 - ⬜ Golden test cases: rows with known change histories (effective_from, changed_by, status, change ids), scrubbed of `key-` ids
 - ⬜ `LabelProjection` (pure) from change-log records; status contributions to `LatStatus` with no note text
 - ⬜ `mix lat.relabel --laws|--all --dry-run`: offline diff against today's labels, classified (expected: effect labels equal; the 14,709 note-sourced labels empty)

@@ -86,6 +86,12 @@ These feed the guide (LR-11) and the QA spec (LR-12).
 
 Applying unapplied changes to the text (#171); note enrichment (parked); fetching beyond R0–R6; territory from the register in v1 (D4).
 
+## The two questions (2026-10-13)
+
+The register exists to answer, for every provision, as it stands today:
+1. **Where does it apply?** Extent and territorial application, from the provision's own markup plus the changes that narrowed or extended it.
+2. **When does it apply?** Whether it is in force (in force, partly in force, prospective, repealed, repealed with savings), and since when the current text has had effect (amendments, substitutions, insertions; not modifications or applications of it, which are recorded but don't date the text).
+
 ## Decisions for Jason
 
 **Decided 2026-10-13 (Jason):**
@@ -99,6 +105,10 @@ Applying unapplied changes to the text (#171); note enrichment (parked); fetchin
 
   When sources disagree, the projection takes the higher authority and lists the disagreement as a gap.
 - **D4** agreed for v1, but raise it if it needs a loop back in v0.2 (see below).
+- **D4 revised 2026-10-13 (Jason):** territory moves into v0.1. Sense check:
+  - the two questions the labels must answer are *where* a provision applies now and *when* it applies (in force, and since when);
+  - neither can be answered yet;
+  - "where" is outside the register (`LatTerritory`), and today's `effective_from` is "latest change of any kind", modifications included. The register is the path to both. Jason: "the territory work moves into v0.1 since we now have a better architecture to handle it". Delivered by LR-26.
 
 **D4 loop back for v0.2: yes, recommended.**
 - Territory labels already come only from markup and effects. `territory_provenance`: markup 7,934 rows; effect paths (application / extent / everywhere / in_force …) about 21,900 row entries; no note source. So v1 loses nothing.

@@ -9,7 +9,7 @@ parent: lat-refactor/2026-10-09-lr-00-meta.md
 
 ## Problem
 
-When LR-24's projection is accepted, the labels in `legal_articles` move to it in one wave, and the parse stops computing change labels. The note-text paths LR-21 was to remove are no longer called and can be deleted. fractalaw's columns stay the same; values move (LH-05).
+When LR-24's (when) and LR-26's (where) projections are accepted, the labels in `legal_articles` move to it in one wave, and the parse stops computing change labels. The note-text paths LR-21 was to remove are no longer called and can be deleted. fractalaw's columns stay the same; values move (LH-05).
 
 ## Todo
 
@@ -22,4 +22,5 @@ When LR-24's projection is accepted, the labels in `legal_articles` move to it i
 
 ## Dependencies
 
-- ⬜ LR-24 accepted
+- ⬜ LR-24 accepted (when)
+- ⬜ LR-26 accepted (where)
