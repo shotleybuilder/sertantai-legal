@@ -27,9 +27,13 @@ Some changes-feed effects give their affected provision only as text, with no st
 ## Todo
 
 - ✅ Measure: unreached effects naming a Part / Chapter / cross-heading / Schedule Part as text only; the LR-24 J5 rows they would date
-- ⬜ Tests first: a container ref (cross-heading / Part / Chapter) reaches the provisions inside it (1996/18 ss. 27U–27Y); a words-level change to a heading doesn't
+- ✅ Tests first: a container ref (cross-heading / Part / Chapter) reaches the provisions inside it (1996/18 ss. 27U–27Y); a words-level change to a heading doesn't
 - ⬜ EffectIndex: expand container refs from the CLML tree; re-collect (fidelity gate; dry run → Jason → apply)
 - ⬜ Timeline rebuilt: J5 gaps that now have a date
+
+## Decisions for Jason
+
+- **D1 — Re-collect the register** with container refs (dry run below): `mix lat.collect_changes --all --apply`; then a timeline dry run → D2 rebuild
 
 ## Dependencies
 
@@ -51,3 +55,22 @@ Some changes-feed effects give their affected provision only as text, with no st
 Each reaches only the container's row.
 
 **Fix:** expand a container ref to the provisions inside it in the CLML document (non-words-level effects; a words change to a heading stays on the heading). This is a join fix: it changes the register (via `ref` / `whole`) and, through the timeline, the dates of provisions in inserted cross-headings and Parts.
+
+## Build and register dry run (2026-10-13)
+
+**Built:**
+- `EffectIndex.new/4` takes `containers` (container id → ids inside it) and expands a non-words-level effect's ref to them.
+- `LatParser.Effects.index/3` builds the map from the CLML (Part, Chapter, Pblock, PsubBlock with an id).
+- Tests: cross-heading → its sections; Part → everything inside; a words change to a heading stays on the heading. Suite 2,683.
+
+**Register dry run** (`lr27_collect_dry`): 1,066 laws, 0 errors, **0 fidelity failures**.
+
+| | Last fill | With container refs |
+|---|---|---|
+| Per-row `ref` joins | 272,220 | 736,334 |
+| `whole` joins | 17,227 | 18,181 |
+| `markup` joins | 104,515 | 103,804 |
+| Unreached effects | 14,140 | 14,100 |
+| Records stored (compact) | 132,965 | 139,691 |
+
+The per-row growth is mostly Part-wide applications and modifications now reaching the provisions in the Part. Compaction keeps the stored increase to +6,726.
