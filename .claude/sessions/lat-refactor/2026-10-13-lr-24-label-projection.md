@@ -26,6 +26,11 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 
 ## Decisions for Jason
 
+- **J1 — Before the earliest known event** (no data case). Recommend:
+  - the timeline starts at the earliest date we have evidence for: the provision's insertion (it didn't exist before), its own commencement, or the law's `md_coming_into_force_date` (`uk_lrt`; held for 564 of 1,066 LAT laws);
+  - with none of those, it starts at the earliest change we hold;
+  - before that start there's no row ("unknown"), never a guessed "in force".
+- **J2 — Today's period vs the CLML markup.** When the timeline as at today disagrees with the revised text's markup (e.g. the text shows the provision repealed but no repeal change is dated), the markup wins for the current period and the disagreement is listed as a gap. The revised text is legislation.gov.uk's current state; a dated change can't be invented to explain it.
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
   - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
