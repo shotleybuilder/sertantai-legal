@@ -16,7 +16,7 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 - ✅ Measure first: rows whose `effective_from` today comes from a modification / application rather than a text change
 - ✅ Jason: what `effective_from` means (since when the current text has had effect; modifications excluded), what each operation contributes to status, and what whole-instrument effects (LR-23 D5) mean for a row (LR-22 Q2)
 - ✅ Jason: labels as a query as at a date; published as a timeline (R3 + timeline, approved 2026-10-13, v0.1)
-- ⬜ Compliance: the timeline in v0.1 (its schema, its drill-down / #37 reads) — agreed with the compliance session
+- ✅ Compliance: the timeline in v0.1 — requirements received (see "Compliance's requirements"); the final DDL goes to compliance before it ships; final shape in dev by about 17 Oct for a release/0.1 exception (Jason confirms with compliance)
 - ⬜ Golden test cases: rows with known change histories (effective_from, changed_by, status, change ids), scrubbed of `key-` ids
 - ⬜ `LabelProjection` (pure): `timeline/2` (a law's rows + register records → periods) and `as_at/2`; status from changes, no note text
 - ⬜ `lat_label_timeline` (Ash resource + migration) and `mix lat.timeline --laws|--all [--apply]`; rebuilt per law after each collect
@@ -132,3 +132,17 @@ Asked the sertantai-compliance session (Jason: "the delta sync to compliance on 
 - The v0.1 sync change: drop `status`, `effective_from` and `changed_by` from the export; `extent_code` stays.
 - fractalaw's pull computes at serve time, with a labels hash in the manifest.
 - The v0.2 dated labels table is legal's output for compliance, and it also gives legal a dated record of what was served.
+
+## Compliance's requirements for the timeline (2026-10-13)
+
+From the compliance session:
+- **No compliance migration.** Legal owns `lat_label_timeline` and creates it with its own migration (the prod DB is shared, like `legal_articles`). Compliance reads it read-only with raw SQL per law.
+- **No Electric shape.** 0.5–1M rows never go to the browser.
+- **Shape:**
+  - `law_name` (as in `legal_articles`), plus an index serving `WHERE law_name = $1` and as-at: `(law_name, section_id, valid_from)` or a daterange with GiST;
+  - **at most one row per section_id for any date**: `EXCLUDE USING gist (section_id WITH =, daterange(valid_from, valid_to) WITH &&)`;
+  - `valid_from` / `valid_to` as `date` (UK dates); `valid_to` exclusive, null = open;
+  - section_id format as in `legal_articles`, with the UK / AU partitions; say if the timeline is UK only.
+- **Its v0.1 read: drill-down only.** LEFT JOIN as at the UK date for today; a status badge (repealed, repealed_saved, prospective, partial); a missing row means no badge. Repealed and prospective provisions are marked and listed last, not hidden. Not matching: the screener walks `legal_register.compiled_applicability`, so "repealed / prospective don't drive a match" is a tree-compile concern (#37, v0.2).
+- **Timing:** the v0.1 feature freeze is 20 Oct. The badge lands on release/0.1 only if Jason confirms with compliance and the table is in dev with its final shape by about **17 Oct**; otherwise v0.2. It must not delay #133 / #27 (the v0.1 critical path).
+- **The DDL** (columns, types, indexes) is sent to compliance before it ships, for its test sandbox.
