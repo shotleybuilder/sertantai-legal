@@ -1,7 +1,69 @@
 ---
-session: 'LR-24: Label Projection'
-status: active
+session: 'LR-24: Label Projection — When'
+status: closed
 opened: 2026-10-13
+closed: 2026-10-13
+outcome: success
+parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Labels became a query as at a date, published as the timeline lat_label_timeline (one period per provision per date,
+  built from the change register; "as at T" is a lookup, so nothing goes stale and the time machine is free). Filled and
+  rebuilt for 1,066 laws (476,075 periods); seven dry runs found and fixed six classification and rule faults; where the
+  data can't be true the timeline says so (empty date = "changed, date unknown"; no row = unknown) and every such provision
+  is listed (59,786 gaps).
+
+decisions:
+  - what: "Labels are a query as at a date, not stored columns (R)"
+    why: "Jason: users want what applies today and may want a time machine; 'static labels go stale … the data is there to apply the label at the time of query'"
+    result: "LabelProjection.timeline/4 and as_at/2; time machine = the same call with another date"
+  - what: "R3: the delta sync stops exporting lat.status / effective_from / changed_by; extent_code stays"
+    why: "Compliance (asked via its session on Jason's instruction): nothing reads those three; extent_code is read by the drill-down"
+    result: "recorded for LR-25; compliance wants a dated labels table, not the raw register"
+  - what: "Publish a labels timeline (valid_from/valid_to per provision), not a daily snapshot; v0.1"
+    why: "Jason: it can't depend on the dev machine being on; a timeline already holds known future dates, so 'as at today' is a lookup with no job anywhere"
+    result: "lat_label_timeline with an EXCLUDE (one period per provision per date), date columns, index (law_name, section_id, valid_from) — compliance's shape"
+  - what: "D1-D3 as the timeline's rules: version since the latest text change or commencement in force (never a modification); status from changes in force at T"
+    why: "Measured: modifications dated only 385 rows today; dates come from text changes and commencement in equal shares"
+    result: "15 golden cases + rules tests (suite 2,669)"
+  - what: "J1-J5: start = insertion > law's coming into force (register, else CLML ComingIntoForce, else an Act's Royal Assent, Interpretation Act 1978 s.4) > own commencement > earliest change on the row; markup wins today's period; an unapplied in-force repeal counts (outstanding effect, source-side); a note pointing to an insertion withholds the law's start"
+    why: "No guessing where data is absent; the law outranks derived text; notes only point (Jason: 'Notes should already ONLY act as pointers')"
+    result: "no-start rows 45,868 → 22,203; inserted-looking ids dated from the law's year 5,750 → 53"
+  - what: "Truth (Jason: 'we cannot have wrong data for when and where'): T1 an undatable text change empties in_force_from; T2 no basis column; T3 unknown stays implied; W1 territory to LR-26"
+    why: "A wrong date is worse than an empty one; T2 defaults rest on the law; T3 avoids row noise"
+    result: "16,231 provisions now read 'changed, date unknown' instead of an older date; the table documents that it is not a 'where' source until LR-26"
+  - what: "Don't message compliance until building and enrichment are finished; Gemini acceptance dropped"
+    why: "Jason"
+    result: "compliance's 17 Oct release/0.1 window left to Jason"
+
+metrics:
+  timeline: { laws: 1066, periods: 476075, provisions: 340579, code_version: edd5156e, per_law_read_ms: 1.5 }
+  gaps: { no_start: 22203, insertion_not_in_register: 12084, undated_change: 16231, markup_conflict: 7925, outstanding_effect: 1343 }
+  vs_today_labels: { status_same: 334794, status_changed: 40072, from_same: 227043, from_moved: 11157, from_emptied: 29859, from_filled: 106807 }
+  what_dates_rows_today: { text_change: 107721, commencement: 105060, modification: 385, effect_labelled_no_match: 8716 }
+  register_gaps: { reaching_no_row: 14140, undated_not_prospective: 265, prospective_undated: 19325, markup_unexplained: 8547 }
+  dry_runs: { total: 7, faults_found_and_fixed: 6 }
+
+lessons:
+  - title: Run the whole corpus and sample every big diff class before trusting a rule
+    detail: "Each all-law dry run exposed a fault the 15 golden cases didn't: earlier-affecting-provision types, undated markup read as prospective, territorial repeals as whole repeals, modification verbs behind '(as inserted)', blanket instrument word changes, 'in part' repeals, Royal Assent dating inserted sections. A 20-40 row sample per class found each in minutes."
+    tag: data
+  - title: The effect-type classifier was the root of most wrong dates
+    detail: "ChangeFacts.kind took the earliest verb it knew, so 'applied in part … (as inserted)' and 'amendment to earlier affecting provision … (as substituted)' became text changes (1,800+ records). Today's parse labels carry the same faults; fixing kind/2 at source fixed both."
+    tag: data
+  - title: A lawful default is still a guess for provisions it can't apply to
+    detail: "J3's Royal Assent start was right for original provisions and wrong for inserted ones (1996/18 s.27V dated 1996, inserted 2024). The note was the only evidence of insertion; used as a pointer that withholds the default (not a fact), and extended to ancestors and to non-instrument changes."
+    tag: data
+  - title: The user's 'shoes' question reshaped the design twice
+    detail: "'What applies today, or on a date' turned stored labels into a query; 'it can't depend on my machine' turned a daily cache into a timeline. Both removed machinery (jobs, refresh, relabel waves) rather than adding it."
+    tag: schema
+  - title: Ask the consumer before keeping a column for it
+    detail: "Gemini assumed the synced columns mattered; compliance's own session confirmed three were unread and named the one that is (extent_code), its read shape, and its constraint needs (EXCLUDE one period per date)."
+    tag: sync
+  - title: "'Unknown' needs a stated meaning, not new schema"
+    detail: "Jason rejected extra columns/rows; an empty in_force_from with status in_force documented as 'changed, date unknown', plus a gaps list, gives the signal with no schema."
+    tag: schema
+
 bugs:
   - pattern: "Modification effect types read as text changes by a later verb: 'applied in part … (as inserted)' → inserted, 'modified by S.I. 2003/281' → amended, 'construed as one with …' → substituted"
     category: change-kind
@@ -27,10 +89,32 @@ bugs:
     affected: "1,267 register records (565 as text ops); HSWA 409 rows dated 2009-08-05 by SI 2009/1750 today"
     fix: "kind/2 returns 'other' for types naming an earlier amending/affecting provision; register re-collected"
     status: fixed
-parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/label_projection.ex (timeline/4, as_at/2, uk_today/1, clml_start/2)
+  - backend/lib/sertantai_legal/scraper/label_timeline.ex (builder)
+  - backend/lib/sertantai_legal/legal/lat_label_timeline.ex (Ash resource, EXCLUDE constraint)
+  - backend/priv/repo/migrations/20261013163827_add_lat_label_timeline_extensions_1.exs, 20261013163828_add_lat_label_timeline.exs
+  - backend/lib/mix/tasks/lat.timeline.ex (dry run, as-at-today diff, gaps CSV)
+  - backend/lib/sertantai_legal/scraper/change_facts.ex (kind/2: earlier-provision and modification verbs)
+  - backend/lib/sertantai_legal/repo.ex (btree_gist)
+  - backend/test/sertantai_legal/scraper/label_projection_test.exs
+  - backend/data/code-reviews/2026-10-13-lr-24-labels-as-query.md
+  - backend/data/reports/lat-refactor/lr24_dry*.csv, lr24_rebuild.csv, lr24_gaps.gaps.csv (gitignored)
+  - .claude/sessions/lat-refactor/2026-10-13-lr-27-text-only-effect-refs.md (opened)
+
+depends_on:
+  - 2026-10-13-lr-23-change-log-collectors
+  - 2026-10-13-lr-22-change-register
+
+enables:
+  - LR-26 territory per period (W1: the timeline's 'where')
+  - LR-25 switch-over (sync drops status/effective_from/changed_by, carries the timeline; fractalaw reads it; parse hook rebuilds per law)
+  - LR-27 text-only effect refs (dates J5 rows)
+  - compliance drill-down badge (when Jason says)
 ---
 
-# Session: LR-24 Label Projection — When (ACTIVE)
+# Session: LR-24 Label Projection — When (CLOSED)
 
 ## Problem
 
