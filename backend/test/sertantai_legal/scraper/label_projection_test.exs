@@ -412,4 +412,30 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
     assert LabelProjection.clml_start(act, "uksi") == nil
     assert LabelProjection.clml_start("<x/>", "ukpga") == nil
   end
+
+  test "J5: a provision a note points to as inserted never takes the law's start (1996/18 s.27V)" do
+    law = "UK_ukpga_1996_18"
+    rows = [row(law, "s.27V", inserted_pointer: true)]
+
+    assert %{periods: [], gaps: [{"UK_ukpga_1996_18:s.27V", :insertion_not_in_register}]} =
+             LabelProjection.timeline(law, rows, [], today: @today, law_start: ~D[1996-05-22])
+
+    # a whole-instrument change doesn't show the provision existed; its own does
+    act =
+      change(law, "s.27V", "m1", "other", "modified", "UK_uksi_2004_1", [{~D[2004-07-01], nil}],
+        via: ["instrument"]
+      )
+
+    own =
+      change(law, "s.27V", "w1", "substituted", "words substituted", "UK_ukpga_2025_1", [
+        {~D[2025-01-01], nil}
+      ])
+
+    assert %{periods: []} =
+             LabelProjection.timeline(law, rows, [act], today: @today, law_start: ~D[1996-05-22])
+
+    assert periods(law, rows, [act, own], law_start: ~D[1996-05-22]) == [
+             {~D[2025-01-01], nil, "in_force", ~D[2025-01-01], "UK_ukpga_2025_1"}
+           ]
+  end
 end

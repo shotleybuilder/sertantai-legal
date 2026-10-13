@@ -28,11 +28,16 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     else in_force.
   - **J1 start.** The row's own insertion (it didn't exist before), else the
     law's coming into force (`law_start`), else its own commencement, else
-    the earliest change held; with none, no periods (a `:no_start` gap).
+    the earliest change held on the row (not a whole-instrument one); with
+    none, no periods (a `:no_start` gap).
     Before the start: no period ("unknown").
   - **J2 today.** Where the CLML markup says repealed or prospective and
     the period containing today disagrees, the markup wins for that period
     and the disagreement is a `:markup_conflict` gap.
+  - **J5 inserted.** A row a note points to as inserted or substituted
+    (`inserted_pointer`; the note is only a pointer) whose insertion the
+    register doesn't date never takes the law's start: its start is the
+    earliest change held, else unknown (`:insertion_not_in_register`).
   - **J4 outstanding.** A repeal in force but not yet applied to the
     revised text (`applied: false`) counts from its date; the row is listed
     as an `:outstanding_effect` (source-side: legislation.gov.uk's backlog).
@@ -69,7 +74,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           }
   end
 
-  @type gap :: {String.t(), :no_start | :markup_conflict | :outstanding_effect}
+  @type gap ::
+          {String.t(),
+           :no_start | :insertion_not_in_register | :markup_conflict | :outstanding_effect}
 
   @text_ops ~w(substituted inserted repealed renumbered amended)
 
@@ -197,9 +204,15 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   defp row_timeline(law, row, changes, law_start, today) do
+    # J5: a note saying the provision was inserted (a pointer) withholds the
+    # law's start when the register holds no dated insertion for it
+    law_start = if Map.get(row, :inserted_pointer), do: nil, else: law_start
+
     case start(changes, law_start) do
       nil ->
-        {:gap, {row.section_id, :no_start}}
+        {:gap,
+         {row.section_id,
+          if(Map.get(row, :inserted_pointer), do: :insertion_not_in_register, else: :no_start)}}
 
       {start, evidence?} ->
         bounds =
@@ -237,7 +250,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       |> Enum.flat_map(&dates/1)
       |> Enum.min(Date, fn -> nil end)
 
-    earliest = changes |> Enum.flat_map(&dates/1) |> Enum.min(Date, fn -> nil end)
+    # a whole-instrument change says nothing about when this provision existed
+    earliest =
+      changes
+      |> Enum.reject(&("instrument" in (&1.via || [])))
+      |> Enum.flat_map(&dates/1)
+      |> Enum.min(Date, fn -> nil end)
 
     cond do
       insertion -> {insertion, true}

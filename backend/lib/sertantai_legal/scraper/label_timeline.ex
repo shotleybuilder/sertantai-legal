@@ -28,12 +28,28 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
         [law_name]
       )
 
+    # J5: rows a note points to as inserted / substituted whole (a pointer
+    # only: it withholds the law's start, it supplies no fact)
+    %{rows: pointed} =
+      Repo.query!(
+        """
+        SELECT DISTINCT unnest(affected_sections) FROM amendment_annotations
+        WHERE law_name = $1 AND code_type = 'amendment'
+          AND text ~* '\\y(inserted|added|substituted)\\y'
+          AND text !~* '\\ywords?\\y[^.;]{0,40}\\y(inserted|added|substituted)\\y'
+        """,
+        [law_name]
+      )
+
+    pointed = MapSet.new(List.flatten(pointed))
+
     rows =
       for [sid, extent, status, prov, from, by, change_src] <- rows do
         %{
           section_id: sid,
           extent_code: extent,
           markup_status: if(prov == "markup" and status in ~w(repealed prospective), do: status),
+          inserted_pointer: MapSet.member?(pointed, sid),
           today: %{status: status, effective_from: from, changed_by: by, source: change_src}
         }
       end
