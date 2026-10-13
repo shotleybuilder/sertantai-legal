@@ -70,6 +70,10 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
   @text_ops ~w(substituted inserted repealed renumbered amended)
 
+  # a repeal "in part", "(except s. 31)", "in so far as …" isn't a repeal of
+  # the provision (Jason, LR-06: "revoked in part")
+  @in_part ~r/\bin part\b|\bpartially\b|\bexcept\b|\bso far as\b|\bto the extent\b/i
+
   @doc """
   The law's timeline. `rows`: `section_id`, `extent_code`, `markup_status`
   (the CLML's own status: "repealed" | "prospective" | nil). `changes`: the
@@ -277,6 +281,10 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   # territorial application, else the change's extent; none, or "same as
   # affected" (the feed spells it S+A+M+E+A+S+A+F+F+E+C+T+E+D), is the row's
   defp covers_row?(c, row_extent) do
+    if Regex.match?(@in_part, c.effect_type || ""), do: false, else: extent_covers?(c, row_extent)
+  end
+
+  defp extent_covers?(c, row_extent) do
     case change_extent(c) do
       nil -> true
       extent -> Territory.covers?(extent, row_extent)

@@ -354,4 +354,25 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              {~D[2007-05-21], nil, "in_force", ~D[2007-05-21], nil}
            ]
   end
+
+  test "a repeal 'in part' or with exceptions isn't a repeal of the provision (LR-06 'revoked in part')" do
+    law = "UK_ukpga_1986_62"
+
+    changes = [
+      change(
+        law,
+        "s.41(4)",
+        "r1",
+        "repealed",
+        "repealed in part (except s. 31)",
+        "UK_ukpga_2006_46",
+        [{~D[2006-11-15], nil}],
+        via: ["instrument"]
+      )
+    ]
+
+    assert periods(law, [row(law, "s.41(4)")], changes, law_start: ~D[1986-09-01]) == [
+             {~D[1986-09-01], nil, "in_force", ~D[1986-09-01], nil}
+           ]
+  end
 end

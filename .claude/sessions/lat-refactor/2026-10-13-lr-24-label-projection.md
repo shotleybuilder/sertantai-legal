@@ -60,6 +60,7 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
   - **Acts:** start at Royal Assent (`ukm:EnactmentDate` in our CLML; 335 Acts). That's the Interpretation Act 1978 s.4 default, "at the beginning of the day on which the Act receives the Royal Assent" unless provision is made otherwise. Sections commenced later by order are prospective until their commencement (post-2002 from effects; pre-2002 from LR-08).
   - **SIs:** start at `ukm:ComingIntoForce` where the CLML has it (13).
   - **The rest** (about 125 SIs with neither): no timeline (J1), listed.
+- **J4 — A repeal in force but not yet applied to the text** (`applied: false`; 18 of 40 sampled new repeals). The law has repealed the provision by its date; legislation.gov.uk hasn't updated the revised text. Recommend: the repeal counts from its date (the law outranks the derived text), and the row is listed as an "outstanding effect" gap. The alternative is to wait for the text.
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
   - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
@@ -208,3 +209,13 @@ Suite: 2,660 pass.
 The register was re-collected after each classifier fix (fidelity 0).
 
 **No start (J3):** 44,327 rows in 357 laws. Laws lacking `md_coming_into_force_date`: 502, of which 335 are Acts with `ukm:EnactmentDate` in the CLML, 13 SIs with `ukm:ComingIntoForce`, and about 125 SIs / NI instruments with neither.
+
+**Fourth dry run (after the classifier fixes).** Dates moving: 25,173 → 6,632 rows. Losing their date with status unchanged: 14,310. A sample shows these are correct under the rules:
+- dates from note text (no dated change at that date);
+- dates from the "earlier affecting provision" fix (HSWA 2009-08-05);
+- partly-in-force rows (`in_force_from` empty by D1);
+- J2 prospective markup.
+
+In force → repealed: 3,763 rows. Of a 40-row sample:
+- 18 are repeals in force but not applied to the text (J4);
+- 21 are applied, with the text still present. These include "repealed in part (except s. 31)", now not a repeal (LR-06 "revoked in part"; test added; suite 2,665).
