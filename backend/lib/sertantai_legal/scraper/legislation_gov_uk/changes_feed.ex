@@ -183,7 +183,7 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
           affecting: law_name(blank(e.affecting_uri)),
           affected_provisions: blank(e.affected_provisions),
           affected_extent: blank(e.affected_extent),
-          effect_extent: blank(e.effect_extent),
+          effect_extent: e.effect_extent |> blank() |> same_as_affected(),
           territorial_application: blank(e.territorial_application),
           applied: bool(e.applied),
           requires_applied: bool(e.requires_applied),
@@ -365,6 +365,15 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed do
       end
     end)
     |> Enum.min(Date, fn -> nil end)
+  end
+
+  # the feed spells "same as affected" one letter at a time
+  # ("S+A+M+E+A+S+A+F+F+E+C+T+E+D"): no territory of its own (LR-24 bug)
+  defp same_as_affected(nil), do: nil
+
+  defp same_as_affected(code) do
+    letters = code |> String.replace(~r/[^A-Za-z]/, "") |> String.upcase()
+    if String.starts_with?(letters, "SAMEAS"), do: nil, else: code
   end
 
   defp blank(""), do: nil

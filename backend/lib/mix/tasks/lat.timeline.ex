@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Lat.Timeline do
 
   @shortdoc "Build lat_label_timeline from the change register (dry run by default)"
 
-  @cols ~w(law rows periods no_start insertion_not_in_register undated_change markup_conflicts outstanding status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
+  @cols ~w(law rows periods territory_unknown_before_today no_start insertion_not_in_register undated_change markup_conflicts outstanding status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
 
   @impl Mix.Task
   def run(args) do
@@ -97,6 +97,13 @@ defmodule Mix.Tasks.Lat.Timeline do
         law,
         n,
         length(periods),
+        periods
+        |> Enum.filter(
+          &(Date.compare(&1.valid_from, today) == :lt and &1.territory == nil and
+              &1.status not in ~w(repealed repealed_saved))
+        )
+        |> Enum.uniq_by(& &1.section_id)
+        |> length(),
         Enum.count(gaps, &(elem(&1, 1) == :no_start)),
         Enum.count(gaps, &(elem(&1, 1) == :insertion_not_in_register)),
         Enum.count(gaps, &(elem(&1, 1) == :undated_change)),

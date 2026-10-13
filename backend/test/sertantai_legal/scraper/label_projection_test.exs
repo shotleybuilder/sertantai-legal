@@ -459,4 +459,197 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
 
     assert gaps == [{"UK_ukpga_1990_43:s.10(2)", :undated_change}]
   end
+
+  describe "territory (LR-26 D1′)" do
+    defp terr(law, rows, changes, opts \\ []) do
+      %{periods: periods} =
+        LabelProjection.timeline(law, rows, changes, Keyword.merge([today: @today], opts))
+
+      Enum.map(periods, &{&1.valid_from, &1.valid_to, &1.status, &1.territory})
+    end
+
+    test "today's territory is the extent minus the excluded extent" do
+      law = "UK_ukpga_1974_37"
+      rows = [row(law, "s.1", extent_code: "E+W+S", excluded_extent: "S", claims: [])]
+
+      assert terr(law, rows, [], law_start: ~D[1975-04-01]) == [
+               {~D[1975-04-01], nil, "in_force", "E+W"}
+             ]
+    end
+
+    test "a dated territorial repeal is rolled back before its date (a removal)" do
+      law = "UK_ukpga_1974_40"
+
+      rep =
+        change(
+          law,
+          "s.13",
+          "r1",
+          "repealed",
+          "repealed",
+          "UK_asp_2003_1",
+          [{~D[2003-04-01], nil}],
+          effect_extent: "S"
+        )
+
+      rows = [
+        row(law, "s.13",
+          extent_code: "E+W+S",
+          excluded_extent: "S",
+          claims: [%{effect_id: "r1", territory: "S"}]
+        )
+      ]
+
+      assert terr(law, rows, [rep], law_start: ~D[1974-07-31]) == [
+               {~D[1974-07-31], ~D[2003-04-01], "in_force", "E+W+S"},
+               {~D[2003-04-01], nil, "in_force", "E+W"}
+             ]
+    end
+
+    test "an exclusion behind an undated claim: earlier periods unknown, never today's carried back" do
+      law = "UK_ukpga_1974_40"
+
+      ins =
+        change(law, "s.14", "i1", "inserted", "words inserted", "UK_ukpga_1995_25", [
+          {~D[1996-04-01], nil}
+        ])
+
+      rows = [
+        row(law, "s.14",
+          extent_code: "E+W+S",
+          excluded_extent: "S",
+          claims: [%{effect_id: nil, territory: "E+W"}]
+        )
+      ]
+
+      assert terr(law, rows, [ins], law_start: ~D[1974-07-31]) == [
+               {~D[1974-07-31], ~D[1996-04-01], "in_force", nil},
+               {~D[1996-04-01], nil, "in_force", "E+W"}
+             ]
+    end
+
+    test "an exclusion behind a narrowing insertion: earlier periods unknown" do
+      law = "UK_ukpga_1990_43"
+
+      ins =
+        change(law, "s.6(6A)(c)", "i1", "inserted", "inserted", "UK_ukpga_1995_25", [
+          {~D[1996-04-01], nil}
+        ])
+
+      rows = [
+        row(law, "s.6(6A)(c)",
+          extent_code: "E+W+S",
+          excluded_extent: "S",
+          claims: [%{effect_id: "i1", territory: "E+W"}]
+        )
+      ]
+
+      assert [{~D[1996-04-01], nil, "in_force", "E+W"}] =
+               terr(law, rows, [ins], law_start: ~D[1991-01-01])
+
+      words =
+        change(law, "s.7", "w1", "substituted", "words substituted", "UK_ukpga_1995_25", [
+          {~D[1996-04-01], nil}
+        ])
+
+      rows = [
+        row(law, "s.7",
+          extent_code: "E+W+S",
+          excluded_extent: "S",
+          claims: [%{effect_id: "w1", territory: "E+W"}]
+        )
+      ]
+
+      assert terr(law, rows, [words], law_start: ~D[1991-01-01]) == [
+               {~D[1991-01-01], ~D[1996-04-01], "in_force", nil},
+               {~D[1996-04-01], nil, "in_force", "E+W"}
+             ]
+    end
+
+    test "a future territorial repeal narrows the territory from its date" do
+      law = "UK_uksi_2011_988"
+
+      rep =
+        change(
+          law,
+          "reg.13(4)",
+          "r1",
+          "repealed",
+          "omitted",
+          "UK_ssi_2025_1",
+          [{~D[2026-12-31], nil}],
+          effect_extent: "S"
+        )
+
+      rows = [row(law, "reg.13(4)", extent_code: "E+W+S", claims: [])]
+
+      assert terr(law, rows, [rep], law_start: ~D[2011-04-06]) == [
+               {~D[2011-04-06], ~D[2026-12-31], "in_force", "E+W+S"},
+               {~D[2026-12-31], nil, "in_force", "E+W"}
+             ]
+    end
+
+    test "nothing left: status repealed, territory empty (nowhere); a repealed period has no territory" do
+      law = "UK_ukpga_1974_40"
+
+      rep =
+        change(
+          law,
+          "s.20",
+          "r1",
+          "repealed",
+          "repealed",
+          "UK_asp_2003_1",
+          [{~D[2003-04-01], nil}],
+          effect_extent: "S"
+        )
+
+      rows = [
+        row(law, "s.20",
+          extent_code: "S",
+          excluded_extent: "S",
+          claims: [%{effect_id: "r1", territory: "S"}]
+        )
+      ]
+
+      assert terr(law, rows, [rep], law_start: ~D[1974-07-31]) == [
+               {~D[1974-07-31], ~D[2003-04-01], "in_force", "S"},
+               {~D[2003-04-01], nil, "repealed", nil}
+             ]
+    end
+
+    test "a staged removal (different dates per territory) can't be rolled back: unknown before today" do
+      law = "UK_ukpga_1990_43"
+
+      rep =
+        change(law, "s.33", "r1", "repealed", "repealed", "UK_ukpga_1995_25", [
+          {~D[2001-01-01], "for E."},
+          {~D[2002-01-01], "for W."}
+        ])
+
+      rows = [
+        row(law, "s.33",
+          extent_code: "E+W+S",
+          excluded_extent: "E+W",
+          claims: [%{effect_id: "r1", territory: "E+W"}]
+        )
+      ]
+
+      # unknown before the last stage; today S (repealed for E and W only)
+      assert terr(law, rows, [rep], law_start: ~D[1991-01-01]) == [
+               {~D[1991-01-01], ~D[2002-01-01], "in_force", nil},
+               {~D[2002-01-01], nil, "in_force", "S"}
+             ]
+    end
+
+    test "no extent known: territory unknown" do
+      law = "UK_ukpga_1974_37"
+
+      assert terr(law, [row(law, "s.2", extent_code: nil, claims: [])], [],
+               law_start: ~D[1975-04-01]
+             ) == [
+               {~D[1975-04-01], nil, "in_force", nil}
+             ]
+    end
+  end
 end

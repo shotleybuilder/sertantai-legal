@@ -49,6 +49,21 @@ defmodule SertantaiLegal.Scraper.LegislationGovUk.ChangesFeedTest do
     assert Enum.all?(effects, &(&1.affecting =~ ~r/^UK_\w+_\d{4}_\w+$/))
   end
 
+  test "'same as affected' (spelled S+A+M+E+A+S+A+F+F+E+C+T+E+D) is no extent of its own (LR-26)",
+       %{
+         xml: xml
+       } do
+    garbled =
+      String.replace(
+        xml,
+        ~s(AffectingEffectsExtent="E+W"),
+        ~s(AffectingEffectsExtent="S+A+M+E+A+S+A+F+F+E+C+T+E+D")
+      )
+
+    {effects, _} = ChangesFeed.parse(garbled)
+    assert Enum.find(effects, &(&1.affecting == "UK_wsi_2005_1806")).effect_extent == nil
+  end
+
   test "more pages are reported" do
     xml =
       File.read!(@fixture)

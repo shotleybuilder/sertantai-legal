@@ -42,6 +42,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     (`undated_change`) has no `in_force_from` / `changed_by` in its in-force
     periods: empty `in_force_from` with status in_force means "changed,
     date unknown" (with prospective / partial it means not fully in force).
+  - **LR-26 D1′ territory.** Today's period: extent minus excluded extent
+    (the parse's reviewed calculation); earlier periods roll an exclusion
+    back only when every claim behind it is a dated single-date removal,
+    else unknown; later periods narrow by dated territorial repeals (staged:
+    unknown). Nothing left: status repealed, territory nil ("nowhere").
+    `rows` also carry `excluded_extent` and `claims` (territory_provenance).
   - **J4 outstanding.** A repeal in force but not yet applied to the
     revised text (`applied: false`) counts from its date; the row is listed
     as an `:outstanding_effect` (source-side: legislation.gov.uk's backlog).
@@ -49,7 +55,15 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   Notes are never read. Pure: `today` and `law_start` are passed in.
   """
 
-  alias SertantaiLegal.Scraper.{AmendmentNote, ChangeFacts, EffectIndex, LatStatus, Territory}
+  alias SertantaiLegal.Scraper.{
+    AmendmentNote,
+    ChangeFacts,
+    EffectIndex,
+    EffectTerritory,
+    LatStatus,
+    Territory
+  }
+
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   defmodule Period do
@@ -63,6 +77,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       :status,
       :in_force_from,
       :changed_by,
+      :territory,
       change_ids: []
     ]
 
@@ -74,6 +89,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
             status: String.t(),
             in_force_from: Date.t() | nil,
             changed_by: String.t() | nil,
+            territory: String.t() | nil,
             change_ids: [String.t()]
           }
   end
@@ -233,9 +249,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           |> Enum.map(fn {from, to} ->
             state(law, row, changes, from, to, start, evidence?)
           end)
+          |> territories(row, changes, today)
+          |> undated(row)
           |> merge()
 
-        {periods, gaps} = periods |> undated(row) |> markup_today(row, today)
+        {periods, gaps} = markup_today(periods, row, today)
 
         {:ok, periods,
          gaps ++
@@ -361,6 +379,17 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     |> Enum.reject(&(&1 in [nil, ""] or same_as_affected?(&1)))
     |> List.first()
     |> Territory.normalize()
+    |> Kernel.||(qualified_extent(c))
+  end
+
+  # in-force entries that each name a territory ("for E.", "for W."): the
+  # change reaches their union
+  defp qualified_extent(c) do
+    ts =
+      for e <- c.in_force,
+          do: e.qualification && EffectTerritory.qualifier_territory(e.qualification)
+
+    if ts != [] and Enum.all?(ts), do: Territory.union(ts)
   end
 
   defp same_as_affected?(code),
@@ -423,7 +452,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   defp same?(a, b),
-    do: {a.status, a.in_force_from, a.changed_by} == {b.status, b.in_force_from, b.changed_by}
+    do:
+      {a.status, a.in_force_from, a.changed_by, a.territory} ==
+        {b.status, b.in_force_from, b.changed_by, b.territory}
 
   # J2: the markup's repealed / prospective wins the period containing today
   defp markup_today(periods, %{markup_status: markup} = row, today)
@@ -445,6 +476,136 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   defp markup_today(periods, _row, _today), do: {periods, []}
+
+  # LR-26 D1′ (Jason 2026-10-13: "we have to publish what we know is true"):
+  # each period's territory. Today's period: the row's extent minus its
+  # excluded extent (the parse's reviewed calculation). Earlier periods: the
+  # extent, with an exclusion rolled back before its date only when every
+  # claim behind it is a dated removal with one date; else unknown (nil).
+  # Later periods: today's territory narrowed by dated territorial repeals
+  # from their dates; a staged one is unknown. Nothing left: status
+  # repealed, territory nil ("nowhere"); a repealed period has no territory.
+  defp territories(periods, row, changes, today) do
+    extent = Territory.normalize(Map.get(row, :extent_code))
+    excluded = Territory.normalize(Map.get(row, :excluded_extent))
+    by_ev = Map.new(changes, &{&1.evidence, &1})
+    claims = Map.get(row, :claims) || []
+
+    now =
+      if excluded,
+        do: Territory.subtract(extent || "E+W+S+NI", excluded) || :nowhere,
+        else: extent
+
+    rollback =
+      cond do
+        extent == nil or extent_change?(changes) -> :unknown
+        excluded == nil -> []
+        claims != [] and Enum.all?(claims, &removal_date(&1, by_ev)) -> claims
+        true -> :unknown
+      end
+
+    Enum.map(periods, fn p ->
+      t =
+        cond do
+          extent == nil ->
+            nil
+
+          covers?(p, today) ->
+            now
+
+          Date.compare(p.valid_from, today) == :gt ->
+            later(now, changes, row, today, p.valid_from)
+
+          rollback == :unknown ->
+            nil
+
+          true ->
+            earlier(extent, excluded, rollback, by_ev, p.valid_from)
+        end
+
+      cond do
+        p.status in ~w(repealed repealed_saved) ->
+          %{p | territory: nil}
+
+        t == :nowhere ->
+          %{p | status: "repealed", territory: nil, in_force_from: nil, changed_by: nil}
+
+        true ->
+          %{p | territory: t}
+      end
+    end)
+  end
+
+  # before today: the extent minus the exclusions whose (removal) claims are
+  # in force at the period's start
+  defp earlier(extent, nil, _claims, _by_ev, _from), do: extent
+
+  defp earlier(extent, excluded, claims, by_ev, from) do
+    live =
+      for c <- claims,
+          d = removal_date(c, by_ev),
+          Date.compare(d, from) != :gt,
+          t = Territory.normalize(c.territory),
+          t != nil,
+          do: t
+
+    case live do
+      [] -> extent
+      ts -> Territory.subtract(extent, intersect(excluded, Territory.union(ts))) || :nowhere
+    end
+  end
+
+  # after today: territorial repeals (whole provision, not "in part") from
+  # their dates; a staged one (several dates) is unknown
+  defp later(nil, _changes, _row, _today, _from), do: nil
+  defp later(:nowhere, _changes, _row, _today, _from), do: :nowhere
+
+  defp later(now, changes, row, today, from) do
+    repeals =
+      for c <- changes,
+          c.operation == "repealed",
+          not words_level?(c),
+          not Regex.match?(@in_part, c.effect_type || ""),
+          d = c.effective_from,
+          d != nil,
+          Date.compare(d, today) == :gt,
+          Date.compare(d, from) != :gt,
+          do: c
+
+    Enum.reduce_while(repeals, now, fn c, t ->
+      cond do
+        length(Enum.uniq(dates(c))) > 1 -> {:halt, nil}
+        covers_row?(c, Map.get(row, :extent_code)) -> {:cont, :nowhere}
+        ext = change_extent(c) -> {:cont, Territory.subtract(t, ext) || :nowhere}
+        true -> {:cont, t}
+      end
+    end)
+  end
+
+  # a claim's removal date: its effect is a dated repeal with one date
+  defp removal_date(%{effect_id: id}, by_ev) when is_binary(id) do
+    case by_ev[id] do
+      %{operation: "repealed"} = c ->
+        case Enum.uniq(dates(c)) do
+          [d] -> d
+          _ -> nil
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  defp removal_date(_claim, _by_ev), do: nil
+
+  defp extent_change?(changes),
+    do:
+      Enum.any?(
+        changes,
+        &Regex.match?(~r/\bextent (?:extended|restricted|changed)\b/i, &1.effect_type || "")
+      )
+
+  defp intersect(a, b), do: Territory.subtract(a, Territory.subtract(a, b) || "") || a
 
   # T1 (Jason 2026-10-13: "a text change we cannot date should communicate
   # that fact"): the row has a text change no source dates (undated change

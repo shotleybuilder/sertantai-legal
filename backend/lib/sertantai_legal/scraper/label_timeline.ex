@@ -22,7 +22,8 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
       Repo.query!(
         """
         SELECT section_id, extent_code, status, change_provenance->>'status',
-               effective_from, changed_by, change_provenance->>'change'
+               effective_from, changed_by, change_provenance->>'change',
+               excluded_extent, territory_provenance
         FROM legal_articles WHERE law_name = $1 ORDER BY position
         """,
         [law_name]
@@ -59,11 +60,18 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     noted = Enum.group_by(noted, &hd/1, fn [_, l] -> l end)
 
     rows =
-      for [sid, extent, status, prov, from, by, change_src] <- rows do
+      for [sid, extent, status, prov, from, by, change_src, excluded, claims] <- rows do
         %{
           section_id: sid,
           extent_code: extent,
           markup_status: if(prov == "markup" and status in ~w(repealed prospective), do: status),
+          excluded_extent: excluded,
+          # LR-26: the claims behind the row's territory (territory_provenance)
+          claims:
+            for(
+              c <- claims || [],
+              do: %{effect_id: c["effect_id"], territory: c["territory"], source: c["source"]}
+            ),
           inserted_pointer:
             sid |> LatStatus.ancestors() |> Enum.any?(&MapSet.member?(pointed, &1)),
           today: %{status: status, effective_from: from, changed_by: by, source: change_src}
