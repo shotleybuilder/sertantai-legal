@@ -62,6 +62,7 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
   - **The rest** (about 125 SIs with neither): no timeline (J1), listed.
 - **J4 — approved 2026-10-13** (Jason: "important that compliance and subsequently users know the provision is repealed … 'outstanding effect' is on the source"). A repeal in force but not yet applied to the text (`applied: false`; 18 of 40 sampled new repeals). The law has repealed the provision by its date; legislation.gov.uk hasn't updated the revised text. Recommend: the repeal counts from its date (the law outranks the derived text), and the row is listed as an "outstanding effect" gap. The alternative is to wait for the text.
 - **J5 — approved 2026-10-13** (Jason: "Notes should already ONLY act as pointers and make sure the real fix is logged in the right session"). Built: the pointer withholds the law's start; the fallback start counts only changes on the row, not whole-instrument ones; gap `insertion_not_in_register`. Real fix: LR-27 (text-only effect refs) and LR-08 (pre-2002). An inserted provision whose insertion isn't in the register (7,157 rows / 144 laws). The row carries a whole-provision insertion or substitution note ("Ss. 27U-27Y and cross-heading inserted …"), the register has no dated insertion on it, and J3's default would date it from the law's own start (1996/18 s.27V: Royal Assent 1996-05-22 for a section inserted in 2024). Recommend: the note acts as a pointer only — it withholds the default, it supplies no fact. The start is unknown (no period before the first change held); listed as a gap "insertion not in the register". The data comes later from the join (the feed's "Part 2B inserted" has no structured refs: 25 such effects) or LR-08.
+- **F — Fill:** `mix lat.timeline --all --apply` writes `lat_label_timeline` only (empty today; nothing reads it until LR-25 and compliance's badge); see "Dry run with J5". **Jason: approve**
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
   - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
@@ -235,3 +236,24 @@ In force → repealed: 3,763 rows. Of a 40-row sample:
 | effective_from: unchanged / moved / emptied / gained | 229,178 / 24,479 / 9,381 / 111,828 |
 
 **A problem with J3's default.** Of the moved dates, 13,556 go earlier, most of them to the law's own start. Example: 1996/18 s.27V, inserted in 2024 by 2023/13 ("Part 2B inserted": the feed gives the Part as text only, no structured refs, so it reaches no row), dated from Royal Assent 1996-05-22. Rows carrying a whole-provision insertion or substitution note, with no dated insertion in the register and dated from the law's own year: **7,157 rows in 144 laws** (J5).
+
+## Dry run with J5 (2026-10-13, for the fill)
+
+1,066 laws, 0 errors.
+
+| | |
+|---|---|
+| Periods | 476,075 |
+| Rows with no timeline | 34,287 (9%): no start 22,203; insertion not in the register 12,084 (J5; LR-27 / LR-08 will date them) |
+| Markup conflicts (J2) | 7,925 |
+| Outstanding effects (J4) | 1,343 |
+| Status vs today: same / changed | 334,794 / 40,072. Of the changes, 33,626 are "unknown" (no timeline row) |
+| Other status moves | in force → repealed_saved 1,885 / repealed 857; repealed_saved → in force 899 (territorial or "in part" repeals) |
+| effective_from vs today: same / moved / emptied / filled | 232,432 / 14,188 / 20,387 / 107,859 |
+| Inserted-looking ids still dated from the law's own year | 53 (was about 5,750 before J5) |
+
+Moved dates: 12,993 earlier, 1,195 later. Sampled causes:
+- note-text dates replaced by the law's start or the version held;
+- territorial repeals no longer starting versions;
+- the "earlier affecting provision" fix;
+- today's labels carrying a future date (now as at today).
