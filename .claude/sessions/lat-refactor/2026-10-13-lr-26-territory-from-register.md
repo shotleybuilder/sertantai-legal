@@ -1,8 +1,52 @@
 ---
 session: 'LR-26: Territory from the Register'
-status: active
+status: closed
 opened: 2026-10-13
+closed: 2026-10-13
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  The labels timeline now answers "where" as well as "when": each period carries the provision's territory, today's from
+  the reviewed parse-time calculation and earlier/later periods from dated changes in the register, unknown wherever it
+  can't be dated safely. Two rebuilds (479,265 periods); as at today territory is known for 310,656 provisions, nowhere
+  for 9,866 (repealed) and unknown for 19,636.
+
+decisions:
+  - what: "Territory can't move into the register wholesale; the register dates the parse's territorial claims"
+    why: "Today's 'where' composes change claims over the row's words (LR-02/03), which needs the text structure only the parse has; 13,726 of 13,797 exclusions rest on dated claims"
+    result: "no territory collector needed (territory_provenance + register dates)"
+  - what: "D1′ (consensus after Gemini, approved): today's period = extent minus excluded; earlier periods roll an exclusion back only for dated single-date removals, else unknown; later periods narrow by dated territorial repeals (staged: unknown); nothing left = repealed; status disambiguates nowhere vs unknown"
+    why: "Jason: 'we have to publish what we know is true'; Gemini showed rolling back composed exclusions (insertions narrow, repeals remove), extent changes and staged per-territory dates could publish a wrong territory"
+    result: "today's territory = today's columns (0 differences in a five-law check); unknown before today 26,373"
+  - what: "Rows with no extent take the extent their devolved type fixes (SSI/ASP S, WSI/ANAW E+W, NI instruments NI); UK Acts/SIs with none stay unknown"
+    why: "The legislature fixes the extent (the parser's own law_extent table); a UK instrument with no RestrictExtent has no stated extent"
+    result: "+5,624 provisions with a known territory today"
+  - what: "Rebuilds R and R2 (dry run → Jason → apply); Gemini acceptance dropped"
+    why: "Jason"
+    result: "479,265 periods, code_version d6c29123"
+
+metrics:
+  timeline: { periods: 479265, code_version: d6c29123, laws: 1066 }
+  territory_today: { known: 310656, nowhere: 9866, unknown: 19636 }
+  territory_unknown_before_today: 26373
+  exclusions: { rows: 13797, all_claims_dated: 13726, undated_claim: 71 }
+  rows_without_extent: { total: 32828, laws: 274, uksi: 21812, ssi: 4092, wsi: 2455, nisr: 2386, ukpga: 2083 }
+
+lessons:
+  - title: Not every fact belongs in the register; some only need its dates
+    detail: "Territory composes change claims over a provision's words, which needs the parsed text. The register's job was dating those claims, not re-deriving them; checking that 13,726 of 13,797 exclusions were datable settled the design in one query."
+    tag: schema
+  - title: "'Nothing left' has more than one cause"
+    detail: "A whole-extent exclusion means repealed everywhere, or not yet in force anywhere (nothing live). Reading the second as 'nowhere' would have marked 369 prospective provisions repealed in future periods; the today-vs-columns check and a look at the 'unknown' rows exposed it."
+    tag: data
+  - title: A consensus review is cheaper than a defended draft
+    detail: "Gemini's review of D1 named three ways the draft could publish a wrong territory (composed rollback, extent changes, staged per-territory dates). Folding them in as 'unknown unless safe' before building avoided rework; the staged case also exposed a status bug (a repeal 'for E.'/'for W.' read as everywhere)."
+    tag: data
+  - title: Check every 'unknown' bucket for a cause the data already answers
+    detail: "25,058 of 25,427 unknown-today rows had no extent; for devolved instruments the type fixes it (the parser already knew). Unknown should mean no source, not a source not yet consulted."
+    tag: data
+
 bugs:
   - pattern: "legislation.gov.uk feed spells AffectingEffectsExtent 'same as affected' as S+A+M+E+A+S+A+F+F+E+C+T+E+D; stored as an extent code it reads as Scotland (+ junk)"
     category: feed-extent
@@ -22,9 +66,27 @@ bugs:
     affected: "369 provisions today (prospective, extent = excluded) and their future periods"
     fix: "not commenced → territory unknown in every period, never 'nowhere'"
     status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/label_projection.ex (territory per period, staged-territory change extent, not-commenced rule)
+  - backend/lib/sertantai_legal/scraper/label_timeline.ex (excluded_extent, claims, devolved type extent)
+  - backend/lib/sertantai_legal/scraper/lat_parser/effects.ex (type_extent/1)
+  - backend/lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex ('same as affected' normalised)
+  - backend/lib/sertantai_legal/legal/lat_label_timeline.ex (territory documented)
+  - backend/lib/mix/tasks/lat.timeline.ex (territory_unknown_before_today)
+  - backend/test/sertantai_legal/scraper/label_projection_test.exs, legislation_gov_uk/changes_feed_test.exs
+  - backend/data/code-reviews/2026-10-13-lr-26-territory-rule.md
+  - backend/data/reports/lat-refactor/lr26_dry*.csv, lr26_rebuild*.csv (gitignored)
+
+depends_on:
+  - 2026-10-13-lr-24-label-projection
+  - 2026-10-13-lr-23-change-log-collectors
+
+enables:
+  - LR-25 switch-over (the timeline answers where and when; sync drops status/effective_from/changed_by; extent_code replacement agreed with compliance later)
+  - compliance per-site territory (v0.2) from the timeline's territory
 ---
 
-# Session: LR-26 Territory from the Register — Where (ACTIVE)
+# Session: LR-26 Territory from the Register — Where (CLOSED)
 
 ## Problem
 
@@ -36,7 +98,7 @@ A provision's territory (`extent_code`, `excluded_extent`, `territory_provenance
 - ❌ Collector: change territory into `lat_change_log` — not needed: the claims already carry each change's territory (`territory_provenance`) and the register dates them (markup Extent of joined and unjoined change elements; the feed's extents are already recorded); the provision's own RestrictExtent stays a row fact (markup about the provision, not a change)
 - ✅ Jason: the territory rule as a projection (D1′ approved) (base extent from the row's markup, narrowed or extended by changes, in date order; authority law > derived data > auto-derived > editorial)
 - ✅ Tests first; territory in `LabelProjection` (pure); offline diff against today's `extent_code` / `excluded_extent` / `territory_provenance`, classified
-- ⬜ Gemini acceptance
+- ❌ Gemini acceptance — dropped (Jason, 2026-10-13, at close; Gemini reviewed the rule, D1′ is the consensus)
 - ✅ Timeline `territory` per period (W1): rebuild (dry run → Jason → apply), twice
 - ✅ Feed's 'same as affected' extent (S+A+M+E…) normalised at source (LR-24 bug)
 - ⏸️ Lands in the LR-25 switch-over with the "when" labels (LR-25's work)
