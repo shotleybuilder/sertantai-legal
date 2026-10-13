@@ -9,7 +9,10 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   `:own`: every provision it sits on, its `affected_sections`; `:cited`:
   only the provision the effect was found on). The note's code is the
   `pointer`. An effect reaching no
-  row is kept with `section_id` nil. A note join only stays where the note
+  row is kept with `section_id` nil when it may fall on a provision LAT
+  holds or names none (D5: not on a Schedule, an annex or a section outside
+  the law's LAT scope); a whole-instrument effect ("Act", "Regulations")
+  reaches every row (`instrument`). A note join only stays where the note
   alone reaches the row (LR-23 D4): beside a direct join (`:markup`,
   `:whole`, `:ref`) it only corroborates, and its placement stays in
   `amendment_annotations`. A note's text is never read: a note joining no
@@ -26,7 +29,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   # join kinds, strongest first
-  @strength ~w(markup whole ref note_markup note_own note_cited)
+  @strength ~w(markup whole ref instrument note_markup note_own note_cited)
 
   @doc """
   Change log records for `law_name` from its parsed `rows` (`section_id`,
@@ -45,6 +48,15 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
             do: {id, row.section_id}
       )
 
+    # D5: an effect on the whole instrument ("Act", "Regulations") reaches
+    # every row of the law — a range over the law
+    instrument =
+      for %Effect{effect_id: id} = e <- effects,
+          id != nil,
+          instrument?(e),
+          row <- rows,
+          do: {{id, row.section_id}, "instrument", nil}
+
     joins =
       for(
         row <- rows,
@@ -56,7 +68,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
           join <- Map.get(n, :effect_joins) || [],
           {id, kind, sid} <- note_targets(join, n, carried),
           do: {{id, sid}, "note_#{kind}", n.code}
-        )
+        ) ++ instrument
 
     reached =
       joins
@@ -68,13 +80,62 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
 
     hit = MapSet.new(reached, & &1.evidence)
 
+    held = held_ids(rows)
+
+    # D5: an effect reaching no row is a gap only when it may fall on a
+    # provision LAT holds (or names none); one on a Schedule, an annex or a
+    # section outside the law's LAT scope is not a change to LAT
     unreached =
       for %Effect{effect_id: id} = e <- effects,
           id != nil,
           not MapSet.member?(hit, id),
+          on_lat?(e, held),
           do: record(law_name, e, nil, [], nil)
 
     reached ++ unreached
+  end
+
+  @instrument ~r/\A\s*(Act|Regulations?|Order|Rules|Instrument|Measure|Scheme|Directive)\s*\z/i
+
+  # the whole instrument: the affected provisions name the instrument alone
+  defp instrument?(%Effect{affected_provisions: p}) when is_binary(p),
+    do: Regex.match?(@instrument, p)
+
+  defp instrument?(_effect), do: false
+
+  # the law's held xml ids, and every id above one ("section-9" above
+  # "section-9-2"): {held, above}
+  defp held_ids(rows) do
+    held =
+      for row <- rows,
+          id <- [Map.get(row, :xml_id), Map.get(row, :source_xml_id)],
+          is_binary(id),
+          into: MapSet.new(),
+          do: id
+
+    {held, MapSet.new(Enum.flat_map(held, &above/1))}
+  end
+
+  defp above(id) do
+    parts = String.split(id, "-")
+    for n <- 1..(length(parts) - 1)//1, do: parts |> Enum.take(n) |> Enum.join("-")
+  end
+
+  # may the effect fall on a provision LAT holds? Yes when it names none
+  # (specified provisions, a blanket amendment, definitions); else when a ref
+  # or a range end is a held id, inside one or above one
+  defp on_lat?(%Effect{} = e, held) do
+    refs =
+      (e.affected_refs || []) ++
+        Enum.flat_map(e.affected_ranges || [], fn {a, b} -> [a, b] end)
+
+    refs == [] or Enum.any?(refs, &held?(&1, held))
+  end
+
+  # the ref is held, inside a held provision, or above one
+  defp held?(ref, {held, above_held}) do
+    MapSet.member?(held, ref) or MapSet.member?(above_held, ref) or
+      Enum.any?(above(ref), &MapSet.member?(held, &1))
   end
 
   # a pointer join reaches the provision its effect was found on; a markup

@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Lat.CollectChanges do
 
   @shortdoc "Fill lat_change_log from the CLML store (dry run by default)"
 
-  @vias ~w(markup whole ref note_markup note_own note_cited)
+  @vias ~w(markup whole ref instrument note_markup note_own note_cited)
 
   @impl Mix.Task
   def run(args) do

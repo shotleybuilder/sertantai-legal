@@ -69,11 +69,43 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.FeedTest do
            ]
   end
 
-  test "an effect reaching no row is kept, with no row: a visible gap" do
+  test "an effect on a provision LAT holds that reached no row is kept, with no row: a visible gap" do
+    rows = [%{section_id: "#{@law}:s.9", xml_id: "section-9", effect_joins: []}]
+
     assert [%Record{section_id: nil, via: [], evidence: "key-z"}] =
-             Feed.records(@law, [%{section_id: "#{@law}:s.9", effect_joins: []}], [], [
-               effect("key-z", "repealed")
+             Feed.records(@law, rows, [], [
+               effect("key-z", "words repealed", affected_refs: ["section-9-2"])
              ])
+  end
+
+  test "D5: an effect on a provision LAT doesn't hold (Schedule, out of scope, annex) is not recorded" do
+    rows = [%{section_id: "#{@law}:s.9", xml_id: "section-9", effect_joins: []}]
+
+    effects = [
+      effect("key-s", "words substituted", affected_refs: ["schedule-2-paragraph-3"]),
+      effect("key-o", "repealed", affected_refs: ["section-40"]),
+      effect("key-r", "applied", affected_ranges: [{"section-30", "section-35"}])
+    ]
+
+    assert Feed.records(@law, rows, [], effects) == []
+  end
+
+  test "D5: an effect naming no provision (specified provisions, blanket, definitions) is kept as a gap" do
+    e =
+      effect("key-u", "Commencement Order", affected_provisions: "specified amended provision(s)")
+
+    assert [%Record{section_id: nil, evidence: "key-u"}] = Feed.records(@law, [], [], [e])
+  end
+
+  test "D5: a whole-instrument effect reaches every row of the law (a range over the law)" do
+    rows =
+      for s <- ["pt.1", "s.1", "s.1(1)", "s.2"],
+          do: %{section_id: "#{@law}:#{s}", effect_joins: []}
+
+    e = effect("key-act", "applied (with modifications)", affected_provisions: "Act")
+
+    assert Feed.records(@law, rows, [], [e]) |> Enum.map(&{&1.section_id, &1.via}) ==
+             for(r <- rows, do: {r.section_id, ["instrument"]})
   end
 
   test "a note's text is never read: a note joining no effect makes no record" do
