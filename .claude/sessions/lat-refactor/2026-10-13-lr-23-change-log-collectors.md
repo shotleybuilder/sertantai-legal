@@ -34,6 +34,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 
 - **D3 — Compact targets**: approved 2026-10-13 on condition of Gemini feedback; Gemini ACCEPT WITH CHANGES (`backend/data/code-reviews/2026-10-13-lr-23-d3-compact-targets.md`); built (Jason, 2026-10-13: "Surely there is a way to architect and not create so many rows and retain the same data fidelity"): see Compact targets; D2 waits on it
 - **D4 — Corroborating note joins**: approved 2026-10-13 — a note join stays only where it is the only way the change reaches the row; built in `Feed` (tests updated + 1 new; suite 2,642)
+- **D5 — Unreached effects**: keep all 121,978 (one record each), or only those that may fall on a provision LAT holds (see Compact dry run)
 - **D2 — Fill**: approve `mix lat.collect_changes --all --apply` (writes only `lat_change_log`, empty today; no other table changes)
 - **D1 — Record shape** (see Record shape). Taken back to Gemini 2026-10-13 (Jason): **VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md`)
 
@@ -194,3 +195,17 @@ Measured: keeping a note join only where it is the only way the change reaches t
 | 1990/43 | 10,944 | 3,325 | 3,270 |
 | 1991/56 | 11,062 | 3,840 | 3,742 |
 | 2017/1013 | 405 | 151 | 137 |
+
+## Compact dry run, all LAT laws (2026-10-13, with D4)
+
+`backend/data/reports/lat-refactor/lr23_dry2.csv`: 1,066 laws, 0 errors, **0 fidelity gate failures**.
+
+| | Per row | Stored (compact) |
+|---|---|---|
+| Reaching a row | 421,923 | 116,776 (−72%) |
+| Effects reaching no row | 121,978 | 121,978 (one each) |
+| **Total** | **543,901** | **238,754 (−56%)** |
+
+Joins after D4: `ref` 272,220, `markup` 104,515, `whole` 17,227, `note_own` 8,443 and `note_cited` 986 (where the note alone reaches the row), `note_markup` 0 (always beside the row's own markup). Largest: 1991/22 8,263, 2006/46 6,234, 1990/8 5,577.
+
+Half of what's stored is now effects reaching no row. By the earlier sample, about 96% of them are on provisions LAT doesn't hold: outside a fragment law's scope (58%), on Schedules (37%), whole instrument / annex. They aren't changes to LAT provisions (D5).
