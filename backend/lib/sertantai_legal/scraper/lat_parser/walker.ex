@@ -343,6 +343,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
       |> Effects.row_segments(ctx, extent || ctx.law_extent, node)
 
     text = LatTerritory.render(segments, extent || ctx.law_extent, repealed)
+    joins = Effects.row_effect_joins(segments, whole, ctx, node)
 
     {commentary_counts, commentary_refs} = Refs.collect(node, ctx.ref_type_lookup)
 
@@ -371,7 +372,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
         Enum.uniq(LatTerritory.provenance(segments) ++ LatTerritory.provenance(whole)),
       # LR-07: {commentary ref, effect id} per joined change in the row's text
       note_effects: LatTerritory.note_effects(segments),
-      effect_ids: Effects.row_effect_ids(segments, whole, ctx, node),
+      # LR-23: each joined effect with its join kind (the change log's `via`)
+      effect_joins: joins,
+      effect_ids: Enum.map(joins, &elem(&1, 0)),
       from_version: ctx.from_version
     }
   end

@@ -296,6 +296,11 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   note. The facts come from those effects; the note only says where to
   look. Empty when none: the note stays a note.
 
+  LR-23: also `effect_joins`, each effect with how the note reached it:
+  `{id, :markup}` or `{id, :own}` (the note's placement carries it to every
+  provision it sits on), or `{id, :cited, section_id}` (the pointer above:
+  only the provision the effect was found on).
+
   `effects`: the law's changes-feed effects.
   """
   @spec with_effects([map()], [map()], [Effect.t()]) :: [map()]
@@ -310,8 +315,9 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     joined =
       Enum.map(annotations, fn a ->
         ref = a.code |> String.split(":", parts: 2) |> List.last()
-        own = if MapSet.member?(known, ref), do: [ref], else: []
-        Map.put(a, :effect_ids, Enum.uniq(Map.get(by_ref, ref, []) ++ own))
+        own = if MapSet.member?(known, ref), do: [{ref, :own}], else: []
+        markup = for id <- Map.get(by_ref, ref, []), do: {id, :markup}
+        with_joins(a, Enum.uniq_by(markup ++ own, &elem(&1, 0)))
       end)
 
     held = MapSet.new(for a <- joined, id <- a.effect_ids, do: id)
@@ -321,10 +327,21 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
       EffectIndex.new(effects, lat_rows |> Enum.map(&row_xml_id/1) |> Enum.reject(&is_nil/1))
 
     Enum.map(joined, fn
-      %{effect_ids: []} = a -> %{a | effect_ids: pointed(a, index, xml_ids, held)}
-      a -> a
+      %{effect_ids: []} = a ->
+        with_joins(a, for({id, sid} <- pointed(a, index, xml_ids, held), do: {id, :cited, sid}))
+
+      a ->
+        a
     end)
   end
+
+  # LR-23: `effect_joins` (the change log's `via`) and the flat `effect_ids`
+  defp with_joins(a, joins),
+    do:
+      Map.merge(a, %{
+        effect_joins: joins,
+        effect_ids: joins |> Enum.map(&elem(&1, 0)) |> Enum.uniq()
+      })
 
   defp row_xml_id(row), do: Map.get(row, :xml_id) || Map.get(row, :source_xml_id)
 
@@ -349,7 +366,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
           e.affecting != nil and AmendmentNote.same_law?(e.affecting, law),
           ChangeFacts.kind(e.type, nil) in kinds,
           uniq: true,
-          do: e.effect_id
+          do: {e.effect_id, sid}
     end
   end
 

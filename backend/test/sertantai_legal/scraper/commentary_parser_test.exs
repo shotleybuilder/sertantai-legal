@@ -422,6 +422,15 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
              ]
     end
 
+    test "effect_joins: each joined effect with how the note reached it (LR-23)" do
+      annotations = [%{code: "F:c123", text: "b"}, %{code: "I:key-cc", text: "c"}]
+      rows = [%{section_id: "x", note_effects: [{"c123", "key-b1"}]}]
+      known = for id <- ~w(key-cc key-b1), do: effect(effect_id: id)
+
+      assert CommentaryParser.with_effects(annotations, rows, known)
+             |> Enum.map(& &1.effect_joins) == [[{"key-b1", :markup}], [{"key-cc", :own}]]
+    end
+
     test "a note no markup joins: the effects on its provision by the law it cites, of its kind, held by no other note (1991/56 s.98(5))" do
       rows = [
         %{section_id: "L:s.98(5)", xml_id: "section-98-5"},
@@ -487,6 +496,14 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
                {"F:key-held", ["key-held"]},
                {"F3", []},
                {"C1", []}
+             ]
+
+      assert CommentaryParser.with_effects(annotations, rows, effects)
+             |> Enum.map(& &1.effect_joins)
+             |> Enum.take(3) == [
+               [{"key-rep", :cited, "L:s.98(5)"}],
+               [{"key-si", :cited, "L:s.98(5)"}],
+               [{"key-held", :own}]
              ]
     end
 

@@ -9,7 +9,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
   - whole-provision changes an applied effect makes on a provision with no
     joinable markup, inherited by its descendants (`with_whole_provision/2`)
   - a row's segments with territory resolved (`row_segments/4`), its
-    excluded extent (`excluded/3`) and its effect ids (`row_effect_ids/4`)
+    excluded extent (`excluded/3`) and its effect ids (`row_effect_ids/4`,
+    with their join kinds: `row_effect_joins/4`)
 
   `ctx` is the walk context (`:effects`, `:provision_changes`). Pure.
   """
@@ -25,18 +26,28 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
   changes and the effects naming its provision (commencement, modification).
   """
   @spec row_effect_ids(LatSegments.t(), LatSegments.t(), map(), tuple()) :: [String.t()]
-  def row_effect_ids(segments, whole, ctx, node) do
-    joined = Enum.map(LatTerritory.note_effects(segments), &elem(&1, 1))
-    claimed = for %{effect_id: id} <- LatTerritory.provenance(whole), id != nil, do: id
+  def row_effect_ids(segments, whole, ctx, node),
+    do: segments |> row_effect_joins(whole, ctx, node) |> Enum.map(&elem(&1, 0))
+
+  @doc """
+  LR-23: `row_effect_ids/4` with how each effect reached the row, first join
+  kept: `:markup` (a change element in its text), `:whole` (a whole-provision
+  change it carries), `:ref` (the effect names its provision).
+  """
+  @spec row_effect_joins(LatSegments.t(), LatSegments.t(), map(), tuple()) ::
+          [{String.t(), :markup | :whole | :ref}]
+  def row_effect_joins(segments, whole, ctx, node) do
+    joined = for {_ref, id} <- LatTerritory.note_effects(segments), do: {id, :markup}
+    claimed = for %{effect_id: id} <- LatTerritory.provenance(whole), id != nil, do: {id, :whole}
 
     # words-level effects join through the markup only (their ref is coarse)
     named =
       for %{effect_id: id} = e <- EffectIndex.on(ctx.effects, Xml.xml_id(node)),
           id != nil,
           not EffectIndex.words_level?(e),
-          do: id
+          do: {id, :ref}
 
-    Enum.uniq(joined ++ claimed ++ named)
+    Enum.uniq_by(joined ++ claimed ++ named, &elem(&1, 0))
   end
 
   @doc """

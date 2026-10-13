@@ -67,6 +67,14 @@ defmodule SertantaiLegal.Scraper.LatParser.EffectsTest do
     assert Effects.row_effect_ids([], [], ctx, node) == ["key-c"]
   end
 
+  test "row_effect_joins/4: each join with how it reached the row (LR-23)" do
+    node = el(~s(<P1 id="regulation-3"><Pnumber>3</Pnumber></P1>))
+    ctx = ctx([effect("key-c", "coming into force", ["regulation-3"])], node)
+
+    assert Effects.row_effect_joins([], [], ctx, node) == [{"key-c", :ref}]
+    assert Effects.row_effect_ids([], [], ctx, node) == ["key-c"]
+  end
+
   test "excluded/3: the row's exclusion and the segments it was read from" do
     node =
       el(
