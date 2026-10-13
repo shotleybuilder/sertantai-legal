@@ -62,6 +62,11 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
   - **The rest** (about 125 SIs with neither): no timeline (J1), listed.
 - **J4 — approved 2026-10-13** (Jason: "important that compliance and subsequently users know the provision is repealed … 'outstanding effect' is on the source"). A repeal in force but not yet applied to the text (`applied: false`; 18 of 40 sampled new repeals). The law has repealed the provision by its date; legislation.gov.uk hasn't updated the revised text. Recommend: the repeal counts from its date (the law outranks the derived text), and the row is listed as an "outstanding effect" gap. The alternative is to wait for the text.
 - **J5 — approved 2026-10-13** (Jason: "Notes should already ONLY act as pointers and make sure the real fix is logged in the right session"). Built: the pointer withholds the law's start; the fallback start counts only changes on the row, not whole-instrument ones; gap `insertion_not_in_register`. Real fix: LR-27 (text-only effect refs) and LR-08 (pre-2002). An inserted provision whose insertion isn't in the register (7,157 rows / 144 laws). The row carries a whole-provision insertion or substitution note ("Ss. 27U-27Y and cross-heading inserted …"), the register has no dated insertion on it, and J3's default would date it from the law's own start (1996/18 s.27V: Royal Assent 1996-05-22 for a section inserted in 2024). Recommend: the note acts as a pointer only — it withholds the default, it supplies no fact. The start is unknown (no period before the first change held); listed as a gap "insertion not in the register". The data comes later from the join (the feed's "Part 2B inserted" has no structured refs: 25 such effects) or LR-08.
+- **TRUTH — Jason, 2026-10-13: "we cannot have wrong data for when and where"; where fidelity isn't possible, a clear value must say so.** Audit (see "Truth audit"), each a decision:
+  - **W1:** a provision repealed for one territory shows `in_force` with no territory (12,276 rows). Until LR-26 the timeline must not be read for "where"; LR-26 becomes a v0.1 blocker for any reader.
+  - **T1:** a text change we know happened but can't date makes the version date `unknown`, never an older date. Sources: undated change markup (15,398 rows), a note pointing to an amendment the register lacks (up to 14,709 rows; the J5 rule generalised from insertions to every text change), unreached gaps on the row.
+  - **T2:** Royal Assent / law-start defaults carry `basis = law_default`, not `evidence`; or are `unknown` (the pre-2002 Act whose sections were commenced by order is the risk).
+  - **T3:** an explicit `unknown` period from `-infinity` (a Postgres date) instead of a missing row, so every provision has a value for every date.
 - **F — Fill:** `mix lat.timeline --all --apply` writes `lat_label_timeline` only (empty today; nothing reads it until LR-25 and compliance's badge); see "Dry run with J5". **Jason: approve**
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
@@ -257,3 +262,16 @@ Moved dates: 12,993 earlier, 1,195 later. Sampled causes:
 - territorial repeals no longer starting versions;
 - the "earlier affecting provision" fix;
 - today's labels carrying a future date (now as at today).
+
+## Truth audit (2026-10-13)
+
+Jason: "does our when and where data tell the truth and when it cannot have fidelity does it default to a clear value signalling that fact — we cannot have wrong data for when and where". Answer: not yet. Where the timeline can state a wrong value rather than "unknown":
+
+| # | Where it can be wrong | Rows | Proposal |
+|---|---|---|---|
+| W1 | A territorial repeal (e.g. repealed for S) leaves `status = in_force` and `territory` empty, so it's wrong for that territory | 12,276 with a territorial repeal in force | LR-26 (territory per period) before any reader; until then the timeline is not a "where" source |
+| T1 | A text change happened but can't be dated (undated change markup; a note pointing to an amendment the register lacks; an unreached change on the row): `in_force_from` shows an older version date | 15,398 rows with undated markup; up to 14,709 note-labelled rows | `in_force_from` unknown whenever the row has a pointer to an undatable text change (generalises J5) |
+| T2 | Law-start defaults (register date, CLML, Royal Assent) state "in force since" for provisions whose commencement the feed doesn't hold (pre-2002 commencement by order) | the 107,859 newly filled dates are mostly defaults | a `basis` column (`evidence` / `law_default` / `markup`), or `unknown` |
+| T3 | No row = unknown is implicit; a reader can't tell "unknown" from "missing" | 34,287 rows | an explicit `unknown` period from `-infinity` |
+
+The fill runs on (it writes only the new table; nothing reads it). It's rebuilt after these.
