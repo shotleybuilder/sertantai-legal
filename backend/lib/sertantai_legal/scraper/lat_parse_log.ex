@@ -1,4 +1,4 @@
-defmodule SertantaiLegal.Scraper.LatChangeLog do
+defmodule SertantaiLegal.Scraper.LatParseLog do
   @moduledoc """
   Per-row change log of one LAT parse (sertantai-legal #167, L8.5): which rows
   changed, how, and why — the row-level counterpart of the operation's cause

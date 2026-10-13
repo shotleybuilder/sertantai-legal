@@ -15,7 +15,8 @@ We have been building a change system without naming it. A row's change label (e
 
 - ✅ Draft the design (below)
 - ✅ Gemini review of the plan → `backend/data/code-reviews/2026-10-13-lr-22-change-register-plan.md`
-- ⬜ Jason: decisions D1–D4
+- ✅ Jason: decisions D1–D4 (2026-10-13)
+- ✅ Rename `LatChangeLog` → `LatParseLog` (module + test; `lat_changes` table kept; 2,623 tests pass)
 - ⬜ Build plan: sessions for the table + feed collector, the labelling projection, and the switch-over wave; LR-08 and LR-21 re-scoped
 
 ## Dependencies
@@ -86,6 +87,25 @@ These feed the guide (LR-11) and the QA spec (LR-12).
 Applying unapplied changes to the text (#171); note enrichment (parked); fetching beyond R0–R6; territory from the register in v1 (D4).
 
 ## Decisions for Jason
+
+**Decided 2026-10-13 (Jason):**
+- **D1** approved.
+- **D2** `lat_change_log`; the existing module renamed `LatParseLog`.
+- **D3** "the look-in order; law is always authoritative above data derived from it, and data auto-derived from it is authoritative above editorial". So the authority order is:
+  1. the law's text (amending and commencing law);
+  2. data derived from it (legislation.gov.uk's revised-text markup and effects);
+  3. data derived from that automatically;
+  4. editorial (notes: never a fact).
+
+  When sources disagree, the projection takes the higher authority and lists the disagreement as a gap.
+- **D4** agreed for v1, but raise it if it needs a loop back in v0.2 (see below).
+
+**D4 loop back for v0.2: yes, recommended.**
+- Territory labels already come only from markup and effects. `territory_provenance`: markup 7,934 rows; effect paths (application / extent / everywhere / in_force …) about 21,900 row entries; no note source. So v1 loses nothing.
+- But `LatTerritory` reads the same feed effects the register's feed collector will hold. Two consumers of one source means a second change system for territory.
+- Pre-2002 territory from the amending law's own extent words ("Any amendment … has the same extent as the enactment being amended", Utilities Act 2000 s. 110(4)) is covered by neither.
+- For v0.2: project territory from `lat_change_log` and retire `LatTerritory`'s own effect reads.
+
 
 - **D1 — The design**: a register of changes (`lat_change_log`), collectors per source, labels a pure projection
 - **D2 — Name**: `lat_change_log` (snake_case, words separated, matching `lat_section_id_renames`, `amendment_annotations`; better than `lat_changelog`). Clash: the existing module `LatChangeLog` writes `lat_changes` (our copy's parse diffs). Recommend renaming that module `LatParseLog` (table `lat_changes` kept), so `LatChangeLog` names the new register

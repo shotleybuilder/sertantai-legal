@@ -1,7 +1,7 @@
-defmodule SertantaiLegal.Scraper.LatChangeLogTest do
+defmodule SertantaiLegal.Scraper.LatParseLogTest do
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.{AmendmentNote, LatChangeLog}
+  alias SertantaiLegal.Scraper.{AmendmentNote, LatParseLog}
 
   @law "UK_ukpga_2018_12"
 
@@ -16,13 +16,13 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
 
   describe "renumber_pair/2" do
     test "whole-provision renumbering notes give an {old, new} pair" do
-      assert LatChangeLog.renumber_pair(
+      assert LatParseLog.renumber_pair(
                "S. 23 renumbered as s. 24 (1.4.2010) by S.I. 2010/1",
                @law
              ) ==
                {id("s.23"), id("s.24")}
 
-      assert LatChangeLog.renumber_pair(
+      assert LatParseLog.renumber_pair(
                "Art. 10 renumbered as art. 10(1) (1.4.2013) by , (with ) The Natural Resources Body for Wales (Functions) Order 2013 (S.I. 2013/755)",
                "UK_uksi_2013_755"
              ) ==
@@ -30,18 +30,18 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
     end
 
     test "words moved within a provision, or any other note → nil" do
-      assert LatChangeLog.renumber_pair(
+      assert LatParseLog.renumber_pair(
                "Words in s. 39(3)(a) renumbered as s. 39(3)(a)(i) (3.7.2000) by 1999 c. 29",
                @law
              ) == nil
 
-      assert LatChangeLog.renumber_pair("S. 4 substituted (1.1.2020) by S.I. 2020/1", @law) == nil
+      assert LatParseLog.renumber_pair("S. 4 substituted (1.1.2020) by S.I. 2020/1", @law) == nil
     end
   end
 
   describe "entries/2" do
     test "an initial parse logs nothing (version 1, not a change)" do
-      assert LatChangeLog.entries(plan(inserted: [id("s.1")]), %{
+      assert LatParseLog.entries(plan(inserted: [id("s.1")]), %{
                cause: "initial",
                new_notes: [],
                status_changes: []
@@ -50,7 +50,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
 
     test "parser / scope / correction: every changed row takes the operation's cause" do
       entries =
-        LatChangeLog.entries(
+        LatParseLog.entries(
           plan(
             changed: [id("s.1")],
             inserted: [id("s.2")],
@@ -72,7 +72,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
       n = note("s.1", "S. 1 substituted (1.4.2024) by S.I. 2024/9")
 
       entries =
-        LatChangeLog.entries(
+        LatParseLog.entries(
           plan(changed: [id("s.1(2)"), id("s.5")]),
           %{cause: "legislative", new_notes: [n], status_changes: []}
         )
@@ -93,7 +93,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
 
     test "a status-only change is logged and is legislative evidence in itself" do
       assert [%{change: "status_changed", section_id: sid, cause: "legislative"}] =
-               LatChangeLog.entries(plan(), %{
+               LatParseLog.entries(plan(), %{
                  cause: "unattributed",
                  new_notes: [],
                  status_changes: [{id("s.9"), "in_force", "repealed"}]
@@ -114,7 +114,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
                  change_ids: [_]
                }
              ] =
-               LatChangeLog.entries(
+               LatParseLog.entries(
                  plan(removed: [id("s.23")], inserted: [id("s.24")]),
                  %{cause: "legislative", new_notes: [n], status_changes: []}
                )
@@ -138,7 +138,7 @@ defmodule SertantaiLegal.Scraper.LatChangeLogTest do
       existing = [id("s.1"), id("s.2"), id("s.3"), id("s.4"), id("s.5"), id("s.6")]
       new_ids = [id("s.1"), id("s.2"), id("s.5"), id("s.7"), id("s.8")]
 
-      plan = LatChangeLog.plan(merge, existing, new_ids)
+      plan = LatParseLog.plan(merge, existing, new_ids)
 
       assert plan.changed == [id("s.2")]
       assert plan.removed == [id("s.3"), id("s.4")]

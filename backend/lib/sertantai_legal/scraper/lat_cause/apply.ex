@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{AmendmentNote, LatCause, LatChangeLog, LatEvents, LatStatus}
+  alias SertantaiLegal.Scraper.{AmendmentNote, LatCause, LatParseLog, LatEvents, LatStatus}
 
   require Logger
 
@@ -157,7 +157,7 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
           do: {sid, before.statuses[sid], status}
 
     entries =
-      LatChangeLog.entries(plan, %{
+      LatParseLog.entries(plan, %{
         cause: cause,
         new_notes: new_notes,
         status_changes: status_changes
