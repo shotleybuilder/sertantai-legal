@@ -284,3 +284,7 @@ The fill runs on (it writes only the new table; nothing reads it). It's rebuilt 
 ## Fill (2026-10-13)
 
 `mix lat.timeline --all --apply --tag lr24_fill`: 1,066 laws, 0 errors; **476,075 periods** (equal to the dry run) for 340,579 provisions in 1,003 laws, `code_version` 31bf7029. The EXCLUDE constraint held for every insert (no overlapping periods). As at today for HSWA: in force 993, repealed 39, repealed_saved 4, prospective 2, read in 1.5 ms. **Compliance not told** (Jason: not until building and enrichment are finished).
+
+## Dry run with T1 (2026-10-13, for the rebuild)
+
+1,066 laws, 0 errors. Periods are unchanged: 476,075 (T1 only empties dates). **Undated changes: 16,231 rows** now carry an empty `in_force_from` with status in_force ("changed, date unknown") instead of an older date. Against today: effective_from same 227,043 / moved 11,157 (was 14,188) / emptied 29,859 / filled 106,807. Unchanged otherwise: no start 22,203, insertion not in the register 12,084, markup conflicts 7,925, outstanding effects 1,343. **Rebuild (dry run → Jason → apply).**
