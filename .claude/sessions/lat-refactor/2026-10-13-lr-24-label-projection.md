@@ -2,6 +2,13 @@
 session: 'LR-24: Label Projection'
 status: active
 opened: 2026-10-13
+bugs:
+  - pattern: "Effects changing an earlier amending or affecting provision ('amendment to earlier affecting provision SI 1995/3128 reg. 10(2) (as substituted)') classified as text changes by their trailing verb; they date rows as if this law's text changed"
+    category: change-kind
+    module: ChangeFacts.kind/2
+    affected: "1,267 register records (565 as text ops); HSWA 409 rows dated 2009-08-05 by SI 2009/1750 today"
+    fix: "kind/2 returns 'other' for types naming an earlier amending/affecting provision; register re-collected"
+    status: fixed
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
@@ -17,20 +24,20 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 - ✅ Jason: what `effective_from` means (since when the current text has had effect; modifications excluded), what each operation contributes to status, and what whole-instrument effects (LR-23 D5) mean for a row (LR-22 Q2)
 - ✅ Jason: labels as a query as at a date; published as a timeline (R3 + timeline, approved 2026-10-13, v0.1)
 - ✅ Compliance: the timeline in v0.1 — requirements received (see "Compliance's requirements"); the final DDL goes to compliance before it ships; final shape in dev by about 17 Oct for a release/0.1 exception (Jason confirms with compliance)
-- ⬜ Golden test cases: rows with known change histories (effective_from, changed_by, status, change ids), scrubbed of `key-` ids
-- ⬜ `LabelProjection` (pure): `timeline/2` (a law's rows + register records → periods) and `as_at/2`; status from changes, no note text
-- ⬜ `lat_label_timeline` (Ash resource + migration) and `mix lat.timeline --laws|--all [--apply]`; rebuilt per law after each collect
+- ✅ Golden test cases: rows with known change histories (effective_from, changed_by, status, change ids), scrubbed of `key-` ids
+- ✅ `LabelProjection` (pure): `timeline/4` (a law's rows + register records → periods) and `as_at/2`; status from changes, no note text
+- ✅ `lat_label_timeline` (Ash resource + migration) and `mix lat.timeline --laws|--all [--apply]` (rebuild after each collect: the LR-25 hook)
 - ⬜ Offline diff: the timeline as at today against today's labels, classified (expected: effect labels mostly equal; note-sourced and note-dated labels empty)
 - ⬜ Gap queries: rows with a note pointer and no change; changes with no date; changes resolving to no row
 - ⬜ Gemini acceptance
 
 ## Decisions for Jason
 
-- **J1 — Before the earliest known event** (no data case). Recommend:
+- **J1 — approved 2026-10-13.** Before the earliest known event (no data case):
   - the timeline starts at the earliest date we have evidence for: the provision's insertion (it didn't exist before), its own commencement, or the law's `md_coming_into_force_date` (`uk_lrt`; held for 564 of 1,066 LAT laws);
   - with none of those, it starts at the earliest change we hold;
   - before that start there's no row ("unknown"), never a guessed "in force".
-- **J2 — Today's period vs the CLML markup.** When the timeline as at today disagrees with the revised text's markup (e.g. the text shows the provision repealed but no repeal change is dated), the markup wins for the current period and the disagreement is listed as a gap. The revised text is legislation.gov.uk's current state; a dated change can't be invented to explain it.
+- **J2 — approved 2026-10-13.** Today's period vs the CLML markup: When the timeline as at today disagrees with the revised text's markup (e.g. the text shows the provision repealed but no repeal change is dated), the markup wins for the current period and the disagreement is listed as a gap. The revised text is legislation.gov.uk's current state; a dated change can't be invented to explain it.
 - **R3 + timeline — APPROVED 2026-10-13 (Jason: "it's needed in v0.1. I approve the timeline - that's a great solution").**
   - **Truth:** labels are a query as at a date.
   - **Published:** legal publishes a labels timeline, `lat_label_timeline`: one row per provision per period (section_id, valid_from, valid_to, status, in_force_from, changed_by, territory, change ids, code version). It's built from the register whenever the register changes.
@@ -151,3 +158,22 @@ From the compliance session:
 - **Its v0.1 read: drill-down only.** LEFT JOIN as at the UK date for today; a status badge (repealed, repealed_saved, prospective, partial); a missing row means no badge. Repealed and prospective provisions are marked and listed last, not hidden. Not matching: the screener walks `legal_register.compiled_applicability`, so "repealed / prospective don't drive a match" is a tree-compile concern (#37, v0.2).
 - **Timing:** the v0.1 feature freeze is 20 Oct. The badge lands on release/0.1 only if Jason confirms with compliance and the table is in dev with its final shape by about **17 Oct**; otherwise v0.2. It must not delay #133 / #27 (the v0.1 critical path).
 - **The DDL** (columns, types, indexes) is sent to compliance before it ships, for its test sandbox.
+
+## Build (2026-10-13)
+
+- **`LabelProjection`** (pure): `timeline/4` (D1, D3, J1, J2 as its rules), `as_at/2`, `uk_today/1` (BST from 01:00 UTC on the last Sunday of March to the last Sunday of October; no tz database in the app). 15 golden cases on real provisions (1990/43 s.6(6A), s.162(2), s.78B(2); 1986/44 s.8F(4); 1996/18 s.201(1); 1995/288; 2008/2164 pt.1; 1974/37; 2017/1013) plus the UK date.
+- **`lat_label_timeline`** (Ash resource; migrations `…163827` btree_gist, `…163828` table):
+  - the EXCLUDE constraint, one period per provision per date (compliance);
+  - index `(law_name, section_id, valid_from)`;
+  - `territory` column ready for LR-26;
+  - `code_version` stamped.
+- **`LabelTimeline`** (builder: DB reads, write per law) and **`mix lat.timeline`**: a dry run by default, with the as-at-today diff against today's columns written as it goes.
+
+**First four-law dry run: two faults, both fixed.**
+1. **Changes to an earlier amending/affecting provision counted as text changes** (bug logged).
+   - HSWA: 409 rows went 2009-08-05 → 2011-04-06, both from "amendment to earlier affecting provision S.I. 2001/2127 …" effects. Today's labels have the same fault.
+   - The register holds 1,267 such records, 565 with a text operation picked from a trailing "(as substituted)".
+   - `ChangeFacts.kind/2` now returns `other` for them. The register was re-collected.
+2. **1990/43: 837 rows went in force → prospective.** Undated change markup (the markup collector) and applied effects with no date counted as commencements that never started. A commencing change now counts only when it has a dated entry, or is genuinely prospective (not applied).
+
+Suite: 2,660 pass.
