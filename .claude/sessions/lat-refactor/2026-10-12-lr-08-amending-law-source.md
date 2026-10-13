@@ -16,7 +16,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Size, in rows (after LR-19): which note-labelled rows have their amending law in the store
 - ✅ Stop rules for fetching amending laws into the CLML store (Jason, 2026-10-13: rules first, so we don't run through the legislation.gov.uk corpus)
 - ✅ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
-- ⬜ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
+- ✅ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
 - ⬜ Design (Gemini, then Jason): which facts this source may supply (changed_by, dates, territory, status) and how provenance marks it (`law`)
 - ⬜ Tests first; offline classified diff; wave via LR-21
 - Not in scope: applying unapplied amendments to the text (#171), backlog
@@ -82,3 +82,39 @@ R0 applied (2026-10-13): of the 7,150 rows, 568 (28 laws) have no family and 6 (
 - **151 of 173 bodies stored** (CLML store 968 → 1,118 body files).
 - **1 unavailable:** Merchant Shipping (Registration, etc.) Act 1993 (ukpga 1993/22, repealed 1996). legislation.gov.uk serves no body for it.
 - **21 are LAT laws with a `LatScope`** (fragments only), so `clml.fetch` fetched only their LAT fragments. Their amending provisions came instead from the notes' pointers (s. / Sch. after the amending citation): 109 named fragments, 3 already held, 104 fetched (`section/N`, `schedule/N`). 2 returned 404: ukpga 1960/34 Sch. 1 and ukpga 1994/22 Sch. 7, probably pointer misreads. Their bodies were not fetched, so `LatScope` fragment reads and `lat.qa_sample` are unchanged.
+
+## Probe (2026-10-13)
+
+Hop 1 rows: 6,203, of which 4,200 carry a placed note (4,343 notes); the rest are labelled through an ancestor. Scripts: scratchpad `lr08_verify.py` and the commencement classifier. Both are crude regex first cuts, used for sizing only.
+
+**Example: Utilities Act 2000 (1,086 rows: Gas Act 1986 562, Electricity Act 1989 523).**
+- s. 60: "The 1989 Act is amended as follows. (2) In subsection (1) of section 25 … for "and (5)" there is substituted …; (4) … paragraphs (b) and (c) shall cease to have effect; (5) After subsection (5) … there is inserted …".
+- The law text gives the target (through a defined term and "that section") and the operation.
+- It gives no date: s. 110(2) "such day as the Secretary of State may by order … appoint". The dates are in S.I. 2000/3343, 2001/1781 and 2001/3266.
+- Extent: s. 110(4) "Any amendment or repeal made by this Act has the same extent as the enactment being amended".
+- The only dates inside the Act's CLML are its own notes ("S. 60 in force at 1.10.2001 by S.I. 2001/3266"). These are notes on another law and are not a source.
+
+**Row → amending provision.** The link is the note's pointer (amending law + provision), which the rule allows: a pointer, not a fact.
+- The crude parse resolved 2,061 of 4,343 notes to a provision in the CLML.
+- 1,682 didn't parse. Causes: "(c. 38, SIF 43:1)", "ss 156", lowercase "sch.", and EU amending acts whose notes name no article. These are parser gaps, fixable.
+- 608 parsed but the provision wasn't found: schedule part/paragraph ids, and fragments.
+
+**Verifying the provision is about the row.**
+- Of the 2,061 found, the text names the target law by title or year in 1,329 and the target provision number in 648.
+- The misses are mostly defined terms ("the 1989 Act", "the Energy Order", "the principal Act"), Schedule cross-headings naming the law once, and anaphora ("that section"). Those need resolving.
+
+**Operation from the law text.** "there is substituted", "is inserted", "shall cease to have effect", "is repealed" give the effect kind directly.
+
+**Dates (hop 1 laws, the law's own commencement words, notes stripped):**
+
+| How the amending law commences | Laws | Rows |
+|---|---|---|
+| Fixed or relative date in the law ("come into force on 10th August 2000", "day after Royal Assent") | 82 | 1,661 |
+| Mixed: some provisions fixed or at assent, the rest by order | 23 | 2,056 |
+| By order only (hop 2) | 22 | 1,021 |
+| No body (scoped LAT laws, fragments only; 1 unavailable) | 22 | 848 |
+| Unclassified ("exit day", lists, no words found) | 24 | 617 |
+
+Some "amending laws" are commencement orders (uksi 2001/114, ssi 2002/118, ssi 2013/51: "1st April 2013 is the day appointed …"). The row's fact is a commencement, and the order's own text dates it.
+
+**Hop 2 size.** 67 amending laws need an order (by order, mixed, or no body). Their rows' notes name 65 distinct commencing SIs (2,205 rows with a placed note); 1 is in the CLML store. At N = 5: 37 SIs, 2,529 notes.
