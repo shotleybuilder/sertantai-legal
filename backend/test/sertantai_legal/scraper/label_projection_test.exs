@@ -1,0 +1,259 @@
+defmodule SertantaiLegal.Scraper.LabelProjectionTest do
+  @moduledoc """
+  LR-24 golden cases: a provision's labels as a timeline from its changes
+  (lat_change_log rows). Shaped on real provisions (effect ids replaced).
+  """
+  use ExUnit.Case, async: true
+
+  alias SertantaiLegal.Scraper.LabelProjection
+  alias SertantaiLegal.Scraper.LabelProjection.Period
+
+  @today ~D[2026-10-13]
+
+  defp row(law, sid, extra \\ []),
+    do:
+      Map.merge(
+        %{section_id: "#{law}:#{sid}", extent_code: "E+W+S", markup_status: nil},
+        Map.new(extra)
+      )
+
+  defp change(law, sid, ev, op, type, by, entries, extra \\ []) do
+    entries =
+      for {date, q} <- entries,
+          do: %{
+            "date" => date && Date.to_iso8601(date),
+            "qualification" => q,
+            "prospective" => date == nil,
+            "applied" => true
+          }
+
+    dated = for {d, _} <- List.wrap(entries_dates(entries)), d != nil, do: d
+
+    Map.merge(
+      %{
+        section_id: "#{law}:#{sid}",
+        evidence: ev,
+        operation: op,
+        effect_type: type,
+        affecting_law: by,
+        in_force: entries,
+        effective_from: Enum.max(dated, Date, fn -> nil end),
+        savings: [],
+        prospective: dated == [],
+        via: ["ref"]
+      },
+      Map.new(extra)
+    )
+  end
+
+  defp entries_dates(entries),
+    do: for(e <- entries, do: {e["date"] && Date.from_iso8601!(e["date"]), e["qualification"]})
+
+  defp periods(law, rows, changes, opts \\ []) do
+    %{periods: periods} =
+      LabelProjection.timeline(law, rows, changes, Keyword.merge([today: @today], opts))
+
+    Enum.map(periods, &{&1.valid_from, &1.valid_to, &1.status, &1.in_force_from, &1.changed_by})
+  end
+
+  test "text changes on several dates: a period per version; nothing before an insertion (1990/43 s.6(6A))" do
+    law = "UK_ukpga_1990_43"
+
+    changes = [
+      change(law, "s.6(6A)", "e1", "inserted", "inserted", "UK_ukpga_1995_25", [
+        {~D[1996-04-01], nil}
+      ]),
+      change(law, "s.6(6A)", "e2", "substituted", "words substituted", "UK_uksi_2010_675", [
+        {~D[2010-04-06], nil}
+      ])
+    ]
+
+    assert periods(law, [row(law, "s.6(6A)")], changes, law_start: ~D[1991-01-01]) == [
+             {~D[1996-04-01], ~D[2010-04-06], "in_force", ~D[1996-04-01], "UK_ukpga_1995_25"},
+             {~D[2010-04-06], nil, "in_force", ~D[2010-04-06], "UK_uksi_2010_675"}
+           ]
+  end
+
+  test "repeal with savings: in force from the law's commencement, repealed_saved from the repeal (1986/44 s.8F(4))" do
+    law = "UK_ukpga_1986_44"
+
+    changes = [
+      change(
+        law,
+        "s.8F(4)",
+        "e1",
+        "repealed",
+        "omitted",
+        "UK_uksi_2019_1393",
+        [{~D[2020-12-31], nil}],
+        savings: ["reg. 3"]
+      )
+    ]
+
+    assert periods(law, [row(law, "s.8F(4)")], changes, law_start: ~D[1986-08-25]) == [
+             {~D[1986-08-25], ~D[2020-12-31], "in_force", ~D[1986-08-25], nil},
+             {~D[2020-12-31], nil, "repealed_saved", ~D[2020-12-31], "UK_uksi_2019_1393"}
+           ]
+  end
+
+  test "partial commencement: prospective, then partly in force, then in force (1990/43 s.162(2))" do
+    law = "UK_ukpga_1990_43"
+
+    changes = [
+      change(law, "s.162(2)", "c1", "commenced", "coming into force", "UK_uksi_2012_1", [
+        {~D[2012-04-01], "for specified purposes"},
+        {~D[2016-04-01], "in so far as not already in force"}
+      ])
+    ]
+
+    assert periods(law, [row(law, "s.162(2)")], changes, law_start: ~D[1991-01-01]) == [
+             {~D[1991-01-01], ~D[2012-04-01], "prospective", nil, nil},
+             {~D[2012-04-01], ~D[2016-04-01], "in_force_partial", nil, nil},
+             {~D[2016-04-01], nil, "in_force", ~D[2016-04-01], "UK_uksi_2012_1"}
+           ]
+  end
+
+  test "a prospective insertion with no date: prospective from the law's start (1996/18 s.201(1))" do
+    law = "UK_ukpga_1996_18"
+
+    changes = [
+      change(law, "s.201(1)", "p1", "inserted", "inserted", "UK_ukpga_2008_25", [{nil, nil}],
+        applied: false
+      )
+    ]
+
+    rows = [row(law, "s.201(1)", markup_status: "prospective")]
+
+    assert periods(law, rows, changes, law_start: ~D[1996-08-22]) == [
+             {~D[1996-08-22], nil, "prospective", nil, nil}
+           ]
+  end
+
+  test "whole-instrument revocation reaches every row: repealed from its date (1995/288)" do
+    law = "UK_uksi_1995_288"
+
+    changes =
+      for sid <- ["reg.1", "reg.2"],
+          do:
+            change(
+              law,
+              sid,
+              "w1",
+              "repealed",
+              "revoked",
+              "UK_uksi_2012_632",
+              [{~D[2012-04-06], nil}],
+              via: ["instrument"]
+            )
+
+    assert periods(law, [row(law, "reg.1"), row(law, "reg.2")], changes,
+             law_start: ~D[1995-03-01]
+           ) ==
+             List.duplicate(
+               [
+                 {~D[1995-03-01], ~D[2012-04-06], "in_force", ~D[1995-03-01], nil},
+                 {~D[2012-04-06], nil, "repealed", ~D[2012-04-06], "UK_uksi_2012_632"}
+               ],
+               2
+             )
+             |> List.flatten()
+  end
+
+  test "a future repeal is in the timeline now and takes effect on its date (2008/2164 pt.1)" do
+    law = "UK_uksi_2008_2164"
+
+    changes = [
+      change(law, "pt.1", "f1", "repealed", "revoked", "UK_uksi_2026_9", [{~D[2026-10-17], nil}])
+    ]
+
+    %{periods: p} =
+      LabelProjection.timeline(law, [row(law, "pt.1")], changes,
+        today: @today,
+        law_start: ~D[2008-09-01]
+      )
+
+    assert %Period{status: "in_force"} = LabelProjection.as_at(p, @today)["#{law}:pt.1"]
+    assert %Period{status: "repealed"} = LabelProjection.as_at(p, ~D[2026-10-17])["#{law}:pt.1"]
+    assert %Period{status: "in_force"} = LabelProjection.as_at(p, ~D[2026-10-16])["#{law}:pt.1"]
+    assert LabelProjection.as_at(p, ~D[2001-01-01])["#{law}:pt.1"] == nil
+  end
+
+  test "a modification never starts a version (D1)" do
+    law = "UK_ukpga_1974_37"
+
+    changes = [
+      change(law, "s.2(3)", "m1", "other", "applied (with modifications)", "UK_uksi_2015_51", [
+        {~D[2015-04-06], nil}
+      ])
+    ]
+
+    assert periods(law, [row(law, "s.2(3)")], changes, law_start: ~D[1975-04-01]) == [
+             {~D[1975-04-01], nil, "in_force", ~D[1975-04-01], nil}
+           ]
+  end
+
+  test "an ancestor's whole-provision repeal reaches the row; its words-level change doesn't" do
+    law = "UK_ukpga_1974_37"
+
+    changes = [
+      change(law, "s.9", "w1", "substituted", "words substituted", "UK_ukpga_1999_1", [
+        {~D[1999-01-01], nil}
+      ]),
+      change(law, "s.9", "r1", "repealed", "repealed", "UK_ukpga_2005_1", [{~D[2005-01-01], nil}])
+    ]
+
+    assert periods(law, [row(law, "s.9(1)")], changes, law_start: ~D[1975-04-01]) == [
+             {~D[1975-04-01], ~D[2005-01-01], "in_force", ~D[1975-04-01], nil},
+             {~D[2005-01-01], nil, "repealed", ~D[2005-01-01], "UK_ukpga_2005_1"}
+           ]
+  end
+
+  test "J1: no evidence of a start (no law date, no change): no periods, a gap" do
+    law = "UK_uksi_1999_1"
+
+    assert %{periods: [], gaps: [{"UK_uksi_1999_1:reg.4", :no_start}]} =
+             LabelProjection.timeline(law, [row(law, "reg.4")], [], today: @today)
+  end
+
+  test "J1: no law date: the timeline starts at the earliest change held" do
+    law = "UK_uksi_1999_1"
+
+    changes = [
+      change(law, "reg.4", "e1", "substituted", "words substituted", "UK_uksi_2004_2", [
+        {~D[2004-06-01], nil}
+      ])
+    ]
+
+    assert periods(law, [row(law, "reg.4")], changes) == [
+             {~D[2004-06-01], nil, "in_force", ~D[2004-06-01], "UK_uksi_2004_2"}
+           ]
+  end
+
+  test "J2: the CLML markup wins today's period when no dated change explains it; the conflict is a gap" do
+    law = "UK_ukpga_1974_37"
+
+    %{periods: p, gaps: gaps} =
+      LabelProjection.timeline(law, [row(law, "s.5", markup_status: "repealed")], [],
+        today: @today,
+        law_start: ~D[1975-04-01]
+      )
+
+    assert [%Period{valid_from: ~D[1975-04-01], valid_to: nil, status: "repealed"}] = p
+    assert gaps == [{"UK_ukpga_1974_37:s.5", :markup_conflict}]
+  end
+
+  test "a commencement by the law itself: no changed_by" do
+    law = "UK_uksi_2017_1013"
+
+    changes = [
+      change(law, "reg.38", "c1", "commenced", "coming into force", "UK_uksi_2017_1013", [
+        {~D[2018-01-01], nil}
+      ])
+    ]
+
+    assert periods(law, [row(law, "reg.38")], changes, law_start: ~D[2017-11-01]) == [
+             {~D[2017-11-01], ~D[2018-01-01], "prospective", nil, nil},
+             {~D[2018-01-01], nil, "in_force", ~D[2018-01-01], nil}
+           ]
+  end
+end
