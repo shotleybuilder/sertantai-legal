@@ -33,17 +33,17 @@ A provision's territory (`extent_code`, `excluded_extent`, `territory_provenance
 ## Todo
 
 - ✅ Inventory: every territory path in `LatTerritory` / `LatParser.Effects` and which facts it reads (markup on the row, markup on a change, effect extent / application)
-- ⬜ Collector: change territory into `lat_change_log` (markup Extent of joined and unjoined change elements; the feed's extents are already recorded); the provision's own RestrictExtent stays a row fact (markup about the provision, not a change)
+- ❌ Collector: change territory into `lat_change_log` — not needed: the claims already carry each change's territory (`territory_provenance`) and the register dates them (markup Extent of joined and unjoined change elements; the feed's extents are already recorded); the provision's own RestrictExtent stays a row fact (markup about the provision, not a change)
 - ✅ Jason: the territory rule as a projection (D1′ approved) (base extent from the row's markup, narrowed or extended by changes, in date order; authority law > derived data > auto-derived > editorial)
 - ✅ Tests first; territory in `LabelProjection` (pure); offline diff against today's `extent_code` / `excluded_extent` / `territory_provenance`, classified
 - ⬜ Gemini acceptance
-- ⬜ Timeline `territory` per period (W1): rebuild (dry run → Jason → apply)
+- ✅ Timeline `territory` per period (W1): rebuild (dry run → Jason → apply), twice
 - ✅ Feed's 'same as affected' extent (S+A+M+E…) normalised at source (LR-24 bug)
-- ⬜ Lands in the LR-25 switch-over with the "when" labels
+- ⏸️ Lands in the LR-25 switch-over with the "when" labels (LR-25's work)
 
 ## Decisions for Jason
 
-- **R — Rebuild** approved and applied 2026-10-13 (479,097 periods, 77c801a2). **R2 — rebuild with the two fixes below: Jason: approve**
+- **R — Rebuild** approved and applied 2026-10-13 (479,097 periods, 77c801a2). **R2 — rebuild with the two fixes: approved and applied 2026-10-13** (479,265 periods, d6c29123)
 - **D1′ — approved 2026-10-13, built.** Consensus after Gemini (see "Gemini on D1")**: Jason approves the consensus ("we have to publish what we know is true"). **Jason: approve D1′**
 - **D1 — The territory rule (per period)**, see "Proposed rule". Today's "where" stays the reviewed LR-02/03 calculation; the register dates it; undatable means unknown.
 
@@ -140,3 +140,5 @@ The table's `territory` documentation now states the convention: empty means now
 - **As at today:** territory known 310,656 (+5,624: devolved types); nowhere (repealed) 9,866; unknown 19,636 (mostly UK Acts / SIs with no extent in LAT).
 - **Unknown before today:** 26,373 provisions (was 32,167).
 - **Status vs today's columns:** 40,214 changed (+142: not-commenced rows no longer repealed in future periods). R2 rebuild to Jason.
+
+**Rebuild 2** (approved): 479,265 periods, `code_version` d6c29123, 0 errors. As at today: territory known 310,656, nowhere (repealed) 9,866, unknown 19,636. W1 is closed: the timeline is a "where" source.
