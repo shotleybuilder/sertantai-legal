@@ -374,6 +374,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
       note_effects: LatTerritory.note_effects(segments),
       # LR-23: each joined effect with its join kind (the change log's `via`)
       effect_joins: joins,
+      # LR-23: change markup no effect explains (the change log's markup source)
+      unjoined_changes: LatTerritory.unjoined_changes(segments),
       effect_ids: Enum.map(joins, &elem(&1, 0)),
       from_version: ctx.from_version
     }

@@ -24,7 +24,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 - ✅ Tests first: pure feed collector (joins by markup, whole provision, ref, note pointer; unresolved effect; no fact from note text)
 - ✅ Walker emits each row's joins with their kind (`effect_joins`), not only the flat `effect_ids`
 - ✅ `ChangeCollector.Feed` (pure) and `ChangeCollector` (orchestrator, store only)
-- ⬜ Markup collector: change markup no effect explains (source `markup`)
+- ✅ Markup collector: change markup no effect explains (source `markup`)
 - ✅ Ash resource `SertantaiLegal.Legal.LatChangeLog` + Ash-generated migration (`20261013090525_add_lat_change_log`, migrated; table empty)
 - ⬜ `mix lat.collect_changes --laws|--all [--dry-run]`: counts by source and via, unresolved list
 - ⬜ Dry run on all LAT laws → Jason → fill (DB write)
@@ -76,3 +76,7 @@ Rule now:
 Records: 1990/43 26,530 → 9,854; 1991/56 18,630 → 9,951.
 
 Today's labels spread the same way (`ChangeFacts.row_facts` gives every row in a note's placement the note's fact). LR-24's diff will show which labels move.
+
+**Markup collector.** `LatTerritory.unjoined_changes/1` gives a ChangeId that joined no effect (after the orphan joins), as `{change_id, ref, operation}`; the walker emits it as `unjoined_changes`. `ChangeCollector.Markup` records it with source `markup`, the commentary ref as `pointer`, and no date or law: a change happened, and nothing here says when or by whom. Four-law trial: markup records 1990/43 1,090, 1991/56 1,111, 1974/37 212, 2017/1013 15.
+
+**Range effects reach every provision in the range.** In 1974/37, "s. 1-59 applied by …" and "s. 1-54 (Pt. 1) amended …" each reach 786–820 rows, sub-provisions included (`EffectIndex` expands a range against the document's id order, as today's parse does). This is recorded faithfully. The projection inherits from ancestors anyway, so the duplicates don't change labels. Narrowing the expansion to the named provisions is a later choice, not this session's.

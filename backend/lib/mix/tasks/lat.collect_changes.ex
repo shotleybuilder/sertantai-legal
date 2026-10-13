@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Lat.CollectChanges do
       mix lat.collect_changes --all --apply       # write (per law: delete + insert)
       mix lat.collect_changes --all --tag lr23    # report name (default: collect)
 
-  Writes `data/reports/lat-refactor/<tag>.csv` as it goes (law, records,
-  rows reached, unreached effects, each `via`); a re-run skips the laws
+  Writes `data/reports/lat-refactor/<tag>.csv` as it goes (law, feed
+  records, effects, unreached effects, each `via`, markup records); a re-run skips the laws
   already in the report (`<tag>.csv.done`). Never fetches.
   """
 
@@ -46,7 +46,12 @@ defmodule Mix.Tasks.Lat.CollectChanges do
     done = if File.exists?(done_file), do: done_file |> File.read!() |> String.split(), else: []
 
     if done == [],
-      do: File.write!(csv, Enum.join(~w(law records effects unreached) ++ @vias, ",") <> "\n")
+      do:
+        File.write!(
+          csv,
+          Enum.join(~w(law feed_records effects unreached) ++ @vias ++ ~w(markup_records), ",") <>
+            "\n"
+        )
 
     todo = laws -- done
 
@@ -57,9 +62,9 @@ defmodule Mix.Tasks.Lat.CollectChanges do
     for {law, i} <- Enum.with_index(todo, 1) do
       line =
         case ChangeCollector.collect(law) do
-          {:ok, %{"feed" => records} = by} ->
+          {:ok, %{"feed" => records, "markup" => markup} = by} ->
             if opts[:apply], do: {:ok, _} = ChangeCollector.write(law, by)
-            summary(law, records)
+            summary(law, records) <> ",#{length(markup)}"
 
           {:error, reason} ->
             Mix.shell().error("  #{law}: #{inspect(reason)}")

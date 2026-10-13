@@ -4,12 +4,13 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   a law, offline from the CLML store: parse (store only) → the collectors →
   delete + insert that law's records per collector, in one transaction.
 
-  Collectors: `Feed` (changes-feed effects with their joins). Never fetches.
+  Collectors: `Feed` (changes-feed effects with their joins), `Markup`
+  (change markup no effect explains). Never fetches.
   Thin: the joins and records are the pure collectors'.
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.ChangeCollector.{Feed, Record}
+  alias SertantaiLegal.Scraper.ChangeCollector.{Feed, Markup, Record}
   alias SertantaiLegal.Scraper.LatStagedParser
 
   @doc "A law's records from the store, by collector."
@@ -17,7 +18,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   def collect(law_name) do
     with {:ok, %{rows: rows, notes: notes, effects: effects}} <-
            LatStagedParser.fetch_changes(law_name, store: :only) do
-      {:ok, %{"feed" => Feed.records(law_name, rows, notes, effects)}}
+      {:ok,
+       %{
+         "feed" => Feed.records(law_name, rows, notes, effects),
+         "markup" => Markup.records(law_name, rows)
+       }}
     end
   end
 

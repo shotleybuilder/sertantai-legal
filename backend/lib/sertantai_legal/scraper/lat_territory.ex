@@ -164,6 +164,31 @@ defmodule SertantaiLegal.Scraper.LatTerritory do
     |> Enum.uniq()
   end
 
+  @doc """
+  LR-23: change markup no effect explains — each change with a ChangeId that
+  joined no effect, as `{change_id, commentary ref, operation}` (`inserted`,
+  `substituted`, `repealed`), in order, unique. The change log's `markup`
+  source.
+  """
+  @spec unjoined_changes(LatSegments.t()) :: [{String.t(), String.t() | nil, String.t()}]
+  def unjoined_changes(segments) do
+    segments
+    |> Enum.flat_map(&changes/1)
+    |> Enum.flat_map(fn
+      %Change{change_id: id, effect_id: nil, synthetic: false} = c when is_binary(id) ->
+        [{id, c.ref, operation(c)}]
+
+      _ ->
+        []
+    end)
+    |> Enum.uniq()
+  end
+
+  defp operation(%Change{kind: :keep}), do: "repealed"
+  defp operation(%Change{kind: :pair}), do: "substituted"
+  defp operation(%Change{substitution: true}), do: "substituted"
+  defp operation(%Change{}), do: "inserted"
+
   defp changes({:words, change, inner}), do: [change | Enum.flat_map(inner, &changes/1)]
   defp changes({:aside, inner}), do: Enum.flat_map(inner, &changes/1)
   defp changes({:pair, change, new, old}), do: [change | Enum.flat_map(new ++ old, &changes/1)]

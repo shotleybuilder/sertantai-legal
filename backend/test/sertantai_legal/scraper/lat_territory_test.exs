@@ -519,6 +519,26 @@ defmodule SertantaiLegal.Scraper.LatTerritoryTest do
       assert LatTerritory.note_effects(segs) == [{"key-a", "key-a"}, {"c123", "key-b"}]
     end
 
+    test "unjoined_changes/1: change markup no effect explains, with its operation (LR-23)" do
+      segs =
+        LatTerritory.resolve(
+          [
+            {:words, %Change{kind: :ins, ref: "c1", change_id: "key-a-1"}, [t("x")]},
+            {:words, %Change{kind: :keep, ref: "c124", change_id: "d29p1"}, [t("y")]},
+            {:words, %Change{kind: :ins, ref: "c125", change_id: "d30p2", substitution: true},
+             [t("z")]},
+            # no ChangeId: nothing to record
+            {:words, %Change{kind: :ins, ref: "c126"}, [t("w")]}
+          ],
+          EffectIndex.new([fx(effect_id: "key-a")])
+        )
+
+      assert LatTerritory.unjoined_changes(segs) == [
+               {"d29p1", "c124", "repealed"},
+               {"d30p2", "c125", "substituted"}
+             ]
+    end
+
     test "an effect with no AffectedExtent is measured against the law's own extent (an SSI amended by an SSI)" do
       index = EffectIndex.new([fx(effect_id: "key-ss", effect_extent: "S")], [], "S")
 
