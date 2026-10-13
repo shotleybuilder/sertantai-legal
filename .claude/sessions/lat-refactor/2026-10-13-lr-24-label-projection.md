@@ -23,7 +23,8 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 
 ## Decisions for Jason
 
-- **R — Revision (proposed 2026-10-13, see "Labels as a query"):** labels computed at query time from the register as at a date (default today), no stored labels; D1–D3 become the rules of that function; modifications shown through the register for v0.1; LR-25 reduced (no relabel wave). Gemini review, then Jason.
+- **R2 — Revision after Gemini (see "Gemini on labels as a query"):** the query is the truth; the existing label columns stay as a dated cache of "as at today" (refreshed daily and after each collect, stamped with the date and code version); the manifest hash includes the labels so fractalaw re-pulls when today's labels change; valid-time semantics; 'today' is the UK date. **Jason: approve R2**
+- **R — Revision (proposed 2026-10-13, superseded by R2):** labels computed at query time from the register as at a date (default today), no stored labels; D1–D3 become the rules of that function; modifications shown through the register for v0.1; LR-25 reduced (no relabel wave). Gemini review, then Jason.
 - **D1 — What `effective_from` means.** Superseded by R: as at T, the start of the provision's version in force at T (text changes and its own commencement; not modifications).
 - **D2 — Whole-instrument effects.** Superseded by R: a commencement dates every row from its date; a repeal makes every row repealed from its date; a modification is shown like D1's.
 - **D3 — Status.** Superseded by R: at T, only changes in force by T count (prospective = not yet in force at T; partly in force at T; repealed at T, savings → repealed_saved). No note text.
@@ -78,3 +79,26 @@ Jason: put ourselves in a user's shoes. Users mostly want to know what applies t
   - the time machine gives status and dates at T, not the text as it read at T (only today's revised text is held; #171);
   - before about 2002, answers depend on LR-08.
 - **Speed:** a row's changes 6 ms, the largest law 0.7 s from the view. The projection is timed when built.
+
+## Gemini on labels as a query (2026-10-13)
+
+`backend/data/code-reviews/2026-10-13-lr-24-labels-as-query.md`. **VERDICT: ACCEPT WITH CHANGES.**
+
+**Correction to the proposal.** Gemini flagged the sync, and it's right. The `lat` table (`SertantaiLegal.Legal.Lat`), with `status`, `effective_from` and `changed_by`, is exported by the delta sync to compliance's production database (`Sync.Delta.Config`). Compliance's code doesn't read those columns, but they do reach production. Dropping them would be a schema change across the sync.
+
+Taken:
+- **Keep one materialisation, as a cache: "as at today".** Consumers that read columns (fractalaw's pull, the delta sync) need them, and so do cross-law questions ("all provisions in force today"). The query stays the source of truth; the cache is its output for one date.
+- **Change detection.** The LAT manifest hash fractalaw re-pulls on must include the labels, so a provision coming into force (no text change) triggers a re-pull.
+- **Retrospective changes.** The in-force date governs, not the date the change was made: as at T, a change counts if it is in force at T.
+- **Rules for missing data.** No supporting change means an empty label, never a guess. That's already the LR-20 rule, now stated for the projection.
+
+Not taken:
+- **"Whole-corpus query ≈ 37.5 minutes".** That estimate assumes one 6 ms query per row. The measured corpus-wide view read is 22 s, and the projection runs per law. The cache answers cross-law questions anyway.
+- **`effective_from` as an array for partial commencement.** Status `in_force_partial` plus the register's dated entries carry it; a new label shape would change the contract.
+- **Hashing labels into the content hash.** The manifest carries the labels hash next to `lat_hash`, so text and label changes stay distinguishable.
+
+Added by Claude:
+- **"Today" is the UK date (Europe/London), not UTC.** In-force dates are UK dates; at 00:30 BST, UTC is still the previous day.
+- **Semantics are valid time.** As at T means "as the law is known now, what applied at T", not "what we would have said at T". Bitemporal history is out of scope. Audit of what was served comes from the cache's daily changes: a status that changes because a date passes is logged in `lat_changes` (`LatParseLog`), so "what did we serve on date X" is answerable.
+
+**R2 in one line:** labels are a query as at a date; the existing columns become the dated "today" cache (as-at date + code version), refreshed daily and after each collect; the manifest carries a labels hash; changes to the cache are logged. Effect on LR-25: no relabel wave from the parse; instead the cache refresh job, the labels hash in the manifest, deletion of the parse-time label paths, and the staleness check. fractalaw's and compliance's column contracts are unchanged (values move; LH-05 notes the meaning: "as at" the stamped date).
