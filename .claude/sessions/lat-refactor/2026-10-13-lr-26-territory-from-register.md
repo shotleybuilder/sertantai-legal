@@ -24,6 +24,7 @@ A provision's territory (`extent_code`, `excluded_extent`, `territory_provenance
 
 ## Decisions for Jason
 
+- **D1′ — consensus after Gemini (see "Gemini on D1")**: Jason approves the consensus ("we have to publish what we know is true"). **Jason: approve D1′**
 - **D1 — The territory rule (per period)**, see "Proposed rule". Today's "where" stays the reviewed LR-02/03 calculation; the register dates it; undatable means unknown.
 
 ## Dependencies
@@ -55,3 +56,29 @@ For each timeline period:
 4. **Later periods:** a territorial repeal in force after today (dated, not yet applied) narrows the territory from its date: the row's territory minus the repeal's territory (application, else effect extent; "same as affected" = the row's).
 5. **No territory left** (excluded = the whole extent) means the provision applies nowhere: status repealed for that period, consistent with today's columns.
 6. Notes are never read. The garbled "same as affected" extent is normalised at the feed parser (LR-24 bug).
+
+## Gemini on D1 (2026-10-13)
+
+`backend/data/code-reviews/2026-10-13-lr-26-territory-rule.md`. **VERDICT: ACCEPT WITH CHANGES.**
+
+Points where D1 could publish a wrong territory (not merely unknown):
+1. **Rolling back a composed exclusion.** Today's `excluded_extent` composes several claims over the words (insertions narrow, repeals remove). Undoing one claim by date can re-include a territory another claim still excludes, or one a narrowing insertion never covered.
+2. **The provision's own extent can change over time** (an extent change). Today's `extent_code` carried back would be wrong.
+3. **Staged in-force entries per territory** ("1.4.2025 for E., 1.4.2026 for W.") mean one claim narrows the territory in steps, not at one date.
+4. **"Unknown" vs "nowhere"** must be distinguishable.
+
+Agreed (no change): today's parse result is the authoritative current period; notes never read; future dated repeals narrow from their date. Not taken: a `territory_provenance` column on the timeline (more schema; the row's provenance and change ids already trace it), an array type for territory (the codes are "E+W+S+NI" text, as `extent_code`).
+
+## D1′ — consensus
+
+For each period:
+1. **Today's period:** `territory` = `extent_code` minus `excluded_extent` (the reviewed current calculation).
+2. **Earlier periods, exact only when safe:** an exclusion is rolled back before its date only when every claim behind it is a **dated removal** (a repeal or omission, with one in-force date or staged dates whose territories can be read per stage). Then the territory before the date includes that territory again.
+3. **Unknown otherwise** (territory empty for periods before today):
+   - a claim behind the exclusion is undated (71 rows);
+   - a claim is a narrowing insertion or substitution;
+   - the provision has an extent change on it;
+   - a staged claim's territories can't be read.
+4. **Later periods:** a dated territorial repeal not yet in force narrows the territory from its date (by stage where staged); unreadable → unknown from that date.
+5. **Nowhere vs unknown:** when no territory is left, the period's status is `repealed`. An empty territory with status repealed means "nowhere"; with any other status, "unknown". Same pattern as LR-24 T1: the status disambiguates, no new values or columns.
+6. Notes are never read; "same as affected" is normalised at the feed parser.
