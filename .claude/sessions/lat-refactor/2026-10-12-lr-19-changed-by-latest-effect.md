@@ -1,8 +1,52 @@
 ---
 session: 'LR-19: Effect Joins'
-status: active
+status: closed
 opened: 2026-10-12
+closed: 2026-10-13
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Provision labels now come from the right effects: the orphan join no longer takes another
+  change's or another law's effect (D2), legacy notes point rows to their provision's effect by
+  the cited law (D1), and an undated changed_by needs a single law (D3a). Applied to 283 laws
+  offline (NAS backup first): note-sourced row labels 21,276 → 14,709, 0 errors, no enrichment dropped.
+
+decisions:
+  - what: "Purpose is high-quality provision labels; note enrichment (note-level fact columns) parked"
+    why: "Jason: 'We're not labelling Notes. We might use Notes to help label provisions.' — the first framing filled facts for notes"
+    result: "decisions restated for rows and re-measured at row level; LR-00 meta and memory record the parking"
+  - what: "D1 — a row takes, for an unjoined legacy note on it, the effect on its provision by the law the note cites, of its kind, held by no other note"
+    why: "legacy notes (bare CommentaryRef, no change element) had no join; the note is only the pointer, the fact comes from the effect"
+    result: "6,328 rows keep their label but now from an effect; 144 gain one"
+  - what: "D2 — an orphan change id never takes an effect owned by other markup or another note, and only one by the law its note cites"
+    why: "1,095 wrong picks came from with_orphans taking 'the one effect of its kind on the provision' (1968/47 s.1(1); 1991/56 blanket M_F_ note collected 20 effects)"
+    result: "1,569 rows lost a changed_by whose law has no effect on them; statuses and territory corrected in 69 laws"
+  - what: "D3 option a — a row's label is its latest dated effect; with none dated, a changed_by only when one law made the undated changes"
+    why: "the old fallback took the first law by name among several undated — arbitrary"
+    result: "1,246 rows have no label instead of an arbitrary law"
+
+metrics:
+  missed_joins_notes: { exact_provision: 6883, ancestor: 913, descendant: 201, elsewhere_by_law: 2321, no_effect_by_law: 5943 }
+  wrong_picks_notes: { total: 1719, orphan_join_fault: 1095, feed_as_substituted: 601, latest_of_several: 12, other: 11 }
+  corpus_diff: { field_diffs: 55997, laws: 283, rows_touched: 15192, row_laws: 244, from_note_to_effect: 6328, other_law_or_date: 2952, d3a_undated_none: 1246, emptied: 340, gained: 144, effect_to_note: 80, status_changes: 81, territory_laws: 69 }
+  wave: { laws: 283, rows: 210362, errors: 0, renamed: 0, dropped: 0, ambiguous: 0, orphaned_mappings: 0, enriched_before: 169750, enriched_after: 169729, text_changed_enriched: 21 }
+  row_labels_after: { from_effects: 224417, from_notes: 14709, from_notes_before: 21276 }
+
+lessons:
+  - title: "Frame data-quality work on the thing customers see — provision labels — not on notes"
+    detail: "I measured and proposed note-level facts (a note's changed_by) until Jason corrected it. Re-measured by row, D1's value was ~2,000 labels, not the ~10,000 notes the note view suggested: a row's label is its latest dated change and pointed effects are usually older or undated."
+    tag: data
+  - title: "A simulation that drops all notes overstates the loss: note placement legitimately carries joined effects"
+    detail: "The first row simulation passed notes=[] and showed thousands of effect-labelled rows going empty. Notes joined to effects (by markup or own id) must stay as carriers with their text facts blanked; only unjoined notes' text is removed."
+    tag: tooling
+  - title: "Orphan joins need ownership and the cited law, or one blanket note spreads facts across an Act"
+    detail: "with_orphans picked 'the one applied effect of the kind on the provision' with no check that the effect had its own markup/note or was by the cited law. One M_F_ blanket note in 1991/56 joined 20 effects and gave every row it marks 2025 by 2024/13. Both checks are cheap: held ids and Commentary Citation URIs are in the document."
+    tag: data
+  - title: "Validate a corpus diff against the feed, then sample the residue by hand"
+    detail: "Checking 'does the old/new law have an effect on the row?' split 4,374 changed_by changes; the suspicious 443 turned out to be the checker counting Act-wide effects ('power to amend conferred | Act') and more wrong joins removed. Hand-sampling with fetch_changes + the baseline .etf (term_to_binary compressed, not gzip) settled each class."
+    tag: tooling
+
 bugs:
   - pattern: "A note's changed_by comes from the latest-dated effect joined to it, not the law the note itself cites (its Citation): later changes to the same words replace the note's own amender"
     category: lat-change-facts
@@ -22,9 +66,34 @@ bugs:
     affected: ~10000 notes
     fix: "CommentaryParser.with_effects/3 pointer join (D1), applied in the lr19 wave"
     status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/effect_index.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/effects.ex
+  - backend/lib/sertantai_legal/scraper/commentary_parser.ex
+  - backend/lib/sertantai_legal/scraper/amendment_note.ex
+  - backend/lib/sertantai_legal/scraper/lat_staged_parser.ex
+  - backend/lib/sertantai_legal/scraper/staged_parser.ex
+  - backend/lib/sertantai_legal/scraper/CLAUDE.md
+  - backend/test/sertantai_legal/scraper/effect_territory_test.exs
+  - backend/test/sertantai_legal/scraper/commentary_parser_test.exs
+  - backend/test/sertantai_legal/scraper/amendment_note_test.exs
+  - backend/data/reports/lat-refactor/lr19-snapshot.compare.csv
+  - backend/data/reports/lat-reparse/lr19_preview.csv
+  - backend/data/reports/lat-reparse/lr19.csv
+  - backend/data/reports/lat-reparse/lr19_wave_laws.txt
+
+depends_on:
+  - 2026-10-12-lr-20-no-facts-from-notes
+  - 2026-10-09-lr-07-change-metadata-from-effects
+
+enables:
+  - "LR-08 amending law as a source (A3)"
+  - "LR-21 note fallback removal (A4): 14,709 note-sourced labels left"
+  - "LH-05: LR-19 label changes and 21 rows to re-enrich recorded there"
 ---
 
-# Session: LR-19 Effect Joins (ACTIVE)
+# Session: LR-19 Effect Joins (CLOSED)
 
 ## Problem
 
@@ -43,7 +112,6 @@ Widened 2026-10-12 (architecture track): every fact a row or note gets must come
 - ✅ Classified diff of the offline whole-corpus parse (2026-10-12, `mix lat.parse_snapshot` baseline on the pre-change code → `--compare`) — see Diff
 - ✅ Re-parse dry run (2026-10-12, `mix lat.reparse --laws <283> --store only --dry-run --tag lr19_preview`, `lat-reparse/lr19_preview.csv`, law list `lr19_wave_laws.txt`): 0 errors, 0 gate failures; enriched 169,750: carried 169,729, changed 21 (territory brackets in text: eur 2016/2031 5, 1968/73 8, 1990/43 3, 1984/55 2, 1982/16, 2010/15, uksi 2010/2214), dropped 0, ambiguous 0; no renames, row counts unchanged
 - ✅ Jason approved ("Go", 2026-10-12) → NAS backup (snapshots/latest) → applied (`mix lat.reparse --laws <283> --store only --tag lr19`, `lat-reparse/lr19.csv`): 0 errors; rows 210,362 → 210,362; renamed 0, dropped 0, ambiguous 0, orphaned mappings 0; enriched 169,750 → 169,729 (the 21 rows whose territory brackets changed await fractalaw re-enrichment); `mix lat.status` dry run: 0 to update. LAT 374,866 rows / 1,066 laws; labelled rows from effects 224,417, from notes 14,709 (was 21,276)
-- ⬜ LH-05: tell fractalaw (21 enriched rows' text changed; labels changed on 15,192 rows) — only on Jason's go
 
 ## Dependencies
 
