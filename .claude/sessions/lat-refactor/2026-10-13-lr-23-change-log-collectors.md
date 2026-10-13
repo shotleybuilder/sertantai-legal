@@ -1,7 +1,63 @@
 ---
 session: 'LR-23: Change Log Table & Feed Collector'
-status: active
+status: closed
 opened: 2026-10-13
+closed: 2026-10-13
+outcome: success
+parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Built and filled the change register lat_change_log: pure feed and markup collectors that record each change with
+  the row it reached and how (via), stored compact as runs of consecutive rows and expanded by the view
+  lat_change_log_rows. 132,965 records in 853 laws; the view reproduces the 2,450,531 per-row joins exactly
+  (0 fidelity failures in 1,066 laws); Gemini accepted.
+
+decisions:
+  - what: "D1 record shape: one record per change, source and target row, with via (how it reached the row) and pointer (the note), unreached changes kept with no row"
+    why: "Joins from markup, whole-provision changes, note pointers and orphan ids can't be rebuilt from affected_ref at label time; storing them makes every label traceable. Gemini first advised resolving at label time, then accepted on re-review (text provision ids, rewritten per law after every parse)"
+    result: "Gemini ACCEPT; correction recorded: section ids are not stable across renumbering, the per-parse rewrite is the guard"
+  - what: "D2 fill: mix lat.collect_changes --all --apply"
+    why: "Writes only the new empty table, per law in one transaction, refusing any law that fails the fidelity gate"
+    result: "1,066 laws, 0 errors, 0 gate failures; 132,965 records"
+  - what: "D3 compact targets: a change stored once per run of consecutive rows (section_id .. section_id_to by position), expanded by a view"
+    why: "Jason: range and Part-wide changes written per row (1991/22: 73,482 records, ~690 rows per modification) — 'surely there is a way … and retain the same data fidelity'. Gemini ACCEPT WITH CHANGES: one interval shape replaced covers row|subtree; gate run in DB position order"
+    result: "Fidelity gate 0 differences on every law; extent filtering and a materialised view not taken (would change joins; per-law reads are fast)"
+  - what: "D4 a note join stays only where the note alone reaches the row"
+    why: "A modification note placed on each section row (s.54 … s.106) corroborated a ref join and broke every run; its placement stays in amendment_annotations"
+    result: "1991/22 16,550 → 8,263 records; note_markup joins 104,096 → 0 (always beside the row's own markup)"
+  - what: "D5 unreached effects: kept only when they may fall on a LAT provision or name none; whole-instrument effects reach every row"
+    why: "96% of unreached effects were on Schedules, annexes or out-of-scope sections — not changes to LAT. Jason: whole-instrument effects are needed, 'a special case of the range application'"
+    result: "Unreached 121,978 → 14,140; whole-instrument effects in 311 laws (2,018,087 row joins, about one record each); stored 238,754 → 132,965"
+
+metrics:
+  fill: { laws: 1066, laws_with_records: 853, records: 132965, unreached_gaps: 14140, runs: 19575, markup_records: 8547, errors: 0, fidelity_failures: 0 }
+  view: { rows: 2450531, equals_per_row_total: true, row_read_ms: 6, largest_law_read_s: 0.7, corpus_read_s: 22 }
+  per_row_joins: { ref: 272220, markup: 104515, whole: 17227, instrument: 2018087, note_own: 8323, note_cited: 986, note_markup: 0 }
+  storage: { per_row: 543901, compact_before_d5: 238754, stored: 132965 }
+  effects: { in_feed: 203639, recorded: 97837 }
+  unreached_sample_43_laws: { total: 18731, out_of_scope: 10907, schedules: 6874, whole_instrument: 213, annex: 184, not_applied: 177, no_ref: 74, words_level_gap: 261, whole_provision_gap: 41 }
+  tests: { suite: 2645, collector_tests_added: 19 }
+
+lessons:
+  - title: Storing the joins made a hidden label bug visible on the first two laws
+    detail: "Today's labels spread a note's effects across every row the note sits on (1990/43 'Pt. 2A inserted' 692 rows x 24 effects; 1991/56 blanket M_F_ note 560 rows x 15). Resolving at label time would have hidden it; the per-row counts in a two-law trial exposed it before any fill."
+    tag: data
+  - title: Volume is a design signal — ask what one fact is before storing it per row
+    detail: "Jason challenged 73,482 records for one law. A range or a Part-wide modification is one fact; storing runs of consecutive rows and expanding in a view cut 543,901 to 132,965 with an exact round trip. The fidelity gate (expand compact == per-row, in DB position order) is what made the compression safe to accept."
+    tag: schema
+  - title: Measure what breaks the compression rather than guessing
+    detail: "My guess (multi-kind via sets) was wrong (16,550 → 16,445). Inspecting one run breaker showed a corroborating note on every section row splitting a 603-row range — D4 then halved the law."
+    tag: data
+  - title: Whole-instrument effects are a range, not an unreachable effect
+    detail: "I lumped 'Act'/'Regulations' effects with Schedules and out-of-scope sections; Jason corrected: they apply to every provision. 'Act defn. of …', 'Blanket amendment' and 'specified amended provision(s)' are not whole-instrument — words-level or unspecified, kept as gaps."
+    tag: data
+  - title: Push a reviewer to decide, with the counter-argument in hand
+    detail: "Gemini's first advice (drop stored rows) rested on an assumption (volatile keys). Re-asking with the concrete answer and 'accept or push back harder' gave a clear verdict and named the real guard (rewrite after parse) and its residual risk (staleness check, now in LR-25)."
+    tag: tooling
+  - title: "`until ! pgrep -f X` wait loops never end"
+    detail: "The waiting shell's own command line contains X, so pgrep always matches; 11 such loops from LR-19 were still polling. Run the job itself in the background, or wait on a log file."
+    tag: tooling
+
 bugs:
   - pattern: "A note's joined effects spread to every row the note sits on: a pointer (cited-law) join pairs every effect found with every placement row; a markup join reaches rows whose text doesn't carry the change"
     category: label-join
@@ -9,10 +65,35 @@ bugs:
     affected: "1990/43 Pt. 2A note: 692 rows × 24 effects; 1991/56 blanket M_F_ note: 560 rows × 15 effects (rows with the change markup: 684)"
     fix: "Collector records the real pair: cited → the provision the effect was found on; markup → only rows whose own markup carries the change; own (commencement/modification) → the note's placement. Labels move in LR-24/25"
     status: open
-parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+artifacts:
+  - backend/lib/sertantai_legal/legal/lat_change_log.ex (Ash resource; view lat_change_log_rows as a custom statement)
+  - backend/priv/repo/migrations/20261013090525_add_lat_change_log.exs
+  - backend/priv/repo/migrations/20261013115913_lat_change_log_compact.exs
+  - backend/lib/sertantai_legal/scraper/change_collector.ex (orchestrator, fidelity/3, db_order/1)
+  - backend/lib/sertantai_legal/scraper/change_collector/{record,feed,markup,compact}.ex
+  - backend/lib/mix/tasks/lat.collect_changes.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/effects.ex (row_effect_joins/4), walker.ex (effect_joins, unjoined_changes)
+  - backend/lib/sertantai_legal/scraper/commentary_parser.ex (note effect_joins with kind; cited joins keep their provision)
+  - backend/lib/sertantai_legal/scraper/lat_territory.ex (unjoined_changes/1)
+  - backend/test/sertantai_legal/scraper/change_collector/{feed,markup,compact}_test.exs
+  - backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md
+  - backend/data/code-reviews/2026-10-13-lr-23-d3-compact-targets.md
+  - backend/data/code-reviews/2026-10-13-lr-23-acceptance.md
+  - backend/data/reports/lat-refactor/lr23_dry.csv, lr23_dry2.csv, lr23_dry3.csv, lr23_fill.csv (gitignored)
+
+depends_on:
+  - 2026-10-13-lr-22-change-register
+  - 2026-10-12-lr-19-changed-by-latest-effect
+
+enables:
+  - LR-24 label projection (when) from lat_change_log
+  - LR-26 territory from the register (where)
+  - LR-25 switch-over wave (parse hook, staleness check)
+  - LR-08 amending and commencing law collectors (source law)
 ---
 
-# Session: LR-23 Change Log Table & Feed Collector (ACTIVE)
+# Session: LR-23 Change Log Table & Feed Collector (CLOSED)
 
 ## Problem
 
