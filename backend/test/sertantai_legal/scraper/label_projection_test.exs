@@ -286,4 +286,51 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              {~D[1991-01-01], nil, "in_force", ~D[1991-01-01], nil}
            ]
   end
+
+  test "a repeal for part of the row's extent leaves it in force (territory narrows: LR-26) (1974/37 s.1(3))" do
+    law = "UK_ukpga_1974_37"
+
+    changes = [
+      change(
+        law,
+        "s.1(3)",
+        "r1",
+        "repealed",
+        "repealed",
+        "UK_asp_2018_1",
+        [{~D[2019-04-01], nil}],
+        effect_extent: "S"
+      )
+    ]
+
+    assert periods(law, [row(law, "s.1(3)", extent_code: "E+W+S+NI")], changes,
+             law_start: ~D[1975-04-01]
+           ) == [
+             {~D[1975-04-01], nil, "in_force", ~D[1975-04-01], nil}
+           ]
+  end
+
+  test "a repeal whose extent is 'same as affected' (the feed's S+A+M+E+… spelling) covers the row" do
+    law = "UK_ukpga_1974_40"
+
+    changes = [
+      change(
+        law,
+        "s.3(3)",
+        "r1",
+        "repealed",
+        "repealed",
+        "UK_ukpga_1995_25",
+        [{~D[1996-04-01], nil}],
+        effect_extent: "S+A+M+E+A+S+A+F+F+E+C+T+E+D"
+      )
+    ]
+
+    assert periods(law, [row(law, "s.3(3)", extent_code: "E+W+S")], changes,
+             law_start: ~D[1974-07-31]
+           ) == [
+             {~D[1974-07-31], ~D[1996-04-01], "in_force", ~D[1974-07-31], nil},
+             {~D[1996-04-01], nil, "repealed", ~D[1996-04-01], "UK_ukpga_1995_25"}
+           ]
+  end
 end

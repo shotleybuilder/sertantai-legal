@@ -3,6 +3,12 @@ session: 'LR-24: Label Projection'
 status: active
 opened: 2026-10-13
 bugs:
+  - pattern: "legislation.gov.uk feed spells AffectingEffectsExtent 'same as affected' as S+A+M+E+A+S+A+F+F+E+C+T+E+D; stored as an extent code it reads as Scotland (+ junk)"
+    category: feed-extent
+    module: ChangesFeed (parse) / anything reading effect_extent
+    affected: "17,881 lat_change_log records"
+    fix: "LabelProjection reads it as 'same as the provision'; the feed parser should normalise it to nil at source (LR-26 territory)"
+    status: open
   - pattern: "Effects changing an earlier amending or affecting provision ('amendment to earlier affecting provision SI 1995/3128 reg. 10(2) (as substituted)') classified as text changes by their trailing verb; they date rows as if this law's text changed"
     category: change-kind
     module: ChangeFacts.kind/2

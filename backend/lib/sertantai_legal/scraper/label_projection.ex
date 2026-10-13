@@ -21,7 +21,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     the law itself. Modifications and applications never start a version.
     Empty while prospective or partly in force.
   - **D3 status at T.** repealed (repealed_saved with savings) from a
-    whole-provision repeal in force at T; prospective while a commencing
+    whole-provision repeal in force at T reaching the row's whole extent (a
+    repeal for part of it narrows the territory: LR-26); prospective while a commencing
     change (commencement, the row's own insertion or substitution) has no
     entry in force at T; in_force_partial while a commencement is partial;
     else in_force.
@@ -36,7 +37,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   Notes are never read. Pure: `today` and `law_start` are passed in.
   """
 
-  alias SertantaiLegal.Scraper.{AmendmentNote, ChangeFacts, EffectIndex, LatStatus}
+  alias SertantaiLegal.Scraper.{AmendmentNote, ChangeFacts, EffectIndex, LatStatus, Territory}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   defmodule Period do
@@ -204,6 +205,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     repeal =
       in_force
       |> Enum.filter(&(&1.operation == "repealed" and not words_level?(&1)))
+      |> Enum.filter(&covers_row?(&1, row.extent_code))
       |> Enum.max_by(& &1.effective_from, Date, fn -> nil end)
 
     commencing = Enum.filter(changes, &commencing?/1)
@@ -231,7 +233,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
     version =
       in_force
-      |> Enum.filter(&version?/1)
+      |> Enum.filter(
+        &(version?(&1) and (&1.operation != "repealed" or covers_row?(&1, row.extent_code)))
+      )
       |> Enum.max_by(& &1.effective_from, Date, fn -> nil end)
 
     {in_force_from, by, ids} =
@@ -261,8 +265,34 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     }
   end
 
+  # a repeal makes the row repealed only where it reaches the row's whole
+  # extent; one for part of it narrows the territory (LR-26). Its extent: the
+  # territorial application, else the change's extent; none, or "same as
+  # affected" (the feed spells it S+A+M+E+A+S+A+F+F+E+C+T+E+D), is the row's
+  defp covers_row?(c, row_extent) do
+    case change_extent(c) do
+      nil -> true
+      extent -> Territory.covers?(extent, row_extent)
+    end
+  end
+
+  defp change_extent(c) do
+    [Map.get(c, :territorial_application), Map.get(c, :effect_extent)]
+    |> Enum.reject(&(&1 in [nil, ""] or same_as_affected?(&1)))
+    |> List.first()
+    |> Territory.normalize()
+  end
+
+  defp same_as_affected?(code),
+    do:
+      code
+      |> String.replace(~r/[^A-Za-z]/, "")
+      |> String.upcase()
+      |> String.starts_with?("SAMEAS")
+
   # a version starts with a text change (an ancestor's only when whole-
-  # provision) or a commencement — never a modification
+  # provision; a repeal only where it reaches the row's whole extent) or a
+  # commencement — never a modification
   defp version?(%{operation: op}) when op in @text_ops, do: true
   defp version?(%{operation: "commenced"}), do: true
   defp version?(_change), do: false

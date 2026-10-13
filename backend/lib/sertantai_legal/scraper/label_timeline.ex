@@ -40,7 +40,8 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
       Repo.query!(
         """
         SELECT section_id, evidence, operation, effect_type, affecting_law, in_force,
-               effective_from, savings, via, prospective, applied
+               effective_from, savings, via, prospective, applied, effect_extent,
+               territorial_application
         FROM lat_change_log_rows WHERE law_name = $1 AND section_id IS NOT NULL
         """,
         [law_name]
