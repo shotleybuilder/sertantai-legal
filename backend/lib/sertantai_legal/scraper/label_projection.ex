@@ -496,8 +496,17 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
         do: Territory.subtract(extent || "E+W+S+NI", excluded) || :nowhere,
         else: extent
 
+    # a provision not yet in force anywhere: its whole extent is "excluded"
+    # because nothing is live, not because a repeal took it — no territory
+    # fact; unknown in every period, never "nowhere"
+    not_commenced? =
+      excluded != nil and excluded == extent and
+        (Map.get(row, :markup_status) == "prospective" or
+           Enum.any?(periods, &(covers?(&1, today) and &1.status == "prospective")))
+
     rollback =
       cond do
+        not_commenced? -> :unknown
         extent == nil or extent_change?(changes) -> :unknown
         excluded == nil -> []
         claims != [] and Enum.all?(claims, &removal_date(&1, by_ev)) -> claims
@@ -507,7 +516,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     Enum.map(periods, fn p ->
       t =
         cond do
-          extent == nil ->
+          extent == nil or not_commenced? ->
             nil
 
           covers?(p, today) ->

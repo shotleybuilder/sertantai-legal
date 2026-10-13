@@ -16,6 +16,12 @@ bugs:
     affected: "found by test; counted in the territory dry run"
     fix: "a change whose in-force entries each name a territory reaches their union"
     status: fixed
+  - pattern: "A provision not yet in force anywhere has its whole extent 'excluded' (nothing live), which the territory step read as 'nowhere' and marked repealed in future periods"
+    category: label-territory
+    module: LabelProjection (territories)
+    affected: "369 provisions today (prospective, extent = excluded) and their future periods"
+    fix: "not commenced → territory unknown in every period, never 'nowhere'"
+    status: fixed
 ---
 
 # Session: LR-26 Territory from the Register — Where (ACTIVE)
@@ -37,7 +43,7 @@ A provision's territory (`extent_code`, `excluded_extent`, `territory_provenance
 
 ## Decisions for Jason
 
-- **R — Rebuild** the timeline with territory (dry run below). **Jason: approve**
+- **R — Rebuild** approved and applied 2026-10-13 (479,097 periods, 77c801a2). **R2 — rebuild with the two fixes below: Jason: approve**
 - **D1′ — approved 2026-10-13, built.** Consensus after Gemini (see "Gemini on D1")**: Jason approves the consensus ("we have to publish what we know is true"). **Jason: approve D1′**
 - **D1 — The territory rule (per period)**, see "Proposed rule". Today's "where" stays the reviewed LR-02/03 calculation; the register dates it; undatable means unknown.
 
@@ -115,3 +121,16 @@ The first dry run crashed at law 719 (uksi 2007/79): a later repeal after nothin
 - **Today's territory equals today's columns** (`extent_code` minus `excluded_extent`; repealed = none). A five-law check (1974/37, 1990/43, 1974/40, 1968/73) gave 0 differences among provisions with a row today.
 - **Provisions whose territory is unknown before today: 32,167.** The causes: an exclusion behind an undated or narrowing claim, a staged one, or an extent change.
 - **Status vs today:** 40,072 changed (as LR-24, with the staged-territory repeals corrected), of which 33,626 are unknown (no row).
+
+## Rebuild 1 and two fixes (2026-10-13)
+
+**Rebuild 1** (approved): 479,097 periods, `code_version` 77c801a2. As at today:
+- 305,032 provisions have a known territory;
+- 9,699 apply nowhere (repealed);
+- **25,427 are unknown.**
+
+Why they're unknown:
+- **25,058 provisions (227 laws) have no `extent_code` in LAT**: uksi 21,812, ssi 4,092, wsi 2,455, nisr 2,386, ukpga 2,083. A devolved legislature's instrument has the extent its type fixes: SSI / ASP S; WSI / ANAW E+W; NI instruments NI. That's `LatParser.Effects.law_extent`'s table, used by the parser itself. **Fix:** the builder gives those rows that extent (`Effects.type_extent/1`). UK Acts and SIs with no extent stay unknown.
+- **369 are prospective provisions** whose whole extent is "excluded" because nothing is live yet. Today J2 kept them prospective, but **future periods were marked repealed** (bug logged). **Fix:** not commenced means territory unknown in every period, never "nowhere". Test added; suite 2,680.
+
+The table's `territory` documentation now states the convention: empty means nowhere when repealed, otherwise unknown.

@@ -690,6 +690,29 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              ]
     end
 
+    test "a provision not yet in force anywhere: territory unknown in every period, never 'nowhere' (2006/28 s.36(1))" do
+      law = "UK_ukpga_2006_28"
+
+      com =
+        change(law, "s.36(1)", "c1", "commenced", "coming into force", "UK_uksi_2027_1", [
+          {~D[2027-06-01], nil}
+        ])
+
+      rows = [
+        row(law, "s.36(1)",
+          extent_code: "E+W",
+          excluded_extent: "E+W",
+          markup_status: "prospective",
+          claims: []
+        )
+      ]
+
+      assert terr(law, rows, [com], law_start: ~D[2007-03-01]) == [
+               {~D[2007-03-01], ~D[2027-06-01], "prospective", nil},
+               {~D[2027-06-01], nil, "in_force", nil}
+             ]
+    end
+
     test "no extent known: territory unknown" do
       law = "UK_ukpga_1974_37"
 

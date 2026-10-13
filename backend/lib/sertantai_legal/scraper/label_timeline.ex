@@ -14,6 +14,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LabelProjection, LatStatus}
+  alias SertantaiLegal.Scraper.LatParser.Effects
 
   @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows`: today's labels, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
@@ -59,11 +60,15 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
 
     noted = Enum.group_by(noted, &hd/1, fn [_, l] -> l end)
 
+    law_type = law_name |> String.split("_") |> Enum.at(1)
+
     rows =
       for [sid, extent, status, prov, from, by, change_src, excluded, claims] <- rows do
         %{
           section_id: sid,
-          extent_code: extent,
+          # LR-26: a row with no extent of its own takes the one its law's
+          # type fixes (SSI: S, WSI: E+W, NI: NI); UK types stay unknown
+          extent_code: extent || Effects.type_extent(law_type),
           markup_status: if(prov == "markup" and status in ~w(repealed prospective), do: status),
           excluded_extent: excluded,
           # LR-26: the claims behind the row's territory (territory_provenance)

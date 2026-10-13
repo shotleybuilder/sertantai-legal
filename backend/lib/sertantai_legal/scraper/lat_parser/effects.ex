@@ -167,6 +167,14 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
     do: Xml.root_extent(doc) || Map.get(@type_extent, Map.get(context, :type_code))
 
   @doc """
+  The extent a law's type fixes by its legislature (an SSI: S; a WSI: E+W;
+  NI instruments: NI); nil for UK types (LR-26: a row with no extent of its
+  own takes it; a UK Act or SI with none stays unknown).
+  """
+  @spec type_extent(String.t() | nil) :: String.t() | nil
+  def type_extent(type_code), do: Map.get(@type_extent, type_code)
+
+  @doc """
   A row's segments with territory resolved from the effects layer
   (LatTerritory.resolve/2), inside any whole-provision changes it inherits.
   """
