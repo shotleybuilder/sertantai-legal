@@ -134,3 +134,9 @@ Why they're unknown:
 - **369 are prospective provisions** whose whole extent is "excluded" because nothing is live yet. Today J2 kept them prospective, but **future periods were marked repealed** (bug logged). **Fix:** not commenced means territory unknown in every period, never "nowhere". Test added; suite 2,680.
 
 The table's `territory` documentation now states the convention: empty means nowhere when repealed, otherwise unknown.
+
+**Dry run with the fixes** (`lr26_dry2`): 1,066 laws, 0 errors.
+- **Periods:** 479,265.
+- **As at today:** territory known 310,656 (+5,624: devolved types); nowhere (repealed) 9,866; unknown 19,636 (mostly UK Acts / SIs with no extent in LAT).
+- **Unknown before today:** 26,373 provisions (was 32,167).
+- **Status vs today's columns:** 40,214 changed (+142: not-commenced rows no longer repealed in future periods). R2 rebuild to Jason.
