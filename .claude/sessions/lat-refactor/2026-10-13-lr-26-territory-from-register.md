@@ -3,6 +3,19 @@ session: 'LR-26: Territory from the Register'
 status: active
 opened: 2026-10-13
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+bugs:
+  - pattern: "legislation.gov.uk feed spells AffectingEffectsExtent 'same as affected' as S+A+M+E+A+S+A+F+F+E+C+T+E+D; stored as an extent code it reads as Scotland (+ junk)"
+    category: feed-extent
+    module: ChangesFeed (parse)
+    affected: "17,881 lat_change_log records"
+    fix: "ChangesFeed normalises it to nil at parse (test); the register picks it up on the next re-collect (LR-25 hook)"
+    status: fixed
+  - pattern: "A repeal staged per territory ('for E.' 1.1.2001, 'for W.' 1.1.2002) with no extent of its own read as a repeal everywhere: the provision shown repealed while it applies in S"
+    category: label-status
+    module: LabelProjection (change_extent)
+    affected: "found by test; counted in the territory dry run"
+    fix: "a change whose in-force entries each name a territory reaches their union"
+    status: fixed
 ---
 
 # Session: LR-26 Territory from the Register — Where (ACTIVE)
@@ -15,16 +28,17 @@ A provision's territory (`extent_code`, `excluded_extent`, `territory_provenance
 
 - ✅ Inventory: every territory path in `LatTerritory` / `LatParser.Effects` and which facts it reads (markup on the row, markup on a change, effect extent / application)
 - ⬜ Collector: change territory into `lat_change_log` (markup Extent of joined and unjoined change elements; the feed's extents are already recorded); the provision's own RestrictExtent stays a row fact (markup about the provision, not a change)
-- ⬜ Jason: the territory rule as a projection (base extent from the row's markup, narrowed or extended by changes, in date order; authority law > derived data > auto-derived > editorial)
-- ⬜ Tests first; `TerritoryProjection` (pure); offline diff against today's `extent_code` / `excluded_extent` / `territory_provenance`, classified
+- ✅ Jason: the territory rule as a projection (D1′ approved) (base extent from the row's markup, narrowed or extended by changes, in date order; authority law > derived data > auto-derived > editorial)
+- ✅ Tests first; territory in `LabelProjection` (pure); offline diff against today's `extent_code` / `excluded_extent` / `territory_provenance`, classified
 - ⬜ Gemini acceptance
 - ⬜ Timeline `territory` per period (W1): rebuild (dry run → Jason → apply)
-- ⬜ Feed's 'same as affected' extent (S+A+M+E…) normalised at source (LR-24 bug)
+- ✅ Feed's 'same as affected' extent (S+A+M+E…) normalised at source (LR-24 bug)
 - ⬜ Lands in the LR-25 switch-over with the "when" labels
 
 ## Decisions for Jason
 
-- **D1′ — consensus after Gemini (see "Gemini on D1")**: Jason approves the consensus ("we have to publish what we know is true"). **Jason: approve D1′**
+- **R — Rebuild** the timeline with territory (dry run below). **Jason: approve**
+- **D1′ — approved 2026-10-13, built.** Consensus after Gemini (see "Gemini on D1")**: Jason approves the consensus ("we have to publish what we know is true"). **Jason: approve D1′**
 - **D1 — The territory rule (per period)**, see "Proposed rule". Today's "where" stays the reviewed LR-02/03 calculation; the register dates it; undatable means unknown.
 
 ## Dependencies
@@ -82,3 +96,22 @@ For each period:
 4. **Later periods:** a dated territorial repeal not yet in force narrows the territory from its date (by stage where staged); unreadable → unknown from that date.
 5. **Nowhere vs unknown:** when no territory is left, the period's status is `repealed`. An empty territory with status repealed means "nowhere"; with any other status, "unknown". Same pattern as LR-24 T1: the status disambiguates, no new values or columns.
 6. Notes are never read; "same as affected" is normalised at the feed parser.
+
+## Build and dry run (2026-10-13)
+
+**Built** in `LabelProjection` (the timeline's second pass; the rules sit with the "when" rules, no separate module), following D1′:
+- **Today's period:** `extent_code` minus `excluded_extent`.
+- **Earlier periods:** an exclusion is rolled back only when every claim behind it is a dated single-date removal; otherwise unknown.
+- **Later periods:** dated territorial repeals narrow the territory; a staged one is unknown.
+- **Nothing left:** status `repealed`, territory empty ("nowhere"). A repealed period has no territory.
+- **A change's territory** also comes from in-force entries that each name a territory (bug above).
+- **The builder** passes each row's `excluded_extent` and `territory_provenance` claims. `ChangesFeed` normalises "same as affected".
+- **Tests:** 9 territory cases. Suite 2,679.
+
+The first dry run crashed at law 719 (uksi 2007/79): a later repeal after nothing was left subtracted from "nowhere". Fixed with a test.
+
+**Dry run** (`lr26_dry`): 1,066 laws, 0 errors.
+- **Periods:** 479,097 (+3,022 from territorial splits).
+- **Today's territory equals today's columns** (`extent_code` minus `excluded_extent`; repealed = none). A five-law check (1974/37, 1990/43, 1974/40, 1968/73) gave 0 differences among provisions with a row today.
+- **Provisions whose territory is unknown before today: 32,167.** The causes: an exclusion behind an undated or narrowing claim, a staged one, or an extent change.
+- **Status vs today:** 40,072 changed (as LR-24, with the staged-territory repeals corrected), of which 33,626 are unknown (no row).
