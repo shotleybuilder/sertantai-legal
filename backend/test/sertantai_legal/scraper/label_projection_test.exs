@@ -438,4 +438,25 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              {~D[2025-01-01], nil, "in_force", ~D[2025-01-01], "UK_ukpga_2025_1"}
            ]
   end
+
+  test "T1: a text change no source dates empties in_force_from (changed, date unknown); the status stands" do
+    law = "UK_ukpga_1990_43"
+    rows = [row(law, "s.10(2)", undated_change: true)]
+
+    changes = [
+      change(law, "s.10(2)", "r1", "repealed", "repealed", "UK_ukpga_2020_1", [
+        {~D[2021-01-01], nil}
+      ])
+    ]
+
+    %{periods: p, gaps: gaps} =
+      LabelProjection.timeline(law, rows, changes, today: @today, law_start: ~D[1991-01-01])
+
+    assert Enum.map(p, &{&1.valid_from, &1.status, &1.in_force_from, &1.changed_by}) == [
+             {~D[1991-01-01], "in_force", nil, nil},
+             {~D[2021-01-01], "repealed", ~D[2021-01-01], "UK_ukpga_2020_1"}
+           ]
+
+    assert gaps == [{"UK_ukpga_1990_43:s.10(2)", :undated_change}]
+  end
 end

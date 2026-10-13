@@ -38,6 +38,10 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     (`inserted_pointer`; the note is only a pointer) whose insertion the
     register doesn't date never takes the law's start: its start is the
     earliest change held, else unknown (`:insertion_not_in_register`).
+  - **T1 undated.** A row with a text change no source dates
+    (`undated_change`) has no `in_force_from` / `changed_by` in its in-force
+    periods: empty `in_force_from` with status in_force means "changed,
+    date unknown" (with prospective / partial it means not fully in force).
   - **J4 outstanding.** A repeal in force but not yet applied to the
     revised text (`applied: false`) counts from its date; the row is listed
     as an `:outstanding_effect` (source-side: legislation.gov.uk's backlog).
@@ -231,8 +235,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
           end)
           |> merge()
 
-        {periods, gaps} = markup_today(periods, row, today)
-        {:ok, periods, gaps ++ outstanding(periods, changes, row, today)}
+        {periods, gaps} = periods |> undated(row) |> markup_today(row, today)
+
+        {:ok, periods,
+         gaps ++
+           outstanding(periods, changes, row, today) ++
+           if(Map.get(row, :undated_change), do: [{row.section_id, :undated_change}], else: [])}
     end
   end
 
@@ -437,6 +445,19 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   defp markup_today(periods, _row, _today), do: {periods, []}
+
+  # T1 (Jason 2026-10-13: "a text change we cannot date should communicate
+  # that fact"): the row has a text change no source dates (undated change
+  # markup; an amendment note naming a law with no dated change on the row),
+  # so no in-force period can say since when its current text applies —
+  # in_force_from and changed_by are empty while the status stands
+  defp undated(periods, %{undated_change: true}) do
+    for p <- periods do
+      if p.status in ~w(in_force), do: %{p | in_force_from: nil, changed_by: nil}, else: p
+    end
+  end
+
+  defp undated(periods, _row), do: periods
 
   # J4: repealed today by a repeal legislation.gov.uk hasn't applied to the
   # revised text yet — the status stands (the law outranks the derived

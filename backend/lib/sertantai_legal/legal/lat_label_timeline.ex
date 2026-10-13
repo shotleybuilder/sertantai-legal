@@ -11,7 +11,11 @@ defmodule SertantaiLegal.Legal.LatLabelTimeline do
   - `valid_from` / `valid_to` are UK dates; `valid_to` is exclusive, nil
     = open. Before a provision's first period its state is unknown (no row).
   - `status`: in_force | in_force_partial | prospective | repealed |
-    repealed_saved. `territory` arrives with LR-26.
+    repealed_saved. `territory` arrives with LR-26: until then this table
+    is not a source for where a provision applies.
+  - `in_force_from` empty with `in_force` means the text changed and no
+    source dates it ("date unknown"); never an older date in its place.
+  - No row for a date means unknown (implied; no "unknown" rows).
   - Rebuilt per law (delete + insert) after each change collection; UK only.
 
   Read by compliance (drill-down status badge, v0.1) through the delta sync.
@@ -64,7 +68,8 @@ defmodule SertantaiLegal.Legal.LatLabelTimeline do
 
     attribute(:in_force_from, :date,
       public?: true,
-      description: "when the current text took effect; nil while prospective or partly in force"
+      description:
+        "when the current text took effect. Empty: with status prospective / in_force_partial, not fully in force; with in_force, the text changed and no source dates it (\"date unknown\")"
     )
 
     attribute(:changed_by, :string, public?: true)
