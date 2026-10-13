@@ -42,8 +42,8 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   law's own extent) stands in for an effect's missing `AffectedExtent`, so a
   devolved instrument's amendment isn't read as narrower than the UK.
   """
-  @spec new([Effect.t()], [String.t()], String.t() | nil) :: t()
-  def new(effects, order \\ [], law_extent \\ nil) do
+  @spec new([Effect.t()], [String.t()], String.t() | nil, %{String.t() => [String.t()]}) :: t()
+  def new(effects, order \\ [], law_extent \\ nil, containers \\ %{}) do
     positions = order |> Enum.with_index() |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     effects =
@@ -57,10 +57,20 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
         effects
         |> Enum.flat_map(fn e ->
           refs = (e.affected_refs || []) ++ in_ranges(e.affected_ranges || [], order, positions)
+          refs = refs ++ inside(refs, containers, e)
           refs |> Enum.uniq() |> Enum.map(&{&1, e})
         end)
         |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
     }
+  end
+
+  # LR-27: a ref naming a container (cross-heading, Part, Chapter) reaches
+  # the elements inside it — unless the change is words-level (a words
+  # change to a heading stays on the heading)
+  defp inside(refs, containers, e) do
+    if containers == %{} or words_level?(e),
+      do: [],
+      else: Enum.flat_map(refs, &Map.get(containers, &1, []))
   end
 
   defp in_ranges(ranges, order, positions) do

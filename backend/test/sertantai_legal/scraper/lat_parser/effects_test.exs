@@ -86,4 +86,47 @@ defmodule SertantaiLegal.Scraper.LatParser.EffectsTest do
     assert excluded == "S"
     assert is_list(segments)
   end
+
+  describe "container refs (LR-27)" do
+    @doc_xml ~s(<Legislation><Part id="part-2B"><Pblock id="part-2B-crossheading-general"><P1group><P1 id="section-27U"><P2 id="section-27U-1"/></P1></P1group><P1group><P1 id="section-27V"/></P1group></Pblock></Part><P1 id="section-28"/></Legislation>)
+
+    test "a ref naming a cross-heading reaches the provisions inside it (1996/18 ss. 27U-27Y)" do
+      doc = el(@doc_xml)
+
+      index =
+        Effects.index(
+          [effect("key-i", "inserted", ["part-2B-crossheading-general"])],
+          doc,
+          "E+W+S"
+        )
+
+      for id <- ~w(part-2B-crossheading-general section-27U section-27U-1 section-27V),
+          do: assert([%Effect{effect_id: "key-i"}] = EffectIndex.on(index, id))
+
+      assert EffectIndex.on(index, "section-28") == []
+    end
+
+    test "a ref naming a Part reaches everything in the Part" do
+      index =
+        Effects.index(
+          [effect("key-m", "applied (with modifications)", ["part-2B"])],
+          el(@doc_xml),
+          nil
+        )
+
+      assert [%Effect{}] = EffectIndex.on(index, "section-27V")
+    end
+
+    test "a words-level change to a heading stays on the heading" do
+      index =
+        Effects.index(
+          [effect("key-w", "words substituted", ["part-2B-crossheading-general"])],
+          el(@doc_xml),
+          nil
+        )
+
+      assert [%Effect{}] = EffectIndex.on(index, "part-2B-crossheading-general")
+      assert EffectIndex.on(index, "section-27U") == []
+    end
+  end
 end

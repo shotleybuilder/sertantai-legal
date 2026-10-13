@@ -80,7 +80,12 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
 
   def index(effects, doc, law_extent) when is_list(effects) do
     index =
-      EffectIndex.new(effects, doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1), law_extent)
+      EffectIndex.new(
+        effects,
+        doc |> xpath(~x"//@id"ls) |> Enum.map(&to_string/1),
+        law_extent,
+        containers(doc)
+      )
 
     changes = change_occurrences(doc, index)
     cites = CommentaryParser.cited_laws(doc)
@@ -107,6 +112,19 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
           do: {change_id, law}
 
     EffectIndex.with_orphans(index, orphans, held: held, cited: cited)
+  end
+
+  # LR-27: each container (Part, Chapter, cross-heading block) → the ids of
+  # the elements inside it, for refs that name the container
+  defp containers(doc) do
+    for el <-
+          xpath(
+            doc,
+            ~x"//*[self::Part or self::Chapter or self::Pblock or self::PsubBlock][@id]"l
+          ),
+        into: %{} do
+      {to_string(xpath(el, ~x"./@id"s)), el |> xpath(~x".//*/@id"ls) |> Enum.map(&to_string/1)}
+    end
   end
 
   # every change element: {ChangeId, its CommentaryRef, the ids of the
