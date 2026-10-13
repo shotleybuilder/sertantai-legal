@@ -16,6 +16,9 @@ defmodule Mix.Tasks.Lat.Timeline do
     against today's columns (status, effective_from, changed_by)
   - `<tag>.diff.csv`: each differing field (law, section_id, field, today's
     change source, old, new)
+  - `<tag>.gaps.csv`: each provision the timeline can't fully answer (law,
+    section_id, gap): `no_start`, `insertion_not_in_register`,
+    `undated_change`, `markup_conflict`, `outstanding_effect`
   """
 
   use Mix.Task
@@ -49,12 +52,14 @@ defmodule Mix.Tasks.Lat.Timeline do
     tag = opts[:tag] || "timeline"
     csv = Path.join(dir, "#{tag}.csv")
     diff = Path.join(dir, "#{tag}.diff.csv")
+    gaps_csv = Path.join(dir, "#{tag}.gaps.csv")
     done_file = csv <> ".done"
     done = if File.exists?(done_file), do: done_file |> File.read!() |> String.split(), else: []
 
     if done == [] do
       File.write!(csv, Enum.join(@cols, ",") <> "\n")
       File.write!(diff, "law,section_id,field,today_source,old,new\n")
+      File.write!(gaps_csv, "law,section_id,gap\n")
     end
 
     today = LabelProjection.uk_today()
@@ -68,6 +73,10 @@ defmodule Mix.Tasks.Lat.Timeline do
     for {law, i} <- Enum.with_index(todo, 1) do
       %{periods: periods, gaps: gaps, rows: rows} = LabelTimeline.build(law, today)
       if opts[:apply], do: {:ok, _} = LabelTimeline.write(law, periods, version)
+
+      File.write!(gaps_csv, Enum.map(gaps, fn {sid, kind} -> "#{law},#{sid},#{kind}\n" end), [
+        :append
+      ])
 
       now = LabelProjection.as_at(periods, today)
       diffs = for r <- rows, d <- row_diffs(r, now[r.section_id]), do: {r, d}

@@ -45,9 +45,9 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 - ✅ Golden test cases: rows with known change histories (effective_from, changed_by, status, change ids), scrubbed of `key-` ids
 - ✅ `LabelProjection` (pure): `timeline/4` (a law's rows + register records → periods) and `as_at/2`; status from changes, no note text
 - ✅ `lat_label_timeline` (Ash resource + migration) and `mix lat.timeline --laws|--all [--apply]` (rebuild after each collect: the LR-25 hook)
-- ⬜ Offline diff: the timeline as at today against today's labels, classified (expected: effect labels mostly equal; note-sourced and note-dated labels empty)
-- ⬜ Gap queries: rows with a note pointer and no change; changes with no date; changes resolving to no row
-- ⬜ Gemini acceptance
+- ✅ Offline diff: the timeline as at today against today's labels, classified (expected: effect labels mostly equal; note-sourced and note-dated labels empty)
+- ✅ Gap queries: rows with a note pointer and no change; changes with no date; changes resolving to no row
+- ❌ Gemini acceptance — dropped (Jason, 2026-10-13: "drop the gemini review from the session")
 
 ## Decisions for Jason
 
@@ -288,3 +288,23 @@ The fill runs on (it writes only the new table; nothing reads it). It's rebuilt 
 ## Dry run with T1 (2026-10-13, for the rebuild)
 
 1,066 laws, 0 errors. Periods are unchanged: 476,075 (T1 only empties dates). **Undated changes: 16,231 rows** now carry an empty `in_force_from` with status in_force ("changed, date unknown") instead of an older date. Against today: effective_from same 227,043 / moved 11,157 (was 14,188) / emptied 29,859 / filled 106,807. Unchanged otherwise: no start 22,203, insertion not in the register 12,084, markup conflicts 7,925, outstanding effects 1,343. **Rebuild (dry run → Jason → apply).**
+
+## Rebuild and gaps (2026-10-13)
+
+**Rebuild** (approved): `mix lat.timeline --all --apply --tag lr24_rebuild`. 1,066 laws, 0 errors; **476,075 periods**, all `code_version` edd5156e. 15,029 provisions' current period reads "changed, date unknown" (`in_force` with no `in_force_from`).
+
+**Gaps: what the labels can't fully answer.** `mix lat.timeline` writes `<tag>.gaps.csv` (law, section_id, gap). Current list: `backend/data/reports/lat-refactor/lr24_gaps.gaps.csv`.
+
+| Gap | Provisions | Means | Fixed by |
+|---|---|---|---|
+| no_start | 22,203 | no evidence of when it started; no row (unknown) | metadata / LR-08 |
+| insertion_not_in_register | 12,084 | a note points to an insertion the register doesn't date | LR-27, LR-08 |
+| undated_change | 16,231 | the text changed; no source dates it | LR-08, LR-27 |
+| markup_conflict | 7,925 | the CLML says repealed / prospective, no dated change explains it (markup wins today) | review |
+| outstanding_effect | 1,343 | a repeal in force not yet applied by legislation.gov.uk (repealed shown) | source-side |
+
+**Register gaps** (queries on `lat_change_log`):
+- changes reaching no row: `section_id IS NULL`, 14,140 (586 laws);
+- feed changes with no date, not prospective: `collector = 'feed' AND effective_from IS NULL AND NOT prospective`, 265;
+- prospective with no date yet: 19,325;
+- change markup no effect explains: `collector = 'markup'`, 8,547.
