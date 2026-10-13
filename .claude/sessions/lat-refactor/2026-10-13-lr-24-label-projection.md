@@ -21,6 +21,21 @@ Row change labels (`effective_from`, `changed_by`, the change part of `status`, 
 - ⬜ Gap queries: rows with a note pointer and no change; changes with no date; changes resolving to no row
 - ⬜ Gemini acceptance
 
+## Decisions for Jason
+
+- **D1 — What `effective_from` means.** The date the provision's current text took effect: the latest in-force date among text changes on the row and whole-provision text changes on its ancestors, and the provision's own commencement when that is later. Modifications and applications are recorded but never set it. `changed_by` is the law of the change that sets the date; empty when that is the provision's own commencement by its own law.
+- **D2 — Whole-instrument effects.**
+  - A commencement ("Act" / "Regulations" coming into force, a commencement order) dates every row like a provision's own commencement.
+  - A repeal or revocation of the instrument makes every row repealed (or repealed with savings).
+  - A modification or application of the whole instrument is recorded only.
+- **D3 — Status from the register.**
+  - repealed: a repeal change in force (markup keeps priority; savings make it repealed_saved);
+  - in_force_partial: commenced only for specified purposes or territories (InForce qualifications);
+  - prospective: in-force entries all prospective and not applied;
+  - otherwise in_force.
+
+  No note text. The about 3,600 rows dated from note text today lose that date (LR-20's rule).
+
 ## Dependencies
 
 - ✅ LR-23 table filled (closed 2026-10-13: 132,965 records, view `lat_change_log_rows` exact)
