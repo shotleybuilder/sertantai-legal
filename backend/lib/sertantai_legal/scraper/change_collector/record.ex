@@ -4,7 +4,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Record do
   `lat_change_log` row before it is written.
 
   - target: `law_name` (the law changed), `section_id` (nil: the change
-    reached no row — a visible gap), `via` (how it reached the row,
+    reached no row — a visible gap) and `section_id_to` (the last row of a
+    run of consecutive rows in document order; nil: one row, `Compact`), `via` (how it reached the row,
     strongest first) and `pointer` (the note whose placement carried it)
   - source: `source` (`effect` | `markup` | `law`) and `evidence` (the
     effect id, ChangeId or provision read)
@@ -15,6 +16,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Record do
   defstruct [
     :law_name,
     :section_id,
+    :section_id_to,
     :pointer,
     :source,
     :evidence,
@@ -39,6 +41,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Record do
   @type t :: %__MODULE__{
           law_name: String.t(),
           section_id: String.t() | nil,
+          section_id_to: String.t() | nil,
           via: [String.t()],
           pointer: String.t() | nil,
           source: String.t(),

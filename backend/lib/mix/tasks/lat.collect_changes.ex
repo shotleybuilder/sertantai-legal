@@ -9,7 +9,9 @@ defmodule Mix.Tasks.Lat.CollectChanges do
       mix lat.collect_changes --all --tag lr23    # report name (default: collect)
 
   Writes `data/reports/lat-refactor/<tag>.csv` as it goes (law, feed
-  records, effects, unreached effects, each `via`, markup records); a re-run skips the laws
+  records, effects, unreached effects, each `via`, markup records, records
+  stored (compact), fidelity differences). A law failing the fidelity gate
+  (`ChangeCollector.fidelity/3`) is reported and never written; a re-run skips the laws
   already in the report (`<tag>.csv.done`). Never fetches.
   """
 
@@ -49,7 +51,11 @@ defmodule Mix.Tasks.Lat.CollectChanges do
       do:
         File.write!(
           csv,
-          Enum.join(~w(law feed_records effects unreached) ++ @vias ++ ~w(markup_records), ",") <>
+          Enum.join(
+            ~w(law feed_records effects unreached) ++
+              @vias ++ ~w(markup_records stored fidelity_diffs),
+            ","
+          ) <>
             "\n"
         )
 
@@ -62,9 +68,24 @@ defmodule Mix.Tasks.Lat.CollectChanges do
     for {law, i} <- Enum.with_index(todo, 1) do
       line =
         case ChangeCollector.collect(law) do
-          {:ok, %{"feed" => records, "markup" => markup} = by} ->
-            if opts[:apply], do: {:ok, _} = ChangeCollector.write(law, by)
-            summary(law, records) <> ",#{length(markup)}"
+          {:ok, %{records: by, per_row: per_row}} ->
+            diffs = ChangeCollector.fidelity(by, per_row, ChangeCollector.db_order(law))
+
+            cond do
+              diffs != [] ->
+                Mix.shell().error(
+                  "  #{law}: fidelity gate failed (#{length(diffs)}): #{inspect(Enum.take(diffs, 3))}"
+                )
+
+              opts[:apply] ->
+                {:ok, _} = ChangeCollector.write(law, by)
+
+              true ->
+                :ok
+            end
+
+            summary(law, per_row["feed"]) <>
+              ",#{length(per_row["markup"])},#{length(by["feed"]) + length(by["markup"])},#{length(diffs)}"
 
           {:error, reason} ->
             Mix.shell().error("  #{law}: #{inspect(reason)}")

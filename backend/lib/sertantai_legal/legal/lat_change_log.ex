@@ -13,6 +13,9 @@ defmodule SertantaiLegal.Legal.LatChangeLog do
   - `via`: how the change reached the row, strongest first —
     `markup` | `whole` | `ref` | `note_markup` | `note_own` | `note_cited`;
     empty with `section_id` nil when it reached no row (a visible gap).
+  - Compact (LR-23 D3): one record per run of consecutive rows a change
+    reached (`section_id` … `section_id_to`, by `position`); the view
+    `lat_change_log_rows` expands them to one row per LAT row.
   - Written per law by `ChangeCollector` (delete + insert per law and
     collector), so a law's records always match its latest parse.
   """
@@ -24,6 +27,36 @@ defmodule SertantaiLegal.Legal.LatChangeLog do
   postgres do
     table("lat_change_log")
     repo(SertantaiLegal.Repo)
+
+    custom_statements do
+      # LR-23 D3: compact records expanded to one row per LAT row reached
+      # (positions from section_id to section_id_to); unreached records kept
+      statement :lat_change_log_rows do
+        up("""
+        CREATE VIEW lat_change_log_rows AS
+        SELECT c.id AS change_log_id, c.law_name, a.section_id, c.via, c.pointer, c.source,
+               c.evidence, c.affected_ref, c.affecting_law, c.affecting_ref, c.operation,
+               c.effect_type, c.effective_from, c.in_force, c.prospective, c.applied, c.savings,
+               c.affected_extent, c.effect_extent, c.territorial_application, c.dated_by_law,
+               c.dated_by_ref, c.collector, c.collected_at
+        FROM lat_change_log c
+        JOIN legal_articles f ON f.law_name = c.law_name AND f.section_id = c.section_id
+        LEFT JOIN legal_articles t ON t.law_name = c.law_name AND t.section_id = c.section_id_to
+        JOIN legal_articles a ON a.law_name = c.law_name
+         AND a.position BETWEEN f.position AND COALESCE(t.position, f.position)
+        UNION ALL
+        SELECT c.id, c.law_name, NULL, c.via, c.pointer, c.source, c.evidence, c.affected_ref,
+               c.affecting_law, c.affecting_ref, c.operation, c.effect_type, c.effective_from,
+               c.in_force, c.prospective, c.applied, c.savings, c.affected_extent,
+               c.effect_extent, c.territorial_application, c.dated_by_law, c.dated_by_ref,
+               c.collector, c.collected_at
+        FROM lat_change_log c
+        WHERE c.section_id IS NULL
+        """)
+
+        down("DROP VIEW IF EXISTS lat_change_log_rows")
+      end
+    end
 
     custom_indexes do
       index([:law_name, :section_id])
@@ -40,7 +73,12 @@ defmodule SertantaiLegal.Legal.LatChangeLog do
 
     attribute(:section_id, :string,
       public?: true,
-      description: "LAT row the change reached; nil when it reached none"
+      description: "first LAT row the change reached; nil when it reached none"
+    )
+
+    attribute(:section_id_to, :string,
+      public?: true,
+      description: "last row of a run of consecutive rows (by position); nil: one row"
     )
 
     attribute(:via, {:array, :string}, allow_nil?: false, default: [], public?: true)

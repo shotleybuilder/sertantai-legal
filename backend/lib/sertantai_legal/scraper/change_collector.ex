@@ -5,25 +5,86 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   delete + insert that law's records per collector, in one transaction.
 
   Collectors: `Feed` (changes-feed effects with their joins), `Markup`
-  (change markup no effect explains). Never fetches.
+  (change markup no effect explains). Records are stored compact (`Compact`:
+  one per run of consecutive rows) and checked against the per-row joins
+  in the DB's row order before writing (`fidelity/3`). Never fetches.
   Thin: the joins and records are the pure collectors'.
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.ChangeCollector.{Feed, Markup, Record}
+  alias SertantaiLegal.Scraper.ChangeCollector.{Compact, Feed, Markup, Record}
   alias SertantaiLegal.Scraper.LatStagedParser
 
-  @doc "A law's records from the store, by collector."
-  @spec collect(String.t()) :: {:ok, %{String.t() => [Record.t()]}} | {:error, term()}
+  @doc """
+  A law's records from the store, by collector: `records` compact (one per
+  run of consecutive rows, `Compact`), `per_row` as joined, and `order` (the
+  parse's section_ids in document order).
+  """
+  @spec collect(String.t()) ::
+          {:ok,
+           %{
+             records: %{String.t() => [Record.t()]},
+             per_row: %{String.t() => [Record.t()]},
+             order: [String.t()]
+           }}
+          | {:error, term()}
   def collect(law_name) do
     with {:ok, %{rows: rows, notes: notes, effects: effects}} <-
            LatStagedParser.fetch_changes(law_name, store: :only) do
+      order = Enum.map(rows, & &1.section_id)
+
+      per_row = %{
+        "feed" => Feed.records(law_name, rows, notes, effects),
+        "markup" => Markup.records(law_name, rows)
+      }
+
       {:ok,
        %{
-         "feed" => Feed.records(law_name, rows, notes, effects),
-         "markup" => Markup.records(law_name, rows)
+         records: Map.new(per_row, fn {k, recs} -> {k, Compact.compact(recs, order)} end),
+         per_row: per_row,
+         order: order
        }}
     end
+  end
+
+  @doc """
+  The fidelity gate (LR-23 D3): expanding the compact records over the
+  law's rows in the DB's order (`position`, as the `lat_change_log_rows`
+  view does) gives exactly the per-row joins. Returns the differences
+  (`{:missing | :extra, key}`); empty when it holds.
+  """
+  @spec fidelity(%{String.t() => [Record.t()]}, %{String.t() => [Record.t()]}, [String.t()]) ::
+          [{:missing | :extra, tuple()}]
+  def fidelity(records, per_row, db_order) do
+    key = &{&1.evidence, &1.source, &1.section_id, &1.via, &1.pointer}
+    known = MapSet.new(db_order)
+
+    Enum.flat_map(per_row, fn {collector, recs} ->
+      want = recs |> Enum.map(key) |> Enum.frequencies()
+
+      got =
+        records
+        |> Map.get(collector, [])
+        |> Enum.filter(&(is_nil(&1.section_id) or MapSet.member?(known, &1.section_id)))
+        |> Enum.filter(&(is_nil(&1.section_id_to) or MapSet.member?(known, &1.section_id_to)))
+        |> Compact.expand(db_order)
+        |> Enum.map(key)
+        |> Enum.frequencies()
+
+      for(k <- Map.keys(want), Map.get(got, k) != want[k], do: {:missing, k}) ++
+        for(k <- Map.keys(got), not Map.has_key?(want, k), do: {:extra, k})
+    end)
+  end
+
+  @doc "The law's section_ids in the DB, by `position`."
+  @spec db_order(String.t()) :: [String.t()]
+  def db_order(law_name) do
+    %{rows: rows} =
+      Repo.query!("SELECT section_id FROM legal_articles WHERE law_name = $1 ORDER BY position", [
+        law_name
+      ])
+
+    List.flatten(rows)
   end
 
   @doc "Replace a law's records for each collector given. Returns rows written."
