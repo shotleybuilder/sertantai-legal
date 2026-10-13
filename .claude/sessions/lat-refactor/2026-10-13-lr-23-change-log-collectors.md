@@ -26,12 +26,13 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 - ✅ `ChangeCollector.Feed` (pure) and `ChangeCollector` (orchestrator, store only)
 - ✅ Markup collector: change markup no effect explains (source `markup`)
 - ✅ Ash resource `SertantaiLegal.Legal.LatChangeLog` + Ash-generated migration (`20261013090525_add_lat_change_log`, migrated; table empty)
-- ⬜ `mix lat.collect_changes --laws|--all [--dry-run]`: counts by source and via, unresolved list
-- ⬜ Dry run on all LAT laws → Jason → fill (DB write)
+- ✅ `mix lat.collect_changes --laws|--all [--apply]`: counts by source and via, unresolved list
+- ⬜ Dry run on all LAT laws ✅ → Jason → fill (DB write)
 - ⬜ Gemini acceptance
 
 ## Decisions for Jason
 
+- **D2 — Fill**: approve `mix lat.collect_changes --all --apply` (writes only `lat_change_log`, empty today; no other table changes)
 - **D1 — Record shape** (see Record shape). Taken back to Gemini 2026-10-13 (Jason): **VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md`)
 
 ## Dependencies
@@ -97,3 +98,32 @@ Remaining risks and guards:
   - Until then, a staleness check: laws whose latest `lat_events` `parsed` is newer than their latest `lat_change_log.collected_at`. It goes in `mix lat.collect_changes` and the LR-25 verification.
 - **Partial runs.** Already covered and stronger than Gemini assumed: `ChangeCollector.write/2` writes all of a law's collectors in one transaction, so a law's records are all new or all old.
 - **Drift in the collector logic.** Unit tests per join kind, plus a full dry-run report compared against the previous one before any `--apply`.
+
+## Dry run, all LAT laws (2026-10-13)
+
+`backend/data/reports/lat-refactor/lr23_dry.csv` (gitignored): 1,066 laws, 0 errors.
+
+| | Count |
+|---|---|
+| Records (feed) | 525,369 |
+| Effects in the feed | 203,639 (856 laws; 210 laws have none) |
+| Effects reaching no row | 121,978 |
+| Joins by kind: `ref` / `markup` / `note_markup` / `note_own` / `whole` / `note_cited` | 272,220 / 104,515 / 104,096 / 46,379 / 17,227 / 6,971 |
+| Markup records (change markup no effect explains) | 18,532 |
+
+**Effects reaching no row.** Sample: 40 random laws plus the 3 largest, 18,731 unreached effects.
+
+| Reason | Effects | Share |
+|---|---|---|
+| Outside the law's LAT scope (fragment laws) | 10,907 | 58% |
+| On a Schedule (LAT holds no Schedules, LR-10) | 6,874 | 37% |
+| Whole instrument ("Act", "Regulations") | 213 | 1.1% |
+| Annex / appendix | 184 | 1.0% |
+| Not yet applied (prospective / unapplied) | 177 | 0.9% |
+| No affected ref | 74 | 0.4% |
+| **Words-level, applied, no markup join** | **261** | **1.4%** |
+| **Whole-provision, applied, no row** | **41** | **0.2%** |
+
+The last two (about 1.6% of the unreached) are the real gaps: changes to provisions LAT holds that reached no row. They include "specified amended provision(s)" commencement orders, multi-number refs ("reg. 9(6)(7)", "art. 63(6)(v)(w)") and ranges of inserted subsections ("s. 20(5D)-(5F)"). They become LR-24's gap query.
+
+**Volume.** Range modifications dominate: New Roads and Street Works Act 1991 has 73,482 records, 69,761 of them `ref` joins from Part 3-wide modifications ("s. 48-106 (Pt. 3) saved / applied / excluded") reaching about 690 rows each. Recorded faithfully, as today's parse joins them.
