@@ -28,7 +28,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 - ✅ Ash resource `SertantaiLegal.Legal.LatChangeLog` + Ash-generated migration (`20261013090525_add_lat_change_log`, migrated; table empty)
 - ✅ `mix lat.collect_changes --laws|--all [--apply]`: counts by source and via, unresolved list
 - ✅ Dry run on all LAT laws → Jason (D2 approved 2026-10-13) → fill (DB write) → verified
-- ⬜ Gemini acceptance
+- ✅ Gemini acceptance: VERDICT ACCEPT (`backend/data/code-reviews/2026-10-13-lr-23-acceptance.md`)
 
 ## Decisions for Jason
 
@@ -250,3 +250,18 @@ Verified:
 | One row's changes (HSWA s.2(3), 24 changes) | 6 ms |
 | A whole law (1991/22, 108,819 view rows) | 0.7 s |
 | The whole corpus | 22 s |
+
+## Gemini acceptance (2026-10-13)
+
+**VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-acceptance.md`).
+- **Decisions:** D1–D5 are built as recorded, with nothing missing either way.
+- **Code review:** the collectors (join grouping, the D4 drop, the D5 instrument and held-ref logic, compaction runs, the fidelity gate) found no correctness issue.
+- **Verification:** sufficient to close.
+
+Its extra check (laws with nothing to record hold no records) is already covered: the per-law comparison includes the 213 laws whose dry-run count is 0, with 0 mismatches.
+
+Its note on LR-26 cites the earlier v0.2 deferral. Since 2026-10-13, territory is v0.1 (LR-26).
+
+Risks carried forward:
+- **LR-24:** what whole-instrument effects mean for a row's label; the gap query, i.e. the 14,140 unreached records, of which an estimated 1.6% in the sample are real gaps on held provisions.
+- **LR-26:** change territory to collect (markup Extent); the projection rule.
