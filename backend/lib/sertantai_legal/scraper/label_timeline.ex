@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.LabelProjection
+  alias SertantaiLegal.Scraper.{LabelProjection, LatStatus}
 
   @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows`: today's labels, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
@@ -28,8 +28,9 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
         [law_name]
       )
 
-    # J5: rows a note points to as inserted / substituted whole (a pointer
-    # only: it withholds the law's start, it supplies no fact)
+    # J5: rows a note points to as inserted / substituted whole — the row or
+    # an ancestor (a pointer only: it withholds the law's start, it supplies
+    # no fact; 1962/58 s.58B(2) under "S. 58B inserted")
     %{rows: pointed} =
       Repo.query!(
         """
@@ -49,7 +50,8 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
           section_id: sid,
           extent_code: extent,
           markup_status: if(prov == "markup" and status in ~w(repealed prospective), do: status),
-          inserted_pointer: MapSet.member?(pointed, sid),
+          inserted_pointer:
+            sid |> LatStatus.ancestors() |> Enum.any?(&MapSet.member?(pointed, &1)),
           today: %{status: status, effective_from: from, changed_by: by, source: change_src}
         }
       end
