@@ -27,7 +27,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
 - ✅ Markup collector: change markup no effect explains (source `markup`)
 - ✅ Ash resource `SertantaiLegal.Legal.LatChangeLog` + Ash-generated migration (`20261013090525_add_lat_change_log`, migrated; table empty)
 - ✅ `mix lat.collect_changes --laws|--all [--apply]`: counts by source and via, unresolved list
-- ⬜ Dry run on all LAT laws ✅ → Jason → fill (DB write)
+- ✅ Dry run on all LAT laws → Jason (D2 approved 2026-10-13) → fill (DB write) → verified
 - ⬜ Gemini acceptance
 
 ## Decisions for Jason
@@ -39,7 +39,7 @@ LR-22 (design approved 2026-10-13) needs its register: the `lat_change_log` tabl
   - an unreached effect is recorded only when a ref or range end is held, inside a held provision or above one, or it names no provision ("specified amended provision(s)", "Blanket amendment", "Act defn. of …": words-level or unspecified, so a gap, not spread);
   - Schedules, annexes and out-of-scope sections are not recorded.
   - Tests: 4 new (suite 2,645). Three-law trial: 1974/37 1,549 → 1,508 stored, 2006/46 6,234 → 1,349, 1990/43 3,270 → 3,129; fidelity 0.
-- **D2 — Fill**: approve `mix lat.collect_changes --all --apply` (writes only `lat_change_log`, empty today; no other table changes)
+- **D2 — Fill**: approved 2026-10-13, applied and verified — `mix lat.collect_changes --all --apply` (writes only `lat_change_log`, empty today; no other table changes)
 - **D1 — Record shape** (see Record shape). Taken back to Gemini 2026-10-13 (Jason): **VERDICT: ACCEPT** (`backend/data/code-reviews/2026-10-13-lr-23-d1-record-shape.md`)
 
 ## Dependencies
@@ -232,3 +232,21 @@ Half of what's stored is now effects reaching no row. By the earlier sample, abo
 Joins: `ref` 272,220, `markup` 104,515, `whole` 17,227, `note_own` 8,323, `note_cited` 986.
 
 The view `lat_change_log_rows` expands whole-instrument effects to every row: about 2.4 million view rows corpus-wide. Reads are per law (indexed `law_name`), so the cost is per law. Timed after the fill.
+
+## Fill (2026-10-13)
+
+`mix lat.collect_changes --all --apply --tag lr23_fill`: 1,066 laws, 0 errors, 0 fidelity gate failures.
+
+Verified:
+- **Records:** `lat_change_log` holds 132,965 records in 853 laws (213 laws have no change to record). Every law's count equals its dry-run count, with 0 laws mismatched.
+  - 14,140 records reach no row (gaps);
+  - 19,575 are runs (`section_id_to` set);
+  - 8,547 come from the markup collector.
+- **Expansion:** the view `lat_change_log_rows` expands to **2,450,531 rows**, exactly the per-row total the collectors produced. Compact storage loses nothing.
+- **Read times:**
+
+| Read | Time |
+|---|---|
+| One row's changes (HSWA s.2(3), 24 changes) | 6 ms |
+| A whole law (1991/22, 108,819 view rows) | 0.7 s |
+| The whole corpus | 22 s |
