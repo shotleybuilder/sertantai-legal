@@ -21,7 +21,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 
 ## Decisions for Jason
 
-- **D1 — Scope** (see Size): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law is in the register but not the store: no fetch for v0.1 (#179)
+- **D1 — Scope** (see Size): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D2 — Dates**: the amending law names the change and itself; the date is usually set by a commencement order (a second law). effective_from only when the amending law fixes the date itself or its commencement order is in the store; otherwise empty
 
 ## Dependencies
@@ -30,14 +30,14 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 
 ## Size (2026-10-13)
 
-Rows labelled from notes (`change_provenance.change = note`) after LR-19: 14,709 rows, 262 laws. By what holds their amending law (the law the note names); report `backend/data/reports/lat-refactor/lr08_rows.tsv` (gitignored).
+Rows labelled from notes (`change_provenance.change = note`) after LR-19: 14,709 rows, 262 laws. By which data repo holds their amending law (the law the note names). Repos: CLML store = `backend/data/cache/clml/<type>/<y>/<n>/body/data.xml.gz` (968 laws' XML); LAT = `legal_articles` (1,066 laws, parsed from the CLML); `uk_lrt` = the legal register table (19,813 laws, metadata only, no text); report `backend/data/reports/lat-refactor/lr08_rows.tsv` (gitignored).
 
 | Class | Rows | Laws | Amending laws | Amending law before 2002 |
 |---|---|---|---|---|
-| In the store; the feed has effects by it on other provisions | 1,944 | 50 | 63 | 1,041 |
-| In the store; no effect by it on the law | 1,684 | 53 | 56 | 1,635 |
-| In the register, not the store | 7,150 | 201 | 404 | 4,838 |
-| Not held | 2,725 | 119 | 231 | 2,003 |
+| CLML store + LAT; the feed has effects by it on other provisions | 1,944 | 50 | 63 | 1,041 |
+| CLML store + LAT; no effect by it on the law | 1,684 | 53 | 56 | 1,635 |
+| `uk_lrt` only (37 of the 404 also in LAT, without CLML) | 7,150 | 201 | 404 | 4,838 |
+| No repo | 2,725 | 119 | 231 | 2,003 |
 | No law named (date only; own commencement?) | 1,206 | 64 | — | — |
 
 The two store classes total 3,628 rows in 82 laws, from 113 amending laws. Most are pre-2002 changes, where the feed records few effects (legislation.gov.uk's effects run from 2002). Example: Town and Country Planning Act 1990: 512 rows labelled from notes as changed by the Planning and Compensation Act 1991; the feed holds only that Act's prospective repeals on 1990/8. The rows' dates (1991-09-25, 1992-01-02, 1992-07-17 …) come from commencement orders, not from the 1991 Act.
