@@ -27,7 +27,8 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 
 ## Decisions for Jason
 
-- **D4 — Collector design, consensus after Gemini** (see "Gemini on the design"). **Jason: approve**
+- **D5 — Fetch the Schedules of the amending laws** (see "Schedules aren't in the store"): a fixed list of `/schedules` documents (274 laws), under the stop rules; nothing else. **Jason: approve**
+- **D4 — approved 2026-10-14**: collector design, consensus after Gemini (see "Gemini on the design")
 - **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D3 — Stop rules**: approved 2026-10-13, R1–R6 with **N = 5** (191 amending laws, 47% of 404; 6,768 of 7,150 rows, 95%)
 - **D2 — Dates** (now LR-24's rule: the commencing provision over the amending law's own date over the effect; else empty): the amending law names the change and itself; the date is usually set by a commencement order (a second law). effective_from only when the amending law fixes the date itself or its commencement order is in the store; otherwise empty
@@ -207,3 +208,13 @@ Not taken: a separate drafting-verb registry module (the verbs stay in `Operatio
 - `Pointer`, `Doc`, `RowRef`, `Locator`, `Text`, `DefinedTerms`, `Target`, `RepealTable`, `Operation`, `Commencement` (all pure, each small);
 - `ChangeCollector.AmendingLaw` (pure orchestration);
 - the IO stays in `ChangeCollector`.
+
+## Schedules aren't in the store (2026-10-14)
+
+Building the fixtures showed the stored amending laws hold **no Schedules**. `clml.fetch` stores each law's `/body/data.xml`, and legislation.gov.uk serves Schedules as a separate document (`/schedules/data.xml`). LAT laws' Schedules aren't stored either (LR-10 took Schedules out of LAT).
+
+Of the 18,003 gap rows whose note points to an amending law in the store:
+- **10,370 (58%) point into a Schedule**, e.g. "2000 c. 27, s. 108, Sch. 6 Pt. II para. 33(c)", or a "Sch. 14" table of repeals. They come from 274 amending laws;
+- 8,723 point into the body.
+
+Without the Schedules the collector can serve about 8,700 rows; consequential amendments and repeal tables, the main pre-2002 forms, need the Schedules (D5).
