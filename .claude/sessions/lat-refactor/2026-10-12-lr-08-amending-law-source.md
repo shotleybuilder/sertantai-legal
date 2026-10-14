@@ -59,13 +59,13 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Re-measure against the timeline's gaps: rows `undated_change` / `insertion_not_in_register` / `no_start` whose note points to an amending law now in the CLML store (hop 1)
 - ✅ Design (Gemini, then Jason): `ChangeCollector.AmendingLaw` — from a pointer (note's citation + provision) read the amending provision; record (source `law`, evidence = provision path) only when its text names the affected law and provision (defined terms resolved); operation from the text; date from the law's own commencement words (LR-24 rules: commencing provision > law's own date)
 - ✅ Hop 2: the commencing SIs (37 at N = 5) → list → Jason → fetch
-- ⬜ Tests first; the collector; register dry run (fidelity) → Jason → apply; timeline rebuild → Jason → apply
+- ✅ Tests first; the collector; register dry run (fidelity) → Jason → apply; timeline rebuild → Jason → apply
 - Not in scope: applying unapplied amendments to the text (#171), backlog
 
 ## Decisions for Jason
 
 - **D5 — approved 2026-10-14** (Jason: "fetch the Schedules for the amending laws that we need, but only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT"): 274 `/schedules` documents fetched into the CLML store only; LAT untouched
-- **D9 — Rebuild the timeline** (dry run below). **Jason: approve**
+- **D9 — approved and applied 2026-10-14**: timeline rebuilt
 - **D8 — approved and applied 2026-10-14**: register re-collected with hop 2 dates
 - **D7 — approved 2026-10-14 ("fetch")**: 57 commencing SIs fetched into the store (bodies all; 30 Schedules, 27 orders have none)
 - **D6 — approved and applied 2026-10-14:** law records written to the register; timeline rebuild after hop 2
@@ -356,3 +356,5 @@ A first run reported 1989/29 s.39A(3)(b) as differing. That was the QA script re
 | undated_change | 19,031 | **18,559** |
 | no_start | 22,113 | 22,113 |
 | markup conflicts | 7,705 | 7,678 |
+
+**Timeline rebuilt** (D9): `lr08_tl`, 1,066 laws, 0 errors; **506,466 periods**, `code_version` b9d888bc. As at today: territory known 313,139, nowhere (repealed) 11,852, unknown 19,674. Gaps: insertion_not_in_register 7,648, undated_change 18,559, no_start 22,113.
