@@ -19,7 +19,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Stop rules for fetching amending laws into the CLML store (Jason, 2026-10-13: rules first, so we don't run through the legislation.gov.uk corpus)
 - ✅ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
 - ✅ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
-- ⬜ Re-measure against the timeline's gaps: rows `undated_change` / `insertion_not_in_register` / `no_start` whose note points to an amending law now in the CLML store (hop 1)
+- ✅ Re-measure against the timeline's gaps: rows `undated_change` / `insertion_not_in_register` / `no_start` whose note points to an amending law now in the CLML store (hop 1)
 - ⬜ Design (Gemini, then Jason): `ChangeCollector.AmendingLaw` — from a pointer (note's citation + provision) read the amending provision; record (source `law`, evidence = provision path) only when its text names the affected law and provision (defined terms resolved); operation from the text; date from the law's own commencement words (LR-24 rules: commencing provision > law's own date)
 - ⬜ Hop 2: the commencing SIs (37 at N = 5) → list → Jason → fetch
 - ⬜ Tests first; the collector; register dry run (fidelity) → Jason → apply; timeline rebuild → Jason → apply
@@ -123,3 +123,15 @@ Hop 1 rows: 6,203, of which 4,200 carry a placed note (4,343 notes); the rest ar
 Some "amending laws" are commencement orders (uksi 2001/114, ssi 2002/118, ssi 2013/51: "1st April 2013 is the day appointed …"). The row's fact is a commencement, and the order's own text dates it.
 
 **Hop 2 size.** 67 amending laws need an order (by order, mixed, or no body). Their rows' notes name 65 distinct commencing SIs (2,205 rows with a placed note); 1 is in the CLML store. At N = 5: 37 SIs, 2,529 notes.
+
+## Re-measure against the timeline's gaps (2026-10-14)
+
+Gaps from `lr27_rebuild.gaps.csv`. For each gap row: does an amendment note on it (a pointer) name a law, and is that law in the CLML store (1,219 laws: the LAT laws plus hop 1)?
+
+| Gap | Rows | Note names a law | Law in the store | Law not in the store |
+|---|---|---|---|---|
+| undated_change | 19,031 | 18,426 | **14,587** | 7,051 |
+| insertion_not_in_register | 8,134 | 4,549 | **3,416** | 1,275 |
+| no_start | 22,113 | 883 | 64 | 819 |
+
+A row can carry notes naming several laws, so the columns overlap. **About 18,000 gap rows have an amending law in the store to read.** That's the collector's scope; whether each yields a fact depends on finding the amending provision, verifying that it names the row, and dating it. no_start is mostly not this source (a law's own commencement and metadata).
