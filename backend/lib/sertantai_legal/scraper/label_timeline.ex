@@ -88,7 +88,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
         """
         SELECT section_id, evidence, operation, effect_type, affecting_law, in_force,
                effective_from, savings, via, prospective, applied, effect_extent,
-               territorial_application, source
+               territorial_application, source, pointer
         FROM lat_change_log_rows WHERE law_name = $1 AND section_id IS NOT NULL
         """,
         [law_name]
@@ -109,7 +109,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
           into: MapSet.new(),
           do: {c.section_id, c.affecting_law}
 
-    undated_markup = for c <- changes, c.source == "markup", into: MapSet.new(), do: c.section_id
+    undated_markup = undated_markup(changes)
 
     undated? = fn sid ->
       MapSet.member?(undated_markup, sid) or
@@ -151,6 +151,29 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   defp head(gz) do
     xml = :zlib.gunzip(gz)
     binary_part(xml, 0, min(byte_size(xml), 80_000))
+  end
+
+  @doc """
+  Rows with change markup no source dates (T1): a markup record makes its
+  row "date unknown" unless a dated law record on the same row points to
+  the same note (the markup's commentary ref = the law record's note code,
+  "c950488" / "F:c950488": the same change, now dated by the law; LR-08).
+  """
+  @spec undated_markup([map()]) :: MapSet.t()
+  def undated_markup(changes) do
+    explained =
+      for c <- changes,
+          c.source == "law",
+          c.effective_from != nil,
+          is_binary(c[:pointer]),
+          into: MapSet.new(),
+          do: {c.section_id, c.pointer |> String.split(":") |> List.last()}
+
+    for c <- changes,
+        c.source == "markup",
+        not MapSet.member?(explained, {c.section_id, c[:pointer]}),
+        into: MapSet.new(),
+        do: c.section_id
   end
 
   @doc "Replace the law's periods. Returns the number written."
