@@ -295,23 +295,6 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     end
   end
 
-  @doc """
-  Fetch and parse a law's annotations without persisting (e.g.
-  `mix lat.place_notes`). Options as for `fetch_rows/2` (`store:`).
-  """
-  @spec fetch_notes(String.t(), keyword()) :: {:ok, [map()]} | {:error, String.t()}
-  def fetch_notes(law_name, opts \\ []) do
-    with {:ok, xmls, _law_id} <- fetch_docs(law_name, opts),
-         {:ok, {type_code, _}} <- parse_law_name(law_name) do
-      {:ok,
-       parse_annotations(
-         xmls,
-         law_name,
-         parse_rows(xmls, law_name, type_code, law_effects(law_name, opts))
-       )}
-    end
-  end
-
   defp parse_rows(xmls, law_name, type_code, effects) do
     xmls
     |> Enum.map(

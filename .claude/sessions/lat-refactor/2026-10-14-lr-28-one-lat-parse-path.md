@@ -24,7 +24,9 @@ Jason (2026-10-14): "second parse path feels like poor code architecture". LR-25
 - ✅ `persist_body_lat` and `maybe_run_commentary_substage` replaced by `LatStagedParser.run_stages/5` (green); behaviour differences listed
 - ✅ Other writers of `legal_articles` listed (targeted repair tools: `mix lat.repair_text`, `mix lat.fix_section_ids` #120) with a decision each: route through the same post-write step, or delete
 - ✅ Gate: full suite 2,718 pass; credo unchanged on `staged_parser.ex`. `mix lat.parse_snapshot` not run: no parser module changed (only which caller persists), so it can't differ
-- ⬜ **Jason: D1** (one-off in-place writers)
+- ✅ **Jason: D1** (2026-10-14): "Delete the 4. Log the other two in the correct session for sequencing and eventual fix". Deleted `lat.fix_section_ids`, `lat.repair_text` + `LatRepair`, `lat.reorder_notes` + `NoteReorder` + `CommentaryParser.text_pairs/1` / `legacy_commentary_text/1`, `lat.place_notes` + `NotePlacement` + `LatStagedParser.fetch_notes/2`, with their tests (suite 2,718 → 2,691 pass)
+- ⬜ `SortKeyRewrite.monotonic/1` into the parser's own modules (e.g. `LatParser.Transforms` or a `LatParser.SortKey`), its tests (`sort_key_rewrite_test.exs:87–141`) moved with it (TDD: red against the new name, then move); then delete `SortKeyRewrite` + `SortKeyRewrite.Store` (the one-off in-place sort-key repair, `Store.plan(:all)` = 0 rows). Zero diff: `mix lat.parse_snapshot`
+- ⏸️ `lat.backfill_titles`: logged in LR-25 (decided after its wave)
 - ⬜ CLAUDE.md (scraper) updated: one parse path
 
 ## Dependencies
@@ -74,3 +76,14 @@ Each writes parse content (text, ids, note placement, `excluded_extent`) outside
 - From now on, a repair re-parses the affected laws through the one path (dry run → Jason → apply, as waves have done since wave 2). The parser carries enrichment over (`Carry`), and LR-25's hook then refreshes the register and timeline.
 - The cost: a fix is a re-parse of the law, not a patch of its changed rows. This reverses the 2026-10-07 targeted-repair approach, which predates the store and carry-over.
 - Alternative: keep them and route each through the same post-write step. That leaves six writers that can drift from the parser.
+
+## Verification of the four deletions (2026-10-14)
+
+Before deleting, an agent compared stored data against a fresh in-memory parse of all 1,066 laws from the store. Text, section ids, sort keys, titles, note text and note placement differ on 0 rows and 0 notes. Each fix sits in the parser with a parser-level regression test:
+- #120 P2 wrappers: `lat_parser_test.exs:1918`;
+- list text: `:977`;
+- note order: `commentary_parser_test.exs:241`;
+- note placement: `lat_parser_test.exs:2174`;
+- titles: `:1981`.
+
+So a re-parse can't bring any of these bugs back.

@@ -85,33 +85,6 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     |> Map.new(fn {ref, sections} -> {ref, Enum.reverse(sections) |> Enum.uniq()} end)
   end
 
-  @doc """
-  Each commentary's `{code_type, code, old_text, text}` in document order:
-  the pre-2026-10-08 (scrambled) text beside the ordered one, so
-  `mix lat.reorder_notes` can find stored notes by their old text. Remove
-  with that task once the corpus is re-keyed.
-  """
-  @spec text_pairs(String.t()) :: [{String.t(), String.t(), String.t(), String.t()}]
-  def text_pairs(xml) when is_binary(xml) do
-    xml
-    |> SweetXml.parse(quiet: true)
-    |> xpath(~x"//Commentaries/Commentary"l)
-    |> Enum.flat_map(fn node ->
-      id = node |> xpath(~x"./@id"s) |> to_string()
-      type_char = node |> xpath(~x"./@Type"s) |> to_string()
-      code_type = Map.get(@type_map, type_char)
-
-      if is_nil(code_type) or id == "" do
-        []
-      else
-        [
-          {to_string(code_type), derive_code(id, code_type, type_char),
-           legacy_commentary_text(node) || "", extract_commentary_text(node) || ""}
-        ]
-      end
-    end)
-  end
-
   # ── Extract a single Commentary element ──────────────────────────
 
   defp extract_commentary(node, ref_to_sections) do
@@ -217,22 +190,6 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
          ) do
       [type, year, number] -> "UK_#{type}_#{year}_#{number}"
       nil -> nil
-    end
-  end
-
-  # The old extraction (xmerl //text(): direct text first, then descendants').
-  # Kept only to match stored notes during the re-key; remove afterwards.
-  defp legacy_commentary_text(node) do
-    (xpath(node, ~x".//Para//text()"ls) ++ xpath(node, ~x".//Text//text()"ls))
-    |> Enum.map(&(&1 |> to_string() |> String.trim()))
-    |> Enum.reject(&(&1 == ""))
-    |> Enum.uniq()
-    |> Enum.join(" ")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim()
-    |> case do
-      "" -> nil
-      t -> t
     end
   end
 

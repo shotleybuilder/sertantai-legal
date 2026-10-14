@@ -281,21 +281,6 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
       assert ann.text == "S. 2 repealed (1.1.2000) by Act 1999 (c. 1), s. 3"
     end
 
-    test "text_pairs/1 gives each commentary's old (scrambled) and ordered text" do
-      xml = """
-      <Legislation>
-      <Commentaries>
-        <Commentary id="F1" Type="F"><Para><Text>S. 2 repealed (1.1.2000) by <Citation>Act 1999 (c. 1)</Citation>, s. 3</Text></Para></Commentary>
-      </Commentaries>
-      </Legislation>
-      """
-
-      assert CommentaryParser.text_pairs(xml) == [
-               {"amendment", "F1", "S. 2 repealed (1.1.2000) by , s. 3 Act 1999 (c. 1)",
-                "S. 2 repealed (1.1.2000) by Act 1999 (c. 1), s. 3"}
-             ]
-    end
-
     test "handles empty Commentary gracefully" do
       xml = """
       <Legislation>
