@@ -4,6 +4,18 @@ status: active
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
+  - pattern: "Gaps mode asked no rows: a boolean match (`dated? = …`) inside a `for` comprehension acts as a filter and dropped every false — 0 law records in the first all-law dry run"
+    category: tooling
+    module: ChangeCollector.amending_law/4
+    affected: "all gap rows (first dry run: 0 records)"
+    fix: "explicit dated?/3 filter compared to the mode; test"
+    status: fixed
+  - pattern: "A provision's own commencement words ('This section shall come into force on the passing of this Act') ignored when the Act-wide rule excepted it — dated records came out undated"
+    category: amending-law-date
+    module: AmendingLaw.Commencement
+    affected: "e.g. Utilities Act 2000 s.68 (1989/29 s.15A)"
+    fix: "read the provision's own commencement words first; test"
+    status: fixed
   - pattern: "Benchmark review: an inserted provision's number guessed from the quoted words ('a fee …' read as paragraph (a)) put a law record on the wrong row (1990/43 s.6(2)(a))"
     category: amending-law-target
     module: AmendingLaw.Text / Target
@@ -47,6 +59,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 ## Decisions for Jason
 
 - **D5 — approved 2026-10-14** (Jason: "fetch the Schedules for the amending laws that we need, but only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT"): 274 `/schedules` documents fetched into the CLML store only; LAT untouched
+- **D6 — Write the law records to the register** (`mix lat.collect_changes --all --apply`; dry run below); timeline rebuild after hop 2 (the records are mostly undated until then). **Jason: approve**
 - **D4 — approved 2026-10-14**: collector design, consensus after Gemini (see "Gemini on the design")
 - **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D3 — Stop rules**: approved 2026-10-13, R1–R6 with **N = 5** (191 amending laws, 47% of 404; 6,768 of 7,150 rows, 95%)
@@ -269,3 +282,15 @@ Without the Schedules the collector can serve about 8,700 rows; consequential am
 - **First sample:** 23 right. Two faults: an inserted number guessed from quoted words; the nearest-law rule falling through (bugs above). Fixed with tests.
 - **Second sample:** 25 right on reading. "Operation differs" is the feed recording only a modification or generic "amended" on those rows; the substitution or insertion is in the law. One structural weakness fixed (inserted provisions matched by full path, not by numbers found anywhere in the quote).
 - **Dates:** the law's own words date few changes (Acts mostly commence by order), so most records are undated until hop 2.
+
+## Register dry run with the collector (2026-10-14)
+
+The first all-law dry run gave **0 law records**, which exposed two faults (bugs above): the gap rows were filtered out by a boolean match in a `for`, and a provision's own commencement words were ignored. Both fixed with tests (suite 2,709). The ten-law benchmark after the fixes was unchanged: 0 date disagreements.
+
+**Gap records' dates against their notes** (QA hint only; the note is never the value), ten laws: 2,671 law records. 27 are dated by the law's own words: 26 match the note's date, 1 note has none, **0 differ**. 2,644 are undated (by order: hop 2).
+
+**All-law dry run** (`lr08_collect_dry`): 1,066 laws, 0 errors, **0 fidelity failures**.
+- **4,681 law records** (per row) in **105 laws**. Largest: Gas Act 1986 785, 1990/43 752, Electricity Act 1989 646, 1988/52 462, 1981/69 320.
+- **Stored:** 141,390 (+1,699 compact).
+
+About 18,000 gap rows had an amending law in the store. 4,681 get a law record under the strict rule (the text must name both the law and the provision). The rest have no match: a pointer to a provision whose text doesn't name the row, a heading or Schedule form not read, or a law not in the store's documents.
