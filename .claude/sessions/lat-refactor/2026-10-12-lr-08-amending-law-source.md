@@ -135,3 +135,37 @@ Gaps from `lr27_rebuild.gaps.csv`. For each gap row: does an amendment note on i
 | no_start | 22,113 | 883 | 64 | 819 |
 
 A row can carry notes naming several laws, so the columns overlap. **About 18,000 gap rows have an amending law in the store to read.** That's the collector's scope; whether each yields a fact depends on finding the amending provision, verifying that it names the row, and dating it. no_start is mostly not this source (a law's own commencement and metadata).
+
+## Design (draft, 2026-10-14)
+
+**Goal.** Give the timeline's gap rows facts from the law itself: a change record (source `law`) in `lat_change_log` for a row, read from the amending provision a note points to, and only when the amending text names the row's law and provision. The note is a pointer, never a fact.
+
+**Scope (v1).** Gap-driven: `(row, amending law)` pairs where the register holds no dated change on the row by that law (`undated_change`, `insertion_not_in_register`) and the amending law is in the CLML store. Reads the store only; never fetches (hop 2 is a separate, approved fetch). Effects stay authoritative where they exist, so v1 creates no law-vs-effect conflicts. Widening it to cross-check effects is a later decision.
+
+### Modules: pure pieces, one IO edge, none over ~200 lines
+
+| Module | Pure? | Responsibility | In → out |
+|---|---|---|---|
+| `AmendingLaw.Pointer` | pure | Parse a note's pointer only: the amending law (its `citation_law`), the amending provision refs after the citation ("s. 60(5)", "Sch. 6 Pt. II para. 33(c)"), and any commencing instrument after ";" ("S.I. 2001/3266, art. 2"). Never dates, never operations. | note → `%Pointer{}` |
+| `AmendingLaw.Locator` | pure | Provision ref → element ids in the amending law's CLML ("s. 60(5)" → `section-60-5`; "Sch. 6 Pt. II para. 33" → `schedule-6-part-II-paragraph-33`, falling back up the hierarchy to the nearest held id). | ref + doc ids → ids |
+| `AmendingLaw.Text` | pure | An element's law text: Commentary and notes stripped, BlockAmendment content kept and marked as quoted (inserted words, not instructions). | element → `%Text{instruction, quoted}` |
+| `AmendingLaw.DefinedTerms` | pure | The amending law's defined terms for laws ("“the 1989 Act” means the Electricity Act 1989", "the principal Act"), and the heading a Schedule paragraph sits under ("The Electricity Act 1989"). | doc → `%{term => law_name}` |
+| `AmendingLaw.Target` | pure | Does the instruction name the row's law (title, year and chapter, or a defined term) and provision ("section 25", "subsection (5) of that section" resolved within the same provision)? | `%Text{}`, terms, row → `{:ok, refs}` / `:no_match` |
+| `AmendingLaw.Operation` | pure | The operation from the drafting verbs: "there is substituted" / "for … substitute" → substituted; "is inserted" / "insert" → inserted; "shall cease to have effect" / "omit" / "is repealed" → repealed; else amended. | `%Text{}` → operation |
+| `AmendingLaw.Commencement` | pure | The amending law's own commencement for a provision: a fixed date, relative to Royal Assent (`ukm:EnactmentDate`) or making, "on such day as … appoint" (by order), with exceptions ("apart from this section and section 68"). | doc, provision → `{:date, d}` / `:by_order` / `:unknown` |
+| `ChangeCollector.AmendingLaw` | pure | Orchestrates the above for a law's gap rows into `%Record{source: "law", evidence: "ukpga/2000/27/section/60", affecting_law, affecting_ref, operation, effective_from, dated_by_law, dated_by_ref, pointer: note code, via: ["law_pointer"]}`; a record only on a `Target` match; `effective_from` only from `Commencement` (or hop 2 later). | rows, notes, gaps, `docs_fun` → records |
+| `ChangeCollector` (existing) | IO | Adds the `amending_law` collector: loads gaps and notes, injects `docs_fun` (a memoised store read per amending law), writes with the others (one transaction, fidelity gate). | — |
+
+**Structs.** `%Pointer{}` (affecting_law, provisions, commencing, note_code) and `%Text{}` (instruction, quoted) with `@enforce_keys`. `Record` is reused.
+
+**Dates (LR-24 rule):** the commencing provision (hop 2) over the amending law's own date; `:by_order` with no order held leaves `effective_from` empty, and the row stays an undated change (truth). `dated_by_law` / `dated_by_ref` say which law dated it.
+
+**Projection.** No change: `LabelProjection` treats a `law` record like any dated change (text operations version the row; repeals set status), so a matched, dated record removes the row's gap. A matched but undated record keeps the "date unknown" signal and adds the evidence.
+
+**Verification.**
+- **Tests first,** per module, with trimmed fixtures from the stored CLML: Utilities Act 2000 s. 60 on Electricity Act 1989 s. 25; Sch. 6 Pt. II para. 33 under its "The Electricity Act 1989" heading; a modern "omit … insert" instruction. `key-` ids scrubbed.
+- **Register dry run** with the fidelity gate.
+- **Precision sample:** for N matched records, compare to the note's own date and law, as a **QA signal only** (the note is never the value), and list disagreements.
+- **Timeline dry run** → Jason → apply.
+
+**Out of scope.** Hop 2 (commencing SIs: a list → Jason → fetch, then a `CommencingOrder` reader); laws not in the store (#179); text application (#171).
