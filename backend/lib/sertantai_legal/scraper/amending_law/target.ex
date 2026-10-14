@@ -121,15 +121,18 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
     end)
   end
 
-  # an inserted provision's own number (its Pnumber in the quote)
+  # an inserted provision's own number: the top of a path in the quote
   defp inserted?(%Text{inserted: ins, instruction: i}, number),
-    do: i =~ ~r/insert|substitut/i and number in ins
+    do: i =~ ~r/insert|substitut/i and Enum.any?(ins, &match?([^number | _], &1))
 
-  # the row's brackets, all named by the instruction
+  # the row's brackets, all named by the instruction — or the row's path
+  # inserted whole by the quote ([11A, 7, b], or [5A] into a named section)
   defp provision(text, row) do
     named = brackets(text)
 
     cond do
+      quoted_path?(text, row) -> {:ok, row.section_id}
+      inserted?(text, row.number_ref) -> :no_match
       row.subs != [] and Enum.all?(row.subs, &(&1 in named)) -> {:ok, row.section_id}
       row.subs == [] and named == [] -> {:ok, row.section_id}
       row.subs == [] -> :no_match
@@ -138,7 +141,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
     end
   end
 
-  defp brackets(%Text{instruction: i, inserted: ins}) do
+  # the row's path inserted by the quote: the whole provision ([11A, 7]),
+  # or the instruction's brackets then the inserted path ((2) + [ca])
+  defp quoted_path?(%Text{inserted: ins, instruction: i} = text, row) do
+    named = brackets(text)
+
+    i =~ ~r/insert|substitut/i and
+      Enum.any?(
+        ins,
+        &(&1 == [row.number_ref | row.subs] or (row.subs != [] and row.subs == named ++ &1))
+      )
+  end
+
+  defp brackets(%Text{instruction: i}) do
     plain =
       i
       |> String.replace(~r/[“"][^”"]*[”"]/u, "")
@@ -146,6 +161,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Target do
 
     own = for [b] <- Regex.scan(~r/\(([0-9A-Za-z]+)\)/, plain, capture: :all_but_first), do: b
 
-    own ++ if(i =~ ~r/insert|substitut/i, do: ins, else: [])
+    own
   end
 end

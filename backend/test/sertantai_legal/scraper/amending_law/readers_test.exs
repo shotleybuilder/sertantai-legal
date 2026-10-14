@@ -175,7 +175,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
     test "an inserted provision's own number counts (Pnumber in the quote)" do
       text =
         tx("In section 98(2) after paragraph (c) insert—.",
-          inserted: ["ca"],
+          inserted: [["ca"]],
           context: ["In the Water Industry Act 1991—"]
         )
 
@@ -197,5 +197,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ReadersTest do
       other = tx("In section 142(7) of the Gas Act 1986, for “x” substitute .")
       assert Target.match(other, "Environmental Protection Act 1990", %{}, row) == :no_match
     end
+  end
+
+  test "an inserted provision matches by its full path in the quote, not by numbers found anywhere in it" do
+    xml =
+      ~s(<Legislation><Primary><Body><P1 id="section-35"><P1para><Text>After section 11 of the Electricity Act 1989 there is inserted—</Text><BlockAmendment><P1group><P1><Pnumber>11A</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><P3><Pnumber>b</Pnumber></P3></P2para></P2><P2><Pnumber>7</Pnumber><P2para><Text>text</Text></P2para></P2></P1para></P1></P1group></BlockAmendment></P1para></P1></Body></Primary></Legislation>)
+
+    d = Doc.new("UK_ukpga_2000_27", [xml])
+    t = Text.of(d, "section-35")
+    assert t.inserted == [["11A"], ["11A", "1"], ["11A", "1", "b"], ["11A", "7"]]
+
+    m = fn sid ->
+      Target.match(t, nil, %{}, RowRef.new("UK_ukpga_1989_29:" <> sid, "Electricity Act"))
+    end
+
+    assert m.("s.11A(1)(b)") == {:ok, "UK_ukpga_1989_29:s.11A(1)(b)"}
+    assert m.("s.11A(7)") == {:ok, "UK_ukpga_1989_29:s.11A(7)"}
+    # (7)(b) isn't in the inserted text: added later by another law
+    assert m.("s.11A(7)(b)") == :no_match
   end
 end

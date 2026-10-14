@@ -63,15 +63,45 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
     end
   end
 
-  # the numbers of provisions the quote inserts (their Pnumber), never a
-  # guess from the quoted words
-  defp inserted(el) do
-    import SweetXml
+  # the paths of the provisions the quote inserts, from their Pnumbers
+  # ([["11A"], ["11A", "1"], ["11A", "1", "b"]]) — never guessed from words
+  defp inserted({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}),
+    do: children |> Enum.flat_map(&in_quote(&1, false, [])) |> Enum.uniq()
 
-    el
-    |> xpath(~x".//*[local-name()='BlockAmendment']//*[local-name()='Pnumber']"l)
-    |> Enum.map(&(&1 |> SertantaiLegal.Scraper.AmendingLaw.Doc.text() |> String.trim()))
-    |> Enum.reject(&(&1 == ""))
+  defp in_quote({:xmlElement, :BlockAmendment, _, _, _, _, _, _, children, _, _, _}, _, path),
+    do: Enum.flat_map(children, &in_quote(&1, true, path))
+
+  defp in_quote({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}, true, path) do
+    case number(children) do
+      nil ->
+        Enum.flat_map(children, &in_quote(&1, true, path))
+
+      n ->
+        own = path ++ [n]
+        [own | Enum.flat_map(children, &in_quote(&1, true, own))]
+    end
+  end
+
+  defp in_quote({:xmlElement, _, _, _, _, _, _, attrs, children, _, _, _}, false, path) do
+    if Enum.any?(attrs, &(elem(&1, 1) == :id)),
+      do: [],
+      else: Enum.flat_map(children, &in_quote(&1, false, path))
+  end
+
+  defp in_quote(_node, _quoted, _path), do: []
+
+  # a provision's own number: its Pnumber child
+  defp number(children) do
+    Enum.find_value(children, fn
+      {:xmlElement, :Pnumber, _, _, _, _, _, _, _, _, _, _} = p ->
+        case p |> Doc.text() |> String.trim() do
+          "" -> nil
+          n -> n
+        end
+
+      _ ->
+        nil
+    end)
   end
 
   # the top provision: section-60 for section-60-5, schedule-6-paragraph-33
