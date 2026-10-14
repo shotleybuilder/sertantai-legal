@@ -27,6 +27,7 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 
 ## Decisions for Jason
 
+- **D4 — Collector design, consensus after Gemini** (see "Gemini on the design"). **Jason: approve**
 - **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D3 — Stop rules**: approved 2026-10-13, R1–R6 with **N = 5** (191 amending laws, 47% of 404; 6,768 of 7,150 rows, 95%)
 - **D2 — Dates** (now LR-24's rule: the commencing provision over the amending law's own date over the effect; else empty): the amending law names the change and itself; the date is usually set by a commencement order (a second law). effective_from only when the amending law fixes the date itself or its commencement order is in the store; otherwise empty
@@ -169,3 +170,40 @@ A row can carry notes naming several laws, so the columns overlap. **About 18,00
 - **Timeline dry run** → Jason → apply.
 
 **Out of scope.** Hop 2 (commencing SIs: a list → Jason → fetch, then a `CommencingOrder` reader); laws not in the store (#179); text application (#171).
+
+## Gemini on the design (2026-10-14)
+
+`backend/data/code-reviews/2026-10-14-lr-08-amending-law-collector-design.md`. **VERDICT: ACCEPT WITH CHANGES.** The decomposition, the one IO edge and the strict Target rule are agreed.
+
+Taken:
+- **Structs for the inputs.**
+  - `AmendingLaw.Doc`: a parsed amending law, with ids, metadata (enactment date, type), defined terms and the heading per Schedule paragraph, built once per law.
+  - `AmendingLaw.RowRef`: the row's law, title, short title and provision path, parsed from `section_id`.
+
+  No raw XML or ad-hoc maps cross the module boundaries.
+- **Truth handling per case:**
+  - **No match:**
+    - a note pointing to the wrong provision (the text must confirm independently);
+    - anaphora reaching beyond the same amending provision, or ambiguous;
+    - savings and transitional provisions;
+    - an ambiguous defined term ("the principal Act" with more than one candidate).
+  - **Handled:**
+    - "that section" and "the said Act" within the same provision;
+    - a Schedule paragraph under a heading naming the law;
+    - a provision amending several laws (each matched on its own);
+    - partial amendments ("in subsection (2)(a)": the change is recorded on the row it names; a words change is `amended`);
+    - commencement exceptions;
+    - commencement by order or for some purposes (`effective_from` empty).
+- **Repeal tables in v1** (`AmendingLaw.RepealTable`): pre-2002 repeals are mostly Schedules of repeals (Chapter / Short title / Extent of repeal; "1993 c. 43, … Sch. 14"). A table reader, not the text Target, matches a row only when the Chapter or Short title names the row's law and the "Extent of repeal" names its provision.
+- **Precision first:** zero wrong facts in the reviewed sample before any write. Recall is secondary.
+
+Added (consensus):
+- **A benchmark against effects.** Run the collector on (row, law) pairs where the feed already holds a dated effect, and compare operation and date. It's an automatic precision and recall measure on thousands of cases, without trusting notes. Then a manual sample of 50 gap records, read against the amending text. Acceptance: no wrong operation or date in either; recall reported.
+- **The fidelity gate is the existing one** (compact = per-row) plus that benchmark. The note stays a QA hint only.
+
+Not taken: a separate drafting-verb registry module (the verbs stay in `Operation` until they outgrow it).
+
+**Modules (v1):**
+- `Pointer`, `Doc`, `RowRef`, `Locator`, `Text`, `DefinedTerms`, `Target`, `RepealTable`, `Operation`, `Commencement` (all pure, each small);
+- `ChangeCollector.AmendingLaw` (pure orchestration);
+- the IO stays in `ChangeCollector`.
