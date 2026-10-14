@@ -3,6 +3,25 @@ session: 'LR-08: The Amending Law as a Source'
 status: active
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+bugs:
+  - pattern: "Benchmark review: an inserted provision's number guessed from the quoted words ('a fee …' read as paragraph (a)) put a law record on the wrong row (1990/43 s.6(2)(a))"
+    category: amending-law-target
+    module: AmendingLaw.Text / Target
+    affected: "found in a 25-record sample"
+    fix: "inserted provisions only from the quote's Pnumber tree, matched by full path"
+    status: fixed
+  - pattern: "Target's nearest-law rule fell through: an instruction naming only another law could match a container title; laws named in quoted old words counted"
+    category: amending-law-target
+    module: AmendingLaw.Target
+    affected: "2 in a 25-record sample (right by luck)"
+    fix: "the first text naming any law decides; quoted old words name nothing"
+    status: fixed
+  - pattern: "A whole Schedule (pointer 'Sch. 26') read as one instruction gave 'inserted' where its repeals table says repealed (1989/29 s.56C(7))"
+    category: amending-law-target
+    module: ChangeCollector.AmendingLaw / RepealTable
+    affected: "found by the benchmark"
+    fix: "only a single provision is read as an instruction; whole Schedules only through RepealTable, which now reads the modern 2-column form"
+    status: fixed
 ---
 
 # Session: LR-08 The Amending Law as a Source (ACTIVE)
@@ -20,14 +39,14 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
 - ✅ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
 - ✅ Re-measure against the timeline's gaps: rows `undated_change` / `insertion_not_in_register` / `no_start` whose note points to an amending law now in the CLML store (hop 1)
-- ⬜ Design (Gemini, then Jason): `ChangeCollector.AmendingLaw` — from a pointer (note's citation + provision) read the amending provision; record (source `law`, evidence = provision path) only when its text names the affected law and provision (defined terms resolved); operation from the text; date from the law's own commencement words (LR-24 rules: commencing provision > law's own date)
+- ✅ Design (Gemini, then Jason): `ChangeCollector.AmendingLaw` — from a pointer (note's citation + provision) read the amending provision; record (source `law`, evidence = provision path) only when its text names the affected law and provision (defined terms resolved); operation from the text; date from the law's own commencement words (LR-24 rules: commencing provision > law's own date)
 - ⬜ Hop 2: the commencing SIs (37 at N = 5) → list → Jason → fetch
 - ⬜ Tests first; the collector; register dry run (fidelity) → Jason → apply; timeline rebuild → Jason → apply
 - Not in scope: applying unapplied amendments to the text (#171), backlog
 
 ## Decisions for Jason
 
-- **D5 — Fetch the Schedules of the amending laws** (see "Schedules aren't in the store"): a fixed list of `/schedules` documents (274 laws), under the stop rules; nothing else. **Jason: approve**
+- **D5 — approved 2026-10-14** (Jason: "fetch the Schedules for the amending laws that we need, but only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT"): 274 `/schedules` documents fetched into the CLML store only; LAT untouched
 - **D4 — approved 2026-10-14**: collector design, consensus after Gemini (see "Gemini on the design")
 - **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D3 — Stop rules**: approved 2026-10-13, R1–R6 with **N = 5** (191 amending laws, 47% of 404; 6,768 of 7,150 rows, 95%)
@@ -218,3 +237,35 @@ Of the 18,003 gap rows whose note points to an amending law in the store:
 - 8,723 point into the body.
 
 Without the Schedules the collector can serve about 8,700 rows; consequential amendments and repeal tables, the main pre-2002 forms, need the Schedules (D5).
+
+## Build (2026-10-14)
+
+**Schedules fetched** (D5): 274 `/schedules` documents into the CLML store only; 272 stored, 2 are 404 (nisr 2012/187, uksi 1995/1983 have no Schedules). LAT and `LatScope` untouched.
+
+**Modules** (`lib/sertantai_legal/scraper/amending_law/`, each small, pure):
+- `Pointer`: a note's pointer only;
+- `Doc`: a parsed law with ids, positions, container titles and enactment date, plus text in document order;
+- `RowRef`, `Locator`;
+- `Text`: instruction, quoted words, the inserted provisions' Pnumber paths, context;
+- `DefinedTerms`: Citation URI first;
+- `Operation`;
+- `Commencement`: read once per law;
+- `Target`: the strict rule;
+- `RepealTable`: the 3-column and 2-column forms.
+
+`ChangeCollector.AmendingLaw` (pure) is wired into `ChangeCollector.collect/2` as collector `amending_law`. Rows asked: gaps mode, where a note names a law with no dated feed change on the row or an ancestor. The IO edge reads notes, titles and the stored CLML (body, Schedules, fragments), each law parsed once per process. `mix lat.amending_law_benchmark` is read-only. Tests: 45 for the module family; suite 2,708.
+
+**Benchmark against the feed** (rows where the feed already dates a change by the law; compared on the row's family). Ten laws (1989/29, 1986/44, 1974/37, 1990/43, 1991/56, 1996/18, 1990/8, 1974/40, 1968/73, uksi 1999/3242): **4,605 law records**:
+
+| Verdict | Records |
+|---|---|
+| agree on the operation | 4,233 |
+| of which also dated by the law's own words, and every date agrees | 108 |
+| date disagrees | 0 |
+| operation differs | 252 |
+| no feed change on the family | 120 |
+
+**Manual review** (two samples of 25, weighted to "differs" and "no feed change", read against the amending text):
+- **First sample:** 23 right. Two faults: an inserted number guessed from quoted words; the nearest-law rule falling through (bugs above). Fixed with tests.
+- **Second sample:** 25 right on reading. "Operation differs" is the feed recording only a modification or generic "amended" on those rows; the substitution or insertion is in the law. One structural weakness fixed (inserted provisions matched by full path, not by numbers found anywhere in the quote).
+- **Dates:** the law's own words date few changes (Acts mostly commence by order), so most records are undated until hop 2.
