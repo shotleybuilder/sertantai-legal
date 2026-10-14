@@ -335,3 +335,5 @@ The collector dates undated law records from the orders their note names: `effec
 - 1,761 undated (no order named, order not fetched, or a Part reference).
 
 A first run reported 1989/29 s.39A(3)(b) as differing. That was the QA script reading only the note's first date ("16.5.2001 for certain purposes and otherwise 1.10.2001"). The law record has both: partly in force 16 May 2001 (SI 2001/1781), fully in force 1 October 2001 (SI 2001/3266).
+
+**Register dry run with hop 2** (`lr08_hop2_dry`): 1,066 laws, 0 errors, **0 fidelity failures**. Law records: 4,681 per row (unchanged: dates add no records). **Dated: 1,059** (by the law's own words or a commencing order); 3,622 undated. Stored 141,390. D8 to Jason.
