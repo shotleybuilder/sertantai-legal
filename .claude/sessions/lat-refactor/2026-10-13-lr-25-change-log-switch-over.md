@@ -21,9 +21,11 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
 - ⬜ Note-read guard test (D4, approved): fails if a module outside the allow-list reads note text (`amendment_annotations.text`, `AmendmentNote`, note regexes); allow-list = the pointer uses only
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
 - ⬜ Parse hook (after LR-28, in its one place): collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
-- ⬜ Staleness check: 0 laws whose latest `parsed` event is newer than their `lat_change_log.collected_at` (LR-23 Gemini D1)
+- ⬜ Staleness check, two parts:
+  - 0 laws whose latest `parsed` event is newer than their `lat_change_log.collected_at` (LR-23 Gemini D1);
+  - 0 laws parsed by older parser code: the parse stamps a code version, as the timeline does (found 2026-10-14, see Parse drift)
 - ⬜ Delete the dead parse-time label and note-fact paths (LR-21)
-- ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify
+- ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)
 - ⬜ Close LR-22 (design umbrella) and LR-21 with this session
 
@@ -118,3 +120,26 @@ Implications for D2 (LH-05), recorded here and not sent:
 - `NoteTerritory` in the `LatTerritoryCheck` diagnostic.
 
 Recommend an architecture test that fails if any module outside an allow-list reads note text (`amendment_annotations.text`, `AmendmentNote`, note regexes).
+
+## Parse drift (found 2026-10-14, in LR-28's check of the one-off repairs)
+
+**Method.** Stored `legal_articles` was compared with a fresh in-memory parse of all 1,066 laws from the store. It was read-only and nothing was written. Per-law counts are in `backend/data/reports/lat-refactor/lr25-parse-drift.tsv`.
+
+**Matches.** Text, section ids, sort keys, titles, note text, note placement and `extent_code` all match exactly.
+
+**Behind the parser** (code changed after wave 4 and these laws were never re-parsed):
+
+| Column | Rows | Laws | Read by the timeline? |
+|---|---|---|---|
+| `effect_ids` | 74,151 | 162 | no (the collector re-joins from the store) |
+| `territory_provenance` | 1,204 | 16 | yes ("where" today) |
+| `excluded_extent` | 451 | 8 | yes ("where" today) |
+
+The largest: uksi 2023/909, ukpga 1984/22, 1991/22, 1981/69, anaw 2016/3. Candidate causes are the parser commits since wave 4:
+- `967d2cdd`, the "revoked in part" rule;
+- LR-19 `a6ee628d`, effect joins (its wave covered 283 laws);
+- LR-27 `19355784`, container refs: the register was re-collected but the LAT was not re-parsed.
+
+This is to be classified in the wave's dry run.
+
+**Lesson.** The planned staleness check (parse newer than collect) can't see this. A change to parser code makes stored output stale with no new parse. The parse needs a code version, and the check needs to compare it.
