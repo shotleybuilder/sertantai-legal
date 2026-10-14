@@ -29,13 +29,13 @@ Some changes-feed effects give their affected provision only as text, with no st
 - ✅ Measure: unreached effects naming a Part / Chapter / cross-heading / Schedule Part as text only; the LR-24 J5 rows they would date
 - ✅ Tests first: a container ref (cross-heading / Part / Chapter) reaches the provisions inside it (1996/18 ss. 27U–27Y); a words-level change to a heading doesn't
 - ✅ EffectIndex: expand container refs from the CLML tree; re-collect (fidelity gate; dry run → Jason → apply)
-- ⬜ Timeline rebuilt: J5 gaps that now have a date
+- ✅ Timeline rebuilt: J5 gaps that now have a date (12,084 → 8,134)
 
 ## Decisions for Jason
 
 - **D1 — approved and applied 2026-10-13.** Re-collect the register with container refs (dry run below): `mix lat.collect_changes --all --apply`; then a timeline dry run → D2 rebuild
 
-- **D2 — Rebuild the timeline** (dry run below): `mix lat.timeline --all --apply`. **Jason: approve**
+- **D2 — approved and applied 2026-10-14.** Rebuild the timeline: `mix lat.timeline --all --apply`
 
 ## Dependencies
 
@@ -99,3 +99,10 @@ Where the 12,084 insertion gaps went:
 - 8,134 remain (the feed holds no insertion reaching them: LR-08, or an insertion the feed doesn't record).
 
 **1996/18 s.27V:** partly in force from 2023-07-31, in force from 2024-10-01 (2023/13), territory set. It was "unknown" before.
+
+## Rebuild (2026-10-14)
+
+`lr27_rebuild` (approved): 1,066 laws, 0 errors; **505,244 periods**, `code_version` cc2c9a3c. As at today (14 Oct):
+- territory known 312,689;
+- nowhere (repealed) 11,816 (+1,950: whole-Part repeals now reach the provisions in the Part);
+- unknown 19,674.
