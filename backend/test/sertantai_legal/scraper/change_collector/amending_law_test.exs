@@ -117,4 +117,22 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
   test "a whole Schedule that isn't a repeals table is never read as one instruction" do
     assert run([note("F5", "S. 40(2) inserted by 2000 c. 27, Sch. 6", ["s.40(2)"])]) == []
   end
+
+  test "ChangeCollector.dated?/3: undated rows are false (gaps mode asks them), dated rows true" do
+    dated = MapSet.new([{"#{@law}:s.25", "UK_ukpga_2000_27"}])
+
+    assert SertantaiLegal.Scraper.ChangeCollector.dated?(
+             dated,
+             "#{@law}:s.25(5A)",
+             "UK_ukpga_2000_27"
+           )
+
+    refute SertantaiLegal.Scraper.ChangeCollector.dated?(
+             dated,
+             "#{@law}:s.15A",
+             "UK_ukpga_2000_27"
+           )
+
+    refute SertantaiLegal.Scraper.ChangeCollector.dated?(dated, "#{@law}:s.25", "UK_ukpga_1999_1")
+  end
 end

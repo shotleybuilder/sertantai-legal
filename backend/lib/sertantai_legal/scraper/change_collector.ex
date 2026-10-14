@@ -68,12 +68,14 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
           into: MapSet.new(),
           do: {r.section_id, r.affecting_law}
 
+    want_dated = mode == :benchmark
+
+    # (a `for` match on a boolean would filter out every false: an explicit
+    # filter instead)
     ask =
       for n <- notes,
           sid <- n.affected_sections,
-          dated? =
-            Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(dated, {&1, n.citation_law})),
-          dated? == (mode == :benchmark),
+          dated?(dated, sid, n.citation_law) == want_dated,
           into: MapSet.new(),
           do: sid
 
@@ -89,6 +91,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
           &amending_doc/1
         )
   end
+
+  @doc "True when the row or an ancestor has a dated change by `law` in `dated` ({section_id, law} pairs)."
+  @spec dated?(MapSet.t(), String.t(), String.t()) :: boolean()
+  def dated?(dated, sid, law),
+    do: Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(dated, {&1, law}))
 
   # the law's amendment notes, each with the law it points to
   defp law_notes(law_name) do

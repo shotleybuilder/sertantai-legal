@@ -2,7 +2,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Commencement do
   @moduledoc """
   When an amending provision came into force by the amending law's own
   words (lat-refactor LR-08): `{:date, date, provision}` when the law fixes
-  it — an SI's single "shall come into force on 10th August 2000"; an Act
+  it — the provision's own "This section shall come into force on …"
+  first; else an SI's single "shall come into force on 10th August 2000"; an Act
   "on the passing of this Act" or "at the end of the period of two months
   beginning with the day on which it is passed" (from `ukm:EnactmentDate`) —
   `:by_order` when it is "such day as … may by order appoint", `:unknown`
@@ -20,10 +21,34 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Commencement do
   @spec of(Doc.t(), String.t(), [{String.t(), String.t()}] | nil) ::
           {:date, Date.t(), String.t()} | :by_order | :unknown
   def of(doc, id, found \\ nil) do
-    case found || provisions(doc) do
-      [] -> :unknown
-      found -> rule(doc, id, found)
+    found = found || provisions(doc)
+
+    case own(doc, id, found) do
+      nil -> if(found == [], do: :unknown, else: rule(doc, id, found))
+      dated -> dated
     end
+  end
+
+  # the provision's own words: "This section shall come into force on the
+  # passing of this Act" / "on 1st April 1991", in the same top provision
+  defp own(doc, id, found) do
+    top = top(id)
+
+    Enum.find_value(found, fn {cid, w} ->
+      if top(cid) == top and
+           w =~ ~r/^This (?:section|regulation|article|paragraph) shall come into force on/i do
+        cond do
+          w =~ ~r/on the passing of this Act|on the day on which this Act is passed/i ->
+            passed(doc, cid, 0)
+
+          length(dates(w)) == 1 ->
+            {:date, hd(dates(w)), cid}
+
+          true ->
+            nil
+        end
+      end
+    end)
   end
 
   @doc "{provision id, its words} for each provision with commencement words."
@@ -90,7 +115,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Commencement do
       end
   end
 
-  defp passed(%Doc{enactment_date: nil}, _cid, _months), do: :unknown
+  defp passed(%Doc{enactment_date: nil}, _cid, _months), do: nil
 
   defp passed(%Doc{enactment_date: d}, cid, months),
     do: {:date, Date.shift(d, month: months), cid}
