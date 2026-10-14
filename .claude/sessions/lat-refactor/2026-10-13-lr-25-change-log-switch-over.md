@@ -18,7 +18,7 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
 - ✅ Re-scoped to inside -legal; meta plan updated (2026-10-14)
 - ✅ Inventory: every writer and reader of the `legal_articles` label columns; parse entry points; note-fact paths still called
 - ⬜ **Jason: D1** — what the `legal_articles` label columns become once the parse stops computing them
-- ⬜ Note-read guard test (D4, approved): fails if a module outside the allow-list reads note text (`amendment_annotations.text`, `AmendmentNote`, note regexes); allow-list = the pointer uses only
+- ✅ Note-read guard test (D4, approved; step 1, 2026-10-14): `test/sertantai_legal/architecture/note_read_test.exs`. Fact calls (`AmendmentNote.parse/row_effective/resolve_law`, `LatStatus.resolve`, `NoteTerritory`) must appear nowhere but a ratchet `@to_delete` list (8 entries; must shrink to empty in step 7). SQL readers of note text are allow-listed with reasons: pointer (LabelTimeline J5, ChangeCollector), display (qa_sample, ai_sync, admin LAT page), to_delete (LatStatus.Apply)
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
 - ⬜ Parse hook (after LR-28, in its one place): collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
 - ⬜ Staleness check, two parts:
@@ -144,3 +144,79 @@ The largest: uksi 2023/909, ukpga 1984/22, 1991/22, 1981/69, anaw 2016/3. Candid
 This is to be classified in the wave's dry run.
 
 **Lesson.** The planned staleness check (parse newer than collect) can't see this. A change to parser code makes stored output stale with no new parse. The parse needs a code version, and the check needs to compare it.
+
+## Build plan (draft, 2026-10-14)
+
+Each step is test-first and the suite is green after each. No outward run: nothing is synced or served to compliance or fractalaw.
+
+1. **Note-read guard (D4).**
+   - Architecture test, as LR-28's: fails when a module outside the allow-list reads note text (`amendment_annotations.text`, `AmendmentNote`, `LatStatus` note regexes).
+   - Red now. The allow-list is the pointer uses: J5 in `LabelTimeline`; T1 and the collector's law pointer; `CommentaryParser` (it builds notes); `NoteTerritory` (diagnostic).
+2. **Parser code version.**
+   - Each `parsed` lat_event records `parser_version`, a hash of the parser's source files taken at compile time (`@external_resource`).
+   - It changes only when parse code changes. A git sha would change with every commit and mark every law stale.
+   - The timeline keeps its own `code_version`.
+3. **`markup_status`.**
+   - The parse writes what the revised text shows (`Rows.assign_status`: Prospective flag, repealed text, an exclusion covering the extent) to a new column.
+   - `LabelTimeline` J2 reads it instead of `status` + `change_provenance.status`.
+   - Gate: the timeline is rebuilt in a dry run from a re-parse and is unchanged except where `markup_status` ≠ today's "markup"-sourced status (classified).
+4. **Hook in one place.**
+   - After `LatStagedParser.persist_stages` (rows, notes, cause), it runs `ChangeCollector` collect → fidelity → write, then `LabelTimeline` build → write, for that law.
+   - A failure is logged and doesn't fail the parse.
+   - `LatArchive` deletes the law's register and timeline rows.
+   - `LabelTimeline`'s code version moves out of `mix lat.timeline` into the builder.
+5. **Staleness check** (`mix lat.stale`, and part of verification). It lists laws:
+   - parsed after their latest collect;
+   - collected after their timeline was built;
+   - whose `parser_version` isn't the current one.
+6. **Readers move off the label columns.**
+   - `LatHash` `status_hash`: the timeline's status as at today.
+   - Zenoh `serialize_lat`: status / effective_from / changed_by come from the timeline as at today (`status`, `in_force_from`, `changed_by`). This is R3's "the pull computes as-at-today labels when it serves"; the contract shape is unchanged. It is only served at D2.
+   - `LatCause` / `LatParseLog` `status_changed`: `markup_status`.
+   - `mix lat.qa_sample` / `change_diff` / `parse_snapshot` / `timeline`: drop the label columns or read the timeline.
+7. **Delete.**
+   - `LatStatus.Apply` (refresh and note fact writes), `ChangeFacts`, `LatStatus.resolve` and its note regexes, and the fact-reading part of `AmendmentNote`.
+   - The law-naming pointer stays (D2), written at parse by `CommentaryPersister`.
+   - `CommentaryPersister` no longer calls the refresh.
+8. **Migration** (Ash-generated; the `lat` view, which has no triggers, is recreated):
+   - drop `legal_articles.effective_from`, `changed_by`, `change_provenance` and `status`;
+   - add `markup_status`;
+   - the `Lat` and `LegalArticle` resources follow.
+9. **Wave.**
+   - `markup_status` needs every law parsed, and 162 laws are behind the parser anyway, so it re-parses all 1,066 laws from the store through the one path, with the hook re-collecting and rebuilding each law's timeline.
+   - Order: NAS backup → dry run (classified: labels moved, territory drift on 16 laws) → **Jason** → apply → verify: staleness 0, guard green, no label from note text, timeline as at today classified against the pre-wave timeline.
+10. `lat.backfill_titles` decision; LH-05 contract notes (written, not sent); close LR-21 and LR-22.
+
+**Gemini review** (`backend/data/code-reviews/2026-10-14-lr-25-build-plan.md`):
+
+Taken:
+- **Order.** Split the migration: an additive one at step 3 (`markup_status`), and the drop at step 8, after readers move (6) and code is deleted (7). Gemini's own order, migration first, would drop `status` while the code still reads it; the split meets its concern.
+- **Parser version scope.** Everything the parse output depends on goes into the hash:
+  - `lat_parser/**`, `lat_parser.ex`, `lat_staged_parser.ex`;
+  - the changes-feed reader, effect index and territory modules;
+  - `commentary_parser.ex`, `transforms.ex`;
+  - `mix.lock`, for library changes.
+
+  Whitespace edits also mark laws stale, a cost accepted to stay conservative.
+- **Hook failure is recorded, not just logged.**
+  - It records a `lat_event` `labels_failed` with the reason, and `mix lat.stale` lists it.
+  - The register write and the timeline write are each already one transaction per law, so a failure leaves the previous complete state.
+  - The staleness check still catches it, because `collected_at` stays older than the parse.
+- **Verification adds:**
+  - every law's `parsed` event carries the current `parser_version`;
+  - a timeline coverage report (provisions with no timeline = the A8 gap classes, counted);
+  - a `serialize_lat` shape test, so the contract shape is unchanged with values from the timeline;
+  - hook time per law measured during the wave.
+- **D2 open point:** Gemini recommends (a), drop.
+
+Not taken:
+- **Rolling back the parse when the hook fails.** The parse is valid data on its own, and the failure is visible.
+- **An async job queue (Oban).** LAT is parsed on a local tool, with no Oban today. Synchronous per law is simpler to reason about, and a wave runs in a background shell.
+- **Time zone.** Already handled: "today" is the UK date (`LabelProjection.uk_today/1`).
+- **No timeline row.** Served as status nil = unknown, never a default. For D2: fractalaw's gate treats nil as live (`status IN ('repealed','prospective')`), so the contract note must say "nil = unknown".
+
+**Open point for Jason, D2 clarified.** Deleting `LatStatus.Apply` also stops filling the notes' own fact columns on `amendment_annotations`: `effect`, `effective_dates`, `effective_from`, `fact_provenance`. That is the note enrichment parked on 2026-10-12 ("the architecture track neither fills nor drops it"). The Zenoh note pull serves them. Options:
+- **(a) Drop the columns with the code (recommended).** They are facts read from note text, which the rule forbids, and the register now holds the same changes with real sources. If note enrichment is wanted later, it would project from the register, not from note text.
+- **(b) Keep the columns frozen** at today's values, documented as legacy, until the note-enrichment question is decided.
+
+`changed_by` on notes stays either way, as the pointer (D2). `change_id` stays as an id.
