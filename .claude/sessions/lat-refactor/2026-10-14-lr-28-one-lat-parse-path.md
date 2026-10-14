@@ -1,11 +1,61 @@
 ---
 session: 'LR-28: One LAT Parse Path'
-status: active
+status: closed
 opened: 2026-10-14
+closed: 2026-10-14
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Every LAT parse now reaches legal_articles / amendment_annotations through LatStagedParser: StagedParser's copy (persist_body_lat) is gone and an architecture test enforces it.
+  Five one-off in-place repairs were deleted after a fresh parse of all 1,066 laws showed each fix lives in the parser with a parser-level test (0 rows/notes differ), and the sort-key repair the parser needs moved into LatParser.SortKey.
+  The same check found 162 laws behind the parser in label-input columns (logged in LR-25).
+
+decisions:
+  - what: "StagedParser's LAT sub-stage calls LatStagedParser (run_stages/5 with the body in hand; parse/1 when scoped)"
+    why: "Jason: 'second parse path feels like poor code architecture'; the copy skipped LatCause, the no-body guard and note replacement, and LR-25's hook needs one place"
+    result: "architecture test: only LatStagedParser calls LatPersister.persist / CommentaryPersister.persist"
+  - what: "Delete lat.fix_section_ids, lat.repair_text (+LatRepair), lat.reorder_notes (+NoteReorder, text_pairs), lat.place_notes (+NotePlacement, fetch_notes)"
+    why: "Jason asked whether the parser has the fixes; a fresh in-memory parse of 1,066 laws matched the DB on text, ids, sort keys, titles, note text and placement (0 differ), each fix with a parser-level regression test"
+    result: "a fix to parse output lands by re-parse through the one path; suite 2,718 -> 2,691"
+  - what: "SortKeyRewrite.monotonic/1 moved to LatParser.SortKey; SortKeyRewrite, its Store and mix lat.rewrite_sort_keys deleted"
+    why: "the parser called a function inside a one-off repair module"
+    result: "0 sort_key / position / text diff vs DB across 1,066 laws; suite 2,679"
+  - what: "lat.backfill_titles kept for now, decided in LR-25 after its wave"
+    why: "the only tool that sets one parser-derived column without a re-parse; the parse drift (excluded_extent 451 rows) may need it or a re-parse"
+    result: "logged in LR-25"
+
+metrics:
+  verification: { laws: 1066, rows: 374866, notes: 89679, rows_differ_text_ids_sortkey_title: 0, notes_differ: 0 }
+  parse_drift: { laws: 162, effect_ids_rows: 74151, territory_provenance_rows: 1204, excluded_extent_rows: 451, extent_code_rows: 0 }
+  tests: { before: 2718, after: 2679 }
+
+lessons:
+  - title: "A wave proves DB = parser at that moment, not that later parser changes reached the DB"
+    detail: "Parser code changed after wave 4 (revoked-in-part rule, LR-19 joins, LR-27 container refs) and only the register was rebuilt; 162 laws' stored effect_ids / territory columns fell behind. A staleness check on parse-vs-collect timestamps can't see it; the parse needs a code version (now an LR-25 requirement)."
+    tag: data
+  - title: "Before deleting a repair tool, prove the fix is in the parser, not just the data"
+    detail: "Compare stored data against a fresh parse from the store (read-only) and find a parser-level regression test per bug; one tool (SortKeyRewrite) turned out to hold a function the parser itself calls."
+    tag: tooling
+  - title: "An architecture test (grep over lib/) is a cheap guard for 'only X may call Y'"
+    detail: "lat_write_path_test.exs failed on the copy, passes after; the same pattern is planned for LR-25's note-read guard."
+    tag: tooling
+
+artifacts:
+  - backend/test/sertantai_legal/architecture/lat_write_path_test.exs
+  - backend/lib/sertantai_legal/scraper/staged_parser.ex
+  - backend/lib/sertantai_legal/scraper/lat_parser/sort_key.ex
+  - backend/test/sertantai_legal/scraper/lat_parser/sort_key_test.exs
+  - backend/lib/sertantai_legal/scraper/CLAUDE.md
+
+depends_on:
+  - 2026-10-09-lr-04-decomposition
+
+enables:
+  - LR-25 parse hook attached in one place
 ---
 
-# Session: LR-28 One LAT Parse Path (ACTIVE)
+# Session: LR-28 One LAT Parse Path (CLOSED)
 
 ## Problem
 
