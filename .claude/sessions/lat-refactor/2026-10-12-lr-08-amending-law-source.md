@@ -59,7 +59,8 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 ## Decisions for Jason
 
 - **D5 — approved 2026-10-14** (Jason: "fetch the Schedules for the amending laws that we need, but only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT"): 274 `/schedules` documents fetched into the CLML store only; LAT untouched
-- **D6 — Write the law records to the register** (`mix lat.collect_changes --all --apply`; dry run below); timeline rebuild after hop 2 (the records are mostly undated until then). **Jason: approve**
+- **D7 — Hop 2 fetch:** 57 commencing SIs (`lr08_hop2_list.tsv`; N = 5, not already held), each SI's documents into the CLML store only, under the stop rules. **Jason: approve**
+- **D6 — approved and applied 2026-10-14:** law records written to the register; timeline rebuild after hop 2
 - **D4 — approved 2026-10-14**: collector design, consensus after Gemini (see "Gemini on the design")
 - **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D3 — Stop rules**: approved 2026-10-13, R1–R6 with **N = 5** (191 amending laws, 47% of 404; 6,768 of 7,150 rows, 95%)
@@ -294,3 +295,21 @@ The first all-law dry run gave **0 law records**, which exposed two faults (bugs
 - **Stored:** 141,390 (+1,699 compact).
 
 About 18,000 gap rows had an amending law in the store. 4,681 get a law record under the strict rule (the text must name both the law and the provision). The rest have no match: a pointer to a provision whose text doesn't name the row, a heading or Schedule form not read, or a law not in the store's documents.
+
+## Register write and hop 2 list (2026-10-14)
+
+**Applied** (D6): `lr08_collect`, 1,066 laws, 0 errors, 0 fidelity failures. `lat_change_log` by collector:
+
+| Collector | Records | Laws | Dated |
+|---|---|---|---|
+| feed | 131,147 | 844 | 110,254 |
+| markup | 8,544 | 241 | 0 |
+| amending_law | 1,699 (4,681 rows) | 105 | 118 |
+
+**Hop 2.** The commencing SIs the undated law records' notes point to (the "; S.I. YYYY/N" after the amending citation, read by `Pointer`; a pointer only):
+- undated law rows: 4,261, of which 3,236 name a commencing SI; 170 distinct SIs;
+- at N = 5: 62 SIs (5 already held), covering 5,392 row-SI pairs; at N = 10: 39 SIs.
+
+**Fetch list (N = 5, not held): 57 SIs** (`backend/data/reports/lat-refactor/lr08_hop2_list.tsv`). Largest: uksi 2001/3266 (838), uksi 2000/1986, uksi 2000/340, ssi 2000/180 (625 each), uksi 1996/218 (309), uksi 2000/3343 (258), uksi 1992/1286 (196), uksi 2001/1781 (145).
+
+Then a `CommencingOrder` reader (pure): the order's article or Schedule listing the amending provision → the appointed day, "for specified purposes" partial. It gets the benchmark and a manual sample before any write.
