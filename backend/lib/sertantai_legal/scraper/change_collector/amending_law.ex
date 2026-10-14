@@ -8,11 +8,14 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
   a repeals table: `RepealTable`) and states an operation (`Operation`). The
   date is the law's own commencement for it (`Commencement`); by order, or
   unread, leaves it empty (hop 2 dates it). Source `law`; the evidence is
-  the provision read. Notes give no value. Pure: the documents come from
-  `docs` (amending law → `Doc` | nil).
+  the provision read. Undated, it is dated by the commencing orders its
+  note names (hop 2: `CommencingOrder`). Notes give no value. Pure: the
+  documents come from `docs` (law → `Doc` | nil), amending laws' titles from
+  `titles`.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{
+    CommencingOrder,
     Commencement,
     DefinedTerms,
     Doc,
@@ -35,7 +38,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
   @spec records(String.t(), String.t() | nil, [String.t()], [map()], MapSet.t(), (String.t() ->
                                                                                     Doc.t() | nil)) ::
           [Record.t()]
-  def records(law_name, title, section_ids, notes, ask, docs) do
+  def records(law_name, title, section_ids, notes, ask, docs, titles \\ fn _ -> nil end) do
     held = MapSet.new(section_ids)
     terms = memo(fn doc -> DefinedTerms.of(doc) end)
     starts = memo(fn doc -> Commencement.provisions(doc) end)
@@ -49,6 +52,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
         ref <- pointer.provisions,
         id <- Locator.ids(doc, ref),
         rec = read(doc, id, RowRef.new(sid, title), {terms.(doc), starts.(doc)}, pointer),
+        rec = rec && hop2(rec, doc, pointer, docs, titles),
         rec != nil,
         MapSet.member?(held, rec.section_id) do
       %{rec | law_name: law_name}
@@ -129,6 +133,53 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
       via: ["law_pointer"]
     }
   end
+
+  # hop 2: an undated record dated by the commencing orders its note names
+  # (CommencingOrder); the latest fully in-force date is effective_from,
+  # partial entries are kept as in-force entries
+  defp hop2(%Record{effective_from: nil} = rec, doc, pointer, docs, titles) do
+    [_, _, year, _] = String.split(doc.law_name, "_", parts: 4)
+    act = %{law: doc.law_name, title: titles.(doc.law_name), year: year}
+
+    entries =
+      for {si, _refs} <- pointer.commencing,
+          order = docs.(si),
+          order != nil,
+          e <- CommencingOrder.dates(order, act, rec.affecting_ref),
+          do: Map.put(e, :law, si)
+
+    case entries do
+      [] ->
+        rec
+
+      _ ->
+        full =
+          entries
+          |> Enum.filter(&is_nil(&1.qualification))
+          |> Enum.max_by(& &1.date, Date, fn -> nil end)
+
+        by = full || Enum.max_by(entries, & &1.date, Date)
+
+        %{
+          rec
+          | effective_from: full && full.date,
+            in_force:
+              for(
+                e <- entries,
+                do: %{
+                  "date" => Date.to_iso8601(e.date),
+                  "applied" => true,
+                  "prospective" => false,
+                  "qualification" => e.qualification
+                }
+              ),
+            dated_by_law: by.law,
+            dated_by_ref: by.ref
+        }
+    end
+  end
+
+  defp hop2(rec, _doc, _pointer, _docs, _titles), do: rec
 
   # ukpga/2000/27/schedule/6/paragraph/33/c
   defp evidence(doc, id) do

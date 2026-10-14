@@ -88,7 +88,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
           section_ids,
           notes,
           ask,
-          &amending_doc/1
+          &amending_doc/1,
+          &law_title/1
         )
   end
 

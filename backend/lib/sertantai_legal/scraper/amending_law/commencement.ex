@@ -122,6 +122,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Commencement do
 
   defp top(id), do: id |> String.split("-") |> Enum.take(2) |> Enum.join("-")
 
+  @doc "The dates written in a text (\"1st October 2001\")."
+  @spec parse_dates(String.t()) :: [Date.t()]
+  def parse_dates(w), do: dates(w)
+
   defp dates(w) do
     for [_, day, month, year] <- Regex.scan(@date, w) do
       m = Enum.find_index(@months, &(&1 == String.downcase(month))) + 1

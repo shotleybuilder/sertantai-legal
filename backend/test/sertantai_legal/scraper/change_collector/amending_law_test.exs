@@ -135,4 +135,53 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
 
     refute SertantaiLegal.Scraper.ChangeCollector.dated?(dated, "#{@law}:s.25", "UK_ukpga_1999_1")
   end
+
+  test "hop 2: an undated record is dated by the commencing order the note names" do
+    order = Doc.new("UK_uksi_2001_3266", [File.read!("#{@dir}/uksi_2001_3266.xml")])
+
+    act =
+      Doc.new("UK_ukpga_2000_27", [
+        File.read!("#{@dir}/ukpga_2000_27_body.xml"),
+        File.read!("#{@dir}/ukpga_2000_27_schedules.xml")
+      ])
+
+    docs = fn
+      "UK_ukpga_2000_27" -> act
+      "UK_uksi_2001_3266" -> order
+      _ -> nil
+    end
+
+    titles = fn
+      "UK_ukpga_2000_27" -> "Utilities Act"
+      _ -> nil
+    end
+
+    sids = ["#{@law}:s.25(5A)"]
+
+    n =
+      note(
+        "F1",
+        "S. 25(5A) inserted (1.10.2001) by 2000 c. 27, s. 60(5); S.I. 2001/3266, art. 2, Sch.",
+        ["s.25(5A)"]
+      )
+
+    assert [
+             %Record{
+               effective_from: ~D[2001-10-01],
+               dated_by_law: "UK_uksi_2001_3266",
+               dated_by_ref: "schedule"
+             } = r
+           ] =
+             AmendingLaw.records(
+               @law,
+               "Electricity Act",
+               sids,
+               [n],
+               MapSet.new(sids),
+               docs,
+               titles
+             )
+
+    assert [%{"date" => "2001-10-01", "qualification" => nil}] = r.in_force
+  end
 end
