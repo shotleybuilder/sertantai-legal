@@ -1,8 +1,63 @@
 ---
 session: 'LR-08: The Amending Law as a Source'
-status: active
+status: closed
 opened: 2026-10-12
+closed: 2026-10-14
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  The change register now reads the law itself: an amending-law collector (ten small pure modules) records a change on a
+  row only when the amending text names the row's law and provision, dated by the law's own commencement words or (hop 2)
+  the commencement order its note points to. Under stop rules R0-R6, 173 amending laws, their Schedules (274) and 57
+  orders were fetched into the CLML store only; 4,681 rows got law records (1,059 dated), benchmarked against the feed with
+  0 date disagreements; the timeline was rebuilt (506,466 periods).
+
+decisions:
+  - what: "Stop rules R0-R6 before any fetch (Jason: rules first, or we run through the legislation.gov.uk corpus); R0 demand only from in-force EHS&HR LAT laws; N = 5"
+    why: "A fetched law names more laws; without stop rules the cascade is unbounded"
+    result: "hop 1: 173 amending laws; Schedules: 274; hop 2: 57 orders — each a fixed list approved before fetching; fetched laws create no demand"
+  - what: "Suspended at the design point when Jason saw a change system being built implicitly; resumed as the register's amending-law and commencing-law collectors (LR-22 architecture)"
+    why: "Jason: 'we are essentially building a change system … without actually stating that explicitly'"
+    result: "LR-22..LR-27 built the register and timeline first; LR-08 became a collector, not a parse path"
+  - what: "D4 collector design (Gemini consensus): pure modules Pointer, Doc, RowRef, Locator, Text, DefinedTerms, Target, RepealTable, Operation, Commencement (+ CommencingOrder); one IO edge; strict Target (law AND provision named); precision first"
+    why: "Jason: good Elixir design, no behemoths; never a wrong fact"
+    result: "45+ tests for the family; suite 2,716"
+  - what: "D5 Schedules fetched into the store only (not LAT)"
+    why: "58% of gap rows pointed into Schedules, which /body omits; Jason: 'only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT'"
+    result: "272 Schedules documents stored"
+  - what: "D6/D8 register writes, D9 timeline rebuild (dry run → Jason → apply)"
+    why: "process"
+    result: "1,699 compact law records (4,681 rows, 1,059 dated); timeline insertion gaps 8,134 → 7,648, undated 19,031 → 18,559"
+
+metrics:
+  fetch: { hop1_amending_laws: 173, hop1_bodies: 151, hop1_fragments: 104, schedules_stored: 272, hop2_orders: 57 }
+  benchmark_10_laws: { law_records: 4656, agree_operation: 4323, agree_dated: 127, date_disagree: 0, operation_differs: 209, no_feed_change: 124 }
+  manual_review: { samples: 2, records: 50, wrong_found_and_fixed: 3 }
+  gap_dates_vs_notes_qa: { law_records_10_laws: 2671, dated: 910, match_note: 909, differ: 0 }
+  register: { amending_law_compact: 1699, rows: 4681, dated_rows: 1059, laws: 105, total_records: 141390 }
+  timeline: { periods: 506466, code_version: b9d888bc, insertion_not_in_register: 7648, undated_change: 18559, no_start: 22113 }
+
+lessons:
+  - title: Stop rules before fetching, and demand only from what the product needs
+    detail: "Jason set the shape: rules that end the cascade (fetched laws create no demand, two hops, N threshold, fixed lists) and R0 (only in-force EHS&HR laws drive demand). Every fetch then was a short, approved list."
+    tag: data
+  - title: legislation.gov.uk's /body omits Schedules
+    detail: "Most pre-2002 consequential amendments and repeal tables live in Schedules (/schedules/data.xml). The hop-1 fetch held none; found only when building fixtures. Check the document parts a reader needs before fetching."
+    tag: data
+  - title: Benchmark a new source against the old one where both exist, then sample the disagreements
+    detail: "The feed gave an automatic precision check (0 date disagreements on 4,656 records); manual samples of the disagreements found three truth faults (an inserted number guessed from quoted words, the nearest-law rule falling through, a whole Schedule read as one instruction). 'Operation differs' was mostly the feed recording a generic 'amended'."
+    tag: data
+  - title: "In an Elixir `for`, `x = bool_expr` is a filter"
+    detail: "`dated? = …` in a comprehension dropped every false — the gaps-mode collector asked no rows and the first all-law dry run gave 0 records. Use an explicit filter expression."
+    tag: tooling
+  - title: A new source must also retire the signals it explains
+    detail: "After hop 2, 907 rows stayed 'date unknown' because their unmatched change markup still counted — the same note the dated law record now covered. Gap signals need re-deriving when a source is added."
+    tag: data
+  - title: A QA script can be the bug
+    detail: "The hop-2 date check flagged 1989/29 s.39A(3)(b) as differing; the script read only the note's first date ('16.5.2001 for certain purposes and otherwise 1.10.2001'). The record was right."
+    tag: tooling
+
 bugs:
   - pattern: "Change markup on a row kept it 'date unknown' even when a dated law record for the same note now dates that change (markup pointer c950488 = law record note F:c950488)"
     category: label-date
@@ -40,9 +95,30 @@ bugs:
     affected: "found by the benchmark"
     fix: "only a single provision is read as an instruction; whole Schedules only through RepealTable, which now reads the modern 2-column form"
     status: fixed
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/ (pointer, doc, text, row_ref, locator, defined_terms, operation, commencement, commencing_order, target, repeal_table)
+  - backend/lib/sertantai_legal/scraper/change_collector/amending_law.ex
+  - backend/lib/sertantai_legal/scraper/change_collector.ex (amending_law collector, dated?/3, store reads)
+  - backend/lib/sertantai_legal/scraper/label_timeline.ex (undated_markup/1)
+  - backend/lib/mix/tasks/lat.amending_law_benchmark.ex, lat.collect_changes.ex
+  - backend/test/sertantai_legal/scraper/amending_law/, change_collector/amending_law_test.exs, label_timeline_test.exs
+  - backend/test/fixtures/amending_law/ (ukpga_2000_27 body/schedules, ukpga_2002_40 schedules, uksi_2001_3266)
+  - backend/data/code-reviews/2026-10-14-lr-08-amending-law-collector-design.md
+  - backend/data/reports/lat-refactor/lr08_*.csv / .tsv (gitignored)
+  - data/cache/clml: 173 amending laws, 274 Schedules documents, 57 commencement orders (store only)
+
+depends_on:
+  - 2026-10-12-lr-20-no-facts-from-notes
+  - 2026-10-13-lr-22-change-register
+  - 2026-10-13-lr-23-change-log-collectors
+  - 2026-10-13-lr-24-label-projection
+
+enables:
+  - LR-25 switch-over (the timeline now includes the law's own text and commencement orders)
+  - further hop-2 coverage (orders below N = 5, Part references) if Jason wants it
 ---
 
-# Session: LR-08 The Amending Law as a Source (ACTIVE)
+# Session: LR-08 The Amending Law as a Source (CLOSED)
 
 > **Resumed 2026-10-14** as the change register's amending-law and commencing-law collectors (LR-22 architecture; LR-23 register, LR-24/26 timeline). **Suspended 2026-10-13** (Jason): we were building a change system without designing it as one. Resumes as the amending-law and commencing-law collectors of the change register (LR-22, `lat_change_log`). Hop 1 fetch and the probe stand as evidence.
 
