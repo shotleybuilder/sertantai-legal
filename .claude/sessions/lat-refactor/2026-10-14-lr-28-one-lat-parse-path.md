@@ -25,9 +25,9 @@ Jason (2026-10-14): "second parse path feels like poor code architecture". LR-25
 - ✅ Other writers of `legal_articles` listed (targeted repair tools: `mix lat.repair_text`, `mix lat.fix_section_ids` #120) with a decision each: route through the same post-write step, or delete
 - ✅ Gate: full suite 2,718 pass; credo unchanged on `staged_parser.ex`. `mix lat.parse_snapshot` not run: no parser module changed (only which caller persists), so it can't differ
 - ✅ **Jason: D1** (2026-10-14): "Delete the 4. Log the other two in the correct session for sequencing and eventual fix". Deleted `lat.fix_section_ids`, `lat.repair_text` + `LatRepair`, `lat.reorder_notes` + `NoteReorder` + `CommentaryParser.text_pairs/1` / `legacy_commentary_text/1`, `lat.place_notes` + `NotePlacement` + `LatStagedParser.fetch_notes/2`, with their tests (suite 2,718 → 2,691 pass)
-- ⬜ `SortKeyRewrite.monotonic/1` into the parser's own modules (e.g. `LatParser.Transforms` or a `LatParser.SortKey`), its tests (`sort_key_rewrite_test.exs:87–141`) moved with it (TDD: red against the new name, then move); then delete `SortKeyRewrite` + `SortKeyRewrite.Store` (the one-off in-place sort-key repair, `Store.plan(:all)` = 0 rows). Zero diff: `mix lat.parse_snapshot`
+- ✅ `SortKeyRewrite.monotonic/1` into the parser's own modules (e.g. `LatParser.Transforms` or a `LatParser.SortKey`), its tests (`sort_key_rewrite_test.exs:87–141`) moved with it (TDD: red against the new name, then move); then delete `SortKeyRewrite` + `SortKeyRewrite.Store` (the one-off in-place sort-key repair, `Store.plan(:all)` = 0 rows). Zero diff: `mix lat.parse_snapshot`
 - ⏸️ `lat.backfill_titles`: logged in LR-25 (decided after its wave)
-- ⬜ CLAUDE.md (scraper) updated: one parse path
+- ✅ CLAUDE.md (scraper) updated: one parse path
 
 ## Dependencies
 
@@ -87,3 +87,19 @@ Before deleting, an agent compared stored data against a fresh in-memory parse o
 - titles: `:1981`.
 
 So a re-parse can't bring any of these bugs back.
+
+## Sort key moved (2026-10-14)
+
+`LatParser.SortKey.monotonic/1` was moved verbatim, with its private helpers.
+- **Red:** the 5 monotonic tests, moved unchanged to `test/sertantai_legal/scraper/lat_parser/sort_key_test.exs`, failed until the module existed.
+- **Green:** they now pass.
+
+Deleted:
+- `Legal.Lat.SortKeyRewrite` (`rewrite/2`, the in-place key correction);
+- `SortKeyRewrite.Store`;
+- `mix lat.rewrite_sort_keys`;
+- their tests.
+
+The docs in `Transforms` and the scraper's CLAUDE.md now point to the new module. Suite 2,691 → 2,679 pass (12 rewrite/store tests gone, 5 monotonic tests moved).
+
+**Gate.** `parse_snapshot` needs a baseline taken before the change, which we didn't have. The database already equals the old parser's output (0 rows differ, checked today), so the gate is a fresh parse of all 1,066 laws with the new module, compared against it: sort_key, position and text differ on **0** rows.

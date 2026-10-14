@@ -463,7 +463,7 @@ defmodule SertantaiLegal.Legal.Lat.Transforms do
   schedule uses an "S" prefix (e.g. "S01") to sort after body content; position
   is 6 digits.
 
-  **Ordering only.** `LatParser` finishes with `SortKeyRewrite.monotonic/1`,
+  **Ordering only.** `LatParser` finishes with `LatParser.SortKey.monotonic/1`,
   which gives rows the encoding cannot place their predecessor's prefix, so a
   stored key's segments are not always the row's own numbering. Never decode
   structure from a sort_key; read the part/provision/... columns.

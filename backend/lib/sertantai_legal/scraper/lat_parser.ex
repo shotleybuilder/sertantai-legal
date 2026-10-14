@@ -30,8 +30,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
   `Schedules` and `Schedule` give no rows: no schedules in LAT (LR-10).
   """
 
-  alias SertantaiLegal.Legal.Lat.SortKeyRewrite
-  alias SertantaiLegal.Scraper.LatParser.{Rows, Walker}
+  alias SertantaiLegal.Scraper.LatParser.{Rows, SortKey, Walker}
   alias SertantaiLegal.Scraper.LatParser.Walker.Ctx
 
   @doc """
@@ -69,7 +68,7 @@ defmodule SertantaiLegal.Scraper.LatParser do
     |> Rows.disambiguate()
     # Keys must ascend with document order even where the numbering or the
     # source markup defeats the hierarchical encoding.
-    |> SortKeyRewrite.monotonic()
+    |> SortKey.monotonic()
   end
 
   @doc "Convert parsed rows to maps for `Repo.insert_all/3` (`Rows.to_insert_maps/2`)."
