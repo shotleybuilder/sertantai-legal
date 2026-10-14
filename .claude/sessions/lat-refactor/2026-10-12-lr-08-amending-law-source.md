@@ -4,6 +4,12 @@ status: active
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
+  - pattern: "Change markup on a row kept it 'date unknown' even when a dated law record for the same note now dates that change (markup pointer c950488 = law record note F:c950488)"
+    category: label-date
+    module: LabelTimeline.undated_markup/1
+    affected: "907 rows"
+    fix: "markup explained by a dated law record on the same row and note isn't undated; test"
+    status: fixed
   - pattern: "Gaps mode asked no rows: a boolean match (`dated? = …`) inside a `for` comprehension acts as a filter and dropped every false — 0 law records in the first all-law dry run"
     category: tooling
     module: ChangeCollector.amending_law/4
@@ -59,7 +65,8 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 ## Decisions for Jason
 
 - **D5 — approved 2026-10-14** (Jason: "fetch the Schedules for the amending laws that we need, but only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT"): 274 `/schedules` documents fetched into the CLML store only; LAT untouched
-- **D8 — Re-collect the register with hop 2 dates** (dry run → Jason → apply), then the timeline rebuild (dry run → Jason → apply)
+- **D9 — Rebuild the timeline** (dry run below). **Jason: approve**
+- **D8 — approved and applied 2026-10-14**: register re-collected with hop 2 dates
 - **D7 — approved 2026-10-14 ("fetch")**: 57 commencing SIs fetched into the store (bodies all; 30 Schedules, 27 orders have none)
 - **D6 — approved and applied 2026-10-14:** law records written to the register; timeline rebuild after hop 2
 - **D4 — approved 2026-10-14**: collector design, consensus after Gemini (see "Gemini on the design")
@@ -337,3 +344,15 @@ The collector dates undated law records from the orders their note names: `effec
 A first run reported 1989/29 s.39A(3)(b) as differing. That was the QA script reading only the note's first date ("16.5.2001 for certain purposes and otherwise 1.10.2001"). The law record has both: partly in force 16 May 2001 (SI 2001/1781), fully in force 1 October 2001 (SI 2001/3266).
 
 **Register dry run with hop 2** (`lr08_hop2_dry`): 1,066 laws, 0 errors, **0 fidelity failures**. Law records: 4,681 per row (unchanged: dates add no records). **Dated: 1,059** (by the law's own words or a commencing order); 3,622 undated. Stored 141,390. D8 to Jason.
+
+**Applied** (D8): `lr08_hop2`, 0 errors, 0 fidelity failures; law records 1,699 compact, **285 dated** (1,059 rows).
+
+**Timeline dry run** (`lr08_tl_dry`). First run: undated changes went up (19,031 → 19,402). Of the 1,054 rows with a dated law record, 922 stayed "date unknown" because their unmatched change markup still counted, though on 907 of them the markup is the same note the law record dates (bug above, fixed). After the fix:
+
+| | Before LR-08 | After |
+|---|---|---|
+| Periods | 505,244 | 506,466 |
+| insertion_not_in_register | 8,134 | **7,648** |
+| undated_change | 19,031 | **18,559** |
+| no_start | 22,113 | 22,113 |
+| markup conflicts | 7,705 | 7,678 |
