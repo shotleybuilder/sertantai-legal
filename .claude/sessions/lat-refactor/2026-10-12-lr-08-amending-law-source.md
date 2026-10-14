@@ -52,14 +52,15 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
 - ✅ Re-measure against the timeline's gaps: rows `undated_change` / `insertion_not_in_register` / `no_start` whose note points to an amending law now in the CLML store (hop 1)
 - ✅ Design (Gemini, then Jason): `ChangeCollector.AmendingLaw` — from a pointer (note's citation + provision) read the amending provision; record (source `law`, evidence = provision path) only when its text names the affected law and provision (defined terms resolved); operation from the text; date from the law's own commencement words (LR-24 rules: commencing provision > law's own date)
-- ⬜ Hop 2: the commencing SIs (37 at N = 5) → list → Jason → fetch
+- ✅ Hop 2: the commencing SIs (37 at N = 5) → list → Jason → fetch
 - ⬜ Tests first; the collector; register dry run (fidelity) → Jason → apply; timeline rebuild → Jason → apply
 - Not in scope: applying unapplied amendments to the text (#171), backlog
 
 ## Decisions for Jason
 
 - **D5 — approved 2026-10-14** (Jason: "fetch the Schedules for the amending laws that we need, but only into the .xml store. Don't pollute the session trying to get Schedules parsed into LAT"): 274 `/schedules` documents fetched into the CLML store only; LAT untouched
-- **D7 — Hop 2 fetch:** 57 commencing SIs (`lr08_hop2_list.tsv`; N = 5, not already held), each SI's documents into the CLML store only, under the stop rules. **Jason: approve**
+- **D8 — Re-collect the register with hop 2 dates** (dry run → Jason → apply), then the timeline rebuild (dry run → Jason → apply)
+- **D7 — approved 2026-10-14 ("fetch")**: 57 commencing SIs fetched into the store (bodies all; 30 Schedules, 27 orders have none)
 - **D6 — approved and applied 2026-10-14:** law records written to the register; timeline rebuild after hop 2
 - **D4 — approved 2026-10-14**: collector design, consensus after Gemini (see "Gemini on the design")
 - **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
@@ -313,3 +314,24 @@ About 18,000 gap rows had an amending law in the store. 4,681 get a law record u
 **Fetch list (N = 5, not held): 57 SIs** (`backend/data/reports/lat-refactor/lr08_hop2_list.tsv`). Largest: uksi 2001/3266 (838), uksi 2000/1986, uksi 2000/340, ssi 2000/180 (625 each), uksi 1996/218 (309), uksi 2000/3343 (258), uksi 1992/1286 (196), uksi 2001/1781 (145).
 
 Then a `CommencingOrder` reader (pure): the order's article or Schedule listing the amending provision → the appointed day, "for specified purposes" partial. It gets the benchmark and a manual sample before any write.
+
+## Hop 2 (2026-10-14)
+
+**Fetched** (D7): 57 orders, body + Schedules, into the CLML store only. All bodies stored; 27 orders have no Schedules (404).
+
+**`AmendingLaw.CommencingOrder`** (pure; 5 tests):
+- applies only when the order commences the record's amending law ("“the Act” means …", its Citation, or the act's title and year);
+- reads Schedule tables (with nested rows "Section 5 — subsections (1) to (9)") and articles listing provisions;
+- dates them from the Schedule's title, else the article bringing the Schedule into force (its single date, or the defined "appointed day");
+- "For all (remaining) purposes" means in force; "save …", "so far as …", "for the purpose …" mean partly in force;
+- a Part reference gives no match.
+
+The collector dates undated law records from the orders their note names: `effective_from` is the latest fully in-force date, partial entries are kept, and `dated_by_law` / `dated_by_ref` point to the order. Suite 2,715.
+
+**Benchmark** (rows the feed dates): 127 agree with a date (111 before hop 2), **0 date disagreements**. Few benchmark rows' orders were fetched; the fetch was driven by gap rows.
+
+**Gap rows against their notes** (QA hint only), ten laws, 2,671 law records:
+- **910 dated** (27 before hop 2): 909 match a date in the note, 1 note has none, **0 differ**;
+- 1,761 undated (no order named, order not fetched, or a Part reference).
+
+A first run reported 1989/29 s.39A(3)(b) as differing. That was the QA script reading only the note's first date ("16.5.2001 for certain purposes and otherwise 1.10.2001"). The law record has both: partly in force 16 May 2001 (SI 2001/1781), fully in force 1 October 2001 (SI 2001/3266).
