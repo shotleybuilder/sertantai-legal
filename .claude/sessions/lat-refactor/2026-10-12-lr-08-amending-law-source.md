@@ -1,13 +1,13 @@
 ---
 session: 'LR-08: The Amending Law as a Source'
-status: suspended
+status: active
 opened: 2026-10-12
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 ---
 
-# Session: LR-08 The Amending Law as a Source (SUSPENDED)
+# Session: LR-08 The Amending Law as a Source (ACTIVE)
 
-> **Suspended 2026-10-13** (Jason): we were building a change system without designing it as one. Resumes as the amending-law and commencing-law collectors of the change register (LR-22, `lat_change_log`). Hop 1 fetch and the probe stand as evidence.
+> **Resumed 2026-10-14** as the change register's amending-law and commencing-law collectors (LR-22 architecture; LR-23 register, LR-24/26 timeline). **Suspended 2026-10-13** (Jason): we were building a change system without designing it as one. Resumes as the amending-law and commencing-law collectors of the change register (LR-22, `lat_change_log`). Hop 1 fetch and the probe stand as evidence.
 
 ## Problem
 
@@ -19,19 +19,22 @@ The other half of Jason's 2026-10-09 decision: a change the markup and effects d
 - ✅ Stop rules for fetching amending laws into the CLML store (Jason, 2026-10-13: rules first, so we don't run through the legislation.gov.uk corpus)
 - ✅ Fetch hop 1 (the amending laws meeting the rules) into the CLML store: list → Jason → fetch
 - ✅ Probe: find the amending provision for a change (amending law + affected provision from the effect or the note's pointer), read its operation (substitute / insert / omit / repeal), commencement and extent from the amending law's CLML
-- ⏸️ (suspended → LR-22) Design (Gemini, then Jason): which facts this source may supply (changed_by, dates, territory, status) and how provenance marks it (`law`)
-- ⏸️ (suspended → LR-22) Tests first; offline classified diff; wave via LR-21
+- ⬜ Re-measure against the timeline's gaps: rows `undated_change` / `insertion_not_in_register` / `no_start` whose note points to an amending law now in the CLML store (hop 1)
+- ⬜ Design (Gemini, then Jason): `ChangeCollector.AmendingLaw` — from a pointer (note's citation + provision) read the amending provision; record (source `law`, evidence = provision path) only when its text names the affected law and provision (defined terms resolved); operation from the text; date from the law's own commencement words (LR-24 rules: commencing provision > law's own date)
+- ⬜ Hop 2: the commencing SIs (37 at N = 5) → list → Jason → fetch
+- ⬜ Tests first; the collector; register dry run (fidelity) → Jason → apply; timeline rebuild → Jason → apply
 - Not in scope: applying unapplied amendments to the text (#171), backlog
 
 ## Decisions for Jason
 
-- **D1 — Scope** (see Size): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
+- **D1 — Scope** (see Size; to be re-measured against the timeline gaps): (a) rows whose amending law is in the store, 3,628; (b) the 1,206 rows with no law named, from the law's own commencement; (c) the 7,150 rows whose amending law has a `uk_lrt` record but no CLML file: not downloaded from legislation.gov.uk for v0.1 (#179)
 - **D3 — Stop rules**: approved 2026-10-13, R1–R6 with **N = 5** (191 amending laws, 47% of 404; 6,768 of 7,150 rows, 95%)
-- **D2 — Dates**: the amending law names the change and itself; the date is usually set by a commencement order (a second law). effective_from only when the amending law fixes the date itself or its commencement order is in the store; otherwise empty
+- **D2 — Dates** (now LR-24's rule: the commencing provision over the amending law's own date over the effect; else empty): the amending law names the change and itself; the date is usually set by a commencement order (a second law). effective_from only when the amending law fixes the date itself or its commencement order is in the store; otherwise empty
 
 ## Dependencies
 
 - ✅ LR-20 inventory and rule (D1, D2 approved)
+- ✅ LR-22 register design; LR-23 register (139,691 records); LR-24/26/27 timeline (505,244 periods) with gaps listed
 
 ## Size (2026-10-13)
 
