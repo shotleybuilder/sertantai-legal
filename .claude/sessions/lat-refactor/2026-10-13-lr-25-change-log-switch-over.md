@@ -72,17 +72,42 @@ Reusable for the hook:
 
 ## Decisions for Jason
 
-**D1 — The `legal_articles` label columns until D2.** Recommend:
-- **Inputs stay parse output.** `extent_code`, `excluded_extent`, `territory_provenance` and `effect_ids` come from markup and effects only, and the timeline reads them. The markup status the timeline needs (J2) moves to its own internal column, `markup_status`, written by the parse; it is not synced or served.
-- **The outward columns are frozen until D2.** The parse and the hook stop writing `status`, `effective_from`, `changed_by` and `change_provenance`. Re-parses carry the old values, so nothing prod or fractalaw sees changes and no hash moves before QA run 4. D2 drops them from the sync and the pull in favour of the timeline.
-- **Rejected:**
-  - mirroring today's timeline into them now (true values, but it changes hashes and fractalaw re-pulls before QA);
-  - emptying them now (an outward change with nothing to replace it yet).
-- **Known cost:** until D2, those four columns are legacy. They include 519 note-sourced statuses and the note-dated labels. They are documented as deprecated, and nothing in -legal reads them except the `mix lat.timeline` diff.
+**Jason, 2026-10-14:**
+- Nothing goes to compliance or fractalaw, so freezing or removing the columns makes no difference.
+- "Disappointed we still derive data from Notes."
+- "status goes to fractalaw — have we thought through the implications of removing."
+- "Second parse path feels like poor code architecture."
 
-**D2 — The notes' changed-by pointer.**
-- Recommend: keep the part of `AmendmentNote` that names the law, as a pointer only (where to look). It feeds the collector and timeline (964 notes).
-- Delete its effect and date reading, the `LatStatus` note regexes and the `ChangeFacts` note fallback.
-- `change_id` (a hash of the note text, used by `LatParseLog`) stays: it's an id, not a fact.
+**What fractalaw does with `status`** (read from `~/fractalaw`, 2026-10-14):
+1. **The liveness gate (#73).** A row with status repealed or prospective imposes nothing. Its `drrp_types` and actors are blanked, and `extraction_method` is set to 'status' (`fractalaw-store/src/pg.rs:92-121`, 625-639). The blanked taxa are published back to legal.
+2. **The re-pull trigger.** `status_hash` (SHA-256 over `section_id TAB status`) tells fractalaw to re-pull.
+3. **A second repeal calculation of its own.** `unapplied_repealed()` (`pg_lat_sync.rs:239`) reads the feed's unapplied effects. It counts a provision as repealed when an exact, not-prospective, unsaved repeal has an in-force date on or before `current_date`. That is the timeline's job, done again inside fractalaw and evaluated daily by fractalaw's clock.
+4. `effective_from` and `changed_by` are stored in `legislation_text` and not used.
 
-**D3 — The hook covers both parse paths.** Collect, then the timeline, runs after `LatStagedParser` and after the `persist_body_lat` bypass. A failure is logged and left for the staleness check to show, rather than failing the parse.
+Implications for D2 (LH-05), recorded here and not sent:
+- `status` can't simply go. The gate needs an as-at-today status from the timeline.
+- Status depends on the date, so a known commencement or repeal date passing changes it with no new data. Either fractalaw holds the periods and evaluates "as at" itself, as it already does with `current_date`, or the labels hash must move when a date passes.
+- With the timeline, `unapplied_repealed` should retire: one change system, not two.
+- The 11,206 provisions whose status differs from the timeline today would change fractalaw's taxa (classified "none" vs classified).
+
+**D1 (revised) — remove, not freeze.**
+- Remove `effective_from`, `changed_by` and `change_provenance` from `legal_articles`, using an Ash migration with the `Lat` view, sync and Zenoh field lists updated in code. Nothing is run outward.
+- `status` becomes `markup_status`: what the revised text shows, written by the parse, which J2 reads. "status" as a label exists only in the timeline.
+- Until D2, fractalaw must not pull.
+
+**D3 (revised) — one LAT parse path, before the hook.**
+- `StagedParser.persist_body_lat` repeats `LatStagedParser`'s work for unscoped making laws: the parse, the persist and the commentary sub-stage. It skips `LatCause` and the after-parse refresh.
+- Fix it in its own session, LR-28 One LAT Parse Path, before LR-25's hook:
+  - `LatStagedParser` takes the body already in hand;
+  - `persist_body_lat` and its commentary copy are deleted;
+  - the hook attaches in one place.
+- Zero-diff gate: `mix lat.parse_snapshot`.
+
+**D4 — no new note-fact path can appear unseen.** The note-fact code being deleted is LR-21's list (open since 2026-10-12), not a new find. After deletion, the only reads of note text are pointers:
+- J5: a note saying "inserted" withholds the law's default start; it supplies no value;
+- T1 and the collector: the law a note names;
+- the collector's note joins;
+- `change_id`, a hash;
+- `NoteTerritory` in the `LatTerritoryCheck` diagnostic.
+
+Recommend an architecture test that fails if any module outside an allow-list reads note text (`amendment_annotations.text`, `AmendmentNote`, note regexes).
