@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Lat.CollectChanges do
           csv,
           Enum.join(
             ~w(law feed_records effects unreached) ++
-              @vias ++ ~w(markup_records stored fidelity_diffs),
+              @vias ++ ~w(markup_records amending_law_records stored fidelity_diffs),
             ","
           ) <>
             "\n"
@@ -85,7 +85,7 @@ defmodule Mix.Tasks.Lat.CollectChanges do
             end
 
             summary(law, per_row["feed"]) <>
-              ",#{length(per_row["markup"])},#{length(by["feed"]) + length(by["markup"])},#{length(diffs)}"
+              ",#{length(per_row["markup"])},#{length(per_row["amending_law"])},#{by |> Map.values() |> Enum.map(&length/1) |> Enum.sum()},#{length(diffs)}"
 
           {:error, reason} ->
             Mix.shell().error("  #{law}: #{inspect(reason)}")

@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
   @enforce_keys [:id, :instruction]
-  defstruct [:id, :instruction, quoted: "", context: []]
+  defstruct [:id, :instruction, quoted: "", inserted: [], context: []]
 
   @type t :: %__MODULE__{
           id: String.t(),
@@ -38,14 +38,40 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
         top = top(id)
 
         context =
-          for other <- Enum.take_while(doc.ids, &(&1 != id)),
+          for other <- Doc.between(doc, top, id),
               other == top or String.starts_with?(other, top <> "-"),
               {w, _} = words(Doc.element(doc, other)),
               w != "",
               do: w
 
-        %__MODULE__{id: id, instruction: words, quoted: quoted, context: context}
+        %__MODULE__{
+          id: id,
+          instruction: words,
+          quoted: quoted,
+          inserted: inserted(el),
+          context: context
+        }
     end
+  end
+
+  @doc "The element's own words only (no quoted words, no context); \"\" when not held."
+  @spec words_of(Doc.t(), String.t()) :: String.t()
+  def words_of(doc, id) do
+    case Doc.element(doc, id) do
+      nil -> ""
+      el -> el |> words() |> elem(0)
+    end
+  end
+
+  # the numbers of provisions the quote inserts (their Pnumber), never a
+  # guess from the quoted words
+  defp inserted(el) do
+    import SweetXml
+
+    el
+    |> xpath(~x".//*[local-name()='BlockAmendment']//*[local-name()='Pnumber']"l)
+    |> Enum.map(&(&1 |> SertantaiLegal.Scraper.AmendingLaw.Doc.text() |> String.trim()))
+    |> Enum.reject(&(&1 == ""))
   end
 
   # the top provision: section-60 for section-60-5, schedule-6-paragraph-33
@@ -76,13 +102,26 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
 
   defp node({:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _}, acc, in_quote) do
     cond do
-      name in @notes -> acc
+      name in @notes ->
+        acc
+
       # a number outside a quote is the provision's own; inside, the inserted
       # provision's ("5A")
-      name in @numbers and not in_quote -> acc
-      name in @quoted -> collect(children, acc, true)
-      not in_quote and Enum.any?(attrs, &(elem(&1, 1) == :id)) -> acc
-      true -> collect(children, acc, in_quote)
+      name in @numbers and not in_quote ->
+        acc
+
+      name in @quoted ->
+        collect(children, acc, true)
+
+      # an inserted provision's number, kept apart from its words ("5A The …")
+      name in @numbers ->
+        collect(children ++ [{:xmlText, [], 0, [], ~c" ", :text}], acc, in_quote)
+
+      not in_quote and Enum.any?(attrs, &(elem(&1, 1) == :id)) ->
+        acc
+
+      true ->
+        collect(children, acc, in_quote)
     end
   end
 

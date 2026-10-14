@@ -5,14 +5,17 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   delete + insert that law's records per collector, in one transaction.
 
   Collectors: `Feed` (changes-feed effects with their joins), `Markup`
-  (change markup no effect explains). Records are stored compact (`Compact`:
+  (change markup no effect explains), `AmendingLaw` (the amending law's own
+  text, for rows the feed doesn't date; LR-08). Records are stored compact (`Compact`:
   one per run of consecutive rows) and checked against the per-row joins
   in the DB's row order before writing (`fidelity/3`). Never fetches.
   Thin: the joins and records are the pure collectors'.
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.ChangeCollector.{Compact, Feed, Markup, Record}
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.ChangeCollector.{AmendingLaw, Compact, Feed, Markup, Record}
+  alias SertantaiLegal.Scraper.LatStatus
   alias SertantaiLegal.Scraper.LatStagedParser
 
   @doc """
@@ -20,7 +23,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   run of consecutive rows, `Compact`), `per_row` as joined, and `order` (the
   parse's section_ids in document order).
   """
-  @spec collect(String.t()) ::
+  @spec collect(String.t(), keyword()) ::
           {:ok,
            %{
              records: %{String.t() => [Record.t()]},
@@ -28,14 +31,16 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
              order: [String.t()]
            }}
           | {:error, term()}
-  def collect(law_name) do
+  def collect(law_name, opts \\ []) do
     with {:ok, %{rows: rows, notes: notes, effects: effects}} <-
            LatStagedParser.fetch_changes(law_name, store: :only) do
       order = Enum.map(rows, & &1.section_id)
+      feed = Feed.records(law_name, rows, notes, effects)
 
       per_row = %{
-        "feed" => Feed.records(law_name, rows, notes, effects),
-        "markup" => Markup.records(law_name, rows)
+        "feed" => feed,
+        "markup" => Markup.records(law_name, rows),
+        "amending_law" => amending_law(law_name, order, feed, Keyword.get(opts, :mode, :gaps))
       }
 
       {:ok,
@@ -44,6 +49,91 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
          per_row: per_row,
          order: order
        }}
+    end
+  end
+
+  @doc """
+  The amending-law collector's records for a law (LR-08). `mode`: `:gaps`
+  — rows whose note names a law with no dated change on the row (or an
+  ancestor) in the feed; `:benchmark` — rows that do have one (to compare
+  the law's reading with the feed's).
+  """
+  @spec amending_law(String.t(), [String.t()], [Record.t()], :gaps | :benchmark) :: [Record.t()]
+  def amending_law(law_name, section_ids, feed, mode) do
+    notes = law_notes(law_name)
+
+    dated =
+      for r <- feed,
+          r.effective_from != nil,
+          into: MapSet.new(),
+          do: {r.section_id, r.affecting_law}
+
+    ask =
+      for n <- notes,
+          sid <- n.affected_sections,
+          dated? =
+            Enum.any?(LatStatus.ancestors(sid), &MapSet.member?(dated, {&1, n.citation_law})),
+          dated? == (mode == :benchmark),
+          into: MapSet.new(),
+          do: sid
+
+    if MapSet.size(ask) == 0,
+      do: [],
+      else:
+        AmendingLaw.records(
+          law_name,
+          law_title(law_name),
+          section_ids,
+          notes,
+          ask,
+          &amending_doc/1
+        )
+  end
+
+  # the law's amendment notes, each with the law it points to
+  defp law_notes(law_name) do
+    %{rows: rows} =
+      Repo.query!(
+        """
+        SELECT code, text, coalesce(citation_law, changed_by), affected_sections
+        FROM amendment_annotations
+        WHERE law_name = $1 AND code_type = 'amendment' AND coalesce(citation_law, changed_by) IS NOT NULL
+        """,
+        [law_name]
+      )
+
+    for [code, text, law, sids] <- rows,
+        do: %{code: code, text: text, citation_law: law, affected_sections: sids || []}
+  end
+
+  defp law_title(law_name) do
+    case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law_name]) do
+      %{rows: [[t]]} when is_binary(t) ->
+        t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+
+      _ ->
+        nil
+    end
+  end
+
+  # the amending law's stored CLML (body, Schedules, fragments), parsed once
+  # per process; nil when not held
+  defp amending_doc(law) do
+    key = {__MODULE__, :doc, law}
+
+    case Process.get(key, :none) do
+      :none -> tap(read_doc(law), &Process.put(key, &1))
+      doc -> doc
+    end
+  end
+
+  defp read_doc(law) do
+    with [_, type, year, number] <- String.split(law, "_", parts: 4),
+         [_ | _] = paths <-
+           Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/**/data.xml.gz") do
+      Doc.new(law, Enum.map(Enum.sort(paths), &(&1 |> File.read!() |> :zlib.gunzip())))
+    else
+      _ -> nil
     end
   end
 

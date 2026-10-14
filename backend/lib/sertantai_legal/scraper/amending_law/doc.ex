@@ -10,13 +10,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   import SweetXml
 
   @enforce_keys [:law_name, :type]
-  defstruct [:law_name, :type, :enactment_date, ids: [], elements: %{}, titles: %{}, roots: []]
+  defstruct [
+    :law_name,
+    :type,
+    :enactment_date,
+    ids: [],
+    pos: %{},
+    elements: %{},
+    titles: %{},
+    roots: []
+  ]
 
   @type t :: %__MODULE__{
           law_name: String.t(),
           type: String.t(),
           enactment_date: Date.t() | nil,
           ids: [String.t()],
+          pos: %{String.t() => non_neg_integer()},
           elements: %{String.t() => tuple()},
           titles: %{String.t() => String.t()},
           roots: [tuple()]
@@ -34,6 +44,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
       type: law_name |> String.split("_") |> Enum.at(1),
       enactment_date: Enum.find_value(roots, &enactment/1),
       ids: ids,
+      pos: ids |> Enum.with_index() |> Map.new(),
       elements: Map.new(Enum.zip(ids, els)),
       titles: titles(roots),
       roots: roots
@@ -44,9 +55,51 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   @spec element(t(), String.t()) :: tuple() | nil
   def element(%__MODULE__{elements: els}, id), do: els[id]
 
+  @doc "The held ids from `first` up to (not including) `id`, in document order."
+  @spec between(t(), String.t(), String.t()) :: [String.t()]
+  def between(%__MODULE__{pos: pos, ids: ids}, first, id) do
+    case {pos[first], pos[id]} do
+      {a, b} when is_integer(a) and is_integer(b) and a < b -> Enum.slice(ids, a, b - a)
+      _ -> []
+    end
+  end
+
   @doc "The title of the nearest container over the element (its own title for a container)."
   @spec title(t(), String.t()) :: String.t() | nil
   def title(%__MODULE__{titles: titles}, id), do: titles[id]
+
+  @doc "An element's text in document order (XPath `//text()` isn't), whitespace squashed."
+  @spec text(tuple()) :: String.t()
+  def text(el), do: el |> lines() |> Enum.join(" ")
+
+  @doc "An element's text in document order, one entry per line (`<br/>`, `Para`, `Text` break)."
+  @spec lines(tuple()) :: [String.t()]
+  def lines(el) do
+    el
+    |> walk([[]])
+    |> Enum.map(
+      &(&1
+        |> Enum.reverse()
+        |> Enum.join()
+        |> String.replace(~r/\s+/u, " ")
+        |> String.trim())
+    )
+    |> Enum.reverse()
+    |> Enum.reject(&(&1 == ""))
+  end
+
+  defp walk({:xmlText, _, _, _, value, _}, [line | rest]), do: [[to_string(value) | line] | rest]
+  defp walk({:xmlElement, :br, _, _, _, _, _, _, _, _, _, _}, acc), do: [[] | acc]
+
+  # a paragraph or text block starts a new line
+  defp walk({:xmlElement, name, _, _, _, _, _, _, children, _, _, _}, acc)
+       when name in [:Para, :Text],
+       do: Enum.reduce(children, [[] | acc], &walk/2)
+
+  defp walk({:xmlElement, _, _, _, _, _, _, _, children, _, _, _}, acc),
+    do: Enum.reduce(children, acc, &walk/2)
+
+  defp walk(_node, acc), do: acc
 
   defp id(el), do: el |> xpath(~x"./@id"s) |> to_string()
 
