@@ -40,13 +40,9 @@ defmodule SertantaiLegal.Scraper.StagedParser do
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.IdField
-  alias SertantaiLegal.Scraper.CommentaryParser
-  alias SertantaiLegal.Scraper.CommentaryPersister
   alias SertantaiLegal.Scraper.DefinitionParser
   alias SertantaiLegal.Scraper.DefinitionPersister
   alias SertantaiLegal.Scraper.ExtentResolver
-  alias SertantaiLegal.Scraper.LatParser
-  alias SertantaiLegal.Scraper.LatPersister
   alias SertantaiLegal.Scraper.LatScope
   alias SertantaiLegal.Scraper.LatStagedParser
   alias SertantaiLegal.Scraper.LiveStatus
@@ -1246,9 +1242,7 @@ defmodule SertantaiLegal.Scraper.StagedParser do
       # whole body over it — re-parse through the scope-aware parser.
       case lookup_law_id(law_name) do
         {:ok, law_id} ->
-          if LatScope.get(law_name),
-            do: run_scoped_lat(law_name),
-            else: persist_body_lat(body_xml, law_name, law_id, type_code)
+          run_lat(law_name, law_id, type_code, body_xml)
 
         {:error, reason} ->
           IO.puts("    ✗ LAT skipped: #{reason}")
@@ -1262,63 +1256,31 @@ defmodule SertantaiLegal.Scraper.StagedParser do
 
   defp maybe_run_lat_substage(_taxa_data, _body_xml, _type_code, _year, _number, _record), do: 0
 
-  defp persist_body_lat(body_xml, law_name, law_id, type_code) do
-    # the law's effects: territory (LR-03) and change facts (LR-07)
-    effects = LatStagedParser.law_effects(law_name, []) || []
+  # One LAT parse path (LR-28): LatStagedParser, which logs the parse's cause,
+  # guards a body with no rows and persists the notes. A scoped law (#166)
+  # keeps only its fragments: never parse the whole body over it — the
+  # scope-aware parse fetches them.
+  defp run_lat(law_name, law_id, type_code, body_xml) do
+    result =
+      if LatScope.get(law_name),
+        do: LatStagedParser.parse(law_name),
+        else: LatStagedParser.run_stages(law_name, type_code, law_id, body_xml)
 
-    rows =
-      LatParser.parse(body_xml, %{law_name: law_name, type_code: type_code, effects: effects})
+    case result do
+      {:ok, %{has_errors: false, lat: %{inserted: inserted}, annotations: annotations}} ->
+        IO.puts(
+          "    ✓ LAT: #{inserted} rows, #{annotations[:inserted] || 0} annotations persisted"
+        )
 
-    case LatPersister.persist(rows, law_name, law_id) do
-      {:ok, %{inserted: inserted}} ->
-        IO.puts("    ✓ LAT: #{inserted} rows persisted")
-
-        # Commentary sub-stage: parse Commentaries block and persist annotations
-        maybe_run_commentary_substage(body_xml, rows, law_name, law_id, effects)
-
-        inserted
-
-      {:error, reason} ->
-        IO.puts("    ✗ LAT persist failed: #{reason}")
-        0
-    end
-  end
-
-  defp run_scoped_lat(law_name) do
-    case LatStagedParser.parse(law_name) do
-      {:ok, %{has_errors: false, lat: %{inserted: inserted}}} ->
-        IO.puts("    ✓ LAT (scoped): #{inserted} rows persisted")
         inserted
 
       {:ok, result} ->
-        IO.puts("    ✗ LAT (scoped) failed: #{result[:error]}")
+        IO.puts("    ✗ LAT failed: #{result[:error]}")
         0
 
       {:error, reason} ->
-        IO.puts("    ✗ LAT (scoped) failed: #{reason}")
+        IO.puts("    ✗ LAT failed: #{reason}")
         0
-    end
-  end
-
-  # Commentary sub-stage: parse <Commentaries> block from body XML and persist annotations
-  defp maybe_run_commentary_substage(body_xml, lat_rows, law_name, law_id, effects) do
-    ref_to_sections = CommentaryParser.build_ref_to_sections(lat_rows)
-
-    annotations =
-      body_xml
-      |> CommentaryParser.parse(%{law_name: law_name}, ref_to_sections)
-      |> CommentaryParser.with_effects(lat_rows, effects || [])
-
-    if annotations == [] do
-      IO.puts("    ○ Annotations: none found in body XML")
-    else
-      case CommentaryPersister.persist(annotations, law_name, law_id) do
-        {:ok, %{inserted: inserted}} ->
-          IO.puts("    ✓ Annotations: #{inserted} persisted from Commentaries block")
-
-        {:error, reason} ->
-          IO.puts("    ✗ Annotations persist failed: #{reason}")
-      end
     end
   end
 

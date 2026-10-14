@@ -18,8 +18,9 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
 - ✅ Re-scoped to inside -legal; meta plan updated (2026-10-14)
 - ✅ Inventory: every writer and reader of the `legal_articles` label columns; parse entry points; note-fact paths still called
 - ⬜ **Jason: D1** — what the `legal_articles` label columns become once the parse stops computing them
+- ⬜ Note-read guard test (D4, approved): fails if a module outside the allow-list reads note text (`amendment_annotations.text`, `AmendmentNote`, note regexes); allow-list = the pointer uses only
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
-- ⬜ Parse hook: collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
+- ⬜ Parse hook (after LR-28, in its one place): collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
 - ⬜ Staleness check: 0 laws whose latest `parsed` event is newer than their `lat_change_log.collected_at` (LR-23 Gemini D1)
 - ⬜ Delete the dead parse-time label and note-fact paths (LR-21)
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify
@@ -89,6 +90,12 @@ Implications for D2 (LH-05), recorded here and not sent:
 - Status depends on the date, so a known commencement or repeal date passing changes it with no new data. Either fractalaw holds the periods and evaluates "as at" itself, as it already does with `current_date`, or the labels hash must move when a date passes.
 - With the timeline, `unapplied_repealed` should retire: one change system, not two.
 - The 11,206 provisions whose status differs from the timeline today would change fractalaw's taxa (classified "none" vs classified).
+
+**Decided 2026-10-14 (Jason):**
+- D1 remove;
+- D3 as LR-28, opened;
+- D4 guard test added.
+- **fractalaw** will derive status from the timeline and refactor when the time comes to ship, retiring its own repeal calculation (`unapplied_repealed`) at the same time. Recorded in LH-05 (D2).
 
 **D1 (revised) — remove, not freeze.**
 - Remove `effective_from`, `changed_by` and `change_provenance` from `legal_articles`, using an Ash migration with the `Lat` view, sync and Zenoh field lists updated in code. Nothing is run outward.

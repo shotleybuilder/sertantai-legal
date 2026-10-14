@@ -13,6 +13,12 @@ Fractalaw builds nothing until the contract and data settle (Jason, 2026-10-08),
 
 ## Todo
 
+- ⬜ **Status from the timeline** (Jason, 2026-10-14). `legal_articles.status`, `effective_from` and `changed_by` are removed in LR-25, so fractalaw derives status from `lat_label_timeline` as at the date. It refactors when the time comes to ship:
+  - the liveness gate (#73) and `status_hash` read the timeline;
+  - its own repeal calculation (`unapplied_repealed`, `pg_lat_sync.rs`) retires.
+
+  Implications are in LR-25 "What fractalaw does with status".
+
 - ⬜ Zenoh frame: `title`, `excluded_extent`; manifest `title_hash`, `notes_hash`; shared vectors (incl. null-title row) in `test/fixtures/lat_hash/vectors.json`
 - ⬜ Draft the one contract message (frame columns, manifest fields, vectors, affected_sections semantics, change-id mapping file, correction/parser/legislative labels, what changed in the waves) → Jason → send
 - ⬜ Restart the Phoenix server for fractalaw's pull; post-hand-off NAS backup
