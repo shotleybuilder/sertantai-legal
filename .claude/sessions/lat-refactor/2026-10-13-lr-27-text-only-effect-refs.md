@@ -1,24 +1,75 @@
 ---
 session: 'LR-27: Text-only Effect Refs'
-status: active
+status: closed
 opened: 2026-10-13
+closed: 2026-10-14
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  Opened for feed effects named only as text ("Part 2B inserted"); measuring showed those are rare (24) and the real cause
+  of undated inserted provisions was container refs — an effect referencing a cross-heading, Part or Chapter reached only
+  the container's row (3,338 effects in 227 laws). Container refs now reach the provisions inside them; the register was
+  re-collected (139,691 records, 0 fidelity failures) and the timeline rebuilt (505,244 periods): insertion gaps 12,084 → 8,134.
+
+decisions:
+  - what: "Re-scope from text-only refs to container refs"
+    why: "Text-only Part refs: 24 effects, 47 J5 rows; the 1996/18 case had a structured ref (part-2B-crossheading-general) that joined only the cross-heading row"
+    result: "3,338 container-ref effects in 227 laws found"
+  - what: "Expand a non-words-level effect's container ref to the elements inside it in the CLML (EffectIndex.new/4, LatParser.Effects.index/3); a words change to a heading stays on the heading"
+    why: "The feed names the container; the provisions inside it are what changed"
+    result: "per-row ref joins 272,220 → 736,334; stored records 132,965 → 139,691 (compaction)"
+  - what: "D1 re-collect, D2 timeline rebuild (dry run → Jason → apply)"
+    why: "process"
+    result: "1,559 insertion gaps fully dated, 2,329 now 'date unknown' with a timeline, 8,134 remain (LR-08 / not in the feed); s.27V dated 2023-07-31 partial, 2024-10-01 in force"
+
+metrics:
+  container_ref_effects: { total: 3338, laws: 227, inserted_crossheading: 628, part_applied: 571, part_modified: 521, part_chapter_inserted: 321 }
+  register: { records: 139691, ref_per_row: 736334, unreached: 14100, fidelity_failures: 0 }
+  timeline: { periods: 505244, code_version: cc2c9a3c }
+  gaps: { insertion_not_in_register: 8134, undated_change: 19031, no_start: 22113, markup_conflict: 7705 }
+  territory_today: { known: 312689, nowhere: 11816, unknown: 19674 }
+
+lessons:
+  - title: Measure the hypothesis before building the fix it implies
+    detail: "The session was opened for text-only refs from one example; measuring found 24 such effects. Following the same example into the register showed the effect was there with a structured ref — to a container — which was the real, 140x larger gap."
+    tag: data
+  - title: A structured ref can still under-reach
+    detail: "legislation.gov.uk often references the cross-heading or Part that was inserted or modified rather than each provision; an exact-id join treats it as one row. Containment comes from the CLML tree, which the parse already holds."
+    tag: data
+  - title: Don't recompile while a long mix task runs
+    detail: "A forced compile during the dry run crashed it mid-way (walker stack trace); re-running clean confirmed no code fault."
+    tag: tooling
+
 bugs:
   - pattern: "A feed effect whose structured ref names a container (cross-heading, Part, Chapter: 'part-2B-crossheading-general') joins only the container's row; the provisions inside get it only where their own text carries markup"
     category: effect-join
     module: EffectIndex.new / LatParser.Effects.index
     affected: "3,338 effects (not words-level) in 227 laws; behind LR-24 J5 rows (1996/18 s.27V)"
     fix: "expand a container ref to the ids of the elements inside it in the CLML document (non-words-level effects); re-collect; rebuild the timeline"
-    status: open
+    status: fixed
   - pattern: "Feed effects whose affected provision is given only as text ('Part 2B inserted', no AffectedProvisions refs) reach no LAT row, so the rows of an inserted Part have no dated insertion"
     category: effect-join
     module: ChangeCollector.Feed / EffectIndex (affected_provisions text → rows)
-    affected: "25 unreached Part/Chapter effects; behind most of LR-24 J5's 7,157 rows in 144 laws (1996/18 Pt. 2B, ss. 27U-27Y, inserted by 2023/13)"
+    affected: "24 unreached effects named only as a Part (measured 2026-10-13; not the main J5 cause after all — that was container refs)"
     fix: "Resolve affected_provisions text naming a Part / Chapter / cross-heading to its LAT rows (the rows' part / chapter / heading_group), join via ref; re-collect; the J5 rows then take their insertion date from the effect"
     status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/effect_index.ex (new/4 containers)
+  - backend/lib/sertantai_legal/scraper/lat_parser/effects.ex (containers/1)
+  - backend/test/sertantai_legal/scraper/lat_parser/effects_test.exs (container refs)
+  - backend/data/reports/lat-refactor/lr27_collect*.csv, lr27_dry*.csv, lr27_rebuild*.csv (gitignored)
+
+depends_on:
+  - 2026-10-13-lr-24-label-projection
+  - 2026-10-13-lr-23-change-log-collectors
+
+enables:
+  - LR-08 (the remaining 8,134 insertion gaps, pre-2002)
+  - LR-25 switch-over (the parse's own joins also gain container refs on the next re-parse)
 ---
 
-# Session: LR-27 Text-only Effect Refs (ACTIVE)
+# Session: LR-27 Text-only Effect Refs (CLOSED)
 
 ## Problem
 
