@@ -16,19 +16,48 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   alias SertantaiLegal.Scraper.{LabelProjection, LatStatus}
   alias SertantaiLegal.Scraper.LatParser.Effects
 
+  @doc """
+  J2's input (LR-24, LR-25): what the revised text shows, when it says the
+  provision is repealed or not yet in force; nil otherwise. Read from the
+  parse's `markup_status`, never from a relabelled status.
+  """
+  @spec j2_markup(String.t() | nil) :: String.t() | nil
+  def j2_markup(markup) when markup in ~w(repealed prospective), do: markup
+  def j2_markup(_markup), do: nil
+
+  @doc """
+  Refuses a law whose rows were parsed before `markup_status` existed
+  (LR-25): J2 would silently find no markup reading. `rows`: `[section_id,
+  markup_status]` pairs. Re-parse the law first (the wave, or the hook).
+  """
+  @spec require_markup!(String.t(), [[String.t() | nil]]) :: :ok
+  def require_markup!(law_name, rows) do
+    case Enum.count(rows, fn [_sid, markup] -> is_nil(markup) end) do
+      0 ->
+        :ok
+
+      n ->
+        raise ArgumentError,
+              "#{law_name}: #{n} of #{length(rows)} rows have no markup_status " <>
+                "(parsed before LR-25); re-parse the law before building its timeline"
+    end
+  end
+
   @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows`: today's labels, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
   def build(law_name, today) do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT section_id, extent_code, status, change_provenance->>'status',
+        SELECT section_id, extent_code, status, markup_status,
                effective_from, changed_by, change_provenance->>'change',
                excluded_extent, territory_provenance
         FROM legal_articles WHERE law_name = $1 ORDER BY position
         """,
         [law_name]
       )
+
+    :ok = require_markup!(law_name, Enum.map(rows, fn [sid, _, _, m | _] -> [sid, m] end))
 
     # J5: rows a note points to as inserted / substituted whole — the row or
     # an ancestor (a pointer only: it withholds the law's start, it supplies
@@ -63,13 +92,13 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     law_type = law_name |> String.split("_") |> Enum.at(1)
 
     rows =
-      for [sid, extent, status, prov, from, by, change_src, excluded, claims] <- rows do
+      for [sid, extent, status, markup, from, by, change_src, excluded, claims] <- rows do
         %{
           section_id: sid,
           # LR-26: a row with no extent of its own takes the one its law's
           # type fixes (SSI: S, WSI: E+W, NI: NI); UK types stay unknown
           extent_code: extent || Effects.type_extent(law_type),
-          markup_status: if(prov == "markup" and status in ~w(repealed prospective), do: status),
+          markup_status: j2_markup(markup),
           excluded_extent: excluded,
           # LR-26: the claims behind the row's territory (territory_provenance)
           claims:

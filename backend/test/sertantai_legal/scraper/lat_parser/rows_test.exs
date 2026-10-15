@@ -76,6 +76,17 @@ defmodule SertantaiLegal.Scraper.LatParser.RowsTest do
     refute Map.has_key?(hd(Rows.assign_status(rows)), :prospective)
   end
 
+  test "assign_status/1 records what the revised text shows as markup_status (LR-25)" do
+    rows = [
+      row(text: "x") |> Map.put(:prospective, true),
+      row(text: "[Revoked]") |> Map.put(:prospective, false),
+      row(text: "x") |> Map.put(:prospective, false)
+    ]
+
+    assert Enum.map(Rows.assign_status(rows), & &1.markup_status) ==
+             ~w(prospective repealed in_force)
+  end
+
   test "qualify_parallels/1: the same provision with different extents gets [extent]" do
     rows =
       [row(provision: "10", extent_code: "E+W"), row(provision: "10", extent_code: "S")]

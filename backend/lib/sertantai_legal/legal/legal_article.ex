@@ -152,6 +152,16 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       )
     end
 
+    attribute :markup_status, :string do
+      allow_nil?(true)
+
+      constraints(match: ~r/\A(in_force|repealed|repealed_saved|prospective)\z/)
+
+      description(
+        "What the revised text shows (LR-25), written by the parse only: prospective (CLML Status), repealed (repealed text), repealed_saved (retained, excluded everywhere it extends), else in_force. Not a label: the timeline's J2 reads it; status as a label lives in lat_label_timeline."
+      )
+    end
+
     attribute :effective_from, :date do
       allow_nil?(true)
 

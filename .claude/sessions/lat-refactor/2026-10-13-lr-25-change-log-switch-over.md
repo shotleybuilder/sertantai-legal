@@ -23,6 +23,13 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - `ParserVersion.current/0` is a compile-time 12-hex hash of the parse's source files (21 patterns: `lat_parser/**`, `LatStagedParser`, scope, territory, effect index, changes feed, `CommentaryParser`, `Transforms`, PDF transcript CLML, ...) and `mix.lock`. It is curated, not the full alias closure, which reaches the whole Ash domain through `Api`.
   - `lat_events.parser_version` is an Ash attribute with a generated migration. The `lat_events_on_insert` trigger fills it from `sertantai.lat.parser_version`, which `LatPersister` sets (hand migration; down restores the old function).
   - Tests: `parser_version_test.exs` (3) and `lat_event_test.exs` ("a parsed event records the parser version").
+- ✅ Step 3 (2026-10-15), `markup_status`:
+  - `legal_articles.markup_status` is written by the parse only (`Rows.assign_status`: the same reading as the parse's `status`) and appended to the `lat` view, which `LatPersister` inserts through. It is not a `Lat` attribute, so it is never synced or served.
+  - The migration is Ash-generated, with the view edit as in LR-13. Up, down and up were tested.
+  - J2 reads it through `LabelTimeline.j2_markup/1` (repealed / prospective only), not `status` + `change_provenance`.
+  - Guard `require_markup!/2`: no timeline is built from rows parsed before LR-25. All 374,866 rows are null until the wave, so `mix lat.timeline` refuses until then.
+  - **Behaviour change for the wave dry run:** J2 now sees the markup reading even where an effect set `status` (before, only where `change_provenance.status = markup`). This is the approved J2 rule ("markup wins today"), to be classified.
+  - **The step-3 gate moves to step 9:** the dry run builds each law's timeline from its fresh in-memory parse (`LabelTimeline.build` gains a rows option), as the collector already reads the store.
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
 - ⬜ Parse hook (after LR-28, in its one place): collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
 - ⬜ Staleness check, two parts:

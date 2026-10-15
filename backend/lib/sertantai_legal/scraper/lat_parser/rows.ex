@@ -177,6 +177,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
   Status from the parse alone (#167): the inherited Prospective flag, else
   repealed text (dots / the markers above), else in force. Partial
   commencement and savings come from the notes (LatStatus.Apply).
+
+  Also `markup_status` (LR-25): the same reading, kept as what the revised
+  text shows when `status` is relabelled (the timeline's J2 input).
   """
   @spec assign_status([map()]) :: [map()]
   def assign_status(rows) do
@@ -189,7 +192,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
           true -> "in_force"
         end
 
-      row |> Map.delete(:prospective) |> Map.put(:status, status)
+      row
+      |> Map.delete(:prospective)
+      |> Map.put(:status, status)
+      |> Map.put(:markup_status, status)
     end)
   end
 
@@ -329,6 +335,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
         sub_paragraph: row.sub_paragraph,
         extent_code: row.extent_code,
         status: Map.get(row, :status),
+        markup_status: Map.get(row, :markup_status),
         sort_key: row.sort_key,
         position: row.position,
         depth: row.depth,

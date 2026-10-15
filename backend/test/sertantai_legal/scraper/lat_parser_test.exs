@@ -488,6 +488,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       [map] = LatParser.to_insert_maps([row], Ecto.UUID.generate())
       assert map.status == "in_force"
+      assert map.markup_status == "in_force"
     end
   end
 
