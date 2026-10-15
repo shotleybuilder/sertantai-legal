@@ -1,6 +1,6 @@
 ---
 session: 'LR-25: Change Log Switch-over'
-status: active
+status: suspended
 opened: 2026-10-13
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
@@ -18,13 +18,17 @@ bugs:
     status: fixed
 ---
 
-# Session: LR-25 Change Log Switch-over (ACTIVE)
+# Session: LR-25 Change Log Switch-over (SUSPENDED)
 
 ## Problem
 
 The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeline`, LR-24/LR-26/LR-27) now answer where and when for each provision, but the LAT parse still computes its own change labels on `legal_articles` (status, effective_from, changed_by, change_provenance), partly from note text, and nothing rebuilds the register and timeline when a law is re-parsed. This session switches -legal over inside -legal: one source of labels, kept fresh after each parse, and the note-fact code deleted (absorbs LR-21).
 
 **Re-scoped 2026-10-14 (Jason: "We're not close to fractalaw handoff yet").** Nothing that reaches compliance or fractalaw happens here. The delta sync change (stop exporting `lat.status` / `effective_from` / `changed_by`, carry the timeline) and fractalaw's pull from the timeline (labels hash in the manifest) move to D2 (LH-05), after QA run 4.
+
+## Suspended (2026-10-15)
+
+Steps 1–8 are built and committed, and dry run 1 is classified. The wave (step 9) waits for LR-29 (container ref over-reach): applying now would write that regression. Resume with a fresh dry run once LR-29 is fixed.
 
 ## Todo
 

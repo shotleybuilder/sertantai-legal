@@ -1,6 +1,6 @@
 ---
 session: 'LR-29: Container Ref Over-reach'
-status: pending
+status: active
 opened: 2026-10-15
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
@@ -12,7 +12,7 @@ bugs:
     status: open
 ---
 
-# Session: LR-29 Container Ref Over-reach (PENDING)
+# Session: LR-29 Container Ref Over-reach (ACTIVE)
 
 ## Problem
 
