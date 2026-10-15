@@ -381,6 +381,28 @@ defmodule SertantaiLegal.Scraper.CommentaryParserTest do
   # ── Code derivation ────────────────────────────────────────────
 
   describe "with_effects/3 (LR-07, LR-19)" do
+    test "a note's pointer law is its joined effect's affecting law (the latest dated), else none here (LR-25)" do
+      annotations = [%{code: "F:c1", text: "1996 NI 17"}, %{code: "F:c2", text: "b"}]
+
+      rows = [
+        %{section_id: "x", note_effects: [{"c1", "key-1"}, {"c1", "key-2"}]},
+        %{section_id: "y"}
+      ]
+
+      at = fn d -> %{date: d, prospective: false, qualification: nil, applied: true} end
+
+      effects = [
+        effect(effect_id: "key-1", affecting: "UK_nisr_2001_1", in_force: [at.(~D[2001-01-01])]),
+        effect(effect_id: "key-2", affecting: "UK_nisr_2006_425", in_force: [at.(~D[2006-12-01])])
+      ]
+
+      assert CommentaryParser.with_effects(annotations, rows, effects)
+             |> Enum.map(&{&1.text, &1[:changed_by]}) == [
+               {"1996 NI 17", "UK_nisr_2006_425"},
+               {"b", nil}
+             ]
+    end
+
     test "from the change markup citing the note, plus its own id when the feed has it" do
       annotations = [
         %{code: "F:key-aa", text: "a"},

@@ -10,6 +10,12 @@ bugs:
     affected: "~130 MB per law; the wave dry run was killed for low memory after 460 of 1,066 laws; the apply (one process, hook per law) would have hit it too"
     fix: "ChangeCollector.with_doc_cache/1 scopes the doc cache to one law's collection (cleared in after); records/7 deletes its memo tables in after. Measured flat (~190 MB over 30 laws)"
     status: fixed
+  - pattern: "Step 7 regression: a note's changed_by pointer came only from its text, so a bare citation note ('1996 NI 17') pointed to no law and T1 marked its row 'date unknown' though the register dates it (141 rows lost a date in the dry run)"
+    category: lat-change-facts
+    module: CommentaryParser.with_effects/3 / CommentaryPersister (LR-25 step 7)
+    affected: "141 rows in the LR-25 dry run (apni 1970/10 s.1(4A), mwa 2010/8 s.9(3), ...)"
+    fix: "the pointer is the joined effect's affecting law (the latest dated: data from effects), else the law the text names — as before step 7, without note facts"
+    status: fixed
 ---
 
 # Session: LR-25 Change Log Switch-over (ACTIVE)
@@ -109,6 +115,21 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - **Cause:** the LR-08 amending-law collector cached every parsed amending-law document (xmerl trees) in the process dictionary, and created an ETS table per call that it never deleted. Measured at about 130 MB per law (5.2 GB after 40 laws, 660 cached documents).
   - **Fix:** the document cache is scoped to one law's collection (`with_doc_cache/1`), and memo tables are deleted after each call. Tests first.
   - **Re-measured:** flat at about 190 MB over 30 laws, about 11.6 s per law (previously about 15 s).
+- ✅ Step 9c (2026-10-15), dry run 1 complete (`lr25_dry`):
+  - **Run:** 1,066 laws. Labels hook `ok` on all 1,066, 0 errors, cause `parser` on every one. The DB is unchanged after.
+  - **Changes as at today:** 1,227 label diffs in 67 laws.
+  - **Correct:**
+    - 277 in_force → repealed and 5 partial → repealed: every one has dotted or [Repealed] text (J2 now reads `markup_status`);
+    - their undated repeals empty `effective_from` / `changed_by` and are listed as markup conflicts;
+    - uksi 2023/909 E+W → E (267; "Pt. 2 Ch. 3 inserted", territorial application E, the sole container);
+    - WIA 1991 ss.29, 30ZA… E+W → UK (13; wrong legacy-id joins dropped, LR-19).
+  - **Wrong, from LR-29's over-reach** (cross-heading refs reaching provisions not inserted), 95 rows:
+    - ukpga 1991/22 "s. 81 cross-heading" (29);
+    - anaw 2016/3 "s. 7 cross-heading" (28);
+    - ukpga 1981/69 "s. 27ZA and cross-heading" (23);
+    - ukpga 1989/29 "s. 11C–11H and cross-heading" (15; s.12A / s.12B → applying nowhere).
+  - **To explain:** ukpga 1993/12 s.51 picks up the "ss. 30–46 repealed (S)" effect though it sits outside the range. In LR-29's measurement.
+  - **Wrong, from step 7:** 141 rows lose a date because the notes' pointer lost its effect source. Fixed (bug above); the next dry run should show them gone.
 - ⬜ **Wave apply waits for LR-29** (container ref over-reach, found in this dry run): applying now would write the regression (Electricity Act 1989 s.12A applying nowhere)
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes

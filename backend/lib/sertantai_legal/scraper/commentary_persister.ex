@@ -87,8 +87,11 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
         effect_ids: ann |> Map.get(:effect_ids, []) |> nil_if_empty(),
         # LR-05: the law its first Citation after "by" names (nil: none)
         citation_law: Map.get(ann, :citation_law),
-        # LR-25: the law its text names, a pointer only, and its stable id
-        changed_by: NotePointer.law(ann.text, to_string(ann.code_type)),
+        # LR-25: the law it points to — its joined effect's affecting law
+        # (CommentaryParser.with_effects/3), else the law its text names — and
+        # its stable id
+        changed_by:
+          Map.get(ann, :changed_by) || NotePointer.law(ann.text, to_string(ann.code_type)),
         change_id: NotePointer.change_id(ann.law_name, ann.text),
         created_at: now,
         updated_at: now

@@ -283,13 +283,36 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     index =
       EffectIndex.new(effects, lat_rows |> Enum.map(&row_xml_id/1) |> Enum.reject(&is_nil/1))
 
-    Enum.map(joined, fn
+    by_id = Map.new(for e <- effects, e.effect_id != nil, do: {e.effect_id, e})
+
+    joined
+    |> Enum.map(fn
       %{effect_ids: []} = a ->
         with_joins(a, for({id, sid} <- pointed(a, index, xml_ids, held), do: {id, :cited, sid}))
 
       a ->
         a
     end)
+    |> Enum.map(&with_pointer(&1, by_id))
+  end
+
+  # LR-25: the law a note points to, from the effects it joined (data from
+  # effects, not note text): the affecting law of the one that took effect
+  # last, else the first's. A note with no effect gets its text's pointer at
+  # persist (`NotePointer.law/2`).
+  defp with_pointer(%{effect_ids: ids} = a, by_id) do
+    joined = for id <- ids, e = by_id[id], do: e
+
+    dated =
+      for e <- joined, f <- e.in_force || [], f.date != nil, e.affecting != nil, do: {f.date, e}
+
+    law =
+      case Enum.max_by(dated, &elem(&1, 0), Date, fn -> nil end) do
+        {_, e} -> e.affecting
+        nil -> Enum.find_value(joined, & &1.affecting)
+      end
+
+    Map.put(a, :changed_by, law)
   end
 
   # LR-23: `effect_joins` (the change log's `via`) and the flat `effect_ids`
