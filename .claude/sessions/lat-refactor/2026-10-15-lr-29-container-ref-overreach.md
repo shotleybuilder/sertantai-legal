@@ -1,18 +1,100 @@
 ---
 session: 'LR-29: Container Ref Over-reach'
-status: active
+status: closed
 opened: 2026-10-15
+closed: 2026-10-15
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'An effect now lands where its own AffectedProvisions text says (ProvisionText grammar + EffectTarget resolution against the document tree), with the structured refs as fallback and cross-check;
+  one principle replaced LR-27''s container expansion and a table of special cases. Measured over 136,446 effects (94.5% unchanged, 515 narrowed, 109 widened, 0 disagreements after three refinements); the
+  LR-25 wave removed LR-27''s over-reach from the register and timeline (1,792 provisions no longer wrongly repealed, 11,783 dates corrected).
+
+  '
+decisions:
+- what: 'The principle: an effect lands where its own text says; refs are fallback and cross-check'
+  why: 'Jason: ''any effect needs to be at the right level of granularity ... I''m wary of code carrying lots of particular rules - is there an abstraction here'''
+  result: ProvisionText + EffectTarget; container expansion deleted; 'this makes the codebase more tractable'
+- what: The text, not the intersection with refs, decides
+  why: refs are sometimes truncated ('s. 50 - 55' carries only section-50), not only coarse
+  result: 109 truncated ranges widened
+- what: '''cross-heading'' read literally: the heading element'
+  why: provisions inserted with a heading are named in the text
+  result: one ambiguity removed
+- what: 'Disagreements 50 to 0: mixed-level brackets are a path; unheld refs don''t contradict; coverage follows hierarchical ids'
+  why: each a tightening of the one rule, found by listing the disagreements
+  result: 0 disagreements over the store
+- what: Heading rows join effects that name them, by name only
+  why: headings were dated only via the note fallback; whole-row claims under a heading aren't its changes
+  result: 233 headings dated; none repealed by their provisions
+- what: 'Stable tie-break: the change before its commencement, then law, then effect id'
+  why: same-day ties flipped labels between runs, then named the commencement order
+  result: labels deterministic; changed_by names the law that made the change
+metrics:
+  effects_measured:
+    total: 136446
+    not_in_document: 82198
+    same: 51290
+    narrowed: 515
+    widened: 109
+    disagree_final: 0
+    text_unresolved: 2322
+  wave_classes:
+    repealed_to_in_force: 1792
+    to_partial: 535
+    dates_moved: 11783
+lessons:
+- title: Look for the principle behind a table of cases
+  detail: 'Four special cases (named provisions + container, heading only, nested containers, sole container) were all outcomes of one rule: an effect lands where its text says. Jason asked for the abstraction;
+    it made the code smaller and the remaining faults easy to name.'
+  tag: data
+- title: Measure a principle over the whole store before building it
+  detail: A prototype comparing text-resolved and ref-resolved targets over 136,446 effects showed 94.5% agreement, exposed truncated refs (which overturned the intersection rule) and gave the numbers for
+    the decision.
+  tag: data
+- title: Structured data from the source can be wrong in both directions
+  detail: legislation.gov.uk refs were too coarse (a container), truncated (a range's first id) and malformed (section-87-b-c); its own AffectedProvisions text was the reliable statement.
+  tag: data
 bugs:
-  - pattern: "An effect naming specific provisions and their cross-heading ('s. 11C-11H and cross-heading inserted') is expanded (LR-27) to everything under that cross-heading in today's CLML, including older provisions that were not inserted (Electricity Act 1989 ss.12-14A)"
-    category: lat-effect-joins
-    module: LatParser.Effects.containers/1 + EffectIndex.new/4 (LR-27)
-    affected: "to be measured (found in the LR-25 wave dry run)"
-    fix: "when the effect's text names provisions besides the container, expand the container only to those provisions (the container row itself keeps the effect); expand to all contents only when the container is the sole target ('cross-heading inserted', 'Pt. 2A inserted')"
-    status: open
+- pattern: An effect naming specific provisions and their cross-heading ('s. 11C-11H and cross-heading inserted') is expanded (LR-27) to everything under that cross-heading in today's CLML, including older
+    provisions that were not inserted (Electricity Act 1989 ss.12-14A)
+  category: lat-effect-joins
+  module: LatParser.Effects.containers/1 + EffectIndex.new/4 (LR-27)
+  affected: to be measured (found in the LR-25 wave dry run)
+  fix: when the effect's text names provisions besides the container, expand the container only to those provisions (the container row itself keeps the effect); expand to all contents only when the container
+    is the sole target ('cross-heading inserted', 'Pt. 2A inserted')
+  status: fixed
+- pattern: Feed effects whose affected provision is given only as text reach no LAT row
+  category: lat-effect-joins
+  module: EffectTarget (LR-29)
+  affected: resolved by text
+  fix: an effect lands where its text says, refs or not
+  status: fixed
+- pattern: Heading rows never joined effects directly (only via the note fallback), so LR-29's more precise note joins left headings like 1991/56 h.22A undated
+  category: lat-effect-joins
+  module: LatParser.Walker heading rows
+  affected: 233 headings dated in the wave
+  fix: heading rows get row_effect_joins by name only
+  status: fixed
+- pattern: Same-day ties chose the label by DB row order, then by law name (naming the commencement order)
+  category: lat-timeline
+  module: LabelProjection.latest/1
+  affected: ~140 rows across dry runs
+  fix: the change before its commencement, then law, then effect id
+  status: fixed
+artifacts:
+- backend/lib/sertantai_legal/scraper/provision_text.ex
+- backend/lib/sertantai_legal/scraper/effect_target.ex
+- backend/test/sertantai_legal/scraper/effect_target_test.exs
+- backend/test/sertantai_legal/scraper/provision_text_test.exs
+- backend/test/sertantai_legal/scraper/lat_parser/heading_effects_test.exs
+- backend/data/code-reviews/2026-10-15-lr-29-effect-target.md
+depends_on:
+- 2026-10-13-lr-27-text-only-effect-refs
+enables:
+- LR-25 wave
 ---
 
-# Session: LR-29 Container Ref Over-reach (ACTIVE)
+# Session: LR-29 Container Ref Over-reach (CLOSED)
 
 ## Problem
 
@@ -88,8 +170,8 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
   - **Found: the tie-break picked the commencement order over the law that made the change** (anaw 2017/3 s.42(1A): inserted by wsi 2018/101, commenced by wsi 2018/35, the same day; ordering by law name chose 2018/35). **Fixed:** in a same-day tie, the change itself ranks before its commencement, then law, then effect id (test).
 - ✅ **Final dry run 2** (`lr25_final2`, code `be66e178`): 1,066 laws, 0 errors, cause `parser` on all, labels hook ok on all, DB unchanged.
   - **Against final run 1:** only 110 changed_by labels differ (same-day ties now name the law that made the change). Rows, periods, unknowns, every gap class and the parse columns are identical.
-- ⬜ The LR-25 wave to Jason
-- ⬜ Lands in the LR-25 wave (re-parse + re-collect)
+- ✅ The LR-25 wave to Jason — applied 2026-10-15
+- ✅ Lands in the LR-25 wave (re-parse + re-collect) — 2026-10-15
 
 ## Dependencies
 

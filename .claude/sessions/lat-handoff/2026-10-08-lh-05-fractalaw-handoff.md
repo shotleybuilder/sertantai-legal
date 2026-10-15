@@ -44,3 +44,34 @@ Plan steps 6–7 (`../lat-refactor/2026-10-09-lr-00-meta.md`).
 
 - ⬜ LH-04 ready
 - ⬜ Jason's go to flag fractalaw
+
+## Contract notes from LR-25 / LR-29 / LR-30 / LR-32 (2026-10-15; written, not sent)
+
+**`legal_articles` / the `lat` view (what compliance syncs and fractalaw pulls).**
+- Dropped: `status`, `effective_from`, `changed_by` and `change_provenance`.
+- `markup_status` added, dev-only: what the revised text shows; not a label.
+- The delta sync code no longer carries the dropped columns (compliance agreed 2026-10-13); prod still has them until D2.
+- Labels are the timeline's: `lat_label_timeline`, with "as at today" in the `lat_labels_today` view.
+
+**The Zenoh LAT pull** keeps the contract shape.
+- `status`, `effective_from` (= the period's `in_force_from`) and `changed_by` come from the timeline as at the UK date.
+- A provision with no period today serves **nil = unknown**, never a default. fractalaw's liveness gate treats nil as live: it must read nil as unknown.
+- `status_hash` runs over today's timeline status, with unknown hashed as "", matching fractalaw's own `status_hash`. It is never nil now.
+- Status depends on the date: a known commencement or repeal date passing changes it with no new data. fractalaw should hold the periods, or re-derive status as at its date.
+
+**Notes (`amendment_annotations` and the Zenoh note pull).**
+- `effect`, `effective_dates`, `effective_from` and `fact_provenance` are dropped. Jason: notes are pointers, not data to store.
+- A note keeps its text, placement, `citation_law`, `changed_by` (a pointer: its joined effect's affecting law, else the law its text names) and `change_id`.
+
+**Values that moved** (the 2026-10-15 wave; 39,638 label changes as at today in 240 laws):
+- LR-27's container over-reach removed (LR-29): 1,792 repealed → in force; 535 → partly in force; 11,783 dates moved.
+- The revised text shows a repeal: 278 in force → repealed.
+- Undated insertions withhold the law's start (LR-30), and over-reach left no honest start: in force → unknown, 1,948.
+- Another territory's change no longer dates a version (LR-32): 332 changed_by.
+- Headings dated by effects that name them; same-day ties name the law that made the change.
+- `lat_hash` is unchanged (status isn't in it); `status_hash` changes for the laws above.
+
+**fractalaw refactor at ship (Jason, 2026-10-14).**
+- Derive status from the timeline: the liveness gate (#73) and `status_hash`.
+- Retire its own repeal calculation (`unapplied_repealed`).
+- Re-enrich the provisions whose liveness changed (repealed ↔ in force; prospective → in force).

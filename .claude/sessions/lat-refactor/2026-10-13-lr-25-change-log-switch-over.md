@@ -1,8 +1,62 @@
 ---
 session: 'LR-25: Change Log Switch-over'
-status: suspended
+status: closed
 opened: 2026-10-13
+closed: 2026-10-15
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+
+summary: >
+  -legal switched to one label source: the change register and its timeline. The parse writes only markup_status, a hook rebuilds each law's register and timeline after every parse, staleness is visible (parser / labels versions, refresh events), and every note-fact path and the old label columns are gone.
+  The wave (2026-10-15) re-parsed all 1,066 laws from the store after five rolled-back dry runs that found and fixed LR-29, LR-30, LR-32, a memory leak, a heading-join mistake and two tie-break faults; all 39,638 predicted label changes match the live data, with 0 stale laws.
+
+decisions:
+  - what: "Inside -legal only; the delta sync and fractalaw's pull move to D2 (LH-05)"
+    why: "Jason: 'We're not close to fractalaw handoff yet'"
+    result: "nothing synced or served; contract notes written in LH-05, not sent"
+  - what: "D1 remove the parse-time label columns (status, effective_from, changed_by, change_provenance); markup_status for J2"
+    why: "nothing goes outward before D2, so freezing bought nothing; status as a label is the timeline's"
+    result: "migration dropped them; the lat view recreated; the backup taken first"
+  - what: "D2 drop the notes' fact columns (effect, effective_dates, effective_from, fact_provenance)"
+    why: "Jason: 'we use leg.gov.uk notes as helpers/pointers not as data we need to store. The data comes from law or effects'"
+    result: "NotePointer (law, change_id, same_law?) replaces AmendmentNote; the note-read guard fails on any fact read from note text"
+  - what: "Status of fractalaw: it derives status from the timeline and retires unapplied_repealed when it ships"
+    why: "Jason 2026-10-14; the liveness gate (#73) and status_hash read status"
+    result: "recorded in LH-05"
+  - what: "Dry run = the real path in a rolled-back transaction (mix lat.wave_preview)"
+    why: "the dry run and the apply can't diverge"
+    result: "five full dry runs; each surfaced a real fault before any write"
+  - what: "Approve and run the wave (Jason 2026-10-15: 'Do steps 1 to 4')"
+    why: "final dry run 2 clean; every change class verified or traced"
+    result: "1,066 laws, 0 errors; enrichment 287,676 → 287,676; 0 stale; gaps and labels equal to the dry run"
+
+metrics:
+  wave: { laws: 1066, errors: 0, rows: 374866, enriched_kept: 287676, renamed: 0, dropped: 0, label_changes_today: 39638, laws_changed: 240, predicted_vs_live_differences: 0 }
+  timeline: { periods_before: 506466, periods_after: 479108, unknown_today_before: 30201, unknown_today_after: 31984 }
+  gaps_after: { no_start: 21941, insertion_not_in_register: 9576, undated_change: 16506, markup_conflict: 8163, outstanding_effect: 1526 }
+  register: { records_before: 141390, records_after: 134457 }
+  tests: { before: 2632, after: 2678 }
+
+lessons:
+  - title: "A dry run that runs the real path in a rolled-back transaction is worth its cost"
+    detail: "Five full rolled-back runs each found something a unit test couldn't: LR-27's over-reach hidden in the stored data, a heading join mistake, same-day ties flipping labels run to run, a tie-break that named the commencement order. The live result then matched the last dry run on every one of 39,638 changes."
+    tag: data
+  - title: "Comparing a fresh run against stored data hides faults present in both"
+    detail: "Dry run 1 showed 1,227 changes; LR-27's over-reach was in the stored register and in the fresh collect alike, so it matched itself. Only after LR-29 corrected the fresh side did 33,000 wrong labels show."
+    tag: data
+  - title: "Verify each change class row by row, not by sample alone"
+    detail: "A per-row check (does the change behind the old label still reach the row under the new code?) confirmed 95%+ of changed_by changes and every status class, and its exceptions found the heading-join gap and LR-30."
+    tag: data
+  - title: "Ties need an explicit, meaningful order"
+    detail: "Enum.max_by on a date returned whichever same-day change came first from an unordered query, so labels flipped between runs; ordering by law name then named the commencement order. Rank the change itself before its commencement, then a stable key."
+    tag: data
+  - title: "A per-process cache in a pure-looking module leaks in a corpus run"
+    detail: "The LR-08 amending-law collector kept every parsed xmerl document in the process dictionary and an ETS table per call: ~130 MB per law in one process; the dry run was killed after 460 laws. Scope caches to the unit of work."
+    tag: tooling
+  - title: "Backups must cover what the run writes"
+    detail: "nas-backup.sh predated the change register: lat_change_log, lat_label_timeline, lat_events, lat_changes and lat_section_id_renames were added before the wave."
+    tag: infrastructure
+
 bugs:
   - pattern: "Amending-law collector caches leak across laws in one process: amending_doc keeps every parsed xmerl document in the process dictionary for the process's life; memo/1 creates an ETS table per call and never deletes it"
     category: memory
@@ -16,9 +70,64 @@ bugs:
     affected: "141 rows in the LR-25 dry run (apni 1970/10 s.1(4A), mwa 2010/8 s.9(3), ...)"
     fix: "the pointer is the joined effect's affecting law (the latest dated: data from effects), else the law the text names — as before step 7, without note facts"
     status: fixed
+  - pattern: "Row change facts pool note facts with effect facts and take the latest date, so a note can override an effect on the same row"
+    category: lat-change-facts
+    module: scraper/change_facts.ex
+    affected: "deleted"
+    fix: "ChangeFacts.row_facts deleted; labels from the timeline"
+    status: fixed
+  - pattern: "Provenance mislabelled or missing for note-derived values"
+    category: lat-change-facts
+    module: scraper/change_facts.ex / LatStatus.Apply
+    affected: "deleted"
+    fix: "note-derived values removed with their columns"
+    status: fixed
+  - pattern: "LAT facts derived from legislation.gov.uk note text alone where no markup or effect supports them"
+    category: lat-change-facts
+    module: AmendmentNote / LatStatus / ChangeFacts
+    affected: "deleted"
+    fix: "every note-fact path deleted; note-read guard test"
+    status: fixed
+  - pattern: "changed_by null when the note cites a bare SI number"
+    category: lat-change-facts
+    module: AmendmentNote / ChangeFacts note fallback
+    affected: "superseded"
+    fix: "no facts from notes; changed_by from the register (effects, law)"
+    status: fixed
+
+artifacts:
+  - backend/lib/sertantai_legal/scraper/label_refresh.ex
+  - backend/lib/sertantai_legal/scraper/labels_today.ex
+  - backend/lib/sertantai_legal/scraper/label_staleness.ex
+  - backend/lib/sertantai_legal/scraper/source_version.ex
+  - backend/lib/sertantai_legal/scraper/parser_version.ex
+  - backend/lib/sertantai_legal/scraper/label_version.ex
+  - backend/lib/sertantai_legal/scraper/note_pointer.ex
+  - backend/lib/sertantai_legal/scraper/effect_facts.ex
+  - backend/lib/sertantai_legal/scraper/wave_preview.ex
+  - backend/lib/mix/tasks/lat.stale.ex
+  - backend/lib/mix/tasks/lat.relabel.ex
+  - backend/lib/mix/tasks/lat.wave_preview.ex
+  - backend/test/sertantai_legal/architecture/note_read_test.exs
+  - backend/priv/repo/migrations/20261015054800_lr25_drop_label_and_note_fact_columns.exs
+  - backend/priv/repo/migrations/20261015060000_add_lat_labels_today_view.exs
+  - scripts/nas/nas-backup.sh
+  - backend/data/reports/lat-reparse/lr25_wave.csv
+  - backend/data/backups/lr25/
+
+depends_on:
+  - 2026-10-13-lr-24-label-projection
+  - 2026-10-13-lr-26-territory-from-register
+  - 2026-10-14-lr-28-one-lat-parse-path
+  - 2026-10-15-lr-29-container-ref-overreach
+
+enables:
+  - A8 timeline gap classes
+  - LR-31 pipeline performance
+  - D2 LH-05 (sync carries the timeline; fractalaw derives status from it)
 ---
 
-# Session: LR-25 Change Log Switch-over (SUSPENDED)
+# Session: LR-25 Change Log Switch-over (CLOSED)
 
 ## Problem
 
@@ -34,7 +143,7 @@ Steps 1–8 are built and committed, and dry run 1 is classified. The wave (step
 
 - ✅ Re-scoped to inside -legal; meta plan updated (2026-10-14)
 - ✅ Inventory: every writer and reader of the `legal_articles` label columns; parse entry points; note-fact paths still called
-- ⬜ **Jason: D1** — what the `legal_articles` label columns become once the parse stops computing them
+- ✅ **Jason: D1** — remove (2026-10-14)
 - ✅ Note-read guard test (D4, approved; step 1, 2026-10-14): `test/sertantai_legal/architecture/note_read_test.exs`. Fact calls (`AmendmentNote.parse/row_effective/resolve_law`, `LatStatus.resolve`, `NoteTerritory`) must appear nowhere but a ratchet `@to_delete` list (8 entries; must shrink to empty in step 7). SQL readers of note text are allow-listed with reasons: pointer (LabelTimeline J5, ChangeCollector), display (qa_sample, ai_sync, admin LAT page), to_delete (LatStatus.Apply)
 - ✅ Step 2 (2026-10-15), parser version:
   - `ParserVersion.current/0` is a compile-time 12-hex hash of the parse's source files (21 patterns: `lat_parser/**`, `LatStagedParser`, scope, territory, effect index, changes feed, `CommentaryParser`, `Transforms`, PDF transcript CLML, ...) and `mix.lock`. It is curated, not the full alias closure, which reaches the whole Ash domain through `Api`.
@@ -135,11 +244,11 @@ Steps 1–8 are built and committed, and dry run 1 is classified. The wave (step
   - **To explain:** ukpga 1993/12 s.51 picks up the "ss. 30–46 repealed (S)" effect though it sits outside the range. In LR-29's measurement.
   - **Wrong, from step 7:** 141 rows lose a date because the notes' pointer lost its effect source. Fixed (bug above); the next dry run should show them gone.
 - ✅ ~~Wave apply waits for LR-29~~: LR-29, LR-30 and LR-32 built; final dry run 2 clean (2026-10-15)
-- ⬜ **Jason: the wave** (see "The wave (2026-10-15)") (container ref over-reach, found in this dry run): applying now would write the regression (Electricity Act 1989 s.12A applying nowhere)
-- ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
-- ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
-- ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)
-- ⬜ Close LR-22 (design umbrella) and LR-21 with this session
+- ✅ **Jason: the wave** — approved and applied 2026-10-15 (see "The wave (2026-10-15)") (container ref over-reach, found in this dry run): applying now would write the regression (Electricity Act 1989 s.12A applying nowhere)
+- ✅ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify (2026-10-15). The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
+- ⏸️ (deferred — the re-parse cleared the drift it was kept for: 0 stale laws; recommend deleting it, Jason's call) `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
+- ✅ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)
+- ✅ Close LR-22 (design umbrella) and LR-21 with this session
 
 ## Dependencies
 

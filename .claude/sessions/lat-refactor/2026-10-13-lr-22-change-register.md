@@ -1,11 +1,47 @@
 ---
 session: 'LR-22: Change Register'
-status: active
-opened: 2026-10-13
+status: closed
+opened: '2026-10-13'
+closed: '2026-10-15'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'Named and built the change system: lat_change_log (register filled by feed, markup, amending-law and commencement collectors) projected into lat_label_timeline periods; legal_articles holds no
+  labels, today''s view is lat_labels_today. Delivered through LR-23, LR-24, LR-26, LR-27/LR-08 and the LR-25 switch-over wave (2026-10-15: 1,066 laws, 0 errors, 0 stale).'
+decisions:
+- what: A register of legal changes with labels as a pure projection
+  why: 'Jason 2026-10-13: ''we are essentially building a change system … without actually stating that explicitly'''
+  result: 134,457 register records; 479,108 timeline periods; a fresh rebuild equals the stored timeline
+- what: Labels as periods (when + where), not columns
+  why: answers 'in force since when, where' without re-parsing
+  result: lat_labels_today view; fractalaw derives status from the timeline (LH-05)
+metrics:
+  wave_2026_10_15:
+    laws: 1066
+    errors: 0
+    register: 134457
+    periods: 479108
+    unknown_today: 31984
+    tests: 2678
+lessons:
+- title: Name the system before adding another source
+  detail: Each new source (amending law, commencement order) had added a path to the parse and another wave; once the register existed, collectors were additive and relabelling needed no re-parse.
+  tag: data
+artifacts:
+- backend/lib/sertantai_legal/scraper/change_collector.ex
+- backend/lib/sertantai_legal/scraper/label_projection.ex
+- backend/lib/sertantai_legal/scraper/label_timeline.ex
+- backend/lib/sertantai_legal/scraper/label_refresh.ex
+depends_on:
+- 2026-10-12-lr-20-no-facts-from-notes
+- 2026-10-12-lr-19-changed-by-latest-effect
+enables:
+- A8 gap classes
+- LR-11 guide
+- LR-12 QA spec
+- LH-05 contract (D2)
 ---
 
-# Session: LR-22 Change Register (ACTIVE)
+# Session: LR-22 Change Register (CLOSED)
 
 ## Problem
 
@@ -23,7 +59,7 @@ We have been building a change system without naming it. A row's change label (e
 
 - ✅ LR-20 rule (facts from markup, effects, the amending law; notes only point)
 - ✅ LR-19 effect joins (become the feed collector's join logic)
-- ⏸️ LR-08 suspended at the design point: hop 1 fetched (173 laws), probe done; resumes as the amending-law collector
+- ✅ LR-08 resumed and closed as the amending-law collector (with hop 2, LR-27)
 
 ## Design (draft, 2026-10-13)
 
