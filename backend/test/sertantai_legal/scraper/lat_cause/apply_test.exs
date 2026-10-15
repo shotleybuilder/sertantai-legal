@@ -39,7 +39,8 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
   # One parse operation: snapshot → persist → (notes) → record.
   defp parse!(name, law_id, text, xml, opts \\ []) do
     before = Apply.snapshot(name)
-    {:ok, %{op_id: op_id} = persisted} = LatPersister.persist([row(name, text)], name, law_id)
+    r = row(name, text) |> Map.put(:markup_status, opts[:markup])
+    {:ok, %{op_id: op_id} = persisted} = LatPersister.persist([r], name, law_id)
 
     for note <- Keyword.get(opts, :notes, []) do
       Repo.query!(
@@ -134,5 +135,34 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
                xml("2025-08-01"),
                explicit: "correction"
              )
+  end
+
+  test "status changes are the revised text's (markup_status); a first reading is no change (LR-25)" do
+    name = "UK_uksi_2099_#{System.unique_integer([:positive])}"
+
+    law =
+      LegalRegister
+      |> Ash.Changeset.for_create(:create, %{
+        country: "uk",
+        name: name,
+        title_en: "Test Regulations",
+        type_code: "uksi",
+        year: 2099,
+        number: "1"
+      })
+      |> Ash.create!()
+
+    assert {"initial", _} = parse!(name, law.id, "Duty.", xml("2024-01-01"))
+
+    # rows parsed before markup_status existed: the first reading changes nothing
+    assert {"parser", _} =
+             parse!(name, law.id, "Duty.", xml("2024-02-01"), markup: "in_force")
+
+    # the revised text now shows the provision repealed
+    assert {"legislative", _} =
+             parse!(name, law.id, "Duty.", xml("2024-03-01"), markup: "repealed")
+
+    reg1 = "#{name}:reg.1"
+    assert_received {:changes, "legislative", [[^reg1, "status_changed", "legislative", 0]]}
   end
 end

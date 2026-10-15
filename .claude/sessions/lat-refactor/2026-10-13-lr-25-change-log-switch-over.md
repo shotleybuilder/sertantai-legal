@@ -30,6 +30,16 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - Guard `require_markup!/2`: no timeline is built from rows parsed before LR-25. All 374,866 rows are null until the wave, so `mix lat.timeline` refuses until then.
   - **Behaviour change for the wave dry run:** J2 now sees the markup reading even where an effect set `status` (before, only where `change_provenance.status = markup`). This is the approved J2 rule ("markup wins today"), to be classified.
   - **The step-3 gate moves to step 9:** the dry run builds each law's timeline from its fresh in-memory parse (`LabelTimeline.build` gains a rows option), as the collector already reads the store.
+- ✅ Step 6 (2026-10-15), readers off the label columns:
+  - **6.1 (`7c5cab41`):**
+    - The view `lat_labels_today` (the timeline period in force on the UK date, computed in Postgres with Europe/London; agrees with `uk_today`) and `LabelsToday` (`for_law/1`, `put/2`).
+    - The Zenoh LAT pull serves `status` / `effective_from` (= `in_force_from`) / `changed_by` from it. A row with no period today serves nils (unknown). The contract shape is unchanged.
+    - `status_hash` (Elixir and manifest SQL) runs over today's timeline status, with unknown hashed as "", as fractalaw's own `status_hash` does. It is never nil now; that goes in the D2 contract note.
+  - **6.2:**
+    - `LatCause` / `LatParseLog` status changes come from `markup_status`. A first reading (null before) is never a change, so the wave doesn't mark every row "status_changed".
+    - `mix lat.qa_sample` stratifies and shows rows by today's timeline labels (status, effective_from, changed_by, territory). The `placed_notes` stratum becomes `dated_change`. Notes are shown as notes (text, placement, `citation_law`), with no note facts. Smoke run: 16 packets.
+    - `mix lat.change_diff` (LR-07) and `parse_snapshot`'s change-fact part go in step 7, with `ChangeFacts`.
+  - Suite green.
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
 - ✅ Step 4 (2026-10-15), parse hook:
   - `LabelRefresh.run/2` runs collect → fidelity gate → register write → timeline build → timeline write.

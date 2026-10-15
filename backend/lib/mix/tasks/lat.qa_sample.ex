@@ -28,21 +28,22 @@ defmodule Mix.Tasks.Lat.QaSample do
 
   @shortdoc "Stratified random sample of LAT rows + XML fragments for QA"
 
-  # {name, share of n, SQL condition on the lat view}
+  # {name, share of n, SQL condition on the lat view (l) and today's labels
+  # from the timeline (t, `lat_labels_today`, LR-25)}
   @strata [
     {"plain", 0.28, "true"},
     {"title", 0.08, "title IS NOT NULL AND section_type IN ('section', 'article')"},
     {"territorial_brackets", 0.08, "text ~ '\\[(E|W|S|NI)(\\+(E|W|S|NI))*: '"},
     {"amending_text", 0.08, "text LIKE '%«%'"},
     {"excluded_extent", 0.08, "excluded_extent IS NOT NULL"},
-    {"repealed_saved", 0.05, "status = 'repealed_saved'"},
-    {"in_force_partial", 0.05, "status = 'in_force_partial'"},
-    {"repealed", 0.03, "status = 'repealed'"},
+    {"repealed_saved", 0.05, "t.status = 'repealed_saved'"},
+    {"in_force_partial", 0.05, "t.status = 'in_force_partial'"},
+    {"repealed", 0.03, "t.status = 'repealed'"},
     {"table", 0.04, "section_type = 'table'"},
     {"signed", 0.03, "section_type = 'signed'"},
     {"structural", 0.05, "section_type IN ('part', 'chapter', 'heading', 'schedule')"},
-    {"qualified_id", 0.05, "section_id ~ '\\[[A-Z+]+\\]'"},
-    {"placed_notes", 0.10, "effective_from IS NOT NULL OR changed_by IS NOT NULL"}
+    {"qualified_id", 0.05, "l.section_id ~ '\\[[A-Z+]+\\]'"},
+    {"dated_change", 0.10, "t.in_force_from IS NOT NULL OR t.changed_by IS NOT NULL"}
   ]
 
   # PDF-sourced LAT (no body in the stored XML): nothing to compare against
@@ -104,9 +105,10 @@ defmodule Mix.Tasks.Lat.QaSample do
       %{rows: rows} =
         Repo.query!(
           """
-          SELECT section_id FROM lat
-          WHERE (#{condition}) AND NOT (law_name = ANY($2)) AND NOT (section_id = ANY($3))
-          ORDER BY md5($1 || section_id) LIMIT $4
+          SELECT l.section_id FROM lat l
+          LEFT JOIN lat_labels_today t ON t.section_id = l.section_id
+          WHERE (#{condition}) AND NOT (l.law_name = ANY($2)) AND NOT (l.section_id = ANY($3))
+          ORDER BY md5($1 || l.section_id) LIMIT $4
           """,
           [seed, @excluded_laws, taken, k],
           timeout: :infinity
@@ -159,13 +161,19 @@ defmodule Mix.Tasks.Lat.QaSample do
 
   @row_columns ~w(section_id law_name section_type sort_key position depth hierarchy_path
                   part chapter heading_group provision sub_provision paragraph sub_paragraph
-                  schedule extent_code text title excluded_extent status effective_from
-                  changed_by amendment_count modification_count commencement_count extent_count)
+                  schedule extent_code text title excluded_extent
+                  amendment_count modification_count commencement_count extent_count)
 
+  # the row as stored, with its labels as at today from the timeline (LR-25)
   defp stored_rows(ids) do
     %{columns: cols, rows: rows} =
       Repo.query!(
-        "SELECT #{Enum.join(@row_columns, ", ")} FROM lat WHERE section_id = ANY($1)",
+        """
+        SELECT #{Enum.map_join(@row_columns, ", ", &"l.#{&1}")},
+               t.status, t.in_force_from AS effective_from, t.changed_by, t.territory
+        FROM lat l LEFT JOIN lat_labels_today t ON t.section_id = l.section_id
+        WHERE l.section_id = ANY($1)
+        """,
         [ids]
       )
 
@@ -179,8 +187,7 @@ defmodule Mix.Tasks.Lat.QaSample do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT s.id, a.id, a.code, a.code_type, a.text, a.effect, a.effective_from,
-               a.changed_by, a.affected_sections
+        SELECT s.id, a.id, a.code, a.code_type, a.text, a.citation_law, a.affected_sections
         FROM amendment_annotations a
         JOIN unnest($1::text[]) AS s(id) ON s.id = ANY(a.affected_sections)
         """,
@@ -190,17 +197,16 @@ defmodule Mix.Tasks.Lat.QaSample do
     Enum.group_by(
       rows,
       &hd/1,
-      fn [_, id, code, type, text, effect, from, by, sections] ->
+      fn [_, id, code, type, text, cited, sections] ->
         %{
           id: id,
           code: code,
           code_type: type,
+          # a note is shown as a note: text, placement and the law it cites
+          # (a pointer); never facts read from it (LR-25)
           text: text,
-          effect: effect,
-          effective_from: from,
-          changed_by: by,
+          citation_law: cited,
           affected_sections: sections,
-          # the row the note's status / effective_from apply to
           target: List.last(sections || [])
         }
       end

@@ -216,9 +216,14 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
     :ok
   end
 
+  # What the revised text shows per row (LR-25: `markup_status`, the parse's
+  # own reading, never a relabelled status). Rows with no reading yet (parsed
+  # before LR-25) are left out, so a first reading is never a status change.
   defp statuses(law_name) do
     %{rows: rows} =
-      Repo.query!("SELECT section_id, status FROM legal_articles WHERE law_name = $1", [law_name],
+      Repo.query!(
+        "SELECT section_id, markup_status FROM legal_articles WHERE law_name = $1 AND markup_status IS NOT NULL",
+        [law_name],
         timeout: :infinity
       )
 
