@@ -1,6 +1,6 @@
 ---
 session: 'LR-32: One Territory''s Change Dating Another''s Version'
-status: pending
+status: active
 opened: 2026-10-15
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
@@ -12,7 +12,7 @@ bugs:
     status: open
 ---
 
-# Session: LR-32 One Territory's Change Dating Another's Version (PENDING)
+# Session: LR-32 One Territory's Change Dating Another's Version (ACTIVE)
 
 ## Problem
 
@@ -28,7 +28,11 @@ The E+W version's changed-by depended on which of the two came first: a same-day
 
 - ⬜ Measure: version rows with dated changes whose extent doesn't cover the version
 - ✅ **Jason: D1** (2026-10-15): agreed — `covers_row?` for all text changes in version selection
-- ⬜ Tests first; lands with the LR-25 wave
+- ✅ Built test-first (2026-10-15), `LabelProjection.for_row?/2`. A change dates a row (version selection, insertion start, LR-30's undated check) unless its territory (territorial application, else effect extent) is **disjoint** from the row's.
+  - **Refined from "covers_row?":** covering would wrongly drop an E-only amendment to an E+W provision, which does change its text. Jason's rule is "a change for one territory never dates another territory's version", i.e. disjoint.
+  - Repeals keep `covers_row?` (LR-26 narrows the territory).
+  - Tests: 1995/25 s.114(2)(a)(ix)[E+W] dated by the Water Act 2003, not ssi 2006/181, and not moved by a later S substitution; an E-only change still dates an E+W provision. Suite 2,677.
+- ⬜ Lands with the LR-25 wave; counted in the final dry run
 
 ## Dependencies
 

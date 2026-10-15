@@ -802,4 +802,76 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
       assert {p.valid_from, p.status} == {~D[1968-10-25], "prospective"}
     end
   end
+
+  describe "LR-32: a change for one territory never dates another territory's version" do
+    @law32 "UK_ukpga_1995_25"
+
+    test "an S change doesn't date the E+W version (1995/25 s.114(2)(a)(ix)[E+W]: ssi 2006/181 inserted the S text)" do
+      changes = [
+        change(
+          @law32,
+          "s.114(2)(a)(ix)[E+W]",
+          "key-ew",
+          "inserted",
+          "inserted",
+          "UK_ukpga_2003_37",
+          [
+            {~D[2006-04-01], nil}
+          ]
+        ),
+        change(
+          @law32,
+          "s.114(2)(a)(ix)[E+W]",
+          "key-s",
+          "inserted",
+          "inserted",
+          "UK_ssi_2006_181",
+          [
+            {~D[2006-04-01], nil}
+          ],
+          effect_extent: "S"
+        ),
+        change(
+          @law32,
+          "s.114(2)(a)(ix)[E+W]",
+          "key-s2",
+          "substituted",
+          "substituted",
+          "UK_ssi_2010_1",
+          [
+            {~D[2010-06-01], nil}
+          ],
+          effect_extent: "S"
+        )
+      ]
+
+      rows = [row(@law32, "s.114(2)(a)(ix)[E+W]", extent_code: "E+W")]
+
+      assert periods(@law32, rows, changes, law_start: ~D[1995-07-19]) == [
+               {~D[2006-04-01], nil, "in_force", ~D[2006-04-01], "UK_ukpga_2003_37"}
+             ]
+    end
+
+    test "an E-only change to an E+W provision does date it (the territories overlap)" do
+      changes = [
+        change(
+          @law32,
+          "s.5",
+          "key-e",
+          "substituted",
+          "words substituted",
+          "UK_uksi_2012_9",
+          [
+            {~D[2012-03-01], nil}
+          ],
+          effect_extent: "E"
+        )
+      ]
+
+      assert [_, {~D[2012-03-01], nil, "in_force", ~D[2012-03-01], "UK_uksi_2012_9"}] =
+               periods(@law32, [row(@law32, "s.5", extent_code: "E+W")], changes,
+                 law_start: ~D[1995-07-19]
+               )
+    end
+  end
 end

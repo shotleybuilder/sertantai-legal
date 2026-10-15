@@ -227,7 +227,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     # J5: a note saying the provision was inserted (a pointer), or (LR-30) an
     # insertion of it or an ancestor that no source dates, withholds the
     # law's start: the provision didn't exist from then
-    withheld? = Map.get(row, :inserted_pointer) || undated_insertion?(changes)
+    withheld? = Map.get(row, :inserted_pointer) || undated_insertion?(row, changes)
     law_start = if withheld?, do: nil, else: law_start
 
     case start(row, changes, law_start) do
@@ -292,7 +292,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   # (it came with that ancestor; LR-30)
   defp insertion_date(row, changes) do
     dated =
-      for c <- changes, insertion?(c), d <- dates(c), do: {c.section_id, d}
+      for c <- changes,
+          insertion?(c),
+          for_row?(c, Map.get(row, :extent_code)),
+          d <- dates(c),
+          do: {c.section_id, d}
 
     row.section_id
     |> LatStatus.ancestors()
@@ -308,12 +312,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   # markup, or the amending law's record) while none is dated — not a
   # prospective one (not yet in force: approved as prospective from the law's
   # start)
-  defp undated_insertion?(changes) do
-    not Enum.any?(changes, &(insertion?(&1) and dates(&1) != [])) and
-      Enum.any?(
-        changes,
-        &(insertion?(&1) and dates(&1) == [] and Map.get(&1, :prospective) != true)
-      )
+  defp undated_insertion?(row, changes) do
+    mine = Enum.filter(changes, &(insertion?(&1) and for_row?(&1, Map.get(row, :extent_code))))
+
+    not Enum.any?(mine, &(dates(&1) != [])) and
+      Enum.any?(mine, &(dates(&1) == [] and Map.get(&1, :prospective) != true))
   end
 
   defp insertion?(c), do: c.operation == "inserted" and not words_level?(c)
@@ -354,7 +357,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     version =
       in_force
       |> Enum.filter(
-        &(version?(&1) and (&1.operation != "repealed" or covers_row?(&1, row.extent_code)))
+        &(version?(&1) and for_row?(&1, row.extent_code) and
+            (&1.operation != "repealed" or covers_row?(&1, row.extent_code)))
       )
       |> latest()
 
@@ -391,6 +395,18 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   # affected" (the feed spells it S+A+M+E+A+S+A+F+F+E+C+T+E+D), is the row's
   defp covers_row?(c, row_extent) do
     if Regex.match?(@in_part, c.effect_type || ""), do: false, else: extent_covers?(c, row_extent)
+  end
+
+  # LR-32: a change for one territory never dates another territory's
+  # version (extent versions share an xml id, so a ref join reaches each:
+  # ssi 2006/181's S insertion reached 1995/25 s.114(2)(a)(ix)[E+W]); a
+  # change whose territory overlaps the row's still dates it
+  defp for_row?(c, row_extent) do
+    case {change_extent(c), row_extent} do
+      {nil, _} -> true
+      {_, nil} -> true
+      {extent, row} -> not Territory.disjoint?(extent, row)
+    end
   end
 
   defp extent_covers?(c, row_extent) do
