@@ -63,6 +63,49 @@ Row impact shows in the next dry run: where a cross-heading holds only the named
 
 **Still to explain:** 1993/12 s.51 takes the "ss. 30–46 repealed (S)" effect, though it sits outside the range.
 
+## The abstraction (Jason, 2026-10-15)
+
+Jason: "the effects structure names the container but that lacks the specificity of the actual effect which is in the text. We are essentially building the change database, and clearly any effect needs to be at the right level of granularity. If its a single provision that's where it lands, if it's a whole chapter likewise. I'm wary of code carrying lots of particular rules — is there an abstraction here." On the proposed principle: "that looks and feels like a more robust architecture."
+
+**The principle.** An effect carries two descriptions of its target, both legislation.gov.uk's data about the effect, never a note:
+- its `AffectedProvisions` text;
+- its structured refs.
+
+The effect lands on the elements its text covers in the document. The refs are the fallback when the text can't be resolved, and a cross-check: where text and refs share nothing, the effect is a gap for review, not a guess. The table's cases are outcomes of this one rule, not rules of their own.
+
+**Refined 2026-10-15, from the measurement pilot.** It was first proposed as the intersection of text and refs. But refs are sometimes truncated the other way: "s. 50 - 55" carries only `section-50`, and "s. 27A - 27F" only `section-27A`. So the text, not the intersection, decides. It narrows a container ref and widens a truncated range ref.
+
+**How it's operationalised.**
+- One pure `EffectTarget` module, used by `EffectIndex.new` (the parse and the register share it since LR-28). It replaces LR-27's container expansion.
+- One grammar for provision text, LR-08's (`Pointer` / `Locator`), extended for ranges, bracket ranges and lists, Parts (Arabic or Roman), Chapters, Schedule paragraphs, "cross-heading" / "heading".
+- Measured before deciding, test-first after, Gemini review, then a full dry run.
+
+## Measurement of the principle (2026-10-15, whole store, read-only)
+
+**Method.** A prototype resolver was used (not production; scratchpad `target_measure.exs`). For every effect that isn't words-level, in all 1,066 laws, it compared the elements the effect's `AffectedProvisions` text covers in the document with those its structured refs cover. 0 errors.
+
+**Coverage.** 136,446 effects in all:
+- 82,198 target nothing in the document: Schedules (not in LAT, LR-10), omitted provisions, scoped-out parts. They can't join any row, whatever the rule.
+- 54,248 target the document:
+
+| Text vs refs | Effects | Share | What the rule does |
+|---|---|---|---|
+| same | 51,290 | 94.5% | nothing changes |
+| text narrower (container refs, nested Parts) | 515 | 0.9% | the over-reach is removed |
+| text wider (truncated range refs, "s. 50 - 55" → `section-50`) | 109 | 0.2% | the under-reach is fixed |
+| disagree (nothing shared) | 12 | 0.02% | listed as gaps |
+| text not resolved by the prototype | 2,322 | 4.3% | fall back to the refs as given |
+
+**Top unresolved shapes:**
+- "word" fragments: 461;
+- deep bracket paths "s. N(x)(x)(x)": 262 (often below the depth CLML gives ids);
+- EU "Art. N para. N": 150;
+- bracket lists after a space: 157.
+
+The production grammar adds what is worth adding; the rest falls back to the refs.
+
+The earlier per-case table's 1,983 "named + container" effects mostly come out "same": where the cross-heading holds only the named provisions, nothing changes. The rows that do change are the 515 + 109.
+
 ## Decisions for Jason
 
 **D1 — the rule** (recommended, as in the table):
