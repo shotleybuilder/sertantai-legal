@@ -224,15 +224,15 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   defp row_timeline(law, row, changes, law_start, today) do
-    # J5: a note saying the provision was inserted (a pointer) withholds the
-    # law's start when the register holds no dated insertion for it
-    law_start = if Map.get(row, :inserted_pointer), do: nil, else: law_start
+    # J5: a note saying the provision was inserted (a pointer), or (LR-30) an
+    # insertion of it or an ancestor that no source dates, withholds the
+    # law's start: the provision didn't exist from then
+    withheld? = Map.get(row, :inserted_pointer) || undated_insertion?(changes)
+    law_start = if withheld?, do: nil, else: law_start
 
-    case start(changes, law_start) do
+    case start(row, changes, law_start) do
       nil ->
-        {:gap,
-         {row.section_id,
-          if(Map.get(row, :inserted_pointer), do: :insertion_not_in_register, else: :no_start)}}
+        {:gap, {row.section_id, if(withheld?, do: :insertion_not_in_register, else: :no_start)}}
 
       {start, evidence?} ->
         bounds =
@@ -263,12 +263,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   end
 
   # J1: {start, whether it is evidence of commencement}
-  defp start(changes, law_start) do
-    insertion =
-      changes
-      |> Enum.filter(&(&1.own and &1.operation == "inserted" and not words_level?(&1)))
-      |> Enum.flat_map(&dates/1)
-      |> Enum.min(Date, fn -> nil end)
+  defp start(row, changes, law_start) do
+    insertion = insertion_date(row, changes)
 
     commencement =
       changes
@@ -291,6 +287,36 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       true -> nil
     end
   end
+
+  # the row's insertion date: its own, else its nearest inserted ancestor's
+  # (it came with that ancestor; LR-30)
+  defp insertion_date(row, changes) do
+    dated =
+      for c <- changes, insertion?(c), d <- dates(c), do: {c.section_id, d}
+
+    row.section_id
+    |> LatStatus.ancestors()
+    |> Enum.find_value(fn sid ->
+      dated
+      |> Enum.filter(&(elem(&1, 0) == sid))
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.min(Date, fn -> nil end)
+    end)
+  end
+
+  # LR-30: an insertion of the row or an ancestor that no source dates (change
+  # markup, or the amending law's record) while none is dated — not a
+  # prospective one (not yet in force: approved as prospective from the law's
+  # start)
+  defp undated_insertion?(changes) do
+    not Enum.any?(changes, &(insertion?(&1) and dates(&1) != [])) and
+      Enum.any?(
+        changes,
+        &(insertion?(&1) and dates(&1) == [] and Map.get(&1, :prospective) != true)
+      )
+  end
+
+  defp insertion?(c), do: c.operation == "inserted" and not words_level?(c)
 
   defp state(law, row, changes, from, to, start, evidence?) do
     in_force =

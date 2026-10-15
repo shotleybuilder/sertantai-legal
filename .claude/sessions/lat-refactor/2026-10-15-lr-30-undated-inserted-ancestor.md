@@ -1,6 +1,6 @@
 ---
 session: 'LR-30: Undated Inserted Ancestor'
-status: pending
+status: active
 opened: 2026-10-15
 parent: lat-refactor/2026-10-09-lr-00-meta.md
 bugs:
@@ -12,7 +12,7 @@ bugs:
     status: open
 ---
 
-# Session: LR-30 Undated Inserted Ancestor (PENDING)
+# Session: LR-30 Undated Inserted Ancestor (ACTIVE)
 
 ## Problem
 
@@ -26,8 +26,17 @@ Rule J5 already withholds the law's start from a row a note points to as inserte
 ## Todo
 
 - ⬜ Measure precisely (1,945 rows / 96 laws by section-id ancestry; classify)
-- ⬜ **Jason: D1** — the rule (recommended: J5 extends to undated inserted ancestors; start unknown, listed as a gap)
-- ⬜ Tests first; lands with the LR-25 wave (timeline rebuild only)
+- ✅ **Jason: D1** (2026-10-15): agreed — J5 extends to undated inserted ancestors
+- ✅ Built test-first (2026-10-15), `LabelProjection`:
+  - **The start (J1).** A row's insertion date is its own, else its nearest inserted ancestor's (it came with that ancestor). Was: own only, so children of a dated insertion took the law's start.
+  - **Withholding the law's start.** It is withheld when the row or an ancestor has an insertion no source dates (change markup or the amending law's record, never dated, and no dated insertion on the row or above). It becomes the `insertion_not_in_register` gap, as J5's note pointer already does.
+  - **Not covered:** prospective insertions (not yet in force) keep the approved reading, prospective from the law's start (1996/18 s.201(1)).
+  - **Undated insertions in the register, by kind:**
+    - markup 6,537 and law records 531, which the rule covers;
+    - prospective effects 1,966, which it does not.
+  - **One LR-24 expectation changed:** 1990/43 s.78B(2), inserted by the Environment Act 1995 on an undated day, had expected "in force since 1991" (the law's start). It now has no start, listed as a gap. Still never prospective, the test's original point.
+  - Tests: 3 new plus the 1 changed; suite 2,675.
+- ⬜ Lands with the LR-25 wave (timeline rebuild); counted in the final dry run
 
 ## Dependencies
 

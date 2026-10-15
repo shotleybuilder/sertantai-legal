@@ -269,7 +269,7 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
     assert LabelProjection.uk_today(~U[2026-10-25 23:30:00Z]) == ~D[2026-10-25]
   end
 
-  test "undated change markup and an applied undated change say nothing about commencement (1990/43 s.78B(2))" do
+  test "undated change markup and an applied undated change say nothing about commencement, nor give the law's start (1990/43 s.78B(2))" do
     law = "UK_ukpga_1990_43"
 
     changes = [
@@ -282,9 +282,17 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
       )
     ]
 
-    assert periods(law, [row(law, "s.78B(2)")], changes, law_start: ~D[1991-01-01]) == [
-             {~D[1991-01-01], nil, "in_force", ~D[1991-01-01], nil}
-           ]
+    # never prospective (it's in the text); and (LR-30, Jason 2026-10-15) its
+    # start is unknown, not the law's: it was inserted in 1995 on a date no
+    # source gives, so "in force since 1991" would be wrong
+    %{periods: p, gaps: gaps} =
+      LabelProjection.timeline(law, [row(law, "s.78B(2)")], changes,
+        today: @today,
+        law_start: ~D[1991-01-01]
+      )
+
+    assert p == []
+    assert {"UK_ukpga_1990_43:s.78B(2)", :insertion_not_in_register} in gaps
   end
 
   test "a repeal for part of the row's extent leaves it in force (territory narrows: LR-26) (1974/37 s.1(3))" do
@@ -746,5 +754,52 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
       periods(law, rows, Enum.reverse(changes), law_start: ~D[2010-10-01], today: ~D[2026-12-01])
 
     assert forward == reverse
+  end
+
+  describe "LR-30: an insertion no source dates withholds the law's start" do
+    @law "UK_ukpga_1968_73"
+
+    # change markup marks the provision inserted; no effect or law dates it
+    defp undated_insertion(sid),
+      do:
+        change(@law, sid, "d29p16361", "inserted", nil, nil, [],
+          source: "markup",
+          prospective: nil,
+          via: ["markup"]
+        )
+
+    defp tl(rows, changes),
+      do: LabelProjection.timeline(@law, rows, changes, today: @today, law_start: ~D[1968-10-25])
+
+    test "under an ancestor whose insertion is undated: no start, a gap (1968/73 s.10(1)(i)[S])" do
+      rows = [row(@law, "s.10(1)[S]"), row(@law, "s.10(1)(i)[S]")]
+
+      assert %{periods: [], gaps: gaps} = tl(rows, [undated_insertion("s.10(1)[S]")])
+
+      assert {"UK_ukpga_1968_73:s.10(1)(i)[S]", :insertion_not_in_register} in gaps
+      assert {"UK_ukpga_1968_73:s.10(1)[S]", :insertion_not_in_register} in gaps
+    end
+
+    test "under an ancestor inserted on a known date: the row starts then, not at the law's start" do
+      changes = [
+        change(@law, "s.10(1)", "key-i", "inserted", "inserted", "UK_ukpga_2008_26", [
+          {~D[2009-02-09], nil}
+        ])
+      ]
+
+      assert %{periods: [first | _]} = tl([row(@law, "s.10(1)(i)")], changes)
+      assert first.valid_from == ~D[2009-02-09]
+    end
+
+    test "a prospective insertion (not yet in force) keeps its approved reading: prospective from the law's start" do
+      changes = [
+        change(@law, "s.20", "p1", "inserted", "inserted", "UK_ukpga_2008_25", [{nil, nil}],
+          applied: false
+        )
+      ]
+
+      assert %{periods: [p]} = tl([row(@law, "s.20", markup_status: "prospective")], changes)
+      assert {p.valid_from, p.status} == {~D[1968-10-25], "prospective"}
+    end
   end
 end

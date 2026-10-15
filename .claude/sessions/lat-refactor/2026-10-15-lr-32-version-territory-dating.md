@@ -27,7 +27,7 @@ The E+W version's changed-by depended on which of the two came first: a same-day
 ## Todo
 
 - ⬜ Measure: version rows with dated changes whose extent doesn't cover the version
-- ⬜ **Jason: D1** — rule (recommended: extend `covers_row?` from repeals to all text changes in version selection)
+- ✅ **Jason: D1** (2026-10-15): agreed — `covers_row?` for all text changes in version selection
 - ⬜ Tests first; lands with the LR-25 wave
 
 ## Dependencies
