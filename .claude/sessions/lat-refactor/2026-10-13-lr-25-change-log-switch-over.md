@@ -109,6 +109,7 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - **Cause:** the LR-08 amending-law collector cached every parsed amending-law document (xmerl trees) in the process dictionary, and created an ETS table per call that it never deleted. Measured at about 130 MB per law (5.2 GB after 40 laws, 660 cached documents).
   - **Fix:** the document cache is scoped to one law's collection (`with_doc_cache/1`), and memo tables are deleted after each call. Tests first.
   - **Re-measured:** flat at about 190 MB over 30 laws, about 11.6 s per law (previously about 15 s).
+- ⬜ **Wave apply waits for LR-29** (container ref over-reach, found in this dry run): applying now would write the regression (Electricity Act 1989 s.12A applying nowhere)
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
 - ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)
