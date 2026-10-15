@@ -26,8 +26,21 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
 ## Todo
 
 - ✅ Measure: container-expanded joins where the effect's text names provisions besides the container; the rows reached that the text doesn't name
-- ⬜ **Jason: D1** — the rule (recommended: expand to the named provisions only when the text names any; all contents only when the container is the sole target)
-- ⬜ Tests first (1989/29 s.12A; LR-27's 1996/18 ss.27U–27Y must still be reached)
+- ✅ **Jason: D1** (2026-10-15): the principle, not a rule table ("this makes the codebase more tractable"); was: the rule (recommended: expand to the named provisions only when the text names any; all contents only when the container is the sole target)
+- ✅ Built test-first (2026-10-15, `07b41c42`, then the Gemini fixes):
+  - `ProvisionText.parse/1` is the grammar (13 tests).
+  - `EffectTarget` covers the tree, resolution and span (16 tests).
+  - `EffectIndex.new/4` takes the document tree and records each effect's `targets` source; LR-27's container expansion is deleted.
+  - LR-27's tests now use real-world text.
+  - "cross-heading" reads literally: the heading element. Provisions inserted with it are named in the text.
+- ✅ Gemini review (`backend/data/code-reviews/2026-10-15-lr-29-effect-target.md`):
+  - **Taken:**
+    - path vs list ("s. 25(2)(4)") — when both readings are held, the one the refs name (a wrong-join risk);
+    - tests for Roman Chapters, en dashes, span edges and declined text.
+  - **Not taken:**
+    - expanding containers on the fallback: that is the over-reach being removed; the fallback may under-reach (a gap), never land wrong. It matches the pre-LR-27 joins.
+    - "Act" resolving to the whole document: whole-instrument effects are joined by the collector's `instrument` / `whole`.
+    - qualifier stripping ("(Pt. 2)"): ids are unique within a document, so low risk.
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies

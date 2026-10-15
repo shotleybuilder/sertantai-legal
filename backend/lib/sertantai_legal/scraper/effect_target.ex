@@ -124,18 +124,28 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
     span(tree, "#{parent}-#{List.last(path)}", "#{parent}-#{to}")
   end
 
-  defp ids({:provision, kind, n, path, nil}, _e, tree) do
+  defp ids({:provision, kind, n, path, nil}, e, tree) do
     base = "#{kind}-#{n}"
     full = Enum.join([base | path], "-")
-
-    # brackets with no space are a path ("33(1)(e)"); a list when the path
-    # isn't held ("36(1)(2)": subsections 1 and 2)
     each = Enum.map(path, &"#{base}-#{&1}")
+    path? = held(tree, [full]) != []
+    list? = length(held(tree, each)) == length(each)
 
+    # brackets with no space read as a path ("33(1)(e)") or a list ("25(2)(4)":
+    # subsections 2 and 4, legislation.gov.uk's way of listing them); when
+    # both are held, the reading the refs name (Gemini, LR-29)
     cond do
-      held(tree, [full]) != [] -> [full]
-      length(held(tree, each)) == length(each) -> each
-      true -> []
+      path? and list? ->
+        if Enum.all?(each, &(&1 in (e.affected_refs || []))), do: each, else: [full]
+
+      path? ->
+        [full]
+
+      list? ->
+        each
+
+      true ->
+        []
     end
   end
 

@@ -102,4 +102,41 @@ defmodule SertantaiLegal.Scraper.EffectTargetTest do
     assert {:refs, ids} = resolve("word", [], [{"section-50", "section-55"}])
     assert Enum.sort(ids) == ~w(section-50 section-51 section-55)
   end
+
+  describe "Gemini review (LR-29)" do
+    @lists ~s(<Legislation><P1 id="section-25"><P2 id="section-25-2"><P3 id="section-25-2-4"/></P2><P2 id="section-25-4"/></P1>
+      <Part id="part-III"><Chapter id="part-III-chapter-V"><P1 id="section-70"/></Chapter></Part></Legislation>)
+
+    defp tree2, do: @lists |> SweetXml.parse(quiet: true) |> EffectTarget.tree()
+
+    test "brackets that read both as a path and as a list: the reading the refs support (\"s. 25(2)(4)\")" do
+      assert EffectTarget.resolve(fx("s. 25(2)(4)", ["section-25-2", "section-25-4"]), tree2()) ==
+               {:text, ["section-25-2", "section-25-4"]}
+
+      assert EffectTarget.resolve(fx("s. 25(2)(4)", ["section-25-2-4"]), tree2()) ==
+               {:text, ["section-25-2-4"]}
+    end
+
+    test "a Chapter named in Arabic numerals, its id in Roman; an en dash range" do
+      assert {:text, ids} =
+               EffectTarget.resolve(fx("Pt. 3 Ch. 5", ["part-III-chapter-V"]), tree2())
+
+      assert "section-70" in ids
+
+      assert {:text, ids} = resolve("s. 50 – 55", ["section-50"])
+      assert Enum.sort(ids) == ~w(section-50 section-51 section-55)
+    end
+
+    test "span: an end before its start, or not held, spans nothing" do
+      assert EffectTarget.span(tree(), "section-55", "section-50") == []
+      assert EffectTarget.span(tree(), "section-50", "section-99") == []
+    end
+
+    test "text the grammar declines falls back to the refs (\"Pt. 2 Ch. 3 and 4\", \"Sch. 1 cross-heading\")" do
+      assert {:refs, ["part-2"]} = resolve("Pt. 2 Ch. 3 and 4", ["part-2"])
+
+      assert {:refs, ["part-I-crossheading-appeal"]} =
+               resolve("Sch. 1 cross-heading", ["part-I-crossheading-appeal"])
+    end
+  end
 end
