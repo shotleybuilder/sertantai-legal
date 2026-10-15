@@ -470,16 +470,16 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       """
 
       rows = LatParser.parse(xml, %{law_name: "UK_ukpga_2021_30", type_code: "ukpga"})
-      by_id = Map.new(rows, &{&1.section_id, &1.status})
+      by_id = Map.new(rows, &{&1.section_id, &1.markup_status})
 
       assert by_id["UK_ukpga_2021_30:s.10"] == "prospective"
       assert by_id["UK_ukpga_2021_30:s.10(1)"] == "prospective"
       assert by_id["UK_ukpga_2021_30:s.11"] == "repealed"
       assert by_id["UK_ukpga_2021_30:s.12"] == "in_force"
-      assert Enum.all?(rows, &(&1.status in SertantaiLegal.Scraper.LatStatus.statuses()))
+      assert Enum.all?(rows, &(&1.markup_status in SertantaiLegal.Scraper.LatStatus.statuses()))
     end
 
-    test "to_insert_maps carries status" do
+    test "to_insert_maps carries markup_status" do
       [row | _] =
         LatParser.parse(
           ~s(<Legislation><Primary><Body><P1group><P1 id="section-1"><Pnumber>1</Pnumber><P1para><Text>Duty.</Text></P1para></P1></P1group></Body></Primary></Legislation>),
@@ -487,8 +487,8 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         )
 
       [map] = LatParser.to_insert_maps([row], Ecto.UUID.generate())
-      assert map.status == "in_force"
       assert map.markup_status == "in_force"
+      refute Map.has_key?(map, :status)
     end
   end
 
@@ -2270,7 +2270,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       for id <- ["reg.3", "reg.3(1)", "reg.3(2)"] do
         row = by_id(rows, id)
         assert row.excluded_extent == "S", id
-        assert row.status == "in_force", id
+        assert row.markup_status == "in_force", id
       end
 
       assert by_id(rows, "reg.3(1)").text == "The sludge shall be tested."
@@ -2305,7 +2305,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         )
 
       row = by_id(rows, "reg.5")
-      assert row.status == "repealed_saved"
+      assert row.markup_status == "repealed_saved"
       assert row.excluded_extent == "E+W+S"
     end
 
@@ -2328,7 +2328,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
         )
 
       assert by_id(rows, "reg.7").excluded_extent == nil
-      assert by_id(rows, "reg.7").status == "in_force"
+      assert by_id(rows, "reg.7").markup_status == "in_force"
     end
 
     test "to_insert_maps/2 carries territory_provenance as JSON-ready maps (LR-03)" do
@@ -2471,7 +2471,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
       row = by_id(rows, "reg.20")
       assert row.text == "The Executive shall report."
       assert row.excluded_extent == "S"
-      assert row.status == "in_force"
+      assert row.markup_status == "in_force"
     end
 
     test "dotted extents (\"E.W.\") read as extent codes" do
@@ -2801,7 +2801,7 @@ defmodule SertantaiLegal.Scraper.LatParserTest do
 
       table = Enum.find(rows, &(&1.section_type == "table"))
       assert table.text == "apparatus | sections 89(3) and 105(1); bridge | section 88(1)(a)"
-      assert table.status == "in_force"
+      assert table.markup_status == "in_force"
     end
 
     test "list items keep their numbers (NumberOverride), in text and table cells" do

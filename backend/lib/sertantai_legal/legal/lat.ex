@@ -129,29 +129,6 @@ defmodule SertantaiLegal.Legal.Lat do
       description("Territorial extent, e.g. E+W, E+W+S+NI, S. NULL if matches parent default.")
     end
 
-    attribute :status, :string do
-      allow_nil?(true)
-
-      constraints(match: ~r/\A(in_force|in_force_partial|repealed|repealed_saved|prospective)\z/)
-
-      description(
-        "Legal status (#167): in_force | in_force_partial | repealed | repealed_saved | prospective. NULL = not yet computed. Set by LatParser + LatStatus.Apply."
-      )
-    end
-
-    attribute :effective_from, :date do
-      allow_nil?(true)
-
-      description(
-        "When the row's current text/status took effect: the latest dated amendment/commencement note on it or an ancestor (#167)"
-      )
-    end
-
-    attribute :changed_by, :string do
-      allow_nil?(true)
-      description("Law name of the instrument behind effective_from's note (#167)")
-    end
-
     attribute :title, :string do
       allow_nil?(true)
 
@@ -286,9 +263,6 @@ defmodule SertantaiLegal.Legal.Lat do
         :text,
         :language,
         :extent_code,
-        :status,
-        :effective_from,
-        :changed_by,
         :title,
         :excluded_extent,
         :territory_provenance,
@@ -324,9 +298,6 @@ defmodule SertantaiLegal.Legal.Lat do
         :text,
         :language,
         :extent_code,
-        :status,
-        :effective_from,
-        :changed_by,
         :title,
         :excluded_extent,
         :territory_provenance,

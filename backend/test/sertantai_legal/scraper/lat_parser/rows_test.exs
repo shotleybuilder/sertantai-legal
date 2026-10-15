@@ -62,7 +62,7 @@ defmodule SertantaiLegal.Scraper.LatParser.RowsTest do
     assert [%{text: "[Repealed]"}] = Rows.mark_repealed(rows, :section)
   end
 
-  test "assign_status/1: prospective, repealed, retained everywhere, in force" do
+  test "assign_status/1: what the revised text shows (markup_status, LR-25): prospective, repealed, retained everywhere, in force" do
     rows = [
       row(text: "x") |> Map.put(:prospective, true),
       row(text: "[Revoked]") |> Map.put(:prospective, false),
@@ -70,21 +70,10 @@ defmodule SertantaiLegal.Scraper.LatParser.RowsTest do
       row(text: "x") |> Map.put(:prospective, false)
     ]
 
-    assert Enum.map(Rows.assign_status(rows), & &1.status) ==
+    assert Enum.map(Rows.assign_status(rows), & &1.markup_status) ==
              ~w(prospective repealed repealed_saved in_force)
 
     refute Map.has_key?(hd(Rows.assign_status(rows)), :prospective)
-  end
-
-  test "assign_status/1 records what the revised text shows as markup_status (LR-25)" do
-    rows = [
-      row(text: "x") |> Map.put(:prospective, true),
-      row(text: "[Revoked]") |> Map.put(:prospective, false),
-      row(text: "x") |> Map.put(:prospective, false)
-    ]
-
-    assert Enum.map(Rows.assign_status(rows), & &1.markup_status) ==
-             ~w(prospective repealed in_force)
   end
 
   test "qualify_parallels/1: the same provision with different extents gets [extent]" do

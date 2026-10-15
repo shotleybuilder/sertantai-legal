@@ -190,10 +190,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
           true -> "in_force"
         end
 
-      row
-      |> Map.delete(:prospective)
-      |> Map.put(:status, status)
-      |> Map.put(:markup_status, status)
+      row |> Map.delete(:prospective) |> Map.put(:markup_status, status)
     end)
   end
 
@@ -332,7 +329,6 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
         paragraph: row.paragraph,
         sub_paragraph: row.sub_paragraph,
         extent_code: row.extent_code,
-        status: Map.get(row, :status),
         markup_status: Map.get(row, :markup_status),
         sort_key: row.sort_key,
         position: row.position,

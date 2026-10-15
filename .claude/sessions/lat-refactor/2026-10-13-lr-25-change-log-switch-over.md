@@ -78,6 +78,17 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - **One writer:** `mix lat.collect_changes` and `mix lat.timeline` are report-only (`--apply` removed). The new **`mix lat.relabel`** (`--laws`, `--stale`, `--all`; resumable) rebuilds through `LabelRefresh`, for label-code changes with no re-parse.
   - **Guard:** `lat_write_path_test.exs` now also asserts that only `LabelRefresh` writes the register and timeline.
   - Suite 2,703.
+- ✅ Step 8 (2026-10-15), columns dropped:
+  - **Dropped from `legal_articles`:** `status`, `effective_from`, `changed_by`, `change_provenance` (with `legal_articles_status_check`).
+  - **Dropped from `amendment_annotations`:** `effect`, `effective_dates`, `effective_from`, `fact_provenance`.
+  - **The `lat` view** is recreated without the dropped columns.
+  - **Kept:** notes' `changed_by` (the pointer) and `change_id`; `legal_articles.markup_status`.
+  - **Migration:** Ash-generated, edited for the view as in LR-13. Up, down and up were tested on the test DB with `--to`; down restores the view columns and the check.
+  - **Backup before the drop:** `backend/data/backups/lr25/legal_articles_labels.csv.gz` (374,866 rows) and `amendment_annotations_facts.csv.gz` (89,679).
+  - **Resources:** `LegalArticle`, `Lat` and `AmendmentAnnotation` lose the attributes, so the delta sync code no longer carries them. Nothing is synced until D2.
+  - **The parse** writes `markup_status` only.
+  - **`mix lat.timeline`** now diffs a fresh build against the stored timeline as at today, not against the old columns.
+  - Suite 2,629.
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
 - ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)

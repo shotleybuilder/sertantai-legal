@@ -142,16 +142,6 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       description("Territorial extent. NULL if matches parent default.")
     end
 
-    attribute :status, :string do
-      allow_nil?(true)
-
-      constraints(match: ~r/\A(in_force|in_force_partial|repealed|repealed_saved|prospective)\z/)
-
-      description(
-        "Legal status (#167): in_force | in_force_partial | repealed | repealed_saved | prospective. NULL = not yet computed. Set by LatParser + LatStatus.Apply."
-      )
-    end
-
     attribute :markup_status, :string do
       allow_nil?(true)
 
@@ -160,19 +150,6 @@ defmodule SertantaiLegal.Legal.LegalArticle do
       description(
         "What the revised text shows (LR-25), written by the parse only: prospective (CLML Status), repealed (repealed text), repealed_saved (retained, excluded everywhere it extends), else in_force. Not a label: the timeline's J2 reads it; status as a label lives in lat_label_timeline."
       )
-    end
-
-    attribute :effective_from, :date do
-      allow_nil?(true)
-
-      description(
-        "When the row's current text/status took effect: the latest dated amendment/commencement note on it or an ancestor (#167)"
-      )
-    end
-
-    attribute :changed_by, :string do
-      allow_nil?(true)
-      description("Law name of the instrument behind effective_from's note (#167)")
     end
 
     attribute :title, :string do
@@ -212,14 +189,6 @@ defmodule SertantaiLegal.Legal.LegalArticle do
 
       description(
         "The legislation.gov.uk effects on the row (LR-07): its change markup's joins, its whole-provision changes and the effects naming its provision"
-      )
-    end
-
-    attribute :change_provenance, :map do
-      allow_nil?(true)
-
-      description(
-        "Where the row's change facts came from (LR-07): %{\"status\" => markup | effect | note, \"change\" => effect | note} — change covers effective_from / changed_by"
       )
     end
 
@@ -458,14 +427,11 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :text,
         :language,
         :extent_code,
-        :status,
-        :effective_from,
-        :changed_by,
+        :markup_status,
         :title,
         :excluded_extent,
         :territory_provenance,
         :effect_ids,
-        :change_provenance,
         :amendment_count,
         :modification_count,
         :commencement_count,
@@ -499,14 +465,11 @@ defmodule SertantaiLegal.Legal.LegalArticle do
         :text,
         :language,
         :extent_code,
-        :status,
-        :effective_from,
-        :changed_by,
+        :markup_status,
         :title,
         :excluded_extent,
         :territory_provenance,
         :effect_ids,
-        :change_provenance,
         :amendment_count,
         :modification_count,
         :commencement_count,

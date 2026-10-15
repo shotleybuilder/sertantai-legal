@@ -13,10 +13,10 @@ defmodule Mix.Tasks.Lat.Timeline do
 
   - `data/reports/lat-refactor/<tag>.csv`: per law — rows, periods, rows
     with no start (J1), markup conflicts (J2), outstanding effects (J4), and
-    the as-at-today diff
-    against today's columns (status, effective_from, changed_by)
-  - `<tag>.diff.csv`: each differing field (law, section_id, field, today's
-    change source, old, new)
+    the as-at-today diff of a fresh build against the stored timeline
+    (`lat_labels_today`: status, effective_from, changed_by)
+  - `<tag>.diff.csv`: each differing field (law, section_id, field,
+    "timeline", stored, fresh)
   - `<tag>.gaps.csv`: each provision the timeline can't fully answer (law,
     section_id, gap): `no_start`, `insertion_not_in_register`,
     `undated_change`, `markup_conflict`, `outstanding_effect`
@@ -124,7 +124,7 @@ defmodule Mix.Tasks.Lat.Timeline do
     Mix.shell().info("report #{csv}")
   end
 
-  # today's columns vs the period containing today (nil period: unknown)
+  # the stored timeline as at today vs the fresh build's (nil: unknown)
   defp row_diffs(r, period) do
     new = period || %{status: nil, in_force_from: nil, changed_by: nil}
     old_status = r.today.status

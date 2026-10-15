@@ -69,32 +69,14 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
       description("Array of section_id values from LAT that this annotation applies to")
     end
 
-    # ── Structured note (#167, L8.2; AmendmentNote.parse/3) ─────────
-
-    attribute :effect, :string do
-      allow_nil?(true)
-
-      description(
-        "substituted | inserted | repealed | renumbered | amended | commenced | modified | other"
-      )
-    end
-
-    attribute :effective_dates, {:array, :date} do
-      allow_nil?(true)
-
-      description(
-        "Every date the note gives before 'by' (compound / partial commencement keeps all)"
-      )
-    end
-
-    attribute :effective_from, :date do
-      allow_nil?(true)
-      description("The latest of effective_dates: when the change fully took effect")
-    end
+    # ── What the note points to (LR-25, NotePointer; never facts) ───
 
     attribute :changed_by, :string do
       allow_nil?(true)
-      description("Law name of the amending instrument (first citation after 'by')")
+
+      description(
+        "The law the note's text names after \"by\" (NotePointer.law/2): a pointer for the collectors, never a fact"
+      )
     end
 
     attribute :change_id, :string do
@@ -118,14 +100,6 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
 
       description(
         "The law the note's first <Citation> after 'by' names, from its URI (LR-05): structured, so it beats the text's reading (a Welsh SI cited as plain S.I.; EU Regulations). Nil: no such citation"
-      )
-    end
-
-    attribute :fact_provenance, :map do
-      allow_nil?(true)
-
-      description(
-        "Where the note's facts came from (LR-07): %{\"facts\" => effect | note, \"dates\" => effect | note | nil}. Notes are hints: text only where no effect joins"
       )
     end
 
@@ -165,13 +139,9 @@ defmodule SertantaiLegal.Legal.AmendmentAnnotation do
         :source,
         :text,
         :affected_sections,
-        :effect,
-        :effective_dates,
-        :effective_from,
         :changed_by,
         :change_id,
-        :effect_ids,
-        :fact_provenance
+        :effect_ids
       ])
     end
 

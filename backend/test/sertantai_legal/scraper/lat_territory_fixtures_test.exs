@@ -341,7 +341,11 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
     test "retained for some territories (attribute)" do
       rows = parse(whole_retained(~s| Extent="S"|, "n-rep-s"), rep_s())
 
-      assert %{text: "The sludge shall be tested.", excluded_extent: "S", status: "in_force"} =
+      assert %{
+               text: "The sludge shall be tested.",
+               excluded_extent: "S",
+               markup_status: "in_force"
+             } =
                row(rows, "s.3")
     end
 
@@ -363,12 +367,12 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
           fx(effect_id: "key-rep", type: "repealed", savings: ["section-9"])
         ])
 
-      assert %{excluded_extent: "E+W+S", status: "repealed_saved"} = row(rows, "s.3")
+      assert %{excluded_extent: "E+W+S", markup_status: "repealed_saved"} = row(rows, "s.3")
     end
 
     test "retained, no effect joined: no claim, nothing removed — a missed join is not \"everywhere\" (LR-07: 1967/10 s.28, \"Act repealed (S.)\" under a legacy id)" do
       rows = parse(whole_retained("", "n-rep"), rep_none())
-      assert %{excluded_extent: nil, status: "in_force"} = row(rows, "s.3")
+      assert %{excluded_extent: nil, markup_status: "in_force"} = row(rows, "s.3")
     end
 
     test "inserted for a narrower territory (attribute): 1990/43 s.88B" do
@@ -474,7 +478,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
         ~s|<P1group><Title>T</Title><P1 Status="Prospective"><Pnumber><Repeal CommentaryRef="n-rep-s" RetainText="true" Extent="S">3</Repeal></Pnumber><P1para><Text><Repeal CommentaryRef="n-rep-s" RetainText="true" Extent="S">The sludge shall be tested.</Repeal></Text></P1para></P1></P1group>|
 
       rows = parse(body, rep_s())
-      assert %{excluded_extent: "S", status: "prospective"} = row(rows, "s.3")
+      assert %{excluded_extent: "S", markup_status: "prospective"} = row(rows, "s.3")
     end
   end
 
@@ -570,7 +574,7 @@ defmodule SertantaiLegal.Scraper.LatTerritoryFixturesTest do
           )
         ])
 
-      assert %{excluded_extent: nil, status: "in_force"} = row(rows, "s.13")
+      assert %{excluded_extent: nil, markup_status: "in_force"} = row(rows, "s.13")
       assert %{excluded_extent: "E+W"} = row(rows, "s.20")
     end
   end

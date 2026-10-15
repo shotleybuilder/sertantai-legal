@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LabelProjection, LatStatus}
+  alias SertantaiLegal.Scraper.{LabelProjection, LabelsToday, LatStatus}
   alias SertantaiLegal.Scraper.LatParser.Effects
 
   @doc """
@@ -52,21 +52,22 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     end
   end
 
-  @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows`: today's labels, for the diff)."
+  @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows[].today`: the stored timeline as at today, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
   def build(law_name, today) do
     %{rows: rows} =
       Repo.query!(
         """
-        SELECT section_id, extent_code, status, markup_status,
-               effective_from, changed_by, change_provenance->>'change',
-               excluded_extent, territory_provenance
+        SELECT section_id, extent_code, markup_status, excluded_extent, territory_provenance
         FROM legal_articles WHERE law_name = $1 ORDER BY position
         """,
         [law_name]
       )
 
-    :ok = require_markup!(law_name, Enum.map(rows, fn [sid, _, _, m | _] -> [sid, m] end))
+    :ok = require_markup!(law_name, Enum.map(rows, fn [sid, _, m | _] -> [sid, m] end))
+
+    # the stored timeline's labels as at today, for `mix lat.timeline`'s diff
+    stored = LabelsToday.for_law(law_name)
 
     # J5: rows a note points to as inserted / substituted whole — the row or
     # an ancestor (a pointer only: it withholds the law's start, it supplies
@@ -101,7 +102,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     law_type = law_name |> String.split("_") |> Enum.at(1)
 
     rows =
-      for [sid, extent, status, markup, from, by, change_src, excluded, claims] <- rows do
+      for [sid, extent, markup, excluded, claims] <- rows do
         %{
           section_id: sid,
           # LR-26: a row with no extent of its own takes the one its law's
@@ -117,7 +118,14 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
             ),
           inserted_pointer:
             sid |> LatStatus.ancestors() |> Enum.any?(&MapSet.member?(pointed, &1)),
-          today: %{status: status, effective_from: from, changed_by: by, source: change_src}
+          # the stored timeline as at today (`mix lat.timeline` diffs a fresh
+          # build against it)
+          today:
+            Map.merge(
+              %{status: nil, effective_from: nil, changed_by: nil},
+              Map.get(stored, sid, %{})
+            )
+            |> Map.put(:source, "timeline")
         }
       end
 
