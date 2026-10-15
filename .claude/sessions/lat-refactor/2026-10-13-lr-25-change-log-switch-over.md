@@ -89,6 +89,13 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - **The parse** writes `markup_status` only.
   - **`mix lat.timeline`** now diffs a fresh build against the stored timeline as at today, not against the old columns.
   - Suite 2,629.
+- ✅ Step 9a (2026-10-15), wave dry-run tool `mix lat.wave_preview`:
+  - **How it works:** the real apply path (`LatStagedParser.parse` from the store → persist → notes → cause → LR-25 hook) runs per law inside a transaction that is always rolled back. Zenoh is off in mix tasks.
+  - **What it compares:** `WavePreview` (pure, 3 tests) compares before and after, i.e. labels as at today (status, effective_from, changed_by, territory) and the parse-time columns.
+  - **Pilot** (HSWA, uksi 2023/909, anaw 2016/3, 87 s): event / timeline / register / `markup_status` counts were identical after, so nothing persisted.
+    - HSWA: 4 dotted-out provisions (s.75, s.78(3), (4), (8)(d)) go in_force → repealed. The old J2 ignored markup wherever an effect had set the status; this is the approved rule.
+    - 2023/909: territory E+W → E for 267 rows (the `excluded_extent` drift).
+    - anaw 2016/3: E+W → W for 28.
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
 - ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)
