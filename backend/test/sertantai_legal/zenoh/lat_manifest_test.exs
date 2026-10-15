@@ -91,26 +91,32 @@ defmodule SertantaiLegal.Zenoh.LatManifestTest do
     assert hash == Query.for_law(name).lat_hash
   end
 
-  test "status_hash: the SQL aggregate equals LatHash.status_hash/1 (#167)", %{name: name} do
-    rows =
-      SertantaiLegal.Repo.query!("SELECT section_id, status FROM lat WHERE law_name = $1", [name]).rows
-      |> Enum.map(fn [sid, status] -> %{section_id: sid, status: status} end)
+  test "status_hash: the SQL aggregate over today's timeline labels equals LatHash.status_hash/1 (LR-25)",
+       %{name: name} do
+    sids =
+      SertantaiLegal.Repo.query!("SELECT section_id FROM lat WHERE law_name = $1", [name]).rows
+      |> List.flatten()
+
+    # no timeline yet: every status unknown, hashed as ""
+    unknown = Enum.map(sids, &%{section_id: &1, status: nil})
+    assert Query.for_law(name).status_hash == LatHash.status_hash(unknown)
+
+    [first | _] = sids
 
     SertantaiLegal.Repo.query!(
-      "UPDATE legal_articles SET status = 'in_force' WHERE law_name = $1",
-      [name]
+      """
+      INSERT INTO lat_label_timeline (law_name, section_id, valid_from, status, code_version)
+      VALUES ($1, $2, '2001-01-01', 'repealed', 'test')
+      """,
+      [name, first]
     )
 
-    rows = Enum.map(rows, &%{&1 | status: "in_force"})
+    rows =
+      Enum.map(unknown, &if(&1.section_id == first, do: %{&1 | status: "repealed"}, else: &1))
 
     assert Query.for_law(name).status_hash == LatHash.status_hash(rows)
     assert Enum.find(Query.all(), &(&1.law_name == name)).status_hash == LatHash.status_hash(rows)
-
-    SertantaiLegal.Repo.query!("UPDATE legal_articles SET status = NULL WHERE law_name = $1", [
-      name
-    ])
-
-    assert Query.for_law(name).status_hash == nil
+    refute LatHash.status_hash(rows) == LatHash.status_hash(unknown)
   end
 
   test "cause and source_hash of the law's latest parse (#167 L8.3)", %{name: name} do

@@ -129,8 +129,10 @@ defmodule SertantaiLegal.Scraper.LatHashTest do
       assert LatHash.status_hash(Enum.reverse(rows)) == expected
     end
 
-    test "nil while any row's status is not yet computed; empty hash with no rows" do
-      assert LatHash.status_hash([%{section_id: "L:s.1", status: nil}]) == nil
+    test "an unknown status (no timeline period today) hashes as \"\", as fractalaw does (LR-25)" do
+      assert LatHash.status_hash([%{section_id: "L:s.1", status: nil}]) ==
+               :crypto.hash(:sha256, "L:s.1\t\n") |> Base.encode16(case: :lower)
+
       assert LatHash.status_hash([]) == LatHash.empty_hash()
     end
   end

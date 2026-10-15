@@ -53,16 +53,17 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   FROM legal_register r
   """
 
-  # status_hash (#167), mirroring LatHash.status_hash/1 over the `lat` view:
-  # NULL while any row's status is NULL. COLLATE "C" = bytewise order.
+  # status_hash (#167), mirroring LatHash.status_hash/1: each LAT row's status
+  # as at today from the timeline (`lat_labels_today`, LR-25), unknown = "".
+  # COLLATE "C" = bytewise order.
   @status_hash_sql """
-  SELECT law_name,
-         CASE WHEN bool_and(status IS NOT NULL) THEN
-           encode(sha256(convert_to(
-             string_agg(section_id || E'\\t' || status || E'\\n', '' ORDER BY section_id COLLATE "C"),
-             'UTF8')), 'hex')
-         END
-  FROM lat
+  SELECT l.law_name,
+         encode(sha256(convert_to(
+           string_agg(l.section_id || E'\\t' || coalesce(t.status, '') || E'\\n', ''
+                      ORDER BY l.section_id COLLATE "C"),
+           'UTF8')), 'hex')
+  FROM lat l
+  LEFT JOIN lat_labels_today t ON t.section_id = l.section_id
   """
 
   @doc "The rows the LAT queryable serves for `law_name`, in serving order."
@@ -179,13 +180,15 @@ defmodule SertantaiLegal.Scraper.LatHash.Query do
   @doc "`status_hash` per law (#167), for the named laws or `:all`."
   @spec status_hashes([String.t()] | :all) :: %{String.t() => String.t() | nil}
   def status_hashes(:all) do
-    %{rows: rows} = Repo.query!(@status_hash_sql <> " GROUP BY law_name", [], timeout: :infinity)
+    %{rows: rows} =
+      Repo.query!(@status_hash_sql <> " GROUP BY l.law_name", [], timeout: :infinity)
+
     Map.new(rows, fn [law, hash] -> {law, hash} end)
   end
 
   def status_hashes(laws) when is_list(laws) do
     %{rows: rows} =
-      Repo.query!(@status_hash_sql <> " WHERE law_name = ANY($1) GROUP BY law_name", [laws])
+      Repo.query!(@status_hash_sql <> " WHERE l.law_name = ANY($1) GROUP BY l.law_name", [laws])
 
     Map.new(rows, fn [law, hash] -> {law, hash} end)
   end

@@ -40,6 +40,7 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   }
 
   alias SertantaiLegal.Scraper.LatHash.Query, as: LatHashQuery
+  alias SertantaiLegal.Scraper.LabelsToday
   alias SertantaiLegal.Zenoh.{ActivityLog, LatChanges, LatManifest, LatRenames}
 
   @poll_interval :timer.seconds(2)
@@ -243,19 +244,23 @@ defmodule SertantaiLegal.Zenoh.DataServer do
   @doc false
   # Public for testing: the LAT queryable payload for one law.
   def fetch_lat_by_law(law_name, :json) do
-    records =
-      law_name
-      |> LatHashQuery.served_query()
-      |> Repo.all()
-      |> Enum.map(&serialize_lat/1)
+    records = law_name |> served_rows() |> Enum.map(&serialize_lat/1)
 
     {:ok, Jason.encode!(records)}
   end
 
   def fetch_lat_by_law(law_name, :arrow) do
-    records = law_name |> LatHashQuery.served_query() |> Repo.all()
+    law_name |> served_rows() |> lat_to_arrow()
+  end
 
-    lat_to_arrow(records)
+  # The law's rows with today's labels from the timeline (LR-25): status,
+  # effective_from, changed_by are no longer the rows' own columns.
+  defp served_rows(law_name) do
+    law_name
+    |> LatHashQuery.served_query()
+    |> Repo.all()
+    |> Enum.map(&Map.from_struct/1)
+    |> LabelsToday.put(LabelsToday.for_law(law_name))
   end
 
   @doc false

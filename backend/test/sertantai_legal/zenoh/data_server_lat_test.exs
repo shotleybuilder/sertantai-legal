@@ -46,6 +46,16 @@ defmodule SertantaiLegal.Zenoh.DataServerLatTest do
     }
 
     {:ok, _} = LatPersister.persist([row], name, law.id)
+
+    # LR-25: today's labels come from the timeline, not the row
+    SertantaiLegal.Repo.query!(
+      """
+      INSERT INTO lat_label_timeline (law_name, section_id, valid_from, status, in_force_from, changed_by, code_version)
+      VALUES ($1, $2, '2001-01-01', 'repealed', '2001-01-01', 'UK_ssi_2000_1', 'test')
+      """,
+      [name, row.section_id]
+    )
+
     %{name: name}
   end
 
@@ -58,8 +68,31 @@ defmodule SertantaiLegal.Zenoh.DataServerLatTest do
     assert [%{"status" => "repealed"}] = Explorer.DataFrame.to_rows(df)
   end
 
-  test "LAT rows serve effective_from / changed_by; notes serve their parsed fields (#167 L8.2)",
-       %{name: name} do
+  test "LAT rows serve today's effective_from / changed_by from the timeline (LR-25)", %{
+    name: name
+  } do
+    {:ok, json} = DataServer.fetch_lat_by_law(name, :json)
+
+    assert [%{"effective_from" => "2001-01-01", "changed_by" => "UK_ssi_2000_1"}] =
+             Jason.decode!(json)
+
+    {:ok, ipc} = DataServer.fetch_lat_by_law(name, :arrow)
+
+    assert [%{"effective_from" => ~D[2001-01-01], "changed_by" => "UK_ssi_2000_1"}] =
+             ipc |> Explorer.DataFrame.load_ipc_stream!() |> Explorer.DataFrame.to_rows()
+  end
+
+  test "a row with no timeline period today serves nil labels (unknown, never a default)", %{
+    name: name
+  } do
+    SertantaiLegal.Repo.query!("DELETE FROM lat_label_timeline WHERE law_name = $1", [name])
+    {:ok, json} = DataServer.fetch_lat_by_law(name, :json)
+
+    assert [%{"status" => nil, "effective_from" => nil, "changed_by" => nil}] =
+             Jason.decode!(json)
+  end
+
+  test "notes serve their parsed fields (#167 L8.2)", %{name: name} do
     law_id =
       SertantaiLegal.Repo.query!("SELECT id FROM legal_register WHERE name = $1", [name]).rows
       |> hd()
@@ -80,16 +113,6 @@ defmodule SertantaiLegal.Zenoh.DataServerLatTest do
     )
 
     SertantaiLegal.Scraper.LatStatus.Apply.refresh(name)
-
-    {:ok, json} = DataServer.fetch_lat_by_law(name, :json)
-
-    assert [%{"effective_from" => "2021-04-01", "changed_by" => "UK_uksi_2021_5"}] =
-             Jason.decode!(json)
-
-    {:ok, ipc} = DataServer.fetch_lat_by_law(name, :arrow)
-
-    assert [%{"effective_from" => ~D[2021-04-01], "changed_by" => "UK_uksi_2021_5"}] =
-             ipc |> Explorer.DataFrame.load_ipc_stream!() |> Explorer.DataFrame.to_rows()
 
     {:ok, json} = DataServer.fetch_amendments_by_law(name, :json)
 
