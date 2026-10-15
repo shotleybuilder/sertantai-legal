@@ -21,6 +21,13 @@ TABLES=(
   legal_articles_uk
   legal_articles_au
   amendment_annotations
+  # the change register and label timeline (lat-refactor LR-22–LR-25) and
+  # the LAT history tables a re-parse writes
+  lat_change_log
+  lat_label_timeline
+  lat_events
+  lat_changes
+  lat_section_id_renames
   controls
   control_mappings
   secondary_sources
