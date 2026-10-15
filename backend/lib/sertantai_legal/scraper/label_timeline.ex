@@ -43,6 +43,15 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     end
   end
 
+  @doc "The code version stamped on the periods a build writes: the git commit, else \"unknown\"."
+  @spec code_version() :: String.t()
+  def code_version do
+    case System.cmd("git", ["rev-parse", "--short", "HEAD"], stderr_to_stdout: true) do
+      {sha, 0} -> String.trim(sha)
+      _ -> "unknown"
+    end
+  end
+
   @doc "A law's timeline from the DB: `%{periods, gaps, rows}` (`rows`: today's labels, for the diff)."
   @spec build(String.t(), Date.t()) :: map()
   def build(law_name, today) do

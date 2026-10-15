@@ -48,6 +48,56 @@ defmodule SertantaiLegal.Scraper.LatStagedParserTest do
     end
   end
 
+  describe "run_stages/5: labels after the parse (LR-25 hook)" do
+    alias SertantaiLegal.Legal.LegalRegister
+
+    setup do
+      law =
+        LegalRegister
+        |> Ash.Changeset.for_create(:create, %{
+          country: "uk",
+          name: "UK_uksi_1991_899",
+          title_en: "Test",
+          type_code: "uksi",
+          year: 1991,
+          number: "899",
+          # the timeline's start (J1); without one the law gets no periods
+          md_coming_into_force_date: ~D[1991-04-01]
+        })
+        |> Ash.create!()
+
+      %{law: law}
+    end
+
+    test "a parse rebuilds the law's change register and label timeline", %{law: law} do
+      {:ok, result} = LatStagedParser.run_stages("UK_uksi_1991_899", "uksi", law.id, @body)
+
+      refute result.has_errors, inspect(result)
+      assert result.labels == :ok
+
+      %{rows: [[provisions, timelined]]} =
+        Repo.query!("""
+        SELECT (SELECT count(*) FROM legal_articles WHERE law_name = 'UK_uksi_1991_899'),
+               (SELECT count(DISTINCT section_id) FROM lat_label_timeline WHERE law_name = 'UK_uksi_1991_899')
+        """)
+
+      assert provisions > 0
+      assert timelined > 0
+    end
+
+    test "labels: false skips the hook", %{law: law} do
+      {:ok, result} =
+        LatStagedParser.run_stages("UK_uksi_1991_899", "uksi", law.id, @body, labels: false)
+
+      assert result.labels == :skipped
+
+      %{rows: [[n]]} =
+        Repo.query!("SELECT count(*) FROM lat_label_timeline WHERE law_name = 'UK_uksi_1991_899'")
+
+      assert n == 0
+    end
+  end
+
   describe "run_stages/5 when the LAT persist fails" do
     setup do
       # A law_id with no legal_register row makes LatPersister fail (FK).

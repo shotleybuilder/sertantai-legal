@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Lat.Timeline do
     end
 
     today = LabelProjection.uk_today()
-    version = code_version()
+    version = LabelTimeline.code_version()
     todo = laws -- done
 
     Mix.shell().info(
@@ -145,13 +145,6 @@ defmodule Mix.Tasks.Lat.Timeline do
   defp kind("effective_from", nil, _), do: :from_gained
   defp kind("effective_from", _, nil), do: :from_emptied
   defp kind("effective_from", _, _), do: :from_changed
-
-  defp code_version do
-    case System.cmd("git", ["rev-parse", "--short", "HEAD"], stderr_to_stdout: true) do
-      {sha, 0} -> String.trim(sha)
-      _ -> "unknown"
-    end
-  end
 
   defp laws_with_lat do
     %{rows: rows} =

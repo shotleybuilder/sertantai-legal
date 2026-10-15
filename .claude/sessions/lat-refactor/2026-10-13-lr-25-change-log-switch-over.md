@@ -31,7 +31,15 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - **Behaviour change for the wave dry run:** J2 now sees the markup reading even where an effect set `status` (before, only where `change_provenance.status = markup`). This is the approved J2 rule ("markup wins today"), to be classified.
   - **The step-3 gate moves to step 9:** the dry run builds each law's timeline from its fresh in-memory parse (`LabelTimeline.build` gains a rows option), as the collector already reads the store.
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
-- ⬜ Parse hook (after LR-28, in its one place): collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
+- ✅ Step 4 (2026-10-15), parse hook:
+  - `LabelRefresh.run/2` runs collect → fidelity gate → register write → timeline build → timeline write.
+  - `LatStagedParser.persist_stages` calls it after the rows, notes and cause, passing what it just persisted (`ChangeCollector.collect(parsed:)`), so nothing is parsed twice.
+  - The result carries `labels: :ok | {:error, _} | :skipped`; `labels: false` skips it.
+  - A failure doesn't fail the parse. It is recorded as a `labels_failed` lat_event with the reason.
+  - `LatArchive.discard` deletes the law's register and timeline rows in its transaction.
+  - `LabelTimeline.code_version/0` moved out of `mix lat.timeline`.
+  - Tests: hook (rebuilds; skip), failure event, archive cleanup. Suite 2,692.
+- ⬜ (ChangeFacts.row_facts retired in step 7)
 - ⬜ Staleness check, two parts:
   - 0 laws whose latest `parsed` event is newer than their `lat_change_log.collected_at` (LR-23 Gemini D1);
   - 0 laws parsed by older parser code: the parse stamps a code version, as the timeline does (found 2026-10-14, see Parse drift)

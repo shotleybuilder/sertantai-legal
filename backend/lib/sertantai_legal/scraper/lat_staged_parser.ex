@@ -29,6 +29,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     LatScope,
     CommentaryParser,
     CommentaryPersister,
+    LabelRefresh,
     LatCause
   }
 
@@ -334,7 +335,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
           {%{inserted: 0, deleted: 0, error: reason}, true}
       end
 
-    {annotation_result, ann_error} =
+    {annotation_result, ann_error, annotations} =
       if lat_error do
         skip_annotations(on_progress)
       else
@@ -353,6 +354,21 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
             Keyword.get(opts, :cause)
           )
 
+    # LR-25: the law's change register and label timeline follow its parse
+    labels =
+      cond do
+        lat_error or ann_error ->
+          :skipped
+
+        Keyword.get(opts, :labels, true) == false ->
+          :skipped
+
+        true ->
+          LabelRefresh.run(law_name,
+            parsed: %{rows: lat_rows, notes: annotations, effects: opts[:effects] || []}
+          )
+      end
+
     duration_ms = System.monotonic_time(:millisecond) - start
     has_errors = lat_error or ann_error
     notify(on_progress, {:parse_complete, has_errors})
@@ -363,6 +379,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
        lat: lat_result,
        annotations: annotation_result,
        cause: cause,
+       labels: labels,
        duration_ms: duration_ms,
        has_errors: has_errors
      }
@@ -413,7 +430,7 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
     notify(on_progress, {:stage_complete, :parse_annotations, :skipped, reason})
     notify(on_progress, {:stage_start, :persist_annotations, 5, @total_stages})
     notify(on_progress, {:stage_complete, :persist_annotations, :skipped, reason})
-    {%{inserted: 0, skipped: true}, false}
+    {%{inserted: 0, skipped: true}, false, []}
   end
 
   defp run_annotation_stages(law_name, law_id, xmls, lat_rows, on_progress, effects) do
@@ -441,11 +458,11 @@ defmodule SertantaiLegal.Scraper.LatStagedParser do
           {:stage_complete, :persist_annotations, :ok, "#{result.inserted} inserted"}
         )
 
-        {result, false}
+        {result, false, annotations}
 
       {:error, reason} ->
         notify(on_progress, {:stage_complete, :persist_annotations, :error, reason})
-        {%{inserted: 0, error: reason}, true}
+        {%{inserted: 0, error: reason}, true, annotations}
     end
   end
 

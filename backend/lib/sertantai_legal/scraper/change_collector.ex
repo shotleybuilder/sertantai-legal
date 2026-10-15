@@ -22,6 +22,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   A law's records from the store, by collector: `records` compact (one per
   run of consecutive rows, `Compact`), `per_row` as joined, and `order` (the
   parse's section_ids in document order).
+
+  Options: `parsed` — the parse's own `%{rows, notes, effects}` (the LR-25
+  hook passes what it just persisted, so nothing is parsed twice); else the
+  law is parsed from the store. `mode` — the amending-law collector's
+  (`:gaps`).
   """
   @spec collect(String.t(), keyword()) ::
           {:ok,
@@ -32,8 +37,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
            }}
           | {:error, term()}
   def collect(law_name, opts \\ []) do
-    with {:ok, %{rows: rows, notes: notes, effects: effects}} <-
-           LatStagedParser.fetch_changes(law_name, store: :only) do
+    with {:ok, %{rows: rows, notes: notes, effects: effects}} <- parsed(law_name, opts) do
       order = Enum.map(rows, & &1.section_id)
       feed = Feed.records(law_name, rows, notes, effects)
 
@@ -49,6 +53,13 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
          per_row: per_row,
          order: order
        }}
+    end
+  end
+
+  defp parsed(law_name, opts) do
+    case Keyword.get(opts, :parsed) do
+      nil -> LatStagedParser.fetch_changes(law_name, store: :only)
+      parsed -> {:ok, parsed}
     end
   end
 

@@ -118,6 +118,32 @@ defmodule SertantaiLegal.Scraper.LatArchiveTest do
     assert n == 0
   end
 
+  test "discard/3 removes the law's change register and label timeline with its LAT (LR-25)",
+       %{dir: dir, name: name} do
+    Repo.query!(
+      """
+      INSERT INTO lat_change_log (id, law_name, section_id, via, source, evidence, in_force, savings, collector, collected_at)
+      VALUES (gen_random_uuid(), $1, $1 || ':reg.1', '{}', 'markup', 'c1', '{}', '{}', 'markup', now())
+      """,
+      [name]
+    )
+
+    Repo.query!(
+      """
+      INSERT INTO lat_label_timeline (law_name, section_id, valid_from, status, code_version)
+      VALUES ($1, $1 || ':reg.1', '2000-01-01', 'in_force', 'test')
+      """,
+      [name]
+    )
+
+    assert {:ok, _} = LatArchive.discard(name, "revoked", dir: dir)
+
+    for table <- ~w(lat_change_log lat_label_timeline) do
+      %{rows: [[n]]} = Repo.query!("SELECT count(*) FROM #{table} WHERE law_name = $1", [name])
+      assert n == 0, table
+    end
+  end
+
   test "discard/3 refuses when the archive cannot be written, unless archive: false", %{
     name: name
   } do

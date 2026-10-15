@@ -21,6 +21,7 @@ defmodule SertantaiLegal.Scraper.LatArchive do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.LatScope
   alias SertantaiLegal.Scraper.LatPersister
+  alias SertantaiLegal.Scraper.LabelRefresh
 
   @default_dir "/mnt/nas/sertantai-data/data/lat-archive"
 
@@ -106,6 +107,8 @@ defmodule SertantaiLegal.Scraper.LatArchive do
           Repo.query!("DELETE FROM amendment_annotations WHERE law_name = $1", [law_name])
 
         %{num_rows: n} = Repo.query!("DELETE FROM lat WHERE law_name = $1", [law_name])
+        # LR-25: the law's change register and label timeline go with it
+        LabelRefresh.discard(law_name)
         LatPersister.clear_event_context()
         %{deleted: n, annotations_deleted: ann, archive_ref: ref}
       end)
