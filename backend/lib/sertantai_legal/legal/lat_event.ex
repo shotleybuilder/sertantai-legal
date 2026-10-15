@@ -71,6 +71,15 @@ defmodule SertantaiLegal.Legal.LatEvent do
     attribute(:source, :string, public?: true)
     attribute(:actor, :string, public?: true)
     attribute(:app_version, :string, public?: true)
+
+    attribute :parser_version, :string do
+      public?(true)
+
+      description(
+        "The parser code a `parsed` event's LAT came from (`ParserVersion.current/0`, LR-25): a law parsed by older parser code is stale"
+      )
+    end
+
     attribute(:lat_hash, :string, public?: true)
     attribute(:struct_hash, :string, public?: true)
     attribute(:row_count, :integer, public?: true)
@@ -152,6 +161,7 @@ defmodule SertantaiLegal.Legal.LatEvent do
         :source,
         :actor,
         :app_version,
+        :parser_version,
         :lat_hash,
         :struct_hash,
         :row_count,

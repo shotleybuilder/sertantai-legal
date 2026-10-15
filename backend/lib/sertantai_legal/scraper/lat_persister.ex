@@ -87,7 +87,8 @@ defmodule SertantaiLegal.Scraper.LatPersister do
             reason: "reparse",
             source: Keyword.get(opts, :source, "lat_persister"),
             actor: Keyword.get(opts, :actor),
-            app_version: app_version()
+            app_version: app_version(),
+            parser_version: SertantaiLegal.Scraper.ParserVersion.current()
           )
 
           # DELETE existing rows for this law
@@ -168,7 +169,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
   @doc """
   Set `lat_events` trigger context for the current transaction
   (`SET LOCAL sertantai.lat.<key>`). Keys: `op_id`, `reason`, `source`,
-  `actor`, `archive_ref`, `app_version`; nil values are skipped.
+  `actor`, `archive_ref`, `app_version`, `parser_version`; nil values are skipped.
   """
   @spec set_event_context(keyword()) :: :ok
   def set_event_context(context) do
@@ -179,7 +180,7 @@ defmodule SertantaiLegal.Scraper.LatPersister do
     :ok
   end
 
-  @event_context_keys ~w(op_id reason source actor archive_ref app_version)
+  @event_context_keys ~w(op_id reason source actor archive_ref app_version parser_version)
 
   @doc "Clear the `lat_events` trigger context for the rest of the transaction."
   @spec clear_event_context() :: :ok

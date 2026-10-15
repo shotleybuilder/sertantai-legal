@@ -19,6 +19,10 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
 - ✅ Inventory: every writer and reader of the `legal_articles` label columns; parse entry points; note-fact paths still called
 - ⬜ **Jason: D1** — what the `legal_articles` label columns become once the parse stops computing them
 - ✅ Note-read guard test (D4, approved; step 1, 2026-10-14): `test/sertantai_legal/architecture/note_read_test.exs`. Fact calls (`AmendmentNote.parse/row_effective/resolve_law`, `LatStatus.resolve`, `NoteTerritory`) must appear nowhere but a ratchet `@to_delete` list (8 entries; must shrink to empty in step 7). SQL readers of note text are allow-listed with reasons: pointer (LabelTimeline J5, ChangeCollector), display (qa_sample, ai_sync, admin LAT page), to_delete (LatStatus.Apply)
+- ✅ Step 2 (2026-10-15), parser version:
+  - `ParserVersion.current/0` is a compile-time 12-hex hash of the parse's source files (21 patterns: `lat_parser/**`, `LatStagedParser`, scope, territory, effect index, changes feed, `CommentaryParser`, `Transforms`, PDF transcript CLML, ...) and `mix.lock`. It is curated, not the full alias closure, which reaches the whole Ash domain through `Api`.
+  - `lat_events.parser_version` is an Ash attribute with a generated migration. The `lat_events_on_insert` trigger fills it from `sertantai.lat.parser_version`, which `LatPersister` sets (hand migration; down restores the old function).
+  - Tests: `parser_version_test.exs` (3) and `lat_event_test.exs` ("a parsed event records the parser version").
 - ⬜ Tests first: no fact from note text (ChangeFacts, AmendmentNote, LatStatus, CommentaryParser `citation_law` a pointer only)
 - ⬜ Parse hook (after LR-28, in its one place): collect + timeline for the law after each LAT parse; `ChangeFacts.row_facts` retired
 - ⬜ Staleness check, two parts:
@@ -215,7 +219,9 @@ Not taken:
 - **Time zone.** Already handled: "today" is the UK date (`LabelProjection.uk_today/1`).
 - **No timeline row.** Served as status nil = unknown, never a default. For D2: fractalaw's gate treats nil as live (`status IN ('repealed','prospective')`), so the contract note must say "nil = unknown".
 
-**Open point for Jason, D2 clarified.** Deleting `LatStatus.Apply` also stops filling the notes' own fact columns on `amendment_annotations`: `effect`, `effective_dates`, `effective_from`, `fact_provenance`. That is the note enrichment parked on 2026-10-12 ("the architecture track neither fills nor drops it"). The Zenoh note pull serves them. Options:
+**D2 decided 2026-10-15 (Jason): (a) drop.** "Drop them, we use leg.gov.uk notes as helpers/pointers not as data we need to store. The data comes from law or effects." Step 7 deletes the note fact columns (`effect`, `effective_dates`, `effective_from`, `fact_provenance`) with the code that fills them; step 8's migration drops them; the Zenoh note pull stops serving them (D2 contract note).
+
+**Open point for Jason, D2 clarified (decided above).** Deleting `LatStatus.Apply` also stops filling the notes' own fact columns on `amendment_annotations`: `effect`, `effective_dates`, `effective_from`, `fact_provenance`. That is the note enrichment parked on 2026-10-12 ("the architecture track neither fills nor drops it"). The Zenoh note pull serves them. Options:
 - **(a) Drop the columns with the code (recommended).** They are facts read from note text, which the rule forbids, and the register now holds the same changes with real sources. If note enrichment is wanted later, it would project from the register, not from note text.
 - **(b) Keep the columns frozen** at today's values, documented as legacy, until the note-enrichment question is decided.
 

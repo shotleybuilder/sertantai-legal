@@ -76,6 +76,18 @@ defmodule SertantaiLegal.Legal.LatEventTest do
     assert h == register_hash(name)
   end
 
+  test "a parsed event records the parser version that produced it (LR-25)", %{
+    name: name,
+    law: law
+  } do
+    {:ok, _} = LatPersister.persist([row(name, 1)], name, law.id)
+
+    assert %{rows: [[v]]} =
+             Repo.query!("SELECT parser_version FROM lat_events WHERE law_name = $1", [name])
+
+    assert v == SertantaiLegal.Scraper.ParserVersion.current()
+  end
+
   test "a law persisted in several insert batches still gets one parsed event", %{
     name: name,
     law: law
