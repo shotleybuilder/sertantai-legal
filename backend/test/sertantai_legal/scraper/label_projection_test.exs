@@ -723,4 +723,28 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              ]
     end
   end
+
+  test "two laws changing a provision on the same day: the same label whatever the input order (LR-29 dry runs)" do
+    law = "UK_uksi_2010_2214"
+
+    changes = [
+      change(law, "reg.14", "key-a", "substituted", "substituted", "UK_uksi_2023_911", [
+        {~D[2023-10-01], nil}
+      ]),
+      change(law, "reg.14", "key-b", "inserted", "inserted", "UK_uksi_2026_1034", [
+        {~D[2026-10-01], nil}
+      ]),
+      change(law, "reg.14", "key-c", "inserted", "inserted", "UK_uksi_2025_1236", [
+        {~D[2026-10-01], nil}
+      ])
+    ]
+
+    rows = [row(law, "reg.14")]
+    forward = periods(law, rows, changes, law_start: ~D[2010-10-01], today: ~D[2026-12-01])
+
+    reverse =
+      periods(law, rows, Enum.reverse(changes), law_start: ~D[2010-10-01], today: ~D[2026-12-01])
+
+    assert forward == reverse
+  end
 end

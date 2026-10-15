@@ -73,7 +73,14 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
   | repealed → unknown | 54 | 54 over-reach removed |
   | in force → repealed | 277 | J2, dotted / [Repealed] text |
   | in force → unknown | 717 | 578 over-reach removed; the rest traced by sample (WRA 1991 s.79A, uksi 2011/3066 reg.31(10), CROW 2000 s.10(3)): over-reach of other record kinds ("Pt. 4 heading", Part refs) leaving no honest start (the `no_start` class), or heading rows (now fixed) |
-- ⬜ Dry run 4 on the final code (heading joins), compared with dry run 3, then the wave to Jason
+- ✅ **Dry run 4** (heading joins), compared with dry run 3: 1,839 new changes, nearly all headings.
+  - **Spot-check found a mistake in the heading fix.** Heading rows were joined to `:whole` claims read from the provisions under them, so asp 2005/5 h.48 "Training" read repealed because ss.44–46 were.
+  - **Fixed:** headings now join effects by name only (test-first).
+- ✅ **Dry run 5** (`lr25_dry5`, code with the heading fix): 1,066 laws, 0 errors, DB unchanged; 34,466 label changes in 141 laws.
+  - **Against dry run 3:** 1,004 new, of which 998 are headings now dated by effects that name them (unknown → in force 215; date or changed_by gained about 460; territory about 230). 52 gone (25 headings). 1 changed value.
+  - **34 non-heading rows flipped changed_by between runs:** 33 are same-day ties (two or more laws on the latest date), where `Enum.max_by` took whichever arrived first from the DB. **Fixed:** `LabelProjection.latest/1` breaks ties by law, then effect id (test: the same label whatever the input order).
+  - **The 34th** (1995/25 s.114(2)(a)(ix)[E+W]) is also a tie, but exposes a separate pre-existing issue: an S effect dating the E+W version through a shared xml id. Logged as **LR-32**.
+- ⬜ After LR-30 (and LR-32) are decided: the final dry run, then the wave to Jason
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies

@@ -300,7 +300,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       in_force
       |> Enum.filter(&(&1.operation == "repealed" and not words_level?(&1)))
       |> Enum.filter(&covers_row?(&1, row.extent_code))
-      |> Enum.max_by(& &1.effective_from, Date, fn -> nil end)
+      |> latest()
 
     commencing = Enum.filter(changes, &commencing?/1)
 
@@ -330,7 +330,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       |> Enum.filter(
         &(version?(&1) and (&1.operation != "repealed" or covers_row?(&1, row.extent_code)))
       )
-      |> Enum.max_by(& &1.effective_from, Date, fn -> nil end)
+      |> latest()
 
     {in_force_from, by, ids} =
       cond do
@@ -687,4 +687,17 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp date(nil), do: nil
   defp date(%Date{} = d), do: d
   defp date(s) when is_binary(s), do: Date.from_iso8601!(s)
+
+  # The change that took effect last; on the same day, a stable order (law,
+  # then effect id) so the label never depends on the order changes arrive
+  # in (LR-29: two laws inserting on 2026-10-01 gave different labels run to
+  # run)
+  defp latest([]), do: nil
+
+  defp latest(changes),
+    do:
+      Enum.max_by(changes, fn c ->
+        {if(c.effective_from, do: Date.to_gregorian_days(c.effective_from), else: -1),
+         c.affecting_law || "", c.evidence || ""}
+      end)
 end
