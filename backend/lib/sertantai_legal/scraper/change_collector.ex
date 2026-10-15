@@ -93,15 +93,31 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
     if MapSet.size(ask) == 0,
       do: [],
       else:
-        AmendingLaw.records(
-          law_name,
-          law_title(law_name),
-          section_ids,
-          notes,
-          ask,
-          &amending_doc/1,
-          &law_title/1
-        )
+        with_doc_cache(fn ->
+          AmendingLaw.records(
+            law_name,
+            law_title(law_name),
+            section_ids,
+            notes,
+            ask,
+            &amending_doc/1,
+            &law_title/1
+          )
+        end)
+  end
+
+  @doc """
+  Run `fun` with the amending-law document cache (`amending_doc/1`) scoped to
+  it: each amending law's CLML is parsed once per law's collection and
+  dropped afterwards, raise or not. Parsed xmerl documents are large; kept for
+  the life of the process they exhausted memory in a corpus run (LR-25: ~130 MB
+  per law).
+  """
+  @spec with_doc_cache((-> result)) :: result when result: term()
+  def with_doc_cache(fun) do
+    fun.()
+  after
+    for {__MODULE__, :doc, _} = key <- Process.get_keys(), do: Process.delete(key)
   end
 
   @doc "True when the row or an ancestor has a dated change by `law` in `dated` ({section_id, law} pairs)."
@@ -136,7 +152,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   end
 
   # the amending law's stored CLML (body, Schedules, fragments), parsed once
-  # per process; nil when not held
+  # per law's collection (`with_doc_cache/1`); nil when not held
   defp amending_doc(law) do
     key = {__MODULE__, :doc, law}
 

@@ -40,9 +40,19 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
           [Record.t()]
   def records(law_name, title, section_ids, notes, ask, docs, titles \\ fn _ -> nil end) do
     held = MapSet.new(section_ids)
-    terms = memo(fn doc -> DefinedTerms.of(doc) end)
-    starts = memo(fn doc -> Commencement.provisions(doc) end)
+    {terms, terms_table} = memo(fn doc -> DefinedTerms.of(doc) end)
+    {starts, starts_table} = memo(fn doc -> Commencement.provisions(doc) end)
 
+    try do
+      collect(law_name, title, notes, ask, docs, titles, held, terms, starts)
+    after
+      # per call: a corpus run in one process must not keep them (LR-25)
+      :ets.delete(terms_table)
+      :ets.delete(starts_table)
+    end
+  end
+
+  defp collect(law_name, title, notes, ask, docs, titles, held, terms, starts) do
     for note <- notes,
         sid <- Map.get(note, :affected_sections) || [],
         MapSet.member?(ask, sid),
@@ -187,15 +197,16 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
     Enum.join([type, year, number | String.split(id, "-")], "/")
   end
 
-  # defined terms once per amending law
+  # once per amending law within one call: the memo function and its table
+  # (the caller deletes it)
   defp memo(fun) do
     table = :ets.new(:memo, [:set, :private])
 
-    fn doc ->
-      case :ets.lookup(table, doc.law_name) do
-        [{_, v}] -> v
-        [] -> tap(fun.(doc), &:ets.insert(table, {doc.law_name, &1}))
-      end
-    end
+    {fn doc ->
+       case :ets.lookup(table, doc.law_name) do
+         [{_, v}] -> v
+         [] -> tap(fun.(doc), &:ets.insert(table, {doc.law_name, &1}))
+       end
+     end, table}
   end
 end

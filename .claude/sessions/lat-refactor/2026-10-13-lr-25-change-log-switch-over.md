@@ -3,6 +3,13 @@ session: 'LR-25: Change Log Switch-over'
 status: active
 opened: 2026-10-13
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+bugs:
+  - pattern: "Amending-law collector caches leak across laws in one process: amending_doc keeps every parsed xmerl document in the process dictionary for the process's life; memo/1 creates an ETS table per call and never deletes it"
+    category: memory
+    module: ChangeCollector.amending_doc / ChangeCollector.AmendingLaw.memo (LR-08)
+    affected: "~130 MB per law; the wave dry run was killed for low memory after 460 of 1,066 laws; the apply (one process, hook per law) would have hit it too"
+    fix: "ChangeCollector.with_doc_cache/1 scopes the doc cache to one law's collection (cleared in after); records/7 deletes its memo tables in after. Measured flat (~190 MB over 30 laws)"
+    status: fixed
 ---
 
 # Session: LR-25 Change Log Switch-over (ACTIVE)
@@ -96,6 +103,12 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
     - HSWA: 4 dotted-out provisions (s.75, s.78(3), (4), (8)(d)) go in_force → repealed. The old J2 ignored markup wherever an effect had set the status; this is the approved rule.
     - 2023/909: territory E+W → E for 267 rows (the `excluded_extent` drift).
     - anaw 2016/3: E+W → W for 28.
+- ✅ Step 9b (2026-10-15), memory leak found and fixed:
+  - **What happened:** the dry run was stopped by Claude Code for low system memory after 460 laws. The database was untouched (rolled back).
+  - **Not the disk** (33 GB free), and **not Postgres** (174 MB container).
+  - **Cause:** the LR-08 amending-law collector cached every parsed amending-law document (xmerl trees) in the process dictionary, and created an ETS table per call that it never deleted. Measured at about 130 MB per law (5.2 GB after 40 laws, 660 cached documents).
+  - **Fix:** the document cache is scoped to one law's collection (`with_doc_cache/1`), and memo tables are deleted after each call. Tests first.
+  - **Re-measured:** flat at about 190 MB over 30 laws, about 11.6 s per law (previously about 15 s).
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
 - ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)

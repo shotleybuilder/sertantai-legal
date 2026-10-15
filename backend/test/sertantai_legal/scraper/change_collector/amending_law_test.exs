@@ -184,4 +184,18 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
 
     assert [%{"date" => "2001-10-01", "qualification" => nil}] = r.in_force
   end
+
+  test "records/7 leaves no ETS tables behind (memory across a corpus run, LR-25)" do
+    before = length(:ets.all())
+
+    run([
+      note(
+        "F1",
+        "S. 25(5A) inserted (1.10.2001) by 2000 c. 27, s. 60(5); S.I. 2001/3266, art. 2",
+        ["s.25(5A)"]
+      )
+    ])
+
+    assert length(:ets.all()) == before
+  end
 end
