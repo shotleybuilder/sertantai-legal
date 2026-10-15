@@ -46,6 +46,24 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
   - **Refs the document doesn't hold can't contradict the text.** Malformed refs like "s. 87(b)(c)" → `section-87-b-c`.
   - **Coverage follows legislation.gov.uk's hierarchical ids where the XML doesn't nest.** 1968/73 s.9(1)(b)(iaa).
 - ✅ RSA 1993 s.51: no longer joined to "ss. 30–46" under LR-29 (the text resolves to that span). The old route can't be shown now that the code is gone; the final dry run confirms it.
+- ✅ Final dry run `lr25_dry3` (2026-10-15, code `ea916ee8`): 1,066 laws, 0 errors, DB unchanged. **33,514 label changes in 128 laws.**
+  - **Why so many more than dry run 1 (1,227).** LR-27's over-reach was already in the stored register and timeline (re-collect 2026-10-13, rebuild 2026-10-14). Dry run 1's fresh collect carried the same over-reach, so it matched; LR-29 removes it.
+  - **Largest cases:**
+    - Planning Act 2008: "Pt. 6 Ch. 7 repealed" had been applied to all of Part 6 (606 rows);
+    - asp 2005/5: 553 rows;
+    - WIA 1991: 2,416 rows dated by a heading-only substitution or another Chapter's insertion.
+- ✅ Verification of `lr25_dry3`:
+  - **changed_by changes (12,588).** For 12,075, no text-change effect by the old law still reaches the row: over-reach removed. The remaining 513:
+    - 280 now partly in force: all 535 partial rows verified as over-reach removed (a "wholly in force" commencing record that no longer reaches);
+    - 112 J2 markup repeals;
+    - 50 no longer repealed (the "Pt. 6 Ch. 7" over-reach, plus a same-law, same-date heading change);
+    - 15 better attribution (the amending Act, not its commencement order);
+    - 50 same status, emptied — traced: 1968/73 s.10(1)(i)[S], over-reach removed, exposes LR-30; WIA h.35A-type heading rows (below);
+    - 5 heading rows → unknown (below);
+    - 1 other.
+  - **Found and fixed: heading rows.** The walker never joined effects to heading rows (only provisions got `row_effect_joins`); headings were dated only through the looser note fallback (`note_cited`). With LR-29, the note's legacy change id resolves through markup, which by design reaches only rows whose markup carries the change, so headings like WIA 1991 h.22A lost their dated insertion. Heading rows now get `row_effect_joins` (test-first, `heading_effects_test.exs`); h.22A is re-dated (2005-04-01, Water Act 2003) in the real parse path.
+  - **Found, logged separately: LR-30** — rows under an undated inserted ancestor take the law's start (1,945 rows, 96 laws). Pre-existing; LR-29 unmasks it.
+- ⬜ Dry run 4 on the final code (heading joins), then verification, then the wave to Jason
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies

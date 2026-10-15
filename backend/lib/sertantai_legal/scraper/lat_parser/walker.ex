@@ -384,6 +384,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
   defp emit_heading_row(ctx, node, extent, heading_text) do
     {commentary_counts, commentary_refs} = Refs.collect(node, ctx.ref_type_lookup)
     {repealed, whole} = Effects.excluded(node, extent || ctx.law_extent, ctx)
+    # LR-29: an effect whose text names the heading ("… and cross-heading")
+    # joins the heading row as it joins provisions
+    joins = Effects.row_effect_joins([], whole, ctx, node)
 
     %{
       element: "Pblock",
@@ -407,6 +410,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
       commentary_refs: commentary_refs,
       excluded_extent: repealed,
       territory_provenance: LatTerritory.provenance(whole),
+      effect_joins: joins,
+      effect_ids: Enum.map(joins, &elem(&1, 0)),
       from_version: ctx.from_version
     }
   end
