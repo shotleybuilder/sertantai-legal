@@ -36,7 +36,8 @@ Rule J5 already withholds the law's start from a row a note points to as inserte
     - prospective effects 1,966, which it does not.
   - **One LR-24 expectation changed:** 1990/43 s.78B(2), inserted by the Environment Act 1995 on an undated day, had expected "in force since 1991" (the law's start). It now has no start, listed as a gap. Still never prospective, the test's original point.
   - Tests: 3 new plus the 1 changed; suite 2,675.
-- ⬜ Lands with the LR-25 wave (timeline rebuild); counted in the final dry run
+- ✅ Counted in the final dry run: 1,162 provisions in force → unknown confirmed as LR-30; plus 72 whose parent's insertion is dated in the future (no period before the start, J1)
+- ⬜ Lands with the LR-25 wave
 
 ## Dependencies
 

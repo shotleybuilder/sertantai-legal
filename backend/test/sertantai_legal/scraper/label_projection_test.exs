@@ -874,4 +874,22 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
                )
     end
   end
+
+  test "same day, a change and its commencement: changed_by is the law that made the change, not the order (anaw 2017/3 s.42(1A))" do
+    law = "UK_anaw_2017_3"
+
+    changes = [
+      change(law, "s.42(1A)", "key-i", "inserted", "inserted", "UK_wsi_2018_101", [
+        {~D[2018-04-01], nil}
+      ]),
+      change(law, "s.42(1A)", "key-c", "commenced", "coming into force", "UK_wsi_2018_35", [
+        {~D[2018-04-01], nil}
+      ])
+    ]
+
+    for cs <- [changes, Enum.reverse(changes)] do
+      assert [{~D[2018-04-01], nil, "in_force", ~D[2018-04-01], "UK_wsi_2018_101"}] =
+               periods(law, [row(law, "s.42(1A)")], cs, law_start: ~D[2017-06-01])
+    end
+  end
 end

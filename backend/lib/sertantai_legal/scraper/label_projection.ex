@@ -730,16 +730,17 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp date(%Date{} = d), do: d
   defp date(s) when is_binary(s), do: Date.from_iso8601!(s)
 
-  # The change that took effect last; on the same day, a stable order (law,
-  # then effect id) so the label never depends on the order changes arrive
-  # in (LR-29: two laws inserting on 2026-10-01 gave different labels run to
-  # run)
+  # The change that took effect last. On the same day: the change itself
+  # before its commencement (changed_by names the law that made the change,
+  # not the order that commenced it: anaw 2017/3 s.42(1A)), then a stable
+  # order (law, effect id), so the label never depends on the order changes
+  # arrive in (LR-29: same-day ties gave different labels run to run)
   defp latest([]), do: nil
 
   defp latest(changes),
     do:
       Enum.max_by(changes, fn c ->
         {if(c.effective_from, do: Date.to_gregorian_days(c.effective_from), else: -1),
-         c.affecting_law || "", c.evidence || ""}
+         if(c.operation == "commenced", do: 0, else: 1), c.affecting_law || "", c.evidence || ""}
       end)
 end

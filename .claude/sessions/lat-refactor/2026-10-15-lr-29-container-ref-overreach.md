@@ -80,7 +80,13 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
   - **Against dry run 3:** 1,004 new, of which 998 are headings now dated by effects that name them (unknown → in force 215; date or changed_by gained about 460; territory about 230). 52 gone (25 headings). 1 changed value.
   - **34 non-heading rows flipped changed_by between runs:** 33 are same-day ties (two or more laws on the latest date), where `Enum.max_by` took whichever arrived first from the DB. **Fixed:** `LabelProjection.latest/1` breaks ties by law, then effect id (test: the same label whatever the input order).
   - **The 34th** (1995/25 s.114(2)(a)(ix)[E+W]) is also a tie, but exposes a separate pre-existing issue: an S effect dating the E+W version through a shared xml id. Logged as **LR-32**.
-- ⬜ After LR-30 (and LR-32) are decided: the final dry run, then the wave to Jason
+- ✅ **Final dry run 1** (`lr25_final`, LR-25 + 29 + 30 + 32): 1,066 laws, 0 errors, DB unchanged; 39,720 changes in 242 laws.
+  - **Against dry run 5: 5,325 new.**
+    - **in force → unknown: 1,234.** 1,162 are confirmed LR-30 (an undated, non-prospective insertion on the row or an ancestor, none dated). 72 have a parent insertion dated in the future (nisr 2024/155 reg.7(e), inserted 2026-11-01), so no period today; under J1, "before the start: unknown".
+    - **Territory → unknown, about 1,180:** the same rows.
+    - **changed_by changed or emptied, 1,488:** 332 are LR-32 (the old changed_by was another territory's change: a Scottish Act dating 1962/58 s.37(1)(a)[E+W]). Samples of the rest were same-day ties.
+  - **Found: the tie-break picked the commencement order over the law that made the change** (anaw 2017/3 s.42(1A): inserted by wsi 2018/101, commenced by wsi 2018/35, the same day; ordering by law name chose 2018/35). **Fixed:** in a same-day tie, the change itself ranks before its commencement, then law, then effect id (test).
+- ⬜ Final dry run 2 on the tie fix, then the wave to Jason
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies
