@@ -139,4 +139,31 @@ defmodule SertantaiLegal.Scraper.EffectTargetTest do
                resolve("Sch. 1 cross-heading", ["part-I-crossheading-appeal"])
     end
   end
+
+  describe "the 50 disagreements (LR-29)" do
+    @mixed ~s(<Legislation><P1 id="section-28"><P2 id="section-28-3"><P3 id="section-28-3-e"/></P2><P3 id="section-28-f"/></P1>
+      <P1 id="section-87"><P2 id="section-87-b"/><P2 id="section-87-c"/></P1></Legislation>)
+
+    defp tree3, do: @mixed |> SweetXml.parse(quiet: true) |> EffectTarget.tree()
+
+    test "brackets of different levels are a path, never a list (\"s. 28(3)(f)\" isn't s.28(3) and s.28(f))" do
+      assert EffectTarget.resolve(fx("s. 28(3)(f)", ["section-28-3-f"]), tree3()) ==
+               {:refs, ["section-28-3-f"]}
+    end
+
+    test "refs naming nothing the document holds don't contradict the text (\"s. 87(b)(c)\" → section-87-b-c)" do
+      assert EffectTarget.resolve(fx("s. 87(b)(c)", ["section-87-b-c"]), tree3()) ==
+               {:text, ["section-87-b", "section-87-c"]}
+    end
+
+    test "coverage follows the id hierarchy where the XML doesn't nest (1968/73 s.9(1)(b)(iaa))" do
+      flat_xml =
+        ~s(<Legislation><P1 id="section-9"><P3 id="section-9-1-b"/><P4 id="section-9-1-b-iaa"/></P1></Legislation>)
+
+      t = flat_xml |> SweetXml.parse(quiet: true) |> EffectTarget.tree()
+
+      assert EffectTarget.resolve(fx("s. 9(1)(b)(iaa)", ["section-9-1-b", "section-9-1-iaa"]), t) ==
+               {:text, ["section-9-1-b-iaa"]}
+    end
+  end
 end

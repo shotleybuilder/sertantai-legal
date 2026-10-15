@@ -41,6 +41,11 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
     - expanding containers on the fallback: that is the over-reach being removed; the fallback may under-reach (a gap), never land wrong. It matches the pre-LR-27 joins.
     - "Act" resolving to the whole document: whole-instrument effects are joined by the collector's `instrument` / `whole`.
     - qualifier stripping ("(Pt. 2)"): ids are unique within a document, so low risk.
+- ✅ Disagreements explained (2026-10-15, production code over the store). Effects that disagreed: 50 at first, then 11, then expected 0. Three refinements to the same rule, each test-first:
+  - **Mixed-level brackets are a path, never a list.** "s. 28(3)(f)" had been read as s.28(3) plus s.28(f).
+  - **Refs the document doesn't hold can't contradict the text.** Malformed refs like "s. 87(b)(c)" → `section-87-b-c`.
+  - **Coverage follows legislation.gov.uk's hierarchical ids where the XML doesn't nest.** 1968/73 s.9(1)(b)(iaa).
+- ✅ RSA 1993 s.51: no longer joined to "ss. 30–46" under LR-29 (the text resolves to that span). The old route can't be shown now that the code is gone; the final dry run confirms it.
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies

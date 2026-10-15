@@ -74,7 +74,11 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
     with {:ok, designators} <- ProvisionText.parse(e.affected_provisions),
          false <- :whole in designators,
          {:ok, ids} <- designated(designators, e, tree) do
-      if refs != [] and disjoint?(cover(ids, tree), cover(refs, tree)),
+      # only refs the document holds can contradict the text (some are
+      # malformed: "s. 87(b)(c)" → section-87-b-c)
+      held_refs = held(tree, refs)
+
+      if held_refs != [] and disjoint?(cover(ids, tree), cover(held_refs, tree)),
         do: {:disagree, refs},
         else: {:text, ids}
     else
@@ -129,7 +133,9 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
     full = Enum.join([base | path], "-")
     each = Enum.map(path, &"#{base}-#{&1}")
     path? = held(tree, [full]) != []
-    list? = length(held(tree, each)) == length(each)
+    # a list is brackets of one level ("(2)(4)", "(d)(e)"); mixed levels
+    # ("(3)(f)") are a path
+    list? = one_level?(path) and length(held(tree, each)) == length(each)
 
     # brackets with no space read as a path ("33(1)(e)") or a list ("25(2)(4)":
     # subsections 2 and 4, legislation.gov.uk's way of listing them); when
@@ -194,11 +200,22 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
     if Map.has_key?(tree.positions, id), do: [id | Map.get(tree.inside, id, [])], else: []
   end
 
+  defp one_level?(path),
+    do: path |> Enum.map(&String.match?(&1, ~r/^[0-9]/)) |> Enum.uniq() |> length() == 1
+
   defp held(tree, ids), do: Enum.filter(ids, &Map.has_key?(tree.positions, &1))
 
-  # everything ids reach: themselves and what's inside them
+  # everything ids reach: themselves and what the XML nests inside them
   defp cover(ids, tree),
     do: MapSet.new(ids ++ Enum.flat_map(ids, &Map.get(tree.inside, &1, [])))
 
-  defp disjoint?(a, b), do: MapSet.disjoint?(a, b)
+  # no element shared, nor one under the other by id (legislation.gov.uk ids
+  # are hierarchical: section-9-1-b-iaa sits under section-9-1-b even where
+  # the XML doesn't nest them; 1968/73 s.9(1))
+  defp disjoint?(a, b) do
+    MapSet.disjoint?(a, b) and
+      not Enum.any?(a, fn x ->
+        Enum.any?(b, &(String.starts_with?(x, &1 <> "-") or String.starts_with?(&1, x <> "-")))
+      end)
+  end
 end

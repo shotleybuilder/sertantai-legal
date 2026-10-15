@@ -186,7 +186,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
   end
 
   test "records/7 leaves no ETS tables behind (memory across a corpus run, LR-25)" do
-    before = length(:ets.all())
+    # only this process's tables: async tests create their own in parallel
+    owned = fn -> Enum.count(:ets.all(), &(:ets.info(&1, :owner) == self())) end
+    before = owned.()
 
     run([
       note(
@@ -196,6 +198,6 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
       )
     ])
 
-    assert length(:ets.all()) == before
+    assert owned.() == before
   end
 end
