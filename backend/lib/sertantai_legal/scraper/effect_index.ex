@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendmentNote
+  alias SertantaiLegal.Scraper.NotePointer
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type t :: %{
@@ -280,7 +280,7 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
 
         keep? = fn e ->
           not MapSet.member?(held, e.effect_id) and
-            (law == nil or (e.affecting != nil and AmendmentNote.same_law?(e.affecting, law)))
+            (law == nil or (e.affecting != nil and NotePointer.same_law?(e.affecting, law)))
         end
 
         case orphan_effect(index, paths, kind, keep?) do

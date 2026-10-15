@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{AmendmentNote, LatCause, LatParseLog, LatEvents, LatStatus}
+  alias SertantaiLegal.Scraper.{LatCause, LatParseLog, LatEvents, LatStatus}
 
   require Logger
 
@@ -142,12 +142,12 @@ defmodule SertantaiLegal.Scraper.LatCause.Apply do
       )
 
     new_notes =
-      for [sections, text, type, cid] <- note_rows,
+      for [sections, text, _type, cid] <- note_rows,
           not MapSet.member?(before.change_ids, cid),
           do: %{
             targets: LatStatus.note_targets(%{affected_sections: sections}),
             text: text,
-            parsed: AmendmentNote.parse(text, type, law_name)
+            change_id: cid
           }
 
     status_changes =

@@ -1,14 +1,14 @@
 defmodule SertantaiLegal.Scraper.LatParseLogTest do
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.{AmendmentNote, LatParseLog}
+  alias SertantaiLegal.Scraper.{LatParseLog, NotePointer}
 
   @law "UK_ukpga_2018_12"
 
   defp id(x), do: "#{@law}:#{x}"
 
   defp note(target, text),
-    do: %{targets: [id(target)], text: text, parsed: AmendmentNote.parse(text, "amendment", @law)}
+    do: %{targets: [id(target)], text: text, change_id: NotePointer.change_id(@law, text)}
 
   defp plan(overrides \\ []) do
     Map.merge(%{changed: [], inserted: [], removed: [], renames: []}, Map.new(overrides))
@@ -88,7 +88,7 @@ defmodule SertantaiLegal.Scraper.LatParseLogTest do
              ] = entries
 
       assert {s12, s5} == {id("s.1(2)"), id("s.5")}
-      assert cid == n.parsed.change_id
+      assert cid == n.change_id
     end
 
     test "a status-only change is logged and is legislative evidence in itself" do

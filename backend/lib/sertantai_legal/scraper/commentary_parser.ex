@@ -21,7 +21,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.{AmendmentNote, ChangeFacts, EffectIndex}
+  alias SertantaiLegal.Scraper.{EffectFacts, EffectIndex, NotePointer}
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type_map %{
@@ -302,7 +302,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
 
   defp row_xml_id(row), do: Map.get(row, :xml_id) || Map.get(row, :source_xml_id)
 
-  # the effect kinds (ChangeFacts.kind/2) a note of each type can point to
+  # the effect kinds (EffectFacts.kind/2) a note of each type can point to
   @kinds %{
     "amendment" => ~w(substituted inserted repealed renumbered amended),
     "modification" => ~w(other),
@@ -320,8 +320,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
           e <- EffectIndex.on(index, xml_ids[sid]),
           e.effect_id != nil,
           not MapSet.member?(held, e.effect_id),
-          e.affecting != nil and AmendmentNote.same_law?(e.affecting, law),
-          ChangeFacts.kind(e.type, nil) in kinds,
+          e.affecting != nil and NotePointer.same_law?(e.affecting, law),
+          EffectFacts.kind(e.type, nil) in kinds,
           uniq: true,
           do: {e.effect_id, sid}
     end
@@ -334,7 +334,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
     text = Map.get(a, :text) || ""
 
     if String.contains?(text, " by "),
-      do: AmendmentNote.parse(text, a.code_type, Map.get(a, :law_name) || "").changed_by
+      do: NotePointer.law(text, to_string(a.code_type))
   end
 
   # ── Sequential ID Assignment ─────────────────────────────────────

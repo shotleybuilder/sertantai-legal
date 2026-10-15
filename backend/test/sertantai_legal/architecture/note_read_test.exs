@@ -19,19 +19,6 @@ defmodule SertantaiLegal.Architecture.NoteReadTest do
     "NoteTerritory."
   ]
 
-  # Fact readers still to be deleted in LR-25 step 7 (a ratchet: the list
-  # may only shrink, and must be empty when LR-25 closes).
-  @to_delete [
-    {"sertantai_legal/scraper/change_facts.ex", "AmendmentNote.parse("},
-    {"sertantai_legal/scraper/change_facts.ex", "AmendmentNote.row_effective("},
-    {"sertantai_legal/scraper/change_facts.ex", "AmendmentNote.resolve_law("},
-    {"sertantai_legal/scraper/change_facts.ex", "LatStatus.resolve("},
-    {"sertantai_legal/scraper/commentary_parser.ex", "AmendmentNote.parse("},
-    {"sertantai_legal/scraper/lat_cause/apply.ex", "AmendmentNote.parse("},
-    {"sertantai_legal/scraper/lat_status/apply.ex", "AmendmentNote.parse("},
-    {"sertantai_legal/scraper/lat_territory_check.ex", "NoteTerritory."}
-  ]
-
   # SQL that reads amendment_annotations.text, by file → why it may
   @text_readers %{
     # J5: a note saying "inserted" withholds the law's default start; it
@@ -46,9 +33,18 @@ defmodule SertantaiLegal.Architecture.NoteReadTest do
     "sertantai_legal_web/controllers/ai_sync_controller.ex" => :display,
     # the admin LAT page lists a law's notes
     "sertantai_legal_web/controllers/lat_admin_controller.ex" => :display,
-    # LR-25 step 7 deletes it
-    "sertantai_legal/scraper/lat_status/apply.ex" => :to_delete
+    # our copy's change log (LatParseLog): a "renumbered as" note pairs a
+    # removed and an inserted row as a rename; the note's change id is the
+    # evidence. Not a label.
+    "sertantai_legal/scraper/lat_cause/apply.ex" => :pointer
   }
+
+  # heredoc SQL and one-line "…" strings
+  defp sql_strings(src) do
+    heredocs = Regex.scan(~r/"""(.*?)"""/s, src, capture: :all_but_first)
+    lines = Regex.scan(~r/"((?:[^"\\\n]|\\.)*)"/, src, capture: :all_but_first)
+    List.flatten(heredocs ++ lines)
+  end
 
   defp files,
     do:
@@ -63,14 +59,13 @@ defmodule SertantaiLegal.Architecture.NoteReadTest do
           String.contains?(src, call),
           do: {path, call}
 
-    assert offenders -- @to_delete == []
-    assert @to_delete -- offenders == [], "remove deleted readers from @to_delete"
+    assert offenders == []
   end
 
   test "only allow-listed modules read note text in SQL" do
     readers =
       for {path, src} <- files(),
-          sql <- Regex.scan(~r/"""(.*?)"""/s, src, capture: :all_but_first) |> List.flatten(),
+          sql <- sql_strings(src),
           sql =~ ~r/\bamendment_annotations\b/,
           sql =~ ~r/(?<!::)\btext\b\s*(~|!~|ILIKE|LIKE|,|\n\s*FROM|\s+FROM)/i,
           uniq: true,

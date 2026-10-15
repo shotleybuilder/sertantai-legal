@@ -70,8 +70,8 @@ defmodule SertantaiLegal.Scraper.LatParseLog do
   @doc """
   The parse's entries. `plan`: `%{changed, inserted, removed, renames}` (ids;
   renames `%{old, new, match}`). `ctx`: `%{cause, new_notes, status_changes}`
-  — the operation's cause, notes new in this parse (`%{targets, text, parsed}`,
-  `parsed` an `AmendmentNote`), and `[{section_id, before, after}]`.
+  — the operation's cause, notes new in this parse (`%{targets, text, change_id}`),
+  and `[{section_id, before, after}]`.
   """
   @spec entries(map(), map()) :: [entry()]
   def entries(_plan, %{cause: "initial"}), do: []
@@ -83,7 +83,7 @@ defmodule SertantaiLegal.Scraper.LatParseLog do
       for n <- notes,
           {old, new} <- [renumber_pair(n.text, law_name)],
           old in plan.removed and new in plan.inserted,
-          do: {old, new, n.parsed.change_id}
+          do: {old, new, n.change_id}
 
     paired_old = MapSet.new(pairs, &elem(&1, 0))
     paired_new = MapSet.new(pairs, &elem(&1, 1))
@@ -91,7 +91,7 @@ defmodule SertantaiLegal.Scraper.LatParseLog do
 
     by_target =
       notes
-      |> Enum.flat_map(fn n -> Enum.map(n.targets, &{&1, n.parsed.change_id}) end)
+      |> Enum.flat_map(fn n -> Enum.map(n.targets, &{&1, n.change_id}) end)
       |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
 
     evidence = fn sid ->

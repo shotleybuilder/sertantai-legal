@@ -1,10 +1,10 @@
 defmodule Mix.Tasks.Lat.ParseSnapshot do
   @moduledoc """
   The zero-diff gate for behaviour-preserving parser refactors (LR-04):
-  every law parsed offline with its effects (`LatStagedParser.fetch_changes/2`)
-  and its change facts resolved (`ChangeFacts.resolve/5`), saved whole —
-  every row field, every note field, every fact — then compared field by
-  field after a change.
+  every law parsed offline with its effects (`LatStagedParser.fetch_changes/2`),
+  saved whole — every row field and every note field (with the effects
+  joined to it) — then compared field by field after a change. (Change
+  labels are the timeline's, LR-25: `mix lat.timeline` reports them.)
 
       mix lat.parse_snapshot --all --dir data/reports/lat-refactor/lr04-snapshot
       mix lat.parse_snapshot --all --dir data/reports/lat-refactor/lr04-snapshot --compare
@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
   saved are skipped). `--compare` parses afresh and compares with the saved
   snapshot; every difference is a line in `<dir>.compare.csv` (law_name,
   part, index, id, field, base, new) and the run ends with the total, which
-  must be 0. Notes (and their facts) are compared in note-id order: the ids
+  must be 0. Notes are compared in note-id order: the ids
   are the output, the list order is not. `--store` as `lat.text_diff` (default `only`: no requests);
   `--laws A,B` instead of `--all`.
   """
@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
 
   alias NimbleCSV.RFC4180, as: CSV
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{ChangeFacts, LatStagedParser}
+  alias SertantaiLegal.Scraper.LatStagedParser
 
   @shortdoc "Snapshot every law's full parse, or compare a fresh parse with the snapshot"
 
@@ -51,18 +51,16 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
         true -> Mix.raise("Give --laws A,B or --all")
       end
 
-    known = known_laws()
-
-    if opts[:compare], do: compare(laws, dir, mode, known), else: write(laws, dir, mode, known)
+    if opts[:compare], do: compare(laws, dir, mode), else: write(laws, dir, mode)
   end
 
-  defp write(laws, dir, mode, known) do
+  defp write(laws, dir, mode) do
     todo = Enum.reject(laws, &File.exists?(path(dir, &1)))
     Mix.shell().info("#{length(todo)} laws to snapshot (#{length(laws) - length(todo)} saved)")
 
     {ok, failed} =
       todo
-      |> stream(mode, known)
+      |> stream(mode)
       |> Enum.reduce({0, []}, fn
         {law, {:ok, snap}}, {n, failed} ->
           File.write!(path(dir, law), :erlang.term_to_binary(snap, [:compressed]))
@@ -76,7 +74,7 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
     Mix.shell().info("#{ok} laws saved to #{dir}")
   end
 
-  defp compare(laws, dir, mode, known) do
+  defp compare(laws, dir, mode) do
     out = String.trim_trailing(dir, "/") <> ".compare.csv"
     File.write!(out, CSV.dump_to_iodata([~w(law_name part index id field base new)]))
     saved = Enum.filter(laws, &File.exists?(path(dir, &1)))
@@ -84,7 +82,7 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
 
     {total, laws_differing, failed} =
       saved
-      |> stream(mode, known)
+      |> stream(mode)
       |> Enum.reduce({0, 0, []}, fn
         {law, {:ok, snap}}, {total, n, failed} ->
           base = dir |> path(law) |> File.read!() |> :erlang.binary_to_term()
@@ -105,9 +103,9 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
     Mix.shell().info("\n#{total} differences in #{laws_differing} laws (#{out})")
   end
 
-  defp stream(laws, mode, known) do
+  defp stream(laws, mode) do
     laws
-    |> Task.async_stream(&{&1, snapshot(&1, mode, known)},
+    |> Task.async_stream(&{&1, snapshot(&1, mode)},
       max_concurrency: System.schedulers_online(),
       timeout: :infinity,
       ordered: false
@@ -115,30 +113,22 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
     |> Stream.map(fn {:ok, result} -> result end)
   end
 
-  defp snapshot(law, mode, known) do
-    with {:ok, %{rows: rows, notes: notes, effects: effects}} <-
-           LatStagedParser.fetch_changes(law, store: mode) do
-      by_id = for e <- effects, e.effect_id != nil, into: %{}, do: {e.effect_id, e}
+  defp snapshot(law, mode) do
+    with {:ok, %{rows: rows, notes: notes}} <- LatStagedParser.fetch_changes(law, store: mode) do
       notes = Enum.map(notes, &%{&1 | code_type: to_string(&1.code_type)})
-      holders = rows |> Enum.map(& &1.section_id) |> ChangeFacts.holders()
-
-      {facts, out} =
-        ChangeFacts.resolve(rows, notes, by_id, law, holders: holders, known_laws: known)
-
-      {:ok, %{rows: rows, notes: notes, facts: facts, out: out}}
+      {:ok, %{rows: rows, notes: notes}}
     end
   rescue
     e -> {:error, Exception.message(e)}
   end
 
-  # Every field of every row / note / fact (by position), and every row's
-  # resolved status / change fields (by section_id).
+  # Every field of every row / note (by position).
   defp diff(law, base, new) do
     base = by_note_id(base)
     new = by_note_id(new)
 
     lists =
-      for part <- [:rows, :notes, :facts] do
+      for part <- [:rows, :notes] do
         b = Map.fetch!(base, part)
         n = Map.fetch!(new, part)
 
@@ -153,21 +143,13 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
            |> Enum.flat_map(fn {{bi, ni}, i} -> fields(law, part, i, id(bi), bi, ni) end))
       end
 
-    out =
-      (Map.keys(base.out) ++ Map.keys(new.out))
-      |> Enum.uniq()
-      |> Enum.flat_map(fn sid -> fields(law, :out, "", sid, base.out[sid], new.out[sid]) end)
-
-    (Enum.concat(lists) ++ out) |> Enum.map(fn line -> Enum.map(line, &str/1) end)
+    lists |> Enum.concat() |> Enum.map(fn line -> Enum.map(line, &str/1) end)
   end
 
-  # Notes (and their facts, index-aligned) in note-id order: ids are the
-  # output ({law}:{code_type}:{seq}), the list order is not (LR-04: it
-  # followed the VM's atom table before CommentaryParser grouped by name)
-  defp by_note_id(%{notes: notes, facts: facts} = snap) do
-    {notes, facts} = notes |> Enum.zip(facts) |> Enum.sort_by(&elem(&1, 0).id) |> Enum.unzip()
-    %{snap | notes: notes, facts: facts}
-  end
+  # Notes in note-id order: ids are the output ({law}:{code_type}:{seq}),
+  # the list order is not (LR-04: it followed the VM's atom table before
+  # CommentaryParser grouped by name)
+  defp by_note_id(%{notes: notes} = snap), do: %{snap | notes: Enum.sort_by(notes, & &1.id)}
 
   defp fields(_law, _part, _i, _id, same, same), do: []
 
@@ -197,11 +179,6 @@ defmodule Mix.Tasks.Lat.ParseSnapshot do
   defp report_failed(failed) do
     Mix.shell().error("#{length(failed)} laws failed:")
     Enum.each(failed, fn {law, reason} -> Mix.shell().error("  #{law}: #{reason}") end)
-  end
-
-  defp known_laws do
-    %{rows: rows} = Repo.query!("SELECT name FROM legal_register", [], timeout: :infinity)
-    rows |> List.flatten() |> MapSet.new()
   end
 
   defp laws_with_lat do

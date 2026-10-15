@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     whole-provision changes (not words-level), and whole-instrument changes
     (they reach every row). A change counts at its `effective_from` (the
     latest dated in-force entry: fully in force); its earlier entries
-    make a commencement partial (`ChangeFacts.partial?/3`).
+    make a commencement partial (`EffectFacts.partial?/3`).
   - **D1 version.** `in_force_from` is when the current text took effect:
     the latest text change (substituted, inserted, repealed, renumbered,
     amended) or commencement in force at T, else the start when it is
@@ -56,11 +56,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   """
 
   alias SertantaiLegal.Scraper.{
-    AmendmentNote,
-    ChangeFacts,
+    EffectFacts,
     EffectIndex,
     EffectTerritory,
     LatStatus,
+    NotePointer,
     Territory
   }
 
@@ -318,7 +318,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
         commencing != [] and not started? ->
           "prospective"
 
-        ChangeFacts.partial?(Enum.map(commencing, &effect/1), row.extent_code, from) ->
+        EffectFacts.partial?(Enum.map(commencing, &effect/1), row.extent_code, from) ->
           "in_force_partial"
 
         true ->
@@ -652,7 +652,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
         (p.valid_to == nil or Date.compare(date, p.valid_to) == :lt)
 
   defp not_self(nil, _law), do: nil
-  defp not_self(by, law), do: if(AmendmentNote.same_law?(by, law), do: nil, else: by)
+  defp not_self(by, law), do: if(NotePointer.same_law?(by, law), do: nil, else: by)
 
   defp dates(c) do
     entries = for e <- c.in_force, d = e.date, d != nil, do: d

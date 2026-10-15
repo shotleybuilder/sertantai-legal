@@ -389,9 +389,6 @@ defmodule SertantaiLegal.Zenoh.DataServer do
       text: r.text,
       source: r.source,
       affected_sections: r.affected_sections,
-      effect: r.effect,
-      effective_dates: r.effective_dates,
-      effective_from: r.effective_from,
       changed_by: r.changed_by,
       change_id: r.change_id,
       updated_at: r.updated_at
@@ -548,9 +545,6 @@ defmodule SertantaiLegal.Zenoh.DataServer do
         text: Enum.map(records, & &1.text),
         source: Enum.map(records, & &1.source),
         affected_sections: Enum.map(records, &(&1.affected_sections || [])),
-        effect: Enum.map(records, & &1.effect),
-        effective_dates: Enum.map(records, &(&1.effective_dates || [])),
-        effective_from: Enum.map(records, & &1.effective_from),
         changed_by: Enum.map(records, & &1.changed_by),
         change_id: Enum.map(records, & &1.change_id),
         updated_at: Enum.map(records, & &1.updated_at)

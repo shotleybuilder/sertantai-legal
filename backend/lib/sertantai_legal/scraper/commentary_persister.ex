@@ -14,7 +14,7 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Zenoh.ChangeNotifier
 
-  alias SertantaiLegal.Scraper.LatStatus
+  alias SertantaiLegal.Scraper.NotePointer
 
   require Logger
 
@@ -62,13 +62,6 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
 
       %{inserted: inserted, deleted: deleted}
     end)
-    |> tap(fn
-      # Notes drive per-row status and change fields, and their own parsed
-      # fields (#167): refresh once they are committed, on every persist path.
-      # Never fails the persist.
-      {:ok, _} -> LatStatus.Apply.refresh_after_parse(law_name)
-      _ -> :ok
-    end)
   rescue
     e ->
       Logger.error("[CommentaryPersister] Failed for #{law_name}: #{Exception.message(e)}")
@@ -94,6 +87,9 @@ defmodule SertantaiLegal.Scraper.CommentaryPersister do
         effect_ids: ann |> Map.get(:effect_ids, []) |> nil_if_empty(),
         # LR-05: the law its first Citation after "by" names (nil: none)
         citation_law: Map.get(ann, :citation_law),
+        # LR-25: the law its text names, a pointer only, and its stable id
+        changed_by: NotePointer.law(ann.text, to_string(ann.code_type)),
+        change_id: NotePointer.change_id(ann.law_name, ann.text),
         created_at: now,
         updated_at: now
       }

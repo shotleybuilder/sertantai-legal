@@ -174,12 +174,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Rows do
   end
 
   @doc """
-  Status from the parse alone (#167): the inherited Prospective flag, else
-  repealed text (dots / the markers above), else in force. Partial
-  commencement and savings come from the notes (LatStatus.Apply).
-
-  Also `markup_status` (LR-25): the same reading, kept as what the revised
-  text shows when `status` is relabelled (the timeline's J2 input).
+  What the revised text shows (#167, LR-25 `markup_status`): the inherited
+  Prospective flag, else repealed text (dots / the markers above), else
+  retained and excluded everywhere it extends, else in force. The
+  timeline's J2 input; status as a label is the timeline's.
   """
   @spec assign_status([map()]) :: [map()]
   def assign_status(rows) do

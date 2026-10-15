@@ -3,7 +3,7 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
 
   alias SertantaiLegal.Legal.LegalRegister
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LatPersister, LatStatus}
+  alias SertantaiLegal.Scraper.LatPersister
   alias SertantaiLegal.Scraper.LatCause.Apply
 
   @paths ["/uksi/2099/1/body/data.xml"]
@@ -45,20 +45,21 @@ defmodule SertantaiLegal.Scraper.LatCause.ApplyTest do
     for note <- Keyword.get(opts, :notes, []) do
       Repo.query!(
         """
-        INSERT INTO amendment_annotations (id, country, law_name, law_id, code, code_type, source, text, affected_sections, created_at, updated_at)
-        VALUES ($1, 'uk', $2, $3, 'F1', 'amendment', 'lat_parser', $4, $5, now(), now())
+        INSERT INTO amendment_annotations (id, country, law_name, law_id, code, code_type, source, text, affected_sections, change_id, created_at, updated_at)
+        VALUES ($1, 'uk', $2, $3, 'F1', 'amendment', 'lat_parser', $4, $5, $6, now(), now())
         """,
         [
           "#{name}_#{System.unique_integer([:positive])}",
           name,
           Ecto.UUID.dump!(law_id),
           note,
-          ["#{name}:reg.1"]
+          ["#{name}:reg.1"],
+          # as CommentaryPersister stores it (LR-25)
+          SertantaiLegal.Scraper.NotePointer.change_id(name, note)
         ]
       )
     end
 
-    LatStatus.Apply.refresh(name)
     cause = Apply.record(name, persisted, before, {[xml], @paths}, opts[:explicit])
 
     %{rows: [[stored, hash, valid, paths]]} =

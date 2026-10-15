@@ -184,9 +184,9 @@ defmodule Mix.Tasks.Lat.TextDiff do
 
   defp diff_law(law, mode) do
     # notes too: the note territory hint check (LR-05) compares them
-    with {:ok, %{rows: rows, notes: notes}} <- LatStagedParser.fetch_changes(law, store: mode) do
+    with {:ok, %{rows: rows}} <- LatStagedParser.fetch_changes(law, store: mode) do
       new = Map.new(rows, &{&1.section_id, Map.take(&1, @fields)})
-      {:ok, changes(stored(law), new), LatTerritoryCheck.check(rows, notes)}
+      {:ok, changes(stored(law), new), LatTerritoryCheck.check(rows)}
     end
   end
 

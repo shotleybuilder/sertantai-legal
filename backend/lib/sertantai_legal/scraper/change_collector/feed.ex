@@ -18,14 +18,14 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
   `amendment_annotations`. A note's text is never read: a note joining no
   effect makes no record.
 
-  The facts are the effect's: operation (`ChangeFacts.kind/2`),
-  effective_from (`ChangeFacts.effect_fact/1`: the latest dated InForce),
+  The facts are the effect's: operation (`EffectFacts.kind/2`),
+  effective_from (`EffectFacts.effect_fact/1`: the latest dated InForce),
   in-force entries, extents, savings. Ancestor inheritance and labels are
   the projection's (LR-24). Pure.
   """
 
   alias SertantaiLegal.Scraper.ChangeCollector.Record
-  alias SertantaiLegal.Scraper.ChangeFacts
+  alias SertantaiLegal.Scraper.EffectFacts
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   # join kinds, strongest first
@@ -192,9 +192,9 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Feed do
       affected_ref: e.affected_provisions,
       affecting_law: e.affecting,
       affecting_ref: e.affecting_provisions,
-      operation: ChangeFacts.kind(e.type, nil),
+      operation: EffectFacts.kind(e.type, nil),
       effect_type: e.type,
-      effective_from: ChangeFacts.effect_fact(e).effective_from,
+      effective_from: EffectFacts.effect_fact(e).effective_from,
       in_force: e.in_force || [],
       prospective: e.prospective,
       applied: e.applied,
