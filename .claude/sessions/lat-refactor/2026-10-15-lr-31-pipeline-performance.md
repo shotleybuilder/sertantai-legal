@@ -45,14 +45,37 @@ Measured alongside a running dry run, so absolute times are inflated; the propor
 
 Expected: A + B take a full run from about 1.5 h to roughly 10–15 min. Measure on an idle machine before claiming it.
 
+## Gemini review (2026-10-15)
+
+**Taken:**
+- **Measure before acting.** Add to the clean baseline:
+  - GC time (`:erlang.statistics(:garbage_collection)`);
+  - DB write time separate from preparation;
+  - the xpath hot spots;
+  - CPU against memory on an idle machine.
+- **A: prove isolation, don't assume it.** Check every table a law writes and confirm no two laws write the same row:
+  - `lat_events` and the `legal_register` lat_hash triggers are per law row;
+  - `lat_change_log` and `lat_label_timeline` delete + insert by `law_name`.
+
+  Then size the DB pool to the workers. Errors are isolated per law: a failed law is reported, and the run goes on. The equality gate (parallel output = sequential output) stays.
+- **B: an artefact is valid only for the code that made it.** Key each artefact by the source file's hash **and** the producer's code version: a `SourceVersion` over the modules that build it, the pattern `ParserVersion` / `LabelVersion` already use. A parser change then invalidates the artefact automatically. The term records its version and is read with `binary_to_term(bin, [:safe])`.
+- **E (new, quick win): one-pass id index.** `EffectTarget.tree` runs `.//*/@id` per element, roughly O(n × depth) xpath work (2.2 s for WIA). Build the id order, positions and containment in one walk of the tree. Pure, so it can be tested against the current output.
+- **C before D:** parse once per law first; Saxy only if A + B + C + E aren't enough.
+
+**Not taken:**
+- **Splitting a law's transaction for large laws.** Per-law atomicity is what makes the rollback dry run and the wave safe.
+- **A queue process for shared-table writes.** Not needed if the isolation check confirms no cross-law rows; revisit only if it doesn't.
+- **A Postgres table or a run-scoped cache instead of `.etf.gz`.** A run-scoped cache loses the cross-run gain. A table adds schema for derived data that belongs with the store it is derived from.
+
 ## Todo
 
 - ⬜ Clean baseline profile (idle machine): the per-law phases for a sample of small, average and large laws; whole-run time
-- ⬜ Gemini review of the plan
+- ✅ Gemini review of the plan (`backend/data/code-reviews/2026-10-15-lr-31-performance-plan.md`): diagnosis confirmed; C before D
 - ⬜ **Jason: D1** — scope (A + B first; C; D later)
 - ⬜ A: parallel runs — tests first; output identical to a sequential run (compare reports)
 - ⬜ B: derived artefacts — tests first; equality gate: the effects and Docs from the artefact equal those from the XML across the corpus
 - ⬜ C: one parse per document — zero-diff gate (`mix lat.parse_snapshot`)
+- ⬜ E: `EffectTarget.tree` in one pass — tests first; equal to the current tree on every law
 - ⬜ Re-profile; record before and after
 
 ## Dependencies
