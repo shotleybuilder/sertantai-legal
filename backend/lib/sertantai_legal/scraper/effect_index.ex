@@ -19,20 +19,22 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   """
 
   alias SertantaiLegal.Scraper.NotePointer
+  alias SertantaiLegal.Scraper.EffectTarget
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type t :: %{
           by_id: %{String.t() => Effect.t()},
           by_ref: %{String.t() => [Effect.t()]},
           law_extent: String.t() | nil,
-          orphans: %{{String.t(), :ins | :keep} => String.t()}
+          orphans: %{{String.t(), :ins | :keep} => String.t()},
+          targets: %{String.t() => EffectTarget.source()}
         }
 
   @whole ~w(repealed revoked omitted inserted added)
 
   @doc "An empty index (a law with no effects, or none loaded)."
   @spec empty() :: t()
-  def empty, do: %{by_id: %{}, by_ref: %{}, law_extent: nil, orphans: %{}}
+  def empty, do: %{by_id: %{}, by_ref: %{}, law_extent: nil, orphans: %{}, targets: %{}}
 
   @doc """
   Index effects by id and by affected ref. A range ("ss. 1-30") covers every
@@ -42,12 +44,24 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
   law's own extent) stands in for an effect's missing `AffectedExtent`, so a
   devolved instrument's amendment isn't read as narrower than the UK.
   """
-  @spec new([Effect.t()], [String.t()], String.t() | nil, %{String.t() => [String.t()]}) :: t()
-  def new(effects, order \\ [], law_extent \\ nil, containers \\ %{}) do
-    positions = order |> Enum.with_index() |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+  @spec new([Effect.t()], [String.t()], String.t() | nil, EffectTarget.t() | nil) :: t()
+  def new(effects, order \\ [], law_extent \\ nil, tree \\ nil) do
+    flat = EffectTarget.flat(order)
 
     effects =
       Enum.map(effects, fn e -> %{e | affected_extent: e.affected_extent || law_extent} end)
+
+    # LR-29: each effect lands where its own text says (EffectTarget), with
+    # the document tree; else (no tree, or a words-level change: it stays on
+    # the element it names) its refs as given
+    targets =
+      Map.new(effects, fn e ->
+        {e,
+         if(tree && not words_level?(e),
+           do: EffectTarget.resolve(e, tree),
+           else: as_given(e, flat)
+         )}
+      end)
 
     %{
       law_extent: law_extent,
@@ -55,40 +69,19 @@ defmodule SertantaiLegal.Scraper.EffectIndex do
       by_id: for(%Effect{effect_id: id} = e <- effects, id != nil, into: %{}, do: {id, e}),
       by_ref:
         effects
-        |> Enum.flat_map(fn e ->
-          refs = (e.affected_refs || []) ++ in_ranges(e.affected_ranges || [], order, positions)
-          refs = refs ++ inside(refs, containers, e)
-          refs |> Enum.uniq() |> Enum.map(&{&1, e})
-        end)
-        |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+        |> Enum.flat_map(fn e -> targets[e] |> elem(1) |> Enum.uniq() |> Enum.map(&{&1, e}) end)
+        |> Enum.group_by(&elem(&1, 0), &elem(&1, 1)),
+      # where each effect's target came from: :text | :refs | :disagree
+      targets:
+        for({%Effect{effect_id: id}, {src, _}} <- targets, id != nil, into: %{}, do: {id, src})
     }
   end
 
-  # LR-27: a ref naming a container (cross-heading, Part, Chapter) reaches
-  # the elements inside it — unless the change is words-level (a words
-  # change to a heading stays on the heading)
-  defp inside(refs, containers, e) do
-    if containers == %{} or words_level?(e),
-      do: [],
-      else: Enum.flat_map(refs, &Map.get(containers, &1, []))
-  end
-
-  defp in_ranges(ranges, order, positions) do
-    Enum.flat_map(ranges, fn {first, last} ->
-      ends = Map.get(positions, last, [])
-
-      spans =
-        for from <- Map.get(positions, first, []),
-            to = Enum.find(ends, &(&1 >= from)),
-            to != nil,
-            do: from..to
-
-      case spans do
-        [] -> []
-        spans -> Enum.slice(order, Enum.min_by(spans, &Range.size/1))
-      end
-    end)
-  end
+  defp as_given(e, flat),
+    do:
+      {:refs,
+       (e.affected_refs || []) ++
+         Enum.flat_map(e.affected_ranges || [], fn {a, b} -> EffectTarget.span(flat, a, b) end)}
 
   @doc "The effect id in a markup ChangeId; nil for a legacy id."
   @spec effect_id(String.t() | nil) :: String.t() | nil

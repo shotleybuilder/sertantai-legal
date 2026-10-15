@@ -87,15 +87,19 @@ defmodule SertantaiLegal.Scraper.LatParser.EffectsTest do
     assert is_list(segments)
   end
 
-  describe "container refs (LR-27)" do
+  describe "container refs (LR-27; LR-29: the effect lands where its text says)" do
     @doc_xml ~s(<Legislation><Part id="part-2B"><Pblock id="part-2B-crossheading-general"><P1group><P1 id="section-27U"><P2 id="section-27U-1"/></P1></P1group><P1group><P1 id="section-27V"/></P1group></Pblock></Part><P1 id="section-28"/></Legislation>)
 
-    test "a ref naming a cross-heading reaches the provisions inside it (1996/18 ss. 27U-27Y)" do
+    test "provisions inserted with their cross-heading are reached; the ref names only the heading (1996/18 ss. 27U-27Y)" do
       doc = el(@doc_xml)
 
       index =
         Effects.index(
-          [effect("key-i", "inserted", ["part-2B-crossheading-general"])],
+          [
+            effect("key-i", "inserted", ["part-2B-crossheading-general"],
+              affected_provisions: "ss. 27U-27V and cross-heading"
+            )
+          ],
           doc,
           "E+W+S"
         )
@@ -106,10 +110,14 @@ defmodule SertantaiLegal.Scraper.LatParser.EffectsTest do
       assert EffectIndex.on(index, "section-28") == []
     end
 
-    test "a ref naming a Part reaches everything in the Part" do
+    test "a Part named reaches everything in the Part" do
       index =
         Effects.index(
-          [effect("key-m", "applied (with modifications)", ["part-2B"])],
+          [
+            effect("key-m", "applied (with modifications)", ["part-2B"],
+              affected_provisions: "Pt. 2B"
+            )
+          ],
           el(@doc_xml),
           nil
         )
@@ -127,6 +135,23 @@ defmodule SertantaiLegal.Scraper.LatParser.EffectsTest do
 
       assert [%Effect{}] = EffectIndex.on(index, "part-2B-crossheading-general")
       assert EffectIndex.on(index, "section-27U") == []
+    end
+
+    test "a provision named with its cross-heading doesn't reach other provisions under the heading (1989/29 s.12A)" do
+      index =
+        Effects.index(
+          [
+            effect("key-i", "inserted", ["part-2B-crossheading-general"],
+              affected_provisions: "s. 27U and cross-heading"
+            )
+          ],
+          el(@doc_xml),
+          nil
+        )
+
+      assert [%Effect{}] = EffectIndex.on(index, "section-27U")
+      assert EffectIndex.on(index, "section-27V") == []
+      assert index.targets["key-i"] == :text
     end
   end
 end

@@ -14,6 +14,8 @@ defmodule SertantaiLegal.Scraper.ParserVersionTest do
           lib/sertantai_legal/scraper/lat_parser.ex
           lib/sertantai_legal/scraper/lat_parser/walker.ex
           lib/sertantai_legal/scraper/lat_parser/effects.ex
+          lib/sertantai_legal/scraper/effect_target.ex
+          lib/sertantai_legal/scraper/provision_text.ex
           lib/sertantai_legal/scraper/lat_parser/sort_key.ex
           lib/sertantai_legal/scraper/lat_staged_parser.ex
           lib/sertantai_legal/scraper/legislation_gov_uk/changes_feed.ex

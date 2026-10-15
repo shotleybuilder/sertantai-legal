@@ -1,0 +1,105 @@
+defmodule SertantaiLegal.Scraper.EffectTargetTest do
+  use ExUnit.Case, async: true
+
+  alias SertantaiLegal.Scraper.EffectTarget
+  alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
+
+  # 1989/29-like cross-heading block (11C-11H inserted with it; 12A older),
+  # 2023/909-like Part 2 with Chapters, a run of sections, a bracket run
+  @xml ~s(<Legislation>
+    <Part id="part-I">
+      <Pblock id="part-I-crossheading-appeal">
+        <P1 id="section-11C"/><P1 id="section-11D"/><P1 id="section-11H"/>
+        <P1 id="section-12A"><P2 id="section-12A-1"/></P1>
+      </Pblock>
+    </Part>
+    <Part id="part-2">
+      <Chapter id="part-2-chapter-1"><P1 id="regulation-5"/></Chapter>
+      <Chapter id="part-2-chapter-3"><P1 id="regulation-9"><P2 id="regulation-9-8"/></P1></Chapter>
+    </Part>
+    <P1 id="section-50"/><P1 id="section-51"/><P1 id="section-55"/><P1 id="section-56"/>
+    <P1 id="section-33"><P2 id="section-33-1">
+      <P3 id="section-33-1-e"/><P3 id="section-33-1-f"/><P3 id="section-33-1-h"/><P3 id="section-33-1-j"/>
+    </P2></P1>
+  </Legislation>)
+
+  defp tree, do: @xml |> SweetXml.parse(quiet: true) |> EffectTarget.tree()
+
+  defp fx(text, refs, ranges \\ []),
+    do:
+      struct!(Effect,
+        effect_id: "key-1",
+        affecting: "UK_x",
+        type: "inserted",
+        affected_provisions: text,
+        affected_refs: refs,
+        affected_ranges: ranges
+      )
+
+  defp resolve(text, refs, ranges \\ []), do: EffectTarget.resolve(fx(text, refs, ranges), tree())
+
+  test "provisions named with their cross-heading: those provisions and the heading, not older ones under it (1989/29 s.12A)" do
+    assert {:text, ids} = resolve("ss. 11C-11H and cross-heading", ["part-I-crossheading-appeal"])
+    assert Enum.sort(ids) == ~w(part-I-crossheading-appeal section-11C section-11D section-11H)
+  end
+
+  test "\"s. N cross-heading\": the heading only" do
+    assert resolve("s. 11C cross-heading", ["part-I-crossheading-appeal"]) ==
+             {:text, ["part-I-crossheading-appeal"]}
+  end
+
+  test "\"cross-heading\" alone is the heading, as the text says; a Part or Chapter named alone is its contents" do
+    assert resolve("cross-heading", ["part-I-crossheading-appeal"]) ==
+             {:text, ["part-I-crossheading-appeal"]}
+
+    assert {:text, ids} = resolve("Pt. 2", ["part-2"])
+
+    assert Enum.sort(ids) ==
+             ~w(part-2 part-2-chapter-1 part-2-chapter-3 regulation-5 regulation-9 regulation-9-8)
+  end
+
+  test "nested container refs: the text's Chapter, not the whole Part (2023/909 Pt. 2 Ch. 3)" do
+    assert {:text, ids} = resolve("Pt. 2 Ch. 3", ["part-2", "part-2-chapter-3"])
+    assert Enum.sort(ids) == ~w(part-2-chapter-3 regulation-9 regulation-9-8)
+  end
+
+  test "a Part named in Arabic numerals, its id in Roman" do
+    assert {:text, ids} = resolve("Pt. 1", ["part-I"])
+    assert "section-12A-1" in ids and "part-I" in ids
+  end
+
+  test "a range the refs truncate to its first id: the whole range (\"s. 50 - 55\")" do
+    assert {:text, ids} = resolve("s. 50 - 55", ["section-50"])
+    assert Enum.sort(ids) == ~w(section-50 section-51 section-55)
+  end
+
+  test "a bracket range under one parent" do
+    assert {:text, ids} = resolve("s. 33(1)(e)-(h)", ["section-33-1-e", "section-33-1-h"])
+    assert Enum.sort(ids) == ~w(section-33-1-e section-33-1-f section-33-1-h)
+  end
+
+  test "one provision: its own id (sub-provisions are reached through their ancestors, as before)" do
+    assert resolve("s. 33", ["section-33"]) == {:text, ["section-33"]}
+  end
+
+  test "text and refs sharing nothing: the refs as given, marked :disagree (a gap, never a guess)" do
+    assert resolve("s. 56", ["section-50"]) == {:disagree, ["section-50"]}
+  end
+
+  test "text it can't read, or a provision the document doesn't hold: the refs as given (no container expansion)" do
+    assert resolve("word", ["part-I-crossheading-appeal"]) ==
+             {:refs, ["part-I-crossheading-appeal"]}
+
+    assert resolve("s. 99", ["section-50"]) == {:refs, ["section-50"]}
+    assert resolve(nil, ["section-50"]) == {:refs, ["section-50"]}
+  end
+
+  test "the whole instrument keeps its refs (whole-instrument effects are joined elsewhere)" do
+    assert resolve("Act", []) == {:refs, []}
+  end
+
+  test "ranges in the refs are kept on the fallback" do
+    assert {:refs, ids} = resolve("word", [], [{"section-50", "section-55"}])
+    assert Enum.sort(ids) == ~w(section-50 section-51 section-55)
+  end
+end
