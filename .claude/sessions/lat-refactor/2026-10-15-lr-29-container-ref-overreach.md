@@ -86,7 +86,9 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
     - **Territory → unknown, about 1,180:** the same rows.
     - **changed_by changed or emptied, 1,488:** 332 are LR-32 (the old changed_by was another territory's change: a Scottish Act dating 1962/58 s.37(1)(a)[E+W]). Samples of the rest were same-day ties.
   - **Found: the tie-break picked the commencement order over the law that made the change** (anaw 2017/3 s.42(1A): inserted by wsi 2018/101, commenced by wsi 2018/35, the same day; ordering by law name chose 2018/35). **Fixed:** in a same-day tie, the change itself ranks before its commencement, then law, then effect id (test).
-- ⬜ Final dry run 2 on the tie fix, then the wave to Jason
+- ✅ **Final dry run 2** (`lr25_final2`, code `be66e178`): 1,066 laws, 0 errors, cause `parser` on all, labels hook ok on all, DB unchanged.
+  - **Against final run 1:** only 110 changed_by labels differ (same-day ties now name the law that made the change). Rows, periods, unknowns, every gap class and the parse columns are identical.
+- ⬜ The LR-25 wave to Jason
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies

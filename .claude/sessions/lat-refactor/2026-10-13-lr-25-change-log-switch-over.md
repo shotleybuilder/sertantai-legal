@@ -134,7 +134,8 @@ Steps 1–8 are built and committed, and dry run 1 is classified. The wave (step
     - ukpga 1989/29 "s. 11C–11H and cross-heading" (15; s.12A / s.12B → applying nowhere).
   - **To explain:** ukpga 1993/12 s.51 picks up the "ss. 30–46 repealed (S)" effect though it sits outside the range. In LR-29's measurement.
   - **Wrong, from step 7:** 141 rows lose a date because the notes' pointer lost its effect source. Fixed (bug above); the next dry run should show them gone.
-- ⬜ **Wave apply waits for LR-29** (container ref over-reach, found in this dry run): applying now would write the regression (Electricity Act 1989 s.12A applying nowhere)
+- ✅ ~~Wave apply waits for LR-29~~: LR-29, LR-30 and LR-32 built; final dry run 2 clean (2026-10-15)
+- ⬜ **Jason: the wave** (see "The wave (2026-10-15)") (container ref over-reach, found in this dry run): applying now would write the regression (Electricity Act 1989 s.12A applying nowhere)
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes
 - ⬜ Contract notes for D2 (LH-05): what changed for compliance and fractalaw (written down, not sent)
@@ -332,3 +333,47 @@ Not taken:
 - **(b) Keep the columns frozen** at today's values, documented as legacy, until the note-enrichment question is decided.
 
 `changed_by` on notes stays either way, as the pointer (D2). `change_id` stays as an id.
+
+## The wave (2026-10-15): for Jason's decision
+
+**What it is.** The real pipeline over all 1,066 laws, from the store: re-parse → persist (with the enrichment carry and its gate) → notes → cause → the LR-25 hook (register and timeline per law). The result is what final dry run 2 (`lr25_final2`) showed, minus the rollback.
+
+**What changes as at today** (39,638 label changes in 240 laws):
+
+| Cause | Main classes |
+|---|---|
+| LR-27 over-reach removed (LR-29) | repealed → in force 1,792; in force → partly in force 535; dates moved 11,783; changed_by changed or emptied (95% verified as the old label's change no longer reaching) |
+| J2: the revised text shows a repeal | in force → repealed 278 |
+| LR-30: an undated insertion withholds the law's start | in force → unknown about 1,230 |
+| LR-29: no honest start left once the over-reach is gone | in force → unknown about 700 |
+| LR-32: another territory's change no longer dates a version | changed_by 332 |
+| Headings dated by effects naming them | unknown → in force 233; dates and changed_by gained |
+| Same-day ties: the law that made the change, stably | changed_by |
+| Territory | follows the status changes above (rows becoming unknown lose their territory; rows no longer repealed regain theirs) |
+
+**Timeline totals.**
+- Periods: 506,466 → 479,108.
+- Provisions unknown today: 30,201 → 31,984.
+- Gaps:
+  - no start 21,941;
+  - insertion not in the register 9,576;
+  - undated change 16,506;
+  - markup conflict 8,163;
+  - outstanding effect 1,526.
+
+**Also fixed by the wave:**
+- the parse drift on 162 laws (the stored `effect_ids`, `excluded_extent` and `territory_provenance` behind the parser);
+- `markup_status` filled for every row;
+- every law's `parsed` event carrying the current `parser_version`, and a `labels_refreshed` event.
+
+**Steps.**
+1. NAS backup (`./scripts/nas/nas-backup.sh`).
+2. `mix lat.reparse --laws <all 1,066> --store only --tag lr25_wave` (rollback snapshot `lat_reparse_lr25_wave`; it stops at the first error). About 1.5–2 h.
+3. Verify:
+   - `mix lat.stale --strict` reports 0;
+   - 0 `labels_failed` events;
+   - today's labels equal the final dry run's (status / gap counts);
+   - the note-read and write-path guards are green.
+4. Record and close LR-25 (with LR-21, LR-22), LR-29, LR-30 and LR-32.
+
+**Outward.** Nothing is synced. The Zenoh LAT pull, if fractalaw pulls from this dev DB, would serve today's timeline labels and a changed `status_hash`. fractalaw must not pull until D2 (LH-05).
