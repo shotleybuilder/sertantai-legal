@@ -40,9 +40,14 @@ The register (`lat_change_log`, LR-23/LR-08) and the timeline (`lat_label_timeli
   - `LabelTimeline.code_version/0` moved out of `mix lat.timeline`.
   - Tests: hook (rebuilds; skip), failure event, archive cleanup. Suite 2,692.
 - ⬜ (ChangeFacts.row_facts retired in step 7)
-- ⬜ Staleness check, two parts:
-  - 0 laws whose latest `parsed` event is newer than their `lat_change_log.collected_at` (LR-23 Gemini D1);
-  - 0 laws parsed by older parser code: the parse stamps a code version, as the timeline does (found 2026-10-14, see Parse drift)
+- ✅ Step 5 (2026-10-15), staleness:
+  - **Versions:** `SourceVersion` (shared compile-time file hash), with `ParserVersion` moved onto it and a new `LabelVersion` (collectors, amending-law readers, projection, refresh, `mix.lock`).
+  - **Events:** `LabelRefresh` records `labels_refreshed` (provenance: `labels_version`, records, periods) or `labels_failed`. They are used instead of `collected_at` / `built_at`, because ~200 laws have no register records and laws with no start have no periods, so the tables can't show that a law was refreshed.
+  - **Rules:** `LabelStaleness.reasons/2` (pure, 6 tests) gives `no_parse_event`, `parser_version`, `labels_behind_parse`, `labels_version`, `labels_failed`.
+  - **`mix lat.stale`** (`--list`, `--strict`). Today: **1,066 stale** (all `parser_version` + `labels_behind_parse`), as expected before the wave.
+  - **One writer:** `mix lat.collect_changes` and `mix lat.timeline` are report-only (`--apply` removed). The new **`mix lat.relabel`** (`--laws`, `--stale`, `--all`; resumable) rebuilds through `LabelRefresh`, for label-code changes with no re-parse.
+  - **Guard:** `lat_write_path_test.exs` now also asserts that only `LabelRefresh` writes the register and timeline.
+  - Suite 2,703.
 - ⬜ Delete the dead parse-time label and note-fact paths (LR-21)
 - ⬜ Offline classified diff (store only); NAS backup; dry run → **Jason** → apply → verify. The wave re-parses the 162 drifted laws through the one path (LR-28), then re-collects and rebuilds the timeline
 - ⬜ `mix lat.backfill_titles` (from LR-28, Jason 2026-10-14): the only tool that sets one parser-derived column (`--column`, e.g. `excluded_extent`) without a re-parse, so a second writer of parse content. Decide after the wave: if re-parsing the drifted laws through the one path is enough, delete it; else route it through the post-parse hook and record its writes

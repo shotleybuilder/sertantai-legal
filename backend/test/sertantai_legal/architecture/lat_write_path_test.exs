@@ -30,4 +30,20 @@ defmodule SertantaiLegal.Architecture.LatWritePathTest do
   test "only LatStagedParser persists a parse's notes" do
     assert callers("CommentaryPersister.persist(") == []
   end
+
+  test "only LabelRefresh writes a law's change register and label timeline (LR-25)" do
+    allowed = ~w(
+      sertantai_legal/scraper/label_refresh.ex
+      sertantai_legal/scraper/change_collector.ex
+      sertantai_legal/scraper/label_timeline.ex
+    )
+
+    writers =
+      for call <- ["ChangeCollector.write(", "LabelTimeline.write("],
+          path <- callers(call),
+          path not in allowed,
+          do: {path, call}
+
+    assert writers == []
+  end
 end

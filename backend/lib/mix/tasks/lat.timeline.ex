@@ -1,11 +1,12 @@
 defmodule Mix.Tasks.Lat.Timeline do
   @moduledoc """
-  Build the labels timeline `lat_label_timeline` (lat-refactor LR-24) from
-  the change register via `LabelTimeline`. Dry run by default.
+  Report the labels timeline `LabelTimeline` builds from the change register
+  (lat-refactor LR-24) for each law. Report only: `lat_label_timeline` is
+  written by `LabelRefresh` alone — after each parse (the LR-25 hook) or by
+  `mix lat.relabel`.
 
-      mix lat.timeline --laws A,B             # dry run, named laws
-      mix lat.timeline --all                  # dry run, every law with LAT
-      mix lat.timeline --all --apply          # write (per law: delete + insert)
+      mix lat.timeline --laws A,B             # named laws
+      mix lat.timeline --all                  # every law with LAT
       mix lat.timeline --all --tag lr24       # report name (default: timeline)
 
   Reports, written as they go (resumable, `<tag>.csv.done`):
@@ -26,7 +27,7 @@ defmodule Mix.Tasks.Lat.Timeline do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{LabelProjection, LabelTimeline}
 
-  @shortdoc "Build lat_label_timeline from the change register (dry run by default)"
+  @shortdoc "Report each law's label timeline (report only)"
 
   @cols ~w(law rows periods territory_unknown_before_today no_start insertion_not_in_register undated_change markup_conflicts outstanding status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
 
@@ -34,7 +35,7 @@ defmodule Mix.Tasks.Lat.Timeline do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [laws: :string, all: :boolean, apply: :boolean, tag: :string]
+        strict: [laws: :string, all: :boolean, tag: :string]
       )
 
     Mix.Task.run("app.start")
@@ -63,16 +64,12 @@ defmodule Mix.Tasks.Lat.Timeline do
     end
 
     today = LabelProjection.uk_today()
-    version = LabelTimeline.code_version()
     todo = laws -- done
 
-    Mix.shell().info(
-      "#{length(todo)} laws (#{length(done)} done); as at #{today}; #{if opts[:apply], do: "APPLY", else: "dry run"}"
-    )
+    Mix.shell().info("#{length(todo)} laws (#{length(done)} done); as at #{today}; report only")
 
     for {law, i} <- Enum.with_index(todo, 1) do
       %{periods: periods, gaps: gaps, rows: rows} = LabelTimeline.build(law, today)
-      if opts[:apply], do: {:ok, _} = LabelTimeline.write(law, periods, version)
 
       File.write!(gaps_csv, Enum.map(gaps, fn {sid, kind} -> "#{law},#{sid},#{kind}\n" end), [
         :append
