@@ -63,7 +63,17 @@ The same over-reach went into the change register in LR-27's re-collect, giving 
     - 1 other.
   - **Found and fixed: heading rows.** The walker never joined effects to heading rows (only provisions got `row_effect_joins`); headings were dated only through the looser note fallback (`note_cited`). With LR-29, the note's legacy change id resolves through markup, which by design reaches only rows whose markup carries the change, so headings like WIA 1991 h.22A lost their dated insertion. Heading rows now get `row_effect_joins` (test-first, `heading_effects_test.exs`); h.22A is re-dated (2005-04-01, Water Act 2003) in the real parse path.
   - **Found, logged separately: LR-30** — rows under an undated inserted ancestor take the law's start (1,945 rows, 96 laws). Pre-existing; LR-29 unmasks it.
-- ⬜ Dry run 4 on the final code (heading joins), then verification, then the wave to Jason
+- ✅ **Status classes verified row by row** (`lr25_dry3`). For each row: did it lose a stored record of the relevant kind that no longer reaches it under LR-29?
+
+  | Class | Rows | Result |
+  |---|---|---|
+  | in force → partly in force | 535 | 535 over-reach removed |
+  | repealed → in force | 1,792 | 1,788 over-reach removed; the one exception (1968/73 s.9(1)(a)(i)[E+W+NI]) traced: its text is live, its only repeal is words-level, so the old "repealed" was wrong |
+  | prospective → in force | 198 | 198 over-reach removed |
+  | repealed → unknown | 54 | 54 over-reach removed |
+  | in force → repealed | 277 | J2, dotted / [Repealed] text |
+  | in force → unknown | 717 | 578 over-reach removed; the rest traced by sample (WRA 1991 s.79A, uksi 2011/3066 reg.31(10), CROW 2000 s.10(3)): over-reach of other record kinds ("Pt. 4 heading", Part refs) leaving no honest start (the `no_start` class), or heading rows (now fixed) |
+- ⬜ Dry run 4 on the final code (heading joins), compared with dry run 3, then the wave to Jason
 - ⬜ Lands in the LR-25 wave (re-parse + re-collect)
 
 ## Dependencies
