@@ -49,17 +49,16 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
   @doc "A document's element tree (an xmerl document or element)."
   @spec tree(tuple()) :: t()
   def tree(doc) do
-    # without xpath per element (LR-31 E2). The order is xmerl's `//*[@id]`,
-    # not document order: each node's children in turn (all Parts before
-    # their sections) — kept so the refactor changes no output; LR-35
-    # decides whether spans should run in document order
+    # document order (LR-35), as EffectIndex's ids: xmerl's `//*[@id]` lists
+    # each node's children in turn (all Parts before their sections), so a
+    # range ran over a different order from the one `span/3` documents
     root = if Record.is_record(doc, :xmlDocument), do: doc |> elem(1) |> hd(), else: doc
-    els = Enum.filter([root | Xml.descendants_xmerl(root)], &Xml.attr_or_nil(&1, :id))
+    els = Enum.filter([root | Xml.descendants(root)], &Xml.attr_or_nil(&1, :id))
     order = Enum.map(els, &Xml.attr(&1, :id))
 
     inside =
       Map.new(Enum.zip(order, els), fn {id, el} ->
-        {id, for(d <- Xml.descendants_xmerl(el), v = Xml.attr_or_nil(d, :id), v != nil, do: v)}
+        {id, for(d <- Xml.descendants(el), v = Xml.attr_or_nil(d, :id), v != nil, do: v)}
       end)
 
     %__MODULE__{order: order, positions: positions(order), inside: inside}

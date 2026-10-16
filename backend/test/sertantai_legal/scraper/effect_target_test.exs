@@ -140,6 +140,27 @@ defmodule SertantaiLegal.Scraper.EffectTargetTest do
     end
   end
 
+  describe "document order (LR-35)" do
+    @parts ~s(<Legislation><Part id="part-1"><P1 id="section-1"/><P1 id="section-2"><P2 id="section-2-1"/></P1></Part>
+      <Part id="part-2"><P1 id="section-3"/><P1 id="section-4"/></Part></Legislation>)
+
+    defp tree4, do: @parts |> SweetXml.parse(quiet: true) |> EffectTarget.tree()
+
+    test "the tree's order is document order (as EffectIndex's), not xmerl's `//` order" do
+      assert tree4().order ==
+               ~w(part-1 section-1 section-2 section-2-1 part-2 section-3 section-4)
+    end
+
+    test "a range across a Part boundary takes what lies between its ends in the document" do
+      assert EffectTarget.span(tree4(), "section-2", "section-3") ==
+               ~w(section-2 section-2-1 part-2 section-3)
+    end
+
+    test "inside: an element's descendants in document order" do
+      assert tree4().inside["part-1"] == ~w(section-1 section-2 section-2-1)
+    end
+  end
+
   describe "the 50 disagreements (LR-29)" do
     @mixed ~s(<Legislation><P1 id="section-28"><P2 id="section-28-3"><P3 id="section-28-3-e"/></P2><P3 id="section-28-f"/></P1>
       <P1 id="section-87"><P2 id="section-87-b"/><P2 id="section-87-c"/></P1></Legislation>)

@@ -158,7 +158,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
   each node's children in turn, for the node and then its descendants in
   document order — not document order (`descendants/1,2`). Kept where the
   xpath it replaced fed an ordered result, so LR-31's refactor changes no
-  output; `EffectTarget`'s use of it is LR-35.
+  output (LR-35 moved `EffectTarget` to document order).
   """
   @spec descendants_xmerl(tuple()) :: [tuple()]
   def descendants_xmerl(node), do: Enum.flat_map([node | descendants(node)], &children/1)
