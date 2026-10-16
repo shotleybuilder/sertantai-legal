@@ -8,7 +8,35 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
 
   import SweetXml
 
+  require Record
+
   alias SertantaiLegal.Scraper.Territory
+
+  # xmerl's records, read directly (LR-31 E2): `SweetXml.xpath/2` re-parses
+  # its path string on every call, about half the LAT walk's time
+  Record.defrecordp(
+    :xml_element,
+    :xmlElement,
+    Record.extract(:xmlElement, from_lib: "xmerl/include/xmerl.hrl")
+  )
+
+  Record.defrecordp(
+    :xml_attribute,
+    :xmlAttribute,
+    Record.extract(:xmlAttribute, from_lib: "xmerl/include/xmerl.hrl")
+  )
+
+  Record.defrecordp(
+    :xml_text,
+    :xmlText,
+    Record.extract(:xmlText, from_lib: "xmerl/include/xmerl.hrl")
+  )
+
+  Record.defrecordp(
+    :xml_namespace,
+    :xmlNamespace,
+    Record.extract(:xmlNamespace, from_lib: "xmerl/include/xmerl.hrl")
+  )
 
   @container_elements ~w(Legislation Primary Secondary Body
                          P1para P2para P3para P4para P1group P2group P3group
@@ -69,11 +97,99 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
   @spec no_text_elements() :: [String.t()]
   def no_text_elements, do: @no_text_elements
 
-  @doc "An element's name (`name(.)`)."
+  @doc """
+  An element's name, as XPath `name(.)` gives it: "{uri}Local" for a
+  prefixed name whose namespace is declared, else the name ("P1").
+  """
   @spec element_name(tuple()) :: String.t()
-  def element_name(node) do
-    xpath(node, ~x"name(.)"s)
+  def element_name(xml_element(name: name, nsinfo: nsinfo, namespace: ns)) do
+    case nsinfo do
+      {prefix, local} ->
+        case List.keyfind(xml_namespace(ns, :nodes), prefix, 0) do
+          {_, uri} -> "{#{uri}}#{local}"
+          nil -> to_string(local)
+        end
+
+      [] ->
+        Atom.to_string(name)
+    end
   end
+
+  def element_name(_node), do: ""
+
+  @doc "An element's attribute value, \"\" when absent (`./@Name` with `s`)."
+  @spec attr(tuple(), atom()) :: String.t()
+  def attr(node, name), do: attr_or_nil(node, name) || ""
+
+  @doc "An element's attribute value, nil when absent (`./@Name` with `so`)."
+  @spec attr_or_nil(tuple(), atom()) :: String.t() | nil
+  def attr_or_nil(xml_element(attributes: attributes), name) do
+    case List.keyfind(attributes, name, xml_attribute(:name)) do
+      nil -> nil
+      a -> a |> xml_attribute(:value) |> to_string()
+    end
+  end
+
+  def attr_or_nil(_node, _name), do: nil
+
+  @doc "Child elements (`./*`), or those named `name` (`./Name`)."
+  @spec children(tuple()) :: [tuple()]
+  def children(xml_element(content: content)),
+    do: Enum.filter(content, &Record.is_record(&1, :xmlElement))
+
+  def children(_node), do: []
+
+  @spec children(tuple(), atom()) :: [tuple()]
+  def children(node, name),
+    do: node |> children() |> Enum.filter(&(xml_element(&1, :name) == name))
+
+  @doc "Descendant elements in document order (`.//*`), or those named in `names` (`.//Name`)."
+  @spec descendants(tuple()) :: [tuple()]
+  def descendants(node), do: node |> children() |> Enum.flat_map(&[&1 | descendants(&1)])
+
+  @spec descendants(tuple(), atom() | [atom()]) :: [tuple()]
+  def descendants(node, names) do
+    names = List.wrap(names)
+    node |> descendants() |> Enum.filter(&(xml_element(&1, :name) in names))
+  end
+
+  @doc """
+  Descendant elements in xmerl's `.//*` order, or those named in `names`:
+  each node's children in turn, for the node and then its descendants in
+  document order — not document order (`descendants/1,2`). Kept where the
+  xpath it replaced fed an ordered result, so LR-31's refactor changes no
+  output; `EffectTarget`'s use of it is LR-35.
+  """
+  @spec descendants_xmerl(tuple()) :: [tuple()]
+  def descendants_xmerl(node), do: Enum.flat_map([node | descendants(node)], &children/1)
+
+  @spec descendants_xmerl(tuple(), atom() | [atom()]) :: [tuple()]
+  def descendants_xmerl(node, names) do
+    names = List.wrap(names)
+    node |> descendants_xmerl() |> Enum.filter(&(xml_element(&1, :name) in names))
+  end
+
+  @doc "Whether any descendant element is named in `names` (`.//Name[1]` exists)."
+  @spec descendant?(tuple(), atom() | [atom()]) :: boolean()
+  def descendant?(node, names), do: find_descendant(children(node), List.wrap(names))
+
+  defp find_descendant([], _names), do: false
+
+  defp find_descendant([el | rest], names),
+    do:
+      xml_element(el, :name) in names or find_descendant(children(el), names) or
+        find_descendant(rest, names)
+
+  @doc "Descendant text in document order (`./descendant::text()` with `ls`)."
+  @spec texts(tuple()) :: [String.t()]
+  def texts(xml_element(content: content)), do: Enum.flat_map(content, &texts/1)
+  def texts(xml_text(value: value)), do: [to_string(value)]
+  def texts(_node), do: []
+
+  @doc "An element's local name atom (`P1`, `Title`)."
+  @spec tag(tuple()) :: atom() | nil
+  def tag(xml_element(name: name)), do: name
+  def tag(_node), do: nil
 
   @doc """
   A name without its prefix: "xhtml:td" (element atom) or
@@ -90,12 +206,12 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
 
   @doc "Status=\"Prospective\" on the element."
   @spec prospective?(tuple()) :: boolean()
-  def prospective?(node), do: xpath(node, ~x"./@Status"so) |> to_string() == "Prospective"
+  def prospective?(node), do: attr_or_nil(node, :Status) == "Prospective"
 
   @doc "The element's RestrictExtent, normalised (nil when none)."
   @spec element_extent(tuple()) :: String.t() | nil
   def element_extent(node) do
-    case xpath(node, ~x"./@RestrictExtent"so) do
+    case attr_or_nil(node, :RestrictExtent) do
       nil -> nil
       "" -> nil
       val -> Territory.normalize(to_string(val))
@@ -122,15 +238,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Xml do
   legislation.gov.uk, a stable join key whatever the parse.
   """
   @spec xml_id(tuple()) :: String.t() | nil
-  def xml_id(node) do
-    case xpath(node, ~x"./@id"s) do
-      nil -> nil
-      "" -> nil
-      id -> to_string(id)
-    end
-  end
+  def xml_id(node), do: blank_to_nil(attr(node, :id))
 
   @doc "A change element's ChangeId (nil when none)."
   @spec change_id(tuple()) :: String.t() | nil
-  def change_id(element), do: blank_to_nil(xpath(element, ~x"./@ChangeId"s))
+  def change_id(element), do: blank_to_nil(attr(element, :ChangeId))
 end

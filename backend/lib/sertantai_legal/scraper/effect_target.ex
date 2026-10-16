@@ -26,8 +26,9 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
   Pure: `tree/1` reads an already-parsed document.
   """
 
-  import SweetXml
+  require Record
 
+  alias SertantaiLegal.Scraper.LatParser.Xml
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
   alias SertantaiLegal.Scraper.ProvisionText
 
@@ -48,12 +49,17 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
   @doc "A document's element tree (an xmerl document or element)."
   @spec tree(tuple()) :: t()
   def tree(doc) do
-    els = xpath(doc, ~x"//*[@id]"l)
-    order = Enum.map(els, &to_string(xpath(&1, ~x"./@id"s)))
+    # without xpath per element (LR-31 E2). The order is xmerl's `//*[@id]`,
+    # not document order: each node's children in turn (all Parts before
+    # their sections) — kept so the refactor changes no output; LR-35
+    # decides whether spans should run in document order
+    root = if Record.is_record(doc, :xmlDocument), do: doc |> elem(1) |> hd(), else: doc
+    els = Enum.filter([root | Xml.descendants_xmerl(root)], &Xml.attr_or_nil(&1, :id))
+    order = Enum.map(els, &Xml.attr(&1, :id))
 
     inside =
       Map.new(Enum.zip(order, els), fn {id, el} ->
-        {id, el |> xpath(~x".//*/@id"ls) |> Enum.map(&to_string/1)}
+        {id, for(d <- Xml.descendants_xmerl(el), v = Xml.attr_or_nil(d, :id), v != nil, do: v)}
       end)
 
     %__MODULE__{order: order, positions: positions(order), inside: inside}

@@ -75,7 +75,7 @@ Expected: A + B take a full run from about 1.5 h to roughly 10–15 min. Measure
 - ✅ A: parallel runs — `LawRunner` (3 tests) in `mix lat.relabel` and `mix lat.wave_preview` (`--workers`, default 5); gate: a parallel relabel preview over the sequentially applied labels shows 0 label diffs and the same gap totals
 - ⬜ B: derived artefacts — tests first; equality gate: the effects and Docs from the artefact equal those from the XML across the corpus
 - ❌ C: one parse per document — dropped (parse is 2.5 s at worst; the cost is xpath)
-- ⬜ E2: direct element access instead of xpath (LAT walk, notes, `EffectTarget.tree`) — zero-diff gate `mix lat.parse_snapshot --all`
+- ✅ E2: direct element access instead of xpath (LAT walk, notes, `EffectTarget.tree`) — zero-diff gate `mix lat.parse_snapshot --all`
 - ⬜ Re-profile; record before and after
 
 ## Dependencies
@@ -128,3 +128,13 @@ Order: A → E2 → B, re-profiling after each. Target: the whole run from 58 mi
 ## E2 design (from the call sites)
 
 71 xpath call sites; the hot ones: `Xml.element_name/1` (`name(.)` on every node), attribute reads (`./@id`, `./@CommentaryRef`, `./@RetainText` …) on every element, `./*` children in the walker, and five subtree searches per node in `Text` (`.//P1[1]` … `.//Pblock[1]`, quadratic on deep laws). Plan: record helpers in `LatParser.Xml` (`attr/2`, `children/1,2`, `descendants/2`, `first_descendant?/2`, `texts/1`) over xmerl records; move the call sites module by module, each checked against xpath on every element of sample documents, the whole by `mix lat.parse_snapshot --all` (zero diff).
+
+## E2. Direct element access (2026-10-16)
+
+`LatParser.Xml` reads xmerl records directly: `element_name/1` (XPath `name(.)` exactly: "{uri}Local" for a declared prefix), `attr/2`, `attr_or_nil/2`, `children/1,2`, `descendants/1,2` (document order: the `descendant::` axis), `descendants_xmerl/1,2` (xmerl's `.//*` order), `descendant?/2`, `texts/1`. The hot call sites moved over (walker, Text — five subtree searches per node became one —, Ids, Inline, Refs, Effects, Xml, CommentaryParser); `EffectTarget.tree` no longer runs an xpath per element. Kept as xpath: once-per-document queries and three rare forms (`own_provisions?`, `first_p1_number`, signatures).
+
+**Finding (LR-35):** xmerl's `//` order is not document order (each node's children in turn). The first one-walk tree used document order and changed 161 laws' effect joins (`span/3` resolves ranges over that order). E2 now reproduces xmerl's order (`descendants_xmerl`) wherever the replaced xpath fed an ordered result; the fix is LR-35's decision.
+
+**Gates:** every helper equals its xpath on every element of 8 sample laws (harness in the session scratchpad); `mix lat.parse_snapshot --all --compare` against the baseline `lr31-snapshot`: **0 differences in 1,066 laws**. 2,731 tests pass.
+
+**Result:** the corpus parse (`parse_snapshot`, 6 at once) **45 min → 6 min**. Per law, `fetch_changes`: 6.3 → 2.4 s (817 rows), 25 → 14 s (1988/52), 52 → 29 s (WIA). The amending-law collector (43–58 s on the big Acts) is now the largest cost: B.

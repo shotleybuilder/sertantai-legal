@@ -19,7 +19,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   def p2_wrapper?(p1_node, provision) do
     p2_numbers =
       p1_node
-      |> xpath(~x".//P2"l)
+      |> Xml.descendants_xmerl(:P2)
       |> Enum.map(&pnumber/1)
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
@@ -51,7 +51,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   defp printed_pnumber(node) do
     # descendant::text() reaches through nested Addition/Repeal/Substitution
     # wrappers in document order (xmerl's //text() puts direct text first)
-    case xpath(node, ~x"./Pnumber/descendant::text()"ls) do
+    case node |> Xml.children(:Pnumber) |> Enum.flat_map(&Xml.texts/1) do
       nil ->
         nil
 
@@ -80,7 +80,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   defp number_parts(node, prefix) do
     raw =
       node
-      |> xpath(~x"./Number/descendant::text()"ls)
+      |> Xml.children(:Number)
+      |> Enum.flat_map(&Xml.texts/1)
       |> Enum.map_join("", &to_string/1)
       |> String.trim()
       # Strip the prefix word: "Part I" → "I", "SCHEDULE 1" → "1"
@@ -132,8 +133,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   @spec title(tuple()) :: String.t() | nil
   def title(node) do
     # a Schedule's heading is in its TitleBlock (#165)
-    case xpath(node, ~x"./Title"l) do
-      [] -> node |> xpath(~x"./TitleBlock/Title"l) |> titles_text() |> Xml.blank_to_nil()
+    case Xml.children(node, :Title) do
+      [] -> node |> title_block_titles() |> titles_text() |> Xml.blank_to_nil()
       titles -> titles |> titles_text() |> Xml.blank_to_nil()
     end
   end
@@ -176,9 +177,9 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   # <Repeal RetainText="true" SubstitutionRef="X">old</Repeal><Addition ChangeId="X">new</Addition>:
   # the old words kept for another territory, then their replacement.
   defp territorial_pair?(prev, next) do
-    elem(prev, 1) == :Repeal and xpath(prev, ~x"./@RetainText"s) == "true" and
-      xpath(prev, ~x"./@SubstitutionRef"s) not in ["", nil] and
-      xpath(prev, ~x"./@SubstitutionRef"s) == xpath(next, ~x"./@ChangeId"s)
+    elem(prev, 1) == :Repeal and Xml.attr(prev, :RetainText) == "true" and
+      Xml.attr(prev, :SubstitutionRef) not in ["", nil] and
+      Xml.attr(prev, :SubstitutionRef) == Xml.attr(next, :ChangeId)
   end
 
   # The `title` column: a heading as written (Title, or a Schedule's
@@ -190,13 +191,17 @@ defmodule SertantaiLegal.Scraper.LatParser.Ids do
   @spec heading_title(tuple()) :: String.t() | nil
   def heading_title(node) do
     title =
-      case xpath(node, ~x"./Title"l) do
-        [] -> node |> xpath(~x"./TitleBlock/Title"l) |> titles_text()
+      case Xml.children(node, :Title) do
+        [] -> node |> title_block_titles() |> titles_text()
         titles -> titles_text(titles)
       end
 
     if Regex.match?(@dots_title, title), do: nil, else: title
   end
+
+  # ./TitleBlock/Title
+  defp title_block_titles(node),
+    do: node |> Xml.children(:TitleBlock) |> Enum.flat_map(&Xml.children(&1, :Title))
 
   @doc "The Pnumber of the first P1 inside (a Pblock's heading_group)."
   @spec first_p1_number(tuple()) :: String.t() | nil

@@ -130,7 +130,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
 
   defp change_occurrences(node, index, path) when elem(node, 0) == :xmlElement do
     path =
-      case Xml.blank_to_nil(xpath(node, ~x"./@id"s)) do
+      case Xml.blank_to_nil(Xml.attr(node, :id)) do
         nil -> path
         id -> path ++ [id]
       end
@@ -138,7 +138,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
     own =
       with name when name in ~w(Addition Substitution Repeal) <- Xml.local_name(elem(node, 1)),
            change_id when change_id != nil <- Xml.change_id(node) do
-        ref = Xml.blank_to_nil(xpath(node, ~x"./@CommentaryRef"s))
+        ref = Xml.blank_to_nil(Xml.attr(node, :CommentaryRef))
         joined = EffectIndex.for(index, change_id, ref)
 
         [
@@ -229,12 +229,12 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
 
   defp joinable_markup?(node, effects) do
     node
-    |> xpath(~x".//Addition | .//Substitution | .//Repeal"l)
+    |> Xml.descendants_xmerl([:Addition, :Substitution, :Repeal])
     |> Enum.any?(fn el ->
       EffectIndex.for(
         effects,
         Xml.change_id(el),
-        Xml.blank_to_nil(xpath(el, ~x"./@CommentaryRef"s))
+        Xml.blank_to_nil(Xml.attr(el, :CommentaryRef))
       ) !=
         nil
     end)

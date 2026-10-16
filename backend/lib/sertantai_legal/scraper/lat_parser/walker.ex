@@ -100,10 +100,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
     defp versions(doc) do
       for version <- xpath(doc, ~x"//Versions/Version"l),
-          first = xpath(version, ~x"./*[1]"o),
+          first = List.first(Xml.children(version)),
           first != nil and Xml.element_name(first) in @version_content,
           into: %{},
-          do: {to_string(xpath(version, ~x"./@id"s)), version}
+          do: {Xml.attr(version, :id), version}
     end
   end
 
@@ -120,7 +120,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
   defp walk_children(node, ctx) do
     ctx = %{ctx | trailing: []}
-    children = xpath(node, ~x"./*"l)
+    children = Xml.children(node)
     parent_open? = Text.lead_in_before_children_open?(node)
 
     children
@@ -168,7 +168,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
   # version). Inner extents that contradict it don't label its rows: uksi
   # 2010/2214's Welsh reg.36 holds a P1 marked E (LH-02).
   defp version_extent(version) do
-    case xpath(version, ~x"./*[1]"o) do
+    case List.first(Xml.children(version)) do
       nil -> nil
       root -> Xml.element_extent(root)
     end
@@ -184,7 +184,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Walker do
 
   defp alt_versions(node, versions) do
     node
-    |> xpath(~x"./@AltVersionRefs"s)
+    |> Xml.attr(:AltVersionRefs)
     |> String.split(~r/\s+/, trim: true)
     |> Enum.flat_map(fn id ->
       case Map.fetch(versions, id) do

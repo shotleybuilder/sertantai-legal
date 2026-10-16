@@ -29,8 +29,8 @@ defmodule SertantaiLegal.Scraper.LatParser.Refs do
 
       commentaries ->
         Map.new(commentaries, fn c ->
-          id = xpath(c, ~x"./@id"s) |> to_string()
-          type = xpath(c, ~x"./@Type"s) |> to_string() |> String.upcase()
+          id = Xml.attr(c, :id) |> to_string()
+          type = Xml.attr(c, :Type) |> to_string() |> String.upcase()
           {id, type}
         end)
     end
@@ -49,10 +49,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Refs do
            }, [String.t()]}
   def collect(node, ref_type_lookup) do
     refs =
-      case xpath(node, ~x".//CommentaryRef/@Ref"ls) do
-        nil -> []
-        list -> Enum.map(list, &to_string/1)
-      end
+      for r <- Xml.descendants_xmerl(node, :CommentaryRef),
+          v = Xml.attr_or_nil(r, :Ref),
+          v != nil,
+          do: v
 
     counts =
       refs
@@ -83,7 +83,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Refs do
   end
 
   defp refs_within(element, wrapper, quoted) do
-    attribute = Xml.blank_to_nil(xpath(element, ~x"./@CommentaryRef"s))
+    attribute = Xml.blank_to_nil(Xml.attr(element, :CommentaryRef))
 
     from_children =
       element
@@ -100,7 +100,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Refs do
 
     cond do
       name == "CommentaryRef" ->
-        List.wrap(Xml.blank_to_nil(xpath(child, ~x"./@Ref"s)))
+        List.wrap(Xml.blank_to_nil(Xml.attr(child, :Ref)))
 
       name in Xml.quoted_elements() ->
         refs_within(child, wrapper, true)
@@ -129,10 +129,27 @@ defmodule SertantaiLegal.Scraper.LatParser.Refs do
   """
   @spec placement(tuple(), String.t()) :: [String.t()]
   def placement(node, path) do
-    elements = xpath(node, ~x"#{path}/descendant::CommentaryRef/@Ref"ls)
-    attributes = xpath(node, ~x"#{path}/descendant-or-self::*/@CommentaryRef"ls)
-    (elements ++ attributes) |> Enum.map(&to_string/1) |> Enum.uniq()
+    under = under(node, path)
+
+    elements =
+      for n <- under,
+          r <- Xml.descendants(n, :CommentaryRef),
+          v = Xml.attr_or_nil(r, :Ref),
+          v != nil,
+          do: v
+
+    attributes =
+      for n <- under,
+          el <- [n | Xml.descendants(n)],
+          v = Xml.attr_or_nil(el, :CommentaryRef),
+          v != nil,
+          do: v
+
+    (elements ++ attributes) |> Enum.uniq()
   end
+
+  # the elements a `./Name` path selects (the one form callers use)
+  defp under(node, "./" <> name), do: Xml.children(node, String.to_existing_atom(name))
 
   # Classify a ref ID: first try the lookup (handles hash-style IDs),
   # then fall back to prefix matching (F1, C2, I3, E4).

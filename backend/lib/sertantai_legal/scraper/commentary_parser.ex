@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   import SweetXml
 
   alias SertantaiLegal.Scraper.{EffectFacts, EffectIndex, NotePointer}
+  alias SertantaiLegal.Scraper.LatParser.Xml
   alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed.Effect
 
   @type_map %{
@@ -88,8 +89,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   # ── Extract a single Commentary element ──────────────────────────
 
   defp extract_commentary(node, ref_to_sections) do
-    id = xpath(node, ~x"./@id"s) |> to_string()
-    type_char = xpath(node, ~x"./@Type"s) |> to_string()
+    id = Xml.attr(node, :id)
+    type_char = Xml.attr(node, :Type)
 
     code_type = Map.get(@type_map, type_char)
 
@@ -116,7 +117,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   # text before descendants' and scrambled every note with a citation
   # (LAT parser coverage II).
   defp extract_commentary_text(node) do
-    case xpath(node, ~x"./descendant::Text"l) do
+    case Xml.descendants(node, :Text) do
       [] -> [node]
       blocks -> blocks
     end
@@ -142,7 +143,7 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
         law = citation_law(node, extract_commentary_text(node) || ""),
         law != nil,
         into: %{},
-        do: {node |> xpath(~x"./@id"s) |> to_string(), law}
+        do: {node |> Xml.attr(:id), law}
   end
 
   @doc """
@@ -169,11 +170,11 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
   # the first Citation after " by ": {position, its law | nil (no usable URI)}
   defp first_citation(node, text, by_at) do
     node
-    |> xpath(~x".//Citation"l)
+    |> Xml.descendants_xmerl(:Citation)
     |> Enum.flat_map(fn c ->
       case citation_at(text, inline_text(c), by_at) do
         nil -> []
-        at -> [{at, uri_law(xpath(c, ~x"./@URI"s) |> to_string())}]
+        at -> [{at, uri_law(Xml.attr(c, :URI))}]
       end
     end)
     |> Enum.min_by(&elem(&1, 0), fn -> nil end)
@@ -195,8 +196,8 @@ defmodule SertantaiLegal.Scraper.CommentaryParser do
 
   defp inline_text(element) do
     element
-    |> xpath(~x"./descendant::text()"ls)
-    |> Enum.map_join("", &to_string/1)
+    |> Xml.texts()
+    |> Enum.join("")
     |> String.replace(~r/\s+/u, " ")
     |> String.trim()
   end

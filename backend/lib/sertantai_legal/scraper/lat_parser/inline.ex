@@ -12,8 +12,6 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
   Territory is decided later, per row (`LatTerritory`). Pure.
   """
 
-  import SweetXml
-
   alias SertantaiLegal.Scraper.LatParser.Xml
   alias SertantaiLegal.Scraper.{LatSegments, LatTerritory}
 
@@ -24,7 +22,10 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
   @spec text(tuple()) :: LatSegments.t()
   def text(element) do
     subrefs =
-      element |> xpath(~x".//@SubstitutionRef"ls) |> Enum.map(&to_string/1) |> MapSet.new()
+      [element | Xml.descendants(element)]
+      |> Enum.map(&Xml.attr_or_nil(&1, :SubstitutionRef))
+      |> Enum.reject(&is_nil/1)
+      |> MapSet.new()
 
     element
     |> render_inline(subrefs)
@@ -46,7 +47,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
   @spec block_change(tuple()) :: LatTerritory.Change.t() | nil
   def block_change(el) do
     cond do
-      elem(el, 1) == :Repeal and xpath(el, ~x"./@RetainText"s) == "true" -> change(el, :keep)
+      elem(el, 1) == :Repeal and Xml.attr(el, :RetainText) == "true" -> change(el, :keep)
       elem(el, 1) in [:Addition, :Substitution] -> change(el, :ins)
       true -> nil
     end
@@ -158,15 +159,15 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
 
   # Words repealed (text kept) with no replacement.
   defp retained_words?(el) do
-    elem(el, 1) == :Repeal and xpath(el, ~x"./@RetainText"s) == "true" and
+    elem(el, 1) == :Repeal and Xml.attr(el, :RetainText) == "true" and
       substitution_ref(el) == nil
   end
 
   defp change(el, kind) do
     %LatTerritory.Change{
       kind: kind,
-      attribute: Xml.blank_to_nil(xpath(el, ~x"./@Extent"s)),
-      ref: Xml.blank_to_nil(xpath(el, ~x"./@CommentaryRef"s)),
+      attribute: Xml.blank_to_nil(Xml.attr(el, :Extent)),
+      ref: Xml.blank_to_nil(Xml.attr(el, :CommentaryRef)),
       change_id: Xml.change_id(el),
       substitution: elem(el, 1) == :Substitution
     }
@@ -176,13 +177,13 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
   defp pair_change(repeal, partner) do
     attribute =
       [repeal, partner]
-      |> Enum.map(&Xml.blank_to_nil(xpath(&1, ~x"./@Extent"s)))
+      |> Enum.map(&Xml.blank_to_nil(Xml.attr(&1, :Extent)))
       |> Enum.find(& &1)
 
     %LatTerritory.Change{
       kind: :pair,
       attribute: attribute,
-      ref: Xml.blank_to_nil(xpath(repeal, ~x"./@CommentaryRef"s)),
+      ref: Xml.blank_to_nil(Xml.attr(repeal, :CommentaryRef)),
       change_id: Xml.change_id(repeal)
     }
   end
@@ -202,7 +203,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Inline do
   end
 
   defp substitution_ref(element) do
-    if elem(element, 1) == :Repeal and xpath(element, ~x"./@RetainText"s) == "true",
-      do: Xml.blank_to_nil(xpath(element, ~x"./@SubstitutionRef"s))
+    if elem(element, 1) == :Repeal and Xml.attr(element, :RetainText) == "true",
+      do: Xml.blank_to_nil(Xml.attr(element, :SubstitutionRef))
   end
 end

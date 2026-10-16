@@ -193,12 +193,12 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   end
 
   defp item_label(item, list, i) do
-    decoration = xpath(list, ~x"./@Decoration"s)
+    decoration = Xml.attr(list, :Decoration)
 
-    case xpath(item, ~x"./@NumberOverride"s) do
+    case Xml.attr(item, :NumberOverride) do
       "" ->
         # number only what the source numbers: an OrderedList with a Type
-        type = xpath(list, ~x"./@Type"s)
+        type = Xml.attr(list, :Type)
 
         if elem(list, 1) == :OrderedList and type != "",
           do: decorate(list_number(i, type), decoration)
@@ -320,7 +320,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
     # blocks before its first child row)
     {blocks, _} =
       node
-      |> xpath(~x"./*"l)
+      |> Xml.children()
       |> Enum.flat_map_reduce({false, []}, fn child, {after_open_child?, lead} ->
         {out, after?} = block(child, mode, after_open_child?, lead)
         {out, {after?, freeze(lead, out)}}
@@ -464,11 +464,7 @@ defmodule SertantaiLegal.Scraper.LatParser.Text do
   end
 
   defp child_provisions?(node) do
-    xpath(node, ~x".//P1[1]"o) != nil ||
-      xpath(node, ~x".//P2[1]"o) != nil ||
-      xpath(node, ~x".//P3[1]"o) != nil ||
-      xpath(node, ~x".//P4[1]"o) != nil ||
-      xpath(node, ~x".//Pblock[1]"o) != nil
+    Xml.descendant?(node, [:P1, :P2, :P3, :P4, :Pblock])
   end
 
   @doc """
