@@ -1,11 +1,114 @@
 ---
 session: 'LR-33: No Start Date'
-status: active
-opened: 2026-10-15
+status: closed
+opened: '2026-10-15'
+closed: '2026-10-16'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'A law''s start is now decided in one place, LawStart: a catalogue of 14 treatments (register, CLML metadata, EU, the law''s own commencement clause, Royal Assent, known limits), written to the
+  register as one commencement record per law and explained by mix lat.law_start. Applied by relabel 2026-10-16: provisions unknown today 31,984 → 19,736; no_start 21,941 → 8,589, all remaining under agreed
+  known limits.'
+decisions:
+- what: 'P1: read the law''s own commencement clause as a register record (source law)'
+  why: the law speaking about itself is a law fact; 191 laws had no start from metadata
+  result: 142 laws gained a start; 12,389 provisions gained an in-force date
+- what: 'P2: exit day = 2020-01-31, IP completion day = 2020-12-31, read as revised'
+  why: exit day moved three times; many exit-day SIs were re-pointed to IP completion day
+  result: 9 laws dated (clause_named_day)
+- what: 'P3: EU regulations from EUR-Lex entry into force (original-act metadata) or their text; directives a known limit'
+  why: a directive was never in force in the UK itself; embedded EUR-Lex metadata is often a consolidation's
+  result: 10 regulations dated; 41 directives and 15 publication-relative regulations are limits
+- what: 'P4/P5: by order, tied to another law, unread and no clause are known limits'
+  why: no date the law itself states
+  result: 40 laws, listed by mix lat.law_start --treatment
+- what: An Act's own dated clause before Royal Assent
+  why: the Interpretation Act 1978 s.4 default applies only where no provision is made otherwise; Jason confirmed 2026-10-16
+  result: 48 Acts' starts moved later (17,018 provisions), e.g. Employment Rights Act 1996 → 22 Aug 1996
+- what: 'Tractability: one catalogue, one register record per law, one report task'
+  why: 'Jason 2026-10-16: ''so our future selves can quickly know the treatments applying'''
+  result: LawStart.catalogue/0; commencement collector (effect_type = treatment); mix lat.law_start
+metrics:
+  relabel_2026_10_16:
+    laws: 1066
+    failed: 0
+    stale_after: 0
+    predicted_changes_live: 50536
+    mismatches: 0
+    unknown_today_before: 31984
+    unknown_today_after: 19736
+    no_start_before: 21941
+    no_start_after: 8589
+    periods_after: 495085
+  clause_reader_vs_register:
+    comparable: 506
+    agree: 501
+  treatments:
+    lrt_metadata: 564
+    act_enactment: 216
+    clause_made_relative: 67
+    clause_staged: 63
+    eu_directive: 41
+    clause_date: 28
+    no_clause: 17
+    eu_publication_relative: 15
+    clause_unread: 14
+    clml_coming_into_force: 13
+    eu_entry_into_force: 10
+    clause_named_day: 9
+    by_order: 6
+    tied_to_other_law: 3
+lessons:
+- title: A cited default can hide its own condition
+  detail: J3 cited Interpretation Act s.4 for Royal Assent but dropped 'unless provision is made otherwise', so 48 Acts that state their commencement took Royal Assent. Re-read the rule's full text when
+    a treatment rests on it.
+  tag: data
+- title: Validate a new reader against the source it will sit beside
+  detail: Running the clause reader on the 506 laws that also had a register date gave a 99% agreement figure and showed the register's own errors (exception dates, a text/metadata conflict).
+  tag: data
+- title: legislation.gov.uk RestrictStartDate is a dataset base date for old laws
+  detail: Every NI Order checked carries 2006-01-01; never use it as commencement.
+  tag: data
+- title: Look at the dry run's biggest movers, not just its totals
+  detail: Checking the top moved laws against known commencements found the Climate Change Act miss ('on the day this Act is passed' without 'on which') before apply.
+  tag: tooling
+bugs:
+- pattern: Provisions of laws with no register coming-into-force date had no start (no_start), though the law's own clause dates them
+  category: timeline gap
+  module: LawStart / LabelTimeline
+  affected: 13352
+  fix: LawStart treatments + commencement collector
+  status: fixed
+- pattern: Acts took Royal Assent as their start even where their own clause states a later commencement
+  category: wrong date
+  module: LabelProjection.clml_start (J3)
+  affected: 17018
+  fix: dated clause before act_enactment in the catalogue
+  status: fixed
+- pattern: uk_lrt.md_coming_into_force_date is sometimes an exception date or disagrees with the revised text (5 of 506 laws)
+  category: register data
+  module: uk_lrt metadata
+  affected: 5
+  fix: kept first in the catalogue; listed in lr33_validate.csv for review
+  status: open
+artifacts:
+- backend/lib/sertantai_legal/scraper/law_start.ex
+- backend/lib/sertantai_legal/scraper/law_start/clause.ex
+- backend/lib/sertantai_legal/scraper/law_start/eu.ex
+- backend/lib/sertantai_legal/scraper/change_collector/commencement.ex
+- backend/lib/mix/tasks/lat.law_start.ex
+- backend/lib/mix/tasks/lat.wave_preview.ex
+- backend/test/sertantai_legal/scraper/law_start_test.exs
+- backend/data/reports/lat-refactor/lr33_dry.csv
+- backend/data/reports/lat-refactor/lr33_validate.csv
+depends_on:
+- 2026-10-13-lr-25-change-log-switch-over
+- 2026-10-13-lr-24-label-projection
+enables:
+- LR-34 commencement exceptions
+- A8 next gap class
 ---
 
-# Session: LR-33 No Start Date (ACTIVE)
+# Session: LR-33 No Start Date (CLOSED)
 
 ## Problem
 
@@ -22,7 +125,7 @@ By type: uksi 90, eudr 41, eur 25, nisi 12, wsi 7, ssi 7, nisr 7, ukpga 1, mwa 1
 - ✅ Validate the clause reader against the 564 laws that already have a coming-into-force date (agreement rate)
 - ✅ Offline measure: `mix lat.wave_preview --all --relabel --tag lr33_dry` (the label path, rolled back; `--relabel` added)
 - ⏸️ Dated exceptions on their provisions ("Articles 45(4)(d) … come into force on …"): LR-34 (pending), after the whole-law start lands
-- ⬜ Dry run → Jason → apply (relabel; no re-parse needed if the start lives in the timeline build) → verify
+- ✅ Dry run → Jason (2026-10-16: "Go ahead") → NAS backup → `mix lat.relabel --stale` → verify: 0 failed, 0 stale, 50,536/50,536 predicted changes live, 19,736 unknown today
 
 ## Dependencies
 
