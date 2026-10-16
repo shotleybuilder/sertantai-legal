@@ -126,12 +126,19 @@ defmodule SertantaiLegal.Scraper.LatParser.Effects do
   # join | nil (an orphan)}, in document order (EffectIndex.with_orphans/3).
   # A walk carrying the path: xpath's ancestor axis is lost on nodes
   # selected from a list.
+  # inline elements that carry ids (LR-37)
+  @inline_ids ~w(Citation CitationSubRef Term Definition Abbreviation Acronym ExternalLink InternalLink FootnoteRef)a
+
   defp change_occurrences(node, index, path \\ [])
 
   defp change_occurrences(node, index, path) when elem(node, 0) == :xmlElement do
+    # a location is a structural element: an inline element's id (a
+    # Citation, a Term, a link) is no provision an effect lands on (LR-37:
+    # eur 2006/1013's Art. 2A-2C insertion, its heading's Citation c00026)
     path =
       case Xml.blank_to_nil(Xml.attr(node, :id)) do
         nil -> path
+        _id when elem(node, 1) in @inline_ids -> path
         id -> path ++ [id]
       end
 
