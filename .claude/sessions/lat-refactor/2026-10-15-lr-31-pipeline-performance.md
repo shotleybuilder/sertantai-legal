@@ -71,11 +71,11 @@ Expected: A + B take a full run from about 1.5 h to roughly 10–15 min. Measure
 
 - ✅ Clean baseline profile (idle machine, 2026-10-16): below
 - ✅ Gemini review of the plan (`backend/data/code-reviews/2026-10-15-lr-31-performance-plan.md`): diagnosis confirmed; C before D
-- ⬜ **Jason: D1** — scope and order (revised below: A, E2, B; C and D dropped or later)
-- ⬜ A: parallel runs — tests first; output identical to a sequential run (compare reports)
+- ✅ **Jason: D1** (2026-10-16: "Yes, try that plan A E2 B")
+- ✅ A: parallel runs — `LawRunner` (3 tests) in `mix lat.relabel` and `mix lat.wave_preview` (`--workers`, default 5); gate: a parallel relabel preview over the sequentially applied labels shows 0 label diffs and the same gap totals
 - ⬜ B: derived artefacts — tests first; equality gate: the effects and Docs from the artefact equal those from the XML across the corpus
-- ⬜ C: one parse per document — zero-diff gate (`mix lat.parse_snapshot`)
-- ⬜ E: `EffectTarget.tree` in one pass — tests first; equal to the current tree on every law
+- ❌ C: one parse per document — dropped (parse is 2.5 s at worst; the cost is xpath)
+- ⬜ E2: direct element access instead of xpath (LAT walk, notes, `EffectTarget.tree`) — zero-diff gate `mix lat.parse_snapshot --all`
 - ⬜ Re-profile; record before and after
 
 ## Dependencies
@@ -116,3 +116,15 @@ Whole relabel (`mix lat.relabel --stale`, 1,066 laws, sequential): **58 min** (1
 - **C (one parse per law) dropped**: the parse is 2.5 s at worst; E2 is where the time is. **D (Saxy) dropped** unless A + E2 + B fall short.
 
 Order: A → E2 → B, re-profiling after each. Target: the whole run from 58 min to under 15 min.
+
+## A. Parallel laws (2026-10-16)
+
+**Isolation check (Gemini):** a law's relabel writes only its own `lat_change_log` / `lat_label_timeline` rows (delete + insert by `law_name`) and `lat_events`; a parse writes its own `legal_articles` / `amendment_annotations` / `lat_changes` / `lat_section_id_renames` and, by trigger, its own `legal_register` row (lat stats) and `lat_events`. The `legal_register` triggers that touch other laws (`propagate_amend_date_change`, `propagate_rescind_date_change`) fire only on `UPDATE OF md_date`, which no LAT path changes. No path reads another law's freshly written data (amending laws come from the CLML store). Pool 20 ≥ 5 workers.
+
+**Built:** `LawRunner.run/4` (`Task.async_stream`, unordered, per-law errors isolated, results handled in the caller so file writes stay serial); `--workers` on `mix lat.relabel` and `mix lat.wave_preview` (default 5). `mix lat.reparse` stays sequential for now: `LatReparse.run` stops at the first error or failed enrichment gate, a sequential contract.
+
+**Gate passed (`lr31_a_par`, 2026-10-16):** a parallel (5 workers) relabel preview of all 1,066 laws over the sequentially applied labels: 0 errors, 0 label diffs; unknown today 18,340, periods 483,781 and every gap total equal to the sequential `lr34_dry3`. **Time: 23.4 min** (15:54–16:18), against 58 min sequential: ×2.5, not ×5 — the largest laws (about 2 min each: WIA, EPA, 1988/52) now set the run's length, which E2 and B target.
+
+## E2 design (from the call sites)
+
+71 xpath call sites; the hot ones: `Xml.element_name/1` (`name(.)` on every node), attribute reads (`./@id`, `./@CommentaryRef`, `./@RetainText` …) on every element, `./*` children in the walker, and five subtree searches per node in `Text` (`.//P1[1]` … `.//Pblock[1]`, quadratic on deep laws). Plan: record helpers in `LatParser.Xml` (`attr/2`, `children/1,2`, `descendants/2`, `first_descendant?/2`, `texts/1`) over xmerl records; move the call sites module by module, each checked against xpath on every element of sample documents, the whole by `mix lat.parse_snapshot --all` (zero diff).

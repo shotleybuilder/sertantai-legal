@@ -11,6 +11,7 @@ defmodule Mix.Tasks.Lat.Relabel do
       mix lat.relabel --laws A,B
       mix lat.relabel --stale             # laws stale for a label reason
       mix lat.relabel --all
+      mix lat.relabel --stale --workers 1   # one law at a time (default: 5 at once, LR-31)
 
   Resumable: laws done are listed in `data/reports/lat-refactor/<tag>.done`
   (default tag: `relabel_<LabelVersion>`, so a resume never skips a law
@@ -20,7 +21,14 @@ defmodule Mix.Tasks.Lat.Relabel do
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LabelRefresh, LabelStaleness, LabelVersion, ParserVersion}
+
+  alias SertantaiLegal.Scraper.{
+    LabelRefresh,
+    LabelStaleness,
+    LabelVersion,
+    LawRunner,
+    ParserVersion
+  }
 
   @shortdoc "Rebuild laws' register + timeline from the store (writes)"
 
@@ -30,7 +38,7 @@ defmodule Mix.Tasks.Lat.Relabel do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [laws: :string, stale: :boolean, all: :boolean, tag: :string]
+        strict: [laws: :string, stale: :boolean, all: :boolean, tag: :string, workers: :integer]
       )
 
     Mix.Task.run("app.start")
@@ -54,22 +62,28 @@ defmodule Mix.Tasks.Lat.Relabel do
     todo = laws -- done
     Mix.shell().info("#{length(todo)} laws (#{length(done)} done)")
 
-    failed =
-      for {law, i} <- Enum.with_index(todo, 1), reduce: 0 do
-        acc ->
-          result = LabelRefresh.run(law)
+    total = length(todo)
+    counter = :counters.new(1, [])
+
+    results =
+      LawRunner.run(
+        todo,
+        &LabelRefresh.run/1,
+        fn law, result ->
           File.write!(done_file, law <> "\n", [:append])
-          if rem(i, 50) == 0, do: Mix.shell().info("  [#{i}/#{length(todo)}]")
+          :counters.add(counter, 1, 1)
+          i = :counters.get(counter, 1)
+          if rem(i, 50) == 0, do: Mix.shell().info("  [#{i}/#{total}]")
 
           case result do
-            :ok ->
-              acc
-
-            {:error, reason} ->
-              Mix.shell().error("  #{law}: #{inspect(reason)}")
-              acc + 1
+            :ok -> :ok
+            {:error, reason} -> Mix.shell().error("  #{law}: #{inspect(reason)}")
           end
-      end
+        end,
+        workers: opts[:workers] || LawRunner.default_workers()
+      )
+
+    failed = Enum.count(results, fn {_, r} -> r != :ok end)
 
     Mix.shell().info("done; #{failed} failed (labels_failed events)")
   end

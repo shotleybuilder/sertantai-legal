@@ -11,6 +11,9 @@ defmodule Mix.Tasks.Lat.WavePreview do
       mix lat.wave_preview --laws A,B --tag lr25_dry
       mix lat.wave_preview --all --tag lr25_dry
       mix lat.wave_preview --all --relabel --tag lr33_dry   # the label path only (`LabelRefresh.run/1`, as `mix lat.relabel`)
+      mix lat.wave_preview --all --workers 1 --tag x       # one law at a time (default: 5 at once, LR-31)
+
+  Rows in the reports are in finishing order, not input order.
 
   Written as it goes (resumable, `<tag>.csv.done`) under
   `data/reports/lat-refactor/`:
@@ -37,6 +40,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
     LabelRefresh,
     LabelTimeline,
     LatStagedParser,
+    LawRunner,
     WavePreview
   }
 
@@ -52,7 +56,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
   def run(args) do
     {opts, _, _} =
       OptionParser.parse(args,
-        strict: [laws: :string, all: :boolean, tag: :string, relabel: :boolean]
+        strict: [laws: :string, all: :boolean, tag: :string, relabel: :boolean, workers: :integer]
       )
 
     Mix.Task.run("app.start")
@@ -83,21 +87,42 @@ defmodule Mix.Tasks.Lat.WavePreview do
     todo = laws -- done
     Mix.shell().info("#{length(todo)} laws (#{length(done)} done); as at #{today}; never writes")
 
-    for {law, i} <- Enum.with_index(todo, 1) do
-      {line, diffs} = preview(law, today, backlog, opts[:relabel] == true)
+    total = length(todo)
+    counter = :counters.new(1, [])
 
-      File.write!(
-        diff_csv,
-        Enum.map(diffs, fn {sid, field, old, new} = d ->
-          Enum.join([law, sid, field, old, new, WavePreview.class(d)], ",") <> "\n"
-        end),
-        [:append]
-      )
+    LawRunner.run(
+      todo,
+      &preview(&1, today, backlog, opts[:relabel] == true),
+      fn
+        law, {:error, reason} ->
+          Mix.shell().error("  #{law}: #{inspect(reason)}")
 
-      File.write!(csv, Enum.join(line, ",") <> "\n", [:append])
-      File.write!(done_file, law <> "\n", [:append])
-      if rem(i, 25) == 0, do: Mix.shell().info("  [#{i}/#{length(todo)}]")
-    end
+          File.write!(
+            csv,
+            Enum.join(
+              [law | List.duplicate("", length(@cols) - 2)] ++ [csv_safe(inspect(reason))],
+              ","
+            ) <> "\n",
+            [:append]
+          )
+
+        law, {line, diffs} ->
+          File.write!(
+            diff_csv,
+            Enum.map(diffs, fn {sid, field, old, new} = d ->
+              Enum.join([law, sid, field, old, new, WavePreview.class(d)], ",") <> "\n"
+            end),
+            [:append]
+          )
+
+          File.write!(csv, Enum.join(line, ",") <> "\n", [:append])
+          File.write!(done_file, law <> "\n", [:append])
+          :counters.add(counter, 1, 1)
+          i = :counters.get(counter, 1)
+          if rem(i, 25) == 0, do: Mix.shell().info("  [#{i}/#{total}]")
+      end,
+      workers: opts[:workers] || LawRunner.default_workers()
+    )
 
     write_classes(diff_csv, Path.join(dir, "#{tag}.classes.csv"))
     Mix.shell().info("report #{csv}")
