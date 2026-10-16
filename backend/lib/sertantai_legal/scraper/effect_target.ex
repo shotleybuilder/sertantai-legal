@@ -33,13 +33,18 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
   alias SertantaiLegal.Scraper.ProvisionText
 
   @enforce_keys [:order, :positions, :inside]
-  defstruct @enforce_keys
+  defstruct [:order, :positions, :inside, ends: %{}]
 
-  @typedoc "A document's ids in order, each id's positions, and each element's ids inside it."
+  @typedoc """
+  A document's ids in document order, each id's positions, each element's
+  ids inside it, and where each position's contents end (LR-35; absent in
+  an ids-only tree: an element ends where it starts).
+  """
   @type t :: %__MODULE__{
           order: [String.t()],
           positions: %{String.t() => [non_neg_integer()]},
-          inside: %{String.t() => [String.t()]}
+          inside: %{String.t() => [String.t()]},
+          ends: %{non_neg_integer() => non_neg_integer()}
         }
 
   @type source :: :text | :refs | :disagree
@@ -56,12 +61,21 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
     els = Enum.filter([root | Xml.descendants(root)], &Xml.attr_or_nil(&1, :id))
     order = Enum.map(els, &Xml.attr(&1, :id))
 
-    inside =
-      Map.new(Enum.zip(order, els), fn {id, el} ->
-        {id, for(d <- Xml.descendants(el), v = Xml.attr_or_nil(d, :id), v != nil, do: v)}
+    held =
+      Enum.map(els, fn el ->
+        for d <- Xml.descendants(el), v = Xml.attr_or_nil(d, :id), v != nil, do: v
       end)
 
-    %__MODULE__{order: order, positions: positions(order), inside: inside}
+    # an element's ids follow it contiguously in document order: its
+    # contents end at its position + their count
+    ends = held |> Enum.with_index() |> Map.new(fn {ids, i} -> {i, i + length(ids)} end)
+
+    %__MODULE__{
+      order: order,
+      positions: positions(order),
+      inside: Map.new(Enum.zip(order, held)),
+      ends: ends
+    }
   end
 
   @doc "An ids-only tree (no containment): ranges resolve, containers don't expand."
@@ -92,23 +106,36 @@ defmodule SertantaiLegal.Scraper.EffectTarget do
   end
 
   @doc """
-  Every id from `first` to `last` in document order, taking the smallest
-  span: versions repeat ids later, so an end's first occurrence can lie far
-  from its start (1990/43 s.34(2A)-(2D)). [] when either end isn't held.
+  What a range from `first` to `last` covers: every element wholly within
+  it, from `first`'s start to the end of `last`'s contents (LR-35, Jason
+  2026-10-16): "Pt. 3-5" is Parts 3, 4 and 5 entire; "s. 2-7" takes the
+  cross-headings and subsections between, not a Part that starts inside and
+  runs past s.7. Document order, taking the smallest span: versions repeat
+  ids later, so an end's first occurrence can lie far from its start (1990/43
+  s.34(2A)-(2D)). [] when either end isn't held. In an ids-only tree (no
+  contents) every id from `first` to `last`.
   """
   @spec span(t(), String.t(), String.t()) :: [String.t()]
-  def span(%__MODULE__{order: order, positions: positions}, first, last) do
-    ends = Map.get(positions, last, [])
+  def span(%__MODULE__{order: order, positions: positions, ends: ends}, first, last) do
+    last_at = Map.get(positions, last, [])
 
     spans =
       for from <- Map.get(positions, first, []),
-          to = Enum.find(ends, &(&1 >= from)),
+          to = Enum.find(last_at, &(&1 >= from)),
           to != nil,
-          do: from..to
+          do: {from, to}
 
     case spans do
-      [] -> []
-      spans -> Enum.slice(order, Enum.min_by(spans, &Range.size/1))
+      [] ->
+        []
+
+      spans ->
+        {from, to} = Enum.min_by(spans, fn {a, b} -> b - a end)
+        stop = Map.get(ends, to, to)
+
+        for {id, i} <- order |> Enum.slice(from..stop//1) |> Enum.with_index(from),
+            Map.get(ends, i, i) <= stop,
+            do: id
     end
   end
 

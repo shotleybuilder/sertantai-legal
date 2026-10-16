@@ -21,8 +21,9 @@ Found by LR-31 E2 (2026-10-16). `EffectTarget.tree/1` took its id order from xpa
 ## Todo
 
 - ✅ Measure: classify the 161 laws' join changes under document order (below)
-- ⬜ Jason: D1 document order; D2 a range covers what lies wholly within it
-- ⬜ Build (tree from `Xml.descendants/1`), zero other change; dry run → Jason → apply (re-parse, the joins are parse-time)
+- ✅ Jason 2026-10-16: "Agree recommendations" (D1 document order; D2 a range covers what lies wholly within it)
+- ✅ Build: tree in document order with each position's contents end (`ends`); `span/3` takes elements wholly within first's start .. last's contents end; ids-only trees unchanged (6 tests)
+- ⬜ Dry run → Jason → apply (re-parse the affected laws: joins are parse-time)
 
 ## Dependencies
 
@@ -58,3 +59,22 @@ So document order alone is not the fix; a range needs a rule for containers it o
 
 - **D1. Document order** for `EffectTarget` (recommended): one order in the parser, as `span/3` documents.
 - **D2. A range covers what lies wholly within it** (recommended): from the start of its first element to the end of its last element's contents; an element is in the range when all of it is. So "Pt. 3-5" is Parts 3, 4 and 5 entire; "s. 2-7" is ss. 2–7 with the cross-headings and subsections between, but not Part 2, which starts inside and runs past s.7. The refs fallback (`EffectIndex` flat spans, no tree) is unchanged.
+
+## Build (2026-10-16, D1 + D2)
+
+`EffectTarget.tree/1` in document order, recording where each position's contents end (`ends`); `span/3` runs from `first`'s start to the end of `last`'s contents and keeps every element wholly inside. An ids-only tree (`flat/1`, the refs fallback) has no contents: unchanged. Tests: tree order, "s. 2-7"-shaped range without the Part that starts inside, a range of Parts taken whole, the flat fallback. 1,769 scraper tests pass.
+
+Parse compare against the xmerl-order baseline: 20,642 differences in 175 laws (`lr35_compare2.csv`; effect_joins 10,256, effect_ids 10,209, territory_provenance 75, note joins 47, unjoined_changes 47, excluded_extent 8). Label dry run (`lr35_dry2`, parse path, 175 laws) running.
+
+## Dry run 2 (`lr35_dry2`, parse path, 175 laws, D1 + D2)
+
+0 errors; 384 label changes in 23 laws; unknown today in those laws 6,875 → 6,861; no rows added or removed.
+
+**Checked fixes:**
+- asp 2005/5 (Fire (Scotland) Act): `pt.2` unchanged, so the Part 2 regression is gone. The 12 Chapter headings (`pt.2.ch.2` … `ch.10`) that "s. 2-7" wrongly repealed under xmerl's order go back to in force; the cross-heading `h.6`, inside ss. 2-7, is repealed with them.
+- eur 2006/561: the saved repeal of "Art. 15-19" no longer reaches Articles 11 and 14 (11 rows repealed_saved → in force).
+- uksi 2026/318: reg. 11(1)(c)-(i) commence on 19 Jan 2027 (the law's own commencement effect), so their in-force date empties (4 rows).
+
+**Two side effects, each its own bug and session:**
+- **LR-37** (eur 2006/1013, 47 rows lose their date): the range now reaches Art. 2A's sub-paragraphs, whose insertion markup joins the effect directly; LR-19's "held by another change" then refuses Art. 2A(1)'s legacy orphan id the same effect, and its markup reads "changed, date unknown".
+- **LR-36** (ukpga 1988/52 s.127(3)(a)-(d) in force → prospective): a pending (never commenced) substitution of s.127(1)-(4) now reaches them; D3 already reads s.127(1)-(3) prospective today though their text is in force — a pre-existing flaw (117 rows corpus-wide where the label says prospective and the markup in force).

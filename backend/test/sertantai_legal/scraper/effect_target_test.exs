@@ -151,9 +151,19 @@ defmodule SertantaiLegal.Scraper.EffectTargetTest do
                ~w(part-1 section-1 section-2 section-2-1 part-2 section-3 section-4)
     end
 
-    test "a range across a Part boundary takes what lies between its ends in the document" do
+    test "a range covers what lies wholly within it: its last element whole, not a Part that starts inside and runs past (asp 2005/5 \"s. 2-7\")" do
       assert EffectTarget.span(tree4(), "section-2", "section-3") ==
-               ~w(section-2 section-2-1 part-2 section-3)
+               ~w(section-2 section-2-1 section-3)
+    end
+
+    test "a range of containers takes them whole (\"Pt. 1-2\")" do
+      assert EffectTarget.span(tree4(), "part-1", "part-2") ==
+               ~w(part-1 section-1 section-2 section-2-1 part-2 section-3 section-4)
+    end
+
+    test "the refs fallback (an ids-only tree) is unchanged" do
+      flat = EffectTarget.flat(~w(section-2 part-2 section-3))
+      assert EffectTarget.span(flat, "section-2", "section-3") == ~w(section-2 part-2 section-3)
     end
 
     test "inside: an element's descendants in document order" do
