@@ -34,6 +34,15 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   - **J2 today.** Where the CLML markup says repealed or prospective and
     the period containing today disagrees, the markup wins for that period
     and the disagreement is a `:markup_conflict` gap.
+  - **J6 by order (LR-34 D1 b).** A row the law's clause leaves to
+    commencement orders (`by_order`) with no dated commencement of its own
+    and not marked prospective by the text is in force as at the revised
+    text held (`text_date`; its insertion, if dated, still starts it),
+    `in_force_from` empty: a `:commenced_by_order` gap. With a dated
+    commencement it exists from the law's start and is prospective until
+    then (D3); marked prospective, it is prospective from the law's start
+    (J2). A row the clause dates (`law_start` on the row) takes that date in
+    place of the law's.
   - **J5 inserted.** A row a note points to as inserted or substituted
     (`inserted_pointer`; the note is only a pointer) whose insertion the
     register doesn't date never takes the law's start: its start is the
@@ -96,7 +105,12 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
   @type gap ::
           {String.t(),
-           :no_start | :insertion_not_in_register | :markup_conflict | :outstanding_effect}
+           :no_start
+           | :insertion_not_in_register
+           | :markup_conflict
+           | :outstanding_effect
+           | :undated_change
+           | :commenced_by_order}
 
   @text_ops ~w(substituted inserted repealed renumbered amended)
 
@@ -109,8 +123,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   (the CLML's own status: "repealed" | "prospective" | nil). `changes`: the
   register's rows for the law (`section_id`, `evidence`, `operation`,
   `effect_type`, `affecting_law`, `in_force`, `effective_from`, `savings`,
-  `via`, and optionally `prospective` / `applied`). Options: `today` (the UK date), `law_start` (the law's coming into
-  force, `uk_lrt.md_coming_into_force_date`).
+  `via`, and optionally `prospective` / `applied`). A row may carry its own
+  start from the law's clause (LR-34): `law_start` (a date, in place of the
+  law's) or `by_order: true` (left to commencement orders). Options: `today`
+  (the UK date), `law_start` (the law's coming into force, `LawStart`),
+  `text_date` (the date of the revised text held, for J6).
   """
   @spec timeline(String.t(), [map()], [map()], keyword()) :: %{
           periods: [Period.t()],
@@ -119,6 +136,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   def timeline(law_name, rows, changes, opts) do
     today = Keyword.fetch!(opts, :today)
     law_start = Keyword.get(opts, :law_start)
+    text_date = Keyword.get(opts, :text_date)
 
     by_row =
       changes
@@ -128,7 +146,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
     {periods, gaps} =
       Enum.reduce(rows, {[], []}, fn row, {ps, gs} ->
-        case row_timeline(law_name, row, relevant(row, by_row), law_start, today) do
+        case row_timeline(law_name, row, relevant(row, by_row), law_start, today, text_date) do
           {:ok, p, g} -> {[p | ps], g ++ gs}
           {:gap, g} -> {ps, [g | gs]}
         end
@@ -187,44 +205,113 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     )
   end
 
-  defp row_timeline(law, row, changes, law_start, today) do
+  defp row_timeline(law, row, changes, law_start, today, text_date) do
     # J5: a note saying the provision was inserted (a pointer), or (LR-30) an
     # insertion of it or an ancestor that no source dates, withholds the
     # law's start: the provision didn't exist from then
     withheld? = Map.get(row, :inserted_pointer) || undated_insertion?(row, changes)
-    law_start = if withheld?, do: nil, else: law_start
 
+    # J6 applies only where nothing else says when the row commenced: no
+    # dated commencement of its own (else it exists from the law's start and
+    # is prospective until then, D3) and the text doesn't mark it
+    # prospective (else prospective from the law's start, J2)
+    by_order? =
+      Map.get(row, :by_order, false) and not commenced?(changes) and
+        Map.get(row, :markup_status) != "prospective"
+
+    # LR-34: the row's own start from the law's clause, in place of the
+    # law's; a row left to commencement orders has none (D1 b)
+    # a date the clause gives the row: after the law's start, the row exists
+    # from the law's start and commences then (prospective until; uksi
+    # 2026/109 reg.2(2) on 23 Mar 2027); else it starts the row
+    {law_start, changes} =
+      case Map.get(row, :law_start) do
+        %Date{} = d when law_start != nil ->
+          if Date.compare(d, law_start) == :gt,
+            do: {law_start, [clause_commencement(law, row, d) | changes]},
+            else: {d, changes}
+
+        %Date{} = d ->
+          {d, changes}
+
+        nil ->
+          {law_start, changes}
+      end
+
+    law_start = if withheld? or by_order?, do: nil, else: law_start
+
+    # J6 (LR-34 D1 b): a row left to commencement orders with no dated start
+    # of its own is in force as at the revised text held, since unknown (J2
+    # still applies the text's prospective / repealed)
     case start(row, changes, law_start) do
+      _ when by_order? and not withheld? and text_date != nil ->
+        # in force as at the text, since unknown (an insertion still dates
+        # the row it made)
+        start = insertion_date(row, changes) || text_date
+        {:ok, periods, gaps} = row_periods(law, row, changes, start, false, today)
+        {:ok, periods, [{row.section_id, :commenced_by_order} | gaps]}
+
       nil ->
         {:gap, {row.section_id, if(withheld?, do: :insertion_not_in_register, else: :no_start)}}
 
       {start, evidence?} ->
-        bounds =
-          changes
-          |> Enum.flat_map(&dates/1)
-          |> Enum.filter(&(Date.compare(&1, start) == :gt))
-          |> Enum.concat([start])
-          |> Enum.uniq()
-          |> Enum.sort(Date)
-
-        periods =
-          bounds
-          |> Enum.zip(tl(bounds) ++ [nil])
-          |> Enum.map(fn {from, to} ->
-            state(law, row, changes, from, to, start, evidence?)
-          end)
-          |> territories(row, changes, today)
-          |> undated(row)
-          |> merge()
-
-        {periods, gaps} = markup_today(periods, row, today)
-
-        {:ok, periods,
-         gaps ++
-           outstanding(periods, changes, row, today) ++
-           if(Map.get(row, :undated_change), do: [{row.section_id, :undated_change}], else: [])}
+        row_periods(law, row, changes, start, evidence?, today)
     end
   end
+
+  defp row_periods(law, row, changes, start, evidence?, today) do
+    bounds =
+      changes
+      |> Enum.flat_map(&dates/1)
+      |> Enum.filter(&(Date.compare(&1, start) == :gt))
+      |> Enum.concat([start])
+      |> Enum.uniq()
+      |> Enum.sort(Date)
+
+    periods =
+      bounds
+      |> Enum.zip(tl(bounds) ++ [nil])
+      |> Enum.map(fn {from, to} ->
+        state(law, row, changes, from, to, start, evidence?)
+      end)
+      |> territories(row, changes, today)
+      |> undated(row)
+      |> merge()
+
+    {periods, gaps} = markup_today(periods, row, today)
+
+    {:ok, periods,
+     gaps ++
+       outstanding(periods, changes, row, today) ++
+       if(Map.get(row, :undated_change), do: [{row.section_id, :undated_change}], else: [])}
+  end
+
+  # the law's own clause commencing the row on a date (LR-34), as a change
+  # of the row's own (normalised): the law commences itself, so changed_by
+  # stays empty
+  defp clause_commencement(law, row, date),
+    do: %{
+      section_id: row.section_id,
+      evidence: "commencement clause",
+      operation: "commenced",
+      effect_type: "provision_dated",
+      affecting_law: law,
+      in_force: [%{date: date, qualification: nil, prospective: false, applied: true}],
+      effective_from: date,
+      savings: [],
+      via: ["law"],
+      prospective: false,
+      applied: true,
+      effect_extent: nil,
+      territorial_application: nil,
+      source: "law",
+      pointer: nil,
+      own: true
+    }
+
+  # a dated commencement of the row's own
+  defp commenced?(changes),
+    do: Enum.any?(changes, &(&1.own and &1.operation == "commenced" and dates(&1) != []))
 
   # J1: {start, whether it is evidence of commencement}
   defp start(row, changes, law_start) do

@@ -47,6 +47,9 @@ defmodule SertantaiLegal.Scraper.LawStart do
           | :clause_unread
           | :no_clause
 
+  @type provision_treatment ::
+          :provision_dated | :provision_by_order | :provision_qualified | :provision_unread
+
   @type t :: %__MODULE__{
           treatment: treatment(),
           date: Date.t() | nil,
@@ -108,6 +111,27 @@ defmodule SertantaiLegal.Scraper.LawStart do
      "Jason 2026-10-16 (LR-33 P5)"},
     {:no_clause, false, "nothing above", "Jason 2026-10-16 (LR-33 P5)"}
   ]
+
+  # {treatment, starts its rows?, rule, decided}: the commencement of
+  # particular provisions (LR-34, `LawStart.Provisions`)
+  @provision_catalogue [
+    {:provision_dated, true,
+     "named provisions of this law commence on a date the clause states: their start, in place of the law's",
+     "Jason 2026-10-16 (LR-33 P1, LR-34)"},
+    {:provision_by_order, true,
+     "named or remaining provisions left to commencement orders, or a law commenced wholly by order: no law start; their own dated commencement where held, else in force as at the revised text unless it marks them prospective, since unknown (gap commenced_by_order)",
+     "Jason 2026-10-16 (LR-34 D1 b)"},
+    {:provision_qualified, false,
+     "commenced for some purposes or places only (\"so far as …\", \"in relation to Wales\"): listed on its rows, no effect",
+     "Jason 2026-10-16 (LR-34 D2)"},
+    {:provision_unread, false,
+     "a sentence whose provisions or date the reader can't resolve: listed for the law, no effect",
+     "LR-34"}
+  ]
+
+  @doc "The provision-level treatments (LR-34): `{treatment, affects rows?, rule, decided}`."
+  @spec provision_catalogue() :: [{provision_treatment(), boolean(), String.t(), String.t()}]
+  def provision_catalogue, do: @provision_catalogue
 
   @doc "The treatments in the order they are tried: `{treatment, dates?, rule, decided}`."
   @spec catalogue() :: [{treatment(), boolean(), String.t(), String.t()}]

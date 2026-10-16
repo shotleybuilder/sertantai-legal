@@ -77,7 +77,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   @doc """
   What `LawStart` decides a law's start from (LR-33): the register's coming
   into force and made date (`uk_lrt`), the stored CLML's metadata, and the
-  law's rows (`section_id`, `text`, in document order).
+  law's rows (`section_id`, `text`, `part`, `chapter`, in document order).
   """
   @spec law_start_input(String.t(), [map()]) :: SertantaiLegal.Scraper.LawStart.input()
   def law_start_input(law_name, rows) do
@@ -97,7 +97,16 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
       lrt_date: lrt_date,
       made: made || clml_made(head),
       clml_head: head,
-      rows: Enum.map(rows, &%{section_id: &1.section_id, text: Map.get(&1, :text)})
+      rows:
+        Enum.map(
+          rows,
+          &%{
+            section_id: &1.section_id,
+            text: Map.get(&1, :text),
+            part: Map.get(&1, :part),
+            chapter: Map.get(&1, :chapter)
+          }
+        )
     }
   end
 

@@ -19,7 +19,8 @@ defmodule Mix.Tasks.Lat.Timeline do
     "timeline", stored, fresh)
   - `<tag>.gaps.csv`: each provision the timeline can't fully answer (law,
     section_id, gap): `no_start`, `insertion_not_in_register`,
-    `undated_change`, `markup_conflict`, `outstanding_effect`
+    `undated_change`, `markup_conflict`, `outstanding_effect`,
+    `commenced_by_order` (LR-34: in force as at the text, since unknown)
   """
 
   use Mix.Task
@@ -29,7 +30,7 @@ defmodule Mix.Tasks.Lat.Timeline do
 
   @shortdoc "Report each law's label timeline (report only)"
 
-  @cols ~w(law rows periods territory_unknown_before_today no_start insertion_not_in_register undated_change markup_conflicts outstanding status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
+  @cols ~w(law rows periods territory_unknown_before_today no_start insertion_not_in_register undated_change markup_conflicts outstanding commenced_by_order status_same status_changed from_same from_changed from_emptied from_gained by_same by_changed)
 
   @impl Mix.Task
   def run(args) do
@@ -106,6 +107,7 @@ defmodule Mix.Tasks.Lat.Timeline do
         Enum.count(gaps, &(elem(&1, 1) == :undated_change)),
         Enum.count(gaps, &(elem(&1, 1) == :markup_conflict)),
         Enum.count(gaps, &(elem(&1, 1) == :outstanding_effect)),
+        Enum.count(gaps, &(elem(&1, 1) == :commenced_by_order)),
         n - changed.(:status_changed),
         changed.(:status_changed),
         n - changed.(:from_changed) - changed.(:from_emptied) - changed.(:from_gained),

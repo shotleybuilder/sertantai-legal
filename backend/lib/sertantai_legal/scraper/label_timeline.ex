@@ -134,7 +134,8 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
         SELECT section_id, evidence, operation, effect_type, affecting_law, in_force,
                effective_from, savings, via, prospective, applied, effect_extent,
                territorial_application, source, pointer
-        FROM lat_change_log_rows WHERE law_name = $1 AND section_id IS NOT NULL
+        FROM lat_change_log_rows
+        WHERE law_name = $1 AND section_id IS NOT NULL AND collector <> 'commencement'
         """,
         [law_name]
       )
@@ -167,10 +168,62 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     rows = Enum.map(rows, &Map.put(&1, :undated_change, undated?.(&1.section_id)))
 
     law_start = law_start(law_name)
+    starts = row_starts(law_name)
+
+    rows =
+      Enum.map(rows, fn row ->
+        case Map.get(starts, row.section_id) do
+          {"provision_dated", %Date{} = d} -> Map.put(row, :law_start, d)
+          {"provision_by_order", _} -> Map.put(row, :by_order, true)
+          _ -> row
+        end
+      end)
 
     law_name
-    |> LabelProjection.timeline(rows, changes, today: today, law_start: law_start)
+    |> LabelProjection.timeline(rows, changes,
+      today: today,
+      law_start: law_start,
+      text_date: text_date(law_name)
+    )
     |> Map.put(:rows, rows)
+  end
+
+  @doc """
+  Each row's own start from the law's commencement clause (LR-34):
+  section_id → `{treatment, date}` for `provision_dated` and
+  `provision_by_order` records.
+  """
+  @spec row_starts(String.t()) :: %{String.t() => {String.t(), Date.t() | nil}}
+  def row_starts(law_name) do
+    %{rows: rows} =
+      Repo.query!(
+        """
+        SELECT section_id, effect_type, effective_from FROM lat_change_log_rows
+        WHERE law_name = $1 AND collector = 'commencement' AND section_id IS NOT NULL
+          AND effect_type IN ('provision_dated', 'provision_by_order')
+        """,
+        [law_name]
+      )
+
+    Map.new(rows, fn [sid, t, d] -> {sid, {t, d}} end)
+  end
+
+  @doc """
+  The date of the revised text we hold (LR-34 D1 b): the latest parse's
+  `source_valid_date` (`dct:valid`), else the day it was parsed.
+  """
+  @spec text_date(String.t()) :: Date.t() | nil
+  def text_date(law_name) do
+    case Repo.query!(
+           """
+           SELECT coalesce(source_valid_date, at::date) FROM lat_events
+           WHERE law_name = $1 AND event = 'parsed' ORDER BY at DESC LIMIT 1
+           """,
+           [law_name]
+         ) do
+      %{rows: [[%Date{} = d]]} -> d
+      _ -> nil
+    end
   end
 
   @doc """
@@ -184,6 +237,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
            """
            SELECT effective_from FROM lat_change_log
            WHERE law_name = $1 AND collector = 'commencement' AND section_id IS NULL
+             AND effect_type NOT LIKE 'provision\\_%'
            LIMIT 1
            """,
            [law_name]

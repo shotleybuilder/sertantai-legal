@@ -54,7 +54,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   # a part of this law commencing ("This Article and Article 2 shall come
   # into operation …", "The remaining provisions of this Order …")
   @own_part Regex.compile!(
-              ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:this\s+(?:article|regulation|section|rule|paragraph|Part|Schedule)\b|(?:the\s+)?(?:remaining provisions|remainder)\s+of\s+(?:this|these)\b|.{0,200}\bof\s+(?:this|these)\s+" <>
+              ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:this\s+(?:article|regulation|section|rule|paragraph|Part|Schedule)\b|(?:the\s+)?(?:remaining provisions|remainder)\s+of\s+(?:this|these)\b|the\s+following\s+provisions\b(?!\s+of\s+(?:the|that)\b)|.{0,200}\bof\s+(?:this|these)\s+" <>
                 @instrument <> ~S"\b).{0,300}?\binto\s+(?:force|operation)\b",
               "is"
             )
@@ -164,6 +164,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
+  @doc "Whether a sentence is a clause commencing the whole instrument."
+  @spec general?(String.t()) :: boolean()
+  def general?(sentence), do: Enum.any?(@general, &Regex.match?(&1, sentence))
+
   # the first sentence in document order where the whole instrument comes
   # into force: {row, sentence, tail}
   defp general(rows) do
@@ -259,12 +263,15 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     t = String.replace(tail, ~r/\s+/, " ")
 
     cond do
-      Regex.match?(~r/^on (?:the (?:day|date) (?:(?:on which|of) )?|Royal Assent)/i, t) and
+      Regex.match?(
+        ~r/^on (?:the (?:day|date) (?:(?:on which|of) )?|Royal Assent|the (?:passing|making) of)/i,
+        t
+      ) and
           starts_made?(t, ~r/^on /i) ->
         & &1
 
-      Regex.match?(~r/^on the day (?:after|following) /i, t) and
-          starts_made?(t, ~r/^on the day (?:after|following) /i) ->
+      Regex.match?(~r/^(?:on )?the day (?:after|following) /i, t) and
+          starts_made?(t, ~r/^(?:on )?the day (?:after|following) /i) ->
         &Date.add(&1, 1)
 
       m = Regex.run(~r/^(?:on )?the #{@number} day (?:after|following) (.*)$/i, t) ->
@@ -352,10 +359,12 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
     end
   end
 
-  defp by_order?(tail),
+  @doc "A tail leaving the commencement to an order (\"on such day as … may by order appoint\")."
+  @spec by_order?(String.t()) :: boolean()
+  def by_order?(tail),
     do:
       tail =~
-        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b/i
+        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b|\bappoints\b|\bprovision made by (?:\w+ ){0,6}(?:by )?order\b|\bspecified by order\b/i
 
   defp tied?(tail),
     do:

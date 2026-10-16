@@ -410,6 +410,61 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
     assert gaps == [{"UK_ukpga_1977_39:s.14", :outstanding_effect}]
   end
 
+  describe "LR-34: the law's clause starts its provisions" do
+    @law "UK_asp_2024_14"
+
+    test "a dated provision after the law's start: exists from the law's start, prospective until its date" do
+      rows = [row(@law, "s.62", law_start: ~D[2027-03-23])]
+
+      assert [
+               {~D[2024-11-13], ~D[2027-03-23], "prospective", nil, nil},
+               {~D[2027-03-23], nil, "in_force", ~D[2027-03-23], nil}
+             ] = periods(@law, rows, [], law_start: ~D[2024-11-13])
+    end
+
+    test "a dated provision before the law's general date starts there (nisr 1997/455 reg.14)" do
+      rows = [row(@law, "s.62", law_start: ~D[1997-12-01])]
+
+      assert [{~D[1997-12-01], nil, "in_force", ~D[1997-12-01], nil}] =
+               periods(@law, rows, [], law_start: ~D[1998-04-01])
+    end
+
+    test "J6: left to commencement orders, no dated start: in force as at the text, since unknown" do
+      rows = [row(@law, "s.1", by_order: true)]
+
+      assert %{
+               periods: [%{valid_from: ~D[2026-09-14], status: "in_force", in_force_from: nil}],
+               gaps: [{"UK_asp_2024_14:s.1", :commenced_by_order}]
+             } =
+               LabelProjection.timeline(@law, rows, [],
+                 today: @today,
+                 law_start: ~D[2024-11-13],
+                 text_date: ~D[2026-09-14]
+               )
+    end
+
+    test "marked prospective by the text: prospective from the law's start (J2), no J6" do
+      rows = [row(@law, "s.1", by_order: true, markup_status: "prospective")]
+
+      assert [{~D[2024-11-13], nil, "prospective", nil, nil}] =
+               periods(@law, rows, [], law_start: ~D[2024-11-13], text_date: ~D[2026-09-14])
+    end
+
+    test "a dated commencement of its own: exists from the law's start, prospective until then (D3; asp 2026/6 s.10)" do
+      rows = [row(@law, "s.1", by_order: true)]
+
+      com =
+        change(@law, "s.1", "c1", "commenced", "coming into force", "UK_ssi_2025_9", [
+          {~D[2025-06-01], nil}
+        ])
+
+      assert [
+               {~D[2024-11-13], ~D[2025-06-01], "prospective", nil, nil},
+               {~D[2025-06-01], nil, "in_force", ~D[2025-06-01], "UK_ssi_2025_9"}
+             ] = periods(@law, rows, [com], law_start: ~D[2024-11-13], text_date: ~D[2026-09-14])
+    end
+  end
+
   test "J5: a provision a note points to as inserted never takes the law's start (1996/18 s.27V)" do
     law = "UK_ukpga_1996_18"
     rows = [row(law, "s.27V", inserted_pointer: true)]
