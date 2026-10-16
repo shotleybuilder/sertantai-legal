@@ -9,6 +9,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
 
   import SweetXml
 
+  alias SertantaiLegal.Scraper.LatParser.Xml
+
   @enforce_keys [:law_name, :type]
   defstruct [
     :law_name,
@@ -36,7 +38,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
   @spec new(String.t(), [String.t()]) :: t()
   def new(law_name, xmls) do
     roots = Enum.map(xmls, &SweetXml.parse(&1, quiet: true, namespace_conformant: false))
-    els = Enum.flat_map(roots, &xpath(&1, ~x"//*[@id]"l))
+    # xmerl's `//*[@id]` order (each node's children in turn), as before
+    # LR-31: `between/3` and `pos` read it
+    els =
+      Enum.flat_map(roots, fn root ->
+        Enum.filter([root | Xml.descendants_xmerl(root)], &Xml.attr_or_nil(&1, :id))
+      end)
+
     ids = Enum.map(els, &id/1)
 
     %__MODULE__{
@@ -101,7 +109,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
 
   defp walk(_node, acc), do: acc
 
-  defp id(el), do: el |> xpath(~x"./@id"s) |> to_string()
+  defp id(el), do: Xml.attr(el, :id)
 
   defp enactment(root) do
     case root |> xpath(~x"//*[local-name()='EnactmentDate']/@Date"s) |> to_string() do
@@ -119,6 +127,8 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
               root,
               ~x"//*[self::P1group or self::Pblock or self::PsubBlock or self::Part or self::Chapter or self::Schedule]"l
             ) do
+        # xpath kept: its union orders text nodes by term order, which the
+        # titles' text depends on (LR-31: "No. The Pastoral Measure 1983")
         title =
           el
           |> xpath(~x"./Title//text() | ./TitleBlock/Title//text()"ls)
@@ -131,7 +141,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
     |> Enum.reject(fn {_, title, _} -> title == "" end)
     |> Enum.sort_by(&elem(&1, 0))
     |> Enum.reduce(%{}, fn {_, title, el}, acc ->
-      ids = el |> xpath(~x"./descendant-or-self::*/@id"ls) |> Enum.map(&to_string/1)
+      ids = for d <- [el | Xml.descendants(el)], v = Xml.attr_or_nil(d, :id), v != nil, do: v
       Enum.reduce(ids, acc, &Map.put(&2, &1, title))
     end)
   end

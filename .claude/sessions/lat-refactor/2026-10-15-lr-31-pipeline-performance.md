@@ -138,3 +138,18 @@ Order: A → E2 → B, re-profiling after each. Target: the whole run from 58 mi
 **Gates:** every helper equals its xpath on every element of 8 sample laws (harness in the session scratchpad); `mix lat.parse_snapshot --all --compare` against the baseline `lr31-snapshot`: **0 differences in 1,066 laws**. 2,731 tests pass.
 
 **Result:** the corpus parse (`parse_snapshot`, 6 at once) **45 min → 6 min**. Per law, `fetch_changes`: 6.3 → 2.4 s (817 rows), 25 → 14 s (1988/52), 52 → 29 s (WIA). The amending-law collector (43–58 s on the big Acts) is now the largest cost: B.
+
+## B measured before building: doesn't pay (2026-10-16)
+
+- **Stored `Doc` terms are slower than parsing:** for WIA's amending laws, `binary_to_term` of the compressed `Doc` took 2.9 s against 1.8 s to parse the XML again, at about 12 MB per artefact against a few hundred KB of gzip. xmerl trees carry parent lists and namespace records on every element; a term of them is bloated.
+- **Little cross-law reuse to cache:** 6,456 law × amending-law pairs over 3,009 amending laws (about 2.1 parses each; 100 amending laws serve 10+ laws, the top one 57), and the collector loads one only for rows the feed leaves undated. A shared in-run cache across 5 workers would also copy these large terms between processes.
+
+So B as planned is dropped. Measuring the whole run with A + E2 (`lr31_ae2`) before proposing what replaces it.
+
+**A + E2 measured (`lr31_ae2`, 2026-10-16):** full relabel preview, 5 workers: **18.5 min** (16:52–17:10; from 58 sequential, 23.4 with A alone). 0 errors, 0 label diffs, unknown today 18,340.
+
+## B2 (replaces B): the amending-law readers without per-element xpath
+
+`AmendingLaw.Doc.new/2`: ids by record access in xmerl's `//*[@id]` order (`between/3` and `pos` read it); a container's ids by the `descendant-or-self` axis. **Kept as xpath:** a container's title text — xmerl's union (`./Title//text() | ./TitleBlock/Title//text()`) orders text nodes by Erlang term order, which titles depend on ("No. The Pastoral Measure 1983 ( 1)"). Gate 1: the `Doc` fields equal the xpath-built ones for 139 amending laws (those of WIA, EPA, 1988/52, the Equality Act, and the five most shared): 0 mismatches. Gate 2: every law's amending-law records equal the stored register: 106 laws, 0 differing.
+
+**Gain is small (about 10%: 1988/52 43 → 39 s, WIA 58 → 53 s).** The collector's cost is now parsing itself: for 1988/52, 162 documents of 47 amending laws (body + Schedules each, no duplicates), `xmerl_scan` 41%. Only a faster parser (D, Saxy) or fewer parses would cut it further.
