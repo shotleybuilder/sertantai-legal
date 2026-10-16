@@ -13,6 +13,8 @@ defmodule SertantaiLegal.Scraper.LabelVersion do
       lib/sertantai_legal/scraper/change_collector.ex
       lib/sertantai_legal/scraper/change_collector/*.ex
       lib/sertantai_legal/scraper/amending_law/*.ex
+      lib/sertantai_legal/scraper/law_start.ex
+      lib/sertantai_legal/scraper/law_start/*.ex
       lib/sertantai_legal/scraper/label_projection.ex
       lib/sertantai_legal/scraper/label_timeline.ex
       lib/sertantai_legal/scraper/label_refresh.ex

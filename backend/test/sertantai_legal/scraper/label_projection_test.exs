@@ -410,17 +410,6 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
     assert gaps == [{"UK_ukpga_1977_39:s.14", :outstanding_effect}]
   end
 
-  test "clml_start/2: earliest ComingIntoForce; else Royal Assent for an Act; else nil" do
-    si =
-      ~s(<ukm:ComingIntoForce> <ukm:DateTime Date="1997-06-20"/> <ukm:DateTime Date="1995-10-09"/> </ukm:ComingIntoForce>)
-
-    assert LabelProjection.clml_start(si, "nisr") == ~D[1995-10-09]
-    act = ~s(<ukm:EnactmentDate Date="1974-07-31"/>)
-    assert LabelProjection.clml_start(act, "ukpga") == ~D[1974-07-31]
-    assert LabelProjection.clml_start(act, "uksi") == nil
-    assert LabelProjection.clml_start("<x/>", "ukpga") == nil
-  end
-
   test "J5: a provision a note points to as inserted never takes the law's start (1996/18 s.27V)" do
     law = "UK_ukpga_1996_18"
     rows = [row(law, "s.27V", inserted_pointer: true)]

@@ -2,14 +2,13 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
   @moduledoc """
   Builds a law's labels timeline (lat-refactor LR-24) into
   `lat_label_timeline`: reads its rows (`legal_articles`), its changes
-  (`lat_change_log_rows`) and its coming into force (`uk_lrt`), runs
-  `LabelProjection.timeline/4`, and replaces the law's periods in one
-  transaction. Thin: the rules are `LabelProjection`'s.
+  (`lat_change_log_rows`) and its start (the register's `commencement`
+  record, LR-33), runs `LabelProjection.timeline/4`, and replaces the law's
+  periods in one transaction. Thin: the rules are `LabelProjection`'s.
 
   The CLML markup status (J2) is the row's `status` where its provenance is
-  `markup` and it is repealed or prospective. The law's start: the
-  register's `md_coming_into_force_date`, else its CLML metadata
-  (`LabelProjection.clml_start/2`, J3).
+  `markup` and it is repealed or prospective. The law's start, and the
+  treatment that decided it, are `LawStart`'s (LR-33).
   """
 
   alias SertantaiLegal.Repo
@@ -167,36 +166,31 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
 
     rows = Enum.map(rows, &Map.put(&1, :undated_change, undated?.(&1.section_id)))
 
-    law_start =
-      case Repo.query!("SELECT md_coming_into_force_date FROM uk_lrt WHERE name = $1 LIMIT 1", [
-             law_name
-           ]) do
-        %{rows: [[%Date{} = d]]} -> d
-        _ -> clml_start(law_name)
-      end
+    law_start = law_start(law_name)
 
     law_name
     |> LabelProjection.timeline(rows, changes, today: today, law_start: law_start)
     |> Map.put(:rows, rows)
   end
 
-  # J3: the law's coming into force from its stored CLML metadata
-  defp clml_start(law_name) do
-    with [_, type, year, number] <- String.split(law_name, "_", parts: 4),
-         [path | _] <-
-           Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/**/data.xml.gz")
-           |> Enum.sort(),
-         {:ok, gz} <- File.read(path) do
-      gz |> head() |> LabelProjection.clml_start(type)
-    else
+  @doc """
+  The law's start (J1's `law_start`): the register's `commencement` record,
+  dated by the `LawStart` treatment named in its `effect_type` (LR-33); nil
+  for a known limit or a law not yet collected.
+  """
+  @spec law_start(String.t()) :: Date.t() | nil
+  def law_start(law_name) do
+    case Repo.query!(
+           """
+           SELECT effective_from FROM lat_change_log
+           WHERE law_name = $1 AND collector = 'commencement' AND section_id IS NULL
+           LIMIT 1
+           """,
+           [law_name]
+         ) do
+      %{rows: [[%Date{} = d]]} -> d
       _ -> nil
     end
-  end
-
-  # the metadata sits at the top of the document
-  defp head(gz) do
-    xml = :zlib.gunzip(gz)
-    binary_part(xml, 0, min(byte_size(xml), 80_000))
   end
 
   @doc """

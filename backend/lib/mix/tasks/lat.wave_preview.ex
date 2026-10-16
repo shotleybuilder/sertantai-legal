@@ -10,6 +10,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
 
       mix lat.wave_preview --laws A,B --tag lr25_dry
       mix lat.wave_preview --all --tag lr25_dry
+      mix lat.wave_preview --all --relabel --tag lr33_dry   # the label path only (`LabelRefresh.run/1`, as `mix lat.relabel`)
 
   Written as it goes (resumable, `<tag>.csv.done`) under
   `data/reports/lat-refactor/`:
@@ -22,14 +23,22 @@ defmodule Mix.Tasks.Lat.WavePreview do
     field, old, new, class)
   - `<tag>.classes.csv`: diffs counted by class (written at the end)
 
-  The apply is `mix lat.reparse --store only` (Jason's approval, NAS backup
-  first); this task never writes.
+  The apply is `mix lat.reparse --store only`, or `mix lat.relabel` for a
+  `--relabel` preview (Jason's approval, NAS backup first); this task never
+  writes.
   """
 
   use Mix.Task
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LabelProjection, LabelTimeline, LatStagedParser, WavePreview}
+
+  alias SertantaiLegal.Scraper.{
+    LabelProjection,
+    LabelRefresh,
+    LabelTimeline,
+    LatStagedParser,
+    WavePreview
+  }
 
   @shortdoc "Dry run of a re-parse wave: real path, rolled back (never writes)"
 
@@ -42,7 +51,9 @@ defmodule Mix.Tasks.Lat.WavePreview do
   @impl Mix.Task
   def run(args) do
     {opts, _, _} =
-      OptionParser.parse(args, strict: [laws: :string, all: :boolean, tag: :string])
+      OptionParser.parse(args,
+        strict: [laws: :string, all: :boolean, tag: :string, relabel: :boolean]
+      )
 
     Mix.Task.run("app.start")
     Logger.configure(level: :warning)
@@ -73,7 +84,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
     Mix.shell().info("#{length(todo)} laws (#{length(done)} done); as at #{today}; never writes")
 
     for {law, i} <- Enum.with_index(todo, 1) do
-      {line, diffs} = preview(law, today, backlog)
+      {line, diffs} = preview(law, today, backlog, opts[:relabel] == true)
 
       File.write!(
         diff_csv,
@@ -92,14 +103,14 @@ defmodule Mix.Tasks.Lat.WavePreview do
     Mix.shell().info("report #{csv}")
   end
 
-  defp preview(law, today, backlog) do
+  defp preview(law, today, backlog, relabel?) do
     before = snapshot(law)
 
     result =
       try do
         Repo.transaction(
           fn ->
-            {:ok, parsed} = LatStagedParser.parse(law, store: :only, pdf_backlog_dir: backlog)
+            {:ok, parsed} = run_path(law, backlog, relabel?)
             after_ = snapshot(law)
 
             gaps =
@@ -149,6 +160,13 @@ defmodule Mix.Tasks.Lat.WavePreview do
            List.duplicate("", length(@cols) - 3) ++ [csv_safe(inspect(reason))], []}
     end
   end
+
+  # the real path: the parse (with its LR-25 hook), or the label path alone
+  defp run_path(law, _backlog, true),
+    do: {:ok, %{cause: "relabel", labels: LabelRefresh.run(law)}}
+
+  defp run_path(law, backlog, false),
+    do: LatStagedParser.parse(law, store: :only, pdf_backlog_dir: backlog)
 
   # the law's labels as at today and its parse-time columns, by section_id
   defp snapshot(law) do

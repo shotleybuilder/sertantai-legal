@@ -1,0 +1,402 @@
+defmodule SertantaiLegal.Scraper.LawStart.Clause do
+  @moduledoc """
+  Reads a law's own commencement clause (lat-refactor LR-33 P1, P2, P4,
+  P5; `LawStart`'s clause treatments): the first sentence in document order
+  where the whole instrument ("this Order", "these Regulations", "This Act")
+  comes into force or operation, including "… may be cited as … and come
+  into force …" and asides ("shall, except as provided by paragraphs (3)
+  and (4) below, come into force …").
+
+  The clause's tail decides the treatment:
+
+  | Tail | Treatment |
+  |---|---|
+  | "on 17th April 1995" | `:clause_date` |
+  | "on the day after the day on which it is made"; "on the twenty-first day after …"; "six months after the date on which they are made"; "on the expiration of two months from the day …" (+1 day); "at the end of the period of three months beginning with the day on which it is passed"; "on the first day of the month following that in which it is made" | `:clause_made_relative` |
+  | "on IP completion day" (also "immediately before / after"): 2020-12-31; "on exit day": 2020-01-31 | `:clause_named_day` |
+  | "in accordance with paragraphs (2) and (3)", "as follows", a list: the earliest date its provision's other sentences state | `:clause_staged` |
+  | no clause for the whole law, only for its parts ("This Article and Article 2 …", "The remaining provisions of this Order …"): the earliest date that provision states | `:clause_staged` |
+  | "on such day as … may by order appoint" | `:by_order` |
+  | "at the same time as section 83 of the 2022 Act comes into force" | `:tied_to_other_law` |
+  | anything else, or a made-relative tail without a made date | `:clause_unread` |
+
+  Counting periods (Interpretation Act conventions): a period "from" or
+  "after" a day excludes that day, so "the expiration of N months from the
+  day on which it is made" is the day after made + N months; a period
+  "beginning with" the day includes it, so its end is made + N. Pure.
+  """
+
+  alias SertantaiLegal.Scraper.LawStart
+
+  @ip_completion_day ~D[2020-12-31]
+  @exit_day ~D[2020-01-31]
+
+  @instrument ~S"(?:Order(?: in Council)?|Regulations?|Rules|Act|Measure|Scheme|Instrument|Byelaws?|Directions)"
+  # an aside between commas: ", subject to paragraphs (2) and (3),"
+  @aside ~S"(?:\s*,[^,]{0,160},)?\s*"
+  @cif ~S"(?:shall" <> @aside <> ~S")?(?:comes?|came)\s+into\s+(?:force|operation)"
+  @prefix ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:(?:Subject to|Except as (?:otherwise )?(?:provided|specified)|Save as (?:otherwise )?provided|Apart from)[^,]{0,200}?(?:,\s*|\s+(?=(?:this|these|the)\s)))?"
+
+  @general [
+    Regex.compile!(
+      @prefix <>
+        ~S"(?:this|these|the)\s+" <>
+        @instrument <> ~S"\b(?:\s*\([^)]*\))?" <> @aside <> @cif <> ~S"\s*(.*)$",
+      "is"
+    ),
+    Regex.compile!(
+      ~S"\b(?:this|these)\s+" <>
+        @instrument <> ~S"\s+may be cited as\b.{0,300}?\band" <> @aside <> @cif <> ~S"\s*(.*)$",
+      "is"
+    )
+  ]
+
+  # a part of this law commencing ("This Article and Article 2 shall come
+  # into operation …", "The remaining provisions of this Order …")
+  @own_part Regex.compile!(
+              ~S"^(?:\(?\d+[A-Z]?\)?\s+)?(?:this\s+(?:article|regulation|section|rule|paragraph|Part|Schedule)\b|(?:the\s+)?(?:remaining provisions|remainder)\s+of\s+(?:this|these)\b|.{0,200}\bof\s+(?:this|these)\s+" <>
+                @instrument <> ~S"\b).{0,300}?\binto\s+(?:force|operation)\b",
+              "is"
+            )
+
+  @months ~w(january february march april may june july august september october november december)
+
+  @numbers %{
+    "one" => 1,
+    "two" => 2,
+    "three" => 3,
+    "four" => 4,
+    "five" => 5,
+    "six" => 6,
+    "seven" => 7,
+    "eight" => 8,
+    "nine" => 9,
+    "ten" => 10,
+    "eleven" => 11,
+    "twelve" => 12,
+    "thirteen" => 13,
+    "fourteen" => 14,
+    "fifteen" => 15,
+    "sixteen" => 16,
+    "seventeen" => 17,
+    "eighteen" => 18,
+    "nineteen" => 19,
+    "twenty" => 20,
+    "thirty" => 30,
+    "first" => 1,
+    "second" => 2,
+    "third" => 3,
+    "fourth" => 4,
+    "fifth" => 5,
+    "sixth" => 6,
+    "seventh" => 7,
+    "eighth" => 8,
+    "ninth" => 9,
+    "tenth" => 10,
+    "eleventh" => 11,
+    "twelfth" => 12,
+    "thirteenth" => 13,
+    "fourteenth" => 14,
+    "fifteenth" => 15,
+    "sixteenth" => 16,
+    "seventeenth" => 17,
+    "eighteenth" => 18,
+    "nineteenth" => 19,
+    "twentieth" => 20,
+    "thirtieth" => 30,
+    "forty" => 40,
+    "fortieth" => 40,
+    "fifty" => 50,
+    "fiftieth" => 50,
+    "sixty" => 60,
+    "sixtieth" => 60
+  }
+
+  @made ~S"(?:(?:the\s+(?:day|date)\s+(?:(?:on\s+which|of)\s+)?)?(?:it\s+is|they\s+are|they\s+were|(?:this|these)\s+[A-Za-z ]+?\s+(?:is|are|was|were))\s+(?:made|passed)|(?:the\s+)?(?:making|passing)\s+(?:of\s+(?:this|these)\s+[A-Za-z ]+|thereof)|its\s+(?:making|passing)|(?:the\s+day\s+(?:on\s+which\s+)?)?(?:this\s+Act\s+receives\s+)?Royal\s+Assent)"
+  @number ~S"(\d+|[a-z]+(?:[- ][a-z]+)?)"
+
+  @doc "The law's start from its commencement clause; nil when it has none."
+  @spec read([map()], Date.t() | nil) :: LawStart.t() | nil
+  def read(rows, made) do
+    case general(rows) do
+      nil -> own_parts(rows, made)
+      {row, sentence, tail} -> decide(rows, row, sentence, tail, made)
+    end
+  end
+
+  # no clause for the whole law, but its parts commence: the earliest date
+  # the first such provision states (`:clause_staged`); unread when it
+  # states none
+  defp own_parts(rows, made) do
+    Enum.find_value(rows, fn row ->
+      case row |> Map.get(:text) |> sentences() |> Enum.find(&Regex.match?(@own_part, &1)) do
+        nil ->
+          nil
+
+        s ->
+          staged(
+            rows,
+            row,
+            %LawStart{treatment: :clause_unread, evidence: row.section_id, text: s},
+            made
+          )
+      end
+    end)
+  end
+
+  defp decide(rows, row, sentence, tail, made) do
+    found = %LawStart{treatment: :clause_unread, evidence: row.section_id, text: sentence}
+
+    case tail_date(tail, made) do
+      {treatment, %Date{} = d} ->
+        %{found | treatment: treatment, date: d}
+
+      :made_unknown ->
+        found
+
+      nil ->
+        cond do
+          by_order?(tail) -> %{found | treatment: :by_order}
+          tied?(tail) -> %{found | treatment: :tied_to_other_law}
+          staged?(tail) -> staged(rows, row, found, made)
+          true -> found
+        end
+    end
+  end
+
+  # the first sentence in document order where the whole instrument comes
+  # into force: {row, sentence, tail}
+  defp general(rows) do
+    Enum.find_value(rows, fn row ->
+      row
+      |> Map.get(:text)
+      |> sentences()
+      |> Enum.find_value(fn s ->
+        Enum.find_value(@general, fn re ->
+          case Regex.run(re, s) do
+            [_, tail] -> {row, s, String.trim(tail)}
+            nil -> nil
+          end
+        end)
+      end)
+    end)
+  end
+
+  defp sentences(nil), do: []
+
+  defp sentences(text),
+    do: text |> String.replace(~r/\s+/, " ") |> String.split(~r/(?<=\.)\s+(?=[A-Z(])/)
+
+  @doc """
+  A tail's date and its treatment: `{treatment, date}`; `:made_unknown`
+  when it counts from a made date we don't have; nil when it states none.
+  """
+  @spec tail_date(String.t(), Date.t() | nil) ::
+          {LawStart.treatment(), Date.t()} | :made_unknown | nil
+  def tail_date(tail, made) do
+    cond do
+      d = named_day(tail) ->
+        {:clause_named_day, d}
+
+      d = date_at_start(String.replace(tail, ~r/^(?:at [^,]{1,30}? )?(?:on|from)\s+/i, "")) ->
+        {:clause_date, d}
+
+      d = by_territory(tail) ->
+        {:clause_staged, d}
+
+      true ->
+        made_relative(tail, made)
+    end
+  end
+
+  # "in England on 1st July 2007 and in Wales on 2nd April 2007": the earliest
+  defp by_territory(tail) do
+    if tail =~ ~r/^in (?:England|Wales|Scotland|Northern Ireland|Great Britain)\b/i do
+      ~r/\bon\s+(\d{1,2}\s*(?:st|nd|rd|th)?\s*[A-Za-z]+,?\s+\d{4})/
+      |> Regex.scan(tail, capture: :all_but_first)
+      |> List.flatten()
+      |> Enum.map(&date_at_start/1)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.min(Date, fn -> nil end)
+    end
+  end
+
+  defp named_day(tail) do
+    case Regex.run(
+           ~r/^(?:on\s+|at\s+|immediately\s+(?:before|after)\s+)?(IP completion day|exit day)\b/i,
+           tail
+         ) do
+      [_, day] -> if day =~ ~r/^IP/i, do: @ip_completion_day, else: @exit_day
+      nil -> nil
+    end
+  end
+
+  @doc "A date at the start of text: \"17th April 1995\", \"30 th August 2013\", \"1 October 2020\"."
+  @spec date_at_start(String.t()) :: Date.t() | nil
+  def date_at_start(text) do
+    re = ~r/^(?:the\s+)?(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:day\s+of\s+)?([A-Za-z]+),?\s+(\d{4})\b/
+
+    with [_, d, m, y] <- Regex.run(re, String.trim(text)),
+         month when is_integer(month) <- Enum.find_index(@months, &(&1 == String.downcase(m))),
+         {:ok, date} <- Date.new(String.to_integer(y), month + 1, String.to_integer(d)) do
+      date
+    else
+      _ -> nil
+    end
+  end
+
+  defp made_relative(tail, made) do
+    case made_shift(tail) do
+      nil -> nil
+      _shift when is_nil(made) -> :made_unknown
+      shift -> {:clause_made_relative, shift.(made)}
+    end
+  end
+
+  # the tail's count from the made date, as a function of it; nil when the
+  # tail doesn't count from it
+  defp made_shift(tail) do
+    t = String.replace(tail, ~r/\s+/, " ")
+
+    cond do
+      Regex.match?(~r/^on (?:the (?:day|date) (?:(?:on which|of) )?|Royal Assent)/i, t) and
+          starts_made?(t, ~r/^on /i) ->
+        & &1
+
+      Regex.match?(~r/^on the day (?:after|following) /i, t) and
+          starts_made?(t, ~r/^on the day (?:after|following) /i) ->
+        &Date.add(&1, 1)
+
+      m = Regex.run(~r/^(?:on )?the #{@number} day (?:after|following) (.*)$/i, t) ->
+        [_, n, rest] = m
+        with_made(rest, n, fn made, k -> Date.add(made, k) end)
+
+      m =
+          Regex.run(
+            ~r/^(?:on )?the first day of the (?:#{@number} )?(?:calendar )?month (?:following|after) (?:that|the month) in which (.*)$/i,
+            t
+          ) ->
+        first_of_month(m)
+
+      m =
+          Regex.run(
+            ~r/^(?:on |at |with )?(?:the )?(?:expiration|expiry|end) of (?:a |the )?(?:period of )?#{@number} (days?|weeks?|months?|years?) (from|after|beginning with|beginning on|starting with) (.*)$/i,
+            t
+          ) ->
+        [_, n, unit, rel, rest] = m
+        extra = if String.downcase(rel) in ["from", "after"], do: 1, else: 0
+        with_made(rest, n, fn made, k -> made |> shift(unit, k) |> Date.add(extra) end)
+
+      m = Regex.run(~r/^(?:on )?#{@number} (days?|weeks?|months?) after (.*)$/i, t) ->
+        [_, n, unit, rest] = m
+        with_made(rest, n, fn made, k -> shift(made, unit, k) end)
+
+      true ->
+        nil
+    end
+  end
+
+  defp starts_made?(t, lead),
+    do:
+      Regex.match?(
+        ~r/^#{@made}/i,
+        t
+        |> String.replace(lead, "")
+        |> String.replace(~r/^the day (?:on which|of) /i, "the day on which ")
+      )
+
+  defp with_made(rest, n, fun) do
+    with true <- Regex.match?(~r/^#{@made}/i, rest),
+         k when is_integer(k) <- number(n) do
+      &fun.(&1, k)
+    else
+      _ -> nil
+    end
+  end
+
+  defp first_of_month([_, n, rest]) do
+    k = if n in [nil, ""], do: 1, else: number(n)
+
+    if is_integer(k) and Regex.match?(~r/^#{@made}/i, rest),
+      do: fn made -> made |> Date.beginning_of_month() |> Date.shift(month: k) end
+  end
+
+  defp first_of_month([_, rest]), do: first_of_month([nil, "", rest])
+
+  defp shift(date, unit, k) do
+    case String.downcase(unit) do
+      "day" <> _ -> Date.add(date, k)
+      "week" <> _ -> Date.add(date, 7 * k)
+      "month" <> _ -> Date.shift(date, month: k)
+      "year" <> _ -> Date.shift(date, year: k)
+    end
+  end
+
+  defp number(n) do
+    n = String.downcase(n)
+
+    case Integer.parse(n) do
+      {i, ""} ->
+        i
+
+      _ ->
+        case String.split(n, ~r/[- ]/) do
+          [a, b] ->
+            with x when is_integer(x) <- @numbers[a],
+                 y when is_integer(y) <- @numbers[b],
+                 do: x + y
+
+          [a] ->
+            @numbers[a]
+        end
+    end
+  end
+
+  defp by_order?(tail),
+    do:
+      tail =~
+        ~r/\bsuch (?:day|date|time)s?\b|\bday appointed\b|\bappointed (?:day|by)\b|\bmay,? by (?:order|regulations)\b|\bmay appoint\b/i
+
+  defp tied?(tail),
+    do:
+      tail =~
+        ~r/\bat the same time as\b|^immediately (?:after|before)\b.*\binto (?:force|operation)|^on the (?:same )?(?:day|date) (?:on which|that)\b.*\binto (?:force|operation)/i
+
+  defp staged?(tail),
+    do:
+      tail == "" or tail =~ ~r/^(?:[—:;,–-]|as follows|in accordance with|in stages|subject to)/i
+
+  # the earliest date the clause's own provision states elsewhere
+  # ("(2) … on 1st June 2015", "(3) … on IP completion day")
+  defp staged(rows, row, found, made) do
+    base = provision(row.section_id)
+
+    in_provision = Enum.filter(rows, &(provision(&1.section_id) == base))
+
+    stated =
+      for r <- in_provision,
+          s <- sentences(Map.get(r, :text)),
+          [_, tail] <- [Regex.run(~r/\binto\s+(?:force|operation)\s+(.*)$/i, s)],
+          {_, %Date{} = d} <- [tail_date(String.trim(tail), made)],
+          do: d
+
+    # list items under the clause: "(a) on 1st October 2006, for …"
+    listed =
+      for r <- in_provision,
+          r.section_id != row.section_id,
+          String.starts_with?(r.section_id, row.section_id),
+          text = (Map.get(r, :text) || "") |> String.replace(~r/^\(?[a-z0-9]+\)\s*/i, ""),
+          {_, %Date{} = d} <- [tail_date(String.trim(text), made)],
+          do: d
+
+    dates = stated ++ listed
+
+    case dates do
+      [] -> found
+      ds -> %{found | treatment: :clause_staged, date: Enum.min(ds, Date)}
+    end
+  end
+
+  # "UK_x:reg.1(2)" → "UK_x:reg.1"
+  defp provision(section_id), do: section_id |> String.split("(", parts: 2) |> hd()
+end

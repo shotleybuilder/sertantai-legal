@@ -27,7 +27,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     entry in force at T; in_force_partial while a commencement is partial;
     else in_force.
   - **J1 start.** The row's own insertion (it didn't exist before), else the
-    law's coming into force (`law_start`), else its own commencement, else
+    law's coming into force (`law_start`, decided by `LawStart`, LR-33), else its own commencement, else
     the earliest change held on the row (not a whole-instrument one); with
     none, no periods (a `:no_start` gap).
     Before the start: no period ("unknown").
@@ -154,42 +154,6 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp last_sunday(year, month) do
     last = Date.new!(year, month, Date.days_in_month(Date.new!(year, month, 1)))
     Date.add(last, -rem(Date.day_of_week(last), 7))
-  end
-
-  @acts ~w(ukpga asp anaw asc mwa nia apni ukla)
-
-  @doc """
-  The law's coming into force from its CLML metadata, where the register
-  has none (J1/J3, Jason 2026-10-13): the earliest `ukm:ComingIntoForce`
-  date; else, for an Act, Royal Assent (`ukm:EnactmentDate`) — the
-  Interpretation Act 1978 s.4 default ("at the beginning of the day on
-  which the Act receives the Royal Assent" unless provision is made
-  otherwise). `type_code`: the law's type (ukpga, uksi, …).
-  """
-  @spec clml_start(String.t(), String.t()) :: Date.t() | nil
-  def clml_start(xml, type_code) do
-    coming =
-      case Regex.run(~r{<ukm:ComingIntoForce>(.*?)</ukm:ComingIntoForce>}s, xml) do
-        [_, inner] ->
-          ~r/Date="(\d{4}-\d{2}-\d{2})"/
-          |> Regex.scan(inner, capture: :all_but_first)
-          |> List.flatten()
-          |> Enum.map(&Date.from_iso8601!/1)
-          |> Enum.min(Date, fn -> nil end)
-
-        nil ->
-          nil
-      end
-
-    enacted =
-      with true <- type_code in @acts,
-           [_, d] <- Regex.run(~r/<ukm:EnactmentDate Date="(\d{4}-\d{2}-\d{2})"/, xml) do
-        Date.from_iso8601!(d)
-      else
-        _ -> nil
-      end
-
-    coming || enacted
   end
 
   @doc "Each provision's period containing `date` (section_id → period); absent when unknown."

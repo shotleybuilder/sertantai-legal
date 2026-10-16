@@ -129,7 +129,8 @@ defmodule SertantaiLegal.Legal.LatChangeLog do
     attribute(:collector, :string,
       allow_nil?: false,
       public?: true,
-      description: "feed | markup | amending_law | commencing_law"
+      description:
+        "feed | markup | amending_law | commencement (law-level: the law's start, LR-33)"
     )
 
     attribute :collected_at, :utc_datetime_usec do

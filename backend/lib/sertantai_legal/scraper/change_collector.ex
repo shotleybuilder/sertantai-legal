@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
   Collectors: `Feed` (changes-feed effects with their joins), `Markup`
   (change markup no effect explains), `AmendingLaw` (the amending law's own
-  text, for rows the feed doesn't date; LR-08). Records are stored compact (`Compact`:
+  text, for rows the feed doesn't date; LR-08), `Commencement` (the law's
+  own start and the `LawStart` treatment that decided it; LR-33). Records are stored compact (`Compact`:
   one per run of consecutive rows) and checked against the per-row joins
   in the DB's row order before writing (`fidelity/3`). Never fetches.
   Thin: the joins and records are the pure collectors'.
@@ -14,7 +15,16 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.ChangeCollector.{AmendingLaw, Compact, Feed, Markup, Record}
+
+  alias SertantaiLegal.Scraper.ChangeCollector.{
+    AmendingLaw,
+    Commencement,
+    Compact,
+    Feed,
+    Markup,
+    Record
+  }
+
   alias SertantaiLegal.Scraper.LatStatus
   alias SertantaiLegal.Scraper.LatStagedParser
 
@@ -44,7 +54,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
       per_row = %{
         "feed" => feed,
         "markup" => Markup.records(law_name, rows),
-        "amending_law" => amending_law(law_name, order, feed, Keyword.get(opts, :mode, :gaps))
+        "amending_law" => amending_law(law_name, order, feed, Keyword.get(opts, :mode, :gaps)),
+        "commencement" => Commencement.records(law_name, law_start_input(law_name, rows))
       }
 
       {:ok,
@@ -60,6 +71,65 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
     case Keyword.get(opts, :parsed) do
       nil -> LatStagedParser.fetch_changes(law_name, store: :only)
       parsed -> {:ok, parsed}
+    end
+  end
+
+  @doc """
+  What `LawStart` decides a law's start from (LR-33): the register's coming
+  into force and made date (`uk_lrt`), the stored CLML's metadata, and the
+  law's rows (`section_id`, `text`, in document order).
+  """
+  @spec law_start_input(String.t(), [map()]) :: SertantaiLegal.Scraper.LawStart.input()
+  def law_start_input(law_name, rows) do
+    {lrt_date, made} =
+      case Repo.query!(
+             "SELECT md_coming_into_force_date, md_made_date FROM uk_lrt WHERE name = $1 LIMIT 1",
+             [law_name]
+           ) do
+        %{rows: [[cif, made]]} -> {date(cif), date(made)}
+        _ -> {nil, nil}
+      end
+
+    head = clml_head(law_name)
+
+    %{
+      type_code: law_name |> String.split("_", parts: 3) |> Enum.at(1),
+      lrt_date: lrt_date,
+      made: made || clml_made(head),
+      clml_head: head,
+      rows: Enum.map(rows, &%{section_id: &1.section_id, text: Map.get(&1, :text)})
+    }
+  end
+
+  defp date(%Date{} = d), do: d
+  defp date(_other), do: nil
+
+  # the stored CLML's metadata (up to its close: EU metadata runs long)
+  defp clml_head(law_name) do
+    with [_, type, year, number] <- String.split(law_name, "_", parts: 4),
+         [path | _] <-
+           Enum.sort(Path.wildcard("data/cache/clml/#{type}/#{year}/#{number}/**/data.xml.gz")),
+         {:ok, gz} <- File.read(path) do
+      xml = :zlib.gunzip(gz)
+
+      case :binary.match(xml, "</ukm:Metadata>") do
+        {pos, len} -> binary_part(xml, 0, pos + len)
+        :nomatch -> binary_part(xml, 0, min(byte_size(xml), 80_000))
+      end
+    else
+      _ -> nil
+    end
+  end
+
+  defp clml_made(nil), do: nil
+
+  # an SI's made date; an Act's passing (Royal Assent)
+  defp clml_made(head) do
+    with [_, d] <- Regex.run(~r/<ukm:(?:Made|EnactmentDate) Date="(\d{4}-\d{2}-\d{2})"/, head),
+         {:ok, date} <- Date.from_iso8601(d) do
+      date
+    else
+      _ -> nil
     end
   end
 
