@@ -26,4 +26,4 @@ Found in LR-35's dry run (2026-10-16). ukpga 1988/52 s.127(1)-(4) were substitut
 
 ## Dependencies
 
-- ⬜ LR-35 applied
+- ✅ LR-35 applied (2026-10-16)

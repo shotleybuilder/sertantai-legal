@@ -26,4 +26,4 @@ Found in LR-35's dry run (2026-10-16). eur 2006/1013 Art. 2A-2C were inserted by
 
 ## Dependencies
 
-- ⬜ LR-35 applied
+- ✅ LR-35 applied (2026-10-16)

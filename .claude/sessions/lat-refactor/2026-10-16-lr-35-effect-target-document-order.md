@@ -1,18 +1,78 @@
 ---
 session: 'LR-35: EffectTarget Document Order'
-status: active
-opened: 2026-10-16
+status: closed
+opened: '2026-10-16'
+closed: '2026-10-16'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'EffectTarget now resolves an effect''s ranges in document order (as EffectIndex already did) and a range covers what lies wholly within it, from its first element''s start to the end of its last
+  element''s contents. Applied by a store re-parse of all 1,066 laws 2026-10-16: 175 laws'' joins changed, 384 label changes in 23 laws, all live; unknown today 18,340 → 18,326. Two side effects opened
+  as LR-36 and LR-37.'
+decisions:
+- what: 'D1: document order for EffectTarget'
+  why: the parser ran two orders (EffectIndex document order, EffectTarget xmerl's `//` order) and span/3 documents document order; xmerl's order let 's. 2-7' reach Chapter headings far away
+  result: 12 Chapter headings and 11 EU articles no longer wrongly repealed
+- what: 'D2: a range covers what lies wholly within it'
+  why: document order alone made 's. 2-7' reach the Part 2 element that starts inside (Fire (Scotland) Act 2005 Part 2 would have read repealed) and 'Pt. 3-5' stop at Part 5's heading
+  result: Part 2 untouched; Part ranges take their last Part whole
+- what: Apply now; side effects as their own sessions
+  why: the fixes are wrong repeals; LR-37's 47 lost dates become honest unknowns; LR-36's flaw predates LR-35
+  result: LR-36 (pending substitution reads prospective, 117 rows) and LR-37 (orphan join vs range effects, 47 rows) opened
+metrics:
+  wave_2026_10_16:
+    laws: 1066
+    errors: 0
+    rows: 374866
+    enriched_carried: 287676
+    dropped: 0
+    stale_after: 0
+    predicted_label_changes_live: 384
+    mismatches: 0
+    unknown_today_before: 18340
+    unknown_today_after: 18326
+  measure:
+    laws_join_changes: 175
+    parse_differences: 20642
+    effects_changed_doc_order_only: 844
+    label_changes: 384
+    laws_label_changes: 23
+lessons:
+- title: A performance refactor is the cheapest place to find an order bug
+  detail: LR-31's zero-diff gate failed only because a one-walk tree used document order where xmerl's xpath hadn't; keeping the refactor bug-compatible and opening a session for the order kept both honest.
+  tag: tooling
+- title: Fixing an order exposes the rules that relied on it
+  detail: Document order alone created a new fault (a Part starting inside a range), surfaced a pre-existing one (pending substitutions read prospective, LR-36) and an interaction (LR-19's held rule vs
+    range effects, LR-37). Dry-run the label effect and read the losers, not only the totals.
+  tag: data
 bugs:
-  - pattern: "EffectTarget's id order is xmerl's //*[@id] order (each node's children in turn: all Parts before their sections), not document order; span/3 resolves ranges over it"
-    category: wrong join
-    module: EffectTarget
-    affected: "161 laws' effect joins (6,200 rows) differ under document order"
-    fix: "Build the tree in document order (Xml.descendants/1); dry run the joins and labels; Jason decides"
-    status: open
+- pattern: 'EffectTarget''s id order is xmerl''s //*[@id] order (each node''s children in turn: all Parts before their sections), not document order; span/3 resolves ranges over it'
+  category: wrong join
+  module: EffectTarget
+  affected: 175 laws' effect joins; 384 label changes in 23 laws (applied 2026-10-16)
+  fix: Build the tree in document order (Xml.descendants/1); dry run the joins and labels; Jason decides
+  status: fixed
+- pattern: A range of provisions took a Part or Chapter that only starts inside it, and stopped at its last element instead of after its contents ('Pt. 3-5' without Part 5's contents)
+  category: wrong join
+  module: EffectTarget.span/3
+  affected: asp 2005/5 Part 2 (would have read repealed); asc 2023/3 Part 5; the 175 laws
+  fix: 'D2: a range covers what lies wholly within it (first''s start to last''s contents end)'
+  status: fixed
+artifacts:
+- backend/lib/sertantai_legal/scraper/effect_target.ex
+- backend/test/sertantai_legal/scraper/effect_target_test.exs
+- backend/data/reports/lat-refactor/lr35_compare2.csv
+- backend/data/reports/lat-refactor/lr35_effects.csv
+- backend/data/reports/lat-refactor/lr35_dry2.csv
+- backend/data/reports/lat-reparse/lr35_wave.csv
+depends_on:
+- 2026-10-15-lr-31-pipeline-performance
+- 2026-10-15-lr-29-container-ref-overreach
+enables:
+- LR-36 prospective substitution status
+- LR-37 orphan join and range effects
 ---
 
-# Session: LR-35 EffectTarget Document Order (ACTIVE)
+# Session: LR-35 EffectTarget Document Order (CLOSED)
 
 ## Problem
 
@@ -23,7 +83,7 @@ Found by LR-31 E2 (2026-10-16). `EffectTarget.tree/1` took its id order from xpa
 - ✅ Measure: classify the 161 laws' join changes under document order (below)
 - ✅ Jason 2026-10-16: "Agree recommendations" (D1 document order; D2 a range covers what lies wholly within it)
 - ✅ Build: tree in document order with each position's contents end (`ends`); `span/3` takes elements wholly within first's start .. last's contents end; ids-only trees unchanged (6 tests)
-- ⬜ Dry run → Jason → apply (re-parse the affected laws: joins are parse-time)
+- ✅ Dry run → Jason ("Go") → NAS backup → `mix lat.reparse --store only` over all 1,066 laws (the parser version covers all) → verify: 0 errors, 0 stale, 384/384 predicted label changes live, 18,326 unknown today
 
 ## Dependencies
 
@@ -78,3 +138,7 @@ Parse compare against the xmerl-order baseline: 20,642 differences in 175 laws (
 **Two side effects, each its own bug and session:**
 - **LR-37** (eur 2006/1013, 47 rows lose their date): the range now reaches Art. 2A's sub-paragraphs, whose insertion markup joins the effect directly; LR-19's "held by another change" then refuses Art. 2A(1)'s legacy orphan id the same effect, and its markup reads "changed, date unknown".
 - **LR-36** (ukpga 1988/52 s.127(3)(a)-(d) in force → prospective): a pending (never commenced) substitution of s.127(1)-(4) now reaches them; D3 already reads s.127(1)-(3) prospective today though their text is in force — a pre-existing flaw (117 rows corpus-wide where the label says prospective and the markup in force).
+
+## Apply (2026-10-16)
+
+NAS backup; `mix lat.reparse --laws <all 1,066> --store only --tag lr35_wave`: 0 errors; rows 374,866 → 374,866; enriched 287,676 carried, 0 dropped or changed. Verify: `lat.stale --strict` 0; 384 of 384 predicted label changes live; 18,326 provisions unknown today (18,340 − 14, as predicted).
