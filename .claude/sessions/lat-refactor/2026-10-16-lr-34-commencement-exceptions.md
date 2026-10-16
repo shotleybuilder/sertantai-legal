@@ -103,6 +103,6 @@ wsi 2026/103 showed 630 rows in force from the day after made where its list say
 | `no_start` | 8,589 | 7,731 |
 | `commenced_by_order` (new: in force as at the text, since unknown) | — | 18,735 |
 
-Label changes 9,496 in 67 laws (`lr34_dry3.classes.csv`): effective_from moved 4,005 (later 3,6xx: provisions dated after the law's start, e.g. Fire Safety Order 2005 → 1 Oct 2006; earlier: Part 1s commenced before the general date, e.g. ssi 2004/428, uksi 2015/966), emptied 2,165 (D1 b: left to orders, date unknown), gained 698; status unknown→in_force 1,347 (laws commenced wholly by order, D1 b; wsi 2026/103's early provisions), unknown→prospective 46, in_force→prospective 1 (uksi 2026/109 reg.2(2), 2027). Nothing moves to unknown.
+Label changes 9,496 in 67 laws (`lr34_dry3.classes.csv`): effective_from moved 4,005 (later 3660, earlier 345: provisions dated after the law's start, e.g. Fire Safety Order 2005 → 1 Oct 2006; earlier: Part 1s commenced before the general date, e.g. ssi 2004/428, uksi 2015/966), emptied 2,165 (D1 b: left to orders, date unknown), gained 698; status unknown→in_force 1,347 (laws commenced wholly by order, D1 b; wsi 2026/103's early provisions), unknown→prospective 46, in_force→prospective 1 (uksi 2026/109 reg.2(2), 2027). Nothing moves to unknown.
 
 Open (logged, its own A8 session): a law made but not yet in force leaves its undated rows unknown rather than prospective (wsi 2026/103: 531 rows until 1 Oct 2027).
