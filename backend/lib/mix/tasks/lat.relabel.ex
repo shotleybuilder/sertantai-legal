@@ -13,7 +13,8 @@ defmodule Mix.Tasks.Lat.Relabel do
       mix lat.relabel --all
 
   Resumable: laws done are listed in `data/reports/lat-refactor/<tag>.done`
-  (default tag: relabel). Never fetches.
+  (default tag: `relabel_<LabelVersion>`, so a resume never skips a law
+  relabelled by older code). Never fetches.
   """
 
   use Mix.Task
@@ -45,7 +46,10 @@ defmodule Mix.Tasks.Lat.Relabel do
 
     dir = "data/reports/lat-refactor"
     File.mkdir_p!(dir)
-    done_file = Path.join(dir, "#{opts[:tag] || "relabel"}.done")
+    # resumable within one label code version only: a done file from an
+    # earlier version's run must never skip a law now stale (LR-34: the
+    # default `relabel.done` from LR-33's apply skipped all 1,066)
+    done_file = Path.join(dir, "#{opts[:tag] || "relabel_#{LabelVersion.current()}"}.done")
     done = if File.exists?(done_file), do: done_file |> File.read!() |> String.split(), else: []
     todo = laws -- done
     Mix.shell().info("#{length(todo)} laws (#{length(done)} done)")

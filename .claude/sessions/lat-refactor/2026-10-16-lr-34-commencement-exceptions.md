@@ -1,8 +1,61 @@
 ---
 session: 'LR-34: Commencement Exceptions'
-status: active
-opened: 2026-10-16
+status: closed
+opened: '2026-10-16'
+closed: '2026-10-16'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'A law''s commencement clause now starts its provisions, not just the law: LawStart.Provisions assigns rows to provision_dated, provision_by_order (J6: in force as at the text, since unknown),
+  provision_qualified and provision_unread, written as per-row commencement records. Applied by relabel 2026-10-16: unknown today 19,736 → 18,340; 9,496 label changes in 67 laws, all live, none to unknown.'
+decisions:
+- what: 'D1 (b): provisions left to commencement orders with no dated commencement of their own are in force as at the revised text, since unknown (J6, gap commenced_by_order)'
+  why: 'Jason 2026-10-16 ''Your recommendations'': 27,741 rows in 29 Acts read ''in force since Royal Assent'', which the law doesn''t say; making them unknown would lose 25K rows the text shows in force'
+  result: 18,735 rows carry commenced_by_order; 2,165 in-force dates emptied; laws commenced wholly by order gain an in-force status
+- what: 'D2: qualified commencements (''so far as …'', ''in relation to Wales'') are listed, no effect'
+  why: they commence a provision for some purposes or places only
+  result: provision_qualified on 4,230 rows in 28 laws
+- what: A clause date after the law's start is the row's commencement, not its start
+  why: 'dry run 2: uksi 2026/109 reg.2(2) (23 Mar 2027) and asc 2025/4 showed nothing today instead of prospective'
+  result: rows exist from the law's start, prospective until their date (D3)
+- what: J6 only where nothing else says when the row commenced
+  why: 'dry run 1: asp 2026/6 s.10 has a dated (future) commencement order; J6 wiped its prospective status (229 rows)'
+  result: own dated commencement → D3; marked prospective → J2; else J6
+metrics:
+  relabel_2026_10_16:
+    laws: 1066
+    failed: 0
+    stale_after: 0
+    predicted_changes_live: 9496
+    mismatches: 0
+    unknown_today_before: 19736
+    unknown_today_after: 18340
+    no_start_after: 7731
+    commenced_by_order: 18735
+  provisions:
+    provision_dated:
+      laws: 79
+      rows: 14185
+    provision_by_order:
+      laws: 55
+      rows: 30821
+    provision_qualified:
+      laws: 28
+      rows: 4230
+    provision_unread:
+      laws: 35
+  dry_runs: 3
+lessons:
+- title: A resume file outlives the wave it was written for
+  detail: mix lat.relabel --stale skipped all 1,066 stale laws because relabel.done from LR-33's apply listed them; it printed '0 failed' and looked like success. Only the post-apply verify (0 of 9,496
+    predicted changes live) caught it. Resume files are now keyed by the code version.
+  tag: tooling
+- title: Removing a start is not the same as not knowing a start
+  detail: Twice a rule that dropped the law's start for some rows also dropped their known prospective history (future commencement orders, future clause dates). A provision that exists but isn't in force
+    is prospective, not unknown.
+  tag: data
+- title: Inspect the biggest gainers as well as the losers
+  detail: wsi 2026/103 gaining 630 'in force' rows looked like good news; reading its clause showed 'Chapter 1 of Part 6' read as all of Part 6 and an item-level 'except' ignored.
+  tag: data
 bugs:
 - pattern: 'A made law whose general commencement date is in the future has no period today for its undated provisions (unknown), where prospective is the truth (wsi 2026/103: 531 rows until 1 Oct 2027)'
   category: timeline gap
@@ -10,9 +63,41 @@ bugs:
   affected: 531
   fix: 'a law made but not yet in force: its rows prospective from the made date until the law''s start (its own A8 session)'
   status: open
+- pattern: Provisions of Acts commenced in stages read 'in force since' the earliest stated date, though the law leaves them to commencement orders
+  category: overstated label
+  module: LawStart / LabelProjection J1
+  affected: 27741
+  fix: LawStart.Provisions + J6
+  status: fixed
+- pattern: Provisions a clause dates apart from the general date took the law's general date
+  category: wrong date
+  module: LawStart
+  affected: 14185
+  fix: provision_dated records; row start or own commencement
+  status: fixed
+- pattern: mix lat.relabel --stale resumed from a previous wave's done file and skipped every stale law
+  category: tooling
+  module: Mix.Tasks.Lat.Relabel
+  affected: 1066
+  fix: done file keyed by LabelVersion
+  status: fixed
+artifacts:
+- backend/lib/sertantai_legal/scraper/law_start/provisions.ex
+- backend/lib/sertantai_legal/scraper/change_collector/commencement.ex
+- backend/lib/sertantai_legal/scraper/label_projection.ex
+- backend/lib/sertantai_legal/scraper/label_timeline.ex
+- backend/lib/mix/tasks/lat.relabel.ex
+- backend/lib/mix/tasks/lat.law_start.ex
+- backend/test/sertantai_legal/scraper/law_start_provisions_test.exs
+- backend/data/reports/lat-refactor/lr34_dry3.csv
+depends_on:
+- 2026-10-15-lr-33-no-start-date
+enables:
+- 'A8: law made but not yet in force (prospective, not unknown)'
+- A8 next gap class
 ---
 
-# Session: LR-34 Commencement Exceptions (ACTIVE)
+# Session: LR-34 Commencement Exceptions (CLOSED)
 
 ## Problem
 
@@ -24,7 +109,7 @@ LR-33 gives each law one start (`LawStart`: the general date its commencement cl
 - ✅ Jason 2026-10-16: D1 (b) and D2 known limit ("Your recommendations")
 - ✅ Resolve the named provisions to rows (the `ProvisionText` / `EffectTarget` grammar, "Articles 45(4)(d) and 48", "Part II", "regulation 26, with the exception of paragraph (4)")
 - ✅ Write them as provision-level `commencement` records (a `LawStart` treatment each), J1 starting the row at its own commencement
-- ⬜ Dry run ✅ (`lr34_dry3`) → Jason → apply
+- ✅ Dry run (`lr34_dry3`) → Jason ("Go with the apply") → NAS backup → `mix lat.relabel --stale` (second run, after the resume-file fix) → verify: 0 failed, 0 stale, 9,496/9,496 predicted changes live, 18,340 unknown today
 
 ## Dependencies
 
@@ -106,3 +191,9 @@ wsi 2026/103 showed 630 rows in force from the day after made where its list say
 Label changes 9,496 in 67 laws (`lr34_dry3.classes.csv`): effective_from moved 4,005 (later 3660, earlier 345: provisions dated after the law's start, e.g. Fire Safety Order 2005 → 1 Oct 2006; earlier: Part 1s commenced before the general date, e.g. ssi 2004/428, uksi 2015/966), emptied 2,165 (D1 b: left to orders, date unknown), gained 698; status unknown→in_force 1,347 (laws commenced wholly by order, D1 b; wsi 2026/103's early provisions), unknown→prospective 46, in_force→prospective 1 (uksi 2026/109 reg.2(2), 2027). Nothing moves to unknown.
 
 Open (logged, its own A8 session): a law made but not yet in force leaves its undated rows unknown rather than prospective (wsi 2026/103: 531 rows until 1 Oct 2027).
+
+## Apply (2026-10-16, Jason: "Go with the apply")
+
+NAS backup (archive + DB). The first `mix lat.relabel --stale` relabelled nothing: "0 laws (1066 done)". Its default resume file `relabel.done` still listed every law from LR-33's apply, so a new label version's stale laws were all skipped, and "done; 0 failed" read as success. Caught by the verify (0 of 9,496 predicted changes live, 1,066 still stale). Fixed in the task: the default resume file is `relabel_<LabelVersion>.done`, so a resume only skips laws relabelled by the same code. Re-run started.
+
+Re-run: 1,066 laws, 0 failed. Verify: 0 stale; 9,496 of 9,496 predicted changes live; 18,340 provisions unknown today, as predicted.
