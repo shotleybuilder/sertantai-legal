@@ -1,11 +1,93 @@
 ---
 session: 'LR-31: Pipeline Performance'
-status: active
-opened: 2026-10-15
+status: closed
+opened: '2026-10-15'
+closed: '2026-10-16'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'A full-corpus relabel went from 58 min to 18.5 min with identical output: laws run 5 at once (LawRunner), and the LAT walk and amending-law Doc read xmerl records directly instead of SweetXml.xpath,
+  which re-parses its path string on every call. The planned store artefacts (B) were measured and dropped: a stored xmerl tree loads slower than a fresh parse.'
+decisions:
+- what: Profile on an idle machine before acting; re-plan from the profile
+  why: 'Gemini review; the original diagnosis (xmerl parsing, the store) was wrong: parse 0.2–2.5 s, store 55 ms'
+  result: xpath was about half of fetch_changes (457,676 path compilations for one 817-row law); plan revised to A, E2, B (C and D dropped)
+- what: 'A: run laws in parallel (5 workers) after an isolation check'
+  why: each law writes only its own rows; the cross-law legal_register triggers fire only on md_date, which no LAT path changes
+  result: 58 → 23.4 min; parallel preview equal to the sequential labels (0 diffs)
+- what: 'E2: read xmerl records directly; keep xmerl''s own orders where the old xpath result was ordered'
+  why: a refactor must be zero-diff; xmerl's `//` order is not document order, and switching silently changed 161 laws' joins
+  result: 0 differences over 1,066 laws; corpus parse 45 → 6 min; full run 18.5 min; the order question is LR-35
+- what: Drop B (stored Doc terms); do B2 (record access in AmendingLaw.Doc)
+  why: binary_to_term of a Doc took 2.9 s vs 1.8 s to parse, ~12 MB per artefact; amending laws serve ~2.1 laws each
+  result: B2 ~10% on the big Acts; register equal for 106 laws
+- what: Stop at 18.5 min (D, a faster parser, not pursued)
+  why: the remaining cost is first-time xmerl parsing of amending laws (41% of the collector); dry runs and relabels are now fast enough to iterate
+  result: session closed
+metrics:
+  full_relabel_preview_min:
+    sequential_baseline: 58
+    A_parallel: 23.4
+    A_plus_E2: 18.5
+  corpus_parse_snapshot_min:
+    before: 45
+    after_E2: 6
+  fetch_changes_ms:
+    uksi_1996_1527:
+    - 6257
+    - 2351
+    ukpga_1988_52:
+    - 24945
+    - 14018
+    ukpga_1991_56:
+    - 51760
+    - 29465
+  amending_law_collector_ms:
+    ukpga_1988_52:
+    - 45963
+    - 38662
+    ukpga_1991_56:
+    - 53816
+    - 53158
+  gates:
+    parallel_label_diffs: 0
+    parse_snapshot_differences: 0
+    doc_mismatches_139: 0
+    amending_register_laws_differing_106: 0
+    tests: 2731
+lessons:
+- title: SweetXml.xpath re-compiles its path string on every call
+  detail: xmerl_xpath tokenises and yecc-parses the expression each time; in a per-element walk this was ~50% of the LAT parse (457,676 ~x evaluations for an 817-row law). Read xmerl records directly in
+    hot paths.
+  tag: tooling
+- title: xmerl's `//` results are not in document order
+  detail: '`.//*` lists each node''s children in turn (all Parts before their sections); a union (`a | b`) sorts text nodes by Erlang term order. A refactor to document order changed 161 laws'' effect joins.
+    Verify helper-vs-xpath equality on every element before trusting a rewrite.'
+  tag: tooling
+- title: Measure an artefact cache before building it
+  detail: A stored xmerl tree (term_to_binary) loaded slower than re-parsing the XML and was ~20× the gzip size; the plan's biggest item would have cost time.
+  tag: infrastructure
+- title: A profile taken under load misleads on proportions too
+  detail: The first profile (alongside a dry run) blamed xmerl parsing; the idle profile showed the walk's xpath and the amending-law collector.
+  tag: tooling
+artifacts:
+- backend/lib/sertantai_legal/scraper/law_runner.ex
+- backend/lib/sertantai_legal/scraper/lat_parser/xml.ex
+- backend/lib/sertantai_legal/scraper/effect_target.ex
+- backend/lib/sertantai_legal/scraper/amending_law/doc.ex
+- backend/lib/mix/tasks/lat.relabel.ex
+- backend/lib/mix/tasks/lat.wave_preview.ex
+- backend/test/sertantai_legal/scraper/law_runner_test.exs
+- backend/data/reports/lat-refactor/lr31-snapshot/
+- backend/data/code-reviews/2026-10-15-lr-31-performance-plan.md
+depends_on:
+- 2026-10-13-lr-25-change-log-switch-over
+enables:
+- LR-35 EffectTarget document order
+- faster A8 dry runs (18.5 min)
+- D (Saxy) if ever needed
 ---
 
-# Session: LR-31 Pipeline Performance (ACTIVE)
+# Session: LR-31 Pipeline Performance (CLOSED)
 
 ## Problem
 
@@ -73,10 +155,10 @@ Expected: A + B take a full run from about 1.5 h to roughly 10–15 min. Measure
 - ✅ Gemini review of the plan (`backend/data/code-reviews/2026-10-15-lr-31-performance-plan.md`): diagnosis confirmed; C before D
 - ✅ **Jason: D1** (2026-10-16: "Yes, try that plan A E2 B")
 - ✅ A: parallel runs — `LawRunner` (3 tests) in `mix lat.relabel` and `mix lat.wave_preview` (`--workers`, default 5); gate: a parallel relabel preview over the sequentially applied labels shows 0 label diffs and the same gap totals
-- ⬜ B: derived artefacts — tests first; equality gate: the effects and Docs from the artefact equal those from the XML across the corpus
+- ❌ B: derived artefacts — measured and dropped (a stored Doc loads slower than a parse); replaced by ✅ B2 (record access in `AmendingLaw.Doc`, register equal for 106 laws)
 - ❌ C: one parse per document — dropped (parse is 2.5 s at worst; the cost is xpath)
 - ✅ E2: direct element access instead of xpath (LAT walk, notes, `EffectTarget.tree`) — zero-diff gate `mix lat.parse_snapshot --all`
-- ⬜ Re-profile; record before and after
+- ✅ Re-profile; record before and after (above: 58 → 18.5 min)
 
 ## Dependencies
 
