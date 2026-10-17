@@ -31,7 +31,7 @@ lessons:
     detail: 'D3 picks the latest commencement in force as in_force_from, so adding one at the law''s start overrode an earlier feed commencement on the row or its ancestor (2017/469 art.1(1)). Synthesise only where nothing else dates the row.'
     tag: data
 bugs:
-  - pattern: A made law whose general commencement date is in the future has no period today for its undated provisions (unknown), where prospective is the truth (wsi 2026/103: 531 rows until 1 Oct 2027)
+  - pattern: 'A made law whose general commencement date is in the future has no period today for its undated provisions (unknown), where prospective is the truth (wsi 2026/103: 531 rows until 1 Oct 2027)'
     category: timeline gap
     module: LabelProjection J1
     affected: 981
