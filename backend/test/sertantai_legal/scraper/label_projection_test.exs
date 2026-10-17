@@ -534,6 +534,87 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
     end
   end
 
+  describe "LR-39: a law made, not yet in force" do
+    @law "UK_wsi_2026_103"
+    @made ~D[2026-03-25]
+
+    test "a row the law commences exists from its making, prospective until the law's start" do
+      rows = [row(@law, "reg.5")]
+
+      assert [
+               {~D[2026-03-25], ~D[2027-10-01], "prospective", nil, nil},
+               {~D[2027-10-01], nil, "in_force", ~D[2027-10-01], nil}
+             ] = periods(@law, rows, [], law_start: ~D[2027-10-01], made: @made)
+    end
+
+    test "the clause's own date for the row (before or after the law's start) ends it" do
+      rows = [
+        row(@law, "reg.1", law_start: ~D[2026-03-26]),
+        row(@law, "reg.40", law_start: ~D[2030-10-01])
+      ]
+
+      assert [
+               {~D[2026-03-25], ~D[2026-03-26], "prospective", nil, nil},
+               {~D[2026-03-26], nil, "in_force", ~D[2026-03-26], nil},
+               {~D[2026-03-25], ~D[2030-10-01], "prospective", nil, nil},
+               {~D[2030-10-01], nil, "in_force", ~D[2030-10-01], nil}
+             ] = periods(@law, rows, [], law_start: ~D[2027-10-01], made: @made)
+    end
+
+    test "made the day it comes into force, or no made date: starts at the start" do
+      rows = [row(@law, "reg.5")]
+
+      assert [{~D[2027-10-01], nil, "in_force", ~D[2027-10-01], nil}] =
+               periods(@law, rows, [], law_start: ~D[2027-10-01], made: ~D[2027-10-01])
+
+      assert [{~D[2027-10-01], nil, "in_force", ~D[2027-10-01], nil}] =
+               periods(@law, rows, [], law_start: ~D[2027-10-01])
+    end
+
+    test "a row another law inserted starts at its insertion" do
+      rows = [row(@law, "reg.5A")]
+
+      ins =
+        change(@law, "reg.5A", "i1", "inserted", "inserted", "UK_wsi_2028_1", [
+          {~D[2028-01-01], nil}
+        ])
+
+      assert [{~D[2028-01-01], nil, "in_force", ~D[2028-01-01], "UK_wsi_2028_1"}] =
+               periods(@law, rows, [ins], law_start: ~D[2027-10-01], made: @made)
+    end
+
+    test "a dated commencement of its own dates the row, not the law's start (uksi 2017/469 art.1)" do
+      law = "UK_uksi_2017_469"
+      rows = [row(law, "reg.1")]
+
+      com =
+        change(law, "reg.1", "c1", "commenced", "coming into force", law, [
+          {~D[2017-03-25], nil}
+        ])
+
+      assert [{~D[2017-05-08], nil, "in_force", ~D[2017-03-25], nil}] =
+               periods(law, rows, [com], law_start: ~D[2017-05-08], made: ~D[2017-03-24])
+
+      # its child, reached by the ancestor's commencement
+      assert [{~D[2017-05-08], nil, "in_force", ~D[2017-03-25], nil}] =
+               periods(law, [row(law, "reg.1(1)")], [com],
+                 law_start: ~D[2017-05-08],
+                 made: ~D[2017-03-24]
+               )
+    end
+
+    test "left to commencement orders: J6, not the making" do
+      rows = [row(@law, "reg.90", by_order: true)]
+
+      assert [{~D[2026-09-14], nil, "in_force", nil, nil}] =
+               periods(@law, rows, [],
+                 law_start: ~D[2027-10-01],
+                 made: @made,
+                 text_date: ~D[2026-09-14]
+               )
+    end
+  end
+
   test "J5: a provision a note points to as inserted never takes the law's start (1996/18 s.27V)" do
     law = "UK_ukpga_1996_18"
     rows = [row(law, "s.27V", inserted_pointer: true)]

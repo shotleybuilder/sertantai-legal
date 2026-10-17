@@ -33,7 +33,9 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     law's coming into force (`law_start`, decided by `LawStart`, LR-33), else its own commencement, else
     the earliest change held on the row (not a whole-instrument one); with
     none, no periods (a `:no_start` gap).
-    Before the start: no period ("unknown").
+    Before the start: no period ("unknown") — except that a row the law
+    commences itself exists from the law's making (`made`, LR-39): it is
+    prospective from then until its start (a law made, not yet in force).
   - **J2 today.** Where the CLML markup says repealed or prospective and
     the period containing today disagrees, the markup wins for that period
     and the disagreement is a `:markup_conflict` gap.
@@ -131,7 +133,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   start from the law's clause (LR-34): `law_start` (a date, in place of the
   law's) or `by_order: true` (left to commencement orders). Options: `today`
   (the UK date), `law_start` (the law's coming into force, `LawStart`),
-  `text_date` (the date of the revised text held, for J6).
+  `made` (when the law was made, LR-39), `text_date` (the date of the
+  revised text held, for J6).
   """
   @spec timeline(String.t(), [map()], [map()], keyword()) :: %{
           periods: [Period.t()],
@@ -141,6 +144,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     today = Keyword.fetch!(opts, :today)
     law_start = Keyword.get(opts, :law_start)
     text_date = Keyword.get(opts, :text_date)
+    made = Keyword.get(opts, :made)
 
     by_row =
       changes
@@ -150,7 +154,14 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
     {periods, gaps} =
       Enum.reduce(rows, {[], []}, fn row, {ps, gs} ->
-        case row_timeline(law_name, row, relevant(row, by_row), law_start, today, text_date) do
+        case row_timeline(
+               law_name,
+               row,
+               relevant(row, by_row),
+               {law_start, made},
+               today,
+               text_date
+             ) do
           {:ok, p, g} -> {[p | ps], g ++ gs}
           {:gap, g} -> {ps, [g | gs]}
         end
@@ -209,7 +220,7 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     )
   end
 
-  defp row_timeline(law, row, changes, law_start, today, text_date) do
+  defp row_timeline(law, row, changes, {law_start, made}, today, text_date) do
     # J5: a note saying the provision was inserted (a pointer), or (LR-30) an
     # insertion of it or an ancestor that no source dates, withholds the
     # law's start: the provision didn't exist from then
@@ -224,25 +235,15 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
         Map.get(row, :markup_status) != "prospective"
 
     # LR-34: the row's own start from the law's clause, in place of the
-    # law's; a row left to commencement orders has none (D1 b)
-    # a date the clause gives the row: after the law's start, the row exists
-    # from the law's start and commences then (prospective until; uksi
-    # 2026/109 reg.2(2) on 23 Mar 2027); else it starts the row
+    # law's; a row left to commencement orders has none (D1 b), a withheld
+    # row none from the law (J5) — though a clause date for it after the
+    # law's start still commences it (a fact of the law; the note only points)
     {law_start, changes} =
-      case Map.get(row, :law_start) do
-        %Date{} = d when law_start != nil ->
-          if Date.compare(d, law_start) == :gt,
-            do: {law_start, [clause_commencement(law, row, d) | changes]},
-            else: {d, changes}
-
-        %Date{} = d ->
-          {d, changes}
-
-        nil ->
-          {law_start, changes}
+      cond do
+        by_order? -> {nil, changes}
+        withheld? -> {nil, withheld_commencement(law, row, changes, law_start)}
+        true -> law_commences(law, row, changes, law_start, made)
       end
-
-    law_start = if withheld? or by_order?, do: nil, else: law_start
 
     # J6 (LR-34 D1 b): a row left to commencement orders with no dated start
     # of its own is in force as at the revised text held, since unknown (J2
@@ -260,6 +261,52 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
       {start, evidence?} ->
         row_periods(law, row, changes, start, evidence?, today)
+    end
+  end
+
+  # the law's own clause commences the row on its date for the row (LR-34),
+  # else the law's start; the row exists from the earliest of the law's
+  # making (LR-39 D1: made, not yet in force — prospective until), the
+  # law's start (uksi 2026/109 reg.2(2) on 23 Mar 2027) and that date
+  defp withheld_commencement(law, row, changes, law_start) do
+    case Map.get(row, :law_start) do
+      %Date{} = d when law_start != nil ->
+        if Date.compare(d, law_start) == :gt,
+          do: [clause_commencement(law, row, d) | changes],
+          else: changes
+
+      _ ->
+        changes
+    end
+  end
+
+  defp law_commences(law, row, changes, law_start, made) do
+    own = Map.get(row, :law_start)
+    commences = own || law_start
+
+    exists =
+      [made, law_start, commences] |> Enum.reject(&is_nil/1) |> Enum.min(Date, fn -> nil end)
+
+    # LR-39: from the making only where nothing else dates the row — no
+    # insertion and no dated commencement reaching it, its own or an
+    # ancestor's (uksi 2017/469 art.1(1) and art.11 on 25 Mar 2017)
+    dated_otherwise? =
+      insertion_date(row, changes) != nil or
+        Enum.any?(changes, &(&1.operation == "commenced" and dates(&1) != []))
+
+    cond do
+      commences == nil ->
+        {nil, changes}
+
+      # a clause date for the row after the law's start (LR-34)
+      own != nil and law_start != nil and Date.compare(own, law_start) == :gt ->
+        {exists, [clause_commencement(law, row, own) | changes]}
+
+      Date.compare(exists, commences) == :lt and not dated_otherwise? ->
+        {exists, [clause_commencement(law, row, commences) | changes]}
+
+      true ->
+        {commences, changes}
     end
   end
 

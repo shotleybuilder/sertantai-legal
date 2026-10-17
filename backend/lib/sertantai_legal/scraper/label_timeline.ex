@@ -183,6 +183,7 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
     |> LabelProjection.timeline(rows, changes,
       today: today,
       law_start: law_start,
+      made: made_date(law_name),
       text_date: text_date(law_name)
     )
     |> Map.put(:rows, rows)
@@ -219,6 +220,22 @@ defmodule SertantaiLegal.Scraper.LabelTimeline do
            SELECT coalesce(source_valid_date, at::date) FROM lat_events
            WHERE law_name = $1 AND event = 'parsed' ORDER BY at DESC LIMIT 1
            """,
+           [law_name]
+         ) do
+      %{rows: [[%Date{} = d]]} -> d
+      _ -> nil
+    end
+  end
+
+  @doc """
+  When the law was made (LR-39): an SI's made date, else an Act's
+  enactment (Royal Assent); from then a provision the law commences itself
+  exists, prospective until its start.
+  """
+  @spec made_date(String.t()) :: Date.t() | nil
+  def made_date(law_name) do
+    case Repo.query!(
+           "SELECT coalesce(md_made_date, md_enactment_date) FROM uk_lrt WHERE name = $1 LIMIT 1",
            [law_name]
          ) do
       %{rows: [[%Date{} = d]]} -> d
