@@ -1,18 +1,66 @@
 ---
 session: 'LR-37: Orphan Join and Range Effects'
-status: active
-opened: 2026-10-16
+status: closed
+opened: '2026-10-16'
+closed: '2026-10-17'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'The 47 dates eur 2006/1013 lost under LR-35 came from LR-19''s orphan join counting inline elements (Citation ids in a heading) as locations, not from the held rule as first logged. An orphan''s
+  location is now its nearest structural id; applied by a store re-parse of all 1,066 laws 2026-10-17: 122 label gains in 6 laws, none lost.'
+decisions:
+- what: An orphan change's location is its nearest structural id; inline ids (Citation, CitationSubRef, Term, Definition, Abbreviation, Acronym, links, FootnoteRef) are skipped
+  why: no effect lands on a citation; inline ids are everywhere (CitationSubRef 42,104 and Citation 17,127 in a 150-body sample) and broke the orphan's next-level agreement
+  result: 89 previously unexplained changes join their effect in 5 laws; eur 2006/1013's 47 dates back
+- what: Apply by re-parsing all 1,066 laws
+  why: the parser version covers every law (0 stale is the wave's check)
+  result: 0 errors, 0 stale, 122/122 predicted label changes live
+metrics:
+  wave_2026_10_17:
+    laws: 1066
+    errors: 0
+    minutes: 59
+    rows: 374866
+    enriched_carried: 287676
+    stale_after: 0
+    predicted_label_changes_live: 122
+    unknown_today: 18326
+  measure:
+    laws_changed: 6
+    parse_differences: 335
+    unexplained_changes_joined: 89
+    joins_lost: 1
+    label_gains: 122
+    label_losses: 0
+lessons:
+- title: Log the symptom, not the suspected cause, until it's traced
+  detail: LR-37 was opened as 'the held rule reads a range effect's markup as rival claims'; tracing the 211 markup pieces showed no piece held the effect at all — inline Citation ids were the cause.
+  tag: data
+- title: Ids in CLML aren't only on provisions
+  detail: Citation, CitationSubRef, Term and links carry ids far more often than provisions do; any logic that walks 'the nearest id' must say which ids are structural.
+  tag: data
 bugs:
-  - pattern: "An orphan change id (ChangeId not in the feed) is refused the effect its note cites when markup elsewhere in the same range effect holds it: LR-19's 'held by another change' reads a range effect's own markup pieces as rival claims"
-    category: lost join
-    module: LatParser.Effects (held set) / EffectIndex.with_orphans
-    affected: "eur 2006/1013 Art. 2A: 47 rows lose their date under LR-35"
-    fix: "Markup occurrences joined to the same effect through its range aren't another change; let an orphan take an effect held only by occurrences of that effect's own range; Jason decides"
-    status: open
+- pattern: 'An orphan change id (ChangeId not in the feed) is refused the effect its note cites when markup elsewhere in the same range effect holds it: LR-19''s ''held by another change'' reads a range
+    effect''s own markup pieces as rival claims'
+  category: lost join
+  module: LatParser.Effects (held set) / EffectIndex.with_orphans
+  affected: eur 2006/1013 47 rows; 89 unexplained changes in 5 laws now joined; 122 label gains (applied 2026-10-17)
+  fix: 'Cause was not the held rule: an orphan''s locations counted inline elements'' ids (a heading''s <Citation id=''c00026''>), which carry no effect, so the next-level agreement failed. Locations are
+    now structural ids only.'
+  status: fixed
+artifacts:
+- backend/lib/sertantai_legal/scraper/lat_parser/effects.ex
+- backend/test/sertantai_legal/scraper/lat_parser/orphan_location_test.exs
+- backend/data/reports/lat-refactor/lr37-snapshot.compare.csv
+- backend/data/reports/lat-refactor/lr37_dry.csv
+- backend/data/reports/lat-reparse/lr37_wave.csv
+depends_on:
+- 2026-10-16-lr-35-effect-target-document-order
+enables:
+- LR-36 prospective substitution status
+- parallel re-parse (LR-31 follow-on)
 ---
 
-# Session: LR-37 Orphan Join and Range Effects (ACTIVE)
+# Session: LR-37 Orphan Join and Range Effects (CLOSED)
 
 ## Problem
 
@@ -21,9 +69,9 @@ Found in LR-35's dry run (2026-10-16). eur 2006/1013 Art. 2A-2C were inserted by
 ## Todo
 
 - ✅ Measure: the cause isn't the held rule (below)
-- ⬜ Jason: the rule (an orphan's locations are structural elements) and apply
+- ✅ Jason (2026-10-17: "Go ahead"): the rule and apply
 - ✅ Build (tests first) and dry run (`lr37_dry`)
-- ⬜ Apply: re-parse of the 6 laws → verify
+- ✅ Apply: NAS backup; re-parse of all 1,066 laws from the store (`lr37_wave`, 59 min) → verify: 0 errors, 0 stale, 122/122 label changes live, unknown today 18,326
 
 ## Dependencies
 
