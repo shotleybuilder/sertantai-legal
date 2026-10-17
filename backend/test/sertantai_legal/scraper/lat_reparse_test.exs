@@ -146,6 +146,81 @@ defmodule SertantaiLegal.Scraper.LatReparseTest do
     assert rb.error == nil
   end
 
+  describe "workers (LR-38)" do
+    test "laws run in parallel; reports come back in input order" do
+      laws = for _ <- 1..4, do: elem(law(), 0)
+
+      report =
+        LatReparse.run(laws,
+          snapshot: "lat_reparse_test_#{System.unique_integer([:positive])}",
+          parse_fn: parse_fn(fn n -> [row(n, 1, "One."), row(n, 2, "Two.")] end),
+          workers: 3
+        )
+
+      assert %{status: :ok, skipped: []} = report
+      assert Enum.map(report.laws, & &1.law_name) == laws
+      assert Enum.all?(report.laws, &(&1.enriched_after == 2 and &1.error == nil))
+    end
+
+    test "the first failure stops new laws starting; the rest are reported skipped" do
+      laws = for _ <- 1..6, do: elem(law(), 0)
+      [first | rest] = laws
+      me = self()
+
+      parse_fn = fn
+        ^first ->
+          {:ok, %{has_errors: true, lat: %{}, error: "enrichment gate refused"}}
+
+        law ->
+          send(me, {:parsed, law})
+          Process.sleep(50)
+          {:ok, %{has_errors: false, lat: %{carried: 2}}}
+      end
+
+      report =
+        LatReparse.run(laws,
+          snapshot: "lat_reparse_test_#{System.unique_integer([:positive])}",
+          parse_fn: parse_fn,
+          workers: 2
+        )
+
+      assert report.status == {:stopped, first}
+
+      parsed =
+        for l <- rest,
+            (receive do
+               {:parsed, ^l} -> true
+             after
+               0 -> false
+             end),
+            do: l
+
+      # only laws already in flight finished; none started after the failure
+      assert length(parsed) <= 1
+      assert Enum.sort(report.skipped ++ parsed) == Enum.sort(rest)
+      assert Enum.map(report.laws, & &1.law_name) == [first | parsed]
+    end
+
+    test "a law that raises is its own error and stops the run" do
+      [a, b] = for _ <- 1..2, do: elem(law(), 0)
+
+      parse_fn = fn
+        ^a -> raise "boom"
+        _ -> {:ok, %{has_errors: false, lat: %{}}}
+      end
+
+      report =
+        LatReparse.run([a, b],
+          snapshot: "lat_reparse_test_#{System.unique_integer([:positive])}",
+          parse_fn: parse_fn,
+          workers: 2
+        )
+
+      assert {:stopped, ^a} = report.status
+      assert hd(report.laws).error =~ "boom"
+    end
+  end
+
   test "preview/2 reports what a re-parse would do to enriched rows, persisting nothing" do
     {name, _} = law()
     rows_fn = fn n -> {:ok, [row(n, 1, "One."), row(n, 2, "Two changed.")], law_id(n)} end

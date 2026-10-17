@@ -11,15 +11,19 @@ defmodule Mix.Tasks.Lat.Reparse do
       mix lat.reparse --laws A,B --store prefer --tag x # parse from the local CLML store (#175)
       mix lat.reparse --older-format --enriched --dry-run --tag preview
                                                       # plan only, persist nothing
+      mix lat.reparse --laws A,B --store only --workers 3 --tag x  # laws at once (default 5 with --store only, else 1; LR-38)
 
   Each run snapshots the batch to `lat_reparse_<tag>` (+ `_cm`), re-parses
-  law by law (legislation.gov.uk, rate-limited), stops at the first error
-  or failed enrichment gate, and writes `data/reports/lat-reparse/<tag>.csv`.
+  the laws in parallel (LR-38; `--workers`, default 5 with `--store only`,
+  else 1: the client's rate limit is per process), stops starting new laws at the
+  first error or failed enrichment gate (laws in flight finish; the rest are
+  listed as not started), and writes `data/reports/lat-reparse/<tag>.csv`
+  (input order).
   """
 
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.{LatReparse, LatStagedParser}
+  alias SertantaiLegal.Scraper.{LatReparse, LatStagedParser, LawRunner}
 
   @shortdoc "Gated batch LAT re-parse keeping enrichment"
 
@@ -40,7 +44,8 @@ defmodule Mix.Tasks.Lat.Reparse do
           enriched: :boolean,
           force: :boolean,
           cause: :string,
-          store: :string
+          store: :string,
+          workers: :integer
         ]
       )
 
@@ -124,6 +129,7 @@ defmodule Mix.Tasks.Lat.Reparse do
         force: Keyword.get(opts, :force, false),
         cause: opts[:cause],
         store: store_mode(opts[:store]),
+        workers: opts[:workers] || default_workers(store_mode(opts[:store])),
         on_law: fn r ->
           Mix.shell().info(
             "  #{String.pad_trailing(r.law_name, 24)} rows #{r.rows_before}→#{r.rows_after} " <>
@@ -136,6 +142,13 @@ defmodule Mix.Tasks.Lat.Reparse do
       )
 
     path = write_csv(tag, @columns, report.laws)
+
+    if report.skipped != [],
+      do:
+        Mix.shell().info(
+          "\n#{length(report.skipped)} laws not started (after the stop): #{Enum.join(report.skipped, ",")}"
+        )
+
     Mix.shell().info("\n#{inspect(report.status)} — report #{path}")
   end
 
@@ -159,6 +172,12 @@ defmodule Mix.Tasks.Lat.Reparse do
   end
 
   # #175: nil = live (default); prefer/only/refresh use the local CLML store
+  # offline (`--store only`): 5 at once; anything that may fetch stays one
+  # at a time — the client's rate limit is a per-process delay, so workers
+  # would multiply the request rate to legislation.gov.uk
+  defp default_workers(:only), do: LawRunner.default_workers()
+  defp default_workers(_store), do: 1
+
   defp store_mode(nil), do: nil
   defp store_mode(mode) when mode in ~w(prefer only refresh), do: String.to_atom(mode)
   defp store_mode(other), do: Mix.raise("--store must be prefer, only or refresh, got #{other}")

@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   """
 
   alias SertantaiLegal.Repo
-  alias SertantaiLegal.Scraper.{LatMerge, LatParser, LatStagedParser}
+  alias SertantaiLegal.Scraper.{LatMerge, LatParser, LatStagedParser, LawRunner}
   alias SertantaiLegal.Scraper.LatPersister.Carry
 
   require Logger
@@ -74,11 +74,18 @@ defmodule SertantaiLegal.Scraper.LatReparse do
   required), `parse_fn` (`law_name -> {:ok, result}`; default
   `LatStagedParser.parse/2`), `force` (bypass the enrichment gate — for
   laws whose loss has been accepted), `cause` (`"correction"` / `"scope"`,
-  recorded on each parse's lat_event; #167), `on_law` (callback per law report).
+  recorded on each parse's lat_event; #167), `on_law` (callback per law report),
+  `workers` (laws at once, default 1; LR-38).
+
+  With several workers (`LawRunner`; laws are independent, LR-31) the
+  contract holds: on the first error or failed gate no new law starts; laws
+  already in flight finish; laws never started are `skipped`. Reports are in
+  input order; `status` names the first failing law in input order.
   """
   @spec run([String.t()], keyword()) :: %{
           status: :ok | {:stopped, String.t()},
-          laws: [law_report()]
+          laws: [law_report()],
+          skipped: [String.t()]
         }
   def run(laws, opts) do
     table = Keyword.fetch!(opts, :snapshot)
@@ -97,16 +104,83 @@ defmodule SertantaiLegal.Scraper.LatReparse do
 
     snapshot!(laws, table)
 
-    Enum.reduce_while(laws, %{status: :ok, laws: []}, fn law, acc ->
+    case Keyword.get(opts, :workers, 1) do
+      1 -> sequential(laws, parse_fn, on_law)
+      workers -> parallel(laws, parse_fn, on_law, workers)
+    end
+  end
+
+  defp sequential(laws, parse_fn, on_law) do
+    Enum.reduce_while(laws, %{status: :ok, laws: [], skipped: []}, fn law, acc ->
       report = reparse_one(law, parse_fn)
       on_law.(report)
       acc = %{acc | laws: acc.laws ++ [report]}
 
-      if report.error && not pdf_only?(report.error),
-        do: {:halt, %{acc | status: {:stopped, law}}},
+      if failed?(report),
+        do:
+          {:halt,
+           %{acc | status: {:stopped, law}, skipped: Enum.drop_while(laws, &(&1 != law)) |> tl()}},
         else: {:cont, acc}
     end)
   end
+
+  # LR-38: laws `workers` at a time; a failure stops new laws starting
+  defp parallel(laws, parse_fn, on_law, workers) do
+    stop = :atomics.new(1, [])
+
+    run_one = fn law ->
+      if :atomics.get(stop, 1) == 1 do
+        :skipped
+      else
+        report =
+          try do
+            reparse_one(law, parse_fn)
+          rescue
+            e -> %{law_name: law, error: Exception.message(e)}
+          end
+
+        if failed?(report), do: :atomics.put(stop, 1, 1)
+        report
+      end
+    end
+
+    results =
+      LawRunner.run(
+        laws,
+        run_one,
+        fn
+          _law, :skipped -> :ok
+          law, {:error, reason} -> on_law.(%{law_name: law, error: inspect(reason)})
+          _law, report -> on_law.(report)
+        end,
+        workers: workers
+      )
+
+    reports =
+      for law <- laws, r = results[law], r != :skipped do
+        case r do
+          {:error, reason} ->
+            %{law_name: law, error: inspect(reason)}
+
+          report ->
+            report
+        end
+      end
+
+    %{
+      status:
+        case Enum.find(reports, &failed?/1) do
+          nil -> :ok
+          r -> {:stopped, r.law_name}
+        end,
+      laws: reports,
+      skipped: for(law <- laws, results[law] == :skipped, do: law)
+    }
+  end
+
+  # an error stops the run, except a law with no XML body (queued to the
+  # PDF backlog: an expected outcome)
+  defp failed?(report), do: report.error != nil and not pdf_only?(report.error)
 
   @doc """
   Dry run for one law: fetch and parse (`rows_fn`, default
