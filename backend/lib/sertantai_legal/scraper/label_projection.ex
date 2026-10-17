@@ -24,8 +24,11 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     whole-provision repeal in force at T reaching the row's whole extent (a
     repeal for part of it narrows the territory: LR-26); prospective while a commencing
     change (commencement, the row's own insertion or substitution) has no
-    entry in force at T; in_force_partial while a commencement is partial;
-    else in_force.
+    entry in force at T (LR-36: a prospective insertion or substitution not
+    yet applied to the revised text is pending for the new text — it leaves
+    the current text in force, a `:pending_change` gap; a pending
+    commencement still means not yet in force); in_force_partial while a
+    commencement is partial; else in_force.
   - **J1 start.** The row's own insertion (it didn't exist before), else the
     law's coming into force (`law_start`, decided by `LawStart`, LR-33), else its own commencement, else
     the earliest change held on the row (not a whole-instrument one); with
@@ -110,7 +113,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
            | :markup_conflict
            | :outstanding_effect
            | :undated_change
-           | :commenced_by_order}
+           | :commenced_by_order
+           | :pending_change}
 
   @text_ops ~w(substituted inserted repealed renumbered amended)
 
@@ -283,7 +287,8 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
     {:ok, periods,
      gaps ++
        outstanding(periods, changes, row, today) ++
-       if(Map.get(row, :undated_change), do: [{row.section_id, :undated_change}], else: [])}
+       if(Map.get(row, :undated_change), do: [{row.section_id, :undated_change}], else: []) ++
+       if(Enum.any?(changes, &pending?/1), do: [{row.section_id, :pending_change}], else: [])}
   end
 
   # the law's own clause commencing the row on a date (LR-34), as a change
@@ -514,8 +519,25 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
 
   defp commencing_kind?(_change), do: false
 
-  defp informative?(c),
-    do: dates(c) != [] or (Map.get(c, :prospective) == true and Map.get(c, :applied) != true)
+  # LR-36 (Jason 2026-10-17): a prospective insertion or substitution not
+  # yet applied to the revised text is pending for the new text; it never
+  # makes the current text prospective (the revised text says what is in
+  # force today; a provision it marks prospective reads so by J2) — it is a
+  # `:pending_change` gap
+  # A pending commencement still means the provision isn't in force yet
+  # (asc 2026/5's undated "coming into force" effects)
+  defp informative?(c), do: dates(c) != [] or (pending_commencement?(c) and not new_text?(c))
+
+  defp pending_commencement?(c),
+    do: Map.get(c, :prospective) == true and Map.get(c, :applied) != true
+
+  # an insertion or substitution: it makes new text
+  defp new_text?(c), do: c.operation in ~w(inserted substituted)
+
+  defp pending?(c),
+    do:
+      c.own and new_text?(c) and commencing_kind?(c) and dates(c) == [] and
+        pending_commencement?(c)
 
   # consecutive periods with the same labels become one
   defp merge(periods) do

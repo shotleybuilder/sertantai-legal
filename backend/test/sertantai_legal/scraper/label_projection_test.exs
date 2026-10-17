@@ -410,6 +410,75 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
     assert gaps == [{"UK_ukpga_1977_39:s.14", :outstanding_effect}]
   end
 
+  describe "LR-36: a pending change doesn't make the current text prospective" do
+    @law36 "UK_ukpga_1988_52"
+
+    test "a prospective substitution not yet applied: the current text stays in force; a pending_change gap (s.127(3))" do
+      rows = [row(@law36, "s.127(3)", markup_status: nil)]
+
+      sub =
+        change(
+          @law36,
+          "s.127(3)",
+          "key-sub",
+          "substituted",
+          "substituted",
+          "UK_ukpga_2006_49",
+          [{nil, nil}],
+          prospective: true,
+          applied: false
+        )
+
+      assert %{periods: [%{status: "in_force", valid_from: ~D[1988-11-15]}], gaps: gaps} =
+               LabelProjection.timeline(@law36, rows, [sub],
+                 today: @today,
+                 law_start: ~D[1988-11-15]
+               )
+
+      assert {"UK_ukpga_1988_52:s.127(3)", :pending_change} in gaps
+    end
+
+    test "a pending commencement still means not yet in force (asc 2026/5)" do
+      rows = [row(@law36, "s.127(3)", markup_status: nil)]
+
+      com =
+        change(
+          @law36,
+          "s.127(3)",
+          "key-cif",
+          "commenced",
+          "coming into force",
+          "UK_x",
+          [{nil, nil}],
+          prospective: true,
+          applied: false
+        )
+
+      assert [{_, nil, "prospective", nil, nil}] =
+               periods(@law36, rows, [com], law_start: ~D[1988-11-15])
+    end
+
+    test "the revised text marking the provision prospective still reads prospective (J2)" do
+      rows = [row(@law36, "s.127(3)", markup_status: "prospective")]
+
+      sub =
+        change(
+          @law36,
+          "s.127(3)",
+          "key-sub",
+          "inserted",
+          "inserted",
+          "UK_ukpga_2006_49",
+          [{nil, nil}],
+          prospective: true,
+          applied: false
+        )
+
+      assert [{_, nil, "prospective", nil, nil}] =
+               periods(@law36, rows, [sub], law_start: ~D[1988-11-15])
+    end
+  end
+
   describe "LR-34: the law's clause starts its provisions" do
     @law "UK_asp_2024_14"
 

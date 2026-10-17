@@ -46,7 +46,7 @@ defmodule Mix.Tasks.Lat.WavePreview do
 
   @shortdoc "Dry run of a re-parse wave: real path, rolled back (never writes)"
 
-  @gaps ~w(no_start insertion_not_in_register undated_change markup_conflict outstanding_effect commenced_by_order)a
+  @gaps ~w(no_start insertion_not_in_register undated_change markup_conflict outstanding_effect commenced_by_order pending_change)a
   @cols ~w(law rows_before rows_after cause labels periods_before periods_after unknown_before
            unknown_after label_diffs) ++
           Enum.map(@gaps, &"gap_#{&1}") ++
