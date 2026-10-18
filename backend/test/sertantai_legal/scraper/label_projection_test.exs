@@ -579,6 +579,27 @@ defmodule SertantaiLegal.Scraper.LabelProjectionTest do
              ] = periods(@law, rows, [], law_start: ~D[2027-10-01], made: @made)
     end
 
+    test "CR-06: text inserted after the clause's date for it is commenced by its insertion, not the clause" do
+      law = "UK_ukpga_1990_43"
+
+      ins =
+        change(law, "s.79", "e1", "inserted", "inserted", "UK_asp_2014_3", [
+          {nil, nil},
+          {~D[2014-06-30], "wholly in force"}
+        ])
+
+      rows = [
+        row(law, "s.79(12)",
+          law_start: ~D[1991-01-01],
+          extent_code: "S",
+          clause_in_force: [%{"date" => "1991-01-01", "qualification" => "for certain purposes"}]
+        )
+      ]
+
+      assert [{~D[2014-06-30], nil, "in_force", ~D[2014-06-30], "UK_asp_2014_3"}] =
+               periods(law, rows, [ins], law_start: ~D[1990-11-01])
+    end
+
     test "made the day it comes into force, or no made date: starts at the start" do
       rows = [row(@law, "reg.5")]
 

@@ -104,6 +104,23 @@ defmodule SertantaiLegal.Scraper.EffectFactsTest do
       refute EffectFacts.partial?([first, unqualified], "E+W", @today)
     end
 
+    test "CR-06: a purposes-only entry naming no territory is closed by a later territorial commencement (2010/29 s.7)" do
+      first =
+        fx(type: "coming into force", in_force: [at(~D[2010-04-08], "for certain purposes")])
+
+      england = fx(type: "coming into force", in_force: [at(~D[2010-10-01], "for E.")])
+      refute EffectFacts.partial?([first, england], "E+W", @today)
+
+      # for W. for specified purposes stays open in Wales
+      wales =
+        fx(
+          type: "coming into force",
+          in_force: [at(~D[2010-04-08], "for W. for specified purposes")]
+        )
+
+      assert EffectFacts.partial?([wales, england], "E+W", @today)
+    end
+
     test "a completing step after today hasn't happened yet" do
       e =
         fx(

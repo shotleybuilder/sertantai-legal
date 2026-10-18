@@ -162,8 +162,13 @@ defmodule SertantaiLegal.Scraper.EffectFacts do
     live = for({t, :complete} <- entries, t != nil, do: t) |> Territory.union()
     covered? = fn t -> live != nil and Territory.covers?(live, t || extent) end
 
+    # a purposes-only entry naming no territory is closed by any later
+    # complete one: the territory a commencement doesn't mention is a gap,
+    # not "not in force" (CR-06: 2010/29 s.7, on passing for making orders,
+    # then for E.)
     open_purposes =
       Enum.any?(entries, fn
+        {nil, :purposes} -> live == nil
         {t, :purposes} -> not covered?.(t)
         _ -> false
       end)

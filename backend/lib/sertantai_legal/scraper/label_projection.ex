@@ -294,9 +294,17 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
       insertion_date(row, changes) != nil or
         Enum.any?(changes, &(&1.operation == "commenced" and dates(&1) != []))
 
+    inserted = insertion_date(row, changes)
+
     cond do
       commences == nil ->
         {nil, changes}
+
+      # text another law inserted after the clause's date: the clause never
+      # commenced it, its insertion does (CR-06: 1990/43 s.79(12)[S], named
+      # by s.164(2)'s "section 79", inserted in 2014)
+      inserted != nil and Date.compare(inserted, own || commences) == :gt ->
+        {commences, changes}
 
       # the clause brings the row in partly first (CR-06): its entries,
       # whatever else dates the row
@@ -855,11 +863,15 @@ defmodule SertantaiLegal.Scraper.LabelProjection do
   defp words_level?(c),
     do: EffectIndex.words_level?(%Effect{type: c.effect_type || "", affecting: nil})
 
-  # a commencement read from the law (its clause, CR-06) is the feed's
-  # "coming into force" kind, whatever treatment named it
+  # the law's own clause commencing the row (CR-06) is the feed's "coming
+  # into force" kind, whatever treatment named it
   defp effect(c),
     do: %Effect{
-      type: if(c.operation == "commenced", do: "coming into force", else: c.effect_type || ""),
+      type:
+        if(c[:evidence] == "commencement clause",
+          do: "coming into force",
+          else: c.effect_type || ""
+        ),
       affecting: c.affecting_law,
       in_force: c.in_force
     }
