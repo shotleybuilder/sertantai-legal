@@ -67,3 +67,45 @@ A commencement order becomes rules about the law it commences. Today `Commencing
 | undated / no order | 7,872 |
 
 78% agree or are consistent where both date. The differences are mostly staged commencements read as full: an order's partial stage ("so far as it relates to ss. 120D–120H", "for the substitution of s. 66EB(1)–(7)") without a qualifier the reader recognises, and the later "so far as not already in force" order not among those the note names (Water Act 2014 690, Building Safety Act 2022 428, Energy Act 2013? 2005/16 270, 2011/20 234, 2023/13 220).
+
+## Decided (Jason 2026-10-18: "Agree, 95% bar and read all orders")
+
+- **Bar**: order-rule dates reach the labels (CR-06) only at ≥ 95% agreement with the feed where both date (agree + consistent partial).
+- **Read every commencement order made under an Act**, not only those the notes cite (the final "so far as not already in force" order is often uncited); missing orders fetched into the store (as LR-42). The same list serves CR-07.
+
+## Every commencement order of an Act (`Commencement.Orders`)
+
+legislation.gov.uk's title search ("<Act title> <year> (Commencement", every page) ∪ the register's `uk_lrt.enacting` titled commencement / appointed day; cached per Act (`data/cache/commencement-orders/`). Water Act 2014: 17 orders (the notes cite a few; the register lists 16). `mix lat.commencement --orders`: 221 amending Acts, 1,468 commencement orders, 1,131 not held → fetched (`mix clml.fetch`); `--read-orders` writes their rules by order.
+
+## Re-scoped (Jason 2026-10-18: "Are we focussed on grabbing the laws we need …"; "if we have the 'effects' data from leg.gov.uk why do we need to pull the laws too?"; "Agree the re-scope")
+
+The all-orders fetch was stopped at 56 of 1,131 (an Act's whole commencement history is far wider than the provisions that changed our rows: Scotland Act 2016 alone 98 orders). **Effects first; law text only where effects are missing; every fetch scoped from our domain laws' rows, one hop.**
+
+1. **2002 on (68 amending Acts, 481 undated records)**: the amending Act's own changes feed (all pages) — its "coming into force" effects (provision, commencing order and article, date, territory / purpose) — as rules. No laws or orders fetched.
+2. **Before 2002 (136 Acts, 1,870 records)**: legislation.gov.uk's changes data is thin there; read the amending law and the orders the notes cite (held since LR-42). No further fetching.
+3. Measure against the 95% bar.
+
+## Effects first: built and measured (2026-10-18)
+
+- `Commencement.Effects`: an Act's "coming into force" effects → rules (scope from the structured refs; a Schedule listed with its paragraph is only its place; one rule per in-force entry; qualification → territory / the four purposes); `for_row/2`: a qualification naming inserted sections ("for the insertion of s. 120A for E. and the insertion of s. 120B for specified purposes") reaches only those rows.
+- `Commencement.Amending.evaluate/4`: effects first; the text rules (the Act's own clause, the orders its notes cite) only where no effect reaches the provision.
+- `Store.write/3` `treatments:` — two readers of one document keep each other's rules.
+- `mix lat.commencement --effects`: every amending Act's feed (221 Acts, one feed each, 712 commencing instruments, 32,335 rules) — the feed records commencements from 2002, of older Acts too (CROW 2000 in 2004–05). The all-orders fetch (`--orders`) is not used.
+
+Bugs caught by the measure: the feed's refs list a paragraph's Schedule too, so every Sch. 5 paragraph's commencement reached para. 77 (BSA 2022) — precision 86% → 96%; an Act's year is not its commencement's (CROW 2000) — feeds fetched for every amending Act.
+
+### Gate (`cr04_measure.exs`): precision vs the feed where it dates, by tier
+
+| Tier | Agree | Consistent (partial before the feed's date) | Differs | Rate |
+|---|---|---|---|---|
+| **effects** | 11,015 | 1,123 | 491 | **96.1%** ✅ |
+| text (own clause + orders read) | 946 | 158 | 593 | **65%** ❌ |
+
+### Coverage: undated amending-law changes on our rows (5,720)
+
+| Tier | Dated | Partial | Undated / no rules |
+|---|---|---|---|
+| effects | 737 | 126 | — |
+| text | 2,843 | 86 | 1,928 |
+
+The text tier dates most pre-2002 rows (2,771) but at 65% where checkable — below the bar; its pre-2002 precision can't be checked against the feed (6 records).
