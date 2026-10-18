@@ -1,11 +1,79 @@
 ---
 session: 'LR-41: Which Law an Instruction Amends'
-status: active
+status: closed
 opened: '2026-10-17'
+closed: '2026-10-18'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'The amending-law collector now follows the law an instruction amends: defined terms count only when they mean a law (whole words, apposition), context in document order, and the law named before the instruction (its Schedule, the body, "that Act"); four older misreads fixed. Applied with LR-42 by relabel 2026-10-18: 1,653 label changes live, 0 stale; undated_change 16,528 → 16,268, unknown today 17,345 → 17,102.'
+decisions:
+  - what: Re-scoped from block changes to which law an instruction amends
+    why: 'Jason 2026-10-17 "Law first, block next": the sample''s law check failed 95 of 159 target failures, blocks 61'
+    result: block changes are LR-43
+  - what: A defined term names a law only when its definition does, as whole words
+    why: every amending Act defines ordinary terms ("a", "and", "authority", ""), which stopped the law search everywhere (LR-08 bug)
+    result: sample law failures 95 → 27 with fixes 1–4
+  - what: When nothing near the instruction names a law, the nearest law named before it decides (its Schedule, the body naming the Schedule, earlier provisions)
+    why: Schedule paragraphs and "of that Act" name their law elsewhere; strict rule kept (another law first → no match)
+    result: pairs reaching a record 11 → 47 in the sample (6 dated: commencement is the bottleneck → LR-44)
+  - what: Apply LR-41 and LR-42 together; commencement (LR-44) before block changes (LR-43)
+    why: 'Jason 2026-10-18 "Agree 1 and 2"'
+    result: relabel 2026-10-18
+metrics:
+  relabel_2026_10_18: { laws: 1066, failed: 0, stale_after: 0, predicted_label_changes_live: 1653, unknown_today: 17102, undated_change: 16268, insertion_not_in_register: 9286, unknown_to_in_force: 242, minutes: 18.5 }
+  benchmark: { records: '4,656 → 27,689', operation_differs: '4.5% → 3.5%', no_feed_change: '2.7% → 2.0%', date_differs: 854 }
+lessons:
+  - title: Kept-for-zero-diff behaviour must be revisited when it is a cause
+    detail: 'LR-31 kept xmerl // order in AmendingLaw.Doc for a zero-diff refactor; it put a later subsection''s words ("In section 153") into an earlier paragraph''s context. A zero-diff choice is a debt to log, not a decision.'
+    tag: data
+  - title: A stage trace (explain) beats guessing the cause
+    detail: 'The session was opened as "block changes" from note wording; Target.explain/4 showed the law check failed most. Add a why-not function to a matcher before choosing the fix.'
+    tag: tooling
+  - title: A dry run's few losses are where the reader's bugs are
+    detail: 'Every loss in three dry runs (ERA s.235, 1973/26 s.4, 1998/17 s.13(1), 2005/1806 reg.32, 1984/26 s.9(1)) was a misread record — insertions into a provision read as insertions of it, a renumbering aside, definitions omitted read as a whole repeal.'
+    tag: data
+bugs:
+  - pattern: 'Defined terms naming no law ("a", "and", "authority", "") counted as naming a law in Target.laws/2, stopping the law search'
+    category: amending-law collector
+    module: AmendingLaw.DefinedTerms / Target
+    affected: 
+    fix: law-only terms, whole-word match, apposition
+    status: fixed
+  - pattern: 'An insertion into a provision recorded as an insertion of it (after subsection (2) insert; at the end add the following paragraph; In subsection (1) … insert), withholding its start (LR-30)'
+    category: amending-law collector
+    module: AmendingLaw.Target
+    affected: 
+    fix: a whole insertion reaches a row only by its own path in the quote or its brackets named as what is inserted
+    status: fixed
+  - pattern: '"omit the following definitions" read as a whole repeal'
+    category: amending-law collector
+    module: AmendingLaw.Operation
+    affected: 
+    fix: definitions / entries are words-level
+    status: fixed
+  - pattern: 'RTA 1988 9 rows: in_force_from moved 1992-07-01 → 1988-11-15 when an undated "insertion of s.92" by RTA 1991 is no longer read; s.92(1)''s 2009 words substitution never dates it'
+    category: residual
+    module: LabelProjection / AmendingLaw.Target
+    affected: 9
+    fix: check RTA 1991's s.92 instruction against the text
+    status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/amending_law/target.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/defined_terms.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/text.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/doc.ex
+  - backend/lib/sertantai_legal/scraper/amending_law/operation.ex
+  - backend/data/reports/lat-refactor/lr41_dry3.csv
+  - backend/data/reports/lat-refactor/lr41_bench3.csv
+depends_on:
+  - 2026-10-17-lr-40-undated-change
+  - 2026-10-17-lr-42-fetch-amending-laws
+enables:
+  - 2026-10-18-lr-44-amending-commencement
+  - 2026-10-17-lr-43-block-changes
 ---
 
-# Session: LR-41 Which Law an Instruction Amends (ACTIVE)
+# Session: LR-41 Which Law an Instruction Amends (CLOSED)
 
 ## Problem
 
@@ -19,7 +87,7 @@ The amending-law collector (LR-08) makes a record only when an instruction names
 - ✅ Build: amending-law tests 61 pass; sample re-trace: law failures 95 → 27, pairs reaching a record 11 → 47 (6 dated: most stall at commencement, LR-40 cause 5)
 - ✅ Precision: `mix lat.amending_law_benchmark --all` (`lr41_bench3`) vs `lr08_bench5`: records 4,656 → 27,689; operation differs 4.5% → 3.5%, no feed change 2.7% → 2.0%; date differs 854 (commencement by many orders: LR-40 cause 5)
 - ✅ Dry run 3 (`lr41_dry3`, with LR-42's laws): below
-- ⬜ Jason: apply; NAS backup, relabel, verify
+- ✅ Jason: apply ("Agree 1 and 2"); NAS backup, relabel (18.5 min, 0 failed), 0 stale, 1,653 of 1,653 predicted changes live; unknown today 17,102
 
 ## Dependencies
 
