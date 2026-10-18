@@ -1,11 +1,38 @@
 ---
 session: 'CR-01: Schema & Storage'
-status: active
+status: closed
 opened: '2026-10-18'
+closed: '2026-10-18'
+outcome: success
 parent: commencement-rules/2026-10-18-cr-00-meta.md
+summary: 'The commencement ruleset has its schema and its store: Commencement.Rule (scope, when, territory, four purposes, source, treatment; one readable line; row mapping), the commencement_rules table (Ash), Commencement.Store and mix lat.commencement. Empty until the readers (CR-03, CR-04) write rules.'
+decisions:
+  - what: 'Bringing into force only; purposes = nil / for_making_secondary_legislation / in_relation_to / for_specified_purposes; when = date / after / named_day / appointed / with / unread'
+    why: 'Jason 2026-10-18: "Adopt the 4 purposes and scope to bringing into force. The abstraction should simplify not complicate"'
+    result: no expiry, no retrospective flag, no scope modifier ("so far as not already in force" is the evaluator's date order)
+  - what: Scope refs are LAT section_id strings, a range "from..to"
+    why: LawStart.Provisions already matches rows by that grammar (prefix coverage); readable as written
+    result: '"s.12(3)", "pt.6.ch.1", "sch.13.para.70(a)", "s.1..s.5"'
+metrics:
+  tests: { new: 12, suite: 2768 }
+lessons:
+  - title: Check column names against SQL reserved words before generating the migration
+    detail: '"except" broke raw INSERTs; the fix was a rollback, deleting the generated migration and snapshot, and regenerating — plus dropping the stale table by hand in the test DB, whose migration file no longer existed.'
+    tag: schema
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/rule.ex
+  - backend/lib/sertantai_legal/scraper/commencement/store.ex
+  - backend/lib/sertantai_legal/legal/commencement_rule.ex
+  - backend/lib/mix/tasks/lat.commencement.ex
+  - backend/priv/repo/migrations/20261018105421_add_commencement_rules.exs
+depends_on:
+  - lat-refactor/2026-10-18-lr-44-amending-commencement
+enables:
+  - commencement-rules/2026-10-18-cr-02-evaluator
+  - commencement-rules/2026-10-18-cr-03-reader-own-clause
 ---
 
-# Session: CR-01: Schema & Storage (ACTIVE)
+# Session: CR-01: Schema & Storage (CLOSED)
 
 ## Problem
 
