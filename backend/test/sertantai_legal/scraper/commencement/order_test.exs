@@ -216,4 +216,13 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
 
     assert %{full_from: nil} = dated(rules, "schedule-16-paragraph-3")
   end
+
+  test "an order made for one territory says so in its title (SI 2000/340, \"(England) Order\")" do
+    d =
+      Doc.new("UK_uksi_2000_340", [
+        ~S|<Legislation xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>The Environment Act 1995 (Commencement No. 16 and Saving Provision) (England) Order 2000</dc:title><Secondary><Body><P1 id="article-1"><P1para><Text>In this Order “<Term id="t">the Act</Term>” means the Railways Act 1993.</Text></P1para></P1><P1 id="article-2"><P1para><Text>Section 57 of the Act comes into force on 1st April 2000.</Text></P1para></P1></Body></Secondary></Legislation>|
+      ])
+
+    assert [%Rule{territory: "E"}] = Order.rules(d, @act)
+  end
 end

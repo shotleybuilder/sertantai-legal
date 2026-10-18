@@ -57,7 +57,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
     if commences?(order, act) do
       aliases = aliases(order, act)
 
-      type_territory = type_territory(order.law_name)
+      type_territory = type_territory(order.law_name) || title_territory(order)
 
       (statements(order, aliases) ++ tables(order, act))
       |> Enum.map(fn r ->
@@ -101,7 +101,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
 
   @doc "The law's title from its own CLML (`dc:title`), without the year: for an Act `uk_lrt` doesn't hold."
   @spec title(Doc.t()) :: String.t() | nil
-  def title(%Doc{roots: roots}) do
+  def title(doc) do
+    case full_title(doc) do
+      nil -> nil
+      t -> t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+    end
+  end
+
+  defp full_title(%Doc{roots: roots}) do
     Enum.find_value(roots, fn root ->
       case root
            |> xpath(
@@ -109,7 +116,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
            )
            |> to_string() do
         "" -> nil
-        t -> t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+        t -> t
       end
     end)
   end
@@ -386,6 +393,18 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       "ssi" -> "S"
       "nisr" -> "NI"
       _ -> nil
+    end
+  end
+
+  # an order made for one territory says so in its title: "The Environment
+  # Act 1995 (Commencement No. 16 …) (England) Order 2000" (SI 2000/340)
+  defp title_territory(order) do
+    case Regex.run(
+           ~r/\((England and Wales|England|Wales|Scotland|Northern Ireland)\)\s+(?:Order|Regulations)\b/,
+           full_title(order) || ""
+         ) do
+      [_, place] -> Map.get(@places, String.downcase(place))
+      nil -> nil
     end
   end
 
