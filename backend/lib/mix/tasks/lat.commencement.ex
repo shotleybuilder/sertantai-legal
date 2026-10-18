@@ -14,6 +14,8 @@ defmodule Mix.Tasks.Lat.Commencement do
 
       mix lat.commencement --read --law X | --all           # write the laws' own-clause rules (CR-03)
       mix lat.commencement --compare --all --tag cr03_cmp   # the evaluator vs today's register, per row
+      mix lat.commencement --effects                        # amending Acts: their feed's "coming into force" effects as rules (CR-04)
+      mix lat.commencement --read-orders                    # amending Acts before 2002: the rules the orders their notes cite state (where no effect reaches)
 
   `--read` writes only `commencement_rules` (no label changes). `--compare`
   writes `data/reports/commencement-rules/<tag>.csv` — each row whose
@@ -26,7 +28,19 @@ defmodule Mix.Tasks.Lat.Commencement do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.{ChangeCollector, LabelTimeline, LawRunner}
-  alias SertantaiLegal.Scraper.Commencement.{Evaluator, OwnClause, Rule, Store}
+  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+
+  alias SertantaiLegal.Scraper.Commencement.{
+    Effects,
+    Evaluator,
+    Order,
+    Orders,
+    OwnClause,
+    Rule,
+    Store
+  }
+
+  alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
 
   @shortdoc "Print, read or compare a law's commencement rules"
 
@@ -39,6 +53,9 @@ defmodule Mix.Tasks.Lat.Commencement do
           all: :boolean,
           read: :boolean,
           compare: :boolean,
+          orders: :boolean,
+          effects: :boolean,
+          read_orders: :boolean,
           tag: :string,
           workers: :integer
         ]
@@ -53,6 +70,15 @@ defmodule Mix.Tasks.Lat.Commencement do
 
       opts[:compare] ->
         compare(laws(opts), opts)
+
+      opts[:orders] ->
+        orders()
+
+      opts[:effects] ->
+        effects()
+
+      opts[:read_orders] ->
+        read_orders(opts)
 
       opts[:law] ->
         opts[:law] |> Store.for_law() |> print(opts[:law])
@@ -114,6 +140,146 @@ defmodule Mix.Tasks.Lat.Commencement do
     )
 
     for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{inspect(e)}")
+  end
+
+  # ── --orders / --read-orders (CR-04) ────────────────────────────────
+
+  # the Acts whose amending provisions the amending-law collector reads
+  defp amending_acts do
+    Repo.query!("""
+    SELECT DISTINCT affecting_law FROM lat_change_log
+    WHERE collector = 'amending_law' AND affecting_law ~ '^UK_(ukpga|asp|anaw|asc|nia|apni|mwa)_'
+    ORDER BY 1
+    """).rows
+    |> List.flatten()
+  end
+
+  defp act(law) do
+    [_, _, year, _] = String.split(law, "_", parts: 4)
+
+    title =
+      case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
+        %{rows: [[t]]} when is_binary(t) ->
+          t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+
+        _ ->
+          (d = doc(law)) && Order.title(d)
+      end
+
+    %{law: law, title: title, year: year}
+  end
+
+  defp orders do
+    lists =
+      for law <- amending_acts(), a = act(law), do: {law, Orders.for_act(law, a.title, a.year)}
+
+    all = lists |> Enum.flat_map(&elem(&1, 1)) |> Enum.uniq()
+    missing = Enum.reject(all, &held?/1)
+    dir = "data/reports/commencement-rules"
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, "orders_missing.txt"), Enum.join(missing, "\n") <> "\n")
+
+    Mix.shell().info(
+      "#{length(lists)} Acts, #{length(all)} commencement orders, #{length(missing)} not held → #{dir}/orders_missing.txt (mix clml.fetch --laws …)"
+    )
+  end
+
+  # effects first (Jason 2026-10-18): an amending Act's own changes feed
+  # (one per Act, through the store) states when its provisions came into
+  # force; legislation.gov.uk's changes data covers changes from 2002
+  defp effects do
+    # every amending Act: the feed records commencements from 2002 on, of
+    # older Acts too (CROW 2000 in 2004–05; EPA 1990 in Scotland in 2015)
+    acts = amending_acts()
+
+    {by_order, errors} =
+      Enum.reduce(acts, {%{}, []}, fn law, {acc, errs} ->
+        [_, t, y, n] = String.split(law, "_", parts: 4)
+
+        case ChangesFeed.fetch(t, y, n, store: :prefer) do
+          {:ok, effects} ->
+            {Enum.reduce(Effects.rules(law, effects), acc, fn r, a ->
+               Map.update(a, r.source.law, [r], &[r | &1])
+             end), errs}
+
+          {:error, e} ->
+            {acc, [{law, e} | errs]}
+        end
+      end)
+
+    for {order, rules} <- by_order,
+        do: Store.write(order, Enum.reverse(rules), treatments: [:feed_commencement])
+
+    Mix.shell().info(
+      "#{length(acts)} amending Acts, #{map_size(by_order)} commencing instruments, #{by_order |> Map.values() |> List.flatten() |> length()} rules, #{length(errors)} feed errors"
+    )
+
+    for {law, e} <- Enum.take(errors, 10), do: Mix.shell().info("  #{law}: #{e}")
+  end
+
+  defp year(law), do: law |> String.split("_") |> Enum.at(2) |> String.to_integer()
+
+  defp read_orders(_opts) do
+    cited = cited_orders()
+
+    by_order =
+      for law <- amending_acts(),
+          year(law) < 2002,
+          a = act(law),
+          order <- Map.get(cited, law, []),
+          d = doc(order),
+          d != nil,
+          rule <- Order.rules(d, a),
+          reduce: %{} do
+        acc -> Map.update(acc, order, [rule], &[rule | &1])
+      end
+
+    for {order, rules} <- by_order,
+        do: Store.write(order, Enum.reverse(rules), treatments: [:order_date, :order_schedule])
+
+    Mix.shell().info(
+      "#{map_size(by_order)} orders with rules, #{by_order |> Map.values() |> List.flatten() |> length()} rules written"
+    )
+  end
+
+  # the commencing instruments the notes cite, per amending law (the
+  # amending-law collector's records' pointers)
+  defp cited_orders do
+    %{rows: rows} =
+      Repo.query!("""
+      SELECT DISTINCT l.affecting_law, a.code, a.text, a.citation_law, a.affected_sections
+      FROM lat_change_log l
+      JOIN amendment_annotations a ON a.law_name = l.law_name AND a.code = l.pointer
+      WHERE l.collector = 'amending_law'
+      """)
+
+    for [law, code, text, cl, sids] <- rows,
+        {si, _} <-
+          SertantaiLegal.Scraper.AmendingLaw.Pointer.parse(%{
+            code: code,
+            text: text,
+            citation_law: cl,
+            affected_sections: sids || []
+          }).commencing,
+        reduce: %{} do
+      acc -> Map.update(acc, law, [si], &Enum.uniq([si | &1]))
+    end
+  end
+
+  defp held?(law) do
+    case String.split(law, "_", parts: 4) do
+      [_, t, y, n] -> Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") != []
+      _ -> false
+    end
+  end
+
+  defp doc(law) do
+    with [_, t, y, n] <- String.split(law, "_", parts: 4),
+         [_ | _] = paths <- Path.wildcard("data/cache/clml/#{t}/#{y}/#{n}/**/data.xml.gz") do
+      Doc.new(law, paths |> Enum.sort() |> Enum.map(&(&1 |> File.read!() |> :zlib.gunzip())))
+    else
+      _ -> nil
+    end
   end
 
   # ── --compare ───────────────────────────────────────────────────────

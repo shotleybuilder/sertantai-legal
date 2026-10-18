@@ -35,6 +35,22 @@ defmodule SertantaiLegal.Scraper.Commencement.StoreTest do
     assert MapSet.new(Store.for_law("UK_ukpga_2014_21")) == MapSet.new([a2, b])
   end
 
+  test "treatments: a write replaces only its own kind of rules from the document" do
+    eff = %{
+      rule("UK_ukpga_2014_21", "UK_uksi_2017_1", ["s.11"], {:date, ~D[2017-04-01]})
+      | treatment: :feed_commencement
+    }
+
+    text = %{
+      rule("UK_ukpga_2014_21", "UK_uksi_2017_1", ["s.12"], {:date, ~D[2017-04-01]})
+      | treatment: :order_date
+    }
+
+    Store.write("UK_uksi_2017_1", [eff], treatments: [:feed_commencement])
+    Store.write("UK_uksi_2017_1", [text], treatments: [:order_date])
+    assert MapSet.new(Store.for_law("UK_ukpga_2014_21")) == MapSet.new([eff, text])
+  end
+
   test "a source's rules must all come from it" do
     assert_raise ArgumentError, fn ->
       Store.write("UK_uksi_2017_1", [rule("UK_ukpga_2014_21", "UK_wsi_2019_1", :all, :unread)])

@@ -12,9 +12,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
   @columns ~w(commences scope_kind scope scope_except when_kind when_date when_basis when_offset
               when_detail territory purposes source_law source_ref source_text treatment)a
 
-  @doc "Replace the rules read from `source_law` with `rules`. Returns `{:ok, count}`."
-  @spec write(String.t(), [Rule.t()]) :: {:ok, non_neg_integer()}
-  def write(source_law, rules) do
+  @doc """
+  Replace the rules read from `source_law` with `rules`. Returns `{:ok,
+  count}`. `treatments:` replaces only rules of those treatments — two
+  readers of one document (its feed effects, its text) keep each other's.
+  """
+  @spec write(String.t(), [Rule.t()], keyword()) :: {:ok, non_neg_integer()}
+  def write(source_law, rules, opts \\ []) do
     for r <- rules, r.source.law != source_law do
       raise ArgumentError, "rule from #{r.source.law} written as #{source_law}'s"
     end
@@ -22,7 +26,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Store do
     rows = Enum.map(rules, &Rule.to_row/1)
 
     Repo.transaction(fn ->
-      Repo.query!("DELETE FROM commencement_rules WHERE source_law = $1", [source_law])
+      case Keyword.get(opts, :treatments) do
+        nil ->
+          Repo.query!("DELETE FROM commencement_rules WHERE source_law = $1", [source_law])
+
+        ts ->
+          Repo.query!(
+            "DELETE FROM commencement_rules WHERE source_law = $1 AND treatment = ANY($2)",
+            [source_law, Enum.map(ts, &to_string/1)]
+          )
+      end
 
       for row <- rows do
         Repo.query!(
