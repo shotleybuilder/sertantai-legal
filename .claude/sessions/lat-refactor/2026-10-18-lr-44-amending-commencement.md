@@ -1,11 +1,34 @@
 ---
 session: 'LR-44: Dating Amending Provisions'
-status: active
+status: closed
 opened: '2026-10-18'
+closed: '2026-10-18'
+outcome: success
 parent: lat-refactor/2026-10-09-lr-00-meta.md
+summary: 'Sized the undated amending-law records (2,552 distinct: 1,463 Acts whose held commencement orders give no date, 706 Acts with no order named, 383 SIs whose own start is not read) and, with Jason, chose a common commencement ruleset (readers → rules → one evaluator). Gemini reviewed the schema; implementation moved to the Commencement Ruleset meta (CR-00, CR-01–CR-07).'
+decisions:
+  - what: 'One commencement ruleset: source text translated to readable rules; one evaluator dates any provision'
+    why: 'Jason 2026-10-18: "the key would be the schema for the abstracted rules … translated to a common ruleset that''s easy to read"; four readers cover different subsets today'
+    result: commencement-rules/2026-10-18-cr-00-meta.md
+  - what: 'Gemini: purposes a fixed set; add retrospective, expiry, on_event, not_already_in_force; aggregate rules in date order (a full commencement supersedes partial ones)'
+    why: 'Gemini 2.5 Pro review of the draft (backend/data/code-reviews/2026-10-18-commencement-ruleset-schema-gemini.md)'
+    result: CR-01 decides the fields, CR-02 the evaluator
+metrics:
+  undated_amending_records: { total: 3452, undated: 2745, distinct_by_cause: 2552, act_orders_no_date: 1463, act_no_order_named: 706, si_own_unread: 383 }
+lessons:
+  - title: Once documents are held, the gaps are all reading
+    detail: 'After LR-42 no undated amending-law record lacks a held order or law; every one fails at reading commencement. The answer was one schema for commencement rather than more reader patches.'
+    tag: data
+artifacts:
+  - backend/data/code-reviews/2026-10-18-commencement-ruleset-schema-gemini.md
+depends_on:
+  - 2026-10-17-lr-41-instruction-law
+  - 2026-10-17-lr-42-fetch-amending-laws
+enables:
+  - commencement-rules/2026-10-18-cr-00-meta
 ---
 
-# Session: LR-44 Dating Amending Provisions (ACTIVE)
+# Session: LR-44 Dating Amending Provisions (CLOSED)
 
 ## Problem
 
@@ -14,9 +37,9 @@ The amending-law collector finds the change but can't date it: the amending prov
 ## Todo
 
 - ✅ Size after the LR-41/42 relabel (`undated_al.exs`): 3,452 amending-law records, 2,745 undated; 2,552 distinct by cause (below)
-- ⬜ Trace a sample of "order held, no date read"
-- ⬜ D1 per cause (Jason)
-- ⬜ Build, tests, dry run, benchmark (date differs down), apply
+- ⏸️ Trace a sample of "order held, no date read" (moved to CR-04)
+- ✅ D1 (Jason 2026-10-18): a common commencement ruleset, readers → rules → one evaluator; Gemini reviewed (`backend/data/code-reviews/2026-10-18-commencement-ruleset-schema-gemini.md`)
+- ⏸️ Build, tests, dry run, benchmark, apply (moved to the Commencement Ruleset meta: `commencement-rules/2026-10-18-cr-00-meta.md`, CR-01–CR-07)
 
 ## Dependencies
 
