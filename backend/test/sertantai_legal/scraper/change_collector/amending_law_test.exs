@@ -181,4 +181,29 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLawTest do
 
     assert owned.() == before
   end
+
+  test "CR-06: a row the quoted text makes is inserted, not the sentence's earlier repeal (1991 c.40 s.9(1))" do
+    rta = "UK_ukpga_1988_52"
+
+    doc =
+      Doc.new("UK_ukpga_1991_40", [
+        ~S|<Legislation><Primary><Body><P1 id="section-9"><P1para><P2 id="section-9-1"><P2para><Text>Section 68(1) and (2) of the Road Traffic Act 1988 shall cease to have effect, and after section 66 of that Act there shall be inserted—</Text><BlockAmendment><P1group><Title>Appointment of examiners</Title><P1><Pnumber>66A</Pnumber><P1para><P2><Pnumber>1</Pnumber><P2para><Text>The Secretary of State shall appoint such examiners as he considers necessary.</Text></P2para></P2></P1para></P1></P1group></BlockAmendment></P2para></P2></P1para></P1></Body></Primary></Legislation>|
+      ])
+
+    n = %{
+      code: "F1",
+      text:
+        "S. 66A inserted (1.7.1992) by Road Traffic Act 1991 (c. 40), s. 9(1); S.I. 1992/1286, art. 2, Sch.",
+      citation_law: "UK_ukpga_1991_40",
+      affected_sections: ["#{rta}:s.66A(1)"]
+    }
+
+    sids = ["#{rta}:s.66A(1)"]
+
+    assert [%Record{operation: "inserted"}] =
+             AmendingLaw.records(rta, "Road Traffic Act", sids, [n], MapSet.new(sids), fn
+               "UK_ukpga_1991_40" -> doc
+               _ -> nil
+             end)
+  end
 end

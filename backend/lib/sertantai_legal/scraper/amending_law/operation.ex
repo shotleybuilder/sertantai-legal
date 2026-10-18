@@ -30,6 +30,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
     end
   end
 
+  @doc """
+  The operation for a row the instruction's quoted text makes (CR-06): its
+  insertion or substitution verb, not an earlier one of the same sentence
+  ("section 68(1) and (2) … shall cease to have effect, and after section
+  66 … there shall be inserted— 66A": 1991 c.40 s.9(1)).
+  """
+  @spec of_quoted(Text.t()) :: {String.t(), String.t()} | nil
+  def of_quoted(%Text{instruction: s} = t) do
+    found =
+      for {re, op} <- Enum.take(@verbs, 2),
+          [{pos, _} | _] <- [Regex.run(re, s, return: :index)],
+          do: {pos, op}
+
+    case Enum.min_by(found, &elem(&1, 0), fn -> nil end) do
+      nil -> of(t)
+      {_, op} -> {op, if(words?(s), do: "words #{op}", else: op)}
+    end
+  end
+
   # quoted or named words, definitions or entries (LR-41: SI 2009/2861 reg.
   # 12(a) "omit the following definitions—" omits words of reg. 32, not it)
   defp words?(s),

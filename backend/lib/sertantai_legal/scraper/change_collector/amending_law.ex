@@ -107,9 +107,19 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.AmendingLaw do
 
     with op when op != nil <- Operation.of(text),
          {:ok, target} <- Target.match(text, Doc.title(doc, id), terms, row) do
+      op = if quoted?(text, target), do: Operation.of_quoted(text), else: op
       record(doc, id, target, op, {id, dating}, pointer)
     else
       _ -> nil
+    end
+  end
+
+  # the row is one the instruction's quoted text makes (its provision
+  # number among the quote's: "66A" for s.66A(1))
+  defp quoted?(%Text{inserted: inserted}, target) do
+    case Regex.run(~r/:(?:s|reg|art|rule)\.(\d+[A-Z]*)/, target) do
+      [_, n] -> Enum.any?(inserted, &match?([^n | _], &1))
+      nil -> false
     end
   end
 
