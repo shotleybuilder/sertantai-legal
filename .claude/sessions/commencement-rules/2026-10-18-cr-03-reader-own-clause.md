@@ -1,11 +1,69 @@
 ---
 session: "CR-03: Reader — a Law's Own Commencement Clause"
-status: active
+status: closed
 opened: '2026-10-18'
+closed: '2026-10-18'
+outcome: success
 parent: commencement-rules/2026-10-18-cr-00-meta.md
+summary: 'A law''s own commencement clause is now a set of rules (Commencement.OwnClause over LawStart and Provisions.groups/3): 1,241 rules for 994 laws; the evaluator matches today''s register on 99.6% of rows, every difference classified. Reading fixes applied by relabel 2026-10-18 (59 rows; unknown today 17,079).'
+decisions:
+  - what: Reuse LawStart / Provisions reading; the reader writes what they read as rules
+    why: the parsing (made-relative counting, named days, lists, except, Parts) is tested and decided (LR-33/34); rewriting it would re-open it
+    result: 'Provisions.groups/3: refs unexpanded ("pt.II", "pt.6.ch.1")'
+  - what: A qualified sentence is a partial rule, completing the general one
+    why: 'Jason 2026-10-18 "Accept the decisions" (replaces LR-34 D2); Quarries reg.26: in force for classified tips 2006, fully 2007'
+    result: 905 rows partial first in the comparison; labels change at CR-06
+  - what: A staged clause keeps LR-33 P1's earliest-date law rule for now
+    why: 'dropping it made 4,666 rows in 35 laws unknown, largely reader gaps (Jason 2026-10-18)'
+    result: revisit when the reader covers the missed sentences
+  - what: Apply the reading fixes' 59 label changes
+    why: Jason 2026-10-18
+    result: 82 of 82 fields live, 0 stale
+metrics:
+  rules: { written: 1241, laws: 994 }
+  comparison_cr03_cmp4: { same: 373430, partial_first_qualified: 905, by_order_to_dated: 218, dated_to_unknown: 173, partial_only: 70, later: 28, earlier: 19, unknown_to_dated: 23 }
+  relabel_2026_10_18: { label_changes: 59, fields_live: 82, stale_after: 0, unknown_today: 17079 }
+  tests: { suite: 2804 }
+lessons:
+  - title: A widened pattern needs the corpus dry run before it is trusted
+    detail: 'Two reading edits passed their tests and failed on the corpus: a bare "in Scotland" qualifier matched inside "(… except in Scotland …)" (243 rows moved), "the X is made" matched "the day after the day on which these Regulations are made" (lost +1 day). The relabel dry run caught both.'
+    tag: data
+  - title: Never --no-verify a commit while code is staged
+    detail: 'A code commit failed its format hook and the follow-up session commit (--no-verify) swept the still-staged code in; undone with a soft reset and redone. Stage sessions-only before a --no-verify commit.'
+    tag: tooling
+bugs:
+  - pattern: 'LawStart.Provisions reads an "Otherwise … comes into force on" sentence over provisions an earlier sentence commences (uksi 2017/469 art.11)'
+    category: commencement clause
+    module: LawStart.Provisions
+    affected: 4
+    fix: 'the ruleset: "Otherwise" = rest; the source''s named rules win (CR-03)'
+    status: fixed
+  - pattern: 'A row''s dated commencement record lost to a qualified record of the same sentence (Commencement uniq by {section_id, evidence}: wsi 2026/103 reg.36)'
+    category: commencement register
+    module: ChangeCollector.Commencement
+    affected: 1
+    fix: the register's provision records are replaced by the evaluator at CR-06
+    status: open
+  - pattern: 'A sentence qualified by one item qualifies all it names ("Sections 33, 34, 41 and (in so far as …) 42": asp 2005/13)'
+    category: commencement clause
+    module: LawStart.Provisions
+    affected: 32
+    fix: qualify per item outside "the following" lists too
+    status: open
+artifacts:
+  - backend/lib/sertantai_legal/scraper/commencement/own_clause.ex
+  - backend/lib/sertantai_legal/scraper/law_start/provisions.ex
+  - backend/lib/mix/tasks/lat.commencement.ex
+  - backend/data/reports/commencement-rules/cr03_cmp4.csv
+  - backend/data/reports/lat-refactor/cr03_dry3.csv
+depends_on:
+  - commencement-rules/2026-10-18-cr-02-evaluator
+enables:
+  - commencement-rules/2026-10-18-cr-04-reader-orders
+  - commencement-rules/2026-10-18-cr-06-switch-over
 ---
 
-# Session: CR-03: Reader — a Law's Own Commencement Clause (ACTIVE)
+# Session: CR-03: Reader — a Law's Own Commencement Clause (CLOSED)
 
 ## Problem
 
@@ -16,9 +74,9 @@ A law's own commencement clause becomes rules: the reading `LawStart.Clause` (LR
 - ✅ `Commencement.OwnClause`: `LawStart`'s decision → the law-level rule; `Provisions.groups/3` (new, refs unexpanded: "pt.II", "pt.6.ch.1") → named / rest / qualified rules; `context/1` (containers from `part` / `chapter`, document order)
 - ✅ "Otherwise …" / "The remaining provisions …" = `rest` (never the commencement provision itself); the source's named rules win (uksi 2017/469 art.11, SI 1988/819 reg.4)
 - ✅ Classified diff (`mix lat.commencement --compare --all`, `cr03_cmp2`): below
-- ⬜ Jason: the qualified-sentence change (LR-34 D2) and the staged-clause question
+- ✅ Jason 2026-10-18 "Accept the decisions": (1) a qualified sentence is a partial rule — replaces LR-34 D2 (listed, no effect); (2) a staged clause keeps LR-33 P1's law-level rule (the earliest date) for now; (3) apply the 59
 - ✅ Relabel dry run of the reading edits (`cr03_dry3`): 59 label changes in 5 laws, all explained (below); rules written (`--read --all`: 1,241 rules, 994 laws)
-- ⬜ Jason: apply the 59 (NAS backup, relabel)
+- ✅ Applied 2026-10-18: NAS backup, relabel (18 min), 0 stale, 82 of 82 predicted label fields live (59 rows); unknown today 17,079
 
 ## Dependencies
 
@@ -68,3 +126,9 @@ Two edits caught on the way, with tests: the bare "in Scotland" qualifier first 
 | ukpga 2010/15, asp 2012/8 | 2 | emptied (J6) | the same; asp 2012/8 s.128 ("this Part (other than section 128)") |
 
 Comparison after them (`cr03_cmp4`): same 373,430; dated → partial first 905; by_order → dated 218; dated → unknown 173; partial only 70; later 28; earlier 19; unknown → dated 23 (uksi 2016/1245, as above) — classes as `cr03_cmp2`.
+
+## Decisions (Jason 2026-10-18: "Accept the decisions")
+
+1. **Qualified sentences are partial rules** ("for the purposes of …", "in relation to Wales", "with respect to …"): the provision is partly in force from the general date and fully once the qualified sentence's date arrives. Replaces LR-34 D2 (listed with no effect). In the labels from CR-06.
+2. **A staged clause keeps LR-33 P1's law-level rule** (its earliest date reaches rows no sentence names) until the reader reads the sentences it misses (Health and Care Act 2022 s.186's "other provisions"; SI 2018/1203's compound sentence) — then revisit.
+3. **Apply the 59 label changes** (`cr03_dry3`).
