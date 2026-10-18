@@ -13,7 +13,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
     the law-level one reaches: `provision_dated` (fully in force on a date;
     its partial entries before it kept as in-force entries),
     `provision_qualified` (in force partly only), `provision_by_order` (left
-    to orders). A sentence the reader can't resolve is one law-level
+    to orders, wholly or for the rest: J6). A sentence the reader can't resolve is one law-level
     `provision_unread` record.
 
   `LabelTimeline` takes the law's start from the law-level record and each
@@ -66,6 +66,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
 
       r.full_from != nil ->
         record(law_name, sid, :provision_dated, r, decider(r, law_rule).source)
+
+      # partly in, the rest left to orders: J6 (LR-34 D1 b), its partial
+      # entries kept as facts
+      dated? and by_order? ->
+        record(law_name, sid, :provision_by_order, r, decider(r, law_rule).source)
 
       dated? ->
         record(law_name, sid, :provision_qualified, r, decider(r, law_rule).source)

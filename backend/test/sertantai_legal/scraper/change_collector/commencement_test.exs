@@ -126,4 +126,23 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.CommencementTest do
 
     assert [{"UK_x:reg.2(1)", "provision_dated", ~D[2024-04-01], [nil]}] = provisions(input)
   end
+
+  test "CR-06: partly in on a date, the rest left to orders: by order (J6), the partial entry kept" do
+    input = %{
+      type_code: "ukpga",
+      made: ~D[1990-11-01],
+      rows:
+        rows([
+          {"s.164(2)",
+           "Section 158 in so far as it relates to Scotland shall come into force on 1st January 1991."},
+          {"s.164(3)",
+           "The remainder of this Act shall come into force on such day as the Secretary of State may by order appoint."},
+          {"s.158", "Duty."}
+        ])
+    }
+
+    assert {"UK_x:s.158", "provision_by_order", nil, ["for certain purposes"]} in provisions(
+             input
+           )
+  end
 end
