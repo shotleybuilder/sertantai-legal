@@ -113,4 +113,17 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.CommencementTest do
 
     assert {"UK_x:s.68(2)", "provision_dated", ~D[2000-07-28], [nil]} in provisions(input)
   end
+
+  test "CR-06: a law with no law-level rule (no clause) — rows only a provision rule reaches" do
+    input = %{
+      type_code: "wsi",
+      rows:
+        rows([
+          {"reg.1", "Duty."},
+          {"reg.2(1)", "This regulation comes into force on 1st April 2024."}
+        ])
+    }
+
+    assert [{"UK_x:reg.2(1)", "provision_dated", ~D[2024-04-01], [nil]}] = provisions(input)
+  end
 end

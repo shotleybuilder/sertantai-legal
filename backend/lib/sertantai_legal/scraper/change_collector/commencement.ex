@@ -61,7 +61,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Commencement do
     dated? = Enum.any?(r.entries, & &1.date)
 
     cond do
-      own == [] and not (law_rule && law_rule.treatment == :by_order) ->
+      own == [] and not match?(%{treatment: :by_order}, law_rule) ->
         nil
 
       r.full_from != nil ->
