@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Compact do
   record from its first row (`section_id`) to its last (`section_id_to`).
 
   A run is consecutive in document order (the law's rows in order), and only
-  merges records of the same change, join (`via`) and `pointer`, so
+  merges records of the same change — every field but the rows (`key/1`;
+  CR-06: one clause dates consecutive rows differently) — so
   `expand/2` gives back exactly the rows and joins it was made from: the
   fidelity gate. Records with no row pass through. Pure.
   """
@@ -21,7 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Compact do
 
     runs =
       placed
-      |> Enum.group_by(&{&1.evidence, &1.source, &1.via, &1.pointer})
+      |> Enum.group_by(&key/1)
       |> Enum.flat_map(fn {_key, recs} ->
         recs
         |> Enum.sort_by(&index[&1.section_id])
@@ -36,6 +37,10 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.Compact do
 
     runs ++ loose
   end
+
+  @doc "A change's identity: every field but the rows it reaches."
+  @spec key(Record.t()) :: map()
+  def key(%Record{} = r), do: r |> Map.from_struct() |> Map.drop([:section_id, :section_id_to])
 
   defp extend(rec, [], _index), do: {:cont, [rec]}
 

@@ -65,4 +65,11 @@ defmodule SertantaiLegal.Scraper.ChangeCollector.CompactTest do
            |> Enum.sort() ==
              recs |> Enum.map(key) |> Enum.sort()
   end
+
+  test "CR-06: one clause dating consecutive rows differently is two changes, never merged (1990/43 s.164(2))" do
+    full = %{rec(sid("s.48")) | effective_from: ~D[1991-01-01]}
+    partial = %{rec(sid("s.48(1)")) | effective_from: nil, in_force: [%{"date" => "1991-01-01"}]}
+
+    assert length(Compact.compact([full, partial], @order)) == 2
+  end
 end

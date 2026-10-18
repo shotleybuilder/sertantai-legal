@@ -273,7 +273,7 @@ defmodule SertantaiLegal.Scraper.ChangeCollector do
   @spec fidelity(%{String.t() => [Record.t()]}, %{String.t() => [Record.t()]}, [String.t()]) ::
           [{:missing | :extra, tuple()}]
   def fidelity(records, per_row, db_order) do
-    key = &{&1.evidence, &1.source, &1.section_id, &1.via, &1.pointer}
+    key = &{&1.section_id, Compact.key(&1)}
     known = MapSet.new(db_order)
 
     Enum.flat_map(per_row, fn {collector, recs} ->
