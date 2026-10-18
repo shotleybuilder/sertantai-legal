@@ -38,6 +38,7 @@ defmodule SertantaiLegal.Api do
     resource(SertantaiLegal.Legal.LatEvent)
     resource(SertantaiLegal.Legal.LatChangeLog)
     resource(SertantaiLegal.Legal.LatLabelTimeline)
+    resource(SertantaiLegal.Legal.CommencementRule)
 
     # AI-generated controls and provision mappings (from fractalaw)
     resource(SertantaiLegal.Legal.Control)
