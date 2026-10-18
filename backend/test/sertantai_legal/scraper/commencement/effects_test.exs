@@ -199,4 +199,58 @@ defmodule SertantaiLegal.Scraper.Commencement.EffectsTest do
     assert %{full_from: ~D[2004-09-19]} =
              Amending.evaluate([effect, text], "section-14", "UK_ukpga_1957_31:s.2", "E+W")
   end
+
+  test "Amending: no Royal Assent fallback; a repeals Schedule with entries on different dates gets no date" do
+    alias SertantaiLegal.Scraper.Commencement.Amending
+
+    ra =
+      Rule.new(
+        commences: "UK_ukpga_1991_34",
+        scope: :all,
+        when: {:date, ~D[1991-07-25]},
+        source: %{law: "UK_ukpga_1991_34", ref: "ukm:EnactmentDate", text: nil},
+        treatment: :act_enactment
+      )
+
+    assert %{entries: []} =
+             Amending.evaluate(
+               [ra],
+               "schedule-7-paragraph-33-a",
+               "UK_ukpga_1990_8:s.196(1)",
+               "E+W"
+             )
+
+    repeals =
+      Effects.rules("UK_ukpga_1995_25", [
+        %Effect{
+          type: "coming into force",
+          affecting: "UK_uksi_1996_186",
+          affected_refs: ["schedule-24"],
+          in_force: [
+            %{
+              date: ~D[1996-04-01],
+              prospective: false,
+              qualification: "for specified purposes",
+              applied: true
+            }
+          ]
+        },
+        %Effect{
+          type: "coming into force",
+          affecting: "UK_uksi_2005_1",
+          affected_refs: ["schedule-24"],
+          in_force: [
+            %{
+              date: ~D[2005-01-01],
+              prospective: false,
+              qualification: "for specified purposes",
+              applied: true
+            }
+          ]
+        }
+      ])
+
+    assert %{entries: [], full_from: nil} =
+             Amending.evaluate(repeals, "schedule-24", "UK_ukpga_1991_57:s.8", "E+W")
+  end
 end

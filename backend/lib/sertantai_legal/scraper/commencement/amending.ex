@@ -4,7 +4,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Amending do
   of the amended law (commencement-rules CR-04): **effects first** — the
   amending Act's "coming into force" effects (`Effects`, legislation.gov.uk's
   editorial data) where any reaches the provision; else the rules read from
-  the orders the notes cite (`Order`). Jason 2026-10-18: "if we have the
+  the orders the notes cite (`Order`) — never an Act's Royal Assent
+  fallback; a whole Schedule whose entries came in on different dates gets
+  none. Jason 2026-10-18: "if we have the
   'effects' data from leg.gov.uk why do we need to pull the laws too?". Pure.
   """
 
@@ -21,10 +23,23 @@ defmodule SertantaiLegal.Scraper.Commencement.Amending do
     ctx = Map.put(Order.context(), :extent, extent)
     {effects, text} = Enum.split_with(rules, &(&1.treatment == :feed_commencement))
 
+    # an Act's Royal Assent where its clause leaves the rest to orders is its
+    # start (LR-33), not evidence of when an amending provision came in
+    text = Enum.reject(text, &(&1.treatment == :act_enactment))
+
     by_effects = Evaluator.evaluate(Effects.for_row(effects, section_id), ref, ctx)
 
-    if by_effects.entries == [],
-      do: Evaluator.evaluate(text, ref, ctx),
-      else: by_effects
+    if(by_effects.entries == [], do: Evaluator.evaluate(text, ref, ctx), else: by_effects)
+    |> whole_schedule(ref)
+  end
+
+  # a whole Schedule (a repeals table) whose entries came in on different
+  # dates says nothing about one entry: no date rather than a guess
+  defp whole_schedule(result, ref) do
+    dates = result.entries |> Enum.map(& &1.date) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+    if Regex.match?(~r/^sch\.[^.]+$/, ref) and length(dates) > 1,
+      do: %{result | entries: [], full_from: nil, partial_from: nil, undated: []},
+      else: result
   end
 end

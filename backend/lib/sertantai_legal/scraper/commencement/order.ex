@@ -410,10 +410,20 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
   # the Schedule a line's bare paragraphs belong to
   defp schedule_context(line, sch) do
     cond do
-      m = Regex.run(~r/\bparagraphs?\b.*?\bof\s+Schedule\s+(\d+[A-Z]*)/i, line) -> Enum.at(m, 1)
-      m = Regex.run(~r/\bin\s+Schedule\s+(\d+[A-Z]*)\b/i, line) -> Enum.at(m, 1)
-      line =~ ~r/^\s*(?:sections?|in\s+section)\b/i -> nil
-      true -> sch
+      m = Regex.run(~r/\bparagraphs?\b.*?\bof\s+Schedule\s+(\d+[A-Z]*)/i, line) ->
+        Enum.at(m, 1)
+
+      m = Regex.run(~r/\bprovisions\s+(?:of|in)\s+Schedule\s+(\d+[A-Z]*)\s*[—–:]/iu, line) ->
+        Enum.at(m, 1)
+
+      m = Regex.run(~r/\bin\s+Schedule\s+(\d+[A-Z]*)\b/i, line) ->
+        Enum.at(m, 1)
+
+      line =~ ~r/^\s*(?:sections?|in\s+section)\b/i ->
+        nil
+
+      true ->
+        sch
     end
   end
 
@@ -449,6 +459,10 @@ defmodule SertantaiLegal.Scraper.Commencement.Order do
       for [_, list] <-
             Regex.scan(~r/(?<![Ii]n )\bSchedules?\s+#{@list}(?!\s*,?\s*paragraph)/, text),
           not (text =~ ~r/\bparagraphs?\b[^;]*\bof\s+Schedule/i),
+          # "the following provisions of Schedule 22—", "the provisions in
+          # Schedules 13 and 14 … specified in …": a subset, not the Schedule
+          not (text =~
+                 ~r/\b(?:provisions|paragraphs|entries|repeals|amendments)\s+(?:of|in|made\s+by)\s+(?:Part\s+\w+\s+of\s+)?Schedules?\b|\bSchedules?\s+[\d\s,and]+(?:to\s+the\s+Act\s+)?specified\b|\bSchedules?\s+\d+[A-Z]*\s*[—–:]/iu),
           r <- list_refs(list, "sch."),
           do: r
 

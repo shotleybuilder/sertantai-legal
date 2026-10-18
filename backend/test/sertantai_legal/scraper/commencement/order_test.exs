@@ -188,4 +188,20 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
 
     assert [%Rule{scope: ["s.8(1)"], purposes: :in_relation_to}] = rules
   end
+
+  test "\"the following provisions of Schedule 22—\", \"provisions in Schedules 13 and 14 … specified\": a subset, never the whole Schedule" do
+    rules =
+      Order.rules(
+        order(~S"""
+        <P1 id="article-3"><P1para><Text>The following provisions of the Act shall come into force on 21st September 1995—</Text>
+        <UnorderedList><ListItem><Para><Text>section 120(1) in so far as it relates to the following provisions of Schedule 22— paragraphs 37(1) and (4), 38;</Text></Para></ListItem>
+        <ListItem><Para><Text>section 180 of the Act, so far as it relates to the provisions in Schedules 13 and 14 to the Act specified in sub-paragraphs (c) and (d) below;</Text></Para></ListItem></UnorderedList></P1para></P1>
+        """),
+        @act
+      )
+
+    assert %{full_from: ~D[1995-09-21]} = dated(rules, "schedule-22-paragraph-38")
+    assert %{full_from: nil} = dated(rules, "schedule-22-paragraph-109")
+    assert %{full_from: nil} = dated(rules, "schedule-13-paragraph-119-7-a")
+  end
 end
